@@ -6,6 +6,8 @@ import gsap from 'gsap';
 import { Image as ImageIcon } from 'lucide-react';
 import { drawAdvancedVisualizer } from '../lib/visualizer';
 import { HeadlineSlot } from './HeadlineSlot';
+import { AutoFitText } from './AutoFitText';
+import { sanitizeRichText, stripRichText } from '../lib/rich-text';
 
 const TransparentImage = ({ src, className, removeWhite }: { src: string, className: string, removeWhite?: boolean }) => {
   const [dataUrl, setDataUrl] = useState(src);
@@ -55,6 +57,9 @@ interface CanvasEditorProps {
   accentColor: string;
   backgroundColor: string;
   bgMedia: {url: string, type: string} | null;
+  bgShadow: boolean;
+  bgShadowOpacity: number;
+  introImage: string | null;
 }
 
 const MOCK_CAPTIONS = [
@@ -64,7 +69,7 @@ const MOCK_CAPTIONS = [
   { text: "Never miss a lead again.", start: 7, end: 9, speaker: 2 },
 ];
 
-export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia }) => {
+export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage }) => {
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
@@ -92,6 +97,12 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         } else {
           useEditorStore.getState().undo();
         }
+        e.preventDefault();
+        return;
+      }
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'y') {
+        useEditorStore.getState().redo();
         e.preventDefault();
         return;
       }
@@ -144,6 +155,23 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   const [currentCaption, setCurrentCaption] = useState<string | null>(null);
   const [currentSpeaker, setCurrentSpeaker] = useState<number>(1);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const editingRef = useRef<HTMLDivElement | null>(null);
+  const [playbackTime, setPlaybackTime] = useState(0);
+
+  useEffect(() => {
+    if (!editingId) return;
+    requestAnimationFrame(() => {
+      const editor = editingRef.current;
+      if (!editor) return;
+      editor.focus();
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(editor);
+      range.collapse(false);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    });
+  }, [editingId]);
 
   useEffect(() => {
     if (!audioUrl) return;
@@ -172,6 +200,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       animateVisualizer();
     } else {
       audioRef.current.pause();
+      setPlaybackTime(0);
       if (reqAnimRef.current) {
         cancelAnimationFrame(reqAnimRef.current);
       }
@@ -199,16 +228,20 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       const state = useEditorStore.getState();
       
       const currentTime = audioRef.current?.currentTime || 0;
+      setPlaybackTime(currentTime);
       const activeCaps = state.captions.length > 0 ? state.captions : MOCK_CAPTIONS;
-      const activeCaption = activeCaps.find(c => currentTime >= c.start && currentTime <= c.end);
-      let loopSpeaker = 1;
+      const activeCaptionIndex = activeCaps.findIndex(c => currentTime >= c.start && currentTime <= c.end);
+      const activeCaption = activeCaptionIndex >= 0 ? activeCaps[activeCaptionIndex] : undefined;
+      const hasTwoSpeakers = activeCaps.some(c => c.speaker === 2);
+      let loopSpeaker: number | null = null;
       
       if (activeCaption) {
         setCurrentCaption(activeCaption.text);
-        setCurrentSpeaker(activeCaption.speaker);
-        loopSpeaker = activeCaption.speaker;
+        loopSpeaker = hasTwoSpeakers ? activeCaption.speaker : (activeCaptionIndex % 2) + 1;
+        setCurrentSpeaker(loopSpeaker);
       } else {
         setCurrentCaption(null);
+        loopSpeaker = Math.floor(currentTime / 1.5) % 2 === 0 ? 1 : 2;
       }
       
       const firstVis = state.elements.find(e => e.type === 'visualizer');
@@ -241,8 +274,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                  if (el.visualizerSplitSpeakers) {
                      const halfCount = Math.floor(binsCount / 2);
                      for (let i = 0; i < binsCount; i++) {
-                         if (loopSpeaker === 1 && i < halfCount) value += dataArray[i];
-                         if (loopSpeaker === 2 && i >= halfCount) value += dataArray[i];
+                         if (!loopSpeaker || (loopSpeaker === 1 && i < halfCount) || (loopSpeaker === 2 && i >= halfCount)) value += dataArray[i];
                      }
                      value = value / halfCount;
                  } else {
@@ -261,15 +293,26 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
           
           barsRef.current[vId].forEach((bar, index) => {
             if (bar) {
+              const isLeftSpeakerSide = index < halfCount;
+              const isActiveSpeakerSide = !el.visualizerSplitSpeakers || !loopSpeaker || (loopSpeaker === 1 ? isLeftSpeakerSide : !isLeftSpeakerSide);
               const dataBins = Math.floor(bufferLength * 0.4); // Focus on lower/mid frequencies
               // Space out the indices so it looks good visually
-              const dataIndex = 1 + Math.floor((index / Math.max(1, barsRef.current[vId].length - 1)) * dataBins);
+              const sideIndex = isLeftSpeakerSide ? index : index - halfCount;
+              const sideTotal = isLeftSpeakerSide ? halfCount : barsRef.current[vId].length - halfCount;
+              const normalizedIndex = el.visualizerSplitSpeakers
+                ? sideIndex / Math.max(1, sideTotal - 1)
+                : index / Math.max(1, barsRef.current[vId].length - 1);
+              const dataIndex = 1 + Math.floor(normalizedIndex * dataBins);
               let value = (dataArray[Math.min(dataIndex, bufferLength - 1)] / 255) * sensitivityMultiplier;
               value = Math.min(value, 1.0);
               
               if (el.visualizerSplitSpeakers) {
-                if (loopSpeaker === 1 && index >= halfCount) value = 0;
-                if (loopSpeaker === 2 && index < halfCount) value = 0;
+                value = isActiveSpeakerSide ? value : 0.04;
+                bar.style.backgroundColor = isLeftSpeakerSide ? (el.barColor || '#00ffcc') : '#8b5cf6';
+                bar.style.opacity = isActiveSpeakerSide ? '1' : '0.28';
+              } else {
+                bar.style.backgroundColor = el.barColor || '#00ffcc';
+                bar.style.opacity = '1';
               }
               
               const targetHeight = 4 + Math.pow(value, 1.5) * ((bar.parentElement?.clientHeight || 100) * 0.9);
@@ -296,6 +339,10 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       barsRef.current[vId] = new Array(total).fill(null);
     }
     barsRef.current[vId][index] = el;
+  };
+
+  const applyInlineTextCommand = (command: 'bold' | 'italic' | 'underline') => {
+    document.execCommand(command);
   };
 
   const [dimensions, setDimensions] = useState({ w: 0, h: 0 });
@@ -327,6 +374,16 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
     showSafeZones ? dimensions.h * 0.14 : -1,
     showSafeZones ? dimensions.h * 0.65 : -1
   ].filter(v => v >= 0) : [];
+
+  const introDuration = 2;
+  const introFadeDuration = 0.65;
+  const introOpacity = introImage && playing
+    ? playbackTime < introDuration
+      ? 1
+      : playbackTime < introDuration + introFadeDuration
+        ? 1 - ((playbackTime - introDuration) / introFadeDuration)
+        : 0
+    : 0;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -371,6 +428,22 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         />
       )}
 
+      {bgMedia && bgShadow && (
+        <div
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{ backgroundColor: `rgba(0, 0, 0, ${bgShadowOpacity})` }}
+        />
+      )}
+
+      {introImage && introOpacity > 0 && (
+        <img
+          src={introImage}
+          className="absolute inset-0 z-50 h-full w-full object-cover pointer-events-none"
+          style={{ opacity: introOpacity }}
+          alt=""
+        />
+      )}
+
       <audio 
         ref={audioRef} 
         src={audioUrl || undefined}
@@ -390,12 +463,13 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
 
       <Selecto
         dragContainer={canvasRef.current as any}
-        selectableTargets={['.element-node']}
+        selectableTargets={editingId ? [] : ['.element-node']}
         hitRate={0}
         selectByClick={true}
         selectFromInside={false}
         toggleContinueSelect={['shift']}
         dragCondition={(e: any) => {
+          if (editingId) return false;
           const target = e.inputEvent.target;
           return !target.closest('.element-node') && !target.closest('.moveable-control-box');
         }}
@@ -407,7 +481,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
 
       <Moveable
         ref={moveableRef}
-        target={targets}
+        target={editingId ? [] : targets}
         draggable={true}
         resizable={true}
         rotatable={true}
@@ -578,6 +652,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             id={`el-${el.id}`}
             className={`absolute element-node group`}
             onMouseDown={(e: React.MouseEvent) => {
+              if (editingId) return;
               if ((e.target as HTMLElement).closest('.moveable-control-box')) return;
               if (e.shiftKey) {
                  selectElement(el.id, true);
@@ -588,6 +663,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             onDoubleClick={(e) => {
                e.stopPropagation();
                if (el.type === 'text' || el.type === 'button') {
+                  selectElement(el.id, false);
                   setEditingId(el.id);
                }
             }}
@@ -603,38 +679,74 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             {/* TEXT */}
             {el.type === 'text' && (
               <div 
-                className="w-full h-full flex items-center justify-center break-words select-none"
+                className={`w-full h-full flex items-center justify-center break-words ${editingId === el.id ? 'select-text' : 'select-none'}`}
                 style={{
                   fontFamily: el.fontFamily,
                   fontSize: `${el.fontSize}px`,
                   fontWeight: el.fontWeight,
+                  fontStyle: el.fontStyle,
+                  textDecoration: el.textDecoration,
                   color: el.color,
                   textAlign: el.textAlign,
                   lineHeight: el.lineHeight,
                 }}
               >
-                {el.id === 'headline-1' ? (
-                  <HeadlineSlot niche="dental" elementId={el.id} />
-                ) : editingId === el.id ? (
-                  <textarea
-                    className="w-full h-full bg-transparent border-none outline-none resize-none overflow-hidden"
-                    style={{ textAlign: el.textAlign || 'center' }}
-                    autoFocus
-                    defaultValue={el.content}
+                {editingId === el.id ? (
+                  <AutoFitText
+                    textRef={editingRef}
+                    editable
+                    className="w-full cursor-text px-1 outline-none select-text"
+                    minFontSize={8}
+                    lineHeight={el.lineHeight || 1.12}
+                    plainText={stripRichText(el.content || '')}
+                    style={{
+                      color: el.color,
+                      fontFamily: el.fontFamily,
+                      fontWeight: el.fontWeight,
+                      fontStyle: el.fontStyle,
+                      textDecoration: el.textDecoration,
+                      textAlign: el.textAlign || 'center',
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onDoubleClick={(e) => e.stopPropagation()}
                     onBlur={(e) => {
-                      updateElement(el.id, { content: e.target.value });
+                      updateElement(el.id, { content: sanitizeRichText(e.currentTarget.innerHTML) });
                       commitHistory();
                       setEditingId(null);
                     }}
                     onKeyDown={(e) => {
+                       if ((e.metaKey || e.ctrlKey) && ['b', 'i', 'u'].includes(e.key.toLowerCase())) {
+                          e.preventDefault();
+                          const key = e.key.toLowerCase();
+                          if (key === 'b') applyInlineTextCommand('bold');
+                          if (key === 'i') applyInlineTextCommand('italic');
+                          if (key === 'u') applyInlineTextCommand('underline');
+                          return;
+                       }
                        if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault();
                           e.currentTarget.blur();
                        }
                     }}
-                  />
+                  >
+                    <span dangerouslySetInnerHTML={{ __html: sanitizeRichText(el.content || '') }} />
+                  </AutoFitText>
+                ) : el.id === 'headline-1' ? (
+                  <HeadlineSlot niche="dental" elementId={el.id} />
                 ) : (
-                  el.content
+                  <AutoFitText
+                    className="w-full px-1"
+                    minFontSize={8}
+                    lineHeight={el.lineHeight || 1.12}
+                    plainText={stripRichText(el.content || '')}
+                    style={{
+                      fontStyle: el.fontStyle,
+                      textAlign: el.textAlign || 'center',
+                      textDecoration: el.textDecoration,
+                    }}
+                  >
+                    <span dangerouslySetInnerHTML={{ __html: sanitizeRichText(el.content || '') }} />
+                  </AutoFitText>
                 )}
               </div>
             )}
@@ -698,7 +810,11 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                           key={i}
                           ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 8)}
                           className="flex-1 rounded-full"
-                          style={{ backgroundColor: el.barColor || '#00ffcc', height: '4px', minWidth: '4px' }}
+                          style={{
+                            backgroundColor: el.visualizerSplitSpeakers && i >= Math.floor((el.barCount || 8) / 2) ? '#8b5cf6' : (el.barColor || '#00ffcc'),
+                            height: '4px',
+                            minWidth: '4px'
+                          }}
                         />
                       ))}
                     </div>
@@ -715,27 +831,37 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             {/* CAPTION */}
             {el.type === 'caption' && (
                <div className="w-full h-full flex items-center justify-center pointer-events-none">
-                  {currentCaption ? (
-                    <div className="w-full h-full flex items-center justify-center p-2">
-                       <p className="text-[16px] font-medium text-center leading-snug drop-shadow-sm line-clamp-2" style={{ color: el.color || accentColor }}>
-                         {currentCaption}
-                       </p>
-                    </div>
-                  ) : (
-                    <div className="w-full h-full text-center flex items-center justify-center pointer-events-none">
-                      <span className="text-[16px] font-medium p-2" style={{ color: el.color || accentColor }}>
-                        {audioUrl ? "Captions will appear during playback" : "Upload audio for captions"}
-                      </span>
-                    </div>
-                  )}
+                  <AutoFitText
+                    className="px-2 text-center font-semibold"
+                    minFontSize={8}
+                    maxFontSize={64}
+                    lineHeight={1.22}
+                    fitPaddingX={18}
+                    fitPaddingY={16}
+                    style={{
+                      color: el.color || accentColor,
+                      fontFamily: el.fontFamily || 'Inter, sans-serif',
+                      fontWeight: el.fontWeight || 700,
+                    }}
+                  >
+                    {currentCaption || (audioUrl ? "Captions will appear during playback" : "Upload audio for captions")}
+                  </AutoFitText>
                </div>
             )}
 
             {/* IMAGE */}
             {el.type === 'image' && (
-               <div className="w-full h-full flex items-center justify-center pointer-events-none overflow-hidden" style={{ borderRadius: el.borderRadius, mixBlendMode: el.mixBlendMode as any }}>
+               <div className="relative w-full h-full flex items-center justify-center pointer-events-none overflow-hidden" style={{ borderRadius: el.borderRadius, mixBlendMode: el.mixBlendMode as any }}>
                  {el.imageUrl ? (
-                   <TransparentImage src={el.imageUrl} className="w-full h-full object-contain" removeWhite={el.removeWhite} />
+                   <>
+                     <TransparentImage src={el.imageUrl} className="w-full h-full object-contain" removeWhite={el.removeWhite} />
+                     {el.imageShadow && (
+                       <div
+                         className="absolute inset-0 pointer-events-none"
+                         style={{ backgroundColor: `rgba(0, 0, 0, ${el.imageShadowOpacity ?? 0.42})` }}
+                       />
+                     )}
+                   </>
                  ) : (
                    <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500">
                      <ImageIcon className="w-8 h-8 opacity-50" />

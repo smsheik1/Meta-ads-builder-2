@@ -2,10 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { PlatformFrame, type PlatformType } from './components/PlatformFrame';
 import { CanvasEditor } from './components/CanvasEditor';
 import { PropertiesPanel } from './components/PropertiesPanel';
-import { Upload, Play, Square, Save, Video, Database, CheckCircle2, Download, Settings, Layers, Loader2, X, Moon, Sun, Smartphone, ChevronDown } from 'lucide-react';
+import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, ChevronDown, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon } from 'lucide-react';
 import Papa from 'papaparse';
 import { useEditorStore } from './store';
 import { drawAdvancedVisualizer } from './lib/visualizer';
+import { parseRichText, stripRichText, type RichTextRun } from './lib/rich-text';
 
 const MOCK_CAPTIONS = [
   { text: "Are you missing calls?", start: 0, end: 2, speaker: 1 },
@@ -14,24 +15,13 @@ const MOCK_CAPTIONS = [
   { text: "Never miss a lead again.", start: 7, end: 9, speaker: 2 },
 ];
 
-interface Template {
-  name: string;
-  headline: string;
-  subhead: string;
-  ctaText: string;
-  visualizerColor: string;
-  accentColor: string;
-}
-
 type RenderDurationCap = 30 | 60 | 'full';
+type ExportPhase = 'recording' | 'converting' | 'complete' | 'error';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single');
   
   // Single Template State
-  const [headline, setHeadline] = useState("Never Miss a Lead Again.");
-  const [subhead, setSubhead] = useState("Our AI Receptionist answers calls 24/7.");
-  const [ctaText, setCtaText] = useState("BOOK A DEMO");
   const [visualizerColor, setVisualizerColor] = useState("#00ffcc");
   const [accentColor, setAccentColor] = useState("#4f46e5");
   const [bgColor, setBgColor] = useState("#f5f5f5");
@@ -46,6 +36,10 @@ export default function App() {
   
   // Media State
   const [bgMedia, setBgMedia] = useState<{url: string, type: string} | null>(null);
+  const [bgShadow, setBgShadow] = useState(true);
+  const [bgShadowOpacity, setBgShadowOpacity] = useState(0.38);
+  const [introImage, setIntroImage] = useState<string | null>(null);
+  const [introFileName, setIntroFileName] = useState<string>('');
   const [audioUrl, setAudioUrl] = useState<string | null>('/019e13bd-0b04-7dd0-95d6-dbcb36900e35-1778447713483-d2bb8e52-6c00-4439-a0e9-52f7e7a4a897-stereo (1).mp3');
   const [audioFileName, setAudioFileName] = useState<string>('019e13bd-0b04-7dd0-95d6-dbcb36900e35-1778447713483-d2bb8e52-6c00-4439-a0e9-52f7e7a4a897-stereo (1).mp3');
   
@@ -53,25 +47,32 @@ export default function App() {
   const [playing, setPlaying] = useState(false);
   const [rendering, setRendering] = useState(false);
   const [renderProgress, setRenderProgress] = useState(0);
+  const [exportPhase, setExportPhase] = useState<ExportPhase>('recording');
+  const [exportDownload, setExportDownload] = useState<{ url: string; filename: string } | null>(null);
+  const [exportLaunchAnimation, setExportLaunchAnimation] = useState(false);
   const [renderDurationCap, setRenderDurationCap] = useState<RenderDurationCap>(30);
 
   // Batch State
   const [csvData, setCsvData] = useState<any[]>([]);
   const [batchStatus, setBatchStatus] = useState<'idle' | 'processing' | 'done'>('idle');
 
-  // Templates
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement } = useEditorStore();
-
-  useEffect(() => {
-    // Load templates from local storage
-    const saved = localStorage.getItem('hyperframes_templates');
-    if (saved) {
-      setTemplates(JSON.parse(saved));
-    }
-  }, []);
+  const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, elements } = useEditorStore();
+  const hasComponent = (role: NonNullable<typeof elements[number]['componentRole']>) => elements.some((element) => element.componentRole === role);
+  const hasSubheadline = hasComponent('subheadline');
 
   const [isTranscribing, setIsTranscribing] = useState(false);
+
+  useEffect(() => {
+    if (!rendering) return;
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [rendering]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -89,6 +90,13 @@ export default function App() {
       setAudioUrl(URL.createObjectURL(file));
       setAudioFileName(file.name);
     }
+  };
+
+  const handleIntroImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIntroImage(URL.createObjectURL(file));
+    setIntroFileName(file.name);
   };
 
   useEffect(() => {
@@ -220,6 +228,7 @@ export default function App() {
       const url = URL.createObjectURL(file);
       addElement({
         type: 'image',
+        componentRole: 'image',
         x: 100,
         y: 100,
         width: 150,
@@ -227,8 +236,120 @@ export default function App() {
         rotation: 0,
         zIndex: 10,
         imageUrl: url,
+        imageShadow: false,
+        imageShadowOpacity: 0.42,
       });
     }
+  };
+
+  const handleAddSubheadline = () => {
+    if (hasSubheadline) return;
+
+    addElement({
+      type: 'text',
+      componentRole: 'subheadline',
+      content: 'Your secondary message goes here',
+      x: 20,
+      y: 198,
+      width: 320,
+      height: 72,
+      rotation: 0,
+      zIndex: 2,
+      fontSize: 18,
+      fontWeight: '600',
+      color: accentColor,
+      textAlign: 'center',
+      lineHeight: 1.12,
+    });
+  };
+
+  const handleAddHeadline = () => {
+    if (hasComponent('headline')) return;
+    addElement({
+      type: 'text',
+      componentRole: 'headline',
+      content: 'YOUR HEADLINE HERE',
+      x: 20,
+      y: 118,
+      width: 320,
+      height: 120,
+      rotation: 0,
+      zIndex: 1,
+      fontSize: 52,
+      fontWeight: '900',
+      color: '#000000',
+      textAlign: 'center',
+      lineHeight: 1.04,
+    });
+  };
+
+  const handleAddVisualizer = () => {
+    if (hasComponent('visualizer')) return;
+    addElement({
+      type: 'visualizer',
+      componentRole: 'visualizer',
+      x: 0,
+      y: 270,
+      width: 360,
+      height: 120,
+      rotation: 0,
+      zIndex: 3,
+      visualizerType: 'bars-center',
+      barColor: visualizerColor,
+      barCount: 16,
+      visualizerSplitSpeakers: false,
+    });
+  };
+
+  const handleAddCaptions = () => {
+    if (hasComponent('captions')) return;
+    addElement({
+      type: 'caption',
+      componentRole: 'captions',
+      x: 20,
+      y: 400,
+      width: 320,
+      height: 55,
+      rotation: 0,
+      zIndex: 4,
+    });
+  };
+
+  const handleAddCta = () => {
+    addElement({
+      type: 'button',
+      componentRole: 'cta',
+      content: 'BOOK A DEMO',
+      x: 88,
+      y: 590,
+      width: 184,
+      height: 48,
+      rotation: 0,
+      zIndex: 5,
+      fontSize: 16,
+      fontWeight: '800',
+      color: '#ffffff',
+      backgroundColor: accentColor,
+      borderRadius: 8,
+    });
+  };
+
+  const handleAddLogo = () => {
+    if (hasComponent('logo')) return;
+    addElement({
+      type: 'image',
+      componentRole: 'logo',
+      imageUrl: '/logo.png',
+      x: 120,
+      y: 70,
+      width: 120,
+      height: 48,
+      rotation: 0,
+      zIndex: 10,
+      removeWhite: true,
+      imageShadow: false,
+      imageShadowOpacity: 0.42,
+    });
   };
 
   const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -252,36 +373,16 @@ export default function App() {
     setPlaying(!playing);
   };
 
-  const saveTemplate = () => {
-    const name = prompt("Name your template:", "New Template");
-    if (!name) return;
-
-    const newTemplate: Template = {
-      name,
-      headline,
-      subhead,
-      ctaText,
-      visualizerColor,
-      accentColor
-    };
-
-    const updated = [...templates, newTemplate];
-    setTemplates(updated);
-    localStorage.setItem('hyperframes_templates', JSON.stringify(updated));
-    alert("Template saved!");
-  };
-
-  const loadTemplate = (t: Template) => {
-    setHeadline(t.headline);
-    setSubhead(t.subhead);
-    setCtaText(t.ctaText);
-    setVisualizerColor(t.visualizerColor);
-    setAccentColor(t.accentColor);
-  };
-
   const downloadSimulatedVideo = async () => {
+    setExportLaunchAnimation(true);
+    window.setTimeout(() => setExportLaunchAnimation(false), 650);
     setRendering(true);
     setRenderProgress(0);
+    setExportPhase('recording');
+    setExportDownload((previous) => {
+      if (previous) URL.revokeObjectURL(previous.url);
+      return null;
+    });
 
     const isVertical = platform === 'vertical';
     const targetWidth = 1080;
@@ -318,7 +419,17 @@ export default function App() {
         renderDuration = Math.max(renderDuration, bgVideoEl.duration * 1000);
       }
     }
-    const elements = useEditorStore.getState().elements;
+
+    let introImgEl: HTMLImageElement | null = null;
+    if (introImage) {
+      introImgEl = new Image();
+      introImgEl.crossOrigin = 'anonymous';
+      introImgEl.src = introImage;
+      await new Promise(r => { introImgEl!.onload = r; introImgEl!.onerror = r; });
+    }
+
+    const elements = JSON.parse(JSON.stringify(useEditorStore.getState().elements));
+    const captions = JSON.parse(JSON.stringify(useEditorStore.getState().captions));
     for (const el of elements) {
       if (el.type === 'image' && el.imageUrl) {
         const img = new Image();
@@ -418,6 +529,8 @@ export default function App() {
     mediaRecorder.onstop = async () => {
       await new Promise(r => setTimeout(r, 100)); // drain remaining chunks
       const blob = new Blob(chunks, { type: 'video/webm' });
+      setExportPhase('converting');
+      setRenderProgress(92);
       
       const formData = new FormData();
       formData.append('video', blob, 'video.webm');
@@ -436,27 +549,22 @@ export default function App() {
         }
         
         const url = URL.createObjectURL(mp4Blob);
+        const filename = `rendered_video_${Date.now()}.mp4`;
         const a = document.createElement('a');
         a.href = url;
-        a.download = `rendered_video_${Date.now()}.mp4`;
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        setExportDownload({ url, filename });
+        setExportPhase('complete');
+        setRenderProgress(100);
       } catch (err) {
         console.error("Error creating MP4:", err);
-        // Fallback to WebM
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `rendered_video_${Date.now()}.webm`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        setExportPhase('error');
+        alert('MP4 export failed. Please try again.');
       }
       setRendering(false);
-      setRenderProgress(100);
     };
 
     mediaRecorder.start();
@@ -503,7 +611,7 @@ export default function App() {
          return;
       }
 
-      setRenderProgress(Math.min((elapsed / renderDuration) * 100, 100));
+      setRenderProgress(Math.min((elapsed / renderDuration) * 90, 90));
       
       // Draw background
       ctx.fillStyle = bgColor;
@@ -539,17 +647,25 @@ export default function App() {
         const dy = (canvas.height - dHeight) / 2;
         ctx.drawImage(img, dx, dy, dWidth, dHeight);
       }
+
+      if (bgMedia && bgShadow) {
+        ctx.fillStyle = `rgba(0, 0, 0, ${bgShadowOpacity})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
       
-      const currentElements = useEditorStore.getState().elements;
+      const currentElements = elements;
       const sortedElements = [...currentElements].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
       
       const currentTimeSec = elapsed / 1000;
-      const storeCaptions = useEditorStore.getState().captions;
-      const activeCaptionGlobal = storeCaptions.length > 0 
-         ? storeCaptions.find(c => currentTimeSec >= c.start && currentTimeSec <= c.end)
-         : MOCK_CAPTIONS.find(c => currentTimeSec >= c.start && currentTimeSec <= c.end);
+      const storeCaptions = captions;
+      const renderCaptions = storeCaptions.length > 0 ? storeCaptions : MOCK_CAPTIONS;
+      const activeCaptionIndexGlobal = renderCaptions.findIndex(c => currentTimeSec >= c.start && currentTimeSec <= c.end);
+      const activeCaptionGlobal = activeCaptionIndexGlobal >= 0 ? renderCaptions[activeCaptionIndexGlobal] : undefined;
+      const hasTwoSpeakers = renderCaptions.some(c => c.speaker === 2);
       
-      const loopSpeaker = activeCaptionGlobal ? activeCaptionGlobal.speaker : 1;
+      const loopSpeaker = activeCaptionGlobal
+        ? (hasTwoSpeakers ? activeCaptionGlobal.speaker : (activeCaptionIndexGlobal % 2) + 1)
+        : (Math.floor(currentTimeSec / 1.5) % 2 === 0 ? 1 : 2);
       
       if (analyser && dataArray) {
         const visEl = currentElements.find(e => e.type === 'visualizer');
@@ -594,43 +710,81 @@ export default function App() {
             const drawY = (elH - drawH) / 2;
             
             ctx.drawImage(img, drawX, drawY, drawW, drawH);
+
+            if (el.imageShadow) {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.fillStyle = `rgba(0, 0, 0, ${el.imageShadowOpacity ?? 0.42})`;
+                ctx.fillRect(0, 0, elW, elH);
+            }
             
             if (el.mixBlendMode) {
                 ctx.globalCompositeOperation = 'source-over';
             }
          } else if (el.type === 'text') {
              ctx.fillStyle = el.color || '#fff';
-             const fontSize = (el.fontSize || 16) * scale;
-             ctx.font = `${el.fontWeight || 'normal'} ${fontSize}px ${el.fontFamily || 'Inter, sans-serif'}`;
+             let fontSize = (el.fontSize || 16) * scale;
+             const fontFamily = el.fontFamily || 'Inter, sans-serif';
+             const fontWeight = el.fontWeight || 'normal';
+             const fontStyle = el.fontStyle || 'normal';
              ctx.textAlign = (el.textAlign as CanvasTextAlign) || 'center';
              ctx.textBaseline = 'top';
-             
-             const explicitLines = (el.content || '').split('\n');
-             const lines: string[] = [];
-             
-             explicitLines.forEach(expLine => {
-               if (!expLine) {
-                 lines.push('');
-                 return;
-               }
-               const words = expLine.split(/\s+/);
-               let currentLine = words[0] || '';
-               for (let i = 1; i < words.length; i++) {
-                 const word = words[i];
-                 const width = ctx.measureText(currentLine + " " + word).width;
-                 if (width <= elW) {
-                   currentLine += " " + word;
+             const richRuns = parseRichText(el.content || '');
+             const plainContent = stripRichText(el.content || '');
+
+             const wrapText = (size: number) => {
+               ctx.font = `${fontStyle} ${fontWeight} ${size}px ${fontFamily}`;
+               const wrapped: string[] = [];
+               const explicitLines = plainContent.split('\n');
+               explicitLines.forEach(expLine => {
+                 if (!expLine) {
+                   wrapped.push('');
+                   return;
+                 }
+                 const words = expLine.split(/\s+/);
+                 let currentLine = words[0] || '';
+                 for (let i = 1; i < words.length; i++) {
+                   const word = words[i];
+                   const width = ctx.measureText(currentLine + " " + word).width;
+                   if (width <= elW) {
+                     currentLine += " " + word;
+                   } else {
+                     wrapped.push(currentLine);
+                     currentLine = word;
+                   }
+                 }
+                 if (currentLine) wrapped.push(currentLine);
+               });
+               return wrapped;
+             };
+
+             let lines = wrapText(fontSize);
+             let lineHeight = fontSize * (el.lineHeight || 1.12);
+             if (el.type === 'text') {
+               let low = 8 * scale;
+               let high = 96 * scale;
+               let bestSize = low;
+               let bestLines = lines;
+               while (low <= high) {
+                 const mid = Math.floor((low + high) / 2);
+                 const candidateLines = wrapText(mid);
+                 const candidateHeight = candidateLines.length * mid * (el.lineHeight || 1.12);
+                 const candidateWidest = candidateLines.reduce((max, line) => Math.max(max, ctx.measureText(line).width), 0);
+                 if (candidateWidest <= elW - (8 * scale) && candidateHeight <= elH - (4 * scale)) {
+                   bestSize = mid;
+                   bestLines = candidateLines;
+                   low = mid + 1;
                  } else {
-                   lines.push(currentLine);
-                   currentLine = word;
+                   high = mid - 1;
                  }
                }
-               if (currentLine) {
-                  lines.push(currentLine);
-               }
-             });
+               fontSize = bestSize;
+               lines = bestLines;
+               lineHeight = fontSize * (el.lineHeight || 1.12);
+               ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
+             } else {
+               ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
+             }
 
-             const lineHeight = fontSize * (el.lineHeight || 1.2);
              const totalHeight = lines.length * lineHeight;
              
              let textX = 0;
@@ -641,40 +795,140 @@ export default function App() {
              const startY = (elH - totalHeight) / 2 + (fontSize * 0.1);
 
              lines.forEach((line, i) => {
-               ctx.fillText(line, textX, startY + (i * lineHeight), elW);
+               const lineY = startY + (i * lineHeight);
+               ctx.fillText(line, textX, lineY, elW);
+               if (el.textDecoration === 'underline' || richRuns.some(run => run.bold || run.italic || run.underline)) {
+                 const lineRuns: RichTextRun[] = [];
+                 let remaining = line.length;
+                 let consumed = lines.slice(0, i).join('').length;
+                 for (const run of richRuns) {
+                   if (run.text === '\n') continue;
+                   const runText = run.text;
+                   if (consumed >= runText.length) {
+                     consumed -= runText.length;
+                     continue;
+                   }
+                   const start = Math.max(consumed, 0);
+                   const slice = runText.slice(start, start + remaining);
+                   if (slice) {
+                     lineRuns.push({ ...run, text: slice });
+                     remaining -= slice.length;
+                   }
+                   consumed = 0;
+                   if (remaining <= 0) break;
+                 }
+
+                 if (lineRuns.some(run => run.bold || run.italic || run.underline)) {
+                   ctx.clearRect(0, lineY - 2 * scale, elW, lineHeight);
+                   const totalWidth = lineRuns.reduce((sum, run) => {
+                     const runWeight = run.bold ? '900' : fontWeight;
+                     const runStyle = run.italic ? 'italic' : fontStyle;
+                     ctx.font = `${runStyle} ${runWeight} ${fontSize}px ${fontFamily}`;
+                     return sum + ctx.measureText(run.text).width;
+                   }, 0);
+                   let cursorX = ctx.textAlign === 'center' ? (elW - totalWidth) / 2 : ctx.textAlign === 'right' ? elW - totalWidth : 0;
+                   lineRuns.forEach(run => {
+                     const runWeight = run.bold ? '900' : fontWeight;
+                     const runStyle = run.italic ? 'italic' : fontStyle;
+                     ctx.font = `${runStyle} ${runWeight} ${fontSize}px ${fontFamily}`;
+                     ctx.fillText(run.text, cursorX, lineY);
+                     const runWidth = ctx.measureText(run.text).width;
+                     if (run.underline || el.textDecoration === 'underline') {
+                       const underlineY = lineY + fontSize * 0.9;
+                       ctx.save();
+                       ctx.strokeStyle = el.color || '#fff';
+                       ctx.lineWidth = Math.max(1.5 * scale, fontSize * 0.06);
+                       ctx.beginPath();
+                       ctx.moveTo(cursorX, underlineY);
+                       ctx.lineTo(cursorX + runWidth, underlineY);
+                       ctx.stroke();
+                       ctx.restore();
+                     }
+                     cursorX += runWidth;
+                   });
+                   ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
+                   return;
+                 }
+               }
+               if (el.textDecoration === 'underline') {
+                 const metrics = ctx.measureText(line);
+                 let underlineX = textX;
+                 if (ctx.textAlign === 'center') underlineX = textX - (metrics.width / 2);
+                 else if (ctx.textAlign === 'right') underlineX = textX - metrics.width;
+                 const underlineY = lineY + fontSize * 0.9;
+                 ctx.save();
+                 ctx.strokeStyle = el.color || '#fff';
+                 ctx.lineWidth = Math.max(1.5 * scale, fontSize * 0.06);
+                 ctx.beginPath();
+                 ctx.moveTo(underlineX, underlineY);
+                 ctx.lineTo(underlineX + metrics.width, underlineY);
+                 ctx.stroke();
+                 ctx.restore();
+               }
              });
          } else if (el.type === 'caption') {
              const currentTimeSec = elapsed / 1000;
-             const storeCaptions = useEditorStore.getState().captions;
+             const storeCaptions = captions;
              const activeCaption = storeCaptions.length > 0 
                 ? storeCaptions.find(c => currentTimeSec >= c.start && currentTimeSec <= c.end)
                 : MOCK_CAPTIONS.find(c => currentTimeSec >= c.start && currentTimeSec <= c.end);
              
              if (activeCaption) {
-                const captionFontSize = 18 * scale;
-                ctx.font = `bold ${captionFontSize}px Inter, sans-serif`;
-                
-                const maxTextWidth = elW - (4 * scale);
-                const words = `${activeCaption.text}`.split(' ');
-                let line = '';
-                const lines = [];
-                for(let i = 0; i < words.length; i++) {
-                  const testLine = line + words[i] + ' ';
-                  const metrics = ctx.measureText(testLine);
-                  const testWidth = metrics.width;
-                  if (testWidth > maxTextWidth && i > 0) {
+                const maxTextWidth = elW - (18 * scale);
+                const maxTextHeight = elH - (16 * scale);
+                const captionText = `${activeCaption.text}`;
+                const fontFamily = el.fontFamily || 'Inter, sans-serif';
+                const fontWeight = el.fontWeight || 'bold';
+                const wrapCaptionLines = (fontSize: number) => {
+                  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+                  const lines: string[] = [];
+                  captionText.split('\n').forEach((explicitLine) => {
+                    const words = explicitLine.trim().split(/\s+/).filter(Boolean);
+                    if (words.length === 0) {
+                      lines.push('');
+                      return;
+                    }
+
+                    let line = words[0];
+                    for (let i = 1; i < words.length; i++) {
+                      const testLine = `${line} ${words[i]}`;
+                      if (ctx.measureText(testLine).width <= maxTextWidth) {
+                        line = testLine;
+                      } else {
+                        lines.push(line);
+                        line = words[i];
+                      }
+                    }
                     lines.push(line);
-                    line = words[i] + ' ';
+                  });
+                  return lines;
+                };
+
+                let low = 8 * scale;
+                let high = 72 * scale;
+                let captionFontSize = low;
+                let renderLines = wrapCaptionLines(captionFontSize);
+                while (low <= high) {
+                  const mid = Math.floor((low + high) / 2);
+                  const candidateLines = wrapCaptionLines(mid);
+                  const candidateLineHeight = mid * 1.22;
+                  const widest = candidateLines.reduce((max, line) => Math.max(max, ctx.measureText(line).width), 0);
+                  const totalHeight = candidateLines.length * candidateLineHeight;
+
+                  if (widest <= maxTextWidth && totalHeight <= maxTextHeight) {
+                    captionFontSize = mid;
+                    renderLines = candidateLines;
+                    low = mid + 1;
                   } else {
-                    line = testLine;
+                    high = mid - 1;
                   }
                 }
-                lines.push(line);
-                const renderLines = lines.slice(0, 2); 
-                const lineHeight = captionFontSize * 1.3;
+
+                ctx.font = `${fontWeight} ${captionFontSize}px ${fontFamily}`;
+                const lineHeight = captionFontSize * 1.22;
                 
                 const totalTextHeight = renderLines.length * lineHeight;
-                const startY = (elH - totalTextHeight) / 2 + (captionFontSize * 0.1);
+                const startY = (elH - totalTextHeight) / 2;
 
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
@@ -748,24 +1002,31 @@ export default function App() {
              if (el.visualizerSplitSpeakers) {
                  const halfCount = Math.floor(count / 2);
                  for (let i = 0; i < count; i++) {
-                     if (loopSpeaker === 1 && i >= halfCount) values[i] = 0;
-                     if (loopSpeaker === 2 && i < halfCount) values[i] = 0;
+                     const isLeftSpeakerSide = i < halfCount;
+                     const isActiveSpeakerSide = !loopSpeaker || (loopSpeaker === 1 ? isLeftSpeakerSide : !isLeftSpeakerSide);
+                     if (!isActiveSpeakerSide) values[i] = 0.04;
                  }
              }
 
              if (type === 'bars-bottom' || type === 'bars-center') {
                  const gap = 2 * scale;
                  const barW = (elW - gap * (count - 1)) / count;
+                 const halfCount = Math.floor(count / 2);
                  for (let i = 0; i < count; i++) {
                      const v = values[i];
                      const minBarH = 4 * scale;
                      const barH = Math.min(minBarH + v * (elH * 0.9), elH);
                      const barX = i * (barW + gap);
                      const barY = type === 'bars-center' ? (elH - barH) / 2 : elH - barH;
+                     const isLeftSpeakerSide = i < halfCount;
+                     const isActiveSpeakerSide = !el.visualizerSplitSpeakers || !loopSpeaker || (loopSpeaker === 1 ? isLeftSpeakerSide : !isLeftSpeakerSide);
+                     ctx.fillStyle = el.visualizerSplitSpeakers && !isLeftSpeakerSide ? '#8b5cf6' : (el.barColor || '#fff');
+                     ctx.globalAlpha = isActiveSpeakerSide ? 1 : 0.28;
                      
                      ctx.beginPath();
                      ctx.roundRect(barX, barY, barW, barH, barW / 2);
                      ctx.fill();
+                     ctx.globalAlpha = 1;
                  }
              } else if (['ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(type)) {
                  let v = 0;
@@ -774,8 +1035,7 @@ export default function App() {
                      if (el.visualizerSplitSpeakers) {
                          const halfCount = Math.floor(binsCount / 2);
                          for (let i = 0; i < binsCount; i++) {
-                             if (loopSpeaker === 1 && i < halfCount) v += dataArray[i];
-                             if (loopSpeaker === 2 && i >= halfCount) v += dataArray[i];
+                             if (!loopSpeaker || (loopSpeaker === 1 && i < halfCount) || (loopSpeaker === 2 && i >= halfCount)) v += dataArray[i];
                          }
                          v = v / halfCount;
                      } else {
@@ -793,6 +1053,35 @@ export default function App() {
          ctx.restore();
       });
 
+      if (introImgEl) {
+        const introDuration = 2;
+        const introFadeDuration = 0.65;
+        let introOpacity = 0;
+        if (currentTimeSec < introDuration) {
+          introOpacity = 1;
+        } else if (currentTimeSec < introDuration + introFadeDuration) {
+          introOpacity = 1 - ((currentTimeSec - introDuration) / introFadeDuration);
+        }
+
+        if (introOpacity > 0) {
+          const imgRatio = introImgEl.width / introImgEl.height;
+          const canvasRatio = canvas.width / canvas.height;
+          let dWidth = canvas.width;
+          let dHeight = canvas.height;
+          if (imgRatio > canvasRatio) {
+            dWidth = canvas.height * imgRatio;
+          } else {
+            dHeight = canvas.width / imgRatio;
+          }
+          const dx = (canvas.width - dWidth) / 2;
+          const dy = (canvas.height - dHeight) / 2;
+          ctx.save();
+          ctx.globalAlpha = introOpacity;
+          ctx.drawImage(introImgEl, dx, dy, dWidth, dHeight);
+          ctx.restore();
+        }
+      }
+
       const videoTrack = stream.getVideoTracks()[0] as any;
       if (videoTrack && typeof videoTrack.requestFrame === 'function') {
         videoTrack.requestFrame();
@@ -806,10 +1095,6 @@ export default function App() {
     };
     
     requestAnimationFrame(draw);
-  };
-
-  const simulateRender = () => {
-    downloadSimulatedVideo();
   };
 
   const runBatch = () => {
@@ -850,57 +1135,24 @@ export default function App() {
       {/* Header */}
       <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center text-white font-bold">H</div>
+          <div className="w-8 h-8 bg-slate-900 rounded flex items-center justify-center text-white font-bold">V</div>
           <h1 className="text-lg font-semibold tracking-tight">
-            Hyperframes <span className="text-slate-400 font-normal">AdGen Studio</span>
+            Visualizer Ads <span className="text-slate-400 font-normal">Studio</span>
           </h1>
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="px-3 py-1 bg-green-50 border border-green-200 rounded-full text-xs font-medium text-green-700 flex items-center gap-1.5 hidden sm:flex">
-            <span className="w-2 h-2 bg-green-500 rounded-full"></span> /hyperframes skill: Active
-          </div>
           <button 
             onClick={() => setActiveTab('single')}
             className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'single' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}
           >
-            Composition
-          </button>
-          <button 
-            onClick={async () => {
-              console.log("Testing render API...");
-              try {
-                const res = await fetch('/api/render-test', { method: 'POST' });
-                const data = await res.json();
-                console.log("Render API Response:", data);
-              } catch (e) {
-                console.error("Render API fetch error:", e);
-              }
-            }}
-            className="px-4 py-2 text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition-colors border border-red-300"
-          >
-            Test Render
-          </button>
-          <button 
-            onClick={async () => {
-              console.log("Testing hyperframes render...");
-              try {
-                const res = await fetch('/api/hyperframes-render-test', { method: 'POST' });
-                const data = await res.json();
-                console.log("Hyperframes Render Response:", data);
-              } catch (e) {
-                console.error("Hyperframes Render API fetch error:", e);
-              }
-            }}
-            className="px-4 py-2 text-sm font-medium bg-orange-100 text-orange-700 hover:bg-orange-200 rounded-lg transition-colors border border-orange-300"
-          >
-            Test Hyperframes Render
+            Create Ad
           </button>
           <button 
             onClick={() => setActiveTab('batch')}
             className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'batch' ? 'bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700' : 'text-slate-600 hover:bg-slate-50 rounded-lg'}`}
           >
-            Batch View
+            Batch Ads
           </button>
         </div>
       </header>
@@ -911,57 +1163,98 @@ export default function App() {
             
             {activeTab === 'single' ? (
               <>
-              <PropertiesPanel 
-                saveTemplate={saveTemplate}
-                templates={templates}
-                loadTemplate={loadTemplate}
-                headline={headline} setHeadline={setHeadline}
-                subhead={subhead} setSubhead={setSubhead}
-                ctaText={ctaText} setCtaText={setCtaText}
-              />
+              <PropertiesPanel />
 
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Style & Assets</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700">Visualizer Color</label>
-                    <div className="flex items-center gap-2 border border-slate-200 rounded-md px-2 py-1.5 bg-slate-50">
-                      <input 
-                        type="color" 
-                        value={visualizerColor}
-                        onChange={e => setVisualizerColor(e.target.value)}
-                        className="w-4 h-4 rounded-sm cursor-pointer bg-transparent border-0 p-0" 
-                      />
-                      <span className="text-xs text-slate-600">{visualizerColor}</span>
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700">Accent Color</label>
-                    <div className="flex items-center gap-2 border border-slate-200 rounded-md px-2 py-1.5 bg-slate-50">
-                      <input 
-                        type="color" 
-                        value={accentColor}
-                        onChange={e => setAccentColor(e.target.value)}
-                        className="w-4 h-4 rounded-sm cursor-pointer bg-transparent border-0 p-0" 
-                      />
-                      <span className="text-xs text-slate-600">{accentColor}</span>
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700">Background Color</label>
-                    <div className="flex items-center gap-2 border border-slate-200 rounded-md px-2 py-1.5 bg-slate-50">
-                      <input 
-                        type="color" 
-                        value={bgColor}
-                        onChange={e => setBgColor(e.target.value)}
-                        className="w-4 h-4 rounded-sm cursor-pointer bg-transparent border-0 p-0" 
-                      />
-                      <span className="text-xs text-slate-600 uppercase">{bgColor}</span>
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Components</h2>
+                <div className="space-y-2">
+                  {[
+                    { label: 'Headline', description: 'Hook slot with refresh', icon: Type, action: handleAddHeadline, added: hasComponent('headline') },
+                    { label: 'Sub-headline', description: 'Optional supporting copy', icon: Type, action: handleAddSubheadline, added: hasSubheadline },
+                    { label: 'Visualizer', description: 'Audio-reactive bars', icon: AudioLines, action: handleAddVisualizer, added: hasComponent('visualizer') },
+                    { label: 'Captions', description: 'Timed transcript text', icon: Captions, action: handleAddCaptions, added: hasComponent('captions') },
+                    { label: 'CTA Button', description: 'Clickable-style call to action', icon: MousePointerClick, action: handleAddCta, added: false },
+                    { label: 'Logo', description: 'Default brand mark', icon: ImageIcon, action: handleAddLogo, added: hasComponent('logo') },
+                  ].map((component) => {
+                    const Icon = component.icon;
+                    return (
+                      <button
+                        key={component.label}
+                        type="button"
+                        onClick={component.action}
+                        disabled={component.added}
+                        className="w-full flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-left transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Icon className="w-4 h-4 text-slate-500" />
+                          <span>
+                            <span className="block text-sm font-semibold text-slate-800">{component.label}</span>
+                            <span className="block text-xs text-slate-500">{component.description}</span>
+                          </span>
+                        </span>
+                        <span className="text-xs font-semibold text-slate-400">{component.added ? 'Added' : 'Add'}</span>
+                      </button>
+                    );
+                  })}
+                  <div className="relative group">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={(e) => {
+                        handleAddImageElement(e);
+                        if(e.target) e.target.value = '';
+                      }}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      title="Add Image Layer"
+                    />
+                    <div className="w-full flex items-center justify-between gap-3 rounded-lg border border-dashed border-slate-300 bg-white px-3 py-3 text-left transition-colors group-hover:bg-slate-50">
+                      <span className="flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-slate-500" />
+                        <span>
+                          <span className="block text-sm font-semibold text-slate-800">Image Layer</span>
+                          <span className="block text-xs text-slate-500">Upload product or proof image</span>
+                        </span>
+                      </span>
+                      <span className="text-xs font-semibold text-slate-400">Upload</span>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="mt-4 space-y-3">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Style & Assets</h2>
+                <div className="space-y-2">
+                  {[
+                    { label: 'Visualizer', value: visualizerColor, onChange: setVisualizerColor },
+                    { label: 'Accent', value: accentColor, onChange: setAccentColor },
+                    { label: 'Background', value: bgColor, onChange: setBgColor },
+                  ].map((colorControl) => (
+                    <label
+                      key={colorControl.label}
+                      className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
+                    >
+                      <span className="text-sm font-semibold text-slate-700">{colorControl.label}</span>
+                      <span className="flex items-center gap-2">
+                        <span className="relative h-7 w-7 overflow-hidden rounded border border-slate-200 shadow-inner">
+                          <span
+                            className="absolute inset-0"
+                            style={{ backgroundColor: colorControl.value }}
+                          />
+                          <input
+                            type="color"
+                            value={colorControl.value}
+                            onChange={(event) => colorControl.onChange(event.target.value)}
+                            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                            aria-label={`${colorControl.label} color`}
+                          />
+                        </span>
+                        <span className="w-[68px] text-right font-mono text-xs uppercase text-slate-500">{colorControl.value}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+
+                <div className="mt-4 space-y-2">
                   <div className="flex gap-2">
                     <div className="relative group flex-1">
                       <input 
@@ -974,13 +1267,16 @@ export default function App() {
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                         title="Upload background"
                       />
-                      <div className="w-full h-full flex items-center justify-between px-3 py-2 text-sm border border-dashed border-slate-300 rounded-md text-slate-500 group-hover:bg-slate-50 bg-white transition-colors">
+                      <div className="w-full h-full flex items-center justify-between px-3 py-3 text-sm border border-dashed border-slate-300 rounded-lg text-slate-600 group-hover:bg-slate-50 bg-white transition-colors">
                         <span className="flex items-center gap-2">
                           <Upload className="w-4 h-4 text-slate-400" />
-                          Background
+                          <span>
+                            <span className="block font-semibold text-slate-700">Background media</span>
+                            <span className="block text-xs text-slate-500">Image or video</span>
+                          </span>
                         </span>
-                        <span className="text-xs font-mono truncate max-w-[100px] text-right">
-                          {bgMedia ? "loaded" : "none"}
+                        <span className="text-xs font-semibold text-slate-400">
+                          {bgMedia ? "Loaded" : "Upload"}
                         </span>
                       </div>
                     </div>
@@ -988,7 +1284,79 @@ export default function App() {
                       <button 
                         onClick={() => setBgMedia(null)}
                         title="Remove Background"
-                        className="px-2 border border-slate-200 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors bg-white flex items-center justify-center shrink-0"
+                        className="px-2 border border-slate-200 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors bg-white flex items-center justify-center shrink-0"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  {bgMedia && (
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
+                      <label className="flex cursor-pointer items-center justify-between gap-3">
+                        <span>
+                          <span className="block text-sm font-semibold text-slate-700">Shadow overlay</span>
+                          <span className="block text-xs text-slate-500">Darken media behind the ad text</span>
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={bgShadow}
+                          onChange={(e) => setBgShadow(e.target.checked)}
+                          className="h-4 w-4 cursor-pointer"
+                        />
+                      </label>
+                      <div className={bgShadow ? 'mt-3 space-y-1.5' : 'mt-3 space-y-1.5 opacity-40'}>
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-slate-600">Intensity</label>
+                          <span className="text-xs font-semibold text-slate-500">{Math.round(bgShadowOpacity * 100)}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0.1"
+                          max="0.75"
+                          step="0.05"
+                          value={bgShadowOpacity}
+                          disabled={!bgShadow}
+                          onChange={(e) => setBgShadowOpacity(parseFloat(e.target.value))}
+                          className="w-full cursor-pointer disabled:cursor-not-allowed"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <div className="relative group flex-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          handleIntroImageUpload(e);
+                          if(e.target) e.target.value = '';
+                        }}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        title="Upload intro image"
+                      />
+                      <div className="w-full h-full flex items-center justify-between px-3 py-3 text-sm border border-dashed border-slate-300 rounded-lg text-slate-600 group-hover:bg-slate-50 bg-white transition-colors">
+                        <span className="flex min-w-0 items-center gap-2">
+                          <ImageIcon className="w-4 h-4 shrink-0 text-slate-400" />
+                          <span className="min-w-0">
+                            <span className="block font-semibold text-slate-700">Intro image</span>
+                            <span className="block truncate text-xs text-slate-500">{introImage ? introFileName || 'Shows first 2 seconds' : 'First 2 seconds, then fades out'}</span>
+                          </span>
+                        </span>
+                        <span className="text-xs font-semibold text-slate-400">
+                          {introImage ? "Loaded" : "Upload"}
+                        </span>
+                      </div>
+                    </div>
+                    {introImage && (
+                      <button
+                        onClick={() => {
+                          setIntroImage(null);
+                          setIntroFileName('');
+                        }}
+                        title="Remove intro image"
+                        className="px-2 border border-slate-200 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors bg-white flex items-center justify-center shrink-0"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -1007,13 +1375,16 @@ export default function App() {
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                         title="Upload audio"
                       />
-                      <div className="w-full h-full flex items-center justify-between px-3 py-2 text-sm border border-dashed border-slate-300 rounded-md text-slate-500 group-hover:bg-slate-50 bg-white transition-colors">
+                      <div className="w-full h-full flex items-center justify-between px-3 py-3 text-sm border border-dashed border-slate-300 rounded-lg text-slate-600 group-hover:bg-slate-50 bg-white transition-colors">
                         <span className="flex items-center gap-2">
                           {isTranscribing ? <Loader2 className="w-4 h-4 text-slate-400 animate-spin" /> : <Upload className="w-4 h-4 text-slate-400" />}
-                          {isTranscribing ? "Transcribing..." : "Audio (MP3)"}
+                          <span>
+                            <span className="block font-semibold text-slate-700">{isTranscribing ? "Transcribing..." : "Voiceover audio"}</span>
+                            <span className="block max-w-[170px] truncate text-xs text-slate-500">{audioFileName || "MP3, WAV, M4A"}</span>
+                          </span>
                         </span>
-                        <span className="text-xs font-mono uppercase truncate max-w-[100px] text-right">
-                          {audioFileName || "none"}
+                        <span className="text-xs font-semibold text-slate-400">
+                          {audioUrl ? "Loaded" : "Upload"}
                         </span>
                       </div>
                     </div>
@@ -1021,32 +1392,11 @@ export default function App() {
                       <button 
                         onClick={() => { setAudioUrl(null); setAudioFileName(''); }}
                         title="Remove Audio"
-                        className="px-2 border border-slate-200 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors bg-white flex items-center justify-center shrink-0"
+                        className="px-2 border border-slate-200 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors bg-white flex items-center justify-center shrink-0"
                       >
                         <X className="w-4 h-4" />
                       </button>
                     )}
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <div className="relative group flex-1">
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={(e) => {
-                          handleAddImageElement(e);
-                          if(e.target) e.target.value = '';
-                        }}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        title="Add Image Layer"
-                      />
-                      <div className="w-full h-full flex items-center justify-between px-3 py-2 text-sm border border-dashed border-slate-300 rounded-md text-slate-500 group-hover:bg-slate-50 bg-white transition-colors">
-                        <span className="flex items-center gap-2">
-                          <Layers className="w-4 h-4 text-slate-400" />
-                          Add Image Layer
-                        </span>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -1054,56 +1404,81 @@ export default function App() {
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Platform Simulator</h2>
-                  <button 
-                    onClick={() => setPlatformTheme(prev => prev === 'dark' ? 'light' : 'dark')}
-                    className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
-                    title="Toggle Theme"
-                  >
-                    {platformTheme === 'dark' ? <Sun className="w-4 h-4 cursor-pointer" /> : <Moon className="w-4 h-4 cursor-pointer" />}
-                  </button>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Meta preview</span>
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700">Environment</label>
-                    <select 
-                      value={platform}
-                      onChange={e => setPlatform(e.target.value as PlatformType)}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPlatform('vertical')}
+                      className={`rounded-lg border px-3 py-2 text-left transition-colors ${platform === 'vertical' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'}`}
                     >
-                      <option value="vertical">Reels & Stories (9:16)</option>
-                      <option value="feed">Facebook & IG Feed (4:5)</option>
-                    </select>
+                      <span className="block text-sm font-semibold">Reels</span>
+                      <span className={`block text-xs ${platform === 'vertical' ? 'text-white/70' : 'text-slate-500'}`}>9:16</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPlatform('feed')}
+                      className={`rounded-lg border px-3 py-2 text-left transition-colors ${platform === 'feed' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'}`}
+                    >
+                      <span className="block text-sm font-semibold">Feed</span>
+                      <span className={`block text-xs ${platform === 'feed' ? 'text-white/70' : 'text-slate-500'}`}>4:5</span>
+                    </button>
                   </div>
 
-                  <div className="space-y-1.5 flex items-center justify-between mt-2 mb-2 p-2 bg-slate-50 border border-slate-100 rounded-md">
-                    <label className="text-xs font-semibold text-slate-700 cursor-pointer select-none" htmlFor="safeZonesToggle">Show Safe Zones</label>
-                    <div className="relative inline-block w-8 h-4 align-middle select-none transition duration-200 ease-in">
-                        <input type="checkbox" id="safeZonesToggle" checked={showSafeZones} onChange={(e) => setShowSafeZones(e.target.checked)} className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 border-slate-300 appearance-none cursor-pointer z-10 transition-transform duration-200 checked:translate-x-4 checked:border-indigo-500" style={{ top: 0, left: 0 }} />
-                        <label htmlFor="safeZonesToggle" className={`toggle-label block overflow-hidden h-4 rounded-full cursor-pointer transition-colors duration-200 ${showSafeZones ? 'bg-indigo-500' : 'bg-slate-300'}`}></label>
-                    </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPlatformTheme('dark')}
+                      className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${platformTheme === 'dark' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'}`}
+                    >
+                      <Moon className="w-4 h-4" />
+                      Dark
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPlatformTheme('light')}
+                      className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${platformTheme === 'light' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'}`}
+                    >
+                      <Sun className="w-4 h-4" />
+                      Light
+                    </button>
                   </div>
 
-                  <div className="space-y-1.5 flex items-center justify-between mt-2 mb-2 p-2 bg-slate-50 border border-slate-100 rounded-md">
-                    <label className="text-xs font-semibold text-slate-700 cursor-pointer select-none" htmlFor="redGuidesToggle">Show Red Info Text</label>
-                    <div className="relative inline-block w-8 h-4 align-middle select-none transition duration-200 ease-in">
-                        <input type="checkbox" id="redGuidesToggle" checked={showRedGuides} onChange={(e) => setShowRedGuides(e.target.checked)} className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 border-slate-300 appearance-none cursor-pointer z-10 transition-transform duration-200 checked:translate-x-4 checked:border-indigo-500" style={{ top: 0, left: 0 }} />
-                        <label htmlFor="redGuidesToggle" className={`toggle-label block overflow-hidden h-4 rounded-full cursor-pointer transition-colors duration-200 ${showRedGuides ? 'bg-indigo-500' : 'bg-slate-300'}`}></label>
-                    </div>
+                  <div className="space-y-2">
+                    {[
+                      { id: 'safeZonesToggle', label: 'Safe zones', checked: showSafeZones, onChange: setShowSafeZones },
+                      { id: 'redGuidesToggle', label: 'Info labels', checked: showRedGuides, onChange: setShowRedGuides },
+                    ].map((toggle) => (
+                      <label key={toggle.id} htmlFor={toggle.id} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                        <span className="text-sm font-semibold text-slate-700">{toggle.label}</span>
+                        <span className="relative inline-block h-5 w-9">
+                          <input
+                            type="checkbox"
+                            id={toggle.id}
+                            checked={toggle.checked}
+                            onChange={(event) => toggle.onChange(event.target.checked)}
+                            className="peer sr-only"
+                          />
+                          <span className="absolute inset-0 rounded-full bg-slate-300 transition-colors peer-checked:bg-slate-900" />
+                          <span className="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
+                        </span>
+                      </label>
+                    ))}
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700">Brand Username</label>
-                    <input 
-                      type="text" 
-                      value={brandName}
-                      onChange={e => setBrandName(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
-                    />
-                  </div>
+                  <div className="space-y-2">
+                    <label className="block">
+                      <span className="mb-1.5 block text-xs font-semibold text-slate-700">Brand username</span>
+                      <input 
+                        type="text" 
+                        value={brandName}
+                        onChange={e => setBrandName(e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500/20" 
+                      />
+                    </label>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700">Brand Logo</label>
                     <div className="flex gap-2">
                        <div className="relative flex-1 group">
                          <input 
@@ -1118,12 +1493,13 @@ export default function App() {
                            }}
                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                          />
-                         <div className="w-full px-3 py-2 border border-slate-200 border-dashed rounded-md bg-white hover:bg-slate-50 hover:border-slate-300 transition-colors flex items-center justify-between pointer-events-none">
-                           <span className="text-sm font-medium text-slate-500">
-                              Upload Logo...
+                         <div className="w-full px-3 py-3 border border-slate-200 border-dashed rounded-lg bg-white hover:bg-slate-50 hover:border-slate-300 transition-colors flex items-center justify-between pointer-events-none">
+                           <span>
+                              <span className="block text-sm font-semibold text-slate-700">Brand logo</span>
+                              <span className="block text-xs text-slate-500">Profile avatar</span>
                            </span>
-                           <span className="text-xs font-mono uppercase truncate max-w-[80px] text-right">
-                              {brandLogo ? "Uploaded" : "None"}
+                           <span className="text-xs font-semibold text-slate-400">
+                              {brandLogo ? "Uploaded" : "Upload"}
                            </span>
                          </div>
                        </div>
@@ -1131,7 +1507,7 @@ export default function App() {
                           <button 
                              onClick={() => setBrandLogo(null)}
                              title="Remove Logo"
-                             className="px-2 border border-slate-200 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors bg-white flex items-center justify-center shrink-0"
+                             className="px-2 border border-slate-200 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors bg-white flex items-center justify-center shrink-0"
                           >
                              <X className="w-4 h-4" />
                           </button>
@@ -1140,11 +1516,11 @@ export default function App() {
                   </div>
                   
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700">Auto-injected CTA</label>
+                    <label className="text-xs font-semibold text-slate-700">Platform CTA</label>
                     <select 
                       value={autoCta}
                       onChange={e => setAutoCta(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
                     >
                       <option value="Learn More">Learn More</option>
                       <option value="Get Quote">Get Quote</option>
@@ -1162,7 +1538,7 @@ export default function App() {
                       value={simulatedCaption}
                       onChange={e => setSimulatedCaption(e.target.value)}
                       rows={2}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none" 
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500/20 resize-none" 
                     />
                     <div className="flex justify-end text-[10px] text-slate-400 font-medium">
                        {simulatedCaption.length > 125 ? <span className="text-orange-500 flex items-center gap-1">⚠ Truncated (~125 chars max before 'more')</span> : `~${125 - simulatedCaption.length} chars until truncation`}
@@ -1256,6 +1632,9 @@ export default function App() {
                   platform={platform}
                   backgroundColor={bgColor}
                   bgMedia={bgMedia}
+                  bgShadow={bgShadow}
+                  bgShadowOpacity={bgShadowOpacity}
+                  introImage={introImage}
                   audioUrl={audioUrl}
                   accentColor={accentColor}
                   playing={playing}
@@ -1263,29 +1642,6 @@ export default function App() {
                 />
               </PlatformFrame>
               
-              {/* Overlay while rendering */}
-              {rendering && (
-                <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-md z-50 rounded-[30px] flex flex-col items-center justify-center p-6 text-center">
-                  <div className="p-4 bg-slate-900 rounded-full shadow-2xl mb-4 border border-slate-700">
-                    <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
-                  </div>
-                  <div className="text-white font-semibold mb-2">Executing Render...</div>
-                  <div className="w-48 h-2 bg-slate-800 rounded-full overflow-hidden mb-4">
-                    <div 
-                      className="h-full bg-indigo-500 transition-all duration-200"
-                      style={{ width: `${renderProgress}%` }}
-                    />
-                  </div>
-                  
-                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 max-w-[280px]">
-                    <p className="text-xs text-red-300 font-semibold mb-1">⚠️ DO NOT SWITCH TABS</p>
-                    <p className="text-[10px] text-red-200/80 leading-relaxed">
-                      Keep this window visible and active. Switching tabs will pause the browser's render engine and freeze your video.
-                    </p>
-                  </div>
-                </div>
-              )}
-
               {/* Cycle Platform Button */}
               <button 
                 onClick={() => {
@@ -1304,21 +1660,14 @@ export default function App() {
             {/* Toolbar */}
             <div className="mt-8 flex flex-col items-center gap-2">
               <div className="flex flex-wrap justify-center gap-3">
-                <button 
-                  onClick={simulateRender}
-                  disabled={rendering}
-                  className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-sm font-semibold flex items-center gap-2 text-slate-700 shadow-sm disabled:opacity-50 transition-colors"
-                 >
-                  <Video className="w-4 h-4" />
-                  Render Output
-                </button>
                 <div className="flex flex-col items-center gap-2">
                   <button 
                     onClick={downloadSimulatedVideo}
-                    className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-sm font-semibold flex items-center gap-2 text-slate-700 shadow-sm transition-colors"
+                    disabled={rendering}
+                    className={`px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-sm font-semibold flex items-center gap-2 text-slate-700 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed ${exportLaunchAnimation ? 'translate-y-8 scale-90 opacity-0' : ''}`}
                    >
-                    <Download className="w-4 h-4" />
-                    Download Video
+                    {rendering ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                    {rendering ? 'Exporting MP4' : 'Export MP4'}
                   </button>
                   <div className="flex items-center gap-1 text-[10px] text-slate-500">
                     <span className="font-medium mr-1 text-slate-600">Video length:</span>
@@ -1391,18 +1740,87 @@ export default function App() {
                    </div>
                  </div>
                )}
-               {(rendering && renderProgress === 100) || batchStatus === 'done' ? (
+               {batchStatus === 'done' ? (
                  <div className="p-2 bg-slate-800 rounded border border-slate-700 mt-4">
                     <p className="text-slate-300">Recent Outputs:</p>
-                    <p onClick={downloadSimulatedVideo} className="text-indigo-400 underline cursor-pointer mt-1 flex items-center justify-between">
-                       ad_output.webm <Download className="w-3 h-3" />
+                    <p className="text-indigo-400 mt-1 flex items-center justify-between">
+                       Batch complete <CheckCircle2 className="w-3 h-3" />
                     </p>
                  </div>
                ) : null}
             </div>
           </div>
         </main>
+
+        {(rendering || exportDownload || exportPhase === 'error') && (
+          <div className="fixed bottom-5 right-5 z-50 w-[300px] rounded-lg border border-slate-200 bg-white p-4 shadow-2xl animate-in slide-in-from-bottom-4 fade-in duration-300">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-full bg-indigo-50 p-2">
+                {exportDownload ? (
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                ) : exportPhase === 'error' ? (
+                  <X className="h-4 w-4 text-red-600" />
+                ) : (
+                  <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-slate-900">
+                    {exportDownload
+                      ? 'MP4 ready'
+                      : exportPhase === 'error'
+                        ? 'Export failed'
+                        : exportPhase === 'converting'
+                          ? 'Converting to MP4'
+                          : 'Rendering frames'}
+                  </p>
+                  {exportDownload || exportPhase === 'error' ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (exportDownload) URL.revokeObjectURL(exportDownload.url);
+                        setExportDownload(null);
+                        setExportPhase('recording');
+                      }}
+                      className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                      aria-label="Dismiss export status"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  ) : (
+                    <span className="text-xs font-semibold text-slate-500">{Math.round(renderProgress)}%</span>
+                  )}
+                </div>
+                {!exportDownload && exportPhase !== 'error' && <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className={`h-full rounded-full bg-indigo-500 transition-all duration-200 ${exportPhase === 'converting' ? 'animate-pulse' : ''}`}
+                    style={{ width: `${renderProgress}%` }}
+                  />
+                </div>}
+                <p className="mt-2 text-xs leading-snug text-slate-500">
+                  {exportDownload
+                    ? 'Your export used a snapshot of the ad from when you clicked Export.'
+                    : exportPhase === 'error'
+                      ? 'Try exporting again. If it repeats, restart the dev server.'
+                      : exportPhase === 'converting'
+                    ? 'Finalizing the 60fps MP4. Keep this tab open.'
+                    : 'Rendering a snapshot of this ad. You can start a different creative while this finishes.'}
+                </p>
+                {exportDownload && (
+                  <a
+                    href={exportDownload.url}
+                    download={exportDownload.filename}
+                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download MP4
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 }
-

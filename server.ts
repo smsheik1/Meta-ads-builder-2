@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
@@ -13,6 +14,14 @@ const port = isProd ? 3000 : 3001;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.get('/api/health', (_req, res) => {
+  res.json({
+    ok: true,
+    deepgramConfigured: Boolean(process.env.DEEPGRAM_API_KEY),
+    geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+  });
+});
 
 const memoryStorage = multer.memoryStorage();
 const uploadMem = multer({ storage: memoryStorage });
@@ -50,7 +59,7 @@ app.post('/api/convert-to-mp4', uploadDisk.single('video'), (req, res) => {
       '-pix_fmt yuv420p',
       '-c:a aac',
       '-b:a 128k',
-      '-r 30'
+      '-r 60'
     ])
     .outputFormat('mp4')
     .on('start', (commandLine) => {
@@ -78,6 +87,10 @@ app.post('/api/convert-to-mp4', uploadDisk.single('video'), (req, res) => {
 app.post('/api/transcribe', uploadMem.single('audio'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No audio file provided' });
+  }
+
+  if (!process.env.DEEPGRAM_API_KEY) {
+    return res.status(500).json({ error: 'DEEPGRAM_API_KEY is not configured on the server.' });
   }
 
   try {
