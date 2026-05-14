@@ -1,471 +1,302 @@
 import React from 'react';
-import { useEditorStore, AdElement } from '../store';
-// Added import for Sparkles icon
-import { Save, RotateCcw, Sparkles, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { AlignCenter, AlignLeft, AlignRight, RotateCcw } from 'lucide-react';
+import { useEditorStore, type AdElement } from '../store';
 
-interface Props {
-  // Pass down anything needed for global config
-  saveTemplate: () => void;
-  templates: any[];
-  loadTemplate: (t: any) => void;
-  // Global form fields state (deprecated but kept for compatibility)
-  headline: string; setHeadline: (v: string) => void;
-  subhead: string; setSubhead: (v: string) => void;
-  ctaText: string; setCtaText: (v: string) => void;
+const inputClass = 'h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10';
+const labelClass = 'text-[11px] font-semibold uppercase tracking-wide text-slate-500';
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block space-y-1.5">
+      <span className={labelClass}>{label}</span>
+      {children}
+    </label>
+  );
 }
 
-export const PropertiesPanel: React.FC<Props> = ({
-  saveTemplate,
-  templates,
-  loadTemplate,
-  headline, setHeadline,
-  subhead, setSubhead,
-  ctaText, setCtaText,
-}) => {
-  const { selectedIds, elements, updateElement, setElements, businessContext, setBusinessContext } = useEditorStore();
-  const [isGenerating, setIsGenerating] = useState(false);
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-3 border-t border-slate-100 pt-4 first:border-t-0 first:pt-0">
+      <h3 className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">{title}</h3>
+      {children}
+    </div>
+  );
+}
 
+function ToggleRow({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className="flex w-full items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-left transition hover:bg-white"
+    >
+      <span className="text-sm font-semibold text-slate-700">{label}</span>
+      <span className={`relative h-5 w-9 rounded-full transition ${checked ? 'bg-indigo-500' : 'bg-slate-300'}`}>
+        <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition ${checked ? 'left-4' : 'left-0.5'}`} />
+      </span>
+    </button>
+  );
+}
+
+function ColorControl({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  return (
+    <div className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 shadow-sm">
+      <input
+        type="color"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-5 w-5 cursor-pointer rounded border-0 bg-transparent p-0"
+      />
+      <span className="min-w-0 flex-1 truncate text-xs font-semibold text-slate-500">{value}</span>
+    </div>
+  );
+}
+
+function SliderRow({
+  label,
+  value,
+  displayValue,
+  min,
+  max,
+  step,
+  onChange,
+  onReset,
+}: {
+  label: string;
+  value: number;
+  displayValue: string;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (value: number) => void;
+  onReset?: () => void;
+}) {
+  return (
+    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-semibold text-slate-700">{label}</span>
+        <span className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+          {onReset && (
+            <button type="button" onClick={onReset} className="text-slate-400 transition hover:text-slate-700" title={`Reset ${label}`}>
+              <RotateCcw size={12} />
+            </button>
+          )}
+          {displayValue}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        className="w-full cursor-pointer accent-indigo-500"
+      />
+    </div>
+  );
+}
+
+function LayoutFields({ selectedEl, updateElement }: { selectedEl: AdElement; updateElement: (id: string, updates: Partial<AdElement>) => void }) {
+  return (
+    <Section title="Layout">
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="X">
+          <input type="number" value={Math.round(selectedEl.x)} onChange={(e) => updateElement(selectedEl.id, { x: parseInt(e.target.value) || 0 })} className={inputClass} />
+        </Field>
+        <Field label="Y">
+          <input type="number" value={Math.round(selectedEl.y)} onChange={(e) => updateElement(selectedEl.id, { y: parseInt(e.target.value) || 0 })} className={inputClass} />
+        </Field>
+        <Field label="Width">
+          <input type="number" value={parseInt(selectedEl.width as string)} onChange={(e) => updateElement(selectedEl.id, { width: parseInt(e.target.value) || 0 })} className={inputClass} />
+        </Field>
+        <Field label="Height">
+          <input type="number" value={parseInt(selectedEl.height as string)} onChange={(e) => updateElement(selectedEl.id, { height: parseInt(e.target.value) || 0 })} className={inputClass} />
+        </Field>
+      </div>
+    </Section>
+  );
+}
+
+export const PropertiesPanel: React.FC = () => {
+  const { selectedIds, elements, updateElement } = useEditorStore();
   const selectedEl = selectedIds.length === 1 ? elements.find(el => el.id === selectedIds[0]) : null;
-
-  const handleGenerateCopy = async () => {
-    setIsGenerating(true);
-    try {
-      const response = await fetch('/api/generate-copy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ businessContext })
-      });
-      
-      if (!response.ok) {
-        let errMsg = "Failed to generate copy";
-        try {
-          const errData = await response.json();
-          if (errData.error) errMsg = errData.error;
-        } catch (errJson) {}
-        throw new Error(errMsg);
-      }
-      
-      const data = await response.json();
-      
-      const newElements = elements.map(el => {
-        if (el.id === 'headline-1' && data.headline) {
-          return { ...el, content: data.headline.toUpperCase() };
-        }
-        if (el.id === 'subhead-1' && data.subhead) {
-          return { ...el, content: data.subhead };
-        }
-        return el;
-      });
-      
-      setElements(newElements);
-    } catch (e: any) {
-      console.error(e);
-      if (e?.message?.includes("API_KEY_INVALID") || e?.message?.includes("PERMISSION_DENIED")) {
-        alert("API key not valid. Please configure a valid Gemini API Key through the Settings > Secrets panel.");
-      } else {
-        alert("Failed to generate copy: " + (e?.message || e));
-      }
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   if (selectedIds.length > 1) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 h-[300px] flex items-center justify-center flex-col gap-2">
-         <span className="text-sm font-bold text-slate-500">Multiple Elements Selected</span>
-         <span className="text-xs text-slate-400 text-center px-4">Move or resize them together on the canvas. Contextual properties are available only when a single element is selected.</span>
+      <div className="flex h-[220px] flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
+        <span className="text-sm font-bold text-slate-700">Multiple elements selected</span>
+        <span className="text-xs leading-relaxed text-slate-500">Move or resize them together. Select one element to edit its properties.</span>
       </div>
     );
   }
 
-  if (selectedEl) {
-    return (
-      <div className="bg-indigo-50 rounded-xl border border-indigo-100 shadow-sm p-4">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-4">Element Properties</h2>
+  if (!selectedEl) return null;
 
-        <div className="space-y-4">
-          
-          {/* COMMON PROPERTIES */}
-          <div className="grid grid-cols-2 gap-3">
-             <div className="space-y-1.5">
-               <label className="text-xs font-semibold text-slate-700">X Position</label>
-               <input 
-                 type="number" 
-                 value={Math.round(selectedEl.x)}
-                 onChange={(e) => updateElement(selectedEl.id, { x: parseInt(e.target.value) || 0 })}
-                 className="w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
-               />
-             </div>
-             <div className="space-y-1.5">
-               <label className="text-xs font-semibold text-slate-700">Y Position</label>
-               <input 
-                 type="number" 
-                 value={Math.round(selectedEl.y)}
-                 onChange={(e) => updateElement(selectedEl.id, { y: parseInt(e.target.value) || 0 })}
-                 className="w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
-               />
-             </div>
-             <div className="space-y-1.5">
-               <label className="text-xs font-semibold text-slate-700">Width</label>
-               <input 
-                 type="number" 
-                 value={parseInt(selectedEl.width as string)}
-                 onChange={(e) => updateElement(selectedEl.id, { width: parseInt(e.target.value) || 0 })}
-                 className="w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
-               />
-             </div>
-             <div className="space-y-1.5">
-               <label className="text-xs font-semibold text-slate-700">Height</label>
-               <input 
-                 type="number" 
-                 value={parseInt(selectedEl.height as string)}
-                 onChange={(e) => updateElement(selectedEl.id, { height: parseInt(e.target.value) || 0 })}
-                 className="w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
-               />
-             </div>
-          </div>
-
-          {/* TEXT PROPERTIES */}
-          {selectedEl.type === 'text' && (
-            <>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Content</label>
-                <textarea 
-                  value={selectedEl.content || ''}
-                  onChange={(e) => updateElement(selectedEl.id, { content: e.target.value })}
-                  rows={2}
-                  className="w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none" 
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                 <div className="space-y-1.5">
-                   <label className="text-xs font-semibold text-slate-700">Font Size (px)</label>
-                   <input 
-                     type="number" 
-                     value={selectedEl.fontSize || 16}
-                     onChange={(e) => updateElement(selectedEl.id, { fontSize: parseInt(e.target.value) || 16 })}
-                     className="w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
-                   />
-                 </div>
-                 <div className="space-y-1.5">
-                   <label className="text-xs font-semibold text-slate-700">Weight</label>
-                   <select 
-                     value={selectedEl.fontWeight || 'normal'}
-                     onChange={(e) => updateElement(selectedEl.id, { fontWeight: e.target.value })}
-                     className="w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
-                   >
-                     <option value="normal">Normal</option>
-                     <option value="500">Medium</option>
-                     <option value="600">SemiBold</option>
-                     <option value="bold">Bold</option>
-                     <option value="800">ExtraBold</option>
-                   </select>
-                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                 <div className="space-y-1.5">
-                   <label className="text-xs font-semibold text-slate-700">Alignment</label>
-                   <select 
-                     value={selectedEl.textAlign || 'left'}
-                     onChange={(e) => updateElement(selectedEl.id, { textAlign: e.target.value as any })}
-                     className="w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
-                   >
-                     <option value="left">Left</option>
-                     <option value="center">Center</option>
-                     <option value="right">Right</option>
-                   </select>
-                 </div>
-                 <div className="space-y-1.5">
-                   <label className="text-xs font-semibold text-slate-700">Text Color</label>
-                   <div className="flex bg-white items-center gap-2 border border-indigo-200 rounded-md px-2 py-1">
-                      <input 
-                        type="color" 
-                        value={selectedEl.color || '#000000'}
-                        onChange={(e) => updateElement(selectedEl.id, { color: e.target.value })}
-                        className="w-4 h-4 rounded-sm cursor-pointer bg-transparent border-0 p-0" 
-                      />
-                      <span className="text-xs text-slate-600 truncate">{selectedEl.color}</span>
-                   </div>
-                 </div>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Line Height</label>
-                <input 
-                  type="number" step="0.1"
-                  value={selectedEl.lineHeight || 1.2}
-                  onChange={(e) => updateElement(selectedEl.id, { lineHeight: parseFloat(e.target.value) || 1.2 })}
-                  className="w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
-                />
-              </div>
-            </>
-          )}
-
-          {/* BUTTON PROPERTIES */}
-          {selectedEl.type === 'button' && (
-             <>
-               <div className="space-y-1.5">
-                 <label className="text-xs font-semibold text-slate-700">Button Text</label>
-                 <input 
-                   type="text" 
-                   value={selectedEl.content || ''}
-                   onChange={(e) => updateElement(selectedEl.id, { content: e.target.value })}
-                   className="w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
-                 />
-               </div>
-               
-               <div className="grid grid-cols-2 gap-3">
-                 <div className="space-y-1.5">
-                   <label className="text-xs font-semibold text-slate-700">Text Color</label>
-                   <div className="flex bg-white items-center gap-2 border border-indigo-200 rounded-md px-2 py-1">
-                      <input 
-                        type="color" 
-                        value={selectedEl.color || '#000000'}
-                        onChange={(e) => updateElement(selectedEl.id, { color: e.target.value })}
-                        className="w-4 h-4 rounded-sm cursor-pointer bg-transparent border-0 p-0" 
-                      />
-                   </div>
-                 </div>
-                 <div className="space-y-1.5">
-                   <label className="text-xs font-semibold text-slate-700">Background</label>
-                   <div className="flex bg-white items-center gap-2 border border-indigo-200 rounded-md px-2 py-1">
-                      <input 
-                        type="color" 
-                        value={selectedEl.backgroundColor || '#4f46e5'}
-                        onChange={(e) => updateElement(selectedEl.id, { backgroundColor: e.target.value })}
-                        className="w-4 h-4 rounded-sm cursor-pointer bg-transparent border-0 p-0" 
-                      />
-                   </div>
-                 </div>
-               </div>
-
-               <div className="grid grid-cols-2 gap-3">
-                 <div className="space-y-1.5">
-                   <label className="text-xs font-semibold text-slate-700">Radius</label>
-                   <input 
-                     type="number" 
-                     value={selectedEl.borderRadius || 0}
-                     onChange={(e) => updateElement(selectedEl.id, { borderRadius: parseInt(e.target.value) || 0 })}
-                     className="w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
-                   />
-                 </div>
-                 <div className="space-y-1.5">
-                   <label className="text-xs font-semibold text-slate-700">Font Size</label>
-                   <input 
-                     type="number" 
-                     value={selectedEl.fontSize || 16}
-                     onChange={(e) => updateElement(selectedEl.id, { fontSize: parseInt(e.target.value) || 16 })}
-                     className="w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
-                   />
-                 </div>
-               </div>
-             </>
-          )}
-
-          {/* VISUALIZER PROPERTIES */}
-          {selectedEl.type === 'visualizer' && (
-             <>
-               <div className="space-y-1.5">
-                 <label className="text-xs font-semibold text-slate-700">Style</label>
-                 <select 
-                   value={selectedEl.visualizerType || 'bars-bottom'}
-                   onChange={(e) => updateElement(selectedEl.id, { visualizerType: e.target.value as any })}
-                   className="w-full px-3 py-1.5 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
-                 >
-                   <option value="bars-bottom">Bars (Bottom)</option>
-                   <option value="bars-center">Bars (Center)</option>
-                   <option value="ai-orb">AI Assistant Orb</option>
-                   <option value="siri-wave">Siri Wave</option>
-                   <option value="ai-blob">ThreeJS Blob</option>
-                   <option value="elevenlabs-v1">11Labs Orb (Blue)</option>
-                   <option value="elevenlabs-v2">11Labs Orb (Peach)</option>
-                   <option value="elevenlabs-v3">11Labs Orb (Silver)</option>
-                   <option value="chatgpt-orb">ChatGPT Aura</option>
-                 </select>
-               </div>
-               <div className="flex items-center justify-between mt-2">
-                 <label className="text-xs font-semibold text-slate-700">Mirror (Symmetry)</label>
-                 <input 
-                   type="checkbox"
-                   checked={selectedEl.visualizerMirror || false}
-                   onChange={(e) => updateElement(selectedEl.id, { visualizerMirror: e.target.checked })}
-                   className="cursor-pointer"
-                 />
-               </div>
-               <div className="space-y-1.5">
-                 <label className="text-xs font-semibold text-slate-700">Color</label>
-                 <div className="flex bg-white items-center gap-2 border border-indigo-200 rounded-md px-2 py-1">
-                    <input 
-                      type="color" 
-                      value={selectedEl.barColor || '#00ffcc'}
-                      onChange={(e) => updateElement(selectedEl.id, { barColor: e.target.value })}
-                      className="w-4 h-4 rounded-sm cursor-pointer bg-transparent border-0 p-0" 
-                    />
-                 </div>
-               </div>
-               <div className="space-y-1.5">
-                 <label className="text-xs font-semibold text-slate-700">Bar Count</label>
-                 <input 
-                   type="range"
-                   min="3" max="32"
-                   value={selectedEl.barCount || 8}
-                   onChange={(e) => updateElement(selectedEl.id, { barCount: parseInt(e.target.value) })}
-                   className="w-full"
-                 />
-               </div>
-               <div className="flex items-center justify-between mt-4">
-                 <div className="flex items-center gap-2">
-                   <label className="text-xs font-semibold text-slate-700">Sensitivity</label>
-                   <button 
-                     onClick={() => updateElement(selectedEl.id, { visualizerSensitivity: 1.0 })}
-                     className="text-slate-400 hover:text-slate-600 transition-colors"
-                     title="Reset to default (1.0x)"
-                   >
-                     <RotateCcw size={12} />
-                   </button>
-                 </div>
-                 <span className="text-xs text-slate-500">{(selectedEl.visualizerSensitivity ?? 1.0).toFixed(1)}x</span>
-               </div>
-               <div className="relative pb-2 mt-1">
-                 <input 
-                   type="range"
-                   min="0.1" max="5.0" step="0.1"
-                   value={selectedEl.visualizerSensitivity ?? 1.0}
-                   onChange={(e) => updateElement(selectedEl.id, { visualizerSensitivity: parseFloat(e.target.value) })}
-                   className="w-full cursor-pointer relative z-10"
-                 />
-                 <div className="absolute top-[18px] left-[18.36%] w-0.5 h-1.5 bg-slate-400 transform -translate-x-1/2" title="Default: 1.0x" />
-               </div>
-
-               <div className="flex items-center gap-2 mt-4 cursor-pointer" onClick={() => updateElement(selectedEl.id, { visualizerSplitSpeakers: !selectedEl.visualizerSplitSpeakers })}>
-                 <div className={`w-4 h-4 rounded border flex items-center justify-center ${selectedEl.visualizerSplitSpeakers ? 'bg-indigo-500 border-indigo-500' : 'border-slate-300'}`}>
-                    {selectedEl.visualizerSplitSpeakers && <div className="w-2 h-2 bg-white rounded-sm" />}
-                 </div>
-                 <span className="text-sm text-slate-700">Split by Speaker</span>
-               </div>
-
-               <div className="flex items-center justify-between mt-4">
-                 <div className="flex items-center gap-2">
-                   <label className="text-xs font-semibold text-slate-700">Smoothing</label>
-                   <button 
-                     onClick={() => updateElement(selectedEl.id, { visualizerSmoothing: 0.8 })}
-                     className="text-slate-400 hover:text-slate-600 transition-colors"
-                     title="Reset to default (0.8)"
-                   >
-                     <RotateCcw size={12} />
-                   </button>
-                 </div>
-                 <span className="text-xs text-slate-500">{selectedEl.visualizerSmoothing ?? 0.8}</span>
-               </div>
-               <div className="relative pb-2 mt-1">
-                 <input 
-                   type="range"
-                   min="0.05" max="0.95" step="0.05"
-                   value={selectedEl.visualizerSmoothing ?? 0.8}
-                   onChange={(e) => updateElement(selectedEl.id, { visualizerSmoothing: parseFloat(e.target.value) })}
-                   className="w-full cursor-pointer relative z-10"
-                 />
-                 <div className="absolute top-[18px] left-[83.33%] w-0.5 h-1.5 bg-slate-400 transform -translate-x-1/2" title="Default: 0.8" />
-               </div>
-             </>
-          )}
-          
-          {/* CAPTION PROPERTIES */}
-          {selectedEl.type === 'caption' && (
-             <div className="space-y-1.5">
-               <label className="text-xs font-semibold text-slate-700">Speaker Highlight Color</label>
-               <div className="flex bg-white items-center gap-2 border border-indigo-200 rounded-md px-2 py-1">
-                  <input 
-                    type="color" 
-                    value={selectedEl.color || '#4f46e5'}
-                    onChange={(e) => updateElement(selectedEl.id, { color: e.target.value })}
-                    className="w-4 h-4 rounded-sm cursor-pointer bg-transparent border-0 p-0" 
-                  />
-               </div>
-             </div>
-          )}
-
-          {/* IMAGE PROPERTIES */}
-          {selectedEl.type === 'image' && (
-             <div className="space-y-1.5">
-               <label className="text-xs font-semibold text-slate-700">Border Radius (px)</label>
-               <input 
-                 type="number" 
-                 value={selectedEl.borderRadius || 0}
-                 onChange={(e) => updateElement(selectedEl.id, { borderRadius: parseInt(e.target.value) || 0 })}
-                 className="w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
-               />
-             </div>
-          )}
-
-        </div>
-      </div>
-    );
-  }
-
-  // GLOBAL CONFIG
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Ad Content (Global)</h2>
-        <button 
-          onClick={saveTemplate}
-          className="text-xs font-semibold px-2 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors flex items-center gap-1 text-slate-600 hover:text-slate-900"
-        >
-          <Save className="w-3.5 h-3.5" /> Save Preset
-        </button>
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Properties</h2>
+        <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold capitalize text-slate-500">{selectedEl.componentRole || selectedEl.type}</span>
       </div>
 
-      {/* Templates Dropdown */}
-      {templates.length > 0 && (
-        <div className="mb-4">
-          <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Saved Presets</label>
-          <div className="flex flex-wrap gap-2">
-            {templates.map((t, idx) => (
-              <button
-                key={idx}
-                onClick={() => loadTemplate(t)}
-                className="px-2 py-1 text-xs bg-indigo-50 text-indigo-700 border border-indigo-100 hover:border-indigo-300 rounded-md transition-all font-medium"
-              >
-                {t.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="space-y-4">
+        <LayoutFields selectedEl={selectedEl} updateElement={updateElement} />
 
-      {/* Magic AI Copy Generator */}
-      <div className="space-y-3 mt-4 pt-4 border-t border-slate-100">
-        <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-          AI Magic Copy
-        </label>
-        <div className="space-y-2">
-          <textarea 
-            value={businessContext}
-            onChange={e => setBusinessContext(e.target.value)}
-            placeholder="What does your business do?"
-            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none" 
-            rows={3}
-          />
-          <button 
-            onClick={handleGenerateCopy}
-            disabled={isGenerating || !businessContext.trim()}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold text-sm rounded-md hover:from-indigo-600 hover:to-purple-600 transition-all disabled:opacity-50"
-          >
-            {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-            {isGenerating ? 'Generating...' : 'Rewrite Ad Copy'}
-          </button>
-        </div>
+        {selectedEl.type === 'text' && (
+          <Section title="Text">
+            <Field label="Content">
+              <textarea
+                value={selectedEl.content || ''}
+                onChange={(e) => updateElement(selectedEl.id, { content: e.target.value })}
+                rows={3}
+                className={`${inputClass} h-auto min-h-[74px] resize-none py-2`}
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Font size">
+                <input type="number" value={selectedEl.fontSize || 16} onChange={(e) => updateElement(selectedEl.id, { fontSize: parseInt(e.target.value) || 16 })} className={inputClass} />
+              </Field>
+              <Field label="Weight">
+                <select value={selectedEl.fontWeight || 'normal'} onChange={(e) => updateElement(selectedEl.id, { fontWeight: e.target.value })} className={inputClass}>
+                  <option value="normal">Normal</option>
+                  <option value="500">Medium</option>
+                  <option value="600">Semibold</option>
+                  <option value="bold">Bold</option>
+                  <option value="800">Extra bold</option>
+                  <option value="900">Black</option>
+                </select>
+              </Field>
+            </div>
+
+            {(selectedEl.componentRole === 'headline' || selectedEl.componentRole === 'subheadline') && (
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label: 'B', active: Number.parseInt(String(selectedEl.fontWeight || '400'), 10) >= 700, action: () => updateElement(selectedEl.id, { fontWeight: Number.parseInt(String(selectedEl.fontWeight || '400'), 10) >= 700 ? '500' : '900' }), className: 'font-black' },
+                  { label: 'I', active: selectedEl.fontStyle === 'italic', action: () => updateElement(selectedEl.id, { fontStyle: selectedEl.fontStyle === 'italic' ? 'normal' : 'italic' }), className: 'italic' },
+                  { label: 'U', active: selectedEl.textDecoration === 'underline', action: () => updateElement(selectedEl.id, { textDecoration: selectedEl.textDecoration === 'underline' ? 'none' : 'underline' }), className: 'underline' },
+                ].map(control => (
+                  <button
+                    key={control.label}
+                    type="button"
+                    onClick={control.action}
+                    className={`h-9 rounded-lg border text-sm transition ${control.className} ${control.active ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}
+                  >
+                    {control.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Align">
+                <div className="grid h-9 grid-cols-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                  {[
+                    { value: 'left', icon: AlignLeft },
+                    { value: 'center', icon: AlignCenter },
+                    { value: 'right', icon: AlignRight },
+                  ].map(({ value, icon: Icon }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => updateElement(selectedEl.id, { textAlign: value as any })}
+                      className={`flex items-center justify-center transition ${selectedEl.textAlign === value ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}
+                    >
+                      <Icon size={15} />
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              <Field label="Color">
+                <ColorControl value={selectedEl.color || '#000000'} onChange={(value) => updateElement(selectedEl.id, { color: value })} />
+              </Field>
+            </div>
+            <Field label="Line height">
+              <input type="number" step="0.05" value={selectedEl.lineHeight || 1.2} onChange={(e) => updateElement(selectedEl.id, { lineHeight: parseFloat(e.target.value) || 1.2 })} className={inputClass} />
+            </Field>
+          </Section>
+        )}
+
+        {selectedEl.type === 'button' && (
+          <Section title="Button">
+            <Field label="Text">
+              <input type="text" value={selectedEl.content || ''} onChange={(e) => updateElement(selectedEl.id, { content: e.target.value })} className={inputClass} />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Text color">
+                <ColorControl value={selectedEl.color || '#000000'} onChange={(value) => updateElement(selectedEl.id, { color: value })} />
+              </Field>
+              <Field label="Fill">
+                <ColorControl value={selectedEl.backgroundColor || '#4f46e5'} onChange={(value) => updateElement(selectedEl.id, { backgroundColor: value })} />
+              </Field>
+              <Field label="Radius">
+                <input type="number" value={selectedEl.borderRadius || 0} onChange={(e) => updateElement(selectedEl.id, { borderRadius: parseInt(e.target.value) || 0 })} className={inputClass} />
+              </Field>
+              <Field label="Font size">
+                <input type="number" value={selectedEl.fontSize || 16} onChange={(e) => updateElement(selectedEl.id, { fontSize: parseInt(e.target.value) || 16 })} className={inputClass} />
+              </Field>
+            </div>
+          </Section>
+        )}
+
+        {selectedEl.type === 'visualizer' && (
+          <Section title="Visualizer">
+            <Field label="Style">
+              <select value={selectedEl.visualizerType || 'bars-bottom'} onChange={(e) => updateElement(selectedEl.id, { visualizerType: e.target.value as any })} className={inputClass}>
+                <option value="bars-bottom">Bars, bottom</option>
+                <option value="bars-center">Bars, center</option>
+                <option value="ai-orb">AI orb</option>
+                <option value="siri-wave">Siri wave</option>
+                <option value="ai-blob">3D blob</option>
+                <option value="elevenlabs-v1">11Labs orb, blue</option>
+                <option value="elevenlabs-v2">11Labs orb, peach</option>
+                <option value="elevenlabs-v3">11Labs orb, silver</option>
+                <option value="chatgpt-orb">ChatGPT aura</option>
+              </select>
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <ToggleRow label="Mirror" checked={selectedEl.visualizerMirror || false} onChange={(checked) => updateElement(selectedEl.id, { visualizerMirror: checked })} />
+              <ToggleRow label="Split speaker" checked={selectedEl.visualizerSplitSpeakers || false} onChange={(checked) => updateElement(selectedEl.id, { visualizerSplitSpeakers: checked })} />
+            </div>
+            <Field label="Color">
+              <ColorControl value={selectedEl.barColor || '#00ffcc'} onChange={(value) => updateElement(selectedEl.id, { barColor: value })} />
+            </Field>
+            <SliderRow label="Bar count" value={selectedEl.barCount || 8} displayValue={`${selectedEl.barCount || 8}`} min={3} max={32} step={1} onChange={(value) => updateElement(selectedEl.id, { barCount: value })} />
+            <SliderRow label="Sensitivity" value={selectedEl.visualizerSensitivity ?? 1} displayValue={`${(selectedEl.visualizerSensitivity ?? 1).toFixed(1)}x`} min={0.1} max={5} step={0.1} onChange={(value) => updateElement(selectedEl.id, { visualizerSensitivity: value })} onReset={() => updateElement(selectedEl.id, { visualizerSensitivity: 1 })} />
+            <SliderRow label="Smoothing" value={selectedEl.visualizerSmoothing ?? 0.8} displayValue={`${selectedEl.visualizerSmoothing ?? 0.8}`} min={0.05} max={0.95} step={0.05} onChange={(value) => updateElement(selectedEl.id, { visualizerSmoothing: value })} onReset={() => updateElement(selectedEl.id, { visualizerSmoothing: 0.8 })} />
+          </Section>
+        )}
+
+        {selectedEl.type === 'caption' && (
+          <Section title="Captions">
+            <Field label="Color">
+              <ColorControl value={selectedEl.color || '#4f46e5'} onChange={(value) => updateElement(selectedEl.id, { color: value })} />
+            </Field>
+          </Section>
+        )}
+
+        {selectedEl.type === 'image' && (
+          <Section title="Image">
+            <ToggleRow
+              label="Shadow overlay"
+              checked={selectedEl.imageShadow || false}
+              onChange={(checked) => updateElement(selectedEl.id, { imageShadow: checked, imageShadowOpacity: selectedEl.imageShadowOpacity ?? 0.42 })}
+            />
+            <SliderRow
+              label="Shadow"
+              value={selectedEl.imageShadowOpacity ?? 0.42}
+              displayValue={`${Math.round((selectedEl.imageShadowOpacity ?? 0.42) * 100)}%`}
+              min={0.1}
+              max={0.75}
+              step={0.05}
+              onChange={(value) => updateElement(selectedEl.id, { imageShadowOpacity: value })}
+            />
+            <Field label="Radius">
+              <input type="number" value={selectedEl.borderRadius || 0} onChange={(e) => updateElement(selectedEl.id, { borderRadius: parseInt(e.target.value) || 0 })} className={inputClass} />
+            </Field>
+          </Section>
+        )}
       </div>
-      
-      <p className="mt-4 text-[10px] text-slate-400 italic text-center">
-        Select elements on canvas to edit properties.
-      </p>
-
     </div>
   );
 };

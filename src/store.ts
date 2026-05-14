@@ -6,6 +6,7 @@ export type ElementType = 'text' | 'visualizer' | 'button' | 'caption' | 'image'
 export interface AdElement {
   id: string;
   type: ElementType;
+  componentRole?: 'headline' | 'subheadline' | 'logo' | 'visualizer' | 'captions' | 'cta' | 'image';
   x: number;
   y: number;
   width: number | string;
@@ -17,6 +18,8 @@ export interface AdElement {
   fontFamily?: string;
   fontSize?: number;
   fontWeight?: string | number;
+  fontStyle?: 'normal' | 'italic';
+  textDecoration?: 'none' | 'underline';
   color?: string;
   textAlign?: 'left' | 'center' | 'right';
   lineHeight?: number;
@@ -37,6 +40,8 @@ export interface AdElement {
   imageUrl?: string;
   mixBlendMode?: string;
   removeWhite?: boolean;
+  imageShadow?: boolean;
+  imageShadowOpacity?: number;
 }
 
 export interface Caption {
@@ -88,6 +93,7 @@ const DEFAULT_ELEMENTS: AdElement[] = [
   {
     id: 'logo-1',
     type: 'image',
+    componentRole: 'logo',
     imageUrl: '/logo.png',
     x: 120,
     y: 70,
@@ -100,53 +106,41 @@ const DEFAULT_ELEMENTS: AdElement[] = [
   {
     id: 'headline-1',
     type: 'text',
+    componentRole: 'headline',
     content: 'YOUR HEADLINE HERE',
     x: 20,
-    y: 130,
+    y: 118,
     width: 320,
-    height: 60,
+    height: 120,
     rotation: 0,
     zIndex: 1,
-    fontSize: 26,
-    fontWeight: 'bold',
+    fontSize: 52,
+    fontWeight: '900',
     color: '#000000',
     textAlign: 'center',
-    lineHeight: 1.2
-  },
-  {
-    id: 'subhead-1',
-    type: 'text',
-    content: 'Your secondary message goes here',
-    x: 20,
-    y: 190,
-    width: 320,
-    height: 80,
-    rotation: 0,
-    zIndex: 2,
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#4f46e5', // indigo-600
-    textAlign: 'center',
-    lineHeight: 1.4
+    lineHeight: 1.04
   },
   {
     id: 'visualizer-1',
     type: 'visualizer',
-    x: 20,
-    y: 280,
-    width: 320,
-    height: 60,
+    componentRole: 'visualizer',
+    x: 0,
+    y: 270,
+    width: 360,
+    height: 120,
     rotation: 0,
     zIndex: 3,
     visualizerType: 'bars-center',
     barColor: '#00ffcc',
-    barCount: 8
+    barCount: 16,
+    visualizerSplitSpeakers: false
   },
   {
     id: 'caption-1',
     type: 'caption',
+    componentRole: 'captions',
     x: 20,
-    y: 350,
+    y: 400,
     width: 320,
     height: 55, // h-24
     rotation: 0,

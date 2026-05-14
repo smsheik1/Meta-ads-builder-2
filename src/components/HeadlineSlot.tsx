@@ -1,77 +1,94 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { useEditorStore } from '../store';
-
-type Headline = { text: string; framework: string };
+import { getSeededHooks, type Headline } from '../lib/headline-pool';
+import { AutoFitText } from './AutoFitText';
+import { sanitizeRichText, stripRichText } from '../lib/rich-text';
 
 export function HeadlineSlot({ niche, elementId }: { niche: string; elementId: string }) {
-  const [headlines, setHeadlines] = useState<Headline[]>([]);
+  const seededHooks = useMemo(() => getSeededHooks(niche), [niche]);
+  const [headlines, setHeadlines] = useState<Headline[]>(seededHooks);
   const [index, setIndex] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [isRefilling, setIsRefilling] = useState(false);
   const { updateElement } = useEditorStore();
 
-  const generateBatch = async () => {
-    setLoading(true);
+  useEffect(() => {
+    const currentContent = useEditorStore.getState().elements.find(element => element.id === elementId)?.content || '';
+    const isPlaceholder = !currentContent || currentContent === 'YOUR HEADLINE HERE';
+    const currentIsSeeded = seededHooks.some(headline => headline.text === currentContent);
+    const nextHeadlines = !isPlaceholder && !currentIsSeeded
+      ? [{ text: currentContent, framework: 'Custom' }, ...seededHooks]
+      : seededHooks;
+
+    setHeadlines(nextHeadlines);
+    setIndex(0);
+    if (isPlaceholder) {
+      updateElement(elementId, { content: seededHooks[0]?.text || '' });
+    }
+  }, [elementId, seededHooks, updateElement]);
+
+  const refillWithAi = async () => {
+    setIsRefilling(true);
     try {
-      const batch = await fetch('/api/generate-headlines', {
+      const response = await fetch('/api/generate-headlines', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ niche, count: 20 }),
-      }).then(r => r.json());
-      
-      setHeadlines(batch);
-      setIndex(0);
-      if (batch && batch.length > 0) {
+        body: JSON.stringify({ niche, count: 50 }),
+      });
+
+      if (!response.ok) return;
+
+      const batch = await response.json();
+      if (Array.isArray(batch) && batch.length > 0) {
+        setHeadlines(batch);
+        setIndex(0);
         updateElement(elementId, { content: batch[0].text });
       }
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error('Headline refill failed:', error);
     } finally {
-      setLoading(false);
+      setIsRefilling(false);
     }
   };
-
-  useEffect(() => { 
-    generateBatch(); 
-  }, [niche]);
 
   const refresh = () => {
-    if (index + 1 >= headlines.length) {
-       generateBatch();
-    } else {
-       const newIndex = index + 1;
-       setIndex(newIndex);
-       updateElement(elementId, { content: headlines[newIndex].text });
+    const nextIndex = (index + 1) % headlines.length;
+    setIndex(nextIndex);
+    updateElement(elementId, { content: headlines[nextIndex].text });
+
+    if (nextIndex === headlines.length - 3 && !isRefilling) {
+      refillWithAi();
     }
   };
 
-  const displayText = loading ? 'Generating fresh batch...' : headlines[index]?.text || 'Loading...';
+  const activeHeadline = headlines[index] || seededHooks[0];
 
   return (
-    <div className="headline-slot w-full h-full flex items-center justify-center relative group">
-      <div className="ad-headline w-full" style={{ textAlign: "inherit" }}>
-        {displayText}
-      </div>
-      <div 
-        className="controls flex gap-2 absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto"
-        onMouseDown={e => e.stopPropagation()}
-        onDoubleClick={e => e.stopPropagation()}
-        onTouchStart={e => e.stopPropagation()}
+    <div className="headline-slot relative flex h-full w-full items-center justify-center overflow-hidden">
+      <AutoFitText
+        className="ad-headline w-full px-1"
+        minFontSize={12}
+        lineHeight={1.04}
+        plainText={stripRichText(activeHeadline?.text || '')}
+        style={{ textAlign: 'inherit' }}
       >
-        <button 
-          className="bg-white text-black px-2 py-1 rounded text-xs shadow-md border hover:bg-gray-100 whitespace-nowrap" 
-          onClick={refresh} 
-          disabled={loading}
-        >
-          🎲 {headlines.length > 0 ? `${index + 1}/${headlines.length}` : ''}
-        </button>
-        <button 
-          className="bg-white text-black px-2 py-1 rounded text-xs shadow-md border hover:bg-gray-100 whitespace-nowrap" 
-          onClick={generateBatch} 
-          disabled={loading}
-        >
-          🔄 New Batch
-        </button>
-      </div>
+        <span dangerouslySetInnerHTML={{ __html: sanitizeRichText(activeHeadline?.text || '') }} />
+      </AutoFitText>
+
+      <button
+        type="button"
+        aria-label="Try another headline"
+        title={activeHeadline?.framework ? `Try another hook (${activeHeadline.framework})` : 'Try another hook'}
+        onClick={(event) => {
+          event.stopPropagation();
+          refresh();
+        }}
+        onMouseDown={(event) => event.stopPropagation()}
+        onDoubleClick={(event) => event.stopPropagation()}
+        className="absolute right-2 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-lg opacity-0 transition hover:bg-slate-50 hover:text-slate-950 group-hover:opacity-100"
+      >
+        <RefreshCw className={`h-4 w-4 ${isRefilling ? 'animate-spin text-indigo-500' : ''}`} />
+      </button>
     </div>
   );
 }
