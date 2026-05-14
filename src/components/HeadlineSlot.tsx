@@ -11,21 +11,22 @@ export function HeadlineSlot({ niche, elementId }: { niche: string; elementId: s
   const [index, setIndex] = useState(0);
   const [isRefilling, setIsRefilling] = useState(false);
   const { updateElement } = useEditorStore();
+  const currentContent = useEditorStore((state) => state.elements.find(element => element.id === elementId)?.content || '');
 
   useEffect(() => {
-    const currentContent = useEditorStore.getState().elements.find(element => element.id === elementId)?.content || '';
     const isPlaceholder = !currentContent || currentContent === 'YOUR HEADLINE HERE';
-    const currentIsSeeded = seededHooks.some(headline => headline.text === currentContent);
+    const seededIndex = seededHooks.findIndex(headline => headline.text === currentContent);
+    const currentIsSeeded = seededIndex >= 0;
     const nextHeadlines = !isPlaceholder && !currentIsSeeded
       ? [{ text: currentContent, framework: 'Custom' }, ...seededHooks]
       : seededHooks;
 
     setHeadlines(nextHeadlines);
-    setIndex(0);
+    setIndex(currentIsSeeded ? seededIndex : 0);
     if (isPlaceholder) {
       updateElement(elementId, { content: seededHooks[0]?.text || '' });
     }
-  }, [elementId, seededHooks, updateElement]);
+  }, [currentContent, elementId, seededHooks, updateElement]);
 
   const refillWithAi = async () => {
     setIsRefilling(true);
@@ -85,7 +86,7 @@ export function HeadlineSlot({ niche, elementId }: { niche: string; elementId: s
         }}
         onMouseDown={(event) => event.stopPropagation()}
         onDoubleClick={(event) => event.stopPropagation()}
-        className="absolute right-2 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-lg opacity-0 transition hover:bg-slate-50 hover:text-slate-950 group-hover:opacity-100"
+        className="absolute right-2 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-lg transition hover:bg-white hover:text-slate-950"
       >
         <RefreshCw className={`h-4 w-4 ${isRefilling ? 'animate-spin text-indigo-500' : ''}`} />
       </button>

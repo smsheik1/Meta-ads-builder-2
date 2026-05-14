@@ -2,11 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { PlatformFrame, type PlatformType } from './components/PlatformFrame';
 import { CanvasEditor } from './components/CanvasEditor';
 import { PropertiesPanel } from './components/PropertiesPanel';
-import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, ChevronDown, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon } from 'lucide-react';
+import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, ChevronDown, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus } from 'lucide-react';
 import Papa from 'papaparse';
 import { useEditorStore } from './store';
 import { drawAdvancedVisualizer } from './lib/visualizer';
 import { parseRichText, stripRichText, type RichTextRun } from './lib/rich-text';
+
+const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 
 const MOCK_CAPTIONS = [
   { text: "Are you missing calls?", start: 0, end: 2, speaker: 1 },
@@ -17,6 +19,31 @@ const MOCK_CAPTIONS = [
 
 type RenderDurationCap = 30 | 60 | 'full';
 type ExportPhase = 'recording' | 'converting' | 'complete' | 'error';
+
+type SavedTemplate = {
+  id: string;
+  name: string;
+  createdAt: number;
+  elements: ReturnType<typeof useEditorStore.getState>['elements'];
+  settings: {
+    visualizerColor: string;
+    accentColor: string;
+    bgColor: string;
+    platform: PlatformType;
+    platformTheme: 'light' | 'dark';
+    brandName: string;
+    brandLogo: string | null;
+    simulatedCaption: string;
+    autoCta: string;
+    bgMedia: { url: string; type: string } | null;
+    bgShadow: boolean;
+    bgShadowOpacity: number;
+    introImage: string | null;
+    introFileName: string;
+    audioUrl: string | null;
+    audioFileName: string;
+  };
+};
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single');
@@ -55,12 +82,106 @@ export default function App() {
   // Batch State
   const [csvData, setCsvData] = useState<any[]>([]);
   const [batchStatus, setBatchStatus] = useState<'idle' | 'processing' | 'done'>('idle');
+  const [templates, setTemplates] = useState<SavedTemplate[]>([]);
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [templateDraftName, setTemplateDraftName] = useState('');
 
-  const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, elements } = useEditorStore();
+  const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, setElements, deselectAll, commitHistory, elements } = useEditorStore();
   const hasComponent = (role: NonNullable<typeof elements[number]['componentRole']>) => elements.some((element) => element.componentRole === role);
   const hasSubheadline = hasComponent('subheadline');
 
   const [isTranscribing, setIsTranscribing] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(TEMPLATE_STORAGE_KEY);
+      if (saved) setTemplates(JSON.parse(saved));
+    } catch (error) {
+      console.error('Failed to load templates:', error);
+    }
+  }, []);
+
+  const persistTemplates = (nextTemplates: SavedTemplate[]) => {
+    setTemplates(nextTemplates);
+    try {
+      localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(nextTemplates));
+    } catch (error) {
+      console.error('Failed to save templates:', error);
+      alert('Template could not be saved. Browser storage may be full.');
+    }
+  };
+
+  const getCurrentDesignTitle = () => {
+    const currentElements = useEditorStore.getState().elements;
+    const headline = currentElements.find(element => element.componentRole === 'headline' || element.type === 'text');
+    const subheadline = currentElements.find(element => element.componentRole === 'subheadline');
+    const button = currentElements.find(element => element.type === 'button');
+    return (
+      stripRichText(headline?.content || '').trim() ||
+      stripRichText(subheadline?.content || '').trim() ||
+      stripRichText(button?.content || '').trim() ||
+      `Template ${templates.length + 1}`
+    );
+  };
+
+  const saveCurrentTemplate = (nameOverride?: string) => {
+    const name = (nameOverride || templateDraftName || getCurrentDesignTitle()).trim();
+
+    const template: SavedTemplate = {
+      id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `template-${Date.now()}`,
+      name,
+      createdAt: Date.now(),
+      elements: JSON.parse(JSON.stringify(useEditorStore.getState().elements)),
+      settings: {
+        visualizerColor,
+        accentColor,
+        bgColor,
+        platform,
+        platformTheme,
+        brandName,
+        brandLogo,
+        simulatedCaption,
+        autoCta,
+        bgMedia,
+        bgShadow,
+        bgShadowOpacity,
+        introImage,
+        introFileName,
+        audioUrl,
+        audioFileName,
+      },
+    };
+
+    persistTemplates([template, ...templates]);
+    setTemplateDraftName('');
+    setSaveTemplateOpen(false);
+  };
+
+  const loadTemplate = (template: SavedTemplate) => {
+    setElements(JSON.parse(JSON.stringify(template.elements)));
+    deselectAll();
+    setVisualizerColor(template.settings.visualizerColor);
+    setAccentColor(template.settings.accentColor);
+    setBgColor(template.settings.bgColor);
+    setPlatform(template.settings.platform);
+    setPlatformTheme(template.settings.platformTheme);
+    setBrandName(template.settings.brandName);
+    setBrandLogo(template.settings.brandLogo);
+    setSimulatedCaption(template.settings.simulatedCaption);
+    setAutoCta(template.settings.autoCta);
+    setBgMedia(template.settings.bgMedia);
+    setBgShadow(template.settings.bgShadow);
+    setBgShadowOpacity(template.settings.bgShadowOpacity);
+    setIntroImage(template.settings.introImage);
+    setIntroFileName(template.settings.introFileName);
+    setAudioUrl(template.settings.audioUrl);
+    setAudioFileName(template.settings.audioFileName);
+    requestAnimationFrame(() => commitHistory());
+  };
+
+  const deleteTemplate = (templateId: string) => {
+    persistTemplates(templates.filter((template) => template.id !== templateId));
+  };
 
   useEffect(() => {
     if (!rendering) return;
@@ -1130,6 +1251,82 @@ export default function App() {
     processNext();
   };
 
+  const TemplatePreview = ({ template }: { template: SavedTemplate }) => {
+    const headline = template.elements.find(element => element.componentRole === 'headline' || element.type === 'text');
+    const subheadline = template.elements.find(element => element.componentRole === 'subheadline');
+    const visualizer = template.elements.find(element => element.type === 'visualizer');
+    const cta = template.elements.find(element => element.type === 'button');
+    const hasCaptions = template.elements.some(element => element.type === 'caption');
+    const hasLogo = template.elements.some(element => element.componentRole === 'logo');
+    const headlineText = stripRichText(headline?.content || 'Headline');
+    return (
+      <div
+        className="relative aspect-[9/16] w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-inner"
+        style={{ backgroundColor: template.settings.bgColor }}
+      >
+        <div className="absolute inset-x-0 top-[10%] flex justify-center">
+          {hasLogo ? (
+            <span className="h-2 w-8 rounded-full bg-emerald-500/80" />
+          ) : (
+            <span className="h-2 w-8 rounded-full bg-slate-200" />
+          )}
+        </div>
+
+        <div className="absolute inset-x-2 top-[20%] flex min-h-[42px] items-center justify-center">
+          <p
+            className="line-clamp-3 text-center text-[11px] font-black leading-[0.95]"
+            style={{ color: headline?.color || '#0f172a' }}
+          >
+            {headlineText}
+          </p>
+        </div>
+
+        {subheadline && (
+          <div className="absolute inset-x-4 top-[40%] flex justify-center">
+            <span className="h-2 w-14 rounded-full" style={{ backgroundColor: subheadline.color || template.settings.accentColor }} />
+          </div>
+        )}
+
+        {visualizer && (
+          <div className="absolute inset-x-2 top-[52%] flex h-7 items-center gap-[2px]">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <span
+                key={index}
+                className="flex-1 rounded-full"
+                style={{
+                  height: `${22 + ((index * 9) % 46)}%`,
+                  backgroundColor: visualizer.barColor || template.settings.visualizerColor,
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {hasCaptions && (
+          <div className="absolute inset-x-5 top-[69%] flex justify-center">
+            <span className="h-2 w-20 rounded-full" style={{ backgroundColor: template.settings.accentColor }} />
+          </div>
+        )}
+
+        {cta && (
+          <div className="absolute inset-x-4 bottom-[9%] h-4 rounded-full" style={{ backgroundColor: cta.backgroundColor || template.settings.accentColor }} />
+        )}
+      </div>
+    );
+  };
+
+  const getTemplateTitle = (template: SavedTemplate) => {
+    const headline = template.elements.find(element => element.componentRole === 'headline' || element.type === 'text');
+    const subheadline = template.elements.find(element => element.componentRole === 'subheadline');
+    const button = template.elements.find(element => element.type === 'button');
+    return (
+      stripRichText(headline?.content || '').trim() ||
+      stripRichText(subheadline?.content || '').trim() ||
+      stripRichText(button?.content || '').trim() ||
+      template.name
+    );
+  };
+
   return (
     <div className="flex flex-col h-screen w-full bg-slate-50 font-sans text-slate-900">
       {/* Header */}
@@ -1422,7 +1619,7 @@ export default function App() {
                       onClick={() => setPlatform('feed')}
                       className={`rounded-lg border px-3 py-2 text-left transition-colors ${platform === 'feed' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'}`}
                     >
-                      <span className="block text-sm font-semibold">Feed</span>
+                      <span className="block text-sm font-semibold">Facebook Feed</span>
                       <span className={`block text-xs ${platform === 'feed' ? 'text-white/70' : 'text-slate-500'}`}>4:5</span>
                     </button>
                   </div>
@@ -1655,6 +1852,53 @@ export default function App() {
               >
                 <ChevronDown className="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors" />
               </button>
+
+              <div className="absolute -right-11 top-[30%] z-20 hidden sm:block">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTemplateDraftName(getCurrentDesignTitle());
+                    setSaveTemplateOpen(true);
+                  }}
+                  className="flex h-24 w-8 items-center justify-center rounded-r-xl border border-l-0 border-slate-200 bg-white/95 text-slate-500 shadow-lg backdrop-blur transition hover:w-10 hover:text-slate-900"
+                  title="Save this design as a template"
+                >
+                  <BookmarkPlus className="h-4 w-4" />
+                </button>
+              </div>
+
+              {saveTemplateOpen && (
+                <div className="absolute -right-56 top-[30%] z-30 hidden w-48 rounded-xl border border-slate-200 bg-white p-3 shadow-2xl sm:block">
+                  <div className="mb-3 flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-bold text-slate-800">Save template</p>
+                      <p className="mt-0.5 text-xs text-slate-500">Name is optional.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSaveTemplateOpen(false)}
+                      className="rounded-md p-1 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={templateDraftName}
+                    onChange={(e) => setTemplateDraftName(e.target.value)}
+                    placeholder={getCurrentDesignTitle()}
+                    className="mb-2 h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => saveCurrentTemplate()}
+                    className="w-full rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-slate-800 active:scale-[0.98]"
+                  >
+                    Save
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Toolbar */}
@@ -1706,48 +1950,64 @@ export default function App() {
             
           </div>
 
-          {/* Generation Log */}
-          <div className="w-64 bg-slate-900 rounded-xl overflow-hidden flex flex-col shadow-inner shrink-0 hidden xl:flex">
-            <div className="p-3 bg-slate-800 border-b border-slate-700">
-              <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center justify-between">
-                Rendering Engine
-                {rendering || batchStatus === 'processing' ? <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> : <span className="w-2 h-2 rounded-full bg-slate-500"></span>}
-              </h2>
+          {/* Template Library */}
+          <div className="hidden w-72 shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm xl:flex">
+            <div className="border-b border-slate-100 p-4">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Templates</h2>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-500">Save reusable layouts, then reload and swap copy.</p>
+                </div>
+                <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-500">{templates.length}</span>
+              </div>
             </div>
-            <div className="flex-1 p-3 font-mono text-[10px] text-green-400 space-y-1.5 overflow-hidden">
-               <p>&gt; hyperframes initialize --p vertical-ad</p>
-               <p>&gt; loading styles ... OK</p>
-               {(rendering || batchStatus !== 'idle') && (
-                 <>
-                   <p>&gt; analyzing media...</p>
-                   <p>&gt; found audio track</p>
-                   <p>&gt; generating transcribe captions...</p>
-                   {playing || rendering ? (
-                     <p className="text-indigo-400 animate-pulse">&gt; building gsap timeline...</p>
-                   ) : null}
-                 </>
-               )}
-               {batchStatus === 'processing' && (
-                 <div className="mt-4 pt-4 border-t border-slate-700 space-y-3">
-                   <div className="flex flex-col gap-1">
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Batch Progress</span>
-                        <span>{Math.round(renderProgress)}%</span>
+
+            <div className="flex-1 overflow-y-auto p-3">
+              {templates.length === 0 ? (
+                <div className="flex h-full flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 p-5 text-center">
+                  <Database className="mb-3 h-5 w-5 text-slate-400" />
+                  <p className="text-sm font-bold text-slate-700">No templates yet</p>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-500">When a layout works, save it here and reuse it for the next ad.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {templates.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => loadTemplate(template)}
+                      title={`Use ${getTemplateTitle(template)}`}
+                      className="group relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2 text-left transition hover:border-indigo-300 hover:bg-white hover:shadow-sm active:scale-[0.99]"
+                    >
+                      <TemplatePreview template={template} />
+                      <div className="mt-2 flex items-center justify-between gap-1">
+                        <p className="min-w-0 truncate text-xs font-bold text-slate-700">{getTemplateTitle(template)}</p>
+                        <span className="text-[10px] font-semibold text-slate-400">{template.elements.length}</span>
                       </div>
-                      <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
-                        <div className="h-full bg-indigo-500 transition-all duration-200" style={{ width: `${renderProgress}%` }}></div>
-                      </div>
-                   </div>
-                 </div>
-               )}
-               {batchStatus === 'done' ? (
-                 <div className="p-2 bg-slate-800 rounded border border-slate-700 mt-4">
-                    <p className="text-slate-300">Recent Outputs:</p>
-                    <p className="text-indigo-400 mt-1 flex items-center justify-between">
-                       Batch complete <CheckCircle2 className="w-3 h-3" />
-                    </p>
-                 </div>
-               ) : null}
+                      <span className="pointer-events-none absolute inset-2 rounded-lg bg-indigo-500/0 transition group-hover:bg-indigo-500/5" />
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          deleteTemplate(template.id);
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            deleteTemplate(template.id);
+                          }
+                        }}
+                        title="Delete template"
+                        className="absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-slate-400 opacity-0 shadow-sm transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </main>
