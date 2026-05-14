@@ -156,6 +156,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   const [currentSpeaker, setCurrentSpeaker] = useState<number>(1);
   const [editingId, setEditingId] = useState<string | null>(null);
   const editingRef = useRef<HTMLDivElement | null>(null);
+  const [editingFontSize, setEditingFontSize] = useState<number>(24);
   const [playbackTime, setPlaybackTime] = useState(0);
 
   useEffect(() => {
@@ -163,6 +164,58 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
     requestAnimationFrame(() => {
       const editor = editingRef.current;
       if (!editor) return;
+      const element = useEditorStore.getState().elements.find(el => el.id === editingId);
+      editor.innerHTML = sanitizeRichText(element?.content || '');
+      if (element) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          const copy = stripRichText(element.content || '');
+          const width = Number(element.width) - 8;
+          const height = Number(element.height) - 4;
+          const lineHeight = element.lineHeight || 1.12;
+          const fontFamily = element.fontFamily || 'Inter, sans-serif';
+          const fontWeight = element.fontWeight || '700';
+          const fontStyle = element.fontStyle || 'normal';
+          const wrapLines = (size: number) => {
+            ctx.font = `${fontStyle} ${fontWeight} ${size}px ${fontFamily}`;
+            const lines: string[] = [];
+            copy.split('\n').forEach((explicitLine) => {
+              const words = explicitLine.trim().split(/\s+/).filter(Boolean);
+              if (words.length === 0) {
+                lines.push('');
+                return;
+              }
+              let line = words[0];
+              for (let i = 1; i < words.length; i++) {
+                const candidate = `${line} ${words[i]}`;
+                if (ctx.measureText(candidate).width <= width) line = candidate;
+                else {
+                  lines.push(line);
+                  line = words[i];
+                }
+              }
+              lines.push(line);
+            });
+            const widest = lines.reduce((max, line) => Math.max(max, ctx.measureText(line).width), 0);
+            return { widest, height: lines.length * size * lineHeight };
+          };
+          let low = 8;
+          let high = 96;
+          let best = low;
+          while (low <= high) {
+            const mid = Math.floor((low + high) / 2);
+            const measurement = wrapLines(mid);
+            if (measurement.widest <= width && measurement.height <= height) {
+              best = mid;
+              low = mid + 1;
+            } else {
+              high = mid - 1;
+            }
+          }
+          setEditingFontSize(best);
+        }
+      }
       editor.focus();
       const selection = window.getSelection();
       const range = document.createRange();
@@ -692,19 +745,20 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                 }}
               >
                 {editingId === el.id ? (
-                  <AutoFitText
-                    textRef={editingRef}
-                    editable
-                    className="w-full cursor-text px-1 outline-none select-text"
-                    minFontSize={8}
-                    lineHeight={el.lineHeight || 1.12}
-                    plainText={stripRichText(el.content || '')}
+                  <div
+                    ref={editingRef}
+                    className="w-full h-full cursor-text overflow-hidden px-1 outline-none select-text"
+                    contentEditable
+                    suppressContentEditableWarning
+                    spellCheck={false}
                     style={{
                       color: el.color,
                       fontFamily: el.fontFamily,
                       fontWeight: el.fontWeight,
                       fontStyle: el.fontStyle,
                       textDecoration: el.textDecoration,
+                      fontSize: `${editingFontSize}px`,
+                      lineHeight: el.lineHeight || 1.12,
                       textAlign: el.textAlign || 'center',
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
@@ -728,10 +782,8 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                           e.currentTarget.blur();
                        }
                     }}
-                  >
-                    <span dangerouslySetInnerHTML={{ __html: sanitizeRichText(el.content || '') }} />
-                  </AutoFitText>
-                ) : el.id === 'headline-1' ? (
+                  />
+                ) : el.componentRole === 'headline' ? (
                   <HeadlineSlot niche="dental" elementId={el.id} />
                 ) : (
                   <AutoFitText

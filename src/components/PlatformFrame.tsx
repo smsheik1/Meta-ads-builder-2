@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, User, Music, VolumeX, Battery, Wifi, Signal, ChevronUp, X as XIcon } from 'lucide-react';
+import { Heart, MessageCircle, Send, MoreHorizontal, User, VolumeX, Battery, Wifi, Signal, ChevronUp, ThumbsUp, Share2, Globe2 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -64,7 +64,7 @@ export function PlatformFrame({
         {/* The actual rendered AD */}
         <div className={cn(
           "absolute pointer-events-auto",
-          platform === 'feed' ? "top-[60px] bottom-[160px] left-0 right-0" : "inset-0",
+          platform === 'feed' ? "top-[60px] bottom-[142px] left-0 right-0" : "inset-0",
           "flex items-center justify-center overflow-hidden bg-slate-900"
         )}>
            <div className={cn("w-full h-full max-w-full max-h-full mx-auto relative", adContainerAspect)}>
@@ -72,20 +72,22 @@ export function PlatformFrame({
            </div>
         </div>
 
-        {/* Feed Frame (Instagram/Facebook style preview) */}
+        {/* Facebook Feed preview */}
         {platform === 'feed' && (
            <div className="absolute inset-0 z-10 pointer-events-none flex flex-col h-full bg-transparent">
               {/* Header */}
-              <div className={cn("px-4 py-3 flex items-center justify-between", isDark ? "bg-black" : "bg-white")}>
+              <div className={cn("px-4 py-3 flex items-center justify-between border-b", isDark ? "bg-black border-slate-900" : "bg-white border-slate-100")}>
                  <div className="flex items-center gap-2 relative z-20">
-                    <div className={cn("w-8 h-8 rounded-full flex items-center justify-center overflow-hidden shrink-0 border border-slate-200", isDark ? "border-slate-800 bg-slate-900" : "bg-slate-100")}>
+                    <div className={cn("w-9 h-9 rounded-full flex items-center justify-center overflow-hidden shrink-0 border", isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-slate-100")}>
                       {brandLogo ? <img src={brandLogo} alt={brandName} className="w-full h-full object-cover" /> : <User className={cn("w-4 h-4", isDark ? "text-slate-400" : "text-slate-500")} />}
                     </div>
                     <div>
                        <div className="flex items-center gap-1">
                           <span className={cn("font-bold text-sm leading-tight", isDark ? "text-white" : "text-black")}>{brandName}</span>
                        </div>
-                       <span className={cn("text-[11px]", isDark ? "text-slate-400" : "text-slate-500")}>Sponsored</span>
+                       <span className={cn("flex items-center gap-1 text-[11px]", isDark ? "text-slate-400" : "text-slate-500")}>
+                         Sponsored · <Globe2 className="h-3 w-3" />
+                       </span>
                     </div>
                  </div>
                  <div className="relative z-20 flex items-center gap-3">
@@ -98,22 +100,34 @@ export function PlatformFrame({
               </div>
 
               {/* Bottom Actions */}
-              <div className={cn("px-4 py-3 flex flex-col gap-3 relative z-20 pointer-events-auto", isDark ? "bg-black" : "bg-white")}>
-                 <div className={cn("w-full py-2.5 rounded flex items-center justify-between px-4 text-[13px] font-bold cursor-pointer transition-opacity hover:opacity-90 active:scale-[0.99]", isDark ? "bg-slate-800 text-blue-400" : "bg-blue-50 text-blue-600")}>
-                    <span>{metaCta}</span>
-                    <ChevronUp className="w-4 h-4" />
+              <div className={cn("px-3 py-2 flex flex-col gap-1.5 relative z-20 pointer-events-auto border-t", isDark ? "bg-black border-slate-900" : "bg-white border-slate-100")}>
+                 <div className={cn("flex items-start justify-between gap-2 px-1 text-[12px] leading-snug", isDark ? "text-white" : "text-black")}>
+                   <div className="min-w-0">
+                     <span className="font-bold mr-2">{brandName}</span>
+                     <span className={cn(isDark ? "text-slate-300" : "text-slate-700")}>{caption.substring(0, 72)}{caption.length > 72 ? '...' : ''}</span>
+                   </div>
+                   <button className="shrink-0 rounded-md bg-blue-600 px-2.5 py-1.5 text-[11px] font-bold text-white transition-opacity hover:opacity-90 active:scale-[0.99]">
+                     {metaCta}
+                   </button>
                  </div>
-                 <div className="flex justify-between items-center px-1">
-                    <div className="flex gap-4">
-                       <Heart className={cn("w-6 h-6 hover:opacity-70 cursor-pointer", isDark ? "text-white" : "text-black")} />
-                       <MessageCircle className={cn("w-6 h-6 hover:opacity-70 cursor-pointer", isDark ? "text-white" : "text-black")} />
-                       <Send className={cn("w-6 h-6 hover:opacity-70 cursor-pointer", isDark ? "text-white" : "text-black")} />
-                    </div>
-                    <Bookmark className={cn("w-6 h-6 hover:opacity-70 cursor-pointer", isDark ? "text-white" : "text-black")} />
+                 <div className={cn("flex items-center justify-between border-y py-1 text-[11px]", isDark ? "border-slate-900 text-slate-400" : "border-slate-100 text-slate-500")}>
+                   <span>1.2K reactions</span>
+                   <span>84 comments · 19 shares</span>
                  </div>
-                 <div className={cn("text-[13px] px-1", isDark ? "text-white" : "text-black")}>
-                    <span className="font-bold mr-2">{brandName}</span>
-                    <span className={cn(isDark ? "text-slate-300" : "text-slate-700")}>{caption.substring(0, 100)}{caption.length > 100 ? '...' : ''}</span>
+                 <div className="grid grid-cols-3 gap-1 px-1">
+                    {[
+                      { label: 'Like', icon: ThumbsUp },
+                      { label: 'Comment', icon: MessageCircle },
+                      { label: 'Share', icon: Share2 },
+                    ].map(({ label, icon: Icon }) => (
+                      <button
+                        key={label}
+                        className={cn("flex items-center justify-center gap-1 rounded-md py-1 text-[12px] font-semibold transition hover:bg-slate-100", isDark ? "text-slate-300 hover:bg-slate-900" : "text-slate-600")}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                        {label}
+                      </button>
+                    ))}
                  </div>
               </div>
            </div>
