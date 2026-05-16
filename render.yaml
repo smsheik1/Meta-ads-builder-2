@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: agent-enamel-studio
+    env: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEEPGRAM_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
