@@ -1663,57 +1663,108 @@ export default function App() {
           </button>
         </header>
 
-        <main className="mx-auto grid min-h-[calc(100vh-80px)] max-w-7xl items-center gap-10 px-6 py-10 md:grid-cols-[0.9fr_1.1fr] md:px-10">
-          <section className="max-w-xl">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-500 shadow-sm">
-              <AudioLines className="h-4 w-4 text-[#00FFCC]" />
-              Visualizer ads for voice AI agencies
-            </div>
-            <h1 className="text-5xl font-black leading-[0.95] tracking-normal text-slate-950 md:text-7xl">
-              Turn voice AI offers into scroll-stopping ad creatives.
-            </h1>
-            <p className="mt-6 max-w-lg text-lg font-medium leading-8 text-slate-600">
-              Build branded Meta ads with bold hooks, intro cards, voiceover audio, waveform visuals, and export-ready layouts without opening a video editor.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={enterStudio}
-                className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800"
-              >
-                Create an ad
-                <Wand2 className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={enterStudio}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300"
-              >
-                Explore templates
-              </button>
-            </div>
-          </section>
+        <main className="mx-auto max-w-7xl px-6 py-10 md:px-10">
+          <div className="grid min-h-[calc(100vh-120px)] items-center gap-10 md:grid-cols-[0.9fr_1.1fr]">
+            <section className="max-w-xl">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-500 shadow-sm">
+                <AudioLines className="h-4 w-4 text-[#00FFCC]" />
+                Visualizer ads for voice AI agencies
+              </div>
+              <h1 className="text-5xl font-black leading-[0.95] tracking-normal text-slate-950 md:text-7xl">
+                Turn voice AI offers into scroll-stopping ad creatives.
+              </h1>
+              <p className="mt-6 max-w-lg text-lg font-medium leading-8 text-slate-600">
+                Build branded Meta ads with bold hooks, intro cards, voiceover audio, waveform visuals, and export-ready layouts without opening a video editor.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={enterStudio}
+                  className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800"
+                >
+                  Create an ad
+                  <Wand2 className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={enterStudio}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300"
+                >
+                  Explore templates
+                </button>
+              </div>
+            </section>
 
-          <section className="relative min-h-[560px]">
-            <div className="absolute left-[8%] top-[8%] w-[36%] rotate-[-5deg]">
-              <HomeAdCard headline="One lunch break can cost a $3,200 case." />
-            </div>
-            <div className="absolute left-[36%] top-0 w-[38%] rotate-[3deg]">
-              <HomeAdCard headline="You don't need more leads. You need answered calls." background="#FFFFFF" accent="#4F46E5" />
-            </div>
-            <div className="absolute bottom-[4%] right-[4%] w-[36%] rotate-[6deg]">
-              <HomeAdCard headline="Every voicemail is a patient choosing someone else." background="#080B16" accent="#6D5BFF" dark />
-            </div>
-            <div className="absolute bottom-[12%] left-[18%] rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#00FFCC]/15">
-                  <AudioLines className="h-5 w-5 text-[#00BFA5]" />
-                </div>
-                <div>
-                  <p className="text-sm font-black text-slate-900">Hook + waveform + CTA</p>
-                  <p className="text-xs font-semibold text-slate-500">The reusable ad-card system.</p>
+            <section className="relative min-h-[560px]">
+              <div className="absolute left-[8%] top-[8%] w-[36%] rotate-[-5deg]">
+                <HomeAdCard headline="One lunch break can cost a $3,200 case." />
+              </div>
+              <div className="absolute left-[36%] top-0 w-[38%] rotate-[3deg]">
+                <HomeAdCard headline="You don't need more leads. You need answered calls." background="#FFFFFF" accent="#4F46E5" />
+              </div>
+              <div className="absolute bottom-[4%] right-[4%] w-[36%] rotate-[6deg]">
+                <HomeAdCard headline="Every voicemail is a patient choosing someone else." background="#080B16" accent="#6D5BFF" dark />
+              </div>
+              <div className="absolute bottom-[12%] left-[18%] rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#00FFCC]/15">
+                    <AudioLines className="h-5 w-5 text-[#00BFA5]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-slate-900">Hook + waveform + CTA</p>
+                    <p className="text-xs font-semibold text-slate-500">The reusable ad-card system.</p>
+                  </div>
                 </div>
               </div>
+            </section>
+          </div>
+
+          <section className="pb-16 pt-8">
+            <div className="mb-8 max-w-2xl">
+              <p className="text-sm font-black uppercase tracking-wide text-slate-400">Built for the marketer workflow</p>
+              <h2 className="mt-2 text-3xl font-black tracking-normal text-slate-950 md:text-5xl">
+                Fast ad making without the design-tool maze.
+              </h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                {
+                  icon: Wand2,
+                  title: 'Slot-machine hooks',
+                  copy: 'Refresh ad angles instantly without prompt writing.',
+                },
+                {
+                  icon: AudioLines,
+                  title: 'Voice AI visuals',
+                  copy: 'Waveforms, captions, intro cards, and CTA layouts in one builder.',
+                },
+                {
+                  icon: CheckCircle2,
+                  title: 'Meta-safe previews',
+                  copy: 'Check feed, reels, stories, and safe areas before export.',
+                },
+                {
+                  icon: BookmarkPlus,
+                  title: 'Reusable designs',
+                  copy: 'Save winning layouts and reload them for the next ad.',
+                },
+                {
+                  icon: Download,
+                  title: 'MP4 export',
+                  copy: 'Create upload-ready ads without opening a video editor.',
+                },
+                {
+                  icon: MousePointerClick,
+                  title: 'Marketer-first flow',
+                  copy: 'Strategy, copy, design, preview, and export stay together.',
+                },
+              ].map((feature) => (
+                <div key={feature.title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <feature.icon className="mb-5 h-10 w-10 stroke-[2.4] text-slate-950" />
+                  <h3 className="text-2xl font-black leading-tight tracking-normal text-slate-950">{feature.title}</h3>
+                  <p className="mt-3 text-sm font-semibold leading-6 text-slate-500">{feature.copy}</p>
+                </div>
+              ))}
             </div>
           </section>
         </main>
