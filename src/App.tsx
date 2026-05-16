@@ -1725,12 +1725,17 @@ export default function App() {
     <div className="flex flex-col h-screen w-full bg-slate-50 font-sans text-slate-900">
       {/* Header */}
       <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 shrink-0">
-        <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setShowHomepage(true)}
+          className="flex items-center gap-3 rounded-xl text-left transition hover:opacity-80"
+          title="Open homepage"
+        >
           <img src="/logo.png" alt="Agent Enamel" className="h-8 w-8 rounded-md object-cover shadow-sm" />
           <h1 className="text-lg font-semibold tracking-tight">
             {appTitle}
           </h1>
-        </div>
+        </button>
         
         <div className="flex items-center gap-4">
           <button 
