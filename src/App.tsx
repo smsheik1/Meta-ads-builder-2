@@ -140,7 +140,7 @@ export default function App() {
   const [bgColor, setBgColor] = useState("#f5f5f5");
 
   // Platform Frame State
-  const [platform, setPlatform] = useState<PlatformType>('reels');
+  const [platform, setPlatform] = useState<PlatformType>('instagram-feed');
   const [platformTheme, setPlatformTheme] = useState<'light' | 'dark'>('dark');
   const [brandName, setBrandName] = useState('Agent Enamel');
   const [brandLogo, setBrandLogo] = useState<string | null>(null);
