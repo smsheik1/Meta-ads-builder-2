@@ -262,7 +262,7 @@ export const PropertiesPanel: React.FC = () => {
               <ColorControl value={selectedEl.barColor || '#00ffcc'} onChange={(value) => updateElement(selectedEl.id, { barColor: value })} />
             </Field>
             <SliderRow label="Bar count" value={selectedEl.barCount || 8} displayValue={`${selectedEl.barCount || 8}`} min={3} max={32} step={1} onChange={(value) => updateElement(selectedEl.id, { barCount: value })} />
-            <SliderRow label="Sensitivity" value={selectedEl.visualizerSensitivity ?? 1} displayValue={`${(selectedEl.visualizerSensitivity ?? 1).toFixed(1)}x`} min={0.1} max={5} step={0.1} onChange={(value) => updateElement(selectedEl.id, { visualizerSensitivity: value })} onReset={() => updateElement(selectedEl.id, { visualizerSensitivity: 1 })} />
+            <SliderRow label="Sensitivity" value={selectedEl.visualizerSensitivity ?? 1} displayValue={`${(selectedEl.visualizerSensitivity ?? 1).toFixed(1)}x`} min={0.1} max={5} step={0.1} onChange={(value) => updateElement(selectedEl.id, { visualizerSensitivity: value })} onReset={() => updateElement(selectedEl.id, { visualizerSensitivity: 1.5 })} />
             <SliderRow label="Smoothing" value={selectedEl.visualizerSmoothing ?? 0.8} displayValue={`${selectedEl.visualizerSmoothing ?? 0.8}`} min={0.05} max={0.95} step={0.05} onChange={(value) => updateElement(selectedEl.id, { visualizerSmoothing: value })} onReset={() => updateElement(selectedEl.id, { visualizerSmoothing: 0.8 })} />
           </Section>
         )}

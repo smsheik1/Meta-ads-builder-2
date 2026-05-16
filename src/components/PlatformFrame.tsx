@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, MessageCircle, Send, MoreHorizontal, User, VolumeX, Battery, Wifi, Signal, ChevronUp, ThumbsUp, Share2, Globe2 } from 'lucide-react';
+import { Heart, MessageCircle, Send, MoreHorizontal, User, VolumeX, Battery, Wifi, Signal, ChevronUp, ThumbsUp, Share2, Globe2, Bookmark } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -7,7 +7,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export type PlatformType = 'vertical' | 'feed';
+export type PlatformType = 'facebook-feed' | 'instagram-feed' | 'reels' | 'stories' | 'vertical' | 'feed';
+
+export const isFeedPlatform = (platform: PlatformType) => platform === 'facebook-feed' || platform === 'instagram-feed' || platform === 'feed';
+export const isVerticalPlatform = (platform: PlatformType) => platform === 'reels' || platform === 'stories' || platform === 'vertical';
 
 interface PlatformFrameProps {
   platform: PlatformType;
@@ -52,8 +55,12 @@ export function PlatformFrame({
     return 'w-[360px] h-[720px]'; // Device frame size
   };
 
-  const adContainerAspect = 
-    platform === 'vertical' ? 'aspect-[9/16]' : 'aspect-[4/5]';
+  const feedPlatform = isFeedPlatform(platform);
+  const instagramFeed = platform === 'instagram-feed';
+  const storiesPlatform = platform === 'stories';
+  const verticalPlatform = isVerticalPlatform(platform);
+  const verticalLabel = platform === 'stories' ? 'Stories' : 'Reels';
+  const adContainerAspect = verticalPlatform ? 'aspect-[9/16]' : 'aspect-[4/5]';
 
   return (
     <div className={cn(frameClasses, getContainerSize(), "flex flex-col")}>
@@ -63,8 +70,8 @@ export function PlatformFrame({
         
         {/* The actual rendered AD */}
         <div className={cn(
-          "absolute pointer-events-auto",
-          platform === 'feed' ? "top-[60px] bottom-[142px] left-0 right-0" : "inset-0",
+          "absolute z-0 pointer-events-auto",
+          feedPlatform ? "top-[60px] left-0 right-0 h-[450px]" : "inset-0",
           "flex items-center justify-center overflow-hidden bg-slate-900"
         )}>
            <div className={cn("w-full h-full max-w-full max-h-full mx-auto relative", adContainerAspect)}>
@@ -73,8 +80,8 @@ export function PlatformFrame({
         </div>
 
         {/* Facebook Feed preview */}
-        {platform === 'feed' && (
-           <div className="absolute inset-0 z-10 pointer-events-none flex flex-col h-full bg-transparent">
+        {feedPlatform && !instagramFeed && (
+           <div className="absolute inset-0 z-30 pointer-events-none flex flex-col h-full bg-transparent">
               {/* Header */}
               <div className={cn("px-4 py-3 flex items-center justify-between border-b", isDark ? "bg-black border-slate-900" : "bg-white border-slate-100")}>
                  <div className="flex items-center gap-2 relative z-20">
@@ -132,13 +139,103 @@ export function PlatformFrame({
               </div>
            </div>
         )}
-        {platform === 'vertical' && (
-          <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between">
+
+        {/* Instagram Feed preview */}
+        {instagramFeed && (
+           <div className="absolute inset-0 z-30 pointer-events-none flex flex-col h-full bg-transparent">
+              <div className={cn("px-3 py-2.5 flex items-center justify-between border-b", isDark ? "bg-black border-slate-900" : "bg-white border-slate-100")}>
+                 <div className="flex items-center gap-2 relative z-20 min-w-0">
+                    <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px] shrink-0">
+                      <div className={cn("h-full w-full rounded-full overflow-hidden border-2 flex items-center justify-center", isDark ? "bg-black border-black" : "bg-white border-white")}>
+                        {brandLogo ? <img src={brandLogo} alt={brandName} className="w-full h-full object-cover" /> : <User className={cn("w-4 h-4", isDark ? "text-slate-300" : "text-slate-700")} />}
+                      </div>
+                    </div>
+                    <div className="min-w-0">
+                      <div className={cn("truncate text-sm font-bold leading-tight", isDark ? "text-white" : "text-black")}>{brandName}</div>
+                      <div className={cn("text-[11px] leading-tight", isDark ? "text-slate-400" : "text-slate-500")}>Sponsored</div>
+                    </div>
+                 </div>
+                 <MoreHorizontal className={cn("h-5 w-5 shrink-0", isDark ? "text-white" : "text-black")} />
+              </div>
+
+              <div className="flex-1 pointer-events-none relative z-0">
+                 {/* Ad content space */}
+              </div>
+
+              <div className={cn("relative z-20 border-t px-3 py-2 pointer-events-auto", isDark ? "bg-black border-slate-900" : "bg-white border-slate-100")}>
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <Heart className={cn("h-6 w-6", isDark ? "text-white" : "text-black")} />
+                    <MessageCircle className={cn("h-6 w-6", isDark ? "text-white" : "text-black")} />
+                    <Send className={cn("h-6 w-6", isDark ? "text-white" : "text-black")} />
+                  </div>
+                  <Bookmark className={cn("h-6 w-6", isDark ? "text-white" : "text-black")} />
+                </div>
+                <div className={cn("text-[12px] font-bold", isDark ? "text-white" : "text-black")}>1,284 likes</div>
+                <p className={cn("mt-1 text-[12px] leading-snug", isDark ? "text-slate-200" : "text-slate-800")}>
+                  <span className={cn("font-bold", isDark ? "text-white" : "text-black")}>{brandName}</span>{' '}
+                  {caption.substring(0, 92)}{caption.length > 92 ? '...' : ''}
+                </p>
+                <button className={cn("mt-1 text-[12px]", isDark ? "text-slate-500" : "text-slate-400")}>View all 84 comments</button>
+                <div className={cn("mt-1 text-[10px] uppercase tracking-wide", isDark ? "text-slate-600" : "text-slate-400")}>Sponsored</div>
+              </div>
+           </div>
+        )}
+        {/* Instagram Stories preview */}
+        {storiesPlatform && (
+          <div className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-between">
+            <div className="px-3 pt-3">
+              <div className="mb-2 grid grid-cols-3 gap-1">
+                {[0, 1, 2].map((segment) => (
+                  <div key={segment} className="h-0.5 overflow-hidden rounded-full bg-white/35">
+                    <div className={cn("h-full rounded-full", segment === 0 ? "w-[72%]" : "w-0", isDark ? "bg-white" : "bg-slate-900")} />
+                  </div>
+                ))}
+              </div>
+              <div className={cn("flex items-center justify-between drop-shadow-md", isDark ? "text-white" : "text-black drop-shadow-none")}>
+                <div className="flex min-w-0 items-center gap-2">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px]">
+                    <div className={cn("h-full w-full rounded-full overflow-hidden border-2 flex items-center justify-center", isDark ? "bg-black border-black" : "bg-white border-white")}>
+                      {brandLogo ? <img src={brandLogo} alt={brandName} className="h-full w-full object-cover" /> : <User className="h-4 w-4" />}
+                    </div>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate text-[13px] font-bold">{brandName}</div>
+                    <div className="text-[11px] opacity-80">Sponsored</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <VolumeX className="h-5 w-5" />
+                  <MoreHorizontal className="h-5 w-5" />
+                </div>
+              </div>
+            </div>
+
+            <div className={cn("absolute bottom-0 left-0 right-0 pointer-events-none px-3 pb-4 pt-20", isDark ? "bg-gradient-to-t from-black/55 via-black/20 to-transparent" : "bg-gradient-to-t from-white/60 via-white/20 to-transparent")}>
+              <div className="mb-3 flex justify-center">
+                <button className={cn("rounded-full px-8 py-3 text-[14px] font-bold shadow-lg backdrop-blur-md", isDark ? "bg-white/95 text-black" : "bg-slate-950/95 text-white")}>
+                  {metaCta}
+                </button>
+              </div>
+              <div className="flex items-center gap-2 pointer-events-auto">
+                <div className={cn("flex-1 rounded-full border px-4 py-3 text-[13px] font-medium backdrop-blur-md", isDark ? "border-white/70 text-white" : "border-slate-900/30 text-slate-900")}>
+                  Send message
+                </div>
+                <Heart className={cn("h-7 w-7 shrink-0", isDark ? "text-white" : "text-slate-900")} />
+                <Send className={cn("h-7 w-7 shrink-0", isDark ? "text-white" : "text-slate-900")} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Instagram Reels preview */}
+        {verticalPlatform && !storiesPlatform && (
+          <div className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-between">
             {/* Top Area */}
              <div className="px-4 pt-2">
                 <StatusBar isDark={isDark} />
                 <div className={cn("flex justify-between items-start drop-shadow-md", isDark ? "text-white" : "text-black drop-shadow-none")}>
-                   <h2 className="font-bold text-[18px]">Reels / Stories</h2>
+                   <h2 className="font-bold text-[18px]">{verticalLabel}</h2>
                    <VolumeX className="w-5 h-5" />
                 </div>
              </div>

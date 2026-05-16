@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
+import { getRandomSeededHook } from './lib/headline-pool';
 
 export type ElementType = 'text' | 'visualizer' | 'button' | 'caption' | 'image';
 
@@ -107,7 +108,7 @@ const DEFAULT_ELEMENTS: AdElement[] = [
     id: 'headline-1',
     type: 'text',
     componentRole: 'headline',
-    content: 'YOUR HEADLINE HERE',
+    content: getRandomSeededHook(),
     x: 20,
     y: 118,
     width: 320,
@@ -125,14 +126,15 @@ const DEFAULT_ELEMENTS: AdElement[] = [
     type: 'visualizer',
     componentRole: 'visualizer',
     x: 0,
-    y: 270,
+    y: 255,
     width: 360,
-    height: 120,
+    height: 90,
     rotation: 0,
     zIndex: 3,
     visualizerType: 'bars-center',
     barColor: '#00ffcc',
     barCount: 16,
+    visualizerSensitivity: 1.5,
     visualizerSplitSpeakers: false
   },
   {
@@ -140,9 +142,9 @@ const DEFAULT_ELEMENTS: AdElement[] = [
     type: 'caption',
     componentRole: 'captions',
     x: 20,
-    y: 400,
+    y: 350,
     width: 320,
-    height: 55, // h-24
+    height: 48,
     rotation: 0,
     zIndex: 4,
   }
