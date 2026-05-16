@@ -9,8 +9,8 @@ import ffmpegPath from 'ffmpeg-static';
 const app = express();
 const isProd = process.env.NODE_ENV === 'production';
 // Using port 3001 for Express so Vite can bind to 3000 as required in development.
-// In production, everything binds to port 3000.
-const port = isProd ? 3000 : 3001;
+// Hosts like Render provide PORT in production.
+const port = Number(process.env.PORT) || (isProd ? 3000 : 3001);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -154,7 +154,7 @@ No prose. No explanation. Just the JSON array.`;
       }
     });
 
-    const text = response.text() || '[]';
+    const text = response.text || '[]';
     res.json(JSON.parse(text));
   } catch (error: any) {
     console.error("Generate headlines error:", error);

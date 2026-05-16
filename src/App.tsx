@@ -8,6 +8,7 @@ import { useEditorStore } from './store';
 import { drawAdvancedVisualizer } from './lib/visualizer';
 import { parseRichText, stripRichText, type RichTextRun } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
+import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -128,6 +129,8 @@ type SavedTemplate = {
   };
 };
 
+type AdHistoryItem = SavedTemplate & StoredAdSnapshot;
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single');
   
@@ -150,9 +153,9 @@ export default function App() {
   const [bgShadowOpacity, setBgShadowOpacity] = useState(0.38);
   const [introImage, setIntroImage] = useState<string | null>(DEFAULT_INTRO_IMAGE);
   const [introFileName, setIntroFileName] = useState<string>(DEFAULT_INTRO_IMAGE_NAME);
-  const [introDuration, setIntroDuration] = useState<IntroDuration>(2);
+  const [introDuration, setIntroDuration] = useState<IntroDuration>(1);
   const [introFeedCropY, setIntroFeedCropY] = useState(50);
-  const [introImageAspect, setIntroImageAspect] = useState<number | null>(941 / 1672);
+  const [introImageAspect, setIntroImageAspect] = useState<number | null>(1132 / 1389);
   const [introCropOpen, setIntroCropOpen] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>('/019e13bd-0b04-7dd0-95d6-dbcb36900e35-1778447713483-d2bb8e52-6c00-4439-a0e9-52f7e7a4a897-stereo (1).mp3');
   const [audioFileName, setAudioFileName] = useState<string>('019e13bd-0b04-7dd0-95d6-dbcb36900e35-1778447713483-d2bb8e52-6c00-4439-a0e9-52f7e7a4a897-stereo (1).mp3');
@@ -162,7 +165,7 @@ export default function App() {
   const [rendering, setRendering] = useState(false);
   const [renderProgress, setRenderProgress] = useState(0);
   const [exportPhase, setExportPhase] = useState<ExportPhase>('recording');
-  const [exportDownload, setExportDownload] = useState<{ url: string; filename: string } | null>(null);
+  const [exportDownload, setExportDownload] = useState<{ url: string; filename: string; snapshot: SavedTemplate } | null>(null);
   const [exportLaunchAnimation, setExportLaunchAnimation] = useState(false);
   const [renderDurationCap, setRenderDurationCap] = useState<RenderDurationCap>(30);
 
@@ -170,6 +173,9 @@ export default function App() {
   const [csvData, setCsvData] = useState<any[]>([]);
   const [batchStatus, setBatchStatus] = useState<'idle' | 'processing' | 'done'>('idle');
   const [templates, setTemplates] = useState<SavedTemplate[]>([]);
+  const [historyItems, setHistoryItems] = useState<AdHistoryItem[]>([]);
+  const [templateLibraryTab, setTemplateLibraryTab] = useState<'templates' | 'history'>('templates');
+  const [historySaveWarning, setHistorySaveWarning] = useState<string | null>(null);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const [templateDraftName, setTemplateDraftName] = useState('');
   const [creativeBrief, setCreativeBrief] = useState<CreativeBrief>(EMPTY_CREATIVE_BRIEF);
@@ -189,6 +195,12 @@ export default function App() {
     } catch (error) {
       console.error('Failed to load templates:', error);
     }
+  }, []);
+
+  useEffect(() => {
+    listAdHistory()
+      .then((items) => setHistoryItems(items as AdHistoryItem[]))
+      .catch((error) => console.error('Failed to load ad history:', error));
   }, []);
 
   useEffect(() => {
@@ -252,10 +264,10 @@ export default function App() {
     );
   };
 
-  const saveCurrentTemplate = (nameOverride?: string) => {
+  const createCurrentSnapshot = (nameOverride?: string): SavedTemplate => {
     const name = (nameOverride || templateDraftName || getCurrentDesignTitle()).trim();
 
-    const template: SavedTemplate = {
+    return {
       id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `template-${Date.now()}`,
       name,
       createdAt: Date.now(),
@@ -282,39 +294,109 @@ export default function App() {
         audioFileName,
       },
     };
+  };
+
+  const saveCurrentTemplate = (nameOverride?: string) => {
+    const template = createCurrentSnapshot(nameOverride);
 
     persistTemplates([template, ...templates]);
     setTemplateDraftName('');
     setSaveTemplateOpen(false);
   };
 
-  const loadTemplate = (template: SavedTemplate) => {
-    setElements(JSON.parse(JSON.stringify(template.elements)));
+  const hydrateStoredMedia = (template: SavedTemplate | AdHistoryItem): SavedTemplate => {
+    const historyTemplate = template as AdHistoryItem;
+    const settings = { ...template.settings };
+
+    if (historyTemplate.media?.introImage) settings.introImage = URL.createObjectURL(historyTemplate.media.introImage);
+    if (historyTemplate.media?.audio) settings.audioUrl = URL.createObjectURL(historyTemplate.media.audio);
+    if (historyTemplate.media?.brandLogo) settings.brandLogo = URL.createObjectURL(historyTemplate.media.brandLogo);
+    if (historyTemplate.media?.bgMedia && settings.bgMedia) {
+      settings.bgMedia = { ...settings.bgMedia, url: URL.createObjectURL(historyTemplate.media.bgMedia) };
+    }
+
+    return { ...template, settings };
+  };
+
+  const loadTemplate = (template: SavedTemplate | AdHistoryItem) => {
+    const hydratedTemplate = hydrateStoredMedia(template);
+    setElements(JSON.parse(JSON.stringify(hydratedTemplate.elements)));
     deselectAll();
-    setVisualizerColor(template.settings.visualizerColor);
-    setAccentColor(template.settings.accentColor);
-    setBgColor(template.settings.bgColor);
-    setPlatform(template.settings.platform);
-    setPlatformTheme(template.settings.platformTheme);
-    setBrandName(template.settings.brandName);
-    setBrandLogo(template.settings.brandLogo);
-    setSimulatedCaption(template.settings.simulatedCaption);
-    setAutoCta(template.settings.autoCta);
-    setBgMedia(template.settings.bgMedia);
-    setBgShadow(template.settings.bgShadow);
-    setBgShadowOpacity(template.settings.bgShadowOpacity);
-    setIntroImage(template.settings.introImage);
-    setIntroFileName(template.settings.introFileName);
-    setIntroDuration(template.settings.introDuration || 2);
-    setIntroFeedCropY(template.settings.introFeedCropY ?? 50);
-    setIntroImageAspect(template.settings.introImageAspect ?? null);
-    setAudioUrl(template.settings.audioUrl);
-    setAudioFileName(template.settings.audioFileName);
+    setVisualizerColor(hydratedTemplate.settings.visualizerColor);
+    setAccentColor(hydratedTemplate.settings.accentColor);
+    setBgColor(hydratedTemplate.settings.bgColor);
+    setPlatform(hydratedTemplate.settings.platform);
+    setPlatformTheme(hydratedTemplate.settings.platformTheme);
+    setBrandName(hydratedTemplate.settings.brandName);
+    setBrandLogo(hydratedTemplate.settings.brandLogo);
+    setSimulatedCaption(hydratedTemplate.settings.simulatedCaption);
+    setAutoCta(hydratedTemplate.settings.autoCta);
+    setBgMedia(hydratedTemplate.settings.bgMedia);
+    setBgShadow(hydratedTemplate.settings.bgShadow);
+    setBgShadowOpacity(hydratedTemplate.settings.bgShadowOpacity);
+    setIntroImage(hydratedTemplate.settings.introImage);
+    setIntroFileName(hydratedTemplate.settings.introFileName);
+    setIntroDuration(hydratedTemplate.settings.introDuration || 1);
+    setIntroFeedCropY(hydratedTemplate.settings.introFeedCropY ?? 50);
+    setIntroImageAspect(hydratedTemplate.settings.introImageAspect ?? null);
+    setAudioUrl(hydratedTemplate.settings.audioUrl);
+    setAudioFileName(hydratedTemplate.settings.audioFileName);
     requestAnimationFrame(() => commitHistory());
   };
 
   const deleteTemplate = (templateId: string) => {
     persistTemplates(templates.filter((template) => template.id !== templateId));
+  };
+
+  const captureMediaBlob = async (url: string | null | undefined, label: string, warnings: string[]) => {
+    if (!url) return undefined;
+
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      if (blob.size > 25 * 1024 * 1024) {
+        warnings.push(`${label} was too large to save locally.`);
+        return undefined;
+      }
+      return blob;
+    } catch (error) {
+      console.warn(`Could not save ${label} in history:`, error);
+      warnings.push(`${label} could not be saved locally.`);
+      return undefined;
+    }
+  };
+
+  const saveDownloadedAdToHistory = async (snapshot: SavedTemplate) => {
+    const warnings: string[] = [];
+    const media: AdHistoryItem['media'] = {};
+
+    media.introImage = await captureMediaBlob(snapshot.settings.introImage, 'Intro image', warnings);
+    media.audio = await captureMediaBlob(snapshot.settings.audioUrl, 'Audio', warnings);
+    media.brandLogo = await captureMediaBlob(snapshot.settings.brandLogo, 'Brand logo', warnings);
+    media.bgMedia = await captureMediaBlob(snapshot.settings.bgMedia?.url, 'Background media', warnings);
+
+    const historyItem: AdHistoryItem = {
+      ...snapshot,
+      id: `history-${snapshot.id}`,
+      createdAt: Date.now(),
+      media,
+      mediaWarnings: warnings,
+    };
+
+    try {
+      const nextItems = await saveAdHistoryItem(historyItem);
+      setHistoryItems(nextItems as AdHistoryItem[]);
+      setTemplateLibraryTab('history');
+      setHistorySaveWarning(warnings.length ? warnings.join(' ') : null);
+    } catch (error) {
+      console.error('Failed to save ad history:', error);
+      setHistorySaveWarning('Downloaded video, but browser history could not save this design.');
+    }
+  };
+
+  const deleteHistoryItem = async (historyId: string) => {
+    const nextItems = await deleteAdHistoryItem(historyId);
+    setHistoryItems(nextItems as AdHistoryItem[]);
   };
 
   useEffect(() => {
@@ -636,6 +718,7 @@ export default function App() {
   };
 
   const downloadSimulatedVideo = async () => {
+    const exportSnapshot = createCurrentSnapshot(getCurrentDesignTitle());
     setExportLaunchAnimation(true);
     window.setTimeout(() => setExportLaunchAnimation(false), 650);
     setRendering(true);
@@ -811,14 +894,8 @@ export default function App() {
         }
         
         const url = URL.createObjectURL(mp4Blob);
-        const filename = `rendered_video_${Date.now()}.mp4`;
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setExportDownload({ url, filename });
+        const filename = `agent-enamel-${Date.now()}.mp4`;
+        setExportDownload({ url, filename, snapshot: exportSnapshot });
         setExportPhase('complete');
         setRenderProgress(100);
       } catch (err) {
@@ -936,6 +1013,9 @@ export default function App() {
         }
         analyser.getByteFrequencyData(dataArray);
       }
+
+      const canvasWidth = canvas.width / scale;
+      const canvasHeight = canvas.height / scale;
 
       sortedElements.forEach(el => {
          ctx.save();
@@ -1508,6 +1588,9 @@ export default function App() {
     );
   };
 
+  const activeTemplateItems = templateLibraryTab === 'templates' ? templates : historyItems;
+  const activeTemplateCount = templateLibraryTab === 'templates' ? templates.length : historyItems.length;
+
   return (
     <div className="flex flex-col h-screen w-full bg-slate-50 font-sans text-slate-900">
       {/* Header */}
@@ -1719,7 +1802,7 @@ export default function App() {
                           <ImageIcon className="w-4 h-4 shrink-0 text-slate-400" />
                           <span className="min-w-0 flex-1 overflow-hidden">
                             <span className="block font-semibold text-slate-700">Intro image</span>
-                            <span className="block truncate text-xs text-slate-500">{introImage ? introFileName || `Shows first ${introDuration}s` : 'First 2 seconds, then fades out'}</span>
+                            <span className="block truncate text-xs text-slate-500">{introImage ? introFileName || `Shows first ${introDuration}s` : 'First second, then fades out'}</span>
                           </span>
                         </span>
                         <span className="shrink-0 text-xs font-semibold text-slate-400">
@@ -2030,7 +2113,7 @@ export default function App() {
           </div>
 
           {/* Main Preview Area */}
-          <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto">
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden px-4 py-3">
             
             <div className="w-full max-w-[420px] relative">
               <PlatformFrame
@@ -2134,7 +2217,7 @@ export default function App() {
             </div>
 
             {/* Toolbar */}
-            <div className="mt-8 flex flex-col items-center gap-2">
+            <div className="mt-4 flex flex-col items-center gap-2">
               <div className="flex flex-wrap justify-center gap-3">
                 <div className="flex flex-col items-center gap-2">
                   <button 
@@ -2179,7 +2262,7 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="mt-2 w-full max-w-[360px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+              <div className="mt-1 w-full max-w-[360px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Timeline</span>
                   <span className="text-xs font-semibold text-slate-500">
@@ -2215,23 +2298,45 @@ export default function App() {
             <div className="border-b border-slate-100 p-4">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Templates</h2>
-                  <p className="mt-1 text-xs leading-relaxed text-slate-500">Save reusable layouts, then reload and swap copy.</p>
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Design Library</h2>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-500">Templates plus your last 20 downloaded ads.</p>
                 </div>
-                <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-500">{templates.length}</span>
+                <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-500">{activeTemplateCount}</span>
               </div>
+              <div className="grid grid-cols-2 rounded-lg bg-slate-100 p-1">
+                {(['templates', 'history'] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setTemplateLibraryTab(tab)}
+                    className={`rounded-md px-2 py-1.5 text-xs font-bold transition ${templateLibraryTab === tab ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                  >
+                    {tab === 'templates' ? 'Templates' : 'My History'}
+                  </button>
+                ))}
+              </div>
+              {templateLibraryTab === 'history' && (
+                <p className="mt-3 text-[11px] leading-relaxed text-slate-400">History is saved on this device after you download an MP4.</p>
+              )}
+              {historySaveWarning && templateLibraryTab === 'history' && (
+                <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-800">{historySaveWarning}</p>
+              )}
             </div>
 
             <div className="flex-1 overflow-y-auto p-3">
-              {templates.length === 0 ? (
+              {activeTemplateItems.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 p-5 text-center">
                   <Database className="mb-3 h-5 w-5 text-slate-400" />
-                  <p className="text-sm font-bold text-slate-700">No templates yet</p>
-                  <p className="mt-1 text-xs leading-relaxed text-slate-500">When a layout works, save it here and reuse it for the next ad.</p>
+                  <p className="text-sm font-bold text-slate-700">{templateLibraryTab === 'templates' ? 'No templates yet' : 'No download history yet'}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                    {templateLibraryTab === 'templates'
+                      ? 'When a layout works, save it here and reuse it for the next ad.'
+                      : 'Downloaded ads will appear here so you can bring them back exactly.'}
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
-                  {templates.map((template) => (
+                  {activeTemplateItems.map((template) => (
                     <button
                       key={template.id}
                       type="button"
@@ -2250,16 +2355,16 @@ export default function App() {
                         tabIndex={0}
                         onClick={(event) => {
                           event.stopPropagation();
-                          deleteTemplate(template.id);
+                          templateLibraryTab === 'templates' ? deleteTemplate(template.id) : deleteHistoryItem(template.id);
                         }}
                         onKeyDown={(event) => {
                           if (event.key === 'Enter' || event.key === ' ') {
                             event.preventDefault();
                             event.stopPropagation();
-                            deleteTemplate(template.id);
+                            templateLibraryTab === 'templates' ? deleteTemplate(template.id) : deleteHistoryItem(template.id);
                           }
                         }}
-                        title="Delete template"
+                        title={templateLibraryTab === 'templates' ? 'Delete template' : 'Delete history item'}
                         className="absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-slate-400 opacity-0 shadow-sm transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
                       >
                         <X className="h-3.5 w-3.5" />
@@ -2331,6 +2436,7 @@ export default function App() {
                   <a
                     href={exportDownload.url}
                     download={exportDownload.filename}
+                    onClick={() => saveDownloadedAdToHistory(exportDownload.snapshot)}
                     className="mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
                   >
                     <Download className="h-4 w-4" />

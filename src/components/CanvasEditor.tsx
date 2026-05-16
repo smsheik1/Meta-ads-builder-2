@@ -523,6 +523,17 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             style={{ objectPosition: feedPlatform ? `50% ${introFeedCropY}%` : 'center' }}
             alt=""
           />
+          {showSafeZones && feedPlatform && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+              <div className="relative aspect-square w-full border border-white/85 bg-white/[0.035] shadow-[0_0_0_999px_rgba(15,23,42,0.22)]">
+                <div className="absolute inset-x-0 top-0 border-t border-dashed border-white/85" />
+                <div className="absolute inset-x-0 bottom-0 border-b border-dashed border-white/85" />
+                <span className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full bg-white/95 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-slate-900 shadow-sm">
+                  1:1 safe area
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
