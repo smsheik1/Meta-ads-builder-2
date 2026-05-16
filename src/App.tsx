@@ -1,14 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { PlatformFrame, type PlatformType } from './components/PlatformFrame';
+import { PlatformFrame, isFeedPlatform, isVerticalPlatform, type PlatformType } from './components/PlatformFrame';
 import { CanvasEditor } from './components/CanvasEditor';
 import { PropertiesPanel } from './components/PropertiesPanel';
-import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, ChevronDown, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus } from 'lucide-react';
+import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, ChevronDown, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList } from 'lucide-react';
 import Papa from 'papaparse';
 import { useEditorStore } from './store';
 import { drawAdvancedVisualizer } from './lib/visualizer';
 import { parseRichText, stripRichText, type RichTextRun } from './lib/rich-text';
+import { getRandomSeededHook } from './lib/headline-pool';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
+const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
+const DEFAULT_INTRO_IMAGE = '/default-intro-image.png';
+const DEFAULT_INTRO_IMAGE_NAME = 'Default intro image';
 
 const MOCK_CAPTIONS = [
   { text: "Are you missing calls?", start: 0, end: 2, speaker: 1 },
@@ -19,6 +23,82 @@ const MOCK_CAPTIONS = [
 
 type RenderDurationCap = 30 | 60 | 'full';
 type ExportPhase = 'recording' | 'converting' | 'complete' | 'error';
+type IntroDuration = 1 | 2 | 3;
+
+type CreativeBrief = {
+  offer: string;
+  buyer: string;
+  pain: string;
+  failedAlternatives: string;
+  promisedResult: string;
+  differentiator: string;
+  cta: string;
+  reference: string;
+};
+
+const EMPTY_CREATIVE_BRIEF: CreativeBrief = {
+  offer: 'AI front-desk employees that answer calls, recover missed calls, and book dental patients automatically.',
+  buyer: 'Dental practice owners with 1-5 locations who want more appointments without hiring more front desk staff.',
+  pain: 'They are losing new patients because calls go unanswered during busy hours, lunch, and after-hours.',
+  failedAlternatives: 'Hiring receptionists, outsourced call centers, more ads, reminder software, and generic automation tools.',
+  promisedResult: '20+ extra appointments per month without hiring additional front desk staff.',
+  differentiator: 'Our AI sounds human, handles follow-up automatically, and is built specifically for dental workflows and patient booking.',
+  cta: 'Book a demo.',
+  reference: `Most practices don't need more leads.
+
+They need to stop losing the ones already calling.
+
+3 missed calls a day could equal thousands in lost treatment revenue every month.`,
+};
+
+const CREATIVE_BRIEF_FIELDS: Array<{
+  key: keyof CreativeBrief;
+  question: string;
+  placeholder: string;
+  optional?: boolean;
+}> = [
+  {
+    key: 'offer',
+    question: 'What do you sell?',
+    placeholder: 'AI receptionist that answers and books dental patient calls.',
+  },
+  {
+    key: 'buyer',
+    question: 'Who buys it?',
+    placeholder: 'Dental practice owners with 1-5 locations.',
+  },
+  {
+    key: 'pain',
+    question: "What's the #1 pain?",
+    placeholder: 'They are losing new patients because calls go unanswered.',
+  },
+  {
+    key: 'failedAlternatives',
+    question: "What have they tried that didn't work?",
+    placeholder: 'Hiring receptionists, call centers, more ads, reminder software.',
+  },
+  {
+    key: 'promisedResult',
+    question: 'What result do you promise?',
+    placeholder: 'Book more patients 24/7 without hiring more front desk staff.',
+  },
+  {
+    key: 'differentiator',
+    question: 'Why you instead of competitors?',
+    placeholder: 'Sounds human, handles follow-up, and is built for dental workflows.',
+  },
+  {
+    key: 'cta',
+    question: "What's the CTA?",
+    placeholder: 'Book a demo.',
+  },
+  {
+    key: 'reference',
+    question: 'Reference URL or winning ad',
+    placeholder: 'Landing page URL, ad link, or notes from a top performer.',
+    optional: true,
+  },
+];
 
 type SavedTemplate = {
   id: string;
@@ -40,6 +120,9 @@ type SavedTemplate = {
     bgShadowOpacity: number;
     introImage: string | null;
     introFileName: string;
+    introDuration?: IntroDuration;
+    introFeedCropY?: number;
+    introImageAspect?: number | null;
     audioUrl: string | null;
     audioFileName: string;
   };
@@ -54,7 +137,7 @@ export default function App() {
   const [bgColor, setBgColor] = useState("#f5f5f5");
 
   // Platform Frame State
-  const [platform, setPlatform] = useState<PlatformType>('vertical');
+  const [platform, setPlatform] = useState<PlatformType>('reels');
   const [platformTheme, setPlatformTheme] = useState<'light' | 'dark'>('dark');
   const [brandName, setBrandName] = useState('Agent Enamel');
   const [brandLogo, setBrandLogo] = useState<string | null>(null);
@@ -65,8 +148,12 @@ export default function App() {
   const [bgMedia, setBgMedia] = useState<{url: string, type: string} | null>(null);
   const [bgShadow, setBgShadow] = useState(true);
   const [bgShadowOpacity, setBgShadowOpacity] = useState(0.38);
-  const [introImage, setIntroImage] = useState<string | null>(null);
-  const [introFileName, setIntroFileName] = useState<string>('');
+  const [introImage, setIntroImage] = useState<string | null>(DEFAULT_INTRO_IMAGE);
+  const [introFileName, setIntroFileName] = useState<string>(DEFAULT_INTRO_IMAGE_NAME);
+  const [introDuration, setIntroDuration] = useState<IntroDuration>(2);
+  const [introFeedCropY, setIntroFeedCropY] = useState(50);
+  const [introImageAspect, setIntroImageAspect] = useState<number | null>(941 / 1672);
+  const [introCropOpen, setIntroCropOpen] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>('/019e13bd-0b04-7dd0-95d6-dbcb36900e35-1778447713483-d2bb8e52-6c00-4439-a0e9-52f7e7a4a897-stereo (1).mp3');
   const [audioFileName, setAudioFileName] = useState<string>('019e13bd-0b04-7dd0-95d6-dbcb36900e35-1778447713483-d2bb8e52-6c00-4439-a0e9-52f7e7a4a897-stereo (1).mp3');
   
@@ -85,8 +172,11 @@ export default function App() {
   const [templates, setTemplates] = useState<SavedTemplate[]>([]);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const [templateDraftName, setTemplateDraftName] = useState('');
+  const [creativeBrief, setCreativeBrief] = useState<CreativeBrief>(EMPTY_CREATIVE_BRIEF);
+  const [creativeBriefOpen, setCreativeBriefOpen] = useState(false);
+  const [appTitle] = useState('Agent Enamel Studio');
 
-  const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, setElements, deselectAll, commitHistory, elements } = useEditorStore();
+  const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, setElements, deselectAll, commitHistory, setBusinessContext, elements } = useEditorStore();
   const hasComponent = (role: NonNullable<typeof elements[number]['componentRole']>) => elements.some((element) => element.componentRole === role);
   const hasSubheadline = hasComponent('subheadline');
 
@@ -100,6 +190,44 @@ export default function App() {
       console.error('Failed to load templates:', error);
     }
   }, []);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(CREATIVE_BRIEF_STORAGE_KEY);
+      if (saved) {
+        const parsedBrief = { ...EMPTY_CREATIVE_BRIEF, ...JSON.parse(saved) };
+        setCreativeBrief(parsedBrief);
+        setBusinessContext(serializeCreativeBrief(parsedBrief));
+      }
+    } catch (error) {
+      console.error('Failed to load creative brief:', error);
+    }
+  }, []);
+
+  const briefCompletion = CREATIVE_BRIEF_FIELDS.filter(field => !field.optional && creativeBrief[field.key].trim()).length;
+  const requiredBriefFields = CREATIVE_BRIEF_FIELDS.filter(field => !field.optional).length;
+
+  const serializeCreativeBrief = (brief: CreativeBrief) => [
+    `[Offer] ${brief.offer}`,
+    `[Buyer] ${brief.buyer}`,
+    `[Pain] ${brief.pain}`,
+    `[Failed Alternatives] ${brief.failedAlternatives}`,
+    `[Promised Result] ${brief.promisedResult}`,
+    `[Differentiator] ${brief.differentiator}`,
+    `[CTA] ${brief.cta}`,
+    brief.reference ? `[Reference] ${brief.reference}` : '',
+  ].filter(Boolean).join('\n');
+
+  const updateCreativeBrief = (key: keyof CreativeBrief, value: string) => {
+    const nextBrief = { ...creativeBrief, [key]: value };
+    setCreativeBrief(nextBrief);
+    setBusinessContext(serializeCreativeBrief(nextBrief));
+    try {
+      localStorage.setItem(CREATIVE_BRIEF_STORAGE_KEY, JSON.stringify(nextBrief));
+    } catch (error) {
+      console.error('Failed to save creative brief:', error);
+    }
+  };
 
   const persistTemplates = (nextTemplates: SavedTemplate[]) => {
     setTemplates(nextTemplates);
@@ -147,6 +275,9 @@ export default function App() {
         bgShadowOpacity,
         introImage,
         introFileName,
+        introDuration,
+        introFeedCropY,
+        introImageAspect,
         audioUrl,
         audioFileName,
       },
@@ -174,6 +305,9 @@ export default function App() {
     setBgShadowOpacity(template.settings.bgShadowOpacity);
     setIntroImage(template.settings.introImage);
     setIntroFileName(template.settings.introFileName);
+    setIntroDuration(template.settings.introDuration || 2);
+    setIntroFeedCropY(template.settings.introFeedCropY ?? 50);
+    setIntroImageAspect(template.settings.introImageAspect ?? null);
     setAudioUrl(template.settings.audioUrl);
     setAudioFileName(template.settings.audioFileName);
     requestAnimationFrame(() => commitHistory());
@@ -216,8 +350,14 @@ export default function App() {
   const handleIntroImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setIntroImage(URL.createObjectURL(file));
+    const objectUrl = URL.createObjectURL(file);
+    setIntroImage(objectUrl);
     setIntroFileName(file.name);
+    setIntroFeedCropY(50);
+    const img = new Image();
+    img.onload = () => setIntroImageAspect(img.naturalWidth / img.naturalHeight);
+    img.src = objectUrl;
+    setIntroCropOpen(true);
   };
 
   useEffect(() => {
@@ -389,7 +529,7 @@ export default function App() {
     addElement({
       type: 'text',
       componentRole: 'headline',
-      content: 'YOUR HEADLINE HERE',
+      content: getRandomSeededHook(),
       x: 20,
       y: 118,
       width: 320,
@@ -410,14 +550,15 @@ export default function App() {
       type: 'visualizer',
       componentRole: 'visualizer',
       x: 0,
-      y: 270,
+      y: 255,
       width: 360,
-      height: 120,
+      height: 90,
       rotation: 0,
       zIndex: 3,
       visualizerType: 'bars-center',
       barColor: visualizerColor,
       barCount: 16,
+      visualizerSensitivity: 1.5,
       visualizerSplitSpeakers: false,
     });
   };
@@ -428,9 +569,9 @@ export default function App() {
       type: 'caption',
       componentRole: 'captions',
       x: 20,
-      y: 400,
+      y: 350,
       width: 320,
-      height: 55,
+      height: 48,
       rotation: 0,
       zIndex: 4,
     });
@@ -505,7 +646,7 @@ export default function App() {
       return null;
     });
 
-    const isVertical = platform === 'vertical';
+    const isVertical = isVerticalPlatform(platform);
     const targetWidth = 1080;
     const targetHeight = isVertical ? 1920 : 1350;
     
@@ -798,10 +939,17 @@ export default function App() {
 
       sortedElements.forEach(el => {
          ctx.save();
+         const rawElW = typeof el.width === 'number' ? el.width : 200;
+         const rawElH = typeof el.height === 'number' ? el.height : 50;
+         const feedSafeSquareTop = isFeedPlatform(platform) ? Math.max(0, (canvasHeight - canvasWidth) / 2) : 0;
+         const feedSafeSquareBottom = feedSafeSquareTop + canvasWidth;
+         const rawElY = isFeedPlatform(platform) && el.type === 'caption'
+           ? Math.min(el.y, feedSafeSquareBottom - rawElH - 8)
+           : el.y;
          const elX = el.x * scale;
-         const elY = el.y * scale;
-         const elW = (typeof el.width === 'number' ? el.width : 200) * scale;
-         const elH = (typeof el.height === 'number' ? el.height : 50) * scale;
+         const elY = rawElY * scale;
+         const elW = rawElW * scale;
+         const elH = rawElH * scale;
          
          ctx.translate(elX, elY);
          if (el.rotation) {
@@ -1102,7 +1250,12 @@ export default function App() {
                  let val = 0;
                  if (analyser && dataArray) {
                      const dataBins = Math.floor(dataArray.length * 0.4);
-                     const dataIdx = 1 + Math.floor((idx / Math.max(1, total - 1)) * dataBins);
+                     const center = (total - 1) / 2;
+                     const centerDistance = Math.abs(idx - center);
+                     const normalizedIndex = type === 'bars-center' && !el.visualizerSplitSpeakers
+                       ? centerDistance / Math.max(1, center)
+                       : idx / Math.max(1, total - 1);
+                     const dataIdx = 1 + Math.floor(normalizedIndex * dataBins);
                      val = Math.min((dataArray[Math.min(dataIdx, dataArray.length-1)] / 255.0) * sensitivityMultiplier, 1.0); 
                      val = Math.pow(val, 1.5); // non-linear scaling for better visuals
                  } else {
@@ -1175,7 +1328,6 @@ export default function App() {
       });
 
       if (introImgEl) {
-        const introDuration = 2;
         const introFadeDuration = 0.65;
         let introOpacity = 0;
         if (currentTimeSec < introDuration) {
@@ -1187,16 +1339,39 @@ export default function App() {
         if (introOpacity > 0) {
           const imgRatio = introImgEl.width / introImgEl.height;
           const canvasRatio = canvas.width / canvas.height;
+          let coverWidth = canvas.width;
+          let coverHeight = canvas.height;
+          if (imgRatio > canvasRatio) {
+            coverWidth = canvas.height * imgRatio;
+          } else {
+            coverHeight = canvas.width / imgRatio;
+          }
+          const coverX = (canvas.width - coverWidth) / 2;
+          const coverY = (canvas.height - coverHeight) / 2;
+
           let dWidth = canvas.width;
           let dHeight = canvas.height;
-          if (imgRatio > canvasRatio) {
-            dWidth = canvas.height * imgRatio;
+          if (isFeedPlatform(platform) && !introIsSquareish) {
+            if (imgRatio > canvasRatio) {
+              dWidth = canvas.height * imgRatio;
+            } else {
+              dHeight = canvas.width / imgRatio;
+            }
           } else {
-            dHeight = canvas.width / imgRatio;
+            if (imgRatio > canvasRatio) {
+              dHeight = canvas.width / imgRatio;
+            } else {
+              dWidth = canvas.height * imgRatio;
+            }
           }
           const dx = (canvas.width - dWidth) / 2;
-          const dy = (canvas.height - dHeight) / 2;
+          const dy = isFeedPlatform(platform) && !introIsSquareish ? (canvas.height - dHeight) * (introFeedCropY / 100) : (canvas.height - dHeight) / 2;
           ctx.save();
+          ctx.globalAlpha = introOpacity;
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.globalAlpha = introOpacity * 0.65;
+          ctx.drawImage(introImgEl, coverX, coverY, coverWidth, coverHeight);
           ctx.globalAlpha = introOpacity;
           ctx.drawImage(introImgEl, dx, dy, dWidth, dHeight);
           ctx.restore();
@@ -1315,6 +1490,12 @@ export default function App() {
     );
   };
 
+  const selectedTimelineDuration = renderDurationCap === 'full' ? 30 : renderDurationCap;
+  const introTimelineSeconds = introImage ? introDuration : 0;
+  const mainTimelineSeconds = Math.max(1, selectedTimelineDuration - introTimelineSeconds);
+  const introTimelineWidth = introTimelineSeconds > 0 ? `${Math.max(10, (introTimelineSeconds / selectedTimelineDuration) * 100)}%` : '0%';
+  const introIsSquareish = introImageAspect !== null && introImageAspect >= 0.9 && introImageAspect <= 1.1;
+
   const getTemplateTitle = (template: SavedTemplate) => {
     const headline = template.elements.find(element => element.componentRole === 'headline' || element.type === 'text');
     const subheadline = template.elements.find(element => element.componentRole === 'subheadline');
@@ -1332,9 +1513,9 @@ export default function App() {
       {/* Header */}
       <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-slate-900 rounded flex items-center justify-center text-white font-bold">V</div>
+          <img src="/logo.png" alt="Agent Enamel" className="h-8 w-8 rounded-md object-cover shadow-sm" />
           <h1 className="text-lg font-semibold tracking-tight">
-            Visualizer Ads <span className="text-slate-400 font-normal">Studio</span>
+            {appTitle}
           </h1>
         </div>
         
@@ -1452,8 +1633,8 @@ export default function App() {
                 </div>
 
                 <div className="mt-4 space-y-2">
-                  <div className="flex gap-2">
-                    <div className="relative group flex-1">
+                  <div className="flex min-w-0 gap-2">
+                    <div className="relative group min-w-0 flex-1">
                       <input 
                         type="file" 
                         accept="image/*,video/*" 
@@ -1533,15 +1714,15 @@ export default function App() {
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                         title="Upload intro image"
                       />
-                      <div className="w-full h-full flex items-center justify-between px-3 py-3 text-sm border border-dashed border-slate-300 rounded-lg text-slate-600 group-hover:bg-slate-50 bg-white transition-colors">
-                        <span className="flex min-w-0 items-center gap-2">
+                      <div className="w-full h-full flex min-w-0 items-center justify-between gap-2 px-3 py-3 text-sm border border-dashed border-slate-300 rounded-lg text-slate-600 group-hover:bg-slate-50 bg-white transition-colors">
+                        <span className="flex min-w-0 flex-1 items-center gap-2">
                           <ImageIcon className="w-4 h-4 shrink-0 text-slate-400" />
-                          <span className="min-w-0">
+                          <span className="min-w-0 flex-1 overflow-hidden">
                             <span className="block font-semibold text-slate-700">Intro image</span>
-                            <span className="block truncate text-xs text-slate-500">{introImage ? introFileName || 'Shows first 2 seconds' : 'First 2 seconds, then fades out'}</span>
+                            <span className="block truncate text-xs text-slate-500">{introImage ? introFileName || `Shows first ${introDuration}s` : 'First 2 seconds, then fades out'}</span>
                           </span>
                         </span>
-                        <span className="text-xs font-semibold text-slate-400">
+                        <span className="shrink-0 text-xs font-semibold text-slate-400">
                           {introImage ? "Loaded" : "Upload"}
                         </span>
                       </div>
@@ -1559,6 +1740,38 @@ export default function App() {
                       </button>
                     )}
                   </div>
+
+                  {introImage && (
+                    <div className="rounded-lg border border-slate-200 bg-white p-2.5">
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-xs font-semibold text-slate-600">Intro duration</span>
+                        <span className="text-xs font-semibold text-slate-400">{introDuration}s then fade</span>
+                      </div>
+                      <div className="grid grid-cols-3 rounded-md bg-slate-100 p-1">
+                        {([1, 2, 3] as const).map((duration) => (
+                          <button
+                            key={duration}
+                            type="button"
+                            onClick={() => setIntroDuration(duration)}
+                            className={`rounded px-2 py-1.5 text-xs font-bold transition ${
+                              introDuration === duration
+                                ? 'bg-white text-indigo-600 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-800'
+                            }`}
+                          >
+                            {duration}s
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIntroCropOpen(true)}
+                        className="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs font-bold text-slate-600 transition hover:bg-white hover:text-slate-900"
+                      >
+                        Check feed crop
+                      </button>
+                    </div>
+                  )}
 
                   <div className="flex gap-2">
                     <div className="relative group flex-1">
@@ -1606,22 +1819,25 @@ export default function App() {
                 
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setPlatform('vertical')}
-                      className={`rounded-lg border px-3 py-2 text-left transition-colors ${platform === 'vertical' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'}`}
-                    >
-                      <span className="block text-sm font-semibold">Reels</span>
-                      <span className={`block text-xs ${platform === 'vertical' ? 'text-white/70' : 'text-slate-500'}`}>9:16</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPlatform('feed')}
-                      className={`rounded-lg border px-3 py-2 text-left transition-colors ${platform === 'feed' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'}`}
-                    >
-                      <span className="block text-sm font-semibold">Facebook Feed</span>
-                      <span className={`block text-xs ${platform === 'feed' ? 'text-white/70' : 'text-slate-500'}`}>4:5</span>
-                    </button>
+                    {([
+                      { id: 'facebook-feed', label: 'FB Feed', ratio: '4:5' },
+                      { id: 'instagram-feed', label: 'IG Feed', ratio: '4:5' },
+                      { id: 'reels', label: 'Reels', ratio: '9:16' },
+                      { id: 'stories', label: 'Stories', ratio: '9:16' },
+                    ] as const).map((option) => {
+                      const active = platform === option.id || (platform === 'feed' && option.id === 'facebook-feed') || (platform === 'vertical' && option.id === 'reels');
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => setPlatform(option.id)}
+                          className={`rounded-lg border px-3 py-2 text-left transition-colors ${active ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'}`}
+                        >
+                          <span className="block text-sm font-semibold">{option.label}</span>
+                          <span className={`block text-xs ${active ? 'text-white/70' : 'text-slate-500'}`}>{option.ratio}</span>
+                        </button>
+                      );
+                    })}
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
@@ -1832,6 +2048,10 @@ export default function App() {
                   bgShadow={bgShadow}
                   bgShadowOpacity={bgShadowOpacity}
                   introImage={introImage}
+                  introDuration={introDuration}
+                  introFeedCropY={introFeedCropY}
+                  introImageAspect={introImageAspect}
+                  previewDurationCap={renderDurationCap === 'full' ? null : renderDurationCap}
                   audioUrl={audioUrl}
                   accentColor={accentColor}
                   playing={playing}
@@ -1842,7 +2062,7 @@ export default function App() {
               {/* Cycle Platform Button */}
               <button 
                 onClick={() => {
-                  const platforms: PlatformType[] = ['vertical', 'feed'];
+                  const platforms: PlatformType[] = ['facebook-feed', 'instagram-feed', 'reels', 'stories'];
                   const currentIndex = platforms.indexOf(platform);
                   const nextIndex = (currentIndex + 1) % platforms.length;
                   setPlatform(platforms[nextIndex]);
@@ -1899,6 +2119,18 @@ export default function App() {
                   </button>
                 </div>
               )}
+
+              <button
+                type="button"
+                onClick={() => setCreativeBriefOpen(true)}
+                className="absolute -right-14 top-[12%] z-20 hidden h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-lg transition hover:text-slate-900 hover:shadow-xl sm:flex"
+                title="Open Creative Brief"
+              >
+                <ClipboardList className="h-4 w-4" />
+                <span className="absolute -right-1 -top-1 rounded-full bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                  {briefCompletion}/{requiredBriefFields}
+                </span>
+              </button>
             </div>
 
             {/* Toolbar */}
@@ -1945,6 +2177,34 @@ export default function App() {
                     <><Play className="w-4 h-4 text-indigo-400 fill-current" /> Play Preview</>
                   )}
                 </button>
+              </div>
+
+              <div className="mt-2 w-full max-w-[360px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Timeline</span>
+                  <span className="text-xs font-semibold text-slate-500">
+                    {renderDurationCap === 'full' ? 'Full audio' : `${selectedTimelineDuration}s`}
+                  </span>
+                </div>
+                <div className="flex h-8 overflow-hidden rounded-lg bg-slate-100">
+                  {introImage && (
+                    <div
+                      className="flex min-w-[46px] items-center justify-center border-r border-white bg-indigo-500 text-[10px] font-bold text-white"
+                      style={{ width: introTimelineWidth }}
+                      title={`Intro image: ${introDuration}s`}
+                    >
+                      Intro {introDuration}s
+                    </div>
+                  )}
+                  <div className="flex flex-1 items-center justify-center bg-slate-900 text-[10px] font-bold text-white">
+                    Visualizer {mainTimelineSeconds}s
+                  </div>
+                </div>
+                <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400">
+                  <span>0s</span>
+                  {introImage && <span>Fade after {introDuration}s</span>}
+                  <span>{renderDurationCap === 'full' ? 'End' : `${selectedTimelineDuration}s`}</span>
+                </div>
               </div>
             </div>
             
@@ -2081,6 +2341,157 @@ export default function App() {
             </div>
           </div>
         )}
-    </div>
-  );
-}
+
+        {introCropOpen && introImage && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-4xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+              <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Check Intro Crop</h2>
+                  <p className="mt-1 text-sm text-slate-500">Keep important text, faces, and CTA inside the 1:1 safe area for feed.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIntroCropOpen(false)}
+                  className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="grid gap-5 p-5 md:grid-cols-[1fr_260px]">
+                <div>
+                  <div className="mx-auto aspect-[4/5] max-h-[58vh] overflow-hidden rounded-xl border border-slate-200 bg-black shadow-inner">
+                    <div className="relative h-full w-full overflow-hidden bg-black">
+                      <div
+                        className="absolute inset-0 scale-110 bg-cover bg-center blur-xl opacity-60"
+                        style={{
+                          backgroundImage: `url(${introImage})`,
+                          backgroundPosition: introIsSquareish ? 'center' : `50% ${introFeedCropY}%`,
+                        }}
+                      />
+                      <img
+                        src={introImage}
+                        alt=""
+                        className={`absolute inset-0 h-full w-full ${introIsSquareish ? 'object-contain' : 'object-cover'}`}
+                        style={{ objectPosition: introIsSquareish ? 'center' : `50% ${introFeedCropY}%` }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="relative aspect-square w-full border-2 border-white/80 bg-white/[0.035] shadow-[0_0_0_999px_rgba(15,23,42,0.18)]">
+                          <span className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-slate-900 shadow">
+                            1:1 safe area
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-sm font-bold text-slate-700">{introIsSquareish ? 'Feed-safe square fit' : 'Feed vertical crop'}</span>
+                      <span className="text-xs font-bold text-slate-400">{introIsSquareish ? '1:1' : `${introFeedCropY}%`}</span>
+                    </div>
+                    {introIsSquareish ? (
+                      <p className="text-xs leading-relaxed text-slate-500">This image is already square, so it is fitted into the 1:1 safe area. There is no vertical crop to adjust.</p>
+                    ) : (
+                      <>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          step="1"
+                          value={introFeedCropY}
+                          onChange={(event) => setIntroFeedCropY(Number(event.target.value))}
+                          className="w-full cursor-pointer"
+                        />
+                        <div className="mt-1 flex justify-between text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                          <span>Top</span>
+                          <span>Center</span>
+                          <span>Bottom</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Stories / Reels</p>
+                    <div className="mt-2 aspect-[9/16] overflow-hidden rounded-lg border border-slate-200 bg-black">
+                      <img src={introImage} alt="" className="h-full w-full object-contain" />
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-relaxed text-amber-900">
+                    If the core message cannot fit inside the square, recreate a feed-safe intro image instead of forcing the crop.
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIntroCropOpen(false)}
+                    className="mt-auto rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800"
+                  >
+                    Use This Crop
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {creativeBriefOpen && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
+            <div className="max-h-[86vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+              <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Creative Brief</h2>
+                  <p className="mt-1 text-sm text-slate-500">Answer once. Future ad variations use this as strategy context.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+                    {briefCompletion}/{requiredBriefFields}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setCreativeBriefOpen(false)}
+                    className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid max-h-[64vh] gap-4 overflow-y-auto p-5 md:grid-cols-2">
+                {CREATIVE_BRIEF_FIELDS.map((field) => (
+                  <label key={field.key} className={field.key === 'reference' ? 'block space-y-1.5 md:col-span-2' : 'block space-y-1.5'}>
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-semibold text-slate-800">{field.question}</span>
+                      {field.optional && <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Optional</span>}
+                    </span>
+                    <textarea
+                      value={creativeBrief[field.key]}
+                      onChange={(event) => updateCreativeBrief(field.key, event.target.value)}
+                      rows={field.key === 'reference' ? 3 : 2}
+                      placeholder={field.placeholder}
+                      className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10"
+                    />
+                  </label>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 px-5 py-4">
+                <p className="text-xs text-slate-500">This saves automatically in this browser.</p>
+                <button
+                  type="button"
+                  onClick={() => setCreativeBriefOpen(false)}
+                  className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }

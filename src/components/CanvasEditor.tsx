@@ -8,6 +8,7 @@ import { drawAdvancedVisualizer } from '../lib/visualizer';
 import { HeadlineSlot } from './HeadlineSlot';
 import { AutoFitText } from './AutoFitText';
 import { sanitizeRichText, stripRichText } from '../lib/rich-text';
+import { isFeedPlatform, isVerticalPlatform, type PlatformType } from './PlatformFrame';
 
 const TransparentImage = ({ src, className, removeWhite }: { src: string, className: string, removeWhite?: boolean }) => {
   const [dataUrl, setDataUrl] = useState(src);
@@ -50,7 +51,7 @@ const TransparentImage = ({ src, className, removeWhite }: { src: string, classN
 };
 
 interface CanvasEditorProps {
-  platform: 'vertical' | 'feed';
+  platform: PlatformType;
   audioUrl: string | null;
   playing: boolean;
   onPlaybackComplete?: () => void;
@@ -60,6 +61,10 @@ interface CanvasEditorProps {
   bgShadow: boolean;
   bgShadowOpacity: number;
   introImage: string | null;
+  introDuration: 1 | 2 | 3;
+  introFeedCropY: number;
+  introImageAspect: number | null;
+  previewDurationCap: number | null;
 }
 
 const MOCK_CAPTIONS = [
@@ -69,10 +74,12 @@ const MOCK_CAPTIONS = [
   { text: "Never miss a lead again.", start: 7, end: 9, speaker: 2 },
 ];
 
-export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage }) => {
+export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap }) => {
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
+  const feedPlatform = isFeedPlatform(platform);
+  const verticalPlatform = isVerticalPlatform(platform);
   
   const [targets, setTargets] = useState<Array<HTMLElement | SVGElement>>([]);
 
@@ -156,7 +163,6 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   const [currentSpeaker, setCurrentSpeaker] = useState<number>(1);
   const [editingId, setEditingId] = useState<string | null>(null);
   const editingRef = useRef<HTMLDivElement | null>(null);
-  const [editingFontSize, setEditingFontSize] = useState<number>(24);
   const [playbackTime, setPlaybackTime] = useState(0);
 
   useEffect(() => {
@@ -213,7 +219,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
               high = mid - 1;
             }
           }
-          setEditingFontSize(best);
+          editor.style.fontSize = `${best}px`;
         }
       }
       editor.focus();
@@ -249,6 +255,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       if (audioContextRef.current?.state === 'suspended') {
         audioContextRef.current.resume();
       }
+      audioRef.current.currentTime = 0;
       audioRef.current.play().catch(console.error);
       animateVisualizer();
     } else {
@@ -282,6 +289,11 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       
       const currentTime = audioRef.current?.currentTime || 0;
       setPlaybackTime(currentTime);
+      if (previewDurationCap && currentTime >= previewDurationCap) {
+        audioRef.current?.pause();
+        onPlaybackComplete?.();
+        return;
+      }
       const activeCaps = state.captions.length > 0 ? state.captions : MOCK_CAPTIONS;
       const activeCaptionIndex = activeCaps.findIndex(c => currentTime >= c.start && currentTime <= c.end);
       const activeCaption = activeCaptionIndex >= 0 ? activeCaps[activeCaptionIndex] : undefined;
@@ -352,8 +364,13 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
               // Space out the indices so it looks good visually
               const sideIndex = isLeftSpeakerSide ? index : index - halfCount;
               const sideTotal = isLeftSpeakerSide ? halfCount : barsRef.current[vId].length - halfCount;
+              const center = (barsRef.current[vId].length - 1) / 2;
+              const centerDistance = Math.abs(index - center);
+              const centerTotal = Math.max(1, center);
               const normalizedIndex = el.visualizerSplitSpeakers
                 ? sideIndex / Math.max(1, sideTotal - 1)
+                : type === 'bars-center'
+                  ? centerDistance / centerTotal
                 : index / Math.max(1, barsRef.current[vId].length - 1);
               const dataIndex = 1 + Math.floor(normalizedIndex * dataBins);
               let value = (dataArray[Math.min(dataIndex, bufferLength - 1)] / 255) * sensitivityMultiplier;
@@ -428,7 +445,6 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
     showSafeZones ? dimensions.h * 0.65 : -1
   ].filter(v => v >= 0) : [];
 
-  const introDuration = 2;
   const introFadeDuration = 0.65;
   const introOpacity = introImage && playing
     ? playbackTime < introDuration
@@ -437,6 +453,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         ? 1 - ((playbackTime - introDuration) / introFadeDuration)
         : 0
     : 0;
+  const introIsSquareish = introImageAspect !== null && introImageAspect >= 0.9 && introImageAspect <= 1.1;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -489,12 +506,24 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       )}
 
       {introImage && introOpacity > 0 && (
-        <img
-          src={introImage}
-          className="absolute inset-0 z-50 h-full w-full object-cover pointer-events-none"
+        <div
+          className="absolute inset-0 z-50 overflow-hidden bg-black pointer-events-none"
           style={{ opacity: introOpacity }}
-          alt=""
-        />
+        >
+          <div
+            className="absolute inset-0 scale-110 bg-cover bg-center blur-xl opacity-70"
+            style={{
+              backgroundImage: `url(${introImage})`,
+              backgroundPosition: feedPlatform ? `50% ${introFeedCropY}%` : 'center',
+            }}
+          />
+          <img
+            src={introImage}
+            className={`relative z-10 h-full w-full ${feedPlatform && !introIsSquareish ? 'object-cover object-top' : 'object-contain'}`}
+            style={{ objectPosition: feedPlatform ? `50% ${introFeedCropY}%` : 'center' }}
+            alt=""
+          />
+        </div>
       )}
 
       <audio 
@@ -503,7 +532,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         onEnded={onPlaybackComplete}
       />
 
-      {showRedGuides && platform === 'vertical' && (
+      {showRedGuides && verticalPlatform && (
          <>
            <div className="absolute top-0 left-0 right-0 h-[14%] border-b-2 border-red-500/50 border-dashed pointer-events-none z-10 flex items-end justify-center pb-2 bg-red-500/5">
              <span className="text-[10px] font-bold text-red-500/70 uppercase text-center px-4">Avoid placing content here &mdash; covered by platform UI</span>
@@ -512,6 +541,18 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
              <span className="text-[10px] font-bold text-red-500/70 uppercase text-center px-4">Avoid placing content here &mdash; covered by platform UI</span>
            </div>
          </>
+      )}
+
+      {showSafeZones && feedPlatform && (
+        <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
+          <div className="relative aspect-square w-full border border-indigo-500/45 bg-indigo-500/[0.035] shadow-[0_0_0_999px_rgba(15,23,42,0.08)]">
+            <div className="absolute inset-x-0 top-0 border-t border-dashed border-indigo-500/55" />
+            <div className="absolute inset-x-0 bottom-0 border-b border-dashed border-indigo-500/55" />
+            <span className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full bg-white/90 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-indigo-600 shadow-sm">
+              1:1 safe area
+            </span>
+          </div>
+        </div>
       )}
 
       <Selecto
@@ -699,6 +740,12 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       />
 
       {elements.map((el) => {
+        const feedSafeSquareTop = feedPlatform ? Math.max(0, (dimensions.h - dimensions.w) / 2) : 0;
+        const feedSafeSquareBottom = feedSafeSquareTop + dimensions.w;
+        const displayY = feedPlatform && el.type === 'caption' && dimensions.w > 0
+          ? Math.min(el.y, feedSafeSquareBottom - Number(el.height) - 8)
+          : el.y;
+
         return (
           <div
             key={el.id}
@@ -722,7 +769,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             }}
             style={{ 
               left: el.x, 
-              top: el.y, 
+              top: displayY, 
               width: el.width, 
               height: el.height, 
               transform: `rotate(${el.rotation || 0}deg)`,
@@ -757,7 +804,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                       fontWeight: el.fontWeight,
                       fontStyle: el.fontStyle,
                       textDecoration: el.textDecoration,
-                      fontSize: `${editingFontSize}px`,
+                      fontSize: `${el.fontSize}px`,
                       lineHeight: el.lineHeight || 1.12,
                       textAlign: el.textAlign || 'center',
                     }}

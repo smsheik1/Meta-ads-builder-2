@@ -19,3 +19,8 @@ export function getSeededHooks(niche: string) {
   if (niche === 'dental') return SEEDED_DENTAL_HOOKS;
   return SEEDED_DENTAL_HOOKS;
 }
+
+export function getRandomSeededHook(niche = 'dental') {
+  const hooks = getSeededHooks(niche);
+  return hooks[Math.floor(Math.random() * hooks.length)]?.text || SEEDED_DENTAL_HOOKS[0].text;
+}
