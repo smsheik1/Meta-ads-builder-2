@@ -52,7 +52,7 @@ export function PlatformFrame({
   );
 
   const getContainerSize = () => {
-    return 'w-[360px] h-[720px]'; // Device frame size
+    return 'w-[min(360px,calc((100vh-360px)*0.5))] min-w-[280px] aspect-[1/2]';
   };
 
   const feedPlatform = isFeedPlatform(platform);
@@ -71,7 +71,7 @@ export function PlatformFrame({
         {/* The actual rendered AD */}
         <div className={cn(
           "absolute z-0 pointer-events-auto",
-          feedPlatform ? "top-[60px] left-0 right-0 h-[450px]" : "inset-0",
+          feedPlatform ? "top-[8.33%] left-0 right-0 h-[62.5%]" : "inset-0",
           "flex items-center justify-center overflow-hidden bg-slate-900"
         )}>
            <div className={cn("w-full h-full max-w-full max-h-full mx-auto relative", adContainerAspect)}>
