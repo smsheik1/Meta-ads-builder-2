@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Heart, MessageCircle, Send, MoreHorizontal, User, VolumeX, Battery, Wifi, Signal, ChevronUp, ThumbsUp, Share2, Globe2, Bookmark } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -51,9 +51,19 @@ export function PlatformFrame({
     isDark ? "bg-black border-slate-800 text-white" : "bg-white border-slate-200 text-black"
   );
 
-  const getContainerSize = () => {
-    return 'w-[min(360px,calc((100vh-360px)*0.5))] min-w-[280px] aspect-[1/2]';
-  };
+  const [frameScale, setFrameScale] = useState(1);
+
+  useEffect(() => {
+    const updateScale = () => {
+      const availableHeight = window.innerHeight - 360;
+      const nextScale = Math.min(1, Math.max(0.78, (availableHeight * 0.5) / 360));
+      setFrameScale(Number.isFinite(nextScale) ? nextScale : 1);
+    };
+
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
 
   const feedPlatform = isFeedPlatform(platform);
   const instagramFeed = platform === 'instagram-feed';
@@ -63,7 +73,14 @@ export function PlatformFrame({
   const adContainerAspect = verticalPlatform ? 'aspect-[9/16]' : 'aspect-[4/5]';
 
   return (
-    <div className={cn(frameClasses, getContainerSize(), "flex flex-col")}>
+    <div
+      className="relative mx-auto"
+      style={{ width: 360 * frameScale, height: 720 * frameScale }}
+    >
+    <div
+      className={cn(frameClasses, "flex h-[720px] w-[360px] origin-top-left flex-col")}
+      style={{ transform: `scale(${frameScale})` }}
+    >
       
       {/* Frame Content */}
       <div className="flex-1 relative flex flex-col overflow-hidden">
@@ -288,6 +305,7 @@ export function PlatformFrame({
         )}
 
       </div>
+    </div>
     </div>
   );
 }
