@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { PlatformFrame, isFeedPlatform, isVerticalPlatform, type PlatformType } from './components/PlatformFrame';
 import { CanvasEditor } from './components/CanvasEditor';
 import { PropertiesPanel } from './components/PropertiesPanel';
-import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, ChevronDown, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList } from 'lucide-react';
+import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, ChevronDown, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList, ArrowRight, Wand2 } from 'lucide-react';
 import Papa from 'papaparse';
 import { useEditorStore } from './store';
 import { drawAdvancedVisualizer } from './lib/visualizer';
@@ -12,6 +12,7 @@ import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSna
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
+const STUDIO_SEEN_STORAGE_KEY = 'agent_enamel_studio_seen_v1';
 const DEFAULT_INTRO_IMAGE = '/default-intro-image.png';
 const DEFAULT_INTRO_IMAGE_NAME = 'Default intro image';
 
@@ -131,7 +132,48 @@ type SavedTemplate = {
 
 type AdHistoryItem = SavedTemplate & StoredAdSnapshot;
 
+const HomeAdCard = ({
+  headline,
+  accent = '#4F46E5',
+  background = '#10F5B1',
+  dark = false,
+}: {
+  headline: string;
+  accent?: string;
+  background?: string;
+  dark?: boolean;
+}) => (
+  <div
+    className={`relative aspect-[9/16] overflow-hidden rounded-2xl border p-5 shadow-sm ${dark ? 'border-slate-800 text-white' : 'border-slate-200 text-slate-950'}`}
+    style={{ background }}
+  >
+    <div className="mx-auto mb-8 h-2 w-10 rounded-full opacity-70" style={{ backgroundColor: accent }} />
+    <p className="mx-auto max-w-[190px] text-center text-2xl font-black leading-[0.9] tracking-normal">{headline}</p>
+    <div className="absolute inset-x-6 top-[52%] flex h-12 items-center justify-center gap-1">
+      {Array.from({ length: 18 }).map((_, index) => (
+        <span
+          key={index}
+          className="w-2 rounded-full"
+          style={{
+            height: `${18 + ((index * 13) % 48)}px`,
+            backgroundColor: index % 5 === 0 ? accent : '#00FFCC',
+          }}
+        />
+      ))}
+    </div>
+    <div className="absolute bottom-[24%] left-1/2 h-2 w-24 -translate-x-1/2 rounded-full" style={{ backgroundColor: accent }} />
+    <div className="absolute bottom-5 left-5 right-5 h-10 rounded-full bg-white/90" />
+  </div>
+);
+
 export default function App() {
+  const [showHomepage, setShowHomepage] = useState(() => {
+    try {
+      return localStorage.getItem(STUDIO_SEEN_STORAGE_KEY) !== '1';
+    } catch {
+      return true;
+    }
+  });
   const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single');
   
   // Single Template State
@@ -1590,6 +1632,94 @@ export default function App() {
 
   const activeTemplateItems = templateLibraryTab === 'templates' ? templates : historyItems;
   const activeTemplateCount = templateLibraryTab === 'templates' ? templates.length : historyItems.length;
+
+  const enterStudio = () => {
+    try {
+      localStorage.setItem(STUDIO_SEEN_STORAGE_KEY, '1');
+    } catch {
+      // Ignore private browsing storage failures.
+    }
+    setShowHomepage(false);
+  };
+
+  if (showHomepage) {
+    return (
+      <div className="min-h-screen bg-[#F6F8FB] font-sans text-slate-950">
+        <header className="flex h-20 items-center justify-between border-b border-slate-200 bg-white px-6 md:px-10">
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="Agent Enamel" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
+            <div>
+              <p className="text-lg font-black leading-tight">Agent Enamel Studio</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Voice AI ad builder</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={enterStudio}
+            className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800"
+          >
+            Open Studio
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </header>
+
+        <main className="mx-auto grid min-h-[calc(100vh-80px)] max-w-7xl items-center gap-10 px-6 py-10 md:grid-cols-[0.9fr_1.1fr] md:px-10">
+          <section className="max-w-xl">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-500 shadow-sm">
+              <AudioLines className="h-4 w-4 text-[#00FFCC]" />
+              Visualizer ads for voice AI agencies
+            </div>
+            <h1 className="text-5xl font-black leading-[0.95] tracking-normal text-slate-950 md:text-7xl">
+              Turn voice AI offers into scroll-stopping ad creatives.
+            </h1>
+            <p className="mt-6 max-w-lg text-lg font-medium leading-8 text-slate-600">
+              Build branded Meta ads with bold hooks, intro cards, voiceover audio, waveform visuals, and export-ready layouts without opening a video editor.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={enterStudio}
+                className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800"
+              >
+                Create an ad
+                <Wand2 className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={enterStudio}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300"
+              >
+                Explore templates
+              </button>
+            </div>
+          </section>
+
+          <section className="relative min-h-[560px]">
+            <div className="absolute left-[8%] top-[8%] w-[36%] rotate-[-5deg]">
+              <HomeAdCard headline="One lunch break can cost a $3,200 case." />
+            </div>
+            <div className="absolute left-[36%] top-0 w-[38%] rotate-[3deg]">
+              <HomeAdCard headline="You don't need more leads. You need answered calls." background="#FFFFFF" accent="#4F46E5" />
+            </div>
+            <div className="absolute bottom-[4%] right-[4%] w-[36%] rotate-[6deg]">
+              <HomeAdCard headline="Every voicemail is a patient choosing someone else." background="#080B16" accent="#6D5BFF" dark />
+            </div>
+            <div className="absolute bottom-[12%] left-[18%] rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#00FFCC]/15">
+                  <AudioLines className="h-5 w-5 text-[#00BFA5]" />
+                </div>
+                <div>
+                  <p className="text-sm font-black text-slate-900">Hook + waveform + CTA</p>
+                  <p className="text-xs font-semibold text-slate-500">The reusable ad-card system.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen w-full bg-slate-50 font-sans text-slate-900">
