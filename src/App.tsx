@@ -1278,12 +1278,13 @@ export default function App() {
       bgVideoEl.play();
     }
     
+    const renderStartTime = performance.now();
     let frame = 0;
     const visualizerValueMemory: Record<string, number[]> = {};
     
     const draw = () => {
       if (hasStopped) return;
-      const elapsed = Math.min(frame * frameDurationMs, renderDuration);
+      const elapsed = Math.min(performance.now() - renderStartTime, renderDuration);
       
       if (elapsed >= renderDuration) {
          hasStopped = true;
