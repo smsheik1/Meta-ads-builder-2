@@ -9,12 +9,15 @@ import { drawAdvancedVisualizer } from './lib/visualizer';
 import { parseRichText, stripRichText, type RichTextRun } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
+import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } from './lib/audio-library';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
 const STUDIO_SEEN_STORAGE_KEY = 'agent_enamel_studio_seen_v1';
 const DEFAULT_INTRO_IMAGE = '/default-intro-image.png';
 const DEFAULT_INTRO_IMAGE_NAME = 'Default intro image';
+const DEFAULT_AUDIO_URL = '/ai-dental-receptionist-audio.mp3';
+const DEFAULT_AUDIO_NAME = 'AI Dental Receptionist';
 
 const MOCK_CAPTIONS = [
   { text: "Are you missing calls?", start: 0, end: 2, speaker: 1 },
@@ -266,11 +269,19 @@ const BUILT_IN_TEMPLATES: SavedTemplate[] = [
       introDuration: 1,
       introFeedCropY: 50,
       introImageAspect: 1080 / 1350,
-      audioUrl: null,
-      audioFileName: '',
+      audioUrl: DEFAULT_AUDIO_URL,
+      audioFileName: DEFAULT_AUDIO_NAME,
     },
   },
 ];
+
+type AudioLibraryItem = {
+  id: string;
+  name: string;
+  url: string;
+  builtIn?: boolean;
+  stored?: StoredAudioItem;
+};
 
 type AdHistoryItem = SavedTemplate & StoredAdSnapshot;
 
@@ -341,8 +352,8 @@ export default function App() {
   const [introFeedCropY, setIntroFeedCropY] = useState(50);
   const [introImageAspect, setIntroImageAspect] = useState<number | null>(1132 / 1389);
   const [introCropOpen, setIntroCropOpen] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>('/019e13bd-0b04-7dd0-95d6-dbcb36900e35-1778447713483-d2bb8e52-6c00-4439-a0e9-52f7e7a4a897-stereo (1).mp3');
-  const [audioFileName, setAudioFileName] = useState<string>('019e13bd-0b04-7dd0-95d6-dbcb36900e35-1778447713483-d2bb8e52-6c00-4439-a0e9-52f7e7a4a897-stereo (1).mp3');
+  const [audioUrl, setAudioUrl] = useState<string | null>(DEFAULT_AUDIO_URL);
+  const [audioFileName, setAudioFileName] = useState<string>(DEFAULT_AUDIO_NAME);
   
   // Playback/Render State
   const [playing, setPlaying] = useState(false);
@@ -358,6 +369,7 @@ export default function App() {
   const [batchStatus, setBatchStatus] = useState<'idle' | 'processing' | 'done'>('idle');
   const [templates, setTemplates] = useState<SavedTemplate[]>([]);
   const [historyItems, setHistoryItems] = useState<AdHistoryItem[]>([]);
+  const [storedAudioItems, setStoredAudioItems] = useState<StoredAudioItem[]>([]);
   const [templateLibraryTab, setTemplateLibraryTab] = useState<'templates' | 'history'>('templates');
   const [historySaveWarning, setHistorySaveWarning] = useState<string | null>(null);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
@@ -390,6 +402,12 @@ export default function App() {
     listAdHistory()
       .then((items) => setHistoryItems(items as AdHistoryItem[]))
       .catch((error) => console.error('Failed to load ad history:', error));
+  }, []);
+
+  useEffect(() => {
+    listAudioItems()
+      .then(setStoredAudioItems)
+      .catch((error) => console.error('Failed to load audio library:', error));
   }, []);
 
   useEffect(() => {
@@ -588,6 +606,34 @@ export default function App() {
     setHistoryItems(nextItems as AdHistoryItem[]);
   };
 
+  const rememberAudioBlob = async (name: string, blob: Blob) => {
+    try {
+      const item: StoredAudioItem = {
+        id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `audio-${Date.now()}`,
+        name,
+        createdAt: Date.now(),
+        blob,
+        mimeType: blob.type || 'audio/mpeg',
+      };
+      const nextItems = await saveAudioItem(item);
+      setStoredAudioItems(nextItems);
+    } catch (error) {
+      console.error('Failed to save audio item:', error);
+    }
+  };
+
+  const useAudioItem = (item: AudioLibraryItem) => {
+    setGeneratedDialogueAudioUrl(null);
+    const nextUrl = item.stored ? URL.createObjectURL(item.stored.blob) : item.url;
+    setAudioUrl(nextUrl);
+    setAudioFileName(item.name);
+  };
+
+  const deleteStoredAudio = async (audioId: string) => {
+    const nextItems = await deleteAudioItem(audioId);
+    setStoredAudioItems(nextItems);
+  };
+
   useEffect(() => {
     if (!rendering) return;
 
@@ -613,9 +659,11 @@ export default function App() {
   const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const url = URL.createObjectURL(file);
       setGeneratedDialogueAudioUrl(null);
-      setAudioUrl(URL.createObjectURL(file));
+      setAudioUrl(url);
       setAudioFileName(file.name);
+      await rememberAudioBlob(file.name, file);
     }
   };
 
@@ -727,7 +775,9 @@ export default function App() {
       useEditorStore.getState().setCaptions(captions);
       setGeneratedDialogueAudioUrl(url);
       setAudioUrl(url);
-      setAudioFileName(data.filename || `${script.title || 'conversation-ad'}.wav`);
+      const filename = data.filename || `${script.title || 'conversation-ad'}.wav`;
+      setAudioFileName(filename);
+      await rememberAudioBlob(filename, blob);
     } catch (error: any) {
       console.error('Dialogue audio generation failed:', error);
       alert(`Audio generation failed: ${error.message || 'Unknown error'}`.slice(0, 180));
@@ -1911,6 +1961,15 @@ export default function App() {
   const templateItems = [...BUILT_IN_TEMPLATES, ...templates];
   const activeTemplateItems = templateLibraryTab === 'templates' ? templateItems : historyItems;
   const activeTemplateCount = templateLibraryTab === 'templates' ? templateItems.length : historyItems.length;
+  const audioLibraryItems: AudioLibraryItem[] = [
+    { id: 'built-in-ai-dental-receptionist-audio', name: DEFAULT_AUDIO_NAME, url: DEFAULT_AUDIO_URL, builtIn: true },
+    ...storedAudioItems.map((item) => ({
+      id: item.id,
+      name: item.name,
+      url: '',
+      stored: item,
+    })),
+  ];
 
   const enterStudio = () => {
     try {
@@ -2588,7 +2647,7 @@ export default function App() {
                     <div className="relative group flex-1">
                       <input 
                         type="file" 
-                        accept="audio/*" 
+                        accept="audio/*,video/mp4" 
                         onChange={(e) => {
                           handleAudioUpload(e);
                           if(e.target) e.target.value = '';
@@ -2619,6 +2678,47 @@ export default function App() {
                       </button>
                     )}
                   </div>
+
+                  {audioLibraryItems.length > 0 && (
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Previous audios</span>
+                        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-slate-400">{audioLibraryItems.length}</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {audioLibraryItems.slice(0, 6).map((item) => (
+                          <div
+                            key={item.id}
+                            className={`group flex items-center gap-2 rounded-md border px-2 py-2 text-left transition ${
+                              audioFileName === item.name
+                                ? 'border-indigo-200 bg-white text-slate-900'
+                                : 'border-transparent bg-white/60 text-slate-600 hover:border-slate-200 hover:bg-white'
+                            }`}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => useAudioItem(item)}
+                              className="min-w-0 flex-1 text-left"
+                              title={`Use ${item.name}`}
+                            >
+                              <span className="block truncate text-xs font-bold">{item.name}</span>
+                              <span className="block text-[10px] font-semibold text-slate-400">{item.builtIn ? 'Default audio' : 'Saved on this device'}</span>
+                            </button>
+                            {!item.builtIn && (
+                              <button
+                                type="button"
+                                onClick={() => deleteStoredAudio(item.id)}
+                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-300 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                                title="Remove audio"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                     <div className="flex items-start justify-between gap-3">
