@@ -222,7 +222,7 @@ export default function App() {
   const [templateDraftName, setTemplateDraftName] = useState('');
   const [creativeBrief, setCreativeBrief] = useState<CreativeBrief>(EMPTY_CREATIVE_BRIEF);
   const [creativeBriefOpen, setCreativeBriefOpen] = useState(false);
-  const [appTitle] = useState('Pingy');
+  const [appTitle] = useState('Wiggly');
 
   const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, setElements, deselectAll, commitHistory, setBusinessContext, elements } = useEditorStore();
   const hasComponent = (role: NonNullable<typeof elements[number]['componentRole']>) => elements.some((element) => element.componentRole === role);
@@ -1649,7 +1649,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Agent Enamel" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
             <div>
-              <p className="text-lg font-black leading-tight">Pingy</p>
+              <p className="text-lg font-black leading-tight">Wiggly</p>
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Visual ads that move fast.</p>
             </div>
           </div>
@@ -1770,13 +1770,106 @@ export default function App() {
             </div>
           </section>
 
+          <section className="relative overflow-hidden rounded-[2rem] bg-slate-950 px-5 py-8 text-white shadow-2xl shadow-slate-900/15 md:px-8 md:py-10">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(0,255,204,0.18),transparent_28%),radial-gradient(circle_at_65%_42%,rgba(79,70,229,0.32),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.06),transparent_38%)]" />
+            <div className="pointer-events-none absolute left-[28%] top-[12%] h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+            <div className="relative grid min-h-[560px] gap-6 lg:grid-cols-[0.85fr_1.3fr_0.85fr]">
+              <div className="rounded-3xl border border-white/10 bg-white/[0.08] p-5 backdrop-blur-xl">
+                <p className="mb-5 text-sm font-black uppercase tracking-wide text-white/40">Persona decks</p>
+                {[
+                  ['Dental', 'Missed-call recovery', '#00FFCC'],
+                  ['Med spa', 'Luxury consults', '#F0ABFC'],
+                  ['HVAC', 'Emergency calls', '#60A5FA'],
+                  ['Legal', 'After-hours intake', '#FBBF24'],
+                  ['Fitness', 'Trial bookings', '#FB7185'],
+                  ['Real estate', 'Lead follow-up', '#A78BFA'],
+                ].map(([persona, angle, color]) => (
+                  <button
+                    key={persona}
+                    type="button"
+                    onClick={enterStudio}
+                    className="group flex w-full items-center gap-3 border-b border-white/10 py-4 text-left last:border-b-0"
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-sm font-black text-slate-950 transition group-hover:scale-105" style={{ backgroundColor: color }}>
+                      +
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-lg font-black leading-tight text-white">{persona}</span>
+                      <span className="block truncate text-sm font-semibold text-white/40">{angle}</span>
+                    </span>
+                    <Play className="h-4 w-4 fill-white text-white/45 transition group-hover:text-white" />
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative hidden min-h-[520px] lg:block">
+                <div className="absolute left-[4%] top-[6%] w-[34%] rotate-[-7deg]">
+                  <HomeAdCard headline="One lunch break can cost a $3,200 case." />
+                </div>
+                <div className="absolute left-[33%] top-[18%] w-[35%] rotate-[4deg]">
+                  <HomeAdCard headline="Empty consult slots are not a demand problem." background="#FFFFFF" accent="#F0ABFC" />
+                </div>
+                <div className="absolute bottom-[4%] left-[16%] w-[35%] rotate-[6deg]">
+                  <HomeAdCard headline="The hottest lead is the one calling right now." background="#080B16" accent="#60A5FA" dark />
+                </div>
+                <div className="absolute bottom-[14%] right-[2%] w-[34%] rotate-[-5deg]">
+                  <HomeAdCard headline="After-hours calls should still become booked jobs." background="#00FFCC" accent="#4F46E5" />
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-white/10 bg-white/[0.72] p-5 text-slate-950 shadow-2xl backdrop-blur-xl">
+                <div className="flex items-center justify-between">
+                  <p className="text-lg font-black">Wiggly</p>
+                  <span className="h-8 w-14 rounded-full bg-[#00C6A6] p-1">
+                    <span className="block h-6 w-6 translate-x-6 rounded-full bg-white shadow-sm" />
+                  </span>
+                </div>
+                <div className="mt-5 border-t border-slate-950/10 pt-5">
+                  <p className="text-sm font-black uppercase tracking-wide text-slate-400">Current persona</p>
+                  <p className="mt-2 text-2xl font-black leading-tight">Dental practices</p>
+                </div>
+                <div className="mt-6 space-y-5">
+                  <div>
+                    <div className="mb-2 flex items-center justify-between text-sm font-black text-slate-500">
+                      <span>Pain intensity</span>
+                      <span>High</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-950/10">
+                      <div className="h-2 w-4/5 rounded-full bg-slate-950" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-2 flex items-center justify-between text-sm font-black text-slate-500">
+                      <span>Creative speed</span>
+                      <span>Fast</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-950/10">
+                      <div className="h-2 w-11/12 rounded-full bg-[#4F46E5]" />
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={enterStudio}
+                  className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-slate-800"
+                >
+                  Open this deck
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <p className="relative mt-6 text-center text-sm font-black text-white/35">
+              Pick a customer type. Wiggly gives you a visual direction to start from.
+            </p>
+          </section>
+
           <section className="py-16">
             <div className="mb-12 max-w-4xl">
               <h2 className="text-4xl font-black leading-[0.95] tracking-normal text-slate-950 md:text-6xl">
                 Designed for the parts marketers repeat every day.
               </h2>
               <p className="mt-5 max-w-2xl text-lg font-semibold leading-8 text-slate-500">
-                Pingy keeps the creative loop small: pick a hook, preview the ad, save what works, and ship the next variation.
+                Wiggly keeps the creative loop small: pick a hook, preview the ad, save what works, and ship the next variation.
               </p>
             </div>
             <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
@@ -1816,7 +1909,7 @@ export default function App() {
                   onClick={enterStudio}
                   className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5 hover:bg-slate-100"
                 >
-                  Open Pingy
+                  Open Wiggly
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
@@ -1851,13 +1944,13 @@ export default function App() {
 
         <footer className="relative overflow-hidden px-6 pb-10 md:px-10">
           <div className="mx-auto flex max-w-7xl flex-col gap-4 border-t border-slate-200 pt-8 text-sm font-bold text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-            <p>Pingy. Visual ads that move fast.</p>
+            <p>Wiggly. Visual ads that move fast.</p>
             <button type="button" onClick={enterStudio} className="text-slate-950 transition hover:text-[#4F46E5]">
               Open Studio
             </button>
           </div>
           <div className="pointer-events-none -mb-8 hidden select-none overflow-hidden bg-gradient-to-b from-slate-950/10 to-slate-950/0 bg-clip-text text-center text-[10rem] font-black leading-none text-transparent sm:block md:text-[15rem]">
-            Pingy
+            Wiggly
           </div>
         </footer>
       </div>
