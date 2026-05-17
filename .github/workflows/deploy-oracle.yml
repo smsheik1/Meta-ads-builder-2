@@ -24,4 +24,10 @@ jobs:
           key: ${{ secrets.ORACLE_SSH_KEY }}
           script_stop: true
           script: |
-            bash /home/ubuntu/Meta-ads-builder-2/scripts/deploy-oracle.sh
+            set -euo pipefail
+            cd /home/ubuntu/Meta-ads-builder-2
+            git fetch origin main
+            git checkout main
+            git pull --ff-only origin main
+            chmod +x scripts/deploy-oracle.sh
+            bash scripts/deploy-oracle.sh
