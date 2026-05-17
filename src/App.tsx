@@ -268,6 +268,7 @@ export default function App() {
   const [exportLaunchAnimation, setExportLaunchAnimation] = useState(false);
   const [renderDurationCap, setRenderDurationCap] = useState<RenderDurationCap>(30);
   const exportCancelRef = useRef<(() => void) | null>(null);
+  const savedExportHistoryIdRef = useRef<string | null>(null);
 
   // Batch State
   const [csvData, setCsvData] = useState<any[]>([]);
@@ -504,6 +505,32 @@ export default function App() {
       console.error('Failed to save ad history:', error);
       setHistorySaveWarning('Downloaded video, but browser history could not save this design.');
     }
+  };
+
+  const saveExportToHistoryOnce = (snapshot: SavedTemplate) => {
+    if (savedExportHistoryIdRef.current === snapshot.id) return;
+    savedExportHistoryIdRef.current = snapshot.id;
+    void saveDownloadedAdToHistory(snapshot);
+  };
+
+  const downloadReadyExport = () => {
+    if (!exportDownload) return;
+
+    const link = document.createElement('a');
+    link.href = exportDownload.url;
+    link.download = exportDownload.filename;
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    saveExportToHistoryOnce(exportDownload.snapshot);
+  };
+
+  const openReadyExport = () => {
+    if (!exportDownload) return;
+    window.open(exportDownload.url, '_blank', 'noopener,noreferrer');
+    saveExportToHistoryOnce(exportDownload.snapshot);
   };
 
   const deleteHistoryItem = async (historyId: string) => {
@@ -981,6 +1008,7 @@ export default function App() {
     setRendering(true);
     setRenderProgress(0);
     setExportPhase('recording');
+    savedExportHistoryIdRef.current = null;
     setExportDownload((previous) => {
       if (previous) URL.revokeObjectURL(previous.url);
       return null;
@@ -3253,15 +3281,23 @@ export default function App() {
                     : 'Rendering a snapshot of this ad. You can start a different creative while this finishes.'}
                 </p>
                 {exportDownload && (
-                  <a
-                    href={exportDownload.url}
-                    download={exportDownload.filename}
-                    onClick={() => saveDownloadedAdToHistory(exportDownload.snapshot)}
-                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-                  >
-                    <Download className="h-4 w-4" />
-                    Download MP4
-                  </a>
+                  <div className="mt-3 space-y-2">
+                    <button
+                      type="button"
+                      onClick={downloadReadyExport}
+                      className="flex w-full items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download MP4
+                    </button>
+                    <button
+                      type="button"
+                      onClick={openReadyExport}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                      Open MP4
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
