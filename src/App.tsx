@@ -18,16 +18,33 @@ const DEFAULT_INTRO_IMAGE = '/default-intro-image.png';
 const DEFAULT_INTRO_IMAGE_NAME = 'Default intro image';
 const DEFAULT_AUDIO_URL = '/ai-dental-receptionist-audio.mp3';
 const DEFAULT_AUDIO_NAME = 'AI Dental Receptionist';
-const BACKGROUND_COLOR_PRESETS = [
-  '#f5f5f5',
-  '#ffffff',
-  '#eef2ff',
-  '#ecfdf5',
-  '#e0f2fe',
-  '#111827',
-  '#080b16',
-  '#06261f',
+const BACKGROUND_COLOR_FAMILIES = [
+  { hue: 158, saturation: [70, 95], lightness: [45, 96] },
+  { hue: 190, saturation: [55, 90], lightness: [42, 94] },
+  { hue: 230, saturation: [45, 75], lightness: [44, 96] },
+  { hue: 255, saturation: [45, 78], lightness: [45, 94] },
+  { hue: 315, saturation: [35, 70], lightness: [48, 94] },
+  { hue: 25, saturation: [35, 70], lightness: [50, 94] },
+  { hue: 0, saturation: [0, 0], lightness: [8, 98] },
 ];
+
+const randomInRange = ([min, max]: number[]) => Math.round(min + Math.random() * (max - min));
+
+const getFreshBackgroundColor = (currentColor: string) => {
+  let nextColor = currentColor;
+  let attempts = 0;
+
+  while (nextColor.toLowerCase() === currentColor.toLowerCase() && attempts < 8) {
+    const family = BACKGROUND_COLOR_FAMILIES[Math.floor(Math.random() * BACKGROUND_COLOR_FAMILIES.length)];
+    const hue = family.hue + randomInRange([-8, 8]);
+    const saturation = randomInRange(family.saturation);
+    const lightness = randomInRange(family.lightness);
+    nextColor = `hsl(${hue} ${saturation}% ${lightness}%)`;
+    attempts += 1;
+  }
+
+  return nextColor;
+};
 
 const MOCK_CAPTIONS = [
   { text: "Are you missing calls?", start: 0, end: 2, speaker: 1 },
@@ -239,12 +256,7 @@ export default function App() {
   const [audioFileName, setAudioFileName] = useState<string>(DEFAULT_AUDIO_NAME);
 
   const refreshBackgroundColor = () => {
-    setBgColor((currentColor) => {
-      const currentIndex = BACKGROUND_COLOR_PRESETS.findIndex(
-        (color) => color.toLowerCase() === currentColor.toLowerCase()
-      );
-      return BACKGROUND_COLOR_PRESETS[(currentIndex + 1) % BACKGROUND_COLOR_PRESETS.length];
-    });
+    setBgColor((currentColor) => getFreshBackgroundColor(currentColor));
   };
   
   // Playback/Render State
