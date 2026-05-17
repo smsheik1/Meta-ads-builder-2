@@ -1228,6 +1228,7 @@ export default function App() {
 
       await new Promise(r => setTimeout(r, 100)); // drain remaining chunks
       const blob = new Blob(chunks, { type: 'video/webm' });
+      cleanupExportResources();
       setExportPhase('converting');
       setRenderProgress(92);
       
@@ -1265,7 +1266,10 @@ export default function App() {
       exportCancelRef.current = null;
     };
 
-    mediaRecorder.start();
+    const exportFps = 60;
+    const frameDurationMs = 1000 / exportFps;
+
+    mediaRecorder.start(1000);
     if (audioSource) {
       audioSource.start();
     }
@@ -1274,12 +1278,11 @@ export default function App() {
       bgVideoEl.play();
     }
     
-    const startTime = Date.now();
     let frame = 0;
     
     const draw = () => {
       if (hasStopped) return;
-      const elapsed = Date.now() - startTime;
+      const elapsed = Math.min(frame * frameDurationMs, renderDuration);
       
       if (elapsed >= renderDuration) {
          hasStopped = true;
@@ -1291,8 +1294,6 @@ export default function App() {
             setRendering(false);
             setRenderProgress(100);
          }
-         
-         cleanupExportResources();
          return;
       }
 
@@ -1812,11 +1813,11 @@ export default function App() {
       frame++;
       
       if (!hasStopped) {
-         requestAnimationFrame(draw);
+         window.setTimeout(draw, frameDurationMs);
       }
     };
     
-    requestAnimationFrame(draw);
+    draw();
   };
 
   const runBatch = () => {
