@@ -2131,17 +2131,17 @@ export default function App() {
               </div>
             </section>
 
-            <section className="relative min-h-[560px]">
-              <div className="absolute left-[8%] top-[8%] w-[36%] rotate-[-5deg]">
+            <section className="relative flex gap-4 overflow-x-auto pb-4 pt-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:block md:min-h-[560px] md:overflow-visible md:pb-0 md:pt-0">
+              <div className="w-[172px] shrink-0 rotate-[-3deg] snap-center sm:w-[210px] md:absolute md:left-[8%] md:top-[8%] md:w-[36%] md:rotate-[-5deg]">
                 <HomeAdCard headline="One lunch break can cost a $3,200 case." />
               </div>
-              <div className="absolute left-[36%] top-0 w-[38%] rotate-[3deg]">
+              <div className="w-[172px] shrink-0 rotate-[2deg] snap-center sm:w-[210px] md:absolute md:left-[36%] md:top-0 md:w-[38%] md:rotate-[3deg]">
                 <HomeAdCard headline="You don't need more leads. You need answered calls." background="#FFFFFF" accent="#4F46E5" />
               </div>
-              <div className="absolute bottom-[4%] right-[4%] w-[36%] rotate-[6deg]">
+              <div className="w-[172px] shrink-0 rotate-[3deg] snap-center sm:w-[210px] md:absolute md:bottom-[4%] md:right-[4%] md:w-[36%] md:rotate-[6deg]">
                 <HomeAdCard headline="Every voicemail is a patient choosing someone else." background="#080B16" accent="#6D5BFF" dark />
               </div>
-              <div className="absolute bottom-[12%] left-[18%] rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
+              <div className="hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xl md:absolute md:bottom-[12%] md:left-[18%] md:block">
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#00FFCC]/15">
                     <AudioLines className="h-5 w-5 text-[#00BFA5]" />

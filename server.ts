@@ -1,5 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
+import type { ErrorRequestHandler } from 'express';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -12,8 +15,30 @@ const isProd = process.env.NODE_ENV === 'production';
 // Hosts like Render provide PORT in production.
 const port = Number(process.env.PORT) || (isProd ? 3000 : 3001);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Please wait a bit and try again.' },
+});
+
+const expensiveApiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 25,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many generation/export requests. Please wait a bit and try again.' },
+});
+
+app.use('/api', apiLimiter);
 
 app.get('/api/health', (_req, res) => {
   res.json({
@@ -24,7 +49,21 @@ app.get('/api/health', (_req, res) => {
 });
 
 const memoryStorage = multer.memoryStorage();
-const uploadMem = multer({ storage: memoryStorage });
+const uploadMem = multer({
+  storage: memoryStorage,
+  limits: {
+    fileSize: 50 * 1024 * 1024,
+    files: 1,
+  },
+  fileFilter: (_req, file, cb) => {
+    const allowed = file.mimetype.startsWith('audio/') || file.mimetype === 'video/mp4' || file.mimetype === 'video/webm';
+    if (!allowed) {
+      cb(new Error('Unsupported audio file type.'));
+      return;
+    }
+    cb(null, true);
+  },
+});
 
 const diskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -38,9 +77,27 @@ const diskStorage = multer.diskStorage({
     cb(null, file.fieldname + '-' + Date.now() + '.webm');
   }
 });
-const uploadDisk = multer({ storage: diskStorage });
+const uploadDisk = multer({
+  storage: diskStorage,
+  limits: {
+    fileSize: 300 * 1024 * 1024,
+    files: 1,
+  },
+  fileFilter: (_req, file, cb) => {
+    const allowed = file.mimetype === 'video/webm' || file.originalname.toLowerCase().endsWith('.webm');
+    if (!allowed) {
+      cb(new Error('Unsupported video file type.'));
+      return;
+    }
+    cb(null, true);
+  },
+});
 
-app.post('/api/convert-to-mp4', uploadDisk.single('video'), (req, res) => {
+const sendServerError = (res: express.Response, fallbackMessage: string) => {
+  res.status(500).json({ error: fallbackMessage });
+};
+
+app.post('/api/convert-to-mp4', expensiveApiLimiter, uploadDisk.single('video'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No video file provided' });
   }
@@ -84,7 +141,7 @@ app.post('/api/convert-to-mp4', uploadDisk.single('video'), (req, res) => {
     .save(outputPath);
 });
 
-app.post('/api/transcribe', uploadMem.single('audio'), async (req, res) => {
+app.post('/api/transcribe', expensiveApiLimiter, uploadMem.single('audio'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No audio file provided' });
   }
@@ -105,14 +162,15 @@ app.post('/api/transcribe', uploadMem.single('audio'), async (req, res) => {
 
     if (!response.ok) {
       const text = await response.text();
-      return res.status(response.status).json({ error: text });
+      console.warn('Deepgram transcription rejected request:', response.status, text.slice(0, 500));
+      return res.status(response.status).json({ error: 'Transcription service rejected the request.' });
     }
 
     const data = await response.json();
     return res.json(data);
   } catch (error: any) {
     console.error('Transcription error:', error);
-    return res.status(500).json({ error: error.message });
+    return sendServerError(res, 'Transcription failed. Please try again.');
   }
 });
 
@@ -252,7 +310,7 @@ const pcmBase64ToWavBase64 = (pcmBase64: string, sampleRate = 24000, channels = 
   return Buffer.concat([header, pcm]).toString('base64');
 };
 
-app.post('/api/generate-headlines', async (req, res) => {
+app.post('/api/generate-headlines', expensiveApiLimiter, async (req, res) => {
   try {
     const { niche, count = 20 } = req.body;
 
@@ -281,11 +339,11 @@ No prose. No explanation. Just the JSON array.`;
     res.json(JSON.parse(text));
   } catch (error: any) {
     console.error("Generate headlines error:", error);
-    res.status(500).json({ error: error.message || 'Error generating headlines' });
+    sendServerError(res, 'Error generating headlines.');
   }
 });
 
-app.post('/api/generate-copy', async (req, res) => {
+app.post('/api/generate-copy', expensiveApiLimiter, async (req, res) => {
   try {
     const { businessContext } = req.body;
     
@@ -387,11 +445,11 @@ Return valid JSON with the following structure:
     res.json(JSON.parse(response.text));
   } catch (error: any) {
     console.error("Generate error:", error);
-    res.status(500).json({ error: error.message || 'Error generating copy' });
+    sendServerError(res, 'Error generating copy.');
   }
 });
 
-app.post('/api/generate-dialogue-scripts', async (req, res) => {
+app.post('/api/generate-dialogue-scripts', expensiveApiLimiter, async (req, res) => {
   try {
     const { creativeBrief, persona = 'Dental practice owner', count = 5 } = req.body;
 
@@ -457,11 +515,11 @@ Return ONLY valid JSON:
     res.json({ scripts: fillDialogueScripts(scripts, Number(count) || 5) });
   } catch (error: any) {
     console.error("Generate dialogue scripts error:", error);
-    res.status(500).json({ error: error.message || 'Error generating dialogue scripts' });
+    sendServerError(res, 'Error generating dialogue scripts.');
   }
 });
 
-app.post('/api/generate-dialogue-audio', async (req, res) => {
+app.post('/api/generate-dialogue-audio', expensiveApiLimiter, async (req, res) => {
   try {
     const { script } = req.body;
 
@@ -526,7 +584,7 @@ app.post('/api/generate-dialogue-audio', async (req, res) => {
     });
   } catch (error: any) {
     console.error("Generate dialogue audio error:", error);
-    res.status(500).json({ error: error.message || 'Error generating dialogue audio' });
+    sendServerError(res, 'Error generating dialogue audio.');
   }
 });
 
@@ -537,6 +595,29 @@ if (isProd) {
     res.sendFile(path.join(distPath, 'index.html'));
   });
 }
+
+const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+  console.error('Request error:', err);
+
+  if (res.headersSent) return;
+
+  if (err instanceof multer.MulterError) {
+    const message = err.code === 'LIMIT_FILE_SIZE'
+      ? 'Uploaded file is too large.'
+      : 'File upload failed.';
+    res.status(400).json({ error: message });
+    return;
+  }
+
+  if (err instanceof SyntaxError && 'body' in err) {
+    res.status(400).json({ error: 'Invalid JSON request body.' });
+    return;
+  }
+
+  res.status(400).json({ error: 'Request could not be processed.' });
+};
+
+app.use(errorHandler);
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Express server running on port ${port}`);
