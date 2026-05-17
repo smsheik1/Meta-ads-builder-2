@@ -900,7 +900,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
 
             {/* VISUALIZER */}
             {el.type === 'visualizer' && (
-               <div className="w-full h-full flex items-center justify-center pointer-events-none">
+               <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
                  {(el.visualizerType === 'bars-bottom' || !el.visualizerType) && (
                     <div className="w-full h-full flex items-end justify-between gap-1">
                       {Array.from({ length: el.barCount || 8 }).map((_, i) => (
@@ -935,6 +935,24 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                       className="w-full h-full"
                     />
                  )}
+                 <label
+                   className="pointer-events-auto absolute right-2 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover:opacity-100 focus-within:opacity-100"
+                   title="Change visualizer color"
+                   onMouseDown={(event) => event.stopPropagation()}
+                   onClick={(event) => event.stopPropagation()}
+                 >
+                   <span
+                     className="h-4 w-4 rounded-full border border-slate-200 shadow-inner"
+                     style={{ backgroundColor: el.barColor || '#00ffcc' }}
+                   />
+                   <input
+                     type="color"
+                     value={el.barColor || '#00ffcc'}
+                     onChange={(event) => updateElement(el.id, { barColor: event.target.value })}
+                     className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                     aria-label="Visualizer color"
+                   />
+                 </label>
                </div>
             )}
 

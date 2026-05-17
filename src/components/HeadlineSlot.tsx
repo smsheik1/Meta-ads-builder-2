@@ -65,7 +65,7 @@ export function HeadlineSlot({ niche, elementId }: { niche: string; elementId: s
   const activeHeadline = headlines[index] || seededHooks[0];
 
   return (
-    <div className="headline-slot relative flex h-full w-full items-center justify-center overflow-hidden">
+    <div className="headline-slot group/headline relative flex h-full w-full items-center justify-center overflow-hidden">
       <AutoFitText
         className="ad-headline w-full px-1"
         minFontSize={12}
@@ -86,7 +86,7 @@ export function HeadlineSlot({ niche, elementId }: { niche: string; elementId: s
         }}
         onMouseDown={(event) => event.stopPropagation()}
         onDoubleClick={(event) => event.stopPropagation()}
-        className="absolute right-2 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-lg transition hover:bg-white hover:text-slate-950"
+        className="absolute right-2 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 opacity-0 shadow-lg transition hover:bg-white hover:text-slate-950 focus-visible:opacity-100 group-hover/headline:opacity-100"
       >
         <RefreshCw className={`h-4 w-4 ${isRefilling ? 'animate-spin text-indigo-500' : ''}`} />
       </button>
