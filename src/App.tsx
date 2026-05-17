@@ -38,6 +38,18 @@ type CreativeBrief = {
   reference: string;
 };
 
+type DialogueLine = {
+  speaker: 'Ava' | 'Sam' | string;
+  tone: string;
+  text: string;
+};
+
+type DialogueScript = {
+  title: string;
+  angle: string;
+  lines: DialogueLine[];
+};
+
 const EMPTY_CREATIVE_BRIEF: CreativeBrief = {
   offer: 'AI front-desk employees that answer calls, recover missed calls, and book dental patients automatically.',
   buyer: 'Dental practice owners with 1-5 locations who want more appointments without hiring more front desk staff.',
@@ -224,6 +236,9 @@ export default function App() {
   const [creativeBriefOpen, setCreativeBriefOpen] = useState(false);
   const [appTitle] = useState('Wiggly');
   const [activePersonaDeckIndex, setActivePersonaDeckIndex] = useState(0);
+  const [dialogueScripts, setDialogueScripts] = useState<DialogueScript[]>([]);
+  const [isGeneratingDialogueScripts, setIsGeneratingDialogueScripts] = useState(false);
+  const [isGeneratingDialogueAudio, setIsGeneratingDialogueAudio] = useState(false);
 
   const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, setElements, deselectAll, commitHistory, setBusinessContext, elements } = useEditorStore();
   const hasComponent = (role: NonNullable<typeof elements[number]['componentRole']>) => elements.some((element) => element.componentRole === role);
@@ -483,6 +498,90 @@ export default function App() {
     img.onload = () => setIntroImageAspect(img.naturalWidth / img.naturalHeight);
     img.src = objectUrl;
     setIntroCropOpen(true);
+  };
+
+  const captionsFromDialogueScript = (script: DialogueScript) => {
+    let cursor = 0;
+    const speakers = Array.from(new Set(script.lines.map((line) => line.speaker).filter(Boolean))).slice(0, 2);
+    return script.lines.map((line) => {
+      const wordCount = line.text.trim().split(/\s+/).filter(Boolean).length;
+      const duration = Math.max(1.4, Math.min(4.5, wordCount * 0.38));
+      const caption = {
+        text: line.text,
+        start: cursor,
+        end: cursor + duration,
+        speaker: speakers.indexOf(line.speaker) === 1 ? 2 : 1,
+      };
+      cursor += duration + 0.18;
+      return caption;
+    });
+  };
+
+  const handleGenerateDialogueScripts = async () => {
+    try {
+      setIsGeneratingDialogueScripts(true);
+      const res = await fetch('/api/generate-dialogue-scripts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          creativeBrief,
+          persona: activePersonaDeck?.customer || 'Dental practice owner',
+          count: 5,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText);
+      }
+
+      const data = await res.json();
+      setDialogueScripts(Array.isArray(data.scripts) ? data.scripts : []);
+    } catch (error: any) {
+      console.error('Dialogue script generation failed:', error);
+      alert(`Dialogue generation failed: ${error.message || 'Unknown error'}`.slice(0, 180));
+    } finally {
+      setIsGeneratingDialogueScripts(false);
+    }
+  };
+
+  const handleGenerateDialogueAudio = async (script: DialogueScript) => {
+    try {
+      setIsGeneratingDialogueAudio(true);
+      const res = await fetch('/api/generate-dialogue-audio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ script }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText);
+      }
+
+      const data = await res.json();
+      const binary = atob(data.audioBase64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: data.mimeType || 'audio/wav' });
+      const url = URL.createObjectURL(blob);
+      const captions = captionsFromDialogueScript(script);
+      useEditorStore.getState().setCaptions(captions);
+      try {
+        localStorage.setItem(`transcription_${url}`, JSON.stringify(captions));
+      } catch (error) {
+        console.error('Could not cache generated dialogue captions:', error);
+      }
+      setAudioUrl(url);
+      setAudioFileName(data.filename || `${script.title || 'conversation-ad'}.wav`);
+    } catch (error: any) {
+      console.error('Dialogue audio generation failed:', error);
+      alert(`Audio generation failed: ${error.message || 'Unknown error'}`.slice(0, 180));
+    } finally {
+      setIsGeneratingDialogueAudio(false);
+    }
   };
 
   useEffect(() => {
@@ -2339,6 +2438,44 @@ export default function App() {
                       >
                         <X className="w-4 h-4" />
                       </button>
+                    )}
+                  </div>
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <span className="block text-sm font-bold text-slate-800">Conversation ad</span>
+                        <span className="block text-xs font-semibold leading-5 text-slate-500">Generate a subtle two-person voice scene from the brief.</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleGenerateDialogueScripts}
+                        disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
+                        className="shrink-0 rounded-md bg-slate-950 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isGeneratingDialogueScripts ? 'Writing...' : 'Generate'}
+                      </button>
+                    </div>
+                    {dialogueScripts.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        {dialogueScripts.map((script, index) => (
+                          <button
+                            key={`${script.title}-${index}`}
+                            type="button"
+                            onClick={() => handleGenerateDialogueAudio(script)}
+                            disabled={isGeneratingDialogueAudio || isGeneratingDialogueScripts}
+                            className="w-full rounded-md border border-slate-200 bg-white p-2 text-left transition hover:border-indigo-200 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <span className="flex items-center justify-between gap-2">
+                              <span className="truncate text-xs font-black text-slate-800">{script.title || `Option ${index + 1}`}</span>
+                              <span className="text-[10px] font-bold uppercase tracking-wide text-indigo-500">
+                                {isGeneratingDialogueAudio ? 'Making audio' : 'Use'}
+                              </span>
+                            </span>
+                            <span className="mt-1 block truncate text-[11px] font-semibold text-slate-500">{script.angle}</span>
+                          </button>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>

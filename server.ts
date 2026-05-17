@@ -129,6 +129,35 @@ app.post('/api/hyperframes-render-test', (req, res) => {
 import { GoogleGenAI } from '@google/genai';
 import { getMasterPrompt } from './src/lib/prompts/headline-master';
 
+const parseJsonResponse = (text: string) => {
+  const trimmed = text.trim();
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  return JSON.parse(fenced ? fenced[1] : trimmed);
+};
+
+const pcmBase64ToWavBase64 = (pcmBase64: string, sampleRate = 24000, channels = 1, bitsPerSample = 16) => {
+  const pcm = Buffer.from(pcmBase64, 'base64');
+  const header = Buffer.alloc(44);
+  const byteRate = sampleRate * channels * bitsPerSample / 8;
+  const blockAlign = channels * bitsPerSample / 8;
+
+  header.write('RIFF', 0);
+  header.writeUInt32LE(36 + pcm.length, 4);
+  header.write('WAVE', 8);
+  header.write('fmt ', 12);
+  header.writeUInt32LE(16, 16);
+  header.writeUInt16LE(1, 20);
+  header.writeUInt16LE(channels, 22);
+  header.writeUInt32LE(sampleRate, 24);
+  header.writeUInt32LE(byteRate, 28);
+  header.writeUInt16LE(blockAlign, 32);
+  header.writeUInt16LE(bitsPerSample, 34);
+  header.write('data', 36);
+  header.writeUInt32LE(pcm.length, 40);
+
+  return Buffer.concat([header, pcm]).toString('base64');
+};
+
 app.post('/api/generate-headlines', async (req, res) => {
   try {
     const { niche, count = 20 } = req.body;
@@ -265,6 +294,130 @@ Return valid JSON with the following structure:
   } catch (error: any) {
     console.error("Generate error:", error);
     res.status(500).json({ error: error.message || 'Error generating copy' });
+  }
+});
+
+app.post('/api/generate-dialogue-scripts', async (req, res) => {
+  try {
+    const { creativeBrief, persona = 'Dental practice owner', count = 5 } = req.body;
+
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      throw new Error("GEMINI_API_KEY is not set.");
+    }
+
+    const ai = new GoogleGenAI({ apiKey: key });
+    const briefText = typeof creativeBrief === 'object'
+      ? Object.entries(creativeBrief).map(([label, value]) => `${label}: ${value}`).join('\n')
+      : String(creativeBrief || '');
+
+    const prompt = `You are a direct-response creative strategist for Wiggly, a visual ad creator.
+
+Create ${count} short two-person dialogue ad scripts for this brief.
+
+Brief:
+${briefText}
+
+Persona: ${persona}
+
+The ad should feel like a real-life overheard conversation, not a sales pitch.
+One person has the problem. The other casually reveals the solution.
+Keep each script 14-26 seconds when read aloud.
+No hype. No buzzwords. No testimonials. No fake stats.
+
+Return ONLY valid JSON:
+{
+  "scripts": [
+    {
+      "title": "short option title",
+      "angle": "short strategy angle",
+      "lines": [
+        {"speaker": "Ava", "tone": "frustrated", "text": "line"},
+        {"speaker": "Sam", "tone": "calm", "text": "line"}
+      ]
+    }
+  ]
+}`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+      },
+    });
+
+    const text = response.text || '{"scripts":[]}';
+    res.json(parseJsonResponse(text));
+  } catch (error: any) {
+    console.error("Generate dialogue scripts error:", error);
+    res.status(500).json({ error: error.message || 'Error generating dialogue scripts' });
+  }
+});
+
+app.post('/api/generate-dialogue-audio', async (req, res) => {
+  try {
+    const { script } = req.body;
+
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      throw new Error("GEMINI_API_KEY is not set.");
+    }
+    if (!script?.lines?.length) {
+      return res.status(400).json({ error: 'No script lines provided.' });
+    }
+
+    const ai = new GoogleGenAI({ apiKey: key });
+    const speakers = Array.from(new Set(script.lines.map((line: any) => String(line.speaker || 'Speaker').trim()).filter(Boolean))).slice(0, 2) as string[];
+    while (speakers.length < 2) speakers.push(`Speaker ${speakers.length + 1}`);
+    const ttsText = `Read this as a natural, subtle, two-person conversation for a Meta ad. Keep it conversational and not salesy.\n\n${script.lines.map((line: any) => `${line.speaker}: [${line.tone || 'natural'}] ${line.text}`).join('\n')}`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.1-flash-tts-preview',
+      contents: [{ parts: [{ text: ttsText }] }],
+      config: {
+        responseModalities: ['AUDIO'],
+        speechConfig: {
+          multiSpeakerVoiceConfig: {
+            speakerVoiceConfigs: [
+              {
+                speaker: speakers[0],
+                voiceConfig: {
+                  prebuiltVoiceConfig: { voiceName: 'Zephyr' },
+                },
+              },
+              {
+                speaker: speakers[1],
+                voiceConfig: {
+                  prebuiltVoiceConfig: { voiceName: 'Puck' },
+                },
+              },
+            ],
+          },
+        },
+      },
+    } as any);
+
+    const part = response.candidates?.[0]?.content?.parts?.find((candidatePart: any) => candidatePart.inlineData);
+    const inlineData = part?.inlineData;
+    if (!inlineData?.data) {
+      return res.status(500).json({ error: 'No audio returned from Gemini TTS.' });
+    }
+
+    const mimeType = inlineData.mimeType || 'audio/L16;codec=pcm;rate=24000';
+    const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+    const sampleRate = sampleRateMatch ? Number(sampleRateMatch[1]) : 24000;
+    const isPcm = mimeType.includes('audio/L16') || mimeType.includes('pcm');
+    const audioBase64 = isPcm ? pcmBase64ToWavBase64(inlineData.data, sampleRate) : inlineData.data;
+
+    res.json({
+      audioBase64,
+      mimeType: isPcm ? 'audio/wav' : mimeType,
+      filename: `${(script.title || 'conversation-ad').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'conversation-ad'}.wav`,
+    });
+  } catch (error: any) {
+    console.error("Generate dialogue audio error:", error);
+    res.status(500).json({ error: error.message || 'Error generating dialogue audio' });
   }
 });
 
