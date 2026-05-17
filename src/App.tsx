@@ -236,6 +236,7 @@ export default function App() {
   const [exportDownload, setExportDownload] = useState<{ url: string; filename: string; snapshot: SavedTemplate } | null>(null);
   const [exportLaunchAnimation, setExportLaunchAnimation] = useState(false);
   const [renderDurationCap, setRenderDurationCap] = useState<RenderDurationCap>(30);
+  const exportCancelRef = useRef<(() => void) | null>(null);
 
   // Batch State
   const [csvData, setCsvData] = useState<any[]>([]);
@@ -938,6 +939,10 @@ export default function App() {
     setPlaying(!playing);
   };
 
+  const cancelExport = () => {
+    exportCancelRef.current?.();
+  };
+
   const downloadSimulatedVideo = async () => {
     const exportSnapshot = createCurrentSnapshot(getCurrentDesignTitle());
     setExportLaunchAnimation(true);
@@ -1087,12 +1092,51 @@ export default function App() {
 
     const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
     const chunks: BlobPart[] = [];
+    const abortController = new AbortController();
+    let exportCancelled = false;
+    let hasStopped = false;
+
+    const cleanupExportResources = () => {
+      if (canvas.parentNode) {
+        canvas.parentNode.removeChild(canvas);
+      }
+      stream.getTracks().forEach((track) => track.stop());
+      if (audioSource) {
+        try { audioSource.stop(); } catch(e){}
+      }
+      if (bgVideoEl) {
+        bgVideoEl.pause();
+      }
+      if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close();
+      }
+    };
+
+    exportCancelRef.current = () => {
+      exportCancelled = true;
+      hasStopped = true;
+      abortController.abort();
+      if (mediaRecorder.state !== 'inactive') {
+        try { mediaRecorder.stop(); } catch(e){}
+      } else {
+        cleanupExportResources();
+      }
+      setRendering(false);
+      setRenderProgress(0);
+      setExportPhase('recording');
+      exportCancelRef.current = null;
+    };
     
     mediaRecorder.ondataavailable = (e) => {
       if (e.data.size > 0) chunks.push(e.data);
     };
 
     mediaRecorder.onstop = async () => {
+      if (exportCancelled) {
+        cleanupExportResources();
+        return;
+      }
+
       await new Promise(r => setTimeout(r, 100)); // drain remaining chunks
       const blob = new Blob(chunks, { type: 'video/webm' });
       setExportPhase('converting');
@@ -1105,6 +1149,7 @@ export default function App() {
         const res = await fetch('/api/convert-to-mp4', {
           method: 'POST',
           body: formData,
+          signal: abortController.signal,
         });
         
         if (!res.ok) throw new Error('Failed to convert');
@@ -1120,11 +1165,15 @@ export default function App() {
         setExportPhase('complete');
         setRenderProgress(100);
       } catch (err) {
+        if (exportCancelled || (err instanceof DOMException && err.name === 'AbortError')) {
+          return;
+        }
         console.error("Error creating MP4:", err);
         setExportPhase('error');
         alert('MP4 export failed. Please try again.');
       }
       setRendering(false);
+      exportCancelRef.current = null;
     };
 
     mediaRecorder.start();
@@ -1139,8 +1188,6 @@ export default function App() {
     const startTime = Date.now();
     let frame = 0;
     
-    let hasStopped = false;
-
     const draw = () => {
       if (hasStopped) return;
       const elapsed = Date.now() - startTime;
@@ -1156,18 +1203,7 @@ export default function App() {
             setRenderProgress(100);
          }
          
-         if (canvas.parentNode) {
-           canvas.parentNode.removeChild(canvas);
-         }
-         if (audioSource) {
-           try { audioSource.stop(); } catch(e){}
-         }
-         if (bgVideoEl) {
-           bgVideoEl.pause();
-         }
-         if (audioContext) {
-           audioContext.close();
-         }
+         cleanupExportResources();
          return;
       }
 
@@ -3155,7 +3191,18 @@ export default function App() {
                       <X className="h-4 w-4" />
                     </button>
                   ) : (
-                    <span className="text-xs font-semibold text-slate-500">{Math.round(renderProgress)}%</span>
+                    <span className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-slate-500">{Math.round(renderProgress)}%</span>
+                      <button
+                        type="button"
+                        onClick={cancelExport}
+                        className="rounded p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
+                        aria-label="Cancel export"
+                        title="Cancel export"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </span>
                   )}
                 </div>
                 {!exportDownload && exportPhase !== 'error' && <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
