@@ -1664,23 +1664,25 @@ export default function App() {
         </header>
 
         <main className="mx-auto max-w-7xl px-6 py-10 md:px-10">
-          <div className="grid min-h-[calc(100vh-120px)] items-center gap-10 md:grid-cols-[0.9fr_1.1fr]">
+          <div className="relative grid min-h-[calc(100vh-120px)] items-center gap-10 overflow-hidden rounded-[2rem] border border-slate-900/10 bg-[#07080B] px-6 py-10 shadow-2xl shadow-slate-900/10 md:grid-cols-[0.9fr_1.1fr] md:px-10">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_5%,rgba(102,43,174,0.42),transparent_34%),radial-gradient(circle_at_82%_92%,rgba(0,255,204,0.18),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent_38%)]" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white/10 to-transparent" />
             <section className="max-w-xl">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-500 shadow-sm">
+              <div className="relative mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white/70 shadow-sm backdrop-blur">
                 <AudioLines className="h-4 w-4 text-[#00FFCC]" />
                 Visualizer ads for modern service brands
               </div>
-              <h1 className="text-5xl font-black leading-[0.95] tracking-normal text-slate-950 md:text-7xl">
+              <h1 className="relative text-5xl font-black leading-[0.95] tracking-normal text-white md:text-7xl">
                 Turn sharp hooks into scroll-stopping ad creatives.
               </h1>
-              <p className="mt-6 max-w-lg text-lg font-medium leading-8 text-slate-600">
+              <p className="relative mt-6 max-w-lg text-lg font-medium leading-8 text-white/[0.62]">
                 Build branded Meta ads with bold hooks, intro cards, voiceover audio, waveform visuals, and export-ready layouts without opening a video editor.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="relative mt-8 flex flex-wrap gap-3">
                 <button
                   type="button"
                   onClick={enterStudio}
-                  className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800"
+                  className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5 hover:bg-slate-100"
                 >
                   Create an ad
                   <Wand2 className="h-4 w-4" />
@@ -1688,7 +1690,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={enterStudio}
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300"
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.08] px-5 py-3 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-white/[0.12]"
                 >
                   Explore templates
                 </button>
