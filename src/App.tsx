@@ -223,6 +223,7 @@ export default function App() {
   const [creativeBrief, setCreativeBrief] = useState<CreativeBrief>(EMPTY_CREATIVE_BRIEF);
   const [creativeBriefOpen, setCreativeBriefOpen] = useState(false);
   const [appTitle] = useState('Wiggly');
+  const [activePersonaDeckIndex, setActivePersonaDeckIndex] = useState(0);
 
   const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, setElements, deselectAll, commitHistory, setBusinessContext, elements } = useEditorStore();
   const hasComponent = (role: NonNullable<typeof elements[number]['componentRole']>) => elements.some((element) => element.componentRole === role);
@@ -1642,6 +1643,88 @@ export default function App() {
     setShowHomepage(false);
   };
 
+  const personaDecks = [
+    {
+      persona: 'Dental',
+      customer: 'Dental practices',
+      angle: 'Missed-call recovery',
+      color: '#00FFCC',
+      pain: 'High',
+      speed: 'Fast',
+      cards: [
+        { headline: 'One lunch break can cost a $3,200 case.', background: '#00FFCC', accent: '#4F46E5' },
+        { headline: "You don't need more leads. You need answered calls.", background: '#FFFFFF', accent: '#00FFCC' },
+        { headline: 'Every voicemail is a patient choosing someone else.', background: '#080B16', accent: '#60A5FA', dark: true },
+      ],
+    },
+    {
+      persona: 'Med spa',
+      customer: 'Med spa owners',
+      angle: 'Luxury consults',
+      color: '#F0ABFC',
+      pain: 'Medium',
+      speed: 'Fast',
+      cards: [
+        { headline: 'Empty consult slots are not a demand problem.', background: '#FFFFFF', accent: '#F0ABFC' },
+        { headline: 'Your best leads are asking one question: price.', background: '#080B16', accent: '#F0ABFC', dark: true },
+        { headline: 'Turn interest into booked consultations.', background: '#F0ABFC', accent: '#4F46E5' },
+      ],
+    },
+    {
+      persona: 'HVAC',
+      customer: 'Home service teams',
+      angle: 'Emergency calls',
+      color: '#60A5FA',
+      pain: 'High',
+      speed: 'Urgent',
+      cards: [
+        { headline: 'The hottest lead is the one calling right now.', background: '#080B16', accent: '#60A5FA', dark: true },
+        { headline: 'After-hours calls should still become booked jobs.', background: '#00FFCC', accent: '#4F46E5' },
+        { headline: 'Miss the call. Lose the job.', background: '#FFFFFF', accent: '#60A5FA' },
+      ],
+    },
+    {
+      persona: 'Legal',
+      customer: 'Law firms',
+      angle: 'After-hours intake',
+      color: '#FBBF24',
+      pain: 'High',
+      speed: 'Steady',
+      cards: [
+        { headline: 'New cases do not wait for office hours.', background: '#FBBF24', accent: '#4F46E5' },
+        { headline: 'Your intake form is not answering the phone.', background: '#FFFFFF', accent: '#FBBF24' },
+        { headline: 'Capture the case before they call another firm.', background: '#080B16', accent: '#FBBF24', dark: true },
+      ],
+    },
+    {
+      persona: 'Fitness',
+      customer: 'Fitness studios',
+      angle: 'Trial bookings',
+      color: '#FB7185',
+      pain: 'Medium',
+      speed: 'Fast',
+      cards: [
+        { headline: 'Trial leads go cold faster than you think.', background: '#FB7185', accent: '#00FFCC' },
+        { headline: 'More DMs should become booked intros.', background: '#FFFFFF', accent: '#FB7185' },
+        { headline: 'Stop letting motivated leads drift away.', background: '#080B16', accent: '#FB7185', dark: true },
+      ],
+    },
+    {
+      persona: 'Real estate',
+      customer: 'Real estate teams',
+      angle: 'Lead follow-up',
+      color: '#A78BFA',
+      pain: 'Medium',
+      speed: 'Fast',
+      cards: [
+        { headline: 'The first agent to respond usually wins.', background: '#A78BFA', accent: '#00FFCC' },
+        { headline: 'Every Zillow lead needs instant follow-up.', background: '#FFFFFF', accent: '#A78BFA' },
+        { headline: 'Speed-to-lead is the whole game.', background: '#080B16', accent: '#A78BFA', dark: true },
+      ],
+    },
+  ];
+  const activePersonaDeck = personaDecks[activePersonaDeckIndex];
+
   if (showHomepage) {
     return (
       <div className="min-h-screen bg-[#F6F8FB] font-sans text-slate-950">
@@ -1776,45 +1859,39 @@ export default function App() {
             <div className="relative grid min-h-[560px] gap-6 lg:grid-cols-[0.85fr_1.3fr_0.85fr]">
               <div className="rounded-3xl border border-white/10 bg-white/[0.08] p-5 backdrop-blur-xl">
                 <p className="mb-5 text-sm font-black uppercase tracking-wide text-white/40">Persona decks</p>
-                {[
-                  ['Dental', 'Missed-call recovery', '#00FFCC'],
-                  ['Med spa', 'Luxury consults', '#F0ABFC'],
-                  ['HVAC', 'Emergency calls', '#60A5FA'],
-                  ['Legal', 'After-hours intake', '#FBBF24'],
-                  ['Fitness', 'Trial bookings', '#FB7185'],
-                  ['Real estate', 'Lead follow-up', '#A78BFA'],
-                ].map(([persona, angle, color]) => (
+                {personaDecks.map((deck, index) => (
                   <button
-                    key={persona}
+                    key={deck.persona}
                     type="button"
-                    onClick={enterStudio}
-                    className="group flex w-full items-center gap-3 border-b border-white/10 py-4 text-left last:border-b-0"
+                    onClick={() => setActivePersonaDeckIndex(index)}
+                    className={`group flex w-full items-center gap-3 border-b border-white/10 py-4 text-left transition last:border-b-0 ${index === activePersonaDeckIndex ? 'text-white' : 'text-white/55 hover:text-white'}`}
+                    aria-pressed={index === activePersonaDeckIndex}
                   >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-sm font-black text-slate-950 transition group-hover:scale-105" style={{ backgroundColor: color }}>
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-sm font-black text-slate-950 transition group-hover:scale-105" style={{ backgroundColor: deck.color }}>
                       +
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-lg font-black leading-tight text-white">{persona}</span>
-                      <span className="block truncate text-sm font-semibold text-white/40">{angle}</span>
+                      <span className="block text-lg font-black leading-tight">{deck.persona}</span>
+                      <span className="block truncate text-sm font-semibold text-white/40">{deck.angle}</span>
                     </span>
-                    <Play className="h-4 w-4 fill-white text-white/45 transition group-hover:text-white" />
+                    <Play className={`h-4 w-4 fill-white transition group-hover:text-white ${index === activePersonaDeckIndex ? 'text-white' : 'text-white/45'}`} />
                   </button>
                 ))}
               </div>
 
               <div className="relative hidden min-h-[520px] lg:block">
-                <div className="absolute left-[4%] top-[6%] w-[34%] rotate-[-7deg]">
-                  <HomeAdCard headline="One lunch break can cost a $3,200 case." />
-                </div>
-                <div className="absolute left-[33%] top-[18%] w-[35%] rotate-[4deg]">
-                  <HomeAdCard headline="Empty consult slots are not a demand problem." background="#FFFFFF" accent="#F0ABFC" />
-                </div>
-                <div className="absolute bottom-[4%] left-[16%] w-[35%] rotate-[6deg]">
-                  <HomeAdCard headline="The hottest lead is the one calling right now." background="#080B16" accent="#60A5FA" dark />
-                </div>
-                <div className="absolute bottom-[14%] right-[2%] w-[34%] rotate-[-5deg]">
-                  <HomeAdCard headline="After-hours calls should still become booked jobs." background="#00FFCC" accent="#4F46E5" />
-                </div>
+                {activePersonaDeck.cards.map((card, index) => {
+                  const positions = [
+                    'left-[5%] top-[8%] w-[38%] rotate-[-7deg]',
+                    'left-[33%] top-[19%] w-[39%] rotate-[3deg]',
+                    'bottom-[4%] right-[3%] w-[38%] rotate-[-4deg]',
+                  ];
+                  return (
+                    <div key={`${activePersonaDeck.persona}-${card.headline}`} className={`absolute transition-all duration-300 ${positions[index]}`}>
+                      <HomeAdCard headline={card.headline} background={card.background} accent={card.accent} dark={card.dark} />
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="rounded-3xl border border-white/10 bg-white/[0.72] p-5 text-slate-950 shadow-2xl backdrop-blur-xl">
@@ -1826,25 +1903,25 @@ export default function App() {
                 </div>
                 <div className="mt-5 border-t border-slate-950/10 pt-5">
                   <p className="text-sm font-black uppercase tracking-wide text-slate-400">Current persona</p>
-                  <p className="mt-2 text-2xl font-black leading-tight">Dental practices</p>
+                  <p className="mt-2 text-2xl font-black leading-tight">{activePersonaDeck.customer}</p>
                 </div>
                 <div className="mt-6 space-y-5">
                   <div>
                     <div className="mb-2 flex items-center justify-between text-sm font-black text-slate-500">
                       <span>Pain intensity</span>
-                      <span>High</span>
+                      <span>{activePersonaDeck.pain}</span>
                     </div>
                     <div className="h-2 rounded-full bg-slate-950/10">
-                      <div className="h-2 w-4/5 rounded-full bg-slate-950" />
+                      <div className={`h-2 rounded-full bg-slate-950 ${activePersonaDeck.pain === 'High' ? 'w-4/5' : 'w-3/5'}`} />
                     </div>
                   </div>
                   <div>
                     <div className="mb-2 flex items-center justify-between text-sm font-black text-slate-500">
                       <span>Creative speed</span>
-                      <span>Fast</span>
+                      <span>{activePersonaDeck.speed}</span>
                     </div>
                     <div className="h-2 rounded-full bg-slate-950/10">
-                      <div className="h-2 w-11/12 rounded-full bg-[#4F46E5]" />
+                      <div className={`h-2 rounded-full bg-[#4F46E5] ${activePersonaDeck.speed === 'Urgent' ? 'w-full' : activePersonaDeck.speed === 'Steady' ? 'w-2/3' : 'w-11/12'}`} />
                     </div>
                   </div>
                 </div>
