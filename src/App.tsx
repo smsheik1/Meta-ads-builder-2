@@ -264,7 +264,7 @@ export default function App() {
   const [rendering, setRendering] = useState(false);
   const [renderProgress, setRenderProgress] = useState(0);
   const [exportPhase, setExportPhase] = useState<ExportPhase>('recording');
-  const [exportDownload, setExportDownload] = useState<{ url: string; filename: string; snapshot: SavedTemplate } | null>(null);
+  const [exportDownload, setExportDownload] = useState<{ url: string; blob: Blob; filename: string; snapshot: SavedTemplate } | null>(null);
   const [exportLaunchAnimation, setExportLaunchAnimation] = useState(false);
   const [renderDurationCap, setRenderDurationCap] = useState<RenderDurationCap>(30);
   const exportCancelRef = useRef<(() => void) | null>(null);
@@ -513,16 +513,46 @@ export default function App() {
     void saveDownloadedAdToHistory(snapshot);
   };
 
-  const downloadReadyExport = () => {
+  const downloadReadyExport = async () => {
     if (!exportDownload) return;
 
-    const link = document.createElement('a');
-    link.href = exportDownload.url;
-    link.download = exportDownload.filename;
-    link.rel = 'noopener';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    const showSaveFilePicker = (window as any).showSaveFilePicker;
+
+    if (typeof showSaveFilePicker === 'function') {
+      try {
+        const fileHandle = await showSaveFilePicker({
+          suggestedName: exportDownload.filename,
+          types: [
+            {
+              description: 'MP4 video',
+              accept: { 'video/mp4': ['.mp4'] },
+            },
+          ],
+        });
+        const writable = await fileHandle.createWritable();
+        await writable.write(exportDownload.blob);
+        await writable.close();
+        saveExportToHistoryOnce(exportDownload.snapshot);
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        console.warn('Native MP4 save failed, falling back to browser download:', error);
+      }
+    }
+
+    try {
+      const link = document.createElement('a');
+      link.href = exportDownload.url;
+      link.download = exportDownload.filename;
+      link.rel = 'noopener';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.warn('Browser MP4 download failed:', error);
+      window.open(exportDownload.url, '_blank', 'noopener,noreferrer');
+    }
 
     saveExportToHistoryOnce(exportDownload.snapshot);
   };
@@ -1220,7 +1250,7 @@ export default function App() {
         
         const url = URL.createObjectURL(mp4Blob);
         const filename = `agent-enamel-${Date.now()}.mp4`;
-        setExportDownload({ url, filename, snapshot: exportSnapshot });
+        setExportDownload({ url, blob: mp4Blob, filename, snapshot: exportSnapshot });
         setExportPhase('complete');
         setRenderProgress(100);
       } catch (err) {
