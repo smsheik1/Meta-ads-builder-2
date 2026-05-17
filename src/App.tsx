@@ -239,6 +239,7 @@ export default function App() {
   const [dialogueScripts, setDialogueScripts] = useState<DialogueScript[]>([]);
   const [isGeneratingDialogueScripts, setIsGeneratingDialogueScripts] = useState(false);
   const [isGeneratingDialogueAudio, setIsGeneratingDialogueAudio] = useState(false);
+  const [generatedDialogueAudioUrl, setGeneratedDialogueAudioUrl] = useState<string | null>(null);
 
   const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, setElements, deselectAll, commitHistory, setBusinessContext, elements } = useEditorStore();
   const hasComponent = (role: NonNullable<typeof elements[number]['componentRole']>) => elements.some((element) => element.componentRole === role);
@@ -482,6 +483,7 @@ export default function App() {
   const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setGeneratedDialogueAudioUrl(null);
       setAudioUrl(URL.createObjectURL(file));
       setAudioFileName(file.name);
     }
@@ -500,22 +502,45 @@ export default function App() {
     setIntroCropOpen(true);
   };
 
-  const captionsFromDialogueScript = (script: DialogueScript) => {
+  const captionsFromDialogueScript = (script: DialogueScript, totalDuration?: number) => {
     let cursor = 0;
+    const gap = 0.18;
     const speakers = Array.from(new Set(script.lines.map((line) => line.speaker).filter(Boolean))).slice(0, 2);
-    return script.lines.map((line) => {
-      const wordCount = line.text.trim().split(/\s+/).filter(Boolean).length;
-      const duration = Math.max(1.4, Math.min(4.5, wordCount * 0.38));
+    const wordCounts = script.lines.map((line) => Math.max(1, line.text.trim().split(/\s+/).filter(Boolean).length));
+    const totalWords = wordCounts.reduce((sum, count) => sum + count, 0) || 1;
+    const usableDuration = totalDuration && totalDuration > 0
+      ? Math.max(script.lines.length * 1.25, totalDuration - gap * Math.max(0, script.lines.length - 1))
+      : 0;
+
+    return script.lines.map((line, index) => {
+      const duration = usableDuration
+        ? Math.max(1.25, usableDuration * (wordCounts[index] / totalWords))
+        : Math.max(1.4, Math.min(4.5, wordCounts[index] * 0.38));
       const caption = {
         text: line.text,
         start: cursor,
         end: cursor + duration,
         speaker: speakers.indexOf(line.speaker) === 1 ? 2 : 1,
       };
-      cursor += duration + 0.18;
+      cursor += duration + gap;
       return caption;
     });
   };
+
+  const getObjectAudioDuration = (url: string) => new Promise<number>((resolve) => {
+    const audio = new Audio(url);
+    const timeout = window.setTimeout(() => resolve(0), 1500);
+    audio.preload = 'metadata';
+    audio.onloadedmetadata = () => {
+      window.clearTimeout(timeout);
+      resolve(Number.isFinite(audio.duration) ? audio.duration : 0);
+    };
+    audio.onerror = () => {
+      window.clearTimeout(timeout);
+      resolve(0);
+    };
+    audio.src = url;
+  });
 
   const handleGenerateDialogueScripts = async () => {
     try {
@@ -567,13 +592,10 @@ export default function App() {
       }
       const blob = new Blob([bytes], { type: data.mimeType || 'audio/wav' });
       const url = URL.createObjectURL(blob);
-      const captions = captionsFromDialogueScript(script);
+      const audioDuration = await getObjectAudioDuration(url);
+      const captions = captionsFromDialogueScript(script, audioDuration);
       useEditorStore.getState().setCaptions(captions);
-      try {
-        localStorage.setItem(`transcription_${url}`, JSON.stringify(captions));
-      } catch (error) {
-        console.error('Could not cache generated dialogue captions:', error);
-      }
+      setGeneratedDialogueAudioUrl(url);
       setAudioUrl(url);
       setAudioFileName(data.filename || `${script.title || 'conversation-ad'}.wav`);
     } catch (error: any) {
@@ -592,6 +614,10 @@ export default function App() {
   useEffect(() => {
     if (!audioUrl) {
       useEditorStore.getState().setCaptions([]);
+      return;
+    }
+
+    if (audioUrl === generatedDialogueAudioUrl) {
       return;
     }
 
@@ -705,7 +731,7 @@ export default function App() {
     };
 
     transcribeUrl();
-  }, [audioUrl]);
+  }, [audioUrl, generatedDialogueAudioUrl]);
 
   const handleAddImageElement = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -2432,7 +2458,7 @@ export default function App() {
                     </div>
                     {audioUrl && (
                       <button 
-                        onClick={() => { setAudioUrl(null); setAudioFileName(''); }}
+                        onClick={() => { setAudioUrl(null); setAudioFileName(''); setGeneratedDialogueAudioUrl(null); }}
                         title="Remove Audio"
                         className="px-2 border border-slate-200 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors bg-white flex items-center justify-center shrink-0"
                       >
