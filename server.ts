@@ -135,6 +135,100 @@ const parseJsonResponse = (text: string) => {
   return JSON.parse(fenced ? fenced[1] : trimmed);
 };
 
+const gibberishPattern = /\b(?:[bcdfghjklmnpqrstvwxyz]{4,}|(?:asdf|sdfg|qwer|zxcv|hjkl|lorem|ipsum)[a-z]*)\b/i;
+
+const hasGarbageText = (value: unknown) => {
+  const text = String(value || '').trim();
+  return !text || gibberishPattern.test(text) || /\bwiggly\b/i.test(text);
+};
+
+const normalizeDialogueScripts = (payload: any, count: number) => {
+  const rawScripts = Array.isArray(payload?.scripts) ? payload.scripts : [];
+
+  return rawScripts
+    .map((script: any) => {
+      const lines = Array.isArray(script?.lines)
+        ? script.lines
+            .map((line: any, index: number) => ({
+              speaker: String(line?.speaker || (index % 2 === 0 ? 'Ava' : 'Sam')).trim(),
+              tone: String(line?.tone || 'natural').trim(),
+              text: String(line?.text || '').trim(),
+            }))
+            .filter((line: any) => {
+              const words = line.text.split(/\s+/).filter(Boolean);
+              return words.length >= 3 && words.length <= 28 && !hasGarbageText(line.text);
+            })
+        : [];
+
+      return {
+        title: String(script?.title || 'Conversation option').trim(),
+        angle: String(script?.angle || 'Problem and solution').trim(),
+        lines,
+      };
+    })
+    .filter((script: any) => {
+      const combined = [
+        script.title,
+        script.angle,
+        ...script.lines.map((line: any) => line.text),
+      ].join(' ');
+      const repeatsSpeaker = script.lines.some((line: any, index: number) => (
+        index > 0 && line.speaker.toLowerCase() === script.lines[index - 1].speaker.toLowerCase()
+      ));
+      return script.lines.length >= 4 && !repeatsSpeaker && !hasGarbageText(combined);
+    })
+    .slice(0, count);
+};
+
+const fillDialogueScripts = (scripts: any[], count: number) => {
+  const fallbacks = fallbackDialogueScripts(count);
+  const combined = [...scripts];
+  for (const fallback of fallbacks) {
+    if (combined.length >= count) break;
+    if (!combined.some((script) => script.title === fallback.title)) {
+      combined.push(fallback);
+    }
+  }
+  return combined.slice(0, count);
+};
+
+const fallbackDialogueScripts = (count: number) => {
+  const scripts = [
+    {
+      title: 'Missed Call Recovery',
+      angle: 'The practice is already paying for leads it never answers.',
+      lines: [
+        { speaker: 'Ava', tone: 'concerned', text: 'We missed three new patient calls during lunch again.' },
+        { speaker: 'Sam', tone: 'calm', text: 'That is exactly why the AI front desk answers when the team cannot.' },
+        { speaker: 'Ava', tone: 'curious', text: 'So it can book the patient before they call another office?' },
+        { speaker: 'Sam', tone: 'assured', text: 'Yes. It answers, follows up, and keeps the appointment moving.' },
+      ],
+    },
+    {
+      title: 'After Hours Calls',
+      angle: 'Patients call outside normal hours and still expect a response.',
+      lines: [
+        { speaker: 'Ava', tone: 'frustrated', text: 'The best leads keep calling after we close.' },
+        { speaker: 'Sam', tone: 'practical', text: 'Then stop making business hours the only time you can book.' },
+        { speaker: 'Ava', tone: 'thoughtful', text: 'An AI receptionist could answer those calls at night?' },
+        { speaker: 'Sam', tone: 'calm', text: 'And follow up automatically so the patient does not disappear.' },
+      ],
+    },
+    {
+      title: 'No More Hiring',
+      angle: 'More staff is not always the cleanest fix.',
+      lines: [
+        { speaker: 'Ava', tone: 'tired', text: 'I do not want to hire another front desk person.' },
+        { speaker: 'Sam', tone: 'steady', text: 'Then cover the gaps instead of adding another payroll problem.' },
+        { speaker: 'Ava', tone: 'interested', text: 'So the AI handles missed calls and follow up?' },
+        { speaker: 'Sam', tone: 'confident', text: 'Exactly. Your team stays focused while the calls still get answered.' },
+      ],
+    },
+  ];
+
+  return scripts.slice(0, count);
+};
+
 const pcmBase64ToWavBase64 = (pcmBase64: string, sampleRate = 24000, channels = 1, bitsPerSample = 16) => {
   const pcm = Buffer.from(pcmBase64, 'base64');
   const header = Buffer.alloc(44);
@@ -324,6 +418,10 @@ The ad should feel like a real-life overheard conversation, not a sales pitch.
 One person has the problem. The other casually reveals the solution.
 Keep each script 14-26 seconds when read aloud.
 No hype. No buzzwords. No testimonials. No fake stats.
+Do not include placeholder text, keyboard-mash text, filler words, lorem ipsum, or nonsensical tokens.
+Every line must be fluent English that could be read aloud in the ad.
+Never mention Wiggly. Wiggly is the internal builder, not the product being advertised.
+Use the offer and CTA from the brief. If the brand name is unknown, say "the AI front desk" instead of inventing one.
 
 Return ONLY valid JSON:
 {
@@ -339,16 +437,24 @@ Return ONLY valid JSON:
   ]
 }`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-      },
-    });
+    let scripts: any[] = [];
 
-    const text = response.text || '{"scripts":[]}';
-    res.json(parseJsonResponse(text));
+    for (let attempt = 0; attempt < 2 && scripts.length === 0; attempt += 1) {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: attempt === 0
+          ? prompt
+          : `${prompt}\n\nYour previous output failed quality checks. Return clean, fluent English only. Absolutely no placeholder or keyboard-mash text.`,
+        config: {
+          responseMimeType: 'application/json',
+        },
+      });
+
+      const text = response.text || '{"scripts":[]}';
+      scripts = normalizeDialogueScripts(parseJsonResponse(text), Number(count) || 5);
+    }
+
+    res.json({ scripts: fillDialogueScripts(scripts, Number(count) || 5) });
   } catch (error: any) {
     console.error("Generate dialogue scripts error:", error);
     res.status(500).json({ error: error.message || 'Error generating dialogue scripts' });
