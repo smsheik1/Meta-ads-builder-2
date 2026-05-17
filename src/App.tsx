@@ -1650,7 +1650,7 @@ export default function App() {
             <img src="/logo.png" alt="Agent Enamel" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
             <div>
               <p className="text-lg font-black leading-tight">Pingy</p>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Creative ad platform</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Visual ads that move fast.</p>
             </div>
           </div>
           <button
