@@ -117,6 +117,7 @@ const CREATIVE_BRIEF_FIELDS: Array<{
 type SavedTemplate = {
   id: string;
   name: string;
+  builtIn?: boolean;
   createdAt: number;
   elements: ReturnType<typeof useEditorStore.getState>['elements'];
   settings: {
@@ -141,6 +142,135 @@ type SavedTemplate = {
     audioFileName: string;
   };
 };
+
+const BUILT_IN_TEMPLATES: SavedTemplate[] = [
+  {
+    id: 'built-in-ai-dental-receptionist',
+    name: 'AI Dental Receptionist',
+    builtIn: true,
+    createdAt: 0,
+    elements: [
+      {
+        id: 'built-in-ai-dental-logo',
+        type: 'image',
+        componentRole: 'logo',
+        imageUrl: '/logo.png',
+        x: 126,
+        y: 46,
+        width: 108,
+        height: 44,
+        rotation: 0,
+        zIndex: 10,
+        removeWhite: true,
+      },
+      {
+        id: 'built-in-ai-dental-headline',
+        type: 'text',
+        componentRole: 'headline',
+        content: 'The AI Dental Receptionist',
+        x: 18,
+        y: 126,
+        width: 324,
+        height: 116,
+        rotation: 0,
+        zIndex: 2,
+        fontFamily: 'Montserrat',
+        fontSize: 48,
+        fontWeight: '900',
+        color: '#ffffff',
+        textAlign: 'center',
+        lineHeight: 1,
+      },
+      {
+        id: 'built-in-ai-dental-subhead',
+        type: 'text',
+        componentRole: 'subheadline',
+        content: 'Never miss another call again.',
+        x: 28,
+        y: 252,
+        width: 304,
+        height: 48,
+        rotation: 0,
+        zIndex: 2,
+        fontFamily: 'Inter',
+        fontSize: 25,
+        fontWeight: '800',
+        color: '#ffffff',
+        textAlign: 'center',
+        lineHeight: 1.08,
+      },
+      {
+        id: 'built-in-ai-dental-visualizer',
+        type: 'visualizer',
+        componentRole: 'visualizer',
+        x: 0,
+        y: 330,
+        width: 360,
+        height: 108,
+        rotation: 0,
+        zIndex: 3,
+        visualizerType: 'bars-center',
+        barColor: '#00FFCC',
+        barCount: 16,
+        visualizerSensitivity: 1.5,
+        visualizerSplitSpeakers: false,
+      },
+      {
+        id: 'built-in-ai-dental-captions',
+        type: 'caption',
+        componentRole: 'captions',
+        x: 24,
+        y: 508,
+        width: 312,
+        height: 72,
+        rotation: 0,
+        zIndex: 4,
+        fontSize: 24,
+        fontWeight: '900',
+        color: '#ffffff',
+        textAlign: 'center',
+      },
+      {
+        id: 'built-in-ai-dental-cta',
+        type: 'button',
+        componentRole: 'cta',
+        content: 'BOOK A DEMO',
+        x: 76,
+        y: 612,
+        width: 208,
+        height: 54,
+        rotation: 0,
+        zIndex: 5,
+        fontSize: 17,
+        fontWeight: '900',
+        color: '#ffffff',
+        backgroundColor: '#4F46E5',
+        borderRadius: 999,
+      },
+    ],
+    settings: {
+      visualizerColor: '#00FFCC',
+      accentColor: '#4F46E5',
+      bgColor: '#111827',
+      platform: 'instagram-feed',
+      platformTheme: 'dark',
+      brandName: 'Agent Enamel',
+      brandLogo: null,
+      simulatedCaption: 'The AI Dental Receptionist. Never miss another call again.',
+      autoCta: 'Learn More',
+      bgMedia: null,
+      bgShadow: true,
+      bgShadowOpacity: 0.38,
+      introImage: null,
+      introFileName: '',
+      introDuration: 1,
+      introFeedCropY: 50,
+      introImageAspect: 1080 / 1350,
+      audioUrl: null,
+      audioFileName: '',
+    },
+  },
+];
 
 type AdHistoryItem = SavedTemplate & StoredAdSnapshot;
 
@@ -1687,6 +1817,28 @@ export default function App() {
         className="relative aspect-[9/16] w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-inner"
         style={{ backgroundColor: template.settings.bgColor }}
       >
+        {template.settings.bgMedia?.type === 'video' && (
+          <video
+            src={template.settings.bgMedia.url}
+            className="absolute inset-0 h-full w-full object-cover"
+            muted
+            loop
+            playsInline
+            autoPlay
+          />
+        )}
+        {template.settings.bgMedia?.type === 'image' && (
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${template.settings.bgMedia.url})` }}
+          />
+        )}
+        {template.settings.bgMedia && template.settings.bgShadow && (
+          <div
+            className="absolute inset-0 bg-black"
+            style={{ opacity: template.settings.bgShadowOpacity }}
+          />
+        )}
         <div className="absolute inset-x-0 top-[10%] flex justify-center">
           {hasLogo ? (
             <span className="h-2 w-8 rounded-full bg-emerald-500/80" />
@@ -1756,8 +1908,9 @@ export default function App() {
     );
   };
 
-  const activeTemplateItems = templateLibraryTab === 'templates' ? templates : historyItems;
-  const activeTemplateCount = templateLibraryTab === 'templates' ? templates.length : historyItems.length;
+  const templateItems = [...BUILT_IN_TEMPLATES, ...templates];
+  const activeTemplateItems = templateLibraryTab === 'templates' ? templateItems : historyItems;
+  const activeTemplateCount = templateLibraryTab === 'templates' ? templateItems.length : historyItems.length;
 
   const enterStudio = () => {
     try {
@@ -2963,25 +3116,27 @@ export default function App() {
                         <span className="text-[10px] font-semibold text-slate-400">{template.elements.length}</span>
                       </div>
                       <span className="pointer-events-none absolute inset-2 rounded-lg bg-indigo-500/0 transition group-hover:bg-indigo-500/5" />
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          templateLibraryTab === 'templates' ? deleteTemplate(template.id) : deleteHistoryItem(template.id);
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault();
+                      {!template.builtIn && (
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(event) => {
                             event.stopPropagation();
                             templateLibraryTab === 'templates' ? deleteTemplate(template.id) : deleteHistoryItem(template.id);
-                          }
-                        }}
-                        title={templateLibraryTab === 'templates' ? 'Delete template' : 'Delete history item'}
-                        className="absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-slate-400 opacity-0 shadow-sm transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </span>
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              templateLibraryTab === 'templates' ? deleteTemplate(template.id) : deleteHistoryItem(template.id);
+                            }
+                          }}
+                          title={templateLibraryTab === 'templates' ? 'Delete template' : 'Delete history item'}
+                          className="absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-slate-400 opacity-0 shadow-sm transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
