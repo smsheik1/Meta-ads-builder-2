@@ -1737,7 +1737,7 @@ export default function App() {
                 },
                 {
                   icon: AudioLines,
-                  title: 'Voice AI visuals',
+                  title: 'Audio-first visuals',
                   copy: 'Waveforms, captions, intro cards, and CTA layouts in one builder.',
                 },
                 {
@@ -1769,7 +1769,97 @@ export default function App() {
               ))}
             </div>
           </section>
+
+          <section className="py-16">
+            <div className="mb-12 max-w-4xl">
+              <h2 className="text-4xl font-black leading-[0.95] tracking-normal text-slate-950 md:text-6xl">
+                Designed for the parts marketers repeat every day.
+              </h2>
+              <p className="mt-5 max-w-2xl text-lg font-semibold leading-8 text-slate-500">
+                Pingy keeps the creative loop small: pick a hook, preview the ad, save what works, and ship the next variation.
+              </p>
+            </div>
+            <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { icon: Wand2, title: 'Fresh hook angles' },
+                { icon: AudioLines, title: 'Reactive waveform ads' },
+                { icon: Layers, title: 'Layouts you can reuse' },
+                { icon: Captions, title: 'Caption-ready videos' },
+                { icon: Type, title: 'Editable ad copy' },
+                { icon: BookmarkPlus, title: 'Saved design library' },
+                { icon: CheckCircle2, title: 'Placement checks' },
+                { icon: Download, title: 'Export-ready MP4s' },
+              ].map((item) => (
+                <div key={item.title} className="group flex flex-col items-center text-center">
+                  <item.icon className="mb-5 h-16 w-16 stroke-[2.8] text-slate-950 transition duration-300 group-hover:-translate-y-1 group-hover:scale-105 group-hover:text-[#4F46E5]" />
+                  <h3 className="max-w-[12rem] text-2xl font-black leading-tight tracking-normal text-slate-950">
+                    {item.title}
+                  </h3>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="relative mb-16 overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-14 text-white shadow-2xl shadow-slate-900/15 md:px-12 md:py-16">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(0,255,204,0.22),transparent_30%),radial-gradient(circle_at_85%_10%,rgba(79,70,229,0.32),transparent_34%)]" />
+            <div className="relative grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+              <div>
+                <p className="text-sm font-black uppercase tracking-wide text-[#00FFCC]">The ad creative loop</p>
+                <h2 className="mt-3 text-4xl font-black leading-[0.95] tracking-normal md:text-6xl">
+                  Make ten ad directions before lunch.
+                </h2>
+                <p className="mt-5 max-w-xl text-base font-semibold leading-7 text-white/62">
+                  Start with a saved layout, refresh the hook, check the Meta placement, then export the version that feels strongest.
+                </p>
+                <button
+                  type="button"
+                  onClick={enterStudio}
+                  className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5 hover:bg-slate-100"
+                >
+                  Open Pingy
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-white/[0.08] p-4 backdrop-blur">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[
+                    ['Hook', 'Lunch break = lost case'],
+                    ['Format', 'IG Feed 4:5'],
+                    ['Motion', 'Center waveform'],
+                    ['Export', '30s MP4'],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-2xl bg-white/[0.09] p-4">
+                      <p className="text-xs font-black uppercase tracking-wide text-white/35">{label}</p>
+                      <p className="mt-2 text-lg font-black leading-tight text-white">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 rounded-2xl bg-[#00FFCC] p-5 text-slate-950">
+                  <p className="text-sm font-black uppercase tracking-wide opacity-60">Current angle</p>
+                  <p className="mt-2 text-3xl font-black leading-none tracking-normal">Stop losing patients to voicemail.</p>
+                  <div className="mt-5 flex h-3 items-center gap-2">
+                    <span className="h-3 w-12 rounded-full bg-slate-950" />
+                    <span className="h-3 w-7 rounded-full bg-[#4F46E5]" />
+                    <span className="h-3 w-16 rounded-full bg-slate-950" />
+                    <span className="h-3 w-9 rounded-full bg-[#4F46E5]" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </main>
+
+        <footer className="relative overflow-hidden px-6 pb-10 md:px-10">
+          <div className="mx-auto flex max-w-7xl flex-col gap-4 border-t border-slate-200 pt-8 text-sm font-bold text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+            <p>Pingy. Visual ads that move fast.</p>
+            <button type="button" onClick={enterStudio} className="text-slate-950 transition hover:text-[#4F46E5]">
+              Open Studio
+            </button>
+          </div>
+          <div className="pointer-events-none -mb-8 hidden select-none overflow-hidden bg-gradient-to-b from-slate-950/10 to-slate-950/0 bg-clip-text text-center text-[10rem] font-black leading-none text-transparent sm:block md:text-[15rem]">
+            Pingy
+          </div>
+        </footer>
       </div>
     );
   }
