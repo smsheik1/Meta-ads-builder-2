@@ -222,7 +222,7 @@ export default function App() {
   const [templateDraftName, setTemplateDraftName] = useState('');
   const [creativeBrief, setCreativeBrief] = useState<CreativeBrief>(EMPTY_CREATIVE_BRIEF);
   const [creativeBriefOpen, setCreativeBriefOpen] = useState(false);
-  const [appTitle] = useState('Agent Enamel Studio');
+  const [appTitle] = useState('Pingy');
 
   const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, setElements, deselectAll, commitHistory, setBusinessContext, elements } = useEditorStore();
   const hasComponent = (role: NonNullable<typeof elements[number]['componentRole']>) => elements.some((element) => element.componentRole === role);
@@ -1649,8 +1649,8 @@ export default function App() {
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Agent Enamel" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
             <div>
-              <p className="text-lg font-black leading-tight">Agent Enamel Studio</p>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Voice AI ad builder</p>
+              <p className="text-lg font-black leading-tight">Pingy</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Creative ad platform</p>
             </div>
           </div>
           <button
@@ -1668,10 +1668,10 @@ export default function App() {
             <section className="max-w-xl">
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-500 shadow-sm">
                 <AudioLines className="h-4 w-4 text-[#00FFCC]" />
-                Visualizer ads for voice AI agencies
+                Visualizer ads for modern service brands
               </div>
               <h1 className="text-5xl font-black leading-[0.95] tracking-normal text-slate-950 md:text-7xl">
-                Turn voice AI offers into scroll-stopping ad creatives.
+                Turn sharp hooks into scroll-stopping ad creatives.
               </h1>
               <p className="mt-6 max-w-lg text-lg font-medium leading-8 text-slate-600">
                 Build branded Meta ads with bold hooks, intro cards, voiceover audio, waveform visuals, and export-ready layouts without opening a video editor.
