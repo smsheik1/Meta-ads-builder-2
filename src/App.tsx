@@ -1228,6 +1228,7 @@ export default function App() {
 
       await new Promise(r => setTimeout(r, 100)); // drain remaining chunks
       const blob = new Blob(chunks, { type: 'video/webm' });
+      cleanupExportResources();
       setExportPhase('converting');
       setRenderProgress(92);
       
@@ -1265,7 +1266,10 @@ export default function App() {
       exportCancelRef.current = null;
     };
 
-    mediaRecorder.start();
+    const exportFps = 60;
+    const frameDurationMs = 1000 / exportFps;
+
+    mediaRecorder.start(1000);
     if (audioSource) {
       audioSource.start();
     }
@@ -1274,12 +1278,13 @@ export default function App() {
       bgVideoEl.play();
     }
     
-    const startTime = Date.now();
+    const renderStartTime = performance.now();
     let frame = 0;
+    const visualizerValueMemory: Record<string, number[]> = {};
     
     const draw = () => {
       if (hasStopped) return;
-      const elapsed = Date.now() - startTime;
+      const elapsed = Math.min(performance.now() - renderStartTime, renderDuration);
       
       if (elapsed >= renderDuration) {
          hasStopped = true;
@@ -1291,8 +1296,6 @@ export default function App() {
             setRendering(false);
             setRenderProgress(100);
          }
-         
-         cleanupExportResources();
          return;
       }
 
@@ -1672,15 +1675,20 @@ export default function App() {
              const mirror = el.visualizerMirror || false;
              const sensitivityMultiplier = el.visualizerSensitivity ?? 1.0;
 
-             const getValue = (idx, total) => {
+             const getValue = (idx: number, total: number, isLeftSpeakerSide?: boolean) => {
                  let val = 0;
                  if (analyser && dataArray) {
                      const dataBins = Math.floor(dataArray.length * 0.4);
-                     const center = (total - 1) / 2;
+                     const halfCount = Math.floor(count / 2);
+                     const sideIndex = isLeftSpeakerSide ? idx : idx - halfCount;
+                     const sideTotal = isLeftSpeakerSide ? halfCount : count - halfCount;
+                     const center = (count - 1) / 2;
                      const centerDistance = Math.abs(idx - center);
-                     const normalizedIndex = type === 'bars-center' && !el.visualizerSplitSpeakers
-                       ? centerDistance / Math.max(1, center)
-                       : idx / Math.max(1, total - 1);
+                     const normalizedIndex = el.visualizerSplitSpeakers
+                       ? sideIndex / Math.max(1, sideTotal - 1)
+                       : type === 'bars-center'
+                         ? centerDistance / Math.max(1, center)
+                         : idx / Math.max(1, total - 1);
                      const dataIdx = 1 + Math.floor(normalizedIndex * dataBins);
                      val = Math.min((dataArray[Math.min(dataIdx, dataArray.length-1)] / 255.0) * sensitivityMultiplier, 1.0); 
                      val = Math.pow(val, 1.5); // non-linear scaling for better visuals
@@ -1690,13 +1698,14 @@ export default function App() {
                  return val;
              };
 
-             const values = [];
+             const values: number[] = [];
              if (mirror) {
                  const half = Math.ceil(count / 2);
-                 for(let i=0; i<half; i++) values.push(getValue(i, half));
+                 for(let i=0; i<half; i++) values.push(getValue(i, half, i < Math.floor(count / 2)));
                  for(let i=half; i<count; i++) values.push(values[count - 1 - i]);
              } else {
-                 for(let i=0; i<count; i++) values.push(getValue(i, count));
+                 const halfCount = Math.floor(count / 2);
+                 for(let i=0; i<count; i++) values.push(getValue(i, count, i < halfCount));
              }
              
              if (el.visualizerSplitSpeakers) {
@@ -1708,12 +1717,19 @@ export default function App() {
                  }
              }
 
+             const previousValues = visualizerValueMemory[el.id] || new Array(count).fill(0.04);
+             const smoothedValues = values.map((value, index) => {
+               const previous = previousValues[index] ?? 0.04;
+               return previous + (value - previous) * 0.38;
+             });
+             visualizerValueMemory[el.id] = smoothedValues;
+
              if (type === 'bars-bottom' || type === 'bars-center') {
-                 const gap = 2 * scale;
+                 const gap = 4 * scale;
                  const barW = (elW - gap * (count - 1)) / count;
                  const halfCount = Math.floor(count / 2);
                  for (let i = 0; i < count; i++) {
-                     const v = values[i];
+                     const v = smoothedValues[i];
                      const minBarH = 4 * scale;
                      const barH = Math.min(minBarH + v * (elH * 0.9), elH);
                      const barX = i * (barW + gap);
@@ -1812,11 +1828,11 @@ export default function App() {
       frame++;
       
       if (!hasStopped) {
-         requestAnimationFrame(draw);
+         window.setTimeout(draw, frameDurationMs);
       }
     };
     
-    requestAnimationFrame(draw);
+    draw();
   };
 
   const runBatch = () => {
