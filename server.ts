@@ -405,10 +405,13 @@ app.post('/api/generate-dialogue-audio', async (req, res) => {
     }
 
     const mimeType = inlineData.mimeType || 'audio/L16;codec=pcm;rate=24000';
-    const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+    const normalizedMimeType = mimeType.toLowerCase();
+    const sampleRateMatch = normalizedMimeType.match(/rate=(\d+)/);
     const sampleRate = sampleRateMatch ? Number(sampleRateMatch[1]) : 24000;
-    const isPcm = mimeType.includes('audio/L16') || mimeType.includes('pcm');
-    const audioBase64 = isPcm ? pcmBase64ToWavBase64(inlineData.data, sampleRate) : inlineData.data;
+    const channelsMatch = normalizedMimeType.match(/channels=(\d+)/);
+    const channels = channelsMatch ? Number(channelsMatch[1]) : 1;
+    const isPcm = normalizedMimeType.includes('audio/l16') || normalizedMimeType.includes('pcm');
+    const audioBase64 = isPcm ? pcmBase64ToWavBase64(inlineData.data, sampleRate, channels) : inlineData.data;
 
     res.json({
       audioBase64,
