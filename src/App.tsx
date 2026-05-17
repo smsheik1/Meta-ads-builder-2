@@ -2,18 +2,49 @@ import React, { useState, useRef, useEffect } from 'react';
 import { PlatformFrame, isFeedPlatform, isVerticalPlatform, type PlatformType } from './components/PlatformFrame';
 import { CanvasEditor } from './components/CanvasEditor';
 import { PropertiesPanel } from './components/PropertiesPanel';
-import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, ChevronDown, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList } from 'lucide-react';
+import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, ChevronDown, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList, ArrowRight, Wand2 } from 'lucide-react';
 import Papa from 'papaparse';
 import { useEditorStore } from './store';
 import { drawAdvancedVisualizer } from './lib/visualizer';
 import { parseRichText, stripRichText, type RichTextRun } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
+import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } from './lib/audio-library';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
+const STUDIO_SEEN_STORAGE_KEY = 'agent_enamel_studio_seen_v1';
 const DEFAULT_INTRO_IMAGE = '/default-intro-image.png';
 const DEFAULT_INTRO_IMAGE_NAME = 'Default intro image';
+const DEFAULT_AUDIO_URL = '/ai-dental-receptionist-audio.mp3';
+const DEFAULT_AUDIO_NAME = 'AI Dental Receptionist';
+const BACKGROUND_COLOR_FAMILIES = [
+  { hue: 158, saturation: [70, 95], lightness: [45, 96] },
+  { hue: 190, saturation: [55, 90], lightness: [42, 94] },
+  { hue: 230, saturation: [45, 75], lightness: [44, 96] },
+  { hue: 255, saturation: [45, 78], lightness: [45, 94] },
+  { hue: 315, saturation: [35, 70], lightness: [48, 94] },
+  { hue: 25, saturation: [35, 70], lightness: [50, 94] },
+  { hue: 0, saturation: [0, 0], lightness: [8, 98] },
+];
+
+const randomInRange = ([min, max]: number[]) => Math.round(min + Math.random() * (max - min));
+
+const getFreshBackgroundColor = (currentColor: string) => {
+  let nextColor = currentColor;
+  let attempts = 0;
+
+  while (nextColor.toLowerCase() === currentColor.toLowerCase() && attempts < 8) {
+    const family = BACKGROUND_COLOR_FAMILIES[Math.floor(Math.random() * BACKGROUND_COLOR_FAMILIES.length)];
+    const hue = family.hue + randomInRange([-8, 8]);
+    const saturation = randomInRange(family.saturation);
+    const lightness = randomInRange(family.lightness);
+    nextColor = `hsl(${hue} ${saturation}% ${lightness}%)`;
+    attempts += 1;
+  }
+
+  return nextColor;
+};
 
 const MOCK_CAPTIONS = [
   { text: "Are you missing calls?", start: 0, end: 2, speaker: 1 },
@@ -35,6 +66,18 @@ type CreativeBrief = {
   differentiator: string;
   cta: string;
   reference: string;
+};
+
+type DialogueLine = {
+  speaker: 'Ava' | 'Sam' | string;
+  tone: string;
+  text: string;
+};
+
+type DialogueScript = {
+  title: string;
+  angle: string;
+  lines: DialogueLine[];
 };
 
 const EMPTY_CREATIVE_BRIEF: CreativeBrief = {
@@ -104,6 +147,7 @@ const CREATIVE_BRIEF_FIELDS: Array<{
 type SavedTemplate = {
   id: string;
   name: string;
+  builtIn?: boolean;
   createdAt: number;
   elements: ReturnType<typeof useEditorStore.getState>['elements'];
   settings: {
@@ -129,9 +173,60 @@ type SavedTemplate = {
   };
 };
 
+const BUILT_IN_TEMPLATES: SavedTemplate[] = [];
+
+type AudioLibraryItem = {
+  id: string;
+  name: string;
+  url: string;
+  builtIn?: boolean;
+  stored?: StoredAudioItem;
+};
+
 type AdHistoryItem = SavedTemplate & StoredAdSnapshot;
 
+const HomeAdCard = ({
+  headline,
+  accent = '#4F46E5',
+  background = '#10F5B1',
+  dark = false,
+}: {
+  headline: string;
+  accent?: string;
+  background?: string;
+  dark?: boolean;
+}) => (
+  <div
+    className={`relative aspect-[9/16] overflow-hidden rounded-2xl border p-5 shadow-sm ${dark ? 'border-slate-800 text-white' : 'border-slate-200 text-slate-950'}`}
+    style={{ background }}
+  >
+    <div className="mx-auto mb-8 h-2 w-10 rounded-full opacity-70" style={{ backgroundColor: accent }} />
+    <p className="mx-auto max-w-[190px] text-center text-2xl font-black leading-[0.9] tracking-normal">{headline}</p>
+    <div className="absolute inset-x-6 top-[52%] flex h-12 items-center justify-center gap-1">
+      {Array.from({ length: 18 }).map((_, index) => (
+        <span
+          key={index}
+          className="w-2 rounded-full"
+          style={{
+            height: `${18 + ((index * 13) % 48)}px`,
+            backgroundColor: index % 5 === 0 ? accent : '#00FFCC',
+          }}
+        />
+      ))}
+    </div>
+    <div className="absolute bottom-[24%] left-1/2 h-2 w-24 -translate-x-1/2 rounded-full" style={{ backgroundColor: accent }} />
+    <div className="absolute bottom-5 left-5 right-5 h-10 rounded-full bg-white/90" />
+  </div>
+);
+
 export default function App() {
+  const [showHomepage, setShowHomepage] = useState(() => {
+    try {
+      return localStorage.getItem(STUDIO_SEEN_STORAGE_KEY) !== '1';
+    } catch {
+      return true;
+    }
+  });
   const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single');
   
   // Single Template State
@@ -157,30 +252,42 @@ export default function App() {
   const [introFeedCropY, setIntroFeedCropY] = useState(50);
   const [introImageAspect, setIntroImageAspect] = useState<number | null>(1132 / 1389);
   const [introCropOpen, setIntroCropOpen] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>('/019e13bd-0b04-7dd0-95d6-dbcb36900e35-1778447713483-d2bb8e52-6c00-4439-a0e9-52f7e7a4a897-stereo (1).mp3');
-  const [audioFileName, setAudioFileName] = useState<string>('019e13bd-0b04-7dd0-95d6-dbcb36900e35-1778447713483-d2bb8e52-6c00-4439-a0e9-52f7e7a4a897-stereo (1).mp3');
+  const [audioUrl, setAudioUrl] = useState<string | null>(DEFAULT_AUDIO_URL);
+  const [audioFileName, setAudioFileName] = useState<string>(DEFAULT_AUDIO_NAME);
+
+  const refreshBackgroundColor = () => {
+    setBgColor((currentColor) => getFreshBackgroundColor(currentColor));
+  };
   
   // Playback/Render State
   const [playing, setPlaying] = useState(false);
   const [rendering, setRendering] = useState(false);
   const [renderProgress, setRenderProgress] = useState(0);
   const [exportPhase, setExportPhase] = useState<ExportPhase>('recording');
-  const [exportDownload, setExportDownload] = useState<{ url: string; filename: string; snapshot: SavedTemplate } | null>(null);
+  const [exportDownload, setExportDownload] = useState<{ url: string; blob: Blob; filename: string; snapshot: SavedTemplate } | null>(null);
   const [exportLaunchAnimation, setExportLaunchAnimation] = useState(false);
   const [renderDurationCap, setRenderDurationCap] = useState<RenderDurationCap>(30);
+  const exportCancelRef = useRef<(() => void) | null>(null);
+  const savedExportHistoryIdRef = useRef<string | null>(null);
 
   // Batch State
   const [csvData, setCsvData] = useState<any[]>([]);
   const [batchStatus, setBatchStatus] = useState<'idle' | 'processing' | 'done'>('idle');
   const [templates, setTemplates] = useState<SavedTemplate[]>([]);
   const [historyItems, setHistoryItems] = useState<AdHistoryItem[]>([]);
+  const [storedAudioItems, setStoredAudioItems] = useState<StoredAudioItem[]>([]);
   const [templateLibraryTab, setTemplateLibraryTab] = useState<'templates' | 'history'>('templates');
   const [historySaveWarning, setHistorySaveWarning] = useState<string | null>(null);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const [templateDraftName, setTemplateDraftName] = useState('');
   const [creativeBrief, setCreativeBrief] = useState<CreativeBrief>(EMPTY_CREATIVE_BRIEF);
   const [creativeBriefOpen, setCreativeBriefOpen] = useState(false);
-  const [appTitle] = useState('Agent Enamel Studio');
+  const [appTitle] = useState('Wiggly');
+  const [activePersonaDeckIndex, setActivePersonaDeckIndex] = useState(0);
+  const [dialogueScripts, setDialogueScripts] = useState<DialogueScript[]>([]);
+  const [isGeneratingDialogueScripts, setIsGeneratingDialogueScripts] = useState(false);
+  const [isGeneratingDialogueAudio, setIsGeneratingDialogueAudio] = useState(false);
+  const [generatedDialogueAudioUrl, setGeneratedDialogueAudioUrl] = useState<string | null>(null);
 
   const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, setElements, deselectAll, commitHistory, setBusinessContext, elements } = useEditorStore();
   const hasComponent = (role: NonNullable<typeof elements[number]['componentRole']>) => elements.some((element) => element.componentRole === role);
@@ -201,6 +308,12 @@ export default function App() {
     listAdHistory()
       .then((items) => setHistoryItems(items as AdHistoryItem[]))
       .catch((error) => console.error('Failed to load ad history:', error));
+  }, []);
+
+  useEffect(() => {
+    listAudioItems()
+      .then(setStoredAudioItems)
+      .catch((error) => console.error('Failed to load audio library:', error));
   }, []);
 
   useEffect(() => {
@@ -394,9 +507,93 @@ export default function App() {
     }
   };
 
+  const saveExportToHistoryOnce = (snapshot: SavedTemplate) => {
+    if (savedExportHistoryIdRef.current === snapshot.id) return;
+    savedExportHistoryIdRef.current = snapshot.id;
+    void saveDownloadedAdToHistory(snapshot);
+  };
+
+  const downloadReadyExport = async () => {
+    if (!exportDownload) return;
+
+    const showSaveFilePicker = (window as any).showSaveFilePicker;
+
+    if (typeof showSaveFilePicker === 'function') {
+      try {
+        const fileHandle = await showSaveFilePicker({
+          suggestedName: exportDownload.filename,
+          types: [
+            {
+              description: 'MP4 video',
+              accept: { 'video/mp4': ['.mp4'] },
+            },
+          ],
+        });
+        const writable = await fileHandle.createWritable();
+        await writable.write(exportDownload.blob);
+        await writable.close();
+        saveExportToHistoryOnce(exportDownload.snapshot);
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        console.warn('Native MP4 save failed, falling back to browser download:', error);
+      }
+    }
+
+    try {
+      const link = document.createElement('a');
+      link.href = exportDownload.url;
+      link.download = exportDownload.filename;
+      link.rel = 'noopener';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.warn('Browser MP4 download failed:', error);
+      window.open(exportDownload.url, '_blank', 'noopener,noreferrer');
+    }
+
+    saveExportToHistoryOnce(exportDownload.snapshot);
+  };
+
+  const openReadyExport = () => {
+    if (!exportDownload) return;
+    window.open(exportDownload.url, '_blank', 'noopener,noreferrer');
+    saveExportToHistoryOnce(exportDownload.snapshot);
+  };
+
   const deleteHistoryItem = async (historyId: string) => {
     const nextItems = await deleteAdHistoryItem(historyId);
     setHistoryItems(nextItems as AdHistoryItem[]);
+  };
+
+  const rememberAudioBlob = async (name: string, blob: Blob) => {
+    try {
+      const item: StoredAudioItem = {
+        id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `audio-${Date.now()}`,
+        name,
+        createdAt: Date.now(),
+        blob,
+        mimeType: blob.type || 'audio/mpeg',
+      };
+      const nextItems = await saveAudioItem(item);
+      setStoredAudioItems(nextItems);
+    } catch (error) {
+      console.error('Failed to save audio item:', error);
+    }
+  };
+
+  const useAudioItem = (item: AudioLibraryItem) => {
+    setGeneratedDialogueAudioUrl(null);
+    const nextUrl = item.stored ? URL.createObjectURL(item.stored.blob) : item.url;
+    setAudioUrl(nextUrl);
+    setAudioFileName(item.name);
+  };
+
+  const deleteStoredAudio = async (audioId: string) => {
+    const nextItems = await deleteAudioItem(audioId);
+    setStoredAudioItems(nextItems);
   };
 
   useEffect(() => {
@@ -424,8 +621,11 @@ export default function App() {
   const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setAudioUrl(URL.createObjectURL(file));
+      const url = URL.createObjectURL(file);
+      setGeneratedDialogueAudioUrl(null);
+      setAudioUrl(url);
       setAudioFileName(file.name);
+      await rememberAudioBlob(file.name, file);
     }
   };
 
@@ -442,6 +642,112 @@ export default function App() {
     setIntroCropOpen(true);
   };
 
+  const captionsFromDialogueScript = (script: DialogueScript, totalDuration?: number) => {
+    let cursor = 0;
+    const gap = 0.18;
+    const speakers = Array.from(new Set(script.lines.map((line) => line.speaker).filter(Boolean))).slice(0, 2);
+    const wordCounts = script.lines.map((line) => Math.max(1, line.text.trim().split(/\s+/).filter(Boolean).length));
+    const totalWords = wordCounts.reduce((sum, count) => sum + count, 0) || 1;
+    const usableDuration = totalDuration && totalDuration > 0
+      ? Math.max(script.lines.length * 1.25, totalDuration - gap * Math.max(0, script.lines.length - 1))
+      : 0;
+
+    return script.lines.map((line, index) => {
+      const duration = usableDuration
+        ? Math.max(1.25, usableDuration * (wordCounts[index] / totalWords))
+        : Math.max(1.4, Math.min(4.5, wordCounts[index] * 0.38));
+      const caption = {
+        text: line.text,
+        start: cursor,
+        end: cursor + duration,
+        speaker: speakers.indexOf(line.speaker) === 1 ? 2 : 1,
+      };
+      cursor += duration + gap;
+      return caption;
+    });
+  };
+
+  const getObjectAudioDuration = (url: string) => new Promise<number>((resolve) => {
+    const audio = new Audio(url);
+    const timeout = window.setTimeout(() => resolve(0), 1500);
+    audio.preload = 'metadata';
+    audio.onloadedmetadata = () => {
+      window.clearTimeout(timeout);
+      resolve(Number.isFinite(audio.duration) ? audio.duration : 0);
+    };
+    audio.onerror = () => {
+      window.clearTimeout(timeout);
+      resolve(0);
+    };
+    audio.src = url;
+  });
+
+  const handleGenerateDialogueScripts = async () => {
+    try {
+      setIsGeneratingDialogueScripts(true);
+      const res = await fetch('/api/generate-dialogue-scripts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          creativeBrief,
+          persona: activePersonaDeck?.customer || 'Dental practice owner',
+          count: 5,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText);
+      }
+
+      const data = await res.json();
+      setDialogueScripts(Array.isArray(data.scripts) ? data.scripts : []);
+    } catch (error: any) {
+      console.error('Dialogue script generation failed:', error);
+      alert(`Dialogue generation failed: ${error.message || 'Unknown error'}`.slice(0, 180));
+    } finally {
+      setIsGeneratingDialogueScripts(false);
+    }
+  };
+
+  const handleGenerateDialogueAudio = async (script: DialogueScript) => {
+    try {
+      setIsGeneratingDialogueAudio(true);
+      const res = await fetch('/api/generate-dialogue-audio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ script }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText);
+      }
+
+      const data = await res.json();
+      const binary = atob(data.audioBase64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: data.mimeType || 'audio/wav' });
+      const url = URL.createObjectURL(blob);
+      const audioDuration = await getObjectAudioDuration(url);
+      const captions = captionsFromDialogueScript(script, audioDuration);
+      useEditorStore.getState().setCaptions(captions);
+      setGeneratedDialogueAudioUrl(url);
+      setAudioUrl(url);
+      const filename = data.filename || `${script.title || 'conversation-ad'}.wav`;
+      setAudioFileName(filename);
+      await rememberAudioBlob(filename, blob);
+    } catch (error: any) {
+      console.error('Dialogue audio generation failed:', error);
+      alert(`Audio generation failed: ${error.message || 'Unknown error'}`.slice(0, 180));
+    } finally {
+      setIsGeneratingDialogueAudio(false);
+    }
+  };
+
   useEffect(() => {
     // Intentionally skipped auto generation via `/api/generate-copy` 
     // Users can generate Ad Copy using the API key panel
@@ -450,6 +756,10 @@ export default function App() {
   useEffect(() => {
     if (!audioUrl) {
       useEditorStore.getState().setCaptions([]);
+      return;
+    }
+
+    if (audioUrl === generatedDialogueAudioUrl) {
       return;
     }
 
@@ -563,7 +873,7 @@ export default function App() {
     };
 
     transcribeUrl();
-  }, [audioUrl]);
+  }, [audioUrl, generatedDialogueAudioUrl]);
 
   const handleAddImageElement = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -717,6 +1027,10 @@ export default function App() {
     setPlaying(!playing);
   };
 
+  const cancelExport = () => {
+    exportCancelRef.current?.();
+  };
+
   const downloadSimulatedVideo = async () => {
     const exportSnapshot = createCurrentSnapshot(getCurrentDesignTitle());
     setExportLaunchAnimation(true);
@@ -724,6 +1038,7 @@ export default function App() {
     setRendering(true);
     setRenderProgress(0);
     setExportPhase('recording');
+    savedExportHistoryIdRef.current = null;
     setExportDownload((previous) => {
       if (previous) URL.revokeObjectURL(previous.url);
       return null;
@@ -866,12 +1181,51 @@ export default function App() {
 
     const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
     const chunks: BlobPart[] = [];
+    const abortController = new AbortController();
+    let exportCancelled = false;
+    let hasStopped = false;
+
+    const cleanupExportResources = () => {
+      if (canvas.parentNode) {
+        canvas.parentNode.removeChild(canvas);
+      }
+      stream.getTracks().forEach((track) => track.stop());
+      if (audioSource) {
+        try { audioSource.stop(); } catch(e){}
+      }
+      if (bgVideoEl) {
+        bgVideoEl.pause();
+      }
+      if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close();
+      }
+    };
+
+    exportCancelRef.current = () => {
+      exportCancelled = true;
+      hasStopped = true;
+      abortController.abort();
+      if (mediaRecorder.state !== 'inactive') {
+        try { mediaRecorder.stop(); } catch(e){}
+      } else {
+        cleanupExportResources();
+      }
+      setRendering(false);
+      setRenderProgress(0);
+      setExportPhase('recording');
+      exportCancelRef.current = null;
+    };
     
     mediaRecorder.ondataavailable = (e) => {
       if (e.data.size > 0) chunks.push(e.data);
     };
 
     mediaRecorder.onstop = async () => {
+      if (exportCancelled) {
+        cleanupExportResources();
+        return;
+      }
+
       await new Promise(r => setTimeout(r, 100)); // drain remaining chunks
       const blob = new Blob(chunks, { type: 'video/webm' });
       setExportPhase('converting');
@@ -884,6 +1238,7 @@ export default function App() {
         const res = await fetch('/api/convert-to-mp4', {
           method: 'POST',
           body: formData,
+          signal: abortController.signal,
         });
         
         if (!res.ok) throw new Error('Failed to convert');
@@ -895,15 +1250,19 @@ export default function App() {
         
         const url = URL.createObjectURL(mp4Blob);
         const filename = `agent-enamel-${Date.now()}.mp4`;
-        setExportDownload({ url, filename, snapshot: exportSnapshot });
+        setExportDownload({ url, blob: mp4Blob, filename, snapshot: exportSnapshot });
         setExportPhase('complete');
         setRenderProgress(100);
       } catch (err) {
+        if (exportCancelled || (err instanceof DOMException && err.name === 'AbortError')) {
+          return;
+        }
         console.error("Error creating MP4:", err);
         setExportPhase('error');
         alert('MP4 export failed. Please try again.');
       }
       setRendering(false);
+      exportCancelRef.current = null;
     };
 
     mediaRecorder.start();
@@ -918,8 +1277,6 @@ export default function App() {
     const startTime = Date.now();
     let frame = 0;
     
-    let hasStopped = false;
-
     const draw = () => {
       if (hasStopped) return;
       const elapsed = Date.now() - startTime;
@@ -935,18 +1292,7 @@ export default function App() {
             setRenderProgress(100);
          }
          
-         if (canvas.parentNode) {
-           canvas.parentNode.removeChild(canvas);
-         }
-         if (audioSource) {
-           try { audioSource.stop(); } catch(e){}
-         }
-         if (bgVideoEl) {
-           bgVideoEl.pause();
-         }
-         if (audioContext) {
-           audioContext.close();
-         }
+         cleanupExportResources();
          return;
       }
 
@@ -1519,6 +1865,28 @@ export default function App() {
         className="relative aspect-[9/16] w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-inner"
         style={{ backgroundColor: template.settings.bgColor }}
       >
+        {template.settings.bgMedia?.type === 'video' && (
+          <video
+            src={template.settings.bgMedia.url}
+            className="absolute inset-0 h-full w-full object-cover"
+            muted
+            loop
+            playsInline
+            autoPlay
+          />
+        )}
+        {template.settings.bgMedia?.type === 'image' && (
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${template.settings.bgMedia.url})` }}
+          />
+        )}
+        {template.settings.bgMedia && template.settings.bgShadow && (
+          <div
+            className="absolute inset-0 bg-black"
+            style={{ opacity: template.settings.bgShadowOpacity }}
+          />
+        )}
         <div className="absolute inset-x-0 top-[10%] flex justify-center">
           {hasLogo ? (
             <span className="h-2 w-8 rounded-full bg-emerald-500/80" />
@@ -1588,19 +1956,436 @@ export default function App() {
     );
   };
 
-  const activeTemplateItems = templateLibraryTab === 'templates' ? templates : historyItems;
-  const activeTemplateCount = templateLibraryTab === 'templates' ? templates.length : historyItems.length;
+  const templateItems = [...BUILT_IN_TEMPLATES, ...templates];
+  const activeTemplateItems = templateLibraryTab === 'templates' ? templateItems : historyItems;
+  const activeTemplateCount = templateLibraryTab === 'templates' ? templateItems.length : historyItems.length;
+  const audioLibraryItems: AudioLibraryItem[] = [
+    { id: 'built-in-ai-dental-receptionist-audio', name: DEFAULT_AUDIO_NAME, url: DEFAULT_AUDIO_URL, builtIn: true },
+    ...storedAudioItems.map((item) => ({
+      id: item.id,
+      name: item.name,
+      url: '',
+      stored: item,
+    })),
+  ];
+
+  const enterStudio = () => {
+    try {
+      localStorage.setItem(STUDIO_SEEN_STORAGE_KEY, '1');
+    } catch {
+      // Ignore private browsing storage failures.
+    }
+    setShowHomepage(false);
+  };
+
+  const personaDecks = [
+    {
+      persona: 'Dental',
+      customer: 'Dental practices',
+      angle: 'Missed-call recovery',
+      color: '#00FFCC',
+      pain: 'High',
+      speed: 'Fast',
+      cards: [
+        { headline: 'One lunch break can cost a $3,200 case.', background: '#00FFCC', accent: '#4F46E5' },
+        { headline: "You don't need more leads. You need answered calls.", background: '#FFFFFF', accent: '#00FFCC' },
+        { headline: 'Every voicemail is a patient choosing someone else.', background: '#080B16', accent: '#60A5FA', dark: true },
+      ],
+    },
+    {
+      persona: 'Med spa',
+      customer: 'Med spa owners',
+      angle: 'Luxury consults',
+      color: '#F0ABFC',
+      pain: 'Medium',
+      speed: 'Fast',
+      cards: [
+        { headline: 'Empty consult slots are not a demand problem.', background: '#FFFFFF', accent: '#F0ABFC' },
+        { headline: 'Your best leads are asking one question: price.', background: '#080B16', accent: '#F0ABFC', dark: true },
+        { headline: 'Turn interest into booked consultations.', background: '#F0ABFC', accent: '#4F46E5' },
+      ],
+    },
+    {
+      persona: 'HVAC',
+      customer: 'Home service teams',
+      angle: 'Emergency calls',
+      color: '#60A5FA',
+      pain: 'High',
+      speed: 'Urgent',
+      cards: [
+        { headline: 'The hottest lead is the one calling right now.', background: '#080B16', accent: '#60A5FA', dark: true },
+        { headline: 'After-hours calls should still become booked jobs.', background: '#00FFCC', accent: '#4F46E5' },
+        { headline: 'Miss the call. Lose the job.', background: '#FFFFFF', accent: '#60A5FA' },
+      ],
+    },
+    {
+      persona: 'Legal',
+      customer: 'Law firms',
+      angle: 'After-hours intake',
+      color: '#FBBF24',
+      pain: 'High',
+      speed: 'Steady',
+      cards: [
+        { headline: 'New cases do not wait for office hours.', background: '#FBBF24', accent: '#4F46E5' },
+        { headline: 'Your intake form is not answering the phone.', background: '#FFFFFF', accent: '#FBBF24' },
+        { headline: 'Capture the case before they call another firm.', background: '#080B16', accent: '#FBBF24', dark: true },
+      ],
+    },
+    {
+      persona: 'Fitness',
+      customer: 'Fitness studios',
+      angle: 'Trial bookings',
+      color: '#FB7185',
+      pain: 'Medium',
+      speed: 'Fast',
+      cards: [
+        { headline: 'Trial leads go cold faster than you think.', background: '#FB7185', accent: '#00FFCC' },
+        { headline: 'More DMs should become booked intros.', background: '#FFFFFF', accent: '#FB7185' },
+        { headline: 'Stop letting motivated leads drift away.', background: '#080B16', accent: '#FB7185', dark: true },
+      ],
+    },
+    {
+      persona: 'Real estate',
+      customer: 'Real estate teams',
+      angle: 'Lead follow-up',
+      color: '#A78BFA',
+      pain: 'Medium',
+      speed: 'Fast',
+      cards: [
+        { headline: 'The first agent to respond usually wins.', background: '#A78BFA', accent: '#00FFCC' },
+        { headline: 'Every Zillow lead needs instant follow-up.', background: '#FFFFFF', accent: '#A78BFA' },
+        { headline: 'Speed-to-lead is the whole game.', background: '#080B16', accent: '#A78BFA', dark: true },
+      ],
+    },
+  ];
+  const activePersonaDeck = personaDecks[activePersonaDeckIndex];
+
+  if (showHomepage) {
+    return (
+      <div className="min-h-screen bg-[#F6F8FB] font-sans text-slate-950">
+        <header className="flex h-20 items-center justify-between border-b border-slate-200 bg-white px-6 md:px-10">
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="Agent Enamel" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
+            <div>
+              <p className="text-lg font-black leading-tight">Wiggly</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Visual ads that move fast.</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={enterStudio}
+            className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800"
+          >
+            Open Studio
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </header>
+
+        <main className="mx-auto max-w-7xl px-6 py-10 md:px-10">
+          <div className="relative grid min-h-[calc(100vh-120px)] items-center gap-10 overflow-hidden rounded-[2rem] border border-slate-200 bg-white px-6 py-10 shadow-2xl shadow-slate-900/8 md:grid-cols-[0.9fr_1.1fr] md:px-10">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_8%,rgba(0,255,204,0.28),transparent_34%),radial-gradient(circle_at_82%_18%,rgba(79,70,229,0.13),transparent_30%),linear-gradient(180deg,rgba(246,248,251,0),rgba(246,248,251,0.92))]" />
+            <div className="pointer-events-none absolute -left-24 top-24 h-64 w-64 rounded-full bg-[#00FFCC]/20 blur-3xl" />
+            <section className="max-w-xl">
+              <div className="relative mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-500 shadow-sm backdrop-blur">
+                <AudioLines className="h-4 w-4 text-[#00FFCC]" />
+                Visualizer ads for modern service brands
+              </div>
+              <h1 className="relative text-5xl font-black leading-[0.95] tracking-normal text-slate-950 md:text-7xl">
+                Turn sharp hooks into scroll-stopping ad creatives.
+              </h1>
+              <p className="relative mt-6 max-w-lg text-lg font-medium leading-8 text-slate-600">
+                Build branded Meta ads with bold hooks, intro cards, voiceover audio, waveform visuals, and export-ready layouts without opening a video editor.
+              </p>
+              <div className="relative mt-8 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={enterStudio}
+                  className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800"
+                >
+                  Create an ad
+                  <Wand2 className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={enterStudio}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300"
+                >
+                  Explore templates
+                </button>
+              </div>
+            </section>
+
+            <section className="relative min-h-[560px]">
+              <div className="absolute left-[8%] top-[8%] w-[36%] rotate-[-5deg]">
+                <HomeAdCard headline="One lunch break can cost a $3,200 case." />
+              </div>
+              <div className="absolute left-[36%] top-0 w-[38%] rotate-[3deg]">
+                <HomeAdCard headline="You don't need more leads. You need answered calls." background="#FFFFFF" accent="#4F46E5" />
+              </div>
+              <div className="absolute bottom-[4%] right-[4%] w-[36%] rotate-[6deg]">
+                <HomeAdCard headline="Every voicemail is a patient choosing someone else." background="#080B16" accent="#6D5BFF" dark />
+              </div>
+              <div className="absolute bottom-[12%] left-[18%] rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#00FFCC]/15">
+                    <AudioLines className="h-5 w-5 text-[#00BFA5]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-slate-900">Hook + waveform + CTA</p>
+                    <p className="text-xs font-semibold text-slate-500">The reusable ad-card system.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <section className="pb-16 pt-8">
+            <div className="mb-8 max-w-2xl">
+              <p className="text-sm font-black uppercase tracking-wide text-slate-400">Built for the marketer workflow</p>
+              <h2 className="mt-2 text-3xl font-black tracking-normal text-slate-950 md:text-5xl">
+                Fast ad making without the design-tool maze.
+              </h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                {
+                  icon: Wand2,
+                  title: 'Slot-machine hooks',
+                  copy: 'Refresh ad angles instantly without prompt writing.',
+                },
+                {
+                  icon: AudioLines,
+                  title: 'Audio-first visuals',
+                  copy: 'Waveforms, captions, intro cards, and CTA layouts in one builder.',
+                },
+                {
+                  icon: CheckCircle2,
+                  title: 'Meta-safe previews',
+                  copy: 'Check feed, reels, stories, and safe areas before export.',
+                },
+                {
+                  icon: BookmarkPlus,
+                  title: 'Reusable designs',
+                  copy: 'Save winning layouts and reload them for the next ad.',
+                },
+                {
+                  icon: Download,
+                  title: 'MP4 export',
+                  copy: 'Create upload-ready ads without opening a video editor.',
+                },
+                {
+                  icon: MousePointerClick,
+                  title: 'Marketer-first flow',
+                  copy: 'Strategy, copy, design, preview, and export stay together.',
+                },
+              ].map((feature) => (
+                <div key={feature.title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <feature.icon className="mb-5 h-10 w-10 stroke-[2.4] text-slate-950" />
+                  <h3 className="text-2xl font-black leading-tight tracking-normal text-slate-950">{feature.title}</h3>
+                  <p className="mt-3 text-sm font-semibold leading-6 text-slate-500">{feature.copy}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="relative py-10 lg:px-10">
+            <div className="absolute inset-x-0 top-20 bottom-16 overflow-hidden rounded-[2rem] bg-slate-950 shadow-2xl shadow-slate-900/15">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(0,255,204,0.18),transparent_28%),radial-gradient(circle_at_65%_42%,rgba(79,70,229,0.32),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.06),transparent_38%)]" />
+              <div className="pointer-events-none absolute left-[28%] top-[12%] h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+            </div>
+            <div className="relative grid min-h-[640px] gap-6 text-white lg:grid-cols-[0.85fr_1.3fr_0.85fr]">
+              <div className="self-start rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-2xl shadow-slate-950/20 backdrop-blur-xl lg:-ml-8">
+                <p className="mb-5 text-sm font-black uppercase tracking-wide text-white/40">Persona decks</p>
+                {personaDecks.map((deck, index) => (
+                  <button
+                    key={deck.persona}
+                    type="button"
+                    onClick={() => setActivePersonaDeckIndex(index)}
+                    className={`group flex w-full items-center gap-3 border-b border-white/10 py-4 text-left transition last:border-b-0 ${index === activePersonaDeckIndex ? 'text-white' : 'text-white/55 hover:text-white'}`}
+                    aria-pressed={index === activePersonaDeckIndex}
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-sm font-black text-slate-950 transition group-hover:scale-105" style={{ backgroundColor: deck.color }}>
+                      +
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-lg font-black leading-tight">{deck.persona}</span>
+                      <span className="block truncate text-sm font-semibold text-white/40">{deck.angle}</span>
+                    </span>
+                    <Play className={`h-4 w-4 fill-white transition group-hover:text-white ${index === activePersonaDeckIndex ? 'text-white' : 'text-white/45'}`} />
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative hidden min-h-[600px] lg:block">
+                {activePersonaDeck.cards.map((card, index) => {
+                  const positions = [
+                    'left-[1%] top-[11%] w-[39%] rotate-[-7deg]',
+                    'left-[30%] top-[20%] w-[40%] rotate-[3deg]',
+                    'bottom-[8%] right-[-2%] w-[39%] rotate-[-4deg]',
+                  ];
+                  return (
+                    <div key={`${activePersonaDeck.persona}-${card.headline}`} className={`absolute transition-all duration-300 ${positions[index]}`}>
+                      <HomeAdCard headline={card.headline} background={card.background} accent={card.accent} dark={card.dark} />
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="self-start rounded-3xl border border-white/10 bg-white/[0.72] p-5 text-slate-950 shadow-2xl shadow-slate-950/20 backdrop-blur-xl lg:-mr-8 lg:mt-8">
+                <div className="flex items-center justify-between">
+                  <p className="text-lg font-black">Wiggly</p>
+                  <span className="h-8 w-14 rounded-full bg-[#00C6A6] p-1">
+                    <span className="block h-6 w-6 translate-x-6 rounded-full bg-white shadow-sm" />
+                  </span>
+                </div>
+                <div className="mt-5 border-t border-slate-950/10 pt-5">
+                  <p className="text-sm font-black uppercase tracking-wide text-slate-400">Current persona</p>
+                  <p className="mt-2 text-2xl font-black leading-tight">{activePersonaDeck.customer}</p>
+                </div>
+                <div className="mt-6 space-y-5">
+                  <div>
+                    <div className="mb-2 flex items-center justify-between text-sm font-black text-slate-500">
+                      <span>Pain intensity</span>
+                      <span>{activePersonaDeck.pain}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-950/10">
+                      <div className={`h-2 rounded-full bg-slate-950 ${activePersonaDeck.pain === 'High' ? 'w-4/5' : 'w-3/5'}`} />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-2 flex items-center justify-between text-sm font-black text-slate-500">
+                      <span>Creative speed</span>
+                      <span>{activePersonaDeck.speed}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-950/10">
+                      <div className={`h-2 rounded-full bg-[#4F46E5] ${activePersonaDeck.speed === 'Urgent' ? 'w-full' : activePersonaDeck.speed === 'Steady' ? 'w-2/3' : 'w-11/12'}`} />
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={enterStudio}
+                  className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-slate-800"
+                >
+                  Open this deck
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <p className="relative -mt-8 text-center text-sm font-black text-white/35">
+              Pick a customer type. Wiggly gives you a visual direction to start from.
+            </p>
+          </section>
+
+          <section className="py-16">
+            <div className="mb-12 max-w-4xl">
+              <h2 className="text-4xl font-black leading-[0.95] tracking-normal text-slate-950 md:text-6xl">
+                Designed for the parts marketers repeat every day.
+              </h2>
+              <p className="mt-5 max-w-2xl text-lg font-semibold leading-8 text-slate-500">
+                Wiggly keeps the creative loop small: pick a hook, preview the ad, save what works, and ship the next variation.
+              </p>
+            </div>
+            <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { icon: Wand2, title: 'Fresh hook angles' },
+                { icon: AudioLines, title: 'Reactive waveform ads' },
+                { icon: Layers, title: 'Layouts you can reuse' },
+                { icon: Captions, title: 'Caption-ready videos' },
+                { icon: Type, title: 'Editable ad copy' },
+                { icon: BookmarkPlus, title: 'Saved design library' },
+                { icon: CheckCircle2, title: 'Placement checks' },
+                { icon: Download, title: 'Export-ready MP4s' },
+              ].map((item) => (
+                <div key={item.title} className="group flex flex-col items-center text-center">
+                  <item.icon className="mb-5 h-16 w-16 stroke-[2.8] text-slate-950 transition duration-300 group-hover:-translate-y-1 group-hover:scale-105 group-hover:text-[#4F46E5]" />
+                  <h3 className="max-w-[12rem] text-2xl font-black leading-tight tracking-normal text-slate-950">
+                    {item.title}
+                  </h3>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="relative mb-16 overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-14 text-white shadow-2xl shadow-slate-900/15 md:px-12 md:py-16">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(0,255,204,0.22),transparent_30%),radial-gradient(circle_at_85%_10%,rgba(79,70,229,0.32),transparent_34%)]" />
+            <div className="relative grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+              <div>
+                <p className="text-sm font-black uppercase tracking-wide text-[#00FFCC]">The ad creative loop</p>
+                <h2 className="mt-3 text-4xl font-black leading-[0.95] tracking-normal md:text-6xl">
+                  Make ten ad directions before lunch.
+                </h2>
+                <p className="mt-5 max-w-xl text-base font-semibold leading-7 text-white/62">
+                  Start with a saved layout, refresh the hook, check the Meta placement, then export the version that feels strongest.
+                </p>
+                <button
+                  type="button"
+                  onClick={enterStudio}
+                  className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5 hover:bg-slate-100"
+                >
+                  Open Wiggly
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-white/[0.08] p-4 backdrop-blur">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[
+                    ['Hook', 'Lunch break = lost case'],
+                    ['Format', 'IG Feed 4:5'],
+                    ['Motion', 'Center waveform'],
+                    ['Export', '30s MP4'],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-2xl bg-white/[0.09] p-4">
+                      <p className="text-xs font-black uppercase tracking-wide text-white/35">{label}</p>
+                      <p className="mt-2 text-lg font-black leading-tight text-white">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 rounded-2xl bg-[#00FFCC] p-5 text-slate-950">
+                  <p className="text-sm font-black uppercase tracking-wide opacity-60">Current angle</p>
+                  <p className="mt-2 text-3xl font-black leading-none tracking-normal">Stop losing patients to voicemail.</p>
+                  <div className="mt-5 flex h-3 items-center gap-2">
+                    <span className="h-3 w-12 rounded-full bg-slate-950" />
+                    <span className="h-3 w-7 rounded-full bg-[#4F46E5]" />
+                    <span className="h-3 w-16 rounded-full bg-slate-950" />
+                    <span className="h-3 w-9 rounded-full bg-[#4F46E5]" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <footer className="relative overflow-hidden px-6 pb-10 md:px-10">
+          <div className="mx-auto flex max-w-7xl flex-col gap-4 border-t border-slate-200 pt-8 text-sm font-bold text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+            <p>Wiggly. Visual ads that move fast.</p>
+            <button type="button" onClick={enterStudio} className="text-slate-950 transition hover:text-[#4F46E5]">
+              Open Studio
+            </button>
+          </div>
+          <div className="pointer-events-none -mb-8 hidden select-none overflow-hidden bg-gradient-to-b from-slate-950/10 to-slate-950/0 bg-clip-text text-center text-[10rem] font-black leading-none text-transparent sm:block md:text-[15rem]">
+            Wiggly
+          </div>
+        </footer>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen w-full bg-slate-50 font-sans text-slate-900">
       {/* Header */}
       <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 shrink-0">
-        <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setShowHomepage(true)}
+          className="flex items-center gap-3 rounded-xl text-left transition hover:opacity-80"
+          title="Open homepage"
+        >
           <img src="/logo.png" alt="Agent Enamel" className="h-8 w-8 rounded-md object-cover shadow-sm" />
           <h1 className="text-lg font-semibold tracking-tight">
             {appTitle}
           </h1>
-        </div>
+        </button>
         
         <div className="flex items-center gap-4">
           <button 
@@ -1860,7 +2645,7 @@ export default function App() {
                     <div className="relative group flex-1">
                       <input 
                         type="file" 
-                        accept="audio/*" 
+                        accept="audio/*,video/mp4" 
                         onChange={(e) => {
                           handleAudioUpload(e);
                           if(e.target) e.target.value = '';
@@ -1883,12 +2668,91 @@ export default function App() {
                     </div>
                     {audioUrl && (
                       <button 
-                        onClick={() => { setAudioUrl(null); setAudioFileName(''); }}
+                        onClick={() => { setAudioUrl(null); setAudioFileName(''); setGeneratedDialogueAudioUrl(null); }}
                         title="Remove Audio"
                         className="px-2 border border-slate-200 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors bg-white flex items-center justify-center shrink-0"
                       >
                         <X className="w-4 h-4" />
                       </button>
+                    )}
+                  </div>
+
+                  {audioLibraryItems.length > 0 && (
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Previous audios</span>
+                        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-slate-400">{audioLibraryItems.length}</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {audioLibraryItems.slice(0, 6).map((item) => (
+                          <div
+                            key={item.id}
+                            className={`group flex items-center gap-2 rounded-md border px-2 py-2 text-left transition ${
+                              audioFileName === item.name
+                                ? 'border-indigo-200 bg-white text-slate-900'
+                                : 'border-transparent bg-white/60 text-slate-600 hover:border-slate-200 hover:bg-white'
+                            }`}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => useAudioItem(item)}
+                              className="min-w-0 flex-1 text-left"
+                              title={`Use ${item.name}`}
+                            >
+                              <span className="block truncate text-xs font-bold">{item.name}</span>
+                              <span className="block text-[10px] font-semibold text-slate-400">{item.builtIn ? 'Default audio' : 'Saved on this device'}</span>
+                            </button>
+                            {!item.builtIn && (
+                              <button
+                                type="button"
+                                onClick={() => deleteStoredAudio(item.id)}
+                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-300 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                                title="Remove audio"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <span className="block text-sm font-bold text-slate-800">Conversation ad</span>
+                        <span className="block text-xs font-semibold leading-5 text-slate-500">Generate a subtle two-person voice scene from the brief.</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleGenerateDialogueScripts}
+                        disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
+                        className="shrink-0 rounded-md bg-slate-950 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isGeneratingDialogueScripts ? 'Writing...' : 'Generate'}
+                      </button>
+                    </div>
+                    {dialogueScripts.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        {dialogueScripts.map((script, index) => (
+                          <button
+                            key={`${script.title}-${index}`}
+                            type="button"
+                            onClick={() => handleGenerateDialogueAudio(script)}
+                            disabled={isGeneratingDialogueAudio || isGeneratingDialogueScripts}
+                            className="w-full rounded-md border border-slate-200 bg-white p-2 text-left transition hover:border-indigo-200 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <span className="flex items-center justify-between gap-2">
+                              <span className="truncate text-xs font-black text-slate-800">{script.title || `Option ${index + 1}`}</span>
+                              <span className="text-[10px] font-bold uppercase tracking-wide text-indigo-500">
+                                {isGeneratingDialogueAudio ? 'Making audio' : 'Use'}
+                              </span>
+                            </span>
+                            <span className="mt-1 block truncate text-[11px] font-semibold text-slate-500">{script.angle}</span>
+                          </button>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -2139,6 +3003,7 @@ export default function App() {
                   accentColor={accentColor}
                   playing={playing}
                   onPlaybackComplete={() => setPlaying(false)}
+                  onRefreshBackgroundColor={refreshBackgroundColor}
                 />
               </PlatformFrame>
               
@@ -2350,25 +3215,27 @@ export default function App() {
                         <span className="text-[10px] font-semibold text-slate-400">{template.elements.length}</span>
                       </div>
                       <span className="pointer-events-none absolute inset-2 rounded-lg bg-indigo-500/0 transition group-hover:bg-indigo-500/5" />
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          templateLibraryTab === 'templates' ? deleteTemplate(template.id) : deleteHistoryItem(template.id);
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault();
+                      {!template.builtIn && (
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(event) => {
                             event.stopPropagation();
                             templateLibraryTab === 'templates' ? deleteTemplate(template.id) : deleteHistoryItem(template.id);
-                          }
-                        }}
-                        title={templateLibraryTab === 'templates' ? 'Delete template' : 'Delete history item'}
-                        className="absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-slate-400 opacity-0 shadow-sm transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </span>
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              templateLibraryTab === 'templates' ? deleteTemplate(template.id) : deleteHistoryItem(template.id);
+                            }
+                          }}
+                          title={templateLibraryTab === 'templates' ? 'Delete template' : 'Delete history item'}
+                          className="absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-slate-400 opacity-0 shadow-sm transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -2414,7 +3281,18 @@ export default function App() {
                       <X className="h-4 w-4" />
                     </button>
                   ) : (
-                    <span className="text-xs font-semibold text-slate-500">{Math.round(renderProgress)}%</span>
+                    <span className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-slate-500">{Math.round(renderProgress)}%</span>
+                      <button
+                        type="button"
+                        onClick={cancelExport}
+                        className="rounded p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
+                        aria-label="Cancel export"
+                        title="Cancel export"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </span>
                   )}
                 </div>
                 {!exportDownload && exportPhase !== 'error' && <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
@@ -2433,15 +3311,23 @@ export default function App() {
                     : 'Rendering a snapshot of this ad. You can start a different creative while this finishes.'}
                 </p>
                 {exportDownload && (
-                  <a
-                    href={exportDownload.url}
-                    download={exportDownload.filename}
-                    onClick={() => saveDownloadedAdToHistory(exportDownload.snapshot)}
-                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-                  >
-                    <Download className="h-4 w-4" />
-                    Download MP4
-                  </a>
+                  <div className="mt-3 space-y-2">
+                    <button
+                      type="button"
+                      onClick={downloadReadyExport}
+                      className="flex w-full items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download MP4
+                    </button>
+                    <button
+                      type="button"
+                      onClick={openReadyExport}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                      Open MP4
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

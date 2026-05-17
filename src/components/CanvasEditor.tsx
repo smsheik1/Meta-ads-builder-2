@@ -65,6 +65,7 @@ interface CanvasEditorProps {
   introFeedCropY: number;
   introImageAspect: number | null;
   previewDurationCap: number | null;
+  onRefreshBackgroundColor?: () => void;
 }
 
 const MOCK_CAPTIONS = [
@@ -74,7 +75,7 @@ const MOCK_CAPTIONS = [
   { text: "Never miss a lead again.", start: 7, end: 9, speaker: 2 },
 ];
 
-export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap }) => {
+export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor }) => {
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
@@ -92,30 +93,36 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   // Keyboard shortcuts for z-index, undo/redo, nudging
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if typing in an input
-      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA' || document.activeElement?.getAttribute('contenteditable') === 'true') {
-        return;
-      }
+      const key = e.key.toLowerCase();
+      const usesShortcutModifier = e.metaKey || e.ctrlKey;
+      const isEditableTarget =
+        document.activeElement?.tagName === 'INPUT' ||
+        document.activeElement?.tagName === 'TEXTAREA' ||
+        document.activeElement?.getAttribute('contenteditable') === 'true';
 
-      // Cmd + Z / Cmd + Shift + Z
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+      if (usesShortcutModifier && key === 'z' && !isEditableTarget) {
+        e.preventDefault();
         if (e.shiftKey) {
           useEditorStore.getState().redo();
         } else {
           useEditorStore.getState().undo();
         }
-        e.preventDefault();
         return;
       }
 
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'y') {
-        useEditorStore.getState().redo();
+      if (usesShortcutModifier && key === 'y' && !isEditableTarget) {
         e.preventDefault();
+        useEditorStore.getState().redo();
+        return;
+      }
+
+      // Ignore layout shortcuts while typing in inputs or editing text directly.
+      if (isEditableTarget) {
         return;
       }
       
       // Z-Order: Cmd + ] or Cmd + [
-      if ((e.metaKey || e.ctrlKey)) {
+      if (usesShortcutModifier) {
         if (e.key === ']') {
           if (selectedIds.length === 1) useEditorStore.getState().bringForward(selectedIds[0]);
           e.preventDefault();
@@ -478,6 +485,12 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       ref={canvasRef}
       onContextMenu={(e) => {
         e.preventDefault();
+      }}
+      onClick={(e) => {
+        if (e.detail === 3 && e.target === e.currentTarget) {
+          e.preventDefault();
+          onRefreshBackgroundColor?.();
+        }
       }}
     >
       {bgMedia && bgMedia.type === 'image' && (
@@ -900,7 +913,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
 
             {/* VISUALIZER */}
             {el.type === 'visualizer' && (
-               <div className="w-full h-full flex items-center justify-center pointer-events-none">
+               <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
                  {(el.visualizerType === 'bars-bottom' || !el.visualizerType) && (
                     <div className="w-full h-full flex items-end justify-between gap-1">
                       {Array.from({ length: el.barCount || 8 }).map((_, i) => (
@@ -935,6 +948,24 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                       className="w-full h-full"
                     />
                  )}
+                 <label
+                   className="pointer-events-auto absolute right-2 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover:opacity-100 focus-within:opacity-100"
+                   title="Change visualizer color"
+                   onMouseDown={(event) => event.stopPropagation()}
+                   onClick={(event) => event.stopPropagation()}
+                 >
+                   <span
+                     className="h-4 w-4 rounded-full border border-slate-200 shadow-inner"
+                     style={{ backgroundColor: el.barColor || '#00ffcc' }}
+                   />
+                   <input
+                     type="color"
+                     value={el.barColor || '#00ffcc'}
+                     onChange={(event) => updateElement(el.id, { barColor: event.target.value })}
+                     className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                     aria-label="Visualizer color"
+                   />
+                 </label>
                </div>
             )}
 

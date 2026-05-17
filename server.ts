@@ -129,6 +129,129 @@ app.post('/api/hyperframes-render-test', (req, res) => {
 import { GoogleGenAI } from '@google/genai';
 import { getMasterPrompt } from './src/lib/prompts/headline-master';
 
+const parseJsonResponse = (text: string) => {
+  const trimmed = text.trim();
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  return JSON.parse(fenced ? fenced[1] : trimmed);
+};
+
+const gibberishPattern = /\b(?:[bcdfghjklmnpqrstvwxyz]{4,}|(?:asdf|sdfg|qwer|zxcv|hjkl|lorem|ipsum)[a-z]*)\b/i;
+
+const hasGarbageText = (value: unknown) => {
+  const text = String(value || '').trim();
+  return !text || gibberishPattern.test(text) || /\bwiggly\b/i.test(text);
+};
+
+const normalizeDialogueScripts = (payload: any, count: number) => {
+  const rawScripts = Array.isArray(payload?.scripts) ? payload.scripts : [];
+
+  return rawScripts
+    .map((script: any) => {
+      const lines = Array.isArray(script?.lines)
+        ? script.lines
+            .map((line: any, index: number) => ({
+              speaker: String(line?.speaker || (index % 2 === 0 ? 'Ava' : 'Sam')).trim(),
+              tone: String(line?.tone || 'natural').trim(),
+              text: String(line?.text || '').trim(),
+            }))
+            .filter((line: any) => {
+              const words = line.text.split(/\s+/).filter(Boolean);
+              return words.length >= 3 && words.length <= 28 && !hasGarbageText(line.text);
+            })
+        : [];
+
+      return {
+        title: String(script?.title || 'Conversation option').trim(),
+        angle: String(script?.angle || 'Problem and solution').trim(),
+        lines,
+      };
+    })
+    .filter((script: any) => {
+      const combined = [
+        script.title,
+        script.angle,
+        ...script.lines.map((line: any) => line.text),
+      ].join(' ');
+      const repeatsSpeaker = script.lines.some((line: any, index: number) => (
+        index > 0 && line.speaker.toLowerCase() === script.lines[index - 1].speaker.toLowerCase()
+      ));
+      return script.lines.length >= 4 && !repeatsSpeaker && !hasGarbageText(combined);
+    })
+    .slice(0, count);
+};
+
+const fillDialogueScripts = (scripts: any[], count: number) => {
+  const fallbacks = fallbackDialogueScripts(count);
+  const combined = [...scripts];
+  for (const fallback of fallbacks) {
+    if (combined.length >= count) break;
+    if (!combined.some((script) => script.title === fallback.title)) {
+      combined.push(fallback);
+    }
+  }
+  return combined.slice(0, count);
+};
+
+const fallbackDialogueScripts = (count: number) => {
+  const scripts = [
+    {
+      title: 'Missed Call Recovery',
+      angle: 'The practice is already paying for leads it never answers.',
+      lines: [
+        { speaker: 'Ava', tone: 'concerned', text: 'We missed three new patient calls during lunch again.' },
+        { speaker: 'Sam', tone: 'calm', text: 'That is exactly why the AI front desk answers when the team cannot.' },
+        { speaker: 'Ava', tone: 'curious', text: 'So it can book the patient before they call another office?' },
+        { speaker: 'Sam', tone: 'assured', text: 'Yes. It answers, follows up, and keeps the appointment moving.' },
+      ],
+    },
+    {
+      title: 'After Hours Calls',
+      angle: 'Patients call outside normal hours and still expect a response.',
+      lines: [
+        { speaker: 'Ava', tone: 'frustrated', text: 'The best leads keep calling after we close.' },
+        { speaker: 'Sam', tone: 'practical', text: 'Then stop making business hours the only time you can book.' },
+        { speaker: 'Ava', tone: 'thoughtful', text: 'An AI receptionist could answer those calls at night?' },
+        { speaker: 'Sam', tone: 'calm', text: 'And follow up automatically so the patient does not disappear.' },
+      ],
+    },
+    {
+      title: 'No More Hiring',
+      angle: 'More staff is not always the cleanest fix.',
+      lines: [
+        { speaker: 'Ava', tone: 'tired', text: 'I do not want to hire another front desk person.' },
+        { speaker: 'Sam', tone: 'steady', text: 'Then cover the gaps instead of adding another payroll problem.' },
+        { speaker: 'Ava', tone: 'interested', text: 'So the AI handles missed calls and follow up?' },
+        { speaker: 'Sam', tone: 'confident', text: 'Exactly. Your team stays focused while the calls still get answered.' },
+      ],
+    },
+  ];
+
+  return scripts.slice(0, count);
+};
+
+const pcmBase64ToWavBase64 = (pcmBase64: string, sampleRate = 24000, channels = 1, bitsPerSample = 16) => {
+  const pcm = Buffer.from(pcmBase64, 'base64');
+  const header = Buffer.alloc(44);
+  const byteRate = sampleRate * channels * bitsPerSample / 8;
+  const blockAlign = channels * bitsPerSample / 8;
+
+  header.write('RIFF', 0);
+  header.writeUInt32LE(36 + pcm.length, 4);
+  header.write('WAVE', 8);
+  header.write('fmt ', 12);
+  header.writeUInt32LE(16, 16);
+  header.writeUInt16LE(1, 20);
+  header.writeUInt16LE(channels, 22);
+  header.writeUInt32LE(sampleRate, 24);
+  header.writeUInt32LE(byteRate, 28);
+  header.writeUInt16LE(blockAlign, 32);
+  header.writeUInt16LE(bitsPerSample, 34);
+  header.write('data', 36);
+  header.writeUInt32LE(pcm.length, 40);
+
+  return Buffer.concat([header, pcm]).toString('base64');
+};
+
 app.post('/api/generate-headlines', async (req, res) => {
   try {
     const { niche, count = 20 } = req.body;
@@ -265,6 +388,145 @@ Return valid JSON with the following structure:
   } catch (error: any) {
     console.error("Generate error:", error);
     res.status(500).json({ error: error.message || 'Error generating copy' });
+  }
+});
+
+app.post('/api/generate-dialogue-scripts', async (req, res) => {
+  try {
+    const { creativeBrief, persona = 'Dental practice owner', count = 5 } = req.body;
+
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      throw new Error("GEMINI_API_KEY is not set.");
+    }
+
+    const ai = new GoogleGenAI({ apiKey: key });
+    const briefText = typeof creativeBrief === 'object'
+      ? Object.entries(creativeBrief).map(([label, value]) => `${label}: ${value}`).join('\n')
+      : String(creativeBrief || '');
+
+    const prompt = `You are a direct-response creative strategist for Wiggly, a visual ad creator.
+
+Create ${count} short two-person dialogue ad scripts for this brief.
+
+Brief:
+${briefText}
+
+Persona: ${persona}
+
+The ad should feel like a real-life overheard conversation, not a sales pitch.
+One person has the problem. The other casually reveals the solution.
+Keep each script 14-26 seconds when read aloud.
+No hype. No buzzwords. No testimonials. No fake stats.
+Do not include placeholder text, keyboard-mash text, filler words, lorem ipsum, or nonsensical tokens.
+Every line must be fluent English that could be read aloud in the ad.
+Never mention Wiggly. Wiggly is the internal builder, not the product being advertised.
+Use the offer and CTA from the brief. If the brand name is unknown, say "the AI front desk" instead of inventing one.
+
+Return ONLY valid JSON:
+{
+  "scripts": [
+    {
+      "title": "short option title",
+      "angle": "short strategy angle",
+      "lines": [
+        {"speaker": "Ava", "tone": "frustrated", "text": "line"},
+        {"speaker": "Sam", "tone": "calm", "text": "line"}
+      ]
+    }
+  ]
+}`;
+
+    let scripts: any[] = [];
+
+    for (let attempt = 0; attempt < 2 && scripts.length === 0; attempt += 1) {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: attempt === 0
+          ? prompt
+          : `${prompt}\n\nYour previous output failed quality checks. Return clean, fluent English only. Absolutely no placeholder or keyboard-mash text.`,
+        config: {
+          responseMimeType: 'application/json',
+        },
+      });
+
+      const text = response.text || '{"scripts":[]}';
+      scripts = normalizeDialogueScripts(parseJsonResponse(text), Number(count) || 5);
+    }
+
+    res.json({ scripts: fillDialogueScripts(scripts, Number(count) || 5) });
+  } catch (error: any) {
+    console.error("Generate dialogue scripts error:", error);
+    res.status(500).json({ error: error.message || 'Error generating dialogue scripts' });
+  }
+});
+
+app.post('/api/generate-dialogue-audio', async (req, res) => {
+  try {
+    const { script } = req.body;
+
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      throw new Error("GEMINI_API_KEY is not set.");
+    }
+    if (!script?.lines?.length) {
+      return res.status(400).json({ error: 'No script lines provided.' });
+    }
+
+    const ai = new GoogleGenAI({ apiKey: key });
+    const speakers = Array.from(new Set(script.lines.map((line: any) => String(line.speaker || 'Speaker').trim()).filter(Boolean))).slice(0, 2) as string[];
+    while (speakers.length < 2) speakers.push(`Speaker ${speakers.length + 1}`);
+    const ttsText = `Read this as a natural, subtle, two-person conversation for a Meta ad. Keep it conversational and not salesy.\n\n${script.lines.map((line: any) => `${line.speaker}: [${line.tone || 'natural'}] ${line.text}`).join('\n')}`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.1-flash-tts-preview',
+      contents: [{ parts: [{ text: ttsText }] }],
+      config: {
+        responseModalities: ['AUDIO'],
+        speechConfig: {
+          multiSpeakerVoiceConfig: {
+            speakerVoiceConfigs: [
+              {
+                speaker: speakers[0],
+                voiceConfig: {
+                  prebuiltVoiceConfig: { voiceName: 'Zephyr' },
+                },
+              },
+              {
+                speaker: speakers[1],
+                voiceConfig: {
+                  prebuiltVoiceConfig: { voiceName: 'Puck' },
+                },
+              },
+            ],
+          },
+        },
+      },
+    } as any);
+
+    const part = response.candidates?.[0]?.content?.parts?.find((candidatePart: any) => candidatePart.inlineData);
+    const inlineData = part?.inlineData;
+    if (!inlineData?.data) {
+      return res.status(500).json({ error: 'No audio returned from Gemini TTS.' });
+    }
+
+    const mimeType = inlineData.mimeType || 'audio/L16;codec=pcm;rate=24000';
+    const normalizedMimeType = mimeType.toLowerCase();
+    const sampleRateMatch = normalizedMimeType.match(/rate=(\d+)/);
+    const sampleRate = sampleRateMatch ? Number(sampleRateMatch[1]) : 24000;
+    const channelsMatch = normalizedMimeType.match(/channels=(\d+)/);
+    const channels = channelsMatch ? Number(channelsMatch[1]) : 1;
+    const isPcm = normalizedMimeType.includes('audio/l16') || normalizedMimeType.includes('pcm');
+    const audioBase64 = isPcm ? pcmBase64ToWavBase64(inlineData.data, sampleRate, channels) : inlineData.data;
+
+    res.json({
+      audioBase64,
+      mimeType: isPcm ? 'audio/wav' : mimeType,
+      filename: `${(script.title || 'conversation-ad').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'conversation-ad'}.wav`,
+    });
+  } catch (error: any) {
+    console.error("Generate dialogue audio error:", error);
+    res.status(500).json({ error: error.message || 'Error generating dialogue audio' });
   }
 });
 
