@@ -18,6 +18,16 @@ const DEFAULT_INTRO_IMAGE = '/default-intro-image.png';
 const DEFAULT_INTRO_IMAGE_NAME = 'Default intro image';
 const DEFAULT_AUDIO_URL = '/ai-dental-receptionist-audio.mp3';
 const DEFAULT_AUDIO_NAME = 'AI Dental Receptionist';
+const BACKGROUND_COLOR_PRESETS = [
+  '#f5f5f5',
+  '#ffffff',
+  '#eef2ff',
+  '#ecfdf5',
+  '#e0f2fe',
+  '#111827',
+  '#080b16',
+  '#06261f',
+];
 
 const MOCK_CAPTIONS = [
   { text: "Are you missing calls?", start: 0, end: 2, speaker: 1 },
@@ -227,6 +237,15 @@ export default function App() {
   const [introCropOpen, setIntroCropOpen] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(DEFAULT_AUDIO_URL);
   const [audioFileName, setAudioFileName] = useState<string>(DEFAULT_AUDIO_NAME);
+
+  const refreshBackgroundColor = () => {
+    setBgColor((currentColor) => {
+      const currentIndex = BACKGROUND_COLOR_PRESETS.findIndex(
+        (color) => color.toLowerCase() === currentColor.toLowerCase()
+      );
+      return BACKGROUND_COLOR_PRESETS[(currentIndex + 1) % BACKGROUND_COLOR_PRESETS.length];
+    });
+  };
   
   // Playback/Render State
   const [playing, setPlaying] = useState(false);
@@ -2914,6 +2933,7 @@ export default function App() {
                   accentColor={accentColor}
                   playing={playing}
                   onPlaybackComplete={() => setPlaying(false)}
+                  onRefreshBackgroundColor={refreshBackgroundColor}
                 />
               </PlatformFrame>
               
