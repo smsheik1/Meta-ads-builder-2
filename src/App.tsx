@@ -1853,11 +1853,13 @@ export default function App() {
             </div>
           </section>
 
-          <section className="relative overflow-hidden rounded-[2rem] bg-slate-950 px-5 py-8 text-white shadow-2xl shadow-slate-900/15 md:px-8 md:py-10">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(0,255,204,0.18),transparent_28%),radial-gradient(circle_at_65%_42%,rgba(79,70,229,0.32),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.06),transparent_38%)]" />
-            <div className="pointer-events-none absolute left-[28%] top-[12%] h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-            <div className="relative grid min-h-[560px] gap-6 lg:grid-cols-[0.85fr_1.3fr_0.85fr]">
-              <div className="rounded-3xl border border-white/10 bg-white/[0.08] p-5 backdrop-blur-xl">
+          <section className="relative py-10 lg:px-10">
+            <div className="absolute inset-x-0 top-20 bottom-16 overflow-hidden rounded-[2rem] bg-slate-950 shadow-2xl shadow-slate-900/15">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(0,255,204,0.18),transparent_28%),radial-gradient(circle_at_65%_42%,rgba(79,70,229,0.32),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.06),transparent_38%)]" />
+              <div className="pointer-events-none absolute left-[28%] top-[12%] h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+            </div>
+            <div className="relative grid min-h-[640px] gap-6 text-white lg:grid-cols-[0.85fr_1.3fr_0.85fr]">
+              <div className="self-start rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-2xl shadow-slate-950/20 backdrop-blur-xl lg:-ml-8">
                 <p className="mb-5 text-sm font-black uppercase tracking-wide text-white/40">Persona decks</p>
                 {personaDecks.map((deck, index) => (
                   <button
@@ -1879,12 +1881,12 @@ export default function App() {
                 ))}
               </div>
 
-              <div className="relative hidden min-h-[520px] lg:block">
+              <div className="relative hidden min-h-[600px] lg:block">
                 {activePersonaDeck.cards.map((card, index) => {
                   const positions = [
-                    'left-[5%] top-[8%] w-[38%] rotate-[-7deg]',
-                    'left-[33%] top-[19%] w-[39%] rotate-[3deg]',
-                    'bottom-[4%] right-[3%] w-[38%] rotate-[-4deg]',
+                    'left-[1%] top-[11%] w-[39%] rotate-[-7deg]',
+                    'left-[30%] top-[20%] w-[40%] rotate-[3deg]',
+                    'bottom-[8%] right-[-2%] w-[39%] rotate-[-4deg]',
                   ];
                   return (
                     <div key={`${activePersonaDeck.persona}-${card.headline}`} className={`absolute transition-all duration-300 ${positions[index]}`}>
@@ -1894,7 +1896,7 @@ export default function App() {
                 })}
               </div>
 
-              <div className="rounded-3xl border border-white/10 bg-white/[0.72] p-5 text-slate-950 shadow-2xl backdrop-blur-xl">
+              <div className="self-start rounded-3xl border border-white/10 bg-white/[0.72] p-5 text-slate-950 shadow-2xl shadow-slate-950/20 backdrop-blur-xl lg:-mr-8 lg:mt-8">
                 <div className="flex items-center justify-between">
                   <p className="text-lg font-black">Wiggly</p>
                   <span className="h-8 w-14 rounded-full bg-[#00C6A6] p-1">
@@ -1935,7 +1937,7 @@ export default function App() {
                 </button>
               </div>
             </div>
-            <p className="relative mt-6 text-center text-sm font-black text-white/35">
+            <p className="relative -mt-8 text-center text-sm font-black text-white/35">
               Pick a customer type. Wiggly gives you a visual direction to start from.
             </p>
           </section>
