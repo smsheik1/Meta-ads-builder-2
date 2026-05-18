@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { spawn } from 'child_process';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
 import { bundle } from '@remotion/bundler';
@@ -138,6 +139,67 @@ const replaceMediaUrl = (snapshot: ExportSnapshot, field: string, url: string) =
   }
 };
 
+const extractAudioLevels = (input: string | null | undefined, durationSeconds: number) => new Promise<number[] | null>((resolve) => {
+  if (!input || !ffmpegPath) {
+    resolve(null);
+    return;
+  }
+
+  const sampleRate = 8000;
+  const args = [
+    '-hide_banner',
+    '-loglevel', 'error',
+    '-t', String(Math.max(1, durationSeconds)),
+    '-i', input,
+    '-vn',
+    '-ac', '1',
+    '-ar', String(sampleRate),
+    '-f', 's16le',
+    'pipe:1',
+  ];
+  const child = spawn(ffmpegPath, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+  const chunks: Buffer[] = [];
+
+  child.stdout.on('data', chunk => chunks.push(chunk));
+  child.on('error', () => resolve(null));
+  child.on('close', (code) => {
+    if (code !== 0 || chunks.length === 0) {
+      resolve(null);
+      return;
+    }
+
+    const buffer = Buffer.concat(chunks);
+    const frameCount = Math.max(1, Math.ceil(durationSeconds * EXPORT_FPS));
+    const sums = new Array(frameCount).fill(0);
+    const counts = new Array(frameCount).fill(0);
+
+    for (let offset = 0, sampleIndex = 0; offset + 1 < buffer.length; offset += 2, sampleIndex += 1) {
+      const frameIndex = Math.min(frameCount - 1, Math.floor((sampleIndex / sampleRate) * EXPORT_FPS));
+      const sample = buffer.readInt16LE(offset) / 32768;
+      sums[frameIndex] += sample * sample;
+      counts[frameIndex] += 1;
+    }
+
+    const rms = sums.map((sum, index) => Math.sqrt(sum / Math.max(1, counts[index])));
+    const sorted = [...rms].sort((a, b) => a - b);
+    const noiseFloor = sorted[Math.floor(sorted.length * 0.12)] || 0;
+    const peak = sorted[Math.floor(sorted.length * 0.96)] || Math.max(...rms, 0.001);
+    const dynamicRange = Math.max(0.001, peak - noiseFloor);
+
+    let previous = 0;
+    const normalized = rms.map((value) => {
+      const gated = Math.max(0, value - noiseFloor);
+      const level = Math.min(1, gated / dynamicRange);
+      const compressed = Math.pow(level, 0.55);
+      const smoothed = previous * 0.55 + compressed * 0.45;
+      previous = smoothed;
+      return Number(smoothed.toFixed(4));
+    });
+
+    resolve(normalized);
+  });
+});
+
 app.post('/api/render-remotion', expensiveApiLimiter, uploadRemotion.any(), async (req, res) => {
   const renderId = `render-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const assetDir = path.join(remotionAssetsRoot, renderId);
@@ -152,22 +214,28 @@ app.post('/api/render-remotion', expensiveApiLimiter, uploadRemotion.any(), asyn
 
     const snapshot = JSON.parse(snapshotRaw) as ExportSnapshot & { durationSeconds?: number };
     const files = Array.isArray(req.files) ? req.files as Express.Multer.File[] : [];
+    let audioAnalysisInput: string | null = null;
 
     for (const file of files) {
       const safeName = `${file.fieldname.replace(/[^a-zA-Z0-9_-]/g, '-')}-${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9_.-]/g, '-')}`;
       const filePath = path.join(assetDir, safeName);
       fs.writeFileSync(filePath, file.buffer);
+      if (file.fieldname === 'audio') {
+        audioAnalysisInput = filePath;
+      }
       replaceMediaUrl(snapshot, file.fieldname, `http://127.0.0.1:${port}/api/remotion-assets/${renderId}/${safeName}`);
     }
 
     const dimensions = getExportDimensions(snapshot.settings.platform);
     const durationCap = snapshot.settings.renderDurationCap === 'full' ? 180 : Number(snapshot.settings.renderDurationCap || 30);
     const durationSeconds = Math.max(1, Math.min(Number(snapshot.durationSeconds || 30), durationCap));
+    const audioLevels = await extractAudioLevels(audioAnalysisInput || snapshot.settings.audioUrl, durationSeconds);
     const inputProps = {
       snapshot,
       width: dimensions.width,
       height: dimensions.height,
       durationSeconds,
+      audioLevels: audioLevels || undefined,
     };
 
     const serveUrl = await getRemotionBundle();

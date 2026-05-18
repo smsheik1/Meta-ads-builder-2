@@ -22,6 +22,7 @@ type RemotionAdProps = {
   width: number;
   height: number;
   durationSeconds: number;
+  audioLevels?: number[];
 };
 
 const editorScale = 3;
@@ -210,13 +211,16 @@ const ImageElement = ({ element }: { element: AdElement }) => (
   </div>
 );
 
-const Waveform = ({ element }: { element: AdElement }) => {
+const Waveform = ({ element, audioLevels }: { element: AdElement; audioLevels?: number[] }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const count = element.visualizerType === 'waveform-strip' ? 72 : (element.barCount || 16);
   const sensitivity = element.visualizerSensitivity ?? 1.5;
   const color = element.barColor || '#00ffcc';
   const time = frame / fps;
+  const audioLevel = audioLevels?.length
+    ? audioLevels[Math.min(audioLevels.length - 1, frame)] ?? 0
+    : null;
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: element.visualizerType === 'bars-bottom' ? 'flex-end' : 'center', gap: 4 * editorScale }}>
@@ -229,12 +233,14 @@ const Waveform = ({ element }: { element: AdElement }) => {
         const edgeFade = element.visualizerType === 'waveform-strip'
           ? 0.45 + Math.pow(Math.sin(normalized * Math.PI), 0.7) * 0.55
           : 1;
-        const signal = (
+        const idleSignal = (
           Math.sin(time * 9 + index * 0.62) * 0.45 +
           Math.sin(time * 17 + index * 1.37) * 0.35 +
           Math.sin(time * 4 + index * 0.19) * 0.2 +
           1
         ) / 2;
+        const barTexture = 0.62 + (((Math.sin(index * 1.71 + time * 4) + 1) / 2) * 0.38);
+        const signal = audioLevel === null ? idleSignal : Math.min(1, audioLevel * barTexture);
         const minHeight = element.visualizerType === 'waveform-strip' ? 8 : 4 * editorScale;
         const maxHeight = element.visualizerType === 'waveform-strip' ? 0.75 : 0.9;
         const height = minHeight + Math.pow(Math.min(1, signal * sensitivity), 1.6) * maxHeight * edgeFade * 100;
@@ -288,7 +294,7 @@ const CaptionElement = ({ element, captions, accentColor }: { element: AdElement
   );
 };
 
-export const RemotionAd = ({ snapshot, width, height }: RemotionAdProps) => {
+export const RemotionAd = ({ snapshot, width, height, audioLevels }: RemotionAdProps) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const seconds = frame / fps;
@@ -327,7 +333,7 @@ export const RemotionAd = ({ snapshot, width, height }: RemotionAdProps) => {
             {element.type === 'button' && <ButtonElement element={element} />}
             {element.type === 'image' && <ImageElement element={element} />}
             {element.type === 'caption' && <CaptionElement element={element} captions={snapshot.captions} accentColor={settings.accentColor} />}
-            {element.type === 'visualizer' && <Waveform element={element} />}
+            {element.type === 'visualizer' && <Waveform element={element} audioLevels={audioLevels} />}
           </div>
         );
       })}

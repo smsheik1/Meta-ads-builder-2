@@ -8,6 +8,7 @@ type RemotionRootProps = {
   width: number;
   height: number;
   durationSeconds: number;
+  audioLevels?: number[];
 };
 
 const defaultSnapshot: ExportSnapshot = {
@@ -36,6 +37,7 @@ export const RemotionRoot = ({
   width = 1080,
   height = 1350,
   durationSeconds = 30,
+  audioLevels,
 }: Partial<RemotionRootProps>) => (
   <Composition
     id="AdRender"
@@ -49,6 +51,7 @@ export const RemotionRoot = ({
       width,
       height,
       durationSeconds,
+      audioLevels,
     }}
   />
 );
