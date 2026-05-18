@@ -23,6 +23,7 @@ type RemotionAdProps = {
   height: number;
   durationSeconds: number;
   audioLevels?: number[];
+  audioBands?: number[][];
 };
 
 const editorScale = 3;
@@ -211,7 +212,7 @@ const ImageElement = ({ element }: { element: AdElement }) => (
   </div>
 );
 
-const Waveform = ({ element, audioLevels }: { element: AdElement; audioLevels?: number[] }) => {
+const Waveform = ({ element, box, audioLevels, audioBands }: { element: AdElement; box: ElementBox; audioLevels?: number[]; audioBands?: number[][] }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const count = element.visualizerType === 'waveform-strip' ? 72 : (element.barCount || 16);
@@ -220,6 +221,9 @@ const Waveform = ({ element, audioLevels }: { element: AdElement; audioLevels?: 
   const time = frame / fps;
   const audioLevel = audioLevels?.length
     ? audioLevels[Math.min(audioLevels.length - 1, frame)] ?? 0
+    : null;
+  const frequencyBands = audioBands?.length
+    ? audioBands[Math.min(audioBands.length - 1, frame)] ?? null
     : null;
 
   return (
@@ -239,18 +243,25 @@ const Waveform = ({ element, audioLevels }: { element: AdElement; audioLevels?: 
           Math.sin(time * 4 + index * 0.19) * 0.2 +
           1
         ) / 2;
-        const barTexture = 0.62 + (((Math.sin(index * 1.71 + time * 4) + 1) / 2) * 0.38);
-        const signal = audioLevel === null ? idleSignal : Math.min(1, audioLevel * barTexture);
-        const minHeight = element.visualizerType === 'waveform-strip' ? 8 : 4 * editorScale;
-        const maxHeight = element.visualizerType === 'waveform-strip' ? 0.75 : 0.9;
-        const height = minHeight + Math.pow(Math.min(1, signal * sensitivity), 1.6) * maxHeight * edgeFade * 100;
+        const bandIndex = frequencyBands
+          ? Math.min(frequencyBands.length - 1, Math.max(0, 1 + Math.floor(normalized * (frequencyBands.length - 2))))
+          : 0;
+        const bandSignal = frequencyBands ? frequencyBands[bandIndex] ?? 0 : null;
+        const signal = bandSignal === null
+          ? audioLevel === null ? idleSignal : audioLevel
+          : Math.min(1, bandSignal * 0.82 + (audioLevel || 0) * 0.18);
+        const reactive = Math.min(1, signal * sensitivity);
+        const minHeight = element.visualizerType === 'waveform-strip' ? Math.max(3 * editorScale, box.height * 0.12) : 4 * editorScale;
+        const height = element.visualizerType === 'waveform-strip'
+          ? Math.min(box.height, minHeight + Math.pow(reactive, 1.45) * box.height * 0.72 * edgeFade)
+          : Math.min(box.height, minHeight + Math.pow(reactive, 1.5) * (box.height * 0.9));
         return (
           <div
             key={index}
             style={{
               flex: 1,
               minWidth: element.visualizerType === 'waveform-strip' ? 2 : 4 * editorScale,
-              height: `${height}%`,
+              height,
               maxHeight: '100%',
               borderRadius: 999,
               background: color,
@@ -294,7 +305,7 @@ const CaptionElement = ({ element, captions, accentColor }: { element: AdElement
   );
 };
 
-export const RemotionAd = ({ snapshot, width, height, audioLevels }: RemotionAdProps) => {
+export const RemotionAd = ({ snapshot, width, height, audioLevels, audioBands }: RemotionAdProps) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const seconds = frame / fps;
@@ -333,7 +344,7 @@ export const RemotionAd = ({ snapshot, width, height, audioLevels }: RemotionAdP
             {element.type === 'button' && <ButtonElement element={element} />}
             {element.type === 'image' && <ImageElement element={element} />}
             {element.type === 'caption' && <CaptionElement element={element} captions={snapshot.captions} accentColor={settings.accentColor} />}
-            {element.type === 'visualizer' && <Waveform element={element} audioLevels={audioLevels} />}
+            {element.type === 'visualizer' && <Waveform element={element} box={box} audioLevels={audioLevels} audioBands={audioBands} />}
           </div>
         );
       })}

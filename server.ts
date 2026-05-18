@@ -139,13 +139,23 @@ const replaceMediaUrl = (snapshot: ExportSnapshot, field: string, url: string) =
   }
 };
 
-const extractAudioLevels = (input: string | null | undefined, durationSeconds: number) => new Promise<number[] | null>((resolve) => {
+type AudioAnalysis = {
+  levels: number[];
+  bands: number[][];
+};
+
+const percentile = (values: number[], amount: number) => {
+  if (values.length === 0) return 0;
+  return values[Math.min(values.length - 1, Math.max(0, Math.floor(values.length * amount)))] || 0;
+};
+
+const extractAudioAnalysis = (input: string | null | undefined, durationSeconds: number) => new Promise<AudioAnalysis | null>((resolve) => {
   if (!input || !ffmpegPath) {
     resolve(null);
     return;
   }
 
-  const sampleRate = 8000;
+  const sampleRate = 16000;
   const args = [
     '-hide_banner',
     '-loglevel', 'error',
@@ -169,13 +179,19 @@ const extractAudioLevels = (input: string | null | undefined, durationSeconds: n
     }
 
     const buffer = Buffer.concat(chunks);
+    const sampleCount = Math.floor(buffer.length / 2);
+    const samples = new Float32Array(sampleCount);
+    for (let sampleIndex = 0, offset = 0; sampleIndex < sampleCount; sampleIndex += 1, offset += 2) {
+      samples[sampleIndex] = buffer.readInt16LE(offset) / 32768;
+    }
+
     const frameCount = Math.max(1, Math.ceil(durationSeconds * EXPORT_FPS));
     const sums = new Array(frameCount).fill(0);
     const counts = new Array(frameCount).fill(0);
 
-    for (let offset = 0, sampleIndex = 0; offset + 1 < buffer.length; offset += 2, sampleIndex += 1) {
+    for (let sampleIndex = 0; sampleIndex < samples.length; sampleIndex += 1) {
       const frameIndex = Math.min(frameCount - 1, Math.floor((sampleIndex / sampleRate) * EXPORT_FPS));
-      const sample = buffer.readInt16LE(offset) / 32768;
+      const sample = samples[sampleIndex];
       sums[frameIndex] += sample * sample;
       counts[frameIndex] += 1;
     }
@@ -187,7 +203,7 @@ const extractAudioLevels = (input: string | null | undefined, durationSeconds: n
     const dynamicRange = Math.max(0.001, peak - noiseFloor);
 
     let previous = 0;
-    const normalized = rms.map((value) => {
+    const levels = rms.map((value) => {
       const gated = Math.max(0, value - noiseFloor);
       const level = Math.min(1, gated / dynamicRange);
       const compressed = Math.pow(level, 0.55);
@@ -196,7 +212,53 @@ const extractAudioLevels = (input: string | null | undefined, durationSeconds: n
       return Number(smoothed.toFixed(4));
     });
 
-    resolve(normalized);
+    const fftSize = 256;
+    const focusedBinCount = 52;
+    const rawBands: number[][] = Array.from({ length: frameCount }, () => new Array(focusedBinCount).fill(0));
+    const flatBands: number[] = [];
+    const windowValues = Array.from({ length: fftSize }, (_, index) => 0.5 - 0.5 * Math.cos((2 * Math.PI * index) / Math.max(1, fftSize - 1)));
+
+    for (let frameIndex = 0; frameIndex < frameCount; frameIndex += 1) {
+      const centerSample = Math.floor((frameIndex / EXPORT_FPS) * sampleRate);
+      const startSample = centerSample - Math.floor(fftSize / 2);
+
+      for (let binIndex = 0; binIndex < focusedBinCount; binIndex += 1) {
+        const fftBin = binIndex + 1;
+        const coeff = 2 * Math.cos((2 * Math.PI * fftBin) / fftSize);
+        let s1 = 0;
+        let s2 = 0;
+
+        for (let sampleOffset = 0; sampleOffset < fftSize; sampleOffset += 1) {
+          const sample = samples[startSample + sampleOffset] || 0;
+          const s0 = sample * windowValues[sampleOffset] + coeff * s1 - s2;
+          s2 = s1;
+          s1 = s0;
+        }
+
+        const power = Math.max(0, s1 * s1 + s2 * s2 - coeff * s1 * s2);
+        const magnitude = Math.sqrt(power) / fftSize;
+        rawBands[frameIndex][binIndex] = magnitude;
+        flatBands.push(magnitude);
+      }
+    }
+
+    const sortedBands = flatBands.sort((a, b) => a - b);
+    const bandFloor = percentile(sortedBands, 0.1);
+    const bandPeak = Math.max(bandFloor + 0.0001, percentile(sortedBands, 0.965));
+    const bandRange = bandPeak - bandFloor;
+    const previousBands = new Array(focusedBinCount).fill(0);
+    const bands = rawBands.map((frameBands, frameIndex) => {
+      const gate = levels[frameIndex] <= 0.015 ? 0 : Math.min(1, levels[frameIndex] / 0.08);
+      return frameBands.map((value, binIndex) => {
+        const normalizedBand = Math.min(1, Math.max(0, (value - bandFloor) / bandRange));
+        const compressed = Math.pow(normalizedBand, 0.72) * gate;
+        const smoothed = previousBands[binIndex] * 0.68 + compressed * 0.32;
+        previousBands[binIndex] = smoothed;
+        return Number(smoothed.toFixed(4));
+      });
+    });
+
+    resolve({ levels, bands });
   });
 });
 
@@ -229,13 +291,14 @@ app.post('/api/render-remotion', expensiveApiLimiter, uploadRemotion.any(), asyn
     const dimensions = getExportDimensions(snapshot.settings.platform);
     const durationCap = snapshot.settings.renderDurationCap === 'full' ? 180 : Number(snapshot.settings.renderDurationCap || 30);
     const durationSeconds = Math.max(1, Math.min(Number(snapshot.durationSeconds || 30), durationCap));
-    const audioLevels = await extractAudioLevels(audioAnalysisInput || snapshot.settings.audioUrl, durationSeconds);
+    const audioAnalysis = await extractAudioAnalysis(audioAnalysisInput || snapshot.settings.audioUrl, durationSeconds);
     const inputProps = {
       snapshot,
       width: dimensions.width,
       height: dimensions.height,
       durationSeconds,
-      audioLevels: audioLevels || undefined,
+      audioLevels: audioAnalysis?.levels,
+      audioBands: audioAnalysis?.bands,
     };
 
     const serveUrl = await getRemotionBundle();
