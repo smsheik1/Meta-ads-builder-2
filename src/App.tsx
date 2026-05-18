@@ -30,6 +30,17 @@ const BACKGROUND_COLOR_FAMILIES = [
 
 const randomInRange = ([min, max]: number[]) => Math.round(min + Math.random() * (max - min));
 
+const toHexChannel = (value: number) => Math.round(value).toString(16).padStart(2, '0');
+
+const hslToHex = (hue: number, saturation: number, lightness: number) => {
+  const s = saturation / 100;
+  const l = lightness / 100;
+  const k = (n: number) => (n + hue / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return `#${toHexChannel(255 * f(0))}${toHexChannel(255 * f(8))}${toHexChannel(255 * f(4))}`;
+};
+
 const getFreshBackgroundColor = (currentColor: string) => {
   let nextColor = currentColor;
   let attempts = 0;
@@ -39,7 +50,7 @@ const getFreshBackgroundColor = (currentColor: string) => {
     const hue = family.hue + randomInRange([-8, 8]);
     const saturation = randomInRange(family.saturation);
     const lightness = randomInRange(family.lightness);
-    nextColor = `hsl(${hue} ${saturation}% ${lightness}%)`;
+    nextColor = hslToHex(hue, saturation, lightness);
     attempts += 1;
   }
 
@@ -218,6 +229,78 @@ const HomeAdCard = ({
     <div className="absolute bottom-5 left-5 right-5 h-10 rounded-full bg-white/90" />
   </div>
 );
+
+const normalizeHexColor = (value: string) => {
+  const trimmed = value.trim();
+  const withHash = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+  const shortHex = withHash.match(/^#([0-9a-fA-F]{3})$/);
+  if (shortHex) {
+    return `#${shortHex[1].split('').map((char) => `${char}${char}`).join('')}`.toUpperCase();
+  }
+  return /^#[0-9a-fA-F]{6}$/.test(withHash) ? withHash.toUpperCase() : null;
+};
+
+const HexColorInput = ({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) => {
+  const [draft, setDraft] = useState(value);
+
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
+  const normalizedValue = normalizeHexColor(value) || '#000000';
+  const commit = (nextDraft: string) => {
+    const normalized = normalizeHexColor(nextDraft);
+    if (normalized) {
+      onChange(normalized);
+      setDraft(normalized);
+    } else {
+      setDraft(value);
+    }
+  };
+
+  return (
+    <label className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+      <span className="text-sm font-semibold text-slate-700">{label}</span>
+      <span className="flex items-center gap-2">
+        <span className="relative h-7 w-7 overflow-hidden rounded border border-slate-200 shadow-inner" style={{ backgroundColor: normalizedValue }}>
+          <input
+            type="color"
+            value={normalizedValue}
+            onChange={(event) => {
+              onChange(event.target.value.toUpperCase());
+              setDraft(event.target.value.toUpperCase());
+            }}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            aria-label={`${label} color picker`}
+          />
+        </span>
+        <input
+          type="text"
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onBlur={() => commit(draft)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.currentTarget.blur();
+            }
+          }}
+          spellCheck={false}
+          className="h-8 w-[92px] rounded-md border border-slate-200 bg-white px-2 text-right font-mono text-xs uppercase text-slate-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10"
+          aria-label={`${label} hex color`}
+          placeholder="#00FFCC"
+        />
+      </span>
+    </label>
+  );
+};
 
 export default function App() {
   const [showHomepage, setShowHomepage] = useState(() => {
@@ -2491,28 +2574,12 @@ export default function App() {
                     { label: 'Accent', value: accentColor, onChange: setAccentColor },
                     { label: 'Background', value: bgColor, onChange: setBgColor },
                   ].map((colorControl) => (
-                    <label
+                    <HexColorInput
                       key={colorControl.label}
-                      className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
-                    >
-                      <span className="text-sm font-semibold text-slate-700">{colorControl.label}</span>
-                      <span className="flex items-center gap-2">
-                        <span className="relative h-7 w-7 overflow-hidden rounded border border-slate-200 shadow-inner">
-                          <span
-                            className="absolute inset-0"
-                            style={{ backgroundColor: colorControl.value }}
-                          />
-                          <input
-                            type="color"
-                            value={colorControl.value}
-                            onChange={(event) => colorControl.onChange(event.target.value)}
-                            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                            aria-label={`${colorControl.label} color`}
-                          />
-                        </span>
-                        <span className="w-[68px] text-right font-mono text-xs uppercase text-slate-500">{colorControl.value}</span>
-                      </span>
-                    </label>
+                      label={colorControl.label}
+                      value={colorControl.value}
+                      onChange={colorControl.onChange}
+                    />
                   ))}
                 </div>
 
