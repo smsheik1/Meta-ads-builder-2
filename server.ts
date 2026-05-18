@@ -187,6 +187,7 @@ app.post('/api/render-remotion', expensiveApiLimiter, uploadRemotion.any(), asyn
       overwrite: true,
     });
 
+    res.setHeader('Content-Type', 'video/mp4');
     res.download(outputPath, 'video.mp4', () => {
       fs.rm(assetDir, { recursive: true, force: true }, () => {});
     });
@@ -229,6 +230,7 @@ app.post('/api/convert-to-mp4', expensiveApiLimiter, uploadDisk.single('video'),
     })
     .on('end', () => {
       fs.unlink(inputPath, () => {});
+      res.setHeader('Content-Type', 'video/mp4');
       res.download(outputPath, 'video.mp4', () => {
          fs.unlink(outputPath, () => {});
       });

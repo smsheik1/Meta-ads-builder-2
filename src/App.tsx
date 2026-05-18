@@ -690,6 +690,21 @@ export default function App() {
     return formData;
   };
 
+  const MIN_VALID_MP4_BYTES = 1024;
+
+  const isValidMp4Blob = async (blob: Blob) => {
+    if (blob.size < MIN_VALID_MP4_BYTES) return false;
+
+    const header = new Uint8Array(await blob.slice(0, 12).arrayBuffer());
+    const signature = String.fromCharCode(...header.slice(4, 8));
+    return signature === 'ftyp';
+  };
+
+  const ensureValidMp4Blob = async (blob: Blob, label: string) => {
+    if (await isValidMp4Blob(blob)) return;
+    throw new Error(`${label} returned an invalid MP4 (${blob.size} bytes).`);
+  };
+
   const tryRemotionExport = async (exportSnapshot: SavedTemplate, abortController: AbortController) => {
     setExportPhase('converting');
     setRenderProgress(10);
@@ -708,9 +723,7 @@ export default function App() {
 
     setRenderProgress(92);
     const mp4Blob = await response.blob();
-    if (mp4Blob.size < 100) {
-      throw new Error('Remotion export returned an empty MP4');
-    }
+    await ensureValidMp4Blob(mp4Blob, 'Remotion export');
 
     const url = URL.createObjectURL(mp4Blob);
     const filename = `agent-enamel-${Date.now()}.mp4`;
@@ -721,6 +734,15 @@ export default function App() {
 
   const downloadReadyExport = async () => {
     if (!exportDownload) return;
+
+    try {
+      await ensureValidMp4Blob(exportDownload.blob, 'Ready export');
+    } catch (error) {
+      console.error('Blocked invalid MP4 download:', error);
+      setExportPhase('error');
+      alert('This export is not a valid MP4. Please export again.');
+      return;
+    }
 
     const showSaveFilePicker = (window as any).showSaveFilePicker;
 
@@ -763,8 +785,16 @@ export default function App() {
     saveExportToHistoryOnce(exportDownload.snapshot);
   };
 
-  const openReadyExport = () => {
+  const openReadyExport = async () => {
     if (!exportDownload) return;
+    try {
+      await ensureValidMp4Blob(exportDownload.blob, 'Ready export');
+    } catch (error) {
+      console.error('Blocked invalid MP4 open:', error);
+      setExportPhase('error');
+      alert('This export is not a valid MP4. Please export again.');
+      return;
+    }
     window.open(exportDownload.url, '_blank', 'noopener,noreferrer');
     saveExportToHistoryOnce(exportDownload.snapshot);
   };
@@ -1474,9 +1504,7 @@ export default function App() {
         if (!res.ok) throw new Error('Failed to convert');
         
         const mp4Blob = await res.blob();
-        if (mp4Blob.size < 100) {
-           throw new Error('MP4 conversion failed, blob too small');
-        }
+        await ensureValidMp4Blob(mp4Blob, 'Browser recorder fallback');
         
         const url = URL.createObjectURL(mp4Blob);
         const filename = `agent-enamel-${Date.now()}.mp4`;
