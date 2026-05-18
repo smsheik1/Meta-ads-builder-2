@@ -80,6 +80,11 @@ const MOCK_CAPTIONS = [
   { text: "Never miss a lead again.", start: 7, end: 9, speaker: 2 },
 ];
 
+const CAPTION_SPEAKER_COLORS: Record<number, string> = {
+  1: '#00D6B8',
+  2: '#6554FF',
+};
+
 export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor }) => {
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -982,7 +987,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                     fitPaddingX={18}
                     fitPaddingY={16}
                     style={{
-                      color: el.color || accentColor,
+                      color: currentCaption ? (CAPTION_SPEAKER_COLORS[currentSpeaker] || el.color || accentColor) : (el.color || accentColor),
                       fontFamily: el.fontFamily || 'Inter, sans-serif',
                       fontWeight: el.fontWeight || 700,
                     }}

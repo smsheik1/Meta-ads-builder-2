@@ -64,6 +64,11 @@ const MOCK_CAPTIONS = [
   { text: "Never miss a lead again.", start: 7, end: 9, speaker: 2 },
 ];
 
+const CAPTION_SPEAKER_COLORS: Record<number, string> = {
+  1: '#00D6B8',
+  2: '#6554FF',
+};
+
 type RenderDurationCap = 30 | 60 | 'full';
 type ExportPhase = 'recording' | 'converting' | 'complete' | 'error';
 type IntroDuration = 1 | 2 | 3;
@@ -1608,6 +1613,7 @@ export default function App() {
                 const maxTextWidth = elW - (18 * scale);
                 const maxTextHeight = elH - (16 * scale);
                 const captionText = `${activeCaption.text}`;
+                const captionColor = CAPTION_SPEAKER_COLORS[activeCaption.speaker] || el.color || accentColor;
                 const fontFamily = el.fontFamily || 'Inter, sans-serif';
                 const fontWeight = el.fontWeight || 'bold';
                 const wrapCaptionLines = (fontSize: number) => {
@@ -1663,7 +1669,7 @@ export default function App() {
 
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
-                ctx.fillStyle = el.color || accentColor;
+                ctx.fillStyle = captionColor;
                 
                 // Add drop shadow
                 ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
