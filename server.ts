@@ -149,7 +149,7 @@ const percentile = (values: number[], amount: number) => {
   return values[Math.min(values.length - 1, Math.max(0, Math.floor(values.length * amount)))] || 0;
 };
 
-const extractAudioAnalysis = (input: string | null | undefined, durationSeconds: number) => new Promise<AudioAnalysis | null>((resolve) => {
+const extractAudioAnalysis = (input: string | null | undefined, durationSeconds: number, smoothing = 0.8) => new Promise<AudioAnalysis | null>((resolve) => {
   if (!input || !ffmpegPath) {
     resolve(null);
     return;
@@ -202,12 +202,13 @@ const extractAudioAnalysis = (input: string | null | undefined, durationSeconds:
     const peak = sorted[Math.floor(sorted.length * 0.96)] || Math.max(...rms, 0.001);
     const dynamicRange = Math.max(0.001, peak - noiseFloor);
 
+    const smoothingAmount = Math.min(0.95, Math.max(0.05, smoothing));
     let previous = 0;
     const levels = rms.map((value) => {
       const gated = Math.max(0, value - noiseFloor);
       const level = Math.min(1, gated / dynamicRange);
       const compressed = Math.pow(level, 0.55);
-      const smoothed = previous * 0.55 + compressed * 0.45;
+      const smoothed = previous * smoothingAmount + compressed * (1 - smoothingAmount);
       previous = smoothed;
       return Number(smoothed.toFixed(4));
     });
@@ -252,7 +253,7 @@ const extractAudioAnalysis = (input: string | null | undefined, durationSeconds:
       return frameBands.map((value, binIndex) => {
         const normalizedBand = Math.min(1, Math.max(0, (value - bandFloor) / bandRange));
         const compressed = Math.pow(normalizedBand, 0.72) * gate;
-        const smoothed = previousBands[binIndex] * 0.68 + compressed * 0.32;
+        const smoothed = previousBands[binIndex] * smoothingAmount + compressed * (1 - smoothingAmount);
         previousBands[binIndex] = smoothed;
         return Number(smoothed.toFixed(4));
       });
@@ -291,7 +292,8 @@ app.post('/api/render-remotion', expensiveApiLimiter, uploadRemotion.any(), asyn
     const dimensions = getExportDimensions(snapshot.settings.platform);
     const durationCap = snapshot.settings.renderDurationCap === 'full' ? 180 : Number(snapshot.settings.renderDurationCap || 30);
     const durationSeconds = Math.max(1, Math.min(Number(snapshot.durationSeconds || 30), durationCap));
-    const audioAnalysis = await extractAudioAnalysis(audioAnalysisInput || snapshot.settings.audioUrl, durationSeconds);
+    const visualizerElement = snapshot.elements.find(element => element.type === 'visualizer');
+    const audioAnalysis = await extractAudioAnalysis(audioAnalysisInput || snapshot.settings.audioUrl, durationSeconds, visualizerElement?.visualizerSmoothing ?? 0.8);
     const inputProps = {
       snapshot,
       width: dimensions.width,

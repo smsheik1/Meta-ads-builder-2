@@ -344,7 +344,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         if (!el) return;
         const type = el.visualizerType || 'bars-center';
 
-        const sensitivityMultiplier = el.visualizerSensitivity ?? 1.0;
+        const sensitivityMultiplier = el.visualizerSensitivity ?? 1.5;
 
         if (['waveform-strip', 'ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(type)) {
           const canvas = barsRef.current[vId][0] as unknown as HTMLCanvasElement;
@@ -373,7 +373,11 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                  value = (value / 255) * sensitivityMultiplier;
                  value = Math.min(value, 1.0);
                  
-                 drawAdvancedVisualizer(ctx, type, canvas.width, canvas.height, value, frameCount, el.barColor || '#00ffcc');
+                 drawAdvancedVisualizer(ctx, type, canvas.width, canvas.height, value, frameCount, el.barColor || '#00ffcc', 1, {
+                   barCount: el.barCount,
+                   heightScale: el.visualizerHeight,
+                   baseline: el.visualizerBaseline,
+                 });
              }
           }
         } else {
@@ -408,7 +412,9 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                 bar.style.opacity = '1';
               }
               
-              const targetHeight = 4 + Math.pow(value, 1.5) * ((bar.parentElement?.clientHeight || 100) * 0.9);
+              const baseline = el.visualizerBaseline ?? 4;
+              const heightScale = el.visualizerHeight ?? 0.9;
+              const targetHeight = baseline + Math.pow(value, 1.5) * ((bar.parentElement?.clientHeight || 100) * heightScale);
               
               gsap.to(bar, {
                 height: targetHeight,
@@ -932,26 +938,26 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
                  {(el.visualizerType === 'bars-bottom' || !el.visualizerType) && (
                     <div className="w-full h-full flex items-end justify-between gap-1">
-                      {Array.from({ length: el.barCount || 8 }).map((_, i) => (
+                      {Array.from({ length: el.barCount || 16 }).map((_, i) => (
                         <div
                           key={i}
-                          ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 8)}
+                          ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 16)}
                           className="flex-1 rounded-full"
-                          style={{ backgroundColor: el.barColor || '#00ffcc', height: '4px', minWidth: '4px' }}
+                          style={{ backgroundColor: el.barColor || '#00ffcc', height: `${el.visualizerBaseline ?? 4}px`, minWidth: '4px' }}
                         />
                       ))}
                     </div>
                  )}
                  {el.visualizerType === 'bars-center' && (
                     <div className="w-full h-full flex items-center justify-between gap-1">
-                      {Array.from({ length: el.barCount || 8 }).map((_, i) => (
+                      {Array.from({ length: el.barCount || 16 }).map((_, i) => (
                         <div
                           key={i}
-                          ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 8)}
+                          ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 16)}
                           className="flex-1 rounded-full"
                           style={{
-                            backgroundColor: el.visualizerSplitSpeakers && i >= Math.floor((el.barCount || 8) / 2) ? '#8b5cf6' : (el.barColor || '#00ffcc'),
-                            height: '4px',
+                            backgroundColor: el.visualizerSplitSpeakers && i >= Math.floor((el.barCount || 16) / 2) ? '#8b5cf6' : (el.barColor || '#00ffcc'),
+                            height: `${el.visualizerBaseline ?? 4}px`,
                             minWidth: '4px'
                           }}
                         />

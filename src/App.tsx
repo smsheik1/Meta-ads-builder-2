@@ -1246,6 +1246,9 @@ export default function App() {
       barColor: visualizerColor,
       barCount: 16,
       visualizerSensitivity: 1.5,
+      visualizerSmoothing: 0.85,
+      visualizerHeight: 0.9,
+      visualizerBaseline: 4,
       visualizerSplitSpeakers: false,
     });
   };
@@ -1936,9 +1939,9 @@ export default function App() {
              ctx.lineJoin = 'round';
              
              const type = el.visualizerType || 'bars-center';
-             const count = el.barCount || 8;
+             const count = el.barCount || (type === 'waveform-strip' ? 72 : 16);
              const mirror = el.visualizerMirror || false;
-             const sensitivityMultiplier = el.visualizerSensitivity ?? 1.0;
+             const sensitivityMultiplier = el.visualizerSensitivity ?? 1.5;
 
              const getValue = (idx: number, total: number, isLeftSpeakerSide?: boolean) => {
                  let val = 0;
@@ -1983,9 +1986,10 @@ export default function App() {
              }
 
              const previousValues = visualizerValueMemory[el.id] || new Array(count).fill(0.04);
+             const blend = Math.min(0.65, Math.max(0.05, 1 - (el.visualizerSmoothing ?? 0.65)));
              const smoothedValues = values.map((value, index) => {
                const previous = previousValues[index] ?? 0.04;
-               return previous + (value - previous) * 0.38;
+               return previous + (value - previous) * blend;
              });
              visualizerValueMemory[el.id] = smoothedValues;
 
@@ -1995,8 +1999,9 @@ export default function App() {
                  const halfCount = Math.floor(count / 2);
                  for (let i = 0; i < count; i++) {
                      const v = smoothedValues[i];
-                     const minBarH = 4 * scale;
-                     const barH = Math.min(minBarH + v * (elH * 0.9), elH);
+                     const minBarH = (el.visualizerBaseline ?? 4) * scale;
+                     const heightScale = el.visualizerHeight ?? 0.9;
+                     const barH = Math.min(minBarH + v * (elH * heightScale), elH);
                      const barX = i * (barW + gap);
                      const barY = type === 'bars-center' ? (elH - barH) / 2 : elH - barH;
                      const isLeftSpeakerSide = i < halfCount;
@@ -2028,7 +2033,11 @@ export default function App() {
                      v = Math.min(((Math.sin(frame * 0.2) * 0.5 + 0.5) * 0.5) * sensitivityMultiplier, 1.0);
                  }
                  
-                 drawAdvancedVisualizer(ctx, type, elW, elH, v, frame, el.barColor || '#00ffcc', scale);
+                 drawAdvancedVisualizer(ctx, type, elW, elH, v, frame, el.barColor || '#00ffcc', scale, {
+                   barCount: el.barCount,
+                   heightScale: el.visualizerHeight,
+                   baseline: el.visualizerBaseline,
+                 });
              }
          }
          ctx.restore();

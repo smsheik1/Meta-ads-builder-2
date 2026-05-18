@@ -6,15 +6,16 @@ export function drawAdvancedVisualizer(
     v: number,
     frame: number,
     color: string,
-    scale: number = 1
+    scale: number = 1,
+    options: { barCount?: number; heightScale?: number; baseline?: number } = {}
 ) {
     if (type === 'waveform-strip') {
-        const count = 72;
+        const count = options.barCount || 72;
         const gap = 2.2 * scale;
         const barW = Math.max(1.5 * scale, (elW - gap * (count - 1)) / count);
         const centerY = elH / 2;
-        const maxBarH = elH * 0.72;
-        const minBarH = Math.max(3 * scale, elH * 0.12);
+        const maxBarH = elH * (options.heightScale ?? 0.72);
+        const minBarH = Math.max((options.baseline ?? 4) * scale, elH * 0.04);
         ctx.fillStyle = color;
         ctx.globalAlpha = 0.92;
         for (let i = 0; i < count; i++) {

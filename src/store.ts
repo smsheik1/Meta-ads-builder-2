@@ -27,6 +27,8 @@ export interface AdElement {
   
   visualizerSensitivity?: number;
   visualizerSmoothing?: number;
+  visualizerHeight?: number;
+  visualizerBaseline?: number;
   visualizerSplitSpeakers?: boolean;
   visualizerType?: 'bars-bottom' | 'bars-center' | 'waveform-strip' | 'ai-orb' | 'siri-wave' | 'ai-blob' | 'elevenlabs-v1' | 'elevenlabs-v2' | 'elevenlabs-v3' | 'chatgpt-orb';
   visualizerMirror?: boolean;
@@ -135,6 +137,9 @@ const DEFAULT_ELEMENTS: AdElement[] = [
     barColor: '#00ffcc',
     barCount: 16,
     visualizerSensitivity: 1.5,
+    visualizerSmoothing: 0.85,
+    visualizerHeight: 0.9,
+    visualizerBaseline: 4,
     visualizerSplitSpeakers: false
   },
   {

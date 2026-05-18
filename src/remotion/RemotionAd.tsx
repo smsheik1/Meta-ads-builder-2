@@ -212,10 +212,10 @@ const ImageElement = ({ element }: { element: AdElement }) => (
   </div>
 );
 
-const Waveform = ({ element, box, audioLevels, audioBands }: { element: AdElement; box: ElementBox; audioLevels?: number[]; audioBands?: number[][] }) => {
+const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { element: AdElement; box: ElementBox; audioLevels?: number[]; audioBands?: number[][]; currentSpeaker: number }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const count = element.visualizerType === 'waveform-strip' ? 72 : (element.barCount || 16);
+  const count = element.visualizerType === 'waveform-strip' ? (element.barCount || 72) : (element.barCount || 16);
   const sensitivity = element.visualizerSensitivity ?? 1.5;
   const color = element.barColor || '#00ffcc';
   const time = frame / fps;
@@ -229,11 +229,21 @@ const Waveform = ({ element, box, audioLevels, audioBands }: { element: AdElemen
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: element.visualizerType === 'bars-bottom' ? 'flex-end' : 'center', gap: 4 * editorScale }}>
       {Array.from({ length: count }).map((_, index) => {
+        const halfCount = Math.floor(count / 2);
+        const isLeftSpeakerSide = index < halfCount;
+        const isActiveSpeakerSide = !element.visualizerSplitSpeakers || (currentSpeaker === 1 ? isLeftSpeakerSide : !isLeftSpeakerSide);
+        const sampleIndex = element.visualizerMirror && !element.visualizerSplitSpeakers
+          ? Math.min(index, count - 1 - index)
+          : index;
         const center = (count - 1) / 2;
-        const centerDistance = Math.abs(index - center);
-        const normalized = element.visualizerType === 'bars-center'
-          ? centerDistance / Math.max(1, center)
-          : index / Math.max(1, count - 1);
+        const centerDistance = Math.abs(sampleIndex - center);
+        const sideIndex = isLeftSpeakerSide ? index : index - halfCount;
+        const sideTotal = isLeftSpeakerSide ? halfCount : count - halfCount;
+        const normalized = element.visualizerSplitSpeakers
+          ? sideIndex / Math.max(1, sideTotal - 1)
+          : element.visualizerType === 'bars-center'
+            ? centerDistance / Math.max(1, center)
+            : sampleIndex / Math.max(1, count - 1);
         const edgeFade = element.visualizerType === 'waveform-strip'
           ? 0.45 + Math.pow(Math.sin(normalized * Math.PI), 0.7) * 0.55
           : 1;
@@ -247,7 +257,7 @@ const Waveform = ({ element, box, audioLevels, audioBands }: { element: AdElemen
           ? Math.min(frequencyBands.length - 1, Math.max(0, 1 + Math.floor(normalized * (frequencyBands.length - 2))))
           : 0;
         const bandSignal = frequencyBands ? frequencyBands[bandIndex] ?? 0 : null;
-        const signal = bandSignal === null
+        const signal = !isActiveSpeakerSide ? 0.04 : bandSignal === null
           ? audioLevel === null ? idleSignal : audioLevel
           : Math.min(1, bandSignal * 0.82 + (audioLevel || 0) * 0.18);
         const reactive = Math.min(1, signal * sensitivity);
@@ -264,8 +274,8 @@ const Waveform = ({ element, box, audioLevels, audioBands }: { element: AdElemen
               height,
               maxHeight: '100%',
               borderRadius: 999,
-              background: color,
-              opacity: 0.95,
+              background: element.visualizerSplitSpeakers && !isLeftSpeakerSide ? '#8b5cf6' : color,
+              opacity: isActiveSpeakerSide ? 0.95 : 0.28,
             }}
           />
         );
@@ -315,6 +325,13 @@ export const RemotionAd = ({ snapshot, width, height, audioLevels, audioBands }:
   const introOpacity = settings.introImage && seconds < settings.introDuration + introFadeDuration
     ? seconds < settings.introDuration ? 1 : 1 - ((seconds - settings.introDuration) / introFadeDuration)
     : 0;
+  const activeCaptions = snapshot.captions.length > 0 ? snapshot.captions : MOCK_CAPTIONS;
+  const activeCaptionIndex = activeCaptions.findIndex(caption => seconds >= caption.start && seconds <= caption.end);
+  const activeCaption = activeCaptionIndex >= 0 ? activeCaptions[activeCaptionIndex] : null;
+  const hasTwoSpeakers = activeCaptions.some(caption => caption.speaker === 2);
+  const currentSpeaker = activeCaption
+    ? hasTwoSpeakers ? activeCaption.speaker : (activeCaptionIndex % 2) + 1
+    : (Math.floor(seconds / 1.5) % 2) + 1;
 
   return (
     <AbsoluteFill style={{ background: settings.bgColor, width, height, overflow: 'hidden' }}>
@@ -344,7 +361,7 @@ export const RemotionAd = ({ snapshot, width, height, audioLevels, audioBands }:
             {element.type === 'button' && <ButtonElement element={element} />}
             {element.type === 'image' && <ImageElement element={element} />}
             {element.type === 'caption' && <CaptionElement element={element} captions={snapshot.captions} accentColor={settings.accentColor} />}
-            {element.type === 'visualizer' && <Waveform element={element} box={box} audioLevels={audioLevels} audioBands={audioBands} />}
+            {element.type === 'visualizer' && <Waveform element={element} box={box} audioLevels={audioLevels} audioBands={audioBands} currentSpeaker={currentSpeaker} />}
           </div>
         );
       })}
