@@ -336,7 +336,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
 
         const sensitivityMultiplier = el.visualizerSensitivity ?? 1.0;
 
-        if (['ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(type)) {
+        if (['waveform-strip', 'ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(type)) {
           const canvas = barsRef.current[vId][0] as unknown as HTMLCanvasElement;
           if (canvas && canvas.getContext) {
              const ctx = canvas.getContext('2d');
@@ -948,7 +948,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                       ))}
                     </div>
                  )}
-                 {['ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(el.visualizerType || '') && (
+                 {['waveform-strip', 'ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(el.visualizerType || '') && (
                     <canvas
                       ref={canvasEl => setBarRef(el.id, canvasEl as any, 0, 1)}
                       className="w-full h-full"

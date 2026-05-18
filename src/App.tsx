@@ -1781,7 +1781,7 @@ export default function App() {
                      ctx.fill();
                      ctx.globalAlpha = 1;
                  }
-             } else if (['ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(type)) {
+             } else if (['waveform-strip', 'ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(type)) {
                  let v = 0;
                  if (analyser && dataArray) {
                      const binsCount = Math.floor(dataArray.length * 0.5);

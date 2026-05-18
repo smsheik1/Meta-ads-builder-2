@@ -290,6 +290,7 @@ export const PropertiesPanel: React.FC = () => {
               <select value={selectedEl.visualizerType || 'bars-bottom'} onChange={(e) => updateElement(selectedEl.id, { visualizerType: e.target.value as any })} className={inputClass}>
                 <option value="bars-bottom">Bars, bottom</option>
                 <option value="bars-center">Bars, center</option>
+                <option value="waveform-strip">Waveform strip</option>
                 <option value="ai-orb">AI orb</option>
                 <option value="siri-wave">Siri wave</option>
                 <option value="ai-blob">3D blob</option>

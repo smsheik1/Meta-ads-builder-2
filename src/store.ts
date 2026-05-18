@@ -28,7 +28,7 @@ export interface AdElement {
   visualizerSensitivity?: number;
   visualizerSmoothing?: number;
   visualizerSplitSpeakers?: boolean;
-  visualizerType?: 'bars-bottom' | 'bars-center' | 'ai-orb' | 'siri-wave' | 'ai-blob' | 'elevenlabs-v1' | 'elevenlabs-v2' | 'elevenlabs-v3' | 'chatgpt-orb';
+  visualizerType?: 'bars-bottom' | 'bars-center' | 'waveform-strip' | 'ai-orb' | 'siri-wave' | 'ai-blob' | 'elevenlabs-v1' | 'elevenlabs-v2' | 'elevenlabs-v3' | 'chatgpt-orb';
   visualizerMirror?: boolean;
   barColor?: string;
   barCount?: number;
