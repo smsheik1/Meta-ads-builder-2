@@ -311,14 +311,11 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       const activeCaps = state.captions.length > 0 ? state.captions : MOCK_CAPTIONS;
       const activeCaptionIndex = activeCaps.findIndex(c => currentTime >= c.start && currentTime <= c.end);
       const activeCaption = activeCaptionIndex >= 0 ? activeCaps[activeCaptionIndex] : undefined;
-      const hasTwoSpeakers = activeCaps.some(c => c.speaker === 2);
       let loopSpeaker: number | null = null;
       
       if (activeCaption) {
         setCurrentCaption(activeCaption.text);
-        loopSpeaker = hasTwoSpeakers && (activeCaption.speaker === 1 || activeCaption.speaker === 2)
-          ? activeCaption.speaker
-          : (activeCaptionIndex % 2) + 1;
+        loopSpeaker = (activeCaptionIndex % 2) + 1;
         setCurrentSpeaker(loopSpeaker);
       } else {
         setCurrentCaption(null);
@@ -1025,7 +1022,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                       fontWeight: el.fontWeight || 700,
                     }}
                   >
-                    {currentCaption || (audioUrl ? "Captions will appear during playback" : "Upload audio for captions")}
+                    {currentCaption || (playing ? '' : audioUrl ? 'Captions will appear during playback' : 'Upload audio for captions')}
                   </AutoFitText>
                </div>
             )}

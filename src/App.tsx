@@ -1608,15 +1608,12 @@ export default function App() {
              const renderCaptions = storeCaptions.length > 0 ? storeCaptions : MOCK_CAPTIONS;
              const activeCaptionIndex = renderCaptions.findIndex(c => currentTimeSec >= c.start && currentTimeSec <= c.end);
              const activeCaption = activeCaptionIndex >= 0 ? renderCaptions[activeCaptionIndex] : undefined;
-             const hasTwoCaptionSpeakers = renderCaptions.some(c => c.speaker === 2);
              
              if (activeCaption) {
                 const maxTextWidth = elW - (18 * scale);
                 const maxTextHeight = elH - (16 * scale);
                 const captionText = `${activeCaption.text}`;
-                const captionSpeaker = hasTwoCaptionSpeakers && (activeCaption.speaker === 1 || activeCaption.speaker === 2)
-                  ? activeCaption.speaker
-                  : (activeCaptionIndex % 2) + 1;
+                const captionSpeaker = (activeCaptionIndex % 2) + 1;
                 const captionColor = CAPTION_SPEAKER_COLORS[captionSpeaker] || el.color || accentColor;
                 const fontFamily = el.fontFamily || 'Inter, sans-serif';
                 const fontWeight = el.fontWeight || 'bold';
