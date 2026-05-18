@@ -2355,7 +2355,7 @@ export default function App() {
       <div className="min-h-screen bg-[#F6F8FB] font-sans text-slate-950">
         <header className="flex h-20 items-center justify-between border-b border-slate-200 bg-white px-6 md:px-10">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Agent Enamel" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
+            <img src="/wiggly-logo.svg" alt="Wiggly" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
             <div>
               <p className="text-lg font-black leading-tight">Wiggly</p>
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Visual ads that move fast.</p>
@@ -2671,7 +2671,7 @@ export default function App() {
           className="flex items-center gap-3 rounded-xl text-left transition hover:opacity-80"
           title="Open homepage"
         >
-          <img src="/logo.png" alt="Agent Enamel" className="h-8 w-8 rounded-md object-cover shadow-sm" />
+          <img src="/wiggly-logo.svg" alt="Wiggly" className="h-8 w-8 rounded-md object-cover shadow-sm" />
           <h1 className="text-lg font-semibold tracking-tight">
             {appTitle}
           </h1>

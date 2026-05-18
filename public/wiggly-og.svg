@@ -1,0 +1,17 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#F7F8FB"/>
+  <circle cx="116" cy="92" r="260" fill="#00F0C8" opacity="0.22"/>
+  <circle cx="1068" cy="112" r="220" fill="#6D5CFF" opacity="0.16"/>
+  <circle cx="1044" cy="566" r="280" fill="#111827" opacity="0.08"/>
+  <rect x="86" y="74" width="1028" height="482" rx="56" fill="white" stroke="#E5E7EB" stroke-width="2"/>
+  <g transform="translate(142 132)">
+    <rect width="128" height="128" rx="32" fill="#070A12"/>
+    <path d="M22 72C38 40 54 40 70 72C86 104 102 104 118 72" stroke="#00F0C8" stroke-width="13" stroke-linecap="round"/>
+    <path d="M22 56C38 88 54 88 70 56C86 24 102 24 118 56" stroke="#6D5CFF" stroke-width="9" stroke-linecap="round"/>
+  </g>
+  <text x="304" y="220" fill="#070A12" font-family="Inter, Arial, sans-serif" font-size="86" font-weight="900">Wiggly</text>
+  <text x="146" y="344" fill="#070A12" font-family="Inter, Arial, sans-serif" font-size="58" font-weight="900">Visual ads that move fast.</text>
+  <text x="148" y="410" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="650">Build hook-driven voice ads with audio, captions,</text>
+  <text x="148" y="446" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="650">waveforms, templates, and MP4 export.</text>
+  <path d="M148 488C226 448 304 528 382 488C460 448 538 528 616 488C694 448 772 528 850 488C928 448 1006 528 1084 488" stroke="#00F0C8" stroke-width="18" stroke-linecap="round"/>
+</svg>
