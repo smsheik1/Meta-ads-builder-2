@@ -419,14 +419,6 @@ app.post('/api/transcribe', expensiveApiLimiter, uploadMem.single('audio'), asyn
 
 
 
-app.post('/api/render-test', (req, res) => {
-  res.json({ status: 'not implemented yet' });
-});
-
-app.post('/api/hyperframes-render-test', (req, res) => {
-  res.json({ status: 'not implemented yet' });
-});
-
 import { GoogleGenAI } from '@google/genai';
 import { getMasterPrompt } from './src/lib/prompts/headline-master';
 

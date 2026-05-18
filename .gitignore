@@ -2,6 +2,9 @@ node_modules/
 build/
 dist/
 coverage/
+test-results/
+tmp/
+playwright-report/
 .DS_Store
 *.log
 .env*

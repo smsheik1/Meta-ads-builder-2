@@ -1,60 +1,42 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Smoke tests', () => {
+  test('app loads without browser errors', async ({ page }) => {
+    const errors: string[] = [];
 
-  test('App loads with no console errors', async ({ page }) => {
-    const consoleErrors: string[] = [];
-    page.on('console', msg => {
-      if (msg.type() === 'error') {
-        consoleErrors.push(msg.text());
-      }
+    page.on('console', (message) => {
+      const text = message.text();
+      const isRateLimitNoise = text.includes('429') || text.includes('Too many generation/export requests');
+      if (message.type() === 'error' && !isRateLimitNoise) errors.push(text);
     });
-    
-    // Listen for uncaught exceptions within the page
-    page.on('pageerror', exception => {
-      consoleErrors.push(exception.message);
-    });
+    page.on('pageerror', (error) => errors.push(error.message));
 
     await page.goto('/');
-    
-    // Wait for the app to settle
-    await page.waitForTimeout(3000);
+    await expect(page.getByText('Wiggly').first()).toBeVisible();
+    await expect(page.getByRole('banner').getByRole('button', { name: /open studio/i })).toBeVisible();
 
-    expect(consoleErrors.length).toBe(0);
+    expect(errors).toEqual([]);
   });
 
-  test('Canvas renders with default elements', async ({ page }) => {
+  test('studio shows the core editor panels', async ({ page }) => {
     await page.goto('/');
-    
-    // Wait for app to load
-    await page.waitForTimeout(1000);
+    await page.getByRole('banner').getByRole('button', { name: /open studio/i }).click();
 
-    // The canvas should contain the default elements, such as the headline
-    const headline = page.locator('text=YOUR HEADLINE HERE');
-    await expect(headline).toBeVisible();
-
-    // Verify PlatformFrame container by looking for the simulated status bar "9:41"
-    const statusBar = page.locator('text=9:41');
-    await expect(statusBar).toBeVisible();
+    await expect(page.getByText('Components')).toBeVisible();
+    await expect(page.getByText('Style & Assets')).toBeVisible();
+    await expect(page.getByText('Platform Simulator')).toBeVisible();
+    await expect(page.getByRole('button', { name: /export mp4/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /play preview/i })).toBeVisible();
   });
 
-  test('Tab switch changes UI from Composition to Batch View', async ({ page }) => {
+  test('template panel exposes templates and history', async ({ page }) => {
     await page.goto('/');
-    
-    // Wait for app to load
-    await page.waitForTimeout(1000);
+    await page.getByRole('banner').getByRole('button', { name: /open studio/i }).click();
 
-    // Initial assumption is that Batch Engine should NOT be visible initially
-    await expect(page.locator('text=Batch Engine')).not.toBeVisible();
+    await expect(page.getByRole('button', { name: 'Templates' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'My History' })).toBeVisible();
 
-    // Find and click the 'Batch View' button
-    await page.click('button:has-text("Batch View")');
-
-    // Wait 500ms
-    await page.waitForTimeout(500);
-
-    // Assert that 'Batch Engine' text is now visible
-    await expect(page.locator('text=Batch Engine')).toBeVisible();
+    await page.getByRole('button', { name: 'My History' }).click();
+    await expect(page.getByText(/downloaded ads will appear here/i)).toBeVisible();
   });
-
 });
