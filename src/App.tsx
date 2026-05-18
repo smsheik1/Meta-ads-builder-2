@@ -6,7 +6,7 @@ import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2
 import Papa from 'papaparse';
 import { useEditorStore } from './store';
 import { drawAdvancedVisualizer } from './lib/visualizer';
-import { parseRichText, stripRichText, type RichTextRun } from './lib/rich-text';
+import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
 import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } from './lib/audio-library';
@@ -1509,7 +1509,6 @@ export default function App() {
              const fontStyle = el.fontStyle || 'normal';
              ctx.textAlign = (el.textAlign as CanvasTextAlign) || 'center';
              ctx.textBaseline = 'top';
-             const richRuns = parseRichText(el.content || '');
              const plainContent = stripRichText(el.content || '');
 
              const wrapText = (size: number) => {
@@ -1578,58 +1577,6 @@ export default function App() {
              lines.forEach((line, i) => {
                const lineY = startY + (i * lineHeight);
                ctx.fillText(line, textX, lineY, elW);
-               if (el.textDecoration === 'underline' || richRuns.some(run => run.bold || run.italic || run.underline)) {
-                 const lineRuns: RichTextRun[] = [];
-                 let remaining = line.length;
-                 let consumed = lines.slice(0, i).join('').length;
-                 for (const run of richRuns) {
-                   if (run.text === '\n') continue;
-                   const runText = run.text;
-                   if (consumed >= runText.length) {
-                     consumed -= runText.length;
-                     continue;
-                   }
-                   const start = Math.max(consumed, 0);
-                   const slice = runText.slice(start, start + remaining);
-                   if (slice) {
-                     lineRuns.push({ ...run, text: slice });
-                     remaining -= slice.length;
-                   }
-                   consumed = 0;
-                   if (remaining <= 0) break;
-                 }
-
-                 if (lineRuns.some(run => run.bold || run.italic || run.underline)) {
-                   const totalWidth = lineRuns.reduce((sum, run) => {
-                     const runWeight = run.bold ? '900' : fontWeight;
-                     const runStyle = run.italic ? 'italic' : fontStyle;
-                     ctx.font = `${runStyle} ${runWeight} ${fontSize}px ${fontFamily}`;
-                     return sum + ctx.measureText(run.text).width;
-                   }, 0);
-                   let cursorX = ctx.textAlign === 'center' ? (elW - totalWidth) / 2 : ctx.textAlign === 'right' ? elW - totalWidth : 0;
-                   lineRuns.forEach(run => {
-                     const runWeight = run.bold ? '900' : fontWeight;
-                     const runStyle = run.italic ? 'italic' : fontStyle;
-                     ctx.font = `${runStyle} ${runWeight} ${fontSize}px ${fontFamily}`;
-                     ctx.fillText(run.text, cursorX, lineY);
-                     const runWidth = ctx.measureText(run.text).width;
-                     if (run.underline || el.textDecoration === 'underline') {
-                       const underlineY = lineY + fontSize * 0.9;
-                       ctx.save();
-                       ctx.strokeStyle = el.color || '#fff';
-                       ctx.lineWidth = Math.max(1.5 * scale, fontSize * 0.06);
-                       ctx.beginPath();
-                       ctx.moveTo(cursorX, underlineY);
-                       ctx.lineTo(cursorX + runWidth, underlineY);
-                       ctx.stroke();
-                       ctx.restore();
-                     }
-                     cursorX += runWidth;
-                   });
-                   ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
-                   return;
-                 }
-               }
                if (el.textDecoration === 'underline') {
                  const metrics = ctx.measureText(line);
                  let underlineX = textX;
