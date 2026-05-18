@@ -6,7 +6,7 @@ import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2
 import Papa from 'papaparse';
 import { useEditorStore } from './store';
 import { drawAdvancedVisualizer } from './lib/visualizer';
-import { stripRichText } from './lib/rich-text';
+import { parseRichText, stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
 import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } from './lib/audio-library';
@@ -1506,7 +1506,11 @@ export default function App() {
              let fontSize = (el.fontSize || 16) * scale;
              const fontFamily = el.fontFamily || 'Inter, sans-serif';
              const fontWeight = el.fontWeight || 'normal';
-             const fontStyle = el.fontStyle || 'normal';
+             const richRuns = parseRichText(el.content || '');
+             const hasInlineItalic = richRuns.some(run => run.italic);
+             const hasInlineUnderline = richRuns.some(run => run.underline);
+             const fontStyle = hasInlineItalic ? 'italic' : (el.fontStyle || 'normal');
+             const textDecoration = hasInlineUnderline ? 'underline' : el.textDecoration;
              ctx.textAlign = (el.textAlign as CanvasTextAlign) || 'center';
              ctx.textBaseline = 'top';
              const plainContent = stripRichText(el.content || '');
@@ -1577,7 +1581,7 @@ export default function App() {
              lines.forEach((line, i) => {
                const lineY = startY + (i * lineHeight);
                ctx.fillText(line, textX, lineY, elW);
-               if (el.textDecoration === 'underline') {
+               if (textDecoration === 'underline') {
                  const metrics = ctx.measureText(line);
                  let underlineX = textX;
                  if (ctx.textAlign === 'center') underlineX = textX - (metrics.width / 2);
