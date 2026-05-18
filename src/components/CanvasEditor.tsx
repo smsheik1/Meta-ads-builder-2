@@ -425,7 +425,38 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
     barsRef.current[vId][index] = el;
   };
 
-  const applyInlineTextCommand = (command: 'bold' | 'italic' | 'underline') => {
+  const applyInlineTextCommand = (command: 'bold' | 'italic' | 'underline', element?: { fontWeight?: string | number }) => {
+    const selection = window.getSelection();
+    if (
+      command === 'bold' &&
+      selection &&
+      !selection.isCollapsed &&
+      Number.parseInt(String(element?.fontWeight || '400'), 10) >= 700
+    ) {
+      const anchorElement = selection.anchorNode instanceof HTMLElement
+        ? selection.anchorNode
+        : selection.anchorNode?.parentElement;
+      const existingLightSpan = anchorElement?.closest('span[data-inline-weight="light"]');
+      if (existingLightSpan && editingRef.current?.contains(existingLightSpan)) {
+        const parent = existingLightSpan.parentNode;
+        while (existingLightSpan.firstChild) parent?.insertBefore(existingLightSpan.firstChild, existingLightSpan);
+        parent?.removeChild(existingLightSpan);
+        return;
+      }
+
+      const range = selection.getRangeAt(0);
+      const wrapper = document.createElement('span');
+      wrapper.dataset.inlineWeight = 'light';
+      wrapper.style.fontWeight = '500';
+      wrapper.appendChild(range.extractContents());
+      range.insertNode(wrapper);
+      selection.removeAllRanges();
+      const nextRange = document.createRange();
+      nextRange.selectNodeContents(wrapper);
+      selection.addRange(nextRange);
+      return;
+    }
+
     document.execCommand(command);
   };
 
@@ -850,9 +881,9 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                        if ((e.metaKey || e.ctrlKey) && ['b', 'i', 'u'].includes(e.key.toLowerCase())) {
                           e.preventDefault();
                           const key = e.key.toLowerCase();
-                          if (key === 'b') applyInlineTextCommand('bold');
-                          if (key === 'i') applyInlineTextCommand('italic');
-                          if (key === 'u') applyInlineTextCommand('underline');
+                          if (key === 'b') applyInlineTextCommand('bold', el);
+                          if (key === 'i') applyInlineTextCommand('italic', el);
+                          if (key === 'u') applyInlineTextCommand('underline', el);
                           return;
                        }
                        if (e.key === 'Enter' && !e.shiftKey) {
