@@ -155,8 +155,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   selectedIds: [],
   history: [{ elements: DEFAULT_ELEMENTS }],
   historyIndex: 0,
-  showSafeZones: true,
-  showRedGuides: true,
+  showSafeZones: false,
+  showRedGuides: false,
   captions: [],
   businessContext: `[Name] Dr. Michael Carter
 [Niche] Dental Practice Owners
