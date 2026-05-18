@@ -39,15 +39,60 @@ function ToggleRow({ label, checked, onChange }: { label: string; checked: boole
 }
 
 function ColorControl({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const normalizeHexColor = (nextValue: string) => {
+    const trimmed = nextValue.trim();
+    const withHash = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+    const shortHex = withHash.match(/^#([0-9a-fA-F]{3})$/);
+    if (shortHex) {
+      return `#${shortHex[1].split('').map((char) => `${char}${char}`).join('')}`.toUpperCase();
+    }
+    return /^#[0-9a-fA-F]{6}$/.test(withHash) ? withHash.toUpperCase() : null;
+  };
+
+  const [draft, setDraft] = React.useState(value);
+  React.useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
+  const normalizedValue = normalizeHexColor(value) || '#000000';
+  const commit = () => {
+    const normalized = normalizeHexColor(draft);
+    if (normalized) {
+      onChange(normalized);
+      setDraft(normalized);
+      return;
+    }
+    setDraft(value);
+  };
+
   return (
     <div className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 shadow-sm">
+      <span className="relative h-5 w-5 shrink-0 overflow-hidden rounded border border-slate-200 shadow-inner" style={{ backgroundColor: normalizedValue }}>
+        <input
+          type="color"
+          value={normalizedValue}
+          onChange={(e) => {
+            const nextValue = e.target.value.toUpperCase();
+            onChange(nextValue);
+            setDraft(nextValue);
+          }}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        />
+      </span>
       <input
-        type="color"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-5 w-5 cursor-pointer rounded border-0 bg-transparent p-0"
+        type="text"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.currentTarget.blur();
+          }
+        }}
+        spellCheck={false}
+        className="min-w-0 flex-1 bg-transparent font-mono text-xs font-semibold uppercase text-slate-600 outline-none"
+        placeholder="#00FFCC"
       />
-      <span className="min-w-0 flex-1 truncate text-xs font-semibold text-slate-500">{value}</span>
     </div>
   );
 }

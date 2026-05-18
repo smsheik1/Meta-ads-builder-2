@@ -32,11 +32,35 @@ export function sanitizeRichText(input = '') {
     }
 
     const replacementTag = tagName === 'STRONG' ? 'b' : tagName === 'EM' ? 'i' : tagName.toLowerCase();
-    const cleanedElement = document.createElement(replacementTag);
+    let cleanedElement = document.createElement(replacementTag);
     element.childNodes.forEach(child => {
       const cleaned = cleanNode(child);
       if (cleaned) cleanedElement.appendChild(cleaned);
     });
+
+    if (tagName === 'SPAN') {
+      const fontWeight = element.style.fontWeight;
+      const isBold = fontWeight === 'bold' || Number(fontWeight) >= 600;
+      const isItalic = element.style.fontStyle === 'italic';
+      const isUnderlined = element.style.textDecorationLine.includes('underline') || element.style.textDecoration.includes('underline');
+
+      if (isUnderlined) {
+        const wrapper = document.createElement('u');
+        wrapper.append(...Array.from(cleanedElement.childNodes));
+        cleanedElement = wrapper;
+      }
+      if (isItalic) {
+        const wrapper = document.createElement('i');
+        wrapper.append(...Array.from(cleanedElement.childNodes));
+        cleanedElement = wrapper;
+      }
+      if (isBold) {
+        const wrapper = document.createElement('b');
+        wrapper.append(...Array.from(cleanedElement.childNodes));
+        cleanedElement = wrapper;
+      }
+    }
+
     return cleanedElement;
   };
 
