@@ -623,16 +623,20 @@ export default function App() {
     field: string,
     url: string | null | undefined,
     applyUrl: (nextUrl: string) => void,
+    options?: { forceUpload?: boolean; removeWhite?: boolean },
   ) => {
     if (!url) return;
 
-    if (!url.startsWith('blob:') && !url.startsWith('data:')) {
+    if (!options?.forceUpload && !url.startsWith('blob:') && !url.startsWith('data:')) {
       applyUrl(new URL(url, window.location.origin).href);
       return;
     }
 
     const response = await fetch(url);
-    const blob = await response.blob();
+    let blob = await response.blob();
+    if (options?.removeWhite && blob.type.startsWith('image/')) {
+      blob = await removeWhiteFromImageBlob(blob);
+    }
     const extension = blob.type.includes('png') ? 'png'
       : blob.type.includes('jpeg') || blob.type.includes('jpg') ? 'jpg'
       : blob.type.includes('mp4') ? 'mp4'
@@ -640,6 +644,41 @@ export default function App() {
       : 'bin';
     formData.append(field, blob, `${field.replace(/[^a-zA-Z0-9_-]/g, '-')}.${extension}`);
     applyUrl('');
+  };
+
+  const removeWhiteFromImageBlob = async (blob: Blob) => {
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    const objectUrl = URL.createObjectURL(blob);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error('Failed to load image for transparency processing.'));
+        image.src = objectUrl;
+      });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth || image.width;
+      canvas.height = image.naturalHeight || image.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return blob;
+
+      ctx.drawImage(image, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      for (let index = 0; index < data.length; index += 4) {
+        if (data[index] > 240 && data[index + 1] > 240 && data[index + 2] > 240) {
+          data[index + 3] = 0;
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+
+      return await new Promise<Blob>((resolve) => {
+        canvas.toBlob(processed => resolve(processed || blob), 'image/png');
+      });
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
   };
 
   const createRemotionSnapshot = async (snapshot: SavedTemplate): Promise<FormData> => {
@@ -682,7 +721,13 @@ export default function App() {
     }
     for (const element of remotionSnapshot.elements) {
       if (element.type === 'image' && element.imageUrl) {
-        await appendMediaForRemotion(formData, `elementImage:${element.id}`, element.imageUrl, url => { element.imageUrl = url; });
+        await appendMediaForRemotion(
+          formData,
+          `elementImage:${element.id}`,
+          element.imageUrl,
+          url => { element.imageUrl = url; },
+          { forceUpload: Boolean(element.removeWhite), removeWhite: Boolean(element.removeWhite) },
+        );
       }
     }
 
