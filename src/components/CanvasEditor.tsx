@@ -280,7 +280,17 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       }
       Object.keys(barsRef.current).forEach((vId) => {
         barsRef.current[vId].forEach(bar => {
-          if (bar) gsap.to(bar, { height: 4, duration: 0.2 });
+          if (!bar) return;
+          if (bar instanceof HTMLCanvasElement) {
+            bar.style.height = '';
+            bar.style.opacity = '1';
+            const ctx = bar.getContext('2d');
+            if (ctx) {
+              ctx.clearRect(0, 0, bar.width, bar.height);
+            }
+            return;
+          }
+          gsap.to(bar, { height: 4, duration: 0.2 });
         });
       });
     }
