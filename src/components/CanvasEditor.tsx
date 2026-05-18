@@ -10,6 +10,11 @@ import { AutoFitText } from './AutoFitText';
 import { sanitizeRichText, stripRichText } from '../lib/rich-text';
 import { isFeedPlatform, isVerticalPlatform, type PlatformType } from './PlatformFrame';
 
+const isEditableEventTarget = (target: EventTarget | null) => {
+  if (!(target instanceof HTMLElement)) return false;
+  return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+};
+
 const TransparentImage = ({ src, className, removeWhite }: { src: string, className: string, removeWhite?: boolean }) => {
   const [dataUrl, setDataUrl] = useState(src);
 
@@ -95,10 +100,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       const usesShortcutModifier = e.metaKey || e.ctrlKey;
-      const isEditableTarget =
-        document.activeElement?.tagName === 'INPUT' ||
-        document.activeElement?.tagName === 'TEXTAREA' ||
-        document.activeElement?.getAttribute('contenteditable') === 'true';
+      const isEditableTarget = isEditableEventTarget(e.target) || isEditableEventTarget(document.activeElement);
 
       if (usesShortcutModifier && key === 'z' && !isEditableTarget) {
         e.preventDefault();
@@ -464,8 +466,8 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't delete if we are typing in an input or textarea
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      // Don't delete selected components while the user is editing text or a form field.
+      if (isEditableEventTarget(e.target) || isEditableEventTarget(document.activeElement)) {
         return;
       }
       if (e.key === 'Backspace' || e.key === 'Delete') {
