@@ -316,7 +316,9 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       
       if (activeCaption) {
         setCurrentCaption(activeCaption.text);
-        loopSpeaker = hasTwoSpeakers ? activeCaption.speaker : (activeCaptionIndex % 2) + 1;
+        loopSpeaker = hasTwoSpeakers && (activeCaption.speaker === 1 || activeCaption.speaker === 2)
+          ? activeCaption.speaker
+          : (activeCaptionIndex % 2) + 1;
         setCurrentSpeaker(loopSpeaker);
       } else {
         setCurrentCaption(null);

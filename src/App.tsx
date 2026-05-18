@@ -1605,15 +1605,19 @@ export default function App() {
          } else if (el.type === 'caption') {
              const currentTimeSec = elapsed / 1000;
              const storeCaptions = captions;
-             const activeCaption = storeCaptions.length > 0 
-                ? storeCaptions.find(c => currentTimeSec >= c.start && currentTimeSec <= c.end)
-                : MOCK_CAPTIONS.find(c => currentTimeSec >= c.start && currentTimeSec <= c.end);
+             const renderCaptions = storeCaptions.length > 0 ? storeCaptions : MOCK_CAPTIONS;
+             const activeCaptionIndex = renderCaptions.findIndex(c => currentTimeSec >= c.start && currentTimeSec <= c.end);
+             const activeCaption = activeCaptionIndex >= 0 ? renderCaptions[activeCaptionIndex] : undefined;
+             const hasTwoCaptionSpeakers = renderCaptions.some(c => c.speaker === 2);
              
              if (activeCaption) {
                 const maxTextWidth = elW - (18 * scale);
                 const maxTextHeight = elH - (16 * scale);
                 const captionText = `${activeCaption.text}`;
-                const captionColor = CAPTION_SPEAKER_COLORS[activeCaption.speaker] || el.color || accentColor;
+                const captionSpeaker = hasTwoCaptionSpeakers && (activeCaption.speaker === 1 || activeCaption.speaker === 2)
+                  ? activeCaption.speaker
+                  : (activeCaptionIndex % 2) + 1;
+                const captionColor = CAPTION_SPEAKER_COLORS[captionSpeaker] || el.color || accentColor;
                 const fontFamily = el.fontFamily || 'Inter, sans-serif';
                 const fontWeight = el.fontWeight || 'bold';
                 const wrapCaptionLines = (fontSize: number) => {
