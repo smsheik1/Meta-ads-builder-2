@@ -41,13 +41,9 @@ export function sanitizeRichText(input = '') {
     if (tagName === 'SPAN') {
       const fontWeight = element.style.fontWeight;
       const isBold = fontWeight === 'bold' || Number(fontWeight) >= 600;
-      const isNormalWeight = fontWeight === 'normal' || fontWeight === '400' || fontWeight === '500' || Number(fontWeight) <= 500;
       const isItalic = element.style.fontStyle === 'italic';
       const isUnderlined = element.style.textDecorationLine.includes('underline') || element.style.textDecoration.includes('underline');
 
-      if (isNormalWeight) {
-        cleanedElement.style.fontWeight = '500';
-      }
       if (isUnderlined) {
         const wrapper = document.createElement('u');
         wrapper.append(...Array.from(cleanedElement.childNodes));
