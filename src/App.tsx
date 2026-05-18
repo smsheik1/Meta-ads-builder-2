@@ -705,6 +705,17 @@ export default function App() {
     throw new Error(`${label} returned an invalid MP4 (${blob.size} bytes).`);
   };
 
+  const getValidMp4Bytes = async (blob: Blob, label: string) => {
+    await ensureValidMp4Blob(blob, label);
+    return new Uint8Array(await blob.arrayBuffer());
+  };
+
+  const formatBytes = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   const tryRemotionExport = async (exportSnapshot: SavedTemplate, abortController: AbortController) => {
     setExportPhase('converting');
     setRenderProgress(10);
@@ -735,8 +746,9 @@ export default function App() {
   const downloadReadyExport = async () => {
     if (!exportDownload) return;
 
+    let mp4Bytes: Uint8Array;
     try {
-      await ensureValidMp4Blob(exportDownload.blob, 'Ready export');
+      mp4Bytes = await getValidMp4Bytes(exportDownload.blob, 'Ready export');
     } catch (error) {
       console.error('Blocked invalid MP4 download:', error);
       setExportPhase('error');
@@ -758,7 +770,7 @@ export default function App() {
           ],
         });
         const writable = await fileHandle.createWritable();
-        await writable.write(exportDownload.blob);
+        await writable.write(mp4Bytes);
         await writable.close();
         saveExportToHistoryOnce(exportDownload.snapshot);
         return;
@@ -769,14 +781,16 @@ export default function App() {
     }
 
     try {
+      const downloadUrl = URL.createObjectURL(new Blob([mp4Bytes], { type: 'video/mp4' }));
       const link = document.createElement('a');
-      link.href = exportDownload.url;
+      link.href = downloadUrl;
       link.download = exportDownload.filename;
       link.rel = 'noopener';
       link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 10000);
     } catch (error) {
       console.warn('Browser MP4 download failed:', error);
       window.open(exportDownload.url, '_blank', 'noopener,noreferrer');
@@ -3509,7 +3523,7 @@ export default function App() {
                 </div>}
                 <p className="mt-2 text-xs leading-snug text-slate-500">
                   {exportDownload
-                    ? 'Your export used a snapshot of the ad from when you clicked Export.'
+                    ? `Ready to save: ${formatBytes(exportDownload.blob.size)} MP4 snapshot.`
                     : exportPhase === 'error'
                       ? 'Try exporting again. If it repeats, restart the dev server.'
                       : exportPhase === 'converting'
