@@ -1600,7 +1600,6 @@ export default function App() {
                  }
 
                  if (lineRuns.some(run => run.bold || run.italic || run.underline)) {
-                   ctx.clearRect(0, lineY - 2 * scale, elW, lineHeight);
                    const totalWidth = lineRuns.reduce((sum, run) => {
                      const runWeight = run.bold ? '900' : fontWeight;
                      const runStyle = run.italic ? 'italic' : fontStyle;
