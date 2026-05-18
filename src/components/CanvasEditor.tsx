@@ -860,8 +860,8 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                           e.preventDefault();
                           const key = e.key.toLowerCase();
                           if (key === 'b') applyInlineTextCommand('bold');
-                          if (key === 'i') applyInlineTextCommand('italic', el);
-                          if (key === 'u') applyInlineTextCommand('underline', el);
+                          if (key === 'i') applyInlineTextCommand('italic');
+                          if (key === 'u') applyInlineTextCommand('underline');
                           return;
                        }
                        if (e.key === 'Enter' && !e.shiftKey) {

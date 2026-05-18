@@ -1,0 +1,271 @@
+import React from 'react';
+import { AbsoluteFill, Audio, Img, OffthreadVideo, useCurrentFrame, useVideoConfig } from 'remotion';
+import type { AdElement, Caption } from '../store';
+import type { ExportSnapshot } from '../lib/export-snapshot';
+import { getActiveCaption } from '../lib/export-snapshot';
+import { stripRichText } from '../lib/rich-text';
+
+const CAPTION_SPEAKER_COLORS: Record<number, string> = {
+  1: '#00D6B8',
+  2: '#6554FF',
+};
+
+const MOCK_CAPTIONS: Caption[] = [
+  { text: 'Are you missing calls?', start: 0, end: 2, speaker: 1 },
+  { text: 'Our AI receptionist can help.', start: 2.5, end: 4.5, speaker: 2 },
+  { text: 'Available 24/7.', start: 5, end: 6.5, speaker: 1 },
+  { text: 'Never miss a lead again.', start: 7, end: 9, speaker: 2 },
+];
+
+type RemotionAdProps = {
+  snapshot: ExportSnapshot;
+  width: number;
+  height: number;
+  durationSeconds: number;
+};
+
+const editorScale = 3;
+
+const isFeedPlatform = (platform: ExportSnapshot['settings']['platform']) => (
+  platform === 'facebook-feed' || platform === 'instagram-feed' || platform === 'feed'
+);
+
+const mediaCoverStyle: React.CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+};
+
+const getElementBox = (element: AdElement, platform: ExportSnapshot['settings']['platform'], exportHeight: number) => {
+  const canvasWidth = 360;
+  const canvasHeight = exportHeight / editorScale;
+  const rawWidth = Number(element.width) || 200;
+  const rawHeight = Number(element.height) || 50;
+  const feedSafeSquareTop = isFeedPlatform(platform) ? Math.max(0, (canvasHeight - canvasWidth) / 2) : 0;
+  const feedSafeSquareBottom = feedSafeSquareTop + canvasWidth;
+  const y = isFeedPlatform(platform) && element.type === 'caption'
+    ? Math.min(element.y, feedSafeSquareBottom - rawHeight - 8)
+    : element.y;
+
+  return {
+    left: element.x * editorScale,
+    top: y * editorScale,
+    width: rawWidth * editorScale,
+    height: rawHeight * editorScale,
+  };
+};
+
+const textShadow = '0 3px 12px rgba(0,0,0,0.28)';
+
+const TextElement = ({ element }: { element: AdElement }) => {
+  const content = stripRichText(element.content || '');
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        color: element.color || '#fff',
+        fontFamily: element.fontFamily || 'Inter, sans-serif',
+        fontSize: (element.fontSize || 16) * editorScale,
+        fontWeight: element.fontWeight || 'normal',
+        fontStyle: element.fontStyle || 'normal',
+        textDecoration: element.textDecoration || 'none',
+        textAlign: element.textAlign || 'center',
+        lineHeight: element.lineHeight || 1.12,
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'break-word',
+      }}
+    >
+      {content}
+    </div>
+  );
+};
+
+const ButtonElement = ({ element }: { element: AdElement }) => (
+  <div
+    style={{
+      width: '100%',
+      height: '100%',
+      borderRadius: (element.borderRadius || 8) * editorScale,
+      background: element.backgroundColor || '#4f46e5',
+      color: element.color || '#fff',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: element.fontFamily || 'Inter, sans-serif',
+      fontSize: (element.fontSize || 18) * editorScale,
+      fontWeight: element.fontWeight || 'bold',
+      textTransform: 'uppercase',
+      letterSpacing: 2,
+    }}
+  >
+    {stripRichText(element.content || '')}
+  </div>
+);
+
+const ImageElement = ({ element }: { element: AdElement }) => (
+  <div
+    style={{
+      position: 'relative',
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden',
+      borderRadius: element.borderRadius || 0,
+      mixBlendMode: element.mixBlendMode as React.CSSProperties['mixBlendMode'],
+    }}
+  >
+    {element.imageUrl ? (
+      <>
+        <Img src={element.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        {element.imageShadow && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: `rgba(0, 0, 0, ${element.imageShadowOpacity ?? 0.42})`,
+            }}
+          />
+        )}
+      </>
+    ) : null}
+  </div>
+);
+
+const Waveform = ({ element }: { element: AdElement }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const count = element.visualizerType === 'waveform-strip' ? 72 : (element.barCount || 16);
+  const sensitivity = element.visualizerSensitivity ?? 1.5;
+  const color = element.barColor || '#00ffcc';
+  const time = frame / fps;
+
+  return (
+    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: element.visualizerType === 'bars-bottom' ? 'flex-end' : 'center', gap: 4 * editorScale }}>
+      {Array.from({ length: count }).map((_, index) => {
+        const center = (count - 1) / 2;
+        const centerDistance = Math.abs(index - center);
+        const normalized = element.visualizerType === 'bars-center'
+          ? centerDistance / Math.max(1, center)
+          : index / Math.max(1, count - 1);
+        const edgeFade = element.visualizerType === 'waveform-strip'
+          ? 0.45 + Math.pow(Math.sin(normalized * Math.PI), 0.7) * 0.55
+          : 1;
+        const signal = (
+          Math.sin(time * 9 + index * 0.62) * 0.45 +
+          Math.sin(time * 17 + index * 1.37) * 0.35 +
+          Math.sin(time * 4 + index * 0.19) * 0.2 +
+          1
+        ) / 2;
+        const minHeight = element.visualizerType === 'waveform-strip' ? 8 : 4 * editorScale;
+        const maxHeight = element.visualizerType === 'waveform-strip' ? 0.75 : 0.9;
+        const height = minHeight + Math.pow(Math.min(1, signal * sensitivity), 1.6) * maxHeight * edgeFade * 100;
+        return (
+          <div
+            key={index}
+            style={{
+              flex: 1,
+              minWidth: element.visualizerType === 'waveform-strip' ? 2 : 4 * editorScale,
+              height: `${height}%`,
+              maxHeight: '100%',
+              borderRadius: 999,
+              background: color,
+              opacity: 0.95,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
+const CaptionElement = ({ element, captions, accentColor }: { element: AdElement; captions: Caption[]; accentColor: string }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const activeCaptions = captions.length > 0 ? captions : MOCK_CAPTIONS;
+  const { caption, index } = getActiveCaption(activeCaptions, frame / fps);
+  if (!caption) return null;
+
+  const speaker = (index % 2) + 1;
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: `${16 * editorScale}px ${18 * editorScale}px`,
+        color: CAPTION_SPEAKER_COLORS[speaker] || element.color || accentColor,
+        fontFamily: element.fontFamily || 'Inter, sans-serif',
+        fontSize: (element.fontSize || 22) * editorScale,
+        fontWeight: element.fontWeight || 700,
+        textAlign: 'center',
+        lineHeight: 1.22,
+        textShadow,
+      }}
+    >
+      {caption.text}
+    </div>
+  );
+};
+
+export const RemotionAd = ({ snapshot, width, height }: RemotionAdProps) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const seconds = frame / fps;
+  const { settings } = snapshot;
+  const sorted = [...snapshot.elements].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+  const introFadeDuration = 0.65;
+  const introOpacity = settings.introImage && seconds < settings.introDuration + introFadeDuration
+    ? seconds < settings.introDuration ? 1 : 1 - ((seconds - settings.introDuration) / introFadeDuration)
+    : 0;
+
+  return (
+    <AbsoluteFill style={{ background: settings.bgColor, width, height, overflow: 'hidden' }}>
+      {settings.bgMedia?.url && settings.bgMedia.type === 'video' && (
+        <OffthreadVideo src={settings.bgMedia.url} muted style={mediaCoverStyle} />
+      )}
+      {settings.bgMedia?.url && settings.bgMedia.type.startsWith('image') && (
+        <Img src={settings.bgMedia.url} style={mediaCoverStyle} />
+      )}
+      {settings.bgMedia && settings.bgShadow && (
+        <div style={{ position: 'absolute', inset: 0, background: `rgba(0,0,0,${settings.bgShadowOpacity})` }} />
+      )}
+
+      {sorted.map((element) => {
+        const box = getElementBox(element, settings.platform, height);
+        return (
+          <div
+            key={element.id}
+            style={{
+              position: 'absolute',
+              ...box,
+              transform: element.rotation ? `rotate(${element.rotation}deg)` : undefined,
+              transformOrigin: 'center',
+            }}
+          >
+            {element.type === 'text' && <TextElement element={element} />}
+            {element.type === 'button' && <ButtonElement element={element} />}
+            {element.type === 'image' && <ImageElement element={element} />}
+            {element.type === 'caption' && <CaptionElement element={element} captions={snapshot.captions} accentColor={settings.accentColor} />}
+            {element.type === 'visualizer' && <Waveform element={element} />}
+          </div>
+        );
+      })}
+
+      {settings.audioUrl && <Audio src={settings.audioUrl} />}
+
+      {settings.introImage && introOpacity > 0 && (
+        <div style={{ position: 'absolute', inset: 0, opacity: introOpacity, background: settings.bgColor }}>
+          <Img src={settings.introImage} style={{ width: '100%', height: '100%', objectFit: isFeedPlatform(settings.platform) ? 'contain' : 'cover' }} />
+        </div>
+      )}
+    </AbsoluteFill>
+  );
+};

@@ -8,6 +8,9 @@ import path from 'path';
 import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
+import { bundle } from '@remotion/bundler';
+import { getCompositions, renderMedia } from '@remotion/renderer';
+import { EXPORT_FPS, getExportDimensions, type ExportSnapshot } from './src/lib/export-snapshot';
 
 const app = express();
 const isProd = process.env.NODE_ENV === 'production';
@@ -65,6 +68,14 @@ const uploadMem = multer({
   },
 });
 
+const uploadRemotion = multer({
+  storage: memoryStorage,
+  limits: {
+    fileSize: 300 * 1024 * 1024,
+    files: 12,
+  },
+});
+
 const diskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     const tmpDir = path.join(process.cwd(), 'tmp');
@@ -96,6 +107,97 @@ const uploadDisk = multer({
 const sendServerError = (res: express.Response, fallbackMessage: string) => {
   res.status(500).json({ error: fallbackMessage });
 };
+
+const remotionAssetsRoot = path.join(process.cwd(), 'tmp', 'remotion-assets');
+app.use('/api/remotion-assets', express.static(remotionAssetsRoot));
+
+let remotionBundlePromise: Promise<string> | null = null;
+const getRemotionBundle = () => {
+  if (!remotionBundlePromise) {
+    remotionBundlePromise = bundle({
+      entryPoint: path.join(process.cwd(), 'src', 'remotion', 'index.ts'),
+    });
+  }
+  return remotionBundlePromise;
+};
+
+const replaceMediaUrl = (snapshot: ExportSnapshot, field: string, url: string) => {
+  if (field === 'audio') snapshot.settings.audioUrl = url;
+  if (field === 'introImage') snapshot.settings.introImage = url;
+  if (field === 'bgMedia' && snapshot.settings.bgMedia) snapshot.settings.bgMedia.url = url;
+  if (field.startsWith('elementImage:')) {
+    const id = field.split(':')[1];
+    const element = snapshot.elements.find(candidate => candidate.id === id);
+    if (element) element.imageUrl = url;
+  }
+};
+
+app.post('/api/render-remotion', expensiveApiLimiter, uploadRemotion.any(), async (req, res) => {
+  const renderId = `render-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const assetDir = path.join(remotionAssetsRoot, renderId);
+  fs.mkdirSync(assetDir, { recursive: true });
+
+  try {
+    const snapshotRaw = typeof req.body.snapshot === 'string' ? req.body.snapshot : '';
+    if (!snapshotRaw) {
+      fs.rm(assetDir, { recursive: true, force: true }, () => {});
+      return res.status(400).json({ error: 'Missing render snapshot.' });
+    }
+
+    const snapshot = JSON.parse(snapshotRaw) as ExportSnapshot & { durationSeconds?: number };
+    const files = Array.isArray(req.files) ? req.files as Express.Multer.File[] : [];
+
+    for (const file of files) {
+      const safeName = `${file.fieldname.replace(/[^a-zA-Z0-9_-]/g, '-')}-${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9_.-]/g, '-')}`;
+      const filePath = path.join(assetDir, safeName);
+      fs.writeFileSync(filePath, file.buffer);
+      replaceMediaUrl(snapshot, file.fieldname, `http://127.0.0.1:${port}/api/remotion-assets/${renderId}/${safeName}`);
+    }
+
+    const dimensions = getExportDimensions(snapshot.settings.platform);
+    const durationCap = snapshot.settings.renderDurationCap === 'full' ? 180 : Number(snapshot.settings.renderDurationCap || 30);
+    const durationSeconds = Math.max(1, Math.min(Number(snapshot.durationSeconds || 30), durationCap));
+    const inputProps = {
+      snapshot,
+      width: dimensions.width,
+      height: dimensions.height,
+      durationSeconds,
+    };
+
+    const serveUrl = await getRemotionBundle();
+    const compositions = await getCompositions(serveUrl, { inputProps });
+    const composition = compositions.find(candidate => candidate.id === 'AdRender');
+    if (!composition) {
+      throw new Error('Remotion composition not found.');
+    }
+
+    const outputPath = path.join(assetDir, 'render.mp4');
+    await renderMedia({
+      composition: {
+        ...composition,
+        width: dimensions.width,
+        height: dimensions.height,
+        fps: EXPORT_FPS,
+        durationInFrames: Math.max(1, Math.ceil(durationSeconds * EXPORT_FPS)),
+      },
+      serveUrl,
+      codec: 'h264',
+      outputLocation: outputPath,
+      inputProps,
+      overwrite: true,
+    });
+
+    res.download(outputPath, 'video.mp4', () => {
+      fs.rm(assetDir, { recursive: true, force: true }, () => {});
+    });
+  } catch (error) {
+    console.error('Remotion render error:', error);
+    fs.rm(assetDir, { recursive: true, force: true }, () => {});
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Remotion render failed.' });
+    }
+  }
+});
 
 app.post('/api/convert-to-mp4', expensiveApiLimiter, uploadDisk.single('video'), (req, res) => {
   if (!req.file) {

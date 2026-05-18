@@ -10,6 +10,7 @@ import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
 import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } from './lib/audio-library';
+import type { ExportSnapshot } from './lib/export-snapshot';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -601,6 +602,123 @@ export default function App() {
     void saveDownloadedAdToHistory(snapshot);
   };
 
+  const getMediaDurationSeconds = (url: string | null | undefined, type: 'audio' | 'video') => new Promise<number | null>((resolve) => {
+    if (!url) {
+      resolve(null);
+      return;
+    }
+    const element = type === 'audio' ? document.createElement('audio') : document.createElement('video');
+    element.preload = 'metadata';
+    element.src = url;
+    element.onloadedmetadata = () => {
+      resolve(Number.isFinite(element.duration) ? element.duration : null);
+      element.removeAttribute('src');
+      element.load();
+    };
+    element.onerror = () => resolve(null);
+  });
+
+  const appendMediaForRemotion = async (
+    formData: FormData,
+    field: string,
+    url: string | null | undefined,
+    applyUrl: (nextUrl: string) => void,
+  ) => {
+    if (!url) return;
+
+    if (!url.startsWith('blob:') && !url.startsWith('data:')) {
+      applyUrl(new URL(url, window.location.origin).href);
+      return;
+    }
+
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const extension = blob.type.includes('png') ? 'png'
+      : blob.type.includes('jpeg') || blob.type.includes('jpg') ? 'jpg'
+      : blob.type.includes('mp4') ? 'mp4'
+      : blob.type.includes('mpeg') ? 'mp3'
+      : 'bin';
+    formData.append(field, blob, `${field.replace(/[^a-zA-Z0-9_-]/g, '-')}.${extension}`);
+    applyUrl('');
+  };
+
+  const createRemotionSnapshot = async (snapshot: SavedTemplate): Promise<FormData> => {
+    const audioDuration = await getMediaDurationSeconds(snapshot.settings.audioUrl, 'audio');
+    const bgVideoDuration = snapshot.settings.bgMedia?.type === 'video'
+      ? await getMediaDurationSeconds(snapshot.settings.bgMedia.url, 'video')
+      : null;
+    const uncappedDuration = Math.max(3, audioDuration || 0, bgVideoDuration || 0);
+    const durationSeconds = renderDurationCap === 'full' ? uncappedDuration : Math.min(uncappedDuration, renderDurationCap);
+
+    const remotionSnapshot: ExportSnapshot = {
+      id: snapshot.id,
+      name: snapshot.name,
+      durationSeconds,
+      elements: JSON.parse(JSON.stringify(snapshot.elements)),
+      captions: JSON.parse(JSON.stringify(useEditorStore.getState().captions)),
+      settings: {
+        visualizerColor: snapshot.settings.visualizerColor,
+        accentColor: snapshot.settings.accentColor,
+        bgColor: snapshot.settings.bgColor,
+        platform: snapshot.settings.platform,
+        bgMedia: snapshot.settings.bgMedia ? { ...snapshot.settings.bgMedia } : null,
+        bgShadow: snapshot.settings.bgShadow,
+        bgShadowOpacity: snapshot.settings.bgShadowOpacity,
+        introImage: snapshot.settings.introImage,
+        introDuration: snapshot.settings.introDuration || 1,
+        introFeedCropY: snapshot.settings.introFeedCropY ?? 50,
+        audioUrl: snapshot.settings.audioUrl,
+        renderDurationCap,
+      },
+    };
+
+    const formData = new FormData();
+    await appendMediaForRemotion(formData, 'audio', remotionSnapshot.settings.audioUrl, url => { remotionSnapshot.settings.audioUrl = url; });
+    await appendMediaForRemotion(formData, 'introImage', remotionSnapshot.settings.introImage, url => { remotionSnapshot.settings.introImage = url; });
+    if (remotionSnapshot.settings.bgMedia) {
+      await appendMediaForRemotion(formData, 'bgMedia', remotionSnapshot.settings.bgMedia.url, url => {
+        if (remotionSnapshot.settings.bgMedia) remotionSnapshot.settings.bgMedia.url = url;
+      });
+    }
+    for (const element of remotionSnapshot.elements) {
+      if (element.type === 'image' && element.imageUrl) {
+        await appendMediaForRemotion(formData, `elementImage:${element.id}`, element.imageUrl, url => { element.imageUrl = url; });
+      }
+    }
+
+    formData.append('snapshot', JSON.stringify(remotionSnapshot));
+    return formData;
+  };
+
+  const tryRemotionExport = async (exportSnapshot: SavedTemplate, abortController: AbortController) => {
+    setExportPhase('converting');
+    setRenderProgress(10);
+    const formData = await createRemotionSnapshot(exportSnapshot);
+    setRenderProgress(25);
+
+    const response = await fetch('/api/render-remotion', {
+      method: 'POST',
+      body: formData,
+      signal: abortController.signal,
+    });
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      throw new Error(payload.error || 'Remotion export failed');
+    }
+
+    setRenderProgress(92);
+    const mp4Blob = await response.blob();
+    if (mp4Blob.size < 100) {
+      throw new Error('Remotion export returned an empty MP4');
+    }
+
+    const url = URL.createObjectURL(mp4Blob);
+    const filename = `agent-enamel-${Date.now()}.mp4`;
+    setExportDownload({ url, blob: mp4Blob, filename, snapshot: exportSnapshot });
+    setExportPhase('complete');
+    setRenderProgress(100);
+  };
+
   const downloadReadyExport = async () => {
     if (!exportDownload) return;
 
@@ -1131,6 +1249,29 @@ export default function App() {
       if (previous) URL.revokeObjectURL(previous.url);
       return null;
     });
+
+    const remotionAbortController = new AbortController();
+    exportCancelRef.current = () => {
+      remotionAbortController.abort();
+      setRendering(false);
+      setRenderProgress(0);
+      setExportPhase('recording');
+      exportCancelRef.current = null;
+    };
+
+    try {
+      await tryRemotionExport(exportSnapshot, remotionAbortController);
+      setRendering(false);
+      exportCancelRef.current = null;
+      return;
+    } catch (error) {
+      if (remotionAbortController.signal.aborted) {
+        return;
+      }
+      console.warn('Remotion export failed, falling back to browser recorder:', error);
+      setExportPhase('recording');
+      setRenderProgress(0);
+    }
 
     const isVertical = isVerticalPlatform(platform);
     const targetWidth = 1080;
