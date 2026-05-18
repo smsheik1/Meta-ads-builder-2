@@ -113,6 +113,12 @@ app.use('/api/remotion-assets', express.static(remotionAssetsRoot));
 
 let remotionBundlePromise: Promise<string> | null = null;
 const getRemotionBundle = () => {
+  if (!isProd) {
+    return bundle({
+      entryPoint: path.join(process.cwd(), 'src', 'remotion', 'index.ts'),
+    });
+  }
+
   if (!remotionBundlePromise) {
     remotionBundlePromise = bundle({
       entryPoint: path.join(process.cwd(), 'src', 'remotion', 'index.ts'),

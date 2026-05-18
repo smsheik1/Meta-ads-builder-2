@@ -59,7 +59,80 @@ const getElementBox = (element: AdElement, platform: ExportSnapshot['settings'][
 
 const textShadow = '0 3px 12px rgba(0,0,0,0.28)';
 
-const TextElement = ({ element }: { element: AdElement }) => {
+type ElementBox = ReturnType<typeof getElementBox>;
+
+const estimateTextWidth = (text: string, fontSize: number, fontWeight: AdElement['fontWeight']) => {
+  const weightMultiplier = Number(fontWeight || 400) >= 700 || `${fontWeight}`.toLowerCase().includes('bold') ? 1.06 : 1;
+  const units = [...text].reduce((sum, char) => {
+    if (char === ' ') return sum + 0.34;
+    if ('.,:;!|'.includes(char)) return sum + 0.24;
+    if ('ilI[]()/\\'.includes(char)) return sum + 0.34;
+    if ('mwMW@#%&'.includes(char)) return sum + 0.9;
+    if (/[A-Z]/.test(char)) return sum + 0.68;
+    if (/[0-9]/.test(char)) return sum + 0.58;
+    return sum + 0.54;
+  }, 0);
+
+  return units * fontSize * weightMultiplier;
+};
+
+const wrapTextForBox = (text: string, fontSize: number, maxWidth: number, fontWeight: AdElement['fontWeight']) => {
+  const lines: string[] = [];
+  text.split('\n').forEach((explicitLine) => {
+    const words = explicitLine.trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) {
+      lines.push('');
+      return;
+    }
+
+    let line = words[0];
+    for (let index = 1; index < words.length; index += 1) {
+      const candidate = `${line} ${words[index]}`;
+      if (estimateTextWidth(candidate, fontSize, fontWeight) <= maxWidth) {
+        line = candidate;
+      } else {
+        lines.push(line);
+        line = words[index];
+      }
+    }
+    lines.push(line);
+  });
+
+  return lines;
+};
+
+const getFittedTextLayout = (element: AdElement, box: ElementBox) => {
+  const content = stripRichText(element.content || '');
+  const lineHeight = element.lineHeight || 1.12;
+  const paddingX = 8 * editorScale;
+  const paddingY = 4 * editorScale;
+  const maxWidth = Math.max(20, box.width - paddingX);
+  const maxHeight = Math.max(20, box.height - paddingY);
+  let low = 8 * editorScale;
+  let high = Math.max((element.fontSize || 16) * editorScale, 96 * editorScale);
+  let bestSize = low;
+  let bestLines = wrapTextForBox(content, low, maxWidth, element.fontWeight);
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const lines = wrapTextForBox(content, mid, maxWidth, element.fontWeight);
+    const widest = lines.reduce((max, line) => Math.max(max, estimateTextWidth(line, mid, element.fontWeight)), 0);
+    const height = lines.length * mid * lineHeight;
+
+    if (widest <= maxWidth && height <= maxHeight) {
+      bestSize = mid;
+      bestLines = lines;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+
+  return { content, fontSize: bestSize, lines: bestLines, lineHeight };
+};
+
+const TextElement = ({ element, box }: { element: AdElement; box: ElementBox }) => {
+  const layout = getFittedTextLayout(element, box);
   const content = stripRichText(element.content || '');
   return (
     <div
@@ -72,17 +145,17 @@ const TextElement = ({ element }: { element: AdElement }) => {
         overflow: 'hidden',
         color: element.color || '#fff',
         fontFamily: element.fontFamily || 'Inter, sans-serif',
-        fontSize: (element.fontSize || 16) * editorScale,
+        fontSize: layout.fontSize,
         fontWeight: element.fontWeight || 'normal',
         fontStyle: element.fontStyle || 'normal',
         textDecoration: element.textDecoration || 'none',
         textAlign: element.textAlign || 'center',
-        lineHeight: element.lineHeight || 1.12,
+        lineHeight: layout.lineHeight,
         whiteSpace: 'pre-wrap',
         overflowWrap: 'break-word',
       }}
     >
-      {content}
+      {layout.lines.join('\n') || content}
     </div>
   );
 };
@@ -250,7 +323,7 @@ export const RemotionAd = ({ snapshot, width, height }: RemotionAdProps) => {
               transformOrigin: 'center',
             }}
           >
-            {element.type === 'text' && <TextElement element={element} />}
+            {element.type === 'text' && <TextElement element={element} box={box} />}
             {element.type === 'button' && <ButtonElement element={element} />}
             {element.type === 'image' && <ImageElement element={element} />}
             {element.type === 'caption' && <CaptionElement element={element} captions={snapshot.captions} accentColor={settings.accentColor} />}
