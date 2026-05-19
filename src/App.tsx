@@ -58,6 +58,10 @@ const getFreshBackgroundColor = (currentColor: string) => {
   return nextColor;
 };
 
+const isDefaultIntroImage = (url: string | null | undefined, fileName?: string | null) => (
+  url === DEFAULT_INTRO_IMAGE || fileName === DEFAULT_INTRO_IMAGE_NAME
+);
+
 const MOCK_CAPTIONS = [
   { text: "Are you missing calls?", start: 0, end: 2, speaker: 1 },
   { text: "Our AI receptionist can help.", start: 2.5, end: 4.5, speaker: 2 },
@@ -336,11 +340,11 @@ export default function App() {
   const [bgMedia, setBgMedia] = useState<{url: string, type: string} | null>(null);
   const [bgShadow, setBgShadow] = useState(true);
   const [bgShadowOpacity, setBgShadowOpacity] = useState(0.38);
-  const [introImage, setIntroImage] = useState<string | null>(DEFAULT_INTRO_IMAGE);
-  const [introFileName, setIntroFileName] = useState<string>(DEFAULT_INTRO_IMAGE_NAME);
+  const [introImage, setIntroImage] = useState<string | null>(null);
+  const [introFileName, setIntroFileName] = useState<string>('');
   const [introDuration, setIntroDuration] = useState<IntroDuration>(1);
   const [introFeedCropY, setIntroFeedCropY] = useState(50);
-  const [introImageAspect, setIntroImageAspect] = useState<number | null>(1132 / 1389);
+  const [introImageAspect, setIntroImageAspect] = useState<number | null>(null);
   const [introCropOpen, setIntroCropOpen] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(DEFAULT_AUDIO_URL);
   const [audioFileName, setAudioFileName] = useState<string>(DEFAULT_AUDIO_NAME);
@@ -469,6 +473,8 @@ export default function App() {
 
   const createCurrentSnapshot = (nameOverride?: string): SavedTemplate => {
     const name = (nameOverride || templateDraftName || getCurrentDesignTitle()).trim();
+    const snapshotIntroImage = isDefaultIntroImage(introImage, introFileName) ? null : introImage;
+    const snapshotIntroFileName = snapshotIntroImage ? introFileName : '';
 
     return {
       id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `template-${Date.now()}`,
@@ -488,11 +494,11 @@ export default function App() {
         bgMedia,
         bgShadow,
         bgShadowOpacity,
-        introImage,
-        introFileName,
+        introImage: snapshotIntroImage,
+        introFileName: snapshotIntroFileName,
         introDuration,
         introFeedCropY,
-        introImageAspect,
+        introImageAspect: snapshotIntroImage ? introImageAspect : null,
         audioUrl,
         audioFileName,
       },
@@ -537,11 +543,14 @@ export default function App() {
     setBgMedia(hydratedTemplate.settings.bgMedia);
     setBgShadow(hydratedTemplate.settings.bgShadow);
     setBgShadowOpacity(hydratedTemplate.settings.bgShadowOpacity);
-    setIntroImage(hydratedTemplate.settings.introImage);
-    setIntroFileName(hydratedTemplate.settings.introFileName);
+    const hydratedIntroImage = isDefaultIntroImage(hydratedTemplate.settings.introImage, hydratedTemplate.settings.introFileName)
+      ? null
+      : hydratedTemplate.settings.introImage;
+    setIntroImage(hydratedIntroImage);
+    setIntroFileName(hydratedIntroImage ? hydratedTemplate.settings.introFileName || '' : '');
     setIntroDuration(hydratedTemplate.settings.introDuration || 1);
     setIntroFeedCropY(hydratedTemplate.settings.introFeedCropY ?? 50);
-    setIntroImageAspect(hydratedTemplate.settings.introImageAspect ?? null);
+    setIntroImageAspect(hydratedIntroImage ? hydratedTemplate.settings.introImageAspect ?? null : null);
     setAudioUrl(hydratedTemplate.settings.audioUrl);
     setAudioFileName(hydratedTemplate.settings.audioFileName);
     requestAnimationFrame(() => commitHistory());
@@ -683,6 +692,9 @@ export default function App() {
   };
 
   const createRemotionSnapshot = async (snapshot: SavedTemplate): Promise<FormData> => {
+    const snapshotIntroImage = isDefaultIntroImage(snapshot.settings.introImage, snapshot.settings.introFileName)
+      ? null
+      : snapshot.settings.introImage;
     const audioDuration = await getMediaDurationSeconds(snapshot.settings.audioUrl, 'audio');
     const bgVideoDuration = snapshot.settings.bgMedia?.type === 'video'
       ? await getMediaDurationSeconds(snapshot.settings.bgMedia.url, 'video')
@@ -704,7 +716,7 @@ export default function App() {
         bgMedia: snapshot.settings.bgMedia ? { ...snapshot.settings.bgMedia } : null,
         bgShadow: snapshot.settings.bgShadow,
         bgShadowOpacity: snapshot.settings.bgShadowOpacity,
-        introImage: snapshot.settings.introImage,
+        introImage: snapshotIntroImage,
         introDuration: snapshot.settings.introDuration || 1,
         introFeedCropY: snapshot.settings.introFeedCropY ?? 50,
         audioUrl: snapshot.settings.audioUrl,
@@ -2862,7 +2874,7 @@ export default function App() {
                           <ImageIcon className="w-4 h-4 shrink-0 text-slate-400" />
                           <span className="min-w-0 flex-1 overflow-hidden">
                             <span className="block font-semibold text-slate-700">Intro image</span>
-                            <span className="block truncate text-xs text-slate-500">{introImage ? introFileName || `Shows first ${introDuration}s` : 'First second, then fades out'}</span>
+                            <span className="block truncate text-xs text-slate-500">{introImage ? introFileName || `Shows first ${introDuration}s` : 'No intro. Ad starts immediately.'}</span>
                           </span>
                         </span>
                         <span className="shrink-0 text-xs font-semibold text-slate-400">
@@ -3425,7 +3437,7 @@ export default function App() {
                 </div>
                 <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400">
                   <span>0s</span>
-                  {introImage && <span>Fade after {introDuration}s</span>}
+                  {introImage ? <span>Fade after {introDuration}s</span> : <span>No intro</span>}
                   <span>{renderDurationCap === 'full' ? 'End' : `${selectedTimelineDuration}s`}</span>
                 </div>
               </div>
