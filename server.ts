@@ -139,6 +139,43 @@ const replaceMediaUrl = (snapshot: ExportSnapshot, field: string, url: string) =
   }
 };
 
+const getImageMimeType = (filePathOrUrl: string) => {
+  const lower = filePathOrUrl.toLowerCase();
+  if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
+  if (lower.endsWith('.webp')) return 'image/webp';
+  return 'image/png';
+};
+
+const inlineIntroImageForFrameZero = async (snapshot: ExportSnapshot) => {
+  const introImage = snapshot.settings.introImage;
+  if (!introImage || introImage.startsWith('data:')) return;
+
+  try {
+    let buffer: Buffer | null = null;
+    let mimeType = getImageMimeType(introImage);
+
+    const url = new URL(introImage, 'http://localhost');
+    const publicPath = path.join(process.cwd(), 'public', decodeURIComponent(url.pathname.replace(/^\/+/, '')));
+
+    if ((url.hostname === 'localhost' || url.hostname === '127.0.0.1') && fs.existsSync(publicPath)) {
+      buffer = await fs.promises.readFile(publicPath);
+      mimeType = getImageMimeType(publicPath);
+    } else {
+      const response = await fetch(introImage);
+      if (!response.ok) return;
+      const contentType = response.headers.get('content-type');
+      if (contentType?.startsWith('image/')) mimeType = contentType;
+      buffer = Buffer.from(await response.arrayBuffer());
+    }
+
+    if (buffer) {
+      snapshot.settings.introImage = `data:${mimeType};base64,${buffer.toString('base64')}`;
+    }
+  } catch (error) {
+    console.warn('Could not inline intro image for frame zero:', error);
+  }
+};
+
 type AudioAnalysis = {
   levels: number[];
   bands: number[][];
@@ -291,6 +328,8 @@ app.post('/api/render-remotion', expensiveApiLimiter, uploadRemotion.any(), asyn
         : `http://127.0.0.1:${port}/api/remotion-assets/${renderId}/${safeName}`;
       replaceMediaUrl(snapshot, file.fieldname, remotionAssetUrl);
     }
+
+    await inlineIntroImageForFrameZero(snapshot);
 
     const dimensions = getExportDimensions(snapshot.settings.platform);
     const durationCap = snapshot.settings.renderDurationCap === 'full' ? 180 : Number(snapshot.settings.renderDurationCap || 30);
