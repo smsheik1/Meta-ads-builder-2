@@ -714,7 +714,13 @@ export default function App() {
 
     const formData = new FormData();
     await appendMediaForRemotion(formData, 'audio', remotionSnapshot.settings.audioUrl, url => { remotionSnapshot.settings.audioUrl = url; });
-    await appendMediaForRemotion(formData, 'introImage', remotionSnapshot.settings.introImage, url => { remotionSnapshot.settings.introImage = url; });
+    await appendMediaForRemotion(
+      formData,
+      'introImage',
+      remotionSnapshot.settings.introImage,
+      url => { remotionSnapshot.settings.introImage = url; },
+      { forceUpload: Boolean(remotionSnapshot.settings.introImage) },
+    );
     if (remotionSnapshot.settings.bgMedia) {
       await appendMediaForRemotion(formData, 'bgMedia', remotionSnapshot.settings.bgMedia.url, url => {
         if (remotionSnapshot.settings.bgMedia) remotionSnapshot.settings.bgMedia.url = url;
