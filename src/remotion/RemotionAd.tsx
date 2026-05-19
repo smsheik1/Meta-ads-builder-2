@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, Audio, Img, OffthreadVideo, useCurrentFrame, useVideoConfig } from 'remotion';
+import { AbsoluteFill, Audio, continueRender, delayRender, Img, OffthreadVideo, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { AdElement, Caption } from '../store';
 import type { ExportSnapshot } from '../lib/export-snapshot';
 import { getActiveCaption } from '../lib/export-snapshot';
@@ -212,6 +212,31 @@ const ImageElement = ({ element }: { element: AdElement }) => (
   </div>
 );
 
+const BlockingIntroImage = ({ src, style }: { src: string; style: React.CSSProperties }) => {
+  const [handle] = React.useState(() => delayRender('Loading intro image for frame zero', { timeoutInMilliseconds: 30000 }));
+
+  React.useEffect(() => {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      continueRender(handle);
+    };
+
+    const image = new Image();
+    image.onload = () => {
+      const decodePromise = image.decode ? image.decode() : Promise.resolve();
+      decodePromise.then(finish).catch(finish);
+    };
+    image.onerror = finish;
+    image.src = src;
+
+    return finish;
+  }, [handle, src]);
+
+  return <img src={src} decoding="sync" style={style} />;
+};
+
 const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { element: AdElement; box: ElementBox; audioLevels?: number[]; audioBands?: number[][]; currentSpeaker: number }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -370,7 +395,7 @@ export const RemotionAd = ({ snapshot, width, height, audioLevels, audioBands }:
 
       {settings.introImage && introOpacity > 0 && (
         <div style={{ position: 'absolute', inset: 0, opacity: introOpacity, background: settings.bgColor }}>
-          <Img src={settings.introImage} style={{ width: '100%', height: '100%', objectFit: isFeedPlatform(settings.platform) ? 'contain' : 'cover' }} />
+          <BlockingIntroImage src={settings.introImage} style={{ width: '100%', height: '100%', objectFit: isFeedPlatform(settings.platform) ? 'contain' : 'cover' }} />
         </div>
       )}
     </AbsoluteFill>

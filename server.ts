@@ -286,7 +286,10 @@ app.post('/api/render-remotion', expensiveApiLimiter, uploadRemotion.any(), asyn
       if (file.fieldname === 'audio') {
         audioAnalysisInput = filePath;
       }
-      replaceMediaUrl(snapshot, file.fieldname, `http://127.0.0.1:${port}/api/remotion-assets/${renderId}/${safeName}`);
+      const remotionAssetUrl = file.fieldname === 'introImage'
+        ? `data:${file.mimetype || 'image/png'};base64,${file.buffer.toString('base64')}`
+        : `http://127.0.0.1:${port}/api/remotion-assets/${renderId}/${safeName}`;
+      replaceMediaUrl(snapshot, file.fieldname, remotionAssetUrl);
     }
 
     const dimensions = getExportDimensions(snapshot.settings.platform);
