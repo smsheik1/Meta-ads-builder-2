@@ -2360,18 +2360,15 @@ export default function App() {
   if (showHomepage) {
     return (
       <div className="min-h-screen bg-[#F6F8FB] font-sans text-slate-950">
-        <header className="flex h-20 items-center justify-between border-b border-slate-200 bg-white px-6 md:px-10">
+        <header className="flex h-16 items-center justify-between bg-[#FBF7EF] px-6 md:px-10">
           <div className="flex items-center gap-3">
-            <img src="/wiggly-logo.svg" alt="Wiggly" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
-            <div>
-              <p className="text-lg font-black leading-tight">Wiggly</p>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Visual ads that move fast.</p>
-            </div>
+            <img src="/wiggly-logo.svg" alt="Wiggly" className="h-9 w-9 rounded-xl object-cover shadow-sm shadow-slate-950/10" />
+            <p className="text-xl font-black leading-none tracking-normal text-slate-950">Wiggly</p>
           </div>
           <button
             type="button"
             onClick={enterStudio}
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800"
+            className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-slate-950/10 transition hover:-translate-y-0.5 hover:bg-slate-800"
           >
             Open Studio
             <ArrowRight className="h-4 w-4" />
@@ -2678,8 +2675,8 @@ export default function App() {
           className="flex items-center gap-3 rounded-xl text-left transition hover:opacity-80"
           title="Open homepage"
         >
-          <img src="/wiggly-logo.svg" alt="Wiggly" className="h-8 w-8 rounded-md object-cover shadow-sm" />
-          <h1 className="text-lg font-semibold tracking-tight">
+          <img src="/wiggly-logo.svg" alt="Wiggly" className="h-9 w-9 rounded-xl object-cover shadow-sm shadow-slate-950/10" />
+          <h1 className="text-xl font-black tracking-normal">
             {appTitle}
           </h1>
         </button>
