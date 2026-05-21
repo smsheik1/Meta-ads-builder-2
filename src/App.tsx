@@ -2382,13 +2382,13 @@ export default function App() {
             <section className="max-w-xl">
               <div className="relative mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-500 shadow-sm backdrop-blur">
                 <AudioLines className="h-4 w-4 text-[#00FFCC]" />
-                Visualizer ads for modern service brands
+                Simple video ads for service businesses
               </div>
               <h1 className="relative text-5xl font-black leading-[0.95] tracking-normal text-slate-950 md:text-7xl">
-                Turn sharp hooks into scroll-stopping ad creatives.
+                Make video ads without learning video editing.
               </h1>
               <p className="relative mt-6 max-w-lg text-lg font-medium leading-8 text-slate-600">
-                Build branded Meta ads with bold hooks, intro cards, voiceover audio, waveform visuals, and export-ready layouts without opening a video editor.
+                Start with a ready-made design, add your message or voice recording, preview how it looks on Facebook and Instagram, then download the finished ad.
               </p>
               <div className="relative mt-8 flex flex-wrap gap-3">
                 <button
@@ -2396,7 +2396,7 @@ export default function App() {
                   onClick={enterStudio}
                   className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800"
                 >
-                  Create an ad
+                  Make an ad
                   <Wand2 className="h-4 w-4" />
                 </button>
                 <button
@@ -2425,8 +2425,8 @@ export default function App() {
                     <AudioLines className="h-5 w-5 text-[#00BFA5]" />
                   </div>
                   <div>
-                    <p className="text-sm font-black text-slate-900">Hook + waveform + CTA</p>
-                    <p className="text-xs font-semibold text-slate-500">The reusable ad-card system.</p>
+                    <p className="text-sm font-black text-slate-900">Headline + audio + button</p>
+                    <p className="text-xs font-semibold text-slate-500">A simple ad layout you can reuse.</p>
                   </div>
                 </div>
               </div>
@@ -2435,42 +2435,42 @@ export default function App() {
 
           <section className="pb-16 pt-8">
             <div className="mb-8 max-w-2xl">
-              <p className="text-sm font-black uppercase tracking-wide text-slate-400">Built for the marketer workflow</p>
+              <p className="text-sm font-black uppercase tracking-wide text-slate-400">Built for busy marketers</p>
               <h2 className="mt-2 text-3xl font-black tracking-normal text-slate-950 md:text-5xl">
-                Fast ad making without the design-tool maze.
+                Make the ad. Change the words. Ship the video.
               </h2>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {[
                 {
                   icon: Wand2,
-                  title: 'Slot-machine hooks',
-                  copy: 'Refresh ad angles instantly without prompt writing.',
+                  title: 'New headline ideas',
+                  copy: 'Click once to try a different headline when you are stuck.',
                 },
                 {
                   icon: AudioLines,
-                  title: 'Audio-first visuals',
-                  copy: 'Waveforms, captions, intro cards, and CTA layouts in one builder.',
+                  title: 'Audio that looks alive',
+                  copy: 'Turn a voice recording into moving bars, captions, and a clean ad layout.',
                 },
                 {
                   icon: CheckCircle2,
-                  title: 'Meta-safe previews',
-                  copy: 'Check feed, reels, stories, and safe areas before export.',
+                  title: 'See each placement',
+                  copy: 'Preview the ad in Facebook feed, Instagram feed, reels, and stories.',
                 },
                 {
                   icon: BookmarkPlus,
-                  title: 'Reusable designs',
-                  copy: 'Save winning layouts and reload them for the next ad.',
+                  title: 'Reuse good designs',
+                  copy: 'Save a layout once, then swap the text and audio for the next ad.',
                 },
                 {
                   icon: Download,
-                  title: 'MP4 export',
-                  copy: 'Create upload-ready ads without opening a video editor.',
+                  title: 'Download the ad',
+                  copy: 'Get a video file you can upload to your ad account.',
                 },
                 {
                   icon: MousePointerClick,
-                  title: 'Marketer-first flow',
-                  copy: 'Strategy, copy, design, preview, and export stay together.',
+                  title: 'No design degree needed',
+                  copy: 'Everything is already laid out so you can focus on the message.',
                 },
               ].map((feature) => (
                 <div key={feature.title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -2489,7 +2489,7 @@ export default function App() {
             </div>
             <div className="relative grid min-h-[640px] gap-6 text-white lg:grid-cols-[0.85fr_1.3fr_0.85fr]">
               <div className="self-start rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-2xl shadow-slate-950/20 backdrop-blur-xl lg:-ml-8">
-                <p className="mb-5 text-sm font-black uppercase tracking-wide text-white/40">Persona decks</p>
+                <p className="mb-5 text-sm font-black uppercase tracking-wide text-white/40">Pick who the ad is for</p>
                 {personaDecks.map((deck, index) => (
                   <button
                     key={deck.persona}
@@ -2533,13 +2533,13 @@ export default function App() {
                   </span>
                 </div>
                 <div className="mt-5 border-t border-slate-950/10 pt-5">
-                  <p className="text-sm font-black uppercase tracking-wide text-slate-400">Current persona</p>
+                  <p className="text-sm font-black uppercase tracking-wide text-slate-400">Audience</p>
                   <p className="mt-2 text-2xl font-black leading-tight">{activePersonaDeck.customer}</p>
                 </div>
                 <div className="mt-6 space-y-5">
                   <div>
                     <div className="mb-2 flex items-center justify-between text-sm font-black text-slate-500">
-                      <span>Pain intensity</span>
+                      <span>How urgent?</span>
                       <span>{activePersonaDeck.pain}</span>
                     </div>
                     <div className="h-2 rounded-full bg-slate-950/10">
@@ -2548,7 +2548,7 @@ export default function App() {
                   </div>
                   <div>
                     <div className="mb-2 flex items-center justify-between text-sm font-black text-slate-500">
-                      <span>Creative speed</span>
+                      <span>How fast to test?</span>
                       <span>{activePersonaDeck.speed}</span>
                     </div>
                     <div className="h-2 rounded-full bg-slate-950/10">
@@ -2561,35 +2561,35 @@ export default function App() {
                   onClick={enterStudio}
                   className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-slate-800"
                 >
-                  Open this deck
+                  Start with this audience
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
             </div>
             <p className="relative -mt-8 text-center text-sm font-black text-white/35">
-              Pick a customer type. Wiggly gives you a visual direction to start from.
+              Pick who you are selling to. Wiggly gives you ad ideas to start from.
             </p>
           </section>
 
           <section className="py-16">
             <div className="mb-12 max-w-4xl">
               <h2 className="text-4xl font-black leading-[0.95] tracking-normal text-slate-950 md:text-6xl">
-                Designed for the parts marketers repeat every day.
+                The boring ad tasks are handled for you.
               </h2>
               <p className="mt-5 max-w-2xl text-lg font-semibold leading-8 text-slate-500">
-                Wiggly keeps the creative loop small: pick a hook, preview the ad, save what works, and ship the next variation.
+                Choose a design, change the message, check how it looks, and download the version you like.
               </p>
             </div>
             <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
               {[
-                { icon: Wand2, title: 'Fresh hook angles' },
-                { icon: AudioLines, title: 'Reactive waveform ads' },
-                { icon: Layers, title: 'Layouts you can reuse' },
-                { icon: Captions, title: 'Caption-ready videos' },
-                { icon: Type, title: 'Editable ad copy' },
-                { icon: BookmarkPlus, title: 'Saved design library' },
-                { icon: CheckCircle2, title: 'Placement checks' },
-                { icon: Download, title: 'Export-ready MP4s' },
+                { icon: Wand2, title: 'Headline ideas' },
+                { icon: AudioLines, title: 'Moving audio bars' },
+                { icon: Layers, title: 'Reusable layouts' },
+                { icon: Captions, title: 'On-screen captions' },
+                { icon: Type, title: 'Editable text' },
+                { icon: BookmarkPlus, title: 'Saved designs' },
+                { icon: CheckCircle2, title: 'Feed and reel previews' },
+                { icon: Download, title: 'Finished video downloads' },
               ].map((item) => (
                 <div key={item.title} className="group flex flex-col items-center text-center">
                   <item.icon className="mb-5 h-16 w-16 stroke-[2.8] text-slate-950 transition duration-300 group-hover:-translate-y-1 group-hover:scale-105 group-hover:text-[#4F46E5]" />
@@ -2605,12 +2605,12 @@ export default function App() {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(0,255,204,0.22),transparent_30%),radial-gradient(circle_at_85%_10%,rgba(79,70,229,0.32),transparent_34%)]" />
             <div className="relative grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
               <div>
-                <p className="text-sm font-black uppercase tracking-wide text-[#00FFCC]">The ad creative loop</p>
+                <p className="text-sm font-black uppercase tracking-wide text-[#00FFCC]">Make more ads faster</p>
                 <h2 className="mt-3 text-4xl font-black leading-[0.95] tracking-normal md:text-6xl">
-                  Make ten ad directions before lunch.
+                  Make ten versions before lunch.
                 </h2>
                 <p className="mt-5 max-w-xl text-base font-semibold leading-7 text-white/62">
-                  Start with a saved layout, refresh the hook, check the Meta placement, then export the version that feels strongest.
+                  Start with a saved design, try a different headline, preview the ad, then download the version that feels strongest.
                 </p>
                 <button
                   type="button"
@@ -2624,10 +2624,10 @@ export default function App() {
               <div className="rounded-3xl border border-white/10 bg-white/[0.08] p-4 backdrop-blur">
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
-                    ['Hook', 'Lunch break = lost case'],
+                    ['Headline', 'Lunch break = lost case'],
                     ['Format', 'IG Feed 4:5'],
-                    ['Motion', 'Center waveform'],
-                    ['Export', '30s MP4'],
+                    ['Visual', 'Moving audio bars'],
+                    ['Download', '30 second video'],
                   ].map(([label, value]) => (
                     <div key={label} className="rounded-2xl bg-white/[0.09] p-4">
                       <p className="text-xs font-black uppercase tracking-wide text-white/35">{label}</p>
@@ -2636,7 +2636,7 @@ export default function App() {
                   ))}
                 </div>
                 <div className="mt-4 rounded-2xl bg-[#00FFCC] p-5 text-slate-950">
-                  <p className="text-sm font-black uppercase tracking-wide opacity-60">Current angle</p>
+                  <p className="text-sm font-black uppercase tracking-wide opacity-60">Current message</p>
                   <p className="mt-2 text-3xl font-black leading-none tracking-normal">Stop losing patients to voicemail.</p>
                   <div className="mt-5 flex h-3 items-center gap-2">
                     <span className="h-3 w-12 rounded-full bg-slate-950" />
