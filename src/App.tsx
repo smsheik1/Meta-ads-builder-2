@@ -10,6 +10,7 @@ import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
 import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } from './lib/audio-library';
+import type { ExportSnapshot } from './lib/export-snapshot';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -63,6 +64,11 @@ const MOCK_CAPTIONS = [
   { text: "Available 24/7.", start: 5, end: 6.5, speaker: 1 },
   { text: "Never miss a lead again.", start: 7, end: 9, speaker: 2 },
 ];
+
+const CAPTION_SPEAKER_COLORS: Record<number, string> = {
+  1: '#00D6B8',
+  2: '#6554FF',
+};
 
 type RenderDurationCap = 30 | 60 | 'full';
 type ExportPhase = 'recording' | 'converting' | 'complete' | 'error';
@@ -245,6 +251,7 @@ const HexColorInput = ({
   value,
   onChange,
 }: {
+  key?: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
@@ -596,8 +603,210 @@ export default function App() {
     void saveDownloadedAdToHistory(snapshot);
   };
 
+  const getMediaDurationSeconds = (url: string | null | undefined, type: 'audio' | 'video') => new Promise<number | null>((resolve) => {
+    if (!url) {
+      resolve(null);
+      return;
+    }
+    const element = type === 'audio' ? document.createElement('audio') : document.createElement('video');
+    element.preload = 'metadata';
+    element.src = url;
+    element.onloadedmetadata = () => {
+      resolve(Number.isFinite(element.duration) ? element.duration : null);
+      element.removeAttribute('src');
+      element.load();
+    };
+    element.onerror = () => resolve(null);
+  });
+
+  const appendMediaForRemotion = async (
+    formData: FormData,
+    field: string,
+    url: string | null | undefined,
+    applyUrl: (nextUrl: string) => void,
+    options?: { forceUpload?: boolean; removeWhite?: boolean },
+  ) => {
+    if (!url) return;
+
+    if (!options?.forceUpload && !url.startsWith('blob:') && !url.startsWith('data:')) {
+      applyUrl(new URL(url, window.location.origin).href);
+      return;
+    }
+
+    const response = await fetch(url);
+    let blob = await response.blob();
+    if (options?.removeWhite && blob.type.startsWith('image/')) {
+      blob = await removeWhiteFromImageBlob(blob);
+    }
+    const extension = blob.type.includes('png') ? 'png'
+      : blob.type.includes('jpeg') || blob.type.includes('jpg') ? 'jpg'
+      : blob.type.includes('mp4') ? 'mp4'
+      : blob.type.includes('mpeg') ? 'mp3'
+      : 'bin';
+    formData.append(field, blob, `${field.replace(/[^a-zA-Z0-9_-]/g, '-')}.${extension}`);
+    applyUrl('');
+  };
+
+  const removeWhiteFromImageBlob = async (blob: Blob) => {
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    const objectUrl = URL.createObjectURL(blob);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error('Failed to load image for transparency processing.'));
+        image.src = objectUrl;
+      });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth || image.width;
+      canvas.height = image.naturalHeight || image.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return blob;
+
+      ctx.drawImage(image, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      for (let index = 0; index < data.length; index += 4) {
+        if (data[index] > 240 && data[index + 1] > 240 && data[index + 2] > 240) {
+          data[index + 3] = 0;
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+
+      return await new Promise<Blob>((resolve) => {
+        canvas.toBlob(processed => resolve(processed || blob), 'image/png');
+      });
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  };
+
+  const createRemotionSnapshot = async (snapshot: SavedTemplate): Promise<FormData> => {
+    const audioDuration = await getMediaDurationSeconds(snapshot.settings.audioUrl, 'audio');
+    const bgVideoDuration = snapshot.settings.bgMedia?.type === 'video'
+      ? await getMediaDurationSeconds(snapshot.settings.bgMedia.url, 'video')
+      : null;
+    const uncappedDuration = Math.max(3, audioDuration || 0, bgVideoDuration || 0);
+    const durationSeconds = renderDurationCap === 'full' ? uncappedDuration : Math.min(uncappedDuration, renderDurationCap);
+
+    const remotionSnapshot: ExportSnapshot = {
+      id: snapshot.id,
+      name: snapshot.name,
+      durationSeconds,
+      elements: JSON.parse(JSON.stringify(snapshot.elements)),
+      captions: JSON.parse(JSON.stringify(useEditorStore.getState().captions)),
+      settings: {
+        visualizerColor: snapshot.settings.visualizerColor,
+        accentColor: snapshot.settings.accentColor,
+        bgColor: snapshot.settings.bgColor,
+        platform: snapshot.settings.platform,
+        bgMedia: snapshot.settings.bgMedia ? { ...snapshot.settings.bgMedia } : null,
+        bgShadow: snapshot.settings.bgShadow,
+        bgShadowOpacity: snapshot.settings.bgShadowOpacity,
+        introImage: snapshot.settings.introImage,
+        introDuration: snapshot.settings.introDuration || 1,
+        introFeedCropY: snapshot.settings.introFeedCropY ?? 50,
+        audioUrl: snapshot.settings.audioUrl,
+        renderDurationCap,
+      },
+    };
+
+    const formData = new FormData();
+    await appendMediaForRemotion(formData, 'audio', remotionSnapshot.settings.audioUrl, url => { remotionSnapshot.settings.audioUrl = url; });
+    await appendMediaForRemotion(
+      formData,
+      'introImage',
+      remotionSnapshot.settings.introImage,
+      url => { remotionSnapshot.settings.introImage = url; },
+      { forceUpload: Boolean(remotionSnapshot.settings.introImage) },
+    );
+    if (remotionSnapshot.settings.bgMedia) {
+      await appendMediaForRemotion(formData, 'bgMedia', remotionSnapshot.settings.bgMedia.url, url => {
+        if (remotionSnapshot.settings.bgMedia) remotionSnapshot.settings.bgMedia.url = url;
+      });
+    }
+    for (const element of remotionSnapshot.elements) {
+      if (element.type === 'image' && element.imageUrl) {
+        await appendMediaForRemotion(
+          formData,
+          `elementImage:${element.id}`,
+          element.imageUrl,
+          url => { element.imageUrl = url; },
+          { forceUpload: Boolean(element.removeWhite), removeWhite: Boolean(element.removeWhite) },
+        );
+      }
+    }
+
+    formData.append('snapshot', JSON.stringify(remotionSnapshot));
+    return formData;
+  };
+
+  const MIN_VALID_MP4_BYTES = 1024;
+
+  const isValidMp4Blob = async (blob: Blob) => {
+    if (blob.size < MIN_VALID_MP4_BYTES) return false;
+
+    const header = new Uint8Array(await blob.slice(0, 12).arrayBuffer());
+    const signature = String.fromCharCode(...header.slice(4, 8));
+    return signature === 'ftyp';
+  };
+
+  const ensureValidMp4Blob = async (blob: Blob, label: string) => {
+    if (await isValidMp4Blob(blob)) return;
+    throw new Error(`${label} returned an invalid MP4 (${blob.size} bytes).`);
+  };
+
+  const getValidMp4Bytes = async (blob: Blob, label: string) => {
+    await ensureValidMp4Blob(blob, label);
+    return new Uint8Array(await blob.arrayBuffer());
+  };
+
+  const formatBytes = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const tryRemotionExport = async (exportSnapshot: SavedTemplate, abortController: AbortController) => {
+    setExportPhase('converting');
+    setRenderProgress(10);
+    const formData = await createRemotionSnapshot(exportSnapshot);
+    setRenderProgress(25);
+
+    const response = await fetch('/api/render-remotion', {
+      method: 'POST',
+      body: formData,
+      signal: abortController.signal,
+    });
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      throw new Error(payload.error || 'Remotion export failed');
+    }
+
+    setRenderProgress(92);
+    const mp4Blob = await response.blob();
+    await ensureValidMp4Blob(mp4Blob, 'Remotion export');
+
+    const url = URL.createObjectURL(mp4Blob);
+    const filename = `agent-enamel-${Date.now()}.mp4`;
+    setExportDownload({ url, blob: mp4Blob, filename, snapshot: exportSnapshot });
+    setExportPhase('complete');
+    setRenderProgress(100);
+  };
+
   const downloadReadyExport = async () => {
     if (!exportDownload) return;
+
+    let mp4Bytes: Uint8Array;
+    try {
+      mp4Bytes = await getValidMp4Bytes(exportDownload.blob, 'Ready export');
+    } catch (error) {
+      console.error('Blocked invalid MP4 download:', error);
+      setExportPhase('error');
+      alert('This export is not a valid MP4. Please export again.');
+      return;
+    }
 
     const showSaveFilePicker = (window as any).showSaveFilePicker;
 
@@ -613,7 +822,7 @@ export default function App() {
           ],
         });
         const writable = await fileHandle.createWritable();
-        await writable.write(exportDownload.blob);
+        await writable.write(mp4Bytes);
         await writable.close();
         saveExportToHistoryOnce(exportDownload.snapshot);
         return;
@@ -624,14 +833,16 @@ export default function App() {
     }
 
     try {
+      const downloadUrl = URL.createObjectURL(new Blob([mp4Bytes], { type: 'video/mp4' }));
       const link = document.createElement('a');
-      link.href = exportDownload.url;
+      link.href = downloadUrl;
       link.download = exportDownload.filename;
       link.rel = 'noopener';
       link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 10000);
     } catch (error) {
       console.warn('Browser MP4 download failed:', error);
       window.open(exportDownload.url, '_blank', 'noopener,noreferrer');
@@ -640,8 +851,16 @@ export default function App() {
     saveExportToHistoryOnce(exportDownload.snapshot);
   };
 
-  const openReadyExport = () => {
+  const openReadyExport = async () => {
     if (!exportDownload) return;
+    try {
+      await ensureValidMp4Blob(exportDownload.blob, 'Ready export');
+    } catch (error) {
+      console.error('Blocked invalid MP4 open:', error);
+      setExportPhase('error');
+      alert('This export is not a valid MP4. Please export again.');
+      return;
+    }
     window.open(exportDownload.url, '_blank', 'noopener,noreferrer');
     saveExportToHistoryOnce(exportDownload.snapshot);
   };
@@ -1034,6 +1253,9 @@ export default function App() {
       barColor: visualizerColor,
       barCount: 16,
       visualizerSensitivity: 1.5,
+      visualizerSmoothing: 0.85,
+      visualizerHeight: 0.9,
+      visualizerBaseline: 4,
       visualizerSplitSpeakers: false,
     });
   };
@@ -1126,6 +1348,29 @@ export default function App() {
       if (previous) URL.revokeObjectURL(previous.url);
       return null;
     });
+
+    const remotionAbortController = new AbortController();
+    exportCancelRef.current = () => {
+      remotionAbortController.abort();
+      setRendering(false);
+      setRenderProgress(0);
+      setExportPhase('recording');
+      exportCancelRef.current = null;
+    };
+
+    try {
+      await tryRemotionExport(exportSnapshot, remotionAbortController);
+      setRendering(false);
+      exportCancelRef.current = null;
+      return;
+    } catch (error) {
+      if (remotionAbortController.signal.aborted) {
+        return;
+      }
+      console.warn('Remotion export failed, falling back to browser recorder:', error);
+      setExportPhase('recording');
+      setRenderProgress(0);
+    }
 
     const isVertical = isVerticalPlatform(platform);
     const targetWidth = 1080;
@@ -1328,9 +1573,7 @@ export default function App() {
         if (!res.ok) throw new Error('Failed to convert');
         
         const mp4Blob = await res.blob();
-        if (mp4Blob.size < 100) {
-           throw new Error('MP4 conversion failed, blob too small');
-        }
+        await ensureValidMp4Blob(mp4Blob, 'Browser recorder fallback');
         
         const url = URL.createObjectURL(mp4Blob);
         const filename = `agent-enamel-${Date.now()}.mp4`;
@@ -1507,6 +1750,7 @@ export default function App() {
              const fontFamily = el.fontFamily || 'Inter, sans-serif';
              const fontWeight = el.fontWeight || 'normal';
              const fontStyle = el.fontStyle || 'normal';
+             const textDecoration = el.textDecoration;
              ctx.textAlign = (el.textAlign as CanvasTextAlign) || 'center';
              ctx.textBaseline = 'top';
              const plainContent = stripRichText(el.content || '');
@@ -1577,7 +1821,7 @@ export default function App() {
              lines.forEach((line, i) => {
                const lineY = startY + (i * lineHeight);
                ctx.fillText(line, textX, lineY, elW);
-               if (el.textDecoration === 'underline') {
+               if (textDecoration === 'underline') {
                  const metrics = ctx.measureText(line);
                  let underlineX = textX;
                  if (ctx.textAlign === 'center') underlineX = textX - (metrics.width / 2);
@@ -1596,14 +1840,16 @@ export default function App() {
          } else if (el.type === 'caption') {
              const currentTimeSec = elapsed / 1000;
              const storeCaptions = captions;
-             const activeCaption = storeCaptions.length > 0 
-                ? storeCaptions.find(c => currentTimeSec >= c.start && currentTimeSec <= c.end)
-                : MOCK_CAPTIONS.find(c => currentTimeSec >= c.start && currentTimeSec <= c.end);
+             const renderCaptions = storeCaptions.length > 0 ? storeCaptions : MOCK_CAPTIONS;
+             const activeCaptionIndex = renderCaptions.findIndex(c => currentTimeSec >= c.start && currentTimeSec <= c.end);
+             const activeCaption = activeCaptionIndex >= 0 ? renderCaptions[activeCaptionIndex] : undefined;
              
              if (activeCaption) {
                 const maxTextWidth = elW - (18 * scale);
                 const maxTextHeight = elH - (16 * scale);
                 const captionText = `${activeCaption.text}`;
+                const captionSpeaker = (activeCaptionIndex % 2) + 1;
+                const captionColor = CAPTION_SPEAKER_COLORS[captionSpeaker] || el.color || accentColor;
                 const fontFamily = el.fontFamily || 'Inter, sans-serif';
                 const fontWeight = el.fontWeight || 'bold';
                 const wrapCaptionLines = (fontSize: number) => {
@@ -1659,7 +1905,7 @@ export default function App() {
 
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
-                ctx.fillStyle = el.color || accentColor;
+                ctx.fillStyle = captionColor;
                 
                 // Add drop shadow
                 ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
@@ -1700,9 +1946,9 @@ export default function App() {
              ctx.lineJoin = 'round';
              
              const type = el.visualizerType || 'bars-center';
-             const count = el.barCount || 8;
+             const count = el.barCount || (type === 'waveform-strip' ? 72 : 16);
              const mirror = el.visualizerMirror || false;
-             const sensitivityMultiplier = el.visualizerSensitivity ?? 1.0;
+             const sensitivityMultiplier = el.visualizerSensitivity ?? 1.5;
 
              const getValue = (idx: number, total: number, isLeftSpeakerSide?: boolean) => {
                  let val = 0;
@@ -1747,9 +1993,10 @@ export default function App() {
              }
 
              const previousValues = visualizerValueMemory[el.id] || new Array(count).fill(0.04);
+             const blend = Math.min(0.65, Math.max(0.05, 1 - (el.visualizerSmoothing ?? 0.65)));
              const smoothedValues = values.map((value, index) => {
                const previous = previousValues[index] ?? 0.04;
-               return previous + (value - previous) * 0.38;
+               return previous + (value - previous) * blend;
              });
              visualizerValueMemory[el.id] = smoothedValues;
 
@@ -1759,8 +2006,9 @@ export default function App() {
                  const halfCount = Math.floor(count / 2);
                  for (let i = 0; i < count; i++) {
                      const v = smoothedValues[i];
-                     const minBarH = 4 * scale;
-                     const barH = Math.min(minBarH + v * (elH * 0.9), elH);
+                     const minBarH = (el.visualizerBaseline ?? 4) * scale;
+                     const heightScale = el.visualizerHeight ?? 0.9;
+                     const barH = Math.min(minBarH + v * (elH * heightScale), elH);
                      const barX = i * (barW + gap);
                      const barY = type === 'bars-center' ? (elH - barH) / 2 : elH - barH;
                      const isLeftSpeakerSide = i < halfCount;
@@ -1773,7 +2021,7 @@ export default function App() {
                      ctx.fill();
                      ctx.globalAlpha = 1;
                  }
-             } else if (['ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(type)) {
+             } else if (['waveform-strip', 'ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(type)) {
                  let v = 0;
                  if (analyser && dataArray) {
                      const binsCount = Math.floor(dataArray.length * 0.5);
@@ -1792,7 +2040,11 @@ export default function App() {
                      v = Math.min(((Math.sin(frame * 0.2) * 0.5 + 0.5) * 0.5) * sensitivityMultiplier, 1.0);
                  }
                  
-                 drawAdvancedVisualizer(ctx, type, elW, elH, v, frame, el.barColor || '#00ffcc', scale);
+                 drawAdvancedVisualizer(ctx, type, elW, elH, v, frame, el.barColor || '#00ffcc', scale, {
+                   barCount: el.barCount,
+                   heightScale: el.visualizerHeight,
+                   baseline: el.visualizerBaseline,
+                 });
              }
          }
          ctx.restore();
@@ -2110,7 +2362,7 @@ export default function App() {
       <div className="min-h-screen bg-[#F6F8FB] font-sans text-slate-950">
         <header className="flex h-20 items-center justify-between border-b border-slate-200 bg-white px-6 md:px-10">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Agent Enamel" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
+            <img src="/wiggly-logo.svg" alt="Wiggly" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
             <div>
               <p className="text-lg font-black leading-tight">Wiggly</p>
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Visual ads that move fast.</p>
@@ -2426,7 +2678,7 @@ export default function App() {
           className="flex items-center gap-3 rounded-xl text-left transition hover:opacity-80"
           title="Open homepage"
         >
-          <img src="/logo.png" alt="Agent Enamel" className="h-8 w-8 rounded-md object-cover shadow-sm" />
+          <img src="/wiggly-logo.svg" alt="Wiggly" className="h-8 w-8 rounded-md object-cover shadow-sm" />
           <h1 className="text-lg font-semibold tracking-tight">
             {appTitle}
           </h1>
@@ -2616,7 +2868,7 @@ export default function App() {
                           <ImageIcon className="w-4 h-4 shrink-0 text-slate-400" />
                           <span className="min-w-0 flex-1 overflow-hidden">
                             <span className="block font-semibold text-slate-700">Intro image</span>
-                            <span className="block truncate text-xs text-slate-500">{introImage ? introFileName || `Shows first ${introDuration}s` : 'First second, then fades out'}</span>
+                            <span className="block truncate text-xs text-slate-500">{introImage ? introFileName || `Shows first ${introDuration}s` : 'No intro image'}</span>
                           </span>
                         </span>
                         <span className="shrink-0 text-xs font-semibold text-slate-400">
@@ -3179,7 +3431,7 @@ export default function App() {
                 </div>
                 <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400">
                   <span>0s</span>
-                  {introImage && <span>Fade after {introDuration}s</span>}
+                  {introImage ? <span>Fade after {introDuration}s</span> : <span>No intro</span>}
                   <span>{renderDurationCap === 'full' ? 'End' : `${selectedTimelineDuration}s`}</span>
                 </div>
               </div>
@@ -3332,7 +3584,7 @@ export default function App() {
                 </div>}
                 <p className="mt-2 text-xs leading-snug text-slate-500">
                   {exportDownload
-                    ? 'Your export used a snapshot of the ad from when you clicked Export.'
+                    ? `Ready to save: ${formatBytes(exportDownload.blob.size)} MP4 snapshot.`
                     : exportPhase === 'error'
                       ? 'Try exporting again. If it repeats, restart the dev server.'
                       : exportPhase === 'converting'

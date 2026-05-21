@@ -142,6 +142,79 @@ function SliderRow({
   );
 }
 
+function PresetRow<T extends string | number>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: ReadonlyArray<{ label: string; value: T }>;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+      <span className="text-sm font-semibold text-slate-700">{label}</span>
+      <div className="grid grid-cols-3 gap-1 rounded-md bg-white p-1 shadow-inner">
+        {options.map(option => (
+          <button
+            key={`${option.value}`}
+            type="button"
+            onClick={() => onChange(option.value)}
+            className={`h-8 rounded text-xs font-bold transition ${
+              value === option.value
+                ? 'bg-slate-900 text-white shadow-sm'
+                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const nearestPresetValue = (value: number | undefined, options: ReadonlyArray<{ value: number }>, fallback: number) => {
+  if (value === undefined || Number.isNaN(value)) return fallback;
+  return options.reduce((nearest, option) => (
+    Math.abs(option.value - value) < Math.abs(nearest - value) ? option.value : nearest
+  ), fallback);
+};
+
+const MOTION_PRESETS = [
+  { label: 'Snappy', value: 0.35 },
+  { label: 'Balanced', value: 0.65 },
+  { label: 'Smooth', value: 0.85 },
+] as const;
+
+const HEIGHT_PRESETS = [
+  { label: 'Small', value: 0.55 },
+  { label: 'Medium', value: 0.75 },
+  { label: 'Big', value: 0.9 },
+] as const;
+
+const BASELINE_PRESETS = [
+  { label: 'Flat', value: 4 },
+  { label: 'Subtle', value: 8 },
+  { label: 'Visible', value: 14 },
+] as const;
+
+const BAR_DETAIL_PRESETS = [
+  { label: 'Simple', value: 12 },
+  { label: 'Normal', value: 16 },
+  { label: 'Dense', value: 24 },
+] as const;
+
+const WAVEFORM_DETAIL_PRESETS = [
+  { label: 'Simple', value: 48 },
+  { label: 'Normal', value: 72 },
+  { label: 'Dense', value: 96 },
+] as const;
+
+const barLikeVisualizerTypes = new Set(['bars-bottom', 'bars-center', 'waveform-strip']);
+
 function LayoutFields({ selectedEl, updateElement }: { selectedEl: AdElement; updateElement: (id: string, updates: Partial<AdElement>) => void }) {
   return (
     <Section title="Layout">
@@ -177,6 +250,10 @@ export const PropertiesPanel: React.FC = () => {
   }
 
   if (!selectedEl) return null;
+  const visualizerType = selectedEl.visualizerType || 'bars-center';
+  const showBarControls = selectedEl.type === 'visualizer' && barLikeVisualizerTypes.has(visualizerType);
+  const detailPresets = visualizerType === 'waveform-strip' ? WAVEFORM_DETAIL_PRESETS : BAR_DETAIL_PRESETS;
+  const detailFallback = visualizerType === 'waveform-strip' ? 72 : 16;
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -287,9 +364,10 @@ export const PropertiesPanel: React.FC = () => {
         {selectedEl.type === 'visualizer' && (
           <Section title="Visualizer">
             <Field label="Style">
-              <select value={selectedEl.visualizerType || 'bars-bottom'} onChange={(e) => updateElement(selectedEl.id, { visualizerType: e.target.value as any })} className={inputClass}>
+              <select value={visualizerType} onChange={(e) => updateElement(selectedEl.id, { visualizerType: e.target.value as any })} className={inputClass}>
                 <option value="bars-bottom">Bars, bottom</option>
                 <option value="bars-center">Bars, center</option>
+                <option value="waveform-strip">Waveform strip</option>
                 <option value="ai-orb">AI orb</option>
                 <option value="siri-wave">Siri wave</option>
                 <option value="ai-blob">3D blob</option>
@@ -299,16 +377,42 @@ export const PropertiesPanel: React.FC = () => {
                 <option value="chatgpt-orb">ChatGPT aura</option>
               </select>
             </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <ToggleRow label="Mirror" checked={selectedEl.visualizerMirror || false} onChange={(checked) => updateElement(selectedEl.id, { visualizerMirror: checked })} />
-              <ToggleRow label="Split speaker" checked={selectedEl.visualizerSplitSpeakers || false} onChange={(checked) => updateElement(selectedEl.id, { visualizerSplitSpeakers: checked })} />
-            </div>
             <Field label="Color">
               <ColorControl value={selectedEl.barColor || '#00ffcc'} onChange={(value) => updateElement(selectedEl.id, { barColor: value })} />
             </Field>
-            <SliderRow label="Bar count" value={selectedEl.barCount || 8} displayValue={`${selectedEl.barCount || 8}`} min={3} max={32} step={1} onChange={(value) => updateElement(selectedEl.id, { barCount: value })} />
-            <SliderRow label="Sensitivity" value={selectedEl.visualizerSensitivity ?? 1} displayValue={`${(selectedEl.visualizerSensitivity ?? 1).toFixed(1)}x`} min={0.1} max={5} step={0.1} onChange={(value) => updateElement(selectedEl.id, { visualizerSensitivity: value })} onReset={() => updateElement(selectedEl.id, { visualizerSensitivity: 1.5 })} />
-            <SliderRow label="Smoothing" value={selectedEl.visualizerSmoothing ?? 0.8} displayValue={`${selectedEl.visualizerSmoothing ?? 0.8}`} min={0.05} max={0.95} step={0.05} onChange={(value) => updateElement(selectedEl.id, { visualizerSmoothing: value })} onReset={() => updateElement(selectedEl.id, { visualizerSmoothing: 0.8 })} />
+            <SliderRow label="Energy" value={selectedEl.visualizerSensitivity ?? 1.5} displayValue={`${(selectedEl.visualizerSensitivity ?? 1.5).toFixed(1)}x`} min={0.1} max={5} step={0.1} onChange={(value) => updateElement(selectedEl.id, { visualizerSensitivity: value })} onReset={() => updateElement(selectedEl.id, { visualizerSensitivity: 1.5 })} />
+            <PresetRow
+              label="Motion"
+              value={nearestPresetValue(selectedEl.visualizerSmoothing, MOTION_PRESETS, 0.85)}
+              options={MOTION_PRESETS}
+              onChange={(value) => updateElement(selectedEl.id, { visualizerSmoothing: value })}
+            />
+            <PresetRow
+              label="Height"
+              value={nearestPresetValue(selectedEl.visualizerHeight, HEIGHT_PRESETS, 0.9)}
+              options={HEIGHT_PRESETS}
+              onChange={(value) => updateElement(selectedEl.id, { visualizerHeight: value })}
+            />
+            <PresetRow
+              label="Baseline"
+              value={nearestPresetValue(selectedEl.visualizerBaseline, BASELINE_PRESETS, 4)}
+              options={BASELINE_PRESETS}
+              onChange={(value) => updateElement(selectedEl.id, { visualizerBaseline: value })}
+            />
+            {showBarControls && (
+              <>
+                <PresetRow
+                  label="Detail"
+                  value={nearestPresetValue(selectedEl.barCount, detailPresets, detailFallback)}
+                  options={detailPresets}
+                  onChange={(value) => updateElement(selectedEl.id, { barCount: value })}
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <ToggleRow label="Symmetry" checked={selectedEl.visualizerMirror || false} onChange={(checked) => updateElement(selectedEl.id, { visualizerMirror: checked })} />
+                  <ToggleRow label="Dialogue mode" checked={selectedEl.visualizerSplitSpeakers || false} onChange={(checked) => updateElement(selectedEl.id, { visualizerSplitSpeakers: checked })} />
+                </div>
+              </>
+            )}
           </Section>
         )}
 

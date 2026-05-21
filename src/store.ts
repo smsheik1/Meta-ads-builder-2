@@ -27,8 +27,10 @@ export interface AdElement {
   
   visualizerSensitivity?: number;
   visualizerSmoothing?: number;
+  visualizerHeight?: number;
+  visualizerBaseline?: number;
   visualizerSplitSpeakers?: boolean;
-  visualizerType?: 'bars-bottom' | 'bars-center' | 'ai-orb' | 'siri-wave' | 'ai-blob' | 'elevenlabs-v1' | 'elevenlabs-v2' | 'elevenlabs-v3' | 'chatgpt-orb';
+  visualizerType?: 'bars-bottom' | 'bars-center' | 'waveform-strip' | 'ai-orb' | 'siri-wave' | 'ai-blob' | 'elevenlabs-v1' | 'elevenlabs-v2' | 'elevenlabs-v3' | 'chatgpt-orb';
   visualizerMirror?: boolean;
   barColor?: string;
   barCount?: number;
@@ -135,6 +137,9 @@ const DEFAULT_ELEMENTS: AdElement[] = [
     barColor: '#00ffcc',
     barCount: 16,
     visualizerSensitivity: 1.5,
+    visualizerSmoothing: 0.85,
+    visualizerHeight: 0.9,
+    visualizerBaseline: 4,
     visualizerSplitSpeakers: false
   },
   {
@@ -155,8 +160,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   selectedIds: [],
   history: [{ elements: DEFAULT_ELEMENTS }],
   historyIndex: 0,
-  showSafeZones: true,
-  showRedGuides: true,
+  showSafeZones: false,
+  showRedGuides: false,
   captions: [],
   businessContext: `[Name] Dr. Michael Carter
 [Niche] Dental Practice Owners

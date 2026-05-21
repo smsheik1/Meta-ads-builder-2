@@ -80,6 +80,11 @@ const MOCK_CAPTIONS = [
   { text: "Never miss a lead again.", start: 7, end: 9, speaker: 2 },
 ];
 
+const CAPTION_SPEAKER_COLORS: Record<number, string> = {
+  1: '#00D6B8',
+  2: '#6554FF',
+};
+
 export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor }) => {
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -275,7 +280,17 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       }
       Object.keys(barsRef.current).forEach((vId) => {
         barsRef.current[vId].forEach(bar => {
-          if (bar) gsap.to(bar, { height: 4, duration: 0.2 });
+          if (!bar) return;
+          if (bar instanceof HTMLCanvasElement) {
+            bar.style.height = '';
+            bar.style.opacity = '1';
+            const ctx = bar.getContext('2d');
+            if (ctx) {
+              ctx.clearRect(0, 0, bar.width, bar.height);
+            }
+            return;
+          }
+          gsap.to(bar, { height: 4, duration: 0.2 });
         });
       });
     }
@@ -306,12 +321,11 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       const activeCaps = state.captions.length > 0 ? state.captions : MOCK_CAPTIONS;
       const activeCaptionIndex = activeCaps.findIndex(c => currentTime >= c.start && currentTime <= c.end);
       const activeCaption = activeCaptionIndex >= 0 ? activeCaps[activeCaptionIndex] : undefined;
-      const hasTwoSpeakers = activeCaps.some(c => c.speaker === 2);
       let loopSpeaker: number | null = null;
       
       if (activeCaption) {
         setCurrentCaption(activeCaption.text);
-        loopSpeaker = hasTwoSpeakers ? activeCaption.speaker : (activeCaptionIndex % 2) + 1;
+        loopSpeaker = (activeCaptionIndex % 2) + 1;
         setCurrentSpeaker(loopSpeaker);
       } else {
         setCurrentCaption(null);
@@ -330,9 +344,9 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         if (!el) return;
         const type = el.visualizerType || 'bars-center';
 
-        const sensitivityMultiplier = el.visualizerSensitivity ?? 1.0;
+        const sensitivityMultiplier = el.visualizerSensitivity ?? 1.5;
 
-        if (['ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(type)) {
+        if (['waveform-strip', 'ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(type)) {
           const canvas = barsRef.current[vId][0] as unknown as HTMLCanvasElement;
           if (canvas && canvas.getContext) {
              const ctx = canvas.getContext('2d');
@@ -359,7 +373,11 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                  value = (value / 255) * sensitivityMultiplier;
                  value = Math.min(value, 1.0);
                  
-                 drawAdvancedVisualizer(ctx, type, canvas.width, canvas.height, value, frameCount, el.barColor || '#00ffcc');
+                 drawAdvancedVisualizer(ctx, type, canvas.width, canvas.height, value, frameCount, el.barColor || '#00ffcc', 1, {
+                   barCount: el.barCount,
+                   heightScale: el.visualizerHeight,
+                   baseline: el.visualizerBaseline,
+                 });
              }
           }
         } else {
@@ -394,7 +412,9 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                 bar.style.opacity = '1';
               }
               
-              const targetHeight = 4 + Math.pow(value, 1.5) * ((bar.parentElement?.clientHeight || 100) * 0.9);
+              const baseline = el.visualizerBaseline ?? 4;
+              const heightScale = el.visualizerHeight ?? 0.9;
+              const targetHeight = baseline + Math.pow(value, 1.5) * ((bar.parentElement?.clientHeight || 100) * heightScale);
               
               gsap.to(bar, {
                 height: targetHeight,
@@ -918,33 +938,33 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
                  {(el.visualizerType === 'bars-bottom' || !el.visualizerType) && (
                     <div className="w-full h-full flex items-end justify-between gap-1">
-                      {Array.from({ length: el.barCount || 8 }).map((_, i) => (
+                      {Array.from({ length: el.barCount || 16 }).map((_, i) => (
                         <div
                           key={i}
-                          ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 8)}
+                          ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 16)}
                           className="flex-1 rounded-full"
-                          style={{ backgroundColor: el.barColor || '#00ffcc', height: '4px', minWidth: '4px' }}
+                          style={{ backgroundColor: el.barColor || '#00ffcc', height: `${el.visualizerBaseline ?? 4}px`, minWidth: '4px' }}
                         />
                       ))}
                     </div>
                  )}
                  {el.visualizerType === 'bars-center' && (
                     <div className="w-full h-full flex items-center justify-between gap-1">
-                      {Array.from({ length: el.barCount || 8 }).map((_, i) => (
+                      {Array.from({ length: el.barCount || 16 }).map((_, i) => (
                         <div
                           key={i}
-                          ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 8)}
+                          ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 16)}
                           className="flex-1 rounded-full"
                           style={{
-                            backgroundColor: el.visualizerSplitSpeakers && i >= Math.floor((el.barCount || 8) / 2) ? '#8b5cf6' : (el.barColor || '#00ffcc'),
-                            height: '4px',
+                            backgroundColor: el.visualizerSplitSpeakers && i >= Math.floor((el.barCount || 16) / 2) ? '#8b5cf6' : (el.barColor || '#00ffcc'),
+                            height: `${el.visualizerBaseline ?? 4}px`,
                             minWidth: '4px'
                           }}
                         />
                       ))}
                     </div>
                  )}
-                 {['ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(el.visualizerType || '') && (
+                 {['waveform-strip', 'ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(el.visualizerType || '') && (
                     <canvas
                       ref={canvasEl => setBarRef(el.id, canvasEl as any, 0, 1)}
                       className="w-full h-full"
@@ -982,12 +1002,12 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                     fitPaddingX={18}
                     fitPaddingY={16}
                     style={{
-                      color: el.color || accentColor,
+                      color: currentCaption ? (CAPTION_SPEAKER_COLORS[currentSpeaker] || el.color || accentColor) : (el.color || accentColor),
                       fontFamily: el.fontFamily || 'Inter, sans-serif',
                       fontWeight: el.fontWeight || 700,
                     }}
                   >
-                    {currentCaption || (audioUrl ? "Captions will appear during playback" : "Upload audio for captions")}
+                    {currentCaption || (playing ? '' : audioUrl ? 'Captions will appear during playback' : 'Upload audio for captions')}
                   </AutoFitText>
                </div>
             )}

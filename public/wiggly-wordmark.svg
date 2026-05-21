@@ -1,0 +1,10 @@
+<svg width="720" height="220" viewBox="0 0 720 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="220" rx="44" fill="#070A12"/>
+  <g transform="translate(40 42)">
+    <rect width="136" height="136" rx="34" fill="#111827"/>
+    <path d="M24 76C40 42 56 42 72 76C88 110 104 110 120 76" stroke="#00F0C8" stroke-width="14" stroke-linecap="round"/>
+    <path d="M24 60C40 94 56 94 72 60C88 26 104 26 120 60" stroke="#6D5CFF" stroke-width="9" stroke-linecap="round"/>
+  </g>
+  <text x="204" y="127" fill="white" font-family="Inter, Arial, sans-serif" font-size="72" font-weight="900" letter-spacing="-1">Wiggly</text>
+  <path d="M210 154C260 134 312 174 362 154C412 134 464 174 514 154C560 136 606 166 650 154" stroke="#00F0C8" stroke-width="10" stroke-linecap="round"/>
+</svg>
