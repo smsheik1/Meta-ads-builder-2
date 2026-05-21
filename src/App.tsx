@@ -327,7 +327,7 @@ export default function App() {
   // Platform Frame State
   const [platform, setPlatform] = useState<PlatformType>('instagram-feed');
   const [platformTheme, setPlatformTheme] = useState<'light' | 'dark'>('dark');
-  const [brandName, setBrandName] = useState('Agent Enamel');
+  const [brandName, setBrandName] = useState('Wiggly');
   const [brandLogo, setBrandLogo] = useState<string | null>(null);
   const [simulatedCaption, setSimulatedCaption] = useState('Check out our new AI receptionist feature! Never miss a lead and keep your customers happy.');
   const [autoCta, setAutoCta] = useState('Learn More');
@@ -1298,7 +1298,7 @@ export default function App() {
     addElement({
       type: 'image',
       componentRole: 'logo',
-      imageUrl: '/logo.png',
+      imageUrl: '/wiggly-logo.png',
       x: 120,
       y: 70,
       width: 120,

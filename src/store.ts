@@ -97,7 +97,7 @@ const DEFAULT_ELEMENTS: AdElement[] = [
     id: 'logo-1',
     type: 'image',
     componentRole: 'logo',
-    imageUrl: '/logo.png',
+    imageUrl: '/wiggly-logo.png',
     x: 120,
     y: 70,
     width: 120,
