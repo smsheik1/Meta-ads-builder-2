@@ -10,7 +10,7 @@ import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
 import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } from './lib/audio-library';
-import { getDefaultLayoutOffsetX, getEditorDimensions, getExportDimensions, type ExportSnapshot } from './lib/export-snapshot';
+import { getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions, getExportDimensions, type ExportSnapshot } from './lib/export-snapshot';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -1375,6 +1375,7 @@ export default function App() {
     const { width: targetWidth, height: targetHeight } = getExportDimensions(platform);
     const editorDimensions = getEditorDimensions(platform);
     const layoutOffsetX = getDefaultLayoutOffsetX(platform);
+    const layoutScaleY = getDefaultLayoutScaleY(platform);
     
     const scale = targetWidth / editorDimensions.width;
 
@@ -1701,9 +1702,9 @@ export default function App() {
            ? Math.min(el.y, feedSafeSquareBottom - rawElH - 8)
            : el.y;
          const elX = (el.x + layoutOffsetX) * scale;
-         const elY = rawElY * scale;
+         const elY = rawElY * layoutScaleY * scale;
          const elW = rawElW * scale;
-         const elH = rawElH * scale;
+         const elH = rawElH * layoutScaleY * scale;
          
          ctx.translate(elX, elY);
          if (el.rotation) {

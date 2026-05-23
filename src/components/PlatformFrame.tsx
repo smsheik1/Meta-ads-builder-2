@@ -56,15 +56,19 @@ export function PlatformFrame({
 
   useEffect(() => {
     const updateScale = () => {
-      const availableHeight = window.innerHeight - 360;
-      const nextScale = Math.min(1, Math.max(0.62, (availableHeight * 0.5) / 360));
+      const wideMode = platform === 'youtube';
+      const availableHeight = window.innerHeight - (wideMode ? 420 : 360);
+      const availableWidth = window.innerWidth - 880;
+      const nextScale = wideMode
+        ? Math.min(0.88, Math.max(0.72, Math.min(availableWidth / 640, availableHeight / 360)))
+        : Math.min(1, Math.max(0.62, (availableHeight * 0.5) / 360));
       setFrameScale(Number.isFinite(nextScale) ? nextScale : 1);
     };
 
     updateScale();
     window.addEventListener('resize', updateScale);
     return () => window.removeEventListener('resize', updateScale);
-  }, []);
+  }, [platform]);
 
   const feedPlatform = isFeedPlatform(platform);
   const instagramFeed = platform === 'instagram-feed';
@@ -74,7 +78,7 @@ export function PlatformFrame({
   const verticalLabel = platform === 'stories' ? 'Stories' : 'Reels';
   const adContainerAspect = widePlatform ? 'aspect-video' : verticalPlatform ? 'aspect-[9/16]' : 'aspect-[4/5]';
   const frameWidth = widePlatform ? 640 : 360;
-  const frameHeight = widePlatform ? 420 : 720;
+  const frameHeight = widePlatform ? 360 : 720;
 
   return (
     <div
@@ -92,7 +96,7 @@ export function PlatformFrame({
         {/* The actual rendered AD */}
         <div className={cn(
           "absolute z-0 pointer-events-auto",
-          feedPlatform ? "top-[8.33%] left-0 right-0 h-[62.5%]" : widePlatform ? "left-0 right-0 top-[64px] aspect-video" : "inset-0",
+          feedPlatform ? "top-[8.33%] left-0 right-0 h-[62.5%]" : "inset-0",
           "flex items-center justify-center overflow-hidden bg-slate-900"
         )}>
            <div className={cn("w-full h-full max-w-full max-h-full mx-auto relative", adContainerAspect)}>
@@ -159,36 +163,6 @@ export function PlatformFrame({
                  </div>
               </div>
            </div>
-        )}
-
-        {/* YouTube player preview */}
-        {widePlatform && (
-          <div className="absolute inset-0 z-30 pointer-events-none flex flex-col bg-transparent">
-            <div className={cn("flex h-16 items-center justify-between border-b px-4", isDark ? "border-slate-900 bg-black text-white" : "border-slate-100 bg-white text-slate-950")}>
-              <div className="flex min-w-0 items-center gap-3">
-                <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border", isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-slate-100")}>
-                  {brandLogo ? <img src={brandLogo} alt={brandName} className="h-full w-full object-cover" /> : <User className="h-4 w-4" />}
-                </div>
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-bold">{brandName}</div>
-                  <div className={cn("text-[11px]", isDark ? "text-slate-400" : "text-slate-500")}>Sponsored video</div>
-                </div>
-              </div>
-              <button className={cn("rounded-full px-3 py-1.5 text-xs font-bold", isDark ? "bg-white text-black" : "bg-slate-950 text-white")}>
-                {metaCta}
-              </button>
-            </div>
-            <div className="flex-1" />
-            <div className={cn("border-t px-4 py-3", isDark ? "border-slate-900 bg-black text-white" : "border-slate-100 bg-white text-slate-950")}>
-              <div className="mb-2 flex items-center gap-3">
-                <div className={cn("h-2 flex-1 overflow-hidden rounded-full", isDark ? "bg-white/20" : "bg-slate-200")}>
-                  <div className="h-full w-[38%] rounded-full bg-red-600" />
-                </div>
-                <span className={cn("text-[11px] font-semibold", isDark ? "text-slate-400" : "text-slate-500")}>0:11 / 0:30</span>
-              </div>
-              <p className={cn("line-clamp-1 text-[13px] font-semibold", isDark ? "text-slate-300" : "text-slate-700")}>{caption}</p>
-            </div>
-          </div>
         )}
 
         {/* Instagram Feed preview */}

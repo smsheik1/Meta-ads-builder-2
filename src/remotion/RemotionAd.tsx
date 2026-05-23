@@ -2,7 +2,7 @@ import React from 'react';
 import { AbsoluteFill, Audio, continueRender, delayRender, Img, OffthreadVideo, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { AdElement, Caption } from '../store';
 import type { ExportSnapshot } from '../lib/export-snapshot';
-import { getActiveCaption, getDefaultLayoutOffsetX, getEditorDimensions } from '../lib/export-snapshot';
+import { getActiveCaption, getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions } from '../lib/export-snapshot';
 import { stripRichText } from '../lib/rich-text';
 
 const CAPTION_SPEAKER_COLORS: Record<number, string> = {
@@ -46,6 +46,7 @@ const getElementBox = (element: AdElement, platform: ExportSnapshot['settings'][
   const rawWidth = Number(element.width) || 200;
   const rawHeight = Number(element.height) || 50;
   const offsetX = getDefaultLayoutOffsetX(platform);
+  const scaleY = getDefaultLayoutScaleY(platform);
   const feedSafeSquareTop = isFeedPlatform(platform) ? Math.max(0, (canvasHeight - canvasWidth) / 2) : 0;
   const feedSafeSquareBottom = feedSafeSquareTop + canvasWidth;
   const y = isFeedPlatform(platform) && element.type === 'caption'
@@ -54,9 +55,9 @@ const getElementBox = (element: AdElement, platform: ExportSnapshot['settings'][
 
   return {
     left: (element.x + offsetX) * editorScale,
-    top: y * editorScale,
+    top: y * scaleY * editorScale,
     width: rawWidth * editorScale,
-    height: rawHeight * editorScale,
+    height: rawHeight * scaleY * editorScale,
     scale: editorScale,
   };
 };

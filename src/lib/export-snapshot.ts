@@ -42,6 +42,11 @@ export const getDefaultLayoutOffsetX = (platform: PlatformType) => {
   return (getEditorDimensions(platform).width - 360) / 2;
 };
 
+export const getDefaultLayoutScaleY = (platform: PlatformType) => {
+  if (platform !== 'youtube') return 1;
+  return getEditorDimensions(platform).height / 450;
+};
+
 export const getExportDimensions = (platform: PlatformType) => {
   if (platform === 'youtube') {
     return {
