@@ -9,6 +9,7 @@ import { HeadlineSlot } from './HeadlineSlot';
 import { AutoFitText } from './AutoFitText';
 import { sanitizeRichText, stripRichText } from '../lib/rich-text';
 import { isFeedPlatform, isVerticalPlatform, type PlatformType } from './PlatformFrame';
+import { getDefaultLayoutOffsetX } from '../lib/export-snapshot';
 
 const isEditableEventTarget = (target: EventTarget | null) => {
   if (!(target instanceof HTMLElement)) return false;
@@ -91,6 +92,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   const moveableRef = useRef<Moveable>(null);
   const feedPlatform = isFeedPlatform(platform);
   const verticalPlatform = isVerticalPlatform(platform);
+  const layoutOffsetX = getDefaultLayoutOffsetX(platform);
   
   const [targets, setTargets] = useState<Array<HTMLElement | SVGElement>>([]);
 
@@ -646,7 +648,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             if (e.isDrag) {
                 const id = e.target.id.replace('el-', '');
                 updateElement(id, {
-                    x: parseFloat(e.target.style.left || '0'),
+                    x: parseFloat(e.target.style.left || '0') - layoutOffsetX,
                     y: parseFloat(e.target.style.top || '0')
                 });
                 commitHistory();
@@ -669,7 +671,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                 e.targets.forEach(target => {
                     const id = target.id.replace('el-', '');
                     updateElement(id, {
-                        x: parseFloat(target.style.left || '0'),
+                        x: parseFloat(target.style.left || '0') - layoutOffsetX,
                         y: parseFloat(target.style.top || '0')
                     });
                 });
@@ -696,7 +698,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                 updateElement(id, {
                     width: parseFloat(e.target.style.width || '0'),
                     height: parseFloat(e.target.style.height || '0'),
-                    x: parseFloat(e.target.style.left || '0'),
+                    x: parseFloat(e.target.style.left || '0') - layoutOffsetX,
                     y: parseFloat(e.target.style.top || '0')
                 });
                 commitHistory();
@@ -727,7 +729,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                     updateElement(id, {
                         width: parseFloat(target.style.width || '0'),
                         height: parseFloat(target.style.height || '0'),
-                        x: parseFloat(target.style.left || '0'),
+                        x: parseFloat(target.style.left || '0') - layoutOffsetX,
                         y: parseFloat(target.style.top || '0')
                     });
                 });
@@ -776,7 +778,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                         updateElement(id, { rotation: parseFloat(match[1]) });
                     }
                     updateElement(id, {
-                        x: parseFloat(target.style.left || '0'),
+                        x: parseFloat(target.style.left || '0') - layoutOffsetX,
                         y: parseFloat(target.style.top || '0')
                     });
                 });
@@ -814,7 +816,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                }
             }}
             style={{ 
-              left: el.x, 
+              left: el.x + layoutOffsetX, 
               top: displayY, 
               width: el.width, 
               height: el.height, 
