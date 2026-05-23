@@ -25,7 +25,26 @@ export type ExportSnapshot = {
 
 export const EXPORT_FPS = 60;
 
+export const getEditorDimensions = (platform: PlatformType) => {
+  if (platform === 'youtube') {
+    return { width: 640, height: 360 };
+  }
+
+  const vertical = platform === 'reels' || platform === 'stories' || platform === 'vertical';
+  return {
+    width: 360,
+    height: vertical ? 640 : 450,
+  };
+};
+
 export const getExportDimensions = (platform: PlatformType) => {
+  if (platform === 'youtube') {
+    return {
+      width: 1920,
+      height: 1080,
+    };
+  }
+
   const vertical = platform === 'reels' || platform === 'stories' || platform === 'vertical';
   return {
     width: 1080,

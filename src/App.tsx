@@ -10,7 +10,7 @@ import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
 import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } from './lib/audio-library';
-import type { ExportSnapshot } from './lib/export-snapshot';
+import { getEditorDimensions, getExportDimensions, type ExportSnapshot } from './lib/export-snapshot';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -1372,12 +1372,10 @@ export default function App() {
       setRenderProgress(0);
     }
 
-    const isVertical = isVerticalPlatform(platform);
-    const targetWidth = 1080;
-    const targetHeight = isVertical ? 1920 : 1350;
+    const { width: targetWidth, height: targetHeight } = getExportDimensions(platform);
+    const editorDimensions = getEditorDimensions(platform);
     
-    // UI is based on 360px width
-    const scale = targetWidth / 360;
+    const scale = targetWidth / editorDimensions.width;
 
     const canvas = document.createElement('canvas');
     canvas.width = targetWidth;
@@ -2388,7 +2386,7 @@ export default function App() {
                 Make video ads without learning video editing.
               </h1>
               <p className="relative mt-6 max-w-lg text-lg font-medium leading-8 text-slate-600">
-                Start with a ready-made design, add your message or voice recording, preview how it looks on Facebook and Instagram, then download the finished ad.
+                Start with a ready-made design, add your message or voice recording, preview how it looks on Facebook, Instagram, or YouTube, then download the finished ad.
               </p>
               <div className="relative mt-8 flex flex-wrap gap-3">
                 <button
@@ -2455,7 +2453,7 @@ export default function App() {
                 {
                   icon: CheckCircle2,
                   title: 'See each placement',
-                  copy: 'Preview the ad in Facebook feed, Instagram feed, reels, and stories.',
+                  copy: 'Preview the ad in Facebook feed, Instagram feed, reels, stories, and YouTube.',
                 },
                 {
                   icon: BookmarkPlus,
@@ -2588,7 +2586,7 @@ export default function App() {
                 { icon: Captions, title: 'On-screen captions' },
                 { icon: Type, title: 'Editable text' },
                 { icon: BookmarkPlus, title: 'Saved designs' },
-                { icon: CheckCircle2, title: 'Feed and reel previews' },
+                { icon: CheckCircle2, title: 'Feed, reel, and YouTube previews' },
                 { icon: Download, title: 'Finished video downloads' },
               ].map((item) => (
                 <div key={item.title} className="group flex flex-col items-center text-center">
@@ -3039,7 +3037,7 @@ export default function App() {
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Platform Simulator</h2>
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Meta preview</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Ad preview</span>
                 </div>
                 
                 <div className="space-y-4">
@@ -3049,6 +3047,7 @@ export default function App() {
                       { id: 'instagram-feed', label: 'IG Feed', ratio: '4:5' },
                       { id: 'reels', label: 'Reels', ratio: '9:16' },
                       { id: 'stories', label: 'Stories', ratio: '9:16' },
+                      { id: 'youtube', label: 'YouTube', ratio: '16:9' },
                     ] as const).map((option) => {
                       const active = platform === option.id || (platform === 'feed' && option.id === 'facebook-feed') || (platform === 'vertical' && option.id === 'reels');
                       return (
@@ -3288,7 +3287,7 @@ export default function App() {
               {/* Cycle Platform Button */}
               <button 
                 onClick={() => {
-                  const platforms: PlatformType[] = ['facebook-feed', 'instagram-feed', 'reels', 'stories'];
+                  const platforms: PlatformType[] = ['facebook-feed', 'instagram-feed', 'reels', 'stories', 'youtube'];
                   const currentIndex = platforms.indexOf(platform);
                   const nextIndex = (currentIndex + 1) % platforms.length;
                   setPlatform(platforms[nextIndex]);
