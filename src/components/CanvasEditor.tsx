@@ -9,7 +9,7 @@ import { HeadlineSlot } from './HeadlineSlot';
 import { AutoFitText } from './AutoFitText';
 import { sanitizeRichText, stripRichText } from '../lib/rich-text';
 import { isFeedPlatform, isVerticalPlatform, type PlatformType } from './PlatformFrame';
-import { getDefaultLayoutOffsetX, getDefaultLayoutScaleY } from '../lib/export-snapshot';
+import { getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getPlatformElementFrame } from '../lib/export-snapshot';
 
 const isEditableEventTarget = (target: EventTarget | null) => {
   if (!(target instanceof HTMLElement)) return false;
@@ -789,11 +789,13 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       />
 
       {elements.map((el) => {
+        const frame = getPlatformElementFrame(el, platform);
         const feedSafeSquareTop = feedPlatform ? Math.max(0, (dimensions.h - dimensions.w) / 2) : 0;
         const feedSafeSquareBottom = feedSafeSquareTop + dimensions.w;
         const displayY = feedPlatform && el.type === 'caption' && dimensions.w > 0
-          ? Math.min(el.y, feedSafeSquareBottom - Number(el.height) - 8)
-          : el.y;
+          ? Math.min(frame.y, feedSafeSquareBottom - frame.height - 8)
+          : frame.y;
+        const captionMaxFontSize = platform === 'youtube' ? 86 : 64;
 
         return (
           <div
@@ -817,10 +819,10 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                }
             }}
             style={{ 
-              left: el.x + layoutOffsetX, 
+              left: frame.x + layoutOffsetX, 
               top: displayY * layoutScaleY, 
-              width: el.width, 
-              height: Number(el.height) * layoutScaleY, 
+              width: frame.width, 
+              height: frame.height * layoutScaleY, 
               transform: `rotate(${el.rotation || 0}deg)`,
               zIndex: el.zIndex 
             }}
@@ -1000,7 +1002,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                   <AutoFitText
                     className="px-2 text-center font-semibold"
                     minFontSize={8}
-                    maxFontSize={64}
+                    maxFontSize={captionMaxFontSize}
                     lineHeight={1.22}
                     fitPaddingX={18}
                     fitPaddingY={16}

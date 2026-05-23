@@ -2,7 +2,7 @@ import React from 'react';
 import { AbsoluteFill, Audio, continueRender, delayRender, Img, OffthreadVideo, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { AdElement, Caption } from '../store';
 import type { ExportSnapshot } from '../lib/export-snapshot';
-import { getActiveCaption, getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions } from '../lib/export-snapshot';
+import { getActiveCaption, getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions, getPlatformElementFrame } from '../lib/export-snapshot';
 import { stripRichText } from '../lib/rich-text';
 
 const CAPTION_SPEAKER_COLORS: Record<number, string> = {
@@ -43,18 +43,19 @@ const getElementBox = (element: AdElement, platform: ExportSnapshot['settings'][
   const editorScale = exportWidth / editorDimensions.width;
   const canvasWidth = editorDimensions.width;
   const canvasHeight = editorDimensions.height;
-  const rawWidth = Number(element.width) || 200;
-  const rawHeight = Number(element.height) || 50;
+  const frame = getPlatformElementFrame(element, platform);
+  const rawWidth = frame.width;
+  const rawHeight = frame.height;
   const offsetX = getDefaultLayoutOffsetX(platform);
   const scaleY = getDefaultLayoutScaleY(platform);
   const feedSafeSquareTop = isFeedPlatform(platform) ? Math.max(0, (canvasHeight - canvasWidth) / 2) : 0;
   const feedSafeSquareBottom = feedSafeSquareTop + canvasWidth;
   const y = isFeedPlatform(platform) && element.type === 'caption'
-    ? Math.min(element.y, feedSafeSquareBottom - rawHeight - 8)
-    : element.y;
+    ? Math.min(frame.y, feedSafeSquareBottom - rawHeight - 8)
+    : frame.y;
 
   return {
-    left: (element.x + offsetX) * editorScale,
+    left: (frame.x + offsetX) * editorScale,
     top: y * scaleY * editorScale,
     width: rawWidth * editorScale,
     height: rawHeight * scaleY * editorScale,
@@ -312,7 +313,7 @@ const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { e
   );
 };
 
-const CaptionElement = ({ element, box, captions, accentColor }: { element: AdElement; box: ElementBox; captions: Caption[]; accentColor: string }) => {
+const CaptionElement = ({ element, box, platform, captions, accentColor }: { element: AdElement; box: ElementBox; platform: ExportSnapshot['settings']['platform']; captions: Caption[]; accentColor: string }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const activeCaptions = captions.length > 0 ? captions : MOCK_CAPTIONS;
@@ -331,7 +332,7 @@ const CaptionElement = ({ element, box, captions, accentColor }: { element: AdEl
         padding: `${16 * box.scale}px ${18 * box.scale}px`,
         color: CAPTION_SPEAKER_COLORS[speaker] || element.color || accentColor,
         fontFamily: element.fontFamily || 'Inter, sans-serif',
-        fontSize: (element.fontSize || 22) * box.scale,
+        fontSize: (element.fontSize || (platform === 'youtube' ? 30 : 22)) * box.scale,
         fontWeight: element.fontWeight || 700,
         textAlign: 'center',
         lineHeight: 1.22,
@@ -388,7 +389,7 @@ export const RemotionAd = ({ snapshot, width, height, audioLevels, audioBands }:
             {element.type === 'text' && <TextElement element={element} box={box} />}
             {element.type === 'button' && <ButtonElement element={element} box={box} />}
             {element.type === 'image' && <ImageElement element={element} />}
-            {element.type === 'caption' && <CaptionElement element={element} box={box} captions={snapshot.captions} accentColor={settings.accentColor} />}
+            {element.type === 'caption' && <CaptionElement element={element} box={box} platform={settings.platform} captions={snapshot.captions} accentColor={settings.accentColor} />}
             {element.type === 'visualizer' && <Waveform element={element} box={box} audioLevels={audioLevels} audioBands={audioBands} currentSpeaker={currentSpeaker} />}
           </div>
         );

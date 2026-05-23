@@ -47,6 +47,33 @@ export const getDefaultLayoutScaleY = (platform: PlatformType) => {
   return getEditorDimensions(platform).height / 450;
 };
 
+export const getPlatformElementFrame = (element: AdElement, platform: PlatformType) => {
+  const editorDimensions = getEditorDimensions(platform);
+  const rawWidth = Number(element.width) || 200;
+  const rawHeight = Number(element.height) || 50;
+  let x = element.x;
+  let y = element.y;
+  let width = rawWidth;
+  let height = rawHeight;
+
+  if (platform === 'youtube') {
+    const offsetX = getDefaultLayoutOffsetX(platform);
+    if (element.type === 'visualizer') {
+      x = -offsetX;
+      width = editorDimensions.width;
+    }
+
+    if (element.type === 'caption') {
+      x = 48 - offsetX;
+      width = editorDimensions.width - 96;
+      height = Math.max(rawHeight, 86);
+      y = Math.min(y, 450 - height - 16);
+    }
+  }
+
+  return { x, y, width, height };
+};
+
 export const getExportDimensions = (platform: PlatformType) => {
   if (platform === 'youtube') {
     return {

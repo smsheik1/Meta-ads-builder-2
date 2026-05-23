@@ -10,7 +10,7 @@ import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
 import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } from './lib/audio-library';
-import { getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions, getExportDimensions, type ExportSnapshot } from './lib/export-snapshot';
+import { getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions, getExportDimensions, getPlatformElementFrame, type ExportSnapshot } from './lib/export-snapshot';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -1694,14 +1694,15 @@ export default function App() {
 
       sortedElements.forEach(el => {
          ctx.save();
-         const rawElW = typeof el.width === 'number' ? el.width : 200;
-         const rawElH = typeof el.height === 'number' ? el.height : 50;
+         const elementFrame = getPlatformElementFrame(el, platform);
+         const rawElW = elementFrame.width;
+         const rawElH = elementFrame.height;
          const feedSafeSquareTop = isFeedPlatform(platform) ? Math.max(0, (canvasHeight - canvasWidth) / 2) : 0;
          const feedSafeSquareBottom = feedSafeSquareTop + canvasWidth;
          const rawElY = isFeedPlatform(platform) && el.type === 'caption'
-           ? Math.min(el.y, feedSafeSquareBottom - rawElH - 8)
-           : el.y;
-         const elX = (el.x + layoutOffsetX) * scale;
+           ? Math.min(elementFrame.y, feedSafeSquareBottom - rawElH - 8)
+           : elementFrame.y;
+         const elX = (elementFrame.x + layoutOffsetX) * scale;
          const elY = rawElY * layoutScaleY * scale;
          const elW = rawElW * scale;
          const elH = rawElH * layoutScaleY * scale;
@@ -1878,7 +1879,7 @@ export default function App() {
                 };
 
                 let low = 8 * scale;
-                let high = 72 * scale;
+                let high = (platform === 'youtube' ? 92 : 72) * scale;
                 let captionFontSize = low;
                 let renderLines = wrapCaptionLines(captionFontSize);
                 while (low <= high) {
