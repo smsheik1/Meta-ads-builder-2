@@ -239,7 +239,7 @@ const extractAudioAnalysis = (input: string | null | undefined, durationSeconds:
     const peak = sorted[Math.floor(sorted.length * 0.96)] || Math.max(...rms, 0.001);
     const dynamicRange = Math.max(0.001, peak - noiseFloor);
 
-    const smoothingAmount = Math.min(0.95, Math.max(0.05, smoothing));
+    const smoothingAmount = Math.min(0.7, Math.max(0.12, smoothing * 0.55));
     let previous = 0;
     const levels = rms.map((value) => {
       const gated = Math.max(0, value - noiseFloor);

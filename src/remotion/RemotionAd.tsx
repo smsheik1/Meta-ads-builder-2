@@ -243,11 +243,11 @@ const BlockingIntroImage = ({ src, style }: { src: string; style: React.CSSPrope
 
 const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { element: AdElement; box: ElementBox; audioLevels?: number[]; audioBands?: number[][]; currentSpeaker: number }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
   const count = element.visualizerType === 'waveform-strip' ? (element.barCount || 72) : (element.barCount || 16);
   const sensitivity = element.visualizerSensitivity ?? 1.5;
+  const heightScale = element.visualizerHeight ?? 0.9;
+  const baseline = element.visualizerBaseline ?? 4;
   const color = element.barColor || '#00ffcc';
-  const time = frame / fps;
   const audioLevel = audioLevels?.length
     ? audioLevels[Math.min(audioLevels.length - 1, frame)] ?? 0
     : null;
@@ -277,12 +277,12 @@ const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { e
         const edgeFade = element.visualizerType === 'waveform-strip'
           ? 0.45 + Math.pow(Math.sin(normalized * Math.PI), 0.7) * 0.55
           : 1;
-        const idleSignal = (
-          Math.sin(time * 9 + index * 0.62) * 0.45 +
-          Math.sin(time * 17 + index * 1.37) * 0.35 +
-          Math.sin(time * 4 + index * 0.19) * 0.2 +
-          1
-        ) / 2;
+        const fastMotion = Math.min(1, Math.max(0, (
+          Math.sin(frame * 0.2 + index) * 0.5 +
+          Math.sin(frame * 0.09 + index * 1.73) * 0.3 +
+          Math.sin(frame * 0.31 + index * 0.41) * 0.2 +
+          0.5
+        )));
         const bandIndex = frequencyBands
           ? Math.min(frequencyBands.length - 1, Math.max(0, 1 + Math.floor(normalized * (frequencyBands.length - 2))))
           : 0;
@@ -291,13 +291,22 @@ const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { e
         const audioDrivenSignal = rawBandSignal === null
           ? audioLevel
           : Math.min(1, rawBandSignal * 0.82 + (audioLevel || 0) * 0.18);
-        const idleFloor = audioDrivenSignal === null ? 0.42 : hasUsableAudioLevel || hasUsableBandSignal ? 0.16 : 0.34;
-        const signal = !isActiveSpeakerSide ? 0.04 : Math.max(audioDrivenSignal ?? 0, idleSignal * idleFloor);
+        const speechEnergy = Math.max(audioDrivenSignal ?? 0, (audioLevel ?? 0) * 0.72);
+        const motionWeight = audioDrivenSignal === null
+          ? 0.52
+          : hasUsableAudioLevel || hasUsableBandSignal
+            ? 0.24 + Math.min(0.18, speechEnergy * 0.18)
+            : 0.42;
+        const signal = !isActiveSpeakerSide
+          ? 0.04
+          : Math.min(1, Math.max(speechEnergy, speechEnergy * 0.78 + fastMotion * motionWeight));
         const reactive = Math.min(1, signal * sensitivity);
-        const minHeight = element.visualizerType === 'waveform-strip' ? Math.max(3 * box.scale, box.height * 0.12) : 4 * box.scale;
+        const minHeight = element.visualizerType === 'waveform-strip'
+          ? Math.max(baseline * box.scale, box.height * 0.04)
+          : baseline * box.scale;
         const height = element.visualizerType === 'waveform-strip'
-          ? Math.min(box.height, minHeight + Math.pow(reactive, 1.45) * box.height * 0.72 * edgeFade)
-          : Math.min(box.height, minHeight + Math.pow(reactive, 1.5) * (box.height * 0.9));
+          ? Math.min(box.height, minHeight + Math.pow(reactive, 1.45) * box.height * heightScale * edgeFade)
+          : Math.min(box.height, minHeight + Math.pow(reactive, 1.5) * (box.height * heightScale));
         return (
           <div
             key={index}
