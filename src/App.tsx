@@ -3258,7 +3258,7 @@ export default function App() {
           {/* Main Preview Area */}
           <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden px-4 py-3">
             
-            <div className="w-full max-w-[420px] relative">
+            <div className={`relative w-full ${platform === 'youtube' ? 'max-w-[640px]' : 'max-w-[420px]'}`}>
               <PlatformFrame
                 platform={platform}
                 theme={platformTheme}
@@ -3294,20 +3294,20 @@ export default function App() {
                   const nextIndex = (currentIndex + 1) % platforms.length;
                   setPlatform(platforms[nextIndex]);
                 }}
-                className="absolute -right-14 sm:-right-20 bottom-8 p-3 bg-white border border-slate-200 shadow-xl rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-50 hover:scale-105 active:scale-95 transition-all cursor-pointer group z-10"
+                className={`${platform === 'youtube' ? 'absolute -bottom-14 right-4' : 'absolute -right-14 bottom-8 sm:-right-20'} z-10 cursor-pointer rounded-full border border-slate-200 bg-white p-3 text-slate-500 shadow-xl transition-all hover:scale-105 hover:bg-slate-50 hover:text-slate-800 active:scale-95 group`}
                 title="Next Environment"
               >
                 <ChevronDown className="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors" />
               </button>
 
-              <div className="absolute -right-11 top-[30%] z-20 hidden sm:block">
+              <div className={`${platform === 'youtube' ? 'absolute -top-12 right-4' : 'absolute -right-11 top-[30%]'} z-20 hidden sm:block`}>
                 <button
                   type="button"
                   onClick={() => {
                     setTemplateDraftName(getCurrentDesignTitle());
                     setSaveTemplateOpen(true);
                   }}
-                  className="flex h-24 w-8 items-center justify-center rounded-r-xl border border-l-0 border-slate-200 bg-white/95 text-slate-500 shadow-lg backdrop-blur transition hover:w-10 hover:text-slate-900"
+                  className={`${platform === 'youtube' ? 'h-10 w-10 rounded-full border' : 'h-24 w-8 rounded-r-xl border border-l-0 hover:w-10'} flex items-center justify-center border-slate-200 bg-white/95 text-slate-500 shadow-lg backdrop-blur transition hover:text-slate-900`}
                   title="Save this design as a template"
                 >
                   <BookmarkPlus className="h-4 w-4" />
@@ -3315,7 +3315,7 @@ export default function App() {
               </div>
 
               {saveTemplateOpen && (
-                <div className="absolute -right-56 top-[30%] z-30 hidden w-48 rounded-xl border border-slate-200 bg-white p-3 shadow-2xl sm:block">
+                <div className={`${platform === 'youtube' ? 'absolute -top-12 right-16' : 'absolute -right-56 top-[30%]'} z-30 hidden w-48 rounded-xl border border-slate-200 bg-white p-3 shadow-2xl sm:block`}>
                   <div className="mb-3 flex items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold text-slate-800">Save template</p>
