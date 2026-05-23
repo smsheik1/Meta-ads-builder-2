@@ -287,26 +287,19 @@ const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { e
           ? Math.min(frequencyBands.length - 1, Math.max(0, 1 + Math.floor(normalized * (frequencyBands.length - 2))))
           : 0;
         const rawBandSignal = frequencyBands ? frequencyBands[bandIndex] ?? 0 : null;
-        const hasUsableBandSignal = rawBandSignal !== null && rawBandSignal > 0.012;
-        const audioDrivenSignal = rawBandSignal === null
+        const previewSignal = rawBandSignal === null
           ? audioLevel
-          : Math.min(1, rawBandSignal * 0.82 + (audioLevel || 0) * 0.18);
-        const speechEnergy = Math.max(audioDrivenSignal ?? 0, (audioLevel ?? 0) * 0.72);
-        const motionWeight = audioDrivenSignal === null
-          ? 0.52
-          : hasUsableAudioLevel || hasUsableBandSignal
-            ? 0.24 + Math.min(0.18, speechEnergy * 0.18)
-            : 0.42;
+          : rawBandSignal;
+        const fallbackSignal = hasUsableAudioLevel ? (audioLevel ?? 0) : fastMotion * 0.55;
         const signal = !isActiveSpeakerSide
           ? 0.04
-          : Math.min(1, Math.max(speechEnergy, speechEnergy * 0.78 + fastMotion * motionWeight));
-        const reactive = Math.min(1, signal * sensitivity);
+          : Math.pow(Math.min(1, (previewSignal ?? fallbackSignal) * sensitivity), 1.5);
         const minHeight = element.visualizerType === 'waveform-strip'
           ? Math.max(baseline * box.scale, box.height * 0.04)
           : baseline * box.scale;
         const height = element.visualizerType === 'waveform-strip'
-          ? Math.min(box.height, minHeight + Math.pow(reactive, 1.45) * box.height * heightScale * edgeFade)
-          : Math.min(box.height, minHeight + Math.pow(reactive, 1.5) * (box.height * heightScale));
+          ? Math.min(box.height, minHeight + signal * box.height * heightScale * edgeFade)
+          : Math.min(box.height, minHeight + signal * (box.height * heightScale));
         return (
           <div
             key={index}

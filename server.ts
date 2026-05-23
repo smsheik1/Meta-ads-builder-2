@@ -284,15 +284,13 @@ const extractAudioAnalysis = (input: string | null | undefined, durationSeconds:
     const bandFloor = percentile(sortedBands, 0.1);
     const bandPeak = Math.max(bandFloor + 0.0001, percentile(sortedBands, 0.965));
     const bandRange = bandPeak - bandFloor;
-    const previousBands = new Array(focusedBinCount).fill(0);
     const bands = rawBands.map((frameBands, frameIndex) => {
-      const gate = levels[frameIndex] <= 0.015 ? 0 : Math.min(1, levels[frameIndex] / 0.08);
-      return frameBands.map((value, binIndex) => {
+      const rawFrameLevel = Math.min(1, Math.max(0, (rms[frameIndex] - noiseFloor) / dynamicRange));
+      const gate = Math.pow(rawFrameLevel, 0.35);
+      return frameBands.map((value) => {
         const normalizedBand = Math.min(1, Math.max(0, (value - bandFloor) / bandRange));
-        const compressed = Math.pow(normalizedBand, 0.72) * gate;
-        const smoothed = previousBands[binIndex] * smoothingAmount + compressed * (1 - smoothingAmount);
-        previousBands[binIndex] = smoothed;
-        return Number(smoothed.toFixed(4));
+        const compressed = Math.pow(normalizedBand, 0.55) * gate;
+        return Number(compressed.toFixed(4));
       });
     });
 
