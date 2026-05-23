@@ -254,6 +254,7 @@ const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { e
   const frequencyBands = audioBands?.length
     ? audioBands[Math.min(audioBands.length - 1, frame)] ?? null
     : null;
+  const hasUsableAudioLevel = audioLevel !== null && audioLevel > 0.012;
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: element.visualizerType === 'bars-bottom' ? 'flex-end' : 'center', gap: 4 * box.scale }}>
@@ -285,10 +286,13 @@ const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { e
         const bandIndex = frequencyBands
           ? Math.min(frequencyBands.length - 1, Math.max(0, 1 + Math.floor(normalized * (frequencyBands.length - 2))))
           : 0;
-        const bandSignal = frequencyBands ? frequencyBands[bandIndex] ?? 0 : null;
-        const signal = !isActiveSpeakerSide ? 0.04 : bandSignal === null
-          ? audioLevel === null ? idleSignal : audioLevel
-          : Math.min(1, bandSignal * 0.82 + (audioLevel || 0) * 0.18);
+        const rawBandSignal = frequencyBands ? frequencyBands[bandIndex] ?? 0 : null;
+        const hasUsableBandSignal = rawBandSignal !== null && rawBandSignal > 0.012;
+        const audioDrivenSignal = rawBandSignal === null
+          ? audioLevel
+          : Math.min(1, rawBandSignal * 0.82 + (audioLevel || 0) * 0.18);
+        const idleFloor = audioDrivenSignal === null ? 0.42 : hasUsableAudioLevel || hasUsableBandSignal ? 0.16 : 0.34;
+        const signal = !isActiveSpeakerSide ? 0.04 : Math.max(audioDrivenSignal ?? 0, idleSignal * idleFloor);
         const reactive = Math.min(1, signal * sensitivity);
         const minHeight = element.visualizerType === 'waveform-strip' ? Math.max(3 * box.scale, box.height * 0.12) : 4 * box.scale;
         const height = element.visualizerType === 'waveform-strip'
