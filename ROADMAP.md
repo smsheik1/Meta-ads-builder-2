@@ -20,6 +20,23 @@ This file is the product memory for things we intentionally defer. When we make 
 - Reels/stories exports remain `1080x1920` at `60fps`.
 - Remotion export remains the default path with old export fallback available.
 
+## Audio Reliability
+
+### Handle transcription failures gracefully
+
+**Status:** Planned
+
+**Why:** Uploading audio can currently trigger a local transcription API failure in the console. Even though upload/storage still works, a real user should not hit noisy errors or confusing failed-caption behavior.
+
+**Goal:** Make transcription failure non-scary and recoverable: uploaded audio remains selected, captions either stay as-is or show a clear retry path, and console noise is limited to useful diagnostics.
+
+**Acceptance criteria:**
+- Audio upload never appears broken just because transcription fails.
+- Failed transcription does not show a blocking alert for normal local/server outages.
+- The UI shows a small retry/status affordance if captions could not be generated.
+- The console logs one useful diagnostic, not a noisy stack during expected API unavailability.
+- Existing captions are not wiped unless a new transcription succeeds.
+
 ## Audio Panel Redesign
 
 ### Make voice selection moron-proof
@@ -37,8 +54,11 @@ This file is the product memory for things we intentionally defer. When we make 
 - "Make me a voice" is the primary path behind Change.
 - "Use a voice I have" reveals uploaded/generated/example voices only when requested.
 - Saved voices are deduped and use human labels like "Using now," "Example," and "Uploaded by you."
+- The UI never shows duplicate voice rows.
+- Dead or broken local voice records are hidden or clearly flagged as "Needs re-upload," never shown as working choices.
 - Audio download and upload actions live behind Change, not on the default front row.
 - There is no one-click path that leaves the ad silently broken with no voice.
+- The desktop flyout opens to the right; narrow screens fall back to a bottom-sheet style drawer.
 
 ## Backlog Rules
 

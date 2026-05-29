@@ -19,6 +19,7 @@ import { InteractiveTutorial, WIGGLY_TUTORIAL_SEEN_KEY, emitTutorialEvent } from
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
 const STUDIO_SEEN_STORAGE_KEY = 'agent_enamel_studio_seen_v1';
+const CURRENT_AUDIO_STORAGE_KEY = 'wiggly_current_audio_v1';
 const DEFAULT_INTRO_IMAGE = '/default-intro-image.png';
 const DEFAULT_INTRO_IMAGE_NAME = 'Default intro image';
 const DEFAULT_AUDIO_URL = '/ai-dental-receptionist-audio.mp3';
@@ -256,6 +257,8 @@ type AudioLibraryItem = {
   stored?: StoredAudioItem;
 };
 
+type AudioFlyoutView = 'choices' | 'make' | 'library';
+
 type AdHistoryItem = SavedTemplate & StoredAdSnapshot;
 
 const HomeAdCard = ({
@@ -449,6 +452,8 @@ export default function App() {
   const [isGeneratingDialogueAudio, setIsGeneratingDialogueAudio] = useState(false);
   const [generatedDialogueAudioUrl, setGeneratedDialogueAudioUrl] = useState<string | null>(null);
   const [tutorialReplayKey, setTutorialReplayKey] = useState(0);
+  const [audioFlyoutOpen, setAudioFlyoutOpen] = useState(false);
+  const [audioFlyoutView, setAudioFlyoutView] = useState<AudioFlyoutView>('choices');
 
   const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, setElements, deselectAll, commitHistory, setBusinessContext, elements } = useEditorStore();
   const hasComponent = (role: NonNullable<typeof elements[number]['componentRole']>) => elements.some((element) => element.componentRole === role);
@@ -461,6 +466,17 @@ export default function App() {
   const duplicateOffset = (count: number) => Math.min(count * 12, 48);
 
   const [isTranscribing, setIsTranscribing] = useState(false);
+
+  const rememberCurrentAudio = (item: Pick<AudioLibraryItem, 'id' | 'builtIn'>) => {
+    try {
+      localStorage.setItem(CURRENT_AUDIO_STORAGE_KEY, JSON.stringify({
+        id: item.id,
+        builtIn: Boolean(item.builtIn),
+      }));
+    } catch {
+      // Ignore private browsing storage failures.
+    }
+  };
 
   const replayGuidedJourney = () => {
     localStorage.removeItem(WIGGLY_TUTORIAL_SEEN_KEY);
@@ -496,6 +512,7 @@ export default function App() {
       setGeneratedDialogueAudioUrl(null);
       setAudioUrl(DEFAULT_PHONE_CALL_AUDIO_URL);
       setAudioFileName(DEFAULT_PHONE_CALL_AUDIO_NAME);
+      rememberCurrentAudio({ id: 'built-in-phone-call-recording-audio', builtIn: true });
       setPhoneRingDuration(0);
     }
   };
@@ -523,7 +540,36 @@ export default function App() {
 
   useEffect(() => {
     listAudioItems()
-      .then(setStoredAudioItems)
+      .then((items) => {
+        setStoredAudioItems(items);
+        try {
+          const saved = localStorage.getItem(CURRENT_AUDIO_STORAGE_KEY);
+          if (!saved) return;
+          const parsed = JSON.parse(saved) as { id?: string; builtIn?: boolean };
+          if (parsed.id === 'built-in-ai-dental-receptionist-audio') {
+            setGeneratedDialogueAudioUrl(null);
+            setAudioUrl(DEFAULT_AUDIO_URL);
+            setAudioFileName(DEFAULT_AUDIO_NAME);
+            setCurrentAudioAssetId(null);
+            return;
+          }
+          if (parsed.id === 'built-in-phone-call-recording-audio') {
+            setGeneratedDialogueAudioUrl(null);
+            setAudioUrl(DEFAULT_PHONE_CALL_AUDIO_URL);
+            setAudioFileName(DEFAULT_PHONE_CALL_AUDIO_NAME);
+            setCurrentAudioAssetId(null);
+            return;
+          }
+          const stored = items.find((item) => item.id === parsed.id && item.status !== 'needs-reupload' && item.blob?.size > 0);
+          if (!stored) return;
+          setGeneratedDialogueAudioUrl(null);
+          setAudioUrl(URL.createObjectURL(stored.blob));
+          setAudioFileName(stored.name);
+          setCurrentAudioAssetId(stored.id);
+        } catch (error) {
+          console.error('Failed to restore current audio:', error);
+        }
+      })
       .catch((error) => console.error('Failed to load audio library:', error));
   }, []);
 
@@ -1238,6 +1284,9 @@ export default function App() {
       setStoredAudioItems(nextItems);
       const savedItem = nextItems[0] || null;
       setCurrentAudioAssetId(savedItem?.id ?? null);
+      if (savedItem) {
+        rememberCurrentAudio({ id: savedItem.id, builtIn: false });
+      }
       return savedItem;
     } catch (error) {
       console.error('Failed to save audio item:', error);
@@ -1251,11 +1300,21 @@ export default function App() {
     setAudioUrl(nextUrl);
     setAudioFileName(item.name);
     setCurrentAudioAssetId(item.stored?.id ?? null);
+    rememberCurrentAudio(item);
+    setAudioFlyoutOpen(false);
+    setAudioFlyoutView('choices');
   };
 
   const deleteStoredAudio = async (audioId: string) => {
     const nextItems = await deleteAudioItem(audioId);
     setStoredAudioItems(nextItems);
+    if (currentAudioAssetId === audioId) {
+      setGeneratedDialogueAudioUrl(null);
+      setAudioUrl(DEFAULT_AUDIO_URL);
+      setAudioFileName(DEFAULT_AUDIO_NAME);
+      setCurrentAudioAssetId(null);
+      rememberCurrentAudio({ id: 'built-in-ai-dental-receptionist-audio', builtIn: true });
+    }
   };
 
   useEffect(() => {
@@ -2759,6 +2818,233 @@ export default function App() {
       stored: item,
     })),
   ];
+  const readyAudioLibraryItems = audioLibraryItems.filter((item) => item.builtIn || (item.stored?.status !== 'needs-reupload' && (item.stored?.blob?.size ?? 0) > 0));
+  const currentAudioItem = readyAudioLibraryItems.find((item) => (
+    item.stored ? item.id === currentAudioAssetId : !currentAudioAssetId && item.name === audioFileName
+  ));
+
+  const formatVoiceName = (name: string) => {
+    const withoutExtension = name.replace(/\.[a-z0-9]+$/i, '');
+    if (withoutExtension === DEFAULT_AUDIO_NAME || withoutExtension === DEFAULT_PHONE_CALL_AUDIO_NAME) return withoutExtension;
+    return withoutExtension
+      .replace(/[-_]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, (letter) => letter.toUpperCase()) || 'Voice';
+  };
+
+  const getAudioItemLabel = (item: AudioLibraryItem) => {
+    if (item.stored?.source === 'voice-wizard') return 'Made by Wiggly';
+    if (item.builtIn) return 'Example';
+    return 'Uploaded by you';
+  };
+
+  const isCurrentAudioItem = (item: AudioLibraryItem) => (
+    item.stored ? item.id === currentAudioAssetId : !currentAudioAssetId && item.name === audioFileName
+  );
+
+  const openAudioFlyout = (view: AudioFlyoutView = 'choices') => {
+    setAudioFlyoutView(view);
+    setAudioFlyoutOpen(true);
+  };
+
+  const renderAudioPanel = (mode: CreativeMode) => {
+    const uploadTitle = mode === 'phone-call' ? 'Upload voicemail audio' : 'Upload voice audio';
+    const currentName = formatVoiceName(currentAudioItem?.name || audioFileName || DEFAULT_AUDIO_NAME);
+    const currentLabel = currentAudioItem ? getAudioItemLabel(currentAudioItem) : 'Example';
+
+    return (
+      <div className="relative space-y-3">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="wiggly-panel-title uppercase">Voice</h2>
+          <span className="wiggly-panel-kicker">Audio</span>
+        </div>
+
+        <div className="wiggly-item-row flex items-center justify-between gap-3 px-3 py-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="wiggly-icon-tile">
+              <AudioLines className="h-4 w-4" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-black text-slate-800">Voice: {currentName}</span>
+              <span className="block truncate text-xs font-semibold text-slate-500">{currentLabel}</span>
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => openAudioFlyout('choices')}
+            className="shrink-0 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-black text-white transition hover:bg-slate-800"
+          >
+            Change
+          </button>
+        </div>
+
+        {audioFlyoutOpen && (
+          <div className="fixed inset-x-4 bottom-4 z-[80] max-h-[78vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-950/20 lg:bottom-auto lg:left-[21.5rem] lg:top-24 lg:w-80 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-black text-slate-900">Change voice</h3>
+                <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">Your ad keeps working while you choose.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setAudioFlyoutOpen(false);
+                  setAudioFlyoutView('choices');
+                }}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
+                aria-label="Close voice options"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {audioFlyoutView !== 'choices' && (
+              <button
+                type="button"
+                onClick={() => setAudioFlyoutView('choices')}
+                className="mb-3 text-xs font-black text-slate-500 transition hover:text-slate-900"
+              >
+                Back
+              </button>
+            )}
+
+            {audioFlyoutView === 'choices' && (
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setAudioFlyoutView('make')}
+                  className="w-full rounded-2xl border border-slate-900 bg-slate-950 p-4 text-left text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:shadow-xl"
+                >
+                  <span className="flex items-center justify-between gap-3">
+                    <span>
+                      <span className="block text-base font-black">Make me a voice</span>
+                      <span className="mt-1 block text-xs font-semibold leading-5 text-white/70">Write a short script. Wiggly turns it into audio.</span>
+                    </span>
+                    <ArrowRight className="h-5 w-5 shrink-0" />
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAudioFlyoutView('library')}
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left text-slate-900 transition hover:border-slate-300 hover:bg-white"
+                >
+                  <span className="flex items-center justify-between gap-3">
+                    <span>
+                      <span className="block text-sm font-black">Use a voice I have</span>
+                      <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">Pick an example, upload one, or reuse a saved voice.</span>
+                    </span>
+                    <ArrowRight className="h-5 w-5 shrink-0 text-slate-400" />
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {audioFlyoutView === 'make' && (
+              <div className="space-y-3">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <span className="block text-sm font-black text-slate-900">Make voice audio</span>
+                  <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">Write a short two-person script, edit it, then make the audio.</span>
+                  <button
+                    type="button"
+                    onClick={handleOpenConversationWizard}
+                    disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
+                    className="mt-3 w-full rounded-xl bg-slate-950 px-3 py-2.5 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isGeneratingDialogueScripts ? 'Writing...' : isGeneratingDialogueAudio ? 'Making...' : 'Open voice maker'}
+                  </button>
+                </div>
+                {dialogueScripts.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleOpenConversationWizard}
+                    className="w-full rounded-xl border border-indigo-100 bg-indigo-50 p-3 text-left transition hover:border-indigo-200 hover:bg-indigo-100"
+                  >
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="truncate text-xs font-black text-slate-800">{dialogueScripts.length} voice scripts ready</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-indigo-500">Review</span>
+                    </span>
+                    <span className="mt-1 block truncate text-[11px] font-semibold text-slate-500">
+                      {draftDialogueScript?.title || dialogueScripts[0]?.title || 'Open to choose one.'}
+                    </span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {audioFlyoutView === 'library' && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-2.5 text-xs font-black text-slate-700 transition hover:border-slate-400 hover:bg-white">
+                    <Upload className="h-4 w-4" />
+                    Upload
+                    <input
+                      type="file"
+                      accept="audio/*,video/mp4"
+                      onChange={(event) => {
+                        handleAudioUpload(event);
+                        if (event.target) event.target.value = '';
+                      }}
+                      className="sr-only"
+                      title={uploadTitle}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={downloadCurrentAudio}
+                    disabled={!audioUrl}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  {readyAudioLibraryItems.map((item) => {
+                    const current = isCurrentAudioItem(item);
+                    return (
+                      <div
+                        key={item.id}
+                        className={`group flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition ${
+                          current
+                            ? 'border-indigo-200 bg-indigo-50 text-slate-900'
+                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                        }`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => useAudioItem(item)}
+                          className="min-w-0 flex-1 text-left"
+                          title={`Use ${formatVoiceName(item.name)}`}
+                        >
+                          <span className="block truncate text-xs font-black">{formatVoiceName(item.name)}</span>
+                          <span className="mt-0.5 block text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                            {current ? 'Using now' : getAudioItemLabel(item)}
+                          </span>
+                        </button>
+                        {!item.builtIn && (
+                          <button
+                            type="button"
+                            onClick={() => deleteStoredAudio(item.id)}
+                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-300 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                            title="Remove saved voice"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const enterStudio = () => {
     try {
@@ -3237,32 +3523,19 @@ export default function App() {
               <>
               {creativeMode === 'visualizer' ? (
               <>
-              <PropertiesPanel />
-
               <div className="wiggly-panel p-4">
-                <div className="mb-4 flex items-end justify-between gap-3">
-                  <h2 className="wiggly-panel-title uppercase">Add to Ad</h2>
-                  <span className="wiggly-panel-kicker">Build</span>
-                </div>
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => setCreativeBriefOpen(true)}
-                    className="wiggly-item-row flex w-full items-center justify-between gap-3 px-3 py-3 text-left"
-                  >
-                    <span className="flex items-center gap-3">
-                      <span className="wiggly-icon-tile">
-                        <ClipboardList className="h-4 w-4" />
-                      </span>
-                      <span>
-                        <span className="block text-sm font-semibold text-slate-800">Business Info</span>
-                        <span className="block text-xs text-slate-500">Tell Wiggly what this ad is for</span>
-                      </span>
-                    </span>
-                    <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600">
-                      {briefCompletion}/{requiredBriefFields} done
-                    </span>
-                  </button>
+                {renderAudioPanel('visualizer')}
+              </div>
+
+              <details className="wiggly-panel group p-4">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                  <span>
+                    <span className="wiggly-panel-title block uppercase">Edit Parts</span>
+                    <span className="mt-1 block text-xs font-semibold text-slate-500">Add logos, images, captions, and buttons.</span>
+                  </span>
+                  <span className="text-lg font-black text-slate-400 transition group-open:rotate-90">›</span>
+                </summary>
+                <div className="mt-4 space-y-2">
                   {[
                     { label: 'Headline', description: headlineCount > 0 ? 'Add another big line' : 'Main ad message', icon: Type, action: handleAddHeadline, added: false, count: headlineCount },
                     { label: 'Sub-headline', description: subheadlineCount > 0 ? 'Add another small line' : 'Extra line under the headline', icon: Type, action: handleAddSubheadline, added: false, count: subheadlineCount },
@@ -3319,13 +3592,16 @@ export default function App() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </details>
 
-              <div className="wiggly-panel p-4">
-                <div className="mb-4 flex items-end justify-between gap-3">
-                  <h2 className="wiggly-panel-title uppercase">Look & Media</h2>
-                  <span className="wiggly-panel-kicker">Style</span>
-                </div>
+              <details className="wiggly-panel group p-4">
+                <summary className="mb-4 flex cursor-pointer list-none items-center justify-between gap-3">
+                  <span>
+                    <span className="wiggly-panel-title block uppercase">Advanced</span>
+                    <span className="mt-1 block text-xs font-semibold text-slate-500">Style, media, labels, and post settings.</span>
+                  </span>
+                  <span className="text-lg font-black text-slate-400 transition group-open:rotate-90">›</span>
+                </summary>
                 <div className="space-y-2">
                   {[
                     { label: 'Bars', value: visualizerColor, onChange: setVisualizerColor },
@@ -3370,7 +3646,7 @@ export default function App() {
                       </div>
                     </div>
                     {bgMedia && (
-                      <button 
+                      <button
                         onClick={() => setBgMedia(null)}
                         title="Remove Background"
                         className="px-2 border border-slate-200 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors bg-white flex items-center justify-center shrink-0"
@@ -3486,158 +3762,107 @@ export default function App() {
                     </div>
                   )}
 
-                  <div className="flex gap-2">
-                    <div className="relative group flex-1">
-                      <input 
-                        type="file" 
-                        accept="audio/*,video/mp4" 
-                        onChange={(e) => {
-                          handleAudioUpload(e);
-                          if(e.target) e.target.value = '';
-                        }}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        title="Upload audio"
-                      />
-                      <div className="wiggly-item-row flex h-full w-full items-center justify-between border-dashed px-3 py-3 text-sm text-slate-600">
-                        <span className="flex items-center gap-3">
-                          <span className="wiggly-icon-tile">
-                            {isTranscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                          </span>
-                          <span>
-                            <span className="block font-semibold text-slate-700">{isTranscribing ? "Reading audio..." : "Voice audio"}</span>
-                            <span className="block max-w-[170px] truncate text-xs text-slate-500">{audioFileName || "MP3, WAV, M4A"}</span>
-                          </span>
-                        </span>
-                        <span className="text-xs font-semibold text-slate-400">
-                          {audioUrl ? "Loaded" : "Upload"}
-                        </span>
-                      </div>
+                  <div className="rounded-lg border border-slate-200 bg-white p-2.5">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-600">Video length</span>
+                      <span className="text-xs font-semibold text-slate-400">
+                        {renderDurationCap === 'full' ? 'Full voice audio' : `${renderDurationCap}s`}
+                      </span>
                     </div>
-                    {audioUrl && (
-                      <>
+                    <div className="grid grid-cols-3 rounded-md bg-slate-100 p-1">
                       <button
                         type="button"
-                        onClick={downloadCurrentAudio}
-                        title="Download audio"
-                        className="px-2 border border-slate-200 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white transition-colors bg-white flex items-center justify-center shrink-0"
+                        onClick={() => setRenderDurationCap(30)}
+                        className={`rounded px-2 py-1.5 text-xs font-bold transition ${renderDurationCap === 30 ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
                       >
-                        <Download className="w-4 h-4" />
+                        30s
                       </button>
-                      <button 
-                        onClick={() => { setAudioUrl(null); setAudioFileName(''); setGeneratedDialogueAudioUrl(null); setCurrentAudioAssetId(null); }}
-                        title="Remove Audio"
-                        className="px-2 border border-slate-200 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors bg-white flex items-center justify-center shrink-0"
+                      <button
+                        type="button"
+                        onClick={() => setRenderDurationCap(60)}
+                        className={`rounded px-2 py-1.5 text-xs font-bold transition ${renderDurationCap === 60 ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
                       >
-                        <X className="w-4 h-4" />
+                        60s
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => setRenderDurationCap('full')}
+                        className={`rounded px-2 py-1.5 text-xs font-bold transition ${renderDurationCap === 'full' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                      >
+                        All
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="wiggly-timeline w-full p-3">
+                    {creativeMode === 'phone-call' ? (
+                      <>
+                        <div className="mb-3 flex items-center justify-between">
+                          <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Timing</span>
+                          <span className="text-xs font-semibold text-slate-500">Ring then voicemail</span>
+                        </div>
+                        <div className="flex h-8 overflow-hidden rounded-full bg-slate-100 shadow-inner">
+                          {phoneRingDuration > 0 && (
+                            <div
+                              className="flex min-w-[56px] items-center justify-center border-r border-white bg-emerald-500 text-[10px] font-bold text-white"
+                              style={{ width: `${Math.max(16, phoneRingDuration * 12)}%` }}
+                            >
+                              Ring {phoneRingDuration}s
+                            </div>
+                          )}
+                          <div className="flex flex-1 items-center justify-center bg-slate-900 text-[10px] font-bold text-white">
+                            {phoneRingDuration > 0 ? 'Voicemail' : 'Recording includes ring'}
+                          </div>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400">
+                          <span>0s</span>
+                          <span>{phoneRingDuration > 0 ? 'Timer starts after ring' : 'No extra ring added'}</span>
+                          <span>End</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="mb-3 flex items-center justify-between">
+                          <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Timing</span>
+                          <span className="text-xs font-semibold text-slate-500">
+                            {renderDurationCap === 'full' ? 'Full voice audio' : `${selectedTimelineDuration}s`}
+                          </span>
+                        </div>
+                        <div className="flex h-8 overflow-hidden rounded-full bg-slate-100 shadow-inner">
+                          {introImage && (
+                            <div
+                              className="flex min-w-[46px] items-center justify-center border-r border-white bg-indigo-500 text-[10px] font-bold text-white"
+                              style={{ width: introTimelineWidth }}
+                              title={`Intro image: ${introDuration}s`}
+                            >
+                              Intro {introDuration}s
+                            </div>
+                          )}
+                          <div className="flex flex-1 items-center justify-center bg-slate-900 text-[10px] font-bold text-white">
+                            Main ad {mainTimelineSeconds}s
+                          </div>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400">
+                          <span>0s</span>
+                          {introImage ? <span>Fade after {introDuration}s</span> : <span>No intro</span>}
+                          <span>{renderDurationCap === 'full' ? 'End' : `${selectedTimelineDuration}s`}</span>
+                        </div>
                       </>
                     )}
                   </div>
-
-                  {audioLibraryItems.length > 0 && (
-                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Saved audio</span>
-                        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-slate-400">{audioLibraryItems.length}</span>
-                      </div>
-                      <div className="space-y-1.5">
-                        {audioLibraryItems.slice(0, 6).map((item) => (
-                          <div
-                            key={item.id}
-                            className={`group flex items-center gap-2 rounded-md border px-2 py-2 text-left transition ${
-                              audioFileName === item.name
-                                ? 'border-indigo-200 bg-white text-slate-900'
-                                : 'border-transparent bg-white/60 text-slate-600 hover:border-slate-200 hover:bg-white'
-                            }`}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => useAudioItem(item)}
-                              className="min-w-0 flex-1 text-left"
-                              title={`Use ${item.name}`}
-                            >
-                              <span className="block truncate text-xs font-bold">{item.name}</span>
-                              <span className="block text-[10px] font-semibold text-slate-400">{item.builtIn ? 'Default audio' : 'Saved on this device'}</span>
-                            </button>
-                            {!item.builtIn && (
-                              <button
-                                type="button"
-                                onClick={() => deleteStoredAudio(item.id)}
-                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-300 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
-                                title="Remove audio"
-                              >
-                                <X className="h-3.5 w-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <span className="block text-sm font-bold text-slate-800">Make voice audio</span>
-                        <span className="block text-xs font-semibold leading-5 text-slate-500">Write a short two-person script, edit it, then make the audio.</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleOpenConversationWizard}
-                        disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
-                        className="shrink-0 rounded-md bg-slate-950 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {isGeneratingDialogueScripts ? 'Writing...' : isGeneratingDialogueAudio ? 'Making...' : 'Open'}
-                      </button>
-                    </div>
-                    {dialogueScripts.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleOpenConversationWizard}
-                        className="mt-3 w-full rounded-md border border-slate-200 bg-white p-2 text-left transition hover:border-indigo-200 hover:bg-indigo-50"
-                      >
-                        <span className="flex items-center justify-between gap-2">
-                          <span className="truncate text-xs font-black text-slate-800">{dialogueScripts.length} voice scripts ready</span>
-                          <span className="text-[10px] font-bold uppercase tracking-wide text-indigo-500">Choose</span>
-                        </span>
-                        <span className="mt-1 block truncate text-[11px] font-semibold text-slate-500">
-                          {draftDialogueScript?.title || dialogueScripts[0]?.title || 'Open to choose one.'}
-                        </span>
-                      </button>
-                    )}
-                  </div>
                 </div>
-              </div>
+              </details>
 
-              <div className="wiggly-panel p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="wiggly-panel-title uppercase">Where It Shows Up</h2>
-                  <span className="wiggly-panel-kicker">Preview</span>
-                </div>
+              <details className="wiggly-panel group p-4">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                  <span>
+                    <span className="wiggly-panel-title block uppercase">Post Settings</span>
+                    <span className="mt-1 block text-xs font-semibold text-slate-500">Preview theme, profile, CTA, and caption.</span>
+                  </span>
+                  <span className="text-lg font-black text-slate-400 transition group-open:rotate-90">›</span>
+                </summary>
                 
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    {([
-                      { id: 'facebook-feed', label: 'FB Feed', ratio: '4:5' },
-                      { id: 'instagram-feed', label: 'IG Feed', ratio: '4:5' },
-                      { id: 'reels', label: 'Reels', ratio: '9:16' },
-                      { id: 'stories', label: 'Stories', ratio: '9:16' },
-                      { id: 'youtube', label: 'YouTube', ratio: '16:9' },
-                    ] as const).map((option) => {
-                      const active = platform === option.id || (platform === 'feed' && option.id === 'facebook-feed') || (platform === 'vertical' && option.id === 'reels');
-                      return (
-                        <button
-                          key={option.id}
-                          type="button"
-                          onClick={() => setPlatform(option.id)}
-                          className={`rounded-xl border px-3 py-2 text-left transition ${active ? 'border-slate-900 bg-slate-900 text-white shadow-lg shadow-slate-950/15' : 'border-slate-200 bg-white/75 text-slate-700 hover:border-indigo-200 hover:bg-white hover:shadow-sm'}`}
-                        >
-                          <span className="block text-sm font-semibold">{option.label}</span>
-                          <span className={`block text-xs ${active ? 'text-white/70' : 'text-slate-500'}`}>{option.ratio}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                <div className="mt-4 space-y-4">
 
                   <div className="grid grid-cols-2 gap-2">
                     <button
@@ -3757,7 +3982,7 @@ export default function App() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </details>
               </>
               ) : (
                 <>
@@ -3799,51 +4024,7 @@ export default function App() {
                         </div>
                       </div>
 
-                      <div className="flex gap-2">
-                        <div className="relative group flex-1">
-                          <input
-                            type="file"
-                            accept="audio/*,video/mp4"
-                            onChange={(e) => {
-                              handleAudioUpload(e);
-                              if(e.target) e.target.value = '';
-                            }}
-                            className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-                            title="Upload voicemail audio"
-                          />
-                          <div className="wiggly-item-row flex h-full w-full items-center justify-between border-dashed px-3 py-3 text-sm text-slate-600">
-                            <span className="flex min-w-0 items-center gap-3">
-                              <span className="wiggly-icon-tile">
-                                <Upload className="h-4 w-4" />
-                              </span>
-                              <span className="min-w-0">
-                                <span className="block font-semibold text-slate-700">Voicemail audio</span>
-                                <span className="block max-w-[178px] truncate text-xs text-slate-500">{audioFileName || 'MP3, WAV, M4A'}</span>
-                              </span>
-                            </span>
-                          <span className="text-xs font-semibold text-slate-400">{audioUrl ? 'Loaded' : 'Upload'}</span>
-                          </div>
-                        </div>
-                        {audioUrl && (
-                          <>
-                          <button
-                            type="button"
-                            onClick={downloadCurrentAudio}
-                            title="Download audio"
-                            className="flex shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-slate-500 transition-colors hover:bg-white hover:text-slate-900"
-                          >
-                            <Download className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => { setAudioUrl(null); setAudioFileName(''); setGeneratedDialogueAudioUrl(null); setCurrentAudioAssetId(null); }}
-                            title="Remove voicemail audio"
-                            className="flex shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-slate-400 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-500"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                          </>
-                        )}
-                      </div>
+                      {renderAudioPanel('phone-call')}
 
                       <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                         <p className="text-xs font-semibold leading-5 text-slate-500">
@@ -3853,46 +4034,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {audioLibraryItems.length > 0 && (
-                    <div className="wiggly-panel p-4">
-                      <div className="mb-3 flex items-center justify-between gap-2">
-                        <h2 className="wiggly-panel-title uppercase">Saved Audio</h2>
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-400">{audioLibraryItems.length}</span>
-                      </div>
-                      <div className="space-y-1.5">
-                        {audioLibraryItems.slice(0, 8).map((item) => (
-                          <div
-                            key={item.id}
-                            className={`group flex items-center gap-2 rounded-md border px-2 py-2 text-left transition ${
-                              audioFileName === item.name
-                                ? 'border-indigo-200 bg-indigo-50 text-slate-900'
-                                : 'border-slate-100 bg-slate-50 text-slate-600 hover:border-slate-200 hover:bg-white'
-                            }`}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => useAudioItem(item)}
-                              className="min-w-0 flex-1 text-left"
-                              title={`Use ${item.name}`}
-                            >
-                              <span className="block truncate text-xs font-bold">{item.name}</span>
-                              <span className="block text-[10px] font-semibold text-slate-400">{item.builtIn ? 'Default audio' : 'Saved on this device'}</span>
-                            </button>
-                            {!item.builtIn && (
-                              <button
-                                type="button"
-                                onClick={() => deleteStoredAudio(item.id)}
-                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-300 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
-                                title="Remove audio"
-                              >
-                                <X className="h-3.5 w-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </>
               )}
               </>
@@ -3963,20 +4104,48 @@ export default function App() {
                 </button>
               </div>
             )}
-            <div className="wiggly-panel p-4">
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <h2 className="wiggly-panel-title uppercase">Guided Journey</h2>
-                <span className="wiggly-panel-kicker">Test</span>
+            {activeTab === 'single' && creativeMode === 'visualizer' && (
+              <div className="wiggly-panel p-3">
+                <button
+                  type="button"
+                  onClick={() => setCreativeBriefOpen(true)}
+                  className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                      <ClipboardList className="h-4 w-4" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-black text-slate-800">Ad details</span>
+                    </span>
+                  </span>
+                  <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-black text-slate-600">
+                    Change
+                  </span>
+                </button>
               </div>
-              <p className="mb-3 text-xs font-semibold leading-5 text-slate-500">
-                Replay the first-time tutorial from the start.
-              </p>
+            )}
+            {activeTab === 'single' && (
+              <button
+                type="button"
+                disabled
+                className="wiggly-border-beam relative flex w-full cursor-not-allowed items-center justify-center gap-2 overflow-hidden rounded-full px-4 py-2 text-xs font-black text-slate-700 shadow-sm"
+                title="Coming soon"
+              >
+                <Upload className="h-3.5 w-3.5 text-indigo-500" />
+                Auto-post everywhere
+                <span className="rounded-full bg-[#d9fff6] px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-900">soon</span>
+              </button>
+            )}
+            <div className="flex justify-end px-2 pb-2">
               <button
                 type="button"
                 onClick={replayGuidedJourney}
-                className="wiggly-secondary-action flex w-full items-center justify-center gap-2 px-3 py-2 text-sm font-semibold"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 shadow-sm transition hover:border-indigo-200 hover:text-indigo-600 hover:shadow-md"
+                title="Replay guided journey"
+                aria-label="Replay guided journey"
               >
-                Replay Guided Journey
+                <Wand2 className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -4029,8 +4198,7 @@ export default function App() {
 
             {/* Toolbar */}
             <div className="wiggly-toolbar mt-4 flex flex-col items-center gap-2">
-              <div className="flex flex-wrap justify-center gap-3">
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex flex-wrap justify-center gap-3">
                 <button 
                   onClick={downloadSimulatedVideo}
                   disabled={rendering}
@@ -4040,28 +4208,6 @@ export default function App() {
                     {rendering ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                     {rendering ? 'Making Video' : 'Download Video'}
                   </button>
-                  <div className="flex items-center gap-1 text-[10px] text-slate-500">
-                    <span className="mr-1 font-medium text-slate-600">How long:</span>
-                    <button 
-                      onClick={() => setRenderDurationCap(30)}
-                      className={`px-1.5 py-0.5 rounded transition-colors ${renderDurationCap === 30 ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-slate-100'}`}
-                    >
-                      30s
-                    </button>
-                    <button 
-                      onClick={() => setRenderDurationCap(60)}
-                      className={`px-1.5 py-0.5 rounded transition-colors ${renderDurationCap === 60 ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-slate-100'}`}
-                    >
-                      60s
-                    </button>
-                    <button 
-                      onClick={() => setRenderDurationCap('full')}
-                      className={`px-1.5 py-0.5 rounded transition-colors ${renderDurationCap === 'full' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-slate-100'}`}
-                    >
-                      All
-                    </button>
-                  </div>
-                </div>
                 <button 
                   onClick={togglePlayback}
                   data-tour="play-button"
@@ -4112,73 +4258,6 @@ export default function App() {
                 )}
               </div>
 
-              <button
-                type="button"
-                disabled
-                className="wiggly-border-beam relative flex w-full max-w-[360px] cursor-not-allowed items-center justify-center gap-2 overflow-hidden rounded-full px-4 py-2 text-xs font-black text-slate-700 shadow-sm"
-                title="Coming soon"
-              >
-                <Upload className="h-3.5 w-3.5 text-indigo-500" />
-                Auto-post everywhere
-                <span className="rounded-full bg-[#d9fff6] px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-900">soon</span>
-              </button>
-
-              <div className="wiggly-timeline mt-1 w-full max-w-[360px] p-3">
-                {creativeMode === 'phone-call' ? (
-                  <>
-                    <div className="mb-3 flex items-center justify-between">
-                      <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Timing</span>
-                      <span className="text-xs font-semibold text-slate-500">Ring then voicemail</span>
-                    </div>
-                    <div className="flex h-8 overflow-hidden rounded-full bg-slate-100 shadow-inner">
-                      {phoneRingDuration > 0 && (
-                        <div
-                          className="flex min-w-[56px] items-center justify-center border-r border-white bg-emerald-500 text-[10px] font-bold text-white"
-                          style={{ width: `${Math.max(16, phoneRingDuration * 12)}%` }}
-                        >
-                          Ring {phoneRingDuration}s
-                        </div>
-                      )}
-                      <div className="flex flex-1 items-center justify-center bg-slate-900 text-[10px] font-bold text-white">
-                        {phoneRingDuration > 0 ? 'Voicemail' : 'Recording includes ring'}
-                      </div>
-                    </div>
-                    <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400">
-                      <span>0s</span>
-                      <span>{phoneRingDuration > 0 ? 'Timer starts after ring' : 'No extra ring added'}</span>
-                      <span>End</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="mb-3 flex items-center justify-between">
-                      <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Timing</span>
-                      <span className="text-xs font-semibold text-slate-500">
-                        {renderDurationCap === 'full' ? 'Full voice audio' : `${selectedTimelineDuration}s`}
-                      </span>
-                    </div>
-                    <div className="flex h-8 overflow-hidden rounded-full bg-slate-100 shadow-inner">
-                      {introImage && (
-                        <div
-                          className="flex min-w-[46px] items-center justify-center border-r border-white bg-indigo-500 text-[10px] font-bold text-white"
-                          style={{ width: introTimelineWidth }}
-                          title={`Intro image: ${introDuration}s`}
-                        >
-                          Intro {introDuration}s
-                        </div>
-                      )}
-                      <div className="flex flex-1 items-center justify-center bg-slate-900 text-[10px] font-bold text-white">
-                        Main ad {mainTimelineSeconds}s
-                      </div>
-                    </div>
-                    <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400">
-                      <span>0s</span>
-                      {introImage ? <span>Fade after {introDuration}s</span> : <span>No intro</span>}
-                      <span>{renderDurationCap === 'full' ? 'End' : `${selectedTimelineDuration}s`}</span>
-                    </div>
-                  </>
-                )}
-              </div>
             </div>
             
           </div>
@@ -4970,14 +5049,14 @@ export default function App() {
 
         {creativeBriefOpen && (
           <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
-            <div className="max-h-[86vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-              <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+            <div className="max-h-[88vh] w-full max-w-2xl overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-2xl">
+              <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
                 <div>
-                  <h2 className="text-base font-bold text-slate-900">Business Info</h2>
-                  <p className="mt-1 text-sm text-slate-500">Answer once. Wiggly uses this to suggest better ad ideas.</p>
+                  <h2 className="text-xl font-black tracking-normal text-slate-950">What's your ad about?</h2>
+                  <p className="mt-1.5 text-sm font-semibold leading-6 text-slate-500">Give Wiggly the basics once. It uses this to make better versions.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-black text-slate-600">
                     {briefCompletion}/{requiredBriefFields}
                   </span>
                   <button
@@ -4990,30 +5069,43 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="grid max-h-[64vh] gap-4 overflow-y-auto p-5 md:grid-cols-2">
-                {CREATIVE_BRIEF_FIELDS.map((field) => (
-                  <label key={field.key} className={field.key === 'reference' ? 'block space-y-1.5 md:col-span-2' : 'block space-y-1.5'}>
+              <div className="max-h-[64vh] overflow-y-auto p-6">
+                <label className="mb-5 block rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                  <span className="text-sm font-black text-slate-900">What do you sell?</span>
+                  <textarea
+                    value={creativeBrief.offer}
+                    onChange={(event) => updateCreativeBrief('offer', event.target.value)}
+                    rows={3}
+                    placeholder="AI receptionist that answers and books dental patient calls."
+                    className="mt-2 min-h-[96px] w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10"
+                  />
+                </label>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                {CREATIVE_BRIEF_FIELDS.filter((field) => field.key !== 'offer').map((field) => (
+                  <label key={field.key} className={field.key === 'reference' ? 'block rounded-2xl border border-slate-200 bg-white p-3 md:col-span-2' : 'block rounded-2xl border border-slate-200 bg-white p-3'}>
                     <span className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-semibold text-slate-800">{field.question}</span>
-                      {field.optional && <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Optional</span>}
+                      <span className="text-xs font-black uppercase tracking-wide text-slate-500">{field.question}</span>
+                      {field.optional && <span className="text-[10px] font-black uppercase tracking-wide text-slate-400">Optional</span>}
                     </span>
                     <textarea
                       value={creativeBrief[field.key]}
                       onChange={(event) => updateCreativeBrief(field.key, event.target.value)}
-                      rows={field.key === 'reference' ? 3 : 2}
+                      rows={field.key === 'reference' ? 4 : 3}
                       placeholder={field.placeholder}
-                      className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10"
+                      className="mt-2 min-h-[92px] w-full resize-y rounded-xl border border-slate-100 bg-slate-50 px-3 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10"
                     />
                   </label>
                 ))}
+                </div>
               </div>
 
-              <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 px-5 py-4">
-                <p className="text-xs text-slate-500">This saves automatically in this browser.</p>
+              <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
+                <p className="text-xs font-semibold text-slate-500">Saves automatically in this browser.</p>
                 <button
                   type="button"
                   onClick={() => setCreativeBriefOpen(false)}
-                  className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800"
+                  className="rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-slate-800"
                 >
                   Done
                 </button>
