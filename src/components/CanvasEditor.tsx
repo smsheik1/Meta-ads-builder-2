@@ -98,6 +98,13 @@ const SUBHEADS = [
 ];
 const CTA_COPY = ['Book Demo', 'See It Live', 'Get Started', 'Try Wiggly', 'Watch Demo'];
 
+const compressVisualizerValue = (value: number) => {
+  const threshold = 0.64;
+  if (value <= threshold) return value;
+  const compressed = threshold + (1 - threshold) * (1 - Math.exp(-(value - threshold) * 1.7));
+  return Math.min(compressed, 0.96);
+};
+
 const applyArchetypeToElement = (element: AdElement, archetype: AdStyleArchetype): AdElement => {
   if (element.locked) return element;
 
@@ -105,11 +112,11 @@ const applyArchetypeToElement = (element: AdElement, archetype: AdStyleArchetype
     return {
       ...element,
       styleArchetypeId: archetype.id,
-      visualizerType: pickRandom(archetype.visualizer.visualizerTypes, element.visualizerType),
+      visualizerType: archetype.visualizerVariant.visualizerType,
       barColor: archetype.visualizerColor,
-      barCount: pickRandom(archetype.visualizer.barCounts, element.barCount),
-      visualizerSensitivity: pickRandom(archetype.visualizer.sensitivities, element.visualizerSensitivity),
-      visualizerHeight: pickRandom(archetype.visualizer.heights, element.visualizerHeight),
+      barCount: archetype.visualizerVariant.barCount,
+      visualizerSensitivity: archetype.visualizerVariant.sensitivity,
+      visualizerHeight: archetype.visualizerVariant.height,
     };
   }
 
@@ -120,7 +127,7 @@ const applyArchetypeToElement = (element: AdElement, archetype: AdStyleArchetype
       styleArchetypeId: archetype.id,
       content: isHeadline ? getRandomSeededHook() : pickRandom(SUBHEADS, stripRichText(element.content || '')),
       color: isHeadline ? archetype.headlineColor : archetype.subheadlineColor,
-      fontWeight: isHeadline ? pickRandom(['800', '900'], String(element.fontWeight || '900')) : pickRandom(['600', '700', '800'], String(element.fontWeight || '700')),
+      fontWeight: isHeadline ? archetype.headlineTreatment.fontWeight : pickRandom(['600', '700', '800'], String(element.fontWeight || '700')),
     };
   }
 
@@ -134,7 +141,7 @@ const applyArchetypeToElement = (element: AdElement, archetype: AdStyleArchetype
     };
   }
 
-  if (element.type === 'button') {
+  if (element.type === 'button' && element.componentRole === 'cta') {
     return {
       ...element,
       styleArchetypeId: archetype.id,
@@ -456,8 +463,9 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                      value = value / binsCount;
                  }
                  
-                 value = (value / 255) * sensitivityMultiplier;
-                 value = Math.min(value, 1.0);
+                 const visualizerBoost = type === 'waveform-strip' ? 1.8 : 1;
+                 value = (value / 255) * sensitivityMultiplier * visualizerBoost;
+                 value = compressVisualizerValue(value);
                  
                  drawAdvancedVisualizer(ctx, type, canvas.width, canvas.height, value, frameCount, el.barColor || '#00ffcc', 1, {
                    barCount: el.barCount,
@@ -487,7 +495,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                 : index / Math.max(1, barsRef.current[vId].length - 1);
               const dataIndex = 1 + Math.floor(normalizedIndex * dataBins);
               let value = (dataArray[Math.min(dataIndex, bufferLength - 1)] / 255) * sensitivityMultiplier;
-              value = Math.min(value, 1.0);
+              value = compressVisualizerValue(value);
               
               if (el.visualizerSplitSpeakers) {
                 value = isActiveSpeakerSide ? value : 0.04;
@@ -1043,36 +1051,75 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
                  {normalizedVisualizerType === 'bars-bottom' && (
                     <div className="w-full h-full flex items-end justify-between gap-1">
-                      {Array.from({ length: el.barCount || 16 }).map((_, i) => (
-                        <div
-                          key={i}
-                          ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 16)}
-                          className="flex-1 rounded-full"
-                          style={{ backgroundColor: el.barColor || '#00ffcc', height: `${el.visualizerBaseline ?? 4}px`, minWidth: '4px' }}
-                        />
-                      ))}
+                      {Array.from({ length: el.barCount || 16 }).map((_, i, bars) => {
+                        const idleHeight = playing
+                          ? (el.visualizerBaseline ?? 4)
+                          : 26 + ((i * 17) % 46) + ((i % 3) * 4);
+                        return (
+                          <div
+                            key={i}
+                            ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 16)}
+                            className={`flex-1 rounded-full ${playing ? '' : 'wiggly-idle-bar'}`}
+                            style={{
+                              animationDelay: playing ? undefined : `${i * 45}ms`,
+                              backgroundColor: el.barColor || '#00ffcc',
+                              height: `${idleHeight}${playing ? 'px' : '%'}`,
+                              minWidth: '4px'
+                            }}
+                          />
+                        );
+                      })}
                     </div>
                  )}
                  {normalizedVisualizerType === 'bars-center' && (
                     <div className="w-full h-full flex items-center justify-between gap-1">
-                      {Array.from({ length: el.barCount || 16 }).map((_, i) => (
-                        <div
-                          key={i}
-                          ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 16)}
-                          className="flex-1 rounded-full"
-                          style={{
-                            backgroundColor: el.visualizerSplitSpeakers && i >= Math.floor((el.barCount || 16) / 2) ? '#8b5cf6' : (el.barColor || '#00ffcc'),
-                            height: `${el.visualizerBaseline ?? 4}px`,
-                            minWidth: '4px'
-                          }}
-                        />
-                      ))}
+                      {Array.from({ length: el.barCount || 16 }).map((_, i, bars) => {
+                        const center = (bars.length - 1) / 2;
+                        const distance = Math.abs(i - center) / Math.max(center, 1);
+                        const idleHeight = playing
+                          ? (el.visualizerBaseline ?? 4)
+                          : Math.min(88, 22 + (1 - distance) * 58 + ((i % 5) * 3));
+                        return (
+                          <div
+                            key={i}
+                            ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 16)}
+                            className={`flex-1 rounded-full ${playing ? '' : 'wiggly-idle-bar'}`}
+                            style={{
+                              animationDelay: playing ? undefined : `${i * 45}ms`,
+                              backgroundColor: el.visualizerSplitSpeakers && i >= Math.floor((el.barCount || 16) / 2) ? '#8b5cf6' : (el.barColor || '#00ffcc'),
+                              height: `${idleHeight}${playing ? 'px' : '%'}`,
+                              minWidth: '4px'
+                            }}
+                          />
+                        );
+                      })}
                     </div>
                  )}
+                {normalizedVisualizerType === 'waveform-strip' && !playing && (
+                  <div className="absolute inset-0 flex items-center justify-between gap-1">
+                    {Array.from({ length: Math.min(el.barCount || 24, 36) }).map((_, i, bars) => {
+                      const center = (bars.length - 1) / 2;
+                      const distance = Math.abs(i - center) / Math.max(center, 1);
+                      const height = 30 + (1 - distance) * 56 + ((i % 3) * 7);
+                      return (
+                        <div
+                          key={i}
+                          className="wiggly-idle-bar wiggly-idle-bar-strong flex-1 rounded-full opacity-80"
+                          style={{
+                            animationDelay: `${i * 45}ms`,
+                            backgroundColor: el.barColor || '#00ffcc',
+                            height: `${Math.min(height, 92)}%`,
+                            minWidth: '3px',
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
                 {normalizedVisualizerType === 'waveform-strip' && (
                     <canvas
                       ref={canvasEl => setBarRef(el.id, canvasEl as any, 0, 1)}
-                      className="w-full h-full"
+                      className="relative z-10 h-full w-full"
                     />
                  )}
                  <label

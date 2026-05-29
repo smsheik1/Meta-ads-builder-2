@@ -9,9 +9,24 @@ export type VisualizerStyleSettings = {
   heights: number[];
 };
 
+export type VisualizerStyleVariant = {
+  visualizerType: NonNullable<AdElement['visualizerType']>;
+  barCount: number;
+  sensitivity: number;
+  height: number;
+};
+
+export type HeadlineStyleTreatment = {
+  fontSize: number;
+  fontWeight: string;
+  lineHeight: number;
+  width: number;
+};
+
 export type AdStyleArchetype = {
   id: string;
   name: string;
+  variantFingerprint: string;
   backgroundColor: string;
   headlineColor: string;
   subheadlineColor: string;
@@ -21,6 +36,8 @@ export type AdStyleArchetype = {
   ctaBackgroundColor: string;
   ctaTextColor: string;
   visualizer: VisualizerStyleSettings;
+  visualizerVariant: VisualizerStyleVariant;
+  headlineTreatment: HeadlineStyleTreatment;
 };
 
 type HslRange = {
@@ -44,6 +61,7 @@ type AdStyleFamily = {
   speaker2: HslRange | string[];
   ctas: CtaPair[];
   visualizerSettings: VisualizerStyleSettings;
+  headlineTreatments: HeadlineStyleTreatment[];
 };
 
 const STYLE_FAMILIES: AdStyleFamily[] = [
@@ -62,10 +80,15 @@ const STYLE_FAMILIES: AdStyleFamily[] = [
     ],
     visualizerSettings: {
       visualizerTypes: ['bars-center', 'waveform-strip'],
-      barCounts: [16, 20, 24, 28],
-      sensitivities: [1.4, 1.5, 1.7],
-      heights: [0.82, 0.9, 1],
+      barCounts: [14, 16, 20, 24, 28, 32],
+      sensitivities: [1.25, 1.4, 1.55, 1.7, 1.85],
+      heights: [0.74, 0.82, 0.9, 1, 1.08],
     },
+    headlineTreatments: [
+      { fontSize: 50, fontWeight: '900', lineHeight: 1.02, width: 320 },
+      { fontSize: 46, fontWeight: '800', lineHeight: 1.06, width: 348 },
+      { fontSize: 54, fontWeight: '900', lineHeight: 0.98, width: 300 },
+    ],
   },
   {
     id: 'warm-minimal',
@@ -82,10 +105,15 @@ const STYLE_FAMILIES: AdStyleFamily[] = [
     ],
     visualizerSettings: {
       visualizerTypes: ['bars-center', 'bars-bottom'],
-      barCounts: [14, 16, 20, 24],
-      sensitivities: [1.2, 1.4, 1.5],
-      heights: [0.72, 0.82, 0.9],
+      barCounts: [12, 14, 16, 20, 24, 30],
+      sensitivities: [1.12, 1.24, 1.38, 1.52, 1.66],
+      heights: [0.66, 0.74, 0.82, 0.9, 0.98],
     },
+    headlineTreatments: [
+      { fontSize: 48, fontWeight: '900', lineHeight: 1.04, width: 330 },
+      { fontSize: 44, fontWeight: '800', lineHeight: 1.1, width: 362 },
+      { fontSize: 52, fontWeight: '900', lineHeight: 1, width: 306 },
+    ],
   },
   {
     id: 'premium-cream',
@@ -102,10 +130,15 @@ const STYLE_FAMILIES: AdStyleFamily[] = [
     ],
     visualizerSettings: {
       visualizerTypes: ['waveform-strip', 'bars-center'],
-      barCounts: [20, 24, 28, 32],
-      sensitivities: [1.3, 1.5, 1.6],
-      heights: [0.78, 0.86, 0.94],
+      barCounts: [18, 20, 24, 28, 32, 36],
+      sensitivities: [1.22, 1.36, 1.5, 1.64, 1.78],
+      heights: [0.7, 0.78, 0.86, 0.94, 1.02],
     },
+    headlineTreatments: [
+      { fontSize: 46, fontWeight: '900', lineHeight: 1.06, width: 340 },
+      { fontSize: 42, fontWeight: '800', lineHeight: 1.12, width: 370 },
+      { fontSize: 50, fontWeight: '900', lineHeight: 1.02, width: 314 },
+    ],
   },
   {
     id: 'bright-trust',
@@ -122,10 +155,15 @@ const STYLE_FAMILIES: AdStyleFamily[] = [
     ],
     visualizerSettings: {
       visualizerTypes: ['bars-center', 'bars-bottom', 'waveform-strip'],
-      barCounts: [16, 20, 24, 28],
-      sensitivities: [1.5, 1.7, 1.9],
-      heights: [0.82, 0.9, 1],
+      barCounts: [16, 20, 24, 28, 32, 36],
+      sensitivities: [1.35, 1.5, 1.68, 1.84, 2],
+      heights: [0.76, 0.84, 0.92, 1, 1.08],
     },
+    headlineTreatments: [
+      { fontSize: 50, fontWeight: '900', lineHeight: 1, width: 318 },
+      { fontSize: 46, fontWeight: '800', lineHeight: 1.08, width: 352 },
+      { fontSize: 54, fontWeight: '900', lineHeight: 0.98, width: 302 },
+    ],
   },
   {
     id: 'editorial-black',
@@ -142,10 +180,15 @@ const STYLE_FAMILIES: AdStyleFamily[] = [
     ],
     visualizerSettings: {
       visualizerTypes: ['bars-center', 'bars-bottom'],
-      barCounts: [18, 22, 26, 32],
-      sensitivities: [1.4, 1.6, 1.8],
-      heights: [0.8, 0.9, 1],
+      barCounts: [14, 18, 22, 26, 32, 40],
+      sensitivities: [1.22, 1.38, 1.56, 1.74, 1.92],
+      heights: [0.7, 0.8, 0.9, 1, 1.1],
     },
+    headlineTreatments: [
+      { fontSize: 52, fontWeight: '900', lineHeight: 0.98, width: 306 },
+      { fontSize: 44, fontWeight: '800', lineHeight: 1.1, width: 360 },
+      { fontSize: 48, fontWeight: '900', lineHeight: 1.04, width: 332 },
+    ],
   },
   {
     id: 'soft-pastel',
@@ -162,14 +205,20 @@ const STYLE_FAMILIES: AdStyleFamily[] = [
     ],
     visualizerSettings: {
       visualizerTypes: ['waveform-strip', 'bars-center'],
-      barCounts: [20, 24, 28, 36],
-      sensitivities: [1.25, 1.45, 1.6],
-      heights: [0.76, 0.84, 0.92],
+      barCounts: [16, 20, 24, 28, 36, 44],
+      sensitivities: [1.14, 1.28, 1.45, 1.62, 1.78],
+      heights: [0.68, 0.76, 0.84, 0.92, 1],
     },
+    headlineTreatments: [
+      { fontSize: 48, fontWeight: '900', lineHeight: 1.04, width: 326 },
+      { fontSize: 42, fontWeight: '800', lineHeight: 1.12, width: 372 },
+      { fontSize: 52, fontWeight: '900', lineHeight: 1, width: 308 },
+    ],
   },
 ];
 
 const recentFamilyIds: string[] = [];
+const recentVariantFingerprints: string[] = [];
 
 const randomBetween = (min: number, max: number) => min + Math.random() * (max - min);
 
@@ -252,20 +301,77 @@ export const pickRandom = <T,>(items: T[], current?: T) => {
   return source[Math.floor(Math.random() * source.length)];
 };
 
+const colorBucket = (color: string) => {
+  const rgb = hexToRgb(color);
+  if (!rgb) return color;
+  const max = Math.max(rgb.r, rgb.g, rgb.b);
+  const min = Math.min(rgb.r, rgb.g, rgb.b);
+  const intensity = max < 80 ? 'dark' : max > 210 ? 'bright' : 'mid';
+  const warmth = rgb.r >= rgb.b + 20 ? 'warm' : rgb.b >= rgb.r + 20 ? 'cool' : 'neutral';
+  const saturation = max - min > 110 ? 'high' : max - min > 55 ? 'medium' : 'low';
+  return `${warmth}-${saturation}-${intensity}`;
+};
+
+const rollVisualizerVariant = (settings: VisualizerStyleSettings): VisualizerStyleVariant => ({
+  visualizerType: pickRandom(settings.visualizerTypes),
+  barCount: pickRandom(settings.barCounts),
+  sensitivity: pickRandom(settings.sensitivities),
+  height: pickRandom(settings.heights),
+});
+
+const buildVariantFingerprint = (
+  family: AdStyleFamily,
+  visualizerColor: string,
+  speaker2Color: string,
+  cta: CtaPair,
+  visualizerVariant: VisualizerStyleVariant,
+  headlineTreatment: HeadlineStyleTreatment
+) => {
+  const density = visualizerVariant.barCount <= 18 ? 'sparse' : visualizerVariant.barCount >= 32 ? 'dense' : 'balanced';
+  const motion = visualizerVariant.sensitivity < 1.35 ? 'calm' : visualizerVariant.sensitivity > 1.7 ? 'active' : 'steady';
+  const headline = headlineTreatment.fontSize >= 52 ? 'big' : headlineTreatment.width >= 350 ? 'wide' : 'standard';
+  return [
+    family.id,
+    visualizerVariant.visualizerType,
+    colorBucket(visualizerColor),
+    colorBucket(speaker2Color),
+    cta.background,
+    density,
+    motion,
+    headline,
+  ].join('|');
+};
+
 const rollFamily = (family: AdStyleFamily): AdStyleArchetype => {
   const cta = pickRandom(family.ctas);
+  const visualizerVariant = rollVisualizerVariant(family.visualizerSettings);
+  const headlineTreatment = pickRandom(family.headlineTreatments);
+  const visualizerColor = rollColor(family.visualizer);
+  const speaker2CaptionColor = rollColor(family.speaker2);
+  const variantFingerprint = buildVariantFingerprint(
+    family,
+    visualizerColor,
+    speaker2CaptionColor,
+    cta,
+    visualizerVariant,
+    headlineTreatment
+  );
+
   return {
     id: family.id,
     name: family.name,
+    variantFingerprint,
     backgroundColor: FIXED_AD_BACKGROUND_COLOR,
     headlineColor: pickRandom(family.headlines),
     subheadlineColor: pickRandom(family.subheadlines),
-    visualizerColor: rollColor(family.visualizer),
+    visualizerColor,
     speaker1CaptionColor: rollColor(family.speaker1),
-    speaker2CaptionColor: rollColor(family.speaker2),
+    speaker2CaptionColor,
     ctaBackgroundColor: cta.background,
     ctaTextColor: cta.text,
     visualizer: family.visualizerSettings,
+    visualizerVariant,
+    headlineTreatment,
   };
 };
 
@@ -276,6 +382,11 @@ const rememberFamily = (familyId: string) => {
   recentFamilyIds.splice(2);
 };
 
+const rememberVariant = (variantFingerprint: string) => {
+  recentVariantFingerprints.unshift(variantFingerprint);
+  recentVariantFingerprints.splice(5);
+};
+
 export const getRandomAdStyleArchetype = (currentId?: string) => {
   const availableFamilies = STYLE_FAMILIES.filter(family => family.id !== currentId && !recentFamilyIds.includes(family.id));
   const source = availableFamilies.length > 0
@@ -283,15 +394,17 @@ export const getRandomAdStyleArchetype = (currentId?: string) => {
     : STYLE_FAMILIES.filter(family => family.id !== currentId);
   const family = pickRandom(source.length > 0 ? source : STYLE_FAMILIES);
 
-  for (let attempt = 0; attempt < 12; attempt++) {
+  for (let attempt = 0; attempt < 24; attempt++) {
     const archetype = rollFamily(family);
-    if (isValidAdStyleArchetype(archetype)) {
+    if (isValidAdStyleArchetype(archetype) && !recentVariantFingerprints.includes(archetype.variantFingerprint)) {
       rememberFamily(family.id);
+      rememberVariant(archetype.variantFingerprint);
       return archetype;
     }
   }
 
   const fallback = rollFamily(STYLE_FAMILIES[0]);
   rememberFamily(fallback.id);
+  rememberVariant(fallback.variantFingerprint);
   return fallback;
 };
