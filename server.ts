@@ -11,7 +11,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
 import { bundle } from '@remotion/bundler';
 import { getCompositions, renderMedia } from '@remotion/renderer';
-import { EXPORT_FPS, getExportDimensions, type ExportSnapshot } from './src/lib/export-snapshot';
+import { EXPORT_FPS, getExportDimensions, isPhoneCallSnapshot, PHONE_CALL_EXPORT_DIMENSIONS, type ExportSnapshot, type RenderSnapshot } from './src/lib/export-snapshot';
 
 const app = express();
 const isProd = process.env.NODE_ENV === 'production';
@@ -49,6 +49,7 @@ app.get('/api/health', (_req, res) => {
     ok: true,
     deepgramConfigured: Boolean(process.env.DEEPGRAM_API_KEY),
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+    postizConfigured: Boolean(process.env.POSTIZ_API_KEY),
   });
 });
 
@@ -74,6 +75,22 @@ const uploadRemotion = multer({
   limits: {
     fileSize: 300 * 1024 * 1024,
     files: 12,
+  },
+});
+
+const uploadPostiz = multer({
+  storage: memoryStorage,
+  limits: {
+    fileSize: 300 * 1024 * 1024,
+    files: 1,
+  },
+  fileFilter: (_req, file, cb) => {
+    const allowed = file.mimetype === 'video/mp4' || file.originalname.toLowerCase().endsWith('.mp4');
+    if (!allowed) {
+      cb(new Error('Unsupported MP4 file type.'));
+      return;
+    }
+    cb(null, true);
   },
 });
 
@@ -109,8 +126,146 @@ const sendServerError = (res: express.Response, fallbackMessage: string) => {
   res.status(500).json({ error: fallbackMessage });
 };
 
+const getPostizConfig = () => {
+  const apiKey = process.env.POSTIZ_API_KEY?.trim();
+  const baseUrl = (process.env.POSTIZ_API_BASE_URL || 'https://api.postiz.com/public/v1').trim().replace(/\/+$/, '');
+  const appUrl = process.env.POSTIZ_APP_URL?.trim() || null;
+  return { apiKey, baseUrl, appUrl };
+};
+
+const postizRequest = async (pathName: string, init: RequestInit = {}) => {
+  const { apiKey, baseUrl } = getPostizConfig();
+  if (!apiKey) {
+    const error = new Error('Postiz is not configured. Add POSTIZ_API_KEY to the server environment.');
+    (error as any).status = 400;
+    throw error;
+  }
+
+  const response = await fetch(`${baseUrl}${pathName}`, {
+    ...init,
+    headers: {
+      Authorization: apiKey,
+      ...(init.headers || {}),
+    },
+  });
+
+  const text = await response.text();
+  const payload = text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    const error = new Error(payload?.error || payload?.message || `Postiz request failed with ${response.status}.`);
+    (error as any).status = response.status;
+    throw error;
+  }
+  return payload;
+};
+
+const getPostizSettings = (identifier: string, title: string, platform?: string) => {
+  const settings: Record<string, any> = { __type: identifier };
+
+  if (identifier === 'instagram' || identifier === 'instagram-standalone') {
+    settings.post_type = platform === 'instagram-feed' || platform === 'facebook-feed' ? 'post' : 'reel';
+  }
+
+  if (identifier === 'youtube') {
+    settings.title = title || 'Wiggly ad';
+    settings.type = platform === 'youtube' ? 'video' : 'short';
+    settings.selfDeclaredMadeForKids = false;
+    settings.tags = [];
+  }
+
+  if (identifier === 'tiktok') {
+    settings.privacy_level = 'PUBLIC_TO_EVERYONE';
+    settings.duet = false;
+    settings.stitch = false;
+    settings.comment = true;
+    settings.autoAddMusic = false;
+    settings.brand_content_toggle = false;
+    settings.brand_organic_toggle = false;
+    settings.content_posting_method = 'DIRECT_POST';
+  }
+
+  return settings;
+};
+
 const remotionAssetsRoot = path.join(process.cwd(), 'tmp', 'remotion-assets');
 app.use('/api/remotion-assets', express.static(remotionAssetsRoot));
+
+app.post('/api/postiz/integrations', async (_req, res) => {
+  try {
+    const integrations = await postizRequest('/integrations');
+    res.json({ integrations: Array.isArray(integrations) ? integrations : [] });
+  } catch (error: any) {
+    console.error('Postiz integrations error:', error);
+    res.status(error.status || 500).json({ error: error.message || 'Could not load Postiz integrations.' });
+  }
+});
+
+app.post('/api/postiz/upload', expensiveApiLimiter, uploadPostiz.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No MP4 file provided.' });
+    }
+
+    const formData = new FormData();
+    formData.append('file', new Blob([req.file.buffer as any], { type: req.file.mimetype || 'video/mp4' }), req.file.originalname || 'wiggly-ad.mp4');
+    const upload = await postizRequest('/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    res.json({ upload });
+  } catch (error: any) {
+    console.error('Postiz upload error:', error);
+    res.status(error.status || 500).json({ error: error.message || 'Could not upload MP4 to Postiz.' });
+  }
+});
+
+app.post('/api/postiz/create-draft', expensiveApiLimiter, async (req, res) => {
+  try {
+    const { integrationId, integrationIdentifier, content, media, title, platform } = req.body || {};
+    if (!integrationId || !integrationIdentifier) {
+      return res.status(400).json({ error: 'Choose a Postiz channel before creating a draft.' });
+    }
+    if (!media?.id || !media?.path) {
+      return res.status(400).json({ error: 'Upload the MP4 before creating a Postiz draft.' });
+    }
+
+    const draftPayload = {
+      type: 'draft',
+      date: new Date().toISOString(),
+      shortLink: false,
+      tags: [],
+      posts: [
+        {
+          integration: { id: String(integrationId) },
+          value: [
+            {
+              content: String(content || '').trim() || 'Created with Wiggly.',
+              image: [
+                {
+                  id: String(media.id),
+                  path: String(media.path),
+                },
+              ],
+            },
+          ],
+          settings: getPostizSettings(String(integrationIdentifier), String(title || 'Wiggly ad'), String(platform || '')),
+        },
+      ],
+    };
+
+    const draft = await postizRequest('/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(draftPayload),
+    });
+
+    res.json({ draft, appUrl: getPostizConfig().appUrl });
+  } catch (error: any) {
+    console.error('Postiz draft error:', error);
+    res.status(error.status || 500).json({ error: error.message || 'Could not create Postiz draft.' });
+  }
+});
 
 let remotionBundlePromise: Promise<string> | null = null;
 const getRemotionBundle = () => {
@@ -128,8 +283,12 @@ const getRemotionBundle = () => {
   return remotionBundlePromise;
 };
 
-const replaceMediaUrl = (snapshot: ExportSnapshot, field: string, url: string) => {
-  if (field === 'audio') snapshot.settings.audioUrl = url;
+const replaceMediaUrl = (snapshot: RenderSnapshot, field: string, url: string) => {
+  if (field === 'audio') {
+    snapshot.settings.audioUrl = url;
+    return;
+  }
+  if (isPhoneCallSnapshot(snapshot)) return;
   if (field === 'introImage') snapshot.settings.introImage = url;
   if (field === 'bgMedia' && snapshot.settings.bgMedia) snapshot.settings.bgMedia.url = url;
   if (field.startsWith('elementImage:')) {
@@ -137,6 +296,42 @@ const replaceMediaUrl = (snapshot: ExportSnapshot, field: string, url: string) =
     const element = snapshot.elements.find(candidate => candidate.id === id);
     if (element) element.imageUrl = url;
   }
+};
+
+const createRingToneWav = async (outputPath: string, durationSeconds: number) => {
+  const sampleRate = 44100;
+  const channelCount = 1;
+  const bytesPerSample = 2;
+  const sampleCount = Math.max(1, Math.ceil(durationSeconds * sampleRate));
+  const dataSize = sampleCount * channelCount * bytesPerSample;
+  const buffer = Buffer.alloc(44 + dataSize);
+
+  buffer.write('RIFF', 0);
+  buffer.writeUInt32LE(36 + dataSize, 4);
+  buffer.write('WAVE', 8);
+  buffer.write('fmt ', 12);
+  buffer.writeUInt32LE(16, 16);
+  buffer.writeUInt16LE(1, 20);
+  buffer.writeUInt16LE(channelCount, 22);
+  buffer.writeUInt32LE(sampleRate, 24);
+  buffer.writeUInt32LE(sampleRate * channelCount * bytesPerSample, 28);
+  buffer.writeUInt16LE(channelCount * bytesPerSample, 32);
+  buffer.writeUInt16LE(16, 34);
+  buffer.write('data', 36);
+  buffer.writeUInt32LE(dataSize, 40);
+
+  for (let index = 0; index < sampleCount; index += 1) {
+    const time = index / sampleRate;
+    const cycleTime = time % 6;
+    const toneOn = cycleTime < 2;
+    const fade = toneOn ? Math.min(1, cycleTime / 0.015, (2 - cycleTime) / 0.015) : 0;
+    const sample = toneOn
+      ? (Math.sin(2 * Math.PI * 440 * time) + Math.sin(2 * Math.PI * 480 * time)) * 0.14 * Math.max(0, fade)
+      : 0;
+    buffer.writeInt16LE(Math.max(-1, Math.min(1, sample)) * 32767, 44 + index * 2);
+  }
+
+  await fs.promises.writeFile(outputPath, buffer);
 };
 
 const getImageMimeType = (filePathOrUrl: string) => {
@@ -310,7 +505,7 @@ app.post('/api/render-remotion', expensiveApiLimiter, uploadRemotion.any(), asyn
       return res.status(400).json({ error: 'Missing render snapshot.' });
     }
 
-    const snapshot = JSON.parse(snapshotRaw) as ExportSnapshot & { durationSeconds?: number };
+    const snapshot = JSON.parse(snapshotRaw) as RenderSnapshot & { durationSeconds?: number };
     const files = Array.isArray(req.files) ? req.files as Express.Multer.File[] : [];
     let audioAnalysisInput: string | null = null;
 
@@ -327,13 +522,25 @@ app.post('/api/render-remotion', expensiveApiLimiter, uploadRemotion.any(), asyn
       replaceMediaUrl(snapshot, file.fieldname, remotionAssetUrl);
     }
 
-    await inlineIntroImageForFrameZero(snapshot);
+    if (!isPhoneCallSnapshot(snapshot)) {
+      await inlineIntroImageForFrameZero(snapshot);
+    }
 
-    const dimensions = getExportDimensions(snapshot.settings.platform);
-    const durationCap = snapshot.settings.renderDurationCap === 'full' ? 180 : Number(snapshot.settings.renderDurationCap || 30);
+    if (isPhoneCallSnapshot(snapshot)) {
+      if (snapshot.settings.ringDurationSeconds > 0) {
+        const ringPath = path.join(assetDir, 'ring-tone.wav');
+        await createRingToneWav(ringPath, snapshot.settings.ringDurationSeconds);
+        snapshot.settings.ringAudioUrl = `http://127.0.0.1:${port}/api/remotion-assets/${renderId}/ring-tone.wav`;
+      } else {
+        snapshot.settings.ringAudioUrl = null;
+      }
+    }
+
+    const dimensions = isPhoneCallSnapshot(snapshot) ? PHONE_CALL_EXPORT_DIMENSIONS : getExportDimensions(snapshot.settings.platform);
+    const durationCap = isPhoneCallSnapshot(snapshot) ? 180 : snapshot.settings.renderDurationCap === 'full' ? 180 : Number(snapshot.settings.renderDurationCap || 30);
     const durationSeconds = Math.max(1, Math.min(Number(snapshot.durationSeconds || 30), durationCap));
-    const visualizerElement = snapshot.elements.find(element => element.type === 'visualizer');
-    const audioAnalysis = await extractAudioAnalysis(audioAnalysisInput || snapshot.settings.audioUrl, durationSeconds, visualizerElement?.visualizerSmoothing ?? 0.8);
+    const visualizerElement = isPhoneCallSnapshot(snapshot) ? null : snapshot.elements.find(element => element.type === 'visualizer');
+    const audioAnalysis = isPhoneCallSnapshot(snapshot) ? null : await extractAudioAnalysis(audioAnalysisInput || snapshot.settings.audioUrl, durationSeconds, visualizerElement?.visualizerSmoothing ?? 0.8);
     const inputProps = {
       snapshot,
       width: dimensions.width,
@@ -345,7 +552,8 @@ app.post('/api/render-remotion', expensiveApiLimiter, uploadRemotion.any(), asyn
 
     const serveUrl = await getRemotionBundle();
     const compositions = await getCompositions(serveUrl, { inputProps });
-    const composition = compositions.find(candidate => candidate.id === 'AdRender');
+    const compositionId = isPhoneCallSnapshot(snapshot) ? 'PhoneCallRender' : 'AdRender';
+    const composition = compositions.find(candidate => candidate.id === compositionId);
     if (!composition) {
       throw new Error('Remotion composition not found.');
     }
@@ -469,10 +677,24 @@ const parseJsonResponse = (text: string) => {
 };
 
 const gibberishPattern = /\b(?:[bcdfghjklmnpqrstvwxyz]{4,}|(?:asdf|sdfg|qwer|zxcv|hjkl|lorem|ipsum)[a-z]*)\b/i;
+const forcedNegationPattern = /\b(?:not this|not that|not because|not more|not another|it'?s not|this isn'?t|don'?t just|stop (?:trying|doing|using|making))\b/i;
+const staccatoPattern = /(?:^|[.!?]\s+)(?:[A-Z][a-z]{2,12}\. ){2,}/;
+
+const cleanHumanDialogueText = (value: unknown) => String(value || '')
+  .replace(/[—–]/g, ', ')
+  .replace(/\s+/g, ' ')
+  .trim();
 
 const hasGarbageText = (value: unknown) => {
   const text = String(value || '').trim();
-  return !text || gibberishPattern.test(text) || /\bwiggly\b/i.test(text);
+  return (
+    !text ||
+    gibberishPattern.test(text) ||
+    /\bwiggly\b/i.test(text) ||
+    /[—–]/.test(text) ||
+    forcedNegationPattern.test(text) ||
+    staccatoPattern.test(text)
+  );
 };
 
 const normalizeDialogueScripts = (payload: any, count: number) => {
@@ -485,7 +707,7 @@ const normalizeDialogueScripts = (payload: any, count: number) => {
             .map((line: any, index: number) => ({
               speaker: String(line?.speaker || (index % 2 === 0 ? 'Ava' : 'Sam')).trim(),
               tone: String(line?.tone || 'natural').trim(),
-              text: String(line?.text || '').trim(),
+              text: cleanHumanDialogueText(line?.text),
             }))
             .filter((line: any) => {
               const words = line.text.split(/\s+/).filter(Boolean);
@@ -494,8 +716,8 @@ const normalizeDialogueScripts = (payload: any, count: number) => {
         : [];
 
       return {
-        title: String(script?.title || 'Conversation option').trim(),
-        angle: String(script?.angle || 'Problem and solution').trim(),
+        title: cleanHumanDialogueText(script?.title || 'Conversation option'),
+        angle: cleanHumanDialogueText(script?.angle || 'Problem and solution'),
         lines,
       };
     })
@@ -532,7 +754,7 @@ const fallbackDialogueScripts = (count: number) => {
       angle: 'The practice is already paying for leads it never answers.',
       lines: [
         { speaker: 'Ava', tone: 'concerned', text: 'We missed three new patient calls during lunch again.' },
-        { speaker: 'Sam', tone: 'calm', text: 'That is exactly why the AI front desk answers when the team cannot.' },
+        { speaker: 'Sam', tone: 'calm', text: 'The AI front desk can answer when the team gets busy.' },
         { speaker: 'Ava', tone: 'curious', text: 'So it can book the patient before they call another office?' },
         { speaker: 'Sam', tone: 'assured', text: 'Yes. It answers, follows up, and keeps the appointment moving.' },
       ],
@@ -542,17 +764,17 @@ const fallbackDialogueScripts = (count: number) => {
       angle: 'Patients call outside normal hours and still expect a response.',
       lines: [
         { speaker: 'Ava', tone: 'frustrated', text: 'The best leads keep calling after we close.' },
-        { speaker: 'Sam', tone: 'practical', text: 'Then stop making business hours the only time you can book.' },
+        { speaker: 'Sam', tone: 'practical', text: 'The AI front desk can still answer and book them.' },
         { speaker: 'Ava', tone: 'thoughtful', text: 'An AI receptionist could answer those calls at night?' },
         { speaker: 'Sam', tone: 'calm', text: 'And follow up automatically so the patient does not disappear.' },
       ],
     },
     {
       title: 'No More Hiring',
-      angle: 'More staff is not always the cleanest fix.',
+      angle: 'AI covers the front desk gaps without adding payroll.',
       lines: [
         { speaker: 'Ava', tone: 'tired', text: 'I do not want to hire another front desk person.' },
-        { speaker: 'Sam', tone: 'steady', text: 'Then cover the gaps instead of adding another payroll problem.' },
+        { speaker: 'Sam', tone: 'steady', text: 'The AI can cover the gaps while your team stays focused.' },
         { speaker: 'Ava', tone: 'interested', text: 'So the AI handles missed calls and follow up?' },
         { speaker: 'Sam', tone: 'confident', text: 'Exactly. Your team stays focused while the calls still get answered.' },
       ],
@@ -751,6 +973,10 @@ The ad should feel like a real-life overheard conversation, not a sales pitch.
 One person has the problem. The other casually reveals the solution.
 Keep each script 14-26 seconds when read aloud.
 No hype. No buzzwords. No testimonials. No fake stats.
+No em dashes or en dashes. Use commas or periods only.
+No forced negation structure like "not this, but that", "it is not X, it is Y", or "stop doing X".
+No staccato sentence stacking. Do not write choppy fragments like "Missed calls. Lost patients. Empty chairs."
+Use normal conversational sentences that sound like people talking naturally.
 Do not include placeholder text, keyboard-mash text, filler words, lorem ipsum, or nonsensical tokens.
 Every line must be fluent English that could be read aloud in the ad.
 Never mention Wiggly. Wiggly is the internal builder, not the product being advertised.
@@ -777,7 +1003,7 @@ Return ONLY valid JSON:
         model: 'gemini-3-flash-preview',
         contents: attempt === 0
           ? prompt
-          : `${prompt}\n\nYour previous output failed quality checks. Return clean, fluent English only. Absolutely no placeholder or keyboard-mash text.`,
+          : `${prompt}\n\nYour previous output failed quality checks. Return clean, fluent English only. Absolutely no em dashes, forced negation, staccato fragments, placeholder text, or keyboard-mash text.`,
         config: {
           responseMimeType: 'application/json',
         },
@@ -809,7 +1035,11 @@ app.post('/api/generate-dialogue-audio', expensiveApiLimiter, async (req, res) =
     const ai = new GoogleGenAI({ apiKey: key });
     const speakers = Array.from(new Set(script.lines.map((line: any) => String(line.speaker || 'Speaker').trim()).filter(Boolean))).slice(0, 2) as string[];
     while (speakers.length < 2) speakers.push(`Speaker ${speakers.length + 1}`);
-    const ttsText = `Read this as a natural, subtle, two-person conversation for a Meta ad. Keep it conversational and not salesy.\n\n${script.lines.map((line: any) => `${line.speaker}: [${line.tone || 'natural'}] ${line.text}`).join('\n')}`;
+    const cleanedLines = script.lines.map((line: any) => ({
+      ...line,
+      text: cleanHumanDialogueText(line.text),
+    }));
+    const ttsText = `Read this as a natural, subtle, two-person conversation for a Meta ad. Keep it conversational and not salesy. Do not add em dashes, choppy dramatic pauses, forced contrast phrasing, or robotic cadence.\n\n${cleanedLines.map((line: any) => `${line.speaker}: [${line.tone || 'natural'}] ${line.text}`).join('\n')}`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.1-flash-tts-preview',

@@ -5,6 +5,14 @@ import { useEditorStore, type AdElement } from '../store';
 const inputClass = 'h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10';
 const labelClass = 'text-[11px] font-semibold uppercase tracking-wide text-slate-500';
 
+const getSelectedItemName = (element: AdElement) => {
+  if (element.componentRole === 'cta') return 'button';
+  if (element.componentRole === 'captions') return 'captions';
+  if (element.componentRole) return element.componentRole.replace('-', ' ');
+  if (element.type === 'visualizer') return 'moving bars';
+  return element.type;
+};
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block space-y-1.5">
@@ -244,7 +252,7 @@ export const PropertiesPanel: React.FC = () => {
     return (
       <div className="flex h-[220px] flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
         <span className="text-sm font-bold text-slate-700">Multiple elements selected</span>
-        <span className="text-xs leading-relaxed text-slate-500">Move or resize them together. Select one element to edit its properties.</span>
+        <span className="text-xs leading-relaxed text-slate-500">Move or resize them together. Select one item to change its text, color, or size.</span>
       </div>
     );
   }
@@ -258,8 +266,8 @@ export const PropertiesPanel: React.FC = () => {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Properties</h2>
-        <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold capitalize text-slate-500">{selectedEl.componentRole || selectedEl.type}</span>
+        <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Edit Selected</h2>
+        <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold capitalize text-slate-500">{getSelectedItemName(selectedEl)}</span>
       </div>
 
       <div className="space-y-4">
@@ -276,10 +284,10 @@ export const PropertiesPanel: React.FC = () => {
               />
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Font size">
+              <Field label="Text size">
                 <input type="number" value={selectedEl.fontSize || 16} onChange={(e) => updateElement(selectedEl.id, { fontSize: parseInt(e.target.value) || 16 })} className={inputClass} />
               </Field>
-              <Field label="Weight">
+              <Field label="Thickness">
                 <select value={selectedEl.fontWeight || 'normal'} onChange={(e) => updateElement(selectedEl.id, { fontWeight: e.target.value })} className={inputClass}>
                   <option value="normal">Normal</option>
                   <option value="500">Medium</option>
@@ -311,7 +319,7 @@ export const PropertiesPanel: React.FC = () => {
             )}
 
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Align">
+              <Field label="Text position">
                 <div className="grid h-9 grid-cols-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
                   {[
                     { value: 'left', icon: AlignLeft },
@@ -333,7 +341,7 @@ export const PropertiesPanel: React.FC = () => {
                 <ColorControl value={selectedEl.color || '#000000'} onChange={(value) => updateElement(selectedEl.id, { color: value })} />
               </Field>
             </div>
-            <Field label="Line height">
+            <Field label="Line spacing">
               <input type="number" step="0.05" value={selectedEl.lineHeight || 1.2} onChange={(e) => updateElement(selectedEl.id, { lineHeight: parseFloat(e.target.value) || 1.2 })} className={inputClass} />
             </Field>
           </Section>
@@ -348,13 +356,13 @@ export const PropertiesPanel: React.FC = () => {
               <Field label="Text color">
                 <ColorControl value={selectedEl.color || '#000000'} onChange={(value) => updateElement(selectedEl.id, { color: value })} />
               </Field>
-              <Field label="Fill">
+              <Field label="Button color">
                 <ColorControl value={selectedEl.backgroundColor || '#4f46e5'} onChange={(value) => updateElement(selectedEl.id, { backgroundColor: value })} />
               </Field>
-              <Field label="Radius">
+              <Field label="Round corners">
                 <input type="number" value={selectedEl.borderRadius || 0} onChange={(e) => updateElement(selectedEl.id, { borderRadius: parseInt(e.target.value) || 0 })} className={inputClass} />
               </Field>
-              <Field label="Font size">
+              <Field label="Text size">
                 <input type="number" value={selectedEl.fontSize || 16} onChange={(e) => updateElement(selectedEl.id, { fontSize: parseInt(e.target.value) || 16 })} className={inputClass} />
               </Field>
             </div>
@@ -362,19 +370,19 @@ export const PropertiesPanel: React.FC = () => {
         )}
 
         {selectedEl.type === 'visualizer' && (
-          <Section title="Visualizer">
-            <Field label="Style">
+          <Section title="Moving Bars">
+            <Field label="Look">
               <select value={visualizerType} onChange={(e) => updateElement(selectedEl.id, { visualizerType: e.target.value as any })} className={inputClass}>
                 <option value="bars-bottom">Bars, bottom</option>
                 <option value="bars-center">Bars, center</option>
                 <option value="waveform-strip">Waveform strip</option>
-                <option value="ai-orb">AI orb</option>
+                <option value="ai-orb">Glowing orb</option>
                 <option value="siri-wave">Siri wave</option>
                 <option value="ai-blob">3D blob</option>
-                <option value="elevenlabs-v1">11Labs orb, blue</option>
-                <option value="elevenlabs-v2">11Labs orb, peach</option>
-                <option value="elevenlabs-v3">11Labs orb, silver</option>
-                <option value="chatgpt-orb">ChatGPT aura</option>
+                <option value="elevenlabs-v1">Blue orb</option>
+                <option value="elevenlabs-v2">Peach orb</option>
+                <option value="elevenlabs-v3">Silver orb</option>
+                <option value="chatgpt-orb">Soft aura</option>
               </select>
             </Field>
             <Field label="Color">
@@ -394,7 +402,7 @@ export const PropertiesPanel: React.FC = () => {
               onChange={(value) => updateElement(selectedEl.id, { visualizerHeight: value })}
             />
             <PresetRow
-              label="Baseline"
+              label="Minimum height"
               value={nearestPresetValue(selectedEl.visualizerBaseline, BASELINE_PRESETS, 4)}
               options={BASELINE_PRESETS}
               onChange={(value) => updateElement(selectedEl.id, { visualizerBaseline: value })}
@@ -402,14 +410,14 @@ export const PropertiesPanel: React.FC = () => {
             {showBarControls && (
               <>
                 <PresetRow
-                  label="Detail"
+                  label="Number of bars"
                   value={nearestPresetValue(selectedEl.barCount, detailPresets, detailFallback)}
                   options={detailPresets}
                   onChange={(value) => updateElement(selectedEl.id, { barCount: value })}
                 />
                 <div className="grid grid-cols-2 gap-3">
-                  <ToggleRow label="Symmetry" checked={selectedEl.visualizerMirror || false} onChange={(checked) => updateElement(selectedEl.id, { visualizerMirror: checked })} />
-                  <ToggleRow label="Dialogue mode" checked={selectedEl.visualizerSplitSpeakers || false} onChange={(checked) => updateElement(selectedEl.id, { visualizerSplitSpeakers: checked })} />
+                  <ToggleRow label="Mirror sides" checked={selectedEl.visualizerMirror || false} onChange={(checked) => updateElement(selectedEl.id, { visualizerMirror: checked })} />
+                  <ToggleRow label="Two speakers" checked={selectedEl.visualizerSplitSpeakers || false} onChange={(checked) => updateElement(selectedEl.id, { visualizerSplitSpeakers: checked })} />
                 </div>
               </>
             )}
@@ -440,7 +448,7 @@ export const PropertiesPanel: React.FC = () => {
               step={0.05}
               onChange={(value) => updateElement(selectedEl.id, { imageShadowOpacity: value })}
             />
-            <Field label="Radius">
+            <Field label="Round corners">
               <input type="number" value={selectedEl.borderRadius || 0} onChange={(e) => updateElement(selectedEl.id, { borderRadius: parseInt(e.target.value) || 0 })} className={inputClass} />
             </Field>
           </Section>

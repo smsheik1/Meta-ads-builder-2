@@ -23,7 +23,28 @@ export type ExportSnapshot = {
   };
 };
 
+export type PhoneCallSnapshot = {
+  kind: 'phone-call';
+  id: string;
+  name: string;
+  durationSeconds: number;
+  settings: {
+    phoneNumber: string;
+    audioUrl: string | null;
+    ringAudioUrl?: string | null;
+    ringDurationSeconds: 0 | 1 | 2 | 3;
+    backgroundColor: string;
+  };
+};
+
+export type RenderSnapshot = ExportSnapshot | PhoneCallSnapshot;
+
+export const isPhoneCallSnapshot = (snapshot: RenderSnapshot | unknown): snapshot is PhoneCallSnapshot => (
+  Boolean(snapshot && typeof snapshot === 'object' && (snapshot as PhoneCallSnapshot).kind === 'phone-call')
+);
+
 export const EXPORT_FPS = 60;
+export const PHONE_CALL_EXPORT_DIMENSIONS = { width: 1080, height: 1920 };
 
 export const getEditorDimensions = (platform: PlatformType) => {
   if (platform === 'youtube') {
