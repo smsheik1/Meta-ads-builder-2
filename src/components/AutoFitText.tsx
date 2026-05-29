@@ -48,7 +48,9 @@ export function AutoFitText({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const wrapLines = (copy: string, size: number, width: number, font: string) => {
+    const copy = plainText ?? String(children ?? '');
+
+    const wrapLines = (size: number, width: number, font: string) => {
       ctx.font = font;
       const lines: string[] = [];
       copy.split('\n').forEach((explicitLine) => {
@@ -72,7 +74,7 @@ export function AutoFitText({
       });
 
       const widest = lines.reduce((max, line) => Math.max(max, ctx.measureText(line).width), 0);
-      return { widest, height: lines.length * size * lineHeight };
+      return { lines, widest };
     };
 
     const fitText = () => {
@@ -84,15 +86,28 @@ export function AutoFitText({
       const fontFamily = styles.fontFamily || 'Inter, sans-serif';
       const fontWeight = styles.fontWeight || '700';
       const fontStyle = styles.fontStyle || 'normal';
+      const originalWhiteSpace = text.style.whiteSpace;
+      const originalWidth = text.style.width;
+      const originalFontSize = text.style.fontSize;
+      const originalLineHeight = text.style.lineHeight;
       let low = minFontSize;
       let high = maxFontSize;
       let best = low;
 
+      text.style.whiteSpace = 'normal';
+      text.style.width = `${Math.max(1, width)}px`;
+
       while (low <= high) {
         const mid = Math.floor((low + high) / 2);
-        const measurement = wrapLines(plainText ?? String(children ?? ''), mid, width, `${fontStyle} ${fontWeight} ${mid}px ${fontFamily}`);
+        const measurement = wrapLines(mid, width, `${fontStyle} ${fontWeight} ${mid}px ${fontFamily}`);
 
-        if (measurement.widest <= width && measurement.height <= height) {
+        text.style.fontSize = `${mid}px`;
+        text.style.lineHeight = String(lineHeight);
+        const renderedHeight = text.scrollHeight;
+        const renderedWidth = text.scrollWidth;
+        const verticalSafety = Math.max(6, Math.ceil(mid * 0.12));
+
+        if (measurement.widest <= width && renderedWidth <= width && renderedHeight <= height - verticalSafety) {
           best = mid;
           low = mid + 1;
         } else {
@@ -100,6 +115,10 @@ export function AutoFitText({
         }
       }
 
+      text.style.whiteSpace = originalWhiteSpace;
+      text.style.width = originalWidth;
+      text.style.fontSize = originalFontSize;
+      text.style.lineHeight = originalLineHeight;
       setFontSize(Math.max(minFontSize, best));
     };
 

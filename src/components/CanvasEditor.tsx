@@ -12,6 +12,7 @@ import { isFeedPlatform, isVerticalPlatform, type PlatformType } from './Platfor
 import { getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getPlatformElementFrame } from '../lib/export-snapshot';
 import { getRandomSeededHook } from '../lib/headline-pool';
 import { getRandomAdStyleArchetype, pickRandom, type AdStyleArchetype } from '../lib/style-archetypes';
+import { emitTutorialEvent } from './InteractiveTutorial';
 
 const isEditableEventTarget = (target: EventTarget | null) => {
   if (!(target instanceof HTMLElement)) return false;
@@ -206,6 +207,9 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         const state = useEditorStore.getState();
         const selectedSet = new Set(state.selectedIds);
         const shouldRerollEverything = selectedSet.size === 0;
+        const selectedRole = shouldRerollEverything
+          ? undefined
+          : state.elements.find(element => selectedSet.has(element.id))?.componentRole;
         const currentArchetypeId = state.elements.find(element => element.styleArchetypeId)?.styleArchetypeId;
         const archetype = getRandomAdStyleArchetype(currentArchetypeId);
         const nextElements = state.elements.map((element) => {
@@ -217,6 +221,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         }
         state.setElements(nextElements);
         state.commitHistory();
+        emitTutorialEvent({ type: 'space-reroll', role: selectedRole });
         return;
       }
       
@@ -602,6 +607,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       onContextMenu={(e) => {
         e.preventDefault();
       }}
+      data-tour="canvas"
       onClick={(e) => {
         if (e.detail === 3 && e.target === e.currentTarget) {
           e.preventDefault();
@@ -902,6 +908,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
               } else if (!selectedIds.includes(el.id)) {
                  selectElement(el.id, false);
               }
+              emitTutorialEvent({ type: 'element-selected', role: el.componentRole });
             }}
             onDoubleClick={(e) => {
                e.stopPropagation();
@@ -918,6 +925,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
               transform: `rotate(${el.rotation || 0}deg)`,
               zIndex: el.zIndex 
             }}
+            data-tour={el.componentRole}
           >
             <button
               type="button"
@@ -928,6 +936,9 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                 event.stopPropagation();
                 updateElement(el.id, { locked: !el.locked });
                 commitHistory();
+                if (!el.locked) {
+                  emitTutorialEvent({ type: 'element-locked', role: el.componentRole });
+                }
               }}
               onMouseDown={(event) => event.stopPropagation()}
               onDoubleClick={(event) => event.stopPropagation()}

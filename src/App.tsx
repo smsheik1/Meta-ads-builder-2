@@ -14,6 +14,7 @@ import { getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions, g
 import { PhoneCallSimulator } from './components/PhoneCallSimulator';
 import { formatUsPhoneNumber } from './lib/phone-call';
 import { FIXED_AD_BACKGROUND_COLOR } from './lib/style-archetypes';
+import { InteractiveTutorial, WIGGLY_TUTORIAL_SEEN_KEY, emitTutorialEvent } from './components/InteractiveTutorial';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -241,6 +242,7 @@ type SavedTemplate = {
     introImageAspect?: number | null;
     audioUrl: string | null;
     audioFileName: string;
+    audioAssetId?: string | null;
   };
 };
 
@@ -393,6 +395,7 @@ export default function App() {
   const [introCropOpen, setIntroCropOpen] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(DEFAULT_AUDIO_URL);
   const [audioFileName, setAudioFileName] = useState<string>(DEFAULT_AUDIO_NAME);
+  const [currentAudioAssetId, setCurrentAudioAssetId] = useState<string | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('5551234567');
   const [phoneRingDuration, setPhoneRingDuration] = useState<RingDuration>(0);
 
@@ -445,6 +448,7 @@ export default function App() {
   const [isGeneratingDialogueScripts, setIsGeneratingDialogueScripts] = useState(false);
   const [isGeneratingDialogueAudio, setIsGeneratingDialogueAudio] = useState(false);
   const [generatedDialogueAudioUrl, setGeneratedDialogueAudioUrl] = useState<string | null>(null);
+  const [tutorialReplayKey, setTutorialReplayKey] = useState(0);
 
   const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, setElements, deselectAll, commitHistory, setBusinessContext, elements } = useEditorStore();
   const hasComponent = (role: NonNullable<typeof elements[number]['componentRole']>) => elements.some((element) => element.componentRole === role);
@@ -457,6 +461,33 @@ export default function App() {
   const duplicateOffset = (count: number) => Math.min(count * 12, 48);
 
   const [isTranscribing, setIsTranscribing] = useState(false);
+
+  const replayGuidedJourney = () => {
+    localStorage.removeItem(WIGGLY_TUTORIAL_SEEN_KEY);
+    setTutorialReplayKey((key) => key + 1);
+  };
+
+  const downloadCurrentAudio = async () => {
+    if (!audioUrl) return;
+    const response = await fetch(audioUrl);
+    const blob = await response.blob();
+    const extension = blob.type.includes('mpeg')
+      ? 'mp3'
+      : blob.type.includes('wav')
+        ? 'wav'
+        : blob.type.includes('mp4') || blob.type.includes('m4a')
+          ? 'm4a'
+          : 'mp3';
+    const safeName = (audioFileName || 'wiggly-audio').replace(/\.[a-z0-9]+$/i, '').replace(/[^a-z0-9-_]+/gi, '-').replace(/^-+|-+$/g, '') || 'wiggly-audio';
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${safeName}.${extension}`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
 
   const switchCreativeMode = (nextMode: CreativeMode) => {
     setCreativeMode(nextMode);
@@ -585,6 +616,7 @@ export default function App() {
         introImageAspect,
         audioUrl,
         audioFileName,
+        audioAssetId: currentAudioAssetId,
       },
     };
   };
@@ -634,6 +666,7 @@ export default function App() {
     setIntroImageAspect(hydratedTemplate.settings.introImageAspect ?? null);
     setAudioUrl(hydratedTemplate.settings.audioUrl);
     setAudioFileName(hydratedTemplate.settings.audioFileName);
+    setCurrentAudioAssetId(hydratedTemplate.settings.audioAssetId ?? null);
     requestAnimationFrame(() => commitHistory());
   };
 
@@ -1189,7 +1222,7 @@ export default function App() {
     setHistoryItems(nextItems as AdHistoryItem[]);
   };
 
-  const rememberAudioBlob = async (name: string, blob: Blob) => {
+  const rememberAudioBlob = async (name: string, blob: Blob, source: StoredAudioItem['source'] = 'user-upload') => {
     try {
       const item: StoredAudioItem = {
         id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `audio-${Date.now()}`,
@@ -1197,11 +1230,18 @@ export default function App() {
         createdAt: Date.now(),
         blob,
         mimeType: blob.type || 'audio/mpeg',
+        kind: source === 'voice-wizard' ? 'generated' : 'uploaded',
+        source,
+        status: 'ready',
       };
       const nextItems = await saveAudioItem(item);
       setStoredAudioItems(nextItems);
+      const savedItem = nextItems[0] || null;
+      setCurrentAudioAssetId(savedItem?.id ?? null);
+      return savedItem;
     } catch (error) {
       console.error('Failed to save audio item:', error);
+      return null;
     }
   };
 
@@ -1210,6 +1250,7 @@ export default function App() {
     const nextUrl = item.stored ? URL.createObjectURL(item.stored.blob) : item.url;
     setAudioUrl(nextUrl);
     setAudioFileName(item.name);
+    setCurrentAudioAssetId(item.stored?.id ?? null);
   };
 
   const deleteStoredAudio = async (audioId: string) => {
@@ -1246,7 +1287,7 @@ export default function App() {
       setGeneratedDialogueAudioUrl(null);
       setAudioUrl(url);
       setAudioFileName(file.name);
-      await rememberAudioBlob(file.name, file);
+      await rememberAudioBlob(file.name, file, 'user-upload');
     }
   };
 
@@ -1473,7 +1514,7 @@ export default function App() {
       setAudioUrl(url);
       const filename = data.filename || `${voiceoverScript.title || 'conversation-ad'}.wav`;
       setAudioFileName(filename);
-      await rememberAudioBlob(filename, blob);
+      await rememberAudioBlob(filename, blob, 'voice-wizard');
       if (captionCount === 0) handleAddCaptions();
       if (visualizerCount === 0) handleAddVisualizer();
       setConversationWizardOpen(false);
@@ -1770,6 +1811,9 @@ export default function App() {
     if (!audioUrl) {
       alert(creativeMode === 'phone-call' ? 'Upload voicemail audio first.' : 'Please upload an audio file first.');
       return;
+    }
+    if (!playing) {
+      emitTutorialEvent({ type: 'play-clicked' });
     }
     setPlaying(!playing);
   };
@@ -3470,13 +3514,23 @@ export default function App() {
                       </div>
                     </div>
                     {audioUrl && (
+                      <>
+                      <button
+                        type="button"
+                        onClick={downloadCurrentAudio}
+                        title="Download audio"
+                        className="px-2 border border-slate-200 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white transition-colors bg-white flex items-center justify-center shrink-0"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
                       <button 
-                        onClick={() => { setAudioUrl(null); setAudioFileName(''); setGeneratedDialogueAudioUrl(null); }}
+                        onClick={() => { setAudioUrl(null); setAudioFileName(''); setGeneratedDialogueAudioUrl(null); setCurrentAudioAssetId(null); }}
                         title="Remove Audio"
                         className="px-2 border border-slate-200 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors bg-white flex items-center justify-center shrink-0"
                       >
                         <X className="w-4 h-4" />
                       </button>
+                      </>
                     )}
                   </div>
 
@@ -3771,13 +3825,23 @@ export default function App() {
                           </div>
                         </div>
                         {audioUrl && (
+                          <>
                           <button
-                            onClick={() => { setAudioUrl(null); setAudioFileName(''); setGeneratedDialogueAudioUrl(null); }}
+                            type="button"
+                            onClick={downloadCurrentAudio}
+                            title="Download audio"
+                            className="flex shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-slate-500 transition-colors hover:bg-white hover:text-slate-900"
+                          >
+                            <Download className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => { setAudioUrl(null); setAudioFileName(''); setGeneratedDialogueAudioUrl(null); setCurrentAudioAssetId(null); }}
                             title="Remove voicemail audio"
                             className="flex shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-slate-400 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-500"
                           >
                             <X className="h-4 w-4" />
                           </button>
+                          </>
                         )}
                       </div>
 
@@ -3899,6 +3963,22 @@ export default function App() {
                 </button>
               </div>
             )}
+            <div className="wiggly-panel p-4">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <h2 className="wiggly-panel-title uppercase">Guided Journey</h2>
+                <span className="wiggly-panel-kicker">Test</span>
+              </div>
+              <p className="mb-3 text-xs font-semibold leading-5 text-slate-500">
+                Replay the first-time tutorial from the start.
+              </p>
+              <button
+                type="button"
+                onClick={replayGuidedJourney}
+                className="wiggly-secondary-action flex w-full items-center justify-center gap-2 px-3 py-2 text-sm font-semibold"
+              >
+                Replay Guided Journey
+              </button>
+            </div>
           </div>
 
           {/* Main Preview Area */}
@@ -3951,10 +4031,11 @@ export default function App() {
             <div className="wiggly-toolbar mt-4 flex flex-col items-center gap-2">
               <div className="flex flex-wrap justify-center gap-3">
                 <div className="flex flex-col items-center gap-2">
-                  <button 
-                    onClick={downloadSimulatedVideo}
-                    disabled={rendering}
-                    className={`wiggly-primary-action flex items-center gap-2 px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${exportLaunchAnimation ? 'translate-y-8 scale-90 opacity-0' : ''}`}
+                <button 
+                  onClick={downloadSimulatedVideo}
+                  disabled={rendering}
+                  data-tour="download-button"
+                  className={`wiggly-primary-action flex items-center gap-2 px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${exportLaunchAnimation ? 'translate-y-8 scale-90 opacity-0' : ''}`}
                    >
                     {rendering ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                     {rendering ? 'Making Video' : 'Download Video'}
@@ -3983,6 +4064,7 @@ export default function App() {
                 </div>
                 <button 
                   onClick={togglePlayback}
+                  data-tour="play-button"
                   className="wiggly-secondary-action flex items-center gap-2 self-start px-4 py-2 text-sm font-semibold"
                  >
                   {playing ? (
@@ -4938,7 +5020,8 @@ export default function App() {
               </div>
             </div>
           </div>
-        )}
-      </div>
-    );
-  }
+      )}
+      <InteractiveTutorial enabled={!showHomepage && creativeMode === 'visualizer'} replayToken={tutorialReplayKey} />
+    </div>
+  );
+}
