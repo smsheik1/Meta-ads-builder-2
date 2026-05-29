@@ -2,7 +2,7 @@ import React from 'react';
 import { AbsoluteFill, Audio, continueRender, delayRender, Img, OffthreadVideo, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { AdElement, Caption } from '../store';
 import type { ExportSnapshot } from '../lib/export-snapshot';
-import { getActiveCaption } from '../lib/export-snapshot';
+import { getActiveCaption, getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions, getPlatformElementFrame } from '../lib/export-snapshot';
 import { stripRichText } from '../lib/rich-text';
 
 const CAPTION_SPEAKER_COLORS: Record<number, string> = {
@@ -26,8 +26,6 @@ type RemotionAdProps = {
   audioBands?: number[][];
 };
 
-const editorScale = 3;
-
 const isFeedPlatform = (platform: ExportSnapshot['settings']['platform']) => (
   platform === 'facebook-feed' || platform === 'instagram-feed' || platform === 'feed'
 );
@@ -40,22 +38,28 @@ const mediaCoverStyle: React.CSSProperties = {
   objectFit: 'cover',
 };
 
-const getElementBox = (element: AdElement, platform: ExportSnapshot['settings']['platform'], exportHeight: number) => {
-  const canvasWidth = 360;
-  const canvasHeight = exportHeight / editorScale;
-  const rawWidth = Number(element.width) || 200;
-  const rawHeight = Number(element.height) || 50;
+const getElementBox = (element: AdElement, platform: ExportSnapshot['settings']['platform'], exportWidth: number) => {
+  const editorDimensions = getEditorDimensions(platform);
+  const editorScale = exportWidth / editorDimensions.width;
+  const canvasWidth = editorDimensions.width;
+  const canvasHeight = editorDimensions.height;
+  const frame = getPlatformElementFrame(element, platform);
+  const rawWidth = frame.width;
+  const rawHeight = frame.height;
+  const offsetX = getDefaultLayoutOffsetX(platform);
+  const scaleY = getDefaultLayoutScaleY(platform);
   const feedSafeSquareTop = isFeedPlatform(platform) ? Math.max(0, (canvasHeight - canvasWidth) / 2) : 0;
   const feedSafeSquareBottom = feedSafeSquareTop + canvasWidth;
   const y = isFeedPlatform(platform) && element.type === 'caption'
-    ? Math.min(element.y, feedSafeSquareBottom - rawHeight - 8)
-    : element.y;
+    ? Math.min(frame.y, feedSafeSquareBottom - rawHeight - 8)
+    : frame.y;
 
   return {
-    left: element.x * editorScale,
-    top: y * editorScale,
+    left: (frame.x + offsetX) * editorScale,
+    top: y * scaleY * editorScale,
     width: rawWidth * editorScale,
-    height: rawHeight * editorScale,
+    height: rawHeight * scaleY * editorScale,
+    scale: editorScale,
   };
 };
 
@@ -106,12 +110,12 @@ const wrapTextForBox = (text: string, fontSize: number, maxWidth: number, fontWe
 const getFittedTextLayout = (element: AdElement, box: ElementBox) => {
   const content = stripRichText(element.content || '');
   const lineHeight = element.lineHeight || 1.12;
-  const paddingX = 8 * editorScale;
-  const paddingY = 4 * editorScale;
+  const paddingX = 8 * box.scale;
+  const paddingY = 4 * box.scale;
   const maxWidth = Math.max(20, box.width - paddingX);
   const maxHeight = Math.max(20, box.height - paddingY);
-  let low = 8 * editorScale;
-  let high = Math.max((element.fontSize || 16) * editorScale, 96 * editorScale);
+  let low = 8 * box.scale;
+  let high = Math.max((element.fontSize || 16) * box.scale, 96 * box.scale);
   let bestSize = low;
   let bestLines = wrapTextForBox(content, low, maxWidth, element.fontWeight);
 
@@ -162,19 +166,19 @@ const TextElement = ({ element, box }: { element: AdElement; box: ElementBox }) 
   );
 };
 
-const ButtonElement = ({ element }: { element: AdElement }) => (
+const ButtonElement = ({ element, box }: { element: AdElement; box: ElementBox }) => (
   <div
     style={{
       width: '100%',
       height: '100%',
-      borderRadius: (element.borderRadius || 8) * editorScale,
+      borderRadius: (element.borderRadius || 8) * box.scale,
       background: element.backgroundColor || '#4f46e5',
       color: element.color || '#fff',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       fontFamily: element.fontFamily || 'Inter, sans-serif',
-      fontSize: (element.fontSize || 18) * editorScale,
+      fontSize: (element.fontSize || 18) * box.scale,
       fontWeight: element.fontWeight || 'bold',
       textTransform: 'uppercase',
       letterSpacing: 2,
@@ -239,20 +243,21 @@ const BlockingIntroImage = ({ src, style }: { src: string; style: React.CSSPrope
 
 const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { element: AdElement; box: ElementBox; audioLevels?: number[]; audioBands?: number[][]; currentSpeaker: number }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
   const count = element.visualizerType === 'waveform-strip' ? (element.barCount || 72) : (element.barCount || 16);
   const sensitivity = element.visualizerSensitivity ?? 1.5;
+  const heightScale = element.visualizerHeight ?? 0.9;
+  const baseline = element.visualizerBaseline ?? 4;
   const color = element.barColor || '#00ffcc';
-  const time = frame / fps;
   const audioLevel = audioLevels?.length
     ? audioLevels[Math.min(audioLevels.length - 1, frame)] ?? 0
     : null;
   const frequencyBands = audioBands?.length
     ? audioBands[Math.min(audioBands.length - 1, frame)] ?? null
     : null;
+  const hasUsableAudioLevel = audioLevel !== null && audioLevel > 0.012;
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: element.visualizerType === 'bars-bottom' ? 'flex-end' : 'center', gap: 4 * editorScale }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: element.visualizerType === 'bars-bottom' ? 'flex-end' : 'center', gap: 4 * box.scale }}>
       {Array.from({ length: count }).map((_, index) => {
         const halfCount = Math.floor(count / 2);
         const isLeftSpeakerSide = index < halfCount;
@@ -272,30 +277,35 @@ const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { e
         const edgeFade = element.visualizerType === 'waveform-strip'
           ? 0.45 + Math.pow(Math.sin(normalized * Math.PI), 0.7) * 0.55
           : 1;
-        const idleSignal = (
-          Math.sin(time * 9 + index * 0.62) * 0.45 +
-          Math.sin(time * 17 + index * 1.37) * 0.35 +
-          Math.sin(time * 4 + index * 0.19) * 0.2 +
-          1
-        ) / 2;
+        const fastMotion = Math.min(1, Math.max(0, (
+          Math.sin(frame * 0.2 + index) * 0.5 +
+          Math.sin(frame * 0.09 + index * 1.73) * 0.3 +
+          Math.sin(frame * 0.31 + index * 0.41) * 0.2 +
+          0.5
+        )));
         const bandIndex = frequencyBands
           ? Math.min(frequencyBands.length - 1, Math.max(0, 1 + Math.floor(normalized * (frequencyBands.length - 2))))
           : 0;
-        const bandSignal = frequencyBands ? frequencyBands[bandIndex] ?? 0 : null;
-        const signal = !isActiveSpeakerSide ? 0.04 : bandSignal === null
-          ? audioLevel === null ? idleSignal : audioLevel
-          : Math.min(1, bandSignal * 0.82 + (audioLevel || 0) * 0.18);
-        const reactive = Math.min(1, signal * sensitivity);
-        const minHeight = element.visualizerType === 'waveform-strip' ? Math.max(3 * editorScale, box.height * 0.12) : 4 * editorScale;
+        const rawBandSignal = frequencyBands ? frequencyBands[bandIndex] ?? 0 : null;
+        const previewSignal = rawBandSignal === null
+          ? audioLevel
+          : rawBandSignal;
+        const fallbackSignal = hasUsableAudioLevel ? (audioLevel ?? 0) : fastMotion * 0.55;
+        const signal = !isActiveSpeakerSide
+          ? 0.04
+          : Math.pow(Math.min(1, (previewSignal ?? fallbackSignal) * sensitivity), 1.5);
+        const minHeight = element.visualizerType === 'waveform-strip'
+          ? Math.max(baseline * box.scale, box.height * 0.04)
+          : baseline * box.scale;
         const height = element.visualizerType === 'waveform-strip'
-          ? Math.min(box.height, minHeight + Math.pow(reactive, 1.45) * box.height * 0.72 * edgeFade)
-          : Math.min(box.height, minHeight + Math.pow(reactive, 1.5) * (box.height * 0.9));
+          ? Math.min(box.height, minHeight + signal * box.height * heightScale * edgeFade)
+          : Math.min(box.height, minHeight + signal * (box.height * heightScale));
         return (
           <div
             key={index}
             style={{
               flex: 1,
-              minWidth: element.visualizerType === 'waveform-strip' ? 2 : 4 * editorScale,
+              minWidth: element.visualizerType === 'waveform-strip' ? 2 : 4 * box.scale,
               height,
               maxHeight: '100%',
               borderRadius: 999,
@@ -309,7 +319,7 @@ const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { e
   );
 };
 
-const CaptionElement = ({ element, captions, accentColor }: { element: AdElement; captions: Caption[]; accentColor: string }) => {
+const CaptionElement = ({ element, box, platform, captions, accentColor }: { element: AdElement; box: ElementBox; platform: ExportSnapshot['settings']['platform']; captions: Caption[]; accentColor: string }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const activeCaptions = captions.length > 0 ? captions : MOCK_CAPTIONS;
@@ -325,10 +335,10 @@ const CaptionElement = ({ element, captions, accentColor }: { element: AdElement
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: `${16 * editorScale}px ${18 * editorScale}px`,
+        padding: `${16 * box.scale}px ${18 * box.scale}px`,
         color: CAPTION_SPEAKER_COLORS[speaker] || element.color || accentColor,
         fontFamily: element.fontFamily || 'Inter, sans-serif',
-        fontSize: (element.fontSize || 22) * editorScale,
+        fontSize: (element.fontSize || (platform === 'youtube' ? 30 : 22)) * box.scale,
         fontWeight: element.fontWeight || 700,
         textAlign: 'center',
         lineHeight: 1.22,
@@ -371,7 +381,7 @@ export const RemotionAd = ({ snapshot, width, height, audioLevels, audioBands }:
       )}
 
       {sorted.map((element) => {
-        const box = getElementBox(element, settings.platform, height);
+        const box = getElementBox(element, settings.platform, width);
         return (
           <div
             key={element.id}
@@ -383,9 +393,9 @@ export const RemotionAd = ({ snapshot, width, height, audioLevels, audioBands }:
             }}
           >
             {element.type === 'text' && <TextElement element={element} box={box} />}
-            {element.type === 'button' && <ButtonElement element={element} />}
+            {element.type === 'button' && <ButtonElement element={element} box={box} />}
             {element.type === 'image' && <ImageElement element={element} />}
-            {element.type === 'caption' && <CaptionElement element={element} captions={snapshot.captions} accentColor={settings.accentColor} />}
+            {element.type === 'caption' && <CaptionElement element={element} box={box} platform={settings.platform} captions={snapshot.captions} accentColor={settings.accentColor} />}
             {element.type === 'visualizer' && <Waveform element={element} box={box} audioLevels={audioLevels} audioBands={audioBands} currentSpeaker={currentSpeaker} />}
           </div>
         );

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { PlatformFrame, isFeedPlatform, isVerticalPlatform, type PlatformType } from './components/PlatformFrame';
 import { CanvasEditor } from './components/CanvasEditor';
 import { PropertiesPanel } from './components/PropertiesPanel';
-import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, ChevronDown, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList, ArrowRight, Wand2 } from 'lucide-react';
+import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, ChevronDown, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList, ArrowRight, Wand2, PhoneCall } from 'lucide-react';
 import Papa from 'papaparse';
 import { useEditorStore } from './store';
 import { drawAdvancedVisualizer } from './lib/visualizer';
@@ -10,7 +10,9 @@ import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
 import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } from './lib/audio-library';
-import type { ExportSnapshot } from './lib/export-snapshot';
+import { getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions, getExportDimensions, getPlatformElementFrame, type ExportSnapshot, type PhoneCallSnapshot } from './lib/export-snapshot';
+import { PhoneCallSimulator } from './components/PhoneCallSimulator';
+import { formatUsPhoneNumber } from './lib/phone-call';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -19,6 +21,9 @@ const DEFAULT_INTRO_IMAGE = '/default-intro-image.png';
 const DEFAULT_INTRO_IMAGE_NAME = 'Default intro image';
 const DEFAULT_AUDIO_URL = '/ai-dental-receptionist-audio.mp3';
 const DEFAULT_AUDIO_NAME = 'AI Dental Receptionist';
+const DEFAULT_PHONE_CALL_AUDIO_URL = '/default-phone-call-audio.m4a';
+const DEFAULT_PHONE_CALL_AUDIO_NAME = 'Call Recording';
+const SOCIAL_POSTING_ENABLED = false;
 const BACKGROUND_COLOR_FAMILIES = [
   { hue: 158, saturation: [70, 95], lightness: [45, 96] },
   { hue: 190, saturation: [55, 90], lightness: [42, 94] },
@@ -73,6 +78,8 @@ const CAPTION_SPEAKER_COLORS: Record<number, string> = {
 type RenderDurationCap = 30 | 60 | 'full';
 type ExportPhase = 'recording' | 'converting' | 'complete' | 'error';
 type IntroDuration = 1 | 2 | 3;
+type RingDuration = 0 | 1 | 2 | 3;
+type CreativeMode = 'visualizer' | 'phone-call';
 
 type CreativeBrief = {
   offer: string;
@@ -96,6 +103,52 @@ type DialogueScript = {
   angle: string;
   lines: DialogueLine[];
 };
+
+type ConversationWizardStep = 'brief' | 'scripts' | 'edit';
+type PostizStatus = 'idle' | 'loading' | 'uploading' | 'drafting' | 'done' | 'error';
+
+type PostizIntegration = {
+  id: string;
+  name: string;
+  identifier: string;
+  picture?: string;
+  disabled?: boolean;
+  profile?: string;
+};
+
+const POSTIZ_CHANNEL_LABELS: Record<string, string> = {
+  facebook: 'FB',
+  instagram: 'IG',
+  'instagram-standalone': 'IG',
+  tiktok: 'TikTok',
+  youtube: 'YouTube',
+  x: 'X',
+  linkedin: 'LinkedIn',
+  'linkedin-page': 'LinkedIn',
+  threads: 'Threads',
+};
+
+const cloneDialogueScript = (script: DialogueScript): DialogueScript => ({
+  title: script.title,
+  angle: script.angle,
+  lines: script.lines.map((line) => ({ ...line })),
+});
+
+const cleanDialogueTextForVoiceover = (value: string) => value
+  .replace(/[—–]/g, ', ')
+  .replace(/\s+/g, ' ')
+  .trim();
+
+const cleanDialogueScriptForVoiceover = (script: DialogueScript): DialogueScript => ({
+  ...script,
+  title: cleanDialogueTextForVoiceover(script.title),
+  angle: cleanDialogueTextForVoiceover(script.angle),
+  lines: script.lines.map((line) => ({
+    ...line,
+    tone: cleanDialogueTextForVoiceover(line.tone),
+    text: cleanDialogueTextForVoiceover(line.text),
+  })),
+});
 
 const EMPTY_CREATIVE_BRIEF: CreativeBrief = {
   offer: 'AI front-desk employees that answer calls, recover missed calls, and book dental patients automatically.',
@@ -150,12 +203,12 @@ const CREATIVE_BRIEF_FIELDS: Array<{
   },
   {
     key: 'cta',
-    question: "What's the CTA?",
+    question: 'What should people do next?',
     placeholder: 'Book a demo.',
   },
   {
     key: 'reference',
-    question: 'Reference URL or winning ad',
+    question: 'Helpful link or winning ad',
     placeholder: 'Landing page URL, ad link, or notes from a top performer.',
     optional: true,
   },
@@ -310,14 +363,9 @@ const HexColorInput = ({
 };
 
 export default function App() {
-  const [showHomepage, setShowHomepage] = useState(() => {
-    try {
-      return localStorage.getItem(STUDIO_SEEN_STORAGE_KEY) !== '1';
-    } catch {
-      return true;
-    }
-  });
+  const [showHomepage, setShowHomepage] = useState(true);
   const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single');
+  const [creativeMode, setCreativeMode] = useState<CreativeMode>('visualizer');
   
   // Single Template State
   const [visualizerColor, setVisualizerColor] = useState("#00ffcc");
@@ -344,6 +392,8 @@ export default function App() {
   const [introCropOpen, setIntroCropOpen] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(DEFAULT_AUDIO_URL);
   const [audioFileName, setAudioFileName] = useState<string>(DEFAULT_AUDIO_NAME);
+  const [phoneNumber, setPhoneNumber] = useState('5551234567');
+  const [phoneRingDuration, setPhoneRingDuration] = useState<RingDuration>(0);
 
   const refreshBackgroundColor = () => {
     setBgColor((currentColor) => getFreshBackgroundColor(currentColor));
@@ -354,11 +404,18 @@ export default function App() {
   const [rendering, setRendering] = useState(false);
   const [renderProgress, setRenderProgress] = useState(0);
   const [exportPhase, setExportPhase] = useState<ExportPhase>('recording');
-  const [exportDownload, setExportDownload] = useState<{ url: string; blob: Blob; filename: string; snapshot: SavedTemplate } | null>(null);
+  const [exportDownload, setExportDownload] = useState<{ url: string; blob: Blob; filename: string; snapshot: SavedTemplate | null } | null>(null);
   const [exportLaunchAnimation, setExportLaunchAnimation] = useState(false);
   const [renderDurationCap, setRenderDurationCap] = useState<RenderDurationCap>(30);
   const exportCancelRef = useRef<(() => void) | null>(null);
   const savedExportHistoryIdRef = useRef<string | null>(null);
+  const [postizOpen, setPostizOpen] = useState(false);
+  const [postizStatus, setPostizStatus] = useState<PostizStatus>('idle');
+  const [postizIntegrations, setPostizIntegrations] = useState<PostizIntegration[]>([]);
+  const [selectedPostizIntegrationId, setSelectedPostizIntegrationId] = useState('');
+  const [postizError, setPostizError] = useState('');
+  const [postizAppUrl, setPostizAppUrl] = useState<string | null>(null);
+  const [postizAutoOpenAfterExport, setPostizAutoOpenAfterExport] = useState(false);
 
   // Batch State
   const [csvData, setCsvData] = useState<any[]>([]);
@@ -375,15 +432,37 @@ export default function App() {
   const [appTitle] = useState('Wiggly');
   const [activePersonaDeckIndex, setActivePersonaDeckIndex] = useState(0);
   const [dialogueScripts, setDialogueScripts] = useState<DialogueScript[]>([]);
+  const [conversationWizardOpen, setConversationWizardOpen] = useState(false);
+  const [conversationWizardStep, setConversationWizardStep] = useState<ConversationWizardStep>('brief');
+  const [selectedDialogueScriptIndex, setSelectedDialogueScriptIndex] = useState(0);
+  const [draftDialogueScript, setDraftDialogueScript] = useState<DialogueScript | null>(null);
+  const [previewingDialogueKey, setPreviewingDialogueKey] = useState<string | null>(null);
   const [isGeneratingDialogueScripts, setIsGeneratingDialogueScripts] = useState(false);
   const [isGeneratingDialogueAudio, setIsGeneratingDialogueAudio] = useState(false);
   const [generatedDialogueAudioUrl, setGeneratedDialogueAudioUrl] = useState<string | null>(null);
 
   const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, setElements, deselectAll, commitHistory, setBusinessContext, elements } = useEditorStore();
   const hasComponent = (role: NonNullable<typeof elements[number]['componentRole']>) => elements.some((element) => element.componentRole === role);
-  const hasSubheadline = hasComponent('subheadline');
+  const headlineCount = elements.filter((element) => element.componentRole === 'headline').length;
+  const subheadlineCount = elements.filter((element) => element.componentRole === 'subheadline').length;
+  const visualizerCount = elements.filter((element) => element.type === 'visualizer').length;
+  const captionCount = elements.filter((element) => element.componentRole === 'captions').length;
+  const ctaCount = elements.filter((element) => element.componentRole === 'cta').length;
+  const logoCount = elements.filter((element) => element.componentRole === 'logo').length;
+  const duplicateOffset = (count: number) => Math.min(count * 12, 48);
 
   const [isTranscribing, setIsTranscribing] = useState(false);
+
+  const switchCreativeMode = (nextMode: CreativeMode) => {
+    setCreativeMode(nextMode);
+    setPlaying(false);
+    if (nextMode === 'phone-call' && (!audioUrl || audioUrl === DEFAULT_AUDIO_URL)) {
+      setGeneratedDialogueAudioUrl(null);
+      setAudioUrl(DEFAULT_PHONE_CALL_AUDIO_URL);
+      setAudioFileName(DEFAULT_PHONE_CALL_AUDIO_NAME);
+      setPhoneRingDuration(0);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -391,6 +470,12 @@ export default function App() {
       if (saved) setTemplates(JSON.parse(saved));
     } catch (error) {
       console.error('Failed to load templates:', error);
+    }
+  }, []);
+
+  useEffect(() => () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
     }
   }, []);
 
@@ -429,7 +514,7 @@ export default function App() {
     `[Failed Alternatives] ${brief.failedAlternatives}`,
     `[Promised Result] ${brief.promisedResult}`,
     `[Differentiator] ${brief.differentiator}`,
-    `[CTA] ${brief.cta}`,
+    `[Action] ${brief.cta}`,
     brief.reference ? `[Reference] ${brief.reference}` : '',
   ].filter(Boolean).join('\n');
 
@@ -597,7 +682,8 @@ export default function App() {
     }
   };
 
-  const saveExportToHistoryOnce = (snapshot: SavedTemplate) => {
+  const saveExportToHistoryOnce = (snapshot: SavedTemplate | null) => {
+    if (!snapshot) return;
     if (savedExportHistoryIdRef.current === snapshot.id) return;
     savedExportHistoryIdRef.current = snapshot.id;
     void saveDownloadedAdToHistory(snapshot);
@@ -618,6 +704,34 @@ export default function App() {
     };
     element.onerror = () => resolve(null);
   });
+
+  const getAudioSignalStats = async (url: string) => {
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    const audioContext = new AudioCtx();
+    try {
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer.slice(0));
+      let sum = 0;
+      let count = 0;
+      for (let channel = 0; channel < audioBuffer.numberOfChannels; channel += 1) {
+        const data = audioBuffer.getChannelData(channel);
+        const step = Math.max(1, Math.floor(data.length / 48000));
+        for (let index = 0; index < data.length; index += step) {
+          sum += data[index] * data[index];
+          count += 1;
+        }
+      }
+      return {
+        duration: audioBuffer.duration,
+        rms: Math.sqrt(sum / Math.max(1, count)),
+      };
+    } finally {
+      if (audioContext.state !== 'closed') {
+        await audioContext.close();
+      }
+    }
+  };
 
   const appendMediaForRemotion = async (
     formData: FormData,
@@ -742,6 +856,46 @@ export default function App() {
     return formData;
   };
 
+  const createPhoneCallRemotionSnapshot = async (): Promise<FormData> => {
+    if (!audioUrl) {
+      throw new Error('Upload voicemail audio before exporting the phone call.');
+    }
+
+    let audioStats: Awaited<ReturnType<typeof getAudioSignalStats>>;
+    try {
+      audioStats = await getAudioSignalStats(audioUrl);
+    } catch {
+      throw new Error('This audio file did not work. Try another MP3, WAV, M4A, or video file.');
+    }
+
+    if (!Number.isFinite(audioStats.duration) || audioStats.duration < 0.5) {
+      throw new Error('This audio is too short to use as voicemail proof.');
+    }
+
+    if (audioStats.rms < 0.0008) {
+      throw new Error('This audio looks silent. Try another voicemail recording.');
+    }
+
+    const phoneSnapshot: PhoneCallSnapshot = {
+      kind: 'phone-call',
+      id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `phone-call-${Date.now()}`,
+      name: `Phone call ${formatUsPhoneNumber(phoneNumber) || 'preview'}`,
+      durationSeconds: Math.min(180, phoneRingDuration + audioStats.duration),
+      settings: {
+        phoneNumber,
+        audioUrl,
+        ringAudioUrl: null,
+        ringDurationSeconds: phoneRingDuration,
+        backgroundColor: '#f8fafc',
+      },
+    };
+
+    const formData = new FormData();
+    await appendMediaForRemotion(formData, 'audio', phoneSnapshot.settings.audioUrl, url => { phoneSnapshot.settings.audioUrl = url; });
+    formData.append('snapshot', JSON.stringify(phoneSnapshot));
+    return formData;
+  };
+
   const MIN_VALID_MP4_BYTES = 1024;
 
   const isValidMp4Blob = async (blob: Blob) => {
@@ -795,6 +949,68 @@ export default function App() {
     setRenderProgress(100);
   };
 
+  const tryPhoneCallRemotionExport = async (abortController: AbortController) => {
+    setExportPhase('converting');
+    setRenderProgress(10);
+    const formData = await createPhoneCallRemotionSnapshot();
+    setRenderProgress(25);
+
+    const response = await fetch('/api/render-remotion', {
+      method: 'POST',
+      body: formData,
+      signal: abortController.signal,
+    });
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      throw new Error(payload.error || 'Phone call export failed');
+    }
+
+    setRenderProgress(92);
+    const mp4Blob = await response.blob();
+    await ensureValidMp4Blob(mp4Blob, 'Phone call export');
+
+    const url = URL.createObjectURL(mp4Blob);
+    const filename = `wiggly-phone-call-${Date.now()}.mp4`;
+    setExportDownload({ url, blob: mp4Blob, filename, snapshot: null });
+    setExportPhase('complete');
+    setRenderProgress(100);
+  };
+
+  const downloadPhoneCallVideo = async () => {
+    setExportLaunchAnimation(true);
+    window.setTimeout(() => setExportLaunchAnimation(false), 650);
+    setRendering(true);
+    setRenderProgress(0);
+    setExportPhase('recording');
+    savedExportHistoryIdRef.current = null;
+    setExportDownload((previous) => {
+      if (previous) URL.revokeObjectURL(previous.url);
+      return null;
+    });
+
+    const remotionAbortController = new AbortController();
+    exportCancelRef.current = () => {
+      remotionAbortController.abort();
+      setRendering(false);
+      setRenderProgress(0);
+      setExportPhase('recording');
+      exportCancelRef.current = null;
+    };
+
+    try {
+      await tryPhoneCallRemotionExport(remotionAbortController);
+      setRendering(false);
+      exportCancelRef.current = null;
+    } catch (error: any) {
+      if (remotionAbortController.signal.aborted) return;
+      console.error('Phone call export failed:', error);
+      setExportPhase('error');
+      setRendering(false);
+      exportCancelRef.current = null;
+      alert(error?.message || 'Phone call export failed. Please try again.');
+    }
+  };
+
   const downloadReadyExport = async () => {
     if (!exportDownload) return;
 
@@ -804,7 +1020,7 @@ export default function App() {
     } catch (error) {
       console.error('Blocked invalid MP4 download:', error);
       setExportPhase('error');
-      alert('This export is not a valid MP4. Please export again.');
+      alert('This video file had a problem. Please make the video again.');
       return;
     }
 
@@ -816,7 +1032,7 @@ export default function App() {
           suggestedName: exportDownload.filename,
           types: [
             {
-              description: 'MP4 video',
+              description: 'Video file',
               accept: { 'video/mp4': ['.mp4'] },
             },
           ],
@@ -858,11 +1074,109 @@ export default function App() {
     } catch (error) {
       console.error('Blocked invalid MP4 open:', error);
       setExportPhase('error');
-      alert('This export is not a valid MP4. Please export again.');
+      alert('This video file had a problem. Please make the video again.');
       return;
     }
     window.open(exportDownload.url, '_blank', 'noopener,noreferrer');
     saveExportToHistoryOnce(exportDownload.snapshot);
+  };
+
+  const getPostizDraftContent = () => (
+    exportDownload?.snapshot?.settings.simulatedCaption?.trim() ||
+    simulatedCaption.trim() ||
+    'Created with Wiggly.'
+  );
+
+  const getSelectedPostizChannelLabel = () => {
+    const selectedIntegration = postizIntegrations.find((integration) => integration.id === selectedPostizIntegrationId);
+    if (!selectedIntegration) return 'Postiz';
+    return POSTIZ_CHANNEL_LABELS[selectedIntegration.identifier] || selectedIntegration.name || selectedIntegration.identifier;
+  };
+
+  const loadPostizIntegrations = async () => {
+    setPostizStatus('loading');
+    setPostizError('');
+    setPostizAppUrl(null);
+    try {
+      const response = await fetch('/api/postiz/integrations', { method: 'POST' });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || 'Could not load Postiz channels.');
+      const integrations = (Array.isArray(payload.integrations) ? payload.integrations : []).filter((integration: PostizIntegration) => !integration.disabled);
+      setPostizIntegrations(integrations);
+      setSelectedPostizIntegrationId((current) => current || integrations[0]?.id || '');
+      setPostizStatus('idle');
+    } catch (error: any) {
+      setPostizStatus('error');
+      setPostizError(error.message || 'Could not load Postiz channels.');
+    }
+  };
+
+  const openPostizHandoff = async () => {
+    if (!exportDownload) return;
+    setPostizOpen(true);
+    if (postizIntegrations.length === 0) {
+      await loadPostizIntegrations();
+    }
+  };
+
+  const handlePostToSocials = () => {
+    if (exportDownload) {
+      void openPostizHandoff();
+      return;
+    }
+
+    setPostizAutoOpenAfterExport(true);
+    void downloadSimulatedVideo();
+  };
+
+  useEffect(() => {
+    if (!postizAutoOpenAfterExport || !exportDownload || rendering) return;
+    setPostizAutoOpenAfterExport(false);
+    void openPostizHandoff();
+  }, [postizAutoOpenAfterExport, exportDownload, rendering]);
+
+  const sendExportToPostiz = async () => {
+    if (!exportDownload || !selectedPostizIntegrationId) return;
+    const selectedIntegration = postizIntegrations.find((integration) => integration.id === selectedPostizIntegrationId);
+    if (!selectedIntegration) return;
+
+    try {
+      const mp4Bytes = await getValidMp4Bytes(exportDownload.blob, 'Ready export');
+      setPostizStatus('uploading');
+      setPostizError('');
+
+      const formData = new FormData();
+      formData.append('file', new Blob([mp4Bytes], { type: 'video/mp4' }), exportDownload.filename);
+      const uploadResponse = await fetch('/api/postiz/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const uploadPayload = await uploadResponse.json().catch(() => ({}));
+      if (!uploadResponse.ok) throw new Error(uploadPayload.error || 'Could not upload MP4 to Postiz.');
+
+      setPostizStatus('drafting');
+      const draftResponse = await fetch('/api/postiz/create-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          integrationId: selectedIntegration.id,
+          integrationIdentifier: selectedIntegration.identifier,
+          content: getPostizDraftContent(),
+          media: uploadPayload.upload,
+          title: exportDownload.filename.replace(/\.mp4$/i, ''),
+          platform: exportDownload.snapshot?.settings.platform || platform,
+        }),
+      });
+      const draftPayload = await draftResponse.json().catch(() => ({}));
+      if (!draftResponse.ok) throw new Error(draftPayload.error || 'Could not create Postiz draft.');
+
+      setPostizAppUrl(draftPayload.appUrl || null);
+      setPostizStatus('done');
+      saveExportToHistoryOnce(exportDownload.snapshot);
+    } catch (error: any) {
+      setPostizStatus('error');
+      setPostizError(error.message || 'Could not send this ad to Postiz.');
+    }
   };
 
   const deleteHistoryItem = async (historyId: string) => {
@@ -984,7 +1298,110 @@ export default function App() {
     audio.src = url;
   });
 
-  const handleGenerateDialogueScripts = async () => {
+  const stopDialoguePreview = () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setPreviewingDialogueKey(null);
+  };
+
+  const playDialoguePreview = (script: DialogueScript, key: string) => {
+    if (!('speechSynthesis' in window)) {
+      alert('Voice preview is not available in this browser.');
+      return;
+    }
+
+    if (previewingDialogueKey === key) {
+      stopDialoguePreview();
+      return;
+    }
+
+    const lines = script.lines.filter((line) => line.text.trim());
+    if (!lines.length) return;
+
+    window.speechSynthesis.cancel();
+    setPreviewingDialogueKey(key);
+
+    const voices = window.speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().startsWith('en'));
+    const speakers = Array.from(new Set(lines.map((line) => line.speaker).filter(Boolean))).slice(0, 2);
+    let remainingLines = lines.length;
+
+    lines.forEach((line) => {
+      const utterance = new SpeechSynthesisUtterance(line.text.trim());
+      const speakerIndex = speakers.indexOf(line.speaker);
+      utterance.rate = 1.02;
+      utterance.pitch = speakerIndex === 1 ? 0.92 : 1.08;
+      utterance.voice = voices[speakerIndex === 1 ? 1 : 0] || voices[0] || null;
+      utterance.onend = () => {
+        remainingLines -= 1;
+        if (remainingLines <= 0) setPreviewingDialogueKey(null);
+      };
+      utterance.onerror = () => {
+        remainingLines -= 1;
+        if (remainingLines <= 0) setPreviewingDialogueKey(null);
+      };
+      window.speechSynthesis.speak(utterance);
+    });
+  };
+
+  const handleOpenConversationWizard = () => {
+    const firstScript = dialogueScripts[selectedDialogueScriptIndex] || dialogueScripts[0];
+    if (firstScript && !draftDialogueScript) {
+      setDraftDialogueScript(cloneDialogueScript(firstScript));
+      setSelectedDialogueScriptIndex(Math.max(0, dialogueScripts.indexOf(firstScript)));
+    }
+    setConversationWizardStep(dialogueScripts.length > 0 ? 'scripts' : 'brief');
+    setConversationWizardOpen(true);
+  };
+
+  const handleSelectDialogueScript = (script: DialogueScript, index: number) => {
+    setSelectedDialogueScriptIndex(index);
+    setDraftDialogueScript(cloneDialogueScript(script));
+    setConversationWizardStep('edit');
+  };
+
+  const updateDraftDialogueLine = (index: number, patch: Partial<DialogueLine>) => {
+    setDraftDialogueScript((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        lines: current.lines.map((line, lineIndex) => (
+          lineIndex === index ? { ...line, ...patch } : line
+        )),
+      };
+    });
+  };
+
+  const addDraftDialogueLine = () => {
+    setDraftDialogueScript((current) => {
+      if (!current) return current;
+      const lastSpeaker = current.lines[current.lines.length - 1]?.speaker;
+      const nextSpeaker = lastSpeaker === 'Ava' ? 'Sam' : 'Ava';
+      return {
+        ...current,
+        lines: [
+          ...current.lines,
+          {
+            speaker: nextSpeaker,
+            tone: 'natural',
+            text: '',
+          },
+        ],
+      };
+    });
+  };
+
+  const removeDraftDialogueLine = (index: number) => {
+    setDraftDialogueScript((current) => {
+      if (!current || current.lines.length <= 2) return current;
+      return {
+        ...current,
+        lines: current.lines.filter((_, lineIndex) => lineIndex !== index),
+      };
+    });
+  };
+
+  const handleGenerateDialogueScripts = async (openEditorAfterGenerate = false) => {
     try {
       setIsGeneratingDialogueScripts(true);
       const res = await fetch('/api/generate-dialogue-scripts', {
@@ -1003,10 +1420,18 @@ export default function App() {
       }
 
       const data = await res.json();
-      setDialogueScripts(Array.isArray(data.scripts) ? data.scripts : []);
+      const scripts = Array.isArray(data.scripts) ? data.scripts : [];
+      setDialogueScripts(scripts);
+      if (scripts[0]) {
+        setSelectedDialogueScriptIndex(0);
+        setDraftDialogueScript(cloneDialogueScript(scripts[0]));
+        setConversationWizardStep(openEditorAfterGenerate ? 'edit' : 'scripts');
+      }
+      return scripts;
     } catch (error: any) {
       console.error('Dialogue script generation failed:', error);
       alert(`Dialogue generation failed: ${error.message || 'Unknown error'}`.slice(0, 180));
+      return [];
     } finally {
       setIsGeneratingDialogueScripts(false);
     }
@@ -1014,11 +1439,13 @@ export default function App() {
 
   const handleGenerateDialogueAudio = async (script: DialogueScript) => {
     try {
+      stopDialoguePreview();
+      const voiceoverScript = cleanDialogueScriptForVoiceover(script);
       setIsGeneratingDialogueAudio(true);
       const res = await fetch('/api/generate-dialogue-audio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ script }),
+        body: JSON.stringify({ script: voiceoverScript }),
       });
 
       if (!res.ok) {
@@ -1035,13 +1462,16 @@ export default function App() {
       const blob = new Blob([bytes], { type: data.mimeType || 'audio/wav' });
       const url = URL.createObjectURL(blob);
       const audioDuration = await getObjectAudioDuration(url);
-      const captions = captionsFromDialogueScript(script, audioDuration);
+      const captions = captionsFromDialogueScript(voiceoverScript, audioDuration);
       useEditorStore.getState().setCaptions(captions);
       setGeneratedDialogueAudioUrl(url);
       setAudioUrl(url);
-      const filename = data.filename || `${script.title || 'conversation-ad'}.wav`;
+      const filename = data.filename || `${voiceoverScript.title || 'conversation-ad'}.wav`;
       setAudioFileName(filename);
       await rememberAudioBlob(filename, blob);
+      if (captionCount === 0) handleAddCaptions();
+      if (visualizerCount === 0) handleAddVisualizer();
+      setConversationWizardOpen(false);
     } catch (error: any) {
       console.error('Dialogue audio generation failed:', error);
       alert(`Audio generation failed: ${error.message || 'Unknown error'}`.slice(0, 180));
@@ -1056,6 +1486,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (creativeMode === 'phone-call') {
+      return;
+    }
+
     if (!audioUrl) {
       useEditorStore.getState().setCaptions([]);
       return;
@@ -1175,7 +1609,7 @@ export default function App() {
     };
 
     transcribeUrl();
-  }, [audioUrl, generatedDialogueAudioUrl]);
+  }, [audioUrl, generatedDialogueAudioUrl, creativeMode]);
 
   const handleAddImageElement = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1198,18 +1632,17 @@ export default function App() {
   };
 
   const handleAddSubheadline = () => {
-    if (hasSubheadline) return;
-
+    const offset = duplicateOffset(subheadlineCount);
     addElement({
       type: 'text',
       componentRole: 'subheadline',
       content: 'Your secondary message goes here',
       x: 20,
-      y: 198,
+      y: 198 + offset,
       width: 320,
       height: 72,
       rotation: 0,
-      zIndex: 2,
+      zIndex: 2 + subheadlineCount,
       fontSize: 18,
       fontWeight: '600',
       color: accentColor,
@@ -1219,17 +1652,17 @@ export default function App() {
   };
 
   const handleAddHeadline = () => {
-    if (hasComponent('headline')) return;
+    const offset = duplicateOffset(headlineCount);
     addElement({
       type: 'text',
       componentRole: 'headline',
       content: getRandomSeededHook(),
       x: 20,
-      y: 118,
+      y: 118 + offset,
       width: 320,
       height: 120,
       rotation: 0,
-      zIndex: 1,
+      zIndex: 1 + headlineCount,
       fontSize: 52,
       fontWeight: '900',
       color: '#000000',
@@ -1239,16 +1672,16 @@ export default function App() {
   };
 
   const handleAddVisualizer = () => {
-    if (hasComponent('visualizer')) return;
+    const offset = duplicateOffset(visualizerCount);
     addElement({
       type: 'visualizer',
       componentRole: 'visualizer',
       x: 0,
-      y: 255,
+      y: 255 + offset,
       width: 360,
       height: 90,
       rotation: 0,
-      zIndex: 3,
+      zIndex: 3 + visualizerCount,
       visualizerType: 'bars-center',
       barColor: visualizerColor,
       barCount: 16,
@@ -1261,30 +1694,34 @@ export default function App() {
   };
 
   const handleAddCaptions = () => {
-    if (hasComponent('captions')) return;
+    const offset = duplicateOffset(captionCount);
     addElement({
       type: 'caption',
       componentRole: 'captions',
       x: 20,
-      y: 350,
+      y: 350 + offset,
       width: 320,
       height: 48,
       rotation: 0,
-      zIndex: 4,
+      zIndex: 4 + captionCount,
     });
   };
 
   const handleAddCta = () => {
+    const offset = duplicateOffset(ctaCount);
+    const editorDimensions = getEditorDimensions(platform);
+    const width = 184;
+    const height = 48;
     addElement({
       type: 'button',
       componentRole: 'cta',
       content: 'BOOK A DEMO',
-      x: 88,
-      y: 590,
-      width: 184,
-      height: 48,
+      x: (editorDimensions.width - width) / 2,
+      y: Math.max(16, editorDimensions.height - height - 20 - offset),
+      width,
+      height,
       rotation: 0,
-      zIndex: 5,
+      zIndex: 5 + ctaCount,
       fontSize: 16,
       fontWeight: '800',
       color: '#ffffff',
@@ -1294,17 +1731,17 @@ export default function App() {
   };
 
   const handleAddLogo = () => {
-    if (hasComponent('logo')) return;
+    const offset = duplicateOffset(logoCount);
     addElement({
       type: 'image',
       componentRole: 'logo',
       imageUrl: '/wiggly-logo.png',
-      x: 120,
-      y: 70,
+      x: 120 + offset,
+      y: 70 + offset,
       width: 120,
       height: 48,
       rotation: 0,
-      zIndex: 10,
+      zIndex: 10 + logoCount,
       removeWhite: true,
       imageShadow: false,
       imageShadowOpacity: 0.42,
@@ -1326,7 +1763,7 @@ export default function App() {
 
   const togglePlayback = () => {
     if (!audioUrl) {
-      alert("Please upload an audio file first.");
+      alert(creativeMode === 'phone-call' ? 'Upload voicemail audio first.' : 'Please upload an audio file first.');
       return;
     }
     setPlaying(!playing);
@@ -1337,6 +1774,11 @@ export default function App() {
   };
 
   const downloadSimulatedVideo = async () => {
+    if (creativeMode === 'phone-call') {
+      await downloadPhoneCallVideo();
+      return;
+    }
+
     const exportSnapshot = createCurrentSnapshot(getCurrentDesignTitle());
     setExportLaunchAnimation(true);
     window.setTimeout(() => setExportLaunchAnimation(false), 650);
@@ -1372,12 +1814,12 @@ export default function App() {
       setRenderProgress(0);
     }
 
-    const isVertical = isVerticalPlatform(platform);
-    const targetWidth = 1080;
-    const targetHeight = isVertical ? 1920 : 1350;
+    const { width: targetWidth, height: targetHeight } = getExportDimensions(platform);
+    const editorDimensions = getEditorDimensions(platform);
+    const layoutOffsetX = getDefaultLayoutOffsetX(platform);
+    const layoutScaleY = getDefaultLayoutScaleY(platform);
     
-    // UI is based on 360px width
-    const scale = targetWidth / 360;
+    const scale = targetWidth / editorDimensions.width;
 
     const canvas = document.createElement('canvas');
     canvas.width = targetWidth;
@@ -1586,7 +2028,7 @@ export default function App() {
         }
         console.error("Error creating MP4:", err);
         setExportPhase('error');
-        alert('MP4 export failed. Please try again.');
+        alert('The video failed. Please try again.');
       }
       setRendering(false);
       exportCancelRef.current = null;
@@ -1694,17 +2136,18 @@ export default function App() {
 
       sortedElements.forEach(el => {
          ctx.save();
-         const rawElW = typeof el.width === 'number' ? el.width : 200;
-         const rawElH = typeof el.height === 'number' ? el.height : 50;
+         const elementFrame = getPlatformElementFrame(el, platform);
+         const rawElW = elementFrame.width;
+         const rawElH = elementFrame.height;
          const feedSafeSquareTop = isFeedPlatform(platform) ? Math.max(0, (canvasHeight - canvasWidth) / 2) : 0;
          const feedSafeSquareBottom = feedSafeSquareTop + canvasWidth;
          const rawElY = isFeedPlatform(platform) && el.type === 'caption'
-           ? Math.min(el.y, feedSafeSquareBottom - rawElH - 8)
-           : el.y;
-         const elX = el.x * scale;
-         const elY = rawElY * scale;
+           ? Math.min(elementFrame.y, feedSafeSquareBottom - rawElH - 8)
+           : elementFrame.y;
+         const elX = (elementFrame.x + layoutOffsetX) * scale;
+         const elY = rawElY * layoutScaleY * scale;
          const elW = rawElW * scale;
-         const elH = rawElH * scale;
+         const elH = rawElH * layoutScaleY * scale;
          
          ctx.translate(elX, elY);
          if (el.rotation) {
@@ -1878,7 +2321,7 @@ export default function App() {
                 };
 
                 let low = 8 * scale;
-                let high = 72 * scale;
+                let high = (platform === 'youtube' ? 92 : 72) * scale;
                 let captionFontSize = low;
                 let renderLines = wrapCaptionLines(captionFontSize);
                 while (low <= high) {
@@ -2118,7 +2561,7 @@ export default function App() {
 
   const runBatch = () => {
     if (csvData.length === 0) {
-      alert("Please upload a CSV file with batch data.");
+    alert('Please upload a spreadsheet first.');
       return;
     }
     setBatchStatus('processing');
@@ -2258,6 +2701,7 @@ export default function App() {
   const activeTemplateCount = templateLibraryTab === 'templates' ? templateItems.length : historyItems.length;
   const audioLibraryItems: AudioLibraryItem[] = [
     { id: 'built-in-ai-dental-receptionist-audio', name: DEFAULT_AUDIO_NAME, url: DEFAULT_AUDIO_URL, builtIn: true },
+    { id: 'built-in-phone-call-recording-audio', name: DEFAULT_PHONE_CALL_AUDIO_NAME, url: DEFAULT_PHONE_CALL_AUDIO_URL, builtIn: true },
     ...storedAudioItems.map((item) => ({
       id: item.id,
       name: item.name,
@@ -2360,18 +2804,15 @@ export default function App() {
   if (showHomepage) {
     return (
       <div className="min-h-screen bg-[#F6F8FB] font-sans text-slate-950">
-        <header className="flex h-20 items-center justify-between border-b border-slate-200 bg-white px-6 md:px-10">
+        <header className="flex h-16 items-center justify-between bg-[#FBF7EF] px-6 md:px-10">
           <div className="flex items-center gap-3">
-            <img src="/wiggly-logo.svg" alt="Wiggly" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
-            <div>
-              <p className="text-lg font-black leading-tight">Wiggly</p>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Visual ads that move fast.</p>
-            </div>
+            <img src="/wiggly-logo.svg" alt="Wiggly" className="h-9 w-9 rounded-xl object-cover shadow-sm shadow-slate-950/10" />
+            <p className="text-xl font-black leading-none tracking-normal text-slate-950">Wiggly</p>
           </div>
           <button
             type="button"
             onClick={enterStudio}
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800"
+            className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-slate-950/10 transition hover:-translate-y-0.5 hover:bg-slate-800"
           >
             Open Studio
             <ArrowRight className="h-4 w-4" />
@@ -2385,29 +2826,22 @@ export default function App() {
             <section className="max-w-xl">
               <div className="relative mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-500 shadow-sm backdrop-blur">
                 <AudioLines className="h-4 w-4 text-[#00FFCC]" />
-                Visualizer ads for modern service brands
+                Simple video ads for service businesses
               </div>
               <h1 className="relative text-5xl font-black leading-[0.95] tracking-normal text-slate-950 md:text-7xl">
-                Turn sharp hooks into scroll-stopping ad creatives.
+                Make video ads without learning video editing.
               </h1>
               <p className="relative mt-6 max-w-lg text-lg font-medium leading-8 text-slate-600">
-                Build branded Meta ads with bold hooks, intro cards, voiceover audio, waveform visuals, and export-ready layouts without opening a video editor.
+                Start with a ready-made design, add your message or voice recording, preview how it looks on Facebook, Instagram, or YouTube, then download the finished ad.
               </p>
               <div className="relative mt-8 flex flex-wrap gap-3">
                 <button
                   type="button"
                   onClick={enterStudio}
-                  className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800"
+                  className="inline-flex items-center gap-3 rounded-2xl bg-slate-950 px-8 py-4 text-base font-black text-white shadow-xl shadow-slate-900/15 transition hover:-translate-y-0.5 hover:bg-slate-800"
                 >
-                  Create an ad
-                  <Wand2 className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={enterStudio}
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300"
-                >
-                  Explore templates
+                  Make an ad
+                  <Wand2 className="h-5 w-5" />
                 </button>
               </div>
             </section>
@@ -2428,8 +2862,8 @@ export default function App() {
                     <AudioLines className="h-5 w-5 text-[#00BFA5]" />
                   </div>
                   <div>
-                    <p className="text-sm font-black text-slate-900">Hook + waveform + CTA</p>
-                    <p className="text-xs font-semibold text-slate-500">The reusable ad-card system.</p>
+                    <p className="text-sm font-black text-slate-900">Headline + audio + button</p>
+                    <p className="text-xs font-semibold text-slate-500">A simple ad layout you can reuse.</p>
                   </div>
                 </div>
               </div>
@@ -2438,42 +2872,42 @@ export default function App() {
 
           <section className="pb-16 pt-8">
             <div className="mb-8 max-w-2xl">
-              <p className="text-sm font-black uppercase tracking-wide text-slate-400">Built for the marketer workflow</p>
+              <p className="text-sm font-black uppercase tracking-wide text-slate-400">Built for busy marketers</p>
               <h2 className="mt-2 text-3xl font-black tracking-normal text-slate-950 md:text-5xl">
-                Fast ad making without the design-tool maze.
+                Make the ad. Change the words. Ship the video.
               </h2>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {[
                 {
                   icon: Wand2,
-                  title: 'Slot-machine hooks',
-                  copy: 'Refresh ad angles instantly without prompt writing.',
+                  title: 'New headline ideas',
+                  copy: 'Click once to try a different headline when you are stuck.',
                 },
                 {
                   icon: AudioLines,
-                  title: 'Audio-first visuals',
-                  copy: 'Waveforms, captions, intro cards, and CTA layouts in one builder.',
+                  title: 'Audio that looks alive',
+                  copy: 'Turn a voice recording into moving bars, captions, and a clean ad layout.',
                 },
                 {
                   icon: CheckCircle2,
-                  title: 'Meta-safe previews',
-                  copy: 'Check feed, reels, stories, and safe areas before export.',
+                  title: 'See each placement',
+                  copy: 'Preview the ad in Facebook feed, Instagram feed, reels, stories, and YouTube.',
                 },
                 {
                   icon: BookmarkPlus,
-                  title: 'Reusable designs',
-                  copy: 'Save winning layouts and reload them for the next ad.',
+                  title: 'Reuse good designs',
+                  copy: 'Save a layout once, then swap the text and audio for the next ad.',
                 },
                 {
                   icon: Download,
-                  title: 'MP4 export',
-                  copy: 'Create upload-ready ads without opening a video editor.',
+                  title: 'Download the ad',
+                  copy: 'Get a video file you can upload to your ad account.',
                 },
                 {
                   icon: MousePointerClick,
-                  title: 'Marketer-first flow',
-                  copy: 'Strategy, copy, design, preview, and export stay together.',
+                  title: 'No design degree needed',
+                  copy: 'Everything is already laid out so you can focus on the message.',
                 },
               ].map((feature) => (
                 <div key={feature.title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -2492,7 +2926,7 @@ export default function App() {
             </div>
             <div className="relative grid min-h-[640px] gap-6 text-white lg:grid-cols-[0.85fr_1.3fr_0.85fr]">
               <div className="self-start rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-2xl shadow-slate-950/20 backdrop-blur-xl lg:-ml-8">
-                <p className="mb-5 text-sm font-black uppercase tracking-wide text-white/40">Persona decks</p>
+                <p className="mb-5 text-sm font-black uppercase tracking-wide text-white/40">Pick who the ad is for</p>
                 {personaDecks.map((deck, index) => (
                   <button
                     key={deck.persona}
@@ -2536,13 +2970,13 @@ export default function App() {
                   </span>
                 </div>
                 <div className="mt-5 border-t border-slate-950/10 pt-5">
-                  <p className="text-sm font-black uppercase tracking-wide text-slate-400">Current persona</p>
+                  <p className="text-sm font-black uppercase tracking-wide text-slate-400">Audience</p>
                   <p className="mt-2 text-2xl font-black leading-tight">{activePersonaDeck.customer}</p>
                 </div>
                 <div className="mt-6 space-y-5">
                   <div>
                     <div className="mb-2 flex items-center justify-between text-sm font-black text-slate-500">
-                      <span>Pain intensity</span>
+                      <span>How urgent?</span>
                       <span>{activePersonaDeck.pain}</span>
                     </div>
                     <div className="h-2 rounded-full bg-slate-950/10">
@@ -2551,7 +2985,7 @@ export default function App() {
                   </div>
                   <div>
                     <div className="mb-2 flex items-center justify-between text-sm font-black text-slate-500">
-                      <span>Creative speed</span>
+                      <span>How fast to test?</span>
                       <span>{activePersonaDeck.speed}</span>
                     </div>
                     <div className="h-2 rounded-full bg-slate-950/10">
@@ -2564,35 +2998,35 @@ export default function App() {
                   onClick={enterStudio}
                   className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-slate-800"
                 >
-                  Open this deck
+                  Start with this audience
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
             </div>
             <p className="relative -mt-8 text-center text-sm font-black text-white/35">
-              Pick a customer type. Wiggly gives you a visual direction to start from.
+              Pick who you are selling to. Wiggly gives you ad ideas to start from.
             </p>
           </section>
 
           <section className="py-16">
             <div className="mb-12 max-w-4xl">
               <h2 className="text-4xl font-black leading-[0.95] tracking-normal text-slate-950 md:text-6xl">
-                Designed for the parts marketers repeat every day.
+                The boring ad tasks are handled for you.
               </h2>
               <p className="mt-5 max-w-2xl text-lg font-semibold leading-8 text-slate-500">
-                Wiggly keeps the creative loop small: pick a hook, preview the ad, save what works, and ship the next variation.
+                Choose a design, change the message, check how it looks, and download the version you like.
               </p>
             </div>
             <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
               {[
-                { icon: Wand2, title: 'Fresh hook angles' },
-                { icon: AudioLines, title: 'Reactive waveform ads' },
-                { icon: Layers, title: 'Layouts you can reuse' },
-                { icon: Captions, title: 'Caption-ready videos' },
-                { icon: Type, title: 'Editable ad copy' },
-                { icon: BookmarkPlus, title: 'Saved design library' },
-                { icon: CheckCircle2, title: 'Placement checks' },
-                { icon: Download, title: 'Export-ready MP4s' },
+                { icon: Wand2, title: 'Headline ideas' },
+                { icon: AudioLines, title: 'Moving audio bars' },
+                { icon: Layers, title: 'Reusable layouts' },
+                { icon: Captions, title: 'On-screen captions' },
+                { icon: Type, title: 'Editable text' },
+                { icon: BookmarkPlus, title: 'Saved designs' },
+                { icon: CheckCircle2, title: 'Feed, reel, and YouTube previews' },
+                { icon: Download, title: 'Finished video downloads' },
               ].map((item) => (
                 <div key={item.title} className="group flex flex-col items-center text-center">
                   <item.icon className="mb-5 h-16 w-16 stroke-[2.8] text-slate-950 transition duration-300 group-hover:-translate-y-1 group-hover:scale-105 group-hover:text-[#4F46E5]" />
@@ -2608,12 +3042,12 @@ export default function App() {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(0,255,204,0.22),transparent_30%),radial-gradient(circle_at_85%_10%,rgba(79,70,229,0.32),transparent_34%)]" />
             <div className="relative grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
               <div>
-                <p className="text-sm font-black uppercase tracking-wide text-[#00FFCC]">The ad creative loop</p>
+                <p className="text-sm font-black uppercase tracking-wide text-[#00FFCC]">Make more ads faster</p>
                 <h2 className="mt-3 text-4xl font-black leading-[0.95] tracking-normal md:text-6xl">
-                  Make ten ad directions before lunch.
+                  Make ten versions before lunch.
                 </h2>
                 <p className="mt-5 max-w-xl text-base font-semibold leading-7 text-white/62">
-                  Start with a saved layout, refresh the hook, check the Meta placement, then export the version that feels strongest.
+                  Start with a saved design, try a different headline, preview the ad, then download the version that feels strongest.
                 </p>
                 <button
                   type="button"
@@ -2627,10 +3061,10 @@ export default function App() {
               <div className="rounded-3xl border border-white/10 bg-white/[0.08] p-4 backdrop-blur">
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
-                    ['Hook', 'Lunch break = lost case'],
+                    ['Headline', 'Lunch break = lost case'],
                     ['Format', 'IG Feed 4:5'],
-                    ['Motion', 'Center waveform'],
-                    ['Export', '30s MP4'],
+                    ['Visual', 'Moving audio bars'],
+                    ['Download', '30 second video'],
                   ].map(([label, value]) => (
                     <div key={label} className="rounded-2xl bg-white/[0.09] p-4">
                       <p className="text-xs font-black uppercase tracking-wide text-white/35">{label}</p>
@@ -2639,7 +3073,7 @@ export default function App() {
                   ))}
                 </div>
                 <div className="mt-4 rounded-2xl bg-[#00FFCC] p-5 text-slate-950">
-                  <p className="text-sm font-black uppercase tracking-wide opacity-60">Current angle</p>
+                  <p className="text-sm font-black uppercase tracking-wide opacity-60">Current message</p>
                   <p className="mt-2 text-3xl font-black leading-none tracking-normal">Stop losing patients to voicemail.</p>
                   <div className="mt-5 flex h-3 items-center gap-2">
                     <span className="h-3 w-12 rounded-full bg-slate-950" />
@@ -2678,8 +3112,8 @@ export default function App() {
           className="flex items-center gap-3 rounded-xl text-left transition hover:opacity-80"
           title="Open homepage"
         >
-          <img src="/wiggly-logo.svg" alt="Wiggly" className="h-8 w-8 rounded-md object-cover shadow-sm" />
-          <h1 className="text-lg font-semibold tracking-tight">
+          <img src="/wiggly-logo.svg" alt="Wiggly" className="h-9 w-9 rounded-xl object-cover shadow-sm shadow-slate-950/10" />
+          <h1 className="text-xl font-black tracking-normal">
             {appTitle}
           </h1>
         </button>
@@ -2689,14 +3123,38 @@ export default function App() {
             onClick={() => setActiveTab('single')}
             className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'single' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}
           >
-            Create Ad
+            Make One Ad
           </button>
           <button 
             onClick={() => setActiveTab('batch')}
             className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'batch' ? 'bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700' : 'text-slate-600 hover:bg-slate-50 rounded-lg'}`}
           >
-            Batch Ads
+            Make Many Ads
           </button>
+          {activeTab === 'single' && (
+            <div className="ml-2 grid grid-cols-2 rounded-xl bg-slate-100 p-1">
+              {([
+                { id: 'visualizer', label: 'Audio Ad', icon: AudioLines },
+                { id: 'phone-call', label: 'Phone Call', icon: PhoneCall },
+              ] as const).map((mode) => {
+                const Icon = mode.icon;
+                const active = creativeMode === mode.id;
+                return (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    onClick={() => {
+                      switchCreativeMode(mode.id);
+                    }}
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold transition ${active ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {mode.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </header>
 
@@ -2706,20 +3164,23 @@ export default function App() {
             
             {activeTab === 'single' ? (
               <>
+              {creativeMode === 'visualizer' ? (
+              <>
               <PropertiesPanel />
 
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Components</h2>
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Add to Ad</h2>
                 <div className="space-y-2">
                   {[
-                    { label: 'Headline', description: 'Hook slot with refresh', icon: Type, action: handleAddHeadline, added: hasComponent('headline') },
-                    { label: 'Sub-headline', description: 'Optional supporting copy', icon: Type, action: handleAddSubheadline, added: hasSubheadline },
-                    { label: 'Visualizer', description: 'Audio-reactive bars', icon: AudioLines, action: handleAddVisualizer, added: hasComponent('visualizer') },
-                    { label: 'Captions', description: 'Timed transcript text', icon: Captions, action: handleAddCaptions, added: hasComponent('captions') },
-                    { label: 'CTA Button', description: 'Clickable-style call to action', icon: MousePointerClick, action: handleAddCta, added: false },
-                    { label: 'Logo', description: 'Default brand mark', icon: ImageIcon, action: handleAddLogo, added: hasComponent('logo') },
+                    { label: 'Headline', description: headlineCount > 0 ? 'Add another big line' : 'Main ad message', icon: Type, action: handleAddHeadline, added: false, count: headlineCount },
+                    { label: 'Sub-headline', description: subheadlineCount > 0 ? 'Add another small line' : 'Extra line under the headline', icon: Type, action: handleAddSubheadline, added: false, count: subheadlineCount },
+                    { label: 'Moving Bars', description: visualizerCount > 0 ? 'Add another audio bar' : 'Bars that move with the voice', icon: AudioLines, action: handleAddVisualizer, added: false, count: visualizerCount },
+                    { label: 'Captions', description: captionCount > 0 ? 'Add another caption box' : 'Words shown as the audio plays', icon: Captions, action: handleAddCaptions, added: false, count: captionCount },
+                    { label: 'Button', description: ctaCount > 0 ? 'Add another button' : 'Call-to-action button', icon: MousePointerClick, action: handleAddCta, added: false, count: ctaCount },
+                    { label: 'Logo', description: logoCount > 0 ? 'Add another logo' : 'Brand logo', icon: ImageIcon, action: handleAddLogo, added: false, count: logoCount },
                   ].map((component) => {
                     const Icon = component.icon;
+                    const componentCount = 'count' in component ? component.count : 0;
                     return (
                       <button
                         key={component.label}
@@ -2735,7 +3196,7 @@ export default function App() {
                             <span className="block text-xs text-slate-500">{component.description}</span>
                           </span>
                         </span>
-                        <span className="text-xs font-semibold text-slate-400">{component.added ? 'Added' : 'Add'}</span>
+                        <span className="text-xs font-semibold text-slate-400">{component.added ? 'Added' : componentCount > 0 ? `${componentCount} added` : 'Add'}</span>
                       </button>
                     );
                   })}
@@ -2748,13 +3209,13 @@ export default function App() {
                         if(e.target) e.target.value = '';
                       }}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                      title="Add Image Layer"
+                      title="Add image"
                     />
                     <div className="w-full flex items-center justify-between gap-3 rounded-lg border border-dashed border-slate-300 bg-white px-3 py-3 text-left transition-colors group-hover:bg-slate-50">
                       <span className="flex items-center gap-2">
                         <Layers className="w-4 h-4 text-slate-500" />
                         <span>
-                          <span className="block text-sm font-semibold text-slate-800">Image Layer</span>
+                          <span className="block text-sm font-semibold text-slate-800">Image</span>
                           <span className="block text-xs text-slate-500">Upload product or proof image</span>
                         </span>
                       </span>
@@ -2765,11 +3226,11 @@ export default function App() {
               </div>
 
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Style & Assets</h2>
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Look & Media</h2>
                 <div className="space-y-2">
                   {[
-                    { label: 'Visualizer', value: visualizerColor, onChange: setVisualizerColor },
-                    { label: 'Accent', value: accentColor, onChange: setAccentColor },
+                    { label: 'Bars', value: visualizerColor, onChange: setVisualizerColor },
+                    { label: 'Highlight', value: accentColor, onChange: setAccentColor },
                     { label: 'Background', value: bgColor, onChange: setBgColor },
                   ].map((colorControl) => (
                     <HexColorInput
@@ -2798,7 +3259,7 @@ export default function App() {
                         <span className="flex items-center gap-2">
                           <Upload className="w-4 h-4 text-slate-400" />
                           <span>
-                            <span className="block font-semibold text-slate-700">Background media</span>
+                            <span className="block font-semibold text-slate-700">Background image/video</span>
                             <span className="block text-xs text-slate-500">Image or video</span>
                           </span>
                         </span>
@@ -2822,7 +3283,7 @@ export default function App() {
                     <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
                       <label className="flex cursor-pointer items-center justify-between gap-3">
                         <span>
-                          <span className="block text-sm font-semibold text-slate-700">Shadow overlay</span>
+                          <span className="block text-sm font-semibold text-slate-700">Dark overlay</span>
                           <span className="block text-xs text-slate-500">Darken media behind the ad text</span>
                         </span>
                         <input
@@ -2893,7 +3354,7 @@ export default function App() {
                   {introImage && (
                     <div className="rounded-lg border border-slate-200 bg-white p-2.5">
                       <div className="mb-2 flex items-center justify-between">
-                        <span className="text-xs font-semibold text-slate-600">Intro duration</span>
+                        <span className="text-xs font-semibold text-slate-600">How long to show it</span>
                         <span className="text-xs font-semibold text-slate-400">{introDuration}s then fade</span>
                       </div>
                       <div className="grid grid-cols-3 rounded-md bg-slate-100 p-1">
@@ -2917,7 +3378,7 @@ export default function App() {
                         onClick={() => setIntroCropOpen(true)}
                         className="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs font-bold text-slate-600 transition hover:bg-white hover:text-slate-900"
                       >
-                        Check feed crop
+                        Check feed preview
                       </button>
                     </div>
                   )}
@@ -2938,7 +3399,7 @@ export default function App() {
                         <span className="flex items-center gap-2">
                           {isTranscribing ? <Loader2 className="w-4 h-4 text-slate-400 animate-spin" /> : <Upload className="w-4 h-4 text-slate-400" />}
                           <span>
-                            <span className="block font-semibold text-slate-700">{isTranscribing ? "Transcribing..." : "Voiceover audio"}</span>
+                            <span className="block font-semibold text-slate-700">{isTranscribing ? "Reading audio..." : "Voice audio"}</span>
                             <span className="block max-w-[170px] truncate text-xs text-slate-500">{audioFileName || "MP3, WAV, M4A"}</span>
                           </span>
                         </span>
@@ -2961,7 +3422,7 @@ export default function App() {
                   {audioLibraryItems.length > 0 && (
                     <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                       <div className="mb-2 flex items-center justify-between gap-2">
-                        <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Previous audios</span>
+                        <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Saved audio</span>
                         <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-slate-400">{audioLibraryItems.length}</span>
                       </div>
                       <div className="space-y-1.5">
@@ -3002,38 +3463,32 @@ export default function App() {
                   <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <span className="block text-sm font-bold text-slate-800">Conversation ad</span>
-                        <span className="block text-xs font-semibold leading-5 text-slate-500">Generate a subtle two-person voice scene from the brief.</span>
+                        <span className="block text-sm font-bold text-slate-800">Make voice audio</span>
+                        <span className="block text-xs font-semibold leading-5 text-slate-500">Write a short two-person script, edit it, then make the audio.</span>
                       </div>
                       <button
                         type="button"
-                        onClick={handleGenerateDialogueScripts}
+                        onClick={handleOpenConversationWizard}
                         disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
                         className="shrink-0 rounded-md bg-slate-950 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {isGeneratingDialogueScripts ? 'Writing...' : 'Generate'}
+                        {isGeneratingDialogueScripts ? 'Writing...' : isGeneratingDialogueAudio ? 'Making...' : 'Open'}
                       </button>
                     </div>
                     {dialogueScripts.length > 0 && (
-                      <div className="mt-3 space-y-2">
-                        {dialogueScripts.map((script, index) => (
-                          <button
-                            key={`${script.title}-${index}`}
-                            type="button"
-                            onClick={() => handleGenerateDialogueAudio(script)}
-                            disabled={isGeneratingDialogueAudio || isGeneratingDialogueScripts}
-                            className="w-full rounded-md border border-slate-200 bg-white p-2 text-left transition hover:border-indigo-200 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            <span className="flex items-center justify-between gap-2">
-                              <span className="truncate text-xs font-black text-slate-800">{script.title || `Option ${index + 1}`}</span>
-                              <span className="text-[10px] font-bold uppercase tracking-wide text-indigo-500">
-                                {isGeneratingDialogueAudio ? 'Making audio' : 'Use'}
-                              </span>
-                            </span>
-                            <span className="mt-1 block truncate text-[11px] font-semibold text-slate-500">{script.angle}</span>
-                          </button>
-                        ))}
-                      </div>
+                      <button
+                        type="button"
+                        onClick={handleOpenConversationWizard}
+                        className="mt-3 w-full rounded-md border border-slate-200 bg-white p-2 text-left transition hover:border-indigo-200 hover:bg-indigo-50"
+                      >
+                        <span className="flex items-center justify-between gap-2">
+                          <span className="truncate text-xs font-black text-slate-800">{dialogueScripts.length} voice scripts ready</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wide text-indigo-500">Choose</span>
+                        </span>
+                        <span className="mt-1 block truncate text-[11px] font-semibold text-slate-500">
+                          {draftDialogueScript?.title || dialogueScripts[0]?.title || 'Open to choose one.'}
+                        </span>
+                      </button>
                     )}
                   </div>
                 </div>
@@ -3041,8 +3496,8 @@ export default function App() {
 
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Platform Simulator</h2>
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Meta preview</span>
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Where It Shows Up</h2>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Preview</span>
                 </div>
                 
                 <div className="space-y-4">
@@ -3052,6 +3507,7 @@ export default function App() {
                       { id: 'instagram-feed', label: 'IG Feed', ratio: '4:5' },
                       { id: 'reels', label: 'Reels', ratio: '9:16' },
                       { id: 'stories', label: 'Stories', ratio: '9:16' },
+                      { id: 'youtube', label: 'YouTube', ratio: '16:9' },
                     ] as const).map((option) => {
                       const active = platform === option.id || (platform === 'feed' && option.id === 'facebook-feed') || (platform === 'vertical' && option.id === 'reels');
                       return (
@@ -3089,8 +3545,8 @@ export default function App() {
 
                   <div className="space-y-2">
                     {[
-                      { id: 'safeZonesToggle', label: 'Safe zones', checked: showSafeZones, onChange: setShowSafeZones },
-                      { id: 'redGuidesToggle', label: 'Info labels', checked: showRedGuides, onChange: setShowRedGuides },
+                      { id: 'safeZonesToggle', label: 'Show safe area', checked: showSafeZones, onChange: setShowSafeZones },
+                      { id: 'redGuidesToggle', label: 'Show guide labels', checked: showRedGuides, onChange: setShowRedGuides },
                     ].map((toggle) => (
                       <label key={toggle.id} htmlFor={toggle.id} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
                         <span className="text-sm font-semibold text-slate-700">{toggle.label}</span>
@@ -3111,7 +3567,7 @@ export default function App() {
 
                   <div className="space-y-2">
                     <label className="block">
-                      <span className="mb-1.5 block text-xs font-semibold text-slate-700">Brand username</span>
+                      <span className="mb-1.5 block text-xs font-semibold text-slate-700">Account name</span>
                       <input 
                         type="text" 
                         value={brandName}
@@ -3136,8 +3592,8 @@ export default function App() {
                          />
                          <div className="w-full px-3 py-3 border border-slate-200 border-dashed rounded-lg bg-white hover:bg-slate-50 hover:border-slate-300 transition-colors flex items-center justify-between pointer-events-none">
                            <span>
-                              <span className="block text-sm font-semibold text-slate-700">Brand logo</span>
-                              <span className="block text-xs text-slate-500">Profile avatar</span>
+                              <span className="block text-sm font-semibold text-slate-700">Profile picture or logo</span>
+                              <span className="block text-xs text-slate-500">Shows next to the ad</span>
                            </span>
                            <span className="text-xs font-semibold text-slate-400">
                               {brandLogo ? "Uploaded" : "Upload"}
@@ -3157,7 +3613,7 @@ export default function App() {
                   </div>
                   
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700">Platform CTA</label>
+                    <label className="text-xs font-semibold text-slate-700">Ad button text</label>
                     <select 
                       value={autoCta}
                       onChange={e => setAutoCta(e.target.value)}
@@ -3173,7 +3629,7 @@ export default function App() {
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-700 flex items-center justify-between">
-                      Caption Preview
+                      Post caption
                     </label>
                     <textarea 
                       value={simulatedCaption}
@@ -3182,21 +3638,146 @@ export default function App() {
                       className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500/20 resize-none" 
                     />
                     <div className="flex justify-end text-[10px] text-slate-400 font-medium">
-                       {simulatedCaption.length > 125 ? <span className="text-orange-500 flex items-center gap-1">⚠ Truncated (~125 chars max before 'more')</span> : `~${125 - simulatedCaption.length} chars until truncation`}
+                       {simulatedCaption.length > 125 ? <span className="flex items-center gap-1 text-orange-500">This may get shortened in the feed</span> : `${125 - simulatedCaption.length} characters before it may shorten`}
                     </div>
                   </div>
                 </div>
               </div>
               </>
+              ) : (
+                <>
+                  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Phone Call</h2>
+                      <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-700">9:16</span>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="block">
+                        <span className="mb-1.5 block text-xs font-semibold text-slate-700">US phone number</span>
+                        <input
+                          type="tel"
+                          value={phoneNumber}
+                          onChange={(event) => setPhoneNumber(event.target.value)}
+                          placeholder="5551234567"
+                          className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10"
+                        />
+                        <span className="mt-1 block text-xs font-semibold text-slate-400">{formatUsPhoneNumber(phoneNumber) || '(555) 123-4567'}</span>
+                      </label>
+
+                      <div>
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className="text-xs font-semibold text-slate-700">Ring duration</span>
+                          <span className="text-xs font-semibold text-slate-400">{phoneRingDuration}s</span>
+                        </div>
+                        <div className="grid grid-cols-4 rounded-lg bg-slate-100 p-1">
+                          {([0, 1, 2, 3] as const).map((duration) => (
+                            <button
+                              key={duration}
+                              type="button"
+                              onClick={() => setPhoneRingDuration(duration)}
+                              className={`rounded-md px-2 py-2 text-xs font-black transition ${phoneRingDuration === duration ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                            >
+                              {duration}s
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <div className="relative group flex-1">
+                          <input
+                            type="file"
+                            accept="audio/*,video/mp4"
+                            onChange={(e) => {
+                              handleAudioUpload(e);
+                              if(e.target) e.target.value = '';
+                            }}
+                            className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                            title="Upload voicemail audio"
+                          />
+                          <div className="flex h-full w-full items-center justify-between rounded-lg border border-dashed border-slate-300 bg-white px-3 py-3 text-sm text-slate-600 transition-colors group-hover:bg-slate-50">
+                            <span className="flex min-w-0 items-center gap-2">
+                              <Upload className="h-4 w-4 shrink-0 text-slate-400" />
+                              <span className="min-w-0">
+                                <span className="block font-semibold text-slate-700">Voicemail audio</span>
+                                <span className="block max-w-[178px] truncate text-xs text-slate-500">{audioFileName || 'MP3, WAV, M4A'}</span>
+                              </span>
+                            </span>
+                          <span className="text-xs font-semibold text-slate-400">{audioUrl ? 'Loaded' : 'Upload'}</span>
+                          </div>
+                        </div>
+                        {audioUrl && (
+                          <button
+                            onClick={() => { setAudioUrl(null); setAudioFileName(''); setGeneratedDialogueAudioUrl(null); }}
+                            title="Remove voicemail audio"
+                            className="flex shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-slate-400 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                        <p className="text-xs font-semibold leading-5 text-slate-500">
+                          This looks like an outgoing iPhone call. If you add a ring, Wiggly plays a normal US phone ring before the voicemail.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {audioLibraryItems.length > 0 && (
+                    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Saved Audio</h2>
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-400">{audioLibraryItems.length}</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {audioLibraryItems.slice(0, 8).map((item) => (
+                          <div
+                            key={item.id}
+                            className={`group flex items-center gap-2 rounded-md border px-2 py-2 text-left transition ${
+                              audioFileName === item.name
+                                ? 'border-indigo-200 bg-indigo-50 text-slate-900'
+                                : 'border-slate-100 bg-slate-50 text-slate-600 hover:border-slate-200 hover:bg-white'
+                            }`}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => useAudioItem(item)}
+                              className="min-w-0 flex-1 text-left"
+                              title={`Use ${item.name}`}
+                            >
+                              <span className="block truncate text-xs font-bold">{item.name}</span>
+                              <span className="block text-[10px] font-semibold text-slate-400">{item.builtIn ? 'Default audio' : 'Saved on this device'}</span>
+                            </button>
+                            {!item.builtIn && (
+                              <button
+                                type="button"
+                                onClick={() => deleteStoredAudio(item.id)}
+                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-300 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                                title="Remove audio"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+              </>
             ) : (
               <div className="bg-indigo-900 rounded-xl border border-indigo-800 shadow-sm p-4 text-white">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-300">Batch Engine</h2>
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-300">Make Many Ads</h2>
                   <Database className="w-4 h-4 text-indigo-400" />
                 </div>
                 
                 <p className="text-[11px] leading-relaxed text-indigo-200 mb-4">
-                  Upload a CSV file containing <strong>headline</strong> and <strong>audioUrl</strong> to render multiple variations.
+                  Upload a spreadsheet with a <strong>headline</strong> and <strong>audio link</strong> for each ad.
                 </p>
 
                 <div className="relative group mb-4">
@@ -3209,7 +3790,7 @@ export default function App() {
                   <div className="flex flex-col items-center justify-center gap-2 border border-dashed border-indigo-500/50 hover:bg-indigo-800/50 rounded-lg p-4 bg-indigo-950/20 transition-colors">
                     <Upload className="w-5 h-5 text-indigo-400" />
                     <span className="text-xs font-medium text-indigo-200">
-                      Drag & Drop CSV
+                      Upload spreadsheet
                     </span>
                   </div>
                 </div>
@@ -3217,7 +3798,7 @@ export default function App() {
                 {csvData.length > 0 && (
                   <div className="mb-4">
                     <p className="text-[11px] leading-relaxed text-indigo-200 mb-2">
-                      Current Queue: <span className="text-white font-semibold">{csvData.length} Combinations</span>
+                      Ads to make: <span className="text-white font-semibold">{csvData.length}</span>
                     </p>
                     <div className="bg-indigo-950/50 rounded-lg border border-indigo-800 max-h-32 overflow-y-auto">
                       <table className="w-full text-left text-[10px]">
@@ -3246,11 +3827,11 @@ export default function App() {
                   className="w-full py-2 bg-indigo-500 hover:bg-indigo-400 disabled:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-bold shadow-lg transition-colors flex justify-center items-center gap-2"
                 >
                   {batchStatus === 'processing' ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> Batch Render {Math.round(renderProgress)}%</>
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Making videos {Math.round(renderProgress)}%</>
                   ) : batchStatus === 'done' ? (
-                    <><CheckCircle2 className="w-4 h-4" /> Batch Complete</>
+                    <><CheckCircle2 className="w-4 h-4" /> Videos ready</>
                   ) : (
-                    "Initialize Batch Render"
+                    "Make videos"
                   )}
                 </button>
               </div>
@@ -3258,9 +3839,20 @@ export default function App() {
           </div>
 
           {/* Main Preview Area */}
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden px-4 py-3">
+          <div className={`flex min-h-0 flex-1 flex-col items-center px-4 ${creativeMode === 'phone-call' ? 'justify-center overflow-y-auto overflow-x-visible py-2' : 'justify-center overflow-hidden py-3'}`}>
             
-            <div className="w-full max-w-[420px] relative">
+            {creativeMode === 'phone-call' ? (
+              <div className="relative w-full max-w-[420px] shrink-0 pb-8">
+                <PhoneCallSimulator
+                  phoneNumber={phoneNumber}
+                  audioUrl={audioUrl}
+                  ringDurationSeconds={phoneRingDuration}
+                  playing={playing}
+                  onPlaybackComplete={() => setPlaying(false)}
+                />
+              </div>
+            ) : (
+            <div className={`relative w-full ${platform === 'youtube' ? 'max-w-[640px]' : 'max-w-[420px]'}`}>
               <PlatformFrame
                 platform={platform}
                 theme={platformTheme}
@@ -3291,25 +3883,25 @@ export default function App() {
               {/* Cycle Platform Button */}
               <button 
                 onClick={() => {
-                  const platforms: PlatformType[] = ['facebook-feed', 'instagram-feed', 'reels', 'stories'];
+                  const platforms: PlatformType[] = ['facebook-feed', 'instagram-feed', 'reels', 'stories', 'youtube'];
                   const currentIndex = platforms.indexOf(platform);
                   const nextIndex = (currentIndex + 1) % platforms.length;
                   setPlatform(platforms[nextIndex]);
                 }}
-                className="absolute -right-14 sm:-right-20 bottom-8 p-3 bg-white border border-slate-200 shadow-xl rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-50 hover:scale-105 active:scale-95 transition-all cursor-pointer group z-10"
-                title="Next Environment"
+                className={`${platform === 'youtube' ? 'absolute -bottom-14 right-4' : 'absolute -right-14 bottom-8 sm:-right-20'} z-10 cursor-pointer rounded-full border border-slate-200 bg-white p-3 text-slate-500 shadow-xl transition-all hover:scale-105 hover:bg-slate-50 hover:text-slate-800 active:scale-95 group`}
+                title="See the next preview"
               >
                 <ChevronDown className="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors" />
               </button>
 
-              <div className="absolute -right-11 top-[30%] z-20 hidden sm:block">
+              <div className={`${platform === 'youtube' ? 'absolute -top-12 right-4' : 'absolute -right-11 top-[30%]'} z-20 hidden sm:block`}>
                 <button
                   type="button"
                   onClick={() => {
                     setTemplateDraftName(getCurrentDesignTitle());
                     setSaveTemplateOpen(true);
                   }}
-                  className="flex h-24 w-8 items-center justify-center rounded-r-xl border border-l-0 border-slate-200 bg-white/95 text-slate-500 shadow-lg backdrop-blur transition hover:w-10 hover:text-slate-900"
+                  className={`${platform === 'youtube' ? 'h-10 w-10 rounded-full border' : 'h-24 w-8 rounded-r-xl border border-l-0 hover:w-10'} flex items-center justify-center border-slate-200 bg-white/95 text-slate-500 shadow-lg backdrop-blur transition hover:text-slate-900`}
                   title="Save this design as a template"
                 >
                   <BookmarkPlus className="h-4 w-4" />
@@ -3317,7 +3909,7 @@ export default function App() {
               </div>
 
               {saveTemplateOpen && (
-                <div className="absolute -right-56 top-[30%] z-30 hidden w-48 rounded-xl border border-slate-200 bg-white p-3 shadow-2xl sm:block">
+                <div className={`${platform === 'youtube' ? 'absolute -top-12 right-16' : 'absolute -right-56 top-[30%]'} z-30 hidden w-48 rounded-xl border border-slate-200 bg-white p-3 shadow-2xl sm:block`}>
                   <div className="mb-3 flex items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold text-slate-800">Save template</p>
@@ -3353,7 +3945,7 @@ export default function App() {
                 type="button"
                 onClick={() => setCreativeBriefOpen(true)}
                 className="absolute -right-14 top-[12%] z-20 hidden h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-lg transition hover:text-slate-900 hover:shadow-xl sm:flex"
-                title="Open Creative Brief"
+                title="Tell Wiggly about the business"
               >
                 <ClipboardList className="h-4 w-4" />
                 <span className="absolute -right-1 -top-1 rounded-full bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold text-white">
@@ -3361,6 +3953,7 @@ export default function App() {
                 </span>
               </button>
             </div>
+            )}
 
             {/* Toolbar */}
             <div className="mt-4 flex flex-col items-center gap-2">
@@ -3372,10 +3965,10 @@ export default function App() {
                     className={`px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-sm font-semibold flex items-center gap-2 text-slate-700 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed ${exportLaunchAnimation ? 'translate-y-8 scale-90 opacity-0' : ''}`}
                    >
                     {rendering ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                    {rendering ? 'Exporting MP4' : 'Export MP4'}
+                    {rendering ? 'Making Video' : 'Download Video'}
                   </button>
                   <div className="flex items-center gap-1 text-[10px] text-slate-500">
-                    <span className="font-medium mr-1 text-slate-600">Video length:</span>
+                    <span className="mr-1 font-medium text-slate-600">How long:</span>
                     <button 
                       onClick={() => setRenderDurationCap(30)}
                       className={`px-1.5 py-0.5 rounded transition-colors ${renderDurationCap === 30 ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-slate-100'}`}
@@ -3392,7 +3985,7 @@ export default function App() {
                       onClick={() => setRenderDurationCap('full')}
                       className={`px-1.5 py-0.5 rounded transition-colors ${renderDurationCap === 'full' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-slate-100'}`}
                     >
-                      Full
+                      All
                     </button>
                   </div>
                 </div>
@@ -3401,45 +3994,90 @@ export default function App() {
                   className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors self-start"
                  >
                   {playing ? (
-                    <><Square className="w-4 h-4 text-red-400" /> Stop Preview</>
+                    <><Square className="w-4 h-4 text-red-400" /> Stop</>
                   ) : (
-                    <><Play className="w-4 h-4 text-indigo-400 fill-current" /> Play Preview</>
+                    <><Play className="w-4 h-4 text-indigo-400 fill-current" /> Play</>
                   )}
+                </button>
+                <button
+                  type="button"
+                  onClick={SOCIAL_POSTING_ENABLED ? handlePostToSocials : undefined}
+                  disabled={!SOCIAL_POSTING_ENABLED || rendering}
+                  className="px-4 py-2 bg-slate-50 border border-slate-200 text-slate-500 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors self-start disabled:cursor-not-allowed disabled:opacity-80"
+                  title="Posting directly to social accounts is coming soon"
+                >
+                  {rendering && postizAutoOpenAfterExport ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                  <span>Post Online</span>
+                  <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-600">Soon</span>
                 </button>
               </div>
 
+              <p className="max-w-[360px] text-center text-[11px] font-semibold leading-5 text-slate-500">
+                Coming soon: send this ad to Facebook, Instagram, TikTok, or YouTube after the video is made.
+              </p>
+
               <div className="mt-1 w-full max-w-[360px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Timeline</span>
-                  <span className="text-xs font-semibold text-slate-500">
-                    {renderDurationCap === 'full' ? 'Full audio' : `${selectedTimelineDuration}s`}
-                  </span>
-                </div>
-                <div className="flex h-8 overflow-hidden rounded-lg bg-slate-100">
-                  {introImage && (
-                    <div
-                      className="flex min-w-[46px] items-center justify-center border-r border-white bg-indigo-500 text-[10px] font-bold text-white"
-                      style={{ width: introTimelineWidth }}
-                      title={`Intro image: ${introDuration}s`}
-                    >
-                      Intro {introDuration}s
+                {creativeMode === 'phone-call' ? (
+                  <>
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Video Plan</span>
+                      <span className="text-xs font-semibold text-slate-500">Ring then voicemail</span>
                     </div>
-                  )}
-                  <div className="flex flex-1 items-center justify-center bg-slate-900 text-[10px] font-bold text-white">
-                    Visualizer {mainTimelineSeconds}s
-                  </div>
-                </div>
-                <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400">
-                  <span>0s</span>
-                  {introImage ? <span>Fade after {introDuration}s</span> : <span>No intro</span>}
-                  <span>{renderDurationCap === 'full' ? 'End' : `${selectedTimelineDuration}s`}</span>
-                </div>
+                    <div className="flex h-8 overflow-hidden rounded-lg bg-slate-100">
+                      {phoneRingDuration > 0 && (
+                        <div
+                          className="flex min-w-[56px] items-center justify-center border-r border-white bg-emerald-500 text-[10px] font-bold text-white"
+                          style={{ width: `${Math.max(16, phoneRingDuration * 12)}%` }}
+                        >
+                          Ring {phoneRingDuration}s
+                        </div>
+                      )}
+                      <div className="flex flex-1 items-center justify-center bg-slate-900 text-[10px] font-bold text-white">
+                        {phoneRingDuration > 0 ? 'Voicemail' : 'Recording includes ring'}
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400">
+                      <span>0s</span>
+                      <span>{phoneRingDuration > 0 ? 'Timer starts after ring' : 'No extra ring added'}</span>
+                      <span>End</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Video Plan</span>
+                      <span className="text-xs font-semibold text-slate-500">
+                        {renderDurationCap === 'full' ? 'Full voice audio' : `${selectedTimelineDuration}s`}
+                      </span>
+                    </div>
+                    <div className="flex h-8 overflow-hidden rounded-lg bg-slate-100">
+                      {introImage && (
+                        <div
+                          className="flex min-w-[46px] items-center justify-center border-r border-white bg-indigo-500 text-[10px] font-bold text-white"
+                          style={{ width: introTimelineWidth }}
+                          title={`Intro image: ${introDuration}s`}
+                        >
+                          Intro {introDuration}s
+                        </div>
+                      )}
+                      <div className="flex flex-1 items-center justify-center bg-slate-900 text-[10px] font-bold text-white">
+                        Main ad {mainTimelineSeconds}s
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400">
+                      <span>0s</span>
+                      {introImage ? <span>Fade after {introDuration}s</span> : <span>No intro</span>}
+                      <span>{renderDurationCap === 'full' ? 'End' : `${selectedTimelineDuration}s`}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             
           </div>
 
           {/* Template Library */}
+          {creativeMode === 'visualizer' && (
           <div className="hidden w-72 shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm xl:flex">
             <div className="border-b border-slate-100 p-4">
               <div className="mb-3 flex items-start justify-between gap-3">
@@ -3462,7 +4100,7 @@ export default function App() {
                 ))}
               </div>
               {templateLibraryTab === 'history' && (
-                <p className="mt-3 text-[11px] leading-relaxed text-slate-400">History is saved on this device after you download an MP4.</p>
+                <p className="mt-3 text-[11px] leading-relaxed text-slate-400">History is saved on this device after you download a video.</p>
               )}
               {historySaveWarning && templateLibraryTab === 'history' && (
                 <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-800">{historySaveWarning}</p>
@@ -3523,6 +4161,7 @@ export default function App() {
               )}
             </div>
           </div>
+          )}
         </main>
 
         {(rendering || exportDownload || exportPhase === 'error') && (
@@ -3541,12 +4180,12 @@ export default function App() {
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-slate-900">
                     {exportDownload
-                      ? 'MP4 ready'
+                      ? 'Video ready'
                       : exportPhase === 'error'
-                        ? 'Export failed'
+                        ? 'Video failed'
                         : exportPhase === 'converting'
-                          ? 'Converting to MP4'
-                          : 'Rendering frames'}
+                          ? 'Finishing video'
+                          : 'Making video'}
                   </p>
                   {exportDownload || exportPhase === 'error' ? (
                     <button
@@ -3584,12 +4223,12 @@ export default function App() {
                 </div>}
                 <p className="mt-2 text-xs leading-snug text-slate-500">
                   {exportDownload
-                    ? `Ready to save: ${formatBytes(exportDownload.blob.size)} MP4 snapshot.`
+                    ? `Ready to save: ${formatBytes(exportDownload.blob.size)} video.`
                     : exportPhase === 'error'
-                      ? 'Try exporting again. If it repeats, restart the dev server.'
+                      ? 'Try making the video again. If it repeats, restart the app.'
                       : exportPhase === 'converting'
-                    ? 'Finalizing the 60fps MP4. Keep this tab open.'
-                    : 'Rendering a snapshot of this ad. You can start a different creative while this finishes.'}
+                    ? 'Finishing the video. Keep this tab open.'
+                    : 'Making this video. You can start a different ad while it finishes.'}
                 </p>
                 {exportDownload && (
                   <div className="mt-3 space-y-2">
@@ -3599,15 +4238,489 @@ export default function App() {
                       className="flex w-full items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
                     >
                       <Download className="h-4 w-4" />
-                      Download MP4
+                      Download Video
                     </button>
                     <button
                       type="button"
                       onClick={openReadyExport}
                       className="flex w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                     >
-                      Open MP4
+                      Preview Video
                     </button>
+                    <button
+                      type="button"
+                      onClick={SOCIAL_POSTING_ENABLED ? openPostizHandoff : undefined}
+                      disabled={!SOCIAL_POSTING_ENABLED}
+                      className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-500"
+                      title="Posting directly to social accounts is coming soon"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Post Online Coming Soon
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {postizOpen && (
+          <div className="fixed inset-0 z-[74] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+              <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Post This Ad</h2>
+                  <p className="mt-1 text-sm text-slate-500">Choose where it should go. Wiggly will make a draft with this video and caption so you can review it before posting.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPostizOpen(false)}
+                  className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4 p-5">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs font-black uppercase tracking-wide text-slate-400">Draft caption</p>
+                  <p className="mt-2 text-sm font-semibold leading-6 text-slate-700">{getPostizDraftContent()}</p>
+                </div>
+
+                {postizStatus === 'loading' ? (
+                  <div className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-5 text-sm font-bold text-slate-500">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading social accounts
+                  </div>
+                ) : postizIntegrations.length === 0 ? (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold leading-6 text-amber-900">
+                    {postizError || 'No connected social accounts found. Connect Facebook, Instagram, TikTok, or YouTube in Postiz, then refresh.'}
+                    <button
+                      type="button"
+                      onClick={loadPostizIntegrations}
+                      className="mt-3 block rounded-lg bg-white px-3 py-2 text-xs font-black text-amber-900 shadow-sm"
+                    >
+                      Refresh channels
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-black uppercase tracking-wide text-slate-400">Choose where to send it</p>
+                      <button
+                        type="button"
+                        onClick={loadPostizIntegrations}
+                        disabled={postizStatus === 'uploading' || postizStatus === 'drafting'}
+                        className="text-xs font-black text-slate-400 transition hover:text-slate-700 disabled:opacity-50"
+                      >
+                        Refresh
+                      </button>
+                    </div>
+                    {postizIntegrations.map((integration) => {
+                      const selected = selectedPostizIntegrationId === integration.id;
+                      return (
+                        <button
+                          key={integration.id}
+                          type="button"
+                          onClick={() => setSelectedPostizIntegrationId(integration.id)}
+                          className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${
+                            selected
+                              ? 'border-slate-900 bg-white shadow-sm'
+                              : 'border-slate-200 bg-slate-50 hover:bg-white'
+                          }`}
+                        >
+                          {integration.picture ? (
+                            <img src={integration.picture} alt="" className="h-9 w-9 rounded-full object-cover" />
+                          ) : (
+                            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-xs font-black uppercase text-slate-500">
+                              {integration.identifier.slice(0, 2)}
+                            </span>
+                          )}
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-black text-slate-900">{integration.name || integration.profile || integration.identifier}</span>
+                            <span className="block truncate text-xs font-semibold text-slate-500">{integration.identifier}{integration.profile ? ` · ${integration.profile}` : ''}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {postizStatus === 'error' && postizIntegrations.length > 0 && (
+                  <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold leading-6 text-red-700">{postizError}</p>
+                )}
+
+                {postizStatus === 'done' && (
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold leading-6 text-emerald-800">
+                    {postizAppUrl ? (
+                      <button
+                        type="button"
+                        onClick={() => window.open(postizAppUrl, '_blank', 'noopener,noreferrer')}
+                        className="text-left font-black text-emerald-900 underline decoration-emerald-300 underline-offset-4 transition hover:text-emerald-700"
+                      >
+                        Draft ready on {getSelectedPostizChannelLabel()} — finish posting →
+                      </button>
+                    ) : (
+                      <span>Draft ready on {getSelectedPostizChannelLabel()}. Add POSTIZ_APP_URL for a direct finish-posting link.</span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 px-5 py-4">
+                <p className="text-xs font-semibold text-slate-500">Nothing goes live until you approve it.</p>
+                <button
+                  type="button"
+                  onClick={sendExportToPostiz}
+                  disabled={!selectedPostizIntegrationId || postizStatus === 'loading' || postizStatus === 'uploading' || postizStatus === 'drafting' || postizStatus === 'done'}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {(postizStatus === 'uploading' || postizStatus === 'drafting') && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {postizStatus === 'uploading' ? 'Uploading video' : postizStatus === 'drafting' ? 'Making draft' : postizStatus === 'done' ? 'Draft ready' : 'Make draft'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {conversationWizardOpen && (
+          <div className="fixed inset-0 z-[75] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+            <div className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+              <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Make Voice Audio</h2>
+                  <p className="mt-1 text-sm text-slate-500">Check the business info, choose the words, edit anything, then make the audio.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    stopDialoguePreview();
+                    setConversationWizardOpen(false);
+                  }}
+                  className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="border-b border-slate-100 px-5 py-3">
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {[
+                    { id: 'brief', label: '1. Business', detail: 'What the ad is about' },
+                    { id: 'scripts', label: '2. Choose Words', detail: `${dialogueScripts.length || 0} options` },
+                    { id: 'edit', label: '3. Make Audio', detail: 'Hear it first' },
+                  ].map((step) => {
+                    const active = conversationWizardStep === step.id;
+                    return (
+                      <button
+                        key={step.id}
+                        type="button"
+                        onClick={() => {
+                          if (step.id === 'edit' && !draftDialogueScript) return;
+                          setConversationWizardStep(step.id as ConversationWizardStep);
+                        }}
+                        className={`rounded-xl border px-3 py-2 text-left transition ${
+                          active
+                            ? 'border-slate-900 bg-slate-950 text-white shadow-sm'
+                            : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-white'
+                        }`}
+                      >
+                        <span className="block text-xs font-black">{step.label}</span>
+                        <span className={`mt-0.5 block text-[11px] font-semibold ${active ? 'text-white/70' : 'text-slate-400'}`}>{step.detail}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="min-h-0 flex-1 overflow-y-auto p-5">
+                {conversationWizardStep === 'brief' && (
+                  <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
+                    <div>
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                          <h3 className="text-sm font-black text-slate-900">Check what this ad is selling</h3>
+                          <p className="mt-1 text-sm text-slate-500">This is the context that decides what the conversation is about.</p>
+                        </div>
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+                          {briefCompletion}/{requiredBriefFields}
+                        </span>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {CREATIVE_BRIEF_FIELDS.map((field) => (
+                          <label key={field.key} className={field.key === 'reference' ? 'block space-y-1.5 md:col-span-2' : 'block space-y-1.5'}>
+                            <span className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-bold text-slate-700">{field.question}</span>
+                              {field.optional && <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Optional</span>}
+                            </span>
+                            <textarea
+                              value={creativeBrief[field.key]}
+                              onChange={(event) => updateCreativeBrief(field.key, event.target.value)}
+                              rows={field.key === 'reference' ? 3 : 2}
+                              placeholder={field.placeholder}
+                              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10"
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <aside className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <p className="text-xs font-black uppercase tracking-wide text-slate-400">Who this is for</p>
+                      <p className="mt-2 text-lg font-black leading-tight text-slate-900">{activePersonaDeck?.customer || 'Dental practice owner'}</p>
+                      <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">The script should sound like one person has the problem and another person casually points to the solution.</p>
+                      <button
+                        type="button"
+                        onClick={() => handleGenerateDialogueScripts(false)}
+                        disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
+                        className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isGeneratingDialogueScripts ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                        {isGeneratingDialogueScripts ? 'Writing options' : dialogueScripts.length ? 'Write new options' : 'Write options'}
+                      </button>
+                      {dialogueScripts.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setConversationWizardStep('scripts')}
+                          className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-800 transition hover:bg-slate-50"
+                        >
+                          Choose words
+                          <ArrowRight className="h-4 w-4" />
+                        </button>
+                      )}
+                    </aside>
+                  </div>
+                )}
+
+                {conversationWizardStep === 'scripts' && (
+                  <div className="grid gap-5 lg:grid-cols-[310px_1fr]">
+                    <div className="space-y-2">
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <div>
+                          <h3 className="text-sm font-black text-slate-900">Choose an angle</h3>
+                          <p className="mt-1 text-xs font-semibold text-slate-500">Click one, edit it on the right, then use it.</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleGenerateDialogueScripts(false)}
+                          disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
+                          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                        >
+                          {isGeneratingDialogueScripts ? 'Writing' : 'More options'}
+                        </button>
+                      </div>
+                      {dialogueScripts.length === 0 ? (
+                        <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-5 text-center">
+                          <p className="text-sm font-bold text-slate-700">No voice scripts yet</p>
+                          <button
+                            type="button"
+                            onClick={() => handleGenerateDialogueScripts(false)}
+                            className="mt-3 rounded-lg bg-slate-950 px-4 py-2 text-xs font-black text-white"
+                          >
+                            Write options
+                          </button>
+                        </div>
+                      ) : (
+                        dialogueScripts.map((script, index) => {
+                          const selected = index === selectedDialogueScriptIndex;
+                          const previewKey = `script-${index}`;
+                          const previewing = previewingDialogueKey === previewKey;
+                          return (
+                            <div
+                              key={`${script.title}-${index}`}
+                              className={`flex w-full items-start gap-2 rounded-xl border p-3 text-left transition ${
+                                selected
+                                  ? 'border-slate-900 bg-white shadow-sm'
+                                  : 'border-slate-200 bg-slate-50 hover:bg-white'
+                              }`}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedDialogueScriptIndex(index);
+                                  setDraftDialogueScript(cloneDialogueScript(script));
+                                }}
+                                className="min-w-0 flex-1 text-left"
+                              >
+                                <span className="flex items-center justify-between gap-2">
+                                  <span className="truncate text-sm font-black text-slate-900">{script.title || `Option ${index + 1}`}</span>
+                                  <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-slate-400">{script.lines.length} lines</span>
+                                </span>
+                                <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">{script.angle}</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => playDialoguePreview(script, previewKey)}
+                                className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-slate-700 transition ${
+                                  previewing
+                                    ? 'border-slate-900 bg-slate-950 text-white'
+                                    : 'border-slate-200 bg-white hover:border-indigo-200 hover:text-indigo-600'
+                                }`}
+                                title={previewing ? 'Stop' : 'Hear this script'}
+                              >
+                                {previewing ? <Square className="h-3.5 w-3.5 fill-current" /> : <Play className="h-3.5 w-3.5 fill-current" />}
+                              </button>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-4">
+                      {draftDialogueScript ? (
+                        <>
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <h3 className="text-xl font-black leading-tight text-slate-950">Edit the exact words</h3>
+                              <p className="mt-1 text-sm font-semibold text-slate-500">These words become the audio and the on-screen captions.</p>
+                            </div>
+                            <div className="flex shrink-0 gap-2">
+                              <button
+                                type="button"
+                                onClick={() => playDialoguePreview(draftDialogueScript, `script-${selectedDialogueScriptIndex}`)}
+                                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-800 transition hover:bg-slate-50"
+                              >
+                                {previewingDialogueKey === `script-${selectedDialogueScriptIndex}` ? 'Stop' : 'Play'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setConversationWizardStep('edit')}
+                                disabled={!draftDialogueScript.lines.some((line) => line.text.trim())}
+                                className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-black text-white transition hover:bg-slate-800"
+                              >
+                                Use these words
+                              </button>
+                            </div>
+                          </div>
+                          <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr]">
+                            <label className="block space-y-1.5">
+                              <span className="text-xs font-bold text-slate-700">Title</span>
+                              <input
+                                value={draftDialogueScript.title}
+                                onChange={(event) => setDraftDialogueScript((current) => current ? { ...current, title: event.target.value } : current)}
+                                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-bold text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10"
+                              />
+                            </label>
+                            <label className="block space-y-1.5">
+                              <span className="text-xs font-bold text-slate-700">Angle</span>
+                              <input
+                                value={draftDialogueScript.angle}
+                                onChange={(event) => setDraftDialogueScript((current) => current ? { ...current, angle: event.target.value } : current)}
+                                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-bold text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10"
+                              />
+                            </label>
+                          </div>
+                          <div className="mt-5 space-y-3">
+                            {draftDialogueScript.lines.map((line, index) => (
+                              <div key={index} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                <div className="mb-2 grid gap-2 sm:grid-cols-[110px_1fr_auto]">
+                                  <input
+                                    value={line.speaker}
+                                    onChange={(event) => updateDraftDialogueLine(index, { speaker: event.target.value })}
+                                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-black text-slate-800 outline-none focus:border-indigo-400"
+                                    aria-label={`Speaker for line ${index + 1}`}
+                                  />
+                                  <input
+                                    value={line.tone}
+                                    onChange={(event) => updateDraftDialogueLine(index, { tone: event.target.value })}
+                                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-bold text-slate-600 outline-none focus:border-indigo-400"
+                                    aria-label={`Tone for line ${index + 1}`}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => removeDraftDialogueLine(index)}
+                                    disabled={draftDialogueScript.lines.length <= 2}
+                                    className="rounded-lg px-2.5 py-2 text-xs font-black text-slate-400 transition hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-30"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                                <textarea
+                                  value={line.text}
+                                  onChange={(event) => updateDraftDialogueLine(index, { text: event.target.value })}
+                                  rows={2}
+                                  placeholder="Write what this person says..."
+                                  className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={addDraftDialogueLine}
+                            className="mt-3 rounded-xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50"
+                          >
+                            Add another line
+                          </button>
+                        </>
+                      ) : (
+                        <div className="flex min-h-[360px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+                          <p className="text-sm font-bold text-slate-500">Choose a script to edit.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {conversationWizardStep === 'edit' && (
+                  <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
+                    <div className="rounded-xl border border-slate-200 bg-white p-4">
+                      <div>
+                        <h3 className="text-xl font-black leading-tight text-slate-950">{draftDialogueScript?.title || 'Chosen words'}</h3>
+                        <p className="mt-1 text-sm font-semibold text-slate-500">{draftDialogueScript?.angle || 'Ready to make audio.'}</p>
+                      </div>
+                      <div className="mt-5 space-y-3">
+                        {draftDialogueScript?.lines.map((line, index) => (
+                          <div key={`${line.speaker}-${index}`} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                            <div className="mb-1 flex items-center gap-2">
+                              <span className={`h-2.5 w-2.5 rounded-full ${index % 2 === 0 ? 'bg-[#00D6B8]' : 'bg-[#6554FF]'}`} />
+                              <span className="text-xs font-black uppercase tracking-wide text-slate-500">{line.speaker}</span>
+                              <span className="text-xs font-semibold text-slate-400">{line.tone}</span>
+                            </div>
+                            <p className="text-sm font-semibold leading-6 text-slate-800">{line.text}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <aside className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <p className="text-xs font-black uppercase tracking-wide text-slate-400">Final check</p>
+                      <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">These exact words will become the audio and captions.</p>
+                      <div className="mt-4 rounded-xl bg-white p-3">
+                        <p className="text-xs font-black text-slate-400">Lines</p>
+                        <p className="mt-1 text-2xl font-black text-slate-950">{draftDialogueScript?.lines.length || 0}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setConversationWizardStep('scripts')}
+                        className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50"
+                      >
+                        Back to options
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => draftDialogueScript && playDialoguePreview(draftDialogueScript, 'draft')}
+                        disabled={!draftDialogueScript || !draftDialogueScript.lines.some((line) => line.text.trim())}
+                        className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {previewingDialogueKey === 'draft' ? <Square className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
+                        {previewingDialogueKey === 'draft' ? 'Stop' : 'Hear it first'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => draftDialogueScript && handleGenerateDialogueAudio(draftDialogueScript)}
+                        disabled={
+                          !draftDialogueScript ||
+                          isGeneratingDialogueAudio ||
+                          isGeneratingDialogueScripts ||
+                          !draftDialogueScript.lines.some((line) => line.text.trim())
+                        }
+                        className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isGeneratingDialogueAudio ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4 fill-white" />}
+                        {isGeneratingDialogueAudio ? 'Making audio' : 'Make audio'}
+                      </button>
+                    </aside>
                   </div>
                 )}
               </div>
@@ -3620,8 +4733,8 @@ export default function App() {
             <div className="w-full max-w-4xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
               <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
                 <div>
-                  <h2 className="text-base font-bold text-slate-900">Check Intro Crop</h2>
-                  <p className="mt-1 text-sm text-slate-500">Keep important text, faces, and CTA inside the 1:1 safe area for feed.</p>
+                  <h2 className="text-base font-bold text-slate-900">Check Intro Image</h2>
+                  <p className="mt-1 text-sm text-slate-500">Keep important text, faces, and buttons inside the square safe area for feed.</p>
                 </div>
                 <button
                   type="button"
@@ -3661,11 +4774,11 @@ export default function App() {
 
                   <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="text-sm font-bold text-slate-700">{introIsSquareish ? 'Feed-safe square fit' : 'Feed vertical crop'}</span>
+                      <span className="text-sm font-bold text-slate-700">{introIsSquareish ? 'Square safe area' : 'Feed view'}</span>
                       <span className="text-xs font-bold text-slate-400">{introIsSquareish ? '1:1' : `${introFeedCropY}%`}</span>
                     </div>
                     {introIsSquareish ? (
-                      <p className="text-xs leading-relaxed text-slate-500">This image is already square, so it is fitted into the 1:1 safe area. There is no vertical crop to adjust.</p>
+                      <p className="text-xs leading-relaxed text-slate-500">This image is already square, so it fits inside the safe area. There is nothing to adjust.</p>
                     ) : (
                       <>
                         <input
@@ -3696,7 +4809,7 @@ export default function App() {
                   </div>
 
                   <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-relaxed text-amber-900">
-                    If the core message cannot fit inside the square, recreate a feed-safe intro image instead of forcing the crop.
+                    If the main message cannot fit inside the square, make a new intro image with the important text inside the square.
                   </div>
 
                   <button
@@ -3704,7 +4817,7 @@ export default function App() {
                     onClick={() => setIntroCropOpen(false)}
                     className="mt-auto rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800"
                   >
-                    Use This Crop
+                    Use This View
                   </button>
                 </div>
               </div>
@@ -3717,8 +4830,8 @@ export default function App() {
             <div className="max-h-[86vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
               <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
                 <div>
-                  <h2 className="text-base font-bold text-slate-900">Creative Brief</h2>
-                  <p className="mt-1 text-sm text-slate-500">Answer once. Future ad variations use this as strategy context.</p>
+                  <h2 className="text-base font-bold text-slate-900">Business Info</h2>
+                  <p className="mt-1 text-sm text-slate-500">Answer once. Wiggly uses this to suggest better ad ideas.</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">

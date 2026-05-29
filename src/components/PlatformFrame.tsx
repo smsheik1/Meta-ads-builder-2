@@ -7,10 +7,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export type PlatformType = 'facebook-feed' | 'instagram-feed' | 'reels' | 'stories' | 'vertical' | 'feed';
+export type PlatformType = 'facebook-feed' | 'instagram-feed' | 'reels' | 'stories' | 'youtube' | 'vertical' | 'feed';
 
 export const isFeedPlatform = (platform: PlatformType) => platform === 'facebook-feed' || platform === 'instagram-feed' || platform === 'feed';
 export const isVerticalPlatform = (platform: PlatformType) => platform === 'reels' || platform === 'stories' || platform === 'vertical';
+export const isWidePlatform = (platform: PlatformType) => platform === 'youtube';
 
 interface PlatformFrameProps {
   platform: PlatformType;
@@ -55,31 +56,38 @@ export function PlatformFrame({
 
   useEffect(() => {
     const updateScale = () => {
-      const availableHeight = window.innerHeight - 360;
-      const nextScale = Math.min(1, Math.max(0.78, (availableHeight * 0.5) / 360));
+      const wideMode = platform === 'youtube';
+      const availableHeight = window.innerHeight - (wideMode ? 420 : 360);
+      const availableWidth = window.innerWidth - 880;
+      const nextScale = wideMode
+        ? Math.min(0.88, Math.max(0.72, Math.min(availableWidth / 640, availableHeight / 360)))
+        : Math.min(1, Math.max(0.62, (availableHeight * 0.5) / 360));
       setFrameScale(Number.isFinite(nextScale) ? nextScale : 1);
     };
 
     updateScale();
     window.addEventListener('resize', updateScale);
     return () => window.removeEventListener('resize', updateScale);
-  }, []);
+  }, [platform]);
 
   const feedPlatform = isFeedPlatform(platform);
   const instagramFeed = platform === 'instagram-feed';
   const storiesPlatform = platform === 'stories';
   const verticalPlatform = isVerticalPlatform(platform);
+  const widePlatform = isWidePlatform(platform);
   const verticalLabel = platform === 'stories' ? 'Stories' : 'Reels';
-  const adContainerAspect = verticalPlatform ? 'aspect-[9/16]' : 'aspect-[4/5]';
+  const adContainerAspect = widePlatform ? 'aspect-video' : verticalPlatform ? 'aspect-[9/16]' : 'aspect-[4/5]';
+  const frameWidth = widePlatform ? 640 : 360;
+  const frameHeight = widePlatform ? 360 : 720;
 
   return (
     <div
       className="relative mx-auto"
-      style={{ width: 360 * frameScale, height: 720 * frameScale }}
+      style={{ width: frameWidth * frameScale, height: frameHeight * frameScale }}
     >
     <div
-      className={cn(frameClasses, "flex h-[720px] w-[360px] origin-top-left flex-col")}
-      style={{ transform: `scale(${frameScale})` }}
+      className={cn(frameClasses, "flex origin-top-left flex-col")}
+      style={{ width: frameWidth, height: frameHeight, transform: `scale(${frameScale})` }}
     >
       
       {/* Frame Content */}
