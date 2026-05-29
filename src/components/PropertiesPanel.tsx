@@ -2,8 +2,8 @@ import React from 'react';
 import { AlignCenter, AlignLeft, AlignRight, RotateCcw } from 'lucide-react';
 import { useEditorStore, type AdElement } from '../store';
 
-const inputClass = 'h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10';
-const labelClass = 'text-[11px] font-semibold uppercase tracking-wide text-slate-500';
+const inputClass = 'h-9 w-full rounded-xl border border-slate-200 bg-white/85 px-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10';
+const labelClass = 'text-[11px] font-black uppercase tracking-[0.12em] text-slate-500';
 
 const getSelectedItemName = (element: AdElement) => {
   if (element.componentRole === 'cta') return 'button';
@@ -24,8 +24,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-3 border-t border-slate-100 pt-4 first:border-t-0 first:pt-0">
-      <h3 className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">{title}</h3>
+    <div className="space-y-3 border-t border-slate-100/80 pt-4 first:border-t-0 first:pt-0">
+      <h3 className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">{title}</h3>
       {children}
     </div>
   );
@@ -36,10 +36,10 @@ function ToggleRow({ label, checked, onChange }: { label: string; checked: boole
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className="flex w-full items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-left transition hover:bg-white"
+      className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white/75 px-3 py-2.5 text-left shadow-sm transition hover:border-indigo-200 hover:bg-white"
     >
       <span className="text-sm font-semibold text-slate-700">{label}</span>
-      <span className={`relative h-5 w-9 rounded-full transition ${checked ? 'bg-indigo-500' : 'bg-slate-300'}`}>
+      <span className={`relative h-5 w-9 rounded-full transition ${checked ? 'bg-slate-950' : 'bg-slate-300'}`}>
         <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition ${checked ? 'left-4' : 'left-0.5'}`} />
       </span>
     </button>
@@ -74,7 +74,7 @@ function ColorControl({ value, onChange }: { value: string; onChange: (value: st
   };
 
   return (
-    <div className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 shadow-sm">
+    <div className="flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white/85 px-2 shadow-sm">
       <span className="relative h-5 w-5 shrink-0 overflow-hidden rounded border border-slate-200 shadow-inner" style={{ backgroundColor: normalizedValue }}>
         <input
           type="color"
@@ -125,7 +125,7 @@ function SliderRow({
   onReset?: () => void;
 }) {
   return (
-    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+    <div className="space-y-2 rounded-xl border border-slate-200 bg-white/75 px-3 py-2.5 shadow-sm">
       <div className="flex items-center justify-between gap-2">
         <span className="text-sm font-semibold text-slate-700">{label}</span>
         <span className="flex items-center gap-2 text-xs font-semibold text-slate-500">
@@ -144,7 +144,7 @@ function SliderRow({
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full cursor-pointer accent-indigo-500"
+        className="w-full cursor-pointer accent-slate-950"
       />
     </div>
   );
@@ -162,9 +162,9 @@ function PresetRow<T extends string | number>({
   onChange: (value: T) => void;
 }) {
   return (
-    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+    <div className="space-y-2 rounded-xl border border-slate-200 bg-white/75 px-3 py-2.5 shadow-sm">
       <span className="text-sm font-semibold text-slate-700">{label}</span>
-      <div className="grid grid-cols-3 gap-1 rounded-md bg-white p-1 shadow-inner">
+      <div className="grid grid-cols-3 gap-1 rounded-full bg-slate-100/90 p-1 shadow-inner">
         {options.map(option => (
           <button
             key={`${option.value}`}
@@ -172,7 +172,7 @@ function PresetRow<T extends string | number>({
             onClick={() => onChange(option.value)}
             className={`h-8 rounded text-xs font-bold transition ${
               value === option.value
-                ? 'bg-slate-900 text-white shadow-sm'
+                ? 'rounded-full bg-slate-950 text-white shadow-sm'
                 : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
             }`}
           >
@@ -250,7 +250,7 @@ export const PropertiesPanel: React.FC = () => {
 
   if (selectedIds.length > 1) {
     return (
-      <div className="flex h-[220px] flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
+      <div className="wiggly-panel flex h-[220px] flex-col items-center justify-center gap-2 p-4 text-center">
         <span className="text-sm font-bold text-slate-700">Multiple elements selected</span>
         <span className="text-xs leading-relaxed text-slate-500">Move or resize them together. Select one item to change its text, color, or size.</span>
       </div>
@@ -264,10 +264,10 @@ export const PropertiesPanel: React.FC = () => {
   const detailFallback = visualizerType === 'waveform-strip' ? 72 : 16;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="wiggly-panel p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Edit Selected</h2>
-        <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold capitalize text-slate-500">{getSelectedItemName(selectedEl)}</span>
+        <h2 className="wiggly-panel-title uppercase">Edit Selected</h2>
+        <span className="rounded-full bg-[#d9fff6] px-2 py-1 text-[11px] font-black capitalize text-slate-900">{getSelectedItemName(selectedEl)}</span>
       </div>
 
       <div className="space-y-4">
