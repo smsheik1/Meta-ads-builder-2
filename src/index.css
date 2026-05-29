@@ -480,6 +480,46 @@
   }
 }
 
+.wiggly-idle-bar {
+  animation: wigglyIdleBar 1.65s ease-in-out infinite alternate;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.wiggly-idle-bar-strong {
+  animation-name: wigglyIdleBarStrong;
+}
+
+@keyframes wigglyIdleBar {
+  0% {
+    opacity: 0.72;
+    transform: scaleY(0.82);
+  }
+
+  100% {
+    opacity: 0.96;
+    transform: scaleY(1.08);
+  }
+}
+
+@keyframes wigglyIdleBarStrong {
+  0% {
+    opacity: 0.68;
+    transform: scaleY(0.66);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scaleY(1.22);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wiggly-idle-bar {
+    animation: none !important;
+  }
+}
+
 @media (max-width: 767px) {
   .wiggly-builder-header {
     height: auto;

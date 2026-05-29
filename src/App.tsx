@@ -13,7 +13,7 @@ import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } 
 import { getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions, getExportDimensions, getPlatformElementFrame, type ExportSnapshot, type PhoneCallSnapshot } from './lib/export-snapshot';
 import { PhoneCallSimulator } from './components/PhoneCallSimulator';
 import { formatUsPhoneNumber } from './lib/phone-call';
-import { FIXED_AD_BACKGROUND_COLOR, type AdStyleArchetype } from './lib/style-archetypes';
+import { FIXED_AD_BACKGROUND_COLOR } from './lib/style-archetypes';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -364,7 +364,7 @@ const HexColorInput = ({
 };
 
 export default function App() {
-  const [showHomepage, setShowHomepage] = useState(true);
+  const [showHomepage, setShowHomepage] = useState(() => window.location.pathname !== '/builder');
   const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single');
   const [creativeMode, setCreativeMode] = useState<CreativeMode>('visualizer');
   
@@ -400,10 +400,8 @@ export default function App() {
     setBgColor((currentColor) => getFreshBackgroundColor(currentColor));
   };
 
-  const applyStyleArchetype = (archetype: AdStyleArchetype) => {
+  const applyStyleArchetype = () => {
     setBgColor(FIXED_AD_BACKGROUND_COLOR);
-    setVisualizerColor(archetype.visualizerColor);
-    setAccentColor(archetype.speaker2CaptionColor);
   };
   
   // Playback/Render State
@@ -2724,8 +2722,26 @@ export default function App() {
     } catch {
       // Ignore private browsing storage failures.
     }
+    if (window.location.pathname !== '/builder') {
+      window.history.pushState(null, '', '/builder');
+    }
     setShowHomepage(false);
   };
+
+  const openHomepage = () => {
+    if (window.location.pathname !== '/') {
+      window.history.pushState(null, '', '/');
+    }
+    setShowHomepage(true);
+  };
+
+  useEffect(() => {
+    const syncPageFromUrl = () => {
+      setShowHomepage(window.location.pathname !== '/builder');
+    };
+    window.addEventListener('popstate', syncPageFromUrl);
+    return () => window.removeEventListener('popstate', syncPageFromUrl);
+  }, []);
 
   const personaDecks = [
     {
@@ -3116,7 +3132,7 @@ export default function App() {
       <header className="wiggly-builder-header flex shrink-0 items-center justify-between px-5 lg:px-6">
         <button
           type="button"
-          onClick={() => setShowHomepage(true)}
+          onClick={openHomepage}
           className="wiggly-brand-button flex items-center gap-3 rounded-2xl text-left transition"
           title="Open homepage"
         >

@@ -14,8 +14,8 @@ export function drawAdvancedVisualizer(
         const gap = 2.2 * scale;
         const barW = Math.max(1.5 * scale, (elW - gap * (count - 1)) / count);
         const centerY = elH / 2;
-        const maxBarH = elH * (options.heightScale ?? 0.72);
-        const minBarH = Math.max((options.baseline ?? 4) * scale, elH * 0.04);
+        const maxBarH = elH * (options.heightScale ?? 0.9);
+        const minBarH = Math.max((options.baseline ?? 4) * scale, elH * 0.08);
         ctx.fillStyle = color;
         ctx.globalAlpha = 0.92;
         for (let i = 0; i < count; i++) {
@@ -26,8 +26,8 @@ export function drawAdvancedVisualizer(
                 Math.sin(frame * 0.07 + i * 1.91) * 0.25 +
                 0.5
             );
-            const reactive = Math.min(1, Math.max(0, v * 0.82 + motion * 0.18));
-            const barH = minBarH + Math.pow(reactive, 1.45) * maxBarH * edgeFade;
+            const reactive = Math.min(1, Math.max(0, v * 1.1 + motion * 0.24));
+            const barH = minBarH + Math.pow(reactive, 1.05) * maxBarH * edgeFade;
             const x = i * (barW + gap);
             const y = centerY - barH / 2;
             ctx.beginPath();
