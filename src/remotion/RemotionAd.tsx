@@ -243,7 +243,10 @@ const BlockingIntroImage = ({ src, style }: { src: string; style: React.CSSPrope
 
 const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { element: AdElement; box: ElementBox; audioLevels?: number[]; audioBands?: number[][]; currentSpeaker: number }) => {
   const frame = useCurrentFrame();
-  const count = element.visualizerType === 'waveform-strip' ? (element.barCount || 72) : (element.barCount || 16);
+  const type = ['bars-bottom', 'bars-center', 'waveform-strip'].includes(element.visualizerType || '')
+    ? (element.visualizerType as 'bars-bottom' | 'bars-center' | 'waveform-strip')
+    : 'bars-center';
+  const count = type === 'waveform-strip' ? (element.barCount || 72) : (element.barCount || 16);
   const sensitivity = element.visualizerSensitivity ?? 1.5;
   const heightScale = element.visualizerHeight ?? 0.9;
   const baseline = element.visualizerBaseline ?? 4;
@@ -257,7 +260,7 @@ const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { e
   const hasUsableAudioLevel = audioLevel !== null && audioLevel > 0.012;
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: element.visualizerType === 'bars-bottom' ? 'flex-end' : 'center', gap: 4 * box.scale }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: type === 'bars-bottom' ? 'flex-end' : 'center', gap: 4 * box.scale }}>
       {Array.from({ length: count }).map((_, index) => {
         const halfCount = Math.floor(count / 2);
         const isLeftSpeakerSide = index < halfCount;
@@ -271,10 +274,10 @@ const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { e
         const sideTotal = isLeftSpeakerSide ? halfCount : count - halfCount;
         const normalized = element.visualizerSplitSpeakers
           ? sideIndex / Math.max(1, sideTotal - 1)
-          : element.visualizerType === 'bars-center'
+          : type === 'bars-center'
             ? centerDistance / Math.max(1, center)
             : sampleIndex / Math.max(1, count - 1);
-        const edgeFade = element.visualizerType === 'waveform-strip'
+        const edgeFade = type === 'waveform-strip'
           ? 0.45 + Math.pow(Math.sin(normalized * Math.PI), 0.7) * 0.55
           : 1;
         const fastMotion = Math.min(1, Math.max(0, (
@@ -294,10 +297,10 @@ const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { e
         const signal = !isActiveSpeakerSide
           ? 0.04
           : Math.pow(Math.min(1, (previewSignal ?? fallbackSignal) * sensitivity), 1.5);
-        const minHeight = element.visualizerType === 'waveform-strip'
+        const minHeight = type === 'waveform-strip'
           ? Math.max(baseline * box.scale, box.height * 0.04)
           : baseline * box.scale;
-        const height = element.visualizerType === 'waveform-strip'
+        const height = type === 'waveform-strip'
           ? Math.min(box.height, minHeight + signal * box.height * heightScale * edgeFade)
           : Math.min(box.height, minHeight + signal * (box.height * heightScale));
         return (
@@ -305,7 +308,7 @@ const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { e
             key={index}
             style={{
               flex: 1,
-              minWidth: element.visualizerType === 'waveform-strip' ? 2 : 4 * box.scale,
+              minWidth: type === 'waveform-strip' ? 2 : 4 * box.scale,
               height,
               maxHeight: '100%',
               borderRadius: 999,
@@ -326,7 +329,9 @@ const CaptionElement = ({ element, box, platform, captions, accentColor }: { ele
   const { caption, index } = getActiveCaption(activeCaptions, frame / fps);
   if (!caption) return null;
 
-  const speaker = (index % 2) + 1;
+  const hasTwoSpeakers = activeCaptions.some(activeCaption => activeCaption.speaker === 2);
+  const speaker = hasTwoSpeakers ? caption.speaker : (index % 2) + 1;
+  const captionColor = (speaker === 2 ? element.captionSpeaker2Color : element.captionSpeaker1Color) || CAPTION_SPEAKER_COLORS[speaker] || element.color || accentColor;
   return (
     <div
       style={{
@@ -336,7 +341,7 @@ const CaptionElement = ({ element, box, platform, captions, accentColor }: { ele
         alignItems: 'center',
         justifyContent: 'center',
         padding: `${16 * box.scale}px ${18 * box.scale}px`,
-        color: CAPTION_SPEAKER_COLORS[speaker] || element.color || accentColor,
+        color: captionColor,
         fontFamily: element.fontFamily || 'Inter, sans-serif',
         fontSize: (element.fontSize || (platform === 'youtube' ? 30 : 22)) * box.scale,
         fontWeight: element.fontWeight || 700,

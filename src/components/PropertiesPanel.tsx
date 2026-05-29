@@ -259,9 +259,10 @@ export const PropertiesPanel: React.FC = () => {
 
   if (!selectedEl) return null;
   const visualizerType = selectedEl.visualizerType || 'bars-center';
-  const showBarControls = selectedEl.type === 'visualizer' && barLikeVisualizerTypes.has(visualizerType);
-  const detailPresets = visualizerType === 'waveform-strip' ? WAVEFORM_DETAIL_PRESETS : BAR_DETAIL_PRESETS;
-  const detailFallback = visualizerType === 'waveform-strip' ? 72 : 16;
+  const supportedVisualizerType = barLikeVisualizerTypes.has(visualizerType) ? visualizerType : 'bars-center';
+  const showBarControls = selectedEl.type === 'visualizer' && barLikeVisualizerTypes.has(supportedVisualizerType);
+  const detailPresets = supportedVisualizerType === 'waveform-strip' ? WAVEFORM_DETAIL_PRESETS : BAR_DETAIL_PRESETS;
+  const detailFallback = supportedVisualizerType === 'waveform-strip' ? 72 : 16;
 
   return (
     <div className="wiggly-panel p-4">
@@ -372,17 +373,10 @@ export const PropertiesPanel: React.FC = () => {
         {selectedEl.type === 'visualizer' && (
           <Section title="Moving Bars">
             <Field label="Look">
-              <select value={visualizerType} onChange={(e) => updateElement(selectedEl.id, { visualizerType: e.target.value as any })} className={inputClass}>
+              <select value={supportedVisualizerType} onChange={(e) => updateElement(selectedEl.id, { visualizerType: e.target.value as any })} className={inputClass}>
                 <option value="bars-bottom">Bars, bottom</option>
                 <option value="bars-center">Bars, center</option>
                 <option value="waveform-strip">Waveform strip</option>
-                <option value="ai-orb">Glowing orb</option>
-                <option value="siri-wave">Siri wave</option>
-                <option value="ai-blob">3D blob</option>
-                <option value="elevenlabs-v1">Blue orb</option>
-                <option value="elevenlabs-v2">Peach orb</option>
-                <option value="elevenlabs-v3">Silver orb</option>
-                <option value="chatgpt-orb">Soft aura</option>
               </select>
             </Field>
             <Field label="Color">

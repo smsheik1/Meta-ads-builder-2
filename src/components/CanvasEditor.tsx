@@ -1,15 +1,17 @@
 import React, { useRef, useEffect, useState } from 'react';
 import Moveable from 'react-moveable';
 import Selecto from 'react-selecto';
-import { useEditorStore } from '../store';
+import { useEditorStore, type AdElement } from '../store';
 import gsap from 'gsap';
-import { Image as ImageIcon } from 'lucide-react';
+import { Image as ImageIcon, Lock, Unlock } from 'lucide-react';
 import { drawAdvancedVisualizer } from '../lib/visualizer';
 import { HeadlineSlot } from './HeadlineSlot';
 import { AutoFitText } from './AutoFitText';
 import { sanitizeRichText, stripRichText } from '../lib/rich-text';
 import { isFeedPlatform, isVerticalPlatform, type PlatformType } from './PlatformFrame';
 import { getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getPlatformElementFrame } from '../lib/export-snapshot';
+import { getRandomSeededHook } from '../lib/headline-pool';
+import { getRandomAdStyleArchetype, pickRandom, type AdStyleArchetype } from '../lib/style-archetypes';
 
 const isEditableEventTarget = (target: EventTarget | null) => {
   if (!(target instanceof HTMLElement)) return false;
@@ -72,6 +74,7 @@ interface CanvasEditorProps {
   introImageAspect: number | null;
   previewDurationCap: number | null;
   onRefreshBackgroundColor?: () => void;
+  onApplyStyleArchetype?: (archetype: AdStyleArchetype) => void;
 }
 
 const MOCK_CAPTIONS = [
@@ -86,7 +89,65 @@ const CAPTION_SPEAKER_COLORS: Record<number, string> = {
   2: '#6554FF',
 };
 
-export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor }) => {
+const SUBHEADS = [
+  'AI answers the calls your team misses.',
+  'Turn missed calls into booked patients.',
+  'Your front desk, covered after hours.',
+  'More booked appointments without more staff.',
+  'Recover the calls that used to hit voicemail.',
+];
+const CTA_COPY = ['Book Demo', 'See It Live', 'Get Started', 'Try Wiggly', 'Watch Demo'];
+
+const applyArchetypeToElement = (element: AdElement, archetype: AdStyleArchetype): AdElement => {
+  if (element.locked) return element;
+
+  if (element.type === 'visualizer') {
+    return {
+      ...element,
+      styleArchetypeId: archetype.id,
+      visualizerType: pickRandom(archetype.visualizer.visualizerTypes, element.visualizerType),
+      barColor: archetype.visualizerColor,
+      barCount: pickRandom(archetype.visualizer.barCounts, element.barCount),
+      visualizerSensitivity: pickRandom(archetype.visualizer.sensitivities, element.visualizerSensitivity),
+      visualizerHeight: pickRandom(archetype.visualizer.heights, element.visualizerHeight),
+    };
+  }
+
+  if (element.type === 'text') {
+    const isHeadline = element.componentRole === 'headline';
+    return {
+      ...element,
+      styleArchetypeId: archetype.id,
+      content: isHeadline ? getRandomSeededHook() : pickRandom(SUBHEADS, stripRichText(element.content || '')),
+      color: isHeadline ? archetype.headlineColor : archetype.subheadlineColor,
+      fontWeight: isHeadline ? pickRandom(['800', '900'], String(element.fontWeight || '900')) : pickRandom(['600', '700', '800'], String(element.fontWeight || '700')),
+    };
+  }
+
+  if (element.type === 'caption') {
+    return {
+      ...element,
+      styleArchetypeId: archetype.id,
+      color: archetype.speaker1CaptionColor,
+      captionSpeaker1Color: archetype.speaker1CaptionColor,
+      captionSpeaker2Color: archetype.speaker2CaptionColor,
+    };
+  }
+
+  if (element.type === 'button') {
+    return {
+      ...element,
+      styleArchetypeId: archetype.id,
+      content: pickRandom(CTA_COPY, element.content),
+      backgroundColor: archetype.ctaBackgroundColor,
+      color: archetype.ctaTextColor,
+    };
+  }
+
+  return element;
+};
+
+export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype }) => {
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
@@ -96,6 +157,8 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   const layoutScaleY = getDefaultLayoutScaleY(platform);
   
   const [targets, setTargets] = useState<Array<HTMLElement | SVGElement>>([]);
+  const supportedVisualizerTypes = new Set(['bars-bottom', 'bars-center', 'waveform-strip']);
+  const canvasVisualizerTypes = new Set(['waveform-strip']);
 
   // Sync targets with selectedIds
   useEffect(() => {
@@ -128,6 +191,25 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
 
       // Ignore layout shortcuts while typing in inputs or editing text directly.
       if (isEditableTarget) {
+        return;
+      }
+
+      if (e.code === 'Space' && !usesShortcutModifier) {
+        e.preventDefault();
+        const state = useEditorStore.getState();
+        const selectedSet = new Set(state.selectedIds);
+        const shouldRerollEverything = selectedSet.size === 0;
+        const currentArchetypeId = state.elements.find(element => element.styleArchetypeId)?.styleArchetypeId;
+        const archetype = getRandomAdStyleArchetype(currentArchetypeId);
+        const nextElements = state.elements.map((element) => {
+          if (!shouldRerollEverything && !selectedSet.has(element.id)) return element;
+          return applyArchetypeToElement(element, archetype);
+        });
+        if (shouldRerollEverything) {
+          onApplyStyleArchetype?.(archetype);
+        }
+        state.setElements(nextElements);
+        state.commitHistory();
         return;
       }
       
@@ -345,11 +427,12 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       Object.keys(barsRef.current).forEach((vId) => {
         const el = state.elements.find(e => e.id === vId);
         if (!el) return;
-        const type = el.visualizerType || 'bars-center';
+        const rawType = el.visualizerType || 'bars-center';
+        const type = supportedVisualizerTypes.has(rawType) ? rawType : 'bars-center';
 
         const sensitivityMultiplier = el.visualizerSensitivity ?? 1.5;
 
-        if (['waveform-strip', 'ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(type)) {
+        if (canvasVisualizerTypes.has(type)) {
           const canvas = barsRef.current[vId][0] as unknown as HTMLCanvasElement;
           if (canvas && canvas.getContext) {
              const ctx = canvas.getContext('2d');
@@ -383,7 +466,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                  });
              }
           }
-        } else {
+        } else if (type === 'bars-bottom' || type === 'bars-center') {
           const halfCount = Math.floor(barsRef.current[vId].length / 2);
           
           barsRef.current[vId].forEach((bar, index) => {
@@ -796,6 +879,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
           ? Math.min(frame.y, feedSafeSquareBottom - frame.height - 8)
           : frame.y;
         const captionMaxFontSize = platform === 'youtube' ? 86 : 64;
+        const normalizedVisualizerType = supportedVisualizerTypes.has(el.visualizerType || '') ? el.visualizerType! : 'bars-center';
 
         return (
           <div
@@ -827,6 +911,22 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
               zIndex: el.zIndex 
             }}
           >
+            <button
+              type="button"
+              className={`wiggly-element-lock absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-lg transition hover:scale-105 hover:bg-white ${el.locked ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+              title={el.locked ? 'Unlock this part' : 'Lock this part'}
+              aria-label={el.locked ? 'Unlock this part' : 'Lock this part'}
+              onPointerDown={(event) => {
+                event.stopPropagation();
+                updateElement(el.id, { locked: !el.locked });
+                commitHistory();
+              }}
+              onMouseDown={(event) => event.stopPropagation()}
+              onDoubleClick={(event) => event.stopPropagation()}
+              onClick={(event) => event.stopPropagation()}
+            >
+              {el.locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+            </button>
             {/* TEXT */}
             {el.type === 'text' && (
               <div 
@@ -941,7 +1041,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             {/* VISUALIZER */}
             {el.type === 'visualizer' && (
                <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
-                 {(el.visualizerType === 'bars-bottom' || !el.visualizerType) && (
+                 {normalizedVisualizerType === 'bars-bottom' && (
                     <div className="w-full h-full flex items-end justify-between gap-1">
                       {Array.from({ length: el.barCount || 16 }).map((_, i) => (
                         <div
@@ -953,7 +1053,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                       ))}
                     </div>
                  )}
-                 {el.visualizerType === 'bars-center' && (
+                 {normalizedVisualizerType === 'bars-center' && (
                     <div className="w-full h-full flex items-center justify-between gap-1">
                       {Array.from({ length: el.barCount || 16 }).map((_, i) => (
                         <div
@@ -969,7 +1069,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                       ))}
                     </div>
                  )}
-                 {['waveform-strip', 'ai-orb', 'siri-wave', 'ai-blob', 'elevenlabs-v1', 'elevenlabs-v2', 'elevenlabs-v3', 'chatgpt-orb'].includes(el.visualizerType || '') && (
+                {normalizedVisualizerType === 'waveform-strip' && (
                     <canvas
                       ref={canvasEl => setBarRef(el.id, canvasEl as any, 0, 1)}
                       className="w-full h-full"
@@ -1007,7 +1107,9 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                     fitPaddingX={18}
                     fitPaddingY={16}
                     style={{
-                      color: currentCaption ? (CAPTION_SPEAKER_COLORS[currentSpeaker] || el.color || accentColor) : (el.color || accentColor),
+                      color: currentCaption
+                        ? (currentSpeaker === 2 ? el.captionSpeaker2Color : el.captionSpeaker1Color) || CAPTION_SPEAKER_COLORS[currentSpeaker] || el.color || accentColor
+                        : (el.color || accentColor),
                       fontFamily: el.fontFamily || 'Inter, sans-serif',
                       fontWeight: el.fontWeight || 700,
                     }}

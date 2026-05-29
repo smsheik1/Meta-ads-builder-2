@@ -30,10 +30,13 @@ export interface AdElement {
   visualizerHeight?: number;
   visualizerBaseline?: number;
   visualizerSplitSpeakers?: boolean;
-  visualizerType?: 'bars-bottom' | 'bars-center' | 'waveform-strip' | 'ai-orb' | 'siri-wave' | 'ai-blob' | 'elevenlabs-v1' | 'elevenlabs-v2' | 'elevenlabs-v3' | 'chatgpt-orb';
+  visualizerType?: 'bars-bottom' | 'bars-center' | 'waveform-strip';
   visualizerMirror?: boolean;
   barColor?: string;
   barCount?: number;
+  styleArchetypeId?: string;
+  captionSpeaker1Color?: string;
+  captionSpeaker2Color?: string;
   
   // button
   backgroundColor?: string;
@@ -45,6 +48,8 @@ export interface AdElement {
   removeWhite?: boolean;
   imageShadow?: boolean;
   imageShadowOpacity?: number;
+
+  locked?: boolean;
 }
 
 export interface Caption {
@@ -119,9 +124,10 @@ const DEFAULT_ELEMENTS: AdElement[] = [
     zIndex: 1,
     fontSize: 52,
     fontWeight: '900',
-    color: '#000000',
+    color: '#0f172a',
     textAlign: 'center',
-    lineHeight: 1.04
+    lineHeight: 1.04,
+    styleArchetypeId: 'clean-mint'
   },
   {
     id: 'visualizer-1',
@@ -134,13 +140,14 @@ const DEFAULT_ELEMENTS: AdElement[] = [
     rotation: 0,
     zIndex: 3,
     visualizerType: 'bars-center',
-    barColor: '#00ffcc',
+    barColor: '#00d6b8',
     barCount: 16,
     visualizerSensitivity: 1.5,
     visualizerSmoothing: 0.85,
     visualizerHeight: 0.9,
     visualizerBaseline: 4,
-    visualizerSplitSpeakers: false
+    visualizerSplitSpeakers: false,
+    styleArchetypeId: 'clean-mint'
   },
   {
     id: 'caption-1',
@@ -152,6 +159,10 @@ const DEFAULT_ELEMENTS: AdElement[] = [
     height: 48,
     rotation: 0,
     zIndex: 4,
+    color: '#008f7d',
+    captionSpeaker1Color: '#008f7d',
+    captionSpeaker2Color: '#4f46e5',
+    styleArchetypeId: 'clean-mint'
   }
 ];
 
