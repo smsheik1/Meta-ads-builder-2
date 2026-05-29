@@ -20,6 +20,26 @@ This file is the product memory for things we intentionally defer. When we make 
 - Reels/stories exports remain `1080x1920` at `60fps`.
 - Remotion export remains the default path with old export fallback available.
 
+## Audio Panel Redesign
+
+### Make voice selection moron-proof
+
+**Status:** Planned
+
+**Why:** The audio panel should start from a working voice and hide file-manager complexity behind one simple "Change" action.
+
+**Goal:** Default to one calm row: "Voice: [current voice] - Change." Behind Change, show two clear paths: "Make me a voice" and "Use a voice I have."
+
+**Acceptance criteria:**
+- The selected voice must survive a page refresh.
+- A new user always lands with a working voice selected.
+- The front row does not show saved-audio lists, file counts, script counts, or technical labels.
+- "Make me a voice" is the primary path behind Change.
+- "Use a voice I have" reveals uploaded/generated/example voices only when requested.
+- Saved voices are deduped and use human labels like "Using now," "Example," and "Uploaded by you."
+- Audio download and upload actions live behind Change, not on the default front row.
+- There is no one-click path that leaves the ad silently broken with no voice.
+
 ## Backlog Rules
 
 - If we say "v2 later", add it here or to GitHub Issues before moving on.

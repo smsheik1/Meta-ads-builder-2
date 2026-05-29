@@ -1,7 +1,12 @@
+import Dexie, { type Table } from 'dexie';
+
 const DB_NAME = 'wiggly_audio_library';
-const DB_VERSION = 1;
 const STORE_NAME = 'audios';
 const MAX_AUDIO_ITEMS = 12;
+
+export type AudioAssetKind = 'uploaded' | 'generated';
+export type AudioAssetSource = 'user-upload' | 'voice-wizard';
+export type AudioAssetStatus = 'ready' | 'needs-reupload';
 
 export type StoredAudioItem = {
   id: string;
@@ -9,60 +14,106 @@ export type StoredAudioItem = {
   createdAt: number;
   blob: Blob;
   mimeType: string;
+  kind?: AudioAssetKind;
+  source?: AudioAssetSource;
+  fingerprint?: string;
+  status?: AudioAssetStatus;
 };
 
-function openDb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+class WigglyAudioDb extends Dexie {
+  audios!: Table<StoredAudioItem, string>;
 
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-      }
-    };
+  constructor() {
+    super(DB_NAME);
+    this.version(1).stores({
+      [STORE_NAME]: 'id',
+    });
+    this.version(2).stores({
+      [STORE_NAME]: 'id, createdAt, name, kind, source, fingerprint, status',
+    }).upgrade(async (transaction) => {
+      const table = transaction.table(STORE_NAME);
+      const items = await table.toArray();
+      await Promise.all(items.map((item) => table.put(normalizeAudioItem(item as StoredAudioItem))));
+    });
+  }
+}
 
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+const audioDb = new WigglyAudioDb();
+
+const createId = () => (
+  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `audio-${Date.now()}-${Math.random().toString(16).slice(2)}`
+);
+
+const isUsableBlob = (blob: unknown): blob is Blob => blob instanceof Blob && blob.size > 0;
+
+const normalizeAudioItem = (item: StoredAudioItem): StoredAudioItem => ({
+  ...item,
+  id: item.id || createId(),
+  name: item.name || 'Audio',
+  createdAt: item.createdAt || Date.now(),
+  mimeType: item.mimeType || item.blob?.type || 'audio/mpeg',
+  kind: item.kind || 'uploaded',
+  source: item.source || 'user-upload',
+  status: isUsableBlob(item.blob) ? 'ready' : 'needs-reupload',
+});
+
+const hashBlob = async (blob: Blob) => {
+  if (!crypto?.subtle) return `${blob.type}:${blob.size}`;
+  const buffer = await blob.arrayBuffer();
+  const digest = await crypto.subtle.digest('SHA-256', buffer);
+  return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, '0')).join('');
+};
+
+const withFingerprint = async (item: StoredAudioItem): Promise<StoredAudioItem> => {
+  const normalized = normalizeAudioItem(item);
+  if (!isUsableBlob(normalized.blob)) return normalized;
+  return {
+    ...normalized,
+    fingerprint: normalized.fingerprint || await hashBlob(normalized.blob),
+  };
+};
+
+const dedupeAudioItems = (items: StoredAudioItem[]) => {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    if (!isUsableBlob(item.blob) || item.status === 'needs-reupload') return false;
+    const key = item.fingerprint || `${item.name.toLowerCase()}-${item.mimeType}-${item.blob.size}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
   });
-}
-
-function runStore<T>(mode: IDBTransactionMode, callback: (store: IDBObjectStore) => IDBRequest<T> | void): Promise<T | undefined> {
-  return openDb().then((db) => new Promise<T | undefined>((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, mode);
-    const store = tx.objectStore(STORE_NAME);
-    const request = callback(store);
-
-    if (request) {
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    } else {
-      tx.oncomplete = () => resolve(undefined);
-    }
-
-    tx.onerror = () => reject(tx.error);
-    tx.onabort = () => reject(tx.error);
-  }).finally(() => db.close()));
-}
+};
 
 export async function listAudioItems(): Promise<StoredAudioItem[]> {
-  const items = await runStore<StoredAudioItem[]>('readonly', (store) => store.getAll());
-  return (items || []).sort((a, b) => b.createdAt - a.createdAt);
+  const items = await audioDb.audios.toArray();
+  return dedupeAudioItems(items.map(normalizeAudioItem)).sort((a, b) => b.createdAt - a.createdAt);
 }
 
 export async function saveAudioItem(item: StoredAudioItem): Promise<StoredAudioItem[]> {
-  const current = await listAudioItems();
-  const next = [item, ...current.filter((existing) => existing.id !== item.id)].slice(0, MAX_AUDIO_ITEMS);
+  const normalized = await withFingerprint(item);
+  const current = await audioDb.audios.toArray();
+  const readyCurrent = dedupeAudioItems(current.map(normalizeAudioItem));
+  const existing = readyCurrent.find((audioItem) => (
+    Boolean(normalized.fingerprint && audioItem.fingerprint === normalized.fingerprint)
+  ));
+  const itemToSave = {
+    ...normalized,
+    id: existing?.id || normalized.id || createId(),
+    createdAt: existing?.createdAt || normalized.createdAt || Date.now(),
+  };
+  const next = [itemToSave, ...readyCurrent.filter((audioItem) => audioItem.id !== itemToSave.id)].slice(0, MAX_AUDIO_ITEMS);
 
-  await runStore('readwrite', (store) => {
-    store.clear();
-    next.forEach((audioItem) => store.put(audioItem));
+  await audioDb.transaction('rw', audioDb.audios, async () => {
+    await audioDb.audios.clear();
+    await audioDb.audios.bulkPut(next);
   });
 
   return next;
 }
 
 export async function deleteAudioItem(id: string): Promise<StoredAudioItem[]> {
-  await runStore('readwrite', (store) => store.delete(id));
+  await audioDb.audios.delete(id);
   return listAudioItems();
 }
