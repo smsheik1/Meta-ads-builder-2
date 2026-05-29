@@ -3103,36 +3103,39 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-full bg-slate-50 font-sans text-slate-900">
+    <div className="wiggly-builder-shell flex h-screen w-full flex-col overflow-hidden font-sans text-slate-900">
       {/* Header */}
-      <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 shrink-0">
+      <header className="wiggly-builder-header flex shrink-0 items-center justify-between px-5 lg:px-6">
         <button
           type="button"
           onClick={() => setShowHomepage(true)}
-          className="flex items-center gap-3 rounded-xl text-left transition hover:opacity-80"
+          className="wiggly-brand-button flex items-center gap-3 rounded-2xl text-left transition"
           title="Open homepage"
         >
-          <img src="/wiggly-logo.svg" alt="Wiggly" className="h-9 w-9 rounded-xl object-cover shadow-sm shadow-slate-950/10" />
-          <h1 className="text-xl font-black tracking-normal">
-            {appTitle}
-          </h1>
+          <img src="/wiggly-logo.svg" alt="Wiggly" className="h-10 w-10 rounded-2xl object-cover shadow-sm shadow-slate-950/10" />
+          <span>
+            <span className="block text-lg font-black leading-none tracking-normal text-slate-950">{appTitle}</span>
+            <span className="wiggly-brand-subtitle mt-0.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Visual ads that move fast</span>
+          </span>
         </button>
         
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setActiveTab('single')}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'single' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}
-          >
-            Make One Ad
-          </button>
-          <button 
-            onClick={() => setActiveTab('batch')}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'batch' ? 'bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700' : 'text-slate-600 hover:bg-slate-50 rounded-lg'}`}
-          >
-            Make Many Ads
-          </button>
+        <div className="wiggly-header-actions flex items-center gap-3">
+          <div className="wiggly-builder-nav flex items-center gap-1 rounded-full p-1">
+            <button
+              onClick={() => setActiveTab('single')}
+              className={`wiggly-nav-button ${activeTab === 'single' ? 'wiggly-nav-button-active' : ''}`}
+            >
+              Make One Ad
+            </button>
+            <button
+              onClick={() => setActiveTab('batch')}
+              className={`wiggly-nav-button ${activeTab === 'batch' ? 'wiggly-nav-button-active' : ''}`}
+            >
+              Make Many Ads
+            </button>
+          </div>
           {activeTab === 'single' && (
-            <div className="ml-2 grid grid-cols-2 rounded-xl bg-slate-100 p-1">
+            <div className="wiggly-mode-switch ml-1 grid grid-cols-2 rounded-full p-1">
               {([
                 { id: 'visualizer', label: 'Audio Ad', icon: AudioLines },
                 { id: 'phone-call', label: 'Phone Call', icon: PhoneCall },
@@ -3146,7 +3149,7 @@ export default function App() {
                     onClick={() => {
                       switchCreativeMode(mode.id);
                     }}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold transition ${active ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                    className={`flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold transition ${active ? 'wiggly-mode-button-active' : 'text-slate-500 hover:text-slate-900'}`}
                   >
                     <Icon className="h-4 w-4" />
                     {mode.label}
@@ -3158,9 +3161,9 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex-1 flex overflow-hidden p-6 gap-6">
+      <main className="wiggly-builder-workspace flex flex-1 overflow-hidden">
         {/* Settings Sidebar */}
-        <div className="w-80 flex flex-col gap-4 overflow-y-auto pr-2 shrink-0 hidden lg:flex">
+        <div className="wiggly-sidebar hidden w-80 shrink-0 flex-col gap-4 overflow-y-auto overflow-x-hidden lg:flex">
             
             {activeTab === 'single' ? (
               <>
@@ -3168,8 +3171,11 @@ export default function App() {
               <>
               <PropertiesPanel />
 
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Add to Ad</h2>
+              <div className="wiggly-panel p-4">
+                <div className="mb-4 flex items-end justify-between gap-3">
+                  <h2 className="wiggly-panel-title uppercase">Add to Ad</h2>
+                  <span className="wiggly-panel-kicker">Build</span>
+                </div>
                 <div className="space-y-2">
                   {[
                     { label: 'Headline', description: headlineCount > 0 ? 'Add another big line' : 'Main ad message', icon: Type, action: handleAddHeadline, added: false, count: headlineCount },
@@ -3187,10 +3193,12 @@ export default function App() {
                         type="button"
                         onClick={component.action}
                         disabled={component.added}
-                        className="w-full flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-left transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+                        className="wiggly-item-row flex w-full items-center justify-between gap-3 px-3 py-3 text-left disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <span className="flex items-center gap-2">
-                          <Icon className="w-4 h-4 text-slate-500" />
+                        <span className="flex items-center gap-3">
+                          <span className="wiggly-icon-tile">
+                            <Icon className="h-4 w-4" />
+                          </span>
                           <span>
                             <span className="block text-sm font-semibold text-slate-800">{component.label}</span>
                             <span className="block text-xs text-slate-500">{component.description}</span>
@@ -3211,9 +3219,11 @@ export default function App() {
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       title="Add image"
                     />
-                    <div className="w-full flex items-center justify-between gap-3 rounded-lg border border-dashed border-slate-300 bg-white px-3 py-3 text-left transition-colors group-hover:bg-slate-50">
-                      <span className="flex items-center gap-2">
-                        <Layers className="w-4 h-4 text-slate-500" />
+                    <div className="wiggly-item-row flex w-full items-center justify-between gap-3 border-dashed px-3 py-3 text-left">
+                      <span className="flex items-center gap-3">
+                        <span className="wiggly-icon-tile">
+                          <Layers className="h-4 w-4" />
+                        </span>
                         <span>
                           <span className="block text-sm font-semibold text-slate-800">Image</span>
                           <span className="block text-xs text-slate-500">Upload product or proof image</span>
@@ -3225,8 +3235,11 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Look & Media</h2>
+              <div className="wiggly-panel p-4">
+                <div className="mb-4 flex items-end justify-between gap-3">
+                  <h2 className="wiggly-panel-title uppercase">Look & Media</h2>
+                  <span className="wiggly-panel-kicker">Style</span>
+                </div>
                 <div className="space-y-2">
                   {[
                     { label: 'Bars', value: visualizerColor, onChange: setVisualizerColor },
@@ -3255,9 +3268,11 @@ export default function App() {
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                         title="Upload background"
                       />
-                      <div className="w-full h-full flex items-center justify-between px-3 py-3 text-sm border border-dashed border-slate-300 rounded-lg text-slate-600 group-hover:bg-slate-50 bg-white transition-colors">
-                        <span className="flex items-center gap-2">
-                          <Upload className="w-4 h-4 text-slate-400" />
+                      <div className="wiggly-item-row flex h-full w-full items-center justify-between border-dashed px-3 py-3 text-sm text-slate-600">
+                        <span className="flex items-center gap-3">
+                          <span className="wiggly-icon-tile">
+                            <Upload className="h-4 w-4" />
+                          </span>
                           <span>
                             <span className="block font-semibold text-slate-700">Background image/video</span>
                             <span className="block text-xs text-slate-500">Image or video</span>
@@ -3324,9 +3339,11 @@ export default function App() {
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                         title="Upload intro image"
                       />
-                      <div className="w-full h-full flex min-w-0 items-center justify-between gap-2 px-3 py-3 text-sm border border-dashed border-slate-300 rounded-lg text-slate-600 group-hover:bg-slate-50 bg-white transition-colors">
-                        <span className="flex min-w-0 flex-1 items-center gap-2">
-                          <ImageIcon className="w-4 h-4 shrink-0 text-slate-400" />
+                      <div className="wiggly-item-row flex h-full w-full min-w-0 items-center justify-between gap-2 border-dashed px-3 py-3 text-sm text-slate-600">
+                        <span className="flex min-w-0 flex-1 items-center gap-3">
+                          <span className="wiggly-icon-tile">
+                            <ImageIcon className="h-4 w-4" />
+                          </span>
                           <span className="min-w-0 flex-1 overflow-hidden">
                             <span className="block font-semibold text-slate-700">Intro image</span>
                             <span className="block truncate text-xs text-slate-500">{introImage ? introFileName || `Shows first ${introDuration}s` : 'No intro image'}</span>
@@ -3395,9 +3412,11 @@ export default function App() {
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                         title="Upload audio"
                       />
-                      <div className="w-full h-full flex items-center justify-between px-3 py-3 text-sm border border-dashed border-slate-300 rounded-lg text-slate-600 group-hover:bg-slate-50 bg-white transition-colors">
-                        <span className="flex items-center gap-2">
-                          {isTranscribing ? <Loader2 className="w-4 h-4 text-slate-400 animate-spin" /> : <Upload className="w-4 h-4 text-slate-400" />}
+                      <div className="wiggly-item-row flex h-full w-full items-center justify-between border-dashed px-3 py-3 text-sm text-slate-600">
+                        <span className="flex items-center gap-3">
+                          <span className="wiggly-icon-tile">
+                            {isTranscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                          </span>
                           <span>
                             <span className="block font-semibold text-slate-700">{isTranscribing ? "Reading audio..." : "Voice audio"}</span>
                             <span className="block max-w-[170px] truncate text-xs text-slate-500">{audioFileName || "MP3, WAV, M4A"}</span>
@@ -3494,10 +3513,10 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+              <div className="wiggly-panel p-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Where It Shows Up</h2>
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Preview</span>
+                  <h2 className="wiggly-panel-title uppercase">Where It Shows Up</h2>
+                  <span className="wiggly-panel-kicker">Preview</span>
                 </div>
                 
                 <div className="space-y-4">
@@ -3515,7 +3534,7 @@ export default function App() {
                           key={option.id}
                           type="button"
                           onClick={() => setPlatform(option.id)}
-                          className={`rounded-lg border px-3 py-2 text-left transition-colors ${active ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'}`}
+                          className={`rounded-xl border px-3 py-2 text-left transition ${active ? 'border-slate-900 bg-slate-900 text-white shadow-lg shadow-slate-950/15' : 'border-slate-200 bg-white/75 text-slate-700 hover:border-indigo-200 hover:bg-white hover:shadow-sm'}`}
                         >
                           <span className="block text-sm font-semibold">{option.label}</span>
                           <span className={`block text-xs ${active ? 'text-white/70' : 'text-slate-500'}`}>{option.ratio}</span>
@@ -3528,7 +3547,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setPlatformTheme('dark')}
-                      className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${platformTheme === 'dark' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'}`}
+                      className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition ${platformTheme === 'dark' ? 'border-slate-900 bg-slate-900 text-white shadow-lg shadow-slate-950/15' : 'border-slate-200 bg-white/75 text-slate-700 hover:border-indigo-200 hover:bg-white hover:shadow-sm'}`}
                     >
                       <Moon className="w-4 h-4" />
                       Dark
@@ -3536,7 +3555,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setPlatformTheme('light')}
-                      className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${platformTheme === 'light' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'}`}
+                      className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition ${platformTheme === 'light' ? 'border-slate-900 bg-slate-900 text-white shadow-lg shadow-slate-950/15' : 'border-slate-200 bg-white/75 text-slate-700 hover:border-indigo-200 hover:bg-white hover:shadow-sm'}`}
                     >
                       <Sun className="w-4 h-4" />
                       Light
@@ -3548,7 +3567,7 @@ export default function App() {
                       { id: 'safeZonesToggle', label: 'Show safe area', checked: showSafeZones, onChange: setShowSafeZones },
                       { id: 'redGuidesToggle', label: 'Show guide labels', checked: showRedGuides, onChange: setShowRedGuides },
                     ].map((toggle) => (
-                      <label key={toggle.id} htmlFor={toggle.id} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                      <label key={toggle.id} htmlFor={toggle.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white/75 px-3 py-2 shadow-sm">
                         <span className="text-sm font-semibold text-slate-700">{toggle.label}</span>
                         <span className="relative inline-block h-5 w-9">
                           <input
@@ -3646,9 +3665,9 @@ export default function App() {
               </>
               ) : (
                 <>
-                  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="wiggly-panel p-4">
                     <div className="mb-4 flex items-center justify-between">
-                      <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Phone Call</h2>
+                      <h2 className="wiggly-panel-title uppercase">Phone Call</h2>
                       <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-700">9:16</span>
                     </div>
 
@@ -3696,9 +3715,11 @@ export default function App() {
                             className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
                             title="Upload voicemail audio"
                           />
-                          <div className="flex h-full w-full items-center justify-between rounded-lg border border-dashed border-slate-300 bg-white px-3 py-3 text-sm text-slate-600 transition-colors group-hover:bg-slate-50">
-                            <span className="flex min-w-0 items-center gap-2">
-                              <Upload className="h-4 w-4 shrink-0 text-slate-400" />
+                          <div className="wiggly-item-row flex h-full w-full items-center justify-between border-dashed px-3 py-3 text-sm text-slate-600">
+                            <span className="flex min-w-0 items-center gap-3">
+                              <span className="wiggly-icon-tile">
+                                <Upload className="h-4 w-4" />
+                              </span>
                               <span className="min-w-0">
                                 <span className="block font-semibold text-slate-700">Voicemail audio</span>
                                 <span className="block max-w-[178px] truncate text-xs text-slate-500">{audioFileName || 'MP3, WAV, M4A'}</span>
@@ -3727,9 +3748,9 @@ export default function App() {
                   </div>
 
                   {audioLibraryItems.length > 0 && (
-                    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className="wiggly-panel p-4">
                       <div className="mb-3 flex items-center justify-between gap-2">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Saved Audio</h2>
+                        <h2 className="wiggly-panel-title uppercase">Saved Audio</h2>
                         <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-400">{audioLibraryItems.length}</span>
                       </div>
                       <div className="space-y-1.5">
@@ -3839,10 +3860,10 @@ export default function App() {
           </div>
 
           {/* Main Preview Area */}
-          <div className={`flex min-h-0 flex-1 flex-col items-center px-4 ${creativeMode === 'phone-call' ? 'justify-center overflow-y-auto overflow-x-visible py-2' : 'justify-center overflow-hidden py-3'}`}>
+          <div className={`wiggly-studio flex min-h-0 flex-1 flex-col items-center px-4 ${creativeMode === 'phone-call' ? 'justify-center overflow-y-auto overflow-x-visible py-4' : 'justify-center overflow-hidden py-5'}`}>
             
             {creativeMode === 'phone-call' ? (
-              <div className="relative w-full max-w-[420px] shrink-0 pb-8">
+              <div className="wiggly-stage-card relative w-full max-w-[420px] shrink-0 pb-8">
                 <PhoneCallSimulator
                   phoneNumber={phoneNumber}
                   audioUrl={audioUrl}
@@ -3852,7 +3873,7 @@ export default function App() {
                 />
               </div>
             ) : (
-            <div className={`relative w-full ${platform === 'youtube' ? 'max-w-[640px]' : 'max-w-[420px]'}`}>
+            <div className={`wiggly-stage-card relative w-full ${platform === 'youtube' ? 'max-w-[640px]' : 'max-w-[420px]'}`}>
               <PlatformFrame
                 platform={platform}
                 theme={platformTheme}
@@ -3888,10 +3909,11 @@ export default function App() {
                   const nextIndex = (currentIndex + 1) % platforms.length;
                   setPlatform(platforms[nextIndex]);
                 }}
-                className={`${platform === 'youtube' ? 'absolute -bottom-14 right-4' : 'absolute -right-14 bottom-8 sm:-right-20'} z-10 cursor-pointer rounded-full border border-slate-200 bg-white p-3 text-slate-500 shadow-xl transition-all hover:scale-105 hover:bg-slate-50 hover:text-slate-800 active:scale-95 group`}
+                className={`${platform === 'youtube' ? 'absolute -bottom-14 right-4' : 'absolute -right-14 bottom-8 sm:-right-20'} z-10 hidden cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white p-3 text-slate-500 shadow-xl transition-all hover:scale-105 hover:bg-slate-50 hover:text-slate-800 active:scale-95 group sm:flex`}
                 title="See the next preview"
               >
                 <ChevronDown className="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors" />
+                <span className="wiggly-float-label right-full mr-2">Next view</span>
               </button>
 
               <div className={`${platform === 'youtube' ? 'absolute -top-12 right-4' : 'absolute -right-11 top-[30%]'} z-20 hidden sm:block`}>
@@ -3901,10 +3923,11 @@ export default function App() {
                     setTemplateDraftName(getCurrentDesignTitle());
                     setSaveTemplateOpen(true);
                   }}
-                  className={`${platform === 'youtube' ? 'h-10 w-10 rounded-full border' : 'h-24 w-8 rounded-r-xl border border-l-0 hover:w-10'} flex items-center justify-center border-slate-200 bg-white/95 text-slate-500 shadow-lg backdrop-blur transition hover:text-slate-900`}
+                  className={`${platform === 'youtube' ? 'h-10 w-10 rounded-full border' : 'h-24 w-8 rounded-r-xl border border-l-0 hover:w-10'} group flex items-center justify-center border-slate-200 bg-white/95 text-slate-500 shadow-lg backdrop-blur transition hover:text-slate-900`}
                   title="Save this design as a template"
                 >
                   <BookmarkPlus className="h-4 w-4" />
+                  <span className={`${platform === 'youtube' ? 'wiggly-float-label top-1/2 right-full mr-2 -translate-y-1/2' : 'wiggly-float-label left-full ml-2'}`}>Save design</span>
                 </button>
               </div>
 
@@ -3944,25 +3967,26 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setCreativeBriefOpen(true)}
-                className="absolute -right-14 top-[12%] z-20 hidden h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-lg transition hover:text-slate-900 hover:shadow-xl sm:flex"
+                className="group absolute -right-14 top-[12%] z-20 hidden h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-lg transition hover:text-slate-900 hover:shadow-xl sm:flex"
                 title="Tell Wiggly about the business"
               >
                 <ClipboardList className="h-4 w-4" />
                 <span className="absolute -right-1 -top-1 rounded-full bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold text-white">
                   {briefCompletion}/{requiredBriefFields}
                 </span>
+                <span className="wiggly-float-label right-full mr-2">Business info</span>
               </button>
             </div>
             )}
 
             {/* Toolbar */}
-            <div className="mt-4 flex flex-col items-center gap-2">
+            <div className="wiggly-toolbar mt-4 flex flex-col items-center gap-2">
               <div className="flex flex-wrap justify-center gap-3">
                 <div className="flex flex-col items-center gap-2">
                   <button 
                     onClick={downloadSimulatedVideo}
                     disabled={rendering}
-                    className={`px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-sm font-semibold flex items-center gap-2 text-slate-700 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed ${exportLaunchAnimation ? 'translate-y-8 scale-90 opacity-0' : ''}`}
+                    className={`wiggly-primary-action flex items-center gap-2 px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${exportLaunchAnimation ? 'translate-y-8 scale-90 opacity-0' : ''}`}
                    >
                     {rendering ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                     {rendering ? 'Making Video' : 'Download Video'}
@@ -3991,39 +4015,46 @@ export default function App() {
                 </div>
                 <button 
                   onClick={togglePlayback}
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors self-start"
+                  className="wiggly-secondary-action flex items-center gap-2 self-start px-4 py-2 text-sm font-semibold"
                  >
                   {playing ? (
                     <><Square className="w-4 h-4 text-red-400" /> Stop</>
                   ) : (
-                    <><Play className="w-4 h-4 text-indigo-400 fill-current" /> Play</>
+                    <><Play className="w-4 h-4 fill-current text-indigo-500" /> Play</>
                   )}
                 </button>
-                <button
-                  type="button"
-                  onClick={SOCIAL_POSTING_ENABLED ? handlePostToSocials : undefined}
-                  disabled={!SOCIAL_POSTING_ENABLED || rendering}
-                  className="px-4 py-2 bg-slate-50 border border-slate-200 text-slate-500 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors self-start disabled:cursor-not-allowed disabled:opacity-80"
-                  title="Posting directly to social accounts is coming soon"
-                >
-                  {rendering && postizAutoOpenAfterExport ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                  <span>Post Online</span>
-                  <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-600">Soon</span>
-                </button>
+                {SOCIAL_POSTING_ENABLED && (
+                  <button
+                    type="button"
+                    onClick={handlePostToSocials}
+                    disabled={rendering}
+                    className="wiggly-secondary-action flex items-center gap-2 self-start px-4 py-2 text-sm font-semibold text-slate-500 disabled:cursor-not-allowed disabled:opacity-80"
+                  >
+                    {rendering && postizAutoOpenAfterExport ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    <span>Post Online</span>
+                  </button>
+                )}
               </div>
 
-              <p className="max-w-[360px] text-center text-[11px] font-semibold leading-5 text-slate-500">
-                Coming soon: send this ad to Facebook, Instagram, TikTok, or YouTube after the video is made.
-              </p>
+              <button
+                type="button"
+                disabled
+                className="wiggly-border-beam relative flex w-full max-w-[360px] cursor-not-allowed items-center justify-center gap-2 overflow-hidden rounded-full px-4 py-2 text-xs font-black text-slate-700 shadow-sm"
+                title="Coming soon"
+              >
+                <Upload className="h-3.5 w-3.5 text-indigo-500" />
+                Auto-post everywhere
+                <span className="rounded-full bg-[#d9fff6] px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-900">soon</span>
+              </button>
 
-              <div className="mt-1 w-full max-w-[360px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+              <div className="wiggly-timeline mt-1 w-full max-w-[360px] p-3">
                 {creativeMode === 'phone-call' ? (
                   <>
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Video Plan</span>
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Timing</span>
                       <span className="text-xs font-semibold text-slate-500">Ring then voicemail</span>
                     </div>
-                    <div className="flex h-8 overflow-hidden rounded-lg bg-slate-100">
+                    <div className="flex h-8 overflow-hidden rounded-full bg-slate-100 shadow-inner">
                       {phoneRingDuration > 0 && (
                         <div
                           className="flex min-w-[56px] items-center justify-center border-r border-white bg-emerald-500 text-[10px] font-bold text-white"
@@ -4044,13 +4075,13 @@ export default function App() {
                   </>
                 ) : (
                   <>
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Video Plan</span>
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Timing</span>
                       <span className="text-xs font-semibold text-slate-500">
                         {renderDurationCap === 'full' ? 'Full voice audio' : `${selectedTimelineDuration}s`}
                       </span>
                     </div>
-                    <div className="flex h-8 overflow-hidden rounded-lg bg-slate-100">
+                    <div className="flex h-8 overflow-hidden rounded-full bg-slate-100 shadow-inner">
                       {introImage && (
                         <div
                           className="flex min-w-[46px] items-center justify-center border-r border-white bg-indigo-500 text-[10px] font-bold text-white"
@@ -4078,22 +4109,22 @@ export default function App() {
 
           {/* Template Library */}
           {creativeMode === 'visualizer' && (
-          <div className="hidden w-72 shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm xl:flex">
+          <div className="wiggly-library hidden w-72 shrink-0 flex-col overflow-hidden xl:flex">
             <div className="border-b border-slate-100 p-4">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Design Library</h2>
+                  <h2 className="wiggly-panel-title uppercase">Design Library</h2>
                   <p className="mt-1 text-xs leading-relaxed text-slate-500">Templates plus your last 20 downloaded ads.</p>
                 </div>
-                <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-500">{activeTemplateCount}</span>
+                <span className="rounded-full bg-[#d9fff6] px-2 py-1 text-[11px] font-black text-slate-900">{activeTemplateCount}</span>
               </div>
-              <div className="grid grid-cols-2 rounded-lg bg-slate-100 p-1">
+              <div className="grid grid-cols-2 rounded-full border border-slate-200 bg-white/70 p-1">
                 {(['templates', 'history'] as const).map((tab) => (
                   <button
                     key={tab}
                     type="button"
                     onClick={() => setTemplateLibraryTab(tab)}
-                    className={`rounded-md px-2 py-1.5 text-xs font-bold transition ${templateLibraryTab === tab ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                    className={`rounded-full px-2 py-1.5 text-xs font-bold transition ${templateLibraryTab === tab ? 'bg-slate-950 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
                   >
                     {tab === 'templates' ? 'Templates' : 'My History'}
                   </button>
@@ -4126,7 +4157,7 @@ export default function App() {
                       type="button"
                       onClick={() => loadTemplate(template)}
                       title={`Use ${getTemplateTitle(template)}`}
-                      className="group relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2 text-left transition hover:border-indigo-300 hover:bg-white hover:shadow-sm active:scale-[0.99]"
+                      className="wiggly-template-card group relative overflow-hidden rounded-2xl p-2 text-left transition active:scale-[0.99]"
                     >
                       <TemplatePreview template={template} />
                       <div className="mt-2 flex items-center justify-between gap-1">
@@ -4165,7 +4196,7 @@ export default function App() {
         </main>
 
         {(rendering || exportDownload || exportPhase === 'error') && (
-          <div className="fixed bottom-5 right-5 z-50 w-[300px] rounded-lg border border-slate-200 bg-white p-4 shadow-2xl animate-in slide-in-from-bottom-4 fade-in duration-300">
+          <div className="wiggly-export-card fixed bottom-5 right-5 z-50 w-[300px] p-4 animate-in slide-in-from-bottom-4 fade-in duration-300">
             <div className="flex items-start gap-3">
               <div className="mt-0.5 rounded-full bg-indigo-50 p-2">
                 {exportDownload ? (
@@ -4235,7 +4266,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={downloadReadyExport}
-                      className="flex w-full items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                      className="wiggly-primary-action flex w-full items-center justify-center gap-2 px-3 py-2 text-sm font-semibold"
                     >
                       <Download className="h-4 w-4" />
                       Download Video
@@ -4243,7 +4274,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={openReadyExport}
-                      className="flex w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                      className="wiggly-secondary-action flex w-full items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700"
                     >
                       Preview Video
                     </button>
