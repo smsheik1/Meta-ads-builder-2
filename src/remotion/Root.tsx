@@ -27,7 +27,7 @@ const defaultSnapshot: ExportSnapshot = {
     bgShadow: false,
     bgShadowOpacity: 0,
     introImage: null,
-    introDuration: 1,
+    introDuration: 0,
     introFeedCropY: 50,
     audioUrl: null,
     renderDurationCap: 30,

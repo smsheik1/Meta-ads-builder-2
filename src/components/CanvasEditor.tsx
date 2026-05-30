@@ -9,7 +9,7 @@ import { HeadlineSlot } from './HeadlineSlot';
 import { AutoFitText } from './AutoFitText';
 import { sanitizeRichText, stripRichText } from '../lib/rich-text';
 import { isFeedPlatform, isVerticalPlatform, type PlatformType } from './PlatformFrame';
-import { getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getPlatformElementFrame } from '../lib/export-snapshot';
+import { getActiveCaption, getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getPlatformElementFrame } from '../lib/export-snapshot';
 import { getRandomSeededHook } from '../lib/headline-pool';
 import { getRandomAdStyleArchetype, pickRandom, type AdStyleArchetype } from '../lib/style-archetypes';
 import { emitTutorialEvent } from './InteractiveTutorial';
@@ -70,7 +70,7 @@ interface CanvasEditorProps {
   bgShadow: boolean;
   bgShadowOpacity: number;
   introImage: string | null;
-  introDuration: 1 | 2 | 3;
+  introDuration: 0 | 1 | 2 | 3;
   introFeedCropY: number;
   introImageAspect: number | null;
   previewDurationCap: number | null;
@@ -416,8 +416,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         return;
       }
       const activeCaps = state.captions.length > 0 ? state.captions : MOCK_CAPTIONS;
-      const activeCaptionIndex = activeCaps.findIndex(c => currentTime >= c.start && currentTime <= c.end);
-      const activeCaption = activeCaptionIndex >= 0 ? activeCaps[activeCaptionIndex] : undefined;
+      const { caption: activeCaption, index: activeCaptionIndex } = getActiveCaption(activeCaps, currentTime);
       let loopSpeaker: number | null = null;
       
       if (activeCaption) {
@@ -443,10 +442,11 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         const type = supportedVisualizerTypes.has(rawType) ? rawType : 'bars-center';
 
         const sensitivityMultiplier = el.visualizerSensitivity ?? 1.5;
+        const visualizerRefs = barsRef.current[vId] || [];
 
         if (canvasVisualizerTypes.has(type)) {
-          const canvas = barsRef.current[vId][0] as unknown as HTMLCanvasElement;
-          if (canvas && canvas.getContext) {
+          const canvas = visualizerRefs[0];
+          if (canvas instanceof HTMLCanvasElement && canvas.getContext) {
              const ctx = canvas.getContext('2d');
              if (ctx) {
                  if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
@@ -479,25 +479,26 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                  });
              }
           }
-        } else if (type === 'bars-bottom' || type === 'bars-center') {
-          const halfCount = Math.floor(barsRef.current[vId].length / 2);
+        } else if ((type === 'bars-bottom' || type === 'bars-center') && visualizerRefs.length > 0) {
+          const barRefs = visualizerRefs.filter((ref): ref is HTMLDivElement => ref instanceof HTMLDivElement);
+          const halfCount = Math.floor(barRefs.length / 2);
           
-          barsRef.current[vId].forEach((bar, index) => {
+          barRefs.forEach((bar, index) => {
             if (bar) {
               const isLeftSpeakerSide = index < halfCount;
               const isActiveSpeakerSide = !el.visualizerSplitSpeakers || !loopSpeaker || (loopSpeaker === 1 ? isLeftSpeakerSide : !isLeftSpeakerSide);
               const dataBins = Math.floor(bufferLength * 0.4); // Focus on lower/mid frequencies
               // Space out the indices so it looks good visually
               const sideIndex = isLeftSpeakerSide ? index : index - halfCount;
-              const sideTotal = isLeftSpeakerSide ? halfCount : barsRef.current[vId].length - halfCount;
-              const center = (barsRef.current[vId].length - 1) / 2;
+              const sideTotal = isLeftSpeakerSide ? halfCount : barRefs.length - halfCount;
+              const center = (barRefs.length - 1) / 2;
               const centerDistance = Math.abs(index - center);
               const centerTotal = Math.max(1, center);
               const normalizedIndex = el.visualizerSplitSpeakers
                 ? sideIndex / Math.max(1, sideTotal - 1)
                 : type === 'bars-center'
                   ? centerDistance / centerTotal
-                : index / Math.max(1, barsRef.current[vId].length - 1);
+                : index / Math.max(1, barRefs.length - 1);
               const dataIndex = 1 + Math.floor(normalizedIndex * dataBins);
               let value = (dataArray[Math.min(dataIndex, bufferLength - 1)] / 255) * sensitivityMultiplier;
               value = compressVisualizerValue(value);
@@ -574,7 +575,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   ].filter(v => v >= 0) : [];
 
   const introFadeDuration = 0.65;
-  const introOpacity = introImage && playing
+  const introOpacity = introImage && playing && introDuration > 0
     ? playbackTime < introDuration
       ? 1
       : playbackTime < introDuration + introFadeDuration
@@ -894,6 +895,10 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
           : frame.y;
         const captionMaxFontSize = platform === 'youtube' ? 86 : 64;
         const normalizedVisualizerType = supportedVisualizerTypes.has(el.visualizerType || '') ? el.visualizerType! : 'bars-center';
+        const showTextColorPicker = !editingId && el.type === 'text' && (el.componentRole === 'headline' || el.componentRole === 'subheadline');
+        const showCaptionColorPicker = !editingId && el.type === 'caption';
+        const hoverColorValue = showCaptionColorPicker ? (el.color || accentColor) : (el.color || '#111827');
+        const hoverColorLabel = showCaptionColorPicker ? 'Caption color' : el.componentRole === 'subheadline' ? 'Sub-headline color' : 'Headline color';
 
         return (
           <div
@@ -929,7 +934,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
           >
             <button
               type="button"
-              className={`wiggly-element-lock absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-lg transition hover:scale-105 hover:bg-white ${el.locked ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+              className={`wiggly-element-lock absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-lg transition hover:scale-105 hover:bg-white ${el.locked ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
               title={el.locked ? 'Unlock this part' : 'Lock this part'}
               aria-label={el.locked ? 'Unlock this part' : 'Lock this part'}
               onPointerDown={(event) => {
@@ -944,8 +949,39 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
               onDoubleClick={(event) => event.stopPropagation()}
               onClick={(event) => event.stopPropagation()}
             >
-              {el.locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+              {el.locked ? <Lock className="h-5 w-5" /> : <Unlock className="h-5 w-5" />}
             </button>
+            {(showTextColorPicker || showCaptionColorPicker) && (
+              <label
+                className="pointer-events-auto absolute left-2 top-1/2 z-50 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover:opacity-100 focus-within:opacity-100"
+                title={hoverColorLabel}
+                onMouseDown={(event) => event.stopPropagation()}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <span
+                  className="h-6 w-6 rounded-full border border-slate-200 shadow-inner"
+                  style={{ backgroundColor: hoverColorValue }}
+                />
+                <input
+                  type="color"
+                  value={hoverColorValue}
+                  onChange={(event) => {
+                    const nextColor = event.target.value;
+                    if (showCaptionColorPicker) {
+                      updateElement(el.id, {
+                        color: nextColor,
+                        captionSpeaker1Color: nextColor,
+                        captionSpeaker2Color: nextColor,
+                      });
+                      return;
+                    }
+                    updateElement(el.id, { color: nextColor });
+                  }}
+                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  aria-label={hoverColorLabel}
+                />
+              </label>
+            )}
             {/* TEXT */}
             {el.type === 'text' && (
               <div 
@@ -1059,7 +1095,10 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
 
             {/* VISUALIZER */}
             {el.type === 'visualizer' && (
-               <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
+               <div
+                 key={`${normalizedVisualizerType}-${el.barCount || 16}`}
+                 className="relative w-full h-full flex items-center justify-center pointer-events-none"
+               >
                  {normalizedVisualizerType === 'bars-bottom' && (
                     <div className="w-full h-full flex items-end justify-between gap-1">
                       {Array.from({ length: el.barCount || 16 }).map((_, i, bars) => {
@@ -1134,13 +1173,13 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                     />
                  )}
                  <label
-                   className="pointer-events-auto absolute right-2 top-1/2 z-50 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover:opacity-100 focus-within:opacity-100"
+                   className="pointer-events-auto absolute left-2 top-1/2 z-50 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover:opacity-100 focus-within:opacity-100"
                    title="Change visualizer color"
                    onMouseDown={(event) => event.stopPropagation()}
                    onClick={(event) => event.stopPropagation()}
                  >
                    <span
-                     className="h-4 w-4 rounded-full border border-slate-200 shadow-inner"
+                     className="h-6 w-6 rounded-full border border-slate-200 shadow-inner"
                      style={{ backgroundColor: el.barColor || '#00ffcc' }}
                    />
                    <input

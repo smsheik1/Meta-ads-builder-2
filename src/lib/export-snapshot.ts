@@ -1,10 +1,12 @@
 import type { AdElement, Caption } from '../store';
 import type { PlatformType } from '../components/PlatformFrame';
+import type { AudioAnalysisData } from './audio-analysis';
 
 export type ExportSnapshot = {
   id: string;
   name: string;
   durationSeconds?: number;
+  audioAnalysis?: AudioAnalysisData | null;
   elements: AdElement[];
   captions: Caption[];
   settings: {
@@ -110,10 +112,27 @@ export const getExportDimensions = (platform: PlatformType) => {
   };
 };
 
+export const MAX_CAPTION_WORDS_ON_SCREEN = 7;
+
+const getCaptionWindowText = (caption: Caption, timeInSeconds: number) => {
+  const words = caption.text.trim().split(/\s+/).filter(Boolean);
+  if (words.length <= MAX_CAPTION_WORDS_ON_SCREEN) return caption.text;
+
+  const chunks: string[] = [];
+  for (let index = 0; index < words.length; index += MAX_CAPTION_WORDS_ON_SCREEN) {
+    chunks.push(words.slice(index, index + MAX_CAPTION_WORDS_ON_SCREEN).join(' '));
+  }
+
+  const duration = Math.max(0.001, caption.end - caption.start);
+  const progress = Math.min(0.999999, Math.max(0, (timeInSeconds - caption.start) / duration));
+  return chunks[Math.min(chunks.length - 1, Math.floor(progress * chunks.length))];
+};
+
 export const getActiveCaption = (captions: Caption[], timeInSeconds: number) => {
   const index = captions.findIndex(caption => timeInSeconds >= caption.start && timeInSeconds <= caption.end);
+  const caption = index >= 0 ? captions[index] : null;
   return {
-    caption: index >= 0 ? captions[index] : null,
+    caption: caption ? { ...caption, text: getCaptionWindowText(caption, timeInSeconds) } : null,
     index,
   };
 };
