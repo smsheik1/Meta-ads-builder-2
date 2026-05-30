@@ -362,7 +362,7 @@ export const RemotionAd = ({ snapshot, width, height, audioLevels, audioBands }:
   const { settings } = snapshot;
   const sorted = [...snapshot.elements].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
   const introFadeDuration = 0.65;
-  const introOpacity = settings.introImage && seconds < settings.introDuration + introFadeDuration
+  const introOpacity = settings.introImage && settings.introDuration > 0 && seconds < settings.introDuration + introFadeDuration
     ? seconds < settings.introDuration ? 1 : 1 - ((seconds - settings.introDuration) / introFadeDuration)
     : 0;
   const activeCaptions = snapshot.captions.length > 0 ? snapshot.captions : MOCK_CAPTIONS;

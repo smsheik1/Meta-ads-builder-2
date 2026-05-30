@@ -188,7 +188,12 @@ const getPostizSettings = (identifier: string, title: string, platform?: string)
 };
 
 const remotionAssetsRoot = path.join(process.cwd(), 'tmp', 'remotion-assets');
-app.use('/api/remotion-assets', express.static(remotionAssetsRoot));
+app.use('/api/remotion-assets', express.static(remotionAssetsRoot, {
+  setHeaders: (res) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  },
+}));
 
 app.post('/api/postiz/integrations', async (_req, res) => {
   try {
@@ -540,7 +545,15 @@ app.post('/api/render-remotion', expensiveApiLimiter, uploadRemotion.any(), asyn
     const durationCap = isPhoneCallSnapshot(snapshot) ? 180 : snapshot.settings.renderDurationCap === 'full' ? 180 : Number(snapshot.settings.renderDurationCap || 30);
     const durationSeconds = Math.max(1, Math.min(Number(snapshot.durationSeconds || 30), durationCap));
     const visualizerElement = isPhoneCallSnapshot(snapshot) ? null : snapshot.elements.find(element => element.type === 'visualizer');
-    const audioAnalysis = isPhoneCallSnapshot(snapshot) ? null : await extractAudioAnalysis(audioAnalysisInput || snapshot.settings.audioUrl, durationSeconds, visualizerElement?.visualizerSmoothing ?? 0.8);
+    const cachedAudioAnalysis = !isPhoneCallSnapshot(snapshot) && snapshot.audioAnalysis?.levels?.length
+      ? snapshot.audioAnalysis
+      : null;
+    const audioAnalysis = isPhoneCallSnapshot(snapshot)
+      ? null
+      : cachedAudioAnalysis || await extractAudioAnalysis(audioAnalysisInput || snapshot.settings.audioUrl, durationSeconds, visualizerElement?.visualizerSmoothing ?? 0.8);
+    if (!isPhoneCallSnapshot(snapshot)) {
+      snapshot.audioAnalysis = null;
+    }
     const inputProps = {
       snapshot,
       width: dimensions.width,

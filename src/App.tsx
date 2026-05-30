@@ -10,7 +10,8 @@ import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
 import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } from './lib/audio-library';
-import { getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions, getExportDimensions, getPlatformElementFrame, type ExportSnapshot, type PhoneCallSnapshot } from './lib/export-snapshot';
+import { precomputeAudioAnalysisFromUrl, type AudioAnalysisData } from './lib/audio-analysis';
+import { getActiveCaption, getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions, getExportDimensions, getPlatformElementFrame, type ExportSnapshot, type PhoneCallSnapshot } from './lib/export-snapshot';
 import { PhoneCallSimulator } from './components/PhoneCallSimulator';
 import { formatUsPhoneNumber } from './lib/phone-call';
 import { FIXED_AD_BACKGROUND_COLOR } from './lib/style-archetypes';
@@ -80,7 +81,7 @@ const CAPTION_SPEAKER_COLORS: Record<number, string> = {
 
 type RenderDurationCap = 30 | 60 | 'full';
 type ExportPhase = 'recording' | 'converting' | 'complete' | 'error';
-type IntroDuration = 1 | 2 | 3;
+type IntroDuration = 0 | 1 | 2 | 3;
 type RingDuration = 0 | 1 | 2 | 3;
 type CreativeMode = 'visualizer' | 'phone-call';
 
@@ -222,6 +223,7 @@ type SavedTemplate = {
   name: string;
   builtIn?: boolean;
   createdAt: number;
+  audioAnalysis?: AudioAnalysisData | null;
   elements: ReturnType<typeof useEditorStore.getState>['elements'];
   settings: {
     visualizerColor: string;
@@ -392,7 +394,7 @@ export default function App() {
   const [bgShadowOpacity, setBgShadowOpacity] = useState(0.38);
   const [introImage, setIntroImage] = useState<string | null>(DEFAULT_INTRO_IMAGE);
   const [introFileName, setIntroFileName] = useState<string>(DEFAULT_INTRO_IMAGE_NAME);
-  const [introDuration, setIntroDuration] = useState<IntroDuration>(1);
+  const [introDuration, setIntroDuration] = useState<IntroDuration>(0);
   const [introFeedCropY, setIntroFeedCropY] = useState(50);
   const [introImageAspect, setIntroImageAspect] = useState<number | null>(1132 / 1389);
   const [introCropOpen, setIntroCropOpen] = useState(false);
@@ -417,9 +419,10 @@ export default function App() {
   const [exportPhase, setExportPhase] = useState<ExportPhase>('recording');
   const [exportDownload, setExportDownload] = useState<{ url: string; blob: Blob; filename: string; snapshot: SavedTemplate | null } | null>(null);
   const [exportLaunchAnimation, setExportLaunchAnimation] = useState(false);
-  const [renderDurationCap, setRenderDurationCap] = useState<RenderDurationCap>(30);
+  const [renderDurationCap, setRenderDurationCap] = useState<RenderDurationCap>('full');
   const exportCancelRef = useRef<(() => void) | null>(null);
   const savedExportHistoryIdRef = useRef<string | null>(null);
+  const audioAnalysisCacheRef = useRef<Map<string, AudioAnalysisData>>(new Map());
   const [postizOpen, setPostizOpen] = useState(false);
   const [postizStatus, setPostizStatus] = useState<PostizStatus>('idle');
   const [postizIntegrations, setPostizIntegrations] = useState<PostizIntegration[]>([]);
@@ -464,6 +467,40 @@ export default function App() {
   const ctaCount = elements.filter((element) => element.componentRole === 'cta').length;
   const logoCount = elements.filter((element) => element.componentRole === 'logo').length;
   const duplicateOffset = (count: number) => Math.min(count * 12, 48);
+
+  const handleVisualizerColorChange = (color: string) => {
+    setVisualizerColor(color);
+    setElements((currentElements) => currentElements.map((element) => {
+      if (element.type === 'visualizer') {
+        return { ...element, barColor: color };
+      }
+      return element;
+    }));
+  };
+
+  const handleAccentColorChange = (color: string) => {
+    setAccentColor(color);
+    setElements((currentElements) => currentElements.map((element) => {
+      if (element.componentRole === 'subheadline') {
+        return { ...element, color };
+      }
+      if (element.componentRole === 'captions') {
+        return {
+          ...element,
+          color,
+          captionSpeaker1Color: color,
+          captionSpeaker2Color: color,
+        };
+      }
+      if (element.componentRole === 'cta') {
+        return {
+          ...element,
+          backgroundColor: color,
+        };
+      }
+      return element;
+    }));
+  };
 
   const [isTranscribing, setIsTranscribing] = useState(false);
 
@@ -707,7 +744,7 @@ export default function App() {
     setBgShadowOpacity(hydratedTemplate.settings.bgShadowOpacity);
     setIntroImage(hydratedTemplate.settings.introImage);
     setIntroFileName(hydratedTemplate.settings.introFileName);
-    setIntroDuration(hydratedTemplate.settings.introDuration || 1);
+    setIntroDuration(hydratedTemplate.settings.introDuration ?? 0);
     setIntroFeedCropY(hydratedTemplate.settings.introFeedCropY ?? 50);
     setIntroImageAspect(hydratedTemplate.settings.introImageAspect ?? null);
     setAudioUrl(hydratedTemplate.settings.audioUrl);
@@ -817,6 +854,51 @@ export default function App() {
     }
   };
 
+  const getAudioAnalysisSourceKey = (
+    url: string | null | undefined,
+    assetId?: string | null,
+    fileName?: string | null,
+  ) => {
+    if (!url) return null;
+    return assetId || fileName || url;
+  };
+
+  const getCachedAudioAnalysis = async (
+    url: string | null | undefined,
+    durationSeconds: number,
+    smoothing: number,
+    existing?: AudioAnalysisData | null,
+    sourceIdentity?: { assetId?: string | null; fileName?: string | null },
+  ) => {
+    const sourceKey = getAudioAnalysisSourceKey(url, sourceIdentity?.assetId, sourceIdentity?.fileName);
+    if (!url || !sourceKey) return null;
+
+    const roundedDuration = Number(durationSeconds.toFixed(3));
+    const roundedSmoothing = Number(smoothing.toFixed(3));
+    const cacheKey = `${sourceKey}|${roundedDuration}|${roundedSmoothing}`;
+    const cached = audioAnalysisCacheRef.current.get(cacheKey);
+    if (cached) return cached;
+
+    if (
+      existing &&
+      existing.sourceKey === sourceKey &&
+      existing.durationSeconds >= roundedDuration - 0.01 &&
+      existing.fps === 60 &&
+      Math.abs(existing.smoothing - roundedSmoothing) < 0.001
+    ) {
+      audioAnalysisCacheRef.current.set(cacheKey, existing);
+      return existing;
+    }
+
+    const analysis = await precomputeAudioAnalysisFromUrl(url, {
+      durationSeconds: roundedDuration,
+      smoothing: roundedSmoothing,
+      sourceKey,
+    });
+    audioAnalysisCacheRef.current.set(cacheKey, analysis);
+    return analysis;
+  };
+
   const appendMediaForRemotion = async (
     formData: FormData,
     field: string,
@@ -888,10 +970,29 @@ export default function App() {
     const uncappedDuration = Math.max(3, audioDuration || 0, bgVideoDuration || 0);
     const durationSeconds = renderDurationCap === 'full' ? uncappedDuration : Math.min(uncappedDuration, renderDurationCap);
 
+    const visualizerElement = snapshot.elements.find(element => element.type === 'visualizer');
+    const audioAnalysis = await getCachedAudioAnalysis(
+      snapshot.settings.audioUrl,
+      durationSeconds,
+      visualizerElement?.visualizerSmoothing ?? 0.8,
+      snapshot.audioAnalysis,
+      {
+        assetId: snapshot.settings.audioAssetId,
+        fileName: snapshot.settings.audioFileName,
+      },
+    ).catch((error) => {
+      console.warn('Could not precompute audio analysis for export; server will try fallback analysis:', error);
+      return null;
+    });
+    if (audioAnalysis) {
+      snapshot.audioAnalysis = audioAnalysis;
+    }
+
     const remotionSnapshot: ExportSnapshot = {
       id: snapshot.id,
       name: snapshot.name,
       durationSeconds,
+      audioAnalysis,
       elements: JSON.parse(JSON.stringify(snapshot.elements)),
       captions: JSON.parse(JSON.stringify(useEditorStore.getState().captions)),
       settings: {
@@ -903,7 +1004,7 @@ export default function App() {
         bgShadow: snapshot.settings.bgShadow,
         bgShadowOpacity: snapshot.settings.bgShadowOpacity,
         introImage: snapshot.settings.introImage,
-        introDuration: snapshot.settings.introDuration || 1,
+        introDuration: snapshot.settings.introDuration ?? 0,
         introFeedCropY: snapshot.settings.introFeedCropY ?? 50,
         audioUrl: snapshot.settings.audioUrl,
         renderDurationCap,
@@ -2392,8 +2493,7 @@ export default function App() {
              const currentTimeSec = elapsed / 1000;
              const storeCaptions = captions;
              const renderCaptions = storeCaptions.length > 0 ? storeCaptions : MOCK_CAPTIONS;
-             const activeCaptionIndex = renderCaptions.findIndex(c => currentTimeSec >= c.start && currentTimeSec <= c.end);
-             const activeCaption = activeCaptionIndex >= 0 ? renderCaptions[activeCaptionIndex] : undefined;
+             const { caption: activeCaption, index: activeCaptionIndex } = getActiveCaption(renderCaptions, currentTimeSec);
              
              if (activeCaption) {
                 const maxTextWidth = elW - (18 * scale);
@@ -2602,7 +2702,7 @@ export default function App() {
          ctx.restore();
       });
 
-      if (introImgEl) {
+      if (introImgEl && introDuration > 0) {
         const introFadeDuration = 0.65;
         let introOpacity = 0;
         if (currentTimeSec < introDuration) {
@@ -3602,10 +3702,10 @@ export default function App() {
                   </span>
                   <span className="text-lg font-black text-slate-400 transition group-open:rotate-90">›</span>
                 </summary>
-                <div className="space-y-2">
-                  {[
-                    { label: 'Bars', value: visualizerColor, onChange: setVisualizerColor },
-                    { label: 'Highlight', value: accentColor, onChange: setAccentColor },
+                  <div className="space-y-2">
+                    {[
+                    { label: 'Visualizer', value: visualizerColor, onChange: handleVisualizerColorChange },
+                    { label: 'Captions + button', value: accentColor, onChange: handleAccentColorChange },
                     { label: 'Background', value: bgColor, onChange: setBgColor },
                   ].map((colorControl) => (
                     <HexColorInput
@@ -3737,7 +3837,7 @@ export default function App() {
                         <span className="text-xs font-semibold text-slate-400">{introDuration}s then fade</span>
                       </div>
                       <div className="grid grid-cols-3 rounded-md bg-slate-100 p-1">
-                        {([1, 2, 3] as const).map((duration) => (
+                        {([0, 1, 2, 3] as const).map((duration) => (
                           <button
                             key={duration}
                             type="button"
@@ -3763,35 +3863,56 @@ export default function App() {
                   )}
 
                   <div className="rounded-lg border border-slate-200 bg-white p-2.5">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-slate-600">Video length</span>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <span className="text-xs font-semibold text-slate-600">Audio in the video</span>
                       <span className="text-xs font-semibold text-slate-400">
-                        {renderDurationCap === 'full' ? 'Full voice audio' : `${renderDurationCap}s`}
+                        {renderDurationCap === 'full' ? 'Whole recording' : `First ${renderDurationCap}s`}
                       </span>
                     </div>
-                    <div className="grid grid-cols-3 rounded-md bg-slate-100 p-1">
-                      <button
-                        type="button"
-                        onClick={() => setRenderDurationCap(30)}
-                        className={`rounded px-2 py-1.5 text-xs font-bold transition ${renderDurationCap === 30 ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-                      >
-                        30s
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setRenderDurationCap(60)}
-                        className={`rounded px-2 py-1.5 text-xs font-bold transition ${renderDurationCap === 60 ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-                      >
-                        60s
-                      </button>
+                    <div className="space-y-1.5">
                       <button
                         type="button"
                         onClick={() => setRenderDurationCap('full')}
-                        className={`rounded px-2 py-1.5 text-xs font-bold transition ${renderDurationCap === 'full' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                        className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left transition ${
+                          renderDurationCap === 'full'
+                            ? 'border-indigo-200 bg-indigo-50 text-slate-900 shadow-sm'
+                            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                        }`}
                       >
-                        All
+                        <span>
+                          <span className="block text-xs font-bold">Use the whole recording</span>
+                          <span className="mt-0.5 block text-[11px] font-medium text-slate-500">Best default. No silence gets added.</span>
+                        </span>
+                        <span className="text-[11px] font-black uppercase tracking-wide text-indigo-500">Default</span>
                       </button>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setRenderDurationCap(30)}
+                          className={`rounded-lg border px-2 py-2 text-xs font-bold transition ${
+                            renderDurationCap === 30
+                              ? 'border-indigo-200 bg-indigo-50 text-indigo-700 shadow-sm'
+                              : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50'
+                          }`}
+                        >
+                          Cut to first 30s
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setRenderDurationCap(60)}
+                          className={`rounded-lg border px-2 py-2 text-xs font-bold transition ${
+                            renderDurationCap === 60
+                              ? 'border-indigo-200 bg-indigo-50 text-indigo-700 shadow-sm'
+                              : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50'
+                          }`}
+                        >
+                          Cut to first 60s
+                        </button>
+                      </div>
                     </div>
+                    <p className="mt-2 text-[11px] font-medium leading-snug text-slate-400">
+                      Shorten only when a platform needs a shorter ad.
+                    </p>
                   </div>
 
                   <div className="wiggly-timeline w-full p-3">
