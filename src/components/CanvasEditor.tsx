@@ -940,7 +940,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
               type="button"
               className={`wiggly-element-lock absolute right-1 top-1 z-50 flex h-12 w-12 items-center justify-center rounded-full border-2 shadow-xl transition duration-150 hover:scale-110 focus-visible:scale-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-400/25 ${
                 el.locked
-                  ? 'border-slate-950 bg-slate-950 text-white opacity-35 shadow-slate-950/30 ring-2 ring-[#00D6B8]/70 hover:opacity-100 group-hover:opacity-100'
+                  ? `${playing ? 'opacity-15' : 'opacity-35'} border-slate-950 bg-slate-950 text-white shadow-slate-950/30 ring-2 ring-[#00D6B8]/70 hover:opacity-100 group-hover:opacity-100`
                   : 'border-slate-300 bg-white/95 text-slate-800 opacity-0 shadow-slate-950/20 hover:border-slate-950 hover:bg-white hover:opacity-100 group-hover:opacity-100 focus-visible:opacity-100'
               } ${pulsingLockedIds.has(el.id) ? 'scale-125 opacity-100 ring-4 ring-[#00D6B8]/80' : ''}`}
               title={el.locked ? 'Unlock this part' : `Lock ${el.componentRole || el.type} style`}
