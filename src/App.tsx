@@ -299,21 +299,17 @@ const getAppRoute = (): { route: AppRoute; shareSlug: string | null } => {
 
 const useIsMobileViewport = () => {
   const getIsMobile = () => typeof window !== 'undefined'
-    && window.matchMedia('(max-width: 767px)').matches
-    && window.matchMedia('(pointer: coarse)').matches;
+    && window.matchMedia('(max-width: 767px)').matches;
   const [isMobile, setIsMobile] = useState(getIsMobile);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const widthQuery = window.matchMedia('(max-width: 767px)');
-    const pointerQuery = window.matchMedia('(pointer: coarse)');
-    const update = () => setIsMobile(widthQuery.matches && pointerQuery.matches);
+    const update = () => setIsMobile(widthQuery.matches);
     update();
     widthQuery.addEventListener('change', update);
-    pointerQuery.addEventListener('change', update);
     return () => {
       widthQuery.removeEventListener('change', update);
-      pointerQuery.removeEventListener('change', update);
     };
   }, []);
 
