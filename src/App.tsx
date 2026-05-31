@@ -17,7 +17,7 @@ import { PhoneCallSimulator } from './components/PhoneCallSimulator';
 import { formatUsPhoneNumber } from './lib/phone-call';
 import { FIXED_AD_BACKGROUND_COLOR } from './lib/style-archetypes';
 import { InteractiveTutorial, WIGGLY_TUTORIAL_SEEN_KEY, emitTutorialEvent } from './components/InteractiveTutorial';
-import { createShareSlug, getHostedSharePageBySlug, isSupabaseConfigured, saveHostedSharePage, type SharePageRecord } from './lib/share-pages';
+import { createShareSlug, getHostedSharePageBySlug, saveHostedSharePage, type SharePageRecord } from './lib/share-pages';
 import { explainVoiceVisualizerPreset, getVoiceVisualizerPreset, VOICE_VISUALIZER_PRESET, type VoiceVisualizerPresetDecision } from './lib/visualizer-presets';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
@@ -97,6 +97,8 @@ type ReadyExport = {
 };
 
 const CURRENT_RENDER_VERSION = 2;
+const TRANSCRIPTION_BACKOFF_KEY = 'wiggly_transcription_429_until';
+const TRANSCRIPTION_ERROR_BACKOFF_KEY = 'wiggly_transcription_error_until';
 
 type CreativeBrief = {
   offer: string;
@@ -738,6 +740,7 @@ export default function App() {
   const [shareStatus, setShareStatus] = useState<'idle' | 'saving' | 'ready' | 'error'>('idle');
   const [shareUrl, setShareUrl] = useState('');
   const [shareError, setShareError] = useState('');
+  const [shareIsLocalPreview, setShareIsLocalPreview] = useState(false);
   const [sharePageRecord, setSharePageRecord] = useState<SharePageRecord | null>(null);
   const [sharePageLoading, setSharePageLoading] = useState(false);
 
@@ -1743,6 +1746,7 @@ export default function App() {
     }
     setShareStatus('saving');
     setShareError('');
+    setShareIsLocalPreview(false);
     try {
       await ensureValidMp4Blob(exportDownload.blob, 'Ready export');
       const metadata = getShareMetadataFromSnapshot(exportDownload.snapshot);
@@ -1754,6 +1758,7 @@ export default function App() {
       });
       const nextUrl = `${window.location.origin}/s/${record.slug}`;
       setShareUrl(nextUrl);
+      setShareIsLocalPreview(!record.videoUrl);
       setShareStatus('ready');
       saveExportToHistoryOnce(exportDownload.snapshot);
       try {
@@ -2215,6 +2220,18 @@ export default function App() {
       } catch(e) {}
     }
 
+    const backoffUntil = Number(localStorage.getItem(TRANSCRIPTION_BACKOFF_KEY) || 0);
+    if (backoffUntil && Date.now() < backoffUntil) {
+      console.warn('AI temporarily at capacity, try again in 1 min.');
+      return;
+    }
+
+    const errorBackoffUntil = Number(localStorage.getItem(TRANSCRIPTION_ERROR_BACKOFF_KEY) || 0);
+    if (errorBackoffUntil && Date.now() < errorBackoffUntil) {
+      console.warn('Skipping transcription during temporary error backoff.');
+      return;
+    }
+
     const transcribeUrl = async () => {
       try {
         setIsTranscribing(true);
@@ -2232,10 +2249,14 @@ export default function App() {
         });
         
         if (!res.ok) {
-           const errorText = await res.text();
-           console.error('Transcription API error:', res.status, errorText);
-           alert('Transcription failed: ' + errorText.substring(0, 50));
-           return;
+          const errorText = await res.text();
+          console.error('Transcription API error:', res.status, errorText);
+          if (res.status === 429) {
+            localStorage.setItem(TRANSCRIPTION_BACKOFF_KEY, String(Date.now() + 60 * 1000));
+            return;
+          }
+          localStorage.setItem(TRANSCRIPTION_ERROR_BACKOFF_KEY, String(Date.now() + 60 * 1000));
+          return;
         }
 
         const data = await res.json();
@@ -5182,7 +5203,7 @@ export default function App() {
                       <div className="rounded-xl border border-indigo-100 bg-white p-2">
                         <p className="mb-2 truncate text-xs font-semibold text-slate-500">{shareUrl}</p>
                         <p className="mb-2 rounded-lg bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-500">
-                          {isSupabaseConfigured ? 'Hosted link. Friends can open it.' : 'Local preview link. Add Supabase env keys to share with friends.'}
+                          {shareIsLocalPreview ? 'Local preview only. Add the server Supabase key to share with friends.' : 'Share link copied. Open it once before sending.'}
                         </p>
                         <div className="grid grid-cols-2 gap-2">
                           <button
