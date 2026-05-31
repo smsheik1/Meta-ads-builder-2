@@ -30,6 +30,8 @@ export const analyzeAudioBuffer = (
   options: {
     durationSeconds: number;
     smoothing?: number;
+    attack?: number;
+    release?: number;
     fps?: number;
     sourceKey: string;
   },
@@ -61,13 +63,18 @@ export const analyzeAudioBuffer = (
   const peak = sorted[Math.floor(sorted.length * 0.96)] || Math.max(...rms, 0.001);
   const dynamicRange = Math.max(0.001, peak - noiseFloor);
   const smoothingAmount = Math.min(0.7, Math.max(0.12, smoothing * 0.55));
+  const attackAmount = typeof options.attack === 'number' ? Math.min(1, Math.max(0.05, options.attack)) : null;
+  const releaseAmount = typeof options.release === 'number' ? Math.min(1, Math.max(0.02, options.release)) : null;
 
   let previous = 0;
   const levels = rms.map((value) => {
     const gated = Math.max(0, value - noiseFloor);
     const linear = Math.min(1, gated / dynamicRange);
     const compressed = Math.pow(linear, 0.55);
-    const smoothed = previous * smoothingAmount + compressed * (1 - smoothingAmount);
+    const blend = compressed >= previous
+      ? attackAmount ?? (1 - smoothingAmount)
+      : releaseAmount ?? (1 - smoothingAmount);
+    const smoothed = previous + (compressed - previous) * blend;
     previous = smoothed;
     return Number(smoothed.toFixed(4));
   });
@@ -109,13 +116,20 @@ export const analyzeAudioBuffer = (
   const bandFloor = percentile(sortedBands, 0.1);
   const bandPeak = Math.max(bandFloor + 0.0001, percentile(sortedBands, 0.965));
   const bandRange = bandPeak - bandFloor;
+  const previousBands = new Array(focusedBinCount).fill(0);
   const bands = rawBands.map((frameBands, frameIndex) => {
     const rawFrameLevel = Math.min(1, Math.max(0, (rms[frameIndex] - noiseFloor) / dynamicRange));
     const gate = Math.pow(rawFrameLevel, 0.35);
-    return frameBands.map((value) => {
+    return frameBands.map((value, bandIndex) => {
       const normalizedBand = Math.min(1, Math.max(0, (value - bandFloor) / bandRange));
       const compressed = Math.pow(normalizedBand, 0.55) * gate;
-      return Number(compressed.toFixed(4));
+      const previousBand = previousBands[bandIndex] ?? 0;
+      const blend = compressed >= previousBand
+        ? attackAmount ?? Math.max(0.14, 1 - smoothingAmount)
+        : releaseAmount ?? Math.max(0.06, (1 - smoothingAmount) * 0.45);
+      const smoothedBand = previousBand + (compressed - previousBand) * blend;
+      previousBands[bandIndex] = smoothedBand;
+      return Number(smoothedBand.toFixed(4));
     });
   });
 
@@ -134,6 +148,8 @@ export const precomputeAudioAnalysisFromUrl = async (
   options: {
     durationSeconds: number;
     smoothing?: number;
+    attack?: number;
+    release?: number;
     sourceKey?: string;
   },
 ) => {
@@ -150,6 +166,8 @@ export const precomputeAudioAnalysisFromUrl = async (
     return analyzeAudioBuffer(audioBuffer, {
       durationSeconds: options.durationSeconds,
       smoothing: options.smoothing,
+      attack: options.attack,
+      release: options.release,
       sourceKey: options.sourceKey || url,
     });
   } finally {

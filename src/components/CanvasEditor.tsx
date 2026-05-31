@@ -4,7 +4,7 @@ import Selecto from 'react-selecto';
 import { useEditorStore, type AdElement } from '../store';
 import gsap from 'gsap';
 import { Image as ImageIcon, Lock, Unlock } from 'lucide-react';
-import { drawAdvancedVisualizer } from '../lib/visualizer';
+import { getVisualizerBarCount, getVisualizerBars, normalizeVisualizerType } from '../lib/visualizer';
 import { HeadlineSlot } from './HeadlineSlot';
 import { AutoFitText } from './AutoFitText';
 import { sanitizeRichText, stripRichText } from '../lib/rich-text';
@@ -13,6 +13,8 @@ import { getActiveCaption, getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getP
 import { getRandomSeededHook } from '../lib/headline-pool';
 import { getRandomAdStyleArchetype, pickRandom, type AdStyleArchetype } from '../lib/style-archetypes';
 import { emitTutorialEvent } from './InteractiveTutorial';
+import type { AudioAnalysisData } from '../lib/audio-analysis';
+import { VOICE_VISUALIZER_PRESET } from '../lib/visualizer-presets';
 
 const isEditableEventTarget = (target: EventTarget | null) => {
   if (!(target instanceof HTMLElement)) return false;
@@ -62,6 +64,7 @@ const TransparentImage = ({ src, className, removeWhite }: { src: string, classN
 interface CanvasEditorProps {
   platform: PlatformType;
   audioUrl: string | null;
+  audioAnalysis?: AudioAnalysisData | null;
   playing: boolean;
   onPlaybackComplete?: () => void;
   accentColor: string;
@@ -99,13 +102,6 @@ const SUBHEADS = [
 ];
 const CTA_COPY = ['Book Demo', 'See It Live', 'Get Started', 'Try Wiggly', 'Watch Demo'];
 
-const compressVisualizerValue = (value: number) => {
-  const threshold = 0.64;
-  if (value <= threshold) return value;
-  const compressed = threshold + (1 - threshold) * (1 - Math.exp(-(value - threshold) * 1.7));
-  return Math.min(compressed, 0.96);
-};
-
 const applyArchetypeToElement = (element: AdElement, archetype: AdStyleArchetype): AdElement => {
   if (element.locked) return element;
 
@@ -118,6 +114,7 @@ const applyArchetypeToElement = (element: AdElement, archetype: AdStyleArchetype
       barCount: archetype.visualizerVariant.barCount,
       visualizerSensitivity: archetype.visualizerVariant.sensitivity,
       visualizerHeight: archetype.visualizerVariant.height,
+      ...VOICE_VISUALIZER_PRESET,
     };
   }
 
@@ -155,7 +152,7 @@ const applyArchetypeToElement = (element: AdElement, archetype: AdStyleArchetype
   return element;
 };
 
-export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype }) => {
+export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, audioAnalysis, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype }) => {
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
@@ -165,9 +162,6 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   const layoutScaleY = getDefaultLayoutScaleY(platform);
   
   const [targets, setTargets] = useState<Array<HTMLElement | SVGElement>>([]);
-  const supportedVisualizerTypes = new Set(['bars-bottom', 'bars-center', 'waveform-strip']);
-  const canvasVisualizerTypes = new Set(['waveform-strip']);
-
   // Sync targets with selectedIds
   useEffect(() => {
     const newTargets = selectedIds.map(id => document.getElementById(`el-${id}`)).filter(Boolean) as HTMLElement[];
@@ -398,17 +392,21 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   }, [playing]);
 
   const animateVisualizer = () => {
-    if (!analyserRef.current || !playing) return;
+    if (!playing) return;
     
-    const bufferLength = analyserRef.current.frequencyBinCount;
+    const bufferLength = analyserRef.current?.frequencyBinCount ?? 0;
     const dataArray = new Uint8Array(bufferLength);
-    let frameCount = 0;
     
     const loop = () => {
-      frameCount++;
       const state = useEditorStore.getState();
       
       const currentTime = audioRef.current?.currentTime || 0;
+      const analysisFrame = audioAnalysis?.levels?.length
+        ? Math.min(audioAnalysis.levels.length - 1, Math.max(0, Math.floor(currentTime * audioAnalysis.fps)))
+        : null;
+      const analysisLevel = analysisFrame !== null ? audioAnalysis?.levels[analysisFrame] ?? null : null;
+      const analysisBands = analysisFrame !== null ? audioAnalysis?.bands?.[analysisFrame] ?? null : null;
+      const frameIndex = analysisFrame ?? Math.floor(currentTime * 60);
       setPlaybackTime(currentTime);
       if (previewDurationCap && currentTime >= previewDurationCap) {
         audioRef.current?.pause();
@@ -433,98 +431,63 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       if (firstVis && analyserRef.current) {
         analyserRef.current.smoothingTimeConstant = firstVis.visualizerSmoothing ?? 0.8;
       }
-      analyserRef.current!.getByteFrequencyData(dataArray);
+      const shouldUseLiveAnalyser = analysisFrame === null && analyserRef.current;
+      if (shouldUseLiveAnalyser) {
+        analyserRef.current!.getByteFrequencyData(dataArray);
+      }
       
       Object.keys(barsRef.current).forEach((vId) => {
         const el = state.elements.find(e => e.id === vId);
         if (!el) return;
-        const rawType = el.visualizerType || 'bars-center';
-        const type = supportedVisualizerTypes.has(rawType) ? rawType : 'bars-center';
+        const type = normalizeVisualizerType(el.visualizerType);
+        const barRefs = (barsRef.current[vId] || []).filter((ref): ref is HTMLDivElement => ref instanceof HTMLDivElement);
+        if (barRefs.length === 0) return;
 
-        const sensitivityMultiplier = el.visualizerSensitivity ?? 1.5;
-        const visualizerRefs = barsRef.current[vId] || [];
+        const parentHeight = barRefs[0]?.parentElement?.clientHeight || 100;
+        const fallbackBands = shouldUseLiveAnalyser
+          ? Array.from({ length: 52 }, (_, index) => {
+              const dataBins = Math.floor(bufferLength * 0.4);
+              const dataIndex = Math.min(bufferLength - 1, 1 + Math.floor((index / 51) * dataBins));
+              return (dataArray[dataIndex] || 0) / 255;
+            })
+          : null;
+        const fallbackLevel = shouldUseLiveAnalyser && bufferLength > 0
+          ? dataArray.slice(0, Math.max(1, Math.floor(bufferLength * 0.5))).reduce((sum, value) => sum + value, 0) / Math.max(1, Math.floor(bufferLength * 0.5)) / 255
+          : null;
+        const bars = getVisualizerBars({
+          type,
+          count: barRefs.length,
+          frame: frameIndex,
+          height: parentHeight,
+          audioLevel: analysisLevel ?? fallbackLevel,
+          frequencyBands: analysisBands ?? fallbackBands,
+          currentSpeaker: loopSpeaker,
+          splitSpeakers: el.visualizerSplitSpeakers,
+          mirror: el.visualizerMirror,
+          sensitivity: el.visualizerSensitivity ?? 1.5,
+          heightScale: el.visualizerHeight ?? 0.9,
+          baseline: el.visualizerBaseline ?? 4,
+          gain: el.visualizerGain ?? 1,
+          compression: el.visualizerCompression ?? 1,
+          floor: el.visualizerFloor ?? 0,
+          ceiling: el.visualizerCeiling ?? 1,
+          curve: el.visualizerCurve ?? 'default',
+          bandFocus: el.visualizerBandFocus ?? 'full',
+          color: el.barColor || '#00ffcc',
+        });
 
-        if (canvasVisualizerTypes.has(type)) {
-          const canvas = visualizerRefs[0];
-          if (canvas instanceof HTMLCanvasElement && canvas.getContext) {
-             const ctx = canvas.getContext('2d');
-             if (ctx) {
-                 if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
-                     canvas.width = canvas.clientWidth;
-                     canvas.height = canvas.clientHeight;
-                 }
-                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                 
-                 let value = 0;
-                 const binsCount = Math.floor(bufferLength * 0.5);
-                 if (el.visualizerSplitSpeakers) {
-                     const halfCount = Math.floor(binsCount / 2);
-                     for (let i = 0; i < binsCount; i++) {
-                         if (!loopSpeaker || (loopSpeaker === 1 && i < halfCount) || (loopSpeaker === 2 && i >= halfCount)) value += dataArray[i];
-                     }
-                     value = value / halfCount;
-                 } else {
-                     for (let i = 0; i < binsCount; i++) value += dataArray[i];
-                     value = value / binsCount;
-                 }
-                 
-                 const visualizerBoost = type === 'waveform-strip' ? 1.8 : 1;
-                 value = (value / 255) * sensitivityMultiplier * visualizerBoost;
-                 value = compressVisualizerValue(value);
-                 
-                 drawAdvancedVisualizer(ctx, type, canvas.width, canvas.height, value, frameCount, el.barColor || '#00ffcc', 1, {
-                   barCount: el.barCount,
-                   heightScale: el.visualizerHeight,
-                   baseline: el.visualizerBaseline,
-                 });
-             }
-          }
-        } else if ((type === 'bars-bottom' || type === 'bars-center') && visualizerRefs.length > 0) {
-          const barRefs = visualizerRefs.filter((ref): ref is HTMLDivElement => ref instanceof HTMLDivElement);
-          const halfCount = Math.floor(barRefs.length / 2);
-          
-          barRefs.forEach((bar, index) => {
-            if (bar) {
-              const isLeftSpeakerSide = index < halfCount;
-              const isActiveSpeakerSide = !el.visualizerSplitSpeakers || !loopSpeaker || (loopSpeaker === 1 ? isLeftSpeakerSide : !isLeftSpeakerSide);
-              const dataBins = Math.floor(bufferLength * 0.4); // Focus on lower/mid frequencies
-              // Space out the indices so it looks good visually
-              const sideIndex = isLeftSpeakerSide ? index : index - halfCount;
-              const sideTotal = isLeftSpeakerSide ? halfCount : barRefs.length - halfCount;
-              const center = (barRefs.length - 1) / 2;
-              const centerDistance = Math.abs(index - center);
-              const centerTotal = Math.max(1, center);
-              const normalizedIndex = el.visualizerSplitSpeakers
-                ? sideIndex / Math.max(1, sideTotal - 1)
-                : type === 'bars-center'
-                  ? centerDistance / centerTotal
-                : index / Math.max(1, barRefs.length - 1);
-              const dataIndex = 1 + Math.floor(normalizedIndex * dataBins);
-              let value = (dataArray[Math.min(dataIndex, bufferLength - 1)] / 255) * sensitivityMultiplier;
-              value = compressVisualizerValue(value);
-              
-              if (el.visualizerSplitSpeakers) {
-                value = isActiveSpeakerSide ? value : 0.04;
-                bar.style.backgroundColor = isLeftSpeakerSide ? (el.barColor || '#00ffcc') : '#8b5cf6';
-                bar.style.opacity = isActiveSpeakerSide ? '1' : '0.28';
-              } else {
-                bar.style.backgroundColor = el.barColor || '#00ffcc';
-                bar.style.opacity = '1';
-              }
-              
-              const baseline = el.visualizerBaseline ?? 4;
-              const heightScale = el.visualizerHeight ?? 0.9;
-              const targetHeight = baseline + Math.pow(value, 1.5) * ((bar.parentElement?.clientHeight || 100) * heightScale);
-              
-              gsap.to(bar, {
-                height: targetHeight,
-                duration: 0.1,
-                ease: "power2.out",
-                overwrite: "auto",
-              });
-            }
+        barRefs.forEach((bar, index) => {
+          const barFrame = bars[index];
+          if (!barFrame) return;
+          bar.style.backgroundColor = barFrame.color;
+          bar.style.opacity = `${barFrame.opacity}`;
+          gsap.to(bar, {
+            height: barFrame.height,
+            duration: 0.1,
+            ease: "power2.out",
+            overwrite: "auto",
           });
-        }
+        });
       });
       
       reqAnimRef.current = requestAnimationFrame(loop);
@@ -894,7 +857,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
           ? Math.min(frame.y, feedSafeSquareBottom - frame.height - 8)
           : frame.y;
         const captionMaxFontSize = platform === 'youtube' ? 86 : 64;
-        const normalizedVisualizerType = supportedVisualizerTypes.has(el.visualizerType || '') ? el.visualizerType! : 'bars-center';
+        const normalizedVisualizerType = normalizeVisualizerType(el.visualizerType);
         const showTextColorPicker = !editingId && el.type === 'text' && (el.componentRole === 'headline' || el.componentRole === 'subheadline');
         const showCaptionColorPicker = !editingId && el.type === 'caption';
         const hoverColorValue = showCaptionColorPicker ? (el.color || accentColor) : (el.color || '#111827');
@@ -1145,20 +1108,23 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                       })}
                     </div>
                  )}
-                {normalizedVisualizerType === 'waveform-strip' && !playing && (
-                  <div className="absolute inset-0 flex items-center justify-between gap-1">
-                    {Array.from({ length: Math.min(el.barCount || 24, 36) }).map((_, i, bars) => {
+                {normalizedVisualizerType === 'waveform-strip' && (
+                  <div className="absolute inset-0 flex items-center justify-between gap-[2px]">
+                    {Array.from({ length: getVisualizerBarCount(normalizedVisualizerType, el.barCount) }).map((_, i, bars) => {
                       const center = (bars.length - 1) / 2;
                       const distance = Math.abs(i - center) / Math.max(center, 1);
-                      const height = 30 + (1 - distance) * 56 + ((i % 3) * 7);
+                      const height = playing
+                        ? (el.visualizerBaseline ?? 4)
+                        : 24 + (1 - distance) * 58 + ((i % 3) * 7);
                       return (
                         <div
                           key={i}
-                          className="wiggly-idle-bar wiggly-idle-bar-strong flex-1 rounded-full opacity-80"
+                          ref={barEl => setBarRef(el.id, barEl, i, getVisualizerBarCount(normalizedVisualizerType, el.barCount))}
+                          className={`flex-1 rounded-full opacity-80 ${playing ? '' : 'wiggly-idle-bar wiggly-idle-bar-strong'}`}
                           style={{
-                            animationDelay: `${i * 45}ms`,
+                            animationDelay: playing ? undefined : `${i * 28}ms`,
                             backgroundColor: el.barColor || '#00ffcc',
-                            height: `${Math.min(height, 92)}%`,
+                            height: `${Math.min(height, 92)}${playing ? 'px' : '%'}`,
                             minWidth: '3px',
                           }}
                         />
@@ -1166,12 +1132,6 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                     })}
                   </div>
                 )}
-                {normalizedVisualizerType === 'waveform-strip' && (
-                    <canvas
-                      ref={canvasEl => setBarRef(el.id, canvasEl as any, 0, 1)}
-                      className="relative z-10 h-full w-full"
-                    />
-                 )}
                  <label
                    className="pointer-events-auto absolute left-2 top-1/2 z-50 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover:opacity-100 focus-within:opacity-100"
                    title="Change visualizer color"
