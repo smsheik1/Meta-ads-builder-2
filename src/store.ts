@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { getRandomSeededHook } from './lib/headline-pool';
+import { VOICE_VISUALIZER_PRESET } from './lib/visualizer-presets';
 
 export type ElementType = 'text' | 'visualizer' | 'button' | 'caption' | 'image';
 
@@ -29,6 +30,14 @@ export interface AdElement {
   visualizerSmoothing?: number;
   visualizerHeight?: number;
   visualizerBaseline?: number;
+  visualizerGain?: number;
+  visualizerCompression?: number;
+  visualizerFloor?: number;
+  visualizerCeiling?: number;
+  visualizerAttack?: number;
+  visualizerRelease?: number;
+  visualizerCurve?: 'default' | 'linear' | 'sqrt' | 'log';
+  visualizerBandFocus?: 'full' | 'voice' | 'low' | 'high';
   visualizerSplitSpeakers?: boolean;
   visualizerType?: 'bars-bottom' | 'bars-center' | 'waveform-strip';
   visualizerMirror?: boolean;
@@ -146,6 +155,7 @@ const DEFAULT_ELEMENTS: AdElement[] = [
     visualizerSmoothing: 0.85,
     visualizerHeight: 0.9,
     visualizerBaseline: 4,
+    ...VOICE_VISUALIZER_PRESET,
     visualizerSplitSpeakers: false,
     styleArchetypeId: 'clean-mint'
   },

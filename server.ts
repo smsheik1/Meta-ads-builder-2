@@ -34,12 +34,28 @@ const apiLimiter = rateLimit({
   message: { error: 'Too many requests. Please wait a bit and try again.' },
 });
 
-const expensiveApiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 25,
+const aiGenerationLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many generation/export requests. Please wait a bit and try again.' },
+  message: { error: 'Too many AI requests. Please wait and try again later.' },
+});
+
+const videoExportLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many video exports. Please wait and try again later.' },
+});
+
+const publishingLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many publishing requests. Please wait and try again later.' },
 });
 
 app.use('/api', apiLimiter);
@@ -205,7 +221,7 @@ app.post('/api/postiz/integrations', async (_req, res) => {
   }
 });
 
-app.post('/api/postiz/upload', expensiveApiLimiter, uploadPostiz.single('file'), async (req, res) => {
+app.post('/api/postiz/upload', publishingLimiter, uploadPostiz.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No MP4 file provided.' });
@@ -225,7 +241,7 @@ app.post('/api/postiz/upload', expensiveApiLimiter, uploadPostiz.single('file'),
   }
 });
 
-app.post('/api/postiz/create-draft', expensiveApiLimiter, async (req, res) => {
+app.post('/api/postiz/create-draft', publishingLimiter, async (req, res) => {
   try {
     const { integrationId, integrationIdentifier, content, media, title, platform } = req.body || {};
     if (!integrationId || !integrationIdentifier) {
@@ -498,7 +514,7 @@ const extractAudioAnalysis = (input: string | null | undefined, durationSeconds:
   });
 });
 
-app.post('/api/render-remotion', expensiveApiLimiter, uploadRemotion.any(), async (req, res) => {
+app.post('/api/render-remotion', videoExportLimiter, uploadRemotion.any(), async (req, res) => {
   const renderId = `render-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const assetDir = path.join(remotionAssetsRoot, renderId);
   fs.mkdirSync(assetDir, { recursive: true });
@@ -600,7 +616,7 @@ app.post('/api/render-remotion', expensiveApiLimiter, uploadRemotion.any(), asyn
   }
 });
 
-app.post('/api/convert-to-mp4', expensiveApiLimiter, uploadDisk.single('video'), (req, res) => {
+app.post('/api/convert-to-mp4', videoExportLimiter, uploadDisk.single('video'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No video file provided' });
   }
@@ -645,7 +661,7 @@ app.post('/api/convert-to-mp4', expensiveApiLimiter, uploadDisk.single('video'),
     .save(outputPath);
 });
 
-app.post('/api/transcribe', expensiveApiLimiter, uploadMem.single('audio'), async (req, res) => {
+app.post('/api/transcribe', aiGenerationLimiter, uploadMem.single('audio'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No audio file provided' });
   }
@@ -820,7 +836,7 @@ const pcmBase64ToWavBase64 = (pcmBase64: string, sampleRate = 24000, channels = 
   return Buffer.concat([header, pcm]).toString('base64');
 };
 
-app.post('/api/generate-headlines', expensiveApiLimiter, async (req, res) => {
+app.post('/api/generate-headlines', aiGenerationLimiter, async (req, res) => {
   try {
     const { niche, count = 20 } = req.body;
 
@@ -853,7 +869,7 @@ No prose. No explanation. Just the JSON array.`;
   }
 });
 
-app.post('/api/generate-copy', expensiveApiLimiter, async (req, res) => {
+app.post('/api/generate-copy', aiGenerationLimiter, async (req, res) => {
   try {
     const { businessContext } = req.body;
     
@@ -959,7 +975,7 @@ Return valid JSON with the following structure:
   }
 });
 
-app.post('/api/generate-dialogue-scripts', expensiveApiLimiter, async (req, res) => {
+app.post('/api/generate-dialogue-scripts', aiGenerationLimiter, async (req, res) => {
   try {
     const { creativeBrief, persona = 'Dental practice owner', count = 5 } = req.body;
 
@@ -1033,7 +1049,7 @@ Return ONLY valid JSON:
   }
 });
 
-app.post('/api/generate-dialogue-audio', expensiveApiLimiter, async (req, res) => {
+app.post('/api/generate-dialogue-audio', aiGenerationLimiter, async (req, res) => {
   try {
     const { script } = req.body;
 

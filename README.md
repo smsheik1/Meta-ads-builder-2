@@ -35,8 +35,12 @@ Create a local `.env` or `.env.local` file with:
 ```bash
 GEMINI_API_KEY=your_gemini_key
 DEEPGRAM_API_KEY=your_deepgram_key
+VITE_SUPABASE_URL=https://howclqjohkrvcdarajur.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 NODE_ENV=development
 ```
+
+If Supabase env vars are missing, Wiggly share links fall back to local browser-only previews. Hosted links that friends can open require the Supabase URL and anon key.
 
 Do not commit real API keys.
 

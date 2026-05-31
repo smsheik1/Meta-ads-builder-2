@@ -192,9 +192,9 @@ const nearestPresetValue = (value: number | undefined, options: ReadonlyArray<{ 
 };
 
 const MOTION_PRESETS = [
-  { label: 'Snappy', value: 0.35 },
-  { label: 'Balanced', value: 0.65 },
   { label: 'Smooth', value: 0.85 },
+  { label: 'Normal', value: 0.65 },
+  { label: 'Snappy', value: 0.35 },
 ] as const;
 
 const HEIGHT_PRESETS = [
@@ -222,6 +222,12 @@ const WAVEFORM_DETAIL_PRESETS = [
 ] as const;
 
 const barLikeVisualizerTypes = new Set(['bars-bottom', 'bars-center', 'waveform-strip']);
+
+const VISUALIZER_STYLE_OPTIONS = [
+  { label: 'Bottom', value: 'bars-bottom' },
+  { label: 'Center', value: 'bars-center' },
+  { label: 'Wave', value: 'waveform-strip' },
+] as const;
 
 function LayoutFields({ selectedEl, updateElement }: { selectedEl: AdElement; updateElement: (id: string, updates: Partial<AdElement>) => void }) {
   return (
@@ -272,7 +278,9 @@ export const PropertiesPanel: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-        <LayoutFields selectedEl={selectedEl} updateElement={updateElement} />
+        {selectedEl.type !== 'visualizer' && (
+          <LayoutFields selectedEl={selectedEl} updateElement={updateElement} />
+        )}
 
         {selectedEl.type === 'text' && (
           <Section title="Text">
@@ -371,14 +379,13 @@ export const PropertiesPanel: React.FC = () => {
         )}
 
         {selectedEl.type === 'visualizer' && (
-          <Section title="Moving Bars">
-            <Field label="Look">
-              <select value={supportedVisualizerType} onChange={(e) => updateElement(selectedEl.id, { visualizerType: e.target.value as any })} className={inputClass}>
-                <option value="bars-bottom">Bars, bottom</option>
-                <option value="bars-center">Bars, center</option>
-                <option value="waveform-strip">Waveform strip</option>
-              </select>
-            </Field>
+          <Section title="Visualizer">
+            <PresetRow
+              label="Style"
+              value={supportedVisualizerType}
+              options={VISUALIZER_STYLE_OPTIONS}
+              onChange={(value) => updateElement(selectedEl.id, { visualizerType: value as any })}
+            />
             <Field label="Color">
               <ColorControl value={selectedEl.barColor || '#00ffcc'} onChange={(value) => updateElement(selectedEl.id, { barColor: value })} />
             </Field>
@@ -390,31 +397,40 @@ export const PropertiesPanel: React.FC = () => {
               onChange={(value) => updateElement(selectedEl.id, { visualizerSmoothing: value })}
             />
             <PresetRow
-              label="Height"
+              label="Size"
               value={nearestPresetValue(selectedEl.visualizerHeight, HEIGHT_PRESETS, 0.9)}
               options={HEIGHT_PRESETS}
               onChange={(value) => updateElement(selectedEl.id, { visualizerHeight: value })}
             />
-            <PresetRow
-              label="Minimum height"
-              value={nearestPresetValue(selectedEl.visualizerBaseline, BASELINE_PRESETS, 4)}
-              options={BASELINE_PRESETS}
-              onChange={(value) => updateElement(selectedEl.id, { visualizerBaseline: value })}
-            />
-            {showBarControls && (
-              <>
+            <details className="group rounded-xl border border-slate-200 bg-white/65 px-3 py-2.5 shadow-sm">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-slate-700">
+                Advanced
+                <span className="text-lg leading-none text-slate-400 transition group-open:rotate-90">›</span>
+              </summary>
+              <div className="mt-3 space-y-3">
                 <PresetRow
-                  label="Number of bars"
-                  value={nearestPresetValue(selectedEl.barCount, detailPresets, detailFallback)}
-                  options={detailPresets}
-                  onChange={(value) => updateElement(selectedEl.id, { barCount: value })}
+                  label="Minimum height"
+                  value={nearestPresetValue(selectedEl.visualizerBaseline, BASELINE_PRESETS, 4)}
+                  options={BASELINE_PRESETS}
+                  onChange={(value) => updateElement(selectedEl.id, { visualizerBaseline: value })}
                 />
-                <div className="grid grid-cols-2 gap-3">
-                  <ToggleRow label="Mirror sides" checked={selectedEl.visualizerMirror || false} onChange={(checked) => updateElement(selectedEl.id, { visualizerMirror: checked })} />
-                  <ToggleRow label="Two speakers" checked={selectedEl.visualizerSplitSpeakers || false} onChange={(checked) => updateElement(selectedEl.id, { visualizerSplitSpeakers: checked })} />
-                </div>
-              </>
-            )}
+                {showBarControls && (
+                  <>
+                    <PresetRow
+                      label="Number of bars"
+                      value={nearestPresetValue(selectedEl.barCount, detailPresets, detailFallback)}
+                      options={detailPresets}
+                      onChange={(value) => updateElement(selectedEl.id, { barCount: value })}
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <ToggleRow label="Mirror sides" checked={selectedEl.visualizerMirror || false} onChange={(checked) => updateElement(selectedEl.id, { visualizerMirror: checked })} />
+                      <ToggleRow label="Two speakers" checked={selectedEl.visualizerSplitSpeakers || false} onChange={(checked) => updateElement(selectedEl.id, { visualizerSplitSpeakers: checked })} />
+                    </div>
+                  </>
+                )}
+                <LayoutFields selectedEl={selectedEl} updateElement={updateElement} />
+              </div>
+            </details>
           </Section>
         )}
 

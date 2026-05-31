@@ -4,6 +4,7 @@ import type { AdElement, Caption } from '../store';
 import type { ExportSnapshot } from '../lib/export-snapshot';
 import { getActiveCaption, getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions, getPlatformElementFrame } from '../lib/export-snapshot';
 import { stripRichText } from '../lib/rich-text';
+import { getVisualizerBarCount, getVisualizerBars, normalizeVisualizerType } from '../lib/visualizer';
 
 const CAPTION_SPEAKER_COLORS: Record<number, string> = {
   1: '#00D6B8',
@@ -243,13 +244,8 @@ const BlockingIntroImage = ({ src, style }: { src: string; style: React.CSSPrope
 
 const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { element: AdElement; box: ElementBox; audioLevels?: number[]; audioBands?: number[][]; currentSpeaker: number }) => {
   const frame = useCurrentFrame();
-  const type = ['bars-bottom', 'bars-center', 'waveform-strip'].includes(element.visualizerType || '')
-    ? (element.visualizerType as 'bars-bottom' | 'bars-center' | 'waveform-strip')
-    : 'bars-center';
-  const count = type === 'waveform-strip' ? (element.barCount || 72) : (element.barCount || 16);
-  const sensitivity = element.visualizerSensitivity ?? 1.5;
-  const heightScale = element.visualizerHeight ?? 0.9;
-  const baseline = element.visualizerBaseline ?? 4;
+  const type = normalizeVisualizerType(element.visualizerType);
+  const count = getVisualizerBarCount(type, element.barCount);
   const color = element.barColor || '#00ffcc';
   const audioLevel = audioLevels?.length
     ? audioLevels[Math.min(audioLevels.length - 1, frame)] ?? 0
@@ -257,63 +253,45 @@ const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { e
   const frequencyBands = audioBands?.length
     ? audioBands[Math.min(audioBands.length - 1, frame)] ?? null
     : null;
-  const hasUsableAudioLevel = audioLevel !== null && audioLevel > 0.012;
+  const bars = getVisualizerBars({
+    type,
+    count,
+    frame,
+    height: box.height,
+    scale: box.scale,
+    audioLevel,
+    frequencyBands,
+    currentSpeaker,
+    splitSpeakers: element.visualizerSplitSpeakers,
+    mirror: element.visualizerMirror,
+    sensitivity: element.visualizerSensitivity ?? 1.5,
+    heightScale: element.visualizerHeight ?? 0.9,
+    baseline: element.visualizerBaseline ?? 4,
+    gain: element.visualizerGain ?? 1,
+    compression: element.visualizerCompression ?? 1,
+    floor: element.visualizerFloor ?? 0,
+    ceiling: element.visualizerCeiling ?? 1,
+    curve: element.visualizerCurve ?? 'default',
+    bandFocus: element.visualizerBandFocus ?? 'full',
+    color,
+  });
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: type === 'bars-bottom' ? 'flex-end' : 'center', gap: 4 * box.scale }}>
-      {Array.from({ length: count }).map((_, index) => {
+      {bars.map((bar, index) => {
         const halfCount = Math.floor(count / 2);
         const isLeftSpeakerSide = index < halfCount;
-        const isActiveSpeakerSide = !element.visualizerSplitSpeakers || (currentSpeaker === 1 ? isLeftSpeakerSide : !isLeftSpeakerSide);
-        const sampleIndex = element.visualizerMirror && !element.visualizerSplitSpeakers
-          ? Math.min(index, count - 1 - index)
-          : index;
-        const center = (count - 1) / 2;
-        const centerDistance = Math.abs(sampleIndex - center);
-        const sideIndex = isLeftSpeakerSide ? index : index - halfCount;
-        const sideTotal = isLeftSpeakerSide ? halfCount : count - halfCount;
-        const normalized = element.visualizerSplitSpeakers
-          ? sideIndex / Math.max(1, sideTotal - 1)
-          : type === 'bars-center'
-            ? centerDistance / Math.max(1, center)
-            : sampleIndex / Math.max(1, count - 1);
-        const edgeFade = type === 'waveform-strip'
-          ? 0.45 + Math.pow(Math.sin(normalized * Math.PI), 0.7) * 0.55
-          : 1;
-        const fastMotion = Math.min(1, Math.max(0, (
-          Math.sin(frame * 0.2 + index) * 0.5 +
-          Math.sin(frame * 0.09 + index * 1.73) * 0.3 +
-          Math.sin(frame * 0.31 + index * 0.41) * 0.2 +
-          0.5
-        )));
-        const bandIndex = frequencyBands
-          ? Math.min(frequencyBands.length - 1, Math.max(0, 1 + Math.floor(normalized * (frequencyBands.length - 2))))
-          : 0;
-        const rawBandSignal = frequencyBands ? frequencyBands[bandIndex] ?? 0 : null;
-        const previewSignal = rawBandSignal === null
-          ? audioLevel
-          : rawBandSignal;
-        const fallbackSignal = hasUsableAudioLevel ? (audioLevel ?? 0) : fastMotion * 0.55;
-        const signal = !isActiveSpeakerSide
-          ? 0.04
-          : Math.pow(Math.min(1, (previewSignal ?? fallbackSignal) * sensitivity), 1.5);
-        const minHeight = type === 'waveform-strip'
-          ? Math.max(baseline * box.scale, box.height * 0.04)
-          : baseline * box.scale;
-        const height = type === 'waveform-strip'
-          ? Math.min(box.height, minHeight + signal * box.height * heightScale * edgeFade)
-          : Math.min(box.height, minHeight + signal * (box.height * heightScale));
         return (
           <div
             key={index}
             style={{
               flex: 1,
               minWidth: type === 'waveform-strip' ? 2 : 4 * box.scale,
-              height,
+              height: bar.height,
               maxHeight: '100%',
               borderRadius: 999,
-              background: element.visualizerSplitSpeakers && !isLeftSpeakerSide ? '#8b5cf6' : color,
-              opacity: isActiveSpeakerSide ? 0.95 : 0.28,
+              background: element.visualizerSplitSpeakers && !isLeftSpeakerSide ? '#8b5cf6' : bar.color,
+              opacity: bar.opacity,
             }}
           />
         );
@@ -387,12 +365,13 @@ export const RemotionAd = ({ snapshot, width, height, audioLevels, audioBands }:
 
       {sorted.map((element) => {
         const box = getElementBox(element, settings.platform, width);
+        const { scale: _renderScale, ...boxStyle } = box;
         return (
           <div
             key={element.id}
             style={{
               position: 'absolute',
-              ...box,
+              ...boxStyle,
               transform: element.rotation ? `rotate(${element.rotation}deg)` : undefined,
               transformOrigin: 'center',
             }}

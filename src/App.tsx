@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { PlatformFrame, isFeedPlatform, isVerticalPlatform, type PlatformType } from './components/PlatformFrame';
 import { CanvasEditor } from './components/CanvasEditor';
+import { DevTuningPanel } from './components/DevTuningPanel';
 import { PropertiesPanel } from './components/PropertiesPanel';
-import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList, ArrowRight, Wand2, PhoneCall } from 'lucide-react';
+import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList, ArrowRight, Wand2, PhoneCall, Link2, ExternalLink, Copy, Heart, MessageCircle, Send, Bookmark } from 'lucide-react';
 import Papa from 'papaparse';
-import { useEditorStore } from './store';
-import { drawAdvancedVisualizer } from './lib/visualizer';
+import { useEditorStore, type AdElement } from './store';
+import { compressVisualizerValue, drawAdvancedVisualizer } from './lib/visualizer';
 import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
@@ -16,6 +17,8 @@ import { PhoneCallSimulator } from './components/PhoneCallSimulator';
 import { formatUsPhoneNumber } from './lib/phone-call';
 import { FIXED_AD_BACKGROUND_COLOR } from './lib/style-archetypes';
 import { InteractiveTutorial, WIGGLY_TUTORIAL_SEEN_KEY, emitTutorialEvent } from './components/InteractiveTutorial';
+import { createShareSlug, getHostedSharePageBySlug, isSupabaseConfigured, saveHostedSharePage, type SharePageRecord } from './lib/share-pages';
+import { explainVoiceVisualizerPreset, getVoiceVisualizerPreset, VOICE_VISUALIZER_PRESET, type VoiceVisualizerPresetDecision } from './lib/visualizer-presets';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -84,6 +87,16 @@ type ExportPhase = 'recording' | 'converting' | 'complete' | 'error';
 type IntroDuration = 0 | 1 | 2 | 3;
 type RingDuration = 0 | 1 | 2 | 3;
 type CreativeMode = 'visualizer' | 'phone-call';
+type AppRoute = 'home' | 'builder' | 'share';
+type ReadyExport = {
+  url: string;
+  blob: Blob;
+  filename: string;
+  snapshot: SavedTemplate | null;
+  renderVersion: number;
+};
+
+const CURRENT_RENDER_VERSION = 2;
 
 type CreativeBrief = {
   offer: string;
@@ -153,6 +166,16 @@ const cleanDialogueScriptForVoiceover = (script: DialogueScript): DialogueScript
     text: cleanDialogueTextForVoiceover(line.text),
   })),
 });
+
+const normalizeShareUrl = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  try {
+    return new URL(trimmed.includes('://') ? trimmed : `https://${trimmed}`).href;
+  } catch {
+    return trimmed;
+  }
+};
 
 const EMPTY_CREATIVE_BRIEF: CreativeBrief = {
   offer: 'AI front-desk employees that answer calls, recover missed calls, and book dental patients automatically.',
@@ -235,6 +258,7 @@ type SavedTemplate = {
     brandLogo: string | null;
     simulatedCaption: string;
     autoCta: string;
+    ctaUrl?: string;
     bgMedia: { url: string; type: string } | null;
     bgShadow: boolean;
     bgShadowOpacity: number;
@@ -262,6 +286,102 @@ type AudioLibraryItem = {
 type AudioFlyoutView = 'choices' | 'make' | 'library';
 
 type AdHistoryItem = SavedTemplate & StoredAdSnapshot;
+
+const getAppRoute = (): { route: AppRoute; shareSlug: string | null } => {
+  const match = window.location.pathname.match(/^\/s\/([^/?#]+)/);
+  if (match) return { route: 'share', shareSlug: decodeURIComponent(match[1]) };
+  if (window.location.pathname === '/builder') return { route: 'builder', shareSlug: null };
+  return { route: 'home', shareSlug: null };
+};
+
+const useIsMobileViewport = () => {
+  const getIsMobile = () => typeof window !== 'undefined'
+    && window.matchMedia('(max-width: 767px)').matches
+    && window.matchMedia('(pointer: coarse)').matches;
+  const [isMobile, setIsMobile] = useState(getIsMobile);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const widthQuery = window.matchMedia('(max-width: 767px)');
+    const pointerQuery = window.matchMedia('(pointer: coarse)');
+    const update = () => setIsMobile(widthQuery.matches && pointerQuery.matches);
+    update();
+    widthQuery.addEventListener('change', update);
+    pointerQuery.addEventListener('change', update);
+    return () => {
+      widthQuery.removeEventListener('change', update);
+      pointerQuery.removeEventListener('change', update);
+    };
+  }, []);
+
+  return isMobile;
+};
+
+function MobileBuilderPlaceholder({ onHome }: { onHome: () => void }) {
+  return (
+    <main className="min-h-screen overflow-hidden bg-[#F7F4EC] px-5 py-8 font-sans text-slate-950">
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col justify-between">
+        <header className="flex items-center gap-3">
+          <img src="/wiggly-logo.svg" alt="Wiggly" className="h-11 w-11 rounded-2xl shadow-sm shadow-slate-950/10" />
+          <span>
+            <span className="block text-xl font-black leading-none">Wiggly</span>
+            <span className="mt-1 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Visual ads that move fast</span>
+          </span>
+        </header>
+
+        <section className="py-10 text-center">
+          <div className="relative mx-auto mb-8 aspect-[9/16] w-[min(68vw,270px)] rounded-[2.2rem] border-[10px] border-white bg-slate-950 shadow-2xl shadow-slate-950/15">
+            <div className="absolute inset-0 overflow-hidden rounded-[1.55rem] bg-[#FAF9F4]">
+              <div className="h-[13%] bg-slate-950" />
+              <div className="flex h-[51%] flex-col items-center justify-center px-5 py-6">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-950 shadow-lg shadow-slate-950/20">
+                  <img src="/wiggly-logo.svg" alt="" className="h-10 w-10 rounded-xl" />
+                </div>
+                <p className="max-w-[12rem] text-3xl font-black leading-[0.95] tracking-normal text-slate-950">
+                  Make ads from voice recordings.
+                </p>
+                <div className="mt-7 flex items-center justify-center gap-2">
+                  <span className="h-3 w-12 rounded-full bg-[#00D6B8]" />
+                  <span className="h-3 w-7 rounded-full bg-[#4F46E5]" />
+                  <span className="h-3 w-16 rounded-full bg-[#00D6B8]" />
+                  <span className="h-3 w-9 rounded-full bg-[#4F46E5]" />
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 min-h-[30%] bg-slate-950 px-5 py-5 text-left">
+                <div className="mb-4 flex gap-4 text-white">
+                  <Heart className="h-6 w-6" />
+                  <MessageCircle className="h-6 w-6" />
+                  <Send className="h-6 w-6" />
+                </div>
+                <p className="text-[13px] font-black leading-5 text-white">Drop a call recording. Hit space until your ad looks unreal.</p>
+              </div>
+            </div>
+          </div>
+
+          <h1 className="text-4xl font-black leading-[0.95] tracking-normal">
+            Wiggly works best on a computer.
+          </h1>
+          <p className="mx-auto mt-4 max-w-sm text-base font-semibold leading-7 text-slate-500">
+            The builder uses a real canvas, keyboard rerolls, locks, dragging, and video export. Open it on desktop to make the ad.
+          </p>
+        </section>
+
+        <footer className="space-y-3 pb-2">
+          <button
+            type="button"
+            onClick={onHome}
+            className="h-13 w-full rounded-2xl bg-slate-950 px-5 py-4 text-sm font-black text-white shadow-xl shadow-slate-950/15 transition active:scale-[0.99]"
+          >
+            See what Wiggly does
+          </button>
+          <p className="text-center text-xs font-bold leading-5 text-slate-400">
+            You are not missing a form. You are missing the fun part.
+          </p>
+        </footer>
+      </div>
+    </main>
+  );
+}
 
 const HomeAdCard = ({
   headline,
@@ -296,6 +416,184 @@ const HomeAdCard = ({
     <div className="absolute bottom-5 left-5 right-5 h-10 rounded-full bg-white/90" />
   </div>
 );
+
+const ShareAdPage = ({
+  record,
+  loading,
+  onOpenBuilder,
+}: {
+  record: SharePageRecord | null;
+  loading: boolean;
+  onOpenBuilder: () => void;
+}) => {
+  const [videoUrl, setVideoUrl] = useState('');
+  const [videoReady, setVideoReady] = useState(false);
+  const [videoHasSound, setVideoHasSound] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    setVideoReady(false);
+    setVideoHasSound(false);
+    if (!record) {
+      setVideoUrl('');
+      return;
+    }
+    if (record.videoUrl) {
+      setVideoUrl(record.videoUrl);
+      return;
+    }
+    if (!record.videoBlob || record.videoBlob.size === 0) {
+      setVideoUrl('');
+      return;
+    }
+    const nextUrl = URL.createObjectURL(record.videoBlob);
+    setVideoUrl(nextUrl);
+    return () => URL.revokeObjectURL(nextUrl);
+  }, [record]);
+
+  const playWithSound = async () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = false;
+    setVideoHasSound(true);
+    try {
+      await video.play();
+    } catch {
+      // Browser policies may still block playback; the native click target remains.
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#F7F4EA] px-6">
+        <div className="rounded-3xl border border-slate-200 bg-white px-6 py-5 text-sm font-black text-slate-700 shadow-xl">Loading Wiggly ad...</div>
+      </main>
+    );
+  }
+
+  if (!record) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#F7F4EA] px-6">
+        <div className="max-w-md rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-xl">
+          <p className="text-2xl font-black text-slate-950">This ad link is not on this device.</p>
+          <p className="mt-3 text-sm font-semibold leading-6 text-slate-500">This first share-page prototype stores videos locally. Cloud links come next.</p>
+          <button type="button" onClick={onOpenBuilder} className="mt-5 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white">
+            Open Wiggly
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-[#F7F4EA] px-4 py-8 text-slate-950 sm:px-8">
+      <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[minmax(280px,420px)_minmax(320px,1fr)] lg:items-center lg:justify-center">
+        <section className="mx-auto w-full max-w-[420px] rounded-[2rem] border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-950/10">
+          <div className="overflow-hidden rounded-[1.45rem] border border-slate-900/10 bg-slate-950">
+            <div className="flex h-14 items-center justify-between bg-slate-950 px-4 text-white">
+              <div className="flex items-center gap-2.5">
+                <img src="/wiggly-logo.png" alt="" className="h-8 w-8 rounded-full bg-black object-contain p-1.5 ring-1 ring-white/20" />
+                <div>
+                  <p className="text-sm font-black leading-none">{record.businessName || record.brandName || 'Wiggly'}</p>
+                  <p className="mt-1 text-[11px] font-semibold leading-none text-white/60">Sponsored</p>
+                </div>
+              </div>
+              <span className="text-xl font-black leading-none text-white/80">...</span>
+            </div>
+
+            <div className="relative aspect-[4/5] bg-[#FAFAF7]">
+              {videoUrl ? (
+                <>
+                  <video
+                    ref={videoRef}
+                    src={videoUrl}
+                    autoPlay
+                    muted={!videoHasSound}
+                    loop
+                    playsInline
+                    preload="metadata"
+                    onLoadedData={() => setVideoReady(true)}
+                    className={`h-full w-full bg-[#FAFAF7] object-contain transition-opacity duration-300 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
+                  />
+                  {!videoReady && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#FAFAF7] text-sm font-black text-slate-500">Loading video...</div>
+                  )}
+                  {!videoHasSound && videoReady && (
+                    <button
+                      type="button"
+                      onClick={playWithSound}
+                      className="absolute inset-x-5 bottom-5 flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800"
+                    >
+                      Play with sound
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-slate-100 text-sm font-black text-slate-500">Video unavailable</div>
+              )}
+            </div>
+
+            <div className="border-t border-white/10 bg-slate-950 px-4 py-3 text-white">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="flex items-center gap-3">
+                  <Heart className="h-5 w-5" />
+                  <MessageCircle className="h-5 w-5" />
+                  <Send className="h-5 w-5" />
+                </span>
+                <Bookmark className="h-5 w-5" />
+              </div>
+              <p className="line-clamp-2 text-xs font-semibold leading-5 text-white/85">{record.subhead || record.headline}</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto w-full max-w-[440px] space-y-5">
+          <div
+            className="overflow-hidden rounded-[2rem] border border-slate-200 p-6 shadow-xl shadow-slate-950/10"
+            style={{ backgroundColor: record.backgroundColor || '#FAFAF7' }}
+          >
+            <div className="mb-10 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <img src="/wiggly-logo.png" alt="" className="h-9 w-9 rounded-xl bg-slate-950 object-contain p-1.5" />
+                <div>
+                  <p className="text-sm font-black text-slate-950">{record.businessName || record.brandName}</p>
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">Wiggly Ad Page</p>
+                </div>
+              </div>
+              <span className="h-3 w-16 rounded-full" style={{ backgroundColor: record.accentColor || '#00D6B8' }} />
+            </div>
+            <h1 className="text-3xl font-black leading-[0.98] tracking-normal text-slate-950 sm:text-4xl">{record.headline}</h1>
+            {record.subhead && <p className="mt-5 text-base font-semibold leading-7 text-slate-600">{record.subhead}</p>}
+          </div>
+
+          {record.ctaUrl ? (
+            <a
+              href={record.ctaUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 py-4 text-base font-black text-white shadow-xl shadow-slate-950/15 transition hover:bg-slate-800"
+            >
+              {record.ctaText || 'Learn More'}
+              <ExternalLink className="h-5 w-5" />
+            </a>
+          ) : (
+            <div className="rounded-2xl border border-slate-200 bg-white px-6 py-4 text-center text-sm font-black text-slate-500">
+              {record.ctaText || 'Learn More'}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={onOpenBuilder}
+            className="text-sm font-black text-slate-500 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-950"
+          >
+            Made with Wiggly
+          </button>
+        </section>
+      </div>
+    </main>
+  );
+};
 
 const normalizeHexColor = (value: string) => {
   const trimmed = value.trim();
@@ -371,7 +669,11 @@ const HexColorInput = ({
 };
 
 export default function App() {
-  const [showHomepage, setShowHomepage] = useState(() => window.location.pathname !== '/builder');
+  const initialRoute = getAppRoute();
+  const [appRoute, setAppRoute] = useState<AppRoute>(initialRoute.route);
+  const [shareSlug, setShareSlug] = useState<string | null>(initialRoute.shareSlug);
+  const showHomepage = appRoute === 'home';
+  const isMobileViewport = useIsMobileViewport();
   const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single');
   const [creativeMode, setCreativeMode] = useState<CreativeMode>('visualizer');
   
@@ -387,6 +689,7 @@ export default function App() {
   const [brandLogo, setBrandLogo] = useState<string | null>(null);
   const [simulatedCaption, setSimulatedCaption] = useState('Check out our new AI receptionist feature! Never miss a lead and keep your customers happy.');
   const [autoCta, setAutoCta] = useState('Learn More');
+  const [ctaUrl, setCtaUrl] = useState('https://agentenamel.com');
   
   // Media State
   const [bgMedia, setBgMedia] = useState<{url: string, type: string} | null>(null);
@@ -417,12 +720,14 @@ export default function App() {
   const [rendering, setRendering] = useState(false);
   const [renderProgress, setRenderProgress] = useState(0);
   const [exportPhase, setExportPhase] = useState<ExportPhase>('recording');
-  const [exportDownload, setExportDownload] = useState<{ url: string; blob: Blob; filename: string; snapshot: SavedTemplate | null } | null>(null);
+  const [exportDownload, setExportDownload] = useState<ReadyExport | null>(null);
   const [exportLaunchAnimation, setExportLaunchAnimation] = useState(false);
   const [renderDurationCap, setRenderDurationCap] = useState<RenderDurationCap>('full');
   const exportCancelRef = useRef<(() => void) | null>(null);
+  const audioPresetSourceRef = useRef<string | null>(null);
   const savedExportHistoryIdRef = useRef<string | null>(null);
   const audioAnalysisCacheRef = useRef<Map<string, AudioAnalysisData>>(new Map());
+  const [previewAudioAnalysis, setPreviewAudioAnalysis] = useState<AudioAnalysisData | null>(null);
   const [postizOpen, setPostizOpen] = useState(false);
   const [postizStatus, setPostizStatus] = useState<PostizStatus>('idle');
   const [postizIntegrations, setPostizIntegrations] = useState<PostizIntegration[]>([]);
@@ -430,6 +735,21 @@ export default function App() {
   const [postizError, setPostizError] = useState('');
   const [postizAppUrl, setPostizAppUrl] = useState<string | null>(null);
   const [postizAutoOpenAfterExport, setPostizAutoOpenAfterExport] = useState(false);
+  const [shareStatus, setShareStatus] = useState<'idle' | 'saving' | 'ready' | 'error'>('idle');
+  const [shareUrl, setShareUrl] = useState('');
+  const [shareError, setShareError] = useState('');
+  const [sharePageRecord, setSharePageRecord] = useState<SharePageRecord | null>(null);
+  const [sharePageLoading, setSharePageLoading] = useState(false);
+
+  useEffect(() => {
+    if (!exportDownload || exportDownload.renderVersion === CURRENT_RENDER_VERSION) return;
+    URL.revokeObjectURL(exportDownload.url);
+    setExportDownload(null);
+    setExportPhase('recording');
+    setShareStatus('idle');
+    setShareUrl('');
+    setShareError('');
+  }, [exportDownload]);
 
   // Batch State
   const [csvData, setCsvData] = useState<any[]>([]);
@@ -463,6 +783,7 @@ export default function App() {
   const headlineCount = elements.filter((element) => element.componentRole === 'headline').length;
   const subheadlineCount = elements.filter((element) => element.componentRole === 'subheadline').length;
   const visualizerCount = elements.filter((element) => element.type === 'visualizer').length;
+  const primaryVisualizerElement = elements.find((element) => element.type === 'visualizer');
   const captionCount = elements.filter((element) => element.componentRole === 'captions').length;
   const ctaCount = elements.filter((element) => element.componentRole === 'cta').length;
   const logoCount = elements.filter((element) => element.componentRole === 'logo').length;
@@ -678,6 +999,7 @@ export default function App() {
       id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `template-${Date.now()}`,
       name,
       createdAt: Date.now(),
+      audioAnalysis: previewAudioAnalysis,
       elements: JSON.parse(JSON.stringify(useEditorStore.getState().elements)),
       settings: {
         visualizerColor,
@@ -689,6 +1011,7 @@ export default function App() {
         brandLogo,
         simulatedCaption,
         autoCta,
+        ctaUrl,
         bgMedia,
         bgShadow,
         bgShadowOpacity,
@@ -739,6 +1062,7 @@ export default function App() {
     setBrandLogo(hydratedTemplate.settings.brandLogo);
     setSimulatedCaption(hydratedTemplate.settings.simulatedCaption);
     setAutoCta(hydratedTemplate.settings.autoCta);
+    setCtaUrl(hydratedTemplate.settings.ctaUrl || 'https://agentenamel.com');
     setBgMedia(hydratedTemplate.settings.bgMedia);
     setBgShadow(hydratedTemplate.settings.bgShadow);
     setBgShadowOpacity(hydratedTemplate.settings.bgShadowOpacity);
@@ -834,18 +1158,31 @@ export default function App() {
     try {
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer.slice(0));
       let sum = 0;
+      let firstFiveSum = 0;
+      let firstFiveCount = 0;
       let count = 0;
+      let peak = 0;
       for (let channel = 0; channel < audioBuffer.numberOfChannels; channel += 1) {
         const data = audioBuffer.getChannelData(channel);
         const step = Math.max(1, Math.floor(data.length / 48000));
+        const firstFiveLimit = Math.min(data.length, Math.floor(audioBuffer.sampleRate * 5));
         for (let index = 0; index < data.length; index += step) {
-          sum += data[index] * data[index];
+          const sample = data[index] || 0;
+          const squared = sample * sample;
+          sum += squared;
           count += 1;
+          if (index < firstFiveLimit) {
+            firstFiveSum += squared;
+            firstFiveCount += 1;
+          }
+          peak = Math.max(peak, Math.abs(sample));
         }
       }
       return {
         duration: audioBuffer.duration,
         rms: Math.sqrt(sum / Math.max(1, count)),
+        firstFiveRms: Math.sqrt(firstFiveSum / Math.max(1, firstFiveCount)),
+        peak,
       };
     } finally {
       if (audioContext.state !== 'closed') {
@@ -863,10 +1200,68 @@ export default function App() {
     return assetId || fileName || url;
   };
 
+  const applyAutoVisualizerPreset = (preset: Partial<AdElement>) => {
+    setElements((currentElements) => currentElements.map((element) => (
+      element.type === 'visualizer' && !element.locked
+        ? { ...element, ...preset }
+        : element
+    )));
+  };
+
+  const logAutoVisualizerPreset = (
+    sourceKey: string,
+    stats: Awaited<ReturnType<typeof getAudioSignalStats>>,
+    decision: VoiceVisualizerPresetDecision,
+  ) => {
+    const rms = stats.rms || 0;
+    const firstFiveRms = stats.firstFiveRms || 0;
+    const peak = stats.peak || 0;
+    const crest = peak / Math.max(0.0001, Math.max(rms, firstFiveRms));
+    console.info('[Wiggly visualizer auto-preset]', {
+      source: sourceKey,
+      preset: decision.presetId,
+      reason: decision.reason,
+      duration: Number(stats.duration.toFixed(2)),
+      rms: Number(rms.toFixed(5)),
+      firstFiveRms: Number(firstFiveRms.toFixed(5)),
+      peak: Number(peak.toFixed(5)),
+      crest: Number(crest.toFixed(2)),
+    });
+  };
+
+  useEffect(() => {
+    if (!audioUrl || creativeMode !== 'visualizer') return;
+
+    const sourceKey = getAudioAnalysisSourceKey(audioUrl, currentAudioAssetId, audioFileName);
+    if (!sourceKey || audioPresetSourceRef.current === sourceKey) return;
+
+    let cancelled = false;
+    const run = async () => {
+      try {
+        const stats = await getAudioSignalStats(audioUrl);
+        if (cancelled) return;
+        const decision = explainVoiceVisualizerPreset(stats);
+        audioPresetSourceRef.current = sourceKey;
+        logAutoVisualizerPreset(sourceKey, stats, decision);
+        applyAutoVisualizerPreset(getVoiceVisualizerPreset(decision.presetId));
+      } catch (error) {
+        console.warn('Could not auto-tune visualizer for this audio; using balanced voice preset:', error);
+        if (!cancelled) applyAutoVisualizerPreset(getVoiceVisualizerPreset('balanced-voice'));
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [audioUrl, audioFileName, currentAudioAssetId, creativeMode]);
+
   const getCachedAudioAnalysis = async (
     url: string | null | undefined,
     durationSeconds: number,
     smoothing: number,
+    attack?: number,
+    release?: number,
     existing?: AudioAnalysisData | null,
     sourceIdentity?: { assetId?: string | null; fileName?: string | null },
   ) => {
@@ -875,7 +1270,9 @@ export default function App() {
 
     const roundedDuration = Number(durationSeconds.toFixed(3));
     const roundedSmoothing = Number(smoothing.toFixed(3));
-    const cacheKey = `${sourceKey}|${roundedDuration}|${roundedSmoothing}`;
+    const roundedAttack = typeof attack === 'number' ? Number(attack.toFixed(3)) : 'auto';
+    const roundedRelease = typeof release === 'number' ? Number(release.toFixed(3)) : 'auto';
+    const cacheKey = `${sourceKey}|${roundedDuration}|${roundedSmoothing}|${roundedAttack}|${roundedRelease}`;
     const cached = audioAnalysisCacheRef.current.get(cacheKey);
     if (cached) return cached;
 
@@ -893,11 +1290,56 @@ export default function App() {
     const analysis = await precomputeAudioAnalysisFromUrl(url, {
       durationSeconds: roundedDuration,
       smoothing: roundedSmoothing,
+      attack,
+      release,
       sourceKey,
     });
     audioAnalysisCacheRef.current.set(cacheKey, analysis);
     return analysis;
   };
+
+  useEffect(() => {
+    if (!audioUrl || creativeMode !== 'visualizer') {
+      setPreviewAudioAnalysis(null);
+      return;
+    }
+
+    let cancelled = false;
+    const smoothing = primaryVisualizerElement?.visualizerSmoothing ?? 0.8;
+    const attack = primaryVisualizerElement?.visualizerAttack;
+    const release = primaryVisualizerElement?.visualizerRelease;
+
+    const run = async () => {
+      try {
+        const audioDuration = await getMediaDurationSeconds(audioUrl, 'audio');
+        const cappedDuration = renderDurationCap === 'full'
+          ? Math.min(Math.max(1, audioDuration || 60), 180)
+          : Math.min(Math.max(1, audioDuration || renderDurationCap), renderDurationCap);
+        const analysis = await getCachedAudioAnalysis(
+          audioUrl,
+          cappedDuration,
+          smoothing,
+          attack,
+          release,
+          previewAudioAnalysis,
+          {
+            assetId: currentAudioAssetId,
+            fileName: audioFileName,
+          },
+        );
+        if (!cancelled) setPreviewAudioAnalysis(analysis);
+      } catch (error) {
+        console.warn('Could not precompute preview audio analysis; preview will use live analyser fallback:', error);
+        if (!cancelled) setPreviewAudioAnalysis(null);
+      }
+    };
+
+    void run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [audioUrl, audioFileName, currentAudioAssetId, creativeMode, primaryVisualizerElement?.visualizerSmoothing, primaryVisualizerElement?.visualizerAttack, primaryVisualizerElement?.visualizerRelease, renderDurationCap]);
 
   const appendMediaForRemotion = async (
     formData: FormData,
@@ -975,6 +1417,8 @@ export default function App() {
       snapshot.settings.audioUrl,
       durationSeconds,
       visualizerElement?.visualizerSmoothing ?? 0.8,
+      visualizerElement?.visualizerAttack,
+      visualizerElement?.visualizerRelease,
       snapshot.audioAnalysis,
       {
         assetId: snapshot.settings.audioAssetId,
@@ -1129,7 +1573,7 @@ export default function App() {
 
     const url = URL.createObjectURL(mp4Blob);
     const filename = `agent-enamel-${Date.now()}.mp4`;
-    setExportDownload({ url, blob: mp4Blob, filename, snapshot: exportSnapshot });
+    setExportDownload({ url, blob: mp4Blob, filename, snapshot: exportSnapshot, renderVersion: CURRENT_RENDER_VERSION });
     setExportPhase('complete');
     setRenderProgress(100);
   };
@@ -1156,7 +1600,7 @@ export default function App() {
 
     const url = URL.createObjectURL(mp4Blob);
     const filename = `wiggly-phone-call-${Date.now()}.mp4`;
-    setExportDownload({ url, blob: mp4Blob, filename, snapshot: null });
+    setExportDownload({ url, blob: mp4Blob, filename, snapshot: null, renderVersion: CURRENT_RENDER_VERSION });
     setExportPhase('complete');
     setRenderProgress(100);
   };
@@ -1168,6 +1612,9 @@ export default function App() {
     setRenderProgress(0);
     setExportPhase('recording');
     savedExportHistoryIdRef.current = null;
+    setShareStatus('idle');
+    setShareUrl('');
+    setShareError('');
     setExportDownload((previous) => {
       if (previous) URL.revokeObjectURL(previous.url);
       return null;
@@ -1264,6 +1711,60 @@ export default function App() {
     }
     window.open(exportDownload.url, '_blank', 'noopener,noreferrer');
     saveExportToHistoryOnce(exportDownload.snapshot);
+  };
+
+  const getShareMetadataFromSnapshot = (snapshot: SavedTemplate | null) => {
+    const snapshotElements = snapshot?.elements || useEditorStore.getState().elements;
+    const headlineElement = snapshotElements.find(element => element.componentRole === 'headline' || element.type === 'text');
+    const subheadElement = snapshotElements.find(element => element.componentRole === 'subheadline');
+    const ctaElement = snapshotElements.find(element => element.componentRole === 'cta' || element.type === 'button');
+    const headline = stripRichText(headlineElement?.content || snapshot?.name || getCurrentDesignTitle()).trim() || 'Wiggly ad';
+    const subhead = stripRichText(subheadElement?.content || snapshot?.settings.simulatedCaption || simulatedCaption).trim();
+    const normalizedCtaUrl = normalizeShareUrl(snapshot?.settings.ctaUrl || ctaUrl);
+
+    return {
+      headline,
+      subhead,
+      ctaText: stripRichText(ctaElement?.content || snapshot?.settings.autoCta || autoCta).trim() || 'Learn More',
+      ctaUrl: normalizedCtaUrl,
+      businessName: snapshot?.settings.brandName || brandName || 'Wiggly',
+      brandName: snapshot?.settings.brandName || brandName || 'Wiggly',
+      accentColor: snapshot?.settings.accentColor || accentColor,
+      backgroundColor: snapshot?.settings.bgColor || bgColor,
+    };
+  };
+
+  const createShareLink = async () => {
+    if (!exportDownload) return;
+    if (exportDownload.renderVersion !== CURRENT_RENDER_VERSION) {
+      setShareStatus('error');
+      setShareError('This video was made with an older renderer. Make the video again, then create the share link.');
+      return;
+    }
+    setShareStatus('saving');
+    setShareError('');
+    try {
+      await ensureValidMp4Blob(exportDownload.blob, 'Ready export');
+      const metadata = getShareMetadataFromSnapshot(exportDownload.snapshot);
+      const record = await saveHostedSharePage({
+        slug: createShareSlug(metadata.headline),
+        videoBlob: exportDownload.blob,
+        videoMimeType: exportDownload.blob.type || 'video/mp4',
+        ...metadata,
+      });
+      const nextUrl = `${window.location.origin}/s/${record.slug}`;
+      setShareUrl(nextUrl);
+      setShareStatus('ready');
+      saveExportToHistoryOnce(exportDownload.snapshot);
+      try {
+        await navigator.clipboard?.writeText(nextUrl);
+      } catch {
+        // Clipboard is a convenience; the link still shows in the UI.
+      }
+    } catch (error: any) {
+      setShareStatus('error');
+      setShareError(error.message || 'Could not create share link.');
+    }
   };
 
   const getPostizDraftContent = () => (
@@ -1895,6 +2396,7 @@ export default function App() {
       visualizerSmoothing: 0.85,
       visualizerHeight: 0.9,
       visualizerBaseline: 4,
+      ...VOICE_VISUALIZER_PRESET,
       visualizerSplitSpeakers: false,
     });
   };
@@ -1995,6 +2497,9 @@ export default function App() {
     setRenderProgress(0);
     setExportPhase('recording');
     savedExportHistoryIdRef.current = null;
+    setShareStatus('idle');
+    setShareUrl('');
+    setShareError('');
     setExportDownload((previous) => {
       if (previous) URL.revokeObjectURL(previous.url);
       return null;
@@ -2016,6 +2521,15 @@ export default function App() {
       return;
     } catch (error) {
       if (remotionAbortController.signal.aborted) {
+        return;
+      }
+      const message = error instanceof Error ? error.message : '';
+      if (/too many/i.test(message)) {
+        console.warn('Remotion export rate-limited:', error);
+        setExportPhase('error');
+        setRendering(false);
+        setRenderProgress(0);
+        exportCancelRef.current = null;
         return;
       }
       console.warn('Remotion export failed, falling back to browser recorder:', error);
@@ -2228,7 +2742,7 @@ export default function App() {
         
         const url = URL.createObjectURL(mp4Blob);
         const filename = `agent-enamel-${Date.now()}.mp4`;
-        setExportDownload({ url, blob: mp4Blob, filename, snapshot: exportSnapshot });
+        setExportDownload({ url, blob: mp4Blob, filename, snapshot: exportSnapshot, renderVersion: CURRENT_RENDER_VERSION });
         setExportPhase('complete');
         setRenderProgress(100);
       } catch (err) {
@@ -2617,10 +3131,10 @@ export default function App() {
                          ? centerDistance / Math.max(1, center)
                          : idx / Math.max(1, total - 1);
                      const dataIdx = 1 + Math.floor(normalizedIndex * dataBins);
-                     val = Math.min((dataArray[Math.min(dataIdx, dataArray.length-1)] / 255.0) * sensitivityMultiplier, 1.0); 
+                     val = compressVisualizerValue((dataArray[Math.min(dataIdx, dataArray.length-1)] / 255.0) * sensitivityMultiplier);
                      val = Math.pow(val, 1.5); // non-linear scaling for better visuals
                  } else {
-                     val = Math.min(((Math.sin(frame * 0.2 + idx) * 0.5 + 0.5) * 0.5) * sensitivityMultiplier, 1.0);
+                     val = compressVisualizerValue(((Math.sin(frame * 0.2 + idx) * 0.5 + 0.5) * 0.5) * sensitivityMultiplier);
                  }
                  return val;
              };
@@ -2687,9 +3201,9 @@ export default function App() {
                          for (let i = 0; i < binsCount; i++) v += dataArray[i];
                          v = v / binsCount;
                      }
-                     v = Math.min((v / 255.0) * sensitivityMultiplier, 1.0);
+                     v = compressVisualizerValue((v / 255.0) * sensitivityMultiplier);
                  } else {
-                     v = Math.min(((Math.sin(frame * 0.2) * 0.5 + 0.5) * 0.5) * sensitivityMultiplier, 1.0);
+                     v = compressVisualizerValue(((Math.sin(frame * 0.2) * 0.5 + 0.5) * 0.5) * sensitivityMultiplier);
                  }
                  
                  drawAdvancedVisualizer(ctx, type, elW, elH, v, frame, el.barColor || '#00ffcc', scale, {
@@ -3155,23 +3669,79 @@ export default function App() {
     if (window.location.pathname !== '/builder') {
       window.history.pushState(null, '', '/builder');
     }
-    setShowHomepage(false);
+    setAppRoute('builder');
+    setShareSlug(null);
   };
 
   const openHomepage = () => {
     if (window.location.pathname !== '/') {
       window.history.pushState(null, '', '/');
     }
-    setShowHomepage(true);
+    setAppRoute('home');
+    setShareSlug(null);
   };
 
   useEffect(() => {
     const syncPageFromUrl = () => {
-      setShowHomepage(window.location.pathname !== '/builder');
+      const nextRoute = getAppRoute();
+      setAppRoute(nextRoute.route);
+      setShareSlug(nextRoute.shareSlug);
     };
     window.addEventListener('popstate', syncPageFromUrl);
     return () => window.removeEventListener('popstate', syncPageFromUrl);
   }, []);
+
+  useEffect(() => {
+    if (appRoute !== 'share' || !shareSlug) {
+      setSharePageRecord(null);
+      return;
+    }
+
+    let cancelled = false;
+    setSharePageLoading(true);
+    getHostedSharePageBySlug(shareSlug)
+      .then((record) => {
+        if (!cancelled) setSharePageRecord(record);
+      })
+      .finally(() => {
+        if (!cancelled) setSharePageLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [appRoute, shareSlug]);
+
+  useEffect(() => {
+    if (appRoute !== 'share') {
+      document.title = 'Wiggly';
+      return;
+    }
+
+    const title = sharePageRecord?.headline ? `${sharePageRecord.headline} | Wiggly` : 'Wiggly share page';
+    document.title = title;
+    const metaTags: Array<[string, string]> = [
+      ['og:title', sharePageRecord?.headline || 'Wiggly ad'],
+      ['og:description', sharePageRecord?.subhead || 'A visual ad made with Wiggly.'],
+      ['twitter:card', 'summary_large_image'],
+      ['twitter:title', sharePageRecord?.headline || 'Wiggly ad'],
+      ['twitter:description', sharePageRecord?.subhead || 'A visual ad made with Wiggly.'],
+    ];
+    metaTags.forEach(([property, content]) => {
+      const selector = property.startsWith('twitter:') ? `meta[name="${property}"]` : `meta[property="${property}"]`;
+      let tag = document.head.querySelector(selector) as HTMLMetaElement | null;
+      if (!tag) {
+        tag = document.createElement('meta');
+        if (property.startsWith('twitter:')) {
+          tag.name = property;
+        } else {
+          tag.setAttribute('property', property);
+        }
+        document.head.appendChild(tag);
+      }
+      tag.content = content;
+    });
+  }, [appRoute, sharePageRecord]);
 
   const personaDecks = [
     {
@@ -3254,6 +3824,20 @@ export default function App() {
     },
   ];
   const activePersonaDeck = personaDecks[activePersonaDeckIndex];
+
+  if (appRoute === 'share') {
+    return (
+      <ShareAdPage
+        record={sharePageRecord}
+        loading={sharePageLoading}
+        onOpenBuilder={enterStudio}
+      />
+    );
+  }
+
+  if (appRoute === 'builder' && isMobileViewport) {
+    return <MobileBuilderPlaceholder onHome={openHomepage} />;
+  }
 
   if (showHomepage) {
     return (
@@ -3626,6 +4210,8 @@ export default function App() {
               <div className="wiggly-panel p-4">
                 {renderAudioPanel('visualizer')}
               </div>
+
+              <PropertiesPanel />
 
               <details className="wiggly-panel group p-4">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
@@ -4088,6 +4674,18 @@ export default function App() {
                     </select>
                   </div>
 
+                  <label className="block space-y-1.5">
+                    <span className="text-xs font-semibold text-slate-700">Ad button link</span>
+                    <input
+                      type="url"
+                      value={ctaUrl}
+                      onChange={(event) => setCtaUrl(event.target.value)}
+                      placeholder="https://example.com/book"
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-500/10"
+                    />
+                    <span className="block text-[11px] font-semibold text-slate-400">Used on Wiggly share pages. The MP4 itself is still just a video.</span>
+                  </label>
+
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-700 flex items-center justify-between">
                       Post caption
@@ -4102,6 +4700,19 @@ export default function App() {
                        {simulatedCaption.length > 125 ? <span className="flex items-center gap-1 text-orange-500">This may get shortened in the feed</span> : `${125 - simulatedCaption.length} characters before it may shorten`}
                     </div>
                   </div>
+                </div>
+              </details>
+
+              <details className="wiggly-panel group p-4">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                  <span>
+                    <span className="wiggly-panel-title block uppercase">Visualizer Tuning</span>
+                    <span className="mt-1 block text-xs font-semibold text-slate-500">Fine-tune how the bars move.</span>
+                  </span>
+                  <span className="text-lg font-black text-slate-400 transition group-open:rotate-90">›</span>
+                </summary>
+                <div className="mt-4">
+                  <DevTuningPanel />
                 </div>
               </details>
               </>
@@ -4306,6 +4917,7 @@ export default function App() {
                   introImageAspect={introImageAspect}
                   previewDurationCap={renderDurationCap === 'full' ? null : renderDurationCap}
                   audioUrl={audioUrl}
+                  audioAnalysis={previewAudioAnalysis}
                   accentColor={accentColor}
                   playing={playing}
                   onPlaybackComplete={() => setPlaying(false)}
@@ -4324,7 +4936,7 @@ export default function App() {
                   onClick={downloadSimulatedVideo}
                   disabled={rendering}
                   data-tour="download-button"
-                  className={`wiggly-primary-action flex items-center gap-2 px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${exportLaunchAnimation ? 'translate-y-8 scale-90 opacity-0' : ''}`}
+                  className={`wiggly-primary-action flex items-center gap-2 px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${exportLaunchAnimation ? 'wiggly-primary-action-launching' : ''}`}
                    >
                     {rendering ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                     {rendering ? 'Making Video' : 'Download Video'}
@@ -4500,6 +5112,9 @@ export default function App() {
                       onClick={() => {
                         if (exportDownload) URL.revokeObjectURL(exportDownload.url);
                         setExportDownload(null);
+                        setShareStatus('idle');
+                        setShareUrl('');
+                        setShareError('');
                         setExportPhase('recording');
                       }}
                       className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
@@ -4554,6 +5169,44 @@ export default function App() {
                     >
                       Preview Video
                     </button>
+                    <button
+                      type="button"
+                      onClick={createShareLink}
+                      disabled={shareStatus === 'saving'}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-indigo-100 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-700 transition hover:border-indigo-200 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {shareStatus === 'saving' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+                      {shareStatus === 'saving' ? 'Creating link' : 'Create share link'}
+                    </button>
+                    {shareUrl && (
+                      <div className="rounded-xl border border-indigo-100 bg-white p-2">
+                        <p className="mb-2 truncate text-xs font-semibold text-slate-500">{shareUrl}</p>
+                        <p className="mb-2 rounded-lg bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-500">
+                          {isSupabaseConfigured ? 'Hosted link. Friends can open it.' : 'Local preview link. Add Supabase env keys to share with friends.'}
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => navigator.clipboard?.writeText(shareUrl)}
+                            className="flex items-center justify-center gap-1 rounded-lg border border-slate-200 px-2 py-1.5 text-xs font-black text-slate-600 transition hover:bg-slate-50"
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                            Copy
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => window.open(shareUrl, '_blank', 'noopener,noreferrer')}
+                            className="flex items-center justify-center gap-1 rounded-lg bg-slate-950 px-2 py-1.5 text-xs font-black text-white transition hover:bg-slate-800"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            Open
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    {shareStatus === 'error' && (
+                      <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600">{shareError || 'Could not create share link.'}</p>
+                    )}
                     <button
                       type="button"
                       onClick={SOCIAL_POSTING_ENABLED ? openPostizHandoff : undefined}
