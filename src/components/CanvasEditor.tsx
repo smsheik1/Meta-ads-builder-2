@@ -156,12 +156,41 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
+  const lockPulseTimeoutsRef = useRef<Record<string, number>>({});
   const feedPlatform = isFeedPlatform(platform);
   const verticalPlatform = isVerticalPlatform(platform);
   const layoutOffsetX = getDefaultLayoutOffsetX(platform);
   const layoutScaleY = getDefaultLayoutScaleY(platform);
   
   const [targets, setTargets] = useState<Array<HTMLElement | SVGElement>>([]);
+  const [pulsingLockedIds, setPulsingLockedIds] = useState<Set<string>>(new Set());
+
+  const pulseLockedElements = (ids: string[]) => {
+    if (ids.length === 0) return;
+    setPulsingLockedIds((current) => {
+      const next = new Set(current);
+      ids.forEach((id) => next.add(id));
+      return next;
+    });
+    ids.forEach((id) => {
+      if (lockPulseTimeoutsRef.current[id]) {
+        window.clearTimeout(lockPulseTimeoutsRef.current[id]);
+      }
+      lockPulseTimeoutsRef.current[id] = window.setTimeout(() => {
+        setPulsingLockedIds((current) => {
+          const next = new Set(current);
+          next.delete(id);
+          return next;
+        });
+        delete lockPulseTimeoutsRef.current[id];
+      }, 650);
+    });
+  };
+
+  useEffect(() => () => {
+    Object.values(lockPulseTimeoutsRef.current).forEach((timeoutId) => window.clearTimeout(timeoutId as number));
+  }, []);
+
   // Sync targets with selectedIds
   useEffect(() => {
     const newTargets = selectedIds.map(id => document.getElementById(`el-${id}`)).filter(Boolean) as HTMLElement[];
@@ -199,17 +228,29 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       if (e.code === 'Space' && !usesShortcutModifier) {
         e.preventDefault();
         const state = useEditorStore.getState();
-        const selectedSet = new Set(state.selectedIds);
-        const shouldRerollEverything = selectedSet.size === 0;
-        const selectedRole = shouldRerollEverything
-          ? undefined
-          : state.elements.find(element => selectedSet.has(element.id))?.componentRole;
+        const liveSelectedIds = state.selectedIds.filter(id => state.elements.some(element => element.id === id));
+        const selectedSet = new Set(liveSelectedIds);
+        const selectedElements = state.elements.filter(element => selectedSet.has(element.id));
+        const shouldRerollEverything = selectedElements.length === 0;
+        const lockedSelectedIds = selectedElements.filter(element => element.locked).map(element => element.id);
+        const rerollableSelectedIds = selectedElements.filter(element => !element.locked).map(element => element.id);
+
+        if (!shouldRerollEverything && rerollableSelectedIds.length === 0) {
+          pulseLockedElements(lockedSelectedIds);
+          return;
+        }
+
+        const selectedRole = shouldRerollEverything ? undefined : selectedElements[0]?.componentRole;
         const currentArchetypeId = state.elements.find(element => element.styleArchetypeId)?.styleArchetypeId;
         const archetype = getRandomAdStyleArchetype(currentArchetypeId);
+        let changed = false;
         const nextElements = state.elements.map((element) => {
-          if (!shouldRerollEverything && !selectedSet.has(element.id)) return element;
-          return applyArchetypeToElement(element, archetype);
+          if (!shouldRerollEverything && !rerollableSelectedIds.includes(element.id)) return element;
+          const nextElement = applyArchetypeToElement(element, archetype);
+          if (nextElement !== element) changed = true;
+          return nextElement;
         });
+        if (!changed) return;
         if (shouldRerollEverything) {
           onApplyStyleArchetype?.(archetype);
         }
@@ -254,7 +295,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIds]);
+  }, [selectedIds, onApplyStyleArchetype]);
 
   // Audio / Visualizer logic
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -897,9 +938,13 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
           >
             <button
               type="button"
-              className={`wiggly-element-lock absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-lg transition hover:scale-105 hover:bg-white ${el.locked ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
-              title={el.locked ? 'Unlock this part' : 'Lock this part'}
-              aria-label={el.locked ? 'Unlock this part' : 'Lock this part'}
+              className={`wiggly-element-lock absolute right-1 top-1 z-50 flex h-12 w-12 items-center justify-center rounded-full border-2 shadow-xl transition duration-150 hover:scale-110 focus-visible:scale-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-400/25 ${
+                el.locked
+                  ? 'border-slate-950 bg-slate-950 text-white opacity-35 shadow-slate-950/30 ring-2 ring-[#00D6B8]/70 hover:opacity-100 group-hover:opacity-100'
+                  : 'border-slate-300 bg-white/95 text-slate-800 opacity-0 shadow-slate-950/20 hover:border-slate-950 hover:bg-white hover:opacity-100 group-hover:opacity-100 focus-visible:opacity-100'
+              } ${pulsingLockedIds.has(el.id) ? 'scale-125 opacity-100 ring-4 ring-[#00D6B8]/80' : ''}`}
+              title={el.locked ? 'Unlock this part' : `Lock ${el.componentRole || el.type} style`}
+              aria-label={el.locked ? 'Unlock this part' : `Lock ${el.componentRole || el.type} style`}
               onPointerDown={(event) => {
                 event.stopPropagation();
                 updateElement(el.id, { locked: !el.locked });
@@ -912,7 +957,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
               onDoubleClick={(event) => event.stopPropagation()}
               onClick={(event) => event.stopPropagation()}
             >
-              {el.locked ? <Lock className="h-5 w-5" /> : <Unlock className="h-5 w-5" />}
+              {el.locked ? <Lock className="h-6 w-6" strokeWidth={3} /> : <Unlock className="h-6 w-6" strokeWidth={2.5} />}
             </button>
             {(showTextColorPicker || showCaptionColorPicker) && (
               <label
