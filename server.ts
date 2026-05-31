@@ -9,6 +9,7 @@ import fs from 'fs';
 import { spawn } from 'child_process';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
+import { createClient } from '@supabase/supabase-js';
 import { bundle } from '@remotion/bundler';
 import { getCompositions, renderMedia } from '@remotion/renderer';
 import { EXPORT_FPS, getExportDimensions, isPhoneCallSnapshot, PHONE_CALL_EXPORT_DIMENSIONS, type ExportSnapshot, type RenderSnapshot } from './src/lib/export-snapshot';
@@ -19,6 +20,7 @@ const isProd = process.env.NODE_ENV === 'production';
 // Hosts like Render provide PORT in production.
 const port = Number(process.env.PORT) || (isProd ? 3000 : 3001);
 
+app.set('trust proxy', 1);
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
@@ -56,6 +58,22 @@ const publishingLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many publishing requests. Please wait and try again later.' },
+});
+
+const criticalApiPaths = new Set(['/api/render-remotion', '/api/share-pages', '/api/transcribe']);
+app.use((req, res, next) => {
+  if (!criticalApiPaths.has(req.path)) {
+    next();
+    return;
+  }
+
+  const startedAt = Date.now();
+  res.on('finish', () => {
+    if (res.statusCode >= 400) {
+      console.warn(`[critical-api-error] method=${req.method} path=${req.path} status=${res.statusCode} duration_ms=${Date.now() - startedAt}`);
+    }
+  });
+  next();
 });
 
 app.use('/api', apiLimiter);
@@ -110,6 +128,22 @@ const uploadPostiz = multer({
   },
 });
 
+const uploadShareVideo = multer({
+  storage: memoryStorage,
+  limits: {
+    fileSize: 80 * 1024 * 1024,
+    files: 1,
+  },
+  fileFilter: (_req, file, cb) => {
+    const allowed = file.mimetype === 'video/mp4' || file.originalname.toLowerCase().endsWith('.mp4');
+    if (!allowed) {
+      cb(new Error('Share videos must be MP4 files.'));
+      return;
+    }
+    cb(null, true);
+  },
+});
+
 const diskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     const tmpDir = path.join(process.cwd(), 'tmp');
@@ -141,6 +175,43 @@ const uploadDisk = multer({
 const sendServerError = (res: express.Response, fallbackMessage: string) => {
   res.status(500).json({ error: fallbackMessage });
 };
+
+const getServerSupabaseConfig = () => {
+  const url = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').trim();
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  return { url, serviceRoleKey };
+};
+
+const isValidHexColor = (value: string) => /^#[0-9A-Fa-f]{6}$/.test(value);
+
+const trimField = (value: unknown, maxLength: number) => String(value || '').trim().slice(0, maxLength);
+
+const createShareSlug = (headline: string) => {
+  const base = headline
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .slice(0, 42) || 'wiggly-ad';
+  const suffix = Math.random().toString(36).slice(2, 7);
+  return `${base}-${suffix}`;
+};
+
+const normalizeShareUrl = (value: unknown) => {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return '';
+  return new URL(trimmed.includes('://') ? trimmed : `https://${trimmed}`).href;
+};
+
+const getRequestOrigin = (req: express.Request) => {
+  const appUrl = process.env.APP_URL?.trim().replace(/\/+$/, '');
+  if (appUrl) return appUrl;
+  const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'http').split(',')[0].trim();
+  const host = req.get('host') || `localhost:${port}`;
+  return `${proto}://${host}`;
+};
+
+const transcriptionBackoffMs = 60 * 1000;
+let transcriptionRateLimitUntil = 0;
 
 const getPostizConfig = () => {
   const apiKey = process.env.POSTIZ_API_KEY?.trim();
@@ -285,6 +356,96 @@ app.post('/api/postiz/create-draft', publishingLimiter, async (req, res) => {
   } catch (error: any) {
     console.error('Postiz draft error:', error);
     res.status(error.status || 500).json({ error: error.message || 'Could not create Postiz draft.' });
+  }
+});
+
+app.post('/api/share-pages', publishingLimiter, uploadShareVideo.single('video'), async (req, res) => {
+  try {
+    const { url, serviceRoleKey } = getServerSupabaseConfig();
+    if (!url || !serviceRoleKey) {
+      return res.status(503).json({ error: 'Hosted sharing is not configured on this server.', code: 'SHARE_HOSTING_NOT_CONFIGURED' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'Add an MP4 video before creating a share link.' });
+    }
+    if (req.file.mimetype !== 'video/mp4') {
+      return res.status(400).json({ error: 'Share videos must be MP4 files.' });
+    }
+
+    const headline = trimField(req.body.headline, 180);
+    const subhead = trimField(req.body.subhead, 500);
+    const ctaText = trimField(req.body.cta_text, 80) || 'Learn More';
+    const businessName = trimField(req.body.business_name, 120) || 'Wiggly';
+    const brandName = trimField(req.body.brand_name, 120) || businessName;
+    const accentColor = trimField(req.body.accent_color, 7) || '#00D6B8';
+    const backgroundColor = trimField(req.body.background_color, 7) || '#FAFAF7';
+    let ctaUrl = '';
+
+    if (!headline) {
+      return res.status(400).json({ error: 'Share links need a headline.' });
+    }
+    if (!isValidHexColor(accentColor) || !isValidHexColor(backgroundColor)) {
+      return res.status(400).json({ error: 'Share colors must be six-digit hex values.' });
+    }
+    try {
+      ctaUrl = normalizeShareUrl(req.body.cta_url);
+    } catch {
+      return res.status(400).json({ error: 'Button link must be a valid URL.' });
+    }
+    if (ctaUrl.length > 500) {
+      return res.status(400).json({ error: 'Button link is too long.' });
+    }
+
+    const supabase = createClient(url, serviceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+    const slug = createShareSlug(headline);
+    const videoPath = `ad-shares/${slug}.mp4`;
+    const upload = await supabase.storage
+      .from('ad-shares')
+      .upload(videoPath, req.file.buffer, {
+        contentType: 'video/mp4',
+        upsert: false,
+      });
+    if (upload.error) throw upload.error;
+
+    const insert = await supabase
+      .from('ad_shares')
+      .insert({
+        slug,
+        video_path: videoPath,
+        headline,
+        subhead,
+        cta_text: ctaText,
+        cta_url: ctaUrl,
+        business_name: businessName,
+        brand_name: brandName,
+        accent_color: accentColor,
+        background_color: backgroundColor,
+      })
+      .select('id, created_at')
+      .single();
+
+    if (insert.error) {
+      await supabase.storage.from('ad-shares').remove([videoPath]);
+      throw insert.error;
+    }
+
+    const publicUrl = supabase.storage.from('ad-shares').getPublicUrl(videoPath).data.publicUrl;
+    res.json({
+      id: insert.data?.id,
+      createdAt: insert.data?.created_at,
+      slug,
+      videoPath,
+      videoUrl: publicUrl,
+      shareUrl: `${getRequestOrigin(req)}/s/${slug}`,
+    });
+  } catch (error: any) {
+    console.error('Create share page error:', error);
+    res.status(error.status || 500).json({ error: error.message || 'Could not create share link.' });
   }
 });
 
@@ -662,6 +823,10 @@ app.post('/api/convert-to-mp4', videoExportLimiter, uploadDisk.single('video'), 
 });
 
 app.post('/api/transcribe', aiGenerationLimiter, uploadMem.single('audio'), async (req, res) => {
+  if (Date.now() < transcriptionRateLimitUntil) {
+    return res.status(429).json({ error: 'AI temporarily at capacity, try again in 1 min.', retryAfterSeconds: Math.ceil((transcriptionRateLimitUntil - Date.now()) / 1000) });
+  }
+
   if (!req.file) {
     return res.status(400).json({ error: 'No audio file provided' });
   }
@@ -683,6 +848,10 @@ app.post('/api/transcribe', aiGenerationLimiter, uploadMem.single('audio'), asyn
     if (!response.ok) {
       const text = await response.text();
       console.warn('Deepgram transcription rejected request:', response.status, text.slice(0, 500));
+      if (response.status === 429) {
+        transcriptionRateLimitUntil = Date.now() + transcriptionBackoffMs;
+        return res.status(429).json({ error: 'AI temporarily at capacity, try again in 1 min.', retryAfterSeconds: 60 });
+      }
       return res.status(response.status).json({ error: 'Transcription service rejected the request.' });
     }
 

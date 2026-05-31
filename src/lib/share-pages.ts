@@ -67,44 +67,37 @@ export async function getSharePageBySlug(slug: string): Promise<SharePageRecord 
 }
 
 export async function saveHostedSharePage(record: Omit<SharePageRecord, 'id' | 'createdAt'>): Promise<SharePageRecord> {
-  if (!supabase) return saveSharePage(record);
+  const formData = new FormData();
+  formData.append('video', record.videoBlob, `${record.slug}.mp4`);
+  formData.append('headline', record.headline);
+  formData.append('subhead', record.subhead);
+  formData.append('cta_text', record.ctaText);
+  formData.append('cta_url', record.ctaUrl);
+  formData.append('business_name', record.businessName);
+  formData.append('brand_name', record.brandName);
+  formData.append('accent_color', record.accentColor);
+  formData.append('background_color', record.backgroundColor);
 
-  const client = supabase as any;
-  const videoPath = `ad-shares/${record.slug}.mp4`;
-  const upload = await client.storage
-    .from('ad-shares')
-    .upload(videoPath, record.videoBlob, {
-      contentType: record.videoMimeType || 'video/mp4',
-      upsert: false,
-    });
-  if (upload.error) throw upload.error;
+  const response = await fetch('/api/share-pages', {
+    method: 'POST',
+    body: formData,
+  });
+  const payload = await response.json().catch(() => ({}));
 
-  const insert = await client
-    .from('ad_shares')
-    .insert({
-      slug: record.slug,
-      video_path: videoPath,
-      headline: record.headline,
-      subhead: record.subhead,
-      cta_text: record.ctaText,
-      cta_url: record.ctaUrl,
-      business_name: record.businessName,
-      brand_name: record.brandName,
-      accent_color: record.accentColor,
-      background_color: record.backgroundColor,
-    })
-    .select('*')
-    .single();
-  if (insert.error) throw insert.error;
-  if (!insert.data) throw new Error('Share page was not saved.');
+  if (!response.ok) {
+    if (payload?.code === 'SHARE_HOSTING_NOT_CONFIGURED' && location.hostname === 'localhost') {
+      return saveSharePage(record);
+    }
+    throw new Error(payload?.error || 'Could not create share link.');
+  }
 
-  const publicUrl = client.storage.from('ad-shares').getPublicUrl(videoPath).data.publicUrl;
   return {
     ...record,
-    id: insert.data.id,
-    createdAt: new Date(insert.data.created_at).getTime(),
-    videoPath,
-    videoUrl: publicUrl,
+    id: payload.id || record.slug,
+    slug: payload.slug || record.slug,
+    createdAt: payload.createdAt ? new Date(payload.createdAt).getTime() : Date.now(),
+    videoPath: payload.videoPath,
+    videoUrl: payload.videoUrl,
   };
 }
 

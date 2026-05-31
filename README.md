@@ -37,12 +37,14 @@ GEMINI_API_KEY=your_gemini_key
 DEEPGRAM_API_KEY=your_deepgram_key
 VITE_SUPABASE_URL=https://howclqjohkrvcdarajur.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_URL=https://howclqjohkrvcdarajur.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_server_only_service_role_key
 NODE_ENV=development
 ```
 
-If Supabase env vars are missing, Wiggly share links fall back to local browser-only previews. Hosted links that friends can open require the Supabase URL and anon key.
+If Supabase env vars are missing, Wiggly share links fall back to local browser-only previews. Hosted links that friends can open require browser read keys (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) plus the server-only `SUPABASE_SERVICE_ROLE_KEY` for uploads.
 
-Do not commit real API keys.
+Do not commit real API keys. Never use a `VITE_` prefix for the Supabase service role key.
 
 ## Quality Checks
 
