@@ -43,6 +43,7 @@ export type BrandAssets = {
   designSystem?: unknown;
   metadata: Record<string, string>;
   socialLinks: string[];
+  reviews?: string[];
   pages: BrandPageSignal[];
   externalResearch?: BrandExternalResearch;
   rawBranding?: Record<string, unknown>;
@@ -113,6 +114,7 @@ Schema:
 
 Rules:
 - Use the website's actual language, but compress it.
+- If the research includes customer reviews or testimonials, use the strongest specific review language as proof.
 - If a field is not obvious, infer carefully from nearby evidence.
 - Colors must be 6-digit hex codes only.
 - bannedGenericPhrases must include vague phrases like "transform your business" when they do not fit this company.

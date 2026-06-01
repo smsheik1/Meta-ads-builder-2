@@ -916,7 +916,7 @@ const FIRECRAWL_TIMEOUT_MS = 12000;
 const TAVILY_TIMEOUT_MS = 9000;
 const BRAND_BRAIN_TIMEOUT_MS = 18000;
 const HEADLINE_VARIATION_TIMEOUT_MS = 20000;
-const BRAND_BRAIN_CACHE_VERSION = 'brand-assets-v2';
+const BRAND_BRAIN_CACHE_VERSION = 'brand-assets-v4';
 
 type ScrapedPage = {
   url: string;
@@ -1176,6 +1176,39 @@ const extractSocialLinks = (links: string[], baseUrl: string) => {
     .slice(0, 20);
 };
 
+const isUsableReviewSnippet = (line: string) => (
+  !/^(home|about|services|contact|privacy|terms|menu)$/i.test(line) &&
+  !/^[-–—]\s*[A-Z][A-Za-z'.-]+(?:\s+[A-Z][A-Za-z'.-]+){0,3}$/.test(line) &&
+  !/^\[?(?:view|read|see|load|show)\s+more\s+(?:reviews|testimonials)\]?$/i.test(line)
+);
+
+const extractReviewSnippets = (markdown: string) => {
+  const normalized = String(markdown || '')
+    .replace(/\r/g, '\n')
+    .replace(/\[[^\]]+\]\([^)]+\)/g, (match) => match.replace(/\]\([^)]+\)/, ']'))
+    .split('\n')
+    .map((line) => cleanTextField(line.replace(/^#{1,6}\s*/, '').replace(/^[-*•]\s*/, ''), 260))
+    .filter(Boolean);
+  const snippets: string[] = [];
+  const reviewSignal = /\b(review|reviews|testimonial|testimonials|client|customer|patient|stars?|rated|rating|google)\b/i;
+  const quoteSignal = /["“”]|(?:\b(amazing|excellent|professional|recommend|recommended|friendly|comfortable|results|love|loved|best)\b)/i;
+
+  normalized.forEach((line, index) => {
+    const context = `${normalized[index - 2] || ''} ${normalized[index - 1] || ''} ${line}`.toLowerCase();
+    const hasReviewContext = reviewSignal.test(context);
+    const looksLikeQuote = quoteSignal.test(line) && line.length >= 36 && line.length <= 220;
+    const hasRating = /(?:★★★★★|★{4,5}|\b[45](?:\.0)?\s*(?:\/\s*5|stars?)\b)/i.test(line);
+    if (!hasReviewContext && !looksLikeQuote && !hasRating) return;
+    if (!isUsableReviewSnippet(line)) return;
+    snippets.push(line.replace(/^["“”]+|["“”]+$/g, '').trim());
+  });
+
+  return snippets
+    .filter(Boolean)
+    .filter((item, index, items) => items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index)
+    .slice(0, 8);
+};
+
 const buildPageBrandAssets = ({
   url,
   data,
@@ -1202,6 +1235,7 @@ const buildPageBrandAssets = ({
   const favicon = firstPublicAssetUrl([brandingImages.favicon, metadata.icon, metadata.favicon], url);
   const ogImage = firstPublicAssetUrl([brandingImages.ogImage, metadata.ogImage, metadata['og:image'], metadata['twitter:image']], url);
   [logoUrl, favicon, ogImage].filter(Boolean).forEach((image) => imageUrlSet.add(image));
+  const reviews = extractReviewSnippets(markdown);
 
   return {
     images: {
@@ -1221,6 +1255,7 @@ const buildPageBrandAssets = ({
     designSystem: clipJsonValue(branding.designSystem),
     metadata: normalizeStringRecord(metadata, 40, 360),
     socialLinks: extractSocialLinks(links, url),
+    reviews,
     pages: [{
       url,
       title: cleanTextField(metadata.title || metadata.ogTitle || '', 160),
@@ -1237,6 +1272,7 @@ const mergeBrandAssets = (pages: ScrapedPage[]): BrandAssets => {
   const mergedColors: Record<string, string> = {};
   const fonts: BrandFontSignal[] = [];
   const socialLinks = new Set<string>();
+  const reviews: string[] = [];
   const allImages = new Set<string>();
   let logo = '';
   let favicon = '';
@@ -1256,6 +1292,9 @@ const mergeBrandAssets = (pages: ScrapedPage[]): BrandAssets => {
       }
     });
     assets.socialLinks.forEach((link) => socialLinks.add(link));
+    (assets.reviews || []).forEach((review) => {
+      if (!reviews.some((candidate) => candidate.toLowerCase() === review.toLowerCase())) reviews.push(review);
+    });
     assets.images.allImages.forEach((image) => allImages.add(image));
     logo ||= assets.images.logo || '';
     favicon ||= assets.images.favicon || '';
@@ -1277,6 +1316,7 @@ const mergeBrandAssets = (pages: ScrapedPage[]): BrandAssets => {
     designSystem: firstAssets?.designSystem,
     metadata: firstAssets?.metadata || {},
     socialLinks: Array.from(socialLinks).slice(0, 20),
+    reviews: reviews.slice(0, 8),
     pages: pages.map((page) => page.brandAssets.pages[0]).filter(Boolean),
     externalResearch: firstAssets?.externalResearch,
     rawBranding: firstAssets?.rawBranding,
@@ -1663,6 +1703,7 @@ const normalizeBrandAssets = (value: unknown, websiteUrl: string): BrandAssets |
     socialLinks: normalizeStringArray(input.socialLinks, 20, 500)
       .map((link) => normalizePublicAssetUrl(link, websiteUrl))
       .filter(Boolean),
+    reviews: normalizeStringArray(input.reviews, 8, 220).filter(isUsableReviewSnippet),
     pages: (Array.isArray(input.pages) ? input.pages : [])
       .slice(0, 8)
       .map((page) => ({
@@ -1678,14 +1719,24 @@ const normalizeBrandAssets = (value: unknown, websiteUrl: string): BrandAssets |
   };
 };
 
-const normalizeBrandBrain = (payload: any, websiteUrl: string, fallbackLogoUrl = ''): BrandBrain => ({
+const normalizeBrandBrain = (payload: any, websiteUrl: string, fallbackLogoUrl = ''): BrandBrain => {
+  const brandAssets = normalizeBrandAssets(payload?.brandAssets, websiteUrl);
+  const proof = [
+    ...normalizeStringArray(payload?.proof, 8, 140),
+    ...(brandAssets?.reviews || []),
+  ]
+    .filter(Boolean)
+    .filter((item, index, items) => items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index)
+    .slice(0, 8);
+
+  return {
   businessName: cleanTextField(payload?.businessName, 60) || new URL(websiteUrl).hostname.replace(/^www\./, ''),
   websiteUrl,
   brandLogoUrl: (() => {
     const logo = normalizeImageAssetUrl(payload?.brandLogoUrl || fallbackLogoUrl, websiteUrl);
     return logo && !isLikelyFaviconAsset(logo) ? logo : undefined;
   })(),
-  brandAssets: normalizeBrandAssets(payload?.brandAssets, websiteUrl),
+  brandAssets,
   offer: cleanTextField(payload?.offer, 180),
   audience: cleanTextField(payload?.audience, 180),
   pain: cleanTextField(payload?.pain, 220),
@@ -1693,12 +1744,13 @@ const normalizeBrandBrain = (payload: any, websiteUrl: string, fallbackLogoUrl =
   differentiator: cleanTextField(payload?.differentiator, 220),
   tone: cleanTextField(payload?.tone, 80) || 'clear, confident, direct',
   colors: normalizeHexColors(payload?.colors).length ? normalizeHexColors(payload?.colors) : ['#00D6B8', '#4F46E5', '#0F172A'],
-  proof: normalizeStringArray(payload?.proof, 8, 140),
+  proof,
   bannedGenericPhrases: normalizeStringArray(payload?.bannedGenericPhrases, 12, 80).length
     ? normalizeStringArray(payload?.bannedGenericPhrases, 12, 80)
     : ['transform your business', 'game changer', 'take it to the next level'],
   adAngles: normalizeStringArray(payload?.adAngles, 8, 180),
-});
+  };
+};
 
 const brandBrainNeedsFallback = (brandBrain: BrandBrain) => {
   const required = [brandBrain.offer, brandBrain.audience, brandBrain.pain];
@@ -1751,6 +1803,7 @@ const buildHeuristicBrandBrain = ({
   const pain = matchedSignal?.pain || `People need a concrete reason to choose ${businessName} over another option`;
   const promisedResult = matchedSignal?.result || `Find the right ${businessName} option faster and feel confident trying it`;
   const differentiator = matchedSignal?.differentiator || `${businessName} already has brand recognition, product signals, and trust buyers recognize`;
+  const reviewProof = (brandAssets?.reviews || []).filter(isUsableReviewSnippet).slice(0, 3);
 
   return {
     businessName,
@@ -1765,6 +1818,7 @@ const buildHeuristicBrandBrain = ({
     tone: 'clear, confident, direct',
     colors: colors.length ? colors : ['#00D6B8', '#4F46E5', '#0F172A'],
     proof: [
+      ...reviewProof,
       description,
       page?.title ? `Website title: ${page.title}` : '',
       brandAssets?.images.logo ? 'Logo found on site' : '',

@@ -16,6 +16,8 @@ test('renderers do not use fake demo captions when transcript captions are missi
   expect(canvasSource).toContain('getActiveCaption(state.captions, currentTime)');
   expect(canvasSource).toContain('captionPreviewText');
   expect(canvasSource).toContain('displayCaption || (audioUrl ?');
+  expect(canvasSource).toContain('pickVisibleColorOnLight');
+  expect(canvasSource).toContain('el.captionSpeaker1Color');
   expect(canvasSource).toContain("captionsLoading ? 'Captions are loading' : ''");
   expect(canvasSource).not.toContain("playing ? 'Captions are loading'");
   expect(canvasSource).not.toContain('Captions unavailable');

@@ -16,6 +16,7 @@ import { emitTutorialEvent } from './InteractiveTutorial';
 import type { AudioAnalysisData } from '../lib/audio-analysis';
 import { VOICE_VISUALIZER_PRESET } from '../lib/visualizer-presets';
 import type { RerollFlashPayload, RerollFlashRole } from './CreateFlow';
+import { pickVisibleColorOnLight } from '../lib/color-contrast';
 
 const isEditableEventTarget = (target: EventTarget | null) => {
   if (!(target instanceof HTMLElement)) return false;
@@ -1317,9 +1318,15 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                     fitPaddingX={18}
                     fitPaddingY={16}
                     style={{
-                      color: currentCaption
-                        ? (currentSpeaker === 2 ? el.captionSpeaker2Color : el.captionSpeaker1Color) || CAPTION_SPEAKER_COLORS[currentSpeaker] || el.color || accentColor
-                        : (el.color || accentColor),
+                      color: displayCaption
+                        ? pickVisibleColorOnLight([
+                          currentSpeaker === 2 ? el.captionSpeaker2Color : el.captionSpeaker1Color,
+                          el.captionSpeaker1Color,
+                          el.captionSpeaker2Color,
+                          el.color,
+                          accentColor,
+                        ], CAPTION_SPEAKER_COLORS[currentSpeaker] || accentColor, { background: backgroundColor, minContrast: 2.2, maxLuminance: 0.86 })
+                        : pickVisibleColorOnLight([el.color, accentColor], accentColor, { background: backgroundColor, minContrast: 2.2, maxLuminance: 0.86 }),
                       fontFamily: el.fontFamily || 'Inter, sans-serif',
                       fontWeight: el.fontWeight || 700,
                     }}
