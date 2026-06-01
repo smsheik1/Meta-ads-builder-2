@@ -7,7 +7,7 @@ import { CreateFlow, type GeneratedAdVariation } from './components/CreateFlow';
 import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList, ArrowRight, Wand2, PhoneCall, Link2, ExternalLink, Copy, Heart, MessageCircle, Send, Bookmark } from 'lucide-react';
 import Papa from 'papaparse';
 import { DEFAULT_ELEMENTS, useEditorStore, type AdElement } from './store';
-import { compressVisualizerValue, drawAdvancedVisualizer } from './lib/visualizer';
+import { getVisualizerBarCount, getVisualizerBars, normalizeVisualizerType } from './lib/visualizer';
 import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
@@ -2949,8 +2949,6 @@ export default function App() {
     
     const renderStartTime = performance.now();
     let frame = 0;
-    const visualizerValueMemory: Record<string, number[]> = {};
-    
     const draw = () => {
       if (hasStopped) return;
       const elapsed = Math.min(performance.now() - renderStartTime, renderDuration);
@@ -3283,113 +3281,56 @@ export default function App() {
                  ctx.fillText(el.content, elW / 2, elH / 2);
              }
          } else if (el.type === 'visualizer') {
-             ctx.fillStyle = el.barColor || '#fff';
-             ctx.strokeStyle = el.barColor || '#fff';
-             ctx.lineWidth = 4 * scale;
-             ctx.lineCap = 'round';
-             ctx.lineJoin = 'round';
-             
-             const type = ['bars-bottom', 'bars-center', 'waveform-strip'].includes(el.visualizerType || '') ? (el.visualizerType as 'bars-bottom' | 'bars-center' | 'waveform-strip') : 'bars-center';
-             const count = el.barCount || (type === 'waveform-strip' ? 72 : 16);
-             const mirror = el.visualizerMirror || false;
-             const sensitivityMultiplier = el.visualizerSensitivity ?? 1.5;
-
-             const getValue = (idx: number, total: number, isLeftSpeakerSide?: boolean) => {
-                 let val = 0;
-                 if (analyser && dataArray) {
-                     const dataBins = Math.floor(dataArray.length * 0.4);
-                     const halfCount = Math.floor(count / 2);
-                     const sideIndex = isLeftSpeakerSide ? idx : idx - halfCount;
-                     const sideTotal = isLeftSpeakerSide ? halfCount : count - halfCount;
-                     const center = (count - 1) / 2;
-                     const centerDistance = Math.abs(idx - center);
-                     const normalizedIndex = el.visualizerSplitSpeakers
-                       ? sideIndex / Math.max(1, sideTotal - 1)
-                       : type === 'bars-center'
-                         ? centerDistance / Math.max(1, center)
-                         : idx / Math.max(1, total - 1);
-                     const dataIdx = 1 + Math.floor(normalizedIndex * dataBins);
-                     val = compressVisualizerValue((dataArray[Math.min(dataIdx, dataArray.length-1)] / 255.0) * sensitivityMultiplier);
-                     val = Math.pow(val, 1.5); // non-linear scaling for better visuals
-                 } else {
-                     val = compressVisualizerValue(((Math.sin(frame * 0.2 + idx) * 0.5 + 0.5) * 0.5) * sensitivityMultiplier);
-                 }
-                 return val;
-             };
-
-             const values: number[] = [];
-             if (mirror) {
-                 const half = Math.ceil(count / 2);
-                 for(let i=0; i<half; i++) values.push(getValue(i, half, i < Math.floor(count / 2)));
-                 for(let i=half; i<count; i++) values.push(values[count - 1 - i]);
-             } else {
-                 const halfCount = Math.floor(count / 2);
-                 for(let i=0; i<count; i++) values.push(getValue(i, count, i < halfCount));
-             }
-             
-             if (el.visualizerSplitSpeakers) {
-                 const halfCount = Math.floor(count / 2);
-                 for (let i = 0; i < count; i++) {
-                     const isLeftSpeakerSide = i < halfCount;
-                     const isActiveSpeakerSide = !loopSpeaker || (loopSpeaker === 1 ? isLeftSpeakerSide : !isLeftSpeakerSide);
-                     if (!isActiveSpeakerSide) values[i] = 0.04;
-                 }
-             }
-
-             const previousValues = visualizerValueMemory[el.id] || new Array(count).fill(0.04);
-             const blend = Math.min(0.65, Math.max(0.05, 1 - (el.visualizerSmoothing ?? 0.65)));
-             const smoothedValues = values.map((value, index) => {
-               const previous = previousValues[index] ?? 0.04;
-               return previous + (value - previous) * blend;
+             const type = normalizeVisualizerType(el.visualizerType);
+             const count = getVisualizerBarCount(type, el.barCount);
+             const dataBins = dataArray ? Math.max(1, Math.floor(dataArray.length * 0.5)) : 0;
+             const fallbackLevel = dataArray
+               ? dataArray.slice(0, dataBins).reduce((sum, value) => sum + value, 0) / dataBins / 255
+               : null;
+             const fallbackBands = dataArray
+               ? Array.from({ length: 52 }, (_, index) => {
+                   const dataIndex = Math.min(dataArray.length - 1, 1 + Math.floor((index / 51) * Math.floor(dataArray.length * 0.4)));
+                   return (dataArray[dataIndex] || 0) / 255;
+                 })
+               : null;
+             const bars = getVisualizerBars({
+               type,
+               count,
+               frame,
+               height: elH,
+               scale,
+               audioLevel: analyser ? fallbackLevel : null,
+               frequencyBands: analyser ? fallbackBands : null,
+               currentSpeaker: loopSpeaker,
+               splitSpeakers: el.visualizerSplitSpeakers,
+               mirror: el.visualizerMirror,
+               sensitivity: el.visualizerSensitivity ?? 1.5,
+               heightScale: el.visualizerHeight ?? 0.9,
+               baseline: el.visualizerBaseline ?? 4,
+               gain: el.visualizerGain ?? 1,
+               compression: el.visualizerCompression ?? 1,
+               floor: el.visualizerFloor ?? 0,
+               ceiling: el.visualizerCeiling ?? 1,
+               curve: el.visualizerCurve ?? 'default',
+               bandFocus: el.visualizerBandFocus ?? 'full',
+               color: el.barColor || '#00ffcc',
              });
-             visualizerValueMemory[el.id] = smoothedValues;
-
-             if (type === 'bars-bottom' || type === 'bars-center') {
-                 const gap = 4 * scale;
-                 const barW = (elW - gap * (count - 1)) / count;
-                 const halfCount = Math.floor(count / 2);
-                 for (let i = 0; i < count; i++) {
-                     const v = smoothedValues[i];
-                     const minBarH = (el.visualizerBaseline ?? 4) * scale;
-                     const heightScale = el.visualizerHeight ?? 0.9;
-                     const barH = Math.min(minBarH + v * (elH * heightScale), elH);
-                     const barX = i * (barW + gap);
-                     const barY = type === 'bars-center' ? (elH - barH) / 2 : elH - barH;
-                     const isLeftSpeakerSide = i < halfCount;
-                     const isActiveSpeakerSide = !el.visualizerSplitSpeakers || !loopSpeaker || (loopSpeaker === 1 ? isLeftSpeakerSide : !isLeftSpeakerSide);
-                     ctx.fillStyle = el.visualizerSplitSpeakers && !isLeftSpeakerSide ? '#8b5cf6' : (el.barColor || '#fff');
-                     ctx.globalAlpha = isActiveSpeakerSide ? 1 : 0.28;
-                     
-                     ctx.beginPath();
-                     ctx.roundRect(barX, barY, barW, barH, barW / 2);
-                     ctx.fill();
-                     ctx.globalAlpha = 1;
-                 }
-             } else if (type === 'waveform-strip') {
-                 let v = 0;
-                 if (analyser && dataArray) {
-                     const binsCount = Math.floor(dataArray.length * 0.5);
-                     if (el.visualizerSplitSpeakers) {
-                         const halfCount = Math.floor(binsCount / 2);
-                         for (let i = 0; i < binsCount; i++) {
-                             if (!loopSpeaker || (loopSpeaker === 1 && i < halfCount) || (loopSpeaker === 2 && i >= halfCount)) v += dataArray[i];
-                         }
-                         v = v / halfCount;
-                     } else {
-                         for (let i = 0; i < binsCount; i++) v += dataArray[i];
-                         v = v / binsCount;
-                     }
-                     v = compressVisualizerValue((v / 255.0) * sensitivityMultiplier);
-                 } else {
-                     v = compressVisualizerValue(((Math.sin(frame * 0.2) * 0.5 + 0.5) * 0.5) * sensitivityMultiplier);
-                 }
-                 
-                 drawAdvancedVisualizer(ctx, type, elW, elH, v, frame, el.barColor || '#00ffcc', scale, {
-                   barCount: el.barCount,
-                   heightScale: el.visualizerHeight,
-                   baseline: el.visualizerBaseline,
-                 });
-             }
+             const gap = 4 * scale;
+             const minBarWidth = (type === 'waveform-strip' ? 2 : 4) * scale;
+             const barW = Math.max(1, Math.max(minBarWidth, (elW - gap * (count - 1)) / count));
+             const halfCount = Math.floor(count / 2);
+             bars.forEach((bar, index) => {
+               const isLeftSpeakerSide = index < halfCount;
+               const barH = Math.min(elH, bar.height);
+               const barX = index * (barW + gap);
+               const barY = type === 'bars-bottom' ? elH - barH : (elH - barH) / 2;
+               ctx.fillStyle = el.visualizerSplitSpeakers && !isLeftSpeakerSide ? '#8b5cf6' : bar.color;
+               ctx.globalAlpha = bar.opacity;
+               ctx.beginPath();
+               ctx.roundRect(barX, barY, barW, barH, barW / 2);
+               ctx.fill();
+               ctx.globalAlpha = 1;
+             });
          }
          ctx.restore();
       });
