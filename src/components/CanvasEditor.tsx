@@ -1320,7 +1320,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                       fontWeight: el.fontWeight || 700,
                     }}
                   >
-                    {currentCaption || (audioUrl ? (captionsLoading ? 'Captions are loading' : 'Captions unavailable') : 'Upload audio for captions')}
+                    {currentCaption || (audioUrl ? (captionsLoading ? 'Captions are loading' : '') : 'Upload audio for captions')}
                   </AutoFitText>
                </div>
             )}

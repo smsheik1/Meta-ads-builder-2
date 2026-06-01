@@ -113,7 +113,12 @@ const uploadMem = multer({
     files: 1,
   },
   fileFilter: (_req, file, cb) => {
-    const allowed = file.mimetype.startsWith('audio/') || file.mimetype === 'video/mp4' || file.mimetype === 'video/webm';
+    const filename = file.originalname.toLowerCase();
+    const allowedExtension = /\.(mp3|m4a|wav|aac|ogg|oga|flac|webm|mp4)$/i.test(filename);
+    const allowed = file.mimetype.startsWith('audio/') ||
+      file.mimetype === 'video/mp4' ||
+      file.mimetype === 'video/webm' ||
+      (file.mimetype === 'application/octet-stream' && allowedExtension);
     if (!allowed) {
       cb(new Error('Unsupported audio file type.'));
       return;

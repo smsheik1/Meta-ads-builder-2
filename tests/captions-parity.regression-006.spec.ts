@@ -14,9 +14,11 @@ test('renderers do not use fake demo captions when transcript captions are missi
   });
 
   expect(canvasSource).toContain('getActiveCaption(state.captions, currentTime)');
-  expect(canvasSource).toContain("captionsLoading ? 'Captions are loading' : 'Captions unavailable'");
+  expect(canvasSource).toContain("captionsLoading ? 'Captions are loading' : ''");
   expect(canvasSource).not.toContain("playing ? 'Captions are loading'");
+  expect(canvasSource).not.toContain('Captions unavailable');
   expect(appSource).toContain('const renderCaptions = captions;');
   expect(appSource).toContain('captionsLoading={isTranscribing}');
+  expect(appSource).toContain('inferAudioMimeType(audioUrl)');
   expect(remotionSource).toContain('const activeCaptions = snapshot.captions;');
 });

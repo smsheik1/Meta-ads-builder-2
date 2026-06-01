@@ -236,6 +236,17 @@ const TRANSCRIPTION_BACKOFF_KEY = 'wiggly_transcription_429_until';
 const TRANSCRIPTION_ERROR_BACKOFF_KEY = 'wiggly_transcription_error_until';
 const SPACE_REMIX_CUE_DISMISSED_KEY = 'wiggly_space_remix_cue_dismissed_v1';
 
+const inferAudioMimeType = (url: string, fallback = 'audio/mpeg') => {
+  const cleanUrl = url.split('?')[0].toLowerCase();
+  if (cleanUrl.endsWith('.m4a')) return 'audio/mp4';
+  if (cleanUrl.endsWith('.wav')) return 'audio/wav';
+  if (cleanUrl.endsWith('.ogg') || cleanUrl.endsWith('.oga')) return 'audio/ogg';
+  if (cleanUrl.endsWith('.flac')) return 'audio/flac';
+  if (cleanUrl.endsWith('.webm')) return 'audio/webm';
+  if (cleanUrl.endsWith('.aac')) return 'audio/aac';
+  return fallback;
+};
+
 type CreativeBrief = {
   offer: string;
   buyer: string;
@@ -2400,7 +2411,7 @@ export default function App() {
         const audioBlob = await audioRes.blob();
         if (audioBlob.size < 100) return;
         
-        const file = new File([audioBlob], 'audio.mp3', { type: audioBlob.type || 'audio/mpeg' });
+        const file = new File([audioBlob], 'audio.mp3', { type: audioBlob.type || inferAudioMimeType(audioUrl) });
         const formData = new FormData();
         formData.append('audio', file);
         
