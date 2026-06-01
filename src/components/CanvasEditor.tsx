@@ -365,6 +365,10 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   const [editingId, setEditingId] = useState<string | null>(null);
   const editingRef = useRef<HTMLDivElement | null>(null);
   const [playbackTime, setPlaybackTime] = useState(0);
+  const captionPreviewText = captions.length > 0
+    ? getActiveCaption(captions, Math.max(playbackTime, captions[0].start)).caption?.text || captions[0].text
+    : null;
+  const displayCaption = currentCaption || (!playing && !captionsLoading ? captionPreviewText : null);
 
   useEffect(() => {
     if (!editingId) return;
@@ -1320,7 +1324,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                       fontWeight: el.fontWeight || 700,
                     }}
                   >
-                    {currentCaption || (audioUrl ? (captionsLoading ? 'Captions are loading' : '') : 'Upload audio for captions')}
+                    {displayCaption || (audioUrl ? (captionsLoading ? 'Captions are loading' : '') : 'Upload audio for captions')}
                   </AutoFitText>
                </div>
             )}
