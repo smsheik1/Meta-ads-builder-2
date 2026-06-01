@@ -885,7 +885,7 @@ app.post('/api/transcribe', aiGenerationLimiter, uploadMem.single('audio'), asyn
 
 import { GoogleGenAI } from '@google/genai';
 import { getMasterPrompt } from './src/lib/prompts/headline-master';
-import { buildBrandBrainPrompt, buildFallbackBrandBrain, BRAND_FALLBACK_QUESTIONS, type BrandAssets, type BrandBrain, type BrandFontSignal } from './src/lib/prompts/brand-brain';
+import { buildBrandBrainPrompt, buildFallbackBrandBrain, type BrandAssets, type BrandBrain, type BrandFontSignal } from './src/lib/prompts/brand-brain';
 import { buildHeadlineVariationsPrompt, type ConversationAdLine, type GeneratedAdFormat, type HeadlineVariation } from './src/lib/prompts/headline-variations';
 import { normalizeAdAngles } from './src/lib/prompts/ad-angles';
 
@@ -1700,6 +1700,75 @@ const brandBrainNeedsFallback = (brandBrain: BrandBrain) => {
   return required.some((field) => field.length < 12) || brandBrain.adAngles.length < 4;
 };
 
+const titleCaseBrandName = (value: string) => value
+  .split(/[\s.-]+/)
+  .filter(Boolean)
+  .map((part) => part.length <= 3 ? part.toUpperCase() : `${part[0]?.toUpperCase() || ''}${part.slice(1).toLowerCase()}`)
+  .join(' ');
+
+const buildHeuristicBrandBrain = ({
+  websiteUrl,
+  researchText,
+  brandAssets,
+  brandLogoUrl,
+}: {
+  websiteUrl: URL;
+  researchText: string;
+  brandAssets?: BrandAssets;
+  brandLogoUrl?: string;
+}): BrandBrain => {
+  const domain = websiteUrl.hostname.replace(/^www\./, '');
+  const domainBrand = titleCaseBrandName(domain.split('.')[0] || 'Brand');
+  const metadata = brandAssets?.metadata || {};
+  const page = brandAssets?.pages?.[0];
+  const title = cleanTextField(page?.title || metadata.title || metadata.ogTitle || domain, 100)
+    .replace(/\s*[|–-]\s*(Official|Homepage|Online Store).*$/i, '')
+    .replace(/\s*[|–-]\s*.*$/i, '')
+    .trim();
+  const businessName = title.toLowerCase().includes(domainBrand.toLowerCase()) ? domainBrand : (title || domainBrand);
+  const description = cleanTextField(
+    page?.description || metadata.description || metadata.ogDescription || researchText,
+    220
+  );
+  const category = description || `${businessName} products and services`;
+  const colors = normalizeHexColors(Object.values(brandAssets?.colors || {}));
+
+  return {
+    businessName,
+    websiteUrl: websiteUrl.href,
+    brandLogoUrl: brandLogoUrl || brandAssets?.images.logo || undefined,
+    brandAssets,
+    offer: category || `Products from ${businessName}`,
+    audience: `People considering ${businessName} or similar options`,
+    pain: `They need a clear reason to choose ${businessName} instead of another familiar option`,
+    promisedResult: `Find the right ${businessName} option faster and feel confident trying it`,
+    differentiator: `${businessName} already has brand recognition, product signals, and trust buyers recognize`,
+    tone: 'clear, confident, direct',
+    colors: colors.length ? colors : ['#00D6B8', '#4F46E5', '#0F172A'],
+    proof: [
+      description,
+      page?.title ? `Website title: ${page.title}` : '',
+      brandAssets?.images.logo ? 'Logo found on site' : '',
+    ].filter(Boolean).slice(0, 4),
+    bannedGenericPhrases: [
+      'transform your business',
+      'take it to the next level',
+      'game changer',
+      'unlock your potential',
+    ],
+    adAngles: [
+      `why people choose ${businessName} over another familiar option`,
+      `the fastest way to understand what ${businessName} offers`,
+      `the everyday moment where ${businessName} becomes the obvious choice`,
+      `the product detail that makes ${businessName} easier to trust`,
+      `the difference between browsing and finding the right ${businessName} option`,
+      `the reason ${businessName} stays top of mind`,
+      `the simple promise behind ${businessName}`,
+      `what shoppers should notice before they compare alternatives`,
+    ],
+  };
+};
+
 const generateBrandBrain = async (websiteUrl: string, researchText: string, fallbackAnswers?: string[], fallbackLogoUrl = '') => {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY is not set.');
@@ -1921,11 +1990,17 @@ app.post('/api/research-brand', brandResearchLimiter, async (req, res) => {
     } catch (error) {
       console.warn('[brand-research] scrape_failed', websiteUrl.href, error instanceof Error ? error.message : error);
       if (fallbackAnswers.length < 3) {
-        return res.status(200).json({
-          needsFallback: true,
-          questions: BRAND_FALLBACK_QUESTIONS,
-          reason: 'I could not read enough from that website yet.',
+        const brandBrain = buildHeuristicBrandBrain({
+          websiteUrl,
+          researchText: '',
+          brandAssets,
+          brandLogoUrl,
         });
+        addBrandBrainCache(brainCacheKey, {
+          expiresAt: Date.now() + BRAND_RESEARCH_CACHE_TTL_MS,
+          brandBrain,
+        });
+        return res.json({ needsFallback: false, brandBrain });
       }
     }
 
@@ -1950,25 +2025,27 @@ app.post('/api/research-brand', brandResearchLimiter, async (req, res) => {
     } catch (error) {
       console.warn('[brand-research] brain_failed', websiteUrl.href, error instanceof Error ? error.message : error);
       if (fallbackAnswers.length < 3) {
-        return res.status(200).json({
-          needsFallback: true,
-          questions: BRAND_FALLBACK_QUESTIONS,
-          reason: 'That website is taking too long to read clearly.',
+        brandBrain = buildHeuristicBrandBrain({
+          websiteUrl,
+          researchText,
+          brandAssets,
+          brandLogoUrl,
         });
+      } else {
+        brandBrain = {
+          ...buildFallbackBrandBrain({ websiteUrl: websiteUrl.href, answers: fallbackAnswers }),
+          brandLogoUrl: brandLogoUrl || undefined,
+          brandAssets,
+        };
       }
-      brandBrain = {
-        ...buildFallbackBrandBrain({ websiteUrl: websiteUrl.href, answers: fallbackAnswers }),
-        brandLogoUrl: brandLogoUrl || undefined,
-        brandAssets,
-      };
     }
 
     if (brandBrainNeedsFallback(brandBrain) && fallbackAnswers.length < 3) {
-      return res.status(200).json({
-        needsFallback: true,
-        questions: BRAND_FALLBACK_QUESTIONS,
-        partialBrandBrain: brandBrain,
-        reason: 'I need three quick answers to make the ads feel specific.',
+      brandBrain = buildHeuristicBrandBrain({
+        websiteUrl,
+        researchText,
+        brandAssets: brandBrain.brandAssets || brandAssets,
+        brandLogoUrl: brandBrain.brandLogoUrl || brandLogoUrl,
       });
     }
 
