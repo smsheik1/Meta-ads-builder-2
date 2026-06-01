@@ -81,11 +81,20 @@ const DEFAULT_BRAND_COLORS = ['#00D6B8', '#4F46E5', '#0F172A'];
 const TARGET_GENERATED_AD_COUNT = 50;
 const CREATE_FLOW_STORAGE_KEY = 'wiggly_create_flow_session_v1';
 const CREATE_FLOW_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
-const FORMAT_MODES: Array<{ id: CreateAdFormat; label: string; icon: typeof LayoutGrid }> = [
+const PAUSED_CREATE_FORMAT_NAMES: Record<GeneratedAdFormat, string> = {
+  visualizer: '',
+  conversation: 'Conversation Card',
+};
+const PAUSED_CREATE_FORMATS = new Set<GeneratedAdFormat>(['conversation']);
+const ACTIVE_GENERATED_FORMATS: GeneratedAdFormat[] = ['visualizer'];
+const ALL_FORMAT_MODES: Array<{ id: CreateAdFormat; label: string; icon: typeof LayoutGrid }> = [
   { id: 'all', label: 'All formats', icon: LayoutGrid },
   { id: 'visualizer', label: 'Audio visualizer', icon: AudioLines },
-  { id: 'conversation', label: 'Conversation', icon: MessageCircle },
+  { id: 'conversation', label: PAUSED_CREATE_FORMAT_NAMES.conversation || 'Conversation', icon: MessageCircle },
 ];
+const FORMAT_MODES = ALL_FORMAT_MODES.filter((mode) => (
+  mode.id === 'all' || !PAUSED_CREATE_FORMATS.has(mode.id)
+));
 
 type PersistedCreateFlow = {
   websiteUrl: string;
@@ -105,9 +114,12 @@ const getCreateFlowStorage = () => {
   }
 };
 
-const normalizeCreateAdFormat = (value: unknown): CreateAdFormat => (
-  value === 'visualizer' || value === 'conversation' || value === 'all' ? value : 'all'
-);
+const normalizeCreateAdFormat = (value: unknown): CreateAdFormat => {
+  if (value === 'visualizer' || value === 'conversation') {
+    return PAUSED_CREATE_FORMATS.has(value) ? 'all' : value;
+  }
+  return value === 'all' ? value : 'all';
+};
 
 const normalizePersistedVariation = (variation: GeneratedAdVariation): GeneratedAdVariation => ({
   ...variation,
@@ -128,9 +140,11 @@ const loadPersistedCreateFlow = (): PersistedCreateFlow | null => {
       return null;
     }
     const parsedVariations = Array.isArray(parsed.variations)
-      ? parsed.variations.map((variation) => normalizePersistedVariation(variation))
+      ? parsed.variations
+        .map((variation) => normalizePersistedVariation(variation))
+        .filter((variation) => !PAUSED_CREATE_FORMATS.has(variation.format))
       : [];
-    const usableVariations = parsedVariations.length >= TARGET_GENERATED_AD_COUNT ? parsedVariations : [];
+    const usableVariations = parsedVariations.length > 0 ? parsedVariations : [];
     return {
       websiteUrl: typeof parsed.websiteUrl === 'string' ? parsed.websiteUrl : '',
       brandBrain: parsed.brandBrain || null,
@@ -187,7 +201,9 @@ const pickVisibleBrandColor = (
 
 const buildGeneratedVariations = (brandBrain: BrandBrain, variations: HeadlineVariation[]): GeneratedAdVariation[] => {
   let currentArchetypeId = '';
-  return variations.map((variation, index) => {
+  return variations
+    .filter((variation) => !PAUSED_CREATE_FORMATS.has(variation.format === 'conversation' ? 'conversation' : 'visualizer'))
+    .map((variation, index) => {
     const archetype = getRandomAdStyleArchetype(currentArchetypeId);
     currentArchetypeId = archetype.id;
     return {
@@ -442,7 +458,7 @@ export function CreateFlow({
     return fetchJsonWithTimeout<AdStreamResponse>('/api/generate-ad-stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ brandBrain: nextBrandBrain, count: TARGET_GENERATED_AD_COUNT, formatMix: ['visualizer', 'conversation'] }),
+      body: JSON.stringify({ brandBrain: nextBrandBrain, count: TARGET_GENERATED_AD_COUNT, formatMix: ACTIVE_GENERATED_FORMATS }),
     }, 30000, 'Writing is taking too long. Try again in a moment.');
   };
 

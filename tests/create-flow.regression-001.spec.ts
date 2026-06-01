@@ -63,7 +63,7 @@ test('create brand dump does not fetch blocked external images', async ({ page }
   expect(consoleErrors).toEqual([]);
 });
 
-test('create format rail filters mixed generated ads', async ({ page }) => {
+test('create format rail hides paused Conversation Card ads', async ({ page }) => {
   await page.addInitScript(() => {
     const archetype = {
       id: 'qa-clean',
@@ -154,23 +154,18 @@ test('create format rail filters mixed generated ads', async ({ page }) => {
 
   await expect(page.getByRole('button', { name: 'Show All formats' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Show Audio visualizer' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Show Conversation' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Show Conversation Card' })).toHaveCount(0);
   await expect(page.getByText(/Ad \d+ of 50/)).toHaveCount(0);
   await expect(page.getByText('Current ad')).toHaveCount(0);
   await expect(page.getByText(/Visualizer ·/)).toHaveCount(0);
 
-  await page.getByRole('button', { name: 'Show Conversation' }).click();
-  await expect(page.getByText(/Conversation ·/)).toHaveCount(0);
-  await expect(page.getByText('Conversation concept 1')).toBeVisible();
-  await expect(page.getByText('This should feel like a real text thread 1.')).toBeVisible();
-
   await page.keyboard.press('Space');
-  await expect(page.getByText('Conversation concept 4')).toBeVisible();
-  await expect(page.getByText('This should feel like a real text thread 4.')).toBeVisible();
+  await expect(page.getByText('Conversation concept 1')).toHaveCount(0);
+  await expect(page.getByText('This should feel like a real text thread 1.')).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Show Audio visualizer' }).click();
   await expect(page.getByText(/Visualizer ·/)).toHaveCount(0);
-  await expect(page.getByText('Visualizer concept 0')).toBeVisible();
+  await expect(page.getByText('Visualizer concept 2')).toBeVisible();
 
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByRole('button', { name: /^Saved/ })).toBeVisible();
@@ -178,15 +173,15 @@ test('create format rail filters mixed generated ads', async ({ page }) => {
   await expect(page.getByText('Saved ads')).toHaveCount(0);
   await page.getByRole('button', { name: /^Saved/ }).hover();
   await expect(page.getByText('Saved ads')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Visualizer concept 0' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Visualizer concept 2' })).toBeVisible();
   const savedTemplates = await page.evaluate(() => JSON.parse(localStorage.getItem('visualizer_ad_templates_v1') || '[]'));
-  expect(savedTemplates[0]?.name).toBe('Visualizer concept 0');
-  expect(savedTemplates[0]?.elements.some((element: { content?: string }) => element.content === 'Visualizer concept 0')).toBe(true);
+  expect(savedTemplates[0]?.name).toBe('Visualizer concept 2');
+  expect(savedTemplates[0]?.elements.some((element: { content?: string }) => element.content === 'Visualizer concept 2')).toBe(true);
   expect(savedTemplates[0]?.elements.some((element: { content?: string; fontFamily?: string }) => (
-    element.content === 'Visualizer concept 0' && !element.fontFamily
+    element.content === 'Visualizer concept 2' && !element.fontFamily
   ))).toBe(true);
 
-  await page.getByRole('button', { name: 'Visualizer concept 0' }).click();
+  await page.getByRole('button', { name: 'Visualizer concept 2' }).click();
   await expect(page).toHaveURL(/\/builder$/);
   await expect(page.getByText('Edit Parts', { exact: true })).toBeVisible();
 });
