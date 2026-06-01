@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, AudioLines, BookmarkPlus, CheckCircle2, Download, ExternalLink, LayoutGrid, Loader2, MessageCircle, Play, Shuffle, Square, Upload, Wand2, X } from 'lucide-react';
+import { ArrowRight, AudioLines, BookmarkPlus, CheckCircle2, Download, ExternalLink, LayoutGrid, Loader2, MessageCircle, MousePointerClick, Play, Shuffle, Square, Upload, Wand2, X } from 'lucide-react';
 import { getRandomAdStyleArchetype, type AdStyleArchetype } from '../lib/style-archetypes';
 import { PlatformFrame, type PlatformType } from './PlatformFrame';
 import { CanvasEditor } from './CanvasEditor';
@@ -714,6 +714,22 @@ export function CreateFlow({
                 {playing ? 'Stop preview' : 'Play this ad'}
               </button>
             </div>
+            {(activeVariation || variations.length > 0) && (
+              <div className="mt-4 flex justify-center">
+                <div className="group flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-3 py-2 shadow-lg shadow-slate-950/8 backdrop-blur sm:gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-white shadow-sm shadow-slate-950/20">
+                    <MousePointerClick className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0 text-xs font-black text-slate-700 sm:text-sm">Press spacebar to generate more</span>
+                  <span
+                    aria-hidden="true"
+                    className="relative h-7 w-16 shrink-0 rounded-[0.65rem] border border-slate-300 bg-gradient-to-b from-white to-slate-100 shadow-[inset_0_-2px_0_rgba(15,23,42,0.14),0_4px_10px_rgba(15,23,42,0.08)] transition group-hover:-translate-y-0.5 sm:w-24"
+                  >
+                    <span className="absolute inset-x-5 bottom-2 h-0.5 rounded-full bg-slate-300" />
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
