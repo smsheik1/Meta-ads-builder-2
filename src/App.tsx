@@ -3,9 +3,10 @@ import { PlatformFrame, isFeedPlatform, isVerticalPlatform, type PlatformType } 
 import { CanvasEditor } from './components/CanvasEditor';
 import { DevTuningPanel } from './components/DevTuningPanel';
 import { PropertiesPanel } from './components/PropertiesPanel';
+import { CreateFlow, type GeneratedAdVariation } from './components/CreateFlow';
 import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList, ArrowRight, Wand2, PhoneCall, Link2, ExternalLink, Copy, Heart, MessageCircle, Send, Bookmark } from 'lucide-react';
 import Papa from 'papaparse';
-import { useEditorStore, type AdElement } from './store';
+import { DEFAULT_ELEMENTS, useEditorStore, type AdElement } from './store';
 import { compressVisualizerValue, drawAdvancedVisualizer } from './lib/visualizer';
 import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
@@ -19,6 +20,8 @@ import { FIXED_AD_BACKGROUND_COLOR } from './lib/style-archetypes';
 import { InteractiveTutorial, WIGGLY_TUTORIAL_EVENT, WIGGLY_TUTORIAL_SEEN_KEY, emitTutorialEvent } from './components/InteractiveTutorial';
 import { createShareSlug, getHostedSharePageBySlug, saveHostedSharePage, type SharePageRecord } from './lib/share-pages';
 import { explainVoiceVisualizerPreset, getVoiceVisualizerPreset, VOICE_VISUALIZER_PRESET, type VoiceVisualizerPresetDecision } from './lib/visualizer-presets';
+import { pickVisibleColorOnLight } from './lib/color-contrast';
+import type { BrandBrain } from './lib/prompts/brand-brain';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -70,6 +73,39 @@ const getFreshBackgroundColor = (currentColor: string) => {
   return nextColor;
 };
 
+const isDataImage = (value: string | null | undefined) => Boolean(value?.startsWith('data:image/'));
+
+const isLikelyFaviconAsset = (value: string | null | undefined) => {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw || isDataImage(raw)) return false;
+  return /(?:^|\/)(?:favicon|apple-touch-icon|mstile|site-icon|android-chrome|icon[-_]\d|icon\.)/i.test(raw)
+    || /\.(?:ico)(?:$|[?#])/i.test(raw);
+};
+
+const pickCanvasBrandLogo = (brandBrain: BrandBrain) => {
+  const candidates = [
+    brandBrain.brandLogoUrl,
+    brandBrain.brandAssets?.images.logo,
+  ];
+  return candidates.find((candidate) => candidate && !isLikelyFaviconAsset(candidate)) || null;
+};
+
+const escapeSvgText = (value: string) => value
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;');
+
+const buildTextLogoDataUrl = (label: string) => {
+  const cleanLabel = label
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 34) || 'Brand';
+  const fontSize = cleanLabel.length > 24 ? 52 : cleanLabel.length > 16 ? 64 : 78;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="192" viewBox="0 0 480 192"><text x="240" y="102" dominant-baseline="middle" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="${fontSize}" font-weight="900" letter-spacing="1.5" fill="#020617">${escapeSvgText(cleanLabel.toUpperCase())}</text></svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+};
+
 const MOCK_CAPTIONS = [
   { text: "Are you missing calls?", start: 0, end: 2, speaker: 1 },
   { text: "Our AI receptionist can help.", start: 2.5, end: 4.5, speaker: 2 },
@@ -87,7 +123,7 @@ type ExportPhase = 'recording' | 'converting' | 'complete' | 'error';
 type IntroDuration = 0 | 1 | 2 | 3;
 type RingDuration = 0 | 1 | 2 | 3;
 type CreativeMode = 'visualizer' | 'phone-call';
-type AppRoute = 'home' | 'builder' | 'share';
+type AppRoute = 'home' | 'builder' | 'share' | 'create';
 type ReadyExport = {
   url: string;
   blob: Blob;
@@ -293,6 +329,7 @@ type AdHistoryItem = SavedTemplate & StoredAdSnapshot;
 const getAppRoute = (): { route: AppRoute; shareSlug: string | null } => {
   const match = window.location.pathname.match(/^\/s\/([^/?#]+)/);
   if (match) return { route: 'share', shareSlug: decodeURIComponent(match[1]) };
+  if (window.location.pathname === '/create') return { route: 'create', shareSlug: null };
   if (window.location.pathname === '/builder') return { route: 'builder', shareSlug: null };
   return { route: 'home', shareSlug: null };
 };
@@ -1916,6 +1953,7 @@ export default function App() {
   const useAudioItem = (item: AudioLibraryItem) => {
     setGeneratedDialogueAudioUrl(null);
     const nextUrl = item.stored ? URL.createObjectURL(item.stored.blob) : item.url;
+    useEditorStore.getState().setCaptions([]);
     setAudioUrl(nextUrl);
     setAudioFileName(item.name);
     setCurrentAudioAssetId(item.stored?.id ?? null);
@@ -1963,6 +2001,7 @@ export default function App() {
     if (file) {
       const url = URL.createObjectURL(file);
       setGeneratedDialogueAudioUrl(null);
+      useEditorStore.getState().setCaptions([]);
       setAudioUrl(url);
       setAudioFileName(file.name);
       await rememberAudioBlob(file.name, file, 'user-upload');
@@ -3707,12 +3746,143 @@ export default function App() {
     setShareSlug(null);
   };
 
+  const openCreateFlow = () => {
+    if (window.location.pathname !== '/create') {
+      window.history.pushState(null, '', '/create');
+    }
+    setAppRoute('create');
+    setShareSlug(null);
+  };
+
   const openHomepage = () => {
     if (window.location.pathname !== '/') {
       window.history.pushState(null, '', '/');
     }
     setAppRoute('home');
     setShareSlug(null);
+  };
+
+  const applyGeneratedAdVariation = (variation: GeneratedAdVariation, brandBrain: BrandBrain, navigateToBuilder = true, resetPlatform = true) => {
+    const businessName = brandBrain.businessName || 'Wiggly';
+    const realCanvasLogo = pickCanvasBrandLogo(brandBrain);
+    const appliedCanvasLogo = realCanvasLogo || buildTextLogoDataUrl(businessName);
+    const appliedProfileLogo = isDataImage(brandBrain.brandAssets?.images.logo)
+      ? brandBrain.brandAssets?.images.logo || null
+      : brandBrain.brandAssets?.images.favicon || brandBrain.brandAssets?.images.logo || null;
+    const appliedVisualizerColor = pickVisibleColorOnLight(
+      [variation.visualizerColor],
+      variation.archetype.visualizerColor,
+      { minContrast: 1.5, maxLuminance: 0.78 }
+    );
+    const appliedAccentColor = pickVisibleColorOnLight(
+      [variation.accentColor],
+      variation.archetype.speaker2CaptionColor,
+      { minContrast: 2.4, maxLuminance: 0.58 }
+    );
+    const brandContext = `[Name] ${businessName}
+[Website] ${brandBrain.websiteUrl}
+[Offer] ${brandBrain.offer}
+[Audience] ${brandBrain.audience}
+[Pain] ${brandBrain.pain}
+[Result] ${brandBrain.promisedResult}
+[Differentiator] ${brandBrain.differentiator}
+[Logo] ${realCanvasLogo || 'Generated text mark'}
+[Tone] ${brandBrain.tone}
+
+This ad headline is: ${variation.headline}`;
+
+    setActiveTab('single');
+    setCreativeMode('visualizer');
+    if (navigateToBuilder) setPlaying(false);
+    useEditorStore.getState().setCaptions([]);
+    if (resetPlatform) setPlatform('instagram-feed');
+    setPlatformTheme('dark');
+    setBrandName(businessName);
+    setBrandLogo(appliedProfileLogo);
+    setSimulatedCaption(brandBrain.offer || variation.headline);
+    setAutoCta('Learn More');
+    setCtaUrl(brandBrain.websiteUrl || '');
+    setBgColor(FIXED_AD_BACKGROUND_COLOR);
+    setBgMedia(null);
+    setBgShadow(false);
+    setIntroDuration(0);
+    setVisualizerColor(appliedVisualizerColor);
+    setAccentColor(appliedAccentColor);
+    setCreativeBrief({
+      offer: brandBrain.offer,
+      buyer: brandBrain.audience,
+      pain: brandBrain.pain,
+      failedAlternatives: brandBrain.proof?.join(', ') || 'The old way is slower and harder to show clearly.',
+      promisedResult: brandBrain.promisedResult,
+      differentiator: brandBrain.differentiator,
+      cta: '',
+      reference: brandBrain.websiteUrl,
+    });
+    setBusinessContext(brandContext);
+    const applyVariationToElement = (element: AdElement): AdElement => {
+      if (element.componentRole === 'logo') {
+        return {
+          ...element,
+          imageUrl: appliedCanvasLogo,
+          removeWhite: false,
+          styleArchetypeId: variation.archetype.id,
+        };
+      }
+      if (element.locked) return element;
+      if (element.componentRole === 'headline') {
+        const headlineWidth = Math.min(320, variation.archetype.headlineTreatment.width);
+        return {
+          ...element,
+          content: variation.headline,
+          color: variation.archetype.headlineColor,
+          fontSize: variation.archetype.headlineTreatment.fontSize,
+          fontWeight: variation.archetype.headlineTreatment.fontWeight,
+          lineHeight: Math.max(1.08, variation.archetype.headlineTreatment.lineHeight),
+          x: (360 - headlineWidth) / 2,
+          width: headlineWidth,
+          styleArchetypeId: variation.archetype.id,
+        };
+      }
+      if (element.type === 'visualizer') {
+        return {
+          ...element,
+          styleArchetypeId: variation.archetype.id,
+          visualizerType: variation.archetype.visualizerVariant.visualizerType,
+          barColor: appliedVisualizerColor,
+          barCount: variation.archetype.visualizerVariant.barCount,
+          visualizerSensitivity: variation.archetype.visualizerVariant.sensitivity,
+          visualizerHeight: variation.archetype.visualizerVariant.height,
+          ...VOICE_VISUALIZER_PRESET,
+        };
+      }
+      if (element.componentRole === 'captions') {
+        return {
+          ...element,
+          styleArchetypeId: variation.archetype.id,
+          color: appliedAccentColor,
+          captionSpeaker1Color: appliedVisualizerColor,
+          captionSpeaker2Color: appliedAccentColor,
+        };
+      }
+      return {
+        ...element,
+        styleArchetypeId: variation.archetype.id,
+      };
+    };
+    setElements((currentElements) => {
+      const sourceElements = currentElements.length ? currentElements : DEFAULT_ELEMENTS;
+      return sourceElements.map(applyVariationToElement);
+    });
+    deselectAll();
+    if (navigateToBuilder) {
+      requestAnimationFrame(() => commitHistory());
+      enterStudio();
+    }
+  };
+
+  const openSaveDesignDialog = () => {
+    setTemplateDraftName(getCurrentDesignTitle());
+    setSaveTemplateOpen(true);
   };
 
   useEffect(() => {
@@ -3858,6 +4028,214 @@ export default function App() {
     },
   ];
   const activePersonaDeck = personaDecks[activePersonaDeckIndex];
+  const saveTemplateModal = saveTemplateOpen ? (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl">
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">Save Design</h2>
+            <p className="mt-1 text-sm text-slate-500">Save this layout so you can reuse it later.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSaveTemplateOpen(false)}
+            className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <input
+          type="text"
+          value={templateDraftName}
+          onChange={(e) => setTemplateDraftName(e.target.value)}
+          placeholder={getCurrentDesignTitle()}
+          className="mb-3 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10"
+          autoFocus
+        />
+        <button
+          type="button"
+          onClick={() => saveCurrentTemplate()}
+          className="wiggly-primary-action flex w-full items-center justify-center gap-2 px-4 py-2 text-sm font-semibold"
+        >
+          <BookmarkPlus className="h-4 w-4" />
+          Save Design
+        </button>
+      </div>
+    </div>
+  ) : null;
+  const exportStatusCard = (rendering || exportDownload || exportPhase === 'error') ? (
+    <div className="wiggly-export-card fixed bottom-5 right-5 z-50 w-[300px] p-4 animate-in slide-in-from-bottom-4 fade-in duration-300">
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 rounded-full bg-indigo-50 p-2">
+          {exportDownload ? (
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+          ) : exportPhase === 'error' ? (
+            <X className="h-4 w-4 text-red-600" />
+          ) : (
+            <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-slate-900">
+              {exportDownload
+                ? 'Video ready'
+                : exportPhase === 'error'
+                  ? 'Video failed'
+                  : exportPhase === 'converting'
+                    ? 'Finishing video'
+                    : 'Making video'}
+            </p>
+            {exportDownload || exportPhase === 'error' ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (exportDownload) URL.revokeObjectURL(exportDownload.url);
+                  setExportDownload(null);
+                  setShareStatus('idle');
+                  setShareUrl('');
+                  setShareError('');
+                  setExportPhase('recording');
+                }}
+                className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Dismiss export status"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            ) : (
+              <span className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-500">{Math.round(renderProgress)}%</span>
+                <button
+                  type="button"
+                  onClick={cancelExport}
+                  className="rounded p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
+                  aria-label="Cancel export"
+                  title="Cancel export"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </span>
+            )}
+          </div>
+          {!exportDownload && exportPhase !== 'error' && (
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className={`h-full rounded-full bg-indigo-500 transition-all duration-200 ${exportPhase === 'converting' ? 'animate-pulse' : ''}`}
+                style={{ width: `${renderProgress}%` }}
+              />
+            </div>
+          )}
+          <p className="mt-2 text-xs leading-snug text-slate-500">
+            {exportDownload
+              ? `Ready to save: ${formatBytes(exportDownload.blob.size)} video.`
+              : exportPhase === 'error'
+                ? 'Try making the video again. If it repeats, restart the app.'
+                : exportPhase === 'converting'
+                  ? 'Finishing the video. Keep this tab open.'
+                  : 'Making this video. You can keep working while it finishes.'}
+          </p>
+          {exportDownload && (
+            <div className="mt-3 space-y-2">
+              <button
+                type="button"
+                onClick={downloadReadyExport}
+                className="wiggly-primary-action flex w-full items-center justify-center gap-2 px-3 py-2 text-sm font-semibold"
+              >
+                <Download className="h-4 w-4" />
+                Download Video
+              </button>
+              <button
+                type="button"
+                onClick={createShareLink}
+                disabled={shareStatus === 'saving'}
+                className="flex w-full items-center justify-center gap-2 rounded-md border border-indigo-100 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-700 transition hover:border-indigo-200 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {shareStatus === 'saving' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+                {shareStatus === 'saving' ? 'Creating link' : 'Create share link'}
+              </button>
+              {shareUrl && (
+                <div className="rounded-xl border border-indigo-100 bg-white p-2">
+                  <p className="mb-2 truncate text-xs font-semibold text-slate-500">{shareUrl}</p>
+                  <p className="mb-2 rounded-lg bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-500">
+                    {shareIsLocalPreview ? 'Local preview only. Add the server Supabase key to share with friends.' : 'Share link copied. Open it once before sending.'}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => navigator.clipboard?.writeText(shareUrl)}
+                      className="flex items-center justify-center gap-1 rounded-lg border border-slate-200 px-2 py-1.5 text-xs font-black text-slate-600 transition hover:bg-slate-50"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      Copy
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => window.open(shareUrl, '_blank', 'noopener,noreferrer')}
+                      className="flex items-center justify-center gap-1 rounded-lg bg-slate-950 px-2 py-1.5 text-xs font-black text-white transition hover:bg-slate-800"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      Open
+                    </button>
+                  </div>
+                </div>
+              )}
+              {shareStatus === 'error' && (
+                <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600">{shareError || 'Could not create share link.'}</p>
+              )}
+              <button
+                type="button"
+                onClick={openReadyExport}
+                className="wiggly-secondary-action flex w-full items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700"
+              >
+                Preview Video
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  ) : null;
+
+  if (appRoute === 'create') {
+    return (
+      <>
+        <CreateFlow
+          audioFileName={audioFileName}
+          hasUserAudio={Boolean(currentAudioAssetId) || Boolean(generatedDialogueAudioUrl)}
+          onAudioUpload={(event) => {
+            void handleAudioUpload(event);
+            if (event.target) event.target.value = '';
+          }}
+          audioUrl={audioUrl}
+          audioAnalysis={previewAudioAnalysis}
+          platform={platform}
+          backgroundColor={bgColor}
+          bgMedia={bgMedia}
+          bgShadow={bgShadow}
+          bgShadowOpacity={bgShadowOpacity}
+          introImage={introImage}
+          introDuration={introDuration}
+          introFeedCropY={introFeedCropY}
+          introImageAspect={introImageAspect}
+          previewDurationCap={renderDurationCap === 'full' ? null : renderDurationCap}
+          playing={playing}
+          onTogglePlayback={togglePlayback}
+          onPlaybackComplete={() => setPlaying(false)}
+          onDownloadVideo={() => void downloadSimulatedVideo()}
+          onSaveDesign={openSaveDesignDialog}
+          onPlatformChange={setPlatform}
+          onRefreshBackgroundColor={refreshBackgroundColor}
+          onApplyStyleArchetype={applyStyleArchetype}
+          onPreviewVariation={(variation, nextBrandBrain) => applyGeneratedAdVariation(variation, nextBrandBrain, false, false)}
+          onOpenBuilder={(variation, nextBrandBrain) => applyGeneratedAdVariation(variation, nextBrandBrain, true, false)}
+          onOpenStudio={enterStudio}
+          rendering={rendering}
+        />
+        {exportStatusCard}
+        {saveTemplateModal}
+      </>
+    );
+  }
 
   if (appRoute === 'share') {
     return (
@@ -3909,7 +4287,7 @@ export default function App() {
               <div className="relative mt-8 flex flex-wrap gap-3">
                 <button
                   type="button"
-                  onClick={enterStudio}
+                  onClick={openCreateFlow}
                   className="inline-flex items-center gap-3 rounded-2xl bg-slate-950 px-8 py-4 text-base font-black text-white shadow-xl shadow-slate-900/15 transition hover:-translate-y-0.5 hover:bg-slate-800"
                 >
                   Make an ad
@@ -4067,7 +4445,7 @@ export default function App() {
                 </div>
                 <button
                   type="button"
-                  onClick={enterStudio}
+                  onClick={openCreateFlow}
                   className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-slate-800"
                 >
                   Start with this audience
@@ -4123,7 +4501,7 @@ export default function App() {
                 </p>
                 <button
                   type="button"
-                  onClick={enterStudio}
+                  onClick={openCreateFlow}
                   className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5 hover:bg-slate-100"
                 >
                   Open Wiggly
@@ -4989,10 +5367,7 @@ export default function App() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setTemplateDraftName(getCurrentDesignTitle());
-                    setSaveTemplateOpen(true);
-                  }}
+                  onClick={openSaveDesignDialog}
                   className="wiggly-secondary-action flex items-center gap-2 self-start px-4 py-2 text-sm font-semibold"
                 >
                   <BookmarkPlus className="h-4 w-4 text-indigo-500" />
@@ -5132,136 +5507,7 @@ export default function App() {
           )}
         </main>
 
-        {(rendering || exportDownload || exportPhase === 'error') && (
-          <div className="wiggly-export-card fixed bottom-5 right-5 z-50 w-[300px] p-4 animate-in slide-in-from-bottom-4 fade-in duration-300">
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 rounded-full bg-indigo-50 p-2">
-                {exportDownload ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                ) : exportPhase === 'error' ? (
-                  <X className="h-4 w-4 text-red-600" />
-                ) : (
-                  <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-slate-900">
-                    {exportDownload
-                      ? 'Video ready'
-                      : exportPhase === 'error'
-                        ? 'Video failed'
-                        : exportPhase === 'converting'
-                          ? 'Finishing video'
-                          : 'Making video'}
-                  </p>
-                  {exportDownload || exportPhase === 'error' ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (exportDownload) URL.revokeObjectURL(exportDownload.url);
-                        setExportDownload(null);
-                        setShareStatus('idle');
-                        setShareUrl('');
-                        setShareError('');
-                        setExportPhase('recording');
-                      }}
-                      className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                      aria-label="Dismiss export status"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-slate-500">{Math.round(renderProgress)}%</span>
-                      <button
-                        type="button"
-                        onClick={cancelExport}
-                        className="rounded p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
-                        aria-label="Cancel export"
-                        title="Cancel export"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </span>
-                  )}
-                </div>
-                {!exportDownload && exportPhase !== 'error' && <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className={`h-full rounded-full bg-indigo-500 transition-all duration-200 ${exportPhase === 'converting' ? 'animate-pulse' : ''}`}
-                    style={{ width: `${renderProgress}%` }}
-                  />
-                </div>}
-                <p className="mt-2 text-xs leading-snug text-slate-500">
-                  {exportDownload
-                    ? `Ready to save: ${formatBytes(exportDownload.blob.size)} video.`
-                    : exportPhase === 'error'
-                      ? 'Try making the video again. If it repeats, restart the app.'
-                      : exportPhase === 'converting'
-                    ? 'Finishing the video. Keep this tab open.'
-                    : 'Making this video. You can start a different ad while it finishes.'}
-                </p>
-                {exportDownload && (
-                  <div className="mt-3 space-y-2">
-                    <button
-                      type="button"
-                      onClick={downloadReadyExport}
-                      className="wiggly-primary-action flex w-full items-center justify-center gap-2 px-3 py-2 text-sm font-semibold"
-                    >
-                      <Download className="h-4 w-4" />
-                      Download Video
-                    </button>
-                    <button
-                      type="button"
-                      onClick={createShareLink}
-                      disabled={shareStatus === 'saving'}
-                      className="flex w-full items-center justify-center gap-2 rounded-md border border-indigo-100 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-700 transition hover:border-indigo-200 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {shareStatus === 'saving' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
-                      {shareStatus === 'saving' ? 'Creating link' : 'Create share link'}
-                    </button>
-                    {shareUrl && (
-                      <div className="rounded-xl border border-indigo-100 bg-white p-2">
-                        <p className="mb-2 truncate text-xs font-semibold text-slate-500">{shareUrl}</p>
-                        <p className="mb-2 rounded-lg bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-500">
-                          {shareIsLocalPreview ? 'Local preview only. Add the server Supabase key to share with friends.' : 'Share link copied. Open it once before sending.'}
-                        </p>
-                        <div className="grid grid-cols-2 gap-2">
-                          <button
-                            type="button"
-                            onClick={() => navigator.clipboard?.writeText(shareUrl)}
-                            className="flex items-center justify-center gap-1 rounded-lg border border-slate-200 px-2 py-1.5 text-xs font-black text-slate-600 transition hover:bg-slate-50"
-                          >
-                            <Copy className="h-3.5 w-3.5" />
-                            Copy
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => window.open(shareUrl, '_blank', 'noopener,noreferrer')}
-                            className="flex items-center justify-center gap-1 rounded-lg bg-slate-950 px-2 py-1.5 text-xs font-black text-white transition hover:bg-slate-800"
-                          >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                            Open
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    {shareStatus === 'error' && (
-                      <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600">{shareError || 'Could not create share link.'}</p>
-                    )}
-                    <button
-                      type="button"
-                      onClick={openReadyExport}
-                      className="wiggly-secondary-action flex w-full items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700"
-                    >
-                      Preview Video
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        {exportStatusCard}
 
         {postizOpen && (
           <div className="fixed inset-0 z-[74] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
@@ -5824,41 +6070,7 @@ export default function App() {
           </div>
         )}
 
-        {saveTemplateOpen && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl">
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">Save Design</h2>
-                  <p className="mt-1 text-sm text-slate-500">Save this layout so you can reuse it later.</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSaveTemplateOpen(false)}
-                  className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-              <input
-                type="text"
-                value={templateDraftName}
-                onChange={(e) => setTemplateDraftName(e.target.value)}
-                placeholder={getCurrentDesignTitle()}
-                className="mb-3 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10"
-                autoFocus
-              />
-              <button
-                type="button"
-                onClick={() => saveCurrentTemplate()}
-                className="wiggly-primary-action flex w-full items-center justify-center gap-2 px-4 py-2 text-sm font-semibold"
-              >
-                <BookmarkPlus className="h-4 w-4" />
-                Save Design
-              </button>
-            </div>
-          </div>
-        )}
+        {saveTemplateModal}
 
         {creativeBriefOpen && (
           <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">

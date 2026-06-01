@@ -110,8 +110,8 @@ export function PlatformFrame({
               {/* Header */}
               <div className={cn("px-4 py-3 flex items-center justify-between border-b", isDark ? "bg-black border-slate-900" : "bg-white border-slate-100")}>
                  <div className="flex items-center gap-2 relative z-20">
-                    <div className={cn("w-9 h-9 rounded-full flex items-center justify-center overflow-hidden shrink-0 border", isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-slate-100")}>
-                      {brandLogo ? <img src={brandLogo} alt={brandName} className="w-full h-full object-cover" /> : <User className={cn("w-4 h-4", isDark ? "text-slate-400" : "text-slate-500")} />}
+                    <div className={cn("w-9 h-9 rounded-full flex items-center justify-center overflow-hidden shrink-0 border", brandLogo ? "bg-white border-slate-200" : isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-slate-100")}>
+                      {brandLogo ? <img src={brandLogo} alt={brandName} className="h-full w-full object-contain p-1" /> : <User className={cn("w-4 h-4", isDark ? "text-slate-400" : "text-slate-500")} />}
                     </div>
                     <div>
                        <div className="flex items-center gap-1">
@@ -171,8 +171,8 @@ export function PlatformFrame({
               <div className={cn("px-3 py-2.5 flex items-center justify-between border-b", isDark ? "bg-black border-slate-900" : "bg-white border-slate-100")}>
                  <div className="flex items-center gap-2 relative z-20 min-w-0">
                     <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px] shrink-0">
-                      <div className={cn("h-full w-full rounded-full overflow-hidden border-2 flex items-center justify-center", isDark ? "bg-black border-black" : "bg-white border-white")}>
-                        {brandLogo ? <img src={brandLogo} alt={brandName} className="w-full h-full object-cover" /> : <User className={cn("w-4 h-4", isDark ? "text-slate-300" : "text-slate-700")} />}
+                      <div className={cn("h-full w-full rounded-full overflow-hidden border-2 flex items-center justify-center", brandLogo ? "bg-white border-white" : isDark ? "bg-black border-black" : "bg-white border-white")}>
+                        {brandLogo ? <img src={brandLogo} alt={brandName} className="h-full w-full object-contain p-1" /> : <User className={cn("w-4 h-4", isDark ? "text-slate-300" : "text-slate-700")} />}
                       </div>
                     </div>
                     <div className="min-w-0">
@@ -220,8 +220,8 @@ export function PlatformFrame({
               <div className={cn("flex items-center justify-between drop-shadow-md", isDark ? "text-white" : "text-black drop-shadow-none")}>
                 <div className="flex min-w-0 items-center gap-2">
                   <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px]">
-                    <div className={cn("h-full w-full rounded-full overflow-hidden border-2 flex items-center justify-center", isDark ? "bg-black border-black" : "bg-white border-white")}>
-                      {brandLogo ? <img src={brandLogo} alt={brandName} className="h-full w-full object-cover" /> : <User className="h-4 w-4" />}
+                    <div className={cn("h-full w-full rounded-full overflow-hidden border-2 flex items-center justify-center", brandLogo ? "bg-white border-white" : isDark ? "bg-black border-black" : "bg-white border-white")}>
+                      {brandLogo ? <img src={brandLogo} alt={brandName} className="h-full w-full object-contain p-1" /> : <User className="h-4 w-4" />}
                     </div>
                   </div>
                   <div className="min-w-0">
@@ -276,8 +276,8 @@ export function PlatformFrame({
 
                   <div className="flex-1 max-w-[240px] mb-2 pointer-events-auto">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className={cn("w-8 h-8 rounded-full border overflow-hidden flex items-center justify-center shrink-0", isDark ? "border-white/20 bg-slate-900" : "border-slate-800/10 bg-white shadow-sm")}>
-                         {brandLogo ? <img src={brandLogo} alt={brandName} className="w-full h-full object-cover" /> : <User className={cn("w-4 h-4", isDark ? "text-white" : "text-slate-800")} />}
+                      <div className={cn("w-8 h-8 rounded-full border overflow-hidden flex items-center justify-center shrink-0", brandLogo ? "border-slate-200 bg-white shadow-sm" : isDark ? "border-white/20 bg-slate-900" : "border-slate-800/10 bg-white shadow-sm")}>
+                         {brandLogo ? <img src={brandLogo} alt={brandName} className="h-full w-full object-contain p-1" /> : <User className={cn("w-4 h-4", isDark ? "text-white" : "text-slate-800")} />}
                       </div>
                       <div className="flex flex-col">
                         <span className={cn("font-bold text-[14px] drop-shadow-md cursor-pointer hover:opacity-80", isDark ? "text-white" : "text-black drop-shadow-none")}>{brandName}</span>

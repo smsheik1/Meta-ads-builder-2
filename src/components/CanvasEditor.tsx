@@ -25,13 +25,17 @@ const TransparentImage = ({ src, className, removeWhite }: { src: string, classN
   const [dataUrl, setDataUrl] = useState(src);
 
   useEffect(() => {
+    let cancelled = false;
     if (!removeWhite) {
       setDataUrl(src);
-      return;
+      return () => {
+        cancelled = true;
+      };
     }
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
+      if (cancelled) return;
       const c = document.createElement('canvas');
       c.width = img.width;
       c.height = img.height;
@@ -49,13 +53,21 @@ const TransparentImage = ({ src, className, removeWhite }: { src: string, classN
           }
         }
         ctx.putImageData(imgData, 0, 0);
-        setDataUrl(c.toDataURL('image/png'));
+        if (!cancelled) setDataUrl(c.toDataURL('image/png'));
       } catch (e) {
         console.error('Failed to remove white background (CORS issue?)', e);
-        setDataUrl(src);
+        if (!cancelled) setDataUrl(src);
       }
     };
+    img.onerror = () => {
+      if (!cancelled) setDataUrl(src);
+    };
     img.src = src;
+    return () => {
+      cancelled = true;
+      img.onload = null;
+      img.onerror = null;
+    };
   }, [src, removeWhite]);
 
   return <img src={dataUrl} className={className} draggable={false} alt="image layer" />;
@@ -79,6 +91,8 @@ interface CanvasEditorProps {
   previewDurationCap: number | null;
   onRefreshBackgroundColor?: () => void;
   onApplyStyleArchetype?: (archetype: AdStyleArchetype) => void;
+  readOnly?: boolean;
+  disableSpaceReroll?: boolean;
 }
 
 const MOCK_CAPTIONS = [
@@ -91,6 +105,20 @@ const MOCK_CAPTIONS = [
 const CAPTION_SPEAKER_COLORS: Record<number, string> = {
   1: '#00D6B8',
   2: '#6554FF',
+};
+
+const getIdleVisualizerHeight = (type: NonNullable<AdElement['visualizerType']>, index: number, total: number) => {
+  if (type === 'bars-bottom') {
+    return 26 + ((index * 17) % 46) + ((index % 3) * 4);
+  }
+
+  const center = (total - 1) / 2;
+  const distance = Math.abs(index - center) / Math.max(center, 1);
+  const centerWeightedHeight = type === 'waveform-strip'
+    ? 24 + (1 - distance) * 58 + ((index % 3) * 7)
+    : 22 + (1 - distance) * 58 + ((index % 5) * 3);
+
+  return Math.min(92, centerWeightedHeight);
 };
 
 const SUBHEADS = [
@@ -152,7 +180,7 @@ const applyArchetypeToElement = (element: AdElement, archetype: AdStyleArchetype
   return element;
 };
 
-export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, audioAnalysis, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype }) => {
+export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, audioAnalysis, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype, readOnly = false, disableSpaceReroll = false }) => {
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
@@ -199,6 +227,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
 
   // Keyboard shortcuts for z-index, undo/redo, nudging
   useEffect(() => {
+    if (readOnly) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       const usesShortcutModifier = e.metaKey || e.ctrlKey;
@@ -225,7 +254,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         return;
       }
 
-      if (e.code === 'Space' && !usesShortcutModifier) {
+      if (e.code === 'Space' && !usesShortcutModifier && !disableSpaceReroll) {
         e.preventDefault();
         const state = useEditorStore.getState();
         const liveSelectedIds = state.selectedIds.filter(id => state.elements.some(element => element.id === id));
@@ -295,7 +324,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIds, onApplyStyleArchetype]);
+  }, [selectedIds, onApplyStyleArchetype, readOnly, disableSpaceReroll]);
 
   // Audio / Visualizer logic
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -407,10 +436,15 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
     } else {
       audioRef.current.pause();
       setPlaybackTime(0);
+      setCurrentCaption(null);
+      setCurrentSpeaker(1);
       if (reqAnimRef.current) {
         cancelAnimationFrame(reqAnimRef.current);
       }
       Object.keys(barsRef.current).forEach((vId) => {
+        const element = useEditorStore.getState().elements.find((item) => item.id === vId);
+        const type = normalizeVisualizerType(element?.visualizerType);
+        const total = getVisualizerBarCount(type, element?.barCount);
         barsRef.current[vId].forEach(bar => {
           if (!bar) return;
           if (bar instanceof HTMLCanvasElement) {
@@ -422,7 +456,10 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             }
             return;
           }
-          gsap.to(bar, { height: 4, duration: 0.2 });
+          const index = Number(bar.dataset.barIndex || 0);
+          gsap.killTweensOf(bar);
+          bar.style.opacity = '';
+          bar.style.height = `${getIdleVisualizerHeight(type, index, total)}%`;
         });
       });
     }
@@ -589,6 +626,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   const introIsSquareish = introImageAspect !== null && introImageAspect >= 0.9 && introImageAspect <= 1.1;
 
   useEffect(() => {
+    if (readOnly) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't delete selected components while the user is editing text or a form field.
       if (isEditableEventTarget(e.target) || isEditableEventTarget(document.activeElement)) {
@@ -602,7 +640,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIds]);
+  }, [selectedIds, readOnly]);
 
   return (
     <div 
@@ -706,7 +744,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         </div>
       )}
 
-      <Selecto
+      {!readOnly && <Selecto
         dragContainer={canvasRef.current as any}
         selectableTargets={editingId ? [] : ['.element-node']}
         hitRate={0}
@@ -722,9 +760,9 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
           const ids = e.selected.map(el => el.id.replace('el-', ''));
           useEditorStore.setState({ selectedIds: ids });
         }}
-      />
+      />}
 
-      <Moveable
+      {!readOnly && <Moveable
         ref={moveableRef}
         target={editingId ? [] : targets}
         draggable={true}
@@ -888,7 +926,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                 commitHistory();
             }
         }}
-      />
+      />}
 
       {elements.map((el) => {
         const frame = getPlatformElementFrame(el, platform);
@@ -910,6 +948,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             id={`el-${el.id}`}
             className={`absolute element-node group`}
             onMouseDown={(e: React.MouseEvent) => {
+              if (readOnly) return;
               if (editingId) return;
               if ((e.target as HTMLElement).closest('.moveable-control-box')) return;
               if (e.shiftKey) {
@@ -921,6 +960,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             }}
             onDoubleClick={(e) => {
                e.stopPropagation();
+               if (readOnly) return;
                if (el.type === 'text' || el.type === 'button') {
                   selectElement(el.id, false);
                   setEditingId(el.id);
@@ -936,7 +976,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             }}
             data-tour={el.componentRole}
           >
-            <button
+            {!readOnly && <button
               type="button"
               className={`wiggly-element-lock absolute right-1 top-1 z-50 flex h-12 w-12 items-center justify-center rounded-full border-2 shadow-xl transition duration-150 hover:scale-110 focus-visible:scale-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-400/25 ${
                 el.locked
@@ -958,8 +998,8 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
               onClick={(event) => event.stopPropagation()}
             >
               {el.locked ? <Lock className="h-6 w-6" strokeWidth={3} /> : <Unlock className="h-6 w-6" strokeWidth={2.5} />}
-            </button>
-            {(showTextColorPicker || showCaptionColorPicker) && (
+            </button>}
+            {!readOnly && (showTextColorPicker || showCaptionColorPicker) && (
               <label
                 className="pointer-events-auto absolute left-2 top-1/2 z-50 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover:opacity-100 focus-within:opacity-100"
                 title={hoverColorLabel}
@@ -1044,7 +1084,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                        }
                     }}
                   />
-                ) : el.componentRole === 'headline' ? (
+                ) : el.componentRole === 'headline' && !readOnly ? (
                   <HeadlineSlot niche="dental" elementId={el.id} />
                 ) : (
                   <AutoFitText
@@ -1110,18 +1150,16 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                  {normalizedVisualizerType === 'bars-bottom' && (
                     <div className="w-full h-full flex items-end justify-between gap-1">
                       {Array.from({ length: el.barCount || 16 }).map((_, i, bars) => {
-                        const idleHeight = playing
-                          ? (el.visualizerBaseline ?? 4)
-                          : 26 + ((i * 17) % 46) + ((i % 3) * 4);
                         return (
                           <div
                             key={i}
                             ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 16)}
+                            data-bar-index={i}
                             className={`flex-1 rounded-full ${playing ? '' : 'wiggly-idle-bar'}`}
                             style={{
                               animationDelay: playing ? undefined : `${i * 45}ms`,
                               backgroundColor: el.barColor || '#00ffcc',
-                              height: `${idleHeight}${playing ? 'px' : '%'}`,
+                              height: `${playing ? (el.visualizerBaseline ?? 4) : getIdleVisualizerHeight(normalizedVisualizerType, i, bars.length)}${playing ? 'px' : '%'}`,
                               minWidth: '4px'
                             }}
                           />
@@ -1132,20 +1170,16 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                  {normalizedVisualizerType === 'bars-center' && (
                     <div className="w-full h-full flex items-center justify-between gap-1">
                       {Array.from({ length: el.barCount || 16 }).map((_, i, bars) => {
-                        const center = (bars.length - 1) / 2;
-                        const distance = Math.abs(i - center) / Math.max(center, 1);
-                        const idleHeight = playing
-                          ? (el.visualizerBaseline ?? 4)
-                          : Math.min(88, 22 + (1 - distance) * 58 + ((i % 5) * 3));
                         return (
                           <div
                             key={i}
                             ref={barEl => setBarRef(el.id, barEl, i, el.barCount || 16)}
+                            data-bar-index={i}
                             className={`flex-1 rounded-full ${playing ? '' : 'wiggly-idle-bar'}`}
                             style={{
                               animationDelay: playing ? undefined : `${i * 45}ms`,
                               backgroundColor: el.visualizerSplitSpeakers && i >= Math.floor((el.barCount || 16) / 2) ? '#8b5cf6' : (el.barColor || '#00ffcc'),
-                              height: `${idleHeight}${playing ? 'px' : '%'}`,
+                              height: `${playing ? (el.visualizerBaseline ?? 4) : getIdleVisualizerHeight(normalizedVisualizerType, i, bars.length)}${playing ? 'px' : '%'}`,
                               minWidth: '4px'
                             }}
                           />
@@ -1156,20 +1190,16 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                 {normalizedVisualizerType === 'waveform-strip' && (
                   <div className="absolute inset-0 flex items-center justify-between gap-[2px]">
                     {Array.from({ length: getVisualizerBarCount(normalizedVisualizerType, el.barCount) }).map((_, i, bars) => {
-                      const center = (bars.length - 1) / 2;
-                      const distance = Math.abs(i - center) / Math.max(center, 1);
-                      const height = playing
-                        ? (el.visualizerBaseline ?? 4)
-                        : 24 + (1 - distance) * 58 + ((i % 3) * 7);
                       return (
                         <div
                           key={i}
                           ref={barEl => setBarRef(el.id, barEl, i, getVisualizerBarCount(normalizedVisualizerType, el.barCount))}
+                          data-bar-index={i}
                           className={`flex-1 rounded-full opacity-80 ${playing ? '' : 'wiggly-idle-bar wiggly-idle-bar-strong'}`}
                           style={{
                             animationDelay: playing ? undefined : `${i * 28}ms`,
                             backgroundColor: el.barColor || '#00ffcc',
-                            height: `${Math.min(height, 92)}${playing ? 'px' : '%'}`,
+                            height: `${playing ? (el.visualizerBaseline ?? 4) : getIdleVisualizerHeight(normalizedVisualizerType, i, bars.length)}${playing ? 'px' : '%'}`,
                             minWidth: '3px',
                           }}
                         />
@@ -1177,7 +1207,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                     })}
                   </div>
                 )}
-                 <label
+                 {!readOnly && <label
                    className="pointer-events-auto absolute left-2 top-1/2 z-50 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover:opacity-100 focus-within:opacity-100"
                    title="Change visualizer color"
                    onMouseDown={(event) => event.stopPropagation()}
@@ -1194,7 +1224,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                      aria-label="Visualizer color"
                    />
-                 </label>
+                 </label>}
                </div>
             )}
 
@@ -1216,7 +1246,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                       fontWeight: el.fontWeight || 700,
                     }}
                   >
-                    {currentCaption || (playing ? '' : audioUrl ? 'Captions will appear during playback' : 'Upload audio for captions')}
+                    {currentCaption || (audioUrl ? (playing ? 'Captions are loading' : 'Captions will appear during playback') : 'Upload audio for captions')}
                   </AutoFitText>
                </div>
             )}

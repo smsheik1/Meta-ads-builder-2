@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import net from 'net';
 import { spawn } from 'child_process';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
@@ -38,10 +39,26 @@ const apiLimiter = rateLimit({
 
 const aiGenerationLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  limit: 10,
+  limit: isProd ? 10 : 200,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many AI requests. Please wait and try again later.' },
+});
+
+const brandResearchLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: isProd ? 20 : 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many brand research attempts. Please wait and try again later.' },
+});
+
+const adStreamLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: isProd ? 15 : 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many ad streams made. Please wait and try again later.' },
 });
 
 const videoExportLimiter = rateLimit({
@@ -60,7 +77,7 @@ const publishingLimiter = rateLimit({
   message: { error: 'Too many publishing requests. Please wait and try again later.' },
 });
 
-const criticalApiPaths = new Set(['/api/render-remotion', '/api/share-pages', '/api/transcribe']);
+const criticalApiPaths = new Set(['/api/render-remotion', '/api/share-pages', '/api/transcribe', '/api/research-brand', '/api/generate-ad-stream']);
 app.use((req, res, next) => {
   if (!criticalApiPaths.has(req.path)) {
     next();
@@ -83,6 +100,7 @@ app.get('/api/health', (_req, res) => {
     ok: true,
     deepgramConfigured: Boolean(process.env.DEEPGRAM_API_KEY),
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+    firecrawlConfigured: Boolean(process.env.FIRECRAWL_API_KEY),
     postizConfigured: Boolean(process.env.POSTIZ_API_KEY),
   });
 });
@@ -867,12 +885,1093 @@ app.post('/api/transcribe', aiGenerationLimiter, uploadMem.single('audio'), asyn
 
 import { GoogleGenAI } from '@google/genai';
 import { getMasterPrompt } from './src/lib/prompts/headline-master';
+import { buildBrandBrainPrompt, buildFallbackBrandBrain, BRAND_FALLBACK_QUESTIONS, type BrandAssets, type BrandBrain, type BrandFontSignal } from './src/lib/prompts/brand-brain';
+import { buildHeadlineVariationsPrompt, type HeadlineVariation } from './src/lib/prompts/headline-variations';
+import { normalizeAdAngles } from './src/lib/prompts/ad-angles';
 
 const parseJsonResponse = (text: string) => {
   const trimmed = text.trim();
   const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  return JSON.parse(fenced ? fenced[1] : trimmed);
+  const jsonText = (fenced ? fenced[1] : trimmed)
+    .replace(/,\s*([}\]])/g, '$1')
+    .trim();
+  return JSON.parse(jsonText);
 };
+
+const FIRECRAWL_SCRAPE_URL = 'https://api.firecrawl.dev/v2/scrape';
+const TAVILY_SEARCH_URL = 'https://api.tavily.com/search';
+const BRAND_RESEARCH_MODEL = 'gemini-3-flash-preview';
+const HEADLINE_VARIATION_MODEL = 'gemini-3.1-flash-lite';
+const BRAND_RESEARCH_CACHE_TTL_MS = 15 * 60 * 1000;
+const BRAND_RESEARCH_CACHE_LIMIT = 100;
+const MAX_RESEARCH_PAGES = 1;
+const MAX_RESEARCH_CHARS = 56000;
+const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/;
+const FIRECRAWL_TIMEOUT_MS = 12000;
+const TAVILY_TIMEOUT_MS = 9000;
+const BRAND_BRAIN_TIMEOUT_MS = 18000;
+const HEADLINE_VARIATION_TIMEOUT_MS = 20000;
+const BRAND_BRAIN_CACHE_VERSION = 'brand-assets-v2';
+
+type ScrapedPage = {
+  url: string;
+  title: string;
+  description: string;
+  markdown: string;
+  links: string[];
+  colors: string[];
+  logoUrl?: string;
+  brandAssets: BrandAssets;
+};
+
+type BrandResearchCacheEntry = {
+  expiresAt: number;
+  pages: ScrapedPage[];
+  researchText: string;
+  logoUrl?: string;
+  brandAssets: BrandAssets;
+};
+
+type BrandBrainCacheEntry = {
+  expiresAt: number;
+  brandBrain: BrandBrain;
+};
+
+const brandResearchCache = new Map<string, BrandResearchCacheEntry>();
+const brandBrainCache = new Map<string, BrandBrainCacheEntry>();
+
+const blockedHostnames = new Set(['localhost', '127.0.0.1', '0.0.0.0', '::1']);
+
+const isPrivateIpv4 = (hostname: string) => {
+  const parts = hostname.split('.').map((part) => Number(part));
+  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return false;
+  const [a, b] = parts;
+  return (
+    a === 10 ||
+    a === 127 ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    a === 0
+  );
+};
+
+const isPrivateIpv6 = (hostname: string) => {
+  const normalized = hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  return normalized === '::1' || normalized.startsWith('fc') || normalized.startsWith('fd') || normalized.startsWith('fe80');
+};
+
+const normalizeResearchUrl = (value: unknown) => {
+  const raw = String(value || '').trim();
+  if (!raw) throw new Error('Website URL is required.');
+  const withProtocol = raw.includes('://') ? raw : `https://${raw}`;
+  const url = new URL(withProtocol);
+  if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Website must start with http or https.');
+  url.hash = '';
+  url.username = '';
+  url.password = '';
+  const hostname = url.hostname.toLowerCase();
+  const ipVersion = net.isIP(hostname);
+  if (
+    blockedHostnames.has(hostname) ||
+    hostname.endsWith('.local') ||
+    (ipVersion === 4 && isPrivateIpv4(hostname)) ||
+    (ipVersion === 6 && isPrivateIpv6(hostname))
+  ) {
+    throw new Error('That website URL cannot be researched.');
+  }
+  return url;
+};
+
+const sameOriginUrl = (value: string, baseUrl: URL) => {
+  try {
+    const nextUrl = new URL(value, baseUrl.href);
+    nextUrl.hash = '';
+    nextUrl.username = '';
+    nextUrl.password = '';
+    if (!['http:', 'https:'].includes(nextUrl.protocol)) return null;
+    if (nextUrl.hostname.replace(/^www\./, '') !== baseUrl.hostname.replace(/^www\./, '')) return null;
+    if (/\.(pdf|zip|png|jpe?g|gif|webp|svg|mp4|mp3|wav|m4a|mov)$/i.test(nextUrl.pathname)) return null;
+    return nextUrl.href;
+  } catch {
+    return null;
+  }
+};
+
+const addBrandResearchCache = (key: string, entry: BrandResearchCacheEntry) => {
+  brandResearchCache.set(key, entry);
+  while (brandResearchCache.size > BRAND_RESEARCH_CACHE_LIMIT) {
+    const firstKey = brandResearchCache.keys().next().value;
+    if (!firstKey) break;
+    brandResearchCache.delete(firstKey);
+  }
+};
+
+const getBrandResearchCache = (key: string) => {
+  const cached = brandResearchCache.get(key);
+  if (!cached) return null;
+  if (cached.expiresAt < Date.now() || !cached.brandAssets) {
+    brandResearchCache.delete(key);
+    return null;
+  }
+  return cached;
+};
+
+const addBrandBrainCache = (key: string, entry: BrandBrainCacheEntry) => {
+  brandBrainCache.set(key, entry);
+  while (brandBrainCache.size > BRAND_RESEARCH_CACHE_LIMIT) {
+    const firstKey = brandBrainCache.keys().next().value;
+    if (!firstKey) break;
+    brandBrainCache.delete(firstKey);
+  }
+};
+
+const getBrandBrainCache = (key: string) => {
+  const cached = brandBrainCache.get(key);
+  if (!cached) return null;
+  if (cached.expiresAt < Date.now()) {
+    brandBrainCache.delete(key);
+    return null;
+  }
+  return cached;
+};
+
+const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> => {
+  let timeoutId: NodeJS.Timeout | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(`${label} timed out.`)), timeoutMs);
+  });
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+};
+
+const fetchWithTimeout = async (url: string, init: RequestInit, timeoutMs: number) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const normalizePublicAssetUrl = (value: unknown, baseUrl: string) => {
+  const raw = String(value || '').trim();
+  if (!raw || raw.startsWith('data:')) return '';
+  try {
+    const url = new URL(raw, baseUrl);
+    if (!['http:', 'https:'].includes(url.protocol)) return '';
+    return url.href;
+  } catch {
+    return '';
+  }
+};
+
+const normalizeImageAssetUrl = (value: unknown, baseUrl: string) => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^data:image\/(?:png|jpe?g|webp|gif|svg\+xml);/i.test(raw)) {
+    return raw.length <= 20000 ? raw : '';
+  }
+  return normalizePublicAssetUrl(raw, baseUrl);
+};
+
+const isLikelyFaviconAsset = (value: unknown) => {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw || raw.startsWith('data:')) return false;
+  return /(?:^|\/)(?:favicon|apple-touch-icon|mstile|site-icon|android-chrome|icon[-_]\d|icon\.)/i.test(raw)
+    || /\.(?:ico)(?:$|[?#])/i.test(raw);
+};
+
+const firstPublicAssetUrl = (values: unknown[], baseUrl: string) => {
+  for (const value of values) {
+    const normalized = normalizeImageAssetUrl(value, baseUrl);
+    if (normalized) return normalized;
+  }
+  return '';
+};
+
+const cleanTextField = (value: unknown, maxLength: number) => String(value || '')
+  .replace(/\s+/g, ' ')
+  .trim()
+  .slice(0, maxLength);
+
+const clipJsonValue = (value: unknown, depth = 0): unknown => {
+  if (value == null) return value;
+  if (typeof value === 'string') return value.slice(0, 800);
+  if (typeof value === 'number' || typeof value === 'boolean') return value;
+  if (depth >= 4) return Array.isArray(value) ? '[array]' : '[object]';
+  if (Array.isArray(value)) return value.slice(0, 20).map((item) => clipJsonValue(item, depth + 1));
+  if (typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .slice(0, 40)
+        .map(([key, item]) => [key.slice(0, 80), clipJsonValue(item, depth + 1)])
+    );
+  }
+  return String(value).slice(0, 800);
+};
+
+const collectPublicAssetUrls = (value: unknown, baseUrl: string, urls = new Set<string>()) => {
+  if (!value) return urls;
+  if (typeof value === 'string') {
+    const normalized = normalizeImageAssetUrl(value, baseUrl);
+    if (normalized) urls.add(normalized);
+    return urls;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectPublicAssetUrls(item, baseUrl, urls));
+    return urls;
+  }
+  if (typeof value === 'object') {
+    Object.values(value as Record<string, unknown>).forEach((item) => collectPublicAssetUrls(item, baseUrl, urls));
+  }
+  return urls;
+};
+
+const normalizeStringRecord = (value: unknown, maxEntries = 40, maxValueLength = 300) => {
+  if (!value || typeof value !== 'object') return {};
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .filter(([, item]) => typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean')
+      .slice(0, maxEntries)
+      .map(([key, item]) => [key.slice(0, 80), String(item).replace(/\s+/g, ' ').trim().slice(0, maxValueLength)])
+      .filter(([, item]) => item)
+  );
+};
+
+const extractFonts = (value: unknown): BrandFontSignal[] => {
+  const fonts = Array.isArray(value) ? value : [];
+  return fonts
+    .map((font): BrandFontSignal | null => {
+      if (typeof font === 'string') return { family: cleanTextField(font, 80) };
+      if (!font || typeof font !== 'object') return null;
+      const record = font as Record<string, unknown>;
+      const family = cleanTextField(record.family || record.name || record.fontFamily, 80);
+      if (!family) return null;
+      return {
+        family,
+        role: cleanTextField(record.role || record.type || record.usage, 40) || undefined,
+      };
+    })
+    .filter((font): font is BrandFontSignal => Boolean(font))
+    .filter((font, index, fonts) => fonts.findIndex((candidate) => candidate.family.toLowerCase() === font.family.toLowerCase() && candidate.role === font.role) === index)
+    .slice(0, 12);
+};
+
+const extractSocialLinks = (links: string[], baseUrl: string) => {
+  const socialPattern = /\b(?:instagram|linkedin|facebook|twitter|x\.com|youtube|tiktok|threads|pinterest)\.com\b/i;
+  return links
+    .map((link) => normalizePublicAssetUrl(link, baseUrl))
+    .filter((link) => link && socialPattern.test(link))
+    .filter((link, index, links) => links.indexOf(link) === index)
+    .slice(0, 20);
+};
+
+const buildPageBrandAssets = ({
+  url,
+  data,
+  colors,
+  logoUrl,
+  markdown,
+  links,
+}: {
+  url: string;
+  data: any;
+  colors: string[];
+  logoUrl: string;
+  markdown: string;
+  links: string[];
+}): BrandAssets => {
+  const metadata = data.metadata || {};
+  const branding = data.branding || {};
+  const brandingImages = branding.images || {};
+  const allImageUrls = Array.from(collectPublicAssetUrls({
+    ...brandingImages,
+    ogImage: metadata.ogImage || metadata['og:image'] || metadata['twitter:image'],
+  }, url)).slice(0, 24);
+  const imageUrlSet = new Set(allImageUrls);
+  const favicon = firstPublicAssetUrl([brandingImages.favicon, metadata.icon, metadata.favicon], url);
+  const ogImage = firstPublicAssetUrl([brandingImages.ogImage, metadata.ogImage, metadata['og:image'], metadata['twitter:image']], url);
+  [logoUrl, favicon, ogImage].filter(Boolean).forEach((image) => imageUrlSet.add(image));
+
+  return {
+    images: {
+      logo: logoUrl || undefined,
+      favicon: favicon || undefined,
+      ogImage: ogImage || undefined,
+      heroImages: allImageUrls.filter((image) => image !== logoUrl && image !== favicon).slice(0, 8),
+      allImages: Array.from(imageUrlSet).slice(0, 24),
+    },
+    colors: {
+      ...normalizeStringRecord(branding.colors, 16, 24),
+      ...Object.fromEntries(colors.map((color, index) => [`detected${index + 1}`, color])),
+    },
+    fonts: extractFonts(branding.fonts),
+    componentStyles: (clipJsonValue(branding.components || {}, 0) || {}) as Record<string, unknown>,
+    personality: clipJsonValue(branding.personality),
+    designSystem: clipJsonValue(branding.designSystem),
+    metadata: normalizeStringRecord(metadata, 40, 360),
+    socialLinks: extractSocialLinks(links, url),
+    pages: [{
+      url,
+      title: cleanTextField(metadata.title || metadata.ogTitle || '', 160),
+      description: cleanTextField(metadata.description || metadata.ogDescription || '', 260),
+      colors,
+      logoUrl: logoUrl || undefined,
+      markdownPreview: markdown.slice(0, 2400),
+    }],
+    rawBranding: (clipJsonValue(branding, 0) || {}) as Record<string, unknown>,
+  };
+};
+
+const mergeBrandAssets = (pages: ScrapedPage[]): BrandAssets => {
+  const mergedColors: Record<string, string> = {};
+  const fonts: BrandFontSignal[] = [];
+  const socialLinks = new Set<string>();
+  const allImages = new Set<string>();
+  let logo = '';
+  let favicon = '';
+  let ogImage = '';
+  const firstAssets = pages[0]?.brandAssets;
+
+  pages.forEach((page) => {
+    const assets = page.brandAssets;
+    Object.entries(assets.colors || {}).forEach(([key, value]) => {
+      if (HEX_COLOR_PATTERN.test(value) && Object.values(mergedColors).indexOf(value) === -1) {
+        mergedColors[key] = value;
+      }
+    });
+    assets.fonts.forEach((font) => {
+      if (!fonts.some((candidate) => candidate.family.toLowerCase() === font.family.toLowerCase() && candidate.role === font.role)) {
+        fonts.push(font);
+      }
+    });
+    assets.socialLinks.forEach((link) => socialLinks.add(link));
+    assets.images.allImages.forEach((image) => allImages.add(image));
+    logo ||= assets.images.logo || '';
+    favicon ||= assets.images.favicon || '';
+    ogImage ||= assets.images.ogImage || '';
+  });
+
+  return {
+    images: {
+      logo: logo || undefined,
+      favicon: favicon || undefined,
+      ogImage: ogImage || undefined,
+      heroImages: Array.from(allImages).filter((image) => image !== logo && image !== favicon).slice(0, 10),
+      allImages: Array.from(allImages).slice(0, 28),
+    },
+    colors: mergedColors,
+    fonts: fonts.slice(0, 12),
+    componentStyles: firstAssets?.componentStyles || {},
+    personality: firstAssets?.personality,
+    designSystem: firstAssets?.designSystem,
+    metadata: firstAssets?.metadata || {},
+    socialLinks: Array.from(socialLinks).slice(0, 20),
+    pages: pages.map((page) => page.brandAssets.pages[0]).filter(Boolean),
+    externalResearch: firstAssets?.externalResearch,
+    rawBranding: firstAssets?.rawBranding,
+  };
+};
+
+const normalizeExternalResearch = (value: unknown, baseUrl: string): BrandAssets['externalResearch'] | undefined => {
+  if (!value || typeof value !== 'object') return undefined;
+  const input = value as Record<string, unknown>;
+  const sources = (Array.isArray(input.sources) ? input.sources : [])
+    .slice(0, 16)
+    .map((source): BrandAssets['externalResearch']['sources'][number] | null => {
+      if (!source || typeof source !== 'object') return null;
+      const record = source as Record<string, unknown>;
+      const url = normalizePublicAssetUrl(record.url, baseUrl);
+      const title = cleanTextField(record.title, 180);
+      const content = cleanTextField(record.content, 500);
+      if (!url || (!title && !content)) return null;
+      const score = Number(record.score);
+      return {
+        title: title || new URL(url).hostname,
+        url,
+        content,
+        score: Number.isFinite(score) ? Math.round(score * 1000) / 1000 : undefined,
+      };
+    })
+    .filter((source): source is BrandAssets['externalResearch']['sources'][number] => Boolean(source));
+  if (sources.length === 0) return undefined;
+
+  return {
+    provider: 'tavily',
+    queries: normalizeStringArray(input.queries, 6, 180),
+    answers: normalizeStringArray(input.answers, 6, 900),
+    sources,
+    socialLinks: normalizeStringArray(input.socialLinks, 20, 500)
+      .map((link) => normalizePublicAssetUrl(link, baseUrl))
+      .filter(Boolean),
+    raw: clipJsonValue(input.raw),
+  };
+};
+
+const researchBrandEverywhere = async (websiteUrl: URL, pages: ScrapedPage[]): Promise<BrandAssets['externalResearch'] | undefined> => {
+  const key = process.env.TAVILY_API_KEY;
+  if (!key) return undefined;
+
+  const page = pages[0];
+  const domain = websiteUrl.hostname.replace(/^www\./, '');
+  const brandName = (page?.title || domain)
+    .replace(/\s*[|–-].*$/, '')
+    .replace(/\bofficial\b/ig, '')
+    .replace(/\bonline store\b/ig, '')
+    .trim() || domain;
+  const queries = [
+    `"${brandName}" "${domain}" official products category proof points`,
+    `"${brandName}" official social profiles Instagram TikTok LinkedIn YouTube ${domain}`,
+  ];
+  const responses: any[] = [];
+
+  for (const query of queries) {
+    try {
+      const response = await fetchWithTimeout(TAVILY_SEARCH_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          api_key: key,
+          query,
+          search_depth: 'basic',
+          include_answer: true,
+          include_raw_content: false,
+          max_results: 6,
+        }),
+      }, TAVILY_TIMEOUT_MS);
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`Tavily search failed (${response.status}): ${body.slice(0, 180)}`);
+      }
+      responses.push(await response.json());
+    } catch (error) {
+      console.warn('[brand-research] tavily_failed', query, error instanceof Error ? error.message : error);
+    }
+  }
+
+  const sourceMap = new Map<string, BrandAssets['externalResearch']['sources'][number]>();
+  const answers: string[] = [];
+  responses.forEach((payload) => {
+    const answer = cleanTextField(payload?.answer, 900);
+    if (answer) answers.push(answer);
+    (Array.isArray(payload?.results) ? payload.results : []).forEach((result: any) => {
+      const url = normalizePublicAssetUrl(result?.url, websiteUrl.href);
+      if (!url || sourceMap.has(url)) return;
+      sourceMap.set(url, {
+        title: cleanTextField(result?.title, 180) || new URL(url).hostname,
+        url,
+        content: cleanTextField(result?.content, 500),
+        score: Number.isFinite(Number(result?.score)) ? Math.round(Number(result.score) * 1000) / 1000 : undefined,
+      });
+    });
+  });
+
+  const sources = Array.from(sourceMap.values()).slice(0, 16);
+  if (sources.length === 0 && answers.length === 0) return undefined;
+  const socialLinks = extractSocialLinks(sources.map((source) => source.url), websiteUrl.href);
+  return {
+    provider: 'tavily',
+    queries,
+    answers: answers.filter((answer, index, list) => list.indexOf(answer) === index).slice(0, 4),
+    sources,
+    socialLinks,
+    raw: clipJsonValue(responses, 0),
+  };
+};
+
+const firecrawlScrape = async (url: string, includeLinks: boolean): Promise<ScrapedPage> => {
+  const key = process.env.FIRECRAWL_API_KEY;
+  if (!key) throw new Error('FIRECRAWL_API_KEY is not set.');
+
+  const response = await fetchWithTimeout(FIRECRAWL_SCRAPE_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      url,
+      formats: includeLinks ? ['markdown', 'links', 'branding'] : ['markdown', 'branding'],
+      onlyMainContent: true,
+      removeBase64Images: true,
+      blockAds: true,
+      timeout: FIRECRAWL_TIMEOUT_MS,
+      maxAge: BRAND_RESEARCH_CACHE_TTL_MS,
+    }),
+  }, FIRECRAWL_TIMEOUT_MS + 3000);
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Firecrawl scrape failed (${response.status}): ${body.slice(0, 240)}`);
+  }
+
+  const payload: any = await response.json();
+  if (!payload?.success || !payload?.data) {
+    throw new Error('Firecrawl returned an empty scrape.');
+  }
+
+  const data = payload.data;
+  const metadata = data.metadata || {};
+  const brandingColors = data.branding?.colors || {};
+  const brandingImages = data.branding?.images || {};
+  const colors = Object.values(brandingColors).filter((color): color is string => (
+    typeof color === 'string' && HEX_COLOR_PATTERN.test(color)
+  ));
+  const logoUrl = firstPublicAssetUrl([
+    brandingImages.logo,
+    metadata.logo,
+  ].filter((asset) => !isLikelyFaviconAsset(asset)), url);
+  const markdown = String(data.markdown || '').slice(0, 18000);
+  const links = Array.isArray(data.links) ? data.links.map(String) : [];
+  const brandAssets = buildPageBrandAssets({
+    url,
+    data,
+    colors,
+    logoUrl,
+    markdown,
+    links,
+  });
+
+  return {
+    url: String(metadata.sourceURL || metadata.url || url),
+    title: String(metadata.title || ''),
+    description: String(metadata.description || ''),
+    markdown,
+    links,
+    colors,
+    logoUrl: logoUrl || undefined,
+    brandAssets,
+  };
+};
+
+const decodeHtmlEntities = (value: string) => value
+  .replace(/&amp;/g, '&')
+  .replace(/&quot;/g, '"')
+  .replace(/&#39;/g, "'")
+  .replace(/&lt;/g, '<')
+  .replace(/&gt;/g, '>');
+
+const extractHtmlMeta = (html: string, key: string) => {
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const patterns = [
+    new RegExp(`<meta[^>]+(?:name|property)=["']${escapedKey}["'][^>]+content=["']([^"']+)["'][^>]*>`, 'i'),
+    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:name|property)=["']${escapedKey}["'][^>]*>`, 'i'),
+  ];
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (match?.[1]) return decodeHtmlEntities(match[1].trim());
+  }
+  return '';
+};
+
+const fallbackHtmlScrape = async (url: string): Promise<ScrapedPage> => {
+  const response = await fetchWithTimeout(url, {
+    headers: {
+      'user-agent': 'Mozilla/5.0 (compatible; WigglyBrandResearch/1.0)',
+      accept: 'text/html,application/xhtml+xml',
+    },
+    redirect: 'follow',
+  }, FIRECRAWL_TIMEOUT_MS);
+
+  if (!response.ok) {
+    throw new Error(`Fallback HTML scrape failed (${response.status}).`);
+  }
+
+  const finalUrl = response.url || url;
+  const html = await response.text();
+  const title = decodeHtmlEntities(html.match(/<title[^>]*>(.*?)<\/title>/is)?.[1]?.replace(/\s+/g, ' ').trim() || '');
+  const description = extractHtmlMeta(html, 'description') || extractHtmlMeta(html, 'og:description');
+  const metadata = {
+    title,
+    description,
+    ogTitle: extractHtmlMeta(html, 'og:title'),
+    ogDescription: extractHtmlMeta(html, 'og:description'),
+    ogImage: extractHtmlMeta(html, 'og:image') || extractHtmlMeta(html, 'twitter:image'),
+    icon: html.match(/<link[^>]+rel=["'][^"']*(?:icon|apple-touch-icon)[^"']*["'][^>]+href=["']([^"']+)["'][^>]*>/i)?.[1] || '',
+  };
+  const links = Array.from(html.matchAll(/<a[^>]+href=["']([^"']+)["'][^>]*>/gi)).map((match) => match[1]).slice(0, 120);
+  const brandAssets = buildPageBrandAssets({
+    url: finalUrl,
+    data: { metadata, branding: { images: { favicon: metadata.icon, ogImage: metadata.ogImage } } },
+    colors: [],
+    logoUrl: '',
+    markdown: [
+      title,
+      description,
+      metadata.ogTitle,
+      metadata.ogDescription,
+    ].filter(Boolean).join('\n'),
+    links,
+  });
+
+  return {
+    url: finalUrl,
+    title,
+    description,
+    markdown: brandAssets.pages[0]?.markdownPreview || `${title}\n${description}`,
+    links,
+    colors: [],
+    logoUrl: undefined,
+    brandAssets,
+  };
+};
+
+const buildResearchText = (pages: ScrapedPage[]) => pages
+  .map((page, index) => [
+    `PAGE ${index + 1}: ${page.title || page.url}`,
+    `URL: ${page.url}`,
+    page.description ? `Description: ${page.description}` : '',
+    page.logoUrl ? `Logo found: ${page.logoUrl}` : '',
+    page.colors.length ? `Brand colors found: ${page.colors.slice(0, 5).join(', ')}` : '',
+    page.markdown,
+  ].filter(Boolean).join('\n'))
+  .join('\n\n---\n\n')
+  .slice(0, MAX_RESEARCH_CHARS);
+
+const appendExternalResearchText = (researchText: string, externalResearch: BrandAssets['externalResearch']) => {
+  if (!externalResearch) return researchText;
+  const outsideText = [
+    'OUTSIDE WEB RESEARCH:',
+    externalResearch.answers.length ? `Summaries:\n${externalResearch.answers.map((answer) => `- ${answer}`).join('\n')}` : '',
+    externalResearch.socialLinks.length ? `Social links found:\n${externalResearch.socialLinks.map((link) => `- ${link}`).join('\n')}` : '',
+    externalResearch.sources.length ? `Sources:\n${externalResearch.sources.map((source) => [
+      `- ${source.title}`,
+      `  URL: ${source.url}`,
+      source.content ? `  Snippet: ${source.content}` : '',
+    ].filter(Boolean).join('\n')).join('\n')}` : '',
+  ].filter(Boolean).join('\n');
+  return `${researchText}\n\n---\n\n${outsideText}`.slice(0, MAX_RESEARCH_CHARS);
+};
+
+const researchBrandWebsite = async (websiteUrl: URL) => {
+  const cacheKey = websiteUrl.href;
+  const cached = getBrandResearchCache(cacheKey);
+  if (cached) return cached;
+
+  let homepage: ScrapedPage;
+  try {
+    homepage = await firecrawlScrape(websiteUrl.href, true);
+  } catch (error) {
+    console.warn('[brand-research] firecrawl_failed_using_html_fallback', websiteUrl.href, error instanceof Error ? error.message : error);
+    homepage = await fallbackHtmlScrape(websiteUrl.href);
+  }
+  const discoveredLinks = homepage.links
+    .map((link) => sameOriginUrl(link, websiteUrl))
+    .filter((link): link is string => Boolean(link))
+    .filter((link, index, links) => links.indexOf(link) === index)
+    .filter((link) => link !== websiteUrl.href)
+    .slice(0, MAX_RESEARCH_PAGES - 1);
+
+  const extraPages: ScrapedPage[] = [];
+  for (const link of discoveredLinks) {
+    try {
+      extraPages.push(await firecrawlScrape(link, false));
+    } catch (error) {
+      console.warn('[brand-research] skipped_page', link, error instanceof Error ? error.message : error);
+    }
+  }
+
+  const pages = [homepage, ...extraPages].slice(0, MAX_RESEARCH_PAGES);
+  const brandAssets = mergeBrandAssets(pages);
+  const externalResearch = await researchBrandEverywhere(websiteUrl, pages);
+  if (externalResearch) {
+    brandAssets.externalResearch = externalResearch;
+    externalResearch.socialLinks.forEach((link) => {
+      if (!brandAssets.socialLinks.includes(link)) brandAssets.socialLinks.push(link);
+    });
+    brandAssets.socialLinks = brandAssets.socialLinks.slice(0, 20);
+  }
+  const entry = {
+    expiresAt: Date.now() + BRAND_RESEARCH_CACHE_TTL_MS,
+    pages,
+    researchText: appendExternalResearchText(buildResearchText(pages), externalResearch),
+    logoUrl: brandAssets.images.logo || pages.find((page) => page.logoUrl)?.logoUrl,
+    brandAssets,
+  };
+  addBrandResearchCache(cacheKey, entry);
+  return entry;
+};
+
+const normalizeHexColors = (value: unknown) => {
+  const colors = Array.isArray(value) ? value : [];
+  return colors
+    .map((color) => String(color || '').trim())
+    .map((color) => {
+      if (/^#[0-9A-Fa-f]{6}$/.test(color)) return color.toUpperCase();
+      if (/^[0-9A-Fa-f]{6}$/.test(color)) return `#${color.toUpperCase()}`;
+      const short = color.match(/^#?([0-9A-Fa-f]{3})$/);
+      if (short) return `#${short[1].split('').map((char) => `${char}${char}`).join('').toUpperCase()}`;
+      return '';
+    })
+    .filter((color) => HEX_COLOR_PATTERN.test(color))
+    .filter((color, index, colors) => colors.indexOf(color) === index)
+    .slice(0, 5);
+};
+
+const normalizeStringArray = (value: unknown, maxItems: number, maxLength: number) => (
+  Array.isArray(value) ? value : []
+)
+  .map((item) => cleanTextField(item, maxLength))
+  .filter(Boolean)
+  .filter((item, index, items) => items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index)
+  .slice(0, maxItems);
+
+const normalizeBrandAssets = (value: unknown, websiteUrl: string): BrandAssets | undefined => {
+  if (!value || typeof value !== 'object') return undefined;
+  const input = value as Partial<BrandAssets>;
+  const imageInput = input.images || { heroImages: [], allImages: [] };
+  const colorInput = input.colors || {};
+  const normalizedLogo = normalizeImageAssetUrl(imageInput.logo, websiteUrl);
+  const normalizedColors = Object.fromEntries(
+    Object.entries(colorInput)
+      .map(([key, color]) => [cleanTextField(key, 60), String(color || '').trim().toUpperCase()])
+      .filter(([key, color]) => key && HEX_COLOR_PATTERN.test(color))
+      .slice(0, 20)
+  );
+
+  return {
+    images: {
+      logo: normalizedLogo && !isLikelyFaviconAsset(normalizedLogo) ? normalizedLogo : undefined,
+      favicon: normalizeImageAssetUrl(imageInput.favicon, websiteUrl) || undefined,
+      ogImage: normalizeImageAssetUrl(imageInput.ogImage, websiteUrl) || undefined,
+      heroImages: normalizeStringArray(imageInput.heroImages, 12, 500)
+        .map((image) => normalizeImageAssetUrl(image, websiteUrl))
+        .filter(Boolean),
+      allImages: normalizeStringArray(imageInput.allImages, 28, 500)
+        .map((image) => normalizeImageAssetUrl(image, websiteUrl))
+        .filter(Boolean),
+    },
+    colors: normalizedColors,
+    fonts: extractFonts(input.fonts),
+    componentStyles: (clipJsonValue(input.componentStyles || {}, 0) || {}) as Record<string, unknown>,
+    personality: clipJsonValue(input.personality),
+    designSystem: clipJsonValue(input.designSystem),
+    metadata: normalizeStringRecord(input.metadata, 40, 360),
+    socialLinks: normalizeStringArray(input.socialLinks, 20, 500)
+      .map((link) => normalizePublicAssetUrl(link, websiteUrl))
+      .filter(Boolean),
+    pages: (Array.isArray(input.pages) ? input.pages : [])
+      .slice(0, 8)
+      .map((page) => ({
+        url: normalizePublicAssetUrl((page as any)?.url, websiteUrl) || websiteUrl,
+        title: cleanTextField((page as any)?.title, 160),
+        description: cleanTextField((page as any)?.description, 260),
+        colors: normalizeHexColors((page as any)?.colors),
+        logoUrl: normalizeImageAssetUrl((page as any)?.logoUrl, websiteUrl) || undefined,
+        markdownPreview: cleanTextField((page as any)?.markdownPreview, 2400),
+      })),
+    externalResearch: normalizeExternalResearch(input.externalResearch, websiteUrl),
+    rawBranding: (clipJsonValue(input.rawBranding || {}, 0) || {}) as Record<string, unknown>,
+  };
+};
+
+const normalizeBrandBrain = (payload: any, websiteUrl: string, fallbackLogoUrl = ''): BrandBrain => ({
+  businessName: cleanTextField(payload?.businessName, 60) || new URL(websiteUrl).hostname.replace(/^www\./, ''),
+  websiteUrl,
+  brandLogoUrl: (() => {
+    const logo = normalizeImageAssetUrl(payload?.brandLogoUrl || fallbackLogoUrl, websiteUrl);
+    return logo && !isLikelyFaviconAsset(logo) ? logo : undefined;
+  })(),
+  brandAssets: normalizeBrandAssets(payload?.brandAssets, websiteUrl),
+  offer: cleanTextField(payload?.offer, 180),
+  audience: cleanTextField(payload?.audience, 180),
+  pain: cleanTextField(payload?.pain, 220),
+  promisedResult: cleanTextField(payload?.promisedResult, 180),
+  differentiator: cleanTextField(payload?.differentiator, 220),
+  tone: cleanTextField(payload?.tone, 80) || 'clear, confident, direct',
+  colors: normalizeHexColors(payload?.colors).length ? normalizeHexColors(payload?.colors) : ['#00D6B8', '#4F46E5', '#0F172A'],
+  proof: normalizeStringArray(payload?.proof, 8, 140),
+  bannedGenericPhrases: normalizeStringArray(payload?.bannedGenericPhrases, 12, 80).length
+    ? normalizeStringArray(payload?.bannedGenericPhrases, 12, 80)
+    : ['transform your business', 'game changer', 'take it to the next level'],
+  adAngles: normalizeStringArray(payload?.adAngles, 8, 180),
+});
+
+const brandBrainNeedsFallback = (brandBrain: BrandBrain) => {
+  const required = [brandBrain.offer, brandBrain.audience, brandBrain.pain];
+  return required.some((field) => field.length < 12) || brandBrain.adAngles.length < 4;
+};
+
+const generateBrandBrain = async (websiteUrl: string, researchText: string, fallbackAnswers?: string[], fallbackLogoUrl = '') => {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error('GEMINI_API_KEY is not set.');
+  const ai = new GoogleGenAI({ apiKey: key });
+  const response = await withTimeout(ai.models.generateContent({
+    model: BRAND_RESEARCH_MODEL,
+    contents: buildBrandBrainPrompt({ websiteUrl, researchText, fallbackAnswers }),
+    config: {
+      responseMimeType: 'application/json',
+    },
+  }), BRAND_BRAIN_TIMEOUT_MS, 'Brand research');
+  return normalizeBrandBrain(parseJsonResponse(response.text || '{}'), websiteUrl, fallbackLogoUrl);
+};
+
+const normalizeHeadline = (value: unknown) => cleanTextField(value, 96)
+  .replace(/["“”]/g, '')
+  .replace(/\s+/g, ' ')
+  .trim();
+
+const headlineWordCount = (headline: string) => headline.split(/\s+/).filter(Boolean).length;
+
+const isUsableHeadline = (headline: string, brandBrain: BrandBrain, previous: Set<string>) => {
+  const words = headlineWordCount(headline);
+  if (words < 4 || words > 12) return false;
+  const lower = headline.toLowerCase();
+  if (previous.has(lower)) return false;
+  if (/\bwiggly\b/i.test(headline)) return false;
+  return !(brandBrain.bannedGenericPhrases || []).some((phrase) => phrase && lower.includes(phrase.toLowerCase()));
+};
+
+const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<string>): HeadlineVariation[] => {
+  const angles = normalizeAdAngles(brandBrain);
+  const seen = new Set(previous);
+  const shortPhrase = (value: unknown, maxWords: number, fallback: string) => {
+    const phrase = cleanTextField(value, 90)
+      .replace(/[^\w\s$%'-]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return phrase.split(/\s+/).filter(Boolean).slice(0, maxWords).join(' ') || fallback;
+  };
+  const pain = shortPhrase(brandBrain.pain, 4, 'the hidden problem');
+  const audience = shortPhrase(brandBrain.audience, 3, 'your buyers');
+  const offer = shortPhrase(brandBrain.offer, 4, 'the better answer');
+  const result = shortPhrase(brandBrain.promisedResult, 4, 'the better outcome');
+  const differentiator = shortPhrase(brandBrain.differentiator, 4, 'the unfair edge');
+  const proof = (brandBrain.proof || []).map((item) => shortPhrase(item, 5, '')).filter(Boolean).slice(0, 8);
+  const subjects = [pain, audience, offer, result, differentiator, ...proof].filter(Boolean);
+  const templates = [
+    `${pain} is getting expensive`,
+    `${pain} should not be invisible`,
+    `Stop letting ${pain} win`,
+    `Your audience already feels ${pain}`,
+    `${audience} need the faster answer`,
+    `${audience} notice the difference fast`,
+    `${offer} should look premium`,
+    `${offer} is the scroll stopper`,
+    `Make ${result} feel obvious`,
+    `${result} starts with one clip`,
+    `${differentiator} is the ad angle`,
+    `Lead with ${differentiator}`,
+    `The old workaround is expensive`,
+    `Show the problem before they scroll`,
+    `Make the hard part visible`,
+    `Turn the proof into motion`,
+  ];
+  const openers = ['Show', 'Make', 'Turn', 'Spotlight', 'Expose', 'Prove', 'Sell', 'Lead with'];
+  const closers = [
+    'before they scroll',
+    'in one glance',
+    'with one line',
+    'without explaining',
+    'as the hook',
+    'with motion',
+    'in seconds',
+    'right away',
+    'on the first frame',
+    'like a premium brand',
+  ];
+
+  proof.forEach((proofPoint) => {
+    templates.push(`${proofPoint} should lead the ad`);
+    templates.push(`Make ${proofPoint} the hook`);
+  });
+  angles.forEach((angle) => {
+    const clippedAngle = shortPhrase(angle, 5, '');
+    if (!clippedAngle) return;
+    templates.push(`${clippedAngle} before they scroll`);
+    templates.push(`Make ${clippedAngle} feel obvious`);
+  });
+  subjects.forEach((subject) => {
+    openers.forEach((opener) => {
+      closers.forEach((closer) => {
+        templates.push(`${opener} ${subject} ${closer}`);
+      });
+    });
+  });
+
+  const fallbacks: HeadlineVariation[] = [];
+  const addHeadline = (value: string) => {
+    if (fallbacks.length >= count) return;
+    const headline = normalizeHeadline(value);
+    if (!isUsableHeadline(headline, brandBrain, seen)) return;
+    seen.add(headline.toLowerCase());
+    fallbacks.push({
+      id: `fallback-${fallbacks.length + 1}`,
+      angle: angles[fallbacks.length % Math.max(angles.length, 1)] || 'core promise',
+      headline,
+    });
+  };
+
+  templates.forEach(addHeadline);
+  let safety = 1;
+  while (fallbacks.length < count && safety <= count * 3) {
+    addHeadline(`A sharper reason to stop scrolling ${safety}`);
+    safety += 1;
+  }
+
+  return fallbacks.slice(0, count);
+};
+
+const generateHeadlineVariations = async (brandBrain: BrandBrain, count: number) => {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error('GEMINI_API_KEY is not set.');
+  const ai = new GoogleGenAI({ apiKey: key });
+  const response = await withTimeout(ai.models.generateContent({
+    model: HEADLINE_VARIATION_MODEL,
+    contents: buildHeadlineVariationsPrompt({ brandBrain, count }),
+    config: {
+      responseMimeType: 'application/json',
+    },
+  }), HEADLINE_VARIATION_TIMEOUT_MS, 'Headline generation');
+  const parsed = parseJsonResponse(response.text || '{"variations": []}');
+  return Array.isArray(parsed) ? parsed : parsed?.variations || [];
+};
+
+app.post('/api/research-brand', brandResearchLimiter, async (req, res) => {
+  try {
+    const websiteUrl = normalizeResearchUrl(req.body?.websiteUrl);
+    const fallbackAnswers = Array.isArray(req.body?.fallbackAnswers)
+      ? req.body.fallbackAnswers.map((answer: unknown) => cleanTextField(answer, 240)).filter(Boolean).slice(0, 3)
+      : [];
+    const brainCacheKey = `${BRAND_BRAIN_CACHE_VERSION}::${websiteUrl.href}::${fallbackAnswers.join('|').toLowerCase()}`;
+    const cachedBrain = getBrandBrainCache(brainCacheKey);
+    if (cachedBrain?.brandBrain.brandAssets) {
+      return res.json({ needsFallback: false, brandBrain: cachedBrain.brandBrain });
+    }
+
+    let researchText = '';
+    let brandLogoUrl = '';
+    let brandAssets: BrandAssets | undefined;
+    try {
+      const research = await researchBrandWebsite(websiteUrl);
+      researchText = research.researchText;
+      brandLogoUrl = research.logoUrl || '';
+      brandAssets = research.brandAssets;
+    } catch (error) {
+      console.warn('[brand-research] scrape_failed', websiteUrl.href, error instanceof Error ? error.message : error);
+      if (fallbackAnswers.length < 3) {
+        return res.status(200).json({
+          needsFallback: true,
+          questions: BRAND_FALLBACK_QUESTIONS,
+          reason: 'I could not read enough from that website yet.',
+        });
+      }
+    }
+
+    if (!researchText && fallbackAnswers.length >= 3) {
+      const fallbackBrandBrain = buildFallbackBrandBrain({ websiteUrl: websiteUrl.href, answers: fallbackAnswers });
+      return res.json({
+        needsFallback: false,
+        brandBrain: brandAssets ? { ...fallbackBrandBrain, brandAssets, brandLogoUrl: brandAssets.images.logo || undefined } : fallbackBrandBrain,
+      });
+    }
+
+    let brandBrain: BrandBrain;
+    try {
+      brandBrain = await generateBrandBrain(websiteUrl.href, researchText, fallbackAnswers, brandLogoUrl);
+      if (brandAssets) {
+        brandBrain = {
+          ...brandBrain,
+          brandAssets,
+          brandLogoUrl: brandBrain.brandLogoUrl || brandAssets.images.logo || brandLogoUrl || undefined,
+        };
+      }
+    } catch (error) {
+      console.warn('[brand-research] brain_failed', websiteUrl.href, error instanceof Error ? error.message : error);
+      if (fallbackAnswers.length < 3) {
+        return res.status(200).json({
+          needsFallback: true,
+          questions: BRAND_FALLBACK_QUESTIONS,
+          reason: 'That website is taking too long to read clearly.',
+        });
+      }
+      brandBrain = {
+        ...buildFallbackBrandBrain({ websiteUrl: websiteUrl.href, answers: fallbackAnswers }),
+        brandLogoUrl: brandLogoUrl || undefined,
+        brandAssets,
+      };
+    }
+
+    if (brandBrainNeedsFallback(brandBrain) && fallbackAnswers.length < 3) {
+      return res.status(200).json({
+        needsFallback: true,
+        questions: BRAND_FALLBACK_QUESTIONS,
+        partialBrandBrain: brandBrain,
+        reason: 'I need three quick answers to make the ads feel specific.',
+      });
+    }
+
+    addBrandBrainCache(brainCacheKey, {
+      expiresAt: Date.now() + BRAND_RESEARCH_CACHE_TTL_MS,
+      brandBrain,
+    });
+    return res.json({ needsFallback: false, brandBrain });
+  } catch (error: any) {
+    console.error('Research brand error:', error);
+    return res.status(400).json({ error: error?.message || 'Could not research that website.' });
+  }
+});
+
+app.post('/api/generate-ad-stream', adStreamLimiter, async (req, res) => {
+  try {
+    const rawBrandBrain = req.body?.brandBrain;
+    if (!rawBrandBrain || typeof rawBrandBrain !== 'object') {
+      return res.status(400).json({ error: 'brandBrain is required.' });
+    }
+
+    const websiteUrl = cleanTextField(rawBrandBrain.websiteUrl, 240) || 'https://example.com';
+    const brandBrain = normalizeBrandBrain(rawBrandBrain, websiteUrl, cleanTextField(rawBrandBrain.brandLogoUrl, 500));
+    const totalCount = Math.min(50, Math.max(10, Number(req.body?.count) || 50));
+    const used = new Set<string>();
+    const variations: HeadlineVariation[] = [];
+
+    let rawVariations: any[] = [];
+    try {
+      rawVariations = await generateHeadlineVariations(brandBrain, totalCount);
+    } catch (error) {
+      console.warn('[ad-stream] headline_generation_failed', error instanceof Error ? error.message : error);
+    }
+
+    rawVariations.forEach((item) => {
+      const headline = normalizeHeadline(item?.headline ?? item?.text ?? item);
+      if (!isUsableHeadline(headline, brandBrain, used)) return;
+      used.add(headline.toLowerCase());
+      variations.push({
+        id: `variation-${variations.length + 1}`,
+        angle: cleanTextField(item?.angle, 160) || normalizeAdAngles(brandBrain)[variations.length % normalizeAdAngles(brandBrain).length] || 'core promise',
+        headline,
+      });
+    });
+
+    while (variations.length < totalCount) {
+      const fill = fallbackHeadlines(brandBrain, totalCount - variations.length, used);
+      if (fill.length === 0) break;
+      fill.forEach((variation) => {
+        if (variations.length >= totalCount) return;
+        used.add(variation.headline.toLowerCase());
+        variations.push({
+          ...variation,
+          id: `variation-${variations.length + 1}`,
+        });
+      });
+    }
+
+    return res.json({
+      brandBrain,
+      variations: variations.slice(0, totalCount),
+    });
+  } catch (error: any) {
+    console.error('Generate ad stream error:', error);
+    return sendServerError(res, 'Could not generate ad variations.');
+  }
+});
 
 const gibberishPattern = /\b(?:[bcdfghjklmnpqrstvwxyz]{4,}|(?:asdf|sdfg|qwer|zxcv|hjkl|lorem|ipsum)[a-z]*)\b/i;
 const forcedNegationPattern = /\b(?:not this|not that|not because|not more|not another|it'?s not|this isn'?t|don'?t just|stop (?:trying|doing|using|making))\b/i;
