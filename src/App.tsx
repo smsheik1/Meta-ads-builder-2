@@ -571,11 +571,13 @@ const ShareAdPage = ({
   const [videoUrl, setVideoUrl] = useState('');
   const [videoReady, setVideoReady] = useState(false);
   const [videoHasSound, setVideoHasSound] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     setVideoReady(false);
     setVideoHasSound(false);
+    setVideoPlaying(false);
     if (!record) {
       setVideoUrl('');
       return;
@@ -600,9 +602,20 @@ const ShareAdPage = ({
     setVideoHasSound(true);
     try {
       await video.play();
+      setVideoPlaying(true);
     } catch {
       // Browser policies may still block playback; the native click target remains.
     }
+  };
+
+  const stopShareVideo = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.pause();
+    video.currentTime = 0;
+    video.muted = true;
+    setVideoPlaying(false);
+    setVideoHasSound(false);
   };
 
   if (loading) {
@@ -651,6 +664,8 @@ const ShareAdPage = ({
                     playsInline
                     preload="metadata"
                     onLoadedData={() => setVideoReady(true)}
+                    onPlay={() => setVideoPlaying(true)}
+                    onPause={() => setVideoPlaying(false)}
                     className={`h-full w-full bg-[#FAFAF7] object-cover transition-opacity duration-300 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
                   />
                   {!videoReady && (
@@ -663,6 +678,15 @@ const ShareAdPage = ({
                       className="absolute inset-x-5 bottom-5 z-40 flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800"
                     >
                       Play with sound
+                    </button>
+                  )}
+                  {videoHasSound && videoReady && (
+                    <button
+                      type="button"
+                      onClick={stopShareVideo}
+                      className="absolute bottom-5 right-5 z-40 flex h-11 items-center justify-center rounded-full bg-slate-950 px-5 text-sm font-black text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800"
+                    >
+                      {videoPlaying ? 'Stop' : 'Replay'}
                     </button>
                   )}
                 </>

@@ -11,6 +11,9 @@ test('share page renders the exported video inside the shared platform frame', a
   const phoneSectionSource = sharePageSource.slice(0, phoneSectionEnd);
 
   expect(sharePageSource).toContain('<PlatformFrame');
+  expect(sharePageSource).toContain('const stopShareVideo = () => {');
+  expect(sharePageSource).toContain("video.pause();");
+  expect(sharePageSource).toContain("'Stop'");
   expect(sharePageSource).toContain("platform={record.platform || 'instagram-feed'}");
   expect(sharePageSource).toContain('caption={record.subhead || record.headline}');
   expect(phoneSectionSource).not.toContain('Wiggly Ad Page');
