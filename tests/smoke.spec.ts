@@ -49,8 +49,8 @@ test.describe('Smoke tests', () => {
     await page.goto('/create');
 
     await expect(page.getByRole('textbox').first()).toBeVisible();
-    await expect(page.getByText('Upload voice clip')).toBeVisible();
-    await expect(page.getByRole('button', { name: /show me my ads/i })).toBeVisible();
+    await expect(page.getByText('Upload voice clip')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /generate ads/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /play this ad/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /open builder/i })).toBeVisible();
   });

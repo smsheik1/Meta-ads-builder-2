@@ -15,6 +15,7 @@ import { getRandomAdStyleArchetype, pickRandom, type AdStyleArchetype } from '..
 import { emitTutorialEvent } from './InteractiveTutorial';
 import type { AudioAnalysisData } from '../lib/audio-analysis';
 import { VOICE_VISUALIZER_PRESET } from '../lib/visualizer-presets';
+import type { RerollFlashPayload, RerollFlashRole } from './CreateFlow';
 
 const isEditableEventTarget = (target: EventTarget | null) => {
   if (!(target instanceof HTMLElement)) return false;
@@ -91,8 +92,10 @@ interface CanvasEditorProps {
   previewDurationCap: number | null;
   onRefreshBackgroundColor?: () => void;
   onApplyStyleArchetype?: (archetype: AdStyleArchetype) => void;
+  rerollFlash?: RerollFlashPayload | null;
   readOnly?: boolean;
   disableSpaceReroll?: boolean;
+  disableEmptySelectionSpaceReroll?: boolean;
 }
 
 const MOCK_CAPTIONS = [
@@ -180,7 +183,7 @@ const applyArchetypeToElement = (element: AdElement, archetype: AdStyleArchetype
   return element;
 };
 
-export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, audioAnalysis, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype, readOnly = false, disableSpaceReroll = false }) => {
+export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, audioAnalysis, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype, rerollFlash, readOnly = false, disableSpaceReroll = false, disableEmptySelectionSpaceReroll = false }) => {
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
@@ -192,6 +195,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   
   const [targets, setTargets] = useState<Array<HTMLElement | SVGElement>>([]);
   const [pulsingLockedIds, setPulsingLockedIds] = useState<Set<string>>(new Set());
+  const [activeRerollFlash, setActiveRerollFlash] = useState<RerollFlashPayload | null>(null);
 
   const pulseLockedElements = (ids: string[]) => {
     if (ids.length === 0) return;
@@ -218,6 +222,21 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   useEffect(() => () => {
     Object.values(lockPulseTimeoutsRef.current).forEach((timeoutId) => window.clearTimeout(timeoutId as number));
   }, []);
+
+  useEffect(() => {
+    if (!rerollFlash) return;
+    let timeoutId: number | undefined;
+    let frameId: number | undefined;
+    setActiveRerollFlash(null);
+    frameId = window.requestAnimationFrame(() => {
+      setActiveRerollFlash(rerollFlash);
+      timeoutId = window.setTimeout(() => setActiveRerollFlash(null), 680);
+    });
+    return () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      if (timeoutId) window.clearTimeout(timeoutId);
+    };
+  }, [rerollFlash]);
 
   // Sync targets with selectedIds
   useEffect(() => {
@@ -261,6 +280,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         const selectedSet = new Set(liveSelectedIds);
         const selectedElements = state.elements.filter(element => selectedSet.has(element.id));
         const shouldRerollEverything = selectedElements.length === 0;
+        if (shouldRerollEverything && disableEmptySelectionSpaceReroll) return;
         const lockedSelectedIds = selectedElements.filter(element => element.locked).map(element => element.id);
         const rerollableSelectedIds = selectedElements.filter(element => !element.locked).map(element => element.id);
 
@@ -273,10 +293,14 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         const currentArchetypeId = state.elements.find(element => element.styleArchetypeId)?.styleArchetypeId;
         const archetype = getRandomAdStyleArchetype(currentArchetypeId);
         let changed = false;
+        const changedRoles = new Set<RerollFlashRole>();
         const nextElements = state.elements.map((element) => {
           if (!shouldRerollEverything && !rerollableSelectedIds.includes(element.id)) return element;
           const nextElement = applyArchetypeToElement(element, archetype);
-          if (nextElement !== element) changed = true;
+          if (nextElement !== element) {
+            changed = true;
+            if (element.componentRole && element.componentRole !== 'image') changedRoles.add(element.componentRole);
+          }
           return nextElement;
         });
         if (!changed) return;
@@ -285,6 +309,12 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         }
         state.setElements(nextElements);
         state.commitHistory();
+        if (changedRoles.size > 0) {
+          setActiveRerollFlash({
+            key: `canvas-${Date.now()}`,
+            roles: Array.from(changedRoles),
+          });
+        }
         emitTutorialEvent({ type: 'space-reroll', role: selectedRole });
         return;
       }
@@ -324,7 +354,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIds, onApplyStyleArchetype, readOnly, disableSpaceReroll]);
+  }, [selectedIds, onApplyStyleArchetype, readOnly, disableSpaceReroll, disableEmptySelectionSpaceReroll]);
 
   // Audio / Visualizer logic
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -941,12 +971,14 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         const showCaptionColorPicker = !editingId && el.type === 'caption';
         const hoverColorValue = showCaptionColorPicker ? (el.color || accentColor) : (el.color || '#111827');
         const hoverColorLabel = showCaptionColorPicker ? 'Caption color' : el.componentRole === 'subheadline' ? 'Sub-headline color' : 'Headline color';
+        const textHasBackground = el.type === 'text' && Boolean(el.backgroundColor);
+        const shouldFlash = Boolean(!el.locked && el.componentRole && activeRerollFlash?.roles.includes(el.componentRole));
 
         return (
           <div
             key={el.id}
             id={`el-${el.id}`}
-            className={`absolute element-node group`}
+            className={`absolute element-node group ${shouldFlash ? `wiggly-reroll-shine wiggly-reroll-shine-${el.componentRole}` : ''}`}
             onMouseDown={(e: React.MouseEvent) => {
               if (readOnly) return;
               if (editingId) return;
@@ -1032,7 +1064,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             )}
             {/* TEXT */}
             {el.type === 'text' && (
-              <div 
+              <div
                 className={`w-full h-full flex items-center justify-center break-words ${editingId === el.id ? 'select-text' : 'select-none'}`}
                 style={{
                   fontFamily: el.fontFamily,
@@ -1043,6 +1075,11 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                   color: el.color,
                   textAlign: el.textAlign,
                   lineHeight: el.lineHeight,
+                  backgroundColor: textHasBackground ? el.backgroundColor : undefined,
+                  borderRadius: textHasBackground ? `${el.borderRadius || 0}px` : undefined,
+                  boxSizing: 'border-box',
+                  boxShadow: textHasBackground ? '0 12px 30px rgba(15,23,42,0.12)' : undefined,
+                  padding: textHasBackground ? '10px 14px' : undefined,
                 }}
               >
                 {editingId === el.id ? (
@@ -1088,7 +1125,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                   <HeadlineSlot niche="dental" elementId={el.id} />
                 ) : (
                   <AutoFitText
-                    className="w-full px-1"
+                    className={textHasBackground ? 'w-full' : 'w-full px-1'}
                     minFontSize={8}
                     lineHeight={el.lineHeight || 1.12}
                     plainText={stripRichText(el.content || '')}

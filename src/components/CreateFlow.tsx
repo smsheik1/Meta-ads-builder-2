@@ -1,17 +1,35 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, BookmarkPlus, CheckCircle2, Download, ExternalLink, Loader2, Play, Shuffle, Square, Upload, Wand2, X } from 'lucide-react';
+import { ArrowRight, AudioLines, BookmarkPlus, CheckCircle2, Download, ExternalLink, LayoutGrid, Loader2, MessageCircle, Play, Shuffle, Square, Upload, Wand2, X } from 'lucide-react';
 import { getRandomAdStyleArchetype, type AdStyleArchetype } from '../lib/style-archetypes';
 import { PlatformFrame, type PlatformType } from './PlatformFrame';
 import { CanvasEditor } from './CanvasEditor';
 import type { AudioAnalysisData } from '../lib/audio-analysis';
 import { pickVisibleColorOnLight } from '../lib/color-contrast';
 import { BRAND_FALLBACK_QUESTIONS, type BrandBrain } from '../lib/prompts/brand-brain';
-import type { HeadlineVariation } from '../lib/prompts/headline-variations';
+import type { ConversationAdLine, GeneratedAdFormat, HeadlineVariation } from '../lib/prompts/headline-variations';
+import { useEditorStore } from '../store';
 
 export type GeneratedAdVariation = HeadlineVariation & {
+  format: GeneratedAdFormat;
+  conversationLines?: ConversationAdLine[];
   index: number;
   archetype: AdStyleArchetype;
   visualizerColor: string;
+  accentColor: string;
+};
+
+type CreateAdFormat = 'all' | GeneratedAdFormat;
+export type RerollFlashRole = 'headline' | 'subheadline' | 'visualizer' | 'captions' | 'cta' | 'logo';
+export type RerollFlashPayload = {
+  key: string;
+  roles: RerollFlashRole[];
+};
+
+type SavedCreateDesign = {
+  id: string;
+  name: string;
+  previewTitle: string;
+  backgroundColor: string;
   accentColor: string;
 };
 
@@ -35,7 +53,9 @@ type CreateFlowProps = {
   onTogglePlayback: () => void;
   onPlaybackComplete: () => void;
   onDownloadVideo: () => void;
-  onSaveDesign: () => void;
+  onSaveDesign: (variation: GeneratedAdVariation, brandBrain: BrandBrain) => void;
+  savedDesigns: SavedCreateDesign[];
+  onOpenSavedDesign: (designId: string) => void;
   onPlatformChange: (platform: PlatformType) => void;
   onRefreshBackgroundColor: () => void;
   onApplyStyleArchetype: (archetype: AdStyleArchetype) => void;
@@ -61,12 +81,18 @@ const DEFAULT_BRAND_COLORS = ['#00D6B8', '#4F46E5', '#0F172A'];
 const TARGET_GENERATED_AD_COUNT = 50;
 const CREATE_FLOW_STORAGE_KEY = 'wiggly_create_flow_session_v1';
 const CREATE_FLOW_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+const FORMAT_MODES: Array<{ id: CreateAdFormat; label: string; icon: typeof LayoutGrid }> = [
+  { id: 'all', label: 'All formats', icon: LayoutGrid },
+  { id: 'visualizer', label: 'Audio visualizer', icon: AudioLines },
+  { id: 'conversation', label: 'Conversation', icon: MessageCircle },
+];
 
 type PersistedCreateFlow = {
   websiteUrl: string;
   brandBrain: BrandBrain | null;
   variations: GeneratedAdVariation[];
   activeIndex: number;
+  selectedFormat?: CreateAdFormat;
   savedAt: number;
 };
 
@@ -79,6 +105,17 @@ const getCreateFlowStorage = () => {
   }
 };
 
+const normalizeCreateAdFormat = (value: unknown): CreateAdFormat => (
+  value === 'visualizer' || value === 'conversation' || value === 'all' ? value : 'all'
+);
+
+const normalizePersistedVariation = (variation: GeneratedAdVariation): GeneratedAdVariation => ({
+  ...variation,
+  archetype: variation.archetype || getRandomAdStyleArchetype(),
+  format: variation.format === 'conversation' ? 'conversation' : 'visualizer',
+  conversationLines: Array.isArray(variation.conversationLines) ? variation.conversationLines : undefined,
+});
+
 const loadPersistedCreateFlow = (): PersistedCreateFlow | null => {
   const storage = getCreateFlowStorage();
   if (!storage) return null;
@@ -90,13 +127,16 @@ const loadPersistedCreateFlow = (): PersistedCreateFlow | null => {
       storage.removeItem(CREATE_FLOW_STORAGE_KEY);
       return null;
     }
-    const parsedVariations = Array.isArray(parsed.variations) ? parsed.variations : [];
+    const parsedVariations = Array.isArray(parsed.variations)
+      ? parsed.variations.map((variation) => normalizePersistedVariation(variation))
+      : [];
     const usableVariations = parsedVariations.length >= TARGET_GENERATED_AD_COUNT ? parsedVariations : [];
     return {
       websiteUrl: typeof parsed.websiteUrl === 'string' ? parsed.websiteUrl : '',
       brandBrain: parsed.brandBrain || null,
       variations: usableVariations,
       activeIndex: Number.isFinite(parsed.activeIndex) ? parsed.activeIndex : 0,
+      selectedFormat: normalizeCreateAdFormat(parsed.selectedFormat),
       savedAt: Number(parsed.savedAt || Date.now()),
     };
   } catch {
@@ -152,6 +192,8 @@ const buildGeneratedVariations = (brandBrain: BrandBrain, variations: HeadlineVa
     currentArchetypeId = archetype.id;
     return {
       ...variation,
+      format: variation.format === 'conversation' ? 'conversation' : 'visualizer',
+      conversationLines: Array.isArray(variation.conversationLines) ? variation.conversationLines : undefined,
       index,
       archetype,
       visualizerColor: index % 3 === 0
@@ -185,6 +227,41 @@ const canPreviewBrandImage = (value: string) => {
   }
 };
 
+const getRerollFlashRoles = (
+  previousVariation: GeneratedAdVariation | null,
+  nextVariation: GeneratedAdVariation
+): RerollFlashRole[] => {
+  if (!previousVariation) return ['headline', 'visualizer', 'captions', 'cta'];
+  if (previousVariation.id === nextVariation.id) return [];
+  if (previousVariation.format !== nextVariation.format) return ['headline', 'visualizer', 'captions', 'cta', 'logo'];
+
+  const roles = new Set<RerollFlashRole>();
+  if (previousVariation.headline !== nextVariation.headline) roles.add('headline');
+  if (previousVariation.archetype.subheadlineColor !== nextVariation.archetype.subheadlineColor) roles.add('subheadline');
+  if (
+    previousVariation.visualizerColor !== nextVariation.visualizerColor ||
+    previousVariation.archetype.visualizerVariant.visualizerType !== nextVariation.archetype.visualizerVariant.visualizerType ||
+    previousVariation.archetype.visualizerVariant.barCount !== nextVariation.archetype.visualizerVariant.barCount
+  ) {
+    roles.add('visualizer');
+  }
+  if (
+    previousVariation.accentColor !== nextVariation.accentColor ||
+    previousVariation.archetype.speaker1CaptionColor !== nextVariation.archetype.speaker1CaptionColor ||
+    previousVariation.archetype.speaker2CaptionColor !== nextVariation.archetype.speaker2CaptionColor
+  ) {
+    roles.add('captions');
+  }
+  if (
+    previousVariation.archetype.ctaBackgroundColor !== nextVariation.archetype.ctaBackgroundColor ||
+    previousVariation.archetype.ctaTextColor !== nextVariation.archetype.ctaTextColor
+  ) {
+    roles.add('cta');
+  }
+
+  return Array.from(roles);
+};
+
 export function CreateFlow({
   audioFileName,
   hasUserAudio,
@@ -206,6 +283,8 @@ export function CreateFlow({
   onPlaybackComplete,
   onDownloadVideo,
   onSaveDesign,
+  savedDesigns,
+  onOpenSavedDesign,
   onPlatformChange,
   onRefreshBackgroundColor,
   onApplyStyleArchetype,
@@ -223,6 +302,7 @@ export function CreateFlow({
       ? Math.min(Math.max(0, persistedCreateFlow.activeIndex || 0), persistedCreateFlow.variations.length - 1)
       : 0
   ));
+  const [selectedFormat, setSelectedFormat] = useState<CreateAdFormat>(persistedCreateFlow?.selectedFormat || 'all');
   const [fallbackQuestions, setFallbackQuestions] = useState<string[]>([]);
   const [fallbackAnswers, setFallbackAnswers] = useState<string[]>(['', '', '']);
   const [status, setStatus] = useState<'idle' | 'researching' | 'writing' | 'ready' | 'error'>(
@@ -230,11 +310,27 @@ export function CreateFlow({
   );
   const [error, setError] = useState('');
   const [brandDetailsOpen, setBrandDetailsOpen] = useState(false);
+  const [savedVariationIds, setSavedVariationIds] = useState<string[]>([]);
+  const [savedDesignsOpen, setSavedDesignsOpen] = useState(false);
+  const [rerollFlash, setRerollFlash] = useState<RerollFlashPayload | null>(null);
   const lastPreviewKeyRef = useRef('');
 
-  const activeVariation = variations[activeIndex] || null;
+  const visibleVariations = useMemo(() => (
+    selectedFormat === 'all'
+      ? variations
+      : variations.filter((variation) => variation.format === selectedFormat)
+  ), [selectedFormat, variations]);
+  const activeGlobalVariation = variations[activeIndex] || null;
+  const activeVariation = activeGlobalVariation && visibleVariations.some((variation) => variation.id === activeGlobalVariation.id)
+    ? activeGlobalVariation
+    : visibleVariations[0] || null;
   const brandAssets = brandBrain?.brandAssets;
   const externalResearch = brandAssets?.externalResearch;
+  const creativeBriefHighlights = brandBrain ? [
+    { label: 'Offer', value: brandBrain.offer },
+    { label: 'Audience', value: brandBrain.audience },
+    { label: 'Hook', value: brandBrain.pain || brandBrain.differentiator },
+  ].filter((item) => item.value?.trim()) : [];
   const socialAvatarLogo = isDataImage(brandAssets?.images.logo)
     ? brandAssets?.images.logo || null
     : brandAssets?.images.favicon || brandAssets?.images.logo || brandBrain?.brandLogoUrl || null;
@@ -253,14 +349,33 @@ export function CreateFlow({
     .replace(/^https?:\/\//i, '')
     .replace(/^www\./i, '')
     .split('/')[0] || 'your site';
+  const selectedFormatLabel = FORMAT_MODES.find((mode) => mode.id === selectedFormat)?.label || 'Generated';
+  const activeVariationSaved = Boolean(activeVariation && savedVariationIds.includes(activeVariation.id));
+  const activeVariationHelper = activeVariation
+    ? ''
+    : variations.length
+      ? `No ${selectedFormatLabel.toLowerCase()} ads in this set yet.`
+      : 'Your generated ads appear on the canvas';
 
   const statusCopy = useMemo(() => {
     if (status === 'researching') return 'Finding the angle';
     if (status === 'writing') return 'Making your ads';
-    if (status === 'ready') return `${variations.length} ads ready`;
+    if (status === 'ready') return 'Ads ready to review';
     if (!hasUserAudio) return 'Add a voice clip first';
     return 'Website plus voice clip';
-  }, [hasUserAudio, status, variations.length]);
+  }, [hasUserAudio, status]);
+
+  const setActiveVariation = (variation: GeneratedAdVariation) => {
+    const flashRoles = getRerollFlashRoles(activeVariation, variation);
+    if (flashRoles.length) {
+      setRerollFlash({
+        key: `${variation.id}-${Date.now()}`,
+        roles: flashRoles,
+      });
+    }
+    const nextIndex = variations.findIndex((candidate) => candidate.id === variation.id);
+    if (nextIndex >= 0) setActiveIndex(nextIndex);
+  };
 
   useEffect(() => {
     if (!brandDetailsOpen) return;
@@ -283,20 +398,29 @@ export function CreateFlow({
       brandBrain,
       variations,
       activeIndex,
+      selectedFormat,
       savedAt: Date.now(),
     }));
-  }, [activeIndex, brandBrain, variations, websiteUrl]);
+  }, [activeIndex, brandBrain, selectedFormat, variations, websiteUrl]);
 
   useEffect(() => {
-    if (!variations.length) return;
+    if (!visibleVariations.length || !activeVariation) return;
+    if (variations[activeIndex]?.id === activeVariation.id) return;
+    setActiveVariation(activeVariation);
+  }, [activeIndex, activeVariation, variations, visibleVariations.length]);
+
+  useEffect(() => {
+    if (!visibleVariations.length) return;
     const handleSpace = (event: KeyboardEvent) => {
       if (event.code !== 'Space' || isEditableTarget(event.target) || isEditableTarget(document.activeElement)) return;
+      if (useEditorStore.getState().selectedIds.length > 0) return;
       event.preventDefault();
-      setActiveIndex((index) => (index + 1) % variations.length);
+      const activeVisibleIndex = Math.max(0, visibleVariations.findIndex((variation) => variation.id === activeVariation?.id));
+      setActiveVariation(visibleVariations[(activeVisibleIndex + 1) % visibleVariations.length]);
     };
     window.addEventListener('keydown', handleSpace);
     return () => window.removeEventListener('keydown', handleSpace);
-  }, [variations.length]);
+  }, [activeVariation, visibleVariations, variations]);
 
   useEffect(() => {
     if (!activeVariation || !brandBrain) return;
@@ -318,13 +442,14 @@ export function CreateFlow({
     return fetchJsonWithTimeout<AdStreamResponse>('/api/generate-ad-stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ brandBrain: nextBrandBrain, count: TARGET_GENERATED_AD_COUNT }),
+      body: JSON.stringify({ brandBrain: nextBrandBrain, count: TARGET_GENERATED_AD_COUNT, formatMix: ['visualizer', 'conversation'] }),
     }, 30000, 'Writing is taking too long. Try again in a moment.');
   };
 
   const generateAds = async (answers?: string[]) => {
     setError('');
     setFallbackQuestions([]);
+    setSavedVariationIds([]);
     setStatus('researching');
     try {
       const research = await requestResearch(answers);
@@ -365,8 +490,22 @@ export function CreateFlow({
   };
 
   const goNext = () => {
-    if (!variations.length) return;
-    setActiveIndex((index) => (index + 1) % variations.length);
+    if (!visibleVariations.length) return;
+    const activeVisibleIndex = Math.max(0, visibleVariations.findIndex((variation) => variation.id === activeVariation?.id));
+    setActiveVariation(visibleVariations[(activeVisibleIndex + 1) % visibleVariations.length]);
+  };
+
+  const saveActiveVariation = () => {
+    if (!activeVariation || !brandBrain || activeVariationSaved) return;
+    onSaveDesign(activeVariation, brandBrain);
+    setSavedVariationIds((currentIds) => (
+      currentIds.includes(activeVariation.id) ? currentIds : [...currentIds, activeVariation.id]
+    ));
+  };
+
+  const closeSavedDesignsOnBlur = (event: React.FocusEvent<HTMLDivElement>) => {
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+    setSavedDesignsOpen(false);
   };
 
   return (
@@ -388,17 +527,17 @@ export function CreateFlow({
         </button>
       </header>
 
-      <section className="mx-auto grid max-w-7xl items-center gap-10 py-10 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[0.82fr_1.18fr]">
+      <section className="mx-auto grid max-w-7xl items-center gap-12 py-10 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
         <div className="max-w-xl">
           <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black uppercase tracking-wide text-slate-500 shadow-sm">
             <Wand2 className="h-4 w-4 text-[#4F46E5]" />
             {statusCopy}
           </p>
           <h1 className="text-5xl font-black leading-[0.9] tracking-normal text-slate-950 md:text-7xl">
-            Give Wiggly a website and a voice clip.
+            Make video ads without learning video editing.
           </h1>
           <p className="mt-6 max-w-lg text-lg font-semibold leading-8 text-slate-600">
-            It reads the brand, writes the headlines, and gives you 50 audio ads to spacebar through.
+            Wiggly reads the site, finds the selling angle, and fills the canvas with polished ads you can preview, save, download, or edit.
           </p>
 
           <div className="mt-8 space-y-3 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8">
@@ -412,19 +551,21 @@ export function CreateFlow({
               />
             </label>
 
-            <label className={`flex cursor-pointer items-center justify-between gap-3 rounded-2xl border px-4 py-4 transition ${hasUserAudio ? 'border-emerald-200 bg-emerald-50' : 'border-dashed border-slate-300 bg-slate-50 hover:bg-white'}`}>
-              <span className="flex min-w-0 items-center gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-900 shadow-sm">
-                  {hasUserAudio ? <CheckCircle2 className="h-5 w-5 text-emerald-600" /> : <Upload className="h-5 w-5" />}
+            {!hasUserAudio && (
+              <label className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 transition hover:bg-white">
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-900 shadow-sm">
+                    <Upload className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-black text-slate-900">Upload voice clip</span>
+                    <span className="mt-1 block text-xs font-semibold text-slate-500">Used for timing and captions</span>
+                  </span>
                 </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-black text-slate-900">{hasUserAudio ? audioFileName : 'Upload voice clip'}</span>
-                  <span className="mt-1 block text-xs font-semibold text-slate-500">{hasUserAudio ? 'Ready for ad generation' : 'The MP4 length follows this audio'}</span>
-                </span>
-              </span>
-              <span className="shrink-0 text-xs font-black uppercase tracking-wide text-slate-400">Choose</span>
-              <input type="file" accept="audio/*,video/mp4" onChange={onAudioUpload} className="sr-only" />
-            </label>
+                <span className="shrink-0 text-xs font-black uppercase tracking-wide text-slate-400">Choose</span>
+                <input type="file" accept="audio/*,video/mp4" onChange={onAudioUpload} className="sr-only" />
+              </label>
+            )}
 
             <button
               type="button"
@@ -433,7 +574,7 @@ export function CreateFlow({
               className={`flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-4 text-base font-black text-white shadow-xl shadow-slate-950/15 transition hover:bg-slate-800 ${isGenerating ? 'cursor-progress' : ''} ${generateButtonUnavailable ? 'cursor-not-allowed opacity-45' : ''}`}
             >
               {status === 'researching' || status === 'writing' ? <Loader2 className="h-5 w-5 animate-spin" /> : <Wand2 className="h-5 w-5" />}
-              {status === 'researching' ? 'Finding the angle' : status === 'writing' ? 'Making your ads' : 'Show me my ads'}
+              {status === 'researching' ? 'Finding the angle' : status === 'writing' ? 'Making your ads' : 'Generate ads'}
             </button>
 
             {isGenerating && (
@@ -490,62 +631,91 @@ export function CreateFlow({
         </div>
 
         <div className="grid items-center gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]">
-          <div className="relative">
-            <PlatformFrame
-              platform={platform}
-              theme="dark"
-              brandName={brandBrain?.businessName || 'Your brand'}
-              brandLogo={socialAvatarLogo}
-              caption={brandBrain?.offer || 'Drop in a voice clip. Wiggly makes it look expensive.'}
-              metaCta="Learn More"
-            >
-              <CanvasEditor
+          <div className="relative flex flex-col items-center gap-3 lg:block">
+            <div className="flex rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-lg shadow-slate-950/10 lg:absolute lg:-left-14 lg:top-1/2 lg:z-50 lg:-translate-y-1/2 lg:flex-col">
+              {FORMAT_MODES.map((mode) => {
+                const Icon = mode.icon;
+                const active = selectedFormat === mode.id;
+                return (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    onClick={() => setSelectedFormat(mode.id)}
+                    className={`flex h-11 w-11 items-center justify-center rounded-xl transition ${
+                      active
+                        ? 'bg-slate-950 text-white shadow-md shadow-slate-950/20'
+                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950'
+                    }`}
+                    aria-label={`Show ${mode.label}`}
+                    title={mode.label}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </button>
+                );
+              })}
+            </div>
+            <div className="relative">
+              <PlatformFrame
                 platform={platform}
-                backgroundColor={backgroundColor}
-                bgMedia={bgMedia}
-                bgShadow={bgShadow}
-                bgShadowOpacity={bgShadowOpacity}
-                introImage={introImage}
-                introDuration={introDuration}
-                introFeedCropY={introFeedCropY}
-                introImageAspect={introImageAspect}
-                previewDurationCap={previewDurationCap}
-                audioUrl={audioUrl}
-                audioAnalysis={audioAnalysis}
-                accentColor={activeVariation?.accentColor || '#4F46E5'}
-                playing={playing}
-                onPlaybackComplete={onPlaybackComplete}
-                onRefreshBackgroundColor={onRefreshBackgroundColor}
-                onApplyStyleArchetype={onApplyStyleArchetype}
-                disableSpaceReroll
-              />
-            </PlatformFrame>
-            <button
-              type="button"
-              onClick={onTogglePlayback}
-              disabled={!audioUrl}
-              className="absolute bottom-7 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-2xl shadow-slate-950/25 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {playing ? <Square className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
-              {playing ? 'Stop preview' : 'Play this ad'}
-            </button>
+                theme="dark"
+                brandName={brandBrain?.businessName || 'Your brand'}
+                brandLogo={socialAvatarLogo}
+                caption={brandBrain?.offer || 'Drop in a voice clip. Wiggly makes it look expensive.'}
+                metaCta="Learn More"
+              >
+                <CanvasEditor
+                  platform={platform}
+                  backgroundColor={backgroundColor}
+                  bgMedia={bgMedia}
+                  bgShadow={bgShadow}
+                  bgShadowOpacity={bgShadowOpacity}
+                  introImage={introImage}
+                  introDuration={introDuration}
+                  introFeedCropY={introFeedCropY}
+                  introImageAspect={introImageAspect}
+                  previewDurationCap={previewDurationCap}
+                  audioUrl={audioUrl}
+                  audioAnalysis={audioAnalysis}
+                  accentColor={activeVariation?.accentColor || '#4F46E5'}
+                  playing={playing}
+                  onPlaybackComplete={onPlaybackComplete}
+                  onRefreshBackgroundColor={onRefreshBackgroundColor}
+                  onApplyStyleArchetype={onApplyStyleArchetype}
+                  rerollFlash={rerollFlash}
+                  disableEmptySelectionSpaceReroll
+                />
+              </PlatformFrame>
+              <button
+                type="button"
+                onClick={onTogglePlayback}
+                disabled={!audioUrl}
+                className="absolute bottom-7 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-2xl shadow-slate-950/25 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {playing ? <Square className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
+                {playing ? 'Stop preview' : 'Play this ad'}
+              </button>
+            </div>
           </div>
 
           <div className="space-y-4">
             <div className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-black text-slate-900">{variations.length ? `Ad ${activeIndex + 1} of ${variations.length}` : 'Ad stream'}</p>
-                  <p className="mt-1 text-xs font-semibold text-slate-500">{variations.length ? 'Press space. No spoilers.' : 'Your generated ads appear on the canvas'}</p>
+              {!activeVariation && (
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-black text-slate-900">Generated ads</p>
+                    {activeVariationHelper && (
+                      <p className="mt-1 text-xs font-semibold text-slate-500">{activeVariationHelper}</p>
+                    )}
+                  </div>
+                  <Shuffle className="h-5 w-5 text-slate-400" />
                 </div>
-                <Shuffle className="h-5 w-5 text-slate-400" />
-              </div>
+              )}
 
               <button
                 type="button"
                 onClick={onDownloadVideo}
                 disabled={!activeVariation || !brandBrain || !audioUrl || rendering}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+                className={`${activeVariation ? '' : 'mt-4'} flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40`}
               >
                 {rendering ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                 {rendering ? 'Making video' : 'Download video'}
@@ -560,15 +730,68 @@ export function CreateFlow({
                 >
                   {playing ? 'Stop' : 'Play'}
                 </button>
-                <button
-                  type="button"
-                  onClick={onSaveDesign}
-                  disabled={!activeVariation || !brandBrain}
-                  className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                <div
+                  className="relative"
+                  onMouseEnter={() => setSavedDesignsOpen(true)}
+                  onMouseLeave={() => setSavedDesignsOpen(false)}
+                  onFocus={() => setSavedDesignsOpen(true)}
+                  onBlur={closeSavedDesignsOnBlur}
                 >
-                  <BookmarkPlus className="h-4 w-4" />
-                  Save
-                </button>
+                  <button
+                    type="button"
+                    onClick={saveActiveVariation}
+                    disabled={!activeVariation || !brandBrain}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    title={activeVariationSaved ? 'Saved to designs' : 'Save this ad to designs'}
+                  >
+                    {activeVariationSaved ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <BookmarkPlus className="h-4 w-4" />}
+                    {activeVariationSaved ? 'Saved' : 'Save'}
+                    {savedDesigns.length > 0 && (
+                      <span className="ml-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-black text-slate-500">
+                        {Math.min(savedDesigns.length, 9)}
+                      </span>
+                    )}
+                  </button>
+                  {savedDesignsOpen && savedDesigns.length > 0 && (
+                    <div className="absolute right-0 top-full z-[60] w-72 pt-2">
+                      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-950/15">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">Saved ads</p>
+                          <span className="text-[10px] font-black text-slate-400">{savedDesigns.length}</span>
+                        </div>
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          {savedDesigns.slice(0, 4).map((design) => (
+                            <button
+                              key={design.id}
+                              type="button"
+                              onClick={() => onOpenSavedDesign(design.id)}
+                              title={`Open ${design.name}`}
+                              className="min-w-0 rounded-xl border border-slate-200 bg-white p-2 text-left transition hover:border-slate-300 hover:bg-slate-50"
+                            >
+                              <span
+                                className="block h-12 rounded-lg border border-slate-200"
+                                style={{ backgroundColor: design.backgroundColor }}
+                              >
+                                <span
+                                  className="mt-8 block h-1.5 w-2/3 rounded-full"
+                                  style={{ backgroundColor: design.accentColor }}
+                                />
+                              </span>
+                              <span className="mt-2 block truncate text-[11px] font-black text-slate-700">
+                                {design.name}
+                              </span>
+                              {design.previewTitle && design.previewTitle !== design.name && (
+                                <span className="mt-0.5 block truncate text-[10px] font-bold text-slate-400">
+                                  {design.previewTitle}
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <label className="mt-2 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700">
@@ -591,10 +814,10 @@ export function CreateFlow({
                 <button
                   type="button"
                   onClick={goNext}
-                  disabled={!variations.length}
+                  disabled={!visibleVariations.length}
                   className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  Next
+                  Try another
                 </button>
                 <button
                   type="button"
@@ -610,9 +833,15 @@ export function CreateFlow({
 
             {brandBrain && (
               <div className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm">
-                <p className="text-xs font-black uppercase tracking-wide text-slate-500">What Wiggly learned</p>
-                <p className="mt-2 text-lg font-black leading-tight text-slate-950">{brandBrain.offer}</p>
-                <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">{brandBrain.audience}</p>
+                <p className="text-xs font-black uppercase tracking-wide text-slate-500">Creative brief</p>
+                <div className="mt-3 space-y-3">
+                  {creativeBriefHighlights.map((item) => (
+                    <div key={item.label}>
+                      <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">{item.label}</p>
+                      <p className="mt-1 text-sm font-black leading-5 text-slate-900">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
                 <div className="mt-4 flex justify-end">
                   <button
                     type="button"

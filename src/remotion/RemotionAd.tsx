@@ -111,8 +111,8 @@ const wrapTextForBox = (text: string, fontSize: number, maxWidth: number, fontWe
 const getFittedTextLayout = (element: AdElement, box: ElementBox) => {
   const content = stripRichText(element.content || '');
   const lineHeight = element.lineHeight || 1.12;
-  const paddingX = 8 * box.scale;
-  const paddingY = 4 * box.scale;
+  const paddingX = element.backgroundColor ? 28 * box.scale : 8 * box.scale;
+  const paddingY = element.backgroundColor ? 20 * box.scale : 4 * box.scale;
   const maxWidth = Math.max(20, box.width - paddingX);
   const maxHeight = Math.max(20, box.height - paddingY);
   let low = 8 * box.scale;
@@ -141,6 +141,7 @@ const getFittedTextLayout = (element: AdElement, box: ElementBox) => {
 const TextElement = ({ element, box }: { element: AdElement; box: ElementBox }) => {
   const layout = getFittedTextLayout(element, box);
   const content = stripRichText(element.content || '');
+  const hasBackground = Boolean(element.backgroundColor);
   return (
     <div
       style={{
@@ -160,6 +161,11 @@ const TextElement = ({ element, box }: { element: AdElement; box: ElementBox }) 
         lineHeight: layout.lineHeight,
         whiteSpace: 'pre-wrap',
         overflowWrap: 'break-word',
+        background: hasBackground ? element.backgroundColor : undefined,
+        borderRadius: hasBackground ? (element.borderRadius || 0) * box.scale : undefined,
+        padding: hasBackground ? `${10 * box.scale}px ${14 * box.scale}px` : undefined,
+        boxSizing: 'border-box',
+        boxShadow: hasBackground ? `0 ${12 * box.scale}px ${30 * box.scale}px rgba(15,23,42,0.12)` : undefined,
       }}
     >
       {layout.lines.join('\n') || content}

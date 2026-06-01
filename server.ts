@@ -93,8 +93,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/api', apiLimiter);
-
 app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
@@ -104,6 +102,8 @@ app.get('/api/health', (_req, res) => {
     postizConfigured: Boolean(process.env.POSTIZ_API_KEY),
   });
 });
+
+app.use('/api', apiLimiter);
 
 const memoryStorage = multer.memoryStorage();
 const uploadMem = multer({
@@ -886,7 +886,7 @@ app.post('/api/transcribe', aiGenerationLimiter, uploadMem.single('audio'), asyn
 import { GoogleGenAI } from '@google/genai';
 import { getMasterPrompt } from './src/lib/prompts/headline-master';
 import { buildBrandBrainPrompt, buildFallbackBrandBrain, BRAND_FALLBACK_QUESTIONS, type BrandAssets, type BrandBrain, type BrandFontSignal } from './src/lib/prompts/brand-brain';
-import { buildHeadlineVariationsPrompt, type HeadlineVariation } from './src/lib/prompts/headline-variations';
+import { buildHeadlineVariationsPrompt, type ConversationAdLine, type GeneratedAdFormat, type HeadlineVariation } from './src/lib/prompts/headline-variations';
 import { normalizeAdAngles } from './src/lib/prompts/ad-angles';
 
 const parseJsonResponse = (text: string) => {
@@ -1314,6 +1314,7 @@ const normalizeExternalResearch = (value: unknown, baseUrl: string): BrandAssets
 };
 
 const researchBrandEverywhere = async (websiteUrl: URL, pages: ScrapedPage[]): Promise<BrandAssets['externalResearch'] | undefined> => {
+  if (process.env.ENABLE_TAVILY_RESEARCH !== 'true') return undefined;
   const key = process.env.TAVILY_API_KEY;
   if (!key) return undefined;
 
@@ -1729,6 +1730,69 @@ const isUsableHeadline = (headline: string, brandBrain: BrandBrain, previous: Se
   return !(brandBrain.bannedGenericPhrases || []).some((phrase) => phrase && lower.includes(phrase.toLowerCase()));
 };
 
+const normalizeFormatMix = (value: unknown): GeneratedAdFormat[] => {
+  if (!Array.isArray(value)) return ['visualizer'];
+  const allowed: GeneratedAdFormat[] = ['visualizer', 'conversation'];
+  const formats = value
+    .map((item) => String(item || '').trim())
+    .filter((item): item is GeneratedAdFormat => allowed.includes(item as GeneratedAdFormat))
+    .filter((item, index, list) => list.indexOf(item) === index);
+  return formats.length ? formats : ['visualizer'];
+};
+
+const pickGeneratedAdFormat = (formats: GeneratedAdFormat[], index: number): GeneratedAdFormat => {
+  if (formats.length === 1) return formats[0];
+  if (formats.includes('conversation') && formats.includes('visualizer')) {
+    return index % 3 === 1 ? 'conversation' : 'visualizer';
+  }
+  return formats[index % formats.length] || 'visualizer';
+};
+
+const shortConversationPhrase = (value: unknown, fallback: string) => {
+  const phrase = cleanTextField(value, 140)
+    .replace(/[^\w\s$%'-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return phrase.split(/\s+/).filter(Boolean).slice(0, 10).join(' ') || fallback;
+};
+
+const buildConversationLines = (brandBrain: BrandBrain, headline: string, angle: string, index: number): ConversationAdLine[] => {
+  const pain = shortConversationPhrase(brandBrain.pain, 'this problem keeps showing up');
+  const offer = shortConversationPhrase(brandBrain.offer, 'the better option');
+  const result = shortConversationPhrase(brandBrain.promisedResult, 'the outcome people want');
+  const differentiator = shortConversationPhrase(brandBrain.differentiator, 'the part that makes it easier');
+  const audience = shortConversationPhrase(brandBrain.audience, 'the people this is for');
+  const proof = (brandBrain.proof || []).map((item) => shortConversationPhrase(item, '')).filter(Boolean);
+  const proofLine = proof[index % Math.max(proof.length, 1)] || differentiator;
+  const starters = [
+    `I keep seeing ${pain}.`,
+    `${audience} are tired of ${pain}.`,
+    `This is the part people usually ignore.`,
+  ];
+  const reveals = [
+    `${offer} makes ${result} feel easier.`,
+    `The hook is simple, ${proofLine}.`,
+    `${differentiator} is the thing worth showing first.`,
+  ];
+  const followUps = [
+    `So the ad should say ${headline.toLowerCase()}?`,
+    `That is more specific than another generic product claim.`,
+    `That gives people a reason to stop scrolling.`,
+  ];
+  const closers = [
+    `Exactly. Make the angle obvious before they scroll.`,
+    `Yes. Show the useful part, then let the voice carry it.`,
+    `Right. The finished ad should feel ready to test.`,
+  ];
+
+  return [
+    { speaker: 'Alex', text: starters[index % starters.length] },
+    { speaker: 'Jordan', text: reveals[index % reveals.length] },
+    { speaker: 'Alex', text: followUps[index % followUps.length] },
+    { speaker: 'Jordan', text: closers[index % closers.length] },
+  ];
+};
+
 const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<string>): HeadlineVariation[] => {
   const angles = normalizeAdAngles(brandBrain);
   const seen = new Set(previous);
@@ -1929,6 +1993,7 @@ app.post('/api/generate-ad-stream', adStreamLimiter, async (req, res) => {
     const websiteUrl = cleanTextField(rawBrandBrain.websiteUrl, 240) || 'https://example.com';
     const brandBrain = normalizeBrandBrain(rawBrandBrain, websiteUrl, cleanTextField(rawBrandBrain.brandLogoUrl, 500));
     const totalCount = Math.min(50, Math.max(10, Number(req.body?.count) || 50));
+    const formatMix = normalizeFormatMix(req.body?.formatMix);
     const used = new Set<string>();
     const variations: HeadlineVariation[] = [];
 
@@ -1943,10 +2008,20 @@ app.post('/api/generate-ad-stream', adStreamLimiter, async (req, res) => {
       const headline = normalizeHeadline(item?.headline ?? item?.text ?? item);
       if (!isUsableHeadline(headline, brandBrain, used)) return;
       used.add(headline.toLowerCase());
+      const format = pickGeneratedAdFormat(formatMix, variations.length);
       variations.push({
         id: `variation-${variations.length + 1}`,
         angle: cleanTextField(item?.angle, 160) || normalizeAdAngles(brandBrain)[variations.length % normalizeAdAngles(brandBrain).length] || 'core promise',
         headline,
+        format,
+        conversationLines: format === 'conversation'
+          ? buildConversationLines(
+            brandBrain,
+            headline,
+            cleanTextField(item?.angle, 160) || normalizeAdAngles(brandBrain)[variations.length % normalizeAdAngles(brandBrain).length] || 'core promise',
+            variations.length
+          )
+          : undefined,
       });
     });
 
@@ -1956,9 +2031,14 @@ app.post('/api/generate-ad-stream', adStreamLimiter, async (req, res) => {
       fill.forEach((variation) => {
         if (variations.length >= totalCount) return;
         used.add(variation.headline.toLowerCase());
+        const format = pickGeneratedAdFormat(formatMix, variations.length);
         variations.push({
           ...variation,
           id: `variation-${variations.length + 1}`,
+          format,
+          conversationLines: format === 'conversation'
+            ? buildConversationLines(brandBrain, variation.headline, variation.angle, variations.length)
+            : undefined,
         });
       });
     }
