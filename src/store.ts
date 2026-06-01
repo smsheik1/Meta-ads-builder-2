@@ -106,7 +106,7 @@ interface EditorState {
   sendBackward: (id: string) => void;
 }
 
-const DEFAULT_ELEMENTS: AdElement[] = [
+export const DEFAULT_ELEMENTS: AdElement[] = [
   {
     id: 'logo-1',
     type: 'image',

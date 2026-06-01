@@ -1,6 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Smoke tests', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('wiggly_interactive_tutorial_seen_v1', '1');
+    });
+  });
+
   test('app loads without browser errors', async ({ page }) => {
     const errors: string[] = [];
 
@@ -19,24 +25,33 @@ test.describe('Smoke tests', () => {
   });
 
   test('studio shows the core editor panels', async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('banner').getByRole('button', { name: /open studio/i }).click();
+    await page.goto('/builder');
 
-    await expect(page.getByText('Components')).toBeVisible();
-    await expect(page.getByText('Style & Assets')).toBeVisible();
-    await expect(page.getByText('Platform Simulator')).toBeVisible();
-    await expect(page.getByRole('button', { name: /export mp4/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /play preview/i })).toBeVisible();
+    await expect(page.getByText('Edit Parts', { exact: true })).toBeVisible();
+    await expect(page.getByText('Advanced', { exact: true })).toBeVisible();
+    await expect(page.getByText('Post Settings', { exact: true })).toBeVisible();
+    await expect(page.getByText('Visualizer Tuning', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: /download video/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^play$/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /save design/i })).toBeVisible();
+    await expect(page.getByLabel('Choose preview')).toBeVisible();
   });
 
-  test('template panel exposes templates and history', async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('banner').getByRole('button', { name: /open studio/i }).click();
+  test('empty design library collapses without hiding the builder', async ({ page }) => {
+    await page.goto('/builder');
 
-    await expect(page.getByRole('button', { name: 'Templates' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'My History' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'No saved templates yet' })).toBeVisible();
+    await expect(page.getByText('Space')).toBeVisible();
+    await expect(page.getByText('remix the ad')).toBeVisible();
+  });
 
-    await page.getByRole('button', { name: 'My History' }).click();
-    await expect(page.getByText(/downloaded ads will appear here/i)).toBeVisible();
+  test('create page exposes website, audio, preview, and actions', async ({ page }) => {
+    await page.goto('/create');
+
+    await expect(page.getByRole('textbox').first()).toBeVisible();
+    await expect(page.getByText('Upload voice clip')).toBeVisible();
+    await expect(page.getByRole('button', { name: /show me my ads/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /play this ad/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /open builder/i })).toBeVisible();
   });
 });
