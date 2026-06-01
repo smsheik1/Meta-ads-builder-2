@@ -630,20 +630,16 @@ const ShareAdPage = ({
   return (
     <main className="min-h-screen bg-[#F7F4EA] px-4 py-8 text-slate-950 sm:px-8">
       <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[minmax(280px,420px)_minmax(320px,1fr)] lg:items-center lg:justify-center">
-        <section className="mx-auto w-full max-w-[420px] rounded-[2rem] border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-950/10">
-          <div className="overflow-hidden rounded-[1.45rem] border border-slate-900/10 bg-slate-950">
-            <div className="flex h-14 items-center justify-between bg-slate-950 px-4 text-white">
-              <div className="flex items-center gap-2.5">
-                <img src="/wiggly-logo.png" alt="" className="h-8 w-8 rounded-full bg-black object-contain p-1.5 ring-1 ring-white/20" />
-                <div>
-                  <p className="text-sm font-black leading-none">{record.businessName || record.brandName || 'Wiggly'}</p>
-                  <p className="mt-1 text-[11px] font-semibold leading-none text-white/60">Sponsored</p>
-                </div>
-              </div>
-              <span className="text-xl font-black leading-none text-white/80">...</span>
-            </div>
-
-            <div className="relative aspect-[4/5] bg-[#FAFAF7]">
+        <section className="mx-auto w-full max-w-[420px]">
+          <PlatformFrame
+            platform={record.platform || 'instagram-feed'}
+            theme="dark"
+            brandName={record.businessName || record.brandName || 'Wiggly'}
+            brandLogo="/wiggly-logo.png"
+            caption={record.subhead || record.headline}
+            metaCta={record.ctaText || 'Learn More'}
+          >
+            <div className="relative h-full w-full bg-[#FAFAF7]">
               {videoUrl ? (
                 <>
                   <video
@@ -655,7 +651,7 @@ const ShareAdPage = ({
                     playsInline
                     preload="metadata"
                     onLoadedData={() => setVideoReady(true)}
-                    className={`h-full w-full bg-[#FAFAF7] object-contain transition-opacity duration-300 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
+                    className={`h-full w-full bg-[#FAFAF7] object-cover transition-opacity duration-300 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
                   />
                   {!videoReady && (
                     <div className="absolute inset-0 flex items-center justify-center bg-[#FAFAF7] text-sm font-black text-slate-500">Loading video...</div>
@@ -664,7 +660,7 @@ const ShareAdPage = ({
                     <button
                       type="button"
                       onClick={playWithSound}
-                      className="absolute inset-x-5 bottom-5 flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800"
+                      className="absolute inset-x-5 bottom-5 z-40 flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800"
                     >
                       Play with sound
                     </button>
@@ -674,19 +670,7 @@ const ShareAdPage = ({
                 <div className="flex h-full w-full items-center justify-center bg-slate-100 text-sm font-black text-slate-500">Video unavailable</div>
               )}
             </div>
-
-            <div className="border-t border-white/10 bg-slate-950 px-4 py-3 text-white">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="flex items-center gap-3">
-                  <Heart className="h-5 w-5" />
-                  <MessageCircle className="h-5 w-5" />
-                  <Send className="h-5 w-5" />
-                </span>
-                <Bookmark className="h-5 w-5" />
-              </div>
-              <p className="line-clamp-2 text-xs font-semibold leading-5 text-white/85">{record.subhead || record.headline}</p>
-            </div>
-          </div>
+          </PlatformFrame>
         </section>
 
         <section className="mx-auto w-full max-w-[440px] space-y-5">
@@ -1889,6 +1873,7 @@ export default function App() {
       brandName: snapshot?.settings.brandName || brandName || 'Wiggly',
       accentColor: snapshot?.settings.accentColor || accentColor,
       backgroundColor: snapshot?.settings.bgColor || bgColor,
+      platform: snapshot?.settings.platform || platform,
     };
   };
 
