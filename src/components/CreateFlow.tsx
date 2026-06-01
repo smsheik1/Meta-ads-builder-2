@@ -174,6 +174,17 @@ const uniqueStrings = (values: Array<string | undefined>) => values
 
 const isDataImage = (value: string | null | undefined) => Boolean(value?.startsWith('data:image/'));
 
+const canPreviewBrandImage = (value: string) => {
+  if (isDataImage(value)) return true;
+  if (value.startsWith('/')) return true;
+  if (typeof window === 'undefined') return false;
+  try {
+    return new URL(value, window.location.href).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+};
+
 export function CreateFlow({
   audioFileName,
   hasUserAudio,
@@ -652,7 +663,14 @@ export function CreateFlow({
                             className="group overflow-hidden rounded-2xl border border-slate-300 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                           >
                             <div className="flex aspect-[1.5] items-center justify-center rounded-xl bg-slate-50 p-3">
-                              <img src={image} alt="" className="max-h-full max-w-full object-contain" />
+                              {canPreviewBrandImage(image) ? (
+                                <img src={image} alt="" className="max-h-full max-w-full object-contain" />
+                              ) : (
+                                <span className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-black uppercase tracking-wide text-slate-500">
+                                  External image
+                                  <ExternalLink className="h-3.5 w-3.5" />
+                                </span>
+                              )}
                             </div>
                             <p className="mt-2 line-clamp-2 break-all text-xs font-bold leading-4 text-slate-600 group-hover:text-slate-900">{image}</p>
                           </a>
