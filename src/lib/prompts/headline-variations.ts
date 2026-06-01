@@ -1,10 +1,19 @@
 import type { BrandBrain } from './brand-brain';
 import { normalizeAdAngles } from './ad-angles';
 
+export type GeneratedAdFormat = 'visualizer' | 'conversation';
+
+export type ConversationAdLine = {
+  speaker: string;
+  text: string;
+};
+
 export type HeadlineVariation = {
   id: string;
   angle: string;
   headline: string;
+  format?: GeneratedAdFormat;
+  conversationLines?: ConversationAdLine[];
 };
 
 export const buildHeadlineVariationsPrompt = ({

@@ -106,6 +106,112 @@ const buildTextLogoDataUrl = (label: string) => {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 };
 
+const cleanConversationLine = (value: string) => value
+  .replace(/\s+/g, ' ')
+  .trim()
+  .slice(0, 96);
+
+const buildConversationFallbackLines = (variation: GeneratedAdVariation, brandBrain: BrandBrain) => {
+  const pain = cleanConversationLine(brandBrain.pain || 'the hard part is getting ignored');
+  const offer = cleanConversationLine(brandBrain.offer || 'the offer is easier to understand this way');
+  const result = cleanConversationLine(brandBrain.promisedResult || 'people understand the value faster');
+  return [
+    { speaker: 'Alex', text: `I keep seeing ${pain}.` },
+    { speaker: 'Jordan', text: `${offer} makes that much clearer.` },
+    { speaker: 'Alex', text: `So the ad should say, ${variation.headline.toLowerCase()}?` },
+    { speaker: 'Jordan', text: `Exactly. Show ${result} before they scroll.` },
+  ];
+};
+
+const buildConversationAdElements = (
+  variation: GeneratedAdVariation,
+  brandBrain: BrandBrain,
+  logoUrl: string
+): AdElement[] => {
+  const businessName = cleanConversationLine(brandBrain.businessName || 'Your brand').slice(0, 28);
+  const lines = (variation.conversationLines?.length ? variation.conversationLines : buildConversationFallbackLines(variation, brandBrain))
+    .map((line) => ({
+      speaker: cleanConversationLine(line.speaker || ''),
+      text: cleanConversationLine(line.text || ''),
+    }))
+    .filter((line) => line.text)
+    .slice(0, 4);
+
+  return [
+    {
+      id: 'logo-1',
+      type: 'image',
+      componentRole: 'logo',
+      imageUrl: logoUrl,
+      x: 26,
+      y: 24,
+      width: 42,
+      height: 42,
+      rotation: 0,
+      zIndex: 10,
+      removeWhite: false,
+      borderRadius: 12,
+    },
+    {
+      id: 'conversation-brand-1',
+      type: 'text',
+      content: businessName,
+      x: 76,
+      y: 24,
+      width: 250,
+      height: 42,
+      rotation: 0,
+      zIndex: 11,
+      fontSize: 19,
+      fontWeight: '900',
+      color: '#0f172a',
+      textAlign: 'left',
+      lineHeight: 1.05,
+    },
+    {
+      id: 'headline-1',
+      type: 'text',
+      componentRole: 'headline',
+      content: variation.headline,
+      x: 26,
+      y: 74,
+      width: 308,
+      height: 62,
+      rotation: 0,
+      zIndex: 1,
+      fontSize: 31,
+      fontWeight: '900',
+      color: '#0f172a',
+      textAlign: 'center',
+      lineHeight: 1.02,
+      styleArchetypeId: variation.archetype.id,
+    },
+    ...lines.map((line, index): AdElement => {
+      const sentByBrand = index % 2 === 1;
+      return {
+        id: `conversation-line-${index + 1}`,
+        type: 'text',
+        content: line.text,
+        x: sentByBrand ? 70 : 20,
+        y: 152 + index * 66,
+        width: 270,
+        height: 62,
+        rotation: 0,
+        zIndex: 20 + index,
+        fontSize: 19,
+        fontWeight: '800',
+        fontFamily: 'Inter, sans-serif',
+        color: sentByBrand ? variation.archetype.ctaTextColor : variation.archetype.headlineColor,
+        textAlign: 'left',
+        lineHeight: 1.12,
+        backgroundColor: sentByBrand ? variation.archetype.ctaBackgroundColor : '#e2e8f0',
+        borderRadius: 18,
+        styleArchetypeId: variation.archetype.id,
+      };
+    }),
+  ];
+};
+
 const MOCK_CAPTIONS = [
   { text: "Are you missing calls?", start: 0, end: 2, speaker: 1 },
   { text: "Our AI receptionist can help.", start: 2.5, end: 4.5, speaker: 2 },
@@ -3819,6 +3925,23 @@ This ad headline is: ${variation.headline}`;
       reference: brandBrain.websiteUrl,
     });
     setBusinessContext(brandContext);
+
+    if (variation.format === 'conversation') {
+      setBgColor('#f8fafc');
+      setVisualizerColor(appliedVisualizerColor);
+      setAccentColor(appliedAccentColor);
+      setElements((currentElements) => {
+        const lockedById = new Map(currentElements.filter((element) => element.locked).map((element) => [element.id, element]));
+        return buildConversationAdElements(variation, brandBrain, appliedCanvasLogo).map((element) => lockedById.get(element.id) || element);
+      });
+      deselectAll();
+      if (navigateToBuilder) {
+        requestAnimationFrame(() => commitHistory());
+        enterStudio();
+      }
+      return;
+    }
+
     const applyVariationToElement = (element: AdElement): AdElement => {
       if (element.componentRole === 'logo') {
         return {
@@ -3834,12 +3957,21 @@ This ad headline is: ${variation.headline}`;
         return {
           ...element,
           content: variation.headline,
+          fontFamily: undefined,
           color: variation.archetype.headlineColor,
           fontSize: variation.archetype.headlineTreatment.fontSize,
           fontWeight: variation.archetype.headlineTreatment.fontWeight,
           lineHeight: Math.max(1.08, variation.archetype.headlineTreatment.lineHeight),
           x: (360 - headlineWidth) / 2,
           width: headlineWidth,
+          styleArchetypeId: variation.archetype.id,
+        };
+      }
+      if (element.componentRole === 'subheadline') {
+        return {
+          ...element,
+          fontFamily: undefined,
+          color: variation.archetype.subheadlineColor,
           styleArchetypeId: variation.archetype.id,
         };
       }
@@ -3864,6 +3996,15 @@ This ad headline is: ${variation.headline}`;
           captionSpeaker2Color: appliedAccentColor,
         };
       }
+      if (element.componentRole === 'cta') {
+        return {
+          ...element,
+          fontFamily: undefined,
+          color: variation.archetype.ctaTextColor,
+          backgroundColor: variation.archetype.ctaBackgroundColor,
+          styleArchetypeId: variation.archetype.id,
+        };
+      }
       return {
         ...element,
         styleArchetypeId: variation.archetype.id,
@@ -3883,6 +4024,20 @@ This ad headline is: ${variation.headline}`;
   const openSaveDesignDialog = () => {
     setTemplateDraftName(getCurrentDesignTitle());
     setSaveTemplateOpen(true);
+  };
+
+  const saveGeneratedAdDesign = (variation: GeneratedAdVariation, nextBrandBrain: BrandBrain) => {
+    applyGeneratedAdVariation(variation, nextBrandBrain, false, false);
+    setTemplateLibraryTab('templates');
+    saveCurrentTemplate(variation.headline);
+  };
+
+  const openSavedCreateDesign = (designId: string) => {
+    const template = templates.find((candidate) => candidate.id === designId);
+    if (!template) return;
+    setTemplateLibraryTab('templates');
+    loadTemplate(template);
+    enterStudio();
   };
 
   useEffect(() => {
@@ -4201,7 +4356,7 @@ This ad headline is: ${variation.headline}`;
       <>
         <CreateFlow
           audioFileName={audioFileName}
-          hasUserAudio={Boolean(currentAudioAssetId) || Boolean(generatedDialogueAudioUrl)}
+          hasUserAudio={Boolean(audioUrl)}
           onAudioUpload={(event) => {
             void handleAudioUpload(event);
             if (event.target) event.target.value = '';
@@ -4222,7 +4377,15 @@ This ad headline is: ${variation.headline}`;
           onTogglePlayback={togglePlayback}
           onPlaybackComplete={() => setPlaying(false)}
           onDownloadVideo={() => void downloadSimulatedVideo()}
-          onSaveDesign={openSaveDesignDialog}
+          onSaveDesign={saveGeneratedAdDesign}
+          savedDesigns={templates.map((template) => ({
+            id: template.id,
+            name: template.name,
+            previewTitle: getTemplateTitle(template),
+            backgroundColor: template.settings.bgColor || '#f8fafc',
+            accentColor: template.settings.accentColor || '#4f46e5',
+          }))}
+          onOpenSavedDesign={openSavedCreateDesign}
           onPlatformChange={setPlatform}
           onRefreshBackgroundColor={refreshBackgroundColor}
           onApplyStyleArchetype={applyStyleArchetype}

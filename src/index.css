@@ -260,6 +260,118 @@
     text-transform: uppercase;
   }
 
+  .wiggly-reroll-shine {
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: 10px;
+    animation: wiggly-reroll-focus 620ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .wiggly-reroll-shine::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    z-index: 79;
+    border-radius: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.18);
+    opacity: 0;
+    pointer-events: none;
+    animation: wiggly-reroll-edge 620ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .wiggly-reroll-shine::after {
+    content: "";
+    position: absolute;
+    top: -45%;
+    bottom: -45%;
+    left: -42%;
+    width: 34%;
+    z-index: 80;
+    background:
+      linear-gradient(
+        96deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0) 30%,
+        rgba(255, 255, 255, 0.58) 43%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 255, 255, 0.58) 57%,
+        rgba(255, 255, 255, 0) 70%,
+        transparent 100%
+      );
+    mix-blend-mode: screen;
+    pointer-events: none;
+    transform: translateX(0) skewX(-18deg);
+    animation: wiggly-reroll-glint 620ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .wiggly-reroll-shine-headline::after,
+  .wiggly-reroll-shine-captions::after {
+    left: -46%;
+    width: 38%;
+  }
+
+  .wiggly-reroll-shine-visualizer::after {
+    background:
+      linear-gradient(
+        96deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0) 28%,
+        rgba(255, 255, 255, 0.68) 43%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 255, 255, 0.68) 57%,
+        rgba(255, 255, 255, 0) 72%,
+        transparent 100%
+      );
+  }
+
+  @keyframes wiggly-reroll-glint {
+    0% {
+      opacity: 0;
+      transform: translateX(0) skewX(-18deg);
+    }
+    12% {
+      opacity: 1;
+    }
+    78% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(430%) skewX(-18deg);
+    }
+  }
+
+  @keyframes wiggly-reroll-focus {
+    0% {
+      filter: brightness(1) contrast(1);
+    }
+    35% {
+      filter: brightness(1.12) contrast(1.04);
+    }
+    68% {
+      filter: brightness(1.04) contrast(1.02);
+    }
+    100% {
+      filter: brightness(1) contrast(1);
+    }
+  }
+
+  @keyframes wiggly-reroll-edge {
+    0% {
+      opacity: 0;
+    }
+    18% {
+      opacity: 0.72;
+    }
+    58% {
+      opacity: 0.36;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
   .wiggly-item-row {
     border: 1px solid rgba(17, 24, 39, 0.08);
     border-radius: 1rem;
