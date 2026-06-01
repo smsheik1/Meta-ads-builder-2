@@ -2214,6 +2214,8 @@ export default function App() {
   };
 
   const handleOpenConversationWizard = () => {
+    setAudioFlyoutOpen(false);
+    setAudioFlyoutView('choices');
     const firstScript = dialogueScripts[selectedDialogueScriptIndex] || dialogueScripts[0];
     if (firstScript && !draftDialogueScript) {
       setDraftDialogueScript(cloneDialogueScript(firstScript));
