@@ -4306,6 +4306,7 @@ This ad headline is: ${variation.headline}`;
           }}
           audioUrl={audioUrl}
           audioAnalysis={previewAudioAnalysis}
+          captionsLoading={isTranscribing}
           platform={platform}
           backgroundColor={bgColor}
           bgMedia={bgMedia}
@@ -5424,6 +5425,7 @@ This ad headline is: ${variation.headline}`;
                   previewDurationCap={renderDurationCap === 'full' ? null : renderDurationCap}
                   audioUrl={audioUrl}
                   audioAnalysis={previewAudioAnalysis}
+                  captionsLoading={isTranscribing}
                   accentColor={accentColor}
                   playing={playing}
                   onPlaybackComplete={() => setPlaying(false)}

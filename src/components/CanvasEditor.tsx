@@ -78,6 +78,7 @@ interface CanvasEditorProps {
   platform: PlatformType;
   audioUrl: string | null;
   audioAnalysis?: AudioAnalysisData | null;
+  captionsLoading?: boolean;
   playing: boolean;
   onPlaybackComplete?: () => void;
   accentColor: string;
@@ -176,7 +177,7 @@ const applyArchetypeToElement = (element: AdElement, archetype: AdStyleArchetype
   return element;
 };
 
-export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, audioAnalysis, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype, rerollFlash, readOnly = false, disableSpaceReroll = false, disableEmptySelectionSpaceReroll = false }) => {
+export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, audioAnalysis, captionsLoading = false, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype, rerollFlash, readOnly = false, disableSpaceReroll = false, disableEmptySelectionSpaceReroll = false }) => {
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
@@ -1319,7 +1320,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                       fontWeight: el.fontWeight || 700,
                     }}
                   >
-                    {currentCaption || (audioUrl ? (playing ? 'Captions are loading' : 'Captions will appear during playback') : 'Upload audio for captions')}
+                    {currentCaption || (audioUrl ? (captionsLoading ? 'Captions are loading' : 'Captions unavailable') : 'Upload audio for captions')}
                   </AutoFitText>
                </div>
             )}

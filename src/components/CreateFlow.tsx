@@ -39,6 +39,7 @@ type CreateFlowProps = {
   onAudioUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   audioUrl: string | null;
   audioAnalysis: AudioAnalysisData | null;
+  captionsLoading?: boolean;
   platform: PlatformType;
   backgroundColor: string;
   bgMedia: { url: string; type: string } | null;
@@ -284,6 +285,7 @@ export function CreateFlow({
   onAudioUpload,
   audioUrl,
   audioAnalysis,
+  captionsLoading = false,
   platform,
   backgroundColor,
   bgMedia,
@@ -692,6 +694,7 @@ export function CreateFlow({
                   previewDurationCap={previewDurationCap}
                   audioUrl={audioUrl}
                   audioAnalysis={audioAnalysis}
+                  captionsLoading={captionsLoading}
                   accentColor={activeVariation?.accentColor || '#4F46E5'}
                   playing={playing}
                   onPlaybackComplete={onPlaybackComplete}
