@@ -1737,17 +1737,31 @@ const buildHeuristicBrandBrain = ({
   );
   const category = description || `${businessName} products and services`;
   const colors = normalizeHexColors(Object.values(brandAssets?.colors || {}));
+  const lowerText = `${businessName} ${category} ${researchText}`.toLowerCase();
+  const categorySignals = [
+    { pattern: /\b(medspa|medical spa|skin|laser|aesthetic|rejuvenation|botox|facial|acne)\b/, label: 'medspa services', audience: 'people considering premium skin and laser treatments', pain: 'They want visible skin results but do not know which treatment to trust', result: 'Feel confident choosing a treatment for smoother, healthier-looking skin', differentiator: `${businessName} makes advanced skin and laser care feel premium and guided` },
+    { pattern: /\b(dental|dentist|orthodont|implant|veneers|teeth)\b/, label: 'dental care', audience: 'people comparing dental providers', pain: 'They want dental care that feels trustworthy before they book', result: 'Book with more confidence and understand the next step faster', differentiator: `${businessName} turns dental care into a clearer, easier decision` },
+    { pattern: /\b(fitness|gym|workout|activewear|training|athlete)\b/, label: 'fitness products', audience: 'people serious about training and performance', pain: 'They want gear that performs without feeling generic', result: 'Train with products that feel built for the way they move', differentiator: `${businessName} connects performance, style, and trust in one offer` },
+  ];
+  const matchedSignal = categorySignals.find((signal) => signal.pattern.test(lowerText));
+  const offer = matchedSignal
+    ? `${businessName} offers ${matchedSignal.label} for ${matchedSignal.audience}.`
+    : category || `Products from ${businessName}`;
+  const audience = matchedSignal?.audience || `People considering ${businessName} or similar options`;
+  const pain = matchedSignal?.pain || `People need a concrete reason to choose ${businessName} over another option`;
+  const promisedResult = matchedSignal?.result || `Find the right ${businessName} option faster and feel confident trying it`;
+  const differentiator = matchedSignal?.differentiator || `${businessName} already has brand recognition, product signals, and trust buyers recognize`;
 
   return {
     businessName,
     websiteUrl: websiteUrl.href,
     brandLogoUrl: brandLogoUrl || brandAssets?.images.logo || undefined,
     brandAssets,
-    offer: category || `Products from ${businessName}`,
-    audience: `People considering ${businessName} or similar options`,
-    pain: `They need a clear reason to choose ${businessName} instead of another familiar option`,
-    promisedResult: `Find the right ${businessName} option faster and feel confident trying it`,
-    differentiator: `${businessName} already has brand recognition, product signals, and trust buyers recognize`,
+    offer,
+    audience,
+    pain,
+    promisedResult,
+    differentiator,
     tone: 'clear, confident, direct',
     colors: colors.length ? colors : ['#00D6B8', '#4F46E5', '#0F172A'],
     proof: [
@@ -1762,14 +1776,14 @@ const buildHeuristicBrandBrain = ({
       'unlock your potential',
     ],
     adAngles: [
-      `why people choose ${businessName} over another familiar option`,
-      `the fastest way to understand what ${businessName} offers`,
-      `the everyday moment where ${businessName} becomes the obvious choice`,
-      `the product detail that makes ${businessName} easier to trust`,
-      `the difference between browsing and finding the right ${businessName} option`,
-      `the reason ${businessName} stays top of mind`,
+      `why ${audience} choose ${businessName}`,
+      `the fastest way to understand ${offer}`,
+      `the decision moment before someone chooses ${businessName}`,
+      `the detail that makes ${businessName} easier to trust`,
+      `the difference between browsing and booking with ${businessName}`,
+      `how ${businessName} helps people get ${promisedResult.toLowerCase()}`,
       `the simple promise behind ${businessName}`,
-      `what shoppers should notice before they compare alternatives`,
+      `what people should notice before they compare alternatives`,
     ],
   };
 };
@@ -1801,6 +1815,9 @@ const isUsableHeadline = (headline: string, brandBrain: BrandBrain, previous: Se
   const lower = headline.toLowerCase();
   if (previous.has(lower)) return false;
   if (/\bwiggly\b/i.test(headline)) return false;
+  if (/\b(they|people|buyers|shoppers|customers|clients|patients)\s+need\s+a\s+clear\b/i.test(headline)) return false;
+  if (/\bneed\s+a\s+clear\s+is\b/i.test(headline)) return false;
+  if (/\b[a-z]+\s+is\s+getting expensive$/i.test(headline) && words < 6) return false;
   return !(brandBrain.bannedGenericPhrases || []).some((phrase) => phrase && lower.includes(phrase.toLowerCase()));
 };
 
@@ -1875,45 +1892,69 @@ const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<
       .replace(/[^\w\s$%'-]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
-    return phrase.split(/\s+/).filter(Boolean).slice(0, maxWords).join(' ') || fallback;
+    const words = phrase.split(/\s+/).filter(Boolean);
+    const clipped = words.slice(0, maxWords).join(' ');
+    if (/^(they|people|buyers|shoppers|customers|clients|patients)\s+need\s+a\s+clear\b/i.test(clipped)) return fallback;
+    if (/\bneed\s+a\s+clear$/i.test(clipped)) return fallback;
+    return clipped || fallback;
   };
-  const pain = shortPhrase(brandBrain.pain, 4, 'the hidden problem');
-  const audience = shortPhrase(brandBrain.audience, 3, 'your buyers');
-  const offer = shortPhrase(brandBrain.offer, 4, 'the better answer');
-  const result = shortPhrase(brandBrain.promisedResult, 4, 'the better outcome');
-  const differentiator = shortPhrase(brandBrain.differentiator, 4, 'the unfair edge');
   const proof = (brandBrain.proof || []).map((item) => shortPhrase(item, 5, '')).filter(Boolean).slice(0, 8);
-  const subjects = [pain, audience, offer, result, differentiator, ...proof].filter(Boolean);
+  const brandName = cleanTextField(brandBrain.businessName, 42) || 'Your brand';
+  const briefText = `${brandName} ${brandBrain.offer} ${brandBrain.audience} ${brandBrain.pain} ${brandBrain.differentiator}`.toLowerCase();
+  const isMedspa = /\b(medspa|skin|laser|aesthetic|rejuvenation|botox|facial|acne)\b/.test(briefText);
+  const categoryTemplates = isMedspa ? [
+    'Know your skin treatment before you book',
+    'Premium skin care should feel clear',
+    'Choose the treatment your skin actually needs',
+    'Smoother skin starts with the right plan',
+    'Laser care without the guessing',
+    'Make your next skin visit feel obvious',
+    `${brandName} makes skin care feel guided`,
+    `Book ${brandName} with more confidence`,
+    'The right medspa choice starts here',
+    'Stop guessing which treatment fits',
+    'Skin goals deserve a clearer plan',
+    'Feel confident before your appointment',
+    'A better skin consult starts here',
+    'Make the next treatment choice simple',
+    'Premium laser care without the confusion',
+    'Turn skin goals into a clearer plan',
+    'The medspa visit should feel guided',
+    'Know what to book before you book',
+    'Clearer skin decisions start here',
+    'Show the treatment before the pitch',
+    'Your skin plan should feel personal',
+    'A premium skin visit starts with clarity',
+    'Make the consultation feel easy',
+    'Give skin goals a smarter next step',
+  ] : [
+    `${brandName} should be easy to understand`,
+    `Choose ${brandName} with more confidence`,
+    `The useful part of ${brandName}`,
+    `Make ${brandName} feel obvious`,
+    `${brandName} in one clear reason`,
+    `A sharper reason to try ${brandName}`,
+    `Why people choose ${brandName}`,
+    `What makes ${brandName} worth noticing`,
+  ];
   const templates = [
-    `${pain} is getting expensive`,
-    `${pain} should not be invisible`,
-    `Stop letting ${pain} win`,
-    `Your audience already feels ${pain}`,
-    `${audience} need the faster answer`,
-    `${audience} notice the difference fast`,
-    `${offer} should look premium`,
-    `${offer} is the scroll stopper`,
-    `Make ${result} feel obvious`,
-    `${result} starts with one clip`,
-    `${differentiator} is the ad angle`,
-    `Lead with ${differentiator}`,
+    ...categoryTemplates,
+    `Show why ${brandName} is worth choosing`,
+    `Make ${brandName} easy to trust`,
+    `Turn ${brandName} into the obvious next step`,
+    `Lead with the clearest reason to try ${brandName}`,
+    `Show the useful part of ${brandName}`,
+    `Make the decision feel easier`,
+    `Give people a reason to stop scrolling`,
+    `Start with the outcome they want`,
+    `Make the offer clear in one glance`,
+    `Show the proof before the pitch`,
+    `Turn the first frame into the hook`,
+    `Make the next step feel simple`,
     `The old workaround is expensive`,
     `Show the problem before they scroll`,
     `Make the hard part visible`,
     `Turn the proof into motion`,
-  ];
-  const openers = ['Show', 'Make', 'Turn', 'Spotlight', 'Expose', 'Prove', 'Sell', 'Lead with'];
-  const closers = [
-    'before they scroll',
-    'in one glance',
-    'with one line',
-    'without explaining',
-    'as the hook',
-    'with motion',
-    'in seconds',
-    'right away',
-    'on the first frame',
-    'like a premium brand',
   ];
 
   proof.forEach((proofPoint) => {
@@ -1925,13 +1966,6 @@ const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<
     if (!clippedAngle) return;
     templates.push(`${clippedAngle} before they scroll`);
     templates.push(`Make ${clippedAngle} feel obvious`);
-  });
-  subjects.forEach((subject) => {
-    openers.forEach((opener) => {
-      closers.forEach((closer) => {
-        templates.push(`${opener} ${subject} ${closer}`);
-      });
-    });
   });
 
   const fallbacks: HeadlineVariation[] = [];
