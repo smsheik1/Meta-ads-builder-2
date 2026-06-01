@@ -15,6 +15,8 @@ test('renderers do not use fake demo captions when transcript captions are missi
 
   expect(canvasSource).toContain('getActiveCaption(state.captions, currentTime)');
   expect(canvasSource).toContain('captionPreviewText');
+  expect(canvasSource).toContain('const displayCaption = currentCaption || (!captionsLoading ? captionPreviewText : null);');
+  expect(canvasSource).toContain('if (state.captions.length === 0) setCurrentCaption(null);');
   expect(canvasSource).toContain('displayCaption || (audioUrl ?');
   expect(canvasSource).toContain('pickVisibleColorOnLight');
   expect(canvasSource).toContain('el.captionSpeaker1Color');
@@ -23,6 +25,7 @@ test('renderers do not use fake demo captions when transcript captions are missi
   expect(canvasSource).not.toContain('Captions unavailable');
   expect(appSource).toContain('const renderCaptions = captions;');
   expect(appSource).toContain('captionsLoading={isTranscribing}');
+  expect(appSource).not.toContain('if (navigateToBuilder) setPlaying(false);\\n    useEditorStore.getState().setCaptions([]);');
   expect(appSource).toContain('inferAudioMimeType(audioUrl)');
   expect(remotionSource).toContain('const activeCaptions = snapshot.captions;');
 });

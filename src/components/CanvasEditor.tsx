@@ -369,7 +369,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   const captionPreviewText = captions.length > 0
     ? getActiveCaption(captions, Math.max(playbackTime, captions[0].start)).caption?.text || captions[0].text
     : null;
-  const displayCaption = currentCaption || (!playing && !captionsLoading ? captionPreviewText : null);
+  const displayCaption = currentCaption || (!captionsLoading ? captionPreviewText : null);
 
   useEffect(() => {
     if (!editingId) return;
@@ -530,7 +530,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         loopSpeaker = (activeCaptionIndex % 2) + 1;
         setCurrentSpeaker(loopSpeaker);
       } else {
-        setCurrentCaption(null);
+        if (state.captions.length === 0) setCurrentCaption(null);
         loopSpeaker = Math.floor(currentTime / 1.5) % 2 === 0 ? 1 : 2;
       }
       

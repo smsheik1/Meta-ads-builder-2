@@ -3854,7 +3854,6 @@ This ad headline is: ${variation.headline}`;
     setActiveTab('single');
     setCreativeMode('visualizer');
     if (navigateToBuilder) setPlaying(false);
-    useEditorStore.getState().setCaptions([]);
     if (resetPlatform) setPlatform('instagram-feed');
     setPlatformTheme('dark');
     setBrandName(businessName);
