@@ -187,6 +187,8 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
+  const imageReplaceInputRef = useRef<HTMLInputElement>(null);
+  const pendingImageReplaceIdRef = useRef<string | null>(null);
   const lockPulseTimeoutsRef = useRef<Record<string, number>>({});
   const feedPlatform = isFeedPlatform(platform);
   const verticalPlatform = isVerticalPlatform(platform);
@@ -655,6 +657,33 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
     : 0;
   const introIsSquareish = introImageAspect !== null && introImageAspect >= 0.9 && introImageAspect <= 1.1;
 
+  const replaceImageElementFromFile = (elementId: string) => {
+    pendingImageReplaceIdRef.current = elementId;
+    if (imageReplaceInputRef.current) {
+      imageReplaceInputRef.current.value = '';
+      imageReplaceInputRef.current.click();
+    }
+  };
+
+  const handleImageReplaceFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    const elementId = pendingImageReplaceIdRef.current;
+    pendingImageReplaceIdRef.current = null;
+    if (!file || !elementId || !file.type.startsWith('image/')) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== 'string') return;
+      updateElement(elementId, {
+        imageUrl: reader.result,
+        removeWhite: false,
+      });
+      selectElement(elementId, false);
+      commitHistory();
+    };
+    reader.readAsDataURL(file);
+  };
+
   useEffect(() => {
     if (readOnly) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -688,6 +717,16 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         }
       }}
     >
+      {!readOnly && (
+        <input
+          ref={imageReplaceInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          aria-label="Replace selected image"
+          onChange={handleImageReplaceFile}
+        />
+      )}
       {bgMedia && bgMedia.type === 'image' && (
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-60 z-0 pointer-events-none" 
@@ -993,6 +1032,11 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             onDoubleClick={(e) => {
                e.stopPropagation();
                if (readOnly) return;
+               if (el.type === 'image') {
+                  selectElement(el.id, false);
+                  replaceImageElementFromFile(el.id);
+                  return;
+               }
                if (el.type === 'text' || el.type === 'button') {
                   selectElement(el.id, false);
                   setEditingId(el.id);
