@@ -212,13 +212,6 @@ const buildConversationAdElements = (
   ];
 };
 
-const MOCK_CAPTIONS = [
-  { text: "Are you missing calls?", start: 0, end: 2, speaker: 1 },
-  { text: "Our AI receptionist can help.", start: 2.5, end: 4.5, speaker: 2 },
-  { text: "Available 24/7.", start: 5, end: 6.5, speaker: 1 },
-  { text: "Never miss a lead again.", start: 7, end: 9, speaker: 2 },
-];
-
 const CAPTION_SPEAKER_COLORS: Record<number, string> = {
   1: '#00D6B8',
   2: '#6554FF',
@@ -3023,8 +3016,7 @@ export default function App() {
       const sortedElements = [...currentElements].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
       
       const currentTimeSec = elapsed / 1000;
-      const storeCaptions = captions;
-      const renderCaptions = storeCaptions.length > 0 ? storeCaptions : MOCK_CAPTIONS;
+      const renderCaptions = captions;
       const activeCaptionIndexGlobal = renderCaptions.findIndex(c => currentTimeSec >= c.start && currentTimeSec <= c.end);
       const activeCaptionGlobal = activeCaptionIndexGlobal >= 0 ? renderCaptions[activeCaptionIndexGlobal] : undefined;
       const hasTwoSpeakers = renderCaptions.some(c => c.speaker === 2);
@@ -3192,8 +3184,7 @@ export default function App() {
              });
          } else if (el.type === 'caption') {
              const currentTimeSec = elapsed / 1000;
-             const storeCaptions = captions;
-             const renderCaptions = storeCaptions.length > 0 ? storeCaptions : MOCK_CAPTIONS;
+             const renderCaptions = captions;
              const { caption: activeCaption, index: activeCaptionIndex } = getActiveCaption(renderCaptions, currentTimeSec);
              
              if (activeCaption) {

@@ -98,13 +98,6 @@ interface CanvasEditorProps {
   disableEmptySelectionSpaceReroll?: boolean;
 }
 
-const MOCK_CAPTIONS = [
-  { text: "Are you missing calls?", start: 0, end: 2, speaker: 1 },
-  { text: "Our AI receptionist can help.", start: 2.5, end: 4.5, speaker: 2 },
-  { text: "Available 24/7.", start: 5, end: 6.5, speaker: 1 },
-  { text: "Never miss a lead again.", start: 7, end: 9, speaker: 2 },
-];
-
 const CAPTION_SPEAKER_COLORS: Record<number, string> = {
   1: '#00D6B8',
   2: '#6554FF',
@@ -523,8 +516,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         onPlaybackComplete?.();
         return;
       }
-      const activeCaps = state.captions.length > 0 ? state.captions : MOCK_CAPTIONS;
-      const { caption: activeCaption, index: activeCaptionIndex } = getActiveCaption(activeCaps, currentTime);
+      const { caption: activeCaption, index: activeCaptionIndex } = getActiveCaption(state.captions, currentTime);
       let loopSpeaker: number | null = null;
       
       if (activeCaption) {
