@@ -37,6 +37,7 @@ type CreateFlowProps = {
   audioFileName: string;
   hasUserAudio: boolean;
   onAudioUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onOpenVoiceMaker: () => void;
   audioUrl: string | null;
   audioAnalysis: AudioAnalysisData | null;
   captionsLoading?: boolean;
@@ -283,6 +284,7 @@ export function CreateFlow({
   audioFileName,
   hasUserAudio,
   onAudioUpload,
+  onOpenVoiceMaker,
   audioUrl,
   audioAnalysis,
   captionsLoading = false,
@@ -331,7 +333,10 @@ export function CreateFlow({
   const [savedVariationIds, setSavedVariationIds] = useState<string[]>([]);
   const [savedDesignsOpen, setSavedDesignsOpen] = useState(false);
   const [rerollFlash, setRerollFlash] = useState<RerollFlashPayload | null>(null);
+  const [voiceMenuOpen, setVoiceMenuOpen] = useState(false);
+  const [voiceMenuView, setVoiceMenuView] = useState<'choices' | 'library'>('choices');
   const lastPreviewKeyRef = useRef('');
+  const voiceMenuCloseTimeoutRef = useRef<number | null>(null);
 
   const visibleVariations = useMemo(() => (
     selectedFormat === 'all'
@@ -374,6 +379,30 @@ export function CreateFlow({
     : variations.length
       ? `No ${selectedFormatLabel.toLowerCase()} ads in this set yet.`
       : 'Your generated ads appear on the canvas';
+  const voiceName = hasUserAudio
+    ? audioFileName.replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim() || 'Uploaded voice'
+    : 'Example voice';
+  const voiceLabel = hasUserAudio ? 'Uploaded by you' : 'Example';
+
+  const openVoiceMenu = () => {
+    if (voiceMenuCloseTimeoutRef.current) {
+      window.clearTimeout(voiceMenuCloseTimeoutRef.current);
+      voiceMenuCloseTimeoutRef.current = null;
+    }
+    setVoiceMenuOpen(true);
+  };
+
+  const closeVoiceMenuSoon = () => {
+    if (voiceMenuCloseTimeoutRef.current) window.clearTimeout(voiceMenuCloseTimeoutRef.current);
+    voiceMenuCloseTimeoutRef.current = window.setTimeout(() => {
+      setVoiceMenuOpen(false);
+      setVoiceMenuView('choices');
+    }, 140);
+  };
+
+  useEffect(() => () => {
+    if (voiceMenuCloseTimeoutRef.current) window.clearTimeout(voiceMenuCloseTimeoutRef.current);
+  }, []);
 
   const statusCopy = useMemo(() => {
     if (status === 'researching') return 'Finding the angle';
@@ -654,11 +683,12 @@ export function CreateFlow({
               {FORMAT_MODES.map((mode) => {
                 const Icon = mode.icon;
                 const active = selectedFormat === mode.id;
-                return (
+                const button = (
                   <button
-                    key={mode.id}
                     type="button"
                     onClick={() => setSelectedFormat(mode.id)}
+                    onFocus={mode.id === 'visualizer' ? openVoiceMenu : undefined}
+                    onBlur={mode.id === 'visualizer' ? closeVoiceMenuSoon : undefined}
                     className={`flex h-11 w-11 items-center justify-center rounded-xl transition ${
                       active
                         ? 'bg-slate-950 text-white shadow-md shadow-slate-950/20'
@@ -669,6 +699,109 @@ export function CreateFlow({
                   >
                     <Icon className="h-5 w-5" />
                   </button>
+                );
+
+                if (mode.id !== 'visualizer') {
+                  return <React.Fragment key={mode.id}>{button}</React.Fragment>;
+                }
+
+                return (
+                  <div
+                    key={mode.id}
+                    className="relative"
+                    onMouseEnter={openVoiceMenu}
+                    onMouseLeave={closeVoiceMenuSoon}
+                  >
+                    {button}
+                    {voiceMenuOpen && (
+                      <div
+                        className="absolute left-1/2 top-[calc(100%+0.75rem)] z-[90] w-80 -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-4 text-left text-slate-950 shadow-2xl shadow-slate-950/20 lg:left-[calc(100%+0.75rem)] lg:top-0 lg:translate-x-0"
+                        onMouseEnter={openVoiceMenu}
+                        onMouseLeave={closeVoiceMenuSoon}
+                      >
+                        <div className="mb-4">
+                          <h3 className="text-sm font-black text-slate-900">Change voice</h3>
+                          <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">Your ad keeps working while you choose.</p>
+                        </div>
+
+                        {voiceMenuView !== 'choices' && (
+                          <button
+                            type="button"
+                            onClick={() => setVoiceMenuView('choices')}
+                            className="mb-3 text-xs font-black text-slate-500 transition hover:text-slate-900"
+                          >
+                            Back
+                          </button>
+                        )}
+
+                        {voiceMenuView === 'choices' && (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3">
+                              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-slate-900 shadow-sm">
+                                <AudioLines className="h-4 w-4" />
+                              </span>
+                              <span className="min-w-0">
+                                <span className="block truncate text-sm font-black text-slate-800">Voice: {voiceName}</span>
+                                <span className="block truncate text-xs font-semibold text-slate-500">{voiceLabel}</span>
+                              </span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setVoiceMenuOpen(false);
+                                setVoiceMenuView('choices');
+                                onOpenVoiceMaker();
+                              }}
+                              className="w-full rounded-2xl border border-slate-900 bg-slate-950 p-4 text-left text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:shadow-xl"
+                            >
+                              <span className="flex items-center justify-between gap-3">
+                                <span>
+                                  <span className="block text-base font-black">Make me a voice</span>
+                                  <span className="mt-1 block text-xs font-semibold leading-5 text-white/70">Write a short script. Wiggly turns it into audio.</span>
+                                </span>
+                                <ArrowRight className="h-5 w-5 shrink-0" />
+                              </span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setVoiceMenuView('library')}
+                              className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left text-slate-900 transition hover:border-slate-300 hover:bg-white"
+                            >
+                              <span className="flex items-center justify-between gap-3">
+                                <span>
+                                  <span className="block text-sm font-black">Use a voice I have</span>
+                                  <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">Upload a voice clip for timing, captions, and bars.</span>
+                                </span>
+                                <ArrowRight className="h-5 w-5 shrink-0 text-slate-400" />
+                              </span>
+                            </button>
+                          </div>
+                        )}
+
+                        {voiceMenuView === 'library' && (
+                          <div className="space-y-3">
+                            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-3 text-sm font-black text-slate-700 transition hover:border-slate-400 hover:bg-white">
+                              <Upload className="h-4 w-4" />
+                              Upload voice audio
+                              <input
+                                type="file"
+                                accept="audio/*,video/mp4"
+                                onChange={(event) => {
+                                  onAudioUpload(event);
+                                  setVoiceMenuOpen(false);
+                                  setVoiceMenuView('choices');
+                                }}
+                                className="sr-only"
+                                title="Upload voice audio"
+                              />
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>

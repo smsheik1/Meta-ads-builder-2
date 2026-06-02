@@ -186,3 +186,15 @@ test('create format rail hides paused Conversation Card ads', async ({ page }) =
   await expect(page).toHaveURL(/\/builder$/);
   await expect(page.getByText('Edit Parts', { exact: true })).toBeVisible();
 });
+
+test('create visualizer rail opens the existing voice maker flow on hover', async ({ page }) => {
+  await page.goto('/create');
+
+  await page.getByRole('button', { name: 'Show Audio visualizer' }).hover();
+  await expect(page.getByText('Change voice')).toBeVisible();
+  await expect(page.getByText('Make me a voice')).toBeVisible();
+  await expect(page.getByText('Use a voice I have')).toBeVisible();
+
+  await page.getByText('Make me a voice').click();
+  await expect(page.getByRole('heading', { name: 'Make Voice Audio' })).toBeVisible();
+});
