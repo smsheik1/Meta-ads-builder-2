@@ -341,6 +341,39 @@ They need to stop losing the ones already calling.
 3 missed calls a day could equal thousands in lost treatment revenue every month.`,
 };
 
+const formatBriefReference = (brandBrain: BrandBrain) => [
+  brandBrain.websiteUrl,
+  ...(brandBrain.proof?.length ? ['', 'Proof from research:', ...brandBrain.proof.map((point) => `- ${point}`)] : []),
+].join('\n');
+
+const inferFailedAlternatives = (brandBrain: BrandBrain) => {
+  const pain = brandBrain.pain.trim();
+  const offer = brandBrain.offer.trim() || 'the right option';
+  if (pain) {
+    return `Comparing generic alternatives, reading reviews, and trying to guess which option actually solves: ${pain.toLowerCase()}`;
+  }
+  return `Comparing generic alternatives, reading reviews, and trying to guess whether ${offer.toLowerCase()} is the right fit.`;
+};
+
+const inferCreativeBriefCta = (brandBrain: BrandBrain) => {
+  const haystack = `${brandBrain.offer} ${brandBrain.audience} ${brandBrain.promisedResult} ${brandBrain.websiteUrl}`.toLowerCase();
+  if (/\b(shop|apparel|clothing|gear|product|products|buy|store|cart)\b/.test(haystack)) return 'Shop now.';
+  if (/\b(appointment|treatment|medspa|laser|skin|clinic|consultation|service)\b/.test(haystack)) return 'Book a consultation.';
+  if (/\b(demo|software|platform|saas|automation|ai)\b/.test(haystack)) return 'Book a demo.';
+  return 'Learn more.';
+};
+
+const buildCreativeBriefFromBrandBrain = (brandBrain: BrandBrain): CreativeBrief => ({
+  offer: brandBrain.offer,
+  buyer: brandBrain.audience,
+  pain: brandBrain.pain,
+  failedAlternatives: inferFailedAlternatives(brandBrain),
+  promisedResult: brandBrain.promisedResult,
+  differentiator: brandBrain.differentiator,
+  cta: inferCreativeBriefCta(brandBrain),
+  reference: formatBriefReference(brandBrain),
+});
+
 const CREATIVE_BRIEF_FIELDS: Array<{
   key: keyof CreativeBrief;
   question: string;
@@ -3867,16 +3900,7 @@ This ad headline is: ${variation.headline}`;
     setIntroDuration(0);
     setVisualizerColor(appliedVisualizerColor);
     setAccentColor(appliedAccentColor);
-    setCreativeBrief({
-      offer: brandBrain.offer,
-      buyer: brandBrain.audience,
-      pain: brandBrain.pain,
-      failedAlternatives: brandBrain.proof?.join(', ') || 'The old way is slower and harder to show clearly.',
-      promisedResult: brandBrain.promisedResult,
-      differentiator: brandBrain.differentiator,
-      cta: '',
-      reference: brandBrain.websiteUrl,
-    });
+    setCreativeBrief(buildCreativeBriefFromBrandBrain(brandBrain));
     setBusinessContext(brandContext);
 
     if (variation.format === 'conversation') {
@@ -4435,7 +4459,7 @@ This ad headline is: ${variation.headline}`;
 
                     <aside className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                       <p className="text-xs font-black uppercase tracking-wide text-slate-400">Who this is for</p>
-                      <p className="mt-2 text-lg font-black leading-tight text-slate-900">{activePersonaDeck?.customer || 'Dental practice owner'}</p>
+                      <p className="mt-2 text-lg font-black leading-tight text-slate-900">{creativeBrief.buyer || activePersonaDeck?.customer || 'Your customer'}</p>
                       <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">The script should sound like one person has the problem and another person casually points to the solution.</p>
                       <button
                         type="button"
@@ -6164,7 +6188,7 @@ This ad headline is: ${variation.headline}`;
 
                     <aside className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                       <p className="text-xs font-black uppercase tracking-wide text-slate-400">Who this is for</p>
-                      <p className="mt-2 text-lg font-black leading-tight text-slate-900">{activePersonaDeck?.customer || 'Dental practice owner'}</p>
+                      <p className="mt-2 text-lg font-black leading-tight text-slate-900">{creativeBrief.buyer || activePersonaDeck?.customer || 'Your customer'}</p>
                       <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">The script should sound like one person has the problem and another person casually points to the solution.</p>
                       <button
                         type="button"
