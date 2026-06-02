@@ -98,6 +98,7 @@ app.get('/api/health', (_req, res) => {
     ok: true,
     deepgramConfigured: Boolean(process.env.DEEPGRAM_API_KEY),
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+    openrouterConfigured: Boolean(process.env.OPENROUTER_API_KEY),
     firecrawlConfigured: Boolean(process.env.FIRECRAWL_API_KEY),
     postizConfigured: Boolean(process.env.POSTIZ_API_KEY),
   });
@@ -907,6 +908,12 @@ const FIRECRAWL_SCRAPE_URL = 'https://api.firecrawl.dev/v2/scrape';
 const TAVILY_SEARCH_URL = 'https://api.tavily.com/search';
 const BRAND_RESEARCH_MODEL = 'gemini-3-flash-preview';
 const HEADLINE_VARIATION_MODEL = 'gemini-3.1-flash-lite';
+const OPENROUTER_FREE_DIALOGUE_MODELS = [
+  'liquid/lfm-2.5-1.2b-instruct:free',
+  'openai/gpt-oss-20b:free',
+  'openrouter/auto:free',
+];
+const DIALOGUE_PROVIDER_TIMEOUT_MS = 12000;
 const BRAND_RESEARCH_CACHE_TTL_MS = 15 * 60 * 1000;
 const BRAND_RESEARCH_CACHE_LIMIT = 100;
 const MAX_RESEARCH_PAGES = 1;
@@ -2370,6 +2377,139 @@ const fallbackDialogueScripts = (count: number, creativeBrief: any = {}) => {
   return normalizeDialogueScripts({ scripts }, count);
 };
 
+const buildDialogueScriptsPrompt = ({
+  creativeBrief,
+  persona,
+  count,
+}: {
+  creativeBrief: any;
+  persona: string;
+  count: number;
+}) => {
+  const briefText = typeof creativeBrief === 'object'
+    ? Object.entries(creativeBrief).map(([label, value]) => `${label}: ${value}`).join('\n')
+    : String(creativeBrief || '');
+
+  return `You are a direct-response creative strategist for Wiggly, a visual ad creator.
+
+Create ${count} short two-person dialogue ad scripts for this brief.
+
+Brief:
+${briefText}
+
+Persona: ${persona}
+
+The ad should feel like a real-life overheard conversation, not a sales pitch.
+One person has the problem. The other casually reveals the solution.
+Keep each script 14-26 seconds when read aloud.
+No hype. No buzzwords. No testimonials. No fake stats.
+No em dashes or en dashes. Use commas or periods only.
+No forced negation structure like "not this, but that", "it is not X, it is Y", or "stop doing X".
+No staccato sentence stacking. Do not write choppy fragments like "Missed calls. Lost patients. Empty chairs."
+Use normal conversational sentences that sound like people talking naturally.
+Do not include placeholder text, keyboard-mash text, filler words, lorem ipsum, or nonsensical tokens.
+Every line must be fluent English that could be read aloud in the ad.
+Never mention Wiggly. Wiggly is the internal builder, not the product being advertised.
+Use the offer and CTA from the brief. If the brand name is unknown, say "the AI front desk" instead of inventing one.
+
+Return ONLY valid JSON:
+{
+  "scripts": [
+    {
+      "title": "short option title",
+      "angle": "short strategy angle",
+      "lines": [
+        {"speaker": "Ava", "tone": "frustrated", "text": "line"},
+        {"speaker": "Sam", "tone": "calm", "text": "line"}
+      ]
+    }
+  ]
+}`;
+};
+
+const buildOpenRouterDialogueScriptsPrompt = ({
+  creativeBrief,
+  persona,
+  count,
+}: {
+  creativeBrief: any;
+  persona: string;
+  count: number;
+}) => {
+  const offer = asBriefString(creativeBrief, 'offer', 'the offer');
+  const buyer = asBriefString(creativeBrief, 'buyer', persona);
+  const pain = asBriefString(creativeBrief, 'pain', 'the buyer is unsure what to choose');
+  const result = asBriefString(creativeBrief, 'promisedResult', 'feel confident about the next step');
+  const differentiator = asBriefString(creativeBrief, 'differentiator', 'the choice feels clearer and more guided');
+  const cta = asBriefString(creativeBrief, 'cta', 'Learn more.');
+
+  return `Return ONLY valid JSON. Create ${count} short two-person dialogue ad scripts.
+Offer: ${offer}
+Buyer: ${buyer}
+Pain: ${pain}
+Result: ${result}
+Why this brand: ${differentiator}
+CTA: ${cta}
+
+Rules: natural spoken English, no hype, no fake stats, no em dash, never mention Wiggly.
+Each script needs title, angle, and exactly 4 lines alternating Ava and Sam.
+Schema: {"scripts":[{"title":"short","angle":"short","lines":[{"speaker":"Ava","tone":"curious","text":"fluent line"},{"speaker":"Sam","tone":"calm","text":"fluent line"},{"speaker":"Ava","tone":"curious","text":"fluent line"},{"speaker":"Sam","tone":"assured","text":"fluent line"}]}]}`;
+};
+
+const generateDialogueScriptsWithOpenRouter = async (prompt: string, count: number) => {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) return [];
+
+  for (const model of OPENROUTER_FREE_DIALOGUE_MODELS) {
+    if (!model.endsWith(':free')) continue;
+    let timeout: NodeJS.Timeout | undefined;
+    try {
+      const controller = new AbortController();
+      timeout = setTimeout(() => controller.abort(), DIALOGUE_PROVIDER_TIMEOUT_MS);
+      const response = await withTimeout(
+        fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': process.env.PUBLIC_APP_URL || 'http://localhost:3000',
+            'X-Title': 'Wiggly',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'user', content: prompt }],
+            response_format: { type: 'json_object' },
+            temperature: 0.7,
+            max_tokens: 1800,
+          }),
+          signal: controller.signal,
+        }),
+        DIALOGUE_PROVIDER_TIMEOUT_MS,
+        `OpenRouter dialogue generation (${model})`,
+      );
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        console.warn('OpenRouter dialogue model failed:', model, response.status, String(payload?.error?.message || '').slice(0, 180));
+        continue;
+      }
+
+      const text = String(payload?.choices?.[0]?.message?.content || '{"scripts":[]}');
+      const scripts = normalizeDialogueScripts(parseJsonResponse(text), count);
+      if (scripts.length) {
+        console.info('OpenRouter dialogue fallback succeeded:', model);
+        return scripts;
+      }
+    } catch (error: any) {
+      console.warn('OpenRouter dialogue fallback error:', model, String(error?.message || error).slice(0, 180));
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  }
+
+  return [];
+};
+
 const fillDialogueScripts = (scripts: any[], count: number, creativeBrief: any = {}) => {
   const fallbacks = fallbackDialogueScripts(count, creativeBrief);
   const combined = [...scripts];
@@ -2547,83 +2687,69 @@ Return valid JSON with the following structure:
 app.post('/api/generate-dialogue-scripts', aiGenerationLimiter, async (req, res) => {
   const { creativeBrief, persona = 'Dental practice owner', count = 5 } = req.body;
   const requestedCount = Number(count) || 5;
+  const prompt = buildDialogueScriptsPrompt({ creativeBrief, persona, count: requestedCount });
+  const openRouterPrompt = buildOpenRouterDialogueScriptsPrompt({ creativeBrief, persona, count: requestedCount });
   try {
-    const key = process.env.GEMINI_API_KEY;
-    if (!key) {
-      console.warn('Generate dialogue scripts using fallback: GEMINI_API_KEY is not set.');
+    const openRouterScripts = await generateDialogueScriptsWithOpenRouter(openRouterPrompt, requestedCount);
+    if (openRouterScripts.length) {
+      return res.json({
+        scripts: fillDialogueScripts(openRouterScripts, requestedCount, creativeBrief),
+        provider: 'openrouter-free',
+      });
+    }
+    if (process.env.OPENROUTER_API_KEY) {
       return res.json({
         scripts: fillDialogueScripts([], requestedCount, creativeBrief),
         fallback: true,
+        provider: 'local',
+        warning: 'Free OpenRouter models are temporarily unavailable, so Wiggly used local script options.',
+      });
+    }
+
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      console.warn('Generate dialogue scripts using provider fallback: GEMINI_API_KEY is not set.');
+      return res.json({
+        scripts: fillDialogueScripts([], requestedCount, creativeBrief),
+        fallback: true,
+        provider: 'local',
         warning: 'AI script generation is not configured, so Wiggly used local script options.',
       });
     }
 
     const ai = new GoogleGenAI({ apiKey: key });
-    const briefText = typeof creativeBrief === 'object'
-      ? Object.entries(creativeBrief).map(([label, value]) => `${label}: ${value}`).join('\n')
-      : String(creativeBrief || '');
-
-    const prompt = `You are a direct-response creative strategist for Wiggly, a visual ad creator.
-
-Create ${count} short two-person dialogue ad scripts for this brief.
-
-Brief:
-${briefText}
-
-Persona: ${persona}
-
-The ad should feel like a real-life overheard conversation, not a sales pitch.
-One person has the problem. The other casually reveals the solution.
-Keep each script 14-26 seconds when read aloud.
-No hype. No buzzwords. No testimonials. No fake stats.
-No em dashes or en dashes. Use commas or periods only.
-No forced negation structure like "not this, but that", "it is not X, it is Y", or "stop doing X".
-No staccato sentence stacking. Do not write choppy fragments like "Missed calls. Lost patients. Empty chairs."
-Use normal conversational sentences that sound like people talking naturally.
-Do not include placeholder text, keyboard-mash text, filler words, lorem ipsum, or nonsensical tokens.
-Every line must be fluent English that could be read aloud in the ad.
-Never mention Wiggly. Wiggly is the internal builder, not the product being advertised.
-Use the offer and CTA from the brief. If the brand name is unknown, say "the AI front desk" instead of inventing one.
-
-Return ONLY valid JSON:
-{
-  "scripts": [
-    {
-      "title": "short option title",
-      "angle": "short strategy angle",
-      "lines": [
-        {"speaker": "Ava", "tone": "frustrated", "text": "line"},
-        {"speaker": "Sam", "tone": "calm", "text": "line"}
-      ]
-    }
-  ]
-}`;
 
     let scripts: any[] = [];
 
     for (let attempt = 0; attempt < 2 && scripts.length === 0; attempt += 1) {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: attempt === 0
-          ? prompt
-          : `${prompt}\n\nYour previous output failed quality checks. Return clean, fluent English only. Absolutely no em dashes, forced negation, staccato fragments, placeholder text, or keyboard-mash text.`,
-        config: {
-          responseMimeType: 'application/json',
-        },
-      });
+      const response = await withTimeout(
+        ai.models.generateContent({
+          model: 'gemini-3-flash-preview',
+          contents: attempt === 0
+            ? prompt
+            : `${prompt}\n\nYour previous output failed quality checks. Return clean, fluent English only. Absolutely no em dashes, forced negation, staccato fragments, placeholder text, or keyboard-mash text.`,
+          config: {
+            responseMimeType: 'application/json',
+          },
+        }),
+        DIALOGUE_PROVIDER_TIMEOUT_MS,
+        'Gemini dialogue generation',
+      );
 
       const text = response.text || '{"scripts":[]}';
       scripts = normalizeDialogueScripts(parseJsonResponse(text), requestedCount);
     }
 
-    res.json({ scripts: fillDialogueScripts(scripts, requestedCount, creativeBrief) });
+    res.json({ scripts: fillDialogueScripts(scripts, requestedCount, creativeBrief), provider: 'gemini' });
   } catch (error: any) {
     console.error("Generate dialogue scripts error:", error);
     const status = Number(error?.status || error?.code || 0);
-    if (status === 403 || status === 429) {
+    const providerUnavailable = status === 403 || status === 429 || /timed out/i.test(String(error?.message || ''));
+    if (providerUnavailable) {
       return res.json({
         scripts: fillDialogueScripts([], requestedCount, creativeBrief),
         fallback: true,
+        provider: 'local',
         warning: 'AI script generation is temporarily unavailable, so Wiggly used local script options.',
       });
     }
