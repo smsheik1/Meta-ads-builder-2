@@ -11,13 +11,6 @@ const CAPTION_SPEAKER_COLORS: Record<number, string> = {
   2: '#6554FF',
 };
 
-const MOCK_CAPTIONS: Caption[] = [
-  { text: 'Are you missing calls?', start: 0, end: 2, speaker: 1 },
-  { text: 'Our AI receptionist can help.', start: 2.5, end: 4.5, speaker: 2 },
-  { text: 'Available 24/7.', start: 5, end: 6.5, speaker: 1 },
-  { text: 'Never miss a lead again.', start: 7, end: 9, speaker: 2 },
-];
-
 type RemotionAdProps = {
   snapshot: ExportSnapshot;
   width: number;
@@ -309,11 +302,10 @@ const Waveform = ({ element, box, audioLevels, audioBands, currentSpeaker }: { e
 const CaptionElement = ({ element, box, platform, captions, accentColor }: { element: AdElement; box: ElementBox; platform: ExportSnapshot['settings']['platform']; captions: Caption[]; accentColor: string }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const activeCaptions = captions.length > 0 ? captions : MOCK_CAPTIONS;
-  const { caption, index } = getActiveCaption(activeCaptions, frame / fps);
+  const { caption, index } = getActiveCaption(captions, frame / fps);
   if (!caption) return null;
 
-  const hasTwoSpeakers = activeCaptions.some(activeCaption => activeCaption.speaker === 2);
+  const hasTwoSpeakers = captions.some(activeCaption => activeCaption.speaker === 2);
   const speaker = hasTwoSpeakers ? caption.speaker : (index % 2) + 1;
   const captionColor = (speaker === 2 ? element.captionSpeaker2Color : element.captionSpeaker1Color) || CAPTION_SPEAKER_COLORS[speaker] || element.color || accentColor;
   return (
@@ -349,7 +341,7 @@ export const RemotionAd = ({ snapshot, width, height, audioLevels, audioBands }:
   const introOpacity = settings.introImage && settings.introDuration > 0 && seconds < settings.introDuration + introFadeDuration
     ? seconds < settings.introDuration ? 1 : 1 - ((seconds - settings.introDuration) / introFadeDuration)
     : 0;
-  const activeCaptions = snapshot.captions.length > 0 ? snapshot.captions : MOCK_CAPTIONS;
+  const activeCaptions = snapshot.captions;
   const activeCaptionIndex = activeCaptions.findIndex(caption => seconds >= caption.start && seconds <= caption.end);
   const activeCaption = activeCaptionIndex >= 0 ? activeCaptions[activeCaptionIndex] : null;
   const hasTwoSpeakers = activeCaptions.some(caption => caption.speaker === 2);

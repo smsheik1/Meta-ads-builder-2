@@ -16,6 +16,7 @@ import { emitTutorialEvent } from './InteractiveTutorial';
 import type { AudioAnalysisData } from '../lib/audio-analysis';
 import { VOICE_VISUALIZER_PRESET } from '../lib/visualizer-presets';
 import type { RerollFlashPayload, RerollFlashRole } from './CreateFlow';
+import { pickVisibleColorOnLight } from '../lib/color-contrast';
 
 const isEditableEventTarget = (target: EventTarget | null) => {
   if (!(target instanceof HTMLElement)) return false;
@@ -78,6 +79,7 @@ interface CanvasEditorProps {
   platform: PlatformType;
   audioUrl: string | null;
   audioAnalysis?: AudioAnalysisData | null;
+  captionsLoading?: boolean;
   playing: boolean;
   onPlaybackComplete?: () => void;
   accentColor: string;
@@ -97,13 +99,6 @@ interface CanvasEditorProps {
   disableSpaceReroll?: boolean;
   disableEmptySelectionSpaceReroll?: boolean;
 }
-
-const MOCK_CAPTIONS = [
-  { text: "Are you missing calls?", start: 0, end: 2, speaker: 1 },
-  { text: "Our AI receptionist can help.", start: 2.5, end: 4.5, speaker: 2 },
-  { text: "Available 24/7.", start: 5, end: 6.5, speaker: 1 },
-  { text: "Never miss a lead again.", start: 7, end: 9, speaker: 2 },
-];
 
 const CAPTION_SPEAKER_COLORS: Record<number, string> = {
   1: '#00D6B8',
@@ -183,10 +178,12 @@ const applyArchetypeToElement = (element: AdElement, archetype: AdStyleArchetype
   return element;
 };
 
-export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, audioAnalysis, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype, rerollFlash, readOnly = false, disableSpaceReroll = false, disableEmptySelectionSpaceReroll = false }) => {
+export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, audioAnalysis, captionsLoading = false, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype, rerollFlash, readOnly = false, disableSpaceReroll = false, disableEmptySelectionSpaceReroll = false }) => {
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
+  const imageReplaceInputRef = useRef<HTMLInputElement>(null);
+  const pendingImageReplaceIdRef = useRef<string | null>(null);
   const lockPulseTimeoutsRef = useRef<Record<string, number>>({});
   const feedPlatform = isFeedPlatform(platform);
   const verticalPlatform = isVerticalPlatform(platform);
@@ -369,6 +366,10 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
   const [editingId, setEditingId] = useState<string | null>(null);
   const editingRef = useRef<HTMLDivElement | null>(null);
   const [playbackTime, setPlaybackTime] = useState(0);
+  const captionPreviewText = captions.length > 0
+    ? getActiveCaption(captions, Math.max(playbackTime, captions[0].start)).caption?.text || captions[0].text
+    : null;
+  const displayCaption = currentCaption || (!captionsLoading ? captionPreviewText : null);
 
   useEffect(() => {
     if (!editingId) return;
@@ -521,8 +522,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         onPlaybackComplete?.();
         return;
       }
-      const activeCaps = state.captions.length > 0 ? state.captions : MOCK_CAPTIONS;
-      const { caption: activeCaption, index: activeCaptionIndex } = getActiveCaption(activeCaps, currentTime);
+      const { caption: activeCaption, index: activeCaptionIndex } = getActiveCaption(state.captions, currentTime);
       let loopSpeaker: number | null = null;
       
       if (activeCaption) {
@@ -530,7 +530,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         loopSpeaker = (activeCaptionIndex % 2) + 1;
         setCurrentSpeaker(loopSpeaker);
       } else {
-        setCurrentCaption(null);
+        if (state.captions.length === 0) setCurrentCaption(null);
         loopSpeaker = Math.floor(currentTime / 1.5) % 2 === 0 ? 1 : 2;
       }
       
@@ -655,6 +655,33 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
     : 0;
   const introIsSquareish = introImageAspect !== null && introImageAspect >= 0.9 && introImageAspect <= 1.1;
 
+  const replaceImageElementFromFile = (elementId: string) => {
+    pendingImageReplaceIdRef.current = elementId;
+    if (imageReplaceInputRef.current) {
+      imageReplaceInputRef.current.value = '';
+      imageReplaceInputRef.current.click();
+    }
+  };
+
+  const handleImageReplaceFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    const elementId = pendingImageReplaceIdRef.current;
+    pendingImageReplaceIdRef.current = null;
+    if (!file || !elementId || !file.type.startsWith('image/')) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== 'string') return;
+      updateElement(elementId, {
+        imageUrl: reader.result,
+        removeWhite: false,
+      });
+      selectElement(elementId, false);
+      commitHistory();
+    };
+    reader.readAsDataURL(file);
+  };
+
   useEffect(() => {
     if (readOnly) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -688,6 +715,16 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         }
       }}
     >
+      {!readOnly && (
+        <input
+          ref={imageReplaceInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          aria-label="Replace selected image"
+          onChange={handleImageReplaceFile}
+        />
+      )}
       {bgMedia && bgMedia.type === 'image' && (
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-60 z-0 pointer-events-none" 
@@ -993,6 +1030,11 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
             onDoubleClick={(e) => {
                e.stopPropagation();
                if (readOnly) return;
+               if (el.type === 'image') {
+                  selectElement(el.id, false);
+                  replaceImageElementFromFile(el.id);
+                  return;
+               }
                if (el.type === 'text' || el.type === 'button') {
                   selectElement(el.id, false);
                   setEditingId(el.id);
@@ -1276,14 +1318,20 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                     fitPaddingX={18}
                     fitPaddingY={16}
                     style={{
-                      color: currentCaption
-                        ? (currentSpeaker === 2 ? el.captionSpeaker2Color : el.captionSpeaker1Color) || CAPTION_SPEAKER_COLORS[currentSpeaker] || el.color || accentColor
-                        : (el.color || accentColor),
+                      color: displayCaption
+                        ? pickVisibleColorOnLight([
+                          currentSpeaker === 2 ? el.captionSpeaker2Color : el.captionSpeaker1Color,
+                          el.captionSpeaker1Color,
+                          el.captionSpeaker2Color,
+                          el.color,
+                          accentColor,
+                        ], CAPTION_SPEAKER_COLORS[currentSpeaker] || accentColor, { background: backgroundColor, minContrast: 2.2, maxLuminance: 0.86 })
+                        : pickVisibleColorOnLight([el.color, accentColor], accentColor, { background: backgroundColor, minContrast: 2.2, maxLuminance: 0.86 }),
                       fontFamily: el.fontFamily || 'Inter, sans-serif',
                       fontWeight: el.fontWeight || 700,
                     }}
                   >
-                    {currentCaption || (audioUrl ? (playing ? 'Captions are loading' : 'Captions will appear during playback') : 'Upload audio for captions')}
+                    {displayCaption || (audioUrl ? (captionsLoading ? 'Captions are loading' : '') : 'Upload audio for captions')}
                   </AutoFitText>
                </div>
             )}

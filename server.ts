@@ -98,6 +98,7 @@ app.get('/api/health', (_req, res) => {
     ok: true,
     deepgramConfigured: Boolean(process.env.DEEPGRAM_API_KEY),
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+    openrouterConfigured: Boolean(process.env.OPENROUTER_API_KEY),
     firecrawlConfigured: Boolean(process.env.FIRECRAWL_API_KEY),
     postizConfigured: Boolean(process.env.POSTIZ_API_KEY),
   });
@@ -113,7 +114,12 @@ const uploadMem = multer({
     files: 1,
   },
   fileFilter: (_req, file, cb) => {
-    const allowed = file.mimetype.startsWith('audio/') || file.mimetype === 'video/mp4' || file.mimetype === 'video/webm';
+    const filename = file.originalname.toLowerCase();
+    const allowedExtension = /\.(mp3|m4a|wav|aac|ogg|oga|flac|webm|mp4)$/i.test(filename);
+    const allowed = file.mimetype.startsWith('audio/') ||
+      file.mimetype === 'video/mp4' ||
+      file.mimetype === 'video/webm' ||
+      (file.mimetype === 'application/octet-stream' && allowedExtension);
     if (!allowed) {
       cb(new Error('Unsupported audio file type.'));
       return;
@@ -885,7 +891,7 @@ app.post('/api/transcribe', aiGenerationLimiter, uploadMem.single('audio'), asyn
 
 import { GoogleGenAI } from '@google/genai';
 import { getMasterPrompt } from './src/lib/prompts/headline-master';
-import { buildBrandBrainPrompt, buildFallbackBrandBrain, BRAND_FALLBACK_QUESTIONS, type BrandAssets, type BrandBrain, type BrandFontSignal } from './src/lib/prompts/brand-brain';
+import { buildBrandBrainPrompt, buildFallbackBrandBrain, type BrandAssets, type BrandBrain, type BrandFontSignal } from './src/lib/prompts/brand-brain';
 import { buildHeadlineVariationsPrompt, type ConversationAdLine, type GeneratedAdFormat, type HeadlineVariation } from './src/lib/prompts/headline-variations';
 import { normalizeAdAngles } from './src/lib/prompts/ad-angles';
 
@@ -902,6 +908,12 @@ const FIRECRAWL_SCRAPE_URL = 'https://api.firecrawl.dev/v2/scrape';
 const TAVILY_SEARCH_URL = 'https://api.tavily.com/search';
 const BRAND_RESEARCH_MODEL = 'gemini-3-flash-preview';
 const HEADLINE_VARIATION_MODEL = 'gemini-3.1-flash-lite';
+const OPENROUTER_FREE_DIALOGUE_MODELS = [
+  'liquid/lfm-2.5-1.2b-instruct:free',
+  'openai/gpt-oss-20b:free',
+  'openrouter/auto:free',
+];
+const DIALOGUE_PROVIDER_TIMEOUT_MS = 12000;
 const BRAND_RESEARCH_CACHE_TTL_MS = 15 * 60 * 1000;
 const BRAND_RESEARCH_CACHE_LIMIT = 100;
 const MAX_RESEARCH_PAGES = 1;
@@ -911,7 +923,7 @@ const FIRECRAWL_TIMEOUT_MS = 12000;
 const TAVILY_TIMEOUT_MS = 9000;
 const BRAND_BRAIN_TIMEOUT_MS = 18000;
 const HEADLINE_VARIATION_TIMEOUT_MS = 20000;
-const BRAND_BRAIN_CACHE_VERSION = 'brand-assets-v2';
+const BRAND_BRAIN_CACHE_VERSION = 'brand-assets-v4';
 
 type ScrapedPage = {
   url: string;
@@ -1171,6 +1183,39 @@ const extractSocialLinks = (links: string[], baseUrl: string) => {
     .slice(0, 20);
 };
 
+const isUsableReviewSnippet = (line: string) => (
+  !/^(home|about|services|contact|privacy|terms|menu)$/i.test(line) &&
+  !/^[-–—]\s*[A-Z][A-Za-z'.-]+(?:\s+[A-Z][A-Za-z'.-]+){0,3}$/.test(line) &&
+  !/^\[?(?:view|read|see|load|show)\s+more\s+(?:reviews|testimonials)\]?$/i.test(line)
+);
+
+const extractReviewSnippets = (markdown: string) => {
+  const normalized = String(markdown || '')
+    .replace(/\r/g, '\n')
+    .replace(/\[[^\]]+\]\([^)]+\)/g, (match) => match.replace(/\]\([^)]+\)/, ']'))
+    .split('\n')
+    .map((line) => cleanTextField(line.replace(/^#{1,6}\s*/, '').replace(/^[-*•]\s*/, ''), 260))
+    .filter(Boolean);
+  const snippets: string[] = [];
+  const reviewSignal = /\b(review|reviews|testimonial|testimonials|client|customer|patient|stars?|rated|rating|google)\b/i;
+  const quoteSignal = /["“”]|(?:\b(amazing|excellent|professional|recommend|recommended|friendly|comfortable|results|love|loved|best)\b)/i;
+
+  normalized.forEach((line, index) => {
+    const context = `${normalized[index - 2] || ''} ${normalized[index - 1] || ''} ${line}`.toLowerCase();
+    const hasReviewContext = reviewSignal.test(context);
+    const looksLikeQuote = quoteSignal.test(line) && line.length >= 36 && line.length <= 220;
+    const hasRating = /(?:★★★★★|★{4,5}|\b[45](?:\.0)?\s*(?:\/\s*5|stars?)\b)/i.test(line);
+    if (!hasReviewContext && !looksLikeQuote && !hasRating) return;
+    if (!isUsableReviewSnippet(line)) return;
+    snippets.push(line.replace(/^["“”]+|["“”]+$/g, '').trim());
+  });
+
+  return snippets
+    .filter(Boolean)
+    .filter((item, index, items) => items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index)
+    .slice(0, 8);
+};
+
 const buildPageBrandAssets = ({
   url,
   data,
@@ -1197,6 +1242,7 @@ const buildPageBrandAssets = ({
   const favicon = firstPublicAssetUrl([brandingImages.favicon, metadata.icon, metadata.favicon], url);
   const ogImage = firstPublicAssetUrl([brandingImages.ogImage, metadata.ogImage, metadata['og:image'], metadata['twitter:image']], url);
   [logoUrl, favicon, ogImage].filter(Boolean).forEach((image) => imageUrlSet.add(image));
+  const reviews = extractReviewSnippets(markdown);
 
   return {
     images: {
@@ -1216,6 +1262,7 @@ const buildPageBrandAssets = ({
     designSystem: clipJsonValue(branding.designSystem),
     metadata: normalizeStringRecord(metadata, 40, 360),
     socialLinks: extractSocialLinks(links, url),
+    reviews,
     pages: [{
       url,
       title: cleanTextField(metadata.title || metadata.ogTitle || '', 160),
@@ -1232,6 +1279,7 @@ const mergeBrandAssets = (pages: ScrapedPage[]): BrandAssets => {
   const mergedColors: Record<string, string> = {};
   const fonts: BrandFontSignal[] = [];
   const socialLinks = new Set<string>();
+  const reviews: string[] = [];
   const allImages = new Set<string>();
   let logo = '';
   let favicon = '';
@@ -1251,6 +1299,9 @@ const mergeBrandAssets = (pages: ScrapedPage[]): BrandAssets => {
       }
     });
     assets.socialLinks.forEach((link) => socialLinks.add(link));
+    (assets.reviews || []).forEach((review) => {
+      if (!reviews.some((candidate) => candidate.toLowerCase() === review.toLowerCase())) reviews.push(review);
+    });
     assets.images.allImages.forEach((image) => allImages.add(image));
     logo ||= assets.images.logo || '';
     favicon ||= assets.images.favicon || '';
@@ -1272,6 +1323,7 @@ const mergeBrandAssets = (pages: ScrapedPage[]): BrandAssets => {
     designSystem: firstAssets?.designSystem,
     metadata: firstAssets?.metadata || {},
     socialLinks: Array.from(socialLinks).slice(0, 20),
+    reviews: reviews.slice(0, 8),
     pages: pages.map((page) => page.brandAssets.pages[0]).filter(Boolean),
     externalResearch: firstAssets?.externalResearch,
     rawBranding: firstAssets?.rawBranding,
@@ -1658,6 +1710,7 @@ const normalizeBrandAssets = (value: unknown, websiteUrl: string): BrandAssets |
     socialLinks: normalizeStringArray(input.socialLinks, 20, 500)
       .map((link) => normalizePublicAssetUrl(link, websiteUrl))
       .filter(Boolean),
+    reviews: normalizeStringArray(input.reviews, 8, 220).filter(isUsableReviewSnippet),
     pages: (Array.isArray(input.pages) ? input.pages : [])
       .slice(0, 8)
       .map((page) => ({
@@ -1673,14 +1726,24 @@ const normalizeBrandAssets = (value: unknown, websiteUrl: string): BrandAssets |
   };
 };
 
-const normalizeBrandBrain = (payload: any, websiteUrl: string, fallbackLogoUrl = ''): BrandBrain => ({
+const normalizeBrandBrain = (payload: any, websiteUrl: string, fallbackLogoUrl = ''): BrandBrain => {
+  const brandAssets = normalizeBrandAssets(payload?.brandAssets, websiteUrl);
+  const proof = [
+    ...normalizeStringArray(payload?.proof, 8, 140),
+    ...(brandAssets?.reviews || []),
+  ]
+    .filter(Boolean)
+    .filter((item, index, items) => items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index)
+    .slice(0, 8);
+
+  return {
   businessName: cleanTextField(payload?.businessName, 60) || new URL(websiteUrl).hostname.replace(/^www\./, ''),
   websiteUrl,
   brandLogoUrl: (() => {
     const logo = normalizeImageAssetUrl(payload?.brandLogoUrl || fallbackLogoUrl, websiteUrl);
     return logo && !isLikelyFaviconAsset(logo) ? logo : undefined;
   })(),
-  brandAssets: normalizeBrandAssets(payload?.brandAssets, websiteUrl),
+  brandAssets,
   offer: cleanTextField(payload?.offer, 180),
   audience: cleanTextField(payload?.audience, 180),
   pain: cleanTextField(payload?.pain, 220),
@@ -1688,16 +1751,102 @@ const normalizeBrandBrain = (payload: any, websiteUrl: string, fallbackLogoUrl =
   differentiator: cleanTextField(payload?.differentiator, 220),
   tone: cleanTextField(payload?.tone, 80) || 'clear, confident, direct',
   colors: normalizeHexColors(payload?.colors).length ? normalizeHexColors(payload?.colors) : ['#00D6B8', '#4F46E5', '#0F172A'],
-  proof: normalizeStringArray(payload?.proof, 8, 140),
+  proof,
   bannedGenericPhrases: normalizeStringArray(payload?.bannedGenericPhrases, 12, 80).length
     ? normalizeStringArray(payload?.bannedGenericPhrases, 12, 80)
     : ['transform your business', 'game changer', 'take it to the next level'],
   adAngles: normalizeStringArray(payload?.adAngles, 8, 180),
-});
+  };
+};
 
 const brandBrainNeedsFallback = (brandBrain: BrandBrain) => {
   const required = [brandBrain.offer, brandBrain.audience, brandBrain.pain];
   return required.some((field) => field.length < 12) || brandBrain.adAngles.length < 4;
+};
+
+const titleCaseBrandName = (value: string) => value
+  .split(/[\s.-]+/)
+  .filter(Boolean)
+  .map((part) => part.length <= 3 ? part.toUpperCase() : `${part[0]?.toUpperCase() || ''}${part.slice(1).toLowerCase()}`)
+  .join(' ');
+
+const buildHeuristicBrandBrain = ({
+  websiteUrl,
+  researchText,
+  brandAssets,
+  brandLogoUrl,
+}: {
+  websiteUrl: URL;
+  researchText: string;
+  brandAssets?: BrandAssets;
+  brandLogoUrl?: string;
+}): BrandBrain => {
+  const domain = websiteUrl.hostname.replace(/^www\./, '');
+  const domainBrand = titleCaseBrandName(domain.split('.')[0] || 'Brand');
+  const metadata = brandAssets?.metadata || {};
+  const page = brandAssets?.pages?.[0];
+  const title = cleanTextField(page?.title || metadata.title || metadata.ogTitle || domain, 100)
+    .replace(/\s*[|–-]\s*(Official|Homepage|Online Store).*$/i, '')
+    .replace(/\s*[|–-]\s*.*$/i, '')
+    .trim();
+  const businessName = title.toLowerCase().includes(domainBrand.toLowerCase()) ? domainBrand : (title || domainBrand);
+  const description = cleanTextField(
+    page?.description || metadata.description || metadata.ogDescription || researchText,
+    220
+  );
+  const category = description || `${businessName} products and services`;
+  const colors = normalizeHexColors(Object.values(brandAssets?.colors || {}));
+  const lowerText = `${businessName} ${category} ${researchText}`.toLowerCase();
+  const categorySignals = [
+    { pattern: /\b(medspa|medical spa|skin|laser|aesthetic|rejuvenation|botox|facial|acne)\b/, label: 'medspa services', audience: 'people considering premium skin and laser treatments', pain: 'They want visible skin results but do not know which treatment to trust', result: 'Feel confident choosing a treatment for smoother, healthier-looking skin', differentiator: `${businessName} makes advanced skin and laser care feel premium and guided` },
+    { pattern: /\b(dental|dentist|orthodont|implant|veneers|teeth)\b/, label: 'dental care', audience: 'people comparing dental providers', pain: 'They want dental care that feels trustworthy before they book', result: 'Book with more confidence and understand the next step faster', differentiator: `${businessName} turns dental care into a clearer, easier decision` },
+    { pattern: /\b(fitness|gym|workout|activewear|training|athlete)\b/, label: 'fitness products', audience: 'people serious about training and performance', pain: 'They want gear that performs without feeling generic', result: 'Train with products that feel built for the way they move', differentiator: `${businessName} connects performance, style, and trust in one offer` },
+  ];
+  const matchedSignal = categorySignals.find((signal) => signal.pattern.test(lowerText));
+  const offer = matchedSignal
+    ? `${businessName} offers ${matchedSignal.label} for ${matchedSignal.audience}.`
+    : category || `Products from ${businessName}`;
+  const audience = matchedSignal?.audience || `People considering ${businessName} or similar options`;
+  const pain = matchedSignal?.pain || `People need a concrete reason to choose ${businessName} over another option`;
+  const promisedResult = matchedSignal?.result || `Find the right ${businessName} option faster and feel confident trying it`;
+  const differentiator = matchedSignal?.differentiator || `${businessName} already has brand recognition, product signals, and trust buyers recognize`;
+  const reviewProof = (brandAssets?.reviews || []).filter(isUsableReviewSnippet).slice(0, 3);
+
+  return {
+    businessName,
+    websiteUrl: websiteUrl.href,
+    brandLogoUrl: brandLogoUrl || brandAssets?.images.logo || undefined,
+    brandAssets,
+    offer,
+    audience,
+    pain,
+    promisedResult,
+    differentiator,
+    tone: 'clear, confident, direct',
+    colors: colors.length ? colors : ['#00D6B8', '#4F46E5', '#0F172A'],
+    proof: [
+      ...reviewProof,
+      description,
+      page?.title ? `Website title: ${page.title}` : '',
+      brandAssets?.images.logo ? 'Logo found on site' : '',
+    ].filter(Boolean).slice(0, 4),
+    bannedGenericPhrases: [
+      'transform your business',
+      'take it to the next level',
+      'game changer',
+      'unlock your potential',
+    ],
+    adAngles: [
+      `why ${audience} choose ${businessName}`,
+      `the fastest way to understand ${offer}`,
+      `the decision moment before someone chooses ${businessName}`,
+      `the detail that makes ${businessName} easier to trust`,
+      `the difference between browsing and booking with ${businessName}`,
+      `how ${businessName} helps people get ${promisedResult.toLowerCase()}`,
+      `the simple promise behind ${businessName}`,
+      `what people should notice before they compare alternatives`,
+    ],
+  };
 };
 
 const generateBrandBrain = async (websiteUrl: string, researchText: string, fallbackAnswers?: string[], fallbackLogoUrl = '') => {
@@ -1727,6 +1876,9 @@ const isUsableHeadline = (headline: string, brandBrain: BrandBrain, previous: Se
   const lower = headline.toLowerCase();
   if (previous.has(lower)) return false;
   if (/\bwiggly\b/i.test(headline)) return false;
+  if (/\b(they|people|buyers|shoppers|customers|clients|patients)\s+need\s+a\s+clear\b/i.test(headline)) return false;
+  if (/\bneed\s+a\s+clear\s+is\b/i.test(headline)) return false;
+  if (/\b[a-z]+\s+is\s+getting expensive$/i.test(headline) && words < 6) return false;
   return !(brandBrain.bannedGenericPhrases || []).some((phrase) => phrase && lower.includes(phrase.toLowerCase()));
 };
 
@@ -1801,45 +1953,69 @@ const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<
       .replace(/[^\w\s$%'-]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
-    return phrase.split(/\s+/).filter(Boolean).slice(0, maxWords).join(' ') || fallback;
+    const words = phrase.split(/\s+/).filter(Boolean);
+    const clipped = words.slice(0, maxWords).join(' ');
+    if (/^(they|people|buyers|shoppers|customers|clients|patients)\s+need\s+a\s+clear\b/i.test(clipped)) return fallback;
+    if (/\bneed\s+a\s+clear$/i.test(clipped)) return fallback;
+    return clipped || fallback;
   };
-  const pain = shortPhrase(brandBrain.pain, 4, 'the hidden problem');
-  const audience = shortPhrase(brandBrain.audience, 3, 'your buyers');
-  const offer = shortPhrase(brandBrain.offer, 4, 'the better answer');
-  const result = shortPhrase(brandBrain.promisedResult, 4, 'the better outcome');
-  const differentiator = shortPhrase(brandBrain.differentiator, 4, 'the unfair edge');
   const proof = (brandBrain.proof || []).map((item) => shortPhrase(item, 5, '')).filter(Boolean).slice(0, 8);
-  const subjects = [pain, audience, offer, result, differentiator, ...proof].filter(Boolean);
+  const brandName = cleanTextField(brandBrain.businessName, 42) || 'Your brand';
+  const briefText = `${brandName} ${brandBrain.offer} ${brandBrain.audience} ${brandBrain.pain} ${brandBrain.differentiator}`.toLowerCase();
+  const isMedspa = /\b(medspa|skin|laser|aesthetic|rejuvenation|botox|facial|acne)\b/.test(briefText);
+  const categoryTemplates = isMedspa ? [
+    'Know your skin treatment before you book',
+    'Premium skin care should feel clear',
+    'Choose the treatment your skin actually needs',
+    'Smoother skin starts with the right plan',
+    'Laser care without the guessing',
+    'Make your next skin visit feel obvious',
+    `${brandName} makes skin care feel guided`,
+    `Book ${brandName} with more confidence`,
+    'The right medspa choice starts here',
+    'Stop guessing which treatment fits',
+    'Skin goals deserve a clearer plan',
+    'Feel confident before your appointment',
+    'A better skin consult starts here',
+    'Make the next treatment choice simple',
+    'Premium laser care without the confusion',
+    'Turn skin goals into a clearer plan',
+    'The medspa visit should feel guided',
+    'Know what to book before you book',
+    'Clearer skin decisions start here',
+    'Show the treatment before the pitch',
+    'Your skin plan should feel personal',
+    'A premium skin visit starts with clarity',
+    'Make the consultation feel easy',
+    'Give skin goals a smarter next step',
+  ] : [
+    `${brandName} should be easy to understand`,
+    `Choose ${brandName} with more confidence`,
+    `The useful part of ${brandName}`,
+    `Make ${brandName} feel obvious`,
+    `${brandName} in one clear reason`,
+    `A sharper reason to try ${brandName}`,
+    `Why people choose ${brandName}`,
+    `What makes ${brandName} worth noticing`,
+  ];
   const templates = [
-    `${pain} is getting expensive`,
-    `${pain} should not be invisible`,
-    `Stop letting ${pain} win`,
-    `Your audience already feels ${pain}`,
-    `${audience} need the faster answer`,
-    `${audience} notice the difference fast`,
-    `${offer} should look premium`,
-    `${offer} is the scroll stopper`,
-    `Make ${result} feel obvious`,
-    `${result} starts with one clip`,
-    `${differentiator} is the ad angle`,
-    `Lead with ${differentiator}`,
+    ...categoryTemplates,
+    `Show why ${brandName} is worth choosing`,
+    `Make ${brandName} easy to trust`,
+    `Turn ${brandName} into the obvious next step`,
+    `Lead with the clearest reason to try ${brandName}`,
+    `Show the useful part of ${brandName}`,
+    `Make the decision feel easier`,
+    `Give people a reason to stop scrolling`,
+    `Start with the outcome they want`,
+    `Make the offer clear in one glance`,
+    `Show the proof before the pitch`,
+    `Turn the first frame into the hook`,
+    `Make the next step feel simple`,
     `The old workaround is expensive`,
     `Show the problem before they scroll`,
     `Make the hard part visible`,
     `Turn the proof into motion`,
-  ];
-  const openers = ['Show', 'Make', 'Turn', 'Spotlight', 'Expose', 'Prove', 'Sell', 'Lead with'];
-  const closers = [
-    'before they scroll',
-    'in one glance',
-    'with one line',
-    'without explaining',
-    'as the hook',
-    'with motion',
-    'in seconds',
-    'right away',
-    'on the first frame',
-    'like a premium brand',
   ];
 
   proof.forEach((proofPoint) => {
@@ -1851,13 +2027,6 @@ const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<
     if (!clippedAngle) return;
     templates.push(`${clippedAngle} before they scroll`);
     templates.push(`Make ${clippedAngle} feel obvious`);
-  });
-  subjects.forEach((subject) => {
-    openers.forEach((opener) => {
-      closers.forEach((closer) => {
-        templates.push(`${opener} ${subject} ${closer}`);
-      });
-    });
   });
 
   const fallbacks: HeadlineVariation[] = [];
@@ -1921,11 +2090,17 @@ app.post('/api/research-brand', brandResearchLimiter, async (req, res) => {
     } catch (error) {
       console.warn('[brand-research] scrape_failed', websiteUrl.href, error instanceof Error ? error.message : error);
       if (fallbackAnswers.length < 3) {
-        return res.status(200).json({
-          needsFallback: true,
-          questions: BRAND_FALLBACK_QUESTIONS,
-          reason: 'I could not read enough from that website yet.',
+        const brandBrain = buildHeuristicBrandBrain({
+          websiteUrl,
+          researchText: '',
+          brandAssets,
+          brandLogoUrl,
         });
+        addBrandBrainCache(brainCacheKey, {
+          expiresAt: Date.now() + BRAND_RESEARCH_CACHE_TTL_MS,
+          brandBrain,
+        });
+        return res.json({ needsFallback: false, brandBrain });
       }
     }
 
@@ -1950,25 +2125,27 @@ app.post('/api/research-brand', brandResearchLimiter, async (req, res) => {
     } catch (error) {
       console.warn('[brand-research] brain_failed', websiteUrl.href, error instanceof Error ? error.message : error);
       if (fallbackAnswers.length < 3) {
-        return res.status(200).json({
-          needsFallback: true,
-          questions: BRAND_FALLBACK_QUESTIONS,
-          reason: 'That website is taking too long to read clearly.',
+        brandBrain = buildHeuristicBrandBrain({
+          websiteUrl,
+          researchText,
+          brandAssets,
+          brandLogoUrl,
         });
+      } else {
+        brandBrain = {
+          ...buildFallbackBrandBrain({ websiteUrl: websiteUrl.href, answers: fallbackAnswers }),
+          brandLogoUrl: brandLogoUrl || undefined,
+          brandAssets,
+        };
       }
-      brandBrain = {
-        ...buildFallbackBrandBrain({ websiteUrl: websiteUrl.href, answers: fallbackAnswers }),
-        brandLogoUrl: brandLogoUrl || undefined,
-        brandAssets,
-      };
     }
 
     if (brandBrainNeedsFallback(brandBrain) && fallbackAnswers.length < 3) {
-      return res.status(200).json({
-        needsFallback: true,
-        questions: BRAND_FALLBACK_QUESTIONS,
-        partialBrandBrain: brandBrain,
-        reason: 'I need three quick answers to make the ads feel specific.',
+      brandBrain = buildHeuristicBrandBrain({
+        websiteUrl,
+        researchText,
+        brandAssets: brandBrain.brandAssets || brandAssets,
+        brandLogoUrl: brandBrain.brandLogoUrl || brandLogoUrl,
       });
     }
 
@@ -2112,8 +2289,229 @@ const normalizeDialogueScripts = (payload: any, count: number) => {
     .slice(0, count);
 };
 
-const fillDialogueScripts = (scripts: any[], count: number) => {
-  const fallbacks = fallbackDialogueScripts(count);
+const asBriefString = (brief: any, key: string, fallback = '') => {
+  const value = typeof brief === 'object' && brief ? brief[key] : '';
+  return String(value || fallback).replace(/\s+/g, ' ').trim();
+};
+
+const fallbackDialogueScripts = (count: number, creativeBrief: any = {}) => {
+  const offer = asBriefString(creativeBrief, 'offer', 'this offer');
+  const buyer = asBriefString(creativeBrief, 'buyer', 'people who need this');
+  const pain = asBriefString(creativeBrief, 'pain', 'they are not sure what to choose');
+  const differentiator = asBriefString(creativeBrief, 'differentiator', 'the guidance feels clearer than the usual options');
+  const cta = asBriefString(creativeBrief, 'cta', 'Learn more.');
+  const brandName = offer.match(/^(.+?)\s+(?:offers|provides|sells|helps|makes)\b/i)?.[1]?.trim() || 'this brand';
+  const category = offer
+    .replace(new RegExp(`^${brandName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+`, 'i'), '')
+    .replace(/^(offers|provides|sells|makes|helps with)\s+/i, '')
+    .replace(/\s+for\s+people.*$/i, '')
+    .trim() || 'the right option';
+  const categoryPhrase = /\bservices\b/i.test(category) ? `${category} can help` : `${category} helps`;
+  const shortBuyer = buyer.replace(/^people\s+/i, 'people ').slice(0, 72).trim();
+  const shortPain = pain
+    .replace(/^they\s+want/i, 'you want')
+    .replace(/^they\s+are/i, 'you are')
+    .replace(/^they\s+/i, 'you ')
+    .replace(/\s+but\s+do\s+not\s+/i, ' and you do not ')
+    .slice(0, 82)
+    .trim();
+  const sentencePain = shortPain ? `${shortPain.charAt(0).toUpperCase()}${shortPain.slice(1).replace(/[.]+$/g, '')}` : 'The choice feels unclear';
+  const trustReason = /\bguid/i.test(differentiator)
+    ? 'the guidance feels personal and clear'
+    : 'the value is easy to understand';
+  const simpleCta = cta.replace(/[.]+$/g, '').toLowerCase();
+
+  const scripts = [
+    {
+      title: 'Clear Next Step',
+      angle: 'A buyer needs confidence before choosing.',
+      lines: [
+        { speaker: 'Ava', tone: 'unsure', text: `I keep looking at options, but ${shortPain.toLowerCase()}.` },
+        { speaker: 'Sam', tone: 'calm', text: `${brandName} makes ${category.toLowerCase()} feel easier to choose.` },
+        { speaker: 'Ava', tone: 'curious', text: `So it helps ${shortBuyer.toLowerCase()} know what actually fits?` },
+        { speaker: 'Sam', tone: 'assured', text: `Yes. The next step is simple, ${simpleCta}.` },
+      ],
+    },
+    {
+      title: 'Review Spiral',
+      angle: 'The old research path is not enough.',
+      lines: [
+        { speaker: 'Ava', tone: 'frustrated', text: `I keep comparing options and still feel unsure.` },
+        { speaker: 'Sam', tone: 'practical', text: `${brandName} should make the choice feel clear right away.` },
+        { speaker: 'Ava', tone: 'thoughtful', text: `So the ad should make the choice feel less risky?` },
+        { speaker: 'Sam', tone: 'confident', text: `Exactly. Show that ${trustReason}.` },
+      ],
+    },
+    {
+      title: 'Trust Before Action',
+      angle: 'The customer needs a reason to trust the choice.',
+      lines: [
+        { speaker: 'Ava', tone: 'careful', text: `I would book, but I want to know I am choosing the right place.` },
+        { speaker: 'Sam', tone: 'warm', text: `${brandName} should make that feel easier to understand.` },
+        { speaker: 'Ava', tone: 'interested', text: `Because ${shortBuyer.toLowerCase()} need more than a generic promise?` },
+        { speaker: 'Sam', tone: 'steady', text: `Right. Lead with the result, then ask them to ${simpleCta}.` },
+      ],
+    },
+    {
+      title: 'Simple Explanation',
+      angle: 'Make the offer easy to repeat.',
+      lines: [
+        { speaker: 'Ava', tone: 'curious', text: `How would you explain this without making it sound complicated?` },
+        { speaker: 'Sam', tone: 'clear', text: `${brandName} helps when ${shortPain.toLowerCase()}.` },
+        { speaker: 'Ava', tone: 'relieved', text: `That sounds easier than trying to figure it out alone.` },
+        { speaker: 'Sam', tone: 'friendly', text: `That is the point. Make the next step feel obvious.` },
+      ],
+    },
+    {
+      title: 'Before They Scroll',
+      angle: 'The first line names the hidden hesitation.',
+      lines: [
+        { speaker: 'Ava', tone: 'honest', text: `Most ads do not answer the thing I am actually worried about.` },
+        { speaker: 'Sam', tone: 'direct', text: `Then say it plainly. ${sentencePain}.` },
+        { speaker: 'Ava', tone: 'curious', text: `And then show how ${categoryPhrase.toLowerCase()}?` },
+        { speaker: 'Sam', tone: 'assured', text: `Yes. Keep it human, specific, and easy to act on.` },
+      ],
+    },
+  ];
+
+  return normalizeDialogueScripts({ scripts }, count);
+};
+
+const buildDialogueScriptsPrompt = ({
+  creativeBrief,
+  persona,
+  count,
+}: {
+  creativeBrief: any;
+  persona: string;
+  count: number;
+}) => {
+  const briefText = typeof creativeBrief === 'object'
+    ? Object.entries(creativeBrief).map(([label, value]) => `${label}: ${value}`).join('\n')
+    : String(creativeBrief || '');
+
+  return `You are a direct-response creative strategist for Wiggly, a visual ad creator.
+
+Create ${count} short two-person dialogue ad scripts for this brief.
+
+Brief:
+${briefText}
+
+Persona: ${persona}
+
+The ad should feel like a real-life overheard conversation, not a sales pitch.
+One person has the problem. The other casually reveals the solution.
+Keep each script 14-26 seconds when read aloud.
+No hype. No buzzwords. No testimonials. No fake stats.
+No em dashes or en dashes. Use commas or periods only.
+No forced negation structure like "not this, but that", "it is not X, it is Y", or "stop doing X".
+No staccato sentence stacking. Do not write choppy fragments like "Missed calls. Lost patients. Empty chairs."
+Use normal conversational sentences that sound like people talking naturally.
+Do not include placeholder text, keyboard-mash text, filler words, lorem ipsum, or nonsensical tokens.
+Every line must be fluent English that could be read aloud in the ad.
+Never mention Wiggly. Wiggly is the internal builder, not the product being advertised.
+Use the offer and CTA from the brief. If the brand name is unknown, say "the AI front desk" instead of inventing one.
+
+Return ONLY valid JSON:
+{
+  "scripts": [
+    {
+      "title": "short option title",
+      "angle": "short strategy angle",
+      "lines": [
+        {"speaker": "Ava", "tone": "frustrated", "text": "line"},
+        {"speaker": "Sam", "tone": "calm", "text": "line"}
+      ]
+    }
+  ]
+}`;
+};
+
+const buildOpenRouterDialogueScriptsPrompt = ({
+  creativeBrief,
+  persona,
+  count,
+}: {
+  creativeBrief: any;
+  persona: string;
+  count: number;
+}) => {
+  const offer = asBriefString(creativeBrief, 'offer', 'the offer');
+  const buyer = asBriefString(creativeBrief, 'buyer', persona);
+  const pain = asBriefString(creativeBrief, 'pain', 'the buyer is unsure what to choose');
+  const result = asBriefString(creativeBrief, 'promisedResult', 'feel confident about the next step');
+  const differentiator = asBriefString(creativeBrief, 'differentiator', 'the choice feels clearer and more guided');
+  const cta = asBriefString(creativeBrief, 'cta', 'Learn more.');
+
+  return `Return ONLY valid JSON. Create ${count} short two-person dialogue ad scripts.
+Offer: ${offer}
+Buyer: ${buyer}
+Pain: ${pain}
+Result: ${result}
+Why this brand: ${differentiator}
+CTA: ${cta}
+
+Rules: natural spoken English, no hype, no fake stats, no em dash, never mention Wiggly.
+Each script needs title, angle, and exactly 4 lines alternating Ava and Sam.
+Schema: {"scripts":[{"title":"short","angle":"short","lines":[{"speaker":"Ava","tone":"curious","text":"fluent line"},{"speaker":"Sam","tone":"calm","text":"fluent line"},{"speaker":"Ava","tone":"curious","text":"fluent line"},{"speaker":"Sam","tone":"assured","text":"fluent line"}]}]}`;
+};
+
+const generateDialogueScriptsWithOpenRouter = async (prompt: string, count: number) => {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) return [];
+
+  for (const model of OPENROUTER_FREE_DIALOGUE_MODELS) {
+    if (!model.endsWith(':free')) continue;
+    let timeout: NodeJS.Timeout | undefined;
+    try {
+      const controller = new AbortController();
+      timeout = setTimeout(() => controller.abort(), DIALOGUE_PROVIDER_TIMEOUT_MS);
+      const response = await withTimeout(
+        fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': process.env.PUBLIC_APP_URL || 'http://localhost:3000',
+            'X-Title': 'Wiggly',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'user', content: prompt }],
+            response_format: { type: 'json_object' },
+            temperature: 0.7,
+            max_tokens: 1800,
+          }),
+          signal: controller.signal,
+        }),
+        DIALOGUE_PROVIDER_TIMEOUT_MS,
+        `OpenRouter dialogue generation (${model})`,
+      );
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        console.warn('OpenRouter dialogue model failed:', model, response.status, String(payload?.error?.message || '').slice(0, 180));
+        continue;
+      }
+
+      const text = String(payload?.choices?.[0]?.message?.content || '{"scripts":[]}');
+      const scripts = normalizeDialogueScripts(parseJsonResponse(text), count);
+      if (scripts.length) {
+        console.info('OpenRouter dialogue fallback succeeded:', model);
+        return scripts;
+      }
+    } catch (error: any) {
+      console.warn('OpenRouter dialogue fallback error:', model, String(error?.message || error).slice(0, 180));
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  }
+
+  return [];
+};
+
+const fillDialogueScripts = (scripts: any[], count: number, creativeBrief: any = {}) => {
+  const fallbacks = fallbackDialogueScripts(count, creativeBrief);
   const combined = [...scripts];
   for (const fallback of fallbacks) {
     if (combined.length >= count) break;
@@ -2122,43 +2520,6 @@ const fillDialogueScripts = (scripts: any[], count: number) => {
     }
   }
   return combined.slice(0, count);
-};
-
-const fallbackDialogueScripts = (count: number) => {
-  const scripts = [
-    {
-      title: 'Missed Call Recovery',
-      angle: 'The practice is already paying for leads it never answers.',
-      lines: [
-        { speaker: 'Ava', tone: 'concerned', text: 'We missed three new patient calls during lunch again.' },
-        { speaker: 'Sam', tone: 'calm', text: 'The AI front desk can answer when the team gets busy.' },
-        { speaker: 'Ava', tone: 'curious', text: 'So it can book the patient before they call another office?' },
-        { speaker: 'Sam', tone: 'assured', text: 'Yes. It answers, follows up, and keeps the appointment moving.' },
-      ],
-    },
-    {
-      title: 'After Hours Calls',
-      angle: 'Patients call outside normal hours and still expect a response.',
-      lines: [
-        { speaker: 'Ava', tone: 'frustrated', text: 'The best leads keep calling after we close.' },
-        { speaker: 'Sam', tone: 'practical', text: 'The AI front desk can still answer and book them.' },
-        { speaker: 'Ava', tone: 'thoughtful', text: 'An AI receptionist could answer those calls at night?' },
-        { speaker: 'Sam', tone: 'calm', text: 'And follow up automatically so the patient does not disappear.' },
-      ],
-    },
-    {
-      title: 'No More Hiring',
-      angle: 'AI covers the front desk gaps without adding payroll.',
-      lines: [
-        { speaker: 'Ava', tone: 'tired', text: 'I do not want to hire another front desk person.' },
-        { speaker: 'Sam', tone: 'steady', text: 'The AI can cover the gaps while your team stays focused.' },
-        { speaker: 'Ava', tone: 'interested', text: 'So the AI handles missed calls and follow up?' },
-        { speaker: 'Sam', tone: 'confident', text: 'Exactly. Your team stays focused while the calls still get answered.' },
-      ],
-    },
-  ];
-
-  return scripts.slice(0, count);
 };
 
 const pcmBase64ToWavBase64 = (pcmBase64: string, sampleRate = 24000, channels = 1, bitsPerSample = 16) => {
@@ -2324,75 +2685,74 @@ Return valid JSON with the following structure:
 });
 
 app.post('/api/generate-dialogue-scripts', aiGenerationLimiter, async (req, res) => {
+  const { creativeBrief, persona = 'Dental practice owner', count = 5 } = req.body;
+  const requestedCount = Number(count) || 5;
+  const prompt = buildDialogueScriptsPrompt({ creativeBrief, persona, count: requestedCount });
+  const openRouterPrompt = buildOpenRouterDialogueScriptsPrompt({ creativeBrief, persona, count: requestedCount });
   try {
-    const { creativeBrief, persona = 'Dental practice owner', count = 5 } = req.body;
+    const openRouterScripts = await generateDialogueScriptsWithOpenRouter(openRouterPrompt, requestedCount);
+    if (openRouterScripts.length) {
+      return res.json({
+        scripts: fillDialogueScripts(openRouterScripts, requestedCount, creativeBrief),
+        provider: 'openrouter-free',
+      });
+    }
+    if (process.env.OPENROUTER_API_KEY) {
+      return res.json({
+        scripts: fillDialogueScripts([], requestedCount, creativeBrief),
+        fallback: true,
+        provider: 'local',
+        warning: 'Free OpenRouter models are temporarily unavailable, so Wiggly used local script options.',
+      });
+    }
 
     const key = process.env.GEMINI_API_KEY;
     if (!key) {
-      throw new Error("GEMINI_API_KEY is not set.");
+      console.warn('Generate dialogue scripts using provider fallback: GEMINI_API_KEY is not set.');
+      return res.json({
+        scripts: fillDialogueScripts([], requestedCount, creativeBrief),
+        fallback: true,
+        provider: 'local',
+        warning: 'AI script generation is not configured, so Wiggly used local script options.',
+      });
     }
 
     const ai = new GoogleGenAI({ apiKey: key });
-    const briefText = typeof creativeBrief === 'object'
-      ? Object.entries(creativeBrief).map(([label, value]) => `${label}: ${value}`).join('\n')
-      : String(creativeBrief || '');
-
-    const prompt = `You are a direct-response creative strategist for Wiggly, a visual ad creator.
-
-Create ${count} short two-person dialogue ad scripts for this brief.
-
-Brief:
-${briefText}
-
-Persona: ${persona}
-
-The ad should feel like a real-life overheard conversation, not a sales pitch.
-One person has the problem. The other casually reveals the solution.
-Keep each script 14-26 seconds when read aloud.
-No hype. No buzzwords. No testimonials. No fake stats.
-No em dashes or en dashes. Use commas or periods only.
-No forced negation structure like "not this, but that", "it is not X, it is Y", or "stop doing X".
-No staccato sentence stacking. Do not write choppy fragments like "Missed calls. Lost patients. Empty chairs."
-Use normal conversational sentences that sound like people talking naturally.
-Do not include placeholder text, keyboard-mash text, filler words, lorem ipsum, or nonsensical tokens.
-Every line must be fluent English that could be read aloud in the ad.
-Never mention Wiggly. Wiggly is the internal builder, not the product being advertised.
-Use the offer and CTA from the brief. If the brand name is unknown, say "the AI front desk" instead of inventing one.
-
-Return ONLY valid JSON:
-{
-  "scripts": [
-    {
-      "title": "short option title",
-      "angle": "short strategy angle",
-      "lines": [
-        {"speaker": "Ava", "tone": "frustrated", "text": "line"},
-        {"speaker": "Sam", "tone": "calm", "text": "line"}
-      ]
-    }
-  ]
-}`;
 
     let scripts: any[] = [];
 
     for (let attempt = 0; attempt < 2 && scripts.length === 0; attempt += 1) {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: attempt === 0
-          ? prompt
-          : `${prompt}\n\nYour previous output failed quality checks. Return clean, fluent English only. Absolutely no em dashes, forced negation, staccato fragments, placeholder text, or keyboard-mash text.`,
-        config: {
-          responseMimeType: 'application/json',
-        },
-      });
+      const response = await withTimeout(
+        ai.models.generateContent({
+          model: 'gemini-3-flash-preview',
+          contents: attempt === 0
+            ? prompt
+            : `${prompt}\n\nYour previous output failed quality checks. Return clean, fluent English only. Absolutely no em dashes, forced negation, staccato fragments, placeholder text, or keyboard-mash text.`,
+          config: {
+            responseMimeType: 'application/json',
+          },
+        }),
+        DIALOGUE_PROVIDER_TIMEOUT_MS,
+        'Gemini dialogue generation',
+      );
 
       const text = response.text || '{"scripts":[]}';
-      scripts = normalizeDialogueScripts(parseJsonResponse(text), Number(count) || 5);
+      scripts = normalizeDialogueScripts(parseJsonResponse(text), requestedCount);
     }
 
-    res.json({ scripts: fillDialogueScripts(scripts, Number(count) || 5) });
+    res.json({ scripts: fillDialogueScripts(scripts, requestedCount, creativeBrief), provider: 'gemini' });
   } catch (error: any) {
     console.error("Generate dialogue scripts error:", error);
+    const status = Number(error?.status || error?.code || 0);
+    const providerUnavailable = status === 403 || status === 429 || /timed out/i.test(String(error?.message || ''));
+    if (providerUnavailable) {
+      return res.json({
+        scripts: fillDialogueScripts([], requestedCount, creativeBrief),
+        fallback: true,
+        provider: 'local',
+        warning: 'AI script generation is temporarily unavailable, so Wiggly used local script options.',
+      });
+    }
     sendServerError(res, 'Error generating dialogue scripts.');
   }
 });

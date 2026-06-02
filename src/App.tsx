@@ -7,7 +7,7 @@ import { CreateFlow, type GeneratedAdVariation } from './components/CreateFlow';
 import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList, ArrowRight, Wand2, PhoneCall, Link2, ExternalLink, Copy, Heart, MessageCircle, Send, Bookmark } from 'lucide-react';
 import Papa from 'papaparse';
 import { DEFAULT_ELEMENTS, useEditorStore, type AdElement } from './store';
-import { compressVisualizerValue, drawAdvancedVisualizer } from './lib/visualizer';
+import { getVisualizerBarCount, getVisualizerBars, normalizeVisualizerType } from './lib/visualizer';
 import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
@@ -212,13 +212,6 @@ const buildConversationAdElements = (
   ];
 };
 
-const MOCK_CAPTIONS = [
-  { text: "Are you missing calls?", start: 0, end: 2, speaker: 1 },
-  { text: "Our AI receptionist can help.", start: 2.5, end: 4.5, speaker: 2 },
-  { text: "Available 24/7.", start: 5, end: 6.5, speaker: 1 },
-  { text: "Never miss a lead again.", start: 7, end: 9, speaker: 2 },
-];
-
 const CAPTION_SPEAKER_COLORS: Record<number, string> = {
   1: '#00D6B8',
   2: '#6554FF',
@@ -242,6 +235,17 @@ const CURRENT_RENDER_VERSION = 2;
 const TRANSCRIPTION_BACKOFF_KEY = 'wiggly_transcription_429_until';
 const TRANSCRIPTION_ERROR_BACKOFF_KEY = 'wiggly_transcription_error_until';
 const SPACE_REMIX_CUE_DISMISSED_KEY = 'wiggly_space_remix_cue_dismissed_v1';
+
+const inferAudioMimeType = (url: string, fallback = 'audio/mpeg') => {
+  const cleanUrl = url.split('?')[0].toLowerCase();
+  if (cleanUrl.endsWith('.m4a')) return 'audio/mp4';
+  if (cleanUrl.endsWith('.wav')) return 'audio/wav';
+  if (cleanUrl.endsWith('.ogg') || cleanUrl.endsWith('.oga')) return 'audio/ogg';
+  if (cleanUrl.endsWith('.flac')) return 'audio/flac';
+  if (cleanUrl.endsWith('.webm')) return 'audio/webm';
+  if (cleanUrl.endsWith('.aac')) return 'audio/aac';
+  return fallback;
+};
 
 type CreativeBrief = {
   offer: string;
@@ -336,6 +340,39 @@ They need to stop losing the ones already calling.
 
 3 missed calls a day could equal thousands in lost treatment revenue every month.`,
 };
+
+const formatBriefReference = (brandBrain: BrandBrain) => [
+  brandBrain.websiteUrl,
+  ...(brandBrain.proof?.length ? ['', 'Proof from research:', ...brandBrain.proof.map((point) => `- ${point}`)] : []),
+].join('\n');
+
+const inferFailedAlternatives = (brandBrain: BrandBrain) => {
+  const pain = brandBrain.pain.trim();
+  const offer = brandBrain.offer.trim() || 'the right option';
+  if (pain) {
+    return `Comparing generic alternatives, reading reviews, and trying to guess which option actually solves: ${pain.toLowerCase()}`;
+  }
+  return `Comparing generic alternatives, reading reviews, and trying to guess whether ${offer.toLowerCase()} is the right fit.`;
+};
+
+const inferCreativeBriefCta = (brandBrain: BrandBrain) => {
+  const haystack = `${brandBrain.offer} ${brandBrain.audience} ${brandBrain.promisedResult} ${brandBrain.websiteUrl}`.toLowerCase();
+  if (/\b(shop|apparel|clothing|gear|product|products|buy|store|cart)\b/.test(haystack)) return 'Shop now.';
+  if (/\b(appointment|treatment|medspa|laser|skin|clinic|consultation|service)\b/.test(haystack)) return 'Book a consultation.';
+  if (/\b(demo|software|platform|saas|automation|ai)\b/.test(haystack)) return 'Book a demo.';
+  return 'Learn more.';
+};
+
+const buildCreativeBriefFromBrandBrain = (brandBrain: BrandBrain): CreativeBrief => ({
+  offer: brandBrain.offer,
+  buyer: brandBrain.audience,
+  pain: brandBrain.pain,
+  failedAlternatives: inferFailedAlternatives(brandBrain),
+  promisedResult: brandBrain.promisedResult,
+  differentiator: brandBrain.differentiator,
+  cta: inferCreativeBriefCta(brandBrain),
+  reference: formatBriefReference(brandBrain),
+});
 
 const CREATIVE_BRIEF_FIELDS: Array<{
   key: keyof CreativeBrief;
@@ -571,11 +608,13 @@ const ShareAdPage = ({
   const [videoUrl, setVideoUrl] = useState('');
   const [videoReady, setVideoReady] = useState(false);
   const [videoHasSound, setVideoHasSound] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     setVideoReady(false);
     setVideoHasSound(false);
+    setVideoPlaying(false);
     if (!record) {
       setVideoUrl('');
       return;
@@ -600,9 +639,20 @@ const ShareAdPage = ({
     setVideoHasSound(true);
     try {
       await video.play();
+      setVideoPlaying(true);
     } catch {
       // Browser policies may still block playback; the native click target remains.
     }
+  };
+
+  const stopShareVideo = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.pause();
+    video.currentTime = 0;
+    video.muted = true;
+    setVideoPlaying(false);
+    setVideoHasSound(false);
   };
 
   if (loading) {
@@ -630,20 +680,16 @@ const ShareAdPage = ({
   return (
     <main className="min-h-screen bg-[#F7F4EA] px-4 py-8 text-slate-950 sm:px-8">
       <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[minmax(280px,420px)_minmax(320px,1fr)] lg:items-center lg:justify-center">
-        <section className="mx-auto w-full max-w-[420px] rounded-[2rem] border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-950/10">
-          <div className="overflow-hidden rounded-[1.45rem] border border-slate-900/10 bg-slate-950">
-            <div className="flex h-14 items-center justify-between bg-slate-950 px-4 text-white">
-              <div className="flex items-center gap-2.5">
-                <img src="/wiggly-logo.png" alt="" className="h-8 w-8 rounded-full bg-black object-contain p-1.5 ring-1 ring-white/20" />
-                <div>
-                  <p className="text-sm font-black leading-none">{record.businessName || record.brandName || 'Wiggly'}</p>
-                  <p className="mt-1 text-[11px] font-semibold leading-none text-white/60">Sponsored</p>
-                </div>
-              </div>
-              <span className="text-xl font-black leading-none text-white/80">...</span>
-            </div>
-
-            <div className="relative aspect-[4/5] bg-[#FAFAF7]">
+        <section className="mx-auto w-full max-w-[420px]">
+          <PlatformFrame
+            platform={record.platform || 'instagram-feed'}
+            theme="dark"
+            brandName={record.businessName || record.brandName || 'Wiggly'}
+            brandLogo="/wiggly-logo.png"
+            caption={record.subhead || record.headline}
+            metaCta={record.ctaText || 'Learn More'}
+          >
+            <div className="relative h-full w-full bg-[#FAFAF7]">
               {videoUrl ? (
                 <>
                   <video
@@ -655,7 +701,9 @@ const ShareAdPage = ({
                     playsInline
                     preload="metadata"
                     onLoadedData={() => setVideoReady(true)}
-                    className={`h-full w-full bg-[#FAFAF7] object-contain transition-opacity duration-300 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
+                    onPlay={() => setVideoPlaying(true)}
+                    onPause={() => setVideoPlaying(false)}
+                    className={`h-full w-full bg-[#FAFAF7] object-cover transition-opacity duration-300 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
                   />
                   {!videoReady && (
                     <div className="absolute inset-0 flex items-center justify-center bg-[#FAFAF7] text-sm font-black text-slate-500">Loading video...</div>
@@ -664,9 +712,18 @@ const ShareAdPage = ({
                     <button
                       type="button"
                       onClick={playWithSound}
-                      className="absolute inset-x-5 bottom-5 flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800"
+                      className="absolute inset-x-5 bottom-5 z-40 flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800"
                     >
                       Play with sound
+                    </button>
+                  )}
+                  {videoHasSound && videoReady && (
+                    <button
+                      type="button"
+                      onClick={stopShareVideo}
+                      className="absolute bottom-5 right-5 z-40 flex h-11 items-center justify-center rounded-full bg-slate-950 px-5 text-sm font-black text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800"
+                    >
+                      {videoPlaying ? 'Stop' : 'Replay'}
                     </button>
                   )}
                 </>
@@ -674,19 +731,7 @@ const ShareAdPage = ({
                 <div className="flex h-full w-full items-center justify-center bg-slate-100 text-sm font-black text-slate-500">Video unavailable</div>
               )}
             </div>
-
-            <div className="border-t border-white/10 bg-slate-950 px-4 py-3 text-white">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="flex items-center gap-3">
-                  <Heart className="h-5 w-5" />
-                  <MessageCircle className="h-5 w-5" />
-                  <Send className="h-5 w-5" />
-                </span>
-                <Bookmark className="h-5 w-5" />
-              </div>
-              <p className="line-clamp-2 text-xs font-semibold leading-5 text-white/85">{record.subhead || record.headline}</p>
-            </div>
-          </div>
+          </PlatformFrame>
         </section>
 
         <section className="mx-auto w-full max-w-[440px] space-y-5">
@@ -1889,6 +1934,7 @@ export default function App() {
       brandName: snapshot?.settings.brandName || brandName || 'Wiggly',
       accentColor: snapshot?.settings.accentColor || accentColor,
       backgroundColor: snapshot?.settings.bgColor || bgColor,
+      platform: snapshot?.settings.platform || platform,
     };
   };
 
@@ -2214,6 +2260,8 @@ export default function App() {
   };
 
   const handleOpenConversationWizard = () => {
+    setAudioFlyoutOpen(false);
+    setAudioFlyoutView('choices');
     const firstScript = dialogueScripts[selectedDialogueScriptIndex] || dialogueScripts[0];
     if (firstScript && !draftDialogueScript) {
       setDraftDialogueScript(cloneDialogueScript(firstScript));
@@ -2396,7 +2444,7 @@ export default function App() {
         const audioBlob = await audioRes.blob();
         if (audioBlob.size < 100) return;
         
-        const file = new File([audioBlob], 'audio.mp3', { type: audioBlob.type || 'audio/mpeg' });
+        const file = new File([audioBlob], 'audio.mp3', { type: audioBlob.type || inferAudioMimeType(audioUrl) });
         const formData = new FormData();
         formData.append('audio', file);
         
@@ -2949,8 +2997,6 @@ export default function App() {
     
     const renderStartTime = performance.now();
     let frame = 0;
-    const visualizerValueMemory: Record<string, number[]> = {};
-    
     const draw = () => {
       if (hasStopped) return;
       const elapsed = Math.min(performance.now() - renderStartTime, renderDuration);
@@ -3014,8 +3060,7 @@ export default function App() {
       const sortedElements = [...currentElements].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
       
       const currentTimeSec = elapsed / 1000;
-      const storeCaptions = captions;
-      const renderCaptions = storeCaptions.length > 0 ? storeCaptions : MOCK_CAPTIONS;
+      const renderCaptions = captions;
       const activeCaptionIndexGlobal = renderCaptions.findIndex(c => currentTimeSec >= c.start && currentTimeSec <= c.end);
       const activeCaptionGlobal = activeCaptionIndexGlobal >= 0 ? renderCaptions[activeCaptionIndexGlobal] : undefined;
       const hasTwoSpeakers = renderCaptions.some(c => c.speaker === 2);
@@ -3183,8 +3228,7 @@ export default function App() {
              });
          } else if (el.type === 'caption') {
              const currentTimeSec = elapsed / 1000;
-             const storeCaptions = captions;
-             const renderCaptions = storeCaptions.length > 0 ? storeCaptions : MOCK_CAPTIONS;
+             const renderCaptions = captions;
              const { caption: activeCaption, index: activeCaptionIndex } = getActiveCaption(renderCaptions, currentTimeSec);
              
              if (activeCaption) {
@@ -3283,113 +3327,56 @@ export default function App() {
                  ctx.fillText(el.content, elW / 2, elH / 2);
              }
          } else if (el.type === 'visualizer') {
-             ctx.fillStyle = el.barColor || '#fff';
-             ctx.strokeStyle = el.barColor || '#fff';
-             ctx.lineWidth = 4 * scale;
-             ctx.lineCap = 'round';
-             ctx.lineJoin = 'round';
-             
-             const type = ['bars-bottom', 'bars-center', 'waveform-strip'].includes(el.visualizerType || '') ? (el.visualizerType as 'bars-bottom' | 'bars-center' | 'waveform-strip') : 'bars-center';
-             const count = el.barCount || (type === 'waveform-strip' ? 72 : 16);
-             const mirror = el.visualizerMirror || false;
-             const sensitivityMultiplier = el.visualizerSensitivity ?? 1.5;
-
-             const getValue = (idx: number, total: number, isLeftSpeakerSide?: boolean) => {
-                 let val = 0;
-                 if (analyser && dataArray) {
-                     const dataBins = Math.floor(dataArray.length * 0.4);
-                     const halfCount = Math.floor(count / 2);
-                     const sideIndex = isLeftSpeakerSide ? idx : idx - halfCount;
-                     const sideTotal = isLeftSpeakerSide ? halfCount : count - halfCount;
-                     const center = (count - 1) / 2;
-                     const centerDistance = Math.abs(idx - center);
-                     const normalizedIndex = el.visualizerSplitSpeakers
-                       ? sideIndex / Math.max(1, sideTotal - 1)
-                       : type === 'bars-center'
-                         ? centerDistance / Math.max(1, center)
-                         : idx / Math.max(1, total - 1);
-                     const dataIdx = 1 + Math.floor(normalizedIndex * dataBins);
-                     val = compressVisualizerValue((dataArray[Math.min(dataIdx, dataArray.length-1)] / 255.0) * sensitivityMultiplier);
-                     val = Math.pow(val, 1.5); // non-linear scaling for better visuals
-                 } else {
-                     val = compressVisualizerValue(((Math.sin(frame * 0.2 + idx) * 0.5 + 0.5) * 0.5) * sensitivityMultiplier);
-                 }
-                 return val;
-             };
-
-             const values: number[] = [];
-             if (mirror) {
-                 const half = Math.ceil(count / 2);
-                 for(let i=0; i<half; i++) values.push(getValue(i, half, i < Math.floor(count / 2)));
-                 for(let i=half; i<count; i++) values.push(values[count - 1 - i]);
-             } else {
-                 const halfCount = Math.floor(count / 2);
-                 for(let i=0; i<count; i++) values.push(getValue(i, count, i < halfCount));
-             }
-             
-             if (el.visualizerSplitSpeakers) {
-                 const halfCount = Math.floor(count / 2);
-                 for (let i = 0; i < count; i++) {
-                     const isLeftSpeakerSide = i < halfCount;
-                     const isActiveSpeakerSide = !loopSpeaker || (loopSpeaker === 1 ? isLeftSpeakerSide : !isLeftSpeakerSide);
-                     if (!isActiveSpeakerSide) values[i] = 0.04;
-                 }
-             }
-
-             const previousValues = visualizerValueMemory[el.id] || new Array(count).fill(0.04);
-             const blend = Math.min(0.65, Math.max(0.05, 1 - (el.visualizerSmoothing ?? 0.65)));
-             const smoothedValues = values.map((value, index) => {
-               const previous = previousValues[index] ?? 0.04;
-               return previous + (value - previous) * blend;
+             const type = normalizeVisualizerType(el.visualizerType);
+             const count = getVisualizerBarCount(type, el.barCount);
+             const dataBins = dataArray ? Math.max(1, Math.floor(dataArray.length * 0.5)) : 0;
+             const fallbackLevel = dataArray
+               ? dataArray.slice(0, dataBins).reduce((sum, value) => sum + value, 0) / dataBins / 255
+               : null;
+             const fallbackBands = dataArray
+               ? Array.from({ length: 52 }, (_, index) => {
+                   const dataIndex = Math.min(dataArray.length - 1, 1 + Math.floor((index / 51) * Math.floor(dataArray.length * 0.4)));
+                   return (dataArray[dataIndex] || 0) / 255;
+                 })
+               : null;
+             const bars = getVisualizerBars({
+               type,
+               count,
+               frame,
+               height: elH,
+               scale,
+               audioLevel: analyser ? fallbackLevel : null,
+               frequencyBands: analyser ? fallbackBands : null,
+               currentSpeaker: loopSpeaker,
+               splitSpeakers: el.visualizerSplitSpeakers,
+               mirror: el.visualizerMirror,
+               sensitivity: el.visualizerSensitivity ?? 1.5,
+               heightScale: el.visualizerHeight ?? 0.9,
+               baseline: el.visualizerBaseline ?? 4,
+               gain: el.visualizerGain ?? 1,
+               compression: el.visualizerCompression ?? 1,
+               floor: el.visualizerFloor ?? 0,
+               ceiling: el.visualizerCeiling ?? 1,
+               curve: el.visualizerCurve ?? 'default',
+               bandFocus: el.visualizerBandFocus ?? 'full',
+               color: el.barColor || '#00ffcc',
              });
-             visualizerValueMemory[el.id] = smoothedValues;
-
-             if (type === 'bars-bottom' || type === 'bars-center') {
-                 const gap = 4 * scale;
-                 const barW = (elW - gap * (count - 1)) / count;
-                 const halfCount = Math.floor(count / 2);
-                 for (let i = 0; i < count; i++) {
-                     const v = smoothedValues[i];
-                     const minBarH = (el.visualizerBaseline ?? 4) * scale;
-                     const heightScale = el.visualizerHeight ?? 0.9;
-                     const barH = Math.min(minBarH + v * (elH * heightScale), elH);
-                     const barX = i * (barW + gap);
-                     const barY = type === 'bars-center' ? (elH - barH) / 2 : elH - barH;
-                     const isLeftSpeakerSide = i < halfCount;
-                     const isActiveSpeakerSide = !el.visualizerSplitSpeakers || !loopSpeaker || (loopSpeaker === 1 ? isLeftSpeakerSide : !isLeftSpeakerSide);
-                     ctx.fillStyle = el.visualizerSplitSpeakers && !isLeftSpeakerSide ? '#8b5cf6' : (el.barColor || '#fff');
-                     ctx.globalAlpha = isActiveSpeakerSide ? 1 : 0.28;
-                     
-                     ctx.beginPath();
-                     ctx.roundRect(barX, barY, barW, barH, barW / 2);
-                     ctx.fill();
-                     ctx.globalAlpha = 1;
-                 }
-             } else if (type === 'waveform-strip') {
-                 let v = 0;
-                 if (analyser && dataArray) {
-                     const binsCount = Math.floor(dataArray.length * 0.5);
-                     if (el.visualizerSplitSpeakers) {
-                         const halfCount = Math.floor(binsCount / 2);
-                         for (let i = 0; i < binsCount; i++) {
-                             if (!loopSpeaker || (loopSpeaker === 1 && i < halfCount) || (loopSpeaker === 2 && i >= halfCount)) v += dataArray[i];
-                         }
-                         v = v / halfCount;
-                     } else {
-                         for (let i = 0; i < binsCount; i++) v += dataArray[i];
-                         v = v / binsCount;
-                     }
-                     v = compressVisualizerValue((v / 255.0) * sensitivityMultiplier);
-                 } else {
-                     v = compressVisualizerValue(((Math.sin(frame * 0.2) * 0.5 + 0.5) * 0.5) * sensitivityMultiplier);
-                 }
-                 
-                 drawAdvancedVisualizer(ctx, type, elW, elH, v, frame, el.barColor || '#00ffcc', scale, {
-                   barCount: el.barCount,
-                   heightScale: el.visualizerHeight,
-                   baseline: el.visualizerBaseline,
-                 });
-             }
+             const gap = 4 * scale;
+             const minBarWidth = (type === 'waveform-strip' ? 2 : 4) * scale;
+             const barW = Math.max(1, Math.max(minBarWidth, (elW - gap * (count - 1)) / count));
+             const halfCount = Math.floor(count / 2);
+             bars.forEach((bar, index) => {
+               const isLeftSpeakerSide = index < halfCount;
+               const barH = Math.min(elH, bar.height);
+               const barX = index * (barW + gap);
+               const barY = type === 'bars-bottom' ? elH - barH : (elH - barH) / 2;
+               ctx.fillStyle = el.visualizerSplitSpeakers && !isLeftSpeakerSide ? '#8b5cf6' : bar.color;
+               ctx.globalAlpha = bar.opacity;
+               ctx.beginPath();
+               ctx.roundRect(barX, barY, barW, barH, barW / 2);
+               ctx.fill();
+               ctx.globalAlpha = 1;
+             });
          }
          ctx.restore();
       });
@@ -3900,7 +3887,6 @@ This ad headline is: ${variation.headline}`;
     setActiveTab('single');
     setCreativeMode('visualizer');
     if (navigateToBuilder) setPlaying(false);
-    useEditorStore.getState().setCaptions([]);
     if (resetPlatform) setPlatform('instagram-feed');
     setPlatformTheme('dark');
     setBrandName(businessName);
@@ -3914,16 +3900,7 @@ This ad headline is: ${variation.headline}`;
     setIntroDuration(0);
     setVisualizerColor(appliedVisualizerColor);
     setAccentColor(appliedAccentColor);
-    setCreativeBrief({
-      offer: brandBrain.offer,
-      buyer: brandBrain.audience,
-      pain: brandBrain.pain,
-      failedAlternatives: brandBrain.proof?.join(', ') || 'The old way is slower and harder to show clearly.',
-      promisedResult: brandBrain.promisedResult,
-      differentiator: brandBrain.differentiator,
-      cta: '',
-      reference: brandBrain.websiteUrl,
-    });
+    setCreativeBrief(buildCreativeBriefFromBrandBrain(brandBrain));
     setBusinessContext(brandContext);
 
     if (variation.format === 'conversation') {
@@ -4361,8 +4338,10 @@ This ad headline is: ${variation.headline}`;
             void handleAudioUpload(event);
             if (event.target) event.target.value = '';
           }}
+          onOpenVoiceMaker={handleOpenConversationWizard}
           audioUrl={audioUrl}
           audioAnalysis={previewAudioAnalysis}
+          captionsLoading={isTranscribing}
           platform={platform}
           backgroundColor={bgColor}
           bgMedia={bgMedia}
@@ -4396,6 +4375,339 @@ This ad headline is: ${variation.headline}`;
         />
         {exportStatusCard}
         {saveTemplateModal}
+        {conversationWizardOpen && (
+          <div className="fixed inset-0 z-[75] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+            <div className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+              <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Make Voice Audio</h2>
+                  <p className="mt-1 text-sm text-slate-500">Check the business info, choose the words, edit anything, then make the audio.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    stopDialoguePreview();
+                    setConversationWizardOpen(false);
+                  }}
+                  className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="border-b border-slate-100 px-5 py-3">
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {[
+                    { id: 'brief', label: '1. Business', detail: 'What the ad is about' },
+                    { id: 'scripts', label: '2. Choose Words', detail: `${dialogueScripts.length || 0} options` },
+                    { id: 'edit', label: '3. Make Audio', detail: 'Hear it first' },
+                  ].map((step) => {
+                    const active = conversationWizardStep === step.id;
+                    return (
+                      <button
+                        key={step.id}
+                        type="button"
+                        onClick={() => {
+                          if (step.id === 'edit' && !draftDialogueScript) return;
+                          setConversationWizardStep(step.id as ConversationWizardStep);
+                        }}
+                        className={`rounded-xl border px-3 py-2 text-left transition ${
+                          active
+                            ? 'border-slate-900 bg-slate-950 text-white shadow-sm'
+                            : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-white'
+                        }`}
+                      >
+                        <span className="block text-xs font-black">{step.label}</span>
+                        <span className={`mt-0.5 block text-[11px] font-semibold ${active ? 'text-white/70' : 'text-slate-400'}`}>{step.detail}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="min-h-0 flex-1 overflow-y-auto p-5">
+                {conversationWizardStep === 'brief' && (
+                  <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
+                    <div>
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                          <h3 className="text-sm font-black text-slate-900">Check what this ad is selling</h3>
+                          <p className="mt-1 text-sm text-slate-500">This is the context that decides what the conversation is about.</p>
+                        </div>
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+                          {briefCompletion}/{requiredBriefFields}
+                        </span>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {CREATIVE_BRIEF_FIELDS.map((field) => (
+                          <label key={field.key} className={field.key === 'reference' ? 'block space-y-1.5 md:col-span-2' : 'block space-y-1.5'}>
+                            <span className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-bold text-slate-700">{field.question}</span>
+                              {field.optional && <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Optional</span>}
+                            </span>
+                            <textarea
+                              value={creativeBrief[field.key]}
+                              onChange={(event) => updateCreativeBrief(field.key, event.target.value)}
+                              rows={field.key === 'reference' ? 3 : 2}
+                              placeholder={field.placeholder}
+                              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10"
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <aside className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <p className="text-xs font-black uppercase tracking-wide text-slate-400">Who this is for</p>
+                      <p className="mt-2 text-lg font-black leading-tight text-slate-900">{creativeBrief.buyer || activePersonaDeck?.customer || 'Your customer'}</p>
+                      <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">The script should sound like one person has the problem and another person casually points to the solution.</p>
+                      <button
+                        type="button"
+                        onClick={() => handleGenerateDialogueScripts(false)}
+                        disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
+                        className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isGeneratingDialogueScripts ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                        {isGeneratingDialogueScripts ? 'Writing options' : dialogueScripts.length ? 'Write new options' : 'Write options'}
+                      </button>
+                      {dialogueScripts.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setConversationWizardStep('scripts')}
+                          className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-800 transition hover:bg-slate-50"
+                        >
+                          Choose words
+                          <ArrowRight className="h-4 w-4" />
+                        </button>
+                      )}
+                    </aside>
+                  </div>
+                )}
+
+                {conversationWizardStep === 'scripts' && (
+                  <div className="grid gap-5 lg:grid-cols-[310px_1fr]">
+                    <div className="space-y-2">
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <div>
+                          <h3 className="text-sm font-black text-slate-900">Choose an angle</h3>
+                          <p className="mt-1 text-xs font-semibold text-slate-500">Click one, edit it on the right, then use it.</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleGenerateDialogueScripts(false)}
+                          disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
+                          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                        >
+                          {isGeneratingDialogueScripts ? 'Writing' : 'More options'}
+                        </button>
+                      </div>
+                      {dialogueScripts.length === 0 ? (
+                        <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-5 text-center">
+                          <p className="text-sm font-bold text-slate-700">No voice scripts yet</p>
+                          <button
+                            type="button"
+                            onClick={() => handleGenerateDialogueScripts(false)}
+                            className="mt-3 rounded-lg bg-slate-950 px-4 py-2 text-xs font-black text-white"
+                          >
+                            Write options
+                          </button>
+                        </div>
+                      ) : (
+                        dialogueScripts.map((script, index) => {
+                          const selected = index === selectedDialogueScriptIndex;
+                          const previewKey = `script-${index}`;
+                          const previewing = previewingDialogueKey === previewKey;
+                          return (
+                            <div
+                              key={`${script.title}-${index}`}
+                              className={`flex w-full items-start gap-2 rounded-xl border p-3 text-left transition ${
+                                selected
+                                  ? 'border-slate-900 bg-white shadow-sm'
+                                  : 'border-slate-200 bg-slate-50 hover:bg-white'
+                              }`}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedDialogueScriptIndex(index);
+                                  setDraftDialogueScript(cloneDialogueScript(script));
+                                }}
+                                className="min-w-0 flex-1 text-left"
+                              >
+                                <span className="flex items-center justify-between gap-2">
+                                  <span className="truncate text-sm font-black text-slate-900">{script.title || `Option ${index + 1}`}</span>
+                                  <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-slate-400">{script.lines.length} lines</span>
+                                </span>
+                                <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">{script.angle}</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => playDialoguePreview(script, previewKey)}
+                                className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-slate-700 transition ${
+                                  previewing
+                                    ? 'border-slate-900 bg-slate-950 text-white'
+                                    : 'border-slate-200 bg-white hover:border-indigo-200 hover:text-indigo-600'
+                                }`}
+                                title={previewing ? 'Stop' : 'Hear this script'}
+                              >
+                                {previewing ? <Square className="h-3.5 w-3.5 fill-current" /> : <Play className="h-3.5 w-3.5 fill-current" />}
+                              </button>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-4">
+                      {draftDialogueScript ? (
+                        <>
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <h3 className="text-xl font-black leading-tight text-slate-950">Edit the exact words</h3>
+                              <p className="mt-1 text-sm font-semibold text-slate-500">These words become the audio and the on-screen captions.</p>
+                            </div>
+                            <div className="flex shrink-0 gap-2">
+                              <button
+                                type="button"
+                                onClick={() => playDialoguePreview(draftDialogueScript, `script-${selectedDialogueScriptIndex}`)}
+                                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-800 transition hover:bg-slate-50"
+                              >
+                                {previewingDialogueKey === `script-${selectedDialogueScriptIndex}` ? 'Stop' : 'Play'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setConversationWizardStep('edit')}
+                                disabled={!draftDialogueScript.lines.some((line) => line.text.trim())}
+                                className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-black text-white transition hover:bg-slate-800"
+                              >
+                                Use these words
+                              </button>
+                            </div>
+                          </div>
+                          <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr]">
+                            <label className="block space-y-1.5">
+                              <span className="text-xs font-bold text-slate-700">Title</span>
+                              <input
+                                value={draftDialogueScript.title}
+                                onChange={(event) => setDraftDialogueScript((current) => current ? { ...current, title: event.target.value } : current)}
+                                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-bold text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10"
+                              />
+                            </label>
+                            <label className="block space-y-1.5">
+                              <span className="text-xs font-bold text-slate-700">Angle</span>
+                              <input
+                                value={draftDialogueScript.angle}
+                                onChange={(event) => setDraftDialogueScript((current) => current ? { ...current, angle: event.target.value } : current)}
+                                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-bold text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/10"
+                              />
+                            </label>
+                          </div>
+                          <div className="mt-5 space-y-3">
+                            {draftDialogueScript.lines.map((line, index) => (
+                              <div key={index} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                <div className="mb-2 grid gap-2 sm:grid-cols-[110px_1fr_auto]">
+                                  <input
+                                    value={line.speaker}
+                                    onChange={(event) => updateDraftDialogueLine(index, { speaker: event.target.value })}
+                                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-black text-slate-800 outline-none focus:border-indigo-400"
+                                    aria-label={`Speaker for line ${index + 1}`}
+                                  />
+                                  <input
+                                    value={line.tone}
+                                    onChange={(event) => updateDraftDialogueLine(index, { tone: event.target.value })}
+                                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-bold text-slate-600 outline-none focus:border-indigo-400"
+                                    aria-label={`Tone for line ${index + 1}`}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => removeDraftDialogueLine(index)}
+                                    disabled={draftDialogueScript.lines.length <= 2}
+                                    className="rounded-lg px-2.5 py-2 text-xs font-black text-slate-400 transition hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-30"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                                <textarea
+                                  value={line.text}
+                                  onChange={(event) => updateDraftDialogueLine(index, { text: event.target.value })}
+                                  rows={2}
+                                  placeholder="Write what this person says..."
+                                  className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={addDraftDialogueLine}
+                            className="mt-3 rounded-xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50"
+                          >
+                            Add another line
+                          </button>
+                        </>
+                      ) : (
+                        <div className="flex min-h-[360px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+                          <p className="text-sm font-bold text-slate-500">Choose a script to edit.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {conversationWizardStep === 'edit' && (
+                  <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
+                    <div className="rounded-xl border border-slate-200 bg-white p-4">
+                      <h3 className="text-xl font-black leading-tight text-slate-950">{draftDialogueScript?.title || 'Chosen words'}</h3>
+                      <p className="mt-1 text-sm font-semibold text-slate-500">{draftDialogueScript?.angle || 'Ready to make audio.'}</p>
+                      <div className="mt-5 space-y-3">
+                        {draftDialogueScript?.lines.map((line, index) => (
+                          <div key={`${line.speaker}-${index}`} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                            <p className="text-sm font-semibold leading-6 text-slate-800">{line.text}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <aside className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <p className="text-xs font-black uppercase tracking-wide text-slate-400">Final check</p>
+                      <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">These exact words will become the audio and captions.</p>
+                      <button
+                        type="button"
+                        onClick={() => setConversationWizardStep('scripts')}
+                        className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50"
+                      >
+                        Back to options
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => draftDialogueScript && playDialoguePreview(draftDialogueScript, 'draft')}
+                        disabled={!draftDialogueScript || !draftDialogueScript.lines.some((line) => line.text.trim())}
+                        className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {previewingDialogueKey === 'draft' ? <Square className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
+                        {previewingDialogueKey === 'draft' ? 'Stop' : 'Hear it first'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => draftDialogueScript && handleGenerateDialogueAudio(draftDialogueScript)}
+                        disabled={
+                          !draftDialogueScript ||
+                          isGeneratingDialogueAudio ||
+                          isGeneratingDialogueScripts ||
+                          !draftDialogueScript.lines.some((line) => line.text.trim())
+                        }
+                        className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isGeneratingDialogueAudio ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4 fill-white" />}
+                        {isGeneratingDialogueAudio ? 'Making audio' : 'Make audio'}
+                      </button>
+                    </aside>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </>
     );
   }
@@ -5481,6 +5793,7 @@ This ad headline is: ${variation.headline}`;
                   previewDurationCap={renderDurationCap === 'full' ? null : renderDurationCap}
                   audioUrl={audioUrl}
                   audioAnalysis={previewAudioAnalysis}
+                  captionsLoading={isTranscribing}
                   accentColor={accentColor}
                   playing={playing}
                   onPlaybackComplete={() => setPlaying(false)}
@@ -5875,7 +6188,7 @@ This ad headline is: ${variation.headline}`;
 
                     <aside className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                       <p className="text-xs font-black uppercase tracking-wide text-slate-400">Who this is for</p>
-                      <p className="mt-2 text-lg font-black leading-tight text-slate-900">{activePersonaDeck?.customer || 'Dental practice owner'}</p>
+                      <p className="mt-2 text-lg font-black leading-tight text-slate-900">{creativeBrief.buyer || activePersonaDeck?.customer || 'Your customer'}</p>
                       <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">The script should sound like one person has the problem and another person casually points to the solution.</p>
                       <button
                         type="button"

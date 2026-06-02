@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, AudioLines, BookmarkPlus, CheckCircle2, Download, ExternalLink, LayoutGrid, Loader2, MessageCircle, Play, Shuffle, Square, Upload, Wand2, X } from 'lucide-react';
+import { ArrowRight, AudioLines, BookmarkPlus, CheckCircle2, Download, ExternalLink, LayoutGrid, Loader2, MessageCircle, MousePointerClick, Play, Shuffle, Square, ThumbsDown, ThumbsUp, Upload, Wand2, X } from 'lucide-react';
 import { getRandomAdStyleArchetype, type AdStyleArchetype } from '../lib/style-archetypes';
 import { PlatformFrame, type PlatformType } from './PlatformFrame';
 import { CanvasEditor } from './CanvasEditor';
@@ -37,8 +37,10 @@ type CreateFlowProps = {
   audioFileName: string;
   hasUserAudio: boolean;
   onAudioUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onOpenVoiceMaker: () => void;
   audioUrl: string | null;
   audioAnalysis: AudioAnalysisData | null;
+  captionsLoading?: boolean;
   platform: PlatformType;
   backgroundColor: string;
   bgMedia: { url: string; type: string } | null;
@@ -80,12 +82,22 @@ type AdStreamResponse = {
 const DEFAULT_BRAND_COLORS = ['#00D6B8', '#4F46E5', '#0F172A'];
 const TARGET_GENERATED_AD_COUNT = 50;
 const CREATE_FLOW_STORAGE_KEY = 'wiggly_create_flow_session_v1';
+const CREATE_FEEDBACK_STORAGE_KEY = 'wiggly_generation_feedback_v1';
 const CREATE_FLOW_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
-const FORMAT_MODES: Array<{ id: CreateAdFormat; label: string; icon: typeof LayoutGrid }> = [
+const PAUSED_CREATE_FORMAT_NAMES: Record<GeneratedAdFormat, string> = {
+  visualizer: '',
+  conversation: 'Conversation Card',
+};
+const PAUSED_CREATE_FORMATS = new Set<GeneratedAdFormat>(['conversation']);
+const ACTIVE_GENERATED_FORMATS: GeneratedAdFormat[] = ['visualizer'];
+const ALL_FORMAT_MODES: Array<{ id: CreateAdFormat; label: string; icon: typeof LayoutGrid }> = [
   { id: 'all', label: 'All formats', icon: LayoutGrid },
   { id: 'visualizer', label: 'Audio visualizer', icon: AudioLines },
-  { id: 'conversation', label: 'Conversation', icon: MessageCircle },
+  { id: 'conversation', label: PAUSED_CREATE_FORMAT_NAMES.conversation || 'Conversation', icon: MessageCircle },
 ];
+const FORMAT_MODES = ALL_FORMAT_MODES.filter((mode) => (
+  mode.id === 'all' || !PAUSED_CREATE_FORMATS.has(mode.id)
+));
 
 type PersistedCreateFlow = {
   websiteUrl: string;
@@ -94,6 +106,17 @@ type PersistedCreateFlow = {
   activeIndex: number;
   selectedFormat?: CreateAdFormat;
   savedAt: number;
+};
+
+type GenerationFeedbackRating = 'up' | 'down';
+type StoredGenerationFeedback = {
+  id: string;
+  createdAt: string;
+  rating: GenerationFeedbackRating;
+  websiteUrl: string;
+  brandName: string;
+  variation: Pick<GeneratedAdVariation, 'id' | 'format' | 'angle' | 'headline' | 'index' | 'visualizerColor' | 'accentColor'>;
+  brandBrief: Pick<BrandBrain, 'offer' | 'audience' | 'pain' | 'promisedResult' | 'differentiator' | 'tone' | 'adAngles'>;
 };
 
 const getCreateFlowStorage = () => {
@@ -105,9 +128,12 @@ const getCreateFlowStorage = () => {
   }
 };
 
-const normalizeCreateAdFormat = (value: unknown): CreateAdFormat => (
-  value === 'visualizer' || value === 'conversation' || value === 'all' ? value : 'all'
-);
+const normalizeCreateAdFormat = (value: unknown): CreateAdFormat => {
+  if (value === 'visualizer' || value === 'conversation') {
+    return PAUSED_CREATE_FORMATS.has(value) ? 'all' : value;
+  }
+  return value === 'all' ? value : 'all';
+};
 
 const normalizePersistedVariation = (variation: GeneratedAdVariation): GeneratedAdVariation => ({
   ...variation,
@@ -128,9 +154,11 @@ const loadPersistedCreateFlow = (): PersistedCreateFlow | null => {
       return null;
     }
     const parsedVariations = Array.isArray(parsed.variations)
-      ? parsed.variations.map((variation) => normalizePersistedVariation(variation))
+      ? parsed.variations
+        .map((variation) => normalizePersistedVariation(variation))
+        .filter((variation) => !PAUSED_CREATE_FORMATS.has(variation.format))
       : [];
-    const usableVariations = parsedVariations.length >= TARGET_GENERATED_AD_COUNT ? parsedVariations : [];
+    const usableVariations = parsedVariations.length > 0 ? parsedVariations : [];
     return {
       websiteUrl: typeof parsed.websiteUrl === 'string' ? parsed.websiteUrl : '',
       brandBrain: parsed.brandBrain || null,
@@ -142,6 +170,21 @@ const loadPersistedCreateFlow = (): PersistedCreateFlow | null => {
   } catch {
     storage.removeItem(CREATE_FLOW_STORAGE_KEY);
     return null;
+  }
+};
+
+const saveGenerationFeedback = (feedback: StoredGenerationFeedback) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = window.localStorage.getItem(CREATE_FEEDBACK_STORAGE_KEY);
+    const previous = raw ? JSON.parse(raw) : [];
+    const feedbackItems = Array.isArray(previous) ? previous : [];
+    window.localStorage.setItem(
+      CREATE_FEEDBACK_STORAGE_KEY,
+      JSON.stringify([feedback, ...feedbackItems.filter((item) => item?.variation?.id !== feedback.variation.id)].slice(0, 500)),
+    );
+  } catch {
+    // Feedback should never break ad generation or previewing.
   }
 };
 
@@ -187,7 +230,9 @@ const pickVisibleBrandColor = (
 
 const buildGeneratedVariations = (brandBrain: BrandBrain, variations: HeadlineVariation[]): GeneratedAdVariation[] => {
   let currentArchetypeId = '';
-  return variations.map((variation, index) => {
+  return variations
+    .filter((variation) => !PAUSED_CREATE_FORMATS.has(variation.format === 'conversation' ? 'conversation' : 'visualizer'))
+    .map((variation, index) => {
     const archetype = getRandomAdStyleArchetype(currentArchetypeId);
     currentArchetypeId = archetype.id;
     return {
@@ -266,8 +311,10 @@ export function CreateFlow({
   audioFileName,
   hasUserAudio,
   onAudioUpload,
+  onOpenVoiceMaker,
   audioUrl,
   audioAnalysis,
+  captionsLoading = false,
   platform,
   backgroundColor,
   bgMedia,
@@ -313,7 +360,11 @@ export function CreateFlow({
   const [savedVariationIds, setSavedVariationIds] = useState<string[]>([]);
   const [savedDesignsOpen, setSavedDesignsOpen] = useState(false);
   const [rerollFlash, setRerollFlash] = useState<RerollFlashPayload | null>(null);
+  const [voiceMenuOpen, setVoiceMenuOpen] = useState(false);
+  const [voiceMenuView, setVoiceMenuView] = useState<'choices' | 'library'>('choices');
+  const [feedbackByVariationId, setFeedbackByVariationId] = useState<Record<string, GenerationFeedbackRating>>({});
   const lastPreviewKeyRef = useRef('');
+  const voiceMenuCloseTimeoutRef = useRef<number | null>(null);
 
   const visibleVariations = useMemo(() => (
     selectedFormat === 'all'
@@ -356,6 +407,30 @@ export function CreateFlow({
     : variations.length
       ? `No ${selectedFormatLabel.toLowerCase()} ads in this set yet.`
       : 'Your generated ads appear on the canvas';
+  const voiceName = hasUserAudio
+    ? audioFileName.replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim() || 'Uploaded voice'
+    : 'Example voice';
+  const voiceLabel = hasUserAudio ? 'Uploaded by you' : 'Example';
+
+  const openVoiceMenu = () => {
+    if (voiceMenuCloseTimeoutRef.current) {
+      window.clearTimeout(voiceMenuCloseTimeoutRef.current);
+      voiceMenuCloseTimeoutRef.current = null;
+    }
+    setVoiceMenuOpen(true);
+  };
+
+  const closeVoiceMenuSoon = () => {
+    if (voiceMenuCloseTimeoutRef.current) window.clearTimeout(voiceMenuCloseTimeoutRef.current);
+    voiceMenuCloseTimeoutRef.current = window.setTimeout(() => {
+      setVoiceMenuOpen(false);
+      setVoiceMenuView('choices');
+    }, 140);
+  };
+
+  useEffect(() => () => {
+    if (voiceMenuCloseTimeoutRef.current) window.clearTimeout(voiceMenuCloseTimeoutRef.current);
+  }, []);
 
   const statusCopy = useMemo(() => {
     if (status === 'researching') return 'Finding the angle';
@@ -375,6 +450,36 @@ export function CreateFlow({
     }
     const nextIndex = variations.findIndex((candidate) => candidate.id === variation.id);
     if (nextIndex >= 0) setActiveIndex(nextIndex);
+  };
+
+  const rateActiveVariation = (rating: GenerationFeedbackRating) => {
+    if (!activeVariation || !brandBrain) return;
+    setFeedbackByVariationId((current) => ({ ...current, [activeVariation.id]: rating }));
+    saveGenerationFeedback({
+      id: `${activeVariation.id}-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      rating,
+      websiteUrl,
+      brandName: brandBrain.businessName,
+      variation: {
+        id: activeVariation.id,
+        format: activeVariation.format,
+        angle: activeVariation.angle,
+        headline: activeVariation.headline,
+        index: activeVariation.index,
+        visualizerColor: activeVariation.visualizerColor,
+        accentColor: activeVariation.accentColor,
+      },
+      brandBrief: {
+        offer: brandBrain.offer,
+        audience: brandBrain.audience,
+        pain: brandBrain.pain,
+        promisedResult: brandBrain.promisedResult,
+        differentiator: brandBrain.differentiator,
+        tone: brandBrain.tone,
+        adAngles: brandBrain.adAngles,
+      },
+    });
   };
 
   useEffect(() => {
@@ -442,7 +547,7 @@ export function CreateFlow({
     return fetchJsonWithTimeout<AdStreamResponse>('/api/generate-ad-stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ brandBrain: nextBrandBrain, count: TARGET_GENERATED_AD_COUNT, formatMix: ['visualizer', 'conversation'] }),
+      body: JSON.stringify({ brandBrain: nextBrandBrain, count: TARGET_GENERATED_AD_COUNT, formatMix: ACTIVE_GENERATED_FORMATS }),
     }, 30000, 'Writing is taking too long. Try again in a moment.');
   };
 
@@ -636,11 +741,12 @@ export function CreateFlow({
               {FORMAT_MODES.map((mode) => {
                 const Icon = mode.icon;
                 const active = selectedFormat === mode.id;
-                return (
+                const button = (
                   <button
-                    key={mode.id}
                     type="button"
                     onClick={() => setSelectedFormat(mode.id)}
+                    onFocus={mode.id === 'visualizer' ? openVoiceMenu : undefined}
+                    onBlur={mode.id === 'visualizer' ? closeVoiceMenuSoon : undefined}
                     className={`flex h-11 w-11 items-center justify-center rounded-xl transition ${
                       active
                         ? 'bg-slate-950 text-white shadow-md shadow-slate-950/20'
@@ -651,6 +757,117 @@ export function CreateFlow({
                   >
                     <Icon className="h-5 w-5" />
                   </button>
+                );
+
+                if (mode.id !== 'visualizer') {
+                  return <React.Fragment key={mode.id}>{button}</React.Fragment>;
+                }
+
+                return (
+                  <div
+                    key={mode.id}
+                    className="relative"
+                    onMouseEnter={openVoiceMenu}
+                    onMouseLeave={closeVoiceMenuSoon}
+                  >
+                    {button}
+                    {voiceMenuOpen && (
+                      <>
+                        <span className="pointer-events-none absolute left-1/2 top-full z-[89] h-2 w-6 -translate-x-1/2 border-x border-slate-200 bg-white lg:left-full lg:top-1/2 lg:h-7 lg:w-2 lg:-translate-x-0 lg:-translate-y-1/2 lg:border-x-0 lg:border-y" />
+                        <span className="pointer-events-none absolute left-1/2 top-full z-[91] h-2 w-4 -translate-x-1/2 bg-white lg:left-full lg:top-1/2 lg:h-5 lg:w-2 lg:-translate-x-0 lg:-translate-y-1/2" />
+                      </>
+                    )}
+                    {voiceMenuOpen && (
+                      <div
+                        className="absolute left-1/2 top-[calc(100%+0.5rem)] z-[90] w-80 -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-4 text-left text-slate-950 shadow-2xl shadow-slate-950/20 lg:left-[calc(100%+0.5rem)] lg:top-0 lg:translate-x-0"
+                        onMouseEnter={openVoiceMenu}
+                        onMouseLeave={closeVoiceMenuSoon}
+                      >
+                        <span className="pointer-events-none absolute -top-2 left-1/2 h-3 w-5 -translate-x-1/2 rounded-t-md border-x border-t border-slate-200 bg-white lg:hidden" />
+                        <span className="pointer-events-none absolute -left-2 top-4 hidden h-6 w-3 rounded-l-md border-y border-l border-slate-200 bg-white lg:block" />
+                        <div className="mb-4">
+                          <h3 className="text-sm font-black text-slate-900">Change voice</h3>
+                          <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">Your ad keeps working while you choose.</p>
+                        </div>
+
+                        {voiceMenuView !== 'choices' && (
+                          <button
+                            type="button"
+                            onClick={() => setVoiceMenuView('choices')}
+                            className="mb-3 text-xs font-black text-slate-500 transition hover:text-slate-900"
+                          >
+                            Back
+                          </button>
+                        )}
+
+                        {voiceMenuView === 'choices' && (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3">
+                              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-slate-900 shadow-sm">
+                                <AudioLines className="h-4 w-4" />
+                              </span>
+                              <span className="min-w-0">
+                                <span className="block truncate text-sm font-black text-slate-800">Voice: {voiceName}</span>
+                                <span className="block truncate text-xs font-semibold text-slate-500">{voiceLabel}</span>
+                              </span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setVoiceMenuOpen(false);
+                                setVoiceMenuView('choices');
+                                onOpenVoiceMaker();
+                              }}
+                              className="w-full rounded-2xl border border-slate-900 bg-slate-950 p-4 text-left text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:shadow-xl"
+                            >
+                              <span className="flex items-center justify-between gap-3">
+                                <span>
+                                  <span className="block text-base font-black">Make me a voice</span>
+                                  <span className="mt-1 block text-xs font-semibold leading-5 text-white/70">Write a short script. Wiggly turns it into audio.</span>
+                                </span>
+                                <ArrowRight className="h-5 w-5 shrink-0" />
+                              </span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setVoiceMenuView('library')}
+                              className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left text-slate-900 transition hover:border-slate-300 hover:bg-white"
+                            >
+                              <span className="flex items-center justify-between gap-3">
+                                <span>
+                                  <span className="block text-sm font-black">Use a voice I have</span>
+                                  <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">Upload a voice clip for timing, captions, and bars.</span>
+                                </span>
+                                <ArrowRight className="h-5 w-5 shrink-0 text-slate-400" />
+                              </span>
+                            </button>
+                          </div>
+                        )}
+
+                        {voiceMenuView === 'library' && (
+                          <div className="space-y-3">
+                            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-3 text-sm font-black text-slate-700 transition hover:border-slate-400 hover:bg-white">
+                              <Upload className="h-4 w-4" />
+                              Upload voice audio
+                              <input
+                                type="file"
+                                accept="audio/*,video/mp4"
+                                onChange={(event) => {
+                                  onAudioUpload(event);
+                                  setVoiceMenuOpen(false);
+                                  setVoiceMenuView('choices');
+                                }}
+                                className="sr-only"
+                                title="Upload voice audio"
+                              />
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -676,6 +893,7 @@ export function CreateFlow({
                   previewDurationCap={previewDurationCap}
                   audioUrl={audioUrl}
                   audioAnalysis={audioAnalysis}
+                  captionsLoading={captionsLoading}
                   accentColor={activeVariation?.accentColor || '#4F46E5'}
                   playing={playing}
                   onPlaybackComplete={onPlaybackComplete}
@@ -695,6 +913,55 @@ export function CreateFlow({
                 {playing ? 'Stop preview' : 'Play this ad'}
               </button>
             </div>
+            {(activeVariation || variations.length > 0) && (
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                {activeVariation && brandBrain && (
+                  <div
+                    className="flex shrink-0 items-center rounded-2xl border border-white/15 bg-slate-950/92 p-1 shadow-lg shadow-slate-950/15"
+                    aria-label="Rate this generated ad"
+                  >
+                    {([
+                      { rating: 'up' as const, label: 'Good generation', icon: ThumbsUp },
+                      { rating: 'down' as const, label: 'Bad generation', icon: ThumbsDown },
+                    ]).map((item) => {
+                      const Icon = item.icon;
+                      const active = feedbackByVariationId[activeVariation.id] === item.rating;
+                      return (
+                        <button
+                          key={item.rating}
+                          type="button"
+                          onClick={() => rateActiveVariation(item.rating)}
+                          className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
+                            active
+                              ? item.rating === 'up'
+                                ? 'bg-emerald-400 text-slate-950'
+                                : 'bg-rose-400 text-slate-950'
+                              : 'text-white/75 hover:bg-white/10 hover:text-white'
+                          }`}
+                          aria-label={item.label}
+                          title={item.label}
+                          aria-pressed={active}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="group flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-3 py-2 shadow-lg shadow-slate-950/8 backdrop-blur sm:gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-white shadow-sm shadow-slate-950/20">
+                    <MousePointerClick className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0 text-xs font-black text-slate-700 sm:text-sm">Press spacebar to generate more</span>
+                  <span
+                    aria-hidden="true"
+                    className="relative h-7 w-16 shrink-0 rounded-[0.65rem] border border-slate-300 bg-gradient-to-b from-white to-slate-100 shadow-[inset_0_-2px_0_rgba(15,23,42,0.14),0_4px_10px_rgba(15,23,42,0.08)] transition group-hover:-translate-y-0.5 sm:w-24"
+                  >
+                    <span className="absolute inset-x-5 bottom-2 h-0.5 rounded-full bg-slate-300" />
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
