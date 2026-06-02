@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, AudioLines, BookmarkPlus, CheckCircle2, Download, ExternalLink, LayoutGrid, Loader2, MessageCircle, MousePointerClick, Play, Shuffle, Square, Upload, Wand2, X } from 'lucide-react';
+import { ArrowRight, AudioLines, BookmarkPlus, CheckCircle2, Download, ExternalLink, LayoutGrid, Loader2, MessageCircle, MousePointerClick, Play, Shuffle, Square, ThumbsDown, ThumbsUp, Upload, Wand2, X } from 'lucide-react';
 import { getRandomAdStyleArchetype, type AdStyleArchetype } from '../lib/style-archetypes';
 import { PlatformFrame, type PlatformType } from './PlatformFrame';
 import { CanvasEditor } from './CanvasEditor';
@@ -82,6 +82,7 @@ type AdStreamResponse = {
 const DEFAULT_BRAND_COLORS = ['#00D6B8', '#4F46E5', '#0F172A'];
 const TARGET_GENERATED_AD_COUNT = 50;
 const CREATE_FLOW_STORAGE_KEY = 'wiggly_create_flow_session_v1';
+const CREATE_FEEDBACK_STORAGE_KEY = 'wiggly_generation_feedback_v1';
 const CREATE_FLOW_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 const PAUSED_CREATE_FORMAT_NAMES: Record<GeneratedAdFormat, string> = {
   visualizer: '',
@@ -105,6 +106,17 @@ type PersistedCreateFlow = {
   activeIndex: number;
   selectedFormat?: CreateAdFormat;
   savedAt: number;
+};
+
+type GenerationFeedbackRating = 'up' | 'down';
+type StoredGenerationFeedback = {
+  id: string;
+  createdAt: string;
+  rating: GenerationFeedbackRating;
+  websiteUrl: string;
+  brandName: string;
+  variation: Pick<GeneratedAdVariation, 'id' | 'format' | 'angle' | 'headline' | 'index' | 'visualizerColor' | 'accentColor'>;
+  brandBrief: Pick<BrandBrain, 'offer' | 'audience' | 'pain' | 'promisedResult' | 'differentiator' | 'tone' | 'adAngles'>;
 };
 
 const getCreateFlowStorage = () => {
@@ -158,6 +170,21 @@ const loadPersistedCreateFlow = (): PersistedCreateFlow | null => {
   } catch {
     storage.removeItem(CREATE_FLOW_STORAGE_KEY);
     return null;
+  }
+};
+
+const saveGenerationFeedback = (feedback: StoredGenerationFeedback) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = window.localStorage.getItem(CREATE_FEEDBACK_STORAGE_KEY);
+    const previous = raw ? JSON.parse(raw) : [];
+    const feedbackItems = Array.isArray(previous) ? previous : [];
+    window.localStorage.setItem(
+      CREATE_FEEDBACK_STORAGE_KEY,
+      JSON.stringify([feedback, ...feedbackItems.filter((item) => item?.variation?.id !== feedback.variation.id)].slice(0, 500)),
+    );
+  } catch {
+    // Feedback should never break ad generation or previewing.
   }
 };
 
@@ -335,6 +362,7 @@ export function CreateFlow({
   const [rerollFlash, setRerollFlash] = useState<RerollFlashPayload | null>(null);
   const [voiceMenuOpen, setVoiceMenuOpen] = useState(false);
   const [voiceMenuView, setVoiceMenuView] = useState<'choices' | 'library'>('choices');
+  const [feedbackByVariationId, setFeedbackByVariationId] = useState<Record<string, GenerationFeedbackRating>>({});
   const lastPreviewKeyRef = useRef('');
   const voiceMenuCloseTimeoutRef = useRef<number | null>(null);
 
@@ -422,6 +450,36 @@ export function CreateFlow({
     }
     const nextIndex = variations.findIndex((candidate) => candidate.id === variation.id);
     if (nextIndex >= 0) setActiveIndex(nextIndex);
+  };
+
+  const rateActiveVariation = (rating: GenerationFeedbackRating) => {
+    if (!activeVariation || !brandBrain) return;
+    setFeedbackByVariationId((current) => ({ ...current, [activeVariation.id]: rating }));
+    saveGenerationFeedback({
+      id: `${activeVariation.id}-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      rating,
+      websiteUrl,
+      brandName: brandBrain.businessName,
+      variation: {
+        id: activeVariation.id,
+        format: activeVariation.format,
+        angle: activeVariation.angle,
+        headline: activeVariation.headline,
+        index: activeVariation.index,
+        visualizerColor: activeVariation.visualizerColor,
+        accentColor: activeVariation.accentColor,
+      },
+      brandBrief: {
+        offer: brandBrain.offer,
+        audience: brandBrain.audience,
+        pain: brandBrain.pain,
+        promisedResult: brandBrain.promisedResult,
+        differentiator: brandBrain.differentiator,
+        tone: brandBrain.tone,
+        adAngles: brandBrain.adAngles,
+      },
+    });
   };
 
   useEffect(() => {
@@ -854,6 +912,39 @@ export function CreateFlow({
                 {playing ? <Square className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
                 {playing ? 'Stop preview' : 'Play this ad'}
               </button>
+              {activeVariation && brandBrain && (
+                <div
+                  className="absolute bottom-7 left-4 z-40 flex items-center rounded-2xl border border-white/15 bg-slate-950/92 p-1 shadow-2xl shadow-slate-950/25 backdrop-blur"
+                  aria-label="Rate this generated ad"
+                >
+                  {([
+                    { rating: 'up' as const, label: 'Good generation', icon: ThumbsUp },
+                    { rating: 'down' as const, label: 'Bad generation', icon: ThumbsDown },
+                  ]).map((item) => {
+                    const Icon = item.icon;
+                    const active = feedbackByVariationId[activeVariation.id] === item.rating;
+                    return (
+                      <button
+                        key={item.rating}
+                        type="button"
+                        onClick={() => rateActiveVariation(item.rating)}
+                        className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
+                          active
+                            ? item.rating === 'up'
+                              ? 'bg-emerald-400 text-slate-950'
+                              : 'bg-rose-400 text-slate-950'
+                            : 'text-white/75 hover:bg-white/10 hover:text-white'
+                        }`}
+                        aria-label={item.label}
+                        title={item.label}
+                        aria-pressed={active}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             {(activeVariation || variations.length > 0) && (
               <div className="mt-4 flex justify-center">

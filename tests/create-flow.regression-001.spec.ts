@@ -182,6 +182,16 @@ test('create format rail hides paused Conversation Card ads', async ({ page }) =
     element.content === 'Visualizer concept 2' && !element.fontFamily
   ))).toBe(true);
 
+  await expect(page.getByRole('button', { name: 'Good generation' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Bad generation' })).toBeVisible();
+  await page.getByRole('button', { name: 'Good generation' }).click();
+  const feedback = await page.evaluate(() => JSON.parse(localStorage.getItem('wiggly_generation_feedback_v1') || '[]'));
+  expect(feedback[0]?.rating).toBe('up');
+  expect(feedback[0]?.variation?.headline).toBe('Visualizer concept 2');
+  expect(feedback[0]?.brandBrief?.offer).toBe('A faster way to make ads from a brand page and voice clip.');
+
+  await page.getByRole('button', { name: /^Saved/ }).hover();
+  await expect(page.getByRole('button', { name: 'Visualizer concept 2' })).toBeVisible();
   await page.getByRole('button', { name: 'Visualizer concept 2' }).click();
   await expect(page).toHaveURL(/\/builder$/);
   await expect(page.getByText('Edit Parts', { exact: true })).toBeVisible();
