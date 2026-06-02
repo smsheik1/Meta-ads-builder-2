@@ -2282,8 +2282,96 @@ const normalizeDialogueScripts = (payload: any, count: number) => {
     .slice(0, count);
 };
 
-const fillDialogueScripts = (scripts: any[], count: number) => {
-  const fallbacks = fallbackDialogueScripts(count);
+const asBriefString = (brief: any, key: string, fallback = '') => {
+  const value = typeof brief === 'object' && brief ? brief[key] : '';
+  return String(value || fallback).replace(/\s+/g, ' ').trim();
+};
+
+const fallbackDialogueScripts = (count: number, creativeBrief: any = {}) => {
+  const offer = asBriefString(creativeBrief, 'offer', 'this offer');
+  const buyer = asBriefString(creativeBrief, 'buyer', 'people who need this');
+  const pain = asBriefString(creativeBrief, 'pain', 'they are not sure what to choose');
+  const differentiator = asBriefString(creativeBrief, 'differentiator', 'the guidance feels clearer than the usual options');
+  const cta = asBriefString(creativeBrief, 'cta', 'Learn more.');
+  const brandName = offer.match(/^(.+?)\s+(?:offers|provides|sells|helps|makes)\b/i)?.[1]?.trim() || 'this brand';
+  const category = offer
+    .replace(new RegExp(`^${brandName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+`, 'i'), '')
+    .replace(/^(offers|provides|sells|makes|helps with)\s+/i, '')
+    .replace(/\s+for\s+people.*$/i, '')
+    .trim() || 'the right option';
+  const categoryPhrase = /\bservices\b/i.test(category) ? `${category} can help` : `${category} helps`;
+  const shortBuyer = buyer.replace(/^people\s+/i, 'people ').slice(0, 72).trim();
+  const shortPain = pain
+    .replace(/^they\s+want/i, 'you want')
+    .replace(/^they\s+are/i, 'you are')
+    .replace(/^they\s+/i, 'you ')
+    .replace(/\s+but\s+do\s+not\s+/i, ' and you do not ')
+    .slice(0, 82)
+    .trim();
+  const sentencePain = shortPain ? `${shortPain.charAt(0).toUpperCase()}${shortPain.slice(1).replace(/[.]+$/g, '')}` : 'The choice feels unclear';
+  const trustReason = /\bguid/i.test(differentiator)
+    ? 'the guidance feels personal and clear'
+    : 'the value is easy to understand';
+  const simpleCta = cta.replace(/[.]+$/g, '').toLowerCase();
+
+  const scripts = [
+    {
+      title: 'Clear Next Step',
+      angle: 'A buyer needs confidence before choosing.',
+      lines: [
+        { speaker: 'Ava', tone: 'unsure', text: `I keep looking at options, but ${shortPain.toLowerCase()}.` },
+        { speaker: 'Sam', tone: 'calm', text: `${brandName} makes ${category.toLowerCase()} feel easier to choose.` },
+        { speaker: 'Ava', tone: 'curious', text: `So it helps ${shortBuyer.toLowerCase()} know what actually fits?` },
+        { speaker: 'Sam', tone: 'assured', text: `Yes. The next step is simple, ${simpleCta}.` },
+      ],
+    },
+    {
+      title: 'Review Spiral',
+      angle: 'The old research path is not enough.',
+      lines: [
+        { speaker: 'Ava', tone: 'frustrated', text: `I keep comparing options and still feel unsure.` },
+        { speaker: 'Sam', tone: 'practical', text: `${brandName} should make the choice feel clear right away.` },
+        { speaker: 'Ava', tone: 'thoughtful', text: `So the ad should make the choice feel less risky?` },
+        { speaker: 'Sam', tone: 'confident', text: `Exactly. Show that ${trustReason}.` },
+      ],
+    },
+    {
+      title: 'Trust Before Action',
+      angle: 'The customer needs a reason to trust the choice.',
+      lines: [
+        { speaker: 'Ava', tone: 'careful', text: `I would book, but I want to know I am choosing the right place.` },
+        { speaker: 'Sam', tone: 'warm', text: `${brandName} should make that feel easier to understand.` },
+        { speaker: 'Ava', tone: 'interested', text: `Because ${shortBuyer.toLowerCase()} need more than a generic promise?` },
+        { speaker: 'Sam', tone: 'steady', text: `Right. Lead with the result, then ask them to ${simpleCta}.` },
+      ],
+    },
+    {
+      title: 'Simple Explanation',
+      angle: 'Make the offer easy to repeat.',
+      lines: [
+        { speaker: 'Ava', tone: 'curious', text: `How would you explain this without making it sound complicated?` },
+        { speaker: 'Sam', tone: 'clear', text: `${brandName} helps when ${shortPain.toLowerCase()}.` },
+        { speaker: 'Ava', tone: 'relieved', text: `That sounds easier than trying to figure it out alone.` },
+        { speaker: 'Sam', tone: 'friendly', text: `That is the point. Make the next step feel obvious.` },
+      ],
+    },
+    {
+      title: 'Before They Scroll',
+      angle: 'The first line names the hidden hesitation.',
+      lines: [
+        { speaker: 'Ava', tone: 'honest', text: `Most ads do not answer the thing I am actually worried about.` },
+        { speaker: 'Sam', tone: 'direct', text: `Then say it plainly. ${sentencePain}.` },
+        { speaker: 'Ava', tone: 'curious', text: `And then show how ${categoryPhrase.toLowerCase()}?` },
+        { speaker: 'Sam', tone: 'assured', text: `Yes. Keep it human, specific, and easy to act on.` },
+      ],
+    },
+  ];
+
+  return normalizeDialogueScripts({ scripts }, count);
+};
+
+const fillDialogueScripts = (scripts: any[], count: number, creativeBrief: any = {}) => {
+  const fallbacks = fallbackDialogueScripts(count, creativeBrief);
   const combined = [...scripts];
   for (const fallback of fallbacks) {
     if (combined.length >= count) break;
@@ -2292,43 +2380,6 @@ const fillDialogueScripts = (scripts: any[], count: number) => {
     }
   }
   return combined.slice(0, count);
-};
-
-const fallbackDialogueScripts = (count: number) => {
-  const scripts = [
-    {
-      title: 'Missed Call Recovery',
-      angle: 'The practice is already paying for leads it never answers.',
-      lines: [
-        { speaker: 'Ava', tone: 'concerned', text: 'We missed three new patient calls during lunch again.' },
-        { speaker: 'Sam', tone: 'calm', text: 'The AI front desk can answer when the team gets busy.' },
-        { speaker: 'Ava', tone: 'curious', text: 'So it can book the patient before they call another office?' },
-        { speaker: 'Sam', tone: 'assured', text: 'Yes. It answers, follows up, and keeps the appointment moving.' },
-      ],
-    },
-    {
-      title: 'After Hours Calls',
-      angle: 'Patients call outside normal hours and still expect a response.',
-      lines: [
-        { speaker: 'Ava', tone: 'frustrated', text: 'The best leads keep calling after we close.' },
-        { speaker: 'Sam', tone: 'practical', text: 'The AI front desk can still answer and book them.' },
-        { speaker: 'Ava', tone: 'thoughtful', text: 'An AI receptionist could answer those calls at night?' },
-        { speaker: 'Sam', tone: 'calm', text: 'And follow up automatically so the patient does not disappear.' },
-      ],
-    },
-    {
-      title: 'No More Hiring',
-      angle: 'AI covers the front desk gaps without adding payroll.',
-      lines: [
-        { speaker: 'Ava', tone: 'tired', text: 'I do not want to hire another front desk person.' },
-        { speaker: 'Sam', tone: 'steady', text: 'The AI can cover the gaps while your team stays focused.' },
-        { speaker: 'Ava', tone: 'interested', text: 'So the AI handles missed calls and follow up?' },
-        { speaker: 'Sam', tone: 'confident', text: 'Exactly. Your team stays focused while the calls still get answered.' },
-      ],
-    },
-  ];
-
-  return scripts.slice(0, count);
 };
 
 const pcmBase64ToWavBase64 = (pcmBase64: string, sampleRate = 24000, channels = 1, bitsPerSample = 16) => {
@@ -2494,12 +2545,17 @@ Return valid JSON with the following structure:
 });
 
 app.post('/api/generate-dialogue-scripts', aiGenerationLimiter, async (req, res) => {
+  const { creativeBrief, persona = 'Dental practice owner', count = 5 } = req.body;
+  const requestedCount = Number(count) || 5;
   try {
-    const { creativeBrief, persona = 'Dental practice owner', count = 5 } = req.body;
-
     const key = process.env.GEMINI_API_KEY;
     if (!key) {
-      throw new Error("GEMINI_API_KEY is not set.");
+      console.warn('Generate dialogue scripts using fallback: GEMINI_API_KEY is not set.');
+      return res.json({
+        scripts: fillDialogueScripts([], requestedCount, creativeBrief),
+        fallback: true,
+        warning: 'AI script generation is not configured, so Wiggly used local script options.',
+      });
     }
 
     const ai = new GoogleGenAI({ apiKey: key });
@@ -2557,12 +2613,20 @@ Return ONLY valid JSON:
       });
 
       const text = response.text || '{"scripts":[]}';
-      scripts = normalizeDialogueScripts(parseJsonResponse(text), Number(count) || 5);
+      scripts = normalizeDialogueScripts(parseJsonResponse(text), requestedCount);
     }
 
-    res.json({ scripts: fillDialogueScripts(scripts, Number(count) || 5) });
+    res.json({ scripts: fillDialogueScripts(scripts, requestedCount, creativeBrief) });
   } catch (error: any) {
     console.error("Generate dialogue scripts error:", error);
+    const status = Number(error?.status || error?.code || 0);
+    if (status === 403 || status === 429) {
+      return res.json({
+        scripts: fillDialogueScripts([], requestedCount, creativeBrief),
+        fallback: true,
+        warning: 'AI script generation is temporarily unavailable, so Wiggly used local script options.',
+      });
+    }
     sendServerError(res, 'Error generating dialogue scripts.');
   }
 });
