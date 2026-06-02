@@ -714,11 +714,19 @@ export function CreateFlow({
                   >
                     {button}
                     {voiceMenuOpen && (
+                      <>
+                        <span className="pointer-events-none absolute left-1/2 top-full z-[89] h-2 w-6 -translate-x-1/2 border-x border-slate-200 bg-white lg:left-full lg:top-1/2 lg:h-7 lg:w-2 lg:-translate-x-0 lg:-translate-y-1/2 lg:border-x-0 lg:border-y" />
+                        <span className="pointer-events-none absolute left-1/2 top-full z-[91] h-2 w-4 -translate-x-1/2 bg-white lg:left-full lg:top-1/2 lg:h-5 lg:w-2 lg:-translate-x-0 lg:-translate-y-1/2" />
+                      </>
+                    )}
+                    {voiceMenuOpen && (
                       <div
-                        className="absolute left-1/2 top-[calc(100%+0.75rem)] z-[90] w-80 -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-4 text-left text-slate-950 shadow-2xl shadow-slate-950/20 lg:left-[calc(100%+0.75rem)] lg:top-0 lg:translate-x-0"
+                        className="absolute left-1/2 top-[calc(100%+0.5rem)] z-[90] w-80 -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-4 text-left text-slate-950 shadow-2xl shadow-slate-950/20 lg:left-[calc(100%+0.5rem)] lg:top-0 lg:translate-x-0"
                         onMouseEnter={openVoiceMenu}
                         onMouseLeave={closeVoiceMenuSoon}
                       >
+                        <span className="pointer-events-none absolute -top-2 left-1/2 h-3 w-5 -translate-x-1/2 rounded-t-md border-x border-t border-slate-200 bg-white lg:hidden" />
+                        <span className="pointer-events-none absolute -left-2 top-4 hidden h-6 w-3 rounded-l-md border-y border-l border-slate-200 bg-white lg:block" />
                         <div className="mb-4">
                           <h3 className="text-sm font-black text-slate-900">Change voice</h3>
                           <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">Your ad keeps working while you choose.</p>
