@@ -1876,6 +1876,11 @@ const isUsableHeadline = (headline: string, brandBrain: BrandBrain, previous: Se
   const lower = headline.toLowerCase();
   if (previous.has(lower)) return false;
   if (/\bwiggly\b/i.test(headline)) return false;
+  if (/^why\s+(people|customers|clients|shoppers|buyers)\s+choose\b/i.test(headline)) return false;
+  if (/^what\s+makes\b.+\bworth\s+(noticing|choosing|trying)\b/i.test(headline)) return false;
+  if (/\b(one\s+clear\s+reason|useful\s+part\s+of|should\s+be\s+easy\s+to\s+understand)\b/i.test(headline)) return false;
+  if (/\b(before\s+they\s+scroll|reason\s+to\s+stop\s+scrolling|first\s+frame|the\s+hook)\b/i.test(headline)) return false;
+  if (/^(show|make|turn|lead\s+with|start\s+with|give)\b/i.test(headline) && /\b(ad|offer|proof|pitch|hook|first frame|reason|decision)\b/i.test(headline)) return false;
   if (/\b(they|people|buyers|shoppers|customers|clients|patients)\s+need\s+a\s+clear\b/i.test(headline)) return false;
   if (/\bneed\s+a\s+clear\s+is\b/i.test(headline)) return false;
   if (/\b[a-z]+\s+is\s+getting expensive$/i.test(headline) && words < 6) return false;
@@ -1960,9 +1965,10 @@ const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<
     return clipped || fallback;
   };
   const proof = (brandBrain.proof || []).map((item) => shortPhrase(item, 5, '')).filter(Boolean).slice(0, 8);
-  const brandName = cleanTextField(brandBrain.businessName, 42) || 'Your brand';
+  const brandName = (cleanTextField(brandBrain.businessName, 42) || 'Your brand').split(':')[0]?.trim() || 'Your brand';
   const briefText = `${brandName} ${brandBrain.offer} ${brandBrain.audience} ${brandBrain.pain} ${brandBrain.differentiator}`.toLowerCase();
   const isMedspa = /\b(medspa|skin|laser|aesthetic|rejuvenation|botox|facial|acne)\b/.test(briefText);
+  const isFood = /\b(cookie|cookies|bakery|baked|dessert|cheesecake|cake|cakes|brownie|brownies|gift|gifting|delivery|snack|sweet)\b/.test(briefText);
   const categoryTemplates = isMedspa ? [
     'Know your skin treatment before you book',
     'Premium skin care should feel clear',
@@ -1988,44 +1994,55 @@ const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<
     'A premium skin visit starts with clarity',
     'Make the consultation feel easy',
     'Give skin goals a smarter next step',
+  ] : isFood ? [
+    'Cookies that arrive ready to impress',
+    'Send dessert without overthinking it',
+    'The gift that actually gets opened',
+    'Fresh cookies beat another boring gift',
+    'Make the dessert table disappear first',
+    'Warm cookie energy without the baking',
+    'Give them cookies they remember',
+    'Skip the card and send cookies',
+    'Cookie delivery for the sweet tooth',
+    'A better gift starts with dessert',
+    'Dessert delivery should feel this easy',
+    'The cookie box everyone notices',
+    'Bring the bakery feeling home',
+    'Make the thank you taste better',
+    'Cookies make the occasion easier',
+    'A sweeter way to show up',
+    'Send the treat they actually want',
+    'The easiest yes is dessert',
+    'Make cookie delivery feel special',
+    `${brandName} delivers the good part`,
+    `${brandName} makes gifting sweeter`,
+    `${brandName} brings dessert to them`,
+    `${brandName} turns delivery into dessert`,
+    `${brandName} makes cookies giftable`,
   ] : [
-    `${brandName} should be easy to understand`,
     `Choose ${brandName} with more confidence`,
-    `The useful part of ${brandName}`,
-    `Make ${brandName} feel obvious`,
-    `${brandName} in one clear reason`,
     `A sharper reason to try ${brandName}`,
-    `Why people choose ${brandName}`,
-    `What makes ${brandName} worth noticing`,
+    `${brandName} makes the next step easier`,
+    `${brandName} turns confusion into clarity`,
+    `${brandName} helps people choose faster`,
+    `${brandName} gives the problem a cleaner answer`,
+    `${brandName} makes the old way feel outdated`,
   ];
   const templates = [
     ...categoryTemplates,
-    `Show why ${brandName} is worth choosing`,
     `Make ${brandName} easy to trust`,
-    `Turn ${brandName} into the obvious next step`,
-    `Lead with the clearest reason to try ${brandName}`,
-    `Show the useful part of ${brandName}`,
-    `Make the decision feel easier`,
-    `Give people a reason to stop scrolling`,
-    `Start with the outcome they want`,
-    `Make the offer clear in one glance`,
-    `Show the proof before the pitch`,
-    `Turn the first frame into the hook`,
     `Make the next step feel simple`,
     `The old workaround is expensive`,
-    `Show the problem before they scroll`,
     `Make the hard part visible`,
-    `Turn the proof into motion`,
   ];
 
   proof.forEach((proofPoint) => {
-    templates.push(`${proofPoint} should lead the ad`);
-    templates.push(`Make ${proofPoint} the hook`);
+    templates.push(`${proofPoint} makes the choice easier`);
+    templates.push(`${proofPoint} is worth remembering`);
   });
   angles.forEach((angle) => {
     const clippedAngle = shortPhrase(angle, 5, '');
     if (!clippedAngle) return;
-    templates.push(`${clippedAngle} before they scroll`);
     templates.push(`Make ${clippedAngle} feel obvious`);
   });
 
