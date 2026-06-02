@@ -912,42 +912,42 @@ export function CreateFlow({
                 {playing ? <Square className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
                 {playing ? 'Stop preview' : 'Play this ad'}
               </button>
-              {activeVariation && brandBrain && (
-                <div
-                  className="absolute bottom-7 left-4 z-40 flex items-center rounded-2xl border border-white/15 bg-slate-950/92 p-1 shadow-2xl shadow-slate-950/25 backdrop-blur"
-                  aria-label="Rate this generated ad"
-                >
-                  {([
-                    { rating: 'up' as const, label: 'Good generation', icon: ThumbsUp },
-                    { rating: 'down' as const, label: 'Bad generation', icon: ThumbsDown },
-                  ]).map((item) => {
-                    const Icon = item.icon;
-                    const active = feedbackByVariationId[activeVariation.id] === item.rating;
-                    return (
-                      <button
-                        key={item.rating}
-                        type="button"
-                        onClick={() => rateActiveVariation(item.rating)}
-                        className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
-                          active
-                            ? item.rating === 'up'
-                              ? 'bg-emerald-400 text-slate-950'
-                              : 'bg-rose-400 text-slate-950'
-                            : 'text-white/75 hover:bg-white/10 hover:text-white'
-                        }`}
-                        aria-label={item.label}
-                        title={item.label}
-                        aria-pressed={active}
-                      >
-                        <Icon className="h-4 w-4" />
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
             </div>
             {(activeVariation || variations.length > 0) && (
-              <div className="mt-4 flex justify-center">
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                {activeVariation && brandBrain && (
+                  <div
+                    className="flex shrink-0 items-center rounded-2xl border border-white/15 bg-slate-950/92 p-1 shadow-lg shadow-slate-950/15"
+                    aria-label="Rate this generated ad"
+                  >
+                    {([
+                      { rating: 'up' as const, label: 'Good generation', icon: ThumbsUp },
+                      { rating: 'down' as const, label: 'Bad generation', icon: ThumbsDown },
+                    ]).map((item) => {
+                      const Icon = item.icon;
+                      const active = feedbackByVariationId[activeVariation.id] === item.rating;
+                      return (
+                        <button
+                          key={item.rating}
+                          type="button"
+                          onClick={() => rateActiveVariation(item.rating)}
+                          className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
+                            active
+                              ? item.rating === 'up'
+                                ? 'bg-emerald-400 text-slate-950'
+                                : 'bg-rose-400 text-slate-950'
+                              : 'text-white/75 hover:bg-white/10 hover:text-white'
+                          }`}
+                          aria-label={item.label}
+                          title={item.label}
+                          aria-pressed={active}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
                 <div className="group flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-3 py-2 shadow-lg shadow-slate-950/8 backdrop-blur sm:gap-3">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-white shadow-sm shadow-slate-950/20">
                     <MousePointerClick className="h-4 w-4" />
