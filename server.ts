@@ -1106,7 +1106,7 @@ const firstPublicAssetUrl = (values: unknown[], baseUrl: string) => {
   return '';
 };
 
-const cleanTextField = (value: unknown, maxLength: number) => String(value || '')
+const cleanTextField = (value: unknown, maxLength: number) => decodeHtmlEntities(String(value || ''))
   .replace(/\s+/g, ' ')
   .trim()
   .slice(0, maxLength);
@@ -1505,11 +1505,13 @@ const firecrawlScrape = async (url: string, includeLinks: boolean): Promise<Scra
 };
 
 const decodeHtmlEntities = (value: string) => value
-  .replace(/&amp;/g, '&')
-  .replace(/&quot;/g, '"')
-  .replace(/&#39;/g, "'")
-  .replace(/&lt;/g, '<')
-  .replace(/&gt;/g, '>');
+  .replace(/&#x([0-9a-f]+);/gi, (_match, hex) => String.fromCharCode(parseInt(hex, 16)))
+  .replace(/&#(\d+);/g, (_match, code) => String.fromCharCode(parseInt(code, 10)))
+  .replace(/&amp;/gi, '&')
+  .replace(/&quot;/gi, '"')
+  .replace(/&apos;/gi, "'")
+  .replace(/&lt;/gi, '<')
+  .replace(/&gt;/gi, '>');
 
 const extractHtmlMeta = (html: string, key: string) => {
   const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1800,7 +1802,7 @@ const buildHeuristicBrandBrain = ({
   const categorySignals = [
     { pattern: /\b(medspa|medical spa|skin|laser|aesthetic|rejuvenation|botox|facial|acne)\b/, label: 'medspa services', audience: 'people considering premium skin and laser treatments', pain: 'They want visible skin results but do not know which treatment to trust', result: 'Feel confident choosing a treatment for smoother, healthier-looking skin', differentiator: `${businessName} makes advanced skin and laser care feel premium and guided` },
     { pattern: /\b(dental|dentist|orthodont|implant|veneers|teeth)\b/, label: 'dental care', audience: 'people comparing dental providers', pain: 'They want dental care that feels trustworthy before they book', result: 'Book with more confidence and understand the next step faster', differentiator: `${businessName} turns dental care into a clearer, easier decision` },
-    { pattern: /\b(fitness|gym|workout|activewear|training|athlete)\b/, label: 'fitness products', audience: 'people serious about training and performance', pain: 'They want gear that performs without feeling generic', result: 'Train with products that feel built for the way they move', differentiator: `${businessName} connects performance, style, and trust in one offer` },
+    { pattern: /\b(fitness|gym|workout|activewear|training|athlete|athletes|sport|sports|shoe|shoes|sneaker|sneakers|running|basketball|apparel|gear)\b/, label: 'performance footwear and athletic apparel', audience: 'athletes and everyday movers choosing training gear', pain: 'They want gear that looks good and keeps up with how they move', result: 'Train, run, and show up with gear built for performance', differentiator: `${businessName} connects performance, style, and athlete-tested trust` },
   ];
   const matchedSignal = categorySignals.find((signal) => signal.pattern.test(lowerText));
   const offer = matchedSignal
@@ -1837,14 +1839,14 @@ const buildHeuristicBrandBrain = ({
       'unlock your potential',
     ],
     adAngles: [
-      `why ${audience} choose ${businessName}`,
-      `the fastest way to understand ${offer}`,
-      `the decision moment before someone chooses ${businessName}`,
-      `the detail that makes ${businessName} easier to trust`,
-      `the difference between browsing and booking with ${businessName}`,
-      `how ${businessName} helps people get ${promisedResult.toLowerCase()}`,
-      `the simple promise behind ${businessName}`,
-      `what people should notice before they compare alternatives`,
+      `${businessName} gear built for how they move`,
+      `the performance promise behind ${businessName}`,
+      `${businessName} style that works past the gym`,
+      `training gear that feels ready on day one`,
+      `the product detail that makes movement easier`,
+      `from browsing gear to feeling ready`,
+      `${businessName} products that make the next workout easier`,
+      `athletic gear that looks as ready as it feels`,
     ],
   };
 };
@@ -1969,6 +1971,7 @@ const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<
   const briefText = `${brandName} ${brandBrain.offer} ${brandBrain.audience} ${brandBrain.pain} ${brandBrain.differentiator}`.toLowerCase();
   const isMedspa = /\b(medspa|skin|laser|aesthetic|rejuvenation|botox|facial|acne)\b/.test(briefText);
   const isFood = /\b(cookie|cookies|bakery|baked|dessert|cheesecake|cake|cakes|brownie|brownies|gift|gifting|delivery|snack|sweet)\b/.test(briefText);
+  const isAthleticWear = /\b(nike|athlete|athletes|sport|sports|training|running|runner|basketball|workout|gym|activewear|apparel|footwear|shoe|shoes|sneaker|sneakers|gear)\b/.test(briefText);
   const categoryTemplates = isMedspa ? [
     'Know your skin treatment before you book',
     'Premium skin care should feel clear',
@@ -2019,6 +2022,28 @@ const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<
     `${brandName} brings dessert to them`,
     `${brandName} turns delivery into dessert`,
     `${brandName} makes cookies giftable`,
+  ] : isAthleticWear ? [
+    'Gear that keeps up with your pace',
+    'Train like the outfit is ready',
+    'The run starts before the first step',
+    'Built for the days you show up',
+    'Performance gear with everyday style',
+    'Move better in gear that works',
+    'Your workout deserves better gear',
+    'From warmup to whatever comes next',
+    'Shoes that make movement feel easier',
+    'Athletic style that earns the miles',
+    'Ready for the run and the rest',
+    'Dress like the workout already started',
+    'The gear should never slow you down',
+    'Made for motion, worn all day',
+    'Feel ready before you start moving',
+    'The next workout starts with gear',
+    `${brandName} gear built for movement`,
+    `${brandName} makes training feel ready`,
+    `${brandName} brings performance into everyday style`,
+    `${brandName} keeps pace with the work`,
+    `${brandName} turns gear into momentum`,
   ] : [
     `Choose ${brandName} with more confidence`,
     `A sharper reason to try ${brandName}`,
