@@ -98,6 +98,7 @@ app.get('/api/health', (_req, res) => {
     ok: true,
     deepgramConfigured: Boolean(process.env.DEEPGRAM_API_KEY),
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+    groqConfigured: Boolean(process.env.GROQ_API_KEY),
     openrouterConfigured: Boolean(process.env.OPENROUTER_API_KEY),
     firecrawlConfigured: Boolean(process.env.FIRECRAWL_API_KEY),
     postizConfigured: Boolean(process.env.POSTIZ_API_KEY),
@@ -908,12 +909,33 @@ const FIRECRAWL_SCRAPE_URL = 'https://api.firecrawl.dev/v2/scrape';
 const TAVILY_SEARCH_URL = 'https://api.tavily.com/search';
 const BRAND_RESEARCH_MODEL = 'gemini-3-flash-preview';
 const HEADLINE_VARIATION_MODEL = 'gemini-3.1-flash-lite';
+const GROQ_DIALOGUE_MODELS = [
+  'llama-3.1-8b-instant',
+  'qwen/qwen3-32b',
+  'meta-llama/llama-4-scout-17b-16e-instruct',
+  'llama-3.3-70b-versatile',
+];
 const OPENROUTER_FREE_DIALOGUE_MODELS = [
   'liquid/lfm-2.5-1.2b-instruct:free',
   'openai/gpt-oss-20b:free',
   'openrouter/auto:free',
 ];
 const DIALOGUE_PROVIDER_TIMEOUT_MS = 12000;
+const GEMINI_DIALOGUE_MODEL = 'gemini-3-flash-preview';
+const DIALOGUE_MODEL_OPTIONS = new Set([
+  'auto',
+  'local',
+  `gemini:${GEMINI_DIALOGUE_MODEL}`,
+  ...GROQ_DIALOGUE_MODELS.map((model) => `groq:${model}`),
+  ...OPENROUTER_FREE_DIALOGUE_MODELS.map((model) => `openrouter:${model}`),
+]);
+const HEADLINE_MODEL_OPTIONS = new Set([
+  'auto',
+  'local',
+  `gemini:${HEADLINE_VARIATION_MODEL}`,
+  ...GROQ_DIALOGUE_MODELS.map((model) => `groq:${model}`),
+  ...OPENROUTER_FREE_DIALOGUE_MODELS.map((model) => `openrouter:${model}`),
+]);
 const BRAND_RESEARCH_CACHE_TTL_MS = 15 * 60 * 1000;
 const BRAND_RESEARCH_CACHE_LIMIT = 100;
 const MAX_RESEARCH_PAGES = 1;
@@ -1106,7 +1128,7 @@ const firstPublicAssetUrl = (values: unknown[], baseUrl: string) => {
   return '';
 };
 
-const cleanTextField = (value: unknown, maxLength: number) => String(value || '')
+const cleanTextField = (value: unknown, maxLength: number) => decodeHtmlEntities(String(value || ''))
   .replace(/\s+/g, ' ')
   .trim()
   .slice(0, maxLength);
@@ -1505,11 +1527,13 @@ const firecrawlScrape = async (url: string, includeLinks: boolean): Promise<Scra
 };
 
 const decodeHtmlEntities = (value: string) => value
-  .replace(/&amp;/g, '&')
-  .replace(/&quot;/g, '"')
-  .replace(/&#39;/g, "'")
-  .replace(/&lt;/g, '<')
-  .replace(/&gt;/g, '>');
+  .replace(/&#x([0-9a-f]+);/gi, (_match, hex) => String.fromCharCode(parseInt(hex, 16)))
+  .replace(/&#(\d+);/g, (_match, code) => String.fromCharCode(parseInt(code, 10)))
+  .replace(/&amp;/gi, '&')
+  .replace(/&quot;/gi, '"')
+  .replace(/&apos;/gi, "'")
+  .replace(/&lt;/gi, '<')
+  .replace(/&gt;/gi, '>');
 
 const extractHtmlMeta = (html: string, key: string) => {
   const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1800,7 +1824,7 @@ const buildHeuristicBrandBrain = ({
   const categorySignals = [
     { pattern: /\b(medspa|medical spa|skin|laser|aesthetic|rejuvenation|botox|facial|acne)\b/, label: 'medspa services', audience: 'people considering premium skin and laser treatments', pain: 'They want visible skin results but do not know which treatment to trust', result: 'Feel confident choosing a treatment for smoother, healthier-looking skin', differentiator: `${businessName} makes advanced skin and laser care feel premium and guided` },
     { pattern: /\b(dental|dentist|orthodont|implant|veneers|teeth)\b/, label: 'dental care', audience: 'people comparing dental providers', pain: 'They want dental care that feels trustworthy before they book', result: 'Book with more confidence and understand the next step faster', differentiator: `${businessName} turns dental care into a clearer, easier decision` },
-    { pattern: /\b(fitness|gym|workout|activewear|training|athlete)\b/, label: 'fitness products', audience: 'people serious about training and performance', pain: 'They want gear that performs without feeling generic', result: 'Train with products that feel built for the way they move', differentiator: `${businessName} connects performance, style, and trust in one offer` },
+    { pattern: /\b(fitness|gym|workout|activewear|training|athlete|athletes|sport|sports|shoe|shoes|sneaker|sneakers|running|basketball|apparel|gear)\b/, label: 'performance footwear and athletic apparel', audience: 'athletes and everyday movers choosing training gear', pain: 'They want gear that looks good and keeps up with how they move', result: 'Train, run, and show up with gear built for performance', differentiator: `${businessName} connects performance, style, and athlete-tested trust` },
   ];
   const matchedSignal = categorySignals.find((signal) => signal.pattern.test(lowerText));
   const offer = matchedSignal
@@ -1837,14 +1861,14 @@ const buildHeuristicBrandBrain = ({
       'unlock your potential',
     ],
     adAngles: [
-      `why ${audience} choose ${businessName}`,
-      `the fastest way to understand ${offer}`,
-      `the decision moment before someone chooses ${businessName}`,
-      `the detail that makes ${businessName} easier to trust`,
-      `the difference between browsing and booking with ${businessName}`,
-      `how ${businessName} helps people get ${promisedResult.toLowerCase()}`,
-      `the simple promise behind ${businessName}`,
-      `what people should notice before they compare alternatives`,
+      `${businessName} gear built for how they move`,
+      `the performance promise behind ${businessName}`,
+      `${businessName} style that works past the gym`,
+      `training gear that feels ready on day one`,
+      `the product detail that makes movement easier`,
+      `from browsing gear to feeling ready`,
+      `${businessName} products that make the next workout easier`,
+      `athletic gear that looks as ready as it feels`,
     ],
   };
 };
@@ -1876,6 +1900,11 @@ const isUsableHeadline = (headline: string, brandBrain: BrandBrain, previous: Se
   const lower = headline.toLowerCase();
   if (previous.has(lower)) return false;
   if (/\bwiggly\b/i.test(headline)) return false;
+  if (/^why\s+(people|customers|clients|shoppers|buyers)\s+choose\b/i.test(headline)) return false;
+  if (/^what\s+makes\b.+\bworth\s+(noticing|choosing|trying)\b/i.test(headline)) return false;
+  if (/\b(one\s+clear\s+reason|useful\s+part\s+of|should\s+be\s+easy\s+to\s+understand)\b/i.test(headline)) return false;
+  if (/\b(before\s+they\s+scroll|reason\s+to\s+stop\s+scrolling|first\s+frame|the\s+hook)\b/i.test(headline)) return false;
+  if (/^(show|make|turn|lead\s+with|start\s+with|give)\b/i.test(headline) && /\b(ad|offer|proof|pitch|hook|first frame|reason|decision)\b/i.test(headline)) return false;
   if (/\b(they|people|buyers|shoppers|customers|clients|patients)\s+need\s+a\s+clear\b/i.test(headline)) return false;
   if (/\bneed\s+a\s+clear\s+is\b/i.test(headline)) return false;
   if (/\b[a-z]+\s+is\s+getting expensive$/i.test(headline) && words < 6) return false;
@@ -1960,9 +1989,11 @@ const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<
     return clipped || fallback;
   };
   const proof = (brandBrain.proof || []).map((item) => shortPhrase(item, 5, '')).filter(Boolean).slice(0, 8);
-  const brandName = cleanTextField(brandBrain.businessName, 42) || 'Your brand';
+  const brandName = (cleanTextField(brandBrain.businessName, 42) || 'Your brand').split(':')[0]?.trim() || 'Your brand';
   const briefText = `${brandName} ${brandBrain.offer} ${brandBrain.audience} ${brandBrain.pain} ${brandBrain.differentiator}`.toLowerCase();
   const isMedspa = /\b(medspa|skin|laser|aesthetic|rejuvenation|botox|facial|acne)\b/.test(briefText);
+  const isFood = /\b(cookie|cookies|bakery|baked|dessert|cheesecake|cake|cakes|brownie|brownies|gift|gifting|delivery|snack|sweet)\b/.test(briefText);
+  const isAthleticWear = /\b(nike|athlete|athletes|sport|sports|training|running|runner|basketball|workout|gym|activewear|apparel|footwear|shoe|shoes|sneaker|sneakers|gear)\b/.test(briefText);
   const categoryTemplates = isMedspa ? [
     'Know your skin treatment before you book',
     'Premium skin care should feel clear',
@@ -1988,44 +2019,77 @@ const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<
     'A premium skin visit starts with clarity',
     'Make the consultation feel easy',
     'Give skin goals a smarter next step',
+  ] : isFood ? [
+    'Cookies that arrive ready to impress',
+    'Send dessert without overthinking it',
+    'The gift that actually gets opened',
+    'Fresh cookies beat another boring gift',
+    'Make the dessert table disappear first',
+    'Warm cookie energy without the baking',
+    'Give them cookies they remember',
+    'Skip the card and send cookies',
+    'Cookie delivery for the sweet tooth',
+    'A better gift starts with dessert',
+    'Dessert delivery should feel this easy',
+    'The cookie box everyone notices',
+    'Bring the bakery feeling home',
+    'Make the thank you taste better',
+    'Cookies make the occasion easier',
+    'A sweeter way to show up',
+    'Send the treat they actually want',
+    'The easiest yes is dessert',
+    'Make cookie delivery feel special',
+    `${brandName} delivers the good part`,
+    `${brandName} makes gifting sweeter`,
+    `${brandName} brings dessert to them`,
+    `${brandName} turns delivery into dessert`,
+    `${brandName} makes cookies giftable`,
+  ] : isAthleticWear ? [
+    'Gear that keeps up with your pace',
+    'Train like the outfit is ready',
+    'The run starts before the first step',
+    'Built for the days you show up',
+    'Performance gear with everyday style',
+    'Move better in gear that works',
+    'Your workout deserves better gear',
+    'From warmup to whatever comes next',
+    'Shoes that make movement feel easier',
+    'Athletic style that earns the miles',
+    'Ready for the run and the rest',
+    'Dress like the workout already started',
+    'The gear should never slow you down',
+    'Made for motion, worn all day',
+    'Feel ready before you start moving',
+    'The next workout starts with gear',
+    `${brandName} gear built for movement`,
+    `${brandName} makes training feel ready`,
+    `${brandName} brings performance into everyday style`,
+    `${brandName} keeps pace with the work`,
+    `${brandName} turns gear into momentum`,
   ] : [
-    `${brandName} should be easy to understand`,
     `Choose ${brandName} with more confidence`,
-    `The useful part of ${brandName}`,
-    `Make ${brandName} feel obvious`,
-    `${brandName} in one clear reason`,
     `A sharper reason to try ${brandName}`,
-    `Why people choose ${brandName}`,
-    `What makes ${brandName} worth noticing`,
+    `${brandName} makes the next step easier`,
+    `${brandName} turns confusion into clarity`,
+    `${brandName} helps people choose faster`,
+    `${brandName} gives the problem a cleaner answer`,
+    `${brandName} makes the old way feel outdated`,
   ];
   const templates = [
     ...categoryTemplates,
-    `Show why ${brandName} is worth choosing`,
     `Make ${brandName} easy to trust`,
-    `Turn ${brandName} into the obvious next step`,
-    `Lead with the clearest reason to try ${brandName}`,
-    `Show the useful part of ${brandName}`,
-    `Make the decision feel easier`,
-    `Give people a reason to stop scrolling`,
-    `Start with the outcome they want`,
-    `Make the offer clear in one glance`,
-    `Show the proof before the pitch`,
-    `Turn the first frame into the hook`,
     `Make the next step feel simple`,
     `The old workaround is expensive`,
-    `Show the problem before they scroll`,
     `Make the hard part visible`,
-    `Turn the proof into motion`,
   ];
 
   proof.forEach((proofPoint) => {
-    templates.push(`${proofPoint} should lead the ad`);
-    templates.push(`Make ${proofPoint} the hook`);
+    templates.push(`${proofPoint} makes the choice easier`);
+    templates.push(`${proofPoint} is worth remembering`);
   });
   angles.forEach((angle) => {
     const clippedAngle = shortPhrase(angle, 5, '');
     if (!clippedAngle) return;
-    templates.push(`${clippedAngle} before they scroll`);
     templates.push(`Make ${clippedAngle} feel obvious`);
   });
 
@@ -2052,7 +2116,134 @@ const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<
   return fallbacks.slice(0, count);
 };
 
-const generateHeadlineVariations = async (brandBrain: BrandBrain, count: number) => {
+const normalizeHeadlineModelChoice = (value: unknown) => {
+  const choice = String(value || 'auto').trim();
+  return HEADLINE_MODEL_OPTIONS.has(choice) ? choice : 'auto';
+};
+
+const getHeadlineModelProvider = (choice: string) => {
+  if (choice === 'local') return 'local';
+  if (choice.startsWith('groq:')) return 'groq';
+  if (choice.startsWith('openrouter:')) return 'openrouter';
+  if (choice.startsWith('gemini:')) return 'gemini';
+  return 'auto';
+};
+
+const getHeadlineModelName = (choice: string) => choice.split(':').slice(1).join(':');
+
+const normalizeHeadlineVariations = (value: any) => {
+  const parsed = Array.isArray(value) ? value : value?.variations || [];
+  return Array.isArray(parsed) ? parsed : [];
+};
+
+const generateHeadlineVariationsWithGroq = async (brandBrain: BrandBrain, count: number, modelChoices = GROQ_DIALOGUE_MODELS) => {
+  const key = process.env.GROQ_API_KEY;
+  if (!key) return { variations: [], model: '' };
+  const prompt = buildHeadlineVariationsPrompt({ brandBrain, count });
+
+  for (const model of modelChoices) {
+    let timeout: NodeJS.Timeout | undefined;
+    try {
+      const controller = new AbortController();
+      timeout = setTimeout(() => controller.abort(), HEADLINE_VARIATION_TIMEOUT_MS);
+      const response = await withTimeout(
+        fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'user', content: prompt }],
+            response_format: { type: 'json_object' },
+            temperature: 0.7,
+            max_completion_tokens: 3000,
+          }),
+          signal: controller.signal,
+        }),
+        HEADLINE_VARIATION_TIMEOUT_MS,
+        `Groq headline generation (${model})`,
+      );
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        console.warn('Groq headline model failed:', model, response.status, String(payload?.error?.message || '').slice(0, 180));
+        continue;
+      }
+
+      const text = String(payload?.choices?.[0]?.message?.content || '{"variations":[]}');
+      const variations = normalizeHeadlineVariations(parseJsonResponse(text));
+      if (variations.length) {
+        console.info('Groq headline generation succeeded:', model);
+        return { variations, model };
+      }
+    } catch (error: any) {
+      console.warn('Groq headline generation error:', model, String(error?.message || error).slice(0, 180));
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  }
+
+  return { variations: [], model: '' };
+};
+
+const generateHeadlineVariationsWithOpenRouter = async (brandBrain: BrandBrain, count: number, modelChoices = OPENROUTER_FREE_DIALOGUE_MODELS) => {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) return { variations: [], model: '' };
+  const prompt = buildHeadlineVariationsPrompt({ brandBrain, count });
+
+  for (const model of modelChoices) {
+    if (!model.endsWith(':free')) continue;
+    let timeout: NodeJS.Timeout | undefined;
+    try {
+      const controller = new AbortController();
+      timeout = setTimeout(() => controller.abort(), HEADLINE_VARIATION_TIMEOUT_MS);
+      const response = await withTimeout(
+        fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': process.env.PUBLIC_APP_URL || 'http://localhost:3000',
+            'X-Title': 'Wiggly',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'user', content: prompt }],
+            response_format: { type: 'json_object' },
+            temperature: 0.7,
+            max_tokens: 3000,
+          }),
+          signal: controller.signal,
+        }),
+        HEADLINE_VARIATION_TIMEOUT_MS,
+        `OpenRouter headline generation (${model})`,
+      );
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        console.warn('OpenRouter headline model failed:', model, response.status, String(payload?.error?.message || '').slice(0, 180));
+        continue;
+      }
+
+      const text = String(payload?.choices?.[0]?.message?.content || '{"variations":[]}');
+      const variations = normalizeHeadlineVariations(parseJsonResponse(text));
+      if (variations.length) {
+        console.info('OpenRouter headline generation succeeded:', model);
+        return { variations, model };
+      }
+    } catch (error: any) {
+      console.warn('OpenRouter headline generation error:', model, String(error?.message || error).slice(0, 180));
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  }
+
+  return { variations: [], model: '' };
+};
+
+const generateHeadlineVariationsWithGemini = async (brandBrain: BrandBrain, count: number) => {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY is not set.');
   const ai = new GoogleGenAI({ apiKey: key });
@@ -2064,7 +2255,61 @@ const generateHeadlineVariations = async (brandBrain: BrandBrain, count: number)
     },
   }), HEADLINE_VARIATION_TIMEOUT_MS, 'Headline generation');
   const parsed = parseJsonResponse(response.text || '{"variations": []}');
-  return Array.isArray(parsed) ? parsed : parsed?.variations || [];
+  return {
+    variations: normalizeHeadlineVariations(parsed),
+    model: HEADLINE_VARIATION_MODEL,
+  };
+};
+
+const generateHeadlineVariations = async (brandBrain: BrandBrain, count: number, modelChoice = 'auto') => {
+  const selectedModel = normalizeHeadlineModelChoice(modelChoice);
+  const selectedProvider = getHeadlineModelProvider(selectedModel);
+  const selectedModelName = getHeadlineModelName(selectedModel);
+
+  if (selectedProvider === 'local') {
+    return { variations: [], provider: 'local', model: 'local', selectedModel, fallback: true };
+  }
+
+  if (selectedProvider === 'groq' || selectedProvider === 'auto') {
+    const result = await generateHeadlineVariationsWithGroq(
+      brandBrain,
+      count,
+      selectedProvider === 'groq' ? [selectedModelName] : GROQ_DIALOGUE_MODELS,
+    );
+    if (result.variations.length) {
+      return { variations: result.variations, provider: 'groq-free', model: result.model, selectedModel };
+    }
+    if (selectedProvider === 'groq') {
+      return { variations: [], provider: 'local', model: 'local', selectedModel, fallback: true };
+    }
+  }
+
+  if (selectedProvider === 'openrouter' || selectedProvider === 'auto') {
+    const result = await generateHeadlineVariationsWithOpenRouter(
+      brandBrain,
+      count,
+      selectedProvider === 'openrouter' ? [selectedModelName] : OPENROUTER_FREE_DIALOGUE_MODELS,
+    );
+    if (result.variations.length) {
+      return { variations: result.variations, provider: 'openrouter-free', model: result.model, selectedModel };
+    }
+    if (selectedProvider === 'openrouter') {
+      return { variations: [], provider: 'local', model: 'local', selectedModel, fallback: true };
+    }
+  }
+
+  if (selectedProvider === 'gemini' && selectedModelName !== HEADLINE_VARIATION_MODEL) {
+    return { variations: [], provider: 'local', model: 'local', selectedModel, fallback: true };
+  }
+
+  if (selectedProvider === 'gemini' || selectedProvider === 'auto') {
+    const result = await generateHeadlineVariationsWithGemini(brandBrain, count);
+    if (result.variations.length) {
+      return { variations: result.variations, provider: 'gemini', model: result.model, selectedModel };
+    }
+  }
+
+  return { variations: [], provider: 'local', model: 'local', selectedModel, fallback: true };
 };
 
 app.post('/api/research-brand', brandResearchLimiter, async (req, res) => {
@@ -2171,14 +2416,23 @@ app.post('/api/generate-ad-stream', adStreamLimiter, async (req, res) => {
     const brandBrain = normalizeBrandBrain(rawBrandBrain, websiteUrl, cleanTextField(rawBrandBrain.brandLogoUrl, 500));
     const totalCount = Math.min(50, Math.max(10, Number(req.body?.count) || 50));
     const formatMix = normalizeFormatMix(req.body?.formatMix);
+    const selectedModel = normalizeHeadlineModelChoice(req.body?.model);
     const used = new Set<string>();
     const variations: HeadlineVariation[] = [];
+    let provider = 'local';
+    let model = 'local';
+    let fallback = false;
 
     let rawVariations: any[] = [];
     try {
-      rawVariations = await generateHeadlineVariations(brandBrain, totalCount);
+      const generation = await generateHeadlineVariations(brandBrain, totalCount, selectedModel);
+      rawVariations = generation.variations;
+      provider = generation.provider;
+      model = generation.model;
+      fallback = Boolean(generation.fallback);
     } catch (error) {
       console.warn('[ad-stream] headline_generation_failed', error instanceof Error ? error.message : error);
+      fallback = true;
     }
 
     rawVariations.forEach((item) => {
@@ -2223,6 +2477,10 @@ app.post('/api/generate-ad-stream', adStreamLimiter, async (req, res) => {
     return res.json({
       brandBrain,
       variations: variations.slice(0, totalCount),
+      provider,
+      model,
+      selectedModel,
+      fallback,
     });
   } catch (error: any) {
     console.error('Generate ad stream error:', error);
@@ -2456,11 +2714,26 @@ Each script needs title, angle, and exactly 4 lines alternating Ava and Sam.
 Schema: {"scripts":[{"title":"short","angle":"short","lines":[{"speaker":"Ava","tone":"curious","text":"fluent line"},{"speaker":"Sam","tone":"calm","text":"fluent line"},{"speaker":"Ava","tone":"curious","text":"fluent line"},{"speaker":"Sam","tone":"assured","text":"fluent line"}]}]}`;
 };
 
-const generateDialogueScriptsWithOpenRouter = async (prompt: string, count: number) => {
-  const key = process.env.OPENROUTER_API_KEY;
-  if (!key) return [];
+const normalizeDialogueModelChoice = (value: unknown) => {
+  const choice = String(value || 'auto').trim();
+  return DIALOGUE_MODEL_OPTIONS.has(choice) ? choice : 'auto';
+};
 
-  for (const model of OPENROUTER_FREE_DIALOGUE_MODELS) {
+const getDialogueModelProvider = (choice: string) => {
+  if (choice === 'local') return 'local';
+  if (choice.startsWith('groq:')) return 'groq';
+  if (choice.startsWith('openrouter:')) return 'openrouter';
+  if (choice.startsWith('gemini:')) return 'gemini';
+  return 'auto';
+};
+
+const getDialogueModelName = (choice: string) => choice.split(':').slice(1).join(':');
+
+const generateDialogueScriptsWithOpenRouter = async (prompt: string, count: number, modelChoices = OPENROUTER_FREE_DIALOGUE_MODELS) => {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) return { scripts: [], model: '' };
+
+  for (const model of modelChoices) {
     if (!model.endsWith(':free')) continue;
     let timeout: NodeJS.Timeout | undefined;
     try {
@@ -2498,7 +2771,7 @@ const generateDialogueScriptsWithOpenRouter = async (prompt: string, count: numb
       const scripts = normalizeDialogueScripts(parseJsonResponse(text), count);
       if (scripts.length) {
         console.info('OpenRouter dialogue fallback succeeded:', model);
-        return scripts;
+        return { scripts, model };
       }
     } catch (error: any) {
       console.warn('OpenRouter dialogue fallback error:', model, String(error?.message || error).slice(0, 180));
@@ -2507,7 +2780,58 @@ const generateDialogueScriptsWithOpenRouter = async (prompt: string, count: numb
     }
   }
 
-  return [];
+  return { scripts: [], model: '' };
+};
+
+const generateDialogueScriptsWithGroq = async (prompt: string, count: number, modelChoices = GROQ_DIALOGUE_MODELS) => {
+  const key = process.env.GROQ_API_KEY;
+  if (!key) return { scripts: [], model: '' };
+
+  for (const model of modelChoices) {
+    let timeout: NodeJS.Timeout | undefined;
+    try {
+      const controller = new AbortController();
+      timeout = setTimeout(() => controller.abort(), DIALOGUE_PROVIDER_TIMEOUT_MS);
+      const response = await withTimeout(
+        fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'user', content: prompt }],
+            response_format: { type: 'json_object' },
+            temperature: 0.7,
+            max_completion_tokens: 1800,
+          }),
+          signal: controller.signal,
+        }),
+        DIALOGUE_PROVIDER_TIMEOUT_MS,
+        `Groq dialogue generation (${model})`,
+      );
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        console.warn('Groq dialogue model failed:', model, response.status, String(payload?.error?.message || '').slice(0, 180));
+        continue;
+      }
+
+      const text = String(payload?.choices?.[0]?.message?.content || '{"scripts":[]}');
+      const scripts = normalizeDialogueScripts(parseJsonResponse(text), count);
+      if (scripts.length) {
+        console.info('Groq dialogue fallback succeeded:', model);
+        return { scripts, model };
+      }
+    } catch (error: any) {
+      console.warn('Groq dialogue fallback error:', model, String(error?.message || error).slice(0, 180));
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  }
+
+  return { scripts: [], model: '' };
 };
 
 const fillDialogueScripts = (scripts: any[], count: number, creativeBrief: any = {}) => {
@@ -2687,71 +3011,116 @@ Return valid JSON with the following structure:
 app.post('/api/generate-dialogue-scripts', aiGenerationLimiter, async (req, res) => {
   const { creativeBrief, persona = 'Dental practice owner', count = 5 } = req.body;
   const requestedCount = Number(count) || 5;
+  const selectedModel = normalizeDialogueModelChoice(req.body?.model);
+  const selectedProvider = getDialogueModelProvider(selectedModel);
+  const selectedModelName = getDialogueModelName(selectedModel);
   const prompt = buildDialogueScriptsPrompt({ creativeBrief, persona, count: requestedCount });
-  const openRouterPrompt = buildOpenRouterDialogueScriptsPrompt({ creativeBrief, persona, count: requestedCount });
+  const providerPrompt = buildOpenRouterDialogueScriptsPrompt({ creativeBrief, persona, count: requestedCount });
+  const sendLocalDialogueScripts = (warning: string) => res.json({
+    scripts: fillDialogueScripts([], requestedCount, creativeBrief),
+    fallback: true,
+    provider: 'local',
+    model: 'local',
+    selectedModel,
+    warning,
+  });
+
   try {
-    const openRouterScripts = await generateDialogueScriptsWithOpenRouter(openRouterPrompt, requestedCount);
-    if (openRouterScripts.length) {
-      return res.json({
-        scripts: fillDialogueScripts(openRouterScripts, requestedCount, creativeBrief),
-        provider: 'openrouter-free',
-      });
-    }
-    if (process.env.OPENROUTER_API_KEY) {
-      return res.json({
-        scripts: fillDialogueScripts([], requestedCount, creativeBrief),
-        fallback: true,
-        provider: 'local',
-        warning: 'Free OpenRouter models are temporarily unavailable, so Wiggly used local script options.',
-      });
+    if (selectedProvider === 'local') {
+      return sendLocalDialogueScripts('Using local script options by request.');
     }
 
-    const key = process.env.GEMINI_API_KEY;
-    if (!key) {
-      console.warn('Generate dialogue scripts using provider fallback: GEMINI_API_KEY is not set.');
-      return res.json({
-        scripts: fillDialogueScripts([], requestedCount, creativeBrief),
-        fallback: true,
-        provider: 'local',
-        warning: 'AI script generation is not configured, so Wiggly used local script options.',
-      });
-    }
-
-    const ai = new GoogleGenAI({ apiKey: key });
-
-    let scripts: any[] = [];
-
-    for (let attempt = 0; attempt < 2 && scripts.length === 0; attempt += 1) {
-      const response = await withTimeout(
-        ai.models.generateContent({
-          model: 'gemini-3-flash-preview',
-          contents: attempt === 0
-            ? prompt
-            : `${prompt}\n\nYour previous output failed quality checks. Return clean, fluent English only. Absolutely no em dashes, forced negation, staccato fragments, placeholder text, or keyboard-mash text.`,
-          config: {
-            responseMimeType: 'application/json',
-          },
-        }),
-        DIALOGUE_PROVIDER_TIMEOUT_MS,
-        'Gemini dialogue generation',
+    if (selectedProvider === 'groq' || selectedProvider === 'auto') {
+      const groqResult = await generateDialogueScriptsWithGroq(
+        providerPrompt,
+        requestedCount,
+        selectedProvider === 'groq' ? [selectedModelName] : GROQ_DIALOGUE_MODELS,
       );
-
-      const text = response.text || '{"scripts":[]}';
-      scripts = normalizeDialogueScripts(parseJsonResponse(text), requestedCount);
+      if (groqResult.scripts.length) {
+        return res.json({
+          scripts: fillDialogueScripts(groqResult.scripts, requestedCount, creativeBrief),
+          provider: 'groq-free',
+          model: groqResult.model,
+          selectedModel,
+        });
+      }
+      if (selectedProvider === 'groq') {
+        return sendLocalDialogueScripts(`Selected Groq model (${selectedModelName}) is unavailable, so Wiggly used local script options.`);
+      }
     }
 
-    res.json({ scripts: fillDialogueScripts(scripts, requestedCount, creativeBrief), provider: 'gemini' });
+    if (selectedProvider === 'openrouter' || selectedProvider === 'auto') {
+      const openRouterResult = await generateDialogueScriptsWithOpenRouter(
+        providerPrompt,
+        requestedCount,
+        selectedProvider === 'openrouter' ? [selectedModelName] : OPENROUTER_FREE_DIALOGUE_MODELS,
+      );
+      if (openRouterResult.scripts.length) {
+        return res.json({
+          scripts: fillDialogueScripts(openRouterResult.scripts, requestedCount, creativeBrief),
+          provider: 'openrouter-free',
+          model: openRouterResult.model,
+          selectedModel,
+        });
+      }
+      if (selectedProvider === 'openrouter') {
+        return sendLocalDialogueScripts(`Selected OpenRouter model (${selectedModelName}) is unavailable, so Wiggly used local script options.`);
+      }
+    }
+
+    if (selectedProvider === 'auto' && (process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY)) {
+      return sendLocalDialogueScripts('Free dialogue models are temporarily unavailable, so Wiggly used local script options.');
+    }
+
+    if (selectedProvider === 'gemini' && selectedModelName !== GEMINI_DIALOGUE_MODEL) {
+      return sendLocalDialogueScripts(`Selected Gemini model (${selectedModelName}) is not configured, so Wiggly used local script options.`);
+    }
+
+    if (selectedProvider === 'gemini' || selectedProvider === 'auto') {
+      const key = process.env.GEMINI_API_KEY;
+      if (!key) {
+        console.warn('Generate dialogue scripts using provider fallback: GEMINI_API_KEY is not set.');
+        return sendLocalDialogueScripts('AI script generation is not configured, so Wiggly used local script options.');
+      }
+
+      const ai = new GoogleGenAI({ apiKey: key });
+
+      let scripts: any[] = [];
+
+      for (let attempt = 0; attempt < 2 && scripts.length === 0; attempt += 1) {
+        const response = await withTimeout(
+          ai.models.generateContent({
+            model: GEMINI_DIALOGUE_MODEL,
+            contents: attempt === 0
+              ? prompt
+              : `${prompt}\n\nYour previous output failed quality checks. Return clean, fluent English only. Absolutely no em dashes, forced negation, staccato fragments, placeholder text, or keyboard-mash text.`,
+            config: {
+              responseMimeType: 'application/json',
+            },
+          }),
+          DIALOGUE_PROVIDER_TIMEOUT_MS,
+          'Gemini dialogue generation',
+        );
+
+        const text = response.text || '{"scripts":[]}';
+        scripts = normalizeDialogueScripts(parseJsonResponse(text), requestedCount);
+      }
+
+      return res.json({
+        scripts: fillDialogueScripts(scripts, requestedCount, creativeBrief),
+        provider: 'gemini',
+        model: GEMINI_DIALOGUE_MODEL,
+        selectedModel,
+      });
+    }
+
+    return sendLocalDialogueScripts('AI script generation is not configured, so Wiggly used local script options.');
   } catch (error: any) {
     console.error("Generate dialogue scripts error:", error);
     const status = Number(error?.status || error?.code || 0);
     const providerUnavailable = status === 403 || status === 429 || /timed out/i.test(String(error?.message || ''));
     if (providerUnavailable) {
-      return res.json({
-        scripts: fillDialogueScripts([], requestedCount, creativeBrief),
-        fallback: true,
-        provider: 'local',
-        warning: 'AI script generation is temporarily unavailable, so Wiggly used local script options.',
-      });
+      return sendLocalDialogueScripts('AI script generation is temporarily unavailable, so Wiggly used local script options.');
     }
     sendServerError(res, 'Error generating dialogue scripts.');
   }

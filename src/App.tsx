@@ -3935,7 +3935,7 @@ This ad headline is: ${variation.headline}`;
           ...element,
           content: variation.headline,
           fontFamily: undefined,
-          color: variation.archetype.headlineColor,
+          color: variation.headlineColor || variation.archetype.headlineColor,
           fontSize: variation.archetype.headlineTreatment.fontSize,
           fontWeight: variation.archetype.headlineTreatment.fontWeight,
           lineHeight: Math.max(1.08, variation.archetype.headlineTreatment.lineHeight),
