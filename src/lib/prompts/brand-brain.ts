@@ -49,6 +49,13 @@ export type BrandAssets = {
   rawBranding?: Record<string, unknown>;
 };
 
+export type BrandReceipts = {
+  specificClaims: string[];
+  buyerMoments: string[];
+  exactSiteLanguage: string[];
+  namedProof: string[];
+};
+
 export type BrandBrain = {
   businessName: string;
   websiteUrl: string;
@@ -62,6 +69,7 @@ export type BrandBrain = {
   tone: string;
   colors: string[];
   proof: string[];
+  receipts?: BrandReceipts;
   bannedGenericPhrases: string[];
   adAngles: string[];
 };
@@ -139,6 +147,12 @@ export const buildFallbackBrandBrain = ({
   tone: 'clear, confident, direct',
   colors: ['#00D6B8', '#4F46E5', '#0F172A'],
   proof: [],
+  receipts: {
+    specificClaims: [],
+    buyerMoments: [],
+    exactSiteLanguage: [],
+    namedProof: [],
+  },
   bannedGenericPhrases: [
     'transform your business',
     'take it to the next level',

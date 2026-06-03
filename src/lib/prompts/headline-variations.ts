@@ -57,5 +57,6 @@ Rules:
 - Do not mention Wiggly.
 - Do not write CTAs.
 - Do not repeat headlines.
+- Do not use scammy or exploit-y verbs like "hijack", "hack", "steal", "trick", "game", "exploit", or "dominate".
 - Do not write full sentences if a punchier fragment is better.
 - Make the user feel like Wiggly read their mind, not like a generic ad generator.`;

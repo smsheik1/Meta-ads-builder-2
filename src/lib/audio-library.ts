@@ -1,4 +1,5 @@
 import Dexie, { type Table } from 'dexie';
+import type { Caption } from '../store';
 
 const DB_NAME = 'wiggly_audio_library';
 const STORE_NAME = 'audios';
@@ -16,6 +17,8 @@ export type StoredAudioItem = {
   mimeType: string;
   kind?: AudioAssetKind;
   source?: AudioAssetSource;
+  brandKey?: string | null;
+  captions?: Caption[];
   fingerprint?: string;
   status?: AudioAssetStatus;
 };

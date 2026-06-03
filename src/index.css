@@ -704,6 +704,22 @@
   opacity: 1;
 }
 
+.wiggly-audio-cta-pulse {
+  animation: wiggly-audio-cta-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes wiggly-audio-cta-pulse {
+  0%, 100% {
+    opacity: 0.72;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.14);
+  }
+
+  50% {
+    opacity: 1;
+    box-shadow: 0 22px 54px rgba(15, 23, 42, 0.2);
+  }
+}
+
 @media (max-width: 767px) {
   .wiggly-builder-header {
     height: auto;

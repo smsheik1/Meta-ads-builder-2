@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, AudioLines, BookmarkPlus, CheckCircle2, Download, ExternalLink, LayoutGrid, Loader2, MessageCircle, MousePointerClick, Play, Shuffle, Square, ThumbsDown, ThumbsUp, Upload, Wand2, X } from 'lucide-react';
+import { ArrowRight, AudioLines, BookmarkPlus, Captions, CheckCircle2, Download, ExternalLink, LayoutGrid, Loader2, MessageCircle, MousePointerClick, Play, Shuffle, Square, ThumbsDown, ThumbsUp, Upload, Wand2, X } from 'lucide-react';
 import { getRandomAdStyleArchetype, type AdStyleArchetype } from '../lib/style-archetypes';
 import { PlatformFrame, type PlatformType } from './PlatformFrame';
 import { CanvasEditor } from './CanvasEditor';
@@ -7,7 +7,7 @@ import type { AudioAnalysisData } from '../lib/audio-analysis';
 import { getRelativeLuminance, pickVisibleColorOnLight } from '../lib/color-contrast';
 import { BRAND_FALLBACK_QUESTIONS, type BrandBrain } from '../lib/prompts/brand-brain';
 import type { ConversationAdLine, GeneratedAdFormat, HeadlineVariation } from '../lib/prompts/headline-variations';
-import { useEditorStore } from '../store';
+import { useEditorStore, type Caption } from '../store';
 
 export type GeneratedAdVariation = HeadlineVariation & {
   format: GeneratedAdFormat;
@@ -45,11 +45,23 @@ type SavedCreateDesign = {
   accentColor: string;
 };
 
+type SavedVoiceOption = {
+  id: string;
+  name: string;
+  label: string;
+  current: boolean;
+};
+
 type CreateFlowProps = {
   audioFileName: string;
   hasUserAudio: boolean;
+  hasPlayableAudio: boolean;
   onAudioUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onOpenVoiceMaker: () => void;
+  savedVoiceOptions: SavedVoiceOption[];
+  onUseSavedVoice: (voiceId: string) => void;
+  captions: Caption[];
+  onUpdateCaptions: (captions: Caption[]) => void;
   audioUrl: string | null;
   audioAnalysis: AudioAnalysisData | null;
   captionsLoading?: boolean;
@@ -75,6 +87,7 @@ type CreateFlowProps = {
   onApplyStyleArchetype: (archetype: AdStyleArchetype) => void;
   onPreviewVariation: (variation: GeneratedAdVariation, brandBrain: BrandBrain) => void;
   onOpenBuilder: (variation: GeneratedAdVariation, brandBrain: BrandBrain) => void;
+  onResetCanvasForNewWebsite: () => void;
   onOpenStudio: () => void;
   rendering: boolean;
 };
@@ -309,6 +322,47 @@ const uniqueStrings = (values: Array<string | undefined>) => values
   .filter((value): value is string => Boolean(value))
   .filter((value, index, allValues) => allValues.indexOf(value) === index);
 
+const isRecordObject = (value: unknown): value is Record<string, unknown> => (
+  typeof value === 'object'
+    && value !== null
+    && !Array.isArray(value)
+);
+
+const isStringArray = (value: unknown): value is string[] => (
+  Array.isArray(value)
+    && value.every((item) => typeof item === 'string')
+);
+
+const normalizeBrandBrainAssets = (value: BrandBrain['brandAssets'] | null | undefined) => {
+  const assets: Record<string, unknown> = isRecordObject(value) ? value : {};
+  const images = isRecordObject(assets)
+    ? (isRecordObject(assets.images) ? assets.images : {})
+    : {};
+
+  return {
+    images: {
+      logo: typeof images.logo === 'string' ? images.logo : undefined,
+      favicon: typeof images.favicon === 'string' ? images.favicon : undefined,
+      ogImage: typeof images.ogImage === 'string' ? images.ogImage : undefined,
+      heroImages: isStringArray(images.heroImages) ? images.heroImages : [],
+      allImages: isStringArray(images.allImages) ? images.allImages : [],
+    },
+    colors: isRecordObject(assets.colors) ? assets.colors as Record<string, string> : {},
+    fonts: Array.isArray(assets.fonts)
+      ? assets.fonts.filter((entry) => isRecordObject(entry) && typeof entry.family === 'string' && Boolean(entry.family.trim())) as { family: string; role?: string }[]
+      : [],
+    componentStyles: isRecordObject(assets.componentStyles) ? assets.componentStyles : {},
+    personality: isRecordObject(assets.personality) ? assets.personality : assets.personality,
+    designSystem: isRecordObject(assets.designSystem) ? assets.designSystem : assets.designSystem,
+    metadata: isRecordObject(assets.metadata) ? assets.metadata as Record<string, string> : {},
+    socialLinks: isStringArray(assets.socialLinks) ? assets.socialLinks : [],
+    reviews: isStringArray(assets.reviews) ? assets.reviews : [],
+    pages: Array.isArray(assets.pages) ? assets.pages : [],
+    externalResearch: isRecordObject(assets.externalResearch) ? assets.externalResearch as BrandBrain['brandAssets']['externalResearch'] : undefined,
+    rawBranding: isRecordObject(assets.rawBranding) ? assets.rawBranding : {},
+  };
+};
+
 const isDataImage = (value: string | null | undefined) => Boolean(value?.startsWith('data:image/'));
 
 const canPreviewBrandImage = (value: string) => {
@@ -368,11 +422,16 @@ const getRerollFlashRoles = (
 export function CreateFlow({
   audioFileName,
   hasUserAudio,
+  hasPlayableAudio,
   onAudioUpload,
   onOpenVoiceMaker,
+  savedVoiceOptions,
+  onUseSavedVoice,
+  captions,
+  onUpdateCaptions,
   audioUrl,
   audioAnalysis,
-  captionsLoading = false,
+  captionsLoading,
   platform,
   backgroundColor,
   bgMedia,
@@ -395,6 +454,7 @@ export function CreateFlow({
   onApplyStyleArchetype,
   onPreviewVariation,
   onOpenBuilder,
+  onResetCanvasForNewWebsite,
   onOpenStudio,
   rendering,
 }: CreateFlowProps) {
@@ -420,6 +480,8 @@ export function CreateFlow({
   const [rerollFlash, setRerollFlash] = useState<RerollFlashPayload | null>(null);
   const [voiceMenuOpen, setVoiceMenuOpen] = useState(false);
   const [voiceMenuView, setVoiceMenuView] = useState<'choices' | 'library'>('choices');
+  const [captionEditorOpen, setCaptionEditorOpen] = useState(false);
+  const [captionDrafts, setCaptionDrafts] = useState<string[]>([]);
   const [feedbackByVariationId, setFeedbackByVariationId] = useState<Record<string, GenerationFeedbackRating>>({});
   const [selectedAdModel, setSelectedAdModel] = useState<AdModelChoice>('auto');
   const [lastAdProvider, setLastAdProvider] = useState('');
@@ -435,7 +497,7 @@ export function CreateFlow({
   const activeVariation = activeGlobalVariation && visibleVariations.some((variation) => variation.id === activeGlobalVariation.id)
     ? activeGlobalVariation
     : visibleVariations[0] || null;
-  const brandAssets = brandBrain?.brandAssets;
+  const brandAssets = brandBrain?.brandAssets ? normalizeBrandBrainAssets(brandBrain.brandAssets) : null;
   const externalResearch = brandAssets?.externalResearch;
   const creativeBriefHighlights = brandBrain ? [
     { label: 'Offer', value: brandBrain.offer },
@@ -453,7 +515,7 @@ export function CreateFlow({
     ...(brandAssets?.images.allImages || []),
   ]).slice(0, 12);
   const brandColorEntries = Object.entries(brandAssets?.colors || {});
-  const canGenerate = websiteUrl.trim().length > 3 && hasUserAudio && status !== 'researching' && status !== 'writing';
+  const canGenerate = websiteUrl.trim().length > 3 && status !== 'researching' && status !== 'writing';
   const isGenerating = status === 'researching' || status === 'writing';
   const generateButtonUnavailable = !canGenerate && !isGenerating;
   const siteLabel = websiteUrl
@@ -470,7 +532,8 @@ export function CreateFlow({
   const voiceName = hasUserAudio
     ? audioFileName.replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim() || 'Uploaded voice'
     : 'Example voice';
-  const voiceLabel = hasUserAudio ? 'Uploaded by you' : 'Example';
+  const voiceLabel = hasPlayableAudio ? 'Ready for this ad' : 'Audio needed';
+  const previewReady = hasPlayableAudio && Boolean(audioAnalysis?.levels?.length);
 
   const openVoiceMenu = () => {
     if (voiceMenuCloseTimeoutRef.current) {
@@ -486,6 +549,19 @@ export function CreateFlow({
       setVoiceMenuOpen(false);
       setVoiceMenuView('choices');
     }, 140);
+  };
+
+  const openCaptionEditor = () => {
+    setCaptionDrafts(captions.map((caption) => caption.text));
+    setCaptionEditorOpen(true);
+  };
+
+  const saveCaptionEdits = () => {
+    onUpdateCaptions(captions.map((caption, index) => ({
+      ...caption,
+      text: (captionDrafts[index] ?? caption.text).trim() || caption.text,
+    })));
+    setCaptionEditorOpen(false);
   };
 
   useEffect(() => () => {
@@ -620,6 +696,13 @@ export function CreateFlow({
     setError('');
     setFallbackQuestions([]);
     setSavedVariationIds([]);
+    const nextWebsiteUrl = websiteUrl.trim();
+    const isDifferentWebsite = Boolean(brandBrain?.websiteUrl && nextWebsiteUrl && brandBrain.websiteUrl !== nextWebsiteUrl);
+    if (isDifferentWebsite || variations.length > 0) {
+      setVariations([]);
+      setActiveIndex(0);
+      onResetCanvasForNewWebsite();
+    }
     setStatus('researching');
     try {
       const research = await requestResearch(answers);
@@ -680,8 +763,8 @@ export function CreateFlow({
   };
 
   return (
-    <main className="min-h-screen bg-[#F7F4EA] px-6 py-6 font-sans text-slate-950 md:px-10">
-      <header className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+    <main className="min-h-screen bg-[#F7F4EA] px-3 py-4 font-sans text-slate-950 sm:px-6 md:px-10">
+      <header className="mx-auto flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <button type="button" onClick={onOpenStudio} className="flex items-center gap-3 text-left">
           <img src="/wiggly-logo.svg" alt="Wiggly" className="h-10 w-10 rounded-2xl object-cover shadow-sm shadow-slate-950/10" />
           <span>
@@ -692,22 +775,22 @@ export function CreateFlow({
         <button
           type="button"
           onClick={onOpenStudio}
-          className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-700 shadow-sm transition hover:bg-slate-50"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-700 shadow-sm transition hover:bg-slate-50 sm:w-auto"
         >
           Open builder
         </button>
       </header>
 
-      <section className="mx-auto grid max-w-7xl items-center gap-12 py-10 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
+      <section className="mx-auto grid max-w-7xl items-center gap-8 py-6 sm:gap-10 sm:py-8 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[0.82fr_1.18fr] lg:gap-16 lg:py-10">
         <div className="max-w-xl">
           <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black uppercase tracking-wide text-slate-500 shadow-sm">
             <Wand2 className="h-4 w-4 text-[#4F46E5]" />
             {statusCopy}
           </p>
-          <h1 className="text-5xl font-black leading-[0.9] tracking-normal text-slate-950 md:text-7xl">
+          <h1 className="text-4xl font-black leading-tight tracking-normal text-slate-950 sm:text-5xl lg:text-7xl">
             Make video ads without learning video editing.
           </h1>
-          <p className="mt-6 max-w-lg text-lg font-semibold leading-8 text-slate-600">
+          <p className="mt-4 max-w-full text-base font-semibold leading-7 text-slate-600 sm:mt-6 sm:text-lg sm:leading-8 md:max-w-lg">
             Wiggly reads the site, finds the selling angle, and fills the canvas with polished ads you can preview, save, download, or edit.
           </p>
 
@@ -721,22 +804,6 @@ export function CreateFlow({
                 className="h-13 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
               />
             </label>
-
-            {!hasUserAudio && (
-              <label className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 transition hover:bg-white">
-                <span className="flex min-w-0 items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-900 shadow-sm">
-                    <Upload className="h-5 w-5" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-black text-slate-900">Upload voice clip</span>
-                    <span className="mt-1 block text-xs font-semibold text-slate-500">Used for timing and captions</span>
-                  </span>
-                </span>
-                <span className="shrink-0 text-xs font-black uppercase tracking-wide text-slate-400">Choose</span>
-                <input type="file" accept="audio/*,video/mp4" onChange={onAudioUpload} className="sr-only" />
-              </label>
-            )}
 
             <label className="block">
               <span className="mb-2 block text-sm font-black text-slate-800">Ad writing model</span>
@@ -818,7 +885,7 @@ export function CreateFlow({
           </div>
         </div>
 
-        <div className="grid items-center gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]">
+        <div className="grid items-center gap-5 sm:gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]">
           <div className="relative flex flex-col items-center gap-3 lg:block">
             <div className="flex rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-lg shadow-slate-950/10 lg:absolute lg:-left-14 lg:top-1/2 lg:z-50 lg:-translate-y-1/2 lg:flex-col">
               {FORMAT_MODES.map((mode) => {
@@ -862,7 +929,7 @@ export function CreateFlow({
                     )}
                     {voiceMenuOpen && (
                       <div
-                        className="absolute left-1/2 top-[calc(100%+0.5rem)] z-[90] w-80 -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-4 text-left text-slate-950 shadow-2xl shadow-slate-950/20 lg:left-[calc(100%+0.5rem)] lg:top-0 lg:translate-x-0"
+                        className="absolute left-1/2 top-[calc(100%+0.5rem)] z-[90] w-[min(20rem,calc(100vw-1.5rem))] -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-4 text-left text-slate-950 shadow-2xl shadow-slate-950/20 lg:left-[calc(100%+0.5rem)] lg:top-0 lg:w-80 lg:translate-x-0"
                         onMouseEnter={openVoiceMenu}
                         onMouseLeave={closeVoiceMenuSoon}
                       >
@@ -946,6 +1013,36 @@ export function CreateFlow({
                                 title="Upload voice audio"
                               />
                             </label>
+                            {savedVoiceOptions.length > 0 ? (
+                              <div className="max-h-52 space-y-2 overflow-y-auto pr-1">
+                                {savedVoiceOptions.map((voice) => (
+                                  <button
+                                    key={voice.id}
+                                    type="button"
+                                    onClick={() => {
+                                      onUseSavedVoice(voice.id);
+                                      setVoiceMenuOpen(false);
+                                      setVoiceMenuView('choices');
+                                    }}
+                                    className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${
+                                      voice.current
+                                        ? 'border-indigo-200 bg-indigo-50 text-slate-900'
+                                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                                    title={`Use ${voice.name}`}
+                                  >
+                                    <span className="block truncate text-xs font-black">{voice.name}</span>
+                                    <span className="mt-0.5 block text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                      {voice.current ? 'Using now' : voice.label}
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold leading-5 text-slate-500">
+                                Saved voices will show here after you upload or make one.
+                              </p>
+                            )}
                           </div>
                         )}
                       </div>
@@ -955,46 +1052,76 @@ export function CreateFlow({
               })}
             </div>
             <div className="relative">
-              <PlatformFrame
-                platform={platform}
-                theme="dark"
-                brandName={brandBrain?.businessName || 'Your brand'}
-                brandLogo={socialAvatarLogo}
-                caption={brandBrain?.offer || 'Drop in a voice clip. Wiggly makes it look expensive.'}
-                metaCta="Learn More"
-              >
-                <CanvasEditor
-                  platform={platform}
-                  backgroundColor={backgroundColor}
-                  bgMedia={bgMedia}
-                  bgShadow={bgShadow}
-                  bgShadowOpacity={bgShadowOpacity}
-                  introImage={introImage}
-                  introDuration={introDuration}
-                  introFeedCropY={introFeedCropY}
-                  introImageAspect={introImageAspect}
-                  previewDurationCap={previewDurationCap}
-                  audioUrl={audioUrl}
-                  audioAnalysis={audioAnalysis}
-                  captionsLoading={captionsLoading}
-                  accentColor={activeVariation?.accentColor || '#4F46E5'}
-                  playing={playing}
-                  onPlaybackComplete={onPlaybackComplete}
-                  onRefreshBackgroundColor={onRefreshBackgroundColor}
-                  onApplyStyleArchetype={onApplyStyleArchetype}
-                  rerollFlash={rerollFlash}
-                  disableEmptySelectionSpaceReroll
-                />
-              </PlatformFrame>
-              <button
-                type="button"
-                onClick={onTogglePlayback}
-                disabled={!audioUrl}
-                className="absolute bottom-7 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-2xl shadow-slate-950/25 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {playing ? <Square className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
-                {playing ? 'Stop preview' : 'Play this ad'}
-              </button>
+              {(() => {
+                const createCaptionFallback = 'Add audio for this ad';
+                return (
+                  <PlatformFrame
+                    platform={platform}
+                    theme="dark"
+                    brandName={brandBrain?.businessName || 'Your brand'}
+                    brandLogo={socialAvatarLogo}
+                    caption={hasPlayableAudio
+                      ? (brandBrain?.offer || activeVariation?.headline || 'Ready-to-serve ad')
+                      : createCaptionFallback}
+                    metaCta="Learn More"
+                  >
+                    <CanvasEditor
+                      platform={platform}
+                      backgroundColor={backgroundColor}
+                      bgMedia={bgMedia}
+                      bgShadow={bgShadow}
+                      bgShadowOpacity={bgShadowOpacity}
+                      introImage={introImage}
+                      introDuration={introDuration}
+                      introFeedCropY={introFeedCropY}
+                      introImageAspect={introImageAspect}
+                      previewDurationCap={previewDurationCap}
+                      audioUrl={audioUrl}
+                      audioAnalysis={audioAnalysis}
+                      captionsLoading={captionsLoading}
+                      emptyCaptionFallback="Add audio for this ad"
+                      accentColor={activeVariation?.accentColor || '#4F46E5'}
+                      playing={playing}
+                      onPlaybackComplete={onPlaybackComplete}
+                      onRefreshBackgroundColor={onRefreshBackgroundColor}
+                      onApplyStyleArchetype={onApplyStyleArchetype}
+                      rerollFlash={rerollFlash}
+                    />
+                  </PlatformFrame>
+                );
+              })()}
+              {(!hasPlayableAudio || !activeVariation) && (
+                <button
+                  type="button"
+                  onClick={() => onOpenVoiceMaker()}
+                  className="wiggly-audio-cta-pulse absolute left-1/2 top-[64%] z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-slate-200/80 bg-white/86 px-4 py-2.5 text-sm font-black text-slate-700 shadow-2xl shadow-slate-950/18 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white hover:text-slate-950"
+                >
+                  <AudioLines className="h-4 w-4" />
+                  Add audio for this ad
+                </button>
+              )}
+              <div className="absolute bottom-7 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2">
+                <button
+                  type="button"
+                  onClick={onTogglePlayback}
+                  disabled={!previewReady}
+                  className="flex items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-2xl shadow-slate-950/25 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {playing ? <Square className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
+                  {playing ? 'Stop preview' : previewReady ? 'Play this ad' : hasPlayableAudio ? 'Preparing preview' : 'Play this ad'}
+                </button>
+                {captions.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={openCaptionEditor}
+                    className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-2xl shadow-slate-950/12 transition hover:-translate-y-0.5 hover:bg-slate-50 hover:text-slate-950"
+                    title="Edit captions"
+                    aria-label="Edit captions"
+                  >
+                    <Captions className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
             </div>
             {(activeVariation || variations.length > 0) && (
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
@@ -1031,7 +1158,14 @@ export function CreateFlow({
                     })}
                   </div>
                 )}
-                <div className="group flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-3 py-2 shadow-lg shadow-slate-950/8 backdrop-blur sm:gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!visibleVariations.length) return;
+                    goNext();
+                  }}
+                  className="group flex w-full max-w-[calc(100vw-2rem)] items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-3 py-2 shadow-lg shadow-slate-950/8 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white hover:text-slate-950 sm:gap-3"
+                >
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-white shadow-sm shadow-slate-950/20">
                     <MousePointerClick className="h-4 w-4" />
                   </span>
@@ -1042,7 +1176,7 @@ export function CreateFlow({
                   >
                     <span className="absolute inset-x-5 bottom-2 h-0.5 rounded-full bg-slate-300" />
                   </span>
-                </div>
+                </button>
               </div>
             )}
           </div>
@@ -1064,7 +1198,7 @@ export function CreateFlow({
               <button
                 type="button"
                 onClick={onDownloadVideo}
-                disabled={!activeVariation || !brandBrain || !audioUrl || rendering}
+                disabled={!activeVariation || !brandBrain || rendering}
                 className={`${activeVariation ? '' : 'mt-4'} flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40`}
               >
                 {rendering ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
@@ -1075,7 +1209,7 @@ export function CreateFlow({
                 <button
                   type="button"
                   onClick={onTogglePlayback}
-                  disabled={!audioUrl}
+                  disabled={!hasPlayableAudio}
                   className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {playing ? 'Stop' : 'Play'}
@@ -1103,7 +1237,7 @@ export function CreateFlow({
                     )}
                   </button>
                   {savedDesignsOpen && savedDesigns.length > 0 && (
-                    <div className="absolute right-0 top-full z-[60] w-72 pt-2">
+                    <div className="absolute right-0 top-full z-[60] w-[min(18rem,calc(100vw-2rem))] pt-2 lg:w-72">
                       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-950/15">
                         <div className="flex items-center justify-between gap-3">
                           <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">Saved ads</p>
@@ -1206,6 +1340,63 @@ export function CreateFlow({
           </div>
         </div>
       </section>
+
+      {captionEditorOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+          <div className="flex max-h-[86vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+              <div>
+                <h2 className="text-base font-black text-slate-950">Edit captions</h2>
+                <p className="mt-1 text-sm font-semibold text-slate-500">Fix the words. Timing stays the same.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCaptionEditorOpen(false)}
+                className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                aria-label="Close caption editor"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-5">
+              {captions.map((caption, index) => (
+                <label key={`${caption.start}-${index}`} className="block rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <span className="mb-2 flex items-center justify-between gap-3 text-[10px] font-black uppercase tracking-wide text-slate-400">
+                    <span>Line {index + 1}</span>
+                    <span>{caption.start.toFixed(1)}s - {caption.end.toFixed(1)}s</span>
+                  </span>
+                  <textarea
+                    value={captionDrafts[index] ?? caption.text}
+                    onChange={(event) => {
+                      const nextDrafts = [...captionDrafts];
+                      nextDrafts[index] = event.target.value;
+                      setCaptionDrafts(nextDrafts);
+                    }}
+                    rows={2}
+                    className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold leading-6 text-slate-900 outline-none transition focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10"
+                  />
+                </label>
+              ))}
+            </div>
+            <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-5 py-4">
+              <button
+                type="button"
+                onClick={() => setCaptionEditorOpen(false)}
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-700 transition hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={saveCaptionEdits}
+                className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-slate-800"
+              >
+                Save captions
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {brandBrain && brandDetailsOpen && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/55 p-4" role="dialog" aria-modal="true" aria-label="Brand research details">

@@ -65,6 +65,7 @@ test('create brand dump does not fetch blocked external images', async ({ page }
 
 test('create format rail hides paused Conversation Card ads', async ({ page }) => {
   await page.addInitScript(() => {
+    window.localStorage.setItem('wiggly_interactive_tutorial_seen_v1', '1');
     const archetype = {
       id: 'qa-clean',
       name: 'QA Clean',
@@ -193,8 +194,24 @@ test('create format rail hides paused Conversation Card ads', async ({ page }) =
   await page.getByRole('button', { name: /^Saved/ }).hover();
   await expect(page.getByRole('button', { name: 'Visualizer concept 2' })).toBeVisible();
   await page.getByRole('button', { name: 'Visualizer concept 2' }).click();
-  await expect(page).toHaveURL(/\/builder$/);
-  await expect(page.getByText('Edit Parts', { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/create$/);
+  await expect(page.locator('#el-headline-1')).toContainText('Visualizer concept 2');
+  await expect(page.locator('.element-node')).toHaveCount(4);
+});
+
+test('create canvas stays editable and keeps the idle visualizer placeholder', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('wiggly_interactive_tutorial_seen_v1', '1');
+  });
+
+  await page.goto('/create');
+  await expect(page.locator('[data-tour="canvas"]')).toBeVisible();
+  await expect(page.locator('.element-node')).toHaveCount(4);
+  await expect(page.locator('.wiggly-idle-bar')).toHaveCount(24);
+
+  await page.locator('#el-headline-1').click({ force: true });
+  await expect(page.locator('.moveable-control-box')).toBeVisible();
+  await expect(page.locator('.moveable-control')).toHaveCount(10);
 });
 
 test('create visualizer rail opens the existing voice maker flow on hover', async ({ page }) => {
@@ -207,4 +224,149 @@ test('create visualizer rail opens the existing voice maker flow on hover', asyn
 
   await page.getByText('Make me a voice').click();
   await expect(page.getByRole('heading', { name: 'Make Voice Audio' })).toBeVisible();
+});
+
+test('create ad with no intentional audio shows audio CTA and keeps silent download available', async ({ page }) => {
+  await page.route('**/api/research-brand', async (route) => {
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        needsFallback: false,
+        brandBrain: {
+          businessName: 'Brilliance Skin and Laser',
+          websiteUrl: 'https://www.brillianceskin.us/',
+          offer: 'Premium medspa services for skin and laser treatments',
+          audience: 'people considering premium skin and laser treatments',
+          pain: 'They want visible skin results but do not know which treatment to trust',
+          promisedResult: 'Feel confident choosing a treatment for smoother healthier looking skin',
+          differentiator: 'guided premium care',
+          tone: 'clear and reassuring',
+          adAngles: ['clearer skin plan', 'premium guided treatment', 'visible skin results'],
+          proof: ['Real client reviews mention caring service'],
+          colors: ['#111827', '#E74B8A', '#F6C453'],
+          bannedGenericPhrases: [],
+          brandAssets: { images: {}, externalResearch: [] },
+        },
+      }),
+    });
+  });
+
+  await page.route('**/api/generate-ad-stream', async (route) => {
+    const payload = route.request().postDataJSON();
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        brandBrain: payload.brandBrain,
+        provider: 'local',
+        model: 'local',
+        fallback: true,
+        variations: [
+          {
+            id: 'variation-1',
+            angle: 'clearer plan',
+            headline: 'Skin goals deserve a clearer plan',
+            format: 'visualizer',
+          },
+        ],
+      }),
+    });
+  });
+
+  await page.goto('/create');
+  await page.getByRole('textbox').first().fill('https://www.brillianceskin.us/');
+  await page.getByRole('button', { name: /generate ads/i }).click();
+
+  await expect(page.getByRole('button', { name: 'Add audio for this ad' })).toBeVisible();
+  await expect(page.getByText('Upload audio for captions')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /play this ad/i })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /download video/i })).toBeEnabled();
+
+  await page.getByRole('button', { name: 'Add audio for this ad' }).click();
+  await expect(page.getByRole('heading', { name: 'Make Voice Audio' })).toBeVisible();
+  await expect(page.locator('button').filter({ hasText: '2. Choose Words' })).toHaveClass(/bg-slate-950/);
+  await expect(page.getByText('Write voice options for this ad')).toBeVisible();
+  await expect(page.getByText('Wiggly will use the business info from the website')).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Write options$/ })).toBeVisible();
+  await expect(page.getByText('Choose a script to edit.')).toHaveCount(0);
+});
+
+test('create refresh ignores stale generated audio from another brand', async ({ page }) => {
+  await page.goto('/create');
+
+  await page.evaluate(async () => {
+    const brandBrain = {
+      businessName: "David's Cookies: Cookie Delivery",
+      websiteUrl: 'https://www.davidscookies.com/',
+      offer: "We're known for our cookies, but we make so much more, including our fabulous cheesecakes and specialty desserts.",
+      audience: "People considering David's Cookies: Cookie Delivery or similar options",
+      pain: "People need a concrete reason to choose David's Cookies over another option",
+      promisedResult: 'Satisfy sweet cravings with cookie delivery.',
+      differentiator: 'Fresh-baked cookie delivery and desserts.',
+      tone: 'warm and direct',
+      adAngles: ['sweet cravings'],
+      proof: [],
+      colors: ['#ef4444', '#0f172a', '#6ee7d8'],
+      bannedGenericPhrases: [],
+      brandAssets: { images: {}, colors: {}, fonts: [], componentStyles: {}, metadata: {}, socialLinks: [], pages: [] },
+    };
+
+    window.sessionStorage.setItem('wiggly_create_flow_session_v1', JSON.stringify({
+      websiteUrl: brandBrain.websiteUrl,
+      brandBrain,
+      activeIndex: 0,
+      selectedFormat: 'all',
+      savedAt: Date.now(),
+      variations: [{
+        id: 'cookies-visualizer-1',
+        angle: 'sweet cravings',
+        headline: 'Satisfy Your Sweet Cravings',
+        format: 'visualizer',
+        index: 0,
+        visualizerColor: '#6ee7d8',
+        accentColor: '#0f172a',
+        headlineColor: '#0f172a',
+      }],
+    }));
+
+    window.localStorage.setItem('wiggly_current_audio_v1', JSON.stringify({
+      id: 'stale-generated-audio',
+      builtIn: false,
+    }));
+
+    await new Promise<void>((resolve, reject) => {
+      const request = window.indexedDB.open('wiggly_audio_library');
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains('audios')) {
+          db.close();
+          reject(new Error('Audio library store was not initialized'));
+          return;
+        }
+        const transaction = db.transaction('audios', 'readwrite');
+        transaction.objectStore('audios').put({
+          id: 'stale-generated-audio',
+          name: 'Dental generated audio.wav',
+          createdAt: Date.now(),
+          blob: new Blob(['stale generated audio'], { type: 'audio/wav' }),
+          mimeType: 'audio/wav',
+          kind: 'generated',
+          source: 'voice-wizard',
+          status: 'ready',
+        });
+        transaction.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+        transaction.onerror = () => reject(transaction.error);
+      };
+    });
+  });
+
+  await page.reload();
+
+  await expect(page.getByText('Satisfy Your Sweet Cravings')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Add audio for this ad' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /play this ad/i })).toBeDisabled();
+  await expect(page.getByText(/Dental generated audio/i)).toHaveCount(0);
 });

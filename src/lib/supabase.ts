@@ -7,6 +7,7 @@ export type Database = {
         Row: {
           accent_color: string;
           background_color: string;
+          brand_logo_url: string | null;
           brand_name: string;
           business_name: string;
           created_at: string;
@@ -14,6 +15,7 @@ export type Database = {
           cta_url: string;
           headline: string;
           id: string;
+          platform: string | null;
           slug: string;
           subhead: string;
           video_path: string;
@@ -21,6 +23,7 @@ export type Database = {
         Insert: {
           accent_color?: string;
           background_color?: string;
+          brand_logo_url?: string | null;
           brand_name?: string;
           business_name?: string;
           created_at?: string;
@@ -28,6 +31,7 @@ export type Database = {
           cta_url?: string;
           headline: string;
           id?: string;
+          platform?: string | null;
           slug: string;
           subhead?: string;
           video_path: string;

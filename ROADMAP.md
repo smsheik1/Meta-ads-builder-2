@@ -60,6 +60,37 @@ This file is the product memory for things we intentionally defer. When we make 
 - There is no one-click path that leaves the ad silently broken with no voice.
 - The desktop flyout opens to the right; narrow screens fall back to a bottom-sheet style drawer.
 
+## Bill Shield Hardening
+
+### Move from session-memory protection to production-grade abuse controls
+
+**Status:** Planned
+
+**Why:** We now have an effective temporary shield for anonymous usage, but in-memory tracking and unsigned session cookies are not enough for production scale or adversarial traffic.
+
+**Goal:** Upgrade protection so anonymous and authenticated traffic is rate-limited safely across deployments and we can confidently cap LLM spend.
+
+**Acceptance criteria:**
+- Replace in-memory quota storage with a shared store (Redis or Postgres) so limits survive restarts and respect all server instances.
+- Add user-based fallback limits once auth lands, with anonymous-session limits still enforced for unauthenticated visitors.
+- Add lightweight anti-abuse hardening on high-cost routes: per-IP + per-session/device throttling, suspicious burst detection, and clear block telemetry.
+- Add alerting for spend/rate anomalies and a runbook for kill-switch response.
+- Keep the default kill-switch + provider flags path working so we can disable any LLM path without deploys.
+
+### Make abuse limits visible and tunable without redeploy
+
+**Status:** Planned
+
+**Why:** We need practical controls during spikes and model regressions.
+
+**Goal:** Add simple internal visibility on quota usage and make the main route limits adjustable through ops knobs.
+
+**Acceptance criteria:**
+- Display rolling quota stats per route and per-day totals in an internal admin/status endpoint.
+- Confirm `AI_BILL_SHIELD_SECRET`, per-route quotas, and feature flags can be changed via environment and deployed safely.
+- Add docs for temporary emergency values and maintenance mode behavior.
+- Add a rollback plan that preserves user-facing UX when shields are temporarily activated.
+
 ## Backlog Rules
 
 - If we say "v2 later", add it here or to GitHub Issues before moving on.
