@@ -20,6 +20,8 @@ interface PlatformFrameProps {
   brandLogo?: string | null;
   caption?: string;
   metaCta?: string;
+  metaCtaUrl?: string;
+  overlayControls?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -43,6 +45,8 @@ export function PlatformFrame({
   brandLogo = null,
   caption = 'Awesome ad caption right here.',
   metaCta = 'Learn More',
+  metaCtaUrl = '',
+  overlayControls = null,
   children
 }: PlatformFrameProps) {
   const isDark = theme === 'dark';
@@ -55,13 +59,15 @@ export function PlatformFrame({
   const [frameScale, setFrameScale] = useState(1);
 
   useEffect(() => {
-    const updateScale = () => {
+  const updateScale = () => {
       const wideMode = platform === 'youtube';
-      const availableHeight = window.innerHeight - (wideMode ? 420 : 360);
-      const availableWidth = window.innerWidth - 880;
-      const nextScale = wideMode
-        ? Math.min(0.88, Math.max(0.72, Math.min(availableWidth / 640, availableHeight / 360)))
-        : Math.min(1, Math.max(0.62, (availableHeight * 0.5) / 360));
+      const availableWidth = Math.max(window.innerWidth - 80, frameWidth);
+      const availableHeight = Math.max(window.innerHeight - (wideMode ? 320 : 280), frameHeight * 0.5);
+      const widthScale = Math.min(availableWidth / frameWidth, 1);
+      const heightScale = Math.min(availableHeight / frameHeight, 1);
+      const widthHeightScale = Math.min(widthScale, heightScale);
+      const minScale = wideMode ? 0.35 : 0.48;
+      const nextScale = Math.max(minScale, widthHeightScale);
       setFrameScale(Number.isFinite(nextScale) ? nextScale : 1);
     };
 
@@ -79,6 +85,7 @@ export function PlatformFrame({
   const adContainerAspect = widePlatform ? 'aspect-video' : verticalPlatform ? 'aspect-[9/16]' : 'aspect-[4/5]';
   const frameWidth = widePlatform ? 640 : 360;
   const frameHeight = widePlatform ? 360 : 720;
+  const ctaLinkProps = metaCtaUrl ? { href: metaCtaUrl, target: '_blank', rel: 'noopener noreferrer' } : {};
 
   return (
     <div
@@ -138,9 +145,9 @@ export function PlatformFrame({
                      <span className="font-bold mr-2">{brandName}</span>
                      <span className={cn(isDark ? "text-slate-300" : "text-slate-700")}>{caption.substring(0, 72)}{caption.length > 72 ? '...' : ''}</span>
                    </div>
-                   <button className="shrink-0 rounded-md bg-blue-600 px-2.5 py-1.5 text-[11px] font-bold text-white transition-opacity hover:opacity-90 active:scale-[0.99]">
+                   <a {...ctaLinkProps} className="pointer-events-auto shrink-0 rounded-md bg-blue-600 px-2.5 py-1.5 text-[11px] font-bold text-white transition-opacity hover:opacity-90 active:scale-[0.99]">
                      {metaCta}
-                   </button>
+                   </a>
                  </div>
                  <div className={cn("flex items-center justify-between border-y py-1 text-[11px]", isDark ? "border-slate-900 text-slate-400" : "border-slate-100 text-slate-500")}>
                    <span>1.2K reactions</span>
@@ -238,9 +245,9 @@ export function PlatformFrame({
 
             <div className={cn("absolute bottom-0 left-0 right-0 pointer-events-none px-3 pb-4 pt-20", isDark ? "bg-gradient-to-t from-black/55 via-black/20 to-transparent" : "bg-gradient-to-t from-white/60 via-white/20 to-transparent")}>
               <div className="mb-3 flex justify-center">
-                <button className={cn("rounded-full px-8 py-3 text-[14px] font-bold shadow-lg backdrop-blur-md", isDark ? "bg-white/95 text-black" : "bg-slate-950/95 text-white")}>
+                <a {...ctaLinkProps} className={cn("pointer-events-auto rounded-full px-8 py-3 text-[14px] font-bold shadow-lg backdrop-blur-md", isDark ? "bg-white/95 text-black" : "bg-slate-950/95 text-white")}>
                   {metaCta}
-                </button>
+                </a>
               </div>
               <div className="flex items-center gap-2 pointer-events-auto">
                 <div className={cn("flex-1 rounded-full border px-4 py-3 text-[13px] font-medium backdrop-blur-md", isDark ? "border-white/70 text-white" : "border-slate-900/30 text-slate-900")}>
@@ -269,10 +276,10 @@ export function PlatformFrame({
                {/* Left Flow Column containing CTA and Info */}
                <div className="px-4 pr-[64px] flex flex-col w-full pointer-events-none z-10 relative">
                   
-                  <div className={cn("backdrop-blur-md rounded-full px-6 py-[14px] mb-4 flex items-center justify-between pointer-events-none shadow-lg mt-2 absolute bottom-[100%] right-4 left-4", isDark ? "bg-white/95" : "bg-slate-900/95")}>
+                  <a {...ctaLinkProps} className={cn("backdrop-blur-md rounded-full px-6 py-[14px] mb-4 flex items-center justify-between pointer-events-auto shadow-lg mt-2 absolute bottom-[100%] right-4 left-4", isDark ? "bg-white/95" : "bg-slate-900/95")}>
                      <span className={cn("text-[14px] font-semibold flex-1 text-center ml-4", isDark ? "text-black" : "text-white")}>{metaCta}</span>
                      <ChevronUp className={cn("w-5 h-5 opacity-80", isDark ? "text-black" : "text-white")} />
-                  </div>
+                  </a>
 
                   <div className="flex-1 max-w-[240px] mb-2 pointer-events-auto">
                     <div className="flex items-center gap-2 mb-2">
@@ -309,6 +316,12 @@ export function PlatformFrame({
             <div className={cn("absolute bottom-0 left-0 right-0 h-[2px]", isDark ? "bg-white/20" : "bg-black/10")}>
                 <div className={cn("h-full w-[30%]", isDark ? "bg-white" : "bg-slate-800")}></div>
             </div>
+          </div>
+        )}
+
+        {overlayControls && (
+          <div className="absolute inset-0 z-50 pointer-events-none">
+            {overlayControls}
           </div>
         )}
 

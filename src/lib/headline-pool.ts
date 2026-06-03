@@ -1,5 +1,14 @@
 export type Headline = { text: string; framework: string };
 
+export const SEEDED_GENERIC_HOOKS: Headline[] = [
+  { text: 'Drop in your website and watch the magic happen.', framework: 'First-Use Promise' },
+  { text: 'Turn your homepage into a ready-to-test ad.', framework: 'Outcome Promise' },
+  { text: 'Your next ad starts with one URL.', framework: 'Simple Mechanism' },
+  { text: 'Make the first draft less painful.', framework: 'Pain Relief' },
+  { text: 'See the angle hiding on your website.', framework: 'Discovery Hook' },
+  { text: 'From brand page to video ad in minutes.', framework: 'Speed Promise' },
+];
+
 export const SEEDED_DENTAL_HOOKS: Headline[] = [
   { text: '3 missed calls a day = $147k gone.', framework: 'Math Bomb' },
   { text: "You don't need more leads. You need answered calls.", framework: 'Belief-Break' },
@@ -17,10 +26,10 @@ export const SEEDED_DENTAL_HOOKS: Headline[] = [
 
 export function getSeededHooks(niche: string) {
   if (niche === 'dental') return SEEDED_DENTAL_HOOKS;
-  return SEEDED_DENTAL_HOOKS;
+  return SEEDED_GENERIC_HOOKS;
 }
 
-export function getRandomSeededHook(niche = 'dental') {
+export function getRandomSeededHook(niche = 'generic') {
   const hooks = getSeededHooks(niche);
-  return hooks[Math.floor(Math.random() * hooks.length)]?.text || SEEDED_DENTAL_HOOKS[0].text;
+  return hooks[Math.floor(Math.random() * hooks.length)]?.text || SEEDED_GENERIC_HOOKS[0].text;
 }

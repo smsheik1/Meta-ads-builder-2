@@ -19,6 +19,7 @@ export type SharePageRecord = {
   ctaUrl: string;
   businessName: string;
   brandName: string;
+  brandLogo?: string | null;
   accentColor: string;
   backgroundColor: string;
   platform?: PlatformType;
@@ -77,6 +78,7 @@ export async function saveHostedSharePage(record: Omit<SharePageRecord, 'id' | '
   formData.append('cta_url', record.ctaUrl);
   formData.append('business_name', record.businessName);
   formData.append('brand_name', record.brandName);
+  if (record.brandLogo) formData.append('brand_logo_url', record.brandLogo);
   formData.append('accent_color', record.accentColor);
   formData.append('background_color', record.backgroundColor);
   if (record.platform) formData.append('platform', record.platform);
@@ -135,6 +137,7 @@ export async function getHostedSharePageBySlug(slug: string): Promise<SharePageR
     ctaUrl: result.data.cta_url,
     businessName: result.data.business_name,
     brandName: result.data.brand_name,
+    brandLogo: result.data.brand_logo_url,
     accentColor: result.data.accent_color,
     backgroundColor: result.data.background_color,
     platform: result.data.platform,

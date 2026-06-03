@@ -80,6 +80,7 @@ interface CanvasEditorProps {
   audioUrl: string | null;
   audioAnalysis?: AudioAnalysisData | null;
   captionsLoading?: boolean;
+  emptyCaptionFallback?: string;
   playing: boolean;
   onPlaybackComplete?: () => void;
   accentColor: string;
@@ -120,11 +121,11 @@ const getIdleVisualizerHeight = (type: NonNullable<AdElement['visualizerType']>,
 };
 
 const SUBHEADS = [
-  'AI answers the calls your team misses.',
-  'Turn missed calls into booked patients.',
-  'Your front desk, covered after hours.',
-  'More booked appointments without more staff.',
-  'Recover the calls that used to hit voicemail.',
+  'Start with your site. Wiggly finds the angle.',
+  'Preview the ad before you edit anything.',
+  'Add audio when you are ready.',
+  'Try another direction with one tap.',
+  'Download the version that feels strongest.',
 ];
 const CTA_COPY = ['Book Demo', 'See It Live', 'Get Started', 'Try Wiggly', 'Watch Demo'];
 
@@ -178,7 +179,7 @@ const applyArchetypeToElement = (element: AdElement, archetype: AdStyleArchetype
   return element;
 };
 
-export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, audioAnalysis, captionsLoading = false, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype, rerollFlash, readOnly = false, disableSpaceReroll = false, disableEmptySelectionSpaceReroll = false }) => {
+export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, audioAnalysis, captionsLoading = false, emptyCaptionFallback = 'Upload audio for captions', playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype, rerollFlash, readOnly = false, disableSpaceReroll = false, disableEmptySelectionSpaceReroll = false }) => {
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
@@ -1164,7 +1165,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                     }}
                   />
                 ) : el.componentRole === 'headline' && !readOnly ? (
-                  <HeadlineSlot niche="dental" elementId={el.id} />
+                  <HeadlineSlot niche="generic" elementId={el.id} />
                 ) : (
                   <AutoFitText
                     className={textHasBackground ? 'w-full' : 'w-full px-1'}
@@ -1331,7 +1332,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                       fontWeight: el.fontWeight || 700,
                     }}
                   >
-                    {displayCaption || (audioUrl ? (captionsLoading ? 'Captions are loading' : '') : 'Upload audio for captions')}
+                    {displayCaption || (audioUrl ? (captionsLoading ? 'Captions are loading' : '') : emptyCaptionFallback)}
                   </AutoFitText>
                </div>
             )}

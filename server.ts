@@ -7,6 +7,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import net from 'net';
+import crypto from 'crypto';
 import { spawn } from 'child_process';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
@@ -29,9 +30,128 @@ app.use(helmet({
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
+const isDisabled = (value: string | undefined) => ['0', 'false', 'off', 'no'].includes(String(value || '').trim().toLowerCase());
+
+const sessionCookieName = 'wiggly_session';
+const billShieldSecret = process.env.AI_BILL_SHIELD_SECRET || process.env.SESSION_SECRET || (isProd ? '' : 'wiggly-dev-bill-shield');
+const quotaWindowMs = 24 * 60 * 60 * 1000;
+const PINNED_TTS_MODEL = 'gemini-3.1-flash-tts-preview';
+const readQuota = (name: string, prodDefault: number, devDefault: number) => (
+  Number(process.env[name] || (isProd ? prodDefault : devDefault))
+);
+const quotaBuckets = {
+  brandResearch: { limit: readQuota('BRAND_RESEARCH_DAILY_QUOTA', 5, 500), label: 'brand research' },
+  adStream: { limit: readQuota('AD_STREAM_DAILY_QUOTA', 10, 500), label: 'ad generation' },
+  dialogueScripts: { limit: readQuota('DIALOGUE_SCRIPTS_DAILY_QUOTA', 10, 1000), label: 'voice script generation' },
+  dialogueAudio: { limit: readQuota('DIALOGUE_AUDIO_DAILY_QUOTA', 3, 200), label: 'voice audio generation' },
+  headlines: { limit: readQuota('HEADLINES_DAILY_QUOTA', 10, 500), label: 'headline generation' },
+  copy: { limit: readQuota('COPY_DAILY_QUOTA', 10, 500), label: 'copy generation' },
+  transcription: { limit: readQuota('TRANSCRIPTION_DAILY_QUOTA', 5, 500), label: 'transcription' },
+} as const;
+type QuotaBucket = keyof typeof quotaBuckets;
+const quotaCounts = new Map<string, { count: number; resetAt: number }>();
+const ipCounts = new Map<string, { count: number; resetAt: number }>();
+
+const parseCookies = (header = '') => Object.fromEntries(
+  header.split(';')
+    .map(part => part.trim())
+    .filter(Boolean)
+    .map((part) => {
+      const index = part.indexOf('=');
+      if (index === -1) return [part, ''];
+      return [part.slice(0, index), decodeURIComponent(part.slice(index + 1))];
+    }),
+);
+
+const signSessionId = (sessionId: string) => crypto
+  .createHmac('sha256', billShieldSecret || 'missing-secret')
+  .update(sessionId)
+  .digest('base64url');
+
+const readSignedSessionId = (rawCookie: string | undefined) => {
+  if (!rawCookie || !billShieldSecret) return null;
+  const [sessionId, signature] = rawCookie.split('.');
+  if (!sessionId || !signature) return null;
+  const expected = signSessionId(sessionId);
+  try {
+    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected)) ? sessionId : null;
+  } catch {
+    return null;
+  }
+};
+
+const getOrSetAnonymousSessionId = (req: express.Request, res: express.Response) => {
+  const cookies = parseCookies(req.headers.cookie);
+  const existingSessionId = readSignedSessionId(cookies[sessionCookieName]);
+  if (existingSessionId) return existingSessionId;
+
+  const sessionId = crypto.randomUUID();
+  const signedCookie = `${sessionId}.${signSessionId(sessionId)}`;
+  res.cookie(sessionCookieName, signedCookie, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: isProd,
+    maxAge: quotaWindowMs,
+  });
+  return sessionId;
+};
+
+const consumeQuota = (store: Map<string, { count: number; resetAt: number }>, key: string, limit: number) => {
+  const now = Date.now();
+  const current = store.get(key);
+  if (!current || current.resetAt <= now) {
+    store.set(key, { count: 1, resetAt: now + quotaWindowMs });
+    return { ok: true, remaining: Math.max(0, limit - 1), resetAt: now + quotaWindowMs };
+  }
+  if (current.count >= limit) {
+    return { ok: false, remaining: 0, resetAt: current.resetAt };
+  }
+  current.count += 1;
+  return { ok: true, remaining: Math.max(0, limit - current.count), resetAt: current.resetAt };
+};
+
+const billShield = (bucket: QuotaBucket, featureFlag = 'AI_GENERATION_ENABLED'): express.RequestHandler => (req, res, next) => {
+  if (!billShieldSecret) {
+    return res.status(503).json({ error: 'AI bill shield is not configured.' });
+  }
+  if (isDisabled(process.env.AI_GENERATION_ENABLED) || isDisabled(process.env[featureFlag])) {
+    return res.status(503).json({ error: 'This AI feature is temporarily disabled.' });
+  }
+
+  const sessionId = getOrSetAnonymousSessionId(req, res);
+  const bucketConfig = quotaBuckets[bucket];
+  const ipLimit = readQuota('AI_IP_DAILY_QUOTA', 30, 5000);
+  const ipKey = crypto.createHash('sha256').update(String(req.ip || req.socket.remoteAddress || 'unknown')).digest('hex').slice(0, 24);
+  const ipQuota = consumeQuota(ipCounts, `ip:${ipKey}`, ipLimit);
+  if (!ipQuota.ok) {
+    return res.status(429).json({
+      error: 'Too many AI requests from this network today. Please try again later.',
+      retryAfterSeconds: Math.ceil((ipQuota.resetAt - Date.now()) / 1000),
+    });
+  }
+
+  const sessionQuota = consumeQuota(quotaCounts, `${bucket}:${sessionId}`, bucketConfig.limit);
+  res.setHeader('X-Wiggly-Quota-Remaining', String(sessionQuota.remaining));
+  if (!sessionQuota.ok) {
+    return res.status(429).json({
+      error: `Too many ${bucketConfig.label} requests today. Please try again later.`,
+      retryAfterSeconds: Math.ceil((sessionQuota.resetAt - Date.now()) / 1000),
+    });
+  }
+  console.info(`[ai-usage] bucket=${bucket} session=${sessionId.slice(0, 8)} ip=${ipKey} remaining=${sessionQuota.remaining}`);
+  next();
+};
+
+app.post('/api/dev/reset-ai-quotas', (req, res) => {
+  if (isProd) return res.status(404).json({ error: 'Not found' });
+  quotaCounts.clear();
+  ipCounts.clear();
+  res.json({ ok: true });
+});
+
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 120,
+  limit: isProd ? 120 : 5000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests. Please wait a bit and try again.' },
@@ -63,7 +183,7 @@ const adStreamLimiter = rateLimit({
 
 const videoExportLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  limit: 30,
+  limit: isProd ? 30 : 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many video exports. Please wait and try again later.' },
@@ -77,7 +197,17 @@ const publishingLimiter = rateLimit({
   message: { error: 'Too many publishing requests. Please wait and try again later.' },
 });
 
-const criticalApiPaths = new Set(['/api/render-remotion', '/api/share-pages', '/api/transcribe', '/api/research-brand', '/api/generate-ad-stream']);
+const criticalApiPaths = new Set([
+  '/api/render-remotion',
+  '/api/share-pages',
+  '/api/transcribe',
+  '/api/research-brand',
+  '/api/generate-ad-stream',
+  '/api/generate-headlines',
+  '/api/generate-copy',
+  '/api/generate-dialogue-scripts',
+  '/api/generate-dialogue-audio',
+]);
 app.use((req, res, next) => {
   if (!criticalApiPaths.has(req.path)) {
     next();
@@ -96,7 +226,12 @@ app.use((req, res, next) => {
 app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
+    aiGenerationEnabled: !isDisabled(process.env.AI_GENERATION_ENABLED),
+    brandResearchEnabled: !isDisabled(process.env.BRAND_RESEARCH_ENABLED),
+    transcriptionEnabled: !isDisabled(process.env.TRANSCRIPTION_ENABLED),
+    ttsEnabled: !isDisabled(process.env.TTS_ENABLED),
     deepgramConfigured: Boolean(process.env.DEEPGRAM_API_KEY),
+    openaiConfigured: Boolean(process.env.OPENAI_API_KEY),
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
     groqConfigured: Boolean(process.env.GROQ_API_KEY),
     openrouterConfigured: Boolean(process.env.OPENROUTER_API_KEY),
@@ -197,8 +332,25 @@ const uploadDisk = multer({
   },
 });
 
-const sendServerError = (res: express.Response, fallbackMessage: string) => {
-  res.status(500).json({ error: fallbackMessage });
+const sendServerError = (res: express.Response, fallbackMessage: string, error?: unknown) => {
+  const statusCode = Number((error as any)?.status || (error as any)?.code || 500);
+  const raw = error as any;
+  const nested = raw?.error;
+  const message = (() => {
+    if (typeof raw?.message === 'string' && raw.message.trim().length) return raw.message;
+    if (typeof nested === 'string' && nested.trim().length) return nested;
+    if (nested && typeof nested === 'object') {
+      if (typeof nested.message === 'string' && nested.message.trim().length) return nested.message;
+      if (typeof nested.status === 'string' && nested.status.trim().length) return nested.status;
+      return JSON.stringify(nested);
+    }
+    return fallbackMessage;
+  })();
+
+  res.status(Number.isFinite(statusCode) && statusCode > 0 ? statusCode : 500).json({
+    error: message || fallbackMessage,
+    fallback: fallbackMessage,
+  });
 };
 
 const getServerSupabaseConfig = () => {
@@ -402,8 +554,13 @@ app.post('/api/share-pages', publishingLimiter, uploadShareVideo.single('video')
     const ctaText = trimField(req.body.cta_text, 80) || 'Learn More';
     const businessName = trimField(req.body.business_name, 120) || 'Wiggly';
     const brandName = trimField(req.body.brand_name, 120) || businessName;
+    const brandLogoUrl = trimField(req.body.brand_logo_url, 5000);
     const accentColor = trimField(req.body.accent_color, 7) || '#00D6B8';
     const backgroundColor = trimField(req.body.background_color, 7) || '#FAFAF7';
+    const requestedPlatform = trimField(req.body.platform, 40);
+    const platform = ['facebook-feed', 'instagram-feed', 'feed', 'reels', 'stories', 'vertical', 'youtube'].includes(requestedPlatform)
+      ? requestedPlatform
+      : 'instagram-feed';
     let ctaUrl = '';
 
     if (!headline) {
@@ -437,22 +594,34 @@ app.post('/api/share-pages', publishingLimiter, uploadShareVideo.single('video')
       });
     if (upload.error) throw upload.error;
 
-    const insert = await supabase
+    const baseShareRow = {
+      slug,
+      video_path: videoPath,
+      headline,
+      subhead,
+      cta_text: ctaText,
+      cta_url: ctaUrl,
+      business_name: businessName,
+      brand_name: brandName,
+      accent_color: accentColor,
+      background_color: backgroundColor,
+    };
+    const enhancedShareRow = {
+      ...baseShareRow,
+      brand_logo_url: brandLogoUrl || null,
+      platform,
+    };
+    const insertShareRow = async (row: typeof baseShareRow | typeof enhancedShareRow) => supabase
       .from('ad_shares')
-      .insert({
-        slug,
-        video_path: videoPath,
-        headline,
-        subhead,
-        cta_text: ctaText,
-        cta_url: ctaUrl,
-        business_name: businessName,
-        brand_name: brandName,
-        accent_color: accentColor,
-        background_color: backgroundColor,
-      })
+      .insert(row)
       .select('id, created_at')
       .single();
+
+    let insert = await insertShareRow(enhancedShareRow);
+    if (insert.error && String(insert.error.message || '').includes('schema cache')) {
+      console.warn('[share-pages] ad_shares schema is missing optional share columns; retrying with base row only.');
+      insert = await insertShareRow(baseShareRow);
+    }
 
     if (insert.error) {
       await supabase.storage.from('ad-shares').remove([videoPath]);
@@ -847,7 +1016,7 @@ app.post('/api/convert-to-mp4', videoExportLimiter, uploadDisk.single('video'), 
     .save(outputPath);
 });
 
-app.post('/api/transcribe', aiGenerationLimiter, uploadMem.single('audio'), async (req, res) => {
+app.post('/api/transcribe', aiGenerationLimiter, billShield('transcription', 'TRANSCRIPTION_ENABLED'), uploadMem.single('audio'), async (req, res) => {
   if (Date.now() < transcriptionRateLimitUntil) {
     return res.status(429).json({ error: 'AI temporarily at capacity, try again in 1 min.', retryAfterSeconds: Math.ceil((transcriptionRateLimitUntil - Date.now()) / 1000) });
   }
@@ -856,7 +1025,7 @@ app.post('/api/transcribe', aiGenerationLimiter, uploadMem.single('audio'), asyn
     return res.status(400).json({ error: 'No audio file provided' });
   }
 
-  if (!process.env.DEEPGRAM_API_KEY) {
+  if (!process.env.DEEPGRAM_API_KEY || isDisabled(process.env.DEEPGRAM_ENABLED)) {
     return res.status(500).json({ error: 'DEEPGRAM_API_KEY is not configured on the server.' });
   }
 
@@ -892,7 +1061,7 @@ app.post('/api/transcribe', aiGenerationLimiter, uploadMem.single('audio'), asyn
 
 import { GoogleGenAI } from '@google/genai';
 import { getMasterPrompt } from './src/lib/prompts/headline-master';
-import { buildBrandBrainPrompt, buildFallbackBrandBrain, type BrandAssets, type BrandBrain, type BrandFontSignal } from './src/lib/prompts/brand-brain';
+import { buildBrandBrainPrompt, buildFallbackBrandBrain, type BrandAssets, type BrandBrain, type BrandFontSignal, type BrandReceipts } from './src/lib/prompts/brand-brain';
 import { buildHeadlineVariationsPrompt, type ConversationAdLine, type GeneratedAdFormat, type HeadlineVariation } from './src/lib/prompts/headline-variations';
 import { normalizeAdAngles } from './src/lib/prompts/ad-angles';
 
@@ -910,23 +1079,28 @@ const TAVILY_SEARCH_URL = 'https://api.tavily.com/search';
 const BRAND_RESEARCH_MODEL = 'gemini-3-flash-preview';
 const HEADLINE_VARIATION_MODEL = 'gemini-3.1-flash-lite';
 const GROQ_DIALOGUE_MODELS = [
-  'llama-3.1-8b-instant',
+  'llama-3.3-70b-versatile',
   'qwen/qwen3-32b',
   'meta-llama/llama-4-scout-17b-16e-instruct',
-  'llama-3.3-70b-versatile',
+  'llama-3.1-8b-instant',
+];
+const OPENROUTER_PREMIUM_DIALOGUE_MODELS = [
+  'moonshotai/kimi-k2.6',
+  'moonshotai/kimi-k2.6:free',
 ];
 const OPENROUTER_FREE_DIALOGUE_MODELS = [
   'liquid/lfm-2.5-1.2b-instruct:free',
   'openai/gpt-oss-20b:free',
   'openrouter/auto:free',
 ];
-const DIALOGUE_PROVIDER_TIMEOUT_MS = 12000;
+const DIALOGUE_PROVIDER_TIMEOUT_MS = 25000;
 const GEMINI_DIALOGUE_MODEL = 'gemini-3-flash-preview';
 const DIALOGUE_MODEL_OPTIONS = new Set([
   'auto',
   'local',
   `gemini:${GEMINI_DIALOGUE_MODEL}`,
   ...GROQ_DIALOGUE_MODELS.map((model) => `groq:${model}`),
+  ...OPENROUTER_PREMIUM_DIALOGUE_MODELS.map((model) => `openrouter:${model}`),
   ...OPENROUTER_FREE_DIALOGUE_MODELS.map((model) => `openrouter:${model}`),
 ]);
 const HEADLINE_MODEL_OPTIONS = new Set([
@@ -945,7 +1119,7 @@ const FIRECRAWL_TIMEOUT_MS = 12000;
 const TAVILY_TIMEOUT_MS = 9000;
 const BRAND_BRAIN_TIMEOUT_MS = 18000;
 const HEADLINE_VARIATION_TIMEOUT_MS = 20000;
-const BRAND_BRAIN_CACHE_VERSION = 'brand-assets-v4';
+const BRAND_BRAIN_CACHE_VERSION = 'brand-assets-v9';
 
 type ScrapedPage = {
   url: string;
@@ -1700,6 +1874,116 @@ const normalizeStringArray = (value: unknown, maxItems: number, maxLength: numbe
   .filter((item, index, items) => items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index)
   .slice(0, maxItems);
 
+const EMPTY_BRAND_RECEIPTS: BrandReceipts = {
+  specificClaims: [],
+  buyerMoments: [],
+  exactSiteLanguage: [],
+  namedProof: [],
+};
+
+const normalizeBrandReceipts = (value: unknown): BrandReceipts => {
+  const input = value && typeof value === 'object' ? value as Partial<BrandReceipts> : {};
+  return {
+    specificClaims: normalizeStringArray(input.specificClaims, 8, 260),
+    buyerMoments: normalizeStringArray(input.buyerMoments, 8, 260),
+    exactSiteLanguage: normalizeStringArray(input.exactSiteLanguage, 8, 220),
+    namedProof: normalizeStringArray(input.namedProof, 8, 260),
+  };
+};
+
+const cleanReceiptLine = (value: unknown, maxLength = 260) => cleanTextField(value, maxLength)
+  .replace(/^#{1,6}\s*/, '')
+  .replace(/^\s*[-*•]\s*/, '')
+  .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+  .replace(/\*\*([^*]+)\*\*/g, '$1')
+  .replace(/__([^_]+)__/g, '$1')
+  .replace(/\*/g, '')
+  .replace(/\\+/g, ' ')
+  .replace(/\b(New)([A-Z])/g, '$1 $2')
+  .replace(/([a-z])(\$)/gi, '$1 $2')
+  .replace(/(:)(\$)/g, '$1 $2')
+  .replace(/([a-z])(\d+\s*(?:days?|weeks?|months?|years?))/gi, '$1 $2')
+  .replace(/\b(days?|weeks?|months?|years?|hours?|hrs?)(see|book|learn|read)\b/gi, '$1 $2')
+  .replace(/\s+/g, ' ')
+  .trim();
+
+const pushReceipt = (items: string[], value: unknown, maxLength = 260) => {
+  const cleaned = cleanReceiptLine(value, maxLength);
+  if (!cleaned || cleaned.length < 8) return;
+  if (/^(https?:\/\/|www\.|#|\|+$)/i.test(cleaned)) return;
+  if (items.some((item) => item.toLowerCase() === cleaned.toLowerCase())) return;
+  items.push(cleaned);
+};
+
+const extractMarkdownReceiptLines = (markdown = '') => markdown
+  .split(/\n+/)
+  .map((line) => cleanReceiptLine(line, 260))
+  .filter((line) => line.length >= 8 && line.length <= 220);
+
+const claimSignalPattern = /(\$[\d,.]+|\b\d[\d,.]*(?:\.\d+)?\s*(?:%|percent|days?|weeks?|months?|years?|hours?|hrs?|calls?|appointments?|patients?|leads?|sales|wins?|rankings?|mentions?|citations?|revenue|brands?|accounts?|followers?)\b|[<>]\s*\d)/i;
+const buyerMomentPattern = /\b(tired of|stuck|struggle|miss|missing|losing|waste|waiting|before|after|when|while|because|need to|trying to|want to|can't|cannot|no longer|instead of|teams|owners|buyers|customers|patients|brands|agencies)\b/i;
+const namedProofPattern = /\b(testimonial|review|case study|customer|client|brand|founder|ceo|owner|manager|director|said|says|generated|ranked|revenue|result)\b/i;
+
+const buildBrandReceipts = (brandBrain: BrandBrain): BrandReceipts => {
+  const specificClaims: string[] = [];
+  const buyerMoments: string[] = [];
+  const exactSiteLanguage: string[] = [];
+  const namedProof: string[] = [];
+  const assets = brandBrain.brandAssets;
+  const metadata = assets?.metadata || {};
+  const pages = assets?.pages || [];
+  const markdownLines = pages.flatMap((page) => extractMarkdownReceiptLines(page.markdownPreview || ''));
+  const titleLines = [
+    metadata.title,
+    metadata.ogTitle,
+    metadata.description,
+    metadata.ogDescription,
+    ...pages.flatMap((page) => [page.title, page.description]),
+  ];
+  const evidenceLines = [
+    ...titleLines,
+    ...markdownLines,
+    ...brandBrain.proof,
+    ...(assets?.reviews || []),
+  ].filter(Boolean);
+
+  for (const line of titleLines) {
+    pushReceipt(exactSiteLanguage, line, 220);
+    if (exactSiteLanguage.length >= 8) break;
+  }
+
+  for (const line of markdownLines) {
+    const looksLikeHeading = line.length <= 120 && !/[.!?]\s+\w/.test(line);
+    if (looksLikeHeading) pushReceipt(exactSiteLanguage, line, 220);
+    if (exactSiteLanguage.length >= 8) break;
+  }
+
+  for (const line of evidenceLines) {
+    if (claimSignalPattern.test(String(line))) pushReceipt(specificClaims, line);
+    if (specificClaims.length >= 8) break;
+  }
+
+  for (const line of evidenceLines) {
+    if (buyerMomentPattern.test(String(line))) pushReceipt(buyerMoments, line);
+    if (buyerMoments.length >= 8) break;
+  }
+
+  for (const line of [...(assets?.reviews || []), ...brandBrain.proof, ...markdownLines]) {
+    const text = String(line);
+    if ((namedProofPattern.test(text) && claimSignalPattern.test(text)) || /^["“].+["”]\s*[-,]/.test(text)) {
+      pushReceipt(namedProof, line);
+    }
+    if (namedProof.length >= 8) break;
+  }
+
+  return normalizeBrandReceipts({
+    specificClaims,
+    buyerMoments,
+    exactSiteLanguage,
+    namedProof,
+  });
+};
+
 const normalizeBrandAssets = (value: unknown, websiteUrl: string): BrandAssets | undefined => {
   if (!value || typeof value !== 'object') return undefined;
   const input = value as Partial<BrandAssets>;
@@ -1760,27 +2044,30 @@ const normalizeBrandBrain = (payload: any, websiteUrl: string, fallbackLogoUrl =
     .filter((item, index, items) => items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index)
     .slice(0, 8);
 
-  return {
-  businessName: cleanTextField(payload?.businessName, 60) || new URL(websiteUrl).hostname.replace(/^www\./, ''),
-  websiteUrl,
-  brandLogoUrl: (() => {
-    const logo = normalizeImageAssetUrl(payload?.brandLogoUrl || fallbackLogoUrl, websiteUrl);
-    return logo && !isLikelyFaviconAsset(logo) ? logo : undefined;
-  })(),
-  brandAssets,
-  offer: cleanTextField(payload?.offer, 180),
-  audience: cleanTextField(payload?.audience, 180),
-  pain: cleanTextField(payload?.pain, 220),
-  promisedResult: cleanTextField(payload?.promisedResult, 180),
-  differentiator: cleanTextField(payload?.differentiator, 220),
-  tone: cleanTextField(payload?.tone, 80) || 'clear, confident, direct',
-  colors: normalizeHexColors(payload?.colors).length ? normalizeHexColors(payload?.colors) : ['#00D6B8', '#4F46E5', '#0F172A'],
-  proof,
-  bannedGenericPhrases: normalizeStringArray(payload?.bannedGenericPhrases, 12, 80).length
-    ? normalizeStringArray(payload?.bannedGenericPhrases, 12, 80)
-    : ['transform your business', 'game changer', 'take it to the next level'],
-  adAngles: normalizeStringArray(payload?.adAngles, 8, 180),
+  const normalizedBrain: BrandBrain = {
+    businessName: cleanTextField(payload?.businessName, 60) || new URL(websiteUrl).hostname.replace(/^www\./, ''),
+    websiteUrl,
+    brandLogoUrl: (() => {
+      const logo = normalizeImageAssetUrl(payload?.brandLogoUrl || fallbackLogoUrl, websiteUrl);
+      return logo && !isLikelyFaviconAsset(logo) ? logo : undefined;
+    })(),
+    brandAssets,
+    offer: cleanTextField(payload?.offer, 180),
+    audience: cleanTextField(payload?.audience, 180),
+    pain: cleanTextField(payload?.pain, 220),
+    promisedResult: cleanTextField(payload?.promisedResult, 180),
+    differentiator: cleanTextField(payload?.differentiator, 220),
+    tone: cleanTextField(payload?.tone, 80) || 'clear, confident, direct',
+    colors: normalizeHexColors(payload?.colors).length ? normalizeHexColors(payload?.colors) : ['#00D6B8', '#4F46E5', '#0F172A'],
+    proof,
+    receipts: normalizeBrandReceipts(payload?.receipts),
+    bannedGenericPhrases: normalizeStringArray(payload?.bannedGenericPhrases, 12, 80).length
+      ? normalizeStringArray(payload?.bannedGenericPhrases, 12, 80)
+      : ['transform your business', 'game changer', 'take it to the next level'],
+    adAngles: normalizeStringArray(payload?.adAngles, 8, 180),
   };
+  const hasReceipts = Object.values(normalizedBrain.receipts || EMPTY_BRAND_RECEIPTS).some((items) => items.length > 0);
+  return hasReceipts ? normalizedBrain : { ...normalizedBrain, receipts: buildBrandReceipts(normalizedBrain) };
 };
 
 const brandBrainNeedsFallback = (brandBrain: BrandBrain) => {
@@ -1822,9 +2109,78 @@ const buildHeuristicBrandBrain = ({
   const colors = normalizeHexColors(Object.values(brandAssets?.colors || {}));
   const lowerText = `${businessName} ${category} ${researchText}`.toLowerCase();
   const categorySignals = [
-    { pattern: /\b(medspa|medical spa|skin|laser|aesthetic|rejuvenation|botox|facial|acne)\b/, label: 'medspa services', audience: 'people considering premium skin and laser treatments', pain: 'They want visible skin results but do not know which treatment to trust', result: 'Feel confident choosing a treatment for smoother, healthier-looking skin', differentiator: `${businessName} makes advanced skin and laser care feel premium and guided` },
-    { pattern: /\b(dental|dentist|orthodont|implant|veneers|teeth)\b/, label: 'dental care', audience: 'people comparing dental providers', pain: 'They want dental care that feels trustworthy before they book', result: 'Book with more confidence and understand the next step faster', differentiator: `${businessName} turns dental care into a clearer, easier decision` },
-    { pattern: /\b(fitness|gym|workout|activewear|training|athlete|athletes|sport|sports|shoe|shoes|sneaker|sneakers|running|basketball|apparel|gear)\b/, label: 'performance footwear and athletic apparel', audience: 'athletes and everyday movers choosing training gear', pain: 'They want gear that looks good and keeps up with how they move', result: 'Train, run, and show up with gear built for performance', differentiator: `${businessName} connects performance, style, and athlete-tested trust` },
+    {
+      pattern: /\b(ai visibility|chatgpt|reddit campaign|reddit campaigns|reddit marketing|answer engine|generative engine|geo\b|aeo\b|seo|rank|ranking|rankings|front-page|front page|brand mentions|citations|d2c visibility|growth agencies|marketing agency|intent-driven traffic)\b/,
+      label: 'AI visibility and Reddit ranking campaigns',
+      audience: 'D2C brands, growth agencies, and B2B teams trying to show up where buyers search',
+      pain: 'They are paying for attention while buyers increasingly trust Reddit, Google, and ChatGPT answers',
+      result: 'Show up in Reddit threads, Google results, and ChatGPT recommendations buyers already trust',
+      differentiator: `${businessName} ties Reddit campaigns, AI visibility, ranking proof, and revenue attribution into one managed system`,
+      angles: [
+        `show up where buyers ask AI`,
+        `Reddit threads that become ChatGPT answers`,
+        `front-page proof instead of marketing guesses`,
+        `AI visibility with revenue receipts`,
+        `turn buyer questions into ranked answers`,
+        `the ranking system behind ${businessName}`,
+        `from invisible brand to recommended answer`,
+        `proof buyers can find before they click`,
+      ],
+    },
+    {
+      pattern: /\b(medspa|medical spa|skin|laser|aesthetic|rejuvenation|botox|facial|acne)\b/,
+      label: 'medspa services',
+      audience: 'people considering premium skin and laser treatments',
+      pain: 'They want visible skin results but do not know which treatment to trust',
+      result: 'Feel confident choosing a treatment for smoother, healthier-looking skin',
+      differentiator: `${businessName} makes advanced skin and laser care feel premium and guided`,
+      angles: [
+        `a clearer plan for better skin`,
+        `premium care without the guessing`,
+        `skin treatments that feel easier to trust`,
+        `the consultation that makes options clear`,
+        `visible skin goals with a guided path`,
+        `why people choose ${businessName}`,
+        `confidence before booking treatment`,
+        `advanced care that feels personal`,
+      ],
+    },
+    {
+      pattern: /\b(dental|dentist|orthodont|implant|veneers|teeth)\b/,
+      label: 'dental care',
+      audience: 'people comparing dental providers',
+      pain: 'They want dental care that feels trustworthy before they book',
+      result: 'Book with more confidence and understand the next step faster',
+      differentiator: `${businessName} turns dental care into a clearer, easier decision`,
+      angles: [
+        `the easier way to choose a dentist`,
+        `confidence before the appointment`,
+        `dental care that feels less confusing`,
+        `the next step made clear`,
+        `why patients trust ${businessName}`,
+        `a better first impression for care`,
+        `from dental worry to booked visit`,
+        `proof before they call`,
+      ],
+    },
+    {
+      pattern: /\b(fitness|gym|workout|activewear|training gear|athletic apparel|sporting goods|sportswear|shoe|shoes|sneaker|sneakers|running|basketball)\b/,
+      label: 'performance footwear and athletic apparel',
+      audience: 'athletes and everyday movers choosing training gear',
+      pain: 'They want gear that looks good and keeps up with how they move',
+      result: 'Train, run, and show up with gear built for performance',
+      differentiator: `${businessName} connects performance, style, and athlete-tested trust`,
+      angles: [
+        `${businessName} gear built for how they move`,
+        `the performance promise behind ${businessName}`,
+        `${businessName} style that works past the gym`,
+        `training gear that feels ready on day one`,
+        `the product detail that makes movement easier`,
+        `from browsing gear to feeling ready`,
+        `${businessName} products that make the next workout easier`,
+        `athletic gear that looks as ready as it feels`,
+      ],
+    },
   ];
   const matchedSignal = categorySignals.find((signal) => signal.pattern.test(lowerText));
   const offer = matchedSignal
@@ -1836,7 +2192,7 @@ const buildHeuristicBrandBrain = ({
   const differentiator = matchedSignal?.differentiator || `${businessName} already has brand recognition, product signals, and trust buyers recognize`;
   const reviewProof = (brandAssets?.reviews || []).filter(isUsableReviewSnippet).slice(0, 3);
 
-  return {
+  const heuristicBrain: BrandBrain = {
     businessName,
     websiteUrl: websiteUrl.href,
     brandLogoUrl: brandLogoUrl || brandAssets?.images.logo || undefined,
@@ -1854,28 +2210,30 @@ const buildHeuristicBrandBrain = ({
       page?.title ? `Website title: ${page.title}` : '',
       brandAssets?.images.logo ? 'Logo found on site' : '',
     ].filter(Boolean).slice(0, 4),
+    receipts: EMPTY_BRAND_RECEIPTS,
     bannedGenericPhrases: [
       'transform your business',
       'take it to the next level',
       'game changer',
       'unlock your potential',
     ],
-    adAngles: [
-      `${businessName} gear built for how they move`,
-      `the performance promise behind ${businessName}`,
-      `${businessName} style that works past the gym`,
-      `training gear that feels ready on day one`,
-      `the product detail that makes movement easier`,
-      `from browsing gear to feeling ready`,
-      `${businessName} products that make the next workout easier`,
-      `athletic gear that looks as ready as it feels`,
+    adAngles: matchedSignal?.angles || [
+      `why ${businessName} is the better choice`,
+      `the result buyers wanted faster`,
+      `the proof behind ${businessName}`,
+      `what makes ${businessName} easier to trust`,
+      `the old way buyers are tired of`,
+      `the moment ${businessName} starts making sense`,
+      `a clearer reason to choose ${businessName}`,
+      `what buyers notice first`,
     ],
   };
+  return { ...heuristicBrain, receipts: buildBrandReceipts(heuristicBrain) };
 };
 
 const generateBrandBrain = async (websiteUrl: string, researchText: string, fallbackAnswers?: string[], fallbackLogoUrl = '') => {
   const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error('GEMINI_API_KEY is not set.');
+  if (!key || isDisabled(process.env.GEMINI_ENABLED)) throw new Error('GEMINI_API_KEY is not set.');
   const ai = new GoogleGenAI({ apiKey: key });
   const response = await withTimeout(ai.models.generateContent({
     model: BRAND_RESEARCH_MODEL,
@@ -1908,6 +2266,7 @@ const isUsableHeadline = (headline: string, brandBrain: BrandBrain, previous: Se
   if (/\b(they|people|buyers|shoppers|customers|clients|patients)\s+need\s+a\s+clear\b/i.test(headline)) return false;
   if (/\bneed\s+a\s+clear\s+is\b/i.test(headline)) return false;
   if (/\b[a-z]+\s+is\s+getting expensive$/i.test(headline) && words < 6) return false;
+  if (/\b(hijack|hack|steal|trick|game|exploit|dominate)\b/i.test(headline)) return false;
   return !(brandBrain.bannedGenericPhrases || []).some((phrase) => phrase && lower.includes(phrase.toLowerCase()));
 };
 
@@ -2138,7 +2497,7 @@ const normalizeHeadlineVariations = (value: any) => {
 
 const generateHeadlineVariationsWithGroq = async (brandBrain: BrandBrain, count: number, modelChoices = GROQ_DIALOGUE_MODELS) => {
   const key = process.env.GROQ_API_KEY;
-  if (!key) return { variations: [], model: '' };
+  if (!key || isDisabled(process.env.GROQ_ENABLED)) return { variations: [], model: '' };
   const prompt = buildHeadlineVariationsPrompt({ brandBrain, count });
 
   for (const model of modelChoices) {
@@ -2190,7 +2549,7 @@ const generateHeadlineVariationsWithGroq = async (brandBrain: BrandBrain, count:
 
 const generateHeadlineVariationsWithOpenRouter = async (brandBrain: BrandBrain, count: number, modelChoices = OPENROUTER_FREE_DIALOGUE_MODELS) => {
   const key = process.env.OPENROUTER_API_KEY;
-  if (!key) return { variations: [], model: '' };
+  if (!key || isDisabled(process.env.OPENROUTER_ENABLED)) return { variations: [], model: '' };
   const prompt = buildHeadlineVariationsPrompt({ brandBrain, count });
 
   for (const model of modelChoices) {
@@ -2245,7 +2604,7 @@ const generateHeadlineVariationsWithOpenRouter = async (brandBrain: BrandBrain, 
 
 const generateHeadlineVariationsWithGemini = async (brandBrain: BrandBrain, count: number) => {
   const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error('GEMINI_API_KEY is not set.');
+  if (!key || isDisabled(process.env.GEMINI_ENABLED)) throw new Error('GEMINI_API_KEY is not set.');
   const ai = new GoogleGenAI({ apiKey: key });
   const response = await withTimeout(ai.models.generateContent({
     model: HEADLINE_VARIATION_MODEL,
@@ -2312,7 +2671,7 @@ const generateHeadlineVariations = async (brandBrain: BrandBrain, count: number,
   return { variations: [], provider: 'local', model: 'local', selectedModel, fallback: true };
 };
 
-app.post('/api/research-brand', brandResearchLimiter, async (req, res) => {
+app.post('/api/research-brand', brandResearchLimiter, billShield('brandResearch', 'BRAND_RESEARCH_ENABLED'), async (req, res) => {
   try {
     const websiteUrl = normalizeResearchUrl(req.body?.websiteUrl);
     const fallbackAnswers = Array.isArray(req.body?.fallbackAnswers)
@@ -2334,26 +2693,19 @@ app.post('/api/research-brand', brandResearchLimiter, async (req, res) => {
       brandAssets = research.brandAssets;
     } catch (error) {
       console.warn('[brand-research] scrape_failed', websiteUrl.href, error instanceof Error ? error.message : error);
-      if (fallbackAnswers.length < 3) {
-        const brandBrain = buildHeuristicBrandBrain({
-          websiteUrl,
-          researchText: '',
-          brandAssets,
-          brandLogoUrl,
-        });
-        addBrandBrainCache(brainCacheKey, {
-          expiresAt: Date.now() + BRAND_RESEARCH_CACHE_TTL_MS,
-          brandBrain,
-        });
-        return res.json({ needsFallback: false, brandBrain });
-      }
+      return res.status(502).json({
+        error: 'Wiggly could not read that website clearly enough to make ads. Try again, or use a different page from the same brand.',
+      });
     }
 
     if (!researchText && fallbackAnswers.length >= 3) {
       const fallbackBrandBrain = buildFallbackBrandBrain({ websiteUrl: websiteUrl.href, answers: fallbackAnswers });
+      const fallbackWithAssets = brandAssets
+        ? { ...fallbackBrandBrain, brandAssets, brandLogoUrl: brandAssets.images.logo || undefined }
+        : fallbackBrandBrain;
       return res.json({
         needsFallback: false,
-        brandBrain: brandAssets ? { ...fallbackBrandBrain, brandAssets, brandLogoUrl: brandAssets.images.logo || undefined } : fallbackBrandBrain,
+        brandBrain: { ...fallbackWithAssets, receipts: buildBrandReceipts(fallbackWithAssets) },
       });
     }
 
@@ -2367,30 +2719,17 @@ app.post('/api/research-brand', brandResearchLimiter, async (req, res) => {
           brandLogoUrl: brandBrain.brandLogoUrl || brandAssets.images.logo || brandLogoUrl || undefined,
         };
       }
+      brandBrain = { ...brandBrain, receipts: buildBrandReceipts(brandBrain) };
     } catch (error) {
       console.warn('[brand-research] brain_failed', websiteUrl.href, error instanceof Error ? error.message : error);
-      if (fallbackAnswers.length < 3) {
-        brandBrain = buildHeuristicBrandBrain({
-          websiteUrl,
-          researchText,
-          brandAssets,
-          brandLogoUrl,
-        });
-      } else {
-        brandBrain = {
-          ...buildFallbackBrandBrain({ websiteUrl: websiteUrl.href, answers: fallbackAnswers }),
-          brandLogoUrl: brandLogoUrl || undefined,
-          brandAssets,
-        };
-      }
+      return res.status(502).json({
+        error: 'Wiggly read the website, but the AI brand brief failed. Try again in a moment.',
+      });
     }
 
-    if (brandBrainNeedsFallback(brandBrain) && fallbackAnswers.length < 3) {
-      brandBrain = buildHeuristicBrandBrain({
-        websiteUrl,
-        researchText,
-        brandAssets: brandBrain.brandAssets || brandAssets,
-        brandLogoUrl: brandBrain.brandLogoUrl || brandLogoUrl,
+    if (brandBrainNeedsFallback(brandBrain)) {
+      return res.status(422).json({
+        error: 'Wiggly read the website, but could not confidently identify the offer, audience, and ad angles. Try a more specific page from the same brand.',
       });
     }
 
@@ -2405,7 +2744,7 @@ app.post('/api/research-brand', brandResearchLimiter, async (req, res) => {
   }
 });
 
-app.post('/api/generate-ad-stream', adStreamLimiter, async (req, res) => {
+app.post('/api/generate-ad-stream', adStreamLimiter, billShield('adStream'), async (req, res) => {
   try {
     const rawBrandBrain = req.body?.brandBrain;
     if (!rawBrandBrain || typeof rawBrandBrain !== 'object') {
@@ -2419,9 +2758,8 @@ app.post('/api/generate-ad-stream', adStreamLimiter, async (req, res) => {
     const selectedModel = normalizeHeadlineModelChoice(req.body?.model);
     const used = new Set<string>();
     const variations: HeadlineVariation[] = [];
-    let provider = 'local';
-    let model = 'local';
-    let fallback = false;
+    let provider = '';
+    let model = '';
 
     let rawVariations: any[] = [];
     try {
@@ -2429,10 +2767,16 @@ app.post('/api/generate-ad-stream', adStreamLimiter, async (req, res) => {
       rawVariations = generation.variations;
       provider = generation.provider;
       model = generation.model;
-      fallback = Boolean(generation.fallback);
+      if (generation.fallback) {
+        return res.status(503).json({
+          error: 'Ad writing failed before usable AI headlines were created. Try another model or try again in a moment.',
+        });
+      }
     } catch (error) {
       console.warn('[ad-stream] headline_generation_failed', error instanceof Error ? error.message : error);
-      fallback = true;
+      return res.status(503).json({
+        error: 'Ad writing failed before usable AI headlines were created. Try another model or try again in a moment.',
+      });
     }
 
     rawVariations.forEach((item) => {
@@ -2456,21 +2800,9 @@ app.post('/api/generate-ad-stream', adStreamLimiter, async (req, res) => {
       });
     });
 
-    while (variations.length < totalCount) {
-      const fill = fallbackHeadlines(brandBrain, totalCount - variations.length, used);
-      if (fill.length === 0) break;
-      fill.forEach((variation) => {
-        if (variations.length >= totalCount) return;
-        used.add(variation.headline.toLowerCase());
-        const format = pickGeneratedAdFormat(formatMix, variations.length);
-        variations.push({
-          ...variation,
-          id: `variation-${variations.length + 1}`,
-          format,
-          conversationLines: format === 'conversation'
-            ? buildConversationLines(brandBrain, variation.headline, variation.angle, variations.length)
-            : undefined,
-        });
+    if (!variations.length) {
+      return res.status(503).json({
+        error: 'Ad writing returned no usable headlines. Try another model or try again in a moment.',
       });
     }
 
@@ -2480,7 +2812,7 @@ app.post('/api/generate-ad-stream', adStreamLimiter, async (req, res) => {
       provider,
       model,
       selectedModel,
-      fallback,
+      fallback: false,
     });
   } catch (error: any) {
     console.error('Generate ad stream error:', error);
@@ -2491,6 +2823,9 @@ app.post('/api/generate-ad-stream', adStreamLimiter, async (req, res) => {
 const gibberishPattern = /\b(?:[bcdfghjklmnpqrstvwxyz]{4,}|(?:asdf|sdfg|qwer|zxcv|hjkl|lorem|ipsum)[a-z]*)\b/i;
 const forcedNegationPattern = /\b(?:not this|not that|not because|not more|not another|it'?s not|this isn'?t|don'?t just|stop (?:trying|doing|using|making))\b/i;
 const staccatoPattern = /(?:^|[.!?]\s+)(?:[A-Z][a-z]{2,12}\. ){2,}/;
+const copiedDialogueExamplePattern = /\b(?:q4 ad invoice|fourteen grand|meta auction|we stopped trying to win every|where are the buyers coming from|recommendation searches|three good booking requests|that is the leak|best leads arrive|busy hours into booked slots|catch those moments and book|serum sold out|sensitive skin|glossy product claim|friend explaining it|d2c operators texting|local service owner and employee|skincare founder and friend)\b/i;
+const bannedAdBuzzwordPattern = /\b(?:game[- ]changer|revolutionary|cutting[- ]edge|unlock your potential|take it to the next level|transform your business)\b/i;
+const bannedDialogueShapePattern = /\b(?:this tool|is it working|will that really make a difference|i'?m worried|i don'?t understand|how did you do it\??|how does it work\??|what kind of results did you see\??|what'?s your secret|what'?s a better way|what'?s the best way)\b/i;
 
 const cleanHumanDialogueText = (value: unknown) => String(value || '')
   .replace(/[—–]/g, ', ')
@@ -2505,7 +2840,10 @@ const hasGarbageText = (value: unknown) => {
     /\bwiggly\b/i.test(text) ||
     /[—–]/.test(text) ||
     forcedNegationPattern.test(text) ||
-    staccatoPattern.test(text)
+    staccatoPattern.test(text) ||
+    copiedDialogueExamplePattern.test(text) ||
+    bannedAdBuzzwordPattern.test(text) ||
+    bannedDialogueShapePattern.test(text)
   );
 };
 
@@ -2551,6 +2889,87 @@ const asBriefString = (brief: any, key: string, fallback = '') => {
   const value = typeof brief === 'object' && brief ? brief[key] : '';
   return String(value || fallback).replace(/\s+/g, ' ').trim();
 };
+
+const getBriefReceipts = (brief: any): BrandReceipts => normalizeBrandReceipts(
+  typeof brief === 'object' && brief ? brief.receipts : undefined
+);
+
+const formatReceiptArrayForPrompt = (label: string, values: string[]) => {
+  if (!values.length) return `${label}: []`;
+  return `${label}:\n${values.map((value) => `- ${value}`).join('\n')}`;
+};
+
+const formatDialogueReceiptsForPrompt = (creativeBrief: any) => {
+  const receipts = getBriefReceipts(creativeBrief);
+  return [
+    formatReceiptArrayForPrompt('specificClaims', receipts.specificClaims),
+    formatReceiptArrayForPrompt('buyerMoments', receipts.buyerMoments),
+    formatReceiptArrayForPrompt('exactSiteLanguage', receipts.exactSiteLanguage),
+    formatReceiptArrayForPrompt('namedProof', receipts.namedProof),
+  ].join('\n');
+};
+
+const DIALOGUE_SCRIPT_CREATIVE_PROCESS = `BEFORE writing each script, decide:
+- Setting: where are they? texting, car, hallway, Slack DM, front counter, voice note, or another real place
+- Relationship: who are they? co-founder/co-founder, boss/employee, two operators, friend/friend, founder/customer
+- Pain: ONE specific buyerMoment from RECEIPTS
+- Proof: ONE specific claim or namedProof from RECEIPTS
+
+The proof must land like a casual receipt dropped in conversation, not a pitch.`;
+
+const DIALOGUE_SCRIPT_SHAPE_RULES = `BANNED SHAPE. Do not produce:
+- A: vague worry
+- B: pitches the tool
+- A: "is it working?" or "how does it work?"
+- B: receipt
+That is an infomercial structure. Real overheard conversations do not work that way.
+
+REQUIRED SHAPE:
+- Line 1: A drops a specific moment, number, time, place, tab, meeting, metric, or customer quote. Not a feeling.
+  Bad: "I'm worried we're losing sales."
+  Good: "Just checked GA. Organic is down 40% this month."
+- Line 2: B reacts like a friend or operator. Do not pitch yet.
+  Bad: "We're using this tool to fix that."
+  Good: "Yeah, we were there in March. Brutal."
+- Line 3: A asks what changed, asks for the link, calls BS, or asks what they did next. No robotic "is it working?"
+- Line 4: B drops the proof casually, then names the brand or mechanism only if it sounds natural.
+
+Banned phrases:
+- "this tool"
+- "is it working"
+- "will that really make a difference"
+- "I'm worried"
+- "I don't understand"
+- "how does it work"
+- "how did you do it"
+- "what's your secret"
+- "what's the best way"`;
+
+const DIALOGUE_SCRIPT_EXAMPLES = `STUDY THESE EXAMPLES. Copy the rhythm, not the specifics. Never copy names, settings, industries, numbers, phrases, titles, or lines from these examples. Your only source material is THIS brief and RECEIPTS.
+
+Example 1, D2C operators texting about search visibility:
+Ava (tired): "Just got the Q4 ad invoice. Fourteen grand for leads we used to get for six."
+Sam (calm): "We stopped trying to win every Meta auction."
+Ava: "Then where are the buyers coming from."
+Sam: "The recommendation searches. We show up before they even hit a site."
+Ava: "How fast did that happen."
+Sam: "First ranking in two weeks. Tracked revenue followed."
+
+Example 2, local service owner and employee after a busy day:
+Ava (frustrated): "We had three good booking requests sit unanswered while I was on jobs."
+Sam (practical): "That is the leak. Not demand, response time."
+Ava: "I hate that the best leads arrive when nobody can reply."
+Sam: "The new setup catches those moments and books the next step."
+Ava: "So fewer people drift to whoever answers first."
+Sam: "Exactly. It turns the busy hours into booked slots."
+
+Example 3, skincare founder and friend after a product drop:
+Ava (excited): "The serum sold out again, but the comments are all asking if it works for sensitive skin."
+Sam (warm): "Then say that first. That is the hesitation."
+Ava: "Not another glossy product claim."
+Sam: "Right. Lead with the real concern, then the proof from the people using it."
+Ava: "So it feels like a friend explaining it."
+Sam: "That is why people stop scrolling."`;
 
 const fallbackDialogueScripts = (count: number, creativeBrief: any = {}) => {
   const offer = asBriefString(creativeBrief, 'offer', 'this offer');
@@ -2645,20 +3064,39 @@ const buildDialogueScriptsPrompt = ({
   count: number;
 }) => {
   const briefText = typeof creativeBrief === 'object'
-    ? Object.entries(creativeBrief).map(([label, value]) => `${label}: ${value}`).join('\n')
+    ? Object.entries(creativeBrief)
+      .filter(([label]) => label !== 'receipts')
+      .map(([label, value]) => `${label}: ${value}`)
+      .join('\n')
     : String(creativeBrief || '');
+  const receiptsText = formatDialogueReceiptsForPrompt(creativeBrief);
 
   return `You are a direct-response creative strategist for Wiggly, a visual ad creator.
 
 Create ${count} short two-person dialogue ad scripts for this brief.
+Return exactly ${count} scripts. Do not stop after one option.
 
 Brief:
 ${briefText}
+
+RECEIPTS:
+Use these exact extracted artifacts as source material. Do not summarize them before writing.
+${receiptsText}
+
+${DIALOGUE_SCRIPT_CREATIVE_PROCESS}
+
+${DIALOGUE_SCRIPT_SHAPE_RULES}
+
+${DIALOGUE_SCRIPT_EXAMPLES}
 
 Persona: ${persona}
 
 The ad should feel like a real-life overheard conversation, not a sales pitch.
 One person has the problem. The other casually reveals the solution.
+Each script must reference one specific claim or named proof from RECEIPTS when available.
+Each script must reference one concrete buyer moment from RECEIPTS when available.
+Use exactSiteLanguage as a voice cue when it fits naturally.
+If a receipts field is empty, ignore that field. Do not invent replacement proof, fake stats, or fake testimonials.
 Keep each script 14-26 seconds when read aloud.
 No hype. No buzzwords. No testimonials. No fake stats.
 No em dashes or en dashes. Use commas or periods only.
@@ -2666,9 +3104,10 @@ No forced negation structure like "not this, but that", "it is not X, it is Y", 
 No staccato sentence stacking. Do not write choppy fragments like "Missed calls. Lost patients. Empty chairs."
 Use normal conversational sentences that sound like people talking naturally.
 Do not include placeholder text, keyboard-mash text, filler words, lorem ipsum, or nonsensical tokens.
+Do not copy any sentence, title, number, setting, or industry from STUDY THESE EXAMPLES.
 Every line must be fluent English that could be read aloud in the ad.
 Never mention Wiggly. Wiggly is the internal builder, not the product being advertised.
-Use the offer and CTA from the brief. If the brand name is unknown, say "the AI front desk" instead of inventing one.
+Use the offer and CTA from the brief. If the brand name is unknown, refer to it as "the tool", "this thing", or "the brand" instead of inventing one.
 
 Return ONLY valid JSON:
 {
@@ -2700,16 +3139,26 @@ const buildOpenRouterDialogueScriptsPrompt = ({
   const result = asBriefString(creativeBrief, 'promisedResult', 'feel confident about the next step');
   const differentiator = asBriefString(creativeBrief, 'differentiator', 'the choice feels clearer and more guided');
   const cta = asBriefString(creativeBrief, 'cta', 'Learn more.');
+  const receiptsText = formatDialogueReceiptsForPrompt(creativeBrief);
 
   return `Return ONLY valid JSON. Create ${count} short two-person dialogue ad scripts.
+Return exactly ${count} scripts. Do not stop after one option.
 Offer: ${offer}
 Buyer: ${buyer}
 Pain: ${pain}
 Result: ${result}
 Why this brand: ${differentiator}
 CTA: ${cta}
+RECEIPTS:
+${receiptsText}
+
+${DIALOGUE_SCRIPT_CREATIVE_PROCESS}
+
+${DIALOGUE_SCRIPT_SHAPE_RULES}
 
 Rules: natural spoken English, no hype, no fake stats, no em dash, never mention Wiggly.
+Use one specific claim or named proof from RECEIPTS when available, plus one concrete buyer moment from RECEIPTS when available. If a receipt field is empty, ignore it and do not invent replacement proof.
+If the brand name is unknown, refer to it as "the tool", "this thing", or "the brand" instead of inventing one.
 Each script needs title, angle, and exactly 4 lines alternating Ava and Sam.
 Schema: {"scripts":[{"title":"short","angle":"short","lines":[{"speaker":"Ava","tone":"curious","text":"fluent line"},{"speaker":"Sam","tone":"calm","text":"fluent line"},{"speaker":"Ava","tone":"curious","text":"fluent line"},{"speaker":"Sam","tone":"assured","text":"fluent line"}]}]}`;
 };
@@ -2729,49 +3178,59 @@ const getDialogueModelProvider = (choice: string) => {
 
 const getDialogueModelName = (choice: string) => choice.split(':').slice(1).join(':');
 
-const generateDialogueScriptsWithOpenRouter = async (prompt: string, count: number, modelChoices = OPENROUTER_FREE_DIALOGUE_MODELS) => {
+const generateDialogueScriptsWithOpenRouter = async (prompt: string, count: number, modelChoices = OPENROUTER_FREE_DIALOGUE_MODELS, options: { requireFree?: boolean } = {}) => {
   const key = process.env.OPENROUTER_API_KEY;
-  if (!key) return { scripts: [], model: '' };
+  if (!key || isDisabled(process.env.OPENROUTER_ENABLED)) return { scripts: [], model: '' };
 
   for (const model of modelChoices) {
-    if (!model.endsWith(':free')) continue;
+    if (options.requireFree && !model.endsWith(':free')) continue;
     let timeout: NodeJS.Timeout | undefined;
     try {
-      const controller = new AbortController();
-      timeout = setTimeout(() => controller.abort(), DIALOGUE_PROVIDER_TIMEOUT_MS);
-      const response = await withTimeout(
-        fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${key}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': process.env.PUBLIC_APP_URL || 'http://localhost:3000',
-            'X-Title': 'Wiggly',
-          },
-          body: JSON.stringify({
-            model,
-            messages: [{ role: 'user', content: prompt }],
-            response_format: { type: 'json_object' },
-            temperature: 0.7,
-            max_tokens: 1800,
+      let bestScripts: any[] = [];
+      for (let attempt = 0; attempt < 2 && bestScripts.length < count; attempt += 1) {
+        const controller = new AbortController();
+        timeout = setTimeout(() => controller.abort(), DIALOGUE_PROVIDER_TIMEOUT_MS);
+        const response = await withTimeout(
+          fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${key}`,
+              'Content-Type': 'application/json',
+              'HTTP-Referer': process.env.PUBLIC_APP_URL || 'http://localhost:3000',
+              'X-Title': 'Wiggly',
+            },
+            body: JSON.stringify({
+              model,
+              messages: [{
+                role: 'user',
+                content: attempt === 0
+                  ? prompt
+                  : `${prompt}\n\nYour previous output returned only ${bestScripts.length} usable scripts. Return exactly ${count} fresh, non-duplicative scripts. Do not reuse weak generic lines.`,
+              }],
+              response_format: { type: 'json_object' },
+              temperature: 0.7,
+              max_tokens: 3000,
+            }),
+            signal: controller.signal,
           }),
-          signal: controller.signal,
-        }),
-        DIALOGUE_PROVIDER_TIMEOUT_MS,
-        `OpenRouter dialogue generation (${model})`,
-      );
+          DIALOGUE_PROVIDER_TIMEOUT_MS,
+          `OpenRouter dialogue generation (${model})`,
+        );
+        if (timeout) clearTimeout(timeout);
 
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        console.warn('OpenRouter dialogue model failed:', model, response.status, String(payload?.error?.message || '').slice(0, 180));
-        continue;
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          console.warn('OpenRouter dialogue model failed:', model, response.status, String(payload?.error?.message || '').slice(0, 180));
+          break;
+        }
+
+        const text = String(payload?.choices?.[0]?.message?.content || '{"scripts":[]}');
+        const scripts = normalizeDialogueScripts(parseJsonResponse(text), count);
+        if (scripts.length > bestScripts.length) bestScripts = scripts;
       }
-
-      const text = String(payload?.choices?.[0]?.message?.content || '{"scripts":[]}');
-      const scripts = normalizeDialogueScripts(parseJsonResponse(text), count);
-      if (scripts.length) {
+      if (bestScripts.length) {
         console.info('OpenRouter dialogue fallback succeeded:', model);
-        return { scripts, model };
+        return { scripts: bestScripts, model };
       }
     } catch (error: any) {
       console.warn('OpenRouter dialogue fallback error:', model, String(error?.message || error).slice(0, 180));
@@ -2785,44 +3244,54 @@ const generateDialogueScriptsWithOpenRouter = async (prompt: string, count: numb
 
 const generateDialogueScriptsWithGroq = async (prompt: string, count: number, modelChoices = GROQ_DIALOGUE_MODELS) => {
   const key = process.env.GROQ_API_KEY;
-  if (!key) return { scripts: [], model: '' };
+  if (!key || isDisabled(process.env.GROQ_ENABLED)) return { scripts: [], model: '' };
 
   for (const model of modelChoices) {
     let timeout: NodeJS.Timeout | undefined;
     try {
-      const controller = new AbortController();
-      timeout = setTimeout(() => controller.abort(), DIALOGUE_PROVIDER_TIMEOUT_MS);
-      const response = await withTimeout(
-        fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${key}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model,
-            messages: [{ role: 'user', content: prompt }],
-            response_format: { type: 'json_object' },
-            temperature: 0.7,
-            max_completion_tokens: 1800,
+      let bestScripts: any[] = [];
+      for (let attempt = 0; attempt < 2 && bestScripts.length < count; attempt += 1) {
+        const controller = new AbortController();
+        timeout = setTimeout(() => controller.abort(), DIALOGUE_PROVIDER_TIMEOUT_MS);
+        const response = await withTimeout(
+          fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${key}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model,
+              messages: [{
+                role: 'user',
+                content: attempt === 0
+                  ? prompt
+                  : `${prompt}\n\nYour previous output returned only ${bestScripts.length} usable scripts. Return exactly ${count} fresh, non-duplicative scripts. Do not reuse weak generic lines.`,
+              }],
+              response_format: { type: 'json_object' },
+              temperature: 0.7,
+              max_completion_tokens: 3000,
+            }),
+            signal: controller.signal,
           }),
-          signal: controller.signal,
-        }),
-        DIALOGUE_PROVIDER_TIMEOUT_MS,
-        `Groq dialogue generation (${model})`,
-      );
+          DIALOGUE_PROVIDER_TIMEOUT_MS,
+          `Groq dialogue generation (${model})`,
+        );
+        if (timeout) clearTimeout(timeout);
 
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        console.warn('Groq dialogue model failed:', model, response.status, String(payload?.error?.message || '').slice(0, 180));
-        continue;
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          console.warn('Groq dialogue model failed:', model, response.status, String(payload?.error?.message || '').slice(0, 180));
+          break;
+        }
+
+        const text = String(payload?.choices?.[0]?.message?.content || '{"scripts":[]}');
+        const scripts = normalizeDialogueScripts(parseJsonResponse(text), count);
+        if (scripts.length > bestScripts.length) bestScripts = scripts;
       }
-
-      const text = String(payload?.choices?.[0]?.message?.content || '{"scripts":[]}');
-      const scripts = normalizeDialogueScripts(parseJsonResponse(text), count);
-      if (scripts.length) {
+      if (bestScripts.length) {
         console.info('Groq dialogue fallback succeeded:', model);
-        return { scripts, model };
+        return { scripts: bestScripts, model };
       }
     } catch (error: any) {
       console.warn('Groq dialogue fallback error:', model, String(error?.message || error).slice(0, 180));
@@ -2869,12 +3338,13 @@ const pcmBase64ToWavBase64 = (pcmBase64: string, sampleRate = 24000, channels = 
   return Buffer.concat([header, pcm]).toString('base64');
 };
 
-app.post('/api/generate-headlines', aiGenerationLimiter, async (req, res) => {
+app.post('/api/generate-headlines', aiGenerationLimiter, billShield('headlines'), async (req, res) => {
   try {
-    const { niche, count = 20 } = req.body;
+    const { niche } = req.body;
+    const count = Math.min(20, Math.max(1, Number(req.body?.count) || 20));
 
     const key = process.env.GEMINI_API_KEY;
-    if (!key) {
+    if (!key || isDisabled(process.env.GEMINI_ENABLED)) {
       throw new Error("GEMINI_API_KEY is not set.");
     }
 
@@ -2902,12 +3372,12 @@ No prose. No explanation. Just the JSON array.`;
   }
 });
 
-app.post('/api/generate-copy', aiGenerationLimiter, async (req, res) => {
+app.post('/api/generate-copy', aiGenerationLimiter, billShield('copy'), async (req, res) => {
   try {
     const { businessContext } = req.body;
     
     const key = process.env.GEMINI_API_KEY;
-    if (!key) {
+    if (!key || isDisabled(process.env.GEMINI_ENABLED)) {
       throw new Error("GEMINI_API_KEY is not set.");
     }
     
@@ -3008,79 +3478,92 @@ Return valid JSON with the following structure:
   }
 });
 
-app.post('/api/generate-dialogue-scripts', aiGenerationLimiter, async (req, res) => {
+app.post('/api/generate-dialogue-scripts', aiGenerationLimiter, billShield('dialogueScripts'), async (req, res) => {
   const { creativeBrief, persona = 'Dental practice owner', count = 5 } = req.body;
-  const requestedCount = Number(count) || 5;
+  const requestedCount = Math.min(5, Math.max(1, Number(count) || 5));
+  const generationCount = Math.min(8, requestedCount + 3);
   const selectedModel = normalizeDialogueModelChoice(req.body?.model);
   const selectedProvider = getDialogueModelProvider(selectedModel);
   const selectedModelName = getDialogueModelName(selectedModel);
-  const prompt = buildDialogueScriptsPrompt({ creativeBrief, persona, count: requestedCount });
-  const providerPrompt = buildOpenRouterDialogueScriptsPrompt({ creativeBrief, persona, count: requestedCount });
-  const sendLocalDialogueScripts = (warning: string) => res.json({
-    scripts: fillDialogueScripts([], requestedCount, creativeBrief),
-    fallback: true,
-    provider: 'local',
-    model: 'local',
-    selectedModel,
-    warning,
-  });
+  const prompt = buildDialogueScriptsPrompt({ creativeBrief, persona, count: generationCount });
+  const sendDialogueFailure = (message: string, status = 503) => res.status(status).json({ error: message, selectedModel });
 
   try {
     if (selectedProvider === 'local') {
-      return sendLocalDialogueScripts('Using local script options by request.');
+      return res.json({
+        scripts: fillDialogueScripts([], requestedCount, creativeBrief),
+        fallback: true,
+        provider: 'local',
+        model: 'local',
+        selectedModel,
+        warning: 'Using local script options by request.',
+      });
+    }
+
+    if (selectedProvider === 'auto') {
+      const kimiResult = await generateDialogueScriptsWithOpenRouter(
+        prompt,
+        requestedCount,
+        OPENROUTER_PREMIUM_DIALOGUE_MODELS,
+      );
+      if (kimiResult.scripts.length) {
+        return res.json({
+          scripts: kimiResult.scripts,
+          provider: 'openrouter',
+          model: kimiResult.model,
+          selectedModel,
+        });
+      }
     }
 
     if (selectedProvider === 'groq' || selectedProvider === 'auto') {
       const groqResult = await generateDialogueScriptsWithGroq(
-        providerPrompt,
+        prompt,
         requestedCount,
         selectedProvider === 'groq' ? [selectedModelName] : GROQ_DIALOGUE_MODELS,
       );
       if (groqResult.scripts.length) {
         return res.json({
-          scripts: fillDialogueScripts(groqResult.scripts, requestedCount, creativeBrief),
+          scripts: groqResult.scripts,
           provider: 'groq-free',
           model: groqResult.model,
           selectedModel,
         });
       }
       if (selectedProvider === 'groq') {
-        return sendLocalDialogueScripts(`Selected Groq model (${selectedModelName}) is unavailable, so Wiggly used local script options.`);
+        return sendDialogueFailure(`Selected Groq model (${selectedModelName}) did not return usable scripts. Try another model or try again in a moment.`);
       }
     }
 
     if (selectedProvider === 'openrouter' || selectedProvider === 'auto') {
       const openRouterResult = await generateDialogueScriptsWithOpenRouter(
-        providerPrompt,
+        prompt,
         requestedCount,
         selectedProvider === 'openrouter' ? [selectedModelName] : OPENROUTER_FREE_DIALOGUE_MODELS,
+        { requireFree: selectedProvider !== 'openrouter' },
       );
       if (openRouterResult.scripts.length) {
         return res.json({
-          scripts: fillDialogueScripts(openRouterResult.scripts, requestedCount, creativeBrief),
+          scripts: openRouterResult.scripts,
           provider: 'openrouter-free',
           model: openRouterResult.model,
           selectedModel,
         });
       }
       if (selectedProvider === 'openrouter') {
-        return sendLocalDialogueScripts(`Selected OpenRouter model (${selectedModelName}) is unavailable, so Wiggly used local script options.`);
+        return sendDialogueFailure(`Selected OpenRouter model (${selectedModelName}) did not return usable scripts. Try another model or try again in a moment.`);
       }
     }
 
-    if (selectedProvider === 'auto' && (process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY)) {
-      return sendLocalDialogueScripts('Free dialogue models are temporarily unavailable, so Wiggly used local script options.');
-    }
-
     if (selectedProvider === 'gemini' && selectedModelName !== GEMINI_DIALOGUE_MODEL) {
-      return sendLocalDialogueScripts(`Selected Gemini model (${selectedModelName}) is not configured, so Wiggly used local script options.`);
+      return sendDialogueFailure(`Selected Gemini model (${selectedModelName}) is not configured for dialogue scripts.`);
     }
 
     if (selectedProvider === 'gemini' || selectedProvider === 'auto') {
       const key = process.env.GEMINI_API_KEY;
-      if (!key) {
+      if (!key || isDisabled(process.env.GEMINI_ENABLED)) {
         console.warn('Generate dialogue scripts using provider fallback: GEMINI_API_KEY is not set.');
-        return sendLocalDialogueScripts('AI script generation is not configured, so Wiggly used local script options.');
+        return sendDialogueFailure('AI script generation is not configured.');
       }
 
       const ai = new GoogleGenAI({ apiKey: key });
@@ -3107,38 +3590,33 @@ app.post('/api/generate-dialogue-scripts', aiGenerationLimiter, async (req, res)
       }
 
       return res.json({
-        scripts: fillDialogueScripts(scripts, requestedCount, creativeBrief),
+        scripts,
         provider: 'gemini',
         model: GEMINI_DIALOGUE_MODEL,
         selectedModel,
       });
     }
 
-    return sendLocalDialogueScripts('AI script generation is not configured, so Wiggly used local script options.');
+    return sendDialogueFailure('AI script generation is not configured.');
   } catch (error: any) {
     console.error("Generate dialogue scripts error:", error);
     const status = Number(error?.status || error?.code || 0);
-    const providerUnavailable = status === 403 || status === 429 || /timed out/i.test(String(error?.message || ''));
+    const providerUnavailable = status === 403 || status === 429 || status === 503 || /timed out|UNAVAILABLE|high demand/i.test(String(error?.message || ''));
     if (providerUnavailable) {
-      return sendLocalDialogueScripts('AI script generation is temporarily unavailable, so Wiggly used local script options.');
+      return sendDialogueFailure('AI script generation is temporarily unavailable. Try again in a moment.');
     }
     sendServerError(res, 'Error generating dialogue scripts.');
   }
 });
 
-app.post('/api/generate-dialogue-audio', aiGenerationLimiter, async (req, res) => {
+app.post('/api/generate-dialogue-audio', aiGenerationLimiter, billShield('dialogueAudio', 'TTS_ENABLED'), async (req, res) => {
   try {
     const { script } = req.body;
 
-    const key = process.env.GEMINI_API_KEY;
-    if (!key) {
-      throw new Error("GEMINI_API_KEY is not set.");
-    }
     if (!script?.lines?.length) {
       return res.status(400).json({ error: 'No script lines provided.' });
     }
 
-    const ai = new GoogleGenAI({ apiKey: key });
     const speakers = Array.from(new Set(script.lines.map((line: any) => String(line.speaker || 'Speaker').trim()).filter(Boolean))).slice(0, 2) as string[];
     while (speakers.length < 2) speakers.push(`Speaker ${speakers.length + 1}`);
     const cleanedLines = script.lines.map((line: any) => ({
@@ -3146,9 +3624,23 @@ app.post('/api/generate-dialogue-audio', aiGenerationLimiter, async (req, res) =
       text: cleanHumanDialogueText(line.text),
     }));
     const ttsText = `Read this as a natural, subtle, two-person conversation for a Meta ad. Keep it conversational and not salesy. Do not add em dashes, choppy dramatic pauses, forced contrast phrasing, or robotic cadence.\n\n${cleanedLines.map((line: any) => `${line.speaker}: [${line.tone || 'natural'}] ${line.text}`).join('\n')}`;
+    const baseFilename = `${(script.title || 'conversation-ad').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'conversation-ad'}`;
 
+    const key = process.env.GEMINI_API_KEY;
+    if (!key || isDisabled(process.env.GEMINI_ENABLED)) {
+      return res.status(503).json({
+        error: 'Gemini 3.1 Flash TTS is not configured. Add GEMINI_API_KEY and set TTS_ENABLED=true.',
+      });
+    }
+    if ((process.env.TTS_MODEL || PINNED_TTS_MODEL) !== PINNED_TTS_MODEL) {
+      return res.status(503).json({
+        error: `Speech generation is pinned to ${PINNED_TTS_MODEL}. Remove the TTS_MODEL override or set it to ${PINNED_TTS_MODEL}.`,
+      });
+    }
+
+    const ai = new GoogleGenAI({ apiKey: key });
     const response = await ai.models.generateContent({
-      model: 'gemini-3.1-flash-tts-preview',
+      model: PINNED_TTS_MODEL,
       contents: [{ parts: [{ text: ttsText }] }],
       config: {
         responseModalities: ['AUDIO'],
@@ -3191,11 +3683,13 @@ app.post('/api/generate-dialogue-audio', aiGenerationLimiter, async (req, res) =
     res.json({
       audioBase64,
       mimeType: isPcm ? 'audio/wav' : mimeType,
-      filename: `${(script.title || 'conversation-ad').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'conversation-ad'}.wav`,
+      filename: `${baseFilename}.wav`,
+      provider: 'gemini',
+      model: PINNED_TTS_MODEL,
     });
   } catch (error: any) {
     console.error("Generate dialogue audio error:", error);
-    sendServerError(res, 'Error generating dialogue audio.');
+    sendServerError(res, 'Error generating dialogue audio.', error);
   }
 });
 

@@ -6,7 +6,7 @@ import { PropertiesPanel } from './components/PropertiesPanel';
 import { CreateFlow, type GeneratedAdVariation } from './components/CreateFlow';
 import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList, ArrowRight, Wand2, PhoneCall, Link2, ExternalLink, Copy, Heart, MessageCircle, Send, Bookmark } from 'lucide-react';
 import Papa from 'papaparse';
-import { DEFAULT_ELEMENTS, useEditorStore, type AdElement } from './store';
+import { DEFAULT_ELEMENTS, useEditorStore, type AdElement, type Caption } from './store';
 import { getVisualizerBarCount, getVisualizerBars, normalizeVisualizerType } from './lib/visualizer';
 import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
@@ -18,10 +18,12 @@ import { PhoneCallSimulator } from './components/PhoneCallSimulator';
 import { formatUsPhoneNumber } from './lib/phone-call';
 import { FIXED_AD_BACKGROUND_COLOR } from './lib/style-archetypes';
 import { InteractiveTutorial, WIGGLY_TUTORIAL_EVENT, WIGGLY_TUTORIAL_SEEN_KEY, emitTutorialEvent } from './components/InteractiveTutorial';
-import { createShareSlug, getHostedSharePageBySlug, saveHostedSharePage, type SharePageRecord } from './lib/share-pages';
+import { getHostedSharePageBySlug, type SharePageRecord } from './lib/share-pages';
 import { explainVoiceVisualizerPreset, getVoiceVisualizerPreset, VOICE_VISUALIZER_PRESET, type VoiceVisualizerPresetDecision } from './lib/visualizer-presets';
 import { pickVisibleColorOnLight } from './lib/color-contrast';
-import type { BrandBrain } from './lib/prompts/brand-brain';
+import { ShareAdPage } from './routes/ShareAdPage';
+import type { BrandBrain, BrandReceipts } from './lib/prompts/brand-brain';
+import { useShareLink } from './features/share/useShareLink';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -33,6 +35,12 @@ const DEFAULT_AUDIO_URL = '/ai-dental-receptionist-audio.mp3';
 const DEFAULT_AUDIO_NAME = 'AI Dental Receptionist';
 const DEFAULT_PHONE_CALL_AUDIO_URL = '/default-phone-call-audio.m4a';
 const DEFAULT_PHONE_CALL_AUDIO_NAME = 'Call Recording';
+type AudioIntent = 'default' | 'uploaded' | 'generated';
+type CurrentAudioMemory = {
+  id?: string;
+  builtIn?: boolean;
+  brandKey?: string | null;
+};
 const SOCIAL_POSTING_ENABLED = false;
 const BACKGROUND_COLOR_FAMILIES = [
   { hue: 158, saturation: [70, 95], lightness: [45, 96] },
@@ -82,12 +90,19 @@ const isLikelyFaviconAsset = (value: string | null | undefined) => {
     || /\.(?:ico)(?:$|[?#])/i.test(raw);
 };
 
+const isLikelyLogoAsset = (value: string | null | undefined) => {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw || isDataImage(raw) || isLikelyFaviconAsset(raw)) return false;
+  if (/(?:avatar|author|headshot|portrait|profile|team|founder|person|people|user|testimonial|speaker|staff)/i.test(raw)) return false;
+  return /(?:logo|brand|wordmark|logomark|mark|horizontal|lockup)/i.test(raw);
+};
+
 const pickCanvasBrandLogo = (brandBrain: BrandBrain) => {
   const candidates = [
     brandBrain.brandLogoUrl,
     brandBrain.brandAssets?.images.logo,
   ];
-  return candidates.find((candidate) => candidate && !isLikelyFaviconAsset(candidate)) || null;
+  return candidates.find(isLikelyLogoAsset) || null;
 };
 
 const escapeSvgText = (value: string) => value
@@ -256,6 +271,7 @@ type CreativeBrief = {
   differentiator: string;
   cta: string;
   reference: string;
+  receipts: BrandReceipts;
 };
 
 type DialogueLine = {
@@ -293,6 +309,36 @@ const POSTIZ_CHANNEL_LABELS: Record<string, string> = {
   'linkedin-page': 'LinkedIn',
   threads: 'Threads',
 };
+const GEMINI_3_1_FLASH_TTS_COST = {
+  inputPerMillionUsd: 1,
+  outputPerMillionUsd: 20,
+  model: 'gemini-3.1-flash-tts-preview',
+};
+
+const estimateDialogueLineTokens = (text: string) => {
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words * 1.25));
+};
+
+const estimateDialogueScriptCostUsd = (script: DialogueScript | null) => {
+  if (!script) return 0;
+  const scriptText = script.lines.map((line) => `${line.speaker}: ${line.text}`).join(' ').trim();
+  if (!scriptText) return 0;
+  const estimatedInputTokens = estimateDialogueLineTokens(scriptText);
+  const estimatedOutputTokens = estimateDialogueLineTokens(scriptText);
+  return (
+    (estimatedInputTokens * GEMINI_3_1_FLASH_TTS_COST.inputPerMillionUsd)
+    + (estimatedOutputTokens * GEMINI_3_1_FLASH_TTS_COST.outputPerMillionUsd)
+  ) / 1_000_000;
+};
+
+const formatDialogueScriptCost = (script: DialogueScript | null) => {
+  const estimatedCostUsd = estimateDialogueScriptCostUsd(script);
+  const estimatedCents = estimatedCostUsd * 100;
+  if (!Number.isFinite(estimatedCents) || estimatedCents <= 0) return '<0.01¢';
+  if (estimatedCents < 0.01) return '<0.01¢';
+  return `${estimatedCents.toFixed(2)}¢`;
+};
 
 const cloneDialogueScript = (script: DialogueScript): DialogueScript => ({
   title: script.title,
@@ -316,15 +362,15 @@ const cleanDialogueScriptForVoiceover = (script: DialogueScript): DialogueScript
   })),
 });
 
-const normalizeShareUrl = (value: string) => {
-  const trimmed = value.trim();
-  if (!trimmed) return '';
-  try {
-    return new URL(trimmed.includes('://') ? trimmed : `https://${trimmed}`).href;
-  } catch {
-    return trimmed;
-  }
-};
+const cleanCaptionText = (text: string) => text
+  .replace(/\bchat\s*gp\b/gi, 'ChatGPT')
+  .replace(/\bchat\s*gpt\b/gi, 'ChatGPT')
+  .replace(/\bchatgp\b/gi, 'ChatGPT');
+
+const cleanCaptions = (captions: Caption[]) => captions.map((caption) => ({
+  ...caption,
+  text: cleanCaptionText(caption.text),
+}));
 
 const EMPTY_CREATIVE_BRIEF: CreativeBrief = {
   offer: 'AI front-desk employees that answer calls, recover missed calls, and book dental patients automatically.',
@@ -339,7 +385,20 @@ const EMPTY_CREATIVE_BRIEF: CreativeBrief = {
 They need to stop losing the ones already calling.
 
 3 missed calls a day could equal thousands in lost treatment revenue every month.`,
+  receipts: {
+    specificClaims: [],
+    buyerMoments: [],
+    exactSiteLanguage: [],
+    namedProof: [],
+  },
 };
+
+const normalizeCreativeBriefReceipts = (receipts?: Partial<BrandReceipts>): BrandReceipts => ({
+  specificClaims: Array.isArray(receipts?.specificClaims) ? receipts.specificClaims.slice(0, 8) : [],
+  buyerMoments: Array.isArray(receipts?.buyerMoments) ? receipts.buyerMoments.slice(0, 8) : [],
+  exactSiteLanguage: Array.isArray(receipts?.exactSiteLanguage) ? receipts.exactSiteLanguage.slice(0, 8) : [],
+  namedProof: Array.isArray(receipts?.namedProof) ? receipts.namedProof.slice(0, 8) : [],
+});
 
 const formatBriefReference = (brandBrain: BrandBrain) => [
   brandBrain.websiteUrl,
@@ -372,10 +431,13 @@ const buildCreativeBriefFromBrandBrain = (brandBrain: BrandBrain): CreativeBrief
   differentiator: brandBrain.differentiator,
   cta: inferCreativeBriefCta(brandBrain),
   reference: formatBriefReference(brandBrain),
+  receipts: normalizeCreativeBriefReceipts(brandBrain.receipts),
 });
 
+type CreativeBriefTextKey = Exclude<keyof CreativeBrief, 'receipts'>;
+
 const CREATIVE_BRIEF_FIELDS: Array<{
-  key: keyof CreativeBrief;
+  key: CreativeBriefTextKey;
   question: string;
   placeholder: string;
   optional?: boolean;
@@ -452,6 +514,9 @@ type SavedTemplate = {
     audioUrl: string | null;
     audioFileName: string;
     audioAssetId?: string | null;
+    audioIntent?: AudioIntent;
+    audioBrandKey?: string | null;
+    createBrandKey?: string | null;
   };
 };
 
@@ -470,11 +535,19 @@ type AudioFlyoutView = 'choices' | 'make' | 'library';
 type AdHistoryItem = SavedTemplate & StoredAdSnapshot;
 
 const getAppRoute = (): { route: AppRoute; shareSlug: string | null } => {
+  const host = window.location.hostname;
+  const shouldForceCreateRoute = host === 'wiggly.agentenamel.com' || host === 'www.wiggly.agentenamel.com';
   const match = window.location.pathname.match(/^\/s\/([^/?#]+)/);
   if (match) return { route: 'share', shareSlug: decodeURIComponent(match[1]) };
+  if (shouldForceCreateRoute && window.location.pathname === '/') return { route: 'create', shareSlug: null };
   if (window.location.pathname === '/create') return { route: 'create', shareSlug: null };
   if (window.location.pathname === '/builder') return { route: 'builder', shareSlug: null };
   return { route: 'home', shareSlug: null };
+};
+
+const isCreateHomepageHost = () => {
+  const host = window.location.hostname;
+  return host === 'wiggly.agentenamel.com' || host === 'www.wiggly.agentenamel.com';
 };
 
 const useIsMobileViewport = () => {
@@ -592,195 +665,9 @@ const HomeAdCard = ({
       ))}
     </div>
     <div className="absolute bottom-[24%] left-1/2 h-2 w-24 -translate-x-1/2 rounded-full" style={{ backgroundColor: accent }} />
-    <div className="absolute bottom-5 left-5 right-5 h-10 rounded-full bg-white/90" />
+  <div className="absolute bottom-5 left-5 right-5 h-10 rounded-full bg-white/90" />
   </div>
 );
-
-const ShareAdPage = ({
-  record,
-  loading,
-  onOpenBuilder,
-}: {
-  record: SharePageRecord | null;
-  loading: boolean;
-  onOpenBuilder: () => void;
-}) => {
-  const [videoUrl, setVideoUrl] = useState('');
-  const [videoReady, setVideoReady] = useState(false);
-  const [videoHasSound, setVideoHasSound] = useState(false);
-  const [videoPlaying, setVideoPlaying] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-
-  useEffect(() => {
-    setVideoReady(false);
-    setVideoHasSound(false);
-    setVideoPlaying(false);
-    if (!record) {
-      setVideoUrl('');
-      return;
-    }
-    if (record.videoUrl) {
-      setVideoUrl(record.videoUrl);
-      return;
-    }
-    if (!record.videoBlob || record.videoBlob.size === 0) {
-      setVideoUrl('');
-      return;
-    }
-    const nextUrl = URL.createObjectURL(record.videoBlob);
-    setVideoUrl(nextUrl);
-    return () => URL.revokeObjectURL(nextUrl);
-  }, [record]);
-
-  const playWithSound = async () => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.muted = false;
-    setVideoHasSound(true);
-    try {
-      await video.play();
-      setVideoPlaying(true);
-    } catch {
-      // Browser policies may still block playback; the native click target remains.
-    }
-  };
-
-  const stopShareVideo = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.pause();
-    video.currentTime = 0;
-    video.muted = true;
-    setVideoPlaying(false);
-    setVideoHasSound(false);
-  };
-
-  if (loading) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F7F4EA] px-6">
-        <div className="rounded-3xl border border-slate-200 bg-white px-6 py-5 text-sm font-black text-slate-700 shadow-xl">Loading Wiggly ad...</div>
-      </main>
-    );
-  }
-
-  if (!record) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F7F4EA] px-6">
-        <div className="max-w-md rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-xl">
-          <p className="text-2xl font-black text-slate-950">This ad link is not on this device.</p>
-          <p className="mt-3 text-sm font-semibold leading-6 text-slate-500">This first share-page prototype stores videos locally. Cloud links come next.</p>
-          <button type="button" onClick={onOpenBuilder} className="mt-5 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white">
-            Open Wiggly
-          </button>
-        </div>
-      </main>
-    );
-  }
-
-  return (
-    <main className="min-h-screen bg-[#F7F4EA] px-4 py-8 text-slate-950 sm:px-8">
-      <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[minmax(280px,420px)_minmax(320px,1fr)] lg:items-center lg:justify-center">
-        <section className="mx-auto w-full max-w-[420px]">
-          <PlatformFrame
-            platform={record.platform || 'instagram-feed'}
-            theme="dark"
-            brandName={record.businessName || record.brandName || 'Wiggly'}
-            brandLogo="/wiggly-logo.png"
-            caption={record.subhead || record.headline}
-            metaCta={record.ctaText || 'Learn More'}
-          >
-            <div className="relative h-full w-full bg-[#FAFAF7]">
-              {videoUrl ? (
-                <>
-                  <video
-                    ref={videoRef}
-                    src={videoUrl}
-                    autoPlay
-                    muted={!videoHasSound}
-                    loop
-                    playsInline
-                    preload="metadata"
-                    onLoadedData={() => setVideoReady(true)}
-                    onPlay={() => setVideoPlaying(true)}
-                    onPause={() => setVideoPlaying(false)}
-                    className={`h-full w-full bg-[#FAFAF7] object-cover transition-opacity duration-300 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
-                  />
-                  {!videoReady && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#FAFAF7] text-sm font-black text-slate-500">Loading video...</div>
-                  )}
-                  {!videoHasSound && videoReady && (
-                    <button
-                      type="button"
-                      onClick={playWithSound}
-                      className="absolute inset-x-5 bottom-5 z-40 flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800"
-                    >
-                      Play with sound
-                    </button>
-                  )}
-                  {videoHasSound && videoReady && (
-                    <button
-                      type="button"
-                      onClick={stopShareVideo}
-                      className="absolute bottom-5 right-5 z-40 flex h-11 items-center justify-center rounded-full bg-slate-950 px-5 text-sm font-black text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800"
-                    >
-                      {videoPlaying ? 'Stop' : 'Replay'}
-                    </button>
-                  )}
-                </>
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-slate-100 text-sm font-black text-slate-500">Video unavailable</div>
-              )}
-            </div>
-          </PlatformFrame>
-        </section>
-
-        <section className="mx-auto w-full max-w-[440px] space-y-5">
-          <div
-            className="overflow-hidden rounded-[2rem] border border-slate-200 p-6 shadow-xl shadow-slate-950/10"
-            style={{ backgroundColor: record.backgroundColor || '#FAFAF7' }}
-          >
-            <div className="mb-10 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <img src="/wiggly-logo.png" alt="" className="h-9 w-9 rounded-xl bg-slate-950 object-contain p-1.5" />
-                <div>
-                  <p className="text-sm font-black text-slate-950">{record.businessName || record.brandName}</p>
-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">Wiggly Ad Page</p>
-                </div>
-              </div>
-              <span className="h-3 w-16 rounded-full" style={{ backgroundColor: record.accentColor || '#00D6B8' }} />
-            </div>
-            <h1 className="text-3xl font-black leading-[0.98] tracking-normal text-slate-950 sm:text-4xl">{record.headline}</h1>
-            {record.subhead && <p className="mt-5 text-base font-semibold leading-7 text-slate-600">{record.subhead}</p>}
-          </div>
-
-          {record.ctaUrl ? (
-            <a
-              href={record.ctaUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 py-4 text-base font-black text-white shadow-xl shadow-slate-950/15 transition hover:bg-slate-800"
-            >
-              {record.ctaText || 'Learn More'}
-              <ExternalLink className="h-5 w-5" />
-            </a>
-          ) : (
-            <div className="rounded-2xl border border-slate-200 bg-white px-6 py-4 text-center text-sm font-black text-slate-500">
-              {record.ctaText || 'Learn More'}
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={onOpenBuilder}
-            className="text-sm font-black text-slate-500 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-950"
-          >
-            Made with Wiggly
-          </button>
-        </section>
-      </div>
-    </main>
-  );
-};
 
 const normalizeHexColor = (value: string) => {
   const trimmed = value.trim();
@@ -864,6 +751,12 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single');
   const [creativeMode, setCreativeMode] = useState<CreativeMode>('visualizer');
   
+  useEffect(() => {
+    if (appRoute === 'create' && isCreateHomepageHost() && window.location.pathname === '/') {
+      window.history.replaceState(null, '', '/create');
+    }
+  }, [appRoute]);
+
   // Single Template State
   const [visualizerColor, setVisualizerColor] = useState("#00d6b8");
   const [accentColor, setAccentColor] = useState("#4f46e5");
@@ -874,7 +767,7 @@ export default function App() {
   const [platformTheme, setPlatformTheme] = useState<'light' | 'dark'>('dark');
   const [brandName, setBrandName] = useState('Wiggly');
   const [brandLogo, setBrandLogo] = useState<string | null>(null);
-  const [simulatedCaption, setSimulatedCaption] = useState('Check out our new AI receptionist feature! Never miss a lead and keep your customers happy.');
+  const [simulatedCaption, setSimulatedCaption] = useState('');
   const [autoCta, setAutoCta] = useState('Learn More');
   const [ctaUrl, setCtaUrl] = useState('https://agentenamel.com');
   
@@ -890,9 +783,36 @@ export default function App() {
   const [introCropOpen, setIntroCropOpen] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(DEFAULT_AUDIO_URL);
   const [audioFileName, setAudioFileName] = useState<string>(DEFAULT_AUDIO_NAME);
+  const [audioIntent, setAudioIntent] = useState<AudioIntent>('default');
+  const [audioBrandKey, setAudioBrandKey] = useState<string | null>(null);
+  const [activeCreateBrandKey, setActiveCreateBrandKey] = useState<string | null>(null);
   const [currentAudioAssetId, setCurrentAudioAssetId] = useState<string | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('5551234567');
   const [phoneRingDuration, setPhoneRingDuration] = useState<RingDuration>(0);
+  const generatedAudioMatchesCreateBrand = Boolean(
+    audioUrl
+      && audioIntent === 'generated'
+      && (
+        activeCreateBrandKey
+          ? audioBrandKey === activeCreateBrandKey
+          : true
+      )
+  );
+  const hasPlayableCreateAudio = Boolean(
+    audioUrl
+      && (audioIntent === 'uploaded' || generatedAudioMatchesCreateBrand)
+  );
+  const createAudioUrl = hasPlayableCreateAudio ? audioUrl : null;
+
+  const clearCreateAudioForNewBrand = () => {
+    setGeneratedDialogueAudioUrl(null);
+    useEditorStore.getState().setCaptions([]);
+    setAudioUrl(null);
+    setAudioFileName('');
+    setAudioIntent('default');
+    setAudioBrandKey(null);
+    setCurrentAudioAssetId(null);
+  };
 
   const refreshBackgroundColor = () => {
     setBgColor((currentColor) => getFreshBackgroundColor(currentColor));
@@ -907,6 +827,7 @@ export default function App() {
   const [rendering, setRendering] = useState(false);
   const [renderProgress, setRenderProgress] = useState(0);
   const [exportPhase, setExportPhase] = useState<ExportPhase>('recording');
+  const [exportErrorMessage, setExportErrorMessage] = useState('');
   const [exportDownload, setExportDownload] = useState<ReadyExport | null>(null);
   const [exportLaunchAnimation, setExportLaunchAnimation] = useState(false);
   const [renderDurationCap, setRenderDurationCap] = useState<RenderDurationCap>('full');
@@ -972,6 +893,7 @@ export default function App() {
   const [conversationWizardOpen, setConversationWizardOpen] = useState(false);
   const [conversationWizardStep, setConversationWizardStep] = useState<ConversationWizardStep>('brief');
   const [selectedDialogueScriptIndex, setSelectedDialogueScriptIndex] = useState(0);
+  const [lastDialogueScriptBriefKey, setLastDialogueScriptBriefKey] = useState('');
   const [draftDialogueScript, setDraftDialogueScript] = useState<DialogueScript | null>(null);
   const [previewingDialogueKey, setPreviewingDialogueKey] = useState<string | null>(null);
   const [isGeneratingDialogueScripts, setIsGeneratingDialogueScripts] = useState(false);
@@ -981,7 +903,7 @@ export default function App() {
   const [audioFlyoutOpen, setAudioFlyoutOpen] = useState(false);
   const [audioFlyoutView, setAudioFlyoutView] = useState<AudioFlyoutView>('choices');
 
-  const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, setElements, deselectAll, commitHistory, setBusinessContext, elements } = useEditorStore();
+  const { showSafeZones, setShowSafeZones, showRedGuides, setShowRedGuides, addElement, setElements, deselectAll, commitHistory, setBusinessContext, elements, captions } = useEditorStore();
   const hasComponent = (role: NonNullable<typeof elements[number]['componentRole']>) => elements.some((element) => element.componentRole === role);
   const headlineCount = elements.filter((element) => element.componentRole === 'headline').length;
   const subheadlineCount = elements.filter((element) => element.componentRole === 'subheadline').length;
@@ -1028,11 +950,12 @@ export default function App() {
 
   const [isTranscribing, setIsTranscribing] = useState(false);
 
-  const rememberCurrentAudio = (item: Pick<AudioLibraryItem, 'id' | 'builtIn'>) => {
+  const rememberCurrentAudio = (item: Pick<AudioLibraryItem, 'id' | 'builtIn'> & { brandKey?: string | null }) => {
     try {
       localStorage.setItem(CURRENT_AUDIO_STORAGE_KEY, JSON.stringify({
         id: item.id,
         builtIn: Boolean(item.builtIn),
+        brandKey: item.brandKey || null,
       }));
     } catch {
       // Ignore private browsing storage failures.
@@ -1073,6 +996,8 @@ export default function App() {
       setGeneratedDialogueAudioUrl(null);
       setAudioUrl(DEFAULT_PHONE_CALL_AUDIO_URL);
       setAudioFileName(DEFAULT_PHONE_CALL_AUDIO_NAME);
+      setAudioIntent('default');
+      setAudioBrandKey(null);
       rememberCurrentAudio({ id: 'built-in-phone-call-recording-audio', builtIn: true });
       setPhoneRingDuration(0);
     }
@@ -1106,11 +1031,13 @@ export default function App() {
         try {
           const saved = localStorage.getItem(CURRENT_AUDIO_STORAGE_KEY);
           if (!saved) return;
-          const parsed = JSON.parse(saved) as { id?: string; builtIn?: boolean };
+          const parsed = JSON.parse(saved) as CurrentAudioMemory;
           if (parsed.id === 'built-in-ai-dental-receptionist-audio') {
             setGeneratedDialogueAudioUrl(null);
             setAudioUrl(DEFAULT_AUDIO_URL);
             setAudioFileName(DEFAULT_AUDIO_NAME);
+            setAudioIntent('default');
+            setAudioBrandKey(null);
             setCurrentAudioAssetId(null);
             return;
           }
@@ -1118,6 +1045,8 @@ export default function App() {
             setGeneratedDialogueAudioUrl(null);
             setAudioUrl(DEFAULT_PHONE_CALL_AUDIO_URL);
             setAudioFileName(DEFAULT_PHONE_CALL_AUDIO_NAME);
+            setAudioIntent('default');
+            setAudioBrandKey(null);
             setCurrentAudioAssetId(null);
             return;
           }
@@ -1126,6 +1055,8 @@ export default function App() {
           setGeneratedDialogueAudioUrl(null);
           setAudioUrl(URL.createObjectURL(stored.blob));
           setAudioFileName(stored.name);
+          setAudioIntent(stored.kind === 'generated' ? 'generated' : 'uploaded');
+          setAudioBrandKey(stored.kind === 'generated' ? stored.brandKey || parsed.brandKey || null : null);
           setCurrentAudioAssetId(stored.id);
         } catch (error) {
           console.error('Failed to restore current audio:', error);
@@ -1138,7 +1069,12 @@ export default function App() {
     try {
       const saved = localStorage.getItem(CREATIVE_BRIEF_STORAGE_KEY);
       if (saved) {
-        const parsedBrief = { ...EMPTY_CREATIVE_BRIEF, ...JSON.parse(saved) };
+        const savedBrief = JSON.parse(saved);
+        const parsedBrief = {
+          ...EMPTY_CREATIVE_BRIEF,
+          ...savedBrief,
+          receipts: normalizeCreativeBriefReceipts(savedBrief?.receipts),
+        };
         setCreativeBrief(parsedBrief);
         setBusinessContext(serializeCreativeBrief(parsedBrief));
       }
@@ -1150,18 +1086,28 @@ export default function App() {
   const briefCompletion = CREATIVE_BRIEF_FIELDS.filter(field => !field.optional && creativeBrief[field.key].trim()).length;
   const requiredBriefFields = CREATIVE_BRIEF_FIELDS.filter(field => !field.optional).length;
 
-  const serializeCreativeBrief = (brief: CreativeBrief) => [
-    `[Offer] ${brief.offer}`,
-    `[Buyer] ${brief.buyer}`,
-    `[Pain] ${brief.pain}`,
-    `[Failed Alternatives] ${brief.failedAlternatives}`,
-    `[Promised Result] ${brief.promisedResult}`,
-    `[Differentiator] ${brief.differentiator}`,
-    `[Action] ${brief.cta}`,
-    brief.reference ? `[Reference] ${brief.reference}` : '',
-  ].filter(Boolean).join('\n');
+  const serializeCreativeBrief = (brief: CreativeBrief) => {
+    const receipts = normalizeCreativeBriefReceipts(brief.receipts);
+    const receiptLines = [
+      receipts.specificClaims.length ? `[Receipt: Specific Claims]\n${receipts.specificClaims.map((item) => `- ${item}`).join('\n')}` : '',
+      receipts.buyerMoments.length ? `[Receipt: Buyer Moments]\n${receipts.buyerMoments.map((item) => `- ${item}`).join('\n')}` : '',
+      receipts.exactSiteLanguage.length ? `[Receipt: Exact Site Language]\n${receipts.exactSiteLanguage.map((item) => `- ${item}`).join('\n')}` : '',
+      receipts.namedProof.length ? `[Receipt: Named Proof]\n${receipts.namedProof.map((item) => `- ${item}`).join('\n')}` : '',
+    ];
+    return [
+      `[Offer] ${brief.offer}`,
+      `[Buyer] ${brief.buyer}`,
+      `[Pain] ${brief.pain}`,
+      `[Failed Alternatives] ${brief.failedAlternatives}`,
+      `[Promised Result] ${brief.promisedResult}`,
+      `[Differentiator] ${brief.differentiator}`,
+      `[Action] ${brief.cta}`,
+      brief.reference ? `[Reference] ${brief.reference}` : '',
+      ...receiptLines,
+    ].filter(Boolean).join('\n');
+  };
 
-  const updateCreativeBrief = (key: keyof CreativeBrief, value: string) => {
+  const updateCreativeBrief = (key: CreativeBriefTextKey, value: string) => {
     const nextBrief = { ...creativeBrief, [key]: value };
     setCreativeBrief(nextBrief);
     setBusinessContext(serializeCreativeBrief(nextBrief));
@@ -1197,12 +1143,13 @@ export default function App() {
 
   const createCurrentSnapshot = (nameOverride?: string): SavedTemplate => {
     const name = (nameOverride || templateDraftName || getCurrentDesignTitle()).trim();
+    const snapshotAudioUrl = appRoute === 'create' ? createAudioUrl : audioUrl;
 
     return {
       id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `template-${Date.now()}`,
       name,
       createdAt: Date.now(),
-      audioAnalysis: previewAudioAnalysis,
+      audioAnalysis: snapshotAudioUrl ? previewAudioAnalysis : null,
       elements: JSON.parse(JSON.stringify(useEditorStore.getState().elements)),
       settings: {
         visualizerColor,
@@ -1223,9 +1170,12 @@ export default function App() {
         introDuration,
         introFeedCropY,
         introImageAspect,
-        audioUrl,
-        audioFileName,
-        audioAssetId: currentAudioAssetId,
+        audioUrl: snapshotAudioUrl,
+        audioFileName: snapshotAudioUrl ? audioFileName : '',
+        audioAssetId: snapshotAudioUrl ? currentAudioAssetId : null,
+        audioIntent: snapshotAudioUrl ? audioIntent : 'default',
+        audioBrandKey: snapshotAudioUrl ? audioBrandKey : null,
+        createBrandKey: activeCreateBrandKey,
       },
     };
   };
@@ -1254,6 +1204,7 @@ export default function App() {
 
   const loadTemplate = (template: SavedTemplate | AdHistoryItem) => {
     const hydratedTemplate = hydrateStoredMedia(template);
+    setPlaying(false);
     setElements(JSON.parse(JSON.stringify(hydratedTemplate.elements)));
     deselectAll();
     setVisualizerColor(hydratedTemplate.settings.visualizerColor);
@@ -1276,6 +1227,9 @@ export default function App() {
     setIntroImageAspect(hydratedTemplate.settings.introImageAspect ?? null);
     setAudioUrl(hydratedTemplate.settings.audioUrl);
     setAudioFileName(hydratedTemplate.settings.audioFileName);
+    setAudioIntent(hydratedTemplate.settings.audioIntent ?? (hydratedTemplate.settings.audioUrl ? 'uploaded' : 'default'));
+    setAudioBrandKey(hydratedTemplate.settings.audioBrandKey ?? null);
+    setActiveCreateBrandKey(hydratedTemplate.settings.createBrandKey ?? hydratedTemplate.settings.audioBrandKey ?? null);
     setCurrentAudioAssetId(hydratedTemplate.settings.audioAssetId ?? null);
     requestAnimationFrame(() => commitHistory());
   };
@@ -1544,6 +1498,37 @@ export default function App() {
     };
   }, [audioUrl, audioFileName, currentAudioAssetId, creativeMode, primaryVisualizerElement?.visualizerSmoothing, primaryVisualizerElement?.visualizerAttack, primaryVisualizerElement?.visualizerRelease, renderDurationCap]);
 
+  const getRemotionUploadExtension = (field: string, url: string, blob: Blob) => {
+    const mimeType = (blob.type || (url.startsWith('data:') ? url.slice(5, url.indexOf(';')).toLowerCase() : '')).toLowerCase();
+    if (mimeType.includes('png')) return 'png';
+    if (mimeType.includes('jpeg') || mimeType.includes('jpg')) return 'jpg';
+    if (mimeType.includes('webp')) return 'webp';
+    if (mimeType.includes('gif')) return 'gif';
+    if (mimeType.includes('svg')) return 'svg';
+    if (mimeType.includes('avif')) return 'avif';
+    if (mimeType.includes('mp4')) return field === 'audio' ? 'm4a' : 'mp4';
+    if (mimeType.includes('quicktime')) return 'mov';
+    if (mimeType.includes('webm')) return 'webm';
+    if (mimeType.includes('mpeg') || mimeType.includes('mp3')) return 'mp3';
+    if (mimeType.includes('wav')) return 'wav';
+    if (mimeType.includes('aac')) return 'aac';
+    if (mimeType.includes('ogg')) return 'ogg';
+
+    try {
+      const sourceExtension = new URL(url, window.location.origin).pathname.match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
+      if (sourceExtension && ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg', 'avif', 'mp4', 'mov', 'webm', 'mp3', 'wav', 'm4a', 'aac', 'ogg'].includes(sourceExtension)) {
+        return sourceExtension === 'jpeg' ? 'jpg' : sourceExtension;
+      }
+    } catch {
+      // Blob URLs and a few browser-generated URLs have no useful path.
+    }
+
+    if (field === 'introImage' || field.startsWith('elementImage:')) return 'png';
+    if (field === 'bgMedia') return 'mp4';
+    if (field === 'audio') return 'mp3';
+    return 'bin';
+  };
+
   const appendMediaForRemotion = async (
     formData: FormData,
     field: string,
@@ -1563,11 +1548,7 @@ export default function App() {
     if (options?.removeWhite && blob.type.startsWith('image/')) {
       blob = await removeWhiteFromImageBlob(blob);
     }
-    const extension = blob.type.includes('png') ? 'png'
-      : blob.type.includes('jpeg') || blob.type.includes('jpg') ? 'jpg'
-      : blob.type.includes('mp4') ? 'mp4'
-      : blob.type.includes('mpeg') ? 'mp3'
-      : 'bin';
+    const extension = getRemotionUploadExtension(field, url, blob);
     formData.append(field, blob, `${field.replace(/[^a-zA-Z0-9_-]/g, '-')}.${extension}`);
     applyUrl('');
   };
@@ -1608,7 +1589,9 @@ export default function App() {
   };
 
   const createRemotionSnapshot = async (snapshot: SavedTemplate): Promise<FormData> => {
-    const audioDuration = await getMediaDurationSeconds(snapshot.settings.audioUrl, 'audio');
+    const audioDuration = snapshot.settings.audioUrl
+      ? await getMediaDurationSeconds(snapshot.settings.audioUrl, 'audio')
+      : 0;
     const bgVideoDuration = snapshot.settings.bgMedia?.type === 'video'
       ? await getMediaDurationSeconds(snapshot.settings.bgMedia.url, 'video')
       : null;
@@ -1616,21 +1599,23 @@ export default function App() {
     const durationSeconds = renderDurationCap === 'full' ? uncappedDuration : Math.min(uncappedDuration, renderDurationCap);
 
     const visualizerElement = snapshot.elements.find(element => element.type === 'visualizer');
-    const audioAnalysis = await getCachedAudioAnalysis(
-      snapshot.settings.audioUrl,
-      durationSeconds,
-      visualizerElement?.visualizerSmoothing ?? 0.8,
-      visualizerElement?.visualizerAttack,
-      visualizerElement?.visualizerRelease,
-      snapshot.audioAnalysis,
-      {
-        assetId: snapshot.settings.audioAssetId,
-        fileName: snapshot.settings.audioFileName,
-      },
-    ).catch((error) => {
-      console.warn('Could not precompute audio analysis for export; server will try fallback analysis:', error);
-      return null;
-    });
+    const audioAnalysis = snapshot.settings.audioUrl
+      ? await getCachedAudioAnalysis(
+        snapshot.settings.audioUrl,
+        durationSeconds,
+        visualizerElement?.visualizerSmoothing ?? 0.8,
+        visualizerElement?.visualizerAttack,
+        visualizerElement?.visualizerRelease,
+        snapshot.audioAnalysis,
+        {
+          assetId: snapshot.settings.audioAssetId,
+          fileName: snapshot.settings.audioFileName,
+        },
+      ).catch((error) => {
+        console.warn('Could not precompute audio analysis for export; server will try fallback analysis:', error);
+        return null;
+      })
+      : null;
     if (audioAnalysis) {
       snapshot.audioAnalysis = audioAnalysis;
     }
@@ -1659,7 +1644,9 @@ export default function App() {
     };
 
     const formData = new FormData();
-    await appendMediaForRemotion(formData, 'audio', remotionSnapshot.settings.audioUrl, url => { remotionSnapshot.settings.audioUrl = url; });
+    if (remotionSnapshot.settings.audioUrl) {
+      await appendMediaForRemotion(formData, 'audio', remotionSnapshot.settings.audioUrl, url => { remotionSnapshot.settings.audioUrl = url; });
+    }
     await appendMediaForRemotion(
       formData,
       'introImage',
@@ -1813,6 +1800,7 @@ export default function App() {
     window.setTimeout(() => setExportLaunchAnimation(false), 650);
     setRendering(true);
     setRenderProgress(0);
+    setExportErrorMessage('');
     setExportPhase('recording');
     savedExportHistoryIdRef.current = null;
     setShareStatus('idle');
@@ -1839,6 +1827,7 @@ export default function App() {
     } catch (error: any) {
       if (remotionAbortController.signal.aborted) return;
       console.error('Phone call export failed:', error);
+      setExportErrorMessage(error instanceof Error ? error.message : 'Phone call export failed.');
       setExportPhase('error');
       setRendering(false);
       exportCancelRef.current = null;
@@ -1916,62 +1905,16 @@ export default function App() {
     saveExportToHistoryOnce(exportDownload.snapshot);
   };
 
-  const getShareMetadataFromSnapshot = (snapshot: SavedTemplate | null) => {
-    const snapshotElements = snapshot?.elements || useEditorStore.getState().elements;
-    const headlineElement = snapshotElements.find(element => element.componentRole === 'headline' || element.type === 'text');
-    const subheadElement = snapshotElements.find(element => element.componentRole === 'subheadline');
-    const ctaElement = snapshotElements.find(element => element.componentRole === 'cta' || element.type === 'button');
-    const headline = stripRichText(headlineElement?.content || snapshot?.name || getCurrentDesignTitle()).trim() || 'Wiggly ad';
-    const subhead = stripRichText(subheadElement?.content || snapshot?.settings.simulatedCaption || simulatedCaption).trim();
-    const normalizedCtaUrl = normalizeShareUrl(snapshot?.settings.ctaUrl || ctaUrl);
-
-    return {
-      headline,
-      subhead,
-      ctaText: stripRichText(ctaElement?.content || snapshot?.settings.autoCta || autoCta).trim() || 'Learn More',
-      ctaUrl: normalizedCtaUrl,
-      businessName: snapshot?.settings.brandName || brandName || 'Wiggly',
-      brandName: snapshot?.settings.brandName || brandName || 'Wiggly',
-      accentColor: snapshot?.settings.accentColor || accentColor,
-      backgroundColor: snapshot?.settings.bgColor || bgColor,
-      platform: snapshot?.settings.platform || platform,
-    };
-  };
-
-  const createShareLink = async () => {
-    if (!exportDownload) return;
-    if (exportDownload.renderVersion !== CURRENT_RENDER_VERSION) {
-      setShareStatus('error');
-      setShareError('This video was made with an older renderer. Make the video again, then create the share link.');
-      return;
-    }
-    setShareStatus('saving');
-    setShareError('');
-    setShareIsLocalPreview(false);
-    try {
-      await ensureValidMp4Blob(exportDownload.blob, 'Ready export');
-      const metadata = getShareMetadataFromSnapshot(exportDownload.snapshot);
-      const record = await saveHostedSharePage({
-        slug: createShareSlug(metadata.headline),
-        videoBlob: exportDownload.blob,
-        videoMimeType: exportDownload.blob.type || 'video/mp4',
-        ...metadata,
-      });
-      const nextUrl = `${window.location.origin}/s/${record.slug}`;
-      setShareUrl(nextUrl);
-      setShareIsLocalPreview(!record.videoUrl);
-      setShareStatus('ready');
-      saveExportToHistoryOnce(exportDownload.snapshot);
-      try {
-        await navigator.clipboard?.writeText(nextUrl);
-      } catch {
-        // Clipboard is a convenience; the link still shows in the UI.
-      }
-    } catch (error: any) {
-      setShareStatus('error');
-      setShareError(error.message || 'Could not create share link.');
-    }
-  };
+  const { createShareLink } = useShareLink({
+    exportDownload,
+    currentRenderVersion: CURRENT_RENDER_VERSION,
+    ensureValidMp4Blob,
+    saveExportToHistoryOnce,
+    setShareStatus,
+    setShareError,
+    setShareIsLocalPreview,
+    setShareUrl,
+  });
 
   const getPostizDraftContent = () => (
     exportDownload?.snapshot?.settings.simulatedCaption?.trim() ||
@@ -2076,7 +2019,13 @@ export default function App() {
     setHistoryItems(nextItems as AdHistoryItem[]);
   };
 
-  const rememberAudioBlob = async (name: string, blob: Blob, source: StoredAudioItem['source'] = 'user-upload') => {
+  const rememberAudioBlob = async (
+    name: string,
+    blob: Blob,
+    source: StoredAudioItem['source'] = 'user-upload',
+    brandKey?: string | null,
+    captions?: Caption[]
+  ) => {
     try {
       const item: StoredAudioItem = {
         id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `audio-${Date.now()}`,
@@ -2086,6 +2035,8 @@ export default function App() {
         mimeType: blob.type || 'audio/mpeg',
         kind: source === 'voice-wizard' ? 'generated' : 'uploaded',
         source,
+        brandKey: source === 'voice-wizard' ? brandKey || null : null,
+        captions: source === 'voice-wizard' && captions ? cleanCaptions(captions) : undefined,
         status: 'ready',
       };
       const nextItems = await saveAudioItem(item);
@@ -2093,7 +2044,7 @@ export default function App() {
       const savedItem = nextItems[0] || null;
       setCurrentAudioAssetId(savedItem?.id ?? null);
       if (savedItem) {
-        rememberCurrentAudio({ id: savedItem.id, builtIn: false });
+        rememberCurrentAudio({ id: savedItem.id, builtIn: false, brandKey: source === 'voice-wizard' ? brandKey || null : null });
       }
       return savedItem;
     } catch (error) {
@@ -2105,13 +2056,36 @@ export default function App() {
   const useAudioItem = (item: AudioLibraryItem) => {
     setGeneratedDialogueAudioUrl(null);
     const nextUrl = item.stored ? URL.createObjectURL(item.stored.blob) : item.url;
-    useEditorStore.getState().setCaptions([]);
+    const selectedAudioBrandKey = item.stored?.kind === 'generated'
+      ? activeCreateBrandKey || item.stored.brandKey || null
+      : null;
+    useEditorStore.getState().setCaptions(item.stored?.captions ? cleanCaptions(item.stored.captions) : []);
     setAudioUrl(nextUrl);
     setAudioFileName(item.name);
+    setAudioIntent(item.stored?.kind === 'generated' ? 'generated' : item.stored ? 'uploaded' : 'default');
+    setAudioBrandKey(selectedAudioBrandKey);
     setCurrentAudioAssetId(item.stored?.id ?? null);
-    rememberCurrentAudio(item);
+    rememberCurrentAudio({
+      ...item,
+      brandKey: selectedAudioBrandKey,
+    });
     setAudioFlyoutOpen(false);
     setAudioFlyoutView('choices');
+  };
+
+  const updateCreateCaptions = (nextCaptions: Caption[]) => {
+    const cleanedCaptions = cleanCaptions(nextCaptions);
+    useEditorStore.getState().setCaptions(cleanedCaptions);
+    if (!currentAudioAssetId) return;
+    const storedAudio = storedAudioItems.find((item) => item.id === currentAudioAssetId);
+    if (!storedAudio) return;
+    const updatedAudio = { ...storedAudio, captions: cleanedCaptions };
+    setStoredAudioItems((items) => items.map((item) => (
+      item.id === currentAudioAssetId ? updatedAudio : item
+    )));
+    void saveAudioItem(updatedAudio)
+      .then((items) => setStoredAudioItems(items))
+      .catch((error) => console.error('Failed to save edited captions:', error));
   };
 
   const deleteStoredAudio = async (audioId: string) => {
@@ -2121,6 +2095,8 @@ export default function App() {
       setGeneratedDialogueAudioUrl(null);
       setAudioUrl(DEFAULT_AUDIO_URL);
       setAudioFileName(DEFAULT_AUDIO_NAME);
+      setAudioIntent('default');
+      setAudioBrandKey(null);
       setCurrentAudioAssetId(null);
       rememberCurrentAudio({ id: 'built-in-ai-dental-receptionist-audio', builtIn: true });
     }
@@ -2156,6 +2132,8 @@ export default function App() {
       useEditorStore.getState().setCaptions([]);
       setAudioUrl(url);
       setAudioFileName(file.name);
+      setAudioIntent('uploaded');
+      setAudioBrandKey(null);
       await rememberAudioBlob(file.name, file, 'user-upload');
     }
   };
@@ -2267,7 +2245,7 @@ export default function App() {
       setDraftDialogueScript(cloneDialogueScript(firstScript));
       setSelectedDialogueScriptIndex(Math.max(0, dialogueScripts.indexOf(firstScript)));
     }
-    setConversationWizardStep(dialogueScripts.length > 0 ? 'scripts' : 'brief');
+    setConversationWizardStep(dialogueScripts.length > 0 || briefCompletion >= requiredBriefFields ? 'scripts' : 'brief');
     setConversationWizardOpen(true);
   };
 
@@ -2318,7 +2296,26 @@ export default function App() {
     });
   };
 
-  const handleGenerateDialogueScripts = async (openEditorAfterGenerate = false) => {
+  const getCreativeBriefCacheKey = () => {
+    const persona = (activePersonaDeck?.customer || 'Dental practice owner').trim().toLowerCase();
+    const payload = {
+      persona,
+      ...creativeBrief,
+    };
+    return JSON.stringify(payload);
+  };
+
+  const handleGenerateDialogueScripts = async (openEditorAfterGenerate = false, force = false) => {
+    const requestKey = getCreativeBriefCacheKey();
+    if (!force && !openEditorAfterGenerate && dialogueScripts.length > 0 && lastDialogueScriptBriefKey === requestKey) {
+      if (openEditorAfterGenerate) {
+        setConversationWizardStep('scripts');
+      } else if (conversationWizardStep === 'brief') {
+        setConversationWizardStep('scripts');
+      }
+      return dialogueScripts;
+    }
+
     try {
       setIsGeneratingDialogueScripts(true);
       const res = await fetch('/api/generate-dialogue-scripts', {
@@ -2339,6 +2336,7 @@ export default function App() {
       const data = await res.json();
       const scripts = Array.isArray(data.scripts) ? data.scripts : [];
       setDialogueScripts(scripts);
+      setLastDialogueScriptBriefKey(requestKey);
       if (scripts[0]) {
         setSelectedDialogueScriptIndex(0);
         setDraftDialogueScript(cloneDialogueScript(scripts[0]));
@@ -2366,8 +2364,20 @@ export default function App() {
       });
 
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText);
+        const rawText = await res.text();
+        let parsed: { error?: string } | null = null;
+        try {
+          parsed = JSON.parse(rawText);
+        } catch {
+          parsed = null;
+        }
+        const parsedError = parsed?.error;
+        const parsedMessage = typeof parsedError === 'string'
+          ? parsedError
+          : parsedError && typeof parsedError === 'object'
+            ? JSON.stringify(parsedError)
+            : rawText;
+        throw new Error(parsedMessage || 'Audio generation failed');
       }
 
       const data = await res.json();
@@ -2379,13 +2389,15 @@ export default function App() {
       const blob = new Blob([bytes], { type: data.mimeType || 'audio/wav' });
       const url = URL.createObjectURL(blob);
       const audioDuration = await getObjectAudioDuration(url);
-      const captions = captionsFromDialogueScript(voiceoverScript, audioDuration);
+      const captions = cleanCaptions(captionsFromDialogueScript(voiceoverScript, audioDuration));
       useEditorStore.getState().setCaptions(captions);
       setGeneratedDialogueAudioUrl(url);
       setAudioUrl(url);
       const filename = data.filename || `${voiceoverScript.title || 'conversation-ad'}.wav`;
       setAudioFileName(filename);
-      await rememberAudioBlob(filename, blob, 'voice-wizard');
+      setAudioIntent('generated');
+      setAudioBrandKey(activeCreateBrandKey);
+      await rememberAudioBlob(filename, blob, 'voice-wizard', activeCreateBrandKey, captions);
       if (captionCount === 0) handleAddCaptions();
       if (visualizerCount === 0) handleAddVisualizer();
       setConversationWizardOpen(false);
@@ -2407,20 +2419,30 @@ export default function App() {
       return;
     }
 
-    if (!audioUrl) {
+    const transcriptionAudioUrl = appRoute === 'create' ? createAudioUrl : audioUrl;
+
+    if (!transcriptionAudioUrl) {
       useEditorStore.getState().setCaptions([]);
       return;
     }
 
-    if (audioUrl === generatedDialogueAudioUrl) {
+    if (currentAudioAssetId) {
+      const currentStoredAudio = storedAudioItems.find((item) => item.id === currentAudioAssetId);
+      if (currentStoredAudio?.captions?.length) {
+        useEditorStore.getState().setCaptions(cleanCaptions(currentStoredAudio.captions));
+        return;
+      }
+    }
+
+    if (transcriptionAudioUrl === generatedDialogueAudioUrl) {
       return;
     }
 
-    const cacheKey = `transcription_${audioUrl}`;
+    const cacheKey = `transcription_${transcriptionAudioUrl}`;
     const cachedCaptions = localStorage.getItem(cacheKey);
     if (cachedCaptions) {
       try {
-        useEditorStore.getState().setCaptions(JSON.parse(cachedCaptions));
+        useEditorStore.getState().setCaptions(cleanCaptions(JSON.parse(cachedCaptions)));
         return;
       } catch(e) {}
     }
@@ -2440,11 +2462,11 @@ export default function App() {
     const transcribeUrl = async () => {
       try {
         setIsTranscribing(true);
-        const audioRes = await fetch(audioUrl);
+        const audioRes = await fetch(transcriptionAudioUrl);
         const audioBlob = await audioRes.blob();
         if (audioBlob.size < 100) return;
         
-        const file = new File([audioBlob], 'audio.mp3', { type: audioBlob.type || inferAudioMimeType(audioUrl) });
+        const file = new File([audioBlob], 'audio.mp3', { type: audioBlob.type || inferAudioMimeType(transcriptionAudioUrl) });
         const formData = new FormData();
         formData.append('audio', file);
         
@@ -2528,9 +2550,10 @@ export default function App() {
           }
         }
         
-        setCaptions(newCaptions);
+        const cleanedCaptions = cleanCaptions(newCaptions);
+        setCaptions(cleanedCaptions);
         try {
-           localStorage.setItem(cacheKey, JSON.stringify(newCaptions));
+           localStorage.setItem(cacheKey, JSON.stringify(cleanedCaptions));
         } catch (e) {
            console.error("Local storage error:", e);
         }
@@ -2542,7 +2565,7 @@ export default function App() {
     };
 
     transcribeUrl();
-  }, [audioUrl, generatedDialogueAudioUrl, creativeMode]);
+  }, [appRoute, audioUrl, createAudioUrl, generatedDialogueAudioUrl, creativeMode, currentAudioAssetId, storedAudioItems]);
 
   const handleAddImageElement = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -2696,6 +2719,9 @@ export default function App() {
   };
 
   const togglePlayback = () => {
+    if (appRoute === 'create' && !hasPlayableCreateAudio) {
+      return;
+    }
     if (!audioUrl) {
       alert(creativeMode === 'phone-call' ? 'Upload voicemail audio first.' : 'Please upload an audio file first.');
       return;
@@ -2721,6 +2747,7 @@ export default function App() {
     window.setTimeout(() => setExportLaunchAnimation(false), 650);
     setRendering(true);
     setRenderProgress(0);
+    setExportErrorMessage('');
     setExportPhase('recording');
     savedExportHistoryIdRef.current = null;
     setShareStatus('idle');
@@ -2752,15 +2779,20 @@ export default function App() {
       const message = error instanceof Error ? error.message : '';
       if (/too many/i.test(message)) {
         console.warn('Remotion export rate-limited:', error);
+        setExportErrorMessage(message || 'Too many video exports. Please wait and try again later.');
         setExportPhase('error');
         setRendering(false);
         setRenderProgress(0);
         exportCancelRef.current = null;
         return;
       }
-      console.warn('Remotion export failed, falling back to browser recorder:', error);
-      setExportPhase('recording');
+      console.error('Remotion export failed:', error);
+      setExportErrorMessage(message || 'Remotion export failed.');
+      setExportPhase('error');
+      setRendering(false);
       setRenderProgress(0);
+      exportCancelRef.current = null;
+      return;
     }
 
     const { width: targetWidth, height: targetHeight } = getExportDimensions(platform);
@@ -3623,6 +3655,21 @@ export default function App() {
     item.stored ? item.id === currentAudioAssetId : !currentAudioAssetId && item.name === audioFileName
   );
 
+  const createSavedVoiceOptions = readyAudioLibraryItems
+    .filter((item) => item.stored)
+    .map((item) => ({
+      id: item.id,
+      name: formatVoiceName(item.name),
+      label: getAudioItemLabel(item),
+      current: isCurrentAudioItem(item),
+    }));
+
+  const useCreateSavedVoice = (voiceId: string) => {
+    const item = readyAudioLibraryItems.find((candidate) => candidate.id === voiceId);
+    if (!item) return;
+    useAudioItem(item);
+  };
+
   const openAudioFlyout = (view: AudioFlyoutView = 'choices') => {
     setAudioFlyoutView(view);
     setAudioFlyoutOpen(true);
@@ -3857,11 +3904,13 @@ export default function App() {
 
   const applyGeneratedAdVariation = (variation: GeneratedAdVariation, brandBrain: BrandBrain, navigateToBuilder = true, resetPlatform = true) => {
     const businessName = brandBrain.businessName || 'Wiggly';
+    const nextBrandKey = brandBrain.websiteUrl || null;
+    const isNewCreateBrand = Boolean(nextBrandKey && nextBrandKey !== activeCreateBrandKey);
     const realCanvasLogo = pickCanvasBrandLogo(brandBrain);
     const appliedCanvasLogo = realCanvasLogo || buildTextLogoDataUrl(businessName);
     const appliedProfileLogo = isDataImage(brandBrain.brandAssets?.images.logo)
       ? brandBrain.brandAssets?.images.logo || null
-      : brandBrain.brandAssets?.images.favicon || brandBrain.brandAssets?.images.logo || null;
+      : brandBrain.brandAssets?.images.favicon || realCanvasLogo || null;
     const appliedVisualizerColor = pickVisibleColorOnLight(
       [variation.visualizerColor],
       variation.archetype.visualizerColor,
@@ -3887,6 +3936,10 @@ This ad headline is: ${variation.headline}`;
     setActiveTab('single');
     setCreativeMode('visualizer');
     if (navigateToBuilder) setPlaying(false);
+    setActiveCreateBrandKey(nextBrandKey);
+    if (audioIntent === 'default' || (audioIntent === 'generated' && audioBrandKey !== nextBrandKey)) {
+      clearCreateAudioForNewBrand();
+    }
     if (resetPlatform) setPlatform('instagram-feed');
     setPlatformTheme('dark');
     setBrandName(businessName);
@@ -3908,7 +3961,11 @@ This ad headline is: ${variation.headline}`;
       setVisualizerColor(appliedVisualizerColor);
       setAccentColor(appliedAccentColor);
       setElements((currentElements) => {
-        const lockedById = new Map(currentElements.filter((element) => element.locked).map((element) => [element.id, element]));
+        const lockedById = new Map(
+          isNewCreateBrand
+            ? []
+            : currentElements.filter((element) => element.locked).map((element) => [element.id, element])
+        );
         return buildConversationAdElements(variation, brandBrain, appliedCanvasLogo).map((element) => lockedById.get(element.id) || element);
       });
       deselectAll();
@@ -3928,7 +3985,7 @@ This ad headline is: ${variation.headline}`;
           styleArchetypeId: variation.archetype.id,
         };
       }
-      if (element.locked) return element;
+      if (element.locked && !isNewCreateBrand) return element;
       if (element.componentRole === 'headline') {
         const headlineWidth = Math.min(320, variation.archetype.headlineTreatment.width);
         return {
@@ -4012,9 +4069,28 @@ This ad headline is: ${variation.headline}`;
   const openSavedCreateDesign = (designId: string) => {
     const template = templates.find((candidate) => candidate.id === designId);
     if (!template) return;
+    setPlaying(false);
     setTemplateLibraryTab('templates');
     loadTemplate(template);
-    enterStudio();
+  };
+
+  const resetCreateCanvasForNewWebsite = () => {
+    setPlaying(false);
+    setActiveCreateBrandKey(null);
+    setBrandName('Your brand');
+    setBrandLogo(null);
+    setSimulatedCaption('Add audio for this ad');
+    setAutoCta('Learn More');
+    setCtaUrl('');
+    setBgColor(FIXED_AD_BACKGROUND_COLOR);
+    setBgMedia(null);
+    setBgShadow(false);
+    setIntroDuration(0);
+    setElements(JSON.parse(JSON.stringify(DEFAULT_ELEMENTS)));
+    deselectAll();
+    if (audioIntent === 'generated' || audioIntent === 'default') {
+      clearCreateAudioForNewBrand();
+    }
   };
 
   useEffect(() => {
@@ -4227,6 +4303,7 @@ This ad headline is: ${variation.headline}`;
                   setShareStatus('idle');
                   setShareUrl('');
                   setShareError('');
+                  setExportErrorMessage('');
                   setExportPhase('recording');
                 }}
                 className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
@@ -4261,7 +4338,7 @@ This ad headline is: ${variation.headline}`;
             {exportDownload
               ? `Ready to save: ${formatBytes(exportDownload.blob.size)} video.`
               : exportPhase === 'error'
-                ? 'Try making the video again. If it repeats, restart the app.'
+                ? exportErrorMessage || 'Try making the video again. If it repeats, restart the app.'
                 : exportPhase === 'converting'
                   ? 'Finishing the video. Keep this tab open.'
                   : 'Making this video. You can keep working while it finishes.'}
@@ -4333,14 +4410,19 @@ This ad headline is: ${variation.headline}`;
       <>
         <CreateFlow
           audioFileName={audioFileName}
-          hasUserAudio={Boolean(audioUrl)}
+          hasUserAudio={hasPlayableCreateAudio}
+          hasPlayableAudio={hasPlayableCreateAudio}
           onAudioUpload={(event) => {
             void handleAudioUpload(event);
             if (event.target) event.target.value = '';
           }}
           onOpenVoiceMaker={handleOpenConversationWizard}
-          audioUrl={audioUrl}
-          audioAnalysis={previewAudioAnalysis}
+          savedVoiceOptions={createSavedVoiceOptions}
+          onUseSavedVoice={useCreateSavedVoice}
+          captions={captions}
+          onUpdateCaptions={updateCreateCaptions}
+          audioUrl={createAudioUrl}
+          audioAnalysis={hasPlayableCreateAudio ? previewAudioAnalysis : null}
           captionsLoading={isTranscribing}
           platform={platform}
           backgroundColor={bgColor}
@@ -4370,6 +4452,7 @@ This ad headline is: ${variation.headline}`;
           onApplyStyleArchetype={applyStyleArchetype}
           onPreviewVariation={(variation, nextBrandBrain) => applyGeneratedAdVariation(variation, nextBrandBrain, false, false)}
           onOpenBuilder={(variation, nextBrandBrain) => applyGeneratedAdVariation(variation, nextBrandBrain, true, false)}
+          onResetCanvasForNewWebsite={resetCreateCanvasForNewWebsite}
           onOpenStudio={enterStudio}
           rendering={rendering}
         />
@@ -4463,7 +4546,7 @@ This ad headline is: ${variation.headline}`;
                       <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">The script should sound like one person has the problem and another person casually points to the solution.</p>
                       <button
                         type="button"
-                        onClick={() => handleGenerateDialogueScripts(false)}
+                        onClick={() => handleGenerateDialogueScripts(false, true)}
                         disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
                         className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                       >
@@ -4486,7 +4569,8 @@ This ad headline is: ${variation.headline}`;
 
                 {conversationWizardStep === 'scripts' && (
                   <div className="grid gap-5 lg:grid-cols-[310px_1fr]">
-                    <div className="space-y-2">
+                    <div className={dialogueScripts.length === 0 ? 'space-y-2 lg:col-span-2' : 'space-y-2'}>
+                      {dialogueScripts.length > 0 && (
                       <div className="mb-3 flex items-center justify-between gap-2">
                         <div>
                           <h3 className="text-sm font-black text-slate-900">Choose an angle</h3>
@@ -4494,22 +4578,28 @@ This ad headline is: ${variation.headline}`;
                         </div>
                         <button
                           type="button"
-                          onClick={() => handleGenerateDialogueScripts(false)}
+                          onClick={() => handleGenerateDialogueScripts(false, true)}
                           disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
                           className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
                         >
                           {isGeneratingDialogueScripts ? 'Writing' : 'More options'}
                         </button>
                       </div>
+                      )}
                       {dialogueScripts.length === 0 ? (
-                        <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-5 text-center">
-                          <p className="text-sm font-bold text-slate-700">No voice scripts yet</p>
+                        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center lg:col-span-2">
+                          <p className="text-2xl font-black leading-tight text-slate-950">Write voice options for this ad</p>
+                          <p className="mt-3 max-w-md text-sm font-semibold leading-6 text-slate-500">
+                            Wiggly will use the business info from the website to write short script options. Pick one, edit it, then make the audio.
+                          </p>
                           <button
                             type="button"
-                            onClick={() => handleGenerateDialogueScripts(false)}
-                            className="mt-3 rounded-lg bg-slate-950 px-4 py-2 text-xs font-black text-white"
+                            onClick={() => handleGenerateDialogueScripts(false, true)}
+                            disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
+                            className="mt-6 flex min-w-56 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 py-4 text-base font-black text-white shadow-xl shadow-slate-950/15 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            Write options
+                            {isGeneratingDialogueScripts ? <Loader2 className="h-5 w-5 animate-spin" /> : <Wand2 className="h-5 w-5" />}
+                            {isGeneratingDialogueScripts ? 'Writing options' : 'Write options'}
                           </button>
                         </div>
                       ) : (
@@ -4558,6 +4648,7 @@ This ad headline is: ${variation.headline}`;
                       )}
                     </div>
 
+                    {dialogueScripts.length > 0 && (
                     <div className="rounded-xl border border-slate-200 bg-white p-4">
                       {draftDialogueScript ? (
                         <>
@@ -4651,6 +4742,7 @@ This ad headline is: ${variation.headline}`;
                         </div>
                       )}
                     </div>
+                    )}
                   </div>
                 )}
 
@@ -4671,6 +4763,9 @@ This ad headline is: ${variation.headline}`;
                     <aside className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-4">
                       <p className="text-xs font-black uppercase tracking-wide text-slate-400">Final check</p>
                       <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">These exact words will become the audio and captions.</p>
+                      <p className="mt-2 rounded-full bg-white px-3 py-1.5 text-xs font-black text-slate-500">
+                        Est. run cost: {formatDialogueScriptCost(draftDialogueScript)} · {GEMINI_3_1_FLASH_TTS_COST.model}
+                      </p>
                       <button
                         type="button"
                         onClick={() => setConversationWizardStep('scripts')}
@@ -4754,7 +4849,7 @@ This ad headline is: ${variation.headline}`;
                 Simple video ads for service businesses
               </div>
               <h1 className="relative text-5xl font-black leading-[0.95] tracking-normal text-slate-950 md:text-7xl">
-                Make video ads without learning video editing.
+                Drop in your website and watch the magic happen.
               </h1>
               <p className="relative mt-6 max-w-lg text-lg font-medium leading-8 text-slate-600">
                 Start with a ready-made design, add your message or voice recording, preview how it looks on Facebook, Instagram, or YouTube, then download the finished ad.
@@ -5777,7 +5872,7 @@ This ad headline is: ${variation.headline}`;
                 theme={platformTheme}
                 brandName={brandName}
                 brandLogo={brandLogo}
-                caption={simulatedCaption}
+                caption={appRoute === 'create' && !hasPlayableCreateAudio ? 'Add audio for this ad' : simulatedCaption}
                 metaCta={autoCta}
               >
                 <CanvasEditor 
@@ -5832,8 +5927,13 @@ This ad headline is: ${variation.headline}`;
                   </button>
                 <button 
                   onClick={togglePlayback}
+                  disabled={!hasPlayableCreateAudio}
                   data-tour="play-button"
-                  className="wiggly-secondary-action flex items-center gap-2 self-start px-4 py-2 text-sm font-semibold"
+                  className={`wiggly-secondary-action flex items-center gap-2 self-start px-4 py-2 text-sm font-semibold ${
+                    !hasPlayableCreateAudio
+                      ? 'cursor-not-allowed opacity-45'
+                      : ''
+                  }`}
                  >
                   {playing ? (
                     <><Square className="w-4 h-4 text-red-400" /> Stop</>
@@ -6192,7 +6292,7 @@ This ad headline is: ${variation.headline}`;
                       <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">The script should sound like one person has the problem and another person casually points to the solution.</p>
                       <button
                         type="button"
-                        onClick={() => handleGenerateDialogueScripts(false)}
+                        onClick={() => handleGenerateDialogueScripts(false, true)}
                         disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
                         className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                       >
@@ -6215,7 +6315,8 @@ This ad headline is: ${variation.headline}`;
 
                 {conversationWizardStep === 'scripts' && (
                   <div className="grid gap-5 lg:grid-cols-[310px_1fr]">
-                    <div className="space-y-2">
+                    <div className={dialogueScripts.length === 0 ? 'space-y-2 lg:col-span-2' : 'space-y-2'}>
+                      {dialogueScripts.length > 0 && (
                       <div className="mb-3 flex items-center justify-between gap-2">
                         <div>
                           <h3 className="text-sm font-black text-slate-900">Choose an angle</h3>
@@ -6223,22 +6324,28 @@ This ad headline is: ${variation.headline}`;
                         </div>
                         <button
                           type="button"
-                          onClick={() => handleGenerateDialogueScripts(false)}
+                            onClick={() => handleGenerateDialogueScripts(false, true)}
                           disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
                           className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
                         >
                           {isGeneratingDialogueScripts ? 'Writing' : 'More options'}
                         </button>
                       </div>
+                      )}
                       {dialogueScripts.length === 0 ? (
-                        <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-5 text-center">
-                          <p className="text-sm font-bold text-slate-700">No voice scripts yet</p>
+                        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center lg:col-span-2">
+                          <p className="text-2xl font-black leading-tight text-slate-950">Write voice options for this ad</p>
+                          <p className="mt-3 max-w-md text-sm font-semibold leading-6 text-slate-500">
+                            Wiggly will use the business info from the website to write short script options. Pick one, edit it, then make the audio.
+                          </p>
                           <button
                             type="button"
-                            onClick={() => handleGenerateDialogueScripts(false)}
-                            className="mt-3 rounded-lg bg-slate-950 px-4 py-2 text-xs font-black text-white"
+                          onClick={() => handleGenerateDialogueScripts(false, true)}
+                            disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
+                            className="mt-6 flex min-w-56 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 py-4 text-base font-black text-white shadow-xl shadow-slate-950/15 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            Write options
+                            {isGeneratingDialogueScripts ? <Loader2 className="h-5 w-5 animate-spin" /> : <Wand2 className="h-5 w-5" />}
+                            {isGeneratingDialogueScripts ? 'Writing options' : 'Write options'}
                           </button>
                         </div>
                       ) : (
@@ -6287,6 +6394,7 @@ This ad headline is: ${variation.headline}`;
                       )}
                     </div>
 
+                    {dialogueScripts.length > 0 && (
                     <div className="rounded-xl border border-slate-200 bg-white p-4">
                       {draftDialogueScript ? (
                         <>
@@ -6380,6 +6488,7 @@ This ad headline is: ${variation.headline}`;
                         </div>
                       )}
                     </div>
+                    )}
                   </div>
                 )}
 
@@ -6407,6 +6516,9 @@ This ad headline is: ${variation.headline}`;
                     <aside className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-4">
                       <p className="text-xs font-black uppercase tracking-wide text-slate-400">Final check</p>
                       <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">These exact words will become the audio and captions.</p>
+                      <p className="mt-2 rounded-full bg-white px-3 py-1.5 text-xs font-black text-slate-500">
+                        Est. run cost: {formatDialogueScriptCost(draftDialogueScript)} · {GEMINI_3_1_FLASH_TTS_COST.model}
+                      </p>
                       <div className="mt-4 rounded-xl bg-white p-3">
                         <p className="text-xs font-black text-slate-400">Lines</p>
                         <p className="mt-1 text-2xl font-black text-slate-950">{draftDialogueScript?.lines.length || 0}</p>

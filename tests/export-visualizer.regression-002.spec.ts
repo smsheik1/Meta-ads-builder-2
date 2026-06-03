@@ -15,3 +15,10 @@ test('browser recorder export uses the shared visualizer renderer', async () => 
   expect(browserRecorderDrawBlock).not.toContain('drawAdvancedVisualizer(');
   expect(browserRecorderDrawBlock).not.toContain('compressVisualizerValue(');
 });
+
+test('local development does not rate-limit video export testing like production', async () => {
+  const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
+
+  expect(serverSource).toContain('limit: isProd ? 120 : 5000');
+  expect(serverSource).toContain('limit: isProd ? 30 : 1000');
+});
