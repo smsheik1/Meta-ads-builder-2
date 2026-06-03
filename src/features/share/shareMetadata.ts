@@ -49,6 +49,13 @@ export const normalizeShareUrl = (value: string) => {
 export const getShareableBrandLogo = (value?: string | null) => {
   const trimmed = value?.trim();
   if (!trimmed || trimmed.startsWith('blob:')) return null;
+  const lowered = trimmed.toLowerCase();
+  if (
+    /(?:^|\/)(?:favicon|apple-touch-icon|mstile|site-icon|android-chrome|icon[-_]\d|icon\.)/i.test(lowered)
+    || /\.(?:ico)(?:$|[?#])/i.test(lowered)
+  ) {
+    return null;
+  }
   return trimmed;
 };
 

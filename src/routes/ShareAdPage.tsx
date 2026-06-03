@@ -43,6 +43,19 @@ const getBrandInitials = (name: string) => {
   return `${words[0][0]}${words[1][0]}`.toUpperCase();
 };
 
+const getShareableBrandLogo = (value?: string | null) => {
+  const trimmed = value?.trim();
+  if (!trimmed || trimmed.startsWith('blob:')) return '';
+  const lowered = trimmed.toLowerCase();
+  if (
+    /(?:^|\/)(?:favicon|apple-touch-icon|mstile|site-icon|android-chrome|icon[-_]\d|icon\.)/i.test(lowered)
+    || /\.(?:ico)(?:$|[?#])/i.test(lowered)
+  ) {
+    return '';
+  }
+  return trimmed;
+};
+
 export const ShareAdPage = ({
   record,
   loading,
@@ -128,7 +141,7 @@ export const ShareAdPage = ({
 
   const sharePlatform = getSharePlatformFromSearch() || record.platform || inferredSharePlatform || 'instagram-feed';
   const shareCtaUrl = normalizeShareUrl(getShareTextFromSearch('u') || record.ctaUrl || '');
-  const shareBrandLogo = getShareTextFromSearch('l') || record.brandLogo || '';
+  const shareBrandLogo = getShareableBrandLogo(getShareTextFromSearch('l') || record.brandLogo);
   const shareBrandName = record.businessName || record.brandName || 'Wiggly';
   const shareBrandInitials = getBrandInitials(shareBrandName);
   const shareHasAudio = getShareTextFromSearch('a') !== '0';
@@ -212,7 +225,7 @@ export const ShareAdPage = ({
                 )}
                 <div>
                   <p className="text-sm font-black text-slate-950">{shareBrandName}</p>
-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">Wiggly Ad Page</p>
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">Sponsored</p>
                 </div>
               </div>
               <span className="h-3 w-16 rounded-full" style={{ backgroundColor: record.accentColor || '#00D6B8' }} />

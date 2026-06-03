@@ -27,12 +27,15 @@ test('share page renders the exported video inside the saved platform overlay', 
   expect(sharePageSource).toContain('brandLogo={shareBrandLogo || null}');
   expect(sharePageSource).toContain('metaCtaUrl={shareCtaUrl}');
   expect(sharePageSource).toContain('caption={record.subhead || record.headline}');
+  expect(sharePageSource).toContain("const shareBrandLogo = getShareableBrandLogo(getShareTextFromSearch('l') || record.brandLogo);");
+  expect(sharePageSource).toContain('Sponsored');
   expect(sharePageSource).toContain('const shareBrandInitials = getBrandInitials(shareBrandName);');
   expect(sharePageSource).toContain('href="/create"');
   expect(sharePageSource).toContain('onLoadedMetadata={(event) => setInferredSharePlatform(inferSharePlatformFromVideo(event.currentTarget.videoWidth, event.currentTarget.videoHeight))}');
   expect(sharePageSource).toContain('object-contain transition-opacity');
   expect(phoneSectionSource).not.toContain('Wiggly Ad Page');
   expect(phoneSectionSource).not.toContain('src="/wiggly-logo.png"');
+  expect(sharePageSource).not.toContain('Wiggly Ad Page');
 });
 
 test('share links keep the selected platform even when the database cannot store it yet', async () => {
@@ -47,6 +50,8 @@ test('share links keep the selected platform even when the database cannot store
   expect(shareMetadataSource).not.toContain('getCurrentDesignTitle');
   expect(shareMetadataSource).not.toContain('|| brandName');
   expect(shareMetadataSource).not.toContain('|| ctaUrl');
+  expect(shareMetadataSource).toContain('favicon');
+  expect(shareMetadataSource).toContain("return null;");
   expect(shareLinkSource).toContain('if (!exportDownload.snapshot) {');
   expect(shareLinkSource).toContain('Make the video again before creating a share link.');
   expect(shareLinkSource).toContain('const shareSearch = new URLSearchParams();');
