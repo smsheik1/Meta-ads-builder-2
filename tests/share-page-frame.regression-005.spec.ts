@@ -31,8 +31,12 @@ test('share page renders the exported video inside the saved platform overlay', 
   expect(sharePageSource).toContain('Sponsored');
   expect(sharePageSource).toContain('const shareBrandInitials = getBrandInitials(shareBrandName);');
   expect(sharePageSource).toContain('href="/create"');
-  expect(sharePageSource).toContain('onLoadedMetadata={(event) => setInferredSharePlatform(inferSharePlatformFromVideo(event.currentTarget.videoWidth, event.currentTarget.videoHeight))}');
+  expect(sharePageSource).toContain('onLoadedMetadata={(event) => {');
+  expect(sharePageSource).toContain('setInferredSharePlatform(inferSharePlatformFromVideo(event.currentTarget.videoWidth, event.currentTarget.videoHeight));');
   expect(sharePageSource).toContain('object-contain transition-opacity');
+  expect(sharePageSource).not.toContain('autoPlay');
+  expect(sharePageSource).toContain('event.currentTarget.currentTime = 0.1;');
+  expect(sharePageSource).toContain('video.currentTime = 0.1;');
   expect(phoneSectionSource).not.toContain('Wiggly Ad Page');
   expect(phoneSectionSource).not.toContain('src="/wiggly-logo.png"');
   expect(sharePageSource).not.toContain('Wiggly Ad Page');

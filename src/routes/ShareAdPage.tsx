@@ -111,7 +111,7 @@ export const ShareAdPage = ({
     const video = videoRef.current;
     if (!video) return;
     video.pause();
-    video.currentTime = 0;
+    video.currentTime = 0.1;
     video.muted = true;
     setVideoPlaying(false);
     setVideoHasSound(false);
@@ -187,12 +187,14 @@ export const ShareAdPage = ({
                   <video
                     ref={videoRef}
                     src={videoUrl}
-                    autoPlay
                     muted={!videoHasSound}
                     loop
                     playsInline
                     preload="metadata"
-                    onLoadedMetadata={(event) => setInferredSharePlatform(inferSharePlatformFromVideo(event.currentTarget.videoWidth, event.currentTarget.videoHeight))}
+                    onLoadedMetadata={(event) => {
+                      setInferredSharePlatform(inferSharePlatformFromVideo(event.currentTarget.videoWidth, event.currentTarget.videoHeight));
+                      event.currentTarget.currentTime = 0.1;
+                    }}
                     onLoadedData={() => setVideoReady(true)}
                     onPlay={() => setVideoPlaying(true)}
                     onPause={() => setVideoPlaying(false)}
