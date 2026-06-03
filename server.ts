@@ -921,6 +921,21 @@ const OPENROUTER_FREE_DIALOGUE_MODELS = [
   'openrouter/auto:free',
 ];
 const DIALOGUE_PROVIDER_TIMEOUT_MS = 12000;
+const GEMINI_DIALOGUE_MODEL = 'gemini-3-flash-preview';
+const DIALOGUE_MODEL_OPTIONS = new Set([
+  'auto',
+  'local',
+  `gemini:${GEMINI_DIALOGUE_MODEL}`,
+  ...GROQ_DIALOGUE_MODELS.map((model) => `groq:${model}`),
+  ...OPENROUTER_FREE_DIALOGUE_MODELS.map((model) => `openrouter:${model}`),
+]);
+const HEADLINE_MODEL_OPTIONS = new Set([
+  'auto',
+  'local',
+  `gemini:${HEADLINE_VARIATION_MODEL}`,
+  ...GROQ_DIALOGUE_MODELS.map((model) => `groq:${model}`),
+  ...OPENROUTER_FREE_DIALOGUE_MODELS.map((model) => `openrouter:${model}`),
+]);
 const BRAND_RESEARCH_CACHE_TTL_MS = 15 * 60 * 1000;
 const BRAND_RESEARCH_CACHE_LIMIT = 100;
 const MAX_RESEARCH_PAGES = 1;
@@ -2101,7 +2116,134 @@ const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<
   return fallbacks.slice(0, count);
 };
 
-const generateHeadlineVariations = async (brandBrain: BrandBrain, count: number) => {
+const normalizeHeadlineModelChoice = (value: unknown) => {
+  const choice = String(value || 'auto').trim();
+  return HEADLINE_MODEL_OPTIONS.has(choice) ? choice : 'auto';
+};
+
+const getHeadlineModelProvider = (choice: string) => {
+  if (choice === 'local') return 'local';
+  if (choice.startsWith('groq:')) return 'groq';
+  if (choice.startsWith('openrouter:')) return 'openrouter';
+  if (choice.startsWith('gemini:')) return 'gemini';
+  return 'auto';
+};
+
+const getHeadlineModelName = (choice: string) => choice.split(':').slice(1).join(':');
+
+const normalizeHeadlineVariations = (value: any) => {
+  const parsed = Array.isArray(value) ? value : value?.variations || [];
+  return Array.isArray(parsed) ? parsed : [];
+};
+
+const generateHeadlineVariationsWithGroq = async (brandBrain: BrandBrain, count: number, modelChoices = GROQ_DIALOGUE_MODELS) => {
+  const key = process.env.GROQ_API_KEY;
+  if (!key) return { variations: [], model: '' };
+  const prompt = buildHeadlineVariationsPrompt({ brandBrain, count });
+
+  for (const model of modelChoices) {
+    let timeout: NodeJS.Timeout | undefined;
+    try {
+      const controller = new AbortController();
+      timeout = setTimeout(() => controller.abort(), HEADLINE_VARIATION_TIMEOUT_MS);
+      const response = await withTimeout(
+        fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'user', content: prompt }],
+            response_format: { type: 'json_object' },
+            temperature: 0.7,
+            max_completion_tokens: 3000,
+          }),
+          signal: controller.signal,
+        }),
+        HEADLINE_VARIATION_TIMEOUT_MS,
+        `Groq headline generation (${model})`,
+      );
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        console.warn('Groq headline model failed:', model, response.status, String(payload?.error?.message || '').slice(0, 180));
+        continue;
+      }
+
+      const text = String(payload?.choices?.[0]?.message?.content || '{"variations":[]}');
+      const variations = normalizeHeadlineVariations(parseJsonResponse(text));
+      if (variations.length) {
+        console.info('Groq headline generation succeeded:', model);
+        return { variations, model };
+      }
+    } catch (error: any) {
+      console.warn('Groq headline generation error:', model, String(error?.message || error).slice(0, 180));
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  }
+
+  return { variations: [], model: '' };
+};
+
+const generateHeadlineVariationsWithOpenRouter = async (brandBrain: BrandBrain, count: number, modelChoices = OPENROUTER_FREE_DIALOGUE_MODELS) => {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) return { variations: [], model: '' };
+  const prompt = buildHeadlineVariationsPrompt({ brandBrain, count });
+
+  for (const model of modelChoices) {
+    if (!model.endsWith(':free')) continue;
+    let timeout: NodeJS.Timeout | undefined;
+    try {
+      const controller = new AbortController();
+      timeout = setTimeout(() => controller.abort(), HEADLINE_VARIATION_TIMEOUT_MS);
+      const response = await withTimeout(
+        fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': process.env.PUBLIC_APP_URL || 'http://localhost:3000',
+            'X-Title': 'Wiggly',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'user', content: prompt }],
+            response_format: { type: 'json_object' },
+            temperature: 0.7,
+            max_tokens: 3000,
+          }),
+          signal: controller.signal,
+        }),
+        HEADLINE_VARIATION_TIMEOUT_MS,
+        `OpenRouter headline generation (${model})`,
+      );
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        console.warn('OpenRouter headline model failed:', model, response.status, String(payload?.error?.message || '').slice(0, 180));
+        continue;
+      }
+
+      const text = String(payload?.choices?.[0]?.message?.content || '{"variations":[]}');
+      const variations = normalizeHeadlineVariations(parseJsonResponse(text));
+      if (variations.length) {
+        console.info('OpenRouter headline generation succeeded:', model);
+        return { variations, model };
+      }
+    } catch (error: any) {
+      console.warn('OpenRouter headline generation error:', model, String(error?.message || error).slice(0, 180));
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  }
+
+  return { variations: [], model: '' };
+};
+
+const generateHeadlineVariationsWithGemini = async (brandBrain: BrandBrain, count: number) => {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY is not set.');
   const ai = new GoogleGenAI({ apiKey: key });
@@ -2113,7 +2255,61 @@ const generateHeadlineVariations = async (brandBrain: BrandBrain, count: number)
     },
   }), HEADLINE_VARIATION_TIMEOUT_MS, 'Headline generation');
   const parsed = parseJsonResponse(response.text || '{"variations": []}');
-  return Array.isArray(parsed) ? parsed : parsed?.variations || [];
+  return {
+    variations: normalizeHeadlineVariations(parsed),
+    model: HEADLINE_VARIATION_MODEL,
+  };
+};
+
+const generateHeadlineVariations = async (brandBrain: BrandBrain, count: number, modelChoice = 'auto') => {
+  const selectedModel = normalizeHeadlineModelChoice(modelChoice);
+  const selectedProvider = getHeadlineModelProvider(selectedModel);
+  const selectedModelName = getHeadlineModelName(selectedModel);
+
+  if (selectedProvider === 'local') {
+    return { variations: [], provider: 'local', model: 'local', selectedModel, fallback: true };
+  }
+
+  if (selectedProvider === 'groq' || selectedProvider === 'auto') {
+    const result = await generateHeadlineVariationsWithGroq(
+      brandBrain,
+      count,
+      selectedProvider === 'groq' ? [selectedModelName] : GROQ_DIALOGUE_MODELS,
+    );
+    if (result.variations.length) {
+      return { variations: result.variations, provider: 'groq-free', model: result.model, selectedModel };
+    }
+    if (selectedProvider === 'groq') {
+      return { variations: [], provider: 'local', model: 'local', selectedModel, fallback: true };
+    }
+  }
+
+  if (selectedProvider === 'openrouter' || selectedProvider === 'auto') {
+    const result = await generateHeadlineVariationsWithOpenRouter(
+      brandBrain,
+      count,
+      selectedProvider === 'openrouter' ? [selectedModelName] : OPENROUTER_FREE_DIALOGUE_MODELS,
+    );
+    if (result.variations.length) {
+      return { variations: result.variations, provider: 'openrouter-free', model: result.model, selectedModel };
+    }
+    if (selectedProvider === 'openrouter') {
+      return { variations: [], provider: 'local', model: 'local', selectedModel, fallback: true };
+    }
+  }
+
+  if (selectedProvider === 'gemini' && selectedModelName !== HEADLINE_VARIATION_MODEL) {
+    return { variations: [], provider: 'local', model: 'local', selectedModel, fallback: true };
+  }
+
+  if (selectedProvider === 'gemini' || selectedProvider === 'auto') {
+    const result = await generateHeadlineVariationsWithGemini(brandBrain, count);
+    if (result.variations.length) {
+      return { variations: result.variations, provider: 'gemini', model: result.model, selectedModel };
+    }
+  }
+
+  return { variations: [], provider: 'local', model: 'local', selectedModel, fallback: true };
 };
 
 app.post('/api/research-brand', brandResearchLimiter, async (req, res) => {
@@ -2220,14 +2416,23 @@ app.post('/api/generate-ad-stream', adStreamLimiter, async (req, res) => {
     const brandBrain = normalizeBrandBrain(rawBrandBrain, websiteUrl, cleanTextField(rawBrandBrain.brandLogoUrl, 500));
     const totalCount = Math.min(50, Math.max(10, Number(req.body?.count) || 50));
     const formatMix = normalizeFormatMix(req.body?.formatMix);
+    const selectedModel = normalizeHeadlineModelChoice(req.body?.model);
     const used = new Set<string>();
     const variations: HeadlineVariation[] = [];
+    let provider = 'local';
+    let model = 'local';
+    let fallback = false;
 
     let rawVariations: any[] = [];
     try {
-      rawVariations = await generateHeadlineVariations(brandBrain, totalCount);
+      const generation = await generateHeadlineVariations(brandBrain, totalCount, selectedModel);
+      rawVariations = generation.variations;
+      provider = generation.provider;
+      model = generation.model;
+      fallback = Boolean(generation.fallback);
     } catch (error) {
       console.warn('[ad-stream] headline_generation_failed', error instanceof Error ? error.message : error);
+      fallback = true;
     }
 
     rawVariations.forEach((item) => {
@@ -2272,6 +2477,10 @@ app.post('/api/generate-ad-stream', adStreamLimiter, async (req, res) => {
     return res.json({
       brandBrain,
       variations: variations.slice(0, totalCount),
+      provider,
+      model,
+      selectedModel,
+      fallback,
     });
   } catch (error: any) {
     console.error('Generate ad stream error:', error);
@@ -2505,11 +2714,26 @@ Each script needs title, angle, and exactly 4 lines alternating Ava and Sam.
 Schema: {"scripts":[{"title":"short","angle":"short","lines":[{"speaker":"Ava","tone":"curious","text":"fluent line"},{"speaker":"Sam","tone":"calm","text":"fluent line"},{"speaker":"Ava","tone":"curious","text":"fluent line"},{"speaker":"Sam","tone":"assured","text":"fluent line"}]}]}`;
 };
 
-const generateDialogueScriptsWithOpenRouter = async (prompt: string, count: number) => {
-  const key = process.env.OPENROUTER_API_KEY;
-  if (!key) return [];
+const normalizeDialogueModelChoice = (value: unknown) => {
+  const choice = String(value || 'auto').trim();
+  return DIALOGUE_MODEL_OPTIONS.has(choice) ? choice : 'auto';
+};
 
-  for (const model of OPENROUTER_FREE_DIALOGUE_MODELS) {
+const getDialogueModelProvider = (choice: string) => {
+  if (choice === 'local') return 'local';
+  if (choice.startsWith('groq:')) return 'groq';
+  if (choice.startsWith('openrouter:')) return 'openrouter';
+  if (choice.startsWith('gemini:')) return 'gemini';
+  return 'auto';
+};
+
+const getDialogueModelName = (choice: string) => choice.split(':').slice(1).join(':');
+
+const generateDialogueScriptsWithOpenRouter = async (prompt: string, count: number, modelChoices = OPENROUTER_FREE_DIALOGUE_MODELS) => {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) return { scripts: [], model: '' };
+
+  for (const model of modelChoices) {
     if (!model.endsWith(':free')) continue;
     let timeout: NodeJS.Timeout | undefined;
     try {
@@ -2547,7 +2771,7 @@ const generateDialogueScriptsWithOpenRouter = async (prompt: string, count: numb
       const scripts = normalizeDialogueScripts(parseJsonResponse(text), count);
       if (scripts.length) {
         console.info('OpenRouter dialogue fallback succeeded:', model);
-        return scripts;
+        return { scripts, model };
       }
     } catch (error: any) {
       console.warn('OpenRouter dialogue fallback error:', model, String(error?.message || error).slice(0, 180));
@@ -2556,14 +2780,14 @@ const generateDialogueScriptsWithOpenRouter = async (prompt: string, count: numb
     }
   }
 
-  return [];
+  return { scripts: [], model: '' };
 };
 
-const generateDialogueScriptsWithGroq = async (prompt: string, count: number) => {
+const generateDialogueScriptsWithGroq = async (prompt: string, count: number, modelChoices = GROQ_DIALOGUE_MODELS) => {
   const key = process.env.GROQ_API_KEY;
-  if (!key) return [];
+  if (!key) return { scripts: [], model: '' };
 
-  for (const model of GROQ_DIALOGUE_MODELS) {
+  for (const model of modelChoices) {
     let timeout: NodeJS.Timeout | undefined;
     try {
       const controller = new AbortController();
@@ -2598,7 +2822,7 @@ const generateDialogueScriptsWithGroq = async (prompt: string, count: number) =>
       const scripts = normalizeDialogueScripts(parseJsonResponse(text), count);
       if (scripts.length) {
         console.info('Groq dialogue fallback succeeded:', model);
-        return scripts;
+        return { scripts, model };
       }
     } catch (error: any) {
       console.warn('Groq dialogue fallback error:', model, String(error?.message || error).slice(0, 180));
@@ -2607,7 +2831,7 @@ const generateDialogueScriptsWithGroq = async (prompt: string, count: number) =>
     }
   }
 
-  return [];
+  return { scripts: [], model: '' };
 };
 
 const fillDialogueScripts = (scripts: any[], count: number, creativeBrief: any = {}) => {
@@ -2787,79 +3011,116 @@ Return valid JSON with the following structure:
 app.post('/api/generate-dialogue-scripts', aiGenerationLimiter, async (req, res) => {
   const { creativeBrief, persona = 'Dental practice owner', count = 5 } = req.body;
   const requestedCount = Number(count) || 5;
+  const selectedModel = normalizeDialogueModelChoice(req.body?.model);
+  const selectedProvider = getDialogueModelProvider(selectedModel);
+  const selectedModelName = getDialogueModelName(selectedModel);
   const prompt = buildDialogueScriptsPrompt({ creativeBrief, persona, count: requestedCount });
   const providerPrompt = buildOpenRouterDialogueScriptsPrompt({ creativeBrief, persona, count: requestedCount });
+  const sendLocalDialogueScripts = (warning: string) => res.json({
+    scripts: fillDialogueScripts([], requestedCount, creativeBrief),
+    fallback: true,
+    provider: 'local',
+    model: 'local',
+    selectedModel,
+    warning,
+  });
+
   try {
-    const groqScripts = await generateDialogueScriptsWithGroq(providerPrompt, requestedCount);
-    if (groqScripts.length) {
-      return res.json({
-        scripts: fillDialogueScripts(groqScripts, requestedCount, creativeBrief),
-        provider: 'groq-free',
-      });
+    if (selectedProvider === 'local') {
+      return sendLocalDialogueScripts('Using local script options by request.');
     }
 
-    const openRouterScripts = await generateDialogueScriptsWithOpenRouter(providerPrompt, requestedCount);
-    if (openRouterScripts.length) {
-      return res.json({
-        scripts: fillDialogueScripts(openRouterScripts, requestedCount, creativeBrief),
-        provider: 'openrouter-free',
-      });
-    }
-    if (process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY) {
-      return res.json({
-        scripts: fillDialogueScripts([], requestedCount, creativeBrief),
-        fallback: true,
-        provider: 'local',
-        warning: 'Free dialogue models are temporarily unavailable, so Wiggly used local script options.',
-      });
-    }
-
-    const key = process.env.GEMINI_API_KEY;
-    if (!key) {
-      console.warn('Generate dialogue scripts using provider fallback: GEMINI_API_KEY is not set.');
-      return res.json({
-        scripts: fillDialogueScripts([], requestedCount, creativeBrief),
-        fallback: true,
-        provider: 'local',
-        warning: 'AI script generation is not configured, so Wiggly used local script options.',
-      });
-    }
-
-    const ai = new GoogleGenAI({ apiKey: key });
-
-    let scripts: any[] = [];
-
-    for (let attempt = 0; attempt < 2 && scripts.length === 0; attempt += 1) {
-      const response = await withTimeout(
-        ai.models.generateContent({
-          model: 'gemini-3-flash-preview',
-          contents: attempt === 0
-            ? prompt
-            : `${prompt}\n\nYour previous output failed quality checks. Return clean, fluent English only. Absolutely no em dashes, forced negation, staccato fragments, placeholder text, or keyboard-mash text.`,
-          config: {
-            responseMimeType: 'application/json',
-          },
-        }),
-        DIALOGUE_PROVIDER_TIMEOUT_MS,
-        'Gemini dialogue generation',
+    if (selectedProvider === 'groq' || selectedProvider === 'auto') {
+      const groqResult = await generateDialogueScriptsWithGroq(
+        providerPrompt,
+        requestedCount,
+        selectedProvider === 'groq' ? [selectedModelName] : GROQ_DIALOGUE_MODELS,
       );
-
-      const text = response.text || '{"scripts":[]}';
-      scripts = normalizeDialogueScripts(parseJsonResponse(text), requestedCount);
+      if (groqResult.scripts.length) {
+        return res.json({
+          scripts: fillDialogueScripts(groqResult.scripts, requestedCount, creativeBrief),
+          provider: 'groq-free',
+          model: groqResult.model,
+          selectedModel,
+        });
+      }
+      if (selectedProvider === 'groq') {
+        return sendLocalDialogueScripts(`Selected Groq model (${selectedModelName}) is unavailable, so Wiggly used local script options.`);
+      }
     }
 
-    res.json({ scripts: fillDialogueScripts(scripts, requestedCount, creativeBrief), provider: 'gemini' });
+    if (selectedProvider === 'openrouter' || selectedProvider === 'auto') {
+      const openRouterResult = await generateDialogueScriptsWithOpenRouter(
+        providerPrompt,
+        requestedCount,
+        selectedProvider === 'openrouter' ? [selectedModelName] : OPENROUTER_FREE_DIALOGUE_MODELS,
+      );
+      if (openRouterResult.scripts.length) {
+        return res.json({
+          scripts: fillDialogueScripts(openRouterResult.scripts, requestedCount, creativeBrief),
+          provider: 'openrouter-free',
+          model: openRouterResult.model,
+          selectedModel,
+        });
+      }
+      if (selectedProvider === 'openrouter') {
+        return sendLocalDialogueScripts(`Selected OpenRouter model (${selectedModelName}) is unavailable, so Wiggly used local script options.`);
+      }
+    }
+
+    if (selectedProvider === 'auto' && (process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY)) {
+      return sendLocalDialogueScripts('Free dialogue models are temporarily unavailable, so Wiggly used local script options.');
+    }
+
+    if (selectedProvider === 'gemini' && selectedModelName !== GEMINI_DIALOGUE_MODEL) {
+      return sendLocalDialogueScripts(`Selected Gemini model (${selectedModelName}) is not configured, so Wiggly used local script options.`);
+    }
+
+    if (selectedProvider === 'gemini' || selectedProvider === 'auto') {
+      const key = process.env.GEMINI_API_KEY;
+      if (!key) {
+        console.warn('Generate dialogue scripts using provider fallback: GEMINI_API_KEY is not set.');
+        return sendLocalDialogueScripts('AI script generation is not configured, so Wiggly used local script options.');
+      }
+
+      const ai = new GoogleGenAI({ apiKey: key });
+
+      let scripts: any[] = [];
+
+      for (let attempt = 0; attempt < 2 && scripts.length === 0; attempt += 1) {
+        const response = await withTimeout(
+          ai.models.generateContent({
+            model: GEMINI_DIALOGUE_MODEL,
+            contents: attempt === 0
+              ? prompt
+              : `${prompt}\n\nYour previous output failed quality checks. Return clean, fluent English only. Absolutely no em dashes, forced negation, staccato fragments, placeholder text, or keyboard-mash text.`,
+            config: {
+              responseMimeType: 'application/json',
+            },
+          }),
+          DIALOGUE_PROVIDER_TIMEOUT_MS,
+          'Gemini dialogue generation',
+        );
+
+        const text = response.text || '{"scripts":[]}';
+        scripts = normalizeDialogueScripts(parseJsonResponse(text), requestedCount);
+      }
+
+      return res.json({
+        scripts: fillDialogueScripts(scripts, requestedCount, creativeBrief),
+        provider: 'gemini',
+        model: GEMINI_DIALOGUE_MODEL,
+        selectedModel,
+      });
+    }
+
+    return sendLocalDialogueScripts('AI script generation is not configured, so Wiggly used local script options.');
   } catch (error: any) {
     console.error("Generate dialogue scripts error:", error);
     const status = Number(error?.status || error?.code || 0);
     const providerUnavailable = status === 403 || status === 429 || /timed out/i.test(String(error?.message || ''));
     if (providerUnavailable) {
-      return res.json({
-        scripts: fillDialogueScripts([], requestedCount, creativeBrief),
-        fallback: true,
-        provider: 'local',
-        warning: 'AI script generation is temporarily unavailable, so Wiggly used local script options.',
-      });
+      return sendLocalDialogueScripts('AI script generation is temporarily unavailable, so Wiggly used local script options.');
     }
     sendServerError(res, 'Error generating dialogue scripts.');
   }

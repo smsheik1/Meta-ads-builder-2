@@ -4,7 +4,7 @@ import { getRandomAdStyleArchetype, type AdStyleArchetype } from '../lib/style-a
 import { PlatformFrame, type PlatformType } from './PlatformFrame';
 import { CanvasEditor } from './CanvasEditor';
 import type { AudioAnalysisData } from '../lib/audio-analysis';
-import { pickVisibleColorOnLight } from '../lib/color-contrast';
+import { getRelativeLuminance, pickVisibleColorOnLight } from '../lib/color-contrast';
 import { BRAND_FALLBACK_QUESTIONS, type BrandBrain } from '../lib/prompts/brand-brain';
 import type { ConversationAdLine, GeneratedAdFormat, HeadlineVariation } from '../lib/prompts/headline-variations';
 import { useEditorStore } from '../store';
@@ -16,9 +16,21 @@ export type GeneratedAdVariation = HeadlineVariation & {
   archetype: AdStyleArchetype;
   visualizerColor: string;
   accentColor: string;
+  headlineColor: string;
 };
 
 type CreateAdFormat = 'all' | GeneratedAdFormat;
+type AdModelChoice =
+  | 'auto'
+  | 'groq:llama-3.1-8b-instant'
+  | 'groq:qwen/qwen3-32b'
+  | 'groq:meta-llama/llama-4-scout-17b-16e-instruct'
+  | 'groq:llama-3.3-70b-versatile'
+  | 'openrouter:liquid/lfm-2.5-1.2b-instruct:free'
+  | 'openrouter:openai/gpt-oss-20b:free'
+  | 'openrouter:openrouter/auto:free'
+  | 'gemini:gemini-3.1-flash-lite'
+  | 'local';
 export type RerollFlashRole = 'headline' | 'subheadline' | 'visualizer' | 'captions' | 'cta' | 'logo';
 export type RerollFlashPayload = {
   key: string;
@@ -77,6 +89,9 @@ type ResearchResponse = {
 type AdStreamResponse = {
   brandBrain: BrandBrain;
   variations: HeadlineVariation[];
+  provider?: string;
+  model?: string;
+  fallback?: boolean;
 };
 
 const DEFAULT_BRAND_COLORS = ['#00D6B8', '#4F46E5', '#0F172A'];
@@ -90,6 +105,18 @@ const PAUSED_CREATE_FORMAT_NAMES: Record<GeneratedAdFormat, string> = {
 };
 const PAUSED_CREATE_FORMATS = new Set<GeneratedAdFormat>(['conversation']);
 const ACTIVE_GENERATED_FORMATS: GeneratedAdFormat[] = ['visualizer'];
+const AD_MODEL_CHOICES: Array<{ value: AdModelChoice; label: string }> = [
+  { value: 'auto', label: 'Auto best available (Auto)' },
+  { value: 'groq:llama-3.1-8b-instant', label: 'Llama 3.1 8B Instant (Groq)' },
+  { value: 'groq:qwen/qwen3-32b', label: 'Qwen 3 32B (Groq)' },
+  { value: 'groq:meta-llama/llama-4-scout-17b-16e-instruct', label: 'Llama 4 Scout (Groq)' },
+  { value: 'groq:llama-3.3-70b-versatile', label: 'Llama 3.3 70B (Groq)' },
+  { value: 'openrouter:liquid/lfm-2.5-1.2b-instruct:free', label: 'Liquid LFM 2.5 1.2B (OpenRouter)' },
+  { value: 'openrouter:openai/gpt-oss-20b:free', label: 'GPT-OSS 20B (OpenRouter)' },
+  { value: 'openrouter:openrouter/auto:free', label: 'Auto free model (OpenRouter)' },
+  { value: 'gemini:gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite (Gemini)' },
+  { value: 'local', label: 'Local fallback headlines (Local)' },
+];
 const ALL_FORMAT_MODES: Array<{ id: CreateAdFormat; label: string; icon: typeof LayoutGrid }> = [
   { id: 'all', label: 'All formats', icon: LayoutGrid },
   { id: 'visualizer', label: 'Audio visualizer', icon: AudioLines },
@@ -228,6 +255,28 @@ const pickVisibleBrandColor = (
   return pickVisibleColorOnLight(ordered, fallback, options);
 };
 
+const pickHeadlineColor = (brandBrain: BrandBrain, archetype: AdStyleArchetype, index: number) => {
+  const brandCandidates = brandBrain.colors || [];
+  const accentCandidates = [
+    pickBrandColor(brandBrain, index + 2, archetype.headlineColor),
+    archetype.visualizerColor,
+    archetype.speaker2CaptionColor,
+    ...brandCandidates,
+  ].filter((color) => getRelativeLuminance(color) > 0.035);
+
+  if (index % 3 === 1 || index % 5 === 2) {
+    return pickVisibleColorOnLight(accentCandidates, archetype.headlineColor, {
+      minContrast: 5,
+      maxLuminance: 0.34,
+    });
+  }
+
+  return pickVisibleColorOnLight([archetype.headlineColor], archetype.headlineColor, {
+    minContrast: 7,
+    maxLuminance: 0.22,
+  });
+};
+
 const buildGeneratedVariations = (brandBrain: BrandBrain, variations: HeadlineVariation[]): GeneratedAdVariation[] => {
   let currentArchetypeId = '';
   return variations
@@ -249,6 +298,7 @@ const buildGeneratedVariations = (brandBrain: BrandBrain, variations: HeadlineVa
         archetype.speaker2CaptionColor,
         { minContrast: 2.4, maxLuminance: 0.58 }
       ),
+      headlineColor: pickHeadlineColor(brandBrain, archetype, index),
     };
   });
 };
@@ -281,7 +331,15 @@ const getRerollFlashRoles = (
   if (previousVariation.format !== nextVariation.format) return ['headline', 'visualizer', 'captions', 'cta', 'logo'];
 
   const roles = new Set<RerollFlashRole>();
-  if (previousVariation.headline !== nextVariation.headline) roles.add('headline');
+  if (
+    previousVariation.headline !== nextVariation.headline ||
+    previousVariation.headlineColor !== nextVariation.headlineColor ||
+    previousVariation.archetype.headlineTreatment.fontSize !== nextVariation.archetype.headlineTreatment.fontSize ||
+    previousVariation.archetype.headlineTreatment.fontWeight !== nextVariation.archetype.headlineTreatment.fontWeight ||
+    previousVariation.archetype.headlineTreatment.width !== nextVariation.archetype.headlineTreatment.width
+  ) {
+    roles.add('headline');
+  }
   if (previousVariation.archetype.subheadlineColor !== nextVariation.archetype.subheadlineColor) roles.add('subheadline');
   if (
     previousVariation.visualizerColor !== nextVariation.visualizerColor ||
@@ -363,6 +421,8 @@ export function CreateFlow({
   const [voiceMenuOpen, setVoiceMenuOpen] = useState(false);
   const [voiceMenuView, setVoiceMenuView] = useState<'choices' | 'library'>('choices');
   const [feedbackByVariationId, setFeedbackByVariationId] = useState<Record<string, GenerationFeedbackRating>>({});
+  const [selectedAdModel, setSelectedAdModel] = useState<AdModelChoice>('auto');
+  const [lastAdProvider, setLastAdProvider] = useState('');
   const lastPreviewKeyRef = useRef('');
   const voiceMenuCloseTimeoutRef = useRef<number | null>(null);
 
@@ -547,7 +607,12 @@ export function CreateFlow({
     return fetchJsonWithTimeout<AdStreamResponse>('/api/generate-ad-stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ brandBrain: nextBrandBrain, count: TARGET_GENERATED_AD_COUNT, formatMix: ACTIVE_GENERATED_FORMATS }),
+      body: JSON.stringify({
+        brandBrain: nextBrandBrain,
+        count: TARGET_GENERATED_AD_COUNT,
+        formatMix: ACTIVE_GENERATED_FORMATS,
+        model: selectedAdModel,
+      }),
     }, 30000, 'Writing is taking too long. Try again in a moment.');
   };
 
@@ -568,6 +633,7 @@ export function CreateFlow({
       setStatus('writing');
       const stream = await requestAdStream(research.brandBrain);
       const nextVariations = buildGeneratedVariations(stream.brandBrain, stream.variations);
+      setLastAdProvider(stream.model && stream.provider ? `${stream.model} (${stream.provider})` : stream.provider || '');
       setBrandBrain(stream.brandBrain);
       setVariations(nextVariations);
       setActiveIndex(0);
@@ -671,6 +737,23 @@ export function CreateFlow({
                 <input type="file" accept="audio/*,video/mp4" onChange={onAudioUpload} className="sr-only" />
               </label>
             )}
+
+            <label className="block">
+              <span className="mb-2 block text-sm font-black text-slate-800">Ad writing model</span>
+              <select
+                value={selectedAdModel}
+                onChange={(event) => setSelectedAdModel(event.target.value as AdModelChoice)}
+                disabled={isGenerating}
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {AD_MODEL_CHOICES.map((choice) => (
+                  <option key={choice.value} value={choice.value}>{choice.label}</option>
+                ))}
+              </select>
+              <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
+                {lastAdProvider ? `Last used: ${lastAdProvider}` : 'Auto is best for users. Pick a model when testing headline quality.'}
+              </span>
+            </label>
 
             <button
               type="button"
