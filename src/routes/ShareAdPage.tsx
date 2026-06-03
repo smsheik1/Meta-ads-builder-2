@@ -213,10 +213,10 @@ export const ShareAdPage = ({
 
         <section className="mx-auto w-full max-w-[440px] space-y-5">
           <div
-            className="overflow-hidden rounded-[2rem] border border-slate-200 p-6 shadow-xl shadow-slate-950/10"
+            className="overflow-hidden rounded-[2rem] border border-slate-200 p-5 shadow-xl shadow-slate-950/10"
             style={{ backgroundColor: record.backgroundColor || '#FAFAF7' }}
           >
-            <div className="mb-10 flex items-center justify-between gap-4">
+            <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 {shareBrandLogo ? (
                   <img src={shareBrandLogo} alt="" className="h-9 w-9 rounded-xl bg-white object-contain p-1.5 shadow-sm" />
@@ -232,8 +232,6 @@ export const ShareAdPage = ({
               </div>
               <span className="h-3 w-16 rounded-full" style={{ backgroundColor: record.accentColor || '#00D6B8' }} />
             </div>
-            <h1 className="text-3xl font-black leading-[0.98] tracking-normal text-slate-950 sm:text-4xl">{record.headline}</h1>
-            {record.subhead && <p className="mt-5 text-base font-semibold leading-7 text-slate-600">{record.subhead}</p>}
           </div>
 
           {shareCtaUrl ? (

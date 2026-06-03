@@ -40,6 +40,8 @@ test('share page renders the exported video inside the saved platform overlay', 
   expect(phoneSectionSource).not.toContain('Wiggly Ad Page');
   expect(phoneSectionSource).not.toContain('src="/wiggly-logo.png"');
   expect(sharePageSource).not.toContain('Wiggly Ad Page');
+  expect(sharePageSource).not.toContain('{record.headline}</h1>');
+  expect(sharePageSource).not.toContain('{record.subhead && <p');
 });
 
 test('share links keep the selected platform even when the database cannot store it yet', async () => {
