@@ -34,6 +34,7 @@ Create a local `.env` or `.env.local` file with:
 
 ```bash
 GEMINI_API_KEY=your_gemini_key
+GROQ_API_KEY=your_groq_key
 OPENROUTER_API_KEY=your_openrouter_key
 DEEPGRAM_API_KEY=your_deepgram_key
 VITE_SUPABASE_URL=https://howclqjohkrvcdarajur.supabase.co

@@ -98,6 +98,7 @@ app.get('/api/health', (_req, res) => {
     ok: true,
     deepgramConfigured: Boolean(process.env.DEEPGRAM_API_KEY),
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+    groqConfigured: Boolean(process.env.GROQ_API_KEY),
     openrouterConfigured: Boolean(process.env.OPENROUTER_API_KEY),
     firecrawlConfigured: Boolean(process.env.FIRECRAWL_API_KEY),
     postizConfigured: Boolean(process.env.POSTIZ_API_KEY),
@@ -908,6 +909,12 @@ const FIRECRAWL_SCRAPE_URL = 'https://api.firecrawl.dev/v2/scrape';
 const TAVILY_SEARCH_URL = 'https://api.tavily.com/search';
 const BRAND_RESEARCH_MODEL = 'gemini-3-flash-preview';
 const HEADLINE_VARIATION_MODEL = 'gemini-3.1-flash-lite';
+const GROQ_DIALOGUE_MODELS = [
+  'llama-3.1-8b-instant',
+  'qwen/qwen3-32b',
+  'meta-llama/llama-4-scout-17b-16e-instruct',
+  'llama-3.3-70b-versatile',
+];
 const OPENROUTER_FREE_DIALOGUE_MODELS = [
   'liquid/lfm-2.5-1.2b-instruct:free',
   'openai/gpt-oss-20b:free',
@@ -2552,6 +2559,57 @@ const generateDialogueScriptsWithOpenRouter = async (prompt: string, count: numb
   return [];
 };
 
+const generateDialogueScriptsWithGroq = async (prompt: string, count: number) => {
+  const key = process.env.GROQ_API_KEY;
+  if (!key) return [];
+
+  for (const model of GROQ_DIALOGUE_MODELS) {
+    let timeout: NodeJS.Timeout | undefined;
+    try {
+      const controller = new AbortController();
+      timeout = setTimeout(() => controller.abort(), DIALOGUE_PROVIDER_TIMEOUT_MS);
+      const response = await withTimeout(
+        fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'user', content: prompt }],
+            response_format: { type: 'json_object' },
+            temperature: 0.7,
+            max_completion_tokens: 1800,
+          }),
+          signal: controller.signal,
+        }),
+        DIALOGUE_PROVIDER_TIMEOUT_MS,
+        `Groq dialogue generation (${model})`,
+      );
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        console.warn('Groq dialogue model failed:', model, response.status, String(payload?.error?.message || '').slice(0, 180));
+        continue;
+      }
+
+      const text = String(payload?.choices?.[0]?.message?.content || '{"scripts":[]}');
+      const scripts = normalizeDialogueScripts(parseJsonResponse(text), count);
+      if (scripts.length) {
+        console.info('Groq dialogue fallback succeeded:', model);
+        return scripts;
+      }
+    } catch (error: any) {
+      console.warn('Groq dialogue fallback error:', model, String(error?.message || error).slice(0, 180));
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  }
+
+  return [];
+};
+
 const fillDialogueScripts = (scripts: any[], count: number, creativeBrief: any = {}) => {
   const fallbacks = fallbackDialogueScripts(count, creativeBrief);
   const combined = [...scripts];
@@ -2730,21 +2788,29 @@ app.post('/api/generate-dialogue-scripts', aiGenerationLimiter, async (req, res)
   const { creativeBrief, persona = 'Dental practice owner', count = 5 } = req.body;
   const requestedCount = Number(count) || 5;
   const prompt = buildDialogueScriptsPrompt({ creativeBrief, persona, count: requestedCount });
-  const openRouterPrompt = buildOpenRouterDialogueScriptsPrompt({ creativeBrief, persona, count: requestedCount });
+  const providerPrompt = buildOpenRouterDialogueScriptsPrompt({ creativeBrief, persona, count: requestedCount });
   try {
-    const openRouterScripts = await generateDialogueScriptsWithOpenRouter(openRouterPrompt, requestedCount);
+    const groqScripts = await generateDialogueScriptsWithGroq(providerPrompt, requestedCount);
+    if (groqScripts.length) {
+      return res.json({
+        scripts: fillDialogueScripts(groqScripts, requestedCount, creativeBrief),
+        provider: 'groq-free',
+      });
+    }
+
+    const openRouterScripts = await generateDialogueScriptsWithOpenRouter(providerPrompt, requestedCount);
     if (openRouterScripts.length) {
       return res.json({
         scripts: fillDialogueScripts(openRouterScripts, requestedCount, creativeBrief),
         provider: 'openrouter-free',
       });
     }
-    if (process.env.OPENROUTER_API_KEY) {
+    if (process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY) {
       return res.json({
         scripts: fillDialogueScripts([], requestedCount, creativeBrief),
         fallback: true,
         provider: 'local',
-        warning: 'Free OpenRouter models are temporarily unavailable, so Wiggly used local script options.',
+        warning: 'Free dialogue models are temporarily unavailable, so Wiggly used local script options.',
       });
     }
 
