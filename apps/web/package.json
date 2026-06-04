@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev -p 3010",
     "build": "next build",
+    "start": "next start -H 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "test": "tsx tests/create-v2-foundation.test.ts && tsx tests/create-v2-website-scene.test.ts && tsx tests/create-v2-research-quality.test.ts && tsx tests/create-v2-audio.test.ts && tsx tests/create-v2-export-share.test.ts",
     "remotion:still": "remotion still remotion-entry/index.ts AdSceneFixture tmp/adscene-fixture.png --frame=30 --scale=0.25"

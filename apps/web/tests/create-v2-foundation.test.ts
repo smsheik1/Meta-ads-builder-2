@@ -319,11 +319,18 @@ test('root, create, and create-v2 routes all use the v2 create app', () => {
 test('oracle deploy pushes Convex before building the app', () => {
   const deployScript = fs.readFileSync(path.join(repoRoot, 'scripts/deploy-oracle.sh'), 'utf8');
   const deployWorkflow = fs.readFileSync(path.join(repoRoot, '.github/workflows/deploy-oracle.yml'), 'utf8');
+  const webPackage = JSON.parse(fs.readFileSync(path.join(webRoot, 'package.json'), 'utf8')) as {
+    scripts?: Record<string, string>;
+  };
 
   assert.match(deployScript, /CONVEX_DEPLOY_KEY/);
   assert.match(deployScript, /NEXT_PUBLIC_CONVEX_URL/);
   assert.match(deployScript, /npx convex deploy/);
   assert.ok(deployScript.indexOf('npx convex deploy') < deployScript.indexOf('npm run build'));
+  assert.match(webPackage.scripts?.start ?? '', /next start/);
+  assert.match(deployScript, /pm2 delete "\$APP_NAME"/);
+  assert.match(deployScript, /\(cd apps\/web && pm2 start npm --name "\$APP_NAME" -- run start\)/);
+  assert.doesNotMatch(deployScript, /pm2 restart "\$APP_NAME"/);
   assert.match(deployWorkflow, /secrets\.CONVEX_DEPLOY_KEY/);
   assert.match(deployWorkflow, /envs: CONVEX_DEPLOY_KEY,CONVEX_URL,NEXT_PUBLIC_CONVEX_URL,NEXT_PUBLIC_CONVEX_SITE_URL/);
 });
