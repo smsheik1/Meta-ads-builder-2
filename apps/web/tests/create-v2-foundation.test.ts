@@ -331,6 +331,19 @@ test('opening the audio panel does not auto-write voice options', () => {
   assert.doesNotMatch(source, /onAddAudio=\\{\\(\\) => loadScriptOptions/);
 });
 
+test('export panel explains render progress without fake precision', () => {
+  const source = fs.readFileSync(path.join(webRoot, 'features/create/ExportPanel.tsx'), 'utf8');
+
+  assert.match(source, /Preparing your video/);
+  assert.match(source, /Rendering the ad scene/);
+  assert.match(source, /Packaging the MP4/);
+  assert.match(source, /Almost ready/);
+  assert.match(source, /This usually takes 10-30 seconds/);
+  assert.match(source, /direct MP4 link/);
+  assert.doesNotMatch(source, /\d+%/);
+  assert.doesNotMatch(source, /Click Save video/);
+});
+
 test('new core product files stay under the 500-line budget', () => {
   const sourceFiles = listSourceFiles(path.join(webRoot, 'features'));
   const oversized = sourceFiles
