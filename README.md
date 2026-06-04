@@ -28,10 +28,10 @@ npm run dev
 
 The Vite client runs on `http://localhost:3000` and the API server runs on `http://localhost:3001` behind the dev proxy.
 
-### Clean-Room Create Rebuild
+### Create V2
 
-The new Wiggly create path is being rebuilt in `apps/web` behind a separate
-Next.js workspace. The old app remains the default until the cutover issue.
+The new Wiggly create path lives in `apps/web` as a Next.js workspace backed by
+Convex for saved designs and share snapshots.
 
 ```bash
 npm run dev:legacy
@@ -42,7 +42,7 @@ npm run test:create-v2
 - `npm run dev` still runs the legacy Vite/Express app.
 - `npm run dev:legacy` runs the legacy Vite/Express app on `http://localhost:3000` with the API on `http://localhost:3001`.
 - `npm run dev:web` runs the new Next app on `http://localhost:3010`.
-- `http://localhost:3010/create-v2` is the temporary foundation route for the rebuild.
+- `http://localhost:3010/`, `http://localhost:3010/create`, and `http://localhost:3010/create-v2` all open the v2 create app.
 - Legacy product work is frozen. See [Legacy Freeze](docs/LEGACY_FREEZE.md).
 
 ## Environment Variables
@@ -58,12 +58,21 @@ VITE_SUPABASE_URL=https://howclqjohkrvcdarajur.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_URL=https://howclqjohkrvcdarajur.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_server_only_service_role_key
+CONVEX_DEPLOYMENT=dev:intent-capybara-375
+CONVEX_URL=https://intent-capybara-375.convex.cloud
+NEXT_PUBLIC_CONVEX_URL=https://intent-capybara-375.convex.cloud
+NEXT_PUBLIC_CONVEX_SITE_URL=https://intent-capybara-375.convex.site
+CONVEX_DEPLOY_KEY=your_server_only_convex_deploy_key
 NODE_ENV=development
 ```
 
 If Supabase env vars are missing, Wiggly share links fall back to local browser-only previews. Hosted links that friends can open require browser read keys (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) plus the server-only `SUPABASE_SERVICE_ROLE_KEY` for uploads.
 
 Do not commit real API keys. Never use a `VITE_` prefix for the Supabase service role key.
+
+Oracle deploy requires `CONVEX_DEPLOY_KEY`, `CONVEX_URL`, and `NEXT_PUBLIC_CONVEX_URL`.
+The deploy script runs `npx convex deploy` before building/restarting PM2 so Convex
+functions and the Next app stay in lockstep.
 
 ## Quality Checks
 

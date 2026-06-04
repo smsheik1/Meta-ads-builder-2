@@ -4,6 +4,18 @@ set -euo pipefail
 APP_DIR="${APP_DIR:-/home/ubuntu/Meta-ads-builder-2}"
 BRANCH="${DEPLOY_BRANCH:-main}"
 APP_NAME="${PM2_APP_NAME:-wiggly}"
+REQUIRED_ENV_VARS=(
+  CONVEX_DEPLOY_KEY
+  CONVEX_URL
+  NEXT_PUBLIC_CONVEX_URL
+)
+
+for env_var in "${REQUIRED_ENV_VARS[@]}"; do
+  if [ -z "${!env_var:-}" ]; then
+    echo "Missing required production env var: $env_var" >&2
+    exit 1
+  fi
+done
 
 cd "$APP_DIR"
 
@@ -17,6 +29,7 @@ else
   npm install
 fi
 
+(cd apps/web && npx convex deploy)
 npm run build
 pm2 restart "$APP_NAME" --update-env
 pm2 save

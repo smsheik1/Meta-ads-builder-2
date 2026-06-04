@@ -14,6 +14,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+      CONVEX_URL: https://intent-capybara-375.convex.cloud
+      NEXT_PUBLIC_CONVEX_URL: https://intent-capybara-375.convex.cloud
+      NEXT_PUBLIC_CONVEX_SITE_URL: https://intent-capybara-375.convex.site
 
     steps:
       - name: Deploy over SSH
@@ -22,6 +27,7 @@ jobs:
           host: ${{ secrets.ORACLE_HOST }}
           username: ${{ secrets.ORACLE_USER }}
           key: ${{ secrets.ORACLE_SSH_KEY }}
+          envs: CONVEX_DEPLOY_KEY,CONVEX_URL,NEXT_PUBLIC_CONVEX_URL,NEXT_PUBLIC_CONVEX_SITE_URL
           script_stop: true
           script: |
             set -euo pipefail

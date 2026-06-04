@@ -304,3 +304,26 @@ test('minimal Remotion fixture is wired to AdScene', () => {
   assert.match(rootSource, /AdSceneFixture/);
   assert.match(sceneSource, /scene: AdScene/);
 });
+
+test('root, create, and create-v2 routes all use the v2 create app', () => {
+  const rootPage = fs.readFileSync(path.join(webRoot, 'app/page.tsx'), 'utf8');
+  const createPage = fs.readFileSync(path.join(webRoot, 'app/create/page.tsx'), 'utf8');
+  const createV2Page = fs.readFileSync(path.join(webRoot, 'app/create-v2/page.tsx'), 'utf8');
+
+  assert.match(rootPage, /CreateFoundation/);
+  assert.match(createPage, /CreateFoundation/);
+  assert.match(createV2Page, /CreateFoundation/);
+  assert.doesNotMatch(rootPage, /Open create v2|foundation route|placeholder/i);
+});
+
+test('oracle deploy pushes Convex before building the app', () => {
+  const deployScript = fs.readFileSync(path.join(repoRoot, 'scripts/deploy-oracle.sh'), 'utf8');
+  const deployWorkflow = fs.readFileSync(path.join(repoRoot, '.github/workflows/deploy-oracle.yml'), 'utf8');
+
+  assert.match(deployScript, /CONVEX_DEPLOY_KEY/);
+  assert.match(deployScript, /NEXT_PUBLIC_CONVEX_URL/);
+  assert.match(deployScript, /npx convex deploy/);
+  assert.ok(deployScript.indexOf('npx convex deploy') < deployScript.indexOf('npm run build'));
+  assert.match(deployWorkflow, /secrets\.CONVEX_DEPLOY_KEY/);
+  assert.match(deployWorkflow, /envs: CONVEX_DEPLOY_KEY,CONVEX_URL,NEXT_PUBLIC_CONVEX_URL,NEXT_PUBLIC_CONVEX_SITE_URL/);
+});
