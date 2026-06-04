@@ -2,11 +2,13 @@ import { NextResponse } from 'next/server';
 import { BillShieldError, assertAudioRouteAllowed, billShieldJson } from '@/features/audio/billShield';
 import { type DialogueScript } from '@/features/audio/dialogueScripts';
 import { generateGeminiDialogueAudio } from '@/features/audio/geminiTts';
+import { createAudioAssetUploadUrl, uploadGeneratedAudioAsset } from '@/features/audio/audioAssetStore';
 
 export const runtime = 'nodejs';
 
 type CreateAudioRequest = {
   sceneId?: unknown;
+  sessionId?: unknown;
   script?: DialogueScript;
 };
 
@@ -29,11 +31,30 @@ export async function POST(request: Request) {
 
   try {
     assertAudioRouteAllowed('audioGeneration', request, 'TTS_ENABLED');
+    const uploadUrl = await createAudioAssetUploadUrl();
+    const sessionId = typeof body.sessionId === 'string' && body.sessionId.trim()
+      ? body.sessionId.trim()
+      : 'unknown-session';
     const result = await generateGeminiDialogueAudio(body.script);
+    const asset = await uploadGeneratedAudioAsset({
+      audioBase64: result.audioBase64,
+      mimeType: result.mimeType,
+      uploadUrl,
+      sessionId,
+      sceneId: body.sceneId,
+      scriptId: body.script.id,
+      durationMs: result.durationMs,
+      transcript: result.transcript,
+      captionCount: result.captions.length,
+    });
 
     return NextResponse.json({
-      ...result,
-      audioUrl: `data:${result.mimeType};base64,${result.audioBase64}`,
+      audioUrl: asset.url,
+      storageId: asset.storageId,
+      mimeType: asset.mimeType,
+      transcript: result.transcript,
+      captions: result.captions,
+      durationMs: result.durationMs,
       sourceSceneId: body.sceneId,
       scriptId: body.script.id,
     });

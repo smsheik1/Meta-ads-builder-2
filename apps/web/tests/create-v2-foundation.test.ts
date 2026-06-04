@@ -211,6 +211,8 @@ test('saved design upsert stores Convex-safe scene snapshots without aliasing', 
     audio: {
       status: 'none' as const,
       url: null,
+      storageId: null,
+      mimeType: null,
       transcript: '',
       captions: [],
       brandKey: null,
@@ -225,6 +227,31 @@ test('saved design upsert stores Convex-safe scene snapshots without aliasing', 
   assert.deepEqual(loaded, expectedSavedScene);
   assert.notEqual(loaded, expectedSavedScene);
   assert.notEqual(firstSave[0].scene, withAudio);
+});
+
+test('saved design snapshots preserve stored generated audio', () => {
+  const withStoredAudio = reduceAdScene(ogToolScene, {
+    type: 'updateAudio',
+    audio: {
+      status: 'generated',
+      url: 'https://intent-capybara-375.convex.cloud/api/storage/mock-audio',
+      storageId: 'kg2audioassetmock',
+      mimeType: 'audio/wav',
+      transcript: 'Saved transcript',
+      captions: [{ text: 'Saved transcript', startMs: 0, endMs: 1200 }],
+      sourceSceneId: ogToolScene.id,
+      scriptId: 'script-1',
+      durationMs: 1200,
+    },
+    now: 200,
+  });
+  const firstSave = upsertSavedDesign([], withStoredAudio, 300);
+  const loaded = loadSavedDesign(firstSave[0]);
+
+  assert.equal(loaded.audio.status, 'generated');
+  assert.equal(loaded.audio.storageId, 'kg2audioassetmock');
+  assert.equal(loaded.audio.url, 'https://intent-capybara-375.convex.cloud/api/storage/mock-audio');
+  assert.equal(loaded.audio.mimeType, 'audio/wav');
 });
 
 test('saving the same scene updates the existing saved design in place', () => {

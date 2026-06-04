@@ -45,6 +45,8 @@ export type AdSceneCreative = {
 export type AdSceneAudio = {
   status: 'none' | 'uploaded' | 'script-ready' | 'generated';
   url: string | null;
+  storageId?: string | null;
+  mimeType?: string | null;
   transcript: string;
   captions: AdSceneCaption[];
   brandKey: string | null;

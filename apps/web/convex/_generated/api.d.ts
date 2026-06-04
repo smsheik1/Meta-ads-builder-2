@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as audioAssets from "../audioAssets.js";
 import type * as savedDesigns from "../savedDesigns.js";
 import type * as shareScenes from "../shareScenes.js";
 
@@ -18,6 +19,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  audioAssets: typeof audioAssets;
   savedDesigns: typeof savedDesigns;
   shareScenes: typeof shareScenes;
 }>;

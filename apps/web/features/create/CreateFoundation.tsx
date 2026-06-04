@@ -7,6 +7,7 @@ import { api } from '@/convex/_generated/api';
 import { Button } from '@/components/ui/button';
 import { AudioOptionsPanel, type AudioPanelStatus } from '@/features/audio/AudioOptionsPanel';
 import { scriptCacheMatches, type DialogueScript } from '@/features/audio/dialogueScripts';
+import { useStoredAudioUrlRefresh } from '@/features/audio/useStoredAudioUrlRefresh';
 import { AdSceneCanvas } from '@/features/render/AdSceneCanvas';
 import type { AdCopyResult } from '@/features/research/adCopy';
 import type { ResearchQuality } from '@/features/research/researchQuality';
@@ -36,6 +37,8 @@ type AudioScriptsResponse = {
 
 type CreateAudioResponse = {
   audioUrl?: string;
+  storageId?: string;
+  mimeType?: string;
   transcript?: string;
   captions?: AdScene['audio']['captions'];
   durationMs?: number;
@@ -136,6 +139,8 @@ export function CreateFoundation() {
   const savedDesignsLoading = Boolean(sessionId) && convexSavedDesigns === undefined;
   const currentSceneSaved = sceneHasSavedSnapshot(savedDesigns, scene);
   const selectedScript = scriptOptions.find((script) => script.id === selectedScriptId) || scriptOptions[0] || null;
+
+  useStoredAudioUrlRefresh(scene, dispatch);
 
   useEffect(() => {
     try {
@@ -307,7 +312,7 @@ export function CreateFoundation() {
       const response = await fetch('/api/create-audio', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ sceneId: scene.id, script: selectedScript }),
+        body: JSON.stringify({ sceneId: scene.id, sessionId, script: selectedScript }),
       });
       const payload = await response.json() as CreateAudioResponse;
 
@@ -320,6 +325,8 @@ export function CreateFoundation() {
         audio: {
           status: 'generated',
           url: payload.audioUrl,
+          storageId: payload.storageId || null,
+          mimeType: payload.mimeType || null,
           transcript: payload.transcript || selectedScript.lines.map((line) => line.text).join('\n'),
           captions: payload.captions || [],
           sourceSceneId: payload.sourceSceneId,

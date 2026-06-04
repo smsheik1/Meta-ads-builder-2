@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { AdScene } from '@/features/create/scene';
+import { refreshSceneAudioUrl } from '@/features/audio/audioAssetStore';
 import { getPublicRenderErrorMessage } from '@/features/export/renderErrors';
 import { renderAdSceneToMp4 } from '@/features/export/renderScene';
 import { createRenderSceneTicket } from '@/features/export/renderSceneTicketStore';
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const render = await renderAdSceneToMp4(body.scene);
+    const render = await renderAdSceneToMp4(await refreshSceneAudioUrl(body.scene));
     const ticket = await createRenderSceneTicket(render.snapshot.scene, render.file);
 
     return NextResponse.json({

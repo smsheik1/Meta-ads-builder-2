@@ -2,6 +2,22 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  audioAssets: defineTable({
+    storageId: v.id("_storage"),
+    sessionId: v.string(),
+    sceneId: v.string(),
+    scriptId: v.string(),
+    mimeType: v.string(),
+    durationMs: v.number(),
+    transcript: v.string(),
+    captionCount: v.number(),
+    size: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_storageId", ["storageId"])
+    .index("by_sessionId_and_createdAt", ["sessionId", "createdAt"])
+    .index("by_sceneId", ["sceneId"]),
   savedDesigns: defineTable({
     sessionId: v.string(),
     designId: v.string(),
