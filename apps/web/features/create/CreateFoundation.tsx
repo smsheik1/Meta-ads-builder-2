@@ -1,10 +1,11 @@
 'use client';
 
-import { FormEvent, useEffect, useRef, useReducer, useState } from 'react';
-import { AudioLines, Globe2, Loader2, Lock, Pause, Play, Wand2 } from 'lucide-react';
+import { FormEvent, useEffect, useReducer, useState } from 'react';
+import { Download, ExternalLink, Globe2, Link2, Loader2, Lock, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AudioOptionsPanel, type AudioPanelStatus } from '@/features/audio/AudioOptionsPanel';
 import { scriptCacheMatches, type DialogueScript } from '@/features/audio/dialogueScripts';
+import { AdSceneCanvas } from '@/features/render/AdSceneCanvas';
 import type { AdCopyResult } from '@/features/research/adCopy';
 import type { ResearchQuality } from '@/features/research/researchQuality';
 import type { WebsiteResearch } from '@/features/research/websiteResearch';
@@ -45,6 +46,17 @@ type CreateAudioResponse = {
   error?: string;
 };
 
+type ShareSceneResponse = {
+  shareUrl?: string;
+  error?: string;
+};
+
+type RenderSceneTicketResponse = {
+  downloadUrl?: string;
+  filename?: string;
+  error?: string;
+};
+
 export function CreateFoundation() {
   const [scene, dispatch] = useReducer(reduceAdScene, ogToolScene);
   const [websiteUrl, setWebsiteUrl] = useState(scene.brand.websiteUrl);
@@ -58,11 +70,14 @@ export function CreateFoundation() {
   const [selectedScriptId, setSelectedScriptId] = useState('');
   const [audioStatus, setAudioStatus] = useState<AudioPanelStatus>('idle');
   const [audioError, setAudioError] = useState('');
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audioTimeMs, setAudioTimeMs] = useState(0);
   const [savedDesigns, setSavedDesigns] = useState<SavedDesign[]>([]);
   const [savedError, setSavedError] = useState('');
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [exportStatus, setExportStatus] = useState<'idle' | 'rendering' | 'ready' | 'error'>('idle');
+  const [exportError, setExportError] = useState('');
+  const [exportDownloadUrl, setExportDownloadUrl] = useState('');
+  const [shareStatus, setShareStatus] = useState<'idle' | 'saving' | 'ready' | 'error'>('idle');
+  const [shareUrl, setShareUrl] = useState('');
+  const [shareError, setShareError] = useState('');
 
   const resetAudioPanel = (nextSceneId: string) => {
     setScriptOptions([]);
@@ -71,8 +86,12 @@ export function CreateFoundation() {
     setAudioStatus('idle');
     setAudioError('');
     setAudioPanelOpen(false);
-    setIsPlaying(false);
-    setAudioTimeMs(0);
+    setExportStatus('idle');
+    setExportError('');
+    setExportDownloadUrl('');
+    setShareStatus('idle');
+    setShareUrl('');
+    setShareError('');
   };
 
   const generateScene = async (event: FormEvent<HTMLFormElement>) => {
@@ -110,26 +129,8 @@ export function CreateFoundation() {
     scene.brand.receipts.exactSiteLanguage[0] ||
     scene.brand.receipts.buyerMoments[0] ||
     'No specific receipt found yet.';
-  const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
   const currentSceneSaved = sceneHasSavedSnapshot(savedDesigns, scene);
   const selectedScript = scriptOptions.find((script) => script.id === selectedScriptId) || scriptOptions[0] || null;
-  const playableAudio = scene.audio.status === 'generated' &&
-    Boolean(scene.audio.url) &&
-    scene.audio.sourceSceneId === scene.id;
-  const activeCaption = playableAudio
-    ? scene.audio.captions.find((caption) => audioTimeMs >= caption.startMs && audioTimeMs <= caption.endMs)?.text ||
-      scene.audio.captions[0]?.text ||
-      scene.audio.transcript
-    : null;
-
-  useEffect(() => {
-    setIsPlaying(false);
-    setAudioTimeMs(0);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-  }, [scene.id, scene.audio.url]);
 
   useEffect(() => {
     try {
@@ -169,6 +170,64 @@ export function CreateFoundation() {
       persistSavedDesigns(deleteSavedDesign(savedDesigns, designId));
     } catch {
       setSavedError('This browser could not delete that saved ad.');
+    }
+  };
+
+  const downloadVideo = async () => {
+    if (exportStatus === 'ready' && exportDownloadUrl) {
+      window.location.assign(exportDownloadUrl);
+      return;
+    }
+
+    setExportStatus('rendering');
+    setExportError('');
+    setExportDownloadUrl('');
+
+    try {
+      const response = await fetch('/api/render-scene-ticket', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ scene }),
+      });
+      const payload = await response.json() as RenderSceneTicketResponse;
+
+      if (!response.ok || !payload.downloadUrl) {
+        throw new Error(payload.error || 'Video download failed.');
+      }
+
+      const nextDownloadUrl = `${window.location.origin}${payload.downloadUrl}`;
+      setExportDownloadUrl(nextDownloadUrl);
+      setExportStatus('ready');
+    } catch (caught) {
+      setExportError(caught instanceof Error ? caught.message : 'Video download failed.');
+      setExportStatus('error');
+    }
+  };
+
+  const createShareLink = async () => {
+    setShareStatus('saving');
+    setShareError('');
+    setShareUrl('');
+
+    try {
+      const response = await fetch('/api/share-scene', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ scene }),
+      });
+      const payload = await response.json() as ShareSceneResponse;
+
+      if (!response.ok || !payload.shareUrl) {
+        throw new Error(payload.error || 'Could not create share link.');
+      }
+
+      const nextShareUrl = `${window.location.origin}${payload.shareUrl}`;
+      setShareUrl(nextShareUrl);
+      setShareStatus('ready');
+      await navigator.clipboard?.writeText(nextShareUrl).catch(() => undefined);
+    } catch (caught) {
+      setShareError(caught instanceof Error ? caught.message : 'Could not create share link.');
+      setShareStatus('error');
     }
   };
 
@@ -243,19 +302,6 @@ export function CreateFoundation() {
     }
   };
 
-  const togglePlayback = async () => {
-    if (!playableAudio || !audioRef.current) return;
-
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-      return;
-    }
-
-    await audioRef.current.play();
-    setIsPlaying(true);
-  };
-
   return (
     <main className="min-h-screen px-5 py-8 md:px-10">
       <div className="mx-auto grid min-w-0 max-w-6xl grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)]">
@@ -328,6 +374,64 @@ export function CreateFoundation() {
           />
 
           <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
+                Export
+              </p>
+              <p className="mt-1 text-sm font-bold text-slate-500">
+                Download or share the exact scene snapshot on the canvas.
+              </p>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Button type="button" onClick={downloadVideo} disabled={exportStatus === 'rendering'}>
+                {exportStatus === 'rendering' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                {exportStatus === 'rendering' ? 'Rendering video' : exportStatus === 'ready' ? 'Save video' : 'Download video'}
+              </Button>
+              <Button type="button" variant="secondary" onClick={createShareLink} disabled={shareStatus === 'saving'}>
+                {shareStatus === 'saving' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+                {shareStatus === 'saving' ? 'Creating link' : 'Create share link'}
+              </Button>
+            </div>
+            {exportStatus === 'ready' && (
+              <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-700">
+                <p>Video is ready.</p>
+                {exportDownloadUrl && (
+                  <a
+                    href={exportDownloadUrl}
+                    className="mt-1 inline-block underline decoration-emerald-300 underline-offset-4"
+                  >
+                    Click Save video, or use this direct download link.
+                  </a>
+                )}
+              </div>
+            )}
+            {exportStatus === 'error' && (
+              <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-black text-red-700">
+                {exportError}
+              </p>
+            )}
+            {shareUrl && (
+              <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="truncate text-sm font-black text-slate-700">{shareUrl}</p>
+                <a
+                  href={shareUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 inline-flex items-center gap-2 text-sm font-black text-slate-950"
+                >
+                  Open share page
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </div>
+            )}
+            {shareStatus === 'error' && (
+              <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-black text-red-700">
+                {shareError}
+              </p>
+            )}
+          </section>
+
+          <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
               Creative brief
             </p>
@@ -379,100 +483,8 @@ export function CreateFoundation() {
           )}
         </section>
 
-        <section className="mx-auto min-w-0 w-full max-w-full self-start rounded-[34px] border border-slate-200 bg-black p-3 shadow-[0_30px_80px_rgba(15,23,42,0.20)] sm:max-w-[390px]">
-          <div className="overflow-hidden rounded-[26px] bg-white">
-            <div className="flex items-center gap-3 bg-black px-4 py-3 text-white">
-              <div className="grid h-9 w-9 place-items-center rounded-full bg-white text-sm font-black text-slate-950">
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt=""
-                    className="h-full w-full rounded-full object-cover"
-                  />
-                ) : (
-                  scene.brand.name.slice(0, 2).toUpperCase()
-                )}
-              </div>
-              <div>
-                <p className="text-sm font-black leading-none">{scene.brand.name}</p>
-                <p className="mt-1 text-xs font-semibold text-white/70">Sponsored</p>
-              </div>
-            </div>
-
-            <div
-              className="flex min-h-[510px] flex-col items-center justify-center gap-7 px-8 text-center"
-              style={{ backgroundColor: scene.creative.backgroundColor }}
-            >
-              <p className="text-sm font-black uppercase tracking-wide text-slate-950">
-                {scene.brand.name}
-              </p>
-              <h2 className="text-4xl font-black leading-[1.02] text-slate-950">
-                {scene.creative.headline}
-              </h2>
-              <div className="flex h-20 w-full items-center justify-center gap-1">
-                {Array.from({ length: 21 }).map((_, index) => {
-                  const center = Math.abs(index - 10);
-                  const height = 18 + (10 - center) * 4;
-                  return (
-                    <span
-                      // Static fixture bars are enough for Child Issue #1. The
-                      // Remotion renderer owns the canonical animation contract.
-                      key={index}
-                      className="w-3 rounded-full"
-                      style={{
-                        height,
-                        backgroundColor: scene.creative.visualizer.color,
-                      }}
-                    />
-                  );
-                })}
-              </div>
-              {activeCaption && (
-                <p className="max-w-[290px] text-base font-black leading-6 text-slate-600">
-                  {activeCaption}
-                </p>
-              )}
-              {playableAudio ? (
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-[0_18px_44px_rgba(15,23,42,0.20)]"
-                    onClick={togglePlayback}
-                  >
-                    {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                    {isPlaying ? 'Pause audio' : 'Play audio'}
-                  </button>
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.12)]"
-                    onClick={() => loadScriptOptions(false)}
-                  >
-                    Change audio
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.14)]"
-                  onClick={() => loadScriptOptions(false)}
-                >
-                  <AudioLines className="h-4 w-4" />
-                  Add audio for this ad
-                </button>
-              )}
-            </div>
-          </div>
-        </section>
+        <AdSceneCanvas scene={scene} onAddAudio={() => loadScriptOptions(false)} />
       </div>
-      <audio
-        ref={audioRef}
-        src={playableAudio ? scene.audio.url || undefined : undefined}
-        onTimeUpdate={(event) => setAudioTimeMs(Math.round(event.currentTarget.currentTime * 1000))}
-        onEnded={() => {
-          setIsPlaying(false);
-          setAudioTimeMs(0);
-        }}
-      />
     </main>
   );
 }

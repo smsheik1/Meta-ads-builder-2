@@ -1,30 +1,23 @@
-import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, Audio, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { AdScene } from '@/features/create/scene';
+import {
+  AD_SCENE_FPS,
+  getActiveCaptionText,
+  getVisualizerBarHeight,
+  isGeneratedSceneAudio,
+} from './adSceneRender';
 
 export type AdSceneRemotionProps = {
   scene: AdScene;
 };
 
-const getPlatformFrame = (platform: AdScene['platform']) => {
-  if (platform === 'youtube') return { width: 1920, height: 1080 };
-  if (platform === 'reels' || platform === 'stories') return { width: 1080, height: 1920 };
-  return { width: 1080, height: 1350 };
-};
-
-const getBarHeight = (index: number, frame: number) => {
-  const center = Math.abs(index - 16);
-  const wave = interpolate(
-    Math.sin(frame / 8 + index * 0.45),
-    [-1, 1],
-    [0.68, 1.16],
-  );
-  return (42 + (16 - center) * 9) * wave;
-};
-
 export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
   const frame = useCurrentFrame();
-  const platformFrame = getPlatformFrame(scene.platform);
-  const isVertical = platformFrame.height > platformFrame.width;
+  const { width, height, fps } = useVideoConfig();
+  const currentTimeMs = Math.round((frame / (fps || AD_SCENE_FPS)) * 1000);
+  const hasAudio = isGeneratedSceneAudio(scene);
+  const activeCaption = hasAudio ? getActiveCaptionText(scene.audio, currentTimeMs) : '';
+  const isVertical = height > width;
   const headlineSize = isVertical ? 94 : 74;
 
   return (
@@ -50,6 +43,9 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
           gap: 24,
         }}
       >
+        {hasAudio && scene.audio.url && (
+          <Audio src={scene.audio.url} />
+        )}
         <div
           style={{
             width: 76,
@@ -123,14 +119,14 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
               key={index}
               style={{
                 width: 22,
-                height: getBarHeight(index, frame),
+                height: getVisualizerBarHeight(index, 33, currentTimeMs, 146),
                 borderRadius: 999,
                 backgroundColor: scene.creative.visualizer.color,
               }}
             />
           ))}
         </div>
-        {scene.audio.status === 'none' ? (
+        {!hasAudio ? (
           <div
             style={{
               borderRadius: 999,
@@ -144,7 +140,7 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
           >
             Add audio for this ad
           </div>
-        ) : (
+        ) : activeCaption ? (
           <div
             style={{
               maxWidth: 760,
@@ -154,9 +150,9 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
               lineHeight: 1.16,
             }}
           >
-            {scene.audio.captions[0]?.text || scene.audio.transcript}
+            {activeCaption}
           </div>
-        )}
+        ) : null}
       </div>
     </AbsoluteFill>
   );
