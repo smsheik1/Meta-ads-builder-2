@@ -44,9 +44,13 @@ export type AdSceneRenderSnapshot = {
   spec: AdSceneRenderSpec;
 };
 
+const audioUrlIsStoredFile = (url: string | null) => (
+  Boolean(url && !/^(data|blob):/i.test(url))
+);
+
 export const isGeneratedSceneAudio = (scene: AdScene) => (
   scene.audio.status === 'generated' &&
-  Boolean(scene.audio.url) &&
+  audioUrlIsStoredFile(scene.audio.url) &&
   scene.audio.sourceSceneId === scene.id
 );
 
@@ -70,6 +74,8 @@ export const createRenderSnapshot = (scene: AdScene): AdSceneRenderSnapshot => {
       ...nextScene.audio,
       status: 'none',
       url: null,
+      storageId: null,
+      mimeType: null,
       transcript: '',
       captions: [],
       sourceSceneId: null,

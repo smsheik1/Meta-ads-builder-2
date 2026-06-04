@@ -31,12 +31,17 @@ const test = async (name: string, run: () => void | Promise<void>) => {
   }
 };
 
+const STORED_AUDIO_URL = 'https://intent-capybara-375.convex.cloud/api/storage/mock-audio';
+const STORED_AUDIO_ID = 'kg2audioassetmock' as const;
+
 const withGeneratedAudio = (scene: AdScene) => ({
   ...cloneAdScene(scene),
   audio: {
     ...scene.audio,
     status: 'generated' as const,
-    url: 'data:audio/wav;base64,abc',
+    url: STORED_AUDIO_URL,
+    storageId: STORED_AUDIO_ID,
+    mimeType: 'audio/wav',
     transcript: 'First line. Second line.',
     captions: [
       { text: 'First line.', startMs: 0, endMs: 1400, speaker: 'a' as const },
@@ -45,6 +50,15 @@ const withGeneratedAudio = (scene: AdScene) => ({
     sourceSceneId: scene.id,
     scriptId: 'script-1',
     durationMs: 2800,
+  },
+});
+
+const withInlineGeneratedAudio = (scene: AdScene) => ({
+  ...withGeneratedAudio(scene),
+  audio: {
+    ...withGeneratedAudio(scene).audio,
+    url: 'data:audio/wav;base64,abc',
+    storageId: null,
   },
 });
 
@@ -83,7 +97,7 @@ await test('share slugs and download filenames are safe and brand-specific', () 
 });
 
 await test('share record builder freezes a Convex-safe render snapshot', () => {
-  const record = createShareSceneRecord(withGeneratedAudio(ogToolScene), 1_717_200_000_000);
+  const record = createShareSceneRecord(withInlineGeneratedAudio(ogToolScene), 1_717_200_000_000);
 
   assert.equal(record.slug, 'why-ai-recommends-your-competitors-cjk00');
   assert.equal(record.scene.creative.headline, ogToolScene.creative.headline);
@@ -91,6 +105,16 @@ await test('share record builder freezes a Convex-safe render snapshot', () => {
   assert.equal(record.scene.audio.url, null);
   assert.equal(record.durationMs, 6000);
   assert.equal(record.spec.compositionId, AD_SCENE_RENDER_SPECS['instagram-feed'].compositionId);
+});
+
+await test('share record builder preserves stored generated audio', () => {
+  const record = createShareSceneRecord(withGeneratedAudio(ogToolScene), 1_717_200_000_000);
+
+  assert.equal(record.scene.audio.status, 'generated');
+  assert.equal(record.scene.audio.url, STORED_AUDIO_URL);
+  assert.equal(record.scene.audio.storageId, STORED_AUDIO_ID);
+  assert.equal(record.scene.audio.mimeType, 'audio/wav');
+  assert.equal(record.durationMs, 2800);
 });
 
 await test('render tickets store a frozen scene for normal attachment downloads', async () => {

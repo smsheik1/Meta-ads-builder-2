@@ -19,6 +19,8 @@ export const stripInlineAudioForPersistence = (scene: AdScene): AdScene => {
     nextScene.audio = {
       status: 'none',
       url: null,
+      storageId: null,
+      mimeType: null,
       transcript: '',
       captions: [],
       brandKey: null,
