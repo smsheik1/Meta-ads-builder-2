@@ -28,6 +28,23 @@ npm run dev
 
 The Vite client runs on `http://localhost:3000` and the API server runs on `http://localhost:3001` behind the dev proxy.
 
+### Clean-Room Create Rebuild
+
+The new Wiggly create path is being rebuilt in `apps/web` behind a separate
+Next.js workspace. The old app remains the default until the cutover issue.
+
+```bash
+npm run dev:legacy
+npm run dev:web
+npm run test:create-v2
+```
+
+- `npm run dev` still runs the legacy Vite/Express app.
+- `npm run dev:legacy` runs the legacy Vite/Express app on `http://localhost:3000` with the API on `http://localhost:3001`.
+- `npm run dev:web` runs the new Next app on `http://localhost:3010`.
+- `http://localhost:3010/create-v2` is the temporary foundation route for the rebuild.
+- Legacy product work is frozen. See [Legacy Freeze](docs/LEGACY_FREEZE.md).
+
 ## Environment Variables
 
 Create a local `.env` or `.env.local` file with:
