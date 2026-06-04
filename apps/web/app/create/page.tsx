@@ -1,5 +1,5 @@
 import { CreateFoundation } from '@/features/create/CreateFoundation';
 
-export default function HomePage() {
+export default function CreatePage() {
   return <CreateFoundation />;
 }
