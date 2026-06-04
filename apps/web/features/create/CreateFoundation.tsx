@@ -1,7 +1,9 @@
 'use client';
 
 import { FormEvent, useEffect, useReducer, useState } from 'react';
-import { Download, ExternalLink, Globe2, Link2, Loader2, Lock, Wand2 } from 'lucide-react';
+import { useMutation, useQuery } from 'convex/react';
+import { Globe2, Loader2, Lock, Wand2 } from 'lucide-react';
+import { api } from '@/convex/_generated/api';
 import { Button } from '@/components/ui/button';
 import { AudioOptionsPanel, type AudioPanelStatus } from '@/features/audio/AudioOptionsPanel';
 import { scriptCacheMatches, type DialogueScript } from '@/features/audio/dialogueScripts';
@@ -13,14 +15,10 @@ import { getAdSceneBrandKey, type AdScene } from './scene';
 import { ogToolScene } from './fixtures';
 import { reduceAdScene } from './sceneReducer';
 import { SavedDesignsPanel } from './SavedDesignsPanel';
-import { loadSavedDesign, type SavedDesign } from './sceneAdapters';
-import {
-  deleteSavedDesign,
-  readSavedDesigns,
-  sceneHasSavedSnapshot,
-  upsertSavedDesign,
-  writeSavedDesigns,
-} from './savedDesigns';
+import { ExportPanel } from './ExportPanel';
+import { createSavedDesign, loadSavedDesign, type SavedDesign } from './sceneAdapters';
+import { sceneHasSavedSnapshot } from './savedDesigns';
+import { getOrCreateAnonymousSessionId } from './anonymousSession';
 
 type CreateSceneResponse = {
   scene?: AdScene;
@@ -70,7 +68,7 @@ export function CreateFoundation() {
   const [selectedScriptId, setSelectedScriptId] = useState('');
   const [audioStatus, setAudioStatus] = useState<AudioPanelStatus>('idle');
   const [audioError, setAudioError] = useState('');
-  const [savedDesigns, setSavedDesigns] = useState<SavedDesign[]>([]);
+  const [sessionId, setSessionId] = useState('');
   const [savedError, setSavedError] = useState('');
   const [exportStatus, setExportStatus] = useState<'idle' | 'rendering' | 'ready' | 'error'>('idle');
   const [exportError, setExportError] = useState('');
@@ -129,29 +127,40 @@ export function CreateFoundation() {
     scene.brand.receipts.exactSiteLanguage[0] ||
     scene.brand.receipts.buyerMoments[0] ||
     'No specific receipt found yet.';
+  const convexSavedDesigns = useQuery(api.savedDesigns.list, sessionId ? { sessionId } : 'skip') as SavedDesign[] | undefined;
+  const upsertSavedDesignMutation = useMutation(api.savedDesigns.upsert);
+  const deleteSavedDesignMutation = useMutation(api.savedDesigns.remove);
+  const savedDesigns = convexSavedDesigns ?? [];
+  const savedDesignsLoading = Boolean(sessionId) && convexSavedDesigns === undefined;
   const currentSceneSaved = sceneHasSavedSnapshot(savedDesigns, scene);
   const selectedScript = scriptOptions.find((script) => script.id === selectedScriptId) || scriptOptions[0] || null;
 
   useEffect(() => {
     try {
-      setSavedDesigns(readSavedDesigns(window.localStorage));
+      setSessionId(getOrCreateAnonymousSessionId(window.localStorage));
     } catch {
-      setSavedError('Saved designs could not load in this browser.');
+      setSavedError('Saved designs could not connect in this browser.');
     }
   }, []);
 
-  const persistSavedDesigns = (nextDesigns: SavedDesign[]) => {
-    writeSavedDesigns(window.localStorage, nextDesigns);
-    setSavedDesigns(nextDesigns);
-    setSavedError('');
-  };
-
   const saveCurrentDesign = () => {
-    try {
-      persistSavedDesigns(upsertSavedDesign(savedDesigns, scene));
-    } catch {
-      setSavedError('This browser could not save the ad. Storage may be full.');
+    if (!sessionId) {
+      setSavedError('Saved designs are still connecting. Try again in a second.');
+      return;
     }
+
+    const existing = savedDesigns.find((design) => design.scene.id === scene.id);
+    const design = createSavedDesign(scene, scene.creative.headline, Date.now(), existing?.id);
+
+    void upsertSavedDesignMutation({
+      sessionId,
+      sceneId: scene.id,
+      design,
+    }).then(() => {
+      setSavedError('');
+    }).catch(() => {
+      setSavedError('This browser could not save the ad.');
+    });
   };
 
   const openSavedDesign = (design: SavedDesign) => {
@@ -166,11 +175,19 @@ export function CreateFoundation() {
   };
 
   const removeSavedDesign = (designId: string) => {
-    try {
-      persistSavedDesigns(deleteSavedDesign(savedDesigns, designId));
-    } catch {
-      setSavedError('This browser could not delete that saved ad.');
+    if (!sessionId) {
+      setSavedError('Saved designs are still connecting. Try again in a second.');
+      return;
     }
+
+    void deleteSavedDesignMutation({
+      sessionId,
+      designId,
+    }).then(() => {
+      setSavedError('');
+    }).catch(() => {
+      setSavedError('This browser could not delete that saved ad.');
+    });
   };
 
   const downloadVideo = async () => {
@@ -368,68 +385,22 @@ export function CreateFoundation() {
             currentSceneSaved={currentSceneSaved}
             savedDesigns={savedDesigns}
             savedError={savedError}
+            savedLoading={savedDesignsLoading}
             onDeleteDesign={removeSavedDesign}
             onLoadDesign={openSavedDesign}
             onSaveDesign={saveCurrentDesign}
           />
 
-          <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
-                Export
-              </p>
-              <p className="mt-1 text-sm font-bold text-slate-500">
-                Download or share the exact scene snapshot on the canvas.
-              </p>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Button type="button" onClick={downloadVideo} disabled={exportStatus === 'rendering'}>
-                {exportStatus === 'rendering' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                {exportStatus === 'rendering' ? 'Rendering video' : exportStatus === 'ready' ? 'Save video' : 'Download video'}
-              </Button>
-              <Button type="button" variant="secondary" onClick={createShareLink} disabled={shareStatus === 'saving'}>
-                {shareStatus === 'saving' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
-                {shareStatus === 'saving' ? 'Creating link' : 'Create share link'}
-              </Button>
-            </div>
-            {exportStatus === 'ready' && (
-              <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-700">
-                <p>Video is ready.</p>
-                {exportDownloadUrl && (
-                  <a
-                    href={exportDownloadUrl}
-                    className="mt-1 inline-block underline decoration-emerald-300 underline-offset-4"
-                  >
-                    Click Save video, or use this direct download link.
-                  </a>
-                )}
-              </div>
-            )}
-            {exportStatus === 'error' && (
-              <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-black text-red-700">
-                {exportError}
-              </p>
-            )}
-            {shareUrl && (
-              <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="truncate text-sm font-black text-slate-700">{shareUrl}</p>
-                <a
-                  href={shareUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-2 inline-flex items-center gap-2 text-sm font-black text-slate-950"
-                >
-                  Open share page
-                  <ExternalLink className="h-4 w-4" />
-                </a>
-              </div>
-            )}
-            {shareStatus === 'error' && (
-              <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-black text-red-700">
-                {shareError}
-              </p>
-            )}
-          </section>
+          <ExportPanel
+            exportDownloadUrl={exportDownloadUrl}
+            exportError={exportError}
+            exportStatus={exportStatus}
+            shareError={shareError}
+            shareStatus={shareStatus}
+            shareUrl={shareUrl}
+            onCreateShareLink={createShareLink}
+            onDownloadVideo={downloadVideo}
+          />
 
           <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">

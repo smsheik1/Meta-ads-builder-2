@@ -13,6 +13,10 @@ import { ogToolScene, redfinScene } from '../features/create/fixtures';
 import { cloneAdScene, deserializeAdScene, serializeAdScene } from '../features/create/scene';
 import { reduceAdScene } from '../features/create/sceneReducer';
 import {
+  ANONYMOUS_SESSION_STORAGE_KEY,
+  getOrCreateAnonymousSessionId,
+} from '../features/create/anonymousSession';
+import {
   MAX_SAVED_DESIGNS,
   SAVED_DESIGNS_STORAGE_KEY,
   deleteSavedDesign,
@@ -246,6 +250,16 @@ test('saved design storage safely parses, sorts, caps, and deletes snapshots', (
   assert.equal(restored[0].updatedAt, 1_000 + MAX_SAVED_DESIGNS + 1);
   assert.equal(deleted.length, MAX_SAVED_DESIGNS - 1);
   assert.equal(deleted.some((design) => design.id === restored[0].id), false);
+});
+
+test('anonymous session id is stable across refreshes', () => {
+  const storage = createMemoryStorage();
+  const firstSessionId = getOrCreateAnonymousSessionId(storage);
+  const secondSessionId = getOrCreateAnonymousSessionId(storage);
+
+  assert.match(firstSessionId, /^anon-/);
+  assert.equal(secondSessionId, firstSessionId);
+  assert.equal(storage.getItem(ANONYMOUS_SESSION_STORAGE_KEY), firstSessionId);
 });
 
 test('current scene is saved only when the snapshot matches the latest scene update', () => {
