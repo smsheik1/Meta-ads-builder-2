@@ -10,6 +10,7 @@ type SavedDesignsPanelProps = {
   currentSceneSaved: boolean;
   savedDesigns: SavedDesign[];
   savedError: string;
+  savedLoading: boolean;
   onDeleteDesign: (designId: string) => void;
   onLoadDesign: (design: SavedDesign) => void;
   onSaveDesign: () => void;
@@ -73,6 +74,7 @@ export function SavedDesignsPanel({
   currentSceneSaved,
   savedDesigns,
   savedError,
+  savedLoading,
   onDeleteDesign,
   onLoadDesign,
   onSaveDesign,
@@ -91,7 +93,7 @@ export function SavedDesignsPanel({
             Saved designs
           </p>
           <p className="mt-1 text-sm font-bold text-slate-500">
-            Saved on this device. Open one without leaving the page.
+            Synced to this session. Open one without leaving the page.
           </p>
         </div>
         <Button type="button" variant={currentSceneSaved ? 'secondary' : 'primary'} onClick={onSaveDesign}>
@@ -111,7 +113,11 @@ export function SavedDesignsPanel({
         </p>
       )}
 
-      {savedDesigns.length === 0 ? (
+      {savedLoading ? (
+        <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm font-bold text-slate-500">
+          Loading saved ads...
+        </div>
+      ) : savedDesigns.length === 0 ? (
         <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm font-bold text-slate-500">
           The ads you save will appear here as reusable snapshots.
         </div>

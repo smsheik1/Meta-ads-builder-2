@@ -1,5 +1,5 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '@/convex/_generated/api';
 import type { AdScene } from '@/features/create/scene';
 import {
   createRenderSnapshot,
@@ -12,54 +12,41 @@ export type ShareSceneRecord = AdSceneRenderSnapshot & {
   createdAt: number;
 };
 
-const getShareStoreDir = () => (
-  path.join(process.cwd(), 'tmp', 'create-v2-shares')
-);
-
-const getShareRecordPath = (slug: string) => (
-  path.join(getShareStoreDir(), `${slug}.json`)
-);
-
 const sanitizeSlug = (value: string) => (
   value.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-|-$/g, '').slice(0, 80)
 );
 
-export const saveShareSceneRecord = async (scene: AdScene, now = Date.now()) => {
-  await fs.mkdir(getShareStoreDir(), { recursive: true });
+const getConvexClient = () => {
+  const url = process.env.NEXT_PUBLIC_CONVEX_URL || process.env.CONVEX_URL;
 
-  const baseSlug = sanitizeSlug(createSceneSlug(scene, now));
-  let slug = baseSlug;
-  let attempt = 0;
-
-  while (attempt < 5) {
-    try {
-      await fs.access(getShareRecordPath(slug));
-      attempt += 1;
-      slug = `${baseSlug}-${attempt + 1}`;
-    } catch {
-      break;
-    }
+  if (!url) {
+    throw new Error('Convex is not configured for share links.');
   }
 
-  const record: ShareSceneRecord = {
+  return new ConvexHttpClient(url);
+};
+
+export const createShareSceneRecord = (
+  scene: AdScene,
+  now = Date.now(),
+  slug = sanitizeSlug(createSceneSlug(scene, now)),
+): ShareSceneRecord => ({
     ...createRenderSnapshot(scene),
     slug,
     createdAt: now,
-  };
+  });
 
-  await fs.writeFile(getShareRecordPath(slug), JSON.stringify(record), 'utf8');
+export const saveShareSceneRecord = async (scene: AdScene, now = Date.now()) => {
+  const record = createShareSceneRecord(scene, now);
+  const saved = await getConvexClient().mutation(api.shareScenes.save, { record });
 
-  return record;
+  return saved as ShareSceneRecord;
 };
 
 export const readShareSceneRecord = async (slug: string) => {
   const safeSlug = sanitizeSlug(slug);
   if (!safeSlug || safeSlug !== slug) return null;
 
-  try {
-    const raw = await fs.readFile(getShareRecordPath(safeSlug), 'utf8');
-    return JSON.parse(raw) as ShareSceneRecord;
-  } catch {
-    return null;
-  }
+  const record = await getConvexClient().query(api.shareScenes.getBySlug, { slug: safeSlug });
+  return record as ShareSceneRecord | null;
 };

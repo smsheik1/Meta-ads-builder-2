@@ -18,7 +18,7 @@ import {
   deleteRenderSceneTicket,
   readRenderSceneTicket,
 } from '../features/export/renderSceneTicketStore';
-import { readShareSceneRecord, saveShareSceneRecord } from '../features/share/shareSceneStore';
+import { createShareSceneRecord } from '../features/share/shareSceneStore';
 
 const test = async (name: string, run: () => void | Promise<void>) => {
   try {
@@ -81,17 +81,13 @@ await test('share slugs and download filenames are safe and brand-specific', () 
   assert.equal(createDownloadFilename(ogToolScene), 'ogtool-why-ai-recommends-your-competitors.mp4');
 });
 
-await test('local share store writes and reads the same frozen render snapshot', async () => {
-  const record = await saveShareSceneRecord(withGeneratedAudio(ogToolScene), 1_717_200_000_000);
-  const restored = await readShareSceneRecord(record.slug);
+await test('share record builder freezes the render snapshot for Convex storage', () => {
+  const record = createShareSceneRecord(withGeneratedAudio(ogToolScene), 1_717_200_000_000);
 
-  assert.ok(restored);
-  assert.equal(restored.slug, record.slug);
-  assert.equal(restored.scene.creative.headline, ogToolScene.creative.headline);
-  assert.equal(restored.durationMs, 2800);
-  assert.equal(restored.spec.compositionId, AD_SCENE_RENDER_SPECS['instagram-feed'].compositionId);
-
-  await fs.rm(path.join(process.cwd(), 'tmp', 'create-v2-shares'), { recursive: true, force: true });
+  assert.equal(record.slug, 'why-ai-recommends-your-competitors-cjk00');
+  assert.equal(record.scene.creative.headline, ogToolScene.creative.headline);
+  assert.equal(record.durationMs, 2800);
+  assert.equal(record.spec.compositionId, AD_SCENE_RENDER_SPECS['instagram-feed'].compositionId);
 });
 
 await test('render tickets store a frozen scene for normal attachment downloads', async () => {

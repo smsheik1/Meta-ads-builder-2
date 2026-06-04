@@ -22,6 +22,11 @@ npm run test:create-v2
 
 ## Current Scope
 
-Child issue #1 only proves the new workspace, `AdScene` contract, reducer,
-adapters, and a minimal Remotion fixture. It does not cut over `/` or `/create`,
-does not persist to Convex, and does not make live AI or TTS calls.
+The new `/create-v2` path owns the clean-room create loop: website research,
+generated `AdScene` snapshots, audio script/TTS generation, saved designs,
+share pages, and Remotion export. The frozen legacy app still serves the old
+Vite/Express experience until `/` and `/create` are explicitly cut over.
+
+Convex is the v2 data spine for saved designs and share snapshots. Temporary
+MP4 render tickets still live on local server files until durable video storage
+is added.
