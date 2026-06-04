@@ -2,10 +2,26 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createSavedDesign, loadSavedDesign, toRenderScene, toShareScene } from '../features/create/sceneAdapters';
+import {
+  createSavedDesign,
+  loadSavedDesign,
+  toRenderScene,
+  toShareScene,
+  type SavedDesign,
+} from '../features/create/sceneAdapters';
 import { ogToolScene, redfinScene } from '../features/create/fixtures';
 import { cloneAdScene, deserializeAdScene, serializeAdScene } from '../features/create/scene';
 import { reduceAdScene } from '../features/create/sceneReducer';
+import {
+  MAX_SAVED_DESIGNS,
+  SAVED_DESIGNS_STORAGE_KEY,
+  deleteSavedDesign,
+  parseSavedDesigns,
+  readSavedDesigns,
+  sceneHasSavedSnapshot,
+  upsertSavedDesign,
+  writeSavedDesigns,
+} from '../features/create/savedDesigns';
 
 const __filename = fileURLToPath(import.meta.url);
 const webRoot = path.resolve(path.dirname(__filename), '..');
@@ -19,6 +35,18 @@ const test = (name: string, run: () => void) => {
     console.error(`not ok - ${name}`);
     throw error;
   }
+};
+
+const createMemoryStorage = (initialValue: string | null = null) => {
+  const records = new Map<string, string>();
+  if (initialValue !== null) records.set(SAVED_DESIGNS_STORAGE_KEY, initialValue);
+
+  return {
+    getItem: (key: string) => records.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      records.set(key, value);
+    },
+  };
 };
 
 const listSourceFiles = (dir: string): string[] => {
@@ -156,6 +184,80 @@ test('saved design and render/share adapters clone scene data', () => {
   assert.notEqual(renderScene, scene);
   assert.equal(shareScene.brand.name, scene.brand.name);
   assert.equal(shareScene.creative.headline, scene.creative.headline);
+});
+
+test('saved design upsert stores full scene snapshots without aliasing', () => {
+  const withAudio = reduceAdScene(ogToolScene, {
+    type: 'updateAudio',
+    audio: {
+      status: 'generated',
+      url: 'data:audio/wav;base64,abc',
+      transcript: 'Saved transcript',
+      captions: [{ text: 'Saved transcript', startMs: 0, endMs: 1200 }],
+      sourceSceneId: ogToolScene.id,
+      scriptId: 'script-1',
+      durationMs: 1200,
+    },
+    now: 200,
+  });
+  const firstSave = upsertSavedDesign([], withAudio, 300);
+  const loaded = loadSavedDesign(firstSave[0]);
+
+  assert.equal(firstSave.length, 1);
+  assert.equal(firstSave[0].scene.audio.url, 'data:audio/wav;base64,abc');
+  assert.deepEqual(loaded, withAudio);
+  assert.notEqual(loaded, withAudio);
+  assert.notEqual(firstSave[0].scene, withAudio);
+});
+
+test('saving the same scene updates the existing saved design in place', () => {
+  const firstSave = upsertSavedDesign([], ogToolScene, 300);
+  const changedScene = reduceAdScene(ogToolScene, {
+    type: 'rerollCreative',
+    creative: { headline: 'Updated saved headline' },
+    now: 301,
+  });
+  const secondSave = upsertSavedDesign(firstSave, changedScene, 400);
+
+  assert.equal(secondSave.length, 1);
+  assert.equal(secondSave[0].id, firstSave[0].id);
+  assert.equal(secondSave[0].createdAt, 300);
+  assert.equal(secondSave[0].updatedAt, 400);
+  assert.equal(secondSave[0].scene.creative.headline, 'Updated saved headline');
+});
+
+test('saved design storage safely parses, sorts, caps, and deletes snapshots', () => {
+  assert.deepEqual(parseSavedDesigns('not-json'), []);
+
+  const saved = Array.from({ length: MAX_SAVED_DESIGNS + 2 }).reduce<SavedDesign[]>((designs, _value, index) => {
+    const scene = {
+      ...cloneAdScene(ogToolScene),
+      id: `scene-${index}`,
+      updatedAt: index,
+    };
+    return upsertSavedDesign(designs, scene, 1_000 + index);
+  }, []);
+  const storage = createMemoryStorage();
+  writeSavedDesigns(storage, saved);
+  const restored = readSavedDesigns(storage);
+  const deleted = deleteSavedDesign(restored, restored[0].id);
+
+  assert.equal(restored.length, MAX_SAVED_DESIGNS);
+  assert.equal(restored[0].updatedAt, 1_000 + MAX_SAVED_DESIGNS + 1);
+  assert.equal(deleted.length, MAX_SAVED_DESIGNS - 1);
+  assert.equal(deleted.some((design) => design.id === restored[0].id), false);
+});
+
+test('current scene is saved only when the snapshot matches the latest scene update', () => {
+  const saved = upsertSavedDesign([], ogToolScene, 300);
+  const changedScene = reduceAdScene(ogToolScene, {
+    type: 'rerollCreative',
+    creative: { headline: 'Unsaved headline change' },
+    now: ogToolScene.updatedAt + 1,
+  });
+
+  assert.equal(sceneHasSavedSnapshot(saved, ogToolScene), true);
+  assert.equal(sceneHasSavedSnapshot(saved, changedScene), false);
 });
 
 test('new web app does not import from legacy src/App.tsx', () => {
