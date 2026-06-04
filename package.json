@@ -22,7 +22,7 @@
     "lint:web": "npm run typecheck -w @wiggly/web",
     "lint": "npm run lint:legacy && npm run lint:web && npm run test:create-v2",
     "test:legacy": "playwright test",
-    "test:create-v2": "tsx apps/web/tests/create-v2-foundation.test.ts",
+    "test:create-v2": "npm run test -w @wiggly/web",
     "test": "npm run test:create-v2 && npm run test:legacy"
   },
   "dependencies": {
@@ -71,6 +71,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@babel/parser": "^7.29.7",
     "@playwright/test": "^1.59.1",
     "@types/express": "^4.17.21",
     "@types/fluent-ffmpeg": "^2.1.28",
