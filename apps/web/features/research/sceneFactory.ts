@@ -1,4 +1,5 @@
 import { AD_SCENE_VERSION, DEFAULT_SCENE_LOCKS, type AdScene } from '@/features/create/scene';
+import type { AdCopy } from './adCopy';
 import type { WebsiteResearch } from './websiteResearch';
 
 const slugify = (value: string) => value
@@ -113,12 +114,14 @@ const pickAccentColor = (research: WebsiteResearch) => {
 
 export const buildAdSceneFromWebsiteResearch = (
   research: WebsiteResearch,
-  now = Date.now(),
+  optionsOrNow: number | { now?: number; copy?: AdCopy } = Date.now(),
 ): AdScene => {
+  const now = typeof optionsOrNow === 'number' ? optionsOrNow : optionsOrNow.now ?? Date.now();
+  const copy = typeof optionsOrNow === 'number' ? undefined : optionsOrNow.copy;
   const audience = chooseAudience(research);
   const pain = choosePain(research, audience);
-  const headline = chooseHeadline(research);
-  const subheadline = chooseSubheadline(research, audience);
+  const headline = copy?.headline || chooseHeadline(research);
+  const subheadline = copy?.subheadline || chooseSubheadline(research, audience);
   const accentColor = pickAccentColor(research);
 
   return {
@@ -135,10 +138,10 @@ export const buildAdSceneFromWebsiteResearch = (
     },
     platform: 'instagram-feed',
     creative: {
-      angleId: slugify(headline),
+      angleId: copy?.angleId || slugify(headline),
       headline,
       subheadline,
-      ctaText: hasSignal(research, /\b(shop|store|product|products|collection|sale)\b/i) ? 'Shop now' : 'Learn More',
+      ctaText: copy?.ctaText || (hasSignal(research, /\b(shop|store|product|products|collection|sale)\b/i) ? 'Shop now' : 'Learn More'),
       ctaUrl: research.websiteUrl,
       backgroundColor: '#fbfaf6',
       accentColor,

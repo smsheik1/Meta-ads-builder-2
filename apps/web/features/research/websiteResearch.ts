@@ -2,6 +2,12 @@ import { load } from 'cheerio';
 import type { AdSceneReceipts } from '@/features/create/scene';
 import { assertPublicWebsiteUrl, normalizeWebsiteUrl, type LookupWebsiteHost } from './url';
 
+export type ResearchProviderStatus = {
+  provider: 'html' | 'firecrawl' | 'openrouter';
+  status: 'used' | 'skipped' | 'failed';
+  reason: string;
+};
+
 export type WebsiteResearch = {
   websiteUrl: string;
   finalUrl: string;
@@ -16,6 +22,7 @@ export type WebsiteResearch = {
   headings: string[];
   paragraphs: string[];
   receipts: AdSceneReceipts;
+  providerStatus: ResearchProviderStatus[];
 };
 
 type Fetcher = typeof fetch;
@@ -188,6 +195,11 @@ export const extractWebsiteResearch = ({
     headings,
     paragraphs,
     receipts,
+    providerStatus: [{
+      provider: 'html',
+      status: 'used',
+      reason: `Read ${headings.length} headings and ${paragraphs.length} page snippets.`,
+    }],
   };
 };
 

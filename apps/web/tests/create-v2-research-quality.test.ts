@@ -1,0 +1,212 @@
+import assert from 'node:assert/strict';
+import { generateAdCopy } from '../features/research/adCopy';
+import {
+  enrichResearchWithFirecrawl,
+  fetchResearchWithFirecrawl,
+  firecrawlResearchWasUsed,
+} from '../features/research/firecrawl';
+import { evaluateResearchQuality } from '../features/research/researchQuality';
+import { buildAdSceneFromWebsiteResearch } from '../features/research/sceneFactory';
+import { extractWebsiteResearch } from '../features/research/websiteResearch';
+import { normalizeWebsiteUrl } from '../features/research/url';
+
+const strongHtml = `
+<!doctype html>
+<html>
+  <head>
+    <title>OGTool | ChatGPT Mentions in 14 Days</title>
+    <meta property="og:site_name" content="OGTool" />
+    <meta property="og:title" content="ChatGPT Mentions in 14 Days" />
+    <meta name="description" content="Fully managed Reddit marketing campaigns and ChatGPT search visibility optimization for D2C brands seeking rapid organic growth." />
+    <meta name="theme-color" content="#7DD3FC" />
+    <link rel="icon" href="/favicon.ico" />
+  </head>
+  <body>
+    <main>
+      <h1>ChatGPT Mentions in 14 Days</h1>
+      <h2>Reddit campaigns that become AI search receipts</h2>
+      <p>First ChatGPT mention in 14 days for a D2C brand after Reddit visibility work.</p>
+      <p>D2C operators are tired of paying for attention while competitors show up in trusted AI answers first.</p>
+      <p>Customer result: first ranking in 14 days and $88k tracked in two months.</p>
+    </main>
+  </body>
+</html>
+`;
+
+const test = async (name: string, run: () => void | Promise<void>) => {
+  try {
+    await run();
+    console.log(`ok - ${name}`);
+  } catch (error) {
+    console.error(`not ok - ${name}`);
+    throw error;
+  }
+};
+
+const researchFrom = (html: string) => extractWebsiteResearch({
+  websiteUrl: normalizeWebsiteUrl('https://ogtool.com/'),
+  html,
+});
+
+await test('research quality fails loudly when page evidence is too thin', () => {
+  const research = researchFrom('<html><head><title>Home</title></head><body>Hi</body></html>');
+  const quality = evaluateResearchQuality(research);
+
+  assert.equal(quality.level, 'weak');
+  assert.equal(quality.canGenerate, false);
+  assert.match(quality.reasons.at(-1) || '', /specific page evidence/);
+});
+
+await test('research quality allows strong receipt-backed pages', () => {
+  const research = researchFrom(strongHtml);
+  const quality = evaluateResearchQuality(research);
+
+  assert.equal(quality.canGenerate, true);
+  assert.ok(quality.score >= 45);
+});
+
+await test('Firecrawl enrichment skips without a key and preserves HTML research', async () => {
+  const research = researchFrom(strongHtml);
+  const enriched = await enrichResearchWithFirecrawl(research, { apiKey: '' });
+
+  assert.equal(enriched.brandName, 'OGTool');
+  assert.equal(enriched.providerStatus.some((item) => (
+    item.provider === 'firecrawl' && item.status === 'skipped'
+  )), true);
+});
+
+await test('Firecrawl enrichment merges receipts from an injected fetcher', async () => {
+  const research = researchFrom(strongHtml);
+  const enriched = await enrichResearchWithFirecrawl(research, {
+    apiKey: 'test-firecrawl-key',
+    fetcher: async () => new Response(JSON.stringify({
+      success: true,
+      data: {
+        metadata: {
+          title: 'OGTool | AI Search Visibility',
+          description: 'Managed Reddit visibility campaigns for brands that want ChatGPT mentions.',
+        },
+        markdown: `
+# Why AI recommends your competitors
+First ChatGPT mention in 14 days.
+Customer result: $88k tracked in two months from Reddit visibility.
+Operators are tired of competitors showing up in AI answers first.
+        `,
+      },
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }),
+  });
+
+  assert.equal(enriched.providerStatus.some((item) => (
+    item.provider === 'firecrawl' && item.status === 'used'
+  )), true);
+  assert.equal(enriched.receipts.specificClaims.some((claim) => claim.includes('$88k')), true);
+});
+
+await test('Firecrawl primary research builds website research without direct HTML', async () => {
+  const research = await fetchResearchWithFirecrawl('ogtool.com', {
+    apiKey: 'test-firecrawl-key',
+    skipNetworkGuard: true,
+    fetcher: async () => new Response(JSON.stringify({
+      success: true,
+      data: {
+        metadata: {
+          ogSiteName: 'OGTool',
+          title: 'OGTool | First AI Ranking in 14 Days',
+          description: 'Managed Reddit visibility campaigns for brands that want ChatGPT mentions.',
+          favicon: 'https://ogtool.com/favicon.ico',
+        },
+        markdown: `
+# First AI Ranking in 14 Days
+Customer result: $88k tracked in two months.
+Operators are tired of competitors showing up in AI answers first.
+        `,
+      },
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }),
+  });
+
+  assert.equal(research.brandName, 'OGTool');
+  assert.equal(research.websiteUrl, 'https://ogtool.com/');
+  assert.equal(firecrawlResearchWasUsed(research), true);
+  assert.equal(research.receipts.specificClaims.some((claim) => claim.includes('$88k')), true);
+});
+
+await test('Firecrawl primary research fails when not configured', async () => {
+  await assert.rejects(
+    () => fetchResearchWithFirecrawl('ogtool.com', {
+      apiKey: '',
+      skipNetworkGuard: true,
+    }),
+    /Firecrawl is required/,
+  );
+});
+
+await test('OpenRouter copy generation skips without a key and uses receipt fallback', async () => {
+  const research = researchFrom(strongHtml);
+  const result = await generateAdCopy(research, { apiKey: '' });
+
+  assert.equal(result.providerStatus.status, 'skipped');
+  assert.equal(result.copy.headline, 'ChatGPT Mentions in 14 Days');
+});
+
+await test('OpenRouter copy generation requires an explicit model before calling out', async () => {
+  const research = researchFrom(strongHtml);
+  let called = false;
+  const result = await generateAdCopy(research, {
+    apiKey: 'test-openrouter-key',
+    model: '',
+    fetcher: async () => {
+      called = true;
+      return new Response('{}');
+    },
+  });
+
+  assert.equal(called, false);
+  assert.equal(result.providerStatus.status, 'skipped');
+});
+
+await test('OpenRouter copy generation uses injected JSON without live API calls', async () => {
+  const research = researchFrom(strongHtml);
+  const result = await generateAdCopy(research, {
+    apiKey: 'test-openrouter-key',
+    model: 'test/model',
+    fetcher: async () => new Response(JSON.stringify({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            headline: 'Own the AI answer',
+            subheadline: 'First ChatGPT mention in 14 days after Reddit visibility work.',
+            angleId: 'ai-answer-ownership',
+            ctaText: 'Learn More',
+          }),
+        },
+      }],
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }),
+  });
+
+  assert.equal(result.providerStatus.status, 'used');
+  assert.equal(result.copy.headline, 'Own the AI answer');
+});
+
+await test('receipt copy can drive the generated AdScene without audio side effects', async () => {
+  const research = researchFrom(strongHtml);
+  const copyResult = await generateAdCopy(research, { apiKey: '' });
+  const scene = buildAdSceneFromWebsiteResearch(research, {
+    now: 456,
+    copy: copyResult.copy,
+  });
+
+  assert.equal(scene.id, 'scene-ogtool-456');
+  assert.equal(scene.creative.headline, copyResult.copy.headline);
+  assert.equal(scene.creative.subheadline, copyResult.copy.subheadline);
+  assert.equal(scene.audio.status, 'none');
+  assert.deepEqual(scene.audio.captions, []);
+});
