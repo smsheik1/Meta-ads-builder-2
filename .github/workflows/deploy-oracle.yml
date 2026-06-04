@@ -19,6 +19,12 @@ jobs:
       CONVEX_URL: https://intent-capybara-375.convex.cloud
       NEXT_PUBLIC_CONVEX_URL: https://intent-capybara-375.convex.cloud
       NEXT_PUBLIC_CONVEX_SITE_URL: https://intent-capybara-375.convex.site
+      FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENROUTER_AD_MODEL: ${{ vars.OPENROUTER_AD_MODEL }}
+      TTS_MODEL: gemini-3.1-flash-tts-preview
 
     steps:
       - name: Deploy over SSH
@@ -27,7 +33,7 @@ jobs:
           host: ${{ secrets.ORACLE_HOST }}
           username: ${{ secrets.ORACLE_USER }}
           key: ${{ secrets.ORACLE_SSH_KEY }}
-          envs: CONVEX_DEPLOY_KEY,CONVEX_URL,NEXT_PUBLIC_CONVEX_URL,NEXT_PUBLIC_CONVEX_SITE_URL
+          envs: CONVEX_DEPLOY_KEY,CONVEX_URL,NEXT_PUBLIC_CONVEX_URL,NEXT_PUBLIC_CONVEX_SITE_URL,FIRECRAWL_API_KEY,GROQ_API_KEY,GEMINI_API_KEY,OPENROUTER_API_KEY,OPENROUTER_AD_MODEL,TTS_MODEL
           script_stop: true
           script: |
             set -euo pipefail

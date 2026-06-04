@@ -365,6 +365,9 @@ test('oracle deploy pushes Convex before building the app', () => {
 
   assert.match(deployScript, /CONVEX_DEPLOY_KEY/);
   assert.match(deployScript, /NEXT_PUBLIC_CONVEX_URL/);
+  assert.match(deployScript, /FIRECRAWL_API_KEY/);
+  assert.match(deployScript, /GROQ_API_KEY/);
+  assert.match(deployScript, /GEMINI_API_KEY/);
   assert.match(deployScript, /npx convex deploy/);
   assert.ok(deployScript.indexOf('npx convex deploy') < deployScript.indexOf('npm run build'));
   assert.match(webPackage.scripts?.start ?? '', /next start/);
@@ -372,5 +375,8 @@ test('oracle deploy pushes Convex before building the app', () => {
   assert.match(deployScript, /\(cd apps\/web && pm2 start npm --name "\$APP_NAME" -- run start\)/);
   assert.doesNotMatch(deployScript, /pm2 restart "\$APP_NAME"/);
   assert.match(deployWorkflow, /secrets\.CONVEX_DEPLOY_KEY/);
-  assert.match(deployWorkflow, /envs: CONVEX_DEPLOY_KEY,CONVEX_URL,NEXT_PUBLIC_CONVEX_URL,NEXT_PUBLIC_CONVEX_SITE_URL/);
+  assert.match(deployWorkflow, /secrets\.FIRECRAWL_API_KEY/);
+  assert.match(deployWorkflow, /secrets\.GROQ_API_KEY/);
+  assert.match(deployWorkflow, /secrets\.GEMINI_API_KEY/);
+  assert.match(deployWorkflow, /envs: CONVEX_DEPLOY_KEY,CONVEX_URL,NEXT_PUBLIC_CONVEX_URL,NEXT_PUBLIC_CONVEX_SITE_URL,FIRECRAWL_API_KEY,GROQ_API_KEY,GEMINI_API_KEY/);
 });
