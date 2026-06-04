@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { AdScene } from '@/features/create/scene';
+import { getPublicRenderErrorMessage } from '@/features/export/renderErrors';
 import { renderAdSceneToMp4 } from '@/features/export/renderScene';
 import { createRenderSceneTicket } from '@/features/export/renderSceneTicketStore';
 
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('[create-v2 render-scene-ticket]', error);
     return NextResponse.json({
-      error: error instanceof Error ? error.message : 'Could not prepare video download.',
+      error: getPublicRenderErrorMessage(error, 'Could not prepare video download. Try again in a moment.'),
     }, { status: 500 });
   }
 }

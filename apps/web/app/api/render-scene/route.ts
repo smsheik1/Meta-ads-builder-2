@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { AdScene } from '@/features/create/scene';
+import { getPublicRenderErrorMessage } from '@/features/export/renderErrors';
 import { renderAdSceneToMp4 } from '@/features/export/renderScene';
 
 export const runtime = 'nodejs';
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('[create-v2 render-scene]', error);
     return NextResponse.json({
-      error: error instanceof Error ? error.message : 'Video render failed.',
+      error: getPublicRenderErrorMessage(error, 'Video render failed. Try again in a moment.'),
     }, { status: 500 });
   }
 }
