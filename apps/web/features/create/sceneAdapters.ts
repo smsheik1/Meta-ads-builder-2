@@ -5,13 +5,20 @@ export type SavedDesign = {
   title: string;
   scene: AdScene;
   createdAt: number;
+  updatedAt: number;
 };
 
-export const createSavedDesign = (scene: AdScene, title = scene.creative.headline): SavedDesign => ({
-  id: `saved-${scene.id}`,
+export const createSavedDesign = (
+  scene: AdScene,
+  title = scene.creative.headline,
+  now = Date.now(),
+  id = `saved-${scene.id}-${now}`,
+): SavedDesign => ({
+  id,
   title,
   scene: cloneAdScene(scene),
-  createdAt: Date.now(),
+  createdAt: now,
+  updatedAt: now,
 });
 
 export const loadSavedDesign = (design: SavedDesign): AdScene => cloneAdScene(design.scene);

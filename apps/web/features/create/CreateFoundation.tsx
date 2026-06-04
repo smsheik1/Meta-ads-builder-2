@@ -11,6 +11,15 @@ import type { WebsiteResearch } from '@/features/research/websiteResearch';
 import { getAdSceneBrandKey, type AdScene } from './scene';
 import { ogToolScene } from './fixtures';
 import { reduceAdScene } from './sceneReducer';
+import { SavedDesignsPanel } from './SavedDesignsPanel';
+import { loadSavedDesign, type SavedDesign } from './sceneAdapters';
+import {
+  deleteSavedDesign,
+  readSavedDesigns,
+  sceneHasSavedSnapshot,
+  upsertSavedDesign,
+  writeSavedDesigns,
+} from './savedDesigns';
 
 type CreateSceneResponse = {
   scene?: AdScene;
@@ -51,6 +60,8 @@ export function CreateFoundation() {
   const [audioError, setAudioError] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioTimeMs, setAudioTimeMs] = useState(0);
+  const [savedDesigns, setSavedDesigns] = useState<SavedDesign[]>([]);
+  const [savedError, setSavedError] = useState('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const resetAudioPanel = (nextSceneId: string) => {
@@ -100,6 +111,7 @@ export function CreateFoundation() {
     scene.brand.receipts.buyerMoments[0] ||
     'No specific receipt found yet.';
   const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
+  const currentSceneSaved = sceneHasSavedSnapshot(savedDesigns, scene);
   const selectedScript = scriptOptions.find((script) => script.id === selectedScriptId) || scriptOptions[0] || null;
   const playableAudio = scene.audio.status === 'generated' &&
     Boolean(scene.audio.url) &&
@@ -118,6 +130,47 @@ export function CreateFoundation() {
       audioRef.current.currentTime = 0;
     }
   }, [scene.id, scene.audio.url]);
+
+  useEffect(() => {
+    try {
+      setSavedDesigns(readSavedDesigns(window.localStorage));
+    } catch {
+      setSavedError('Saved designs could not load in this browser.');
+    }
+  }, []);
+
+  const persistSavedDesigns = (nextDesigns: SavedDesign[]) => {
+    writeSavedDesigns(window.localStorage, nextDesigns);
+    setSavedDesigns(nextDesigns);
+    setSavedError('');
+  };
+
+  const saveCurrentDesign = () => {
+    try {
+      persistSavedDesigns(upsertSavedDesign(savedDesigns, scene));
+    } catch {
+      setSavedError('This browser could not save the ad. Storage may be full.');
+    }
+  };
+
+  const openSavedDesign = (design: SavedDesign) => {
+    const nextScene = loadSavedDesign(design);
+    dispatch({ type: 'loadScene', scene: nextScene });
+    setWebsiteUrl(nextScene.brand.websiteUrl);
+    setResearch(null);
+    setQuality(null);
+    setError('');
+    setStatus('ready');
+    resetAudioPanel(nextScene.id);
+  };
+
+  const removeSavedDesign = (designId: string) => {
+    try {
+      persistSavedDesigns(deleteSavedDesign(savedDesigns, designId));
+    } catch {
+      setSavedError('This browser could not delete that saved ad.');
+    }
+  };
 
   const loadScriptOptions = async (force = false) => {
     setAudioPanelOpen(true);
@@ -265,6 +318,15 @@ export function CreateFoundation() {
             )}
           </form>
 
+          <SavedDesignsPanel
+            currentSceneSaved={currentSceneSaved}
+            savedDesigns={savedDesigns}
+            savedError={savedError}
+            onDeleteDesign={removeSavedDesign}
+            onLoadDesign={openSavedDesign}
+            onSaveDesign={saveCurrentDesign}
+          />
+
           <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
               Creative brief
@@ -317,7 +379,7 @@ export function CreateFoundation() {
           )}
         </section>
 
-        <section className="mx-auto min-w-0 w-full max-w-full rounded-[34px] border border-slate-200 bg-black p-3 shadow-[0_30px_80px_rgba(15,23,42,0.20)] sm:max-w-[390px]">
+        <section className="mx-auto min-w-0 w-full max-w-full self-start rounded-[34px] border border-slate-200 bg-black p-3 shadow-[0_30px_80px_rgba(15,23,42,0.20)] sm:max-w-[390px]">
           <div className="overflow-hidden rounded-[26px] bg-white">
             <div className="flex items-center gap-3 bg-black px-4 py-3 text-white">
               <div className="grid h-9 w-9 place-items-center rounded-full bg-white text-sm font-black text-slate-950">
