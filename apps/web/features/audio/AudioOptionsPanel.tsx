@@ -1,10 +1,11 @@
 'use client';
 
-import { AudioLines, Loader2, RefreshCw } from 'lucide-react';
+import { ChangeEvent, useRef } from 'react';
+import { AudioLines, Loader2, RefreshCw, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { DialogueScript } from './dialogueScripts';
 
-export type AudioPanelStatus = 'idle' | 'writing' | 'ready' | 'making' | 'error';
+export type AudioPanelStatus = 'idle' | 'writing' | 'ready' | 'making' | 'uploading' | 'error';
 
 type AudioOptionsPanelProps = {
   audioError: string;
@@ -14,6 +15,7 @@ type AudioOptionsPanelProps = {
   onMakeAudio: () => void;
   onNewOptions: () => void;
   onSelectScript: (scriptId: string) => void;
+  onUploadAudio: (file: File) => void;
 };
 
 export function AudioOptionsPanel({
@@ -24,8 +26,17 @@ export function AudioOptionsPanel({
   onMakeAudio,
   onNewOptions,
   onSelectScript,
+  onUploadAudio,
 }: AudioOptionsPanelProps) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const selectedScript = scriptOptions.find((script) => script.id === selectedScriptId) || scriptOptions[0] || null;
+  const busy = audioStatus === 'writing' || audioStatus === 'making' || audioStatus === 'uploading';
+
+  const handleAudioFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (file) onUploadAudio(file);
+  };
 
   return (
     <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
@@ -41,7 +52,7 @@ export function AudioOptionsPanel({
         <Button
           type="button"
           variant="secondary"
-          disabled={audioStatus === 'writing' || audioStatus === 'making'}
+          disabled={busy}
           onClick={onNewOptions}
         >
           {audioStatus === 'writing' ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
@@ -54,6 +65,33 @@ export function AudioOptionsPanel({
           {audioError}
         </p>
       )}
+
+      <div className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-black text-slate-950">Already have a voice clip?</p>
+            <p className="mt-1 text-xs font-bold text-slate-500">
+              Upload it here and Wiggly will save it with this ad.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={busy}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {audioStatus === 'uploading' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            {audioStatus === 'uploading' ? 'Uploading' : 'Upload audio'}
+          </Button>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="audio/*"
+          className="hidden"
+          onChange={handleAudioFileChange}
+        />
+      </div>
 
       <div className="mt-5 space-y-3">
         {audioStatus === 'writing' && (
@@ -87,7 +125,7 @@ export function AudioOptionsPanel({
         <Button
           type="button"
           className="mt-5 w-full"
-          disabled={audioStatus === 'making'}
+          disabled={busy}
           onClick={onMakeAudio}
         >
           {audioStatus === 'making' ? <Loader2 className="h-4 w-4 animate-spin" /> : <AudioLines className="h-4 w-4" />}

@@ -12,7 +12,9 @@ type AdSceneDispatch = (action: AdSceneAction) => void;
 export const useStoredAudioUrlRefresh = (scene: AdScene, dispatch: AdSceneDispatch) => {
   const refreshedAudioAsset = useQuery(
     api.audioAssets.getUrl,
-    scene.audio.status === 'generated' && scene.audio.storageId
+    (scene.audio.status === 'generated' || scene.audio.status === 'uploaded') &&
+      scene.audio.sourceSceneId === scene.id &&
+      scene.audio.storageId
       ? { storageId: scene.audio.storageId as Id<'_storage'> }
       : 'skip',
   );
@@ -20,7 +22,8 @@ export const useStoredAudioUrlRefresh = (scene: AdScene, dispatch: AdSceneDispat
   useEffect(() => {
     if (
       !refreshedAudioAsset?.url ||
-      scene.audio.status !== 'generated' ||
+      (scene.audio.status !== 'generated' && scene.audio.status !== 'uploaded') ||
+      scene.audio.sourceSceneId !== scene.id ||
       !scene.audio.storageId ||
       refreshedAudioAsset.storageId !== scene.audio.storageId ||
       refreshedAudioAsset.url === scene.audio.url

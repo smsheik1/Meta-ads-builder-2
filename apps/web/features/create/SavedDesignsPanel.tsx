@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { BookmarkPlus, CheckCircle2, Clock3, Trash2, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { isStoredSceneAudio } from '@/features/render/adSceneRender';
 import type { AdScene } from './scene';
 import type { SavedDesign } from './sceneAdapters';
 
@@ -25,7 +26,7 @@ const formatSavedTime = (value: number) => (
 
 function SavedDesignPreview({ scene }: { scene: AdScene }) {
   const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
-  const hasAudio = scene.audio.status === 'generated' && scene.audio.sourceSceneId === scene.id;
+  const hasAudio = isStoredSceneAudio(scene);
 
   return (
     <div

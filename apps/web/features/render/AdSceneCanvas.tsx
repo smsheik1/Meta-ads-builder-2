@@ -6,7 +6,7 @@ import type { AdScene } from '@/features/create/scene';
 import {
   getActiveCaptionText,
   getVisualizerBarHeight,
-  isGeneratedSceneAudio,
+  isStoredSceneAudio,
 } from './adSceneRender';
 
 type AdSceneCanvasProps = {
@@ -26,7 +26,7 @@ export function AdSceneCanvas({
   const [audioTimeMs, setAudioTimeMs] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
-  const playableAudio = isGeneratedSceneAudio(scene);
+  const playableAudio = isStoredSceneAudio(scene);
   const captionText = playableAudio && (isPlaying || audioTimeMs > 0)
     ? getActiveCaptionText(scene.audio, audioTimeMs)
     : '';
