@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { BookmarkPlus, CheckCircle2, Clock3, Trash2, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { AdScene } from './scene';
@@ -74,6 +77,12 @@ export function SavedDesignsPanel({
   onLoadDesign,
   onSaveDesign,
 }: SavedDesignsPanelProps) {
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
+
   return (
     <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -120,7 +129,7 @@ export function SavedDesignsPanel({
               <p className="mt-2 truncate text-xs font-black text-slate-800">{design.title}</p>
               <p className="mt-1 flex items-center gap-1 text-[10px] font-bold text-slate-400">
                 <Clock3 className="h-3 w-3" />
-                {formatSavedTime(design.updatedAt)}
+                {hydrated ? formatSavedTime(design.updatedAt) : 'Saved locally'}
               </p>
               <span
                 role="button"

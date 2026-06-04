@@ -7,11 +7,13 @@
     "dev": "next dev -p 3010",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "test": "tsx tests/create-v2-foundation.test.ts && tsx tests/create-v2-website-scene.test.ts && tsx tests/create-v2-research-quality.test.ts && tsx tests/create-v2-audio.test.ts",
+    "test": "tsx tests/create-v2-foundation.test.ts && tsx tests/create-v2-website-scene.test.ts && tsx tests/create-v2-research-quality.test.ts && tsx tests/create-v2-audio.test.ts && tsx tests/create-v2-export-share.test.ts",
     "remotion:still": "remotion still remotion-entry/index.ts AdSceneFixture tmp/adscene-fixture.png --frame=30 --scale=0.25"
   },
   "dependencies": {
     "@google/genai": "^2.2.0",
+    "@remotion/bundler": "4.0.462",
+    "@remotion/renderer": "4.0.462",
     "@tailwindcss/postcss": "^4.3.0",
     "cheerio": "^1.1.2",
     "class-variance-authority": "^0.7.1",
