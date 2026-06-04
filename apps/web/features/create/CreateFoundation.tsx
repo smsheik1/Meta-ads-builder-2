@@ -1,49 +1,58 @@
 'use client';
 
-import { useMemo, useReducer } from 'react';
-import { AudioLines, Lock, Sparkles } from 'lucide-react';
+import { FormEvent, useReducer, useState } from 'react';
+import { AudioLines, Globe2, Loader2, Lock, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import type { WebsiteResearch } from '@/features/research/websiteResearch';
+import type { AdScene } from './scene';
 import { ogToolScene } from './fixtures';
 import { reduceAdScene } from './sceneReducer';
 
-const rerollPayloads = [
-  {
-    headline: 'Why AI recommends your competitors',
-    subheadline: 'Fully managed Reddit and ChatGPT visibility campaigns that secure front-page rankings.',
-    accentColor: '#7dd3fc',
-    visualizer: { color: '#93c5fd' },
-  },
-  {
-    headline: 'Show up where buyers ask',
-    subheadline: 'Turn Reddit proof into the answer ChatGPT remembers.',
-    accentColor: '#f472b6',
-    visualizer: { color: '#f9a8d4' },
-  },
-  {
-    headline: 'Get mentioned before the click',
-    subheadline: 'Build the off-site signals that make AI tools point back to your brand.',
-    accentColor: '#34d399',
-    visualizer: { color: '#6ee7b7' },
-  },
-];
+type CreateSceneResponse = {
+  scene?: AdScene;
+  research?: WebsiteResearch;
+  error?: string;
+};
 
 export function CreateFoundation() {
   const [scene, dispatch] = useReducer(reduceAdScene, ogToolScene);
-  const rerollIndex = useMemo(() => (
-    Math.abs(scene.updatedAt) % rerollPayloads.length
-  ), [scene.updatedAt]);
+  const [websiteUrl, setWebsiteUrl] = useState(scene.brand.websiteUrl);
+  const [research, setResearch] = useState<WebsiteResearch | null>(null);
+  const [status, setStatus] = useState<'idle' | 'researching' | 'ready' | 'error'>('idle');
+  const [error, setError] = useState('');
 
-  const reroll = () => {
-    const next = rerollPayloads[(rerollIndex + 1) % rerollPayloads.length];
-    dispatch({
-      type: 'rerollCreative',
-      creative: {
-        angleId: `fixture-${rerollIndex + 1}`,
-        ...next,
-      },
-      now: scene.updatedAt + 1,
-    });
+  const generateScene = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus('researching');
+    setError('');
+
+    try {
+      const response = await fetch('/api/create-scene', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ websiteUrl }),
+      });
+      const payload = await response.json() as CreateSceneResponse;
+
+      if (!response.ok || !payload.scene || !payload.research) {
+        throw new Error(payload.error || 'Something broke while researching that website.');
+      }
+
+      dispatch({ type: 'loadScene', scene: payload.scene });
+      setWebsiteUrl(payload.scene.brand.websiteUrl);
+      setResearch(payload.research);
+      setStatus('ready');
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Something broke while researching that website.');
+      setStatus('error');
+    }
   };
+
+  const firstReceipt = scene.brand.receipts.specificClaims[0] ||
+    scene.brand.receipts.exactSiteLanguage[0] ||
+    scene.brand.receipts.buyerMoments[0] ||
+    'No specific receipt found yet.';
+  const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
 
   return (
     <main className="min-h-screen px-5 py-8 md:px-10">
@@ -57,25 +66,38 @@ export function CreateFoundation() {
               Drop in your website and watch the magic happen.
             </h1>
             <p className="max-w-xl text-base font-semibold leading-7 text-slate-600">
-              This is the clean-room shell for the new Wiggly product path. For now
-              it proves scene state, locks, and reroll behavior without touching the
-              legacy app.
+              Wiggly reads the page, pulls real selling evidence, and turns it into
+              one clean ad scene without touching the frozen legacy app.
             </p>
           </div>
 
-          <div className="min-w-0 rounded-[26px] border border-slate-200 bg-white p-4 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
+          <form
+            className="min-w-0 rounded-[26px] border border-slate-200 bg-white p-4 shadow-[0_24px_70px_rgba(15,23,42,0.10)]"
+            onSubmit={generateScene}
+          >
             <label className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
-              Website fixture
+              Website
             </label>
-            <div className="mt-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-950">
-              {scene.brand.websiteUrl}
+            <div className="mt-2 flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-3">
+              <Globe2 className="h-4 w-4 shrink-0 text-slate-400" />
+              <input
+                value={websiteUrl}
+                onChange={(event) => setWebsiteUrl(event.target.value)}
+                className="min-w-0 flex-1 bg-transparent text-sm font-black text-slate-950 outline-none"
+                placeholder="https://yourbrand.com"
+              />
             </div>
             <div className="mt-4 flex flex-wrap gap-3">
-              <Button onClick={reroll}>
-                <Sparkles className="h-4 w-4" />
-                Reroll scene
+              <Button type="submit" disabled={status === 'researching'}>
+                {status === 'researching' ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Wand2 className="h-4 w-4" />
+                )}
+                {status === 'researching' ? 'Reading website' : 'Generate ad scene'}
               </Button>
               <Button
+                type="button"
                 variant="secondary"
                 onClick={() => dispatch({
                   type: 'setLock',
@@ -87,14 +109,52 @@ export function CreateFoundation() {
                 {scene.locks.headline ? 'Unlock headline' : 'Lock headline'}
               </Button>
             </div>
-          </div>
+            {error && (
+              <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-black text-red-700">
+                {error}
+              </p>
+            )}
+          </form>
+
+          <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
+              Creative brief
+            </p>
+            <dl className="mt-4 space-y-4">
+              <div>
+                <dt className="text-xs font-black uppercase tracking-wide text-slate-400">Offer</dt>
+                <dd className="mt-1 text-sm font-black leading-6 text-slate-950">{scene.brand.offer}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-black uppercase tracking-wide text-slate-400">Audience</dt>
+                <dd className="mt-1 text-sm font-black leading-6 text-slate-950">{scene.brand.audience}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-black uppercase tracking-wide text-slate-400">Receipt</dt>
+                <dd className="mt-1 text-sm font-black leading-6 text-slate-950">{firstReceipt}</dd>
+              </div>
+            </dl>
+            {research && (
+              <p className="mt-4 text-xs font-bold text-slate-500">
+                Read {research.headings.length} headings and {research.paragraphs.length} page snippets from {research.host}.
+              </p>
+            )}
+          </section>
         </section>
 
         <section className="mx-auto min-w-0 w-full max-w-full rounded-[34px] border border-slate-200 bg-black p-3 shadow-[0_30px_80px_rgba(15,23,42,0.20)] sm:max-w-[390px]">
           <div className="overflow-hidden rounded-[26px] bg-white">
             <div className="flex items-center gap-3 bg-black px-4 py-3 text-white">
               <div className="grid h-9 w-9 place-items-center rounded-full bg-white text-sm font-black text-slate-950">
-                {scene.brand.name.slice(0, 2).toUpperCase()}
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt=""
+                    className="h-full w-full rounded-full object-cover"
+                  />
+                ) : (
+                  scene.brand.name.slice(0, 2).toUpperCase()
+                )}
               </div>
               <div>
                 <p className="text-sm font-black leading-none">{scene.brand.name}</p>
