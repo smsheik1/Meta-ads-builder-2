@@ -10,7 +10,6 @@ import { scriptCacheMatches, type DialogueScript } from '@/features/audio/dialog
 import { createUploadedAudioScenePatch } from '@/features/audio/uploadedAudio';
 import { useStoredAudioUrlRefresh } from '@/features/audio/useStoredAudioUrlRefresh';
 import { AdSceneCanvas } from '@/features/render/AdSceneCanvas';
-import type { AdCopyResult } from '@/features/research/adCopy';
 import type { ResearchQuality } from '@/features/research/researchQuality';
 import type { WebsiteResearch } from '@/features/research/websiteResearch';
 import { getAdSceneBrandKey, type AdScene } from './scene';
@@ -27,7 +26,6 @@ type CreateSceneResponse = {
   scene?: AdScene;
   research?: WebsiteResearch;
   quality?: ResearchQuality;
-  adCopy?: AdCopyResult;
   error?: string;
 };
 
@@ -53,12 +51,7 @@ type ShareSceneResponse = {
   shareUrl?: string;
   error?: string;
 };
-
-type RenderSceneTicketResponse = {
-  downloadUrl?: string;
-  filename?: string;
-  error?: string;
-};
+type RenderSceneTicketResponse = { downloadUrl?: string; error?: string };
 
 export function CreateFoundation() {
   const [scene, dispatch] = useReducer(reduceAdScene, ogToolScene);
@@ -169,6 +162,17 @@ export function CreateFoundation() {
     setShareStatus('idle');
     setShareUrl('');
     setShareError('');
+  };
+
+  const openAudioPanel = () => {
+    setAudioPanelOpen(true);
+    setAudioPanelFocusTick((tick) => tick + 1);
+    setAudioError('');
+    if (scriptCacheMatches(scene.id, scriptSceneId, scriptOptions)) {
+      setAudioStatus('ready');
+    } else if (!['writing', 'making', 'uploading'].includes(audioStatus)) {
+      setAudioStatus('idle');
+    }
   };
 
   const saveCurrentDesign = () => {
@@ -486,7 +490,7 @@ export function CreateFoundation() {
           <CreativeBriefPanel scene={scene} research={research} quality={quality} />
         </section>
 
-        <AdSceneCanvas scene={scene} onAddAudio={() => loadScriptOptions(false)} />
+        <AdSceneCanvas scene={scene} onAddAudio={openAudioPanel} />
       </div>
     </main>
   );
