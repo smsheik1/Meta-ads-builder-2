@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
+import { generateAdCopy } from '@/features/research/adCopy';
+import { fetchResearchWithFirecrawl, firecrawlResearchWasUsed } from '@/features/research/firecrawl';
+import { evaluateResearchQuality } from '@/features/research/researchQuality';
 import { buildAdSceneFromWebsiteResearch } from '@/features/research/sceneFactory';
-import { fetchWebsiteResearch } from '@/features/research/websiteResearch';
 
 export const runtime = 'nodejs';
 
@@ -22,10 +24,35 @@ export async function POST(request: Request) {
   }
 
   try {
-    const research = await fetchWebsiteResearch(body.websiteUrl);
-    const scene = buildAdSceneFromWebsiteResearch(research);
+    const enrichedResearch = await fetchResearchWithFirecrawl(body.websiteUrl);
+    if (!firecrawlResearchWasUsed(enrichedResearch)) {
+      return NextResponse.json({
+        error: 'Firecrawl research did not complete, so Wiggly cannot build a brand-based ad from this website yet.',
+        research: enrichedResearch,
+      }, { status: 422 });
+    }
 
-    return NextResponse.json({ scene, research });
+    const quality = evaluateResearchQuality(enrichedResearch);
+
+    if (!quality.canGenerate) {
+      return NextResponse.json({
+        error: 'Wiggly read the page, but did not find enough specific selling evidence to make a trustworthy ad.',
+        research: enrichedResearch,
+        quality,
+      }, { status: 422 });
+    }
+
+    const adCopy = await generateAdCopy(enrichedResearch);
+    const research = {
+      ...enrichedResearch,
+      providerStatus: [
+        ...enrichedResearch.providerStatus.filter((item) => item.provider !== 'openrouter'),
+        adCopy.providerStatus,
+      ],
+    };
+    const scene = buildAdSceneFromWebsiteResearch(research, { copy: adCopy.copy });
+
+    return NextResponse.json({ scene, research, quality, adCopy });
   } catch (error) {
     const message = error instanceof Error
       ? error.message

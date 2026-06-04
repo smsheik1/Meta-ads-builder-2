@@ -3,6 +3,8 @@
 import { FormEvent, useReducer, useState } from 'react';
 import { AudioLines, Globe2, Loader2, Lock, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import type { AdCopyResult } from '@/features/research/adCopy';
+import type { ResearchQuality } from '@/features/research/researchQuality';
 import type { WebsiteResearch } from '@/features/research/websiteResearch';
 import type { AdScene } from './scene';
 import { ogToolScene } from './fixtures';
@@ -11,6 +13,8 @@ import { reduceAdScene } from './sceneReducer';
 type CreateSceneResponse = {
   scene?: AdScene;
   research?: WebsiteResearch;
+  quality?: ResearchQuality;
+  adCopy?: AdCopyResult;
   error?: string;
 };
 
@@ -18,6 +22,7 @@ export function CreateFoundation() {
   const [scene, dispatch] = useReducer(reduceAdScene, ogToolScene);
   const [websiteUrl, setWebsiteUrl] = useState(scene.brand.websiteUrl);
   const [research, setResearch] = useState<WebsiteResearch | null>(null);
+  const [quality, setQuality] = useState<ResearchQuality | null>(null);
   const [status, setStatus] = useState<'idle' | 'researching' | 'ready' | 'error'>('idle');
   const [error, setError] = useState('');
 
@@ -35,12 +40,15 @@ export function CreateFoundation() {
       const payload = await response.json() as CreateSceneResponse;
 
       if (!response.ok || !payload.scene || !payload.research) {
+        setResearch(payload.research ?? null);
+        setQuality(payload.quality ?? null);
         throw new Error(payload.error || 'Something broke while researching that website.');
       }
 
       dispatch({ type: 'loadScene', scene: payload.scene });
       setWebsiteUrl(payload.scene.brand.websiteUrl);
       setResearch(payload.research);
+      setQuality(payload.quality ?? null);
       setStatus('ready');
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Something broke while researching that website.');
@@ -135,9 +143,23 @@ export function CreateFoundation() {
               </div>
             </dl>
             {research && (
-              <p className="mt-4 text-xs font-bold text-slate-500">
-                Read {research.headings.length} headings and {research.paragraphs.length} page snippets from {research.host}.
-              </p>
+              <div className="mt-4 space-y-3">
+                <p className="text-xs font-bold text-slate-500">
+                  Read {research.headings.length} headings and {research.paragraphs.length} page snippets from {research.host}
+                  {quality ? ` · ${quality.level} research (${quality.score}/100)` : ''}.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {research.providerStatus.map((provider) => (
+                    <span
+                      key={`${provider.provider}-${provider.status}`}
+                      className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-slate-500"
+                      title={provider.reason}
+                    >
+                      {provider.provider} {provider.status}
+                    </span>
+                  ))}
+                </div>
+              </div>
             )}
           </section>
         </section>
