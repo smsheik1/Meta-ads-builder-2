@@ -31,5 +31,6 @@ fi
 
 (cd apps/web && npx convex deploy)
 npm run build
-pm2 restart "$APP_NAME" --update-env
+pm2 delete "$APP_NAME" >/dev/null 2>&1 || true
+(cd apps/web && pm2 start npm --name "$APP_NAME" -- run start)
 pm2 save

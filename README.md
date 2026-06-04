@@ -71,8 +71,9 @@ If Supabase env vars are missing, Wiggly share links fall back to local browser-
 Do not commit real API keys. Never use a `VITE_` prefix for the Supabase service role key.
 
 Oracle deploy requires `CONVEX_DEPLOY_KEY`, `CONVEX_URL`, and `NEXT_PUBLIC_CONVEX_URL`.
-The deploy script runs `npx convex deploy` before building/restarting PM2 so Convex
-functions and the Next app stay in lockstep.
+The deploy script runs `npx convex deploy` before building the app, then recreates
+the PM2 process from `apps/web` so production serves the Next create app instead
+of the legacy Vite/Express runtime.
 
 ## Quality Checks
 
