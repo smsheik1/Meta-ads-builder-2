@@ -324,6 +324,13 @@ test('new web app does not import from legacy src/App.tsx', () => {
   assert.deepEqual(offenders, []);
 });
 
+test('opening the audio panel does not auto-write voice options', () => {
+  const source = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
+
+  assert.match(source, /onAddAudio={openAudioPanel}/);
+  assert.doesNotMatch(source, /onAddAudio=\\{\\(\\) => loadScriptOptions/);
+});
+
 test('new core product files stay under the 500-line budget', () => {
   const sourceFiles = listSourceFiles(path.join(webRoot, 'features'));
   const oversized = sourceFiles

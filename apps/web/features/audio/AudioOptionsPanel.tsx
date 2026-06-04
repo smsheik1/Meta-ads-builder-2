@@ -1,7 +1,7 @@
 'use client';
 
 import { ChangeEvent, useRef } from 'react';
-import { AudioLines, Loader2, RefreshCw, Upload } from 'lucide-react';
+import { AudioLines, Loader2, Mic2, RefreshCw, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { DialogueScript } from './dialogueScripts';
 
@@ -31,6 +31,7 @@ export function AudioOptionsPanel({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const selectedScript = scriptOptions.find((script) => script.id === selectedScriptId) || scriptOptions[0] || null;
   const busy = audioStatus === 'writing' || audioStatus === 'making' || audioStatus === 'uploading';
+  const hasScriptOptions = scriptOptions.length > 0;
 
   const handleAudioFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -46,18 +47,20 @@ export function AudioOptionsPanel({
             Voice audio
           </p>
           <h3 className="mt-2 text-2xl font-black leading-tight text-slate-950">
-            Choose the words, then make the audio.
+            Add audio to this ad.
           </h3>
         </div>
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={busy}
-          onClick={onNewOptions}
-        >
-          {audioStatus === 'writing' ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          New options
-        </Button>
+        {hasScriptOptions && (
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={busy}
+            onClick={onNewOptions}
+          >
+            {audioStatus === 'writing' ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            New options
+          </Button>
+        )}
       </div>
 
       {audioError && (
@@ -92,6 +95,27 @@ export function AudioOptionsPanel({
           onChange={handleAudioFileChange}
         />
       </div>
+
+      {!hasScriptOptions && audioStatus !== 'writing' && (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-black text-slate-950">Want Wiggly to make one?</p>
+              <p className="mt-1 text-xs font-bold text-slate-500">
+                Write voice options first, then choose one to generate audio.
+              </p>
+            </div>
+            <Button
+              type="button"
+              disabled={busy}
+              onClick={onNewOptions}
+            >
+              <Mic2 className="h-4 w-4" />
+              Make voice audio
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="mt-5 space-y-3">
         {audioStatus === 'writing' && (
