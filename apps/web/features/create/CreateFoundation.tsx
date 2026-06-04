@@ -1,12 +1,14 @@
 'use client';
 
-import { FormEvent, useReducer, useState } from 'react';
-import { AudioLines, Globe2, Loader2, Lock, Wand2 } from 'lucide-react';
+import { FormEvent, useEffect, useRef, useReducer, useState } from 'react';
+import { AudioLines, Globe2, Loader2, Lock, Pause, Play, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AudioOptionsPanel, type AudioPanelStatus } from '@/features/audio/AudioOptionsPanel';
+import { scriptCacheMatches, type DialogueScript } from '@/features/audio/dialogueScripts';
 import type { AdCopyResult } from '@/features/research/adCopy';
 import type { ResearchQuality } from '@/features/research/researchQuality';
 import type { WebsiteResearch } from '@/features/research/websiteResearch';
-import type { AdScene } from './scene';
+import { getAdSceneBrandKey, type AdScene } from './scene';
 import { ogToolScene } from './fixtures';
 import { reduceAdScene } from './sceneReducer';
 
@@ -18,6 +20,22 @@ type CreateSceneResponse = {
   error?: string;
 };
 
+type AudioScriptsResponse = {
+  scripts?: DialogueScript[];
+  sourceSceneId?: string;
+  error?: string;
+};
+
+type CreateAudioResponse = {
+  audioUrl?: string;
+  transcript?: string;
+  captions?: AdScene['audio']['captions'];
+  durationMs?: number;
+  sourceSceneId?: string;
+  scriptId?: string;
+  error?: string;
+};
+
 export function CreateFoundation() {
   const [scene, dispatch] = useReducer(reduceAdScene, ogToolScene);
   const [websiteUrl, setWebsiteUrl] = useState(scene.brand.websiteUrl);
@@ -25,6 +43,26 @@ export function CreateFoundation() {
   const [quality, setQuality] = useState<ResearchQuality | null>(null);
   const [status, setStatus] = useState<'idle' | 'researching' | 'ready' | 'error'>('idle');
   const [error, setError] = useState('');
+  const [audioPanelOpen, setAudioPanelOpen] = useState(false);
+  const [scriptOptions, setScriptOptions] = useState<DialogueScript[]>([]);
+  const [scriptSceneId, setScriptSceneId] = useState(scene.id);
+  const [selectedScriptId, setSelectedScriptId] = useState('');
+  const [audioStatus, setAudioStatus] = useState<AudioPanelStatus>('idle');
+  const [audioError, setAudioError] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioTimeMs, setAudioTimeMs] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const resetAudioPanel = (nextSceneId: string) => {
+    setScriptOptions([]);
+    setScriptSceneId(nextSceneId);
+    setSelectedScriptId('');
+    setAudioStatus('idle');
+    setAudioError('');
+    setAudioPanelOpen(false);
+    setIsPlaying(false);
+    setAudioTimeMs(0);
+  };
 
   const generateScene = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -49,6 +87,7 @@ export function CreateFoundation() {
       setWebsiteUrl(payload.scene.brand.websiteUrl);
       setResearch(payload.research);
       setQuality(payload.quality ?? null);
+      resetAudioPanel(payload.scene.id);
       setStatus('ready');
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Something broke while researching that website.');
@@ -61,6 +100,108 @@ export function CreateFoundation() {
     scene.brand.receipts.buyerMoments[0] ||
     'No specific receipt found yet.';
   const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
+  const selectedScript = scriptOptions.find((script) => script.id === selectedScriptId) || scriptOptions[0] || null;
+  const playableAudio = scene.audio.status === 'generated' &&
+    Boolean(scene.audio.url) &&
+    scene.audio.sourceSceneId === scene.id;
+  const activeCaption = playableAudio
+    ? scene.audio.captions.find((caption) => audioTimeMs >= caption.startMs && audioTimeMs <= caption.endMs)?.text ||
+      scene.audio.captions[0]?.text ||
+      scene.audio.transcript
+    : null;
+
+  useEffect(() => {
+    setIsPlaying(false);
+    setAudioTimeMs(0);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  }, [scene.id, scene.audio.url]);
+
+  const loadScriptOptions = async (force = false) => {
+    setAudioPanelOpen(true);
+    setAudioError('');
+
+    if (!force && scriptCacheMatches(scene.id, scriptSceneId, scriptOptions)) {
+      setSelectedScriptId(selectedScriptId || scriptOptions[0]?.id || '');
+      setAudioStatus('ready');
+      return;
+    }
+
+    setAudioStatus('writing');
+
+    try {
+      const response = await fetch('/api/create-audio-scripts', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ scene, count: 5 }),
+      });
+      const payload = await response.json() as AudioScriptsResponse;
+
+      if (!response.ok || !payload.scripts?.length || payload.sourceSceneId !== scene.id) {
+        throw new Error(payload.error || 'Could not write voice options for this ad.');
+      }
+
+      setScriptOptions(payload.scripts);
+      setScriptSceneId(scene.id);
+      setSelectedScriptId(payload.scripts[0]?.id || '');
+      setAudioStatus('ready');
+    } catch (caught) {
+      setAudioError(caught instanceof Error ? caught.message : 'Could not write voice options for this ad.');
+      setAudioStatus('error');
+    }
+  };
+
+  const makeAudio = async () => {
+    if (!selectedScript) return;
+    setAudioError('');
+    setAudioStatus('making');
+
+    try {
+      const response = await fetch('/api/create-audio', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ sceneId: scene.id, script: selectedScript }),
+      });
+      const payload = await response.json() as CreateAudioResponse;
+
+      if (!response.ok || !payload.audioUrl || payload.sourceSceneId !== scene.id) {
+        throw new Error(payload.error || 'Could not make audio for this ad.');
+      }
+
+      dispatch({
+        type: 'updateAudio',
+        audio: {
+          status: 'generated',
+          url: payload.audioUrl,
+          transcript: payload.transcript || selectedScript.lines.map((line) => line.text).join('\n'),
+          captions: payload.captions || [],
+          sourceSceneId: payload.sourceSceneId,
+          scriptId: payload.scriptId || selectedScript.id,
+          durationMs: payload.durationMs || null,
+          brandKey: getAdSceneBrandKey(scene),
+        },
+      });
+      setAudioStatus('ready');
+    } catch (caught) {
+      setAudioError(caught instanceof Error ? caught.message : 'Could not make audio for this ad.');
+      setAudioStatus('error');
+    }
+  };
+
+  const togglePlayback = async () => {
+    if (!playableAudio || !audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      return;
+    }
+
+    await audioRef.current.play();
+    setIsPlaying(true);
+  };
 
   return (
     <main className="min-h-screen px-5 py-8 md:px-10">
@@ -162,6 +303,18 @@ export function CreateFoundation() {
               </div>
             )}
           </section>
+
+          {audioPanelOpen && (
+            <AudioOptionsPanel
+              audioError={audioError}
+              audioStatus={audioStatus}
+              scriptOptions={scriptOptions}
+              selectedScriptId={selectedScriptId}
+              onMakeAudio={makeAudio}
+              onNewOptions={() => loadScriptOptions(true)}
+              onSelectScript={setSelectedScriptId}
+            />
+          )}
         </section>
 
         <section className="mx-auto min-w-0 w-full max-w-full rounded-[34px] border border-slate-200 bg-black p-3 shadow-[0_30px_80px_rgba(15,23,42,0.20)] sm:max-w-[390px]">
@@ -212,8 +365,35 @@ export function CreateFoundation() {
                   );
                 })}
               </div>
-              {scene.audio.status === 'none' && (
-                <button className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.14)]">
+              {activeCaption && (
+                <p className="max-w-[290px] text-base font-black leading-6 text-slate-600">
+                  {activeCaption}
+                </p>
+              )}
+              {playableAudio ? (
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-[0_18px_44px_rgba(15,23,42,0.20)]"
+                    onClick={togglePlayback}
+                  >
+                    {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                    {isPlaying ? 'Pause audio' : 'Play audio'}
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.12)]"
+                    onClick={() => loadScriptOptions(false)}
+                  >
+                    Change audio
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.14)]"
+                  onClick={() => loadScriptOptions(false)}
+                >
                   <AudioLines className="h-4 w-4" />
                   Add audio for this ad
                 </button>
@@ -222,6 +402,15 @@ export function CreateFoundation() {
           </div>
         </section>
       </div>
+      <audio
+        ref={audioRef}
+        src={playableAudio ? scene.audio.url || undefined : undefined}
+        onTimeUpdate={(event) => setAudioTimeMs(Math.round(event.currentTarget.currentTime * 1000))}
+        onEnded={() => {
+          setIsPlaying(false);
+          setAudioTimeMs(0);
+        }}
+      />
     </main>
   );
 }

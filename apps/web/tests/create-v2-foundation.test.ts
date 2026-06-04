@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createSavedDesign, loadSavedDesign, toRenderScene, toShareScene } from '../features/create/sceneAdapters';
-import { ogToolScene } from '../features/create/fixtures';
+import { ogToolScene, redfinScene } from '../features/create/fixtures';
 import { cloneAdScene, deserializeAdScene, serializeAdScene } from '../features/create/scene';
 import { reduceAdScene } from '../features/create/sceneReducer';
 
@@ -97,6 +97,49 @@ test('audio updates do not mutate creative state', () => {
   assert.equal(JSON.stringify(updated.creative), beforeCreative);
   assert.equal(updated.audio.status, 'generated');
   assert.equal(updated.audio.captions[0]?.speaker, 'a');
+});
+
+test('stale generated audio cannot attach to a different scene', () => {
+  const updated = reduceAdScene(redfinScene, {
+    type: 'updateAudio',
+    audio: {
+      status: 'generated',
+      url: 'https://example.com/old-audio.wav',
+      transcript: 'Old brand audio',
+      captions: [],
+      sourceSceneId: ogToolScene.id,
+      scriptId: 'old-script',
+      durationMs: 2000,
+    },
+    now: 104,
+  });
+
+  assert.equal(updated.audio.status, 'none');
+  assert.equal(updated.audio.url, null);
+});
+
+test('loading a new generated scene clears previous generated audio', () => {
+  const withAudio = reduceAdScene(ogToolScene, {
+    type: 'updateAudio',
+    audio: {
+      status: 'generated',
+      url: 'https://example.com/audio.wav',
+      transcript: 'Current brand audio',
+      captions: [],
+      sourceSceneId: ogToolScene.id,
+      scriptId: 'script-1',
+      durationMs: 2000,
+    },
+    now: 105,
+  });
+  const loaded = reduceAdScene(withAudio, {
+    type: 'loadScene',
+    scene: redfinScene,
+  });
+
+  assert.equal(loaded.id, redfinScene.id);
+  assert.equal(loaded.audio.status, 'none');
+  assert.equal(loaded.audio.url, null);
 });
 
 test('saved design and render/share adapters clone scene data', () => {

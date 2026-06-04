@@ -48,6 +48,9 @@ export type AdSceneAudio = {
   transcript: string;
   captions: AdSceneCaption[];
   brandKey: string | null;
+  sourceSceneId: string | null;
+  scriptId: string | null;
+  durationMs: number | null;
 };
 
 export type AdSceneLocks = {

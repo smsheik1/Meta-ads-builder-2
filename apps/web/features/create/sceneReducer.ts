@@ -36,6 +36,7 @@ export const reduceAdScene = (scene: AdScene, action: AdSceneAction): AdScene =>
 
   if (action.type === 'updateAudio') {
     if (scene.locks.audio) return scene;
+    if (action.audio.sourceSceneId && action.audio.sourceSceneId !== scene.id) return scene;
     return {
       ...scene,
       audio: {
