@@ -3,16 +3,27 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
     "start": "tsx server.ts",
     "dev:server": "tsx watch server.ts",
     "dev:client": "vite --port=3000 --host=0.0.0.0",
-    "dev": "concurrently \"npm:dev:client\" \"npm:dev:server\"",
-    "build": "vite build",
+    "dev:legacy": "concurrently \"npm:dev:client\" \"npm:dev:server\"",
+    "dev:web": "npm run dev -w @wiggly/web",
+    "dev": "npm run dev:legacy",
+    "build:legacy": "vite build",
+    "build:web": "npm run build -w @wiggly/web",
+    "build": "npm run build:legacy && npm run build:web",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit",
-    "test": "playwright test"
+    "lint:legacy": "tsc --noEmit -p tsconfig.legacy.json",
+    "lint:web": "npm run typecheck -w @wiggly/web",
+    "lint": "npm run lint:legacy && npm run lint:web && npm run test:create-v2",
+    "test:legacy": "playwright test",
+    "test:create-v2": "tsx apps/web/tests/create-v2-foundation.test.ts",
+    "test": "npm run test:create-v2 && npm run test:legacy"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
