@@ -18,6 +18,7 @@ import {
   deleteRenderSceneTicket,
   readRenderSceneTicket,
 } from '../features/export/renderSceneTicketStore';
+import { getPublicRenderErrorMessage } from '../features/export/renderErrors';
 import { createShareSceneRecord } from '../features/share/shareSceneStore';
 
 const test = async (name: string, run: () => void | Promise<void>) => {
@@ -112,4 +113,13 @@ await test('render tickets store a frozen scene for normal attachment downloads'
   await deleteRenderSceneTicket(ticket.id);
   assert.equal(await readRenderSceneTicket(ticket.id), null);
   await fs.rm(path.join(process.cwd(), 'tmp', 'create-v2-render-tickets'), { recursive: true, force: true });
+});
+
+await test('render errors hide server command details from users', () => {
+  const publicMessage = getPublicRenderErrorMessage(
+    new Error('Command failed with exit code 1: /tmp/remotion-assets-dir/audio.wav Invalid data found when processing input'),
+  );
+
+  assert.match(publicMessage, /audio could not be read/);
+  assert.doesNotMatch(publicMessage, /\/tmp|Command failed|remotion-assets-dir/i);
 });

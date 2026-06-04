@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useReducer, useState } from 'react';
+import { FormEvent, useEffect, useRef, useReducer, useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { Globe2, Loader2, Lock, Wand2 } from 'lucide-react';
 import { api } from '@/convex/_generated/api';
@@ -76,6 +76,8 @@ export function CreateFoundation() {
   const [shareStatus, setShareStatus] = useState<'idle' | 'saving' | 'ready' | 'error'>('idle');
   const [shareUrl, setShareUrl] = useState('');
   const [shareError, setShareError] = useState('');
+  const [audioPanelFocusTick, setAudioPanelFocusTick] = useState(0);
+  const audioPanelRef = useRef<HTMLDivElement | null>(null);
 
   const resetAudioPanel = (nextSceneId: string) => {
     setScriptOptions([]);
@@ -142,6 +144,18 @@ export function CreateFoundation() {
       setSavedError('Saved designs could not connect in this browser.');
     }
   }, []);
+
+  useEffect(() => {
+    if (!audioPanelOpen) return;
+
+    window.requestAnimationFrame(() => {
+      audioPanelRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+      audioPanelRef.current?.focus({ preventScroll: true });
+    });
+  }, [audioPanelFocusTick, audioPanelOpen]);
 
   const saveCurrentDesign = () => {
     if (!sessionId) {
@@ -251,6 +265,7 @@ export function CreateFoundation() {
 
   const loadScriptOptions = async (force = false) => {
     setAudioPanelOpen(true);
+    setAudioPanelFocusTick((tick) => tick + 1);
     setAudioError('');
 
     if (!force && scriptCacheMatches(scene.id, scriptSceneId, scriptOptions)) {
@@ -403,6 +418,20 @@ export function CreateFoundation() {
             onDownloadVideo={downloadVideo}
           />
 
+          {audioPanelOpen && (
+            <div ref={audioPanelRef} tabIndex={-1} className="scroll-mt-6 outline-none">
+              <AudioOptionsPanel
+                audioError={audioError}
+                audioStatus={audioStatus}
+                scriptOptions={scriptOptions}
+                selectedScriptId={selectedScriptId}
+                onMakeAudio={makeAudio}
+                onNewOptions={() => loadScriptOptions(true)}
+                onSelectScript={setSelectedScriptId}
+              />
+            </div>
+          )}
+
           <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
               Creative brief
@@ -441,18 +470,6 @@ export function CreateFoundation() {
               </div>
             )}
           </section>
-
-          {audioPanelOpen && (
-            <AudioOptionsPanel
-              audioError={audioError}
-              audioStatus={audioStatus}
-              scriptOptions={scriptOptions}
-              selectedScriptId={selectedScriptId}
-              onMakeAudio={makeAudio}
-              onNewOptions={() => loadScriptOptions(true)}
-              onSelectScript={setSelectedScriptId}
-            />
-          )}
         </section>
 
         <AdSceneCanvas scene={scene} onAddAudio={() => loadScriptOptions(false)} />
