@@ -12,6 +12,7 @@ import {
   getSceneDurationMs,
   getVisualizerBarHeight,
   isGeneratedSceneAudio,
+  isStoredSceneAudio,
 } from '../features/render/adSceneRender';
 import {
   createRenderSceneTicket,
@@ -62,6 +63,22 @@ const withInlineGeneratedAudio = (scene: AdScene) => ({
   },
 });
 
+const withUploadedAudio = (scene: AdScene) => ({
+  ...cloneAdScene(scene),
+  audio: {
+    ...scene.audio,
+    status: 'uploaded' as const,
+    url: STORED_AUDIO_URL,
+    storageId: STORED_AUDIO_ID,
+    mimeType: 'audio/mpeg',
+    transcript: '',
+    captions: [],
+    sourceSceneId: scene.id,
+    scriptId: 'uploaded-audio',
+    durationMs: 4200,
+  },
+});
+
 await test('render snapshots preserve platform dimensions and generated audio duration', () => {
   const vertical = createRenderSnapshot(withGeneratedAudio(redfinScene));
 
@@ -69,6 +86,19 @@ await test('render snapshots preserve platform dimensions and generated audio du
   assert.equal(vertical.spec.height, AD_SCENE_RENDER_SPECS.reels.height);
   assert.equal(vertical.durationMs, 2800);
   assert.equal(isGeneratedSceneAudio(vertical.scene), true);
+  assert.equal(isStoredSceneAudio(vertical.scene), true);
+});
+
+await test('render snapshots preserve stored uploaded audio duration', () => {
+  const snapshot = createRenderSnapshot(withUploadedAudio(ogToolScene));
+
+  assert.equal(snapshot.scene.audio.status, 'uploaded');
+  assert.equal(snapshot.scene.audio.url, STORED_AUDIO_URL);
+  assert.equal(snapshot.scene.audio.storageId, STORED_AUDIO_ID);
+  assert.equal(snapshot.scene.audio.mimeType, 'audio/mpeg');
+  assert.equal(snapshot.durationMs, 4200);
+  assert.equal(isGeneratedSceneAudio(snapshot.scene), false);
+  assert.equal(isStoredSceneAudio(snapshot.scene), true);
 });
 
 await test('render snapshots strip stale generated audio before export and share', () => {
@@ -115,6 +145,16 @@ await test('share record builder preserves stored generated audio', () => {
   assert.equal(record.scene.audio.storageId, STORED_AUDIO_ID);
   assert.equal(record.scene.audio.mimeType, 'audio/wav');
   assert.equal(record.durationMs, 2800);
+});
+
+await test('share record builder preserves stored uploaded audio', () => {
+  const record = createShareSceneRecord(withUploadedAudio(ogToolScene), 1_717_200_000_000);
+
+  assert.equal(record.scene.audio.status, 'uploaded');
+  assert.equal(record.scene.audio.url, STORED_AUDIO_URL);
+  assert.equal(record.scene.audio.storageId, STORED_AUDIO_ID);
+  assert.equal(record.scene.audio.mimeType, 'audio/mpeg');
+  assert.equal(record.durationMs, 4200);
 });
 
 await test('render tickets store a frozen scene for normal attachment downloads', async () => {

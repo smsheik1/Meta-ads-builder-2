@@ -48,14 +48,18 @@ const audioUrlIsStoredFile = (url: string | null) => (
   Boolean(url && !/^(data|blob):/i.test(url))
 );
 
-export const isGeneratedSceneAudio = (scene: AdScene) => (
-  scene.audio.status === 'generated' &&
+export const isStoredSceneAudio = (scene: AdScene) => (
+  (scene.audio.status === 'generated' || scene.audio.status === 'uploaded') &&
   audioUrlIsStoredFile(scene.audio.url) &&
   scene.audio.sourceSceneId === scene.id
 );
 
+export const isGeneratedSceneAudio = (scene: AdScene) => (
+  scene.audio.status === 'generated' && isStoredSceneAudio(scene)
+);
+
 export const getSceneDurationMs = (scene: AdScene) => {
-  if (!isGeneratedSceneAudio(scene)) return DEFAULT_SCENE_DURATION_MS;
+  if (!isStoredSceneAudio(scene)) return DEFAULT_SCENE_DURATION_MS;
   return Math.max(
     1_000,
     Math.min(MAX_SCENE_DURATION_MS, Number(scene.audio.durationMs || DEFAULT_SCENE_DURATION_MS)),
@@ -69,7 +73,7 @@ export const getAdSceneRenderSpec = (platform: AdPlatform) => (
 export const createRenderSnapshot = (scene: AdScene): AdSceneRenderSnapshot => {
   const nextScene = cloneAdScene(scene);
 
-  if (!isGeneratedSceneAudio(nextScene)) {
+  if (!isStoredSceneAudio(nextScene)) {
     nextScene.audio = {
       ...nextScene.audio,
       status: 'none',
@@ -92,7 +96,7 @@ export const createRenderSnapshot = (scene: AdScene): AdSceneRenderSnapshot => {
 };
 
 export const getActiveCaptionText = (audio: AdSceneAudio, currentTimeMs: number) => {
-  if (audio.status !== 'generated') return '';
+  if (audio.status !== 'generated' && audio.status !== 'uploaded') return '';
   const caption = audio.captions.find((item) => (
     currentTimeMs >= item.startMs && currentTimeMs <= item.endMs
   ));

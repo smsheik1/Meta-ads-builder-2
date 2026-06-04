@@ -93,7 +93,11 @@ export const getStoredAudioAssetUrl = async (storageId: string) => {
 };
 
 export const refreshSceneAudioUrl = async (scene: AdScene): Promise<AdScene> => {
-  if (scene.audio.status !== 'generated' || !scene.audio.storageId) {
+  if (
+    (scene.audio.status !== 'generated' && scene.audio.status !== 'uploaded') ||
+    scene.audio.sourceSceneId !== scene.id ||
+    !scene.audio.storageId
+  ) {
     return scene;
   }
 

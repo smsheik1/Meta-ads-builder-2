@@ -4,7 +4,7 @@ import {
   AD_SCENE_FPS,
   getActiveCaptionText,
   getVisualizerBarHeight,
-  isGeneratedSceneAudio,
+  isStoredSceneAudio,
 } from './adSceneRender';
 
 export type AdSceneRemotionProps = {
@@ -15,7 +15,7 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
   const frame = useCurrentFrame();
   const { width, height, fps } = useVideoConfig();
   const currentTimeMs = Math.round((frame / (fps || AD_SCENE_FPS)) * 1000);
-  const hasAudio = isGeneratedSceneAudio(scene);
+  const hasAudio = isStoredSceneAudio(scene);
   const activeCaption = hasAudio ? getActiveCaptionText(scene.audio, currentTimeMs) : '';
   const isVertical = height > width;
   const headlineSize = isVertical ? 94 : 74;
