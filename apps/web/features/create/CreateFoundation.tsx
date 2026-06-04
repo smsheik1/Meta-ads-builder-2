@@ -158,7 +158,8 @@ export function CreateFoundation() {
       design,
     }).then(() => {
       setSavedError('');
-    }).catch(() => {
+    }).catch((caught) => {
+      console.error('[create-v2 save-design]', caught);
       setSavedError('This browser could not save the ad.');
     });
   };

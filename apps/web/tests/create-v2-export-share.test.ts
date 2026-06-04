@@ -81,12 +81,14 @@ await test('share slugs and download filenames are safe and brand-specific', () 
   assert.equal(createDownloadFilename(ogToolScene), 'ogtool-why-ai-recommends-your-competitors.mp4');
 });
 
-await test('share record builder freezes the render snapshot for Convex storage', () => {
+await test('share record builder freezes a Convex-safe render snapshot', () => {
   const record = createShareSceneRecord(withGeneratedAudio(ogToolScene), 1_717_200_000_000);
 
   assert.equal(record.slug, 'why-ai-recommends-your-competitors-cjk00');
   assert.equal(record.scene.creative.headline, ogToolScene.creative.headline);
-  assert.equal(record.durationMs, 2800);
+  assert.equal(record.scene.audio.status, 'none');
+  assert.equal(record.scene.audio.url, null);
+  assert.equal(record.durationMs, 6000);
   assert.equal(record.spec.compositionId, AD_SCENE_RENDER_SPECS['instagram-feed'].compositionId);
 });
 

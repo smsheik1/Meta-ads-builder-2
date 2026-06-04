@@ -8,6 +8,29 @@ export type SavedDesign = {
   updatedAt: number;
 };
 
+export const audioUrlIsInlineBlob = (url: string | null) => (
+  Boolean(url && /^(data|blob):/i.test(url))
+);
+
+export const stripInlineAudioForPersistence = (scene: AdScene): AdScene => {
+  const nextScene = cloneAdScene(scene);
+
+  if (audioUrlIsInlineBlob(nextScene.audio.url)) {
+    nextScene.audio = {
+      status: 'none',
+      url: null,
+      transcript: '',
+      captions: [],
+      brandKey: null,
+      sourceSceneId: null,
+      scriptId: null,
+      durationMs: null,
+    };
+  }
+
+  return nextScene;
+};
+
 export const createSavedDesign = (
   scene: AdScene,
   title = scene.creative.headline,
@@ -16,7 +39,7 @@ export const createSavedDesign = (
 ): SavedDesign => ({
   id,
   title,
-  scene: cloneAdScene(scene),
+  scene: stripInlineAudioForPersistence(scene),
   createdAt: now,
   updatedAt: now,
 });

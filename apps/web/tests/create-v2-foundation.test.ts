@@ -190,7 +190,7 @@ test('saved design and render/share adapters clone scene data', () => {
   assert.equal(shareScene.creative.headline, scene.creative.headline);
 });
 
-test('saved design upsert stores full scene snapshots without aliasing', () => {
+test('saved design upsert stores Convex-safe scene snapshots without aliasing', () => {
   const withAudio = reduceAdScene(ogToolScene, {
     type: 'updateAudio',
     audio: {
@@ -206,11 +206,24 @@ test('saved design upsert stores full scene snapshots without aliasing', () => {
   });
   const firstSave = upsertSavedDesign([], withAudio, 300);
   const loaded = loadSavedDesign(firstSave[0]);
+  const expectedSavedScene = {
+    ...withAudio,
+    audio: {
+      status: 'none' as const,
+      url: null,
+      transcript: '',
+      captions: [],
+      brandKey: null,
+      sourceSceneId: null,
+      scriptId: null,
+      durationMs: null,
+    },
+  };
 
   assert.equal(firstSave.length, 1);
-  assert.equal(firstSave[0].scene.audio.url, 'data:audio/wav;base64,abc');
-  assert.deepEqual(loaded, withAudio);
-  assert.notEqual(loaded, withAudio);
+  assert.equal(firstSave[0].scene.audio.url, null);
+  assert.deepEqual(loaded, expectedSavedScene);
+  assert.notEqual(loaded, expectedSavedScene);
   assert.notEqual(firstSave[0].scene, withAudio);
 });
 

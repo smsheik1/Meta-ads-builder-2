@@ -1,6 +1,7 @@
 import { ConvexHttpClient } from 'convex/browser';
 import { api } from '@/convex/_generated/api';
 import type { AdScene } from '@/features/create/scene';
+import { stripInlineAudioForPersistence } from '@/features/create/sceneAdapters';
 import {
   createRenderSnapshot,
   createSceneSlug,
@@ -31,7 +32,7 @@ export const createShareSceneRecord = (
   now = Date.now(),
   slug = sanitizeSlug(createSceneSlug(scene, now)),
 ): ShareSceneRecord => ({
-    ...createRenderSnapshot(scene),
+    ...createRenderSnapshot(stripInlineAudioForPersistence(scene)),
     slug,
     createdAt: now,
   });
