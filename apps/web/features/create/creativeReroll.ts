@@ -2,7 +2,7 @@ import type { AdScene, AdSceneCreative } from './scene';
 
 export type CreativeRerollPayload = Partial<Pick<
   AdSceneCreative,
-  'angleId' | 'headline' | 'subheadline' | 'ctaText' | 'ctaUrl' | 'backgroundColor' | 'accentColor'
+  'angleId' | 'headline' | 'headlineColor' | 'subheadline' | 'ctaText' | 'ctaUrl' | 'backgroundColor' | 'accentColor'
 >> & {
   visualizer?: Partial<AdSceneCreative['visualizer']>;
   logoUrl?: string | null;
@@ -11,6 +11,8 @@ export type CreativeRerollPayload = Partial<Pick<
 
 const backgrounds = ['#fbfaf6', '#f8fafc', '#fef2f2', '#ecfeff', '#f7fee7', '#fdf4ff'];
 const accents = ['#7dd3fc', '#34d399', '#f472b6', '#facc15', '#a78bfa', '#fb7185'];
+const headlineColors = ['#07111f', '#083452', '#7f1d1d', '#312e81', '#14532d', '#581c87'];
+const barCounts = [17, 21, 25, 29];
 const idlePresets = ['wide-soft-bars', 'center-pulse-bars', 'tight-bounce-bars', 'calm-stack-bars'];
 const playbackPresets = ['voice-reactive-bars', 'center-wave-bars', 'stacked-surge-bars'];
 
@@ -78,6 +80,7 @@ export const createCreativeReroll = (scene: AdScene, now = Date.now()): Creative
   return {
     angleId: `reroll-${seed.toString(36)}`,
     headline: toHeadline(headlineSource, scene.brand.name),
+    headlineColor: pick(headlineColors, seed, 7),
     subheadline: shorten(subheadlineSource, 18),
     backgroundColor: pick(backgrounds, seed, 29),
     accentColor,
@@ -85,6 +88,7 @@ export const createCreativeReroll = (scene: AdScene, now = Date.now()): Creative
       color: accentColor,
       idlePreset: pick(idlePresets, seed, 37),
       playbackPreset: pick(playbackPresets, seed, 43),
+      barCount: pick(barCounts, seed, 47),
     },
     logoUrl: scene.brand.faviconUrl && scene.brand.logoUrl !== scene.brand.faviconUrl
       ? scene.brand.faviconUrl

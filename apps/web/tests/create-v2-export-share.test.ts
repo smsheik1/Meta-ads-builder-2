@@ -9,6 +9,7 @@ import {
   createRenderSnapshot,
   createSceneSlug,
   getActiveCaptionText,
+  getHeadlineScale,
   getSceneDurationMs,
   getVisualizerBarHeight,
   isGeneratedSceneAudio,
@@ -132,6 +133,12 @@ await test('caption and visualizer helpers are deterministic', () => {
   assert.equal(getActiveCaptionText(scene.audio, 1800), 'Second line.');
   assert.equal(getVisualizerBarHeight(10, 21, 0), getVisualizerBarHeight(10, 21, 0));
   assert.notEqual(getVisualizerBarHeight(10, 21, 0), getVisualizerBarHeight(10, 21, 900));
+});
+
+await test('long generated headlines scale down before they can collide with brand text', () => {
+  assert.equal(getHeadlineScale('Why AI recommends your competitors'), 1);
+  assert.equal(getHeadlineScale('Fully Managed Reddit And ChatGPT Visibility Campaigns'), 0.82);
+  assert.equal(getHeadlineScale('Fully Managed Reddit And ChatGPT Visibility Campaigns For Operators'), 0.72);
 });
 
 await test('share slugs and download filenames are safe and brand-specific', () => {

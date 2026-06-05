@@ -11,7 +11,7 @@ import { ogToolScene } from './fixtures';
 
 type RerollCreativePayload = Partial<Pick<
   AdSceneCreative,
-  'angleId' | 'headline' | 'subheadline' | 'ctaText' | 'ctaUrl' | 'backgroundColor' | 'accentColor'
+  'angleId' | 'headline' | 'headlineColor' | 'subheadline' | 'ctaText' | 'ctaUrl' | 'backgroundColor' | 'accentColor'
 >> & {
   visualizer?: Partial<AdSceneCreative['visualizer']>;
   logoUrl?: string | null;
@@ -20,6 +20,8 @@ type RerollCreativePayload = Partial<Pick<
 
 export type AdSceneAction =
   | { type: 'rerollCreative'; creative: RerollCreativePayload; now?: number }
+  | { type: 'editCreative'; creative: Partial<Pick<AdSceneCreative, 'headline' | 'headlineColor' | 'accentColor'>>; visualizer?: Partial<AdSceneCreative['visualizer']>; now?: number }
+  | { type: 'replaceLogo'; logoUrl: string | null; now?: number }
   | { type: 'moveLayoutElement'; element: AdSceneLayoutElement; x: number; y: number; now?: number }
   | { type: 'setLock'; field: keyof AdScene['locks']; locked: boolean; now?: number }
   | { type: 'updateAudio'; audio: Partial<AdSceneAudio>; now?: number }
@@ -63,6 +65,47 @@ export const reduceAdScene = (scene: AdScene, action: AdSceneAction): AdScene =>
     };
   }
 
+  if (action.type === 'replaceLogo') {
+    if (scene.locks.logo) return scene;
+    return {
+      ...scene,
+      brand: {
+        ...scene.brand,
+        logoUrl: action.logoUrl,
+      },
+      updatedAt: getNow(action.now),
+    };
+  }
+
+  if (action.type === 'editCreative') {
+    const nextCreative: AdSceneCreative = { ...scene.creative };
+
+    if (!scene.locks.headline && action.creative.headline !== undefined) {
+      nextCreative.headline = action.creative.headline;
+    }
+
+    if (!scene.locks.headline && action.creative.headlineColor !== undefined) {
+      nextCreative.headlineColor = action.creative.headlineColor;
+    }
+
+    if (action.creative.accentColor !== undefined) {
+      nextCreative.accentColor = action.creative.accentColor;
+    }
+
+    if (!scene.locks.visualizer && action.visualizer) {
+      nextCreative.visualizer = {
+        ...nextCreative.visualizer,
+        ...action.visualizer,
+      };
+    }
+
+    return {
+      ...scene,
+      creative: nextCreative,
+      updatedAt: getNow(action.now),
+    };
+  }
+
   if (action.type === 'moveLayoutElement') {
     if (layoutElementIsLocked(scene, action.element)) return scene;
     const layout = getAdSceneLayout(scene);
@@ -87,6 +130,10 @@ export const reduceAdScene = (scene: AdScene, action: AdSceneAction): AdScene =>
 
     if (!scene.locks.headline && incoming.headline !== undefined) {
       nextCreative.headline = incoming.headline;
+    }
+
+    if (!scene.locks.headline && incoming.headlineColor !== undefined) {
+      nextCreative.headlineColor = incoming.headlineColor;
     }
 
     if (!scene.locks.subheadline && incoming.subheadline !== undefined) {

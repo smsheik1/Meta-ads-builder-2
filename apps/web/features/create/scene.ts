@@ -30,6 +30,7 @@ export type AdSceneBrand = {
 export type AdSceneCreative = {
   angleId: string;
   headline: string;
+  headlineColor?: string;
   subheadline: string;
   ctaText: string;
   ctaUrl: string;
@@ -39,6 +40,7 @@ export type AdSceneCreative = {
     color: string;
     idlePreset: string;
     playbackPreset: string;
+    barCount?: number;
   };
 };
 

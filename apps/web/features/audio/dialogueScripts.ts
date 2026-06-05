@@ -25,6 +25,7 @@ export type GenerateDialogueScriptsOptions = {
 
 const GROQ_CHAT_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const DEFAULT_DIALOGUE_MODEL = 'llama-3.3-70b-versatile';
+const DEFAULT_DIALOGUE_TIMEOUT_MS = 30_000;
 
 const cleanText = (value: unknown, maxLength = 240) => String(value ?? '')
   .replace(/[—–]/g, ', ')
@@ -40,6 +41,9 @@ const slugify = (value: string) => value
   .slice(0, 54) || 'script';
 
 const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.test(String(value || ''));
+const isAbortError = (error: unknown) => (
+  error instanceof Error && (error.name === 'AbortError' || /aborted/i.test(error.message))
+);
 
 const parseJsonObject = (value: string) => {
   const trimmed = value.trim();
@@ -152,7 +156,7 @@ export const generateDialogueScripts = async (
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 18_000);
+  const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_DIALOGUE_TIMEOUT_MS);
 
   try {
     const response = await (options.fetcher ?? fetch)(GROQ_CHAT_URL, {
@@ -188,6 +192,11 @@ export const generateDialogueScripts = async (
     }
 
     return { scripts, provider: 'groq', model };
+  } catch (error) {
+    if (isAbortError(error)) {
+      throw new Error('Voice script generation took too long. Try again in a moment.');
+    }
+    throw error;
   } finally {
     clearTimeout(timeout);
   }

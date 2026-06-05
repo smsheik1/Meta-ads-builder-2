@@ -22,6 +22,7 @@ export type GenerateAdCopyOptions = {
 };
 
 const OPENROUTER_CHAT_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const DEFAULT_AD_COPY_TIMEOUT_MS = 24_000;
 
 const cleanText = (value: unknown, maxLength = 220) => String(value ?? '')
   .replace(/\s+/g, ' ')
@@ -37,6 +38,9 @@ const slugify = (value: string) => value
   .slice(0, 48) || 'website-angle';
 
 const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.test(String(value || ''));
+const isAbortError = (error: unknown) => (
+  error instanceof Error && (error.name === 'AbortError' || /aborted/i.test(error.message))
+);
 
 const firstUseful = (items: string[], minLength: number, maxLength: number) => (
   items.find((item) => {
@@ -160,7 +164,7 @@ export const generateAdCopy = async (
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 14_000);
+  const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_AD_COPY_TIMEOUT_MS);
 
   try {
     const response = await (options.fetcher ?? fetch)(OPENROUTER_CHAT_URL, {
@@ -202,14 +206,18 @@ export const generateAdCopy = async (
       },
     };
   } catch (error) {
+    const reason = isAbortError(error)
+      ? 'OpenRouter took too long to write ad copy; used deterministic receipt copy.'
+      : error instanceof Error
+        ? `${error.message} Used deterministic receipt copy.`
+        : 'OpenRouter failed; used deterministic receipt copy.';
+
     return {
       copy: fallback,
       providerStatus: {
         provider: 'openrouter',
         status: 'failed',
-        reason: error instanceof Error
-          ? `${error.message} Used deterministic receipt copy.`
-          : 'OpenRouter failed; used deterministic receipt copy.',
+        reason,
       },
     };
   } finally {

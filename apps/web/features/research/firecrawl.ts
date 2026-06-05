@@ -14,6 +14,7 @@ export type FirecrawlOptions = {
 
 const FIRECRAWL_SCRAPE_URL = 'https://api.firecrawl.dev/v2/scrape';
 const MAX_MARKDOWN_CHARS = 24_000;
+const DEFAULT_FIRECRAWL_TIMEOUT_MS = 30_000;
 
 type FirecrawlPayload = {
   success?: boolean;
@@ -114,6 +115,10 @@ const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.te
 
 const firecrawlIsConfigured = (apiKey?: string) => Boolean(apiKey) && !isDisabled(process.env.FIRECRAWL_ENABLED);
 
+const isAbortError = (error: unknown) => (
+  error instanceof Error && (error.name === 'AbortError' || /aborted/i.test(error.message))
+);
+
 const firecrawlRequest = async (
   url: string,
   options: FirecrawlOptions,
@@ -124,7 +129,7 @@ const firecrawlRequest = async (
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 14_000);
+  const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_FIRECRAWL_TIMEOUT_MS);
 
   try {
     const response = await (options.fetcher ?? fetch)(FIRECRAWL_SCRAPE_URL, {
@@ -154,6 +159,11 @@ const firecrawlRequest = async (
     }
 
     return payload;
+  } catch (error) {
+    if (isAbortError(error)) {
+      throw new Error('Firecrawl took too long to read that website. Try again, or use a more specific page from the same brand.');
+    }
+    throw error;
   } finally {
     clearTimeout(timeout);
   }

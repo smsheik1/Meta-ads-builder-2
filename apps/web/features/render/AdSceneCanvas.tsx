@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
-import { AudioLines, Pause, Play } from 'lucide-react';
+import { AudioLines, Lock, Pause, Play, Unlock } from 'lucide-react';
 import type { AdScene, AdSceneLayoutElement } from '@/features/create/scene';
 import {
   getActiveCaptionText,
+  getHeadlineScale,
   getVisualizerBarHeight,
   isStoredSceneAudio,
 } from './adSceneRender';
@@ -16,7 +17,10 @@ type AdSceneCanvasProps = {
   className?: string;
   onAddAudio?: () => void;
   onMoveElement?: (element: AdSceneLayoutElement, x: number, y: number) => void;
+  onSelectElement?: (element: AdSceneLayoutElement | null) => void;
+  onToggleLock?: (field: keyof AdScene['locks']) => void;
   rerollTick?: number;
+  selectedElement?: AdSceneLayoutElement | null;
   showGuides?: boolean;
 };
 
@@ -34,7 +38,10 @@ export function AdSceneCanvas({
   className = '',
   onAddAudio,
   onMoveElement,
+  onSelectElement,
+  onToggleLock,
   rerollTick = 0,
+  selectedElement = null,
   showGuides = false,
 }: AdSceneCanvasProps) {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -44,6 +51,8 @@ export function AdSceneCanvas({
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
   const playableAudio = isStoredSceneAudio(scene);
+  const visualizerBarCount = scene.creative.visualizer.barCount ?? 21;
+  const headlineFontSizePx = Math.round(36 * getHeadlineScale(scene.creative.headline));
   const captionText = playableAudio && (isPlaying || audioTimeMs > 0)
     ? getActiveCaptionText(scene.audio, audioTimeMs)
     : '';
@@ -72,8 +81,9 @@ export function AdSceneCanvas({
   };
 
   const startDrag = (element: AdSceneLayoutElement) => (event: PointerEvent<HTMLDivElement>) => {
-    if (!onMoveElement || layoutLockForElement(scene, element) || event.button !== 0) return;
     if (event.target instanceof HTMLElement && event.target.closest('button, a, input, textarea, select')) return;
+    onSelectElement?.(element);
+    if (!onMoveElement || layoutLockForElement(scene, element) || event.button !== 0) return;
 
     const box = getLayoutBox(scene, element);
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -98,9 +108,39 @@ export function AdSceneCanvas({
   };
 
   const dragClass = (element: AdSceneLayoutElement) => {
+    const selectedClass = selectedElement === element
+      ? 'ring-2 ring-slate-950/35 shadow-[0_0_0_6px_rgba(15,23,42,0.05)]'
+      : 'ring-1 ring-transparent';
     if (!onMoveElement) return '';
-    if (layoutLockForElement(scene, element)) return 'cursor-not-allowed opacity-70';
-    return 'cursor-move touch-none select-none rounded-2xl ring-1 ring-transparent transition hover:ring-slate-300';
+    if (layoutLockForElement(scene, element)) return `cursor-pointer opacity-70 ${selectedClass}`;
+    return `cursor-move touch-none select-none rounded-2xl transition hover:ring-slate-300 ${selectedClass}`;
+  };
+
+  const lockFieldForElement = (element: AdSceneLayoutElement): keyof AdScene['locks'] => {
+    if (element === 'brand') return 'logo';
+    if (element === 'headline') return 'headline';
+    if (element === 'visualizer') return 'visualizer';
+    return 'audio';
+  };
+
+  const renderElementLock = (element: AdSceneLayoutElement) => {
+    const field = lockFieldForElement(element);
+    const locked = scene.locks[field];
+    if (!onToggleLock || selectedElement !== element) return null;
+
+    return (
+      <button
+        type="button"
+        className="absolute right-1 top-1 z-20 grid h-8 w-8 place-items-center rounded-full bg-white/95 text-slate-700 shadow-[0_10px_28px_rgba(15,23,42,0.16)] transition hover:bg-slate-950 hover:text-white"
+        title={locked ? 'Unlock element' : 'Lock element'}
+        onClick={(event) => {
+          event.stopPropagation();
+          onToggleLock(field);
+        }}
+      >
+        {locked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+      </button>
+    );
   };
 
   return (
@@ -140,16 +180,19 @@ export function AdSceneCanvas({
           onPointerCancel={() => setDragging(null)}
         >
           <div
-            className={`grid place-items-center px-2 py-1 ${dragClass('brand')}`}
+            className={`relative grid place-items-center px-2 py-1 ${dragClass('brand')}`}
+            data-testid="ad-scene-element-brand"
             style={getCanvasLayoutStyle(scene, 'brand')}
             onPointerDown={startDrag('brand')}
           >
+            {renderElementLock('brand')}
             <p className="text-sm font-black uppercase tracking-wide text-slate-950">
               {scene.brand.name}
             </p>
           </div>
           <div
             className={`relative grid place-items-center overflow-hidden px-2 py-1 ${dragClass('headline')}`}
+            data-testid="ad-scene-element-headline"
             style={getCanvasLayoutStyle(scene, 'headline')}
             onPointerDown={startDrag('headline')}
           >
@@ -160,15 +203,25 @@ export function AdSceneCanvas({
                 data-testid="reroll-shine-headline"
               />
             )}
-            <h2 className="text-4xl font-black leading-[1.02] text-slate-950">
+            {renderElementLock('headline')}
+            <h2
+              className="font-black leading-[1.02]"
+              style={{
+                color: scene.creative.headlineColor || '#07111f',
+                fontSize: `${headlineFontSizePx}px`,
+                overflowWrap: 'break-word',
+              }}
+            >
               {scene.creative.headline}
             </h2>
           </div>
           <div
             className={`relative flex items-center justify-center gap-1 overflow-hidden ${dragClass('visualizer')}`}
+            data-testid="ad-scene-element-visualizer"
             style={getCanvasLayoutStyle(scene, 'visualizer')}
             onPointerDown={startDrag('visualizer')}
           >
+            {renderElementLock('visualizer')}
             {rerollTick > 0 && !scene.locks.visualizer && (
               <span
                 key={`visualizer-${rerollTick}`}
@@ -176,22 +229,24 @@ export function AdSceneCanvas({
                 data-testid="reroll-shine-visualizer"
               />
             )}
-            {Array.from({ length: 21 }).map((_, index) => (
+            {Array.from({ length: visualizerBarCount }).map((_, index) => (
               <span
                 key={index}
                 className="w-3 rounded-full"
                 style={{
-                  height: getVisualizerBarHeight(index, 21, visualizerTimeMs, 74),
+                  height: getVisualizerBarHeight(index, visualizerBarCount, visualizerTimeMs, 74),
                   backgroundColor: scene.creative.visualizer.color,
                 }}
               />
             ))}
           </div>
           <div
-            className={`grid place-items-center ${dragClass('caption')}`}
+            className={`relative grid place-items-center ${dragClass('caption')}`}
+            data-testid="ad-scene-element-caption"
             style={getCanvasLayoutStyle(scene, 'caption')}
             onPointerDown={startDrag('caption')}
           >
+            {renderElementLock('caption')}
             {captionText && (
               <p className="max-w-[290px] text-base font-black leading-6 text-slate-600">
                 {captionText}
