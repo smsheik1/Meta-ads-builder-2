@@ -18,18 +18,14 @@ import { useSpacebarReroll } from './useSpacebarReroll';
 import { SavedDesignsPanel } from './SavedDesignsPanel';
 import { ExportPanel } from './ExportPanel';
 import { CreativeBriefPanel } from './CreativeBriefPanel';
+import { CreateHeroCopy } from './CreateHeroCopy';
 import { CreateCanvasStage } from './CreateCanvasStage';
 import { WebsiteSceneForm } from './WebsiteSceneForm';
 import { createSavedDesign, loadSavedDesign, type SavedDesign } from './sceneAdapters';
 import { sceneHasSavedSnapshot } from './savedDesigns';
 import { getOrCreateAnonymousSessionId } from './anonymousSession';
-import type {
-  AudioScriptsResponse,
-  CreateAudioResponse,
-  CreateSceneResponse,
-  RenderSceneTicketResponse,
-  ShareSceneResponse,
-} from './apiResponses';
+import { useGenerationFeedback } from './useGenerationFeedback';
+import type { AudioScriptsResponse, CreateAudioResponse, CreateSceneResponse, RenderSceneTicketResponse, ShareSceneResponse } from './apiResponses';
 
 export function CreateFoundation() {
   const [scene, dispatch] = useReducer(reduceAdScene, ogToolScene);
@@ -56,6 +52,7 @@ export function CreateFoundation() {
   const [rerollTick, setRerollTick] = useState(0);
   const [showGuides, setShowGuides] = useState(false);
   const [selectedElement, setSelectedElement] = useState<AdSceneLayoutElement | null>(null);
+  const [lastAdModel, setLastAdModel] = useState('auto');
   const audioPanelRef = useRef<HTMLDivElement | null>(null);
 
   const resetAudioPanel = (nextSceneId: string) => {
@@ -75,7 +72,8 @@ export function CreateFoundation() {
 
   const generateScene = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const adModel = new FormData(event.currentTarget).get('adModel');
+    const adModel = String(new FormData(event.currentTarget).get('adModel') || 'auto');
+    setLastAdModel(adModel);
     setStatus('researching');
     setError('');
 
@@ -114,6 +112,12 @@ export function CreateFoundation() {
   const savedDesignsLoading = Boolean(sessionId) && convexSavedDesigns === undefined;
   const currentSceneSaved = sceneHasSavedSnapshot(savedDesigns, scene);
   const selectedScript = scriptOptions.find((script) => script.id === selectedScriptId) || scriptOptions[0] || null;
+  const {
+    feedbackError,
+    feedbackRating,
+    feedbackStatus,
+    submitGenerationFeedback,
+  } = useGenerationFeedback({ adModel: lastAdModel, scene, sessionId });
 
   useStoredAudioUrlRefresh(scene, dispatch);
 
@@ -411,18 +415,7 @@ export function CreateFoundation() {
     <main className="min-h-screen px-5 py-8 md:px-10">
       <div className="mx-auto grid min-w-0 max-w-6xl grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)]">
         <section className="flex min-w-0 flex-col justify-center gap-6">
-          <div className="space-y-3">
-            <p className="text-sm font-black uppercase tracking-[0.18em] text-slate-400">
-              Wiggly create
-            </p>
-            <h1 className="max-w-xl text-4xl font-black leading-[1.02] tracking-normal text-slate-950 md:text-6xl">
-              Drop in your website and watch the magic happen.
-            </h1>
-            <p className="max-w-xl text-base font-semibold leading-7 text-slate-600">
-              Wiggly reads the page, pulls real selling evidence, and turns it into
-              one clean video ad scene you can save, share, and download.
-            </p>
-          </div>
+          <CreateHeroCopy />
 
           <WebsiteSceneForm
             error={error}
@@ -474,6 +467,9 @@ export function CreateFoundation() {
         </section>
 
         <CreateCanvasStage
+          feedbackError={feedbackError}
+          feedbackRating={feedbackRating}
+          feedbackStatus={feedbackStatus}
           scene={scene}
           rerollTick={rerollTick}
           selectedElement={selectedElement}
@@ -484,6 +480,7 @@ export function CreateFoundation() {
           onEditCaptions={openCaptionTranscriptEditor}
           onMoveElement={moveCanvasElement}
           onPlatformChange={changePlatform}
+          onRateGeneration={submitGenerationFeedback}
           onReplaceLogo={replaceCanvasLogo}
           onReroll={rerollCanvas}
           onSelectElement={setSelectedElement}
