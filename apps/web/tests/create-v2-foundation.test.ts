@@ -506,20 +506,28 @@ test('create surface shows a clickable spacebar reroll prompt', () => {
   assert.match(promptSource, /onClick=\{onReroll\}/);
 });
 
-test('saved designs use a hover popover instead of a second library surface', () => {
+test('saved designs keep hover glance and add a clean v2 design library', () => {
   const panelSource = fs.readFileSync(path.join(webRoot, 'features/create/SavedDesignsPanel.tsx'), 'utf8');
+  const cardSource = fs.readFileSync(path.join(webRoot, 'features/create/SavedDesignCard.tsx'), 'utf8');
+  const librarySource = fs.readFileSync(path.join(webRoot, 'features/create/SavedDesignLibrary.tsx'), 'utf8');
 
   assert.match(panelSource, /saved-designs-save-button/);
   assert.match(panelSource, /saved-designs-popover/);
+  assert.match(panelSource, /saved-design-library-open/);
+  assert.match(panelSource, /SavedDesignLibrary/);
   assert.match(panelSource, /savedDesigns\.slice\(0, 4\)/);
   assert.match(panelSource, /onMouseEnter=\{openPopover\}/);
   assert.match(panelSource, /onMouseLeave=\{\(\) => setPopoverOpen\(false\)\}/);
-  assert.match(panelSource, /onLoadDesign\(design\)/);
-  assert.match(panelSource, /saved-template-preview/);
-  assert.match(panelSource, /saved-template-card/);
-  assert.match(panelSource, /aspect-\[9\/16\]/);
-  assert.match(panelSource, /bg-gradient-to-b/);
-  assert.doesNotMatch(panelSource, /sm:grid-cols-4/);
+  assert.match(panelSource, /onLoadDesign\(nextDesign\)/);
+  assert.match(cardSource, /onLoadDesign\(design\)/);
+  assert.match(cardSource, /saved-template-preview/);
+  assert.match(cardSource, /saved-template-card/);
+  assert.match(cardSource, /aspect-\[9\/16\]/);
+  assert.match(cardSource, /bg-gradient-to-b/);
+  assert.match(librarySource, /saved-design-library/);
+  assert.match(librarySource, /saved-design-library-grid/);
+  assert.match(librarySource, /Saved ad snapshots/);
+  assert.doesNotMatch(librarySource, /My History/);
 });
 
 test('safe guides are preview-only canvas UI', () => {
