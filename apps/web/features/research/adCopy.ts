@@ -119,12 +119,41 @@ PICK THE BEST STUFF FIRST:
 - Best proof: what makes the promise believable?
 - Best ad phrase: which exact site phrase or proof sounds most clickable?
 
+DECIDE HEADLINE TYPE BEFORE WRITING:
+Pick ONE shape:
+1. PAINFUL MOMENT - a concrete annoying moment the buyer recognizes.
+2. RECEIPT DROP - the strongest number, result, timeframe, review, or proof.
+3. CALLOUT - directly name the buyer and the problem.
+4. CONTRAST - show the old painful way versus the better way.
+5. TRANSFORMATION - show the before-to-after outcome.
+
+Then write the headline using that shape. Draw from the picked proof or pain.
+
+STUDY THESE EXAMPLES (shape only; do not copy their facts, numbers, markets, or claims unless this website provided them):
+Brand: AI dental receptionist
+Bad: "Grow your dental practice with AI"
+Good: "Your front desk goes home at 5. Mine answers at 11pm."
+
+Brand: AI search visibility service
+Bad: "Boost your AI visibility"
+Good: "Your competitor shows up in ChatGPT. You don't."
+
+Brand: med spa booking software
+Bad: "Streamline your bookings"
+Good: "37 no-shows last month. This fixed it."
+
+Brand: home search app
+Bad: "Find your dream home today"
+Good: "That listing was gone before lunch."
+
 WHAT TO WRITE:
 - Headline should be punchy, concrete, and easy to read on a phone.
-- Subheadline should explain the promise with the best proof.
+- Subheadline should be one sentence. Lead with the best proof, then explain the promise.
 - Use one exact website receipt, but make it sound like an ad, not a website summary.
 - Prefer outcomes, speed, proof, comparison, or a painful moment over generic category labels.
 - If the brand is broad, pick the most specific offer shown on this page.
+- CTA should be 3-5 words, start with an action verb, and name a specific next step or outcome.
+- Avoid lazy CTAs like "Learn More", "Get Started", "Sign Up", or "Try Now" unless the website gives no better action.
 
 BAD HEADLINE SHAPES:
 - "Grow your business"
@@ -134,8 +163,12 @@ BAD HEADLINE SHAPES:
 - "[Brand] made easier"
 - A plain category label with no reason to care
 
+BANNED WORDS:
+unlock, elevate, transform, next-generation, future of, powered by AI, revolutionary, seamless, cutting-edge, supercharge, leverage, robust, solution, journey, ecosystem, empower
+
 HARD RULES:
 - Do not invent numbers, reviews, customers, guarantees, awards, or timeframes.
+- Do not use the STUDY THESE EXAMPLES facts unless those facts appear in STUFF FROM THE WEBSITE.
 - Headline must be 8-72 characters.
 - Subheadline must be 24-180 characters.
 - Return only JSON: {"headline":"...","subheadline":"...","angleId":"...","ctaText":"..."}

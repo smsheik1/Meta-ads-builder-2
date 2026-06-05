@@ -302,6 +302,14 @@ await test('OpenRouter prompt tells the model to pick the best website stuff fir
   assert.match(prompt, /Possible offers/);
   assert.match(prompt, /Possible buyers/);
   assert.match(prompt, /Exact site phrases/);
+  assert.match(prompt, /DECIDE HEADLINE TYPE BEFORE WRITING/);
+  assert.match(prompt, /PAINFUL MOMENT/);
+  assert.match(prompt, /RECEIPT DROP/);
+  assert.match(prompt, /STUDY THESE EXAMPLES \(shape only/);
+  assert.match(prompt, /Your competitor shows up in ChatGPT\. You don't\./);
+  assert.match(prompt, /CTA should be 3-5 words/);
+  assert.match(prompt, /BANNED WORDS/);
+  assert.match(prompt, /Do not use the STUDY THESE EXAMPLES facts/);
   assert.match(prompt, /First ChatGPT mention in 14 days/);
   assert.doesNotMatch(prompt, /whole website/i);
 });
