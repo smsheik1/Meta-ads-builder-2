@@ -612,9 +612,14 @@ test('create surface shows a clickable spacebar reroll prompt', () => {
   const promptSource = fs.readFileSync(path.join(webRoot, 'features/create/SpacebarRerollPrompt.tsx'), 'utf8');
 
   assert.match(source, /SpacebarRerollPrompt/);
+  assert.match(source, /rerollTick=\{rerollTick\}/);
+  assert.match(source, /selectedElement=\{selectedElement\}/);
   assert.match(promptSource, /Press/);
   assert.match(promptSource, /Spacebar/);
-  assert.match(promptSource, /to generate more/);
+  assert.match(promptSource, /make a wish/);
+  assert.match(promptSource, /spacebar-reroll-coach/);
+  assert.match(promptSource, /spacebar-reroll-button/);
+  assert.match(promptSource, /Lock any keeper/);
   assert.match(promptSource, /onClick=\{onReroll\}/);
 });
 
