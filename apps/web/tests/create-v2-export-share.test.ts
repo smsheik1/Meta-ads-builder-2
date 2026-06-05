@@ -207,15 +207,21 @@ await test('share page uses the canonical canvas preview and sends new visitors 
 
 await test('download rendering stays clean while share uses preview chrome', async () => {
   const canvasSource = await fs.readFile(path.join(process.cwd(), 'features', 'render', 'AdSceneCanvas.tsx'), 'utf8');
+  const platformChromeSource = await fs.readFile(path.join(process.cwd(), 'features', 'render', 'PlatformPreviewChrome.tsx'), 'utf8');
   const remotionSource = await fs.readFile(path.join(process.cwd(), 'features', 'render', 'AdSceneRemotion.tsx'), 'utf8');
   const renderSource = await fs.readFile(path.join(process.cwd(), 'features', 'export', 'renderScene.ts'), 'utf8');
 
-  assert.match(canvasSource, /feed-preview-footer/);
-  assert.match(canvasSource, /1,284 likes/);
+  assert.match(canvasSource, /FeedPreviewFooter/);
+  assert.match(canvasSource, /PlatformSurfaceChrome/);
+  assert.match(platformChromeSource, /feed-preview-footer/);
+  assert.match(platformChromeSource, /1,284 likes/);
+  assert.match(platformChromeSource, /reels-preview-chrome/);
+  assert.match(platformChromeSource, /stories-preview-chrome/);
+  assert.match(platformChromeSource, /youtube-preview-chrome/);
   assert.match(renderSource, /createRenderSnapshot/);
   assert.match(renderSource, /renderMedia/);
   assert.doesNotMatch(renderSource, /AdSceneCanvas|feed-preview-footer/);
-  assert.doesNotMatch(remotionSource, /feed-preview-footer|1,284 likes|MessageCircle|Bookmark/);
+  assert.doesNotMatch(remotionSource, /feed-preview-footer|reels-preview-chrome|stories-preview-chrome|youtube-preview-chrome|1,284 likes|MessageCircle|Bookmark/);
 });
 
 await test('made with Wiggly watermark is permanent inside preview and download graphics', async () => {
@@ -238,7 +244,7 @@ await test('made with Wiggly watermark is permanent inside preview and download 
   assert.match(canvasSource, /pointer-events-none/);
   assert.match(canvasSource, /WIGGLY_WATERMARK_TEXT/);
   assert.match(canvasSource, /verticalStoryPlatform/);
-  assert.match(canvasSource, /className=\{`pointer-events-none absolute z-30 select-none font-black uppercase/);
+  assert.match(canvasSource, /className=\{`pointer-events-none absolute z-40 select-none font-black uppercase/);
   assert.match(canvasSource, /text-slate-950\/30/);
   assert.doesNotMatch(canvasWatermark, /rounded-full|bg-white|shadow-|<span/);
   assert.match(remotionSource, /made-with-wiggly-watermark/);

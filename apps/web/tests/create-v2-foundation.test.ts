@@ -677,12 +677,14 @@ test('platform selector updates the canonical scene platform without legacy over
 
 test('instagram feed preview keeps the creative surface at the feed ratio', () => {
   const canvasSource = fs.readFileSync(path.join(webRoot, 'features/render/AdSceneCanvas.tsx'), 'utf8');
+  const platformChromeSource = fs.readFileSync(path.join(webRoot, 'features/render/PlatformPreviewChrome.tsx'), 'utf8');
 
   assert.match(canvasSource, /feedPreviewChrome = scene\.platform === 'instagram-feed'/);
   assert.match(canvasSource, /surfaceAspectRatio = feedPreviewChrome/);
   assert.match(canvasSource, /frameAspectRatio = feedPreviewChrome \? undefined/);
-  assert.match(canvasSource, /feed-preview-footer/);
-  assert.match(canvasSource, /1,284 likes/);
+  assert.match(canvasSource, /FeedPreviewFooter/);
+  assert.match(platformChromeSource, /feed-preview-footer/);
+  assert.match(platformChromeSource, /1,284 likes/);
 });
 
 test('visualizer format owns editing controls through a small format module', () => {
