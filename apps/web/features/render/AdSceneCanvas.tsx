@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
-import { AudioLines, Bookmark, Captions, Heart, Lock, MessageCircle, Pause, Play, Send, Unlock } from 'lucide-react';
+import { AudioLines, Captions, Lock, Pause, Play, Unlock } from 'lucide-react';
 import type { AdScene, AdSceneLayoutElement } from '@/features/create/scene';
 import {
   getActiveCaptionText,
@@ -15,6 +15,7 @@ import {
   WIGGLY_WATERMARK_TEXT,
 } from './adSceneRender';
 import { getCanvasLayoutStyle, getLayoutBox, layoutLockForElement } from './adSceneLayout';
+import { FeedPreviewFooter, PlatformAccountBar, PlatformSurfaceChrome } from './PlatformPreviewChrome';
 
 type AdSceneCanvasProps = {
   scene: AdScene;
@@ -75,7 +76,6 @@ export function AdSceneCanvas({
     : '';
   const visualizerTimeMs = playableAudio && isPlaying ? audioTimeMs : 0;
   const surfacePaddingClass = horizontalPlatform ? 'px-10' : 'px-8';
-  const headerPaddingClass = horizontalPlatform ? 'px-4 py-2' : 'px-4 py-3';
   const brandTextClass = horizontalPlatform ? 'text-[9px] leading-none sm:text-sm' : 'text-sm';
   const visualizerBarWidthClass = horizontalPlatform ? 'w-2 sm:w-3' : 'w-3';
   const visualizerGapClass = horizontalPlatform ? 'gap-0.5 sm:gap-1' : 'gap-1';
@@ -184,30 +184,7 @@ export function AdSceneCanvas({
         className="flex flex-col overflow-hidden rounded-[26px] bg-white"
         style={{ aspectRatio: frameAspectRatio }}
       >
-        <div className={`flex shrink-0 items-center gap-3 bg-black text-white ${headerPaddingClass}`}>
-          <div className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-white text-sm font-black text-slate-950">
-            {rerollTick > 0 && !scene.locks.logo && (
-              <span
-                key={`logo-${rerollTick}`}
-                className="wiggly-reroll-shine pointer-events-none absolute inset-0"
-                data-testid="reroll-shine-logo"
-              />
-            )}
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt=""
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              scene.brand.name.slice(0, 2).toUpperCase()
-            )}
-          </div>
-          <div>
-            <p className="text-sm font-black leading-none">{scene.brand.name}</p>
-            <p className="mt-1 text-xs font-semibold text-white/70">Sponsored</p>
-          </div>
-        </div>
+        {feedPreviewChrome && <PlatformAccountBar avatarUrl={avatarUrl} rerollTick={rerollTick} scene={scene} />}
 
         <div
           ref={surfaceRef}
@@ -344,7 +321,7 @@ export function AdSceneCanvas({
             ) : null}
           </div>
           <p
-            className={`pointer-events-none absolute z-30 select-none font-black uppercase tracking-[0.18em] text-slate-950/30 mix-blend-multiply ${watermarkPositionClass} ${watermarkSizeClass}`}
+            className={`pointer-events-none absolute z-40 select-none font-black uppercase tracking-[0.18em] text-slate-950/30 mix-blend-multiply ${watermarkPositionClass} ${watermarkSizeClass}`}
             data-testid="made-with-wiggly-watermark"
           >
             {WIGGLY_WATERMARK_TEXT}
@@ -361,24 +338,9 @@ export function AdSceneCanvas({
               </div>
             </div>
           )}
+          <PlatformSurfaceChrome avatarUrl={avatarUrl} scene={scene} />
         </div>
-        {feedPreviewChrome && (
-          <div className="shrink-0 bg-black px-4 pb-4 pt-3 text-white" data-testid="feed-preview-footer">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Heart className="h-5 w-5" />
-                <MessageCircle className="h-5 w-5" />
-                <Send className="h-5 w-5" />
-              </div>
-              <Bookmark className="h-5 w-5" />
-            </div>
-            <p className="mt-2 text-xs font-black">1,284 likes</p>
-            <p className="mt-1 line-clamp-2 text-xs font-semibold leading-4 text-white/90">
-              <span className="font-black">{scene.brand.name}</span> {scene.creative.subheadline}
-            </p>
-            <p className="mt-1 text-[11px] font-semibold text-white/45">SPONSORED</p>
-          </div>
-        )}
+        {feedPreviewChrome && <FeedPreviewFooter scene={scene} />}
       </div>
       {playableAudio && (
         <audio

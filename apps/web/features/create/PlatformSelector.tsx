@@ -13,14 +13,15 @@ type PlatformSelectorProps = {
 type PlatformOption = {
   icon: ComponentType<{ className?: string }>;
   label: string;
+  meta: string;
   value: AdPlatform;
 };
 
 const PLATFORM_OPTIONS: PlatformOption[] = [
-  { value: 'instagram-feed', label: 'IG Feed', icon: Instagram },
-  { value: 'reels', label: 'Reels', icon: Smartphone },
-  { value: 'stories', label: 'Stories', icon: PanelTop },
-  { value: 'youtube', label: 'YouTube', icon: Youtube },
+  { value: 'instagram-feed', label: 'IG Feed', meta: '4:5 post', icon: Instagram },
+  { value: 'reels', label: 'Reels', meta: '9:16 scroll', icon: Smartphone },
+  { value: 'stories', label: 'Stories', meta: '9:16 story', icon: PanelTop },
+  { value: 'youtube', label: 'YouTube', meta: '16:9 video', icon: Youtube },
 ];
 
 export function PlatformSelector({
@@ -53,6 +54,9 @@ export function PlatformSelector({
             >
               <Icon className="h-4 w-4" />
               <span className="mt-1 text-xs font-black leading-none">{option.label}</span>
+              <span className={`mt-1 text-[10px] font-bold leading-none ${active ? 'text-white/60' : 'text-slate-400'}`}>
+                {option.meta}
+              </span>
             </button>
           );
         })}
