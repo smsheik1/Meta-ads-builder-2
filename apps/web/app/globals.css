@@ -55,7 +55,6 @@ select {
     rgba(125, 211, 252, 0.52) 62%,
     transparent 86%
   );
-  filter: blur(0.5px);
   mix-blend-mode: screen;
   animation: wiggly-reroll-shine 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }

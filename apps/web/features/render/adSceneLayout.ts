@@ -16,11 +16,10 @@ export const getCanvasLayoutStyle = (scene: AdScene, element: AdSceneLayoutEleme
 
   return {
     position: 'absolute' as const,
-    left: `${box.x * 100}%`,
-    top: `${box.y * 100}%`,
+    left: `${(box.x - box.width / 2) * 100}%`,
+    top: `${(box.y - box.height / 2) * 100}%`,
     width: `${box.width * 100}%`,
-    minHeight: `${box.height * 100}%`,
-    transform: 'translate(-50%, -50%)',
+    height: `${box.height * 100}%`,
   };
 };
 
@@ -33,10 +32,9 @@ export const getRemotionLayoutStyle = (
 
   return {
     position: 'absolute' as const,
-    left: box.x * bounds.width,
-    top: box.y * bounds.height,
+    left: (box.x - box.width / 2) * bounds.width,
+    top: (box.y - box.height / 2) * bounds.height,
     width: box.width * bounds.width,
-    minHeight: box.height * bounds.height,
-    transform: 'translate(-50%, -50%)',
+    height: box.height * bounds.height,
   };
 };
