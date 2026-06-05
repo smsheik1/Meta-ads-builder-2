@@ -60,9 +60,13 @@ export function CreateCanvasStage({
         onSelectElement={onSelectElement}
         onToggleLock={onToggleLock}
       />
+      <SpacebarRerollPrompt
+        rerollTick={rerollTick}
+        selectedElement={selectedElement}
+        onReroll={onReroll}
+      />
       <PlatformSelector platform={scene.platform} onPlatformChange={onPlatformChange} />
       <CanvasGuidesToggle showGuides={showGuides} onToggle={onToggleGuides} />
-      <SpacebarRerollPrompt onReroll={onReroll} />
       <EditTray
         scene={scene}
         selectedElement={selectedElement}
