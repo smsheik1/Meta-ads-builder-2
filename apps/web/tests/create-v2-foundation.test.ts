@@ -13,6 +13,7 @@ import { ogToolScene, redfinScene } from '../features/create/fixtures';
 import { cloneAdScene, deserializeAdScene, serializeAdScene } from '../features/create/scene';
 import { reduceAdScene } from '../features/create/sceneReducer';
 import { createCreativeReroll } from '../features/create/creativeReroll';
+import { createGenerationFeedbackKey, createGenerationFeedbackPayload } from '../features/create/generationFeedbackPayload';
 import {
   ANONYMOUS_SESSION_STORAGE_KEY,
   getOrCreateAnonymousSessionId,
@@ -727,6 +728,55 @@ test('caption transcript editor is wired to the v2 canvas scene', () => {
   assert.match(editorSource, /Save words/);
 });
 
+test('generation feedback stores lightweight useful metadata only', () => {
+  const payload = createGenerationFeedbackPayload({
+    adModel: 'kimi-k2.6-free',
+    rating: 'up',
+    scene: ogToolScene,
+    sessionId: 'session-test',
+  });
+
+  assert.equal(payload.sessionId, 'session-test');
+  assert.equal(payload.sceneId, ogToolScene.id);
+  assert.equal(payload.rating, 'up');
+  assert.equal(payload.websiteUrl, ogToolScene.brand.websiteUrl);
+  assert.equal(payload.brandName, ogToolScene.brand.name);
+  assert.equal(payload.platform, ogToolScene.platform);
+  assert.equal(payload.headline, ogToolScene.creative.headline);
+  assert.equal(payload.adModel, 'kimi-k2.6-free');
+  assert.equal(payload.hasAudio, false);
+  assert.ok(createGenerationFeedbackKey(ogToolScene).includes(ogToolScene.creative.headline));
+  assert.equal('url' in payload, false);
+  assert.equal('transcript' in payload, false);
+  assert.equal('captions' in payload, false);
+  assert.equal('receipts' in payload, false);
+});
+
+test('generation feedback is wired under the v2 canvas', () => {
+  const createSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
+  const stageSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateCanvasStage.tsx'), 'utf8');
+  const componentSource = fs.readFileSync(path.join(webRoot, 'features/create/GenerationFeedback.tsx'), 'utf8');
+  const hookSource = fs.readFileSync(path.join(webRoot, 'features/create/useGenerationFeedback.ts'), 'utf8');
+  const convexSource = fs.readFileSync(path.join(webRoot, 'convex/generationFeedback.ts'), 'utf8');
+  const schemaSource = fs.readFileSync(path.join(webRoot, 'convex/schema.ts'), 'utf8');
+
+  assert.match(createSource, /useGenerationFeedback/);
+  assert.match(createSource, /onRateGeneration=\{submitGenerationFeedback\}/);
+  assert.match(stageSource, /GenerationFeedback/);
+  assert.match(stageSource, /rating=\{feedbackRating\}/);
+  assert.match(hookSource, /api\.generationFeedback\.submit/);
+  assert.match(hookSource, /createGenerationFeedbackPayload/);
+  assert.match(componentSource, /generation-feedback/);
+  assert.match(componentSource, /generation-feedback-up/);
+  assert.match(componentSource, /generation-feedback-down/);
+  assert.match(componentSource, /ThumbsUp/);
+  assert.match(componentSource, /ThumbsDown/);
+  assert.match(schemaSource, /generationFeedback/);
+  assert.match(schemaSource, /by_sessionId_and_sceneId/);
+  assert.match(convexSource, /ctx\.db\.replace/);
+  assert.doesNotMatch(convexSource, /transcript|captions|url/);
+});
+
 test('export panel explains render progress without fake precision', () => {
   const source = fs.readFileSync(path.join(webRoot, 'features/create/ExportPanel.tsx'), 'utf8');
 
@@ -775,12 +825,13 @@ test('root, create, and create-v2 routes all use the v2 create app', () => {
 test('current create surface does not expose migration scaffolding copy', () => {
   const layoutSource = fs.readFileSync(path.join(webRoot, 'app/layout.tsx'), 'utf8');
   const createSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
+  const heroSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateHeroCopy.tsx'), 'utf8');
   const readmeSource = fs.readFileSync(path.join(webRoot, 'README.md'), 'utf8');
-  const combined = [layoutSource, createSource, readmeSource].join('\n');
+  const combined = [layoutSource, createSource, heroSource, readmeSource].join('\n');
 
   assert.doesNotMatch(combined, /Create v2 foundation|frozen legacy app|Clean-room Wiggly create foundation/);
   assert.doesNotMatch(layoutSource, /Wiggly Create V2/);
-  assert.match(createSource, /one clean video ad scene you can save, share, and download/);
+  assert.match(heroSource, /one clean video ad scene you can save, share, and download/);
 });
 
 test('ad writing model selector is wired to scene generation only', () => {

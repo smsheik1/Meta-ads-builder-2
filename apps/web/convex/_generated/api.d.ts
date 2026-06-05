@@ -9,6 +9,7 @@
  */
 
 import type * as audioAssets from "../audioAssets.js";
+import type * as generationFeedback from "../generationFeedback.js";
 import type * as savedDesigns from "../savedDesigns.js";
 import type * as shareScenes from "../shareScenes.js";
 
@@ -20,6 +21,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   audioAssets: typeof audioAssets;
+  generationFeedback: typeof generationFeedback;
   savedDesigns: typeof savedDesigns;
   shareScenes: typeof shareScenes;
 }>;
