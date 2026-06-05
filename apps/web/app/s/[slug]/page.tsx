@@ -28,7 +28,7 @@ export default async function SharePage({ params }: SharePageProps) {
             Create a fresh share link from Wiggly to preview this ad.
           </p>
           <Link
-            href="/create-v2"
+            href="/create"
             className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-slate-950 px-5 text-sm font-black text-white"
           >
             Open Wiggly
