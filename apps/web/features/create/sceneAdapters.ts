@@ -52,7 +52,7 @@ export type RenderScene = AdScene;
 
 export const toRenderScene = (scene: AdScene): RenderScene => cloneAdScene(scene);
 
-export type ShareScene = Pick<AdScene, 'id' | 'brand' | 'platform' | 'creative' | 'audio'>;
+export type ShareScene = Pick<AdScene, 'id' | 'brand' | 'platform' | 'creative' | 'audio' | 'layout'>;
 
 export const toShareScene = (scene: AdScene): ShareScene => ({
   id: scene.id,
@@ -60,4 +60,5 @@ export const toShareScene = (scene: AdScene): ShareScene => ({
   platform: scene.platform,
   creative: { ...scene.creative, visualizer: { ...scene.creative.visualizer } },
   audio: { ...scene.audio, captions: [...scene.audio.captions] },
+  layout: cloneAdScene(scene).layout,
 });

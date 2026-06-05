@@ -63,6 +63,17 @@ export type AdSceneLocks = {
   audio: boolean;
 };
 
+export type AdSceneLayoutElement = 'brand' | 'headline' | 'visualizer' | 'caption';
+
+export type AdSceneLayoutBox = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+export type AdSceneLayout = Record<AdSceneLayoutElement, AdSceneLayoutBox>;
+
 export type AdScene = {
   id: string;
   version: typeof AD_SCENE_VERSION;
@@ -70,6 +81,7 @@ export type AdScene = {
   platform: AdPlatform;
   creative: AdSceneCreative;
   audio: AdSceneAudio;
+  layout: AdSceneLayout;
   locks: AdSceneLocks;
   createdAt: number;
   updatedAt: number;
@@ -83,14 +95,47 @@ export const DEFAULT_SCENE_LOCKS: AdSceneLocks = {
   audio: false,
 };
 
+export const DEFAULT_SCENE_LAYOUT: AdSceneLayout = {
+  brand: { x: 0.5, y: 0.18, width: 0.78, height: 0.08 },
+  headline: { x: 0.5, y: 0.35, width: 0.86, height: 0.22 },
+  visualizer: { x: 0.5, y: 0.57, width: 0.96, height: 0.18 },
+  caption: { x: 0.5, y: 0.75, width: 0.82, height: 0.14 },
+};
+
+const clamp = (value: number, min: number, max: number) => (
+  Math.min(max, Math.max(min, value))
+);
+
+export const normalizeLayoutBox = (box: AdSceneLayoutBox): AdSceneLayoutBox => {
+  const width = clamp(box.width, 0.12, 1);
+  const height = clamp(box.height, 0.05, 1);
+
+  return {
+    width,
+    height,
+    x: clamp(box.x, 0.08, 0.92),
+    y: clamp(box.y, 0.06, 0.94),
+  };
+};
+
+export const getAdSceneLayout = (scene: Pick<AdScene, 'layout'> | { layout?: Partial<AdSceneLayout> }): AdSceneLayout => ({
+  brand: normalizeLayoutBox({ ...DEFAULT_SCENE_LAYOUT.brand, ...scene.layout?.brand }),
+  headline: normalizeLayoutBox({ ...DEFAULT_SCENE_LAYOUT.headline, ...scene.layout?.headline }),
+  visualizer: normalizeLayoutBox({ ...DEFAULT_SCENE_LAYOUT.visualizer, ...scene.layout?.visualizer }),
+  caption: normalizeLayoutBox({ ...DEFAULT_SCENE_LAYOUT.caption, ...scene.layout?.caption }),
+});
+
 export const cloneAdScene = (scene: AdScene): AdScene => (
-  JSON.parse(JSON.stringify(scene)) as AdScene
+  {
+    ...(JSON.parse(JSON.stringify(scene)) as AdScene),
+    layout: getAdSceneLayout(scene),
+  }
 );
 
 export const serializeAdScene = (scene: AdScene) => JSON.stringify(scene);
 
 export const deserializeAdScene = (value: string): AdScene => (
-  JSON.parse(value) as AdScene
+  cloneAdScene(JSON.parse(value) as AdScene)
 );
 
 export const getAdSceneBrandKey = (scene: AdScene) => (

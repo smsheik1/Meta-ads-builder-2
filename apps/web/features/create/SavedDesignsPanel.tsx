@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { BookmarkPlus, CheckCircle2, Clock3, Trash2, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isStoredSceneAudio } from '@/features/render/adSceneRender';
+import { getCanvasLayoutStyle } from '@/features/render/adSceneLayout';
 import type { AdScene } from './scene';
 import type { SavedDesign } from './sceneAdapters';
 
@@ -39,14 +40,23 @@ function SavedDesignPreview({ scene }: { scene: AdScene }) {
         </span>
         <span className="min-w-0 truncate text-[10px] font-black">{scene.brand.name}</span>
       </div>
-      <div className="flex h-[calc(100%-32px)] flex-col items-center justify-center gap-3 px-3 text-center">
-        <p className="text-[10px] font-black uppercase tracking-wide text-slate-950">
+      <div className="relative h-[calc(100%-32px)] px-3 text-center">
+        <p
+          className="grid place-items-center text-[10px] font-black uppercase tracking-wide text-slate-950"
+          style={getCanvasLayoutStyle(scene, 'brand')}
+        >
           {scene.brand.name}
         </p>
-        <p className="line-clamp-3 text-lg font-black leading-[0.98] text-slate-950">
+        <p
+          className="line-clamp-3 grid place-items-center text-lg font-black leading-[0.98] text-slate-950"
+          style={getCanvasLayoutStyle(scene, 'headline')}
+        >
           {scene.creative.headline}
         </p>
-        <div className="flex h-8 w-full items-center justify-center gap-0.5">
+        <div
+          className="flex items-center justify-center gap-0.5"
+          style={getCanvasLayoutStyle(scene, 'visualizer')}
+        >
           {Array.from({ length: 13 }).map((_, index) => {
             const center = Math.abs(index - 6);
             return (

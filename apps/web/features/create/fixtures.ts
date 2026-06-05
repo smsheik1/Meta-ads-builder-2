@@ -1,4 +1,4 @@
-import { AD_SCENE_VERSION, DEFAULT_SCENE_LOCKS, type AdScene } from './scene';
+import { AD_SCENE_VERSION, DEFAULT_SCENE_LAYOUT, DEFAULT_SCENE_LOCKS, type AdScene } from './scene';
 
 const NOW = 1_717_200_000_000;
 
@@ -45,6 +45,7 @@ export const ogToolScene: AdScene = {
     scriptId: null,
     durationMs: null,
   },
+  layout: { ...DEFAULT_SCENE_LAYOUT },
   locks: { ...DEFAULT_SCENE_LOCKS },
   createdAt: NOW,
   updatedAt: NOW,
@@ -93,6 +94,7 @@ export const redfinScene: AdScene = {
     scriptId: null,
     durationMs: null,
   },
+  layout: { ...DEFAULT_SCENE_LAYOUT },
   locks: { ...DEFAULT_SCENE_LOCKS },
   createdAt: NOW,
   updatedAt: NOW,

@@ -1,4 +1,4 @@
-import { AD_SCENE_VERSION, DEFAULT_SCENE_LOCKS, type AdScene } from '@/features/create/scene';
+import { AD_SCENE_VERSION, DEFAULT_SCENE_LAYOUT, DEFAULT_SCENE_LOCKS, type AdScene } from '@/features/create/scene';
 import type { AdCopy } from './adCopy';
 import type { WebsiteResearch } from './websiteResearch';
 
@@ -161,6 +161,7 @@ export const buildAdSceneFromWebsiteResearch = (
       scriptId: null,
       durationMs: null,
     },
+    layout: { ...DEFAULT_SCENE_LAYOUT },
     locks: { ...DEFAULT_SCENE_LOCKS },
     createdAt: now,
     updatedAt: now,
