@@ -31,6 +31,19 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
   const contentBounds = { width: contentWidth, height: contentHeight };
   const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
   const visualizerBarCount = scene.creative.visualizer.barCount ?? 21;
+  const verticalStoryPlatform = scene.platform === 'reels' || scene.platform === 'stories';
+  const watermarkStyle = verticalStoryPlatform
+    ? {
+        left: '50%',
+        bottom: isVertical ? 42 : 28,
+        transform: 'translateX(-50%)',
+        textAlign: 'center' as const,
+      }
+    : {
+        right: isVertical ? 44 : 38,
+        bottom: isVertical ? 34 : 28,
+        textAlign: 'right' as const,
+      };
 
   return (
     <AbsoluteFill
@@ -186,37 +199,18 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
           data-testid="made-with-wiggly-watermark"
           style={{
             position: 'absolute',
-            right: isVertical ? 22 : 18,
-            bottom: isVertical ? 22 : 18,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            borderRadius: 999,
-            border: '2px solid rgba(15, 23, 42, 0.10)',
-            backgroundColor: 'rgba(255, 255, 255, 0.90)',
-            color: '#334155',
-            padding: isVertical ? '12px 18px' : '9px 14px',
+            ...watermarkStyle,
+            color: 'rgba(15, 23, 42, 0.30)',
             fontWeight: 900,
-            fontSize: isVertical ? 22 : 17,
-            boxShadow: '0 28px 70px rgba(15, 23, 42, 0.14)',
+            fontSize: isVertical ? 20 : 15,
+            letterSpacing: isVertical ? 3.6 : 2.8,
+            lineHeight: 1,
+            mixBlendMode: 'multiply',
+            textShadow: '0 1px 0 rgba(255, 255, 255, 0.45)',
+            textTransform: 'uppercase',
           }}
         >
-          <span
-            style={{
-              width: isVertical ? 30 : 24,
-              height: isVertical ? 30 : 24,
-              borderRadius: 999,
-              backgroundColor: '#020617',
-              color: '#fff',
-              display: 'grid',
-              placeItems: 'center',
-              fontSize: isVertical ? 17 : 13,
-              lineHeight: 1,
-            }}
-          >
-            W
-          </span>
-          <span>{WIGGLY_WATERMARK_TEXT}</span>
+          {WIGGLY_WATERMARK_TEXT}
         </div>
       </div>
     </AbsoluteFill>

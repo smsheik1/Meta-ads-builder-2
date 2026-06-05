@@ -76,6 +76,13 @@ export function AdSceneCanvas({
   const visualizerGapClass = horizontalPlatform ? 'gap-0.5 sm:gap-1' : 'gap-1';
   const surfaceAspectRatio = feedPreviewChrome ? `${renderSpec.width} / ${renderSpec.height}` : undefined;
   const frameAspectRatio = feedPreviewChrome ? undefined : `${renderSpec.width} / ${renderSpec.height}`;
+  const verticalStoryPlatform = scene.platform === 'reels' || scene.platform === 'stories';
+  const watermarkPositionClass = verticalStoryPlatform
+    ? 'bottom-5 left-1/2 -translate-x-1/2'
+    : horizontalPlatform
+      ? 'bottom-4 right-5'
+      : 'bottom-4 right-4';
+  const watermarkSizeClass = horizontalPlatform ? 'text-[9px]' : 'text-[10px]';
 
   useEffect(() => {
     setIsPlaying(false);
@@ -323,15 +330,12 @@ export function AdSceneCanvas({
               </button>
             ) : null}
           </div>
-          <div
-            className="pointer-events-none absolute bottom-3 right-3 z-30 inline-flex items-center gap-1.5 rounded-full border border-slate-950/10 bg-white/90 px-2.5 py-1.5 text-[10px] font-black text-slate-700 shadow-[0_14px_34px_rgba(15,23,42,0.14)] backdrop-blur"
+          <p
+            className={`pointer-events-none absolute z-30 select-none font-black uppercase tracking-[0.18em] text-slate-950/30 mix-blend-multiply ${watermarkPositionClass} ${watermarkSizeClass}`}
             data-testid="made-with-wiggly-watermark"
           >
-            <span className="grid h-4 w-4 place-items-center rounded-full bg-slate-950 text-[9px] leading-none text-white">
-              W
-            </span>
-            <span>{WIGGLY_WATERMARK_TEXT}</span>
-          </div>
+            {WIGGLY_WATERMARK_TEXT}
+          </p>
           {showGuides && (
             <div
               className="pointer-events-none absolute inset-0 z-40 grid place-items-center"

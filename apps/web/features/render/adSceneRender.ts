@@ -3,7 +3,7 @@ import { cloneAdScene, type AdPlatform, type AdScene, type AdSceneAudio } from '
 export const AD_SCENE_FPS = 30;
 export const DEFAULT_SCENE_DURATION_MS = 6000;
 export const MAX_SCENE_DURATION_MS = 45_000;
-export const WIGGLY_WATERMARK_TEXT = 'Made with Wiggly';
+export const WIGGLY_WATERMARK_TEXT = 'made with wiggly';
 
 export type AdSceneRenderSpec = {
   compositionId: string;
