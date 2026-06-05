@@ -877,11 +877,16 @@ test('Next keeps create-v2 as the v2 app and leaves create to the legacy app', (
   const rootPage = fs.readFileSync(path.join(webRoot, 'app/page.tsx'), 'utf8');
   const createPagePath = path.join(webRoot, 'app/create/page.tsx');
   const createV2Page = fs.readFileSync(path.join(webRoot, 'app/create-v2/page.tsx'), 'utf8');
+  const rootPackage = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
+  const publicLink = path.join(webRoot, 'public');
 
   assert.doesNotMatch(rootPage, /CreateFoundation/);
   assert.match(rootPage, /href="\/create-v2"/);
   assert.equal(fs.existsSync(createPagePath), false);
   assert.match(createV2Page, /CreateFoundation/);
+  assert.equal(rootPackage.scripts.dev, 'npm run dev:legacy');
+  assert.equal(rootPackage.scripts['dev:client'], 'vite --port=3010 --host=0.0.0.0');
+  assert.equal(fs.lstatSync(publicLink).isSymbolicLink(), true);
 });
 
 test('current create surface does not expose migration scaffolding copy', () => {
