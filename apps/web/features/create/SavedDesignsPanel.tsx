@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState, type FocusEvent } from 'react';
-import { BookmarkPlus, CheckCircle2, Clock3, Trash2, Volume2 } from 'lucide-react';
+import { BookmarkPlus, CheckCircle2, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getHeadlineScale, isStoredSceneAudio } from '@/features/render/adSceneRender';
-import type { AdScene } from './scene';
+import { SavedDesignCard } from './SavedDesignCard';
+import { SavedDesignLibrary } from './SavedDesignLibrary';
 import type { SavedDesign } from './sceneAdapters';
 
 type SavedDesignsPanelProps = {
@@ -17,72 +17,6 @@ type SavedDesignsPanelProps = {
   onSaveDesign: () => void;
 };
 
-const formatSavedTime = (value: number) => (
-  new Intl.DateTimeFormat(undefined, {
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(new Date(value))
-);
-
-function SavedDesignPreview({ scene }: { scene: AdScene }) {
-  const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
-  const hasAudio = isStoredSceneAudio(scene);
-  const previewBarCount = Math.min(14, scene.creative.visualizer.barCount || 14);
-  const headlineScale = getHeadlineScale(scene.creative.headline);
-
-  return (
-    <div
-      className="relative aspect-[9/16] w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-inner"
-      data-testid="saved-template-preview"
-      style={{ backgroundColor: scene.creative.backgroundColor }}
-    >
-      <div className="absolute inset-x-0 top-[8%] flex justify-center">
-        <span className="grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-white text-[9px] font-black text-slate-950 shadow-[0_8px_20px_rgba(15,23,42,0.12)]">
-          {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : scene.brand.name.slice(0, 1).toUpperCase()}
-        </span>
-      </div>
-
-      <div className="absolute inset-x-3 top-[20%] flex min-h-[58px] items-center justify-center text-center">
-        <p
-          className="line-clamp-4 text-center font-black leading-[0.95]"
-          style={{
-            color: scene.creative.headlineColor || '#07111f',
-            fontSize: `${Math.max(11, Math.round(16 * headlineScale))}px`,
-          }}
-        >
-          {scene.creative.headline}
-        </p>
-      </div>
-
-      <div className="absolute inset-x-3 top-[52%] flex h-8 items-center gap-[2px]">
-        {Array.from({ length: previewBarCount }).map((_, index) => (
-          <span
-            key={index}
-            className="flex-1 rounded-full"
-            style={{
-              height: `${28 + ((index * 9) % 46)}%`,
-              backgroundColor: scene.creative.visualizer.color,
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="absolute inset-x-5 bottom-[17%] flex justify-center">
-        <span
-          className="h-2 w-20 rounded-full"
-          style={{ backgroundColor: scene.creative.accentColor }}
-        />
-      </div>
-
-      {hasAudio && (
-        <span className="absolute bottom-2 right-2 grid h-6 w-6 place-items-center rounded-full bg-slate-950 text-white shadow-lg">
-          <Volume2 className="h-3 w-3" />
-        </span>
-      )}
-    </div>
-  );
-}
-
 export function SavedDesignsPanel({
   currentSceneSaved,
   savedDesigns,
@@ -94,6 +28,7 @@ export function SavedDesignsPanel({
 }: SavedDesignsPanelProps) {
   const [hydrated, setHydrated] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const recentDesigns = savedDesigns.slice(0, 4);
   const hasSavedDesigns = savedDesigns.length > 0;
 
@@ -168,39 +103,16 @@ export function SavedDesignsPanel({
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {recentDesigns.map((design) => (
-                    <div
+                    <SavedDesignCard
                       key={design.id}
-                      className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-b from-white to-[#fbf7ef]/70 p-2 text-left shadow-[0_10px_24px_rgba(17,24,39,0.06)] transition hover:border-indigo-200 hover:shadow-[0_18px_34px_rgba(17,24,39,0.10)] active:scale-[0.99]"
-                      data-testid="saved-template-card"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onLoadDesign(design);
-                          setPopoverOpen(false);
-                        }}
-                        className="block w-full min-w-0 text-left"
-                        title={`Open ${design.title}`}
-                      >
-                        <SavedDesignPreview scene={design.scene} />
-                        <span className="mt-2 block truncate text-[11px] font-black text-slate-800">
-                          {design.title}
-                        </span>
-                        <span className="mt-1 flex items-center gap-1 text-[10px] font-bold text-slate-400">
-                          <Clock3 className="h-3 w-3" />
-                          {hydrated ? formatSavedTime(design.updatedAt) : 'Saved'}
-                        </span>
-                      </button>
-                      <span className="pointer-events-none absolute inset-2 rounded-lg bg-indigo-500/0 transition group-hover:bg-indigo-500/5" />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-full bg-white/95 text-slate-400 opacity-0 shadow-sm transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
-                        title="Delete saved design"
-                        onClick={() => onDeleteDesign(design.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+                      design={design}
+                      hydrated={hydrated}
+                      onDeleteDesign={onDeleteDesign}
+                      onLoadDesign={(nextDesign) => {
+                        onLoadDesign(nextDesign);
+                        setPopoverOpen(false);
+                      }}
+                    />
                   ))}
                 </div>
                 {savedDesigns.length > recentDesigns.length && (
@@ -208,6 +120,19 @@ export function SavedDesignsPanel({
                     Showing the latest four. Older saved ads stay synced.
                   </p>
                 )}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="mt-3 w-full"
+                  onClick={() => {
+                    setPopoverOpen(false);
+                    setLibraryOpen(true);
+                  }}
+                  data-testid="saved-design-library-open"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                  View all
+                </Button>
               </div>
             </div>
           )}
@@ -229,10 +154,31 @@ export function SavedDesignsPanel({
           The ads you save will appear here as reusable snapshots.
         </div>
       ) : (
-        <p className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-500">
-          {savedDesigns.length === 1 ? '1 saved ad is ready to reopen.' : `${savedDesigns.length} saved ads are ready to reopen.`}
-        </p>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+          <p className="text-sm font-bold text-slate-500">
+            {savedDesigns.length === 1 ? '1 saved ad is ready to reopen.' : `${savedDesigns.length} saved ads are ready to reopen.`}
+          </p>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setLibraryOpen(true)}
+            data-testid="saved-design-library-open"
+          >
+            <LayoutGrid className="h-4 w-4" />
+            View all
+          </Button>
+        </div>
       )}
+      <SavedDesignLibrary
+        hydrated={hydrated}
+        open={libraryOpen}
+        savedDesigns={savedDesigns}
+        savedError={savedError}
+        savedLoading={savedLoading}
+        onClose={() => setLibraryOpen(false)}
+        onDeleteDesign={onDeleteDesign}
+        onLoadDesign={onLoadDesign}
+      />
     </section>
   );
 }
