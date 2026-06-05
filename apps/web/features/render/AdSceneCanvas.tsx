@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
-import { AudioLines, Lock, Pause, Play, Unlock } from 'lucide-react';
+import { AudioLines, Captions, Lock, Pause, Play, Unlock } from 'lucide-react';
 import type { AdScene, AdSceneLayoutElement } from '@/features/create/scene';
 import {
   getActiveCaptionText,
@@ -16,6 +16,7 @@ type AdSceneCanvasProps = {
   addAudioLabel?: string;
   className?: string;
   onAddAudio?: () => void;
+  onEditCaptions?: () => void;
   onMoveElement?: (element: AdSceneLayoutElement, x: number, y: number) => void;
   onSelectElement?: (element: AdSceneLayoutElement | null) => void;
   onToggleLock?: (field: keyof AdScene['locks']) => void;
@@ -37,6 +38,7 @@ export function AdSceneCanvas({
   addAudioLabel = 'Add audio for this ad',
   className = '',
   onAddAudio,
+  onEditCaptions,
   onMoveElement,
   onSelectElement,
   onToggleLock,
@@ -269,6 +271,17 @@ export function AdSceneCanvas({
                     onClick={onAddAudio}
                   >
                     Change audio
+                  </button>
+                )}
+                {onEditCaptions && (
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.12)] disabled:cursor-not-allowed disabled:opacity-45"
+                    disabled={scene.locks.audio}
+                    onClick={onEditCaptions}
+                  >
+                    <Captions className="h-4 w-4" />
+                    Edit captions
                   </button>
                 )}
               </div>

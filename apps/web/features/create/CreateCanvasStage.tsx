@@ -17,6 +17,7 @@ type CreateCanvasStageProps = {
     creative: Partial<Pick<AdSceneCreative, 'headline' | 'headlineColor' | 'accentColor'>>,
     visualizer?: Partial<AdSceneCreative['visualizer']>,
   ) => void;
+  onEditCaptions: () => void;
   onMoveElement: (element: AdSceneLayoutElement, x: number, y: number) => void;
   onReplaceLogo: (logoUrl: string | null) => void;
   onReroll: () => void;
@@ -33,6 +34,7 @@ export function CreateCanvasStage({
   onAddAudio,
   onClearSelection,
   onEditCreative,
+  onEditCaptions,
   onMoveElement,
   onReplaceLogo,
   onReroll,
@@ -50,6 +52,7 @@ export function CreateCanvasStage({
         selectedElement={selectedElement}
         showGuides={showGuides}
         onAddAudio={onAddAudio}
+        onEditCaptions={onEditCaptions}
         onMoveElement={onMoveElement}
         onSelectElement={onSelectElement}
         onToggleLock={onToggleLock}
