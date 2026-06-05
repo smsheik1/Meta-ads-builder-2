@@ -1,11 +1,14 @@
 'use client';
 
-import { Image, MessageCircle, MessagesSquare, MousePointer2, Twitter, Waves } from 'lucide-react';
+import { useState } from 'react';
+import { Image, MessageCircle, MessagesSquare, Mic2, MousePointer2, Twitter, Upload, Waves } from 'lucide-react';
 import { AD_FORMAT_REGISTRY, ACTIVE_AD_FORMAT_ID } from '@/features/formats/formatRegistry';
 import type { AdFormatDefinition, AdFormatId } from '@/features/formats/formatTypes';
 
 type CanvasFormatRailProps = {
   activeFormatId?: AdFormatId;
+  onMakeVoiceAudio?: () => void;
+  onUploadVoiceAudio?: () => void;
 };
 
 const formatIcons = {
@@ -29,9 +32,11 @@ const buttonClass = (active: boolean, disabled: boolean) => (
 function FormatButton({
   active,
   format,
+  onClick,
 }: {
   active: boolean;
   format: AdFormatDefinition;
+  onClick?: () => void;
 }) {
   const Icon = formatIcons[format.id];
   const disabled = format.status !== 'active';
@@ -45,6 +50,7 @@ function FormatButton({
       data-format-id={format.id}
       data-format-status={format.status}
       disabled={disabled}
+      onClick={disabled ? undefined : onClick}
       title={disabled ? `${format.label} is on the roadmap` : format.description}
     >
       <Icon className="h-5 w-5" />
@@ -59,7 +65,10 @@ function FormatButton({
 
 export function CanvasFormatRail({
   activeFormatId = ACTIVE_AD_FORMAT_ID,
+  onMakeVoiceAudio,
+  onUploadVoiceAudio,
 }: CanvasFormatRailProps) {
+  const [voiceMenuOpen, setVoiceMenuOpen] = useState(false);
   const activeFormats = AD_FORMAT_REGISTRY.filter((format) => format.status === 'active');
   const plannedFormats = AD_FORMAT_REGISTRY.filter((format) => format.status === 'planned');
 
@@ -68,14 +77,60 @@ export function CanvasFormatRail({
       className="absolute left-0 top-1/2 z-30 flex -translate-y-1/2 flex-col items-center gap-2 rounded-[24px] border border-slate-200 bg-white/95 p-2 shadow-[0_24px_60px_rgba(15,23,42,0.16)]"
       aria-label="Ad formats"
       data-testid="canvas-format-rail"
+      onMouseEnter={() => setVoiceMenuOpen(true)}
+      onMouseLeave={() => setVoiceMenuOpen(false)}
     >
       {activeFormats.map((format) => (
         <FormatButton
           key={format.id}
           active={format.id === activeFormatId}
           format={format}
+          onClick={() => setVoiceMenuOpen((open) => !open)}
         />
       ))}
+      {voiceMenuOpen && (
+        <div
+          className="absolute left-[calc(100%+10px)] top-2 w-56 rounded-[24px] border border-slate-200 bg-white p-3 text-left shadow-[0_24px_70px_rgba(15,23,42,0.18)]"
+          data-testid="visualizer-voice-menu"
+        >
+          <span className="absolute -left-2 top-6 h-4 w-4 rotate-45 border-b border-l border-slate-200 bg-white" />
+          <p className="px-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
+            Visualizer audio
+          </p>
+          <button
+            type="button"
+            className="mt-2 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition hover:bg-slate-50"
+            onClick={() => {
+              setVoiceMenuOpen(false);
+              onMakeVoiceAudio?.();
+            }}
+          >
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-slate-950 text-white">
+              <Mic2 className="h-4 w-4" />
+            </span>
+            <span>
+              <span className="block text-sm font-black text-slate-950">Make voice audio</span>
+              <span className="mt-0.5 block text-xs font-bold text-slate-500">Generate options for this ad.</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            className="mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition hover:bg-slate-50"
+            onClick={() => {
+              setVoiceMenuOpen(false);
+              onUploadVoiceAudio?.();
+            }}
+          >
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-slate-700">
+              <Upload className="h-4 w-4" />
+            </span>
+            <span>
+              <span className="block text-sm font-black text-slate-950">Upload voice audio</span>
+              <span className="mt-0.5 block text-xs font-bold text-slate-500">Use a clip you already have.</span>
+            </span>
+          </button>
+        </div>
+      )}
       <span className="my-1 h-px w-8 bg-slate-200" />
       {plannedFormats.map((format) => (
         <FormatButton

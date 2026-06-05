@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useRef, useReducer, useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { AudioOptionsPanel, type AudioPanelStatus } from '@/features/audio/AudioOptionsPanel';
+import { AudioOptionsPanel, type AudioPanelIntent, type AudioPanelStatus } from '@/features/audio/AudioOptionsPanel';
 import { scriptCacheMatches, type DialogueScript } from '@/features/audio/dialogueScripts';
 import { createUploadedAudioScenePatch } from '@/features/audio/uploadedAudio';
 import { useCaptionTranscriptEditor } from '@/features/audio/useCaptionTranscriptEditor';
@@ -35,6 +35,7 @@ export function CreateFoundation() {
   const [status, setStatus] = useState<'idle' | 'researching' | 'ready' | 'error'>('idle');
   const [error, setError] = useState('');
   const [audioPanelOpen, setAudioPanelOpen] = useState(false);
+  const [audioPanelIntent, setAudioPanelIntent] = useState<AudioPanelIntent>('make');
   const [scriptOptions, setScriptOptions] = useState<DialogueScript[]>([]);
   const [scriptSceneId, setScriptSceneId] = useState(scene.id);
   const [selectedScriptId, setSelectedScriptId] = useState('');
@@ -187,7 +188,8 @@ export function CreateFoundation() {
     clearExportResults();
   };
 
-  const openAudioPanel = () => {
+  const openAudioPanel = (intent: AudioPanelIntent = 'make') => {
+    setAudioPanelIntent(intent);
     setAudioPanelOpen(true);
     setAudioPanelFocusTick((tick) => tick + 1);
     setAudioError('');
@@ -452,6 +454,7 @@ export function CreateFoundation() {
             <div ref={audioPanelRef} tabIndex={-1} className="scroll-mt-6 outline-none">
               <AudioOptionsPanel
                 audioError={audioError}
+                audioIntent={audioPanelIntent}
                 audioStatus={audioStatus}
                 scriptOptions={scriptOptions}
                 selectedScriptId={selectedScriptId}
