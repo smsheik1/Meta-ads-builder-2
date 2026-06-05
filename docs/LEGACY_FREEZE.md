@@ -42,3 +42,6 @@ Cutover happens only after the v2 create path can complete the full user loop:
 website research, ad generation, audio, save/history, download, and share.
 
 After cutover, delete the frozen legacy areas in one cleanup PR.
+
+The feature-by-feature deletion gate lives in
+[`CREATE_V2_LEGACY_AUDIT.md`](./CREATE_V2_LEGACY_AUDIT.md).
