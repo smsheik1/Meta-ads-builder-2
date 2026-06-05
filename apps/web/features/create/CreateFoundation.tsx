@@ -6,6 +6,7 @@ import { api } from '@/convex/_generated/api';
 import { AudioOptionsPanel, type AudioPanelStatus } from '@/features/audio/AudioOptionsPanel';
 import { scriptCacheMatches, type DialogueScript } from '@/features/audio/dialogueScripts';
 import { createUploadedAudioScenePatch } from '@/features/audio/uploadedAudio';
+import { useCaptionTranscriptEditor } from '@/features/audio/useCaptionTranscriptEditor';
 import { useStoredAudioUrlRefresh } from '@/features/audio/useStoredAudioUrlRefresh';
 import type { ResearchQuality } from '@/features/research/researchQuality';
 import type { WebsiteResearch } from '@/features/research/websiteResearch';
@@ -143,6 +144,10 @@ export function CreateFoundation() {
     setShareUrl('');
     setShareError('');
   };
+  const {
+    captionTranscriptEditor,
+    openCaptionTranscriptEditor,
+  } = useCaptionTranscriptEditor({ dispatch, onChange: clearExportResults, scene });
 
   const rerollCanvas = () => {
     dispatch({ type: 'rerollCreative', creative: createCreativeReroll(scene) });
@@ -473,6 +478,7 @@ export function CreateFoundation() {
           onAddAudio={openAudioPanel}
           onClearSelection={() => setSelectedElement(null)}
           onEditCreative={editCanvasCreative}
+          onEditCaptions={openCaptionTranscriptEditor}
           onMoveElement={moveCanvasElement}
           onReplaceLogo={replaceCanvasLogo}
           onReroll={rerollCanvas}
@@ -480,6 +486,7 @@ export function CreateFoundation() {
           onToggleGuides={() => setShowGuides((visible) => !visible)}
           onToggleLock={toggleSceneLock}
         />
+        {captionTranscriptEditor}
       </div>
     </main>
   );

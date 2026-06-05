@@ -28,6 +28,7 @@ import {
   upsertSavedDesign,
   writeSavedDesigns,
 } from '../features/create/savedDesigns';
+import { mergeCaptionTextIntoTranscript } from '../features/audio/captionTranscript';
 
 const __filename = fileURLToPath(import.meta.url);
 const webRoot = path.resolve(path.dirname(__filename), '..');
@@ -351,6 +352,49 @@ test('saved design and render/share adapters clone scene data', () => {
   assert.equal(shareScene.creative.headline, scene.creative.headline);
 });
 
+test('caption transcript edits update canonical scene audio for save, render, and share', () => {
+  const withAudio = reduceAdScene(ogToolScene, {
+    type: 'updateAudio',
+    audio: {
+      status: 'generated',
+      url: 'https://intent-capybara-375.convex.cloud/api/storage/mock-audio',
+      storageId: 'kg2audioassetmock',
+      mimeType: 'audio/wav',
+      transcript: 'Ava: ChatGP visibility is missing\nSam: First ranking in 14 days',
+      captions: [
+        { text: 'ChatGP visibility is missing', startMs: 0, endMs: 1200, speaker: 'a' },
+        { text: 'First ranking in 14 days', startMs: 1201, endMs: 2400, speaker: 'b' },
+      ],
+      sourceSceneId: ogToolScene.id,
+      scriptId: 'script-1',
+      durationMs: 2400,
+    },
+    now: 201,
+  });
+  const editedCaptions = withAudio.audio.captions.map((caption, index) => ({
+    ...caption,
+    text: index === 0 ? 'ChatGPT visibility is missing' : caption.text,
+  }));
+  const edited = reduceAdScene(withAudio, {
+    type: 'updateAudio',
+    audio: {
+      transcript: mergeCaptionTextIntoTranscript(withAudio.audio.transcript, editedCaptions),
+      captions: editedCaptions,
+    },
+    now: 202,
+  });
+  const saved = createSavedDesign(edited, 'Edited captions');
+  const renderScene = toRenderScene(edited);
+  const shareScene = toShareScene(edited);
+
+  assert.match(edited.audio.transcript, /Ava: ChatGPT visibility/);
+  assert.equal(edited.audio.captions[0]?.text, 'ChatGPT visibility is missing');
+  assert.equal(edited.audio.storageId, 'kg2audioassetmock');
+  assert.equal(loadSavedDesign(saved).audio.captions[0]?.text, 'ChatGPT visibility is missing');
+  assert.equal(renderScene.audio.transcript, edited.audio.transcript);
+  assert.equal(shareScene.audio.captions[0]?.text, 'ChatGPT visibility is missing');
+});
+
 test('saved design upsert stores Convex-safe scene snapshots without aliasing', () => {
   const withAudio = reduceAdScene(ogToolScene, {
     type: 'updateAudio',
@@ -565,6 +609,20 @@ test('visualizer format owns editing controls through a small format module', ()
   assert.match(canvasSource, /visualizerBarCount/);
   assert.match(remotionSource, /headlineColor/);
   assert.match(remotionSource, /visualizerBarCount/);
+});
+
+test('caption transcript editor is wired to the v2 canvas scene', () => {
+  const createSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
+  const stageSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateCanvasStage.tsx'), 'utf8');
+  const canvasSource = fs.readFileSync(path.join(webRoot, 'features/render/AdSceneCanvas.tsx'), 'utf8');
+  const editorSource = fs.readFileSync(path.join(webRoot, 'features/audio/CaptionTranscriptEditor.tsx'), 'utf8');
+
+  assert.match(createSource, /useCaptionTranscriptEditor/);
+  assert.match(createSource, /onEditCaptions=\{openCaptionTranscriptEditor\}/);
+  assert.match(stageSource, /onEditCaptions=\{onEditCaptions\}/);
+  assert.match(canvasSource, /Edit captions/);
+  assert.match(editorSource, /caption-transcript-editor/);
+  assert.match(editorSource, /Save words/);
 });
 
 test('export panel explains render progress without fake precision', () => {
