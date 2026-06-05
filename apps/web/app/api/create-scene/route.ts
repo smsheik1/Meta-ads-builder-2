@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generateAdCopy } from '@/features/research/adCopy';
+import { parseAdCopyModelChoice, resolveAdCopyModel } from '@/features/research/adCopyModels';
 import { fetchResearchWithFirecrawl, firecrawlResearchWasUsed } from '@/features/research/firecrawl';
 import { evaluateResearchQuality } from '@/features/research/researchQuality';
 import { buildAdSceneFromWebsiteResearch } from '@/features/research/sceneFactory';
@@ -7,6 +8,7 @@ import { buildAdSceneFromWebsiteResearch } from '@/features/research/sceneFactor
 export const runtime = 'nodejs';
 
 type CreateSceneRequest = {
+  adModel?: unknown;
   websiteUrl?: unknown;
 };
 
@@ -21,6 +23,11 @@ export async function POST(request: Request) {
 
   if (typeof body.websiteUrl !== 'string' || !body.websiteUrl.trim()) {
     return NextResponse.json({ error: 'Enter a website URL.' }, { status: 400 });
+  }
+
+  const modelChoice = parseAdCopyModelChoice(body.adModel);
+  if (!modelChoice) {
+    return NextResponse.json({ error: 'Choose a supported ad writing model.' }, { status: 400 });
   }
 
   try {
@@ -42,7 +49,11 @@ export async function POST(request: Request) {
       }, { status: 422 });
     }
 
-    const adCopy = await generateAdCopy(enrichedResearch);
+    const adModel = resolveAdCopyModel(modelChoice);
+    const adCopy = await generateAdCopy(enrichedResearch, {
+      model: adModel.model || undefined,
+      modelLabel: adModel.label,
+    });
     const research = {
       ...enrichedResearch,
       providerStatus: [

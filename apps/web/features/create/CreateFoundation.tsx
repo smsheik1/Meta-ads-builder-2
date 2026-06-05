@@ -75,6 +75,7 @@ export function CreateFoundation() {
 
   const generateScene = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const adModel = new FormData(event.currentTarget).get('adModel');
     setStatus('researching');
     setError('');
 
@@ -82,7 +83,7 @@ export function CreateFoundation() {
       const response = await fetch('/api/create-scene', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ websiteUrl }),
+        body: JSON.stringify({ websiteUrl, adModel }),
       });
       const payload = await response.json() as CreateSceneResponse;
 

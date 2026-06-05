@@ -3,6 +3,7 @@
 import type { FormEvent } from 'react';
 import { Globe2, Loader2, Lock, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AdWritingModelSelect } from './AdWritingModelSelect';
 
 type WebsiteSceneFormProps = {
   error: string;
@@ -40,6 +41,7 @@ export function WebsiteSceneForm({
           placeholder="https://yourbrand.com"
         />
       </div>
+      <AdWritingModelSelect />
       <div className="mt-4 flex flex-wrap gap-3">
         <Button type="submit" disabled={status === 'researching'}>
           {status === 'researching' ? (

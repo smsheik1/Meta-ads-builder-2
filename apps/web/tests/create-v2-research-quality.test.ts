@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { generateAdCopy } from '../features/research/adCopy';
 import {
+  parseAdCopyModelChoice,
+  resolveAdCopyModel,
+} from '../features/research/adCopyModels';
+import {
   enrichResearchWithFirecrawl,
   fetchResearchWithFirecrawl,
   firecrawlResearchWasUsed,
@@ -171,6 +175,19 @@ await test('OpenRouter copy generation skips without a key and uses receipt fall
   assert.equal(result.copy.headline, 'ChatGPT Mentions in 14 Days');
 });
 
+await test('ad copy model choices are allowlisted before OpenRouter calls', async () => {
+  assert.equal(parseAdCopyModelChoice(undefined), 'auto');
+  assert.equal(parseAdCopyModelChoice('kimi-k2.6-free'), 'kimi-k2.6-free');
+  assert.equal(parseAdCopyModelChoice('moonshotai/kimi-k2.6'), null);
+
+  const kimi = resolveAdCopyModel('kimi-k2.6-free');
+  const auto = resolveAdCopyModel('auto', 'meta-llama/llama-3.3-70b-instruct:free');
+
+  assert.equal(kimi.model, 'moonshotai/kimi-k2.6:free');
+  assert.equal(kimi.label, 'Kimi K2.6 Free (OpenRouter)');
+  assert.equal(auto.model, 'meta-llama/llama-3.3-70b-instruct:free');
+});
+
 await test('OpenRouter copy generation requires an explicit model before calling out', async () => {
   const research = researchFrom(strongHtml);
   let called = false;
@@ -192,6 +209,7 @@ await test('OpenRouter copy generation uses injected JSON without live API calls
   const result = await generateAdCopy(research, {
     apiKey: 'test-openrouter-key',
     model: 'test/model',
+    modelLabel: 'Test Model (OpenRouter)',
     fetcher: async () => new Response(JSON.stringify({
       choices: [{
         message: {
@@ -210,6 +228,7 @@ await test('OpenRouter copy generation uses injected JSON without live API calls
   });
 
   assert.equal(result.providerStatus.status, 'used');
+  assert.match(result.providerStatus.reason, /Test Model/);
   assert.equal(result.copy.headline, 'Own the AI answer');
 });
 

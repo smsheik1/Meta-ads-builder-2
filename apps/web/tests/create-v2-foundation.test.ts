@@ -740,6 +740,25 @@ test('current create surface does not expose migration scaffolding copy', () => 
   assert.match(createSource, /one clean video ad scene you can save, share, and download/);
 });
 
+test('ad writing model selector is wired to scene generation only', () => {
+  const createSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
+  const formSource = fs.readFileSync(path.join(webRoot, 'features/create/WebsiteSceneForm.tsx'), 'utf8');
+  const selectorSource = fs.readFileSync(path.join(webRoot, 'features/create/AdWritingModelSelect.tsx'), 'utf8');
+  const modelSource = fs.readFileSync(path.join(webRoot, 'features/research/adCopyModels.ts'), 'utf8');
+  const routeSource = fs.readFileSync(path.join(webRoot, 'app/api/create-scene/route.ts'), 'utf8');
+  const audioSource = fs.readFileSync(path.join(webRoot, 'features/audio/AudioOptionsPanel.tsx'), 'utf8');
+
+  assert.match(formSource, /AdWritingModelSelect/);
+  assert.match(selectorSource, /name="adModel"/);
+  assert.match(selectorSource, /AD_COPY_MODEL_CHOICES/);
+  assert.match(modelSource, /Kimi K2\.6 Free \(OpenRouter\)/);
+  assert.match(createSource, /new FormData\(event\.currentTarget\)\.get\('adModel'\)/);
+  assert.match(createSource, /JSON\.stringify\(\{ websiteUrl, adModel \}\)/);
+  assert.match(routeSource, /parseAdCopyModelChoice/);
+  assert.match(routeSource, /resolveAdCopyModel/);
+  assert.doesNotMatch(audioSource, /AdWritingModelSelect|adModel|OpenRouter/);
+});
+
 test('oracle deploy pushes Convex before building the app', () => {
   const deployScript = fs.readFileSync(path.join(repoRoot, 'scripts/deploy-oracle.sh'), 'utf8');
   const deployWorkflow = fs.readFileSync(path.join(repoRoot, '.github/workflows/deploy-oracle.yml'), 'utf8');
