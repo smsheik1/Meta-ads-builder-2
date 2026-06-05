@@ -110,6 +110,13 @@ export const DEFAULT_SCENE_LOCKS: AdSceneLocks = {
 };
 
 export const DEFAULT_SCENE_LAYOUT: AdSceneLayout = {
+  brand: { x: 0.5, y: 0.17, width: 0.78, height: 0.07 },
+  headline: { x: 0.5, y: 0.36, width: 0.88, height: 0.28 },
+  visualizer: { x: 0.5, y: 0.61, width: 0.96, height: 0.16 },
+  caption: { x: 0.5, y: 0.78, width: 0.82, height: 0.12 },
+};
+
+const LEGACY_DEFAULT_SCENE_LAYOUT: AdSceneLayout = {
   brand: { x: 0.5, y: 0.18, width: 0.78, height: 0.08 },
   headline: { x: 0.5, y: 0.35, width: 0.86, height: 0.22 },
   visualizer: { x: 0.5, y: 0.57, width: 0.96, height: 0.18 },
@@ -132,11 +139,31 @@ export const normalizeLayoutBox = (box: AdSceneLayoutBox): AdSceneLayoutBox => {
   };
 };
 
+const sameLayoutBox = (left?: Partial<AdSceneLayoutBox>, right?: AdSceneLayoutBox) => (
+  left !== undefined &&
+  right !== undefined &&
+  left.x === right.x &&
+  left.y === right.y &&
+  left.width === right.width &&
+  left.height === right.height
+);
+
+const migrateDefaultLayoutBox = (
+  box: Partial<AdSceneLayoutBox> | undefined,
+  element: AdSceneLayoutElement,
+) => {
+  if (sameLayoutBox(box, LEGACY_DEFAULT_SCENE_LAYOUT[element])) {
+    return DEFAULT_SCENE_LAYOUT[element];
+  }
+
+  return { ...DEFAULT_SCENE_LAYOUT[element], ...box };
+};
+
 export const getAdSceneLayout = (scene: Pick<AdScene, 'layout'> | { layout?: Partial<AdSceneLayout> }): AdSceneLayout => ({
-  brand: normalizeLayoutBox({ ...DEFAULT_SCENE_LAYOUT.brand, ...scene.layout?.brand }),
-  headline: normalizeLayoutBox({ ...DEFAULT_SCENE_LAYOUT.headline, ...scene.layout?.headline }),
-  visualizer: normalizeLayoutBox({ ...DEFAULT_SCENE_LAYOUT.visualizer, ...scene.layout?.visualizer }),
-  caption: normalizeLayoutBox({ ...DEFAULT_SCENE_LAYOUT.caption, ...scene.layout?.caption }),
+  brand: normalizeLayoutBox(migrateDefaultLayoutBox(scene.layout?.brand, 'brand')),
+  headline: normalizeLayoutBox(migrateDefaultLayoutBox(scene.layout?.headline, 'headline')),
+  visualizer: normalizeLayoutBox(migrateDefaultLayoutBox(scene.layout?.visualizer, 'visualizer')),
+  caption: normalizeLayoutBox(migrateDefaultLayoutBox(scene.layout?.caption, 'caption')),
 });
 
 export const cloneAdScene = (scene: AdScene): AdScene => (

@@ -115,9 +115,9 @@ export const getHeadlineScale = (
   const characters = cleanHeadline.length;
   const sizeScale = headlineSize === 'hero' ? 1.08 : headlineSize === 'compact' ? 0.88 : 1;
 
-  if (characters >= 58 || words >= 8) return 0.58 * sizeScale;
-  if (characters >= 46 || words >= 7) return 0.64 * sizeScale;
-  if (characters >= 32 || words >= 6) return 0.78 * sizeScale;
+  if (characters >= 58 || words >= 8) return 0.68 * sizeScale;
+  if (characters >= 46 || words >= 7) return 0.78 * sizeScale;
+  if (characters >= 42 || words >= 6) return 0.88 * sizeScale;
   return sizeScale;
 };
 

@@ -153,9 +153,9 @@ await test('caption and visualizer helpers are deterministic', () => {
 
 await test('long generated headlines scale down before they can collide with brand text', () => {
   assert.equal(getHeadlineScale('Stay ahead of the market'), 1);
-  assert.equal(getHeadlineScale('Why AI recommends your competitors'), 0.78);
-  assert.equal(getHeadlineScale('Fully Managed Reddit And ChatGPT Visibility Campaigns'), 0.64);
-  assert.equal(getHeadlineScale('Fully Managed Reddit And ChatGPT Visibility Campaigns For Operators'), 0.58);
+  assert.equal(getHeadlineScale('Why AI recommends your competitors'), 1);
+  assert.equal(getHeadlineScale('Fully Managed Reddit And ChatGPT Visibility Campaigns'), 0.78);
+  assert.equal(getHeadlineScale('Fully Managed Reddit And ChatGPT Visibility Campaigns For Operators'), 0.68);
 });
 
 await test('share slugs and download filenames are safe and brand-specific', () => {

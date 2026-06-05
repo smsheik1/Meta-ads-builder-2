@@ -10,7 +10,7 @@ import {
   type SavedDesign,
 } from '../features/create/sceneAdapters';
 import { ogToolScene, redfinScene } from '../features/create/fixtures';
-import { cloneAdScene, deserializeAdScene, serializeAdScene } from '../features/create/scene';
+import { cloneAdScene, DEFAULT_SCENE_LAYOUT, deserializeAdScene, getAdSceneLayout, serializeAdScene } from '../features/create/scene';
 import { reduceAdScene } from '../features/create/sceneReducer';
 import { createCreativeReroll } from '../features/create/creativeReroll';
 import { createGenerationFeedbackKey, createGenerationFeedbackPayload } from '../features/create/generationFeedbackPayload';
@@ -230,6 +230,26 @@ test('layout movement persists in scene state and respects locks', () => {
   assert.equal(moved.layout.headline.y, 0.44);
   assert.equal(blocked.layout.headline.x, 0.72);
   assert.equal(blocked.layout.headline.y, 0.44);
+});
+
+test('legacy untouched default layout migrates to roomier v2 canvas lanes', () => {
+  const legacyDefaultLayout = {
+    brand: { x: 0.5, y: 0.18, width: 0.78, height: 0.08 },
+    headline: { x: 0.5, y: 0.35, width: 0.86, height: 0.22 },
+    visualizer: { x: 0.5, y: 0.57, width: 0.96, height: 0.18 },
+    caption: { x: 0.5, y: 0.75, width: 0.82, height: 0.14 },
+  };
+  const migrated = getAdSceneLayout({ layout: legacyDefaultLayout });
+  const userMoved = getAdSceneLayout({
+    layout: {
+      ...legacyDefaultLayout,
+      headline: { ...legacyDefaultLayout.headline, y: 0.44 },
+    },
+  });
+
+  assert.deepEqual(migrated, DEFAULT_SCENE_LAYOUT);
+  assert.equal(userMoved.headline.y, 0.44);
+  assert.equal(userMoved.visualizer.y, DEFAULT_SCENE_LAYOUT.visualizer.y);
 });
 
 test('format editor updates creative fields and respects element locks', () => {
