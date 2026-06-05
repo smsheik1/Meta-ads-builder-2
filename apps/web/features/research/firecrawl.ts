@@ -69,6 +69,8 @@ const titleToBrand = (title: string, host: string) => {
 const claimPattern = /(\$[\d,.]+|\b\d[\d,.]*(?:\.\d+)?\s*(?:%|percent|days?|weeks?|months?|years?|hours?|calls?|appointments?|leads?|sales|rankings?|mentions?|citations?|revenue|customers?|homes?|listings?)\b)/i;
 const momentPattern = /\b(tired of|stuck|struggle|miss|missing|losing|waste|waiting|before|after|when|while|because|need to|trying to|want to|can't|cannot|compare|choose|buyers|customers|owners|teams)\b/i;
 const proofPattern = /\b(review|testimonial|customer|client|founder|owner|manager|said|says|case study|result|generated|ranked|stars?)\b/i;
+const offerPattern = /\b(platform|service|software|tool|managed|campaigns?|optimization|delivery|product|products?|solution|book|buy|shop|pricing|free trial)\b/i;
+const audiencePattern = /\b(for|built for|made for|helps|serves)\s+.{8,90}|\b(operators?|founders?|teams?|brands?|customers?|buyers?|sellers?|owners?|marketers?|agencies|creators|shoppers|patients|clients)\b/i;
 
 const parseMarkdownSignals = (markdown: string) => {
   const lines = markdown
@@ -89,6 +91,9 @@ const parseMarkdownSignals = (markdown: string) => {
       namedProof: unique(lines.filter((line) => proofPattern.test(line) && claimPattern.test(line)), 8),
       reviews: unique(lines.filter((line) => proofPattern.test(line)), 8),
     } satisfies AdSceneReceipts,
+    reviewCandidates: unique(lines.filter((line) => proofPattern.test(line)), 12),
+    offerCandidates: unique(lines.filter((line) => offerPattern.test(line)), 12),
+    audienceCandidates: unique(lines.filter((line) => audiencePattern.test(line)), 12),
   };
 };
 
@@ -186,6 +191,44 @@ const brandingColors = (branding: Record<string, unknown>, metadata: Record<stri
     .filter((color) => /^#[0-9A-F]{6}$/.test(color));
 };
 
+const collectStringUrls = (value: unknown, baseUrl: string): string[] => {
+  if (typeof value === 'string') {
+    const resolved = resolveMaybeUrl(value, baseUrl);
+    return resolved ? [resolved] : [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => collectStringUrls(item, baseUrl));
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.values(value as Record<string, unknown>).flatMap((item) => collectStringUrls(item, baseUrl));
+  }
+
+  return [];
+};
+
+const imageUrlsFromFirecrawl = (
+  metadata: Record<string, unknown>,
+  branding: Record<string, unknown>,
+  finalUrl: string,
+) => unique([
+  ...collectStringUrls(metadata.ogImage || metadata.image, finalUrl),
+  ...collectStringUrls(metadata.images, finalUrl),
+  ...collectStringUrls(branding.logo || branding.logoUrl, finalUrl),
+  ...collectStringUrls(branding.images, finalUrl),
+], 16).filter((url) => /\.(?:png|jpe?g|webp|gif|svg|ico)(?:\?|$)/i.test(url) || /favicon|logo|image/i.test(url));
+
+const socialLinksFromFirecrawl = (
+  metadata: Record<string, unknown>,
+  branding: Record<string, unknown>,
+  markdown: string,
+  finalUrl: string,
+) => unique([
+  ...collectStringUrls(metadata.socialLinks || metadata.social || branding.socialLinks || branding.social, finalUrl),
+  ...(markdown.match(/https?:\/\/(?:www\.)?(?:instagram|facebook|linkedin|twitter|x\.com|tiktok|youtube|pinterest)\.com\/[^\s)]+/gi) ?? []),
+], 12);
+
 export const fetchResearchWithFirecrawl = async (
   input: string,
   options: FirecrawlOptions = {},
@@ -251,6 +294,14 @@ export const fetchResearchWithFirecrawl = async (
       status: 'used',
       reason: `Firecrawl read ${signals.paragraphs.length} page snippets.`,
     }],
+    rawMarkdown: markdown.slice(0, MAX_MARKDOWN_CHARS),
+    metadata,
+    branding,
+    imageUrls: imageUrlsFromFirecrawl(metadata, branding, finalUrl),
+    socialLinks: socialLinksFromFirecrawl(metadata, branding, markdown, finalUrl),
+    reviewCandidates: signals.reviewCandidates,
+    offerCandidates: signals.offerCandidates,
+    audienceCandidates: signals.audienceCandidates,
   };
 };
 
@@ -284,6 +335,19 @@ export const enrichResearchWithFirecrawl = async (
       headings: unique([...signals.headings, ...research.headings], 24),
       paragraphs: unique([...signals.paragraphs, ...research.paragraphs], 42),
       receipts: mergeReceipts(research.receipts, signals.receipts),
+      rawMarkdown: markdown.slice(0, MAX_MARKDOWN_CHARS),
+      metadata: { ...(research.metadata || {}), ...metadata },
+      imageUrls: unique([
+        ...imageUrlsFromFirecrawl(metadata, payload.data?.branding || {}, research.finalUrl),
+        ...research.imageUrls,
+      ], 16),
+      socialLinks: unique([
+        ...socialLinksFromFirecrawl(metadata, payload.data?.branding || {}, markdown, research.finalUrl),
+        ...research.socialLinks,
+      ], 12),
+      reviewCandidates: unique([...signals.reviewCandidates, ...research.reviewCandidates], 12),
+      offerCandidates: unique([...signals.offerCandidates, ...research.offerCandidates], 12),
+      audienceCandidates: unique([...signals.audienceCandidates, ...research.audienceCandidates], 12),
       providerStatus: [
         ...research.providerStatus.filter((item) => item.provider !== 'firecrawl'),
         {

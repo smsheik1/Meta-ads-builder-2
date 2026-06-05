@@ -54,6 +54,21 @@ export const evaluateResearchQuality = (research: WebsiteResearch): ResearchQual
     reasons.push('Buyer moment found.');
   }
 
+  if (research.offerCandidates.length > 0) {
+    score += 8;
+    reasons.push('Offer candidate found.');
+  }
+
+  if (research.reviewCandidates.length > 0 || research.receipts.reviews.length > 0) {
+    score += 8;
+    reasons.push('Review or proof candidate found.');
+  }
+
+  if (research.audienceCandidates.length > 0) {
+    score += 6;
+    reasons.push('Audience candidate found.');
+  }
+
   if (research.logoUrl || research.faviconUrl) {
     score += 5;
     reasons.push('Brand image signal found.');
@@ -61,7 +76,8 @@ export const evaluateResearchQuality = (research: WebsiteResearch): ResearchQual
 
   const receiptCount = countReceipts(research);
   const hasMinimumCopy = Boolean(research.description || research.headings[0] || research.title);
-  const canGenerate = score >= 45 && hasMinimumCopy && receiptCount >= 1;
+  const hasSpecificSellingEvidence = receiptCount >= 1 || research.offerCandidates.length > 0 || research.reviewCandidates.length > 0;
+  const canGenerate = score >= 45 && hasMinimumCopy && hasSpecificSellingEvidence;
   const level = score >= 78 ? 'strong' : score >= 45 ? 'usable' : 'weak';
 
   return {

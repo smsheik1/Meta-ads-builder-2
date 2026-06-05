@@ -89,12 +89,20 @@ await test('Firecrawl enrichment merges receipts from an injected fetcher', asyn
         metadata: {
           title: 'OGTool | AI Search Visibility',
           description: 'Managed Reddit visibility campaigns for brands that want ChatGPT mentions.',
+          images: ['https://ogtool.com/case-study.png'],
+          socialLinks: ['https://www.linkedin.com/company/ogtool'],
+        },
+        branding: {
+          colors: ['#7DD3FC'],
+          logo: 'https://ogtool.com/logo.png',
         },
         markdown: `
 # Why AI recommends your competitors
 First ChatGPT mention in 14 days.
 Customer result: $88k tracked in two months from Reddit visibility.
 Operators are tired of competitors showing up in AI answers first.
+Review from Mina, founder: OGTool helped us get cited inside ChatGPT answers.
+Built for D2C operators and growth teams that need managed Reddit visibility campaigns.
         `,
       },
     }), {
@@ -107,6 +115,12 @@ Operators are tired of competitors showing up in AI answers first.
     item.provider === 'firecrawl' && item.status === 'used'
   )), true);
   assert.equal(enriched.receipts.specificClaims.some((claim) => claim.includes('$88k')), true);
+  assert.equal(enriched.rawMarkdown?.includes('Why AI recommends your competitors'), true);
+  assert.equal(enriched.imageUrls.includes('https://ogtool.com/case-study.png'), true);
+  assert.equal(enriched.socialLinks.includes('https://www.linkedin.com/company/ogtool'), true);
+  assert.equal(enriched.reviewCandidates.some((review) => review.includes('Mina')), true);
+  assert.equal(enriched.offerCandidates.some((offer) => offer.includes('managed Reddit visibility')), true);
+  assert.equal(enriched.audienceCandidates.some((audience) => audience.includes('D2C operators')), true);
 });
 
 await test('Firecrawl primary research builds website research without direct HTML', async () => {
@@ -121,11 +135,19 @@ await test('Firecrawl primary research builds website research without direct HT
           title: 'OGTool | First AI Ranking in 14 Days',
           description: 'Managed Reddit visibility campaigns for brands that want ChatGPT mentions.',
           favicon: 'https://ogtool.com/favicon.ico',
+          image: 'https://ogtool.com/social-card.png',
+        },
+        branding: {
+          logo: 'https://ogtool.com/logo.png',
+          colors: ['#7DD3FC'],
         },
         markdown: `
 # First AI Ranking in 14 Days
 Customer result: $88k tracked in two months.
 Operators are tired of competitors showing up in AI answers first.
+Built for D2C operators and growth teams that need managed Reddit visibility campaigns.
+Review from Mina, founder: OGTool helped us get cited inside ChatGPT answers.
+https://www.linkedin.com/company/ogtool
         `,
       },
     }), {
@@ -138,6 +160,15 @@ Operators are tired of competitors showing up in AI answers first.
   assert.equal(research.websiteUrl, 'https://ogtool.com/');
   assert.equal(firecrawlResearchWasUsed(research), true);
   assert.equal(research.receipts.specificClaims.some((claim) => claim.includes('$88k')), true);
+  assert.equal(research.rawMarkdown?.includes('First AI Ranking in 14 Days'), true);
+  assert.equal(research.metadata?.ogSiteName, 'OGTool');
+  assert.equal(research.branding?.logo, 'https://ogtool.com/logo.png');
+  assert.equal(research.imageUrls.includes('https://ogtool.com/social-card.png'), true);
+  assert.equal(research.imageUrls.includes('https://ogtool.com/logo.png'), true);
+  assert.equal(research.socialLinks.includes('https://www.linkedin.com/company/ogtool'), true);
+  assert.equal(research.reviewCandidates.some((review) => review.includes('Mina')), true);
+  assert.equal(research.offerCandidates.some((offer) => offer.includes('managed Reddit visibility')), true);
+  assert.equal(research.audienceCandidates.some((audience) => audience.includes('D2C operators')), true);
 });
 
 await test('Firecrawl primary research fails when not configured', async () => {
