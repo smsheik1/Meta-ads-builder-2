@@ -7,6 +7,9 @@ import { buildAdSceneFromWebsiteResearch } from '@/features/research/sceneFactor
 
 export const runtime = 'nodejs';
 
+const CREATE_SCENE_FIRECRAWL_TIMEOUT_MS = 18_000;
+const CREATE_SCENE_AD_COPY_TIMEOUT_MS = 16_000;
+
 type CreateSceneRequest = {
   adModel?: unknown;
   websiteUrl?: unknown;
@@ -31,7 +34,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    const enrichedResearch = await fetchResearchWithFirecrawl(body.websiteUrl);
+    const enrichedResearch = await fetchResearchWithFirecrawl(body.websiteUrl, {
+      timeoutMs: CREATE_SCENE_FIRECRAWL_TIMEOUT_MS,
+    });
     if (!firecrawlResearchWasUsed(enrichedResearch)) {
       return NextResponse.json({
         error: 'Firecrawl research did not complete, so Wiggly cannot build a brand-based ad from this website yet.',
@@ -53,6 +58,7 @@ export async function POST(request: Request) {
     const adCopy = await generateAdCopy(enrichedResearch, {
       model: adModel.model || undefined,
       modelLabel: adModel.label,
+      timeoutMs: CREATE_SCENE_AD_COPY_TIMEOUT_MS,
     });
     const research = {
       ...enrichedResearch,

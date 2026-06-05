@@ -26,6 +26,7 @@ import { sceneHasSavedSnapshot } from './savedDesigns';
 import { getOrCreateAnonymousSessionId } from './anonymousSession';
 import { useGenerationFeedback } from './useGenerationFeedback';
 import type { AudioScriptsResponse, CreateAudioResponse, CreateSceneResponse, RenderSceneTicketResponse, ShareSceneResponse } from './apiResponses';
+import { requestCreateScene } from './createSceneRequest';
 
 export function CreateFoundation() {
   const [scene, dispatch] = useReducer(reduceAdScene, ogToolScene);
@@ -79,14 +80,9 @@ export function CreateFoundation() {
     setError('');
 
     try {
-      const response = await fetch('/api/create-scene', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ websiteUrl, adModel }),
-      });
-      const payload = await response.json() as CreateSceneResponse;
+      const payload = await requestCreateScene({ websiteUrl, adModel });
 
-      if (!response.ok || !payload.scene || !payload.research) {
+      if (!payload.scene || !payload.research) {
         setResearch(payload.research ?? null);
         setQuality(payload.quality ?? null);
         throw new Error(payload.error || 'Something broke while researching that website.');
