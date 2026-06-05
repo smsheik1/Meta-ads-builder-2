@@ -1,6 +1,6 @@
 'use client';
 
-import type { AdPlatform, AdScene, AdSceneCreative, AdSceneLayoutElement } from './scene';
+import type { AdPlatform, AdScene, AdSceneCreative, AdSceneCreativePatch, AdSceneLayoutElement } from './scene';
 import { AdSceneCanvas } from '@/features/render/AdSceneCanvas';
 import { visualizerFormat } from '@/features/formats/visualizer/visualizerFormat';
 import { CanvasGuidesToggle } from './CanvasGuidesToggle';
@@ -15,7 +15,7 @@ type CreateCanvasStageProps = {
   onAddAudio: () => void;
   onClearSelection: () => void;
   onEditCreative: (
-    creative: Partial<Pick<AdSceneCreative, 'headline' | 'headlineColor' | 'accentColor'>>,
+    creative: AdSceneCreativePatch,
     visualizer?: Partial<AdSceneCreative['visualizer']>,
   ) => void;
   onEditCaptions: () => void;

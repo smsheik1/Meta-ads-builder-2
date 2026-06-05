@@ -30,7 +30,12 @@ export type AdSceneBrand = {
 export type AdSceneCreative = {
   angleId: string;
   headline: string;
+  styleId?: string;
   headlineColor?: string;
+  headlineSize?: 'compact' | 'balanced' | 'hero';
+  headlineAlign?: 'left' | 'center' | 'right';
+  headlineLineHeight?: number;
+  captionColor?: string;
   subheadline: string;
   ctaText: string;
   ctaUrl: string;
@@ -41,7 +46,14 @@ export type AdSceneCreative = {
     idlePreset: string;
     playbackPreset: string;
     barCount?: number;
+    motion?: 'smooth' | 'balanced' | 'snappy';
+    heightScale?: number;
+    baseline?: number;
   };
+};
+
+export type AdSceneCreativePatch = Omit<Partial<AdSceneCreative>, 'visualizer'> & {
+  visualizer?: Partial<AdSceneCreative['visualizer']>;
 };
 
 export type AdSceneAudio = {

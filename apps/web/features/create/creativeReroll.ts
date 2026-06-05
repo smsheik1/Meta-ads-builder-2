@@ -1,24 +1,10 @@
-import type { AdScene, AdSceneCreative } from './scene';
+import type { AdScene, AdSceneCreativePatch } from './scene';
+import { hashStyleSeed, pickSceneStyleFamily, sceneStyleFamilyToCreativePatch } from './styleFamilies';
 
-export type CreativeRerollPayload = Partial<Pick<
-  AdSceneCreative,
-  'angleId' | 'headline' | 'headlineColor' | 'subheadline' | 'ctaText' | 'ctaUrl' | 'backgroundColor' | 'accentColor'
->> & {
-  visualizer?: Partial<AdSceneCreative['visualizer']>;
+export type CreativeRerollPayload = AdSceneCreativePatch & {
   logoUrl?: string | null;
   faviconUrl?: string | null;
 };
-
-const backgrounds = ['#fbfaf6', '#f8fafc', '#fef2f2', '#ecfeff', '#f7fee7', '#fdf4ff'];
-const accents = ['#7dd3fc', '#34d399', '#f472b6', '#facc15', '#a78bfa', '#fb7185'];
-const headlineColors = ['#07111f', '#083452', '#7f1d1d', '#312e81', '#14532d', '#581c87'];
-const barCounts = [17, 21, 25, 29];
-const idlePresets = ['wide-soft-bars', 'center-pulse-bars', 'tight-bounce-bars', 'calm-stack-bars'];
-const playbackPresets = ['voice-reactive-bars', 'center-wave-bars', 'stacked-surge-bars'];
-
-const hashText = (value: string) => (
-  Array.from(value).reduce((hash, char) => ((hash * 31) + char.charCodeAt(0)) >>> 0, 0)
-);
 
 const pick = <Value,>(values: Value[], seed: number, offset = 0) => (
   values[(Math.abs(seed + offset) % values.length)]
@@ -72,24 +58,17 @@ export const createCreativeReroll = (scene: AdScene, now = Date.now()): Creative
     ...receipts.buyerMoments,
     scene.brand.audience,
   ]);
-  const seed = hashText(`${scene.id}:${scene.updatedAt}:${now}:${scene.creative.headline}`);
+  const seed = hashStyleSeed(`${scene.id}:${scene.updatedAt}:${now}:${scene.creative.headline}`);
   const headlineSource = pick(headlineEvidence.length ? headlineEvidence : evidence, seed, 3);
   const subheadlineSource = pick(evidence.length ? evidence : [scene.creative.subheadline], seed, 11);
-  const accentColor = pick(accents, seed, 19);
+  const styleFamily = pickSceneStyleFamily(seed, scene.creative.styleId);
+  const stylePatch = sceneStyleFamilyToCreativePatch(styleFamily);
 
   return {
+    ...stylePatch,
     angleId: `reroll-${seed.toString(36)}`,
     headline: toHeadline(headlineSource, scene.brand.name),
-    headlineColor: pick(headlineColors, seed, 7),
     subheadline: shorten(subheadlineSource, 18),
-    backgroundColor: pick(backgrounds, seed, 29),
-    accentColor,
-    visualizer: {
-      color: accentColor,
-      idlePreset: pick(idlePresets, seed, 37),
-      playbackPreset: pick(playbackPresets, seed, 43),
-      barCount: pick(barCounts, seed, 47),
-    },
     logoUrl: scene.brand.faviconUrl && scene.brand.logoUrl !== scene.brand.faviconUrl
       ? scene.brand.faviconUrl
       : scene.brand.logoUrl,

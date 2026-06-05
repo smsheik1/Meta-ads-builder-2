@@ -10,7 +10,7 @@ import { useCaptionTranscriptEditor } from '@/features/audio/useCaptionTranscrip
 import { useStoredAudioUrlRefresh } from '@/features/audio/useStoredAudioUrlRefresh';
 import type { ResearchQuality } from '@/features/research/researchQuality';
 import type { WebsiteResearch } from '@/features/research/websiteResearch';
-import { getAdSceneBrandKey, type AdPlatform, type AdScene, type AdSceneCreative, type AdSceneLayoutElement } from './scene';
+import { getAdSceneBrandKey, type AdPlatform, type AdScene, type AdSceneCreative, type AdSceneCreativePatch, type AdSceneLayoutElement } from './scene';
 import { ogToolScene } from './fixtures';
 import { reduceAdScene } from './sceneReducer';
 import { createCreativeReroll } from './creativeReroll';
@@ -161,7 +161,7 @@ export function CreateFoundation() {
   };
 
   const editCanvasCreative = (
-    creative: Partial<Pick<AdSceneCreative, 'headline' | 'headlineColor' | 'accentColor'>>,
+    creative: AdSceneCreativePatch,
     visualizer?: Partial<AdSceneCreative['visualizer']>,
   ) => {
     dispatch({ type: 'editCreative', creative, visualizer });

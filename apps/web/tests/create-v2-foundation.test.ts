@@ -237,11 +237,18 @@ test('format editor updates creative fields and respects element locks', () => {
     creative: {
       headline: 'Typed headline',
       headlineColor: '#123456',
+      headlineSize: 'hero',
+      headlineAlign: 'left',
+      headlineLineHeight: 0.98,
+      captionColor: '#334455',
       accentColor: '#abcdef',
     },
     visualizer: {
       color: '#abcdef',
       barCount: 29,
+      motion: 'snappy',
+      heightScale: 1.12,
+      baseline: 0.22,
     },
     now: 112,
   });
@@ -256,6 +263,8 @@ test('format editor updates creative fields and respects element locks', () => {
     creative: {
       headline: 'Blocked headline',
       headlineColor: '#ff0000',
+      headlineSize: 'compact',
+      headlineAlign: 'right',
     },
     now: 114,
   });
@@ -271,18 +280,45 @@ test('format editor updates creative fields and respects element locks', () => {
     visualizer: {
       color: '#ff0000',
       barCount: 17,
+      motion: 'smooth',
+      heightScale: 0.8,
     },
     now: 116,
+  });
+  const lockedCaption = reduceAdScene(edited, {
+    type: 'setLock',
+    field: 'audio',
+    locked: true,
+    now: 117,
+  });
+  const blockedCaption = reduceAdScene(lockedCaption, {
+    type: 'editCreative',
+    creative: {
+      captionColor: '#ff0000',
+    },
+    now: 118,
   });
 
   assert.equal(edited.creative.headline, 'Typed headline');
   assert.equal(edited.creative.headlineColor, '#123456');
+  assert.equal(edited.creative.headlineSize, 'hero');
+  assert.equal(edited.creative.headlineAlign, 'left');
+  assert.equal(edited.creative.headlineLineHeight, 0.98);
+  assert.equal(edited.creative.captionColor, '#334455');
   assert.equal(edited.creative.visualizer.color, '#abcdef');
   assert.equal(edited.creative.visualizer.barCount, 29);
+  assert.equal(edited.creative.visualizer.motion, 'snappy');
+  assert.equal(edited.creative.visualizer.heightScale, 1.12);
+  assert.equal(edited.creative.visualizer.baseline, 0.22);
   assert.equal(blockedHeadline.creative.headline, 'Typed headline');
   assert.equal(blockedHeadline.creative.headlineColor, '#123456');
+  assert.equal(blockedHeadline.creative.headlineSize, 'hero');
+  assert.equal(blockedHeadline.creative.headlineAlign, 'left');
   assert.equal(blockedVisualizer.creative.visualizer.color, '#abcdef');
   assert.equal(blockedVisualizer.creative.visualizer.barCount, 29);
+  assert.equal(blockedVisualizer.creative.visualizer.motion, 'snappy');
+  assert.equal(blockedVisualizer.creative.visualizer.heightScale, 1.12);
+  assert.equal(blockedCaption.creative.captionColor, '#334455');
 });
 
 test('logo replacement respects the logo lock', () => {

@@ -3,7 +3,10 @@ import type { AdScene } from '@/features/create/scene';
 import {
   AD_SCENE_FPS,
   getActiveCaptionText,
+  getCaptionColor,
+  getHeadlineLineHeight,
   getHeadlineScale,
+  getHeadlineTextAlign,
   getVisualizerBarHeight,
   isStoredSceneAudio,
   WIGGLY_WATERMARK_TEXT,
@@ -21,7 +24,9 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
   const hasAudio = isStoredSceneAudio(scene);
   const activeCaption = hasAudio ? getActiveCaptionText(scene.audio, currentTimeMs) : '';
   const isVertical = height > width;
-  const headlineSize = (isVertical ? 94 : 74) * getHeadlineScale(scene.creative.headline);
+  const headlineSize = (isVertical ? 94 : 74) * getHeadlineScale(scene.creative.headline, scene.creative.headlineSize);
+  const headlineTextAlign = getHeadlineTextAlign(scene.creative);
+  const captionColor = getCaptionColor(scene.creative);
   const contentTop = isVertical ? 150 : 118;
   const contentLeft = isVertical ? 80 : 120;
   const contentRight = isVertical ? 80 : 120;
@@ -134,10 +139,11 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
             placeItems: 'center',
             fontWeight: 900,
             fontSize: headlineSize,
-            lineHeight: 1.02,
+            lineHeight: getHeadlineLineHeight(scene.creative),
             letterSpacing: 0,
             color: scene.creative.headlineColor || '#07111f',
             overflowWrap: 'break-word',
+            textAlign: headlineTextAlign,
           }}
         >
           {scene.creative.headline}
@@ -156,7 +162,7 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
               key={index}
               style={{
                 width: 22,
-                height: getVisualizerBarHeight(index, visualizerBarCount, currentTimeMs, 146),
+                height: getVisualizerBarHeight(index, visualizerBarCount, currentTimeMs, 146, scene.creative.visualizer),
                 borderRadius: 999,
                 backgroundColor: scene.creative.visualizer.color,
               }}
@@ -186,7 +192,7 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
               ...getRemotionLayoutStyle(scene, 'caption', contentBounds),
               display: 'grid',
               placeItems: 'center',
-              color: '#475569',
+              color: captionColor,
               fontWeight: 900,
               fontSize: 34,
               lineHeight: 1.16,

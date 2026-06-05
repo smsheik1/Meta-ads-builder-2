@@ -5,23 +5,20 @@ import {
   type AdScene,
   type AdSceneAudio,
   type AdSceneCreative,
+  type AdSceneCreativePatch,
   type AdPlatform,
   type AdSceneLayoutElement,
 } from './scene';
 import { ogToolScene } from './fixtures';
 
-type RerollCreativePayload = Partial<Pick<
-  AdSceneCreative,
-  'angleId' | 'headline' | 'headlineColor' | 'subheadline' | 'ctaText' | 'ctaUrl' | 'backgroundColor' | 'accentColor'
->> & {
-  visualizer?: Partial<AdSceneCreative['visualizer']>;
+type RerollCreativePayload = AdSceneCreativePatch & {
   logoUrl?: string | null;
   faviconUrl?: string | null;
 };
 
 export type AdSceneAction =
   | { type: 'rerollCreative'; creative: RerollCreativePayload; now?: number }
-  | { type: 'editCreative'; creative: Partial<Pick<AdSceneCreative, 'headline' | 'headlineColor' | 'accentColor'>>; visualizer?: Partial<AdSceneCreative['visualizer']>; now?: number }
+  | { type: 'editCreative'; creative: AdSceneCreativePatch; visualizer?: Partial<AdSceneCreative['visualizer']>; now?: number }
   | { type: 'replaceLogo'; logoUrl: string | null; now?: number }
   | { type: 'moveLayoutElement'; element: AdSceneLayoutElement; x: number; y: number; now?: number }
   | { type: 'setPlatform'; platform: AdPlatform; now?: number }
@@ -99,14 +96,31 @@ export const reduceAdScene = (scene: AdScene, action: AdSceneAction): AdScene =>
       nextCreative.headlineColor = action.creative.headlineColor;
     }
 
+    if (!scene.locks.headline && action.creative.headlineSize !== undefined) {
+      nextCreative.headlineSize = action.creative.headlineSize;
+    }
+
+    if (!scene.locks.headline && action.creative.headlineAlign !== undefined) {
+      nextCreative.headlineAlign = action.creative.headlineAlign;
+    }
+
+    if (!scene.locks.headline && action.creative.headlineLineHeight !== undefined) {
+      nextCreative.headlineLineHeight = action.creative.headlineLineHeight;
+    }
+
+    if (!scene.locks.audio && action.creative.captionColor !== undefined) {
+      nextCreative.captionColor = action.creative.captionColor;
+    }
+
     if (action.creative.accentColor !== undefined) {
       nextCreative.accentColor = action.creative.accentColor;
     }
 
-    if (!scene.locks.visualizer && action.visualizer) {
+    const incomingVisualizer = action.visualizer || action.creative.visualizer;
+    if (!scene.locks.visualizer && incomingVisualizer) {
       nextCreative.visualizer = {
         ...nextCreative.visualizer,
-        ...action.visualizer,
+        ...incomingVisualizer,
       };
     }
 
@@ -147,11 +161,28 @@ export const reduceAdScene = (scene: AdScene, action: AdSceneAction): AdScene =>
       nextCreative.headlineColor = incoming.headlineColor;
     }
 
+    if (!scene.locks.headline && incoming.headlineSize !== undefined) {
+      nextCreative.headlineSize = incoming.headlineSize;
+    }
+
+    if (!scene.locks.headline && incoming.headlineAlign !== undefined) {
+      nextCreative.headlineAlign = incoming.headlineAlign;
+    }
+
+    if (!scene.locks.headline && incoming.headlineLineHeight !== undefined) {
+      nextCreative.headlineLineHeight = incoming.headlineLineHeight;
+    }
+
     if (!scene.locks.subheadline && incoming.subheadline !== undefined) {
       nextCreative.subheadline = incoming.subheadline;
     }
 
+    if (!scene.locks.audio && incoming.captionColor !== undefined) {
+      nextCreative.captionColor = incoming.captionColor;
+    }
+
     if (incoming.angleId !== undefined) nextCreative.angleId = incoming.angleId;
+    if (incoming.styleId !== undefined) nextCreative.styleId = incoming.styleId;
     if (incoming.ctaText !== undefined) nextCreative.ctaText = incoming.ctaText;
     if (incoming.ctaUrl !== undefined) nextCreative.ctaUrl = incoming.ctaUrl;
     if (incoming.backgroundColor !== undefined) nextCreative.backgroundColor = incoming.backgroundColor;
