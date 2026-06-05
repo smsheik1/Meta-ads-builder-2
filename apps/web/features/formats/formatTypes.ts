@@ -1,6 +1,8 @@
 import type { ComponentType } from 'react';
 import type { AdScene, AdSceneCreative, AdSceneCreativePatch, AdSceneLayoutElement } from '@/features/create/scene';
 
+export type AdFormatId = 'visualizer' | 'meme' | 'text-message' | 'tweet' | 'conversation-card';
+
 export type FormatEditTrayProps = {
   scene: AdScene;
   selectedElement: AdSceneLayoutElement | null;
@@ -14,7 +16,18 @@ export type FormatEditTrayProps = {
 };
 
 export type AdFormatModule = {
-  id: 'visualizer';
+  id: AdFormatId;
   label: string;
+  description: string;
+  status: 'active';
   EditTray: ComponentType<FormatEditTrayProps>;
 };
+
+export type PlannedAdFormat = {
+  id: AdFormatId;
+  label: string;
+  description: string;
+  status: 'planned';
+};
+
+export type AdFormatDefinition = AdFormatModule | PlannedAdFormat;
