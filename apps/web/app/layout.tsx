@@ -4,8 +4,8 @@ import { ConvexClientProvider } from './ConvexClientProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Wiggly Create V2',
-  description: 'Clean-room Wiggly create foundation.',
+  title: 'Wiggly Create',
+  description: 'Make video ads from a website, voice clip, or generated script.',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
