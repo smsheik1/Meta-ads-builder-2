@@ -30,7 +30,7 @@ export function PlatformSelector({
 }: PlatformSelectorProps) {
   return (
     <section
-      className="mx-auto mt-4 w-full max-w-[min(100%,32rem)] rounded-[24px] border border-slate-200 bg-white/90 p-2 shadow-[0_18px_48px_rgba(15,23,42,0.08)] backdrop-blur"
+      className="mx-auto mt-4 w-full max-w-[min(100%,32rem)] rounded-[24px] border border-slate-200 bg-white p-2 shadow-[0_18px_48px_rgba(15,23,42,0.08)]"
       data-testid="platform-selector"
     >
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

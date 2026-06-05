@@ -29,7 +29,7 @@ export function SpacebarRerollPrompt({
 
   return (
     <section
-      className="mx-auto mt-4 w-full max-w-[390px] rounded-[28px] border border-slate-200 bg-white/95 p-3 shadow-[0_20px_54px_rgba(15,23,42,0.12)] backdrop-blur"
+      className="mx-auto mt-4 w-full max-w-[390px] rounded-[28px] border border-slate-200 bg-white/95 p-3 shadow-[0_20px_54px_rgba(15,23,42,0.12)]"
       data-testid="spacebar-reroll-coach"
     >
       <button

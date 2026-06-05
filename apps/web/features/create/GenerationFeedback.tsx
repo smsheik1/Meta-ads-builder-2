@@ -36,7 +36,7 @@ export function GenerationFeedback({
 
   return (
     <section
-      className="mx-auto mt-3 flex w-full max-w-[390px] flex-wrap items-center justify-between gap-3 rounded-[24px] border border-slate-200 bg-white/85 px-4 py-3 shadow-[0_16px_44px_rgba(15,23,42,0.08)] backdrop-blur"
+      className="mx-auto mt-3 flex w-full max-w-[390px] flex-wrap items-center justify-between gap-3 rounded-[24px] border border-slate-200 bg-white/95 px-4 py-3 shadow-[0_16px_44px_rgba(15,23,42,0.08)]"
       data-testid="generation-feedback"
     >
       <div className="min-w-0">
