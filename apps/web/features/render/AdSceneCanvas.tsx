@@ -1,20 +1,30 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { AudioLines, Pause, Play } from 'lucide-react';
-import type { AdScene } from '@/features/create/scene';
+import type { AdScene, AdSceneLayoutElement } from '@/features/create/scene';
 import {
   getActiveCaptionText,
   getVisualizerBarHeight,
   isStoredSceneAudio,
 } from './adSceneRender';
+import { getCanvasLayoutStyle, getLayoutBox, layoutLockForElement } from './adSceneLayout';
 
 type AdSceneCanvasProps = {
   scene: AdScene;
   addAudioLabel?: string;
   className?: string;
   onAddAudio?: () => void;
+  onMoveElement?: (element: AdSceneLayoutElement, x: number, y: number) => void;
   rerollTick?: number;
+};
+
+type DragState = {
+  element: AdSceneLayoutElement;
+  startX: number;
+  startY: number;
+  originX: number;
+  originY: number;
 };
 
 export function AdSceneCanvas({
@@ -22,11 +32,14 @@ export function AdSceneCanvas({
   addAudioLabel = 'Add audio for this ad',
   className = '',
   onAddAudio,
+  onMoveElement,
   rerollTick = 0,
 }: AdSceneCanvasProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioTimeMs, setAudioTimeMs] = useState(0);
+  const [dragging, setDragging] = useState<DragState | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const surfaceRef = useRef<HTMLDivElement | null>(null);
   const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
   const playableAudio = isStoredSceneAudio(scene);
   const captionText = playableAudio && (isPlaying || audioTimeMs > 0)
@@ -54,6 +67,38 @@ export function AdSceneCanvas({
 
     await audioRef.current.play();
     setIsPlaying(true);
+  };
+
+  const startDrag = (element: AdSceneLayoutElement) => (event: PointerEvent<HTMLDivElement>) => {
+    if (!onMoveElement || layoutLockForElement(scene, element) || event.button !== 0) return;
+    if (event.target instanceof HTMLElement && event.target.closest('button, a, input, textarea, select')) return;
+
+    const box = getLayoutBox(scene, element);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDragging({
+      element,
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: box.x,
+      originY: box.y,
+    });
+  };
+
+  const updateDrag = (event: PointerEvent<HTMLDivElement>) => {
+    if (!dragging || !surfaceRef.current || !onMoveElement) return;
+
+    const bounds = surfaceRef.current.getBoundingClientRect();
+    onMoveElement(
+      dragging.element,
+      dragging.originX + ((event.clientX - dragging.startX) / bounds.width),
+      dragging.originY + ((event.clientY - dragging.startY) / bounds.height),
+    );
+  };
+
+  const dragClass = (element: AdSceneLayoutElement) => {
+    if (!onMoveElement) return '';
+    if (layoutLockForElement(scene, element)) return 'cursor-not-allowed opacity-70';
+    return 'cursor-move touch-none select-none rounded-2xl ring-1 ring-transparent transition hover:ring-slate-300';
   };
 
   return (
@@ -85,13 +130,27 @@ export function AdSceneCanvas({
         </div>
 
         <div
-          className="flex min-h-[510px] flex-col items-center justify-center gap-7 px-8 text-center"
+          ref={surfaceRef}
+          className="relative min-h-[510px] px-8 text-center"
           style={{ backgroundColor: scene.creative.backgroundColor }}
+          onPointerMove={updateDrag}
+          onPointerUp={() => setDragging(null)}
+          onPointerCancel={() => setDragging(null)}
         >
-          <p className="text-sm font-black uppercase tracking-wide text-slate-950">
-            {scene.brand.name}
-          </p>
-          <div className="relative overflow-hidden rounded-2xl px-2 py-1">
+          <div
+            className={`grid place-items-center px-2 py-1 ${dragClass('brand')}`}
+            style={getCanvasLayoutStyle(scene, 'brand')}
+            onPointerDown={startDrag('brand')}
+          >
+            <p className="text-sm font-black uppercase tracking-wide text-slate-950">
+              {scene.brand.name}
+            </p>
+          </div>
+          <div
+            className={`relative grid place-items-center overflow-hidden px-2 py-1 ${dragClass('headline')}`}
+            style={getCanvasLayoutStyle(scene, 'headline')}
+            onPointerDown={startDrag('headline')}
+          >
             {rerollTick > 0 && !scene.locks.headline && (
               <span
                 key={`headline-${rerollTick}`}
@@ -103,7 +162,11 @@ export function AdSceneCanvas({
               {scene.creative.headline}
             </h2>
           </div>
-          <div className="relative flex h-20 w-full items-center justify-center gap-1 overflow-hidden rounded-3xl">
+          <div
+            className={`relative flex items-center justify-center gap-1 overflow-hidden ${dragClass('visualizer')}`}
+            style={getCanvasLayoutStyle(scene, 'visualizer')}
+            onPointerDown={startDrag('visualizer')}
+          >
             {rerollTick > 0 && !scene.locks.visualizer && (
               <span
                 key={`visualizer-${rerollTick}`}
@@ -122,41 +185,47 @@ export function AdSceneCanvas({
               />
             ))}
           </div>
-          {captionText && (
-            <p className="max-w-[290px] text-base font-black leading-6 text-slate-600">
-              {captionText}
-            </p>
-          )}
-          {playableAudio ? (
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-[0_18px_44px_rgba(15,23,42,0.20)]"
-                onClick={togglePlayback}
-              >
-                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                {isPlaying ? 'Pause audio' : 'Play audio'}
-              </button>
-              {onAddAudio && (
+          <div
+            className={`grid place-items-center ${dragClass('caption')}`}
+            style={getCanvasLayoutStyle(scene, 'caption')}
+            onPointerDown={startDrag('caption')}
+          >
+            {captionText && (
+              <p className="max-w-[290px] text-base font-black leading-6 text-slate-600">
+                {captionText}
+              </p>
+            )}
+            {playableAudio ? (
+              <div className="flex flex-wrap items-center justify-center gap-3">
                 <button
                   type="button"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.12)]"
-                  onClick={onAddAudio}
+                  className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-[0_18px_44px_rgba(15,23,42,0.20)]"
+                  onClick={togglePlayback}
                 >
-                  Change audio
+                  {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                  {isPlaying ? 'Pause audio' : 'Play audio'}
                 </button>
-              )}
-            </div>
-          ) : onAddAudio ? (
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.14)]"
-              onClick={onAddAudio}
-            >
-              <AudioLines className="h-4 w-4" />
-              {addAudioLabel}
-            </button>
-          ) : null}
+                {onAddAudio && (
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.12)]"
+                    onClick={onAddAudio}
+                  >
+                    Change audio
+                  </button>
+                )}
+              </div>
+            ) : onAddAudio ? (
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.14)]"
+                onClick={onAddAudio}
+              >
+                <AudioLines className="h-4 w-4" />
+                {addAudioLabel}
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
       {playableAudio && (

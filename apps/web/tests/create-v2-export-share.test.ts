@@ -89,6 +89,19 @@ await test('render snapshots preserve platform dimensions and generated audio du
   assert.equal(isStoredSceneAudio(vertical.scene), true);
 });
 
+await test('render snapshots preserve canvas layout positions', () => {
+  const scene = cloneAdScene(ogToolScene);
+  scene.layout.headline = {
+    ...scene.layout.headline,
+    x: 0.68,
+    y: 0.38,
+  };
+  const snapshot = createRenderSnapshot(scene);
+
+  assert.equal(snapshot.scene.layout.headline.x, 0.68);
+  assert.equal(snapshot.scene.layout.headline.y, 0.38);
+});
+
 await test('render snapshots preserve stored uploaded audio duration', () => {
   const snapshot = createRenderSnapshot(withUploadedAudio(ogToolScene));
 

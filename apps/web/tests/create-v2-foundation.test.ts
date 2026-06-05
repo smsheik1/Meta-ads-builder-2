@@ -170,6 +170,52 @@ test('spacebar reroll ignores editable controls', () => {
   assert.equal(shouldIgnoreSpacebarRerollElement('div'), false);
 });
 
+test('layout movement persists in scene state and respects locks', () => {
+  const moved = reduceAdScene(ogToolScene, {
+    type: 'moveLayoutElement',
+    element: 'headline',
+    x: 0.72,
+    y: 0.44,
+    now: 108,
+  });
+  const locked = reduceAdScene(moved, {
+    type: 'setLock',
+    field: 'headline',
+    locked: true,
+    now: 109,
+  });
+  const blocked = reduceAdScene(locked, {
+    type: 'moveLayoutElement',
+    element: 'headline',
+    x: 0.2,
+    y: 0.2,
+    now: 110,
+  });
+
+  assert.equal(moved.layout.headline.x, 0.72);
+  assert.equal(moved.layout.headline.y, 0.44);
+  assert.equal(blocked.layout.headline.x, 0.72);
+  assert.equal(blocked.layout.headline.y, 0.44);
+});
+
+test('layout survives save, render, and share adapters', () => {
+  const moved = reduceAdScene(ogToolScene, {
+    type: 'moveLayoutElement',
+    element: 'visualizer',
+    x: 0.43,
+    y: 0.62,
+    now: 111,
+  });
+  const design = createSavedDesign(moved, 'Moved layout', 112);
+  const loaded = loadSavedDesign(design);
+  const renderScene = toRenderScene(moved);
+  const shareScene = toShareScene(moved);
+
+  assert.equal(loaded.layout.visualizer.x, 0.43);
+  assert.equal(renderScene.layout.visualizer.y, 0.62);
+  assert.equal(shareScene.layout.visualizer.x, 0.43);
+});
+
 test('stale generated audio cannot attach to a different scene', () => {
   const updated = reduceAdScene(redfinScene, {
     type: 'updateAudio',

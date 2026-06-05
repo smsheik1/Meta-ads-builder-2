@@ -1,4 +1,12 @@
-import { cloneAdScene, type AdScene, type AdSceneAudio, type AdSceneCreative } from './scene';
+import {
+  cloneAdScene,
+  getAdSceneLayout,
+  normalizeLayoutBox,
+  type AdScene,
+  type AdSceneAudio,
+  type AdSceneCreative,
+  type AdSceneLayoutElement,
+} from './scene';
 import { ogToolScene } from './fixtures';
 
 type RerollCreativePayload = Partial<Pick<
@@ -12,12 +20,20 @@ type RerollCreativePayload = Partial<Pick<
 
 export type AdSceneAction =
   | { type: 'rerollCreative'; creative: RerollCreativePayload; now?: number }
+  | { type: 'moveLayoutElement'; element: AdSceneLayoutElement; x: number; y: number; now?: number }
   | { type: 'setLock'; field: keyof AdScene['locks']; locked: boolean; now?: number }
   | { type: 'updateAudio'; audio: Partial<AdSceneAudio>; now?: number }
   | { type: 'loadScene'; scene: AdScene }
   | { type: 'resetScene'; scene?: AdScene };
 
 const getNow = (now?: number) => now ?? Date.now();
+
+const layoutElementIsLocked = (scene: AdScene, element: AdSceneLayoutElement) => {
+  if (element === 'brand') return scene.locks.logo;
+  if (element === 'headline') return scene.locks.headline;
+  if (element === 'visualizer') return scene.locks.visualizer;
+  return scene.locks.audio;
+};
 
 export const reduceAdScene = (scene: AdScene, action: AdSceneAction): AdScene => {
   if (action.type === 'loadScene') return cloneAdScene(action.scene);
@@ -42,6 +58,24 @@ export const reduceAdScene = (scene: AdScene, action: AdSceneAction): AdScene =>
       audio: {
         ...scene.audio,
         ...action.audio,
+      },
+      updatedAt: getNow(action.now),
+    };
+  }
+
+  if (action.type === 'moveLayoutElement') {
+    if (layoutElementIsLocked(scene, action.element)) return scene;
+    const layout = getAdSceneLayout(scene);
+
+    return {
+      ...scene,
+      layout: {
+        ...layout,
+        [action.element]: normalizeLayoutBox({
+          ...layout[action.element],
+          x: action.x,
+          y: action.y,
+        }),
       },
       updatedAt: getNow(action.now),
     };

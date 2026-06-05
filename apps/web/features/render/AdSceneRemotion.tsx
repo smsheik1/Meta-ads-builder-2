@@ -6,6 +6,7 @@ import {
   getVisualizerBarHeight,
   isStoredSceneAudio,
 } from './adSceneRender';
+import { getRemotionLayoutStyle } from './adSceneLayout';
 
 export type AdSceneRemotionProps = {
   scene: AdScene;
@@ -19,6 +20,13 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
   const activeCaption = hasAudio ? getActiveCaptionText(scene.audio, currentTimeMs) : '';
   const isVertical = height > width;
   const headlineSize = isVertical ? 94 : 74;
+  const contentTop = isVertical ? 150 : 118;
+  const contentLeft = isVertical ? 80 : 120;
+  const contentRight = isVertical ? 80 : 120;
+  const contentBottom = isVertical ? 220 : 150;
+  const contentWidth = width - contentLeft - contentRight;
+  const contentHeight = height - contentTop - contentBottom;
+  const contentBounds = { width: contentWidth, height: contentHeight };
 
   return (
     <AbsoluteFill
@@ -74,17 +82,18 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
       <div
         style={{
           position: 'absolute',
-          inset: isVertical ? '150px 80px 220px' : '118px 120px 150px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
+          top: contentTop,
+          left: contentLeft,
+          width: contentWidth,
+          height: contentHeight,
           textAlign: 'center',
-          gap: isVertical ? 56 : 36,
         }}
       >
         <div
           style={{
+            ...getRemotionLayoutStyle(scene, 'brand', contentBounds),
+            display: 'grid',
+            placeItems: 'center',
             fontWeight: 900,
             fontSize: 34,
             letterSpacing: 0,
@@ -95,7 +104,9 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
         </div>
         <div
           style={{
-            maxWidth: isVertical ? 780 : 920,
+            ...getRemotionLayoutStyle(scene, 'headline', contentBounds),
+            display: 'grid',
+            placeItems: 'center',
             fontWeight: 900,
             fontSize: headlineSize,
             lineHeight: 1.02,
@@ -106,8 +117,7 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
         </div>
         <div
           style={{
-            height: 170,
-            width: '100%',
+            ...getRemotionLayoutStyle(scene, 'visualizer', contentBounds),
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -129,6 +139,9 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
         {!hasAudio ? (
           <div
             style={{
+              ...getRemotionLayoutStyle(scene, 'caption', contentBounds),
+              display: 'grid',
+              placeItems: 'center',
               borderRadius: 999,
               backgroundColor: '#fff',
               color: '#475569',
@@ -143,7 +156,9 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
         ) : activeCaption ? (
           <div
             style={{
-              maxWidth: 760,
+              ...getRemotionLayoutStyle(scene, 'caption', contentBounds),
+              display: 'grid',
+              placeItems: 'center',
               color: '#475569',
               fontWeight: 900,
               fontSize: 34,

@@ -12,7 +12,7 @@ import { useStoredAudioUrlRefresh } from '@/features/audio/useStoredAudioUrlRefr
 import { AdSceneCanvas } from '@/features/render/AdSceneCanvas';
 import type { ResearchQuality } from '@/features/research/researchQuality';
 import type { WebsiteResearch } from '@/features/research/websiteResearch';
-import { getAdSceneBrandKey, type AdScene } from './scene';
+import { getAdSceneBrandKey, type AdScene, type AdSceneLayoutElement } from './scene';
 import { ogToolScene } from './fixtures';
 import { reduceAdScene } from './sceneReducer';
 import { useSpacebarReroll } from './useSpacebarReroll';
@@ -146,6 +146,11 @@ export function CreateFoundation() {
     clearExportResults();
     setRerollTick((tick) => tick + 1);
   } });
+
+  const moveCanvasElement = (element: AdSceneLayoutElement, x: number, y: number) => {
+    dispatch({ type: 'moveLayoutElement', element, x, y });
+    clearExportResults();
+  };
 
   const openAudioPanel = () => {
     setAudioPanelOpen(true);
@@ -473,7 +478,12 @@ export function CreateFoundation() {
           <CreativeBriefPanel scene={scene} research={research} quality={quality} />
         </section>
 
-        <AdSceneCanvas scene={scene} rerollTick={rerollTick} onAddAudio={openAudioPanel} />
+        <AdSceneCanvas
+          scene={scene}
+          rerollTick={rerollTick}
+          onAddAudio={openAudioPanel}
+          onMoveElement={moveCanvasElement}
+        />
       </div>
     </main>
   );
