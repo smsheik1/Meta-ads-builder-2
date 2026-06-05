@@ -57,6 +57,10 @@ const stripBrandPrefix = (value: string, brandName: string) => {
     .trim() || cleaned;
 };
 
+const listForPrompt = (items: string[], maxItems = 8) => JSON.stringify(
+  items.map((item) => cleanText(item, 220)).filter(Boolean).slice(0, maxItems),
+);
+
 export const buildDeterministicAdCopy = (research: WebsiteResearch): AdCopy => {
   const receiptHeadline = firstUseful(
     [
@@ -87,10 +91,11 @@ export const buildDeterministicAdCopy = (research: WebsiteResearch): AdCopy => {
 };
 
 const buildPrompt = (research: WebsiteResearch) => `
-You write concise ad canvas copy from website evidence.
+You write punchy ad canvas copy from homepage evidence.
 
 OBJECTIVE:
-Turn the website research into one ready-to-test ad angle. Use receipts, not generic category claims.
+Pick the best stuff from the website, then turn it into one ready-to-test ad angle.
+The ad should make the user feel: "Wiggly understood this business."
 
 BRAND:
 ${research.brandName}
@@ -99,16 +104,38 @@ SITE SUMMARY:
 Title: ${research.title}
 Description: ${research.description}
 
-RECEIPTS:
-Specific claims: ${JSON.stringify(research.receipts.specificClaims)}
-Buyer moments: ${JSON.stringify(research.receipts.buyerMoments)}
-Exact site language: ${JSON.stringify(research.receipts.exactSiteLanguage)}
-Named proof: ${JSON.stringify(research.receipts.namedProof)}
+STUFF FROM THE WEBSITE:
+Possible offers: ${listForPrompt(research.offerCandidates)}
+Possible buyers: ${listForPrompt(research.audienceCandidates)}
+Customer pains / moments: ${listForPrompt(research.receipts.buyerMoments)}
+Specific proof / claims: ${listForPrompt(research.receipts.specificClaims)}
+Named proof / reviews: ${listForPrompt(research.receipts.namedProof.length ? research.receipts.namedProof : research.receipts.reviews)}
+Exact site phrases: ${listForPrompt(research.receipts.exactSiteLanguage)}
 
-RULES:
-- Use one exact receipt from RECEIPTS.
+PICK THE BEST STUFF FIRST:
+- Best promise: what is the clearest thing the customer gets?
+- Best buyer: who is most likely to care?
+- Best pain: what annoying moment makes them want this now?
+- Best proof: what makes the promise believable?
+- Best ad phrase: which exact site phrase or proof sounds most clickable?
+
+WHAT TO WRITE:
+- Headline should be punchy, concrete, and easy to read on a phone.
+- Subheadline should explain the promise with the best proof.
+- Use one exact website receipt, but make it sound like an ad, not a website summary.
+- Prefer outcomes, speed, proof, comparison, or a painful moment over generic category labels.
+- If the brand is broad, pick the most specific offer shown on this page.
+
+BAD HEADLINE SHAPES:
+- "Grow your business"
+- "Unlock your potential"
+- "Take it to the next level"
+- "The future of [category]"
+- "[Brand] made easier"
+- A plain category label with no reason to care
+
+HARD RULES:
 - Do not invent numbers, reviews, customers, guarantees, awards, or timeframes.
-- Do not write generic phrases like "grow your business", "unlock your potential", or "take it to the next level".
 - Headline must be 8-72 characters.
 - Subheadline must be 24-180 characters.
 - Return only JSON: {"headline":"...","subheadline":"...","angleId":"...","ctaText":"..."}

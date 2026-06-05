@@ -263,6 +263,49 @@ await test('OpenRouter copy generation uses injected JSON without live API calls
   assert.equal(result.copy.headline, 'Own the AI answer');
 });
 
+await test('OpenRouter prompt tells the model to pick the best website stuff first', async () => {
+  const research = researchFrom(strongHtml);
+  let prompt = '';
+  const result = await generateAdCopy(research, {
+    apiKey: 'test-openrouter-key',
+    model: 'test/model',
+    fetcher: async (_url, init) => {
+      const body = JSON.parse(String(init?.body || '{}')) as {
+        messages?: Array<{ content?: string }>;
+      };
+      prompt = body.messages?.[0]?.content || '';
+
+      return new Response(JSON.stringify({
+        choices: [{
+          message: {
+            content: JSON.stringify({
+              headline: 'Own the AI answer',
+              subheadline: 'First ChatGPT mention in 14 days after Reddit visibility work.',
+              angleId: 'ai-answer-ownership',
+              ctaText: 'Learn More',
+            }),
+          },
+        }],
+      }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    },
+  });
+
+  assert.equal(result.providerStatus.status, 'used');
+  assert.match(prompt, /PICK THE BEST STUFF FIRST/);
+  assert.match(prompt, /Best promise/);
+  assert.match(prompt, /Best buyer/);
+  assert.match(prompt, /Best pain/);
+  assert.match(prompt, /Best proof/);
+  assert.match(prompt, /Possible offers/);
+  assert.match(prompt, /Possible buyers/);
+  assert.match(prompt, /Exact site phrases/);
+  assert.match(prompt, /First ChatGPT mention in 14 days/);
+  assert.doesNotMatch(prompt, /whole website/i);
+});
+
 await test('OpenRouter timeout status does not expose raw abort wording', async () => {
   const research = researchFrom(strongHtml);
   const result = await generateAdCopy(research, {
