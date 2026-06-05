@@ -25,8 +25,8 @@ function EvidenceList({ emptyLabel, items, title }: EvidenceListProps) {
   const visibleItems = nonEmpty(items);
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-4">
-      <h3 className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
+    <section>
+      <h3 className="text-sm font-black uppercase tracking-wide text-slate-500">
         {title}
       </h3>
       {visibleItems.length > 0 ? (
@@ -34,14 +34,14 @@ function EvidenceList({ emptyLabel, items, title }: EvidenceListProps) {
           {visibleItems.map((item) => (
             <li
               key={item}
-              className="rounded-2xl bg-slate-50 px-3 py-2 text-sm font-bold leading-6 text-slate-700"
+              className="rounded-2xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-black leading-5 text-slate-900"
             >
               {item}
             </li>
           ))}
         </ul>
       ) : (
-        <p className="mt-3 rounded-2xl bg-slate-50 px-3 py-2 text-sm font-bold text-slate-400">
+        <p className="mt-2 text-sm font-bold text-slate-600">
           {emptyLabel}
         </p>
       )}
@@ -112,19 +112,19 @@ export function BrandEvidenceDrawer({
 
         <div className="grid min-h-0 flex-1 overflow-hidden lg:grid-cols-[0.92fr_1.08fr]">
           <div className="min-h-0 overflow-y-auto border-r border-slate-200 bg-white p-6">
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-              <div className="rounded-3xl border border-slate-300 bg-white p-4 shadow-sm">
+            <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="rounded-2xl border border-slate-300 bg-white p-3 shadow-sm">
                 <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Quality</p>
-                <p className="mt-2 text-3xl font-black text-slate-950">
+                <p className="mt-1 text-2xl font-black text-slate-950">
                   {quality ? `${quality.score}/100` : 'N/A'}
                 </p>
                 <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-600">
                   {quality?.level || 'No score yet'}
                 </p>
               </div>
-              <div className="rounded-3xl border border-slate-300 bg-white p-4 shadow-sm">
+              <div className="rounded-2xl border border-slate-300 bg-white p-3 shadow-sm">
                 <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Copy read</p>
-                <p className="mt-2 text-3xl font-black text-slate-950">
+                <p className="mt-1 text-2xl font-black text-slate-950">
                   {(research?.headings.length || 0) + (research?.paragraphs.length || 0)}
                 </p>
                 <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-600">
@@ -135,7 +135,7 @@ export function BrandEvidenceDrawer({
                 href={scene.brand.websiteUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-3xl border border-slate-300 bg-white p-4 shadow-sm transition hover:bg-slate-50"
+                className="rounded-2xl border border-slate-300 bg-white p-3 shadow-sm transition hover:bg-slate-50"
               >
                 <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Website</p>
                 <p className="mt-2 flex items-center gap-2 text-sm font-black leading-5 text-slate-950">
@@ -165,9 +165,12 @@ export function BrandEvidenceDrawer({
                           className="max-h-full max-w-full object-contain"
                         />
                       </div>
-                      <p className="mt-2 flex items-center gap-2 text-xs font-black text-slate-700">
-                        <ImageIcon className="h-3.5 w-3.5" />
+                      <p className="mt-2 flex items-center gap-2 text-xs font-black text-slate-800">
+                        <ImageIcon className="h-3.5 w-3.5 shrink-0" />
                         {image.label}
+                      </p>
+                      <p className="mt-1 line-clamp-2 break-all text-xs font-bold leading-4 text-slate-600 group-hover:text-slate-900">
+                        {image.url}
                       </p>
                     </a>
                   ))}
@@ -238,16 +241,18 @@ export function BrandEvidenceDrawer({
                 items={[...receipts.namedProof, ...receipts.reviews]}
                 emptyLabel="No named testimonials or review proof found yet."
               />
-              <EvidenceList
-                title="Headings"
-                items={research?.headings.slice(0, 12) || []}
-                emptyLabel="No headings available."
-              />
-              <EvidenceList
-                title="Page snippets"
-                items={research?.paragraphs.slice(0, 12) || []}
-                emptyLabel="No page snippets available."
-              />
+              <section>
+                <h3 className="text-sm font-black uppercase tracking-wide text-slate-500">Headings</h3>
+                <pre className="mt-3 max-h-56 overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-sm font-bold leading-6 text-white">
+                  {(research?.headings.slice(0, 12) || []).join('\n') || 'No headings available.'}
+                </pre>
+              </section>
+              <section>
+                <h3 className="text-sm font-black uppercase tracking-wide text-slate-500">Page snippets</h3>
+                <pre className="mt-3 max-h-72 overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-sm font-bold leading-6 text-white">
+                  {(research?.paragraphs.slice(0, 12) || []).join('\n\n') || 'No page snippets available.'}
+                </pre>
+              </section>
             </div>
           </div>
         </div>
