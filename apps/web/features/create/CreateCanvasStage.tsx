@@ -2,8 +2,10 @@
 
 import type { AdPlatform, AdScene, AdSceneCreative, AdSceneCreativePatch, AdSceneLayoutElement } from './scene';
 import { AdSceneCanvas } from '@/features/render/AdSceneCanvas';
-import { visualizerFormat } from '@/features/formats/visualizer/visualizerFormat';
+import { getAdSceneRenderSpec } from '@/features/render/adSceneRender';
+import { ACTIVE_AD_FORMAT_ID, getActiveAdFormat } from '@/features/formats/formatRegistry';
 import { CanvasGuidesToggle } from './CanvasGuidesToggle';
+import { CanvasFormatRail } from './CanvasFormatRail';
 import { GenerationFeedback } from './GenerationFeedback';
 import { PlatformSelector } from './PlatformSelector';
 import { SpacebarRerollPrompt } from './SpacebarRerollPrompt';
@@ -55,21 +57,33 @@ export function CreateCanvasStage({
   onToggleGuides,
   onToggleLock,
 }: CreateCanvasStageProps) {
-  const EditTray = visualizerFormat.EditTray;
+  const activeFormat = getActiveAdFormat(ACTIVE_AD_FORMAT_ID);
+  const EditTray = activeFormat.EditTray;
+  const renderSpec = getAdSceneRenderSpec(scene.platform);
+  const horizontalPlatform = renderSpec.width > renderSpec.height;
+  const canvasShellMaxWidth = horizontalPlatform ? 684 : 454;
 
   return (
     <section className="min-w-0">
-      <AdSceneCanvas
-        scene={scene}
-        rerollTick={rerollTick}
-        selectedElement={selectedElement}
-        showGuides={showGuides}
-        onAddAudio={onAddAudio}
-        onEditCaptions={onEditCaptions}
-        onMoveElement={onMoveElement}
-        onSelectElement={onSelectElement}
-        onToggleLock={onToggleLock}
-      />
+      <div
+        className="relative mx-auto w-full pl-10"
+        style={{ maxWidth: canvasShellMaxWidth }}
+        data-testid="canvas-format-shell"
+      >
+        <CanvasFormatRail activeFormatId={activeFormat.id} />
+        <AdSceneCanvas
+          scene={scene}
+          rerollTick={rerollTick}
+          selectedElement={selectedElement}
+          showGuides={showGuides}
+          className="ml-auto"
+          onAddAudio={onAddAudio}
+          onEditCaptions={onEditCaptions}
+          onMoveElement={onMoveElement}
+          onSelectElement={onSelectElement}
+          onToggleLock={onToggleLock}
+        />
+      </div>
       <SpacebarRerollPrompt
         rerollTick={rerollTick}
         selectedElement={selectedElement}

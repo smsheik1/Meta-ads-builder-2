@@ -696,12 +696,21 @@ test('instagram feed preview keeps the creative surface at the feed ratio', () =
 test('visualizer format owns editing controls through a small format module', () => {
   const stageSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateCanvasStage.tsx'), 'utf8');
   const formatSource = fs.readFileSync(path.join(webRoot, 'features/formats/visualizer/visualizerFormat.ts'), 'utf8');
+  const registrySource = fs.readFileSync(path.join(webRoot, 'features/formats/formatRegistry.ts'), 'utf8');
+  const railSource = fs.readFileSync(path.join(webRoot, 'features/create/CanvasFormatRail.tsx'), 'utf8');
   const traySource = fs.readFileSync(path.join(webRoot, 'features/formats/visualizer/VisualizerEditTray.tsx'), 'utf8');
   const canvasSource = fs.readFileSync(path.join(webRoot, 'features/render/AdSceneCanvas.tsx'), 'utf8');
   const remotionSource = fs.readFileSync(path.join(webRoot, 'features/render/AdSceneRemotion.tsx'), 'utf8');
 
-  assert.match(stageSource, /visualizerFormat\.EditTray/);
+  assert.match(stageSource, /getActiveAdFormat/);
+  assert.doesNotMatch(stageSource, /visualizerFormat/);
   assert.match(formatSource, /id: 'visualizer'/);
+  assert.match(formatSource, /status: 'active'/);
+  assert.match(registrySource, /ACTIVE_AD_FORMAT_ID: AdFormatId = 'visualizer'/);
+  assert.match(registrySource, /status: 'planned'/);
+  assert.match(registrySource, /ACTIVE_AD_FORMATS/);
+  assert.match(railSource, /canvas-format-rail/);
+  assert.match(railSource, /disabled=\{disabled\}/);
   assert.match(traySource, /accept="image\/\*"/);
   assert.match(traySource, /headlineColor/);
   assert.match(traySource, /barCount/);
