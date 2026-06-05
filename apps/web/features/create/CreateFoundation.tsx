@@ -15,43 +15,20 @@ import type { WebsiteResearch } from '@/features/research/websiteResearch';
 import { getAdSceneBrandKey, type AdScene } from './scene';
 import { ogToolScene } from './fixtures';
 import { reduceAdScene } from './sceneReducer';
+import { useSpacebarReroll } from './useSpacebarReroll';
 import { SavedDesignsPanel } from './SavedDesignsPanel';
 import { ExportPanel } from './ExportPanel';
 import { CreativeBriefPanel } from './CreativeBriefPanel';
 import { createSavedDesign, loadSavedDesign, type SavedDesign } from './sceneAdapters';
 import { sceneHasSavedSnapshot } from './savedDesigns';
 import { getOrCreateAnonymousSessionId } from './anonymousSession';
-
-type CreateSceneResponse = {
-  scene?: AdScene;
-  research?: WebsiteResearch;
-  quality?: ResearchQuality;
-  error?: string;
-};
-
-type AudioScriptsResponse = {
-  scripts?: DialogueScript[];
-  sourceSceneId?: string;
-  error?: string;
-};
-
-type CreateAudioResponse = {
-  audioUrl?: string;
-  storageId?: string;
-  mimeType?: string;
-  transcript?: string;
-  captions?: AdScene['audio']['captions'];
-  durationMs?: number;
-  sourceSceneId?: string;
-  scriptId?: string;
-  error?: string;
-};
-
-type ShareSceneResponse = {
-  shareUrl?: string;
-  error?: string;
-};
-type RenderSceneTicketResponse = { downloadUrl?: string; error?: string };
+import type {
+  AudioScriptsResponse,
+  CreateAudioResponse,
+  CreateSceneResponse,
+  RenderSceneTicketResponse,
+  ShareSceneResponse,
+} from './apiResponses';
 
 export function CreateFoundation() {
   const [scene, dispatch] = useReducer(reduceAdScene, ogToolScene);
@@ -75,6 +52,7 @@ export function CreateFoundation() {
   const [shareUrl, setShareUrl] = useState('');
   const [shareError, setShareError] = useState('');
   const [audioPanelFocusTick, setAudioPanelFocusTick] = useState(0);
+  const [rerollTick, setRerollTick] = useState(0);
   const audioPanelRef = useRef<HTMLDivElement | null>(null);
 
   const resetAudioPanel = (nextSceneId: string) => {
@@ -163,6 +141,11 @@ export function CreateFoundation() {
     setShareUrl('');
     setShareError('');
   };
+
+  useSpacebarReroll({ scene, dispatch, onReroll: () => {
+    clearExportResults();
+    setRerollTick((tick) => tick + 1);
+  } });
 
   const openAudioPanel = () => {
     setAudioPanelOpen(true);
@@ -490,7 +473,7 @@ export function CreateFoundation() {
           <CreativeBriefPanel scene={scene} research={research} quality={quality} />
         </section>
 
-        <AdSceneCanvas scene={scene} onAddAudio={openAudioPanel} />
+        <AdSceneCanvas scene={scene} rerollTick={rerollTick} onAddAudio={openAudioPanel} />
       </div>
     </main>
   );
