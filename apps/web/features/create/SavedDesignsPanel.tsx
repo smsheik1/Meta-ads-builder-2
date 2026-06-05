@@ -28,6 +28,7 @@ const formatSavedTime = (value: number) => (
 function SavedDesignPreview({ scene }: { scene: AdScene }) {
   const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
   const hasAudio = isStoredSceneAudio(scene);
+  const previewBarCount = Math.min(13, scene.creative.visualizer.barCount || 13);
 
   return (
     <div
@@ -48,23 +49,26 @@ function SavedDesignPreview({ scene }: { scene: AdScene }) {
           {scene.brand.name}
         </p>
         <p
-          className="line-clamp-3 grid place-items-center text-lg font-black leading-[0.98] text-slate-950"
+          className="line-clamp-3 grid place-items-center text-lg font-black leading-[0.98]"
           style={getCanvasLayoutStyle(scene, 'headline')}
         >
-          {scene.creative.headline}
+          <span style={{ color: scene.creative.headlineColor || '#07111f' }}>
+            {scene.creative.headline}
+          </span>
         </p>
         <div
           className="flex items-center justify-center gap-0.5"
           style={getCanvasLayoutStyle(scene, 'visualizer')}
         >
-          {Array.from({ length: 13 }).map((_, index) => {
-            const center = Math.abs(index - 6);
+          {Array.from({ length: previewBarCount }).map((_, index) => {
+            const centerIndex = (previewBarCount - 1) / 2;
+            const center = Math.abs(index - centerIndex);
             return (
               <span
                 key={index}
                 className="w-1.5 rounded-full"
                 style={{
-                  height: 8 + (6 - center) * 3,
+                  height: 8 + (centerIndex - center) * 3,
                   backgroundColor: scene.creative.visualizer.color,
                 }}
               />

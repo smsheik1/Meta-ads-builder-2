@@ -103,6 +103,16 @@ export const getActiveCaptionText = (audio: AdSceneAudio, currentTimeMs: number)
   return caption?.text || audio.captions[0]?.text || audio.transcript;
 };
 
+export const getHeadlineScale = (headline: string) => {
+  const cleanHeadline = headline.trim().replace(/\s+/g, ' ');
+  const words = cleanHeadline.split(' ').filter(Boolean).length;
+  const characters = cleanHeadline.length;
+
+  if (characters >= 58 || words >= 8) return 0.72;
+  if (characters >= 42 || words >= 6) return 0.82;
+  return 1;
+};
+
 export const getVisualizerBarHeight = (
   index: number,
   count: number,

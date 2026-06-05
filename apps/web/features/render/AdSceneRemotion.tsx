@@ -3,6 +3,7 @@ import type { AdScene } from '@/features/create/scene';
 import {
   AD_SCENE_FPS,
   getActiveCaptionText,
+  getHeadlineScale,
   getVisualizerBarHeight,
   isStoredSceneAudio,
 } from './adSceneRender';
@@ -19,7 +20,7 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
   const hasAudio = isStoredSceneAudio(scene);
   const activeCaption = hasAudio ? getActiveCaptionText(scene.audio, currentTimeMs) : '';
   const isVertical = height > width;
-  const headlineSize = isVertical ? 94 : 74;
+  const headlineSize = (isVertical ? 94 : 74) * getHeadlineScale(scene.creative.headline);
   const contentTop = isVertical ? 150 : 118;
   const contentLeft = isVertical ? 80 : 120;
   const contentRight = isVertical ? 80 : 120;
@@ -27,6 +28,8 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
   const contentWidth = width - contentLeft - contentRight;
   const contentHeight = height - contentTop - contentBottom;
   const contentBounds = { width: contentWidth, height: contentHeight };
+  const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
+  const visualizerBarCount = scene.creative.visualizer.barCount ?? 21;
 
   return (
     <AbsoluteFill
@@ -67,7 +70,15 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
             fontSize: 24,
           }}
         >
-          {scene.brand.name.slice(0, 2).toUpperCase()}
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt=""
+              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 999 }}
+            />
+          ) : (
+            scene.brand.name.slice(0, 2).toUpperCase()
+          )}
         </div>
         <div>
           <div style={{ fontWeight: 900, fontSize: 28, lineHeight: 1 }}>
@@ -111,6 +122,8 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
             fontSize: headlineSize,
             lineHeight: 1.02,
             letterSpacing: 0,
+            color: scene.creative.headlineColor || '#07111f',
+            overflowWrap: 'break-word',
           }}
         >
           {scene.creative.headline}
@@ -124,12 +137,12 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
             gap: 10,
           }}
         >
-          {Array.from({ length: 33 }).map((_, index) => (
+          {Array.from({ length: visualizerBarCount }).map((_, index) => (
             <div
               key={index}
               style={{
                 width: 22,
-                height: getVisualizerBarHeight(index, 33, currentTimeMs, 146),
+                height: getVisualizerBarHeight(index, visualizerBarCount, currentTimeMs, 146),
                 borderRadius: 999,
                 backgroundColor: scene.creative.visualizer.color,
               }}

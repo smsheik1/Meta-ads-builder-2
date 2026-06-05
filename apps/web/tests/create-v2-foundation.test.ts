@@ -198,6 +198,82 @@ test('layout movement persists in scene state and respects locks', () => {
   assert.equal(blocked.layout.headline.y, 0.44);
 });
 
+test('format editor updates creative fields and respects element locks', () => {
+  const edited = reduceAdScene(ogToolScene, {
+    type: 'editCreative',
+    creative: {
+      headline: 'Typed headline',
+      headlineColor: '#123456',
+      accentColor: '#abcdef',
+    },
+    visualizer: {
+      color: '#abcdef',
+      barCount: 29,
+    },
+    now: 112,
+  });
+  const lockedHeadline = reduceAdScene(edited, {
+    type: 'setLock',
+    field: 'headline',
+    locked: true,
+    now: 113,
+  });
+  const blockedHeadline = reduceAdScene(lockedHeadline, {
+    type: 'editCreative',
+    creative: {
+      headline: 'Blocked headline',
+      headlineColor: '#ff0000',
+    },
+    now: 114,
+  });
+  const lockedVisualizer = reduceAdScene(edited, {
+    type: 'setLock',
+    field: 'visualizer',
+    locked: true,
+    now: 115,
+  });
+  const blockedVisualizer = reduceAdScene(lockedVisualizer, {
+    type: 'editCreative',
+    creative: {},
+    visualizer: {
+      color: '#ff0000',
+      barCount: 17,
+    },
+    now: 116,
+  });
+
+  assert.equal(edited.creative.headline, 'Typed headline');
+  assert.equal(edited.creative.headlineColor, '#123456');
+  assert.equal(edited.creative.visualizer.color, '#abcdef');
+  assert.equal(edited.creative.visualizer.barCount, 29);
+  assert.equal(blockedHeadline.creative.headline, 'Typed headline');
+  assert.equal(blockedHeadline.creative.headlineColor, '#123456');
+  assert.equal(blockedVisualizer.creative.visualizer.color, '#abcdef');
+  assert.equal(blockedVisualizer.creative.visualizer.barCount, 29);
+});
+
+test('logo replacement respects the logo lock', () => {
+  const replaced = reduceAdScene(ogToolScene, {
+    type: 'replaceLogo',
+    logoUrl: 'data:image/png;base64,new-logo',
+    now: 117,
+  });
+  const locked = reduceAdScene(replaced, {
+    type: 'setLock',
+    field: 'logo',
+    locked: true,
+    now: 118,
+  });
+  const blocked = reduceAdScene(locked, {
+    type: 'replaceLogo',
+    logoUrl: null,
+    now: 119,
+  });
+
+  assert.equal(replaced.brand.logoUrl, 'data:image/png;base64,new-logo');
+  assert.equal(blocked.brand.logoUrl, 'data:image/png;base64,new-logo');
+});
+
 test('layout survives save, render, and share adapters', () => {
   const moved = reduceAdScene(ogToolScene, {
     type: 'moveLayoutElement',
@@ -411,13 +487,15 @@ test('new web app does not import from legacy src/App.tsx', () => {
 
 test('opening the audio panel does not auto-write voice options', () => {
   const source = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
+  const stageSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateCanvasStage.tsx'), 'utf8');
 
-  assert.match(source, /onAddAudio={openAudioPanel}/);
+  assert.match(source, /onAddAudio=\{openAudioPanel\}/);
+  assert.match(stageSource, /onAddAudio=\{onAddAudio\}/);
   assert.doesNotMatch(source, /onAddAudio=\\{\\(\\) => loadScriptOptions/);
 });
 
 test('create surface shows a clickable spacebar reroll prompt', () => {
-  const source = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
+  const source = fs.readFileSync(path.join(webRoot, 'features/create/CreateCanvasStage.tsx'), 'utf8');
   const promptSource = fs.readFileSync(path.join(webRoot, 'features/create/SpacebarRerollPrompt.tsx'), 'utf8');
 
   assert.match(source, /SpacebarRerollPrompt/);
@@ -441,16 +519,39 @@ test('saved designs use a hover popover instead of a second library surface', ()
 
 test('safe guides are preview-only canvas UI', () => {
   const createSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
+  const stageSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateCanvasStage.tsx'), 'utf8');
   const canvasSource = fs.readFileSync(path.join(webRoot, 'features/render/AdSceneCanvas.tsx'), 'utf8');
   const toggleSource = fs.readFileSync(path.join(webRoot, 'features/create/CanvasGuidesToggle.tsx'), 'utf8');
   const remotionSource = fs.readFileSync(path.join(webRoot, 'features/render/AdSceneRemotion.tsx'), 'utf8');
 
-  assert.match(createSource, /CanvasGuidesToggle/);
   assert.match(createSource, /showGuides=\{showGuides\}/);
+  assert.match(stageSource, /CanvasGuidesToggle/);
+  assert.match(stageSource, /showGuides=\{showGuides\}/);
   assert.match(toggleSource, /safe-guides-toggle/);
   assert.match(canvasSource, /scene-safe-guides/);
   assert.match(canvasSource, /Feed safe area/);
   assert.doesNotMatch(remotionSource, /scene-safe-guides|Feed safe area/);
+});
+
+test('visualizer format owns editing controls through a small format module', () => {
+  const stageSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateCanvasStage.tsx'), 'utf8');
+  const formatSource = fs.readFileSync(path.join(webRoot, 'features/formats/visualizer/visualizerFormat.ts'), 'utf8');
+  const traySource = fs.readFileSync(path.join(webRoot, 'features/formats/visualizer/VisualizerEditTray.tsx'), 'utf8');
+  const canvasSource = fs.readFileSync(path.join(webRoot, 'features/render/AdSceneCanvas.tsx'), 'utf8');
+  const remotionSource = fs.readFileSync(path.join(webRoot, 'features/render/AdSceneRemotion.tsx'), 'utf8');
+
+  assert.match(stageSource, /visualizerFormat\.EditTray/);
+  assert.match(formatSource, /id: 'visualizer'/);
+  assert.match(traySource, /accept="image\/\*"/);
+  assert.match(traySource, /headlineColor/);
+  assert.match(traySource, /barCount/);
+  assert.match(canvasSource, /selectedElement/);
+  assert.match(canvasSource, /onToggleLock/);
+  assert.match(canvasSource, /ad-scene-element-visualizer/);
+  assert.match(canvasSource, /headlineColor/);
+  assert.match(canvasSource, /visualizerBarCount/);
+  assert.match(remotionSource, /headlineColor/);
+  assert.match(remotionSource, /visualizerBarCount/);
 });
 
 test('export panel explains render progress without fake precision', () => {

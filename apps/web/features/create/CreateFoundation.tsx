@@ -2,17 +2,14 @@
 
 import { FormEvent, useEffect, useRef, useReducer, useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
-import { Globe2, Loader2, Lock, Wand2 } from 'lucide-react';
 import { api } from '@/convex/_generated/api';
-import { Button } from '@/components/ui/button';
 import { AudioOptionsPanel, type AudioPanelStatus } from '@/features/audio/AudioOptionsPanel';
 import { scriptCacheMatches, type DialogueScript } from '@/features/audio/dialogueScripts';
 import { createUploadedAudioScenePatch } from '@/features/audio/uploadedAudio';
 import { useStoredAudioUrlRefresh } from '@/features/audio/useStoredAudioUrlRefresh';
-import { AdSceneCanvas } from '@/features/render/AdSceneCanvas';
 import type { ResearchQuality } from '@/features/research/researchQuality';
 import type { WebsiteResearch } from '@/features/research/websiteResearch';
-import { getAdSceneBrandKey, type AdScene, type AdSceneLayoutElement } from './scene';
+import { getAdSceneBrandKey, type AdScene, type AdSceneCreative, type AdSceneLayoutElement } from './scene';
 import { ogToolScene } from './fixtures';
 import { reduceAdScene } from './sceneReducer';
 import { createCreativeReroll } from './creativeReroll';
@@ -20,8 +17,8 @@ import { useSpacebarReroll } from './useSpacebarReroll';
 import { SavedDesignsPanel } from './SavedDesignsPanel';
 import { ExportPanel } from './ExportPanel';
 import { CreativeBriefPanel } from './CreativeBriefPanel';
-import { SpacebarRerollPrompt } from './SpacebarRerollPrompt';
-import { CanvasGuidesToggle } from './CanvasGuidesToggle';
+import { CreateCanvasStage } from './CreateCanvasStage';
+import { WebsiteSceneForm } from './WebsiteSceneForm';
 import { createSavedDesign, loadSavedDesign, type SavedDesign } from './sceneAdapters';
 import { sceneHasSavedSnapshot } from './savedDesigns';
 import { getOrCreateAnonymousSessionId } from './anonymousSession';
@@ -57,6 +54,7 @@ export function CreateFoundation() {
   const [audioPanelFocusTick, setAudioPanelFocusTick] = useState(0);
   const [rerollTick, setRerollTick] = useState(0);
   const [showGuides, setShowGuides] = useState(false);
+  const [selectedElement, setSelectedElement] = useState<AdSceneLayoutElement | null>(null);
   const audioPanelRef = useRef<HTMLDivElement | null>(null);
 
   const resetAudioPanel = (nextSceneId: string) => {
@@ -156,6 +154,24 @@ export function CreateFoundation() {
 
   const moveCanvasElement = (element: AdSceneLayoutElement, x: number, y: number) => {
     dispatch({ type: 'moveLayoutElement', element, x, y });
+    clearExportResults();
+  };
+
+  const editCanvasCreative = (
+    creative: Partial<Pick<AdSceneCreative, 'headline' | 'headlineColor' | 'accentColor'>>,
+    visualizer?: Partial<AdSceneCreative['visualizer']>,
+  ) => {
+    dispatch({ type: 'editCreative', creative, visualizer });
+    clearExportResults();
+  };
+
+  const replaceCanvasLogo = (logoUrl: string | null) => {
+    dispatch({ type: 'replaceLogo', logoUrl });
+    clearExportResults();
+  };
+
+  const toggleSceneLock = (field: keyof AdScene['locks']) => {
+    dispatch({ type: 'setLock', field, locked: !scene.locks[field] });
     clearExportResults();
   };
 
@@ -401,50 +417,15 @@ export function CreateFoundation() {
             </p>
           </div>
 
-          <form
-            className="min-w-0 rounded-[26px] border border-slate-200 bg-white p-4 shadow-[0_24px_70px_rgba(15,23,42,0.10)]"
+          <WebsiteSceneForm
+            error={error}
+            headlineLocked={scene.locks.headline}
+            status={status}
+            websiteUrl={websiteUrl}
             onSubmit={generateScene}
-          >
-            <label className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
-              Website
-            </label>
-            <div className="mt-2 flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-3">
-              <Globe2 className="h-4 w-4 shrink-0 text-slate-400" />
-              <input
-                value={websiteUrl}
-                onChange={(event) => setWebsiteUrl(event.target.value)}
-                className="min-w-0 flex-1 bg-transparent text-sm font-black text-slate-950 outline-none"
-                placeholder="https://yourbrand.com"
-              />
-            </div>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Button type="submit" disabled={status === 'researching'}>
-                {status === 'researching' ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Wand2 className="h-4 w-4" />
-                )}
-                {status === 'researching' ? 'Reading website' : 'Generate ad scene'}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => dispatch({
-                  type: 'setLock',
-                  field: 'headline',
-                  locked: !scene.locks.headline,
-                })}
-              >
-                <Lock className="h-4 w-4" />
-                {scene.locks.headline ? 'Unlock headline' : 'Lock headline'}
-              </Button>
-            </div>
-            {error && (
-              <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-black text-red-700">
-                {error}
-              </p>
-            )}
-          </form>
+            onToggleHeadlineLock={() => toggleSceneLock('headline')}
+            onWebsiteUrlChange={setWebsiteUrl}
+          />
 
           <SavedDesignsPanel
             currentSceneSaved={currentSceneSaved}
@@ -485,11 +466,21 @@ export function CreateFoundation() {
           <CreativeBriefPanel scene={scene} research={research} quality={quality} />
         </section>
 
-        <section className="min-w-0">
-          <AdSceneCanvas scene={scene} rerollTick={rerollTick} onAddAudio={openAudioPanel} onMoveElement={moveCanvasElement} showGuides={showGuides} />
-          <CanvasGuidesToggle showGuides={showGuides} onToggle={() => setShowGuides((visible) => !visible)} />
-          <SpacebarRerollPrompt onReroll={rerollCanvas} />
-        </section>
+        <CreateCanvasStage
+          scene={scene}
+          rerollTick={rerollTick}
+          selectedElement={selectedElement}
+          showGuides={showGuides}
+          onAddAudio={openAudioPanel}
+          onClearSelection={() => setSelectedElement(null)}
+          onEditCreative={editCanvasCreative}
+          onMoveElement={moveCanvasElement}
+          onReplaceLogo={replaceCanvasLogo}
+          onReroll={rerollCanvas}
+          onSelectElement={setSelectedElement}
+          onToggleGuides={() => setShowGuides((visible) => !visible)}
+          onToggleLock={toggleSceneLock}
+        />
       </div>
     </main>
   );

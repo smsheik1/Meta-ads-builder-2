@@ -146,6 +146,23 @@ await test('Firecrawl primary research fails when not configured', async () => {
   );
 });
 
+await test('Firecrawl timeout errors do not leak raw abort messages', async () => {
+  await assert.rejects(
+    () => fetchResearchWithFirecrawl('ogtool.com', {
+      apiKey: 'test-firecrawl-key',
+      skipNetworkGuard: true,
+      fetcher: async () => {
+        throw new DOMException('This operation was aborted', 'AbortError');
+      },
+    }),
+    (error) => (
+      error instanceof Error &&
+      /Firecrawl took too long/.test(error.message) &&
+      !/This operation was aborted/.test(error.message)
+    ),
+  );
+});
+
 await test('OpenRouter copy generation skips without a key and uses receipt fallback', async () => {
   const research = researchFrom(strongHtml);
   const result = await generateAdCopy(research, { apiKey: '' });
@@ -194,6 +211,21 @@ await test('OpenRouter copy generation uses injected JSON without live API calls
 
   assert.equal(result.providerStatus.status, 'used');
   assert.equal(result.copy.headline, 'Own the AI answer');
+});
+
+await test('OpenRouter timeout status does not expose raw abort wording', async () => {
+  const research = researchFrom(strongHtml);
+  const result = await generateAdCopy(research, {
+    apiKey: 'test-openrouter-key',
+    model: 'test/model',
+    fetcher: async () => {
+      throw new DOMException('This operation was aborted', 'AbortError');
+    },
+  });
+
+  assert.equal(result.providerStatus.status, 'failed');
+  assert.match(result.providerStatus.reason, /OpenRouter took too long/);
+  assert.doesNotMatch(result.providerStatus.reason, /This operation was aborted/);
 });
 
 await test('receipt copy can drive the generated AdScene without audio side effects', async () => {
