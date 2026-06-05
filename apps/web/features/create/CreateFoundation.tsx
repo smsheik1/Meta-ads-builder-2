@@ -1,5 +1,4 @@
 'use client';
-
 import { FormEvent, useEffect, useRef, useReducer, useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
@@ -20,13 +19,16 @@ import { ExportPanel } from './ExportPanel';
 import { CreativeBriefPanel } from './CreativeBriefPanel';
 import { CreateHeroCopy } from './CreateHeroCopy';
 import { CreateCanvasStage } from './CreateCanvasStage';
+import { LegacyCreateDesktopShell } from './LegacyCreateDesktopShell';
 import { WebsiteSceneForm } from './WebsiteSceneForm';
 import { createSavedDesign, loadSavedDesign, type SavedDesign } from './sceneAdapters';
 import { sceneHasSavedSnapshot } from './savedDesigns';
 import { getOrCreateAnonymousSessionId } from './anonymousSession';
 import { useGenerationFeedback } from './useGenerationFeedback';
-import type { AudioScriptsResponse, CreateAudioResponse, CreateSceneResponse, RenderSceneTicketResponse, ShareSceneResponse } from './apiResponses';
+import type { AudioScriptsResponse, CreateAudioResponse, CreateSceneResponse, ShareSceneResponse } from './apiResponses';
 import { requestCreateScene } from './createSceneRequest';
+import { requestRenderSceneDownload } from './requestRenderSceneDownload';
+import { startBrowserDownload } from './startBrowserDownload';
 
 export function CreateFoundation() {
   const [scene, dispatch] = useReducer(reduceAdScene, ogToolScene);
@@ -56,7 +58,6 @@ export function CreateFoundation() {
   const [selectedElement, setSelectedElement] = useState<AdSceneLayoutElement | null>(null);
   const [lastAdModel, setLastAdModel] = useState('auto');
   const audioPanelRef = useRef<HTMLDivElement | null>(null);
-
   const resetAudioPanel = (nextSceneId: string) => {
     setScriptOptions([]);
     setScriptSceneId(nextSceneId);
@@ -71,7 +72,6 @@ export function CreateFoundation() {
     setShareUrl('');
     setShareError('');
   };
-
   const generateScene = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const adModel = String(new FormData(event.currentTarget).get('adModel') || 'auto');
@@ -99,7 +99,6 @@ export function CreateFoundation() {
       setStatus('error');
     }
   };
-
   const convexSavedDesigns = useQuery(api.savedDesigns.list, sessionId ? { sessionId } : 'skip') as SavedDesign[] | undefined;
   const upsertSavedDesignMutation = useMutation(api.savedDesigns.upsert);
   const deleteSavedDesignMutation = useMutation(api.savedDesigns.remove);
@@ -115,9 +114,7 @@ export function CreateFoundation() {
     feedbackStatus,
     submitGenerationFeedback,
   } = useGenerationFeedback({ adModel: lastAdModel, scene, sessionId });
-
   useStoredAudioUrlRefresh(scene, dispatch);
-
   useEffect(() => {
     try {
       setSessionId(getOrCreateAnonymousSessionId(window.localStorage));
@@ -254,20 +251,10 @@ export function CreateFoundation() {
     setExportDownloadUrl('');
 
     try {
-      const response = await fetch('/api/render-scene-ticket', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ scene }),
-      });
-      const payload = await response.json() as RenderSceneTicketResponse;
-
-      if (!response.ok || !payload.downloadUrl) {
-        throw new Error(payload.error || 'Video download failed.');
-      }
-
-      const nextDownloadUrl = `${window.location.origin}${payload.downloadUrl}`;
+      const nextDownloadUrl = await requestRenderSceneDownload(scene);
       setExportDownloadUrl(nextDownloadUrl);
       setExportStatus('ready');
+      startBrowserDownload(nextDownloadUrl);
     } catch (caught) {
       setExportError(caught instanceof Error ? caught.message : 'Video download failed.');
       setExportStatus('error');
@@ -409,19 +396,33 @@ export function CreateFoundation() {
     }
   };
 
+  const audioPanel = audioPanelOpen ? (
+    <div ref={audioPanelRef} tabIndex={-1} className="col-span-2 scroll-mt-6 outline-none">
+      <AudioOptionsPanel
+        audioError={audioError}
+        audioIntent={audioPanelIntent}
+        audioStatus={audioStatus}
+        scriptOptions={scriptOptions}
+        selectedScriptId={selectedScriptId}
+        onMakeAudio={makeAudio}
+        onNewOptions={() => loadScriptOptions(true)}
+        onSelectScript={setSelectedScriptId}
+        onUploadAudio={uploadAudioFile}
+      />
+    </div>
+  ) : null;
+
   return (
-    <main className="min-h-screen px-5 py-8 md:px-10">
-      <div className="mx-auto grid min-w-0 max-w-6xl grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)]">
-        <section className="flex min-w-0 flex-col justify-center gap-6">
+    <LegacyCreateDesktopShell
+      leftColumn={(
+        <>
           <CreateHeroCopy />
 
           <WebsiteSceneForm
             error={error}
-            headlineLocked={scene.locks.headline}
             status={status}
             websiteUrl={websiteUrl}
             onSubmit={generateScene}
-            onToggleHeadlineLock={() => toggleSceneLock('headline')}
             onWebsiteUrlChange={setWebsiteUrl}
           />
 
@@ -434,37 +435,9 @@ export function CreateFoundation() {
             onLoadDesign={openSavedDesign}
             onSaveDesign={saveCurrentDesign}
           />
-
-          <ExportPanel
-            exportDownloadUrl={exportDownloadUrl}
-            exportError={exportError}
-            exportStatus={exportStatus}
-            shareError={shareError}
-            shareStatus={shareStatus}
-            shareUrl={shareUrl}
-            onCreateShareLink={createShareLink}
-            onDownloadVideo={downloadVideo}
-          />
-
-          {audioPanelOpen && (
-            <div ref={audioPanelRef} tabIndex={-1} className="scroll-mt-6 outline-none">
-              <AudioOptionsPanel
-                audioError={audioError}
-                audioIntent={audioPanelIntent}
-                audioStatus={audioStatus}
-                scriptOptions={scriptOptions}
-                selectedScriptId={selectedScriptId}
-                onMakeAudio={makeAudio}
-                onNewOptions={() => loadScriptOptions(true)}
-                onSelectScript={setSelectedScriptId}
-                onUploadAudio={uploadAudioFile}
-              />
-            </div>
-          )}
-
-          <CreativeBriefPanel scene={scene} research={research} quality={quality} />
-        </section>
-
+        </>
+      )}
+      canvas={(
         <CreateCanvasStage
           feedbackError={feedbackError}
           feedbackRating={feedbackRating}
@@ -478,7 +451,6 @@ export function CreateFoundation() {
           onEditCreative={editCanvasCreative}
           onEditCaptions={openCaptionTranscriptEditor}
           onMoveElement={moveCanvasElement}
-          onPlatformChange={changePlatform}
           onRateGeneration={submitGenerationFeedback}
           onReplaceLogo={replaceCanvasLogo}
           onReroll={rerollCanvas}
@@ -486,8 +458,30 @@ export function CreateFoundation() {
           onToggleGuides={() => setShowGuides((visible) => !visible)}
           onToggleLock={toggleSceneLock}
         />
-        {captionTranscriptEditor}
-      </div>
-    </main>
+      )}
+      rightColumn={(
+        <>
+          <ExportPanel
+            currentSceneSaved={currentSceneSaved}
+            exportDownloadUrl={exportDownloadUrl}
+            exportError={exportError}
+            exportStatus={exportStatus}
+            platform={scene.platform}
+            savedDesignsCount={savedDesigns.length}
+            shareError={shareError}
+            shareStatus={shareStatus}
+            shareUrl={shareUrl}
+            onCreateShareLink={createShareLink}
+            onDownloadVideo={downloadVideo}
+            onPlatformChange={changePlatform}
+            onSaveDesign={saveCurrentDesign}
+          />
+
+          <CreativeBriefPanel scene={scene} research={research} quality={quality} />
+        </>
+      )}
+      audioPanel={audioPanel}
+      captionEditor={captionTranscriptEditor}
+    />
   );
 }

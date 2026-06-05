@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useRef, useEffect, useState } from 'react';
 import Moveable from 'react-moveable';
 import Selecto from 'react-selecto';

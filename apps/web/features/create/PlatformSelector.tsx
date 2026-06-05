@@ -6,6 +6,7 @@ import type { AdPlatform } from './scene';
 import { AD_SCENE_RENDER_SPECS } from '@/features/render/adSceneRender';
 
 type PlatformSelectorProps = {
+  compact?: boolean;
   platform: AdPlatform;
   onPlatformChange: (platform: AdPlatform) => void;
 };
@@ -25,9 +26,34 @@ const PLATFORM_OPTIONS: PlatformOption[] = [
 ];
 
 export function PlatformSelector({
+  compact = false,
   platform,
   onPlatformChange,
 }: PlatformSelectorProps) {
+  if (compact) {
+    const activeOption = PLATFORM_OPTIONS.find((option) => option.value === platform) || PLATFORM_OPTIONS[0];
+    return (
+      <label
+        className="flex h-12 items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-950"
+        data-testid="platform-selector"
+      >
+        <span className="text-slate-600">Preview</span>
+        <select
+          className="min-w-0 bg-transparent text-right font-black text-slate-950 outline-none"
+          value={platform}
+          onChange={(event) => onPlatformChange(event.target.value as AdPlatform)}
+        >
+          {PLATFORM_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <span className="sr-only">{activeOption.meta}</span>
+      </label>
+    );
+  }
+
   return (
     <section
       className="mx-auto mt-4 w-full max-w-[min(100%,32rem)] rounded-[24px] border border-slate-200 bg-white p-2 shadow-[0_18px_48px_rgba(15,23,42,0.08)]"
