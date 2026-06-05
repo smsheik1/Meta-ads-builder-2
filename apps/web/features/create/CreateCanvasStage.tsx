@@ -61,12 +61,12 @@ export function CreateCanvasStage({
   const EditTray = activeFormat.EditTray;
   const renderSpec = getAdSceneRenderSpec(scene.platform);
   const horizontalPlatform = renderSpec.width > renderSpec.height;
-  const canvasShellMaxWidth = horizontalPlatform ? 684 : 454;
+  const canvasShellMaxWidth = horizontalPlatform ? 700 : 470;
 
   return (
     <section className="min-w-0">
       <div
-        className="relative mx-auto w-full pl-10"
+        className="relative mx-auto w-full pl-20"
         style={{ maxWidth: canvasShellMaxWidth }}
         data-testid="canvas-format-shell"
       >
