@@ -14,6 +14,7 @@ type AdSceneCanvasProps = {
   addAudioLabel?: string;
   className?: string;
   onAddAudio?: () => void;
+  rerollTick?: number;
 };
 
 export function AdSceneCanvas({
@@ -21,6 +22,7 @@ export function AdSceneCanvas({
   addAudioLabel = 'Add audio for this ad',
   className = '',
   onAddAudio,
+  rerollTick = 0,
 }: AdSceneCanvasProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioTimeMs, setAudioTimeMs] = useState(0);
@@ -58,7 +60,14 @@ export function AdSceneCanvas({
     <section className={`mx-auto min-w-0 w-full max-w-full self-start rounded-[34px] border border-slate-200 bg-black p-3 shadow-[0_30px_80px_rgba(15,23,42,0.20)] sm:max-w-[390px] ${className}`}>
       <div className="overflow-hidden rounded-[26px] bg-white">
         <div className="flex items-center gap-3 bg-black px-4 py-3 text-white">
-          <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-white text-sm font-black text-slate-950">
+          <div className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-white text-sm font-black text-slate-950">
+            {rerollTick > 0 && !scene.locks.logo && (
+              <span
+                key={`logo-${rerollTick}`}
+                className="wiggly-reroll-shine pointer-events-none absolute inset-0"
+                data-testid="reroll-shine-logo"
+              />
+            )}
             {avatarUrl ? (
               <img
                 src={avatarUrl}
@@ -82,10 +91,26 @@ export function AdSceneCanvas({
           <p className="text-sm font-black uppercase tracking-wide text-slate-950">
             {scene.brand.name}
           </p>
-          <h2 className="text-4xl font-black leading-[1.02] text-slate-950">
-            {scene.creative.headline}
-          </h2>
-          <div className="flex h-20 w-full items-center justify-center gap-1">
+          <div className="relative overflow-hidden rounded-2xl px-2 py-1">
+            {rerollTick > 0 && !scene.locks.headline && (
+              <span
+                key={`headline-${rerollTick}`}
+                className="wiggly-reroll-shine pointer-events-none absolute inset-0"
+                data-testid="reroll-shine-headline"
+              />
+            )}
+            <h2 className="text-4xl font-black leading-[1.02] text-slate-950">
+              {scene.creative.headline}
+            </h2>
+          </div>
+          <div className="relative flex h-20 w-full items-center justify-center gap-1 overflow-hidden rounded-3xl">
+            {rerollTick > 0 && !scene.locks.visualizer && (
+              <span
+                key={`visualizer-${rerollTick}`}
+                className="wiggly-reroll-shine pointer-events-none absolute inset-0"
+                data-testid="reroll-shine-visualizer"
+              />
+            )}
             {Array.from({ length: 21 }).map((_, index) => (
               <span
                 key={index}

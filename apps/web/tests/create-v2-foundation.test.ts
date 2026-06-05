@@ -12,10 +12,12 @@ import {
 import { ogToolScene, redfinScene } from '../features/create/fixtures';
 import { cloneAdScene, deserializeAdScene, serializeAdScene } from '../features/create/scene';
 import { reduceAdScene } from '../features/create/sceneReducer';
+import { createCreativeReroll } from '../features/create/creativeReroll';
 import {
   ANONYMOUS_SESSION_STORAGE_KEY,
   getOrCreateAnonymousSessionId,
 } from '../features/create/anonymousSession';
+import { shouldIgnoreSpacebarRerollElement } from '../features/create/useSpacebarReroll';
 import {
   MAX_SAVED_DESIGNS,
   SAVED_DESIGNS_STORAGE_KEY,
@@ -129,6 +131,43 @@ test('audio updates do not mutate creative state', () => {
   assert.equal(JSON.stringify(updated.creative), beforeCreative);
   assert.equal(updated.audio.status, 'generated');
   assert.equal(updated.audio.captions[0]?.speaker, 'a');
+});
+
+test('local creative reroll changes only creative and unlocked brand art', () => {
+  const withAudio = reduceAdScene(ogToolScene, {
+    type: 'updateAudio',
+    audio: {
+      status: 'generated',
+      url: 'https://example.com/audio.wav',
+      transcript: 'Current brand audio',
+      captions: [],
+      sourceSceneId: ogToolScene.id,
+      scriptId: 'script-1',
+      durationMs: 2000,
+    },
+    now: 106,
+  });
+  const reroll = createCreativeReroll(withAudio, 123);
+  const updated = reduceAdScene(withAudio, {
+    type: 'rerollCreative',
+    creative: reroll,
+    now: 107,
+  });
+
+  assert.notEqual(updated.creative.angleId, withAudio.creative.angleId);
+  assert.notEqual(updated.creative.visualizer.color, withAudio.creative.visualizer.color);
+  assert.deepEqual(updated.audio, withAudio.audio);
+  assert.equal('audio' in reroll, false);
+});
+
+test('spacebar reroll ignores editable controls', () => {
+  assert.equal(shouldIgnoreSpacebarRerollElement('input'), true);
+  assert.equal(shouldIgnoreSpacebarRerollElement('textarea'), true);
+  assert.equal(shouldIgnoreSpacebarRerollElement('select'), true);
+  assert.equal(shouldIgnoreSpacebarRerollElement('button'), true);
+  assert.equal(shouldIgnoreSpacebarRerollElement('div', true), true);
+  assert.equal(shouldIgnoreSpacebarRerollElement('div', false, 'textbox'), true);
+  assert.equal(shouldIgnoreSpacebarRerollElement('div'), false);
 });
 
 test('stale generated audio cannot attach to a different scene', () => {
