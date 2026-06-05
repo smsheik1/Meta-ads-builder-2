@@ -60,15 +60,11 @@ export const upsertSavedDesign = (
   scene: AdScene,
   now = Date.now(),
 ): SavedDesign[] => {
-  const existing = currentDesigns.find((design) => design.scene.id === scene.id);
   const nextDesign = createSavedDesign(
     scene,
     scene.creative.headline,
     now,
-    existing?.id,
   );
-
-  nextDesign.createdAt = existing?.createdAt ?? now;
 
   return [
     nextDesign,

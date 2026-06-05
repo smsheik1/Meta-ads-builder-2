@@ -37,7 +37,7 @@ export const createSavedDesign = (
   scene: AdScene,
   title = scene.creative.headline,
   now = Date.now(),
-  id = `saved-${scene.id}-${now}`,
+  id = `saved-${scene.id}-${scene.updatedAt}-${now}`,
 ): SavedDesign => ({
   id,
   title,

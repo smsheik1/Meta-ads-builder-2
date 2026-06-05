@@ -192,8 +192,7 @@ export function CreateFoundation() {
       return;
     }
 
-    const existing = savedDesigns.find((design) => design.scene.id === scene.id);
-    const design = createSavedDesign(scene, scene.creative.headline, Date.now(), existing?.id);
+    const design = createSavedDesign(scene, scene.creative.headline, Date.now());
 
     void upsertSavedDesignMutation({
       sessionId,

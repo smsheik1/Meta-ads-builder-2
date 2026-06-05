@@ -415,7 +415,7 @@ test('saved design snapshots preserve stored generated audio', () => {
   assert.equal(loaded.audio.mimeType, 'audio/wav');
 });
 
-test('saving the same scene updates the existing saved design in place', () => {
+test('saving a rerolled scene creates a new saved design snapshot', () => {
   const firstSave = upsertSavedDesign([], ogToolScene, 300);
   const changedScene = reduceAdScene(ogToolScene, {
     type: 'rerollCreative',
@@ -424,11 +424,12 @@ test('saving the same scene updates the existing saved design in place', () => {
   });
   const secondSave = upsertSavedDesign(firstSave, changedScene, 400);
 
-  assert.equal(secondSave.length, 1);
-  assert.equal(secondSave[0].id, firstSave[0].id);
-  assert.equal(secondSave[0].createdAt, 300);
+  assert.equal(secondSave.length, 2);
+  assert.notEqual(secondSave[0].id, firstSave[0].id);
+  assert.equal(secondSave[0].createdAt, 400);
   assert.equal(secondSave[0].updatedAt, 400);
   assert.equal(secondSave[0].scene.creative.headline, 'Updated saved headline');
+  assert.equal(secondSave[1].scene.creative.headline, ogToolScene.creative.headline);
 });
 
 test('saved design storage safely parses, sorts, caps, and deletes snapshots', () => {
@@ -514,6 +515,10 @@ test('saved designs use a hover popover instead of a second library surface', ()
   assert.match(panelSource, /onMouseEnter=\{openPopover\}/);
   assert.match(panelSource, /onMouseLeave=\{\(\) => setPopoverOpen\(false\)\}/);
   assert.match(panelSource, /onLoadDesign\(design\)/);
+  assert.match(panelSource, /saved-template-preview/);
+  assert.match(panelSource, /saved-template-card/);
+  assert.match(panelSource, /aspect-\[9\/16\]/);
+  assert.match(panelSource, /bg-gradient-to-b/);
   assert.doesNotMatch(panelSource, /sm:grid-cols-4/);
 });
 
