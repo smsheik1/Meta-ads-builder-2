@@ -23,6 +23,14 @@ export type WebsiteResearch = {
   paragraphs: string[];
   receipts: AdSceneReceipts;
   providerStatus: ResearchProviderStatus[];
+  rawMarkdown?: string;
+  metadata?: Record<string, unknown>;
+  branding?: Record<string, unknown>;
+  imageUrls: string[];
+  socialLinks: string[];
+  reviewCandidates: string[];
+  offerCandidates: string[];
+  audienceCandidates: string[];
 };
 
 type Fetcher = typeof fetch;
@@ -77,6 +85,8 @@ const trimTitle = (title: string, host: string) => {
 const claimPattern = /(\$[\d,.]+|\b\d[\d,.]*(?:\.\d+)?\s*(?:%|percent|days?|weeks?|months?|years?|hours?|calls?|appointments?|leads?|sales|rankings?|mentions?|citations?|revenue|customers?|homes?|listings?)\b)/i;
 const momentPattern = /\b(tired of|stuck|struggle|miss|missing|losing|waste|waiting|before|after|when|while|because|need to|trying to|want to|can't|cannot|compare|choose|buyers|customers|owners|teams)\b/i;
 const proofPattern = /\b(review|testimonial|customer|client|founder|owner|manager|said|says|case study|result|generated|ranked|stars?)\b/i;
+const offerPattern = /\b(platform|service|software|tool|managed|campaigns?|optimization|delivery|product|products?|solution|book|buy|shop|pricing|free trial)\b/i;
+const audiencePattern = /\b(for|built for|made for|helps|serves)\s+.{8,90}|\b(operators?|founders?|teams?|brands?|customers?|buyers?|sellers?|owners?|marketers?|agencies|creators|shoppers|patients|clients)\b/i;
 
 const pickReceiptLines = (lines: string[], pattern: RegExp, maxItems: number, maxLength = 240) => (
   unique(lines.filter((line) => pattern.test(line)).map((line) => cleanText(line, maxLength))).slice(0, maxItems)
@@ -170,6 +180,14 @@ export const extractWebsiteResearch = ({
     return /\blogo|brandmark|wordmark\b/.test(signature);
   });
   const logoUrl = resolveMaybeUrl(logoImage ? $(logoImage).attr('src') : undefined, resolvedFinalUrl);
+  const imageUrls = unique($('img[src]').toArray()
+    .map((element) => resolveMaybeUrl($(element).attr('src'), resolvedFinalUrl) || '')
+    .filter(Boolean))
+    .slice(0, 16);
+  const socialLinks = unique($('a[href]').toArray()
+    .map((element) => resolveMaybeUrl($(element).attr('href'), resolvedFinalUrl) || '')
+    .filter((href) => /(?:instagram|facebook|linkedin|twitter|x\.com|tiktok|youtube|pinterest)\.com/i.test(href)))
+    .slice(0, 12);
 
   const colorCandidates = [
     meta('meta[name="theme-color"]'),
@@ -180,6 +198,7 @@ export const extractWebsiteResearch = ({
     .slice(0, 6);
 
   const receipts = buildReceipts({ title, description, headings, paragraphs });
+  const evidence = unique([title, description, ...headings, ...paragraphs]);
 
   return {
     websiteUrl: websiteUrl.href,
@@ -200,6 +219,21 @@ export const extractWebsiteResearch = ({
       status: 'used',
       reason: `Read ${headings.length} headings and ${paragraphs.length} page snippets.`,
     }],
+    metadata: {
+      title,
+      description,
+      ogTitle: meta('meta[property="og:title"]'),
+      ogDescription: meta('meta[property="og:description"]'),
+      ogSiteName: meta('meta[property="og:site_name"]'),
+      ogImage: ogImageUrl,
+      themeColor: meta('meta[name="theme-color"]'),
+    },
+    branding: {},
+    imageUrls: unique([logoUrl || '', faviconUrl || '', ogImageUrl || '', ...imageUrls].filter(Boolean)).slice(0, 16),
+    socialLinks,
+    reviewCandidates: pickReceiptLines(evidence, proofPattern, 8),
+    offerCandidates: pickReceiptLines(evidence, offerPattern, 8),
+    audienceCandidates: pickReceiptLines(evidence, audiencePattern, 8),
   };
 };
 

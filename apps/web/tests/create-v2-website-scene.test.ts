@@ -17,6 +17,7 @@ const sampleHtml = `
   <body>
     <header>
       <img src="/logo.png" alt="OGTool logo" />
+      <a href="https://www.linkedin.com/company/ogtool">LinkedIn</a>
     </header>
     <main>
       <h1>ChatGPT Mentions in 14 Days</h1>
@@ -24,6 +25,8 @@ const sampleHtml = `
       <p>First ChatGPT mention in 14 days for a D2C brand after Reddit visibility work.</p>
       <p>D2C operators are tired of paying for attention while competitors show up in trusted AI answers first.</p>
       <p>Customer result: first ranking in 14 days and $88k tracked in two months.</p>
+      <p>Built for D2C operators and growth teams that need managed Reddit visibility campaigns.</p>
+      <p>Review from Mina, founder: OGTool helped us get cited inside ChatGPT answers.</p>
     </main>
   </body>
 </html>
@@ -76,6 +79,12 @@ await test('extracts brand research and receipts from HTML', () => {
   assert.equal(research.faviconUrl, 'https://ogtool.com/favicon.ico');
   assert.equal(research.logoUrl, 'https://ogtool.com/logo.png');
   assert.equal(research.colors[0], '#7DD3FC');
+  assert.ok(research.imageUrls.includes('https://ogtool.com/logo.png'));
+  assert.ok(research.socialLinks.includes('https://www.linkedin.com/company/ogtool'));
+  assert.ok(research.reviewCandidates.some((review) => review.includes('Mina')));
+  assert.ok(research.offerCandidates.some((offer) => offer.includes('managed Reddit visibility')));
+  assert.ok(research.audienceCandidates.some((audience) => audience.includes('D2C operators')));
+  assert.equal(research.metadata?.ogSiteName, 'OGTool');
   assert.ok(research.receipts.exactSiteLanguage.includes('ChatGPT Mentions in 14 Days'));
   assert.ok(research.receipts.specificClaims.some((claim) => claim.includes('14 days')));
   assert.ok(research.receipts.buyerMoments.some((moment) => moment.includes('D2C operators')));
