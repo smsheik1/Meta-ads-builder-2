@@ -1,32 +1,31 @@
 'use client';
 
-import { BrainCircuit } from 'lucide-react';
 import { AD_COPY_MODEL_CHOICES, DEFAULT_AD_COPY_MODEL_CHOICE } from '@/features/research/adCopyModels';
 
 export function AdWritingModelSelect() {
   return (
     <div className="mt-4">
       <label
-        className="text-xs font-black uppercase tracking-[0.16em] text-slate-400"
+        className="mb-2 block text-sm font-black text-slate-800"
         htmlFor="ad-writing-model"
       >
         Ad writing model
       </label>
-      <div className="mt-2 flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-3">
-        <BrainCircuit className="h-4 w-4 shrink-0 text-slate-400" />
-        <select
-          id="ad-writing-model"
-          name="adModel"
-          defaultValue={DEFAULT_AD_COPY_MODEL_CHOICE}
-          className="min-w-0 flex-1 appearance-none bg-transparent text-sm font-black text-slate-950 outline-none"
-        >
-          {AD_COPY_MODEL_CHOICES.map((choice) => (
-            <option key={choice.value} value={choice.value}>
-              {choice.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      <select
+        id="ad-writing-model"
+        name="adModel"
+        defaultValue={DEFAULT_AD_COPY_MODEL_CHOICE}
+        className="h-[3.25rem] w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-950 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
+      >
+        {AD_COPY_MODEL_CHOICES.map((choice) => (
+          <option key={choice.value} value={choice.value}>
+            {choice.label}
+          </option>
+        ))}
+      </select>
+      <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
+        Auto is best for users. Pick a model when testing headline quality.
+      </span>
     </div>
   );
 }

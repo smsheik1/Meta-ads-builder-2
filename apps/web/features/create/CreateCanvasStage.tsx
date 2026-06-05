@@ -1,13 +1,12 @@
 'use client';
 
-import type { AdPlatform, AdScene, AdSceneCreative, AdSceneCreativePatch, AdSceneLayoutElement } from './scene';
+import type { AdScene, AdSceneCreative, AdSceneCreativePatch, AdSceneLayoutElement } from './scene';
 import { AdSceneCanvas } from '@/features/render/AdSceneCanvas';
 import { getAdSceneRenderSpec } from '@/features/render/adSceneRender';
 import { ACTIVE_AD_FORMAT_ID, getActiveAdFormat } from '@/features/formats/formatRegistry';
 import { CanvasGuidesToggle } from './CanvasGuidesToggle';
 import { CanvasFormatRail } from './CanvasFormatRail';
 import { GenerationFeedback } from './GenerationFeedback';
-import { PlatformSelector } from './PlatformSelector';
 import { SpacebarRerollPrompt } from './SpacebarRerollPrompt';
 import type { AudioPanelIntent } from '@/features/audio/AudioOptionsPanel';
 import type { GenerationFeedbackRating, GenerationFeedbackStatus } from './generationFeedbackPayload';
@@ -28,7 +27,6 @@ type CreateCanvasStageProps = {
   ) => void;
   onEditCaptions: () => void;
   onMoveElement: (element: AdSceneLayoutElement, x: number, y: number) => void;
-  onPlatformChange: (platform: AdPlatform) => void;
   onRateGeneration: (rating: GenerationFeedbackRating) => void;
   onReplaceLogo: (logoUrl: string | null) => void;
   onReroll: () => void;
@@ -50,7 +48,6 @@ export function CreateCanvasStage({
   onEditCreative,
   onEditCaptions,
   onMoveElement,
-  onPlatformChange,
   onRateGeneration,
   onReplaceLogo,
   onReroll,
@@ -62,12 +59,12 @@ export function CreateCanvasStage({
   const EditTray = activeFormat.EditTray;
   const renderSpec = getAdSceneRenderSpec(scene.platform);
   const horizontalPlatform = renderSpec.width > renderSpec.height;
-  const canvasShellMaxWidth = horizontalPlatform ? 700 : 470;
+  const canvasShellMaxWidth = horizontalPlatform ? 700 : 390;
 
   return (
     <section className="min-w-0">
       <div
-        className="relative mx-auto w-full pl-20"
+        className="relative mx-auto w-full"
         style={{ maxWidth: canvasShellMaxWidth }}
         data-testid="canvas-format-shell"
       >
@@ -100,7 +97,6 @@ export function CreateCanvasStage({
         status={feedbackStatus}
         onRate={onRateGeneration}
       />
-      <PlatformSelector platform={scene.platform} onPlatformChange={onPlatformChange} />
       <CanvasGuidesToggle showGuides={showGuides} onToggle={onToggleGuides} />
       <EditTray
         scene={scene}

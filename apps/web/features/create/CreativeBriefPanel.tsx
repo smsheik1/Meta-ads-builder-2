@@ -25,9 +25,9 @@ export function CreativeBriefPanel({ scene, research, quality }: CreativeBriefPa
     <>
       <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
         <div className="flex items-start justify-between gap-3">
-          <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
-            Creative brief
-          </p>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
+              Creative brief
+            </p>
           <Button
             type="button"
             variant="secondary"

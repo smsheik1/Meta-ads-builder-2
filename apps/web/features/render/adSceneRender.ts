@@ -133,6 +133,13 @@ export const getCaptionColor = (creative: Pick<AdSceneCreative, 'captionColor'>)
   creative.captionColor || '#475569'
 );
 
+const getLegacyIdleVisualizerPercent = (index: number, count: number) => {
+  const center = (count - 1) / 2;
+  const distance = Math.abs(index - center) / Math.max(center, 1);
+
+  return Math.min(92, 24 + (1 - distance) * 58 + ((index % 3) * 7));
+};
+
 export const getVisualizerBarHeight = (
   index: number,
   count: number,
@@ -140,21 +147,15 @@ export const getVisualizerBarHeight = (
   maxHeight = 86,
   visualizer?: Partial<AdSceneCreative['visualizer']>,
 ) => {
-  const centerIndex = (count - 1) / 2;
-  const distance = Math.abs(index - centerIndex);
-  const centerWeight = Math.max(0, 1 - distance / Math.max(1, centerIndex));
-  const motionSettings = visualizer?.motion === 'snappy'
-    ? { speed: 175, swing: 0.42 }
-    : visualizer?.motion === 'smooth'
-      ? { speed: 360, swing: 0.22 }
-      : { speed: 260, swing: 0.32 };
-  const wave = (Math.sin(currentTimeMs / motionSettings.speed + index * 0.52) + 1) / 2;
-  const baseline = clamp(visualizer?.baseline ?? 0.28, 0.16, 0.44);
-  const heightScale = clamp(visualizer?.heightScale ?? 1, 0.72, 1.28);
-  const base = baseline + centerWeight * (0.86 - baseline);
-  const motion = 0.78 + wave * motionSettings.swing;
+  const basePercent = getLegacyIdleVisualizerPercent(index, count);
+  const oldIdlePhase = ((currentTimeMs + index * 28) % 1650) / 1650;
+  const oldIdleTriangle = oldIdlePhase < 0.5 ? oldIdlePhase * 2 : (1 - oldIdlePhase) * 2;
+  const oldIdleScale = 0.66 + oldIdleTriangle * 0.56;
+  const heightScale = clamp(visualizer?.heightScale ?? 1.04, 0.72, 1.34);
+  const baseline = clamp(visualizer?.baseline ?? 0.24, 0.18, 0.48);
+  const normalizedBase = clamp(basePercent / 100, baseline, 0.98);
 
-  return Math.round(maxHeight * heightScale * base * motion);
+  return Math.round(maxHeight * heightScale * normalizedBase * oldIdleScale);
 };
 
 export const createSceneSlug = (scene: AdScene, now = Date.now()) => {

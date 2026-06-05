@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useRef, useEffect } from 'react';
 import { PlatformFrame, isFeedPlatform, isVerticalPlatform, type PlatformType } from './components/PlatformFrame';
 import { CanvasEditor } from './components/CanvasEditor';

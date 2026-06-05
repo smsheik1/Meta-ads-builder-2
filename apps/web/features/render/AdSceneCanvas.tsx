@@ -55,6 +55,7 @@ export function AdSceneCanvas({
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioTimeMs, setAudioTimeMs] = useState(0);
   const [dragging, setDragging] = useState<DragState | null>(null);
+  const [visualizerClockMs, setVisualizerClockMs] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
@@ -62,9 +63,9 @@ export function AdSceneCanvas({
   const renderSpec = getAdSceneRenderSpec(scene.platform);
   const horizontalPlatform = renderSpec.width > renderSpec.height;
   const feedPreviewChrome = scene.platform === 'instagram-feed';
-  const canvasMaxWidthPx = horizontalPlatform ? 620 : 390;
-  const visualizerMaxHeightPx = horizontalPlatform ? 54 : 74;
-  const visualizerBarCount = scene.creative.visualizer.barCount ?? 21;
+  const canvasMaxWidthPx = horizontalPlatform ? 620 : feedPreviewChrome ? 430 : 400;
+  const visualizerMaxHeightPx = horizontalPlatform ? 70 : 112;
+  const visualizerBarCount = scene.creative.visualizer.barCount ?? 41;
   const headlineScale = getHeadlineScale(scene.creative.headline, scene.creative.headlineSize);
   const headlineTextAlign = getHeadlineTextAlign(scene.creative);
   const captionColor = getCaptionColor(scene.creative);
@@ -74,10 +75,10 @@ export function AdSceneCanvas({
   const captionText = playableAudio && (isPlaying || audioTimeMs > 0)
     ? getActiveCaptionText(scene.audio, audioTimeMs)
     : '';
-  const visualizerTimeMs = playableAudio && isPlaying ? audioTimeMs : 0;
+  const visualizerTimeMs = visualizerClockMs + (playableAudio && isPlaying ? audioTimeMs * 0.2 : 0);
   const surfacePaddingClass = horizontalPlatform ? 'px-10' : 'px-8';
   const brandTextClass = horizontalPlatform ? 'text-[9px] leading-none sm:text-sm' : 'text-sm';
-  const visualizerBarWidthClass = horizontalPlatform ? 'w-2 sm:w-3' : 'w-3';
+  const visualizerBarWidthClass = horizontalPlatform ? 'w-2 sm:w-3' : 'w-2';
   const visualizerGapClass = horizontalPlatform ? 'gap-0.5 sm:gap-1' : 'gap-1';
   const surfaceAspectRatio = feedPreviewChrome ? `${renderSpec.width} / ${renderSpec.height}` : undefined;
   const frameAspectRatio = feedPreviewChrome ? undefined : `${renderSpec.width} / ${renderSpec.height}`;
@@ -92,11 +93,31 @@ export function AdSceneCanvas({
   useEffect(() => {
     setIsPlaying(false);
     setAudioTimeMs(0);
+    setVisualizerClockMs(0);
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
   }, [scene.id, scene.audio.url]);
+
+  useEffect(() => {
+    let frameId = 0;
+    let startedAt = 0;
+    let lastPaintAt = 0;
+
+    const tick = (now: number) => {
+      if (!startedAt) startedAt = now;
+      if (now - lastPaintAt >= 1000 / 60) {
+        setVisualizerClockMs(now - startedAt);
+        lastPaintAt = now;
+      }
+      frameId = window.requestAnimationFrame(tick);
+    };
+
+    frameId = window.requestAnimationFrame(tick);
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [scene.id]);
 
   const togglePlayback = async () => {
     if (!playableAudio || !audioRef.current) return;
@@ -230,6 +251,7 @@ export function AdSceneCanvas({
                 lineHeight: getHeadlineLineHeight(scene.creative),
                 overflowWrap: 'break-word',
                 textAlign: headlineTextAlign,
+                textWrap: 'balance',
               }}
             >
               {scene.creative.headline}
@@ -252,7 +274,7 @@ export function AdSceneCanvas({
             {Array.from({ length: visualizerBarCount }).map((_, index) => (
               <span
                 key={index}
-                className={`${visualizerBarWidthClass} rounded-full`}
+                className={`${visualizerBarWidthClass} rounded-full transition-[height] duration-100 ease-linear`}
                 style={{
                   height: getVisualizerBarHeight(
                     index,

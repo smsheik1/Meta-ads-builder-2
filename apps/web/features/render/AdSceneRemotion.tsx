@@ -24,7 +24,7 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
   const hasAudio = isStoredSceneAudio(scene);
   const activeCaption = hasAudio ? getActiveCaptionText(scene.audio, currentTimeMs) : '';
   const isVertical = height > width;
-  const headlineSize = (isVertical ? 94 : 74) * getHeadlineScale(scene.creative.headline, scene.creative.headlineSize);
+  const headlineSize = (isVertical ? 98 : 76) * getHeadlineScale(scene.creative.headline, scene.creative.headlineSize);
   const headlineTextAlign = getHeadlineTextAlign(scene.creative);
   const captionColor = getCaptionColor(scene.creative);
   const contentTop = isVertical ? 150 : 118;
@@ -35,7 +35,7 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
   const contentHeight = height - contentTop - contentBottom;
   const contentBounds = { width: contentWidth, height: contentHeight };
   const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
-  const visualizerBarCount = scene.creative.visualizer.barCount ?? 21;
+  const visualizerBarCount = scene.creative.visualizer.barCount ?? 41;
   const verticalStoryPlatform = scene.platform === 'reels' || scene.platform === 'stories';
   const watermarkStyle = verticalStoryPlatform
     ? {
@@ -162,7 +162,7 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
               key={index}
               style={{
                 width: 22,
-                height: getVisualizerBarHeight(index, visualizerBarCount, currentTimeMs, 146, scene.creative.visualizer),
+                height: getVisualizerBarHeight(index, visualizerBarCount, currentTimeMs, isVertical ? 182 : 150, scene.creative.visualizer),
                 borderRadius: 999,
                 backgroundColor: scene.creative.visualizer.color,
               }}

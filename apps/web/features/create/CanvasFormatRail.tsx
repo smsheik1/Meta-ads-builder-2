@@ -74,7 +74,7 @@ export function CanvasFormatRail({
 
   return (
     <nav
-      className="absolute left-0 top-1/2 z-30 flex -translate-y-1/2 flex-col items-center gap-2 rounded-[24px] border border-slate-200 bg-white/95 p-2 shadow-[0_24px_60px_rgba(15,23,42,0.16)]"
+      className="absolute -left-20 top-1/2 z-30 flex -translate-y-1/2 flex-col items-center gap-2 rounded-[24px] border border-slate-200 bg-white/95 p-2 shadow-[0_24px_60px_rgba(15,23,42,0.16)]"
       aria-label="Ad formats"
       data-testid="canvas-format-rail"
       onMouseEnter={() => setVoiceMenuOpen(true)}

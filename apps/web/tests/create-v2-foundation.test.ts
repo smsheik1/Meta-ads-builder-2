@@ -687,18 +687,20 @@ test('safe guides are preview-only canvas UI', () => {
 test('platform selector updates the canonical scene platform without legacy overlays', () => {
   const createSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
   const stageSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateCanvasStage.tsx'), 'utf8');
+  const exportSource = fs.readFileSync(path.join(webRoot, 'features/create/ExportPanel.tsx'), 'utf8');
   const selectorSource = fs.readFileSync(path.join(webRoot, 'features/create/PlatformSelector.tsx'), 'utf8');
   const canvasSource = fs.readFileSync(path.join(webRoot, 'features/render/AdSceneCanvas.tsx'), 'utf8');
 
   assert.match(createSource, /type: 'setPlatform'/);
   assert.match(createSource, /onPlatformChange=\{changePlatform\}/);
-  assert.match(stageSource, /PlatformSelector/);
+  assert.match(exportSource, /PlatformSelector/);
+  assert.doesNotMatch(stageSource, /PlatformSelector/);
   assert.match(selectorSource, /platform-selector/);
   assert.match(selectorSource, /AD_SCENE_RENDER_SPECS/);
   assert.match(canvasSource, /getAdSceneRenderSpec/);
   assert.match(canvasSource, /aspectRatio/);
   assert.match(canvasSource, /ad-scene-canvas/);
-  assert.doesNotMatch(`${createSource}\n${stageSource}\n${selectorSource}\n${canvasSource}`, /PlatformFrame/);
+  assert.doesNotMatch(`${createSource}\n${stageSource}\n${exportSource}\n${selectorSource}\n${canvasSource}`, /PlatformFrame/);
 });
 
 test('instagram feed preview keeps the creative surface at the feed ratio', () => {
@@ -871,15 +873,15 @@ test('minimal Remotion fixture is wired to AdScene', () => {
   assert.match(sceneSource, /scene: AdScene/);
 });
 
-test('root, create, and create-v2 routes all use the v2 create app', () => {
+test('Next keeps create-v2 as the v2 app and leaves create to the legacy app', () => {
   const rootPage = fs.readFileSync(path.join(webRoot, 'app/page.tsx'), 'utf8');
-  const createPage = fs.readFileSync(path.join(webRoot, 'app/create/page.tsx'), 'utf8');
+  const createPagePath = path.join(webRoot, 'app/create/page.tsx');
   const createV2Page = fs.readFileSync(path.join(webRoot, 'app/create-v2/page.tsx'), 'utf8');
 
-  assert.match(rootPage, /CreateFoundation/);
-  assert.match(createPage, /CreateFoundation/);
+  assert.doesNotMatch(rootPage, /CreateFoundation/);
+  assert.match(rootPage, /href="\/create-v2"/);
+  assert.equal(fs.existsSync(createPagePath), false);
   assert.match(createV2Page, /CreateFoundation/);
-  assert.doesNotMatch(rootPage, /Open create v2|foundation route|placeholder/i);
 });
 
 test('current create surface does not expose migration scaffolding copy', () => {
@@ -891,7 +893,8 @@ test('current create surface does not expose migration scaffolding copy', () => 
 
   assert.doesNotMatch(combined, /Create v2 foundation|frozen legacy app|Clean-room Wiggly create foundation/);
   assert.doesNotMatch(layoutSource, /Wiggly Create V2/);
-  assert.match(heroSource, /one clean video ad scene you can save, share, and download/);
+  assert.match(heroSource, /Make video ads without learning video editing/);
+  assert.match(heroSource, /Wiggly reads the site, finds the selling angle/);
 });
 
 test('ad writing model selector is wired to scene generation only', () => {

@@ -26,7 +26,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    const render = await renderAdSceneToMp4(await refreshSceneAudioUrl(body.scene));
+    const render = await renderAdSceneToMp4(await refreshSceneAudioUrl(body.scene), {
+      signal: request.signal,
+      timeoutMs: 105_000,
+    });
     const ticket = await createRenderSceneTicket(render.snapshot.scene, render.file);
 
     return NextResponse.json({
