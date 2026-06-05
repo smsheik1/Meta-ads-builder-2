@@ -218,6 +218,21 @@ await test('download rendering stays clean while share uses preview chrome', asy
   assert.doesNotMatch(remotionSource, /feed-preview-footer|1,284 likes|MessageCircle|Bookmark/);
 });
 
+await test('made with Wiggly watermark is permanent inside preview and download graphics', async () => {
+  const sceneSource = await fs.readFile(path.join(process.cwd(), 'features', 'create', 'scene.ts'), 'utf8');
+  const canvasSource = await fs.readFile(path.join(process.cwd(), 'features', 'render', 'AdSceneCanvas.tsx'), 'utf8');
+  const remotionSource = await fs.readFile(path.join(process.cwd(), 'features', 'render', 'AdSceneRemotion.tsx'), 'utf8');
+  const renderSource = await fs.readFile(path.join(process.cwd(), 'features', 'render', 'adSceneRender.ts'), 'utf8');
+
+  assert.match(renderSource, /WIGGLY_WATERMARK_TEXT = 'Made with Wiggly'/);
+  assert.match(canvasSource, /made-with-wiggly-watermark/);
+  assert.match(canvasSource, /pointer-events-none/);
+  assert.match(canvasSource, /WIGGLY_WATERMARK_TEXT/);
+  assert.match(remotionSource, /made-with-wiggly-watermark/);
+  assert.match(remotionSource, /WIGGLY_WATERMARK_TEXT/);
+  assert.doesNotMatch(sceneSource, /watermark/i);
+});
+
 await test('render tickets store a frozen scene for normal attachment downloads', async () => {
   const ticket = await createRenderSceneTicket(
     withGeneratedAudio(ogToolScene),

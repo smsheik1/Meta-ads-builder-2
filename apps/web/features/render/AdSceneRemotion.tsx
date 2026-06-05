@@ -6,6 +6,7 @@ import {
   getHeadlineScale,
   getVisualizerBarHeight,
   isStoredSceneAudio,
+  WIGGLY_WATERMARK_TEXT,
 } from './adSceneRender';
 import { getRemotionLayoutStyle } from './adSceneLayout';
 
@@ -181,6 +182,42 @@ export function AdSceneRemotion({ scene }: AdSceneRemotionProps) {
             {activeCaption}
           </div>
         ) : null}
+        <div
+          data-testid="made-with-wiggly-watermark"
+          style={{
+            position: 'absolute',
+            right: isVertical ? 22 : 18,
+            bottom: isVertical ? 22 : 18,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            borderRadius: 999,
+            border: '2px solid rgba(15, 23, 42, 0.10)',
+            backgroundColor: 'rgba(255, 255, 255, 0.90)',
+            color: '#334155',
+            padding: isVertical ? '12px 18px' : '9px 14px',
+            fontWeight: 900,
+            fontSize: isVertical ? 22 : 17,
+            boxShadow: '0 28px 70px rgba(15, 23, 42, 0.14)',
+          }}
+        >
+          <span
+            style={{
+              width: isVertical ? 30 : 24,
+              height: isVertical ? 30 : 24,
+              borderRadius: 999,
+              backgroundColor: '#020617',
+              color: '#fff',
+              display: 'grid',
+              placeItems: 'center',
+              fontSize: isVertical ? 17 : 13,
+              lineHeight: 1,
+            }}
+          >
+            W
+          </span>
+          <span>{WIGGLY_WATERMARK_TEXT}</span>
+        </div>
       </div>
     </AbsoluteFill>
   );
