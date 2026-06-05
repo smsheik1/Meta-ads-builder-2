@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
-import { AudioLines, Captions, Lock, Pause, Play, Unlock } from 'lucide-react';
+import { AudioLines, Bookmark, Captions, Heart, Lock, MessageCircle, Pause, Play, Send, Unlock } from 'lucide-react';
 import type { AdScene, AdSceneLayoutElement } from '@/features/create/scene';
 import {
   getActiveCaptionText,
@@ -56,6 +56,7 @@ export function AdSceneCanvas({
   const playableAudio = isStoredSceneAudio(scene);
   const renderSpec = getAdSceneRenderSpec(scene.platform);
   const horizontalPlatform = renderSpec.width > renderSpec.height;
+  const feedPreviewChrome = scene.platform === 'instagram-feed';
   const canvasMaxWidthPx = horizontalPlatform ? 620 : 390;
   const visualizerMaxHeightPx = horizontalPlatform ? 54 : 74;
   const visualizerBarCount = scene.creative.visualizer.barCount ?? 21;
@@ -72,6 +73,8 @@ export function AdSceneCanvas({
   const brandTextClass = horizontalPlatform ? 'text-[9px] leading-none sm:text-sm' : 'text-sm';
   const visualizerBarWidthClass = horizontalPlatform ? 'w-2 sm:w-3' : 'w-3';
   const visualizerGapClass = horizontalPlatform ? 'gap-0.5 sm:gap-1' : 'gap-1';
+  const surfaceAspectRatio = feedPreviewChrome ? `${renderSpec.width} / ${renderSpec.height}` : undefined;
+  const frameAspectRatio = feedPreviewChrome ? undefined : `${renderSpec.width} / ${renderSpec.height}`;
 
   useEffect(() => {
     setIsPlaying(false);
@@ -166,7 +169,7 @@ export function AdSceneCanvas({
     >
       <div
         className="flex flex-col overflow-hidden rounded-[26px] bg-white"
-        style={{ aspectRatio: `${renderSpec.width} / ${renderSpec.height}` }}
+        style={{ aspectRatio: frameAspectRatio }}
       >
         <div className={`flex shrink-0 items-center gap-3 bg-black text-white ${headerPaddingClass}`}>
           <div className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-white text-sm font-black text-slate-950">
@@ -195,8 +198,11 @@ export function AdSceneCanvas({
 
         <div
           ref={surfaceRef}
-          className={`relative min-h-0 flex-1 text-center ${surfacePaddingClass}`}
-          style={{ backgroundColor: scene.creative.backgroundColor }}
+          className={`relative min-h-0 text-center ${feedPreviewChrome ? '' : 'flex-1'} ${surfacePaddingClass}`}
+          style={{
+            aspectRatio: surfaceAspectRatio,
+            backgroundColor: scene.creative.backgroundColor,
+          }}
           onPointerMove={updateDrag}
           onPointerUp={() => setDragging(null)}
           onPointerCancel={() => setDragging(null)}
@@ -329,6 +335,23 @@ export function AdSceneCanvas({
             </div>
           )}
         </div>
+        {feedPreviewChrome && (
+          <div className="shrink-0 bg-black px-4 pb-4 pt-3 text-white" data-testid="feed-preview-footer">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Heart className="h-5 w-5" />
+                <MessageCircle className="h-5 w-5" />
+                <Send className="h-5 w-5" />
+              </div>
+              <Bookmark className="h-5 w-5" />
+            </div>
+            <p className="mt-2 text-xs font-black">1,284 likes</p>
+            <p className="mt-1 line-clamp-2 text-xs font-semibold leading-4 text-white/90">
+              <span className="font-black">{scene.brand.name}</span> {scene.creative.subheadline}
+            </p>
+            <p className="mt-1 text-[11px] font-semibold text-white/45">SPONSORED</p>
+          </div>
+        )}
       </div>
       {playableAudio && (
         <audio
