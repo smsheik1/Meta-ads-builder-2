@@ -21,6 +21,7 @@ import { SavedDesignsPanel } from './SavedDesignsPanel';
 import { ExportPanel } from './ExportPanel';
 import { CreativeBriefPanel } from './CreativeBriefPanel';
 import { SpacebarRerollPrompt } from './SpacebarRerollPrompt';
+import { CanvasGuidesToggle } from './CanvasGuidesToggle';
 import { createSavedDesign, loadSavedDesign, type SavedDesign } from './sceneAdapters';
 import { sceneHasSavedSnapshot } from './savedDesigns';
 import { getOrCreateAnonymousSessionId } from './anonymousSession';
@@ -55,6 +56,7 @@ export function CreateFoundation() {
   const [shareError, setShareError] = useState('');
   const [audioPanelFocusTick, setAudioPanelFocusTick] = useState(0);
   const [rerollTick, setRerollTick] = useState(0);
+  const [showGuides, setShowGuides] = useState(false);
   const audioPanelRef = useRef<HTMLDivElement | null>(null);
 
   const resetAudioPanel = (nextSceneId: string) => {
@@ -484,12 +486,8 @@ export function CreateFoundation() {
         </section>
 
         <section className="min-w-0">
-          <AdSceneCanvas
-            scene={scene}
-            rerollTick={rerollTick}
-            onAddAudio={openAudioPanel}
-            onMoveElement={moveCanvasElement}
-          />
+          <AdSceneCanvas scene={scene} rerollTick={rerollTick} onAddAudio={openAudioPanel} onMoveElement={moveCanvasElement} showGuides={showGuides} />
+          <CanvasGuidesToggle showGuides={showGuides} onToggle={() => setShowGuides((visible) => !visible)} />
           <SpacebarRerollPrompt onReroll={rerollCanvas} />
         </section>
       </div>

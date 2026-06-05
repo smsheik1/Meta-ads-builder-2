@@ -17,6 +17,7 @@ type AdSceneCanvasProps = {
   onAddAudio?: () => void;
   onMoveElement?: (element: AdSceneLayoutElement, x: number, y: number) => void;
   rerollTick?: number;
+  showGuides?: boolean;
 };
 
 type DragState = {
@@ -34,6 +35,7 @@ export function AdSceneCanvas({
   onAddAudio,
   onMoveElement,
   rerollTick = 0,
+  showGuides = false,
 }: AdSceneCanvasProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioTimeMs, setAudioTimeMs] = useState(0);
@@ -226,6 +228,18 @@ export function AdSceneCanvas({
               </button>
             ) : null}
           </div>
+          {showGuides && (
+            <div
+              className="pointer-events-none absolute inset-0 z-40 grid place-items-center"
+              data-testid="scene-safe-guides"
+            >
+              <div className="relative aspect-square w-full border border-dashed border-slate-950/30 bg-slate-950/[0.025] shadow-[0_0_0_999px_rgba(15,23,42,0.04)]">
+                <span className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-slate-500 shadow-sm">
+                  Feed safe area
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       {playableAudio && (
