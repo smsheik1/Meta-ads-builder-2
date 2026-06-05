@@ -36,7 +36,7 @@ export function CreativeBriefPanel({ scene, research, quality }: CreativeBriefPa
             data-testid="brand-evidence-open"
           >
             <SearchCheck className="h-4 w-4" />
-            Evidence
+            Full brand dump
           </Button>
         </div>
         <dl className="mt-4 space-y-4">
