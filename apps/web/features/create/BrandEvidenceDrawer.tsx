@@ -21,6 +21,8 @@ type EvidenceListProps = {
 
 const nonEmpty = (items: string[]) => items.map((item) => item.trim()).filter(Boolean);
 
+const toDebugJson = (value: unknown) => JSON.stringify(value, null, 2);
+
 function EvidenceList({ emptyLabel, items, title }: EvidenceListProps) {
   const visibleItems = nonEmpty(items);
 
@@ -75,6 +77,11 @@ export function BrandEvidenceDrawer({
   const images = imageCandidates(research, scene);
   const colors = research?.colors.length ? research.colors : [scene.creative.accentColor, scene.creative.backgroundColor];
   const host = research?.host || new URL(scene.brand.websiteUrl).host;
+  const fullResearchDump = {
+    research,
+    quality,
+    sceneBrand: scene.brand,
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4">
@@ -251,6 +258,15 @@ export function BrandEvidenceDrawer({
                 <h3 className="text-sm font-black uppercase tracking-wide text-slate-500">Page snippets</h3>
                 <pre className="mt-3 max-h-72 overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-sm font-bold leading-6 text-white">
                   {(research?.paragraphs.slice(0, 12) || []).join('\n\n') || 'No page snippets available.'}
+                </pre>
+              </section>
+              <section>
+                <h3 className="text-sm font-black uppercase tracking-wide text-slate-500">Full structured dump</h3>
+                <pre
+                  className="mt-3 max-h-96 overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs font-bold leading-5 text-white"
+                  data-testid="full-structured-brand-dump"
+                >
+                  {toDebugJson(fullResearchDump)}
                 </pre>
               </section>
             </div>

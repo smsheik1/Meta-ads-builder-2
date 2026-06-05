@@ -741,6 +741,19 @@ test('visualizer rail routes voice actions into the existing audio panel only', 
   assert.doesNotMatch(railSource, /fetch\(|create-audio|create-audio-scripts|createUploadedAudioScenePatch/);
 });
 
+test('creative brief exposes the full brand dump for development debugging', () => {
+  const briefSource = fs.readFileSync(path.join(webRoot, 'features/create/CreativeBriefPanel.tsx'), 'utf8');
+  const dumpSource = fs.readFileSync(path.join(webRoot, 'features/create/BrandEvidenceDrawer.tsx'), 'utf8');
+
+  assert.match(briefSource, /Full brand dump/);
+  assert.match(dumpSource, /Full brand dump/);
+  assert.match(dumpSource, /full-structured-brand-dump/);
+  assert.match(dumpSource, /toDebugJson\(fullResearchDump\)/);
+  assert.match(dumpSource, /research,/);
+  assert.match(dumpSource, /quality,/);
+  assert.match(dumpSource, /sceneBrand: scene\.brand/);
+});
+
 test('caption transcript editor is wired to the v2 canvas scene', () => {
   const createSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
   const stageSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateCanvasStage.tsx'), 'utf8');
