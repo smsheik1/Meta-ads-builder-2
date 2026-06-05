@@ -1,13 +1,7 @@
 import { useEffect } from 'react';
-import type { Dispatch } from 'react';
-import type { AdScene } from './scene';
-import type { AdSceneAction } from './sceneReducer';
-import { createCreativeReroll } from './creativeReroll';
 
 type SpacebarRerollOptions = {
-  scene: AdScene;
-  dispatch: Dispatch<AdSceneAction>;
-  onReroll?: () => void;
+  onReroll: () => void;
 };
 
 export const shouldIgnoreSpacebarRerollElement = (
@@ -31,7 +25,7 @@ export const shouldIgnoreSpacebarRerollTarget = (target: EventTarget | null) => 
   );
 };
 
-export const useSpacebarReroll = ({ scene, dispatch, onReroll }: SpacebarRerollOptions) => {
+export const useSpacebarReroll = ({ onReroll }: SpacebarRerollOptions) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== ' ' && event.code !== 'Space') return;
@@ -39,14 +33,10 @@ export const useSpacebarReroll = ({ scene, dispatch, onReroll }: SpacebarRerollO
       if (shouldIgnoreSpacebarRerollTarget(event.target)) return;
 
       event.preventDefault();
-      dispatch({
-        type: 'rerollCreative',
-        creative: createCreativeReroll(scene),
-      });
-      onReroll?.();
+      onReroll();
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dispatch, onReroll, scene]);
+  }, [onReroll]);
 };
