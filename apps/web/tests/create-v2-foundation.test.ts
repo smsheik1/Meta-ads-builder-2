@@ -376,6 +376,17 @@ test('root, create, and create-v2 routes all use the v2 create app', () => {
   assert.doesNotMatch(rootPage, /Open create v2|foundation route|placeholder/i);
 });
 
+test('current create surface does not expose migration scaffolding copy', () => {
+  const layoutSource = fs.readFileSync(path.join(webRoot, 'app/layout.tsx'), 'utf8');
+  const createSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
+  const readmeSource = fs.readFileSync(path.join(webRoot, 'README.md'), 'utf8');
+  const combined = [layoutSource, createSource, readmeSource].join('\n');
+
+  assert.doesNotMatch(combined, /Create v2 foundation|frozen legacy app|Clean-room Wiggly create foundation/);
+  assert.doesNotMatch(layoutSource, /Wiggly Create V2/);
+  assert.match(createSource, /one clean video ad scene you can save, share, and download/);
+});
+
 test('oracle deploy pushes Convex before building the app', () => {
   const deployScript = fs.readFileSync(path.join(repoRoot, 'scripts/deploy-oracle.sh'), 'utf8');
   const deployWorkflow = fs.readFileSync(path.join(repoRoot, '.github/workflows/deploy-oracle.yml'), 'utf8');
