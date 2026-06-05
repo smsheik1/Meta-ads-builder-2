@@ -2101,10 +2101,11 @@ const buildHeuristicBrandBrain = ({
     .replace(/\s*[|–-]\s*.*$/i, '')
     .trim();
   const businessName = title.toLowerCase().includes(domainBrand.toLowerCase()) ? domainBrand : (title || domainBrand);
-  const description = cleanTextField(
+  const rawDescription = cleanTextField(
     page?.description || metadata.description || metadata.ogDescription || researchText,
     220
   );
+  const description = /^(page\s+\d+:|url:|https?:\/\/)/i.test(rawDescription) ? '' : rawDescription;
   const category = description || `${businessName} products and services`;
   const colors = normalizeHexColors(Object.values(brandAssets?.colors || {}));
   const lowerText = `${businessName} ${category} ${researchText}`.toLowerCase();
@@ -2722,9 +2723,13 @@ app.post('/api/research-brand', brandResearchLimiter, billShield('brandResearch'
       brandBrain = { ...brandBrain, receipts: buildBrandReceipts(brandBrain) };
     } catch (error) {
       console.warn('[brand-research] brain_failed', websiteUrl.href, error instanceof Error ? error.message : error);
-      return res.status(502).json({
-        error: 'Wiggly read the website, but the AI brand brief failed. Try again in a moment.',
+      brandBrain = buildHeuristicBrandBrain({
+        websiteUrl,
+        researchText,
+        brandAssets,
+        brandLogoUrl,
       });
+      brandBrain = { ...brandBrain, receipts: buildBrandReceipts(brandBrain) };
     }
 
     if (brandBrainNeedsFallback(brandBrain)) {
