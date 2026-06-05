@@ -723,6 +723,24 @@ test('visualizer format owns editing controls through a small format module', ()
   assert.match(remotionSource, /visualizerBarCount/);
 });
 
+test('visualizer rail routes voice actions into the existing audio panel only', () => {
+  const createSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
+  const stageSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateCanvasStage.tsx'), 'utf8');
+  const railSource = fs.readFileSync(path.join(webRoot, 'features/create/CanvasFormatRail.tsx'), 'utf8');
+  const panelSource = fs.readFileSync(path.join(webRoot, 'features/audio/AudioOptionsPanel.tsx'), 'utf8');
+
+  assert.match(createSource, /audioPanelIntent/);
+  assert.match(createSource, /openAudioPanel = \(intent: AudioPanelIntent = 'make'\)/);
+  assert.match(stageSource, /onMakeVoiceAudio=\{\(\) => onAddAudio\('make'\)\}/);
+  assert.match(stageSource, /onUploadVoiceAudio=\{\(\) => onAddAudio\('upload'\)\}/);
+  assert.match(railSource, /visualizer-voice-menu/);
+  assert.match(railSource, /onMakeVoiceAudio\?\.\(\)/);
+  assert.match(railSource, /onUploadVoiceAudio\?\.\(\)/);
+  assert.match(panelSource, /audioIntent === 'upload'/);
+  assert.match(panelSource, /audioIntent === 'make'/);
+  assert.doesNotMatch(railSource, /fetch\(|create-audio|create-audio-scripts|createUploadedAudioScenePatch/);
+});
+
 test('caption transcript editor is wired to the v2 canvas scene', () => {
   const createSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
   const stageSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateCanvasStage.tsx'), 'utf8');

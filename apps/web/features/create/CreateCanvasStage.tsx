@@ -9,6 +9,7 @@ import { CanvasFormatRail } from './CanvasFormatRail';
 import { GenerationFeedback } from './GenerationFeedback';
 import { PlatformSelector } from './PlatformSelector';
 import { SpacebarRerollPrompt } from './SpacebarRerollPrompt';
+import type { AudioPanelIntent } from '@/features/audio/AudioOptionsPanel';
 import type { GenerationFeedbackRating, GenerationFeedbackStatus } from './generationFeedbackPayload';
 
 type CreateCanvasStageProps = {
@@ -19,7 +20,7 @@ type CreateCanvasStageProps = {
   rerollTick: number;
   selectedElement: AdSceneLayoutElement | null;
   showGuides: boolean;
-  onAddAudio: () => void;
+  onAddAudio: (intent?: AudioPanelIntent) => void;
   onClearSelection: () => void;
   onEditCreative: (
     creative: AdSceneCreativePatch,
@@ -70,7 +71,11 @@ export function CreateCanvasStage({
         style={{ maxWidth: canvasShellMaxWidth }}
         data-testid="canvas-format-shell"
       >
-        <CanvasFormatRail activeFormatId={activeFormat.id} />
+        <CanvasFormatRail
+          activeFormatId={activeFormat.id}
+          onMakeVoiceAudio={() => onAddAudio('make')}
+          onUploadVoiceAudio={() => onAddAudio('upload')}
+        />
         <AdSceneCanvas
           scene={scene}
           rerollTick={rerollTick}

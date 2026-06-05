@@ -6,9 +6,11 @@ import { Button } from '@/components/ui/button';
 import type { DialogueScript } from './dialogueScripts';
 
 export type AudioPanelStatus = 'idle' | 'writing' | 'ready' | 'making' | 'uploading' | 'error';
+export type AudioPanelIntent = 'make' | 'upload';
 
 type AudioOptionsPanelProps = {
   audioError: string;
+  audioIntent: AudioPanelIntent;
   audioStatus: AudioPanelStatus;
   scriptOptions: DialogueScript[];
   selectedScriptId: string;
@@ -20,6 +22,7 @@ type AudioOptionsPanelProps = {
 
 export function AudioOptionsPanel({
   audioError,
+  audioIntent,
   audioStatus,
   scriptOptions,
   selectedScriptId,
@@ -32,6 +35,7 @@ export function AudioOptionsPanel({
   const selectedScript = scriptOptions.find((script) => script.id === selectedScriptId) || scriptOptions[0] || null;
   const busy = audioStatus === 'writing' || audioStatus === 'making' || audioStatus === 'uploading';
   const hasScriptOptions = scriptOptions.length > 0;
+  const uploadFirst = audioIntent === 'upload';
 
   const handleAudioFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -47,8 +51,13 @@ export function AudioOptionsPanel({
             Voice audio
           </p>
           <h3 className="mt-2 text-2xl font-black leading-tight text-slate-950">
-            Add audio to this ad.
+            {audioIntent === 'upload' ? 'Upload audio for this ad.' : 'Make voice audio for this ad.'}
           </h3>
+          <p className="mt-2 text-sm font-bold leading-6 text-slate-500">
+            {audioIntent === 'upload'
+              ? 'Choose a clip you already have, or switch to generated options below.'
+              : 'Write a few voice options, pick one, then generate the final audio.'}
+          </p>
         </div>
         {hasScriptOptions && (
           <Button
@@ -69,11 +78,15 @@ export function AudioOptionsPanel({
         </p>
       )}
 
-      <div className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4">
+      <div className={`mt-5 rounded-2xl border border-dashed p-4 ${
+        uploadFirst
+          ? 'border-slate-300 bg-slate-950 text-white shadow-[0_18px_48px_rgba(15,23,42,0.16)]'
+          : 'border-slate-200 bg-slate-50'
+      }`}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-black text-slate-950">Already have a voice clip?</p>
-            <p className="mt-1 text-xs font-bold text-slate-500">
+            <p className={`text-sm font-black ${uploadFirst ? 'text-white' : 'text-slate-950'}`}>Already have a voice clip?</p>
+            <p className={`mt-1 text-xs font-bold ${uploadFirst ? 'text-white/65' : 'text-slate-500'}`}>
               Upload it here and Wiggly will save it with this ad.
             </p>
           </div>
@@ -97,16 +110,21 @@ export function AudioOptionsPanel({
       </div>
 
       {!hasScriptOptions && audioStatus !== 'writing' && (
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+        <div className={`mt-4 rounded-2xl border p-4 ${
+          audioIntent === 'make'
+            ? 'border-slate-300 bg-slate-950 text-white shadow-[0_18px_48px_rgba(15,23,42,0.16)]'
+            : 'border-slate-200 bg-white'
+        }`}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-black text-slate-950">Want Wiggly to make one?</p>
-              <p className="mt-1 text-xs font-bold text-slate-500">
+              <p className={`text-sm font-black ${audioIntent === 'make' ? 'text-white' : 'text-slate-950'}`}>Want Wiggly to make one?</p>
+              <p className={`mt-1 text-xs font-bold ${audioIntent === 'make' ? 'text-white/65' : 'text-slate-500'}`}>
                 Write voice options first, then choose one to generate audio.
               </p>
             </div>
             <Button
               type="button"
+              variant={audioIntent === 'make' ? 'secondary' : 'primary'}
               disabled={busy}
               onClick={onNewOptions}
             >
