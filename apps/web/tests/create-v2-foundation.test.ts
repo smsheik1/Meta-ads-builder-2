@@ -416,6 +416,17 @@ test('opening the audio panel does not auto-write voice options', () => {
   assert.doesNotMatch(source, /onAddAudio=\\{\\(\\) => loadScriptOptions/);
 });
 
+test('create surface shows a clickable spacebar reroll prompt', () => {
+  const source = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
+  const promptSource = fs.readFileSync(path.join(webRoot, 'features/create/SpacebarRerollPrompt.tsx'), 'utf8');
+
+  assert.match(source, /SpacebarRerollPrompt/);
+  assert.match(promptSource, /Press/);
+  assert.match(promptSource, /Spacebar/);
+  assert.match(promptSource, /to generate more/);
+  assert.match(promptSource, /onClick=\{onReroll\}/);
+});
+
 test('export panel explains render progress without fake precision', () => {
   const source = fs.readFileSync(path.join(webRoot, 'features/create/ExportPanel.tsx'), 'utf8');
 

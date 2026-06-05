@@ -15,10 +15,12 @@ import type { WebsiteResearch } from '@/features/research/websiteResearch';
 import { getAdSceneBrandKey, type AdScene, type AdSceneLayoutElement } from './scene';
 import { ogToolScene } from './fixtures';
 import { reduceAdScene } from './sceneReducer';
+import { createCreativeReroll } from './creativeReroll';
 import { useSpacebarReroll } from './useSpacebarReroll';
 import { SavedDesignsPanel } from './SavedDesignsPanel';
 import { ExportPanel } from './ExportPanel';
 import { CreativeBriefPanel } from './CreativeBriefPanel';
+import { SpacebarRerollPrompt } from './SpacebarRerollPrompt';
 import { createSavedDesign, loadSavedDesign, type SavedDesign } from './sceneAdapters';
 import { sceneHasSavedSnapshot } from './savedDesigns';
 import { getOrCreateAnonymousSessionId } from './anonymousSession';
@@ -142,10 +144,13 @@ export function CreateFoundation() {
     setShareError('');
   };
 
-  useSpacebarReroll({ scene, dispatch, onReroll: () => {
+  const rerollCanvas = () => {
+    dispatch({ type: 'rerollCreative', creative: createCreativeReroll(scene) });
     clearExportResults();
     setRerollTick((tick) => tick + 1);
-  } });
+  };
+
+  useSpacebarReroll({ onReroll: rerollCanvas });
 
   const moveCanvasElement = (element: AdSceneLayoutElement, x: number, y: number) => {
     dispatch({ type: 'moveLayoutElement', element, x, y });
@@ -478,12 +483,15 @@ export function CreateFoundation() {
           <CreativeBriefPanel scene={scene} research={research} quality={quality} />
         </section>
 
-        <AdSceneCanvas
-          scene={scene}
-          rerollTick={rerollTick}
-          onAddAudio={openAudioPanel}
-          onMoveElement={moveCanvasElement}
-        />
+        <section className="min-w-0">
+          <AdSceneCanvas
+            scene={scene}
+            rerollTick={rerollTick}
+            onAddAudio={openAudioPanel}
+            onMoveElement={moveCanvasElement}
+          />
+          <SpacebarRerollPrompt onReroll={rerollCanvas} />
+        </section>
       </div>
     </main>
   );
