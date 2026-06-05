@@ -223,13 +223,30 @@ await test('made with Wiggly watermark is permanent inside preview and download 
   const canvasSource = await fs.readFile(path.join(process.cwd(), 'features', 'render', 'AdSceneCanvas.tsx'), 'utf8');
   const remotionSource = await fs.readFile(path.join(process.cwd(), 'features', 'render', 'AdSceneRemotion.tsx'), 'utf8');
   const renderSource = await fs.readFile(path.join(process.cwd(), 'features', 'render', 'adSceneRender.ts'), 'utf8');
+  const getElementWindow = (source: string, marker: string, closeTag: string) => {
+    const markerIndex = source.indexOf(marker);
+    const startIndex = source.lastIndexOf('<', markerIndex);
+    const endIndex = source.indexOf(closeTag, markerIndex);
 
-  assert.match(renderSource, /WIGGLY_WATERMARK_TEXT = 'Made with Wiggly'/);
+    return source.slice(startIndex, endIndex + closeTag.length);
+  };
+  const canvasWatermark = getElementWindow(canvasSource, 'data-testid="made-with-wiggly-watermark"', '</p>');
+  const remotionWatermark = getElementWindow(remotionSource, 'data-testid="made-with-wiggly-watermark"', '</div>');
+
+  assert.match(renderSource, /WIGGLY_WATERMARK_TEXT = 'made with wiggly'/);
   assert.match(canvasSource, /made-with-wiggly-watermark/);
   assert.match(canvasSource, /pointer-events-none/);
   assert.match(canvasSource, /WIGGLY_WATERMARK_TEXT/);
+  assert.match(canvasSource, /verticalStoryPlatform/);
+  assert.match(canvasSource, /className=\{`pointer-events-none absolute z-30 select-none font-black uppercase/);
+  assert.match(canvasSource, /text-slate-950\/30/);
+  assert.doesNotMatch(canvasWatermark, /rounded-full|bg-white|shadow-|<span/);
   assert.match(remotionSource, /made-with-wiggly-watermark/);
   assert.match(remotionSource, /WIGGLY_WATERMARK_TEXT/);
+  assert.match(remotionSource, /verticalStoryPlatform/);
+  assert.match(remotionSource, /textTransform: 'uppercase'/);
+  assert.match(remotionSource, /rgba\(15, 23, 42, 0\.30\)/);
+  assert.doesNotMatch(remotionWatermark, /border:|backgroundColor:|boxShadow:|<span/);
   assert.doesNotMatch(sceneSource, /watermark/i);
 });
 
