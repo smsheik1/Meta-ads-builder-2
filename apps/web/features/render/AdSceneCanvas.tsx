@@ -6,7 +6,10 @@ import type { AdScene, AdSceneLayoutElement } from '@/features/create/scene';
 import {
   getActiveCaptionText,
   getAdSceneRenderSpec,
+  getCaptionColor,
+  getHeadlineLineHeight,
   getHeadlineScale,
+  getHeadlineTextAlign,
   getVisualizerBarHeight,
   isStoredSceneAudio,
   WIGGLY_WATERMARK_TEXT,
@@ -61,7 +64,9 @@ export function AdSceneCanvas({
   const canvasMaxWidthPx = horizontalPlatform ? 620 : 390;
   const visualizerMaxHeightPx = horizontalPlatform ? 54 : 74;
   const visualizerBarCount = scene.creative.visualizer.barCount ?? 21;
-  const headlineScale = getHeadlineScale(scene.creative.headline);
+  const headlineScale = getHeadlineScale(scene.creative.headline, scene.creative.headlineSize);
+  const headlineTextAlign = getHeadlineTextAlign(scene.creative);
+  const captionColor = getCaptionColor(scene.creative);
   const headlineFontSize = horizontalPlatform
     ? `clamp(${Math.max(10, Math.round(11 * headlineScale))}px, ${3.3 * headlineScale}vw, ${Math.round(22 * headlineScale)}px)`
     : `${Math.round(36 * headlineScale)}px`;
@@ -245,7 +250,9 @@ export function AdSceneCanvas({
               style={{
                 color: scene.creative.headlineColor || '#07111f',
                 fontSize: headlineFontSize,
+                lineHeight: getHeadlineLineHeight(scene.creative),
                 overflowWrap: 'break-word',
+                textAlign: headlineTextAlign,
               }}
             >
               {scene.creative.headline}
@@ -270,7 +277,13 @@ export function AdSceneCanvas({
                 key={index}
                 className={`${visualizerBarWidthClass} rounded-full`}
                 style={{
-                  height: getVisualizerBarHeight(index, visualizerBarCount, visualizerTimeMs, visualizerMaxHeightPx),
+                  height: getVisualizerBarHeight(
+                    index,
+                    visualizerBarCount,
+                    visualizerTimeMs,
+                    visualizerMaxHeightPx,
+                    scene.creative.visualizer,
+                  ),
                   backgroundColor: scene.creative.visualizer.color,
                 }}
               />
@@ -284,7 +297,7 @@ export function AdSceneCanvas({
           >
             {renderElementLock('caption')}
             {captionText && (
-              <p className="max-w-[290px] text-base font-black leading-6 text-slate-600">
+              <p className="max-w-[290px] text-base font-black leading-6" style={{ color: captionColor }}>
                 {captionText}
               </p>
             )}

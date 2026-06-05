@@ -16,7 +16,7 @@ export function SavedDesignPreview({ scene }: { scene: AdScene }) {
   const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
   const hasAudio = isStoredSceneAudio(scene);
   const previewBarCount = Math.min(14, scene.creative.visualizer.barCount || 14);
-  const headlineScale = getHeadlineScale(scene.creative.headline);
+  const headlineScale = getHeadlineScale(scene.creative.headline, scene.creative.headlineSize);
 
   return (
     <div

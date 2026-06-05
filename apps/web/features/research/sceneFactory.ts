@@ -1,4 +1,5 @@
 import { AD_SCENE_VERSION, DEFAULT_SCENE_LAYOUT, DEFAULT_SCENE_LOCKS, type AdScene } from '@/features/create/scene';
+import { hashStyleSeed, pickSceneStyleFamily, sceneStyleFamilyToCreativePatch } from '@/features/create/styleFamilies';
 import type { AdCopy } from './adCopy';
 import type { WebsiteResearch } from './websiteResearch';
 
@@ -123,6 +124,14 @@ export const buildAdSceneFromWebsiteResearch = (
   const headline = copy?.headline || chooseHeadline(research);
   const subheadline = copy?.subheadline || chooseSubheadline(research, audience);
   const accentColor = pickAccentColor(research);
+  const style = sceneStyleFamilyToCreativePatch(
+    pickSceneStyleFamily(hashStyleSeed(`${research.websiteUrl}:${headline}:${now}`), undefined, accentColor),
+  );
+  const visualizerStyle = style.visualizer || {
+    color: accentColor,
+    idlePreset: 'wide-soft-bars',
+    playbackPreset: 'voice-reactive-bars',
+  };
 
   return {
     id: `scene-${slugify(research.brandName)}-${now}`,
@@ -138,17 +147,19 @@ export const buildAdSceneFromWebsiteResearch = (
     },
     platform: 'instagram-feed',
     creative: {
+      ...style,
       angleId: copy?.angleId || slugify(headline),
       headline,
       subheadline,
       ctaText: copy?.ctaText || (hasSignal(research, /\b(shop|store|product|products|collection|sale)\b/i) ? 'Shop now' : 'Learn More'),
       ctaUrl: research.websiteUrl,
-      backgroundColor: '#fbfaf6',
+      backgroundColor: style.backgroundColor || '#fbfaf6',
       accentColor,
       visualizer: {
+        ...visualizerStyle,
+        idlePreset: visualizerStyle.idlePreset || 'wide-soft-bars',
+        playbackPreset: visualizerStyle.playbackPreset || 'voice-reactive-bars',
         color: accentColor,
-        idlePreset: 'wide-soft-bars',
-        playbackPreset: 'voice-reactive-bars',
       },
     },
     audio: {

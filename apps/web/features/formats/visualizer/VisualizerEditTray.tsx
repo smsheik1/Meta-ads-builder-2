@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, type ChangeEvent } from 'react';
-import { ImagePlus, Lock, SlidersHorizontal, Type, Unlock, Waves, X } from 'lucide-react';
+import { AlignCenter, AlignLeft, AlignRight, ImagePlus, Lock, SlidersHorizontal, Type, Unlock, Waves, X } from 'lucide-react';
 import type { AdScene, AdSceneLayoutElement } from '@/features/create/scene';
 import type { FormatEditTrayProps } from '../formatTypes';
 
@@ -25,6 +25,40 @@ const iconForElement = (element: AdSceneLayoutElement) => {
   if (element === 'visualizer') return Waves;
   return SlidersHorizontal;
 };
+
+const headlineSizes = [
+  { value: 'compact', label: 'Compact' },
+  { value: 'balanced', label: 'Balanced' },
+  { value: 'hero', label: 'Hero' },
+] as const;
+
+const headlineAlignments = [
+  { value: 'left', label: 'Left', icon: AlignLeft },
+  { value: 'center', label: 'Center', icon: AlignCenter },
+  { value: 'right', label: 'Right', icon: AlignRight },
+] as const;
+
+const visualizerMotions = [
+  { value: 'smooth', label: 'Smooth' },
+  { value: 'balanced', label: 'Balanced' },
+  { value: 'snappy', label: 'Snappy' },
+] as const;
+
+const chipClass = (active: boolean) => (
+  `rounded-full px-3 py-2 text-xs font-black transition ${
+    active
+      ? 'bg-slate-950 text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)]'
+      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+  }`
+);
+
+const iconChipClass = (active: boolean) => (
+  `grid h-9 w-9 place-items-center rounded-full transition ${
+    active
+      ? 'bg-slate-950 text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)]'
+      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+  }`
+);
 
 export function VisualizerEditTray({
   scene,
@@ -151,6 +185,60 @@ export function VisualizerEditTray({
               onChange={(event) => onEditCreative({ headlineColor: event.target.value })}
             />
           </label>
+          <div className="rounded-2xl border border-slate-200 px-4 py-3">
+            <span className="block text-sm font-black text-slate-600">Headline size</span>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {headlineSizes.map((size) => (
+                <button
+                  key={size.value}
+                  type="button"
+                  className={chipClass((scene.creative.headlineSize || 'balanced') === size.value)}
+                  disabled={locked}
+                  onClick={() => onEditCreative({ headlineSize: size.value })}
+                >
+                  {size.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-[1fr_1.2fr]">
+            <div className="rounded-2xl border border-slate-200 px-4 py-3">
+              <span className="block text-sm font-black text-slate-600">Align</span>
+              <div className="mt-3 flex gap-2">
+                {headlineAlignments.map((alignment) => {
+                  const AlignIcon = alignment.icon;
+                  return (
+                    <button
+                      key={alignment.value}
+                      type="button"
+                      className={iconChipClass((scene.creative.headlineAlign || 'center') === alignment.value)}
+                      disabled={locked}
+                      title={alignment.label}
+                      onClick={() => onEditCreative({ headlineAlign: alignment.value })}
+                    >
+                      <AlignIcon className="h-4 w-4" />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <label className="rounded-2xl border border-slate-200 px-4 py-3">
+              <span className="flex items-center justify-between gap-3 text-sm font-black text-slate-600">
+                Line height
+                <span className="text-xs text-slate-400">{(scene.creative.headlineLineHeight || 1.02).toFixed(2)}</span>
+              </span>
+              <input
+                type="range"
+                min={0.94}
+                max={1.16}
+                step={0.01}
+                value={scene.creative.headlineLineHeight || 1.02}
+                disabled={locked}
+                className="mt-3 w-full accent-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+                onChange={(event) => onEditCreative({ headlineLineHeight: Number(event.target.value) })}
+              />
+            </label>
+          </div>
         </div>
       )}
 
@@ -180,13 +268,70 @@ export function VisualizerEditTray({
               <option value={29}>Ultra dense</option>
             </select>
           </label>
+          <label className="rounded-2xl border border-slate-200 px-4 py-3">
+            <span className="block text-sm font-black text-slate-600">Motion</span>
+            <select
+              value={scene.creative.visualizer.motion || 'balanced'}
+              disabled={locked}
+              className="mt-3 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-black text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              onChange={(event) => onEditCreative({}, { motion: event.target.value as AdScene['creative']['visualizer']['motion'] })}
+            >
+              {visualizerMotions.map((motion) => (
+                <option key={motion.value} value={motion.value}>{motion.label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="rounded-2xl border border-slate-200 px-4 py-3">
+            <span className="flex items-center justify-between gap-3 text-sm font-black text-slate-600">
+              Wave height
+              <span className="text-xs text-slate-400">{Math.round((scene.creative.visualizer.heightScale || 1) * 100)}%</span>
+            </span>
+            <input
+              type="range"
+              min={0.72}
+              max={1.28}
+              step={0.02}
+              value={scene.creative.visualizer.heightScale || 1}
+              disabled={locked}
+              className="mt-3 w-full accent-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+              onChange={(event) => onEditCreative({}, { heightScale: Number(event.target.value) })}
+            />
+          </label>
+          <label className="rounded-2xl border border-slate-200 px-4 py-3">
+            <span className="flex items-center justify-between gap-3 text-sm font-black text-slate-600">
+              Baseline
+              <span className="text-xs text-slate-400">{Math.round((scene.creative.visualizer.baseline || 0.28) * 100)}%</span>
+            </span>
+            <input
+              type="range"
+              min={0.16}
+              max={0.44}
+              step={0.02}
+              value={scene.creative.visualizer.baseline || 0.28}
+              disabled={locked}
+              className="mt-3 w-full accent-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+              onChange={(event) => onEditCreative({}, { baseline: Number(event.target.value) })}
+            />
+          </label>
         </div>
       )}
 
       {selectedElement === 'caption' && (
-        <p className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-500">
-          Captions come from the selected audio. Lock this element to keep audio and caption timing from changing.
-        </p>
+        <div className="mt-4 space-y-3">
+          <label className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 px-4 py-3">
+            <span className="text-sm font-black text-slate-600">Caption color</span>
+            <input
+              type="color"
+              value={scene.creative.captionColor || '#475569'}
+              disabled={locked}
+              className="h-9 w-12 rounded-lg border border-slate-200 bg-white disabled:cursor-not-allowed disabled:opacity-50"
+              onChange={(event) => onEditCreative({ captionColor: event.target.value })}
+            />
+          </label>
+          <p className="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-500">
+            Captions come from the selected audio. Lock this element to keep audio and caption timing from changing.
+          </p>
+        </div>
       )}
     </aside>
   );
