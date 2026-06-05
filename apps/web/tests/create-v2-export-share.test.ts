@@ -193,6 +193,31 @@ await test('share record builder preserves stored uploaded audio', () => {
   assert.equal(record.durationMs, 4200);
 });
 
+await test('share page uses the canonical canvas preview and sends new visitors to create', async () => {
+  const shareSource = await fs.readFile(path.join(process.cwd(), 'features', 'share', 'ShareScenePage.tsx'), 'utf8');
+  const expiredPageSource = await fs.readFile(path.join(process.cwd(), 'app', 's', '[slug]', 'page.tsx'), 'utf8');
+
+  assert.match(shareSource, /AdSceneCanvas/);
+  assert.match(shareSource, /<AdSceneCanvas scene=\{scene\}/);
+  assert.match(shareSource, /href="\/create"/);
+  assert.match(expiredPageSource, /href="\/create"/);
+  assert.doesNotMatch(shareSource, /AdSceneRemotion|create-v2/);
+  assert.doesNotMatch(expiredPageSource, /create-v2/);
+});
+
+await test('download rendering stays clean while share uses preview chrome', async () => {
+  const canvasSource = await fs.readFile(path.join(process.cwd(), 'features', 'render', 'AdSceneCanvas.tsx'), 'utf8');
+  const remotionSource = await fs.readFile(path.join(process.cwd(), 'features', 'render', 'AdSceneRemotion.tsx'), 'utf8');
+  const renderSource = await fs.readFile(path.join(process.cwd(), 'features', 'export', 'renderScene.ts'), 'utf8');
+
+  assert.match(canvasSource, /feed-preview-footer/);
+  assert.match(canvasSource, /1,284 likes/);
+  assert.match(renderSource, /createRenderSnapshot/);
+  assert.match(renderSource, /renderMedia/);
+  assert.doesNotMatch(renderSource, /AdSceneCanvas|feed-preview-footer/);
+  assert.doesNotMatch(remotionSource, /feed-preview-footer|1,284 likes|MessageCircle|Bookmark/);
+});
+
 await test('render tickets store a frozen scene for normal attachment downloads', async () => {
   const ticket = await createRenderSceneTicket(
     withGeneratedAudio(ogToolScene),
