@@ -5,6 +5,7 @@ import { AudioLines, Captions, Lock, Pause, Play, Unlock } from 'lucide-react';
 import type { AdScene, AdSceneLayoutElement } from '@/features/create/scene';
 import {
   getActiveCaptionText,
+  getAdSceneRenderSpec,
   getHeadlineScale,
   getVisualizerBarHeight,
   isStoredSceneAudio,
@@ -53,12 +54,24 @@ export function AdSceneCanvas({
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
   const playableAudio = isStoredSceneAudio(scene);
+  const renderSpec = getAdSceneRenderSpec(scene.platform);
+  const horizontalPlatform = renderSpec.width > renderSpec.height;
+  const canvasMaxWidthPx = horizontalPlatform ? 620 : 390;
+  const visualizerMaxHeightPx = horizontalPlatform ? 54 : 74;
   const visualizerBarCount = scene.creative.visualizer.barCount ?? 21;
-  const headlineFontSizePx = Math.round(36 * getHeadlineScale(scene.creative.headline));
+  const headlineScale = getHeadlineScale(scene.creative.headline);
+  const headlineFontSize = horizontalPlatform
+    ? `clamp(${Math.max(10, Math.round(11 * headlineScale))}px, ${3.3 * headlineScale}vw, ${Math.round(22 * headlineScale)}px)`
+    : `${Math.round(36 * headlineScale)}px`;
   const captionText = playableAudio && (isPlaying || audioTimeMs > 0)
     ? getActiveCaptionText(scene.audio, audioTimeMs)
     : '';
   const visualizerTimeMs = playableAudio && isPlaying ? audioTimeMs : 0;
+  const surfacePaddingClass = horizontalPlatform ? 'px-10' : 'px-8';
+  const headerPaddingClass = horizontalPlatform ? 'px-4 py-2' : 'px-4 py-3';
+  const brandTextClass = horizontalPlatform ? 'text-[9px] leading-none sm:text-sm' : 'text-sm';
+  const visualizerBarWidthClass = horizontalPlatform ? 'w-2 sm:w-3' : 'w-3';
+  const visualizerGapClass = horizontalPlatform ? 'gap-0.5 sm:gap-1' : 'gap-1';
 
   useEffect(() => {
     setIsPlaying(false);
@@ -146,9 +159,16 @@ export function AdSceneCanvas({
   };
 
   return (
-    <section className={`mx-auto min-w-0 w-full max-w-full self-start rounded-[34px] border border-slate-200 bg-black p-3 shadow-[0_30px_80px_rgba(15,23,42,0.20)] sm:max-w-[390px] ${className}`}>
-      <div className="overflow-hidden rounded-[26px] bg-white">
-        <div className="flex items-center gap-3 bg-black px-4 py-3 text-white">
+    <section
+      className={`mx-auto min-w-0 w-full max-w-full self-start rounded-[34px] border border-slate-200 bg-black p-3 shadow-[0_30px_80px_rgba(15,23,42,0.20)] ${className}`}
+      data-testid="ad-scene-canvas"
+      style={{ maxWidth: canvasMaxWidthPx }}
+    >
+      <div
+        className="flex flex-col overflow-hidden rounded-[26px] bg-white"
+        style={{ aspectRatio: `${renderSpec.width} / ${renderSpec.height}` }}
+      >
+        <div className={`flex shrink-0 items-center gap-3 bg-black text-white ${headerPaddingClass}`}>
           <div className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-white text-sm font-black text-slate-950">
             {rerollTick > 0 && !scene.locks.logo && (
               <span
@@ -175,7 +195,7 @@ export function AdSceneCanvas({
 
         <div
           ref={surfaceRef}
-          className="relative min-h-[510px] px-8 text-center"
+          className={`relative min-h-0 flex-1 text-center ${surfacePaddingClass}`}
           style={{ backgroundColor: scene.creative.backgroundColor }}
           onPointerMove={updateDrag}
           onPointerUp={() => setDragging(null)}
@@ -188,7 +208,7 @@ export function AdSceneCanvas({
             onPointerDown={startDrag('brand')}
           >
             {renderElementLock('brand')}
-            <p className="text-sm font-black uppercase tracking-wide text-slate-950">
+            <p className={`${brandTextClass} font-black uppercase tracking-wide text-slate-950`}>
               {scene.brand.name}
             </p>
           </div>
@@ -210,7 +230,7 @@ export function AdSceneCanvas({
               className="font-black leading-[1.02]"
               style={{
                 color: scene.creative.headlineColor || '#07111f',
-                fontSize: `${headlineFontSizePx}px`,
+                fontSize: headlineFontSize,
                 overflowWrap: 'break-word',
               }}
             >
@@ -218,7 +238,7 @@ export function AdSceneCanvas({
             </h2>
           </div>
           <div
-            className={`relative flex items-center justify-center gap-1 overflow-hidden ${dragClass('visualizer')}`}
+            className={`relative flex items-center justify-center overflow-hidden ${visualizerGapClass} ${dragClass('visualizer')}`}
             data-testid="ad-scene-element-visualizer"
             style={getCanvasLayoutStyle(scene, 'visualizer')}
             onPointerDown={startDrag('visualizer')}
@@ -234,9 +254,9 @@ export function AdSceneCanvas({
             {Array.from({ length: visualizerBarCount }).map((_, index) => (
               <span
                 key={index}
-                className="w-3 rounded-full"
+                className={`${visualizerBarWidthClass} rounded-full`}
                 style={{
-                  height: getVisualizerBarHeight(index, visualizerBarCount, visualizerTimeMs, 74),
+                  height: getVisualizerBarHeight(index, visualizerBarCount, visualizerTimeMs, visualizerMaxHeightPx),
                   backgroundColor: scene.creative.visualizer.color,
                 }}
               />
@@ -303,7 +323,7 @@ export function AdSceneCanvas({
             >
               <div className="relative aspect-square w-full border border-dashed border-slate-950/30 bg-slate-950/[0.025] shadow-[0_0_0_999px_rgba(15,23,42,0.04)]">
                 <span className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-slate-500 shadow-sm">
-                  Feed safe area
+                  Safe area
                 </span>
               </div>
             </div>

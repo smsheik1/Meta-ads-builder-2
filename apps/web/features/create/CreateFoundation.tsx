@@ -10,7 +10,7 @@ import { useCaptionTranscriptEditor } from '@/features/audio/useCaptionTranscrip
 import { useStoredAudioUrlRefresh } from '@/features/audio/useStoredAudioUrlRefresh';
 import type { ResearchQuality } from '@/features/research/researchQuality';
 import type { WebsiteResearch } from '@/features/research/websiteResearch';
-import { getAdSceneBrandKey, type AdScene, type AdSceneCreative, type AdSceneLayoutElement } from './scene';
+import { getAdSceneBrandKey, type AdPlatform, type AdScene, type AdSceneCreative, type AdSceneLayoutElement } from './scene';
 import { ogToolScene } from './fixtures';
 import { reduceAdScene } from './sceneReducer';
 import { createCreativeReroll } from './creativeReroll';
@@ -144,10 +144,7 @@ export function CreateFoundation() {
     setShareUrl('');
     setShareError('');
   };
-  const {
-    captionTranscriptEditor,
-    openCaptionTranscriptEditor,
-  } = useCaptionTranscriptEditor({ dispatch, onChange: clearExportResults, scene });
+  const { captionTranscriptEditor, openCaptionTranscriptEditor } = useCaptionTranscriptEditor({ dispatch, onChange: clearExportResults, scene });
 
   const rerollCanvas = () => {
     dispatch({ type: 'rerollCreative', creative: createCreativeReroll(scene) });
@@ -172,6 +169,11 @@ export function CreateFoundation() {
 
   const replaceCanvasLogo = (logoUrl: string | null) => {
     dispatch({ type: 'replaceLogo', logoUrl });
+    clearExportResults();
+  };
+
+  const changePlatform = (platform: AdPlatform) => {
+    dispatch({ type: 'setPlatform', platform });
     clearExportResults();
   };
 
@@ -480,6 +482,7 @@ export function CreateFoundation() {
           onEditCreative={editCanvasCreative}
           onEditCaptions={openCaptionTranscriptEditor}
           onMoveElement={moveCanvasElement}
+          onPlatformChange={changePlatform}
           onReplaceLogo={replaceCanvasLogo}
           onReroll={rerollCanvas}
           onSelectElement={setSelectedElement}

@@ -134,6 +134,38 @@ test('audio updates do not mutate creative state', () => {
   assert.equal(updated.audio.captions[0]?.speaker, 'a');
 });
 
+test('platform changes preserve creative and audio state', () => {
+  const withAudio = reduceAdScene(ogToolScene, {
+    type: 'updateAudio',
+    audio: {
+      status: 'generated',
+      url: 'https://example.com/audio.wav',
+      transcript: 'Current brand audio',
+      captions: [],
+      sourceSceneId: ogToolScene.id,
+      scriptId: 'script-1',
+      durationMs: 2000,
+    },
+    now: 106,
+  });
+  const changed = reduceAdScene(withAudio, {
+    type: 'setPlatform',
+    platform: 'reels',
+    now: 107,
+  });
+  const unchanged = reduceAdScene(changed, {
+    type: 'setPlatform',
+    platform: 'reels',
+    now: 108,
+  });
+
+  assert.equal(changed.platform, 'reels');
+  assert.deepEqual(changed.creative, withAudio.creative);
+  assert.deepEqual(changed.audio, withAudio.audio);
+  assert.equal(changed.updatedAt, 107);
+  assert.equal(unchanged, changed);
+});
+
 test('local creative reroll changes only creative and unlocked brand art', () => {
   const withAudio = reduceAdScene(ogToolScene, {
     type: 'updateAudio',
@@ -586,8 +618,25 @@ test('safe guides are preview-only canvas UI', () => {
   assert.match(stageSource, /showGuides=\{showGuides\}/);
   assert.match(toggleSource, /safe-guides-toggle/);
   assert.match(canvasSource, /scene-safe-guides/);
-  assert.match(canvasSource, /Feed safe area/);
-  assert.doesNotMatch(remotionSource, /scene-safe-guides|Feed safe area/);
+  assert.match(canvasSource, /Safe area/);
+  assert.doesNotMatch(remotionSource, /scene-safe-guides|Safe area/);
+});
+
+test('platform selector updates the canonical scene platform without legacy overlays', () => {
+  const createSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
+  const stageSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateCanvasStage.tsx'), 'utf8');
+  const selectorSource = fs.readFileSync(path.join(webRoot, 'features/create/PlatformSelector.tsx'), 'utf8');
+  const canvasSource = fs.readFileSync(path.join(webRoot, 'features/render/AdSceneCanvas.tsx'), 'utf8');
+
+  assert.match(createSource, /type: 'setPlatform'/);
+  assert.match(createSource, /onPlatformChange=\{changePlatform\}/);
+  assert.match(stageSource, /PlatformSelector/);
+  assert.match(selectorSource, /platform-selector/);
+  assert.match(selectorSource, /AD_SCENE_RENDER_SPECS/);
+  assert.match(canvasSource, /getAdSceneRenderSpec/);
+  assert.match(canvasSource, /aspectRatio/);
+  assert.match(canvasSource, /ad-scene-canvas/);
+  assert.doesNotMatch(`${createSource}\n${stageSource}\n${selectorSource}\n${canvasSource}`, /PlatformFrame/);
 });
 
 test('visualizer format owns editing controls through a small format module', () => {
