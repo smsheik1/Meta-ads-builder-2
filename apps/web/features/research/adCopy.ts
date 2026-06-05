@@ -18,6 +18,7 @@ export type GenerateAdCopyOptions = {
   apiKey?: string;
   fetcher?: Fetcher;
   model?: string;
+  modelLabel?: string;
   timeoutMs?: number;
 };
 
@@ -151,6 +152,7 @@ export const generateAdCopy = async (
   const fallback = buildDeterministicAdCopy(research);
   const apiKey = options.apiKey ?? process.env.OPENROUTER_API_KEY;
   const model = options.model ?? process.env.OPENROUTER_AD_MODEL;
+  const modelLabel = options.modelLabel || model || 'Auto best available';
 
   if (!apiKey || !model || isDisabled(process.env.OPENROUTER_ENABLED)) {
     return {
@@ -158,7 +160,7 @@ export const generateAdCopy = async (
       providerStatus: {
         provider: 'openrouter',
         status: 'skipped',
-        reason: 'OpenRouter key or ad model is not configured; used deterministic receipt copy.',
+        reason: `${modelLabel} was not configured for OpenRouter; used deterministic receipt copy.`,
       },
     };
   }
@@ -202,7 +204,7 @@ export const generateAdCopy = async (
       providerStatus: {
         provider: 'openrouter',
         status: 'used',
-        reason: `Generated ad copy with ${model}.`,
+        reason: `Generated ad copy with ${modelLabel}.`,
       },
     };
   } catch (error) {
