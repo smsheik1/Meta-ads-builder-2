@@ -9,6 +9,7 @@ import {
   getHeadlineScale,
   getVisualizerBarHeight,
   isStoredSceneAudio,
+  WIGGLY_WATERMARK_TEXT,
 } from './adSceneRender';
 import { getCanvasLayoutStyle, getLayoutBox, layoutLockForElement } from './adSceneLayout';
 
@@ -321,6 +322,15 @@ export function AdSceneCanvas({
                 {addAudioLabel}
               </button>
             ) : null}
+          </div>
+          <div
+            className="pointer-events-none absolute bottom-3 right-3 z-30 inline-flex items-center gap-1.5 rounded-full border border-slate-950/10 bg-white/90 px-2.5 py-1.5 text-[10px] font-black text-slate-700 shadow-[0_14px_34px_rgba(15,23,42,0.14)] backdrop-blur"
+            data-testid="made-with-wiggly-watermark"
+          >
+            <span className="grid h-4 w-4 place-items-center rounded-full bg-slate-950 text-[9px] leading-none text-white">
+              W
+            </span>
+            <span>{WIGGLY_WATERMARK_TEXT}</span>
           </div>
           {showGuides && (
             <div
