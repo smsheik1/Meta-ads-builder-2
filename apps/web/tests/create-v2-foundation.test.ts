@@ -427,6 +427,32 @@ test('create surface shows a clickable spacebar reroll prompt', () => {
   assert.match(promptSource, /onClick=\{onReroll\}/);
 });
 
+test('saved designs use a hover popover instead of a second library surface', () => {
+  const panelSource = fs.readFileSync(path.join(webRoot, 'features/create/SavedDesignsPanel.tsx'), 'utf8');
+
+  assert.match(panelSource, /saved-designs-save-button/);
+  assert.match(panelSource, /saved-designs-popover/);
+  assert.match(panelSource, /savedDesigns\.slice\(0, 4\)/);
+  assert.match(panelSource, /onMouseEnter=\{openPopover\}/);
+  assert.match(panelSource, /onMouseLeave=\{\(\) => setPopoverOpen\(false\)\}/);
+  assert.match(panelSource, /onLoadDesign\(design\)/);
+  assert.doesNotMatch(panelSource, /sm:grid-cols-4/);
+});
+
+test('safe guides are preview-only canvas UI', () => {
+  const createSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
+  const canvasSource = fs.readFileSync(path.join(webRoot, 'features/render/AdSceneCanvas.tsx'), 'utf8');
+  const toggleSource = fs.readFileSync(path.join(webRoot, 'features/create/CanvasGuidesToggle.tsx'), 'utf8');
+  const remotionSource = fs.readFileSync(path.join(webRoot, 'features/render/AdSceneRemotion.tsx'), 'utf8');
+
+  assert.match(createSource, /CanvasGuidesToggle/);
+  assert.match(createSource, /showGuides=\{showGuides\}/);
+  assert.match(toggleSource, /safe-guides-toggle/);
+  assert.match(canvasSource, /scene-safe-guides/);
+  assert.match(canvasSource, /Feed safe area/);
+  assert.doesNotMatch(remotionSource, /scene-safe-guides|Feed safe area/);
+});
+
 test('export panel explains render progress without fake precision', () => {
   const source = fs.readFileSync(path.join(webRoot, 'features/create/ExportPanel.tsx'), 'utf8');
 
