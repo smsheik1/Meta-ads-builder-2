@@ -47,31 +47,17 @@ export const upsert = mutation({
     design: savedDesignValidator,
   },
   handler: async (ctx, args) => {
-    const existing = await ctx.db
-      .query("savedDesigns")
-      .withIndex("by_sessionId_and_sceneId", (q) => (
-        q.eq("sessionId", args.sessionId).eq("sceneId", args.sceneId)
-      ))
-      .unique();
-
-    const designId = existing?.designId ?? args.design.id;
-    const createdAt = existing?.createdAt ?? args.design.createdAt;
-
     const nextRow = {
       sessionId: args.sessionId,
-      designId,
+      designId: args.design.id,
       sceneId: args.sceneId,
       title: args.design.title,
       scene: args.design.scene,
-      createdAt,
+      createdAt: args.design.createdAt,
       updatedAt: args.design.updatedAt,
     };
 
-    if (existing) {
-      await ctx.db.replace(existing._id, nextRow);
-    } else {
-      await ctx.db.insert("savedDesigns", nextRow);
-    }
+    await ctx.db.insert("savedDesigns", nextRow);
 
     const rows = await ctx.db
       .query("savedDesigns")

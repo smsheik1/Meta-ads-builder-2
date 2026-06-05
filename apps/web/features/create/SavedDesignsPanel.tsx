@@ -3,8 +3,7 @@
 import { useEffect, useState, type FocusEvent } from 'react';
 import { BookmarkPlus, CheckCircle2, Clock3, Trash2, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { isStoredSceneAudio } from '@/features/render/adSceneRender';
-import { getCanvasLayoutStyle } from '@/features/render/adSceneLayout';
+import { getHeadlineScale, isStoredSceneAudio } from '@/features/render/adSceneRender';
 import type { AdScene } from './scene';
 import type { SavedDesign } from './sceneAdapters';
 
@@ -28,54 +27,53 @@ const formatSavedTime = (value: number) => (
 function SavedDesignPreview({ scene }: { scene: AdScene }) {
   const avatarUrl = scene.brand.logoUrl || scene.brand.faviconUrl;
   const hasAudio = isStoredSceneAudio(scene);
-  const previewBarCount = Math.min(13, scene.creative.visualizer.barCount || 13);
+  const previewBarCount = Math.min(14, scene.creative.visualizer.barCount || 14);
+  const headlineScale = getHeadlineScale(scene.creative.headline);
 
   return (
     <div
-      className="relative aspect-[4/5] overflow-hidden rounded-xl border border-slate-200 bg-white"
+      className="relative aspect-[9/16] w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-inner"
+      data-testid="saved-template-preview"
       style={{ backgroundColor: scene.creative.backgroundColor }}
     >
-      <div className="flex items-center gap-2 bg-black px-2 py-1.5 text-white">
-        <span className="grid h-5 w-5 place-items-center overflow-hidden rounded-full bg-white text-[9px] font-black text-slate-950">
-          {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : scene.brand.name.slice(0, 1)}
+      <div className="absolute inset-x-0 top-[8%] flex justify-center">
+        <span className="grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-white text-[9px] font-black text-slate-950 shadow-[0_8px_20px_rgba(15,23,42,0.12)]">
+          {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : scene.brand.name.slice(0, 1).toUpperCase()}
         </span>
-        <span className="min-w-0 truncate text-[10px] font-black">{scene.brand.name}</span>
       </div>
-      <div className="relative h-[calc(100%-32px)] px-3 text-center">
+
+      <div className="absolute inset-x-3 top-[20%] flex min-h-[58px] items-center justify-center text-center">
         <p
-          className="grid place-items-center text-[10px] font-black uppercase tracking-wide text-slate-950"
-          style={getCanvasLayoutStyle(scene, 'brand')}
+          className="line-clamp-4 text-center font-black leading-[0.95]"
+          style={{
+            color: scene.creative.headlineColor || '#07111f',
+            fontSize: `${Math.max(11, Math.round(16 * headlineScale))}px`,
+          }}
         >
-          {scene.brand.name}
+          {scene.creative.headline}
         </p>
-        <p
-          className="line-clamp-3 grid place-items-center text-lg font-black leading-[0.98]"
-          style={getCanvasLayoutStyle(scene, 'headline')}
-        >
-          <span style={{ color: scene.creative.headlineColor || '#07111f' }}>
-            {scene.creative.headline}
-          </span>
-        </p>
-        <div
-          className="flex items-center justify-center gap-0.5"
-          style={getCanvasLayoutStyle(scene, 'visualizer')}
-        >
-          {Array.from({ length: previewBarCount }).map((_, index) => {
-            const centerIndex = (previewBarCount - 1) / 2;
-            const center = Math.abs(index - centerIndex);
-            return (
-              <span
-                key={index}
-                className="w-1.5 rounded-full"
-                style={{
-                  height: 8 + (centerIndex - center) * 3,
-                  backgroundColor: scene.creative.visualizer.color,
-                }}
-              />
-            );
-          })}
-        </div>
       </div>
+
+      <div className="absolute inset-x-3 top-[52%] flex h-8 items-center gap-[2px]">
+        {Array.from({ length: previewBarCount }).map((_, index) => (
+          <span
+            key={index}
+            className="flex-1 rounded-full"
+            style={{
+              height: `${28 + ((index * 9) % 46)}%`,
+              backgroundColor: scene.creative.visualizer.color,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="absolute inset-x-5 bottom-[17%] flex justify-center">
+        <span
+          className="h-2 w-20 rounded-full"
+          style={{ backgroundColor: scene.creative.accentColor }}
+        />
+      </div>
+
       {hasAudio && (
         <span className="absolute bottom-2 right-2 grid h-6 w-6 place-items-center rounded-full bg-slate-950 text-white shadow-lg">
           <Volume2 className="h-3 w-3" />
@@ -158,7 +156,7 @@ export function SavedDesignsPanel({
               className="absolute right-0 top-full z-50 w-[min(20rem,calc(100vw-2rem))] pt-2"
               data-testid="saved-designs-popover"
             >
-              <div className="relative rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
+              <div className="relative rounded-[28px] border border-slate-200/80 bg-white/90 p-3 shadow-[0_24px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl">
                 <span className="absolute -top-2 right-8 h-3 w-5 rounded-t-md border-x border-t border-slate-200 bg-white" />
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
@@ -172,7 +170,8 @@ export function SavedDesignsPanel({
                   {recentDesigns.map((design) => (
                     <div
                       key={design.id}
-                      className="group relative rounded-xl border border-slate-200 bg-white p-2 text-left transition hover:border-slate-300 hover:bg-slate-50"
+                      className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-b from-white to-[#fbf7ef]/70 p-2 text-left shadow-[0_10px_24px_rgba(17,24,39,0.06)] transition hover:border-indigo-200 hover:shadow-[0_18px_34px_rgba(17,24,39,0.10)] active:scale-[0.99]"
+                      data-testid="saved-template-card"
                     >
                       <button
                         type="button"
@@ -192,6 +191,7 @@ export function SavedDesignsPanel({
                           {hydrated ? formatSavedTime(design.updatedAt) : 'Saved'}
                         </span>
                       </button>
+                      <span className="pointer-events-none absolute inset-2 rounded-lg bg-indigo-500/0 transition group-hover:bg-indigo-500/5" />
                       <button
                         type="button"
                         className="absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-full bg-white/95 text-slate-400 opacity-0 shadow-sm transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
