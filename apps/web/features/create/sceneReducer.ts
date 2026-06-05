@@ -5,6 +5,7 @@ import {
   type AdScene,
   type AdSceneAudio,
   type AdSceneCreative,
+  type AdPlatform,
   type AdSceneLayoutElement,
 } from './scene';
 import { ogToolScene } from './fixtures';
@@ -23,6 +24,7 @@ export type AdSceneAction =
   | { type: 'editCreative'; creative: Partial<Pick<AdSceneCreative, 'headline' | 'headlineColor' | 'accentColor'>>; visualizer?: Partial<AdSceneCreative['visualizer']>; now?: number }
   | { type: 'replaceLogo'; logoUrl: string | null; now?: number }
   | { type: 'moveLayoutElement'; element: AdSceneLayoutElement; x: number; y: number; now?: number }
+  | { type: 'setPlatform'; platform: AdPlatform; now?: number }
   | { type: 'setLock'; field: keyof AdScene['locks']; locked: boolean; now?: number }
   | { type: 'updateAudio'; audio: Partial<AdSceneAudio>; now?: number }
   | { type: 'loadScene'; scene: AdScene }
@@ -48,6 +50,15 @@ export const reduceAdScene = (scene: AdScene, action: AdSceneAction): AdScene =>
         ...scene.locks,
         [action.field]: action.locked,
       },
+      updatedAt: getNow(action.now),
+    };
+  }
+
+  if (action.type === 'setPlatform') {
+    if (scene.platform === action.platform) return scene;
+    return {
+      ...scene,
+      platform: action.platform,
       updatedAt: getNow(action.now),
     };
   }

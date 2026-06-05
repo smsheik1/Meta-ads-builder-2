@@ -90,6 +90,22 @@ await test('render snapshots preserve platform dimensions and generated audio du
   assert.equal(isStoredSceneAudio(vertical.scene), true);
 });
 
+await test('render snapshots preserve each selected platform spec', () => {
+  const platforms = Object.keys(AD_SCENE_RENDER_SPECS) as Array<keyof typeof AD_SCENE_RENDER_SPECS>;
+
+  platforms.forEach((platform) => {
+    const scene = {
+      ...cloneAdScene(ogToolScene),
+      platform,
+    };
+    const snapshot = createRenderSnapshot(scene);
+
+    assert.equal(snapshot.scene.platform, platform);
+    assert.equal(snapshot.spec.width, AD_SCENE_RENDER_SPECS[platform].width);
+    assert.equal(snapshot.spec.height, AD_SCENE_RENDER_SPECS[platform].height);
+  });
+});
+
 await test('render snapshots preserve canvas layout positions', () => {
   const scene = cloneAdScene(ogToolScene);
   scene.layout.headline = {

@@ -1,9 +1,10 @@
 'use client';
 
-import type { AdScene, AdSceneCreative, AdSceneLayoutElement } from './scene';
+import type { AdPlatform, AdScene, AdSceneCreative, AdSceneLayoutElement } from './scene';
 import { AdSceneCanvas } from '@/features/render/AdSceneCanvas';
 import { visualizerFormat } from '@/features/formats/visualizer/visualizerFormat';
 import { CanvasGuidesToggle } from './CanvasGuidesToggle';
+import { PlatformSelector } from './PlatformSelector';
 import { SpacebarRerollPrompt } from './SpacebarRerollPrompt';
 
 type CreateCanvasStageProps = {
@@ -19,6 +20,7 @@ type CreateCanvasStageProps = {
   ) => void;
   onEditCaptions: () => void;
   onMoveElement: (element: AdSceneLayoutElement, x: number, y: number) => void;
+  onPlatformChange: (platform: AdPlatform) => void;
   onReplaceLogo: (logoUrl: string | null) => void;
   onReroll: () => void;
   onSelectElement: (element: AdSceneLayoutElement | null) => void;
@@ -36,6 +38,7 @@ export function CreateCanvasStage({
   onEditCreative,
   onEditCaptions,
   onMoveElement,
+  onPlatformChange,
   onReplaceLogo,
   onReroll,
   onSelectElement,
@@ -57,6 +60,7 @@ export function CreateCanvasStage({
         onSelectElement={onSelectElement}
         onToggleLock={onToggleLock}
       />
+      <PlatformSelector platform={scene.platform} onPlatformChange={onPlatformChange} />
       <CanvasGuidesToggle showGuides={showGuides} onToggle={onToggleGuides} />
       <SpacebarRerollPrompt onReroll={onReroll} />
       <EditTray
