@@ -881,13 +881,15 @@ test('ad writing model selector is wired to scene generation only', () => {
   const modelSource = fs.readFileSync(path.join(webRoot, 'features/research/adCopyModels.ts'), 'utf8');
   const routeSource = fs.readFileSync(path.join(webRoot, 'app/api/create-scene/route.ts'), 'utf8');
   const audioSource = fs.readFileSync(path.join(webRoot, 'features/audio/AudioOptionsPanel.tsx'), 'utf8');
+  const requestSource = fs.readFileSync(path.join(webRoot, 'features/create/createSceneRequest.ts'), 'utf8');
 
   assert.match(formSource, /AdWritingModelSelect/);
   assert.match(selectorSource, /name="adModel"/);
   assert.match(selectorSource, /AD_COPY_MODEL_CHOICES/);
   assert.match(modelSource, /Kimi K2\.6 Free \(OpenRouter\)/);
   assert.match(createSource, /new FormData\(event\.currentTarget\)\.get\('adModel'\)/);
-  assert.match(createSource, /JSON\.stringify\(\{ websiteUrl, adModel \}\)/);
+  assert.match(createSource, /requestCreateScene\(\{ websiteUrl, adModel \}\)/);
+  assert.match(requestSource, /JSON\.stringify\(\{ websiteUrl, adModel \}\)/);
   assert.match(routeSource, /parseAdCopyModelChoice/);
   assert.match(routeSource, /resolveAdCopyModel/);
   assert.doesNotMatch(audioSource, /AdWritingModelSelect|adModel|OpenRouter/);
@@ -916,4 +918,20 @@ test('oracle deploy pushes Convex before building the app', () => {
   assert.match(deployWorkflow, /secrets\.GROQ_API_KEY/);
   assert.match(deployWorkflow, /secrets\.GEMINI_API_KEY/);
   assert.match(deployWorkflow, /envs: CONVEX_DEPLOY_KEY,CONVEX_URL,NEXT_PUBLIC_CONVEX_URL,NEXT_PUBLIC_CONVEX_SITE_URL,FIRECRAWL_API_KEY,GROQ_API_KEY,GEMINI_API_KEY/);
+});
+
+test('website scene generation is bounded by client and server timeouts', () => {
+  const createSource = fs.readFileSync(path.join(webRoot, 'features/create/CreateFoundation.tsx'), 'utf8');
+  const requestSource = fs.readFileSync(path.join(webRoot, 'features/create/createSceneRequest.ts'), 'utf8');
+  const routeSource = fs.readFileSync(path.join(webRoot, 'app/api/create-scene/route.ts'), 'utf8');
+
+  assert.match(createSource, /requestCreateScene\(\{ websiteUrl, adModel \}\)/);
+  assert.match(requestSource, /DEFAULT_CREATE_SCENE_TIMEOUT_MS = 38_000/);
+  assert.match(requestSource, /AbortController/);
+  assert.match(requestSource, /Website research took too long/);
+  assert.doesNotMatch(requestSource, /This operation was aborted/);
+  assert.match(routeSource, /CREATE_SCENE_FIRECRAWL_TIMEOUT_MS = 18_000/);
+  assert.match(routeSource, /CREATE_SCENE_AD_COPY_TIMEOUT_MS = 16_000/);
+  assert.match(routeSource, /fetchResearchWithFirecrawl\(body\.websiteUrl, \{\s*timeoutMs: CREATE_SCENE_FIRECRAWL_TIMEOUT_MS/s);
+  assert.match(routeSource, /timeoutMs: CREATE_SCENE_AD_COPY_TIMEOUT_MS/);
 });
