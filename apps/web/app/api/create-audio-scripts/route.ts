@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { BillShieldError, assertAudioRouteAllowed, billShieldJson } from '@/features/audio/billShield';
 import { generateDialogueScripts } from '@/features/audio/dialogueScripts';
-import type { AdScene } from '@/features/create/scene';
+import type { AdScene } from '@/features/engine/scene';
 
 export const runtime = 'nodejs';
 

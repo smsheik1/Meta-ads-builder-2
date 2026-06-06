@@ -29,6 +29,7 @@ test('legacy create owns its AdScene engine instead of importing create-v2 UI in
 
   expect(offenders).toEqual([]);
   expect(fs.existsSync(path.join(repoRoot, 'src', 'engine', 'ad-scene', 'scene.ts'))).toBe(true);
+  expect(fs.existsSync(path.join(repoRoot, 'apps', 'web', 'features', 'create'))).toBe(false);
 });
 
 test('freeze docs name legacy create as the active product path', () => {

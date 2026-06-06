@@ -1,5 +1,5 @@
-import { AD_SCENE_VERSION, DEFAULT_SCENE_LAYOUT, DEFAULT_SCENE_LOCKS, type AdScene } from '@/features/create/scene';
-import { hashStyleSeed, pickSceneStyleFamily, sceneStyleFamilyToCreativePatch } from '@/features/create/styleFamilies';
+import { AD_SCENE_VERSION, DEFAULT_SCENE_LAYOUT, DEFAULT_SCENE_LOCKS, type AdScene } from '@/features/engine/scene';
+import { hashStyleSeed, pickSceneStyleFamily, sceneStyleFamilyToCreativePatch } from '@/features/engine/styleFamilies';
 import type { AdCopy } from './adCopy';
 import type { WebsiteResearch } from './websiteResearch';
 

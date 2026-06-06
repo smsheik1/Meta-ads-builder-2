@@ -4,8 +4,8 @@
 
 The app tried a clean-room `/create-v2` rewrite, but the definitive user
 experience is now the desktop `/create` page served by the Vite/Express app.
-Do not replace `/create` with `/create-v2` UI again. Treat `/create-v2` code as
-donor/reference material until it is deleted.
+Do not replace `/create` with `/create-v2` UI again. The `/create-v2` UI has
+been deleted; reusable engine work lives in neutral modules instead.
 
 ## Frozen Areas
 
@@ -26,8 +26,8 @@ tests in the same PR.
 - Production-blocking bug fixes.
 - Security fixes.
 - Small extraction/refactor steps that preserve `/create` behavior.
-- Deletion of dead `/create-v2` or `/builder` code after the reusable pieces are
-  moved to neutral modules.
+- Deletion of dead `/builder` code after the reusable pieces are moved to
+  neutral modules.
 
 ## Not Allowed
 
@@ -50,7 +50,7 @@ npx playwright test tests/create-look-contract.spec.ts tests/style-archetypes.sp
 
 1. Freeze `/create` behavior with tests.
 2. Extract reusable AdScene engine pieces into neutral `src/engine/*` modules.
-3. Delete `/create-v2` UI/tests once `src/` no longer depends on them.
+3. Keep `/create-v2` UI/tests deleted after `src/` no longer depends on them.
 4. Remove dead branches from `src/App.tsx`.
 5. Split live `/create` logic into small modules.
 6. Delete or quarantine `/builder` after preserving the few UI pieces we still
@@ -59,6 +59,3 @@ npx playwright test tests/create-look-contract.spec.ts tests/style-archetypes.sp
 
 The target is fewer lines, but the real goal is smaller reasoning surfaces: no
 single product file should stay thousands of lines long.
-
-The feature-by-feature deletion gate lives in
-[`CREATE_V2_LEGACY_AUDIT.md`](./CREATE_V2_LEGACY_AUDIT.md).

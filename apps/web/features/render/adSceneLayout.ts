@@ -1,4 +1,4 @@
-import { getAdSceneLayout, type AdScene, type AdSceneLayoutElement } from '@/features/create/scene';
+import { getAdSceneLayout, type AdScene, type AdSceneLayoutElement } from '@/features/engine/scene';
 
 export const layoutLockForElement = (scene: AdScene, element: AdSceneLayoutElement) => {
   if (element === 'brand') return scene.locks.logo;

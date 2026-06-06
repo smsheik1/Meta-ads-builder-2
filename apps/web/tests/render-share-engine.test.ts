@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { ogToolScene, redfinScene } from '../features/create/fixtures';
-import { cloneAdScene, type AdScene } from '../features/create/scene';
+import { ogToolScene, redfinScene } from '../features/engine/fixtures';
+import { cloneAdScene, type AdScene } from '../features/engine/scene';
 import {
   AD_SCENE_RENDER_SPECS,
   createDownloadFilename,
@@ -226,7 +226,7 @@ await test('download rendering stays clean while share uses preview chrome', asy
 });
 
 await test('made with Wiggly watermark is permanent inside preview and download graphics', async () => {
-  const sceneSource = await fs.readFile(path.join(process.cwd(), 'features', 'create', 'scene.ts'), 'utf8');
+  const sceneSource = await fs.readFile(path.join(process.cwd(), 'features', 'engine', 'scene.ts'), 'utf8');
   const canvasSource = await fs.readFile(path.join(process.cwd(), 'features', 'render', 'AdSceneCanvas.tsx'), 'utf8');
   const remotionSource = await fs.readFile(path.join(process.cwd(), 'features', 'render', 'AdSceneRemotion.tsx'), 'utf8');
   const renderSource = await fs.readFile(path.join(process.cwd(), 'features', 'render', 'adSceneRender.ts'), 'utf8');
@@ -276,7 +276,7 @@ await test('render tickets store a frozen scene for normal attachment downloads'
 
   await deleteRenderSceneTicket(ticket.id);
   assert.equal(await readRenderSceneTicket(ticket.id), null);
-  await fs.rm(path.join(process.cwd(), 'tmp', 'create-v2-render-tickets'), { recursive: true, force: true });
+  await fs.rm(path.join(process.cwd(), 'tmp', 'ad-scene-render-tickets'), { recursive: true, force: true });
 });
 
 await test('render errors hide server command details from users', () => {

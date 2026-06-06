@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import type { AdScene } from '@/features/create/scene';
+import type { AdScene } from '@/features/engine/scene';
 import { saveShareSceneRecord } from '@/features/share/shareSceneStore';
 
 export const runtime = 'nodejs';
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       shareUrl: `/s/${record.slug}`,
     });
   } catch (error) {
-    console.error('[create-v2 share-scene]', error);
+    console.error('[ad-scene share-scene]', error);
     return NextResponse.json({
       error: error instanceof Error ? error.message : 'Could not create share link.',
     }, { status: 500 });
