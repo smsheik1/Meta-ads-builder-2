@@ -1,6 +1,8 @@
 import type { AdElement } from '../store';
 
 export const FIXED_AD_BACKGROUND_COLOR = '#fafaf7';
+const SOFT_TINT_BASE_COLOR = '#fffef8';
+const SOFT_TINT_BASE_WEIGHT = 0.86;
 
 export type VisualizerStyleSettings = {
   visualizerTypes: NonNullable<AdElement['visualizerType']>[];
@@ -269,6 +271,32 @@ const hexToRgb = (hex: string) => {
   };
 };
 
+const toHexChannel = (value: number) => Math.round(value).toString(16).padStart(2, '0');
+
+const rgbToHex = ({ r, g, b }: { r: number; g: number; b: number }) => (
+  `#${toHexChannel(r)}${toHexChannel(g)}${toHexChannel(b)}`
+);
+
+const mixHexColors = (color: string, baseColor: string, baseWeight: number) => {
+  const source = hexToRgb(color);
+  const base = hexToRgb(baseColor);
+  if (!source || !base) return null;
+  const sourceWeight = 1 - baseWeight;
+
+  return rgbToHex({
+    r: source.r * sourceWeight + base.r * baseWeight,
+    g: source.g * sourceWeight + base.g * baseWeight,
+    b: source.b * sourceWeight + base.b * baseWeight,
+  });
+};
+
+export const createTintedAdBackground = (
+  sourceColor: string | null | undefined,
+  fallback = FIXED_AD_BACKGROUND_COLOR,
+) => (
+  mixHexColors(sourceColor || '', SOFT_TINT_BASE_COLOR, SOFT_TINT_BASE_WEIGHT) || fallback
+);
+
 const luminanceChannel = (channel: number) => {
   const value = channel / 255;
   return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
@@ -361,7 +389,7 @@ const rollFamily = (family: AdStyleFamily): AdStyleArchetype => {
     id: family.id,
     name: family.name,
     variantFingerprint,
-    backgroundColor: FIXED_AD_BACKGROUND_COLOR,
+    backgroundColor: createTintedAdBackground(visualizerColor),
     headlineColor: pickRandom(family.headlines),
     subheadlineColor: pickRandom(family.subheadlines),
     visualizerColor,
