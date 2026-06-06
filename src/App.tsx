@@ -11,7 +11,6 @@ import { DEFAULT_ELEMENTS, useEditorStore, type AdElement, type Caption } from '
 import { getVisualizerBarCount, getVisualizerBars, normalizeVisualizerType } from './lib/visualizer';
 import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
-import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
 import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } from './lib/audio-library';
 import { precomputeAudioAnalysisFromUrl, type AudioAnalysisData } from './lib/audio-analysis';
 import { getEditorDimensions, type ExportSnapshot } from './lib/export-snapshot';
@@ -25,8 +24,19 @@ import type { BrandBrain, BrandReceipts } from './lib/prompts/brand-brain';
 import { useShareLink } from './features/share/useShareLink';
 import type { AdScene } from './engine/ad-scene/scene';
 import { createLegacyCreateAdScene } from './lib/legacy-create-ad-scene';
+import {
+  hydrateStoredMedia,
+  loadSavedAdHistory,
+  loadSavedTemplates,
+  persistSavedTemplates,
+  removeSavedAdHistoryItem,
+  saveDownloadedAdToHistoryItem,
+  type AdHistoryItem,
+  type AudioIntent,
+  type IntroDuration,
+  type SavedTemplate,
+} from './features/create/createSavedDesigns';
 
-const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
 const STUDIO_SEEN_STORAGE_KEY = 'agent_enamel_studio_seen_v1';
 const CURRENT_AUDIO_STORAGE_KEY = 'wiggly_current_audio_v1';
@@ -34,7 +44,6 @@ const DEFAULT_INTRO_IMAGE = '/default-intro-image.png';
 const DEFAULT_INTRO_IMAGE_NAME = 'Default intro image';
 const DEFAULT_AUDIO_URL = '/ai-dental-receptionist-audio.mp3';
 const DEFAULT_AUDIO_NAME = 'AI Dental Receptionist';
-type AudioIntent = 'default' | 'uploaded' | 'generated';
 type CurrentAudioMemory = {
   id?: string;
   builtIn?: boolean;
@@ -232,7 +241,6 @@ const CAPTION_SPEAKER_COLORS: Record<number, string> = {
 
 type RenderDurationCap = 30 | 60 | 'full';
 type ExportPhase = 'recording' | 'converting' | 'complete' | 'error';
-type IntroDuration = 0 | 1 | 2 | 3;
 type AppRoute = 'home' | 'builder' | 'share' | 'create';
 type ReadyExport = {
   url: string;
@@ -460,42 +468,6 @@ const CREATIVE_BRIEF_FIELDS: Array<{
   },
 ];
 
-type SavedTemplate = {
-  id: string;
-  name: string;
-  builtIn?: boolean;
-  createdAt: number;
-  audioAnalysis?: AudioAnalysisData | null;
-  adScene?: AdScene | null;
-  elements: ReturnType<typeof useEditorStore.getState>['elements'];
-  settings: {
-    visualizerColor: string;
-    accentColor: string;
-    bgColor: string;
-    platform: PlatformType;
-    platformTheme: 'light' | 'dark';
-    brandName: string;
-    brandLogo: string | null;
-    simulatedCaption: string;
-    autoCta: string;
-    ctaUrl?: string;
-    bgMedia: { url: string; type: string } | null;
-    bgShadow: boolean;
-    bgShadowOpacity: number;
-    introImage: string | null;
-    introFileName: string;
-    introDuration?: IntroDuration;
-    introFeedCropY?: number;
-    introImageAspect?: number | null;
-    audioUrl: string | null;
-    audioFileName: string;
-    audioAssetId?: string | null;
-    audioIntent?: AudioIntent;
-    audioBrandKey?: string | null;
-    createBrandKey?: string | null;
-  };
-};
-
 const BUILT_IN_TEMPLATES: SavedTemplate[] = [];
 
 type AudioLibraryItem = {
@@ -507,8 +479,6 @@ type AudioLibraryItem = {
 };
 
 type AudioFlyoutView = 'choices' | 'make' | 'library';
-
-type AdHistoryItem = SavedTemplate & StoredAdSnapshot;
 
 const getAppRoute = (): { route: AppRoute; shareSlug: string | null } => {
   const host = window.location.hostname;
@@ -953,12 +923,8 @@ export default function App() {
   };
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(TEMPLATE_STORAGE_KEY);
-      if (saved) setTemplates(JSON.parse(saved));
-    } catch (error) {
-      console.error('Failed to load templates:', error);
-    }
+    const savedTemplates = loadSavedTemplates();
+    if (savedTemplates.length) setTemplates(savedTemplates);
   }, []);
 
   useEffect(() => () => {
@@ -968,8 +934,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    listAdHistory()
-      .then((items) => setHistoryItems(items as AdHistoryItem[]))
+    loadSavedAdHistory()
+      .then((items) => setHistoryItems(items))
       .catch((error) => console.error('Failed to load ad history:', error));
   }, []);
 
@@ -1061,7 +1027,7 @@ export default function App() {
   const persistTemplates = (nextTemplates: SavedTemplate[]) => {
     setTemplates(nextTemplates);
     try {
-      localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(nextTemplates));
+      persistSavedTemplates(nextTemplates);
     } catch (error) {
       console.error('Failed to save templates:', error);
       alert('Template could not be saved. Browser storage may be full.');
@@ -1129,30 +1095,6 @@ export default function App() {
     setSaveTemplateOpen(false);
   };
 
-  const hydrateStoredMedia = (template: SavedTemplate | AdHistoryItem): SavedTemplate => {
-    const historyTemplate = template as AdHistoryItem;
-    const settings = { ...template.settings };
-    const adScene = template.adScene ? JSON.parse(JSON.stringify(template.adScene)) as AdScene : null;
-
-    if (historyTemplate.media?.introImage) settings.introImage = URL.createObjectURL(historyTemplate.media.introImage);
-    if (historyTemplate.media?.audio) {
-      settings.audioUrl = URL.createObjectURL(historyTemplate.media.audio);
-      if (adScene && adScene.audio.status !== 'none') adScene.audio.url = settings.audioUrl;
-    }
-    if (historyTemplate.media?.brandLogo) {
-      settings.brandLogo = URL.createObjectURL(historyTemplate.media.brandLogo);
-      if (adScene) {
-        adScene.brand.logoUrl = settings.brandLogo;
-        adScene.brand.faviconUrl = settings.brandLogo;
-      }
-    }
-    if (historyTemplate.media?.bgMedia && settings.bgMedia) {
-      settings.bgMedia = { ...settings.bgMedia, url: URL.createObjectURL(historyTemplate.media.bgMedia) };
-    }
-
-    return { ...template, settings, adScene };
-  };
-
   const loadTemplate = (template: SavedTemplate | AdHistoryItem) => {
     const hydratedTemplate = hydrateStoredMedia(template);
     setPlaying(false);
@@ -1190,51 +1132,13 @@ export default function App() {
     persistTemplates(templates.filter((template) => template.id !== templateId));
   };
 
-  const captureMediaBlob = async (url: string | null | undefined, label: string, warnings: string[]) => {
-    if (!url) return undefined;
-
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      if (blob.size > 25 * 1024 * 1024) {
-        warnings.push(`${label} was too large to save locally.`);
-        return undefined;
-      }
-      return blob;
-    } catch (error) {
-      console.warn(`Could not save ${label} in history:`, error);
-      warnings.push(`${label} could not be saved locally.`);
-      return undefined;
-    }
-  };
-
   const saveDownloadedAdToHistory = async (snapshot: SavedTemplate, adScene?: AdScene | null) => {
-    const warnings: string[] = [];
-    const media: AdHistoryItem['media'] = {};
-
-    media.introImage = await captureMediaBlob(snapshot.settings.introImage, 'Intro image', warnings);
-    media.audio = await captureMediaBlob(snapshot.settings.audioUrl, 'Audio', warnings);
-    media.brandLogo = await captureMediaBlob(snapshot.settings.brandLogo, 'Brand logo', warnings);
-    media.bgMedia = await captureMediaBlob(snapshot.settings.bgMedia?.url, 'Background media', warnings);
-
-    const historyItem: AdHistoryItem = {
-      ...snapshot,
-      id: `history-${snapshot.id}`,
-      createdAt: Date.now(),
-      adScene: adScene || snapshot.adScene || null,
-      media,
-      mediaWarnings: warnings,
-    };
-
-    try {
-      const nextItems = await saveAdHistoryItem(historyItem);
-      setHistoryItems(nextItems as AdHistoryItem[]);
+    const result = await saveDownloadedAdToHistoryItem(snapshot, adScene);
+    if (result.items) {
+      setHistoryItems(result.items);
       setTemplateLibraryTab('history');
-      setHistorySaveWarning(warnings.length ? warnings.join(' ') : null);
-    } catch (error) {
-      console.error('Failed to save ad history:', error);
-      setHistorySaveWarning('Downloaded video, but browser history could not save this design.');
     }
+    setHistorySaveWarning(result.warning);
   };
 
   const saveExportToHistoryOnce = (snapshot: SavedTemplate | null, adScene?: AdScene | null) => {
@@ -1821,8 +1725,8 @@ export default function App() {
   });
 
   const deleteHistoryItem = async (historyId: string) => {
-    const nextItems = await deleteAdHistoryItem(historyId);
-    setHistoryItems(nextItems as AdHistoryItem[]);
+    const nextItems = await removeSavedAdHistoryItem(historyId);
+    setHistoryItems(nextItems);
   };
 
   const rememberAudioBlob = async (

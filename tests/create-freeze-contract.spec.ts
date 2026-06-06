@@ -136,3 +136,20 @@ test('legacy create formats are centralized before adding new ad formats', () =>
   expect(createFlowSource).not.toContain('const PAUSED_CREATE_FORMATS');
   expect(adGenerationSource).not.toContain("const allowed: GeneratedAdFormat[] = ['visualizer', 'conversation']");
 });
+
+test('legacy create saved-design persistence lives outside App', () => {
+  const savedDesignsPath = path.join(repoRoot, 'src', 'features', 'create', 'createSavedDesigns.ts');
+  const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const savedDesignsSource = fs.readFileSync(savedDesignsPath, 'utf8');
+
+  expect(fs.existsSync(savedDesignsPath)).toBe(true);
+  expect(appSource).toContain("from './features/create/createSavedDesigns'");
+  expect(appSource).not.toContain("from './lib/ad-history'");
+  expect(appSource).not.toContain("const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1'");
+  expect(appSource).not.toContain('const captureMediaBlob');
+  expect(savedDesignsSource).toContain('loadSavedTemplates');
+  expect(savedDesignsSource).toContain('persistSavedTemplates');
+  expect(savedDesignsSource).toContain('hydrateStoredMedia');
+  expect(savedDesignsSource).toContain('saveDownloadedAdToHistoryItem');
+  expect(savedDesignsSource).toContain('removeSavedAdHistoryItem');
+});
