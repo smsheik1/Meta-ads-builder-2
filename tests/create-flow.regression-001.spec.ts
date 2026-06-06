@@ -209,9 +209,13 @@ test('create canvas stays editable and keeps the idle visualizer placeholder', a
   await page.goto('/create');
   await expect(page.locator('[data-tour="canvas"]')).toBeVisible();
   await expect(page.locator('.element-node')).toHaveCount(4);
+  await expect(page.locator('.element-node').first()).toHaveClass(/hover:ring-slate-300/);
+  await expect(page.locator('.element-node').first()).toHaveClass(/ring-1/);
   await expect(page.locator('.wiggly-idle-bar')).toHaveCount(24);
 
   await page.locator('#el-headline-1').click({ force: true });
+  await expect(page.locator('#el-headline-1')).toHaveClass(/ring-2/);
+  await expect(page.locator('#el-headline-1')).toHaveClass(/ring-slate-950\/35/);
   await expect(page.locator('.moveable-control-box')).toBeVisible();
   await expect(page.locator('.moveable-control')).toHaveCount(10);
 });

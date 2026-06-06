@@ -1012,12 +1012,18 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
         const hoverColorLabel = showCaptionColorPicker ? 'Caption color' : el.componentRole === 'subheadline' ? 'Sub-headline color' : 'Headline color';
         const textHasBackground = el.type === 'text' && Boolean(el.backgroundColor);
         const shouldFlash = Boolean(!el.locked && el.componentRole && activeRerollFlash?.roles.includes(el.componentRole));
+        const selectedClass = selectedIds.includes(el.id)
+          ? 'ring-2 ring-slate-950/35 shadow-[0_0_0_6px_rgba(15,23,42,0.05)]'
+          : 'ring-1 ring-transparent';
+        const hoverBorderClass = readOnly
+          ? ''
+          : `cursor-move touch-none select-none rounded-2xl transition hover:ring-slate-300 ${selectedClass}`;
 
         return (
           <div
             key={el.id}
             id={`el-${el.id}`}
-            className={`absolute element-node group ${shouldFlash ? `wiggly-reroll-shine wiggly-reroll-shine-${el.componentRole}` : ''}`}
+            className={`absolute element-node group ${hoverBorderClass} ${shouldFlash ? `wiggly-reroll-shine wiggly-reroll-shine-${el.componentRole}` : ''}`}
             onMouseDown={(e: React.MouseEvent) => {
               if (readOnly) return;
               if (editingId) return;
