@@ -9,7 +9,6 @@ import fs from 'fs';
 import net from 'net';
 import crypto from 'crypto';
 import { spawn } from 'child_process';
-import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
 import { createClient } from '@supabase/supabase-js';
 import { ConvexHttpClient } from 'convex/browser';
@@ -310,34 +309,6 @@ const uploadShareVideo = multer({
     const allowed = file.mimetype === 'video/mp4' || file.originalname.toLowerCase().endsWith('.mp4');
     if (!allowed) {
       cb(new Error('Share videos must be MP4 files.'));
-      return;
-    }
-    cb(null, true);
-  },
-});
-
-const diskStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const tmpDir = path.join(process.cwd(), 'tmp');
-    if (!fs.existsSync(tmpDir)) {
-      fs.mkdirSync(tmpDir);
-    }
-    cb(null, tmpDir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + '.webm');
-  }
-});
-const uploadDisk = multer({
-  storage: diskStorage,
-  limits: {
-    fileSize: 300 * 1024 * 1024,
-    files: 1,
-  },
-  fileFilter: (_req, file, cb) => {
-    const allowed = file.mimetype === 'video/webm' || file.originalname.toLowerCase().endsWith('.webm');
-    if (!allowed) {
-      cb(new Error('Unsupported video file type.'));
       return;
     }
     cb(null, true);
@@ -1073,51 +1044,6 @@ app.post('/api/render-remotion', videoExportLimiter, uploadRemotion.any(), async
       res.status(500).json({ error: 'Remotion render failed.' });
     }
   }
-});
-
-app.post('/api/convert-to-mp4', videoExportLimiter, uploadDisk.single('video'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No video file provided' });
-  }
-
-  const inputPath = req.file.path;
-  ffmpeg.setFfmpegPath(ffmpegPath!);
-
-  const outputPath = inputPath.replace('.webm', '.mp4');
-  
-  ffmpeg(inputPath)
-    .outputOptions([
-      '-y',
-      '-c:v libx264',
-      '-preset ultrafast',
-      '-profile:v main',
-      '-pix_fmt yuv420p',
-      '-c:a aac',
-      '-b:a 128k',
-      '-r 60'
-    ])
-    .outputFormat('mp4')
-    .on('start', (commandLine) => {
-      console.log('Spawned FFmpeg with command: ' + commandLine);
-    })
-    .on('stderr', (stderrLine) => {
-      console.log('FFmpeg stderr: ' + stderrLine); // Don't suppress, helpful for debugging
-    })
-    .on('end', () => {
-      fs.unlink(inputPath, () => {});
-      res.setHeader('Content-Type', 'video/mp4');
-      res.download(outputPath, 'video.mp4', () => {
-         fs.unlink(outputPath, () => {});
-      });
-    })
-    .on('error', (err) => {
-      console.error('FFmpeg error:', err.message);
-      fs.unlink(inputPath, () => {});
-      if (!res.headersSent) {
-        res.status(500).json({ error: 'Failed to convert video' });
-      }
-    })
-    .save(outputPath);
 });
 
 app.post('/api/transcribe', aiGenerationLimiter, billShield('transcription', 'TRANSCRIPTION_ENABLED'), uploadMem.single('audio'), async (req, res) => {
