@@ -247,7 +247,6 @@ app.get('/api/health', (_req, res) => {
     groqConfigured: Boolean(process.env.GROQ_API_KEY),
     openrouterConfigured: Boolean(process.env.OPENROUTER_API_KEY),
     firecrawlConfigured: Boolean(process.env.FIRECRAWL_API_KEY),
-    postizConfigured: Boolean(process.env.POSTIZ_API_KEY),
   });
 });
 
@@ -280,22 +279,6 @@ const uploadRemotion = multer({
   limits: {
     fileSize: 300 * 1024 * 1024,
     files: 12,
-  },
-});
-
-const uploadPostiz = multer({
-  storage: memoryStorage,
-  limits: {
-    fileSize: 300 * 1024 * 1024,
-    files: 1,
-  },
-  fileFilter: (_req, file, cb) => {
-    const allowed = file.mimetype === 'video/mp4' || file.originalname.toLowerCase().endsWith('.mp4');
-    if (!allowed) {
-      cb(new Error('Unsupported MP4 file type.'));
-      return;
-    }
-    cb(null, true);
   },
 });
 
@@ -408,67 +391,6 @@ const getRequestOrigin = (req: express.Request) => {
 const transcriptionBackoffMs = 60 * 1000;
 let transcriptionRateLimitUntil = 0;
 
-const getPostizConfig = () => {
-  const apiKey = process.env.POSTIZ_API_KEY?.trim();
-  const baseUrl = (process.env.POSTIZ_API_BASE_URL || 'https://api.postiz.com/public/v1').trim().replace(/\/+$/, '');
-  const appUrl = process.env.POSTIZ_APP_URL?.trim() || null;
-  return { apiKey, baseUrl, appUrl };
-};
-
-const postizRequest = async (pathName: string, init: RequestInit = {}) => {
-  const { apiKey, baseUrl } = getPostizConfig();
-  if (!apiKey) {
-    const error = new Error('Postiz is not configured. Add POSTIZ_API_KEY to the server environment.');
-    (error as any).status = 400;
-    throw error;
-  }
-
-  const response = await fetch(`${baseUrl}${pathName}`, {
-    ...init,
-    headers: {
-      Authorization: apiKey,
-      ...(init.headers || {}),
-    },
-  });
-
-  const text = await response.text();
-  const payload = text ? JSON.parse(text) : null;
-  if (!response.ok) {
-    const error = new Error(payload?.error || payload?.message || `Postiz request failed with ${response.status}.`);
-    (error as any).status = response.status;
-    throw error;
-  }
-  return payload;
-};
-
-const getPostizSettings = (identifier: string, title: string, platform?: string) => {
-  const settings: Record<string, any> = { __type: identifier };
-
-  if (identifier === 'instagram' || identifier === 'instagram-standalone') {
-    settings.post_type = platform === 'instagram-feed' || platform === 'facebook-feed' ? 'post' : 'reel';
-  }
-
-  if (identifier === 'youtube') {
-    settings.title = title || 'Wiggly ad';
-    settings.type = platform === 'youtube' ? 'video' : 'short';
-    settings.selfDeclaredMadeForKids = false;
-    settings.tags = [];
-  }
-
-  if (identifier === 'tiktok') {
-    settings.privacy_level = 'PUBLIC_TO_EVERYONE';
-    settings.duet = false;
-    settings.stitch = false;
-    settings.comment = true;
-    settings.autoAddMusic = false;
-    settings.brand_content_toggle = false;
-    settings.brand_organic_toggle = false;
-    settings.content_posting_method = 'DIRECT_POST';
-  }
-
-  return settings;
-};
-
 const remotionAssetsRoot = path.join(process.cwd(), 'tmp', 'remotion-assets');
 app.use('/api/remotion-assets', express.static(remotionAssetsRoot, {
   setHeaders: (res) => {
@@ -476,83 +398,6 @@ app.use('/api/remotion-assets', express.static(remotionAssetsRoot, {
     res.setHeader('Access-Control-Allow-Origin', '*');
   },
 }));
-
-app.post('/api/postiz/integrations', async (_req, res) => {
-  try {
-    const integrations = await postizRequest('/integrations');
-    res.json({ integrations: Array.isArray(integrations) ? integrations : [] });
-  } catch (error: any) {
-    console.error('Postiz integrations error:', error);
-    res.status(error.status || 500).json({ error: error.message || 'Could not load Postiz integrations.' });
-  }
-});
-
-app.post('/api/postiz/upload', publishingLimiter, uploadPostiz.single('file'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No MP4 file provided.' });
-    }
-
-    const formData = new FormData();
-    formData.append('file', new Blob([req.file.buffer as any], { type: req.file.mimetype || 'video/mp4' }), req.file.originalname || 'wiggly-ad.mp4');
-    const upload = await postizRequest('/upload', {
-      method: 'POST',
-      body: formData,
-    });
-
-    res.json({ upload });
-  } catch (error: any) {
-    console.error('Postiz upload error:', error);
-    res.status(error.status || 500).json({ error: error.message || 'Could not upload MP4 to Postiz.' });
-  }
-});
-
-app.post('/api/postiz/create-draft', publishingLimiter, async (req, res) => {
-  try {
-    const { integrationId, integrationIdentifier, content, media, title, platform } = req.body || {};
-    if (!integrationId || !integrationIdentifier) {
-      return res.status(400).json({ error: 'Choose a Postiz channel before creating a draft.' });
-    }
-    if (!media?.id || !media?.path) {
-      return res.status(400).json({ error: 'Upload the MP4 before creating a Postiz draft.' });
-    }
-
-    const draftPayload = {
-      type: 'draft',
-      date: new Date().toISOString(),
-      shortLink: false,
-      tags: [],
-      posts: [
-        {
-          integration: { id: String(integrationId) },
-          value: [
-            {
-              content: String(content || '').trim() || 'Created with Wiggly.',
-              image: [
-                {
-                  id: String(media.id),
-                  path: String(media.path),
-                },
-              ],
-            },
-          ],
-          settings: getPostizSettings(String(integrationIdentifier), String(title || 'Wiggly ad'), String(platform || '')),
-        },
-      ],
-    };
-
-    const draft = await postizRequest('/posts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(draftPayload),
-    });
-
-    res.json({ draft, appUrl: getPostizConfig().appUrl });
-  } catch (error: any) {
-    console.error('Postiz draft error:', error);
-    res.status(error.status || 500).json({ error: error.message || 'Could not create Postiz draft.' });
-  }
-});
 
 app.post('/api/share-pages', publishingLimiter, uploadShareVideo.single('video'), async (req, res) => {
   try {

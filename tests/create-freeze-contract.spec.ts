@@ -65,6 +65,7 @@ test('legacy create website research timeout matches the server research budget'
 
 test('legacy create app no longer carries dead phone-call or Postiz branches', () => {
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const serverSource = fs.readFileSync(path.join(repoRoot, 'server.ts'), 'utf8');
 
   expect(appSource).not.toContain('creativeMode');
   expect(appSource).not.toContain('phone-call');
@@ -72,6 +73,11 @@ test('legacy create app no longer carries dead phone-call or Postiz branches', (
   expect(appSource).not.toContain('SOCIAL_POSTING_ENABLED');
   expect(appSource).not.toContain('postiz');
   expect(appSource).not.toContain('Postiz');
+  expect(serverSource).not.toContain('/api/postiz');
+  expect(serverSource).not.toContain('Postiz');
+  expect(serverSource).not.toContain('postiz');
+  expect(serverSource).not.toContain('POSTIZ');
+  expect(serverSource).not.toContain('uploadPostiz');
 });
 
 test('legacy create render path has no phone-call composition branch', () => {
