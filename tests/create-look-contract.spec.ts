@@ -146,6 +146,17 @@ test.describe('legacy /create look contract', () => {
     expect(layout.canvasHeight).toBeGreaterThan(390);
   });
 
+  test('shows the computer-only gate on phone-sized create view', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript(seedCleanBrowserState);
+
+    await page.goto('/create');
+
+    await expect(page.getByRole('heading', { name: 'Open Wiggly on your computer.' })).toBeVisible();
+    await expect(page.getByText('desktop and laptop screens')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Generate ads' })).toHaveCount(0);
+  });
+
   test('keeps the old generated review layout on /create', async ({ page }) => {
     await page.addInitScript(seedGeneratedOgToolState);
 
