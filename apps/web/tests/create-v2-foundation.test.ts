@@ -939,6 +939,9 @@ test('oracle deploy pushes Convex before building the app', () => {
   assert.match(deployScript, /FIRECRAWL_API_KEY/);
   assert.match(deployScript, /GROQ_API_KEY/);
   assert.match(deployScript, /GEMINI_API_KEY/);
+  assert.match(deployScript, /AI_BILL_SHIELD_SECRET_FILE/);
+  assert.match(deployScript, /openssl rand -hex 32/);
+  assert.match(deployScript, /export AI_BILL_SHIELD_SECRET/);
   assert.match(deployScript, /npx convex deploy/);
   assert.ok(deployScript.indexOf('npx convex deploy') < deployScript.indexOf('npm run build'));
   assert.match(rootPackage.scripts?.start ?? '', /tsx server\.ts/);
