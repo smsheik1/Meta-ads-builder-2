@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { DEFAULT_ELEMENTS, type AdElement } from '../src/store';
 import { createLegacyCreateAdScene } from '../src/lib/legacy-create-ad-scene';
-import { requestLegacyCreateRenderDownload } from '../src/lib/legacy-create-render-download';
+import { requestAdSceneRenderDownload, requestLegacyCreateRenderDownload } from '../src/lib/legacy-create-render-download';
 import { buildShareMetadataFromAdScene } from '../src/features/share/shareMetadata';
 import type { BrandBrain } from '../src/lib/prompts/brand-brain';
 
@@ -177,6 +177,50 @@ test('legacy create share metadata comes from the exported AdScene', () => {
   expect(metadata.ctaUrl).toBe('https://ogtool.com/');
 });
 
+test('saved legacy create scenes can render without rebuilding from live variation state', async () => {
+  let submittedScene: any = null;
+  const savedScene = createLegacyCreateAdScene({
+    brandBrain,
+    variation,
+    elements: legacyElements(),
+    captions: [{ text: 'Saved scene caption.', start: 0, end: 1.2, speaker: 1 }],
+    platform: 'instagram-feed',
+    backgroundColor: '#fafaf7',
+    audioStatus: 'none',
+    now: 1_717_200_000_000,
+  });
+
+  const fetcher: typeof fetch = async (input, init) => {
+    const url = String(input);
+
+    if (url === '/api/render-scene-ticket') {
+      const formData = init?.body as FormData;
+      submittedScene = JSON.parse(String(formData.get('scene')));
+      return Response.json({
+        ticketId: 'ticket-1',
+        filename: 'saved-scene.mp4',
+        downloadUrl: '/api/render-scene/ticket-1',
+      });
+    }
+
+    if (url.endsWith('/api/render-scene/ticket-1')) {
+      return new Response(mp4Blob(), { headers: { 'content-type': 'video/mp4' } });
+    }
+
+    return new Response('not found', { status: 404 });
+  };
+
+  const render = await requestAdSceneRenderDownload({
+    scene: savedScene,
+    validateMp4Blob: async () => {},
+    fetcher,
+  });
+
+  expect(submittedScene.id).toBe(savedScene.id);
+  expect(submittedScene.creative.headline).toBe('Why AI recommends your competitors');
+  expect(render.filename).toBe('saved-scene.mp4');
+});
+
 test('legacy create has Express AdScene render-ticket routes', () => {
   const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
   const appSource = fs.readFileSync(path.join(process.cwd(), 'src/App.tsx'), 'utf8');
@@ -191,8 +235,12 @@ test('legacy create has Express AdScene render-ticket routes', () => {
   expect(serverSource).toContain('readRenderSceneTicket');
   expect(serverSource).toContain('saveShareSceneSnapshot');
   expect(serverSource).toContain('parseShareSceneBody');
-  expect(appSource).toContain('requestLegacyCreateRenderDownload');
+  expect(appSource).toContain('requestAdSceneRenderDownload');
   expect(appSource).toContain('tryLegacyCreateAdSceneExport');
+  expect(appSource).toContain('trySavedCreateAdSceneExport');
+  expect(appSource).toContain('adScene?: AdScene | null');
+  expect(appSource).toContain('setCurrentCreateAdScene(hydratedTemplate.adScene || null)');
+  expect(appSource).toContain('saveCurrentTemplate(variation.headline, scene)');
   expect(appSource).toContain('snapshot: exportSnapshot');
   expect(appSource).toContain('adScene: render.scene');
   expect(shareHookSource).toContain('buildShareMetadataFromAdScene');

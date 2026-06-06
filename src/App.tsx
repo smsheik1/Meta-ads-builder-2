@@ -25,7 +25,9 @@ import { pickVisibleColorOnLight } from './lib/color-contrast';
 import { ShareAdPage } from './routes/ShareAdPage';
 import type { BrandBrain, BrandReceipts } from './lib/prompts/brand-brain';
 import { useShareLink } from './features/share/useShareLink';
-import { requestLegacyCreateRenderDownload } from './lib/legacy-create-render-download';
+import type { AdScene } from '../apps/web/features/create/scene';
+import { createLegacyCreateAdScene } from './lib/legacy-create-ad-scene';
+import { requestAdSceneRenderDownload } from './lib/legacy-create-render-download';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -494,6 +496,7 @@ type SavedTemplate = {
   builtIn?: boolean;
   createdAt: number;
   audioAnalysis?: AudioAnalysisData | null;
+  adScene?: AdScene | null;
   elements: ReturnType<typeof useEditorStore.getState>['elements'];
   settings: {
     visualizerColor: string;
@@ -789,6 +792,7 @@ export default function App() {
   const [audioIntent, setAudioIntent] = useState<AudioIntent>('default');
   const [audioBrandKey, setAudioBrandKey] = useState<string | null>(null);
   const [activeCreateBrandKey, setActiveCreateBrandKey] = useState<string | null>(null);
+  const [currentCreateAdScene, setCurrentCreateAdScene] = useState<AdScene | null>(null);
   const [currentAudioAssetId, setCurrentAudioAssetId] = useState<string | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('5551234567');
   const [phoneRingDuration, setPhoneRingDuration] = useState<RingDuration>(0);
@@ -1144,7 +1148,7 @@ export default function App() {
     );
   };
 
-  const createCurrentSnapshot = (nameOverride?: string): SavedTemplate => {
+  const createCurrentSnapshot = (nameOverride?: string, adScene?: AdScene | null): SavedTemplate => {
     const name = (nameOverride || templateDraftName || getCurrentDesignTitle()).trim();
     const snapshotAudioUrl = appRoute === 'create' ? createAudioUrl : audioUrl;
 
@@ -1153,6 +1157,7 @@ export default function App() {
       name,
       createdAt: Date.now(),
       audioAnalysis: snapshotAudioUrl ? previewAudioAnalysis : null,
+      adScene: appRoute === 'create' ? (adScene || currentCreateAdScene || null) : null,
       elements: JSON.parse(JSON.stringify(useEditorStore.getState().elements)),
       settings: {
         visualizerColor,
@@ -1183,8 +1188,8 @@ export default function App() {
     };
   };
 
-  const saveCurrentTemplate = (nameOverride?: string) => {
-    const template = createCurrentSnapshot(nameOverride);
+  const saveCurrentTemplate = (nameOverride?: string, adScene?: AdScene | null) => {
+    const template = createCurrentSnapshot(nameOverride, adScene);
 
     persistTemplates([template, ...templates]);
     setTemplateDraftName('');
@@ -1194,15 +1199,25 @@ export default function App() {
   const hydrateStoredMedia = (template: SavedTemplate | AdHistoryItem): SavedTemplate => {
     const historyTemplate = template as AdHistoryItem;
     const settings = { ...template.settings };
+    const adScene = template.adScene ? JSON.parse(JSON.stringify(template.adScene)) as AdScene : null;
 
     if (historyTemplate.media?.introImage) settings.introImage = URL.createObjectURL(historyTemplate.media.introImage);
-    if (historyTemplate.media?.audio) settings.audioUrl = URL.createObjectURL(historyTemplate.media.audio);
-    if (historyTemplate.media?.brandLogo) settings.brandLogo = URL.createObjectURL(historyTemplate.media.brandLogo);
+    if (historyTemplate.media?.audio) {
+      settings.audioUrl = URL.createObjectURL(historyTemplate.media.audio);
+      if (adScene && adScene.audio.status !== 'none') adScene.audio.url = settings.audioUrl;
+    }
+    if (historyTemplate.media?.brandLogo) {
+      settings.brandLogo = URL.createObjectURL(historyTemplate.media.brandLogo);
+      if (adScene) {
+        adScene.brand.logoUrl = settings.brandLogo;
+        adScene.brand.faviconUrl = settings.brandLogo;
+      }
+    }
     if (historyTemplate.media?.bgMedia && settings.bgMedia) {
       settings.bgMedia = { ...settings.bgMedia, url: URL.createObjectURL(historyTemplate.media.bgMedia) };
     }
 
-    return { ...template, settings };
+    return { ...template, settings, adScene };
   };
 
   const loadTemplate = (template: SavedTemplate | AdHistoryItem) => {
@@ -1233,6 +1248,7 @@ export default function App() {
     setAudioIntent(hydratedTemplate.settings.audioIntent ?? (hydratedTemplate.settings.audioUrl ? 'uploaded' : 'default'));
     setAudioBrandKey(hydratedTemplate.settings.audioBrandKey ?? null);
     setActiveCreateBrandKey(hydratedTemplate.settings.createBrandKey ?? hydratedTemplate.settings.audioBrandKey ?? null);
+    setCurrentCreateAdScene(hydratedTemplate.adScene || null);
     setCurrentAudioAssetId(hydratedTemplate.settings.audioAssetId ?? null);
     requestAnimationFrame(() => commitHistory());
   };
@@ -1259,7 +1275,7 @@ export default function App() {
     }
   };
 
-  const saveDownloadedAdToHistory = async (snapshot: SavedTemplate) => {
+  const saveDownloadedAdToHistory = async (snapshot: SavedTemplate, adScene?: AdScene | null) => {
     const warnings: string[] = [];
     const media: AdHistoryItem['media'] = {};
 
@@ -1272,6 +1288,7 @@ export default function App() {
       ...snapshot,
       id: `history-${snapshot.id}`,
       createdAt: Date.now(),
+      adScene: adScene || snapshot.adScene || null,
       media,
       mediaWarnings: warnings,
     };
@@ -1287,11 +1304,11 @@ export default function App() {
     }
   };
 
-  const saveExportToHistoryOnce = (snapshot: SavedTemplate | null) => {
+  const saveExportToHistoryOnce = (snapshot: SavedTemplate | null, adScene?: AdScene | null) => {
     if (!snapshot) return;
     if (savedExportHistoryIdRef.current === snapshot.id) return;
     savedExportHistoryIdRef.current = snapshot.id;
-    void saveDownloadedAdToHistory(snapshot);
+    void saveDownloadedAdToHistory(snapshot, adScene);
   };
 
   const getMediaDurationSeconds = (url: string | null | undefined, type: 'audio' | 'video') => new Promise<number | null>((resolve) => {
@@ -1798,15 +1815,10 @@ export default function App() {
     setRenderProgress(100);
   };
 
-  const tryLegacyCreateAdSceneExport = async (
-    exportSnapshot: SavedTemplate,
+  const getCurrentLegacyCreateAdScene = (
     variation: GeneratedAdVariation,
     nextBrandBrain: BrandBrain,
-    abortController: AbortController,
   ) => {
-    setExportPhase('converting');
-    setRenderProgress(10);
-
     const sceneCaptions = cleanCaptions(useEditorStore.getState().captions);
     const sceneAudioStatus = createAudioUrl && audioIntent === 'generated'
       ? 'generated'
@@ -1814,8 +1826,7 @@ export default function App() {
         ? 'uploaded'
         : 'none';
 
-    setRenderProgress(25);
-    const render = await requestLegacyCreateRenderDownload({
+    return createLegacyCreateAdScene({
       brandBrain: nextBrandBrain,
       variation,
       elements: JSON.parse(JSON.stringify(useEditorStore.getState().elements)),
@@ -1833,6 +1844,19 @@ export default function App() {
       audioMimeType: sceneAudioStatus === 'none' || !createAudioUrl ? null : inferAudioMimeType(createAudioUrl),
       audioTranscript: sceneCaptions.map((caption) => caption.text).join(' '),
       audioBrandKey: sceneAudioStatus === 'none' ? null : audioBrandKey,
+    });
+  };
+
+  const trySavedCreateAdSceneExport = async (
+    exportSnapshot: SavedTemplate,
+    scene: AdScene,
+    abortController: AbortController,
+  ) => {
+    setExportPhase('converting');
+    setRenderProgress(10);
+
+    const render = await requestAdSceneRenderDownload({
+      scene,
       validateMp4Blob: ensureValidMp4Blob,
       signal: abortController.signal,
     });
@@ -1843,10 +1867,47 @@ export default function App() {
       url,
       blob: render.blob,
       filename: render.filename,
-      snapshot: exportSnapshot,
+      snapshot: {
+        ...exportSnapshot,
+        adScene: render.scene,
+      },
       renderVersion: CURRENT_RENDER_VERSION,
       adScene: render.scene,
     });
+    setExportPhase('complete');
+    setRenderProgress(100);
+  };
+
+  const tryLegacyCreateAdSceneExport = async (
+    exportSnapshot: SavedTemplate,
+    variation: GeneratedAdVariation,
+    nextBrandBrain: BrandBrain,
+    abortController: AbortController,
+  ) => {
+    setExportPhase('converting');
+    setRenderProgress(10);
+
+    setRenderProgress(25);
+    const render = await requestAdSceneRenderDownload({
+      scene: getCurrentLegacyCreateAdScene(variation, nextBrandBrain),
+      validateMp4Blob: ensureValidMp4Blob,
+      signal: abortController.signal,
+    });
+
+    setRenderProgress(92);
+    const url = URL.createObjectURL(render.blob);
+    setExportDownload({
+      url,
+      blob: render.blob,
+      filename: render.filename,
+      snapshot: {
+        ...exportSnapshot,
+        adScene: render.scene,
+      },
+      renderVersion: CURRENT_RENDER_VERSION,
+      adScene: render.scene,
+    });
+    setCurrentCreateAdScene(render.scene);
     setExportPhase('complete');
     setRenderProgress(100);
   };
@@ -1920,7 +1981,7 @@ export default function App() {
         const writable = await fileHandle.createWritable();
         await writable.write(mp4Bytes);
         await writable.close();
-        saveExportToHistoryOnce(exportDownload.snapshot);
+        saveExportToHistoryOnce(exportDownload.snapshot, exportDownload.adScene);
         return;
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') return;
@@ -1944,7 +2005,7 @@ export default function App() {
       window.open(exportDownload.url, '_blank', 'noopener,noreferrer');
     }
 
-    saveExportToHistoryOnce(exportDownload.snapshot);
+    saveExportToHistoryOnce(exportDownload.snapshot, exportDownload.adScene);
   };
 
   const openReadyExport = async () => {
@@ -1958,7 +2019,7 @@ export default function App() {
       return;
     }
     window.open(exportDownload.url, '_blank', 'noopener,noreferrer');
-    saveExportToHistoryOnce(exportDownload.snapshot);
+    saveExportToHistoryOnce(exportDownload.snapshot, exportDownload.adScene);
   };
 
   const { createShareLink } = useShareLink({
@@ -2063,7 +2124,7 @@ export default function App() {
 
       setPostizAppUrl(draftPayload.appUrl || null);
       setPostizStatus('done');
-      saveExportToHistoryOnce(exportDownload.snapshot);
+      saveExportToHistoryOnce(exportDownload.snapshot, exportDownload.adScene);
     } catch (error: any) {
       setPostizStatus('error');
       setPostizError(error.message || 'Could not send this ad to Postiz.');
@@ -2801,7 +2862,7 @@ export default function App() {
       return;
     }
 
-    const exportSnapshot = createCurrentSnapshot(getCurrentDesignTitle());
+    const exportSnapshot = createCurrentSnapshot(getCurrentDesignTitle(), currentCreateAdScene);
     setExportLaunchAnimation(true);
     window.setTimeout(() => setExportLaunchAnimation(false), 650);
     setRendering(true);
@@ -2827,6 +2888,12 @@ export default function App() {
     };
 
     try {
+      if (appRoute === 'create' && currentCreateAdScene) {
+        await trySavedCreateAdSceneExport(exportSnapshot, currentCreateAdScene, remotionAbortController);
+        setRendering(false);
+        exportCancelRef.current = null;
+        return;
+      }
       if (appRoute === 'create' && createVariation && createBrandBrain) {
         await tryLegacyCreateAdSceneExport(exportSnapshot, createVariation, createBrandBrain, remotionAbortController);
         setRendering(false);
@@ -4000,6 +4067,7 @@ This ad headline is: ${variation.headline}`;
 
     setActiveTab('single');
     setCreativeMode('visualizer');
+    setCurrentCreateAdScene(null);
     if (navigateToBuilder) setPlaying(false);
     setActiveCreateBrandKey(nextBrandKey);
     if (audioIntent === 'default' || (audioIntent === 'generated' && audioBrandKey !== nextBrandKey)) {
@@ -4127,8 +4195,10 @@ This ad headline is: ${variation.headline}`;
 
   const saveGeneratedAdDesign = (variation: GeneratedAdVariation, nextBrandBrain: BrandBrain) => {
     applyGeneratedAdVariation(variation, nextBrandBrain, false, false);
+    const scene = getCurrentLegacyCreateAdScene(variation, nextBrandBrain);
+    setCurrentCreateAdScene(scene);
     setTemplateLibraryTab('templates');
-    saveCurrentTemplate(variation.headline);
+    saveCurrentTemplate(variation.headline, scene);
   };
 
   const openSavedCreateDesign = (designId: string) => {
@@ -4142,6 +4212,7 @@ This ad headline is: ${variation.headline}`;
   const resetCreateCanvasForNewWebsite = () => {
     setPlaying(false);
     setActiveCreateBrandKey(null);
+    setCurrentCreateAdScene(null);
     setBrandName('Your brand');
     setBrandLogo(null);
     setSimulatedCaption('Add audio for this ad');
