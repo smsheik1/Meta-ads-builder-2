@@ -5,7 +5,7 @@ import { CanvasEditor } from './components/CanvasEditor';
 import { DevTuningPanel } from './components/DevTuningPanel';
 import { PropertiesPanel } from './components/PropertiesPanel';
 import { CreateFlow, type GeneratedAdVariation } from './components/CreateFlow';
-import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList, ArrowRight, Wand2, PhoneCall, Link2, ExternalLink, Copy, Heart, MessageCircle, Send, Bookmark } from 'lucide-react';
+import { Upload, Play, Square, Database, CheckCircle2, Download, Layers, Loader2, X, Moon, Sun, Type, AudioLines, Captions, MousePointerClick, Image as ImageIcon, BookmarkPlus, ClipboardList, ArrowRight, Wand2, Link2, ExternalLink, Copy, Heart, MessageCircle, Send, Bookmark } from 'lucide-react';
 import Papa from 'papaparse';
 import { DEFAULT_ELEMENTS, useEditorStore, type AdElement, type Caption } from './store';
 import { getVisualizerBarCount, getVisualizerBars, normalizeVisualizerType } from './lib/visualizer';
@@ -14,9 +14,7 @@ import { getRandomSeededHook } from './lib/headline-pool';
 import { deleteAdHistoryItem, listAdHistory, saveAdHistoryItem, type StoredAdSnapshot } from './lib/ad-history';
 import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } from './lib/audio-library';
 import { precomputeAudioAnalysisFromUrl, type AudioAnalysisData } from './lib/audio-analysis';
-import { getActiveCaption, getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions, getExportDimensions, getPlatformElementFrame, type ExportSnapshot, type PhoneCallSnapshot } from './lib/export-snapshot';
-import { PhoneCallSimulator } from './components/PhoneCallSimulator';
-import { formatUsPhoneNumber } from './lib/phone-call';
+import { getEditorDimensions, type ExportSnapshot } from './lib/export-snapshot';
 import { FIXED_AD_BACKGROUND_COLOR, createTintedAdBackground, type AdStyleArchetype } from './lib/style-archetypes';
 import { InteractiveTutorial, WIGGLY_TUTORIAL_EVENT, WIGGLY_TUTORIAL_SEEN_KEY, emitTutorialEvent } from './components/InteractiveTutorial';
 import { getHostedSharePageBySlug, type SharePageRecord } from './lib/share-pages';
@@ -36,15 +34,12 @@ const DEFAULT_INTRO_IMAGE = '/default-intro-image.png';
 const DEFAULT_INTRO_IMAGE_NAME = 'Default intro image';
 const DEFAULT_AUDIO_URL = '/ai-dental-receptionist-audio.mp3';
 const DEFAULT_AUDIO_NAME = 'AI Dental Receptionist';
-const DEFAULT_PHONE_CALL_AUDIO_URL = '/default-phone-call-audio.m4a';
-const DEFAULT_PHONE_CALL_AUDIO_NAME = 'Call Recording';
 type AudioIntent = 'default' | 'uploaded' | 'generated';
 type CurrentAudioMemory = {
   id?: string;
   builtIn?: boolean;
   brandKey?: string | null;
 };
-const SOCIAL_POSTING_ENABLED = false;
 const BACKGROUND_COLOR_FAMILIES = [
   { hue: 158, saturation: [70, 95], lightness: [45, 96] },
   { hue: 190, saturation: [55, 90], lightness: [42, 94] },
@@ -238,8 +233,6 @@ const CAPTION_SPEAKER_COLORS: Record<number, string> = {
 type RenderDurationCap = 30 | 60 | 'full';
 type ExportPhase = 'recording' | 'converting' | 'complete' | 'error';
 type IntroDuration = 0 | 1 | 2 | 3;
-type RingDuration = 0 | 1 | 2 | 3;
-type CreativeMode = 'visualizer' | 'phone-call';
 type AppRoute = 'home' | 'builder' | 'share' | 'create';
 type ReadyExport = {
   url: string;
@@ -291,28 +284,6 @@ type DialogueScript = {
 };
 
 type ConversationWizardStep = 'brief' | 'scripts' | 'edit';
-type PostizStatus = 'idle' | 'loading' | 'uploading' | 'drafting' | 'done' | 'error';
-
-type PostizIntegration = {
-  id: string;
-  name: string;
-  identifier: string;
-  picture?: string;
-  disabled?: boolean;
-  profile?: string;
-};
-
-const POSTIZ_CHANNEL_LABELS: Record<string, string> = {
-  facebook: 'FB',
-  instagram: 'IG',
-  'instagram-standalone': 'IG',
-  tiktok: 'TikTok',
-  youtube: 'YouTube',
-  x: 'X',
-  linkedin: 'LinkedIn',
-  'linkedin-page': 'LinkedIn',
-  threads: 'Threads',
-};
 const GEMINI_3_1_FLASH_TTS_COST = {
   inputPerMillionUsd: 1,
   outputPerMillionUsd: 20,
@@ -747,7 +718,6 @@ export default function App() {
   const showHomepage = appRoute === 'home';
   const isMobileViewport = useIsMobileViewport();
   const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single');
-  const [creativeMode, setCreativeMode] = useState<CreativeMode>('visualizer');
   
   useEffect(() => {
     if (appRoute === 'create' && isCreateHomepageHost() && window.location.pathname === '/') {
@@ -786,8 +756,6 @@ export default function App() {
   const [activeCreateBrandKey, setActiveCreateBrandKey] = useState<string | null>(null);
   const [currentCreateAdScene, setCurrentCreateAdScene] = useState<AdScene | null>(null);
   const [currentAudioAssetId, setCurrentAudioAssetId] = useState<string | null>(null);
-  const [phoneNumber, setPhoneNumber] = useState('5551234567');
-  const [phoneRingDuration, setPhoneRingDuration] = useState<RingDuration>(0);
   const generatedAudioMatchesCreateBrand = Boolean(
     audioUrl
       && audioIntent === 'generated'
@@ -838,13 +806,6 @@ export default function App() {
   const savedExportHistoryIdRef = useRef<string | null>(null);
   const audioAnalysisCacheRef = useRef<Map<string, AudioAnalysisData>>(new Map());
   const [previewAudioAnalysis, setPreviewAudioAnalysis] = useState<AudioAnalysisData | null>(null);
-  const [postizOpen, setPostizOpen] = useState(false);
-  const [postizStatus, setPostizStatus] = useState<PostizStatus>('idle');
-  const [postizIntegrations, setPostizIntegrations] = useState<PostizIntegration[]>([]);
-  const [selectedPostizIntegrationId, setSelectedPostizIntegrationId] = useState('');
-  const [postizError, setPostizError] = useState('');
-  const [postizAppUrl, setPostizAppUrl] = useState<string | null>(null);
-  const [postizAutoOpenAfterExport, setPostizAutoOpenAfterExport] = useState(false);
   const [shareStatus, setShareStatus] = useState<'idle' | 'saving' | 'ready' | 'error'>('idle');
   const [shareUrl, setShareUrl] = useState('');
   const [shareError, setShareError] = useState('');
@@ -991,20 +952,6 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  const switchCreativeMode = (nextMode: CreativeMode) => {
-    setCreativeMode(nextMode);
-    setPlaying(false);
-    if (nextMode === 'phone-call' && (!audioUrl || audioUrl === DEFAULT_AUDIO_URL)) {
-      setGeneratedDialogueAudioUrl(null);
-      setAudioUrl(DEFAULT_PHONE_CALL_AUDIO_URL);
-      setAudioFileName(DEFAULT_PHONE_CALL_AUDIO_NAME);
-      setAudioIntent('default');
-      setAudioBrandKey(null);
-      rememberCurrentAudio({ id: 'built-in-phone-call-recording-audio', builtIn: true });
-      setPhoneRingDuration(0);
-    }
-  };
-
   useEffect(() => {
     try {
       const saved = localStorage.getItem(TEMPLATE_STORAGE_KEY);
@@ -1038,15 +985,6 @@ export default function App() {
             setGeneratedDialogueAudioUrl(null);
             setAudioUrl(DEFAULT_AUDIO_URL);
             setAudioFileName(DEFAULT_AUDIO_NAME);
-            setAudioIntent('default');
-            setAudioBrandKey(null);
-            setCurrentAudioAssetId(null);
-            return;
-          }
-          if (parsed.id === 'built-in-phone-call-recording-audio') {
-            setGeneratedDialogueAudioUrl(null);
-            setAudioUrl(DEFAULT_PHONE_CALL_AUDIO_URL);
-            setAudioFileName(DEFAULT_PHONE_CALL_AUDIO_NAME);
             setAudioIntent('default');
             setAudioBrandKey(null);
             setCurrentAudioAssetId(null);
@@ -1402,7 +1340,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (!audioUrl || creativeMode !== 'visualizer') return;
+    if (!audioUrl) return;
 
     const sourceKey = getAudioAnalysisSourceKey(audioUrl, currentAudioAssetId, audioFileName);
     if (!sourceKey || audioPresetSourceRef.current === sourceKey) return;
@@ -1426,7 +1364,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [audioUrl, audioFileName, currentAudioAssetId, creativeMode]);
+  }, [audioUrl, audioFileName, currentAudioAssetId]);
 
   const getCachedAudioAnalysis = async (
     url: string | null | undefined,
@@ -1471,7 +1409,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (!audioUrl || creativeMode !== 'visualizer') {
+    if (!audioUrl) {
       setPreviewAudioAnalysis(null);
       return;
     }
@@ -1511,7 +1449,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [audioUrl, audioFileName, currentAudioAssetId, creativeMode, primaryVisualizerElement?.visualizerSmoothing, primaryVisualizerElement?.visualizerAttack, primaryVisualizerElement?.visualizerRelease, renderDurationCap]);
+  }, [audioUrl, audioFileName, currentAudioAssetId, primaryVisualizerElement?.visualizerSmoothing, primaryVisualizerElement?.visualizerAttack, primaryVisualizerElement?.visualizerRelease, renderDurationCap]);
 
   const getRemotionUploadExtension = (field: string, url: string, blob: Blob) => {
     const mimeType = (blob.type || (url.startsWith('data:') ? url.slice(5, url.indexOf(';')).toLowerCase() : '')).toLowerCase();
@@ -1690,46 +1628,6 @@ export default function App() {
     return formData;
   };
 
-  const createPhoneCallRemotionSnapshot = async (): Promise<FormData> => {
-    if (!audioUrl) {
-      throw new Error('Upload voicemail audio before exporting the phone call.');
-    }
-
-    let audioStats: Awaited<ReturnType<typeof getAudioSignalStats>>;
-    try {
-      audioStats = await getAudioSignalStats(audioUrl);
-    } catch {
-      throw new Error('This audio file did not work. Try another MP3, WAV, M4A, or video file.');
-    }
-
-    if (!Number.isFinite(audioStats.duration) || audioStats.duration < 0.5) {
-      throw new Error('This audio is too short to use as voicemail proof.');
-    }
-
-    if (audioStats.rms < 0.0008) {
-      throw new Error('This audio looks silent. Try another voicemail recording.');
-    }
-
-    const phoneSnapshot: PhoneCallSnapshot = {
-      kind: 'phone-call',
-      id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `phone-call-${Date.now()}`,
-      name: `Phone call ${formatUsPhoneNumber(phoneNumber) || 'preview'}`,
-      durationSeconds: Math.min(180, phoneRingDuration + audioStats.duration),
-      settings: {
-        phoneNumber,
-        audioUrl,
-        ringAudioUrl: null,
-        ringDurationSeconds: phoneRingDuration,
-        backgroundColor: '#f8fafc',
-      },
-    };
-
-    const formData = new FormData();
-    await appendMediaForRemotion(formData, 'audio', phoneSnapshot.settings.audioUrl, url => { phoneSnapshot.settings.audioUrl = url; });
-    formData.append('snapshot', JSON.stringify(phoneSnapshot));
-    return formData;
-  };
-
   const MIN_VALID_MP4_BYTES = 1024;
 
   const isValidMp4Blob = async (blob: Blob) => {
@@ -1790,33 +1688,6 @@ export default function App() {
     setRenderProgress(100);
   };
 
-  const tryPhoneCallRemotionExport = async (abortController: AbortController) => {
-    setExportPhase('converting');
-    setRenderProgress(10);
-    const formData = await createPhoneCallRemotionSnapshot();
-    setRenderProgress(25);
-
-    const response = await fetch('/api/render-remotion', {
-      method: 'POST',
-      body: formData,
-      signal: abortController.signal,
-    });
-    if (!response.ok) {
-      const payload = await response.json().catch(() => ({}));
-      throw new Error(payload.error || 'Phone call export failed');
-    }
-
-    setRenderProgress(92);
-    const mp4Blob = await response.blob();
-    await ensureValidMp4Blob(mp4Blob, 'Phone call export');
-
-    const url = URL.createObjectURL(mp4Blob);
-    const filename = `wiggly-phone-call-${Date.now()}.mp4`;
-    setExportDownload({ url, blob: mp4Blob, filename, snapshot: null, renderVersion: CURRENT_RENDER_VERSION });
-    setExportPhase('complete');
-    setRenderProgress(100);
-  };
-
   const getCurrentLegacyCreateAdScene = (
     variation: GeneratedAdVariation,
     nextBrandBrain: BrandBrain,
@@ -1866,46 +1737,6 @@ export default function App() {
     const scene = getCurrentLegacyCreateAdScene(variation, nextBrandBrain);
     setCurrentCreateAdScene(scene);
     await tryRemotionExport({ ...exportSnapshot, adScene: scene }, abortController);
-  };
-
-  const downloadPhoneCallVideo = async () => {
-    setExportLaunchAnimation(true);
-    window.setTimeout(() => setExportLaunchAnimation(false), 650);
-    setRendering(true);
-    setRenderProgress(0);
-    setExportErrorMessage('');
-    setExportPhase('recording');
-    savedExportHistoryIdRef.current = null;
-    setShareStatus('idle');
-    setShareUrl('');
-    setShareError('');
-    setExportDownload((previous) => {
-      if (previous) URL.revokeObjectURL(previous.url);
-      return null;
-    });
-
-    const remotionAbortController = new AbortController();
-    exportCancelRef.current = () => {
-      remotionAbortController.abort();
-      setRendering(false);
-      setRenderProgress(0);
-      setExportPhase('recording');
-      exportCancelRef.current = null;
-    };
-
-    try {
-      await tryPhoneCallRemotionExport(remotionAbortController);
-      setRendering(false);
-      exportCancelRef.current = null;
-    } catch (error: any) {
-      if (remotionAbortController.signal.aborted) return;
-      console.error('Phone call export failed:', error);
-      setExportErrorMessage(error instanceof Error ? error.message : 'Phone call export failed.');
-      setExportPhase('error');
-      setRendering(false);
-      exportCancelRef.current = null;
-      alert(error?.message || 'Phone call export failed. Please try again.');
-    }
   };
 
   const downloadReadyExport = async () => {
@@ -1988,104 +1819,6 @@ export default function App() {
     setShareIsLocalPreview,
     setShareUrl,
   });
-
-  const getPostizDraftContent = () => (
-    exportDownload?.snapshot?.settings.simulatedCaption?.trim() ||
-    simulatedCaption.trim() ||
-    'Created with Wiggly.'
-  );
-
-  const getSelectedPostizChannelLabel = () => {
-    const selectedIntegration = postizIntegrations.find((integration) => integration.id === selectedPostizIntegrationId);
-    if (!selectedIntegration) return 'Postiz';
-    return POSTIZ_CHANNEL_LABELS[selectedIntegration.identifier] || selectedIntegration.name || selectedIntegration.identifier;
-  };
-
-  const loadPostizIntegrations = async () => {
-    setPostizStatus('loading');
-    setPostizError('');
-    setPostizAppUrl(null);
-    try {
-      const response = await fetch('/api/postiz/integrations', { method: 'POST' });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.error || 'Could not load Postiz channels.');
-      const integrations = (Array.isArray(payload.integrations) ? payload.integrations : []).filter((integration: PostizIntegration) => !integration.disabled);
-      setPostizIntegrations(integrations);
-      setSelectedPostizIntegrationId((current) => current || integrations[0]?.id || '');
-      setPostizStatus('idle');
-    } catch (error: any) {
-      setPostizStatus('error');
-      setPostizError(error.message || 'Could not load Postiz channels.');
-    }
-  };
-
-  const openPostizHandoff = async () => {
-    if (!exportDownload) return;
-    setPostizOpen(true);
-    if (postizIntegrations.length === 0) {
-      await loadPostizIntegrations();
-    }
-  };
-
-  const handlePostToSocials = () => {
-    if (exportDownload) {
-      void openPostizHandoff();
-      return;
-    }
-
-    setPostizAutoOpenAfterExport(true);
-    void downloadSimulatedVideo();
-  };
-
-  useEffect(() => {
-    if (!postizAutoOpenAfterExport || !exportDownload || rendering) return;
-    setPostizAutoOpenAfterExport(false);
-    void openPostizHandoff();
-  }, [postizAutoOpenAfterExport, exportDownload, rendering]);
-
-  const sendExportToPostiz = async () => {
-    if (!exportDownload || !selectedPostizIntegrationId) return;
-    const selectedIntegration = postizIntegrations.find((integration) => integration.id === selectedPostizIntegrationId);
-    if (!selectedIntegration) return;
-
-    try {
-      const mp4Bytes = await getValidMp4Bytes(exportDownload.blob, 'Ready export');
-      setPostizStatus('uploading');
-      setPostizError('');
-
-      const formData = new FormData();
-      formData.append('file', new Blob([mp4Bytes], { type: 'video/mp4' }), exportDownload.filename);
-      const uploadResponse = await fetch('/api/postiz/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      const uploadPayload = await uploadResponse.json().catch(() => ({}));
-      if (!uploadResponse.ok) throw new Error(uploadPayload.error || 'Could not upload MP4 to Postiz.');
-
-      setPostizStatus('drafting');
-      const draftResponse = await fetch('/api/postiz/create-draft', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          integrationId: selectedIntegration.id,
-          integrationIdentifier: selectedIntegration.identifier,
-          content: getPostizDraftContent(),
-          media: uploadPayload.upload,
-          title: exportDownload.filename.replace(/\.mp4$/i, ''),
-          platform: exportDownload.snapshot?.settings.platform || platform,
-        }),
-      });
-      const draftPayload = await draftResponse.json().catch(() => ({}));
-      if (!draftResponse.ok) throw new Error(draftPayload.error || 'Could not create Postiz draft.');
-
-      setPostizAppUrl(draftPayload.appUrl || null);
-      setPostizStatus('done');
-      saveExportToHistoryOnce(exportDownload.snapshot, exportDownload.adScene);
-    } catch (error: any) {
-      setPostizStatus('error');
-      setPostizError(error.message || 'Could not send this ad to Postiz.');
-    }
-  };
 
   const deleteHistoryItem = async (historyId: string) => {
     const nextItems = await deleteAdHistoryItem(historyId);
@@ -2488,10 +2221,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (creativeMode === 'phone-call') {
-      return;
-    }
-
     const transcriptionAudioUrl = appRoute === 'create' ? createAudioUrl : audioUrl;
 
     if (!transcriptionAudioUrl) {
@@ -2638,7 +2367,7 @@ export default function App() {
     };
 
     transcribeUrl();
-  }, [appRoute, audioUrl, createAudioUrl, generatedDialogueAudioUrl, creativeMode, currentAudioAssetId, storedAudioItems]);
+  }, [appRoute, audioUrl, createAudioUrl, generatedDialogueAudioUrl, currentAudioAssetId, storedAudioItems]);
 
   const handleAddImageElement = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -2796,7 +2525,7 @@ export default function App() {
       return;
     }
     if (!audioUrl) {
-      alert(creativeMode === 'phone-call' ? 'Upload voicemail audio first.' : 'Please upload an audio file first.');
+      alert('Please upload an audio file first.');
       return;
     }
     if (!playing) {
@@ -2813,11 +2542,6 @@ export default function App() {
     createVariation?: GeneratedAdVariation | null,
     createBrandBrain?: BrandBrain | null,
   ) => {
-    if (creativeMode === 'phone-call') {
-      await downloadPhoneCallVideo();
-      return;
-    }
-
     const exportSnapshot = createCurrentSnapshot(getCurrentDesignTitle(), currentCreateAdScene);
     setExportLaunchAnimation(true);
     window.setTimeout(() => setExportLaunchAnimation(false), 650);
@@ -2883,688 +2607,6 @@ export default function App() {
       return;
     }
 
-    const { width: targetWidth, height: targetHeight } = getExportDimensions(platform);
-    const editorDimensions = getEditorDimensions(platform);
-    const layoutOffsetX = getDefaultLayoutOffsetX(platform);
-    const layoutScaleY = getDefaultLayoutScaleY(platform);
-    
-    const scale = targetWidth / editorDimensions.width;
-
-    const canvas = document.createElement('canvas');
-    canvas.width = targetWidth;
-    canvas.height = targetHeight;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    
-    // Pre-load images to avoid flickering during recording
-    const imageCache: Record<string, HTMLImageElement> = {};
-    let bgVideoEl: HTMLVideoElement | null = null;
-    let renderDuration = 3000; // default 3s if no audio/video
-
-    if (bgMedia && bgMedia.type.startsWith('image')) {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = bgMedia.url;
-      await new Promise(r => { img.onload = r; img.onerror = r; });
-      imageCache[bgMedia.url] = img;
-    } else if (bgMedia && bgMedia.type === 'video') {
-      bgVideoEl = document.createElement('video');
-      bgVideoEl.crossOrigin = 'anonymous';
-      bgVideoEl.src = bgMedia.url;
-      bgVideoEl.volume = 0; // mute the video element so it doesn't play out loud to the user during render
-      bgVideoEl.playsInline = true;
-      await new Promise(r => { bgVideoEl!.onloadeddata = r; bgVideoEl!.onerror = r; });
-      if (bgVideoEl.duration && isFinite(bgVideoEl.duration)) {
-        renderDuration = Math.max(renderDuration, bgVideoEl.duration * 1000);
-      }
-    }
-
-    let introImgEl: HTMLImageElement | null = null;
-    if (introImage) {
-      introImgEl = new Image();
-      introImgEl.crossOrigin = 'anonymous';
-      introImgEl.src = introImage;
-      await new Promise(r => { introImgEl!.onload = r; introImgEl!.onerror = r; });
-    }
-
-    const elements = JSON.parse(JSON.stringify(useEditorStore.getState().elements));
-    const captions = JSON.parse(JSON.stringify(useEditorStore.getState().captions));
-    for (const el of elements) {
-      if (el.type === 'image' && el.imageUrl) {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.src = el.imageUrl;
-        await new Promise(r => { img.onload = r; img.onerror = r; });
-        
-        if (el.removeWhite) {
-          const c = document.createElement('canvas');
-          c.width = img.width;
-          c.height = img.height;
-          const cCtx = c.getContext('2d');
-          if (cCtx) {
-            cCtx.drawImage(img, 0, 0);
-            const imgData = cCtx.getImageData(0, 0, c.width, c.height);
-            const data = imgData.data;
-            for (let i = 0; i < data.length; i += 4) {
-              if (data[i] > 240 && data[i+1] > 240 && data[i+2] > 240) {
-                data[i+3] = 0;
-              }
-            }
-            cCtx.putImageData(imgData, 0, 0);
-            const transparentImg = new Image();
-            transparentImg.src = c.toDataURL('image/png');
-            await new Promise(r => { transparentImg.onload = r; });
-            imageCache[el.imageUrl] = transparentImg;
-            continue;
-          }
-        }
-        
-        imageCache[el.imageUrl] = img;
-      }
-    }
-
-    // Draw background initially
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    canvas.style.position = 'fixed';
-    canvas.style.top = '-9999px';
-    canvas.style.left = '-9999px';
-    canvas.style.opacity = '1'; 
-    canvas.style.pointerEvents = 'none';
-    canvas.style.zIndex = '-1';
-    document.body.appendChild(canvas);
-
-    const stream = canvas.captureStream(60);
-
-    let audioContext: AudioContext | null = null;
-    let audioSource: AudioBufferSourceNode | null = null;
-    let analyser: AnalyserNode | null = null;
-    let dataArray: Uint8Array | null = null;
-    let destStream: MediaStream | null = null;
-
-    if (audioUrl) {
-      try {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        audioContext = new AudioCtx();
-        const dest = audioContext.createMediaStreamDestination();
-        destStream = dest.stream;
-        
-        analyser = audioContext.createAnalyser();
-        analyser.fftSize = 256; 
-        
-        const response = await fetch(audioUrl);
-        const arrayBuffer = await response.arrayBuffer();
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-        
-        renderDuration = Math.max(renderDuration, audioBuffer.duration * 1000);
-        
-        audioSource = audioContext.createBufferSource();
-        audioSource.buffer = audioBuffer;
-        
-        audioSource.connect(analyser);
-        analyser.connect(dest);
-        
-        // Critical: inject the audio track into the main video stream
-        destStream.getAudioTracks().forEach(track => stream.addTrack(track));
-        
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-      } catch (e) {
-        console.error("Error setting up audio:", e);
-      }
-    }
-
-    if (renderDurationCap !== 'full') {
-      renderDuration = Math.min(renderDuration, renderDurationCap * 1000);
-    }
-
-    const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-    const chunks: BlobPart[] = [];
-    const abortController = new AbortController();
-    let exportCancelled = false;
-    let hasStopped = false;
-
-    const cleanupExportResources = () => {
-      if (canvas.parentNode) {
-        canvas.parentNode.removeChild(canvas);
-      }
-      stream.getTracks().forEach((track) => track.stop());
-      if (audioSource) {
-        try { audioSource.stop(); } catch(e){}
-      }
-      if (bgVideoEl) {
-        bgVideoEl.pause();
-      }
-      if (audioContext && audioContext.state !== 'closed') {
-        audioContext.close();
-      }
-    };
-
-    exportCancelRef.current = () => {
-      exportCancelled = true;
-      hasStopped = true;
-      abortController.abort();
-      if (mediaRecorder.state !== 'inactive') {
-        try { mediaRecorder.stop(); } catch(e){}
-      } else {
-        cleanupExportResources();
-      }
-      setRendering(false);
-      setRenderProgress(0);
-      setExportPhase('recording');
-      exportCancelRef.current = null;
-    };
-    
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunks.push(e.data);
-    };
-
-    mediaRecorder.onstop = async () => {
-      if (exportCancelled) {
-        cleanupExportResources();
-        return;
-      }
-
-      await new Promise(r => setTimeout(r, 100)); // drain remaining chunks
-      const blob = new Blob(chunks, { type: 'video/webm' });
-      cleanupExportResources();
-      setExportPhase('converting');
-      setRenderProgress(92);
-      
-      const formData = new FormData();
-      formData.append('video', blob, 'video.webm');
-      
-      try {
-        const res = await fetch('/api/convert-to-mp4', {
-          method: 'POST',
-          body: formData,
-          signal: abortController.signal,
-        });
-        
-        if (!res.ok) throw new Error('Failed to convert');
-        
-        const mp4Blob = await res.blob();
-        await ensureValidMp4Blob(mp4Blob, 'Browser recorder fallback');
-        
-        const url = URL.createObjectURL(mp4Blob);
-        const filename = `agent-enamel-${Date.now()}.mp4`;
-        setExportDownload({ url, blob: mp4Blob, filename, snapshot: exportSnapshot, renderVersion: CURRENT_RENDER_VERSION });
-        setExportPhase('complete');
-        setRenderProgress(100);
-      } catch (err) {
-        if (exportCancelled || (err instanceof DOMException && err.name === 'AbortError')) {
-          return;
-        }
-        console.error("Error creating MP4:", err);
-        setExportPhase('error');
-        alert('The video failed. Please try again.');
-      }
-      setRendering(false);
-      exportCancelRef.current = null;
-    };
-
-    const exportFps = 60;
-    const frameDurationMs = 1000 / exportFps;
-
-    mediaRecorder.start(1000);
-    if (audioSource) {
-      audioSource.start();
-    }
-    if (bgVideoEl) {
-      bgVideoEl.currentTime = 0;
-      bgVideoEl.play();
-    }
-    
-    const renderStartTime = performance.now();
-    let frame = 0;
-    const draw = () => {
-      if (hasStopped) return;
-      const elapsed = Math.min(performance.now() - renderStartTime, renderDuration);
-      
-      if (elapsed >= renderDuration) {
-         hasStopped = true;
-         
-         if (mediaRecorder.state !== 'inactive') {
-            try { mediaRecorder.requestData(); } catch(e){}
-            mediaRecorder.stop();
-         } else {
-            setRendering(false);
-            setRenderProgress(100);
-         }
-         return;
-      }
-
-      setRenderProgress(Math.min((elapsed / renderDuration) * 90, 90));
-      
-      // Draw background
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      if (bgMedia && bgMedia.type === 'video' && bgVideoEl) {
-        // cover mode video
-        const canvasRatio = canvas.width / canvas.height;
-        const vidRatio = bgVideoEl.videoWidth / Math.max(1, bgVideoEl.videoHeight);
-        let dWidth = canvas.width;
-        let dHeight = canvas.height;
-        if (vidRatio > canvasRatio) {
-           dWidth = canvas.height * vidRatio;
-        } else {
-           dHeight = canvas.width / vidRatio;
-        }
-        const dx = (canvas.width - dWidth) / 2;
-        const dy = (canvas.height - dHeight) / 2;
-        ctx.drawImage(bgVideoEl, dx, dy, dWidth, dHeight);
-      } else if (bgMedia && imageCache[bgMedia.url]) {
-        // cover mode image
-        const img = imageCache[bgMedia.url];
-        const canvasRatio = canvas.width / canvas.height;
-        const imgRatio = img.width / img.height;
-        let dWidth = canvas.width;
-        let dHeight = canvas.height;
-        if (imgRatio > canvasRatio) {
-           dWidth = canvas.height * imgRatio;
-        } else {
-           dHeight = canvas.width / imgRatio;
-        }
-        const dx = (canvas.width - dWidth) / 2;
-        const dy = (canvas.height - dHeight) / 2;
-        ctx.drawImage(img, dx, dy, dWidth, dHeight);
-      }
-
-      if (bgMedia && bgShadow) {
-        ctx.fillStyle = `rgba(0, 0, 0, ${bgShadowOpacity})`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-      
-      const currentElements = elements;
-      const sortedElements = [...currentElements].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
-      
-      const currentTimeSec = elapsed / 1000;
-      const renderCaptions = captions;
-      const activeCaptionIndexGlobal = renderCaptions.findIndex(c => currentTimeSec >= c.start && currentTimeSec <= c.end);
-      const activeCaptionGlobal = activeCaptionIndexGlobal >= 0 ? renderCaptions[activeCaptionIndexGlobal] : undefined;
-      const hasTwoSpeakers = renderCaptions.some(c => c.speaker === 2);
-      
-      const loopSpeaker = activeCaptionGlobal
-        ? (hasTwoSpeakers ? activeCaptionGlobal.speaker : (activeCaptionIndexGlobal % 2) + 1)
-        : (Math.floor(currentTimeSec / 1.5) % 2 === 0 ? 1 : 2);
-      
-      if (analyser && dataArray) {
-        const visEl = currentElements.find(e => e.type === 'visualizer');
-        if (visEl) {
-          analyser.smoothingTimeConstant = visEl.visualizerSmoothing ?? 0.8;
-        }
-        analyser.getByteFrequencyData(dataArray);
-      }
-
-      const canvasWidth = canvas.width / scale;
-      const canvasHeight = canvas.height / scale;
-
-      sortedElements.forEach(el => {
-         ctx.save();
-         const elementFrame = getPlatformElementFrame(el, platform);
-         const rawElW = elementFrame.width;
-         const rawElH = elementFrame.height;
-         const feedSafeSquareTop = isFeedPlatform(platform) ? Math.max(0, (canvasHeight - canvasWidth) / 2) : 0;
-         const feedSafeSquareBottom = feedSafeSquareTop + canvasWidth;
-         const rawElY = isFeedPlatform(platform) && el.type === 'caption'
-           ? Math.min(elementFrame.y, feedSafeSquareBottom - rawElH - 8)
-           : elementFrame.y;
-         const elX = (elementFrame.x + layoutOffsetX) * scale;
-         const elY = rawElY * layoutScaleY * scale;
-         const elW = rawElW * scale;
-         const elH = rawElH * layoutScaleY * scale;
-         
-         ctx.translate(elX, elY);
-         if (el.rotation) {
-             ctx.translate(elW / 2, elH / 2);
-             ctx.rotate(el.rotation * Math.PI / 180);
-             ctx.translate(-elW / 2, -elH / 2);
-         }
-         
-         if (el.type === 'image' && el.imageUrl && imageCache[el.imageUrl]) {
-            if (el.mixBlendMode) {
-                ctx.globalCompositeOperation = el.mixBlendMode as any;
-            }
-            const img = imageCache[el.imageUrl];
-            const imgRatio = img.width / img.height;
-            const boxRatio = elW / elH;
-            
-            let drawW = elW;
-            let drawH = elH;
-            
-            if (imgRatio > boxRatio) {
-                drawH = drawW / imgRatio;
-            } else {
-                drawW = drawH * imgRatio;
-            }
-            
-            const drawX = (elW - drawW) / 2;
-            const drawY = (elH - drawH) / 2;
-            
-            ctx.drawImage(img, drawX, drawY, drawW, drawH);
-
-            if (el.imageShadow) {
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.fillStyle = `rgba(0, 0, 0, ${el.imageShadowOpacity ?? 0.42})`;
-                ctx.fillRect(0, 0, elW, elH);
-            }
-            
-            if (el.mixBlendMode) {
-                ctx.globalCompositeOperation = 'source-over';
-            }
-         } else if (el.type === 'text') {
-             ctx.fillStyle = el.color || '#fff';
-             let fontSize = (el.fontSize || 16) * scale;
-             const fontFamily = el.fontFamily || 'Inter, sans-serif';
-             const fontWeight = el.fontWeight || 'normal';
-             const fontStyle = el.fontStyle || 'normal';
-             const textDecoration = el.textDecoration;
-             ctx.textAlign = (el.textAlign as CanvasTextAlign) || 'center';
-             ctx.textBaseline = 'top';
-             const plainContent = stripRichText(el.content || '');
-
-             const wrapText = (size: number) => {
-               ctx.font = `${fontStyle} ${fontWeight} ${size}px ${fontFamily}`;
-               const wrapped: string[] = [];
-               const explicitLines = plainContent.split('\n');
-               explicitLines.forEach(expLine => {
-                 if (!expLine) {
-                   wrapped.push('');
-                   return;
-                 }
-                 const words = expLine.split(/\s+/);
-                 let currentLine = words[0] || '';
-                 for (let i = 1; i < words.length; i++) {
-                   const word = words[i];
-                   const width = ctx.measureText(currentLine + " " + word).width;
-                   if (width <= elW) {
-                     currentLine += " " + word;
-                   } else {
-                     wrapped.push(currentLine);
-                     currentLine = word;
-                   }
-                 }
-                 if (currentLine) wrapped.push(currentLine);
-               });
-               return wrapped;
-             };
-
-             let lines = wrapText(fontSize);
-             let lineHeight = fontSize * (el.lineHeight || 1.12);
-             if (el.type === 'text') {
-               let low = 8 * scale;
-               let high = 96 * scale;
-               let bestSize = low;
-               let bestLines = lines;
-               while (low <= high) {
-                 const mid = Math.floor((low + high) / 2);
-                 const candidateLines = wrapText(mid);
-                 const candidateHeight = candidateLines.length * mid * (el.lineHeight || 1.12);
-                 const candidateWidest = candidateLines.reduce((max, line) => Math.max(max, ctx.measureText(line).width), 0);
-                 if (candidateWidest <= elW - (8 * scale) && candidateHeight <= elH - (4 * scale)) {
-                   bestSize = mid;
-                   bestLines = candidateLines;
-                   low = mid + 1;
-                 } else {
-                   high = mid - 1;
-                 }
-               }
-               fontSize = bestSize;
-               lines = bestLines;
-               lineHeight = fontSize * (el.lineHeight || 1.12);
-               ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
-             } else {
-               ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
-             }
-
-             const totalHeight = lines.length * lineHeight;
-             
-             let textX = 0;
-             if (ctx.textAlign === 'center') textX = elW / 2;
-             else if (ctx.textAlign === 'right') textX = elW;
-             
-             // Vertically center using top baseline, shifted down slightly to match HTML visual center
-             const startY = (elH - totalHeight) / 2 + (fontSize * 0.1);
-
-             lines.forEach((line, i) => {
-               const lineY = startY + (i * lineHeight);
-               ctx.fillText(line, textX, lineY, elW);
-               if (textDecoration === 'underline') {
-                 const metrics = ctx.measureText(line);
-                 let underlineX = textX;
-                 if (ctx.textAlign === 'center') underlineX = textX - (metrics.width / 2);
-                 else if (ctx.textAlign === 'right') underlineX = textX - metrics.width;
-                 const underlineY = lineY + fontSize * 0.9;
-                 ctx.save();
-                 ctx.strokeStyle = el.color || '#fff';
-                 ctx.lineWidth = Math.max(1.5 * scale, fontSize * 0.06);
-                 ctx.beginPath();
-                 ctx.moveTo(underlineX, underlineY);
-                 ctx.lineTo(underlineX + metrics.width, underlineY);
-                 ctx.stroke();
-                 ctx.restore();
-               }
-             });
-         } else if (el.type === 'caption') {
-             const currentTimeSec = elapsed / 1000;
-             const renderCaptions = captions;
-             const { caption: activeCaption, index: activeCaptionIndex } = getActiveCaption(renderCaptions, currentTimeSec);
-             
-             if (activeCaption) {
-                const maxTextWidth = elW - (18 * scale);
-                const maxTextHeight = elH - (16 * scale);
-                const captionText = `${activeCaption.text}`;
-                const hasTwoSpeakers = renderCaptions.some(caption => caption.speaker === 2);
-                const captionSpeaker = hasTwoSpeakers ? activeCaption.speaker : (activeCaptionIndex % 2) + 1;
-                const captionColor = (captionSpeaker === 2 ? el.captionSpeaker2Color : el.captionSpeaker1Color) || CAPTION_SPEAKER_COLORS[captionSpeaker] || el.color || accentColor;
-                const fontFamily = el.fontFamily || 'Inter, sans-serif';
-                const fontWeight = el.fontWeight || 'bold';
-                const wrapCaptionLines = (fontSize: number) => {
-                  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-                  const lines: string[] = [];
-                  captionText.split('\n').forEach((explicitLine) => {
-                    const words = explicitLine.trim().split(/\s+/).filter(Boolean);
-                    if (words.length === 0) {
-                      lines.push('');
-                      return;
-                    }
-
-                    let line = words[0];
-                    for (let i = 1; i < words.length; i++) {
-                      const testLine = `${line} ${words[i]}`;
-                      if (ctx.measureText(testLine).width <= maxTextWidth) {
-                        line = testLine;
-                      } else {
-                        lines.push(line);
-                        line = words[i];
-                      }
-                    }
-                    lines.push(line);
-                  });
-                  return lines;
-                };
-
-                let low = 8 * scale;
-                let high = (platform === 'youtube' ? 92 : 72) * scale;
-                let captionFontSize = low;
-                let renderLines = wrapCaptionLines(captionFontSize);
-                while (low <= high) {
-                  const mid = Math.floor((low + high) / 2);
-                  const candidateLines = wrapCaptionLines(mid);
-                  const candidateLineHeight = mid * 1.22;
-                  const widest = candidateLines.reduce((max, line) => Math.max(max, ctx.measureText(line).width), 0);
-                  const totalHeight = candidateLines.length * candidateLineHeight;
-
-                  if (widest <= maxTextWidth && totalHeight <= maxTextHeight) {
-                    captionFontSize = mid;
-                    renderLines = candidateLines;
-                    low = mid + 1;
-                  } else {
-                    high = mid - 1;
-                  }
-                }
-
-                ctx.font = `${fontWeight} ${captionFontSize}px ${fontFamily}`;
-                const lineHeight = captionFontSize * 1.22;
-                
-                const totalTextHeight = renderLines.length * lineHeight;
-                const startY = (elH - totalTextHeight) / 2;
-
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'top';
-                ctx.fillStyle = captionColor;
-                
-                // Add drop shadow
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-                ctx.shadowBlur = 4 * scale;
-                ctx.shadowOffsetX = 1 * scale;
-                ctx.shadowOffsetY = 1 * scale;
-                
-                renderLines.forEach((l, i) => {
-                  ctx.fillText(l.trim(), elW / 2, startY + (i * lineHeight));
-                });
-                
-                // Reset shadow
-                ctx.shadowColor = 'transparent';
-                ctx.shadowBlur = 0;
-                ctx.shadowOffsetX = 0;
-                ctx.shadowOffsetY = 0;
-             }
-         } else if (el.type === 'button') {
-             ctx.fillStyle = el.backgroundColor || '#4f46e5';
-             const r = (el.borderRadius || 8) * scale;
-             ctx.beginPath();
-             ctx.roundRect(0, 0, elW, elH, r);
-             ctx.fill();
-             
-             if (el.content) {
-                 ctx.fillStyle = el.color || '#fff';
-                 const fontSize = (el.fontSize || 18) * scale;
-                 ctx.font = `${el.fontWeight || 'bold'} ${fontSize}px sans-serif`;
-                 ctx.textAlign = 'center';
-                 ctx.textBaseline = 'middle';
-                 ctx.fillText(el.content, elW / 2, elH / 2);
-             }
-         } else if (el.type === 'visualizer') {
-             const type = normalizeVisualizerType(el.visualizerType);
-             const count = getVisualizerBarCount(type, el.barCount);
-             const dataBins = dataArray ? Math.max(1, Math.floor(dataArray.length * 0.5)) : 0;
-             const fallbackLevel = dataArray
-               ? dataArray.slice(0, dataBins).reduce((sum, value) => sum + value, 0) / dataBins / 255
-               : null;
-             const fallbackBands = dataArray
-               ? Array.from({ length: 52 }, (_, index) => {
-                   const dataIndex = Math.min(dataArray.length - 1, 1 + Math.floor((index / 51) * Math.floor(dataArray.length * 0.4)));
-                   return (dataArray[dataIndex] || 0) / 255;
-                 })
-               : null;
-             const bars = getVisualizerBars({
-               type,
-               count,
-               frame,
-               height: elH,
-               scale,
-               audioLevel: analyser ? fallbackLevel : null,
-               frequencyBands: analyser ? fallbackBands : null,
-               currentSpeaker: loopSpeaker,
-               splitSpeakers: el.visualizerSplitSpeakers,
-               mirror: el.visualizerMirror,
-               sensitivity: el.visualizerSensitivity ?? 1.5,
-               heightScale: el.visualizerHeight ?? 0.9,
-               baseline: el.visualizerBaseline ?? 4,
-               gain: el.visualizerGain ?? 1,
-               compression: el.visualizerCompression ?? 1,
-               floor: el.visualizerFloor ?? 0,
-               ceiling: el.visualizerCeiling ?? 1,
-               curve: el.visualizerCurve ?? 'default',
-               bandFocus: el.visualizerBandFocus ?? 'full',
-               color: el.barColor || '#00ffcc',
-             });
-             const gap = 4 * scale;
-             const minBarWidth = (type === 'waveform-strip' ? 2 : 4) * scale;
-             const barW = Math.max(1, Math.max(minBarWidth, (elW - gap * (count - 1)) / count));
-             const halfCount = Math.floor(count / 2);
-             bars.forEach((bar, index) => {
-               const isLeftSpeakerSide = index < halfCount;
-               const barH = Math.min(elH, bar.height);
-               const barX = index * (barW + gap);
-               const barY = type === 'bars-bottom' ? elH - barH : (elH - barH) / 2;
-               ctx.fillStyle = el.visualizerSplitSpeakers && !isLeftSpeakerSide ? '#8b5cf6' : bar.color;
-               ctx.globalAlpha = bar.opacity;
-               ctx.beginPath();
-               ctx.roundRect(barX, barY, barW, barH, barW / 2);
-               ctx.fill();
-               ctx.globalAlpha = 1;
-             });
-         }
-         ctx.restore();
-      });
-
-      if (introImgEl && introDuration > 0) {
-        const introFadeDuration = 0.65;
-        let introOpacity = 0;
-        if (currentTimeSec < introDuration) {
-          introOpacity = 1;
-        } else if (currentTimeSec < introDuration + introFadeDuration) {
-          introOpacity = 1 - ((currentTimeSec - introDuration) / introFadeDuration);
-        }
-
-        if (introOpacity > 0) {
-          const imgRatio = introImgEl.width / introImgEl.height;
-          const canvasRatio = canvas.width / canvas.height;
-          let coverWidth = canvas.width;
-          let coverHeight = canvas.height;
-          if (imgRatio > canvasRatio) {
-            coverWidth = canvas.height * imgRatio;
-          } else {
-            coverHeight = canvas.width / imgRatio;
-          }
-          const coverX = (canvas.width - coverWidth) / 2;
-          const coverY = (canvas.height - coverHeight) / 2;
-
-          let dWidth = canvas.width;
-          let dHeight = canvas.height;
-          if (isFeedPlatform(platform) && !introIsSquareish) {
-            if (imgRatio > canvasRatio) {
-              dWidth = canvas.height * imgRatio;
-            } else {
-              dHeight = canvas.width / imgRatio;
-            }
-          } else {
-            if (imgRatio > canvasRatio) {
-              dHeight = canvas.width / imgRatio;
-            } else {
-              dWidth = canvas.height * imgRatio;
-            }
-          }
-          const dx = (canvas.width - dWidth) / 2;
-          const dy = isFeedPlatform(platform) && !introIsSquareish ? (canvas.height - dHeight) * (introFeedCropY / 100) : (canvas.height - dHeight) / 2;
-          ctx.save();
-          ctx.globalAlpha = introOpacity;
-          ctx.fillStyle = '#000000';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.globalAlpha = introOpacity * 0.65;
-          ctx.drawImage(introImgEl, coverX, coverY, coverWidth, coverHeight);
-          ctx.globalAlpha = introOpacity;
-          ctx.drawImage(introImgEl, dx, dy, dWidth, dHeight);
-          ctx.restore();
-        }
-      }
-
-      const videoTrack = stream.getVideoTracks()[0] as any;
-      if (videoTrack && typeof videoTrack.requestFrame === 'function') {
-        videoTrack.requestFrame();
-      }
-
-      frame++;
-      
-      if (!hasStopped) {
-         window.setTimeout(draw, frameDurationMs);
-      }
-    };
-    
-    draw();
   };
 
   const runBatch = () => {
@@ -3710,7 +2752,6 @@ export default function App() {
   const showCompactDesignLibrary = activeTemplateItems.length === 0;
   const audioLibraryItems: AudioLibraryItem[] = [
     { id: 'built-in-ai-dental-receptionist-audio', name: DEFAULT_AUDIO_NAME, url: DEFAULT_AUDIO_URL, builtIn: true },
-    { id: 'built-in-phone-call-recording-audio', name: DEFAULT_PHONE_CALL_AUDIO_NAME, url: DEFAULT_PHONE_CALL_AUDIO_URL, builtIn: true },
     ...storedAudioItems.map((item) => ({
       id: item.id,
       name: item.name,
@@ -3725,7 +2766,7 @@ export default function App() {
 
   const formatVoiceName = (name: string) => {
     const withoutExtension = name.replace(/\.[a-z0-9]+$/i, '');
-    if (withoutExtension === DEFAULT_AUDIO_NAME || withoutExtension === DEFAULT_PHONE_CALL_AUDIO_NAME) return withoutExtension;
+    if (withoutExtension === DEFAULT_AUDIO_NAME) return withoutExtension;
     return withoutExtension
       .replace(/[-_]+/g, ' ')
       .replace(/\s+/g, ' ')
@@ -3763,8 +2804,8 @@ export default function App() {
     setAudioFlyoutOpen(true);
   };
 
-  const renderAudioPanel = (mode: CreativeMode) => {
-    const uploadTitle = mode === 'phone-call' ? 'Upload voicemail audio' : 'Upload voice audio';
+  const renderAudioPanel = () => {
+    const uploadTitle = 'Upload voice audio';
     const currentName = formatVoiceName(currentAudioItem?.name || audioFileName || DEFAULT_AUDIO_NAME);
     const currentLabel = currentAudioItem ? getAudioItemLabel(currentAudioItem) : 'Example';
 
@@ -4026,7 +3067,6 @@ export default function App() {
 This ad headline is: ${variation.headline}`;
 
     setActiveTab('single');
-    setCreativeMode('visualizer');
     setCurrentCreateAdScene(null);
     if (navigateToBuilder) setPlaying(false);
     setActiveCreateBrandKey(nextBrandKey);
@@ -5250,30 +4290,6 @@ This ad headline is: ${variation.headline}`;
               Make Many Ads
             </button>
           </div>
-          {activeTab === 'single' && (
-            <div className="wiggly-mode-switch ml-1 grid grid-cols-2 rounded-full p-1">
-              {([
-                { id: 'visualizer', label: 'Audio Ad', icon: AudioLines },
-                { id: 'phone-call', label: 'Phone Call', icon: PhoneCall },
-              ] as const).map((mode) => {
-                const Icon = mode.icon;
-                const active = creativeMode === mode.id;
-                return (
-                  <button
-                    key={mode.id}
-                    type="button"
-                    onClick={() => {
-                      switchCreativeMode(mode.id);
-                    }}
-                    className={`flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold transition ${active ? 'wiggly-mode-button-active' : 'text-slate-500 hover:text-slate-900'}`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {mode.label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
         </div>
       </header>
 
@@ -5283,10 +4299,8 @@ This ad headline is: ${variation.headline}`;
             
             {activeTab === 'single' ? (
               <>
-              {creativeMode === 'visualizer' ? (
-              <>
               <div className="wiggly-panel p-4">
-                {renderAudioPanel('visualizer')}
+                {renderAudioPanel()}
               </div>
 
               <PropertiesPanel />
@@ -5580,60 +4594,31 @@ This ad headline is: ${variation.headline}`;
                   </div>
 
                   <div className="wiggly-timeline w-full p-3">
-                    {creativeMode === 'phone-call' ? (
-                      <>
-                        <div className="mb-3 flex items-center justify-between">
-                          <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Timing</span>
-                          <span className="text-xs font-semibold text-slate-500">Ring then voicemail</span>
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Timing</span>
+                      <span className="text-xs font-semibold text-slate-500">
+                        {renderDurationCap === 'full' ? 'Full voice audio' : `${selectedTimelineDuration}s`}
+                      </span>
+                    </div>
+                    <div className="flex h-8 overflow-hidden rounded-full bg-slate-100 shadow-inner">
+                      {introImage && (
+                        <div
+                          className="flex min-w-[46px] items-center justify-center border-r border-white bg-indigo-500 text-[10px] font-bold text-white"
+                          style={{ width: introTimelineWidth }}
+                          title={`Intro image: ${introDuration}s`}
+                        >
+                          Intro {introDuration}s
                         </div>
-                        <div className="flex h-8 overflow-hidden rounded-full bg-slate-100 shadow-inner">
-                          {phoneRingDuration > 0 && (
-                            <div
-                              className="flex min-w-[56px] items-center justify-center border-r border-white bg-emerald-500 text-[10px] font-bold text-white"
-                              style={{ width: `${Math.max(16, phoneRingDuration * 12)}%` }}
-                            >
-                              Ring {phoneRingDuration}s
-                            </div>
-                          )}
-                          <div className="flex flex-1 items-center justify-center bg-slate-900 text-[10px] font-bold text-white">
-                            {phoneRingDuration > 0 ? 'Voicemail' : 'Recording includes ring'}
-                          </div>
-                        </div>
-                        <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400">
-                          <span>0s</span>
-                          <span>{phoneRingDuration > 0 ? 'Timer starts after ring' : 'No extra ring added'}</span>
-                          <span>End</span>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="mb-3 flex items-center justify-between">
-                          <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Timing</span>
-                          <span className="text-xs font-semibold text-slate-500">
-                            {renderDurationCap === 'full' ? 'Full voice audio' : `${selectedTimelineDuration}s`}
-                          </span>
-                        </div>
-                        <div className="flex h-8 overflow-hidden rounded-full bg-slate-100 shadow-inner">
-                          {introImage && (
-                            <div
-                              className="flex min-w-[46px] items-center justify-center border-r border-white bg-indigo-500 text-[10px] font-bold text-white"
-                              style={{ width: introTimelineWidth }}
-                              title={`Intro image: ${introDuration}s`}
-                            >
-                              Intro {introDuration}s
-                            </div>
-                          )}
-                          <div className="flex flex-1 items-center justify-center bg-slate-900 text-[10px] font-bold text-white">
-                            Main ad {mainTimelineSeconds}s
-                          </div>
-                        </div>
-                        <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400">
-                          <span>0s</span>
-                          {introImage ? <span>Fade after {introDuration}s</span> : <span>No intro</span>}
-                          <span>{renderDurationCap === 'full' ? 'End' : `${selectedTimelineDuration}s`}</span>
-                        </div>
-                      </>
-                    )}
+                      )}
+                      <div className="flex flex-1 items-center justify-center bg-slate-900 text-[10px] font-bold text-white">
+                        Main ad {mainTimelineSeconds}s
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-slate-400">
+                      <span>0s</span>
+                      {introImage ? <span>Fade after {introDuration}s</span> : <span>No intro</span>}
+                      <span>{renderDurationCap === 'full' ? 'End' : `${selectedTimelineDuration}s`}</span>
+                    </div>
                   </div>
                 </div>
               </details>
@@ -5794,59 +4779,6 @@ This ad headline is: ${variation.headline}`;
                 </div>
               </details>
               </>
-              ) : (
-                <>
-                  <div className="wiggly-panel p-4">
-                    <div className="mb-4 flex items-center justify-between">
-                      <h2 className="wiggly-panel-title uppercase">Phone Call</h2>
-                      <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-700">9:16</span>
-                    </div>
-
-                    <div className="space-y-4">
-                      <label className="block">
-                        <span className="mb-1.5 block text-xs font-semibold text-slate-700">US phone number</span>
-                        <input
-                          type="tel"
-                          value={phoneNumber}
-                          onChange={(event) => setPhoneNumber(event.target.value)}
-                          placeholder="5551234567"
-                          className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10"
-                        />
-                        <span className="mt-1 block text-xs font-semibold text-slate-400">{formatUsPhoneNumber(phoneNumber) || '(555) 123-4567'}</span>
-                      </label>
-
-                      <div>
-                        <div className="mb-2 flex items-center justify-between">
-                          <span className="text-xs font-semibold text-slate-700">Ring duration</span>
-                          <span className="text-xs font-semibold text-slate-400">{phoneRingDuration}s</span>
-                        </div>
-                        <div className="grid grid-cols-4 rounded-lg bg-slate-100 p-1">
-                          {([0, 1, 2, 3] as const).map((duration) => (
-                            <button
-                              key={duration}
-                              type="button"
-                              onClick={() => setPhoneRingDuration(duration)}
-                              className={`rounded-md px-2 py-2 text-xs font-black transition ${phoneRingDuration === duration ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-                            >
-                              {duration}s
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {renderAudioPanel('phone-call')}
-
-                      <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                        <p className="text-xs font-semibold leading-5 text-slate-500">
-                          This looks like an outgoing iPhone call. If you add a ring, Wiggly plays a normal US phone ring before the voicemail.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                </>
-              )}
-              </>
             ) : (
               <div className="bg-indigo-900 rounded-xl border border-indigo-800 shadow-sm p-4 text-white">
                 <div className="flex items-center justify-between mb-3">
@@ -5914,7 +4846,7 @@ This ad headline is: ${variation.headline}`;
                 </button>
               </div>
             )}
-            {activeTab === 'single' && creativeMode === 'visualizer' && (
+            {activeTab === 'single' && (
               <div className="wiggly-panel p-3">
                 <button
                   type="button"
@@ -5949,19 +4881,7 @@ This ad headline is: ${variation.headline}`;
           </div>
 
           {/* Main Preview Area */}
-          <div className={`wiggly-studio flex min-h-0 flex-1 flex-col items-center px-4 ${creativeMode === 'phone-call' ? 'justify-center overflow-y-auto overflow-x-visible py-4' : 'justify-center overflow-hidden py-5'}`}>
-            
-            {creativeMode === 'phone-call' ? (
-              <div className="wiggly-stage-card relative w-full max-w-[420px] shrink-0 pb-8">
-                <PhoneCallSimulator
-                  phoneNumber={phoneNumber}
-                  audioUrl={audioUrl}
-                  ringDurationSeconds={phoneRingDuration}
-                  playing={playing}
-                  onPlaybackComplete={() => setPlaying(false)}
-                />
-              </div>
-            ) : (
+          <div className="wiggly-studio flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden px-4 py-5">
             <div className={`wiggly-stage-card relative w-full ${platform === 'youtube' ? 'max-w-[640px]' : 'max-w-[420px]'}`}>
               <PlatformFrame
                 platform={platform}
@@ -5994,23 +4914,20 @@ This ad headline is: ${variation.headline}`;
               </PlatformFrame>
               
             </div>
-            )}
 
             {/* Toolbar */}
             <div className="wiggly-toolbar mt-4 flex flex-col items-center gap-2">
-                {creativeMode === 'visualizer' && (
-                  <div
-                    className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-black shadow-sm transition-all duration-500 ${
-                      spaceRemixCueVisible
-                        ? 'translate-y-0 border-indigo-100 bg-white text-slate-900 opacity-100'
-                        : 'pointer-events-none -translate-y-1 border-transparent bg-white/0 text-slate-400 opacity-0'
-                    }`}
-                    aria-hidden={!spaceRemixCueVisible}
-                  >
-                    <span className="rounded-md bg-slate-950 px-2 py-1 text-[11px] font-black uppercase tracking-wide text-white">Space</span>
-                    <span>remix the ad</span>
-                  </div>
-                )}
+                <div
+                  className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-black shadow-sm transition-all duration-500 ${
+                    spaceRemixCueVisible
+                      ? 'translate-y-0 border-indigo-100 bg-white text-slate-900 opacity-100'
+                      : 'pointer-events-none -translate-y-1 border-transparent bg-white/0 text-slate-400 opacity-0'
+                  }`}
+                  aria-hidden={!spaceRemixCueVisible}
+                >
+                  <span className="rounded-md bg-slate-950 px-2 py-1 text-[11px] font-black uppercase tracking-wide text-white">Space</span>
+                  <span>remix the ad</span>
+                </div>
                 <div className="flex flex-wrap justify-center gap-3">
                 <button 
                   onClick={downloadSimulatedVideo}
@@ -6060,17 +4977,6 @@ This ad headline is: ${variation.headline}`;
                     <option value="youtube">YouTube</option>
                   </select>
                 </label>
-                {SOCIAL_POSTING_ENABLED && (
-                  <button
-                    type="button"
-                    onClick={handlePostToSocials}
-                    disabled={rendering}
-                    className="wiggly-secondary-action flex items-center gap-2 self-start px-4 py-2 text-sm font-semibold text-slate-500 disabled:cursor-not-allowed disabled:opacity-80"
-                  >
-                    {rendering && postizAutoOpenAfterExport ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                    <span>Post Online</span>
-                  </button>
-                )}
               </div>
 
             </div>
@@ -6078,8 +4984,7 @@ This ad headline is: ${variation.headline}`;
           </div>
 
           {/* Template Library */}
-          {creativeMode === 'visualizer' && (
-          showCompactDesignLibrary ? (
+          {showCompactDesignLibrary ? (
           <div className="hidden w-14 shrink-0 items-start justify-center border-l border-slate-200/70 bg-white/55 pt-5 xl:flex">
             <button
               type="button"
@@ -6175,130 +5080,10 @@ This ad headline is: ${variation.headline}`;
               )}
             </div>
           </div>
-          )
           )}
         </main>
 
         {exportStatusCard}
-
-        {postizOpen && (
-          <div className="fixed inset-0 z-[74] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-              <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">Post This Ad</h2>
-                  <p className="mt-1 text-sm text-slate-500">Choose where it should go. Wiggly will make a draft with this video and caption so you can review it before posting.</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setPostizOpen(false)}
-                  className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <div className="space-y-4 p-5">
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-xs font-black uppercase tracking-wide text-slate-400">Draft caption</p>
-                  <p className="mt-2 text-sm font-semibold leading-6 text-slate-700">{getPostizDraftContent()}</p>
-                </div>
-
-                {postizStatus === 'loading' ? (
-                  <div className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-5 text-sm font-bold text-slate-500">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading social accounts
-                  </div>
-                ) : postizIntegrations.length === 0 ? (
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold leading-6 text-amber-900">
-                    {postizError || 'No connected social accounts found. Connect Facebook, Instagram, TikTok, or YouTube in Postiz, then refresh.'}
-                    <button
-                      type="button"
-                      onClick={loadPostizIntegrations}
-                      className="mt-3 block rounded-lg bg-white px-3 py-2 text-xs font-black text-amber-900 shadow-sm"
-                    >
-                      Refresh channels
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs font-black uppercase tracking-wide text-slate-400">Choose where to send it</p>
-                      <button
-                        type="button"
-                        onClick={loadPostizIntegrations}
-                        disabled={postizStatus === 'uploading' || postizStatus === 'drafting'}
-                        className="text-xs font-black text-slate-400 transition hover:text-slate-700 disabled:opacity-50"
-                      >
-                        Refresh
-                      </button>
-                    </div>
-                    {postizIntegrations.map((integration) => {
-                      const selected = selectedPostizIntegrationId === integration.id;
-                      return (
-                        <button
-                          key={integration.id}
-                          type="button"
-                          onClick={() => setSelectedPostizIntegrationId(integration.id)}
-                          className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${
-                            selected
-                              ? 'border-slate-900 bg-white shadow-sm'
-                              : 'border-slate-200 bg-slate-50 hover:bg-white'
-                          }`}
-                        >
-                          {integration.picture ? (
-                            <img src={integration.picture} alt="" className="h-9 w-9 rounded-full object-cover" />
-                          ) : (
-                            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-xs font-black uppercase text-slate-500">
-                              {integration.identifier.slice(0, 2)}
-                            </span>
-                          )}
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-black text-slate-900">{integration.name || integration.profile || integration.identifier}</span>
-                            <span className="block truncate text-xs font-semibold text-slate-500">{integration.identifier}{integration.profile ? ` · ${integration.profile}` : ''}</span>
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {postizStatus === 'error' && postizIntegrations.length > 0 && (
-                  <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold leading-6 text-red-700">{postizError}</p>
-                )}
-
-                {postizStatus === 'done' && (
-                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold leading-6 text-emerald-800">
-                    {postizAppUrl ? (
-                      <button
-                        type="button"
-                        onClick={() => window.open(postizAppUrl, '_blank', 'noopener,noreferrer')}
-                        className="text-left font-black text-emerald-900 underline decoration-emerald-300 underline-offset-4 transition hover:text-emerald-700"
-                      >
-                        Draft ready on {getSelectedPostizChannelLabel()} — finish posting →
-                      </button>
-                    ) : (
-                      <span>Draft ready on {getSelectedPostizChannelLabel()}. Add POSTIZ_APP_URL for a direct finish-posting link.</span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 px-5 py-4">
-                <p className="text-xs font-semibold text-slate-500">Nothing goes live until you approve it.</p>
-                <button
-                  type="button"
-                  onClick={sendExportToPostiz}
-                  disabled={!selectedPostizIntegrationId || postizStatus === 'loading' || postizStatus === 'uploading' || postizStatus === 'drafting' || postizStatus === 'done'}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {(postizStatus === 'uploading' || postizStatus === 'drafting') && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {postizStatus === 'uploading' ? 'Uploading video' : postizStatus === 'drafting' ? 'Making draft' : postizStatus === 'done' ? 'Draft ready' : 'Make draft'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {conversationWizardOpen && (
           <div className="fixed inset-0 z-[75] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
@@ -6822,7 +5607,7 @@ This ad headline is: ${variation.headline}`;
             </div>
           </div>
       )}
-      <InteractiveTutorial enabled={!showHomepage && creativeMode === 'visualizer'} replayToken={tutorialReplayKey} />
+      <InteractiveTutorial enabled={!showHomepage} replayToken={tutorialReplayKey} />
     </div>
   );
 }
