@@ -1,5 +1,6 @@
 import type { PlatformType } from '../../components/PlatformFrame';
 import { stripRichText } from '../../lib/rich-text';
+import type { AdScene } from '../../../apps/web/features/create/scene';
 
 type ShareMetadataElement = {
   type: string;
@@ -72,3 +73,16 @@ export const buildShareMetadataFromSnapshot = (snapshot: ShareMetadataSnapshot):
     platform: snapshot.settings.platform,
   };
 };
+
+export const buildShareMetadataFromAdScene = (scene: AdScene): ShareMetadata => ({
+  headline: stripRichText(scene.creative.headline).trim() || 'Wiggly ad',
+  subhead: stripRichText(scene.creative.subheadline).trim(),
+  ctaText: stripRichText(scene.creative.ctaText || '').trim() || 'Learn More',
+  ctaUrl: normalizeShareUrl(scene.creative.ctaUrl || scene.brand.websiteUrl || ''),
+  businessName: scene.brand.name || 'Wiggly',
+  brandName: scene.brand.name || 'Wiggly',
+  brandLogo: getShareableBrandLogo(scene.brand.logoUrl || scene.brand.faviconUrl),
+  accentColor: scene.creative.accentColor || '#00D6B8',
+  backgroundColor: scene.creative.backgroundColor || '#FAFAF7',
+  platform: scene.platform as PlatformType,
+});

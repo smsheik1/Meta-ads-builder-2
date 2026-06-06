@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { createShareSlug, saveHostedSharePage } from '../../lib/share-pages';
-import { buildShareMetadataFromSnapshot, type ShareMetadataSnapshot } from './shareMetadata';
+import type { AdScene } from '../../../apps/web/features/create/scene';
+import { buildShareMetadataFromAdScene, buildShareMetadataFromSnapshot, type ShareMetadataSnapshot } from './shareMetadata';
 
 export type ShareLinkStatus = 'idle' | 'saving' | 'ready' | 'error';
 
@@ -8,6 +9,7 @@ type ReadyShareExport<TSnapshot extends ShareMetadataSnapshot> = {
   blob: Blob;
   snapshot: TSnapshot | null;
   renderVersion: number;
+  adScene?: AdScene | null;
 };
 
 type UseShareLinkArgs<TSnapshot extends ShareMetadataSnapshot> = {
@@ -38,7 +40,7 @@ export const useShareLink = <TSnapshot extends ShareMetadataSnapshot>({
       setShareError('This video was made with an older renderer. Make the video again, then create the share link.');
       return;
     }
-    if (!exportDownload.snapshot) {
+    if (!exportDownload.snapshot && !exportDownload.adScene) {
       setShareStatus('error');
       setShareError('Make the video again before creating a share link.');
       return;
@@ -46,14 +48,17 @@ export const useShareLink = <TSnapshot extends ShareMetadataSnapshot>({
 
     setShareStatus('saving');
     setShareError('');
-    setShareIsLocalPreview(false);
+      setShareIsLocalPreview(false);
     try {
       await ensureValidMp4Blob(exportDownload.blob, 'Ready export');
-      const metadata = buildShareMetadataFromSnapshot(exportDownload.snapshot);
+      const metadata = exportDownload.adScene
+        ? buildShareMetadataFromAdScene(exportDownload.adScene)
+        : buildShareMetadataFromSnapshot(exportDownload.snapshot as TSnapshot);
       const record = await saveHostedSharePage({
         slug: createShareSlug(metadata.headline),
         videoBlob: exportDownload.blob,
         videoMimeType: exportDownload.blob.type || 'video/mp4',
+        scene: exportDownload.adScene || null,
         ...metadata,
       });
       const shareSearch = new URLSearchParams();
@@ -66,12 +71,15 @@ export const useShareLink = <TSnapshot extends ShareMetadataSnapshot>({
       if (metadata.brandLogo && metadata.brandLogo.length < 1500) {
         shareSearch.set('l', metadata.brandLogo);
       }
-      shareSearch.set('a', exportDownload.snapshot.settings.audioUrl ? '1' : '0');
+      const hasAudio = exportDownload.adScene
+        ? exportDownload.adScene.audio.status !== 'none'
+        : Boolean(exportDownload.snapshot?.settings.audioUrl);
+      shareSearch.set('a', hasAudio ? '1' : '0');
       const nextUrl = `${window.location.origin}/s/${record.slug}${shareSearch.toString() ? `?${shareSearch.toString()}` : ''}`;
       setShareUrl(nextUrl);
       setShareIsLocalPreview(!record.videoUrl);
       setShareStatus('ready');
-      saveExportToHistoryOnce(exportDownload.snapshot);
+      if (exportDownload.snapshot) saveExportToHistoryOnce(exportDownload.snapshot);
       try {
         await navigator.clipboard?.writeText(nextUrl);
       } catch {

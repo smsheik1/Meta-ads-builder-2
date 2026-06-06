@@ -246,6 +246,7 @@ type ReadyExport = {
   filename: string;
   snapshot: SavedTemplate | null;
   renderVersion: number;
+  adScene?: AdScene | null;
 };
 
 const CURRENT_RENDER_VERSION = 2;
@@ -1844,6 +1845,7 @@ export default function App() {
       filename: render.filename,
       snapshot: exportSnapshot,
       renderVersion: CURRENT_RENDER_VERSION,
+      adScene: render.scene,
     });
     setExportPhase('complete');
     setRenderProgress(100);
