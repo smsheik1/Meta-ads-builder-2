@@ -42,11 +42,17 @@ test('freeze docs name legacy create as the active product path', () => {
 
 test('legacy create app has no browser recorder fallback renderer', () => {
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const serverSource = fs.readFileSync(path.join(repoRoot, 'server.ts'), 'utf8');
+  const packageSource = fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8');
 
   expect(appSource).not.toContain('canvas.captureStream');
   expect(appSource).not.toContain('new MediaRecorder');
   expect(appSource).not.toContain('Browser recorder fallback');
   expect(appSource).not.toContain('/api/convert-to-mp4');
+  expect(serverSource).not.toContain('/api/convert-to-mp4');
+  expect(serverSource).not.toContain('uploadDisk');
+  expect(serverSource).not.toContain('fluent-ffmpeg');
+  expect(packageSource).not.toContain('fluent-ffmpeg');
 });
 
 test('legacy create app no longer carries dead phone-call or Postiz branches', () => {
