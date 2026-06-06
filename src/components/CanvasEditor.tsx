@@ -237,12 +237,6 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
     };
   }, [rerollFlash]);
 
-  // Sync targets with selectedIds
-  useEffect(() => {
-    const newTargets = selectedIds.map(id => document.getElementById(`el-${id}`)).filter(Boolean) as HTMLElement[];
-    setTargets(newTargets);
-  }, [selectedIds, elements.length]); // depend on elements.length to re-attach when elements are added/removed
-
   // Keyboard shortcuts for z-index, undo/redo, nudging
   useEffect(() => {
     if (readOnly) return;
@@ -372,6 +366,12 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
     ? getActiveCaption(captions, Math.max(playbackTime, captions[0].start)).caption?.text || captions[0].text
     : null;
   const displayCaption = currentCaption || (!captionsLoading ? captionPreviewText : null);
+
+  // Sync targets with selectedIds
+  useEffect(() => {
+    const newTargets = selectedIds.map(id => document.getElementById(`el-${id}`)).filter(Boolean) as HTMLElement[];
+    setTargets(newTargets);
+  }, [selectedIds, elements.length, audioUrl, captionsLoading, displayCaption, emptyCaptionFallback]); // re-attach when hidden caption layers appear/disappear
 
   useEffect(() => {
     if (!editingId) return;
@@ -998,6 +998,11 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
       />}
 
       {elements.map((el) => {
+        const captionElementText = displayCaption || (audioUrl ? (captionsLoading ? 'Captions are loading' : '') : emptyCaptionFallback);
+        if (el.type === 'caption' && !captionElementText.trim()) {
+          return null;
+        }
+
         const frame = getPlatformElementFrame(el, platform);
         const feedSafeSquareTop = feedPlatform ? Math.max(0, (dimensions.h - dimensions.w) / 2) : 0;
         const feedSafeSquareBottom = feedSafeSquareTop + dimensions.w;
@@ -1339,7 +1344,7 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
                       fontWeight: el.fontWeight || 700,
                     }}
                   >
-                    {displayCaption || (audioUrl ? (captionsLoading ? 'Captions are loading' : '') : emptyCaptionFallback)}
+                    {captionElementText}
                   </AutoFitText>
                </div>
             )}

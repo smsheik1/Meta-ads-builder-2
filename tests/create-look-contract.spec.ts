@@ -116,6 +116,7 @@ test.describe('legacy /create look contract', () => {
     await expect(page.getByRole('button', { name: 'Download video' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Play this ad' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Add audio for this ad' })).toBeVisible();
+    await expect(page.getByText('Add audio for this ad')).toHaveCount(1);
     await expect(page.locator('[data-tour="canvas"]')).toBeVisible();
     await expect(page.locator('.wiggly-idle-bar')).toHaveCount(24);
 
