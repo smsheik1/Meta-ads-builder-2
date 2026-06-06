@@ -873,17 +873,18 @@ test('minimal Remotion fixture is wired to AdScene', () => {
   assert.match(sceneSource, /scene: AdScene/);
 });
 
-test('Next keeps create-v2 as the v2 app and leaves create to the legacy app', () => {
+test('Next deletes create-v2 and leaves create to the legacy app', () => {
   const rootPage = fs.readFileSync(path.join(webRoot, 'app/page.tsx'), 'utf8');
   const createPagePath = path.join(webRoot, 'app/create/page.tsx');
-  const createV2Page = fs.readFileSync(path.join(webRoot, 'app/create-v2/page.tsx'), 'utf8');
+  const createV2PagePath = path.join(webRoot, 'app/create-v2/page.tsx');
   const rootPackage = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
   const publicLink = path.join(webRoot, 'public');
 
   assert.doesNotMatch(rootPage, /CreateFoundation/);
-  assert.match(rootPage, /href="\/create-v2"/);
+  assert.doesNotMatch(rootPage, /create-v2/);
+  assert.match(rootPage, /href="\/create"/);
   assert.equal(fs.existsSync(createPagePath), false);
-  assert.match(createV2Page, /CreateFoundation/);
+  assert.equal(fs.existsSync(createV2PagePath), false);
   assert.equal(rootPackage.scripts.dev, 'npm run dev:legacy');
   assert.equal(rootPackage.scripts['dev:client'], 'vite --port=3010 --host=0.0.0.0');
   assert.equal(fs.lstatSync(publicLink).isSymbolicLink(), true);

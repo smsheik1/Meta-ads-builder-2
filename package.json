@@ -20,10 +20,10 @@
     "clean": "rm -rf dist",
     "lint:legacy": "tsc --noEmit -p tsconfig.legacy.json",
     "lint:web": "npm run typecheck -w @wiggly/web",
-    "lint": "npm run lint:legacy && npm run lint:web && npm run test:create-v2",
+    "lint": "npm run lint:legacy && npm run lint:web && npm run test:web-engine",
     "test:legacy": "playwright test",
-    "test:create-v2": "npm run test -w @wiggly/web",
-    "test": "npm run test:create-v2 && npm run test:legacy"
+    "test:web-engine": "npm run test -w @wiggly/web",
+    "test": "npm run test:web-engine && npm run test:legacy"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

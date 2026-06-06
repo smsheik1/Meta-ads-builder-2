@@ -28,22 +28,23 @@ npm run dev
 
 The Vite client runs on `http://localhost:3000` and the API server runs on `http://localhost:3001` behind the dev proxy.
 
-### Create V2
+### Web Engine
 
-The new Wiggly create path lives in `apps/web` as a Next.js workspace backed by
-Convex for saved designs and share snapshots.
+The shared Wiggly engine lives in `apps/web` as a Next.js workspace backed by
+Convex for saved designs, share snapshots, render tickets, and API routes.
+The desktop product route is the legacy-looking `/create` experience.
 
 ```bash
 npm run dev:legacy
 npm run dev:web
-npm run test:create-v2
+npm run test:web-engine
 ```
 
 - `npm run dev` still runs the legacy Vite/Express app.
-- `npm run dev:legacy` runs the legacy Vite/Express app on `http://localhost:3000` with the API on `http://localhost:3001`.
+- `npm run dev:legacy` runs the legacy Vite/Express app on `http://localhost:3010` with the API on `http://localhost:3001`.
 - `npm run dev:web` runs the new Next app on `http://localhost:3010`.
-- `http://localhost:3010/`, `http://localhost:3010/create`, and `http://localhost:3010/create-v2` all open the v2 create app.
-- Legacy product work is frozen. See [Legacy Freeze](docs/LEGACY_FREEZE.md).
+- `http://localhost:3010/create` is the definitive desktop product surface.
+- `apps/web` keeps the shared AdScene, Convex, share, and render engine routes.
 
 ## Environment Variables
 
@@ -71,9 +72,7 @@ If Supabase env vars are missing, Wiggly share links fall back to local browser-
 Do not commit real API keys. Never use a `VITE_` prefix for the Supabase service role key.
 
 Oracle deploy requires `CONVEX_DEPLOY_KEY`, `CONVEX_URL`, and `NEXT_PUBLIC_CONVEX_URL`.
-The deploy script runs `npx convex deploy` before building the app, then recreates
-the PM2 process from `apps/web` so production serves the Next create app instead
-of the legacy Vite/Express runtime.
+The deploy script runs `npx convex deploy` before building the app.
 
 ## Quality Checks
 
