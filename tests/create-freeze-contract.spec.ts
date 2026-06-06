@@ -98,3 +98,18 @@ test('legacy create render path has no phone-call composition branch', () => {
   expect(fs.existsSync(path.join(repoRoot, 'src', 'components', 'PhoneCallSimulator.tsx'))).toBe(false);
   expect(fs.existsSync(path.join(repoRoot, 'src', 'lib', 'phone-call.ts'))).toBe(false);
 });
+
+test('legacy create dialogue generation stays outside the server monolith', () => {
+  const serverSource = fs.readFileSync(path.join(repoRoot, 'server.ts'), 'utf8');
+  const dialoguePath = path.join(repoRoot, 'src', 'server', 'dialogue-generation.ts');
+  const dialogueSource = fs.readFileSync(dialoguePath, 'utf8');
+
+  expect(fs.existsSync(dialoguePath)).toBe(true);
+  expect(serverSource).toContain('generateDialogueScriptsResponse(req.body)');
+  expect(serverSource).toContain('generateDialogueAudioResponse(req.body)');
+  expect(serverSource).not.toContain('DIALOGUE_SCRIPT_EXAMPLES');
+  expect(serverSource).not.toContain('gibberishPattern');
+  expect(serverSource).not.toContain('pcmBase64ToWavBase64');
+  expect(dialogueSource).toContain('DIALOGUE_SCRIPT_SHAPE_RULES');
+  expect(dialogueSource).toContain('PINNED_TTS_MODEL');
+});
