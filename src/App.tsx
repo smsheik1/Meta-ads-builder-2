@@ -574,7 +574,7 @@ const useIsMobileViewport = () => {
   return isMobile;
 };
 
-function MobileBuilderPlaceholder({ onHome }: { onHome: () => void }) {
+function MobileComputerGate() {
   return (
     <main className="min-h-screen overflow-hidden bg-[#F7F4EC] px-5 py-8 font-sans text-slate-950">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col justify-between">
@@ -616,23 +616,16 @@ function MobileBuilderPlaceholder({ onHome }: { onHome: () => void }) {
           </div>
 
           <h1 className="text-4xl font-black leading-[0.95] tracking-normal">
-            Wiggly works best on a computer.
+            Open Wiggly on your computer.
           </h1>
           <p className="mx-auto mt-4 max-w-sm text-base font-semibold leading-7 text-slate-500">
-            The builder uses a real canvas, keyboard rerolls, locks, dragging, and video export. Open it on desktop to make the ad.
+            The app uses a real canvas, keyboard rerolls, locks, dragging, and video export. It is built for desktop and laptop screens.
           </p>
         </section>
 
         <footer className="space-y-3 pb-2">
-          <button
-            type="button"
-            onClick={onHome}
-            className="h-13 w-full rounded-2xl bg-slate-950 px-5 py-4 text-sm font-black text-white shadow-xl shadow-slate-950/15 transition active:scale-[0.99]"
-          >
-            See what Wiggly does
-          </button>
-          <p className="text-center text-xs font-bold leading-5 text-slate-400">
-            You are not missing a form. You are missing the fun part.
+          <p className="rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 text-center text-sm font-black leading-6 text-slate-600 shadow-xl shadow-slate-950/8">
+            Come back on a bigger screen and make the ad properly.
           </p>
         </footer>
       </div>
@@ -4501,6 +4494,10 @@ This ad headline is: ${variation.headline}`;
     </div>
   ) : null;
 
+  if (isMobileViewport && appRoute !== 'share') {
+    return <MobileComputerGate />;
+  }
+
   if (appRoute === 'create') {
     return (
       <>
@@ -4911,10 +4908,6 @@ This ad headline is: ${variation.headline}`;
         onOpenBuilder={enterStudio}
       />
     );
-  }
-
-  if (appRoute === 'builder' && isMobileViewport) {
-    return <MobileBuilderPlaceholder onHome={openHomepage} />;
   }
 
   if (showHomepage) {
