@@ -1,4 +1,4 @@
-import type { AdScene } from '../../apps/web/features/create/scene';
+import { cloneAdScene, type AdScene } from '../../apps/web/features/create/scene';
 import {
   createLegacyCreateAdScene,
   type LegacyCreateAdSceneInput,
@@ -14,6 +14,13 @@ export type LegacyCreateRenderDownload = {
 };
 
 export type LegacyCreateRenderDownloadInput = LegacyCreateAdSceneInput & {
+  signal?: AbortSignal;
+  fetcher?: Fetcher;
+  validateMp4Blob: (blob: Blob, label: string) => Promise<void>;
+};
+
+export type AdSceneRenderDownloadInput = {
+  scene: AdScene;
   signal?: AbortSignal;
   fetcher?: Fetcher;
   validateMp4Blob: (blob: Blob, label: string) => Promise<void>;
@@ -92,11 +99,11 @@ const fetchJson = async <T>(response: Response): Promise<T> => {
   return payload as T;
 };
 
-export const requestLegacyCreateRenderDownload = async (
-  input: LegacyCreateRenderDownloadInput,
+export const requestAdSceneRenderDownload = async (
+  input: AdSceneRenderDownloadInput,
 ): Promise<LegacyCreateRenderDownload> => {
   const fetcher = input.fetcher || fetch;
-  const scene = createLegacyCreateAdScene(input);
+  const scene = cloneAdScene(input.scene);
   const formData = new FormData();
 
   await appendSceneAsset(
@@ -161,3 +168,14 @@ export const requestLegacyCreateRenderDownload = async (
     downloadUrl,
   };
 };
+
+export const requestLegacyCreateRenderDownload = async (
+  input: LegacyCreateRenderDownloadInput,
+): Promise<LegacyCreateRenderDownload> => (
+  requestAdSceneRenderDownload({
+    scene: createLegacyCreateAdScene(input),
+    signal: input.signal,
+    fetcher: input.fetcher,
+    validateMp4Blob: input.validateMp4Blob,
+  })
+);
