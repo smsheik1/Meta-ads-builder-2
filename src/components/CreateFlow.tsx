@@ -1052,54 +1052,47 @@ export function CreateFlow({
               })}
             </div>
             <div className="relative">
-              {(() => {
-                const createCaptionFallback = 'Add audio for this ad';
-                return (
-                  <PlatformFrame
-                    platform={platform}
-                    theme="dark"
-                    brandName={brandBrain?.businessName || 'Your brand'}
-                    brandLogo={socialAvatarLogo}
-                    caption={hasPlayableAudio
-                      ? (brandBrain?.offer || activeVariation?.headline || 'Ready-to-serve ad')
-                      : createCaptionFallback}
-                    metaCta="Learn More"
-                  >
-                    <CanvasEditor
-                      platform={platform}
-                      backgroundColor={backgroundColor}
-                      bgMedia={bgMedia}
-                      bgShadow={bgShadow}
-                      bgShadowOpacity={bgShadowOpacity}
-                      introImage={introImage}
-                      introDuration={introDuration}
-                      introFeedCropY={introFeedCropY}
-                      introImageAspect={introImageAspect}
-                      previewDurationCap={previewDurationCap}
-                      audioUrl={audioUrl}
-                      audioAnalysis={audioAnalysis}
-                      captionsLoading={captionsLoading}
-                      emptyCaptionFallback="Add audio for this ad"
-                      accentColor={activeVariation?.accentColor || '#4F46E5'}
-                      playing={playing}
-                      onPlaybackComplete={onPlaybackComplete}
-                      onRefreshBackgroundColor={onRefreshBackgroundColor}
-                      onApplyStyleArchetype={onApplyStyleArchetype}
-                      rerollFlash={rerollFlash}
-                    />
-                  </PlatformFrame>
-                );
-              })()}
-              {(!hasPlayableAudio || !activeVariation) && (
-                <button
-                  type="button"
-                  onClick={() => onOpenVoiceMaker()}
-                  className="wiggly-audio-cta-pulse absolute left-1/2 top-[64%] z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-slate-200/80 bg-white/86 px-4 py-2.5 text-sm font-black text-slate-700 shadow-2xl shadow-slate-950/18 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white hover:text-slate-950"
-                >
-                  <AudioLines className="h-4 w-4" />
-                  Add audio for this ad
-                </button>
-              )}
+              <PlatformFrame
+                platform={platform}
+                theme="dark"
+                brandName={brandBrain?.businessName || 'Your brand'}
+                brandLogo={socialAvatarLogo}
+                caption={brandBrain?.offer || activeVariation?.headline || activeVariationHelper}
+                metaCta="Learn More"
+              >
+                <CanvasEditor
+                  platform={platform}
+                  backgroundColor={backgroundColor}
+                  bgMedia={bgMedia}
+                  bgShadow={bgShadow}
+                  bgShadowOpacity={bgShadowOpacity}
+                  introImage={introImage}
+                  introDuration={introDuration}
+                  introFeedCropY={introFeedCropY}
+                  introImageAspect={introImageAspect}
+                  previewDurationCap={previewDurationCap}
+                  audioUrl={audioUrl}
+                  audioAnalysis={audioAnalysis}
+                  captionsLoading={captionsLoading}
+                  emptyCaptionFallback=""
+                  emptyCaptionAction={!hasPlayableAudio || !activeVariation ? (
+                    <button
+                      type="button"
+                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white/95 px-5 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.10)] transition hover:-translate-y-0.5 hover:bg-white hover:text-slate-950"
+                      onClick={() => onOpenVoiceMaker()}
+                    >
+                      <AudioLines className="h-4 w-4 shrink-0" />
+                      Add audio for this ad
+                    </button>
+                  ) : null}
+                  accentColor={activeVariation?.accentColor || '#4F46E5'}
+                  playing={playing}
+                  onPlaybackComplete={onPlaybackComplete}
+                  onRefreshBackgroundColor={onRefreshBackgroundColor}
+                  onApplyStyleArchetype={onApplyStyleArchetype}
+                  rerollFlash={rerollFlash}
+                />
+              </PlatformFrame>
               <div className="absolute bottom-7 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2">
                 <button
                   type="button"
