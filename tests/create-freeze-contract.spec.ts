@@ -130,6 +130,8 @@ test('legacy create formats are centralized before adding new ad formats', () =>
   expect(registrySource).toContain('conversationFormat');
   expect(createFlowSource).toContain("from '../features/formats/registry'");
   expect(adGenerationSource).toContain("from '../features/formats/registry'");
+  expect(adGenerationSource).toContain('isCreateFormatActive');
+  expect(adGenerationSource).not.toContain('isGeneratedAdFormat');
   expect(createFlowSource).not.toContain('const ACTIVE_GENERATED_FORMATS');
   expect(createFlowSource).not.toContain('const PAUSED_CREATE_FORMATS');
   expect(adGenerationSource).not.toContain("const allowed: GeneratedAdFormat[] = ['visualizer', 'conversation']");
