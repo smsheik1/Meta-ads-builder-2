@@ -43,15 +43,10 @@ import {
 import { useCreateExportController } from './features/create/useCreateExportController';
 import { CreateVoiceWizard } from './features/create/CreateVoiceWizard';
 import {
-  captionsFromDialogueScript,
-  cleanDialogueScriptForVoiceover,
-  cloneDialogueScript,
-  type ConversationWizardStep,
   type CreativeBrief,
   type CreativeBriefTextKey,
-  type DialogueLine,
-  type DialogueScript,
 } from './features/create/createVoiceScripts';
+import { useCreateVoiceController } from './features/create/useCreateVoiceController';
 
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
 const STUDIO_SEEN_STORAGE_KEY = 'agent_enamel_studio_seen_v1';
@@ -73,6 +68,87 @@ const BACKGROUND_COLOR_FAMILIES = [
   { hue: 315, saturation: [35, 70], lightness: [48, 94] },
   { hue: 25, saturation: [35, 70], lightness: [50, 94] },
   { hue: 0, saturation: [0, 0], lightness: [8, 98] },
+];
+
+const PERSONA_DECKS = [
+  {
+    persona: 'Dental',
+    customer: 'Dental practices',
+    angle: 'Missed-call recovery',
+    color: '#00FFCC',
+    pain: 'High',
+    speed: 'Fast',
+    cards: [
+      { headline: 'One lunch break can cost a $3,200 case.', background: '#00FFCC', accent: '#4F46E5' },
+      { headline: "You don't need more leads. You need answered calls.", background: '#FFFFFF', accent: '#00FFCC' },
+      { headline: 'Every voicemail is a patient choosing someone else.', background: '#080B16', accent: '#60A5FA', dark: true },
+    ],
+  },
+  {
+    persona: 'Med spa',
+    customer: 'Med spa owners',
+    angle: 'Luxury consults',
+    color: '#F0ABFC',
+    pain: 'Medium',
+    speed: 'Fast',
+    cards: [
+      { headline: 'Empty consult slots are not a demand problem.', background: '#FFFFFF', accent: '#F0ABFC' },
+      { headline: 'Your best leads are asking one question: price.', background: '#080B16', accent: '#F0ABFC', dark: true },
+      { headline: 'Turn interest into booked consultations.', background: '#F0ABFC', accent: '#4F46E5' },
+    ],
+  },
+  {
+    persona: 'HVAC',
+    customer: 'Home service teams',
+    angle: 'Emergency calls',
+    color: '#60A5FA',
+    pain: 'High',
+    speed: 'Urgent',
+    cards: [
+      { headline: 'The hottest lead is the one calling right now.', background: '#080B16', accent: '#60A5FA', dark: true },
+      { headline: 'After-hours calls should still become booked jobs.', background: '#00FFCC', accent: '#4F46E5' },
+      { headline: 'Miss the call. Lose the job.', background: '#FFFFFF', accent: '#60A5FA' },
+    ],
+  },
+  {
+    persona: 'Legal',
+    customer: 'Law firms',
+    angle: 'After-hours intake',
+    color: '#FBBF24',
+    pain: 'High',
+    speed: 'Steady',
+    cards: [
+      { headline: 'New cases do not wait for office hours.', background: '#FBBF24', accent: '#4F46E5' },
+      { headline: 'Your intake form is not answering the phone.', background: '#FFFFFF', accent: '#FBBF24' },
+      { headline: 'Capture the case before they call another firm.', background: '#080B16', accent: '#FBBF24', dark: true },
+    ],
+  },
+  {
+    persona: 'Fitness',
+    customer: 'Fitness studios',
+    angle: 'Trial bookings',
+    color: '#FB7185',
+    pain: 'Medium',
+    speed: 'Fast',
+    cards: [
+      { headline: 'Trial leads go cold faster than you think.', background: '#FB7185', accent: '#00FFCC' },
+      { headline: 'More DMs should become booked intros.', background: '#FFFFFF', accent: '#FB7185' },
+      { headline: 'Stop letting motivated leads drift away.', background: '#080B16', accent: '#FB7185', dark: true },
+    ],
+  },
+  {
+    persona: 'Real estate',
+    customer: 'Real estate teams',
+    angle: 'Lead follow-up',
+    color: '#A78BFA',
+    pain: 'Medium',
+    speed: 'Fast',
+    cards: [
+      { headline: 'The first agent to respond usually wins.', background: '#A78BFA', accent: '#00FFCC' },
+      { headline: 'Every Zillow lead needs instant follow-up.', background: '#FFFFFF', accent: '#A78BFA' },
+      { headline: 'Speed-to-lead is the whole game.', background: '#080B16', accent: '#A78BFA', dark: true },
+    ],
+  },
 ];
 
 const randomInRange = ([min, max]: number[]) => Math.round(min + Math.random() * (max - min));
@@ -669,7 +745,7 @@ export default function App() {
   const createAudioUrl = hasPlayableCreateAudio ? audioUrl : null;
 
   const clearCreateAudioForNewBrand = () => {
-    setGeneratedDialogueAudioUrl(null);
+    clearGeneratedDialogueAudio();
     useEditorStore.getState().setCaptions([]);
     setAudioUrl(null);
     setAudioFileName('');
@@ -727,16 +803,6 @@ export default function App() {
   const [creativeBriefOpen, setCreativeBriefOpen] = useState(false);
   const [appTitle] = useState('Wiggly');
   const [activePersonaDeckIndex, setActivePersonaDeckIndex] = useState(0);
-  const [dialogueScripts, setDialogueScripts] = useState<DialogueScript[]>([]);
-  const [conversationWizardOpen, setConversationWizardOpen] = useState(false);
-  const [conversationWizardStep, setConversationWizardStep] = useState<ConversationWizardStep>('brief');
-  const [selectedDialogueScriptIndex, setSelectedDialogueScriptIndex] = useState(0);
-  const [lastDialogueScriptBriefKey, setLastDialogueScriptBriefKey] = useState('');
-  const [draftDialogueScript, setDraftDialogueScript] = useState<DialogueScript | null>(null);
-  const [previewingDialogueKey, setPreviewingDialogueKey] = useState<string | null>(null);
-  const [isGeneratingDialogueScripts, setIsGeneratingDialogueScripts] = useState(false);
-  const [isGeneratingDialogueAudio, setIsGeneratingDialogueAudio] = useState(false);
-  const [generatedDialogueAudioUrl, setGeneratedDialogueAudioUrl] = useState<string | null>(null);
   const [tutorialReplayKey, setTutorialReplayKey] = useState(0);
   const [audioFlyoutOpen, setAudioFlyoutOpen] = useState(false);
   const [audioFlyoutView, setAudioFlyoutView] = useState<AudioFlyoutView>('choices');
@@ -832,12 +898,6 @@ export default function App() {
     if (savedTemplates.length) setTemplates(savedTemplates);
   }, []);
 
-  useEffect(() => () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-  }, []);
-
   useEffect(() => {
     loadSavedAdHistory()
       .then((items) => setHistoryItems(items))
@@ -853,7 +913,7 @@ export default function App() {
           if (!saved) return;
           const parsed = JSON.parse(saved) as CurrentAudioMemory;
           if (parsed.id === 'built-in-ai-dental-receptionist-audio') {
-            setGeneratedDialogueAudioUrl(null);
+            clearGeneratedDialogueAudio();
             setAudioUrl(DEFAULT_AUDIO_URL);
             setAudioFileName(DEFAULT_AUDIO_NAME);
             setAudioIntent('default');
@@ -863,7 +923,7 @@ export default function App() {
           }
           const stored = items.find((item) => item.id === parsed.id && item.status !== 'needs-reupload' && item.blob?.size > 0);
           if (!stored) return;
-          setGeneratedDialogueAudioUrl(null);
+          clearGeneratedDialogueAudio();
           setAudioUrl(URL.createObjectURL(stored.blob));
           setAudioFileName(stored.name);
           setAudioIntent(stored.kind === 'generated' ? 'generated' : 'uploaded');
@@ -1424,8 +1484,52 @@ export default function App() {
     }
   };
 
+  const {
+    dialogueScripts,
+    conversationWizardOpen,
+    conversationWizardStep,
+    selectedDialogueScriptIndex,
+    draftDialogueScript,
+    previewingDialogueKey,
+    isGeneratingDialogueScripts,
+    isGeneratingDialogueAudio,
+    generatedDialogueAudioUrl,
+    clearGeneratedDialogueAudio,
+    openConversationWizard,
+    closeConversationWizard,
+    setConversationWizardStep,
+    setDraftDialogueScript,
+    updateDraftDialogueLine,
+    addDraftDialogueLine,
+    removeDraftDialogueLine,
+    playDialoguePreview,
+    generateDialogueScripts,
+    generateDialogueAudio,
+    selectDialogueScript,
+  } = useCreateVoiceController({
+    creativeBrief,
+    personaLabel: PERSONA_DECKS[activePersonaDeckIndex]?.customer || 'Dental practice owner',
+    briefCompletion,
+    requiredBriefFields,
+    onBeforeOpenWizard: () => {
+      setAudioFlyoutOpen(false);
+      setAudioFlyoutView('choices');
+    },
+    onGeneratedVoiceAudio: async ({ url, filename, blob, captions: nextCaptions }) => {
+      const cleanedCaptions = cleanCaptions(nextCaptions);
+      useEditorStore.getState().setCaptions(cleanedCaptions);
+      setAudioUrl(url);
+      setAudioFileName(filename);
+      setAudioIntent('generated');
+      setAudioBrandKey(activeCreateBrandKey);
+      await rememberAudioBlob(filename, blob, 'voice-wizard', activeCreateBrandKey, cleanedCaptions);
+      if (captionCount === 0) handleAddCaptions();
+      if (visualizerCount === 0) handleAddVisualizer();
+    },
+  });
+
   const useAudioItem = (item: AudioLibraryItem) => {
-    setGeneratedDialogueAudioUrl(null);
+    clearGeneratedDialogueAudio();
     const nextUrl = item.stored ? URL.createObjectURL(item.stored.blob) : item.url;
     const selectedAudioBrandKey = item.stored?.kind === 'generated'
       ? activeCreateBrandKey || item.stored.brandKey || null
@@ -1463,7 +1567,7 @@ export default function App() {
     const nextItems = await deleteAudioItem(audioId);
     setStoredAudioItems(nextItems);
     if (currentAudioAssetId === audioId) {
-      setGeneratedDialogueAudioUrl(null);
+      clearGeneratedDialogueAudio();
       setAudioUrl(DEFAULT_AUDIO_URL);
       setAudioFileName(DEFAULT_AUDIO_NAME);
       setAudioIntent('default');
@@ -1487,7 +1591,7 @@ export default function App() {
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      setGeneratedDialogueAudioUrl(null);
+      clearGeneratedDialogueAudio();
       useEditorStore.getState().setCaptions([]);
       setAudioUrl(url);
       setAudioFileName(file.name);
@@ -1508,239 +1612,6 @@ export default function App() {
     img.onload = () => setIntroImageAspect(img.naturalWidth / img.naturalHeight);
     img.src = objectUrl;
     setIntroCropOpen(true);
-  };
-
-  const getObjectAudioDuration = (url: string) => new Promise<number>((resolve) => {
-    const audio = new Audio(url);
-    const timeout = window.setTimeout(() => resolve(0), 1500);
-    audio.preload = 'metadata';
-    audio.onloadedmetadata = () => {
-      window.clearTimeout(timeout);
-      resolve(Number.isFinite(audio.duration) ? audio.duration : 0);
-    };
-    audio.onerror = () => {
-      window.clearTimeout(timeout);
-      resolve(0);
-    };
-    audio.src = url;
-  });
-
-  const stopDialoguePreview = () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-    setPreviewingDialogueKey(null);
-  };
-
-  const playDialoguePreview = (script: DialogueScript, key: string) => {
-    if (!('speechSynthesis' in window)) {
-      alert('Voice preview is not available in this browser.');
-      return;
-    }
-
-    if (previewingDialogueKey === key) {
-      stopDialoguePreview();
-      return;
-    }
-
-    const lines = script.lines.filter((line) => line.text.trim());
-    if (!lines.length) return;
-
-    window.speechSynthesis.cancel();
-    setPreviewingDialogueKey(key);
-
-    const voices = window.speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().startsWith('en'));
-    const speakers = Array.from(new Set(lines.map((line) => line.speaker).filter(Boolean))).slice(0, 2);
-    let remainingLines = lines.length;
-
-    lines.forEach((line) => {
-      const utterance = new SpeechSynthesisUtterance(line.text.trim());
-      const speakerIndex = speakers.indexOf(line.speaker);
-      utterance.rate = 1.02;
-      utterance.pitch = speakerIndex === 1 ? 0.92 : 1.08;
-      utterance.voice = voices[speakerIndex === 1 ? 1 : 0] || voices[0] || null;
-      utterance.onend = () => {
-        remainingLines -= 1;
-        if (remainingLines <= 0) setPreviewingDialogueKey(null);
-      };
-      utterance.onerror = () => {
-        remainingLines -= 1;
-        if (remainingLines <= 0) setPreviewingDialogueKey(null);
-      };
-      window.speechSynthesis.speak(utterance);
-    });
-  };
-
-  const handleOpenConversationWizard = () => {
-    setAudioFlyoutOpen(false);
-    setAudioFlyoutView('choices');
-    const firstScript = dialogueScripts[selectedDialogueScriptIndex] || dialogueScripts[0];
-    if (firstScript && !draftDialogueScript) {
-      setDraftDialogueScript(cloneDialogueScript(firstScript));
-      setSelectedDialogueScriptIndex(Math.max(0, dialogueScripts.indexOf(firstScript)));
-    }
-    setConversationWizardStep(dialogueScripts.length > 0 || briefCompletion >= requiredBriefFields ? 'scripts' : 'brief');
-    setConversationWizardOpen(true);
-  };
-
-  const handleSelectDialogueScript = (script: DialogueScript, index: number) => {
-    setSelectedDialogueScriptIndex(index);
-    setDraftDialogueScript(cloneDialogueScript(script));
-    setConversationWizardStep('edit');
-  };
-
-  const updateDraftDialogueLine = (index: number, patch: Partial<DialogueLine>) => {
-    setDraftDialogueScript((current) => {
-      if (!current) return current;
-      return {
-        ...current,
-        lines: current.lines.map((line, lineIndex) => (
-          lineIndex === index ? { ...line, ...patch } : line
-        )),
-      };
-    });
-  };
-
-  const addDraftDialogueLine = () => {
-    setDraftDialogueScript((current) => {
-      if (!current) return current;
-      const lastSpeaker = current.lines[current.lines.length - 1]?.speaker;
-      const nextSpeaker = lastSpeaker === 'Ava' ? 'Sam' : 'Ava';
-      return {
-        ...current,
-        lines: [
-          ...current.lines,
-          {
-            speaker: nextSpeaker,
-            tone: 'natural',
-            text: '',
-          },
-        ],
-      };
-    });
-  };
-
-  const removeDraftDialogueLine = (index: number) => {
-    setDraftDialogueScript((current) => {
-      if (!current || current.lines.length <= 2) return current;
-      return {
-        ...current,
-        lines: current.lines.filter((_, lineIndex) => lineIndex !== index),
-      };
-    });
-  };
-
-  const getCreativeBriefCacheKey = () => {
-    const persona = (activePersonaDeck?.customer || 'Dental practice owner').trim().toLowerCase();
-    const payload = {
-      persona,
-      ...creativeBrief,
-    };
-    return JSON.stringify(payload);
-  };
-
-  const handleGenerateDialogueScripts = async (openEditorAfterGenerate = false, force = false) => {
-    const requestKey = getCreativeBriefCacheKey();
-    if (!force && !openEditorAfterGenerate && dialogueScripts.length > 0 && lastDialogueScriptBriefKey === requestKey) {
-      if (openEditorAfterGenerate) {
-        setConversationWizardStep('scripts');
-      } else if (conversationWizardStep === 'brief') {
-        setConversationWizardStep('scripts');
-      }
-      return dialogueScripts;
-    }
-
-    try {
-      setIsGeneratingDialogueScripts(true);
-      const res = await fetch('/api/generate-dialogue-scripts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          creativeBrief,
-          persona: activePersonaDeck?.customer || 'Dental practice owner',
-          count: 5,
-        }),
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText);
-      }
-
-      const data = await res.json();
-      const scripts = Array.isArray(data.scripts) ? data.scripts : [];
-      setDialogueScripts(scripts);
-      setLastDialogueScriptBriefKey(requestKey);
-      if (scripts[0]) {
-        setSelectedDialogueScriptIndex(0);
-        setDraftDialogueScript(cloneDialogueScript(scripts[0]));
-        setConversationWizardStep(openEditorAfterGenerate ? 'edit' : 'scripts');
-      }
-      return scripts;
-    } catch (error: any) {
-      console.error('Dialogue script generation failed:', error);
-      alert(`Dialogue generation failed: ${error.message || 'Unknown error'}`.slice(0, 180));
-      return [];
-    } finally {
-      setIsGeneratingDialogueScripts(false);
-    }
-  };
-
-  const handleGenerateDialogueAudio = async (script: DialogueScript) => {
-    try {
-      stopDialoguePreview();
-      const voiceoverScript = cleanDialogueScriptForVoiceover(script);
-      setIsGeneratingDialogueAudio(true);
-      const res = await fetch('/api/generate-dialogue-audio', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ script: voiceoverScript }),
-      });
-
-      if (!res.ok) {
-        const rawText = await res.text();
-        let parsed: { error?: string } | null = null;
-        try {
-          parsed = JSON.parse(rawText);
-        } catch {
-          parsed = null;
-        }
-        const parsedError = parsed?.error;
-        const parsedMessage = typeof parsedError === 'string'
-          ? parsedError
-          : parsedError && typeof parsedError === 'object'
-            ? JSON.stringify(parsedError)
-            : rawText;
-        throw new Error(parsedMessage || 'Audio generation failed');
-      }
-
-      const data = await res.json();
-      const binary = atob(data.audioBase64);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i += 1) {
-        bytes[i] = binary.charCodeAt(i);
-      }
-      const blob = new Blob([bytes], { type: data.mimeType || 'audio/wav' });
-      const url = URL.createObjectURL(blob);
-      const audioDuration = await getObjectAudioDuration(url);
-      const captions = cleanCaptions(captionsFromDialogueScript(voiceoverScript, audioDuration));
-      useEditorStore.getState().setCaptions(captions);
-      setGeneratedDialogueAudioUrl(url);
-      setAudioUrl(url);
-      const filename = data.filename || `${voiceoverScript.title || 'conversation-ad'}.wav`;
-      setAudioFileName(filename);
-      setAudioIntent('generated');
-      setAudioBrandKey(activeCreateBrandKey);
-      await rememberAudioBlob(filename, blob, 'voice-wizard', activeCreateBrandKey, captions);
-      if (captionCount === 0) handleAddCaptions();
-      if (visualizerCount === 0) handleAddVisualizer();
-      setConversationWizardOpen(false);
-    } catch (error: any) {
-      console.error('Dialogue audio generation failed:', error);
-      alert(`Audio generation failed: ${error.message || 'Unknown error'}`.slice(0, 180));
-    } finally {
-      setIsGeneratingDialogueAudio(false);
-    }
   };
 
   useEffect(() => {
@@ -1957,7 +1828,7 @@ export default function App() {
     });
   };
 
-  const handleAddVisualizer = () => {
+  function handleAddVisualizer() {
     const offset = duplicateOffset(visualizerCount);
     addElement({
       type: 'visualizer',
@@ -1978,9 +1849,9 @@ export default function App() {
       ...VOICE_VISUALIZER_PRESET,
       visualizerSplitSpeakers: false,
     });
-  };
+  }
 
-  const handleAddCaptions = () => {
+  function handleAddCaptions() {
     const offset = duplicateOffset(captionCount);
     addElement({
       type: 'caption',
@@ -1992,7 +1863,7 @@ export default function App() {
       rotation: 0,
       zIndex: 4 + captionCount,
     });
-  };
+  }
 
   const handleAddCta = () => {
     const offset = duplicateOffset(ctaCount);
@@ -2357,7 +2228,7 @@ export default function App() {
                   <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">Write a short two-person script, edit it, then make the audio.</span>
                   <button
                     type="button"
-                    onClick={handleOpenConversationWizard}
+                    onClick={openConversationWizard}
                     disabled={isGeneratingDialogueScripts || isGeneratingDialogueAudio}
                     className="mt-3 w-full rounded-xl bg-slate-950 px-3 py-2.5 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                   >
@@ -2367,7 +2238,7 @@ export default function App() {
                 {dialogueScripts.length > 0 && (
                   <button
                     type="button"
-                    onClick={handleOpenConversationWizard}
+                    onClick={openConversationWizard}
                     className="w-full rounded-xl border border-indigo-100 bg-indigo-50 p-3 text-left transition hover:border-indigo-200 hover:bg-indigo-100"
                   >
                     <span className="flex items-center justify-between gap-2">
@@ -2744,87 +2615,7 @@ This ad headline is: ${variation.headline}`;
     });
   }, [appRoute, sharePageRecord]);
 
-  const personaDecks = [
-    {
-      persona: 'Dental',
-      customer: 'Dental practices',
-      angle: 'Missed-call recovery',
-      color: '#00FFCC',
-      pain: 'High',
-      speed: 'Fast',
-      cards: [
-        { headline: 'One lunch break can cost a $3,200 case.', background: '#00FFCC', accent: '#4F46E5' },
-        { headline: "You don't need more leads. You need answered calls.", background: '#FFFFFF', accent: '#00FFCC' },
-        { headline: 'Every voicemail is a patient choosing someone else.', background: '#080B16', accent: '#60A5FA', dark: true },
-      ],
-    },
-    {
-      persona: 'Med spa',
-      customer: 'Med spa owners',
-      angle: 'Luxury consults',
-      color: '#F0ABFC',
-      pain: 'Medium',
-      speed: 'Fast',
-      cards: [
-        { headline: 'Empty consult slots are not a demand problem.', background: '#FFFFFF', accent: '#F0ABFC' },
-        { headline: 'Your best leads are asking one question: price.', background: '#080B16', accent: '#F0ABFC', dark: true },
-        { headline: 'Turn interest into booked consultations.', background: '#F0ABFC', accent: '#4F46E5' },
-      ],
-    },
-    {
-      persona: 'HVAC',
-      customer: 'Home service teams',
-      angle: 'Emergency calls',
-      color: '#60A5FA',
-      pain: 'High',
-      speed: 'Urgent',
-      cards: [
-        { headline: 'The hottest lead is the one calling right now.', background: '#080B16', accent: '#60A5FA', dark: true },
-        { headline: 'After-hours calls should still become booked jobs.', background: '#00FFCC', accent: '#4F46E5' },
-        { headline: 'Miss the call. Lose the job.', background: '#FFFFFF', accent: '#60A5FA' },
-      ],
-    },
-    {
-      persona: 'Legal',
-      customer: 'Law firms',
-      angle: 'After-hours intake',
-      color: '#FBBF24',
-      pain: 'High',
-      speed: 'Steady',
-      cards: [
-        { headline: 'New cases do not wait for office hours.', background: '#FBBF24', accent: '#4F46E5' },
-        { headline: 'Your intake form is not answering the phone.', background: '#FFFFFF', accent: '#FBBF24' },
-        { headline: 'Capture the case before they call another firm.', background: '#080B16', accent: '#FBBF24', dark: true },
-      ],
-    },
-    {
-      persona: 'Fitness',
-      customer: 'Fitness studios',
-      angle: 'Trial bookings',
-      color: '#FB7185',
-      pain: 'Medium',
-      speed: 'Fast',
-      cards: [
-        { headline: 'Trial leads go cold faster than you think.', background: '#FB7185', accent: '#00FFCC' },
-        { headline: 'More DMs should become booked intros.', background: '#FFFFFF', accent: '#FB7185' },
-        { headline: 'Stop letting motivated leads drift away.', background: '#080B16', accent: '#FB7185', dark: true },
-      ],
-    },
-    {
-      persona: 'Real estate',
-      customer: 'Real estate teams',
-      angle: 'Lead follow-up',
-      color: '#A78BFA',
-      pain: 'Medium',
-      speed: 'Fast',
-      cards: [
-        { headline: 'The first agent to respond usually wins.', background: '#A78BFA', accent: '#00FFCC' },
-        { headline: 'Every Zillow lead needs instant follow-up.', background: '#FFFFFF', accent: '#A78BFA' },
-        { headline: 'Speed-to-lead is the whole game.', background: '#080B16', accent: '#A78BFA', dark: true },
-      ],
-    },
-  ];
-  const activePersonaDeck = personaDecks[activePersonaDeckIndex];
+  const activePersonaDeck = PERSONA_DECKS[activePersonaDeckIndex];
   const saveTemplateModal = saveTemplateOpen ? (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
       <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl">
@@ -3001,20 +2792,17 @@ This ad headline is: ${variation.headline}`;
       previewingDialogueKey={previewingDialogueKey}
       isGeneratingDialogueScripts={isGeneratingDialogueScripts}
       isGeneratingDialogueAudio={isGeneratingDialogueAudio}
-      onClose={() => {
-        stopDialoguePreview();
-        setConversationWizardOpen(false);
-      }}
+      onClose={closeConversationWizard}
       onStepChange={setConversationWizardStep}
       onUpdateCreativeBrief={updateCreativeBrief}
-      onGenerateDialogueScripts={() => void handleGenerateDialogueScripts(false, true)}
-      onSelectDialogueScript={handleSelectDialogueScript}
+      onGenerateDialogueScripts={() => void generateDialogueScripts(false, true)}
+      onSelectDialogueScript={selectDialogueScript}
       onSetDraftDialogueScript={setDraftDialogueScript}
       onUpdateDraftDialogueLine={updateDraftDialogueLine}
       onAddDraftDialogueLine={addDraftDialogueLine}
       onRemoveDraftDialogueLine={removeDraftDialogueLine}
       onPlayDialoguePreview={playDialoguePreview}
-      onGenerateDialogueAudio={(script) => void handleGenerateDialogueAudio(script)}
+      onGenerateDialogueAudio={(script) => void generateDialogueAudio(script)}
     />
   );
 
@@ -3033,7 +2821,7 @@ This ad headline is: ${variation.headline}`;
             void handleAudioUpload(event);
             if (event.target) event.target.value = '';
           }}
-          onOpenVoiceMaker={handleOpenConversationWizard}
+          onOpenVoiceMaker={openConversationWizard}
           savedVoiceOptions={createSavedVoiceOptions}
           onUseSavedVoice={useCreateSavedVoice}
           captions={captions}
@@ -3216,7 +3004,7 @@ This ad headline is: ${variation.headline}`;
             <div className="relative grid min-h-[640px] gap-6 text-white lg:grid-cols-[0.85fr_1.3fr_0.85fr]">
               <div className="self-start rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-2xl shadow-slate-950/20 backdrop-blur-xl lg:-ml-8">
                 <p className="mb-5 text-sm font-black uppercase tracking-wide text-white/40">Pick who the ad is for</p>
-                {personaDecks.map((deck, index) => (
+                {PERSONA_DECKS.map((deck, index) => (
                   <button
                     key={deck.persona}
                     type="button"
