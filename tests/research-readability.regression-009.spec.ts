@@ -73,12 +73,13 @@ test('real homepage copy is enough for a brand brief', () => {
 
 test('brand research fails closed on empty reads and recovers low-confidence AI briefs', () => {
   const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
+  const researchSource = fs.readFileSync(path.join(process.cwd(), 'src', 'server', 'brand-research.ts'), 'utf8');
 
   expect(serverSource).toContain('hasReadableWebsiteResearch(research)');
   expect(serverSource).toContain('could not find enough readable words');
-  expect(serverSource).toContain('getAlternateResearchUrls');
-  expect(serverSource).toContain('https://about.x.com/en');
-  expect(serverSource).toContain('using_alternate_research_page');
+  expect(researchSource).toContain('getAlternateResearchUrls');
+  expect(researchSource).toContain('https://about.x.com/en');
+  expect(researchSource).toContain('using_alternate_research_page');
   expect(serverSource).toContain('brain_low_confidence_using_heuristic');
   expect(serverSource).toContain('fallbackHeadlines(brandBrain, totalCount - variations.length, used)');
   expect(serverSource).toMatch(/if \(brandBrainNeedsFallback\(brandBrain\)\) \{[\s\S]*?buildHeuristicBrandBrain/);
