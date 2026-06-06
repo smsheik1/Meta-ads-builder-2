@@ -1,8 +1,8 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { AdScene } from '@/features/create/scene';
-import { createDownloadFilename, createRenderSnapshot } from '@/features/render/adSceneRender';
+import type { AdScene } from '../create/scene';
+import { createDownloadFilename, createRenderSnapshot } from '../render/adSceneRender';
 
 export type RenderSceneTicket = {
   id: string;

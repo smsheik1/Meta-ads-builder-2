@@ -1,14 +1,15 @@
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { bundle } from '@remotion/bundler';
 import { getCompositions, makeCancelSignal, renderMedia } from '@remotion/renderer';
-import type { AdScene } from '@/features/create/scene';
+import type { AdScene } from '../create/scene';
 import {
   AD_SCENE_FPS,
   createDownloadFilename,
   createRenderSnapshot,
-} from '@/features/render/adSceneRender';
+} from '../render/adSceneRender';
 
 let remotionBundlePromise: Promise<string> | null = null;
 
@@ -18,7 +19,11 @@ type RenderAdSceneOptions = {
 };
 
 export const getRemotionEntryPoint = () => (
-  path.join(process.cwd(), 'remotion-entry', 'index.ts')
+  path.join(getWebRoot(), 'remotion-entry', 'index.ts')
+);
+
+const getWebRoot = () => (
+  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 );
 
 export const getCreateV2RemotionBundle = () => {
@@ -33,7 +38,7 @@ export const getCreateV2RemotionBundle = () => {
           ...currentConfiguration.resolve,
           alias: {
             ...(currentConfiguration.resolve?.alias ?? {}),
-            '@': process.cwd(),
+            '@': getWebRoot(),
           },
         },
       }),

@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
@@ -7,12 +7,12 @@ export default defineConfig({
   workers: 1,
   use: {
     headless: true,
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:3010',
     trace: 'on-first-retry',
   },
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:3000',
+    url: 'http://localhost:3010',
     reuseExistingServer: true,
     timeout: 60000,
   },

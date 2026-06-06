@@ -15,6 +15,14 @@ import { createClient } from '@supabase/supabase-js';
 import { bundle } from '@remotion/bundler';
 import { getCompositions, renderMedia } from '@remotion/renderer';
 import { EXPORT_FPS, getExportDimensions, isPhoneCallSnapshot, PHONE_CALL_EXPORT_DIMENSIONS, type ExportSnapshot, type RenderSnapshot } from './src/lib/export-snapshot';
+import type { AdScene } from './apps/web/features/create/scene';
+import { getPublicRenderErrorMessage } from './apps/web/features/export/renderErrors';
+import { renderAdSceneToMp4 } from './apps/web/features/export/renderScene';
+import {
+  createRenderSceneTicket,
+  deleteRenderSceneTicket,
+  readRenderSceneTicket,
+} from './apps/web/features/export/renderSceneTicketStore';
 
 const app = express();
 const isProd = process.env.NODE_ENV === 'production';
@@ -199,6 +207,7 @@ const publishingLimiter = rateLimit({
 
 const criticalApiPaths = new Set([
   '/api/render-remotion',
+  '/api/render-scene-ticket',
   '/api/share-pages',
   '/api/transcribe',
   '/api/research-brand',
@@ -866,6 +875,106 @@ const extractAudioAnalysis = (input: string | null | undefined, durationSeconds:
     });
 
     resolve({ levels, bands });
+  });
+});
+
+const parseAdSceneBody = (body: Record<string, unknown>): AdScene | null => {
+  const rawScene = body.scene;
+  if (typeof rawScene === 'string') {
+    try {
+      return JSON.parse(rawScene) as AdScene;
+    } catch {
+      return null;
+    }
+  }
+
+  return rawScene && typeof rawScene === 'object' ? rawScene as AdScene : null;
+};
+
+const isCompleteAdScene = (scene: AdScene | null): scene is AdScene => Boolean(
+  scene?.id &&
+  scene?.brand?.name &&
+  scene?.creative?.headline,
+);
+
+const writeAdSceneRenderAssets = (
+  scene: AdScene,
+  files: Express.Multer.File[],
+  renderId: string,
+  assetDir: string,
+) => {
+  for (const file of files) {
+    const safeName = `${file.fieldname.replace(/[^a-zA-Z0-9_-]/g, '-')}-${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9_.-]/g, '-')}`;
+    const filePath = path.join(assetDir, safeName);
+    fs.writeFileSync(filePath, file.buffer);
+    const assetUrl = `http://127.0.0.1:${port}/api/remotion-assets/${renderId}/${safeName}`;
+
+    if (file.fieldname === 'audio' && scene.audio) {
+      scene.audio = {
+        ...scene.audio,
+        url: assetUrl,
+        mimeType: scene.audio.mimeType || file.mimetype || null,
+        sourceSceneId: scene.id,
+      };
+    }
+
+    if (file.fieldname === 'brandLogo') {
+      scene.brand = { ...scene.brand, logoUrl: assetUrl };
+    }
+
+    if (file.fieldname === 'brandFavicon') {
+      scene.brand = { ...scene.brand, faviconUrl: assetUrl };
+    }
+  }
+};
+
+app.post('/api/render-scene-ticket', videoExportLimiter, uploadRemotion.any(), async (req, res) => {
+  const renderId = `scene-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const assetDir = path.join(remotionAssetsRoot, renderId);
+  fs.mkdirSync(assetDir, { recursive: true });
+
+  try {
+    const scene = parseAdSceneBody(req.body as Record<string, unknown>);
+    if (!isCompleteAdScene(scene)) {
+      return res.status(400).json({ error: 'A complete ad scene is required before rendering video.' });
+    }
+
+    const files = Array.isArray(req.files) ? req.files as Express.Multer.File[] : [];
+    writeAdSceneRenderAssets(scene, files, renderId, assetDir);
+
+    const render = await renderAdSceneToMp4(scene, { timeoutMs: 105_000 });
+    const ticket = await createRenderSceneTicket(render.snapshot.scene, render.file);
+
+    res.json({
+      ticketId: ticket.id,
+      filename: ticket.filename,
+      downloadUrl: `/api/render-scene/${ticket.id}`,
+    });
+  } catch (error) {
+    console.error('[legacy create render-scene-ticket]', error);
+    res.status(500).json({
+      error: getPublicRenderErrorMessage(error, 'Could not prepare video download. Try again in a moment.'),
+    });
+  } finally {
+    fs.rm(assetDir, { recursive: true, force: true }, () => {});
+  }
+});
+
+app.get('/api/render-scene/:ticketId', videoExportLimiter, async (req, res) => {
+  const ticket = await readRenderSceneTicket(req.params.ticketId);
+
+  if (!ticket) {
+    return res.status(404).json({ error: 'That video download link expired. Try Download video again.' });
+  }
+
+  res.setHeader('Content-Type', 'video/mp4');
+  res.setHeader('Content-Disposition', `attachment; filename="${ticket.filename}"`);
+  res.setHeader('X-Wiggly-Render-Platform', ticket.scene.platform);
+  res.download(ticket.filePath, ticket.filename, (error) => {
+    void deleteRenderSceneTicket(ticket.id);
+    if (error && !res.headersSent) {
+      res.status(500).json({ error: 'Prepared video file is not available. Try Download video again.' });
+    }
   });
 });
 
