@@ -112,6 +112,10 @@ test('legacy create download helper sends an AdScene render ticket request', asy
       return new Response(new Blob(['voice'], { type: 'audio/mpeg' }));
     }
 
+    if (url.endsWith('/wiggly-logo.png')) {
+      return new Response(new Blob(['logo'], { type: 'image/png' }));
+    }
+
     if (url === '/api/render-scene-ticket') {
       const formData = init?.body as FormData;
       submittedScene = JSON.parse(String(formData.get('scene')));
@@ -177,6 +181,39 @@ test('legacy create share metadata comes from the exported AdScene', () => {
   expect(metadata.ctaUrl).toBe('https://ogtool.com/');
 });
 
+test('legacy create AdScene metadata keeps the actual canvas logo image', () => {
+  const scene = createLegacyCreateAdScene({
+    brandBrain: {
+      ...brandBrain,
+      businessName: "David's Cookies",
+      brandLogoUrl: 'https://profile.example/avatar.png',
+      brandAssets: {
+        ...brandBrain.brandAssets,
+        images: {
+          ...brandBrain.brandAssets.images,
+          logo: 'https://brand-assets.example/fallback-logo.png',
+        },
+      },
+    },
+    variation: {
+      ...variation,
+      headline: 'Better Cookies, Better Choice',
+    },
+    elements: legacyElements().map((element) => (
+      element.componentRole === 'logo'
+        ? { ...element, imageUrl: 'https://davids-cookies.example/logo.png' }
+        : element
+    )),
+    captions: [],
+    platform: 'instagram-feed',
+    backgroundColor: '#fafaf7',
+    brandLogoUrl: 'https://profile.example/avatar.png',
+    now: 1_717_200_000_000,
+  });
+
+  expect(scene.brand.logoUrl).toBe('https://davids-cookies.example/logo.png');
+});
+
 test('saved legacy create scenes can render without rebuilding from live variation state', async () => {
   let submittedScene: any = null;
   const savedScene = createLegacyCreateAdScene({
@@ -192,6 +229,10 @@ test('saved legacy create scenes can render without rebuilding from live variati
 
   const fetcher: typeof fetch = async (input, init) => {
     const url = String(input);
+
+    if (url.endsWith('/wiggly-logo.png')) {
+      return new Response(new Blob(['logo'], { type: 'image/png' }));
+    }
 
     if (url === '/api/render-scene-ticket') {
       const formData = init?.body as FormData;
@@ -221,7 +262,7 @@ test('saved legacy create scenes can render without rebuilding from live variati
   expect(render.filename).toBe('saved-scene.mp4');
 });
 
-test('legacy create has Express AdScene render-ticket routes', () => {
+test('legacy create keeps AdScene routes but downloads visible canvas through Remotion snapshots', () => {
   const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
   const appSource = fs.readFileSync(path.join(process.cwd(), 'src/App.tsx'), 'utf8');
   const createFlowSource = fs.readFileSync(path.join(process.cwd(), 'src/components/CreateFlow.tsx'), 'utf8');
@@ -235,14 +276,15 @@ test('legacy create has Express AdScene render-ticket routes', () => {
   expect(serverSource).toContain('readRenderSceneTicket');
   expect(serverSource).toContain('saveShareSceneSnapshot');
   expect(serverSource).toContain('parseShareSceneBody');
-  expect(appSource).toContain('requestAdSceneRenderDownload');
+  expect(appSource).not.toContain("import { requestAdSceneRenderDownload }");
   expect(appSource).toContain('tryLegacyCreateAdSceneExport');
   expect(appSource).toContain('trySavedCreateAdSceneExport');
+  expect(appSource).toContain('tryRemotionExport({ ...exportSnapshot, adScene: scene }');
+  expect(appSource).toContain('adScene: exportSnapshot.adScene || null');
   expect(appSource).toContain('adScene?: AdScene | null');
   expect(appSource).toContain('setCurrentCreateAdScene(hydratedTemplate.adScene || null)');
   expect(appSource).toContain('saveCurrentTemplate(variation.headline, scene)');
   expect(appSource).toContain('snapshot: exportSnapshot');
-  expect(appSource).toContain('adScene: render.scene');
   expect(shareHookSource).toContain('buildShareMetadataFromAdScene');
   expect(shareHookSource).toContain('scene: exportDownload.adScene || null');
   expect(sharePagesSource).toContain("formData.append('scene'");

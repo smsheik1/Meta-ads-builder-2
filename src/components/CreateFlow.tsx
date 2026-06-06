@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, AudioLines, BookmarkPlus, Captions, CheckCircle2, Download, ExternalLink, LayoutGrid, Loader2, MessageCircle, MousePointerClick, Play, Shuffle, Square, ThumbsDown, ThumbsUp, Upload, Wand2, X } from 'lucide-react';
+import { ArrowRight, AudioLines, BookmarkPlus, Captions, CheckCircle2, Download, ExternalLink, LayoutGrid, Loader2, MessageCircle, Play, Shuffle, Sparkles, Square, ThumbsDown, ThumbsUp, Upload, Wand2, X } from 'lucide-react';
 import { getRandomAdStyleArchetype, type AdStyleArchetype } from '../lib/style-archetypes';
 import { PlatformFrame, type PlatformType } from './PlatformFrame';
 import { CanvasEditor } from './CanvasEditor';
@@ -1126,57 +1126,67 @@ export function CreateFlow({
             {(activeVariation || variations.length > 0) && (
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
                 {activeVariation && brandBrain && (
-                  <div
-                    className="flex shrink-0 items-center rounded-2xl border border-white/15 bg-slate-950/92 p-1 shadow-lg shadow-slate-950/15"
-                    aria-label="Rate this generated ad"
+                  <section
+                    className="mx-auto flex w-full max-w-[390px] flex-wrap items-center justify-between gap-3 rounded-[24px] border border-slate-200 bg-white/95 px-4 py-3 shadow-[0_16px_44px_rgba(15,23,42,0.08)]"
+                    data-testid="generation-feedback"
                   >
-                    {([
-                      { rating: 'up' as const, label: 'Good generation', icon: ThumbsUp },
-                      { rating: 'down' as const, label: 'Bad generation', icon: ThumbsDown },
-                    ]).map((item) => {
-                      const Icon = item.icon;
-                      const active = feedbackByVariationId[activeVariation.id] === item.rating;
-                      return (
-                        <button
-                          key={item.rating}
-                          type="button"
-                          onClick={() => rateActiveVariation(item.rating)}
-                          className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
-                            active
-                              ? item.rating === 'up'
-                                ? 'bg-emerald-400 text-slate-950'
-                                : 'bg-rose-400 text-slate-950'
-                              : 'text-white/75 hover:bg-white/10 hover:text-white'
-                          }`}
-                          aria-label={item.label}
-                          title={item.label}
-                          aria-pressed={active}
-                        >
-                          <Icon className="h-4 w-4" />
-                        </button>
-                      );
-                    })}
-                  </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
+                        Generation
+                      </p>
+                      <p className="text-sm font-black text-slate-950">
+                        Was this one useful?
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {([
+                        { rating: 'up' as const, label: 'Good', icon: ThumbsUp },
+                        { rating: 'down' as const, label: 'Bad', icon: ThumbsDown },
+                      ]).map((item) => {
+                        const Icon = item.icon;
+                        const active = feedbackByVariationId[activeVariation.id] === item.rating;
+                        return (
+                          <button
+                            key={item.rating}
+                            type="button"
+                            onClick={() => rateActiveVariation(item.rating)}
+                            className={`flex h-11 w-11 items-center justify-center rounded-2xl border text-slate-600 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 ${
+                              active
+                                ? 'border-slate-950 bg-slate-950 text-white shadow-[0_14px_34px_rgba(15,23,42,0.20)] hover:bg-slate-900 hover:text-white'
+                                : 'border-slate-200 bg-white'
+                            }`}
+                            aria-pressed={active}
+                            title={item.label}
+                          >
+                            <Icon className="h-4 w-4" />
+                            <span className="sr-only">{item.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
                 )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!visibleVariations.length) return;
-                    goNext();
-                  }}
-                  className="group flex w-full max-w-[calc(100vw-2rem)] items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-3 py-2 shadow-lg shadow-slate-950/8 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white hover:text-slate-950 sm:gap-3"
+                <section
+                  className="mx-auto w-full max-w-[390px] rounded-[28px] border border-slate-200 bg-white/95 p-3 shadow-[0_20px_54px_rgba(15,23,42,0.12)]"
+                  data-testid="spacebar-reroll-coach"
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-white shadow-sm shadow-slate-950/20">
-                    <MousePointerClick className="h-4 w-4" />
-                  </span>
-                  <span className="min-w-0 text-xs font-black text-slate-700 sm:text-sm">Press spacebar to generate more</span>
-                  <span
-                    aria-hidden="true"
-                    className="relative h-7 w-16 shrink-0 rounded-[0.65rem] border border-slate-300 bg-gradient-to-b from-white to-slate-100 shadow-[inset_0_-2px_0_rgba(15,23,42,0.14),0_4px_10px_rgba(15,23,42,0.08)] transition group-hover:-translate-y-0.5 sm:w-24"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!visibleVariations.length) return;
+                      goNext();
+                    }}
+                    className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-[0_16px_36px_rgba(15,23,42,0.20)] transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-[0_22px_52px_rgba(15,23,42,0.18)]"
+                    data-testid="spacebar-reroll-button"
                   >
-                    <span className="absolute inset-x-5 bottom-2 h-0.5 rounded-full bg-slate-300" />
-                  </span>
-                </button>
+                    <Sparkles className="h-4 w-4" />
+                    <span>Press</span>
+                    <span className="rounded-lg border border-white/20 bg-white px-5 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-slate-950 shadow-[inset_0_-2px_0_rgba(15,23,42,0.10)] transition group-hover:bg-slate-100">
+                      Spacebar
+                    </span>
+                    <span>make a wish</span>
+                  </button>
+                </section>
               </div>
             )}
           </div>

@@ -27,7 +27,6 @@ import type { BrandBrain, BrandReceipts } from './lib/prompts/brand-brain';
 import { useShareLink } from './features/share/useShareLink';
 import type { AdScene } from '../apps/web/features/create/scene';
 import { createLegacyCreateAdScene } from './lib/legacy-create-ad-scene';
-import { requestAdSceneRenderDownload } from './lib/legacy-create-render-download';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -1783,7 +1782,14 @@ export default function App() {
 
     const url = URL.createObjectURL(mp4Blob);
     const filename = `agent-enamel-${Date.now()}.mp4`;
-    setExportDownload({ url, blob: mp4Blob, filename, snapshot: exportSnapshot, renderVersion: CURRENT_RENDER_VERSION });
+    setExportDownload({
+      url,
+      blob: mp4Blob,
+      filename,
+      snapshot: exportSnapshot,
+      renderVersion: CURRENT_RENDER_VERSION,
+      adScene: exportSnapshot.adScene || null,
+    });
     setExportPhase('complete');
     setRenderProgress(100);
   };
@@ -1852,30 +1858,7 @@ export default function App() {
     scene: AdScene,
     abortController: AbortController,
   ) => {
-    setExportPhase('converting');
-    setRenderProgress(10);
-
-    const render = await requestAdSceneRenderDownload({
-      scene,
-      validateMp4Blob: ensureValidMp4Blob,
-      signal: abortController.signal,
-    });
-
-    setRenderProgress(92);
-    const url = URL.createObjectURL(render.blob);
-    setExportDownload({
-      url,
-      blob: render.blob,
-      filename: render.filename,
-      snapshot: {
-        ...exportSnapshot,
-        adScene: render.scene,
-      },
-      renderVersion: CURRENT_RENDER_VERSION,
-      adScene: render.scene,
-    });
-    setExportPhase('complete');
-    setRenderProgress(100);
+    await tryRemotionExport({ ...exportSnapshot, adScene: scene }, abortController);
   };
 
   const tryLegacyCreateAdSceneExport = async (
@@ -1884,32 +1867,9 @@ export default function App() {
     nextBrandBrain: BrandBrain,
     abortController: AbortController,
   ) => {
-    setExportPhase('converting');
-    setRenderProgress(10);
-
-    setRenderProgress(25);
-    const render = await requestAdSceneRenderDownload({
-      scene: getCurrentLegacyCreateAdScene(variation, nextBrandBrain),
-      validateMp4Blob: ensureValidMp4Blob,
-      signal: abortController.signal,
-    });
-
-    setRenderProgress(92);
-    const url = URL.createObjectURL(render.blob);
-    setExportDownload({
-      url,
-      blob: render.blob,
-      filename: render.filename,
-      snapshot: {
-        ...exportSnapshot,
-        adScene: render.scene,
-      },
-      renderVersion: CURRENT_RENDER_VERSION,
-      adScene: render.scene,
-    });
-    setCurrentCreateAdScene(render.scene);
-    setExportPhase('complete');
-    setRenderProgress(100);
+    const scene = getCurrentLegacyCreateAdScene(variation, nextBrandBrain);
+    setCurrentCreateAdScene(scene);
+    await tryRemotionExport({ ...exportSnapshot, adScene: scene }, abortController);
   };
 
   const downloadPhoneCallVideo = async () => {
