@@ -154,8 +154,10 @@ test.describe('legacy /create look contract', () => {
     await expect(page.getByText('OGTool').first()).toBeVisible();
     await expect(page.getByText('Why AI recommends your competitors').first()).toBeVisible();
     await expect(page.getByRole('button', { name: /Press Spacebar make a wish/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Good generation' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Bad generation' })).toBeVisible();
+    await expect(page.getByText('Generation')).toBeVisible();
+    await expect(page.getByText('Was this one useful?')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Good' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Bad' })).toBeVisible();
     await expect(page.getByText('Creative brief')).toBeVisible();
     await expect(page.getByText('Full brand dump')).toHaveCount(0);
     await expect(page.locator('.wiggly-idle-bar')).toHaveCount(24);

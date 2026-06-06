@@ -1126,37 +1126,45 @@ export function CreateFlow({
             {(activeVariation || variations.length > 0) && (
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
                 {activeVariation && brandBrain && (
-                  <div
-                    className="flex shrink-0 items-center rounded-2xl border border-white/15 bg-slate-950/92 p-1 shadow-lg shadow-slate-950/15"
-                    aria-label="Rate this generated ad"
+                  <section
+                    className="mx-auto flex w-full max-w-[390px] flex-wrap items-center justify-between gap-3 rounded-[24px] border border-slate-200 bg-white/95 px-4 py-3 shadow-[0_16px_44px_rgba(15,23,42,0.08)]"
+                    data-testid="generation-feedback"
                   >
-                    {([
-                      { rating: 'up' as const, label: 'Good generation', icon: ThumbsUp },
-                      { rating: 'down' as const, label: 'Bad generation', icon: ThumbsDown },
-                    ]).map((item) => {
-                      const Icon = item.icon;
-                      const active = feedbackByVariationId[activeVariation.id] === item.rating;
-                      return (
-                        <button
-                          key={item.rating}
-                          type="button"
-                          onClick={() => rateActiveVariation(item.rating)}
-                          className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
-                            active
-                              ? item.rating === 'up'
-                                ? 'bg-emerald-400 text-slate-950'
-                                : 'bg-rose-400 text-slate-950'
-                              : 'text-white/75 hover:bg-white/10 hover:text-white'
-                          }`}
-                          aria-label={item.label}
-                          title={item.label}
-                          aria-pressed={active}
-                        >
-                          <Icon className="h-4 w-4" />
-                        </button>
-                      );
-                    })}
-                  </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
+                        Generation
+                      </p>
+                      <p className="text-sm font-black text-slate-950">
+                        Was this one useful?
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {([
+                        { rating: 'up' as const, label: 'Good', icon: ThumbsUp },
+                        { rating: 'down' as const, label: 'Bad', icon: ThumbsDown },
+                      ]).map((item) => {
+                        const Icon = item.icon;
+                        const active = feedbackByVariationId[activeVariation.id] === item.rating;
+                        return (
+                          <button
+                            key={item.rating}
+                            type="button"
+                            onClick={() => rateActiveVariation(item.rating)}
+                            className={`flex h-11 w-11 items-center justify-center rounded-2xl border text-slate-600 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 ${
+                              active
+                                ? 'border-slate-950 bg-slate-950 text-white shadow-[0_14px_34px_rgba(15,23,42,0.20)] hover:bg-slate-900 hover:text-white'
+                                : 'border-slate-200 bg-white'
+                            }`}
+                            aria-pressed={active}
+                            title={item.label}
+                          >
+                            <Icon className="h-4 w-4" />
+                            <span className="sr-only">{item.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
                 )}
                 <section
                   className="mx-auto w-full max-w-[390px] rounded-[28px] border border-slate-200 bg-white/95 p-3 shadow-[0_20px_54px_rgba(15,23,42,0.12)]"
