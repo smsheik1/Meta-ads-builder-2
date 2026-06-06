@@ -22,6 +22,15 @@ done
 
 cd "$APP_DIR"
 
+if [ -z "${AI_BILL_SHIELD_SECRET:-}" ] && [ -z "${SESSION_SECRET:-}" ]; then
+  BILL_SHIELD_SECRET_FILE="${AI_BILL_SHIELD_SECRET_FILE:-$APP_DIR/.ai-bill-shield-secret}"
+  if [ ! -f "$BILL_SHIELD_SECRET_FILE" ]; then
+    umask 077
+    openssl rand -hex 32 > "$BILL_SHIELD_SECRET_FILE"
+  fi
+  export AI_BILL_SHIELD_SECRET="$(tr -d '\r\n' < "$BILL_SHIELD_SECRET_FILE")"
+fi
+
 git fetch origin "$BRANCH"
 git checkout "$BRANCH"
 git pull --ff-only origin "$BRANCH"
