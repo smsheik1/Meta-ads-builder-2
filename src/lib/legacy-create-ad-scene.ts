@@ -218,7 +218,7 @@ export const createLegacyCreateAdScene = (input: LegacyCreateAdSceneInput): AdSc
     input.brandBrain.offer || input.brandBrain.promisedResult || input.variation.angle,
   );
   const sceneId = `legacy-create-${slugify(input.brandBrain.businessName)}-${slugify(headline)}-${now}`;
-  const logoUrl = input.brandLogoUrl || input.brandBrain.brandLogoUrl || input.brandBrain.brandAssets?.images.logo || null;
+  const logoUrl = logoElement?.imageUrl || input.brandLogoUrl || input.brandBrain.brandLogoUrl || input.brandBrain.brandAssets?.images.logo || null;
   const faviconUrl = input.brandBrain.brandAssets?.images.favicon || input.brandBrain.brandLogoUrl || logoUrl || null;
   const visualizerColor = visualizerElement?.barColor
     || input.visualizerColor
