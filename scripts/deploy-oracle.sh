@@ -34,6 +34,8 @@ fi
 
 (cd apps/web && npx convex deploy)
 npm run build
+export NODE_ENV=production
+export PORT="${PORT:-3000}"
 pm2 delete "$APP_NAME" >/dev/null 2>&1 || true
-(cd apps/web && pm2 start npm --name "$APP_NAME" -- run start)
+pm2 start npm --name "$APP_NAME" --update-env -- run start
 pm2 save
