@@ -34,7 +34,10 @@ Done when `src/` no longer imports `apps/web/features/create/scene`.
 - Keep Convex/backend pieces that are still needed.
 - Keep only small compatibility shims if deleting them would break deploy.
 
-Expected line savings: 5k-8k.
+Done in `cleanup/delete-create-v2-ui`: deleted the dead Next create UI,
+renamed the reusable Next-side scene contract into `apps/web/features/engine`,
+kept the render/share/research/audio API engine, and reduced `apps/web` by
+roughly 4.8k lines.
 
 ## Phase 3: Remove Dead Branches From `src/App.tsx`
 

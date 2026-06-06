@@ -1,5 +1,5 @@
 import { AbsoluteFill, Audio, useCurrentFrame, useVideoConfig } from 'remotion';
-import type { AdScene } from '@/features/create/scene';
+import type { AdScene } from '@/features/engine/scene';
 import {
   AD_SCENE_FPS,
   getActiveCaptionText,

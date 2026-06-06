@@ -1,4 +1,4 @@
-import type { AdSceneReceipts } from '@/features/create/scene';
+import type { AdSceneReceipts } from '@/features/engine/scene';
 import type { ResearchProviderStatus, WebsiteResearch } from './websiteResearch';
 import { assertPublicWebsiteUrl, normalizeWebsiteUrl, type LookupWebsiteHost } from './url';
 

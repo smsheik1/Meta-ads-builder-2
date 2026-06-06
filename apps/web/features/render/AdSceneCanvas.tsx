@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { AudioLines, Captions, Lock, Pause, Play, Unlock } from 'lucide-react';
-import type { AdScene, AdSceneLayoutElement } from '@/features/create/scene';
+import type { AdScene, AdSceneLayoutElement } from '@/features/engine/scene';
 import {
   getActiveCaptionText,
   getAdSceneRenderSpec,

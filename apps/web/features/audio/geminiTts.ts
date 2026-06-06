@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import type { AdSceneCaption } from '@/features/create/scene';
+import type { AdSceneCaption } from '@/features/engine/scene';
 import type { DialogueScript } from './dialogueScripts';
 
 export type GenerateDialogueAudioOptions = {

@@ -29,7 +29,7 @@ export async function GET(_request: Request, { params }: RenderSceneTicketRouteC
       },
     });
   } catch (error) {
-    console.error('[create-v2 render-scene ticket file download]', error);
+    console.error('[ad-scene render-scene ticket file download]', error);
     return NextResponse.json({
       error: error instanceof Error ? error.message : 'Prepared video file is not available. Try Download video again.',
     }, { status: 500 });

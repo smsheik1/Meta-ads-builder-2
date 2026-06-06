@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { AdScene } from '../create/scene';
+import type { AdScene } from '../engine/scene';
 import { createDownloadFilename, createRenderSnapshot } from '../render/adSceneRender';
 
 export type RenderSceneTicket = {
@@ -13,11 +13,11 @@ export type RenderSceneTicket = {
 };
 
 const getRenderTicketDir = () => (
-  path.join(process.cwd(), 'tmp', 'create-v2-render-tickets')
+  path.join(process.cwd(), 'tmp', 'ad-scene-render-tickets')
 );
 
 const getRenderFileDir = () => (
-  path.join(process.cwd(), 'tmp', 'create-v2-render-files')
+  path.join(process.cwd(), 'tmp', 'ad-scene-render-files')
 );
 
 const getRenderTicketPath = (ticketId: string) => (

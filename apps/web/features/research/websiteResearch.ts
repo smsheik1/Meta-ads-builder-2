@@ -1,5 +1,5 @@
 import { load } from 'cheerio';
-import type { AdSceneReceipts } from '@/features/create/scene';
+import type { AdSceneReceipts } from '@/features/engine/scene';
 import { assertPublicWebsiteUrl, normalizeWebsiteUrl, type LookupWebsiteHost } from './url';
 
 export type ResearchProviderStatus = {

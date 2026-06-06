@@ -1,5 +1,5 @@
 import { Composition } from 'remotion';
-import { ogToolScene } from '@/features/create/fixtures';
+import { ogToolScene } from '../features/engine/fixtures';
 import { AD_SCENE_FPS, AD_SCENE_RENDER_SPECS, DEFAULT_SCENE_DURATION_MS } from '@/features/render/adSceneRender';
 import { AdSceneRemotion, type AdSceneRemotionProps } from '@/features/render/AdSceneRemotion';
 

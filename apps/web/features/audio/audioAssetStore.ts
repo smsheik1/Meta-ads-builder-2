@@ -1,7 +1,7 @@
 import { ConvexHttpClient } from 'convex/browser';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
-import { cloneAdScene, type AdScene } from '@/features/create/scene';
+import { cloneAdScene, type AdScene } from '@/features/engine/scene';
 
 export type StoredAudioAsset = {
   storageId: string;

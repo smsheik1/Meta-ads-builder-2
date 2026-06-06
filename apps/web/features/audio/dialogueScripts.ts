@@ -1,4 +1,4 @@
-import type { AdScene } from '@/features/create/scene';
+import type { AdScene } from '@/features/engine/scene';
 
 type Fetcher = typeof fetch;
 

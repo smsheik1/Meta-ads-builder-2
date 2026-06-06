@@ -1,7 +1,7 @@
 'use client';
 
 import { Bookmark, ChevronUp, Heart, MessageCircle, MoreHorizontal, Play, Send, VolumeX } from 'lucide-react';
-import type { AdScene } from '@/features/create/scene';
+import type { AdScene } from '@/features/engine/scene';
 
 type PlatformChromeProps = {
   avatarUrl: string | null;

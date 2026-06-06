@@ -1,7 +1,7 @@
 import { api } from '@/convex/_generated/api';
 import { getConvexHttpClient, refreshSceneAudioUrl } from '@/features/audio/audioAssetStore';
-import type { AdScene } from '@/features/create/scene';
-import { stripInlineAudioForPersistence } from '@/features/create/sceneAdapters';
+import type { AdScene } from '@/features/engine/scene';
+import { stripInlineAudioForPersistence } from '@/features/engine/sceneAdapters';
 import {
   createRenderSnapshot,
   createSceneSlug,

@@ -1,4 +1,4 @@
-import { cloneAdScene, type AdPlatform, type AdScene, type AdSceneAudio, type AdSceneCreative } from '../create/scene';
+import { cloneAdScene, type AdPlatform, type AdScene, type AdSceneAudio, type AdSceneCreative } from '../engine/scene';
 
 export const AD_SCENE_FPS = 30;
 export const DEFAULT_SCENE_DURATION_MS = 6000;

@@ -16,7 +16,7 @@ import { ConvexHttpClient } from 'convex/browser';
 import { bundle } from '@remotion/bundler';
 import { getCompositions, renderMedia } from '@remotion/renderer';
 import { EXPORT_FPS, getExportDimensions, isPhoneCallSnapshot, PHONE_CALL_EXPORT_DIMENSIONS, type ExportSnapshot, type RenderSnapshot } from './src/lib/export-snapshot';
-import type { AdScene } from './apps/web/features/create/scene';
+import type { AdScene } from './apps/web/features/engine/scene';
 import { api } from './apps/web/convex/_generated/api';
 import { getPublicRenderErrorMessage } from './apps/web/features/export/renderErrors';
 import { renderAdSceneToMp4 } from './apps/web/features/export/renderScene';
