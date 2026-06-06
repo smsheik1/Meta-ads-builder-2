@@ -266,6 +266,7 @@ test('legacy create keeps AdScene routes but downloads visible canvas through Re
   const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
   const appSource = fs.readFileSync(path.join(process.cwd(), 'src/App.tsx'), 'utf8');
   const createFlowSource = fs.readFileSync(path.join(process.cwd(), 'src/components/CreateFlow.tsx'), 'utf8');
+  const exportControllerSource = fs.readFileSync(path.join(process.cwd(), 'src/features/create/useCreateExportController.ts'), 'utf8');
   const shareHookSource = fs.readFileSync(path.join(process.cwd(), 'src/features/share/useShareLink.ts'), 'utf8');
   const sharePagesSource = fs.readFileSync(path.join(process.cwd(), 'src/lib/share-pages.ts'), 'utf8');
 
@@ -277,14 +278,16 @@ test('legacy create keeps AdScene routes but downloads visible canvas through Re
   expect(serverSource).toContain('saveShareSceneSnapshot');
   expect(serverSource).toContain('parseShareSceneBody');
   expect(appSource).not.toContain("import { requestAdSceneRenderDownload }");
-  expect(appSource).toContain('tryLegacyCreateAdSceneExport');
-  expect(appSource).toContain('trySavedCreateAdSceneExport');
-  expect(appSource).toContain('tryRemotionExport({ ...exportSnapshot, adScene: scene }');
-  expect(appSource).toContain('adScene: exportSnapshot.adScene || null');
-  expect(appSource).toContain('adScene?: AdScene | null');
+  expect(appSource).toContain('useCreateExportController');
+  expect(appSource).toContain('createRemotionSnapshot');
+  expect(exportControllerSource).toContain('currentCreateAdScene');
+  expect(exportControllerSource).toContain('getCurrentLegacyCreateAdScene');
+  expect(exportControllerSource).toContain('tryRemotionExport({ ...exportSnapshot, adScene: scene }');
+  expect(exportControllerSource).toContain('adScene: exportSnapshot.adScene || null');
+  expect(exportControllerSource).toContain('adScene?: AdScene | null');
   expect(appSource).toContain('setCurrentCreateAdScene(hydratedTemplate.adScene || null)');
   expect(appSource).toContain('saveCurrentTemplate(variation.headline, scene)');
-  expect(appSource).toContain('snapshot: exportSnapshot');
+  expect(exportControllerSource).toContain('snapshot: exportSnapshot');
   expect(shareHookSource).toContain('buildShareMetadataFromAdScene');
   expect(shareHookSource).toContain('scene: exportDownload.adScene || null');
   expect(sharePagesSource).toContain("formData.append('scene'");
