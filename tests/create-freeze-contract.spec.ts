@@ -225,3 +225,23 @@ test('legacy create voice wizard markup and helpers live outside App', () => {
   expect(voiceScriptsSource).toContain('cleanDialogueScriptForVoiceover');
   expect(voiceScriptsSource).toContain('captionsFromDialogueScript');
 });
+
+test('legacy create voice controller state lives outside App', () => {
+  const voiceControllerPath = path.join(repoRoot, 'src', 'features', 'create', 'useCreateVoiceController.ts');
+  const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const voiceControllerSource = fs.readFileSync(voiceControllerPath, 'utf8');
+
+  expect(fs.existsSync(voiceControllerPath)).toBe(true);
+  expect(appSource).toContain("from './features/create/useCreateVoiceController'");
+  expect(appSource).not.toContain('const [dialogueScripts, setDialogueScripts]');
+  expect(appSource).not.toContain('const [conversationWizardOpen, setConversationWizardOpen]');
+  expect(appSource).not.toContain('const handleGenerateDialogueScripts');
+  expect(appSource).not.toContain('const handleGenerateDialogueAudio');
+  expect(appSource).not.toContain('const playDialoguePreview');
+  expect(appSource).not.toContain('const stopDialoguePreview');
+  expect(voiceControllerSource).toContain('const [dialogueScripts, setDialogueScripts]');
+  expect(voiceControllerSource).toContain('const generateDialogueScripts');
+  expect(voiceControllerSource).toContain('const generateDialogueAudio');
+  expect(voiceControllerSource).toContain('const playDialoguePreview');
+  expect(voiceControllerSource).toContain('generatedDialogueAudioUrl');
+});
