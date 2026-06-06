@@ -3,7 +3,7 @@ import { buildHeadlineVariationsPrompt, type ConversationAdLine, type GeneratedA
 import { normalizeAdAngles } from '../lib/prompts/ad-angles';
 import {
   ACTIVE_GENERATED_FORMATS,
-  isGeneratedAdFormat,
+  isCreateFormatActive,
 } from '../features/formats/registry';
 import {
   cleanTextField,
@@ -50,7 +50,7 @@ const normalizeFormatMix = (value: unknown): GeneratedAdFormat[] => {
   if (!Array.isArray(value)) return [...ACTIVE_GENERATED_FORMATS];
   const formats = value
     .map((item) => String(item || '').trim())
-    .filter(isGeneratedAdFormat)
+    .filter(isCreateFormatActive)
     .filter((item, index, list) => list.indexOf(item) === index);
   return formats.length ? formats : [...ACTIVE_GENERATED_FORMATS];
 };
