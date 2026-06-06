@@ -1,6 +1,7 @@
 import Dexie, { type Table } from 'dexie';
 import type { PlatformType } from '../components/PlatformFrame';
 import { isSupabaseConfigured, supabase } from './supabase';
+import type { AdScene } from '../../apps/web/features/create/scene';
 
 const DB_NAME = 'wiggly_share_pages';
 const STORE_NAME = 'shares';
@@ -23,6 +24,7 @@ export type SharePageRecord = {
   accentColor: string;
   backgroundColor: string;
   platform?: PlatformType;
+  scene?: AdScene | null;
 };
 
 class WigglyShareDb extends Dexie {
@@ -82,6 +84,7 @@ export async function saveHostedSharePage(record: Omit<SharePageRecord, 'id' | '
   formData.append('accent_color', record.accentColor);
   formData.append('background_color', record.backgroundColor);
   if (record.platform) formData.append('platform', record.platform);
+  if (record.scene) formData.append('scene', JSON.stringify(record.scene));
 
   const response = await fetch('/api/share-pages', {
     method: 'POST',
@@ -141,6 +144,7 @@ export async function getHostedSharePageBySlug(slug: string): Promise<SharePageR
     accentColor: result.data.accent_color,
     backgroundColor: result.data.background_color,
     platform: result.data.platform,
+    scene: null,
   };
 }
 

@@ -12,10 +12,12 @@ import { spawn } from 'child_process';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
 import { createClient } from '@supabase/supabase-js';
+import { ConvexHttpClient } from 'convex/browser';
 import { bundle } from '@remotion/bundler';
 import { getCompositions, renderMedia } from '@remotion/renderer';
 import { EXPORT_FPS, getExportDimensions, isPhoneCallSnapshot, PHONE_CALL_EXPORT_DIMENSIONS, type ExportSnapshot, type RenderSnapshot } from './src/lib/export-snapshot';
 import type { AdScene } from './apps/web/features/create/scene';
+import { api } from './apps/web/convex/_generated/api';
 import { getPublicRenderErrorMessage } from './apps/web/features/export/renderErrors';
 import { renderAdSceneToMp4 } from './apps/web/features/export/renderScene';
 import {
@@ -23,6 +25,7 @@ import {
   deleteRenderSceneTicket,
   readRenderSceneTicket,
 } from './apps/web/features/export/renderSceneTicketStore';
+import { createRenderSnapshot } from './apps/web/features/render/adSceneRender';
 
 const app = express();
 const isProd = process.env.NODE_ENV === 'production';
@@ -388,6 +391,41 @@ const normalizeShareUrl = (value: unknown) => {
   return new URL(trimmed.includes('://') ? trimmed : `https://${trimmed}`).href;
 };
 
+const parseShareSceneBody = (value: unknown): AdScene | null => {
+  if (!value) return null;
+  try {
+    const scene = typeof value === 'string' ? JSON.parse(value) : value;
+    if (!scene || typeof scene !== 'object') return null;
+    const candidate = scene as AdScene;
+    if (!candidate.id || !candidate.brand?.name || !candidate.creative?.headline) return null;
+    return candidate;
+  } catch {
+    return null;
+  }
+};
+
+const getConvexUrl = () => (
+  process.env.NEXT_PUBLIC_CONVEX_URL ||
+  process.env.CONVEX_URL ||
+  ''
+).trim();
+
+const saveShareSceneSnapshot = async (scene: AdScene | null, slug: string) => {
+  if (!scene) return false;
+  const convexUrl = getConvexUrl();
+  if (!convexUrl) return false;
+
+  const client = new ConvexHttpClient(convexUrl);
+  const record = {
+    ...createRenderSnapshot(scene),
+    slug,
+    createdAt: Date.now(),
+  };
+
+  await client.mutation(api.shareScenes.save, { record });
+  return true;
+};
+
 const getRequestOrigin = (req: express.Request) => {
   const appUrl = process.env.APP_URL?.trim().replace(/\/+$/, '');
   if (appUrl) return appUrl;
@@ -558,15 +596,18 @@ app.post('/api/share-pages', publishingLimiter, uploadShareVideo.single('video')
       return res.status(400).json({ error: 'Share videos must be MP4 files.' });
     }
 
-    const headline = trimField(req.body.headline, 180);
-    const subhead = trimField(req.body.subhead, 500);
-    const ctaText = trimField(req.body.cta_text, 80) || 'Learn More';
-    const businessName = trimField(req.body.business_name, 120) || 'Wiggly';
-    const brandName = trimField(req.body.brand_name, 120) || businessName;
-    const brandLogoUrl = trimField(req.body.brand_logo_url, 5000);
-    const accentColor = trimField(req.body.accent_color, 7) || '#00D6B8';
-    const backgroundColor = trimField(req.body.background_color, 7) || '#FAFAF7';
-    const requestedPlatform = trimField(req.body.platform, 40);
+    const shareScene = parseShareSceneBody(req.body.scene);
+    const sceneBrand = shareScene?.brand;
+    const sceneCreative = shareScene?.creative;
+    const headline = trimField(sceneCreative?.headline || req.body.headline, 180);
+    const subhead = trimField(sceneCreative?.subheadline || req.body.subhead, 500);
+    const ctaText = trimField(sceneCreative?.ctaText || req.body.cta_text, 80) || 'Learn More';
+    const businessName = trimField(sceneBrand?.name || req.body.business_name, 120) || 'Wiggly';
+    const brandName = trimField(sceneBrand?.name || req.body.brand_name, 120) || businessName;
+    const brandLogoUrl = trimField(sceneBrand?.logoUrl || sceneBrand?.faviconUrl || req.body.brand_logo_url, 5000);
+    const accentColor = trimField(sceneCreative?.accentColor || req.body.accent_color, 7) || '#00D6B8';
+    const backgroundColor = trimField(sceneCreative?.backgroundColor || req.body.background_color, 7) || '#FAFAF7';
+    const requestedPlatform = trimField(shareScene?.platform || req.body.platform, 40);
     const platform = ['facebook-feed', 'instagram-feed', 'feed', 'reels', 'stories', 'vertical', 'youtube'].includes(requestedPlatform)
       ? requestedPlatform
       : 'instagram-feed';
@@ -579,7 +620,7 @@ app.post('/api/share-pages', publishingLimiter, uploadShareVideo.single('video')
       return res.status(400).json({ error: 'Share colors must be six-digit hex values.' });
     }
     try {
-      ctaUrl = normalizeShareUrl(req.body.cta_url);
+      ctaUrl = normalizeShareUrl(sceneCreative?.ctaUrl || sceneBrand?.websiteUrl || req.body.cta_url);
     } catch {
       return res.status(400).json({ error: 'Button link must be a valid URL.' });
     }
@@ -638,12 +679,20 @@ app.post('/api/share-pages', publishingLimiter, uploadShareVideo.single('video')
     }
 
     const publicUrl = supabase.storage.from('ad-shares').getPublicUrl(videoPath).data.publicUrl;
+    let sceneStored = false;
+    try {
+      sceneStored = await saveShareSceneSnapshot(shareScene, slug);
+    } catch (error) {
+      console.warn('[share-pages] could not save Convex share scene snapshot:', error);
+    }
+
     res.json({
       id: insert.data?.id,
       createdAt: insert.data?.created_at,
       slug,
       videoPath,
       videoUrl: publicUrl,
+      sceneStored,
       shareUrl: `${getRequestOrigin(req)}/s/${slug}`,
     });
   } catch (error: any) {

@@ -2,7 +2,9 @@ import { expect, test } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DEFAULT_ELEMENTS, type AdElement } from '../src/store';
+import { createLegacyCreateAdScene } from '../src/lib/legacy-create-ad-scene';
 import { requestLegacyCreateRenderDownload } from '../src/lib/legacy-create-render-download';
+import { buildShareMetadataFromAdScene } from '../src/features/share/shareMetadata';
 import type { BrandBrain } from '../src/lib/prompts/brand-brain';
 
 const brandBrain: BrandBrain = {
@@ -151,18 +153,50 @@ test('legacy create download helper sends an AdScene render ticket request', asy
   expect(render.blob.type).toBe('video/mp4');
 });
 
+test('legacy create share metadata comes from the exported AdScene', () => {
+  const scene = createLegacyCreateAdScene({
+    brandBrain,
+    variation,
+    elements: legacyElements(),
+    captions: [{ text: 'I just checked the numbers.', start: 0, end: 1.2, speaker: 1 }],
+    platform: 'instagram-feed',
+    backgroundColor: '#fafaf7',
+    visualizerColor: '#93c5fd',
+    ctaText: 'See the strategy',
+    ctaUrl: 'ogtool.com',
+    now: 1_717_200_000_000,
+  });
+
+  const metadata = buildShareMetadataFromAdScene(scene);
+
+  expect(metadata.headline).toBe('Why AI recommends your competitors');
+  expect(metadata.businessName).toBe('OGTool');
+  expect(metadata.brandName).toBe('OGTool');
+  expect(metadata.platform).toBe('instagram-feed');
+  expect(metadata.ctaText).toBe('See the strategy');
+  expect(metadata.ctaUrl).toBe('https://ogtool.com/');
+});
+
 test('legacy create has Express AdScene render-ticket routes', () => {
   const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
   const appSource = fs.readFileSync(path.join(process.cwd(), 'src/App.tsx'), 'utf8');
   const createFlowSource = fs.readFileSync(path.join(process.cwd(), 'src/components/CreateFlow.tsx'), 'utf8');
+  const shareHookSource = fs.readFileSync(path.join(process.cwd(), 'src/features/share/useShareLink.ts'), 'utf8');
+  const sharePagesSource = fs.readFileSync(path.join(process.cwd(), 'src/lib/share-pages.ts'), 'utf8');
 
   expect(serverSource).toContain("app.post('/api/render-scene-ticket'");
   expect(serverSource).toContain("app.get('/api/render-scene/:ticketId'");
   expect(serverSource).toContain('renderAdSceneToMp4');
   expect(serverSource).toContain('createRenderSceneTicket');
   expect(serverSource).toContain('readRenderSceneTicket');
+  expect(serverSource).toContain('saveShareSceneSnapshot');
+  expect(serverSource).toContain('parseShareSceneBody');
   expect(appSource).toContain('requestLegacyCreateRenderDownload');
   expect(appSource).toContain('tryLegacyCreateAdSceneExport');
   expect(appSource).toContain('snapshot: exportSnapshot');
+  expect(appSource).toContain('adScene: render.scene');
+  expect(shareHookSource).toContain('buildShareMetadataFromAdScene');
+  expect(shareHookSource).toContain('scene: exportDownload.adScene || null');
+  expect(sharePagesSource).toContain("formData.append('scene'");
   expect(createFlowSource).toContain('onDownloadVideo(activeVariation, brandBrain)');
 });
