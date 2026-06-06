@@ -873,9 +873,10 @@ test('minimal Remotion fixture is wired to AdScene', () => {
   assert.match(sceneSource, /scene: AdScene/);
 });
 
-test('Next deletes create-v2 and leaves create to the legacy app', () => {
+test('Next serves create and deletes create-v2', () => {
   const rootPage = fs.readFileSync(path.join(webRoot, 'app/page.tsx'), 'utf8');
   const createPagePath = path.join(webRoot, 'app/create/page.tsx');
+  const createPage = fs.readFileSync(createPagePath, 'utf8');
   const createV2PagePath = path.join(webRoot, 'app/create-v2/page.tsx');
   const rootPackage = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
   const publicLink = path.join(webRoot, 'public');
@@ -884,7 +885,7 @@ test('Next deletes create-v2 and leaves create to the legacy app', () => {
   assert.doesNotMatch(rootPage, /create-v2/);
   assert.doesNotMatch(rootPage, /Shared rendering and data engine|Wiggly engine|Open create/);
   assert.match(rootPage, /redirect\('\/create'\)/);
-  assert.equal(fs.existsSync(createPagePath), false);
+  assert.match(createPage, /CreateFoundation/);
   assert.equal(fs.existsSync(createV2PagePath), false);
   assert.equal(rootPackage.scripts.dev, 'npm run dev:legacy');
   assert.equal(rootPackage.scripts['dev:client'], 'vite --port=3010 --host=0.0.0.0');
