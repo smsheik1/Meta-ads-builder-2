@@ -1087,10 +1087,10 @@ export function CreateFlow({
                 <div className="absolute left-1/2 top-[64%] z-50 -translate-x-1/2">
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.14)]"
+                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white/95 px-5 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.10)] transition hover:-translate-y-0.5 hover:bg-white hover:text-slate-950"
                     onClick={() => onOpenVoiceMaker()}
                   >
-                    <AudioLines className="h-4 w-4" />
+                    <AudioLines className="h-4 w-4 shrink-0" />
                     Add audio for this ad
                   </button>
                 </div>
