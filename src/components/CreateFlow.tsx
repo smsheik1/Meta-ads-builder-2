@@ -31,6 +31,10 @@ type AdModelChoice =
   | 'openrouter:openrouter/auto:free'
   | 'gemini:gemini-3.1-flash-lite'
   | 'local';
+
+const WEBSITE_RESEARCH_TIMEOUT_MS = 45000;
+const AD_STREAM_TIMEOUT_MS = 30000;
+
 export type RerollFlashRole = 'headline' | 'subheadline' | 'visualizer' | 'captions' | 'cta' | 'logo';
 export type RerollFlashPayload = {
   key: string;
@@ -676,7 +680,7 @@ export function CreateFlow({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ websiteUrl, fallbackAnswers: answers }),
-    }, 25000, 'That site is taking too long to read. Answer three quick questions and Wiggly can keep going.');
+    }, WEBSITE_RESEARCH_TIMEOUT_MS, 'That site is taking too long to read. Answer three quick questions and Wiggly can keep going.');
   };
 
   const requestAdStream = async (nextBrandBrain: BrandBrain) => {
@@ -689,7 +693,7 @@ export function CreateFlow({
         formatMix: ACTIVE_GENERATED_FORMATS,
         model: selectedAdModel,
       }),
-    }, 30000, 'Writing is taking too long. Try again in a moment.');
+    }, AD_STREAM_TIMEOUT_MS, 'Writing is taking too long. Try again in a moment.');
   };
 
   const generateAds = async (answers?: string[]) => {

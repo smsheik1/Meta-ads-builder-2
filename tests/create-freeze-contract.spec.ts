@@ -55,6 +55,14 @@ test('legacy create app has no browser recorder fallback renderer', () => {
   expect(packageSource).not.toContain('fluent-ffmpeg');
 });
 
+test('legacy create website research timeout matches the server research budget', () => {
+  const createFlowSource = fs.readFileSync(path.join(repoRoot, 'src', 'components', 'CreateFlow.tsx'), 'utf8');
+
+  expect(createFlowSource).toContain('const WEBSITE_RESEARCH_TIMEOUT_MS = 45000;');
+  expect(createFlowSource).toContain('WEBSITE_RESEARCH_TIMEOUT_MS');
+  expect(createFlowSource).not.toContain("}, 25000, 'That site is taking too long to read");
+});
+
 test('legacy create app no longer carries dead phone-call or Postiz branches', () => {
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
 
