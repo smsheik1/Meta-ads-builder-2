@@ -164,4 +164,44 @@ test.describe('legacy /create look contract', () => {
     await expect(page.getByRole('dialog', { name: 'Brand research details' })).toBeVisible();
     await expect(page.getByText('Full brand dump')).toBeVisible();
   });
+
+  test('uses the AdScene render-ticket path when downloading from old /create', async ({ page }) => {
+    await page.addInitScript(seedGeneratedOgToolState);
+
+    let sawRenderTicketRequest = false;
+    await page.route('**/api/render-scene-ticket', async (route) => {
+      const postData = route.request().postData() || '';
+      sawRenderTicketRequest = true;
+      expect(postData).toContain('"scene"');
+      expect(postData).toContain('legacy-create-ogtool');
+      expect(postData).toContain('Why AI recommends your competitors');
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ticketId: 'ticket-1',
+          filename: 'ogtool-render.mp4',
+          downloadUrl: '/api/render-scene/ticket-1',
+        }),
+      });
+    });
+
+    await page.route('**/api/render-scene/ticket-1', async (route) => {
+      const bytes = new Uint8Array(1200);
+      bytes.set([0, 0, 0, 20, 102, 116, 121, 112], 0);
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'video/mp4',
+        body: Buffer.from(bytes),
+      });
+    });
+
+    await page.goto('/create');
+    await page.getByRole('button', { name: 'Download video' }).first().click();
+
+    await expect(page.getByText('Video ready')).toBeVisible();
+    expect(sawRenderTicketRequest).toBe(true);
+  });
 });

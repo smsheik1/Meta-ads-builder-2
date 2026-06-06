@@ -25,6 +25,7 @@ import { pickVisibleColorOnLight } from './lib/color-contrast';
 import { ShareAdPage } from './routes/ShareAdPage';
 import type { BrandBrain, BrandReceipts } from './lib/prompts/brand-brain';
 import { useShareLink } from './features/share/useShareLink';
+import { requestLegacyCreateRenderDownload } from './lib/legacy-create-render-download';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
@@ -1796,6 +1797,58 @@ export default function App() {
     setRenderProgress(100);
   };
 
+  const tryLegacyCreateAdSceneExport = async (
+    exportSnapshot: SavedTemplate,
+    variation: GeneratedAdVariation,
+    nextBrandBrain: BrandBrain,
+    abortController: AbortController,
+  ) => {
+    setExportPhase('converting');
+    setRenderProgress(10);
+
+    const sceneCaptions = cleanCaptions(useEditorStore.getState().captions);
+    const sceneAudioStatus = createAudioUrl && audioIntent === 'generated'
+      ? 'generated'
+      : createAudioUrl && audioIntent === 'uploaded'
+        ? 'uploaded'
+        : 'none';
+
+    setRenderProgress(25);
+    const render = await requestLegacyCreateRenderDownload({
+      brandBrain: nextBrandBrain,
+      variation,
+      elements: JSON.parse(JSON.stringify(useEditorStore.getState().elements)),
+      captions: sceneCaptions,
+      platform,
+      backgroundColor: bgColor,
+      visualizerColor,
+      accentColor,
+      ctaText: autoCta,
+      ctaUrl,
+      brandLogoUrl: brandLogo,
+      audioStatus: sceneAudioStatus,
+      audioUrl: sceneAudioStatus === 'none' ? null : createAudioUrl,
+      audioStorageId: sceneAudioStatus === 'none' ? null : currentAudioAssetId,
+      audioMimeType: sceneAudioStatus === 'none' || !createAudioUrl ? null : inferAudioMimeType(createAudioUrl),
+      audioTranscript: sceneCaptions.map((caption) => caption.text).join(' '),
+      audioBrandKey: sceneAudioStatus === 'none' ? null : audioBrandKey,
+      validateMp4Blob: ensureValidMp4Blob,
+      signal: abortController.signal,
+    });
+
+    setRenderProgress(92);
+    const url = URL.createObjectURL(render.blob);
+    setExportDownload({
+      url,
+      blob: render.blob,
+      filename: render.filename,
+      snapshot: exportSnapshot,
+      renderVersion: CURRENT_RENDER_VERSION,
+    });
+    setExportPhase('complete');
+    setRenderProgress(100);
+  };
+
   const downloadPhoneCallVideo = async () => {
     setExportLaunchAnimation(true);
     window.setTimeout(() => setExportLaunchAnimation(false), 650);
@@ -2737,7 +2790,10 @@ export default function App() {
     exportCancelRef.current?.();
   };
 
-  const downloadSimulatedVideo = async () => {
+  const downloadSimulatedVideo = async (
+    createVariation?: GeneratedAdVariation | null,
+    createBrandBrain?: BrandBrain | null,
+  ) => {
     if (creativeMode === 'phone-call') {
       await downloadPhoneCallVideo();
       return;
@@ -2769,6 +2825,12 @@ export default function App() {
     };
 
     try {
+      if (appRoute === 'create' && createVariation && createBrandBrain) {
+        await tryLegacyCreateAdSceneExport(exportSnapshot, createVariation, createBrandBrain, remotionAbortController);
+        setRendering(false);
+        exportCancelRef.current = null;
+        return;
+      }
       await tryRemotionExport(exportSnapshot, remotionAbortController);
       setRendering(false);
       exportCancelRef.current = null;
@@ -4438,7 +4500,7 @@ This ad headline is: ${variation.headline}`;
           playing={playing}
           onTogglePlayback={togglePlayback}
           onPlaybackComplete={() => setPlaying(false)}
-          onDownloadVideo={() => void downloadSimulatedVideo()}
+          onDownloadVideo={(variation, nextBrandBrain) => void downloadSimulatedVideo(variation, nextBrandBrain)}
           onSaveDesign={saveGeneratedAdDesign}
           savedDesigns={templates.map((template) => ({
             id: template.id,

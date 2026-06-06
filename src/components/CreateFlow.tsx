@@ -78,7 +78,7 @@ type CreateFlowProps = {
   playing: boolean;
   onTogglePlayback: () => void;
   onPlaybackComplete: () => void;
-  onDownloadVideo: () => void;
+  onDownloadVideo: (variation?: GeneratedAdVariation | null, brandBrain?: BrandBrain | null) => void;
   onSaveDesign: (variation: GeneratedAdVariation, brandBrain: BrandBrain) => void;
   savedDesigns: SavedCreateDesign[];
   onOpenSavedDesign: (designId: string) => void;
@@ -1197,7 +1197,7 @@ export function CreateFlow({
 
               <button
                 type="button"
-                onClick={onDownloadVideo}
+                onClick={() => onDownloadVideo(activeVariation, brandBrain)}
                 disabled={!activeVariation || !brandBrain || rendering}
                 className={`${activeVariation ? '' : 'mt-4'} flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40`}
               >
