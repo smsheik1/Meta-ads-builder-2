@@ -59,3 +59,22 @@ test('legacy create app no longer carries dead phone-call or Postiz branches', (
   expect(appSource).not.toContain('postiz');
   expect(appSource).not.toContain('Postiz');
 });
+
+test('legacy create render path has no phone-call composition branch', () => {
+  const serverSource = fs.readFileSync(path.join(repoRoot, 'server.ts'), 'utf8');
+  const remotionRootSource = fs.readFileSync(path.join(repoRoot, 'src', 'remotion', 'Root.tsx'), 'utf8');
+  const exportSnapshotSource = fs.readFileSync(path.join(repoRoot, 'src', 'lib', 'export-snapshot.ts'), 'utf8');
+
+  expect(serverSource).not.toContain('PhoneCallRender');
+  expect(serverSource).not.toContain('isPhoneCallSnapshot');
+  expect(serverSource).not.toContain('PHONE_CALL_EXPORT_DIMENSIONS');
+  expect(remotionRootSource).not.toContain('PhoneCallRender');
+  expect(remotionRootSource).not.toContain('RemotionPhoneCall');
+  expect(exportSnapshotSource).not.toContain('PhoneCallSnapshot');
+  expect(exportSnapshotSource).not.toContain('PHONE_CALL_EXPORT_DIMENSIONS');
+
+  expect(fs.existsSync(path.join(repoRoot, 'src', 'remotion', 'RemotionPhoneCall.tsx'))).toBe(false);
+  expect(fs.existsSync(path.join(repoRoot, 'src', 'components', 'PhoneCallScene.tsx'))).toBe(false);
+  expect(fs.existsSync(path.join(repoRoot, 'src', 'components', 'PhoneCallSimulator.tsx'))).toBe(false);
+  expect(fs.existsSync(path.join(repoRoot, 'src', 'lib', 'phone-call.ts'))).toBe(false);
+});
