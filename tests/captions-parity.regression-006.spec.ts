@@ -51,5 +51,7 @@ test('create ads require intentional audio for playback but allow silent downloa
   expect(createFlowSource).toContain('!hasPlayableAudio');
   expect(createFlowSource).toContain('disabled={!activeVariation || !brandBrain || rendering}');
   expect(createFlowSource).toContain('disabled={!hasPlayableAudio}');
-  expect(createFlowSource).toContain('wiggly-audio-cta-pulse');
+  expect(createFlowSource).toContain('emptyCaptionFallback=""');
+  expect(createFlowSource).toContain('shadow-[0_18px_44px_rgba(15,23,42,0.14)]');
+  expect(createFlowSource).not.toContain('wiggly-audio-cta-pulse');
 });

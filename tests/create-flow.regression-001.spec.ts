@@ -283,6 +283,7 @@ test('create ad with no intentional audio shows audio CTA and keeps silent downl
   await page.getByRole('button', { name: /generate ads/i }).click();
 
   await expect(page.getByRole('button', { name: 'Add audio for this ad' })).toBeVisible();
+  await expect(page.getByText('Add audio for this ad')).toHaveCount(1);
   await expect(page.getByText('Upload audio for captions')).toHaveCount(0);
   await expect(page.getByRole('button', { name: /play this ad/i })).toBeDisabled();
   await expect(page.getByRole('button', { name: /download video/i })).toBeEnabled();
@@ -373,6 +374,7 @@ test('create refresh ignores stale generated audio from another brand', async ({
 
   await expect(page.getByText('Satisfy Your Sweet Cravings')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Add audio for this ad' })).toBeVisible();
+  await expect(page.getByText('Add audio for this ad')).toHaveCount(1);
   await expect(page.getByRole('button', { name: /play this ad/i })).toBeDisabled();
   await expect(page.getByText(/Dental generated audio/i)).toHaveCount(0);
 });
