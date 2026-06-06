@@ -1,4 +1,4 @@
-import { cloneAdScene, type AdScene } from '../../apps/web/features/create/scene';
+import { cloneAdScene, type AdScene } from '../engine/ad-scene/scene';
 import {
   createLegacyCreateAdScene,
   type LegacyCreateAdSceneInput,

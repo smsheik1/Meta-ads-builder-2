@@ -1,7 +1,7 @@
 import Dexie, { type Table } from 'dexie';
 import type { PlatformType } from '../components/PlatformFrame';
 import { isSupabaseConfigured, supabase } from './supabase';
-import type { AdScene } from '../../apps/web/features/create/scene';
+import type { AdScene } from '../engine/ad-scene/scene';
 
 const DB_NAME = 'wiggly_share_pages';
 const STORE_NAME = 'shares';
