@@ -82,6 +82,7 @@ interface CanvasEditorProps {
   audioAnalysis?: AudioAnalysisData | null;
   captionsLoading?: boolean;
   emptyCaptionFallback?: string;
+  emptyCaptionAction?: React.ReactNode;
   playing: boolean;
   onPlaybackComplete?: () => void;
   accentColor: string;
@@ -180,7 +181,7 @@ const applyArchetypeToElement = (element: AdElement, archetype: AdStyleArchetype
   return element;
 };
 
-export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, audioAnalysis, captionsLoading = false, emptyCaptionFallback = 'Upload audio for captions', playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype, rerollFlash, readOnly = false, disableSpaceReroll = false, disableEmptySelectionSpaceReroll = false }) => {
+export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, audioAnalysis, captionsLoading = false, emptyCaptionFallback = 'Upload audio for captions', emptyCaptionAction = null, playing, onPlaybackComplete, accentColor, backgroundColor, bgMedia, bgShadow, bgShadowOpacity, introImage, introDuration, introFeedCropY, introImageAspect, previewDurationCap, onRefreshBackgroundColor, onApplyStyleArchetype, rerollFlash, readOnly = false, disableSpaceReroll = false, disableEmptySelectionSpaceReroll = false }) => {
   const { elements, selectedIds, selectElement, deselectAll, updateElement, commitHistory, showSafeZones, showRedGuides, captions } = useEditorStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
@@ -999,16 +1000,31 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({ platform, audioUrl, 
 
       {elements.map((el) => {
         const captionElementText = displayCaption || (audioUrl ? (captionsLoading ? 'Captions are loading' : '') : emptyCaptionFallback);
-        if (el.type === 'caption' && !captionElementText.trim()) {
-          return null;
-        }
-
         const frame = getPlatformElementFrame(el, platform);
         const feedSafeSquareTop = feedPlatform ? Math.max(0, (dimensions.h - dimensions.w) / 2) : 0;
         const feedSafeSquareBottom = feedSafeSquareTop + dimensions.w;
         const displayY = feedPlatform && el.type === 'caption' && dimensions.w > 0
           ? Math.min(frame.y, feedSafeSquareBottom - frame.height - 8)
           : frame.y;
+        if (el.type === 'caption' && !captionElementText.trim()) {
+          if (!emptyCaptionAction) return null;
+          return (
+            <div
+              key={`${el.id}-empty-action`}
+              className="pointer-events-auto absolute grid place-items-center"
+              style={{
+                left: frame.x + layoutOffsetX,
+                top: displayY * layoutScaleY,
+                width: frame.width,
+                height: frame.height * layoutScaleY,
+                zIndex: el.zIndex,
+              }}
+            >
+              {emptyCaptionAction}
+            </div>
+          );
+        }
+
         const captionMaxFontSize = platform === 'youtube' ? 86 : 64;
         const normalizedVisualizerType = normalizeVisualizerType(el.visualizerType);
         const showTextColorPicker = !editingId && el.type === 'text' && (el.componentRole === 'headline' || el.componentRole === 'subheadline');

@@ -49,6 +49,7 @@ test('create ads require intentional audio for playback but allow silent downloa
 
   expect(createFlowSource).toContain('Add audio for this ad');
   expect(createFlowSource).toContain('!hasPlayableAudio');
+  expect(createFlowSource).toContain('emptyCaptionAction={!hasPlayableAudio || !activeVariation ?');
   expect(createFlowSource).toContain('disabled={!activeVariation || !brandBrain || rendering}');
   expect(createFlowSource).toContain('disabled={!hasPlayableAudio}');
   expect(createFlowSource).toContain('emptyCaptionFallback=""');
