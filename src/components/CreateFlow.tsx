@@ -7,6 +7,16 @@ import type { AudioAnalysisData } from '../lib/audio-analysis';
 import { getRelativeLuminance, pickVisibleColorOnLight } from '../lib/color-contrast';
 import { BRAND_FALLBACK_QUESTIONS, type BrandBrain } from '../lib/prompts/brand-brain';
 import type { ConversationAdLine, GeneratedAdFormat, HeadlineVariation } from '../lib/prompts/headline-variations';
+import {
+  ACTIVE_GENERATED_FORMATS,
+  CREATE_FORMAT_MODES,
+  filterActiveGeneratedVariations,
+  getCreateFormatModeLabel,
+  isCreateFormatActive,
+  normalizeCreateFormatMode,
+  normalizeGeneratedAdFormat,
+} from '../features/formats/registry';
+import type { CreateFormatMode } from '../features/formats/types';
 import { useEditorStore, type Caption } from '../store';
 
 export type GeneratedAdVariation = HeadlineVariation & {
@@ -19,7 +29,7 @@ export type GeneratedAdVariation = HeadlineVariation & {
   headlineColor: string;
 };
 
-type CreateAdFormat = 'all' | GeneratedAdFormat;
+type CreateAdFormat = CreateFormatMode;
 type AdModelChoice =
   | 'auto'
   | 'groq:llama-3.1-8b-instant'
@@ -116,12 +126,6 @@ const TARGET_GENERATED_AD_COUNT = 50;
 const CREATE_FLOW_STORAGE_KEY = 'wiggly_create_flow_session_v1';
 const CREATE_FEEDBACK_STORAGE_KEY = 'wiggly_generation_feedback_v1';
 const CREATE_FLOW_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
-const PAUSED_CREATE_FORMAT_NAMES: Record<GeneratedAdFormat, string> = {
-  visualizer: '',
-  conversation: 'Conversation Card',
-};
-const PAUSED_CREATE_FORMATS = new Set<GeneratedAdFormat>(['conversation']);
-const ACTIVE_GENERATED_FORMATS: GeneratedAdFormat[] = ['visualizer'];
 const AD_MODEL_CHOICES: Array<{ value: AdModelChoice; label: string }> = [
   { value: 'auto', label: 'Auto best available (Auto)' },
   { value: 'groq:llama-3.1-8b-instant', label: 'Llama 3.1 8B Instant (Groq)' },
@@ -134,14 +138,15 @@ const AD_MODEL_CHOICES: Array<{ value: AdModelChoice; label: string }> = [
   { value: 'gemini:gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite (Gemini)' },
   { value: 'local', label: 'Local fallback headlines (Local)' },
 ];
-const ALL_FORMAT_MODES: Array<{ id: CreateAdFormat; label: string; icon: typeof LayoutGrid }> = [
-  { id: 'all', label: 'All formats', icon: LayoutGrid },
-  { id: 'visualizer', label: 'Audio visualizer', icon: AudioLines },
-  { id: 'conversation', label: PAUSED_CREATE_FORMAT_NAMES.conversation || 'Conversation', icon: MessageCircle },
-];
-const FORMAT_MODES = ALL_FORMAT_MODES.filter((mode) => (
-  mode.id === 'all' || !PAUSED_CREATE_FORMATS.has(mode.id)
-));
+const FORMAT_MODE_ICONS: Record<CreateAdFormat, typeof LayoutGrid> = {
+  all: LayoutGrid,
+  visualizer: AudioLines,
+  conversation: MessageCircle,
+};
+const FORMAT_MODES = CREATE_FORMAT_MODES.map((mode) => ({
+  ...mode,
+  icon: FORMAT_MODE_ICONS[mode.id],
+}));
 
 type PersistedCreateFlow = {
   websiteUrl: string;
@@ -172,17 +177,10 @@ const getCreateFlowStorage = () => {
   }
 };
 
-const normalizeCreateAdFormat = (value: unknown): CreateAdFormat => {
-  if (value === 'visualizer' || value === 'conversation') {
-    return PAUSED_CREATE_FORMATS.has(value) ? 'all' : value;
-  }
-  return value === 'all' ? value : 'all';
-};
-
 const normalizePersistedVariation = (variation: GeneratedAdVariation): GeneratedAdVariation => ({
   ...variation,
   archetype: variation.archetype || getRandomAdStyleArchetype(),
-  format: variation.format === 'conversation' ? 'conversation' : 'visualizer',
+  format: normalizeGeneratedAdFormat(variation.format),
   conversationLines: Array.isArray(variation.conversationLines) ? variation.conversationLines : undefined,
 });
 
@@ -200,7 +198,7 @@ const loadPersistedCreateFlow = (): PersistedCreateFlow | null => {
     const parsedVariations = Array.isArray(parsed.variations)
       ? parsed.variations
         .map((variation) => normalizePersistedVariation(variation))
-        .filter((variation) => !PAUSED_CREATE_FORMATS.has(variation.format))
+        .filter((variation) => isCreateFormatActive(variation.format))
       : [];
     const usableVariations = parsedVariations.length > 0 ? parsedVariations : [];
     return {
@@ -208,7 +206,7 @@ const loadPersistedCreateFlow = (): PersistedCreateFlow | null => {
       brandBrain: parsed.brandBrain || null,
       variations: usableVariations,
       activeIndex: Number.isFinite(parsed.activeIndex) ? parsed.activeIndex : 0,
-      selectedFormat: normalizeCreateAdFormat(parsed.selectedFormat),
+      selectedFormat: normalizeCreateFormatMode(parsed.selectedFormat),
       savedAt: Number(parsed.savedAt || Date.now()),
     };
   } catch {
@@ -296,14 +294,13 @@ const pickHeadlineColor = (brandBrain: BrandBrain, archetype: AdStyleArchetype, 
 
 const buildGeneratedVariations = (brandBrain: BrandBrain, variations: HeadlineVariation[]): GeneratedAdVariation[] => {
   let currentArchetypeId = '';
-  return variations
-    .filter((variation) => !PAUSED_CREATE_FORMATS.has(variation.format === 'conversation' ? 'conversation' : 'visualizer'))
+  return filterActiveGeneratedVariations(variations)
     .map((variation, index) => {
     const archetype = getRandomAdStyleArchetype(currentArchetypeId);
     currentArchetypeId = archetype.id;
     return {
       ...variation,
-      format: variation.format === 'conversation' ? 'conversation' : 'visualizer',
+      format: normalizeGeneratedAdFormat(variation.format),
       conversationLines: Array.isArray(variation.conversationLines) ? variation.conversationLines : undefined,
       index,
       archetype,
@@ -526,7 +523,7 @@ export function CreateFlow({
     .replace(/^https?:\/\//i, '')
     .replace(/^www\./i, '')
     .split('/')[0] || 'your site';
-  const selectedFormatLabel = FORMAT_MODES.find((mode) => mode.id === selectedFormat)?.label || 'Generated';
+  const selectedFormatLabel = getCreateFormatModeLabel(selectedFormat);
   const activeVariationSaved = Boolean(activeVariation && savedVariationIds.includes(activeVariation.id));
   const activeVariationHelper = activeVariation
     ? ''

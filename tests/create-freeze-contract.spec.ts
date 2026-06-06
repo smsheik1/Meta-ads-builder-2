@@ -113,3 +113,24 @@ test('legacy create dialogue generation stays outside the server monolith', () =
   expect(dialogueSource).toContain('DIALOGUE_SCRIPT_SHAPE_RULES');
   expect(dialogueSource).toContain('PINNED_TTS_MODEL');
 });
+
+test('legacy create formats are centralized before adding new ad formats', () => {
+  const registryPath = path.join(repoRoot, 'src', 'features', 'formats', 'registry.ts');
+  const visualizerPath = path.join(repoRoot, 'src', 'features', 'formats', 'visualizer.ts');
+  const conversationPath = path.join(repoRoot, 'src', 'features', 'formats', 'conversation.ts');
+  const createFlowSource = fs.readFileSync(path.join(repoRoot, 'src', 'components', 'CreateFlow.tsx'), 'utf8');
+  const adGenerationSource = fs.readFileSync(path.join(repoRoot, 'src', 'server', 'ad-generation.ts'), 'utf8');
+  const registrySource = fs.readFileSync(registryPath, 'utf8');
+
+  expect(fs.existsSync(registryPath)).toBe(true);
+  expect(fs.existsSync(visualizerPath)).toBe(true);
+  expect(fs.existsSync(conversationPath)).toBe(true);
+  expect(registrySource).toContain('ACTIVE_GENERATED_FORMATS');
+  expect(registrySource).toContain('CREATE_FORMAT_MODES');
+  expect(registrySource).toContain('conversationFormat');
+  expect(createFlowSource).toContain("from '../features/formats/registry'");
+  expect(adGenerationSource).toContain("from '../features/formats/registry'");
+  expect(createFlowSource).not.toContain('const ACTIVE_GENERATED_FORMATS');
+  expect(createFlowSource).not.toContain('const PAUSED_CREATE_FORMATS');
+  expect(adGenerationSource).not.toContain("const allowed: GeneratedAdFormat[] = ['visualizer', 'conversation']");
+});
