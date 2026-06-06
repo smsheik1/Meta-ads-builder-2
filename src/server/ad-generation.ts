@@ -2,6 +2,10 @@ import { GoogleGenAI } from '@google/genai';
 import { buildHeadlineVariationsPrompt, type ConversationAdLine, type GeneratedAdFormat, type HeadlineVariation } from '../lib/prompts/headline-variations';
 import { normalizeAdAngles } from '../lib/prompts/ad-angles';
 import {
+  ACTIVE_GENERATED_FORMATS,
+  isGeneratedAdFormat,
+} from '../features/formats/registry';
+import {
   cleanTextField,
   normalizeBrandBrain,
   parseJsonResponse,
@@ -43,13 +47,12 @@ const isUsableHeadline = (headline: string, brandBrain: BrandBrain, previous: Se
 };
 
 const normalizeFormatMix = (value: unknown): GeneratedAdFormat[] => {
-  if (!Array.isArray(value)) return ['visualizer'];
-  const allowed: GeneratedAdFormat[] = ['visualizer', 'conversation'];
+  if (!Array.isArray(value)) return [...ACTIVE_GENERATED_FORMATS];
   const formats = value
     .map((item) => String(item || '').trim())
-    .filter((item): item is GeneratedAdFormat => allowed.includes(item as GeneratedAdFormat))
+    .filter(isGeneratedAdFormat)
     .filter((item, index, list) => list.indexOf(item) === index);
-  return formats.length ? formats : ['visualizer'];
+  return formats.length ? formats : [...ACTIVE_GENERATED_FORMATS];
 };
 
 const pickGeneratedAdFormat = (formats: GeneratedAdFormat[], index: number): GeneratedAdFormat => {
