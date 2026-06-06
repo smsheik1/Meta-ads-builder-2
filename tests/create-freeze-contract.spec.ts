@@ -202,3 +202,26 @@ test('legacy create export and share state lives in controller hook', () => {
   expect(controllerSource).toContain('const downloadSimulatedVideo');
   expect(controllerSource).toContain('const saveExportToHistoryOnce');
 });
+
+test('legacy create voice wizard markup and helpers live outside App', () => {
+  const voiceWizardPath = path.join(repoRoot, 'src', 'features', 'create', 'CreateVoiceWizard.tsx');
+  const voiceScriptsPath = path.join(repoRoot, 'src', 'features', 'create', 'createVoiceScripts.ts');
+  const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const voiceWizardSource = fs.readFileSync(voiceWizardPath, 'utf8');
+  const voiceScriptsSource = fs.readFileSync(voiceScriptsPath, 'utf8');
+
+  expect(fs.existsSync(voiceWizardPath)).toBe(true);
+  expect(fs.existsSync(voiceScriptsPath)).toBe(true);
+  expect(appSource).toContain("from './features/create/CreateVoiceWizard'");
+  expect(appSource).toContain("from './features/create/createVoiceScripts'");
+  expect(appSource).not.toContain('const formatDialogueScriptCost');
+  expect(appSource).not.toContain('const cleanDialogueScriptForVoiceover');
+  expect(appSource).not.toContain('const captionsFromDialogueScript');
+  expect(appSource).not.toContain('Check the business info, choose the words, edit anything, then make the audio.');
+  expect(appSource.match(/\{voiceWizardModal\}/g)?.length).toBe(2);
+  expect(voiceWizardSource).toContain('Make Voice Audio');
+  expect(voiceWizardSource).toContain('Check the business info, choose the words, edit anything, then make the audio.');
+  expect(voiceScriptsSource).toContain('formatDialogueScriptCost');
+  expect(voiceScriptsSource).toContain('cleanDialogueScriptForVoiceover');
+  expect(voiceScriptsSource).toContain('captionsFromDialogueScript');
+});
