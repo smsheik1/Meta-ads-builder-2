@@ -158,10 +158,15 @@ test('legacy create export media helpers live outside App', () => {
   const exportMediaPath = path.join(repoRoot, 'src', 'features', 'create', 'createExportMedia.ts');
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
   const exportMediaSource = fs.readFileSync(exportMediaPath, 'utf8');
+  const exportControllerSource = fs.readFileSync(
+    path.join(repoRoot, 'src', 'features', 'create', 'useCreateExportController.ts'),
+    'utf8',
+  );
 
   expect(fs.existsSync(exportMediaPath)).toBe(true);
   expect(appSource).toContain("from './features/create/createExportMedia'");
-  expect(appSource).toContain('const tryRemotionExport');
+  expect(appSource).not.toContain('const tryRemotionExport');
+  expect(exportControllerSource).toContain('const tryRemotionExport');
   expect(appSource).not.toContain('const getRemotionUploadExtension');
   expect(appSource).not.toContain('const appendMediaForRemotion');
   expect(appSource).not.toContain('const removeWhiteFromImageBlob');
@@ -172,4 +177,28 @@ test('legacy create export media helpers live outside App', () => {
   expect(exportMediaSource).toContain('appendMediaForRemotion');
   expect(exportMediaSource).toContain('ensureValidMp4Blob');
   expect(exportMediaSource).toContain('getValidMp4Bytes');
+});
+
+test('legacy create export and share state lives in controller hook', () => {
+  const controllerPath = path.join(repoRoot, 'src', 'features', 'create', 'useCreateExportController.ts');
+  const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const controllerSource = fs.readFileSync(controllerPath, 'utf8');
+
+  expect(fs.existsSync(controllerPath)).toBe(true);
+  expect(appSource).toContain("from './features/create/useCreateExportController'");
+  expect(appSource).toContain('const createRemotionSnapshot');
+  expect(appSource).not.toContain("from './features/share/useShareLink'");
+  expect(appSource).not.toContain('const [rendering, setRendering]');
+  expect(appSource).not.toContain('const [exportDownload, setExportDownload]');
+  expect(appSource).not.toContain('const [shareStatus, setShareStatus]');
+  expect(appSource).not.toContain('const cancelExport');
+  expect(appSource).not.toContain('const downloadSimulatedVideo');
+  expect(appSource).not.toContain('const saveExportToHistoryOnce');
+  expect(controllerSource).toContain('useShareLink');
+  expect(controllerSource).toContain('const [rendering, setRendering]');
+  expect(controllerSource).toContain('const [exportDownload, setExportDownload]');
+  expect(controllerSource).toContain('const [shareStatus, setShareStatus]');
+  expect(controllerSource).toContain('const cancelExport');
+  expect(controllerSource).toContain('const downloadSimulatedVideo');
+  expect(controllerSource).toContain('const saveExportToHistoryOnce');
 });

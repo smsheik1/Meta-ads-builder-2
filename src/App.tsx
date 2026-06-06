@@ -21,7 +21,6 @@ import { explainVoiceVisualizerPreset, getVoiceVisualizerPreset, VOICE_VISUALIZE
 import { pickVisibleColorOnLight } from './lib/color-contrast';
 import { ShareAdPage } from './routes/ShareAdPage';
 import type { BrandBrain, BrandReceipts } from './lib/prompts/brand-brain';
-import { useShareLink } from './features/share/useShareLink';
 import type { AdScene } from './engine/ad-scene/scene';
 import { createLegacyCreateAdScene } from './lib/legacy-create-ad-scene';
 import {
@@ -38,11 +37,10 @@ import {
 } from './features/create/createSavedDesigns';
 import {
   appendMediaForRemotion,
-  ensureValidMp4Blob,
   formatBytes,
   getMediaDurationSeconds,
-  getValidMp4Bytes,
 } from './features/create/createExportMedia';
+import { useCreateExportController } from './features/create/useCreateExportController';
 
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
 const STUDIO_SEEN_STORAGE_KEY = 'agent_enamel_studio_seen_v1';
@@ -247,16 +245,7 @@ const CAPTION_SPEAKER_COLORS: Record<number, string> = {
 };
 
 type RenderDurationCap = 30 | 60 | 'full';
-type ExportPhase = 'recording' | 'converting' | 'complete' | 'error';
 type AppRoute = 'home' | 'builder' | 'share' | 'create';
-type ReadyExport = {
-  url: string;
-  blob: Blob;
-  filename: string;
-  snapshot: SavedTemplate | null;
-  renderVersion: number;
-  adScene?: AdScene | null;
-};
 
 const CURRENT_RENDER_VERSION = 2;
 const TRANSCRIPTION_BACKOFF_KEY = 'wiggly_transcription_429_until';
@@ -771,37 +760,15 @@ export default function App() {
   
   // Playback/Render State
   const [playing, setPlaying] = useState(false);
-  const [rendering, setRendering] = useState(false);
-  const [renderProgress, setRenderProgress] = useState(0);
-  const [exportPhase, setExportPhase] = useState<ExportPhase>('recording');
-  const [exportErrorMessage, setExportErrorMessage] = useState('');
-  const [exportDownload, setExportDownload] = useState<ReadyExport | null>(null);
-  const [exportLaunchAnimation, setExportLaunchAnimation] = useState(false);
   const [renderDurationCap, setRenderDurationCap] = useState<RenderDurationCap>('full');
-  const exportCancelRef = useRef<(() => void) | null>(null);
   const audioPresetSourceRef = useRef<string | null>(null);
-  const savedExportHistoryIdRef = useRef<string | null>(null);
   const audioAnalysisCacheRef = useRef<Map<string, AudioAnalysisData>>(new Map());
   const [previewAudioAnalysis, setPreviewAudioAnalysis] = useState<AudioAnalysisData | null>(null);
-  const [shareStatus, setShareStatus] = useState<'idle' | 'saving' | 'ready' | 'error'>('idle');
-  const [shareUrl, setShareUrl] = useState('');
-  const [shareError, setShareError] = useState('');
-  const [shareIsLocalPreview, setShareIsLocalPreview] = useState(false);
   const [spaceRemixCueVisible, setSpaceRemixCueVisible] = useState(() => (
     typeof window !== 'undefined' && localStorage.getItem(SPACE_REMIX_CUE_DISMISSED_KEY) !== '1'
   ));
   const [sharePageRecord, setSharePageRecord] = useState<SharePageRecord | null>(null);
   const [sharePageLoading, setSharePageLoading] = useState(false);
-
-  useEffect(() => {
-    if (!exportDownload || exportDownload.renderVersion === CURRENT_RENDER_VERSION) return;
-    URL.revokeObjectURL(exportDownload.url);
-    setExportDownload(null);
-    setExportPhase('recording');
-    setShareStatus('idle');
-    setShareUrl('');
-    setShareError('');
-  }, [exportDownload]);
 
   useEffect(() => {
     const handleTutorialEvent = (event: Event) => {
@@ -1148,13 +1115,6 @@ export default function App() {
     setHistorySaveWarning(result.warning);
   };
 
-  const saveExportToHistoryOnce = (snapshot: SavedTemplate | null, adScene?: AdScene | null) => {
-    if (!snapshot) return;
-    if (savedExportHistoryIdRef.current === snapshot.id) return;
-    savedExportHistoryIdRef.current = snapshot.id;
-    void saveDownloadedAdToHistory(snapshot, adScene);
-  };
-
   const getAudioSignalStats = async (url: string) => {
     const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
@@ -1433,40 +1393,6 @@ export default function App() {
     return formData;
   };
 
-  const tryRemotionExport = async (exportSnapshot: SavedTemplate, abortController: AbortController) => {
-    setExportPhase('converting');
-    setRenderProgress(10);
-    const formData = await createRemotionSnapshot(exportSnapshot);
-    setRenderProgress(25);
-
-    const response = await fetch('/api/render-remotion', {
-      method: 'POST',
-      body: formData,
-      signal: abortController.signal,
-    });
-    if (!response.ok) {
-      const payload = await response.json().catch(() => ({}));
-      throw new Error(payload.error || 'Remotion export failed');
-    }
-
-    setRenderProgress(92);
-    const mp4Blob = await response.blob();
-    await ensureValidMp4Blob(mp4Blob, 'Remotion export');
-
-    const url = URL.createObjectURL(mp4Blob);
-    const filename = `agent-enamel-${Date.now()}.mp4`;
-    setExportDownload({
-      url,
-      blob: mp4Blob,
-      filename,
-      snapshot: exportSnapshot,
-      renderVersion: CURRENT_RENDER_VERSION,
-      adScene: exportSnapshot.adScene || null,
-    });
-    setExportPhase('complete');
-    setRenderProgress(100);
-  };
-
   const getCurrentLegacyCreateAdScene = (
     variation: GeneratedAdVariation,
     nextBrandBrain: BrandBrain,
@@ -1499,104 +1425,33 @@ export default function App() {
     });
   };
 
-  const trySavedCreateAdSceneExport = async (
-    exportSnapshot: SavedTemplate,
-    scene: AdScene,
-    abortController: AbortController,
-  ) => {
-    await tryRemotionExport({ ...exportSnapshot, adScene: scene }, abortController);
-  };
-
-  const tryLegacyCreateAdSceneExport = async (
-    exportSnapshot: SavedTemplate,
-    variation: GeneratedAdVariation,
-    nextBrandBrain: BrandBrain,
-    abortController: AbortController,
-  ) => {
-    const scene = getCurrentLegacyCreateAdScene(variation, nextBrandBrain);
-    setCurrentCreateAdScene(scene);
-    await tryRemotionExport({ ...exportSnapshot, adScene: scene }, abortController);
-  };
-
-  const downloadReadyExport = async () => {
-    if (!exportDownload) return;
-
-    let mp4Bytes: Uint8Array;
-    try {
-      mp4Bytes = await getValidMp4Bytes(exportDownload.blob, 'Ready export');
-    } catch (error) {
-      console.error('Blocked invalid MP4 download:', error);
-      setExportPhase('error');
-      alert('This video file had a problem. Please make the video again.');
-      return;
-    }
-
-    const showSaveFilePicker = (window as any).showSaveFilePicker;
-
-    if (typeof showSaveFilePicker === 'function') {
-      try {
-        const fileHandle = await showSaveFilePicker({
-          suggestedName: exportDownload.filename,
-          types: [
-            {
-              description: 'Video file',
-              accept: { 'video/mp4': ['.mp4'] },
-            },
-          ],
-        });
-        const writable = await fileHandle.createWritable();
-        await writable.write(mp4Bytes);
-        await writable.close();
-        saveExportToHistoryOnce(exportDownload.snapshot, exportDownload.adScene);
-        return;
-      } catch (error) {
-        if (error instanceof DOMException && error.name === 'AbortError') return;
-        console.warn('Native MP4 save failed, falling back to browser download:', error);
-      }
-    }
-
-    try {
-      const downloadUrl = URL.createObjectURL(new Blob([mp4Bytes], { type: 'video/mp4' }));
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = exportDownload.filename;
-      link.rel = 'noopener';
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 10000);
-    } catch (error) {
-      console.warn('Browser MP4 download failed:', error);
-      window.open(exportDownload.url, '_blank', 'noopener,noreferrer');
-    }
-
-    saveExportToHistoryOnce(exportDownload.snapshot, exportDownload.adScene);
-  };
-
-  const openReadyExport = async () => {
-    if (!exportDownload) return;
-    try {
-      await ensureValidMp4Blob(exportDownload.blob, 'Ready export');
-    } catch (error) {
-      console.error('Blocked invalid MP4 open:', error);
-      setExportPhase('error');
-      alert('This video file had a problem. Please make the video again.');
-      return;
-    }
-    window.open(exportDownload.url, '_blank', 'noopener,noreferrer');
-    saveExportToHistoryOnce(exportDownload.snapshot, exportDownload.adScene);
-  };
-
-  const { createShareLink } = useShareLink({
+  const {
+    rendering,
+    renderProgress,
+    setRenderProgress,
+    exportPhase,
+    exportErrorMessage,
     exportDownload,
+    exportLaunchAnimation,
+    shareStatus,
+    shareUrl,
+    shareError,
+    shareIsLocalPreview,
+    cancelExport,
+    createShareLink,
+    dismissExportStatus,
+    downloadReadyExport,
+    downloadSimulatedVideo,
+    openReadyExport,
+  } = useCreateExportController({
+    appRoute,
     currentRenderVersion: CURRENT_RENDER_VERSION,
-    ensureValidMp4Blob,
-    saveExportToHistoryOnce,
-    setShareStatus,
-    setShareError,
-    setShareIsLocalPreview,
-    setShareUrl,
+    createCurrentSnapshot: () => createCurrentSnapshot(getCurrentDesignTitle(), currentCreateAdScene),
+    createRemotionSnapshot,
+    currentCreateAdScene,
+    getCurrentLegacyCreateAdScene,
+    onCurrentCreateAdScene: setCurrentCreateAdScene,
+    saveDownloadedAdToHistory,
   });
 
   const deleteHistoryItem = async (historyId: string) => {
@@ -1686,18 +1541,6 @@ export default function App() {
       rememberCurrentAudio({ id: 'built-in-ai-dental-receptionist-audio', builtIn: true });
     }
   };
-
-  useEffect(() => {
-    if (!rendering) return;
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [rendering]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -2311,81 +2154,6 @@ export default function App() {
       emitTutorialEvent({ type: 'play-clicked' });
     }
     setPlaying(!playing);
-  };
-
-  const cancelExport = () => {
-    exportCancelRef.current?.();
-  };
-
-  const downloadSimulatedVideo = async (
-    createVariation?: GeneratedAdVariation | null,
-    createBrandBrain?: BrandBrain | null,
-  ) => {
-    const exportSnapshot = createCurrentSnapshot(getCurrentDesignTitle(), currentCreateAdScene);
-    setExportLaunchAnimation(true);
-    window.setTimeout(() => setExportLaunchAnimation(false), 650);
-    setRendering(true);
-    setRenderProgress(0);
-    setExportErrorMessage('');
-    setExportPhase('recording');
-    savedExportHistoryIdRef.current = null;
-    setShareStatus('idle');
-    setShareUrl('');
-    setShareError('');
-    setExportDownload((previous) => {
-      if (previous) URL.revokeObjectURL(previous.url);
-      return null;
-    });
-
-    const remotionAbortController = new AbortController();
-    exportCancelRef.current = () => {
-      remotionAbortController.abort();
-      setRendering(false);
-      setRenderProgress(0);
-      setExportPhase('recording');
-      exportCancelRef.current = null;
-    };
-
-    try {
-      if (appRoute === 'create' && currentCreateAdScene) {
-        await trySavedCreateAdSceneExport(exportSnapshot, currentCreateAdScene, remotionAbortController);
-        setRendering(false);
-        exportCancelRef.current = null;
-        return;
-      }
-      if (appRoute === 'create' && createVariation && createBrandBrain) {
-        await tryLegacyCreateAdSceneExport(exportSnapshot, createVariation, createBrandBrain, remotionAbortController);
-        setRendering(false);
-        exportCancelRef.current = null;
-        return;
-      }
-      await tryRemotionExport(exportSnapshot, remotionAbortController);
-      setRendering(false);
-      exportCancelRef.current = null;
-      return;
-    } catch (error) {
-      if (remotionAbortController.signal.aborted) {
-        return;
-      }
-      const message = error instanceof Error ? error.message : '';
-      if (/too many/i.test(message)) {
-        console.warn('Remotion export rate-limited:', error);
-        setExportErrorMessage(message || 'Too many video exports. Please wait and try again later.');
-        setExportPhase('error');
-        setRendering(false);
-        setRenderProgress(0);
-        exportCancelRef.current = null;
-        return;
-      }
-      console.error('Remotion export failed:', error);
-      setExportErrorMessage(message || 'Remotion export failed.');
-      setExportPhase('error');
-      setRendering(false);
-      setRenderProgress(0);
-      exportCancelRef.current = null;
-      return;
-    }
-
   };
 
   const runBatch = () => {
@@ -3212,15 +2980,7 @@ This ad headline is: ${variation.headline}`;
             {exportDownload || exportPhase === 'error' ? (
               <button
                 type="button"
-                onClick={() => {
-                  if (exportDownload) URL.revokeObjectURL(exportDownload.url);
-                  setExportDownload(null);
-                  setShareStatus('idle');
-                  setShareUrl('');
-                  setShareError('');
-                  setExportErrorMessage('');
-                  setExportPhase('recording');
-                }}
+                onClick={dismissExportStatus}
                 className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
                 aria-label="Dismiss export status"
               >
