@@ -173,6 +173,7 @@ test.describe('legacy /create look contract', () => {
     await expect(page.getByText('Creative brief')).toBeVisible();
     await expect(page.getByText('Full brand dump')).toHaveCount(0);
     await expect(page.locator('.wiggly-idle-bar')).toHaveCount(24);
+    await expect(page.locator('[data-tour="canvas"]')).toHaveCSS('background-color', 'rgb(240, 246, 249)');
 
     await page.getByRole('button', { name: 'More', exact: true }).click();
     await expect(page.getByRole('dialog', { name: 'Brand research details' })).toBeVisible();

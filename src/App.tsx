@@ -17,7 +17,7 @@ import { precomputeAudioAnalysisFromUrl, type AudioAnalysisData } from './lib/au
 import { getActiveCaption, getDefaultLayoutOffsetX, getDefaultLayoutScaleY, getEditorDimensions, getExportDimensions, getPlatformElementFrame, type ExportSnapshot, type PhoneCallSnapshot } from './lib/export-snapshot';
 import { PhoneCallSimulator } from './components/PhoneCallSimulator';
 import { formatUsPhoneNumber } from './lib/phone-call';
-import { FIXED_AD_BACKGROUND_COLOR } from './lib/style-archetypes';
+import { FIXED_AD_BACKGROUND_COLOR, createTintedAdBackground, type AdStyleArchetype } from './lib/style-archetypes';
 import { InteractiveTutorial, WIGGLY_TUTORIAL_EVENT, WIGGLY_TUTORIAL_SEEN_KEY, emitTutorialEvent } from './components/InteractiveTutorial';
 import { getHostedSharePageBySlug, type SharePageRecord } from './lib/share-pages';
 import { explainVoiceVisualizerPreset, getVoiceVisualizerPreset, VOICE_VISUALIZER_PRESET, type VoiceVisualizerPresetDecision } from './lib/visualizer-presets';
@@ -817,8 +817,11 @@ export default function App() {
     setBgColor((currentColor) => getFreshBackgroundColor(currentColor));
   };
 
-  const applyStyleArchetype = () => {
-    setBgColor(FIXED_AD_BACKGROUND_COLOR);
+  const applyStyleArchetype = (archetype?: AdStyleArchetype) => {
+    const nextVisualizerColor = archetype?.visualizerColor || visualizerColor;
+    setBgColor(createTintedAdBackground(nextVisualizerColor, archetype?.backgroundColor || FIXED_AD_BACKGROUND_COLOR));
+    if (archetype?.visualizerColor) setVisualizerColor(archetype.visualizerColor);
+    if (archetype?.speaker2CaptionColor) setAccentColor(archetype.speaker2CaptionColor);
   };
   
   // Playback/Render State
@@ -4006,6 +4009,10 @@ export default function App() {
       variation.archetype.speaker2CaptionColor,
       { minContrast: 2.4, maxLuminance: 0.58 }
     );
+    const appliedBackgroundColor = createTintedAdBackground(
+      appliedVisualizerColor,
+      variation.archetype.backgroundColor || FIXED_AD_BACKGROUND_COLOR
+    );
     const brandContext = `[Name] ${businessName}
 [Website] ${brandBrain.websiteUrl}
 [Offer] ${brandBrain.offer}
@@ -4033,7 +4040,7 @@ This ad headline is: ${variation.headline}`;
     setSimulatedCaption(brandBrain.offer || variation.headline);
     setAutoCta('Learn More');
     setCtaUrl(brandBrain.websiteUrl || '');
-    setBgColor(FIXED_AD_BACKGROUND_COLOR);
+    setBgColor(appliedBackgroundColor);
     setBgMedia(null);
     setBgShadow(false);
     setIntroDuration(0);
