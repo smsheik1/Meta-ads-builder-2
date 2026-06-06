@@ -159,7 +159,7 @@ test('create format rail hides paused Conversation Card ads', async ({ page }) =
   await expect(page.getByText(/Ad \d+ of 50/)).toHaveCount(0);
   await expect(page.getByText('Current ad')).toHaveCount(0);
   await expect(page.getByText(/Visualizer ·/)).toHaveCount(0);
-  await expect(page.getByText('Press spacebar to generate more')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Press Spacebar make a wish/i })).toBeVisible();
 
   await page.keyboard.press('Space');
   await expect(page.getByText('Conversation concept 1')).toHaveCount(0);

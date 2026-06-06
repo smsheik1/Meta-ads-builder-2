@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, AudioLines, BookmarkPlus, Captions, CheckCircle2, Download, ExternalLink, LayoutGrid, Loader2, MessageCircle, MousePointerClick, Play, Shuffle, Square, ThumbsDown, ThumbsUp, Upload, Wand2, X } from 'lucide-react';
+import { ArrowRight, AudioLines, BookmarkPlus, Captions, CheckCircle2, Download, ExternalLink, LayoutGrid, Loader2, MessageCircle, Play, Shuffle, Sparkles, Square, ThumbsDown, ThumbsUp, Upload, Wand2, X } from 'lucide-react';
 import { getRandomAdStyleArchetype, type AdStyleArchetype } from '../lib/style-archetypes';
 import { PlatformFrame, type PlatformType } from './PlatformFrame';
 import { CanvasEditor } from './CanvasEditor';
@@ -1158,25 +1158,23 @@ export function CreateFlow({
                     })}
                   </div>
                 )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!visibleVariations.length) return;
-                    goNext();
-                  }}
-                  className="group flex w-full max-w-[calc(100vw-2rem)] items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-3 py-2 shadow-lg shadow-slate-950/8 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white hover:text-slate-950 sm:gap-3"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-white shadow-sm shadow-slate-950/20">
-                    <MousePointerClick className="h-4 w-4" />
-                  </span>
-                  <span className="min-w-0 text-xs font-black text-slate-700 sm:text-sm">Press spacebar to generate more</span>
-                  <span
-                    aria-hidden="true"
-                    className="relative h-7 w-16 shrink-0 rounded-[0.65rem] border border-slate-300 bg-gradient-to-b from-white to-slate-100 shadow-[inset_0_-2px_0_rgba(15,23,42,0.14),0_4px_10px_rgba(15,23,42,0.08)] transition group-hover:-translate-y-0.5 sm:w-24"
+                <div className="w-full max-w-[420px] rounded-[1.75rem] border border-slate-200 bg-white/95 p-3 shadow-[0_20px_54px_rgba(15,23,42,0.12)]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!visibleVariations.length) return;
+                      goNext();
+                    }}
+                    className="group flex min-h-[72px] w-full items-center justify-center gap-4 rounded-[1.35rem] bg-slate-950 px-5 text-[1.35rem] font-medium tracking-normal text-white shadow-[0_16px_36px_rgba(15,23,42,0.20)] transition hover:-translate-y-0.5 hover:bg-slate-900 hover:shadow-[0_22px_52px_rgba(15,23,42,0.18)]"
                   >
-                    <span className="absolute inset-x-5 bottom-2 h-0.5 rounded-full bg-slate-300" />
-                  </span>
-                </button>
+                    <Sparkles className="h-7 w-7 shrink-0 text-white" />
+                    <span>Press</span>
+                    <span className="rounded-xl border border-slate-200 bg-white px-7 py-2 text-base font-black uppercase tracking-[0.22em] text-slate-950 shadow-[inset_0_-2px_0_rgba(15,23,42,0.12),0_6px_18px_rgba(15,23,42,0.14)] transition group-hover:bg-slate-100">
+                      Spacebar
+                    </span>
+                    <span>make a wish</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
