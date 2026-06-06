@@ -110,8 +110,13 @@ test.describe('legacy /create look contract', () => {
     await expect(page.getByLabel('Website')).toBeVisible();
     await expect(page.getByLabel('Ad writing model')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Generate ads' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Show All formats' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Show Audio visualizer' })).toBeVisible();
+    const formatRail = page.getByTestId('canvas-format-rail');
+    await expect(formatRail).toBeVisible();
+    await expect(formatRail.getByRole('button', { name: 'Visualizer' })).toBeVisible();
+    await expect(formatRail.getByRole('button', { name: 'Meme' })).toBeDisabled();
+    await expect(formatRail.getByRole('button', { name: 'Text' })).toBeDisabled();
+    await expect(formatRail.getByRole('button', { name: 'Tweet' })).toBeDisabled();
+    await expect(formatRail.getByRole('button', { name: 'Chat' })).toBeDisabled();
     await expect(page.getByText('Generated ads', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Download video' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Play this ad' })).toBeVisible();
@@ -166,6 +171,27 @@ test.describe('legacy /create look contract', () => {
     await page.getByRole('button', { name: 'More', exact: true }).click();
     await expect(page.getByRole('dialog', { name: 'Brand research details' })).toBeVisible();
     await expect(page.getByText('Full brand dump')).toBeVisible();
+  });
+
+  test('keeps generation controls visible on laptop-height desktop', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 768 });
+    await page.addInitScript(seedGeneratedOgToolState);
+
+    await page.goto('/create');
+
+    await expect(page.getByTestId('generation-feedback')).toBeVisible();
+    await expect(page.getByTestId('spacebar-reroll-coach')).toBeVisible();
+    const controlBounds = await page.evaluate(() => {
+      const feedback = document.querySelector('[data-testid="generation-feedback"]')?.getBoundingClientRect();
+      const spacebar = document.querySelector('[data-testid="spacebar-reroll-coach"]')?.getBoundingClientRect();
+      return {
+        feedbackTop: feedback?.top ?? Number.POSITIVE_INFINITY,
+        spacebarBottom: spacebar?.bottom ?? Number.POSITIVE_INFINITY,
+      };
+    });
+
+    expect(controlBounds.feedbackTop).toBeLessThan(768);
+    expect(controlBounds.spacebarBottom).toBeLessThanOrEqual(768);
   });
 
   test('uses the legacy Remotion snapshot path when downloading from old /create', async ({ page }) => {
