@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, AudioLines, BookmarkPlus, Captions, CheckCircle2, Download, ExternalLink, Loader2, Play, Shuffle, Sparkles, Square, ThumbsDown, ThumbsUp, Wand2, X } from 'lucide-react';
+import { ArrowRight, AudioLines, BookmarkPlus, Captions, CheckCircle2, Download, ExternalLink, LayoutGrid, Loader2, MessageCircle, Play, Shuffle, Sparkles, Square, ThumbsDown, ThumbsUp, Upload, Wand2, X } from 'lucide-react';
 import { getRandomAdStyleArchetype, type AdStyleArchetype } from '../lib/style-archetypes';
 import { PlatformFrame, type PlatformType } from './PlatformFrame';
 import { CanvasEditor } from './CanvasEditor';
-import { CreateCanvasFormatRail, type CreateFormatMode } from './CreateCanvasFormatRail';
 import type { AudioAnalysisData } from '../lib/audio-analysis';
 import { getRelativeLuminance, pickVisibleColorOnLight } from '../lib/color-contrast';
 import { BRAND_FALLBACK_QUESTIONS, type BrandBrain } from '../lib/prompts/brand-brain';
@@ -20,7 +19,7 @@ export type GeneratedAdVariation = HeadlineVariation & {
   headlineColor: string;
 };
 
-type CreateAdFormat = CreateFormatMode;
+type CreateAdFormat = 'all' | GeneratedAdFormat;
 type AdModelChoice =
   | 'auto'
   | 'groq:llama-3.1-8b-instant'
@@ -113,6 +112,10 @@ const TARGET_GENERATED_AD_COUNT = 50;
 const CREATE_FLOW_STORAGE_KEY = 'wiggly_create_flow_session_v1';
 const CREATE_FEEDBACK_STORAGE_KEY = 'wiggly_generation_feedback_v1';
 const CREATE_FLOW_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+const PAUSED_CREATE_FORMAT_NAMES: Record<GeneratedAdFormat, string> = {
+  visualizer: '',
+  conversation: 'Conversation Card',
+};
 const PAUSED_CREATE_FORMATS = new Set<GeneratedAdFormat>(['conversation']);
 const ACTIVE_GENERATED_FORMATS: GeneratedAdFormat[] = ['visualizer'];
 const AD_MODEL_CHOICES: Array<{ value: AdModelChoice; label: string }> = [
@@ -127,10 +130,14 @@ const AD_MODEL_CHOICES: Array<{ value: AdModelChoice; label: string }> = [
   { value: 'gemini:gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite (Gemini)' },
   { value: 'local', label: 'Local fallback headlines (Local)' },
 ];
-const CREATE_FORMAT_LABELS: Record<CreateAdFormat, string> = {
-  visualizer: 'audio visualizer',
-  conversation: 'conversation card',
-};
+const ALL_FORMAT_MODES: Array<{ id: CreateAdFormat; label: string; icon: typeof LayoutGrid }> = [
+  { id: 'all', label: 'All formats', icon: LayoutGrid },
+  { id: 'visualizer', label: 'Audio visualizer', icon: AudioLines },
+  { id: 'conversation', label: PAUSED_CREATE_FORMAT_NAMES.conversation || 'Conversation', icon: MessageCircle },
+];
+const FORMAT_MODES = ALL_FORMAT_MODES.filter((mode) => (
+  mode.id === 'all' || !PAUSED_CREATE_FORMATS.has(mode.id)
+));
 
 type PersistedCreateFlow = {
   websiteUrl: string;
@@ -163,9 +170,9 @@ const getCreateFlowStorage = () => {
 
 const normalizeCreateAdFormat = (value: unknown): CreateAdFormat => {
   if (value === 'visualizer' || value === 'conversation') {
-    return PAUSED_CREATE_FORMATS.has(value) ? 'visualizer' : value;
+    return PAUSED_CREATE_FORMATS.has(value) ? 'all' : value;
   }
-  return 'visualizer';
+  return value === 'all' ? value : 'all';
 };
 
 const normalizePersistedVariation = (variation: GeneratedAdVariation): GeneratedAdVariation => ({
@@ -413,10 +420,13 @@ const getRerollFlashRoles = (
 };
 
 export function CreateFlow({
+  audioFileName,
   hasUserAudio,
   hasPlayableAudio,
   onAudioUpload,
   onOpenVoiceMaker,
+  savedVoiceOptions,
+  onUseSavedVoice,
   captions,
   onUpdateCaptions,
   audioUrl,
@@ -457,7 +467,7 @@ export function CreateFlow({
       ? Math.min(Math.max(0, persistedCreateFlow.activeIndex || 0), persistedCreateFlow.variations.length - 1)
       : 0
   ));
-  const [selectedFormat, setSelectedFormat] = useState<CreateAdFormat>(persistedCreateFlow?.selectedFormat || 'visualizer');
+  const [selectedFormat, setSelectedFormat] = useState<CreateAdFormat>(persistedCreateFlow?.selectedFormat || 'all');
   const [fallbackQuestions, setFallbackQuestions] = useState<string[]>([]);
   const [fallbackAnswers, setFallbackAnswers] = useState<string[]>(['', '', '']);
   const [status, setStatus] = useState<'idle' | 'researching' | 'writing' | 'ready' | 'error'>(
@@ -468,15 +478,20 @@ export function CreateFlow({
   const [savedVariationIds, setSavedVariationIds] = useState<string[]>([]);
   const [savedDesignsOpen, setSavedDesignsOpen] = useState(false);
   const [rerollFlash, setRerollFlash] = useState<RerollFlashPayload | null>(null);
+  const [voiceMenuOpen, setVoiceMenuOpen] = useState(false);
+  const [voiceMenuView, setVoiceMenuView] = useState<'choices' | 'library'>('choices');
   const [captionEditorOpen, setCaptionEditorOpen] = useState(false);
   const [captionDrafts, setCaptionDrafts] = useState<string[]>([]);
   const [feedbackByVariationId, setFeedbackByVariationId] = useState<Record<string, GenerationFeedbackRating>>({});
   const [selectedAdModel, setSelectedAdModel] = useState<AdModelChoice>('auto');
   const [lastAdProvider, setLastAdProvider] = useState('');
   const lastPreviewKeyRef = useRef('');
+  const voiceMenuCloseTimeoutRef = useRef<number | null>(null);
 
   const visibleVariations = useMemo(() => (
-    variations.filter((variation) => variation.format === selectedFormat)
+    selectedFormat === 'all'
+      ? variations
+      : variations.filter((variation) => variation.format === selectedFormat)
   ), [selectedFormat, variations]);
   const activeGlobalVariation = variations[activeIndex] || null;
   const activeVariation = activeGlobalVariation && visibleVariations.some((variation) => variation.id === activeGlobalVariation.id)
@@ -507,14 +522,34 @@ export function CreateFlow({
     .replace(/^https?:\/\//i, '')
     .replace(/^www\./i, '')
     .split('/')[0] || 'your site';
-  const selectedFormatLabel = CREATE_FORMAT_LABELS[selectedFormat] || 'generated';
+  const selectedFormatLabel = FORMAT_MODES.find((mode) => mode.id === selectedFormat)?.label || 'Generated';
   const activeVariationSaved = Boolean(activeVariation && savedVariationIds.includes(activeVariation.id));
   const activeVariationHelper = activeVariation
     ? ''
     : variations.length
       ? `No ${selectedFormatLabel.toLowerCase()} ads in this set yet.`
       : 'Your generated ads appear on the canvas';
+  const voiceName = hasUserAudio
+    ? audioFileName.replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim() || 'Uploaded voice'
+    : 'Example voice';
+  const voiceLabel = hasPlayableAudio ? 'Ready for this ad' : 'Audio needed';
   const previewReady = hasPlayableAudio && Boolean(audioAnalysis?.levels?.length);
+
+  const openVoiceMenu = () => {
+    if (voiceMenuCloseTimeoutRef.current) {
+      window.clearTimeout(voiceMenuCloseTimeoutRef.current);
+      voiceMenuCloseTimeoutRef.current = null;
+    }
+    setVoiceMenuOpen(true);
+  };
+
+  const closeVoiceMenuSoon = () => {
+    if (voiceMenuCloseTimeoutRef.current) window.clearTimeout(voiceMenuCloseTimeoutRef.current);
+    voiceMenuCloseTimeoutRef.current = window.setTimeout(() => {
+      setVoiceMenuOpen(false);
+      setVoiceMenuView('choices');
+    }, 140);
+  };
 
   const openCaptionEditor = () => {
     setCaptionDrafts(captions.map((caption) => caption.text));
@@ -528,6 +563,10 @@ export function CreateFlow({
     })));
     setCaptionEditorOpen(false);
   };
+
+  useEffect(() => () => {
+    if (voiceMenuCloseTimeoutRef.current) window.clearTimeout(voiceMenuCloseTimeoutRef.current);
+  }, []);
 
   const statusCopy = useMemo(() => {
     if (status === 'researching') return 'Finding the angle';
@@ -846,17 +885,172 @@ export function CreateFlow({
           </div>
         </div>
 
-        <div className="grid items-center gap-5 sm:gap-6 lg:grid-cols-[minmax(360px,500px)_minmax(260px,1fr)]">
-          <div
-            className="relative mx-auto flex w-full flex-col items-center gap-3 pl-20 lg:block"
-            data-testid="canvas-format-shell"
-          >
-            <CreateCanvasFormatRail
-              activeFormatId={selectedFormat}
-              onSelectFormat={setSelectedFormat}
-              onMakeVoiceAudio={onOpenVoiceMaker}
-              onUploadVoiceAudio={onAudioUpload}
-            />
+        <div className="grid items-center gap-5 sm:gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]">
+          <div className="relative flex flex-col items-center gap-3 lg:block">
+            <div className="flex rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-lg shadow-slate-950/10 lg:absolute lg:-left-14 lg:top-1/2 lg:z-50 lg:-translate-y-1/2 lg:flex-col">
+              {FORMAT_MODES.map((mode) => {
+                const Icon = mode.icon;
+                const active = selectedFormat === mode.id;
+                const button = (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFormat(mode.id)}
+                    onFocus={mode.id === 'visualizer' ? openVoiceMenu : undefined}
+                    onBlur={mode.id === 'visualizer' ? closeVoiceMenuSoon : undefined}
+                    className={`flex h-11 w-11 items-center justify-center rounded-xl transition ${
+                      active
+                        ? 'bg-slate-950 text-white shadow-md shadow-slate-950/20'
+                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950'
+                    }`}
+                    aria-label={`Show ${mode.label}`}
+                    title={mode.label}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </button>
+                );
+
+                if (mode.id !== 'visualizer') {
+                  return <React.Fragment key={mode.id}>{button}</React.Fragment>;
+                }
+
+                return (
+                  <div
+                    key={mode.id}
+                    className="relative"
+                    onMouseEnter={openVoiceMenu}
+                    onMouseLeave={closeVoiceMenuSoon}
+                  >
+                    {button}
+                    {voiceMenuOpen && (
+                      <>
+                        <span className="pointer-events-none absolute left-1/2 top-full z-[89] h-2 w-6 -translate-x-1/2 border-x border-slate-200 bg-white lg:left-full lg:top-1/2 lg:h-7 lg:w-2 lg:-translate-x-0 lg:-translate-y-1/2 lg:border-x-0 lg:border-y" />
+                        <span className="pointer-events-none absolute left-1/2 top-full z-[91] h-2 w-4 -translate-x-1/2 bg-white lg:left-full lg:top-1/2 lg:h-5 lg:w-2 lg:-translate-x-0 lg:-translate-y-1/2" />
+                      </>
+                    )}
+                    {voiceMenuOpen && (
+                      <div
+                        className="absolute left-1/2 top-[calc(100%+0.5rem)] z-[90] w-[min(20rem,calc(100vw-1.5rem))] -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-4 text-left text-slate-950 shadow-2xl shadow-slate-950/20 lg:left-[calc(100%+0.5rem)] lg:top-0 lg:w-80 lg:translate-x-0"
+                        onMouseEnter={openVoiceMenu}
+                        onMouseLeave={closeVoiceMenuSoon}
+                      >
+                        <span className="pointer-events-none absolute -top-2 left-1/2 h-3 w-5 -translate-x-1/2 rounded-t-md border-x border-t border-slate-200 bg-white lg:hidden" />
+                        <span className="pointer-events-none absolute -left-2 top-4 hidden h-6 w-3 rounded-l-md border-y border-l border-slate-200 bg-white lg:block" />
+                        <div className="mb-4">
+                          <h3 className="text-sm font-black text-slate-900">Change voice</h3>
+                          <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">Your ad keeps working while you choose.</p>
+                        </div>
+
+                        {voiceMenuView !== 'choices' && (
+                          <button
+                            type="button"
+                            onClick={() => setVoiceMenuView('choices')}
+                            className="mb-3 text-xs font-black text-slate-500 transition hover:text-slate-900"
+                          >
+                            Back
+                          </button>
+                        )}
+
+                        {voiceMenuView === 'choices' && (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3">
+                              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-slate-900 shadow-sm">
+                                <AudioLines className="h-4 w-4" />
+                              </span>
+                              <span className="min-w-0">
+                                <span className="block truncate text-sm font-black text-slate-800">Voice: {voiceName}</span>
+                                <span className="block truncate text-xs font-semibold text-slate-500">{voiceLabel}</span>
+                              </span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setVoiceMenuOpen(false);
+                                setVoiceMenuView('choices');
+                                onOpenVoiceMaker();
+                              }}
+                              className="w-full rounded-2xl border border-slate-900 bg-slate-950 p-4 text-left text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:shadow-xl"
+                            >
+                              <span className="flex items-center justify-between gap-3">
+                                <span>
+                                  <span className="block text-base font-black">Make me a voice</span>
+                                  <span className="mt-1 block text-xs font-semibold leading-5 text-white/70">Write a short script. Wiggly turns it into audio.</span>
+                                </span>
+                                <ArrowRight className="h-5 w-5 shrink-0" />
+                              </span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setVoiceMenuView('library')}
+                              className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left text-slate-900 transition hover:border-slate-300 hover:bg-white"
+                            >
+                              <span className="flex items-center justify-between gap-3">
+                                <span>
+                                  <span className="block text-sm font-black">Use a voice I have</span>
+                                  <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">Upload a voice clip for timing, captions, and bars.</span>
+                                </span>
+                                <ArrowRight className="h-5 w-5 shrink-0 text-slate-400" />
+                              </span>
+                            </button>
+                          </div>
+                        )}
+
+                        {voiceMenuView === 'library' && (
+                          <div className="space-y-3">
+                            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-3 text-sm font-black text-slate-700 transition hover:border-slate-400 hover:bg-white">
+                              <Upload className="h-4 w-4" />
+                              Upload voice audio
+                              <input
+                                type="file"
+                                accept="audio/*,video/mp4"
+                                onChange={(event) => {
+                                  onAudioUpload(event);
+                                  setVoiceMenuOpen(false);
+                                  setVoiceMenuView('choices');
+                                }}
+                                className="sr-only"
+                                title="Upload voice audio"
+                              />
+                            </label>
+                            {savedVoiceOptions.length > 0 ? (
+                              <div className="max-h-52 space-y-2 overflow-y-auto pr-1">
+                                {savedVoiceOptions.map((voice) => (
+                                  <button
+                                    key={voice.id}
+                                    type="button"
+                                    onClick={() => {
+                                      onUseSavedVoice(voice.id);
+                                      setVoiceMenuOpen(false);
+                                      setVoiceMenuView('choices');
+                                    }}
+                                    className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${
+                                      voice.current
+                                        ? 'border-indigo-200 bg-indigo-50 text-slate-900'
+                                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                                    title={`Use ${voice.name}`}
+                                  >
+                                    <span className="block truncate text-xs font-black">{voice.name}</span>
+                                    <span className="mt-0.5 block text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                      {voice.current ? 'Using now' : voice.label}
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold leading-5 text-slate-500">
+                                Saved voices will show here after you upload or make one.
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
             <div className="relative">
               <PlatformFrame
                 platform={platform}

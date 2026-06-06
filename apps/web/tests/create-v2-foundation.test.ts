@@ -927,6 +927,9 @@ test('ad writing model selector is wired to scene generation only', () => {
 test('oracle deploy pushes Convex before building the app', () => {
   const deployScript = fs.readFileSync(path.join(repoRoot, 'scripts/deploy-oracle.sh'), 'utf8');
   const deployWorkflow = fs.readFileSync(path.join(repoRoot, '.github/workflows/deploy-oracle.yml'), 'utf8');
+  const rootPackage = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8')) as {
+    scripts?: Record<string, string>;
+  };
   const webPackage = JSON.parse(fs.readFileSync(path.join(webRoot, 'package.json'), 'utf8')) as {
     scripts?: Record<string, string>;
   };
@@ -938,9 +941,13 @@ test('oracle deploy pushes Convex before building the app', () => {
   assert.match(deployScript, /GEMINI_API_KEY/);
   assert.match(deployScript, /npx convex deploy/);
   assert.ok(deployScript.indexOf('npx convex deploy') < deployScript.indexOf('npm run build'));
+  assert.match(rootPackage.scripts?.start ?? '', /tsx server\.ts/);
   assert.match(webPackage.scripts?.start ?? '', /next start/);
+  assert.match(deployScript, /export NODE_ENV=production/);
+  assert.match(deployScript, /export PORT="\$\{PORT:-3000\}"/);
   assert.match(deployScript, /pm2 delete "\$APP_NAME"/);
-  assert.match(deployScript, /\(cd apps\/web && pm2 start npm --name "\$APP_NAME" -- run start\)/);
+  assert.match(deployScript, /pm2 start npm --name "\$APP_NAME" --update-env -- run start/);
+  assert.doesNotMatch(deployScript, /\(cd apps\/web && pm2 start npm/);
   assert.doesNotMatch(deployScript, /pm2 restart "\$APP_NAME"/);
   assert.match(deployWorkflow, /secrets\.CONVEX_DEPLOY_KEY/);
   assert.match(deployWorkflow, /secrets\.FIRECRAWL_API_KEY/);
