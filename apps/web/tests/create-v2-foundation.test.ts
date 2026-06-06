@@ -882,7 +882,8 @@ test('Next deletes create-v2 and leaves create to the legacy app', () => {
 
   assert.doesNotMatch(rootPage, /CreateFoundation/);
   assert.doesNotMatch(rootPage, /create-v2/);
-  assert.match(rootPage, /href="\/create"/);
+  assert.doesNotMatch(rootPage, /Shared rendering and data engine|Wiggly engine|Open create/);
+  assert.match(rootPage, /redirect\('\/create'\)/);
   assert.equal(fs.existsSync(createPagePath), false);
   assert.equal(fs.existsSync(createV2PagePath), false);
   assert.equal(rootPackage.scripts.dev, 'npm run dev:legacy');
