@@ -11,7 +11,7 @@ import {
   type AdSceneCaption,
   type AdSceneLayoutElement,
   type AdSceneReceipts,
-} from '../../apps/web/features/create/scene';
+} from '../engine/ad-scene/scene';
 import { getEditorDimensions, getPlatformElementFrame } from './export-snapshot';
 
 type LegacyGeneratedVariation = {

@@ -1,6 +1,6 @@
 import type { PlatformType } from '../../components/PlatformFrame';
 import { stripRichText } from '../../lib/rich-text';
-import type { AdScene } from '../../../apps/web/features/create/scene';
+import type { AdScene } from '../../engine/ad-scene/scene';
 
 type ShareMetadataElement = {
   type: string;

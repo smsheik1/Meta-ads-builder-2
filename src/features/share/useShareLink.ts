@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { createShareSlug, saveHostedSharePage } from '../../lib/share-pages';
-import type { AdScene } from '../../../apps/web/features/create/scene';
+import type { AdScene } from '../../engine/ad-scene/scene';
 import { buildShareMetadataFromAdScene, buildShareMetadataFromSnapshot, type ShareMetadataSnapshot } from './shareMetadata';
 
 export type ShareLinkStatus = 'idle' | 'saving' | 'ready' | 'error';

@@ -25,7 +25,7 @@ import { pickVisibleColorOnLight } from './lib/color-contrast';
 import { ShareAdPage } from './routes/ShareAdPage';
 import type { BrandBrain, BrandReceipts } from './lib/prompts/brand-brain';
 import { useShareLink } from './features/share/useShareLink';
-import type { AdScene } from '../apps/web/features/create/scene';
+import type { AdScene } from './engine/ad-scene/scene';
 import { createLegacyCreateAdScene } from './lib/legacy-create-ad-scene';
 
 const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1';
