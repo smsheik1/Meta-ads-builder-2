@@ -16,6 +16,7 @@ export const OPENROUTER_FREE_DIALOGUE_MODELS = [
 ];
 export const DIALOGUE_PROVIDER_TIMEOUT_MS = 25000;
 export const GEMINI_DIALOGUE_MODEL = 'gemini-3-flash-preview';
+export const PINNED_TTS_MODEL = 'gemini-3.1-flash-tts-preview';
 export const DIALOGUE_MODEL_OPTIONS = new Set([
   'auto',
   'local',
