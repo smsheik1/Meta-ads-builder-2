@@ -1158,23 +1158,27 @@ export function CreateFlow({
                     })}
                   </div>
                 )}
-                <div className="w-full max-w-[420px] rounded-[1.75rem] border border-slate-200 bg-white/95 p-3 shadow-[0_20px_54px_rgba(15,23,42,0.12)]">
+                <section
+                  className="mx-auto w-full max-w-[390px] rounded-[28px] border border-slate-200 bg-white/95 p-3 shadow-[0_20px_54px_rgba(15,23,42,0.12)]"
+                  data-testid="spacebar-reroll-coach"
+                >
                   <button
                     type="button"
                     onClick={() => {
                       if (!visibleVariations.length) return;
                       goNext();
                     }}
-                    className="group flex min-h-[72px] w-full items-center justify-center gap-4 rounded-[1.35rem] bg-slate-950 px-5 text-[1.35rem] font-medium tracking-normal text-white shadow-[0_16px_36px_rgba(15,23,42,0.20)] transition hover:-translate-y-0.5 hover:bg-slate-900 hover:shadow-[0_22px_52px_rgba(15,23,42,0.18)]"
+                    className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-[0_16px_36px_rgba(15,23,42,0.20)] transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-[0_22px_52px_rgba(15,23,42,0.18)]"
+                    data-testid="spacebar-reroll-button"
                   >
-                    <Sparkles className="h-7 w-7 shrink-0 text-white" />
+                    <Sparkles className="h-4 w-4" />
                     <span>Press</span>
-                    <span className="rounded-xl border border-slate-200 bg-white px-7 py-2 text-base font-black uppercase tracking-[0.22em] text-slate-950 shadow-[inset_0_-2px_0_rgba(15,23,42,0.12),0_6px_18px_rgba(15,23,42,0.14)] transition group-hover:bg-slate-100">
+                    <span className="rounded-lg border border-white/20 bg-white px-5 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-slate-950 shadow-[inset_0_-2px_0_rgba(15,23,42,0.10)] transition group-hover:bg-slate-100">
                       Spacebar
                     </span>
                     <span>make a wish</span>
                   </button>
-                </div>
+                </section>
               </div>
             )}
           </div>
