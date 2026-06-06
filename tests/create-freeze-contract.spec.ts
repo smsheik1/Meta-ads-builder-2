@@ -39,3 +39,23 @@ test('freeze docs name legacy create as the active product path', () => {
   expect(freezeDoc).not.toContain('Build new Wiggly product work in `apps/web`');
   expect(freezeDoc).not.toContain('http://localhost:3010/create-v2');
 });
+
+test('legacy create app has no browser recorder fallback renderer', () => {
+  const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+
+  expect(appSource).not.toContain('canvas.captureStream');
+  expect(appSource).not.toContain('new MediaRecorder');
+  expect(appSource).not.toContain('Browser recorder fallback');
+  expect(appSource).not.toContain('/api/convert-to-mp4');
+});
+
+test('legacy create app no longer carries dead phone-call or Postiz branches', () => {
+  const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+
+  expect(appSource).not.toContain('creativeMode');
+  expect(appSource).not.toContain('phone-call');
+  expect(appSource).not.toContain('PhoneCallSimulator');
+  expect(appSource).not.toContain('SOCIAL_POSTING_ENABLED');
+  expect(appSource).not.toContain('postiz');
+  expect(appSource).not.toContain('Postiz');
+});
