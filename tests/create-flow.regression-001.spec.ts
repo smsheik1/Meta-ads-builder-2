@@ -153,13 +153,8 @@ test('create format rail hides paused Conversation Card ads', async ({ page }) =
 
   await page.goto('/create');
 
-  const formatRail = page.getByTestId('canvas-format-rail');
-  await expect(formatRail).toBeVisible();
-  await expect(formatRail.getByRole('button', { name: 'Visualizer' })).toBeVisible();
-  await expect(formatRail.getByRole('button', { name: 'Meme' })).toBeDisabled();
-  await expect(formatRail.getByRole('button', { name: 'Text' })).toBeDisabled();
-  await expect(formatRail.getByRole('button', { name: 'Tweet' })).toBeDisabled();
-  await expect(formatRail.getByRole('button', { name: 'Chat' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Show All formats' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Show Audio visualizer' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Show Conversation Card' })).toHaveCount(0);
   await expect(page.getByText(/Ad \d+ of 50/)).toHaveCount(0);
   await expect(page.getByText('Current ad')).toHaveCount(0);
@@ -170,7 +165,7 @@ test('create format rail hides paused Conversation Card ads', async ({ page }) =
   await expect(page.getByText('Conversation concept 1')).toHaveCount(0);
   await expect(page.getByText('This should feel like a real text thread 1.')).toHaveCount(0);
 
-  await formatRail.getByRole('button', { name: 'Visualizer' }).click();
+  await page.getByRole('button', { name: 'Show Audio visualizer' }).click();
   await expect(page.getByText(/Visualizer ·/)).toHaveCount(0);
   await expect(page.getByText('Visualizer concept 2')).toBeVisible();
 
@@ -228,13 +223,12 @@ test('create canvas stays editable and keeps the idle visualizer placeholder', a
 test('create visualizer rail opens the existing voice maker flow on hover', async ({ page }) => {
   await page.goto('/create');
 
-  const formatRail = page.getByTestId('canvas-format-rail');
-  await formatRail.getByRole('button', { name: 'Visualizer' }).hover();
-  await expect(page.getByText('Visualizer audio')).toBeVisible();
-  await expect(page.getByText('Make voice audio')).toBeVisible();
-  await expect(page.getByText('Upload voice audio')).toBeVisible();
+  await page.getByRole('button', { name: 'Show Audio visualizer' }).hover();
+  await expect(page.getByText('Change voice')).toBeVisible();
+  await expect(page.getByText('Make me a voice')).toBeVisible();
+  await expect(page.getByText('Use a voice I have')).toBeVisible();
 
-  await page.getByText('Make voice audio').click();
+  await page.getByText('Make me a voice').click();
   await expect(page.getByRole('heading', { name: 'Make Voice Audio' })).toBeVisible();
 });
 

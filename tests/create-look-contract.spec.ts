@@ -110,13 +110,8 @@ test.describe('legacy /create look contract', () => {
     await expect(page.getByLabel('Website')).toBeVisible();
     await expect(page.getByLabel('Ad writing model')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Generate ads' })).toBeVisible();
-    const formatRail = page.getByTestId('canvas-format-rail');
-    await expect(formatRail).toBeVisible();
-    await expect(formatRail.getByRole('button', { name: 'Visualizer' })).toBeVisible();
-    await expect(formatRail.getByRole('button', { name: 'Meme' })).toBeDisabled();
-    await expect(formatRail.getByRole('button', { name: 'Text' })).toBeDisabled();
-    await expect(formatRail.getByRole('button', { name: 'Tweet' })).toBeDisabled();
-    await expect(formatRail.getByRole('button', { name: 'Chat' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Show All formats' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Show Audio visualizer' })).toBeVisible();
     await expect(page.getByText('Generated ads', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Download video' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Play this ad' })).toBeVisible();
