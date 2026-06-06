@@ -153,3 +153,23 @@ test('legacy create saved-design persistence lives outside App', () => {
   expect(savedDesignsSource).toContain('saveDownloadedAdToHistoryItem');
   expect(savedDesignsSource).toContain('removeSavedAdHistoryItem');
 });
+
+test('legacy create export media helpers live outside App', () => {
+  const exportMediaPath = path.join(repoRoot, 'src', 'features', 'create', 'createExportMedia.ts');
+  const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const exportMediaSource = fs.readFileSync(exportMediaPath, 'utf8');
+
+  expect(fs.existsSync(exportMediaPath)).toBe(true);
+  expect(appSource).toContain("from './features/create/createExportMedia'");
+  expect(appSource).toContain('const tryRemotionExport');
+  expect(appSource).not.toContain('const getRemotionUploadExtension');
+  expect(appSource).not.toContain('const appendMediaForRemotion');
+  expect(appSource).not.toContain('const removeWhiteFromImageBlob');
+  expect(appSource).not.toContain('const MIN_VALID_MP4_BYTES');
+  expect(appSource).not.toContain('const isValidMp4Blob');
+  expect(appSource).not.toContain('const formatBytes');
+  expect(exportMediaSource).toContain('getMediaDurationSeconds');
+  expect(exportMediaSource).toContain('appendMediaForRemotion');
+  expect(exportMediaSource).toContain('ensureValidMp4Blob');
+  expect(exportMediaSource).toContain('getValidMp4Bytes');
+});
