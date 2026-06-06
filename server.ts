@@ -15,7 +15,7 @@ import { createClient } from '@supabase/supabase-js';
 import { ConvexHttpClient } from 'convex/browser';
 import { bundle } from '@remotion/bundler';
 import { getCompositions, renderMedia } from '@remotion/renderer';
-import { EXPORT_FPS, getExportDimensions, isPhoneCallSnapshot, PHONE_CALL_EXPORT_DIMENSIONS, type ExportSnapshot, type RenderSnapshot } from './src/lib/export-snapshot';
+import { EXPORT_FPS, getExportDimensions, type ExportSnapshot, type RenderSnapshot } from './src/lib/export-snapshot';
 import type { AdScene } from './apps/web/features/engine/scene';
 import { api } from './apps/web/convex/_generated/api';
 import { getPublicRenderErrorMessage } from './apps/web/features/export/renderErrors';
@@ -722,7 +722,6 @@ const replaceMediaUrl = (snapshot: RenderSnapshot, field: string, url: string) =
     snapshot.settings.audioUrl = url;
     return;
   }
-  if (isPhoneCallSnapshot(snapshot)) return;
   if (field === 'introImage') snapshot.settings.introImage = url;
   if (field === 'bgMedia' && snapshot.settings.bgMedia) snapshot.settings.bgMedia.url = url;
   if (field.startsWith('elementImage:')) {
@@ -730,42 +729,6 @@ const replaceMediaUrl = (snapshot: RenderSnapshot, field: string, url: string) =
     const element = snapshot.elements.find(candidate => candidate.id === id);
     if (element) element.imageUrl = url;
   }
-};
-
-const createRingToneWav = async (outputPath: string, durationSeconds: number) => {
-  const sampleRate = 44100;
-  const channelCount = 1;
-  const bytesPerSample = 2;
-  const sampleCount = Math.max(1, Math.ceil(durationSeconds * sampleRate));
-  const dataSize = sampleCount * channelCount * bytesPerSample;
-  const buffer = Buffer.alloc(44 + dataSize);
-
-  buffer.write('RIFF', 0);
-  buffer.writeUInt32LE(36 + dataSize, 4);
-  buffer.write('WAVE', 8);
-  buffer.write('fmt ', 12);
-  buffer.writeUInt32LE(16, 16);
-  buffer.writeUInt16LE(1, 20);
-  buffer.writeUInt16LE(channelCount, 22);
-  buffer.writeUInt32LE(sampleRate, 24);
-  buffer.writeUInt32LE(sampleRate * channelCount * bytesPerSample, 28);
-  buffer.writeUInt16LE(channelCount * bytesPerSample, 32);
-  buffer.writeUInt16LE(16, 34);
-  buffer.write('data', 36);
-  buffer.writeUInt32LE(dataSize, 40);
-
-  for (let index = 0; index < sampleCount; index += 1) {
-    const time = index / sampleRate;
-    const cycleTime = time % 6;
-    const toneOn = cycleTime < 2;
-    const fade = toneOn ? Math.min(1, cycleTime / 0.015, (2 - cycleTime) / 0.015) : 0;
-    const sample = toneOn
-      ? (Math.sin(2 * Math.PI * 440 * time) + Math.sin(2 * Math.PI * 480 * time)) * 0.14 * Math.max(0, fade)
-      : 0;
-    buffer.writeInt16LE(Math.max(-1, Math.min(1, sample)) * 32767, 44 + index * 2);
-  }
-
-  await fs.promises.writeFile(outputPath, buffer);
 };
 
 const getImageMimeType = (filePathOrUrl: string) => {
@@ -1056,33 +1019,17 @@ app.post('/api/render-remotion', videoExportLimiter, uploadRemotion.any(), async
       replaceMediaUrl(snapshot, file.fieldname, remotionAssetUrl);
     }
 
-    if (!isPhoneCallSnapshot(snapshot)) {
-      await inlineIntroImageForFrameZero(snapshot);
-    }
+    await inlineIntroImageForFrameZero(snapshot);
 
-    if (isPhoneCallSnapshot(snapshot)) {
-      if (snapshot.settings.ringDurationSeconds > 0) {
-        const ringPath = path.join(assetDir, 'ring-tone.wav');
-        await createRingToneWav(ringPath, snapshot.settings.ringDurationSeconds);
-        snapshot.settings.ringAudioUrl = `http://127.0.0.1:${port}/api/remotion-assets/${renderId}/ring-tone.wav`;
-      } else {
-        snapshot.settings.ringAudioUrl = null;
-      }
-    }
-
-    const dimensions = isPhoneCallSnapshot(snapshot) ? PHONE_CALL_EXPORT_DIMENSIONS : getExportDimensions(snapshot.settings.platform);
-    const durationCap = isPhoneCallSnapshot(snapshot) ? 180 : snapshot.settings.renderDurationCap === 'full' ? 180 : Number(snapshot.settings.renderDurationCap || 30);
+    const dimensions = getExportDimensions(snapshot.settings.platform);
+    const durationCap = snapshot.settings.renderDurationCap === 'full' ? 180 : Number(snapshot.settings.renderDurationCap || 30);
     const durationSeconds = Math.max(1, Math.min(Number(snapshot.durationSeconds || 30), durationCap));
-    const visualizerElement = isPhoneCallSnapshot(snapshot) ? null : snapshot.elements.find(element => element.type === 'visualizer');
-    const cachedAudioAnalysis = !isPhoneCallSnapshot(snapshot) && snapshot.audioAnalysis?.levels?.length
+    const visualizerElement = snapshot.elements.find(element => element.type === 'visualizer');
+    const cachedAudioAnalysis = snapshot.audioAnalysis?.levels?.length
       ? snapshot.audioAnalysis
       : null;
-    const audioAnalysis = isPhoneCallSnapshot(snapshot)
-      ? null
-      : cachedAudioAnalysis || await extractAudioAnalysis(audioAnalysisInput || snapshot.settings.audioUrl, durationSeconds, visualizerElement?.visualizerSmoothing ?? 0.8);
-    if (!isPhoneCallSnapshot(snapshot)) {
-      snapshot.audioAnalysis = null;
-    }
+    const audioAnalysis = cachedAudioAnalysis || await extractAudioAnalysis(audioAnalysisInput || snapshot.settings.audioUrl, durationSeconds, visualizerElement?.visualizerSmoothing ?? 0.8);
+    snapshot.audioAnalysis = null;
     const inputProps = {
       snapshot,
       width: dimensions.width,
@@ -1094,8 +1041,7 @@ app.post('/api/render-remotion', videoExportLimiter, uploadRemotion.any(), async
 
     const serveUrl = await getRemotionBundle();
     const compositions = await getCompositions(serveUrl, { inputProps });
-    const compositionId = isPhoneCallSnapshot(snapshot) ? 'PhoneCallRender' : 'AdRender';
-    const composition = compositions.find(candidate => candidate.id === compositionId);
+    const composition = compositions.find(candidate => candidate.id === 'AdRender');
     if (!composition) {
       throw new Error('Remotion composition not found.');
     }
