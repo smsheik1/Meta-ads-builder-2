@@ -1222,6 +1222,7 @@ import { getMasterPrompt } from './src/lib/prompts/headline-master';
 import { buildBrandBrainPrompt, buildFallbackBrandBrain, type BrandAssets, type BrandBrain, type BrandFontSignal, type BrandReceipts } from './src/lib/prompts/brand-brain';
 import { buildHeadlineVariationsPrompt, type ConversationAdLine, type GeneratedAdFormat, type HeadlineVariation } from './src/lib/prompts/headline-variations';
 import { normalizeAdAngles } from './src/lib/prompts/ad-angles';
+import { hasReadableWebsiteResearch } from './src/lib/research-readability';
 
 const parseJsonResponse = (text: string) => {
   const trimmed = text.trim();
@@ -1959,18 +1960,29 @@ const appendExternalResearchText = (researchText: string, externalResearch: Bran
   return `${researchText}\n\n---\n\n${outsideText}`.slice(0, MAX_RESEARCH_CHARS);
 };
 
+const scrapeBrandResearchPage = async (url: string, includeLinks: boolean) => {
+  try {
+    return await firecrawlScrape(url, includeLinks);
+  } catch (error) {
+    console.warn('[brand-research] firecrawl_failed_using_html_fallback', url, error instanceof Error ? error.message : error);
+    return fallbackHtmlScrape(url);
+  }
+};
+
+const getAlternateResearchUrls = (websiteUrl: URL) => {
+  const hostname = websiteUrl.hostname.replace(/^www\./, '').toLowerCase();
+  if (hostname === 'x.com' || hostname === 'twitter.com') {
+    return ['https://about.x.com/en'];
+  }
+  return [];
+};
+
 const researchBrandWebsite = async (websiteUrl: URL) => {
   const cacheKey = websiteUrl.href;
   const cached = getBrandResearchCache(cacheKey);
   if (cached) return cached;
 
-  let homepage: ScrapedPage;
-  try {
-    homepage = await firecrawlScrape(websiteUrl.href, true);
-  } catch (error) {
-    console.warn('[brand-research] firecrawl_failed_using_html_fallback', websiteUrl.href, error instanceof Error ? error.message : error);
-    homepage = await fallbackHtmlScrape(websiteUrl.href);
-  }
+  const homepage = await scrapeBrandResearchPage(websiteUrl.href, true);
   const discoveredLinks = homepage.links
     .map((link) => sameOriginUrl(link, websiteUrl))
     .filter((link): link is string => Boolean(link))
@@ -1987,8 +1999,27 @@ const researchBrandWebsite = async (websiteUrl: URL) => {
     }
   }
 
-  const pages = [homepage, ...extraPages].slice(0, MAX_RESEARCH_PAGES);
-  const brandAssets = mergeBrandAssets(pages);
+  let pages = [homepage, ...extraPages].slice(0, MAX_RESEARCH_PAGES);
+  let brandAssets = mergeBrandAssets(pages);
+
+  if (!hasReadableWebsiteResearch({ pages, brandAssets })) {
+    for (const alternateUrl of getAlternateResearchUrls(websiteUrl)) {
+      try {
+        const alternatePage = await scrapeBrandResearchPage(alternateUrl, false);
+        const alternatePages = [alternatePage, homepage];
+        const alternateBrandAssets = mergeBrandAssets(alternatePages);
+        if (hasReadableWebsiteResearch({ pages: alternatePages, brandAssets: alternateBrandAssets })) {
+          console.info('[brand-research] using_alternate_research_page', websiteUrl.href, alternateUrl);
+          pages = alternatePages;
+          brandAssets = alternateBrandAssets;
+          break;
+        }
+      } catch (error) {
+        console.warn('[brand-research] alternate_page_failed', alternateUrl, error instanceof Error ? error.message : error);
+      }
+    }
+  }
+
   const externalResearch = await researchBrandEverywhere(websiteUrl, pages);
   if (externalResearch) {
     brandAssets.externalResearch = externalResearch;
@@ -2269,6 +2300,24 @@ const buildHeuristicBrandBrain = ({
   const lowerText = `${businessName} ${category} ${researchText}`.toLowerCase();
   const categorySignals = [
     {
+      pattern: /\b(public conversation|free and safe place to talk|global town square|social networking|microblogging|breaking news|live events|real-time|real time|creators|news-driven|public conversation)\b/,
+      label: 'real-time public conversation platform',
+      audience: 'creators, journalists, brands, and people who want live conversations before they hit traditional news',
+      pain: 'They miss fast-moving conversations when filtered feeds and traditional media lag behind what people are saying now',
+      result: 'Follow live public conversation, build an audience, and react while culture is still moving',
+      differentiator: `${businessName} is where public conversation moves in real time across news, creators, communities, and brands`,
+      angles: [
+        `news before it becomes news`,
+        `public conversation while it is still moving`,
+        `the feed where culture breaks first`,
+        `real-time reactions from the people involved`,
+        `where creators and journalists watch the room`,
+        `a direct line to live public conversation`,
+        `the place brands track what people actually say`,
+        `conversation before the recap`,
+      ],
+    },
+    {
       pattern: /\b(ai visibility|chatgpt|reddit campaign|reddit campaigns|reddit marketing|answer engine|generative engine|geo\b|aeo\b|seo|rank|ranking|rankings|front-page|front page|brand mentions|citations|d2c visibility|growth agencies|marketing agency|intent-driven traffic)\b/,
       label: 'AI visibility and Reddit ranking campaigns',
       audience: 'D2C brands, growth agencies, and B2B teams trying to show up where buyers search',
@@ -2512,7 +2561,28 @@ const fallbackHeadlines = (brandBrain: BrandBrain, count: number, previous: Set<
   const isMedspa = /\b(medspa|skin|laser|aesthetic|rejuvenation|botox|facial|acne)\b/.test(briefText);
   const isFood = /\b(cookie|cookies|bakery|baked|dessert|cheesecake|cake|cakes|brownie|brownies|gift|gifting|delivery|snack|sweet)\b/.test(briefText);
   const isAthleticWear = /\b(nike|athlete|athletes|sport|sports|training|running|runner|basketball|workout|gym|activewear|apparel|footwear|shoe|shoes|sneaker|sneakers|gear)\b/.test(briefText);
-  const categoryTemplates = isMedspa ? [
+  const isPublicConversation = /\b(public conversation|global town square|breaking news|news sharing|real-time|real time|world leaders|creators|journalists|culture|markets)\b/.test(briefText);
+  const categoryTemplates = isPublicConversation ? [
+    'News before it becomes news',
+    'The conversation starts before the recap',
+    'Where culture moves in real time',
+    'Public conversation while it is still moving',
+    'A front row seat to live events',
+    'Hear it from the people involved',
+    'The room where the internet reacts first',
+    'Breaking context without the delay',
+    'Follow the signal before the summary',
+    'The feed where markets feel it first',
+    'Real-time reactions before the headlines',
+    'The town square never waits',
+    'Creators watch the room here',
+    'The update before the article',
+    'Conversation before the media cycle',
+    `${brandName} shows the room in real time`,
+    `${brandName} moves before the recap`,
+    `${brandName} is where culture reacts`,
+    `${brandName} makes public conversation instant`,
+  ] : isMedspa ? [
     'Know your skin treatment before you book',
     'Premium skin care should feel clear',
     'Choose the treatment your skin actually needs',
@@ -2850,6 +2920,11 @@ app.post('/api/research-brand', brandResearchLimiter, billShield('brandResearch'
       researchText = research.researchText;
       brandLogoUrl = research.logoUrl || '';
       brandAssets = research.brandAssets;
+      if (!hasReadableWebsiteResearch(research) && fallbackAnswers.length < 3) {
+        return res.status(422).json({
+          error: 'Wiggly could not find enough readable words on that website to make brand-based ads. Try a public marketing page or a more specific page from the same brand.',
+        });
+      }
     } catch (error) {
       console.warn('[brand-research] scrape_failed', websiteUrl.href, error instanceof Error ? error.message : error);
       return res.status(502).json({
@@ -2879,6 +2954,16 @@ app.post('/api/research-brand', brandResearchLimiter, billShield('brandResearch'
         };
       }
       brandBrain = { ...brandBrain, receipts: buildBrandReceipts(brandBrain) };
+      if (brandBrainNeedsFallback(brandBrain)) {
+        console.warn('[brand-research] brain_low_confidence_using_heuristic', websiteUrl.href);
+        brandBrain = buildHeuristicBrandBrain({
+          websiteUrl,
+          researchText,
+          brandAssets,
+          brandLogoUrl,
+        });
+        brandBrain = { ...brandBrain, receipts: buildBrandReceipts(brandBrain) };
+      }
     } catch (error) {
       console.warn('[brand-research] brain_failed', websiteUrl.href, error instanceof Error ? error.message : error);
       brandBrain = buildHeuristicBrandBrain({
@@ -2962,6 +3047,24 @@ app.post('/api/generate-ad-stream', adStreamLimiter, billShield('adStream'), asy
           : undefined,
       });
     });
+
+    if (variations.length < totalCount) {
+      fallbackHeadlines(brandBrain, totalCount - variations.length, used).forEach((item) => {
+        const headline = normalizeHeadline(item.headline);
+        if (!isUsableHeadline(headline, brandBrain, used)) return;
+        used.add(headline.toLowerCase());
+        const format = pickGeneratedAdFormat(formatMix, variations.length);
+        variations.push({
+          ...item,
+          id: `variation-${variations.length + 1}`,
+          headline,
+          format,
+          conversationLines: format === 'conversation'
+            ? buildConversationLines(brandBrain, headline, item.angle, variations.length)
+            : undefined,
+        });
+      });
+    }
 
     if (!variations.length) {
       return res.status(503).json({
