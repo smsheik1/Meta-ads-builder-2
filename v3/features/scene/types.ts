@@ -55,6 +55,22 @@ export type AdSceneAudio =
     generatedAt: number;
   };
 
+export type AdSceneVisualizerStyle = {
+  type: "bars-bottom" | "bars-center" | "waveform-strip";
+  barCount: number;
+  sensitivity: number;
+  heightScale: number;
+  baseline: number;
+  gain: number;
+  compression: number;
+  floor: number;
+  ceiling: number;
+  curve: "default" | "linear" | "sqrt" | "log";
+  bandFocus: "full" | "voice" | "low" | "high";
+  mirror: boolean;
+  splitSpeakers: boolean;
+};
+
 export type AdScene = {
   version: typeof AD_SCENE_VERSION;
   format: AdFormatId;
@@ -75,6 +91,7 @@ export type AdScene = {
     textColor: string;
     accentColor: string;
     visualizerColor: string;
+    visualizer?: AdSceneVisualizerStyle;
     fontFeel: BrandSnapshot["fonts"]["feel"];
   };
   audio: AdSceneAudio;

@@ -167,6 +167,10 @@ assert.equal(scene.version, 1);
 assert.equal(scene.brand.receipts.specificClaims[0], "First ChatGPT mention in 14 days.");
 assert.equal(scene.metadata.researchRunId, "research_1");
 assert.equal(scene.metadata.model, "test-model");
+assert.equal(scene.style.visualizer?.type, "waveform-strip");
+assert.equal(scene.style.visualizer?.barCount, 24);
+assert.equal(scene.style.visualizer?.gain, 1.7);
+assert.equal(scene.style.visualizer?.floor, 0.08);
 
 const geminiResult = await generateAdCandidatesFromResearch(research, {
   count: 1,

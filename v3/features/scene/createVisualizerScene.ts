@@ -4,6 +4,7 @@ import {
   type AdScene,
   type AdSceneCandidate,
 } from "./types";
+import { legacyCreateVisualizerStyle } from "./visualizerStyle";
 
 const defaultAccent = "#7DD3FC";
 
@@ -61,6 +62,7 @@ export const createVisualizerAdScene = ({
       textColor: "#070B1D",
       accentColor,
       visualizerColor: accentColor,
+      visualizer: legacyCreateVisualizerStyle,
       fontFeel: research.brand.fonts.feel,
     },
     audio: {
