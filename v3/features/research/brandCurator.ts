@@ -60,6 +60,7 @@ const uniqueLoose = (items: unknown[], maxItems: number, maxLength = 220) => ite
   .slice(0, maxItems);
 
 const asArray = (value: unknown) => (Array.isArray(value) ? value : []);
+const hasArrayField = (record: Record<string, unknown>, key: string) => Array.isArray(record[key]);
 
 const firstUseful = (items: unknown[], fallback: string, maxLength = 180) => (
   unique(items, 1, maxLength)[0] || cleanText(fallback, maxLength)
@@ -165,18 +166,17 @@ export const normalizeBrandBriefPayload = (
   const proof = unique(asArray(record.proof), 8);
   const buyerMoments = unique(asArray(record.buyerMoments), 8);
   const siteLanguage = unique(asArray(record.siteLanguage), 8);
+  const visualNotes = unique(asArray(record.visualNotes), 6);
 
   return {
     brandName: firstUseful([record.brandName], fallback.brandName, 80),
     offer: firstUseful([record.offer], fallback.offer, 150),
     audience: firstUseful([record.audience], fallback.audience, 150),
-    buyerMoments: buyerMoments.length ? buyerMoments : fallback.buyerMoments,
-    proof: proof.length ? proof : fallback.proof,
-    siteLanguage: siteLanguage.length ? siteLanguage : fallback.siteLanguage,
+    buyerMoments: buyerMoments.length || hasArrayField(record, "buyerMoments") ? buyerMoments : fallback.buyerMoments,
+    proof: proof.length || hasArrayField(record, "proof") ? proof : fallback.proof,
+    siteLanguage: siteLanguage.length || hasArrayField(record, "siteLanguage") ? siteLanguage : fallback.siteLanguage,
     ctaDirection: firstUseful([record.ctaDirection], fallback.ctaDirection, 48),
-    visualNotes: unique(asArray(record.visualNotes), 6).length
-      ? unique(asArray(record.visualNotes), 6)
-      : fallback.visualNotes,
+    visualNotes: visualNotes.length || hasArrayField(record, "visualNotes") ? visualNotes : fallback.visualNotes,
     droppedNoiseSummary: uniqueLoose(asArray(record.droppedNoiseSummary), 8),
     confidence: normalizeConfidence(record.confidence, fallback.confidence),
   };
@@ -204,12 +204,19 @@ Your job is NOT to write ads. Your job is to read messy website text and return 
 Ignore website chrome: navigation, cart text, login text, checkout copy, cookie banners, shipping banners, standalone prices, regular/sale price labels, empty states, footer links, app embeds, and loading messages.
 
 Keep real brand substance:
-- what the brand sells
+- what the brand sells, in plain language, not SEO title text
 - who it is for
 - buyer moments or pains
 - proof, specific claims, outcomes, differentiators, reviews, results
 - exact short phrases that sound like the brand
-- visual notes from branding/screenshot/colors
+- concrete visual notes from branding, colors, fonts, photography, and layout
+
+Field definitions:
+- offer = one plain-language sentence naming the actual product/service/category. Good: "Workout clothes and athletic apparel for lifting, running, and everyday training." Bad: "Gymshark Official Store."
+- buyerMoments = specific situations, not features. Good: "D2C founder watching ad costs climb every quarter." Bad: "Helps with marketing."
+- proof = concrete support from the page. Prefer numbers, named products, dates, review counts, guarantees, specific outcomes, or specific differentiators. Good: "15-17 grams of protein per bar." Good: "Soft Marshmallowy Texture." Bad: "Trusted by many."
+- siteLanguage = short verbatim phrases copied from the evidence that a real ad could reuse.
+- visualNotes = concrete observations: dominant color hex, font feel (serif/sans/mono), photography style, layout density, product-shot style, button shape. Not vague vibes like "premium" or "modern" unless tied to an observable detail.
 
 Return only JSON in this exact shape:
 {
@@ -228,8 +235,85 @@ Return only JSON in this exact shape:
 Rules:
 - Do not invent facts, prices, reviews, numbers, guarantees, or claims.
 - If evidence is thin, keep confidence low and use cautious wording.
+- If a list field has no real evidence, return [] for that field. Never pad with weak filler.
 - Do not include cart, login, checkout, loading, navigation, or standalone price text in buyerMoments, proof, or siteLanguage.
 - Site language must be copied from the website evidence.
+- Do not use a page title, SEO title, or brand name alone as the offer.
+
+Study these examples for shape only:
+
+Example 1 — D2C ecommerce
+Input clue: "BUILT Protein Bars | The Best Tasting Protein Bar", "Soft Marshmallowy Texture", "15-17 grams Protein", "(6379) total reviews"
+Good output:
+{
+  "brandName": "BUILT",
+  "offer": "High-protein snack bars with a soft, marshmallow-like texture.",
+  "audience": "Health-conscious snackers who want protein bars that taste more like a treat.",
+  "buyerMoments": [
+    "Looking for a high-protein snack that does not taste chalky.",
+    "Stocking up on quick protein before workouts, commutes, or busy days."
+  ],
+  "proof": [
+    "15-17 grams of protein per bar.",
+    "Cookie Dough Chunk Puff has 6379 total reviews.",
+    "Soft Marshmallowy Texture."
+  ],
+  "siteLanguage": [
+    "The Best Tasting Protein Bar",
+    "Soft Marshmallowy Texture",
+    "Flavors You Crave"
+  ],
+  "ctaDirection": "Build your box",
+  "visualNotes": [
+    "Bright product photography on clean white backgrounds.",
+    "Rounded primary buttons.",
+    "Blue brand accent appears in logo and UI."
+  ],
+  "droppedNoiseSummary": ["Add to cart", "Regular price", "Skip to content"],
+  "confidence": "high"
+}
+
+Example 2 — SaaS
+Input clue: "The scheduling infrastructure for everyone", "Connect every calendar", "Route meetings automatically"
+Good output:
+{
+  "brandName": "Cal.com",
+  "offer": "Scheduling software for teams that need booking links, calendar routing, and meeting workflows.",
+  "audience": "Teams and operators who coordinate meetings across calendars, teammates, and customers.",
+  "buyerMoments": [
+    "Trying to route customer meetings to the right teammate without manual back-and-forth.",
+    "Needing booking links that work across multiple calendars and workflows."
+  ],
+  "proof": [
+    "Connect every calendar.",
+    "Route meetings automatically.",
+    "Scheduling infrastructure for everyone."
+  ],
+  "siteLanguage": ["Scheduling infrastructure", "Connect every calendar", "Route meetings automatically"],
+  "ctaDirection": "Try scheduling",
+  "visualNotes": ["Minimal SaaS UI style.", "Monochrome interface with clean spacing.", "Product-led dashboard screenshots."],
+  "droppedNoiseSummary": ["Sign in", "Docs", "Footer links"],
+  "confidence": "medium"
+}
+
+Example 3 — local service
+Input clue: "Emergency plumbing", "Available 24/7", "Licensed technicians", "Same-day repairs"
+Good output:
+{
+  "brandName": "Example Plumbing",
+  "offer": "Emergency and same-day plumbing repair services.",
+  "audience": "Homeowners who need urgent plumbing help from licensed technicians.",
+  "buyerMoments": [
+    "A pipe bursts after hours and the homeowner needs someone available now.",
+    "A homeowner wants a same-day repair instead of waiting days for a callback."
+  ],
+  "proof": ["Available 24/7.", "Licensed technicians.", "Same-day repairs."],
+  "siteLanguage": ["Emergency plumbing", "Available 24/7", "Same-day repairs"],
+  "ctaDirection": "Book a repair",
+  "visualNotes": ["Service-truck photography.", "Trust badges near CTA.", "Blue utility-service color palette."],
+  "droppedNoiseSummary": [],
+  "confidence": "medium"
+}
 
 Website evidence:
 ${JSON.stringify(input, null, 2)}

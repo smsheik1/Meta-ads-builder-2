@@ -21,10 +21,10 @@ Website research should use text and visual brand evidence:
 ```text
 Firecrawl markdown -> offer, audience, receipts, claims
 Firecrawl branding -> colors, fonts, typography, UI feel
-Firecrawl screenshot -> visual vibe and later rendered-frame QA
+Optional screenshot capture -> visual vibe and later rendered-frame QA
 ```
 
-The first version uses screenshot/branding to theme human-designed templates. It does not ask AI to generate the design.
+The first version uses markdown and branding in the blocking URL-submit path. Screenshot capture is opt-in/future format work because full-page screenshots can make ecommerce sites timeout. v3 does not ask AI to generate the design.
 
 ## Pages
 
