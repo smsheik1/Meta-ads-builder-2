@@ -52,7 +52,8 @@ assert.equal(
 );
 
 const createClientSource = readFileSync("app/create/CreateResearchClient.tsx", "utf8");
-assert.ok(createClientSource.includes("Play audio preview"), "/create must expose an obvious audio play control.");
+assert.ok(createClientSource.includes("Audio preview syncs captions and visualizer"), "/create must expose an obvious audio preview control.");
+assert.ok(createClientSource.includes("controls"), "/create audio preview must use native playback controls.");
 assert.ok(createClientSource.includes("audioRef"), "/create audio preview must use the generated audio asset.");
 assert.ok(createClientSource.includes("setPreviewTimeSeconds"), "/create audio preview must sync the renderer time.");
 
