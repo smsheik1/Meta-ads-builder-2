@@ -9,7 +9,7 @@ v3 should make new ad formats boring to add. A future meme/image/conversation fo
 ```text
 URL input
 -> Convex creates researchRun
--> Firecrawl reads website markdown, branding, and screenshot
+-> Firecrawl reads website markdown and branding
 -> Wiggly normalizes brand facts and visual vibe
 -> OpenRouter writes ad ideas from evidence
 -> Convex stores AdScene candidates
@@ -74,7 +74,8 @@ Rules:
 
 - Markdown supplies what the brand says.
 - Branding supplies how the brand looks.
-- Screenshot supplies visual context and later QA.
+- Screenshot capture is opt-in and not part of blocking research; full-page screenshots can make storefronts timeout.
+- Screenshots can supply visual context and later QA when a future format explicitly needs them.
 - The first v3 pass uses these inputs to theme pre-built templates, not to generate designs from scratch.
 
 ## Format Registry

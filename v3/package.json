@@ -12,6 +12,7 @@
     "convex:dev": "convex dev",
     "convex:codegen": "convex codegen",
     "runtime:health": "tsx scripts/runtime-health.ts",
+    "smoke:research": "tsx scripts/research-smoke.ts",
     "smoke:live": "tsx scripts/live-smoke.ts",
     "render-worker": "tsx scripts/render-worker.ts",
     "render-worker:watch": "tsx scripts/render-worker.ts --watch",
