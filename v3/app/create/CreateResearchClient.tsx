@@ -6,6 +6,7 @@ import { Loader2, Search, ShieldAlert, Wand2 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
+import { AdRenderSurface } from "@/features/render/AdRenderSurface";
 import type { AdScene } from "@/features/scene/types";
 
 const anonymousIdKey = "wiggly:v3:anonymous-id";
@@ -30,6 +31,7 @@ function ResearchConnected() {
   const [adStatus, setAdStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [result, setResult] = useState<StoredWebsiteResearchResult | null>(null);
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
+  const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
   const [adStatusNote, setAdStatusNote] = useState("");
   const [error, setError] = useState("");
 
@@ -38,6 +40,7 @@ function ResearchConnected() {
     setStatus("loading");
     setAdStatus("idle");
     setAdScenes([]);
+    setSelectedScene(null);
     setAdStatusNote("");
     setError("");
 
@@ -69,6 +72,7 @@ function ResearchConnected() {
         providerStatus: { reason: string; status: string };
       };
       setAdScenes(nextGeneration.scenes);
+      setSelectedScene(nextGeneration.scenes[0] || null);
       setAdStatusNote(nextGeneration.providerStatus.reason);
       setAdStatus("ready");
     } catch (nextError) {
@@ -80,7 +84,7 @@ function ResearchConnected() {
   return (
     <section className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-7xl grid-cols-[0.85fr_1.15fr] items-start gap-10">
       <div className="pt-8">
-        <p className={pillClass}>Phase 2 ad idea engine</p>
+        <p className={pillClass}>Phase 3 renderer engine</p>
         <h1 className="mt-7 text-7xl font-black leading-[0.92] tracking-normal">
           Paste a site. Turn evidence into ads.
         </h1>
@@ -146,13 +150,34 @@ function ResearchConnected() {
 
       <div className="grid gap-5">
         <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_26px_80px_rgba(15,23,42,0.10)]">
+          <p className={pillClass}>Selected preview</p>
+          {selectedScene ? (
+            <div className="mx-auto mt-6 max-w-[440px] rounded-[34px] bg-slate-950 p-3 shadow-[0_30px_90px_rgba(15,23,42,0.22)]">
+              <div className="overflow-hidden rounded-[26px] bg-white">
+                <AdRenderSurface scene={selectedScene} timeSeconds={1.1} />
+              </div>
+            </div>
+          ) : (
+            <p className="mt-6 text-base font-bold leading-7 text-slate-500">
+              Generate ad ideas to preview the first typed AdScene through the shared renderer.
+            </p>
+          )}
+        </div>
+
+        <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_26px_80px_rgba(15,23,42,0.10)]">
           <p className={pillClass}>Generated AdScenes</p>
           {adScenes.length ? (
             <div className="mt-6 grid max-h-[680px] gap-3 overflow-auto pr-2">
               {adScenes.map((scene) => (
-                <article
+                <button
+                  type="button"
                   key={`${scene.metadata.generationBatchId}-${scene.metadata.candidateIndex}`}
-                  className="rounded-3xl border border-slate-200 bg-slate-50 p-5"
+                  onClick={() => setSelectedScene(scene)}
+                  className={`rounded-3xl border p-5 text-left transition hover:-translate-y-0.5 ${
+                    selectedScene === scene
+                      ? "border-slate-950 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
+                      : "border-slate-200 bg-slate-50"
+                  }`}
                 >
                   <div className="flex items-center justify-between gap-4">
                     <span className="rounded-full bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.14em] text-slate-400">
@@ -174,7 +199,7 @@ function ResearchConnected() {
                   <p className="mt-4 text-xs font-bold leading-5 text-slate-400">
                     Proof: {scene.creative.selectedProof}
                   </p>
-                </article>
+                </button>
               ))}
             </div>
           ) : (
