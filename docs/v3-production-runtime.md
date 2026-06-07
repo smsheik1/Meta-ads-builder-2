@@ -112,6 +112,29 @@ ogtool.com
 -> Open share page
 ```
 
+The live smoke command is intentionally manual because it spends provider and render resources:
+
+```bash
+npm run smoke:live
+```
+
+The command exercises:
+
+```text
+ogtool.com -> research -> 50 ads -> reroll -> audio -> render job -> MP4 download URL -> share page
+```
+
+Optional knobs:
+
+```text
+V3_PUBLIC_BASE_URL
+LIVE_SMOKE_WEBSITE_URL
+LIVE_SMOKE_AD_COUNT
+LIVE_SMOKE_RENDER_TIMEOUT_MS
+```
+
+Do not put `npm run smoke:live` in the normal push/PR path.
+
 ## Oracle Live Deployment
 
 v3 deploys beside v1. The legacy PM2 app is still named `wiggly`; v3 must use separate PM2 app names:
