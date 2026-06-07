@@ -10,13 +10,10 @@ import {
   Loader2,
   Lock,
   Mic,
-  Pause,
-  Play,
   RefreshCw,
   Search,
   ShieldAlert,
   Sparkles,
-  Volume2,
   Unlock,
   Wand2,
 } from "lucide-react";
@@ -79,8 +76,6 @@ function ResearchConnected() {
   const [shareUrl, setShareUrl] = useState("");
   const [shareError, setShareError] = useState("");
   const [audioError, setAudioError] = useState("");
-  const [audioPlaybackError, setAudioPlaybackError] = useState("");
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [previewTimeSeconds, setPreviewTimeSeconds] = useState(1.1);
   const [renderError, setRenderError] = useState("");
   const [error, setError] = useState("");
@@ -92,9 +87,7 @@ function ResearchConnected() {
       audio.pause();
       audio.currentTime = 0;
     }
-    setIsAudioPlaying(false);
     setPreviewTimeSeconds(1.1);
-    setAudioPlaybackError("");
   }, []);
 
   const resetShareState = () => {
@@ -303,27 +296,6 @@ function ResearchConnected() {
         ? "Audio failed"
         : "Add audio for this ad";
 
-  const onToggleAudioPlayback = async () => {
-    const audio = audioRef.current;
-    if (!audio || !playableAudioUrl) return;
-
-    setAudioPlaybackError("");
-
-    if (!audio.paused) {
-      audio.pause();
-      setIsAudioPlaying(false);
-      return;
-    }
-
-    try {
-      await audio.play();
-      setIsAudioPlaying(true);
-    } catch (nextError) {
-      setIsAudioPlaying(false);
-      setAudioPlaybackError(nextError instanceof Error ? nextError.message : "Audio playback failed.");
-    }
-  };
-
   return (
     <section className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-7xl grid-cols-[0.85fr_1.15fr] items-start gap-10">
       <div className="pt-8">
@@ -469,6 +441,9 @@ function ResearchConnected() {
                       <div className="mt-3 rounded-[20px] border border-slate-200 bg-white p-3">
                         <audio
                           ref={audioRef}
+                          aria-label="Audio preview"
+                          className="w-full"
+                          controls
                           preload="metadata"
                           src={playableAudioUrl}
                           onTimeUpdate={(event) => {
@@ -476,30 +451,13 @@ function ResearchConnected() {
                           }}
                           onEnded={() => {
                             if (audioRef.current) audioRef.current.currentTime = 0;
-                            setIsAudioPlaying(false);
                             setPreviewTimeSeconds(1.1);
                           }}
-                          onPause={() => setIsAudioPlaying(false)}
-                          onPlay={() => setIsAudioPlaying(true)}
                         />
-                        <button
-                          type="button"
-                          onClick={() => void onToggleAudioPlayback()}
-                          className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-50 px-5 py-4 text-sm font-black text-emerald-950 transition hover:-translate-y-0.5 hover:bg-emerald-100"
-                        >
-                          {isAudioPlaying ? <Pause className="size-5" /> : <Play className="size-5" />}
-                          {isAudioPlaying ? "Pause audio preview" : "Play audio preview"}
-                          <Volume2 className="size-5 text-emerald-700" />
-                        </button>
                         <p className="mt-2 text-center text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                          Syncs captions and visualizer
+                          Audio preview syncs captions and visualizer
                         </p>
                       </div>
-                    ) : null}
-                    {audioPlaybackError ? (
-                      <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
-                        {audioPlaybackError}
-                      </p>
                     ) : null}
                     <button
                       type="button"
