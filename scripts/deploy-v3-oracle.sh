@@ -6,6 +6,8 @@ BRANCH="${DEPLOY_BRANCH:-main}"
 V3_APP_NAME="${PM2_V3_APP_NAME:-wiggly-v3}"
 V3_WORKER_APP_NAME="${PM2_V3_WORKER_APP_NAME:-wiggly-v3-render-worker}"
 V3_PORT="${V3_PORT:-3020}"
+V3_PUBLIC_HOST="${V3_PUBLIC_HOST:-}"
+V3_NGINX_SITE_NAME="${V3_NGINX_SITE_NAME:-wiggly-v3}"
 
 REQUIRED_ENV_VARS=(
   V3_CONVEX_DEPLOY_KEY
@@ -61,3 +63,36 @@ pm2 start npm --name "$V3_WORKER_APP_NAME" --update-env -- run render-worker:wat
 
 pm2 save
 pm2 status
+
+if [ -n "$V3_PUBLIC_HOST" ]; then
+  if ! [[ "$V3_PUBLIC_HOST" =~ ^[A-Za-z0-9.-]+$ ]]; then
+    echo "V3_PUBLIC_HOST must be a plain hostname, got: $V3_PUBLIC_HOST" >&2
+    exit 1
+  fi
+
+  sudo tee "/etc/nginx/sites-available/$V3_NGINX_SITE_NAME" >/dev/null <<EOF
+server {
+    listen 80;
+    listen [::]:80;
+    server_name $V3_PUBLIC_HOST;
+
+    client_max_body_size 350M;
+
+    location / {
+        proxy_pass http://127.0.0.1:$V3_PORT;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+    }
+}
+EOF
+  sudo ln -sf "/etc/nginx/sites-available/$V3_NGINX_SITE_NAME" "/etc/nginx/sites-enabled/$V3_NGINX_SITE_NAME"
+  sudo nginx -t
+  sudo systemctl reload nginx
+fi
