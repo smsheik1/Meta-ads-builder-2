@@ -11,7 +11,7 @@ import {
 } from "./runtime-health";
 
 const filename = fileURLToPath(import.meta.url);
-const defaultPublicBaseUrl = "http://v3.163.192.206.128.nip.io";
+const defaultPublicBaseUrl = "https://v3.wiggly.agentenamel.com";
 const defaultWebsiteUrl = "ogtool.com";
 const defaultAdCount = 50;
 const defaultRenderTimeoutMs = 7 * 60 * 1000;
@@ -60,6 +60,11 @@ async function fetchReachable(url: string, label: string) {
     throw new Error(`${label} returned HTTP ${response.status}.`);
   }
   return response;
+}
+
+async function fetchTextReachable(url: string, label: string) {
+  const response = await fetchReachable(url, label);
+  return response.text();
 }
 
 async function fetchDownloadReachable(url: string) {
@@ -145,7 +150,7 @@ export async function runLiveSmoke() {
 
   const publicBaseUrl = normalizeBaseUrl(
     process.env.V3_PUBLIC_BASE_URL ||
-    (process.env.V3_PUBLIC_HOST ? `http://${process.env.V3_PUBLIC_HOST}` : defaultPublicBaseUrl),
+    (process.env.V3_PUBLIC_HOST ? `https://${process.env.V3_PUBLIC_HOST}` : defaultPublicBaseUrl),
   );
   const websiteUrl = process.env.LIVE_SMOKE_WEBSITE_URL || defaultWebsiteUrl;
   const adCount = parsePositiveInt(process.env.LIVE_SMOKE_AD_COUNT, defaultAdCount, 2, 50);
@@ -223,12 +228,18 @@ export async function runLiveSmoke() {
   }) as { path: string; slug: string };
   if (!share.path || !share.slug) throw new Error("Share link did not return a slug.");
 
-  await fetchReachable(`${publicBaseUrl}${share.path}`, "public share page");
+  const shareHtml = await fetchTextReachable(`${publicBaseUrl}${share.path}`, "public share page");
   const shareRecord = await client.query(api.sharePages.getBySlug, {
     slug: share.slug,
   }) as ShareRecord | null;
   if (!shareRecord) throw new Error("Created share page could not be read from Convex.");
   assertSameFrozenScene(audio.scene, shareRecord.scene);
+  if (shareHtml.includes("Loading share page")) {
+    throw new Error("Public share page rendered only the loading shell.");
+  }
+  if (!shareHtml.includes(audio.scene.creative.headline)) {
+    throw new Error("Public share page HTML did not include the frozen scene headline.");
+  }
   console.log(`share ready ${publicBaseUrl}${share.path}`);
 
   return {

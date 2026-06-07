@@ -1,14 +1,31 @@
-import { ShareSceneClient } from "./ShareSceneClient";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
+import { ShareSceneClient, type ShareRecord } from "./ShareSceneClient";
+
+export const dynamic = "force-dynamic";
+
+async function getInitialShare(slug: string): Promise<ShareRecord | null | undefined> {
+  const convexUrl = getV3ConvexUrl();
+  if (!convexUrl) return undefined;
+
+  try {
+    const client = new ConvexHttpClient(convexUrl);
+    return await client.query(api.sharePages.getBySlug, { slug }) as ShareRecord | null;
+  } catch {
+    return undefined;
+  }
+}
 
 export default async function SharePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const convexConfigured = Boolean(getV3ConvexUrl());
+  const initialShare = convexConfigured ? await getInitialShare(slug) : undefined;
 
   return (
     <main className="grid min-h-screen place-items-center bg-[#f6f2e8] px-8 py-10 text-slate-950">
       {convexConfigured ? (
-        <ShareSceneClient slug={slug} />
+        <ShareSceneClient slug={slug} initialShare={initialShare} />
       ) : (
         <section className="max-w-xl rounded-[32px] border border-amber-200 bg-amber-50 p-8 text-amber-900 shadow-sm">
           <p className="text-xs font-black uppercase tracking-[0.18em]">Convex missing</p>

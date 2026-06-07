@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   assertShareableAdScene,
   createShareSlug,
@@ -114,5 +115,18 @@ assert.equal(sanitizeCtaUrl(undefined, scene.brand.url), "https://ogtool.com/");
 assert.equal(sanitizeCtaUrl("https://example.com/demo", scene.brand.url), "https://example.com/demo");
 assert.equal(sanitizeCtaUrl("javascript:alert(1)", scene.brand.url), undefined);
 assert.equal(sanitizeCtaUrl("not a url", undefined), undefined);
+
+const sharePageSource = readFileSync("app/s/[slug]/page.tsx", "utf8");
+const shareClientSource = readFileSync("app/s/[slug]/ShareSceneClient.tsx", "utf8");
+assert.ok(
+  sharePageSource.includes("ConvexHttpClient") &&
+    sharePageSource.includes("api.sharePages.getBySlug"),
+  "Share page must server-read the share scene before hydration.",
+);
+assert.ok(
+  shareClientSource.includes("initialShare") &&
+    shareClientSource.includes("liveShare === undefined ? initialShare : liveShare"),
+  "Share client must render the server-loaded share scene instead of showing a spinner first.",
+);
 
 console.log("share-scene tests passed");

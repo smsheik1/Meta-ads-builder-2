@@ -19,6 +19,10 @@ assert.ok(
   liveSmokeSource.includes("defaultAdCount = 50"),
   "Live smoke must default to the real 50-ad product promise.",
 );
+assert.ok(
+  liveSmokeSource.includes("https://v3.wiggly.agentenamel.com"),
+  "Live smoke must default to the real HTTPS v3 preview domain.",
+);
 for (const requiredApiCall of [
   "api.researchRuns.runWebsiteResearch",
   "api.adScenes.generateFromResearch",
@@ -40,6 +44,11 @@ assert.ok(
 assert.ok(
   liveSmokeSource.includes("fetchDownloadReachable"),
   "Live smoke must verify the MP4 download URL is reachable.",
+);
+assert.ok(
+  liveSmokeSource.includes("Public share page rendered only the loading shell") &&
+    liveSmokeSource.includes("Public share page HTML did not include the frozen scene headline"),
+  "Live smoke must verify the public share page renders the frozen scene in HTML.",
 );
 assert.ok(
   liveSmokeSource.includes("assertSameFrozenScene"),
