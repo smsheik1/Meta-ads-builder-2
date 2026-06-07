@@ -93,11 +93,20 @@ const deterministic = buildDeterministicAdCandidates(research, 50);
 assert.equal(deterministic.length, 50);
 assert.ok(deterministic.every((candidate) => candidate.headline.length >= 8));
 assert.ok(deterministic.every((candidate) => candidate.subheadline.length >= 24));
+assert.ok(deterministic.every((candidate) => !/#\d+$/.test(candidate.headline)));
 
 assert.equal(
   normalizeAdCandidatePayload({
     ...fallback,
     headline: "Unlock Your AI Potential",
+  }, fallback, 0),
+  null,
+);
+assert.equal(
+  normalizeAdCandidatePayload({
+    ...fallback,
+    headline: "Continue shopping #31",
+    subheadline: "Your cart is empty and you can log in to check out faster.",
   }, fallback, 0),
   null,
 );
@@ -202,5 +211,46 @@ const deterministicResult = await generateAdCandidatesFromResearch(research, {
 });
 assert.equal(deterministicResult.provider, "deterministic");
 assert.equal(deterministicResult.providerStatus.status, "skipped");
+
+const ecommerceResearch: StoredWebsiteResearchResult = {
+  ...research,
+  brand: {
+    ...research.brand,
+    name: "David's Cookies",
+    title: "David's Cookies: Cookie Delivery | Gift Baskets | Fresh Baked",
+    description: "We're known for our cookies, but we make so much more, including our fabulous cheesecakes and specialty desserts.",
+  },
+  evidence: {
+    headings: [
+      "Cookie Delivery | Gift Baskets | Fresh Baked",
+      "Skip to content",
+      "Your cart is empty",
+      "Continue shopping",
+      "Loading...",
+    ],
+    paragraphs: [
+      "We're known for our cookies, but we make so much more, including our fabulous cheesecakes and specialty desserts.",
+      "A box of Fresh Baked Cookies from David's Cookies.",
+    ],
+    receipts: {
+      specificClaims: ["From $33.95", "Regular price~~$0.00~~Sale price"],
+      buyerMoments: ["Your cart is empty", "Have an account?", "Log in to check out faster."],
+      exactSiteLanguage: [
+        "David's Cookies: Cookie Delivery | Gift Baskets | Fresh Baked",
+        "Continue shopping",
+      ],
+      namedProof: [],
+    },
+    rawMarkdown: "# David's Cookies",
+  },
+};
+const ecommerceFallback = buildDeterministicAdCandidates(ecommerceResearch, 50);
+const ecommerceText = JSON.stringify(ecommerceFallback);
+assert.equal(ecommerceFallback.length, 50);
+assert.ok(!ecommerceText.includes("Continue shopping"));
+assert.ok(!ecommerceText.includes("Your cart is empty"));
+assert.ok(!ecommerceText.includes("Regular price"));
+assert.ok(!ecommerceText.includes("Loading"));
+assert.ok(ecommerceFallback.every((candidate) => !/#\d+$/.test(candidate.headline)));
 
 console.log("ad-generation tests passed");

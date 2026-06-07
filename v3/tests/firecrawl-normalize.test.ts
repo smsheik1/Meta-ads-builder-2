@@ -3,6 +3,7 @@ import {
   fetchWebsiteResearchWithFirecrawl,
   firecrawlRequestShape,
   isAbortLikeError,
+  isWebsiteChromeText,
   normalizeFirecrawlPayload,
   toWebsiteResearchErrorMessage,
 } from "../features/research/firecrawl";
@@ -65,6 +66,46 @@ assert.deepEqual(shape.formats, [
   },
 ]);
 assert.equal(shape.onlyMainContent, true);
+
+assert.equal(isWebsiteChromeText("Continue shopping"), true);
+assert.equal(isWebsiteChromeText("Regular price~~$0.00~~Sale price"), true);
+assert.equal(isWebsiteChromeText("Cookie Delivery | Gift Baskets | Fresh Baked"), false);
+
+const shopifyResult = normalizeFirecrawlPayload("davidscookies.com", {
+  success: true,
+  data: {
+    markdown: `
+# Skip to content
+_\\\\* FREE SHIPPING NOT APPLIED TO MULTIPLE ADDRESS ORDERS \\\\*_
+Your cart is empty
+Continue shopping
+Have an account?
+Log in to check out faster.
+Loading...
+Regular price~~$0.00~~Sale price
+Add To Cart
+# David's Cookies: Cookie Delivery | Gift Baskets | Fresh Baked
+We're known for our cookies, but we make so much more, including our fabulous cheesecakes and specialty desserts.
+A box of Fresh Baked Cookies from David's Cookies.
+    `,
+    metadata: {
+      sourceURL: "https://davidscookies.com/",
+      ogTitle: "David's Cookies: Cookie Delivery | Gift Baskets | Fresh Baked",
+      ogDescription: "We're known for our cookies, but we make so much more, including our fabulous cheesecakes and specialty desserts.",
+      ogSiteName: "David's Cookies",
+    },
+  },
+});
+const shopifyEvidenceText = JSON.stringify({
+  headings: shopifyResult.evidence.headings,
+  paragraphs: shopifyResult.evidence.paragraphs,
+  receipts: shopifyResult.evidence.receipts,
+});
+assert.ok(!shopifyEvidenceText.includes("Continue shopping"));
+assert.ok(!shopifyEvidenceText.includes("Regular price"));
+assert.ok(!shopifyEvidenceText.includes("Your cart is empty"));
+assert.ok(shopifyResult.evidence.headings.includes("David's Cookies: Cookie Delivery | Gift Baskets | Fresh Baked"));
+assert.ok(shopifyResult.evidence.paragraphs.some((paragraph) => paragraph.includes("fabulous cheesecakes")));
 
 assert.throws(
   () => normalizeFirecrawlPayload("ogtool.com", { success: true, data: { markdown: "short" } }),
