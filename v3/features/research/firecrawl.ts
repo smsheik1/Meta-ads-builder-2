@@ -1,3 +1,8 @@
+import {
+  buildFallbackBrandBrief,
+  curateWebsiteResearchResult,
+  type BrandCuratorOptions,
+} from "./brandCurator";
 import { normalizePublicWebsiteUrl } from "./url";
 import type {
   BrandSnapshot,
@@ -12,6 +17,7 @@ export type FirecrawlOptions = {
   apiKey?: string;
   fetcher?: Fetcher;
   timeoutMs?: number;
+  curator?: BrandCuratorOptions;
 };
 
 export type FirecrawlPayload = {
@@ -28,6 +34,8 @@ const FIRECRAWL_SCRAPE_URL = "https://api.firecrawl.dev/v2/scrape";
 const DEFAULT_TIMEOUT_MS = 30_000;
 const MAX_MARKDOWN_CHARS = 24_000;
 const FIRECRAWL_TIMEOUT_MESSAGE = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
+const chromeTextPattern = /\b(skip to content|cart is empty|continue shopping|log in|login|check out|checkout|add to cart|quantity|subtotal|loading|have an account|gift message|discount code|multiple addresses?|free shipping not applied|regular price|sale price|sold out|password|newsletter|privacy policy|terms of service)\b/i;
+const standalonePricePattern = /^(?:from\s+)?\$[\d,.]+(?:\s*-\s*\$[\d,.]+)?$/i;
 
 const cleanText = (value: unknown, maxLength = 260) => String(value ?? "")
   .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
@@ -38,9 +46,21 @@ const cleanText = (value: unknown, maxLength = 260) => String(value ?? "")
   .slice(0, maxLength)
   .trim();
 
+export const isWebsiteChromeText = (value: unknown) => {
+  const cleaned = cleanText(value, 260);
+  if (!cleaned) return true;
+  if (standalonePricePattern.test(cleaned)) return true;
+  if (/^_?\\?\*+/.test(cleaned)) return true;
+  if (/^(search|menu|account)$/i.test(cleaned)) return true;
+  if (/~~\s*\$0\.00\s*~~/i.test(cleaned)) return true;
+  if (chromeTextPattern.test(cleaned)) return true;
+  return false;
+};
+
 const unique = (items: string[], maxItems: number) => items
   .map((item) => cleanText(item))
   .filter(Boolean)
+  .filter((item) => !isWebsiteChromeText(item))
   .filter((item, index, all) => all.findIndex((candidate) => (
     candidate.toLowerCase() === item.toLowerCase()
   )) === index)
@@ -95,7 +115,8 @@ const parseMarkdownEvidence = (markdown: string): ResearchEvidence => {
     .slice(0, MAX_MARKDOWN_CHARS)
     .split(/\n+/)
     .map((line) => cleanText(line, 260))
-    .filter((line) => line.length >= 8);
+    .filter((line) => line.length >= 8)
+    .filter((line) => !isWebsiteChromeText(line));
   const headings = lines.filter((line) => line.length <= 120).slice(0, 24);
   const paragraphs = lines.filter((line) => line.length >= 24).slice(0, 42);
   const receipts: ResearchReceipts = {
@@ -250,7 +271,7 @@ export const normalizeFirecrawlPayload = (
   const screenshotUrl = screenshotUrlFromFirecrawl(data.screenshot, finalUrl);
   const colors = colorsFromFirecrawl(branding, metadata);
 
-  return {
+  const result: Omit<WebsiteResearchResult, "brandBrief"> = {
     websiteUrl: websiteUrl.href,
     finalUrl,
     host: websiteUrl.hostname,
@@ -282,6 +303,11 @@ export const normalizeFirecrawlPayload = (
       status: "used",
       reason: `Firecrawl read ${evidence.paragraphs.length} page snippets.`,
     }],
+  };
+
+  return {
+    ...result,
+    brandBrief: buildFallbackBrandBrief(result),
   };
 };
 
@@ -334,7 +360,10 @@ export const fetchWebsiteResearchWithFirecrawl = async (
       throw new Error("Firecrawl could not read that website.");
     }
 
-    return normalizeFirecrawlPayload(websiteUrl.href, payload);
+    return curateWebsiteResearchResult(
+      normalizeFirecrawlPayload(websiteUrl.href, payload),
+      options.curator,
+    );
   } catch (error) {
     throw new Error(toWebsiteResearchErrorMessage(error));
   } finally {

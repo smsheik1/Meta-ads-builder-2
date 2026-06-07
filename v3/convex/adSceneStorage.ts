@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
+import { buildFallbackBrandBrief } from "../features/research/brandCurator";
 import type { StoredWebsiteResearchResult } from "../features/research/types";
 import type { AdScene } from "../features/scene/types";
 
@@ -21,7 +22,7 @@ export const loadResearchForGeneration: ReturnType<typeof internalQuery> = inter
       throw new Error("Research run is missing website evidence.");
     }
 
-    return {
+    const research = {
       sessionId: researchRun.sessionId,
       researchRunId,
       brandSnapshotId: brandSnapshot._id,
@@ -46,6 +47,11 @@ export const loadResearchForGeneration: ReturnType<typeof internalQuery> = inter
       metadata: researchRun.metadata || {},
       branding: researchRun.branding || {},
       providerStatus: researchRun.providerStatus || [],
+    };
+
+    return {
+      ...research,
+      brandBrief: researchRun.brandBrief || buildFallbackBrandBrief(research),
     } satisfies StoredWebsiteResearchResult;
   },
 });

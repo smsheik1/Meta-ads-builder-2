@@ -48,13 +48,19 @@ Title: ${research.brand.title}
 Description: ${research.brand.description}
 Website: ${research.finalUrl}
 
-STUFF FROM THE WEBSITE:
-Headings: ${listForPrompt(research.evidence.headings, 16)}
-Paragraphs: ${listForPrompt(research.evidence.paragraphs, 16)}
-Customer pains / moments: ${listForPrompt(research.evidence.receipts.buyerMoments)}
-Specific proof / claims: ${listForPrompt(research.evidence.receipts.specificClaims)}
-Named proof / testimonials: ${listForPrompt(research.evidence.receipts.namedProof)}
-Exact site phrases: ${listForPrompt(research.evidence.receipts.exactSiteLanguage)}
+CURATED BRAND BRIEF:
+Offer: ${cleanText(research.brandBrief.offer, 220)}
+Audience: ${cleanText(research.brandBrief.audience, 220)}
+Buyer moments: ${listForPrompt(research.brandBrief.buyerMoments)}
+Proof: ${listForPrompt(research.brandBrief.proof)}
+Exact site phrases: ${listForPrompt(research.brandBrief.siteLanguage)}
+CTA direction: ${cleanText(research.brandBrief.ctaDirection, 80)}
+Visual notes: ${listForPrompt(research.brandBrief.visualNotes, 6)}
+Curator confidence: ${research.brandBrief.confidence}
+
+RAW WEBSITE BACKUP (use only if it supports the curated brief; ignore navigation, cart, login, checkout, loading, and standalone price text):
+Headings: ${listForPrompt(research.evidence.headings, 10)}
+Paragraphs: ${listForPrompt(research.evidence.paragraphs, 10)}
 
 PICK THE BEST STUFF FIRST FOR EACH CANDIDATE:
 - Best buyer: who is most likely to care?
@@ -92,7 +98,7 @@ WHAT TO WRITE:
 - Headlines must be punchy, concrete, and easy to read on a phone.
 - Subheadline must be one sentence. Lead with proof or a buyer moment, then explain the promise.
 - CTA should be 2-5 words, start with an action verb, and name a specific next step or outcome.
-- Use only the website evidence above.
+- Use only the curated brand brief and supporting raw website backup above.
 - Vary the headlineType across the list.
 - If evidence is thin, make fewer claims, not bigger claims.
 
@@ -109,11 +115,11 @@ ${bannedAdWords.join(", ")}
 
 HARD RULES:
 - Do not invent numbers, reviews, customers, guarantees, awards, or timeframes.
-- Do not use the STUDY THESE EXAMPLES facts unless those facts appear in STUFF FROM THE WEBSITE.
+- Do not use the STUDY THESE EXAMPLES facts unless those facts appear in the curated brief or raw website backup.
 - Headline must be 8-72 characters.
 - Subheadline must be 24-180 characters.
 - ctaText must be 2-5 words.
-- selectedPain and selectedProof must be copied or closely paraphrased from STUFF FROM THE WEBSITE.
+- selectedPain and selectedProof must be copied or closely paraphrased from CURATED BRAND BRIEF.
 - Return only JSON.
 
 JSON SHAPE:

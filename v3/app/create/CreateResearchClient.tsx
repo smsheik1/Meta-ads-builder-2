@@ -645,10 +645,14 @@ function ResearchConnected() {
           <p className={pillClass}>Full brand dump</p>
           {result ? (
             <div className="mt-6 grid gap-6">
-              <EvidenceList title="Site language" items={result.evidence.receipts.exactSiteLanguage} />
-              <EvidenceList title="Specific claims" items={result.evidence.receipts.specificClaims} />
-              <EvidenceList title="Buyer moments" items={result.evidence.receipts.buyerMoments} />
-              <EvidenceList title="Named proof" items={result.evidence.receipts.namedProof} />
+              <EvidenceList title="Offer" items={[result.brandBrief.offer]} />
+              <EvidenceList title="Audience" items={[result.brandBrief.audience]} />
+              <EvidenceList title="Buyer moments" items={result.brandBrief.buyerMoments} />
+              <EvidenceList title="Proof" items={result.brandBrief.proof} />
+              <EvidenceList title="Site language" items={result.brandBrief.siteLanguage} />
+              <EvidenceList title="CTA direction" items={[result.brandBrief.ctaDirection]} />
+              <EvidenceList title="Visual notes" items={result.brandBrief.visualNotes} />
+              <EvidenceList title="Ignored junk" items={result.brandBrief.droppedNoiseSummary} />
             </div>
           ) : (
             <p className="mt-6 text-base font-bold leading-7 text-slate-500">

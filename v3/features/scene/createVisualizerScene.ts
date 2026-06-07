@@ -40,7 +40,12 @@ export const createVisualizerAdScene = ({
     format: "visualizer",
     brand: {
       ...research.brand,
-      receipts: research.evidence.receipts,
+      receipts: {
+        specificClaims: research.brandBrief.proof,
+        buyerMoments: research.brandBrief.buyerMoments,
+        exactSiteLanguage: research.brandBrief.siteLanguage,
+        namedProof: research.evidence.receipts.namedProof,
+      },
     },
     creative: {
       angleId: candidate.angleId,
