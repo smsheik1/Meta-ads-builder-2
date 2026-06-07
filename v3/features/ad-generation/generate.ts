@@ -57,6 +57,14 @@ const cleanText = (value: unknown, maxLength = 260) => String(value ?? "")
   .slice(0, maxLength)
   .trim();
 
+const cleanTextOnBoundary = (value: unknown, maxLength = 260) => {
+  const cleaned = cleanText(value, maxLength + 40);
+  if (cleaned.length <= maxLength) return cleaned;
+  const sliced = cleaned.slice(0, maxLength).trim();
+  const boundary = sliced.replace(/[\s,;:–—-]+[^\s,;:–—-]*$/, "").trim();
+  return boundary.length >= 8 ? boundary.replace(/[,.!?;:–—-]+$/, "").trim() : sliced;
+};
+
 const slugify = (value: string) => value
   .toLowerCase()
   .replace(/[^a-z0-9]+/g, "-")
@@ -123,9 +131,12 @@ const deriveCategoryPhrase = (research: StoredWebsiteResearchResult) => {
 };
 
 const categoryNoun = (category: string) => {
-  const cleaned = cleanText(category, 42);
-  const firstPart = cleaned.split(/\s*[|:–—-]\s+/)[0] || cleaned;
-  return cleanText(firstPart, 42) || "The Offer";
+  const cleaned = cleanText(category, 140);
+  const firstPart = cleaned.split(/\s*[|:–—]\s+/)[0] || cleaned;
+  const nounPhrase = firstPart.split(
+    /\s+(?:known for|designed for|made for|built for|available for|for|with|that|while|so)\s+/i,
+  )[0] || firstPart;
+  return cleanTextOnBoundary(nounPhrase, 42) || "The Offer";
 };
 
 const fallbackHeadlineTemplates = (
@@ -156,7 +167,7 @@ const fallbackHeadlineTemplates = (
   return templates
     .slice(index % templates.length)
     .concat(templates.slice(0, index % templates.length))
-    .map((headline) => cleanText(headline, 72))
+    .map((headline) => cleanTextOnBoundary(headline, 72))
     .filter((headline) => headline.length >= 8 && headline.length <= 72)
     .filter((headline) => !isBadAdText(headline) && !includesBannedWord(headline));
 };
@@ -326,7 +337,7 @@ export const buildDeterministicAdCandidates = (
   for (let index = 0; candidates.length < normalizedCount && index < normalizedCount * 4; index += 1) {
     const modifier = fillerModifiers[index % fillerModifiers.length];
     const template = fillerTemplates[Math.floor(index / fillerModifiers.length) % fillerTemplates.length]!;
-    const headline = cleanText(template(modifier), 72);
+    const headline = cleanTextOnBoundary(template(modifier), 72);
     const key = headline.toLowerCase();
     if (seen.has(key) || isBadAdText(headline)) continue;
 
