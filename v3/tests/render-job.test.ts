@@ -16,5 +16,9 @@ assert.ok(
   workerSource.includes("api.renderJobs.markReady"),
   "Render worker must write completed MP4s back through Convex renderJobs.",
 );
+assert.ok(
+  remotionSource.includes("@remotion/media") && remotionSource.includes("<Audio"),
+  "Remotion render path must layer generated audio without changing the visual renderer.",
+);
 
 console.log("render-job tests passed");

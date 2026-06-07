@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start -p 3020",
     "typecheck": "tsc --noEmit",
-    "test": "tsx tests/research-url.test.ts && tsx tests/firecrawl-normalize.test.ts && tsx tests/ad-generation.test.ts && tsx tests/render-surface.test.tsx && tsx tests/reroll.test.ts && tsx tests/share-scene.test.ts && tsx tests/render-job.test.ts",
+    "test": "tsx tests/research-url.test.ts && tsx tests/firecrawl-normalize.test.ts && tsx tests/ad-generation.test.ts && tsx tests/render-surface.test.tsx && tsx tests/audio-scene.test.ts && tsx tests/reroll.test.ts && tsx tests/share-scene.test.ts && tsx tests/render-job.test.ts",
     "convex:dev": "convex dev",
     "convex:codegen": "convex codegen",
     "render-worker": "tsx scripts/render-worker.ts",
@@ -18,6 +18,7 @@
   "dependencies": {
     "@google/genai": "^2.8.0",
     "@remotion/bundler": "^4.0.473",
+    "@remotion/media": "^4.0.473",
     "@remotion/renderer": "^4.0.473",
     "@tailwindcss/postcss": "^4.3.0",
     "class-variance-authority": "^0.7.1",

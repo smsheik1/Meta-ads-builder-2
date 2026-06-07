@@ -18,6 +18,15 @@ export function assertShareableAdScene(value: unknown): AdScene {
   if (!/^#[0-9A-F]{6}$/i.test(scene.style?.visualizerColor || "")) {
     throw new Error("Share scene visualizer color is invalid.");
   }
+  if (scene.audio.status === "generated") {
+    if (!scene.audio.storageId?.trim()) throw new Error("Share scene audio storage is missing.");
+    if (!scene.audio.url?.trim()) throw new Error("Share scene audio URL is missing.");
+    if (!scene.audio.mimeType?.trim()) throw new Error("Share scene audio type is missing.");
+    if (!Number.isFinite(scene.audio.durationMs) || scene.audio.durationMs <= 0) {
+      throw new Error("Share scene audio duration is invalid.");
+    }
+    if (!scene.audio.transcript?.trim()) throw new Error("Share scene audio transcript is missing.");
+  }
 
   return scene;
 }

@@ -9,6 +9,7 @@ import {
   Link2,
   Loader2,
   Lock,
+  Mic,
   RefreshCw,
   Search,
   ShieldAlert,
@@ -53,11 +54,13 @@ function isEditableTarget(target: EventTarget | null): boolean {
 function ResearchConnected() {
   const runWebsiteResearch = useAction(api.researchRuns.runWebsiteResearch);
   const generateAdScenes = useAction(api.adScenes.generateFromResearch);
+  const generateAudioForScene = useAction(api.audioAssets.generateForScene);
   const createSharePage = useMutation(api.sharePages.createFromScene);
   const createRenderJob = useMutation(api.renderJobs.createFromScene);
   const [url, setUrl] = useState("ogtool.com");
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [adStatus, setAdStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [audioStatus, setAudioStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [shareStatus, setShareStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [renderStatus, setRenderStatus] = useState<"idle" | "loading" | "queued" | "error">("idle");
   const [result, setResult] = useState<StoredWebsiteResearchResult | null>(null);
@@ -71,6 +74,7 @@ function ResearchConnected() {
   const renderJob = useQuery(api.renderJobs.getStatus, renderJobId ? { renderJobId } : "skip");
   const [shareUrl, setShareUrl] = useState("");
   const [shareError, setShareError] = useState("");
+  const [audioError, setAudioError] = useState("");
   const [renderError, setRenderError] = useState("");
   const [error, setError] = useState("");
 
@@ -86,6 +90,18 @@ function ResearchConnected() {
     setRenderError("");
   };
 
+  const resetAudioState = () => {
+    setAudioStatus("idle");
+    setAudioError("");
+  };
+
+  const replaceSelectedScene = useCallback((nextScene: AdScene) => {
+    setSelectedScene(nextScene);
+    setAdScenes((scenes) => scenes.map((scene, index) => (
+      index === selectedSceneIndex ? nextScene : scene
+    )));
+  }, [selectedSceneIndex]);
+
   const onRerollScene = useCallback(() => {
     const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, sceneLocks);
     if (!next.scene) return;
@@ -95,6 +111,8 @@ function ResearchConnected() {
     setRerollCount((count) => count + 1);
     resetShareState();
     resetRenderState();
+    setAudioStatus(next.scene.audio.status === "generated" ? "ready" : "idle");
+    setAudioError("");
   }, [adScenes, sceneLocks, selectedScene, selectedSceneIndex]);
 
   const onToggleLock = (key: SceneLockKey) => {
@@ -128,6 +146,7 @@ function ResearchConnected() {
     setRerollCount(0);
     resetShareState();
     resetRenderState();
+    resetAudioState();
     setAdStatusNote("");
     setError("");
 
@@ -165,6 +184,7 @@ function ResearchConnected() {
       setRerollCount(0);
       resetShareState();
       resetRenderState();
+      resetAudioState();
       setAdStatusNote(nextGeneration.providerStatus.reason);
       setAdStatus("ready");
     } catch (nextError) {
@@ -200,6 +220,26 @@ function ResearchConnected() {
     }
   };
 
+  const onGenerateAudio = async () => {
+    if (!selectedScene || selectedScene.audio.status === "generated") return;
+    setAudioStatus("loading");
+    setAudioError("");
+    resetRenderState();
+    resetShareState();
+
+    try {
+      const result = await generateAudioForScene({
+        anonymousId: getAnonymousId(),
+        scene: selectedScene,
+      }) as { scene: AdScene };
+      replaceSelectedScene(result.scene);
+      setAudioStatus("ready");
+    } catch (nextError) {
+      setAudioStatus("error");
+      setAudioError(nextError instanceof Error ? nextError.message : "Audio generation failed.");
+    }
+  };
+
   const onCreateRenderJob = async () => {
     if (!selectedScene) return;
     setRenderStatus("loading");
@@ -231,6 +271,14 @@ function ResearchConnected() {
         : currentRenderStatus === "rendering"
           ? `Rendering ${renderProgress}%`
           : "Download video";
+  const hasGeneratedAudio = selectedScene?.audio.status === "generated";
+  const audioStatusLabel = hasGeneratedAudio
+    ? "Audio ready"
+    : audioStatus === "loading"
+      ? "Generating audio"
+      : audioStatus === "error"
+        ? "Audio failed"
+        : "Add audio for this ad";
 
   return (
     <section className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-7xl grid-cols-[0.85fr_1.15fr] items-start gap-10">
@@ -355,9 +403,29 @@ function ResearchConnected() {
                   <div className="mt-4 rounded-[24px] border border-slate-200 bg-slate-50 p-3">
                     <button
                       type="button"
+                      onClick={() => void onGenerateAudio()}
+                      disabled={audioStatus === "loading" || hasGeneratedAudio}
+                      className="inline-flex w-full items-center justify-center gap-3 rounded-[20px] bg-white px-5 py-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:text-slate-400"
+                    >
+                      {audioStatus === "loading" ? (
+                        <Loader2 className="size-5 animate-spin" />
+                      ) : hasGeneratedAudio ? (
+                        <Check className="size-5" />
+                      ) : (
+                        <Mic className="size-5" />
+                      )}
+                      {audioStatusLabel}
+                    </button>
+                    {audioError ? (
+                      <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
+                        {audioError}
+                      </p>
+                    ) : null}
+                    <button
+                      type="button"
                       onClick={() => void onCreateRenderJob()}
                       disabled={currentRenderStatus === "loading" || currentRenderStatus === "queued" || currentRenderStatus === "claimed" || currentRenderStatus === "rendering"}
-                      className="inline-flex w-full items-center justify-center gap-3 rounded-[20px] bg-slate-950 px-5 py-4 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
+                      className="mt-3 inline-flex w-full items-center justify-center gap-3 rounded-[20px] bg-slate-950 px-5 py-4 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
                     >
                       {currentRenderStatus === "loading" || currentRenderStatus === "queued" || currentRenderStatus === "claimed" || currentRenderStatus === "rendering" ? (
                         <Loader2 className="size-5 animate-spin" />
@@ -441,6 +509,8 @@ function ResearchConnected() {
                   onClick={() => {
                     setSelectedScene(scene);
                     setSelectedSceneIndex(index);
+                    setAudioStatus(scene.audio.status === "generated" ? "ready" : "idle");
+                    setAudioError("");
                     resetShareState();
                     resetRenderState();
                   }}

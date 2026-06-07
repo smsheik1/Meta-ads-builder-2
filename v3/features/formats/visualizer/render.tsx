@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { getVisibleCaptionText } from "../../audio/sceneAudio";
 import { getVisualizerBarCount, getVisualizerBars, normalizeVisualizerType } from "../../audio/visualizer";
 import type { FormatRenderProps } from "../types";
 
@@ -51,7 +52,7 @@ export function VisualizerFormatRenderer({
   });
   const logoSource = getLogoSource(scene);
   const textColor = getReadableTextColor(scene.style.textColor);
-  const transcript = scene.audio.transcript.trim();
+  const captionText = getVisibleCaptionText(scene.audio, timeSeconds);
 
   return (
     <div
@@ -153,7 +154,7 @@ export function VisualizerFormatRenderer({
             />
           ))}
         </div>
-        {transcript ? (
+        {captionText ? (
           <p
             style={{
               margin: "38px auto 0",
@@ -166,7 +167,7 @@ export function VisualizerFormatRenderer({
               overflowWrap: "break-word",
             }}
           >
-            {transcript}
+            {captionText}
           </p>
         ) : (
           <div
