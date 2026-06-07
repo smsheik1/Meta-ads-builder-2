@@ -324,3 +324,26 @@ test('legacy create sidebar panels live outside App', () => {
   expect(sidebarSource).toContain('<PropertiesPanel />');
   expect(sidebarSource).toContain('<DevTuningPanel />');
 });
+
+test('legacy create audio and media controller logic lives outside App', () => {
+  const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const mediaControllerPath = path.join(repoRoot, 'src', 'features', 'create', 'useCreateMediaController.ts');
+  const mediaControllerSource = fs.readFileSync(mediaControllerPath, 'utf8');
+
+  expect(fs.existsSync(mediaControllerPath)).toBe(true);
+  expect(appSource).toContain("from './features/create/useCreateMediaController'");
+  expect(appSource).toContain('useCreateMediaController({');
+  expect(appSource).not.toContain('const getAudioSignalStats');
+  expect(appSource).not.toContain('const rememberAudioBlob');
+  expect(appSource).not.toContain('const audioLibraryItems');
+  expect(appSource).not.toContain('const updateCreateCaptions =');
+  expect(appSource).not.toContain('TRANSCRIPTION_BACKOFF_KEY');
+  expect(appSource).not.toContain('CURRENT_AUDIO_STORAGE_KEY');
+  expect(mediaControllerSource).toContain('export function useCreateMediaController');
+  expect(mediaControllerSource).toContain('const getAudioSignalStats');
+  expect(mediaControllerSource).toContain('const rememberAudioBlob');
+  expect(mediaControllerSource).toContain('const audioLibraryItems');
+  expect(mediaControllerSource).toContain('const updateCreateCaptions =');
+  expect(mediaControllerSource).toContain('TRANSCRIPTION_BACKOFF_KEY');
+  expect(mediaControllerSource).toContain('CURRENT_AUDIO_STORAGE_KEY');
+});

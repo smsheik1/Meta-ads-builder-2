@@ -4,17 +4,16 @@ import { isFeedPlatform, isVerticalPlatform, type PlatformType } from './compone
 import { CreateFlow, type GeneratedAdVariation } from './components/CreateFlow';
 import { Upload, Play, Database, CheckCircle2, Download, Layers, Loader2, X, Type, AudioLines, Captions, MousePointerClick, BookmarkPlus, ArrowRight, Wand2, Link2, ExternalLink, Copy, Heart, MessageCircle, Send, Bookmark } from 'lucide-react';
 import Papa from 'papaparse';
-import { DEFAULT_ELEMENTS, useEditorStore, type AdElement, type Caption } from './store';
+import { DEFAULT_ELEMENTS, useEditorStore, type Caption } from './store';
 import { getVisualizerBarCount, getVisualizerBars, normalizeVisualizerType } from './lib/visualizer';
 import { stripRichText } from './lib/rich-text';
 import { getRandomSeededHook } from './lib/headline-pool';
-import { deleteAudioItem, listAudioItems, saveAudioItem, type StoredAudioItem } from './lib/audio-library';
-import { precomputeAudioAnalysisFromUrl, type AudioAnalysisData } from './lib/audio-analysis';
+import type { AudioAnalysisData } from './lib/audio-analysis';
 import { getEditorDimensions, type ExportSnapshot } from './lib/export-snapshot';
 import { FIXED_AD_BACKGROUND_COLOR, createTintedAdBackground, type AdStyleArchetype } from './lib/style-archetypes';
 import { InteractiveTutorial, WIGGLY_TUTORIAL_EVENT, WIGGLY_TUTORIAL_SEEN_KEY, emitTutorialEvent } from './components/InteractiveTutorial';
 import { getHostedSharePageBySlug, type SharePageRecord } from './lib/share-pages';
-import { explainVoiceVisualizerPreset, getVoiceVisualizerPreset, VOICE_VISUALIZER_PRESET, type VoiceVisualizerPresetDecision } from './lib/visualizer-presets';
+import { VOICE_VISUALIZER_PRESET } from './lib/visualizer-presets';
 import { ShareAdPage } from './routes/ShareAdPage';
 import type { BrandBrain } from './lib/prompts/brand-brain';
 import type { AdScene } from './engine/ad-scene/scene';
@@ -27,7 +26,6 @@ import {
   removeSavedAdHistoryItem,
   saveDownloadedAdToHistoryItem,
   type AdHistoryItem,
-  type AudioIntent,
   type IntroDuration,
   type SavedTemplate,
 } from './features/create/createSavedDesigns';
@@ -44,6 +42,13 @@ import {
 } from './features/create/createVoiceScripts';
 import { useCreateVoiceController } from './features/create/useCreateVoiceController';
 import {
+  DEFAULT_AUDIO_NAME,
+  DEFAULT_AUDIO_URL,
+  cleanCaptions,
+  inferAudioMimeType,
+  useCreateMediaController,
+} from './features/create/useCreateMediaController';
+import {
   buildGeneratedAdApplication,
   normalizeCreativeBriefReceipts,
 } from './features/create/createAdApplication';
@@ -53,16 +58,8 @@ import { CreateSidebar } from './features/create/components/CreateSidebar';
 
 const CREATIVE_BRIEF_STORAGE_KEY = 'visualizer_creative_brief_v1';
 const STUDIO_SEEN_STORAGE_KEY = 'agent_enamel_studio_seen_v1';
-const CURRENT_AUDIO_STORAGE_KEY = 'wiggly_current_audio_v1';
 const DEFAULT_INTRO_IMAGE = '/default-intro-image.png';
 const DEFAULT_INTRO_IMAGE_NAME = 'Default intro image';
-const DEFAULT_AUDIO_URL = '/ai-dental-receptionist-audio.mp3';
-const DEFAULT_AUDIO_NAME = 'AI Dental Receptionist';
-type CurrentAudioMemory = {
-  id?: string;
-  builtIn?: boolean;
-  brandKey?: string | null;
-};
 const BACKGROUND_COLOR_FAMILIES = [
   { hue: 158, saturation: [70, 95], lightness: [45, 96] },
   { hue: 190, saturation: [55, 90], lightness: [42, 94] },
@@ -192,30 +189,7 @@ type RenderDurationCap = 30 | 60 | 'full';
 type AppRoute = 'home' | 'builder' | 'share' | 'create';
 
 const CURRENT_RENDER_VERSION = 2;
-const TRANSCRIPTION_BACKOFF_KEY = 'wiggly_transcription_429_until';
-const TRANSCRIPTION_ERROR_BACKOFF_KEY = 'wiggly_transcription_error_until';
 const SPACE_REMIX_CUE_DISMISSED_KEY = 'wiggly_space_remix_cue_dismissed_v1';
-
-const inferAudioMimeType = (url: string, fallback = 'audio/mpeg') => {
-  const cleanUrl = url.split('?')[0].toLowerCase();
-  if (cleanUrl.endsWith('.m4a')) return 'audio/mp4';
-  if (cleanUrl.endsWith('.wav')) return 'audio/wav';
-  if (cleanUrl.endsWith('.ogg') || cleanUrl.endsWith('.oga')) return 'audio/ogg';
-  if (cleanUrl.endsWith('.flac')) return 'audio/flac';
-  if (cleanUrl.endsWith('.webm')) return 'audio/webm';
-  if (cleanUrl.endsWith('.aac')) return 'audio/aac';
-  return fallback;
-};
-
-const cleanCaptionText = (text: string) => text
-  .replace(/\bchat\s*gp\b/gi, 'ChatGPT')
-  .replace(/\bchat\s*gpt\b/gi, 'ChatGPT')
-  .replace(/\bchatgp\b/gi, 'ChatGPT');
-
-const cleanCaptions = (captions: Caption[]) => captions.map((caption) => ({
-  ...caption,
-  text: cleanCaptionText(caption.text),
-}));
 
 const EMPTY_CREATIVE_BRIEF: CreativeBrief = {
   offer: 'AI front-desk employees that answer calls, recover missed calls, and book dental patients automatically.',
@@ -288,14 +262,6 @@ const CREATIVE_BRIEF_FIELDS: Array<{
 ];
 
 const BUILT_IN_TEMPLATES: SavedTemplate[] = [];
-
-type AudioLibraryItem = {
-  id: string;
-  name: string;
-  url: string;
-  builtIn?: boolean;
-  stored?: StoredAudioItem;
-};
 
 type AudioFlyoutView = 'choices' | 'make' | 'library';
 
@@ -465,37 +431,7 @@ export default function App() {
   const [introFeedCropY, setIntroFeedCropY] = useState(50);
   const [introImageAspect, setIntroImageAspect] = useState<number | null>(1132 / 1389);
   const [introCropOpen, setIntroCropOpen] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(DEFAULT_AUDIO_URL);
-  const [audioFileName, setAudioFileName] = useState<string>(DEFAULT_AUDIO_NAME);
-  const [audioIntent, setAudioIntent] = useState<AudioIntent>('default');
-  const [audioBrandKey, setAudioBrandKey] = useState<string | null>(null);
-  const [activeCreateBrandKey, setActiveCreateBrandKey] = useState<string | null>(null);
   const [currentCreateAdScene, setCurrentCreateAdScene] = useState<AdScene | null>(null);
-  const [currentAudioAssetId, setCurrentAudioAssetId] = useState<string | null>(null);
-  const generatedAudioMatchesCreateBrand = Boolean(
-    audioUrl
-      && audioIntent === 'generated'
-      && (
-        activeCreateBrandKey
-          ? audioBrandKey === activeCreateBrandKey
-          : true
-      )
-  );
-  const hasPlayableCreateAudio = Boolean(
-    audioUrl
-      && (audioIntent === 'uploaded' || generatedAudioMatchesCreateBrand)
-  );
-  const createAudioUrl = hasPlayableCreateAudio ? audioUrl : null;
-
-  const clearCreateAudioForNewBrand = () => {
-    clearGeneratedDialogueAudio();
-    useEditorStore.getState().setCaptions([]);
-    setAudioUrl(null);
-    setAudioFileName('');
-    setAudioIntent('default');
-    setAudioBrandKey(null);
-    setCurrentAudioAssetId(null);
-  };
 
   const refreshBackgroundColor = () => {
     setBgColor((currentColor) => getFreshBackgroundColor(currentColor));
@@ -511,9 +447,9 @@ export default function App() {
   // Playback/Render State
   const [playing, setPlaying] = useState(false);
   const [renderDurationCap, setRenderDurationCap] = useState<RenderDurationCap>('full');
-  const audioPresetSourceRef = useRef<string | null>(null);
-  const audioAnalysisCacheRef = useRef<Map<string, AudioAnalysisData>>(new Map());
   const [previewAudioAnalysis, setPreviewAudioAnalysis] = useState<AudioAnalysisData | null>(null);
+  const clearGeneratedDialogueAudioRef = useRef<() => void>(() => {});
+  const generatedDialogueAudioUrlRef = useRef<string | null>(null);
   const [spaceRemixCueVisible, setSpaceRemixCueVisible] = useState(() => (
     typeof window !== 'undefined' && localStorage.getItem(SPACE_REMIX_CUE_DISMISSED_KEY) !== '1'
   ));
@@ -537,7 +473,6 @@ export default function App() {
   const [batchStatus, setBatchStatus] = useState<'idle' | 'processing' | 'done'>('idle');
   const [templates, setTemplates] = useState<SavedTemplate[]>([]);
   const [historyItems, setHistoryItems] = useState<AdHistoryItem[]>([]);
-  const [storedAudioItems, setStoredAudioItems] = useState<StoredAudioItem[]>([]);
   const [templateLibraryTab, setTemplateLibraryTab] = useState<'templates' | 'history'>('templates');
   const [historySaveWarning, setHistorySaveWarning] = useState<string | null>(null);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
@@ -560,6 +495,47 @@ export default function App() {
   const ctaCount = elements.filter((element) => element.componentRole === 'cta').length;
   const logoCount = elements.filter((element) => element.componentRole === 'logo').length;
   const duplicateOffset = (count: number) => Math.min(count * 12, 48);
+
+  const {
+    activeCreateBrandKey,
+    audioBrandKey,
+    audioFileName,
+    audioIntent,
+    audioUrl,
+    createAudioUrl,
+    createSavedVoiceOptions,
+    currentAudioAssetId,
+    currentAudioItem,
+    deleteStoredAudio,
+    downloadCurrentAudio,
+    formatVoiceName,
+    getAudioItemLabel,
+    getCachedAudioAnalysis,
+    handleAudioUpload,
+    hasPlayableCreateAudio,
+    isCurrentAudioItem,
+    isTranscribing,
+    readyAudioLibraryItems,
+    rememberGeneratedVoiceAudio,
+    setActiveCreateBrandKey,
+    useAudioItem,
+    useCreateSavedVoice,
+    clearCreateAudioForNewBrand,
+    applyAudioSettings,
+    updateCreateCaptions,
+  } = useCreateMediaController({
+    appRoute,
+    renderDurationCap,
+    primaryVisualizerElement,
+    previewAudioAnalysis,
+    onPreviewAudioAnalysisChange: setPreviewAudioAnalysis,
+    onClearGeneratedDialogueAudio: () => clearGeneratedDialogueAudioRef.current(),
+    getGeneratedDialogueAudioUrl: () => generatedDialogueAudioUrlRef.current,
+    onAudioPicked: () => {
+      setAudioFlyoutOpen(false);
+      setAudioFlyoutView('choices');
+    },
+  });
 
   const handleVisualizerColorChange = (color: string) => {
     setVisualizerColor(color);
@@ -595,45 +571,9 @@ export default function App() {
     }));
   };
 
-  const [isTranscribing, setIsTranscribing] = useState(false);
-
-  const rememberCurrentAudio = (item: Pick<AudioLibraryItem, 'id' | 'builtIn'> & { brandKey?: string | null }) => {
-    try {
-      localStorage.setItem(CURRENT_AUDIO_STORAGE_KEY, JSON.stringify({
-        id: item.id,
-        builtIn: Boolean(item.builtIn),
-        brandKey: item.brandKey || null,
-      }));
-    } catch {
-      // Ignore private browsing storage failures.
-    }
-  };
-
   const replayGuidedJourney = () => {
     localStorage.removeItem(WIGGLY_TUTORIAL_SEEN_KEY);
     setTutorialReplayKey((key) => key + 1);
-  };
-
-  const downloadCurrentAudio = async () => {
-    if (!audioUrl) return;
-    const response = await fetch(audioUrl);
-    const blob = await response.blob();
-    const extension = blob.type.includes('mpeg')
-      ? 'mp3'
-      : blob.type.includes('wav')
-        ? 'wav'
-        : blob.type.includes('mp4') || blob.type.includes('m4a')
-          ? 'm4a'
-          : 'mp3';
-    const safeName = (audioFileName || 'wiggly-audio').replace(/\.[a-z0-9]+$/i, '').replace(/[^a-z0-9-_]+/gi, '-').replace(/^-+|-+$/g, '') || 'wiggly-audio';
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${safeName}.${extension}`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
   };
 
   useEffect(() => {
@@ -645,38 +585,6 @@ export default function App() {
     loadSavedAdHistory()
       .then((items) => setHistoryItems(items))
       .catch((error) => console.error('Failed to load ad history:', error));
-  }, []);
-
-  useEffect(() => {
-    listAudioItems()
-      .then((items) => {
-        setStoredAudioItems(items);
-        try {
-          const saved = localStorage.getItem(CURRENT_AUDIO_STORAGE_KEY);
-          if (!saved) return;
-          const parsed = JSON.parse(saved) as CurrentAudioMemory;
-          if (parsed.id === 'built-in-ai-dental-receptionist-audio') {
-            clearGeneratedDialogueAudio();
-            setAudioUrl(DEFAULT_AUDIO_URL);
-            setAudioFileName(DEFAULT_AUDIO_NAME);
-            setAudioIntent('default');
-            setAudioBrandKey(null);
-            setCurrentAudioAssetId(null);
-            return;
-          }
-          const stored = items.find((item) => item.id === parsed.id && item.status !== 'needs-reupload' && item.blob?.size > 0);
-          if (!stored) return;
-          clearGeneratedDialogueAudio();
-          setAudioUrl(URL.createObjectURL(stored.blob));
-          setAudioFileName(stored.name);
-          setAudioIntent(stored.kind === 'generated' ? 'generated' : 'uploaded');
-          setAudioBrandKey(stored.kind === 'generated' ? stored.brandKey || parsed.brandKey || null : null);
-          setCurrentAudioAssetId(stored.id);
-        } catch (error) {
-          console.error('Failed to restore current audio:', error);
-        }
-      })
-      .catch((error) => console.error('Failed to load audio library:', error));
   }, []);
 
   useEffect(() => {
@@ -826,13 +734,8 @@ export default function App() {
     setIntroDuration(hydratedTemplate.settings.introDuration ?? 0);
     setIntroFeedCropY(hydratedTemplate.settings.introFeedCropY ?? 50);
     setIntroImageAspect(hydratedTemplate.settings.introImageAspect ?? null);
-    setAudioUrl(hydratedTemplate.settings.audioUrl);
-    setAudioFileName(hydratedTemplate.settings.audioFileName);
-    setAudioIntent(hydratedTemplate.settings.audioIntent ?? (hydratedTemplate.settings.audioUrl ? 'uploaded' : 'default'));
-    setAudioBrandKey(hydratedTemplate.settings.audioBrandKey ?? null);
-    setActiveCreateBrandKey(hydratedTemplate.settings.createBrandKey ?? hydratedTemplate.settings.audioBrandKey ?? null);
+    applyAudioSettings(hydratedTemplate.settings);
     setCurrentCreateAdScene(hydratedTemplate.adScene || null);
-    setCurrentAudioAssetId(hydratedTemplate.settings.audioAssetId ?? null);
     requestAnimationFrame(() => commitHistory());
   };
 
@@ -848,197 +751,6 @@ export default function App() {
     }
     setHistorySaveWarning(result.warning);
   };
-
-  const getAudioSignalStats = async (url: string) => {
-    const response = await fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    const audioContext = new AudioCtx();
-    try {
-      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer.slice(0));
-      let sum = 0;
-      let firstFiveSum = 0;
-      let firstFiveCount = 0;
-      let count = 0;
-      let peak = 0;
-      for (let channel = 0; channel < audioBuffer.numberOfChannels; channel += 1) {
-        const data = audioBuffer.getChannelData(channel);
-        const step = Math.max(1, Math.floor(data.length / 48000));
-        const firstFiveLimit = Math.min(data.length, Math.floor(audioBuffer.sampleRate * 5));
-        for (let index = 0; index < data.length; index += step) {
-          const sample = data[index] || 0;
-          const squared = sample * sample;
-          sum += squared;
-          count += 1;
-          if (index < firstFiveLimit) {
-            firstFiveSum += squared;
-            firstFiveCount += 1;
-          }
-          peak = Math.max(peak, Math.abs(sample));
-        }
-      }
-      return {
-        duration: audioBuffer.duration,
-        rms: Math.sqrt(sum / Math.max(1, count)),
-        firstFiveRms: Math.sqrt(firstFiveSum / Math.max(1, firstFiveCount)),
-        peak,
-      };
-    } finally {
-      if (audioContext.state !== 'closed') {
-        await audioContext.close();
-      }
-    }
-  };
-
-  const getAudioAnalysisSourceKey = (
-    url: string | null | undefined,
-    assetId?: string | null,
-    fileName?: string | null,
-  ) => {
-    if (!url) return null;
-    return assetId || fileName || url;
-  };
-
-  const applyAutoVisualizerPreset = (preset: Partial<AdElement>) => {
-    setElements((currentElements) => currentElements.map((element) => (
-      element.type === 'visualizer' && !element.locked
-        ? { ...element, ...preset }
-        : element
-    )));
-  };
-
-  const logAutoVisualizerPreset = (
-    sourceKey: string,
-    stats: Awaited<ReturnType<typeof getAudioSignalStats>>,
-    decision: VoiceVisualizerPresetDecision,
-  ) => {
-    const rms = stats.rms || 0;
-    const firstFiveRms = stats.firstFiveRms || 0;
-    const peak = stats.peak || 0;
-    const crest = peak / Math.max(0.0001, Math.max(rms, firstFiveRms));
-    console.info('[Wiggly visualizer auto-preset]', {
-      source: sourceKey,
-      preset: decision.presetId,
-      reason: decision.reason,
-      duration: Number(stats.duration.toFixed(2)),
-      rms: Number(rms.toFixed(5)),
-      firstFiveRms: Number(firstFiveRms.toFixed(5)),
-      peak: Number(peak.toFixed(5)),
-      crest: Number(crest.toFixed(2)),
-    });
-  };
-
-  useEffect(() => {
-    if (!audioUrl) return;
-
-    const sourceKey = getAudioAnalysisSourceKey(audioUrl, currentAudioAssetId, audioFileName);
-    if (!sourceKey || audioPresetSourceRef.current === sourceKey) return;
-
-    let cancelled = false;
-    const run = async () => {
-      try {
-        const stats = await getAudioSignalStats(audioUrl);
-        if (cancelled) return;
-        const decision = explainVoiceVisualizerPreset(stats);
-        audioPresetSourceRef.current = sourceKey;
-        logAutoVisualizerPreset(sourceKey, stats, decision);
-        applyAutoVisualizerPreset(getVoiceVisualizerPreset(decision.presetId));
-      } catch (error) {
-        console.warn('Could not auto-tune visualizer for this audio; using balanced voice preset:', error);
-        if (!cancelled) applyAutoVisualizerPreset(getVoiceVisualizerPreset('balanced-voice'));
-      }
-    };
-
-    void run();
-    return () => {
-      cancelled = true;
-    };
-  }, [audioUrl, audioFileName, currentAudioAssetId]);
-
-  const getCachedAudioAnalysis = async (
-    url: string | null | undefined,
-    durationSeconds: number,
-    smoothing: number,
-    attack?: number,
-    release?: number,
-    existing?: AudioAnalysisData | null,
-    sourceIdentity?: { assetId?: string | null; fileName?: string | null },
-  ) => {
-    const sourceKey = getAudioAnalysisSourceKey(url, sourceIdentity?.assetId, sourceIdentity?.fileName);
-    if (!url || !sourceKey) return null;
-
-    const roundedDuration = Number(durationSeconds.toFixed(3));
-    const roundedSmoothing = Number(smoothing.toFixed(3));
-    const roundedAttack = typeof attack === 'number' ? Number(attack.toFixed(3)) : 'auto';
-    const roundedRelease = typeof release === 'number' ? Number(release.toFixed(3)) : 'auto';
-    const cacheKey = `${sourceKey}|${roundedDuration}|${roundedSmoothing}|${roundedAttack}|${roundedRelease}`;
-    const cached = audioAnalysisCacheRef.current.get(cacheKey);
-    if (cached) return cached;
-
-    if (
-      existing &&
-      existing.sourceKey === sourceKey &&
-      existing.durationSeconds >= roundedDuration - 0.01 &&
-      existing.fps === 60 &&
-      Math.abs(existing.smoothing - roundedSmoothing) < 0.001
-    ) {
-      audioAnalysisCacheRef.current.set(cacheKey, existing);
-      return existing;
-    }
-
-    const analysis = await precomputeAudioAnalysisFromUrl(url, {
-      durationSeconds: roundedDuration,
-      smoothing: roundedSmoothing,
-      attack,
-      release,
-      sourceKey,
-    });
-    audioAnalysisCacheRef.current.set(cacheKey, analysis);
-    return analysis;
-  };
-
-  useEffect(() => {
-    if (!audioUrl) {
-      setPreviewAudioAnalysis(null);
-      return;
-    }
-
-    let cancelled = false;
-    const smoothing = primaryVisualizerElement?.visualizerSmoothing ?? 0.8;
-    const attack = primaryVisualizerElement?.visualizerAttack;
-    const release = primaryVisualizerElement?.visualizerRelease;
-
-    const run = async () => {
-      try {
-        const audioDuration = await getMediaDurationSeconds(audioUrl, 'audio');
-        const cappedDuration = renderDurationCap === 'full'
-          ? Math.min(Math.max(1, audioDuration || 60), 180)
-          : Math.min(Math.max(1, audioDuration || renderDurationCap), renderDurationCap);
-        const analysis = await getCachedAudioAnalysis(
-          audioUrl,
-          cappedDuration,
-          smoothing,
-          attack,
-          release,
-          previewAudioAnalysis,
-          {
-            assetId: currentAudioAssetId,
-            fileName: audioFileName,
-          },
-        );
-        if (!cancelled) setPreviewAudioAnalysis(analysis);
-      } catch (error) {
-        console.warn('Could not precompute preview audio analysis; preview will use live analyser fallback:', error);
-        if (!cancelled) setPreviewAudioAnalysis(null);
-      }
-    };
-
-    void run();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [audioUrl, audioFileName, currentAudioAssetId, primaryVisualizerElement?.visualizerSmoothing, primaryVisualizerElement?.visualizerAttack, primaryVisualizerElement?.visualizerRelease, renderDurationCap]);
 
   const createRemotionSnapshot = async (snapshot: SavedTemplate): Promise<FormData> => {
     const audioDuration = snapshot.settings.audioUrl
@@ -1193,40 +905,6 @@ export default function App() {
     setHistoryItems(nextItems);
   };
 
-  const rememberAudioBlob = async (
-    name: string,
-    blob: Blob,
-    source: StoredAudioItem['source'] = 'user-upload',
-    brandKey?: string | null,
-    captions?: Caption[]
-  ) => {
-    try {
-      const item: StoredAudioItem = {
-        id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `audio-${Date.now()}`,
-        name,
-        createdAt: Date.now(),
-        blob,
-        mimeType: blob.type || 'audio/mpeg',
-        kind: source === 'voice-wizard' ? 'generated' : 'uploaded',
-        source,
-        brandKey: source === 'voice-wizard' ? brandKey || null : null,
-        captions: source === 'voice-wizard' && captions ? cleanCaptions(captions) : undefined,
-        status: 'ready',
-      };
-      const nextItems = await saveAudioItem(item);
-      setStoredAudioItems(nextItems);
-      const savedItem = nextItems[0] || null;
-      setCurrentAudioAssetId(savedItem?.id ?? null);
-      if (savedItem) {
-        rememberCurrentAudio({ id: savedItem.id, builtIn: false, brandKey: source === 'voice-wizard' ? brandKey || null : null });
-      }
-      return savedItem;
-    } catch (error) {
-      console.error('Failed to save audio item:', error);
-      return null;
-    }
-  };
-
   const {
     dialogueScripts,
     conversationWizardOpen,
@@ -1259,66 +937,20 @@ export default function App() {
       setAudioFlyoutView('choices');
     },
     onGeneratedVoiceAudio: async ({ url, filename, blob, captions: nextCaptions }) => {
-      const cleanedCaptions = cleanCaptions(nextCaptions);
-      useEditorStore.getState().setCaptions(cleanedCaptions);
-      setAudioUrl(url);
-      setAudioFileName(filename);
-      setAudioIntent('generated');
-      setAudioBrandKey(activeCreateBrandKey);
-      await rememberAudioBlob(filename, blob, 'voice-wizard', activeCreateBrandKey, cleanedCaptions);
+      await rememberGeneratedVoiceAudio({
+        url,
+        filename,
+        blob,
+        captions: nextCaptions,
+        brandKey: activeCreateBrandKey,
+      });
       if (captionCount === 0) handleAddCaptions();
       if (visualizerCount === 0) handleAddVisualizer();
     },
   });
 
-  const useAudioItem = (item: AudioLibraryItem) => {
-    clearGeneratedDialogueAudio();
-    const nextUrl = item.stored ? URL.createObjectURL(item.stored.blob) : item.url;
-    const selectedAudioBrandKey = item.stored?.kind === 'generated'
-      ? activeCreateBrandKey || item.stored.brandKey || null
-      : null;
-    useEditorStore.getState().setCaptions(item.stored?.captions ? cleanCaptions(item.stored.captions) : []);
-    setAudioUrl(nextUrl);
-    setAudioFileName(item.name);
-    setAudioIntent(item.stored?.kind === 'generated' ? 'generated' : item.stored ? 'uploaded' : 'default');
-    setAudioBrandKey(selectedAudioBrandKey);
-    setCurrentAudioAssetId(item.stored?.id ?? null);
-    rememberCurrentAudio({
-      ...item,
-      brandKey: selectedAudioBrandKey,
-    });
-    setAudioFlyoutOpen(false);
-    setAudioFlyoutView('choices');
-  };
-
-  const updateCreateCaptions = (nextCaptions: Caption[]) => {
-    const cleanedCaptions = cleanCaptions(nextCaptions);
-    useEditorStore.getState().setCaptions(cleanedCaptions);
-    if (!currentAudioAssetId) return;
-    const storedAudio = storedAudioItems.find((item) => item.id === currentAudioAssetId);
-    if (!storedAudio) return;
-    const updatedAudio = { ...storedAudio, captions: cleanedCaptions };
-    setStoredAudioItems((items) => items.map((item) => (
-      item.id === currentAudioAssetId ? updatedAudio : item
-    )));
-    void saveAudioItem(updatedAudio)
-      .then((items) => setStoredAudioItems(items))
-      .catch((error) => console.error('Failed to save edited captions:', error));
-  };
-
-  const deleteStoredAudio = async (audioId: string) => {
-    const nextItems = await deleteAudioItem(audioId);
-    setStoredAudioItems(nextItems);
-    if (currentAudioAssetId === audioId) {
-      clearGeneratedDialogueAudio();
-      setAudioUrl(DEFAULT_AUDIO_URL);
-      setAudioFileName(DEFAULT_AUDIO_NAME);
-      setAudioIntent('default');
-      setAudioBrandKey(null);
-      setCurrentAudioAssetId(null);
-      rememberCurrentAudio({ id: 'built-in-ai-dental-receptionist-audio', builtIn: true });
-    }
-  };
+  clearGeneratedDialogueAudioRef.current = clearGeneratedDialogueAudio;
+  generatedDialogueAudioUrlRef.current = generatedDialogueAudioUrl;
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1327,20 +959,6 @@ export default function App() {
         url: URL.createObjectURL(file),
         type: file.type.startsWith('video/') ? 'video' : 'image'
       });
-    }
-  };
-
-  const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      clearGeneratedDialogueAudio();
-      useEditorStore.getState().setCaptions([]);
-      setAudioUrl(url);
-      setAudioFileName(file.name);
-      setAudioIntent('uploaded');
-      setAudioBrandKey(null);
-      await rememberAudioBlob(file.name, file, 'user-upload');
     }
   };
 
@@ -1369,155 +987,6 @@ export default function App() {
     // Intentionally skipped auto generation via `/api/generate-copy` 
     // Users can generate Ad Copy using the API key panel
   }, []);
-
-  useEffect(() => {
-    const transcriptionAudioUrl = appRoute === 'create' ? createAudioUrl : audioUrl;
-
-    if (!transcriptionAudioUrl) {
-      useEditorStore.getState().setCaptions([]);
-      return;
-    }
-
-    if (currentAudioAssetId) {
-      const currentStoredAudio = storedAudioItems.find((item) => item.id === currentAudioAssetId);
-      if (currentStoredAudio?.captions?.length) {
-        useEditorStore.getState().setCaptions(cleanCaptions(currentStoredAudio.captions));
-        return;
-      }
-    }
-
-    if (transcriptionAudioUrl === generatedDialogueAudioUrl) {
-      return;
-    }
-
-    const cacheKey = `transcription_${transcriptionAudioUrl}`;
-    const cachedCaptions = localStorage.getItem(cacheKey);
-    if (cachedCaptions) {
-      try {
-        useEditorStore.getState().setCaptions(cleanCaptions(JSON.parse(cachedCaptions)));
-        return;
-      } catch(e) {}
-    }
-
-    const backoffUntil = Number(localStorage.getItem(TRANSCRIPTION_BACKOFF_KEY) || 0);
-    if (backoffUntil && Date.now() < backoffUntil) {
-      console.warn('AI temporarily at capacity, try again in 1 min.');
-      return;
-    }
-
-    const errorBackoffUntil = Number(localStorage.getItem(TRANSCRIPTION_ERROR_BACKOFF_KEY) || 0);
-    if (errorBackoffUntil && Date.now() < errorBackoffUntil) {
-      console.warn('Skipping transcription during temporary error backoff.');
-      return;
-    }
-
-    const transcribeUrl = async () => {
-      try {
-        setIsTranscribing(true);
-        const audioRes = await fetch(transcriptionAudioUrl);
-        const audioBlob = await audioRes.blob();
-        if (audioBlob.size < 100) return;
-        
-        const file = new File([audioBlob], 'audio.mp3', { type: audioBlob.type || inferAudioMimeType(transcriptionAudioUrl) });
-        const formData = new FormData();
-        formData.append('audio', file);
-        
-        const res = await fetch('/api/transcribe', {
-          method: 'POST',
-          body: formData
-        });
-        
-        if (!res.ok) {
-          const errorText = await res.text();
-          console.error('Transcription API error:', res.status, errorText);
-          if (res.status === 429) {
-            localStorage.setItem(TRANSCRIPTION_BACKOFF_KEY, String(Date.now() + 60 * 1000));
-            return;
-          }
-          localStorage.setItem(TRANSCRIPTION_ERROR_BACKOFF_KEY, String(Date.now() + 60 * 1000));
-          return;
-        }
-
-        const data = await res.json();
-        const { setCaptions } = useEditorStore.getState();
-        let newCaptions: any[] = [];
-        
-        if (data.results && data.results.utterances) {
-          data.results.utterances.forEach((u: any) => {
-            if (u.words && u.words.length > 0) {
-              let currentStart = u.words[0].start;
-              let text = '';
-              for (let i = 0; i < u.words.length; i++) {
-                const w = u.words[i];
-                text += (w.punctuated_word || w.word) + ' ';
-                // Check if this word ends in punctuation and thus finishes a sentence
-                if ((w.punctuated_word || w.word).match(/[.!?]$/)) {
-                  newCaptions.push({
-                    text: text.trim(),
-                    start: currentStart,
-                    end: w.end,
-                    speaker: (u.speaker || 0) + 1
-                  });
-                  text = '';
-                  // Update start to next word if there is one
-                  if (i + 1 < u.words.length) {
-                    currentStart = u.words[i + 1].start;
-                  }
-                }
-              }
-              if (text.trim().length > 0) {
-                newCaptions.push({
-                  text: text.trim(),
-                  start: currentStart,
-                  end: u.words[u.words.length - 1].end,
-                  speaker: (u.speaker || 0) + 1
-                });
-              }
-            } else {
-              newCaptions.push({
-                text: u.transcript || u.text || '',
-                start: Number(u.start) || 0,
-                end: Number(u.end) || 0,
-                speaker: (Number(u.speaker) || 0) + 1
-              });
-            }
-          });
-        } else if (data.results?.channels?.[0]?.alternatives?.[0]?.words) {
-          const words = data.results.channels[0].alternatives[0].words;
-          if (words.length > 0) {
-            let currentStart = words[0].start;
-            let text = '';
-            for(let i = 0; i < words.length; i++) {
-              const w = words[i];
-              text += (w.punctuated_word || w.word) + ' ';
-              if ((w.punctuated_word || w.word)?.match(/[.!?]$/)) {
-                newCaptions.push({ text: text.trim(), start: currentStart, end: w.end, speaker: 1 });
-                text = '';
-                if (i + 1 < words.length) {
-                  currentStart = words[i + 1].start;
-                }
-              }
-            }
-            if (text.trim()) newCaptions.push({ text: text.trim(), start: currentStart, end: words[words.length-1].end, speaker: 1 });
-          }
-        }
-        
-        const cleanedCaptions = cleanCaptions(newCaptions);
-        setCaptions(cleanedCaptions);
-        try {
-           localStorage.setItem(cacheKey, JSON.stringify(cleanedCaptions));
-        } catch (e) {
-           console.error("Local storage error:", e);
-        }
-      } catch (err) {
-        console.error('Transcription failed:', err);
-      } finally {
-        setIsTranscribing(false);
-      }
-    };
-
-    transcribeUrl();
-  }, [appRoute, audioUrl, createAudioUrl, generatedDialogueAudioUrl, currentAudioAssetId, storedAudioItems]);
 
   const handleAddImageElement = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1739,54 +1208,6 @@ export default function App() {
   const activeTemplateItems = templateLibraryTab === 'templates' ? templateItems : historyItems;
   const activeTemplateCount = templateLibraryTab === 'templates' ? templateItems.length : historyItems.length;
   const showCompactDesignLibrary = activeTemplateItems.length === 0;
-  const audioLibraryItems: AudioLibraryItem[] = [
-    { id: 'built-in-ai-dental-receptionist-audio', name: DEFAULT_AUDIO_NAME, url: DEFAULT_AUDIO_URL, builtIn: true },
-    ...storedAudioItems.map((item) => ({
-      id: item.id,
-      name: item.name,
-      url: '',
-      stored: item,
-    })),
-  ];
-  const readyAudioLibraryItems = audioLibraryItems.filter((item) => item.builtIn || (item.stored?.status !== 'needs-reupload' && (item.stored?.blob?.size ?? 0) > 0));
-  const currentAudioItem = readyAudioLibraryItems.find((item) => (
-    item.stored ? item.id === currentAudioAssetId : !currentAudioAssetId && item.name === audioFileName
-  ));
-
-  const formatVoiceName = (name: string) => {
-    const withoutExtension = name.replace(/\.[a-z0-9]+$/i, '');
-    if (withoutExtension === DEFAULT_AUDIO_NAME) return withoutExtension;
-    return withoutExtension
-      .replace(/[-_]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .replace(/\b\w/g, (letter) => letter.toUpperCase()) || 'Voice';
-  };
-
-  const getAudioItemLabel = (item: AudioLibraryItem) => {
-    if (item.stored?.source === 'voice-wizard') return 'Made by Wiggly';
-    if (item.builtIn) return 'Example';
-    return 'Uploaded by you';
-  };
-
-  const isCurrentAudioItem = (item: AudioLibraryItem) => (
-    item.stored ? item.id === currentAudioAssetId : !currentAudioAssetId && item.name === audioFileName
-  );
-
-  const createSavedVoiceOptions = readyAudioLibraryItems
-    .filter((item) => item.stored)
-    .map((item) => ({
-      id: item.id,
-      name: formatVoiceName(item.name),
-      label: getAudioItemLabel(item),
-      current: isCurrentAudioItem(item),
-    }));
-
-  const useCreateSavedVoice = (voiceId: string) => {
-    const item = readyAudioLibraryItems.find((candidate) => candidate.id === voiceId);
-    if (!item) return;
-    useAudioItem(item);
-  };
 
   const openAudioFlyout = (view: AudioFlyoutView = 'choices') => {
     setAudioFlyoutView(view);
