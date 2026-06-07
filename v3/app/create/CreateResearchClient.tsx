@@ -1,10 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAction } from "convex/react";
-import { Loader2, Search, ShieldAlert, Wand2 } from "lucide-react";
+import { Loader2, Lock, RefreshCw, Search, ShieldAlert, Sparkles, Unlock, Wand2 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import {
+  createDefaultSceneLocks,
+  rerollScene,
+  sceneLockKeys,
+  sceneLockLabels,
+  type SceneLockKey,
+} from "@/features/create/reroll";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
 import { AdRenderSurface } from "@/features/render/AdRenderSurface";
 import type { AdScene } from "@/features/scene/types";
@@ -23,6 +30,13 @@ const getAnonymousId = () => {
 
 const pillClass = "rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-slate-400 shadow-sm";
 
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+
+  const tagName = target.tagName.toLowerCase();
+  return target.isContentEditable || tagName === "input" || tagName === "textarea" || tagName === "select";
+}
+
 function ResearchConnected() {
   const runWebsiteResearch = useAction(api.researchRuns.runWebsiteResearch);
   const generateAdScenes = useAction(api.adScenes.generateFromResearch);
@@ -32,8 +46,40 @@ function ResearchConnected() {
   const [result, setResult] = useState<StoredWebsiteResearchResult | null>(null);
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
+  const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
+  const [sceneLocks, setSceneLocks] = useState(createDefaultSceneLocks);
+  const [rerollCount, setRerollCount] = useState(0);
   const [adStatusNote, setAdStatusNote] = useState("");
   const [error, setError] = useState("");
+
+  const onRerollScene = useCallback(() => {
+    const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, sceneLocks);
+    if (!next.scene) return;
+
+    setSelectedScene(next.scene);
+    setSelectedSceneIndex(next.index);
+    setRerollCount((count) => count + 1);
+  }, [adScenes, sceneLocks, selectedScene, selectedSceneIndex]);
+
+  const onToggleLock = (key: SceneLockKey) => {
+    setSceneLocks((locks) => ({
+      ...locks,
+      [key]: !locks[key],
+    }));
+  };
+
+  useEffect(() => {
+    if (!adScenes.length) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== " " || isEditableTarget(event.target)) return;
+      event.preventDefault();
+      onRerollScene();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [adScenes.length, onRerollScene]);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -41,6 +87,9 @@ function ResearchConnected() {
     setAdStatus("idle");
     setAdScenes([]);
     setSelectedScene(null);
+    setSelectedSceneIndex(0);
+    setSceneLocks(createDefaultSceneLocks());
+    setRerollCount(0);
     setAdStatusNote("");
     setError("");
 
@@ -73,6 +122,9 @@ function ResearchConnected() {
       };
       setAdScenes(nextGeneration.scenes);
       setSelectedScene(nextGeneration.scenes[0] || null);
+      setSelectedSceneIndex(0);
+      setSceneLocks(createDefaultSceneLocks());
+      setRerollCount(0);
       setAdStatusNote(nextGeneration.providerStatus.reason);
       setAdStatus("ready");
     } catch (nextError) {
@@ -84,12 +136,12 @@ function ResearchConnected() {
   return (
     <section className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-7xl grid-cols-[0.85fr_1.15fr] items-start gap-10">
       <div className="pt-8">
-        <p className={pillClass}>Phase 3 renderer engine</p>
+        <p className={pillClass}>Phase 5 reroll engine</p>
         <h1 className="mt-7 text-7xl font-black leading-[0.92] tracking-normal">
           Paste a site. Turn evidence into ads.
         </h1>
         <p className="mt-6 max-w-xl text-lg font-bold leading-8 text-slate-500">
-          Firecrawl reads the page, Convex stores the proof, then OpenRouter turns that evidence into 50 AdScene candidates.
+          Firecrawl reads the page, Convex stores the proof, then Gemini turns that evidence into 50 AdScene candidates.
         </p>
 
         <form
@@ -152,11 +204,57 @@ function ResearchConnected() {
         <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_26px_80px_rgba(15,23,42,0.10)]">
           <p className={pillClass}>Selected preview</p>
           {selectedScene ? (
-            <div className="mx-auto mt-6 max-w-[440px] rounded-[34px] bg-slate-950 p-3 shadow-[0_30px_90px_rgba(15,23,42,0.22)]">
-              <div className="overflow-hidden rounded-[26px] bg-white">
-                <AdRenderSurface scene={selectedScene} timeSeconds={1.1} />
+            <>
+              <div className="mx-auto mt-6 max-w-[440px] rounded-[34px] bg-slate-950 p-3 shadow-[0_30px_90px_rgba(15,23,42,0.22)]">
+                <div className="overflow-hidden rounded-[26px] bg-white">
+                  <AdRenderSurface scene={selectedScene} timeSeconds={1.1} />
+                </div>
               </div>
-            </div>
+
+              {adScenes.length ? (
+                <div className="mx-auto mt-5 max-w-[620px] rounded-[30px] border border-slate-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.10)]">
+                  <button
+                    type="button"
+                    onClick={onRerollScene}
+                    className="flex w-full items-center justify-center gap-4 rounded-[24px] bg-slate-950 px-5 py-4 text-xl font-black text-white shadow-[0_16px_42px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5"
+                  >
+                    <Sparkles className="size-6" />
+                    <span>Press</span>
+                    <kbd className="rounded-xl bg-white px-6 py-3 text-base font-black tracking-[0.2em] text-slate-950 shadow-inner">
+                      SPACEBAR
+                    </kbd>
+                    <span>make a wish</span>
+                  </button>
+
+                  <div className="mt-4 grid grid-cols-4 gap-2">
+                    {sceneLockKeys.map((key) => {
+                      const locked = sceneLocks[key];
+                      return (
+                        <button
+                          type="button"
+                          key={key}
+                          onClick={() => onToggleLock(key)}
+                          className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-3 py-3 text-xs font-black transition ${
+                            locked
+                              ? "border-slate-950 bg-slate-950 text-white"
+                              : "border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300 hover:bg-white"
+                          }`}
+                          aria-pressed={locked}
+                        >
+                          {locked ? <Lock className="size-4" /> : <Unlock className="size-4" />}
+                          {sceneLockLabels[key]}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <p className="mt-3 flex items-center justify-center gap-2 text-center text-xs font-black uppercase tracking-[0.14em] text-slate-400">
+                    <RefreshCw className="size-4" />
+                    {rerollCount ? `${rerollCount} reroll${rerollCount === 1 ? "" : "s"} this session` : "Spacebar cycles the 50 ideas"}
+                  </p>
+                </div>
+              ) : null}
+            </>
           ) : (
             <p className="mt-6 text-base font-bold leading-7 text-slate-500">
               Generate ad ideas to preview the first typed AdScene through the shared renderer.
@@ -168,13 +266,16 @@ function ResearchConnected() {
           <p className={pillClass}>Generated AdScenes</p>
           {adScenes.length ? (
             <div className="mt-6 grid max-h-[680px] gap-3 overflow-auto pr-2">
-              {adScenes.map((scene) => (
+              {adScenes.map((scene, index) => (
                 <button
                   type="button"
                   key={`${scene.metadata.generationBatchId}-${scene.metadata.candidateIndex}`}
-                  onClick={() => setSelectedScene(scene)}
+                  onClick={() => {
+                    setSelectedScene(scene);
+                    setSelectedSceneIndex(index);
+                  }}
                   className={`rounded-3xl border p-5 text-left transition hover:-translate-y-0.5 ${
-                    selectedScene === scene
+                    selectedSceneIndex === index
                       ? "border-slate-950 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
                       : "border-slate-200 bg-slate-50"
                   }`}

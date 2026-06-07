@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start -p 3020",
     "typecheck": "tsc --noEmit",
-    "test": "tsx tests/research-url.test.ts && tsx tests/firecrawl-normalize.test.ts && tsx tests/ad-generation.test.ts && tsx tests/render-surface.test.tsx",
+    "test": "tsx tests/research-url.test.ts && tsx tests/firecrawl-normalize.test.ts && tsx tests/ad-generation.test.ts && tsx tests/render-surface.test.tsx && tsx tests/reroll.test.ts",
     "convex:dev": "convex dev",
     "convex:codegen": "convex codegen"
   },
