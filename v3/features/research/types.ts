@@ -1,6 +1,6 @@
 export type ResearchProviderStatus = {
-  provider: "firecrawl";
-  status: "used" | "failed";
+  provider: "firecrawl" | "gemini-curator";
+  status: "used" | "failed" | "skipped";
   reason: string;
 };
 
@@ -37,11 +37,25 @@ export type BrandSnapshot = {
   vibeTags: string[];
 };
 
+export type BrandBrief = {
+  brandName: string;
+  offer: string;
+  audience: string;
+  buyerMoments: string[];
+  proof: string[];
+  siteLanguage: string[];
+  ctaDirection: string;
+  visualNotes: string[];
+  droppedNoiseSummary: string[];
+  confidence: "low" | "medium" | "high";
+};
+
 export type WebsiteResearchResult = {
   websiteUrl: string;
   finalUrl: string;
   host: string;
   brand: BrandSnapshot;
+  brandBrief: BrandBrief;
   evidence: ResearchEvidence;
   metadata: Record<string, unknown>;
   branding: Record<string, unknown>;

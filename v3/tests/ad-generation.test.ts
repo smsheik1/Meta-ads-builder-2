@@ -17,7 +17,7 @@ const research: StoredWebsiteResearchResult = {
   websiteUrl: "https://ogtool.com/",
   finalUrl: "https://ogtool.com/",
   host: "ogtool.com",
-  brand: {
+	  brand: {
     name: "OGTool",
     url: "https://ogtool.com/",
     host: "ogtool.com",
@@ -33,9 +33,30 @@ const research: StoredWebsiteResearchResult = {
       body: "Inter",
       feel: "sans",
     },
-    vibeTags: ["technical", "growth"],
-  },
-  evidence: {
+	    vibeTags: ["technical", "growth"],
+	  },
+	  brandBrief: {
+	    brandName: "OGTool",
+	    offer: "Fully managed Reddit and ChatGPT visibility campaigns for D2C operators.",
+	    audience: "D2C operators trying to show up when buyers ask AI tools for recommendations.",
+	    buyerMoments: [
+	      "Buyers ask ChatGPT for recommendations and your competitor shows up first.",
+	      "D2C operators are trying to show up when buyers ask AI tools for recommendations.",
+	    ],
+	    proof: [
+	      "First ChatGPT mention in 14 days.",
+	      "A customer generated 42 citations in two weeks.",
+	    ],
+	    siteLanguage: [
+	      "ChatGPT mentions in 14 days",
+	      "Secure Google front-page rankings and AI brand citations",
+	    ],
+	    ctaDirection: "See the proof",
+	    visualNotes: ["Use OGTool's blue accent color."],
+	    droppedNoiseSummary: [],
+	    confidence: "high",
+	  },
+	  evidence: {
     headings: [
       "Get mentioned by ChatGPT",
       "Reddit campaigns for AI search visibility",
@@ -214,13 +235,37 @@ assert.equal(deterministicResult.providerStatus.status, "skipped");
 
 const ecommerceResearch: StoredWebsiteResearchResult = {
   ...research,
-  brand: {
-    ...research.brand,
-    name: "David's Cookies",
-    title: "David's Cookies: Cookie Delivery | Gift Baskets | Fresh Baked",
-    description: "We're known for our cookies, but we make so much more, including our fabulous cheesecakes and specialty desserts.",
-  },
-  evidence: {
+	  brand: {
+	    ...research.brand,
+	    name: "David's Cookies",
+	    title: "David's Cookies: Cookie Delivery | Gift Baskets | Fresh Baked",
+	    description: "We're known for our cookies, but we make so much more, including our fabulous cheesecakes and specialty desserts.",
+	  },
+	  brandBrief: {
+	    brandName: "David's Cookies",
+	    offer: "Fresh baked cookies, gift baskets, cheesecakes, and specialty desserts for delivery.",
+	    audience: "People sending cookies, gift baskets, and desserts for memorable occasions.",
+	    buyerMoments: [
+	      "Someone needs a giftable dessert that feels fresh and easy to send.",
+	    ],
+	    proof: [
+	      "We're known for our cookies, but we make so much more, including our fabulous cheesecakes and specialty desserts.",
+	      "A box of Fresh Baked Cookies from David's Cookies.",
+	    ],
+	    siteLanguage: [
+	      "Cookie Delivery | Gift Baskets | Fresh Baked",
+	      "Fresh Baked Cookies",
+	    ],
+	    ctaDirection: "Shop fresh cookies",
+	    visualNotes: ["Use David's Cookies brand red."],
+	    droppedNoiseSummary: [
+	      "Continue shopping",
+	      "Your cart is empty",
+	      "Regular price sale price labels",
+	    ],
+	    confidence: "high",
+	  },
+	  evidence: {
     headings: [
       "Cookie Delivery | Gift Baskets | Fresh Baked",
       "Skip to content",

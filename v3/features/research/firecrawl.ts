@@ -1,3 +1,8 @@
+import {
+  buildFallbackBrandBrief,
+  curateWebsiteResearchResult,
+  type BrandCuratorOptions,
+} from "./brandCurator";
 import { normalizePublicWebsiteUrl } from "./url";
 import type {
   BrandSnapshot,
@@ -12,6 +17,7 @@ export type FirecrawlOptions = {
   apiKey?: string;
   fetcher?: Fetcher;
   timeoutMs?: number;
+  curator?: BrandCuratorOptions;
 };
 
 export type FirecrawlPayload = {
@@ -265,7 +271,7 @@ export const normalizeFirecrawlPayload = (
   const screenshotUrl = screenshotUrlFromFirecrawl(data.screenshot, finalUrl);
   const colors = colorsFromFirecrawl(branding, metadata);
 
-  return {
+  const result: Omit<WebsiteResearchResult, "brandBrief"> = {
     websiteUrl: websiteUrl.href,
     finalUrl,
     host: websiteUrl.hostname,
@@ -297,6 +303,11 @@ export const normalizeFirecrawlPayload = (
       status: "used",
       reason: `Firecrawl read ${evidence.paragraphs.length} page snippets.`,
     }],
+  };
+
+  return {
+    ...result,
+    brandBrief: buildFallbackBrandBrief(result),
   };
 };
 
@@ -349,7 +360,10 @@ export const fetchWebsiteResearchWithFirecrawl = async (
       throw new Error("Firecrawl could not read that website.");
     }
 
-    return normalizeFirecrawlPayload(websiteUrl.href, payload);
+    return curateWebsiteResearchResult(
+      normalizeFirecrawlPayload(websiteUrl.href, payload),
+      options.curator,
+    );
   } catch (error) {
     throw new Error(toWebsiteResearchErrorMessage(error));
   } finally {

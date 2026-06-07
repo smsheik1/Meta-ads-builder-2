@@ -63,6 +63,7 @@ export const saveReady: ReturnType<typeof internalMutation> = internalMutation({
       markdown: research.evidence.rawMarkdown,
       screenshotUrl: research.brand.screenshotUrl || undefined,
       branding: research.branding,
+      brandBrief: research.brandBrief,
       receipts: research.evidence.receipts,
       evidence: research.evidence,
       metadata: research.metadata,

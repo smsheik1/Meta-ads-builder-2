@@ -108,6 +108,8 @@ const titleChunks = (value: string) => cleanText(value, 180)
 const deriveCategoryPhrase = (research: StoredWebsiteResearchResult) => {
   const brand = research.brand.name.toLowerCase();
   const candidates = [
+    research.brandBrief.offer,
+    ...research.brandBrief.siteLanguage,
     ...titleChunks(research.brand.title),
     ...research.evidence.headings,
     research.brand.description,
@@ -238,7 +240,15 @@ const candidateFromReceipt = (
   const brand = research.brand.name;
   const headline = fallbackHeadlineTemplates(research, index, proof, pain)[0] || `${brand} Makes The Offer Obvious`;
   const subheadlineSource = firstUseful(
-    usefulEvidence([proof, pain, research.brand.description, ...research.evidence.paragraphs]),
+    usefulEvidence([
+      proof,
+      pain,
+      research.brandBrief.offer,
+      research.brandBrief.audience,
+      research.brand.description,
+      ...research.brandBrief.proof,
+      ...research.evidence.paragraphs,
+    ]),
     24,
     180,
   ) || `A clearer reason to choose ${brand}, built from the words on its own website.`;
@@ -260,6 +270,8 @@ export const buildDeterministicAdCandidates = (
 ): AdSceneCandidate[] => {
   const normalizedCount = normalizeCount(count);
   const proofs = [
+    ...research.brandBrief.proof,
+    ...research.brandBrief.siteLanguage,
     ...research.evidence.receipts.specificClaims,
     ...research.evidence.receipts.namedProof,
     ...research.evidence.receipts.exactSiteLanguage,
@@ -267,6 +279,8 @@ export const buildDeterministicAdCandidates = (
     research.brand.description,
   ];
   const pains = [
+    ...research.brandBrief.buyerMoments,
+    research.brandBrief.audience,
     ...research.evidence.receipts.buyerMoments,
     ...research.evidence.headings,
     research.brand.description,
@@ -321,7 +335,13 @@ export const buildDeterministicAdCandidates = (
       angleId: slugify(`${headline}-${candidates.length + 1}`),
       headline,
       subheadline: clampSentence(
-        usefulEvidence([research.brand.description, ...research.evidence.paragraphs])[0],
+        usefulEvidence([
+          research.brandBrief.offer,
+          research.brandBrief.audience,
+          research.brand.description,
+          ...research.brandBrief.proof,
+          ...research.evidence.paragraphs,
+        ])[0],
         `A clearer reason to choose ${research.brand.name}, built from the words on its own website.`,
         180,
       ),
