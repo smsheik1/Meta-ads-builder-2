@@ -29,6 +29,7 @@ import {
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
 import { AdRenderSurface } from "@/features/render/AdRenderSurface";
 import type { AdScene } from "@/features/scene/types";
+import { getV3ConvexUrl } from "@/lib/convexEnv";
 
 const anonymousIdKey = "wiggly:v3:anonymous-id";
 
@@ -633,7 +634,7 @@ function EvidenceList({ title, items }: { title: string; items: string[] }) {
 }
 
 export function CreateResearchClient() {
-  const convexConfigured = Boolean(process.env.NEXT_PUBLIC_CONVEX_URL);
+  const convexConfigured = Boolean(getV3ConvexUrl());
 
   if (!convexConfigured) {
     return (
@@ -642,7 +643,7 @@ export function CreateResearchClient() {
           <ShieldAlert className="size-8" />
           <h1 className="mt-5 text-4xl font-black">Convex is missing.</h1>
           <p className="mt-4 text-lg font-bold leading-8">
-            Add NEXT_PUBLIC_CONVEX_URL to v3/.env.local before running Phase 1 research.
+            Add NEXT_PUBLIC_V3_CONVEX_URL to v3/.env.local before running Phase 1 research.
           </p>
         </div>
       </section>
