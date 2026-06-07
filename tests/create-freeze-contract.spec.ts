@@ -284,3 +284,25 @@ test('legacy create generated ad application logic lives outside App', () => {
   expect(conversationTemplateSource).toContain('const buildConversationElements');
   expect(applicationSource).toContain('const buildCreativeBriefFromBrandBrain');
 });
+
+test('legacy create preview and design library UI live outside App', () => {
+  const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const previewStagePath = path.join(repoRoot, 'src', 'features', 'create', 'components', 'CreatePreviewStage.tsx');
+  const designLibraryPath = path.join(repoRoot, 'src', 'features', 'create', 'components', 'CreateDesignLibrary.tsx');
+  const previewStageSource = fs.readFileSync(previewStagePath, 'utf8');
+  const designLibrarySource = fs.readFileSync(designLibraryPath, 'utf8');
+
+  expect(fs.existsSync(previewStagePath)).toBe(true);
+  expect(fs.existsSync(designLibraryPath)).toBe(true);
+  expect(appSource).toContain("from './features/create/components/CreatePreviewStage'");
+  expect(appSource).toContain("from './features/create/components/CreateDesignLibrary'");
+  expect(appSource).toContain('<CreatePreviewStage');
+  expect(appSource).toContain('<CreateDesignLibrary');
+  expect(appSource).not.toContain('const TemplatePreview');
+  expect(appSource).not.toContain('className="wiggly-studio flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden px-4 py-5"');
+  expect(appSource).not.toContain('className="wiggly-library hidden w-72 shrink-0 flex-col overflow-hidden xl:flex"');
+  expect(previewStageSource).toContain('export const CreatePreviewStage');
+  expect(previewStageSource).toContain('CanvasEditor');
+  expect(designLibrarySource).toContain('export const CreateDesignLibrary');
+  expect(designLibrarySource).toContain('const TemplatePreview');
+});
