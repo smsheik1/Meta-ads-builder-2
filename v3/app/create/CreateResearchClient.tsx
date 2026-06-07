@@ -14,6 +14,8 @@ import {
   Search,
   ShieldAlert,
   Sparkles,
+  ThumbsDown,
+  ThumbsUp,
   Unlock,
   Wand2,
 } from "lucide-react";
@@ -31,9 +33,9 @@ import type {
   StoredWebsiteResearchResponse,
   StoredWebsiteResearchResult,
 } from "@/features/research/types";
-import { AdRenderSurface } from "@/features/render/AdRenderSurface";
 import type { AdScene } from "@/features/scene/types";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
+import { FormatRail, PhonePreviewFrame, WigglyMark } from "./CreatePreviewChrome";
 
 const anonymousIdKey = "wiggly:v3:anonymous-id";
 
@@ -312,100 +314,145 @@ function ResearchConnected() {
         ? "Audio failed"
         : "Add audio for this ad";
 
+  const renderBusy = currentRenderStatus === "loading"
+    || currentRenderStatus === "queued"
+    || currentRenderStatus === "claimed"
+    || currentRenderStatus === "rendering";
+
   return (
-    <section className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-7xl grid-cols-[0.85fr_1.15fr] items-start gap-10">
-      <div className="pt-8">
-        <p className={pillClass}>Wiggly engine</p>
-        <h1 className="mt-7 text-7xl font-black leading-[0.92] tracking-normal">
-          Paste a site. Get video ads.
-        </h1>
-        <p className="mt-6 max-w-xl text-lg font-bold leading-8 text-slate-500">
-          Wiggly reads the page, finds the selling angle, and gives you polished ad options to reroll, voice, download, or share.
-        </p>
+    <div className="min-h-screen min-w-[1280px] overflow-x-auto bg-[#f7f4ea] px-10 py-7 text-slate-950">
+      <header className="mx-auto flex max-w-[1720px] items-center justify-between">
+        <div className="flex items-center gap-3">
+          <WigglyMark size="sm" />
+          <div>
+            <p className="text-2xl font-black leading-none tracking-normal text-slate-950">Wiggly</p>
+            <p className="mt-1 text-xs font-black uppercase tracking-[0.28em] text-slate-400">
+              Audio that looks expensive
+            </p>
+          </div>
+        </div>
+        <span aria-hidden="true" />
+      </header>
 
-        <form
-          onSubmit={onSubmit}
-          className="mt-10 rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]"
-        >
-          <label className="text-sm font-black text-slate-900" htmlFor="website-url">
-            Website
-          </label>
-          <input
-            id="website-url"
-            value={url}
-            onChange={(event) => setUrl(event.target.value)}
-            className="mt-3 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-4 text-lg font-bold text-slate-900 outline-none transition focus:border-slate-950 focus:bg-white"
-            placeholder="https://yourbrand.com"
-          />
-          <button
-            type="submit"
-            disabled={status === "loading"}
-            className="mt-5 inline-flex w-full items-center justify-center gap-3 rounded-full bg-slate-950 px-6 py-4 text-base font-black text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] transition hover:translate-y-[-1px] disabled:cursor-not-allowed disabled:bg-slate-400"
+      <section className="mx-auto grid max-w-[1720px] grid-cols-[minmax(390px,560px)_minmax(560px,650px)_minmax(330px,430px)] items-start gap-10 pb-14 pt-9">
+        <div className="pt-16">
+          <p className={pillClass}>{adScenes.length ? "Ads ready to review" : "Add a voice clip first"}</p>
+          <h1 className="mt-7 max-w-[560px] text-[78px] font-black leading-[0.93] tracking-normal text-slate-950">
+            Make video ads without learning video editing.
+          </h1>
+          <p className="mt-8 max-w-[560px] text-lg font-black leading-8 text-slate-500">
+            Wiggly reads the site, finds the selling angle, and fills the canvas with polished ads you can preview, save, download, or edit.
+          </p>
+
+          <form
+            onSubmit={onSubmit}
+            className="mt-11 rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]"
           >
-            {status === "loading" ? <Loader2 className="size-5 animate-spin" /> : <Search className="size-5" />}
-            {status === "loading" ? "Reading website" : "Read website"}
-          </button>
-        </form>
+            <label className="text-sm font-black text-slate-900" htmlFor="website-url">
+              Website
+            </label>
+            <input
+              id="website-url"
+              value={url}
+              onChange={(event) => setUrl(event.target.value)}
+              className="mt-3 w-full rounded-full border border-slate-200 bg-slate-50 px-6 py-4 text-lg font-bold text-slate-900 outline-none transition focus:border-slate-950 focus:bg-white"
+              placeholder="https://yourbrand.com"
+            />
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="mt-5 inline-flex w-full items-center justify-center gap-3 rounded-full bg-slate-950 px-6 py-4 text-base font-black text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
+            >
+              {status === "loading" ? <Loader2 className="size-5 animate-spin" /> : <Wand2 className="size-5" />}
+              {status === "loading" ? "Reading website" : "Generate ads"}
+            </button>
+          </form>
 
-        {result ? (
-          <div className="mt-5 rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-black uppercase tracking-[0.16em] text-slate-400">Next step</p>
-                <p className="mt-2 text-lg font-black text-slate-900">Generate 50 ad ideas from this brand read.</p>
+          {result ? (
+            <div className="mt-6 rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-black uppercase tracking-[0.18em] text-slate-400">Generated ads</p>
+                  <p className="mt-2 text-base font-black leading-6 text-slate-600">
+                    Your generated ads appear on the canvas.
+                  </p>
+                </div>
+                <RefreshCw className="size-5 text-slate-300" />
               </div>
               <button
                 type="button"
                 disabled={adStatus === "loading"}
                 onClick={() => void onGenerateAds(50)}
-                className="inline-flex shrink-0 items-center justify-center gap-3 rounded-full bg-slate-950 px-6 py-4 text-sm font-black text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] transition hover:translate-y-[-1px] disabled:cursor-not-allowed disabled:bg-slate-400"
+                className="mt-5 inline-flex w-full items-center justify-center gap-3 rounded-full bg-slate-950 px-6 py-4 text-base font-black text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
                 {adStatus === "loading" ? <Loader2 className="size-5 animate-spin" /> : <Wand2 className="size-5" />}
-                {adStatus === "loading" ? "Writing ideas" : "Generate 50"}
+                {adStatus === "loading" ? "Writing ideas" : "Generate 50 ads"}
               </button>
+              {adStatusNote ? (
+                <p className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold leading-6 text-slate-500">
+                  {adStatusNote}
+                </p>
+              ) : null}
             </div>
-            {adStatusNote ? (
-              <p className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold leading-6 text-slate-500">
-                {adStatusNote}
-              </p>
-            ) : null}
-          </div>
-        ) : null}
+          ) : null}
 
-        {status === "error" || adStatus === "error" ? (
-          <div className="mt-5 rounded-[22px] border border-red-100 bg-red-50 p-4 text-sm font-black leading-6 text-red-700">
-            {error}
-          </div>
-        ) : null}
-      </div>
+          {status === "error" || adStatus === "error" ? (
+            <div className="mt-5 rounded-[22px] border border-red-100 bg-red-50 p-4 text-sm font-black leading-6 text-red-700">
+              {error}
+            </div>
+          ) : null}
+        </div>
 
-      <div className="grid gap-5">
-        <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_26px_80px_rgba(15,23,42,0.10)]">
-          <p className={pillClass}>Selected ad</p>
-          {selectedScene ? (
-            <>
-              <div className="mx-auto mt-6 max-w-[440px] rounded-[34px] bg-slate-950 p-3 shadow-[0_30px_90px_rgba(15,23,42,0.22)]">
-                <div className="overflow-hidden rounded-[26px] bg-white">
-                  <AdRenderSurface scene={selectedScene} timeSeconds={previewTimeSeconds} />
-                </div>
-              </div>
+        <div>
+          <div className="flex justify-center gap-4">
+            <FormatRail />
+            <div>
+              <PhonePreviewFrame scene={selectedScene} result={result} timeSeconds={previewTimeSeconds} />
 
               {adScenes.length ? (
-                <div className="mx-auto mt-5 max-w-[620px] rounded-[30px] border border-slate-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.10)]">
-                  <button
-                    type="button"
-                    onClick={onRerollScene}
-                    className="flex w-full items-center justify-center gap-4 rounded-[24px] bg-slate-950 px-5 py-4 text-xl font-black text-white shadow-[0_16px_42px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5"
-                  >
-                    <Sparkles className="size-6" />
-                    <span>Press</span>
-                    <kbd className="rounded-xl bg-white px-6 py-3 text-base font-black tracking-[0.2em] text-slate-950 shadow-inner">
-                      SPACEBAR
-                    </kbd>
-                    <span>make a wish</span>
-                  </button>
+                <>
+                  <section className="mx-auto mt-7 w-full max-w-[520px] rounded-[28px] border border-slate-200 bg-white p-3 shadow-[0_20px_54px_rgba(15,23,42,0.12)]">
+                    <button
+                      type="button"
+                      onClick={onRerollScene}
+                      className="group flex w-full items-center justify-center gap-3 rounded-[22px] bg-slate-950 px-5 py-4 text-2xl font-black text-white shadow-[0_16px_42px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5"
+                    >
+                      <Sparkles className="size-7" />
+                      <span>Press</span>
+                      <kbd className="rounded-xl bg-white px-7 py-2.5 text-lg font-black uppercase tracking-[0.22em] text-slate-950 shadow-[inset_0_-2px_0_rgba(15,23,42,0.12)]">
+                        Spacebar
+                      </kbd>
+                      <span>make a wish</span>
+                    </button>
+                    <p className="mt-3 text-center text-xs font-black uppercase tracking-[0.14em] text-slate-400">
+                      {rerollCount ? `${rerollCount} reroll${rerollCount === 1 ? "" : "s"} this session` : "Start here. Make a fresh version in one tap."}
+                    </p>
+                  </section>
 
-                  <div className="mt-4 grid grid-cols-4 gap-2">
+                  <section className="mx-auto mt-5 flex w-full max-w-[390px] items-center justify-between rounded-[28px] border border-slate-200 bg-white/95 px-6 py-4 shadow-[0_18px_46px_rgba(15,23,42,0.10)]">
+                    <div>
+                      <p className="text-sm font-black uppercase tracking-[0.24em] text-slate-400">Generation</p>
+                      <p className="mt-1 text-xl font-black text-slate-950">Was this one useful?</p>
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        aria-label="Thumbs up"
+                        className="grid size-14 place-items-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:-translate-y-0.5 hover:border-slate-300"
+                      >
+                        <ThumbsUp className="size-6" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Thumbs down"
+                        className="grid size-14 place-items-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:-translate-y-0.5 hover:border-slate-300"
+                      >
+                        <ThumbsDown className="size-6" />
+                      </button>
+                    </div>
+                  </section>
+
+                  <section className="mx-auto mt-5 grid w-full max-w-[520px] grid-cols-4 gap-2 rounded-[28px] border border-slate-200 bg-white/95 p-3 shadow-[0_18px_46px_rgba(15,23,42,0.10)]">
                     {sceneLockKeys.map((key) => {
                       const locked = sceneLocks[key];
                       return (
@@ -425,250 +472,267 @@ function ResearchConnected() {
                         </button>
                       );
                     })}
-                  </div>
-
-                  <p className="mt-3 flex items-center justify-center gap-2 text-center text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                    <RefreshCw className="size-4" />
-                    {rerollCount ? `${rerollCount} reroll${rerollCount === 1 ? "" : "s"} this session` : "Spacebar cycles the 50 ideas"}
-                  </p>
-
-                  <div className="mt-4 rounded-[24px] border border-slate-200 bg-slate-50 p-3">
-                    <button
-                      type="button"
-                      onClick={() => void onGenerateAudio()}
-                      disabled={audioStatus === "loading" || hasGeneratedAudio}
-                      className="inline-flex w-full items-center justify-center gap-3 rounded-[20px] bg-white px-5 py-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:text-slate-400"
-                    >
-                      {audioStatus === "loading" ? (
-                        <Loader2 className="size-5 animate-spin" />
-                      ) : hasGeneratedAudio ? (
-                        <Check className="size-5" />
-                      ) : (
-                        <Mic className="size-5" />
-                      )}
-                      {audioStatusLabel}
-                    </button>
-                    {audioError ? (
-                      <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
-                        {audioError}
-                      </p>
-                    ) : null}
-                    {playableAudioUrl ? (
-                      <div className="mt-3 rounded-[20px] border border-slate-200 bg-white p-3">
-                        <audio
-                          ref={audioRef}
-                          aria-label="Audio preview"
-                          className="w-full"
-                          controls
-                          preload="metadata"
-                          src={playableAudioUrl}
-                          onTimeUpdate={(event) => {
-                            setPreviewTimeSeconds(event.currentTarget.currentTime);
-                          }}
-                          onEnded={() => {
-                            if (audioRef.current) audioRef.current.currentTime = 0;
-                            setPreviewTimeSeconds(1.1);
-                          }}
-                        />
-                        <p className="mt-2 text-center text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                          Audio preview syncs captions and visualizer
-                        </p>
-                      </div>
-                    ) : null}
-                    <button
-                      type="button"
-                      onClick={() => void onCreateRenderJob()}
-                      disabled={currentRenderStatus === "loading" || currentRenderStatus === "queued" || currentRenderStatus === "claimed" || currentRenderStatus === "rendering"}
-                      className="mt-3 inline-flex w-full items-center justify-center gap-3 rounded-[20px] bg-slate-950 px-5 py-4 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
-                    >
-                      {currentRenderStatus === "loading" || currentRenderStatus === "queued" || currentRenderStatus === "claimed" || currentRenderStatus === "rendering" ? (
-                        <Loader2 className="size-5 animate-spin" />
-                      ) : currentRenderStatus === "ready" ? (
-                        <Check className="size-5" />
-                      ) : (
-                        <Download className="size-5" />
-                      )}
-                      {renderStatusLabel}
-                    </button>
-                    {renderDownloadUrl ? (
-                      <a
-                        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-black text-slate-500 transition hover:border-slate-300 hover:text-slate-950"
-                        href={renderDownloadUrl}
-                        download
-                      >
-                        Download MP4
-                        <ExternalLink className="size-4" />
-                      </a>
-                    ) : null}
-                    {currentRenderStatus !== "idle" && currentRenderStatus !== "ready" && currentRenderStatus !== "failed" && currentRenderStatus !== "error" ? (
-                      <p className="mt-3 rounded-2xl bg-white px-4 py-3 text-xs font-black leading-5 text-slate-500">
-                        Render worker will turn this frozen scene into an MP4.
-                      </p>
-                    ) : null}
-                    {renderJob?.error || renderError ? (
-                      <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
-                        {renderJob?.error || renderError}
-                      </p>
-                    ) : null}
-                    <button
-                      type="button"
-                      onClick={() => void onCreateShareLink()}
-                      disabled={shareStatus === "loading"}
-                      className="mt-3 inline-flex w-full items-center justify-center gap-3 rounded-[20px] bg-white px-5 py-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:text-slate-400"
-                    >
-                      {shareStatus === "loading" ? (
-                        <Loader2 className="size-5 animate-spin" />
-                      ) : shareStatus === "ready" ? (
-                        <Check className="size-5" />
-                      ) : (
-                        <Link2 className="size-5" />
-                      )}
-                      {shareStatus === "loading" ? "Creating share link" : shareStatus === "ready" ? "Share link copied" : "Create share link"}
-                    </button>
-                    {shareUrl ? (
-                      <a
-                        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-black text-slate-500 transition hover:border-slate-300 hover:text-slate-950"
-                        href={shareUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Open share page
-                        <ExternalLink className="size-4" />
-                      </a>
-                    ) : null}
-                    {shareError ? (
-                      <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
-                        {shareError}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
+                  </section>
+                </>
               ) : null}
-            </>
-          ) : (
-            <p className="mt-6 text-base font-bold leading-7 text-slate-500">
-              Generate ad ideas to preview the first Wiggly ad.
-            </p>
-          )}
+            </div>
+          </div>
         </div>
 
-        <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_26px_80px_rgba(15,23,42,0.10)]">
-          <p className={pillClass}>Generated ads</p>
-          {adScenes.length ? (
-            <div className="mt-6 grid max-h-[680px] gap-3 overflow-auto pr-2">
-              {adScenes.map((scene, index) => (
-                <button
-                  type="button"
-                  key={`${scene.metadata.generationBatchId}-${scene.metadata.candidateIndex}`}
-                  onClick={() => {
-                    resetPreviewPlayback();
-                    setSelectedScene(scene);
-                    setSelectedSceneIndex(index);
-                    setAudioStatus(scene.audio.status === "generated" ? "ready" : "idle");
-                    setAudioError("");
-                    resetShareState();
-                    resetRenderState();
+        <aside className="pt-28">
+          <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-black text-slate-950">Generated ads</h2>
+                <p className="mt-2 text-sm font-black leading-6 text-slate-500">
+                  Your generated ad appears on the canvas.
+                </p>
+              </div>
+              <RefreshCw className="size-5 text-slate-300" />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => void onCreateRenderJob()}
+              disabled={!selectedScene || renderBusy}
+              className="mt-5 inline-flex w-full items-center justify-center gap-3 rounded-[20px] bg-slate-950 px-5 py-4 text-sm font-black text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
+            >
+              {renderBusy ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : currentRenderStatus === "ready" ? (
+                <Check className="size-5" />
+              ) : (
+                <Download className="size-5" />
+              )}
+              {renderStatusLabel}
+            </button>
+
+            {renderDownloadUrl ? (
+              <a
+                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-600 transition hover:border-slate-300 hover:text-slate-950"
+                href={renderDownloadUrl}
+                download
+              >
+                Download MP4
+                <ExternalLink className="size-4" />
+              </a>
+            ) : null}
+
+            {renderBusy ? (
+              <p className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 text-xs font-black leading-5 text-slate-500">
+                Render worker is turning this frozen scene into an MP4.
+              </p>
+            ) : null}
+
+            {renderJob?.error || renderError ? (
+              <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
+                {renderJob?.error || renderError}
+              </p>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => void onGenerateAudio()}
+              disabled={!selectedScene || audioStatus === "loading" || hasGeneratedAudio}
+              className="mt-3 inline-flex w-full items-center justify-center gap-3 rounded-[20px] border border-slate-200 bg-white px-5 py-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:text-slate-400"
+            >
+              {audioStatus === "loading" ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : hasGeneratedAudio ? (
+                <Check className="size-5" />
+              ) : (
+                <Mic className="size-5" />
+              )}
+              {audioStatusLabel}
+            </button>
+
+            {audioError ? (
+              <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
+                {audioError}
+              </p>
+            ) : null}
+
+            {playableAudioUrl ? (
+              <div className="mt-3 rounded-[20px] border border-slate-200 bg-slate-50 p-3">
+                <audio
+                  ref={audioRef}
+                  aria-label="Audio preview"
+                  className="w-full"
+                  controls
+                  preload="metadata"
+                  src={playableAudioUrl}
+                  onTimeUpdate={(event) => {
+                    setPreviewTimeSeconds(event.currentTarget.currentTime);
                   }}
-                  className={`rounded-3xl border p-5 text-left transition hover:-translate-y-0.5 ${
-                    selectedSceneIndex === index
-                      ? "border-slate-950 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
-                      : "border-slate-200 bg-slate-50"
-                  }`}
+                  onEnded={() => {
+                    if (audioRef.current) audioRef.current.currentTime = 0;
+                    setPreviewTimeSeconds(1.1);
+                  }}
+                />
+                <p className="mt-2 text-center text-xs font-black uppercase tracking-[0.14em] text-slate-400">
+                  Audio preview syncs captions and visualizer
+                </p>
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => void onCreateShareLink()}
+              disabled={!selectedScene || shareStatus === "loading"}
+              className="mt-3 inline-flex w-full items-center justify-center gap-3 rounded-[20px] border border-slate-200 bg-white px-5 py-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:text-slate-400"
+            >
+              {shareStatus === "loading" ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : shareStatus === "ready" ? (
+                <Check className="size-5" />
+              ) : (
+                <Link2 className="size-5" />
+              )}
+              {shareStatus === "loading" ? "Creating share link" : shareStatus === "ready" ? "Share link copied" : "Create share link"}
+            </button>
+
+            {shareUrl ? (
+              <a
+                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-600 transition hover:border-slate-300 hover:text-slate-950"
+                href={shareUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open share page
+                <ExternalLink className="size-4" />
+              </a>
+            ) : null}
+
+            {shareError ? (
+              <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
+                {shareError}
+              </p>
+            ) : null}
+          </section>
+
+          <section className="mt-5 rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm font-black uppercase tracking-[0.26em] text-slate-400">Creative brief</p>
+              {result ? (
+                <a
+                  href="#full-brand-dump"
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-600"
                 >
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="rounded-full bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                      {scene.creative.headlineType.replace(/_/g, " ")}
-                    </span>
-                    <span className="text-xs font-black text-slate-400">
-                      #{scene.metadata.candidateIndex + 1}
-                    </span>
+                  <Search className="size-4" />
+                  Full brand dump
+                </a>
+              ) : null}
+            </div>
+            {result ? (
+              <div className="mt-6 grid gap-5">
+                <EvidenceList title="Offer" items={[result.brandBrief.offer]} />
+                <EvidenceList title="Audience" items={[result.brandBrief.audience]} />
+                <EvidenceList title="Hook" items={result.brandBrief.buyerMoments.slice(0, 2)} />
+                <EvidenceList title="Receipt" items={result.brandBrief.proof.slice(0, 2)} />
+              </div>
+            ) : (
+              <p className="mt-6 text-base font-bold leading-7 text-slate-500">
+                Run research to see the brand summary Wiggly will use for ad formats.
+              </p>
+            )}
+          </section>
+
+          <section id="full-brand-dump" className="mt-5 rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
+            <p className="text-sm font-black uppercase tracking-[0.26em] text-slate-400">Full brand dump</p>
+            {result ? (
+              <div className="mt-6 grid max-h-[520px] gap-6 overflow-auto pr-2">
+                <div className="flex items-start gap-4">
+                  {result.brand.logoUrl || result.brand.faviconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      alt=""
+                      className="size-14 rounded-2xl border border-slate-200 object-contain p-2"
+                      src={result.brand.logoUrl || result.brand.faviconUrl || ""}
+                    />
+                  ) : null}
+                  <div>
+                    <h2 className="text-2xl font-black leading-tight">{result.brand.name}</h2>
+                    <p className="mt-2 text-sm font-bold text-slate-500">{result.finalUrl}</p>
                   </div>
-                  <h3 className="mt-4 text-2xl font-black leading-tight text-slate-950">
-                    {scene.creative.headline}
-                  </h3>
-                  <p className="mt-3 text-sm font-bold leading-6 text-slate-600">
-                    {scene.creative.subheadline}
-                  </p>
-                  <p className="mt-4 inline-flex rounded-full bg-slate-950 px-4 py-2 text-xs font-black text-white">
-                    {scene.creative.ctaText}
-                  </p>
-                  <p className="mt-4 text-xs font-bold leading-5 text-slate-400">
-                    Proof: {scene.creative.selectedProof}
-                  </p>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-6 text-base font-bold leading-7 text-slate-500">
-              After Wiggly reads the site, generate 50 ad options here.
-            </p>
-          )}
-        </div>
-
-        <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_26px_80px_rgba(15,23,42,0.10)]">
-          <p className={pillClass}>Creative brief</p>
-          {result ? (
-            <div className="mt-6 grid gap-5">
-              <div className="flex items-start gap-4">
-                {result.brand.logoUrl || result.brand.faviconUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    alt=""
-                    className="size-14 rounded-2xl border border-slate-200 object-contain p-2"
-                    src={result.brand.logoUrl || result.brand.faviconUrl || ""}
-                  />
-                ) : null}
-                <div>
-                  <h2 className="text-3xl font-black leading-tight">{result.brand.name}</h2>
-                  <p className="mt-2 text-sm font-bold text-slate-500">{result.finalUrl}</p>
                 </div>
+                <p className="text-base font-black leading-7 text-slate-700">{result.brand.description}</p>
+                <div className="flex flex-wrap gap-2">
+                  {result.brand.colors.map((color) => (
+                    <span
+                      key={color}
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-500"
+                    >
+                      <span className="size-4 rounded-full border border-slate-200" style={{ backgroundColor: color }} />
+                      {color}
+                    </span>
+                  ))}
+                  {result.brand.vibeTags.map((tag) => (
+                    <span key={tag} className="rounded-full bg-slate-100 px-3 py-2 text-xs font-black text-slate-500">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <EvidenceList title="Offer" items={[result.brandBrief.offer]} />
+                <EvidenceList title="Audience" items={[result.brandBrief.audience]} />
+                <EvidenceList title="Buyer moments" items={result.brandBrief.buyerMoments} />
+                <EvidenceList title="Proof" items={result.brandBrief.proof} />
+                <EvidenceList title="Site language" items={result.brandBrief.siteLanguage} />
+                <EvidenceList title="CTA direction" items={[result.brandBrief.ctaDirection]} />
+                <EvidenceList title="Visual notes" items={result.brandBrief.visualNotes} />
+                <EvidenceList title="Ignored junk" items={result.brandBrief.droppedNoiseSummary} />
               </div>
-              <p className="text-lg font-black leading-8 text-slate-700">{result.brand.description}</p>
-              <div className="flex flex-wrap gap-2">
-                {result.brand.colors.map((color) => (
-                  <span
-                    key={color}
-                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-500"
-                  >
-                    <span className="size-4 rounded-full border border-slate-200" style={{ backgroundColor: color }} />
-                    {color}
-                  </span>
-                ))}
-                {result.brand.vibeTags.map((tag) => (
-                  <span key={tag} className="rounded-full bg-slate-100 px-3 py-2 text-xs font-black text-slate-500">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p className="mt-6 text-base font-bold leading-7 text-slate-500">
-              Run research to see the brand summary Wiggly will use for ad formats.
-            </p>
-          )}
-        </div>
+            ) : (
+              <p className="mt-6 text-base font-bold leading-7 text-slate-500">
+                Wiggly shows the raw facts it found so you can trust what the ads are based on.
+              </p>
+            )}
+          </section>
 
-        <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_26px_80px_rgba(15,23,42,0.10)]">
-          <p className={pillClass}>Full brand dump</p>
-          {result ? (
-            <div className="mt-6 grid gap-6">
-              <EvidenceList title="Offer" items={[result.brandBrief.offer]} />
-              <EvidenceList title="Audience" items={[result.brandBrief.audience]} />
-              <EvidenceList title="Buyer moments" items={result.brandBrief.buyerMoments} />
-              <EvidenceList title="Proof" items={result.brandBrief.proof} />
-              <EvidenceList title="Site language" items={result.brandBrief.siteLanguage} />
-              <EvidenceList title="CTA direction" items={[result.brandBrief.ctaDirection]} />
-              <EvidenceList title="Visual notes" items={result.brandBrief.visualNotes} />
-              <EvidenceList title="Ignored junk" items={result.brandBrief.droppedNoiseSummary} />
-            </div>
-          ) : (
-            <p className="mt-6 text-base font-bold leading-7 text-slate-500">
-              Wiggly shows the raw facts it found so you can trust what the ads are based on.
-            </p>
-          )}
-        </div>
-      </div>
-    </section>
+          {adScenes.length ? (
+            <section className="mt-5 rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
+              <p className="text-sm font-black uppercase tracking-[0.26em] text-slate-400">All ideas</p>
+              <div className="mt-4 grid max-h-[440px] gap-3 overflow-auto pr-2">
+                {adScenes.map((scene, index) => (
+                  <button
+                    type="button"
+                    key={`${scene.metadata.generationBatchId}-${scene.metadata.candidateIndex}`}
+                    onClick={() => {
+                      resetPreviewPlayback();
+                      setSelectedScene(scene);
+                      setSelectedSceneIndex(index);
+                      setAudioStatus(scene.audio.status === "generated" ? "ready" : "idle");
+                      setAudioError("");
+                      resetShareState();
+                      resetRenderState();
+                    }}
+                    className={`rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 ${
+                      selectedSceneIndex === index
+                        ? "border-slate-950 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
+                        : "border-slate-200 bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="rounded-full bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                        {scene.creative.headlineType.replace(/_/g, " ")}
+                      </span>
+                      <span className="text-xs font-black text-slate-400">
+                        #{scene.metadata.candidateIndex + 1}
+                      </span>
+                    </div>
+                    <h3 className="mt-3 text-xl font-black leading-tight text-slate-950">
+                      {scene.creative.headline}
+                    </h3>
+                    <p className="mt-2 line-clamp-2 text-sm font-bold leading-6 text-slate-600">
+                      {scene.creative.subheadline}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </section>
+          ) : null}
+        </aside>
+      </section>
+    </div>
   );
 }
 
