@@ -73,7 +73,7 @@ if [ -n "$V3_PUBLIC_HOST" ]; then
   V3_CERT_FULLCHAIN="/etc/letsencrypt/live/$V3_PUBLIC_HOST/fullchain.pem"
   V3_CERT_PRIVKEY="/etc/letsencrypt/live/$V3_PUBLIC_HOST/privkey.pem"
 
-  if [ -f "$V3_CERT_FULLCHAIN" ] && [ -f "$V3_CERT_PRIVKEY" ]; then
+  if sudo test -f "$V3_CERT_FULLCHAIN" && sudo test -f "$V3_CERT_PRIVKEY"; then
     sudo tee "/etc/nginx/sites-available/$V3_NGINX_SITE_NAME" >/dev/null <<EOF
 server {
     listen 80;
