@@ -90,6 +90,25 @@ assert.throws(
   }),
   /headline is missing/,
 );
+assert.throws(
+  () => assertShareableAdScene({
+    ...scene,
+    audio: {
+      status: "generated",
+      storageId: "",
+      url: "https://example.com/audio.wav",
+      mimeType: "audio/wav",
+      durationMs: 5000,
+      durationSeconds: 5,
+      transcript: "Hello",
+      captions: [{ text: "Hello", startMs: 0, endMs: 1000 }],
+      provider: "gemini",
+      model: "gemini-3.1-flash-tts-preview",
+      generatedAt: 123,
+    },
+  }),
+  /audio storage is missing/,
+);
 
 assert.equal(sanitizeCtaUrl(undefined, scene.brand.url), "https://ogtool.com/");
 assert.equal(sanitizeCtaUrl("https://example.com/demo", scene.brand.url), "https://example.com/demo");

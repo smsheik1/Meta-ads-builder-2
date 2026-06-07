@@ -21,6 +21,32 @@ export type AdSceneCandidate = {
   selectedProof: string;
 };
 
+export type AdSceneCaption = {
+  text: string;
+  startMs: number;
+  endMs: number;
+};
+
+export type AdSceneAudio =
+  | {
+    status: "none";
+    transcript: "";
+    captions: [];
+  }
+  | {
+    status: "generated";
+    storageId: string;
+    url: string;
+    mimeType: string;
+    durationMs: number;
+    durationSeconds: number;
+    transcript: string;
+    captions: AdSceneCaption[];
+    provider: "gemini";
+    model: string;
+    generatedAt: number;
+  };
+
 export type AdScene = {
   version: typeof AD_SCENE_VERSION;
   format: AdFormatId;
@@ -43,11 +69,7 @@ export type AdScene = {
     visualizerColor: string;
     fontFeel: BrandSnapshot["fonts"]["feel"];
   };
-  audio: {
-    status: "none";
-    transcript: "";
-    captions: [];
-  };
+  audio: AdSceneAudio;
   layout: {
     preset: "centered-hero";
   };

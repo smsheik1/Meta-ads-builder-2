@@ -88,6 +88,21 @@ export default defineSchema({
     .index("by_sessionId_and_updatedAt", ["sessionId", "updatedAt"])
     .index("by_status_and_updatedAt", ["status", "updatedAt"]),
 
+  audioAssets: defineTable({
+    sessionId: v.string(),
+    sceneKey: v.string(),
+    storageId: v.id("_storage"),
+    mimeType: v.string(),
+    durationMs: v.number(),
+    transcript: v.string(),
+    provider: v.string(),
+    model: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_sessionId_and_updatedAt", ["sessionId", "updatedAt"])
+    .index("by_storageId", ["storageId"]),
+
   sharePages: defineTable({
     slug: v.string(),
     sessionId: v.string(),
