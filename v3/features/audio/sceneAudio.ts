@@ -4,6 +4,7 @@ export const PINNED_TTS_MODEL = "gemini-3.1-flash-tts-preview";
 
 const minimumAudioDurationMs = 4200;
 const maximumAudioDurationMs = 28000;
+export const MAX_CAPTION_EDIT_TEXT_LENGTH = 180;
 
 const cleanText = (value: unknown) => String(value ?? "")
   .replace(/[—–]/g, ", ")
@@ -117,4 +118,26 @@ export const getVisibleCaptionText = (
   ));
 
   return current?.text || audio.captions[0]?.text || "";
+};
+
+export const updateGeneratedAudioCaptionText = (
+  audio: AdSceneAudio,
+  captionIndex: number,
+  text: string,
+): AdSceneAudio => {
+  if (audio.status !== "generated") return audio;
+  if (!audio.captions[captionIndex]) return audio;
+
+  const safeText = text
+    .replace(/[\r\n]+/g, " ")
+    .slice(0, MAX_CAPTION_EDIT_TEXT_LENGTH);
+  const captions = audio.captions.map((caption, index) => (
+    index === captionIndex ? { ...caption, text: safeText } : caption
+  ));
+
+  return {
+    ...audio,
+    transcript: captions.map((caption) => caption.text.trim()).filter(Boolean).join("\n"),
+    captions,
+  };
 };

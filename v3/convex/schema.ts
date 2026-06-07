@@ -24,9 +24,9 @@ export default defineSchema({
     ),
     markdown: v.optional(v.string()),
     screenshotUrl: v.optional(v.string()),
-	    branding: v.optional(v.any()),
-	    brandBrief: v.optional(v.any()),
-	    receipts: v.optional(v.any()),
+    branding: v.optional(v.any()),
+    brandBrief: v.optional(v.any()),
+    receipts: v.optional(v.any()),
     evidence: v.optional(v.any()),
     metadata: v.optional(v.any()),
     providerStatus: v.optional(v.any()),
@@ -103,6 +103,18 @@ export default defineSchema({
   })
     .index("by_sessionId_and_updatedAt", ["sessionId", "updatedAt"])
     .index("by_storageId", ["storageId"]),
+
+  savedDesigns: defineTable({
+    sessionId: v.string(),
+    designId: v.string(),
+    title: v.string(),
+    format: v.string(),
+    scene: v.any(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_sessionId_and_updatedAt", ["sessionId", "updatedAt"])
+    .index("by_sessionId_and_designId", ["sessionId", "designId"]),
 
   sharePages: defineTable({
     slug: v.string(),

@@ -4,6 +4,7 @@ import {
   normalizeBrandBriefPayload,
 } from "../features/research/brandCurator";
 import {
+  DEFAULT_FIRECRAWL_TIMEOUT_MS,
   fetchWebsiteResearchWithFirecrawl,
   firecrawlRequestShape,
   isAbortLikeError,
@@ -11,6 +12,11 @@ import {
   normalizeFirecrawlPayload,
   toWebsiteResearchErrorMessage,
 } from "../features/research/firecrawl";
+
+assert.ok(
+  DEFAULT_FIRECRAWL_TIMEOUT_MS >= 60_000,
+  "Firecrawl needs a real-world timeout budget; successful scrapes often land around 20-30 seconds.",
+);
 
 const result = normalizeFirecrawlPayload("ogtool.com", {
   success: true,
