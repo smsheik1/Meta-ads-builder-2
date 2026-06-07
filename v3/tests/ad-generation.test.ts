@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   buildDeterministicAdCandidates,
   extractAdCandidatesFromResponse,
+  generateAdCandidatesFromResearch,
   normalizeAdCandidatePayload,
 } from "../features/ad-generation/generate";
 import { bannedAdWords, buildAdIdeasPrompt } from "../features/ad-generation/prompt";
@@ -131,5 +132,75 @@ assert.equal(scene.version, 1);
 assert.equal(scene.brand.receipts.specificClaims[0], "First ChatGPT mention in 14 days.");
 assert.equal(scene.metadata.researchRunId, "research_1");
 assert.equal(scene.metadata.model, "test-model");
+
+const geminiResult = await generateAdCandidatesFromResearch(research, {
+  count: 1,
+  geminiApiKey: "test-gemini-key",
+  geminiModel: "test-gemini-model",
+  geminiGenerateContent: async () => JSON.stringify({
+    candidates: [
+      {
+        angleId: "competitor-chatgpt",
+        headline: "Your Competitor Shows Up First",
+        subheadline: "Buyers ask ChatGPT for recommendations and your competitor shows up first.",
+        ctaText: "See the proof",
+        headlineType: "contrast",
+        selectedPain: "Buyers ask ChatGPT for recommendations and your competitor shows up first.",
+        selectedProof: "First ChatGPT mention in 14 days.",
+      },
+    ],
+  }),
+});
+assert.equal(geminiResult.provider, "gemini");
+assert.equal(geminiResult.model, "test-gemini-model");
+assert.equal(geminiResult.providerStatus.provider, "gemini");
+assert.equal(geminiResult.providerStatus.status, "used");
+assert.equal(geminiResult.candidates[0]?.headline, "Your Competitor Shows Up First");
+
+const openRouterFallbackResult = await generateAdCandidatesFromResearch(research, {
+  count: 1,
+  geminiApiKey: "test-gemini-key",
+  geminiGenerateContent: async () => {
+    throw new Error("Gemini quota exhausted.");
+  },
+  openRouterApiKey: "test-openrouter-key",
+  openRouterModel: "test-openrouter-model",
+  fetcher: async () => new Response(JSON.stringify({
+    choices: [
+      {
+        message: {
+          content: JSON.stringify({
+            candidates: [
+              {
+                angleId: "tracked-revenue",
+                headline: "Tracked Revenue From AI Search",
+                subheadline: "First ChatGPT mention in 14 days from managed Reddit visibility campaigns.",
+                ctaText: "See the proof",
+                headlineType: "receipt_drop",
+                selectedPain: "D2C operators are trying to show up when buyers ask AI tools for recommendations.",
+                selectedProof: "First ChatGPT mention in 14 days.",
+              },
+            ],
+          }),
+        },
+      },
+    ],
+  }), {
+    status: 200,
+    headers: { "content-type": "application/json" },
+  }),
+});
+assert.equal(openRouterFallbackResult.provider, "openrouter");
+assert.equal(openRouterFallbackResult.model, "test-openrouter-model");
+assert.equal(openRouterFallbackResult.providerStatus.reason.includes("Gemini failed"), true);
+assert.equal(openRouterFallbackResult.candidates[0]?.headline, "Tracked Revenue From AI Search");
+
+const deterministicResult = await generateAdCandidatesFromResearch(research, {
+  count: 1,
+  geminiApiKey: "",
+  openRouterApiKey: "",
+});
+assert.equal(deterministicResult.provider, "deterministic");
+assert.equal(deterministicResult.providerStatus.status, "skipped");
 
 console.log("ad-generation tests passed");
