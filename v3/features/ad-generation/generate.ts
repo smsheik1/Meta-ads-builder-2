@@ -1,11 +1,14 @@
+import { GoogleGenAI } from "@google/genai";
 import type { StoredWebsiteResearchResult } from "../research/types";
 import type { AdSceneCandidate, HeadlineType } from "../scene/types";
 import { bannedAdWords, buildAdIdeasPrompt } from "./prompt";
 
 type Fetcher = typeof fetch;
+type GeminiGenerateContent = (input: { model: string; prompt: string }) => Promise<string>;
 
 export const DEFAULT_AD_IDEA_COUNT = 50;
-export const DEFAULT_AD_IDEA_MODEL = "moonshotai/kimi-k2.6:free";
+export const DEFAULT_GEMINI_AD_IDEA_MODEL = "gemini-3.1-flash-lite";
+export const DEFAULT_OPENROUTER_AD_IDEA_MODEL = "moonshotai/kimi-k2.6:free";
 export const OPENROUTER_CHAT_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -18,13 +21,20 @@ const headlineTypes: HeadlineType[] = [
   "transformation",
 ];
 
+export type AdGenerationProvider = "gemini" | "openrouter" | "deterministic";
+
 export type AdGenerationProviderStatus = {
-  provider: "openrouter";
+  provider: "gemini" | "openrouter";
   status: "used" | "skipped" | "failed";
   reason: string;
 };
 
 export type GenerateAdCandidatesOptions = {
+  geminiApiKey?: string;
+  geminiGenerateContent?: GeminiGenerateContent;
+  geminiModel?: string;
+  openRouterApiKey?: string;
+  openRouterModel?: string;
   apiKey?: string;
   fetcher?: Fetcher;
   model?: string;
@@ -35,7 +45,7 @@ export type GenerateAdCandidatesOptions = {
 export type GenerateAdCandidatesResult = {
   candidates: AdSceneCandidate[];
   model: string;
-  provider: "openrouter" | "deterministic";
+  provider: AdGenerationProvider;
   providerStatus: AdGenerationProviderStatus;
 };
 
@@ -65,12 +75,12 @@ const includesBannedWord = (value: string) => {
   });
 };
 
-const parseJsonObject = (value: string) => {
+const parseJsonObject = (value: string, providerLabel = "AI provider") => {
   const trimmed = value.trim();
   const jsonText = trimmed.startsWith("{")
     ? trimmed
     : trimmed.match(/\{[\s\S]*\}/)?.[0] || "";
-  if (!jsonText) throw new Error("OpenRouter returned no JSON.");
+  if (!jsonText) throw new Error(`${providerLabel} returned no JSON.`);
   return JSON.parse(jsonText) as Record<string, unknown>;
 };
 
@@ -211,8 +221,9 @@ export const extractAdCandidatesFromResponse = (
   content: string,
   fallback: AdSceneCandidate[],
   count = DEFAULT_AD_IDEA_COUNT,
+  providerLabel = "AI provider",
 ) => {
-  const payload = parseJsonObject(content);
+  const payload = parseJsonObject(content, providerLabel);
   const normalizedCount = normalizeCount(count);
   const seen = new Set<string>();
   const parsed = asArray(payload.candidates)
@@ -226,7 +237,7 @@ export const extractAdCandidatesFromResponse = (
     })
     .slice(0, normalizedCount);
 
-  if (!parsed.length) throw new Error("OpenRouter returned no usable ad ideas.");
+  if (!parsed.length) throw new Error(`${providerLabel} returned no usable ad ideas.`);
   return parsed;
 };
 
@@ -236,33 +247,67 @@ const isAbortError = (error: unknown) => (
   error instanceof Error && (error.name === "AbortError" || /aborted/i.test(error.message))
 );
 
-export const generateAdCandidatesFromResearch = async (
-  research: StoredWebsiteResearchResult,
-  options: GenerateAdCandidatesOptions = {},
-): Promise<GenerateAdCandidatesResult> => {
-  const count = normalizeCount(options.count);
-  const model = options.model || process.env.OPENROUTER_AD_MODEL || DEFAULT_AD_IDEA_MODEL;
-  const fallback = buildDeterministicAdCandidates(research, count);
-  const apiKey = options.apiKey ?? process.env.OPENROUTER_API_KEY;
+const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, label: string) => {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timeout = setTimeout(() => reject(new Error(`${label} timed out.`)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+};
 
-  if (!apiKey || isDisabled(process.env.OPENROUTER_ENABLED)) {
-    return {
-      candidates: fallback,
-      model,
-      provider: "deterministic",
-      providerStatus: {
-        provider: "openrouter",
-        status: "skipped",
-        reason: "OpenRouter was not configured; used deterministic website evidence ideas.",
-      },
-    };
+const callGemini = async ({
+  apiKey,
+  model,
+  prompt,
+  timeoutMs,
+  geminiGenerateContent,
+}: {
+  apiKey: string;
+  model: string;
+  prompt: string;
+  timeoutMs: number;
+  geminiGenerateContent?: GeminiGenerateContent;
+}) => {
+  if (geminiGenerateContent) {
+    return withTimeout(geminiGenerateContent({ model, prompt }), timeoutMs, "Gemini ad generation");
   }
 
+  const ai = new GoogleGenAI({ apiKey });
+  const response = await withTimeout(ai.models.generateContent({
+    model,
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+    },
+  }), timeoutMs, "Gemini ad generation");
+
+  return response.text || "{\"candidates\":[]}";
+};
+
+const callOpenRouter = async ({
+  apiKey,
+  model,
+  prompt,
+  timeoutMs,
+  fetcher,
+}: {
+  apiKey: string;
+  model: string;
+  prompt: string;
+  timeoutMs: number;
+  fetcher?: Fetcher;
+}) => {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await (options.fetcher ?? fetch)(OPENROUTER_CHAT_URL, {
+    const response = await (fetcher ?? fetch)(OPENROUTER_CHAT_URL, {
       method: "POST",
       headers: {
         authorization: `Bearer ${apiKey}`,
@@ -273,7 +318,7 @@ export const generateAdCandidatesFromResearch = async (
         messages: [
           {
             role: "user",
-            content: buildAdIdeasPrompt(research, count),
+            content: prompt,
           },
         ],
         temperature: 0.78,
@@ -287,31 +332,119 @@ export const generateAdCandidatesFromResearch = async (
     const payload = await response.json() as {
       choices?: Array<{ message?: { content?: string } }>;
     };
-    const content = payload.choices?.[0]?.message?.content || "";
-    const candidates = extractAdCandidatesFromResponse(content, fallback, count);
+    return payload.choices?.[0]?.message?.content || "";
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+const topUpCandidates = (
+  candidates: AdSceneCandidate[],
+  fallback: AdSceneCandidate[],
+  count: number,
+) => (candidates.length >= count
+  ? candidates
+  : [...candidates, ...fallback.slice(candidates.length, count)]);
+
+export const generateAdCandidatesFromResearch = async (
+  research: StoredWebsiteResearchResult,
+  options: GenerateAdCandidatesOptions = {},
+): Promise<GenerateAdCandidatesResult> => {
+  const count = normalizeCount(options.count);
+  const fallback = buildDeterministicAdCandidates(research, count);
+  const prompt = buildAdIdeasPrompt(research, count);
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const geminiModel = options.geminiModel || process.env.GEMINI_AD_MODEL || DEFAULT_GEMINI_AD_IDEA_MODEL;
+  const openRouterModel = options.openRouterModel || options.model || process.env.OPENROUTER_AD_MODEL || DEFAULT_OPENROUTER_AD_IDEA_MODEL;
+  const geminiApiKey = options.geminiApiKey ?? process.env.GEMINI_API_KEY;
+  const openRouterApiKey = options.openRouterApiKey ?? options.apiKey ?? process.env.OPENROUTER_API_KEY;
+
+  if (geminiApiKey && !isDisabled(process.env.GEMINI_ENABLED)) {
+    try {
+      const content = await callGemini({
+        apiKey: geminiApiKey,
+        model: geminiModel,
+        prompt,
+        timeoutMs,
+        geminiGenerateContent: options.geminiGenerateContent,
+      });
+      const candidates = extractAdCandidatesFromResponse(content, fallback, count, "Gemini");
+
+      return {
+        candidates: topUpCandidates(candidates, fallback, count),
+        model: geminiModel,
+        provider: "gemini",
+        providerStatus: {
+          provider: "gemini",
+          status: "used",
+          reason: `Generated ${count} ad ideas with ${geminiModel}.`,
+        },
+      };
+    } catch (error) {
+      if (!openRouterApiKey || isDisabled(process.env.OPENROUTER_ENABLED)) {
+        const reason = error instanceof Error
+          ? `${error.message} Used deterministic website evidence ideas.`
+          : "Gemini failed; used deterministic website evidence ideas.";
+
+        return {
+          candidates: fallback,
+          model: geminiModel,
+          provider: "deterministic",
+          providerStatus: {
+            provider: "gemini",
+            status: "failed",
+            reason,
+          },
+        };
+      }
+    }
+  }
+
+  if (!openRouterApiKey || isDisabled(process.env.OPENROUTER_ENABLED)) {
+    return {
+      candidates: fallback,
+      model: geminiModel,
+      provider: "deterministic",
+      providerStatus: {
+        provider: "gemini",
+        status: "skipped",
+        reason: "Gemini and OpenRouter were not configured; used deterministic website evidence ideas.",
+      },
+    };
+  }
+
+  try {
+    const content = await callOpenRouter({
+      apiKey: openRouterApiKey,
+      model: openRouterModel,
+      prompt,
+      timeoutMs,
+      fetcher: options.fetcher,
+    });
+    const candidates = extractAdCandidatesFromResponse(content, fallback, count, "OpenRouter");
 
     return {
-      candidates: candidates.length >= count
-        ? candidates
-        : [...candidates, ...fallback.slice(candidates.length, count)],
-      model,
+      candidates: topUpCandidates(candidates, fallback, count),
+      model: openRouterModel,
       provider: "openrouter",
       providerStatus: {
         provider: "openrouter",
         status: "used",
-        reason: `Generated ${count} ad ideas with ${model}.`,
+        reason: geminiApiKey && !isDisabled(process.env.GEMINI_ENABLED)
+          ? `Gemini failed; generated ${count} ad ideas with ${openRouterModel}.`
+          : `Generated ${count} ad ideas with ${openRouterModel}.`,
       },
     };
   } catch (error) {
     const reason = isAbortError(error)
-      ? "OpenRouter took too long; used deterministic website evidence ideas."
+      ? "OpenRouter took too long after Gemini fallback; used deterministic website evidence ideas."
       : error instanceof Error
         ? `${error.message} Used deterministic website evidence ideas.`
-        : "OpenRouter failed; used deterministic website evidence ideas.";
+        : "AI providers failed; used deterministic website evidence ideas.";
 
     return {
       candidates: fallback,
-      model,
+      model: openRouterModel,
       provider: "deterministic",
       providerStatus: {
         provider: "openrouter",
@@ -319,7 +452,5 @@ export const generateAdCandidatesFromResearch = async (
         reason,
       },
     };
-  } finally {
-    clearTimeout(timeout);
   }
 };

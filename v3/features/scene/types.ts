@@ -57,7 +57,7 @@ export type AdScene = {
     researchRunId: string;
     brandSnapshotId: string;
     model: string;
-    provider: "openrouter" | "deterministic";
+    provider: "gemini" | "openrouter" | "deterministic";
     generatedAt: number;
   };
 };

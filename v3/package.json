@@ -13,6 +13,7 @@
     "convex:codegen": "convex codegen"
   },
   "dependencies": {
+    "@google/genai": "^2.8.0",
     "@remotion/bundler": "^4.0.473",
     "@remotion/renderer": "^4.0.473",
     "@tailwindcss/postcss": "^4.3.0",
