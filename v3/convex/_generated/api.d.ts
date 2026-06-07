@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as adSceneStorage from "../adSceneStorage.js";
+import type * as adScenes from "../adScenes.js";
 import type * as researchRuns from "../researchRuns.js";
 import type * as researchStorage from "../researchStorage.js";
 import type * as sessions from "../sessions.js";
@@ -19,6 +21,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  adSceneStorage: typeof adSceneStorage;
+  adScenes: typeof adScenes;
   researchRuns: typeof researchRuns;
   researchStorage: typeof researchStorage;
   sessions: typeof sessions;
