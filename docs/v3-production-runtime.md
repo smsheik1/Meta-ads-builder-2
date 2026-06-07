@@ -161,7 +161,7 @@ Do not reuse the legacy `CONVEX_DEPLOY_KEY`; that belongs to the old Convex depl
 Default public test host:
 
 ```text
-http://v3.163.192.206.128.nip.io/create
+https://v3.wiggly.agentenamel.com/create
 ```
 
 The workflow is intentionally `workflow_dispatch` only until v3 passes live smoke.

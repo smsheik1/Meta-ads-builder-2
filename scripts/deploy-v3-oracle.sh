@@ -70,7 +70,46 @@ if [ -n "$V3_PUBLIC_HOST" ]; then
     exit 1
   fi
 
-  sudo tee "/etc/nginx/sites-available/$V3_NGINX_SITE_NAME" >/dev/null <<EOF
+  V3_CERT_FULLCHAIN="/etc/letsencrypt/live/$V3_PUBLIC_HOST/fullchain.pem"
+  V3_CERT_PRIVKEY="/etc/letsencrypt/live/$V3_PUBLIC_HOST/privkey.pem"
+
+  if [ -f "$V3_CERT_FULLCHAIN" ] && [ -f "$V3_CERT_PRIVKEY" ]; then
+    sudo tee "/etc/nginx/sites-available/$V3_NGINX_SITE_NAME" >/dev/null <<EOF
+server {
+    listen 80;
+    listen [::]:80;
+    server_name $V3_PUBLIC_HOST;
+    return 301 https://\$host\$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name $V3_PUBLIC_HOST;
+
+    ssl_certificate $V3_CERT_FULLCHAIN;
+    ssl_certificate_key $V3_CERT_PRIVKEY;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    client_max_body_size 350M;
+
+    location / {
+        proxy_pass http://127.0.0.1:$V3_PORT;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+    }
+}
+EOF
+  else
+    sudo tee "/etc/nginx/sites-available/$V3_NGINX_SITE_NAME" >/dev/null <<EOF
 server {
     listen 80;
     listen [::]:80;
@@ -92,6 +131,7 @@ server {
     }
 }
 EOF
+  fi
   sudo ln -sf "/etc/nginx/sites-available/$V3_NGINX_SITE_NAME" "/etc/nginx/sites-enabled/$V3_NGINX_SITE_NAME"
   sudo nginx -t
   sudo systemctl reload nginx

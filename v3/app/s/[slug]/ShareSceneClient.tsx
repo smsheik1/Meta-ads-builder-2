@@ -6,7 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { AdRenderSurface } from "@/features/render/AdRenderSurface";
 import type { AdScene } from "@/features/scene/types";
 
-type ShareRecord = {
+export type ShareRecord = {
   slug: string;
   ctaUrl?: string;
   createdAt: number;
@@ -14,8 +14,15 @@ type ShareRecord = {
   scene: AdScene;
 };
 
-export function ShareSceneClient({ slug }: { slug: string }) {
-  const share = useQuery(api.sharePages.getBySlug, { slug }) as ShareRecord | null | undefined;
+export function ShareSceneClient({
+  slug,
+  initialShare,
+}: {
+  slug: string;
+  initialShare?: ShareRecord | null;
+}) {
+  const liveShare = useQuery(api.sharePages.getBySlug, { slug }) as ShareRecord | null | undefined;
+  const share = liveShare === undefined ? initialShare : liveShare;
 
   if (share === undefined) {
     return (
