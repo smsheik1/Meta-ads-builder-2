@@ -16,6 +16,16 @@ URL -> Firecrawl research -> 50 ad ideas -> preview one ad -> spacebar reroll ->
 
 Anything outside that flow is post-launch.
 
+Website research should use text and visual brand evidence:
+
+```text
+Firecrawl markdown -> offer, audience, receipts, claims
+Firecrawl branding -> colors, fonts, typography, UI feel
+Firecrawl screenshot -> visual vibe and later rendered-frame QA
+```
+
+The first version uses screenshot/branding to theme human-designed templates. It does not ask AI to generate the design.
+
 ## Pages
 
 - `/`: simple entry or redirect into create.
@@ -26,7 +36,7 @@ Anything outside that flow is post-launch.
 ## Stack
 
 - Next.js 16 for the web app.
-- Convex for anonymous sessions, scenes, render jobs, share records, and storage metadata.
+- Convex for anonymous sessions, research runs, scenes, render jobs, share records, and storage metadata.
 - shadcn/ui + Tailwind for product UI.
 - OpenRouter for ad copy and dialogue generation.
 - Remotion for video rendering.
@@ -38,6 +48,7 @@ Anything outside that flow is post-launch.
 
 - `sessions`: anonymous visitor/session identity.
 - `researchRuns`: URL, evidence, receipts, model output, status.
+- `brandSnapshots`: normalized brand colors, fonts, logo, screenshot, and visual vibe.
 - `adScenes`: typed frozen ad scene payloads.
 - `renderJobs`: scene id, requested format, progress, status, output file.
 - `sharePages`: slug, scene id, render output, CTA URL, brand metadata.

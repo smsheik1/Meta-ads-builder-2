@@ -42,6 +42,14 @@ Why: keep the visual taste and one-renderer lessons, but rebuild as a registry-d
 
 Why: these contain the receipt-driven prompt improvements and the anti-generic rules.
 
+Add to v3 research:
+
+- Firecrawl `markdown` for copy/evidence.
+- Firecrawl `branding` for colors, typography, and UI feel.
+- Firecrawl `screenshot` with `fullPage` for visual vibe and later frame QA.
+
+This should become a normalized `BrandSnapshot`, not scattered metadata.
+
 ### Freeze And Regression Tests
 
 - `tests/create-look-contract.spec.ts`
@@ -91,6 +99,7 @@ v3/
     schema.ts
     sessions.ts
     researchRuns.ts
+    brandSnapshots.ts
     adScenes.ts
     renderJobs.ts
     sharePages.ts
