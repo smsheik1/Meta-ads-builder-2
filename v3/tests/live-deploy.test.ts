@@ -42,5 +42,9 @@ assert.ok(runtimeDoc.includes("V3_CONVEX_DEPLOY_KEY"));
 assert.ok(runtimeDoc.includes("Do not reuse the legacy `CONVEX_DEPLOY_KEY`"));
 assert.ok(runtimeDoc.includes("V3_PUBLIC_HOST"));
 assert.ok(workflow.includes("v3.wiggly.agentenamel.com"));
+assert.ok(
+  !workflow.includes("vars.V3_PUBLIC_HOST"),
+  "v3 deploy must not let a stale repo variable override the canonical HTTPS preview host.",
+);
 
 console.log("live-deploy tests passed");
