@@ -9,7 +9,8 @@ v3 should make new ad formats boring to add. A future meme/image/conversation fo
 ```text
 URL input
 -> Convex creates researchRun
--> Firecrawl reads website
+-> Firecrawl reads website markdown, branding, and screenshot
+-> Wiggly normalizes brand facts and visual vibe
 -> OpenRouter writes ad ideas from evidence
 -> Convex stores AdScene candidates
 -> /create renders selected AdScene
@@ -43,6 +44,38 @@ Rules:
 - `AdScene` is frozen before render/share.
 - No render path rebuilds the scene from live editor state.
 - Download and share use the same frozen scene.
+
+## Brand Snapshot
+
+`BrandSnapshot` is extracted from Firecrawl output and passed into every format. It gives templates brand taste without turning Wiggly into an image generator.
+
+```ts
+type BrandSnapshot = {
+  name: string;
+  url: string;
+  logoUrl?: string;
+  colors: {
+    primary?: string;
+    secondary?: string;
+    background?: string;
+    text?: string;
+  };
+  fonts: {
+    heading?: string;
+    body?: string;
+    feel?: 'serif' | 'sans' | 'display' | 'mono' | 'unknown';
+  };
+  vibeTags: string[];
+  screenshotUrl?: string;
+};
+```
+
+Rules:
+
+- Markdown supplies what the brand says.
+- Branding supplies how the brand looks.
+- Screenshot supplies visual context and later QA.
+- The first v3 pass uses these inputs to theme pre-built templates, not to generate designs from scratch.
 
 ## Format Registry
 

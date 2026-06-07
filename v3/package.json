@@ -1,0 +1,40 @@
+{
+  "name": "@wiggly/v3",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3020",
+    "build": "next build",
+    "start": "next start -p 3020",
+    "typecheck": "tsc --noEmit",
+    "convex:dev": "convex dev",
+    "convex:codegen": "convex codegen"
+  },
+  "dependencies": {
+    "@remotion/bundler": "^4.0.473",
+    "@remotion/renderer": "^4.0.473",
+    "@tailwindcss/postcss": "^4.3.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "convex": "^1.40.0",
+    "lucide-react": "^0.546.0",
+    "next": "^16.2.7",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "remotion": "^4.0.473",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.1.14",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@remotion/cli": "^4.0.473",
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "~5.8.2"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
+  }
+}
