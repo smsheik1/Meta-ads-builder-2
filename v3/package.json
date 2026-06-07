@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start -p 3020",
     "typecheck": "tsc --noEmit",
+    "test": "tsx tests/research-url.test.ts && tsx tests/firecrawl-normalize.test.ts",
     "convex:dev": "convex dev",
     "convex:codegen": "convex codegen"
   },
@@ -32,6 +33,7 @@
     "@types/node": "^22.14.0",
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
+    "tsx": "^4.20.6",
     "typescript": "~5.8.2"
   },
   "overrides": {
