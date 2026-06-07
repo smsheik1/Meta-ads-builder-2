@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start -p 3020",
     "typecheck": "tsc --noEmit",
-    "test": "tsx tests/research-url.test.ts && tsx tests/firecrawl-normalize.test.ts && tsx tests/ad-generation.test.ts && tsx tests/render-surface.test.tsx && tsx tests/format-registry.test.ts && tsx tests/convex-boundary.test.ts && tsx tests/runtime-health.test.ts && tsx tests/audio-scene.test.ts && tsx tests/reroll.test.ts && tsx tests/share-scene.test.ts && tsx tests/render-job.test.ts && tsx tests/v3-smoke.test.tsx",
+    "test": "tsx tests/research-url.test.ts && tsx tests/firecrawl-normalize.test.ts && tsx tests/ad-generation.test.ts && tsx tests/render-surface.test.tsx && tsx tests/format-registry.test.ts && tsx tests/convex-boundary.test.ts && tsx tests/runtime-health.test.ts && tsx tests/live-deploy.test.ts && tsx tests/audio-scene.test.ts && tsx tests/reroll.test.ts && tsx tests/share-scene.test.ts && tsx tests/render-job.test.ts && tsx tests/v3-smoke.test.tsx",
     "convex:dev": "convex dev",
     "convex:codegen": "convex codegen",
     "runtime:health": "tsx scripts/runtime-health.ts",

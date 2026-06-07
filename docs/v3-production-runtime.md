@@ -103,3 +103,28 @@ ogtool.com
 -> Create share link
 -> Open share page
 ```
+
+## Oracle Live Deployment
+
+v3 deploys beside v1. The legacy PM2 app is still named `wiggly`; v3 must use separate PM2 app names:
+
+```text
+wiggly-v3
+wiggly-v3-render-worker
+```
+
+Manual workflow:
+
+```text
+GitHub Actions -> Deploy v3 to Oracle -> scripts/deploy-v3-oracle.sh
+```
+
+Required GitHub secret:
+
+```text
+V3_CONVEX_DEPLOY_KEY
+```
+
+Do not reuse the legacy `CONVEX_DEPLOY_KEY`; that belongs to the old Convex deployment.
+
+The workflow is intentionally `workflow_dispatch` only until v3 passes live smoke.
