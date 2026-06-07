@@ -107,6 +107,11 @@ const fallback: AdSceneCandidate = {
 const prompt = buildAdIdeasPrompt(research, 50);
 assert.ok(prompt.includes("STUDY THESE EXAMPLES"));
 assert.ok(prompt.includes("DECIDE HEADLINE TYPE BEFORE WRITING"));
+assert.ok(prompt.includes("CONCRETE HEADLINE TEST"));
+assert.ok(prompt.includes("Do not average the whole brief"));
+assert.ok(prompt.includes("SEO/title restatements"));
+assert.ok(prompt.includes("Use at least 3 different CTA verbs"));
+assert.ok(prompt.includes("Do not repeat the same headline structure more than 3 times in a row"));
 assert.ok(prompt.includes("Return only JSON"));
 assert.ok(prompt.includes(bannedAdWords.join(", ")));
 
@@ -297,5 +302,44 @@ assert.ok(!ecommerceText.includes("Your cart is empty"));
 assert.ok(!ecommerceText.includes("Regular price"));
 assert.ok(!ecommerceText.includes("Loading"));
 assert.ok(ecommerceFallback.every((candidate) => !/#\d+$/.test(candidate.headline)));
+
+const proteinBarResearch: StoredWebsiteResearchResult = {
+  ...research,
+  brand: {
+    ...research.brand,
+    name: "Built",
+    title: "Built | Protein Bars",
+    description: "High-protein snack bars known for a soft, marshmallow-like texture.",
+  },
+  brandBrief: {
+    brandName: "Built",
+    offer: "High-protein snack bars known for a soft, marshmallow-like texture.",
+    audience: "People who want a protein bar that feels closer to a treat than a chore.",
+    buyerMoments: [
+      "Trying to find a protein bar that does not taste like punishment.",
+      "Seeking a limited-edition flavor rotation to keep healthy snacking interesting.",
+    ],
+    proof: [
+      "15-17 grams of protein per bar.",
+      "Soft, marshmallow-like texture.",
+    ],
+    siteLanguage: [
+      "15-17 grams of protein",
+      "Soft, marshmallow-like texture",
+    ],
+    ctaDirection: "Shop protein bars",
+    visualNotes: ["Use bold snack packaging colors."],
+    droppedNoiseSummary: [],
+    confidence: "high",
+  },
+};
+const proteinFallback = buildDeterministicAdCandidates(proteinBarResearch, 8);
+const proteinFallbackText = JSON.stringify(proteinFallback);
+assert.equal(proteinFallback.length, 8);
+assert.ok(!proteinFallbackText.includes("soft, marsh Without"));
+assert.ok(!proteinFallbackText.includes("soft, marsh That"));
+assert.ok(!proteinFallbackText.includes("soft, marsh Worth"));
+assert.ok(proteinFallback.some((candidate) => candidate.headline.includes("15-17 grams")));
+assert.ok(proteinFallback.some((candidate) => candidate.headline.includes("High-protein snack bars")));
 
 console.log("ad-generation tests passed");
