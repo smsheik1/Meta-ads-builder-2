@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
+  BookmarkPlus,
   Check,
   Download,
   ExternalLink,
@@ -21,6 +22,11 @@ import {
 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { updateGeneratedAudioCaptionText } from "@/features/audio/sceneAudio";
+import {
+  createSavedDesignId,
+  type SavedAdSceneDesign,
+} from "@/features/create/savedDesigns";
 import {
   createDefaultSceneLocks,
   rerollScene,
@@ -91,8 +97,21 @@ function ResearchConnected() {
   const [audioError, setAudioError] = useState("");
   const [previewTimeSeconds, setPreviewTimeSeconds] = useState(1.1);
   const [renderError, setRenderError] = useState("");
+  const [anonymousId, setAnonymousId] = useState("");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [saveError, setSaveError] = useState("");
+  const [savedDesignsOpen, setSavedDesignsOpen] = useState(false);
   const [error, setError] = useState("");
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const savedDesigns = useQuery(api.savedDesigns.list, anonymousId ? { anonymousId } : "skip") as SavedAdSceneDesign[] | undefined;
+  const saveDesign = useMutation(api.savedDesigns.saveFromScene);
+  const savedDesignItems = savedDesigns || [];
+
+  useEffect(() => {
+    setAnonymousId(getAnonymousId());
+  }, []);
+
+  const getCurrentAnonymousId = () => anonymousId || getAnonymousId();
 
   const resetPreviewPlayback = useCallback(() => {
     const audio = audioRef.current;
@@ -121,6 +140,11 @@ function ResearchConnected() {
     resetPreviewPlayback();
   };
 
+  const resetSaveState = () => {
+    setSaveStatus("idle");
+    setSaveError("");
+  };
+
   const replaceSelectedScene = useCallback((nextScene: AdScene) => {
     setSelectedScene(nextScene);
     setAdScenes((scenes) => scenes.map((scene, index) => (
@@ -140,6 +164,7 @@ function ResearchConnected() {
     resetRenderState();
     setAudioStatus(next.scene.audio.status === "generated" ? "ready" : "idle");
     setAudioError("");
+    resetSaveState();
   }, [adScenes, resetPreviewPlayback, sceneLocks, selectedScene, selectedSceneIndex]);
 
   const onToggleLock = (key: SceneLockKey) => {
@@ -174,6 +199,7 @@ function ResearchConnected() {
     resetShareState();
     resetRenderState();
     resetAudioState();
+    resetSaveState();
     setAdStatusNote("");
     setError("");
 
@@ -217,6 +243,7 @@ function ResearchConnected() {
       resetShareState();
       resetRenderState();
       resetAudioState();
+      resetSaveState();
       setAdStatusNote(`${nextGeneration.scenes.length} ads ready. Press spacebar to find a stronger version.`);
       setAdStatus("ready");
     } catch (nextError) {
@@ -233,7 +260,7 @@ function ResearchConnected() {
 
     try {
       const share = await createSharePage({
-        anonymousId: getAnonymousId(),
+        anonymousId: getCurrentAnonymousId(),
         scene: selectedScene,
         ctaUrl: selectedScene.brand.url,
       }) as { path: string };
@@ -261,7 +288,7 @@ function ResearchConnected() {
 
     try {
       const result = await generateAudioForScene({
-        anonymousId: getAnonymousId(),
+        anonymousId: getCurrentAnonymousId(),
         scene: selectedScene,
       }) as { scene: AdScene };
       resetPreviewPlayback();
@@ -273,6 +300,63 @@ function ResearchConnected() {
     }
   };
 
+  const onUpdateCaptionText = (captionIndex: number, text: string) => {
+    if (!selectedScene || selectedScene.audio.status !== "generated") return;
+
+    const nextAudio = updateGeneratedAudioCaptionText(selectedScene.audio, captionIndex, text);
+    if (nextAudio === selectedScene.audio) return;
+
+    replaceSelectedScene({
+      ...selectedScene,
+      audio: nextAudio,
+    });
+    resetRenderState();
+    resetShareState();
+    resetSaveState();
+  };
+
+  const onSaveSelectedDesign = async () => {
+    if (!selectedScene) return;
+    setSaveStatus("loading");
+    setSaveError("");
+
+    try {
+      await saveDesign({
+        anonymousId: getCurrentAnonymousId(),
+        scene: selectedScene,
+      });
+      setSaveStatus("ready");
+      setSavedDesignsOpen(true);
+    } catch (nextError) {
+      setSaveStatus("error");
+      setSaveError(nextError instanceof Error ? nextError.message : "Could not save this design.");
+    }
+  };
+
+  const onOpenSavedDesign = (design: SavedAdSceneDesign) => {
+    const existingIndex = adScenes.findIndex((scene) => createSavedDesignId(scene) === design.id);
+
+    resetPreviewPlayback();
+    setSelectedScene(design.scene);
+    setSelectedSceneIndex(existingIndex >= 0 ? existingIndex : 0);
+    if (existingIndex < 0) {
+      setAdScenes((scenes) => [design.scene, ...scenes]);
+    }
+    setAudioStatus(design.scene.audio.status === "generated" ? "ready" : "idle");
+    setAudioError("");
+    resetShareState();
+    resetRenderState();
+    setSaveStatus("ready");
+    setSaveError("");
+    setSavedDesignsOpen(false);
+  };
+
+  const closeSavedDesignsOnBlur = (event: React.FocusEvent<HTMLDivElement>) => {
+    const nextTarget = event.relatedTarget;
+    if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) return;
+    setSavedDesignsOpen(false);
+  };
+
   const onCreateRenderJob = async () => {
     if (!selectedScene) return;
     setRenderStatus("loading");
@@ -281,7 +365,7 @@ function ResearchConnected() {
 
     try {
       const job = await createRenderJob({
-        anonymousId: getAnonymousId(),
+        anonymousId: getCurrentAnonymousId(),
         scene: selectedScene,
       }) as { renderJobId: Id<"renderJobs"> };
       setRenderJobId(job.renderJobId);
@@ -306,6 +390,15 @@ function ResearchConnected() {
           : "Download video";
   const hasGeneratedAudio = selectedScene?.audio.status === "generated";
   const playableAudioUrl = selectedScene?.audio.status === "generated" ? selectedScene.audio.url : "";
+  const generatedCaptions = selectedScene?.audio.status === "generated" ? selectedScene.audio.captions : [];
+  const hasEmptyEditedCaption = generatedCaptions.some((caption) => !caption.text.trim());
+  const selectedSavedDesignId = selectedScene ? createSavedDesignId(selectedScene) : "";
+  const selectedDesignIsSaved = Boolean(selectedSavedDesignId && savedDesignItems.some((design) => design.id === selectedSavedDesignId));
+  const saveStatusLabel = saveStatus === "loading"
+    ? "Saving"
+    : saveStatus === "ready" || selectedDesignIsSaved
+      ? "Saved"
+      : "Save";
   const audioStatusLabel = hasGeneratedAudio
     ? "Audio ready"
     : audioStatus === "loading"
@@ -518,6 +611,80 @@ function ResearchConnected() {
               </a>
             ) : null}
 
+            <div
+              className="relative mt-3"
+              onMouseEnter={() => setSavedDesignsOpen(true)}
+              onMouseLeave={() => setSavedDesignsOpen(false)}
+              onFocus={() => setSavedDesignsOpen(true)}
+              onBlur={closeSavedDesignsOnBlur}
+            >
+              <button
+                type="button"
+                onClick={() => void onSaveSelectedDesign()}
+                disabled={!selectedScene || saveStatus === "loading"}
+                className="inline-flex w-full items-center justify-center gap-3 rounded-[20px] border border-slate-200 bg-white px-5 py-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:text-slate-400"
+                title={selectedDesignIsSaved ? "Saved to designs" : "Save this ad to designs"}
+              >
+                {saveStatus === "loading" ? (
+                  <Loader2 className="size-5 animate-spin" />
+                ) : saveStatus === "ready" || selectedDesignIsSaved ? (
+                  <Check className="size-5 text-emerald-500" />
+                ) : (
+                  <BookmarkPlus className="size-5" />
+                )}
+                {saveStatusLabel}
+                {savedDesignItems.length ? (
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-500">
+                    {Math.min(savedDesignItems.length, 9)}
+                  </span>
+                ) : null}
+              </button>
+
+              {savedDesignsOpen && savedDesignItems.length ? (
+                <div className="absolute right-0 top-full z-[70] w-80 pt-2">
+                  <div className="rounded-[22px] border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-950/15">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Saved ads</p>
+                      <span className="text-[10px] font-black text-slate-400">{savedDesignItems.length}</span>
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      {savedDesignItems.slice(0, 4).map((design) => (
+                        <button
+                          key={design.id}
+                          type="button"
+                          onClick={() => onOpenSavedDesign(design)}
+                          title={`Open ${design.title}`}
+                          className="min-w-0 rounded-2xl border border-slate-200 bg-white p-2 text-left transition hover:border-slate-300 hover:bg-slate-50"
+                        >
+                          <span
+                            className="block h-14 overflow-hidden rounded-xl border border-slate-200"
+                            style={{ backgroundColor: design.scene.style.backgroundColor }}
+                          >
+                            <span
+                              className="mx-auto mt-8 block h-2 w-2/3 rounded-full"
+                              style={{ backgroundColor: design.scene.style.visualizerColor }}
+                            />
+                          </span>
+                          <span className="mt-2 block truncate text-[11px] font-black text-slate-700">
+                            {design.title}
+                          </span>
+                          <span className="mt-0.5 block truncate text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                            {design.format}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            {saveError ? (
+              <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
+                {saveError}
+              </p>
+            ) : null}
+
             {renderBusy ? (
               <p className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 text-xs font-black leading-5 text-slate-500">
                 Render worker is turning this frozen scene into an MP4.
@@ -572,6 +739,44 @@ function ResearchConnected() {
                 <p className="mt-2 text-center text-xs font-black uppercase tracking-[0.14em] text-slate-400">
                   Audio preview syncs captions and visualizer
                 </p>
+              </div>
+            ) : null}
+
+            {hasGeneratedAudio ? (
+              <div className="mt-3 rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
+                      Captions
+                    </p>
+                    <p className="mt-1 text-xs font-black leading-5 text-slate-500">
+                      Fix typos or wording. Timing stays the same.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-slate-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                    Text only
+                  </span>
+                </div>
+                <div className="mt-3 space-y-3">
+                  {generatedCaptions.map((caption, index) => (
+                    <label key={`${caption.startMs}-${caption.endMs}`} className="block">
+                      <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                        Line {index + 1}
+                      </span>
+                      <textarea
+                        value={caption.text}
+                        onChange={(event) => onUpdateCaptionText(index, event.target.value)}
+                        rows={2}
+                        className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black leading-5 text-slate-700 outline-none transition focus:border-slate-950 focus:bg-white"
+                      />
+                    </label>
+                  ))}
+                </div>
+                {hasEmptyEditedCaption ? (
+                  <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-xs font-black leading-5 text-amber-700">
+                    Empty caption lines will disappear from the preview.
+                  </p>
+                ) : null}
               </div>
             ) : null}
 

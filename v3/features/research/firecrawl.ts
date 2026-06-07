@@ -32,7 +32,7 @@ export type FirecrawlPayload = {
 };
 
 const FIRECRAWL_SCRAPE_URL = "https://api.firecrawl.dev/v2/scrape";
-const DEFAULT_TIMEOUT_MS = 30_000;
+export const DEFAULT_FIRECRAWL_TIMEOUT_MS = 60_000;
 const MAX_MARKDOWN_CHARS = 24_000;
 const FIRECRAWL_TIMEOUT_MESSAGE = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const chromeTextPattern = /\b(skip to content|cart is empty|continue shopping|log in|login|check out|checkout|add to cart|quantity|subtotal|loading|have an account|gift message|discount code|multiple addresses?|free shipping not applied|regular price|sale price|sold out|password|newsletter|privacy policy|terms of service)\b/i;
@@ -342,7 +342,7 @@ export const fetchWebsiteResearchWithFirecrawl = async (
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_FIRECRAWL_TIMEOUT_MS);
 
   try {
     const response = await (options.fetcher ?? fetch)(FIRECRAWL_SCRAPE_URL, {

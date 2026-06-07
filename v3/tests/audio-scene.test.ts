@@ -6,6 +6,7 @@ import {
   createGeneratedSceneAudio,
   createVoiceoverLines,
   getVisibleCaptionText,
+  updateGeneratedAudioCaptionText,
 } from "../features/audio/sceneAudio";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import { getAdSceneDurationInFrames } from "../remotion-entry/Root";
@@ -32,6 +33,17 @@ assert.ok(captions.length >= 2);
 assert.equal(getVisibleCaptionText(audio, 0.1), captions[0]!.text);
 assert.equal(getVisibleCaptionText(audio, 10), captions[0]!.text);
 assert.ok(getAdSceneDurationInFrames(scene) > 60 * 6);
+
+const editedAudio = updateGeneratedAudioCaptionText(audio, 0, "ChatGPT, not ChatGP");
+assert.equal(editedAudio.status, "generated");
+if (editedAudio.status === "generated") {
+  assert.equal(editedAudio.captions[0]!.text, "ChatGPT, not ChatGP");
+  assert.equal(editedAudio.captions[0]!.startMs, captions[0]!.startMs);
+  assert.equal(editedAudio.captions[0]!.endMs, captions[0]!.endMs);
+  assert.equal(editedAudio.captions[1]!.text, captions[1]!.text);
+  assert.ok(editedAudio.transcript.includes("ChatGPT, not ChatGP"));
+}
+assert.equal(updateGeneratedAudioCaptionText(audio, 99, "Ignored"), audio);
 
 const html = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene,
