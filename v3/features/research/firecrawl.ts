@@ -17,6 +17,7 @@ export type FirecrawlOptions = {
   apiKey?: string;
   fetcher?: Fetcher;
   timeoutMs?: number;
+  includeScreenshot?: boolean;
   curator?: BrandCuratorOptions;
 };
 
@@ -311,15 +312,18 @@ export const normalizeFirecrawlPayload = (
   };
 };
 
-export const firecrawlRequestShape = (url: string) => ({
+export const firecrawlRequestShape = (
+  url: string,
+  options: Pick<FirecrawlOptions, "includeScreenshot"> = {},
+) => ({
   url,
   formats: [
     "markdown",
     "branding",
-    {
+    ...(options.includeScreenshot ? [{
       type: "screenshot",
       fullPage: true,
-    },
+    }] : []),
   ],
   onlyMainContent: true,
   removeBase64Images: true,
@@ -347,7 +351,9 @@ export const fetchWebsiteResearchWithFirecrawl = async (
         authorization: `Bearer ${apiKey}`,
         "content-type": "application/json",
       },
-      body: JSON.stringify(firecrawlRequestShape(websiteUrl.href)),
+      body: JSON.stringify(firecrawlRequestShape(websiteUrl.href, {
+        includeScreenshot: options.includeScreenshot,
+      })),
       signal: controller.signal,
     });
 

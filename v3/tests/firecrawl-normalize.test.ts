@@ -62,12 +62,21 @@ const shape = firecrawlRequestShape("https://ogtool.com/");
 assert.deepEqual(shape.formats, [
   "markdown",
   "branding",
+]);
+assert.equal(shape.onlyMainContent, true);
+
+const shapeWithScreenshot = firecrawlRequestShape("https://ogtool.com/", {
+  includeScreenshot: true,
+});
+assert.deepEqual(shapeWithScreenshot.formats, [
+  "markdown",
+  "branding",
   {
     type: "screenshot",
     fullPage: true,
   },
 ]);
-assert.equal(shape.onlyMainContent, true);
+assert.equal(shapeWithScreenshot.onlyMainContent, true);
 
 assert.equal(isWebsiteChromeText("Continue shopping"), true);
 assert.equal(isWebsiteChromeText("Regular price~~$0.00~~Sale price"), true);
