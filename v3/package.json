@@ -8,9 +8,12 @@
     "build": "next build",
     "start": "next start -p 3020",
     "typecheck": "tsc --noEmit",
-    "test": "tsx tests/research-url.test.ts && tsx tests/firecrawl-normalize.test.ts && tsx tests/ad-generation.test.ts && tsx tests/render-surface.test.tsx && tsx tests/reroll.test.ts && tsx tests/share-scene.test.ts",
+    "test": "tsx tests/research-url.test.ts && tsx tests/firecrawl-normalize.test.ts && tsx tests/ad-generation.test.ts && tsx tests/render-surface.test.tsx && tsx tests/reroll.test.ts && tsx tests/share-scene.test.ts && tsx tests/render-job.test.ts",
     "convex:dev": "convex dev",
-    "convex:codegen": "convex codegen"
+    "convex:codegen": "convex codegen",
+    "render-worker": "tsx scripts/render-worker.ts",
+    "render-worker:watch": "tsx scripts/render-worker.ts --watch",
+    "remotion:still": "remotion still remotion-entry/index.ts AdSceneMp4 tmp/adscene-still.png --frame=66 --scale=0.25"
   },
   "dependencies": {
     "@google/genai": "^2.8.0",
