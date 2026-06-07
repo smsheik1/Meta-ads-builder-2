@@ -42,13 +42,15 @@ test('freeze docs name legacy create as the active product path', () => {
 
 test('legacy create app has no browser recorder fallback renderer', () => {
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const createPageSource = fs.readFileSync(path.join(repoRoot, 'src', 'features', 'create', 'CreatePage.tsx'), 'utf8');
+  const legacyCreateSource = `${appSource}\n${createPageSource}`;
   const serverSource = fs.readFileSync(path.join(repoRoot, 'server.ts'), 'utf8');
   const packageSource = fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8');
 
-  expect(appSource).not.toContain('canvas.captureStream');
-  expect(appSource).not.toContain('new MediaRecorder');
-  expect(appSource).not.toContain('Browser recorder fallback');
-  expect(appSource).not.toContain('/api/convert-to-mp4');
+  expect(legacyCreateSource).not.toContain('canvas.captureStream');
+  expect(legacyCreateSource).not.toContain('new MediaRecorder');
+  expect(legacyCreateSource).not.toContain('Browser recorder fallback');
+  expect(legacyCreateSource).not.toContain('/api/convert-to-mp4');
   expect(serverSource).not.toContain('/api/convert-to-mp4');
   expect(serverSource).not.toContain('uploadDisk');
   expect(serverSource).not.toContain('fluent-ffmpeg');
@@ -65,19 +67,46 @@ test('legacy create website research timeout matches the server research budget'
 
 test('legacy create app no longer carries dead phone-call or Postiz branches', () => {
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const createPageSource = fs.readFileSync(path.join(repoRoot, 'src', 'features', 'create', 'CreatePage.tsx'), 'utf8');
+  const legacyCreateSource = `${appSource}\n${createPageSource}`;
   const serverSource = fs.readFileSync(path.join(repoRoot, 'server.ts'), 'utf8');
 
-  expect(appSource).not.toContain('creativeMode');
-  expect(appSource).not.toContain('phone-call');
-  expect(appSource).not.toContain('PhoneCallSimulator');
-  expect(appSource).not.toContain('SOCIAL_POSTING_ENABLED');
-  expect(appSource).not.toContain('postiz');
-  expect(appSource).not.toContain('Postiz');
+  expect(legacyCreateSource).not.toContain('creativeMode');
+  expect(legacyCreateSource).not.toContain('phone-call');
+  expect(legacyCreateSource).not.toContain('PhoneCallSimulator');
+  expect(legacyCreateSource).not.toContain('SOCIAL_POSTING_ENABLED');
+  expect(legacyCreateSource).not.toContain('postiz');
+  expect(legacyCreateSource).not.toContain('Postiz');
   expect(serverSource).not.toContain('/api/postiz');
   expect(serverSource).not.toContain('Postiz');
   expect(serverSource).not.toContain('postiz');
   expect(serverSource).not.toContain('POSTIZ');
   expect(serverSource).not.toContain('uploadPostiz');
+});
+
+test('legacy create page lives behind a slim route shell', () => {
+  const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const createPagePath = path.join(repoRoot, 'src', 'features', 'create', 'CreatePage.tsx');
+  const createPageSource = fs.readFileSync(createPagePath, 'utf8');
+
+  expect(fs.existsSync(createPagePath)).toBe(true);
+  expect(appSource).toContain("from './features/create/CreatePage'");
+  expect(appSource).toContain('<CreatePage');
+  expect(appSource.split(/\r?\n/).length).toBeLessThanOrEqual(750);
+
+  [
+    '<CreateFlow',
+    '<CreateSidebar',
+    '<CreatePreviewStage',
+    '<CreateDesignLibrary',
+    'useCreateMediaController({',
+    'useCreateVoiceController({',
+    'useCreateExportController({',
+    'buildGeneratedAdApplication({',
+  ].forEach((createInternal) => {
+    expect(appSource).not.toContain(createInternal);
+    expect(createPageSource).toContain(createInternal);
+  });
 });
 
 test('legacy create render path has no phone-call composition branch', () => {
@@ -140,13 +169,16 @@ test('legacy create formats are centralized before adding new ad formats', () =>
 test('legacy create saved-design persistence lives outside App', () => {
   const savedDesignsPath = path.join(repoRoot, 'src', 'features', 'create', 'createSavedDesigns.ts');
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const createPageSource = fs.readFileSync(path.join(repoRoot, 'src', 'features', 'create', 'CreatePage.tsx'), 'utf8');
   const savedDesignsSource = fs.readFileSync(savedDesignsPath, 'utf8');
 
   expect(fs.existsSync(savedDesignsPath)).toBe(true);
-  expect(appSource).toContain("from './features/create/createSavedDesigns'");
+  expect(appSource).not.toContain('createSavedDesigns');
+  expect(createPageSource).toContain("from './createSavedDesigns'");
   expect(appSource).not.toContain("from './lib/ad-history'");
-  expect(appSource).not.toContain("const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1'");
-  expect(appSource).not.toContain('const captureMediaBlob');
+  expect(createPageSource).not.toContain("from '../../lib/ad-history'");
+  expect(createPageSource).not.toContain("const TEMPLATE_STORAGE_KEY = 'visualizer_ad_templates_v1'");
+  expect(createPageSource).not.toContain('const captureMediaBlob');
   expect(savedDesignsSource).toContain('loadSavedTemplates');
   expect(savedDesignsSource).toContain('persistSavedTemplates');
   expect(savedDesignsSource).toContain('hydrateStoredMedia');
@@ -157,6 +189,7 @@ test('legacy create saved-design persistence lives outside App', () => {
 test('legacy create export media helpers live outside App', () => {
   const exportMediaPath = path.join(repoRoot, 'src', 'features', 'create', 'createExportMedia.ts');
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const createPageSource = fs.readFileSync(path.join(repoRoot, 'src', 'features', 'create', 'CreatePage.tsx'), 'utf8');
   const exportMediaSource = fs.readFileSync(exportMediaPath, 'utf8');
   const exportControllerSource = fs.readFileSync(
     path.join(repoRoot, 'src', 'features', 'create', 'useCreateExportController.ts'),
@@ -164,15 +197,16 @@ test('legacy create export media helpers live outside App', () => {
   );
 
   expect(fs.existsSync(exportMediaPath)).toBe(true);
-  expect(appSource).toContain("from './features/create/createExportMedia'");
+  expect(appSource).not.toContain('createExportMedia');
+  expect(createPageSource).toContain("from './createExportMedia'");
   expect(appSource).not.toContain('const tryRemotionExport');
   expect(exportControllerSource).toContain('const tryRemotionExport');
-  expect(appSource).not.toContain('const getRemotionUploadExtension');
-  expect(appSource).not.toContain('const appendMediaForRemotion');
-  expect(appSource).not.toContain('const removeWhiteFromImageBlob');
-  expect(appSource).not.toContain('const MIN_VALID_MP4_BYTES');
-  expect(appSource).not.toContain('const isValidMp4Blob');
-  expect(appSource).not.toContain('const formatBytes');
+  expect(createPageSource).not.toContain('const getRemotionUploadExtension');
+  expect(createPageSource).not.toContain('const appendMediaForRemotion');
+  expect(createPageSource).not.toContain('const removeWhiteFromImageBlob');
+  expect(createPageSource).not.toContain('const MIN_VALID_MP4_BYTES');
+  expect(createPageSource).not.toContain('const isValidMp4Blob');
+  expect(createPageSource).not.toContain('const formatBytes');
   expect(exportMediaSource).toContain('getMediaDurationSeconds');
   expect(exportMediaSource).toContain('appendMediaForRemotion');
   expect(exportMediaSource).toContain('ensureValidMp4Blob');
@@ -182,18 +216,21 @@ test('legacy create export media helpers live outside App', () => {
 test('legacy create export and share state lives in controller hook', () => {
   const controllerPath = path.join(repoRoot, 'src', 'features', 'create', 'useCreateExportController.ts');
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const createPageSource = fs.readFileSync(path.join(repoRoot, 'src', 'features', 'create', 'CreatePage.tsx'), 'utf8');
   const controllerSource = fs.readFileSync(controllerPath, 'utf8');
 
   expect(fs.existsSync(controllerPath)).toBe(true);
-  expect(appSource).toContain("from './features/create/useCreateExportController'");
-  expect(appSource).toContain('const createRemotionSnapshot');
+  expect(appSource).not.toContain('useCreateExportController');
+  expect(createPageSource).toContain("from './useCreateExportController'");
+  expect(createPageSource).toContain('const createRemotionSnapshot');
   expect(appSource).not.toContain("from './features/share/useShareLink'");
-  expect(appSource).not.toContain('const [rendering, setRendering]');
-  expect(appSource).not.toContain('const [exportDownload, setExportDownload]');
-  expect(appSource).not.toContain('const [shareStatus, setShareStatus]');
-  expect(appSource).not.toContain('const cancelExport');
-  expect(appSource).not.toContain('const downloadSimulatedVideo');
-  expect(appSource).not.toContain('const saveExportToHistoryOnce');
+  expect(createPageSource).not.toContain("from '../../features/share/useShareLink'");
+  expect(createPageSource).not.toContain('const [rendering, setRendering]');
+  expect(createPageSource).not.toContain('const [exportDownload, setExportDownload]');
+  expect(createPageSource).not.toContain('const [shareStatus, setShareStatus]');
+  expect(createPageSource).not.toContain('const cancelExport');
+  expect(createPageSource).not.toContain('const downloadSimulatedVideo');
+  expect(createPageSource).not.toContain('const saveExportToHistoryOnce');
   expect(controllerSource).toContain('useShareLink');
   expect(controllerSource).toContain('const [rendering, setRendering]');
   expect(controllerSource).toContain('const [exportDownload, setExportDownload]');
@@ -207,18 +244,21 @@ test('legacy create voice wizard markup and helpers live outside App', () => {
   const voiceWizardPath = path.join(repoRoot, 'src', 'features', 'create', 'CreateVoiceWizard.tsx');
   const voiceScriptsPath = path.join(repoRoot, 'src', 'features', 'create', 'createVoiceScripts.ts');
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const createPageSource = fs.readFileSync(path.join(repoRoot, 'src', 'features', 'create', 'CreatePage.tsx'), 'utf8');
   const voiceWizardSource = fs.readFileSync(voiceWizardPath, 'utf8');
   const voiceScriptsSource = fs.readFileSync(voiceScriptsPath, 'utf8');
 
   expect(fs.existsSync(voiceWizardPath)).toBe(true);
   expect(fs.existsSync(voiceScriptsPath)).toBe(true);
-  expect(appSource).toContain("from './features/create/CreateVoiceWizard'");
-  expect(appSource).toContain("from './features/create/createVoiceScripts'");
+  expect(appSource).not.toContain('CreateVoiceWizard');
+  expect(appSource).not.toContain('createVoiceScripts');
+  expect(createPageSource).toContain("from './CreateVoiceWizard'");
+  expect(createPageSource).toContain("from './createVoiceScripts'");
   expect(appSource).not.toContain('const formatDialogueScriptCost');
   expect(appSource).not.toContain('const cleanDialogueScriptForVoiceover');
   expect(appSource).not.toContain('const captionsFromDialogueScript');
   expect(appSource).not.toContain('Check the business info, choose the words, edit anything, then make the audio.');
-  expect(appSource.match(/\{voiceWizardModal\}/g)?.length).toBe(2);
+  expect(createPageSource.match(/\{voiceWizardModal\}/g)?.length).toBe(2);
   expect(voiceWizardSource).toContain('Make Voice Audio');
   expect(voiceWizardSource).toContain('Check the business info, choose the words, edit anything, then make the audio.');
   expect(voiceScriptsSource).toContain('formatDialogueScriptCost');
@@ -229,10 +269,12 @@ test('legacy create voice wizard markup and helpers live outside App', () => {
 test('legacy create voice controller state lives outside App', () => {
   const voiceControllerPath = path.join(repoRoot, 'src', 'features', 'create', 'useCreateVoiceController.ts');
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const createPageSource = fs.readFileSync(path.join(repoRoot, 'src', 'features', 'create', 'CreatePage.tsx'), 'utf8');
   const voiceControllerSource = fs.readFileSync(voiceControllerPath, 'utf8');
 
   expect(fs.existsSync(voiceControllerPath)).toBe(true);
-  expect(appSource).toContain("from './features/create/useCreateVoiceController'");
+  expect(appSource).not.toContain('useCreateVoiceController');
+  expect(createPageSource).toContain("from './useCreateVoiceController'");
   expect(appSource).not.toContain('const [dialogueScripts, setDialogueScripts]');
   expect(appSource).not.toContain('const [conversationWizardOpen, setConversationWizardOpen]');
   expect(appSource).not.toContain('const handleGenerateDialogueScripts');
@@ -253,6 +295,7 @@ test('legacy create generated ad application logic lives outside App', () => {
   const visualizerTemplatePath = path.join(repoRoot, 'src', 'features', 'create', 'templates', 'visualizerTemplate.ts');
   const conversationTemplatePath = path.join(repoRoot, 'src', 'features', 'create', 'templates', 'conversationTemplate.ts');
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const createPageSource = fs.readFileSync(path.join(repoRoot, 'src', 'features', 'create', 'CreatePage.tsx'), 'utf8');
   const applicationSource = fs.readFileSync(applicationPath, 'utf8');
   const templateRegistrySource = fs.readFileSync(templateRegistryPath, 'utf8');
   const visualizerTemplateSource = fs.readFileSync(visualizerTemplatePath, 'utf8');
@@ -263,8 +306,10 @@ test('legacy create generated ad application logic lives outside App', () => {
   expect(fs.existsSync(templateRegistryPath)).toBe(true);
   expect(fs.existsSync(visualizerTemplatePath)).toBe(true);
   expect(fs.existsSync(conversationTemplatePath)).toBe(true);
-  expect(appSource).toContain("from './features/create/createAdApplication'");
-  expect(appSource).toContain('buildGeneratedAdApplication({');
+  expect(appSource).not.toContain('createAdApplication');
+  expect(appSource).not.toContain('buildGeneratedAdApplication({');
+  expect(createPageSource).toContain("from './createAdApplication'");
+  expect(createPageSource).toContain('buildGeneratedAdApplication({');
   expect(appSource).not.toContain('const applyVariationToElement');
   expect(appSource).not.toContain("variation.format === 'conversation'");
   expect(appSource).not.toContain('const buildConversationAdElements');
@@ -287,6 +332,7 @@ test('legacy create generated ad application logic lives outside App', () => {
 
 test('legacy create preview and design library UI live outside App', () => {
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const createPageSource = fs.readFileSync(path.join(repoRoot, 'src', 'features', 'create', 'CreatePage.tsx'), 'utf8');
   const previewStagePath = path.join(repoRoot, 'src', 'features', 'create', 'components', 'CreatePreviewStage.tsx');
   const designLibraryPath = path.join(repoRoot, 'src', 'features', 'create', 'components', 'CreateDesignLibrary.tsx');
   const previewStageSource = fs.readFileSync(previewStagePath, 'utf8');
@@ -294,13 +340,15 @@ test('legacy create preview and design library UI live outside App', () => {
 
   expect(fs.existsSync(previewStagePath)).toBe(true);
   expect(fs.existsSync(designLibraryPath)).toBe(true);
-  expect(appSource).toContain("from './features/create/components/CreatePreviewStage'");
-  expect(appSource).toContain("from './features/create/components/CreateDesignLibrary'");
-  expect(appSource).toContain('<CreatePreviewStage');
-  expect(appSource).toContain('<CreateDesignLibrary');
+  expect(appSource).not.toContain('CreatePreviewStage');
+  expect(appSource).not.toContain('CreateDesignLibrary');
+  expect(createPageSource).toContain("from './components/CreatePreviewStage'");
+  expect(createPageSource).toContain("from './components/CreateDesignLibrary'");
+  expect(createPageSource).toContain('<CreatePreviewStage');
+  expect(createPageSource).toContain('<CreateDesignLibrary');
   expect(appSource).not.toContain('const TemplatePreview');
-  expect(appSource).not.toContain('className="wiggly-studio flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden px-4 py-5"');
-  expect(appSource).not.toContain('className="wiggly-library hidden w-72 shrink-0 flex-col overflow-hidden xl:flex"');
+  expect(createPageSource).not.toContain('className="wiggly-studio flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden px-4 py-5"');
+  expect(createPageSource).not.toContain('className="wiggly-library hidden w-72 shrink-0 flex-col overflow-hidden xl:flex"');
   expect(previewStageSource).toContain('export const CreatePreviewStage');
   expect(previewStageSource).toContain('CanvasEditor');
   expect(designLibrarySource).toContain('export const CreateDesignLibrary');
@@ -309,16 +357,18 @@ test('legacy create preview and design library UI live outside App', () => {
 
 test('legacy create sidebar panels live outside App', () => {
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const createPageSource = fs.readFileSync(path.join(repoRoot, 'src', 'features', 'create', 'CreatePage.tsx'), 'utf8');
   const sidebarPath = path.join(repoRoot, 'src', 'features', 'create', 'components', 'CreateSidebar.tsx');
   const sidebarSource = fs.readFileSync(sidebarPath, 'utf8');
 
   expect(fs.existsSync(sidebarPath)).toBe(true);
-  expect(appSource).toContain("from './features/create/components/CreateSidebar'");
-  expect(appSource).toContain('<CreateSidebar');
+  expect(appSource).not.toContain('CreateSidebar');
+  expect(createPageSource).toContain("from './components/CreateSidebar'");
+  expect(createPageSource).toContain('<CreateSidebar');
   expect(appSource).not.toContain('const HexColorInput');
-  expect(appSource).not.toContain('className="wiggly-sidebar hidden w-80 shrink-0 flex-col gap-4 overflow-y-auto overflow-x-hidden lg:flex"');
-  expect(appSource).not.toContain('<PropertiesPanel />');
-  expect(appSource).not.toContain('<DevTuningPanel />');
+  expect(createPageSource).not.toContain('className="wiggly-sidebar hidden w-80 shrink-0 flex-col gap-4 overflow-y-auto overflow-x-hidden lg:flex"');
+  expect(createPageSource).not.toContain('<PropertiesPanel />');
+  expect(createPageSource).not.toContain('<DevTuningPanel />');
   expect(sidebarSource).toContain('export const CreateSidebar');
   expect(sidebarSource).toContain('const HexColorInput');
   expect(sidebarSource).toContain('<PropertiesPanel />');
@@ -327,16 +377,18 @@ test('legacy create sidebar panels live outside App', () => {
 
 test('legacy create audio and media controller logic lives outside App', () => {
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const createPageSource = fs.readFileSync(path.join(repoRoot, 'src', 'features', 'create', 'CreatePage.tsx'), 'utf8');
   const mediaControllerPath = path.join(repoRoot, 'src', 'features', 'create', 'useCreateMediaController.ts');
   const mediaControllerSource = fs.readFileSync(mediaControllerPath, 'utf8');
 
   expect(fs.existsSync(mediaControllerPath)).toBe(true);
-  expect(appSource).toContain("from './features/create/useCreateMediaController'");
-  expect(appSource).toContain('useCreateMediaController({');
+  expect(appSource).not.toContain('useCreateMediaController');
+  expect(createPageSource).toContain("from './useCreateMediaController'");
+  expect(createPageSource).toContain('useCreateMediaController({');
   expect(appSource).not.toContain('const getAudioSignalStats');
   expect(appSource).not.toContain('const rememberAudioBlob');
-  expect(appSource).not.toContain('const audioLibraryItems');
-  expect(appSource).not.toContain('const updateCreateCaptions =');
+  expect(createPageSource).not.toContain('const audioLibraryItems');
+  expect(createPageSource).not.toContain('const updateCreateCaptions =');
   expect(appSource).not.toContain('TRANSCRIPTION_BACKOFF_KEY');
   expect(appSource).not.toContain('CURRENT_AUDIO_STORAGE_KEY');
   expect(mediaControllerSource).toContain('export function useCreateMediaController');
