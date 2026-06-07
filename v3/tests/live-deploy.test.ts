@@ -35,6 +35,10 @@ assert.ok(script.includes("CONVEX_DEPLOY_KEY=\"$V3_CONVEX_DEPLOY_KEY\""), "scrip
 assert.ok(script.includes("V3_PUBLIC_HOST"), "v3 deploy script must own the optional public host route.");
 assert.ok(script.includes("proxy_pass http://127.0.0.1:$V3_PORT"), "v3 public host must proxy to the v3 app port.");
 assert.ok(script.includes("/etc/letsencrypt/live/$V3_PUBLIC_HOST"), "v3 deploy script must preserve HTTPS when a cert exists.");
+assert.ok(
+  script.includes('sudo test -f "$V3_CERT_FULLCHAIN"') && script.includes('sudo test -f "$V3_CERT_PRIVKEY"'),
+  "v3 deploy script must check root-owned Let's Encrypt cert files with sudo.",
+);
 assert.ok(!script.includes("apps/web"), "v3 deploy script must not deploy the legacy web app.");
 assert.ok(!script.includes("deploy-oracle.sh"), "v3 deploy script must not shell into legacy deploy script.");
 assert.ok(packageJson.scripts["runtime:health"], "v3 package must expose runtime health.");
