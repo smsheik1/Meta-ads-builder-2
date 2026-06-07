@@ -1,0 +1,44 @@
+name: Deploy v3 to Oracle
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: oracle-v3-production
+  cancel-in-progress: true
+
+jobs:
+  deploy-v3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DEPLOY_BRANCH: main
+      V3_CONVEX_DEPLOY_KEY: ${{ secrets.V3_CONVEX_DEPLOY_KEY }}
+      V3_CONVEX_URL: ${{ vars.V3_CONVEX_URL || 'https://wry-viper-639.convex.cloud' }}
+      NEXT_PUBLIC_V3_CONVEX_URL: ${{ vars.NEXT_PUBLIC_V3_CONVEX_URL || 'https://wry-viper-639.convex.cloud' }}
+      NEXT_PUBLIC_V3_CONVEX_SITE_URL: ${{ vars.NEXT_PUBLIC_V3_CONVEX_SITE_URL || 'https://wry-viper-639.convex.site' }}
+      FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      TTS_MODEL: gemini-3.1-flash-tts-preview
+      V3_PORT: "3020"
+      PM2_V3_APP_NAME: wiggly-v3
+      PM2_V3_WORKER_APP_NAME: wiggly-v3-render-worker
+
+    steps:
+      - name: Deploy v3 over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USER }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          envs: DEPLOY_BRANCH,V3_CONVEX_DEPLOY_KEY,V3_CONVEX_URL,NEXT_PUBLIC_V3_CONVEX_URL,NEXT_PUBLIC_V3_CONVEX_SITE_URL,FIRECRAWL_API_KEY,GEMINI_API_KEY,OPENROUTER_API_KEY,TTS_MODEL,V3_PORT,PM2_V3_APP_NAME,PM2_V3_WORKER_APP_NAME
+          script_stop: true
+          script: |
+            set -euo pipefail
+            cd /home/ubuntu/Meta-ads-builder-2
+            git fetch origin "$DEPLOY_BRANCH"
+            git checkout "$DEPLOY_BRANCH"
+            git pull --ff-only origin "$DEPLOY_BRANCH"
+            chmod +x scripts/deploy-v3-oracle.sh
+            bash scripts/deploy-v3-oracle.sh
