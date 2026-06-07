@@ -103,6 +103,7 @@ function ResearchConnected() {
   const [selectedDialogueIndex, setSelectedDialogueIndex] = useState(0);
   const [dialogueError, setDialogueError] = useState("");
   const [previewTimeSeconds, setPreviewTimeSeconds] = useState(1.1);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [renderError, setRenderError] = useState("");
   const [anonymousId, setAnonymousId] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -121,6 +122,7 @@ function ResearchConnected() {
   const getCurrentAnonymousId = () => anonymousId || getAnonymousId();
 
   const resetPreviewPlayback = useCallback(() => {
+    setIsAudioPlaying(false);
     const audio = audioRef.current;
     if (audio) {
       audio.pause();
@@ -203,6 +205,41 @@ function ResearchConnected() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [adScenes.length, onRerollScene]);
+
+  useEffect(() => {
+    if (!selectedScene) return;
+
+    const shouldRunClock = selectedScene.audio.status !== "generated" || isAudioPlaying;
+    if (!shouldRunClock) return;
+
+    let animationFrame = 0;
+    const initialTimeSeconds = selectedScene.audio.status === "generated"
+      ? audioRef.current?.currentTime || 0
+      : 1.1;
+    const startedAt = performance.now() - initialTimeSeconds * 1000;
+
+    const tick = (now: number) => {
+      if (selectedScene.audio.status === "generated") {
+        const currentAudio = audioRef.current;
+        if (currentAudio && !currentAudio.paused) {
+          setPreviewTimeSeconds(currentAudio.currentTime);
+          animationFrame = window.requestAnimationFrame(tick);
+        }
+        return;
+      }
+
+      setPreviewTimeSeconds(((now - startedAt) / 1000) % 60);
+      animationFrame = window.requestAnimationFrame(tick);
+    };
+
+    animationFrame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [
+    isAudioPlaying,
+    selectedScene?.audio.status,
+    selectedScene?.metadata.candidateIndex,
+    selectedScene?.metadata.generationBatchId,
+  ]);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -898,10 +935,18 @@ function ResearchConnected() {
                   controls
                   preload="metadata"
                   src={playableAudioUrl}
+                  onPlay={() => {
+                    setIsAudioPlaying(true);
+                  }}
+                  onPause={(event) => {
+                    setIsAudioPlaying(false);
+                    setPreviewTimeSeconds(event.currentTarget.currentTime || 1.1);
+                  }}
                   onTimeUpdate={(event) => {
                     setPreviewTimeSeconds(event.currentTarget.currentTime);
                   }}
                   onEnded={() => {
+                    setIsAudioPlaying(false);
                     if (audioRef.current) audioRef.current.currentTime = 0;
                     setPreviewTimeSeconds(1.1);
                   }}
