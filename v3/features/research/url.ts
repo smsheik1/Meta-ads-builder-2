@@ -7,19 +7,18 @@ export const normalizeWebsiteUrl = (value: string): URL => {
   }
 
   const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-  const url = new URL(withProtocol);
+  const parsed = new URL(withProtocol);
 
-  if (url.protocol !== "https:" && url.protocol !== "http:") {
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
     throw new Error("Only http and https websites can be researched.");
   }
 
-  url.hash = "";
-  url.username = "";
-  url.password = "";
-  url.hostname = url.hostname.toLowerCase();
-  if (!url.pathname) url.pathname = "/";
+  const host = parsed.hostname.toLowerCase();
+  const hostname = host.includes(":") && !host.startsWith("[") ? `[${host}]` : host;
+  const port = parsed.port ? `:${parsed.port}` : "";
+  const pathname = parsed.pathname || "/";
 
-  return url;
+  return new URL(`${parsed.protocol}//${hostname}${port}${pathname}${parsed.search}`);
 };
 
 const parseIPv4 = (host: string) => {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAction } from "convex/react";
 import { Loader2, Search, ShieldAlert } from "lucide-react";
+import { api } from "@/convex/_generated/api";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
 
 const anonymousIdKey = "wiggly:v3:anonymous-id";
@@ -20,7 +21,7 @@ const getAnonymousId = () => {
 const pillClass = "rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-slate-400 shadow-sm";
 
 function ResearchConnected() {
-  const runWebsiteResearch = useAction("researchRuns:runWebsiteResearch" as any);
+  const runWebsiteResearch = useAction(api.researchRuns.runWebsiteResearch);
   const [url, setUrl] = useState("ogtool.com");
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [result, setResult] = useState<StoredWebsiteResearchResult | null>(null);

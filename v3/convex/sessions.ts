@@ -1,7 +1,7 @@
-import { internalMutationGeneric as internalMutation, queryGeneric as query } from "convex/server";
+import { internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
-export const ensureAnonymousSession = internalMutation({
+export const ensureAnonymousSession: ReturnType<typeof internalMutation> = internalMutation({
   args: {
     anonymousId: v.string(),
   },
@@ -25,7 +25,7 @@ export const ensureAnonymousSession = internalMutation({
   },
 });
 
-export const getByAnonymousId = query({
+export const getByAnonymousId: ReturnType<typeof query> = query({
   args: {
     anonymousId: v.string(),
   },
