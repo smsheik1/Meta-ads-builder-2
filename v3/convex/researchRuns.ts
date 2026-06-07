@@ -33,10 +33,18 @@ export const runWebsiteResearch: ReturnType<typeof action> = action({
       };
     } catch (error) {
       const message = toWebsiteResearchErrorMessage(error);
-      await ctx.runMutation(internal.researchStorage.saveFailed, {
-        researchRunId,
-        error: message,
-      });
+      try {
+        await ctx.runMutation(internal.researchStorage.saveFailed, {
+          researchRunId,
+          error: message,
+        });
+      } catch (saveError) {
+        console.warn("Could not save failed research run.", {
+          researchRunId,
+          originalError: message,
+          saveError: toWebsiteResearchErrorMessage(saveError),
+        });
+      }
 
       return {
         status: "failed" as const,

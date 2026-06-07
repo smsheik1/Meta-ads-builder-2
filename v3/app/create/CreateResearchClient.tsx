@@ -48,12 +48,19 @@ const getAnonymousId = () => {
 };
 
 const pillClass = "rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-slate-400 shadow-sm";
+const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
 
   const tagName = target.tagName.toLowerCase();
   return target.isContentEditable || tagName === "input" || tagName === "textarea" || tagName === "select";
+}
+
+function getResearchActionErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || "");
+  if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) return researchTimeoutMessage;
+  return message || "Website research failed.";
 }
 
 function ResearchConnected() {
@@ -182,7 +189,7 @@ function ResearchConnected() {
       setStatus("ready");
     } catch (nextError) {
       setStatus("error");
-      setError(nextError instanceof Error ? nextError.message : "Website research failed.");
+      setError(getResearchActionErrorMessage(nextError));
     }
   };
 
