@@ -1,8 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useAction } from "convex/react";
-import { Loader2, Lock, RefreshCw, Search, ShieldAlert, Sparkles, Unlock, Wand2 } from "lucide-react";
+import { useAction, useMutation } from "convex/react";
+import {
+  Check,
+  ExternalLink,
+  Link2,
+  Loader2,
+  Lock,
+  RefreshCw,
+  Search,
+  ShieldAlert,
+  Sparkles,
+  Unlock,
+  Wand2,
+} from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import {
@@ -40,9 +52,11 @@ function isEditableTarget(target: EventTarget | null): boolean {
 function ResearchConnected() {
   const runWebsiteResearch = useAction(api.researchRuns.runWebsiteResearch);
   const generateAdScenes = useAction(api.adScenes.generateFromResearch);
+  const createSharePage = useMutation(api.sharePages.createFromScene);
   const [url, setUrl] = useState("ogtool.com");
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [adStatus, setAdStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [shareStatus, setShareStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [result, setResult] = useState<StoredWebsiteResearchResult | null>(null);
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
@@ -50,7 +64,15 @@ function ResearchConnected() {
   const [sceneLocks, setSceneLocks] = useState(createDefaultSceneLocks);
   const [rerollCount, setRerollCount] = useState(0);
   const [adStatusNote, setAdStatusNote] = useState("");
+  const [shareUrl, setShareUrl] = useState("");
+  const [shareError, setShareError] = useState("");
   const [error, setError] = useState("");
+
+  const resetShareState = () => {
+    setShareStatus("idle");
+    setShareUrl("");
+    setShareError("");
+  };
 
   const onRerollScene = useCallback(() => {
     const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, sceneLocks);
@@ -59,6 +81,7 @@ function ResearchConnected() {
     setSelectedScene(next.scene);
     setSelectedSceneIndex(next.index);
     setRerollCount((count) => count + 1);
+    resetShareState();
   }, [adScenes, sceneLocks, selectedScene, selectedSceneIndex]);
 
   const onToggleLock = (key: SceneLockKey) => {
@@ -90,6 +113,7 @@ function ResearchConnected() {
     setSelectedSceneIndex(0);
     setSceneLocks(createDefaultSceneLocks());
     setRerollCount(0);
+    resetShareState();
     setAdStatusNote("");
     setError("");
 
@@ -125,6 +149,7 @@ function ResearchConnected() {
       setSelectedSceneIndex(0);
       setSceneLocks(createDefaultSceneLocks());
       setRerollCount(0);
+      resetShareState();
       setAdStatusNote(nextGeneration.providerStatus.reason);
       setAdStatus("ready");
     } catch (nextError) {
@@ -133,10 +158,37 @@ function ResearchConnected() {
     }
   };
 
+  const onCreateShareLink = async () => {
+    if (!selectedScene) return;
+    setShareStatus("loading");
+    setShareUrl("");
+    setShareError("");
+
+    try {
+      const share = await createSharePage({
+        anonymousId: getAnonymousId(),
+        scene: selectedScene,
+        ctaUrl: selectedScene.brand.url,
+      }) as { path: string };
+      const nextShareUrl = `${window.location.origin}${share.path}`;
+      setShareUrl(nextShareUrl);
+      setShareStatus("ready");
+
+      try {
+        await window.navigator.clipboard?.writeText(nextShareUrl);
+      } catch {
+        // Clipboard access is a convenience; the visible link is the source of truth.
+      }
+    } catch (nextError) {
+      setShareStatus("error");
+      setShareError(nextError instanceof Error ? nextError.message : "Share link failed.");
+    }
+  };
+
   return (
     <section className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-7xl grid-cols-[0.85fr_1.15fr] items-start gap-10">
       <div className="pt-8">
-        <p className={pillClass}>Phase 5 reroll engine</p>
+        <p className={pillClass}>Phase 6A share links</p>
         <h1 className="mt-7 text-7xl font-black leading-[0.92] tracking-normal">
           Paste a site. Turn evidence into ads.
         </h1>
@@ -252,6 +304,40 @@ function ResearchConnected() {
                     <RefreshCw className="size-4" />
                     {rerollCount ? `${rerollCount} reroll${rerollCount === 1 ? "" : "s"} this session` : "Spacebar cycles the 50 ideas"}
                   </p>
+
+                  <div className="mt-4 rounded-[24px] border border-slate-200 bg-slate-50 p-3">
+                    <button
+                      type="button"
+                      onClick={() => void onCreateShareLink()}
+                      disabled={shareStatus === "loading"}
+                      className="inline-flex w-full items-center justify-center gap-3 rounded-[20px] bg-white px-5 py-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:text-slate-400"
+                    >
+                      {shareStatus === "loading" ? (
+                        <Loader2 className="size-5 animate-spin" />
+                      ) : shareStatus === "ready" ? (
+                        <Check className="size-5" />
+                      ) : (
+                        <Link2 className="size-5" />
+                      )}
+                      {shareStatus === "loading" ? "Creating share link" : shareStatus === "ready" ? "Share link copied" : "Create share link"}
+                    </button>
+                    {shareUrl ? (
+                      <a
+                        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-black text-slate-500 transition hover:border-slate-300 hover:text-slate-950"
+                        href={shareUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Open share page
+                        <ExternalLink className="size-4" />
+                      </a>
+                    ) : null}
+                    {shareError ? (
+                      <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
+                        {shareError}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
               ) : null}
             </>
@@ -273,6 +359,7 @@ function ResearchConnected() {
                   onClick={() => {
                     setSelectedScene(scene);
                     setSelectedSceneIndex(index);
+                    resetShareState();
                   }}
                   className={`rounded-3xl border p-5 text-left transition hover:-translate-y-0.5 ${
                     selectedSceneIndex === index
