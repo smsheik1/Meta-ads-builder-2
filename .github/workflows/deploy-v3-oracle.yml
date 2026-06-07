@@ -22,6 +22,7 @@ jobs:
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       TTS_MODEL: gemini-3.1-flash-tts-preview
       V3_PORT: "3020"
+      V3_PUBLIC_HOST: ${{ vars.V3_PUBLIC_HOST || 'v3.163.192.206.128.nip.io' }}
       PM2_V3_APP_NAME: wiggly-v3
       PM2_V3_WORKER_APP_NAME: wiggly-v3-render-worker
 
@@ -32,7 +33,7 @@ jobs:
           host: ${{ secrets.ORACLE_HOST }}
           username: ${{ secrets.ORACLE_USER }}
           key: ${{ secrets.ORACLE_SSH_KEY }}
-          envs: DEPLOY_BRANCH,V3_CONVEX_DEPLOY_KEY,V3_CONVEX_URL,NEXT_PUBLIC_V3_CONVEX_URL,NEXT_PUBLIC_V3_CONVEX_SITE_URL,FIRECRAWL_API_KEY,GEMINI_API_KEY,OPENROUTER_API_KEY,TTS_MODEL,V3_PORT,PM2_V3_APP_NAME,PM2_V3_WORKER_APP_NAME
+          envs: DEPLOY_BRANCH,V3_CONVEX_DEPLOY_KEY,V3_CONVEX_URL,NEXT_PUBLIC_V3_CONVEX_URL,NEXT_PUBLIC_V3_CONVEX_SITE_URL,FIRECRAWL_API_KEY,GEMINI_API_KEY,OPENROUTER_API_KEY,TTS_MODEL,V3_PORT,V3_PUBLIC_HOST,PM2_V3_APP_NAME,PM2_V3_WORKER_APP_NAME
           script_stop: true
           script: |
             set -euo pipefail

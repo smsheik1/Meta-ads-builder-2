@@ -42,6 +42,14 @@ GEMINI_API_KEY
 TTS_MODEL optional, defaults to the pinned Gemini TTS model
 ```
 
+Optional public route:
+
+```text
+V3_PUBLIC_HOST
+```
+
+When present, the Oracle deploy script writes a dedicated nginx server block for that hostname and proxies it to the v3 app port. This must stay separate from `wiggly.agentenamel.com` until v3 intentionally replaces v1.
+
 Convex CLI compatibility:
 
 ```text
@@ -126,5 +134,11 @@ V3_CONVEX_DEPLOY_KEY
 ```
 
 Do not reuse the legacy `CONVEX_DEPLOY_KEY`; that belongs to the old Convex deployment.
+
+Default public test host:
+
+```text
+http://v3.163.192.206.128.nip.io/create
+```
 
 The workflow is intentionally `workflow_dispatch` only until v3 passes live smoke.
