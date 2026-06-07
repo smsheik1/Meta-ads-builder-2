@@ -27,6 +27,7 @@ export type FirecrawlPayload = {
 const FIRECRAWL_SCRAPE_URL = "https://api.firecrawl.dev/v2/scrape";
 const DEFAULT_TIMEOUT_MS = 30_000;
 const MAX_MARKDOWN_CHARS = 24_000;
+const FIRECRAWL_TIMEOUT_MESSAGE = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 
 const cleanText = (value: unknown, maxLength = 260) => String(value ?? "")
   .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
@@ -187,6 +188,27 @@ const assertUsefulMarkdown = (markdown: string) => {
   }
 };
 
+export const isAbortLikeError = (error: unknown) => {
+  const record = error && typeof error === "object" ? error as Record<string, unknown> : {};
+  const name = String(record.name || "");
+  const message = error instanceof Error
+    ? error.message
+    : String(record.message || error || "");
+
+  return name === "AbortError" ||
+    message === "AbortError" ||
+    /\b(aborted|abort|timed out|timeout)\b/i.test(message);
+};
+
+export const toWebsiteResearchErrorMessage = (error: unknown) => {
+  if (isAbortLikeError(error)) return FIRECRAWL_TIMEOUT_MESSAGE;
+  if (error instanceof Error && error.message.trim()) return error.message.trim();
+
+  const record = error && typeof error === "object" ? error as Record<string, unknown> : {};
+  const message = String(record.message || error || "").trim();
+  return message || "Website research failed.";
+};
+
 export const normalizeFirecrawlPayload = (
   inputUrl: string,
   payload: FirecrawlPayload,
@@ -314,10 +336,7 @@ export const fetchWebsiteResearchWithFirecrawl = async (
 
     return normalizeFirecrawlPayload(websiteUrl.href, payload);
   } catch (error) {
-    if (error instanceof Error && (error.name === "AbortError" || /aborted/i.test(error.message))) {
-      throw new Error("Firecrawl took too long to read that website. Try a more specific page from the same brand.");
-    }
-    throw error;
+    throw new Error(toWebsiteResearchErrorMessage(error));
   } finally {
     clearTimeout(timeout);
   }
