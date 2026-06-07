@@ -306,3 +306,21 @@ test('legacy create preview and design library UI live outside App', () => {
   expect(designLibrarySource).toContain('export const CreateDesignLibrary');
   expect(designLibrarySource).toContain('const TemplatePreview');
 });
+
+test('legacy create sidebar panels live outside App', () => {
+  const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const sidebarPath = path.join(repoRoot, 'src', 'features', 'create', 'components', 'CreateSidebar.tsx');
+  const sidebarSource = fs.readFileSync(sidebarPath, 'utf8');
+
+  expect(fs.existsSync(sidebarPath)).toBe(true);
+  expect(appSource).toContain("from './features/create/components/CreateSidebar'");
+  expect(appSource).toContain('<CreateSidebar');
+  expect(appSource).not.toContain('const HexColorInput');
+  expect(appSource).not.toContain('className="wiggly-sidebar hidden w-80 shrink-0 flex-col gap-4 overflow-y-auto overflow-x-hidden lg:flex"');
+  expect(appSource).not.toContain('<PropertiesPanel />');
+  expect(appSource).not.toContain('<DevTuningPanel />');
+  expect(sidebarSource).toContain('export const CreateSidebar');
+  expect(sidebarSource).toContain('const HexColorInput');
+  expect(sidebarSource).toContain('<PropertiesPanel />');
+  expect(sidebarSource).toContain('<DevTuningPanel />');
+});
