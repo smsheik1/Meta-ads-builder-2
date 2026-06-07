@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
   Check,
@@ -10,10 +10,13 @@ import {
   Loader2,
   Lock,
   Mic,
+  Pause,
+  Play,
   RefreshCw,
   Search,
   ShieldAlert,
   Sparkles,
+  Volume2,
   Unlock,
   Wand2,
 } from "lucide-react";
@@ -76,8 +79,23 @@ function ResearchConnected() {
   const [shareUrl, setShareUrl] = useState("");
   const [shareError, setShareError] = useState("");
   const [audioError, setAudioError] = useState("");
+  const [audioPlaybackError, setAudioPlaybackError] = useState("");
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [previewTimeSeconds, setPreviewTimeSeconds] = useState(1.1);
   const [renderError, setRenderError] = useState("");
   const [error, setError] = useState("");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const resetPreviewPlayback = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    setIsAudioPlaying(false);
+    setPreviewTimeSeconds(1.1);
+    setAudioPlaybackError("");
+  }, []);
 
   const resetShareState = () => {
     setShareStatus("idle");
@@ -94,6 +112,7 @@ function ResearchConnected() {
   const resetAudioState = () => {
     setAudioStatus("idle");
     setAudioError("");
+    resetPreviewPlayback();
   };
 
   const replaceSelectedScene = useCallback((nextScene: AdScene) => {
@@ -107,6 +126,7 @@ function ResearchConnected() {
     const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, sceneLocks);
     if (!next.scene) return;
 
+    resetPreviewPlayback();
     setSelectedScene(next.scene);
     setSelectedSceneIndex(next.index);
     setRerollCount((count) => count + 1);
@@ -114,7 +134,7 @@ function ResearchConnected() {
     resetRenderState();
     setAudioStatus(next.scene.audio.status === "generated" ? "ready" : "idle");
     setAudioError("");
-  }, [adScenes, sceneLocks, selectedScene, selectedSceneIndex]);
+  }, [adScenes, resetPreviewPlayback, sceneLocks, selectedScene, selectedSceneIndex]);
 
   const onToggleLock = (key: SceneLockKey) => {
     setSceneLocks((locks) => ({
@@ -186,7 +206,7 @@ function ResearchConnected() {
       resetShareState();
       resetRenderState();
       resetAudioState();
-      setAdStatusNote(nextGeneration.providerStatus.reason);
+      setAdStatusNote(`${nextGeneration.scenes.length} ads ready. Press spacebar to find a stronger version.`);
       setAdStatus("ready");
     } catch (nextError) {
       setAdStatus("error");
@@ -233,6 +253,7 @@ function ResearchConnected() {
         anonymousId: getAnonymousId(),
         scene: selectedScene,
       }) as { scene: AdScene };
+      resetPreviewPlayback();
       replaceSelectedScene(result.scene);
       setAudioStatus("ready");
     } catch (nextError) {
@@ -273,6 +294,7 @@ function ResearchConnected() {
           ? `Rendering ${renderProgress}%`
           : "Download video";
   const hasGeneratedAudio = selectedScene?.audio.status === "generated";
+  const playableAudioUrl = selectedScene?.audio.status === "generated" ? selectedScene.audio.url : "";
   const audioStatusLabel = hasGeneratedAudio
     ? "Audio ready"
     : audioStatus === "loading"
@@ -281,15 +303,36 @@ function ResearchConnected() {
         ? "Audio failed"
         : "Add audio for this ad";
 
+  const onToggleAudioPlayback = async () => {
+    const audio = audioRef.current;
+    if (!audio || !playableAudioUrl) return;
+
+    setAudioPlaybackError("");
+
+    if (!audio.paused) {
+      audio.pause();
+      setIsAudioPlaying(false);
+      return;
+    }
+
+    try {
+      await audio.play();
+      setIsAudioPlaying(true);
+    } catch (nextError) {
+      setIsAudioPlaying(false);
+      setAudioPlaybackError(nextError instanceof Error ? nextError.message : "Audio playback failed.");
+    }
+  };
+
   return (
     <section className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-7xl grid-cols-[0.85fr_1.15fr] items-start gap-10">
       <div className="pt-8">
-        <p className={pillClass}>Phase 6B render downloads</p>
+        <p className={pillClass}>Wiggly engine</p>
         <h1 className="mt-7 text-7xl font-black leading-[0.92] tracking-normal">
-          Paste a site. Turn evidence into ads.
+          Paste a site. Get video ads.
         </h1>
         <p className="mt-6 max-w-xl text-lg font-bold leading-8 text-slate-500">
-          Firecrawl reads the page, Convex stores the proof, then Gemini turns that evidence into 50 AdScene candidates.
+          Wiggly reads the page, finds the selling angle, and gives you polished ad options to reroll, voice, download, or share.
         </p>
 
         <form
@@ -321,7 +364,7 @@ function ResearchConnected() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-black uppercase tracking-[0.16em] text-slate-400">Next step</p>
-                <p className="mt-2 text-lg font-black text-slate-900">Generate 50 ad ideas from this research.</p>
+                <p className="mt-2 text-lg font-black text-slate-900">Generate 50 ad ideas from this brand read.</p>
               </div>
               <button
                 type="button"
@@ -350,12 +393,12 @@ function ResearchConnected() {
 
       <div className="grid gap-5">
         <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_26px_80px_rgba(15,23,42,0.10)]">
-          <p className={pillClass}>Selected preview</p>
+          <p className={pillClass}>Selected ad</p>
           {selectedScene ? (
             <>
               <div className="mx-auto mt-6 max-w-[440px] rounded-[34px] bg-slate-950 p-3 shadow-[0_30px_90px_rgba(15,23,42,0.22)]">
                 <div className="overflow-hidden rounded-[26px] bg-white">
-                  <AdRenderSurface scene={selectedScene} timeSeconds={1.1} />
+                  <AdRenderSurface scene={selectedScene} timeSeconds={previewTimeSeconds} />
                 </div>
               </div>
 
@@ -420,6 +463,42 @@ function ResearchConnected() {
                     {audioError ? (
                       <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
                         {audioError}
+                      </p>
+                    ) : null}
+                    {playableAudioUrl ? (
+                      <div className="mt-3 rounded-[20px] border border-slate-200 bg-white p-3">
+                        <audio
+                          ref={audioRef}
+                          preload="metadata"
+                          src={playableAudioUrl}
+                          onTimeUpdate={(event) => {
+                            setPreviewTimeSeconds(event.currentTarget.currentTime);
+                          }}
+                          onEnded={() => {
+                            if (audioRef.current) audioRef.current.currentTime = 0;
+                            setIsAudioPlaying(false);
+                            setPreviewTimeSeconds(1.1);
+                          }}
+                          onPause={() => setIsAudioPlaying(false)}
+                          onPlay={() => setIsAudioPlaying(true)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void onToggleAudioPlayback()}
+                          className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-50 px-5 py-4 text-sm font-black text-emerald-950 transition hover:-translate-y-0.5 hover:bg-emerald-100"
+                        >
+                          {isAudioPlaying ? <Pause className="size-5" /> : <Play className="size-5" />}
+                          {isAudioPlaying ? "Pause audio preview" : "Play audio preview"}
+                          <Volume2 className="size-5 text-emerald-700" />
+                        </button>
+                        <p className="mt-2 text-center text-xs font-black uppercase tracking-[0.14em] text-slate-400">
+                          Syncs captions and visualizer
+                        </p>
+                      </div>
+                    ) : null}
+                    {audioPlaybackError ? (
+                      <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
+                        {audioPlaybackError}
                       </p>
                     ) : null}
                     <button
@@ -494,13 +573,13 @@ function ResearchConnected() {
             </>
           ) : (
             <p className="mt-6 text-base font-bold leading-7 text-slate-500">
-              Generate ad ideas to preview the first typed AdScene through the shared renderer.
+              Generate ad ideas to preview the first Wiggly ad.
             </p>
           )}
         </div>
 
         <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_26px_80px_rgba(15,23,42,0.10)]">
-          <p className={pillClass}>Generated AdScenes</p>
+          <p className={pillClass}>Generated ads</p>
           {adScenes.length ? (
             <div className="mt-6 grid max-h-[680px] gap-3 overflow-auto pr-2">
               {adScenes.map((scene, index) => (
@@ -508,6 +587,7 @@ function ResearchConnected() {
                   type="button"
                   key={`${scene.metadata.generationBatchId}-${scene.metadata.candidateIndex}`}
                   onClick={() => {
+                    resetPreviewPlayback();
                     setSelectedScene(scene);
                     setSelectedSceneIndex(index);
                     setAudioStatus(scene.audio.status === "generated" ? "ready" : "idle");
@@ -546,13 +626,13 @@ function ResearchConnected() {
             </div>
           ) : (
             <p className="mt-6 text-base font-bold leading-7 text-slate-500">
-              After research, generate the 50 typed AdScene candidates that future formats will render.
+              After Wiggly reads the site, generate 50 ad options here.
             </p>
           )}
         </div>
 
         <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_26px_80px_rgba(15,23,42,0.10)]">
-          <p className={pillClass}>Brand snapshot</p>
+          <p className={pillClass}>Creative brief</p>
           {result ? (
             <div className="mt-6 grid gap-5">
               <div className="flex items-start gap-4">
@@ -589,13 +669,13 @@ function ResearchConnected() {
             </div>
           ) : (
             <p className="mt-6 text-base font-bold leading-7 text-slate-500">
-              Run research to see the normalized brand snapshot Convex will pass into ad formats.
+              Run research to see the brand summary Wiggly will use for ad formats.
             </p>
           )}
         </div>
 
         <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_26px_80px_rgba(15,23,42,0.10)]">
-          <p className={pillClass}>Raw evidence</p>
+          <p className={pillClass}>Full brand dump</p>
           {result ? (
             <div className="mt-6 grid gap-6">
               <EvidenceList title="Site language" items={result.evidence.receipts.exactSiteLanguage} />
@@ -605,7 +685,7 @@ function ResearchConnected() {
             </div>
           ) : (
             <p className="mt-6 text-base font-bold leading-7 text-slate-500">
-              The point of this phase is transparency. No mystery prompt yet, just the facts Wiggly found.
+              Wiggly shows the raw facts it found so you can trust what the ads are based on.
             </p>
           )}
         </div>
