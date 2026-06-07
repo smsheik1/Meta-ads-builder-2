@@ -31,21 +31,21 @@ export function VisualizerFormatRenderer({
 }: FormatRenderProps) {
   const frame = Math.max(0, Math.floor(timeSeconds * frameRate));
   const type = normalizeVisualizerType("waveform-strip");
-  const count = getVisualizerBarCount(type, 44);
+  const count = getVisualizerBarCount(type, 34);
   const bars = getVisualizerBars({
     type,
     count,
     frame,
-    height: 138,
+    height: 152,
     scale: 1,
     mirror: true,
-    sensitivity: 1.4,
-    heightScale: 0.82,
+    sensitivity: 1.46,
+    heightScale: 0.9,
     baseline: 14,
-    gain: 1.7,
+    gain: 1.78,
     compression: 3,
-    floor: 0.08,
-    ceiling: 0.86,
+    floor: 0.1,
+    ceiling: 0.9,
     curve: "sqrt",
     bandFocus: "voice",
     color: scene.style.visualizerColor,
@@ -88,11 +88,11 @@ export function VisualizerFormatRenderer({
         ) : (
           <div
             style={{
-            ...brandMarkStyle,
-            display: "grid",
-            placeItems: "center",
-            background: textColor,
-            color: scene.style.backgroundColor,
+              ...brandMarkStyle,
+              display: "grid",
+              placeItems: "center",
+              background: textColor,
+              color: scene.style.backgroundColor,
               fontSize: 22,
               fontWeight: 900,
               letterSpacing: 1,
@@ -133,10 +133,10 @@ export function VisualizerFormatRenderer({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 8,
-            height: "clamp(84px, 18cqw, 138px)",
-            margin: "34px -7% 0",
-            width: "114%",
+            gap: 9,
+            height: "clamp(92px, 19cqw, 152px)",
+            margin: "40px -10% 0",
+            width: "120%",
           }}
         >
           {bars.map((bar, index) => (
@@ -144,7 +144,7 @@ export function VisualizerFormatRenderer({
               key={`${index}-${Math.round(bar.height)}`}
               style={{
                 flex: 1,
-                minWidth: 7,
+                minWidth: 10,
                 height: bar.height,
                 maxHeight: "100%",
                 borderRadius: 999,
@@ -183,8 +183,30 @@ export function VisualizerFormatRenderer({
               fontSize: "clamp(18px, 3.5cqw, 28px)",
               fontWeight: 900,
               boxShadow: "0 18px 45px rgba(15,23,42,0.08)",
+              gap: 12,
             }}
           >
+            <span
+              aria-hidden="true"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 3,
+              }}
+            >
+              {[9, 15, 22, 15, 9].map((height, index) => (
+                <span
+                  key={`${height}-${index}`}
+                  style={{
+                    width: 3,
+                    height,
+                    borderRadius: 999,
+                    background: "#52627A",
+                    opacity: 0.8,
+                  }}
+                />
+              ))}
+            </span>
             Add audio for this ad
           </div>
         )}
