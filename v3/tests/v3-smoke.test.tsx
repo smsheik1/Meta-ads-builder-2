@@ -61,7 +61,8 @@ assert.ok(createClientSource.includes("isStoredWebsiteResearchFailure(nextResult
 for (const requiredApiCall of [
   "api.researchRuns.runWebsiteResearch",
   "api.adScenes.generateFromResearch",
-  "api.audioAssets.generateForScene",
+  "api.dialogueScripts.generateForScene",
+  "api.audioAssets.generateDialogueForScene",
   "api.renderJobs.createFromScene",
   "api.sharePages.createFromScene",
 ]) {
@@ -70,6 +71,9 @@ for (const requiredApiCall of [
     `/create must keep the full v3 smoke path wired: ${requiredApiCall}`,
   );
 }
+assert.ok(createClientSource.includes("Write script options"), "/create must expose explicit dialogue script generation.");
+assert.ok(createClientSource.includes("Generate this audio"), "/create must generate audio from a chosen dialogue script.");
+assert.ok(createClientSource.includes("Two people talking about this product"), "/create must explain the visualizer dialogue workflow.");
 
 const renderJobSource = readFileSync("convex/renderJobs.ts", "utf8");
 assert.ok(renderJobSource.includes("assertShareableAdScene"), "Render jobs must validate frozen scenes.");

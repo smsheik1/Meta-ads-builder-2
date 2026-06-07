@@ -2,11 +2,12 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { action, internalMutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
-import { generateGeminiVoiceover } from "../features/audio/geminiTts";
+import { generateGeminiDialogueVoiceover, generateGeminiVoiceover } from "../features/audio/geminiTts";
 import {
   createGeneratedSceneAudio,
   getSceneAudioKey,
 } from "../features/audio/sceneAudio";
+import { cleanDialogueScriptForVoiceover } from "../features/dialogue/dialogueScripts";
 import { assertShareableAdScene } from "../features/share/shareScene";
 
 const storageIdFromString = (storageId: string) => storageId as Id<"_storage">;
@@ -99,6 +100,59 @@ export const generateForScene: ReturnType<typeof action> = action({
       durationMs: result.durationMs,
       transcript: result.transcript,
       captions: result.captions,
+      analysis: result.analysis,
+      model: result.model,
+    });
+
+    return {
+      audio,
+      scene: {
+        ...audioScene,
+        audio,
+      },
+    };
+  },
+});
+
+export const generateDialogueForScene: ReturnType<typeof action> = action({
+  args: {
+    anonymousId: v.string(),
+    scene: v.any(),
+    script: v.any(),
+  },
+  handler: async (ctx, { anonymousId, scene, script }) => {
+    const audioScene = assertShareableAdScene(scene);
+    const dialogueScript = cleanDialogueScriptForVoiceover(script);
+    const sessionId = await ctx.runMutation(internal.sessions.ensureAnonymousSession, {
+      anonymousId,
+    });
+    const result = await generateGeminiDialogueVoiceover(dialogueScript);
+    const storageId = await ctx.storage.store(new Blob([result.bytes], {
+      type: result.mimeType,
+    }));
+    const sceneKey = getSceneAudioKey(audioScene);
+    const saved = await ctx.runMutation(internal.audioAssets.saveGenerated, {
+      sessionId,
+      sceneKey,
+      storageId,
+      mimeType: result.mimeType,
+      durationMs: result.durationMs,
+      transcript: result.transcript,
+      provider: result.provider,
+      model: result.model,
+    });
+    const url = saved.url || await ctx.storage.getUrl(storageId);
+
+    if (!url) throw new Error("Generated dialogue audio was stored, but no playable URL was returned.");
+
+    const audio = createGeneratedSceneAudio({
+      storageId,
+      url,
+      mimeType: result.mimeType,
+      durationMs: result.durationMs,
+      transcript: result.transcript,
+      captions: result.captions,
+      analysis: result.analysis,
       model: result.model,
     });
 

@@ -72,6 +72,27 @@ export const getVisualizerBarCount = (type: VisualizerType, requested?: number |
   requested || (type === "waveform-strip" ? 72 : 16)
 );
 
+export const getIdleVisualizerPercent = (type: VisualizerType, index: number, count: number) => {
+  if (type === "bars-bottom") {
+    return Math.min(92, 26 + ((index * 17) % 46) + ((index % 3) * 4));
+  }
+
+  const center = (count - 1) / 2;
+  const distance = Math.abs(index - center) / Math.max(center, 1);
+  const centerWeightedHeight = type === "waveform-strip"
+    ? 24 + (1 - distance) * 58 + ((index % 3) * 7)
+    : 22 + (1 - distance) * 58 + ((index % 5) * 3);
+
+  return Math.min(92, centerWeightedHeight);
+};
+
+const getIdleVisualizerScale = (frame: number, index: number) => {
+  const timeMs = (frame / 60) * 1000;
+  const phase = ((timeMs + index * 28) % 1650) / 1650;
+  const triangle = phase < 0.5 ? phase * 2 : (1 - phase) * 2;
+  return 0.76 + triangle * 0.34;
+};
+
 export const getVisualizerBars = ({
   type,
   count,
@@ -150,6 +171,24 @@ export const getVisualizerBars = ({
       ? Math.min(frequencyBands.length - 1, Math.max(0, 1 + Math.floor(focusedNormalized * (frequencyBands.length - 2))))
       : -1;
     const bandSignal = bandIndex >= 0 ? frequencyBands?.[bandIndex] ?? null : null;
+    if (!hasLevel && bandSignal === null) {
+      const idlePercent = getIdleVisualizerPercent(type, index, safeCount);
+      const idleScale = getIdleVisualizerScale(frame, index);
+      const minHeight = type === "waveform-strip"
+        ? Math.max(baseline * scale, safeHeight * 0.04)
+        : baseline * scale;
+      const idleHeight = Math.max(
+        minHeight,
+        safeHeight * (idlePercent / 100) * heightScale * idleScale,
+      );
+
+      return {
+        height: Math.min(safeHeight, idleHeight),
+        opacity: 0.92,
+        color: splitSpeakers && !isLeftSpeakerSide ? speaker2Color : color,
+      };
+    }
+
     const baseSignal = bandSignal ?? (hasLevel ? audioLevel ?? 0 : fallbackMotion * 0.55);
     const tunedSignal = applySignalTuning(baseSignal, { gain, compression, floor, ceiling });
     const compressed = compressVisualizerValue(tunedSignal * sensitivity);

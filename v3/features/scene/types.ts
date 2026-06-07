@@ -25,6 +25,13 @@ export type AdSceneCaption = {
   text: string;
   startMs: number;
   endMs: number;
+  speaker?: 1 | 2;
+};
+
+export type AdSceneAudioAnalysis = {
+  fps: number;
+  levels: number[];
+  bands: number[][];
 };
 
 export type AdSceneAudio =
@@ -42,6 +49,7 @@ export type AdSceneAudio =
     durationSeconds: number;
     transcript: string;
     captions: AdSceneCaption[];
+    analysis?: AdSceneAudioAnalysis;
     provider: "gemini";
     model: string;
     generatedAt: number;
