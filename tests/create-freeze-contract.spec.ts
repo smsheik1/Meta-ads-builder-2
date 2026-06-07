@@ -245,3 +245,22 @@ test('legacy create voice controller state lives outside App', () => {
   expect(voiceControllerSource).toContain('const playDialoguePreview');
   expect(voiceControllerSource).toContain('generatedDialogueAudioUrl');
 });
+
+test('legacy create generated ad application logic lives outside App', () => {
+  const applicationPath = path.join(repoRoot, 'src', 'features', 'create', 'createAdApplication.ts');
+  const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
+  const applicationSource = fs.readFileSync(applicationPath, 'utf8');
+
+  expect(fs.existsSync(applicationPath)).toBe(true);
+  expect(appSource).toContain("from './features/create/createAdApplication'");
+  expect(appSource).toContain('buildGeneratedAdApplication({');
+  expect(appSource).not.toContain('const applyVariationToElement');
+  expect(appSource).not.toContain("variation.format === 'conversation'");
+  expect(appSource).not.toContain('const buildConversationAdElements');
+  expect(appSource).not.toContain('const pickCanvasBrandLogo');
+  expect(appSource).not.toContain('const buildCreativeBriefFromBrandBrain');
+  expect(applicationSource).toContain('export const buildGeneratedAdApplication');
+  expect(applicationSource).toContain("variation.format === 'conversation'");
+  expect(applicationSource).toContain('const buildConversationAdElements');
+  expect(applicationSource).toContain('const buildCreativeBriefFromBrandBrain');
+});
