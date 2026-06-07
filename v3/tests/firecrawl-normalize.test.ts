@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import {
+  fetchWebsiteResearchWithFirecrawl,
   firecrawlRequestShape,
+  isAbortLikeError,
   normalizeFirecrawlPayload,
+  toWebsiteResearchErrorMessage,
 } from "../features/research/firecrawl";
 
 const result = normalizeFirecrawlPayload("ogtool.com", {
@@ -66,6 +69,23 @@ assert.equal(shape.onlyMainContent, true);
 assert.throws(
   () => normalizeFirecrawlPayload("ogtool.com", { success: true, data: { markdown: "short" } }),
   /Firecrawl returned no useful page copy/,
+);
+
+const abortError = new Error("AbortError");
+abortError.name = "AbortError";
+assert.equal(isAbortLikeError(abortError), true);
+assert.match(toWebsiteResearchErrorMessage(abortError), /took too long/);
+
+const abortingFetcher = (async () => {
+  throw abortError;
+}) as typeof fetch;
+
+await assert.rejects(
+  () => fetchWebsiteResearchWithFirecrawl("ogtool.com", {
+    apiKey: "test-firecrawl-key",
+    fetcher: abortingFetcher,
+  }),
+  /That site took too long to read/,
 );
 
 console.log("firecrawl-normalize tests passed");

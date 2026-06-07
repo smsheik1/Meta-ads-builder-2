@@ -53,3 +53,18 @@ export type StoredWebsiteResearchResult = WebsiteResearchResult & {
   researchRunId: string;
   brandSnapshotId: string;
 };
+
+export type StoredWebsiteResearchFailure = {
+  status: "failed";
+  sessionId: string;
+  researchRunId: string;
+  error: string;
+};
+
+export type StoredWebsiteResearchResponse = StoredWebsiteResearchResult | StoredWebsiteResearchFailure;
+
+export const isStoredWebsiteResearchFailure = (
+  result: StoredWebsiteResearchResponse,
+): result is StoredWebsiteResearchFailure => (
+  "status" in result && result.status === "failed"
+);

@@ -56,6 +56,7 @@ assert.ok(createClientSource.includes("Audio preview syncs captions and visualiz
 assert.ok(createClientSource.includes("controls"), "/create audio preview must use native playback controls.");
 assert.ok(createClientSource.includes("audioRef"), "/create audio preview must use the generated audio asset.");
 assert.ok(createClientSource.includes("setPreviewTimeSeconds"), "/create audio preview must sync the renderer time.");
+assert.ok(createClientSource.includes("isStoredWebsiteResearchFailure(nextResult)"), "/create must handle failed website research without exposing raw Convex action errors.");
 
 for (const requiredApiCall of [
   "api.researchRuns.runWebsiteResearch",
@@ -73,6 +74,10 @@ for (const requiredApiCall of [
 const renderJobSource = readFileSync("convex/renderJobs.ts", "utf8");
 assert.ok(renderJobSource.includes("assertShareableAdScene"), "Render jobs must validate frozen scenes.");
 assert.ok(renderJobSource.includes("refreshSceneAudioUrl"), "Render jobs must refresh Convex audio URLs before rendering.");
+
+const researchRunsSource = readFileSync("convex/researchRuns.ts", "utf8");
+assert.ok(researchRunsSource.includes('status: "failed"'), "Website research should return a typed failed result for operational read failures.");
+assert.ok(!researchRunsSource.includes("throw new Error(message)"), "Website research should not turn Firecrawl timeouts into raw Convex server errors.");
 
 const shareSource = readFileSync("convex/sharePages.ts", "utf8");
 assert.ok(shareSource.includes("assertShareableAdScene"), "Share pages must validate frozen scenes.");

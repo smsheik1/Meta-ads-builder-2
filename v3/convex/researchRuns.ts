@@ -1,7 +1,10 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { action, query } from "./_generated/server";
-import { fetchWebsiteResearchWithFirecrawl } from "../features/research/firecrawl";
+import {
+  fetchWebsiteResearchWithFirecrawl,
+  toWebsiteResearchErrorMessage,
+} from "../features/research/firecrawl";
 
 export const runWebsiteResearch: ReturnType<typeof action> = action({
   args: {
@@ -29,12 +32,18 @@ export const runWebsiteResearch: ReturnType<typeof action> = action({
         brandSnapshotId,
       };
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Website research failed.";
+      const message = toWebsiteResearchErrorMessage(error);
       await ctx.runMutation(internal.researchStorage.saveFailed, {
         researchRunId,
         error: message,
       });
-      throw new Error(message);
+
+      return {
+        status: "failed" as const,
+        sessionId,
+        researchRunId,
+        error: message,
+      };
     }
   },
 });

@@ -26,7 +26,11 @@ import {
   sceneLockLabels,
   type SceneLockKey,
 } from "@/features/create/reroll";
-import type { StoredWebsiteResearchResult } from "@/features/research/types";
+import { isStoredWebsiteResearchFailure } from "@/features/research/types";
+import type {
+  StoredWebsiteResearchResponse,
+  StoredWebsiteResearchResult,
+} from "@/features/research/types";
 import { AdRenderSurface } from "@/features/render/AdRenderSurface";
 import type { AdScene } from "@/features/scene/types";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
@@ -168,7 +172,12 @@ function ResearchConnected() {
       const nextResult = await runWebsiteResearch({
         anonymousId: getAnonymousId(),
         url,
-      }) as StoredWebsiteResearchResult;
+      }) as StoredWebsiteResearchResponse;
+      if (isStoredWebsiteResearchFailure(nextResult)) {
+        setStatus("error");
+        setError(nextResult.error);
+        return;
+      }
       setResult(nextResult);
       setStatus("ready");
     } catch (nextError) {
