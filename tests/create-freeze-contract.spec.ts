@@ -248,10 +248,21 @@ test('legacy create voice controller state lives outside App', () => {
 
 test('legacy create generated ad application logic lives outside App', () => {
   const applicationPath = path.join(repoRoot, 'src', 'features', 'create', 'createAdApplication.ts');
+  const templateTypesPath = path.join(repoRoot, 'src', 'features', 'create', 'templates', 'types.ts');
+  const templateRegistryPath = path.join(repoRoot, 'src', 'features', 'create', 'templates', 'registry.ts');
+  const visualizerTemplatePath = path.join(repoRoot, 'src', 'features', 'create', 'templates', 'visualizerTemplate.ts');
+  const conversationTemplatePath = path.join(repoRoot, 'src', 'features', 'create', 'templates', 'conversationTemplate.ts');
   const appSource = fs.readFileSync(path.join(repoRoot, 'src', 'App.tsx'), 'utf8');
   const applicationSource = fs.readFileSync(applicationPath, 'utf8');
+  const templateRegistrySource = fs.readFileSync(templateRegistryPath, 'utf8');
+  const visualizerTemplateSource = fs.readFileSync(visualizerTemplatePath, 'utf8');
+  const conversationTemplateSource = fs.readFileSync(conversationTemplatePath, 'utf8');
 
   expect(fs.existsSync(applicationPath)).toBe(true);
+  expect(fs.existsSync(templateTypesPath)).toBe(true);
+  expect(fs.existsSync(templateRegistryPath)).toBe(true);
+  expect(fs.existsSync(visualizerTemplatePath)).toBe(true);
+  expect(fs.existsSync(conversationTemplatePath)).toBe(true);
   expect(appSource).toContain("from './features/create/createAdApplication'");
   expect(appSource).toContain('buildGeneratedAdApplication({');
   expect(appSource).not.toContain('const applyVariationToElement');
@@ -260,7 +271,16 @@ test('legacy create generated ad application logic lives outside App', () => {
   expect(appSource).not.toContain('const pickCanvasBrandLogo');
   expect(appSource).not.toContain('const buildCreativeBriefFromBrandBrain');
   expect(applicationSource).toContain('export const buildGeneratedAdApplication');
-  expect(applicationSource).toContain("variation.format === 'conversation'");
-  expect(applicationSource).toContain('const buildConversationAdElements');
+  expect(applicationSource).toContain('getCreateAdTemplateForVariation');
+  expect(applicationSource).toContain('template.buildElements');
+  expect(applicationSource).not.toContain("variation.format === 'conversation'");
+  expect(applicationSource).not.toContain('const buildConversationAdElements');
+  expect(applicationSource).not.toContain('const applyVariationToElement');
+  expect(templateRegistrySource).toContain('CREATE_AD_TEMPLATES');
+  expect(templateRegistrySource).toContain('getCreateAdTemplateForVariation');
+  expect(visualizerTemplateSource).toContain('export const visualizerTemplate');
+  expect(visualizerTemplateSource).toContain('const applyVisualizerTemplateElement');
+  expect(conversationTemplateSource).toContain('export const conversationTemplate');
+  expect(conversationTemplateSource).toContain('const buildConversationElements');
   expect(applicationSource).toContain('const buildCreativeBriefFromBrandBrain');
 });
