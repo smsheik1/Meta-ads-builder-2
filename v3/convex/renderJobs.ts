@@ -105,6 +105,29 @@ export const getStatus: ReturnType<typeof query> = query({
   },
 });
 
+export const workerReadiness: ReturnType<typeof query> = query({
+  args: {},
+  handler: async (ctx) => {
+    const queued = await ctx.db
+      .query("renderJobs")
+      .withIndex("by_status_and_updatedAt", (q) => q.eq("status", "queued"))
+      .take(1);
+    const claimed = await ctx.db
+      .query("renderJobs")
+      .withIndex("by_status_and_updatedAt", (q) => q.eq("status", "claimed"))
+      .take(1);
+    const rendering = await ctx.db
+      .query("renderJobs")
+      .withIndex("by_status_and_updatedAt", (q) => q.eq("status", "rendering"))
+      .take(1);
+
+    return {
+      queued: queued.length,
+      active: claimed.length + rendering.length,
+    };
+  },
+});
+
 export const claimNext: ReturnType<typeof mutation> = mutation({
   args: {},
   handler: async (ctx) => {
