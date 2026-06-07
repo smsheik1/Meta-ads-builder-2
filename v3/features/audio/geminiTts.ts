@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
-import type { AdSceneCaption } from "../scene/types";
+import { analyzeGeneratedWavAudio } from "./audioAnalysis";
+import type { AdSceneAudioAnalysis, AdSceneCaption } from "../scene/types";
 import {
   createCaptionsForVoiceover,
   createVoiceoverLines,
@@ -14,6 +15,7 @@ export type GeminiVoiceoverResult = {
   mimeType: string;
   transcript: string;
   captions: AdSceneCaption[];
+  analysis?: AdSceneAudioAnalysis;
   durationMs: number;
   provider: "gemini";
   model: string;
@@ -118,12 +120,14 @@ export async function generateGeminiVoiceover(
     ? getWavDurationMs(bytes) ?? estimateVoiceoverDurationMs(scene)
     : estimateVoiceoverDurationMs(scene);
   const captions = createCaptionsForVoiceover(scene, durationMs);
+  const analysis = finalMimeType === "audio/wav" ? analyzeGeneratedWavAudio(bytes) ?? undefined : undefined;
 
   return {
     bytes,
     mimeType: finalMimeType,
     transcript: createVoiceoverLines(scene).join("\n"),
     captions,
+    analysis,
     durationMs,
     provider: "gemini",
     model,

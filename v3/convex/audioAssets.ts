@@ -99,6 +99,7 @@ export const generateForScene: ReturnType<typeof action> = action({
       durationMs: result.durationMs,
       transcript: result.transcript,
       captions: result.captions,
+      analysis: result.analysis,
       model: result.model,
     });
 

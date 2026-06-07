@@ -30,8 +30,16 @@ export function VisualizerFormatRenderer({
   timeSeconds = 0,
 }: FormatRenderProps) {
   const frame = Math.max(0, Math.floor(timeSeconds * frameRate));
+  const analysis = scene.audio.status === "generated" ? scene.audio.analysis : null;
+  const analysisFrame = analysis?.levels.length
+    ? Math.min(analysis.levels.length - 1, Math.max(0, Math.floor(timeSeconds * analysis.fps)))
+    : null;
+  const timeMs = Math.max(0, timeSeconds * 1000);
+  const activeCaption = scene.audio.status === "generated"
+    ? scene.audio.captions.find((caption) => timeMs >= caption.startMs && timeMs <= caption.endMs)
+    : null;
   const type = normalizeVisualizerType("waveform-strip");
-  const count = getVisualizerBarCount(type, 34);
+  const count = getVisualizerBarCount(type, 36);
   const bars = getVisualizerBars({
     type,
     count,
@@ -39,16 +47,21 @@ export function VisualizerFormatRenderer({
     height: 152,
     scale: 1,
     mirror: true,
-    sensitivity: 1.46,
-    heightScale: 0.9,
+    audioLevel: analysisFrame !== null ? analysis?.levels[analysisFrame] : null,
+    frequencyBands: analysisFrame !== null ? analysis?.bands[analysisFrame] : null,
+    currentSpeaker: activeCaption?.speaker ?? null,
+    splitSpeakers: Boolean(activeCaption?.speaker),
+    sensitivity: 1.58,
+    heightScale: 0.96,
     baseline: 14,
-    gain: 1.78,
-    compression: 3,
-    floor: 0.1,
-    ceiling: 0.9,
+    gain: 1.88,
+    compression: 2.4,
+    floor: scene.audio.status === "generated" ? 0.08 : 0,
+    ceiling: 0.96,
     curve: "sqrt",
     bandFocus: "voice",
     color: scene.style.visualizerColor,
+    speaker2Color: scene.style.accentColor,
   });
   const logoSource = getLogoSource(scene);
   const textColor = getReadableTextColor(scene.style.textColor);
@@ -141,10 +154,10 @@ export function VisualizerFormatRenderer({
         >
           {bars.map((bar, index) => (
             <div
-              key={`${index}-${Math.round(bar.height)}`}
+              key={index}
               style={{
                 flex: 1,
-                minWidth: 10,
+                minWidth: 9,
                 height: bar.height,
                 maxHeight: "100%",
                 borderRadius: 999,

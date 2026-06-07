@@ -1,4 +1,4 @@
-import type { AdScene, AdSceneAudio, AdSceneCaption } from "../scene/types";
+import type { AdScene, AdSceneAudio, AdSceneAudioAnalysis, AdSceneCaption } from "../scene/types";
 
 export const PINNED_TTS_MODEL = "gemini-3.1-flash-tts-preview";
 
@@ -83,6 +83,7 @@ export const createGeneratedSceneAudio = ({
   durationMs,
   transcript,
   captions,
+  analysis,
   model,
 }: {
   storageId: string;
@@ -91,6 +92,7 @@ export const createGeneratedSceneAudio = ({
   durationMs: number;
   transcript: string;
   captions: AdSceneCaption[];
+  analysis?: AdSceneAudioAnalysis;
   model: string;
 }): AdSceneAudio => ({
   status: "generated",
@@ -101,6 +103,7 @@ export const createGeneratedSceneAudio = ({
   durationSeconds: durationMs / 1000,
   transcript,
   captions,
+  analysis,
   provider: "gemini",
   model,
   generatedAt: Date.now(),
