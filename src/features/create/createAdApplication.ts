@@ -1,11 +1,10 @@
 import type { GeneratedAdVariation } from '../../components/CreateFlow';
 import type { BrandBrain, BrandReceipts } from '../../lib/prompts/brand-brain';
-import { FIXED_AD_BACKGROUND_COLOR, createTintedAdBackground } from '../../lib/style-archetypes';
 import { pickVisibleColorOnLight } from '../../lib/color-contrast';
-import { VOICE_VISUALIZER_PRESET } from '../../lib/visualizer-presets';
-import { DEFAULT_ELEMENTS, type AdElement } from '../../store';
+import type { AdElement } from '../../store';
 import type { AudioIntent } from './createSavedDesigns';
 import type { CreativeBrief } from './createVoiceScripts';
+import { getCreateAdTemplateForVariation } from './templates/registry';
 
 const isDataImage = (value: string | null | undefined) => Boolean(value?.startsWith('data:image/'));
 
@@ -45,112 +44,6 @@ const buildTextLogoDataUrl = (label: string) => {
   const fontSize = cleanLabel.length > 24 ? 52 : cleanLabel.length > 16 ? 64 : 78;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="192" viewBox="0 0 480 192"><text x="240" y="102" dominant-baseline="middle" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="${fontSize}" font-weight="900" letter-spacing="1.5" fill="#020617">${escapeSvgText(cleanLabel.toUpperCase())}</text></svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-};
-
-const cleanConversationLine = (value: string) => value
-  .replace(/\s+/g, ' ')
-  .trim()
-  .slice(0, 96);
-
-const buildConversationFallbackLines = (variation: GeneratedAdVariation, brandBrain: BrandBrain) => {
-  const pain = cleanConversationLine(brandBrain.pain || 'the hard part is getting ignored');
-  const offer = cleanConversationLine(brandBrain.offer || 'the offer is easier to understand this way');
-  const result = cleanConversationLine(brandBrain.promisedResult || 'people understand the value faster');
-  return [
-    { speaker: 'Alex', text: `I keep seeing ${pain}.` },
-    { speaker: 'Jordan', text: `${offer} makes that much clearer.` },
-    { speaker: 'Alex', text: `So the ad should say, ${variation.headline.toLowerCase()}?` },
-    { speaker: 'Jordan', text: `Exactly. Show ${result} before they scroll.` },
-  ];
-};
-
-const buildConversationAdElements = (
-  variation: GeneratedAdVariation,
-  brandBrain: BrandBrain,
-  logoUrl: string
-): AdElement[] => {
-  const businessName = cleanConversationLine(brandBrain.businessName || 'Your brand').slice(0, 28);
-  const lines = (variation.conversationLines?.length ? variation.conversationLines : buildConversationFallbackLines(variation, brandBrain))
-    .map((line) => ({
-      speaker: cleanConversationLine(line.speaker || ''),
-      text: cleanConversationLine(line.text || ''),
-    }))
-    .filter((line) => line.text)
-    .slice(0, 4);
-
-  return [
-    {
-      id: 'logo-1',
-      type: 'image',
-      componentRole: 'logo',
-      imageUrl: logoUrl,
-      x: 26,
-      y: 24,
-      width: 42,
-      height: 42,
-      rotation: 0,
-      zIndex: 10,
-      removeWhite: false,
-      borderRadius: 12,
-    },
-    {
-      id: 'conversation-brand-1',
-      type: 'text',
-      content: businessName,
-      x: 76,
-      y: 24,
-      width: 250,
-      height: 42,
-      rotation: 0,
-      zIndex: 11,
-      fontSize: 19,
-      fontWeight: '900',
-      color: '#0f172a',
-      textAlign: 'left',
-      lineHeight: 1.05,
-    },
-    {
-      id: 'headline-1',
-      type: 'text',
-      componentRole: 'headline',
-      content: variation.headline,
-      x: 26,
-      y: 74,
-      width: 308,
-      height: 62,
-      rotation: 0,
-      zIndex: 1,
-      fontSize: 31,
-      fontWeight: '900',
-      color: '#0f172a',
-      textAlign: 'center',
-      lineHeight: 1.02,
-      styleArchetypeId: variation.archetype.id,
-    },
-    ...lines.map((line, index): AdElement => {
-      const sentByBrand = index % 2 === 1;
-      return {
-        id: `conversation-line-${index + 1}`,
-        type: 'text',
-        content: line.text,
-        x: sentByBrand ? 70 : 20,
-        y: 152 + index * 66,
-        width: 270,
-        height: 62,
-        rotation: 0,
-        zIndex: 20 + index,
-        fontSize: 19,
-        fontWeight: '800',
-        fontFamily: 'Inter, sans-serif',
-        color: sentByBrand ? variation.archetype.ctaTextColor : variation.archetype.headlineColor,
-        textAlign: 'left',
-        lineHeight: 1.12,
-        backgroundColor: sentByBrand ? variation.archetype.ctaBackgroundColor : '#e2e8f0',
-        borderRadius: 18,
-        styleArchetypeId: variation.archetype.id,
-      };
-    }),
-  ];
 };
 
 export const normalizeCreativeBriefReceipts = (receipts?: Partial<BrandReceipts>): BrandReceipts => ({
@@ -247,12 +140,19 @@ export const buildGeneratedAdApplication = ({
     variation.archetype.speaker2CaptionColor,
     { minContrast: 2.4, maxLuminance: 0.58 }
   );
-  const appliedBackgroundColor = variation.format === 'conversation'
-    ? '#f8fafc'
-    : createTintedAdBackground(
-      appliedVisualizerColor,
-      variation.archetype.backgroundColor || FIXED_AD_BACKGROUND_COLOR
-    );
+  const template = getCreateAdTemplateForVariation(variation);
+  const templateContext = {
+    variation,
+    brandBrain,
+    businessName,
+    canvasLogoUrl: appliedCanvasLogo,
+    isNewBrand: isNewCreateBrand,
+    visualizerColor: appliedVisualizerColor,
+    accentColor: appliedAccentColor,
+  };
+  const appliedBackgroundColor = template.resolveBackgroundColor?.(templateContext)
+    || variation.archetype.backgroundColor
+    || '#ffffff';
   const businessContext = `[Name] ${businessName}
 [Website] ${brandBrain.websiteUrl}
 [Offer] ${brandBrain.offer}
@@ -265,89 +165,7 @@ export const buildGeneratedAdApplication = ({
 
 This ad headline is: ${variation.headline}`;
 
-  const resolveElements = (currentElements: AdElement[]) => {
-    if (variation.format === 'conversation') {
-      const lockedById = new Map(
-        isNewCreateBrand
-          ? []
-          : currentElements.filter((element) => element.locked).map((element) => [element.id, element])
-      );
-      return buildConversationAdElements(variation, brandBrain, appliedCanvasLogo)
-        .map((element) => lockedById.get(element.id) || element);
-    }
-
-    const applyVariationToElement = (element: AdElement): AdElement => {
-      if (element.componentRole === 'logo') {
-        return {
-          ...element,
-          imageUrl: appliedCanvasLogo,
-          removeWhite: false,
-          styleArchetypeId: variation.archetype.id,
-        };
-      }
-      if (element.locked && !isNewCreateBrand) return element;
-      if (element.componentRole === 'headline') {
-        const headlineWidth = Math.min(320, variation.archetype.headlineTreatment.width);
-        return {
-          ...element,
-          content: variation.headline,
-          fontFamily: undefined,
-          color: variation.headlineColor || variation.archetype.headlineColor,
-          fontSize: variation.archetype.headlineTreatment.fontSize,
-          fontWeight: variation.archetype.headlineTreatment.fontWeight,
-          lineHeight: Math.max(1.08, variation.archetype.headlineTreatment.lineHeight),
-          x: (360 - headlineWidth) / 2,
-          width: headlineWidth,
-          styleArchetypeId: variation.archetype.id,
-        };
-      }
-      if (element.componentRole === 'subheadline') {
-        return {
-          ...element,
-          fontFamily: undefined,
-          color: variation.archetype.subheadlineColor,
-          styleArchetypeId: variation.archetype.id,
-        };
-      }
-      if (element.type === 'visualizer') {
-        return {
-          ...element,
-          styleArchetypeId: variation.archetype.id,
-          visualizerType: variation.archetype.visualizerVariant.visualizerType,
-          barColor: appliedVisualizerColor,
-          barCount: variation.archetype.visualizerVariant.barCount,
-          visualizerSensitivity: variation.archetype.visualizerVariant.sensitivity,
-          visualizerHeight: variation.archetype.visualizerVariant.height,
-          ...VOICE_VISUALIZER_PRESET,
-        };
-      }
-      if (element.componentRole === 'captions') {
-        return {
-          ...element,
-          styleArchetypeId: variation.archetype.id,
-          color: appliedAccentColor,
-          captionSpeaker1Color: appliedVisualizerColor,
-          captionSpeaker2Color: appliedAccentColor,
-        };
-      }
-      if (element.componentRole === 'cta') {
-        return {
-          ...element,
-          fontFamily: undefined,
-          color: variation.archetype.ctaTextColor,
-          backgroundColor: variation.archetype.ctaBackgroundColor,
-          styleArchetypeId: variation.archetype.id,
-        };
-      }
-      return {
-        ...element,
-        styleArchetypeId: variation.archetype.id,
-      };
-    };
-
-    const sourceElements = currentElements.length ? currentElements : DEFAULT_ELEMENTS;
-    return sourceElements.map(applyVariationToElement);
-  };
+  const resolveElements = (currentElements: AdElement[]) => template.buildElements(currentElements, templateContext);
 
   return {
     businessName,
