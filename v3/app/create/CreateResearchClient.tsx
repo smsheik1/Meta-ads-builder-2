@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useAction, useMutation } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import {
   Check,
+  Download,
   ExternalLink,
   Link2,
   Loader2,
@@ -53,10 +54,12 @@ function ResearchConnected() {
   const runWebsiteResearch = useAction(api.researchRuns.runWebsiteResearch);
   const generateAdScenes = useAction(api.adScenes.generateFromResearch);
   const createSharePage = useMutation(api.sharePages.createFromScene);
+  const createRenderJob = useMutation(api.renderJobs.createFromScene);
   const [url, setUrl] = useState("ogtool.com");
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [adStatus, setAdStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [shareStatus, setShareStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [renderStatus, setRenderStatus] = useState<"idle" | "loading" | "queued" | "error">("idle");
   const [result, setResult] = useState<StoredWebsiteResearchResult | null>(null);
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
@@ -64,14 +67,23 @@ function ResearchConnected() {
   const [sceneLocks, setSceneLocks] = useState(createDefaultSceneLocks);
   const [rerollCount, setRerollCount] = useState(0);
   const [adStatusNote, setAdStatusNote] = useState("");
+  const [renderJobId, setRenderJobId] = useState<Id<"renderJobs"> | null>(null);
+  const renderJob = useQuery(api.renderJobs.getStatus, renderJobId ? { renderJobId } : "skip");
   const [shareUrl, setShareUrl] = useState("");
   const [shareError, setShareError] = useState("");
+  const [renderError, setRenderError] = useState("");
   const [error, setError] = useState("");
 
   const resetShareState = () => {
     setShareStatus("idle");
     setShareUrl("");
     setShareError("");
+  };
+
+  const resetRenderState = () => {
+    setRenderStatus("idle");
+    setRenderJobId(null);
+    setRenderError("");
   };
 
   const onRerollScene = useCallback(() => {
@@ -82,6 +94,7 @@ function ResearchConnected() {
     setSelectedSceneIndex(next.index);
     setRerollCount((count) => count + 1);
     resetShareState();
+    resetRenderState();
   }, [adScenes, sceneLocks, selectedScene, selectedSceneIndex]);
 
   const onToggleLock = (key: SceneLockKey) => {
@@ -114,6 +127,7 @@ function ResearchConnected() {
     setSceneLocks(createDefaultSceneLocks());
     setRerollCount(0);
     resetShareState();
+    resetRenderState();
     setAdStatusNote("");
     setError("");
 
@@ -150,6 +164,7 @@ function ResearchConnected() {
       setSceneLocks(createDefaultSceneLocks());
       setRerollCount(0);
       resetShareState();
+      resetRenderState();
       setAdStatusNote(nextGeneration.providerStatus.reason);
       setAdStatus("ready");
     } catch (nextError) {
@@ -185,10 +200,42 @@ function ResearchConnected() {
     }
   };
 
+  const onCreateRenderJob = async () => {
+    if (!selectedScene) return;
+    setRenderStatus("loading");
+    setRenderJobId(null);
+    setRenderError("");
+
+    try {
+      const job = await createRenderJob({
+        anonymousId: getAnonymousId(),
+        scene: selectedScene,
+      }) as { renderJobId: Id<"renderJobs"> };
+      setRenderJobId(job.renderJobId);
+      setRenderStatus("queued");
+    } catch (nextError) {
+      setRenderStatus("error");
+      setRenderError(nextError instanceof Error ? nextError.message : "Video render failed to start.");
+    }
+  };
+
+  const currentRenderStatus = renderJob?.status || renderStatus;
+  const renderProgress = renderJob?.progress ?? (renderStatus === "loading" ? 2 : 0);
+  const renderDownloadUrl = renderJob?.downloadUrl || "";
+  const renderStatusLabel = currentRenderStatus === "ready"
+    ? "Video ready"
+    : currentRenderStatus === "failed" || currentRenderStatus === "error"
+      ? "Video render failed"
+      : currentRenderStatus === "queued" || currentRenderStatus === "claimed"
+        ? "Queued for render"
+        : currentRenderStatus === "rendering"
+          ? `Rendering ${renderProgress}%`
+          : "Download video";
+
   return (
     <section className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-7xl grid-cols-[0.85fr_1.15fr] items-start gap-10">
       <div className="pt-8">
-        <p className={pillClass}>Phase 6A share links</p>
+        <p className={pillClass}>Phase 6B render downloads</p>
         <h1 className="mt-7 text-7xl font-black leading-[0.92] tracking-normal">
           Paste a site. Turn evidence into ads.
         </h1>
@@ -308,9 +355,44 @@ function ResearchConnected() {
                   <div className="mt-4 rounded-[24px] border border-slate-200 bg-slate-50 p-3">
                     <button
                       type="button"
+                      onClick={() => void onCreateRenderJob()}
+                      disabled={currentRenderStatus === "loading" || currentRenderStatus === "queued" || currentRenderStatus === "claimed" || currentRenderStatus === "rendering"}
+                      className="inline-flex w-full items-center justify-center gap-3 rounded-[20px] bg-slate-950 px-5 py-4 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
+                    >
+                      {currentRenderStatus === "loading" || currentRenderStatus === "queued" || currentRenderStatus === "claimed" || currentRenderStatus === "rendering" ? (
+                        <Loader2 className="size-5 animate-spin" />
+                      ) : currentRenderStatus === "ready" ? (
+                        <Check className="size-5" />
+                      ) : (
+                        <Download className="size-5" />
+                      )}
+                      {renderStatusLabel}
+                    </button>
+                    {renderDownloadUrl ? (
+                      <a
+                        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-black text-slate-500 transition hover:border-slate-300 hover:text-slate-950"
+                        href={renderDownloadUrl}
+                        download
+                      >
+                        Download MP4
+                        <ExternalLink className="size-4" />
+                      </a>
+                    ) : null}
+                    {currentRenderStatus !== "idle" && currentRenderStatus !== "ready" && currentRenderStatus !== "failed" && currentRenderStatus !== "error" ? (
+                      <p className="mt-3 rounded-2xl bg-white px-4 py-3 text-xs font-black leading-5 text-slate-500">
+                        Render worker will turn this frozen scene into an MP4.
+                      </p>
+                    ) : null}
+                    {renderJob?.error || renderError ? (
+                      <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
+                        {renderJob?.error || renderError}
+                      </p>
+                    ) : null}
+                    <button
+                      type="button"
                       onClick={() => void onCreateShareLink()}
                       disabled={shareStatus === "loading"}
-                      className="inline-flex w-full items-center justify-center gap-3 rounded-[20px] bg-white px-5 py-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:text-slate-400"
+                      className="mt-3 inline-flex w-full items-center justify-center gap-3 rounded-[20px] bg-white px-5 py-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:text-slate-400"
                     >
                       {shareStatus === "loading" ? (
                         <Loader2 className="size-5 animate-spin" />
@@ -360,6 +442,7 @@ function ResearchConnected() {
                     setSelectedScene(scene);
                     setSelectedSceneIndex(index);
                     resetShareState();
+                    resetRenderState();
                   }}
                   className={`rounded-3xl border p-5 text-left transition hover:-translate-y-0.5 ${
                     selectedSceneIndex === index
