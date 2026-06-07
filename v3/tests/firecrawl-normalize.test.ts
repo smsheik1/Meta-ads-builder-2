@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
 import {
+  buildBrandCuratorPrompt,
+  normalizeBrandBriefPayload,
+} from "../features/research/brandCurator";
+import {
   fetchWebsiteResearchWithFirecrawl,
   firecrawlRequestShape,
   isAbortLikeError,
@@ -120,6 +124,30 @@ assert.ok(shopifyResult.evidence.paragraphs.some((paragraph) => paragraph.includ
 assert.equal(shopifyResult.brandBrief.brandName, "David's Cookies");
 assert.equal(shopifyResult.brandBrief.offer, "Cookie Delivery");
 
+const curatorPrompt = buildBrandCuratorPrompt(shopifyResult);
+assert.ok(curatorPrompt.includes("Study these examples for shape only"));
+assert.ok(curatorPrompt.includes("buyerMoments = specific situations, not features"));
+assert.ok(curatorPrompt.includes("If a list field has no real evidence, return []"));
+assert.ok(curatorPrompt.includes("Do not use a page title, SEO title, or brand name alone as the offer"));
+assert.ok(curatorPrompt.includes("visualNotes = concrete observations"));
+
+const normalizedEmptyBrief = normalizeBrandBriefPayload({
+  brandName: "Thin Brand",
+  offer: "A thin but valid offer.",
+  audience: "A thin but valid audience.",
+  buyerMoments: [],
+  proof: [],
+  siteLanguage: [],
+  visualNotes: [],
+  ctaDirection: "See more",
+  droppedNoiseSummary: [],
+  confidence: "low",
+}, shopifyResult.brandBrief);
+assert.deepEqual(normalizedEmptyBrief.buyerMoments, []);
+assert.deepEqual(normalizedEmptyBrief.proof, []);
+assert.deepEqual(normalizedEmptyBrief.siteLanguage, []);
+assert.deepEqual(normalizedEmptyBrief.visualNotes, []);
+
 const curatedShopifyResult = await fetchWebsiteResearchWithFirecrawl("davidscookies.com", {
   apiKey: "test-firecrawl-key",
   fetcher: async () => new Response(JSON.stringify({
@@ -146,6 +174,8 @@ Fresh baked cookies, gift baskets, cheesecakes, and specialty desserts delivered
     apiKey: "test-gemini-key",
     geminiGenerateContent: async ({ prompt }) => {
       assert.ok(prompt.includes("Ignore website chrome"));
+      assert.ok(prompt.includes("High-protein snack bars with a soft, marshmallow-like texture."));
+      assert.ok(prompt.includes("Scheduling software for teams"));
       return JSON.stringify({
         brandName: "David's Cookies",
         offer: "Fresh baked cookies, gift baskets, cheesecakes, and specialty desserts for delivery.",
