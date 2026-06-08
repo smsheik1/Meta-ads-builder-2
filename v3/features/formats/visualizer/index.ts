@@ -5,6 +5,7 @@ import { validateVisualizerScene } from "./validate";
 export const visualizerFormatModule: AdFormatModule = {
   id: "visualizer",
   label: "Audio visualizer",
+  defaultSlots: ["headline", "visualizer", "captions"],
   RenderComponent: VisualizerFormatRenderer,
   validate: validateVisualizerScene,
 };

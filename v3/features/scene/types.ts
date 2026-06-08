@@ -71,9 +71,20 @@ export type AdSceneVisualizerStyle = {
   splitSpeakers: boolean;
 };
 
-export type AdScene = {
+export type AdSceneStyleBase = {
+  backgroundColor: string;
+  textColor: string;
+  accentColor: string;
+  fontFeel: BrandSnapshot["fonts"]["feel"];
+};
+
+export type AdSceneBase<
+  TFormat extends string,
+  TStyle extends AdSceneStyleBase,
+  TLayout extends { preset: string },
+> = {
   version: typeof AD_SCENE_VERSION;
-  format: AdFormatId;
+  format: TFormat;
   brand: BrandSnapshot & {
     receipts: ResearchReceipts;
   };
@@ -86,18 +97,9 @@ export type AdScene = {
     selectedPain: string;
     selectedProof: string;
   };
-  style: {
-    backgroundColor: string;
-    textColor: string;
-    accentColor: string;
-    visualizerColor: string;
-    visualizer?: AdSceneVisualizerStyle;
-    fontFeel: BrandSnapshot["fonts"]["feel"];
-  };
+  style: TStyle;
   audio: AdSceneAudio;
-  layout: {
-    preset: "centered-hero";
-  };
+  layout: TLayout;
   metadata: {
     candidateIndex: number;
     generationBatchId: string;
@@ -108,3 +110,16 @@ export type AdScene = {
     generatedAt: number;
   };
 };
+
+export type VisualizerAdSceneStyle = AdSceneStyleBase & {
+  visualizerColor: string;
+  visualizer?: AdSceneVisualizerStyle;
+};
+
+export type VisualizerAdScene = AdSceneBase<
+  "visualizer",
+  VisualizerAdSceneStyle,
+  { preset: "centered-hero" }
+>;
+
+export type AdScene = VisualizerAdScene;

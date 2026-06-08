@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { AdFormatId, AdScene } from "../scene/types";
+import type { AdFormatId, AdScene, AdSceneBase, AdSceneStyleBase } from "../scene/types";
 
 export type RenderMode = "preview" | "poster" | "video";
 export type RenderMotionMode = "auto" | "idle" | "audio";
@@ -10,8 +10,8 @@ export type RenderFlashState = {
   roles: RenderFlashRole[];
 };
 
-export type FormatRenderProps = {
-  scene: AdScene;
+export type FormatRenderProps<TScene extends AdSceneBase<string, AdSceneStyleBase, { preset: string }> = AdScene> = {
+  scene: TScene;
   mode: RenderMode;
   timeSeconds?: number;
   motionMode?: RenderMotionMode;
@@ -23,9 +23,13 @@ export type FormatValidationResult = {
   errors: string[];
 };
 
-export type AdFormatModule = {
-  id: AdFormatId;
+export type AdFormatModule<
+  TFormat extends string = AdFormatId,
+  TScene extends AdSceneBase<string, AdSceneStyleBase, { preset: string }> = AdScene,
+> = {
+  id: TFormat;
   label: string;
-  RenderComponent: ComponentType<FormatRenderProps>;
-  validate(scene: AdScene): FormatValidationResult;
+  defaultSlots: readonly RenderSelectableSlot[];
+  RenderComponent: ComponentType<FormatRenderProps<TScene>>;
+  validate(scene: TScene): FormatValidationResult;
 };
