@@ -197,9 +197,9 @@ export function CreateActionCard({
                   <span className="text-[10px] font-black text-slate-400">{savedDesignItems.length}</span>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2">
-                  {savedDesignItems.slice(0, 4).map((design) => (
+                  {savedDesignItems.slice(0, 4).map((design, index) => (
                     <button
-                      key={design.id}
+                      key={`${design.id}-${index}`}
                       type="button"
                       onClick={() => onOpenSavedDesign(design)}
                       title={`Open ${design.title}`}
