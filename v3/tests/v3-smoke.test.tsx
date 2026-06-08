@@ -108,10 +108,12 @@ assert.ok(canvasKeyboardSource.includes("isEditableShortcutTarget"), "/create mu
 assert.ok(canvasKeyboardSource.includes('input, textarea, select, [contenteditable="true"], [contenteditable=""], [role="textbox"]'), "/create keyboard guard must block all normal editable targets.");
 assert.ok(canvasKeyboardSource.includes("useCanvasCanReroll"), "/create spacebar must ask the interaction store whether reroll is allowed.");
 assert.ok(canvasKeyboardSource.includes("!canReroll"), "/create spacebar must be blocked by deterministic interaction state.");
-assert.ok(canvasKeyboardSource.includes("shortcutScopeActiveRef") && canvasKeyboardSource.includes("pointerdown") && canvasKeyboardSource.includes("focusin"), "/create spacebar must track editor scope like Avnac instead of listening globally.");
-assert.ok(canvasKeyboardSource.includes("targetIsInScope") && canvasKeyboardSource.includes("isDocumentShortcutTarget"), "/create spacebar must only fire inside the active editor scope.");
+assert.ok(!canvasKeyboardSource.includes("shortcutScopeActiveRef"), "/create spacebar must not depend on hidden pointer/focus history.");
+assert.ok(!canvasKeyboardSource.includes("targetIsInScope") && !canvasKeyboardSource.includes("isDocumentShortcutTarget"), "/create spacebar must not silently disappear when focus history drifts outside the editor.");
+assert.ok(canvasKeyboardSource.includes("editorScopeRef.current"), "/create spacebar must still require the editor root to be mounted.");
 assert.ok(createModuleSource.includes("placeholderAdSurfaceVariantCount"), "/create fresh visitors must be able to spacebar through curated placeholder ads before website research exists.");
 assert.ok(createModuleSource.includes("setPlaceholderVariantIndex((index) => (index + 1) % placeholderAdSurfaceVariantCount)"), "/create placeholder spacebar reroll must cycle placeholder variants instead of doing nothing.");
+assert.ok(createModuleSource.includes('data-testid="spacebar-reroll-button"'), "/create spacebar wish button must keep a stable browser-test target.");
 assert.ok(!createModuleSource.includes("enabled:"), "/create keyboard hook must not recreate product-state gates in component props.");
 assert.ok(!createModuleSource.includes("enabled: adScenes.length > 0"), "/create must not gate the spacebar tutorial behind generated ads.");
 assert.ok(createModuleSource.includes('openModal("brand-dump")') && createModuleSource.includes('openModal("dialogue")') && createModuleSource.includes('openModal("captions")'), "/create modals must update the interaction store so reroll is blocked while open.");
@@ -210,6 +212,21 @@ assert.ok(!createModuleSource.includes("ring-2 ring-slate-950/35"), "/create sel
 assert.ok(!createModuleSource.includes('selected ? "opacity-70"'), "/create selected slot controls must not stay visible after clicking outside the canvas.");
 assert.ok(createModuleSource.includes("LegacyIdleVisualizer"), "/create empty placeholder must render through the shared legacy idle visualizer recipe.");
 assert.ok(createModuleSource.includes("placeholderVariants"), "/create empty placeholder must keep a small curated tutorial set for first-visit spacebar rerolls.");
+for (const oldCreateStarterHeadline of [
+  "Drop in your website and watch the magic happen.",
+  "Turn your homepage into a ready-to-test ad.",
+  "Your next ad starts with one URL.",
+  "Make the first draft less painful.",
+  "See the angle hiding on your website.",
+  "From brand page to video ad in minutes.",
+]) {
+  assert.ok(
+    createModuleSource.includes(oldCreateStarterHeadline),
+    `/create empty placeholder must keep the original /create starter headline: ${oldCreateStarterHeadline}`,
+  );
+}
+assert.ok(createModuleSource.includes("placeholder-idle-wave"), "/create empty placeholder visualizer must remount on starter reroll so the old staggered wave restarts from the left.");
+assert.ok(createModuleSource.includes("waveKey={variantIndex}"), "/create empty placeholder visualizer must expose a changing wave key for browser QA.");
 assert.ok(createModuleSource.includes("Tour the starter ads in one tap."), "/create empty state must teach fresh visitors that the spacebar bar is interactive.");
 assert.ok(createModuleSource.includes('src="/wiggly-logo.svg"'), "/create empty placeholder must use the old Wiggly logo asset slot.");
 assert.ok(createModuleSource.includes('data-placeholder-slot="logo"'), "/create empty placeholder must expose a locked logo slot.");
@@ -228,6 +245,7 @@ assert.ok(createModuleSource.includes("lg:absolute") && createModuleSource.inclu
 assert.ok(createModuleSource.includes("relative flex flex-col items-center gap-3 lg:block"), "/create preview column must keep the original phone-first layout while preserving the v3 spacebar block.");
 assert.ok(existsSync("public/wiggly-logo.svg"), "/create v3 must ship the old Wiggly placeholder logo asset.");
 assert.ok(visualizerRenderSource.includes("LegacyIdleVisualizer"), "/create generated no-audio scenes must render through the shared legacy idle visualizer recipe.");
+assert.ok(visualizerRenderSource.includes("legacy-idle-wave"), "/create generated no-audio visualizers must key the idle visualizer by active scene so rerolls restart the old staggered wave.");
 assert.ok(visualizerRenderSource.includes("getSmoothedAnalysisFrame"), "/create generated-audio visualizer must smooth between analysis frames.");
 assert.ok(visualizerRenderSource.includes("lerp(fromLevel, toLevel, amount)"), "/create generated-audio visualizer must interpolate audio levels instead of snapping.");
 assert.ok(visualizerRenderSource.includes('motionMode !== "idle"'), "/create renderer must support an idle motion mode for paused previews while keeping audio analysis for playback/export.");
@@ -238,6 +256,7 @@ assert.ok(visualizerRenderSource.includes("top: toCanvasPercent(336, \"y\")") &&
 assert.ok(legacyIdleVisualizerSource.includes("getIdleVisualizerPercent"), "Shared legacy idle visualizer must use the old idle height formula.");
 assert.ok(legacyIdleVisualizerSource.includes("wiggly-idle-bar wiggly-idle-bar-strong"), "Shared legacy idle visualizer must keep the old waveform idle CSS animation.");
 assert.ok(legacyIdleVisualizerSource.includes("index * 28") && legacyIdleVisualizerSource.includes("index * 45"), "Legacy idle visualizer must keep the old waveform and bar stagger timings.");
+assert.ok(legacyIdleVisualizerSource.includes("data-visualizer-wave-key"), "Legacy idle visualizer must expose a wave key so reroll restart behavior can be verified.");
 assert.ok(globalsSource.includes(".wiggly-reroll-shine"), "v3 globals must include the old /create reroll shine class.");
 assert.ok(globalsSource.includes("@keyframes wiggly-reroll-glint"), "v3 globals must include the old /create reroll glint animation.");
 assert.ok(globalsSource.includes("@keyframes wiggly-reroll-focus"), "v3 globals must include the old /create reroll focus animation.");
