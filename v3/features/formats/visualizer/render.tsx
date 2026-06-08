@@ -324,14 +324,17 @@ export function VisualizerFormatRenderer({
       <p
         style={{
           position: "absolute",
-          right: "7%",
-          bottom: "5.8%",
+          right: toCanvasPercent(16, "x"),
+          bottom: toCanvasPercent(18, "y"),
           margin: 0,
-          color: textColor,
-          fontSize: 18,
+          color: "#0F172A",
+          fontSize: "clamp(8px, 2.8cqw, 10px)",
           fontWeight: 900,
-          letterSpacing: 8,
-          opacity: 0.28,
+          letterSpacing: "0.18em",
+          lineHeight: 1,
+          mixBlendMode: "multiply",
+          opacity: 0.3,
+          textShadow: "0 1px 0 rgba(255, 255, 255, 0.45)",
           textTransform: "uppercase",
         }}
       >

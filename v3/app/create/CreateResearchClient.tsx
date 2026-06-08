@@ -11,6 +11,7 @@ import {
   isStaleAudioAnalysis,
   precomputeBrowserAudioAnalysisFromUrl,
 } from "@/features/audio/browserAudioAnalysis";
+import { updateGeneratedAudioCaptionText } from "@/features/audio/sceneAudio";
 import { cloneDialogueScript, type DialogueScript } from "@/features/dialogue/dialogueScripts";
 import type {
   RenderFlashRole,
@@ -40,6 +41,7 @@ import type { AdScene } from "@/features/scene/types";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
 import { CreateActionCard } from "./CreateActionCard";
 import { CreateAudioCard } from "./CreateAudioCard";
+import { CreateCaptionModal } from "./CreateCaptionModal";
 import { BrandDumpModal } from "./CreateBrandDumpModal";
 import { CreateCanvasColumn } from "./CreateCanvasColumn";
 import { CreateCreativeBriefCard } from "./CreateCreativeBriefCard";
@@ -124,6 +126,7 @@ function ResearchConnected() {
   const [shareError, setShareError] = useState("");
   const [audioError, setAudioError] = useState("");
   const [dialoguePanelOpen, setDialoguePanelOpen] = useState(false);
+  const [captionPanelOpen, setCaptionPanelOpen] = useState(false);
   const [brandDetailsOpen, setBrandDetailsOpen] = useState(false);
   const [dialogueStatus, setDialogueStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [dialogueScripts, setDialogueScripts] = useState<DialogueScript[]>([]);
@@ -300,6 +303,7 @@ function ResearchConnected() {
 
   const resetDialogueState = () => {
     setDialoguePanelOpen(false);
+    setCaptionPanelOpen(false);
     setDialogueStatus("idle");
     setDialogueScripts([]);
     setSelectedDialogueIndex(0);
@@ -310,6 +314,7 @@ function ResearchConnected() {
     setAudioStatus("idle");
     setAudioError("");
     setBrandDetailsOpen(false);
+    setCaptionPanelOpen(false);
     resetDialogueState();
     resetPreviewPlayback();
   };
@@ -468,7 +473,7 @@ function ResearchConnected() {
 
   useCanvasKeyboard({
     editorScopeRef: createEditorScopeRef,
-    enabled: adScenes.length > 0 && !brandDetailsOpen && !dialoguePanelOpen,
+    enabled: adScenes.length > 0 && !brandDetailsOpen && !dialoguePanelOpen && !captionPanelOpen,
     onReroll: onRerollScene,
   });
 
@@ -646,6 +651,20 @@ function ResearchConnected() {
     resetShareState();
   };
 
+  const onUpdateCaptionText = (captionIndex: number, text: string) => {
+    if (!selectedScene || selectedScene.audio.status !== "generated") return;
+    const nextAudio = updateGeneratedAudioCaptionText(selectedScene.audio, captionIndex, text);
+    if (nextAudio === selectedScene.audio) return;
+
+    replaceSelectedScene({
+      ...selectedScene,
+      audio: nextAudio,
+    });
+    resetRenderState();
+    resetShareState();
+    resetSaveState();
+  };
+
   const onGenerateAudio = async () => {
     const script = dialogueScripts[selectedDialogueIndex];
     if (!selectedScene || selectedScene.audio.status === "generated" || !script) return;
@@ -806,6 +825,8 @@ function ResearchConnected() {
           : "Download video";
   const hasGeneratedAudio = selectedScene?.audio.status === "generated";
   const playableAudioUrl = selectedScene?.audio.status === "generated" ? selectedScene.audio.url : "";
+  const generatedCaptions = selectedScene?.audio.status === "generated" ? selectedScene.audio.captions : [];
+  const hasEmptyEditedCaption = generatedCaptions.some((caption) => !caption.text.trim());
   const selectedDialogueScript = dialogueScripts[selectedDialogueIndex] || null;
   const dialogueCanGenerateAudio = Boolean(selectedScene && selectedDialogueScript && selectedDialogueScript.lines.some((line) => line.text.trim()));
   const selectedSavedDesignId = selectedScene ? createSavedDesignId(selectedScene) : "";
@@ -885,15 +906,15 @@ function ResearchConnected() {
 
         <aside className="pt-28">
           <CreateActionCard
-            adScenesCount={adScenes.length}
             currentRenderStatus={currentRenderStatus}
+            hasGeneratedAudio={hasGeneratedAudio}
             hasSelectedScene={Boolean(selectedScene)}
             isAudioPlaying={isAudioPlaying}
             onCreateRenderJob={() => void onCreateRenderJob()}
             onCreateShareLink={() => void onCreateShareLink()}
+            onOpenCaptionEditor={() => setCaptionPanelOpen(true)}
             onOpenSavedDesign={onOpenSavedDesign}
             onPreviewPlatformChange={setPreviewPlatform}
-            onRerollScene={onRerollScene}
             onSaveSelectedDesign={() => void onSaveSelectedDesign()}
             onSavedDesignsBlur={closeSavedDesignsOnBlur}
             onSavedDesignsOpenChange={setSavedDesignsOpen}
@@ -975,6 +996,15 @@ function ResearchConnected() {
           onUpdateDialogueLineText={onUpdateDialogueLineText}
           onUploadAudio={(file) => void onUploadAudio(file)}
           selectedDialogueIndex={selectedDialogueIndex}
+        />
+      ) : null}
+
+      {captionPanelOpen && hasGeneratedAudio ? (
+        <CreateCaptionModal
+          captions={generatedCaptions}
+          hasEmptyEditedCaption={hasEmptyEditedCaption}
+          onClose={() => setCaptionPanelOpen(false)}
+          onUpdateCaptionText={onUpdateCaptionText}
         />
       ) : null}
     </div>
