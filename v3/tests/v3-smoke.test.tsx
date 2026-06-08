@@ -52,13 +52,16 @@ assert.equal(
 );
 
 const createClientSource = readFileSync("app/create/CreateResearchClient.tsx", "utf8");
+const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 assert.ok(createClientSource.includes("Audio preview syncs captions and visualizer"), "/create must expose an obvious audio preview control.");
 assert.ok(createClientSource.includes("controls"), "/create audio preview must use native playback controls.");
 assert.ok(createClientSource.includes("audioRef"), "/create audio preview must use the generated audio asset.");
 assert.ok(createClientSource.includes("setPreviewTimeSeconds"), "/create audio preview must sync the renderer time.");
 assert.ok(createClientSource.includes("window.requestAnimationFrame"), "/create must run a smooth preview clock for the visualizer.");
-assert.ok(createClientSource.includes('selectedScene.audio.status !== "generated" || isAudioPlaying'), "/create must animate the no-audio visualizer placeholder.");
+assert.ok(createClientSource.includes('selectedScene.audio.status === "generated" && isAudioPlaying'), "/create must reserve the preview clock for generated audio.");
 assert.ok(createClientSource.includes("isStoredWebsiteResearchFailure(nextResult)"), "/create must handle failed website research without exposing raw Convex action errors.");
+assert.ok(previewChromeSource.includes("getIdleVisualizerPercent"), "/create empty placeholder must use the legacy idle waveform formula.");
+assert.ok(previewChromeSource.includes("wiggly-idle-bar wiggly-idle-bar-strong"), "/create empty placeholder must use the legacy idle CSS animation.");
 
 for (const requiredApiCall of [
   "api.researchRuns.runWebsiteResearch",
