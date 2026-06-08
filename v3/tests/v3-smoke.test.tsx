@@ -82,6 +82,13 @@ assert.ok(createModuleSource.includes('selectedScene.audio.status === "generated
 assert.ok(createModuleSource.includes('motionMode={isAudioPlaying ? "audio" : "idle"}'), "/create must render paused generated-audio previews with the moving idle visualizer instead of a frozen audio frame.");
 assert.ok(createModuleSource.includes("isStoredWebsiteResearchFailure(nextResult)"), "/create must handle failed website research without exposing raw Convex action errors.");
 assert.ok(createModuleSource.includes("await generateScenesForResearch(nextResult.researchRunId"), "/create main Generate ads submit must read the website and immediately generate/select ad scenes.");
+assert.ok(createModuleSource.includes("Keeping this canvas stable until the new ads are ready"), "/create must keep the current canvas stable while a new website is being researched.");
+assert.ok(!createModuleSource.includes("setAdScenes([])"), "/create submit must not clear the current canvas before replacement ads are ready.");
+assert.ok(!createModuleSource.includes("setSelectedScene(null)"), "/create submit must not snap back to the starter placeholder while website research is running.");
+assert.ok(
+  createModuleSource.indexOf("setResult(nextResult)") > createModuleSource.indexOf("const nextScenes = await generateScenesForResearch"),
+  "/create must not swap the visible research result until generated scenes are ready too.",
+);
 assert.ok(createModuleSource.includes('Ad idea generation returned no ads'), "/create must fail loudly if ad generation returns an empty scene list.");
 assert.ok(createModuleSource.includes('const submitIsBusy = status === "loading" || adStatus === "loading"'), "/create main Generate ads button must stay busy while either research or ad generation is running.");
 assert.ok(!createLeftColumnSource.includes("Generate 50 ads"), "/create must not show a second Generate 50 ads box after the main submit already generates ads.");
@@ -98,14 +105,15 @@ assert.ok(canvasKeyboardSource.includes("isRerollSpacebarKey"), "/create must ro
 assert.ok(canvasKeyboardSource.includes('event.key === "Spacebar"') && canvasKeyboardSource.includes('event.code === "Space"'), "/create must accept common browser spacebar key variants.");
 assert.ok(canvasKeyboardSource.includes("isEditableShortcutTarget"), "/create must keep text editors protected while allowing intentional spacebar rerolls.");
 assert.ok(canvasKeyboardSource.includes('input, textarea, select, [contenteditable="true"], [contenteditable=""], [role="textbox"]'), "/create keyboard guard must block all normal editable targets.");
-assert.ok(canvasKeyboardSource.includes('mode !== "idle"'), "/create spacebar must be guarded by canvas interaction mode.");
+assert.ok(canvasKeyboardSource.includes("useCanvasCanReroll"), "/create spacebar must ask the interaction store whether reroll is allowed.");
+assert.ok(canvasKeyboardSource.includes("!canReroll"), "/create spacebar must be blocked by deterministic interaction state.");
 assert.ok(canvasKeyboardSource.includes("shortcutScopeActiveRef") && canvasKeyboardSource.includes("pointerdown") && canvasKeyboardSource.includes("focusin"), "/create spacebar must track editor scope like Avnac instead of listening globally.");
 assert.ok(canvasKeyboardSource.includes("targetIsInScope") && canvasKeyboardSource.includes("isDocumentShortcutTarget"), "/create spacebar must only fire inside the active editor scope.");
 assert.ok(createModuleSource.includes("placeholderAdSurfaceVariantCount"), "/create fresh visitors must be able to spacebar through curated placeholder ads before website research exists.");
 assert.ok(createModuleSource.includes("setPlaceholderVariantIndex((index) => (index + 1) % placeholderAdSurfaceVariantCount)"), "/create placeholder spacebar reroll must cycle placeholder variants instead of doing nothing.");
-assert.ok(createModuleSource.includes("enabled: !brandDetailsOpen && !dialoguePanelOpen && !captionPanelOpen"), "/create spacebar must stay enabled for fresh visitors and only be blocked by editor modals.");
+assert.ok(!createModuleSource.includes("enabled:"), "/create keyboard hook must not recreate product-state gates in component props.");
 assert.ok(!createModuleSource.includes("enabled: adScenes.length > 0"), "/create must not gate the spacebar tutorial behind generated ads.");
-assert.ok(createModuleSource.includes("!brandDetailsOpen && !dialoguePanelOpen"), "/create must disable spacebar reroll while editor modals are open.");
+assert.ok(createModuleSource.includes('openModal("brand-dump")') && createModuleSource.includes('openModal("dialogue")') && createModuleSource.includes('openModal("captions")'), "/create modals must update the interaction store so reroll is blocked while open.");
 assert.ok(!createModuleSource.includes('data-allow-spacebar-reroll="true"'), "/create website input must block rerolls while the user is editing the URL.");
 assert.ok(createModuleSource.includes("shouldCarryAudio"), "/create spacebar reroll must carry generated audio onto the next visual variant.");
 assert.ok(createModuleSource.includes("shouldKeepPlayback"), "/create spacebar reroll must not reset playback when the generated audio is preserved.");
@@ -116,7 +124,11 @@ assert.ok(createModuleSource.includes("rerollFlash={rerollFlash}"), "/create pho
 assert.ok(canvasInteractionStoreSource.includes("create<CanvasInteractionState>"), "/create canvas interaction state must live in a tiny Zustand store.");
 assert.ok(canvasInteractionStoreSource.includes("Canvas interaction only"), "/create canvas store must document its interaction-only boundary.");
 assert.deepEqual(canvasInteractionStoreImports, ['import { create } from "zustand";'], "/create canvas interaction store must only import Zustand.");
-assert.ok(createModuleSource.includes("useCanvasInteractionStore"), "/create must read canvas interaction state from the store.");
+assert.ok(createModuleSource.includes("useCanvasActions") && createModuleSource.includes("useSelectedCanvasSlot") && createModuleSource.includes("useCanvasLocks"), "/create must use exported canvas interaction hooks instead of raw store selectors.");
+assert.ok(!createModuleSource.includes("useCanvasInteractionStore("), "/create must not import or call the raw canvas interaction store.");
+assert.ok(canvasInteractionStoreSource.includes("reduceCanvasInteractionState"), "/create canvas store must expose a pure reducer for transition tests.");
+assert.ok(canvasInteractionStoreSource.includes("uiStatus") && canvasInteractionStoreSource.includes("playbackStatus"), "/create canvas store must keep UI and playback state parallel.");
+assert.ok(canvasInteractionStoreSource.includes("getCanvasCanReroll"), "/create canvas store must expose one derived reroll gate.");
 assert.ok(!createModuleSource.includes("useState<RenderSelectableSlot"), "/create must not keep selected canvas slot in local page state.");
 assert.ok(!createModuleSource.includes("useState(createDefaultSceneLocks"), "/create must not keep canvas locks in local page state.");
 for (const forbiddenLocalStatePattern of forbiddenCreateInteractionLocalState) {
@@ -125,7 +137,7 @@ for (const forbiddenLocalStatePattern of forbiddenCreateInteractionLocalState) {
     "/create must not keep selected slot, canvas mode, or locks in local useState; use the canvas interaction store.",
   );
 }
-assert.ok(createModuleSource.includes("clearSelectedPreviewSlot()"), "/create must not restore scoped canvas selection after refresh because spacebar should full-reroll by default.");
+assert.ok(createModuleSource.includes("interactionReset({ locks: snapshot.sceneLocks })"), "/create must not restore scoped canvas selection after refresh because spacebar should full-reroll by default.");
 assert.ok(createModuleSource.includes("getSceneFormatInteraction"), "/create preview selector must read active format interaction metadata.");
 assert.ok(createModuleSource.includes("getSceneSelectableSlots"), "/create preview selector must read selectable slots from the active format.");
 assert.ok(createModuleSource.includes("getLockedSlotsForScene"), "/create preview selector must derive slot locks from format metadata.");
@@ -135,7 +147,7 @@ assert.ok(createModuleSource.includes("formatInteraction.applySlotReroll"), "/cr
 assert.ok(!createModuleSource.includes("const previewSlotLockKey"), "/create must not hardcode format slot-to-lock mappings.");
 assert.ok(!createModuleSource.includes("const previewSlotLabels"), "/create must not hardcode format slot labels.");
 assert.ok(createModuleSource.includes("onChangePreviewSlotColor"), "/create preview selector must support old builder-style hover color changes.");
-assert.ok(createModuleSource.includes("selectPreviewSlot(slot)"), "/create canvas selection must stay sticky instead of toggling off on normal clicks.");
+assert.ok(createModuleSource.includes("slotSelected(slot)"), "/create canvas selection must stay sticky instead of toggling off on normal clicks.");
 assert.ok(createModuleSource.includes("onChangePreviewBackgroundColor"), "/create preview selector must support background color changes.");
 assert.ok(createModuleSource.includes("Spacebar rerolls the"), "/create must tell users when spacebar is scoped to one selected part.");
 assert.ok(createModuleSource.includes('data-create-action-card="legacy"'), "/create right rail must copy the original /create generated-ad action card look.");
@@ -152,7 +164,7 @@ for (const requiredPreviewLabel of ["FB Feed", "IG Feed", "Reels", "Stories", "Y
 }
 assert.ok(createModuleSource.includes('data-create-creative-brief-card="legacy"'), "/create right rail must copy the original compact creative brief card look.");
 assert.ok(createModuleSource.includes("getCreativeBriefHighlights"), "/create creative brief card must use a tiny offer/audience/hook summary before the full dump.");
-assert.ok(createModuleSource.includes("setBrandDetailsOpen(true)"), "/create creative brief More button must open the full brand dump modal.");
+assert.ok(createModuleSource.includes("openBrandDetails") && createModuleSource.includes('openModal("brand-dump")'), "/create creative brief More button must open the full brand dump modal through the interaction store.");
 assert.ok(createModuleSource.includes('data-brand-dump-modal="legacy"'), "/create full brand dump must use the original modal structure instead of a giant inline section.");
 assert.ok(createModuleSource.includes("Images Firecrawl found"), "/create full brand dump modal must expose visual evidence from research.");
 assert.ok(createModuleSource.includes("Useful claims"), "/create full brand dump modal must expose the strongest copywriting fuel.");
