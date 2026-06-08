@@ -904,10 +904,10 @@ function ResearchConnected() {
   return (
     <div
       ref={createEditorScopeRef}
-      className="min-h-screen min-w-[1280px] overflow-x-auto bg-[#f7f4ea] px-10 py-7 text-slate-950"
+      className="min-h-screen min-w-[1280px] overflow-x-auto bg-[#F7F4EA] px-3 py-4 font-sans text-slate-950 sm:px-6 md:px-10"
       data-create-editor-scope="true"
     >
-      <header className="mx-auto flex max-w-[1720px] items-center justify-between">
+      <header className="mx-auto flex max-w-7xl items-center justify-between">
         <div className="flex items-center gap-3">
           <WigglyMark size="sm" />
           <div>
@@ -917,10 +917,16 @@ function ResearchConnected() {
             </p>
           </div>
         </div>
-        <span aria-hidden="true" />
+        <button
+          type="button"
+          className="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-black text-slate-700 shadow-md shadow-slate-950/10"
+          title="Builder stays legacy-only while v3 /create is stabilized."
+        >
+          Open builder
+        </button>
       </header>
 
-      <section className="mx-auto grid max-w-[1720px] grid-cols-[minmax(390px,560px)_minmax(560px,650px)_minmax(330px,430px)] items-start gap-10 pb-14 pt-9">
+      <section className="mx-auto grid max-w-7xl items-center gap-8 py-6 sm:gap-10 sm:py-8 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[0.82fr_1.18fr] lg:gap-16 lg:py-10">
         <CreateLeftColumn
           adScenesCount={adScenes.length}
           adStatus={adStatus}
@@ -931,94 +937,100 @@ function ResearchConnected() {
           url={url}
         />
 
-        <CreateCanvasColumn
-          adScenesCount={adScenes.length}
-          isAudioPlaying={isAudioPlaying}
-          onChangePreviewBackgroundColor={onChangePreviewBackgroundColor}
-          onChangePreviewSlotColor={onChangePreviewSlotColor}
-          onOpenAudioPanel={onOpenAudioPanel}
-          onRerollScene={onRerollScene}
-          onSelectPreviewSlot={onSelectPreviewSlot}
-          onTogglePlayback={onTogglePreviewPlayback}
-          onTogglePreviewSlotLock={onTogglePreviewSlotLock}
-          placeholderVariantIndex={placeholderVariantIndex}
-          playableAudioUrl={playableAudioUrl}
-          previewPlatform={previewPlatform}
-          previewTimeSeconds={previewTimeSeconds}
-          rerollCount={rerollCount}
-          rerollFlash={rerollFlash}
-          result={result}
-          sceneLocks={sceneLocks}
-          selectedPreviewSlot={selectedPreviewSlot}
-          selectedScene={selectedScene}
-        />
+        <div className="space-y-4">
+          <div className="grid items-center gap-5 sm:gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]">
+            <CreateCanvasColumn
+              adScenesCount={adScenes.length}
+              isAudioPlaying={isAudioPlaying}
+              onChangePreviewBackgroundColor={onChangePreviewBackgroundColor}
+              onChangePreviewSlotColor={onChangePreviewSlotColor}
+              onOpenAudioPanel={onOpenAudioPanel}
+              onRerollScene={onRerollScene}
+              onSelectPreviewSlot={onSelectPreviewSlot}
+              onTogglePlayback={onTogglePreviewPlayback}
+              onTogglePreviewSlotLock={onTogglePreviewSlotLock}
+              placeholderVariantIndex={placeholderVariantIndex}
+              playableAudioUrl={playableAudioUrl}
+              previewPlatform={previewPlatform}
+              previewTimeSeconds={previewTimeSeconds}
+              rerollCount={rerollCount}
+              rerollFlash={rerollFlash}
+              result={result}
+              sceneLocks={sceneLocks}
+              selectedPreviewSlot={selectedPreviewSlot}
+              selectedScene={selectedScene}
+            />
 
-        <aside className="pt-28">
-          <CreateActionCard
-            currentRenderStatus={currentRenderStatus}
-            hasGeneratedAudio={hasGeneratedAudio}
-            hasSelectedScene={Boolean(selectedScene)}
-            isAudioPlaying={isAudioPlaying}
-            onCreateRenderJob={() => void onCreateRenderJob()}
-            onCreateShareLink={() => void onCreateShareLink()}
-            onOpenCaptionEditor={openCaptionPanel}
-            onOpenSavedDesign={onOpenSavedDesign}
-            onPreviewPlatformChange={setPreviewPlatform}
-            onSaveSelectedDesign={() => void onSaveSelectedDesign()}
-            onSavedDesignsBlur={closeSavedDesignsOnBlur}
-            onSavedDesignsOpenChange={setSavedDesignsOpen}
-            onTogglePreviewPlayback={onTogglePreviewPlayback}
-            playableAudioUrl={playableAudioUrl}
-            previewPlatform={previewPlatform}
-            renderBusy={renderBusy}
-            renderDownloadUrl={renderDownloadUrl}
-            renderErrorMessage={renderJob?.error || renderError}
-            renderStatusLabel={renderStatusLabel}
-            saveError={saveError}
-            savedDesignItems={savedDesignItems}
-            savedDesignsOpen={savedDesignsOpen}
-            saveStatus={saveStatus}
-            saveStatusLabel={saveStatusLabel}
-            selectedDesignIsSaved={selectedDesignIsSaved}
-            shareError={shareError}
-            shareStatus={shareStatus}
-            shareUrl={shareUrl}
-          />
+            <aside className="space-y-4">
+              <CreateActionCard
+                currentRenderStatus={currentRenderStatus}
+                hasGeneratedAudio={hasGeneratedAudio}
+                hasSelectedScene={Boolean(selectedScene)}
+                isAudioPlaying={isAudioPlaying}
+                onCreateRenderJob={() => void onCreateRenderJob()}
+                onCreateShareLink={() => void onCreateShareLink()}
+                onOpenCaptionEditor={openCaptionPanel}
+                onOpenSavedDesign={onOpenSavedDesign}
+                onPreviewPlatformChange={setPreviewPlatform}
+                onSaveSelectedDesign={() => void onSaveSelectedDesign()}
+                onSavedDesignsBlur={closeSavedDesignsOnBlur}
+                onSavedDesignsOpenChange={setSavedDesignsOpen}
+                onTogglePreviewPlayback={onTogglePreviewPlayback}
+                playableAudioUrl={playableAudioUrl}
+                previewPlatform={previewPlatform}
+                renderBusy={renderBusy}
+                renderDownloadUrl={renderDownloadUrl}
+                renderErrorMessage={renderJob?.error || renderError}
+                renderStatusLabel={renderStatusLabel}
+                saveError={saveError}
+                savedDesignItems={savedDesignItems}
+                savedDesignsOpen={savedDesignsOpen}
+                saveStatus={saveStatus}
+                saveStatusLabel={saveStatusLabel}
+                selectedDesignIsSaved={selectedDesignIsSaved}
+                shareError={shareError}
+                shareStatus={shareStatus}
+                shareUrl={shareUrl}
+              />
 
-          <CreateAudioCard
-            audioError={audioError}
-            audioRef={audioRef}
-            onAudioEnded={() => {
-              setIsAudioPlaying(false);
-              canvasActions.playbackStopped();
-              if (audioRef.current) audioRef.current.currentTime = 0;
-              setPreviewTimeSeconds(1.1);
-            }}
-            onAudioPause={(currentTime) => {
-              setIsAudioPlaying(false);
-              canvasActions.playbackStopped();
-              setPreviewTimeSeconds(currentTime);
-            }}
-            onAudioPlay={() => {
-              setIsAudioPlaying(true);
-              canvasActions.playbackStarted();
-            }}
-            onAudioTimeUpdate={setPreviewTimeSeconds}
-            playableAudioUrl={playableAudioUrl}
-          />
+              <CreateAudioCard
+                audioError={audioError}
+                audioRef={audioRef}
+                onAudioEnded={() => {
+                  setIsAudioPlaying(false);
+                  canvasActions.playbackStopped();
+                  if (audioRef.current) audioRef.current.currentTime = 0;
+                  setPreviewTimeSeconds(1.1);
+                }}
+                onAudioPause={(currentTime) => {
+                  setIsAudioPlaying(false);
+                  canvasActions.playbackStopped();
+                  setPreviewTimeSeconds(currentTime);
+                }}
+                onAudioPlay={() => {
+                  setIsAudioPlaying(true);
+                  canvasActions.playbackStarted();
+                }}
+                onAudioTimeUpdate={setPreviewTimeSeconds}
+                playableAudioUrl={playableAudioUrl}
+              />
 
-          <CreateCreativeBriefCard
-            onOpenDetails={openBrandDetails}
-            result={result}
-          />
-
-          <CreateIdeasList
-            scenes={adScenes}
-            selectedSceneIndex={selectedSceneIndex}
-            onSelectScene={onSelectAdIdea}
-          />
-        </aside>
+              <CreateCreativeBriefCard
+                onOpenDetails={openBrandDetails}
+                result={result}
+              />
+            </aside>
+          </div>
+        </div>
       </section>
+
+      <div className="mx-auto max-w-7xl pb-14">
+        <CreateIdeasList
+          scenes={adScenes}
+          selectedSceneIndex={selectedSceneIndex}
+          onSelectScene={onSelectAdIdea}
+        />
+      </div>
 
       {result && brandDetailsOpen ? (
         <BrandDumpModal
