@@ -4,7 +4,11 @@ import {
   type AdScene,
   type AdSceneCandidate,
 } from "./types";
-import { legacyCreateVisualizerStyle } from "./visualizerStyle";
+import {
+  createTintedVisualizerBackground,
+  getVisualizerVariantForCandidate,
+  pickVisualizerColorForCandidate,
+} from "./visualizerVariants";
 
 const defaultAccent = "#7DD3FC";
 
@@ -35,6 +39,8 @@ export const createVisualizerAdScene = ({
   now?: number;
 }): AdScene => {
   const accentColor = pickSceneAccentColor(research.brand.colors);
+  const visualizerVariant = getVisualizerVariantForCandidate(candidateIndex);
+  const visualizerColor = pickVisualizerColorForCandidate(research.brand.colors, candidateIndex);
 
   return {
     version: AD_SCENE_VERSION,
@@ -58,11 +64,11 @@ export const createVisualizerAdScene = ({
       selectedProof: candidate.selectedProof,
     },
     style: {
-      backgroundColor: "#FBFAF5",
+      backgroundColor: createTintedVisualizerBackground(visualizerColor),
       textColor: "#070B1D",
       accentColor,
-      visualizerColor: accentColor,
-      visualizer: legacyCreateVisualizerStyle,
+      visualizerColor,
+      visualizer: visualizerVariant.visualizer,
       fontFeel: research.brand.fonts.feel,
     },
     audio: {

@@ -1,11 +1,12 @@
 import type { CSSProperties } from "react";
 import { getFormatModule } from "../formats/registry";
-import type { RenderMode } from "../formats/types";
+import type { RenderMode, RenderMotionMode } from "../formats/types";
 import type { AdScene } from "../scene/types";
 
 export type AdRenderSurfaceProps = {
   scene: AdScene;
   mode?: RenderMode;
+  motionMode?: RenderMotionMode;
   timeSeconds?: number;
   className?: string;
   style?: CSSProperties;
@@ -14,6 +15,7 @@ export type AdRenderSurfaceProps = {
 export function AdRenderSurface({
   scene,
   mode = "preview",
+  motionMode = "auto",
   timeSeconds = 0,
   className,
   style,
@@ -37,7 +39,7 @@ export function AdRenderSurface({
         ...style,
       }}
     >
-      <FormatRenderer scene={scene} mode={mode} timeSeconds={timeSeconds} />
+      <FormatRenderer scene={scene} mode={mode} motionMode={motionMode} timeSeconds={timeSeconds} />
     </div>
   );
 }

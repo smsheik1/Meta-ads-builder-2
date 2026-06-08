@@ -1,13 +1,14 @@
 import type { CSSProperties } from "react";
 import { getVisibleCaptionText } from "../../audio/sceneAudio";
 import {
-  getIdleVisualizerPercent,
   getVisualizerBarCount,
   getVisualizerBars,
   normalizeVisualizerType,
 } from "../../audio/visualizer";
 import { legacyCreateVisualizerStyle } from "../../scene/visualizerStyle";
 import type { FormatRenderProps } from "../types";
+import { LegacyIdleVisualizer } from "./LegacyIdleVisualizer";
+import type { AdSceneAudioAnalysis } from "../../scene/types";
 
 const frameRate = 60;
 
@@ -51,15 +52,44 @@ const brandMarkStyle: CSSProperties = {
   borderRadius: 16,
 };
 
+const lerp = (from: number, to: number, amount: number) => (
+  from + (to - from) * amount
+);
+
+const getSmoothedAnalysisFrame = (
+  analysis: AdSceneAudioAnalysis | null | undefined,
+  timeSeconds: number,
+) => {
+  if (!analysis?.levels.length) {
+    return {
+      level: null,
+      bands: null,
+    };
+  }
+
+  const exactFrame = Math.max(0, timeSeconds * analysis.fps);
+  const fromFrame = Math.min(analysis.levels.length - 1, Math.floor(exactFrame));
+  const toFrame = Math.min(analysis.levels.length - 1, fromFrame + 1);
+  const amount = Math.min(1, Math.max(0, exactFrame - fromFrame));
+  const fromLevel = analysis.levels[fromFrame] ?? 0;
+  const toLevel = analysis.levels[toFrame] ?? fromLevel;
+  const fromBands = analysis.bands[fromFrame] || [];
+  const toBands = analysis.bands[toFrame] || fromBands;
+
+  return {
+    level: lerp(fromLevel, toLevel, amount),
+    bands: fromBands.map((fromBand, index) => lerp(fromBand, toBands[index] ?? fromBand, amount)),
+  };
+};
+
 export function VisualizerFormatRenderer({
+  motionMode = "auto",
   scene,
   timeSeconds = 0,
 }: FormatRenderProps) {
   const frame = Math.max(0, Math.floor(timeSeconds * frameRate));
   const analysis = scene.audio.status === "generated" ? scene.audio.analysis : null;
-  const analysisFrame = analysis?.levels.length
-    ? Math.min(analysis.levels.length - 1, Math.max(0, Math.floor(timeSeconds * analysis.fps)))
-    : null;
+  const smoothedAnalysis = getSmoothedAnalysisFrame(analysis, timeSeconds);
   const timeMs = Math.max(0, timeSeconds * 1000);
   const activeCaption = scene.audio.status === "generated"
     ? scene.audio.captions.find((caption) => timeMs >= caption.startMs && timeMs <= caption.endMs)
@@ -69,7 +99,8 @@ export function VisualizerFormatRenderer({
   const count = getVisualizerBarCount(type, visualizerStyle.barCount);
   const splitSpeakers = Boolean(visualizerStyle.splitSpeakers && activeCaption?.speaker);
   const isGeneratedAudio = scene.audio.status === "generated";
-  const bars = isGeneratedAudio
+  const shouldUseAudioAnalysis = isGeneratedAudio && motionMode !== "idle";
+  const bars = shouldUseAudioAnalysis
     ? getVisualizerBars({
       type,
       count,
@@ -77,8 +108,8 @@ export function VisualizerFormatRenderer({
       height: legacyCanvas.visualizerHeight,
       scale: 1,
       mirror: visualizerStyle.mirror,
-      audioLevel: analysisFrame !== null ? analysis?.levels[analysisFrame] : null,
-      frequencyBands: analysisFrame !== null ? analysis?.bands[analysisFrame] : null,
+      audioLevel: smoothedAnalysis.level,
+      frequencyBands: smoothedAnalysis.bands,
       currentSpeaker: activeCaption?.speaker ?? null,
       splitSpeakers,
       sensitivity: visualizerStyle.sensitivity,
@@ -93,11 +124,7 @@ export function VisualizerFormatRenderer({
       color: scene.style.visualizerColor,
       speaker2Color: scene.style.accentColor,
     })
-    : Array.from({ length: count }, (_, index) => ({
-      height: legacyCanvas.visualizerHeight * (getIdleVisualizerPercent(type, index, count) / 100),
-      opacity: 0.8,
-      color: scene.style.visualizerColor,
-    }));
+    : [];
   const logoSource = getLogoSource(scene);
   const textColor = getReadableTextColor(scene.style.textColor);
   const captionText = getVisibleCaptionText(scene.audio, timeSeconds);
@@ -163,43 +190,60 @@ export function VisualizerFormatRenderer({
         >
           {trimHeadline(scene.creative.headline)}
         </h2>
-        <div
-          aria-hidden="true"
-          data-visualizer-kind="legacy-create-waveform-strip"
-          data-visualizer-motion={isGeneratedAudio ? "audio-analysis" : "css-idle"}
-          style={{
-            position: "absolute",
-            top: toCanvasPercent(255, "y"),
-            left: 0,
-            width: "100%",
-            height: toCanvasPercent(90, "y"),
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "0.56cqw",
-          }}
-        >
-          {bars.map((bar, index) => {
-            const barHeightPercent = Math.min(100, Math.max(0, (bar.height / legacyCanvas.visualizerHeight) * 100));
-            return (
-              <div
-                className={isGeneratedAudio ? undefined : "wiggly-idle-bar wiggly-idle-bar-strong"}
-                data-visualizer-bar="true"
-                key={index}
-                style={{
-                  flex: 1,
-                  minWidth: "0.83cqw",
-                  height: `${barHeightPercent}%`,
-                  maxHeight: "100%",
-                  borderRadius: 999,
-                  background: bar.color,
-                  opacity: bar.opacity,
-                  animationDelay: isGeneratedAudio ? undefined : `${index * 28}ms`,
-                }}
-              />
-            );
-          })}
-        </div>
+        {shouldUseAudioAnalysis ? (
+          <div
+            aria-hidden="true"
+            data-visualizer-kind={`legacy-create-${type}`}
+            data-visualizer-motion="audio-analysis"
+            style={{
+              position: "absolute",
+              top: toCanvasPercent(255, "y"),
+              left: 0,
+              width: "100%",
+              height: toCanvasPercent(90, "y"),
+              display: "flex",
+              alignItems: type === "bars-bottom" ? "flex-end" : "center",
+              justifyContent: "space-between",
+              gap: "0.56cqw",
+            }}
+          >
+            {bars.map((bar, index) => {
+              const barHeightPercent = Math.min(100, Math.max(0, (bar.height / legacyCanvas.visualizerHeight) * 100));
+              return (
+                <div
+                  data-visualizer-bar="true"
+                  key={index}
+                  style={{
+                    flex: 1,
+                    minWidth: "0.83cqw",
+                    height: `${barHeightPercent}%`,
+                    maxHeight: "100%",
+                    borderRadius: 999,
+                    background: bar.color,
+                    opacity: bar.opacity,
+                  }}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <LegacyIdleVisualizer
+            type={type}
+            barCount={visualizerStyle.barCount}
+            color={scene.style.visualizerColor}
+            speaker2Color={scene.style.accentColor}
+            splitSpeakers={visualizerStyle.splitSpeakers}
+            gap={type === "waveform-strip" ? "0.56cqw" : "1.11cqw"}
+            barMinWidth={type === "waveform-strip" ? "0.83cqw" : "1.11cqw"}
+            style={{
+              position: "absolute",
+              top: toCanvasPercent(255, "y"),
+              left: 0,
+              width: "100%",
+              height: toCanvasPercent(90, "y"),
+            }}
+          />
+        )}
         {captionText ? (
           <p
             style={{
@@ -223,18 +267,19 @@ export function VisualizerFormatRenderer({
           <div
             style={{
               position: "absolute",
-              top: toCanvasPercent(350, "y"),
+              top: toCanvasPercent(336, "y"),
               left: "50%",
               transform: "translateX(-50%)",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              padding: "16px 26px",
+              padding: "13px 24px",
               borderRadius: 999,
               background: "#FFFFFF",
               color: "#52627A",
-              fontSize: "clamp(18px, 3.5cqw, 28px)",
+              fontSize: "clamp(14px, 3.2cqw, 18px)",
               fontWeight: 900,
+              whiteSpace: "nowrap",
               boxShadow: "0 18px 45px rgba(15,23,42,0.08)",
               gap: 12,
             }}
