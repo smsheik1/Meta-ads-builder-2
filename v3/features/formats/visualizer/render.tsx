@@ -26,9 +26,9 @@ const trimHeadline = (headline: string) => headline
 
 const getHeadlineFontSize = (headline: string) => {
   const length = trimHeadline(headline).length;
-  if (length > 42) return "clamp(28px, 8.6cqw, 48px)";
-  if (length > 28) return "clamp(30px, 10cqw, 56px)";
-  return "clamp(34px, 12.2cqw, 64px)";
+  if (length > 42) return "clamp(24px, 7.4cqw, 40px)";
+  if (length > 28) return "clamp(28px, 8.8cqw, 48px)";
+  return "clamp(32px, 10.6cqw, 56px)";
 };
 
 const legacyCanvas = {
@@ -84,6 +84,7 @@ const getSmoothedAnalysisFrame = (
 
 export function VisualizerFormatRenderer({
   motionMode = "auto",
+  rerollFlash = null,
   scene,
   timeSeconds = 0,
 }: FormatRenderProps) {
@@ -128,6 +129,11 @@ export function VisualizerFormatRenderer({
   const logoSource = getLogoSource(scene);
   const textColor = getReadableTextColor(scene.style.textColor);
   const captionText = getVisibleCaptionText(scene.audio, timeSeconds);
+  const getRerollFlashClassName = (role: "headline" | "visualizer" | "captions") => (
+    rerollFlash?.roles.includes(role)
+      ? `wiggly-reroll-shine wiggly-reroll-shine-${role}`
+      : undefined
+  );
 
   return (
     <div
@@ -169,12 +175,13 @@ export function VisualizerFormatRenderer({
           </p>
         )}
         <h2
+          className={getRerollFlashClassName("headline")}
           style={{
             position: "absolute",
             top: toCanvasPercent(118, "y"),
             left: toCanvasPercent(20, "x"),
             width: toCanvasPercent(320, "x"),
-            minHeight: toCanvasPercent(120, "y"),
+            height: toCanvasPercent(120, "y"),
             display: "grid",
             placeItems: "center",
             margin: 0,
@@ -185,6 +192,7 @@ export function VisualizerFormatRenderer({
             lineHeight: 1.04,
             textAlign: "center",
             textWrap: "balance",
+            overflow: "hidden",
             overflowWrap: "break-word",
           }}
         >
@@ -193,6 +201,7 @@ export function VisualizerFormatRenderer({
         {shouldUseAudioAnalysis ? (
           <div
             aria-hidden="true"
+            className={getRerollFlashClassName("visualizer")}
             data-visualizer-kind={`legacy-create-${type}`}
             data-visualizer-motion="audio-analysis"
             style={{
@@ -228,6 +237,7 @@ export function VisualizerFormatRenderer({
           </div>
         ) : (
           <LegacyIdleVisualizer
+            className={getRerollFlashClassName("visualizer")}
             type={type}
             barCount={visualizerStyle.barCount}
             color={scene.style.visualizerColor}
@@ -246,6 +256,7 @@ export function VisualizerFormatRenderer({
         )}
         {captionText ? (
           <p
+            className={getRerollFlashClassName("captions")}
             style={{
               position: "absolute",
               top: toCanvasPercent(350, "y"),
@@ -265,6 +276,7 @@ export function VisualizerFormatRenderer({
           </p>
         ) : (
           <div
+            className={getRerollFlashClassName("captions")}
             style={{
               position: "absolute",
               top: toCanvasPercent(336, "y"),

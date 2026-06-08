@@ -91,6 +91,14 @@ const html = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene,
   timeSeconds: 1,
 }));
+const flashHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene,
+  rerollFlash: {
+    key: "test-flash",
+    roles: ["headline", "visualizer", "captions"],
+  },
+  timeSeconds: 1,
+}));
 const noAudioHtmlAtLaterFrame = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene,
   timeSeconds: 7,
@@ -119,6 +127,9 @@ assert.equal(
   "Legacy /create waveform uses 24 bars by default.",
 );
 assert.ok(html.includes("wiggly-idle-bar-strong"), "No-audio visualizer must use the legacy idle animation.");
+assert.ok(flashHtml.includes("wiggly-reroll-shine-headline"), "Reroll flash must shine the headline slot.");
+assert.ok(flashHtml.includes("wiggly-reroll-shine-visualizer"), "Reroll flash must shine the visualizer slot.");
+assert.ok(flashHtml.includes("wiggly-reroll-shine-captions"), "Reroll flash must shine the caption/audio slot.");
 
 const generatedAudioScene: AdScene = {
   ...scene,

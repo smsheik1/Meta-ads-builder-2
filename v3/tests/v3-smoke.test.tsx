@@ -55,6 +55,7 @@ const createClientSource = readFileSync("app/create/CreateResearchClient.tsx", "
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const visualizerRenderSource = readFileSync("features/formats/visualizer/render.tsx", "utf8");
 const legacyIdleVisualizerSource = readFileSync("features/formats/visualizer/LegacyIdleVisualizer.tsx", "utf8");
+const globalsSource = readFileSync("app/globals.css", "utf8");
 assert.ok(createClientSource.includes("Audio preview syncs captions and visualizer"), "/create must expose an obvious audio preview control.");
 assert.ok(createClientSource.includes("controls"), "/create audio preview must use native playback controls.");
 assert.ok(createClientSource.includes("audioRef"), "/create audio preview must use the generated audio asset.");
@@ -70,13 +71,38 @@ assert.ok(createClientSource.includes("dialogueScripts: DialogueScript[]"), "/cr
 assert.ok(createClientSource.includes("setDialogueScripts(snapshot.dialogueScripts)"), "/create must restore generated dialogue options instead of forcing a rewrite after refresh.");
 assert.ok(createClientSource.includes("isRerollSpacebarKey"), "/create must route spacebar rerolls through a dedicated key guard.");
 assert.ok(createClientSource.includes('event.key === "Spacebar"') && createClientSource.includes('event.code === "Space"'), "/create must accept common browser spacebar key variants.");
+assert.ok(createClientSource.includes("blocksSpacebarReroll"), "/create must keep text editors protected while allowing intentional spacebar rerolls.");
+assert.ok(!createClientSource.includes('data-allow-spacebar-reroll="true"'), "/create website input must block rerolls while the user is editing the URL.");
 assert.ok(createClientSource.includes("shouldCarryAudio"), "/create spacebar reroll must carry generated audio onto the next visual variant.");
 assert.ok(createClientSource.includes("shouldKeepPlayback"), "/create spacebar reroll must not reset playback when the generated audio is preserved.");
+assert.ok(createClientSource.includes("triggerRerollFlash"), "/create reroll must trigger the old canvas shine feedback.");
+assert.ok(createClientSource.includes('allPreviewSlots: RenderFlashRole[] = ["headline", "visualizer", "captions"]'), "/create reroll shine must cover the headline, visualizer, and caption/audio slots.");
+assert.ok(createClientSource.includes("rerollFlashMs = 680"), "/create reroll shine must keep the old short-lived flash timing.");
+assert.ok(createClientSource.includes("rerollFlash={rerollFlash}"), "/create phone preview must receive reroll shine state from the create flow.");
+assert.ok(createClientSource.includes("selectedPreviewSlot"), "/create must track the selected preview slot for focused rerolls.");
+assert.ok(createClientSource.includes("selectedPreviewSlot: null"), "/create must not restore scoped canvas selection after refresh because spacebar should full-reroll by default.");
+assert.ok(createClientSource.includes("previewSlotLockKey"), "/create preview selector must reuse the existing scene lock model.");
+assert.ok(createClientSource.includes('captions: "captionColor"'), "/create caption slot must lock/reroll caption color, not audio or caption text.");
+assert.ok(createClientSource.includes("onChangePreviewSlotColor"), "/create preview selector must support old builder-style hover color changes.");
+assert.ok(createClientSource.includes("setSelectedPreviewSlot(slot)"), "/create canvas selection must stay sticky instead of toggling off on normal clicks.");
+assert.ok(createClientSource.includes("onChangePreviewBackgroundColor"), "/create preview selector must support background color changes.");
+assert.ok(createClientSource.includes("Spacebar rerolls the"), "/create must tell users when spacebar is scoped to one selected part.");
+assert.ok(previewChromeSource.includes("rerollFlash={rerollFlash}"), "/create phone preview must pass reroll shine state into the shared renderer.");
+assert.ok(previewChromeSource.includes("PreviewSelectionOverlay"), "/create phone preview must provide the lightweight component selector overlay.");
+assert.ok(previewChromeSource.includes("data-preview-selectable-slot"), "/create selector must expose selectable slots for QA and future format tests.");
+assert.ok(previewChromeSource.includes('type="color"'), "/create selector must expose the old hover color picker affordance.");
+assert.ok(previewChromeSource.includes("data-preview-background-color"), "/create selector must expose a background color picker.");
+assert.ok(previewChromeSource.includes("size-14"), "/create selector lock bubble must keep the large old /builder lock affordance.");
+assert.ok(!previewChromeSource.includes("ring-2 ring-slate-950/35"), "/create selected slot must not show the heavy old bounding-box outline.");
+assert.ok(!previewChromeSource.includes('selected ? "opacity-70"'), "/create selected slot controls must not stay visible after clicking outside the canvas.");
 assert.ok(previewChromeSource.includes("LegacyIdleVisualizer"), "/create empty placeholder must render through the shared legacy idle visualizer recipe.");
 assert.ok(previewChromeSource.includes('src="/wiggly-logo.svg"'), "/create empty placeholder must use the old Wiggly logo asset slot.");
 assert.ok(previewChromeSource.includes('data-placeholder-slot="logo"'), "/create empty placeholder must expose a locked logo slot.");
 assert.ok(previewChromeSource.includes("toPlaceholderPercent(70, \"y\")") && previewChromeSource.includes("toPlaceholderPercent(120, \"x\")"), "/create empty placeholder logo must stay in the old /create x=120 y=70 slot.");
 assert.ok(previewChromeSource.includes("toPlaceholderPercent(118, \"y\")") && previewChromeSource.includes("toPlaceholderPercent(20, \"x\")"), "/create empty placeholder headline must stay in the old /create x=20 y=118 slot.");
+assert.ok(previewChromeSource.includes("See the angle hiding on your website."), "/create empty placeholder headline must use the shorter old-style copy that does not collide with the visualizer.");
+assert.ok(previewChromeSource.includes('fontSize: "clamp(31px, 9.4cqw, 42px)"'), "/create empty placeholder headline must stay small enough to avoid the visualizer.");
+assert.ok(previewChromeSource.includes('overflow: "hidden"'), "/create empty placeholder headline must not spill into the visualizer.");
 assert.ok(previewChromeSource.includes("toPlaceholderPercent(255, \"y\")") && previewChromeSource.includes("toPlaceholderPercent(360, \"x\")"), "/create empty placeholder visualizer must stay in the old /create x=0 y=255 w=360 slot.");
 assert.ok(previewChromeSource.includes("toPlaceholderPercent(350, \"y\")") && previewChromeSource.includes('data-placeholder-slot="caption-action"'), "/create empty placeholder audio action must stay in the old /create caption slot.");
 assert.ok(previewChromeSource.includes('data-preview-audio-action="true"'), "/create phone preview must expose a real clickable add-audio hit target over no-audio scenes.");
@@ -89,10 +115,16 @@ assert.ok(visualizerRenderSource.includes("LegacyIdleVisualizer"), "/create gene
 assert.ok(visualizerRenderSource.includes("getSmoothedAnalysisFrame"), "/create generated-audio visualizer must smooth between analysis frames.");
 assert.ok(visualizerRenderSource.includes("lerp(fromLevel, toLevel, amount)"), "/create generated-audio visualizer must interpolate audio levels instead of snapping.");
 assert.ok(visualizerRenderSource.includes('motionMode !== "idle"'), "/create renderer must support an idle motion mode for paused previews while keeping audio analysis for playback/export.");
+assert.ok(visualizerRenderSource.includes("wiggly-reroll-shine-${role}"), "/create renderer must apply the old reroll shine classes to changed slots.");
+assert.ok(visualizerRenderSource.includes('height: toCanvasPercent(120, "y")'), "/create generated headline must stay in the fixed old headline slot.");
+assert.ok(visualizerRenderSource.includes('overflow: "hidden"'), "/create generated headline must not spill into the visualizer.");
 assert.ok(visualizerRenderSource.includes("top: toCanvasPercent(336, \"y\")") && visualizerRenderSource.includes('whiteSpace: "nowrap"'), "/create rendered no-audio action must avoid wrapping or overlapping the watermark.");
 assert.ok(legacyIdleVisualizerSource.includes("getIdleVisualizerPercent"), "Shared legacy idle visualizer must use the old idle height formula.");
 assert.ok(legacyIdleVisualizerSource.includes("wiggly-idle-bar wiggly-idle-bar-strong"), "Shared legacy idle visualizer must keep the old waveform idle CSS animation.");
 assert.ok(legacyIdleVisualizerSource.includes("index * 28") && legacyIdleVisualizerSource.includes("index * 45"), "Legacy idle visualizer must keep the old waveform and bar stagger timings.");
+assert.ok(globalsSource.includes(".wiggly-reroll-shine"), "v3 globals must include the old /create reroll shine class.");
+assert.ok(globalsSource.includes("@keyframes wiggly-reroll-glint"), "v3 globals must include the old /create reroll glint animation.");
+assert.ok(globalsSource.includes("@keyframes wiggly-reroll-focus"), "v3 globals must include the old /create reroll focus animation.");
 
 for (const requiredApiCall of [
   "api.researchRuns.runWebsiteResearch",
