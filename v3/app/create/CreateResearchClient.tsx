@@ -65,34 +65,13 @@ import {
   previewPlatformOptions,
   type PreviewPlatform,
 } from "./CreatePreviewChrome";
+import {
+  getAnonymousId,
+  loadCreateSessionSnapshot,
+  saveCreateSessionSnapshot,
+} from "./createSession";
 
-const anonymousIdKey = "wiggly:v3:anonymous-id";
-const createSessionStorageKey = "wiggly:v3:create-session";
-const createSessionTtlMs = 1000 * 60 * 60 * 12;
 const rerollFlashMs = 680;
-
-type CreateSessionSnapshot = {
-  result: StoredWebsiteResearchResult | null;
-  adScenes: AdScene[];
-  selectedScene: AdScene | null;
-  selectedSceneIndex: number;
-  sceneLocks: CanvasInteractionLocks;
-  rerollCount: number;
-  adStatusNote: string;
-  dialogueScripts: DialogueScript[];
-  selectedDialogueIndex: number;
-  savedAt: number;
-};
-
-const getAnonymousId = () => {
-  if (typeof window === "undefined") return "server";
-  const existing = window.localStorage.getItem(anonymousIdKey);
-  if (existing) return existing;
-
-  const next = window.crypto.randomUUID();
-  window.localStorage.setItem(anonymousIdKey, next);
-  return next;
-};
 
 const pillClass = "rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-slate-400 shadow-sm";
 const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
@@ -170,77 +149,6 @@ function getNextDistinctColor(currentColor: string, colors: string[], offset: nu
 
   return fallbackCaptionColors.find((color) => color !== current) || "#7DD3FC";
 }
-
-const getCreateSessionStorage = () => {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage;
-  } catch {
-    return null;
-  }
-};
-
-const normalizePersistedLocks = (locks: Partial<CanvasInteractionLocks> | null | undefined): CanvasInteractionLocks => ({
-  ...createDefaultCanvasInteractionLocks(),
-  ...(locks || {}),
-});
-
-const loadCreateSessionSnapshot = (): CreateSessionSnapshot | null => {
-  const storage = getCreateSessionStorage();
-  if (!storage) return null;
-
-  try {
-    const raw = storage.getItem(createSessionStorageKey);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<CreateSessionSnapshot>;
-    if (!parsed.savedAt || Date.now() - parsed.savedAt > createSessionTtlMs) {
-      storage.removeItem(createSessionStorageKey);
-      return null;
-    }
-
-    const adScenes = Array.isArray(parsed.adScenes) ? parsed.adScenes : [];
-    const selectedSceneIndex = Math.min(
-      Math.max(0, Math.trunc(Number(parsed.selectedSceneIndex) || 0)),
-      Math.max(0, adScenes.length - 1),
-    );
-
-    return {
-      result: parsed.result || null,
-      adScenes,
-      selectedScene: parsed.selectedScene || adScenes[selectedSceneIndex] || null,
-      selectedSceneIndex,
-      sceneLocks: normalizePersistedLocks(parsed.sceneLocks),
-      rerollCount: Math.max(0, Math.trunc(Number(parsed.rerollCount) || 0)),
-      adStatusNote: typeof parsed.adStatusNote === "string" ? parsed.adStatusNote : "",
-      dialogueScripts: Array.isArray(parsed.dialogueScripts)
-        ? parsed.dialogueScripts.map((script) => cloneDialogueScript(script as DialogueScript))
-        : [],
-      selectedDialogueIndex: Math.max(0, Math.trunc(Number(parsed.selectedDialogueIndex) || 0)),
-      savedAt: parsed.savedAt,
-    };
-  } catch {
-    storage.removeItem(createSessionStorageKey);
-    return null;
-  }
-};
-
-const saveCreateSessionSnapshot = (snapshot: Omit<CreateSessionSnapshot, "savedAt">) => {
-  const storage = getCreateSessionStorage();
-  if (!storage) return;
-
-  try {
-    if (!snapshot.result && !snapshot.adScenes.length) {
-      storage.removeItem(createSessionStorageKey);
-      return;
-    }
-    storage.setItem(createSessionStorageKey, JSON.stringify({
-      ...snapshot,
-      savedAt: Date.now(),
-    }));
-  } catch {
-    // Session restore is a convenience; it should never break the create flow.
-  }
-};
 
 function getResearchActionErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : String(error || "");
