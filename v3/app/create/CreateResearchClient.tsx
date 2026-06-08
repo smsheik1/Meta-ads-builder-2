@@ -27,6 +27,7 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { updateGeneratedAudioCaptionText } from "@/features/audio/sceneAudio";
 import { cloneDialogueScript, type DialogueScript } from "@/features/dialogue/dialogueScripts";
+import { getFormatModule } from "@/features/formats/registry";
 import type { RenderFlashRole, RenderFlashState, RenderSelectableSlot } from "@/features/formats/types";
 import {
   createDefaultCanvasInteractionLocks,
@@ -133,8 +134,9 @@ const previewSlotLabels: Record<CanvasInteractionSlot, string> = {
   captions: "captions",
 };
 
-const allPreviewSlots: RenderFlashRole[] = ["headline", "visualizer", "captions"];
 const fallbackCaptionColors = ["#7DD3FC", "#FB7185", "#A78BFA", "#34D399", "#F59E0B", "#F472B6"];
+
+const getSceneDefaultFlashSlots = (scene: AdScene): RenderFlashRole[] => [...getFormatModule(scene.format).defaultSlots];
 
 function normalizeHexColor(value: string): string | null {
   if (!/^#[0-9A-F]{6}$/i.test(value)) return null;
@@ -488,7 +490,7 @@ function ResearchConnected() {
     )));
   }, [selectedSceneIndex]);
 
-  const triggerRerollFlash = useCallback((roles: RenderFlashRole[] = allPreviewSlots) => {
+  const triggerRerollFlash = useCallback((roles: RenderFlashRole[]) => {
     if (rerollFlashTimeoutRef.current) {
       window.clearTimeout(rerollFlashTimeoutRef.current);
     }
@@ -562,7 +564,7 @@ function ResearchConnected() {
     setAudioError("");
     resetDialogueState();
     resetSaveState();
-    triggerRerollFlash(selectedPreviewSlot ? [selectedPreviewSlot] : allPreviewSlots);
+    triggerRerollFlash(selectedPreviewSlot ? [selectedPreviewSlot] : getSceneDefaultFlashSlots(nextScene));
   }, [adScenes, resetPreviewPlayback, sceneLocks, selectedPreviewSlot, selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
   const onToggleLock = (key: SceneLockKey) => {

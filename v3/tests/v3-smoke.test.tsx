@@ -94,7 +94,7 @@ assert.ok(!createClientSource.includes('data-allow-spacebar-reroll="true"'), "/c
 assert.ok(createClientSource.includes("shouldCarryAudio"), "/create spacebar reroll must carry generated audio onto the next visual variant.");
 assert.ok(createClientSource.includes("shouldKeepPlayback"), "/create spacebar reroll must not reset playback when the generated audio is preserved.");
 assert.ok(createClientSource.includes("triggerRerollFlash"), "/create reroll must trigger the old canvas shine feedback.");
-assert.ok(createClientSource.includes('allPreviewSlots: RenderFlashRole[] = ["headline", "visualizer", "captions"]'), "/create reroll shine must cover the headline, visualizer, and caption/audio slots.");
+assert.ok(createClientSource.includes("getSceneDefaultFlashSlots") && createClientSource.includes("getFormatModule(scene.format).defaultSlots"), "/create reroll shine must use the active format module default slots.");
 assert.ok(createClientSource.includes("rerollFlashMs = 680"), "/create reroll shine must keep the old short-lived flash timing.");
 assert.ok(createClientSource.includes("rerollFlash={rerollFlash}"), "/create phone preview must receive reroll shine state from the create flow.");
 assert.ok(canvasInteractionStoreSource.includes("create<CanvasInteractionState>"), "/create canvas interaction state must live in a tiny Zustand store.");
