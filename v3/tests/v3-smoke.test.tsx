@@ -190,6 +190,9 @@ for (const forbiddenStoreImport of ["convex/", "_generated", "AdScene", "scene/t
 }
 assert.ok(previewChromeSource.includes("rerollFlash={rerollFlash}"), "/create phone preview must pass reroll shine state into the shared renderer.");
 assert.ok(previewChromeSource.includes("previewFrameId = `legacy-${platform}`"), "/create phone preview must support switching platform chrome without duplicating renderers.");
+assert.equal((previewChromeSource.match(/<AdRenderSurface/g) || []).length, 1, "/create phone preview must have exactly one AdRenderSurface call for starter and generated scenes.");
+assert.ok(previewChromeSource.includes("scene ?? createStarterPlaceholderScene(placeholderVariantIndex)"), "/create phone preview must convert starter mode to scene data before rendering.");
+assert.ok(!previewChromeSource.includes("PlaceholderAdSurface"), "/create phone preview must not branch into a placeholder renderer component.");
 assert.ok(previewChromeSource.includes('data-preview-phone-frame={previewFrameId}'), "/create phone preview must expose the active platform shell for QA.");
 assert.ok(previewChromeSource.includes("h-[720px] w-[360px]"), "/create IG feed chrome must keep the original fixed 360x720 frame geometry.");
 assert.ok(previewChromeSource.includes("h-[420px] w-[640px]"), "/create YouTube chrome must reserve a non-overlapping editor footer instead of squeezing the canvas.");
@@ -211,7 +214,7 @@ assert.ok(createModuleSource.includes("size-14"), "/create selector lock bubble 
 assert.ok(!createModuleSource.includes("ring-2 ring-slate-950/35"), "/create selected slot must not show the heavy old bounding-box outline.");
 assert.ok(!createModuleSource.includes('selected ? "opacity-70"'), "/create selected slot controls must not stay visible after clicking outside the canvas.");
 assert.ok(createModuleSource.includes("AdRenderSurface"), "/create empty placeholder must render through the shared AdRenderSurface instead of a separate canvas renderer.");
-assert.ok(!readFileSync("app/create/CreatePlaceholderAdSurface.tsx", "utf8").includes("LegacyIdleVisualizer"), "/create empty placeholder must not import its own visualizer renderer.");
+assert.ok(!existsSync("app/create/CreatePlaceholderAdSurface.tsx"), "/create empty placeholder component must not exist; starter mode is scene data, not a renderer.");
 assert.ok(createModuleSource.includes("placeholderVariants"), "/create empty placeholder must keep a small curated tutorial set for first-visit spacebar rerolls.");
 for (const oldCreateStarterHeadline of [
   "Drop in your website and watch the magic happen.",

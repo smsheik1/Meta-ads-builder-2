@@ -50,9 +50,9 @@ import { CreateCreativeBriefCard } from "./CreateCreativeBriefCard";
 import { CreateDialogueModal } from "./CreateDialogueModal";
 import { CreateIdeasList } from "./CreateIdeasList";
 import { CreateLeftColumn } from "./CreateLeftColumn";
-import { placeholderAdSurfaceVariantCount } from "./CreatePlaceholderAdSurface";
 import type { PreviewPlatform } from "./CreatePreviewChrome";
 import { WigglyMark } from "./WigglyMark";
+import { placeholderAdSurfaceVariantCount } from "./createStarterScene";
 import {
   fallbackCaptionColors,
   getNextDistinctColor,

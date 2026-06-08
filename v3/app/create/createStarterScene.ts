@@ -1,6 +1,4 @@
-import type { RenderFlashState } from "@/features/formats/types";
-import { AdRenderSurface } from "@/features/render/AdRenderSurface";
-import type { AdScene, VisualizerAdScene } from "@/features/scene/types";
+import type { VisualizerAdScene } from "@/features/scene/types";
 import { getVisualizerVariantForCandidate } from "@/features/scene/visualizerVariants";
 
 const placeholderVariants = [
@@ -38,7 +36,7 @@ const placeholderVariants = [
 
 export const placeholderAdSurfaceVariantCount = placeholderVariants.length;
 
-const createPlaceholderScene = (variantIndex: number): VisualizerAdScene => {
+export const createStarterPlaceholderScene = (variantIndex: number): VisualizerAdScene => {
   const variant = placeholderVariants[Math.abs(variantIndex) % placeholderVariants.length] || placeholderVariants[0]!;
   const visualizerVariant = getVisualizerVariantForCandidate(variantIndex).visualizer;
 
@@ -103,23 +101,3 @@ const createPlaceholderScene = (variantIndex: number): VisualizerAdScene => {
     },
   };
 };
-
-export function PlaceholderAdSurface({
-  rerollFlash = null,
-  variantIndex = 0,
-}: {
-  rerollFlash?: RenderFlashState | null;
-  variantIndex?: number;
-}) {
-  const scene: AdScene = createPlaceholderScene(variantIndex);
-
-  return (
-    <AdRenderSurface
-      className="h-full"
-      motionMode="idle"
-      rerollFlash={rerollFlash}
-      scene={scene}
-      timeSeconds={0}
-    />
-  );
-}

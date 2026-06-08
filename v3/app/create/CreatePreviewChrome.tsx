@@ -25,8 +25,8 @@ import type {
 import { AdRenderSurface } from "@/features/render/AdRenderSurface";
 import type { AdScene } from "@/features/scene/types";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
-import { PlaceholderAdSurface } from "./CreatePlaceholderAdSurface";
 import { PreviewSelectionOverlay } from "./CreatePreviewSelectionOverlay";
+import { createStarterPlaceholderScene } from "./createStarterScene";
 import { toPlaceholderPercent } from "./createPreviewGeometry";
 
 export type PreviewPlatform = "facebook-feed" | "instagram-feed" | "reels" | "stories" | "youtube";
@@ -134,6 +134,8 @@ export function PhonePreviewFrame({
   const youtubePlatform = platform === "youtube";
   const verticalPlatform = reelsPlatform || storiesPlatform;
   const isDark = true;
+  const renderScene = scene ?? createStarterPlaceholderScene(placeholderVariantIndex);
+  const renderMotionMode = scene ? motionMode : "idle";
   const frameClassName = youtubePlatform
     ? "relative mx-auto h-[420px] w-[640px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25"
     : "relative mx-auto h-[720px] w-[360px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25";
@@ -144,20 +146,13 @@ export function PhonePreviewFrame({
       className={cx("relative overflow-hidden bg-[#fbfaf5]", className)}
       data-preview-ad-viewport={previewFrameId}
     >
-      {scene ? (
-        <AdRenderSurface
-          className="h-full"
-          scene={scene}
-          motionMode={motionMode}
-          rerollFlash={rerollFlash}
-          timeSeconds={timeSeconds}
-        />
-      ) : (
-        <PlaceholderAdSurface
-          rerollFlash={rerollFlash}
-          variantIndex={placeholderVariantIndex}
-        />
-      )}
+      <AdRenderSurface
+        className="h-full"
+        scene={renderScene}
+        motionMode={renderMotionMode}
+        rerollFlash={rerollFlash}
+        timeSeconds={timeSeconds}
+      />
       {showPreviewAudioAction ? (
         <button
           type="button"
