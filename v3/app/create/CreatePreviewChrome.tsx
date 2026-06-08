@@ -21,7 +21,12 @@ import {
   Wifi,
 } from "lucide-react";
 import { LegacyIdleVisualizer } from "@/features/formats/visualizer/LegacyIdleVisualizer";
-import type { RenderFlashState, RenderMotionMode, RenderSelectableSlot } from "@/features/formats/types";
+import type {
+  FormatSelectableSlotDefinition,
+  RenderFlashState,
+  RenderMotionMode,
+  RenderSelectableSlot,
+} from "@/features/formats/types";
 import { AdRenderSurface } from "@/features/render/AdRenderSurface";
 import type { AdScene } from "@/features/scene/types";
 import { legacyCreateVisualizerStyle } from "@/features/scene/visualizerStyle";
@@ -107,8 +112,9 @@ const toPlaceholderPercent = (value: number, axis: "x" | "y") => (
 
 type PreviewSelectionOverlayProps = {
   selectedSlot: RenderSelectableSlot | null;
-  lockedSlots: Record<RenderSelectableSlot, boolean>;
-  slotColors: Record<RenderSelectableSlot, string>;
+  selectableSlots: readonly FormatSelectableSlotDefinition[];
+  lockedSlots: Partial<Record<RenderSelectableSlot, boolean>>;
+  slotColors: Partial<Record<RenderSelectableSlot, string>>;
   backgroundColor: string;
   onSelectSlot: (slot: RenderSelectableSlot) => void;
   onToggleSlotLock: (slot: RenderSelectableSlot) => void;
@@ -116,42 +122,9 @@ type PreviewSelectionOverlayProps = {
   onChangeBackgroundColor: (color: string) => void;
 };
 
-const previewSelectableSlots: Array<{
-  slot: RenderSelectableSlot;
-  label: string;
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-}> = [
-  {
-    slot: "headline",
-    label: "Headline",
-    top: 118,
-    left: 20,
-    width: 320,
-    height: 120,
-  },
-  {
-    slot: "visualizer",
-    label: "Visualizer",
-    top: 255,
-    left: 0,
-    width: 360,
-    height: 90,
-  },
-  {
-    slot: "captions",
-    label: "Captions",
-    top: 336,
-    left: 20,
-    width: 320,
-    height: 62,
-  },
-];
-
 function PreviewSelectionOverlay({
   selectedSlot,
+  selectableSlots,
   lockedSlots,
   slotColors,
   backgroundColor,
@@ -162,10 +135,10 @@ function PreviewSelectionOverlay({
 }: PreviewSelectionOverlayProps) {
   return (
     <div aria-label="Selectable ad parts" className="group/preview-selector absolute inset-0 z-30">
-      {previewSelectableSlots.map(({ slot, label, top, left, width, height }) => {
+      {selectableSlots.map(({ slot, label, top, left, width, height }) => {
         const selected = selectedSlot === slot;
-        const locked = lockedSlots[slot];
-        const color = slotColors[slot];
+        const locked = Boolean(lockedSlots[slot]);
+        const color = slotColors[slot] || "#0f172a";
         return (
           <div
             key={slot}
@@ -340,6 +313,7 @@ export function PhonePreviewFrame({
   previewReady = false,
   isAudioPlaying = false,
   selectedSlot = null,
+  selectableSlots,
   lockedSlots,
   slotColors,
   backgroundColor,
@@ -359,8 +333,9 @@ export function PhonePreviewFrame({
   previewReady?: boolean;
   isAudioPlaying?: boolean;
   selectedSlot?: RenderSelectableSlot | null;
-  lockedSlots?: Record<RenderSelectableSlot, boolean>;
-  slotColors?: Record<RenderSelectableSlot, string>;
+  selectableSlots?: readonly FormatSelectableSlotDefinition[];
+  lockedSlots?: Partial<Record<RenderSelectableSlot, boolean>>;
+  slotColors?: Partial<Record<RenderSelectableSlot, string>>;
   backgroundColor?: string;
   onSelectSlot?: (slot: RenderSelectableSlot) => void;
   onToggleSlotLock?: (slot: RenderSelectableSlot) => void;
@@ -371,7 +346,7 @@ export function PhonePreviewFrame({
   const brandLogoUrl = scene?.brand.logoUrl || scene?.brand.faviconUrl || result?.brand.logoUrl || result?.brand.faviconUrl || "";
   const caption = scene?.creative.subheadline || "Add audio for this ad";
   const showPreviewAudioAction = Boolean(scene && scene.audio.status !== "generated" && onOpenAudioPanel);
-  const canSelectSlots = Boolean(scene && lockedSlots && slotColors && backgroundColor && onSelectSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor);
+  const canSelectSlots = Boolean(scene && selectableSlots?.length && lockedSlots && slotColors && backgroundColor && onSelectSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor);
   const feedPlatform = platform === "facebook-feed" || platform === "instagram-feed";
   const instagramFeed = platform === "instagram-feed";
   const storiesPlatform = platform === "stories";
@@ -415,9 +390,10 @@ export function PhonePreviewFrame({
           Add audio for this ad
         </button>
       ) : null}
-      {canSelectSlots && lockedSlots && slotColors && backgroundColor && onSelectSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor ? (
+      {canSelectSlots && selectableSlots && lockedSlots && slotColors && backgroundColor && onSelectSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor ? (
         <PreviewSelectionOverlay
           selectedSlot={selectedSlot}
+          selectableSlots={selectableSlots}
           lockedSlots={lockedSlots}
           slotColors={slotColors}
           backgroundColor={backgroundColor}

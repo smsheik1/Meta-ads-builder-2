@@ -28,12 +28,17 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { updateGeneratedAudioCaptionText } from "@/features/audio/sceneAudio";
 import { cloneDialogueScript, type DialogueScript } from "@/features/dialogue/dialogueScripts";
 import { getFormatModule } from "@/features/formats/registry";
-import type { RenderFlashRole, RenderFlashState, RenderSelectableSlot } from "@/features/formats/types";
+import type {
+  FormatSceneLocks,
+  FormatSelectableSlotDefinition,
+  RenderFlashRole,
+  RenderFlashState,
+  RenderSelectableSlot,
+} from "@/features/formats/types";
 import {
   createDefaultCanvasInteractionLocks,
   useCanvasInteractionStore,
   type CanvasInteractionLocks,
-  type CanvasInteractionSlot,
 } from "@/features/create/canvasInteractionStore";
 import {
   createSavedDesignId,
@@ -122,21 +127,27 @@ const getUsefulClaims = (result: StoredWebsiteResearchResult) => uniqueNonEmptyS
   result.brandBrief.ctaDirection,
 ]);
 
-const previewSlotLockKey: Record<CanvasInteractionSlot, SceneLockKey> = {
-  headline: "headline",
-  visualizer: "style",
-  captions: "captionColor",
-};
-
-const previewSlotLabels: Record<CanvasInteractionSlot, string> = {
-  headline: "headline",
-  visualizer: "visualizer",
-  captions: "captions",
-};
-
 const fallbackCaptionColors = ["#7DD3FC", "#FB7185", "#A78BFA", "#34D399", "#F59E0B", "#F472B6"];
 
+const getSceneFormatInteraction = (scene: AdScene) => getFormatModule(scene.format).interaction;
 const getSceneDefaultFlashSlots = (scene: AdScene): RenderFlashRole[] => [...getFormatModule(scene.format).defaultSlots];
+const getSceneSelectableSlots = (scene: AdScene): readonly FormatSelectableSlotDefinition[] => getSceneFormatInteraction(scene).selectableSlots;
+const getSceneSelectedSlotLabel = (scene: AdScene, slot: RenderSelectableSlot) => (
+  getSceneSelectableSlots(scene).find((item) => item.slot === slot)?.label.toLowerCase() || slot
+);
+const getLockedSlotsForScene = (
+  scene: AdScene,
+  locks: FormatSceneLocks,
+): Partial<Record<RenderSelectableSlot, boolean>> => (
+  Object.fromEntries(getSceneSelectableSlots(scene).map((slot) => [slot.slot, locks[slot.lockKey]]))
+);
+const getSlotColorsForScene = (scene: AdScene): Partial<Record<RenderSelectableSlot, string>> => {
+  const interaction = getSceneFormatInteraction(scene);
+  return Object.fromEntries(interaction.selectableSlots.map((slot) => [
+    slot.slot,
+    interaction.getSlotColor(scene, slot.slot),
+  ]));
+};
 
 function normalizeHexColor(value: string): string | null {
   if (!/^#[0-9A-F]{6}$/i.test(value)) return null;
@@ -508,48 +519,33 @@ function ResearchConnected() {
   }, []);
 
   const onRerollScene = useCallback(() => {
-    const effectiveLocks = selectedPreviewSlot
-      ? {
-        headline: selectedPreviewSlot !== "headline" || sceneLocks.headline,
-        subheadline: selectedPreviewSlot !== "captions",
-        style: selectedPreviewSlot !== "visualizer" || sceneLocks.style,
-        captionColor: selectedPreviewSlot !== "captions" || sceneLocks.captionColor,
-        audio: true,
-      }
+    const formatInteraction = selectedScene ? getSceneFormatInteraction(selectedScene) : null;
+    const effectiveLocks = selectedPreviewSlot && formatInteraction
+      ? formatInteraction.getRerollLocksForSlot(selectedPreviewSlot, sceneLocks)
       : sceneLocks;
     const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, effectiveLocks);
     if (!next.scene) return;
 
     const currentGeneratedAudio = selectedScene?.audio.status === "generated" ? selectedScene.audio : null;
     const shouldCarryAudio = Boolean(currentGeneratedAudio && next.scene.audio.status !== "generated");
-    const nextCaptionColor = selectedScene
-      ? getNextDistinctColor(
-        selectedScene.style.accentColor,
-        [
-          next.scene.style.accentColor,
-          next.scene.style.visualizerColor,
-          ...selectedScene.brand.colors,
-          ...adScenes.flatMap((scene) => [scene.style.accentColor, scene.style.visualizerColor]),
-          ...fallbackCaptionColors,
-        ],
-        rerollCount + 1,
-      )
-      : next.scene.style.accentColor;
-    const colorOnlyCaptionReroll = selectedPreviewSlot === "captions" && selectedScene
-      ? {
-        ...selectedScene,
-        style: {
-          ...selectedScene.style,
-          accentColor: sceneLocks.captionColor ? selectedScene.style.accentColor : nextCaptionColor,
-        },
-      }
+    const formatRerolledScene = formatInteraction && selectedScene
+      ? formatInteraction.applySlotReroll({
+        selectedSlot: selectedPreviewSlot,
+        currentScene: selectedScene,
+        nextScene: next.scene,
+        allScenes: adScenes,
+        locks: sceneLocks,
+        fallbackColors: fallbackCaptionColors,
+        offset: rerollCount + 1,
+        pickDistinctColor: getNextDistinctColor,
+      })
       : next.scene;
     const nextScene = shouldCarryAudio && currentGeneratedAudio
       ? {
-        ...colorOnlyCaptionReroll,
+        ...formatRerolledScene,
         audio: currentGeneratedAudio,
       }
-      : colorOnlyCaptionReroll;
+      : formatRerolledScene;
     const shouldKeepPlayback = nextScene.audio.status === "generated" && currentGeneratedAudio?.url === nextScene.audio.url;
 
     if (!shouldKeepPlayback) {
@@ -576,20 +572,15 @@ function ResearchConnected() {
   };
 
   const onTogglePreviewSlotLock = (slot: RenderSelectableSlot) => {
-    onToggleLock(previewSlotLockKey[slot]);
+    if (!selectedScene) return;
+    const slotDefinition = getSceneSelectableSlots(selectedScene).find((item) => item.slot === slot);
+    if (!slotDefinition) return;
+    onToggleLock(slotDefinition.lockKey as SceneLockKey);
   };
 
   const onChangePreviewSlotColor = (slot: RenderSelectableSlot, color: string) => {
     if (!selectedScene) return;
-    const nextScene: AdScene = {
-      ...selectedScene,
-      style: {
-        ...selectedScene.style,
-        ...(slot === "headline" ? { textColor: color } : null),
-        ...(slot === "visualizer" ? { visualizerColor: color } : null),
-        ...(slot === "captions" ? { accentColor: color } : null),
-      },
-    };
+    const nextScene = getSceneFormatInteraction(selectedScene).applySlotColor(selectedScene, slot, color);
     replaceSelectedScene(nextScene);
     resetShareState();
     resetRenderState();
@@ -599,13 +590,7 @@ function ResearchConnected() {
 
   const onChangePreviewBackgroundColor = (color: string) => {
     if (!selectedScene) return;
-    const nextScene: AdScene = {
-      ...selectedScene,
-      style: {
-        ...selectedScene.style,
-        backgroundColor: color,
-      },
-    };
+    const nextScene = getSceneFormatInteraction(selectedScene).applyBackgroundColor(selectedScene, color);
     replaceSelectedScene(nextScene);
     resetShareState();
     resetRenderState();
@@ -1088,17 +1073,10 @@ function ResearchConnected() {
                 previewReady={Boolean(playableAudioUrl)}
                 isAudioPlaying={isAudioPlaying}
                 selectedSlot={selectedPreviewSlot}
-                lockedSlots={{
-                  headline: sceneLocks.headline,
-                  visualizer: sceneLocks.style,
-                  captions: sceneLocks.captionColor,
-                }}
-                slotColors={{
-                  headline: selectedScene?.style.textColor || "#0f172a",
-                  visualizer: selectedScene?.style.visualizerColor || "#00d6b8",
-                  captions: selectedScene?.style.accentColor || "#52627A",
-                }}
-                backgroundColor={selectedScene?.style.backgroundColor || "#fbfaf5"}
+                selectableSlots={selectedScene ? getSceneSelectableSlots(selectedScene) : undefined}
+                lockedSlots={selectedScene ? getLockedSlotsForScene(selectedScene, sceneLocks) : undefined}
+                slotColors={selectedScene ? getSlotColorsForScene(selectedScene) : undefined}
+                backgroundColor={selectedScene ? getSceneFormatInteraction(selectedScene).getBackgroundColor(selectedScene) : "#fbfaf5"}
                 onSelectSlot={onSelectPreviewSlot}
                 onToggleSlotLock={onTogglePreviewSlotLock}
                 onChangeSlotColor={onChangePreviewSlotColor}
@@ -1121,8 +1099,8 @@ function ResearchConnected() {
                       <span>make a wish</span>
                     </button>
                     <p className="mt-3 text-center text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                      {selectedPreviewSlot
-                        ? `Spacebar rerolls the ${previewSlotLabels[selectedPreviewSlot]}`
+                      {selectedPreviewSlot && selectedScene
+                        ? `Spacebar rerolls the ${getSceneSelectedSlotLabel(selectedScene, selectedPreviewSlot)}`
                         : rerollCount
                           ? `${rerollCount} reroll${rerollCount === 1 ? "" : "s"} this session`
                           : "Start here. Make a fresh version in one tap."}

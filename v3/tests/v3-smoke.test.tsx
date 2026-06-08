@@ -110,8 +110,14 @@ for (const forbiddenLocalStatePattern of forbiddenCreateInteractionLocalState) {
   );
 }
 assert.ok(createClientSource.includes("clearSelectedPreviewSlot()"), "/create must not restore scoped canvas selection after refresh because spacebar should full-reroll by default.");
-assert.ok(createClientSource.includes("previewSlotLockKey"), "/create preview selector must reuse the existing scene lock model.");
-assert.ok(createClientSource.includes('captions: "captionColor"'), "/create caption slot must lock/reroll caption color, not audio or caption text.");
+assert.ok(createClientSource.includes("getSceneFormatInteraction"), "/create preview selector must read active format interaction metadata.");
+assert.ok(createClientSource.includes("getSceneSelectableSlots"), "/create preview selector must read selectable slots from the active format.");
+assert.ok(createClientSource.includes("getLockedSlotsForScene"), "/create preview selector must derive slot locks from format metadata.");
+assert.ok(createClientSource.includes("getSlotColorsForScene"), "/create preview selector must derive slot colors from format metadata.");
+assert.ok(createClientSource.includes("formatInteraction.getRerollLocksForSlot"), "/create selected-slot reroll locks must come from the active format module.");
+assert.ok(createClientSource.includes("formatInteraction.applySlotReroll"), "/create selected-slot reroll semantics must come from the active format module.");
+assert.ok(!createClientSource.includes("const previewSlotLockKey"), "/create must not hardcode format slot-to-lock mappings.");
+assert.ok(!createClientSource.includes("const previewSlotLabels"), "/create must not hardcode format slot labels.");
 assert.ok(createClientSource.includes("onChangePreviewSlotColor"), "/create preview selector must support old builder-style hover color changes.");
 assert.ok(createClientSource.includes("selectPreviewSlot(slot)"), "/create canvas selection must stay sticky instead of toggling off on normal clicks.");
 assert.ok(createClientSource.includes("onChangePreviewBackgroundColor"), "/create preview selector must support background color changes.");
@@ -158,6 +164,8 @@ assert.ok(previewChromeSource.includes('youtubePlatform ? "bottom-1"'), "/create
 assert.ok(previewChromeSource.includes("onTogglePlayback"), "/create phone play pill must bridge to the existing native audio control instead of creating a second audio system.");
 assert.ok(!previewChromeSource.includes("CanvasEditor"), "/create v3 phone chrome must not re-import the old CanvasEditor renderer.");
 assert.ok(previewChromeSource.includes("PreviewSelectionOverlay"), "/create phone preview must provide the lightweight component selector overlay.");
+assert.ok(previewChromeSource.includes("selectableSlots.map"), "/create phone preview must render selector geometry from active format metadata.");
+assert.ok(!previewChromeSource.includes("const previewSelectableSlots"), "/create phone preview must not hardcode selector geometry for one format.");
 assert.ok(previewChromeSource.includes("data-preview-selectable-slot"), "/create selector must expose selectable slots for QA and future format tests.");
 assert.ok(previewChromeSource.includes('type="color"'), "/create selector must expose the old hover color picker affordance.");
 assert.ok(previewChromeSource.includes("data-preview-background-color"), "/create selector must expose a background color picker.");
