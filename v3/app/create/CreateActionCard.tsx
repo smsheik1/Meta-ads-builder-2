@@ -9,6 +9,7 @@ import {
   Loader2,
   Play,
   RefreshCw,
+  Type,
 } from "lucide-react";
 import type { SavedAdSceneDesign } from "@/features/create/savedDesigns";
 import { previewPlatformOptions, type PreviewPlatform } from "./CreatePreviewChrome";
@@ -16,13 +17,13 @@ import { previewPlatformOptions, type PreviewPlatform } from "./CreatePreviewChr
 type SaveStatus = "idle" | "loading" | "ready" | "error";
 
 export function CreateActionCard({
-  adScenesCount,
   currentRenderStatus,
+  hasGeneratedAudio,
   isAudioPlaying,
   onCreateRenderJob,
   onCreateShareLink,
+  onOpenCaptionEditor,
   onOpenSavedDesign,
-  onRerollScene,
   onSaveSelectedDesign,
   onSavedDesignsBlur,
   onSavedDesignsOpenChange,
@@ -45,14 +46,14 @@ export function CreateActionCard({
   hasSelectedScene,
   onPreviewPlatformChange,
 }: {
-  adScenesCount: number;
   currentRenderStatus: string;
+  hasGeneratedAudio: boolean;
   isAudioPlaying: boolean;
   onCreateRenderJob: () => void;
   onCreateShareLink: () => void;
+  onOpenCaptionEditor: () => void;
   onOpenSavedDesign: (design: SavedAdSceneDesign) => void;
   onPreviewPlatformChange: (platform: PreviewPlatform) => void;
-  onRerollScene: () => void;
   onSaveSelectedDesign: () => void;
   onSavedDesignsBlur: (event: FocusEvent<HTMLDivElement>) => void;
   onSavedDesignsOpenChange: (open: boolean) => void;
@@ -269,11 +270,13 @@ export function CreateActionCard({
       <div className="mt-2 grid grid-cols-2 gap-2">
         <button
           type="button"
-          onClick={onRerollScene}
-          disabled={!adScenesCount}
-          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+          onClick={onOpenCaptionEditor}
+          disabled={!hasGeneratedAudio}
+          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+          title={hasGeneratedAudio ? "Edit this ad's captions" : "Generate or upload audio before editing captions"}
         >
-          Try another
+          <Type className="size-4" />
+          Edit captions
         </button>
         <button
           type="button"
