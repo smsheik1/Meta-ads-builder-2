@@ -56,6 +56,8 @@ const createModuleSource = readdirSync("app/create")
   .filter((file) => /\.(ts|tsx)$/.test(file))
   .map((file) => readFileSync(`app/create/${file}`, "utf8"))
   .join("\n");
+const createLeftColumnSource = readFileSync("app/create/CreateLeftColumn.tsx", "utf8");
+const createAudioCardSource = readFileSync("app/create/CreateAudioCard.tsx", "utf8");
 const shareClientSource = readFileSync("app/s/[slug]/ShareSceneClient.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const visualizerRenderSource = readFileSync("features/formats/visualizer/render.tsx", "utf8");
@@ -82,6 +84,8 @@ assert.ok(createModuleSource.includes("isStoredWebsiteResearchFailure(nextResult
 assert.ok(createModuleSource.includes("await generateScenesForResearch(nextResult.researchRunId"), "/create main Generate ads submit must read the website and immediately generate/select ad scenes.");
 assert.ok(createModuleSource.includes('Ad idea generation returned no ads'), "/create must fail loudly if ad generation returns an empty scene list.");
 assert.ok(createModuleSource.includes('const submitIsBusy = status === "loading" || adStatus === "loading"'), "/create main Generate ads button must stay busy while either research or ad generation is running.");
+assert.ok(!createLeftColumnSource.includes("Generate 50 ads"), "/create must not show a second Generate 50 ads box after the main submit already generates ads.");
+assert.ok(!createLeftColumnSource.includes("onGenerateAds"), "/create left column must not expose a second ad-generation entry point.");
 assert.ok(createModuleSource.includes("wiggly:v3:create-session"), "/create must restore the active generation after refresh so spacebar reroll still has scenes.");
 assert.ok(createModuleSource.includes("loadCreateSessionSnapshot"), "/create must load the persisted session before spacebar reroll can silently disappear.");
 assert.ok(createModuleSource.includes("saveCreateSessionSnapshot"), "/create must persist generated scenes for same-browser reroll continuity.");
@@ -152,6 +156,9 @@ assert.ok(createModuleSource.includes("Raw website text"), "/create full brand d
 assert.ok(!createModuleSource.includes('id="full-brand-dump"'), "/create full brand dump must not live as a long inline page section.");
 assert.ok(createModuleSource.includes("Share link") && createModuleSource.includes("onCreateShareLink"), "/create share controls must live in the compact legacy action card.");
 assert.ok(createModuleSource.includes('data-create-audio-card="v3"'), "/create audio controls must stay separate from the copied legacy action card.");
+assert.ok(createAudioCardSource.includes("if (!playableAudioUrl && !audioError) return null;"), "/create right rail audio card must stay hidden until audio exists or an audio error needs display.");
+assert.ok(!createAudioCardSource.includes("onOpenAudioPanel"), "/create right rail audio card must not duplicate the canvas Add audio button.");
+assert.ok(!createAudioCardSource.includes("audioStatusLabel"), "/create right rail audio card must not render a second Add audio CTA label.");
 for (const forbiddenStoreImport of ["convex/", "_generated", "AdScene", "scene/types", "server"]) {
   assert.ok(
     !canvasInteractionStoreSource.includes(forbiddenStoreImport),
