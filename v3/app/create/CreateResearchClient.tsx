@@ -10,7 +10,6 @@ import {
   ExternalLink,
   Link2,
   Loader2,
-  Mic,
   Play,
   RefreshCw,
   ShieldAlert,
@@ -45,6 +44,7 @@ import type {
 } from "@/features/research/types";
 import type { AdScene } from "@/features/scene/types";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
+import { CreateAudioCard } from "./CreateAudioCard";
 import { BrandDumpModal } from "./CreateBrandDumpModal";
 import { CreateCanvasColumn } from "./CreateCanvasColumn";
 import { CreateDialogueModal } from "./CreateDialogueModal";
@@ -1079,101 +1079,32 @@ function ResearchConnected() {
             ) : null}
           </section>
 
-          <section
-            className="mt-3 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8"
-            data-create-audio-card="v3"
-          >
-            <button
-              type="button"
-              onClick={onOpenAudioPanel}
-              disabled={!selectedScene || audioStatus === "loading" || hasGeneratedAudio}
-              className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {audioStatus === "loading" ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : hasGeneratedAudio ? (
-                <Check className="size-5" />
-              ) : (
-                <Mic className="size-5" />
-              )}
-              {audioStatusLabel}
-            </button>
-
-            {audioError ? (
-              <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
-                {audioError}
-              </p>
-            ) : null}
-
-            {playableAudioUrl ? (
-              <div className="mt-3 rounded-[20px] border border-slate-200 bg-slate-50 p-3">
-                <audio
-                  ref={audioRef}
-                  aria-label="Audio preview"
-                  className="w-full"
-                  controls
-                  preload="metadata"
-                  src={playableAudioUrl}
-                  onPlay={() => {
-                    setIsAudioPlaying(true);
-                  }}
-                  onPause={(event) => {
-                    setIsAudioPlaying(false);
-                    setPreviewTimeSeconds(event.currentTarget.currentTime || 1.1);
-                  }}
-                  onTimeUpdate={(event) => {
-                    setPreviewTimeSeconds(event.currentTarget.currentTime);
-                  }}
-                  onEnded={() => {
-                    setIsAudioPlaying(false);
-                    if (audioRef.current) audioRef.current.currentTime = 0;
-                    setPreviewTimeSeconds(1.1);
-                  }}
-                />
-                <p className="mt-2 text-center text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                  Audio preview syncs captions and visualizer
-                </p>
-              </div>
-            ) : null}
-
-            {hasGeneratedAudio ? (
-              <div className="mt-3 rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
-                      Captions
-                    </p>
-                    <p className="mt-1 text-xs font-black leading-5 text-slate-500">
-                      Fix typos or wording. Timing stays the same.
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-slate-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-                    Text only
-                  </span>
-                </div>
-                <div className="mt-3 space-y-3">
-                  {generatedCaptions.map((caption, index) => (
-                    <label key={`${caption.startMs}-${caption.endMs}`} className="block">
-                      <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-                        Line {index + 1}
-                      </span>
-                      <textarea
-                        value={caption.text}
-                        onChange={(event) => onUpdateCaptionText(index, event.target.value)}
-                        rows={2}
-                        className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black leading-5 text-slate-700 outline-none transition focus:border-slate-950 focus:bg-white"
-                      />
-                    </label>
-                  ))}
-                </div>
-                {hasEmptyEditedCaption ? (
-                  <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-xs font-black leading-5 text-amber-700">
-                    Empty caption lines will disappear from the preview.
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
-          </section>
+          <CreateAudioCard
+            audioError={audioError}
+            audioRef={audioRef}
+            audioStatus={audioStatus}
+            audioStatusLabel={audioStatusLabel}
+            captions={generatedCaptions}
+            hasEmptyEditedCaption={hasEmptyEditedCaption}
+            hasGeneratedAudio={hasGeneratedAudio}
+            hasSelectedScene={Boolean(selectedScene)}
+            onAudioEnded={() => {
+              setIsAudioPlaying(false);
+              if (audioRef.current) audioRef.current.currentTime = 0;
+              setPreviewTimeSeconds(1.1);
+            }}
+            onAudioPause={(currentTime) => {
+              setIsAudioPlaying(false);
+              setPreviewTimeSeconds(currentTime);
+            }}
+            onAudioPlay={() => {
+              setIsAudioPlaying(true);
+            }}
+            onAudioTimeUpdate={setPreviewTimeSeconds}
+            onOpenAudioPanel={onOpenAudioPanel}
+            onUpdateCaptionText={onUpdateCaptionText}
+            playableAudioUrl={playableAudioUrl}
+          />
 
           <section
             className="mt-5 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm"
