@@ -5,12 +5,14 @@ import {
   Bookmark,
   Grid2X2,
   Heart,
+  Lock,
   MessageCircle,
   Send,
+  Unlock,
 } from "lucide-react";
 import { LegacyIdleVisualizer } from "@/features/formats/visualizer/LegacyIdleVisualizer";
+import type { RenderFlashState, RenderMotionMode, RenderSelectableSlot } from "@/features/formats/types";
 import { AdRenderSurface } from "@/features/render/AdRenderSurface";
-import type { RenderMotionMode } from "@/features/formats/types";
 import type { AdScene } from "@/features/scene/types";
 import { legacyCreateVisualizerStyle } from "@/features/scene/visualizerStyle";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
@@ -68,6 +70,146 @@ const toPlaceholderPercent = (value: number, axis: "x" | "y") => (
   `${(value / (axis === "x" ? legacyPlaceholderCanvas.width : legacyPlaceholderCanvas.height)) * 100}%`
 );
 
+type PreviewSelectionOverlayProps = {
+  selectedSlot: RenderSelectableSlot | null;
+  lockedSlots: Record<RenderSelectableSlot, boolean>;
+  slotColors: Record<RenderSelectableSlot, string>;
+  backgroundColor: string;
+  onSelectSlot: (slot: RenderSelectableSlot) => void;
+  onToggleSlotLock: (slot: RenderSelectableSlot) => void;
+  onChangeSlotColor: (slot: RenderSelectableSlot, color: string) => void;
+  onChangeBackgroundColor: (color: string) => void;
+};
+
+const previewSelectableSlots: Array<{
+  slot: RenderSelectableSlot;
+  label: string;
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}> = [
+  {
+    slot: "headline",
+    label: "Headline",
+    top: 118,
+    left: 20,
+    width: 320,
+    height: 120,
+  },
+  {
+    slot: "visualizer",
+    label: "Visualizer",
+    top: 255,
+    left: 0,
+    width: 360,
+    height: 90,
+  },
+  {
+    slot: "captions",
+    label: "Captions",
+    top: 336,
+    left: 20,
+    width: 320,
+    height: 62,
+  },
+];
+
+function PreviewSelectionOverlay({
+  selectedSlot,
+  lockedSlots,
+  slotColors,
+  backgroundColor,
+  onSelectSlot,
+  onToggleSlotLock,
+  onChangeSlotColor,
+  onChangeBackgroundColor,
+}: PreviewSelectionOverlayProps) {
+  return (
+    <div aria-label="Selectable ad parts" className="group/preview-selector absolute inset-0 z-30">
+      {previewSelectableSlots.map(({ slot, label, top, left, width, height }) => {
+        const selected = selectedSlot === slot;
+        const locked = lockedSlots[slot];
+        const color = slotColors[slot];
+        return (
+          <div
+            key={slot}
+            data-preview-selectable-slot={slot}
+            className="group absolute rounded-2xl ring-1 ring-transparent transition hover:ring-slate-300 focus-within:ring-slate-300"
+            style={{
+              top: toPlaceholderPercent(top, "y"),
+              left: toPlaceholderPercent(left, "x"),
+              width: toPlaceholderPercent(width, "x"),
+              height: toPlaceholderPercent(height, "y"),
+            }}
+          >
+            <button
+              type="button"
+              aria-label={`Select ${label}`}
+              aria-pressed={selected}
+              className="absolute inset-0 rounded-2xl"
+              onClick={() => onSelectSlot(slot)}
+            >
+              <span className="sr-only">{label}</span>
+            </button>
+            <button
+              type="button"
+              className={`absolute right-1 top-1 z-40 grid size-14 place-items-center rounded-full border-2 shadow-xl transition duration-150 hover:scale-110 focus-visible:scale-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-400/25 ${
+                locked
+                  ? "border-slate-950 bg-slate-950 text-white opacity-80 shadow-slate-950/30 ring-2 ring-[#00D6B8]/70 hover:opacity-100 group-hover:opacity-100"
+                  : "border-slate-300 bg-white/95 text-slate-800 opacity-0 shadow-slate-950/20 hover:border-slate-950 hover:bg-white hover:opacity-100 group-hover:opacity-100 focus-visible:opacity-100"
+              }`}
+              aria-label={locked ? `Unlock ${label}` : `Lock ${label}`}
+              aria-pressed={locked}
+              onClick={(event) => {
+                event.stopPropagation();
+                onToggleSlotLock(slot);
+              }}
+            >
+              {locked ? <Lock className="size-6" strokeWidth={3} /> : <Unlock className="size-6" strokeWidth={2.5} />}
+            </button>
+            <label
+              className="absolute left-2 top-1/2 z-40 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover:opacity-100 focus-within:opacity-100"
+              title={`${label} color`}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <span
+                className="size-6 rounded-full border border-slate-200 shadow-inner"
+                style={{ backgroundColor: color }}
+              />
+              <input
+                type="color"
+                value={color}
+                aria-label={`${label} color`}
+                className="absolute inset-0 size-full cursor-pointer opacity-0"
+                onChange={(event) => onChangeSlotColor(slot, event.target.value)}
+              />
+            </label>
+          </div>
+        );
+      })}
+      <label
+        className="absolute bottom-3 left-3 z-40 flex size-11 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover/preview-selector:opacity-100 focus-within:opacity-100"
+        title="Background color"
+        data-preview-background-color="true"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <span
+          className="size-6 rounded-full border border-slate-200 shadow-inner"
+          style={{ backgroundColor }}
+        />
+        <input
+          type="color"
+          value={backgroundColor}
+          aria-label="Background color"
+          className="absolute inset-0 size-full cursor-pointer opacity-0"
+          onChange={(event) => onChangeBackgroundColor(event.target.value)}
+        />
+      </label>
+    </div>
+  );
+}
+
 function PlaceholderAdSurface() {
   return (
     <div className="relative aspect-[4/5] overflow-hidden bg-[#fbfaf5] text-center">
@@ -97,16 +239,17 @@ function PlaceholderAdSurface() {
           placeItems: "center",
           margin: 0,
           color: "#0f172a",
-          fontSize: "clamp(34px, 11.6cqw, 52px)",
+          fontSize: "clamp(31px, 9.4cqw, 42px)",
           fontWeight: 900,
           letterSpacing: 0,
           lineHeight: 1.04,
           textAlign: "center",
           textWrap: "balance",
+          overflow: "hidden",
           overflowWrap: "break-word",
         }}
       >
-        Drop in your website and watch the magic happen.
+        See the angle hiding on your website.
       </h2>
       <div
         data-placeholder-slot="visualizer"
@@ -154,19 +297,38 @@ export function PhonePreviewFrame({
   scene,
   result,
   motionMode = "auto",
+  rerollFlash = null,
   timeSeconds,
   onOpenAudioPanel,
+  selectedSlot = null,
+  lockedSlots,
+  slotColors,
+  backgroundColor,
+  onSelectSlot,
+  onToggleSlotLock,
+  onChangeSlotColor,
+  onChangeBackgroundColor,
 }: {
   scene: AdScene | null;
   result: StoredWebsiteResearchResult | null;
   motionMode?: RenderMotionMode;
+  rerollFlash?: RenderFlashState | null;
   timeSeconds: number;
   onOpenAudioPanel?: () => void;
+  selectedSlot?: RenderSelectableSlot | null;
+  lockedSlots?: Record<RenderSelectableSlot, boolean>;
+  slotColors?: Record<RenderSelectableSlot, string>;
+  backgroundColor?: string;
+  onSelectSlot?: (slot: RenderSelectableSlot) => void;
+  onToggleSlotLock?: (slot: RenderSelectableSlot) => void;
+  onChangeSlotColor?: (slot: RenderSelectableSlot, color: string) => void;
+  onChangeBackgroundColor?: (color: string) => void;
 }) {
   const brandName = scene?.brand.name || result?.brand.name || "Your brand";
   const brandLogoUrl = scene?.brand.logoUrl || scene?.brand.faviconUrl || result?.brand.logoUrl || result?.brand.faviconUrl || "";
   const caption = scene?.creative.subheadline || "Add audio for this ad";
   const showPreviewAudioAction = Boolean(scene && scene.audio.status !== "generated" && onOpenAudioPanel);
+  const canSelectSlots = Boolean(scene && lockedSlots && slotColors && backgroundColor && onSelectSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor);
 
   return (
     <div className="mx-auto w-[460px] rounded-[40px] bg-black p-[10px] shadow-[0_34px_90px_rgba(15,23,42,0.24)]">
@@ -184,7 +346,12 @@ export function PhonePreviewFrame({
 
         <div className="relative bg-[#fbfaf5]">
           {scene ? (
-            <AdRenderSurface scene={scene} motionMode={motionMode} timeSeconds={timeSeconds} />
+            <AdRenderSurface
+              scene={scene}
+              motionMode={motionMode}
+              rerollFlash={rerollFlash}
+              timeSeconds={timeSeconds}
+            />
           ) : (
             <PlaceholderAdSurface />
           )}
@@ -202,6 +369,18 @@ export function PhonePreviewFrame({
               <AudioLines className="size-5 shrink-0" />
               Add audio for this ad
             </button>
+          ) : null}
+          {canSelectSlots && lockedSlots && slotColors && backgroundColor && onSelectSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor ? (
+            <PreviewSelectionOverlay
+              selectedSlot={selectedSlot}
+              lockedSlots={lockedSlots}
+              slotColors={slotColors}
+              backgroundColor={backgroundColor}
+              onSelectSlot={onSelectSlot}
+              onToggleSlotLock={onToggleSlotLock}
+              onChangeSlotColor={onChangeSlotColor}
+              onChangeBackgroundColor={onChangeBackgroundColor}
+            />
           ) : null}
         </div>
 

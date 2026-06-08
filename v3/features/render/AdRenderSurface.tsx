@@ -1,12 +1,13 @@
 import type { CSSProperties } from "react";
 import { getFormatModule } from "../formats/registry";
-import type { RenderMode, RenderMotionMode } from "../formats/types";
+import type { RenderFlashState, RenderMode, RenderMotionMode } from "../formats/types";
 import type { AdScene } from "../scene/types";
 
 export type AdRenderSurfaceProps = {
   scene: AdScene;
   mode?: RenderMode;
   motionMode?: RenderMotionMode;
+  rerollFlash?: RenderFlashState | null;
   timeSeconds?: number;
   className?: string;
   style?: CSSProperties;
@@ -16,6 +17,7 @@ export function AdRenderSurface({
   scene,
   mode = "preview",
   motionMode = "auto",
+  rerollFlash = null,
   timeSeconds = 0,
   className,
   style,
@@ -39,7 +41,13 @@ export function AdRenderSurface({
         ...style,
       }}
     >
-      <FormatRenderer scene={scene} mode={mode} motionMode={motionMode} timeSeconds={timeSeconds} />
+      <FormatRenderer
+        scene={scene}
+        mode={mode}
+        motionMode={motionMode}
+        rerollFlash={rerollFlash}
+        timeSeconds={timeSeconds}
+      />
     </div>
   );
 }
