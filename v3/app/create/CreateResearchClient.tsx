@@ -20,7 +20,9 @@ import type {
 } from "@/features/formats/types";
 import {
   createDefaultCanvasInteractionLocks,
-  useCanvasInteractionStore,
+  useCanvasActions,
+  useCanvasLocks,
+  useSelectedCanvasSlot,
   type CanvasInteractionLocks,
 } from "@/features/create/canvasInteractionStore";
 import {
@@ -158,15 +160,9 @@ function ResearchConnected() {
   } | null | undefined;
   const saveDesign = useMutation(api.savedDesigns.saveFromScene);
   const savedDesignItems = savedDesigns || [];
-  const canvasMode = useCanvasInteractionStore((state) => state.mode);
-  const selectedPreviewSlot = useCanvasInteractionStore((state) => state.selectedSlot);
-  const sceneLocks = useCanvasInteractionStore((state) => state.locks);
-  const setCanvasMode = useCanvasInteractionStore((state) => state.setMode);
-  const selectPreviewSlot = useCanvasInteractionStore((state) => state.selectSlot);
-  const clearSelectedPreviewSlot = useCanvasInteractionStore((state) => state.clearSelectedSlot);
-  const setCanvasLocks = useCanvasInteractionStore((state) => state.setLocks);
-  const toggleCanvasLock = useCanvasInteractionStore((state) => state.toggleLock);
-  const resetCanvasInteraction = useCanvasInteractionStore((state) => state.resetInteraction);
+  const selectedPreviewSlot = useSelectedCanvasSlot();
+  const sceneLocks = useCanvasLocks();
+  const canvasActions = useCanvasActions();
 
   useEffect(() => {
     setAnonymousId(getAnonymousId());
@@ -186,9 +182,7 @@ function ResearchConnected() {
       setAdScenes(snapshot.adScenes);
       setSelectedScene(snapshot.selectedScene);
       setSelectedSceneIndex(snapshot.selectedSceneIndex);
-      setCanvasLocks(snapshot.sceneLocks);
-      clearSelectedPreviewSlot();
-      setCanvasMode("idle");
+      canvasActions.interactionReset({ locks: snapshot.sceneLocks });
       setRerollCount(snapshot.rerollCount);
       setAdStatus(snapshot.adScenes.length ? "ready" : "idle");
       setAdStatusNote(snapshot.adStatusNote);
@@ -198,7 +192,7 @@ function ResearchConnected() {
       setDialogueStatus(snapshot.dialogueScripts.length ? "ready" : "idle");
     }
     setSessionRestored(true);
-  }, []);
+  }, [canvasActions]);
 
   useEffect(() => {
     if (!sessionRestored) return;
@@ -235,53 +229,31 @@ function ResearchConnected() {
     setAdScenes(latestGeneration.scenes);
     setSelectedScene(restoredScene);
     setSelectedSceneIndex(0);
-    setCanvasLocks(createDefaultCanvasInteractionLocks());
-    clearSelectedPreviewSlot();
-    setCanvasMode("idle");
+    canvasActions.interactionReset({ locks: createDefaultCanvasInteractionLocks() });
     setRerollCount(0);
     setAdStatus("ready");
     setAdStatusNote(`${latestGeneration.scenes.length} ads restored. Press spacebar to find a stronger version.`);
     setAudioStatus(restoredScene?.audio.status === "generated" ? "ready" : "idle");
   }, [
     adScenes.length,
+    canvasActions,
     latestGeneration,
     result,
-    clearSelectedPreviewSlot,
     sessionRestored,
-    setCanvasLocks,
-    setCanvasMode,
-  ]);
-
-  useEffect(() => {
-    const nextMode = status === "loading" || adStatus === "loading" || audioStatus === "loading"
-      ? "generating"
-      : isAudioPlaying
-        ? "playing"
-        : "idle";
-
-    if (canvasMode !== nextMode) {
-      setCanvasMode(nextMode);
-    }
-  }, [
-    adStatus,
-    audioStatus,
-    canvasMode,
-    isAudioPlaying,
-    setCanvasMode,
-    status,
   ]);
 
   const getCurrentAnonymousId = () => anonymousId || getAnonymousId();
 
   const resetPreviewPlayback = useCallback(() => {
     setIsAudioPlaying(false);
+    canvasActions.playbackStopped();
     const audio = audioRef.current;
     if (audio) {
       audio.pause();
       audio.currentTime = 0;
     }
     setPreviewTimeSeconds(1.1);
-  }, []);
+  }, [canvasActions]);
 
   const onTogglePreviewPlayback = useCallback(() => {
     const audio = audioRef.current;
@@ -310,6 +282,8 @@ function ResearchConnected() {
   const resetDialogueState = () => {
     setDialoguePanelOpen(false);
     setCaptionPanelOpen(false);
+    canvasActions.closeModal("dialogue");
+    canvasActions.closeModal("captions");
     setDialogueStatus("idle");
     setDialogueScripts([]);
     setSelectedDialogueIndex(0);
@@ -321,6 +295,8 @@ function ResearchConnected() {
     setAudioError("");
     setBrandDetailsOpen(false);
     setCaptionPanelOpen(false);
+    canvasActions.closeModal("brand-dump");
+    canvasActions.closeModal("captions");
     resetDialogueState();
     resetPreviewPlayback();
   };
@@ -328,6 +304,36 @@ function ResearchConnected() {
   const resetSaveState = () => {
     setSaveStatus("idle");
     setSaveError("");
+  };
+
+  const openBrandDetails = () => {
+    setBrandDetailsOpen(true);
+    canvasActions.openModal("brand-dump");
+  };
+
+  const closeBrandDetails = () => {
+    setBrandDetailsOpen(false);
+    canvasActions.closeModal("brand-dump");
+  };
+
+  const openDialoguePanel = () => {
+    setDialoguePanelOpen(true);
+    canvasActions.openModal("dialogue");
+  };
+
+  const closeDialoguePanel = () => {
+    setDialoguePanelOpen(false);
+    canvasActions.closeModal("dialogue");
+  };
+
+  const openCaptionPanel = () => {
+    setCaptionPanelOpen(true);
+    canvasActions.openModal("captions");
+  };
+
+  const closeCaptionPanel = () => {
+    setCaptionPanelOpen(false);
+    canvasActions.closeModal("captions");
   };
 
   const replaceSelectedScene = useCallback((nextScene: AdScene) => {
@@ -451,11 +457,11 @@ function ResearchConnected() {
   }, [adScenes, rerollCount, resetPreviewPlayback, sceneLocks, selectedPreviewSlot, selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
   const onToggleLock = (key: SceneLockKey) => {
-    toggleCanvasLock(key);
+    canvasActions.slotLockToggled(key);
   };
 
   const onSelectPreviewSlot = (slot: RenderSelectableSlot) => {
-    selectPreviewSlot(slot);
+    canvasActions.slotSelected(slot);
   };
 
   const onTogglePreviewSlotLock = (slot: RenderSelectableSlot) => {
@@ -491,7 +497,7 @@ function ResearchConnected() {
     setAdScenes(scenes);
     setSelectedScene(firstScene);
     setSelectedSceneIndex(0);
-    resetCanvasInteraction();
+    canvasActions.interactionReset();
     setRerollCount(0);
     resetShareState();
     resetRenderState();
@@ -499,6 +505,7 @@ function ResearchConnected() {
     resetSaveState();
     setAdStatusNote(`${scenes.length} ads ready. Press spacebar to find a stronger version.`);
     setAdStatus("ready");
+    canvasActions.finishBusy();
   };
 
   const generateScenesForResearch = async (researchRunId: Id<"researchRuns">, count = 50) => {
@@ -512,7 +519,6 @@ function ResearchConnected() {
 
   useCanvasKeyboard({
     editorScopeRef: createEditorScopeRef,
-    enabled: !brandDetailsOpen && !dialoguePanelOpen && !captionPanelOpen,
     onReroll: onRerollScene,
   });
 
@@ -543,7 +549,7 @@ function ResearchConnected() {
     if (!brandDetailsOpen) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setBrandDetailsOpen(false);
+      if (event.key === "Escape") closeBrandDetails();
     };
 
     window.addEventListener("keydown", onKeyDown);
@@ -557,7 +563,8 @@ function ResearchConnected() {
     setAdScenes([]);
     setSelectedScene(null);
     setSelectedSceneIndex(0);
-    resetCanvasInteraction();
+    canvasActions.interactionReset();
+    canvasActions.beginBusy("website-research");
     setRerollCount(0);
     resetShareState();
     resetRenderState();
@@ -575,14 +582,17 @@ function ResearchConnected() {
       if (isStoredWebsiteResearchFailure(nextResult)) {
         setStatus("error");
         setError(nextResult.error);
+        canvasActions.finishBusy();
         return;
       }
       setResult(nextResult);
       setStatus("ready");
       researchCompleted = true;
       setAdStatus("loading");
+      canvasActions.beginBusy("ad-generation");
       await generateScenesForResearch(nextResult.researchRunId as Id<"researchRuns">, 50);
     } catch (nextError) {
+      canvasActions.finishBusy();
       const message = getResearchActionErrorMessage(nextError);
       if (researchCompleted) {
         setStatus("ready");
@@ -625,14 +635,18 @@ function ResearchConnected() {
 
   const onOpenAudioPanel = () => {
     if (!selectedScene || selectedScene.audio.status === "generated" || audioStatus === "loading") return;
-    setDialoguePanelOpen((open) => !open);
+    if (dialoguePanelOpen) {
+      closeDialoguePanel();
+    } else {
+      openDialoguePanel();
+    }
     setAudioError("");
     setDialogueError("");
   };
 
   const onGenerateDialogueScripts = async () => {
     if (!selectedScene || selectedScene.audio.status === "generated") return;
-    setDialoguePanelOpen(true);
+    openDialoguePanel();
     setDialogueStatus("loading");
     setDialogueError("");
     setAudioError("");
@@ -689,6 +703,7 @@ function ResearchConnected() {
     const script = dialogueScripts[selectedDialogueIndex];
     if (!selectedScene || selectedScene.audio.status === "generated" || !script) return;
     setAudioStatus("loading");
+    canvasActions.beginBusy("audio-generation");
     setAudioError("");
     resetRenderState();
     resetShareState();
@@ -702,10 +717,13 @@ function ResearchConnected() {
       resetPreviewPlayback();
       replaceSelectedScene(result.scene);
       setAudioStatus("ready");
-      setDialoguePanelOpen(false);
+      closeDialoguePanel();
+      canvasActions.finishBusy();
     } catch (nextError) {
       setAudioStatus("error");
       setAudioError(nextError instanceof Error ? nextError.message : "Audio generation failed.");
+      if (dialoguePanelOpen) canvasActions.openModal("dialogue");
+      else canvasActions.finishBusy();
     }
   };
 
@@ -718,6 +736,7 @@ function ResearchConnected() {
     }
 
     setAudioStatus("loading");
+    canvasActions.beginBusy("audio-upload");
     setAudioError("");
     setDialogueError("");
     resetRenderState();
@@ -751,10 +770,13 @@ function ResearchConnected() {
       resetPreviewPlayback();
       replaceSelectedScene(result.scene);
       setAudioStatus("ready");
-      setDialoguePanelOpen(false);
+      closeDialoguePanel();
+      canvasActions.finishBusy();
     } catch (nextError) {
       setAudioStatus("error");
       setAudioError(nextError instanceof Error ? nextError.message : "Audio upload failed.");
+      if (dialoguePanelOpen) canvasActions.openModal("dialogue");
+      else canvasActions.finishBusy();
     }
   };
 
@@ -815,6 +837,7 @@ function ResearchConnected() {
   const onCreateRenderJob = async () => {
     if (!selectedScene) return;
     setRenderStatus("loading");
+    canvasActions.beginBusy("render");
     setRenderJobId(null);
     setRenderError("");
 
@@ -828,6 +851,7 @@ function ResearchConnected() {
     } catch (nextError) {
       setRenderStatus("error");
       setRenderError(nextError instanceof Error ? nextError.message : "Video render failed to start.");
+      canvasActions.finishBusy();
     }
   };
 
@@ -860,6 +884,12 @@ function ResearchConnected() {
     || currentRenderStatus === "queued"
     || currentRenderStatus === "claimed"
     || currentRenderStatus === "rendering";
+
+  useEffect(() => {
+    if (currentRenderStatus === "ready" || currentRenderStatus === "failed" || currentRenderStatus === "error") {
+      canvasActions.finishBusy();
+    }
+  }, [canvasActions, currentRenderStatus]);
 
   return (
     <div
@@ -921,7 +951,7 @@ function ResearchConnected() {
             isAudioPlaying={isAudioPlaying}
             onCreateRenderJob={() => void onCreateRenderJob()}
             onCreateShareLink={() => void onCreateShareLink()}
-            onOpenCaptionEditor={() => setCaptionPanelOpen(true)}
+            onOpenCaptionEditor={openCaptionPanel}
             onOpenSavedDesign={onOpenSavedDesign}
             onPreviewPlatformChange={setPreviewPlatform}
             onSaveSelectedDesign={() => void onSaveSelectedDesign()}
@@ -950,22 +980,25 @@ function ResearchConnected() {
             audioRef={audioRef}
             onAudioEnded={() => {
               setIsAudioPlaying(false);
+              canvasActions.playbackStopped();
               if (audioRef.current) audioRef.current.currentTime = 0;
               setPreviewTimeSeconds(1.1);
             }}
             onAudioPause={(currentTime) => {
               setIsAudioPlaying(false);
+              canvasActions.playbackStopped();
               setPreviewTimeSeconds(currentTime);
             }}
             onAudioPlay={() => {
               setIsAudioPlaying(true);
+              canvasActions.playbackStarted();
             }}
             onAudioTimeUpdate={setPreviewTimeSeconds}
             playableAudioUrl={playableAudioUrl}
           />
 
           <CreateCreativeBriefCard
-            onOpenDetails={() => setBrandDetailsOpen(true)}
+            onOpenDetails={openBrandDetails}
             result={result}
           />
 
@@ -980,7 +1013,7 @@ function ResearchConnected() {
       {result && brandDetailsOpen ? (
         <BrandDumpModal
           result={result}
-          onClose={() => setBrandDetailsOpen(false)}
+          onClose={closeBrandDetails}
         />
       ) : null}
 
@@ -993,7 +1026,7 @@ function ResearchConnected() {
           dialogueScripts={dialogueScripts}
           dialogueStatus={dialogueStatus}
           hasSelectedScene={Boolean(selectedScene)}
-          onClose={() => setDialoguePanelOpen(false)}
+          onClose={closeDialoguePanel}
           onGenerateAudio={() => void onGenerateAudio()}
           onGenerateDialogueScripts={() => void onGenerateDialogueScripts()}
           onSelectDialogueScript={onSelectDialogueScript}
@@ -1007,7 +1040,7 @@ function ResearchConnected() {
         <CreateCaptionModal
           captions={generatedCaptions}
           hasEmptyEditedCaption={hasEmptyEditedCaption}
-          onClose={() => setCaptionPanelOpen(false)}
+          onClose={closeCaptionPanel}
           onUpdateCaptionText={onUpdateCaptionText}
         />
       ) : null}
