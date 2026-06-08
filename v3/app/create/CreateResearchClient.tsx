@@ -587,6 +587,7 @@ function ResearchConnected() {
         anonymousId: getCurrentAnonymousId(),
         scene: selectedScene,
         ctaUrl: selectedScene.brand.url,
+        previewPlatform,
       }) as { path: string };
       const nextShareUrl = `${window.location.origin}${share.path}`;
       setShareUrl(nextShareUrl);

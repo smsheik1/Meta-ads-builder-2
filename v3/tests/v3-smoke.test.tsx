@@ -56,6 +56,7 @@ const createModuleSource = readdirSync("app/create")
   .filter((file) => /\.(ts|tsx)$/.test(file))
   .map((file) => readFileSync(`app/create/${file}`, "utf8"))
   .join("\n");
+const shareClientSource = readFileSync("app/s/[slug]/ShareSceneClient.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const visualizerRenderSource = readFileSync("features/formats/visualizer/render.tsx", "utf8");
 const legacyIdleVisualizerSource = readFileSync("features/formats/visualizer/LegacyIdleVisualizer.tsx", "utf8");
@@ -131,7 +132,7 @@ assert.ok(createModuleSource.includes("rounded-[1.5rem] border border-slate-200 
 assert.ok(createModuleSource.includes("Download video") && createModuleSource.includes("renderStatusLabel"), "/create legacy action card must keep download wired through v3 render jobs.");
 assert.ok(createModuleSource.includes("onTogglePreviewPlayback") && createModuleSource.includes("playableAudioUrl"), "/create legacy action card play button must control v3 audio preview state.");
 assert.ok(createModuleSource.includes("onSaveSelectedDesign") && createModuleSource.includes("savedDesignItems.length"), "/create legacy action card save button must keep v3 saved-design hover behavior.");
-assert.ok(createModuleSource.includes("Try another") && createModuleSource.includes("onRerollScene"), "/create legacy action card must reroll through the v3 scene reroll path.");
+assert.ok(createModuleSource.includes("Edit captions") && createModuleSource.includes("onOpenCaptionEditor"), "/create legacy action card must open the v3 caption editor instead of duplicating reroll controls.");
 assert.ok(createModuleSource.includes("Open in builder") && createModuleSource.includes("Builder stays legacy-only"), "/create legacy action card may show builder affordance but must not link to a missing v3 builder route.");
 assert.ok(createModuleSource.includes("previewPlatformOptions"), "/create preview dropdown must use the shared old platform option list.");
 assert.ok(createModuleSource.includes("setPreviewPlatform"), "/create preview dropdown must actually switch platform chrome.");
@@ -146,7 +147,7 @@ assert.ok(createModuleSource.includes("Images Firecrawl found"), "/create full b
 assert.ok(createModuleSource.includes("Useful claims"), "/create full brand dump modal must expose the strongest copywriting fuel.");
 assert.ok(createModuleSource.includes("Raw website text"), "/create full brand dump modal must expose raw website text during development.");
 assert.ok(!createModuleSource.includes('id="full-brand-dump"'), "/create full brand dump must not live as a long inline page section.");
-assert.ok(createModuleSource.includes('data-create-share-card="v3"'), "/create share controls must stay separate from the copied legacy action card.");
+assert.ok(createModuleSource.includes("Share link") && createModuleSource.includes("onCreateShareLink"), "/create share controls must live in the compact legacy action card.");
 assert.ok(createModuleSource.includes('data-create-audio-card="v3"'), "/create audio controls must stay separate from the copied legacy action card.");
 for (const forbiddenStoreImport of ["convex/", "_generated", "AdScene", "scene/types", "server"]) {
   assert.ok(
@@ -244,6 +245,13 @@ assert.ok(!researchRunsSource.includes("throw new Error(message)"), "Website res
 const shareSource = readFileSync("convex/sharePages.ts", "utf8");
 assert.ok(shareSource.includes("assertShareableAdScene"), "Share pages must validate frozen scenes.");
 assert.ok(shareSource.includes("refreshSceneAudioUrl"), "Share pages must refresh Convex audio URLs before display.");
+assert.ok(shareSource.includes("previewPlatform"), "Share pages must persist the selected preview platform.");
+assert.ok(createClientSource.includes("previewPlatform,"), "/create must send the selected preview platform when creating a share link.");
+assert.ok(shareClientSource.includes("PhonePreviewFrame"), "Share pages must reuse the same phone preview chrome as /create.");
+assert.ok(shareClientSource.includes("<audio"), "Share pages must include a real audio element for generated audio playback.");
+assert.ok(shareClientSource.includes('motionMode={isAudioPlaying ? "audio" : "idle"}'), "Share pages must show the moving idle visualizer until the viewer plays the ad.");
+assert.ok(shareClientSource.includes("window.requestAnimationFrame"), "Share pages must drive preview time smoothly while audio plays.");
+assert.ok(shareClientSource.includes('platform={share.previewPlatform || "instagram-feed"}'), "Existing share links must fall back to IG Feed when no platform was stored.");
 
 const remotionSource = readFileSync("remotion-entry/RemotionAdScene.tsx", "utf8");
 assert.ok(remotionSource.includes("AdRenderSurface"), "Remotion must render through the shared render surface.");
