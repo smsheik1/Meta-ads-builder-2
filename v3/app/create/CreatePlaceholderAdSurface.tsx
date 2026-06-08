@@ -1,11 +1,55 @@
 import { AudioLines } from "lucide-react";
+import type { RenderFlashState } from "@/features/formats/types";
 import { LegacyIdleVisualizer } from "@/features/formats/visualizer/LegacyIdleVisualizer";
 import { legacyCreateVisualizerStyle } from "@/features/scene/visualizerStyle";
 import { toPlaceholderPercent } from "./createPreviewGeometry";
 
-export function PlaceholderAdSurface() {
+const placeholderVariants = [
+  {
+    headline: "See the angle hiding on your website.",
+    color: "#00d6b8",
+    background: "#fbfaf5",
+  },
+  {
+    headline: "Drop in your website and watch the magic happen.",
+    color: "#82dfff",
+    background: "#f2fbff",
+  },
+  {
+    headline: "Turn a brand page into video ads.",
+    color: "#f9a8d4",
+    background: "#fff7fb",
+  },
+  {
+    headline: "Find the hook buyers actually feel.",
+    color: "#8b5cf6",
+    background: "#f7f3ff",
+  },
+  {
+    headline: "Make a fresh ad in one tap.",
+    color: "#22c55e",
+    background: "#f3fff7",
+  },
+];
+
+export const placeholderAdSurfaceVariantCount = placeholderVariants.length;
+
+export function PlaceholderAdSurface({
+  rerollFlash = null,
+  variantIndex = 0,
+}: {
+  rerollFlash?: RenderFlashState | null;
+  variantIndex?: number;
+}) {
+  const variant = placeholderVariants[Math.abs(variantIndex) % placeholderVariants.length] || placeholderVariants[0]!;
+  const getRerollFlashClassName = (role: "headline" | "visualizer" | "captions") => (
+    rerollFlash?.roles.includes(role)
+      ? `wiggly-reroll-shine wiggly-reroll-shine-${role}`
+      : undefined
+  );
+
   return (
-    <div className="relative aspect-[4/5] overflow-hidden bg-[#fbfaf5] text-center">
+    <div className="relative aspect-[4/5] overflow-hidden text-center" style={{ background: variant.background }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         alt=""
@@ -21,6 +65,7 @@ export function PlaceholderAdSurface() {
         }}
       />
       <h2
+        className={getRerollFlashClassName("headline")}
         data-placeholder-slot="headline"
         style={{
           position: "absolute",
@@ -42,9 +87,10 @@ export function PlaceholderAdSurface() {
           overflowWrap: "break-word",
         }}
       >
-        See the angle hiding on your website.
+        {variant.headline}
       </h2>
       <div
+        className={getRerollFlashClassName("visualizer")}
         data-placeholder-slot="visualizer"
         style={{
           position: "absolute",
@@ -57,12 +103,13 @@ export function PlaceholderAdSurface() {
         <LegacyIdleVisualizer
           type={legacyCreateVisualizerStyle.type}
           barCount={legacyCreateVisualizerStyle.barCount}
-          color="#00d6b8"
+          color={variant.color}
           gap="0.56cqw"
           barMinWidth="0.83cqw"
         />
       </div>
       <div
+        className={getRerollFlashClassName("captions")}
         data-placeholder-slot="caption-action"
         style={{
           position: "absolute",

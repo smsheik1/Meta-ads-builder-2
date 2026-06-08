@@ -48,6 +48,7 @@ import { CreateCreativeBriefCard } from "./CreateCreativeBriefCard";
 import { CreateDialogueModal } from "./CreateDialogueModal";
 import { CreateIdeasList } from "./CreateIdeasList";
 import { CreateLeftColumn } from "./CreateLeftColumn";
+import { placeholderAdSurfaceVariantCount } from "./CreatePlaceholderAdSurface";
 import type { PreviewPlatform } from "./CreatePreviewChrome";
 import { WigglyMark } from "./WigglyMark";
 import {
@@ -123,6 +124,7 @@ function ResearchConnected() {
   const [previewPlatform, setPreviewPlatform] = useState<PreviewPlatform>("instagram-feed");
   const [rerollCount, setRerollCount] = useState(0);
   const [rerollFlash, setRerollFlash] = useState<RenderFlashState | null>(null);
+  const [placeholderVariantIndex, setPlaceholderVariantIndex] = useState(0);
   const [adStatusNote, setAdStatusNote] = useState("");
   const [renderJobId, setRenderJobId] = useState<Id<"renderJobs"> | null>(null);
   const renderJob = useQuery(api.renderJobs.getStatus, renderJobId ? { renderJobId } : "skip");
@@ -397,6 +399,13 @@ function ResearchConnected() {
   }, []);
 
   const onRerollScene = useCallback(() => {
+    if (!adScenes.length || !selectedScene) {
+      setPlaceholderVariantIndex((index) => (index + 1) % placeholderAdSurfaceVariantCount);
+      setRerollCount((count) => count + 1);
+      triggerRerollFlash(["headline", "visualizer", "captions"]);
+      return;
+    }
+
     const formatInteraction = selectedScene ? getSceneFormatInteraction(selectedScene) : null;
     const effectiveLocks = selectedPreviewSlot && formatInteraction
       ? formatInteraction.getRerollLocksForSlot(selectedPreviewSlot, sceneLocks)
@@ -439,7 +448,7 @@ function ResearchConnected() {
     resetDialogueState();
     resetSaveState();
     triggerRerollFlash(selectedPreviewSlot ? [selectedPreviewSlot] : getSceneDefaultFlashSlots(nextScene));
-  }, [adScenes, resetPreviewPlayback, sceneLocks, selectedPreviewSlot, selectedScene, selectedSceneIndex, triggerRerollFlash]);
+  }, [adScenes, rerollCount, resetPreviewPlayback, sceneLocks, selectedPreviewSlot, selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
   const onToggleLock = (key: SceneLockKey) => {
     toggleCanvasLock(key);
@@ -503,7 +512,7 @@ function ResearchConnected() {
 
   useCanvasKeyboard({
     editorScopeRef: createEditorScopeRef,
-    enabled: adScenes.length > 0 && !brandDetailsOpen && !dialoguePanelOpen && !captionPanelOpen,
+    enabled: !brandDetailsOpen && !dialoguePanelOpen && !captionPanelOpen,
     onReroll: onRerollScene,
   });
 
@@ -892,6 +901,7 @@ function ResearchConnected() {
           onSelectPreviewSlot={onSelectPreviewSlot}
           onTogglePlayback={onTogglePreviewPlayback}
           onTogglePreviewSlotLock={onTogglePreviewSlotLock}
+          placeholderVariantIndex={placeholderVariantIndex}
           playableAudioUrl={playableAudioUrl}
           previewPlatform={previewPlatform}
           previewTimeSeconds={previewTimeSeconds}

@@ -23,6 +23,7 @@ export function CreateCanvasColumn({
   onSelectPreviewSlot,
   onTogglePlayback,
   onTogglePreviewSlotLock,
+  placeholderVariantIndex,
   playableAudioUrl,
   previewPlatform,
   previewTimeSeconds,
@@ -42,6 +43,7 @@ export function CreateCanvasColumn({
   onSelectPreviewSlot: (slot: RenderSelectableSlot) => void;
   onTogglePlayback: () => void;
   onTogglePreviewSlotLock: (slot: RenderSelectableSlot) => void;
+  placeholderVariantIndex: number;
   playableAudioUrl: string;
   previewPlatform: PreviewPlatform;
   previewTimeSeconds: number;
@@ -68,6 +70,7 @@ export function CreateCanvasColumn({
             onTogglePlayback={onTogglePlayback}
             previewReady={Boolean(playableAudioUrl)}
             isAudioPlaying={isAudioPlaying}
+            placeholderVariantIndex={placeholderVariantIndex}
             selectedSlot={selectedPreviewSlot}
             selectableSlots={selectedScene ? getSceneSelectableSlots(selectedScene) : undefined}
             lockedSlots={selectedScene ? getLockedSlotsForScene(selectedScene, sceneLocks) : undefined}
@@ -79,32 +82,29 @@ export function CreateCanvasColumn({
             onChangeBackgroundColor={onChangePreviewBackgroundColor}
           />
 
-          {adScenesCount ? (
-            <>
-              <section className="mx-auto mt-7 w-full max-w-[520px] rounded-[28px] border border-slate-200 bg-white p-3 shadow-[0_20px_54px_rgba(15,23,42,0.12)]">
-                <button
-                  type="button"
-                  onClick={onRerollScene}
-                  className="group flex w-full items-center justify-center gap-3 rounded-[22px] bg-slate-950 px-5 py-4 text-2xl font-black text-white shadow-[0_16px_42px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5"
-                >
-                  <Sparkles className="size-7" />
-                  <span>Press</span>
-                  <kbd className="rounded-xl bg-white px-7 py-2.5 text-lg font-black uppercase tracking-[0.22em] text-slate-950 shadow-[inset_0_-2px_0_rgba(15,23,42,0.12)]">
-                    Spacebar
-                  </kbd>
-                  <span>make a wish</span>
-                </button>
-                <p className="mt-3 text-center text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                  {selectedPreviewSlot && selectedScene
-                    ? `Spacebar rerolls the ${getSceneSelectedSlotLabel(selectedScene, selectedPreviewSlot)}`
-                    : rerollCount
-                      ? `${rerollCount} reroll${rerollCount === 1 ? "" : "s"} this session`
-                      : "Start here. Make a fresh version in one tap."}
-                </p>
-              </section>
-
-            </>
-          ) : null}
+          <section className="mx-auto mt-7 w-full max-w-[520px] rounded-[28px] border border-slate-200 bg-white p-3 shadow-[0_20px_54px_rgba(15,23,42,0.12)]">
+            <button
+              type="button"
+              onClick={onRerollScene}
+              className="group flex w-full items-center justify-center gap-3 rounded-[22px] bg-slate-950 px-5 py-4 text-2xl font-black text-white shadow-[0_16px_42px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5"
+            >
+              <Sparkles className="size-7" />
+              <span>Press</span>
+              <kbd className="rounded-xl bg-white px-7 py-2.5 text-lg font-black uppercase tracking-[0.22em] text-slate-950 shadow-[inset_0_-2px_0_rgba(15,23,42,0.12)]">
+                Spacebar
+              </kbd>
+              <span>make a wish</span>
+            </button>
+            <p className="mt-3 text-center text-xs font-black uppercase tracking-[0.14em] text-slate-400">
+              {selectedPreviewSlot && selectedScene
+                ? `Spacebar rerolls the ${getSceneSelectedSlotLabel(selectedScene, selectedPreviewSlot)}`
+                : rerollCount
+                  ? `${rerollCount} reroll${rerollCount === 1 ? "" : "s"} this session`
+                  : adScenesCount
+                    ? "Start here. Make a fresh version in one tap."
+                    : "Start here. Tour the starter ads in one tap."}
+            </p>
+          </section>
         </div>
       </div>
     </div>
