@@ -82,6 +82,13 @@ assert.ok(createModuleSource.includes('selectedScene.audio.status === "generated
 assert.ok(createModuleSource.includes('motionMode={isAudioPlaying ? "audio" : "idle"}'), "/create must render paused generated-audio previews with the moving idle visualizer instead of a frozen audio frame.");
 assert.ok(createModuleSource.includes("isStoredWebsiteResearchFailure(nextResult)"), "/create must handle failed website research without exposing raw Convex action errors.");
 assert.ok(createModuleSource.includes("await generateScenesForResearch(nextResult.researchRunId"), "/create main Generate ads submit must read the website and immediately generate/select ad scenes.");
+assert.ok(createModuleSource.includes("Keeping this canvas stable until the new ads are ready"), "/create must keep the current canvas stable while a new website is being researched.");
+assert.ok(!createModuleSource.includes("setAdScenes([])"), "/create submit must not clear the current canvas before replacement ads are ready.");
+assert.ok(!createModuleSource.includes("setSelectedScene(null)"), "/create submit must not snap back to the starter placeholder while website research is running.");
+assert.ok(
+  createModuleSource.indexOf("setResult(nextResult)") > createModuleSource.indexOf("const nextScenes = await generateScenesForResearch"),
+  "/create must not swap the visible research result until generated scenes are ready too.",
+);
 assert.ok(createModuleSource.includes('Ad idea generation returned no ads'), "/create must fail loudly if ad generation returns an empty scene list.");
 assert.ok(createModuleSource.includes('const submitIsBusy = status === "loading" || adStatus === "loading"'), "/create main Generate ads button must stay busy while either research or ad generation is running.");
 assert.ok(!createLeftColumnSource.includes("Generate 50 ads"), "/create must not show a second Generate 50 ads box after the main submit already generates ads.");
