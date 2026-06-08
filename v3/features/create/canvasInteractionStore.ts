@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 // Canvas interaction only. Keep product data outside this store.
 // Product data belongs to Convex/page state; this store only owns temporary canvas UX state.
+// Boundary: keep persisted data and product scene state out of this file.
 export type CanvasInteractionMode = "idle" | "editing" | "generating" | "rerolling" | "playing";
 export type CanvasInteractionSlot = "headline" | "visualizer" | "captions";
 export type CanvasInteractionLockKey = "headline" | "subheadline" | "style" | "captionColor" | "audio";
