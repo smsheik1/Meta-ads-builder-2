@@ -11,7 +11,6 @@ import {
   isStaleAudioAnalysis,
   precomputeBrowserAudioAnalysisFromUrl,
 } from "@/features/audio/browserAudioAnalysis";
-import { updateGeneratedAudioCaptionText } from "@/features/audio/sceneAudio";
 import { cloneDialogueScript, type DialogueScript } from "@/features/dialogue/dialogueScripts";
 import type {
   RenderFlashRole,
@@ -720,21 +719,6 @@ function ResearchConnected() {
     }
   };
 
-  const onUpdateCaptionText = (captionIndex: number, text: string) => {
-    if (!selectedScene || selectedScene.audio.status !== "generated") return;
-
-    const nextAudio = updateGeneratedAudioCaptionText(selectedScene.audio, captionIndex, text);
-    if (nextAudio === selectedScene.audio) return;
-
-    replaceSelectedScene({
-      ...selectedScene,
-      audio: nextAudio,
-    });
-    resetRenderState();
-    resetShareState();
-    resetSaveState();
-  };
-
   const onSaveSelectedDesign = async () => {
     if (!selectedScene) return;
     setSaveStatus("loading");
@@ -822,8 +806,6 @@ function ResearchConnected() {
           : "Download video";
   const hasGeneratedAudio = selectedScene?.audio.status === "generated";
   const playableAudioUrl = selectedScene?.audio.status === "generated" ? selectedScene.audio.url : "";
-  const generatedCaptions = selectedScene?.audio.status === "generated" ? selectedScene.audio.captions : [];
-  const hasEmptyEditedCaption = generatedCaptions.some((caption) => !caption.text.trim());
   const selectedDialogueScript = dialogueScripts[selectedDialogueIndex] || null;
   const dialogueCanGenerateAudio = Boolean(selectedScene && selectedDialogueScript && selectedDialogueScript.lines.some((line) => line.text.trim()));
   const selectedSavedDesignId = selectedScene ? createSavedDesignId(selectedScene) : "";
@@ -938,8 +920,6 @@ function ResearchConnected() {
             audioRef={audioRef}
             audioStatus={audioStatus}
             audioStatusLabel={audioStatusLabel}
-            captions={generatedCaptions}
-            hasEmptyEditedCaption={hasEmptyEditedCaption}
             hasGeneratedAudio={hasGeneratedAudio}
             hasSelectedScene={Boolean(selectedScene)}
             onAudioEnded={() => {
@@ -956,7 +936,6 @@ function ResearchConnected() {
             }}
             onAudioTimeUpdate={setPreviewTimeSeconds}
             onOpenAudioPanel={onOpenAudioPanel}
-            onUpdateCaptionText={onUpdateCaptionText}
             playableAudioUrl={playableAudioUrl}
           />
 
