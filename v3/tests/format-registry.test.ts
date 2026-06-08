@@ -17,6 +17,11 @@ for (const [formatId, module] of entries) {
   assert.equal(module.id, formatId, `${formatId} module id must match its registry key.`);
   assert.ok(module.label.trim(), `${formatId} must expose a human label.`);
   assert.ok(module.defaultSlots.length > 0, `${formatId} must expose default selectable slots.`);
+  assert.ok(module.interaction.selectableSlots.length > 0, `${formatId} must expose selectable slot metadata.`);
+  assert.equal(typeof module.interaction.getSlotColor, "function", `${formatId} must expose slot color reads.`);
+  assert.equal(typeof module.interaction.applySlotColor, "function", `${formatId} must expose slot color writes.`);
+  assert.equal(typeof module.interaction.getRerollLocksForSlot, "function", `${formatId} must expose selected-slot reroll locks.`);
+  assert.equal(typeof module.interaction.applySlotReroll, "function", `${formatId} must expose selected-slot reroll semantics.`);
   assert.equal(typeof module.validate, "function", `${formatId} must expose a validator.`);
   assert.equal(typeof module.RenderComponent, "function", `${formatId} must expose a render component.`);
   assert.equal(getFormatModule(module.id).id, module.id);
@@ -28,6 +33,44 @@ const fakeMemeFormatModule: AdFormatModule<"meme", FakeMemeScene> = {
   id: "meme",
   label: "Meme image",
   defaultSlots: ["headline"],
+  interaction: {
+    selectableSlots: [
+      {
+        slot: "headline",
+        label: "Headline",
+        lockKey: "headline",
+        top: 80,
+        left: 24,
+        width: 312,
+        height: 160,
+      },
+    ],
+    getSlotColor: (scene) => scene.style.textColor,
+    applySlotColor: (scene, _slot, color) => ({
+      ...scene,
+      style: {
+        ...scene.style,
+        textColor: color,
+      },
+    }),
+    getBackgroundColor: (scene) => scene.style.backgroundColor,
+    applyBackgroundColor: (scene, color) => ({
+      ...scene,
+      style: {
+        ...scene.style,
+        backgroundColor: color,
+      },
+    }),
+    getRerollLocksForSlot: (_slot, locks) => ({
+      ...locks,
+      headline: false,
+      subheadline: true,
+      style: true,
+      captionColor: true,
+      audio: true,
+    }),
+    applySlotReroll: ({ nextScene }) => nextScene,
+  },
   RenderComponent: () => null,
   validate: (scene) => ({
     valid: scene.format === "meme" && Boolean(scene.creative.headline.trim()),
@@ -65,6 +108,10 @@ for (const filePath of coreFilesThatMustStayFormatAgnostic) {
   assert.ok(
     !source.includes("formats/visualizer") && !source.includes("formats\\visualizer"),
     `${filePath} must not import the visualizer format directly; use the registry/render surface.`,
+  );
+  assert.ok(
+    !/from\s+["'][^"']*features\/formats\/visualizer/.test(source),
+    `${filePath} must not import from features/formats/visualizer; use the registry/render surface.`,
   );
 }
 
