@@ -161,7 +161,7 @@ assert.ok(createModuleSource.includes("Open in builder") && createModuleSource.i
 assert.ok(createModuleSource.includes("previewPlatformOptions"), "/create preview dropdown must use the shared old platform option list.");
 assert.ok(createModuleSource.includes("setPreviewPlatform"), "/create preview dropdown must actually switch platform chrome.");
 assert.ok(createFormatRailSource.includes('data-create-format-rail="legacy"'), "/create left rail must copy the original compact two-icon format rail look.");
-assert.ok(createFormatRailSource.includes("w-[58px]") && createFormatRailSource.includes("rounded-full"), "/create left rail must stay a compact pill instead of a tall tool strip.");
+assert.ok(createFormatRailSource.includes("rounded-2xl") && createFormatRailSource.includes("lg:-left-14"), "/create left rail must stay the original compact floating pill instead of a tall tool strip.");
 assert.ok(createFormatRailSource.includes("Grid2X2") && createFormatRailSource.includes("AudioLines"), "/create left rail must keep the old two-icon visual rhythm.");
 assert.ok(!createFormatRailSource.includes("MessageCircle"), "/create left rail must not bring back extra inactive format buttons.");
 for (const requiredPreviewLabel of ["FB Feed", "IG Feed", "Reels", "Stories", "YouTube"]) {
@@ -224,8 +224,8 @@ assert.ok(previewChromeSource.includes('data-preview-audio-action="true"'), "/cr
 assert.ok(previewChromeSource.includes("onClick={onOpenAudioPanel}"), "/create phone preview add-audio target must open the audio panel instead of being dead renderer text.");
 assert.ok(createModuleSource.includes("z-50 inline-flex") && createModuleSource.includes("group/preview-selector absolute inset-0 z-30"), "/create phone preview add-audio target must sit above the selector overlay so clicks are not swallowed.");
 assert.ok(previewChromeSource.includes("top: toPlaceholderPercent(336, \"y\")"), "/create preview add-audio hit target must sit clear of the watermark.");
-assert.ok(createModuleSource.includes("self-start") && createModuleSource.includes("xl:content-start"), "/create format rail must stay compact and not stretch with the preview stack.");
-assert.ok(createModuleSource.includes("flex items-start justify-center gap-4"), "/create preview column must not stretch the compact format rail.");
+assert.ok(createModuleSource.includes("lg:absolute") && createModuleSource.includes("lg:-left-14"), "/create format rail must float beside the preview like the original /create shell.");
+assert.ok(createModuleSource.includes("relative flex flex-col items-center gap-3 lg:block"), "/create preview column must keep the original phone-first layout while preserving the v3 spacebar block.");
 assert.ok(existsSync("public/wiggly-logo.svg"), "/create v3 must ship the old Wiggly placeholder logo asset.");
 assert.ok(visualizerRenderSource.includes("LegacyIdleVisualizer"), "/create generated no-audio scenes must render through the shared legacy idle visualizer recipe.");
 assert.ok(visualizerRenderSource.includes("getSmoothedAnalysisFrame"), "/create generated-audio visualizer must smooth between analysis frames.");
