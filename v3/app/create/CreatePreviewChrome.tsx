@@ -380,7 +380,7 @@ export function PhonePreviewFrame({
   const verticalPlatform = reelsPlatform || storiesPlatform;
   const isDark = true;
   const frameClassName = youtubePlatform
-    ? "relative mx-auto h-[360px] w-[640px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25"
+    ? "relative mx-auto h-[420px] w-[640px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25"
     : "relative mx-auto h-[720px] w-[360px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25";
   const previewFrameId = `legacy-${platform}`;
 
@@ -596,20 +596,26 @@ export function PhonePreviewFrame({
       ) : null}
 
       {youtubePlatform ? (
-        <div className="absolute inset-0 overflow-hidden bg-black">
-          <div className="absolute inset-0 flex items-center justify-center bg-[#0f1117]">
+        <div className="flex h-full flex-col overflow-hidden bg-black">
+          <div
+            className="flex h-[360px] shrink-0 items-center justify-center bg-[#0f1117]"
+            data-youtube-editor-canvas="true"
+          >
             {renderAdViewport("h-full aspect-[4/5]")}
           </div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 bg-gradient-to-t from-black/85 via-black/35 to-transparent px-5 pb-4 pt-20">
-            <div className="h-1 overflow-hidden rounded-full bg-white/25">
+          <div
+            className="relative h-[60px] shrink-0 border-t border-slate-800 bg-black px-5 py-3 text-white"
+            data-preview-phone-footer={platform}
+          >
+            <div className="absolute inset-x-5 top-0 h-1 overflow-hidden rounded-full bg-white/20">
               <div className="h-full w-[38%] rounded-full bg-red-600" />
             </div>
-            <div className="mt-3 flex items-center justify-between text-white">
-              <div>
-                <p className="text-sm font-black">{brandName}</p>
-                <p className="text-xs font-bold text-slate-300">Sponsored video</p>
+            <div className="flex h-full items-center justify-between gap-4">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-black">{brandName}</p>
+                <p className="truncate text-xs font-bold text-slate-300">Sponsored video</p>
               </div>
-              <button className="rounded-full bg-white px-5 py-2 text-sm font-black text-black">Learn More</button>
+              <button className="shrink-0 rounded-full bg-white px-5 py-2 text-sm font-black text-black">Learn More</button>
             </div>
           </div>
         </div>
@@ -622,7 +628,7 @@ export function PhonePreviewFrame({
         disabled={!previewReady || !onTogglePlayback}
         className={cx(
           "absolute left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-2xl bg-slate-950/95 px-5 py-3 text-sm font-black text-white shadow-2xl shadow-slate-950/30 transition hover:-translate-x-1/2 hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50",
-          youtubePlatform ? "bottom-4" : "bottom-[86px]",
+          youtubePlatform ? "bottom-1" : "bottom-[86px]",
         )}
       >
         {isAudioPlaying ? <Square className="size-4 fill-current" /> : <Play className="size-4 fill-current" />}
