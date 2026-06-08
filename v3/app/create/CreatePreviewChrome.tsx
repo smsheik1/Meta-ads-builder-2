@@ -5,9 +5,7 @@ import {
   Bookmark,
   Battery,
   ChevronUp,
-  Grid2X2,
   Heart,
-  Lock,
   MessageCircle,
   MoreHorizontal,
   Play,
@@ -16,11 +14,9 @@ import {
   Signal,
   Square,
   ThumbsUp,
-  Unlock,
   VolumeX,
   Wifi,
 } from "lucide-react";
-import { LegacyIdleVisualizer } from "@/features/formats/visualizer/LegacyIdleVisualizer";
 import type {
   FormatSelectableSlotDefinition,
   RenderFlashState,
@@ -29,8 +25,10 @@ import type {
 } from "@/features/formats/types";
 import { AdRenderSurface } from "@/features/render/AdRenderSurface";
 import type { AdScene } from "@/features/scene/types";
-import { legacyCreateVisualizerStyle } from "@/features/scene/visualizerStyle";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
+import { PlaceholderAdSurface } from "./CreatePlaceholderAdSurface";
+import { PreviewSelectionOverlay } from "./CreatePreviewSelectionOverlay";
+import { toPlaceholderPercent } from "./createPreviewGeometry";
 
 export type PreviewPlatform = "facebook-feed" | "instagram-feed" | "reels" | "stories" | "youtube";
 
@@ -43,23 +41,6 @@ export const previewPlatformOptions: Array<{ label: string; value: PreviewPlatfo
 ];
 
 const cx = (...classes: Array<string | false | null | undefined>) => classes.filter(Boolean).join(" ");
-
-export function WigglyMark({ size = "md" }: { size?: "sm" | "md" }) {
-  const wrapperSize = size === "sm" ? "size-9" : "size-11";
-  const dotSize = size === "sm" ? "size-1.5" : "size-2";
-
-  return (
-    <div className={`${wrapperSize} grid place-items-center rounded-full bg-slate-950 shadow-[0_10px_24px_rgba(15,23,42,0.18)]`}>
-      <div className="flex items-center gap-0.5">
-        <span className={`${dotSize} rounded-full bg-cyan-300`} />
-        <span className="h-1 w-3 rounded-full bg-blue-500" />
-        <span className={`${dotSize} rounded-full bg-fuchsia-400`} />
-        <span className="h-1 w-3 rounded-full bg-emerald-300" />
-        <span className={`${dotSize} rounded-full bg-cyan-300`} />
-      </div>
-    </div>
-  );
-}
 
 function BrandAvatar({
   logoUrl,
@@ -97,206 +78,6 @@ function StatusBar({ isDark = true }: { isDark?: boolean }) {
         <Wifi className="size-3.5" strokeWidth={2.5} />
         <Battery className="size-4" strokeWidth={2.5} />
       </div>
-    </div>
-  );
-}
-
-const legacyPlaceholderCanvas = {
-  width: 360,
-  height: 450,
-};
-
-const toPlaceholderPercent = (value: number, axis: "x" | "y") => (
-  `${(value / (axis === "x" ? legacyPlaceholderCanvas.width : legacyPlaceholderCanvas.height)) * 100}%`
-);
-
-type PreviewSelectionOverlayProps = {
-  selectedSlot: RenderSelectableSlot | null;
-  selectableSlots: readonly FormatSelectableSlotDefinition[];
-  lockedSlots: Partial<Record<RenderSelectableSlot, boolean>>;
-  slotColors: Partial<Record<RenderSelectableSlot, string>>;
-  backgroundColor: string;
-  onSelectSlot: (slot: RenderSelectableSlot) => void;
-  onToggleSlotLock: (slot: RenderSelectableSlot) => void;
-  onChangeSlotColor: (slot: RenderSelectableSlot, color: string) => void;
-  onChangeBackgroundColor: (color: string) => void;
-};
-
-function PreviewSelectionOverlay({
-  selectedSlot,
-  selectableSlots,
-  lockedSlots,
-  slotColors,
-  backgroundColor,
-  onSelectSlot,
-  onToggleSlotLock,
-  onChangeSlotColor,
-  onChangeBackgroundColor,
-}: PreviewSelectionOverlayProps) {
-  return (
-    <div aria-label="Selectable ad parts" className="group/preview-selector absolute inset-0 z-30">
-      {selectableSlots.map(({ slot, label, top, left, width, height }) => {
-        const selected = selectedSlot === slot;
-        const locked = Boolean(lockedSlots[slot]);
-        const color = slotColors[slot] || "#0f172a";
-        return (
-          <div
-            key={slot}
-            data-preview-selectable-slot={slot}
-            className="group absolute rounded-2xl ring-1 ring-transparent transition hover:ring-slate-300 focus-within:ring-slate-300"
-            style={{
-              top: toPlaceholderPercent(top, "y"),
-              left: toPlaceholderPercent(left, "x"),
-              width: toPlaceholderPercent(width, "x"),
-              height: toPlaceholderPercent(height, "y"),
-            }}
-          >
-            <button
-              type="button"
-              aria-label={`Select ${label}`}
-              aria-pressed={selected}
-              className="absolute inset-0 rounded-2xl"
-              onClick={() => onSelectSlot(slot)}
-            >
-              <span className="sr-only">{label}</span>
-            </button>
-            <button
-              type="button"
-              className={`absolute right-1 top-1 z-40 grid size-14 place-items-center rounded-full border-2 shadow-xl transition duration-150 hover:scale-110 focus-visible:scale-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-400/25 ${
-                locked
-                  ? "border-slate-950 bg-slate-950 text-white opacity-80 shadow-slate-950/30 ring-2 ring-[#00D6B8]/70 hover:opacity-100 group-hover:opacity-100"
-                  : "border-slate-300 bg-white/95 text-slate-800 opacity-0 shadow-slate-950/20 hover:border-slate-950 hover:bg-white hover:opacity-100 group-hover:opacity-100 focus-visible:opacity-100"
-              }`}
-              aria-label={locked ? `Unlock ${label}` : `Lock ${label}`}
-              aria-pressed={locked}
-              onClick={(event) => {
-                event.stopPropagation();
-                onToggleSlotLock(slot);
-              }}
-            >
-              {locked ? <Lock className="size-6" strokeWidth={3} /> : <Unlock className="size-6" strokeWidth={2.5} />}
-            </button>
-            <label
-              className="absolute left-2 top-1/2 z-40 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover:opacity-100 focus-within:opacity-100"
-              title={`${label} color`}
-              onClick={(event) => event.stopPropagation()}
-            >
-              <span
-                className="size-6 rounded-full border border-slate-200 shadow-inner"
-                style={{ backgroundColor: color }}
-              />
-              <input
-                type="color"
-                value={color}
-                aria-label={`${label} color`}
-                className="absolute inset-0 size-full cursor-pointer opacity-0"
-                onChange={(event) => onChangeSlotColor(slot, event.target.value)}
-              />
-            </label>
-          </div>
-        );
-      })}
-      <label
-        className="absolute bottom-3 left-3 z-40 flex size-11 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover/preview-selector:opacity-100 focus-within:opacity-100"
-        title="Background color"
-        data-preview-background-color="true"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <span
-          className="size-6 rounded-full border border-slate-200 shadow-inner"
-          style={{ backgroundColor }}
-        />
-        <input
-          type="color"
-          value={backgroundColor}
-          aria-label="Background color"
-          className="absolute inset-0 size-full cursor-pointer opacity-0"
-          onChange={(event) => onChangeBackgroundColor(event.target.value)}
-        />
-      </label>
-    </div>
-  );
-}
-
-function PlaceholderAdSurface() {
-  return (
-    <div className="relative aspect-[4/5] overflow-hidden bg-[#fbfaf5] text-center">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        alt=""
-        data-placeholder-slot="logo"
-        src="/wiggly-logo.svg"
-        style={{
-          position: "absolute",
-          top: toPlaceholderPercent(70, "y"),
-          left: toPlaceholderPercent(120, "x"),
-          width: toPlaceholderPercent(120, "x"),
-          height: toPlaceholderPercent(48, "y"),
-          objectFit: "contain",
-        }}
-      />
-      <h2
-        data-placeholder-slot="headline"
-        style={{
-          position: "absolute",
-          top: toPlaceholderPercent(118, "y"),
-          left: toPlaceholderPercent(20, "x"),
-          width: toPlaceholderPercent(320, "x"),
-          height: toPlaceholderPercent(120, "y"),
-          display: "grid",
-          placeItems: "center",
-          margin: 0,
-          color: "#0f172a",
-          fontSize: "clamp(31px, 9.4cqw, 42px)",
-          fontWeight: 900,
-          letterSpacing: 0,
-          lineHeight: 1.04,
-          textAlign: "center",
-          textWrap: "balance",
-          overflow: "hidden",
-          overflowWrap: "break-word",
-        }}
-      >
-        See the angle hiding on your website.
-      </h2>
-      <div
-        data-placeholder-slot="visualizer"
-        style={{
-          position: "absolute",
-          top: toPlaceholderPercent(255, "y"),
-          left: toPlaceholderPercent(0, "x"),
-          width: toPlaceholderPercent(360, "x"),
-          height: toPlaceholderPercent(90, "y"),
-        }}
-      >
-        <LegacyIdleVisualizer
-          type={legacyCreateVisualizerStyle.type}
-          barCount={legacyCreateVisualizerStyle.barCount}
-          color="#00d6b8"
-          gap="0.56cqw"
-          barMinWidth="0.83cqw"
-        />
-      </div>
-      <div
-        data-placeholder-slot="caption-action"
-        style={{
-          position: "absolute",
-          top: toPlaceholderPercent(350, "y"),
-          left: toPlaceholderPercent(20, "x"),
-          width: toPlaceholderPercent(320, "x"),
-          height: toPlaceholderPercent(48, "y"),
-          display: "grid",
-          placeItems: "center",
-        }}
-      >
-        <div className="inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-full bg-white/95 px-5 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.10)]">
-          <AudioLines className="size-4 shrink-0" />
-          Add audio for this ad
-        </div>
-      </div>
-      <p className="absolute bottom-4 right-8 text-xs font-black uppercase tracking-[0.38em] text-slate-950/25">
-        Made with Wiggly
-      </p>
     </div>
   );
 }
@@ -609,36 +390,6 @@ export function PhonePreviewFrame({
       >
         {isAudioPlaying ? <Square className="size-4 fill-current" /> : <Play className="size-4 fill-current" />}
         {isAudioPlaying ? "Stop preview" : "Play this ad"}
-      </button>
-    </div>
-  );
-}
-
-export function FormatRail() {
-  return (
-    <div className="mt-64 hidden w-16 shrink-0 self-start rounded-[28px] border border-slate-200 bg-white/95 p-2 shadow-[0_18px_50px_rgba(15,23,42,0.12)] xl:grid xl:content-start">
-      <button
-        type="button"
-        aria-label="Visualizer format"
-        className="grid size-12 place-items-center rounded-2xl bg-slate-950 text-white shadow-sm"
-      >
-        <AudioLines className="size-6" />
-      </button>
-      <button
-        type="button"
-        aria-label="Future image format"
-        className="mt-3 grid size-12 place-items-center rounded-2xl border border-slate-200 text-slate-300"
-        disabled
-      >
-        <Grid2X2 className="size-5" />
-      </button>
-      <button
-        type="button"
-        aria-label="Future social format"
-        className="mt-3 grid size-12 place-items-center rounded-2xl border border-slate-200 text-slate-300"
-        disabled
-      >
-        <MessageCircle className="size-5" />
       </button>
     </div>
   );
