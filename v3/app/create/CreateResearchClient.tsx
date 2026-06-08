@@ -514,7 +514,7 @@ function ResearchConnected() {
       count,
     }) as AdSceneGenerationResponse;
 
-    return nextGeneration.scenes || [];
+    applyGeneratedScenes(nextGeneration.scenes || []);
   };
 
   useCanvasKeyboard({
@@ -558,26 +558,19 @@ function ResearchConnected() {
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const hadExistingCanvas = Boolean(selectedScene || adScenes.length);
-    const keepPreviousCanvasAfterFailure = () => {
-      setAdStatus(hadExistingCanvas ? "ready" : "error");
-      if (hadExistingCanvas) {
-        setAdStatusNote("Previous ads are still on the canvas. Try another URL when you're ready.");
-      }
-    };
-
     setStatus("loading");
-    setAdStatus("loading");
-    canvasActions.slotCleared();
+    setAdStatus("idle");
+    setAdScenes([]);
+    setSelectedScene(null);
+    setSelectedSceneIndex(0);
+    canvasActions.interactionReset();
     canvasActions.beginBusy("website-research");
+    setRerollCount(0);
     resetShareState();
     resetRenderState();
-    resetPreviewPlayback();
-    resetDialogueState();
-    closeBrandDetails();
-    closeCaptionPanel();
+    resetAudioState();
     resetSaveState();
-    setAdStatusNote(hadExistingCanvas ? "Reading website. Keeping this canvas stable until the new ads are ready." : "");
+    setAdStatusNote("");
     setError("");
     let researchCompleted = false;
 
@@ -587,29 +580,26 @@ function ResearchConnected() {
         url,
       }) as StoredWebsiteResearchResponse;
       if (isStoredWebsiteResearchFailure(nextResult)) {
-        setStatus(hadExistingCanvas ? "ready" : "error");
+        setStatus("error");
         setError(nextResult.error);
-        keepPreviousCanvasAfterFailure();
         canvasActions.finishBusy();
         return;
       }
-      researchCompleted = true;
-      canvasActions.beginBusy("ad-generation");
-      const nextScenes = await generateScenesForResearch(nextResult.researchRunId as Id<"researchRuns">, 50);
       setResult(nextResult);
       setStatus("ready");
-      applyGeneratedScenes(nextScenes);
+      researchCompleted = true;
+      setAdStatus("loading");
+      canvasActions.beginBusy("ad-generation");
+      await generateScenesForResearch(nextResult.researchRunId as Id<"researchRuns">, 50);
     } catch (nextError) {
       canvasActions.finishBusy();
       const message = getResearchActionErrorMessage(nextError);
       if (researchCompleted) {
-        setStatus(hadExistingCanvas ? "ready" : "error");
+        setStatus("ready");
         setAdStatus("error");
-        setAdStatusNote(hadExistingCanvas ? "Previous ads are still on the canvas. New ad generation failed." : "");
         setError(message);
       } else {
-        setStatus(hadExistingCanvas ? "ready" : "error");
-        keepPreviousCanvasAfterFailure();
+        setStatus("error");
         setError(message);
       }
     }
