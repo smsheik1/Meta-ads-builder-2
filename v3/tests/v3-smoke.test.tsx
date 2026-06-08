@@ -252,6 +252,7 @@ assert.ok(shareClientSource.includes("<audio"), "Share pages must include a real
 assert.ok(shareClientSource.includes('motionMode={isAudioPlaying ? "audio" : "idle"}'), "Share pages must show the moving idle visualizer until the viewer plays the ad.");
 assert.ok(shareClientSource.includes("window.requestAnimationFrame"), "Share pages must drive preview time smoothly while audio plays.");
 assert.ok(shareClientSource.includes('platform={share.previewPlatform || "instagram-feed"}'), "Existing share links must fall back to IG Feed when no platform was stored.");
+assert.ok(shareClientSource.includes('href="/create"') && shareClientSource.includes("Made with Wiggly"), "Share pages must keep the small Made with Wiggly backlink.");
 
 const remotionSource = readFileSync("remotion-entry/RemotionAdScene.tsx", "utf8");
 assert.ok(remotionSource.includes("AdRenderSurface"), "Remotion must render through the shared render surface.");

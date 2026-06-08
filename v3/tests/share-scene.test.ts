@@ -128,5 +128,10 @@ assert.ok(
     shareClientSource.includes("liveShare === undefined ? initialShare : liveShare"),
   "Share client must render the server-loaded share scene instead of showing a spinner first.",
 );
+assert.ok(
+  shareClientSource.includes('href="/create"') &&
+    shareClientSource.includes("Made with Wiggly"),
+  "Share pages must include the small Made with Wiggly link back to /create.",
+);
 
 console.log("share-scene tests passed");

@@ -1,6 +1,7 @@
 import type { AdScene, AdSceneAudio, AdSceneAudioAnalysis, AdSceneCaption } from "../scene/types";
 
 export const PINNED_TTS_MODEL = "gemini-3.1-flash-tts-preview";
+export const UPLOADED_AUDIO_MODEL = "uploaded-audio";
 
 const minimumAudioDurationMs = 4200;
 const maximumAudioDurationMs = 28000;
@@ -111,18 +112,26 @@ export const createGeneratedSceneAudio = ({
   generatedAt: Date.now(),
 });
 
+export const hasDisplayableCaptionTrack = (audio: AdSceneAudio) => (
+  audio.status === "generated" &&
+  !(audio.provider === "upload" && audio.model === UPLOADED_AUDIO_MODEL) &&
+  audio.captions.some((caption) => cleanText(caption.text))
+);
+
 export const getVisibleCaptionText = (
   audio: AdSceneAudio,
   timeSeconds: number,
 ) => {
   if (audio.status !== "generated") return "";
+  if (!hasDisplayableCaptionTrack(audio)) return "";
 
   const timeMs = Math.max(0, timeSeconds * 1000);
-  const current = audio.captions.find((caption) => (
+  const captions = audio.captions.filter((caption) => cleanText(caption.text));
+  const current = captions.find((caption) => (
     timeMs >= caption.startMs && timeMs <= caption.endMs
   ));
 
-  return current?.text || audio.captions[0]?.text || "";
+  return current?.text || captions[0]?.text || "";
 };
 
 export const updateGeneratedAudioCaptionText = (

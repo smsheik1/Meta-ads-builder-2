@@ -163,6 +163,12 @@ export function ShareSceneClient({
             <ExternalLink className="size-5" />
           </a>
         ) : null}
+        <a
+          href="/create"
+          className="mt-6 inline-flex text-sm font-black text-slate-500 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-950"
+        >
+          Made with Wiggly
+        </a>
       </aside>
     </section>
   );
