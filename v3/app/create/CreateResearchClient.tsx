@@ -44,10 +44,8 @@ import { CreateDialogueModal } from "./CreateDialogueModal";
 import { CreateIdeasList } from "./CreateIdeasList";
 import { CreateLeftColumn } from "./CreateLeftColumn";
 import { CreateShareCard } from "./CreateShareCard";
-import {
-  WigglyMark,
-  type PreviewPlatform,
-} from "./CreatePreviewChrome";
+import type { PreviewPlatform } from "./CreatePreviewChrome";
+import { WigglyMark } from "./WigglyMark";
 import {
   fallbackCaptionColors,
   getNextDistinctColor,

@@ -8,7 +8,8 @@ import {
 import type { RenderFlashState, RenderSelectableSlot } from "@/features/formats/types";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
 import type { AdScene } from "@/features/scene/types";
-import { FormatRail, PhonePreviewFrame, type PreviewPlatform } from "./CreatePreviewChrome";
+import { FormatRail } from "./CreateFormatRail";
+import { PhonePreviewFrame, type PreviewPlatform } from "./CreatePreviewChrome";
 import {
   getLockedSlotsForScene,
   getSceneFormatInteraction,
