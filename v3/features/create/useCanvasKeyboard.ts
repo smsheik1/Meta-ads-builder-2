@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type RefObject } from "react";
-import { useCanvasCanReroll } from "./canvasInteractionStore";
+import { useCanvasInteractionStore } from "./canvasInteractionStore";
 
 export function isEditableShortcutTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -25,12 +25,13 @@ function isRerollSpacebarKey(event: KeyboardEvent): boolean {
 }
 
 type UseCanvasKeyboardOptions = {
+  enabled: boolean;
   editorScopeRef: RefObject<HTMLElement | null>;
   onReroll: () => void;
 };
 
-export function useCanvasKeyboard({ editorScopeRef, onReroll }: UseCanvasKeyboardOptions) {
-  const canReroll = useCanvasCanReroll();
+export function useCanvasKeyboard({ enabled, editorScopeRef, onReroll }: UseCanvasKeyboardOptions) {
+  const mode = useCanvasInteractionStore((state) => state.mode);
   const shortcutScopeActiveRef = useRef(true);
 
   useEffect(() => {
@@ -47,9 +48,11 @@ export function useCanvasKeyboard({ editorScopeRef, onReroll }: UseCanvasKeyboar
   }, [editorScopeRef]);
 
   useEffect(() => {
+    if (!enabled) return;
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (!isRerollSpacebarKey(event)) return;
-      if (!canReroll) return;
+      if (mode !== "idle") return;
       if (isEditableShortcutTarget(event.target) || isEditableShortcutTarget(document.activeElement)) return;
 
       const targetInScope = targetIsInScope(event.target, editorScopeRef.current);
@@ -62,5 +65,5 @@ export function useCanvasKeyboard({ editorScopeRef, onReroll }: UseCanvasKeyboar
 
     window.addEventListener("keydown", onKeyDown, true);
     return () => window.removeEventListener("keydown", onKeyDown, true);
-  }, [canReroll, editorScopeRef, onReroll]);
+  }, [enabled, editorScopeRef, mode, onReroll]);
 }
