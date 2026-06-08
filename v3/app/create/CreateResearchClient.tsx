@@ -14,7 +14,6 @@ import {
   Mic,
   Play,
   RefreshCw,
-  Search,
   ShieldAlert,
   Sparkles,
   ThumbsDown,
@@ -53,7 +52,13 @@ import type {
 } from "@/features/research/types";
 import type { AdScene } from "@/features/scene/types";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
-import { FormatRail, PhonePreviewFrame, WigglyMark } from "./CreatePreviewChrome";
+import {
+  FormatRail,
+  PhonePreviewFrame,
+  WigglyMark,
+  previewPlatformOptions,
+  type PreviewPlatform,
+} from "./CreatePreviewChrome";
 
 const anonymousIdKey = "wiggly:v3:anonymous-id";
 const createSessionStorageKey = "wiggly:v3:create-session";
@@ -86,6 +91,35 @@ const getAnonymousId = () => {
 const pillClass = "rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-slate-400 shadow-sm";
 const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const fallbackUploadedAudioDurationMs = 8000;
+const summarizeJson = (value: unknown) => JSON.stringify(value ?? {}, null, 2);
+
+const uniqueNonEmptyStrings = (items: Array<string | null | undefined>) => (
+  Array.from(new Set(items.map((item) => item?.trim()).filter((item): item is string => Boolean(item))))
+);
+
+const getCreativeBriefHighlights = (result: StoredWebsiteResearchResult | null) => {
+  if (!result) return [];
+
+  return [
+    { label: "Offer", value: result.brandBrief.offer },
+    { label: "Audience", value: result.brandBrief.audience },
+    { label: "Hook", value: result.brandBrief.buyerMoments[0] || result.brandBrief.proof[0] || result.brand.description },
+  ].filter((item) => item.value.trim());
+};
+
+const getBrandDumpImages = (result: StoredWebsiteResearchResult) => uniqueNonEmptyStrings([
+  result.brand.logoUrl,
+  result.brand.faviconUrl,
+  result.brand.ogImageUrl,
+  result.brand.screenshotUrl,
+]);
+
+const getUsefulClaims = (result: StoredWebsiteResearchResult) => uniqueNonEmptyStrings([
+  result.brandBrief.offer,
+  ...result.brandBrief.buyerMoments,
+  ...result.brandBrief.proof,
+  result.brandBrief.ctaDirection,
+]);
 
 const previewSlotLockKey: Record<CanvasInteractionSlot, SceneLockKey> = {
   headline: "headline",
@@ -243,6 +277,7 @@ function ResearchConnected() {
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
+  const [previewPlatform, setPreviewPlatform] = useState<PreviewPlatform>("instagram-feed");
   const [rerollCount, setRerollCount] = useState(0);
   const [rerollFlash, setRerollFlash] = useState<RenderFlashState | null>(null);
   const [adStatusNote, setAdStatusNote] = useState("");
@@ -252,6 +287,7 @@ function ResearchConnected() {
   const [shareError, setShareError] = useState("");
   const [audioError, setAudioError] = useState("");
   const [dialoguePanelOpen, setDialoguePanelOpen] = useState(false);
+  const [brandDetailsOpen, setBrandDetailsOpen] = useState(false);
   const [dialogueStatus, setDialogueStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [dialogueScripts, setDialogueScripts] = useState<DialogueScript[]>([]);
   const [selectedDialogueIndex, setSelectedDialogueIndex] = useState(0);
@@ -434,6 +470,7 @@ function ResearchConnected() {
   const resetAudioState = () => {
     setAudioStatus("idle");
     setAudioError("");
+    setBrandDetailsOpen(false);
     resetDialogueState();
     resetPreviewPlayback();
   };
@@ -599,6 +636,17 @@ function ResearchConnected() {
     isAudioPlaying,
     selectedScene?.audio.status,
   ]);
+
+  useEffect(() => {
+    if (!brandDetailsOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setBrandDetailsOpen(false);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [brandDetailsOpen]);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -925,6 +973,7 @@ function ResearchConnected() {
         : dialoguePanelOpen
           ? "Audio script open"
           : "Add audio for this ad";
+  const creativeBriefHighlights = getCreativeBriefHighlights(result);
 
   const renderBusy = currentRenderStatus === "loading"
     || currentRenderStatus === "queued"
@@ -1022,6 +1071,7 @@ function ResearchConnected() {
               <PhonePreviewFrame
                 scene={selectedScene}
                 result={result}
+                platform={previewPlatform}
                 motionMode={isAudioPlaying ? "audio" : "idle"}
                 rerollFlash={rerollFlash}
                 timeSeconds={previewTimeSeconds}
@@ -1266,11 +1316,14 @@ function ResearchConnected() {
             <label className="mt-2 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700">
               <span>Preview</span>
               <select
-                defaultValue="instagram-feed"
+                value={previewPlatform}
+                onChange={(event) => setPreviewPlatform(event.target.value as PreviewPlatform)}
                 className="bg-transparent text-sm font-black text-slate-950 outline-none"
                 aria-label="Choose preview"
               >
-                <option value="instagram-feed">IG Feed</option>
+                {previewPlatformOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
               </select>
             </label>
 
@@ -1430,80 +1483,34 @@ function ResearchConnected() {
             ) : null}
           </section>
 
-          <section className="mt-5 rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm font-black uppercase tracking-[0.26em] text-slate-400">Creative brief</p>
-              {result ? (
-                <a
-                  href="#full-brand-dump"
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-600"
-                >
-                  <Search className="size-4" />
-                  Full brand dump
-                </a>
-              ) : null}
-            </div>
+          <section
+            className="mt-5 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm"
+            data-create-creative-brief-card="legacy"
+          >
+            <p className="text-xs font-black uppercase tracking-wide text-slate-500">Creative brief</p>
             {result ? (
-              <div className="mt-6 grid gap-5">
-                <EvidenceList title="Offer" items={[result.brandBrief.offer]} />
-                <EvidenceList title="Audience" items={[result.brandBrief.audience]} />
-                <EvidenceList title="Hook" items={result.brandBrief.buyerMoments.slice(0, 2)} />
-                <EvidenceList title="Receipt" items={result.brandBrief.proof.slice(0, 2)} />
-              </div>
+              <>
+                <div className="mt-3 space-y-3">
+                  {creativeBriefHighlights.map((item) => (
+                    <div key={item.label}>
+                      <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">{item.label}</p>
+                      <p className="mt-1 text-sm font-black leading-5 text-slate-900">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setBrandDetailsOpen(true)}
+                    className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800"
+                  >
+                    More
+                  </button>
+                </div>
+              </>
             ) : (
-              <p className="mt-6 text-base font-bold leading-7 text-slate-500">
+              <p className="mt-3 text-sm font-bold leading-6 text-slate-500">
                 Run research to see the brand summary Wiggly will use for ad formats.
-              </p>
-            )}
-          </section>
-
-          <section id="full-brand-dump" className="mt-5 rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
-            <p className="text-sm font-black uppercase tracking-[0.26em] text-slate-400">Full brand dump</p>
-            {result ? (
-              <div className="mt-6 grid max-h-[520px] gap-6 overflow-auto pr-2">
-                <div className="flex items-start gap-4">
-                  {result.brand.logoUrl || result.brand.faviconUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      alt=""
-                      className="size-14 rounded-2xl border border-slate-200 object-contain p-2"
-                      src={result.brand.logoUrl || result.brand.faviconUrl || ""}
-                    />
-                  ) : null}
-                  <div>
-                    <h2 className="text-2xl font-black leading-tight">{result.brand.name}</h2>
-                    <p className="mt-2 text-sm font-bold text-slate-500">{result.finalUrl}</p>
-                  </div>
-                </div>
-                <p className="text-base font-black leading-7 text-slate-700">{result.brand.description}</p>
-                <div className="flex flex-wrap gap-2">
-                  {result.brand.colors.map((color) => (
-                    <span
-                      key={color}
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-500"
-                    >
-                      <span className="size-4 rounded-full border border-slate-200" style={{ backgroundColor: color }} />
-                      {color}
-                    </span>
-                  ))}
-                  {result.brand.vibeTags.map((tag) => (
-                    <span key={tag} className="rounded-full bg-slate-100 px-3 py-2 text-xs font-black text-slate-500">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <EvidenceList title="Offer" items={[result.brandBrief.offer]} />
-                <EvidenceList title="Audience" items={[result.brandBrief.audience]} />
-                <EvidenceList title="Buyer moments" items={result.brandBrief.buyerMoments} />
-                <EvidenceList title="Proof" items={result.brandBrief.proof} />
-                <EvidenceList title="Site language" items={result.brandBrief.siteLanguage} />
-                <EvidenceList title="CTA direction" items={[result.brandBrief.ctaDirection]} />
-                <EvidenceList title="Visual notes" items={result.brandBrief.visualNotes} />
-                <EvidenceList title="Ignored junk" items={result.brandBrief.droppedNoiseSummary} />
-              </div>
-            ) : (
-              <p className="mt-6 text-base font-bold leading-7 text-slate-500">
-                Wiggly shows the raw facts it found so you can trust what the ads are based on.
               </p>
             )}
           </section>
@@ -1553,6 +1560,13 @@ function ResearchConnected() {
           ) : null}
         </aside>
       </section>
+
+      {result && brandDetailsOpen ? (
+        <BrandDumpModal
+          result={result}
+          onClose={() => setBrandDetailsOpen(false)}
+        />
+      ) : null}
 
       {dialoguePanelOpen && !hasGeneratedAudio ? (
         <div
@@ -1712,13 +1726,182 @@ function ResearchConnected() {
   );
 }
 
+function BrandDumpModal({
+  result,
+  onClose,
+}: {
+  result: StoredWebsiteResearchResult;
+  onClose: () => void;
+}) {
+  const brandImages = getBrandDumpImages(result);
+  const usefulClaims = getUsefulClaims(result);
+  const fonts = uniqueNonEmptyStrings([
+    result.brand.fonts.heading ? `Heading: ${result.brand.fonts.heading}` : null,
+    result.brand.fonts.body ? `Body: ${result.brand.fonts.body}` : null,
+    result.brand.fonts.feel !== "unknown" ? `Feel: ${result.brand.fonts.feel}` : null,
+  ]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/55 p-4"
+      data-brand-dump-modal="legacy"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Full brand dump"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section className="flex h-[86vh] w-full max-w-6xl flex-col overflow-hidden rounded-[1.5rem] border border-slate-300 bg-white shadow-2xl shadow-slate-950/30">
+        <header className="flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-6 py-5">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Full brand dump</p>
+            <h2 className="mt-1 text-3xl font-black leading-tight text-slate-950">{result.brand.name}</h2>
+            <p className="mt-1 max-w-2xl text-base font-bold text-slate-600">{result.finalUrl}</p>
+          </div>
+          <button
+            type="button"
+            aria-label="Close brand dump"
+            onClick={onClose}
+            className="grid size-12 shrink-0 place-items-center rounded-2xl border border-slate-200 bg-white text-slate-500 transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-950"
+          >
+            <X className="size-5" />
+          </button>
+        </header>
+
+        <div className="grid min-h-0 flex-1 gap-0 overflow-hidden lg:grid-cols-[0.92fr_1.08fr]">
+          <div className="min-h-0 overflow-y-auto border-r border-slate-200 bg-slate-50/70 px-6 py-5">
+            <div className="grid gap-5">
+              <section className="rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm">
+                <h3 className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Images Firecrawl found</h3>
+                {brandImages.length ? (
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    {brandImages.map((imageUrl) => (
+                      <a
+                        key={imageUrl}
+                        href={imageUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          alt=""
+                          className="h-28 w-full object-contain p-3 transition group-hover:scale-105"
+                          src={imageUrl}
+                        />
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-400">[]</p>
+                )}
+              </section>
+
+              <section className="rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm">
+                <h3 className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Colors</h3>
+                {result.brand.colors.length ? (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {result.brand.colors.map((color) => (
+                      <span
+                        key={color}
+                        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-500"
+                      >
+                        <span className="size-4 rounded-full border border-slate-200" style={{ backgroundColor: color }} />
+                        {color}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-400">[]</p>
+                )}
+              </section>
+
+              <section className="rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm">
+                <EvidenceList title="Fonts" items={fonts} />
+                <div className="mt-5">
+                  <EvidenceList title="Vibe tags" items={result.brand.vibeTags} />
+                </div>
+              </section>
+
+              <section className="rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm">
+                <h3 className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Provider status</h3>
+                {result.providerStatus.length ? (
+                  <div className="mt-3 grid gap-2">
+                    {result.providerStatus.map((provider) => (
+                      <div key={`${provider.provider}-${provider.reason}`} className="rounded-2xl bg-slate-50 px-4 py-3">
+                        <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">
+                          {provider.provider} · {provider.status}
+                        </p>
+                        <p className="mt-1 text-sm font-bold leading-6 text-slate-700">{provider.reason}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-400">[]</p>
+                )}
+              </section>
+            </div>
+          </div>
+
+          <div className="min-h-0 overflow-y-auto bg-white px-6 py-5">
+            <div className="grid gap-5">
+              <section className="rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm">
+                <p className="text-base font-black leading-7 text-slate-700">{result.brand.description}</p>
+              </section>
+
+              <section className="rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm">
+                <EvidenceList title="Useful claims" items={usefulClaims} />
+              </section>
+
+              <section className="rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="grid gap-5">
+                  <EvidenceList title="Offer" items={[result.brandBrief.offer]} />
+                  <EvidenceList title="Audience" items={[result.brandBrief.audience]} />
+                  <EvidenceList title="Buyer moments" items={result.brandBrief.buyerMoments} />
+                  <EvidenceList title="Proof" items={result.brandBrief.proof} />
+                  <EvidenceList title="Site language" items={result.brandBrief.siteLanguage} />
+                  <EvidenceList title="CTA direction" items={[result.brandBrief.ctaDirection]} />
+                  <EvidenceList title="Visual notes" items={result.brandBrief.visualNotes} />
+                  <EvidenceList title="Ignored junk" items={result.brandBrief.droppedNoiseSummary} />
+                </div>
+              </section>
+
+              <JsonDump title="Metadata JSON" value={result.metadata} />
+              <JsonDump title="Branding JSON" value={result.branding} />
+              <TextDump title="Raw website text" value={result.evidence.rawMarkdown} />
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function JsonDump({ title, value }: { title: string; value: unknown }) {
+  return <TextDump title={title} value={summarizeJson(value)} />;
+}
+
+function TextDump({ title, value }: { title: string; value: string }) {
+  return (
+    <section className="rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm">
+      <h3 className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">{title}</h3>
+      <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-950 px-4 py-3 text-xs font-bold leading-5 text-slate-100">
+        {value.trim() || "[]"}
+      </pre>
+    </section>
+  );
+}
+
 function EvidenceList({ title, items }: { title: string; items: string[] }) {
+  const cleanedItems = items.map((item) => item.trim()).filter(Boolean);
+
   return (
     <section>
       <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-400">{title}</h3>
-      {items.length ? (
+      {cleanedItems.length ? (
         <ul className="mt-3 grid gap-2">
-          {items.map((item) => (
+          {cleanedItems.map((item) => (
             <li key={item} className="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold leading-6 text-slate-700">
               {item}
             </li>
