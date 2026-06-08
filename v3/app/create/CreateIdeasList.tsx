@@ -12,7 +12,7 @@ export function CreateIdeasList({
   if (!scenes.length) return null;
 
   return (
-    <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
+    <section className="mt-5 rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
       <p className="text-sm font-black uppercase tracking-[0.26em] text-slate-400">All ideas</p>
       <div className="mt-4 grid max-h-[440px] gap-3 overflow-auto pr-2">
         {scenes.map((scene, index) => (
