@@ -6,29 +6,34 @@ import { toPlaceholderPercent } from "./createPreviewGeometry";
 
 const placeholderVariants = [
   {
-    headline: "See the angle hiding on your website.",
+    headline: "Drop in your website and watch the magic happen.",
     color: "#00d6b8",
     background: "#fbfaf5",
   },
   {
-    headline: "Drop in your website and watch the magic happen.",
+    headline: "Turn your homepage into a ready-to-test ad.",
     color: "#82dfff",
     background: "#f2fbff",
   },
   {
-    headline: "Turn a brand page into video ads.",
+    headline: "Your next ad starts with one URL.",
     color: "#f9a8d4",
     background: "#fff7fb",
   },
   {
-    headline: "Find the hook buyers actually feel.",
+    headline: "Make the first draft less painful.",
     color: "#8b5cf6",
     background: "#f7f3ff",
   },
   {
-    headline: "Make a fresh ad in one tap.",
+    headline: "See the angle hiding on your website.",
     color: "#22c55e",
     background: "#f3fff7",
+  },
+  {
+    headline: "From brand page to video ad in minutes.",
+    color: "#f59e0b",
+    background: "#fff8ed",
   },
 ];
 
@@ -101,11 +106,13 @@ export function PlaceholderAdSurface({
         }}
       >
         <LegacyIdleVisualizer
+          key={`placeholder-idle-wave-${variantIndex}`}
           type={legacyCreateVisualizerStyle.type}
           barCount={legacyCreateVisualizerStyle.barCount}
           color={variant.color}
           gap="0.56cqw"
           barMinWidth="0.83cqw"
+          waveKey={variantIndex}
         />
       </div>
       <div
