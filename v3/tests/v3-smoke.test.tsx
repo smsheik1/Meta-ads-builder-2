@@ -58,6 +58,7 @@ const createModuleSource = readdirSync("app/create")
   .join("\n");
 const createLeftColumnSource = readFileSync("app/create/CreateLeftColumn.tsx", "utf8");
 const createAudioCardSource = readFileSync("app/create/CreateAudioCard.tsx", "utf8");
+const createFormatRailSource = readFileSync("app/create/CreateFormatRail.tsx", "utf8");
 const shareClientSource = readFileSync("app/s/[slug]/ShareSceneClient.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const visualizerRenderSource = readFileSync("features/formats/visualizer/render.tsx", "utf8");
@@ -159,6 +160,10 @@ assert.ok(createModuleSource.includes("Edit captions") && createModuleSource.inc
 assert.ok(createModuleSource.includes("Open in builder") && createModuleSource.includes("Builder stays legacy-only"), "/create legacy action card may show builder affordance but must not link to a missing v3 builder route.");
 assert.ok(createModuleSource.includes("previewPlatformOptions"), "/create preview dropdown must use the shared old platform option list.");
 assert.ok(createModuleSource.includes("setPreviewPlatform"), "/create preview dropdown must actually switch platform chrome.");
+assert.ok(createFormatRailSource.includes('data-create-format-rail="legacy"'), "/create left rail must copy the original compact two-icon format rail look.");
+assert.ok(createFormatRailSource.includes("w-[58px]") && createFormatRailSource.includes("rounded-full"), "/create left rail must stay a compact pill instead of a tall tool strip.");
+assert.ok(createFormatRailSource.includes("Grid2X2") && createFormatRailSource.includes("AudioLines"), "/create left rail must keep the old two-icon visual rhythm.");
+assert.ok(!createFormatRailSource.includes("MessageCircle"), "/create left rail must not bring back extra inactive format buttons.");
 for (const requiredPreviewLabel of ["FB Feed", "IG Feed", "Reels", "Stories", "YouTube"]) {
   assert.ok(previewChromeSource.includes(requiredPreviewLabel), `/create preview formats must include ${requiredPreviewLabel}.`);
 }
