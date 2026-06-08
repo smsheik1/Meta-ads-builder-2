@@ -44,7 +44,7 @@ import {
   sceneLockLabels,
   type SceneLockKey,
 } from "@/features/create/reroll";
-import { useCreateSpacebar } from "@/features/create/useCreateSpacebar";
+import { useCanvasKeyboard } from "@/features/create/useCanvasKeyboard";
 import { isStoredWebsiteResearchFailure } from "@/features/research/types";
 import type {
   StoredWebsiteResearchResponse,
@@ -301,6 +301,7 @@ function ResearchConnected() {
   const [savedDesignsOpen, setSavedDesignsOpen] = useState(false);
   const [error, setError] = useState("");
   const [sessionRestored, setSessionRestored] = useState(false);
+  const createEditorScopeRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const rerollFlashTimeoutRef = useRef<number | null>(null);
   const savedDesigns = useQuery(api.savedDesigns.list, anonymousId ? { anonymousId } : "skip") as SavedAdSceneDesign[] | undefined;
@@ -609,8 +610,9 @@ function ResearchConnected() {
     resetSaveState();
   };
 
-  useCreateSpacebar({
-    enabled: adScenes.length > 0,
+  useCanvasKeyboard({
+    editorScopeRef: createEditorScopeRef,
+    enabled: adScenes.length > 0 && !brandDetailsOpen && !dialoguePanelOpen,
     onReroll: onRerollScene,
   });
 
@@ -981,7 +983,11 @@ function ResearchConnected() {
     || currentRenderStatus === "rendering";
 
   return (
-    <div className="min-h-screen min-w-[1280px] overflow-x-auto bg-[#f7f4ea] px-10 py-7 text-slate-950">
+    <div
+      ref={createEditorScopeRef}
+      className="min-h-screen min-w-[1280px] overflow-x-auto bg-[#f7f4ea] px-10 py-7 text-slate-950"
+      data-create-editor-scope="true"
+    >
       <header className="mx-auto flex max-w-[1720px] items-center justify-between">
         <div className="flex items-center gap-3">
           <WigglyMark size="sm" />
