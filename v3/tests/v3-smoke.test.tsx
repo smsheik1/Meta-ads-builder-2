@@ -121,6 +121,7 @@ assert.ok(previewChromeSource.includes("toPlaceholderPercent(255, \"y\")") && pr
 assert.ok(previewChromeSource.includes("toPlaceholderPercent(350, \"y\")") && previewChromeSource.includes('data-placeholder-slot="caption-action"'), "/create empty placeholder audio action must stay in the old /create caption slot.");
 assert.ok(previewChromeSource.includes('data-preview-audio-action="true"'), "/create phone preview must expose a real clickable add-audio hit target over no-audio scenes.");
 assert.ok(previewChromeSource.includes("onClick={onOpenAudioPanel}"), "/create phone preview add-audio target must open the audio panel instead of being dead renderer text.");
+assert.ok(previewChromeSource.includes("z-50 inline-flex") && previewChromeSource.includes("group/preview-selector absolute inset-0 z-30"), "/create phone preview add-audio target must sit above the selector overlay so clicks are not swallowed.");
 assert.ok(previewChromeSource.includes("top: toPlaceholderPercent(336, \"y\")"), "/create preview add-audio hit target must sit clear of the watermark.");
 assert.ok(previewChromeSource.includes("self-start") && previewChromeSource.includes("xl:content-start"), "/create format rail must stay compact and not stretch with the preview stack.");
 assert.ok(createClientSource.includes("flex items-start justify-center gap-4"), "/create preview column must not stretch the compact format rail.");

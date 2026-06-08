@@ -361,7 +361,7 @@ export function PhonePreviewFrame({
               aria-label="Add audio for this ad"
               data-preview-audio-action="true"
               onClick={onOpenAudioPanel}
-              className="absolute left-1/2 z-20 inline-flex -translate-x-1/2 items-center justify-center gap-3 whitespace-nowrap rounded-full bg-white px-6 py-3 text-[16px] font-black text-slate-600 shadow-[0_18px_45px_rgba(15,23,42,0.10)] transition hover:-translate-x-1/2 hover:-translate-y-0.5 hover:text-slate-950"
+              className="absolute left-1/2 z-50 inline-flex -translate-x-1/2 items-center justify-center gap-3 whitespace-nowrap rounded-full bg-white px-6 py-3 text-[16px] font-black text-slate-600 shadow-[0_18px_45px_rgba(15,23,42,0.10)] transition hover:-translate-x-1/2 hover:-translate-y-0.5 hover:text-slate-950"
               style={{
                 top: toPlaceholderPercent(336, "y"),
               }}
