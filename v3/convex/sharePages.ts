@@ -10,6 +10,14 @@ import {
   sanitizeCtaUrl,
 } from "../features/share/shareScene";
 
+const previewPlatformValidator = v.union(
+  v.literal("facebook-feed"),
+  v.literal("instagram-feed"),
+  v.literal("reels"),
+  v.literal("stories"),
+  v.literal("youtube"),
+);
+
 const ensureAnonymousSession = async (
   ctx: MutationCtx,
   anonymousId: string,
@@ -55,8 +63,9 @@ export const createFromScene: ReturnType<typeof mutation> = mutation({
     anonymousId: v.string(),
     scene: v.any(),
     ctaUrl: v.optional(v.string()),
+    previewPlatform: v.optional(previewPlatformValidator),
   },
-  handler: async (ctx, { anonymousId, scene, ctaUrl }) => {
+  handler: async (ctx, { anonymousId, scene, ctaUrl, previewPlatform }) => {
     const shareScene = assertShareableAdScene(scene);
     const now = Date.now();
     const sessionId = await ensureAnonymousSession(ctx, anonymousId);
@@ -92,6 +101,7 @@ export const createFromScene: ReturnType<typeof mutation> = mutation({
       sessionId,
       sceneId,
       ctaUrl: sanitizeCtaUrl(ctaUrl, shareScene.brand.url),
+      previewPlatform,
       createdAt: now,
       updatedAt: now,
     });
@@ -124,6 +134,7 @@ export const getBySlug: ReturnType<typeof query> = query({
       slug: sharePage.slug,
       ctaUrl: sharePage.ctaUrl,
       createdAt: sharePage.createdAt,
+      previewPlatform: sharePage.previewPlatform,
       sceneId: sharePage.sceneId,
       scene: shareScene,
     };

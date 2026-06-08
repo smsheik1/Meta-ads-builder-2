@@ -1,15 +1,17 @@
 "use client";
 
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery } from "convex/react";
 import { ExternalLink, Loader2, ShieldAlert } from "lucide-react";
 import { api } from "@/convex/_generated/api";
-import { AdRenderSurface } from "@/features/render/AdRenderSurface";
 import type { AdScene } from "@/features/scene/types";
+import { PhonePreviewFrame, type PreviewPlatform } from "../../create/CreatePreviewChrome";
 
 export type ShareRecord = {
   slug: string;
   ctaUrl?: string;
   createdAt: number;
+  previewPlatform?: PreviewPlatform;
   sceneId: string;
   scene: AdScene;
 };
@@ -23,6 +25,50 @@ export function ShareSceneClient({
 }) {
   const liveShare = useQuery(api.sharePages.getBySlug, { slug }) as ShareRecord | null | undefined;
   const share = liveShare === undefined ? initialShare : liveShare;
+  const scene = share?.scene || null;
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [previewTimeSeconds, setPreviewTimeSeconds] = useState(1.1);
+  const playableAudioUrl = scene?.audio.status === "generated" ? scene.audio.url : "";
+  const hasPlayableAudio = Boolean(playableAudioUrl);
+
+  useEffect(() => {
+    setIsAudioPlaying(false);
+    setPreviewTimeSeconds(1.1);
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  }, [playableAudioUrl, scene?.metadata.generationBatchId, scene?.metadata.candidateIndex]);
+
+  useEffect(() => {
+    if (!hasPlayableAudio || !isAudioPlaying) return;
+
+    let animationFrame = 0;
+    const tick = () => {
+      const audio = audioRef.current;
+      if (audio && !audio.paused) {
+        setPreviewTimeSeconds(audio.currentTime);
+        animationFrame = window.requestAnimationFrame(tick);
+      }
+    };
+
+    animationFrame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [hasPlayableAudio, isAudioPlaying]);
+
+  const onTogglePlayback = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !hasPlayableAudio) return;
+
+    if (audio.paused) {
+      void audio.play();
+      return;
+    }
+
+    audio.pause();
+  }, [hasPlayableAudio]);
 
   if (share === undefined) {
     return (
@@ -47,14 +93,39 @@ export function ShareSceneClient({
     );
   }
 
-  const scene = share.scene;
+  const activeScene = share.scene;
 
   return (
     <section className="mx-auto grid w-full max-w-6xl grid-cols-[0.9fr_1fr] items-center gap-10">
-      <div className="rounded-[34px] bg-slate-950 p-3 shadow-[0_30px_90px_rgba(15,23,42,0.22)]">
-        <div className="overflow-hidden rounded-[26px] bg-white">
-          <AdRenderSurface scene={scene} mode="poster" timeSeconds={1.1} />
-        </div>
+      <div className="grid justify-center">
+        <PhonePreviewFrame
+          scene={activeScene}
+          result={null}
+          platform={share.previewPlatform || "instagram-feed"}
+          motionMode={isAudioPlaying ? "audio" : "idle"}
+          timeSeconds={previewTimeSeconds}
+          onTogglePlayback={onTogglePlayback}
+          previewReady={hasPlayableAudio}
+          isAudioPlaying={isAudioPlaying}
+        />
+        {hasPlayableAudio ? (
+          <audio
+            ref={audioRef}
+            src={playableAudioUrl}
+            preload="metadata"
+            onEnded={() => {
+              setIsAudioPlaying(false);
+              setPreviewTimeSeconds(1.1);
+              if (audioRef.current) audioRef.current.currentTime = 0;
+            }}
+            onPause={(event) => {
+              setIsAudioPlaying(false);
+              setPreviewTimeSeconds(event.currentTarget.currentTime || 1.1);
+            }}
+            onPlay={() => setIsAudioPlaying(true)}
+            onTimeUpdate={(event) => setPreviewTimeSeconds(event.currentTarget.currentTime || 1.1)}
+          />
+        ) : null}
       </div>
 
       <aside className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-[0_28px_90px_rgba(15,23,42,0.10)]">
@@ -62,24 +133,24 @@ export function ShareSceneClient({
           Wiggly share page
         </p>
         <div className="mt-5 flex items-center gap-4">
-          {scene.brand.logoUrl || scene.brand.faviconUrl ? (
+          {activeScene.brand.logoUrl || activeScene.brand.faviconUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               alt=""
               className="size-14 rounded-2xl border border-slate-200 object-contain p-2"
-              src={scene.brand.logoUrl || scene.brand.faviconUrl || ""}
+              src={activeScene.brand.logoUrl || activeScene.brand.faviconUrl || ""}
             />
           ) : null}
           <div>
-            <p className="text-2xl font-black leading-tight">{scene.brand.name}</p>
-            <p className="mt-1 text-sm font-bold text-slate-500">{scene.brand.host}</p>
+            <p className="text-2xl font-black leading-tight">{activeScene.brand.name}</p>
+            <p className="mt-1 text-sm font-bold text-slate-500">{activeScene.brand.host}</p>
           </div>
         </div>
         <h1 className="mt-8 text-5xl font-black leading-[0.98] tracking-normal">
-          {scene.creative.headline}
+          {activeScene.creative.headline}
         </h1>
         <p className="mt-5 text-lg font-bold leading-8 text-slate-500">
-          {scene.creative.subheadline}
+          {activeScene.creative.subheadline}
         </p>
         {share.ctaUrl ? (
           <a
@@ -88,10 +159,16 @@ export function ShareSceneClient({
             rel="noreferrer"
             className="mt-8 inline-flex w-full items-center justify-center gap-3 rounded-full bg-slate-950 px-6 py-4 text-base font-black text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5"
           >
-            {scene.creative.ctaText}
+            {activeScene.creative.ctaText}
             <ExternalLink className="size-5" />
           </a>
         ) : null}
+        <a
+          href="/create"
+          className="mt-6 inline-flex text-sm font-black text-slate-500 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-950"
+        >
+          Made with Wiggly
+        </a>
       </aside>
     </section>
   );

@@ -122,6 +122,7 @@ export default defineSchema({
     sceneId: v.id("adScenes"),
     renderJobId: v.optional(v.id("renderJobs")),
     ctaUrl: v.optional(v.string()),
+    previewPlatform: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_slug", ["slug"]),

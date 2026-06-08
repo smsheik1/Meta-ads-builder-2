@@ -55,14 +55,21 @@ const uploadedAudio = createGeneratedSceneAudio({
   url: "https://example.com/uploaded.mp3",
   mimeType: "audio/mpeg",
   durationMs: 9000,
-  transcript: createVoiceoverLines(defaultRenderScene).join("\n"),
-  captions: createCaptionsForVoiceover(defaultRenderScene, 9000),
+  transcript: "uploaded-demo.mp3",
+  captions: [
+    {
+      text: "Fake upload caption from ad copy",
+      startMs: 0,
+      endMs: 9000,
+    },
+  ],
   model: "uploaded-audio",
   provider: "upload",
 });
 assert.equal(uploadedAudio.status, "generated");
 assert.equal(uploadedAudio.provider, "upload");
 assert.equal(uploadedAudio.model, "uploaded-audio");
+assert.equal(getVisibleCaptionText(uploadedAudio, 0.1), "");
 
 const quietDecision = explainVoiceVisualizerPresetFromAnalysis({
   fps: 30,
@@ -98,5 +105,15 @@ const html = renderToStaticMarkup(createElement(AdRenderSurface, {
 }));
 assert.ok(html.includes(captions[0]!.text));
 assert.ok(!html.includes("Add audio for this ad"));
+
+const uploadHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: {
+    ...defaultRenderScene,
+    audio: uploadedAudio,
+  },
+  timeSeconds: 0.1,
+}));
+assert.ok(!uploadHtml.includes("Fake upload caption from ad copy"));
+assert.ok(!uploadHtml.includes("Add audio for this ad"));
 
 console.log("audio-scene tests passed");

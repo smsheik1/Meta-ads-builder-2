@@ -274,7 +274,7 @@ export function VisualizerFormatRenderer({
           >
             {captionText}
           </p>
-        ) : (
+        ) : !isGeneratedAudio ? (
           <div
             className={getRerollFlashClassName("captions")}
             style={{
@@ -319,7 +319,7 @@ export function VisualizerFormatRenderer({
             </span>
             Add audio for this ad
           </div>
-        )}
+        ) : null}
       </div>
       <p
         style={{

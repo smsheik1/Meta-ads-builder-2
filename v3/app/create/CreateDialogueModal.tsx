@@ -100,7 +100,7 @@ export function CreateDialogueModal({
             </span>
           </div>
           <p className="mt-3 text-xs font-bold leading-5 text-slate-400">
-            Uploaded audio uses this ad&apos;s current copy as starter captions. You can edit captions after the audio is attached.
+            Uploaded audio keeps the exact file you provide. Caption editing appears for Wiggly-generated dialogue audio.
           </p>
 
           {audioError ? (

@@ -4,9 +4,9 @@ import { action, internalMutation, mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { generateGeminiDialogueVoiceover, generateGeminiVoiceover } from "../features/audio/geminiTts";
 import {
-  createCaptionsForVoiceover,
   createGeneratedSceneAudio,
   getSceneAudioKey,
+  UPLOADED_AUDIO_MODEL,
 } from "../features/audio/sceneAudio";
 import { analyzeGeneratedWavAudio } from "../features/audio/audioAnalysis";
 import {
@@ -16,10 +16,9 @@ import {
 import { cleanDialogueScriptForVoiceover } from "../features/dialogue/dialogueScripts";
 import { assertShareableAdScene } from "../features/share/shareScene";
 import { legacyCreateVisualizerStyle } from "../features/scene/visualizerStyle";
-import type { AdScene, AdSceneAudio } from "../features/scene/types";
+import type { AdScene, AdSceneAudio, AdSceneCaption } from "../features/scene/types";
 
 const storageIdFromString = (storageId: string) => storageId as Id<"_storage">;
-const uploadedAudioModel = "uploaded-audio";
 const maxUploadedAudioDurationMs = 60_000;
 
 const isWavMimeType = (mimeType: string) => (
@@ -243,8 +242,8 @@ export const attachUploadedToScene: ReturnType<typeof action> = action({
     const blob = isWavMimeType(safeMimeType) ? await ctx.storage.get(storageId) : null;
     const bytes = blob ? new Uint8Array(await blob.arrayBuffer()) : null;
     const analysis = bytes ? analyzeGeneratedWavAudio(bytes) ?? undefined : undefined;
-    const captions = createCaptionsForVoiceover(audioScene, safeDurationMs);
-    const transcript = captions.map((caption) => caption.text).join("\n") || cleanUploadName(fileName);
+    const captions: AdSceneCaption[] = [];
+    const transcript = cleanUploadName(fileName);
     const sceneKey = getSceneAudioKey(audioScene);
 
     await ctx.runMutation(internal.audioAssets.saveGenerated, {
@@ -255,7 +254,7 @@ export const attachUploadedToScene: ReturnType<typeof action> = action({
       durationMs: safeDurationMs,
       transcript,
       provider: "upload",
-      model: uploadedAudioModel,
+      model: UPLOADED_AUDIO_MODEL,
     });
 
     const audio = createGeneratedSceneAudio({
@@ -266,7 +265,7 @@ export const attachUploadedToScene: ReturnType<typeof action> = action({
       transcript,
       captions,
       analysis,
-      model: uploadedAudioModel,
+      model: UPLOADED_AUDIO_MODEL,
       provider: "upload",
     });
 
