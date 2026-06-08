@@ -262,7 +262,11 @@ assert.ok(createModuleSource.includes("Generate this audio"), "/create must gene
 assert.ok(createModuleSource.includes("Upload your audio"), "/create must let users upload their own audio instead of forcing generated audio.");
 assert.ok(createModuleSource.includes('accept="audio/*"'), "/create upload control must only accept audio files.");
 assert.ok(createModuleSource.includes("onUploadAudio"), "/create uploaded audio must flow through a dedicated stored-audio attach handler.");
-assert.ok(createModuleSource.includes("Two people talking about this product"), "/create must explain the visualizer dialogue workflow.");
+assert.ok(createModuleSource.includes("max-w-[680px]") && createModuleSource.includes("max-w-[900px]"), "/create audio chooser must stay compact before scripts exist and only expand for script editing.");
+assert.ok(!createModuleSource.includes("Two people talking about this product"), "/create audio chooser must not over-explain after the user already clicked Add audio.");
+assert.ok(!createModuleSource.includes("No options yet"), "/create audio chooser must not show dead empty-state filler.");
+assert.ok(!createModuleSource.includes("Uploaded audio keeps"), "/create audio chooser must not include unnecessary helper copy under the upload/write options.");
+assert.ok(!createModuleSource.includes("Start by writing script options"), "/create audio chooser must not show redundant empty instructions.");
 assert.ok(createModuleSource.includes('data-dialogue-editor="modal"'), "/create dialogue editing must open in a wide desktop modal, not the skinny action rail.");
 assert.ok(createModuleSource.includes('data-dialogue-option-grid="true"'), "/create dialogue options must be visible in a grid instead of hidden behind horizontal scroll.");
 assert.ok(createModuleSource.includes("grid-cols-5"), "/create must show all five dialogue options without sideways scrolling on desktop.");
