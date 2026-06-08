@@ -55,6 +55,8 @@ const createClientSource = readFileSync("app/create/CreateResearchClient.tsx", "
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const visualizerRenderSource = readFileSync("features/formats/visualizer/render.tsx", "utf8");
 const legacyIdleVisualizerSource = readFileSync("features/formats/visualizer/LegacyIdleVisualizer.tsx", "utf8");
+const canvasInteractionStoreSource = readFileSync("features/create/canvasInteractionStore.ts", "utf8");
+const createSpacebarSource = readFileSync("features/create/useCreateSpacebar.ts", "utf8");
 const globalsSource = readFileSync("app/globals.css", "utf8");
 assert.ok(createClientSource.includes("Audio preview syncs captions and visualizer"), "/create must expose an obvious audio preview control.");
 assert.ok(createClientSource.includes("controls"), "/create audio preview must use native playback controls.");
@@ -69,9 +71,11 @@ assert.ok(createClientSource.includes("loadCreateSessionSnapshot"), "/create mus
 assert.ok(createClientSource.includes("saveCreateSessionSnapshot"), "/create must persist generated scenes for same-browser reroll continuity.");
 assert.ok(createClientSource.includes("dialogueScripts: DialogueScript[]"), "/create must persist generated dialogue script options across refresh.");
 assert.ok(createClientSource.includes("setDialogueScripts(snapshot.dialogueScripts)"), "/create must restore generated dialogue options instead of forcing a rewrite after refresh.");
-assert.ok(createClientSource.includes("isRerollSpacebarKey"), "/create must route spacebar rerolls through a dedicated key guard.");
-assert.ok(createClientSource.includes('event.key === "Spacebar"') && createClientSource.includes('event.code === "Space"'), "/create must accept common browser spacebar key variants.");
-assert.ok(createClientSource.includes("blocksSpacebarReroll"), "/create must keep text editors protected while allowing intentional spacebar rerolls.");
+assert.ok(createClientSource.includes("useCreateSpacebar"), "/create must mount the single spacebar handler hook.");
+assert.ok(createSpacebarSource.includes("isRerollSpacebarKey"), "/create must route spacebar rerolls through a dedicated key guard.");
+assert.ok(createSpacebarSource.includes('event.key === "Spacebar"') && createSpacebarSource.includes('event.code === "Space"'), "/create must accept common browser spacebar key variants.");
+assert.ok(createSpacebarSource.includes("blocksSpacebarReroll"), "/create must keep text editors protected while allowing intentional spacebar rerolls.");
+assert.ok(createSpacebarSource.includes('mode !== "idle"'), "/create spacebar must be guarded by canvas interaction mode.");
 assert.ok(!createClientSource.includes('data-allow-spacebar-reroll="true"'), "/create website input must block rerolls while the user is editing the URL.");
 assert.ok(createClientSource.includes("shouldCarryAudio"), "/create spacebar reroll must carry generated audio onto the next visual variant.");
 assert.ok(createClientSource.includes("shouldKeepPlayback"), "/create spacebar reroll must not reset playback when the generated audio is preserved.");
@@ -79,14 +83,24 @@ assert.ok(createClientSource.includes("triggerRerollFlash"), "/create reroll mus
 assert.ok(createClientSource.includes('allPreviewSlots: RenderFlashRole[] = ["headline", "visualizer", "captions"]'), "/create reroll shine must cover the headline, visualizer, and caption/audio slots.");
 assert.ok(createClientSource.includes("rerollFlashMs = 680"), "/create reroll shine must keep the old short-lived flash timing.");
 assert.ok(createClientSource.includes("rerollFlash={rerollFlash}"), "/create phone preview must receive reroll shine state from the create flow.");
-assert.ok(createClientSource.includes("selectedPreviewSlot"), "/create must track the selected preview slot for focused rerolls.");
-assert.ok(createClientSource.includes("selectedPreviewSlot: null"), "/create must not restore scoped canvas selection after refresh because spacebar should full-reroll by default.");
+assert.ok(canvasInteractionStoreSource.includes("create<CanvasInteractionState>"), "/create canvas interaction state must live in a tiny Zustand store.");
+assert.ok(canvasInteractionStoreSource.includes("Canvas interaction only"), "/create canvas store must document its interaction-only boundary.");
+assert.ok(createClientSource.includes("useCanvasInteractionStore"), "/create must read canvas interaction state from the store.");
+assert.ok(!createClientSource.includes("useState<RenderSelectableSlot"), "/create must not keep selected canvas slot in local page state.");
+assert.ok(!createClientSource.includes("useState(createDefaultSceneLocks"), "/create must not keep canvas locks in local page state.");
+assert.ok(createClientSource.includes("clearSelectedPreviewSlot()"), "/create must not restore scoped canvas selection after refresh because spacebar should full-reroll by default.");
 assert.ok(createClientSource.includes("previewSlotLockKey"), "/create preview selector must reuse the existing scene lock model.");
 assert.ok(createClientSource.includes('captions: "captionColor"'), "/create caption slot must lock/reroll caption color, not audio or caption text.");
 assert.ok(createClientSource.includes("onChangePreviewSlotColor"), "/create preview selector must support old builder-style hover color changes.");
-assert.ok(createClientSource.includes("setSelectedPreviewSlot(slot)"), "/create canvas selection must stay sticky instead of toggling off on normal clicks.");
+assert.ok(createClientSource.includes("selectPreviewSlot(slot)"), "/create canvas selection must stay sticky instead of toggling off on normal clicks.");
 assert.ok(createClientSource.includes("onChangePreviewBackgroundColor"), "/create preview selector must support background color changes.");
 assert.ok(createClientSource.includes("Spacebar rerolls the"), "/create must tell users when spacebar is scoped to one selected part.");
+for (const forbiddenStoreImport of ["convex/", "_generated", "AdScene", "scene/types", "server"]) {
+  assert.ok(
+    !canvasInteractionStoreSource.includes(forbiddenStoreImport),
+    `Canvas interaction store must not import or reference server/product data: ${forbiddenStoreImport}`,
+  );
+}
 assert.ok(previewChromeSource.includes("rerollFlash={rerollFlash}"), "/create phone preview must pass reroll shine state into the shared renderer.");
 assert.ok(previewChromeSource.includes("PreviewSelectionOverlay"), "/create phone preview must provide the lightweight component selector overlay.");
 assert.ok(previewChromeSource.includes("data-preview-selectable-slot"), "/create selector must expose selectable slots for QA and future format tests.");
