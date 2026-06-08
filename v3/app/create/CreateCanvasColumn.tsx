@@ -1,8 +1,4 @@
-"use client";
-
 import { Sparkles } from "lucide-react";
-import type { MouseEvent, PointerEvent } from "react";
-import { useRef } from "react";
 import type { CanvasInteractionLocks } from "@/features/create/canvasInteractionStore";
 import type { RenderFlashState, RenderSelectableSlot } from "@/features/formats/types";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
@@ -58,21 +54,6 @@ export function CreateCanvasColumn({
   selectedPreviewSlot: RenderSelectableSlot | null;
   selectedScene: AdScene | null;
 }) {
-  const lastPointerRerollAtRef = useRef(0);
-
-  const onWishPointerDown = (event: PointerEvent<HTMLButtonElement>) => {
-    if (event.pointerType === "mouse" || event.pointerType === "touch" || event.pointerType === "pen") {
-      event.preventDefault();
-      lastPointerRerollAtRef.current = Date.now();
-      onRerollScene();
-    }
-  };
-
-  const onWishClick = (event: MouseEvent<HTMLButtonElement>) => {
-    const pointerAlreadyHandled = Date.now() - lastPointerRerollAtRef.current < 250;
-    if (!pointerAlreadyHandled || event.detail === 0) onRerollScene();
-  };
-
   return (
     <div className="relative flex flex-col items-center gap-3 lg:block">
       <FormatRail />
@@ -103,10 +84,8 @@ export function CreateCanvasColumn({
           <section className="mx-auto mt-4 w-full max-w-[390px] rounded-[28px] border border-slate-200 bg-white p-3 shadow-[0_20px_54px_rgba(15,23,42,0.12)]">
             <button
               type="button"
-              onClick={onWishClick}
-              onPointerDown={onWishPointerDown}
+              onClick={onRerollScene}
               className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-[0_16px_36px_rgba(15,23,42,0.20)] transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-[0_22px_52px_rgba(15,23,42,0.18)]"
-              data-testid="spacebar-reroll-button"
             >
               <Sparkles className="size-4" />
               <span>Press</span>

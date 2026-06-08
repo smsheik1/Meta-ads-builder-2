@@ -16,7 +16,6 @@ type LegacyIdleVisualizerProps = {
   style?: CSSProperties;
   gap?: CSSProperties["gap"];
   barMinWidth?: CSSProperties["minWidth"];
-  waveKey?: number | string | null;
 };
 
 const getLegacyIdleDelayMs = (type: VisualizerType, index: number) => (
@@ -63,7 +62,6 @@ export function LegacyIdleVisualizer({
   style,
   gap,
   barMinWidth,
-  waveKey,
 }: LegacyIdleVisualizerProps) {
   const visualizerType = normalizeVisualizerType(type);
   const count = getVisualizerBarCount(visualizerType, barCount);
@@ -76,7 +74,6 @@ export function LegacyIdleVisualizer({
       className={className}
       data-visualizer-kind={`legacy-create-${visualizerType}`}
       data-visualizer-motion="css-idle"
-      data-visualizer-wave-key={waveKey ?? undefined}
       style={getLegacyIdleContainerStyle(visualizerType, gap, style)}
     >
       {Array.from({ length: count }, (_, index) => {

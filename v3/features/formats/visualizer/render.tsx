@@ -129,13 +129,6 @@ export function VisualizerFormatRenderer({
   const logoSource = getLogoSource(scene);
   const textColor = getReadableTextColor(scene.style.textColor);
   const captionText = getVisibleCaptionText(scene.audio, timeSeconds);
-  const idleVisualizerKey = [
-    "legacy-idle-wave",
-    scene.metadata.generationBatchId,
-    scene.metadata.candidateIndex,
-    type,
-    visualizerStyle.barCount,
-  ].join("-");
   const getRerollFlashClassName = (role: "headline" | "visualizer" | "captions") => (
     rerollFlash?.roles.includes(role)
       ? `wiggly-reroll-shine wiggly-reroll-shine-${role}`
@@ -244,7 +237,6 @@ export function VisualizerFormatRenderer({
           </div>
         ) : (
           <LegacyIdleVisualizer
-            key={idleVisualizerKey}
             className={getRerollFlashClassName("visualizer")}
             type={type}
             barCount={visualizerStyle.barCount}
@@ -253,7 +245,6 @@ export function VisualizerFormatRenderer({
             splitSpeakers={visualizerStyle.splitSpeakers}
             gap={type === "waveform-strip" ? "0.56cqw" : "1.11cqw"}
             barMinWidth={type === "waveform-strip" ? "0.83cqw" : "1.11cqw"}
-            waveKey={idleVisualizerKey}
             style={{
               position: "absolute",
               top: toCanvasPercent(255, "y"),
