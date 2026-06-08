@@ -7,6 +7,10 @@ import {
 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import {
+  isStaleAudioAnalysis,
+  precomputeBrowserAudioAnalysisFromUrl,
+} from "@/features/audio/browserAudioAnalysis";
 import { updateGeneratedAudioCaptionText } from "@/features/audio/sceneAudio";
 import { cloneDialogueScript, type DialogueScript } from "@/features/dialogue/dialogueScripts";
 import type {
@@ -138,6 +142,7 @@ function ResearchConnected() {
   const [sessionRestored, setSessionRestored] = useState(false);
   const createEditorScopeRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const analysisUpgradeKeyRef = useRef("");
   const rerollFlashTimeoutRef = useRef<number | null>(null);
   const savedDesigns = useQuery(api.savedDesigns.list, anonymousId ? { anonymousId } : "skip") as SavedAdSceneDesign[] | undefined;
   const latestGeneration = useQuery(api.adScenes.latestForAnonymousId, anonymousId ? { anonymousId } : "skip") as {
@@ -322,6 +327,50 @@ function ResearchConnected() {
       index === selectedSceneIndex ? nextScene : scene
     )));
   }, [selectedSceneIndex]);
+
+  useEffect(() => {
+    if (selectedScene?.audio.status !== "generated") return;
+    if (!isStaleAudioAnalysis(selectedScene.audio.analysis)) return;
+
+    const audio = selectedScene.audio;
+    const upgradeKey = `${audio.storageId}:${audio.url}:${audio.durationMs}`;
+    if (analysisUpgradeKeyRef.current === upgradeKey) return;
+    analysisUpgradeKeyRef.current = upgradeKey;
+
+    let cancelled = false;
+    void precomputeBrowserAudioAnalysisFromUrl(audio.url, {
+      durationSeconds: audio.durationSeconds,
+    })
+      .then((analysis) => {
+        if (cancelled) return;
+        setSelectedScene((currentScene) => {
+          if (currentScene?.audio.status !== "generated") return currentScene;
+          if (currentScene.audio.storageId !== audio.storageId) return currentScene;
+          if (!isStaleAudioAnalysis(currentScene.audio.analysis)) return currentScene;
+
+          const upgradedScene = {
+            ...currentScene,
+            audio: {
+              ...currentScene.audio,
+              analysis,
+            },
+          };
+
+          setAdScenes((scenes) => scenes.map((scene, index) => (
+            index === selectedSceneIndex ? upgradedScene : scene
+          )));
+
+          return upgradedScene;
+        });
+      })
+      .catch(() => {
+        analysisUpgradeKeyRef.current = "";
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedScene, selectedSceneIndex]);
 
   const triggerRerollFlash = useCallback((roles: RenderFlashRole[]) => {
     if (rerollFlashTimeoutRef.current) {

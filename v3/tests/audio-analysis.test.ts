@@ -9,8 +9,10 @@ const createTestWav = () => {
   const view = new DataView(pcm.buffer);
 
   for (let index = 0; index < samples; index += 1) {
-    const quiet = index < samples / 2 ? 0.18 : 0.74;
-    const value = Math.sin((index / sampleRate) * Math.PI * 2 * 220) * quiet;
+    const firstHalf = index < samples / 2;
+    const quiet = firstHalf ? 0.18 : 0.74;
+    const frequency = firstHalf ? 220 : 880;
+    const value = Math.sin((index / sampleRate) * Math.PI * 2 * frequency) * quiet;
     view.setInt16(index * 2, Math.round(value * 32767), true);
   }
 
@@ -42,9 +44,16 @@ const createTestWav = () => {
   return wav;
 };
 
+const strongestBandIndex = (bands: number[]) => bands.reduce((bestIndex, value, index) => (
+  value > (bands[bestIndex] ?? 0) ? index : bestIndex
+), 0);
+
 const analysis = analyzeGeneratedWavAudio(createTestWav(), { fps: 10, bandCount: 8 });
+const defaultAnalysis = analyzeGeneratedWavAudio(createTestWav());
 
 assert.ok(analysis, "Generated WAV audio should produce analysis.");
+assert.equal(defaultAnalysis?.fps, 60);
+assert.equal(defaultAnalysis?.bands[0]?.length, 52);
 assert.equal(analysis?.fps, 10);
 assert.equal(analysis?.bands[0]?.length, 8);
 assert.ok((analysis?.levels.length || 0) >= 10);
@@ -53,6 +62,11 @@ assert.ok(Math.min(...(analysis?.levels || [])) >= 0);
 assert.ok(
   (analysis?.levels.at(-1) || 0) > (analysis?.levels[0] || 0),
   "Analysis should reflect the louder second half of the test audio.",
+);
+assert.notEqual(
+  strongestBandIndex(analysis?.bands[2] || []),
+  strongestBandIndex(analysis?.bands.at(-2) || []),
+  "Analysis should produce real frequency bands, not time-sliced RMS chunks.",
 );
 
 console.log("audio-analysis tests passed");
