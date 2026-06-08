@@ -86,6 +86,16 @@ assert.ok(createModuleSource.includes("await generateScenesForResearch(nextResul
 assert.ok(createModuleSource.includes("Keeping this canvas stable until the new ads are ready"), "/create must keep the current canvas stable while a new website is being researched.");
 assert.ok(!createModuleSource.includes("setAdScenes([])"), "/create submit must not clear the current canvas before replacement ads are ready.");
 assert.ok(!createModuleSource.includes("setSelectedScene(null)"), "/create submit must not snap back to the starter placeholder while website research is running.");
+assert.ok(createLeftColumnSource.includes("Reading website") && createLeftColumnSource.includes("Pulling brand proof") && createLeftColumnSource.includes("Writing 50 ads"), "/create submit must show a truthful staged work feed while website research and ad generation run.");
+assert.ok(createLeftColumnSource.includes("Still reading. Some sites take longer"), "/create submit work feed must reassure users when website research is slow.");
+assert.ok(!createLeftColumnSource.includes("%"), "/create submit work feed must not use fake percentage progress.");
+assert.ok(createClientSource.includes("pendingProgressFacts") && createClientSource.includes("getWebsiteSubmitProgressFacts(nextResult)"), "/create submit work feed must reveal real facts from the returned research payload.");
+assert.ok(
+  createClientSource.indexOf("setPendingProgressFacts(getWebsiteSubmitProgressFacts(nextResult))") > createClientSource.indexOf("researchCompleted = true")
+  && createClientSource.indexOf("setPendingProgressFacts(getWebsiteSubmitProgressFacts(nextResult))") < createClientSource.indexOf("const nextScenes = await generateScenesForResearch"),
+  "/create submit work feed must reveal facts only after research returns and before 50-ad generation finishes.",
+);
+assert.ok(createClientSource.includes('setProgressStage("reading-site")') && createClientSource.includes('setProgressStage("writing-ads")') && createClientSource.includes('setProgressStage("preparing-canvas")'), "/create submit work feed must advance on structural handshakes.");
 assert.ok(
   createModuleSource.indexOf("setResult(nextResult)") > createModuleSource.indexOf("const nextScenes = await generateScenesForResearch"),
   "/create must not swap the visible research result until generated scenes are ready too.",

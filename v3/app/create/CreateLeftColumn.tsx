@@ -1,8 +1,106 @@
-import { Loader2, Wand2 } from "lucide-react";
+import { Check, Circle, Loader2, Wand2 } from "lucide-react";
 
 type LoadStatus = "idle" | "loading" | "ready" | "error";
+export type WebsiteSubmitProgressStage = "reading-site" | "writing-ads" | "preparing-canvas" | null;
+
+export type WebsiteSubmitProgressFacts = {
+  brandName: string;
+  hasLogo: boolean;
+  colorCount: number;
+  proofCount: number;
+  buyerMomentCount: number;
+};
 
 const pillClass = "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black uppercase tracking-wide text-slate-500 shadow-sm";
+
+const progressRows = [
+  { id: "reading-site", label: "Reading website" },
+  { id: "brand-proof", label: "Pulling brand proof" },
+  { id: "selling-angle", label: "Finding selling angle" },
+  { id: "writing-ads", label: "Writing 50 ads" },
+  { id: "preparing-canvas", label: "Preparing canvas" },
+] as const;
+
+function getProgressState(
+  rowId: (typeof progressRows)[number]["id"],
+  stage: WebsiteSubmitProgressStage,
+) {
+  if (stage === "reading-site") return rowId === "reading-site" ? "active" : "pending";
+  if (stage === "writing-ads") {
+    if (rowId === "writing-ads") return "active";
+    return rowId === "preparing-canvas" ? "pending" : "complete";
+  }
+  if (stage === "preparing-canvas") return rowId === "preparing-canvas" ? "active" : "complete";
+  return "pending";
+}
+
+function CreateResearchProgressCard({
+  facts,
+  showSlowResearchMessage,
+  stage,
+}: {
+  facts: WebsiteSubmitProgressFacts | null;
+  showSlowResearchMessage: boolean;
+  stage: WebsiteSubmitProgressStage;
+}) {
+  if (!stage) return null;
+
+  const factRows = facts
+    ? [
+        facts.brandName ? `Found ${facts.brandName}` : "",
+        facts.hasLogo ? "Found logo" : "",
+        facts.colorCount ? `Found ${facts.colorCount} brand colors` : "",
+        facts.proofCount ? `Found ${facts.proofCount} proof points` : "",
+        facts.buyerMomentCount ? `Found ${facts.buyerMomentCount} buyer moments` : "",
+      ].filter(Boolean)
+    : [];
+
+  return (
+    <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-3">
+      <div className="space-y-2">
+        {progressRows.map((row) => {
+          const rowState = getProgressState(row.id, stage);
+          return (
+            <div
+              key={row.id}
+              className={`flex items-center gap-2 text-xs font-black ${rowState === "pending" ? "text-slate-400" : "text-slate-800"}`}
+            >
+              <span className="grid size-5 shrink-0 place-items-center">
+                {rowState === "complete" ? (
+                  <Check className="size-4 text-emerald-500" />
+                ) : rowState === "active" ? (
+                  <Loader2 className="size-4 animate-spin text-indigo-500" />
+                ) : (
+                  <Circle className="size-3 text-slate-300" />
+                )}
+              </span>
+              {row.label}
+            </div>
+          );
+        })}
+      </div>
+
+      {showSlowResearchMessage ? (
+        <p className="mt-3 rounded-2xl bg-white px-3 py-2 text-xs font-bold leading-5 text-slate-500">
+          Still reading. Some sites take longer, but your canvas will update when ads are ready.
+        </p>
+      ) : null}
+
+      {factRows.length ? (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {factRows.map((fact) => (
+            <span
+              key={fact}
+              className="rounded-full border border-emerald-100 bg-white px-2.5 py-1 text-[11px] font-black text-emerald-700"
+            >
+              {fact}
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export function CreateLeftColumn({
   adScenesCount,
@@ -10,6 +108,9 @@ export function CreateLeftColumn({
   error,
   onSubmit,
   onUrlChange,
+  progressFacts,
+  progressStage,
+  showSlowResearchMessage,
   status,
   url,
 }: {
@@ -18,6 +119,9 @@ export function CreateLeftColumn({
   error: string;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onUrlChange: (url: string) => void;
+  progressFacts: WebsiteSubmitProgressFacts | null;
+  progressStage: WebsiteSubmitProgressStage;
+  showSlowResearchMessage: boolean;
   status: LoadStatus;
   url: string;
 }) {
@@ -79,6 +183,12 @@ export function CreateLeftColumn({
           {submitIsBusy ? <Loader2 className="size-5 animate-spin" /> : <Wand2 className="size-5" />}
           {submitLabel}
         </button>
+
+        <CreateResearchProgressCard
+          facts={progressFacts}
+          showSlowResearchMessage={showSlowResearchMessage}
+          stage={progressStage}
+        />
       </form>
 
       {status === "error" || adStatus === "error" ? (

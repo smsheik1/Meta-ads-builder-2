@@ -49,7 +49,11 @@ import { CreateCanvasColumn } from "./CreateCanvasColumn";
 import { CreateCreativeBriefCard } from "./CreateCreativeBriefCard";
 import { CreateDialogueModal } from "./CreateDialogueModal";
 import { CreateIdeasList } from "./CreateIdeasList";
-import { CreateLeftColumn } from "./CreateLeftColumn";
+import {
+  CreateLeftColumn,
+  type WebsiteSubmitProgressFacts,
+  type WebsiteSubmitProgressStage,
+} from "./CreateLeftColumn";
 import type { PreviewPlatform } from "./CreatePreviewChrome";
 import { WigglyMark } from "./WigglyMark";
 import { placeholderAdSurfaceVariantCount } from "./createStarterScene";
@@ -67,6 +71,8 @@ import {
 } from "./createSession";
 
 const rerollFlashMs = 680;
+const slowResearchMessageDelayMs = 8000;
+const preparingCanvasDelayMs = 180;
 
 const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const fallbackUploadedAudioDurationMs = 8000;
@@ -79,6 +85,20 @@ function getResearchActionErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : String(error || "");
   if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) return researchTimeoutMessage;
   return message || "Website research failed.";
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function getWebsiteSubmitProgressFacts(result: StoredWebsiteResearchResult): WebsiteSubmitProgressFacts {
+  return {
+    brandName: result.brand.name || result.brandBrief.brandName || result.host,
+    hasLogo: Boolean(result.brand.logoUrl || result.brand.faviconUrl),
+    colorCount: result.brand.colors.length,
+    proofCount: result.brandBrief.proof.length || result.evidence.receipts.specificClaims.length || result.evidence.receipts.namedProof.length,
+    buyerMomentCount: result.brandBrief.buyerMoments.length || result.evidence.receipts.buyerMoments.length,
+  };
 }
 
 function getUploadedAudioDurationMs(file: File): Promise<number> {
@@ -128,6 +148,9 @@ function ResearchConnected() {
   const [rerollFlash, setRerollFlash] = useState<RenderFlashState | null>(null);
   const [placeholderVariantIndex, setPlaceholderVariantIndex] = useState(0);
   const [adStatusNote, setAdStatusNote] = useState("");
+  const [progressStage, setProgressStage] = useState<WebsiteSubmitProgressStage>(null);
+  const [pendingProgressFacts, setPendingProgressFacts] = useState<WebsiteSubmitProgressFacts | null>(null);
+  const [showSlowResearchMessage, setShowSlowResearchMessage] = useState(false);
   const [renderJobId, setRenderJobId] = useState<Id<"renderJobs"> | null>(null);
   const renderJob = useQuery(api.renderJobs.getStatus, renderJobId ? { renderJobId } : "skip");
   const [shareUrl, setShareUrl] = useState("");
@@ -164,6 +187,12 @@ function ResearchConnected() {
   const sceneLocks = useCanvasLocks();
   const canvasActions = useCanvasActions();
 
+  const clearSubmitProgress = () => {
+    setProgressStage(null);
+    setPendingProgressFacts(null);
+    setShowSlowResearchMessage(false);
+  };
+
   useEffect(() => {
     setAnonymousId(getAnonymousId());
   }, []);
@@ -173,6 +202,17 @@ function ResearchConnected() {
       window.clearTimeout(rerollFlashTimeoutRef.current);
     }
   }, []);
+
+  useEffect(() => {
+    if (progressStage !== "reading-site") return;
+
+    setShowSlowResearchMessage(false);
+    const timeoutId = window.setTimeout(() => {
+      setShowSlowResearchMessage(true);
+    }, slowResearchMessageDelayMs);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [progressStage]);
 
   useEffect(() => {
     const snapshot = loadCreateSessionSnapshot();
@@ -568,6 +608,9 @@ function ResearchConnected() {
 
     setStatus("loading");
     setAdStatus("loading");
+    setProgressStage("reading-site");
+    setPendingProgressFacts(null);
+    setShowSlowResearchMessage(false);
     canvasActions.slotCleared();
     canvasActions.beginBusy("website-research");
     resetShareState();
@@ -590,16 +633,24 @@ function ResearchConnected() {
         setStatus(hadExistingCanvas ? "ready" : "error");
         setError(nextResult.error);
         keepPreviousCanvasAfterFailure();
+        clearSubmitProgress();
         canvasActions.finishBusy();
         return;
       }
       researchCompleted = true;
+      setPendingProgressFacts(getWebsiteSubmitProgressFacts(nextResult));
+      setShowSlowResearchMessage(false);
+      setProgressStage("writing-ads");
       canvasActions.beginBusy("ad-generation");
       const nextScenes = await generateScenesForResearch(nextResult.researchRunId as Id<"researchRuns">, 50);
+      setProgressStage("preparing-canvas");
+      await wait(preparingCanvasDelayMs);
       setResult(nextResult);
       setStatus("ready");
       applyGeneratedScenes(nextScenes);
+      clearSubmitProgress();
     } catch (nextError) {
+      clearSubmitProgress();
       canvasActions.finishBusy();
       const message = getResearchActionErrorMessage(nextError);
       if (researchCompleted) {
@@ -933,6 +984,9 @@ function ResearchConnected() {
           error={error}
           onSubmit={onSubmit}
           onUrlChange={setUrl}
+          progressFacts={pendingProgressFacts}
+          progressStage={progressStage}
+          showSlowResearchMessage={showSlowResearchMessage}
           status={status}
           url={url}
         />
