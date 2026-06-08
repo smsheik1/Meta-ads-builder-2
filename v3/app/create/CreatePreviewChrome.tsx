@@ -8,8 +8,10 @@ import {
   MessageCircle,
   Send,
 } from "lucide-react";
+import { getIdleVisualizerPercent, getVisualizerBarCount, normalizeVisualizerType } from "@/features/audio/visualizer";
 import { AdRenderSurface } from "@/features/render/AdRenderSurface";
 import type { AdScene } from "@/features/scene/types";
+import { legacyCreateVisualizerStyle } from "@/features/scene/visualizerStyle";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
 
 export function WigglyMark({ size = "md" }: { size?: "sm" | "md" }) {
@@ -57,9 +59,11 @@ function BrandAvatar({
 }
 
 function PlaceholderAdSurface() {
-  const placeholderBars = [
-    22, 26, 30, 34, 38, 42, 46, 50, 54, 58, 64, 70, 76, 82, 76, 70, 64, 58, 54, 50, 46, 42, 38, 34,
-  ];
+  const visualizerType = normalizeVisualizerType(legacyCreateVisualizerStyle.type);
+  const placeholderBarCount = getVisualizerBarCount(visualizerType, legacyCreateVisualizerStyle.barCount);
+  const placeholderBars = Array.from({ length: placeholderBarCount }, (_, index) => (
+    getIdleVisualizerPercent(visualizerType, index, placeholderBarCount)
+  ));
 
   return (
     <div className="relative flex aspect-[4/5] flex-col items-center justify-center overflow-hidden bg-[#fbfaf5] px-9 text-center">
@@ -67,13 +71,22 @@ function PlaceholderAdSurface() {
       <h2 className="mt-8 max-w-[330px] text-[40px] font-black leading-[0.95] tracking-normal text-slate-950">
         Drop in your website and watch the magic happen.
       </h2>
-      <div className="mt-12 flex w-[118%] items-center justify-center gap-2">
+      <div
+        aria-hidden="true"
+        className="mt-12 flex h-[90px] w-[118%] items-center justify-between gap-[2px]"
+        data-visualizer-kind="legacy-create-waveform-strip"
+        data-visualizer-motion="css-idle"
+      >
         {placeholderBars.map((height, index) => (
           <span
-            aria-hidden="true"
-            className="w-3 rounded-full bg-[#25d8c4]"
+            className="wiggly-idle-bar wiggly-idle-bar-strong flex-1 rounded-full bg-[#25d8c4] opacity-80"
             key={`${height}-${index}`}
-            style={{ height }}
+            data-visualizer-bar="true"
+            style={{
+              animationDelay: `${index * 28}ms`,
+              height: `${height}%`,
+              minWidth: 3,
+            }}
           />
         ))}
       </div>
@@ -81,7 +94,7 @@ function PlaceholderAdSurface() {
         <AudioLines className="size-5" />
         Add audio for this ad
       </div>
-      <p className="absolute bottom-8 right-8 text-xs font-black uppercase tracking-[0.38em] text-slate-950/25">
+      <p className="absolute bottom-4 right-8 text-xs font-black uppercase tracking-[0.38em] text-slate-950/25">
         Made with Wiggly
       </p>
     </div>

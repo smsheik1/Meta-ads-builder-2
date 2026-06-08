@@ -209,27 +209,17 @@ function ResearchConnected() {
   useEffect(() => {
     if (!selectedScene) return;
 
-    const shouldRunClock = selectedScene.audio.status !== "generated" || isAudioPlaying;
+    const shouldRunClock = selectedScene.audio.status === "generated" && isAudioPlaying;
     if (!shouldRunClock) return;
 
     let animationFrame = 0;
-    const initialTimeSeconds = selectedScene.audio.status === "generated"
-      ? audioRef.current?.currentTime || 0
-      : 1.1;
-    const startedAt = performance.now() - initialTimeSeconds * 1000;
 
-    const tick = (now: number) => {
-      if (selectedScene.audio.status === "generated") {
-        const currentAudio = audioRef.current;
-        if (currentAudio && !currentAudio.paused) {
-          setPreviewTimeSeconds(currentAudio.currentTime);
-          animationFrame = window.requestAnimationFrame(tick);
-        }
-        return;
+    const tick = () => {
+      const currentAudio = audioRef.current;
+      if (currentAudio && !currentAudio.paused) {
+        setPreviewTimeSeconds(currentAudio.currentTime);
+        animationFrame = window.requestAnimationFrame(tick);
       }
-
-      setPreviewTimeSeconds(((now - startedAt) / 1000) % 60);
-      animationFrame = window.requestAnimationFrame(tick);
     };
 
     animationFrame = window.requestAnimationFrame(tick);
@@ -237,8 +227,6 @@ function ResearchConnected() {
   }, [
     isAudioPlaying,
     selectedScene?.audio.status,
-    selectedScene?.metadata.candidateIndex,
-    selectedScene?.metadata.generationBatchId,
   ]);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

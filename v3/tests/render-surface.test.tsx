@@ -91,12 +91,22 @@ const html = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene,
   timeSeconds: 1,
 }));
+const noAudioHtmlAtLaterFrame = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene,
+  timeSeconds: 7,
+}));
+assert.equal(
+  html,
+  noAudioHtmlAtLaterFrame,
+  "No-audio visualizer must be CSS-idle, not recalculated by preview time.",
+);
 assert.ok(html.includes('data-render-surface="ad"'));
 assert.ok(html.includes('data-format="visualizer"'));
 assert.ok(html.includes("Your Competitor Shows Up First"));
 assert.ok(html.includes("Add audio for this ad"));
 assert.ok(html.includes("Made with Wiggly"));
 assert.ok(html.includes('data-visualizer-kind="legacy-create-waveform-strip"'), "Visualizer must use the legacy /create waveform renderer.");
+assert.ok(html.includes('data-visualizer-motion="css-idle"'), "No-audio visualizer must use the legacy CSS idle motion.");
 assert.ok(html.includes("top:56.666666666666664%"), "Visualizer must stay in the legacy /create y=255 canvas slot.");
 assert.ok(html.includes("height:20%"), "Visualizer must stay in the legacy /create 90px canvas slot.");
 assert.ok(html.includes("gap:0.56cqw"), "Visualizer must keep the legacy /create 2px waveform gap scaled by canvas width.");

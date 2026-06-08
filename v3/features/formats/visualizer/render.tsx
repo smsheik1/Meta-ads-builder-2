@@ -1,6 +1,11 @@
 import type { CSSProperties } from "react";
 import { getVisibleCaptionText } from "../../audio/sceneAudio";
-import { getVisualizerBarCount, getVisualizerBars, normalizeVisualizerType } from "../../audio/visualizer";
+import {
+  getIdleVisualizerPercent,
+  getVisualizerBarCount,
+  getVisualizerBars,
+  normalizeVisualizerType,
+} from "../../audio/visualizer";
 import { legacyCreateVisualizerStyle } from "../../scene/visualizerStyle";
 import type { FormatRenderProps } from "../types";
 
@@ -63,29 +68,36 @@ export function VisualizerFormatRenderer({
   const type = normalizeVisualizerType(visualizerStyle.type);
   const count = getVisualizerBarCount(type, visualizerStyle.barCount);
   const splitSpeakers = Boolean(visualizerStyle.splitSpeakers && activeCaption?.speaker);
-  const bars = getVisualizerBars({
-    type,
-    count,
-    frame,
-    height: legacyCanvas.visualizerHeight,
-    scale: 1,
-    mirror: visualizerStyle.mirror,
-    audioLevel: analysisFrame !== null ? analysis?.levels[analysisFrame] : null,
-    frequencyBands: analysisFrame !== null ? analysis?.bands[analysisFrame] : null,
-    currentSpeaker: activeCaption?.speaker ?? null,
-    splitSpeakers,
-    sensitivity: visualizerStyle.sensitivity,
-    heightScale: visualizerStyle.heightScale,
-    baseline: visualizerStyle.baseline,
-    gain: visualizerStyle.gain,
-    compression: visualizerStyle.compression,
-    floor: visualizerStyle.floor,
-    ceiling: visualizerStyle.ceiling,
-    curve: visualizerStyle.curve,
-    bandFocus: visualizerStyle.bandFocus,
-    color: scene.style.visualizerColor,
-    speaker2Color: scene.style.accentColor,
-  });
+  const isGeneratedAudio = scene.audio.status === "generated";
+  const bars = isGeneratedAudio
+    ? getVisualizerBars({
+      type,
+      count,
+      frame,
+      height: legacyCanvas.visualizerHeight,
+      scale: 1,
+      mirror: visualizerStyle.mirror,
+      audioLevel: analysisFrame !== null ? analysis?.levels[analysisFrame] : null,
+      frequencyBands: analysisFrame !== null ? analysis?.bands[analysisFrame] : null,
+      currentSpeaker: activeCaption?.speaker ?? null,
+      splitSpeakers,
+      sensitivity: visualizerStyle.sensitivity,
+      heightScale: visualizerStyle.heightScale,
+      baseline: visualizerStyle.baseline,
+      gain: visualizerStyle.gain,
+      compression: visualizerStyle.compression,
+      floor: visualizerStyle.floor,
+      ceiling: visualizerStyle.ceiling,
+      curve: visualizerStyle.curve,
+      bandFocus: visualizerStyle.bandFocus,
+      color: scene.style.visualizerColor,
+      speaker2Color: scene.style.accentColor,
+    })
+    : Array.from({ length: count }, (_, index) => ({
+      height: legacyCanvas.visualizerHeight * (getIdleVisualizerPercent(type, index, count) / 100),
+      opacity: 0.8,
+      color: scene.style.visualizerColor,
+    }));
   const logoSource = getLogoSource(scene);
   const textColor = getReadableTextColor(scene.style.textColor);
   const captionText = getVisibleCaptionText(scene.audio, timeSeconds);
@@ -154,6 +166,7 @@ export function VisualizerFormatRenderer({
         <div
           aria-hidden="true"
           data-visualizer-kind="legacy-create-waveform-strip"
+          data-visualizer-motion={isGeneratedAudio ? "audio-analysis" : "css-idle"}
           style={{
             position: "absolute",
             top: toCanvasPercent(255, "y"),
@@ -170,7 +183,7 @@ export function VisualizerFormatRenderer({
             const barHeightPercent = Math.min(100, Math.max(0, (bar.height / legacyCanvas.visualizerHeight) * 100));
             return (
               <div
-                className={scene.audio.status === "generated" ? undefined : "wiggly-idle-bar wiggly-idle-bar-strong"}
+                className={isGeneratedAudio ? undefined : "wiggly-idle-bar wiggly-idle-bar-strong"}
                 data-visualizer-bar="true"
                 key={index}
                 style={{
@@ -181,7 +194,7 @@ export function VisualizerFormatRenderer({
                   borderRadius: 999,
                   background: bar.color,
                   opacity: bar.opacity,
-                  animationDelay: scene.audio.status === "generated" ? undefined : `${index * 28}ms`,
+                  animationDelay: isGeneratedAudio ? undefined : `${index * 28}ms`,
                 }}
               />
             );
