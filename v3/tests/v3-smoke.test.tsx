@@ -102,6 +102,12 @@ for (const forbiddenStoreImport of ["convex/", "_generated", "AdScene", "scene/t
   );
 }
 assert.ok(previewChromeSource.includes("rerollFlash={rerollFlash}"), "/create phone preview must pass reroll shine state into the shared renderer.");
+assert.ok(previewChromeSource.includes('data-preview-phone-frame="legacy-instagram-feed"'), "/create phone preview must keep the original /create IG feed chrome as the visible shell.");
+assert.ok(previewChromeSource.includes("h-[720px] w-[360px]"), "/create IG feed chrome must keep the original fixed 360x720 frame geometry.");
+assert.ok(previewChromeSource.includes('data-preview-ad-viewport="legacy-instagram-feed"') && previewChromeSource.includes("h-[450px]"), "/create IG feed chrome must reserve the original 360x450 ad viewport for AdRenderSurface.");
+assert.ok(previewChromeSource.includes('data-preview-play-overlay="legacy-instagram-feed"'), "/create phone preview must keep the original centered Play this ad pill over the IG footer.");
+assert.ok(previewChromeSource.includes("onTogglePlayback"), "/create phone play pill must bridge to the existing native audio control instead of creating a second audio system.");
+assert.ok(!previewChromeSource.includes("CanvasEditor"), "/create v3 phone chrome must not re-import the old CanvasEditor renderer.");
 assert.ok(previewChromeSource.includes("PreviewSelectionOverlay"), "/create phone preview must provide the lightweight component selector overlay.");
 assert.ok(previewChromeSource.includes("data-preview-selectable-slot"), "/create selector must expose selectable slots for QA and future format tests.");
 assert.ok(previewChromeSource.includes('type="color"'), "/create selector must expose the old hover color picker affordance.");
