@@ -125,7 +125,7 @@ export function PhonePreviewFrame({
   const brandName = scene?.brand.name || result?.brand.name || "Your brand";
   const brandLogoUrl = scene?.brand.logoUrl || scene?.brand.faviconUrl || result?.brand.logoUrl || result?.brand.faviconUrl || "";
   const caption = scene?.creative.subheadline || "Add audio for this ad";
-  const showPreviewAudioAction = Boolean(scene && scene.audio.status !== "generated" && onOpenAudioPanel);
+  const showPreviewAudioAction = Boolean((!scene || scene.audio.status !== "generated") && onOpenAudioPanel);
   const canSelectSlots = Boolean(scene && selectableSlots?.length && lockedSlots && slotColors && backgroundColor && onSelectSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor);
   const feedPlatform = platform === "facebook-feed" || platform === "instagram-feed";
   const instagramFeed = platform === "instagram-feed";

@@ -210,7 +210,8 @@ assert.ok(createModuleSource.includes("data-preview-background-color"), "/create
 assert.ok(createModuleSource.includes("size-14"), "/create selector lock bubble must keep the large old /builder lock affordance.");
 assert.ok(!createModuleSource.includes("ring-2 ring-slate-950/35"), "/create selected slot must not show the heavy old bounding-box outline.");
 assert.ok(!createModuleSource.includes('selected ? "opacity-70"'), "/create selected slot controls must not stay visible after clicking outside the canvas.");
-assert.ok(createModuleSource.includes("LegacyIdleVisualizer"), "/create empty placeholder must render through the shared legacy idle visualizer recipe.");
+assert.ok(createModuleSource.includes("AdRenderSurface"), "/create empty placeholder must render through the shared AdRenderSurface instead of a separate canvas renderer.");
+assert.ok(!readFileSync("app/create/CreatePlaceholderAdSurface.tsx", "utf8").includes("LegacyIdleVisualizer"), "/create empty placeholder must not import its own visualizer renderer.");
 assert.ok(createModuleSource.includes("placeholderVariants"), "/create empty placeholder must keep a small curated tutorial set for first-visit spacebar rerolls.");
 for (const oldCreateStarterHeadline of [
   "Drop in your website and watch the magic happen.",
@@ -225,20 +226,20 @@ for (const oldCreateStarterHeadline of [
     `/create empty placeholder must keep the original /create starter headline: ${oldCreateStarterHeadline}`,
   );
 }
-assert.ok(createModuleSource.includes("placeholder-idle-wave"), "/create empty placeholder visualizer must remount on starter reroll so the old staggered wave restarts from the left.");
-assert.ok(createModuleSource.includes("waveKey={variantIndex}"), "/create empty placeholder visualizer must expose a changing wave key for browser QA.");
+assert.ok(createModuleSource.includes("getVisualizerVariantForCandidate(variantIndex)"), "/create empty placeholder rerolls must use the same visualizer variant source as generated ads.");
+assert.ok(createModuleSource.includes('generationBatchId: "starter-placeholder"') && createModuleSource.includes("candidateIndex: variantIndex"), "/create empty placeholder must feed a changing scene identity into AdRenderSurface so the old staggered wave restarts.");
 assert.ok(createModuleSource.includes("Tour the starter ads in one tap."), "/create empty state must teach fresh visitors that the spacebar bar is interactive.");
-assert.ok(createModuleSource.includes('src="/wiggly-logo.svg"'), "/create empty placeholder must use the old Wiggly logo asset slot.");
-assert.ok(createModuleSource.includes('data-placeholder-slot="logo"'), "/create empty placeholder must expose a locked logo slot.");
-assert.ok(createModuleSource.includes("toPlaceholderPercent(70, \"y\")") && createModuleSource.includes("toPlaceholderPercent(120, \"x\")"), "/create empty placeholder logo must stay in the old /create x=120 y=70 slot.");
-assert.ok(createModuleSource.includes("toPlaceholderPercent(118, \"y\")") && createModuleSource.includes("toPlaceholderPercent(20, \"x\")"), "/create empty placeholder headline must stay in the old /create x=20 y=118 slot.");
+assert.ok(createModuleSource.includes('logoUrl: "/wiggly-logo.svg"'), "/create empty placeholder must use the old Wiggly logo asset through scene data.");
+assert.ok(visualizerRenderSource.includes("top: toCanvasPercent(70, \"y\")") && visualizerRenderSource.includes("transform: \"translateX(-50%)\""), "/create placeholder and generated logo must share the same renderer slot.");
+assert.ok(visualizerRenderSource.includes("top: toCanvasPercent(118, \"y\")") && visualizerRenderSource.includes("left: toCanvasPercent(20, \"x\")"), "/create placeholder and generated headline must share the same renderer slot.");
 assert.ok(createModuleSource.includes("See the angle hiding on your website."), "/create empty placeholder headline must use the shorter old-style copy that does not collide with the visualizer.");
-assert.ok(createModuleSource.includes('fontSize: "clamp(31px, 9.4cqw, 42px)"'), "/create empty placeholder headline must stay small enough to avoid the visualizer.");
-assert.ok(createModuleSource.includes('overflow: "hidden"'), "/create empty placeholder headline must not spill into the visualizer.");
-assert.ok(createModuleSource.includes("toPlaceholderPercent(255, \"y\")") && createModuleSource.includes("toPlaceholderPercent(360, \"x\")"), "/create empty placeholder visualizer must stay in the old /create x=0 y=255 w=360 slot.");
-assert.ok(createModuleSource.includes("toPlaceholderPercent(350, \"y\")") && createModuleSource.includes('data-placeholder-slot="caption-action"'), "/create empty placeholder audio action must stay in the old /create caption slot.");
+assert.ok(visualizerRenderSource.includes("getHeadlineFontSize"), "/create placeholder and generated headline sizing must stay centralized in the shared renderer.");
+assert.ok(visualizerRenderSource.includes('overflow: "hidden"'), "/create placeholder and generated headline must not spill into the visualizer.");
+assert.ok(visualizerRenderSource.includes("top: toCanvasPercent(255, \"y\")") && visualizerRenderSource.includes('height: toCanvasPercent(90, "y")'), "/create placeholder and generated visualizer must share the same renderer slot.");
+assert.ok(visualizerRenderSource.includes("top: toCanvasPercent(336, \"y\")") && visualizerRenderSource.includes("Add audio for this ad"), "/create placeholder and generated no-audio action must share the same renderer slot.");
 assert.ok(previewChromeSource.includes('data-preview-audio-action="true"'), "/create phone preview must expose a real clickable add-audio hit target over no-audio scenes.");
 assert.ok(previewChromeSource.includes("onClick={onOpenAudioPanel}"), "/create phone preview add-audio target must open the audio panel instead of being dead renderer text.");
+assert.ok(previewChromeSource.includes("!scene || scene.audio.status !== \"generated\""), "/create starter placeholder must get the same clickable add-audio overlay as generated no-audio scenes.");
 assert.ok(createModuleSource.includes("z-50 inline-flex") && createModuleSource.includes("group/preview-selector absolute inset-0 z-30"), "/create phone preview add-audio target must sit above the selector overlay so clicks are not swallowed.");
 assert.ok(previewChromeSource.includes("top: toPlaceholderPercent(336, \"y\")"), "/create preview add-audio hit target must sit clear of the watermark.");
 assert.ok(createModuleSource.includes("lg:absolute") && createModuleSource.includes("lg:-left-14"), "/create format rail must float beside the preview like the original /create shell.");

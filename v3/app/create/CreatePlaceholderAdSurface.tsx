@@ -1,8 +1,7 @@
-import { AudioLines } from "lucide-react";
 import type { RenderFlashState } from "@/features/formats/types";
-import { LegacyIdleVisualizer } from "@/features/formats/visualizer/LegacyIdleVisualizer";
+import { AdRenderSurface } from "@/features/render/AdRenderSurface";
+import type { AdScene, VisualizerAdScene } from "@/features/scene/types";
 import { getVisualizerVariantForCandidate } from "@/features/scene/visualizerVariants";
-import { toPlaceholderPercent } from "./createPreviewGeometry";
 
 const placeholderVariants = [
   {
@@ -39,6 +38,72 @@ const placeholderVariants = [
 
 export const placeholderAdSurfaceVariantCount = placeholderVariants.length;
 
+const createPlaceholderScene = (variantIndex: number): VisualizerAdScene => {
+  const variant = placeholderVariants[Math.abs(variantIndex) % placeholderVariants.length] || placeholderVariants[0]!;
+  const visualizerVariant = getVisualizerVariantForCandidate(variantIndex).visualizer;
+
+  return {
+    version: 1,
+    format: "visualizer",
+    brand: {
+      name: "Your brand",
+      url: "https://yourbrand.com",
+      host: "yourbrand.com",
+      title: "Your brand",
+      description: "Your generated ad appears on the canvas.",
+      faviconUrl: null,
+      logoUrl: "/wiggly-logo.svg",
+      ogImageUrl: null,
+      screenshotUrl: null,
+      colors: [variant.color],
+      fonts: {
+        feel: "sans",
+      },
+      vibeTags: ["starter"],
+      receipts: {
+        specificClaims: [],
+        buyerMoments: [],
+        exactSiteLanguage: [],
+        namedProof: [],
+      },
+    },
+    creative: {
+      angleId: `starter-${variantIndex}`,
+      headline: variant.headline,
+      subheadline: "Add audio for this ad",
+      ctaText: "Add audio",
+      headlineType: "callout",
+      selectedPain: "",
+      selectedProof: "",
+    },
+    style: {
+      backgroundColor: variant.background,
+      textColor: "#0f172a",
+      accentColor: "#52627A",
+      fontFeel: "sans",
+      visualizerColor: variant.color,
+      visualizer: visualizerVariant,
+    },
+    audio: {
+      status: "none",
+      transcript: "",
+      captions: [],
+    },
+    layout: {
+      preset: "centered-hero",
+    },
+    metadata: {
+      candidateIndex: variantIndex,
+      generationBatchId: "starter-placeholder",
+      researchRunId: "starter-placeholder",
+      brandSnapshotId: "starter-placeholder",
+      model: "starter",
+      provider: "deterministic",
+      generatedAt: 0,
+    },
+  };
+};
+
 export function PlaceholderAdSurface({
   rerollFlash = null,
   variantIndex = 0,
@@ -46,98 +111,15 @@ export function PlaceholderAdSurface({
   rerollFlash?: RenderFlashState | null;
   variantIndex?: number;
 }) {
-  const variant = placeholderVariants[Math.abs(variantIndex) % placeholderVariants.length] || placeholderVariants[0]!;
-  const visualizerVariant = getVisualizerVariantForCandidate(variantIndex).visualizer;
-  const getRerollFlashClassName = (role: "headline" | "visualizer" | "captions") => (
-    rerollFlash?.roles.includes(role)
-      ? `wiggly-reroll-shine wiggly-reroll-shine-${role}`
-      : undefined
-  );
+  const scene: AdScene = createPlaceholderScene(variantIndex);
 
   return (
-    <div className="relative aspect-[4/5] overflow-hidden text-center" style={{ background: variant.background }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        alt=""
-        data-placeholder-slot="logo"
-        src="/wiggly-logo.svg"
-        style={{
-          position: "absolute",
-          top: toPlaceholderPercent(70, "y"),
-          left: toPlaceholderPercent(120, "x"),
-          width: toPlaceholderPercent(120, "x"),
-          height: toPlaceholderPercent(48, "y"),
-          objectFit: "contain",
-        }}
-      />
-      <h2
-        className={getRerollFlashClassName("headline")}
-        data-placeholder-slot="headline"
-        style={{
-          position: "absolute",
-          top: toPlaceholderPercent(118, "y"),
-          left: toPlaceholderPercent(20, "x"),
-          width: toPlaceholderPercent(320, "x"),
-          height: toPlaceholderPercent(120, "y"),
-          display: "grid",
-          placeItems: "center",
-          margin: 0,
-          color: "#0f172a",
-          fontSize: "clamp(31px, 9.4cqw, 42px)",
-          fontWeight: 900,
-          letterSpacing: 0,
-          lineHeight: 1.04,
-          textAlign: "center",
-          textWrap: "balance",
-          overflow: "hidden",
-          overflowWrap: "break-word",
-        }}
-      >
-        {variant.headline}
-      </h2>
-      <div
-        className={getRerollFlashClassName("visualizer")}
-        data-placeholder-slot="visualizer"
-        style={{
-          position: "absolute",
-          top: toPlaceholderPercent(255, "y"),
-          left: toPlaceholderPercent(0, "x"),
-          width: toPlaceholderPercent(360, "x"),
-          height: toPlaceholderPercent(90, "y"),
-        }}
-      >
-        <LegacyIdleVisualizer
-          key={`placeholder-idle-wave-${variantIndex}`}
-          type={visualizerVariant.type}
-          barCount={visualizerVariant.barCount}
-          color={variant.color}
-          splitSpeakers={visualizerVariant.splitSpeakers}
-          gap={visualizerVariant.type === "waveform-strip" ? "0.56cqw" : "1.11cqw"}
-          barMinWidth={visualizerVariant.type === "waveform-strip" ? "0.83cqw" : "1.11cqw"}
-          waveKey={variantIndex}
-        />
-      </div>
-      <div
-        className={getRerollFlashClassName("captions")}
-        data-placeholder-slot="caption-action"
-        style={{
-          position: "absolute",
-          top: toPlaceholderPercent(350, "y"),
-          left: toPlaceholderPercent(20, "x"),
-          width: toPlaceholderPercent(320, "x"),
-          height: toPlaceholderPercent(48, "y"),
-          display: "grid",
-          placeItems: "center",
-        }}
-      >
-        <div className="inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-full bg-white/95 px-5 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.10)]">
-          <AudioLines className="size-4 shrink-0" />
-          Add audio for this ad
-        </div>
-      </div>
-      <p className="absolute bottom-4 right-8 text-xs font-black uppercase tracking-[0.38em] text-slate-950/25">
-        Made with Wiggly
-      </p>
-    </div>
+    <AdRenderSurface
+      className="h-full"
+      motionMode="idle"
+      rerollFlash={rerollFlash}
+      scene={scene}
+      timeSeconds={0}
+    />
   );
 }
