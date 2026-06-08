@@ -44,29 +44,19 @@ export function CreateDialogueModal({
       className="fixed inset-0 z-[100] grid place-items-center bg-slate-950/45 px-8 py-8 backdrop-blur-sm"
       data-dialogue-editor="modal"
     >
-      <section className="flex max-h-[88vh] w-full max-w-[980px] flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_40px_120px_rgba(15,23,42,0.35)]">
-        <div className="flex items-start justify-between gap-6 border-b border-slate-100 px-7 py-6">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">Voice script</p>
-            <h2 className="mt-2 text-3xl font-black leading-tight text-slate-950">
-              Pick the conversation people will hear.
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm font-bold leading-6 text-slate-500">
-              Two people talking about this product. Choose an option, edit the lines, then generate audio.
-            </p>
-          </div>
-          <button
-            type="button"
-            aria-label="Close voice script editor"
-            onClick={onClose}
-            className="grid size-12 shrink-0 place-items-center rounded-2xl border border-slate-200 bg-white text-slate-500 transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-950"
-          >
-            <X className="size-5" />
-          </button>
-        </div>
+      <section className={`relative flex max-h-[88vh] w-full flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_40px_120px_rgba(15,23,42,0.35)] ${hasDialogueScripts ? "max-w-[900px]" : "max-w-[680px]"}`}>
+        <h2 className="sr-only">Add audio</h2>
+        <button
+          type="button"
+          aria-label="Close voice script editor"
+          onClick={onClose}
+          className="absolute right-5 top-5 z-10 grid size-11 shrink-0 place-items-center rounded-2xl border border-slate-200 bg-white text-slate-500 transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-950"
+        >
+          <X className="size-5" />
+        </button>
 
-        <div className="overflow-y-auto px-7 py-6">
-          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-4">
+        <div className="overflow-y-auto px-7 py-7">
+          <div className="grid grid-cols-2 gap-3 pr-14">
             <label
               className={`inline-flex cursor-pointer items-center justify-center gap-3 rounded-[20px] border border-slate-200 bg-white px-5 py-4 text-sm font-black text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-950 ${
                 !hasSelectedScene || audioIsLoading ? "pointer-events-none opacity-50" : ""
@@ -95,13 +85,7 @@ export function CreateDialogueModal({
               {dialogueStatus === "loading" ? <Loader2 className="size-5 animate-spin" /> : <Wand2 className="size-5" />}
               {dialogueStatus === "loading" ? "Writing script options" : hasDialogueScripts ? "Rewrite script options" : "Write script options"}
             </button>
-            <span className="rounded-full bg-slate-50 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-slate-400">
-              {dialogueScripts.length ? `${dialogueScripts.length} options` : "No options yet"}
-            </span>
           </div>
-          <p className="mt-3 text-xs font-bold leading-5 text-slate-400">
-            Uploaded audio keeps the exact file you provide. Caption editing appears for Wiggly-generated dialogue audio.
-          </p>
 
           {audioError ? (
             <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-black leading-6 text-red-700">
@@ -184,11 +168,7 @@ export function CreateDialogueModal({
                 </div>
               ) : null}
             </>
-          ) : (
-            <p className="mt-5 rounded-[22px] bg-slate-50 px-5 py-4 text-sm font-black leading-6 text-slate-500">
-              Start by writing script options. Nothing is generated until you choose one.
-            </p>
-          )}
+          ) : null}
         </div>
       </section>
     </div>
