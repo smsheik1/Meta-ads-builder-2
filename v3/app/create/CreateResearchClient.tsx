@@ -586,20 +586,6 @@ function ResearchConnected() {
     }
   };
 
-  const onGenerateAds = async (count = 50) => {
-    if (!result) return;
-    setAdStatus("loading");
-    setAdStatusNote("");
-    setError("");
-
-    try {
-      await generateScenesForResearch(result.researchRunId as Id<"researchRuns">, count);
-    } catch (nextError) {
-      setAdStatus("error");
-      setError(nextError instanceof Error ? nextError.message : "Ad idea generation failed.");
-    }
-  };
-
   const onCreateShareLink = async () => {
     if (!selectedScene) return;
     setShareStatus("loading");
@@ -861,15 +847,6 @@ function ResearchConnected() {
     : saveStatus === "ready" || selectedDesignIsSaved
       ? "Saved"
       : "Save";
-  const audioStatusLabel = hasGeneratedAudio
-    ? "Audio ready"
-    : audioStatus === "loading"
-      ? "Generating audio"
-      : audioStatus === "error"
-        ? "Audio failed"
-        : dialoguePanelOpen
-          ? "Audio script open"
-          : "Add audio for this ad";
   const renderBusy = currentRenderStatus === "loading"
     || currentRenderStatus === "queued"
     || currentRenderStatus === "claimed"
@@ -898,10 +875,7 @@ function ResearchConnected() {
         <CreateLeftColumn
           adScenesCount={adScenes.length}
           adStatus={adStatus}
-          adStatusNote={adStatusNote}
           error={error}
-          hasResearchResult={Boolean(result)}
-          onGenerateAds={(count) => void onGenerateAds(count)}
           onSubmit={onSubmit}
           onUrlChange={setUrl}
           status={status}
@@ -964,10 +938,6 @@ function ResearchConnected() {
           <CreateAudioCard
             audioError={audioError}
             audioRef={audioRef}
-            audioStatus={audioStatus}
-            audioStatusLabel={audioStatusLabel}
-            hasGeneratedAudio={hasGeneratedAudio}
-            hasSelectedScene={Boolean(selectedScene)}
             onAudioEnded={() => {
               setIsAudioPlaying(false);
               if (audioRef.current) audioRef.current.currentTime = 0;
@@ -981,7 +951,6 @@ function ResearchConnected() {
               setIsAudioPlaying(true);
             }}
             onAudioTimeUpdate={setPreviewTimeSeconds}
-            onOpenAudioPanel={onOpenAudioPanel}
             playableAudioUrl={playableAudioUrl}
           />
 
