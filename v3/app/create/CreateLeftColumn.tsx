@@ -33,13 +33,10 @@ export function CreateLeftColumn({
       <h1 className="mt-7 max-w-[560px] text-[78px] font-black leading-[0.93] tracking-normal text-slate-950">
         Make video ads without learning video editing.
       </h1>
-      <p className="mt-8 max-w-[560px] text-lg font-black leading-8 text-slate-500">
-        Wiggly reads the site, finds the selling angle, and fills the canvas with polished ads you can preview, save, download, or edit.
-      </p>
 
       <form
         onSubmit={onSubmit}
-        className="mt-11 rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]"
+        className="mt-9 rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]"
       >
         <label className="text-sm font-black text-slate-900" htmlFor="website-url">
           Website

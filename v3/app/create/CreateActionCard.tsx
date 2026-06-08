@@ -5,6 +5,7 @@ import {
   Check,
   Download,
   ExternalLink,
+  Link2,
   Loader2,
   Play,
   RefreshCw,
@@ -19,6 +20,7 @@ export function CreateActionCard({
   currentRenderStatus,
   isAudioPlaying,
   onCreateRenderJob,
+  onCreateShareLink,
   onOpenSavedDesign,
   onRerollScene,
   onSaveSelectedDesign,
@@ -37,6 +39,9 @@ export function CreateActionCard({
   saveStatus,
   saveStatusLabel,
   selectedDesignIsSaved,
+  shareError,
+  shareStatus,
+  shareUrl,
   hasSelectedScene,
   onPreviewPlatformChange,
 }: {
@@ -44,6 +49,7 @@ export function CreateActionCard({
   currentRenderStatus: string;
   isAudioPlaying: boolean;
   onCreateRenderJob: () => void;
+  onCreateShareLink: () => void;
   onOpenSavedDesign: (design: SavedAdSceneDesign) => void;
   onPreviewPlatformChange: (platform: PreviewPlatform) => void;
   onRerollScene: () => void;
@@ -63,6 +69,9 @@ export function CreateActionCard({
   saveStatus: SaveStatus;
   saveStatusLabel: string;
   selectedDesignIsSaved: boolean;
+  shareError: string;
+  shareStatus: "idle" | "loading" | "ready" | "error";
+  shareUrl: string;
   hasSelectedScene: boolean;
 }) {
   return (
@@ -82,21 +91,39 @@ export function CreateActionCard({
         </div>
       ) : null}
 
-      <button
-        type="button"
-        onClick={onCreateRenderJob}
-        disabled={!hasSelectedScene || renderBusy}
-        className={`${hasSelectedScene ? "" : "mt-4"} flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40`}
-      >
-        {renderBusy ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : currentRenderStatus === "ready" ? (
-          <Check className="size-4" />
-        ) : (
-          <Download className="size-4" />
-        )}
-        {renderStatusLabel}
-      </button>
+      <div className={`${hasSelectedScene ? "" : "mt-4"} grid grid-cols-2 gap-2`}>
+        <button
+          type="button"
+          onClick={onCreateRenderJob}
+          disabled={!hasSelectedScene || renderBusy}
+          className="flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {renderBusy ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : currentRenderStatus === "ready" ? (
+            <Check className="size-4" />
+          ) : (
+            <Download className="size-4" />
+          )}
+          {renderStatusLabel}
+        </button>
+
+        <button
+          type="button"
+          onClick={onCreateShareLink}
+          disabled={!hasSelectedScene || shareStatus === "loading"}
+          className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {shareStatus === "loading" ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : shareStatus === "ready" ? (
+            <Check className="size-4" />
+          ) : (
+            <Link2 className="size-4" />
+          )}
+          {shareStatus === "loading" ? "Creating link" : shareStatus === "ready" ? "Link copied" : "Share link"}
+        </button>
+      </div>
 
       {renderDownloadUrl ? (
         <a
@@ -105,6 +132,18 @@ export function CreateActionCard({
           download
         >
           Download MP4
+          <ExternalLink className="size-4" />
+        </a>
+      ) : null}
+
+      {shareUrl ? (
+        <a
+          className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50"
+          href={shareUrl}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Open share page
           <ExternalLink className="size-4" />
         </a>
       ) : null}
@@ -192,6 +231,12 @@ export function CreateActionCard({
       {saveError ? (
         <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
           {saveError}
+        </p>
+      ) : null}
+
+      {shareError ? (
+        <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
+          {shareError}
         </p>
       ) : null}
 
