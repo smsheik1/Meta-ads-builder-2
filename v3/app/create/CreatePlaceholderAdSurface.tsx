@@ -1,7 +1,7 @@
 import { AudioLines } from "lucide-react";
 import type { RenderFlashState } from "@/features/formats/types";
 import { LegacyIdleVisualizer } from "@/features/formats/visualizer/LegacyIdleVisualizer";
-import { legacyCreateVisualizerStyle } from "@/features/scene/visualizerStyle";
+import { getVisualizerVariantForCandidate } from "@/features/scene/visualizerVariants";
 import { toPlaceholderPercent } from "./createPreviewGeometry";
 
 const placeholderVariants = [
@@ -47,6 +47,7 @@ export function PlaceholderAdSurface({
   variantIndex?: number;
 }) {
   const variant = placeholderVariants[Math.abs(variantIndex) % placeholderVariants.length] || placeholderVariants[0]!;
+  const visualizerVariant = getVisualizerVariantForCandidate(variantIndex).visualizer;
   const getRerollFlashClassName = (role: "headline" | "visualizer" | "captions") => (
     rerollFlash?.roles.includes(role)
       ? `wiggly-reroll-shine wiggly-reroll-shine-${role}`
@@ -107,11 +108,12 @@ export function PlaceholderAdSurface({
       >
         <LegacyIdleVisualizer
           key={`placeholder-idle-wave-${variantIndex}`}
-          type={legacyCreateVisualizerStyle.type}
-          barCount={legacyCreateVisualizerStyle.barCount}
+          type={visualizerVariant.type}
+          barCount={visualizerVariant.barCount}
           color={variant.color}
-          gap="0.56cqw"
-          barMinWidth="0.83cqw"
+          splitSpeakers={visualizerVariant.splitSpeakers}
+          gap={visualizerVariant.type === "waveform-strip" ? "0.56cqw" : "1.11cqw"}
+          barMinWidth={visualizerVariant.type === "waveform-strip" ? "0.83cqw" : "1.11cqw"}
           waveKey={variantIndex}
         />
       </div>
