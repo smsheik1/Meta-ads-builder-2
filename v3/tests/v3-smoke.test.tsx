@@ -101,6 +101,10 @@ assert.ok(canvasKeyboardSource.includes('input, textarea, select, [contenteditab
 assert.ok(canvasKeyboardSource.includes('mode !== "idle"'), "/create spacebar must be guarded by canvas interaction mode.");
 assert.ok(canvasKeyboardSource.includes("shortcutScopeActiveRef") && canvasKeyboardSource.includes("pointerdown") && canvasKeyboardSource.includes("focusin"), "/create spacebar must track editor scope like Avnac instead of listening globally.");
 assert.ok(canvasKeyboardSource.includes("targetIsInScope") && canvasKeyboardSource.includes("isDocumentShortcutTarget"), "/create spacebar must only fire inside the active editor scope.");
+assert.ok(createModuleSource.includes("placeholderAdSurfaceVariantCount"), "/create fresh visitors must be able to spacebar through curated placeholder ads before website research exists.");
+assert.ok(createModuleSource.includes("setPlaceholderVariantIndex((index) => (index + 1) % placeholderAdSurfaceVariantCount)"), "/create placeholder spacebar reroll must cycle placeholder variants instead of doing nothing.");
+assert.ok(createModuleSource.includes("enabled: !brandDetailsOpen && !dialoguePanelOpen && !captionPanelOpen"), "/create spacebar must stay enabled for fresh visitors and only be blocked by editor modals.");
+assert.ok(!createModuleSource.includes("enabled: adScenes.length > 0"), "/create must not gate the spacebar tutorial behind generated ads.");
 assert.ok(createModuleSource.includes("!brandDetailsOpen && !dialoguePanelOpen"), "/create must disable spacebar reroll while editor modals are open.");
 assert.ok(!createModuleSource.includes('data-allow-spacebar-reroll="true"'), "/create website input must block rerolls while the user is editing the URL.");
 assert.ok(createModuleSource.includes("shouldCarryAudio"), "/create spacebar reroll must carry generated audio onto the next visual variant.");
@@ -188,6 +192,8 @@ assert.ok(createModuleSource.includes("size-14"), "/create selector lock bubble 
 assert.ok(!createModuleSource.includes("ring-2 ring-slate-950/35"), "/create selected slot must not show the heavy old bounding-box outline.");
 assert.ok(!createModuleSource.includes('selected ? "opacity-70"'), "/create selected slot controls must not stay visible after clicking outside the canvas.");
 assert.ok(createModuleSource.includes("LegacyIdleVisualizer"), "/create empty placeholder must render through the shared legacy idle visualizer recipe.");
+assert.ok(createModuleSource.includes("placeholderVariants"), "/create empty placeholder must keep a small curated tutorial set for first-visit spacebar rerolls.");
+assert.ok(createModuleSource.includes("Tour the starter ads in one tap."), "/create empty state must teach fresh visitors that the spacebar bar is interactive.");
 assert.ok(createModuleSource.includes('src="/wiggly-logo.svg"'), "/create empty placeholder must use the old Wiggly logo asset slot.");
 assert.ok(createModuleSource.includes('data-placeholder-slot="logo"'), "/create empty placeholder must expose a locked logo slot.");
 assert.ok(createModuleSource.includes("toPlaceholderPercent(70, \"y\")") && createModuleSource.includes("toPlaceholderPercent(120, \"x\")"), "/create empty placeholder logo must stay in the old /create x=120 y=70 slot.");

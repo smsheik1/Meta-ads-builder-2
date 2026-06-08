@@ -1,5 +1,4 @@
 "use client";
-
 import {
   AudioLines,
   Bookmark,
@@ -31,7 +30,6 @@ import { PreviewSelectionOverlay } from "./CreatePreviewSelectionOverlay";
 import { toPlaceholderPercent } from "./createPreviewGeometry";
 
 export type PreviewPlatform = "facebook-feed" | "instagram-feed" | "reels" | "stories" | "youtube";
-
 export const previewPlatformOptions: Array<{ label: string; value: PreviewPlatform }> = [
   { label: "FB Feed", value: "facebook-feed" },
   { label: "IG Feed", value: "instagram-feed" },
@@ -41,7 +39,6 @@ export const previewPlatformOptions: Array<{ label: string; value: PreviewPlatfo
 ];
 
 const cx = (...classes: Array<string | false | null | undefined>) => classes.filter(Boolean).join(" ");
-
 function BrandAvatar({
   logoUrl,
   brandName,
@@ -93,6 +90,7 @@ export function PhonePreviewFrame({
   onTogglePlayback,
   previewReady = false,
   isAudioPlaying = false,
+  placeholderVariantIndex = 0,
   selectedSlot = null,
   selectableSlots,
   lockedSlots,
@@ -113,6 +111,7 @@ export function PhonePreviewFrame({
   onTogglePlayback?: () => void;
   previewReady?: boolean;
   isAudioPlaying?: boolean;
+  placeholderVariantIndex?: number;
   selectedSlot?: RenderSelectableSlot | null;
   selectableSlots?: readonly FormatSelectableSlotDefinition[];
   lockedSlots?: Partial<Record<RenderSelectableSlot, boolean>>;
@@ -154,7 +153,10 @@ export function PhonePreviewFrame({
           timeSeconds={timeSeconds}
         />
       ) : (
-        <PlaceholderAdSurface />
+        <PlaceholderAdSurface
+          rerollFlash={rerollFlash}
+          variantIndex={placeholderVariantIndex}
+        />
       )}
       {showPreviewAudioAction ? (
         <button
