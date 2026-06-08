@@ -3,14 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
-  ArrowRight,
-  BookmarkPlus,
-  Check,
-  Download,
-  ExternalLink,
-  Loader2,
-  Play,
-  RefreshCw,
   ShieldAlert,
 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
@@ -43,6 +35,7 @@ import type {
 } from "@/features/research/types";
 import type { AdScene } from "@/features/scene/types";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
+import { CreateActionCard } from "./CreateActionCard";
 import { CreateAudioCard } from "./CreateAudioCard";
 import { BrandDumpModal } from "./CreateBrandDumpModal";
 import { CreateCanvasColumn } from "./CreateCanvasColumn";
@@ -53,7 +46,6 @@ import { CreateLeftColumn } from "./CreateLeftColumn";
 import { CreateShareCard } from "./CreateShareCard";
 import {
   WigglyMark,
-  previewPlatformOptions,
   type PreviewPlatform,
 } from "./CreatePreviewChrome";
 import {
@@ -865,181 +857,32 @@ function ResearchConnected() {
         />
 
         <aside className="pt-28">
-          <section
-            className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8"
-            data-create-action-card="legacy"
-          >
-            {!selectedScene ? (
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-sm font-black text-slate-900">Generated ads</h2>
-                  <p className="mt-1 text-xs font-semibold text-slate-500">
-                    Your generated ad appears on the canvas.
-                  </p>
-                </div>
-                <RefreshCw className="size-5 text-slate-300" />
-              </div>
-            ) : null}
-
-            <button
-              type="button"
-              onClick={() => void onCreateRenderJob()}
-              disabled={!selectedScene || renderBusy}
-              className={`${selectedScene ? "" : "mt-4"} flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40`}
-            >
-              {renderBusy ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : currentRenderStatus === "ready" ? (
-                <Check className="size-4" />
-              ) : (
-                <Download className="size-4" />
-              )}
-              {renderStatusLabel}
-            </button>
-
-            {renderDownloadUrl ? (
-              <a
-                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50"
-                href={renderDownloadUrl}
-                download
-              >
-                Download MP4
-                <ExternalLink className="size-4" />
-              </a>
-            ) : null}
-
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={onTogglePreviewPlayback}
-                disabled={!playableAudioUrl}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <Play className="size-4" />
-                {isAudioPlaying ? "Stop" : "Play"}
-              </button>
-
-              <div
-                className="relative"
-                onMouseEnter={() => setSavedDesignsOpen(true)}
-                onMouseLeave={() => setSavedDesignsOpen(false)}
-                onFocus={() => setSavedDesignsOpen(true)}
-                onBlur={closeSavedDesignsOnBlur}
-              >
-                <button
-                  type="button"
-                  onClick={() => void onSaveSelectedDesign()}
-                  disabled={!selectedScene || saveStatus === "loading"}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                  title={selectedDesignIsSaved ? "Saved to designs" : "Save this ad to designs"}
-                >
-                  {saveStatus === "loading" ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : saveStatus === "ready" || selectedDesignIsSaved ? (
-                    <Check className="size-4 text-emerald-500" />
-                  ) : (
-                    <BookmarkPlus className="size-4" />
-                  )}
-                  {saveStatusLabel}
-                  {savedDesignItems.length ? (
-                    <span className="ml-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-black text-slate-500">
-                      {Math.min(savedDesignItems.length, 9)}
-                    </span>
-                  ) : null}
-                </button>
-
-              {savedDesignsOpen && savedDesignItems.length ? (
-                <div className="absolute right-0 top-full z-[70] w-80 pt-2">
-                  <div className="rounded-[22px] border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-950/15">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Saved ads</p>
-                      <span className="text-[10px] font-black text-slate-400">{savedDesignItems.length}</span>
-                    </div>
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                      {savedDesignItems.slice(0, 4).map((design) => (
-                        <button
-                          key={design.id}
-                          type="button"
-                          onClick={() => onOpenSavedDesign(design)}
-                          title={`Open ${design.title}`}
-                          className="min-w-0 rounded-2xl border border-slate-200 bg-white p-2 text-left transition hover:border-slate-300 hover:bg-slate-50"
-                        >
-                          <span
-                            className="block h-14 overflow-hidden rounded-xl border border-slate-200"
-                            style={{ backgroundColor: design.scene.style.backgroundColor }}
-                          >
-                            <span
-                              className="mx-auto mt-8 block h-2 w-2/3 rounded-full"
-                              style={{ backgroundColor: design.scene.style.visualizerColor }}
-                            />
-                          </span>
-                          <span className="mt-2 block truncate text-[11px] font-black text-slate-700">
-                            {design.title}
-                          </span>
-                          <span className="mt-0.5 block truncate text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                            {design.format}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-            </div>
-
-            {saveError ? (
-              <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
-                {saveError}
-              </p>
-            ) : null}
-
-            {renderBusy ? (
-              <p className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 text-xs font-black leading-5 text-slate-500">
-                Render worker is turning this frozen scene into an MP4.
-              </p>
-            ) : null}
-
-            {renderJob?.error || renderError ? (
-              <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
-                {renderJob?.error || renderError}
-              </p>
-            ) : null}
-
-            <label className="mt-2 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700">
-              <span>Preview</span>
-              <select
-                value={previewPlatform}
-                onChange={(event) => setPreviewPlatform(event.target.value as PreviewPlatform)}
-                className="bg-transparent text-sm font-black text-slate-950 outline-none"
-                aria-label="Choose preview"
-              >
-                {previewPlatformOptions.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-            </label>
-
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={onRerollScene}
-                disabled={!adScenes.length}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Try another
-              </button>
-              <button
-                type="button"
-                disabled
-                className="flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition disabled:cursor-not-allowed disabled:opacity-40"
-                title="Builder stays legacy-only while v3 /create is stabilized."
-              >
-                Open in builder
-                <ArrowRight className="size-4" />
-              </button>
-            </div>
-          </section>
+          <CreateActionCard
+            adScenesCount={adScenes.length}
+            currentRenderStatus={currentRenderStatus}
+            hasSelectedScene={Boolean(selectedScene)}
+            isAudioPlaying={isAudioPlaying}
+            onCreateRenderJob={() => void onCreateRenderJob()}
+            onOpenSavedDesign={onOpenSavedDesign}
+            onPreviewPlatformChange={setPreviewPlatform}
+            onRerollScene={onRerollScene}
+            onSaveSelectedDesign={() => void onSaveSelectedDesign()}
+            onSavedDesignsBlur={closeSavedDesignsOnBlur}
+            onSavedDesignsOpenChange={setSavedDesignsOpen}
+            onTogglePreviewPlayback={onTogglePreviewPlayback}
+            playableAudioUrl={playableAudioUrl}
+            previewPlatform={previewPlatform}
+            renderBusy={renderBusy}
+            renderDownloadUrl={renderDownloadUrl}
+            renderErrorMessage={renderJob?.error || renderError}
+            renderStatusLabel={renderStatusLabel}
+            saveError={saveError}
+            savedDesignItems={savedDesignItems}
+            savedDesignsOpen={savedDesignsOpen}
+            saveStatus={saveStatus}
+            saveStatusLabel={saveStatusLabel}
+            selectedDesignIsSaved={selectedDesignIsSaved}
+          />
 
           <CreateShareCard
             hasSelectedScene={Boolean(selectedScene)}
