@@ -7,7 +7,9 @@ import {
   Heart,
   Lock,
   MessageCircle,
+  Play,
   Send,
+  Square,
   Unlock,
 } from "lucide-react";
 import { LegacyIdleVisualizer } from "@/features/formats/visualizer/LegacyIdleVisualizer";
@@ -300,6 +302,9 @@ export function PhonePreviewFrame({
   rerollFlash = null,
   timeSeconds,
   onOpenAudioPanel,
+  onTogglePlayback,
+  previewReady = false,
+  isAudioPlaying = false,
   selectedSlot = null,
   lockedSlots,
   slotColors,
@@ -315,6 +320,9 @@ export function PhonePreviewFrame({
   rerollFlash?: RenderFlashState | null;
   timeSeconds: number;
   onOpenAudioPanel?: () => void;
+  onTogglePlayback?: () => void;
+  previewReady?: boolean;
+  isAudioPlaying?: boolean;
   selectedSlot?: RenderSelectableSlot | null;
   lockedSlots?: Record<RenderSelectableSlot, boolean>;
   slotColors?: Record<RenderSelectableSlot, string>;
@@ -331,22 +339,32 @@ export function PhonePreviewFrame({
   const canSelectSlots = Boolean(scene && lockedSlots && slotColors && backgroundColor && onSelectSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor);
 
   return (
-    <div className="mx-auto w-[460px] rounded-[40px] bg-black p-[10px] shadow-[0_34px_90px_rgba(15,23,42,0.24)]">
-      <div className="overflow-hidden rounded-[32px] border border-white/10 bg-black">
-        <div className="flex h-[78px] items-center justify-between border-b border-white/10 px-5">
-          <div className="flex items-center gap-3">
-            <BrandAvatar brandName={brandName} logoUrl={brandLogoUrl} sizeClass="size-12" />
-            <div>
-              <p className="text-sm font-black leading-none text-white">{brandName}</p>
-              <p className="mt-1 text-xs font-bold leading-none text-slate-300">Sponsored</p>
+    <div
+      className="relative mx-auto h-[720px] w-[360px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25"
+      data-preview-phone-frame="legacy-instagram-feed"
+    >
+      <div className="flex h-full flex-col overflow-hidden">
+        <div
+          className="flex h-[60px] shrink-0 items-center justify-between border-b border-slate-900 bg-black px-3 py-2.5"
+          data-preview-phone-header="instagram-feed"
+        >
+          <div className="flex min-w-0 items-center gap-2">
+            <BrandAvatar brandName={brandName} logoUrl={brandLogoUrl} sizeClass="size-9" />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-black leading-tight text-white">{brandName}</p>
+              <p className="text-[11px] font-bold leading-tight text-slate-400">Sponsored</p>
             </div>
           </div>
-          <span className="text-xl font-black tracking-widest text-white">...</span>
+          <span className="shrink-0 text-xl font-black tracking-widest text-white">...</span>
         </div>
 
-        <div className="relative bg-[#fbfaf5]">
+        <div
+          className="relative h-[450px] shrink-0 overflow-hidden bg-[#fbfaf5]"
+          data-preview-ad-viewport="legacy-instagram-feed"
+        >
           {scene ? (
             <AdRenderSurface
+              className="h-full"
               scene={scene}
               motionMode={motionMode}
               rerollFlash={rerollFlash}
@@ -384,24 +402,37 @@ export function PhonePreviewFrame({
           ) : null}
         </div>
 
-        <div className="min-h-[160px] bg-black px-5 py-4 text-white">
+        <div
+          className="relative h-[210px] shrink-0 border-t border-slate-900 bg-black px-3 py-3 text-white"
+          data-preview-phone-footer="instagram-feed"
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Heart className="size-7" strokeWidth={2.4} />
-              <MessageCircle className="size-7" strokeWidth={2.4} />
-              <Send className="size-7" strokeWidth={2.4} />
+              <Heart className="size-6" strokeWidth={2.4} />
+              <MessageCircle className="size-6" strokeWidth={2.4} />
+              <Send className="size-6" strokeWidth={2.4} />
             </div>
-            <Bookmark className="size-7" strokeWidth={2.4} />
+            <Bookmark className="size-6" strokeWidth={2.4} />
           </div>
-          <p className="mt-3 text-sm font-black">1,284 likes</p>
-          <p className="mt-2 max-w-[390px] text-sm font-bold leading-5 text-white">
+          <p className="mt-2 text-[12px] font-black">1,284 likes</p>
+          <p className="mt-1 max-w-[330px] text-[12px] font-bold leading-snug text-white">
             <span className="font-black">{brandName}</span>{" "}
-            <span className="text-slate-200">{caption}</span>
+            <span className="text-slate-200">{caption.substring(0, 92)}{caption.length > 92 ? "..." : ""}</span>
           </p>
-          <p className="mt-2 text-sm font-bold text-slate-500">View all 84 comments</p>
-          <p className="mt-2 text-xs font-black uppercase tracking-[0.12em] text-slate-600">Sponsored</p>
+          <p className="mt-1 text-[12px] font-bold text-slate-500">View all 84 comments</p>
+          <p className="mt-1 text-[10px] font-black uppercase tracking-[0.12em] text-slate-600">Sponsored</p>
         </div>
       </div>
+      <button
+        type="button"
+        data-preview-play-overlay="legacy-instagram-feed"
+        onClick={onTogglePlayback}
+        disabled={!previewReady || !onTogglePlayback}
+        className="absolute bottom-[86px] left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-2xl bg-slate-950/95 px-5 py-3 text-sm font-black text-white shadow-2xl shadow-slate-950/30 transition hover:-translate-x-1/2 hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {isAudioPlaying ? <Square className="size-4 fill-current" /> : <Play className="size-4 fill-current" />}
+        {isAudioPlaying ? "Stop preview" : "Play this ad"}
+      </button>
     </div>
   );
 }

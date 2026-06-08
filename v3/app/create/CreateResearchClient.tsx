@@ -397,6 +397,18 @@ function ResearchConnected() {
     setPreviewTimeSeconds(1.1);
   }, []);
 
+  const onTogglePreviewPlayback = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || selectedScene?.audio.status !== "generated") return;
+
+    if (audio.paused) {
+      void audio.play();
+      return;
+    }
+
+    audio.pause();
+  }, [selectedScene?.audio.status]);
+
   const resetShareState = () => {
     setShareStatus("idle");
     setShareUrl("");
@@ -1012,6 +1024,9 @@ function ResearchConnected() {
                 rerollFlash={rerollFlash}
                 timeSeconds={previewTimeSeconds}
                 onOpenAudioPanel={onOpenAudioPanel}
+                onTogglePlayback={onTogglePreviewPlayback}
+                previewReady={Boolean(playableAudioUrl)}
+                isAudioPlaying={isAudioPlaying}
                 selectedSlot={selectedPreviewSlot}
                 lockedSlots={{
                   headline: sceneLocks.headline,
