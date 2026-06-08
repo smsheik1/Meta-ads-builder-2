@@ -95,6 +95,15 @@ assert.ok(createClientSource.includes("onChangePreviewSlotColor"), "/create prev
 assert.ok(createClientSource.includes("selectPreviewSlot(slot)"), "/create canvas selection must stay sticky instead of toggling off on normal clicks.");
 assert.ok(createClientSource.includes("onChangePreviewBackgroundColor"), "/create preview selector must support background color changes.");
 assert.ok(createClientSource.includes("Spacebar rerolls the"), "/create must tell users when spacebar is scoped to one selected part.");
+assert.ok(createClientSource.includes('data-create-action-card="legacy"'), "/create right rail must copy the original /create generated-ad action card look.");
+assert.ok(createClientSource.includes("rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8"), "/create action card must keep the original compact card shell.");
+assert.ok(createClientSource.includes("Download video") && createClientSource.includes("renderStatusLabel"), "/create legacy action card must keep download wired through v3 render jobs.");
+assert.ok(createClientSource.includes("onTogglePreviewPlayback") && createClientSource.includes("playableAudioUrl"), "/create legacy action card play button must control v3 audio preview state.");
+assert.ok(createClientSource.includes("onSaveSelectedDesign") && createClientSource.includes("savedDesignItems.length"), "/create legacy action card save button must keep v3 saved-design hover behavior.");
+assert.ok(createClientSource.includes("Try another") && createClientSource.includes("onRerollScene"), "/create legacy action card must reroll through the v3 scene reroll path.");
+assert.ok(createClientSource.includes("Open in builder") && createClientSource.includes("Builder stays legacy-only"), "/create legacy action card may show builder affordance but must not link to a missing v3 builder route.");
+assert.ok(createClientSource.includes('data-create-share-card="v3"'), "/create share controls must stay separate from the copied legacy action card.");
+assert.ok(createClientSource.includes('data-create-audio-card="v3"'), "/create audio controls must stay separate from the copied legacy action card.");
 for (const forbiddenStoreImport of ["convex/", "_generated", "AdScene", "scene/types", "server"]) {
   assert.ok(
     !canvasInteractionStoreSource.includes(forbiddenStoreImport),

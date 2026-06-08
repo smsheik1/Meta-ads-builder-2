@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
+  ArrowRight,
   BookmarkPlus,
   Check,
   Download,
@@ -11,6 +12,7 @@ import {
   Loader2,
   Lock,
   Mic,
+  Play,
   RefreshCw,
   Search,
   ShieldAlert,
@@ -1120,36 +1122,41 @@ function ResearchConnected() {
         </div>
 
         <aside className="pt-28">
-          <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-black text-slate-950">Generated ads</h2>
-                <p className="mt-2 text-sm font-black leading-6 text-slate-500">
-                  Your generated ad appears on the canvas.
-                </p>
+          <section
+            className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8"
+            data-create-action-card="legacy"
+          >
+            {!selectedScene ? (
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-black text-slate-900">Generated ads</h2>
+                  <p className="mt-1 text-xs font-semibold text-slate-500">
+                    Your generated ad appears on the canvas.
+                  </p>
+                </div>
+                <RefreshCw className="size-5 text-slate-300" />
               </div>
-              <RefreshCw className="size-5 text-slate-300" />
-            </div>
+            ) : null}
 
             <button
               type="button"
               onClick={() => void onCreateRenderJob()}
               disabled={!selectedScene || renderBusy}
-              className="mt-5 inline-flex w-full items-center justify-center gap-3 rounded-[20px] bg-slate-950 px-5 py-4 text-sm font-black text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className={`${selectedScene ? "" : "mt-4"} flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40`}
             >
               {renderBusy ? (
-                <Loader2 className="size-5 animate-spin" />
+                <Loader2 className="size-4 animate-spin" />
               ) : currentRenderStatus === "ready" ? (
-                <Check className="size-5" />
+                <Check className="size-4" />
               ) : (
-                <Download className="size-5" />
+                <Download className="size-4" />
               )}
               {renderStatusLabel}
             </button>
 
             {renderDownloadUrl ? (
               <a
-                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-600 transition hover:border-slate-300 hover:text-slate-950"
+                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50"
                 href={renderDownloadUrl}
                 download
               >
@@ -1158,34 +1165,45 @@ function ResearchConnected() {
               </a>
             ) : null}
 
-            <div
-              className="relative mt-3"
-              onMouseEnter={() => setSavedDesignsOpen(true)}
-              onMouseLeave={() => setSavedDesignsOpen(false)}
-              onFocus={() => setSavedDesignsOpen(true)}
-              onBlur={closeSavedDesignsOnBlur}
-            >
+            <div className="mt-2 grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => void onSaveSelectedDesign()}
-                disabled={!selectedScene || saveStatus === "loading"}
-                className="inline-flex w-full items-center justify-center gap-3 rounded-[20px] border border-slate-200 bg-white px-5 py-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:text-slate-400"
-                title={selectedDesignIsSaved ? "Saved to designs" : "Save this ad to designs"}
+                onClick={onTogglePreviewPlayback}
+                disabled={!playableAudioUrl}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {saveStatus === "loading" ? (
-                  <Loader2 className="size-5 animate-spin" />
-                ) : saveStatus === "ready" || selectedDesignIsSaved ? (
-                  <Check className="size-5 text-emerald-500" />
-                ) : (
-                  <BookmarkPlus className="size-5" />
-                )}
-                {saveStatusLabel}
-                {savedDesignItems.length ? (
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-500">
-                    {Math.min(savedDesignItems.length, 9)}
-                  </span>
-                ) : null}
+                <Play className="size-4" />
+                {isAudioPlaying ? "Stop" : "Play"}
               </button>
+
+              <div
+                className="relative"
+                onMouseEnter={() => setSavedDesignsOpen(true)}
+                onMouseLeave={() => setSavedDesignsOpen(false)}
+                onFocus={() => setSavedDesignsOpen(true)}
+                onBlur={closeSavedDesignsOnBlur}
+              >
+                <button
+                  type="button"
+                  onClick={() => void onSaveSelectedDesign()}
+                  disabled={!selectedScene || saveStatus === "loading"}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  title={selectedDesignIsSaved ? "Saved to designs" : "Save this ad to designs"}
+                >
+                  {saveStatus === "loading" ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : saveStatus === "ready" || selectedDesignIsSaved ? (
+                    <Check className="size-4 text-emerald-500" />
+                  ) : (
+                    <BookmarkPlus className="size-4" />
+                  )}
+                  {saveStatusLabel}
+                  {savedDesignItems.length ? (
+                    <span className="ml-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-black text-slate-500">
+                      {Math.min(savedDesignItems.length, 9)}
+                    </span>
+                  ) : null}
+                </button>
 
               {savedDesignsOpen && savedDesignItems.length ? (
                 <div className="absolute right-0 top-full z-[70] w-80 pt-2">
@@ -1225,6 +1243,7 @@ function ResearchConnected() {
                 </div>
               ) : null}
             </div>
+            </div>
 
             {saveError ? (
               <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
@@ -1244,11 +1263,86 @@ function ResearchConnected() {
               </p>
             ) : null}
 
+            <label className="mt-2 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700">
+              <span>Preview</span>
+              <select
+                defaultValue="instagram-feed"
+                className="bg-transparent text-sm font-black text-slate-950 outline-none"
+                aria-label="Choose preview"
+              >
+                <option value="instagram-feed">IG Feed</option>
+              </select>
+            </label>
+
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={onRerollScene}
+                disabled={!adScenes.length}
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Try another
+              </button>
+              <button
+                type="button"
+                disabled
+                className="flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition disabled:cursor-not-allowed disabled:opacity-40"
+                title="Builder stays legacy-only while v3 /create is stabilized."
+              >
+                Open in builder
+                <ArrowRight className="size-4" />
+              </button>
+            </div>
+          </section>
+
+          <section
+            className="mt-3 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8"
+            data-create-share-card="v3"
+          >
+            <button
+              type="button"
+              onClick={() => void onCreateShareLink()}
+              disabled={!selectedScene || shareStatus === "loading"}
+              className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {shareStatus === "loading" ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : shareStatus === "ready" ? (
+                <Check className="size-4" />
+              ) : (
+                <Link2 className="size-4" />
+              )}
+              {shareStatus === "loading" ? "Creating share link" : shareStatus === "ready" ? "Share link copied" : "Create share link"}
+            </button>
+
+            {shareUrl ? (
+              <a
+                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50"
+                href={shareUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open share page
+                <ExternalLink className="size-4" />
+              </a>
+            ) : null}
+
+            {shareError ? (
+              <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
+                {shareError}
+              </p>
+            ) : null}
+          </section>
+
+          <section
+            className="mt-3 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8"
+            data-create-audio-card="v3"
+          >
             <button
               type="button"
               onClick={onOpenAudioPanel}
               disabled={!selectedScene || audioStatus === "loading" || hasGeneratedAudio}
-              className="mt-3 inline-flex w-full items-center justify-center gap-3 rounded-[20px] border border-slate-200 bg-white px-5 py-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:text-slate-400"
+              className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {audioStatus === "loading" ? (
                 <Loader2 className="size-5 animate-spin" />
@@ -1333,40 +1427,6 @@ function ResearchConnected() {
                   </p>
                 ) : null}
               </div>
-            ) : null}
-
-            <button
-              type="button"
-              onClick={() => void onCreateShareLink()}
-              disabled={!selectedScene || shareStatus === "loading"}
-              className="mt-3 inline-flex w-full items-center justify-center gap-3 rounded-[20px] border border-slate-200 bg-white px-5 py-4 text-sm font-black text-slate-950 shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:text-slate-400"
-            >
-              {shareStatus === "loading" ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : shareStatus === "ready" ? (
-                <Check className="size-5" />
-              ) : (
-                <Link2 className="size-5" />
-              )}
-              {shareStatus === "loading" ? "Creating share link" : shareStatus === "ready" ? "Share link copied" : "Create share link"}
-            </button>
-
-            {shareUrl ? (
-              <a
-                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-600 transition hover:border-slate-300 hover:text-slate-950"
-                href={shareUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open share page
-                <ExternalLink className="size-4" />
-              </a>
-            ) : null}
-
-            {shareError ? (
-              <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
-                {shareError}
-              </p>
             ) : null}
           </section>
 
