@@ -47,7 +47,6 @@ import { CreateCreativeBriefCard } from "./CreateCreativeBriefCard";
 import { CreateDialogueModal } from "./CreateDialogueModal";
 import { CreateIdeasList } from "./CreateIdeasList";
 import { CreateLeftColumn } from "./CreateLeftColumn";
-import { CreateShareCard } from "./CreateShareCard";
 import type { PreviewPlatform } from "./CreatePreviewChrome";
 import { WigglyMark } from "./WigglyMark";
 import {
@@ -889,7 +888,6 @@ function ResearchConnected() {
           onOpenAudioPanel={onOpenAudioPanel}
           onRerollScene={onRerollScene}
           onSelectPreviewSlot={onSelectPreviewSlot}
-          onToggleLock={onToggleLock}
           onTogglePlayback={onTogglePreviewPlayback}
           onTogglePreviewSlotLock={onTogglePreviewSlotLock}
           playableAudioUrl={playableAudioUrl}
@@ -910,6 +908,7 @@ function ResearchConnected() {
             hasSelectedScene={Boolean(selectedScene)}
             isAudioPlaying={isAudioPlaying}
             onCreateRenderJob={() => void onCreateRenderJob()}
+            onCreateShareLink={() => void onCreateShareLink()}
             onOpenSavedDesign={onOpenSavedDesign}
             onPreviewPlatformChange={setPreviewPlatform}
             onRerollScene={onRerollScene}
@@ -929,11 +928,6 @@ function ResearchConnected() {
             saveStatus={saveStatus}
             saveStatusLabel={saveStatusLabel}
             selectedDesignIsSaved={selectedDesignIsSaved}
-          />
-
-          <CreateShareCard
-            hasSelectedScene={Boolean(selectedScene)}
-            onCreateShareLink={() => void onCreateShareLink()}
             shareError={shareError}
             shareStatus={shareStatus}
             shareUrl={shareUrl}
