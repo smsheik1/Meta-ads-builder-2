@@ -28,17 +28,22 @@ import { updateGeneratedAudioCaptionText } from "@/features/audio/sceneAudio";
 import { cloneDialogueScript, type DialogueScript } from "@/features/dialogue/dialogueScripts";
 import type { RenderFlashRole, RenderFlashState, RenderSelectableSlot } from "@/features/formats/types";
 import {
+  createDefaultCanvasInteractionLocks,
+  useCanvasInteractionStore,
+  type CanvasInteractionLocks,
+  type CanvasInteractionSlot,
+} from "@/features/create/canvasInteractionStore";
+import {
   createSavedDesignId,
   type SavedAdSceneDesign,
 } from "@/features/create/savedDesigns";
 import {
-  createDefaultSceneLocks,
   rerollScene,
   sceneLockKeys,
   sceneLockLabels,
-  type SceneLocks,
   type SceneLockKey,
 } from "@/features/create/reroll";
+import { useCreateSpacebar } from "@/features/create/useCreateSpacebar";
 import { isStoredWebsiteResearchFailure } from "@/features/research/types";
 import type {
   StoredWebsiteResearchResponse,
@@ -58,8 +63,7 @@ type CreateSessionSnapshot = {
   adScenes: AdScene[];
   selectedScene: AdScene | null;
   selectedSceneIndex: number;
-  sceneLocks: SceneLocks;
-  selectedPreviewSlot: RenderSelectableSlot | null;
+  sceneLocks: CanvasInteractionLocks;
   rerollCount: number;
   adStatusNote: string;
   dialogueScripts: DialogueScript[];
@@ -81,13 +85,13 @@ const pillClass = "rounded-full border border-slate-200 bg-white px-4 py-2 text-
 const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const fallbackUploadedAudioDurationMs = 8000;
 
-const previewSlotLockKey: Record<RenderSelectableSlot, SceneLockKey> = {
+const previewSlotLockKey: Record<CanvasInteractionSlot, SceneLockKey> = {
   headline: "headline",
   visualizer: "style",
   captions: "captionColor",
 };
 
-const previewSlotLabels: Record<RenderSelectableSlot, string> = {
+const previewSlotLabels: Record<CanvasInteractionSlot, string> = {
   headline: "headline",
   visualizer: "visualizer",
   captions: "captions",
@@ -95,10 +99,6 @@ const previewSlotLabels: Record<RenderSelectableSlot, string> = {
 
 const allPreviewSlots: RenderFlashRole[] = ["headline", "visualizer", "captions"];
 const fallbackCaptionColors = ["#7DD3FC", "#FB7185", "#A78BFA", "#34D399", "#F59E0B", "#F472B6"];
-
-function isPreviewSelectableSlot(value: unknown): value is RenderSelectableSlot {
-  return value === "headline" || value === "visualizer" || value === "captions";
-}
 
 function normalizeHexColor(value: string): string | null {
   if (!/^#[0-9A-F]{6}$/i.test(value)) return null;
@@ -131,8 +131,8 @@ const getCreateSessionStorage = () => {
   }
 };
 
-const normalizePersistedLocks = (locks: Partial<SceneLocks> | null | undefined): SceneLocks => ({
-  ...createDefaultSceneLocks(),
+const normalizePersistedLocks = (locks: Partial<CanvasInteractionLocks> | null | undefined): CanvasInteractionLocks => ({
+  ...createDefaultCanvasInteractionLocks(),
   ...(locks || {}),
 });
 
@@ -161,7 +161,6 @@ const loadCreateSessionSnapshot = (): CreateSessionSnapshot | null => {
       selectedScene: parsed.selectedScene || adScenes[selectedSceneIndex] || null,
       selectedSceneIndex,
       sceneLocks: normalizePersistedLocks(parsed.sceneLocks),
-      selectedPreviewSlot: null,
       rerollCount: Math.max(0, Math.trunc(Number(parsed.rerollCount) || 0)),
       adStatusNote: typeof parsed.adStatusNote === "string" ? parsed.adStatusNote : "",
       dialogueScripts: Array.isArray(parsed.dialogueScripts)
@@ -193,18 +192,6 @@ const saveCreateSessionSnapshot = (snapshot: Omit<CreateSessionSnapshot, "savedA
     // Session restore is a convenience; it should never break the create flow.
   }
 };
-
-function blocksSpacebarReroll(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  if (target.dataset.allowSpacebarReroll === "true") return false;
-
-  const tagName = target.tagName.toLowerCase();
-  return target.isContentEditable || tagName === "input" || tagName === "textarea" || tagName === "select";
-}
-
-function isRerollSpacebarKey(event: KeyboardEvent): boolean {
-  return event.key === " " || event.key === "Spacebar" || event.code === "Space";
-}
 
 function getResearchActionErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : String(error || "");
@@ -254,8 +241,6 @@ function ResearchConnected() {
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
-  const [sceneLocks, setSceneLocks] = useState(createDefaultSceneLocks);
-  const [selectedPreviewSlot, setSelectedPreviewSlot] = useState<RenderSelectableSlot | null>(null);
   const [rerollCount, setRerollCount] = useState(0);
   const [rerollFlash, setRerollFlash] = useState<RenderFlashState | null>(null);
   const [adStatusNote, setAdStatusNote] = useState("");
@@ -287,6 +272,15 @@ function ResearchConnected() {
   } | null | undefined;
   const saveDesign = useMutation(api.savedDesigns.saveFromScene);
   const savedDesignItems = savedDesigns || [];
+  const canvasMode = useCanvasInteractionStore((state) => state.mode);
+  const selectedPreviewSlot = useCanvasInteractionStore((state) => state.selectedSlot);
+  const sceneLocks = useCanvasInteractionStore((state) => state.locks);
+  const setCanvasMode = useCanvasInteractionStore((state) => state.setMode);
+  const selectPreviewSlot = useCanvasInteractionStore((state) => state.selectSlot);
+  const clearSelectedPreviewSlot = useCanvasInteractionStore((state) => state.clearSelectedSlot);
+  const setCanvasLocks = useCanvasInteractionStore((state) => state.setLocks);
+  const toggleCanvasLock = useCanvasInteractionStore((state) => state.toggleLock);
+  const resetCanvasInteraction = useCanvasInteractionStore((state) => state.resetInteraction);
 
   useEffect(() => {
     setAnonymousId(getAnonymousId());
@@ -306,8 +300,9 @@ function ResearchConnected() {
       setAdScenes(snapshot.adScenes);
       setSelectedScene(snapshot.selectedScene);
       setSelectedSceneIndex(snapshot.selectedSceneIndex);
-      setSceneLocks(snapshot.sceneLocks);
-      setSelectedPreviewSlot(snapshot.selectedPreviewSlot);
+      setCanvasLocks(snapshot.sceneLocks);
+      clearSelectedPreviewSlot();
+      setCanvasMode("idle");
       setRerollCount(snapshot.rerollCount);
       setAdStatus(snapshot.adScenes.length ? "ready" : "idle");
       setAdStatusNote(snapshot.adStatusNote);
@@ -327,7 +322,6 @@ function ResearchConnected() {
       selectedScene,
       selectedSceneIndex,
       sceneLocks,
-      selectedPreviewSlot,
       rerollCount,
       adStatusNote,
       dialogueScripts,
@@ -340,7 +334,6 @@ function ResearchConnected() {
     rerollCount,
     result,
     sceneLocks,
-    selectedPreviewSlot,
     selectedScene,
     selectedSceneIndex,
     selectedDialogueIndex,
@@ -356,7 +349,9 @@ function ResearchConnected() {
     setAdScenes(latestGeneration.scenes);
     setSelectedScene(restoredScene);
     setSelectedSceneIndex(0);
-    setSceneLocks(createDefaultSceneLocks());
+    setCanvasLocks(createDefaultCanvasInteractionLocks());
+    clearSelectedPreviewSlot();
+    setCanvasMode("idle");
     setRerollCount(0);
     setAdStatus("ready");
     setAdStatusNote(`${latestGeneration.scenes.length} ads restored. Press spacebar to find a stronger version.`);
@@ -365,7 +360,29 @@ function ResearchConnected() {
     adScenes.length,
     latestGeneration,
     result,
+    clearSelectedPreviewSlot,
     sessionRestored,
+    setCanvasLocks,
+    setCanvasMode,
+  ]);
+
+  useEffect(() => {
+    const nextMode = status === "loading" || adStatus === "loading" || audioStatus === "loading"
+      ? "generating"
+      : isAudioPlaying
+        ? "playing"
+        : "idle";
+
+    if (canvasMode !== nextMode) {
+      setCanvasMode(nextMode);
+    }
+  }, [
+    adStatus,
+    audioStatus,
+    canvasMode,
+    isAudioPlaying,
+    setCanvasMode,
+    status,
   ]);
 
   const getCurrentAnonymousId = () => anonymousId || getAnonymousId();
@@ -497,14 +514,11 @@ function ResearchConnected() {
   }, [adScenes, resetPreviewPlayback, sceneLocks, selectedPreviewSlot, selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
   const onToggleLock = (key: SceneLockKey) => {
-    setSceneLocks((locks) => ({
-      ...locks,
-      [key]: !locks[key],
-    }));
+    toggleCanvasLock(key);
   };
 
   const onSelectPreviewSlot = (slot: RenderSelectableSlot) => {
-    setSelectedPreviewSlot(slot);
+    selectPreviewSlot(slot);
   };
 
   const onTogglePreviewSlotLock = (slot: RenderSelectableSlot) => {
@@ -544,18 +558,10 @@ function ResearchConnected() {
     resetSaveState();
   };
 
-  useEffect(() => {
-    if (!adScenes.length) return;
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (!isRerollSpacebarKey(event) || blocksSpacebarReroll(event.target) || blocksSpacebarReroll(document.activeElement)) return;
-      event.preventDefault();
-      onRerollScene();
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [adScenes.length, onRerollScene]);
+  useCreateSpacebar({
+    enabled: adScenes.length > 0,
+    onReroll: onRerollScene,
+  });
 
   useEffect(() => {
     if (!selectedScene) return;
@@ -587,7 +593,7 @@ function ResearchConnected() {
     setAdScenes([]);
     setSelectedScene(null);
     setSelectedSceneIndex(0);
-    setSceneLocks(createDefaultSceneLocks());
+    resetCanvasInteraction();
     setRerollCount(0);
     resetShareState();
     resetRenderState();
@@ -631,7 +637,7 @@ function ResearchConnected() {
       setAdScenes(nextGeneration.scenes);
       setSelectedScene(nextGeneration.scenes[0] || null);
       setSelectedSceneIndex(0);
-      setSceneLocks(createDefaultSceneLocks());
+      resetCanvasInteraction();
       setRerollCount(0);
       resetShareState();
       resetRenderState();
