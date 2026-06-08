@@ -171,6 +171,25 @@ assert.equal(scene.style.visualizer?.type, "waveform-strip");
 assert.equal(scene.style.visualizer?.barCount, 24);
 assert.equal(scene.style.visualizer?.gain, 1.7);
 assert.equal(scene.style.visualizer?.floor, 0.08);
+assert.equal(scene.style.visualizerColor, "#82DFFF");
+
+const variedScenes = Array.from({ length: 8 }, (_, index) => createVisualizerAdScene({
+  research,
+  candidate: parsed[0]!,
+  candidateIndex: index,
+  generationBatchId: "batch_1",
+  model: "test-model",
+  provider: "openrouter",
+  now: 123,
+}));
+assert.ok(
+  new Set(variedScenes.map((item) => `${item.style.visualizer?.type}:${item.style.visualizer?.barCount}:${item.style.visualizer?.sensitivity}`)).size > 3,
+  "Generated scenes must include multiple visualizer treatments for spacebar rerolls.",
+);
+assert.ok(
+  new Set(variedScenes.map((item) => item.style.visualizerColor)).size > 1,
+  "Generated scenes must include multiple visualizer colors when the brand palette is sparse.",
+);
 
 const geminiResult = await generateAdCandidatesFromResearch(research, {
   count: 1,

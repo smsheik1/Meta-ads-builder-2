@@ -2,7 +2,10 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { action, query } from "./_generated/server";
 import { generateAdCandidatesFromResearch } from "../features/ad-generation/generate";
+import { buildFallbackBrandBrief } from "../features/research/brandCurator";
 import { createVisualizerAdScene } from "../features/scene/createVisualizerScene";
+import type { StoredWebsiteResearchResult } from "../features/research/types";
+import type { AdScene } from "../features/scene/types";
 
 const createGenerationBatchId = () => (
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
@@ -53,4 +56,75 @@ export const listForResearchRun: ReturnType<typeof query> = query({
     .withIndex("by_researchRunId", (q) => q.eq("researchRunId", researchRunId))
     .order("desc")
     .take(100),
+});
+
+export const latestForAnonymousId: ReturnType<typeof query> = query({
+  args: {
+    anonymousId: v.string(),
+  },
+  handler: async (ctx, { anonymousId }) => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_anonymousId", (q) => q.eq("anonymousId", anonymousId))
+      .first();
+    if (!session) return null;
+
+    const latestRows = await ctx.db
+      .query("adScenes")
+      .withIndex("by_sessionId_and_updatedAt", (q) => q.eq("sessionId", session._id))
+      .order("desc")
+      .take(100);
+    const latestBatchId = latestRows[0]?.generationBatchId;
+    if (!latestBatchId) return null;
+
+    const batchRows = latestRows
+      .filter((row) => row.generationBatchId === latestBatchId)
+      .sort((a, b) => (a.candidateIndex ?? 0) - (b.candidateIndex ?? 0));
+    const firstRow = batchRows[0];
+    if (!firstRow?.researchRunId) return null;
+
+    const researchRun = await ctx.db.get(firstRow.researchRunId);
+    if (!researchRun || researchRun.status !== "ready") return null;
+
+    const brandSnapshot = await ctx.db
+      .query("brandSnapshots")
+      .withIndex("by_researchRunId", (q) => q.eq("researchRunId", firstRow.researchRunId!))
+      .first();
+    if (!brandSnapshot || !researchRun.evidence) return null;
+
+    const research = {
+      sessionId: researchRun.sessionId,
+      researchRunId: firstRow.researchRunId,
+      brandSnapshotId: brandSnapshot._id,
+      websiteUrl: researchRun.url,
+      finalUrl: researchRun.finalUrl || brandSnapshot.url,
+      host: researchRun.host || brandSnapshot.host || "",
+      brand: {
+        name: brandSnapshot.name,
+        url: brandSnapshot.url,
+        host: brandSnapshot.host || "",
+        title: brandSnapshot.title || "",
+        description: brandSnapshot.description || "",
+        faviconUrl: brandSnapshot.faviconUrl || null,
+        logoUrl: brandSnapshot.logoUrl || null,
+        ogImageUrl: brandSnapshot.ogImageUrl || null,
+        screenshotUrl: brandSnapshot.screenshotUrl || null,
+        colors: brandSnapshot.colors,
+        fonts: brandSnapshot.fonts,
+        vibeTags: brandSnapshot.vibeTags,
+      },
+      evidence: researchRun.evidence,
+      metadata: researchRun.metadata || {},
+      branding: researchRun.branding || {},
+      providerStatus: researchRun.providerStatus || [],
+    };
+
+    return {
+      result: {
+        ...research,
+        brandBrief: researchRun.brandBrief || buildFallbackBrandBrief(research),
+      } satisfies StoredWebsiteResearchResult,
+      scenes: batchRows.map((row) => row.scene as AdScene),
+    };
+  },
 });

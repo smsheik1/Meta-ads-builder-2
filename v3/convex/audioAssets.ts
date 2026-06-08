@@ -1,16 +1,69 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { action, internalMutation, query } from "./_generated/server";
+import { action, internalMutation, mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { generateGeminiDialogueVoiceover, generateGeminiVoiceover } from "../features/audio/geminiTts";
 import {
+  createCaptionsForVoiceover,
   createGeneratedSceneAudio,
   getSceneAudioKey,
 } from "../features/audio/sceneAudio";
+import { analyzeGeneratedWavAudio } from "../features/audio/audioAnalysis";
+import {
+  applyVoiceVisualizerPreset,
+  explainVoiceVisualizerPresetFromAnalysis,
+} from "../features/audio/visualizerPresets";
 import { cleanDialogueScriptForVoiceover } from "../features/dialogue/dialogueScripts";
 import { assertShareableAdScene } from "../features/share/shareScene";
+import { legacyCreateVisualizerStyle } from "../features/scene/visualizerStyle";
+import type { AdScene, AdSceneAudio } from "../features/scene/types";
 
 const storageIdFromString = (storageId: string) => storageId as Id<"_storage">;
+const uploadedAudioModel = "uploaded-audio";
+const maxUploadedAudioDurationMs = 60_000;
+
+const isWavMimeType = (mimeType: string) => (
+  mimeType.toLowerCase().includes("wav") || mimeType.toLowerCase().includes("wave")
+);
+
+const cleanUploadName = (value: string | undefined) => String(value || "Uploaded audio")
+  .replace(/[—–]/g, ", ")
+  .replace(/\s+/g, " ")
+  .trim()
+  .slice(0, 120)
+  .trim() || "Uploaded audio";
+
+const attachAudioWithVoiceVisualizerPreset = (
+  scene: AdScene,
+  audio: AdSceneAudio,
+): AdScene => {
+  if (audio.status !== "generated") {
+    return {
+      ...scene,
+      audio,
+    };
+  }
+
+  const decision = explainVoiceVisualizerPresetFromAnalysis(audio.analysis, audio.durationMs);
+  const visualizer = applyVoiceVisualizerPreset(
+    scene.style.visualizer || legacyCreateVisualizerStyle,
+    decision.presetId,
+  );
+
+  return {
+    ...scene,
+    style: {
+      ...scene.style,
+      visualizer,
+    },
+    audio,
+  };
+};
+
+export const createUploadUrl: ReturnType<typeof mutation> = mutation({
+  args: {},
+  handler: async (ctx) => ctx.storage.generateUploadUrl(),
+});
 
 export const saveGenerated: ReturnType<typeof internalMutation> = internalMutation({
   args: {
@@ -106,10 +159,7 @@ export const generateForScene: ReturnType<typeof action> = action({
 
     return {
       audio,
-      scene: {
-        ...audioScene,
-        audio,
-      },
+      scene: attachAudioWithVoiceVisualizerPreset(audioScene, audio),
     };
   },
 });
@@ -158,10 +208,71 @@ export const generateDialogueForScene: ReturnType<typeof action> = action({
 
     return {
       audio,
-      scene: {
-        ...audioScene,
-        audio,
-      },
+      scene: attachAudioWithVoiceVisualizerPreset(audioScene, audio),
+    };
+  },
+});
+
+export const attachUploadedToScene: ReturnType<typeof action> = action({
+  args: {
+    anonymousId: v.string(),
+    scene: v.any(),
+    storageId: v.id("_storage"),
+    mimeType: v.string(),
+    durationMs: v.number(),
+    fileName: v.optional(v.string()),
+  },
+  handler: async (ctx, {
+    anonymousId,
+    scene,
+    storageId,
+    mimeType,
+    durationMs,
+    fileName,
+  }) => {
+    const audioScene = assertShareableAdScene(scene);
+    const safeDurationMs = Math.max(1000, Math.min(maxUploadedAudioDurationMs, Math.round(durationMs || 0)));
+    const safeMimeType = mimeType.trim() || "audio/mpeg";
+    const sessionId = await ctx.runMutation(internal.sessions.ensureAnonymousSession, {
+      anonymousId,
+    });
+    const url = await ctx.storage.getUrl(storageId);
+
+    if (!url) throw new Error("Uploaded audio was stored, but no playable URL was returned.");
+
+    const blob = isWavMimeType(safeMimeType) ? await ctx.storage.get(storageId) : null;
+    const bytes = blob ? new Uint8Array(await blob.arrayBuffer()) : null;
+    const analysis = bytes ? analyzeGeneratedWavAudio(bytes) ?? undefined : undefined;
+    const captions = createCaptionsForVoiceover(audioScene, safeDurationMs);
+    const transcript = captions.map((caption) => caption.text).join("\n") || cleanUploadName(fileName);
+    const sceneKey = getSceneAudioKey(audioScene);
+
+    await ctx.runMutation(internal.audioAssets.saveGenerated, {
+      sessionId,
+      sceneKey,
+      storageId,
+      mimeType: safeMimeType,
+      durationMs: safeDurationMs,
+      transcript,
+      provider: "upload",
+      model: uploadedAudioModel,
+    });
+
+    const audio = createGeneratedSceneAudio({
+      storageId,
+      url,
+      mimeType: safeMimeType,
+      durationMs: safeDurationMs,
+      transcript,
+      captions,
+      analysis,
+      model: uploadedAudioModel,
+      provider: "upload",
+    });
+
+    return {
+      audio,
+      scene: attachAudioWithVoiceVisualizerPreset(audioScene, audio),
     };
   },
 });

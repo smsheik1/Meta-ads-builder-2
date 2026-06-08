@@ -50,7 +50,7 @@ export type AdSceneAudio =
     transcript: string;
     captions: AdSceneCaption[];
     analysis?: AdSceneAudioAnalysis;
-    provider: "gemini";
+    provider: "gemini" | "upload";
     model: string;
     generatedAt: number;
   };

@@ -85,6 +85,7 @@ export const createGeneratedSceneAudio = ({
   captions,
   analysis,
   model,
+  provider = "gemini",
 }: {
   storageId: string;
   url: string;
@@ -94,6 +95,7 @@ export const createGeneratedSceneAudio = ({
   captions: AdSceneCaption[];
   analysis?: AdSceneAudioAnalysis;
   model: string;
+  provider?: "gemini" | "upload";
 }): AdSceneAudio => ({
   status: "generated",
   storageId,
@@ -104,7 +106,7 @@ export const createGeneratedSceneAudio = ({
   transcript,
   captions,
   analysis,
-  provider: "gemini",
+  provider,
   model,
   generatedAt: Date.now(),
 });

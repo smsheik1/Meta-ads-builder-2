@@ -6,6 +6,7 @@ import {
   rerollScene,
 } from "../features/create/reroll";
 import type { AdScene } from "../features/scene/types";
+import { getVisualizerVariantForCandidate } from "../features/scene/visualizerVariants";
 
 function makeScene(index: number): AdScene {
   return {
@@ -49,6 +50,7 @@ function makeScene(index: number): AdScene {
       textColor: index % 2 === 0 ? "#0F172A" : "#FFFFFF",
       accentColor: index % 2 === 0 ? "#38BDF8" : "#F97316",
       visualizerColor: index % 2 === 0 ? "#82DFFF" : "#FB7185",
+      visualizer: getVisualizerVariantForCandidate(index).visualizer,
       fontFeel: "sans",
     },
     audio: {
@@ -82,6 +84,7 @@ const unlockedResult = applySceneLocks(scenes[0]!, scenes[1]!, unlocked);
 assert.equal(unlockedResult.creative.headline, "Headline 1");
 assert.equal(unlockedResult.creative.subheadline, "Subheadline 1");
 assert.equal(unlockedResult.style.visualizerColor, "#FB7185");
+assert.notDeepEqual(unlockedResult.style.visualizer, scenes[0]!.style.visualizer);
 assert.equal(unlockedResult.audio, scenes[1]!.audio);
 
 const lockedHeadline = applySceneLocks(scenes[0]!, scenes[1]!, {
@@ -105,6 +108,7 @@ const lockedStyleAndAudio = applySceneLocks(scenes[0]!, scenes[1]!, {
   audio: true,
 });
 assert.equal(lockedStyleAndAudio.style, scenes[0]!.style);
+assert.deepEqual(lockedStyleAndAudio.style.visualizer, scenes[0]!.style.visualizer);
 assert.equal(lockedStyleAndAudio.audio, scenes[0]!.audio);
 
 const rerolled = rerollScene(scenes, scenes[0]!, 0, {

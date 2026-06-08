@@ -8,8 +8,9 @@ import {
   MessageCircle,
   Send,
 } from "lucide-react";
-import { getIdleVisualizerPercent, getVisualizerBarCount, normalizeVisualizerType } from "@/features/audio/visualizer";
+import { LegacyIdleVisualizer } from "@/features/formats/visualizer/LegacyIdleVisualizer";
 import { AdRenderSurface } from "@/features/render/AdRenderSurface";
+import type { RenderMotionMode } from "@/features/formats/types";
 import type { AdScene } from "@/features/scene/types";
 import { legacyCreateVisualizerStyle } from "@/features/scene/visualizerStyle";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
@@ -58,41 +59,89 @@ function BrandAvatar({
   );
 }
 
-function PlaceholderAdSurface() {
-  const visualizerType = normalizeVisualizerType(legacyCreateVisualizerStyle.type);
-  const placeholderBarCount = getVisualizerBarCount(visualizerType, legacyCreateVisualizerStyle.barCount);
-  const placeholderBars = Array.from({ length: placeholderBarCount }, (_, index) => (
-    getIdleVisualizerPercent(visualizerType, index, placeholderBarCount)
-  ));
+const legacyPlaceholderCanvas = {
+  width: 360,
+  height: 450,
+};
 
+const toPlaceholderPercent = (value: number, axis: "x" | "y") => (
+  `${(value / (axis === "x" ? legacyPlaceholderCanvas.width : legacyPlaceholderCanvas.height)) * 100}%`
+);
+
+function PlaceholderAdSurface() {
   return (
-    <div className="relative flex aspect-[4/5] flex-col items-center justify-center overflow-hidden bg-[#fbfaf5] px-9 text-center">
-      <WigglyMark />
-      <h2 className="mt-8 max-w-[330px] text-[40px] font-black leading-[0.95] tracking-normal text-slate-950">
+    <div className="relative aspect-[4/5] overflow-hidden bg-[#fbfaf5] text-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        alt=""
+        data-placeholder-slot="logo"
+        src="/wiggly-logo.svg"
+        style={{
+          position: "absolute",
+          top: toPlaceholderPercent(70, "y"),
+          left: toPlaceholderPercent(120, "x"),
+          width: toPlaceholderPercent(120, "x"),
+          height: toPlaceholderPercent(48, "y"),
+          objectFit: "contain",
+        }}
+      />
+      <h2
+        data-placeholder-slot="headline"
+        style={{
+          position: "absolute",
+          top: toPlaceholderPercent(118, "y"),
+          left: toPlaceholderPercent(20, "x"),
+          width: toPlaceholderPercent(320, "x"),
+          height: toPlaceholderPercent(120, "y"),
+          display: "grid",
+          placeItems: "center",
+          margin: 0,
+          color: "#0f172a",
+          fontSize: "clamp(34px, 11.6cqw, 52px)",
+          fontWeight: 900,
+          letterSpacing: 0,
+          lineHeight: 1.04,
+          textAlign: "center",
+          textWrap: "balance",
+          overflowWrap: "break-word",
+        }}
+      >
         Drop in your website and watch the magic happen.
       </h2>
       <div
-        aria-hidden="true"
-        className="mt-12 flex h-[90px] w-[118%] items-center justify-between gap-[2px]"
-        data-visualizer-kind="legacy-create-waveform-strip"
-        data-visualizer-motion="css-idle"
+        data-placeholder-slot="visualizer"
+        style={{
+          position: "absolute",
+          top: toPlaceholderPercent(255, "y"),
+          left: toPlaceholderPercent(0, "x"),
+          width: toPlaceholderPercent(360, "x"),
+          height: toPlaceholderPercent(90, "y"),
+        }}
       >
-        {placeholderBars.map((height, index) => (
-          <span
-            className="wiggly-idle-bar wiggly-idle-bar-strong flex-1 rounded-full bg-[#25d8c4] opacity-80"
-            key={`${height}-${index}`}
-            data-visualizer-bar="true"
-            style={{
-              animationDelay: `${index * 28}ms`,
-              height: `${height}%`,
-              minWidth: 3,
-            }}
-          />
-        ))}
+        <LegacyIdleVisualizer
+          type={legacyCreateVisualizerStyle.type}
+          barCount={legacyCreateVisualizerStyle.barCount}
+          color="#00d6b8"
+          gap="0.56cqw"
+          barMinWidth="0.83cqw"
+        />
       </div>
-      <div className="mt-14 inline-flex items-center justify-center gap-3 rounded-full bg-white px-6 py-4 text-base font-black text-slate-500 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
-        <AudioLines className="size-5" />
-        Add audio for this ad
+      <div
+        data-placeholder-slot="caption-action"
+        style={{
+          position: "absolute",
+          top: toPlaceholderPercent(350, "y"),
+          left: toPlaceholderPercent(20, "x"),
+          width: toPlaceholderPercent(320, "x"),
+          height: toPlaceholderPercent(48, "y"),
+          display: "grid",
+          placeItems: "center",
+        }}
+      >
+        <div className="inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-full bg-white/95 px-5 py-3 text-sm font-black text-slate-600 shadow-[0_18px_44px_rgba(15,23,42,0.10)]">
+          <AudioLines className="size-4 shrink-0" />
+          Add audio for this ad
+        </div>
       </div>
       <p className="absolute bottom-4 right-8 text-xs font-black uppercase tracking-[0.38em] text-slate-950/25">
         Made with Wiggly
@@ -104,15 +153,20 @@ function PlaceholderAdSurface() {
 export function PhonePreviewFrame({
   scene,
   result,
+  motionMode = "auto",
   timeSeconds,
+  onOpenAudioPanel,
 }: {
   scene: AdScene | null;
   result: StoredWebsiteResearchResult | null;
+  motionMode?: RenderMotionMode;
   timeSeconds: number;
+  onOpenAudioPanel?: () => void;
 }) {
   const brandName = scene?.brand.name || result?.brand.name || "Your brand";
   const brandLogoUrl = scene?.brand.logoUrl || scene?.brand.faviconUrl || result?.brand.logoUrl || result?.brand.faviconUrl || "";
   const caption = scene?.creative.subheadline || "Add audio for this ad";
+  const showPreviewAudioAction = Boolean(scene && scene.audio.status !== "generated" && onOpenAudioPanel);
 
   return (
     <div className="mx-auto w-[460px] rounded-[40px] bg-black p-[10px] shadow-[0_34px_90px_rgba(15,23,42,0.24)]">
@@ -128,12 +182,27 @@ export function PhonePreviewFrame({
           <span className="text-xl font-black tracking-widest text-white">...</span>
         </div>
 
-        <div className="bg-[#fbfaf5]">
+        <div className="relative bg-[#fbfaf5]">
           {scene ? (
-            <AdRenderSurface scene={scene} timeSeconds={timeSeconds} />
+            <AdRenderSurface scene={scene} motionMode={motionMode} timeSeconds={timeSeconds} />
           ) : (
             <PlaceholderAdSurface />
           )}
+          {showPreviewAudioAction ? (
+            <button
+              type="button"
+              aria-label="Add audio for this ad"
+              data-preview-audio-action="true"
+              onClick={onOpenAudioPanel}
+              className="absolute left-1/2 z-20 inline-flex -translate-x-1/2 items-center justify-center gap-3 whitespace-nowrap rounded-full bg-white px-6 py-3 text-[16px] font-black text-slate-600 shadow-[0_18px_45px_rgba(15,23,42,0.10)] transition hover:-translate-x-1/2 hover:-translate-y-0.5 hover:text-slate-950"
+              style={{
+                top: toPlaceholderPercent(336, "y"),
+              }}
+            >
+              <AudioLines className="size-5 shrink-0" />
+              Add audio for this ad
+            </button>
+          ) : null}
         </div>
 
         <div className="min-h-[160px] bg-black px-5 py-4 text-white">
@@ -160,7 +229,7 @@ export function PhonePreviewFrame({
 
 export function FormatRail() {
   return (
-    <div className="mt-64 hidden w-16 rounded-[28px] border border-slate-200 bg-white/95 p-2 shadow-[0_18px_50px_rgba(15,23,42,0.12)] xl:grid">
+    <div className="mt-64 hidden w-16 shrink-0 self-start rounded-[28px] border border-slate-200 bg-white/95 p-2 shadow-[0_18px_50px_rgba(15,23,42,0.12)] xl:grid xl:content-start">
       <button
         type="button"
         aria-label="Visualizer format"

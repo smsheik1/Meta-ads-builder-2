@@ -18,7 +18,9 @@ import {
   ThumbsDown,
   ThumbsUp,
   Unlock,
+  Upload,
   Wand2,
+  X,
 } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -33,6 +35,7 @@ import {
   rerollScene,
   sceneLockKeys,
   sceneLockLabels,
+  type SceneLocks,
   type SceneLockKey,
 } from "@/features/create/reroll";
 import { isStoredWebsiteResearchFailure } from "@/features/research/types";
@@ -45,6 +48,21 @@ import { getV3ConvexUrl } from "@/lib/convexEnv";
 import { FormatRail, PhonePreviewFrame, WigglyMark } from "./CreatePreviewChrome";
 
 const anonymousIdKey = "wiggly:v3:anonymous-id";
+const createSessionStorageKey = "wiggly:v3:create-session";
+const createSessionTtlMs = 1000 * 60 * 60 * 12;
+
+type CreateSessionSnapshot = {
+  result: StoredWebsiteResearchResult | null;
+  adScenes: AdScene[];
+  selectedScene: AdScene | null;
+  selectedSceneIndex: number;
+  sceneLocks: SceneLocks;
+  rerollCount: number;
+  adStatusNote: string;
+  dialogueScripts: DialogueScript[];
+  selectedDialogueIndex: number;
+  savedAt: number;
+};
 
 const getAnonymousId = () => {
   if (typeof window === "undefined") return "server";
@@ -58,6 +76,78 @@ const getAnonymousId = () => {
 
 const pillClass = "rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-slate-400 shadow-sm";
 const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
+const fallbackUploadedAudioDurationMs = 8000;
+
+const getCreateSessionStorage = () => {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+};
+
+const normalizePersistedLocks = (locks: Partial<SceneLocks> | null | undefined): SceneLocks => ({
+  ...createDefaultSceneLocks(),
+  ...(locks || {}),
+});
+
+const loadCreateSessionSnapshot = (): CreateSessionSnapshot | null => {
+  const storage = getCreateSessionStorage();
+  if (!storage) return null;
+
+  try {
+    const raw = storage.getItem(createSessionStorageKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<CreateSessionSnapshot>;
+    if (!parsed.savedAt || Date.now() - parsed.savedAt > createSessionTtlMs) {
+      storage.removeItem(createSessionStorageKey);
+      return null;
+    }
+
+    const adScenes = Array.isArray(parsed.adScenes) ? parsed.adScenes : [];
+    const selectedSceneIndex = Math.min(
+      Math.max(0, Math.trunc(Number(parsed.selectedSceneIndex) || 0)),
+      Math.max(0, adScenes.length - 1),
+    );
+
+    return {
+      result: parsed.result || null,
+      adScenes,
+      selectedScene: parsed.selectedScene || adScenes[selectedSceneIndex] || null,
+      selectedSceneIndex,
+      sceneLocks: normalizePersistedLocks(parsed.sceneLocks),
+      rerollCount: Math.max(0, Math.trunc(Number(parsed.rerollCount) || 0)),
+      adStatusNote: typeof parsed.adStatusNote === "string" ? parsed.adStatusNote : "",
+      dialogueScripts: Array.isArray(parsed.dialogueScripts)
+        ? parsed.dialogueScripts.map((script) => cloneDialogueScript(script as DialogueScript))
+        : [],
+      selectedDialogueIndex: Math.max(0, Math.trunc(Number(parsed.selectedDialogueIndex) || 0)),
+      savedAt: parsed.savedAt,
+    };
+  } catch {
+    storage.removeItem(createSessionStorageKey);
+    return null;
+  }
+};
+
+const saveCreateSessionSnapshot = (snapshot: Omit<CreateSessionSnapshot, "savedAt">) => {
+  const storage = getCreateSessionStorage();
+  if (!storage) return;
+
+  try {
+    if (!snapshot.result && !snapshot.adScenes.length) {
+      storage.removeItem(createSessionStorageKey);
+      return;
+    }
+    storage.setItem(createSessionStorageKey, JSON.stringify({
+      ...snapshot,
+      savedAt: Date.now(),
+    }));
+  } catch {
+    // Session restore is a convenience; it should never break the create flow.
+  }
+};
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -66,10 +156,37 @@ function isEditableTarget(target: EventTarget | null): boolean {
   return target.isContentEditable || tagName === "input" || tagName === "textarea" || tagName === "select";
 }
 
+function isRerollSpacebarKey(event: KeyboardEvent): boolean {
+  return event.key === " " || event.key === "Spacebar" || event.code === "Space";
+}
+
 function getResearchActionErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : String(error || "");
   if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) return researchTimeoutMessage;
   return message || "Website research failed.";
+}
+
+function getUploadedAudioDurationMs(file: File): Promise<number> {
+  if (typeof window === "undefined") return Promise.resolve(fallbackUploadedAudioDurationMs);
+
+  return new Promise((resolve) => {
+    const objectUrl = window.URL.createObjectURL(file);
+    const audio = document.createElement("audio");
+    const cleanup = () => window.URL.revokeObjectURL(objectUrl);
+    const resolveFallback = () => {
+      cleanup();
+      resolve(fallbackUploadedAudioDurationMs);
+    };
+
+    audio.preload = "metadata";
+    audio.onloadedmetadata = () => {
+      const durationMs = Math.round((Number.isFinite(audio.duration) ? audio.duration : 0) * 1000);
+      cleanup();
+      resolve(durationMs > 0 ? durationMs : fallbackUploadedAudioDurationMs);
+    };
+    audio.onerror = resolveFallback;
+    audio.src = objectUrl;
+  });
 }
 
 function ResearchConnected() {
@@ -77,6 +194,8 @@ function ResearchConnected() {
   const generateAdScenes = useAction(api.adScenes.generateFromResearch);
   const generateDialogueScripts = useAction(api.dialogueScripts.generateForScene);
   const generateDialogueAudioForScene = useAction(api.audioAssets.generateDialogueForScene);
+  const attachUploadedAudioForScene = useAction(api.audioAssets.attachUploadedToScene);
+  const createAudioUploadUrl = useMutation(api.audioAssets.createUploadUrl);
   const createSharePage = useMutation(api.sharePages.createFromScene);
   const createRenderJob = useMutation(api.renderJobs.createFromScene);
   const [url, setUrl] = useState("ogtool.com");
@@ -110,14 +229,86 @@ function ResearchConnected() {
   const [saveError, setSaveError] = useState("");
   const [savedDesignsOpen, setSavedDesignsOpen] = useState(false);
   const [error, setError] = useState("");
+  const [sessionRestored, setSessionRestored] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const savedDesigns = useQuery(api.savedDesigns.list, anonymousId ? { anonymousId } : "skip") as SavedAdSceneDesign[] | undefined;
+  const latestGeneration = useQuery(api.adScenes.latestForAnonymousId, anonymousId ? { anonymousId } : "skip") as {
+    result: StoredWebsiteResearchResult;
+    scenes: AdScene[];
+  } | null | undefined;
   const saveDesign = useMutation(api.savedDesigns.saveFromScene);
   const savedDesignItems = savedDesigns || [];
 
   useEffect(() => {
     setAnonymousId(getAnonymousId());
   }, []);
+
+  useEffect(() => {
+    const snapshot = loadCreateSessionSnapshot();
+    if (snapshot) {
+      setResult(snapshot.result);
+      setStatus(snapshot.result ? "ready" : "idle");
+      setAdScenes(snapshot.adScenes);
+      setSelectedScene(snapshot.selectedScene);
+      setSelectedSceneIndex(snapshot.selectedSceneIndex);
+      setSceneLocks(snapshot.sceneLocks);
+      setRerollCount(snapshot.rerollCount);
+      setAdStatus(snapshot.adScenes.length ? "ready" : "idle");
+      setAdStatusNote(snapshot.adStatusNote);
+      setAudioStatus(snapshot.selectedScene?.audio.status === "generated" ? "ready" : "idle");
+      setDialogueScripts(snapshot.dialogueScripts);
+      setSelectedDialogueIndex(Math.min(snapshot.selectedDialogueIndex, Math.max(0, snapshot.dialogueScripts.length - 1)));
+      setDialogueStatus(snapshot.dialogueScripts.length ? "ready" : "idle");
+    }
+    setSessionRestored(true);
+  }, []);
+
+  useEffect(() => {
+    if (!sessionRestored) return;
+    saveCreateSessionSnapshot({
+      result,
+      adScenes,
+      selectedScene,
+      selectedSceneIndex,
+      sceneLocks,
+      rerollCount,
+      adStatusNote,
+      dialogueScripts,
+      selectedDialogueIndex,
+    });
+  }, [
+    adScenes,
+    adStatusNote,
+    dialogueScripts,
+    rerollCount,
+    result,
+    sceneLocks,
+    selectedScene,
+    selectedSceneIndex,
+    selectedDialogueIndex,
+    sessionRestored,
+  ]);
+
+  useEffect(() => {
+    if (!sessionRestored || result || adScenes.length || !latestGeneration?.scenes.length) return;
+
+    const restoredScene = latestGeneration.scenes[0] || null;
+    setResult(latestGeneration.result);
+    setStatus("ready");
+    setAdScenes(latestGeneration.scenes);
+    setSelectedScene(restoredScene);
+    setSelectedSceneIndex(0);
+    setSceneLocks(createDefaultSceneLocks());
+    setRerollCount(0);
+    setAdStatus("ready");
+    setAdStatusNote(`${latestGeneration.scenes.length} ads restored. Press spacebar to find a stronger version.`);
+    setAudioStatus(restoredScene?.audio.status === "generated" ? "ready" : "idle");
+  }, [
+    adScenes.length,
+    latestGeneration,
+    result,
+    sessionRestored,
+  ]);
 
   const getCurrentAnonymousId = () => anonymousId || getAnonymousId();
 
@@ -174,13 +365,25 @@ function ResearchConnected() {
     const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, sceneLocks);
     if (!next.scene) return;
 
-    resetPreviewPlayback();
-    setSelectedScene(next.scene);
+    const currentGeneratedAudio = selectedScene?.audio.status === "generated" ? selectedScene.audio : null;
+    const shouldCarryAudio = Boolean(currentGeneratedAudio && next.scene.audio.status !== "generated");
+    const nextScene = shouldCarryAudio && currentGeneratedAudio
+      ? {
+        ...next.scene,
+        audio: currentGeneratedAudio,
+      }
+      : next.scene;
+    const shouldKeepPlayback = nextScene.audio.status === "generated" && currentGeneratedAudio?.url === nextScene.audio.url;
+
+    if (!shouldKeepPlayback) {
+      resetPreviewPlayback();
+    }
+    setSelectedScene(nextScene);
     setSelectedSceneIndex(next.index);
     setRerollCount((count) => count + 1);
     resetShareState();
     resetRenderState();
-    setAudioStatus(next.scene.audio.status === "generated" ? "ready" : "idle");
+    setAudioStatus(nextScene.audio.status === "generated" ? "ready" : "idle");
     setAudioError("");
     resetDialogueState();
     resetSaveState();
@@ -197,7 +400,7 @@ function ResearchConnected() {
     if (!adScenes.length) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== " " || isEditableTarget(event.target)) return;
+      if (!isRerollSpacebarKey(event) || isEditableTarget(event.target)) return;
       event.preventDefault();
       onRerollScene();
     };
@@ -390,6 +593,55 @@ function ResearchConnected() {
     } catch (nextError) {
       setAudioStatus("error");
       setAudioError(nextError instanceof Error ? nextError.message : "Audio generation failed.");
+    }
+  };
+
+  const onUploadAudio = async (file: File | null) => {
+    if (!file || !selectedScene || selectedScene.audio.status === "generated" || audioStatus === "loading") return;
+    if (!file.type.startsWith("audio/")) {
+      setAudioStatus("error");
+      setAudioError("Choose an audio file.");
+      return;
+    }
+
+    setAudioStatus("loading");
+    setAudioError("");
+    setDialogueError("");
+    resetRenderState();
+    resetShareState();
+
+    try {
+      const durationMs = await getUploadedAudioDurationMs(file);
+      const uploadUrl = await createAudioUploadUrl({});
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": file.type || "application/octet-stream",
+        },
+        body: file,
+      });
+
+      if (!uploadResponse.ok) throw new Error("Audio upload failed.");
+
+      const uploadResult = await uploadResponse.json() as { storageId?: Id<"_storage"> };
+      if (!uploadResult.storageId) throw new Error("Audio upload did not return a stored file.");
+
+      const result = await attachUploadedAudioForScene({
+        anonymousId: getCurrentAnonymousId(),
+        scene: selectedScene,
+        storageId: uploadResult.storageId,
+        mimeType: file.type || "application/octet-stream",
+        durationMs,
+        fileName: file.name,
+      }) as { scene: AdScene };
+
+      resetPreviewPlayback();
+      replaceSelectedScene(result.scene);
+      setAudioStatus("ready");
+      setDialoguePanelOpen(false);
+    } catch (nextError) {
+      setAudioStatus("error");
+      setAudioError(nextError instanceof Error ? nextError.message : "Audio upload failed.");
     }
   };
 
@@ -596,10 +848,16 @@ function ResearchConnected() {
         </div>
 
         <div>
-          <div className="flex justify-center gap-4">
+          <div className="flex items-start justify-center gap-4">
             <FormatRail />
             <div>
-              <PhonePreviewFrame scene={selectedScene} result={result} timeSeconds={previewTimeSeconds} />
+              <PhonePreviewFrame
+                scene={selectedScene}
+                result={result}
+                motionMode={isAudioPlaying ? "audio" : "idle"}
+                timeSeconds={previewTimeSeconds}
+                onOpenAudioPanel={onOpenAudioPanel}
+              />
 
               {adScenes.length ? (
                 <>
@@ -811,102 +1069,6 @@ function ResearchConnected() {
               )}
               {audioStatusLabel}
             </button>
-
-            {dialoguePanelOpen && !hasGeneratedAudio ? (
-              <div className="mt-3 rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
-                      Voice script
-                    </p>
-                    <p className="mt-1 text-xs font-black leading-5 text-slate-500">
-                      Two people talking about this product. Pick one, edit it, then generate audio.
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-slate-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-                    Dialogue
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => void onGenerateDialogueScripts()}
-                  disabled={dialogueStatus === "loading" || !selectedScene}
-                  className="mt-4 inline-flex w-full items-center justify-center gap-3 rounded-[18px] bg-slate-950 px-4 py-3 text-xs font-black text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
-                >
-                  {dialogueStatus === "loading" ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />}
-                  {dialogueStatus === "loading" ? "Writing script options" : hasDialogueScripts ? "Rewrite script options" : "Write script options"}
-                </button>
-
-                {dialogueError ? (
-                  <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
-                    {dialogueError}
-                  </p>
-                ) : null}
-
-                {hasDialogueScripts ? (
-                  <>
-                    <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-                      {dialogueScripts.map((script, index) => (
-                        <button
-                          key={`${script.title}-${index}`}
-                          type="button"
-                          onClick={() => onSelectDialogueScript(index)}
-                          className={`shrink-0 rounded-full border px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] transition ${
-                            selectedDialogueIndex === index
-                              ? "border-slate-950 bg-slate-950 text-white"
-                              : "border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300"
-                          }`}
-                        >
-                          Option {index + 1}
-                        </button>
-                      ))}
-                    </div>
-
-                    {selectedDialogueScript ? (
-                      <div className="mt-4 rounded-[18px] bg-slate-50 p-3">
-                        <p className="text-sm font-black leading-5 text-slate-950">
-                          {selectedDialogueScript.title}
-                        </p>
-                        <p className="mt-1 text-xs font-bold leading-5 text-slate-500">
-                          {selectedDialogueScript.angle}
-                        </p>
-                        <div className="mt-3 space-y-3">
-                          {selectedDialogueScript.lines.map((line, index) => (
-                            <label key={`${line.speaker}-${index}`} className="block">
-                              <span className="mb-1 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-                                <span>{line.speaker}</span>
-                                <span>{line.tone}</span>
-                              </span>
-                              <textarea
-                                value={line.text}
-                                onChange={(event) => onUpdateDialogueLineText(index, event.target.value)}
-                                rows={2}
-                                className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black leading-5 text-slate-700 outline-none transition focus:border-slate-950"
-                              />
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    <button
-                      type="button"
-                      onClick={() => void onGenerateAudio()}
-                      disabled={!dialogueCanGenerateAudio || audioStatus === "loading"}
-                      className="mt-4 inline-flex w-full items-center justify-center gap-3 rounded-[18px] bg-slate-950 px-4 py-3 text-xs font-black text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
-                    >
-                      {audioStatus === "loading" ? <Loader2 className="size-4 animate-spin" /> : <Mic className="size-4" />}
-                      Generate this audio
-                    </button>
-                  </>
-                ) : (
-                  <p className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 text-xs font-black leading-5 text-slate-500">
-                    Start by writing script options. Nothing is generated until you choose.
-                  </p>
-                )}
-              </div>
-            ) : null}
 
             {audioError ? (
               <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
@@ -1141,6 +1303,161 @@ function ResearchConnected() {
           ) : null}
         </aside>
       </section>
+
+      {dialoguePanelOpen && !hasGeneratedAudio ? (
+        <div
+          className="fixed inset-0 z-[100] grid place-items-center bg-slate-950/45 px-8 py-8 backdrop-blur-sm"
+          data-dialogue-editor="modal"
+        >
+          <section className="flex max-h-[88vh] w-full max-w-[980px] flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_40px_120px_rgba(15,23,42,0.35)]">
+            <div className="flex items-start justify-between gap-6 border-b border-slate-100 px-7 py-6">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">Voice script</p>
+                <h2 className="mt-2 text-3xl font-black leading-tight text-slate-950">
+                  Pick the conversation people will hear.
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm font-bold leading-6 text-slate-500">
+                  Two people talking about this product. Choose an option, edit the lines, then generate audio.
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close voice script editor"
+                onClick={() => setDialoguePanelOpen(false)}
+                className="grid size-12 shrink-0 place-items-center rounded-2xl border border-slate-200 bg-white text-slate-500 transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-950"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto px-7 py-6">
+              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-4">
+                <label
+                  className={`inline-flex cursor-pointer items-center justify-center gap-3 rounded-[20px] border border-slate-200 bg-white px-5 py-4 text-sm font-black text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-950 ${
+                    !selectedScene || audioStatus === "loading" ? "pointer-events-none opacity-50" : ""
+                  }`}
+                >
+                  {audioStatus === "loading" ? <Loader2 className="size-5 animate-spin" /> : <Upload className="size-5" />}
+                  Upload your audio
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    className="sr-only"
+                    disabled={!selectedScene || audioStatus === "loading"}
+                    onChange={(event) => {
+                      const file = event.currentTarget.files?.[0] || null;
+                      event.currentTarget.value = "";
+                      void onUploadAudio(file);
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => void onGenerateDialogueScripts()}
+                  disabled={dialogueStatus === "loading" || !selectedScene}
+                  className="inline-flex items-center justify-center gap-3 rounded-[20px] bg-slate-950 px-5 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
+                >
+                  {dialogueStatus === "loading" ? <Loader2 className="size-5 animate-spin" /> : <Wand2 className="size-5" />}
+                  {dialogueStatus === "loading" ? "Writing script options" : hasDialogueScripts ? "Rewrite script options" : "Write script options"}
+                </button>
+                <span className="rounded-full bg-slate-50 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-slate-400">
+                  {dialogueScripts.length ? `${dialogueScripts.length} options` : "No options yet"}
+                </span>
+              </div>
+              <p className="mt-3 text-xs font-bold leading-5 text-slate-400">
+                Uploaded audio uses this ad's current copy as starter captions. You can edit captions after the audio is attached.
+              </p>
+
+              {audioError ? (
+                <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-black leading-6 text-red-700">
+                  {audioError}
+                </p>
+              ) : null}
+
+              {dialogueError ? (
+                <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-black leading-6 text-red-700">
+                  {dialogueError}
+                </p>
+              ) : null}
+
+              {hasDialogueScripts ? (
+                <>
+                  <div className="mt-5 grid grid-cols-5 gap-3" data-dialogue-option-grid="true">
+                    {dialogueScripts.map((script, index) => (
+                      <button
+                        key={`${script.title}-${index}`}
+                        type="button"
+                        onClick={() => onSelectDialogueScript(index)}
+                        className={`min-w-0 rounded-2xl border px-4 py-3 text-left transition hover:-translate-y-0.5 ${
+                          selectedDialogueIndex === index
+                            ? "border-slate-950 bg-slate-950 text-white shadow-[0_18px_46px_rgba(15,23,42,0.20)]"
+                            : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-white"
+                        }`}
+                      >
+                        <span className="block text-[10px] font-black uppercase tracking-[0.16em] opacity-70">
+                          Option {index + 1}
+                        </span>
+                        <span className="mt-2 block truncate text-sm font-black">
+                          {script.title}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {selectedDialogueScript ? (
+                    <div className="mt-6 rounded-[24px] bg-slate-50 p-5">
+                      <div className="flex items-start justify-between gap-5">
+                        <div>
+                          <h3 className="text-2xl font-black leading-tight text-slate-950">
+                            {selectedDialogueScript.title}
+                          </h3>
+                          <p className="mt-2 max-w-2xl text-sm font-bold leading-6 text-slate-500">
+                            {selectedDialogueScript.angle}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void onGenerateAudio()}
+                          disabled={!dialogueCanGenerateAudio || audioStatus === "loading"}
+                          className="inline-flex shrink-0 items-center justify-center gap-3 rounded-[18px] bg-slate-950 px-5 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
+                        >
+                          {audioStatus === "loading" ? <Loader2 className="size-5 animate-spin" /> : <Mic className="size-5" />}
+                          Generate this audio
+                        </button>
+                      </div>
+
+                      <div className="mt-5 grid gap-4">
+                        {selectedDialogueScript.lines.map((line, index) => (
+                          <label key={`${line.speaker}-${index}`} className="grid grid-cols-[150px_1fr] gap-4 rounded-[20px] border border-slate-200 bg-white p-4">
+                            <span>
+                              <span className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400">
+                                {line.speaker}
+                              </span>
+                              <span className="mt-2 block rounded-full bg-slate-50 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                                {line.tone}
+                              </span>
+                            </span>
+                            <textarea
+                              value={line.text}
+                              onChange={(event) => onUpdateDialogueLineText(index, event.target.value)}
+                              rows={3}
+                              className="min-h-24 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-bold leading-7 text-slate-800 outline-none transition focus:border-slate-950 focus:bg-white"
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <p className="mt-5 rounded-[22px] bg-slate-50 px-5 py-4 text-sm font-black leading-6 text-slate-500">
+                  Start by writing script options. Nothing is generated until you choose one.
+                </p>
+              )}
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }
