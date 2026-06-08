@@ -5,9 +5,11 @@ import {
   Check,
   Download,
   ExternalLink,
+  Link2,
   Loader2,
   Play,
-  Shuffle,
+  RefreshCw,
+  Type,
 } from "lucide-react";
 import type { SavedAdSceneDesign } from "@/features/create/savedDesigns";
 import { previewPlatformOptions, type PreviewPlatform } from "./CreatePreviewChrome";
@@ -78,46 +80,51 @@ export function CreateActionCard({
       className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8"
       data-create-action-card="legacy"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-sm font-black text-slate-900">Generated ads</h2>
-          <p className="mt-1 max-w-[14rem] text-xs font-black leading-5 text-slate-500">
-            Your generated ads appear on the canvas.
-          </p>
+      {!hasSelectedScene ? (
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-black text-slate-900">Generated ads</h2>
+            <p className="mt-1 text-xs font-semibold text-slate-500">
+              Your generated ad appears on the canvas.
+            </p>
+          </div>
+          <RefreshCw className="size-5 text-slate-300" />
         </div>
+      ) : null}
+
+      <div className={`${hasSelectedScene ? "" : "mt-4"} grid grid-cols-2 gap-2`}>
+        <button
+          type="button"
+          onClick={onCreateRenderJob}
+          disabled={!hasSelectedScene || renderBusy}
+          className="flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {renderBusy ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : currentRenderStatus === "ready" ? (
+            <Check className="size-4" />
+          ) : (
+            <Download className="size-4" />
+          )}
+          {renderStatusLabel}
+        </button>
+
         <button
           type="button"
           onClick={onCreateShareLink}
           disabled={!hasSelectedScene || shareStatus === "loading"}
-          className="grid size-9 shrink-0 place-items-center rounded-full text-slate-300 transition hover:bg-slate-50 hover:text-slate-500 disabled:cursor-not-allowed disabled:opacity-30"
-          title="Share link"
-          aria-label={shareStatus === "ready" ? "Share link copied" : "Create share link"}
+          className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {shareStatus === "loading" ? (
-            <Loader2 className="size-5 animate-spin" />
+            <Loader2 className="size-4 animate-spin" />
           ) : shareStatus === "ready" ? (
-            <Check className="size-5" />
+            <Check className="size-4" />
           ) : (
-            <Shuffle className="size-5" />
+            <Link2 className="size-4" />
           )}
+          {shareStatus === "loading" ? "Creating link" : shareStatus === "ready" ? "Link copied" : "Share link"}
         </button>
       </div>
-
-      <button
-        type="button"
-        onClick={onCreateRenderJob}
-        disabled={!hasSelectedScene || renderBusy}
-        className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        {renderBusy ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : currentRenderStatus === "ready" ? (
-          <Check className="size-4" />
-        ) : (
-          <Download className="size-4" />
-        )}
-        {renderStatusLabel}
-      </button>
 
       {renderDownloadUrl ? (
         <a
@@ -268,6 +275,7 @@ export function CreateActionCard({
           className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
           title={hasGeneratedAudio ? "Edit this ad's captions" : "Generate or upload audio before editing captions"}
         >
+          <Type className="size-4" />
           Edit captions
         </button>
         <button
