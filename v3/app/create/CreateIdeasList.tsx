@@ -18,7 +18,7 @@ export function CreateIdeasList({
         {scenes.map((scene, index) => (
           <button
             type="button"
-            key={`${scene.metadata.generationBatchId}-${scene.metadata.candidateIndex}`}
+            key={`${scene.metadata.generationBatchId}-${scene.metadata.candidateIndex}-${index}`}
             onClick={() => onSelectScene(scene, index)}
             className={`rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 ${
               selectedSceneIndex === index

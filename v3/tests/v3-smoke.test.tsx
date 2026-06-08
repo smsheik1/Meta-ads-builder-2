@@ -79,6 +79,9 @@ assert.ok(createModuleSource.includes("window.requestAnimationFrame"), "/create 
 assert.ok(createModuleSource.includes('selectedScene.audio.status === "generated" && isAudioPlaying'), "/create must reserve the preview clock for generated audio.");
 assert.ok(createModuleSource.includes('motionMode={isAudioPlaying ? "audio" : "idle"}'), "/create must render paused generated-audio previews with the moving idle visualizer instead of a frozen audio frame.");
 assert.ok(createModuleSource.includes("isStoredWebsiteResearchFailure(nextResult)"), "/create must handle failed website research without exposing raw Convex action errors.");
+assert.ok(createModuleSource.includes("await generateScenesForResearch(nextResult.researchRunId"), "/create main Generate ads submit must read the website and immediately generate/select ad scenes.");
+assert.ok(createModuleSource.includes('Ad idea generation returned no ads'), "/create must fail loudly if ad generation returns an empty scene list.");
+assert.ok(createModuleSource.includes('const submitIsBusy = status === "loading" || adStatus === "loading"'), "/create main Generate ads button must stay busy while either research or ad generation is running.");
 assert.ok(createModuleSource.includes("wiggly:v3:create-session"), "/create must restore the active generation after refresh so spacebar reroll still has scenes.");
 assert.ok(createModuleSource.includes("loadCreateSessionSnapshot"), "/create must load the persisted session before spacebar reroll can silently disappear.");
 assert.ok(createModuleSource.includes("saveCreateSessionSnapshot"), "/create must persist generated scenes for same-browser reroll continuity.");

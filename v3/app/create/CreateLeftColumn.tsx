@@ -27,6 +27,13 @@ export function CreateLeftColumn({
   status: LoadStatus;
   url: string;
 }) {
+  const submitIsBusy = status === "loading" || adStatus === "loading";
+  const submitLabel = status === "loading"
+    ? "Reading website"
+    : adStatus === "loading"
+      ? "Writing ideas"
+      : "Generate ads";
+
   return (
     <div className="pt-16">
       <p className={pillClass}>{adScenesCount ? "Ads ready to review" : "Add a voice clip first"}</p>
@@ -50,11 +57,11 @@ export function CreateLeftColumn({
         />
         <button
           type="submit"
-          disabled={status === "loading"}
+          disabled={submitIsBusy}
           className="mt-5 inline-flex w-full items-center justify-center gap-3 rounded-full bg-slate-950 px-6 py-4 text-base font-black text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
         >
-          {status === "loading" ? <Loader2 className="size-5 animate-spin" /> : <Wand2 className="size-5" />}
-          {status === "loading" ? "Reading website" : "Generate ads"}
+          {submitIsBusy ? <Loader2 className="size-5 animate-spin" /> : <Wand2 className="size-5" />}
+          {submitLabel}
         </button>
       </form>
 

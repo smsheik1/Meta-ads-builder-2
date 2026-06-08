@@ -68,6 +68,10 @@ const rerollFlashMs = 680;
 const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const fallbackUploadedAudioDurationMs = 8000;
 
+type AdSceneGenerationResponse = {
+  scenes: AdScene[];
+};
+
 function getResearchActionErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : String(error || "");
   if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) return researchTimeoutMessage;
@@ -471,6 +475,32 @@ function ResearchConnected() {
     resetSaveState();
   };
 
+  const applyGeneratedScenes = (scenes: AdScene[]) => {
+    if (!scenes.length) throw new Error("Ad idea generation returned no ads.");
+
+    const firstScene = scenes[0] || null;
+    setAdScenes(scenes);
+    setSelectedScene(firstScene);
+    setSelectedSceneIndex(0);
+    resetCanvasInteraction();
+    setRerollCount(0);
+    resetShareState();
+    resetRenderState();
+    resetAudioState();
+    resetSaveState();
+    setAdStatusNote(`${scenes.length} ads ready. Press spacebar to find a stronger version.`);
+    setAdStatus("ready");
+  };
+
+  const generateScenesForResearch = async (researchRunId: Id<"researchRuns">, count = 50) => {
+    const nextGeneration = await generateAdScenes({
+      researchRunId,
+      count,
+    }) as AdSceneGenerationResponse;
+
+    applyGeneratedScenes(nextGeneration.scenes || []);
+  };
+
   useCanvasKeyboard({
     editorScopeRef: createEditorScopeRef,
     enabled: adScenes.length > 0 && !brandDetailsOpen && !dialoguePanelOpen && !captionPanelOpen,
@@ -526,6 +556,7 @@ function ResearchConnected() {
     resetSaveState();
     setAdStatusNote("");
     setError("");
+    let researchCompleted = false;
 
     try {
       const nextResult = await runWebsiteResearch({
@@ -539,9 +570,19 @@ function ResearchConnected() {
       }
       setResult(nextResult);
       setStatus("ready");
+      researchCompleted = true;
+      setAdStatus("loading");
+      await generateScenesForResearch(nextResult.researchRunId as Id<"researchRuns">, 50);
     } catch (nextError) {
-      setStatus("error");
-      setError(getResearchActionErrorMessage(nextError));
+      const message = getResearchActionErrorMessage(nextError);
+      if (researchCompleted) {
+        setStatus("ready");
+        setAdStatus("error");
+        setError(message);
+      } else {
+        setStatus("error");
+        setError(message);
+      }
     }
   };
 
@@ -552,24 +593,7 @@ function ResearchConnected() {
     setError("");
 
     try {
-      const nextGeneration = await generateAdScenes({
-        researchRunId: result.researchRunId as Id<"researchRuns">,
-        count,
-      }) as {
-        scenes: AdScene[];
-        providerStatus: { reason: string; status: string };
-      };
-      setAdScenes(nextGeneration.scenes);
-      setSelectedScene(nextGeneration.scenes[0] || null);
-      setSelectedSceneIndex(0);
-      resetCanvasInteraction();
-      setRerollCount(0);
-      resetShareState();
-      resetRenderState();
-      resetAudioState();
-      resetSaveState();
-      setAdStatusNote(`${nextGeneration.scenes.length} ads ready. Press spacebar to find a stronger version.`);
-      setAdStatus("ready");
+      await generateScenesForResearch(result.researchRunId as Id<"researchRuns">, count);
     } catch (nextError) {
       setAdStatus("error");
       setError(nextError instanceof Error ? nextError.message : "Ad idea generation failed.");
