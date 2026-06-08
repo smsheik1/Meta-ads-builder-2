@@ -52,7 +52,13 @@ import type {
 } from "@/features/research/types";
 import type { AdScene } from "@/features/scene/types";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
-import { FormatRail, PhonePreviewFrame, WigglyMark } from "./CreatePreviewChrome";
+import {
+  FormatRail,
+  PhonePreviewFrame,
+  WigglyMark,
+  previewPlatformOptions,
+  type PreviewPlatform,
+} from "./CreatePreviewChrome";
 
 const anonymousIdKey = "wiggly:v3:anonymous-id";
 const createSessionStorageKey = "wiggly:v3:create-session";
@@ -271,6 +277,7 @@ function ResearchConnected() {
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
+  const [previewPlatform, setPreviewPlatform] = useState<PreviewPlatform>("instagram-feed");
   const [rerollCount, setRerollCount] = useState(0);
   const [rerollFlash, setRerollFlash] = useState<RenderFlashState | null>(null);
   const [adStatusNote, setAdStatusNote] = useState("");
@@ -1064,6 +1071,7 @@ function ResearchConnected() {
               <PhonePreviewFrame
                 scene={selectedScene}
                 result={result}
+                platform={previewPlatform}
                 motionMode={isAudioPlaying ? "audio" : "idle"}
                 rerollFlash={rerollFlash}
                 timeSeconds={previewTimeSeconds}
@@ -1308,11 +1316,14 @@ function ResearchConnected() {
             <label className="mt-2 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700">
               <span>Preview</span>
               <select
-                defaultValue="instagram-feed"
+                value={previewPlatform}
+                onChange={(event) => setPreviewPlatform(event.target.value as PreviewPlatform)}
                 className="bg-transparent text-sm font-black text-slate-950 outline-none"
                 aria-label="Choose preview"
               >
-                <option value="instagram-feed">IG Feed</option>
+                {previewPlatformOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
               </select>
             </label>
 
