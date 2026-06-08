@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { getVisibleCaptionText } from "../../audio/sceneAudio";
 import { getVisualizerBarCount, getVisualizerBars, normalizeVisualizerType } from "../../audio/visualizer";
+import { legacyCreateVisualizerStyle } from "../../scene/visualizerStyle";
 import type { FormatRenderProps } from "../types";
 
 const frameRate = 60;
@@ -17,12 +18,32 @@ const trimHeadline = (headline: string) => headline
   .replace(/\s+/g, " ")
   .trim();
 
+const getHeadlineFontSize = (headline: string) => {
+  const length = trimHeadline(headline).length;
+  if (length > 42) return "clamp(28px, 8.6cqw, 48px)";
+  if (length > 28) return "clamp(30px, 10cqw, 56px)";
+  return "clamp(34px, 12.2cqw, 64px)";
+};
+
+const legacyCanvas = {
+  width: 360,
+  height: 450,
+  visualizerHeight: 90,
+};
+
+const toCanvasPercent = (value: number, axis: "x" | "y") => (
+  `${(value / (axis === "x" ? legacyCanvas.width : legacyCanvas.height)) * 100}%`
+);
+
 const brandMarkStyle: CSSProperties = {
-  width: 64,
-  height: 64,
+  position: "absolute",
+  top: toCanvasPercent(70, "y"),
+  left: "50%",
+  transform: "translateX(-50%)",
+  width: toCanvasPercent(120, "x"),
+  height: toCanvasPercent(48, "y"),
   objectFit: "contain",
   borderRadius: 16,
-  margin: "0 auto 18px",
 };
 
 export function VisualizerFormatRenderer({
@@ -38,28 +59,30 @@ export function VisualizerFormatRenderer({
   const activeCaption = scene.audio.status === "generated"
     ? scene.audio.captions.find((caption) => timeMs >= caption.startMs && timeMs <= caption.endMs)
     : null;
-  const type = normalizeVisualizerType("waveform-strip");
-  const count = getVisualizerBarCount(type, 36);
+  const visualizerStyle = scene.style.visualizer || legacyCreateVisualizerStyle;
+  const type = normalizeVisualizerType(visualizerStyle.type);
+  const count = getVisualizerBarCount(type, visualizerStyle.barCount);
+  const splitSpeakers = Boolean(visualizerStyle.splitSpeakers && activeCaption?.speaker);
   const bars = getVisualizerBars({
     type,
     count,
     frame,
-    height: 152,
+    height: legacyCanvas.visualizerHeight,
     scale: 1,
-    mirror: true,
+    mirror: visualizerStyle.mirror,
     audioLevel: analysisFrame !== null ? analysis?.levels[analysisFrame] : null,
     frequencyBands: analysisFrame !== null ? analysis?.bands[analysisFrame] : null,
     currentSpeaker: activeCaption?.speaker ?? null,
-    splitSpeakers: Boolean(activeCaption?.speaker),
-    sensitivity: 1.58,
-    heightScale: 0.96,
-    baseline: 14,
-    gain: 1.88,
-    compression: 2.4,
-    floor: scene.audio.status === "generated" ? 0.08 : 0,
-    ceiling: 0.96,
-    curve: "sqrt",
-    bandFocus: "voice",
+    splitSpeakers,
+    sensitivity: visualizerStyle.sensitivity,
+    heightScale: visualizerStyle.heightScale,
+    baseline: visualizerStyle.baseline,
+    gain: visualizerStyle.gain,
+    compression: visualizerStyle.compression,
+    floor: visualizerStyle.floor,
+    ceiling: visualizerStyle.ceiling,
+    curve: visualizerStyle.curve,
+    bandFocus: visualizerStyle.bandFocus,
     color: scene.style.visualizerColor,
     speaker2Color: scene.style.accentColor,
   });
@@ -80,17 +103,7 @@ export function VisualizerFormatRenderer({
         fontFamily: "Arial, Helvetica, sans-serif",
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          inset: "9% 6% 6%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          textAlign: "center",
-        }}
-      >
+      <div>
         {logoSource ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -99,42 +112,39 @@ export function VisualizerFormatRenderer({
             style={brandMarkStyle}
           />
         ) : (
-          <div
+          <p
             style={{
               ...brandMarkStyle,
               display: "grid",
               placeItems: "center",
-              background: textColor,
-              color: scene.style.backgroundColor,
+              margin: 0,
+              color: textColor,
               fontSize: 22,
               fontWeight: 900,
-              letterSpacing: 1,
+              letterSpacing: 0,
+              textAlign: "center",
+              textTransform: "uppercase",
             }}
           >
-            {scene.brand.name.slice(0, 2).toUpperCase()}
-          </div>
+            {scene.brand.name}
+          </p>
         )}
-        <p
-          style={{
-            margin: 0,
-            color: textColor,
-            fontSize: 22,
-            fontWeight: 900,
-            letterSpacing: 0,
-            textTransform: "uppercase",
-          }}
-        >
-          {scene.brand.name}
-        </p>
         <h2
           style={{
-            margin: "24px 0 0",
-            maxWidth: "96%",
+            position: "absolute",
+            top: toCanvasPercent(118, "y"),
+            left: toCanvasPercent(20, "x"),
+            width: toCanvasPercent(320, "x"),
+            minHeight: toCanvasPercent(120, "y"),
+            display: "grid",
+            placeItems: "center",
+            margin: 0,
             color: textColor,
-            fontSize: "clamp(30px, 7.2cqw, 72px)",
+            fontSize: getHeadlineFontSize(scene.creative.headline),
             fontWeight: 950,
             letterSpacing: 0,
-            lineHeight: 0.96,
+            lineHeight: 1.04,
+            textAlign: "center",
             textWrap: "balance",
             overflowWrap: "break-word",
           }}
@@ -143,39 +153,53 @@ export function VisualizerFormatRenderer({
         </h2>
         <div
           aria-hidden="true"
+          data-visualizer-kind="legacy-create-waveform-strip"
           style={{
+            position: "absolute",
+            top: toCanvasPercent(255, "y"),
+            left: 0,
+            width: "100%",
+            height: toCanvasPercent(90, "y"),
             display: "flex",
             alignItems: "center",
-            gap: 9,
-            height: "clamp(92px, 19cqw, 152px)",
-            margin: "40px -10% 0",
-            width: "120%",
+            justifyContent: "space-between",
+            gap: "0.56cqw",
           }}
         >
-          {bars.map((bar, index) => (
-            <div
-              key={index}
-              style={{
-                flex: 1,
-                minWidth: 9,
-                height: bar.height,
-                maxHeight: "100%",
-                borderRadius: 999,
-                background: bar.color,
-                opacity: bar.opacity,
-              }}
-            />
-          ))}
+          {bars.map((bar, index) => {
+            const barHeightPercent = Math.min(100, Math.max(0, (bar.height / legacyCanvas.visualizerHeight) * 100));
+            return (
+              <div
+                className={scene.audio.status === "generated" ? undefined : "wiggly-idle-bar wiggly-idle-bar-strong"}
+                data-visualizer-bar="true"
+                key={index}
+                style={{
+                  flex: 1,
+                  minWidth: "0.83cqw",
+                  height: `${barHeightPercent}%`,
+                  maxHeight: "100%",
+                  borderRadius: 999,
+                  background: bar.color,
+                  opacity: bar.opacity,
+                  animationDelay: scene.audio.status === "generated" ? undefined : `${index * 28}ms`,
+                }}
+              />
+            );
+          })}
         </div>
         {captionText ? (
           <p
             style={{
-              margin: "38px auto 0",
-              maxWidth: "84%",
+              position: "absolute",
+              top: toCanvasPercent(350, "y"),
+              left: toCanvasPercent(20, "x"),
+              width: toCanvasPercent(320, "x"),
+              margin: 0,
               color: scene.style.accentColor,
-              fontSize: "clamp(22px, 4.8cqw, 34px)",
+              fontSize: "clamp(20px, 6.7cqw, 34px)",
               fontWeight: 900,
               lineHeight: 1.08,
+              textAlign: "center",
               textWrap: "balance",
               overflowWrap: "break-word",
             }}
@@ -185,10 +209,13 @@ export function VisualizerFormatRenderer({
         ) : (
           <div
             style={{
+              position: "absolute",
+              top: toCanvasPercent(350, "y"),
+              left: "50%",
+              transform: "translateX(-50%)",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              marginTop: 38,
               padding: "16px 26px",
               borderRadius: 999,
               background: "#FFFFFF",
