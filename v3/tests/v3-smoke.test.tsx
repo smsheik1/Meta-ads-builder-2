@@ -58,6 +58,14 @@ const legacyIdleVisualizerSource = readFileSync("features/formats/visualizer/Leg
 const canvasInteractionStoreSource = readFileSync("features/create/canvasInteractionStore.ts", "utf8");
 const canvasKeyboardSource = readFileSync("features/create/useCanvasKeyboard.ts", "utf8");
 const globalsSource = readFileSync("app/globals.css", "utf8");
+const canvasInteractionStoreImports = canvasInteractionStoreSource
+  .split("\n")
+  .filter((line) => line.startsWith("import "));
+const forbiddenCreateInteractionLocalState = [
+  /\bconst\s*\[\s*(?:selectedSlot|selectedPreviewSlot)\s*,[^\]]+\]\s*=\s*useState\b/,
+  /\bconst\s*\[\s*canvasMode\s*,[^\]]+\]\s*=\s*useState\b/,
+  /\bconst\s*\[\s*(?:sceneLocks|canvasLocks|locks)\s*,[^\]]+\]\s*=\s*useState\b/,
+];
 assert.ok(createClientSource.includes("Audio preview syncs captions and visualizer"), "/create must expose an obvious audio preview control.");
 assert.ok(createClientSource.includes("controls"), "/create audio preview must use native playback controls.");
 assert.ok(createClientSource.includes("audioRef"), "/create audio preview must use the generated audio asset.");
@@ -91,9 +99,16 @@ assert.ok(createClientSource.includes("rerollFlashMs = 680"), "/create reroll sh
 assert.ok(createClientSource.includes("rerollFlash={rerollFlash}"), "/create phone preview must receive reroll shine state from the create flow.");
 assert.ok(canvasInteractionStoreSource.includes("create<CanvasInteractionState>"), "/create canvas interaction state must live in a tiny Zustand store.");
 assert.ok(canvasInteractionStoreSource.includes("Canvas interaction only"), "/create canvas store must document its interaction-only boundary.");
+assert.deepEqual(canvasInteractionStoreImports, ['import { create } from "zustand";'], "/create canvas interaction store must only import Zustand.");
 assert.ok(createClientSource.includes("useCanvasInteractionStore"), "/create must read canvas interaction state from the store.");
 assert.ok(!createClientSource.includes("useState<RenderSelectableSlot"), "/create must not keep selected canvas slot in local page state.");
 assert.ok(!createClientSource.includes("useState(createDefaultSceneLocks"), "/create must not keep canvas locks in local page state.");
+for (const forbiddenLocalStatePattern of forbiddenCreateInteractionLocalState) {
+  assert.ok(
+    !forbiddenLocalStatePattern.test(createClientSource),
+    "/create must not keep selected slot, canvas mode, or locks in local useState; use the canvas interaction store.",
+  );
+}
 assert.ok(createClientSource.includes("clearSelectedPreviewSlot()"), "/create must not restore scoped canvas selection after refresh because spacebar should full-reroll by default.");
 assert.ok(createClientSource.includes("previewSlotLockKey"), "/create preview selector must reuse the existing scene lock model.");
 assert.ok(createClientSource.includes('captions: "captionColor"'), "/create caption slot must lock/reroll caption color, not audio or caption text.");
