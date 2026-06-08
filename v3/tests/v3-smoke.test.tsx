@@ -102,6 +102,14 @@ assert.ok(createClientSource.includes("onTogglePreviewPlayback") && createClient
 assert.ok(createClientSource.includes("onSaveSelectedDesign") && createClientSource.includes("savedDesignItems.length"), "/create legacy action card save button must keep v3 saved-design hover behavior.");
 assert.ok(createClientSource.includes("Try another") && createClientSource.includes("onRerollScene"), "/create legacy action card must reroll through the v3 scene reroll path.");
 assert.ok(createClientSource.includes("Open in builder") && createClientSource.includes("Builder stays legacy-only"), "/create legacy action card may show builder affordance but must not link to a missing v3 builder route.");
+assert.ok(createClientSource.includes('data-create-creative-brief-card="legacy"'), "/create right rail must copy the original compact creative brief card look.");
+assert.ok(createClientSource.includes("getCreativeBriefHighlights"), "/create creative brief card must use a tiny offer/audience/hook summary before the full dump.");
+assert.ok(createClientSource.includes("setBrandDetailsOpen(true)"), "/create creative brief More button must open the full brand dump modal.");
+assert.ok(createClientSource.includes('data-brand-dump-modal="legacy"'), "/create full brand dump must use the original modal structure instead of a giant inline section.");
+assert.ok(createClientSource.includes("Images Firecrawl found"), "/create full brand dump modal must expose visual evidence from research.");
+assert.ok(createClientSource.includes("Useful claims"), "/create full brand dump modal must expose the strongest copywriting fuel.");
+assert.ok(createClientSource.includes("Raw website text"), "/create full brand dump modal must expose raw website text during development.");
+assert.ok(!createClientSource.includes('id="full-brand-dump"'), "/create full brand dump must not live as a long inline page section.");
 assert.ok(createClientSource.includes('data-create-share-card="v3"'), "/create share controls must stay separate from the copied legacy action card.");
 assert.ok(createClientSource.includes('data-create-audio-card="v3"'), "/create audio controls must stay separate from the copied legacy action card.");
 for (const forbiddenStoreImport of ["convex/", "_generated", "AdScene", "scene/types", "server"]) {
