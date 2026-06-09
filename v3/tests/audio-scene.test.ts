@@ -5,7 +5,9 @@ import {
   createCaptionsForVoiceover,
   createGeneratedSceneAudio,
   createVoiceoverLines,
+  getCaptionWindowText,
   getVisibleCaptionText,
+  MAX_CAPTION_WORDS_ON_SCREEN,
   updateGeneratedAudioCaptionText,
 } from "../features/audio/sceneAudio";
 import {
@@ -38,6 +40,16 @@ assert.ok(captions.length >= 2);
 assert.equal(getVisibleCaptionText(audio, 0.1), captions[0]!.text);
 assert.equal(getVisibleCaptionText(audio, 10), captions[0]!.text);
 assert.ok(getAdSceneDurationInFrames(scene) > 60 * 6);
+
+const longCaption = {
+  text: "My dev team says we cannot ship this mobile feature before the end of the month.",
+  startMs: 0,
+  endMs: 3000,
+};
+assert.equal(MAX_CAPTION_WORDS_ON_SCREEN, 7);
+assert.equal(getCaptionWindowText(longCaption, 0.1), "My dev team says we cannot ship");
+assert.equal(getCaptionWindowText(longCaption, 1.6), "this mobile feature before the end of");
+assert.equal(getCaptionWindowText(longCaption, 2.9), "the month.");
 
 const editedAudio = updateGeneratedAudioCaptionText(audio, 0, "ChatGPT, not ChatGP");
 assert.equal(editedAudio.status, "generated");

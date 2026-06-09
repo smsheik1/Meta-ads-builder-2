@@ -2,6 +2,7 @@ import type { AdScene, AdSceneAudio, AdSceneAudioAnalysis, AdSceneCaption } from
 
 export const PINNED_TTS_MODEL = "gemini-3.1-flash-tts-preview";
 export const UPLOADED_AUDIO_MODEL = "uploaded-audio";
+export const MAX_CAPTION_WORDS_ON_SCREEN = 7;
 
 const minimumAudioDurationMs = 4200;
 const maximumAudioDurationMs = 28000;
@@ -131,7 +132,30 @@ export const getVisibleCaptionText = (
     timeMs >= caption.startMs && timeMs <= caption.endMs
   ));
 
-  return current?.text || captions[0]?.text || "";
+  return current
+    ? getCaptionWindowText(current, timeSeconds)
+    : getCaptionWindowText(captions[0], captions[0]?.startMs ? captions[0].startMs / 1000 : 0);
+};
+
+export const getCaptionWindowText = (
+  caption: AdSceneCaption | undefined,
+  timeSeconds: number,
+) => {
+  if (!caption) return "";
+  const words = cleanText(caption.text).split(/\s+/).filter(Boolean);
+  if (words.length <= MAX_CAPTION_WORDS_ON_SCREEN) return cleanText(caption.text);
+
+  const chunks: string[] = [];
+  for (let index = 0; index < words.length; index += MAX_CAPTION_WORDS_ON_SCREEN) {
+    chunks.push(words.slice(index, index + MAX_CAPTION_WORDS_ON_SCREEN).join(" "));
+  }
+
+  const durationSeconds = Math.max(0.001, (caption.endMs - caption.startMs) / 1000);
+  const progress = Math.min(
+    0.999999,
+    Math.max(0, (timeSeconds - caption.startMs / 1000) / durationSeconds),
+  );
+  return chunks[Math.min(chunks.length - 1, Math.floor(progress * chunks.length))] || "";
 };
 
 export const updateGeneratedAudioCaptionText = (
