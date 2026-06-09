@@ -67,21 +67,21 @@ const uploadedAudio = createGeneratedSceneAudio({
   url: "https://example.com/uploaded.mp3",
   mimeType: "audio/mpeg",
   durationMs: 9000,
-  transcript: "uploaded-demo.mp3",
+  transcript: "Uploaded Deepgram caption",
   captions: [
     {
-      text: "Fake upload caption from ad copy",
+      text: "Uploaded Deepgram caption",
       startMs: 0,
       endMs: 9000,
     },
   ],
-  model: "uploaded-audio",
+  model: "deepgram-listen-smart-format-diarized",
   provider: "upload",
 });
 assert.equal(uploadedAudio.status, "generated");
 assert.equal(uploadedAudio.provider, "upload");
-assert.equal(uploadedAudio.model, "uploaded-audio");
-assert.equal(getVisibleCaptionText(uploadedAudio, 0.1), "");
+assert.equal(uploadedAudio.model, "deepgram-listen-smart-format-diarized");
+assert.equal(getVisibleCaptionText(uploadedAudio, 0.1), "Uploaded Deepgram caption");
 
 const quietDecision = explainVoiceVisualizerPresetFromAnalysis({
   fps: 30,
@@ -125,7 +125,7 @@ const uploadHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
   },
   timeSeconds: 0.1,
 }));
-assert.ok(!uploadHtml.includes("Fake upload caption from ad copy"));
+assert.ok(uploadHtml.includes("Uploaded Deepgram caption"));
 assert.ok(!uploadHtml.includes("Add audio for this ad"));
 
 console.log("audio-scene tests passed");

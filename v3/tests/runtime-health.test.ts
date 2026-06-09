@@ -48,7 +48,14 @@ assert.ok(
   "Runtime health must catch disabled Gemini and TTS flags.",
 );
 assert.ok(
-  healthSource.includes("secretNames") && !healthSource.includes("process.env.FIRECRAWL_API_KEY)"),
+  healthSource.includes("checkRequiredEnv(\"DEEPGRAM_API_KEY\")") &&
+    healthSource.includes("checkNotDisabled(\"DEEPGRAM_ENABLED\")"),
+  "Runtime health must require Deepgram transcription for uploaded audio captions.",
+);
+assert.ok(
+  healthSource.includes("secretNames") &&
+    healthSource.includes("\"DEEPGRAM_API_KEY\"") &&
+    !healthSource.includes("process.env.FIRECRAWL_API_KEY)"),
   "Runtime health must avoid printing secret values.",
 );
 assert.ok(

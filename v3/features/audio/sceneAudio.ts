@@ -115,7 +115,6 @@ export const createGeneratedSceneAudio = ({
 
 export const hasDisplayableCaptionTrack = (audio: AdSceneAudio) => (
   audio.status === "generated" &&
-  !(audio.provider === "upload" && audio.model === UPLOADED_AUDIO_MODEL) &&
   audio.captions.some((caption) => cleanText(caption.text))
 );
 
