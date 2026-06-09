@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   createDefaultCanvasInteractionSnapshot,
+  getCanvasCanRerollNow,
   getCanvasCanReroll,
   reduceCanvasInteractionState,
 } from "../features/create/canvasInteractionStore";
@@ -10,6 +11,7 @@ import {
 const idle = createDefaultCanvasInteractionSnapshot();
 
 assert.equal(getCanvasCanReroll(idle), true, "Spacebar should be allowed only in idle + paused.");
+assert.equal(typeof getCanvasCanRerollNow, "function", "Keyboard handlers need a live store reroll gate.");
 
 for (const modal of ["brand-dump", "dialogue", "captions"] as const) {
   const state = reduceCanvasInteractionState(idle, { type: "openModal", modal });
@@ -73,10 +75,30 @@ for (const { file, source } of createSources) {
 }
 
 const storeSource = readFileSync("features/create/canvasInteractionStore.ts", "utf8");
+const keyboardSource = readFileSync("features/create/useCanvasKeyboard.ts", "utf8");
+const overlaySource = readFileSync("app/create/CreatePreviewSelectionOverlay.tsx", "utf8");
+const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
+const canvasColumnSource = readFileSync("app/create/CreateCanvasColumn.tsx", "utf8");
+const createClientSource = readFileSync("app/create/CreateResearchClient.tsx", "utf8");
 const storeImports = storeSource
   .split("\n")
   .filter((line) => line.startsWith("import "));
 assert.deepEqual(storeImports, ['import { create } from "zustand";'], "Canvas interaction store must only import Zustand.");
+
+assert.ok(
+  keyboardSource.includes("getCanvasCanRerollNow()"),
+  "Spacebar handler must ask the store at keypress time, not from stale React render state.",
+);
+assert.ok(
+  overlaySource.includes("data-preview-selection-overlay") && overlaySource.includes("onClearSlot()"),
+  "Blank canvas overlay clicks must clear selected slot so spacebar returns to full-scene reroll.",
+);
+assert.ok(
+  previewChromeSource.includes("onClearSlot") &&
+    canvasColumnSource.includes("onClearPreviewSlot") &&
+    createClientSource.includes("slotCleared()"),
+  "Selected-slot clearing must flow through canvas interaction store actions.",
+);
 
 for (const forbiddenStoreReference of [
   "convex/",

@@ -120,8 +120,8 @@ assert.ok(canvasKeyboardSource.includes("isRerollSpacebarKey"), "/create must ro
 assert.ok(canvasKeyboardSource.includes('event.key === "Spacebar"') && canvasKeyboardSource.includes('event.code === "Space"'), "/create must accept common browser spacebar key variants.");
 assert.ok(canvasKeyboardSource.includes("isEditableShortcutTarget"), "/create must keep text editors protected while allowing intentional spacebar rerolls.");
 assert.ok(canvasKeyboardSource.includes('input, textarea, select, [contenteditable="true"], [contenteditable=""], [role="textbox"]'), "/create keyboard guard must block all normal editable targets.");
-assert.ok(canvasKeyboardSource.includes("useCanvasCanReroll"), "/create spacebar must ask the interaction store whether reroll is allowed.");
-assert.ok(canvasKeyboardSource.includes("!canReroll"), "/create spacebar must be blocked by deterministic interaction state.");
+assert.ok(canvasKeyboardSource.includes("getCanvasCanRerollNow"), "/create spacebar must ask the interaction store whether reroll is allowed at keypress time.");
+assert.ok(canvasKeyboardSource.includes("!getCanvasCanRerollNow()"), "/create spacebar must be blocked by deterministic interaction state.");
 assert.ok(!canvasKeyboardSource.includes("shortcutScopeActiveRef"), "/create spacebar must not depend on hidden pointer/focus history.");
 assert.ok(!canvasKeyboardSource.includes("targetIsInScope") && !canvasKeyboardSource.includes("isDocumentShortcutTarget"), "/create spacebar must not silently disappear when focus history drifts outside the editor.");
 assert.ok(canvasKeyboardSource.includes("editorScopeRef.current"), "/create spacebar must still require the editor root to be mounted.");
@@ -165,6 +165,7 @@ assert.ok(!createModuleSource.includes("const previewSlotLockKey"), "/create mus
 assert.ok(!createModuleSource.includes("const previewSlotLabels"), "/create must not hardcode format slot labels.");
 assert.ok(createModuleSource.includes("onChangePreviewSlotColor"), "/create preview selector must support old builder-style hover color changes.");
 assert.ok(createModuleSource.includes("slotSelected(slot)"), "/create canvas selection must stay sticky instead of toggling off on normal clicks.");
+assert.ok(createModuleSource.includes("slotCleared()") && previewChromeSource.includes("onClearSlot"), "/create blank canvas clicks must clear selected-slot reroll scope.");
 assert.ok(createModuleSource.includes("onChangePreviewBackgroundColor"), "/create preview selector must support background color changes.");
 assert.ok(createModuleSource.includes("Spacebar rerolls the"), "/create must tell users when spacebar is scoped to one selected part.");
 assert.ok(createModuleSource.includes('data-create-action-card="legacy"'), "/create right rail must copy the original /create generated-ad action card look.");
@@ -335,5 +336,9 @@ assert.ok(shareClientSource.includes('href="/create"') && shareClientSource.incl
 const remotionSource = readFileSync("remotion-entry/RemotionAdScene.tsx", "utf8");
 assert.ok(remotionSource.includes("AdRenderSurface"), "Remotion must render through the shared render surface.");
 assert.ok(remotionSource.includes("<Audio"), "Remotion must layer generated audio into the MP4.");
+const renderWorkerSource = readFileSync("scripts/render-worker.ts", "utf8");
+const renderJobsSource = readFileSync("convex/renderJobs.ts", "utf8");
+assert.ok(renderWorkerSource.includes("getWorkerRendererVersion"), "Render worker must version-lock claims to its own renderer build.");
+assert.ok(renderJobsSource.includes('q.field("rendererVersion")'), "Render jobs must not be claimable by stale renderer builds.");
 
 console.log("v3-smoke tests passed");

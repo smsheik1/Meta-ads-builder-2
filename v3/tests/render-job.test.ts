@@ -17,8 +17,24 @@ assert.ok(
   "Render worker must write completed MP4s back through Convex renderJobs.",
 );
 assert.ok(
+  workerSource.includes("getWorkerRendererVersion") &&
+  workerSource.includes("rendererVersion: getWorkerRendererVersion()"),
+  "Render worker must only claim jobs for its own renderer version.",
+);
+assert.ok(
   remotionSource.includes("@remotion/media") && remotionSource.includes("<Audio"),
   "Remotion render path must layer generated audio without changing the visual renderer.",
+);
+
+const renderJobsSource = readFileSync("convex/renderJobs.ts", "utf8");
+assert.ok(
+  renderJobsSource.includes("rendererVersion: v.string()"),
+  "Render job creation must require a renderer version from the client.",
+);
+assert.ok(
+  renderJobsSource.includes("rendererVersion,") &&
+  renderJobsSource.includes('q.field("rendererVersion")'),
+  "Render jobs must persist rendererVersion and claim by matching rendererVersion.",
 );
 
 console.log("render-job tests passed");

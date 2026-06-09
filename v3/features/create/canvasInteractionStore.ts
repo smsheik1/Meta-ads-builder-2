@@ -180,3 +180,7 @@ export const useCanvasCanReroll = () => useCanvasInteractionStoreBase(getCanvasC
 export const useCanvasActions = () => useCanvasInteractionStoreBase((state) => state.actions);
 export const useSelectedCanvasSlot = () => useCanvasInteractionStoreBase((state) => state.selectedSlot);
 export const useCanvasLocks = () => useCanvasInteractionStoreBase((state) => state.locks);
+
+export function getCanvasCanRerollNow() {
+  return getCanvasCanReroll(useCanvasInteractionStoreBase.getState());
+}

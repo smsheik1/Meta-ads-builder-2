@@ -81,6 +81,7 @@ export default defineSchema({
       v.literal("failed"),
     ),
     progress: v.number(),
+    rendererVersion: v.optional(v.string()),
     outputStorageId: v.optional(v.id("_storage")),
     error: v.optional(v.string()),
     createdAt: v.number(),
