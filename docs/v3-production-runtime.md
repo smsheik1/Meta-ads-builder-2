@@ -81,11 +81,11 @@ The health script checks:
 
 ## Non-Negotiables
 
-- Do not point v3 at the legacy `apps/web` Convex deployment.
+- Do not point v3 at a legacy Convex deployment.
 - Do not add a second renderer.
 - Do not make health checks create render jobs, research runs, share pages, or audio files.
 - Do not print secret values in scripts, logs, or test failures.
-- Keep v1 `/create` untouched while v3 is being hardened.
+- Keep legacy reference branches read-only while v3 is being hardened.
 
 ## Production Readiness Definition
 
