@@ -16,6 +16,7 @@
     "runtime:health": "npm run runtime:health -w @wiggly/v3",
     "smoke:research": "npm run smoke:research -w @wiggly/v3",
     "smoke:live": "npm run smoke:live -w @wiggly/v3",
+    "smoke:create": "npm run smoke:create -w @wiggly/v3",
     "render-worker": "npm run render-worker -w @wiggly/v3"
   },
   "overrides": {
