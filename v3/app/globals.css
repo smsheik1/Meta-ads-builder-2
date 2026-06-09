@@ -27,6 +27,15 @@ select {
   font: inherit;
 }
 
+@media (min-width: 1280px) and (max-height: 1080px) {
+  .create-desktop-fit-shell {
+    --create-desktop-fit-scale: clamp(0.78, calc((100vh - 2rem) / 1080), 1);
+    inline-size: calc(100% / var(--create-desktop-fit-scale));
+    transform: scale(var(--create-desktop-fit-scale));
+    transform-origin: top left;
+  }
+}
+
 .wiggly-idle-bar {
   animation: wigglyIdleBar 1.65s ease-in-out infinite alternate;
   transform-origin: center;

@@ -955,7 +955,7 @@ function ResearchConnected() {
   return (
     <div
       ref={createEditorScopeRef}
-      className="min-h-screen min-w-[1280px] overflow-x-auto bg-[#F7F4EA] px-3 py-4 font-sans text-slate-950 sm:px-6 md:px-10"
+      className="create-desktop-fit-shell min-h-screen min-w-[1280px] overflow-x-auto bg-[#F7F4EA] px-3 py-4 font-sans text-slate-950 sm:px-6 md:px-10"
       data-create-editor-scope="true"
     >
       <header className="mx-auto flex max-w-7xl items-center justify-between">

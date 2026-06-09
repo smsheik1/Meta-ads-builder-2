@@ -80,6 +80,8 @@ assert.ok(createModuleSource.includes("Audio preview syncs captions and visualiz
 assert.ok(createModuleSource.includes("controls"), "/create audio preview must use native playback controls.");
 assert.ok(createModuleSource.includes("audioRef"), "/create audio preview must use the generated audio asset.");
 assert.ok(createModuleSource.includes("setPreviewTimeSeconds"), "/create audio preview must sync the renderer time.");
+assert.ok(createClientSource.includes("create-desktop-fit-shell"), "/create desktop shell must scale as one unit on short Chrome viewports instead of cutting off at 100% zoom.");
+assert.ok(globalsSource.includes("--create-desktop-fit-scale") && globalsSource.includes("transform: scale(var(--create-desktop-fit-scale))"), "/create desktop fit scale must be defined in global CSS for short desktop viewports.");
 assert.ok(createModuleSource.includes("window.requestAnimationFrame"), "/create must run a smooth preview clock for the visualizer.");
 assert.ok(createModuleSource.includes('selectedScene.audio.status === "generated" && isAudioPlaying'), "/create must reserve the preview clock for generated audio.");
 assert.ok(createModuleSource.includes('motionMode={isAudioPlaying ? "audio" : "idle"}'), "/create must render paused generated-audio previews with the moving idle visualizer instead of a frozen audio frame.");
