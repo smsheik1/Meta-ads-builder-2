@@ -39,6 +39,7 @@ import type {
   StoredWebsiteResearchResponse,
   StoredWebsiteResearchResult,
 } from "@/features/research/types";
+import { getClientRendererVersion } from "@/features/render/rendererVersion";
 import type { AdScene } from "@/features/scene/types";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
 import { CreateActionCard } from "./CreateActionCard";
@@ -504,6 +505,10 @@ function ResearchConnected() {
     canvasActions.slotSelected(slot);
   };
 
+  const onClearPreviewSlot = () => {
+    canvasActions.slotCleared();
+  };
+
   const onTogglePreviewSlotLock = (slot: RenderSelectableSlot) => {
     if (!selectedScene) return;
     const slotDefinition = getSceneSelectableSlots(selectedScene).find((item) => item.slot === slot);
@@ -905,6 +910,7 @@ function ResearchConnected() {
     try {
       const job = await createRenderJob({
         anonymousId: getCurrentAnonymousId(),
+        rendererVersion: getClientRendererVersion(),
         scene: selectedScene,
       }) as { renderJobId: Id<"renderJobs"> };
       setRenderJobId(job.renderJobId);
@@ -998,6 +1004,7 @@ function ResearchConnected() {
               isAudioPlaying={isAudioPlaying}
               onChangePreviewBackgroundColor={onChangePreviewBackgroundColor}
               onChangePreviewSlotColor={onChangePreviewSlotColor}
+              onClearPreviewSlot={onClearPreviewSlot}
               onOpenAudioPanel={onOpenAudioPanel}
               onRerollScene={onRerollScene}
               onSelectPreviewSlot={onSelectPreviewSlot}

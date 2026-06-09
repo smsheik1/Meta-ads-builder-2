@@ -23,6 +23,7 @@ export function CreateCanvasColumn({
   onChangePreviewBackgroundColor,
   onChangePreviewSlotColor,
   onOpenAudioPanel,
+  onClearPreviewSlot,
   onRerollScene,
   onSelectPreviewSlot,
   onTogglePlayback,
@@ -43,6 +44,7 @@ export function CreateCanvasColumn({
   onChangePreviewBackgroundColor: (color: string) => void;
   onChangePreviewSlotColor: (slot: RenderSelectableSlot, color: string) => void;
   onOpenAudioPanel: () => void;
+  onClearPreviewSlot: () => void;
   onRerollScene: () => void;
   onSelectPreviewSlot: (slot: RenderSelectableSlot) => void;
   onTogglePlayback: () => void;
@@ -95,6 +97,7 @@ export function CreateCanvasColumn({
           slotColors={selectedScene ? getSlotColorsForScene(selectedScene) : undefined}
           backgroundColor={selectedScene ? getSceneFormatInteraction(selectedScene).getBackgroundColor(selectedScene) : "#fbfaf5"}
           onSelectSlot={onSelectPreviewSlot}
+          onClearSlot={onClearPreviewSlot}
           onToggleSlotLock={onTogglePreviewSlotLock}
           onChangeSlotColor={onChangePreviewSlotColor}
           onChangeBackgroundColor={onChangePreviewBackgroundColor}

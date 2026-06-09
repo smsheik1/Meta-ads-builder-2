@@ -5,6 +5,7 @@ import {
   getVisualizerBars,
   normalizeVisualizerType,
 } from "../../audio/visualizer";
+import { WIGGLY_FONT_STACK } from "../../render/fontStack";
 import { legacyCreateVisualizerStyle } from "../../scene/visualizerStyle";
 import type { FormatRenderProps } from "../types";
 import { LegacyIdleVisualizer } from "./LegacyIdleVisualizer";
@@ -152,7 +153,7 @@ export function VisualizerFormatRenderer({
         overflow: "hidden",
         background: scene.style.backgroundColor,
         color: textColor,
-        fontFamily: "Arial, Helvetica, sans-serif",
+        fontFamily: WIGGLY_FONT_STACK,
       }}
     >
       <div>

@@ -6,6 +6,7 @@ import { getCompositions, renderMedia } from "@remotion/renderer";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
+import { getWorkerRendererVersion } from "../features/render/rendererVersion";
 import type { AdScene } from "../features/scene/types";
 import { adSceneCompositionId } from "../remotion-entry/Root";
 
@@ -121,7 +122,9 @@ async function renderJob(client: ConvexHttpClient, serveUrl: string, job: Claime
 }
 
 async function runOnce(client: ConvexHttpClient, serveUrl: string) {
-  const job = await client.mutation(api.renderJobs.claimNext, {});
+  const job = await client.mutation(api.renderJobs.claimNext, {
+    rendererVersion: getWorkerRendererVersion(),
+  });
   if (!job) return false;
 
   try {
@@ -141,6 +144,7 @@ async function runOnce(client: ConvexHttpClient, serveUrl: string) {
 async function main() {
   await loadLocalEnv();
   const watch = process.argv.includes("--watch");
+  const rendererVersion = getWorkerRendererVersion();
   const client = new ConvexHttpClient(getConvexUrl());
   const serveUrl = await bundle({
     entryPoint: renderEntry,
@@ -148,6 +152,7 @@ async function main() {
   });
   await mkdir(outputDir, { recursive: true });
   await writeFile(path.join(outputDir, ".gitkeep"), "", { flag: "a" });
+  console.log(`Render worker ready for renderer ${rendererVersion}.`);
 
   do {
     const didWork = await runOnce(client, serveUrl);

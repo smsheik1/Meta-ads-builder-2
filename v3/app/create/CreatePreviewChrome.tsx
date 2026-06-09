@@ -97,6 +97,7 @@ export function PhonePreviewFrame({
   slotColors,
   backgroundColor,
   onSelectSlot,
+  onClearSlot,
   onToggleSlotLock,
   onChangeSlotColor,
   onChangeBackgroundColor,
@@ -118,6 +119,7 @@ export function PhonePreviewFrame({
   slotColors?: Partial<Record<RenderSelectableSlot, string>>;
   backgroundColor?: string;
   onSelectSlot?: (slot: RenderSelectableSlot) => void;
+  onClearSlot?: () => void;
   onToggleSlotLock?: (slot: RenderSelectableSlot) => void;
   onChangeSlotColor?: (slot: RenderSelectableSlot, color: string) => void;
   onChangeBackgroundColor?: (color: string) => void;
@@ -126,7 +128,7 @@ export function PhonePreviewFrame({
   const brandLogoUrl = scene?.brand.logoUrl || scene?.brand.faviconUrl || result?.brand.logoUrl || result?.brand.faviconUrl || "";
   const caption = scene?.creative.subheadline || "Add audio for this ad";
   const showPreviewAudioAction = Boolean((!scene || scene.audio.status !== "generated") && onOpenAudioPanel);
-  const canSelectSlots = Boolean(scene && selectableSlots?.length && lockedSlots && slotColors && backgroundColor && onSelectSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor);
+  const canSelectSlots = Boolean(scene && selectableSlots?.length && lockedSlots && slotColors && backgroundColor && onSelectSlot && onClearSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor);
   const feedPlatform = platform === "facebook-feed" || platform === "instagram-feed";
   const instagramFeed = platform === "instagram-feed";
   const storiesPlatform = platform === "stories";
@@ -168,7 +170,7 @@ export function PhonePreviewFrame({
           Add audio for this ad
         </button>
       ) : null}
-      {canSelectSlots && selectableSlots && lockedSlots && slotColors && backgroundColor && onSelectSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor ? (
+      {canSelectSlots && selectableSlots && lockedSlots && slotColors && backgroundColor && onSelectSlot && onClearSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor ? (
         <PreviewSelectionOverlay
           selectedSlot={selectedSlot}
           selectableSlots={selectableSlots}
@@ -176,6 +178,7 @@ export function PhonePreviewFrame({
           slotColors={slotColors}
           backgroundColor={backgroundColor}
           onSelectSlot={onSelectSlot}
+          onClearSlot={onClearSlot}
           onToggleSlotLock={onToggleSlotLock}
           onChangeSlotColor={onChangeSlotColor}
           onChangeBackgroundColor={onChangeBackgroundColor}

@@ -40,6 +40,10 @@ git pull --ff-only origin "$BRANCH"
 
 cd "$APP_DIR/v3"
 
+RENDERER_VERSION="${RENDERER_VERSION:-$(git rev-parse --short HEAD)}"
+export RENDERER_VERSION
+export NEXT_PUBLIC_RENDERER_VERSION="$RENDERER_VERSION"
+
 if [ -f package-lock.json ]; then
   npm ci
 else

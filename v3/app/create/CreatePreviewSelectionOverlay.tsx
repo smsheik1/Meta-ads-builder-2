@@ -12,6 +12,7 @@ export type PreviewSelectionOverlayProps = {
   slotColors: Partial<Record<RenderSelectableSlot, string>>;
   backgroundColor: string;
   onSelectSlot: (slot: RenderSelectableSlot) => void;
+  onClearSlot: () => void;
   onToggleSlotLock: (slot: RenderSelectableSlot) => void;
   onChangeSlotColor: (slot: RenderSelectableSlot, color: string) => void;
   onChangeBackgroundColor: (color: string) => void;
@@ -24,12 +25,20 @@ export function PreviewSelectionOverlay({
   slotColors,
   backgroundColor,
   onSelectSlot,
+  onClearSlot,
   onToggleSlotLock,
   onChangeSlotColor,
   onChangeBackgroundColor,
 }: PreviewSelectionOverlayProps) {
   return (
-    <div aria-label="Selectable ad parts" className="group/preview-selector absolute inset-0 z-30">
+    <div
+      aria-label="Selectable ad parts"
+      className="group/preview-selector absolute inset-0 z-30"
+      data-preview-selection-overlay="true"
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) onClearSlot();
+      }}
+    >
       {selectableSlots.map(({ slot, label, top, left, width, height }) => {
         const selected = selectedSlot === slot;
         const locked = Boolean(lockedSlots[slot]);

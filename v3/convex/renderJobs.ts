@@ -53,8 +53,9 @@ export const createFromScene: ReturnType<typeof mutation> = mutation({
   args: {
     anonymousId: v.string(),
     scene: v.any(),
+    rendererVersion: v.string(),
   },
-  handler: async (ctx, { anonymousId, scene }) => {
+  handler: async (ctx, { anonymousId, rendererVersion, scene }) => {
     const renderScene = assertShareableAdScene(scene);
     const now = Date.now();
     const sessionId = await ensureAnonymousSession(ctx, anonymousId);
@@ -74,6 +75,7 @@ export const createFromScene: ReturnType<typeof mutation> = mutation({
       sceneId,
       status: "queued",
       progress: 0,
+      rendererVersion,
       createdAt: now,
       updatedAt: now,
     });
@@ -129,12 +131,15 @@ export const workerReadiness: ReturnType<typeof query> = query({
 });
 
 export const claimNext: ReturnType<typeof mutation> = mutation({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    rendererVersion: v.string(),
+  },
+  handler: async (ctx, { rendererVersion }) => {
     const now = Date.now();
     const job = await ctx.db
       .query("renderJobs")
       .withIndex("by_status_and_updatedAt", (q) => q.eq("status", "queued"))
+      .filter((q) => q.eq(q.field("rendererVersion"), rendererVersion))
       .order("asc")
       .first();
 
