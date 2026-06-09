@@ -64,10 +64,15 @@ assert.ok(
 );
 const workerReadinessBlock = renderJobsSource
   .split("export const workerReadiness")[1]
-  ?.split("export const claimNext")[0] || "";
+  ?.split("export const workerHeartbeat")[0] || "";
 assert.ok(
   !/ctx\.db\.(insert|patch|delete)/.test(workerReadinessBlock),
   "workerReadiness must not mutate Convex data.",
+);
+assert.ok(
+  renderJobsSource.includes("workerHeartbeat") &&
+    renderJobsSource.includes("renderWorkers"),
+  "renderJobs must expose a worker heartbeat so runtime health can detect an offline renderer.",
 );
 assert.ok(runtimeDoc.includes("npm run runtime:health"));
 assert.ok(runtimeDoc.includes("Do not print secret values"));

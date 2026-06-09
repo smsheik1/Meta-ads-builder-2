@@ -34,6 +34,7 @@ export function CreateActionCard({
   renderDownloadUrl,
   renderErrorMessage,
   renderStatusLabel,
+  renderWorkerHealthy,
   saveError,
   savedDesignItems,
   savedDesignsOpen,
@@ -65,6 +66,7 @@ export function CreateActionCard({
   renderDownloadUrl: string;
   renderErrorMessage: string;
   renderStatusLabel: string;
+  renderWorkerHealthy: boolean | null;
   saveError: string;
   savedDesignItems: SavedAdSceneDesign[];
   savedDesignsOpen: boolean;
@@ -76,6 +78,9 @@ export function CreateActionCard({
   shareUrl: string;
   hasSelectedScene: boolean;
 }) {
+  const renderWorkerOffline = renderWorkerHealthy === false;
+  const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline;
+
   return (
     <section
       className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8"
@@ -109,8 +114,9 @@ export function CreateActionCard({
       <button
         type="button"
         onClick={onCreateRenderJob}
-        disabled={!hasSelectedScene || renderBusy}
+        disabled={renderButtonDisabled}
         className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+        title={renderWorkerOffline ? "Start npm run dev from the repo root to run the render worker." : "Download this ad as an MP4"}
       >
         {renderBusy ? (
           <Loader2 className="size-4 animate-spin" />
@@ -240,6 +246,12 @@ export function CreateActionCard({
       {renderBusy ? (
         <p className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 text-xs font-semibold leading-5 text-slate-500">
           Render worker is turning this frozen scene into an MP4.
+        </p>
+      ) : null}
+
+      {renderWorkerOffline ? (
+        <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-xs font-black leading-5 text-amber-800">
+          Render worker is offline. Start <span className="font-black">npm run dev</span> from the repo root before downloading videos.
         </p>
       ) : null}
 

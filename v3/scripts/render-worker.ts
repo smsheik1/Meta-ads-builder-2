@@ -1,4 +1,5 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { hostname } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { bundle } from "@remotion/bundler";
@@ -16,6 +17,7 @@ const v3Root = path.resolve(dirname, "..");
 const repoRoot = path.resolve(v3Root, "..");
 const renderEntry = path.join(v3Root, "remotion-entry", "index.ts");
 const outputDir = path.join(v3Root, "tmp", "renders");
+const heartbeatIntervalMs = 5000;
 
 type ClaimedRenderJob = {
   renderJobId: Id<"renderJobs">;
@@ -59,6 +61,25 @@ function getConvexUrl() {
 
 function serializeError(error: unknown) {
   return error instanceof Error ? error.message : String(error || "Render failed.");
+}
+
+async function wait(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function heartbeat(
+  client: ConvexHttpClient,
+  workerId: string,
+  rendererVersion: string,
+) {
+  try {
+    await client.mutation(api.renderJobs.workerHeartbeat, {
+      workerId,
+      rendererVersion,
+    });
+  } catch (error) {
+    console.warn(`Render worker heartbeat failed: ${serializeError(error)}`);
+  }
 }
 
 async function uploadMp4(client: ConvexHttpClient, filePath: string) {
@@ -122,9 +143,16 @@ async function renderJob(client: ConvexHttpClient, serveUrl: string, job: Claime
 }
 
 async function runOnce(client: ConvexHttpClient, serveUrl: string) {
-  const job = await client.mutation(api.renderJobs.claimNext, {
-    rendererVersion: getWorkerRendererVersion(),
-  });
+  let job = null;
+  try {
+    job = await client.mutation(api.renderJobs.claimNext, {
+      rendererVersion: getWorkerRendererVersion(),
+    });
+  } catch (error) {
+    console.warn(`Render worker could not claim a job: ${serializeError(error)}`);
+    return false;
+  }
+
   if (!job) return false;
 
   try {
@@ -145,6 +173,7 @@ async function main() {
   await loadLocalEnv();
   const watch = process.argv.includes("--watch");
   const rendererVersion = getWorkerRendererVersion();
+  const workerId = `${hostname()}-${process.pid}`;
   const client = new ConvexHttpClient(getConvexUrl());
   const serveUrl = await bundle({
     entryPoint: renderEntry,
@@ -153,12 +182,20 @@ async function main() {
   await mkdir(outputDir, { recursive: true });
   await writeFile(path.join(outputDir, ".gitkeep"), "", { flag: "a" });
   console.log(`Render worker ready for renderer ${rendererVersion}.`);
+  await heartbeat(client, workerId, rendererVersion);
+  const heartbeatTimer = setInterval(() => {
+    void heartbeat(client, workerId, rendererVersion);
+  }, heartbeatIntervalMs);
 
-  do {
-    const didWork = await runOnce(client, serveUrl);
-    if (!watch) break;
-    if (!didWork) await new Promise((resolve) => setTimeout(resolve, 3000));
-  } while (watch);
+  try {
+    do {
+      const didWork = await runOnce(client, serveUrl);
+      if (!watch) break;
+      if (!didWork) await wait(3000);
+    } while (watch);
+  } finally {
+    clearInterval(heartbeatTimer);
+  }
 }
 
 void main().catch((error) => {

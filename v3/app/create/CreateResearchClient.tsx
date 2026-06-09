@@ -154,6 +154,7 @@ function ResearchConnected() {
   const [showSlowResearchMessage, setShowSlowResearchMessage] = useState(false);
   const [renderJobId, setRenderJobId] = useState<Id<"renderJobs"> | null>(null);
   const renderJob = useQuery(api.renderJobs.getStatus, renderJobId ? { renderJobId } : "skip");
+  const renderWorkerReadiness = useQuery(api.renderJobs.workerReadiness, {});
   const [shareUrl, setShareUrl] = useState("");
   const [shareError, setShareError] = useState("");
   const [audioError, setAudioError] = useState("");
@@ -902,6 +903,12 @@ function ResearchConnected() {
 
   const onCreateRenderJob = async () => {
     if (!selectedScene) return;
+    if (renderWorkerReadiness && !renderWorkerReadiness.workerHealthy) {
+      setRenderStatus("error");
+      setRenderError("Render worker is offline. Start `npm run dev` from the repo root so downloads can render.");
+      return;
+    }
+
     setRenderStatus("loading");
     canvasActions.beginBusy("render");
     setRenderJobId(null);
@@ -923,12 +930,15 @@ function ResearchConnected() {
   };
 
   const currentRenderStatus = renderJob?.status || renderStatus;
+  const renderWorkerHealthy = renderWorkerReadiness?.workerHealthy ?? null;
   const renderProgress = renderJob?.progress ?? (renderStatus === "loading" ? 2 : 0);
   const renderDownloadUrl = renderJob?.downloadUrl || "";
   const renderStatusLabel = currentRenderStatus === "ready"
     ? "Video ready"
     : currentRenderStatus === "failed" || currentRenderStatus === "error"
       ? "Video render failed"
+      : renderWorkerHealthy === false
+        ? "Renderer offline"
       : currentRenderStatus === "queued" || currentRenderStatus === "claimed"
         ? "Queued for render"
         : currentRenderStatus === "rendering"
@@ -1044,6 +1054,7 @@ function ResearchConnected() {
                 renderDownloadUrl={renderDownloadUrl}
                 renderErrorMessage={renderJob?.error || renderError}
                 renderStatusLabel={renderStatusLabel}
+                renderWorkerHealthy={renderWorkerHealthy}
                 saveError={saveError}
                 savedDesignItems={savedDesignItems}
                 savedDesignsOpen={savedDesignsOpen}
