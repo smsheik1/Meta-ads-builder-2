@@ -6,6 +6,7 @@ import {
   normalizeVisualizerType,
 } from "../../audio/visualizer";
 import { WIGGLY_FONT_STACK } from "../../render/fontStack";
+import { useRenderAssetComponents } from "../../render/RenderAssetContext";
 import { legacyCreateVisualizerStyle } from "../../scene/visualizerStyle";
 import type { FormatRenderProps } from "../types";
 import { LegacyIdleVisualizer } from "./LegacyIdleVisualizer";
@@ -89,6 +90,7 @@ export function VisualizerFormatRenderer({
   scene,
   timeSeconds = 0,
 }: FormatRenderProps) {
+  const { Image } = useRenderAssetComponents();
   const frame = Math.max(0, Math.floor(timeSeconds * frameRate));
   const analysis = scene.audio.status === "generated" ? scene.audio.analysis : null;
   const smoothedAnalysis = getSmoothedAnalysisFrame(analysis, timeSeconds);
@@ -158,8 +160,7 @@ export function VisualizerFormatRenderer({
     >
       <div>
         {logoSource ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             alt=""
             src={logoSource}
             style={brandMarkStyle}
