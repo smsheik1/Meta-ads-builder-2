@@ -58,6 +58,8 @@ const createModuleSource = readdirSync("app/create")
   .join("\n");
 const createLeftColumnSource = readFileSync("app/create/CreateLeftColumn.tsx", "utf8");
 const createAudioCardSource = readFileSync("app/create/CreateAudioCard.tsx", "utf8");
+const createActionCardSource = readFileSync("app/create/CreateActionCard.tsx", "utf8");
+const createCaptionModalSource = readFileSync("app/create/CreateCaptionModal.tsx", "utf8");
 const createFormatRailSource = readFileSync("app/create/CreateFormatRail.tsx", "utf8");
 const shareClientSource = readFileSync("app/s/[slug]/ShareSceneClient.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
@@ -295,6 +297,10 @@ assert.ok(createModuleSource.includes("Generate this audio"), "/create must gene
 assert.ok(createModuleSource.includes("Upload your audio"), "/create must let users upload their own audio instead of forcing generated audio.");
 assert.ok(createModuleSource.includes('accept="audio/*"'), "/create upload control must only accept audio files.");
 assert.ok(createModuleSource.includes("onUploadAudio"), "/create uploaded audio must flow through a dedicated stored-audio attach handler.");
+assert.ok(createClientSource.includes("dialoguePanelOpen ?"), "/create must allow reopening the audio panel to replace audio after audio already exists.");
+assert.ok(!createClientSource.includes("dialoguePanelOpen && !hasGeneratedAudio"), "/create must not hide the audio replacement modal behind existing audio.");
+assert.ok(createActionCardSource.includes("Replace audio") && createActionCardSource.includes("onOpenAudioPanel"), "/create action card must expose a replace-audio path after audio exists.");
+assert.ok(createCaptionModalSource.includes("No editable captions yet.") && createCaptionModalSource.includes("Replace audio"), "/create caption editor must not dead-end when old audio has no Deepgram captions.");
 assert.ok(createModuleSource.includes("max-w-[680px]") && createModuleSource.includes("max-w-[900px]"), "/create audio chooser must stay compact before scripts exist and only expand for script editing.");
 assert.ok(!createModuleSource.includes("Two people talking about this product"), "/create audio chooser must not over-explain after the user already clicked Add audio.");
 assert.ok(!createModuleSource.includes("No options yet"), "/create audio chooser must not show dead empty-state filler.");

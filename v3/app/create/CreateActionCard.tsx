@@ -8,6 +8,7 @@ import {
   Loader2,
   Play,
   Shuffle,
+  Upload,
 } from "lucide-react";
 import type { SavedAdSceneDesign } from "@/features/create/savedDesigns";
 import { previewPlatformOptions, type PreviewPlatform } from "./CreatePreviewChrome";
@@ -20,6 +21,7 @@ export function CreateActionCard({
   isAudioPlaying,
   onCreateRenderJob,
   onCreateShareLink,
+  onOpenAudioPanel,
   onOpenCaptionEditor,
   onOpenSavedDesign,
   onSaveSelectedDesign,
@@ -49,6 +51,7 @@ export function CreateActionCard({
   isAudioPlaying: boolean;
   onCreateRenderJob: () => void;
   onCreateShareLink: () => void;
+  onOpenAudioPanel: () => void;
   onOpenCaptionEditor: () => void;
   onOpenSavedDesign: (design: SavedAdSceneDesign) => void;
   onPreviewPlatformChange: (platform: PreviewPlatform) => void;
@@ -272,14 +275,25 @@ export function CreateActionCard({
         </button>
         <button
           type="button"
-          disabled
-          className="flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition disabled:cursor-not-allowed disabled:opacity-40"
-          title="Builder stays legacy-only while v3 /create is stabilized."
+          onClick={onOpenAudioPanel}
+          disabled={!hasSelectedScene}
+          className="flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+          title={hasGeneratedAudio ? "Replace or rewrite this ad's audio" : "Add audio to this ad"}
         >
-          Open in builder
-          <ArrowRight className="size-4" />
+          <Upload className="size-4" />
+          {hasGeneratedAudio ? "Replace audio" : "Add audio"}
         </button>
       </div>
+
+      <button
+        type="button"
+        disabled
+        className="mt-2 flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white opacity-40"
+        title="Builder stays legacy-only until v3 gets a dedicated editor route"
+      >
+        Open in builder
+        <ArrowRight className="size-4" />
+      </button>
     </section>
   );
 }

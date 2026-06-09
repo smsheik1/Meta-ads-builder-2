@@ -1,19 +1,26 @@
 "use client";
 
-import { AlertTriangle, Type, X } from "lucide-react";
+import { AlertTriangle, Type, Upload, X } from "lucide-react";
 import type { AdSceneCaption } from "@/features/scene/types";
 
 export function CreateCaptionModal({
   captions,
   hasEmptyEditedCaption,
   onClose,
+  onOpenAudioPanel,
   onUpdateCaptionText,
 }: {
   captions: AdSceneCaption[];
   hasEmptyEditedCaption: boolean;
   onClose: () => void;
+  onOpenAudioPanel: () => void;
   onUpdateCaptionText: (captionIndex: number, text: string) => void;
 }) {
+  const openAudioPanel = () => {
+    onClose();
+    onOpenAudioPanel();
+  };
+
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/45 px-6 py-8">
       <section className="flex max-h-[84vh] w-full max-w-2xl flex-col rounded-[28px] border border-slate-200 bg-white shadow-2xl shadow-slate-950/25">
@@ -59,8 +66,19 @@ export function CreateCaptionModal({
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl bg-slate-50 px-4 py-5 text-sm font-bold text-slate-500">
-              This audio has no editable captions yet.
+            <div className="rounded-2xl bg-slate-50 px-4 py-5">
+              <p className="text-sm font-black text-slate-700">No editable captions yet.</p>
+              <p className="mt-1 text-sm font-bold leading-6 text-slate-500">
+                Replace this audio once and Wiggly will transcribe it with Deepgram.
+              </p>
+              <button
+                type="button"
+                onClick={openAudioPanel}
+                className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-2 text-sm font-black text-white transition hover:bg-slate-800"
+              >
+                <Upload className="size-4" />
+                Replace audio
+              </button>
             </div>
           )}
         </div>
