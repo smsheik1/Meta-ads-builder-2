@@ -2,19 +2,17 @@
 import {
   AudioLines,
   Bookmark,
-  Battery,
   ChevronUp,
+  Captions,
   Heart,
   MessageCircle,
   MoreHorizontal,
   Play,
   Send,
   Share2,
-  Signal,
   Square,
   ThumbsUp,
   VolumeX,
-  Wifi,
 } from "lucide-react";
 import type {
   FormatSelectableSlotDefinition,
@@ -26,6 +24,7 @@ import { AdRenderSurface } from "@/features/render/AdRenderSurface";
 import type { AdScene } from "@/features/scene/types";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
 import { PreviewSelectionOverlay } from "./CreatePreviewSelectionOverlay";
+import { BrandAvatar, StatusBar } from "./CreatePreviewChromeParts";
 import { createStarterPlaceholderScene } from "./createStarterScene";
 import { toPlaceholderPercent } from "./createPreviewGeometry";
 
@@ -39,45 +38,6 @@ export const previewPlatformOptions: Array<{ label: string; value: PreviewPlatfo
 ];
 
 const cx = (...classes: Array<string | false | null | undefined>) => classes.filter(Boolean).join(" ");
-function BrandAvatar({
-  logoUrl,
-  brandName,
-  sizeClass = "size-12",
-}: {
-  brandName: string;
-  logoUrl?: string | null;
-  sizeClass?: string;
-}) {
-  return (
-    <div className={`${sizeClass} grid shrink-0 place-items-center rounded-full border-2 border-fuchsia-500 bg-white p-1 shadow-[inset_0_0_0_2px_rgba(249,115,22,0.55)]`}>
-      {logoUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          alt=""
-          className="size-full rounded-full object-contain"
-          src={logoUrl}
-        />
-      ) : (
-        <span className="grid size-full place-items-center rounded-full bg-slate-950 text-xs font-black text-white">
-          {brandName.slice(0, 1).toUpperCase()}
-        </span>
-      )}
-    </div>
-  );
-}
-
-function StatusBar({ isDark = true }: { isDark?: boolean }) {
-  return (
-    <div className={cx("flex items-center justify-between text-[12px] font-black", isDark ? "text-white" : "text-slate-900")}>
-      <span>9:41</span>
-      <div className="flex items-center gap-1.5">
-        <Signal className="size-3.5" strokeWidth={2.5} />
-        <Wifi className="size-3.5" strokeWidth={2.5} />
-        <Battery className="size-4" strokeWidth={2.5} />
-      </div>
-    </div>
-  );
-}
 
 export function PhonePreviewFrame({
   scene,
@@ -87,7 +47,9 @@ export function PhonePreviewFrame({
   rerollFlash = null,
   timeSeconds,
   onOpenAudioPanel,
+  onOpenCaptionEditor,
   onTogglePlayback,
+  captionsReady = false,
   previewReady = false,
   isAudioPlaying = false,
   placeholderVariantIndex = 0,
@@ -109,7 +71,9 @@ export function PhonePreviewFrame({
   rerollFlash?: RenderFlashState | null;
   timeSeconds: number;
   onOpenAudioPanel?: () => void;
+  onOpenCaptionEditor?: () => void;
   onTogglePlayback?: () => void;
+  captionsReady?: boolean;
   previewReady?: boolean;
   isAudioPlaying?: boolean;
   placeholderVariantIndex?: number;
@@ -378,19 +342,35 @@ export function PhonePreviewFrame({
         </div>
       ) : null}
 
-      <button
-        type="button"
-        data-preview-play-overlay={previewFrameId}
-        onClick={onTogglePlayback}
-        disabled={!previewReady || !onTogglePlayback}
+      <div
         className={cx(
-          "absolute left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-2xl bg-slate-950/95 px-5 py-3 text-sm font-black text-white shadow-2xl shadow-slate-950/30 transition hover:-translate-x-1/2 hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50",
+          "absolute left-1/2 z-40 flex -translate-x-1/2 items-center gap-2",
           youtubePlatform ? "bottom-1" : "bottom-[86px]",
         )}
+        data-preview-control-overlay={previewFrameId}
       >
-        {isAudioPlaying ? <Square className="size-4 fill-current" /> : <Play className="size-4 fill-current" />}
-        {isAudioPlaying ? "Stop preview" : "Play this ad"}
-      </button>
+        <button
+          type="button"
+          data-preview-play-overlay={previewFrameId}
+          onClick={onTogglePlayback}
+          disabled={!previewReady || !onTogglePlayback}
+          className="flex items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-2xl shadow-slate-950/25 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isAudioPlaying ? <Square className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
+          {isAudioPlaying ? "Stop preview" : "Play this ad"}
+        </button>
+        {captionsReady && onOpenCaptionEditor ? (
+          <button
+            type="button"
+            onClick={onOpenCaptionEditor}
+            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-2xl shadow-slate-950/12 transition hover:-translate-y-0.5 hover:bg-slate-50 hover:text-slate-950"
+            title="Edit captions"
+            aria-label="Edit captions"
+          >
+            <Captions className="h-5 w-5" />
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -1016,10 +1016,12 @@ function ResearchConnected() {
               onChangePreviewSlotColor={onChangePreviewSlotColor}
               onClearPreviewSlot={onClearPreviewSlot}
               onOpenAudioPanel={onOpenAudioPanel}
+              onOpenCaptionEditor={openCaptionPanel}
               onRerollScene={onRerollScene}
               onSelectPreviewSlot={onSelectPreviewSlot}
               onTogglePlayback={onTogglePreviewPlayback}
               onTogglePreviewSlotLock={onTogglePreviewSlotLock}
+              hasGeneratedAudio={hasGeneratedAudio}
               placeholderVariantIndex={placeholderVariantIndex}
               playableAudioUrl={playableAudioUrl}
               previewPlatform={previewPlatform}
