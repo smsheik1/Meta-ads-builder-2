@@ -234,6 +234,7 @@ assert.ok(!createModuleSource.includes("const previewSelectableSlots"), "/create
 assert.ok(createModuleSource.includes("data-preview-selectable-slot"), "/create selector must expose selectable slots for QA and future format tests.");
 assert.ok(createModuleSource.includes('type="color"'), "/create selector must expose the old hover color picker affordance.");
 assert.ok(createModuleSource.includes("data-preview-background-color"), "/create selector must expose a background color picker.");
+assert.ok(createModuleSource.includes("pointer-events-none") && createModuleSource.includes("group-hover/preview-selector:pointer-events-auto"), "/create hidden color controls must not intercept normal component selection clicks.");
 assert.ok(createModuleSource.includes("size-14"), "/create selector lock bubble must keep the large old /builder lock affordance.");
 assert.ok(!createModuleSource.includes("ring-2 ring-slate-950/35"), "/create selected slot must not show the heavy old bounding-box outline.");
 assert.ok(!createModuleSource.includes('selected ? "opacity-70"'), "/create selected slot controls must not stay visible after clicking outside the canvas.");

@@ -68,8 +68,8 @@ export function PreviewSelectionOverlay({
               type="button"
               className={`absolute right-1 top-1 z-40 grid size-14 place-items-center rounded-full border-2 shadow-xl transition duration-150 hover:scale-110 focus-visible:scale-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-400/25 ${
                 locked
-                  ? "border-slate-950 bg-slate-950 text-white opacity-80 shadow-slate-950/30 ring-2 ring-[#00D6B8]/70 hover:opacity-100 group-hover:opacity-100"
-                  : "border-slate-300 bg-white/95 text-slate-800 opacity-0 shadow-slate-950/20 hover:border-slate-950 hover:bg-white hover:opacity-100 group-hover:opacity-100 focus-visible:opacity-100"
+                  ? "pointer-events-auto border-slate-950 bg-slate-950 text-white opacity-80 shadow-slate-950/30 ring-2 ring-[#00D6B8]/70 hover:opacity-100 group-hover:opacity-100"
+                  : "pointer-events-none border-slate-300 bg-white/95 text-slate-800 opacity-0 shadow-slate-950/20 hover:border-slate-950 hover:bg-white hover:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100"
               }`}
               aria-label={locked ? `Unlock ${label}` : `Lock ${label}`}
               aria-pressed={locked}
@@ -81,7 +81,7 @@ export function PreviewSelectionOverlay({
               {locked ? <Lock className="size-6" strokeWidth={3} /> : <Unlock className="size-6" strokeWidth={2.5} />}
             </button>
             <label
-              className="absolute left-2 top-1/2 z-40 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover:opacity-100 focus-within:opacity-100"
+              className="pointer-events-none absolute left-2 top-1/2 z-40 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover:pointer-events-auto group-hover:opacity-100 focus-within:pointer-events-auto focus-within:opacity-100"
               title={`${label} color`}
               onClick={(event) => event.stopPropagation()}
             >
@@ -101,7 +101,11 @@ export function PreviewSelectionOverlay({
         );
       })}
       <label
-        className="absolute bottom-3 left-3 z-40 flex size-11 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 opacity-0 shadow-lg transition hover:bg-white group-hover/preview-selector:opacity-100 focus-within:opacity-100"
+        className={`absolute bottom-3 left-3 z-40 flex size-11 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 shadow-lg transition hover:bg-white ${
+          selectedSlot
+            ? "pointer-events-none opacity-0"
+            : "pointer-events-none opacity-0 group-hover/preview-selector:pointer-events-auto group-hover/preview-selector:opacity-100 focus-within:pointer-events-auto focus-within:opacity-100"
+        }`}
         title="Background color"
         data-preview-background-color="true"
         onClick={(event) => event.stopPropagation()}
