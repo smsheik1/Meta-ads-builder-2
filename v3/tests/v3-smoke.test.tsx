@@ -260,6 +260,8 @@ assert.ok(visualizerRenderSource.includes("top: toCanvasPercent(70, \"y\")") && 
 assert.ok(visualizerRenderSource.includes("top: toCanvasPercent(118, \"y\")") && visualizerRenderSource.includes("left: toCanvasPercent(20, \"x\")"), "/create placeholder and generated headline must share the same renderer slot.");
 assert.ok(createModuleSource.includes("See the angle hiding on your website."), "/create empty placeholder headline must use the shorter old-style copy that does not collide with the visualizer.");
 assert.ok(visualizerRenderSource.includes("getHeadlineFontSize"), "/create placeholder and generated headline sizing must stay centralized in the shared renderer.");
+assert.ok(!visualizerRenderSource.includes("clamp("), "/create shared visualizer renderer must not cap ad text with absolute px clamps because 1080px MP4 renders would look smaller than the 360px canvas preview.");
+assert.ok(visualizerRenderSource.includes('return "10.6cqw"') && visualizerRenderSource.includes('fontSize: "6.7cqw"'), "/create shared visualizer text sizes must stay canvas-relative so preview and MP4 scale together.");
 assert.ok(visualizerRenderSource.includes('overflow: "hidden"'), "/create placeholder and generated headline must not spill into the visualizer.");
 assert.ok(visualizerRenderSource.includes("top: toCanvasPercent(255, \"y\")") && visualizerRenderSource.includes('height: toCanvasPercent(90, "y")'), "/create placeholder and generated visualizer must share the same renderer slot.");
 assert.ok(visualizerRenderSource.includes("top: toCanvasPercent(336, \"y\")") && visualizerRenderSource.includes("Add audio for this ad"), "/create placeholder and generated no-audio action must share the same renderer slot.");

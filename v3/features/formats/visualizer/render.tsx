@@ -27,9 +27,9 @@ const trimHeadline = (headline: string) => headline
 
 const getHeadlineFontSize = (headline: string) => {
   const length = trimHeadline(headline).length;
-  if (length > 42) return "clamp(24px, 7.4cqw, 40px)";
-  if (length > 28) return "clamp(28px, 8.8cqw, 48px)";
-  return "clamp(32px, 10.6cqw, 56px)";
+  if (length > 42) return "7.4cqw";
+  if (length > 28) return "8.8cqw";
+  return "10.6cqw";
 };
 
 const legacyCanvas = {
@@ -50,7 +50,7 @@ const brandMarkStyle: CSSProperties = {
   width: toCanvasPercent(120, "x"),
   height: toCanvasPercent(48, "y"),
   objectFit: "contain",
-  borderRadius: 16,
+  borderRadius: "4.4cqw",
 };
 
 const lerp = (from: number, to: number, amount: number) => (
@@ -172,7 +172,7 @@ export function VisualizerFormatRenderer({
               placeItems: "center",
               margin: 0,
               color: textColor,
-              fontSize: 22,
+              fontSize: "6.1cqw",
               fontWeight: 900,
               letterSpacing: 0,
               textAlign: "center",
@@ -277,7 +277,7 @@ export function VisualizerFormatRenderer({
               placeItems: "center",
               margin: 0,
               color: scene.style.accentColor,
-              fontSize: "clamp(20px, 6.7cqw, 34px)",
+              fontSize: "6.7cqw",
               fontWeight: 900,
               lineHeight: 1.08,
               textAlign: "center",
@@ -299,11 +299,11 @@ export function VisualizerFormatRenderer({
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              padding: "13px 24px",
+              padding: "3.6cqw 6.7cqw",
               borderRadius: 999,
               background: "#FFFFFF",
               color: "#52627A",
-              fontSize: "clamp(14px, 3.2cqw, 18px)",
+              fontSize: "3.2cqw",
               fontWeight: 900,
               whiteSpace: "nowrap",
               boxShadow: "0 18px 45px rgba(15,23,42,0.08)",
@@ -318,11 +318,11 @@ export function VisualizerFormatRenderer({
                 gap: 3,
               }}
             >
-              {[9, 15, 22, 15, 9].map((height, index) => (
+              {["2.5cqw", "4.2cqw", "6.1cqw", "4.2cqw", "2.5cqw"].map((height, index) => (
                 <span
                   key={`${height}-${index}`}
                   style={{
-                    width: 3,
+                    width: "0.83cqw",
                     height,
                     borderRadius: 999,
                     background: "#52627A",
@@ -342,7 +342,7 @@ export function VisualizerFormatRenderer({
           bottom: toCanvasPercent(18, "y"),
           margin: 0,
           color: "#0F172A",
-          fontSize: "clamp(8px, 2.8cqw, 10px)",
+          fontSize: "2.8cqw",
           fontWeight: 900,
           letterSpacing: "0.18em",
           lineHeight: 1,
