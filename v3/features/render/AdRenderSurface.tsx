@@ -10,6 +10,7 @@ export type AdRenderSurfaceProps = {
   motionMode?: RenderMotionMode;
   rerollFlash?: RenderFlashState | null;
   timeSeconds?: number;
+  fontFaceCss?: string;
   className?: string;
   style?: CSSProperties;
 };
@@ -20,6 +21,7 @@ export function AdRenderSurface({
   motionMode = "auto",
   rerollFlash = null,
   timeSeconds = 0,
+  fontFaceCss = WIGGLY_FONT_FACE_CSS,
   className,
   style,
 }: AdRenderSurfaceProps) {
@@ -42,7 +44,7 @@ export function AdRenderSurface({
         ...style,
       }}
     >
-      <style>{WIGGLY_FONT_FACE_CSS}</style>
+      <style>{fontFaceCss}</style>
       <FormatRenderer
         scene={scene}
         mode={mode}
