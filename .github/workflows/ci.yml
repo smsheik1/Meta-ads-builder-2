@@ -9,7 +9,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_V3_CONVEX_URL: ${{ vars.NEXT_PUBLIC_V3_CONVEX_URL || 'https://wry-viper-639.convex.cloud' }}
+      NEXT_PUBLIC_V3_CONVEX_SITE_URL: ${{ vars.NEXT_PUBLIC_V3_CONVEX_SITE_URL || 'https://wry-viper-639.convex.site' }}
+      CREATE_SMOKE_BASE_URL: http://localhost:3020
 
     steps:
       - name: Checkout
@@ -26,3 +30,29 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Smoke /create
+        run: |
+          set -euo pipefail
+
+          npm run start > /tmp/wiggly-v3-start.log 2>&1 &
+          SERVER_PID=$!
+
+          cleanup() {
+            kill "$SERVER_PID" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          for _ in {1..60}; do
+            if curl -fsS "$CREATE_SMOKE_BASE_URL/create" >/dev/null; then
+              npm run smoke:create
+              exit 0
+            fi
+            sleep 1
+          done
+
+          cat /tmp/wiggly-v3-start.log
+          exit 1
