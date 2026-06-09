@@ -1,23 +1,26 @@
 # Wiggly
 
-Wiggly is a focused creative studio for building visualizer-style Meta ads. It is designed for marketers who need to turn hooks, voiceover audio, captions, intro images, templates, and platform previews into export-ready MP4 ads without opening a video editor.
+Wiggly turns a brand URL into visualizer-style video ads that can be previewed,
+rerolled, saved, shared, and exported without opening a video editor.
 
-## What It Does
+## Current App
 
-- Build ad creatives for feed, reels, and stories placements.
-- Generate and refresh marketer-friendly hooks/headlines.
-- Add audio, generated scripts, speaker-aware captions, visualizers, intro images, logos, buttons, and templates.
-- Preview ads inside platform-style frames.
-- Export MP4s through a Remotion server renderer for stable 60fps output.
+The active product lives in `v3/`.
 
-## Architecture
+- Frontend: Next.js App Router
+- Backend/data: Convex
+- Video: Remotion
+- Audio/captions: Gemini TTS, uploaded audio, Deepgram transcription
+- Interaction state: small Zustand canvas store
 
-- `src/App.tsx` owns the current editor shell and most orchestration.
-- `src/components/` contains reusable editor, preview, text, platform, and properties UI.
-- `src/lib/` contains shared product logic such as export snapshots, history, audio library, rich text, fonts, and visualizer math.
-- `src/remotion/` contains the server-rendered MP4 composition.
-- `server.ts` serves the app, API routes, transcription/script generation, media handling, and Remotion export.
-- `.github/workflows/` handles CI and Oracle deployment.
+The legacy Vite/Express `/create` and `/builder` code was archived before
+deletion at:
+
+- Branch: `legacy/v1-create-builder-reference`
+- Tag: `legacy-v1-create-builder-reference`
+
+Use that branch only as a read-only reference for old visual taste or behavior.
+Do not ship from it.
 
 ## Local Development
 
@@ -26,64 +29,56 @@ npm install
 npm run dev
 ```
 
-The Vite client runs on `http://localhost:3000` and the API server runs on `http://localhost:3001` behind the dev proxy.
+The v3 app runs at:
 
-### Web Engine
-
-The shared Wiggly engine lives in `apps/web` as a Next.js workspace backed by
-Convex for saved designs, share snapshots, render tickets, and API routes.
-The desktop product route is the legacy-looking `/create` experience.
-
-```bash
-npm run dev:legacy
-npm run dev:web
-npm run test:web-engine
+```text
+http://localhost:3020/create
 ```
 
-- `npm run dev` still runs the legacy Vite/Express app.
-- `npm run dev:legacy` runs the legacy Vite/Express app on `http://localhost:3010` with the API on `http://localhost:3001`.
-- `npm run dev:web` runs the new Next app on `http://localhost:3010`.
-- `http://localhost:3010/create` is the definitive desktop product surface.
-- `apps/web` keeps the shared AdScene, Convex, share, and render engine routes.
-
-## Environment Variables
-
-Create a local `.env` or `.env.local` file with:
+## Useful Commands
 
 ```bash
-GEMINI_API_KEY=your_gemini_key
-GROQ_API_KEY=your_groq_key
-OPENROUTER_API_KEY=your_openrouter_key
-DEEPGRAM_API_KEY=your_deepgram_key
-VITE_SUPABASE_URL=https://howclqjohkrvcdarajur.supabase.co
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_URL=https://howclqjohkrvcdarajur.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your_server_only_service_role_key
-CONVEX_DEPLOYMENT=dev:intent-capybara-375
-CONVEX_URL=https://intent-capybara-375.convex.cloud
-NEXT_PUBLIC_CONVEX_URL=https://intent-capybara-375.convex.cloud
-NEXT_PUBLIC_CONVEX_SITE_URL=https://intent-capybara-375.convex.site
-CONVEX_DEPLOY_KEY=your_server_only_convex_deploy_key
-NODE_ENV=development
-```
-
-If Supabase env vars are missing, Wiggly share links fall back to local browser-only previews. Hosted links that friends can open require browser read keys (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) plus the server-only `SUPABASE_SERVICE_ROLE_KEY` for uploads.
-
-Do not commit real API keys. Never use a `VITE_` prefix for the Supabase service role key.
-
-Oracle deploy requires `CONVEX_DEPLOY_KEY`, `CONVEX_URL`, and `NEXT_PUBLIC_CONVEX_URL`.
-The deploy script runs `npx convex deploy` before building the app.
-
-## Quality Checks
-
-```bash
-npm run lint
+npm run test
 npm run build
-npm test
+npm run typecheck
+npm run runtime:health
+npm run smoke:live
 ```
 
-`npm run lint` currently runs TypeScript validation. Playwright tests live in `tests/`.
+All root commands delegate to `@wiggly/v3`.
 
-## Product Memory
+## Environment
 
-Deferred technical and product decisions live in `ROADMAP.md`. Add future improvements there when something is intentionally pushed to v2.
+Use `v3/.env.local` for local v3 development. Required production secrets are
+documented in `docs/v3-production-runtime.md`.
+
+Common local keys:
+
+```bash
+NEXT_PUBLIC_CONVEX_URL=
+NEXT_PUBLIC_CONVEX_SITE_URL=
+CONVEX_DEPLOY_KEY=
+FIRECRAWL_API_KEY=
+GEMINI_API_KEY=
+DEEPGRAM_API_KEY=
+OPENROUTER_API_KEY=
+```
+
+Never commit real API keys.
+
+## Deployment
+
+The active deploy workflow is:
+
+```text
+.github/workflows/deploy-v3-oracle.yml
+```
+
+The workflow runs `scripts/deploy-v3-oracle.sh`, deploys Convex, builds Next,
+starts the v3 app, and starts the render worker.
+
+## Project Memory
+
+- v3 spec and architecture: `docs/v3-spec.md`, `docs/v3-architecture.md`
+- Production runtime: `docs/v3-production-runtime.md`
+- Future work: `ROADMAP.md`
