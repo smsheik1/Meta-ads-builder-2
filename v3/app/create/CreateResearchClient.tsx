@@ -91,6 +91,11 @@ function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+function isPreviewSlotInteractionTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  return Boolean(target.closest("[data-preview-selectable-slot], [data-preview-background-color], [data-preview-audio-action]"));
+}
+
 function getWebsiteSubmitProgressFacts(result: StoredWebsiteResearchResult): WebsiteSubmitProgressFacts {
   return {
     brandName: result.brand.name || result.brandBrief.brandName || result.host,
@@ -561,6 +566,18 @@ function ResearchConnected() {
     editorScopeRef: createEditorScopeRef,
     onReroll: onRerollScene,
   });
+
+  useEffect(() => {
+    if (!selectedPreviewSlot) return;
+
+    const onPointerDown = (event: globalThis.PointerEvent) => {
+      if (isPreviewSlotInteractionTarget(event.target)) return;
+      canvasActions.slotCleared();
+    };
+
+    window.addEventListener("pointerdown", onPointerDown, true);
+    return () => window.removeEventListener("pointerdown", onPointerDown, true);
+  }, [canvasActions, selectedPreviewSlot]);
 
   useEffect(() => {
     if (!selectedScene) return;

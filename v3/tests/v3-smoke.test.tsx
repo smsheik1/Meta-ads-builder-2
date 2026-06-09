@@ -161,6 +161,7 @@ assert.ok(!createModuleSource.includes("const previewSlotLockKey"), "/create mus
 assert.ok(!createModuleSource.includes("const previewSlotLabels"), "/create must not hardcode format slot labels.");
 assert.ok(createModuleSource.includes("onChangePreviewSlotColor"), "/create preview selector must support old builder-style hover color changes.");
 assert.ok(createModuleSource.includes("slotSelected(slot)"), "/create canvas selection must stay sticky instead of toggling off on normal clicks.");
+assert.ok(createClientSource.includes("isPreviewSlotInteractionTarget") && createClientSource.includes("canvasActions.slotCleared()"), "/create must clear the selected reroll target when the user clicks outside the selected canvas part.");
 assert.ok(createModuleSource.includes("onChangePreviewBackgroundColor"), "/create preview selector must support background color changes.");
 assert.ok(createModuleSource.includes("Spacebar rerolls the"), "/create must tell users when spacebar is scoped to one selected part.");
 assert.ok(createModuleSource.includes('data-create-action-card="legacy"'), "/create right rail must copy the original /create generated-ad action card look.");
