@@ -221,6 +221,7 @@ assert.ok(previewChromeSource.includes("h-[720px] w-[360px]"), "/create IG feed 
 assert.ok(previewChromeSource.includes("h-[420px] w-[640px]"), "/create YouTube chrome must reserve a non-overlapping editor footer instead of squeezing the canvas.");
 assert.ok(previewChromeSource.includes('data-preview-ad-viewport={previewFrameId}') && previewChromeSource.includes("h-[450px]"), "/create IG feed chrome must reserve the original 360x450 ad viewport for AdRenderSurface.");
 assert.ok(previewChromeSource.includes('data-preview-play-overlay={previewFrameId}'), "/create phone preview must keep a platform-aware centered Play this ad pill.");
+assert.ok(previewChromeSource.includes('data-preview-control-overlay={previewFrameId}') && previewChromeSource.includes("shadow-2xl shadow-slate-950/25") && previewChromeSource.includes("Edit captions"), "/create phone preview must keep the original heavy Play/Edit captions overlay controls.");
 assert.ok(previewChromeSource.includes("facebook-feed") && previewChromeSource.includes("storiesPlatform") && previewChromeSource.includes("youtubePlatform"), "/create preview chrome must bring back FB Feed, Stories/Reels, and YouTube wrappers.");
 assert.ok(previewChromeSource.includes('data-youtube-editor-canvas="true"'), "/create YouTube preview must keep the editable ad canvas separate from YouTube-style footer chrome.");
 assert.ok(!previewChromeSource.includes("from-black/85 via-black/35 to-transparent"), "/create YouTube preview must not cover the editable ad pixels with playback gradient chrome.");

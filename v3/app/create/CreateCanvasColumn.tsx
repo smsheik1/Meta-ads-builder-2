@@ -23,12 +23,14 @@ export function CreateCanvasColumn({
   onChangePreviewBackgroundColor,
   onChangePreviewSlotColor,
   onOpenAudioPanel,
+  onOpenCaptionEditor,
   onClearPreviewSlot,
   onRerollScene,
   onSelectPreviewSlot,
   onTogglePlayback,
   onTogglePreviewSlotLock,
   placeholderVariantIndex,
+  hasGeneratedAudio,
   playableAudioUrl,
   previewPlatform,
   previewTimeSeconds,
@@ -44,12 +46,14 @@ export function CreateCanvasColumn({
   onChangePreviewBackgroundColor: (color: string) => void;
   onChangePreviewSlotColor: (slot: RenderSelectableSlot, color: string) => void;
   onOpenAudioPanel: () => void;
+  onOpenCaptionEditor: () => void;
   onClearPreviewSlot: () => void;
   onRerollScene: () => void;
   onSelectPreviewSlot: (slot: RenderSelectableSlot) => void;
   onTogglePlayback: () => void;
   onTogglePreviewSlotLock: (slot: RenderSelectableSlot) => void;
   placeholderVariantIndex: number;
+  hasGeneratedAudio: boolean;
   playableAudioUrl: string;
   previewPlatform: PreviewPlatform;
   previewTimeSeconds: number;
@@ -87,7 +91,9 @@ export function CreateCanvasColumn({
           rerollFlash={rerollFlash}
           timeSeconds={previewTimeSeconds}
           onOpenAudioPanel={onOpenAudioPanel}
+          onOpenCaptionEditor={onOpenCaptionEditor}
           onTogglePlayback={onTogglePlayback}
+          captionsReady={hasGeneratedAudio}
           previewReady={Boolean(playableAudioUrl)}
           isAudioPlaying={isAudioPlaying}
           placeholderVariantIndex={placeholderVariantIndex}
