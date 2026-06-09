@@ -113,7 +113,7 @@ export function CreateDialogueModal({
                         : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-white"
                     }`}
                   >
-                    <span className="block text-[10px] font-black uppercase tracking-[0.16em] opacity-70">
+                    <span className="block text-[10px] font-black uppercase tracking-[0.18em] opacity-70">
                       Option {index + 1}
                     </span>
                     <span className="mt-2 block truncate text-sm font-black">
@@ -130,7 +130,7 @@ export function CreateDialogueModal({
                       <h3 className="text-2xl font-black leading-tight text-slate-950">
                         {selectedDialogueScript.title}
                       </h3>
-                      <p className="mt-2 max-w-2xl text-sm font-bold leading-6 text-slate-500">
+                      <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-slate-500">
                         {selectedDialogueScript.angle}
                       </p>
                     </div>
@@ -149,10 +149,10 @@ export function CreateDialogueModal({
                     {selectedDialogueScript.lines.map((line, index) => (
                       <label key={`${line.speaker}-${index}`} className="grid grid-cols-[150px_1fr] gap-4 rounded-[20px] border border-slate-200 bg-white p-4">
                         <span>
-                          <span className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400">
+                          <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
                             {line.speaker}
                           </span>
-                          <span className="mt-2 block rounded-full bg-slate-50 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                          <span className="mt-2 block rounded-full bg-slate-50 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
                             {line.tone}
                           </span>
                         </span>
@@ -160,7 +160,7 @@ export function CreateDialogueModal({
                           value={line.text}
                           onChange={(event) => onUpdateDialogueLineText(index, event.target.value)}
                           rows={3}
-                          className="min-h-24 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-bold leading-7 text-slate-800 outline-none transition focus:border-slate-950 focus:bg-white"
+                          className="min-h-24 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-semibold leading-7 text-slate-800 outline-none transition focus:border-slate-950 focus:bg-white"
                         />
                       </label>
                     ))}

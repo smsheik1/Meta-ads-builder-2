@@ -84,7 +84,7 @@ export function CreateActionCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-sm font-black text-slate-900">Generated ads</h2>
-          <p className="mt-1 max-w-[14rem] text-xs font-black leading-5 text-slate-500">
+          <p className="mt-1 max-w-[14rem] text-xs font-semibold leading-5 text-slate-500">
             Your generated ads appear on the canvas.
           </p>
         </div>
@@ -213,7 +213,7 @@ export function CreateActionCard({
                       <span className="mt-2 block truncate text-[11px] font-black text-slate-700">
                         {design.title}
                       </span>
-                      <span className="mt-0.5 block truncate text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                      <span className="mt-0.5 block truncate text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
                         {design.format}
                       </span>
                     </button>
@@ -238,7 +238,7 @@ export function CreateActionCard({
       ) : null}
 
       {renderBusy ? (
-        <p className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 text-xs font-black leading-5 text-slate-500">
+        <p className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 text-xs font-semibold leading-5 text-slate-500">
           Render worker is turning this frozen scene into an MP4.
         </p>
       ) : null}

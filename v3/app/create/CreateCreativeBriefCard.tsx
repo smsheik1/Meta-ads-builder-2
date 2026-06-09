@@ -26,11 +26,11 @@ export function CreateCreativeBriefCard({
       className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm"
       data-create-creative-brief-card="legacy"
     >
-      <p className="text-xs font-black uppercase tracking-wide text-slate-500">Creative brief</p>
+      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Creative brief</p>
       <div className="mt-3 space-y-3">
         {creativeBriefHighlights.map((item) => (
           <div key={item.label}>
-            <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">{item.label}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">{item.label}</p>
             <p className="mt-1 text-sm font-black leading-5 text-slate-900">{item.value}</p>
           </div>
         ))}
