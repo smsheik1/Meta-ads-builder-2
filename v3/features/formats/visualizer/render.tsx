@@ -271,6 +271,9 @@ export function VisualizerFormatRenderer({
               top: toCanvasPercent(350, "y"),
               left: toCanvasPercent(20, "x"),
               width: toCanvasPercent(320, "x"),
+              height: toCanvasPercent(80, "y"),
+              display: "grid",
+              placeItems: "center",
               margin: 0,
               color: scene.style.accentColor,
               fontSize: "clamp(20px, 6.7cqw, 34px)",
@@ -278,6 +281,7 @@ export function VisualizerFormatRenderer({
               lineHeight: 1.08,
               textAlign: "center",
               textWrap: "balance",
+              overflow: "hidden",
               overflowWrap: "break-word",
             }}
           >

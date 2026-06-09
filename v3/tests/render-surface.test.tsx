@@ -161,6 +161,35 @@ const generatedAudioScene: AdScene = {
     generatedAt: 123,
   },
 };
+const longCaptionScene: AdScene = {
+  ...generatedAudioScene,
+  audio: {
+    status: "generated",
+    storageId: "audio_storage",
+    url: "https://example.com/audio.wav",
+    mimeType: "audio/wav",
+    durationMs: 3000,
+    durationSeconds: 3,
+    transcript: "My dev team says we cannot ship this mobile feature before the end of the month.",
+    captions: [
+      {
+        text: "My dev team says we cannot ship this mobile feature before the end of the month.",
+        startMs: 0,
+        endMs: 3000,
+      },
+    ],
+    provider: "gemini",
+    model: "test-tts",
+    generatedAt: 123,
+  },
+};
+const longCaptionHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: longCaptionScene,
+  timeSeconds: 0.2,
+}));
+assert.ok(longCaptionHtml.includes("My dev team says we cannot ship"), "Long generated captions must be windowed into legacy-sized chunks.");
+assert.ok(!longCaptionHtml.includes("mobile feature before"), "Long generated captions must not render the whole dialogue line at once.");
+assert.ok(longCaptionHtml.includes("height:17.77777777777778%") && longCaptionHtml.includes("overflow:hidden"), "Generated caption box must stay bounded inside the legacy /create canvas slot.");
 const generatedAtStart = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene: generatedAudioScene,
   timeSeconds: 0,

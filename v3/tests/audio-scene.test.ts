@@ -5,7 +5,9 @@ import {
   createCaptionsForVoiceover,
   createGeneratedSceneAudio,
   createVoiceoverLines,
+  getCaptionWindowText,
   getVisibleCaptionText,
+  MAX_CAPTION_WORDS_ON_SCREEN,
   updateGeneratedAudioCaptionText,
 } from "../features/audio/sceneAudio";
 import {
@@ -39,6 +41,16 @@ assert.equal(getVisibleCaptionText(audio, 0.1), captions[0]!.text);
 assert.equal(getVisibleCaptionText(audio, 10), captions[0]!.text);
 assert.ok(getAdSceneDurationInFrames(scene) > 60 * 6);
 
+const longCaption = {
+  text: "My dev team says we cannot ship this mobile feature before the end of the month.",
+  startMs: 0,
+  endMs: 3000,
+};
+assert.equal(MAX_CAPTION_WORDS_ON_SCREEN, 7);
+assert.equal(getCaptionWindowText(longCaption, 0.1), "My dev team says we cannot ship");
+assert.equal(getCaptionWindowText(longCaption, 1.6), "this mobile feature before the end of");
+assert.equal(getCaptionWindowText(longCaption, 2.9), "the month.");
+
 const editedAudio = updateGeneratedAudioCaptionText(audio, 0, "ChatGPT, not ChatGP");
 assert.equal(editedAudio.status, "generated");
 if (editedAudio.status === "generated") {
@@ -55,21 +67,21 @@ const uploadedAudio = createGeneratedSceneAudio({
   url: "https://example.com/uploaded.mp3",
   mimeType: "audio/mpeg",
   durationMs: 9000,
-  transcript: "uploaded-demo.mp3",
+  transcript: "Uploaded Deepgram caption",
   captions: [
     {
-      text: "Fake upload caption from ad copy",
+      text: "Uploaded Deepgram caption",
       startMs: 0,
       endMs: 9000,
     },
   ],
-  model: "uploaded-audio",
+  model: "deepgram-listen-smart-format-diarized",
   provider: "upload",
 });
 assert.equal(uploadedAudio.status, "generated");
 assert.equal(uploadedAudio.provider, "upload");
-assert.equal(uploadedAudio.model, "uploaded-audio");
-assert.equal(getVisibleCaptionText(uploadedAudio, 0.1), "");
+assert.equal(uploadedAudio.model, "deepgram-listen-smart-format-diarized");
+assert.equal(getVisibleCaptionText(uploadedAudio, 0.1), "Uploaded Deepgram caption");
 
 const quietDecision = explainVoiceVisualizerPresetFromAnalysis({
   fps: 30,
@@ -113,7 +125,7 @@ const uploadHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
   },
   timeSeconds: 0.1,
 }));
-assert.ok(!uploadHtml.includes("Fake upload caption from ad copy"));
+assert.ok(uploadHtml.includes("Uploaded Deepgram caption"));
 assert.ok(!uploadHtml.includes("Add audio for this ad"));
 
 console.log("audio-scene tests passed");

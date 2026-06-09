@@ -25,6 +25,7 @@ type HealthCheck = {
 
 const secretNames = new Set([
   "FIRECRAWL_API_KEY",
+  "DEEPGRAM_API_KEY",
   "GEMINI_API_KEY",
   "OPENROUTER_API_KEY",
 ]);
@@ -187,6 +188,8 @@ export async function runRuntimeHealthChecks() {
   const checks: HealthCheck[] = [
     checkRequiredEnv("NEXT_PUBLIC_V3_CONVEX_URL", ["V3_CONVEX_URL"]),
     checkRequiredEnv("FIRECRAWL_API_KEY"),
+    checkRequiredEnv("DEEPGRAM_API_KEY"),
+    checkNotDisabled("DEEPGRAM_ENABLED"),
     checkRequiredEnv("GEMINI_API_KEY"),
     checkNotDisabled("GEMINI_ENABLED"),
     checkNotDisabled("TTS_ENABLED"),
