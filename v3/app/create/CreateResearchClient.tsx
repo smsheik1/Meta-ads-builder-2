@@ -695,7 +695,7 @@ function ResearchConnected() {
   };
 
   const onOpenAudioPanel = () => {
-    if (!selectedScene || selectedScene.audio.status === "generated" || audioStatus === "loading") return;
+    if (!selectedScene || audioStatus === "loading") return;
     if (dialoguePanelOpen) {
       closeDialoguePanel();
     } else {
@@ -706,7 +706,7 @@ function ResearchConnected() {
   };
 
   const onGenerateDialogueScripts = async () => {
-    if (!selectedScene || selectedScene.audio.status === "generated") return;
+    if (!selectedScene || audioStatus === "loading") return;
     openDialoguePanel();
     setDialogueStatus("loading");
     setDialogueError("");
@@ -762,7 +762,7 @@ function ResearchConnected() {
 
   const onGenerateAudio = async () => {
     const script = dialogueScripts[selectedDialogueIndex];
-    if (!selectedScene || selectedScene.audio.status === "generated" || !script) return;
+    if (!selectedScene || !script || audioStatus === "loading") return;
     setAudioStatus("loading");
     canvasActions.beginBusy("audio-generation");
     setAudioError("");
@@ -789,7 +789,7 @@ function ResearchConnected() {
   };
 
   const onUploadAudio = async (file: File | null) => {
-    if (!file || !selectedScene || selectedScene.audio.status === "generated" || audioStatus === "loading") return;
+    if (!file || !selectedScene || audioStatus === "loading") return;
     if (!file.type.startsWith("audio/")) {
       setAudioStatus("error");
       setAudioError("Choose an audio file.");
@@ -1023,6 +1023,7 @@ function ResearchConnected() {
                 isAudioPlaying={isAudioPlaying}
                 onCreateRenderJob={() => void onCreateRenderJob()}
                 onCreateShareLink={() => void onCreateShareLink()}
+                onOpenAudioPanel={onOpenAudioPanel}
                 onOpenCaptionEditor={openCaptionPanel}
                 onOpenSavedDesign={onOpenSavedDesign}
                 onPreviewPlatformChange={setPreviewPlatform}
@@ -1093,7 +1094,7 @@ function ResearchConnected() {
         />
       ) : null}
 
-      {dialoguePanelOpen && !hasGeneratedAudio ? (
+      {dialoguePanelOpen ? (
         <CreateDialogueModal
           audioError={audioError}
           audioStatus={audioStatus}
@@ -1117,6 +1118,7 @@ function ResearchConnected() {
           captions={generatedCaptions}
           hasEmptyEditedCaption={hasEmptyEditedCaption}
           onClose={closeCaptionPanel}
+          onOpenAudioPanel={onOpenAudioPanel}
           onUpdateCaptionText={onUpdateCaptionText}
         />
       ) : null}
