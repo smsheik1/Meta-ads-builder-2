@@ -52,7 +52,7 @@ export function BrandDumpModal({
           <div>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Full brand dump</p>
             <h2 className="mt-1 text-3xl font-black leading-tight text-slate-950">{result.brand.name}</h2>
-            <p className="mt-1 max-w-2xl text-base font-bold text-slate-600">{result.finalUrl}</p>
+            <p className="mt-1 max-w-2xl text-base font-semibold text-slate-600">{result.finalUrl}</p>
           </div>
           <button
             type="button"
@@ -125,10 +125,10 @@ export function BrandDumpModal({
                   <div className="mt-3 grid gap-2">
                     {result.providerStatus.map((provider) => (
                       <div key={`${provider.provider}-${provider.reason}`} className="rounded-2xl bg-slate-50 px-4 py-3">
-                        <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">
+                        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
                           {provider.provider} · {provider.status}
                         </p>
-                        <p className="mt-1 text-sm font-bold leading-6 text-slate-700">{provider.reason}</p>
+                        <p className="mt-1 text-sm font-semibold leading-6 text-slate-700">{provider.reason}</p>
                       </div>
                     ))}
                   </div>
@@ -193,11 +193,11 @@ function EvidenceList({ title, items }: { title: string; items: string[] }) {
 
   return (
     <section>
-      <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-400">{title}</h3>
+      <h3 className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">{title}</h3>
       {cleanedItems.length ? (
         <ul className="mt-3 grid gap-2">
           {cleanedItems.map((item) => (
-            <li key={item} className="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold leading-6 text-slate-700">
+            <li key={item} className="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-700">
               {item}
             </li>
           ))}

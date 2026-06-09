@@ -30,9 +30,9 @@ export function CreateCaptionModal({
               <Type className="size-5" />
             </span>
             <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.26em] text-slate-400">Captions</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Captions</p>
               <h2 className="mt-1 text-2xl font-black tracking-normal text-slate-950">Edit captions</h2>
-              <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-slate-500">
+              <p className="mt-2 max-w-xl text-sm font-semibold leading-6 text-slate-500">
                 Fix typos or wording. Timing stays attached to the existing audio.
               </p>
             </div>
@@ -60,7 +60,7 @@ export function CreateCaptionModal({
                     value={caption.text}
                     onChange={(event) => onUpdateCaptionText(index, event.target.value)}
                     rows={3}
-                    className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold leading-6 text-slate-800 outline-none transition focus:border-slate-300 focus:bg-white focus:ring-4 focus:ring-slate-100"
+                    className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-800 outline-none transition focus:border-slate-300 focus:bg-white focus:ring-4 focus:ring-slate-100"
                   />
                 </label>
               ))}
@@ -68,7 +68,7 @@ export function CreateCaptionModal({
           ) : (
             <div className="rounded-2xl bg-slate-50 px-4 py-5">
               <p className="text-sm font-black text-slate-700">No editable captions yet.</p>
-              <p className="mt-1 text-sm font-bold leading-6 text-slate-500">
+              <p className="mt-1 text-sm font-semibold leading-6 text-slate-500">
                 Replace this audio once and Wiggly will transcribe it with Deepgram.
               </p>
               <button

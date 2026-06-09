@@ -11,7 +11,7 @@ export type WebsiteSubmitProgressFacts = {
   buyerMomentCount: number;
 };
 
-const pillClass = "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black uppercase tracking-wide text-slate-500 shadow-sm";
+const pillClass = "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-slate-500 shadow-sm";
 
 const progressRows = [
   { id: "reading-site", label: "Reading website" },
@@ -81,7 +81,7 @@ function CreateResearchProgressCard({
       </div>
 
       {showSlowResearchMessage ? (
-        <p className="mt-3 rounded-2xl bg-white px-3 py-2 text-xs font-bold leading-5 text-slate-500">
+        <p className="mt-3 rounded-2xl bg-white px-3 py-2 text-xs font-semibold leading-5 text-slate-500">
           Still reading. Some sites take longer, but your canvas will update when ads are ready.
         </p>
       ) : null}
@@ -150,7 +150,7 @@ export function CreateLeftColumn({
         className="mt-8 space-y-3 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8"
       >
         <label className="block" htmlFor="website-url">
-          <span className="mb-2 block text-sm font-black text-slate-800">Website</span>
+          <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Website</span>
           <input
             id="website-url"
             value={url}
@@ -161,7 +161,7 @@ export function CreateLeftColumn({
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-black text-slate-800">Ad writing model</span>
+          <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Ad writing model</span>
           <select
             className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
             aria-label="Ad writing model"

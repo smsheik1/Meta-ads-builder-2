@@ -48,7 +48,7 @@ export function CreateAudioCard({
             }}
             onEnded={onAudioEnded}
           />
-          <p className="mt-2 text-center text-xs font-black uppercase tracking-[0.14em] text-slate-400">
+          <p className="mt-2 text-center text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
             Audio preview syncs captions and visualizer
           </p>
         </div>

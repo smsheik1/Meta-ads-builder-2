@@ -60,6 +60,8 @@ const createLeftColumnSource = readFileSync("app/create/CreateLeftColumn.tsx", "
 const createAudioCardSource = readFileSync("app/create/CreateAudioCard.tsx", "utf8");
 const createActionCardSource = readFileSync("app/create/CreateActionCard.tsx", "utf8");
 const createCaptionModalSource = readFileSync("app/create/CreateCaptionModal.tsx", "utf8");
+const createIdeasListSource = readFileSync("app/create/CreateIdeasList.tsx", "utf8");
+const createCreativeBriefCardSource = readFileSync("app/create/CreateCreativeBriefCard.tsx", "utf8");
 const createFormatRailSource = readFileSync("app/create/CreateFormatRail.tsx", "utf8");
 const shareClientSource = readFileSync("app/s/[slug]/ShareSceneClient.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
@@ -80,6 +82,12 @@ assert.ok(createModuleSource.includes("Audio preview syncs captions and visualiz
 assert.ok(createModuleSource.includes("controls"), "/create audio preview must use native playback controls.");
 assert.ok(createModuleSource.includes("audioRef"), "/create audio preview must use the generated audio asset.");
 assert.ok(createModuleSource.includes("setPreviewTimeSeconds"), "/create audio preview must sync the renderer time.");
+assert.ok(globalsSource.includes("Geist Variable"), "/create must keep the same Geist Variable font family as the original /create page.");
+assert.ok(createLeftColumnSource.includes("text-4xl font-black") && createLeftColumnSource.includes("text-[10px] font-black uppercase tracking-[0.18em]"), "/create left column must keep the original heavy headline plus tight uppercase eyebrow typography.");
+assert.ok(createLeftColumnSource.includes("text-base font-semibold leading-7"), "/create body copy must use the original quieter semibold support rhythm instead of competing with headlines.");
+assert.ok(createActionCardSource.includes("text-sm font-black text-slate-900") && createActionCardSource.includes("text-xs font-semibold leading-5"), "/create action card must keep old-style black labels with semibold helper copy.");
+assert.ok(createCreativeBriefCardSource.includes("text-[10px] font-black uppercase tracking-[0.18em]"), "/create creative brief labels must keep the original compact uppercase tracking recipe.");
+assert.ok(createIdeasListSource.includes("text-[10px] font-black uppercase tracking-[0.18em]") && createIdeasListSource.includes("text-sm font-semibold leading-6"), "/create ideas list must keep the same label/helper typography recipe as the legacy page.");
 assert.ok(createClientSource.includes("create-desktop-fit-shell"), "/create desktop shell must scale as one unit on short Chrome viewports instead of cutting off at 100% zoom.");
 assert.ok(globalsSource.includes("--create-desktop-fit-scale") && globalsSource.includes("transform: scale(var(--create-desktop-fit-scale))"), "/create desktop fit scale must be defined in global CSS for short desktop viewports.");
 assert.ok(createModuleSource.includes("window.requestAnimationFrame"), "/create must run a smooth preview clock for the visualizer.");

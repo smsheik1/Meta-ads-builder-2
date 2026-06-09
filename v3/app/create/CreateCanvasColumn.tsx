@@ -118,7 +118,7 @@ export function CreateCanvasColumn({
               </kbd>
               <span>make a wish</span>
             </button>
-            <p className="mt-3 text-center text-xs font-black uppercase tracking-[0.14em] text-slate-400">
+            <p className="mt-3 text-center text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
               {selectedPreviewSlot && selectedScene
                 ? `Spacebar rerolls the ${getSceneSelectedSlotLabel(selectedScene, selectedPreviewSlot)}`
                 : rerollCount
