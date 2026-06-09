@@ -128,10 +128,15 @@ async function checkConvexConnectivity(convexUrl: string) {
 
   try {
     const readiness = await client.query(api.renderJobs.workerReadiness, {});
-    checks.push(pass(
-      "worker:queue",
-      `Render queue readable. Queued: ${readiness.queued}, active: ${readiness.active}.`,
-    ));
+    checks.push(readiness.workerHealthy
+      ? pass(
+        "worker:queue",
+        `Render worker alive. Workers: ${readiness.workerCount}, queued: ${readiness.queued}, active: ${readiness.active}.`,
+      )
+      : fail(
+        "worker:queue",
+        "Render worker heartbeat is stale or missing. Run npm run dev from the repo root.",
+      ));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Worker readiness query failed.";
     checks.push(fail("worker:queue", `Render queue readiness failed: ${message}`));

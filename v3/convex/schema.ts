@@ -90,6 +90,13 @@ export default defineSchema({
     .index("by_sessionId_and_updatedAt", ["sessionId", "updatedAt"])
     .index("by_status_and_updatedAt", ["status", "updatedAt"]),
 
+  renderWorkers: defineTable({
+    workerId: v.string(),
+    rendererVersion: v.string(),
+    startedAt: v.number(),
+    lastSeenAt: v.number(),
+  }).index("by_workerId", ["workerId"]),
+
   audioAssets: defineTable({
     sessionId: v.string(),
     sceneKey: v.string(),
