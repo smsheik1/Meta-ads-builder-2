@@ -82,6 +82,15 @@ type AdSceneGenerationResponse = {
   scenes: AdScene[];
 };
 
+type BillingStatus = {
+  paid: boolean;
+  paidUntil: number;
+  freeLimit: number;
+  freeUsed: number;
+  freeRemaining: number | null;
+  resetAt: number;
+};
+
 function getResearchActionErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : String(error || "");
   if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) return researchTimeoutMessage;
@@ -90,6 +99,18 @@ function getResearchActionErrorMessage(error: unknown) {
 
 function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+async function fetchBillingJson(url: string, init?: RequestInit) {
+  const response = await fetch(url, init);
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = new Error(payload?.error || "Billing request failed.") as Error & { status?: number; code?: string };
+    error.status = response.status;
+    error.code = payload?.code;
+    throw error;
+  }
+  return payload as BillingStatus & { url?: string };
 }
 
 function getWebsiteSubmitProgressFacts(result: StoredWebsiteResearchResult): WebsiteSubmitProgressFacts {
@@ -174,6 +195,9 @@ function ResearchConnected() {
   const [savedDesignsOpen, setSavedDesignsOpen] = useState(false);
   const [error, setError] = useState("");
   const [sessionRestored, setSessionRestored] = useState(false);
+  const [billingStatus, setBillingStatus] = useState<BillingStatus | null>(null);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const createEditorScopeRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const analysisUpgradeKeyRef = useRef("");
@@ -197,6 +221,45 @@ function ResearchConnected() {
 
   useEffect(() => {
     setAnonymousId(getAnonymousId());
+  }, []);
+
+  useEffect(() => {
+    void fetchBillingJson("/api/billing/status")
+      .then(setBillingStatus)
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkoutStatus = params.get("checkout");
+    const checkoutSessionId = params.get("session_id");
+    if (checkoutStatus === "cancelled") {
+      setPaywallOpen(true);
+      window.history.replaceState(null, "", "/create");
+      return;
+    }
+    if (checkoutStatus !== "success" || !checkoutSessionId) return;
+
+    const completeCheckout = async () => {
+      setCheckoutLoading(true);
+      try {
+        const nextStatus = await fetchBillingJson("/api/billing/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId: checkoutSessionId }),
+        });
+        setBillingStatus(nextStatus);
+        setPaywallOpen(false);
+        window.history.replaceState(null, "", "/create");
+      } catch (checkoutError) {
+        setPaywallOpen(true);
+        setError(checkoutError instanceof Error ? checkoutError.message : "Could not verify checkout.");
+      } finally {
+        setCheckoutLoading(false);
+      }
+    };
+
+    void completeCheckout();
   }, []);
 
   useEffect(() => () => {
@@ -631,6 +694,21 @@ function ResearchConnected() {
     let researchCompleted = false;
 
     try {
+      try {
+        setBillingStatus(await fetchBillingJson("/api/billing/consume-run", { method: "POST" }));
+      } catch (billingError: unknown) {
+        const typedError = billingError as Error & { status?: number; code?: string };
+        if (typedError.status === 402 || typedError.code === "PAYWALL_REQUIRED") {
+          setPaywallOpen(true);
+          setStatus(hadExistingCanvas ? "ready" : "idle");
+          keepPreviousCanvasAfterFailure();
+          clearSubmitProgress();
+          canvasActions.finishBusy();
+          return;
+        }
+        throw billingError;
+      }
+
       const nextResult = await runWebsiteResearch({
         anonymousId: getAnonymousId(),
         url,
@@ -669,6 +747,19 @@ function ResearchConnected() {
         keepPreviousCanvasAfterFailure();
         setError(message);
       }
+    }
+  };
+
+  const startCheckout = async () => {
+    setCheckoutLoading(true);
+    setError("");
+    try {
+      const payload = await fetchBillingJson("/api/billing/checkout", { method: "POST" });
+      if (!payload.url) throw new Error("Could not start checkout.");
+      window.location.href = payload.url;
+    } catch (checkoutError) {
+      setError(checkoutError instanceof Error ? checkoutError.message : "Could not start checkout.");
+      setCheckoutLoading(false);
     }
   };
 
@@ -974,6 +1065,41 @@ function ResearchConnected() {
       className="create-desktop-fit-shell min-h-screen min-w-[1280px] overflow-x-auto bg-[#F7F4EA] px-3 py-4 font-sans text-slate-950 sm:px-6 md:px-10"
       data-create-editor-scope="true"
     >
+      {paywallOpen ? (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[2rem] border border-slate-200 bg-white p-6 text-slate-950 shadow-2xl shadow-slate-950/30">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-500">Wiggly beta pass</p>
+                <h2 className="mt-2 text-3xl font-black leading-tight">You used your 2 free runs.</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPaywallOpen(false)}
+                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-black text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
+                aria-label="Close paywall"
+              >
+                x
+              </button>
+            </div>
+            <p className="text-sm font-semibold leading-6 text-slate-600">
+              Keep generating ads, rerolling ideas, and testing Wiggly for the next 7 days.
+            </p>
+            <button
+              type="button"
+              onClick={() => void startCheckout()}
+              disabled={checkoutLoading}
+              className="mt-6 flex h-13 w-full items-center justify-center rounded-2xl bg-slate-950 px-5 text-base font-black text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800 disabled:cursor-progress disabled:opacity-70"
+            >
+              {checkoutLoading ? "Starting checkout..." : "Continue for $1"}
+            </button>
+            <p className="mt-3 text-center text-xs font-bold text-slate-400">No signup wall. Just a tiny paid test.</p>
+            <p className="mt-2 text-center text-xs font-semibold text-slate-400">
+              If anything gets weird or you have ideas, email me directly: buildwithshaz@gmail.com.
+            </p>
+          </div>
+        </div>
+      ) : null}
       <header className="mx-auto flex max-w-7xl items-center justify-between">
         <div className="flex items-center gap-3">
           <WigglyMark size="sm" />
@@ -998,6 +1124,9 @@ function ResearchConnected() {
           adScenesCount={adScenes.length}
           adStatus={adStatus}
           error={error}
+          freeRunsLabel={billingStatus && !billingStatus.paid && billingStatus.freeRemaining !== null
+            ? `${billingStatus.freeRemaining} of ${billingStatus.freeLimit} free runs left`
+            : ""}
           onSubmit={onSubmit}
           onUrlChange={setUrl}
           progressFacts={pendingProgressFacts}

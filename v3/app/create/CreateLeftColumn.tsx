@@ -106,6 +106,7 @@ export function CreateLeftColumn({
   adScenesCount,
   adStatus,
   error,
+  freeRunsLabel,
   onSubmit,
   onUrlChange,
   progressFacts,
@@ -117,6 +118,7 @@ export function CreateLeftColumn({
   adScenesCount: number;
   adStatus: LoadStatus;
   error: string;
+  freeRunsLabel?: string;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onUrlChange: (url: string) => void;
   progressFacts: WebsiteSubmitProgressFacts | null;
@@ -183,6 +185,12 @@ export function CreateLeftColumn({
           {submitIsBusy ? <Loader2 className="size-5 animate-spin" /> : <Wand2 className="size-5" />}
           {submitLabel}
         </button>
+
+        {freeRunsLabel ? (
+          <p className="text-center text-xs font-black uppercase tracking-wide text-slate-400">
+            {freeRunsLabel}
+          </p>
+        ) : null}
 
         <CreateResearchProgressCard
           facts={progressFacts}
