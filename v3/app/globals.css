@@ -1,0 +1,233 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Geist Variable", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --default-font-family: var(--font-sans);
+}
+
+@font-face {
+  font-family: "Geist Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("/fonts/geist-latin-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Geist Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("/fonts/geist-latin-ext-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Geist Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("/fonts/geist-cyrillic-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #f6f2e8;
+  color: #070b1d;
+  font-family: "Geist Variable", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+@media (min-width: 1280px) and (max-height: 1080px) {
+  .create-desktop-fit-shell {
+    --create-desktop-fit-scale: clamp(0.78, calc((100vh - 2rem) / 1080), 1);
+    inline-size: calc(100% / var(--create-desktop-fit-scale));
+    transform: scale(var(--create-desktop-fit-scale));
+    transform-origin: top left;
+  }
+}
+
+.wiggly-idle-bar {
+  animation: wigglyIdleBar 1.65s ease-in-out infinite alternate;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.wiggly-idle-bar-strong {
+  animation-name: wigglyIdleBarStrong;
+}
+
+.wiggly-reroll-shine {
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 10px;
+  animation: wiggly-reroll-focus 620ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wiggly-reroll-shine::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: 79;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  animation: wiggly-reroll-edge 620ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wiggly-reroll-shine::after {
+  content: "";
+  position: absolute;
+  top: -45%;
+  bottom: -45%;
+  left: -42%;
+  width: 34%;
+  z-index: 80;
+  background:
+    linear-gradient(
+      96deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0) 30%,
+      rgba(255, 255, 255, 0.58) 43%,
+      rgba(255, 255, 255, 1) 50%,
+      rgba(255, 255, 255, 0.58) 57%,
+      rgba(255, 255, 255, 0) 70%,
+      transparent 100%
+    );
+  mix-blend-mode: screen;
+  pointer-events: none;
+  transform: translateX(0) skewX(-18deg);
+  animation: wiggly-reroll-glint 620ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wiggly-reroll-shine-headline::after,
+.wiggly-reroll-shine-captions::after {
+  left: -46%;
+  width: 38%;
+}
+
+.wiggly-reroll-shine-visualizer::after {
+  background:
+    linear-gradient(
+      96deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0) 28%,
+      rgba(255, 255, 255, 0.68) 43%,
+      rgba(255, 255, 255, 1) 50%,
+      rgba(255, 255, 255, 0.68) 57%,
+      rgba(255, 255, 255, 0) 72%,
+      transparent 100%
+    );
+}
+
+@keyframes wigglyIdleBar {
+  0% {
+    opacity: 0.72;
+    transform: scaleY(0.82);
+  }
+
+  100% {
+    opacity: 0.96;
+    transform: scaleY(1.08);
+  }
+}
+
+@keyframes wigglyIdleBarStrong {
+  0% {
+    opacity: 0.68;
+    transform: scaleY(0.66);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scaleY(1.22);
+  }
+}
+
+@keyframes wiggly-reroll-glint {
+  0% {
+    opacity: 0;
+    transform: translateX(0) skewX(-18deg);
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  78% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(430%) skewX(-18deg);
+  }
+}
+
+@keyframes wiggly-reroll-focus {
+  0% {
+    filter: brightness(1) contrast(1);
+  }
+
+  35% {
+    filter: brightness(1.12) contrast(1.04);
+  }
+
+  68% {
+    filter: brightness(1.04) contrast(1.02);
+  }
+
+  100% {
+    filter: brightness(1) contrast(1);
+  }
+}
+
+@keyframes wiggly-reroll-edge {
+  0% {
+    opacity: 0;
+  }
+
+  18% {
+    opacity: 0.72;
+  }
+
+  58% {
+    opacity: 0.36;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wiggly-idle-bar,
+  .wiggly-reroll-shine,
+  .wiggly-reroll-shine::before,
+  .wiggly-reroll-shine::after {
+    animation: none !important;
+  }
+}

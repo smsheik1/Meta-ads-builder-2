@@ -1,0 +1,1296 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useAction, useMutation, useQuery } from "convex/react";
+import {
+  ShieldAlert,
+} from "lucide-react";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import {
+  isStaleAudioAnalysis,
+  precomputeBrowserAudioAnalysisFromUrl,
+} from "@/features/audio/browserAudioAnalysis";
+import { updateGeneratedAudioCaptionText } from "@/features/audio/sceneAudio";
+import { cloneDialogueScript, type DialogueScript } from "@/features/dialogue/dialogueScripts";
+import type {
+  RenderFlashRole,
+  RenderFlashState,
+  RenderSelectableSlot,
+} from "@/features/formats/types";
+import {
+  createDefaultCanvasInteractionLocks,
+  useCanvasActions,
+  useCanvasLocks,
+  useSelectedCanvasSlot,
+  type CanvasInteractionLocks,
+} from "@/features/create/canvasInteractionStore";
+import {
+  createSavedDesignId,
+  type SavedAdSceneDesign,
+} from "@/features/create/savedDesigns";
+import {
+  rerollScene,
+  type SceneLockKey,
+} from "@/features/create/reroll";
+import { useCanvasKeyboard } from "@/features/create/useCanvasKeyboard";
+import { isStoredWebsiteResearchFailure } from "@/features/research/types";
+import type {
+  StoredWebsiteResearchResponse,
+  StoredWebsiteResearchResult,
+} from "@/features/research/types";
+import { getClientRendererVersion } from "@/features/render/rendererVersion";
+import type { AdScene } from "@/features/scene/types";
+import { getV3ConvexUrl } from "@/lib/convexEnv";
+import { CreateActionCard } from "./CreateActionCard";
+import { CreateAudioCard } from "./CreateAudioCard";
+import { CreateCaptionModal } from "./CreateCaptionModal";
+import { BrandDumpModal } from "./CreateBrandDumpModal";
+import { CreateCanvasColumn } from "./CreateCanvasColumn";
+import { CreateCreativeBriefCard } from "./CreateCreativeBriefCard";
+import { CreateDialogueModal } from "./CreateDialogueModal";
+import { CreateIdeasList } from "./CreateIdeasList";
+import {
+  CreateLeftColumn,
+  type WebsiteSubmitProgressFacts,
+  type WebsiteSubmitProgressStage,
+} from "./CreateLeftColumn";
+import type { PreviewPlatform } from "./CreatePreviewChrome";
+import { WigglyMark } from "./WigglyMark";
+import { placeholderAdSurfaceVariantCount } from "./createStarterScene";
+import {
+  fallbackCaptionColors,
+  getNextDistinctColor,
+  getSceneDefaultFlashSlots,
+  getSceneFormatInteraction,
+  getSceneSelectableSlots,
+} from "./createFormatInteraction";
+import {
+  getAnonymousId,
+  loadCreateSessionSnapshot,
+  saveCreateSessionSnapshot,
+} from "./createSession";
+
+const rerollFlashMs = 680;
+const slowResearchMessageDelayMs = 8000;
+const preparingCanvasDelayMs = 180;
+
+const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
+const fallbackUploadedAudioDurationMs = 8000;
+
+type AdSceneGenerationResponse = {
+  scenes: AdScene[];
+};
+
+type BillingStatus = {
+  paid: boolean;
+  paidUntil: number;
+  freeLimit: number;
+  freeUsed: number;
+  freeRemaining: number | null;
+  resetAt: number;
+};
+
+function getResearchActionErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || "");
+  if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) return researchTimeoutMessage;
+  return message || "Website research failed.";
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+async function fetchBillingJson(url: string, init?: RequestInit) {
+  const response = await fetch(url, init);
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = new Error(payload?.error || "Billing request failed.") as Error & { status?: number; code?: string };
+    error.status = response.status;
+    error.code = payload?.code;
+    throw error;
+  }
+  return payload as BillingStatus & { url?: string };
+}
+
+function getWebsiteSubmitProgressFacts(result: StoredWebsiteResearchResult): WebsiteSubmitProgressFacts {
+  return {
+    brandName: result.brand.name || result.brandBrief.brandName || result.host,
+    hasLogo: Boolean(result.brand.logoUrl || result.brand.faviconUrl),
+    colorCount: result.brand.colors.length,
+    proofCount: result.brandBrief.proof.length || result.evidence.receipts.specificClaims.length || result.evidence.receipts.namedProof.length,
+    buyerMomentCount: result.brandBrief.buyerMoments.length || result.evidence.receipts.buyerMoments.length,
+  };
+}
+
+function getUploadedAudioDurationMs(file: File): Promise<number> {
+  if (typeof window === "undefined") return Promise.resolve(fallbackUploadedAudioDurationMs);
+
+  return new Promise((resolve) => {
+    const objectUrl = window.URL.createObjectURL(file);
+    const audio = document.createElement("audio");
+    const cleanup = () => window.URL.revokeObjectURL(objectUrl);
+    const resolveFallback = () => {
+      cleanup();
+      resolve(fallbackUploadedAudioDurationMs);
+    };
+
+    audio.preload = "metadata";
+    audio.onloadedmetadata = () => {
+      const durationMs = Math.round((Number.isFinite(audio.duration) ? audio.duration : 0) * 1000);
+      cleanup();
+      resolve(durationMs > 0 ? durationMs : fallbackUploadedAudioDurationMs);
+    };
+    audio.onerror = resolveFallback;
+    audio.src = objectUrl;
+  });
+}
+
+function ResearchConnected() {
+  const runWebsiteResearch = useAction(api.researchRuns.runWebsiteResearch);
+  const generateAdScenes = useAction(api.adScenes.generateFromResearch);
+  const generateDialogueScripts = useAction(api.dialogueScripts.generateForScene);
+  const generateDialogueAudioForScene = useAction(api.audioAssets.generateDialogueForScene);
+  const attachUploadedAudioForScene = useAction(api.audioAssets.attachUploadedToScene);
+  const createAudioUploadUrl = useMutation(api.audioAssets.createUploadUrl);
+  const createSharePage = useMutation(api.sharePages.createFromScene);
+  const createRenderJob = useMutation(api.renderJobs.createFromScene);
+  const [url, setUrl] = useState("ogtool.com");
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [adStatus, setAdStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [audioStatus, setAudioStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [shareStatus, setShareStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [renderStatus, setRenderStatus] = useState<"idle" | "loading" | "queued" | "error">("idle");
+  const [result, setResult] = useState<StoredWebsiteResearchResult | null>(null);
+  const [adScenes, setAdScenes] = useState<AdScene[]>([]);
+  const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
+  const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
+  const [previewPlatform, setPreviewPlatform] = useState<PreviewPlatform>("instagram-feed");
+  const [rerollCount, setRerollCount] = useState(0);
+  const [rerollFlash, setRerollFlash] = useState<RenderFlashState | null>(null);
+  const [placeholderVariantIndex, setPlaceholderVariantIndex] = useState(0);
+  const [adStatusNote, setAdStatusNote] = useState("");
+  const [progressStage, setProgressStage] = useState<WebsiteSubmitProgressStage>(null);
+  const [pendingProgressFacts, setPendingProgressFacts] = useState<WebsiteSubmitProgressFacts | null>(null);
+  const [showSlowResearchMessage, setShowSlowResearchMessage] = useState(false);
+  const [renderJobId, setRenderJobId] = useState<Id<"renderJobs"> | null>(null);
+  const renderJob = useQuery(api.renderJobs.getStatus, renderJobId ? { renderJobId } : "skip");
+  const renderWorkerReadiness = useQuery(api.renderJobs.workerReadiness, {});
+  const [shareUrl, setShareUrl] = useState("");
+  const [shareError, setShareError] = useState("");
+  const [audioError, setAudioError] = useState("");
+  const [dialoguePanelOpen, setDialoguePanelOpen] = useState(false);
+  const [captionPanelOpen, setCaptionPanelOpen] = useState(false);
+  const [brandDetailsOpen, setBrandDetailsOpen] = useState(false);
+  const [dialogueStatus, setDialogueStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [dialogueScripts, setDialogueScripts] = useState<DialogueScript[]>([]);
+  const [selectedDialogueIndex, setSelectedDialogueIndex] = useState(0);
+  const [dialogueError, setDialogueError] = useState("");
+  const [previewTimeSeconds, setPreviewTimeSeconds] = useState(1.1);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [renderError, setRenderError] = useState("");
+  const [anonymousId, setAnonymousId] = useState("");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [saveError, setSaveError] = useState("");
+  const [savedDesignsOpen, setSavedDesignsOpen] = useState(false);
+  const [error, setError] = useState("");
+  const [sessionRestored, setSessionRestored] = useState(false);
+  const [billingStatus, setBillingStatus] = useState<BillingStatus | null>(null);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const createEditorScopeRef = useRef<HTMLDivElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const analysisUpgradeKeyRef = useRef("");
+  const rerollFlashTimeoutRef = useRef<number | null>(null);
+  const savedDesigns = useQuery(api.savedDesigns.list, anonymousId ? { anonymousId } : "skip") as SavedAdSceneDesign[] | undefined;
+  const latestGeneration = useQuery(api.adScenes.latestForAnonymousId, anonymousId ? { anonymousId } : "skip") as {
+    result: StoredWebsiteResearchResult;
+    scenes: AdScene[];
+  } | null | undefined;
+  const saveDesign = useMutation(api.savedDesigns.saveFromScene);
+  const savedDesignItems = savedDesigns || [];
+  const selectedPreviewSlot = useSelectedCanvasSlot();
+  const sceneLocks = useCanvasLocks();
+  const canvasActions = useCanvasActions();
+
+  const clearSubmitProgress = () => {
+    setProgressStage(null);
+    setPendingProgressFacts(null);
+    setShowSlowResearchMessage(false);
+  };
+
+  useEffect(() => {
+    setAnonymousId(getAnonymousId());
+  }, []);
+
+  useEffect(() => {
+    void fetchBillingJson("/api/billing/status")
+      .then(setBillingStatus)
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkoutStatus = params.get("checkout");
+    const checkoutSessionId = params.get("session_id");
+    if (checkoutStatus === "cancelled") {
+      setPaywallOpen(true);
+      window.history.replaceState(null, "", "/create");
+      return;
+    }
+    if (checkoutStatus !== "success" || !checkoutSessionId) return;
+
+    const completeCheckout = async () => {
+      setCheckoutLoading(true);
+      try {
+        const nextStatus = await fetchBillingJson("/api/billing/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId: checkoutSessionId }),
+        });
+        setBillingStatus(nextStatus);
+        setPaywallOpen(false);
+        window.history.replaceState(null, "", "/create");
+      } catch (checkoutError) {
+        setPaywallOpen(true);
+        setError(checkoutError instanceof Error ? checkoutError.message : "Could not verify checkout.");
+      } finally {
+        setCheckoutLoading(false);
+      }
+    };
+
+    void completeCheckout();
+  }, []);
+
+  useEffect(() => () => {
+    if (rerollFlashTimeoutRef.current) {
+      window.clearTimeout(rerollFlashTimeoutRef.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (progressStage !== "reading-site") return;
+
+    setShowSlowResearchMessage(false);
+    const timeoutId = window.setTimeout(() => {
+      setShowSlowResearchMessage(true);
+    }, slowResearchMessageDelayMs);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [progressStage]);
+
+  useEffect(() => {
+    const snapshot = loadCreateSessionSnapshot();
+    if (snapshot) {
+      setResult(snapshot.result);
+      setStatus(snapshot.result ? "ready" : "idle");
+      setAdScenes(snapshot.adScenes);
+      setSelectedScene(snapshot.selectedScene);
+      setSelectedSceneIndex(snapshot.selectedSceneIndex);
+      canvasActions.interactionReset({ locks: snapshot.sceneLocks });
+      setRerollCount(snapshot.rerollCount);
+      setAdStatus(snapshot.adScenes.length ? "ready" : "idle");
+      setAdStatusNote(snapshot.adStatusNote);
+      setAudioStatus(snapshot.selectedScene?.audio.status === "generated" ? "ready" : "idle");
+      setDialogueScripts(snapshot.dialogueScripts);
+      setSelectedDialogueIndex(Math.min(snapshot.selectedDialogueIndex, Math.max(0, snapshot.dialogueScripts.length - 1)));
+      setDialogueStatus(snapshot.dialogueScripts.length ? "ready" : "idle");
+    }
+    setSessionRestored(true);
+  }, [canvasActions]);
+
+  useEffect(() => {
+    if (!sessionRestored) return;
+    saveCreateSessionSnapshot({
+      result,
+      adScenes,
+      selectedScene,
+      selectedSceneIndex,
+      sceneLocks,
+      rerollCount,
+      adStatusNote,
+      dialogueScripts,
+      selectedDialogueIndex,
+    });
+  }, [
+    adScenes,
+    adStatusNote,
+    dialogueScripts,
+    rerollCount,
+    result,
+    sceneLocks,
+    selectedScene,
+    selectedSceneIndex,
+    selectedDialogueIndex,
+    sessionRestored,
+  ]);
+
+  useEffect(() => {
+    if (!sessionRestored || result || adScenes.length || !latestGeneration?.scenes.length) return;
+
+    const restoredScene = latestGeneration.scenes[0] || null;
+    setResult(latestGeneration.result);
+    setStatus("ready");
+    setAdScenes(latestGeneration.scenes);
+    setSelectedScene(restoredScene);
+    setSelectedSceneIndex(0);
+    canvasActions.interactionReset({ locks: createDefaultCanvasInteractionLocks() });
+    setRerollCount(0);
+    setAdStatus("ready");
+    setAdStatusNote(`${latestGeneration.scenes.length} ads restored. Press spacebar to find a stronger version.`);
+    setAudioStatus(restoredScene?.audio.status === "generated" ? "ready" : "idle");
+  }, [
+    adScenes.length,
+    canvasActions,
+    latestGeneration,
+    result,
+    sessionRestored,
+  ]);
+
+  const getCurrentAnonymousId = () => anonymousId || getAnonymousId();
+
+  const resetPreviewPlayback = useCallback(() => {
+    setIsAudioPlaying(false);
+    canvasActions.playbackStopped();
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    setPreviewTimeSeconds(1.1);
+  }, [canvasActions]);
+
+  const onTogglePreviewPlayback = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || selectedScene?.audio.status !== "generated") return;
+
+    if (audio.paused) {
+      void audio.play();
+      return;
+    }
+
+    audio.pause();
+  }, [selectedScene?.audio.status]);
+
+  const resetShareState = () => {
+    setShareStatus("idle");
+    setShareUrl("");
+    setShareError("");
+  };
+
+  const resetRenderState = () => {
+    setRenderStatus("idle");
+    setRenderJobId(null);
+    setRenderError("");
+  };
+
+  const resetDialogueState = () => {
+    setDialoguePanelOpen(false);
+    setCaptionPanelOpen(false);
+    canvasActions.closeModal("dialogue");
+    canvasActions.closeModal("captions");
+    setDialogueStatus("idle");
+    setDialogueScripts([]);
+    setSelectedDialogueIndex(0);
+    setDialogueError("");
+  };
+
+  const resetAudioState = () => {
+    setAudioStatus("idle");
+    setAudioError("");
+    setBrandDetailsOpen(false);
+    setCaptionPanelOpen(false);
+    canvasActions.closeModal("brand-dump");
+    canvasActions.closeModal("captions");
+    resetDialogueState();
+    resetPreviewPlayback();
+  };
+
+  const resetSaveState = () => {
+    setSaveStatus("idle");
+    setSaveError("");
+  };
+
+  const openBrandDetails = () => {
+    setBrandDetailsOpen(true);
+    canvasActions.openModal("brand-dump");
+  };
+
+  const closeBrandDetails = () => {
+    setBrandDetailsOpen(false);
+    canvasActions.closeModal("brand-dump");
+  };
+
+  const openDialoguePanel = () => {
+    setDialoguePanelOpen(true);
+    canvasActions.openModal("dialogue");
+  };
+
+  const closeDialoguePanel = () => {
+    setDialoguePanelOpen(false);
+    canvasActions.closeModal("dialogue");
+  };
+
+  const openCaptionPanel = () => {
+    setCaptionPanelOpen(true);
+    canvasActions.openModal("captions");
+  };
+
+  const closeCaptionPanel = () => {
+    setCaptionPanelOpen(false);
+    canvasActions.closeModal("captions");
+  };
+
+  const replaceSelectedScene = useCallback((nextScene: AdScene) => {
+    setSelectedScene(nextScene);
+    setAdScenes((scenes) => scenes.map((scene, index) => (
+      index === selectedSceneIndex ? nextScene : scene
+    )));
+  }, [selectedSceneIndex]);
+
+  useEffect(() => {
+    if (selectedScene?.audio.status !== "generated") return;
+    if (!isStaleAudioAnalysis(selectedScene.audio.analysis)) return;
+
+    const audio = selectedScene.audio;
+    const upgradeKey = `${audio.storageId}:${audio.url}:${audio.durationMs}`;
+    if (analysisUpgradeKeyRef.current === upgradeKey) return;
+    analysisUpgradeKeyRef.current = upgradeKey;
+
+    let cancelled = false;
+    void precomputeBrowserAudioAnalysisFromUrl(audio.url, {
+      durationSeconds: audio.durationSeconds,
+    })
+      .then((analysis) => {
+        if (cancelled) return;
+        setSelectedScene((currentScene) => {
+          if (currentScene?.audio.status !== "generated") return currentScene;
+          if (currentScene.audio.storageId !== audio.storageId) return currentScene;
+          if (!isStaleAudioAnalysis(currentScene.audio.analysis)) return currentScene;
+
+          const upgradedScene = {
+            ...currentScene,
+            audio: {
+              ...currentScene.audio,
+              analysis,
+            },
+          };
+
+          setAdScenes((scenes) => scenes.map((scene, index) => (
+            index === selectedSceneIndex ? upgradedScene : scene
+          )));
+
+          return upgradedScene;
+        });
+      })
+      .catch(() => {
+        analysisUpgradeKeyRef.current = "";
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedScene, selectedSceneIndex]);
+
+  const triggerRerollFlash = useCallback((roles: RenderFlashRole[]) => {
+    if (rerollFlashTimeoutRef.current) {
+      window.clearTimeout(rerollFlashTimeoutRef.current);
+    }
+    setRerollFlash(null);
+    window.requestAnimationFrame(() => {
+      setRerollFlash({
+        key: `reroll-${Date.now()}`,
+        roles,
+      });
+      rerollFlashTimeoutRef.current = window.setTimeout(() => {
+        setRerollFlash(null);
+        rerollFlashTimeoutRef.current = null;
+      }, rerollFlashMs);
+    });
+  }, []);
+
+  const onRerollScene = useCallback(() => {
+    if (!adScenes.length || !selectedScene) {
+      setPlaceholderVariantIndex((index) => (index + 1) % placeholderAdSurfaceVariantCount);
+      setRerollCount((count) => count + 1);
+      triggerRerollFlash(["headline", "visualizer", "captions"]);
+      return;
+    }
+
+    const formatInteraction = selectedScene ? getSceneFormatInteraction(selectedScene) : null;
+    const effectiveLocks = selectedPreviewSlot && formatInteraction
+      ? formatInteraction.getRerollLocksForSlot(selectedPreviewSlot, sceneLocks)
+      : sceneLocks;
+    const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, effectiveLocks);
+    if (!next.scene) return;
+
+    const currentGeneratedAudio = selectedScene?.audio.status === "generated" ? selectedScene.audio : null;
+    const shouldCarryAudio = Boolean(currentGeneratedAudio && next.scene.audio.status !== "generated");
+    const formatRerolledScene = formatInteraction && selectedScene
+      ? formatInteraction.applySlotReroll({
+        selectedSlot: selectedPreviewSlot,
+        currentScene: selectedScene,
+        nextScene: next.scene,
+        allScenes: adScenes,
+        locks: sceneLocks,
+        fallbackColors: fallbackCaptionColors,
+        offset: rerollCount + 1,
+        pickDistinctColor: getNextDistinctColor,
+      })
+      : next.scene;
+    const nextScene = shouldCarryAudio && currentGeneratedAudio
+      ? {
+        ...formatRerolledScene,
+        audio: currentGeneratedAudio,
+      }
+      : formatRerolledScene;
+    const shouldKeepPlayback = nextScene.audio.status === "generated" && currentGeneratedAudio?.url === nextScene.audio.url;
+
+    if (!shouldKeepPlayback) {
+      resetPreviewPlayback();
+    }
+    setSelectedScene(nextScene);
+    setSelectedSceneIndex(next.index);
+    setRerollCount((count) => count + 1);
+    resetShareState();
+    resetRenderState();
+    setAudioStatus(nextScene.audio.status === "generated" ? "ready" : "idle");
+    setAudioError("");
+    resetDialogueState();
+    resetSaveState();
+    triggerRerollFlash(selectedPreviewSlot ? [selectedPreviewSlot] : getSceneDefaultFlashSlots(nextScene));
+  }, [adScenes, rerollCount, resetPreviewPlayback, sceneLocks, selectedPreviewSlot, selectedScene, selectedSceneIndex, triggerRerollFlash]);
+
+  const onToggleLock = (key: SceneLockKey) => {
+    canvasActions.slotLockToggled(key);
+  };
+
+  const onSelectPreviewSlot = (slot: RenderSelectableSlot) => {
+    canvasActions.slotSelected(slot);
+  };
+
+  const onClearPreviewSlot = () => {
+    canvasActions.slotCleared();
+  };
+
+  const onTogglePreviewSlotLock = (slot: RenderSelectableSlot) => {
+    if (!selectedScene) return;
+    const slotDefinition = getSceneSelectableSlots(selectedScene).find((item) => item.slot === slot);
+    if (!slotDefinition) return;
+    onToggleLock(slotDefinition.lockKey as SceneLockKey);
+  };
+
+  const onChangePreviewSlotColor = (slot: RenderSelectableSlot, color: string) => {
+    if (!selectedScene) return;
+    const nextScene = getSceneFormatInteraction(selectedScene).applySlotColor(selectedScene, slot, color);
+    replaceSelectedScene(nextScene);
+    resetShareState();
+    resetRenderState();
+    resetSaveState();
+    triggerRerollFlash([slot]);
+  };
+
+  const onChangePreviewBackgroundColor = (color: string) => {
+    if (!selectedScene) return;
+    const nextScene = getSceneFormatInteraction(selectedScene).applyBackgroundColor(selectedScene, color);
+    replaceSelectedScene(nextScene);
+    resetShareState();
+    resetRenderState();
+    resetSaveState();
+  };
+
+  const applyGeneratedScenes = (scenes: AdScene[]) => {
+    if (!scenes.length) throw new Error("Ad idea generation returned no ads.");
+
+    const firstScene = scenes[0] || null;
+    setAdScenes(scenes);
+    setSelectedScene(firstScene);
+    setSelectedSceneIndex(0);
+    canvasActions.interactionReset();
+    setRerollCount(0);
+    resetShareState();
+    resetRenderState();
+    resetAudioState();
+    resetSaveState();
+    setAdStatusNote(`${scenes.length} ads ready. Press spacebar to find a stronger version.`);
+    setAdStatus("ready");
+    canvasActions.finishBusy();
+  };
+
+  const generateScenesForResearch = async (researchRunId: Id<"researchRuns">, count = 50) => {
+    const nextGeneration = await generateAdScenes({
+      researchRunId,
+      count,
+    }) as AdSceneGenerationResponse;
+
+    return nextGeneration.scenes || [];
+  };
+
+  useCanvasKeyboard({
+    editorScopeRef: createEditorScopeRef,
+    onReroll: onRerollScene,
+  });
+
+  useEffect(() => {
+    if (!selectedScene) return;
+
+    const shouldRunClock = selectedScene.audio.status === "generated" && isAudioPlaying;
+    if (!shouldRunClock) return;
+
+    let animationFrame = 0;
+
+    const tick = () => {
+      const currentAudio = audioRef.current;
+      if (currentAudio && !currentAudio.paused) {
+        setPreviewTimeSeconds(currentAudio.currentTime);
+        animationFrame = window.requestAnimationFrame(tick);
+      }
+    };
+
+    animationFrame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [
+    isAudioPlaying,
+    selectedScene?.audio.status,
+  ]);
+
+  useEffect(() => {
+    if (!brandDetailsOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeBrandDetails();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [brandDetailsOpen]);
+
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const hadExistingCanvas = Boolean(selectedScene || adScenes.length);
+    const keepPreviousCanvasAfterFailure = () => {
+      setAdStatus(hadExistingCanvas ? "ready" : "error");
+      if (hadExistingCanvas) {
+        setAdStatusNote("Previous ads are still on the canvas. Try another URL when you're ready.");
+      }
+    };
+
+    setStatus("loading");
+    setAdStatus("loading");
+    setProgressStage("reading-site");
+    setPendingProgressFacts(null);
+    setShowSlowResearchMessage(false);
+    canvasActions.slotCleared();
+    canvasActions.beginBusy("website-research");
+    resetShareState();
+    resetRenderState();
+    resetPreviewPlayback();
+    resetDialogueState();
+    closeBrandDetails();
+    closeCaptionPanel();
+    resetSaveState();
+    setAdStatusNote(hadExistingCanvas ? "Reading website. Keeping this canvas stable until the new ads are ready." : "");
+    setError("");
+    let researchCompleted = false;
+
+    try {
+      try {
+        setBillingStatus(await fetchBillingJson("/api/billing/consume-run", { method: "POST" }));
+      } catch (billingError: unknown) {
+        const typedError = billingError as Error & { status?: number; code?: string };
+        if (typedError.status === 402 || typedError.code === "PAYWALL_REQUIRED") {
+          setPaywallOpen(true);
+          setStatus(hadExistingCanvas ? "ready" : "idle");
+          keepPreviousCanvasAfterFailure();
+          clearSubmitProgress();
+          canvasActions.finishBusy();
+          return;
+        }
+        throw billingError;
+      }
+
+      const nextResult = await runWebsiteResearch({
+        anonymousId: getAnonymousId(),
+        url,
+      }) as StoredWebsiteResearchResponse;
+      if (isStoredWebsiteResearchFailure(nextResult)) {
+        setStatus(hadExistingCanvas ? "ready" : "error");
+        setError(nextResult.error);
+        keepPreviousCanvasAfterFailure();
+        clearSubmitProgress();
+        canvasActions.finishBusy();
+        return;
+      }
+      researchCompleted = true;
+      setPendingProgressFacts(getWebsiteSubmitProgressFacts(nextResult));
+      setShowSlowResearchMessage(false);
+      setProgressStage("writing-ads");
+      canvasActions.beginBusy("ad-generation");
+      const nextScenes = await generateScenesForResearch(nextResult.researchRunId as Id<"researchRuns">, 50);
+      setProgressStage("preparing-canvas");
+      await wait(preparingCanvasDelayMs);
+      setResult(nextResult);
+      setStatus("ready");
+      applyGeneratedScenes(nextScenes);
+      clearSubmitProgress();
+    } catch (nextError) {
+      clearSubmitProgress();
+      canvasActions.finishBusy();
+      const message = getResearchActionErrorMessage(nextError);
+      if (researchCompleted) {
+        setStatus(hadExistingCanvas ? "ready" : "error");
+        setAdStatus("error");
+        setAdStatusNote(hadExistingCanvas ? "Previous ads are still on the canvas. New ad generation failed." : "");
+        setError(message);
+      } else {
+        setStatus(hadExistingCanvas ? "ready" : "error");
+        keepPreviousCanvasAfterFailure();
+        setError(message);
+      }
+    }
+  };
+
+  const startCheckout = async () => {
+    setCheckoutLoading(true);
+    setError("");
+    try {
+      const payload = await fetchBillingJson("/api/billing/checkout", { method: "POST" });
+      if (!payload.url) throw new Error("Could not start checkout.");
+      window.location.href = payload.url;
+    } catch (checkoutError) {
+      setError(checkoutError instanceof Error ? checkoutError.message : "Could not start checkout.");
+      setCheckoutLoading(false);
+    }
+  };
+
+  const onCreateShareLink = async () => {
+    if (!selectedScene) return;
+    setShareStatus("loading");
+    setShareUrl("");
+    setShareError("");
+
+    try {
+      const share = await createSharePage({
+        anonymousId: getCurrentAnonymousId(),
+        scene: selectedScene,
+        ctaUrl: selectedScene.brand.url,
+        previewPlatform,
+      }) as { path: string };
+      const nextShareUrl = `${window.location.origin}${share.path}`;
+      setShareUrl(nextShareUrl);
+      setShareStatus("ready");
+
+      try {
+        await window.navigator.clipboard?.writeText(nextShareUrl);
+      } catch {
+        // Clipboard access is a convenience; the visible link is the source of truth.
+      }
+    } catch (nextError) {
+      setShareStatus("error");
+      setShareError(nextError instanceof Error ? nextError.message : "Share link failed.");
+    }
+  };
+
+  const onOpenAudioPanel = () => {
+    if (!selectedScene || audioStatus === "loading") return;
+    if (dialoguePanelOpen) {
+      closeDialoguePanel();
+    } else {
+      openDialoguePanel();
+    }
+    setAudioError("");
+    setDialogueError("");
+  };
+
+  const onGenerateDialogueScripts = async () => {
+    if (!selectedScene || audioStatus === "loading") return;
+    openDialoguePanel();
+    setDialogueStatus("loading");
+    setDialogueError("");
+    setAudioError("");
+
+    try {
+      const result = await generateDialogueScripts({
+        scene: selectedScene,
+        count: 5,
+      }) as { scripts: DialogueScript[] };
+      setDialogueScripts((result.scripts || []).map(cloneDialogueScript));
+      setSelectedDialogueIndex(0);
+      setDialogueStatus("ready");
+    } catch (nextError) {
+      setDialogueStatus("error");
+      setDialogueError(nextError instanceof Error ? nextError.message : "Dialogue script generation failed.");
+    }
+  };
+
+  const onSelectDialogueScript = (index: number) => {
+    setSelectedDialogueIndex(index);
+    setDialogueError("");
+  };
+
+  const onUpdateDialogueLineText = (lineIndex: number, text: string) => {
+    setDialogueScripts((scripts) => scripts.map((script, scriptIndex) => (
+      scriptIndex !== selectedDialogueIndex
+        ? script
+        : {
+          ...script,
+          lines: script.lines.map((line, index) => (
+            index === lineIndex ? { ...line, text } : line
+          )),
+        }
+    )));
+    resetRenderState();
+    resetShareState();
+  };
+
+  const onUpdateCaptionText = (captionIndex: number, text: string) => {
+    if (!selectedScene || selectedScene.audio.status !== "generated") return;
+    const nextAudio = updateGeneratedAudioCaptionText(selectedScene.audio, captionIndex, text);
+    if (nextAudio === selectedScene.audio) return;
+
+    replaceSelectedScene({
+      ...selectedScene,
+      audio: nextAudio,
+    });
+    resetRenderState();
+    resetShareState();
+    resetSaveState();
+  };
+
+  const onGenerateAudio = async () => {
+    const script = dialogueScripts[selectedDialogueIndex];
+    if (!selectedScene || !script || audioStatus === "loading") return;
+    setAudioStatus("loading");
+    canvasActions.beginBusy("audio-generation");
+    setAudioError("");
+    resetRenderState();
+    resetShareState();
+
+    try {
+      const result = await generateDialogueAudioForScene({
+        anonymousId: getCurrentAnonymousId(),
+        scene: selectedScene,
+        script,
+      }) as { scene: AdScene };
+      resetPreviewPlayback();
+      replaceSelectedScene(result.scene);
+      setAudioStatus("ready");
+      closeDialoguePanel();
+      canvasActions.finishBusy();
+    } catch (nextError) {
+      setAudioStatus("error");
+      setAudioError(nextError instanceof Error ? nextError.message : "Audio generation failed.");
+      if (dialoguePanelOpen) canvasActions.openModal("dialogue");
+      else canvasActions.finishBusy();
+    }
+  };
+
+  const onUploadAudio = async (file: File | null) => {
+    if (!file || !selectedScene || audioStatus === "loading") return;
+    if (!file.type.startsWith("audio/")) {
+      setAudioStatus("error");
+      setAudioError("Choose an audio file.");
+      return;
+    }
+
+    setAudioStatus("loading");
+    canvasActions.beginBusy("audio-upload");
+    setAudioError("");
+    setDialogueError("");
+    resetRenderState();
+    resetShareState();
+
+    try {
+      const durationMs = await getUploadedAudioDurationMs(file);
+      const uploadUrl = await createAudioUploadUrl({});
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": file.type || "application/octet-stream",
+        },
+        body: file,
+      });
+
+      if (!uploadResponse.ok) throw new Error("Audio upload failed.");
+
+      const uploadResult = await uploadResponse.json() as { storageId?: Id<"_storage"> };
+      if (!uploadResult.storageId) throw new Error("Audio upload did not return a stored file.");
+
+      const result = await attachUploadedAudioForScene({
+        anonymousId: getCurrentAnonymousId(),
+        scene: selectedScene,
+        storageId: uploadResult.storageId,
+        mimeType: file.type || "application/octet-stream",
+        durationMs,
+        fileName: file.name,
+      }) as { scene: AdScene };
+
+      resetPreviewPlayback();
+      replaceSelectedScene(result.scene);
+      setAudioStatus("ready");
+      closeDialoguePanel();
+      canvasActions.finishBusy();
+    } catch (nextError) {
+      setAudioStatus("error");
+      setAudioError(nextError instanceof Error ? nextError.message : "Audio upload failed.");
+      if (dialoguePanelOpen) canvasActions.openModal("dialogue");
+      else canvasActions.finishBusy();
+    }
+  };
+
+  const onSaveSelectedDesign = async () => {
+    if (!selectedScene) return;
+    setSaveStatus("loading");
+    setSaveError("");
+
+    try {
+      await saveDesign({
+        anonymousId: getCurrentAnonymousId(),
+        scene: selectedScene,
+      });
+      setSaveStatus("ready");
+      setSavedDesignsOpen(true);
+    } catch (nextError) {
+      setSaveStatus("error");
+      setSaveError(nextError instanceof Error ? nextError.message : "Could not save this design.");
+    }
+  };
+
+  const onOpenSavedDesign = (design: SavedAdSceneDesign) => {
+    const existingIndex = adScenes.findIndex((scene) => createSavedDesignId(scene) === design.id);
+
+    resetPreviewPlayback();
+    setSelectedScene(design.scene);
+    setSelectedSceneIndex(existingIndex >= 0 ? existingIndex : 0);
+    if (existingIndex < 0) {
+      setAdScenes((scenes) => [design.scene, ...scenes]);
+    }
+    setAudioStatus(design.scene.audio.status === "generated" ? "ready" : "idle");
+    setAudioError("");
+    resetDialogueState();
+    resetShareState();
+    resetRenderState();
+    setSaveStatus("ready");
+    setSaveError("");
+    setSavedDesignsOpen(false);
+  };
+
+  const onSelectAdIdea = (scene: AdScene, index: number) => {
+    resetPreviewPlayback();
+    setSelectedScene(scene);
+    setSelectedSceneIndex(index);
+    setAudioStatus(scene.audio.status === "generated" ? "ready" : "idle");
+    setAudioError("");
+    resetDialogueState();
+    resetShareState();
+    resetRenderState();
+  };
+
+  const closeSavedDesignsOnBlur = (event: React.FocusEvent<HTMLDivElement>) => {
+    const nextTarget = event.relatedTarget;
+    if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) return;
+    setSavedDesignsOpen(false);
+  };
+
+  const onCreateRenderJob = async () => {
+    if (!selectedScene) return;
+    if (renderWorkerReadiness && !renderWorkerReadiness.workerHealthy) {
+      setRenderStatus("error");
+      setRenderError("Render worker is offline. Start `npm run dev` from the repo root so downloads can render.");
+      return;
+    }
+
+    setRenderStatus("loading");
+    canvasActions.beginBusy("render");
+    setRenderJobId(null);
+    setRenderError("");
+
+    try {
+      const job = await createRenderJob({
+        anonymousId: getCurrentAnonymousId(),
+        rendererVersion: getClientRendererVersion(),
+        scene: selectedScene,
+      }) as { renderJobId: Id<"renderJobs"> };
+      setRenderJobId(job.renderJobId);
+      setRenderStatus("queued");
+    } catch (nextError) {
+      setRenderStatus("error");
+      setRenderError(nextError instanceof Error ? nextError.message : "Video render failed to start.");
+      canvasActions.finishBusy();
+    }
+  };
+
+  const currentRenderStatus = renderJob?.status || renderStatus;
+  const renderWorkerHealthy = renderWorkerReadiness?.workerHealthy ?? null;
+  const renderProgress = renderJob?.progress ?? (renderStatus === "loading" ? 2 : 0);
+  const renderDownloadUrl = renderJob?.downloadUrl || "";
+  const renderStatusLabel = currentRenderStatus === "ready"
+    ? "Video ready"
+    : currentRenderStatus === "failed" || currentRenderStatus === "error"
+      ? "Video render failed"
+      : renderWorkerHealthy === false
+        ? "Renderer offline"
+      : currentRenderStatus === "queued" || currentRenderStatus === "claimed"
+        ? "Queued for render"
+        : currentRenderStatus === "rendering"
+          ? `Rendering ${renderProgress}%`
+          : "Download video";
+  const hasGeneratedAudio = selectedScene?.audio.status === "generated";
+  const playableAudioUrl = selectedScene?.audio.status === "generated" ? selectedScene.audio.url : "";
+  const generatedCaptions = selectedScene?.audio.status === "generated" ? selectedScene.audio.captions : [];
+  const hasEmptyEditedCaption = generatedCaptions.some((caption) => !caption.text.trim());
+  const selectedDialogueScript = dialogueScripts[selectedDialogueIndex] || null;
+  const dialogueCanGenerateAudio = Boolean(selectedScene && selectedDialogueScript && selectedDialogueScript.lines.some((line) => line.text.trim()));
+  const selectedSavedDesignId = selectedScene ? createSavedDesignId(selectedScene) : "";
+  const selectedDesignIsSaved = Boolean(selectedSavedDesignId && savedDesignItems.some((design) => design.id === selectedSavedDesignId));
+  const saveStatusLabel = saveStatus === "loading"
+    ? "Saving"
+    : saveStatus === "ready" || selectedDesignIsSaved
+      ? "Saved"
+      : "Save";
+  const renderBusy = currentRenderStatus === "loading"
+    || currentRenderStatus === "queued"
+    || currentRenderStatus === "claimed"
+    || currentRenderStatus === "rendering";
+
+  useEffect(() => {
+    if (currentRenderStatus === "ready" || currentRenderStatus === "failed" || currentRenderStatus === "error") {
+      canvasActions.finishBusy();
+    }
+  }, [canvasActions, currentRenderStatus]);
+
+  return (
+    <div
+      ref={createEditorScopeRef}
+      className="create-desktop-fit-shell min-h-screen min-w-[1280px] overflow-x-auto bg-[#F7F4EA] px-3 py-4 font-sans text-slate-950 sm:px-6 md:px-10"
+      data-create-editor-scope="true"
+    >
+      {paywallOpen ? (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[2rem] border border-slate-200 bg-white p-6 text-slate-950 shadow-2xl shadow-slate-950/30">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-500">Wiggly beta pass</p>
+                <h2 className="mt-2 text-3xl font-black leading-tight">You used your 2 free runs.</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPaywallOpen(false)}
+                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-black text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
+                aria-label="Close paywall"
+              >
+                x
+              </button>
+            </div>
+            <p className="text-sm font-semibold leading-6 text-slate-600">
+              Keep generating ads, rerolling ideas, and testing Wiggly for the next 7 days.
+            </p>
+            <button
+              type="button"
+              onClick={() => void startCheckout()}
+              disabled={checkoutLoading}
+              className="mt-6 flex h-13 w-full items-center justify-center rounded-2xl bg-slate-950 px-5 text-base font-black text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800 disabled:cursor-progress disabled:opacity-70"
+            >
+              {checkoutLoading ? "Starting checkout..." : "Continue for $1"}
+            </button>
+            <p className="mt-3 text-center text-xs font-bold text-slate-400">No signup wall. Just a tiny paid test.</p>
+            <p className="mt-2 text-center text-xs font-semibold text-slate-400">
+              If anything gets weird or you have ideas, email me directly: buildwithshaz@gmail.com.
+            </p>
+          </div>
+        </div>
+      ) : null}
+      <header className="mx-auto flex max-w-7xl items-center justify-between">
+        <div className="flex items-center gap-3">
+          <WigglyMark size="sm" />
+          <div>
+            <p className="text-2xl font-black leading-none tracking-normal text-slate-950">Wiggly</p>
+            <p className="mt-1 text-xs font-black uppercase tracking-[0.28em] text-slate-400">
+              Audio that looks expensive
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          className="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-black text-slate-700 shadow-md shadow-slate-950/10"
+          title="Builder stays legacy-only while v3 /create is stabilized."
+        >
+          Open builder
+        </button>
+      </header>
+
+      <section className="mx-auto grid max-w-7xl items-center gap-8 py-6 sm:gap-10 sm:py-8 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[0.82fr_1.18fr] lg:gap-16 lg:py-10">
+        <CreateLeftColumn
+          adScenesCount={adScenes.length}
+          adStatus={adStatus}
+          error={error}
+          freeRunsLabel={billingStatus && !billingStatus.paid && billingStatus.freeRemaining !== null
+            ? `${billingStatus.freeRemaining} of ${billingStatus.freeLimit} free runs left`
+            : ""}
+          onSubmit={onSubmit}
+          onUrlChange={setUrl}
+          progressFacts={pendingProgressFacts}
+          progressStage={progressStage}
+          showSlowResearchMessage={showSlowResearchMessage}
+          status={status}
+          url={url}
+        />
+
+        <div className="space-y-4">
+          <div className="grid items-center gap-5 sm:gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]">
+            <CreateCanvasColumn
+              adScenesCount={adScenes.length}
+              isAudioPlaying={isAudioPlaying}
+              onChangePreviewBackgroundColor={onChangePreviewBackgroundColor}
+              onChangePreviewSlotColor={onChangePreviewSlotColor}
+              onClearPreviewSlot={onClearPreviewSlot}
+              onOpenAudioPanel={onOpenAudioPanel}
+              onOpenCaptionEditor={openCaptionPanel}
+              onRerollScene={onRerollScene}
+              onSelectPreviewSlot={onSelectPreviewSlot}
+              onTogglePlayback={onTogglePreviewPlayback}
+              onTogglePreviewSlotLock={onTogglePreviewSlotLock}
+              hasGeneratedAudio={hasGeneratedAudio}
+              placeholderVariantIndex={placeholderVariantIndex}
+              playableAudioUrl={playableAudioUrl}
+              previewPlatform={previewPlatform}
+              previewTimeSeconds={previewTimeSeconds}
+              rerollCount={rerollCount}
+              rerollFlash={rerollFlash}
+              result={result}
+              sceneLocks={sceneLocks}
+              selectedPreviewSlot={selectedPreviewSlot}
+              selectedScene={selectedScene}
+            />
+
+            <aside className="space-y-4">
+              <CreateActionCard
+                currentRenderStatus={currentRenderStatus}
+                hasGeneratedAudio={hasGeneratedAudio}
+                hasSelectedScene={Boolean(selectedScene)}
+                isAudioPlaying={isAudioPlaying}
+                onCreateRenderJob={() => void onCreateRenderJob()}
+                onCreateShareLink={() => void onCreateShareLink()}
+                onOpenAudioPanel={onOpenAudioPanel}
+                onOpenCaptionEditor={openCaptionPanel}
+                onOpenSavedDesign={onOpenSavedDesign}
+                onPreviewPlatformChange={setPreviewPlatform}
+                onSaveSelectedDesign={() => void onSaveSelectedDesign()}
+                onSavedDesignsBlur={closeSavedDesignsOnBlur}
+                onSavedDesignsOpenChange={setSavedDesignsOpen}
+                onTogglePreviewPlayback={onTogglePreviewPlayback}
+                playableAudioUrl={playableAudioUrl}
+                previewPlatform={previewPlatform}
+                renderBusy={renderBusy}
+                renderDownloadUrl={renderDownloadUrl}
+                renderErrorMessage={renderJob?.error || renderError}
+                renderStatusLabel={renderStatusLabel}
+                renderWorkerHealthy={renderWorkerHealthy}
+                saveError={saveError}
+                savedDesignItems={savedDesignItems}
+                savedDesignsOpen={savedDesignsOpen}
+                saveStatus={saveStatus}
+                saveStatusLabel={saveStatusLabel}
+                selectedDesignIsSaved={selectedDesignIsSaved}
+                shareError={shareError}
+                shareStatus={shareStatus}
+                shareUrl={shareUrl}
+              />
+
+              <CreateAudioCard
+                audioError={audioError}
+                audioRef={audioRef}
+                onAudioEnded={() => {
+                  setIsAudioPlaying(false);
+                  canvasActions.playbackStopped();
+                  if (audioRef.current) audioRef.current.currentTime = 0;
+                  setPreviewTimeSeconds(1.1);
+                }}
+                onAudioPause={(currentTime) => {
+                  setIsAudioPlaying(false);
+                  canvasActions.playbackStopped();
+                  setPreviewTimeSeconds(currentTime);
+                }}
+                onAudioPlay={() => {
+                  setIsAudioPlaying(true);
+                  canvasActions.playbackStarted();
+                }}
+                onAudioTimeUpdate={setPreviewTimeSeconds}
+                playableAudioUrl={playableAudioUrl}
+              />
+
+              <CreateCreativeBriefCard
+                onOpenDetails={openBrandDetails}
+                result={result}
+              />
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-7xl pb-14">
+        <CreateIdeasList
+          scenes={adScenes}
+          selectedSceneIndex={selectedSceneIndex}
+          onSelectScene={onSelectAdIdea}
+        />
+      </div>
+
+      {result && brandDetailsOpen ? (
+        <BrandDumpModal
+          result={result}
+          onClose={closeBrandDetails}
+        />
+      ) : null}
+
+      {dialoguePanelOpen ? (
+        <CreateDialogueModal
+          audioError={audioError}
+          audioStatus={audioStatus}
+          canGenerateAudio={dialogueCanGenerateAudio}
+          dialogueError={dialogueError}
+          dialogueScripts={dialogueScripts}
+          dialogueStatus={dialogueStatus}
+          hasSelectedScene={Boolean(selectedScene)}
+          onClose={closeDialoguePanel}
+          onGenerateAudio={() => void onGenerateAudio()}
+          onGenerateDialogueScripts={() => void onGenerateDialogueScripts()}
+          onSelectDialogueScript={onSelectDialogueScript}
+          onUpdateDialogueLineText={onUpdateDialogueLineText}
+          onUploadAudio={(file) => void onUploadAudio(file)}
+          selectedDialogueIndex={selectedDialogueIndex}
+        />
+      ) : null}
+
+      {captionPanelOpen && hasGeneratedAudio ? (
+        <CreateCaptionModal
+          captions={generatedCaptions}
+          hasEmptyEditedCaption={hasEmptyEditedCaption}
+          onClose={closeCaptionPanel}
+          onOpenAudioPanel={onOpenAudioPanel}
+          onUpdateCaptionText={onUpdateCaptionText}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+export function CreateResearchClient() {
+  const convexConfigured = Boolean(getV3ConvexUrl());
+
+  if (!convexConfigured) {
+    return (
+      <section className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-4xl items-center">
+        <div className="rounded-[30px] border border-amber-200 bg-amber-50 p-8 text-amber-900 shadow-sm">
+          <ShieldAlert className="size-8" />
+          <h1 className="mt-5 text-4xl font-black">Convex is missing.</h1>
+          <p className="mt-4 text-lg font-bold leading-8">
+            Add NEXT_PUBLIC_V3_CONVEX_URL to v3/.env.local before running Phase 1 research.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  return <ResearchConnected />;
+}

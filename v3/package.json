@@ -1,0 +1,53 @@
+{
+  "name": "@wiggly/v3",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3020",
+    "build": "next build",
+    "start": "next start -p 3020",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx tests/research-url.test.ts && tsx tests/firecrawl-normalize.test.ts && tsx tests/ad-generation.test.ts && tsx tests/dialogue-scripts.test.ts && tsx tests/render-surface.test.tsx && tsx tests/render-parity.test.tsx && tsx tests/format-registry.test.ts && tsx tests/create-module-boundary.test.ts && tsx tests/convex-boundary.test.ts && tsx tests/runtime-health.test.ts && tsx tests/live-deploy.test.ts && tsx tests/live-smoke.test.ts && tsx tests/create-browser-smoke.test.ts && tsx tests/create-smoke-ci.test.ts && tsx tests/audio-analysis.test.ts && tsx tests/deepgram-transcription.test.ts && tsx tests/audio-scene.test.ts && tsx tests/reroll.test.ts && tsx tests/canvas-interaction-store.test.ts && tsx tests/saved-designs.test.ts && tsx tests/share-scene.test.ts && tsx tests/render-job.test.ts && tsx tests/v3-smoke.test.tsx",
+    "convex:dev": "convex dev",
+    "convex:codegen": "convex codegen",
+    "runtime:health": "tsx scripts/runtime-health.ts",
+    "smoke:research": "tsx scripts/research-smoke.ts",
+    "smoke:live": "tsx scripts/live-smoke.ts",
+    "smoke:create": "tsx scripts/create-browser-smoke.ts",
+    "render-worker": "tsx scripts/render-worker.ts",
+    "render-worker:watch": "tsx scripts/render-worker.ts --watch",
+    "remotion:still": "remotion still remotion-entry/index.ts AdSceneMp4 tmp/adscene-still.png --frame=66 --scale=0.25"
+  },
+  "dependencies": {
+    "@google/genai": "^2.8.0",
+    "@remotion/bundler": "^4.0.473",
+    "@remotion/media": "^4.0.473",
+    "@remotion/renderer": "^4.0.473",
+    "@tailwindcss/postcss": "^4.3.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "convex": "^1.40.0",
+    "lucide-react": "^0.546.0",
+    "next": "^16.2.7",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "remotion": "^4.0.473",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.1.14",
+    "zod": "4.3.6",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@remotion/cli": "^4.0.473",
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.2.3",
+    "playwright": "^1.60.0",
+    "tsx": "^4.20.6",
+    "typescript": "~5.8.2"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
+  }
+}
