@@ -33,8 +33,13 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 const isDisabled = (value: string | undefined) => ['0', 'false', 'off', 'no'].includes(String(value || '').trim().toLowerCase());
 
 const sessionCookieName = 'wiggly_session';
+const paidCookieName = 'wiggly_paid_until';
 const billShieldSecret = process.env.AI_BILL_SHIELD_SECRET || process.env.SESSION_SECRET || (isProd ? '' : 'wiggly-dev-bill-shield');
 const quotaWindowMs = 24 * 60 * 60 * 1000;
+const freeWorkflowRunLimit = Number(process.env.FREE_WORKFLOW_RUN_LIMIT || 2);
+const paidPassDays = Number(process.env.PAID_PASS_DAYS || 7);
+const paidPassPriceCents = Number(process.env.PAID_PASS_PRICE_CENTS || 100);
+const isPaywallEnabled = !isDisabled(process.env.PAYWALL_ENABLED);
 const PINNED_TTS_MODEL = 'gemini-3.1-flash-tts-preview';
 const readQuota = (name: string, prodDefault: number, devDefault: number) => (
   Number(process.env[name] || (isProd ? prodDefault : devDefault))
@@ -51,6 +56,7 @@ const quotaBuckets = {
 type QuotaBucket = keyof typeof quotaBuckets;
 const quotaCounts = new Map<string, { count: number; resetAt: number }>();
 const ipCounts = new Map<string, { count: number; resetAt: number }>();
+const workflowRunCounts = new Map<string, { count: number; resetAt: number }>();
 
 const parseCookies = (header = '') => Object.fromEntries(
   header.split(';')
@@ -66,6 +72,11 @@ const parseCookies = (header = '') => Object.fromEntries(
 const signSessionId = (sessionId: string) => crypto
   .createHmac('sha256', billShieldSecret || 'missing-secret')
   .update(sessionId)
+  .digest('base64url');
+
+const signPaidUntil = (sessionId: string, paidUntil: number) => crypto
+  .createHmac('sha256', billShieldSecret || 'missing-secret')
+  .update(`${sessionId}:${paidUntil}`)
   .digest('base64url');
 
 const readSignedSessionId = (rawCookie: string | undefined) => {
@@ -96,6 +107,31 @@ const getOrSetAnonymousSessionId = (req: express.Request, res: express.Response)
   return sessionId;
 };
 
+const readPaidUntil = (req: express.Request, sessionId: string) => {
+  if (!billShieldSecret) return 0;
+  const cookies = parseCookies(req.headers.cookie);
+  const rawCookie = cookies[paidCookieName];
+  if (!rawCookie) return 0;
+  const [paidUntilText, signature] = rawCookie.split('.');
+  const paidUntil = Number(paidUntilText);
+  if (!Number.isFinite(paidUntil) || !signature || paidUntil <= Date.now()) return 0;
+  const expected = signPaidUntil(sessionId, paidUntil);
+  try {
+    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected)) ? paidUntil : 0;
+  } catch {
+    return 0;
+  }
+};
+
+const setPaidUntilCookie = (res: express.Response, sessionId: string, paidUntil: number) => {
+  res.cookie(paidCookieName, `${paidUntil}.${signPaidUntil(sessionId, paidUntil)}`, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: isProd,
+    maxAge: Math.max(0, paidUntil - Date.now()),
+  });
+};
+
 const consumeQuota = (store: Map<string, { count: number; resetAt: number }>, key: string, limit: number) => {
   const now = Date.now();
   const current = store.get(key);
@@ -108,6 +144,60 @@ const consumeQuota = (store: Map<string, { count: number; resetAt: number }>, ke
   }
   current.count += 1;
   return { ok: true, remaining: Math.max(0, limit - current.count), resetAt: current.resetAt };
+};
+
+const readWorkflowUsage = (sessionId: string) => {
+  const now = Date.now();
+  const current = workflowRunCounts.get(`workflow:${sessionId}`);
+  if (!current || current.resetAt <= now) return { count: 0, remaining: freeWorkflowRunLimit, resetAt: now + quotaWindowMs };
+  return {
+    count: current.count,
+    remaining: Math.max(0, freeWorkflowRunLimit - current.count),
+    resetAt: current.resetAt,
+  };
+};
+
+const consumeWorkflowRun = (sessionId: string) => consumeQuota(
+  workflowRunCounts,
+  `workflow:${sessionId}`,
+  freeWorkflowRunLimit,
+);
+
+const getBillingStatus = (req: express.Request, res: express.Response) => {
+  const sessionId = getOrSetAnonymousSessionId(req, res);
+  const paidUntil = readPaidUntil(req, sessionId);
+  const usage = readWorkflowUsage(sessionId);
+  return {
+    paid: paidUntil > Date.now(),
+    paidUntil,
+    freeLimit: freeWorkflowRunLimit,
+    freeUsed: usage.count,
+    freeRemaining: paidUntil > Date.now() ? null : usage.remaining,
+    resetAt: usage.resetAt,
+  };
+};
+
+const workflowPaywall: express.RequestHandler = (req, res, next) => {
+  if (!isPaywallEnabled) return next();
+  const status = getBillingStatus(req, res);
+  if (status.paid) {
+    res.setHeader('X-Wiggly-Paid-Until', String(status.paidUntil));
+    return next();
+  }
+
+  const sessionId = getOrSetAnonymousSessionId(req, res);
+  const usage = consumeWorkflowRun(sessionId);
+  res.setHeader('X-Wiggly-Free-Runs-Remaining', String(usage.remaining));
+  if (!usage.ok) {
+    return res.status(402).json({
+      error: 'You used your 2 free Wiggly runs. Unlock more for $1.',
+      code: 'PAYWALL_REQUIRED',
+      freeLimit: freeWorkflowRunLimit,
+      freeRemaining: 0,
+      resetAt: usage.resetAt,
+    });
+  }
+  next();
 };
 
 const billShield = (bucket: QuotaBucket, featureFlag = 'AI_GENERATION_ENABLED'): express.RequestHandler => (req, res, next) => {
@@ -146,6 +236,7 @@ app.post('/api/dev/reset-ai-quotas', (req, res) => {
   if (isProd) return res.status(404).json({ error: 'Not found' });
   quotaCounts.clear();
   ipCounts.clear();
+  workflowRunCounts.clear();
   res.json({ ok: true });
 });
 
@@ -237,10 +328,80 @@ app.get('/api/health', (_req, res) => {
     openrouterConfigured: Boolean(process.env.OPENROUTER_API_KEY),
     firecrawlConfigured: Boolean(process.env.FIRECRAWL_API_KEY),
     postizConfigured: Boolean(process.env.POSTIZ_API_KEY),
+    stripeConfigured: Boolean(process.env.STRIPE_SECRET_KEY),
   });
 });
 
 app.use('/api', apiLimiter);
+
+app.get('/api/billing/status', (req, res) => {
+  res.json(getBillingStatus(req, res));
+});
+
+app.post('/api/billing/checkout', async (req, res) => {
+  try {
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY?.trim();
+    if (!stripeSecretKey) {
+      return res.status(503).json({ error: 'Stripe is not configured yet.' });
+    }
+
+    const sessionId = getOrSetAnonymousSessionId(req, res);
+    const appUrl = (process.env.APP_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+    const params = new URLSearchParams();
+    params.set('mode', 'payment');
+    params.set('client_reference_id', sessionId);
+    params.set('line_items[0][quantity]', '1');
+    params.set('line_items[0][price_data][currency]', 'usd');
+    params.set('line_items[0][price_data][unit_amount]', String(paidPassPriceCents));
+    params.set('line_items[0][price_data][product_data][name]', 'Wiggly 7-day beta pass');
+    params.set('success_url', `${appUrl}/create?checkout=success&session_id={CHECKOUT_SESSION_ID}`);
+    params.set('cancel_url', `${appUrl}/create?checkout=cancelled`);
+
+    const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${stripeSecretKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params,
+    });
+    const payload: any = await response.json();
+    if (!response.ok || !payload?.url || !payload?.id) {
+      return res.status(response.status || 500).json({ error: payload?.error?.message || 'Could not start checkout.' });
+    }
+
+    return res.json({ url: payload.url });
+  } catch (error: any) {
+    console.error('Stripe checkout error:', error);
+    return res.status(500).json({ error: error?.message || 'Could not start checkout.' });
+  }
+});
+
+app.post('/api/billing/complete', async (req, res) => {
+  try {
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY?.trim();
+    const checkoutSessionId = String(req.body?.sessionId || '').trim();
+    if (!stripeSecretKey || !checkoutSessionId) {
+      return res.status(400).json({ error: 'Checkout session is required.' });
+    }
+
+    const sessionId = getOrSetAnonymousSessionId(req, res);
+    const response = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(checkoutSessionId)}`, {
+      headers: { Authorization: `Bearer ${stripeSecretKey}` },
+    });
+    const payload: any = await response.json();
+    if (!response.ok || payload?.payment_status !== 'paid' || payload?.client_reference_id !== sessionId) {
+      return res.status(402).json({ error: 'Payment is not complete yet.' });
+    }
+
+    const paidUntil = Date.now() + paidPassDays * quotaWindowMs;
+    setPaidUntilCookie(res, sessionId, paidUntil);
+    return res.json({ ...getBillingStatus(req, res), paid: true, paidUntil });
+  } catch (error: any) {
+    console.error('Stripe complete error:', error);
+    return res.status(500).json({ error: error?.message || 'Could not verify checkout.' });
+  }
+});
 
 const memoryStorage = multer.memoryStorage();
 const uploadMem = multer({
@@ -2671,7 +2832,7 @@ const generateHeadlineVariations = async (brandBrain: BrandBrain, count: number,
   return { variations: [], provider: 'local', model: 'local', selectedModel, fallback: true };
 };
 
-app.post('/api/research-brand', brandResearchLimiter, billShield('brandResearch', 'BRAND_RESEARCH_ENABLED'), async (req, res) => {
+app.post('/api/research-brand', brandResearchLimiter, workflowPaywall, billShield('brandResearch', 'BRAND_RESEARCH_ENABLED'), async (req, res) => {
   try {
     const websiteUrl = normalizeResearchUrl(req.body?.websiteUrl);
     const fallbackAnswers = Array.isArray(req.body?.fallbackAnswers)
@@ -2722,8 +2883,27 @@ app.post('/api/research-brand', brandResearchLimiter, billShield('brandResearch'
       brandBrain = { ...brandBrain, receipts: buildBrandReceipts(brandBrain) };
     } catch (error) {
       console.warn('[brand-research] brain_failed', websiteUrl.href, error instanceof Error ? error.message : error);
-      return res.status(502).json({
-        error: 'Wiggly read the website, but the AI brand brief failed. Try again in a moment.',
+      if (!researchText.trim()) {
+        return res.status(502).json({
+          error: 'Wiggly read the website, but could not find enough usable brand details. Try a more specific page from the same brand.',
+        });
+      }
+      console.warn('[brand-research] using_heuristic_brain', websiteUrl.href);
+      brandBrain = buildHeuristicBrandBrain({
+        websiteUrl,
+        researchText,
+        brandAssets,
+        brandLogoUrl,
+      });
+    }
+
+    if (brandBrainNeedsFallback(brandBrain) && researchText.trim()) {
+      console.warn('[brand-research] weak_brain_using_heuristic', websiteUrl.href);
+      brandBrain = buildHeuristicBrandBrain({
+        websiteUrl,
+        researchText,
+        brandAssets,
+        brandLogoUrl,
       });
     }
 

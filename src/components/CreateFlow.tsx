@@ -5,7 +5,7 @@ import { PlatformFrame, type PlatformType } from './PlatformFrame';
 import { CanvasEditor } from './CanvasEditor';
 import type { AudioAnalysisData } from '../lib/audio-analysis';
 import { getRelativeLuminance, pickVisibleColorOnLight } from '../lib/color-contrast';
-import { BRAND_FALLBACK_QUESTIONS, type BrandBrain } from '../lib/prompts/brand-brain';
+import type { BrandBrain } from '../lib/prompts/brand-brain';
 import type { ConversationAdLine, GeneratedAdFormat, HeadlineVariation } from '../lib/prompts/headline-variations';
 import { useEditorStore, type Caption } from '../store';
 
@@ -89,6 +89,7 @@ type CreateFlowProps = {
   onOpenBuilder: (variation: GeneratedAdVariation, brandBrain: BrandBrain) => void;
   onResetCanvasForNewWebsite: () => void;
   onOpenStudio: () => void;
+  spaceRerollDisabled?: boolean;
   rendering: boolean;
 };
 
@@ -97,6 +98,15 @@ type ResearchResponse = {
   questions?: string[];
   reason?: string;
   brandBrain?: BrandBrain;
+};
+
+type BillingStatus = {
+  paid: boolean;
+  paidUntil: number;
+  freeLimit: number;
+  freeUsed: number;
+  freeRemaining: number | null;
+  resetAt: number;
 };
 
 type AdStreamResponse = {
@@ -229,7 +239,7 @@ const saveGenerationFeedback = (feedback: StoredGenerationFeedback) => {
 };
 
 const isEditableTarget = (target: EventTarget | null) => (
-  target instanceof HTMLElement && Boolean(target.closest('input, textarea, select, [contenteditable="true"]'))
+  target instanceof HTMLElement && Boolean(target.closest('input, textarea, select, button, a, [role="button"], [contenteditable="true"]'))
 );
 
 const fetchJsonWithTimeout = async <T,>(url: string, init: RequestInit, timeoutMs: number, timeoutMessage: string): Promise<T> => {
@@ -239,7 +249,10 @@ const fetchJsonWithTimeout = async <T,>(url: string, init: RequestInit, timeoutM
     const response = await fetch(url, { ...init, signal: controller.signal });
     if (!response.ok) {
       const payload = await response.json().catch(() => null);
-      throw new Error(payload?.error || 'Something broke while making the ads.');
+      const nextError = new Error(payload?.error || 'Something broke while making the ads.') as Error & { status?: number; code?: string };
+      nextError.status = response.status;
+      nextError.code = payload?.code;
+      throw nextError;
     }
     return response.json() as Promise<T>;
   } catch (error: any) {
@@ -365,6 +378,32 @@ const normalizeBrandBrainAssets = (value: BrandBrain['brandAssets'] | null | und
 
 const isDataImage = (value: string | null | undefined) => Boolean(value?.startsWith('data:image/'));
 
+const isLikelyFaviconAsset = (value: string | null | undefined) => {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw || isDataImage(raw)) return false;
+  return /(?:^|\/)(?:favicon|apple-touch-icon|mstile|site-icon|android-chrome|icon[-_]\d|icon\.)/i.test(raw)
+    || /\.(?:ico)(?:$|[?#])/i.test(raw);
+};
+
+const isLikelyLogoAsset = (value: string | null | undefined) => {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw || isDataImage(raw) || isLikelyFaviconAsset(raw)) return false;
+  if (/(?:avatar|author|headshot|portrait|profile|team|founder|person|people|user|testimonial|speaker|staff)/i.test(raw)) return false;
+  return /(?:logo|brand|wordmark|logomark|mark|horizontal|lockup)/i.test(raw);
+};
+
+const pickBrandAvatarLogo = (brandBrain: BrandBrain | null, brandAssets: ReturnType<typeof normalizeBrandBrainAssets> | null) => {
+  const logo = brandAssets?.images.logo || brandBrain?.brandLogoUrl || null;
+  if (brandAssets?.images.favicon) return brandAssets.images.favicon;
+  if (isDataImage(logo)) return logo;
+  return [
+    logo,
+    brandAssets?.images.ogImage,
+    ...(brandAssets?.images.heroImages || []),
+    ...(brandAssets?.images.allImages || []),
+  ].find(isLikelyLogoAsset) || brandAssets?.images.favicon || null;
+};
+
 const canPreviewBrandImage = (value: string) => {
   if (isDataImage(value)) return true;
   if (value.startsWith('/')) return true;
@@ -380,11 +419,12 @@ const getRerollFlashRoles = (
   previousVariation: GeneratedAdVariation | null,
   nextVariation: GeneratedAdVariation
 ): RerollFlashRole[] => {
-  if (!previousVariation) return ['headline', 'visualizer', 'captions', 'cta'];
+  const allVisualRoles: RerollFlashRole[] = ['logo', 'headline', 'subheadline', 'visualizer', 'captions', 'cta'];
+  if (!previousVariation) return allVisualRoles;
   if (previousVariation.id === nextVariation.id) return [];
-  if (previousVariation.format !== nextVariation.format) return ['headline', 'visualizer', 'captions', 'cta', 'logo'];
+  if (previousVariation.format !== nextVariation.format) return allVisualRoles;
 
-  const roles = new Set<RerollFlashRole>();
+  const roles = new Set<RerollFlashRole>(['logo']);
   if (
     previousVariation.headline !== nextVariation.headline ||
     previousVariation.headlineColor !== nextVariation.headlineColor ||
@@ -416,8 +456,22 @@ const getRerollFlashRoles = (
     roles.add('cta');
   }
 
-  return Array.from(roles);
+  return roles.size ? Array.from(roles) : allVisualRoles;
 };
+
+const getVariationPreviewKey = (variation: GeneratedAdVariation, brandBrain: BrandBrain) => [
+  brandBrain.websiteUrl,
+  brandBrain.businessName,
+  variation.id,
+  variation.index,
+  variation.headline,
+  variation.angle,
+  variation.visualizerColor,
+  variation.accentColor,
+  variation.headlineColor,
+  variation.archetype?.id,
+  variation.archetype?.variantFingerprint,
+].join(':');
 
 export function CreateFlow({
   audioFileName,
@@ -456,6 +510,7 @@ export function CreateFlow({
   onOpenBuilder,
   onResetCanvasForNewWebsite,
   onOpenStudio,
+  spaceRerollDisabled = false,
   rendering,
 }: CreateFlowProps) {
   const persistedCreateFlow = useMemo(() => loadPersistedCreateFlow(), []);
@@ -485,7 +540,11 @@ export function CreateFlow({
   const [feedbackByVariationId, setFeedbackByVariationId] = useState<Record<string, GenerationFeedbackRating>>({});
   const [selectedAdModel, setSelectedAdModel] = useState<AdModelChoice>('auto');
   const [lastAdProvider, setLastAdProvider] = useState('');
+  const [billingStatus, setBillingStatus] = useState<BillingStatus | null>(null);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const lastPreviewKeyRef = useRef('');
+  const rerollFlashCounterRef = useRef(0);
   const voiceMenuCloseTimeoutRef = useRef<number | null>(null);
 
   const visibleVariations = useMemo(() => (
@@ -504,9 +563,7 @@ export function CreateFlow({
     { label: 'Audience', value: brandBrain.audience },
     { label: 'Hook', value: brandBrain.pain || brandBrain.differentiator },
   ].filter((item) => item.value?.trim()) : [];
-  const socialAvatarLogo = isDataImage(brandAssets?.images.logo)
-    ? brandAssets?.images.logo || null
-    : brandAssets?.images.favicon || brandAssets?.images.logo || brandBrain?.brandLogoUrl || null;
+  const socialAvatarLogo = pickBrandAvatarLogo(brandBrain, brandAssets);
   const brandImages = uniqueStrings([
     brandAssets?.images.logo,
     brandAssets?.images.favicon,
@@ -579,8 +636,9 @@ export function CreateFlow({
   const setActiveVariation = (variation: GeneratedAdVariation) => {
     const flashRoles = getRerollFlashRoles(activeVariation, variation);
     if (flashRoles.length) {
+      rerollFlashCounterRef.current += 1;
       setRerollFlash({
-        key: `${variation.id}-${Date.now()}`,
+        key: `${variation.id}-${Date.now()}-${rerollFlashCounterRef.current}`,
         roles: flashRoles,
       });
     }
@@ -619,6 +677,62 @@ export function CreateFlow({
   };
 
   useEffect(() => {
+    const refreshBilling = async () => {
+      const response = await fetch('/api/billing/status');
+      if (response.ok) setBillingStatus(await response.json());
+    };
+    void refreshBilling();
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkoutStatus = params.get('checkout');
+    const checkoutSessionId = params.get('session_id');
+    if (checkoutStatus === 'cancelled') {
+      setPaywallOpen(true);
+      window.history.replaceState(null, '', '/create');
+      return;
+    }
+    if (checkoutStatus !== 'success' || !checkoutSessionId) return;
+
+    const completeCheckout = async () => {
+      setCheckoutLoading(true);
+      try {
+        const response = await fetch('/api/billing/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: checkoutSessionId }),
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(payload?.error || 'Could not verify checkout.');
+        setBillingStatus(payload);
+        setPaywallOpen(false);
+        window.history.replaceState(null, '', '/create');
+      } catch (error: any) {
+        setError(error?.message || 'Could not verify checkout.');
+        setPaywallOpen(true);
+      } finally {
+        setCheckoutLoading(false);
+      }
+    };
+    void completeCheckout();
+  }, []);
+
+  const startCheckout = async () => {
+    setCheckoutLoading(true);
+    setError('');
+    try {
+      const response = await fetch('/api/billing/checkout', { method: 'POST' });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.url) throw new Error(payload?.error || 'Could not start checkout.');
+      window.location.href = payload.url;
+    } catch (error: any) {
+      setError(error?.message || 'Could not start checkout.');
+      setCheckoutLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (!brandDetailsOpen) return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setBrandDetailsOpen(false);
@@ -653,6 +767,7 @@ export function CreateFlow({
   useEffect(() => {
     if (!visibleVariations.length) return;
     const handleSpace = (event: KeyboardEvent) => {
+      if (spaceRerollDisabled) return;
       if (event.code !== 'Space' || isEditableTarget(event.target) || isEditableTarget(document.activeElement)) return;
       if (useEditorStore.getState().selectedIds.length > 0) return;
       event.preventDefault();
@@ -661,11 +776,11 @@ export function CreateFlow({
     };
     window.addEventListener('keydown', handleSpace);
     return () => window.removeEventListener('keydown', handleSpace);
-  }, [activeVariation, visibleVariations, variations]);
+  }, [activeVariation, spaceRerollDisabled, visibleVariations, variations]);
 
   useEffect(() => {
     if (!activeVariation || !brandBrain) return;
-    const previewKey = `${activeVariation.id}:${brandBrain.websiteUrl}`;
+    const previewKey = getVariationPreviewKey(activeVariation, brandBrain);
     if (lastPreviewKeyRef.current === previewKey) return;
     lastPreviewKeyRef.current = previewKey;
     onPreviewVariation(activeVariation, brandBrain);
@@ -676,7 +791,7 @@ export function CreateFlow({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ websiteUrl, fallbackAnswers: answers }),
-    }, 25000, 'That site is taking too long to read. Answer three quick questions and Wiggly can keep going.');
+    }, 45000, 'That site is taking too long to read. Try again in a moment.');
   };
 
   const requestAdStream = async (nextBrandBrain: BrandBrain) => {
@@ -696,6 +811,7 @@ export function CreateFlow({
     setError('');
     setFallbackQuestions([]);
     setSavedVariationIds([]);
+    lastPreviewKeyRef.current = '';
     const nextWebsiteUrl = websiteUrl.trim();
     const isDifferentWebsite = Boolean(brandBrain?.websiteUrl && nextWebsiteUrl && brandBrain.websiteUrl !== nextWebsiteUrl);
     if (isDifferentWebsite || variations.length > 0) {
@@ -720,15 +836,19 @@ export function CreateFlow({
       setBrandBrain(stream.brandBrain);
       setVariations(nextVariations);
       setActiveIndex(0);
+      if (nextVariations[0]) {
+        lastPreviewKeyRef.current = getVariationPreviewKey(nextVariations[0], stream.brandBrain);
+        onPreviewVariation(nextVariations[0], stream.brandBrain);
+      }
       setStatus('ready');
     } catch (nextError: any) {
-      const nextMessage = nextError?.message || 'Something broke while making the ads.';
-      if (nextMessage.includes('Answer three quick questions')) {
-        setFallbackQuestions(BRAND_FALLBACK_QUESTIONS);
-        setError(nextMessage);
-        setStatus('idle');
+      if (nextError?.status === 402 || nextError?.code === 'PAYWALL_REQUIRED') {
+        setPaywallOpen(true);
+        setStatus(variations.length ? 'ready' : 'idle');
+        setBillingStatus((current) => current ? { ...current, freeRemaining: 0, freeUsed: current.freeLimit } : current);
         return;
       }
+      const nextMessage = nextError?.message || 'Something broke while making the ads.';
       setError(nextMessage);
       setStatus('error');
     }
@@ -764,6 +884,42 @@ export function CreateFlow({
 
   return (
     <main className="min-h-screen bg-[#F7F4EA] px-3 py-4 font-sans text-slate-950 sm:px-6 md:px-10">
+      {paywallOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[2rem] border border-slate-200 bg-white p-6 text-slate-950 shadow-2xl shadow-slate-950/30">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-500">Wiggly beta pass</p>
+                <h2 className="mt-2 text-3xl font-black leading-tight">You used your 2 free runs.</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPaywallOpen(false)}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
+                aria-label="Close paywall"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="text-sm font-semibold leading-6 text-slate-600">
+              Keep generating ads, rerolling ideas, and testing Wiggly for the next 7 days.
+            </p>
+            <button
+              type="button"
+              onClick={() => void startCheckout()}
+              disabled={checkoutLoading}
+              className="mt-6 flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 text-base font-black text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800 disabled:cursor-progress disabled:opacity-70"
+            >
+              {checkoutLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Wand2 className="h-5 w-5" />}
+              Continue for $1
+            </button>
+            <p className="mt-3 text-center text-xs font-bold text-slate-400">No signup wall. Just a tiny paid test.</p>
+            <p className="mt-2 text-center text-xs font-semibold text-slate-400">
+              If anything gets weird or you have ideas, email me directly: buildwithshaz@gmail.com.
+            </p>
+          </div>
+        </div>
+      )}
       <header className="mx-auto flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <button type="button" onClick={onOpenStudio} className="flex items-center gap-3 text-left">
           <img src="/wiggly-logo.svg" alt="Wiggly" className="h-10 w-10 rounded-2xl object-cover shadow-sm shadow-slate-950/10" />
@@ -831,6 +987,14 @@ export function CreateFlow({
               {status === 'researching' || status === 'writing' ? <Loader2 className="h-5 w-5 animate-spin" /> : <Wand2 className="h-5 w-5" />}
               {status === 'researching' ? 'Finding the angle' : status === 'writing' ? 'Making your ads' : 'Generate ads'}
             </button>
+
+            {billingStatus && !billingStatus.paid && (
+              <p className="text-center text-xs font-black uppercase tracking-wide text-slate-400">
+                {billingStatus.freeRemaining === null
+                  ? 'Beta pass active'
+                  : `${billingStatus.freeRemaining} of ${billingStatus.freeLimit} free runs left`}
+              </p>
+            )}
 
             {isGenerating && (
               <div className="overflow-hidden rounded-2xl border border-indigo-100 bg-indigo-50/70 p-3">
@@ -1086,11 +1250,12 @@ export function CreateFlow({
                       onRefreshBackgroundColor={onRefreshBackgroundColor}
                       onApplyStyleArchetype={onApplyStyleArchetype}
                       rerollFlash={rerollFlash}
+                      disableSpaceReroll={spaceRerollDisabled}
                     />
                   </PlatformFrame>
                 );
               })()}
-              {(!hasPlayableAudio || !activeVariation) && (
+              {!hasPlayableAudio && (
                 <button
                   type="button"
                   onClick={() => onOpenVoiceMaker()}
