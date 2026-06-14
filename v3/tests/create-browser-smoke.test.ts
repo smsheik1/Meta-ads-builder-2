@@ -29,6 +29,7 @@ assert(
 [
   "spacebar-reroll-button",
   "1 reroll this session",
+  "Add audio",
   "Download video",
   "create share link",
   "data-create-format-rail='v3'",

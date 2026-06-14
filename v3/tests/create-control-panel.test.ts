@@ -42,6 +42,11 @@ assert.ok(
   "Inline status feedback must be capped at two visible banners.",
 );
 assert.ok(
+  quickActionsSource.includes("onClick={hasAudio ? onTogglePreviewPlayback : onOpenAudioPanel}") &&
+    quickActionsSource.includes('aria-label={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio"}'),
+  "The primary audio quick action must open the audio modal before audio exists and switch to playback after audio exists.",
+);
+assert.ok(
   createClientSource.includes("resetShareState();") &&
     createClientSource.includes("resetRenderState();") &&
     createClientSource.includes("resetSaveState();"),

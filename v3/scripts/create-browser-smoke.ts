@@ -42,6 +42,9 @@ async function main() {
 
     await page.locator("[data-preview-ad-viewport]").first().waitFor({ state: "visible" });
     await page.locator("[data-preview-phone-frame]").waitFor({ state: "visible" });
+    const addAudioButton = page.getByRole("button", { name: "Add audio" });
+    await addAudioButton.waitFor({ state: "visible" });
+    assert(!(await addAudioButton.isEnabled()), "Fresh visitor Audio action should wait until an ad is selected.");
     await page.getByRole("button", { name: "Download video" }).waitFor({ state: "visible" });
     await page.getByRole("button", { name: /create share link|share link copied/i }).waitFor({ state: "visible" });
     await page.locator("[data-create-format-rail='v3']").waitFor({ state: "visible" });

@@ -1,4 +1,5 @@
 import {
+  AudioLines,
   BookmarkPlus,
   Check,
   Download,
@@ -18,6 +19,7 @@ export function CreateQuickActions({
   isAudioPlaying,
   onCreateRenderJob,
   onCreateShareLink,
+  onOpenAudioPanel,
   onSaveSelectedDesign,
   onTogglePreviewPlayback,
   playableAudioUrl,
@@ -40,6 +42,7 @@ export function CreateQuickActions({
   isAudioPlaying: boolean;
   onCreateRenderJob: () => void;
   onCreateShareLink: () => void;
+  onOpenAudioPanel: () => void;
   onSaveSelectedDesign: () => void;
   onTogglePreviewPlayback: () => void;
   playableAudioUrl: string;
@@ -59,6 +62,7 @@ export function CreateQuickActions({
 }) {
   const renderWorkerOffline = renderWorkerHealthy === false;
   const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline;
+  const hasAudio = Boolean(playableAudioUrl);
   const banners = [
     saveError ? { id: "save-error", className: "border-red-100 bg-red-50 text-red-700", message: saveError } : null,
     shareError ? { id: "share-error", className: "border-red-100 bg-red-50 text-red-700", message: shareError } : null,
@@ -74,14 +78,14 @@ export function CreateQuickActions({
       <div className="grid grid-cols-4 gap-2 rounded-[1.35rem] border border-slate-200 bg-white p-2 shadow-xl shadow-slate-950/8">
         <button
           type="button"
-          onClick={onTogglePreviewPlayback}
-          disabled={!playableAudioUrl}
+          onClick={hasAudio ? onTogglePreviewPlayback : onOpenAudioPanel}
+          disabled={!hasSelectedScene}
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-black uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35"
-          aria-label={isAudioPlaying ? "Stop audio preview" : "Play audio preview"}
-          title={isAudioPlaying ? "Stop audio preview" : "Play audio preview"}
+          aria-label={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio"}
+          title={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio"}
         >
-          <Play className="size-4" />
-          {isAudioPlaying ? "Stop" : "Play"}
+          {hasAudio ? <Play className="size-4" /> : <AudioLines className="size-4" />}
+          {hasAudio ? (isAudioPlaying ? "Stop" : "Play") : "Audio"}
         </button>
 
         <button

@@ -1085,6 +1085,7 @@ function ResearchConnected() {
                 isAudioPlaying={isAudioPlaying}
                 onCreateRenderJob={() => void onCreateRenderJob()}
                 onCreateShareLink={() => void onCreateShareLink()}
+                onOpenAudioPanel={onOpenAudioPanel}
                 onSaveSelectedDesign={() => void onSaveSelectedDesign()}
                 onTogglePreviewPlayback={onTogglePreviewPlayback}
                 playableAudioUrl={playableAudioUrl}
