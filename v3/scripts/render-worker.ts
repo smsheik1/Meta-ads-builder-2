@@ -50,9 +50,7 @@ async function loadLocalEnv() {
 
 function getConvexUrl() {
   const convexUrl = process.env.V3_CONVEX_URL ||
-    process.env.NEXT_PUBLIC_V3_CONVEX_URL ||
-    process.env.NEXT_PUBLIC_CONVEX_URL ||
-    process.env.CONVEX_URL;
+    process.env.NEXT_PUBLIC_V3_CONVEX_URL;
   if (!convexUrl) {
     throw new Error("Set V3_CONVEX_URL or NEXT_PUBLIC_V3_CONVEX_URL before running the render worker.");
   }
