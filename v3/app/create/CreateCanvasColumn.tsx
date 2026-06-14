@@ -6,7 +6,6 @@ import { useRef } from "react";
 import type { RenderFlashState } from "@/features/formats/types";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
 import type { AdScene } from "@/features/scene/types";
-import { FormatRail } from "./CreateFormatRail";
 import { PhonePreviewFrame, type PreviewPlatform } from "./CreatePreviewChrome";
 
 export function CreateCanvasColumn({
@@ -49,7 +48,6 @@ export function CreateCanvasColumn({
 
   return (
     <div className="relative flex flex-col items-center gap-3 lg:block">
-      <FormatRail />
       <div>
         <PhonePreviewFrame
           scene={selectedScene}

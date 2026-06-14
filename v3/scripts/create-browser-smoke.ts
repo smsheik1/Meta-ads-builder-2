@@ -44,8 +44,10 @@ async function main() {
     await page.locator("[data-preview-phone-frame]").waitFor({ state: "visible" });
     await page.getByRole("button", { name: "Download video" }).waitFor({ state: "visible" });
     await page.getByRole("button", { name: /create share link|share link copied/i }).waitFor({ state: "visible" });
-    await page.getByRole("combobox", { name: "Choose preview" }).waitFor({ state: "visible" });
-    await page.getByRole("button", { name: /^add audio$/i }).waitFor({ state: "visible" });
+    await page.locator("[data-create-format-rail='v3']").waitFor({ state: "visible" });
+    await page.getByRole("button", { name: "Text" }).waitFor({ state: "visible" });
+    await page.getByRole("button", { name: "Style" }).waitFor({ state: "visible" });
+    await page.getByRole("button", { name: "Format" }).waitFor({ state: "visible" });
 
     const previewBefore = await page.locator("[data-preview-ad-viewport]").first().textContent();
     await page.getByTestId("spacebar-reroll-button").click();

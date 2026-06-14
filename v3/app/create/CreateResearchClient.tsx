@@ -33,13 +33,12 @@ import type {
   StoredWebsiteResearchResult,
 } from "@/features/research/types";
 import { getClientRendererVersion } from "@/features/render/rendererVersion";
-import type { AdScene } from "@/features/scene/types";
+import type { AdScene, AdSceneVisualizerStyle, VisualizerAdSceneStyle } from "@/features/scene/types";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
-import { CreateActionCard } from "./CreateActionCard";
-import { CreateAudioCard } from "./CreateAudioCard";
 import { CreateCaptionModal } from "./CreateCaptionModal";
 import { BrandDumpModal } from "./CreateBrandDumpModal";
 import { CreateCanvasColumn } from "./CreateCanvasColumn";
+import { CreateControlPanel, type CreatePanelId } from "./CreateControlPanel";
 import { CreateCreativeBriefCard } from "./CreateCreativeBriefCard";
 import { CreateDialogueModal } from "./CreateDialogueModal";
 import { CreateIdeasList } from "./CreateIdeasList";
@@ -49,6 +48,7 @@ import {
   type WebsiteSubmitProgressStage,
 } from "./CreateLeftColumn";
 import type { PreviewPlatform } from "./CreatePreviewChrome";
+import { CreateQuickActions } from "./CreateQuickActions";
 import { WigglyMark } from "./WigglyMark";
 import { placeholderAdSurfaceVariantCount } from "./createStarterScene";
 import { getAnonymousId } from "./createSession";
@@ -149,6 +149,7 @@ function ResearchConnected() {
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
   const [previewPlatform, setPreviewPlatform] = useState<PreviewPlatform>("instagram-feed");
+  const [activeCreatePanel, setActiveCreatePanel] = useState<CreatePanelId | null>(null);
   const [rerollCount, setRerollCount] = useState(0);
   const [rerollFlash, setRerollFlash] = useState<RenderFlashState | null>(null);
   const [placeholderVariantIndex, setPlaceholderVariantIndex] = useState(0);
@@ -442,6 +443,61 @@ function ResearchConnected() {
       }, rerollFlashMs);
     });
   }, []);
+
+  const replaceSelectedSceneAndInvalidate = useCallback((
+    nextScene: AdScene,
+    flashRoles: RenderFlashRole[] = [],
+  ) => {
+    if (nextScene === selectedScene) return;
+
+    setSelectedScene(nextScene);
+    setAdScenes((currentScenes) => currentScenes.map((scene, index) => (
+      index === selectedSceneIndex ? nextScene : scene
+    )));
+    resetShareState();
+    resetRenderState();
+    resetSaveState();
+    if (flashRoles.length) triggerRerollFlash(flashRoles);
+  }, [selectedScene, selectedSceneIndex, triggerRerollFlash]);
+
+  const onUpdateCreativeField = useCallback((
+    field: "headline" | "subheadline" | "ctaText",
+    value: string,
+  ) => {
+    if (!selectedScene || selectedScene.creative[field] === value) return;
+    replaceSelectedSceneAndInvalidate({
+      ...selectedScene,
+      creative: {
+        ...selectedScene.creative,
+        [field]: value,
+      },
+    }, field === "headline" ? ["headline"] : []);
+  }, [replaceSelectedSceneAndInvalidate, selectedScene]);
+
+  const onUpdateStyleColor = useCallback((
+    field: keyof Pick<VisualizerAdSceneStyle, "backgroundColor" | "textColor" | "accentColor" | "visualizerColor">,
+    value: string,
+  ) => {
+    if (!selectedScene || selectedScene.style[field] === value) return;
+    replaceSelectedSceneAndInvalidate({
+      ...selectedScene,
+      style: {
+        ...selectedScene.style,
+        [field]: value,
+      },
+    }, field === "visualizerColor" || field === "accentColor" ? ["visualizer", "captions"] : ["headline", "visualizer", "captions"]);
+  }, [replaceSelectedSceneAndInvalidate, selectedScene]);
+
+  const onUpdateVisualizerPreset = useCallback((visualizer: AdSceneVisualizerStyle) => {
+    if (!selectedScene || selectedScene.style.visualizer === visualizer) return;
+    replaceSelectedSceneAndInvalidate({
+      ...selectedScene,
+      style: {
+        ...selectedScene.style,
+        visualizer,
+      },
+    }, ["visualizer"]);
+  }, [replaceSelectedSceneAndInvalidate, selectedScene]);
 
   const onRerollScene = useCallback(() => {
     if (!adScenes.length || !selectedScene) {
@@ -1023,20 +1079,15 @@ function ResearchConnected() {
             />
 
             <aside className="space-y-4">
-              <CreateActionCard
+              <CreateQuickActions
                 currentRenderStatus={currentRenderStatus}
-                hasGeneratedAudio={hasGeneratedAudio}
                 hasSelectedScene={Boolean(selectedScene)}
                 isAudioPlaying={isAudioPlaying}
                 onCreateRenderJob={() => void onCreateRenderJob()}
                 onCreateShareLink={() => void onCreateShareLink()}
-                onOpenAudioPanel={onOpenAudioPanel}
-                onOpenCaptionEditor={openCaptionPanel}
-                onPreviewPlatformChange={setPreviewPlatform}
                 onSaveSelectedDesign={() => void onSaveSelectedDesign()}
                 onTogglePreviewPlayback={onTogglePreviewPlayback}
                 playableAudioUrl={playableAudioUrl}
-                previewPlatform={previewPlatform}
                 renderBusy={renderBusy}
                 renderDownloadUrl={renderDownloadUrl}
                 renderErrorMessage={renderJob?.error || renderError}
@@ -1052,26 +1103,48 @@ function ResearchConnected() {
                 shareUrl={shareUrl}
               />
 
-              <CreateAudioCard
-                audioError={audioError}
-                audioRef={audioRef}
-                onAudioEnded={() => {
-                  setIsAudioPlaying(false);
-                  canvasActions.playbackStopped();
-                  if (audioRef.current) audioRef.current.currentTime = 0;
-                  setPreviewTimeSeconds(1.1);
-                }}
-                onAudioPause={(currentTime) => {
-                  setIsAudioPlaying(false);
-                  canvasActions.playbackStopped();
-                  setPreviewTimeSeconds(currentTime);
-                }}
-                onAudioPlay={() => {
-                  setIsAudioPlaying(true);
-                  canvasActions.playbackStarted();
-                }}
-                onAudioTimeUpdate={setPreviewTimeSeconds}
-                playableAudioUrl={playableAudioUrl}
+              {playableAudioUrl ? (
+                <audio
+                  ref={audioRef}
+                  aria-label="Audio preview"
+                  className="hidden"
+                  preload="metadata"
+                  src={playableAudioUrl}
+                  onPlay={() => {
+                    setIsAudioPlaying(true);
+                    canvasActions.playbackStarted();
+                  }}
+                  onPause={(event) => {
+                    setIsAudioPlaying(false);
+                    canvasActions.playbackStopped();
+                    setPreviewTimeSeconds(event.currentTarget.currentTime || 1.1);
+                  }}
+                  onTimeUpdate={(event) => {
+                    setPreviewTimeSeconds(event.currentTarget.currentTime);
+                  }}
+                  onEnded={() => {
+                    setIsAudioPlaying(false);
+                    canvasActions.playbackStopped();
+                    if (audioRef.current) audioRef.current.currentTime = 0;
+                    setPreviewTimeSeconds(1.1);
+                  }}
+                />
+              ) : null}
+
+              <CreateControlPanel
+                activePanel={activeCreatePanel}
+                audioStatus={audioStatus}
+                hasGeneratedAudio={hasGeneratedAudio}
+                hasSelectedScene={Boolean(selectedScene)}
+                onOpenAudioPanel={onOpenAudioPanel}
+                onOpenCaptionEditor={openCaptionPanel}
+                onPanelChange={setActiveCreatePanel}
+                onPreviewPlatformChange={setPreviewPlatform}
+                onUpdateCreativeField={onUpdateCreativeField}
+                onUpdateStyleColor={onUpdateStyleColor}
+                onUpdateVisualizerPreset={onUpdateVisualizerPreset}
+                previewPlatform={previewPlatform}
+                selectedScene={selectedScene}
               />
 
               <CreateCreativeBriefCard

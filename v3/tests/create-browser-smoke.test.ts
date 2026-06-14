@@ -29,9 +29,12 @@ assert(
 [
   "spacebar-reroll-button",
   "1 reroll this session",
-  "/^add audio$/i",
   "Download video",
   "create share link",
+  "data-create-format-rail='v3'",
+  "name: \"Text\"",
+  "name: \"Style\"",
+  "name: \"Format\"",
   "CREATE_BROWSER_SMOKE_PASS",
 ].forEach((needle) => {
   assert(smokeSource.includes(needle), `create-browser-smoke.ts must assert ${needle}.`);
