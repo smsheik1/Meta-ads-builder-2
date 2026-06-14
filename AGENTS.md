@@ -61,6 +61,21 @@ Ask these questions before writing code:
 - When in doubt, keep `/create` simpler and move advanced editing to `/builder`.
 - Do not delete legacy/reference code unless the user explicitly asks and the branch has a clear rollback path.
 
+## Frontend QA
+
+- After any real rendered frontend change, use browser validation before calling it done.
+- Prefer the Browser plugin/in-app browser when available. If it is not available or fails, use the local Playwright skill/CLI smoke path and say why.
+- A passing typecheck/build is not enough for UI work. Verify the affected flow in a real browser, including the actual control the user complained about.
+- For layout fixes, capture or inspect dimensions/screenshots so oversized, clipped, or off-screen UI cannot slip through.
+- If two attempts fail or the same bug class keeps moving around, stop and report the deeper blocker instead of pushing through.
+
+## UI Components
+
+- For normal app UI, check shadcn first before hand-rolling controls: buttons, dialogs, sheets, inputs, textareas, selects, tabs/toggle groups, badges, alerts, separators, scroll areas, and tooltips.
+- Do not rewrite existing working UI to shadcn just for purity. Adopt shadcn incrementally when touching a surface or building new app-shell controls.
+- Keep Wiggly's product canvas custom. `AdRenderSurface`, format renderers, preview chrome, Remotion/share/download rendering, and ad pixels are not generic shadcn UI.
+- Do not let shadcn replace Wiggly architecture rules: one renderer, passive render surface, complete `AdScene` payloads, no hidden interactivity, and guardrail tests still win.
+
 ## Related Guardrails
 
 - Human-readable rulebook: `docs/wiggly-engineering-rules.md`
