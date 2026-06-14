@@ -20,7 +20,9 @@ import type {
 import { getFormatModule } from "@/features/formats/registry";
 import { useCanvasActions } from "@/features/create/canvasInteractionStore";
 import {
+  canSaveDesignWithoutPaywall,
   createSavedDesignId,
+  FREE_SAVED_DESIGN_LIMIT,
   type SavedAdSceneDesign,
 } from "@/features/create/savedDesigns";
 import { createDefaultSceneLocks, rerollScene } from "@/features/create/reroll";
@@ -49,15 +51,10 @@ import {
 import type { PreviewPlatform } from "./CreatePreviewChrome";
 import { WigglyMark } from "./WigglyMark";
 import { placeholderAdSurfaceVariantCount } from "./createStarterScene";
-import {
-  getAnonymousId,
-  loadCreateSessionSnapshot,
-  saveCreateSessionSnapshot,
-} from "./createSession";
+import { getAnonymousId } from "./createSession";
 
 const rerollFlashMs = 680;
 const slowResearchMessageDelayMs = 8000;
-const preparingCanvasDelayMs = 180;
 
 const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const fallbackUploadedAudioDurationMs = 8000;
@@ -75,14 +72,12 @@ type BillingStatus = {
   resetAt: number;
 };
 
+type CreateModal = "brand-details" | "dialogue" | "captions" | "paywall" | null;
+
 function getResearchActionErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : String(error || "");
   if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) return researchTimeoutMessage;
   return message || "Website research failed.";
-}
-
-function wait(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 function getSceneDefaultFlashSlots(scene: AdScene): RenderFlashRole[] {
@@ -167,9 +162,7 @@ function ResearchConnected() {
   const [shareUrl, setShareUrl] = useState("");
   const [shareError, setShareError] = useState("");
   const [audioError, setAudioError] = useState("");
-  const [dialoguePanelOpen, setDialoguePanelOpen] = useState(false);
-  const [captionPanelOpen, setCaptionPanelOpen] = useState(false);
-  const [brandDetailsOpen, setBrandDetailsOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<CreateModal>(null);
   const [dialogueStatus, setDialogueStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [dialogueScripts, setDialogueScripts] = useState<DialogueScript[]>([]);
   const [selectedDialogueIndex, setSelectedDialogueIndex] = useState(0);
@@ -180,11 +173,8 @@ function ResearchConnected() {
   const [anonymousId, setAnonymousId] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [saveError, setSaveError] = useState("");
-  const [savedDesignsOpen, setSavedDesignsOpen] = useState(false);
   const [error, setError] = useState("");
-  const [sessionRestored, setSessionRestored] = useState(false);
   const [billingStatus, setBillingStatus] = useState<BillingStatus | null>(null);
-  const [paywallOpen, setPaywallOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const createEditorScopeRef = useRef<HTMLDivElement | null>(null);
@@ -199,6 +189,20 @@ function ResearchConnected() {
   const saveDesign = useMutation(api.savedDesigns.saveFromScene);
   const savedDesignItems = savedDesigns || [];
   const canvasActions = useCanvasActions();
+  const brandDetailsOpen = activeModal === "brand-details";
+  const dialoguePanelOpen = activeModal === "dialogue";
+  const captionPanelOpen = activeModal === "captions";
+  const paywallOpen = activeModal === "paywall";
+
+  const setModal = useCallback((modal: CreateModal) => {
+    setActiveModal(modal);
+    if (modal === "brand-details") canvasActions.openModal("brand-dump");
+    else canvasActions.closeModal("brand-dump");
+    if (modal === "dialogue") canvasActions.openModal("dialogue");
+    else canvasActions.closeModal("dialogue");
+    if (modal === "captions") canvasActions.openModal("captions");
+    else canvasActions.closeModal("captions");
+  }, [canvasActions]);
 
   const clearSubmitProgress = () => {
     setProgressStage(null);
@@ -221,7 +225,7 @@ function ResearchConnected() {
     const checkoutStatus = params.get("checkout");
     const checkoutSessionId = params.get("session_id");
     if (checkoutStatus === "cancelled") {
-      setPaywallOpen(true);
+      setModal("paywall");
       window.history.replaceState(null, "", "/create");
       return;
     }
@@ -236,10 +240,10 @@ function ResearchConnected() {
           body: JSON.stringify({ sessionId: checkoutSessionId }),
         });
         setBillingStatus(nextStatus);
-        setPaywallOpen(false);
+        setModal(null);
         window.history.replaceState(null, "", "/create");
       } catch (checkoutError) {
-        setPaywallOpen(true);
+        setModal("paywall");
         const message = checkoutError instanceof Error ? checkoutError.message : "Could not verify checkout.";
         setCheckoutError(message);
         setError(message);
@@ -249,7 +253,7 @@ function ResearchConnected() {
     };
 
     void completeCheckout();
-  }, []);
+  }, [setModal]);
 
   useEffect(() => () => {
     if (rerollFlashTimeoutRef.current) {
@@ -269,51 +273,7 @@ function ResearchConnected() {
   }, [progressStage]);
 
   useEffect(() => {
-    const snapshot = loadCreateSessionSnapshot();
-    if (snapshot) {
-      setResult(snapshot.result);
-      setStatus(snapshot.result ? "ready" : "idle");
-      setAdScenes(snapshot.adScenes);
-      setSelectedScene(snapshot.selectedScene);
-      setSelectedSceneIndex(snapshot.selectedSceneIndex);
-      canvasActions.interactionReset();
-      setRerollCount(snapshot.rerollCount);
-      setAdStatus(snapshot.adScenes.length ? "ready" : "idle");
-      setAdStatusNote(snapshot.adStatusNote);
-      setAudioStatus(snapshot.selectedScene?.audio.status === "generated" ? "ready" : "idle");
-      setDialogueScripts(snapshot.dialogueScripts);
-      setSelectedDialogueIndex(Math.min(snapshot.selectedDialogueIndex, Math.max(0, snapshot.dialogueScripts.length - 1)));
-      setDialogueStatus(snapshot.dialogueScripts.length ? "ready" : "idle");
-    }
-    setSessionRestored(true);
-  }, [canvasActions]);
-
-  useEffect(() => {
-    if (!sessionRestored) return;
-    saveCreateSessionSnapshot({
-      result,
-      adScenes,
-      selectedScene,
-      selectedSceneIndex,
-      rerollCount,
-      adStatusNote,
-      dialogueScripts,
-      selectedDialogueIndex,
-    });
-  }, [
-    adScenes,
-    adStatusNote,
-    dialogueScripts,
-    rerollCount,
-    result,
-    selectedScene,
-    selectedSceneIndex,
-    selectedDialogueIndex,
-    sessionRestored,
-  ]);
-
-  useEffect(() => {
-    if (!sessionRestored || result || adScenes.length || !latestGeneration?.scenes.length) return;
+    if (result || adScenes.length || !latestGeneration?.scenes.length) return;
 
     const restoredScene = latestGeneration.scenes[0] || null;
     setResult(latestGeneration.result);
@@ -331,7 +291,6 @@ function ResearchConnected() {
     canvasActions,
     latestGeneration,
     result,
-    sessionRestored,
   ]);
 
   const getCurrentAnonymousId = () => anonymousId || getAnonymousId();
@@ -372,10 +331,7 @@ function ResearchConnected() {
   };
 
   const resetDialogueState = () => {
-    setDialoguePanelOpen(false);
-    setCaptionPanelOpen(false);
-    canvasActions.closeModal("dialogue");
-    canvasActions.closeModal("captions");
+    setModal(null);
     setDialogueStatus("idle");
     setDialogueScripts([]);
     setSelectedDialogueIndex(0);
@@ -385,10 +341,7 @@ function ResearchConnected() {
   const resetAudioState = () => {
     setAudioStatus("idle");
     setAudioError("");
-    setBrandDetailsOpen(false);
-    setCaptionPanelOpen(false);
-    canvasActions.closeModal("brand-dump");
-    canvasActions.closeModal("captions");
+    setModal(null);
     resetDialogueState();
     resetPreviewPlayback();
   };
@@ -399,33 +352,27 @@ function ResearchConnected() {
   };
 
   const openBrandDetails = () => {
-    setBrandDetailsOpen(true);
-    canvasActions.openModal("brand-dump");
+    setModal("brand-details");
   };
 
   const closeBrandDetails = () => {
-    setBrandDetailsOpen(false);
-    canvasActions.closeModal("brand-dump");
+    setModal(null);
   };
 
   const openDialoguePanel = () => {
-    setDialoguePanelOpen(true);
-    canvasActions.openModal("dialogue");
+    setModal("dialogue");
   };
 
   const closeDialoguePanel = () => {
-    setDialoguePanelOpen(false);
-    canvasActions.closeModal("dialogue");
+    setModal(null);
   };
 
   const openCaptionPanel = () => {
-    setCaptionPanelOpen(true);
-    canvasActions.openModal("captions");
+    setModal("captions");
   };
 
   const closeCaptionPanel = () => {
-    setCaptionPanelOpen(false);
-    canvasActions.closeModal("captions");
+    setModal(null);
   };
 
   const replaceSelectedScene = useCallback((nextScene: AdScene) => {
@@ -628,7 +575,7 @@ function ResearchConnected() {
       } catch (billingError: unknown) {
         const typedError = billingError as Error & { status?: number; code?: string };
         if (typedError.status === 402 || typedError.code === "PAYWALL_REQUIRED") {
-          setPaywallOpen(true);
+          setModal("paywall");
           setStatus(hadExistingCanvas ? "ready" : "idle");
           keepPreviousCanvasAfterFailure();
           clearSubmitProgress();
@@ -657,7 +604,6 @@ function ResearchConnected() {
       canvasActions.beginBusy("ad-generation");
       const nextScenes = await generateScenesForResearch(nextResult.researchRunId as Id<"researchRuns">, 50);
       setProgressStage("preparing-canvas");
-      await wait(preparingCanvasDelayMs);
       setResult(nextResult);
       setStatus("ready");
       applyGeneratedScenes(nextScenes);
@@ -872,6 +818,21 @@ function ResearchConnected() {
 
   const onSaveSelectedDesign = async () => {
     if (!selectedScene) return;
+    const designId = createSavedDesignId(selectedScene);
+    const alreadySaved = savedDesignItems.some((design) => design.id === designId);
+    const paid = Boolean(billingStatus?.paid);
+
+    if (!canSaveDesignWithoutPaywall({
+      alreadySaved,
+      paid,
+      savedCount: savedDesignItems.length,
+    })) {
+      setSaveStatus("idle");
+      setSaveError("");
+      setModal("paywall");
+      return;
+    }
+
     setSaveStatus("loading");
     setSaveError("");
 
@@ -881,30 +842,10 @@ function ResearchConnected() {
         scene: selectedScene,
       });
       setSaveStatus("ready");
-      setSavedDesignsOpen(true);
     } catch (nextError) {
       setSaveStatus("error");
       setSaveError(nextError instanceof Error ? nextError.message : "Could not save this design.");
     }
-  };
-
-  const onOpenSavedDesign = (design: SavedAdSceneDesign) => {
-    const existingIndex = adScenes.findIndex((scene) => createSavedDesignId(scene) === design.id);
-
-    resetPreviewPlayback();
-    setSelectedScene(design.scene);
-    setSelectedSceneIndex(existingIndex >= 0 ? existingIndex : 0);
-    if (existingIndex < 0) {
-      setAdScenes((scenes) => [design.scene, ...scenes]);
-    }
-    setAudioStatus(design.scene.audio.status === "generated" ? "ready" : "idle");
-    setAudioError("");
-    resetDialogueState();
-    resetShareState();
-    resetRenderState();
-    setSaveStatus("ready");
-    setSaveError("");
-    setSavedDesignsOpen(false);
   };
 
   const onSelectAdIdea = (scene: AdScene, index: number) => {
@@ -916,12 +857,6 @@ function ResearchConnected() {
     resetDialogueState();
     resetShareState();
     resetRenderState();
-  };
-
-  const closeSavedDesignsOnBlur = (event: React.FocusEvent<HTMLDivElement>) => {
-    const nextTarget = event.relatedTarget;
-    if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) return;
-    setSavedDesignsOpen(false);
   };
 
   const onCreateRenderJob = async () => {
@@ -975,6 +910,9 @@ function ResearchConnected() {
   const dialogueCanGenerateAudio = Boolean(selectedScene && selectedDialogueScript && selectedDialogueScript.lines.some((line) => line.text.trim()));
   const selectedSavedDesignId = selectedScene ? createSavedDesignId(selectedScene) : "";
   const selectedDesignIsSaved = Boolean(selectedSavedDesignId && savedDesignItems.some((design) => design.id === selectedSavedDesignId));
+  const saveCounterLabel = billingStatus?.paid
+    ? ""
+    : `(${Math.min(savedDesignItems.length, FREE_SAVED_DESIGN_LIMIT)}/${FREE_SAVED_DESIGN_LIMIT})`;
   const saveStatusLabel = saveStatus === "loading"
     ? "Saving"
     : saveStatus === "ready" || selectedDesignIsSaved
@@ -1003,12 +941,12 @@ function ResearchConnected() {
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-500">Wiggly beta pass</p>
-                <h2 className="mt-2 text-3xl font-black leading-tight">You used your 2 free runs.</h2>
+                <h2 className="mt-2 text-3xl font-black leading-tight">Loving Wiggly?</h2>
               </div>
               <button
                 type="button"
                 onClick={() => {
-                  setPaywallOpen(false);
+                  setModal(null);
                   setCheckoutError("");
                 }}
                 className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-black text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
@@ -1018,7 +956,7 @@ function ResearchConnected() {
               </button>
             </div>
             <p className="text-sm font-semibold leading-6 text-slate-600">
-              Start with 7 days of unlimited Wiggly for $1. After that, keep unlimited access for $9/month as an early user, 50% off the normal $19.95.
+              You hit a free limit. Start with 7 days of unlimited Wiggly for $1. After that, keep unlimited access for $9/month as an early user, 50% off the normal $19.95.
             </p>
             <button
               type="button"
@@ -1094,11 +1032,8 @@ function ResearchConnected() {
                 onCreateShareLink={() => void onCreateShareLink()}
                 onOpenAudioPanel={onOpenAudioPanel}
                 onOpenCaptionEditor={openCaptionPanel}
-                onOpenSavedDesign={onOpenSavedDesign}
                 onPreviewPlatformChange={setPreviewPlatform}
                 onSaveSelectedDesign={() => void onSaveSelectedDesign()}
-                onSavedDesignsBlur={closeSavedDesignsOnBlur}
-                onSavedDesignsOpenChange={setSavedDesignsOpen}
                 onTogglePreviewPlayback={onTogglePreviewPlayback}
                 playableAudioUrl={playableAudioUrl}
                 previewPlatform={previewPlatform}
@@ -1107,9 +1042,8 @@ function ResearchConnected() {
                 renderErrorMessage={renderJob?.error || renderError}
                 renderStatusLabel={renderStatusLabel}
                 renderWorkerHealthy={renderWorkerHealthy}
+                saveCounterLabel={saveCounterLabel}
                 saveError={saveError}
-                savedDesignItems={savedDesignItems}
-                savedDesignsOpen={savedDesignsOpen}
                 saveStatus={saveStatus}
                 saveStatusLabel={saveStatusLabel}
                 selectedDesignIsSaved={selectedDesignIsSaved}

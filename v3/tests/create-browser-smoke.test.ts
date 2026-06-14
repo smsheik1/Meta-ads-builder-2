@@ -27,11 +27,8 @@ assert(
 );
 
 [
-  "wiggly:v3:create-session",
-  "defaultRenderScene",
   "spacebar-reroll-button",
-  "2 rerolls this session",
-  "Stop Losing The AI Search",
+  "1 reroll this session",
   "/^add audio$/i",
   "Download video",
   "create share link",
@@ -45,6 +42,9 @@ assert(
   "data-preview-selectable-slot",
   "data-preview-audio-action",
   "Spacebar rerolls the",
+  "wiggly:v3:create-session",
+  "defaultRenderScene",
+  "localStorage.setItem",
 ].forEach((needle) => {
   assert(!smokeSource.includes(needle), `create-browser-smoke.ts must not rely on mini-editor behavior: ${needle}.`);
 });

@@ -1,5 +1,6 @@
 import type { AdFormatId, AdScene } from "../scene/types";
 
+export const FREE_SAVED_DESIGN_LIMIT = 3;
 export const MAX_SAVED_DESIGNS = 8;
 
 export type SavedAdSceneDesign = {
@@ -27,6 +28,20 @@ export const createSavedDesignId = (scene: AdScene) => [
 export const createSavedDesignTitle = (scene: AdScene) => (
   cleanText(scene.creative.headline, 72) || `${cleanText(scene.brand.name, 40) || "Saved"} ad`
 );
+
+export function canSaveDesignWithoutPaywall({
+  alreadySaved,
+  paid,
+  savedCount,
+  freeLimit = FREE_SAVED_DESIGN_LIMIT,
+}: {
+  alreadySaved: boolean;
+  paid: boolean;
+  savedCount: number;
+  freeLimit?: number;
+}) {
+  return paid || alreadySaved || savedCount < freeLimit;
+}
 
 export const assertSavableAdScene = (value: unknown): AdScene => {
   const scene = value && typeof value === "object" ? value as Partial<AdScene> : null;

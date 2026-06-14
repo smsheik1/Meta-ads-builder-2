@@ -56,8 +56,6 @@ export async function loadRuntimeEnv() {
 export function getRuntimeConvexUrl() {
   return process.env.V3_CONVEX_URL ||
     process.env.NEXT_PUBLIC_V3_CONVEX_URL ||
-    process.env.NEXT_PUBLIC_CONVEX_URL ||
-    process.env.CONVEX_URL ||
     "";
 }
 
@@ -190,7 +188,7 @@ export async function runRuntimeHealthChecks() {
   await loadRuntimeEnv();
 
   const checks: HealthCheck[] = [
-    checkRequiredEnv("NEXT_PUBLIC_V3_CONVEX_URL", ["V3_CONVEX_URL", "NEXT_PUBLIC_CONVEX_URL", "CONVEX_URL"]),
+    checkRequiredEnv("NEXT_PUBLIC_V3_CONVEX_URL", ["V3_CONVEX_URL"]),
     checkRequiredEnv("FIRECRAWL_API_KEY"),
     checkRequiredEnv("DEEPGRAM_API_KEY"),
     checkNotDisabled("DEEPGRAM_ENABLED"),

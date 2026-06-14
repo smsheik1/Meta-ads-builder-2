@@ -1,4 +1,3 @@
-import type { FocusEvent } from "react";
 import {
   BookmarkPlus,
   Check,
@@ -9,7 +8,6 @@ import {
   Shuffle,
   Upload,
 } from "lucide-react";
-import type { SavedAdSceneDesign } from "@/features/create/savedDesigns";
 import { previewPlatformOptions, type PreviewPlatform } from "./CreatePreviewChrome";
 
 type SaveStatus = "idle" | "loading" | "ready" | "error";
@@ -22,10 +20,7 @@ export function CreateActionCard({
   onCreateShareLink,
   onOpenAudioPanel,
   onOpenCaptionEditor,
-  onOpenSavedDesign,
   onSaveSelectedDesign,
-  onSavedDesignsBlur,
-  onSavedDesignsOpenChange,
   onTogglePreviewPlayback,
   playableAudioUrl,
   previewPlatform,
@@ -34,9 +29,8 @@ export function CreateActionCard({
   renderErrorMessage,
   renderStatusLabel,
   renderWorkerHealthy,
+  saveCounterLabel,
   saveError,
-  savedDesignItems,
-  savedDesignsOpen,
   saveStatus,
   saveStatusLabel,
   selectedDesignIsSaved,
@@ -53,11 +47,8 @@ export function CreateActionCard({
   onCreateShareLink: () => void;
   onOpenAudioPanel: () => void;
   onOpenCaptionEditor: () => void;
-  onOpenSavedDesign: (design: SavedAdSceneDesign) => void;
   onPreviewPlatformChange: (platform: PreviewPlatform) => void;
   onSaveSelectedDesign: () => void;
-  onSavedDesignsBlur: (event: FocusEvent<HTMLDivElement>) => void;
-  onSavedDesignsOpenChange: (open: boolean) => void;
   onTogglePreviewPlayback: () => void;
   playableAudioUrl: string;
   previewPlatform: PreviewPlatform;
@@ -66,9 +57,8 @@ export function CreateActionCard({
   renderErrorMessage: string;
   renderStatusLabel: string;
   renderWorkerHealthy: boolean | null;
+  saveCounterLabel: string;
   saveError: string;
-  savedDesignItems: SavedAdSceneDesign[];
-  savedDesignsOpen: boolean;
   saveStatus: SaveStatus;
   saveStatusLabel: string;
   selectedDesignIsSaved: boolean;
@@ -161,73 +151,27 @@ export function CreateActionCard({
           {isAudioPlaying ? "Stop" : "Play"}
         </button>
 
-        <div
-          className="relative"
-          onMouseEnter={() => onSavedDesignsOpenChange(true)}
-          onMouseLeave={() => onSavedDesignsOpenChange(false)}
-          onFocus={() => onSavedDesignsOpenChange(true)}
-          onBlur={onSavedDesignsBlur}
+        <button
+          type="button"
+          onClick={onSaveSelectedDesign}
+          disabled={!hasSelectedScene || saveStatus === "loading"}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+          title={selectedDesignIsSaved ? "Saved to designs" : "Save this ad to designs"}
         >
-          <button
-            type="button"
-            onClick={onSaveSelectedDesign}
-            disabled={!hasSelectedScene || saveStatus === "loading"}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-            title={selectedDesignIsSaved ? "Saved to designs" : "Save this ad to designs"}
-          >
-            {saveStatus === "loading" ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : saveStatus === "ready" || selectedDesignIsSaved ? (
-              <Check className="size-4 text-emerald-500" />
-            ) : (
-              <BookmarkPlus className="size-4" />
-            )}
-            {saveStatusLabel}
-            {savedDesignItems.length ? (
-              <span className="ml-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-black text-slate-500">
-                {Math.min(savedDesignItems.length, 9)}
-              </span>
-            ) : null}
-          </button>
-
-          {savedDesignsOpen && savedDesignItems.length ? (
-            <div className="absolute right-0 top-full z-[70] w-80 pt-2">
-              <div className="rounded-[22px] border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-950/15">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Saved ads</p>
-                  <span className="text-[10px] font-black text-slate-400">{savedDesignItems.length}</span>
-                </div>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {savedDesignItems.slice(0, 4).map((design, index) => (
-                    <button
-                      key={`${design.id}-${index}`}
-                      type="button"
-                      onClick={() => onOpenSavedDesign(design)}
-                      title={`Open ${design.title}`}
-                      className="min-w-0 rounded-2xl border border-slate-200 bg-white p-2 text-left transition hover:border-slate-300 hover:bg-slate-50"
-                    >
-                      <span
-                        className="block h-14 overflow-hidden rounded-xl border border-slate-200"
-                        style={{ backgroundColor: design.scene.style.backgroundColor }}
-                      >
-                        <span
-                          className="mx-auto mt-8 block h-2 w-2/3 rounded-full"
-                          style={{ backgroundColor: design.scene.style.visualizerColor }}
-                        />
-                      </span>
-                      <span className="mt-2 block truncate text-[11px] font-black text-slate-700">
-                        {design.title}
-                      </span>
-                      <span className="mt-0.5 block truncate text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
-                        {design.format}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+          {saveStatus === "loading" ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : saveStatus === "ready" || selectedDesignIsSaved ? (
+            <Check className="size-4 text-emerald-500" />
+          ) : (
+            <BookmarkPlus className="size-4" />
+          )}
+          {saveStatusLabel}
+          {saveCounterLabel ? (
+            <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-black text-slate-500">
+              {saveCounterLabel}
+            </span>
           ) : null}
-        </div>
+        </button>
       </div>
 
       {saveError ? (
