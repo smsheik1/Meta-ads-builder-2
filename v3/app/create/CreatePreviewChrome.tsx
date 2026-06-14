@@ -134,9 +134,9 @@ export function PhonePreviewFrame({
                     <span className="mr-2 font-black">{brandName}</span>
                     <span className="text-slate-300">{caption.substring(0, 72)}{caption.length > 72 ? "..." : ""}</span>
                   </div>
-                  <button className="shrink-0 rounded-md bg-blue-600 px-2.5 py-1.5 text-[11px] font-black text-white">
+                  <span className="shrink-0 rounded-md bg-blue-600 px-2.5 py-1.5 text-[11px] font-black text-white">
                     Learn More
-                  </button>
+                  </span>
                 </div>
                 <div className="mt-3 flex items-center justify-between border-y border-slate-900 py-2 text-[11px] font-bold text-slate-400">
                   <span>1.2K reactions</span>
@@ -148,10 +148,10 @@ export function PhonePreviewFrame({
                     { label: "Comment", icon: MessageCircle },
                     { label: "Share", icon: Share2 },
                   ].map(({ label, icon: Icon }) => (
-                    <button key={label} className="flex items-center justify-center gap-1 rounded-md py-1 text-[12px] font-black text-slate-300">
+                    <span key={label} className="flex items-center justify-center gap-1 rounded-md py-1 text-[12px] font-black text-slate-300">
                       <Icon className="size-3.5" />
                       {label}
-                    </button>
+                    </span>
                   ))}
                 </div>
               </>
@@ -191,9 +191,9 @@ export function PhonePreviewFrame({
               </div>
               <div className="bg-gradient-to-t from-black/60 via-black/20 to-transparent px-3 pb-4 pt-20">
                 <div className="mb-3 flex justify-center">
-                  <button className="pointer-events-auto rounded-full bg-white/95 px-8 py-3 text-[14px] font-black text-black shadow-lg backdrop-blur-md">
+                  <span className="rounded-full bg-white/95 px-8 py-3 text-[14px] font-black text-black shadow-lg backdrop-blur-md">
                     Learn More
-                  </button>
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 rounded-full border border-white/70 px-4 py-3 text-[13px] font-bold text-white backdrop-blur-md">
@@ -214,7 +214,7 @@ export function PhonePreviewFrame({
                 </div>
               </div>
               <div className="relative flex flex-col justify-end bg-gradient-to-t from-black/65 via-black/20 to-transparent pb-4 pt-32">
-                <div className="pointer-events-auto absolute bottom-[100%] left-4 right-4 mb-4 flex items-center justify-between rounded-full bg-white/95 px-6 py-[14px] text-black shadow-lg backdrop-blur-md">
+                <div className="absolute bottom-[100%] left-4 right-4 mb-4 flex items-center justify-between rounded-full bg-white/95 px-6 py-[14px] text-black shadow-lg backdrop-blur-md">
                   <span className="ml-4 flex-1 text-center text-[14px] font-black">Learn More</span>
                   <ChevronUp className="size-5 opacity-80" />
                 </div>
@@ -230,7 +230,7 @@ export function PhonePreviewFrame({
                     <p className="line-clamp-2 text-[13px] font-bold leading-snug text-white drop-shadow-md">{caption}</p>
                   </div>
                 </div>
-                <div className="pointer-events-auto absolute bottom-4 right-4 z-20 flex flex-col items-center gap-5 text-white drop-shadow-md">
+                <div className="absolute bottom-4 right-4 z-20 flex flex-col items-center gap-5 text-white drop-shadow-md">
                   <Heart className="size-7" />
                   <MessageCircle className="size-7" />
                   <Send className="size-7" />
@@ -265,7 +265,7 @@ export function PhonePreviewFrame({
                 <p className="truncate text-sm font-black">{brandName}</p>
                 <p className="truncate text-xs font-bold text-slate-300">Sponsored video</p>
               </div>
-              <button className="shrink-0 rounded-full bg-white px-5 py-2 text-sm font-black text-black">Learn More</button>
+              <span className="shrink-0 rounded-full bg-white px-5 py-2 text-sm font-black text-black">Learn More</span>
             </div>
           </div>
         </div>

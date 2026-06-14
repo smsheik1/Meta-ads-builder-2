@@ -119,10 +119,12 @@ assert.ok(
   "/create canvas must not expose a canvas-level add-audio hover/action; audio lives in normal controls.",
 );
 for (const forbiddenPreviewControl of [
+  "<button",
   "data-preview-control-overlay",
   "data-preview-play-overlay",
   "onOpenCaptionEditor",
   "onTogglePlayback",
+  "pointer-events-auto",
 ]) {
   assert.ok(
     !previewChromeSource.includes(forbiddenPreviewControl),
