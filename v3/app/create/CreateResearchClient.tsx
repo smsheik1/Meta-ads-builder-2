@@ -186,6 +186,7 @@ function ResearchConnected() {
   const [billingStatus, setBillingStatus] = useState<BillingStatus | null>(null);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
   const createEditorScopeRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const analysisUpgradeKeyRef = useRef("");
@@ -239,7 +240,9 @@ function ResearchConnected() {
         window.history.replaceState(null, "", "/create");
       } catch (checkoutError) {
         setPaywallOpen(true);
-        setError(checkoutError instanceof Error ? checkoutError.message : "Could not verify checkout.");
+        const message = checkoutError instanceof Error ? checkoutError.message : "Could not verify checkout.";
+        setCheckoutError(message);
+        setError(message);
       } finally {
         setCheckoutLoading(false);
       }
@@ -678,13 +681,16 @@ function ResearchConnected() {
 
   const startCheckout = async () => {
     setCheckoutLoading(true);
+    setCheckoutError("");
     setError("");
     try {
       const payload = await fetchBillingJson("/api/billing/checkout", { method: "POST" });
       if (!payload.url) throw new Error("Could not start checkout.");
       window.location.href = payload.url;
     } catch (checkoutError) {
-      setError(checkoutError instanceof Error ? checkoutError.message : "Could not start checkout.");
+      const message = checkoutError instanceof Error ? checkoutError.message : "Could not start checkout.";
+      setCheckoutError(message);
+      setError(message);
       setCheckoutLoading(false);
     }
   };
@@ -1001,7 +1007,10 @@ function ResearchConnected() {
               </div>
               <button
                 type="button"
-                onClick={() => setPaywallOpen(false)}
+                onClick={() => {
+                  setPaywallOpen(false);
+                  setCheckoutError("");
+                }}
                 className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-black text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
                 aria-label="Close paywall"
               >
@@ -1019,6 +1028,11 @@ function ResearchConnected() {
             >
               {checkoutLoading ? "Starting checkout..." : "Start unlimited for $1"}
             </button>
+            {checkoutError ? (
+              <p className="mt-3 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold leading-5 text-rose-700">
+                {checkoutError} Email me at buildwithshaz@gmail.com and I will get you unstuck.
+              </p>
+            ) : null}
             <p className="mt-3 text-center text-xs font-bold text-slate-400">$1 today, then $9/month after 7 days. Cancel anytime in Stripe.</p>
             <p className="mt-2 text-center text-xs font-semibold text-slate-400">
               If anything gets weird or you have ideas, email me directly: buildwithshaz@gmail.com.
