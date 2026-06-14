@@ -73,6 +73,7 @@ export function PhonePreviewFrame({
     <div
       className={cx("relative overflow-hidden bg-[#fbfaf5]", className)}
       data-preview-ad-viewport={previewFrameId}
+      style={{ containerType: "inline-size" }}
     >
       <AdRenderSurface
         className="h-full"

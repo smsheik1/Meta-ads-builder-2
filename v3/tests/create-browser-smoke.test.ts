@@ -30,6 +30,7 @@ assert(
   "spacebar-reroll-button",
   "1 reroll this session",
   "Add audio for this ad",
+  "Audio CTA should stay compact inside the canvas.",
   ".first()",
   "Fresh visitor must be able to add audio before submitting a website.",
   "data-dialogue-editor='modal'",

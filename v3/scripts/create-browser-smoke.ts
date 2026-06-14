@@ -45,6 +45,13 @@ async function main() {
     const addAudioButton = page.getByRole("button", { name: "Add audio for this ad" }).first();
     await addAudioButton.waitFor({ state: "visible" });
     assert(await addAudioButton.isEnabled(), "Fresh visitor must be able to add audio before submitting a website.");
+    const audioButtonBox = await addAudioButton.boundingBox();
+    const adViewportBox = await page.locator("[data-preview-ad-viewport]").first().boundingBox();
+    assert(audioButtonBox && adViewportBox, "Audio CTA and ad viewport should have measurable boxes.");
+    assert(
+      audioButtonBox.width < adViewportBox.width * 0.72 && audioButtonBox.height < adViewportBox.height * 0.22,
+      `Audio CTA should stay compact inside the canvas. CTA: ${audioButtonBox.width}x${audioButtonBox.height}, viewport: ${adViewportBox.width}x${adViewportBox.height}`,
+    );
     await page.getByRole("button", { name: "Download video" }).waitFor({ state: "visible" });
     await page.getByRole("button", { name: /create share link|share link copied/i }).waitFor({ state: "visible" });
     await page.locator("[data-create-format-rail='v3']").waitFor({ state: "visible" });
