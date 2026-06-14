@@ -11,6 +11,7 @@ export const isPaywallEnabled = () => !isDisabled(process.env.PAYWALL_ENABLED);
 export const freeWorkflowRunLimit = () => Number(process.env.FREE_WORKFLOW_RUN_LIMIT || 2);
 export const paidPassDays = () => Number(process.env.PAID_PASS_DAYS || 7);
 export const paidPassPriceCents = () => Number(process.env.PAID_PASS_PRICE_CENTS || 100);
+export const earlyAccessMonthlyPriceCents = () => Number(process.env.EARLY_ACCESS_MONTHLY_PRICE_CENTS || 900);
 
 const billingSecret = () => process.env.AI_BILL_SHIELD_SECRET || process.env.SESSION_SECRET || "wiggly-dev-billing";
 
