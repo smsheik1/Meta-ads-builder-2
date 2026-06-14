@@ -22,12 +22,22 @@ deletion at:
 Use that branch only as a read-only reference for old visual taste or behavior.
 Do not ship from it.
 
-## Local Development
+## Local Setup
 
 ```bash
 npm install
 npm run dev
 ```
+
+Run `npm run dev` from the repo root, not from `v3/`. The root dev command
+starts the full local stack:
+
+- Next.js app on `http://localhost:3020`
+- Local Convex on `http://127.0.0.1:3210`
+- Render worker for MP4 downloads
+
+If only Next is running, `/create` may load but downloads will show
+`Render worker is offline`.
 
 The v3 app runs at:
 
@@ -46,6 +56,15 @@ npm run smoke:live
 ```
 
 All root commands delegate to `@wiggly/v3`.
+
+To verify the local runtime, run:
+
+```bash
+npm run runtime:health
+```
+
+The render worker is healthy when the `worker:queue` check passes. If it fails,
+stop the partial dev process and restart from the repo root with `npm run dev`.
 
 ## Environment
 
@@ -82,7 +101,8 @@ CONVEX_SELF_HOSTED_ADMIN_KEY="$admin_key" \
 npx convex env set FIRECRAWL_API_KEY "$FIRECRAWL_API_KEY"
 ```
 
-Repeat that command for each env var used by Convex actions:
+Repeat that command for each env var used by Convex actions through the
+`v3/convex/` feature import chain:
 
 ```bash
 FIRECRAWL_API_KEY=
