@@ -227,6 +227,7 @@ async function main() {
       `Typing space in the website input should not reroll. Last status: ${statusAfterFirstReroll}`,
     );
 
+    await page.locator("[data-create-editor-scope='true']").click({ position: { x: 10, y: 10 } });
     await page.keyboard.press("Space");
     await page.getByText("2 rerolls this session").waitFor({ state: "visible" });
     await assertPreviewIncludes("Stop Losing The AI Search");
