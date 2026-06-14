@@ -178,8 +178,6 @@ const previewHtml = renderToStaticMarkup(createElement(PhonePreviewFrame, {
   platform: "instagram-feed",
   motionMode: "audio",
   timeSeconds: 0.5,
-  previewReady: true,
-  isAudioPlaying: true,
 }));
 const directPreviewHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene: parityScene,

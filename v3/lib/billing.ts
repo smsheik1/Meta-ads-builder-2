@@ -9,18 +9,69 @@ const isDisabled = (value: string | undefined) => ["0", "false", "off", "no"].in
 
 export const isPaywallEnabled = () => !isDisabled(process.env.PAYWALL_ENABLED);
 export const freeWorkflowRunLimit = () => Number(process.env.FREE_WORKFLOW_RUN_LIMIT || 2);
+export const freeWorkflowResetDays = () => Number(process.env.FREE_WORKFLOW_RESET_DAYS || 7);
 export const paidPassDays = () => Number(process.env.PAID_PASS_DAYS || 7);
 export const paidPassPriceCents = () => Number(process.env.PAID_PASS_PRICE_CENTS || 100);
 export const earlyAccessMonthlyPriceCents = () => Number(process.env.EARLY_ACCESS_MONTHLY_PRICE_CENTS || 900);
 
 const billingSecret = () => process.env.AI_BILL_SHIELD_SECRET || process.env.SESSION_SECRET || "wiggly-dev-billing";
 
-type WorkflowUsage = {
+export type WorkflowUsage = {
   count: number;
   resetAt: number;
 };
 
 const workflowRunCounts = new Map<string, WorkflowUsage>();
+
+export function hasPaidAccess(paidUntil: number, now = Date.now()) {
+  return paidUntil > now;
+}
+
+export function workflowRunResetMs() {
+  return freeWorkflowResetDays() * dayMs;
+}
+
+export function readWorkflowUsageSnapshot(
+  current: WorkflowUsage | undefined,
+  now = Date.now(),
+  limit = freeWorkflowRunLimit(),
+  resetMs = workflowRunResetMs(),
+) {
+  if (!current || current.resetAt <= now) {
+    return { count: 0, remaining: limit, resetAt: now + resetMs };
+  }
+
+  return {
+    count: current.count,
+    remaining: Math.max(0, limit - current.count),
+    resetAt: current.resetAt,
+  };
+}
+
+export function consumeWorkflowUsageSnapshot(
+  current: WorkflowUsage | undefined,
+  now = Date.now(),
+  limit = freeWorkflowRunLimit(),
+  resetMs = workflowRunResetMs(),
+) {
+  const usage = readWorkflowUsageSnapshot(current, now, limit, resetMs);
+  if (usage.count >= limit) {
+    return { ok: false, usage };
+  }
+
+  const nextUsage = {
+    count: usage.count + 1,
+    resetAt: usage.resetAt,
+  };
+
+  return {
+    ok: true,
+    usage: {
+      ...nextUsage,
+      remaining: Math.max(0, limit - nextUsage.count),
+    },
+  };
+}
 
 function sign(value: string) {
   return crypto
@@ -94,36 +145,33 @@ export async function setPaidUntil(sessionId: string, paidUntil: number) {
 export function readWorkflowUsage(sessionId: string) {
   const now = Date.now();
   const current = workflowRunCounts.get(`workflow:${sessionId}`);
-  const limit = freeWorkflowRunLimit();
-  if (!current || current.resetAt <= now) return { count: 0, remaining: limit, resetAt: now + dayMs };
-  return {
-    count: current.count,
-    remaining: Math.max(0, limit - current.count),
-    resetAt: current.resetAt,
-  };
+  return readWorkflowUsageSnapshot(current, now);
 }
 
 export function consumeWorkflowRun(sessionId: string) {
   const now = Date.now();
   const key = `workflow:${sessionId}`;
   const current = workflowRunCounts.get(key);
-  const limit = freeWorkflowRunLimit();
-  if (!current || current.resetAt <= now) {
-    workflowRunCounts.set(key, { count: 1, resetAt: now + dayMs });
-    return { ok: true, remaining: Math.max(0, limit - 1), resetAt: now + dayMs };
+  const result = consumeWorkflowUsageSnapshot(current, now);
+  if (result.ok) {
+    workflowRunCounts.set(key, {
+      count: result.usage.count,
+      resetAt: result.usage.resetAt,
+    });
   }
-  if (current.count >= limit) {
-    return { ok: false, remaining: 0, resetAt: current.resetAt };
-  }
-  current.count += 1;
-  return { ok: true, remaining: Math.max(0, limit - current.count), resetAt: current.resetAt };
+
+  return {
+    ok: result.ok,
+    remaining: result.usage.remaining,
+    resetAt: result.usage.resetAt,
+  };
 }
 
 export async function getBillingStatus() {
   const sessionId = await getOrSetBillingSessionId();
   const paidUntil = await readPaidUntil(sessionId);
   const usage = readWorkflowUsage(sessionId);
-  const paid = paidUntil > Date.now();
+  const paid = hasPaidAccess(paidUntil);
   return {
     paid,
     paidUntil,

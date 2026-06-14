@@ -24,7 +24,7 @@ type ClaimedRenderJob = {
   scene: AdScene;
 };
 
-async function loadEnvFile(filePath: string) {
+async function loadEnvFile(filePath: string, options: { override?: boolean } = {}) {
   try {
     const content = await readFile(filePath, "utf8");
     for (const line of content.split(/\r?\n/)) {
@@ -33,7 +33,7 @@ async function loadEnvFile(filePath: string) {
       const match = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/.exec(trimmed);
       if (!match) continue;
       const [, key, rawValue] = match;
-      if (process.env[key]) continue;
+      if (process.env[key] && !options.override) continue;
       process.env[key] = rawValue.replace(/^["']|["']$/g, "");
     }
   } catch {
@@ -43,9 +43,9 @@ async function loadEnvFile(filePath: string) {
 
 async function loadLocalEnv() {
   await loadEnvFile(path.join(repoRoot, ".env"));
-  await loadEnvFile(path.join(repoRoot, ".env.local"));
-  await loadEnvFile(path.join(v3Root, ".env"));
-  await loadEnvFile(path.join(v3Root, ".env.local"));
+  await loadEnvFile(path.join(repoRoot, ".env.local"), { override: true });
+  await loadEnvFile(path.join(v3Root, ".env"), { override: true });
+  await loadEnvFile(path.join(v3Root, ".env.local"), { override: true });
 }
 
 function getConvexUrl() {

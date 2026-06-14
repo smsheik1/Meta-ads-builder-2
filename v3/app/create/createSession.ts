@@ -1,7 +1,3 @@
-import {
-  createDefaultCanvasInteractionLocks,
-  type CanvasInteractionLocks,
-} from "@/features/create/canvasInteractionStore";
 import { cloneDialogueScript, type DialogueScript } from "@/features/dialogue/dialogueScripts";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
 import type { AdScene } from "@/features/scene/types";
@@ -15,7 +11,6 @@ export type CreateSessionSnapshot = {
   adScenes: AdScene[];
   selectedScene: AdScene | null;
   selectedSceneIndex: number;
-  sceneLocks: CanvasInteractionLocks;
   rerollCount: number;
   adStatusNote: string;
   dialogueScripts: DialogueScript[];
@@ -42,11 +37,6 @@ const getCreateSessionStorage = () => {
   }
 };
 
-const normalizePersistedLocks = (locks: Partial<CanvasInteractionLocks> | null | undefined): CanvasInteractionLocks => ({
-  ...createDefaultCanvasInteractionLocks(),
-  ...(locks || {}),
-});
-
 export const loadCreateSessionSnapshot = (): CreateSessionSnapshot | null => {
   const storage = getCreateSessionStorage();
   if (!storage) return null;
@@ -71,7 +61,6 @@ export const loadCreateSessionSnapshot = (): CreateSessionSnapshot | null => {
       adScenes,
       selectedScene: parsed.selectedScene || adScenes[selectedSceneIndex] || null,
       selectedSceneIndex,
-      sceneLocks: normalizePersistedLocks(parsed.sceneLocks),
       rerollCount: Math.max(0, Math.trunc(Number(parsed.rerollCount) || 0)),
       adStatusNote: typeof parsed.adStatusNote === "string" ? parsed.adStatusNote : "",
       dialogueScripts: Array.isArray(parsed.dialogueScripts)

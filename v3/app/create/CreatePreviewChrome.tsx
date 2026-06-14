@@ -1,32 +1,24 @@
 "use client";
 import {
-  AudioLines,
   Bookmark,
   ChevronUp,
-  Captions,
   Heart,
   MessageCircle,
   MoreHorizontal,
-  Play,
   Send,
   Share2,
-  Square,
   ThumbsUp,
   VolumeX,
 } from "lucide-react";
 import type {
-  FormatSelectableSlotDefinition,
   RenderFlashState,
   RenderMotionMode,
-  RenderSelectableSlot,
 } from "@/features/formats/types";
 import { AdRenderSurface } from "@/features/render/AdRenderSurface";
 import type { AdScene } from "@/features/scene/types";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
-import { PreviewSelectionOverlay } from "./CreatePreviewSelectionOverlay";
 import { BrandAvatar, StatusBar } from "./CreatePreviewChromeParts";
 import { createStarterPlaceholderScene } from "./createStarterScene";
-import { toPlaceholderPercent } from "./createPreviewGeometry";
 
 export type PreviewPlatform = "facebook-feed" | "instagram-feed" | "reels" | "stories" | "youtube";
 export const previewPlatformOptions: Array<{ label: string; value: PreviewPlatform }> = [
@@ -46,23 +38,7 @@ export function PhonePreviewFrame({
   motionMode = "auto",
   rerollFlash = null,
   timeSeconds,
-  onOpenAudioPanel,
-  onOpenCaptionEditor,
-  onTogglePlayback,
-  captionsReady = false,
-  previewReady = false,
-  isAudioPlaying = false,
   placeholderVariantIndex = 0,
-  selectedSlot = null,
-  selectableSlots,
-  lockedSlots,
-  slotColors,
-  backgroundColor,
-  onSelectSlot,
-  onClearSlot,
-  onToggleSlotLock,
-  onChangeSlotColor,
-  onChangeBackgroundColor,
 }: {
   scene: AdScene | null;
   result: StoredWebsiteResearchResult | null;
@@ -70,29 +46,11 @@ export function PhonePreviewFrame({
   motionMode?: RenderMotionMode;
   rerollFlash?: RenderFlashState | null;
   timeSeconds: number;
-  onOpenAudioPanel?: () => void;
-  onOpenCaptionEditor?: () => void;
-  onTogglePlayback?: () => void;
-  captionsReady?: boolean;
-  previewReady?: boolean;
-  isAudioPlaying?: boolean;
   placeholderVariantIndex?: number;
-  selectedSlot?: RenderSelectableSlot | null;
-  selectableSlots?: readonly FormatSelectableSlotDefinition[];
-  lockedSlots?: Partial<Record<RenderSelectableSlot, boolean>>;
-  slotColors?: Partial<Record<RenderSelectableSlot, string>>;
-  backgroundColor?: string;
-  onSelectSlot?: (slot: RenderSelectableSlot) => void;
-  onClearSlot?: () => void;
-  onToggleSlotLock?: (slot: RenderSelectableSlot) => void;
-  onChangeSlotColor?: (slot: RenderSelectableSlot, color: string) => void;
-  onChangeBackgroundColor?: (color: string) => void;
 }) {
   const brandName = scene?.brand.name || result?.brand.name || "Your brand";
   const brandLogoUrl = scene?.brand.logoUrl || scene?.brand.faviconUrl || result?.brand.logoUrl || result?.brand.faviconUrl || "";
   const caption = scene?.creative.subheadline || "Add audio for this ad";
-  const showPreviewAudioAction = Boolean((!scene || scene.audio.status !== "generated") && onOpenAudioPanel);
-  const canSelectSlots = Boolean(scene && selectableSlots?.length && lockedSlots && slotColors && backgroundColor && onSelectSlot && onClearSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor);
   const feedPlatform = platform === "facebook-feed" || platform === "instagram-feed";
   const instagramFeed = platform === "instagram-feed";
   const storiesPlatform = platform === "stories";
@@ -119,35 +77,6 @@ export function PhonePreviewFrame({
         rerollFlash={rerollFlash}
         timeSeconds={timeSeconds}
       />
-      {showPreviewAudioAction ? (
-        <button
-          type="button"
-          aria-label="Add audio for this ad"
-          data-preview-audio-action="true"
-          onClick={onOpenAudioPanel}
-          className="absolute left-1/2 z-50 inline-flex -translate-x-1/2 items-center justify-center gap-3 whitespace-nowrap rounded-full bg-white px-6 py-3 text-[16px] font-black text-slate-600 shadow-[0_18px_45px_rgba(15,23,42,0.10)] transition hover:-translate-x-1/2 hover:-translate-y-0.5 hover:text-slate-950"
-          style={{
-            top: toPlaceholderPercent(336, "y"),
-          }}
-        >
-          <AudioLines className="size-5 shrink-0" />
-          Add audio for this ad
-        </button>
-      ) : null}
-      {canSelectSlots && selectableSlots && lockedSlots && slotColors && backgroundColor && onSelectSlot && onClearSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor ? (
-        <PreviewSelectionOverlay
-          selectedSlot={selectedSlot}
-          selectableSlots={selectableSlots}
-          lockedSlots={lockedSlots}
-          slotColors={slotColors}
-          backgroundColor={backgroundColor}
-          onSelectSlot={onSelectSlot}
-          onClearSlot={onClearSlot}
-          onToggleSlotLock={onToggleSlotLock}
-          onChangeSlotColor={onChangeSlotColor}
-          onChangeBackgroundColor={onChangeBackgroundColor}
-        />
-      ) : null}
     </div>
   );
 
@@ -205,9 +134,9 @@ export function PhonePreviewFrame({
                     <span className="mr-2 font-black">{brandName}</span>
                     <span className="text-slate-300">{caption.substring(0, 72)}{caption.length > 72 ? "..." : ""}</span>
                   </div>
-                  <button className="shrink-0 rounded-md bg-blue-600 px-2.5 py-1.5 text-[11px] font-black text-white">
+                  <span className="shrink-0 rounded-md bg-blue-600 px-2.5 py-1.5 text-[11px] font-black text-white">
                     Learn More
-                  </button>
+                  </span>
                 </div>
                 <div className="mt-3 flex items-center justify-between border-y border-slate-900 py-2 text-[11px] font-bold text-slate-400">
                   <span>1.2K reactions</span>
@@ -219,10 +148,10 @@ export function PhonePreviewFrame({
                     { label: "Comment", icon: MessageCircle },
                     { label: "Share", icon: Share2 },
                   ].map(({ label, icon: Icon }) => (
-                    <button key={label} className="flex items-center justify-center gap-1 rounded-md py-1 text-[12px] font-black text-slate-300">
+                    <span key={label} className="flex items-center justify-center gap-1 rounded-md py-1 text-[12px] font-black text-slate-300">
                       <Icon className="size-3.5" />
                       {label}
-                    </button>
+                    </span>
                   ))}
                 </div>
               </>
@@ -262,9 +191,9 @@ export function PhonePreviewFrame({
               </div>
               <div className="bg-gradient-to-t from-black/60 via-black/20 to-transparent px-3 pb-4 pt-20">
                 <div className="mb-3 flex justify-center">
-                  <button className="pointer-events-auto rounded-full bg-white/95 px-8 py-3 text-[14px] font-black text-black shadow-lg backdrop-blur-md">
+                  <span className="rounded-full bg-white/95 px-8 py-3 text-[14px] font-black text-black shadow-lg backdrop-blur-md">
                     Learn More
-                  </button>
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 rounded-full border border-white/70 px-4 py-3 text-[13px] font-bold text-white backdrop-blur-md">
@@ -285,7 +214,7 @@ export function PhonePreviewFrame({
                 </div>
               </div>
               <div className="relative flex flex-col justify-end bg-gradient-to-t from-black/65 via-black/20 to-transparent pb-4 pt-32">
-                <div className="pointer-events-auto absolute bottom-[100%] left-4 right-4 mb-4 flex items-center justify-between rounded-full bg-white/95 px-6 py-[14px] text-black shadow-lg backdrop-blur-md">
+                <div className="absolute bottom-[100%] left-4 right-4 mb-4 flex items-center justify-between rounded-full bg-white/95 px-6 py-[14px] text-black shadow-lg backdrop-blur-md">
                   <span className="ml-4 flex-1 text-center text-[14px] font-black">Learn More</span>
                   <ChevronUp className="size-5 opacity-80" />
                 </div>
@@ -301,7 +230,7 @@ export function PhonePreviewFrame({
                     <p className="line-clamp-2 text-[13px] font-bold leading-snug text-white drop-shadow-md">{caption}</p>
                   </div>
                 </div>
-                <div className="pointer-events-auto absolute bottom-4 right-4 z-20 flex flex-col items-center gap-5 text-white drop-shadow-md">
+                <div className="absolute bottom-4 right-4 z-20 flex flex-col items-center gap-5 text-white drop-shadow-md">
                   <Heart className="size-7" />
                   <MessageCircle className="size-7" />
                   <Send className="size-7" />
@@ -336,41 +265,12 @@ export function PhonePreviewFrame({
                 <p className="truncate text-sm font-black">{brandName}</p>
                 <p className="truncate text-xs font-bold text-slate-300">Sponsored video</p>
               </div>
-              <button className="shrink-0 rounded-full bg-white px-5 py-2 text-sm font-black text-black">Learn More</button>
+              <span className="shrink-0 rounded-full bg-white px-5 py-2 text-sm font-black text-black">Learn More</span>
             </div>
           </div>
         </div>
       ) : null}
 
-      <div
-        className={cx(
-          "absolute left-1/2 z-40 flex -translate-x-1/2 items-center gap-2",
-          youtubePlatform ? "bottom-1" : "bottom-[86px]",
-        )}
-        data-preview-control-overlay={previewFrameId}
-      >
-        <button
-          type="button"
-          data-preview-play-overlay={previewFrameId}
-          onClick={onTogglePlayback}
-          disabled={!previewReady || !onTogglePlayback}
-          className="flex items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-2xl shadow-slate-950/25 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isAudioPlaying ? <Square className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
-          {isAudioPlaying ? "Stop preview" : "Play this ad"}
-        </button>
-        {captionsReady && onOpenCaptionEditor ? (
-          <button
-            type="button"
-            onClick={onOpenCaptionEditor}
-            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-2xl shadow-slate-950/12 transition hover:-translate-y-0.5 hover:bg-slate-50 hover:text-slate-950"
-            title="Edit captions"
-            aria-label="Edit captions"
-          >
-            <Captions className="h-5 w-5" />
-          </button>
-        ) : null}
-      </div>
     </div>
   );
 }

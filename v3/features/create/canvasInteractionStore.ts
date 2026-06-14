@@ -3,9 +3,6 @@ import { create } from "zustand";
 // Canvas interaction only. Keep product data outside this store.
 // Boundary: no Convex, scenes, render jobs, audio URLs, or format modules.
 // Export custom hooks/actions only; /create components must not import the raw store.
-export type CanvasInteractionSlot = "headline" | "visualizer" | "captions";
-export type CanvasInteractionLockKey = "headline" | "subheadline" | "style" | "captionColor" | "audio";
-export type CanvasInteractionLocks = Record<CanvasInteractionLockKey, boolean>;
 export type CanvasInteractionBusyReason =
   | "website-research"
   | "ad-generation"
@@ -22,8 +19,6 @@ export type CanvasPlaybackStatus = "paused" | "playing";
 export type CanvasInteractionSnapshot = {
   uiStatus: CanvasInteractionUiStatus;
   playbackStatus: CanvasPlaybackStatus;
-  selectedSlot: CanvasInteractionSlot | null;
-  locks: CanvasInteractionLocks;
 };
 
 export type CanvasInteractionEvent =
@@ -33,11 +28,7 @@ export type CanvasInteractionEvent =
   | { type: "finishBusy" }
   | { type: "playbackStarted" }
   | { type: "playbackStopped" }
-  | { type: "slotSelected"; slot: CanvasInteractionSlot }
-  | { type: "slotCleared" }
-  | { type: "slotLockToggled"; key: CanvasInteractionLockKey }
-  | { type: "locksRestored"; locks: CanvasInteractionLocks }
-  | { type: "interactionReset"; locks?: CanvasInteractionLocks };
+  | { type: "interactionReset" };
 
 type CanvasInteractionActions = {
   openModal: (modal: CanvasInteractionModal) => void;
@@ -46,30 +37,16 @@ type CanvasInteractionActions = {
   finishBusy: () => void;
   playbackStarted: () => void;
   playbackStopped: () => void;
-  slotSelected: (slot: CanvasInteractionSlot) => void;
-  slotCleared: () => void;
-  slotLockToggled: (key: CanvasInteractionLockKey) => void;
-  locksRestored: (locks: CanvasInteractionLocks) => void;
-  interactionReset: (options?: { locks?: CanvasInteractionLocks }) => void;
+  interactionReset: () => void;
 };
 
 type CanvasInteractionState = CanvasInteractionSnapshot & {
   actions: CanvasInteractionActions;
 };
 
-export const createDefaultCanvasInteractionLocks = (): CanvasInteractionLocks => ({
-  headline: false,
-  subheadline: false,
-  style: false,
-  captionColor: false,
-  audio: false,
-});
-
 export const createDefaultCanvasInteractionSnapshot = (): CanvasInteractionSnapshot => ({
   uiStatus: "idle",
   playbackStatus: "paused",
-  selectedSlot: null,
-  locks: createDefaultCanvasInteractionLocks(),
 });
 
 export function getCanvasCanReroll(state: Pick<CanvasInteractionSnapshot, "uiStatus" | "playbackStatus">) {
@@ -120,34 +97,8 @@ export function reduceCanvasInteractionState(
         ...state,
         playbackStatus: "paused",
       };
-    case "slotSelected":
-      return {
-        ...state,
-        selectedSlot: event.slot,
-      };
-    case "slotCleared":
-      return {
-        ...state,
-        selectedSlot: null,
-      };
-    case "slotLockToggled":
-      return {
-        ...state,
-        locks: {
-          ...state.locks,
-          [event.key]: !state.locks[event.key],
-        },
-      };
-    case "locksRestored":
-      return {
-        ...state,
-        locks: event.locks,
-      };
     case "interactionReset":
-      return {
-        ...createDefaultCanvasInteractionSnapshot(),
-        locks: event.locks || createDefaultCanvasInteractionLocks(),
-      };
+      return createDefaultCanvasInteractionSnapshot();
     default:
       return state;
   }
@@ -167,19 +118,13 @@ const useCanvasInteractionStoreBase = create<CanvasInteractionState>()((set) => 
       finishBusy: () => dispatch({ type: "finishBusy" }),
       playbackStarted: () => dispatch({ type: "playbackStarted" }),
       playbackStopped: () => dispatch({ type: "playbackStopped" }),
-      slotSelected: (slot) => dispatch({ type: "slotSelected", slot }),
-      slotCleared: () => dispatch({ type: "slotCleared" }),
-      slotLockToggled: (key) => dispatch({ type: "slotLockToggled", key }),
-      locksRestored: (locks) => dispatch({ type: "locksRestored", locks }),
-      interactionReset: (options) => dispatch({ type: "interactionReset", locks: options?.locks }),
+      interactionReset: () => dispatch({ type: "interactionReset" }),
     },
   };
 });
 
 export const useCanvasCanReroll = () => useCanvasInteractionStoreBase(getCanvasCanReroll);
 export const useCanvasActions = () => useCanvasInteractionStoreBase((state) => state.actions);
-export const useSelectedCanvasSlot = () => useCanvasInteractionStoreBase((state) => state.selectedSlot);
-export const useCanvasLocks = () => useCanvasInteractionStoreBase((state) => state.locks);
 
 export function getCanvasCanRerollNow() {
   return getCanvasCanReroll(useCanvasInteractionStoreBase.getState());

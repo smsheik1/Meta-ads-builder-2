@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery } from "convex/react";
-import { ExternalLink, Loader2, ShieldAlert } from "lucide-react";
+import { ExternalLink, Loader2, Play, ShieldAlert, Square } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import type { AdScene } from "@/features/scene/types";
 import { PhonePreviewFrame, type PreviewPlatform } from "../../create/CreatePreviewChrome";
@@ -104,9 +104,6 @@ export function ShareSceneClient({
           platform={share.previewPlatform || "instagram-feed"}
           motionMode={isAudioPlaying ? "audio" : "idle"}
           timeSeconds={previewTimeSeconds}
-          onTogglePlayback={onTogglePlayback}
-          previewReady={hasPlayableAudio}
-          isAudioPlaying={isAudioPlaying}
         />
         {hasPlayableAudio ? (
           <audio
@@ -152,6 +149,16 @@ export function ShareSceneClient({
         <p className="mt-5 text-lg font-bold leading-8 text-slate-500">
           {activeScene.creative.subheadline}
         </p>
+        {hasPlayableAudio ? (
+          <button
+            type="button"
+            onClick={onTogglePlayback}
+            className="mt-8 inline-flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white px-6 py-4 text-base font-black text-slate-800 shadow-[0_18px_40px_rgba(15,23,42,0.10)] transition hover:-translate-y-0.5 hover:bg-slate-50"
+          >
+            {isAudioPlaying ? <Square className="size-5 fill-current" /> : <Play className="size-5 fill-current" />}
+            {isAudioPlaying ? "Stop preview" : "Play this ad"}
+          </button>
+        ) : null}
         {share.ctaUrl ? (
           <a
             href={share.ctaUrl}

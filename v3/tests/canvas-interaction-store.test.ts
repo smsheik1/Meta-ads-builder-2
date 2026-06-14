@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   createDefaultCanvasInteractionSnapshot,
@@ -36,16 +36,8 @@ assert.equal(pausedInDialogueModal.uiStatus, "modal:dialogue", "Stopping playbac
 assert.equal(pausedInDialogueModal.playbackStatus, "paused", "Stopping playback must preserve modal state.");
 assert.equal(getCanvasCanReroll(pausedInDialogueModal), false, "Modal still blocks reroll after playback stops.");
 
-const selectedVisualizer = reduceCanvasInteractionState(idle, { type: "slotSelected", slot: "visualizer" });
-assert.equal(selectedVisualizer.selectedSlot, "visualizer");
-assert.equal(reduceCanvasInteractionState(selectedVisualizer, { type: "slotCleared" }).selectedSlot, null);
-
-const lockedHeadline = reduceCanvasInteractionState(idle, { type: "slotLockToggled", key: "headline" });
-assert.equal(lockedHeadline.locks.headline, true);
-assert.equal(
-  reduceCanvasInteractionState(lockedHeadline, { type: "slotLockToggled", key: "headline" }).locks.headline,
-  false,
-);
+const reset = reduceCanvasInteractionState(playingInDialogueModal, { type: "interactionReset" });
+assert.deepEqual(reset, idle, "Interaction reset must clear only transient UI/playback state.");
 
 const createDir = join(process.cwd(), "app/create");
 const createSources = readdirSync(createDir)
@@ -76,29 +68,69 @@ for (const { file, source } of createSources) {
 
 const storeSource = readFileSync("features/create/canvasInteractionStore.ts", "utf8");
 const keyboardSource = readFileSync("features/create/useCanvasKeyboard.ts", "utf8");
-const overlaySource = readFileSync("app/create/CreatePreviewSelectionOverlay.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
-const canvasColumnSource = readFileSync("app/create/CreateCanvasColumn.tsx", "utf8");
 const createClientSource = readFileSync("app/create/CreateResearchClient.tsx", "utf8");
 const storeImports = storeSource
   .split("\n")
   .filter((line) => line.startsWith("import "));
-assert.deepEqual(storeImports, ['import { create } from "zustand";'], "Canvas interaction store must only import Zustand.");
 
+assert.deepEqual(storeImports, ['import { create } from "zustand";'], "Canvas interaction store must only import Zustand.");
 assert.ok(
   keyboardSource.includes("getCanvasCanRerollNow()"),
   "Spacebar handler must ask the store at keypress time, not from stale React render state.",
 );
+
+for (const forbiddenStoreShape of [
+  "selectedSlot",
+  "locks:",
+  "CanvasInteractionLocks",
+  "slotSelected",
+  "slotCleared",
+  "slotLockToggled",
+  "useSelectedCanvasSlot",
+  "useCanvasLocks",
+]) {
+  assert.ok(!storeSource.includes(forbiddenStoreShape), `Canvas interaction store must not expose /create editor state: ${forbiddenStoreShape}`);
+}
+
+for (const forbiddenCreateBehavior of [
+  "CreatePreviewSelectionOverlay",
+  "PreviewSelectionOverlay",
+  "data-preview-selectable-slot",
+  "data-preview-background-color",
+  "onChangePreviewSlotColor",
+  "onChangePreviewBackgroundColor",
+  "Spacebar rerolls the",
+  "useSelectedCanvasSlot",
+  "useCanvasLocks",
+  "selectedPreviewSlot",
+  "sceneLocks",
+]) {
+  assert.ok(!createClientSource.includes(forbiddenCreateBehavior), `/create must not keep mini-editor behavior: ${forbiddenCreateBehavior}`);
+  assert.ok(!previewChromeSource.includes(forbiddenCreateBehavior), `/create preview chrome must not keep mini-editor behavior: ${forbiddenCreateBehavior}`);
+}
+
 assert.ok(
-  overlaySource.includes("data-preview-selection-overlay") && overlaySource.includes("onClearSlot()"),
-  "Blank canvas overlay clicks must clear selected slot so spacebar returns to full-scene reroll.",
+  !existsSync("app/create/CreatePreviewSelectionOverlay.tsx"),
+  "/create must not ship a selection overlay; per-slot editing belongs in /builder.",
 );
 assert.ok(
-  previewChromeSource.includes("onClearSlot") &&
-    canvasColumnSource.includes("onClearPreviewSlot") &&
-    createClientSource.includes("slotCleared()"),
-  "Selected-slot clearing must flow through canvas interaction store actions.",
+  !previewChromeSource.includes('data-preview-audio-action="true"'),
+  "/create canvas must not expose a canvas-level add-audio hover/action; audio lives in normal controls.",
 );
+for (const forbiddenPreviewControl of [
+  "<button",
+  "data-preview-control-overlay",
+  "data-preview-play-overlay",
+  "onOpenCaptionEditor",
+  "onTogglePlayback",
+  "pointer-events-auto",
+]) {
+  assert.ok(
+    !previewChromeSource.includes(forbiddenPreviewControl),
+    `/create preview chrome must be preview-only, not action UI: ${forbiddenPreviewControl}`,
+  );
+}
 
 for (const forbiddenStoreReference of [
   "convex/",

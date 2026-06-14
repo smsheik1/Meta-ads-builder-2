@@ -1,6 +1,5 @@
 import type { FocusEvent } from "react";
 import {
-  ArrowRight,
   BookmarkPlus,
   Check,
   Download,
@@ -296,16 +295,6 @@ export function CreateActionCard({
           {hasGeneratedAudio ? "Replace audio" : "Add audio"}
         </button>
       </div>
-
-      <button
-        type="button"
-        disabled
-        className="mt-2 flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white opacity-40"
-        title="Builder stays legacy-only until v3 gets a dedicated editor route"
-      >
-        Open in builder
-        <ArrowRight className="size-4" />
-      </button>
     </section>
   );
 }

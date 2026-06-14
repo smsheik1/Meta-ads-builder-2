@@ -62,10 +62,40 @@ V3_CONVEX_DEPLOY_KEY=
 FIRECRAWL_API_KEY=
 GEMINI_API_KEY=
 DEEPGRAM_API_KEY=
-OPENROUTER_API_KEY=
 ```
 
 Never commit real API keys.
+
+### Local Convex Env
+
+Convex actions do not automatically inherit `v3/.env.local` or the root `.env`.
+If local website research says Firecrawl is not configured, set the action env
+vars on the local Convex deployment:
+
+```bash
+cd v3
+admin_key=$(node -e 'const fs = require("fs"); const data = JSON.parse(fs.readFileSync(".convex/local/default/config.json", "utf8")); process.stdout.write(data.adminKey || "");')
+
+CONVEX_DEPLOYMENT= \
+CONVEX_SELF_HOSTED_URL=http://127.0.0.1:3210 \
+CONVEX_SELF_HOSTED_ADMIN_KEY="$admin_key" \
+npx convex env set FIRECRAWL_API_KEY "$FIRECRAWL_API_KEY"
+```
+
+Repeat that command for each env var used by Convex actions:
+
+```bash
+FIRECRAWL_API_KEY=
+GEMINI_API_KEY=
+GEMINI_ENABLED=true
+GEMINI_AD_MODEL=gemini-3.1-flash-lite
+GEMINI_BRAND_CURATOR_MODEL=gemini-3.1-flash-lite
+GEMINI_DIALOGUE_MODEL=gemini-3.1-flash-lite
+DEEPGRAM_API_KEY=
+DEEPGRAM_ENABLED=true
+TTS_ENABLED=true
+TTS_MODEL=gemini-3.1-flash-tts-preview
+```
 
 ## Deployment
 

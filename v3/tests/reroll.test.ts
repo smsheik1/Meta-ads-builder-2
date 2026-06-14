@@ -5,6 +5,7 @@ import {
   getNextSceneIndex,
   rerollScene,
 } from "../features/create/reroll";
+import { createGeneratedSceneAudio } from "../features/audio/sceneAudio";
 import type { AdScene } from "../features/scene/types";
 import { getVisualizerVariantForCandidate } from "../features/scene/visualizerVariants";
 
@@ -87,37 +88,35 @@ assert.equal(unlockedResult.style.visualizerColor, "#FB7185");
 assert.notDeepEqual(unlockedResult.style.visualizer, scenes[0]!.style.visualizer);
 assert.equal(unlockedResult.audio, scenes[1]!.audio);
 
-const lockedHeadline = applySceneLocks(scenes[0]!, scenes[1]!, {
-  ...createDefaultSceneLocks(),
-  headline: true,
-});
-assert.equal(lockedHeadline.creative.headline, "Headline 0");
-assert.equal(lockedHeadline.creative.headlineType, "contrast");
-assert.equal(lockedHeadline.creative.subheadline, "Subheadline 1");
+const rerolled = rerollScene(scenes, scenes[0]!, 0, createDefaultSceneLocks());
+assert.equal(rerolled.index, 1);
+assert.equal(rerolled.scene?.version, scenes[1]!.version);
+assert.equal(rerolled.scene?.format, scenes[1]!.format);
+assert.equal(rerolled.scene?.brand, scenes[1]!.brand);
+assert.equal(rerolled.scene?.layout, scenes[1]!.layout);
+assert.equal(rerolled.scene?.metadata, scenes[1]!.metadata);
+assert.equal(rerolled.scene?.creative.headline, "Headline 1");
+assert.equal(rerolled.scene?.creative.subheadline, "Subheadline 1");
 
-const lockedSubheadline = applySceneLocks(scenes[0]!, scenes[1]!, {
+const currentSceneWithAudio: AdScene = {
+  ...scenes[0]!,
+  audio: createGeneratedSceneAudio({
+    storageId: "audio-storage-0",
+    url: "https://example.com/audio.wav",
+    mimeType: "audio/wav",
+    durationMs: 5000,
+    transcript: "Audio transcript",
+    captions: [{ text: "Audio transcript", startMs: 0, endMs: 5000 }],
+    model: "test-tts",
+  }),
+};
+const rerolledWithAudioLock = rerollScene(scenes, currentSceneWithAudio, 0, {
   ...createDefaultSceneLocks(),
-  subheadline: true,
-});
-assert.equal(lockedSubheadline.creative.headline, "Headline 1");
-assert.equal(lockedSubheadline.creative.subheadline, "Subheadline 0");
-
-const lockedStyleAndAudio = applySceneLocks(scenes[0]!, scenes[1]!, {
-  ...createDefaultSceneLocks(),
-  style: true,
   audio: true,
 });
-assert.equal(lockedStyleAndAudio.style, scenes[0]!.style);
-assert.deepEqual(lockedStyleAndAudio.style.visualizer, scenes[0]!.style.visualizer);
-assert.equal(lockedStyleAndAudio.audio, scenes[0]!.audio);
-
-const rerolled = rerollScene(scenes, scenes[0]!, 0, {
-  ...createDefaultSceneLocks(),
-  headline: true,
-});
-assert.equal(rerolled.index, 1);
-assert.equal(rerolled.scene?.creative.headline, "Headline 0");
-assert.equal(rerolled.scene?.creative.subheadline, "Subheadline 1");
+assert.equal(rerolledWithAudioLock.index, 1);
+assert.equal(rerolledWithAudioLock.scene?.creative.headline, "Headline 1");
+assert.equal(rerolledWithAudioLock.scene?.audio, currentSceneWithAudio.audio);
 
 const wrapped = rerollScene(scenes, scenes[2]!, 2, createDefaultSceneLocks());
 assert.equal(wrapped.index, 0);

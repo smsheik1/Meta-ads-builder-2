@@ -38,7 +38,7 @@ The first version uses markdown and branding in the blocking URL-submit path. Sc
 - Next.js 16 for the web app.
 - Convex for anonymous sessions, research runs, scenes, render jobs, share records, and storage metadata.
 - shadcn/ui + Tailwind for product UI.
-- OpenRouter for ad copy and dialogue generation.
+- Gemini for ad copy and dialogue generation, with deterministic fallback when the model is unavailable.
 - Remotion for video rendering.
 - Oracle render worker for Chromium/Remotion MP4 work.
 - PostHog for product analytics.

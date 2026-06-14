@@ -1,25 +1,11 @@
 import type { AdScene } from "../scene/types";
 
-export type SceneLockKey = "headline" | "subheadline" | "style" | "captionColor" | "audio";
-
-export type SceneLocks = Record<SceneLockKey, boolean>;
-
-export const sceneLockLabels: Record<SceneLockKey, string> = {
-  headline: "Headline",
-  subheadline: "Subheadline",
-  style: "Style",
-  captionColor: "Caption color",
-  audio: "Audio",
+export type SceneLocks = {
+  audio: boolean;
 };
-
-export const sceneLockKeys: SceneLockKey[] = ["headline", "subheadline", "style", "captionColor", "audio"];
 
 export function createDefaultSceneLocks(): SceneLocks {
   return {
-    headline: false,
-    subheadline: false,
-    style: false,
-    captionColor: false,
     audio: false,
   };
 }
@@ -35,31 +21,8 @@ export function getNextSceneIndex(currentIndex: number, sceneCount: number): num
 }
 
 export function applySceneLocks(currentScene: AdScene, nextScene: AdScene, locks: SceneLocks): AdScene {
-  const style = locks.style
-    ? currentScene.style
-    : {
-      ...nextScene.style,
-      ...(locks.captionColor ? { accentColor: currentScene.style.accentColor } : null),
-    };
-
   return {
     ...nextScene,
-    creative: {
-      ...nextScene.creative,
-      ...(locks.headline
-        ? {
-            angleId: currentScene.creative.angleId,
-            headline: currentScene.creative.headline,
-            headlineType: currentScene.creative.headlineType,
-          }
-        : null),
-      ...(locks.subheadline
-        ? {
-            subheadline: currentScene.creative.subheadline,
-          }
-        : null),
-    },
-    style,
     audio: locks.audio ? currentScene.audio : nextScene.audio,
   };
 }

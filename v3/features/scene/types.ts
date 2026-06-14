@@ -106,7 +106,7 @@ export type AdSceneBase<
     researchRunId: string;
     brandSnapshotId: string;
     model: string;
-    provider: "gemini" | "openrouter" | "deterministic";
+    provider: "gemini" | "deterministic";
     generatedAt: number;
   };
 };
