@@ -54,6 +54,8 @@ Ask these questions before writing code:
 ## Working Style
 
 - Prefer small, reversible changes.
+- Commit after each completed phase so rollback points stay obvious.
+- Push after a clean phase or clean set of phases once checks pass; do not leave important checkpoints local-only unless the user explicitly says not to push.
 - Keep page components thin; move format-specific behavior into format modules.
 - Preserve the current product split unless the user explicitly approves changing it.
 - When in doubt, keep `/create` simpler and move advanced editing to `/builder`.
