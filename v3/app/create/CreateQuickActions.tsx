@@ -79,13 +79,13 @@ export function CreateQuickActions({
         <button
           type="button"
           onClick={hasAudio ? onTogglePreviewPlayback : onOpenAudioPanel}
-          disabled={!hasSelectedScene}
+          disabled={hasAudio && !hasSelectedScene}
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-black uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35"
-          aria-label={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio"}
-          title={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio"}
+          aria-label={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio for this ad"}
+          title={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio for this ad"}
         >
           {hasAudio ? <Play className="size-4" /> : <AudioLines className="size-4" />}
-          {hasAudio ? (isAudioPlaying ? "Stop" : "Play") : "Audio"}
+          {hasAudio ? (isAudioPlaying ? "Stop" : "Play") : "Add audio"}
         </button>
 
         <button

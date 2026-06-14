@@ -42,9 +42,9 @@ async function main() {
 
     await page.locator("[data-preview-ad-viewport]").first().waitFor({ state: "visible" });
     await page.locator("[data-preview-phone-frame]").waitFor({ state: "visible" });
-    const addAudioButton = page.getByRole("button", { name: "Add audio" });
+    const addAudioButton = page.getByRole("button", { name: "Add audio for this ad" });
     await addAudioButton.waitFor({ state: "visible" });
-    assert(!(await addAudioButton.isEnabled()), "Fresh visitor Audio action should wait until an ad is selected.");
+    assert(await addAudioButton.isEnabled(), "Fresh visitor must be able to add audio before submitting a website.");
     await page.getByRole("button", { name: "Download video" }).waitFor({ state: "visible" });
     await page.getByRole("button", { name: /create share link|share link copied/i }).waitFor({ state: "visible" });
     await page.locator("[data-create-format-rail='v3']").waitFor({ state: "visible" });
@@ -65,6 +65,11 @@ async function main() {
       await page.getByText("1 reroll this session").first().isVisible(),
       `Typing space in the website input should not reroll. Last status: ${statusAfterFirstReroll}`,
     );
+
+    await addAudioButton.click();
+    await page.locator("[data-dialogue-editor='modal']").waitFor({ state: "visible" });
+    await page.getByRole("button", { name: "Close voice script editor" }).click();
+    await page.locator("[data-dialogue-editor='modal']").waitFor({ state: "hidden" });
 
     console.log("CREATE_BROWSER_SMOKE_PASS");
   } finally {

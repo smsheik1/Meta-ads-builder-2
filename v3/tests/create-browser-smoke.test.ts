@@ -29,7 +29,9 @@ assert(
 [
   "spacebar-reroll-button",
   "1 reroll this session",
-  "Add audio",
+  "Add audio for this ad",
+  "Fresh visitor must be able to add audio before submitting a website.",
+  "data-dialogue-editor='modal'",
   "Download video",
   "create share link",
   "data-create-format-rail='v3'",

@@ -50,7 +50,7 @@ import {
 import type { PreviewPlatform } from "./CreatePreviewChrome";
 import { CreateQuickActions } from "./CreateQuickActions";
 import { WigglyMark } from "./WigglyMark";
-import { placeholderAdSurfaceVariantCount } from "./createStarterScene";
+import { createStarterPlaceholderScene, placeholderAdSurfaceVariantCount } from "./createStarterScene";
 import { getAnonymousId } from "./createSession";
 
 const rerollFlashMs = 680;
@@ -376,11 +376,26 @@ function ResearchConnected() {
     setModal(null);
   };
 
+  const ensureSelectedScene = useCallback(() => {
+    if (selectedScene) return selectedScene;
+
+    const starterScene = createStarterPlaceholderScene(placeholderVariantIndex);
+    setSelectedScene(starterScene);
+    setSelectedSceneIndex(0);
+    setAdScenes([starterScene]);
+    setAdStatus("ready");
+    setAdStatusNote("Custom starter ad ready. Add audio, then save, share, or download it.");
+    return starterScene;
+  }, [placeholderVariantIndex, selectedScene]);
+
   const replaceSelectedScene = useCallback((nextScene: AdScene) => {
     setSelectedScene(nextScene);
-    setAdScenes((scenes) => scenes.map((scene, index) => (
-      index === selectedSceneIndex ? nextScene : scene
-    )));
+    setAdScenes((scenes) => {
+      if (!scenes.length) return [nextScene];
+      return scenes.map((scene, index) => (
+        index === selectedSceneIndex ? nextScene : scene
+      ));
+    });
   }, [selectedSceneIndex]);
 
   useEffect(() => {
@@ -726,7 +741,8 @@ function ResearchConnected() {
   };
 
   const onOpenAudioPanel = () => {
-    if (!selectedScene || audioStatus === "loading") return;
+    if (audioStatus === "loading") return;
+    ensureSelectedScene();
     if (dialoguePanelOpen) {
       closeDialoguePanel();
     } else {

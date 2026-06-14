@@ -43,8 +43,9 @@ assert.ok(
 );
 assert.ok(
   quickActionsSource.includes("onClick={hasAudio ? onTogglePreviewPlayback : onOpenAudioPanel}") &&
-    quickActionsSource.includes('aria-label={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio"}'),
-  "The primary audio quick action must open the audio modal before audio exists and switch to playback after audio exists.",
+    quickActionsSource.includes("disabled={hasAudio && !hasSelectedScene}") &&
+    quickActionsSource.includes('aria-label={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio for this ad"}'),
+  "The primary audio quick action must open the audio modal before a website exists and switch to playback after audio exists.",
 );
 assert.ok(
   createClientSource.includes("resetShareState();") &&
