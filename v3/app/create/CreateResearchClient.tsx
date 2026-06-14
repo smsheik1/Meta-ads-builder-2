@@ -16,23 +16,14 @@ import { cloneDialogueScript, type DialogueScript } from "@/features/dialogue/di
 import type {
   RenderFlashRole,
   RenderFlashState,
-  RenderSelectableSlot,
 } from "@/features/formats/types";
-import {
-  createDefaultCanvasInteractionLocks,
-  useCanvasActions,
-  useCanvasLocks,
-  useSelectedCanvasSlot,
-  type CanvasInteractionLocks,
-} from "@/features/create/canvasInteractionStore";
+import { getFormatModule } from "@/features/formats/registry";
+import { useCanvasActions } from "@/features/create/canvasInteractionStore";
 import {
   createSavedDesignId,
   type SavedAdSceneDesign,
 } from "@/features/create/savedDesigns";
-import {
-  rerollScene,
-  type SceneLockKey,
-} from "@/features/create/reroll";
+import { createDefaultSceneLocks, rerollScene } from "@/features/create/reroll";
 import { useCanvasKeyboard } from "@/features/create/useCanvasKeyboard";
 import { isStoredWebsiteResearchFailure } from "@/features/research/types";
 import type {
@@ -58,13 +49,6 @@ import {
 import type { PreviewPlatform } from "./CreatePreviewChrome";
 import { WigglyMark } from "./WigglyMark";
 import { placeholderAdSurfaceVariantCount } from "./createStarterScene";
-import {
-  fallbackCaptionColors,
-  getNextDistinctColor,
-  getSceneDefaultFlashSlots,
-  getSceneFormatInteraction,
-  getSceneSelectableSlots,
-} from "./createFormatInteraction";
 import {
   getAnonymousId,
   loadCreateSessionSnapshot,
@@ -99,6 +83,10 @@ function getResearchActionErrorMessage(error: unknown) {
 
 function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function getSceneDefaultFlashSlots(scene: AdScene): RenderFlashRole[] {
+  return [...getFormatModule(scene.format).defaultSlots];
 }
 
 async function fetchBillingJson(url: string, init?: RequestInit) {
@@ -209,8 +197,6 @@ function ResearchConnected() {
   } | null | undefined;
   const saveDesign = useMutation(api.savedDesigns.saveFromScene);
   const savedDesignItems = savedDesigns || [];
-  const selectedPreviewSlot = useSelectedCanvasSlot();
-  const sceneLocks = useCanvasLocks();
   const canvasActions = useCanvasActions();
 
   const clearSubmitProgress = () => {
@@ -287,7 +273,7 @@ function ResearchConnected() {
       setAdScenes(snapshot.adScenes);
       setSelectedScene(snapshot.selectedScene);
       setSelectedSceneIndex(snapshot.selectedSceneIndex);
-      canvasActions.interactionReset({ locks: snapshot.sceneLocks });
+      canvasActions.interactionReset();
       setRerollCount(snapshot.rerollCount);
       setAdStatus(snapshot.adScenes.length ? "ready" : "idle");
       setAdStatusNote(snapshot.adStatusNote);
@@ -306,7 +292,6 @@ function ResearchConnected() {
       adScenes,
       selectedScene,
       selectedSceneIndex,
-      sceneLocks,
       rerollCount,
       adStatusNote,
       dialogueScripts,
@@ -318,7 +303,6 @@ function ResearchConnected() {
     dialogueScripts,
     rerollCount,
     result,
-    sceneLocks,
     selectedScene,
     selectedSceneIndex,
     selectedDialogueIndex,
@@ -334,7 +318,7 @@ function ResearchConnected() {
     setAdScenes(latestGeneration.scenes);
     setSelectedScene(restoredScene);
     setSelectedSceneIndex(0);
-    canvasActions.interactionReset({ locks: createDefaultCanvasInteractionLocks() });
+    canvasActions.interactionReset();
     setRerollCount(0);
     setAdStatus("ready");
     setAdStatusNote(`${latestGeneration.scenes.length} ads restored. Press spacebar to find a stronger version.`);
@@ -517,33 +501,17 @@ function ResearchConnected() {
       return;
     }
 
-    const formatInteraction = selectedScene ? getSceneFormatInteraction(selectedScene) : null;
-    const effectiveLocks = selectedPreviewSlot && formatInteraction
-      ? formatInteraction.getRerollLocksForSlot(selectedPreviewSlot, sceneLocks)
-      : sceneLocks;
-    const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, effectiveLocks);
+    const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, createDefaultSceneLocks());
     if (!next.scene) return;
 
     const currentGeneratedAudio = selectedScene?.audio.status === "generated" ? selectedScene.audio : null;
     const shouldCarryAudio = Boolean(currentGeneratedAudio && next.scene.audio.status !== "generated");
-    const formatRerolledScene = formatInteraction && selectedScene
-      ? formatInteraction.applySlotReroll({
-        selectedSlot: selectedPreviewSlot,
-        currentScene: selectedScene,
-        nextScene: next.scene,
-        allScenes: adScenes,
-        locks: sceneLocks,
-        fallbackColors: fallbackCaptionColors,
-        offset: rerollCount + 1,
-        pickDistinctColor: getNextDistinctColor,
-      })
-      : next.scene;
     const nextScene = shouldCarryAudio && currentGeneratedAudio
       ? {
-        ...formatRerolledScene,
+        ...next.scene,
         audio: currentGeneratedAudio,
       }
-      : formatRerolledScene;
+      : next.scene;
     const shouldKeepPlayback = nextScene.audio.status === "generated" && currentGeneratedAudio?.url === nextScene.audio.url;
 
     if (!shouldKeepPlayback) {
@@ -558,46 +526,8 @@ function ResearchConnected() {
     setAudioError("");
     resetDialogueState();
     resetSaveState();
-    triggerRerollFlash(selectedPreviewSlot ? [selectedPreviewSlot] : getSceneDefaultFlashSlots(nextScene));
-  }, [adScenes, rerollCount, resetPreviewPlayback, sceneLocks, selectedPreviewSlot, selectedScene, selectedSceneIndex, triggerRerollFlash]);
-
-  const onToggleLock = (key: SceneLockKey) => {
-    canvasActions.slotLockToggled(key);
-  };
-
-  const onSelectPreviewSlot = (slot: RenderSelectableSlot) => {
-    canvasActions.slotSelected(slot);
-  };
-
-  const onClearPreviewSlot = () => {
-    canvasActions.slotCleared();
-  };
-
-  const onTogglePreviewSlotLock = (slot: RenderSelectableSlot) => {
-    if (!selectedScene) return;
-    const slotDefinition = getSceneSelectableSlots(selectedScene).find((item) => item.slot === slot);
-    if (!slotDefinition) return;
-    onToggleLock(slotDefinition.lockKey as SceneLockKey);
-  };
-
-  const onChangePreviewSlotColor = (slot: RenderSelectableSlot, color: string) => {
-    if (!selectedScene) return;
-    const nextScene = getSceneFormatInteraction(selectedScene).applySlotColor(selectedScene, slot, color);
-    replaceSelectedScene(nextScene);
-    resetShareState();
-    resetRenderState();
-    resetSaveState();
-    triggerRerollFlash([slot]);
-  };
-
-  const onChangePreviewBackgroundColor = (color: string) => {
-    if (!selectedScene) return;
-    const nextScene = getSceneFormatInteraction(selectedScene).applyBackgroundColor(selectedScene, color);
-    replaceSelectedScene(nextScene);
-    resetShareState();
-    resetRenderState();
-    resetSaveState();
-  };
+    triggerRerollFlash(getSceneDefaultFlashSlots(nextScene));
+  }, [adScenes, resetPreviewPlayback, selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
   const applyGeneratedScenes = (scenes: AdScene[]) => {
     if (!scenes.length) throw new Error("Ad idea generation returned no ads.");
@@ -680,7 +610,6 @@ function ResearchConnected() {
     setProgressStage("reading-site");
     setPendingProgressFacts(null);
     setShowSlowResearchMessage(false);
-    canvasActions.slotCleared();
     canvasActions.beginBusy("website-research");
     resetShareState();
     resetRenderState();
@@ -1141,15 +1070,9 @@ function ResearchConnected() {
             <CreateCanvasColumn
               adScenesCount={adScenes.length}
               isAudioPlaying={isAudioPlaying}
-              onChangePreviewBackgroundColor={onChangePreviewBackgroundColor}
-              onChangePreviewSlotColor={onChangePreviewSlotColor}
-              onClearPreviewSlot={onClearPreviewSlot}
-              onOpenAudioPanel={onOpenAudioPanel}
               onOpenCaptionEditor={openCaptionPanel}
               onRerollScene={onRerollScene}
-              onSelectPreviewSlot={onSelectPreviewSlot}
               onTogglePlayback={onTogglePreviewPlayback}
-              onTogglePreviewSlotLock={onTogglePreviewSlotLock}
               hasGeneratedAudio={hasGeneratedAudio}
               placeholderVariantIndex={placeholderVariantIndex}
               playableAudioUrl={playableAudioUrl}
@@ -1158,8 +1081,6 @@ function ResearchConnected() {
               rerollCount={rerollCount}
               rerollFlash={rerollFlash}
               result={result}
-              sceneLocks={sceneLocks}
-              selectedPreviewSlot={selectedPreviewSlot}
               selectedScene={selectedScene}
             />
 

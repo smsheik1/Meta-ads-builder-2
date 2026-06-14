@@ -1,6 +1,6 @@
 # Create Generator Simplification Plan
 
-Status: saved plan only. Do not implement until the user explicitly says to begin.
+Status: Phase 1 implemented and verified locally. Phases 2-4 remain pending.
 
 ## Goal
 
@@ -41,6 +41,8 @@ Remove `/create`'s individual component editing behavior: selection overlays, se
 
 ## Phase 1: Remove Mini-Editor Behavior
 
+Status: complete as of the Phase 1 audit pass.
+
 Strip `/create` back to full-scene preview/reroll only.
 
 Remove or disable:
@@ -60,6 +62,8 @@ Keep:
 
 ## Phase 2: Tighten Reroll And State Contract
 
+Status: pending.
+
 Make spacebar reroll operate only at the full `AdScene` level.
 
 Rules:
@@ -71,6 +75,8 @@ Rules:
 
 ## Phase 3: Protect Render, Share, And Download Parity
 
+Status: pending.
+
 Ensure preview, share, and download all consume the same active scene contract through `AdRenderSurface`.
 
 Rules:
@@ -80,6 +86,8 @@ Rules:
 - Caption text and audio state must survive the simplified `/create` flow.
 
 ## Phase 4: Guardrail Tests And Cleanup
+
+Status: pending.
 
 Remove obsolete tests/components tied to `/create` editing and add tests for the simplified generator contract.
 

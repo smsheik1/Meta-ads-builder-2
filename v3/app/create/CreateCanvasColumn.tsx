@@ -3,32 +3,18 @@
 import { Sparkles } from "lucide-react";
 import type { MouseEvent, PointerEvent } from "react";
 import { useRef } from "react";
-import type { CanvasInteractionLocks } from "@/features/create/canvasInteractionStore";
-import type { RenderFlashState, RenderSelectableSlot } from "@/features/formats/types";
+import type { RenderFlashState } from "@/features/formats/types";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
 import type { AdScene } from "@/features/scene/types";
 import { FormatRail } from "./CreateFormatRail";
 import { PhonePreviewFrame, type PreviewPlatform } from "./CreatePreviewChrome";
-import {
-  getLockedSlotsForScene,
-  getSceneFormatInteraction,
-  getSceneSelectableSlots,
-  getSceneSelectedSlotLabel,
-  getSlotColorsForScene,
-} from "./createFormatInteraction";
 
 export function CreateCanvasColumn({
   adScenesCount,
   isAudioPlaying,
-  onChangePreviewBackgroundColor,
-  onChangePreviewSlotColor,
-  onOpenAudioPanel,
   onOpenCaptionEditor,
-  onClearPreviewSlot,
   onRerollScene,
-  onSelectPreviewSlot,
   onTogglePlayback,
-  onTogglePreviewSlotLock,
   placeholderVariantIndex,
   hasGeneratedAudio,
   playableAudioUrl,
@@ -37,21 +23,13 @@ export function CreateCanvasColumn({
   rerollCount,
   rerollFlash,
   result,
-  sceneLocks,
-  selectedPreviewSlot,
   selectedScene,
 }: {
   adScenesCount: number;
   isAudioPlaying: boolean;
-  onChangePreviewBackgroundColor: (color: string) => void;
-  onChangePreviewSlotColor: (slot: RenderSelectableSlot, color: string) => void;
-  onOpenAudioPanel: () => void;
   onOpenCaptionEditor: () => void;
-  onClearPreviewSlot: () => void;
   onRerollScene: () => void;
-  onSelectPreviewSlot: (slot: RenderSelectableSlot) => void;
   onTogglePlayback: () => void;
-  onTogglePreviewSlotLock: (slot: RenderSelectableSlot) => void;
   placeholderVariantIndex: number;
   hasGeneratedAudio: boolean;
   playableAudioUrl: string;
@@ -60,8 +38,6 @@ export function CreateCanvasColumn({
   rerollCount: number;
   rerollFlash: RenderFlashState | null;
   result: StoredWebsiteResearchResult | null;
-  sceneLocks: CanvasInteractionLocks;
-  selectedPreviewSlot: RenderSelectableSlot | null;
   selectedScene: AdScene | null;
 }) {
   const lastPointerRerollAtRef = useRef(0);
@@ -90,23 +66,12 @@ export function CreateCanvasColumn({
           motionMode={isAudioPlaying ? "audio" : "idle"}
           rerollFlash={rerollFlash}
           timeSeconds={previewTimeSeconds}
-          onOpenAudioPanel={onOpenAudioPanel}
           onOpenCaptionEditor={onOpenCaptionEditor}
           onTogglePlayback={onTogglePlayback}
           captionsReady={hasGeneratedAudio}
           previewReady={Boolean(playableAudioUrl)}
           isAudioPlaying={isAudioPlaying}
           placeholderVariantIndex={placeholderVariantIndex}
-          selectedSlot={selectedPreviewSlot}
-          selectableSlots={selectedScene ? getSceneSelectableSlots(selectedScene) : undefined}
-          lockedSlots={selectedScene ? getLockedSlotsForScene(selectedScene, sceneLocks) : undefined}
-          slotColors={selectedScene ? getSlotColorsForScene(selectedScene) : undefined}
-          backgroundColor={selectedScene ? getSceneFormatInteraction(selectedScene).getBackgroundColor(selectedScene) : "#fbfaf5"}
-          onSelectSlot={onSelectPreviewSlot}
-          onClearSlot={onClearPreviewSlot}
-          onToggleSlotLock={onTogglePreviewSlotLock}
-          onChangeSlotColor={onChangePreviewSlotColor}
-          onChangeBackgroundColor={onChangePreviewBackgroundColor}
         />
 
           <section className="mx-auto mt-4 w-full max-w-[390px] rounded-[28px] border border-slate-200 bg-white p-3 shadow-[0_20px_54px_rgba(15,23,42,0.12)]">
@@ -125,13 +90,11 @@ export function CreateCanvasColumn({
               <span>make a wish</span>
             </button>
             <p className="mt-3 text-center text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
-              {selectedPreviewSlot && selectedScene
-                ? `Spacebar rerolls the ${getSceneSelectedSlotLabel(selectedScene, selectedPreviewSlot)}`
-                : rerollCount
-                  ? `${rerollCount} reroll${rerollCount === 1 ? "" : "s"} this session`
-                  : adScenesCount
-                    ? "Start here. Make a fresh version in one tap."
-                    : "Start here. Tour the starter ads in one tap."}
+              {rerollCount
+                ? `${rerollCount} reroll${rerollCount === 1 ? "" : "s"} this session`
+                : adScenesCount
+                  ? "Start here. Make a fresh version in one tap."
+                  : "Start here. Tour the starter ads in one tap."}
             </p>
           </section>
       </div>

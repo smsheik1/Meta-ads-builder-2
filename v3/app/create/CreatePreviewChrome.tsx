@@ -1,6 +1,5 @@
 "use client";
 import {
-  AudioLines,
   Bookmark,
   ChevronUp,
   Captions,
@@ -15,18 +14,14 @@ import {
   VolumeX,
 } from "lucide-react";
 import type {
-  FormatSelectableSlotDefinition,
   RenderFlashState,
   RenderMotionMode,
-  RenderSelectableSlot,
 } from "@/features/formats/types";
 import { AdRenderSurface } from "@/features/render/AdRenderSurface";
 import type { AdScene } from "@/features/scene/types";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
-import { PreviewSelectionOverlay } from "./CreatePreviewSelectionOverlay";
 import { BrandAvatar, StatusBar } from "./CreatePreviewChromeParts";
 import { createStarterPlaceholderScene } from "./createStarterScene";
-import { toPlaceholderPercent } from "./createPreviewGeometry";
 
 export type PreviewPlatform = "facebook-feed" | "instagram-feed" | "reels" | "stories" | "youtube";
 export const previewPlatformOptions: Array<{ label: string; value: PreviewPlatform }> = [
@@ -46,23 +41,12 @@ export function PhonePreviewFrame({
   motionMode = "auto",
   rerollFlash = null,
   timeSeconds,
-  onOpenAudioPanel,
   onOpenCaptionEditor,
   onTogglePlayback,
   captionsReady = false,
   previewReady = false,
   isAudioPlaying = false,
   placeholderVariantIndex = 0,
-  selectedSlot = null,
-  selectableSlots,
-  lockedSlots,
-  slotColors,
-  backgroundColor,
-  onSelectSlot,
-  onClearSlot,
-  onToggleSlotLock,
-  onChangeSlotColor,
-  onChangeBackgroundColor,
 }: {
   scene: AdScene | null;
   result: StoredWebsiteResearchResult | null;
@@ -70,29 +54,16 @@ export function PhonePreviewFrame({
   motionMode?: RenderMotionMode;
   rerollFlash?: RenderFlashState | null;
   timeSeconds: number;
-  onOpenAudioPanel?: () => void;
   onOpenCaptionEditor?: () => void;
   onTogglePlayback?: () => void;
   captionsReady?: boolean;
   previewReady?: boolean;
   isAudioPlaying?: boolean;
   placeholderVariantIndex?: number;
-  selectedSlot?: RenderSelectableSlot | null;
-  selectableSlots?: readonly FormatSelectableSlotDefinition[];
-  lockedSlots?: Partial<Record<RenderSelectableSlot, boolean>>;
-  slotColors?: Partial<Record<RenderSelectableSlot, string>>;
-  backgroundColor?: string;
-  onSelectSlot?: (slot: RenderSelectableSlot) => void;
-  onClearSlot?: () => void;
-  onToggleSlotLock?: (slot: RenderSelectableSlot) => void;
-  onChangeSlotColor?: (slot: RenderSelectableSlot, color: string) => void;
-  onChangeBackgroundColor?: (color: string) => void;
 }) {
   const brandName = scene?.brand.name || result?.brand.name || "Your brand";
   const brandLogoUrl = scene?.brand.logoUrl || scene?.brand.faviconUrl || result?.brand.logoUrl || result?.brand.faviconUrl || "";
   const caption = scene?.creative.subheadline || "Add audio for this ad";
-  const showPreviewAudioAction = Boolean((!scene || scene.audio.status !== "generated") && onOpenAudioPanel);
-  const canSelectSlots = Boolean(scene && selectableSlots?.length && lockedSlots && slotColors && backgroundColor && onSelectSlot && onClearSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor);
   const feedPlatform = platform === "facebook-feed" || platform === "instagram-feed";
   const instagramFeed = platform === "instagram-feed";
   const storiesPlatform = platform === "stories";
@@ -119,35 +90,6 @@ export function PhonePreviewFrame({
         rerollFlash={rerollFlash}
         timeSeconds={timeSeconds}
       />
-      {showPreviewAudioAction ? (
-        <button
-          type="button"
-          aria-label="Add audio for this ad"
-          data-preview-audio-action="true"
-          onClick={onOpenAudioPanel}
-          className="absolute left-1/2 z-50 inline-flex -translate-x-1/2 items-center justify-center gap-3 whitespace-nowrap rounded-full bg-white px-6 py-3 text-[16px] font-black text-slate-600 shadow-[0_18px_45px_rgba(15,23,42,0.10)] transition hover:-translate-x-1/2 hover:-translate-y-0.5 hover:text-slate-950"
-          style={{
-            top: toPlaceholderPercent(336, "y"),
-          }}
-        >
-          <AudioLines className="size-5 shrink-0" />
-          Add audio for this ad
-        </button>
-      ) : null}
-      {canSelectSlots && selectableSlots && lockedSlots && slotColors && backgroundColor && onSelectSlot && onClearSlot && onToggleSlotLock && onChangeSlotColor && onChangeBackgroundColor ? (
-        <PreviewSelectionOverlay
-          selectedSlot={selectedSlot}
-          selectableSlots={selectableSlots}
-          lockedSlots={lockedSlots}
-          slotColors={slotColors}
-          backgroundColor={backgroundColor}
-          onSelectSlot={onSelectSlot}
-          onClearSlot={onClearSlot}
-          onToggleSlotLock={onToggleSlotLock}
-          onChangeSlotColor={onChangeSlotColor}
-          onChangeBackgroundColor={onChangeBackgroundColor}
-        />
-      ) : null}
     </div>
   );
 

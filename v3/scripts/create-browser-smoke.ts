@@ -2,7 +2,6 @@ import { chromium, type Browser } from "playwright";
 import { buildFallbackDialogueScripts } from "../features/dialogue/dialogueScripts";
 import type { StoredWebsiteResearchResult } from "../features/research/types";
 import type { AdScene } from "../features/scene/types";
-import { createDefaultCanvasInteractionLocks } from "../features/create/canvasInteractionStore";
 import { defaultRenderScene } from "../remotion-entry/fixture";
 
 const createSessionStorageKey = "wiggly:v3:create-session";
@@ -163,7 +162,6 @@ function createSessionSnapshot() {
     adScenes,
     selectedScene: adScenes[0],
     selectedSceneIndex: 0,
-    sceneLocks: createDefaultCanvasInteractionLocks(),
     rerollCount: 0,
     adStatusNote: "Seeded browser smoke ads.",
     dialogueScripts: buildFallbackDialogueScripts(adScenes[0], 5),
@@ -215,7 +213,7 @@ async function main() {
     await page.getByRole("button", { name: /create share link|share link copied/i }).waitFor({ state: "visible" });
     await page.getByRole("combobox", { name: "Choose preview" }).waitFor({ state: "visible" });
     await page.locator("[data-preview-phone-frame]").waitFor({ state: "visible" });
-    await page.locator("[data-preview-audio-action='true']").waitFor({ state: "visible" });
+    await page.getByRole("button", { name: /^add audio$/i }).waitFor({ state: "visible" });
 
     await page.getByTestId("spacebar-reroll-button").click();
     await page.getByText("1 reroll this session").first().waitFor({ state: "visible" });
@@ -229,21 +227,11 @@ async function main() {
       `Typing space in the website input should not reroll. Last status: ${statusAfterFirstReroll}`,
     );
 
-    const visualizerSlot = page.locator('[data-preview-selectable-slot="visualizer"]').first();
-    await visualizerSlot.getByRole("button", { name: /select visualizer/i }).click();
-    await page.getByText(/Spacebar rerolls the/i).waitFor({ state: "visible" });
-    const selectedSlotStatus = await page.getByText(/Spacebar rerolls the/i).textContent();
     await page.keyboard.press("Space");
-    await page.getByText(/Spacebar rerolls the/i).waitFor({ state: "visible" });
-    assert(
-      await page.getByText("2 rerolls this session").count() === 0,
-      `Selected-slot reroll should stay scoped, not show generic status. Status: ${selectedSlotStatus}`,
-    );
-
-    await page.locator("[data-preview-selection-overlay='true']").click({ position: { x: 4, y: 4 } });
     await page.getByText("2 rerolls this session").waitFor({ state: "visible" });
+    await assertPreviewIncludes("Stop Losing The AI Search");
 
-    await page.locator("[data-preview-audio-action='true']").click();
+    await page.getByRole("button", { name: /^add audio$/i }).click();
     await page.getByRole("button", { name: /upload your audio/i }).waitFor({ state: "visible" });
     const headlineBeforeModalSpace = await previewViewport.textContent();
     await page.locator("[data-dialogue-editor='modal']").click({ position: { x: 8, y: 8 } });

@@ -149,33 +149,37 @@ assert.ok(createModuleSource.includes("rerollFlash={rerollFlash}"), "/create pho
 assert.ok(canvasInteractionStoreSource.includes("create<CanvasInteractionState>"), "/create canvas interaction state must live in a tiny Zustand store.");
 assert.ok(canvasInteractionStoreSource.includes("Canvas interaction only"), "/create canvas store must document its interaction-only boundary.");
 assert.deepEqual(canvasInteractionStoreImports, ['import { create } from "zustand";'], "/create canvas interaction store must only import Zustand.");
-assert.ok(createModuleSource.includes("useCanvasActions") && createModuleSource.includes("useSelectedCanvasSlot") && createModuleSource.includes("useCanvasLocks"), "/create must use exported canvas interaction hooks instead of raw store selectors.");
+assert.ok(createModuleSource.includes("useCanvasActions"), "/create must use exported canvas interaction actions instead of raw store selectors.");
 assert.ok(!createModuleSource.includes("useCanvasInteractionStore("), "/create must not import or call the raw canvas interaction store.");
 assert.ok(canvasInteractionStoreSource.includes("reduceCanvasInteractionState"), "/create canvas store must expose a pure reducer for transition tests.");
 assert.ok(canvasInteractionStoreSource.includes("uiStatus") && canvasInteractionStoreSource.includes("playbackStatus"), "/create canvas store must keep UI and playback state parallel.");
 assert.ok(canvasInteractionStoreSource.includes("getCanvasCanReroll"), "/create canvas store must expose one derived reroll gate.");
 assert.ok(!createModuleSource.includes("useState<RenderSelectableSlot"), "/create must not keep selected canvas slot in local page state.");
 assert.ok(!createModuleSource.includes("useState(createDefaultSceneLocks"), "/create must not keep canvas locks in local page state.");
+assert.ok(!createModuleSource.includes("useSelectedCanvasSlot") && !createModuleSource.includes("useCanvasLocks"), "/create must not expose selected slots or locks; per-slot editing belongs in /builder.");
 for (const forbiddenLocalStatePattern of forbiddenCreateInteractionLocalState) {
   assert.ok(
     !forbiddenLocalStatePattern.test(createModuleSource),
     "/create must not keep selected slot, canvas mode, or locks in local useState; use the canvas interaction store.",
   );
 }
-assert.ok(createModuleSource.includes("interactionReset({ locks: snapshot.sceneLocks })"), "/create must not restore scoped canvas selection after refresh because spacebar should full-reroll by default.");
-assert.ok(createModuleSource.includes("getSceneFormatInteraction"), "/create preview selector must read active format interaction metadata.");
-assert.ok(createModuleSource.includes("getSceneSelectableSlots"), "/create preview selector must read selectable slots from the active format.");
-assert.ok(createModuleSource.includes("getLockedSlotsForScene"), "/create preview selector must derive slot locks from format metadata.");
-assert.ok(createModuleSource.includes("getSlotColorsForScene"), "/create preview selector must derive slot colors from format metadata.");
-assert.ok(createModuleSource.includes("formatInteraction.getRerollLocksForSlot"), "/create selected-slot reroll locks must come from the active format module.");
-assert.ok(createModuleSource.includes("formatInteraction.applySlotReroll"), "/create selected-slot reroll semantics must come from the active format module.");
-assert.ok(!createModuleSource.includes("const previewSlotLockKey"), "/create must not hardcode format slot-to-lock mappings.");
-assert.ok(!createModuleSource.includes("const previewSlotLabels"), "/create must not hardcode format slot labels.");
-assert.ok(createModuleSource.includes("onChangePreviewSlotColor"), "/create preview selector must support old builder-style hover color changes.");
-assert.ok(createModuleSource.includes("slotSelected(slot)"), "/create canvas selection must stay sticky instead of toggling off on normal clicks.");
-assert.ok(createModuleSource.includes("slotCleared()") && previewChromeSource.includes("onClearSlot"), "/create blank canvas clicks must clear selected-slot reroll scope.");
-assert.ok(createModuleSource.includes("onChangePreviewBackgroundColor"), "/create preview selector must support background color changes.");
-assert.ok(createModuleSource.includes("Spacebar rerolls the"), "/create must tell users when spacebar is scoped to one selected part.");
+assert.ok(createModuleSource.includes("interactionReset()"), "/create may reset transient interaction state, but must not restore selected slots or locks after refresh.");
+for (const forbiddenMiniEditorNeedle of [
+  "interactionReset({ locks: snapshot.sceneLocks })",
+  "getSceneFormatInteraction",
+  "getSceneSelectableSlots",
+  "getLockedSlotsForScene",
+  "getSlotColorsForScene",
+  "formatInteraction.getRerollLocksForSlot",
+  "formatInteraction.applySlotReroll",
+  "onChangePreviewSlotColor",
+  "slotSelected(slot)",
+  "slotCleared()",
+  "onChangePreviewBackgroundColor",
+  "Spacebar rerolls the",
+]) {
+  assert.ok(!createModuleSource.includes(forbiddenMiniEditorNeedle), `/create must not keep mini-editor behavior: ${forbiddenMiniEditorNeedle}`);
+}
 assert.ok(createModuleSource.includes('data-create-action-card="legacy"'), "/create right rail must copy the original /create generated-ad action card look.");
 assert.ok(createModuleSource.includes("rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8"), "/create action card must keep the original compact card shell.");
 assert.ok(createModuleSource.includes("Download video") && createModuleSource.includes("renderStatusLabel"), "/create legacy action card must keep download wired through v3 render jobs.");
@@ -228,16 +232,12 @@ assert.ok(!previewChromeSource.includes("from-black/85 via-black/35 to-transpare
 assert.ok(previewChromeSource.includes('youtubePlatform ? "bottom-1"'), "/create YouTube play pill must sit in the footer instead of overlapping the editable canvas.");
 assert.ok(previewChromeSource.includes("onTogglePlayback"), "/create phone play pill must bridge to the existing native audio control instead of creating a second audio system.");
 assert.ok(!previewChromeSource.includes("CanvasEditor"), "/create v3 phone chrome must not re-import the old CanvasEditor renderer.");
-assert.ok(previewChromeSource.includes("PreviewSelectionOverlay"), "/create phone preview must provide the lightweight component selector overlay.");
-assert.ok(createModuleSource.includes("selectableSlots.map"), "/create phone preview must render selector geometry from active format metadata.");
-assert.ok(!createModuleSource.includes("const previewSelectableSlots"), "/create phone preview must not hardcode selector geometry for one format.");
-assert.ok(createModuleSource.includes("data-preview-selectable-slot"), "/create selector must expose selectable slots for QA and future format tests.");
-assert.ok(createModuleSource.includes('type="color"'), "/create selector must expose the old hover color picker affordance.");
-assert.ok(createModuleSource.includes("data-preview-background-color"), "/create selector must expose a background color picker.");
-assert.ok(createModuleSource.includes("pointer-events-none") && createModuleSource.includes("group-hover/preview-selector:pointer-events-auto"), "/create hidden color controls must not intercept normal component selection clicks.");
-assert.ok(createModuleSource.includes("size-14"), "/create selector lock bubble must keep the large old /builder lock affordance.");
-assert.ok(!createModuleSource.includes("ring-2 ring-slate-950/35"), "/create selected slot must not show the heavy old bounding-box outline.");
-assert.ok(!createModuleSource.includes('selected ? "opacity-70"'), "/create selected slot controls must not stay visible after clicking outside the canvas.");
+assert.ok(!previewChromeSource.includes("PreviewSelectionOverlay"), "/create phone preview must not provide a component selector overlay.");
+assert.ok(!createModuleSource.includes("selectableSlots.map"), "/create phone preview must not render selector geometry from active format metadata.");
+assert.ok(!createModuleSource.includes("data-preview-selectable-slot"), "/create selector hit targets must not exist.");
+assert.ok(!createModuleSource.includes('type="color"'), "/create canvas selector color pickers must not exist.");
+assert.ok(!createModuleSource.includes("data-preview-background-color"), "/create canvas background color picker must not exist.");
+assert.ok(!createModuleSource.includes("group-hover/preview-selector:pointer-events-auto"), "/create hidden hover zones must not exist.");
 assert.ok(createModuleSource.includes("AdRenderSurface"), "/create empty placeholder must render through the shared AdRenderSurface instead of a separate canvas renderer.");
 assert.ok(!existsSync("app/create/CreatePlaceholderAdSurface.tsx"), "/create empty placeholder component must not exist; starter mode is scene data, not a renderer.");
 assert.ok(createModuleSource.includes("placeholderVariants"), "/create empty placeholder must keep a small curated tutorial set for first-visit spacebar rerolls.");
@@ -267,11 +267,10 @@ assert.ok(visualizerRenderSource.includes('return "10.6cqw"') && visualizerRende
 assert.ok(visualizerRenderSource.includes('overflow: "hidden"'), "/create placeholder and generated headline must not spill into the visualizer.");
 assert.ok(visualizerRenderSource.includes("top: toCanvasPercent(255, \"y\")") && visualizerRenderSource.includes('height: toCanvasPercent(90, "y")'), "/create placeholder and generated visualizer must share the same renderer slot.");
 assert.ok(visualizerRenderSource.includes("top: toCanvasPercent(336, \"y\")") && visualizerRenderSource.includes("Add audio for this ad"), "/create placeholder and generated no-audio action must share the same renderer slot.");
-assert.ok(previewChromeSource.includes('data-preview-audio-action="true"'), "/create phone preview must expose a real clickable add-audio hit target over no-audio scenes.");
-assert.ok(previewChromeSource.includes("onClick={onOpenAudioPanel}"), "/create phone preview add-audio target must open the audio panel instead of being dead renderer text.");
-assert.ok(previewChromeSource.includes("!scene || scene.audio.status !== \"generated\""), "/create starter placeholder must get the same clickable add-audio overlay as generated no-audio scenes.");
-assert.ok(createModuleSource.includes("z-50 inline-flex") && createModuleSource.includes("group/preview-selector absolute inset-0 z-30"), "/create phone preview add-audio target must sit above the selector overlay so clicks are not swallowed.");
-assert.ok(previewChromeSource.includes("top: toPlaceholderPercent(336, \"y\")"), "/create preview add-audio hit target must sit clear of the watermark.");
+assert.ok(!previewChromeSource.includes('data-preview-audio-action="true"'), "/create phone preview must not add a second clickable add-audio target over the canvas.");
+assert.ok(!previewChromeSource.includes("onClick={onOpenAudioPanel}"), "/create phone preview must not own audio actions; audio lives in normal controls.");
+assert.ok(!previewChromeSource.includes("toPlaceholderPercent"), "/create preview chrome must not keep hidden canvas hit-target geometry.");
+assert.ok(createActionCardSource.includes("Add audio") && createActionCardSource.includes("Replace audio") && createActionCardSource.includes("onOpenAudioPanel"), "/create action card must expose add/replace audio as the normal control path.");
 assert.ok(createModuleSource.includes("lg:absolute") && createModuleSource.includes("lg:-left-14"), "/create format rail must float beside the preview like the original /create shell.");
 assert.ok(createModuleSource.includes("relative flex flex-col items-center gap-3 lg:block"), "/create preview column must keep the original phone-first layout while preserving the v3 spacebar block.");
 assert.ok(existsSync("public/wiggly-logo.svg"), "/create v3 must ship the old Wiggly placeholder logo asset.");
