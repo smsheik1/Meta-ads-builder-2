@@ -37,8 +37,12 @@ const MAX_MARKDOWN_CHARS = 24_000;
 const FIRECRAWL_TIMEOUT_MESSAGE = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const chromeTextPattern = /\b(skip to content|cart is empty|continue shopping|log in|login|check out|checkout|add to cart|quantity|subtotal|loading|have an account|gift message|discount code|multiple addresses?|free shipping not applied|regular price|sale price|sold out|password|newsletter|privacy policy|terms of service)\b/i;
 const standalonePricePattern = /^(?:from\s+)?\$[\d,.]+(?:\s*-\s*\$[\d,.]+)?$/i;
+const imageAltNoisePattern = /\b(decorative|background image|hero image|image|photo|picture|screenshot|graphic|illustration)\b/i;
 
 const cleanText = (value: unknown, maxLength = 260) => String(value ?? "")
+  .replace(/!\[[^\]]*]\([^)]+\)/g, " ")
+  .replace(/!\[[^\]]*]\[[^\]]*]/g, " ")
+  .replace(/!\[[^\]]*]/g, " ")
   .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
   .replace(/^#{1,6}\s*/, "")
   .replace(/^\s*[-*]\s*/, "")
@@ -52,7 +56,9 @@ export const isWebsiteChromeText = (value: unknown) => {
   if (!cleaned) return true;
   if (standalonePricePattern.test(cleaned)) return true;
   if (/^_?\\?\*+/.test(cleaned)) return true;
+  if (/^!/.test(cleaned)) return true;
   if (/^(search|menu|account)$/i.test(cleaned)) return true;
+  if (imageAltNoisePattern.test(cleaned) && cleaned.split(/\s+/).length <= 8) return true;
   if (/~~\s*\$0\.00\s*~~/i.test(cleaned)) return true;
   if (chromeTextPattern.test(cleaned)) return true;
   return false;
@@ -131,7 +137,7 @@ const parseMarkdownEvidence = (markdown: string): ResearchEvidence => {
     headings: unique(headings, 24),
     paragraphs: unique(paragraphs, 42),
     receipts,
-    rawMarkdown: markdown.slice(0, MAX_MARKDOWN_CHARS),
+    rawMarkdown: lines.join("\n").slice(0, MAX_MARKDOWN_CHARS),
   };
 };
 

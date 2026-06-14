@@ -1,6 +1,9 @@
 import type { StoredWebsiteResearchResult } from "../research/types";
 
 const cleanText = (value: unknown, maxLength = 260) => String(value ?? "")
+  .replace(/!\[[^\]]*]\([^)]+\)/g, " ")
+  .replace(/!\[[^\]]*]\[[^\]]*]/g, " ")
+  .replace(/!\[[^\]]*]/g, " ")
   .replace(/\s+/g, " ")
   .replace(/\s+([,.!?])/g, "$1")
   .trim()

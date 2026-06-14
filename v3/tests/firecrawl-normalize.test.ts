@@ -91,6 +91,7 @@ assert.equal(shapeWithScreenshot.onlyMainContent, true);
 assert.equal(isWebsiteChromeText("Continue shopping"), true);
 assert.equal(isWebsiteChromeText("Regular price~~$0.00~~Sale price"), true);
 assert.equal(isWebsiteChromeText("Cookie Delivery | Gift Baskets | Fresh Baked"), false);
+assert.equal(isWebsiteChromeText("!Fin messenger UI decorative background image"), true);
 
 const shopifyResult = normalizeFirecrawlPayload("davidscookies.com", {
   success: true,
@@ -129,6 +130,34 @@ assert.ok(shopifyResult.evidence.headings.includes("David's Cookies: Cookie Deli
 assert.ok(shopifyResult.evidence.paragraphs.some((paragraph) => paragraph.includes("fabulous cheesecakes")));
 assert.equal(shopifyResult.brandBrief.brandName, "David's Cookies");
 assert.equal(shopifyResult.brandBrief.offer, "Cookie Delivery");
+
+const markdownImageResult = normalizeFirecrawlPayload("intercom.com", {
+  success: true,
+  data: {
+    markdown: `
+# Intercom
+The complete AI-first customer service platform.
+![Fin messenger UI Decorative background image](https://example.com/fin.png)
+![Decorative background image][hero]
+Resolve customer questions with AI support agents and human handoff.
+    `,
+    metadata: {
+      sourceURL: "https://intercom.com/",
+      ogTitle: "Intercom | AI Customer Service",
+      ogDescription: "The complete AI-first customer service platform.",
+      ogSiteName: "Intercom",
+    },
+  },
+});
+const markdownImageEvidence = JSON.stringify({
+  headings: markdownImageResult.evidence.headings,
+  paragraphs: markdownImageResult.evidence.paragraphs,
+  receipts: markdownImageResult.evidence.receipts,
+  rawMarkdown: markdownImageResult.evidence.rawMarkdown,
+});
+assert.ok(!markdownImageEvidence.includes("Decorative background image"));
+assert.ok(!markdownImageEvidence.includes("!Fin messenger"));
+assert.ok(markdownImageResult.evidence.paragraphs.some((paragraph) => paragraph.includes("AI support agents")));
 
 const curatorPrompt = buildBrandCuratorPrompt(shopifyResult);
 assert.ok(curatorPrompt.includes("Study these examples for shape only"));
