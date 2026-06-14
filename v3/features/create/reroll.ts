@@ -4,16 +4,6 @@ export type SceneLockKey = "headline" | "subheadline" | "style" | "captionColor"
 
 export type SceneLocks = Record<SceneLockKey, boolean>;
 
-export const sceneLockLabels: Record<SceneLockKey, string> = {
-  headline: "Headline",
-  subheadline: "Subheadline",
-  style: "Style",
-  captionColor: "Caption color",
-  audio: "Audio",
-};
-
-export const sceneLockKeys: SceneLockKey[] = ["headline", "subheadline", "style", "captionColor", "audio"];
-
 export function createDefaultSceneLocks(): SceneLocks {
   return {
     headline: false,

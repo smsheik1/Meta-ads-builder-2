@@ -501,17 +501,14 @@ function ResearchConnected() {
       return;
     }
 
-    const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, createDefaultSceneLocks());
+    const currentGeneratedAudio = selectedScene.audio.status === "generated" ? selectedScene.audio : null;
+    const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, {
+      ...createDefaultSceneLocks(),
+      audio: Boolean(currentGeneratedAudio),
+    });
     if (!next.scene) return;
 
-    const currentGeneratedAudio = selectedScene?.audio.status === "generated" ? selectedScene.audio : null;
-    const shouldCarryAudio = Boolean(currentGeneratedAudio && next.scene.audio.status !== "generated");
-    const nextScene = shouldCarryAudio && currentGeneratedAudio
-      ? {
-        ...next.scene,
-        audio: currentGeneratedAudio,
-      }
-      : next.scene;
+    const nextScene = next.scene;
     const shouldKeepPlayback = nextScene.audio.status === "generated" && currentGeneratedAudio?.url === nextScene.audio.url;
 
     if (!shouldKeepPlayback) {

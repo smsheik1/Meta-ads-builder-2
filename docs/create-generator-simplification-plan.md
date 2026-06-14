@@ -1,6 +1,6 @@
 # Create Generator Simplification Plan
 
-Status: Phase 1 implemented and verified locally. Phases 2-4 remain pending.
+Status: Phases 1-2 implemented and verified locally. Phases 3-4 remain pending.
 
 ## Goal
 
@@ -62,7 +62,7 @@ Keep:
 
 ## Phase 2: Tighten Reroll And State Contract
 
-Status: pending.
+Status: complete as of the Phase 2 reroll contract pass.
 
 Make spacebar reroll operate only at the full `AdScene` level.
 

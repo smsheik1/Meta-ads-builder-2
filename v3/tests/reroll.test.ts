@@ -5,6 +5,7 @@ import {
   getNextSceneIndex,
   rerollScene,
 } from "../features/create/reroll";
+import { createGeneratedSceneAudio } from "../features/audio/sceneAudio";
 import type { AdScene } from "../features/scene/types";
 import { getVisualizerVariantForCandidate } from "../features/scene/visualizerVariants";
 
@@ -116,8 +117,33 @@ const rerolled = rerollScene(scenes, scenes[0]!, 0, {
   headline: true,
 });
 assert.equal(rerolled.index, 1);
+assert.equal(rerolled.scene?.version, scenes[1]!.version);
+assert.equal(rerolled.scene?.format, scenes[1]!.format);
+assert.equal(rerolled.scene?.brand, scenes[1]!.brand);
+assert.equal(rerolled.scene?.layout, scenes[1]!.layout);
+assert.equal(rerolled.scene?.metadata, scenes[1]!.metadata);
 assert.equal(rerolled.scene?.creative.headline, "Headline 0");
 assert.equal(rerolled.scene?.creative.subheadline, "Subheadline 1");
+
+const currentSceneWithAudio: AdScene = {
+  ...scenes[0]!,
+  audio: createGeneratedSceneAudio({
+    storageId: "audio-storage-0",
+    url: "https://example.com/audio.wav",
+    mimeType: "audio/wav",
+    durationMs: 5000,
+    transcript: "Audio transcript",
+    captions: [{ text: "Audio transcript", startMs: 0, endMs: 5000 }],
+    model: "test-tts",
+  }),
+};
+const rerolledWithAudioLock = rerollScene(scenes, currentSceneWithAudio, 0, {
+  ...createDefaultSceneLocks(),
+  audio: true,
+});
+assert.equal(rerolledWithAudioLock.index, 1);
+assert.equal(rerolledWithAudioLock.scene?.creative.headline, "Headline 1");
+assert.equal(rerolledWithAudioLock.scene?.audio, currentSceneWithAudio.audio);
 
 const wrapped = rerollScene(scenes, scenes[2]!, 2, createDefaultSceneLocks());
 assert.equal(wrapped.index, 0);

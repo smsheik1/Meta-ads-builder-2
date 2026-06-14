@@ -140,8 +140,11 @@ assert.ok(!createModuleSource.includes("enabled:"), "/create keyboard hook must 
 assert.ok(!createModuleSource.includes("enabled: adScenes.length > 0"), "/create must not gate the spacebar tutorial behind generated ads.");
 assert.ok(createModuleSource.includes('openModal("brand-dump")') && createModuleSource.includes('openModal("dialogue")') && createModuleSource.includes('openModal("captions")'), "/create modals must update the interaction store so reroll is blocked while open.");
 assert.ok(!createModuleSource.includes('data-allow-spacebar-reroll="true"'), "/create website input must block rerolls while the user is editing the URL.");
-assert.ok(createModuleSource.includes("shouldCarryAudio"), "/create spacebar reroll must carry generated audio onto the next visual variant.");
+assert.ok(createModuleSource.includes("audio: Boolean(currentGeneratedAudio)"), "/create spacebar reroll must carry generated audio through the flat scene lock object.");
 assert.ok(createModuleSource.includes("shouldKeepPlayback"), "/create spacebar reroll must not reset playback when the generated audio is preserved.");
+assert.ok(!createModuleSource.includes("shouldCarryAudio"), "/create spacebar reroll must not patch audio outside the flat scene lock object.");
+assert.ok(createModuleSource.includes("rerollScene(adScenes, selectedScene, selectedSceneIndex"), "/create spacebar must use the shared full-scene reroll function.");
+assert.ok(createModuleSource.includes("setSelectedScene(nextScene)") && createModuleSource.includes("setSelectedSceneIndex(next.index)"), "/create spacebar must swap the active full scene payload and index.");
 assert.ok(createModuleSource.includes("triggerRerollFlash"), "/create reroll must trigger the old canvas shine feedback.");
 assert.ok(createModuleSource.includes("getSceneDefaultFlashSlots") && createModuleSource.includes("getFormatModule(scene.format).defaultSlots"), "/create reroll shine must use the active format module default slots.");
 assert.ok(createModuleSource.includes("rerollFlashMs = 680"), "/create reroll shine must keep the old short-lived flash timing.");
