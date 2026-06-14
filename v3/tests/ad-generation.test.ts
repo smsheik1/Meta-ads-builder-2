@@ -136,6 +136,14 @@ assert.equal(
   }, fallback, 0),
   null,
 );
+assert.equal(
+  normalizeAdCandidatePayload({
+    ...fallback,
+    headline: "!Fin messenger UI!Decorative background image",
+    subheadline: "A scraped image alt leaked into this candidate and should be rejected.",
+  }, fallback, 0),
+  null,
+);
 
 const parsed = extractAdCandidatesFromResponse(JSON.stringify({
   candidates: [

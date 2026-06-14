@@ -45,6 +45,9 @@ export type GenerateAdCandidatesResult = {
 };
 
 const cleanText = (value: unknown, maxLength = 260) => String(value ?? "")
+  .replace(/!\[[^\]]*]\([^)]+\)/g, " ")
+  .replace(/!\[[^\]]*]\[[^\]]*]/g, " ")
+  .replace(/!\[[^\]]*]/g, " ")
   .replace(/\s+/g, " ")
   .replace(/\s+([,.!?])/g, "$1")
   .trim()
@@ -90,6 +93,8 @@ const isBadAdText = (value: string) => {
   if (!cleaned) return true;
   if (isWebsiteChromeText(cleaned)) return true;
   if (/#\d+\s*$/.test(cleaned)) return true;
+  if (/^!/.test(cleaned)) return true;
+  if (/\b(decorative|background image|hero image|image alt|alt text)\b/i.test(cleaned)) return true;
   return false;
 };
 

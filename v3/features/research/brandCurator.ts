@@ -20,8 +20,12 @@ const DEFAULT_TIMEOUT_MS = 20_000;
 const MAX_MARKDOWN_CHARS = 14_000;
 const noisePattern = /\b(skip to content|cart is empty|continue shopping|log in|login|check out|checkout|add to cart|quantity|subtotal|loading|have an account|gift message|discount code|free shipping not applied|regular price|sale price|sold out|newsletter|privacy policy|terms of service|powered by tolstoy)\b/i;
 const standalonePricePattern = /^(?:from\s+)?\$[\d,.]+(?:\s*-\s*\$[\d,.]+)?$/i;
+const imageAltNoisePattern = /\b(decorative|background image|hero image|image|photo|picture|screenshot|graphic|illustration)\b/i;
 
 const cleanText = (value: unknown, maxLength = 260) => String(value ?? "")
+  .replace(/!\[[^\]]*]\([^)]+\)/g, " ")
+  .replace(/!\[[^\]]*]\[[^\]]*]/g, " ")
+  .replace(/!\[[^\]]*]/g, " ")
   .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
   .replace(/^#{1,6}\s*/, "")
   .replace(/^\s*[-*]\s*/, "")
@@ -37,7 +41,9 @@ const isNoiseText = (value: unknown) => {
   if (standalonePricePattern.test(cleaned)) return true;
   if (/~~\s*\$0\.00\s*~~/i.test(cleaned)) return true;
   if (/^_?\\?\*+/.test(cleaned)) return true;
+  if (/^!/.test(cleaned)) return true;
   if (/^(search|menu|account)$/i.test(cleaned)) return true;
+  if (imageAltNoisePattern.test(cleaned) && cleaned.split(/\s+/).length <= 8) return true;
   if (noisePattern.test(cleaned)) return true;
   return false;
 };
