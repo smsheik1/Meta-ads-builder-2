@@ -1036,13 +1036,6 @@ function ResearchConnected() {
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          className="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-black text-slate-700 shadow-md shadow-slate-950/10"
-          title="Builder stays legacy-only while v3 /create is stabilized."
-        >
-          Open builder
-        </button>
       </header>
 
       <section className="mx-auto grid max-w-7xl items-center gap-8 py-6 sm:gap-10 sm:py-8 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[0.82fr_1.18fr] lg:gap-16 lg:py-10">

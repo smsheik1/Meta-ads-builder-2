@@ -27,7 +27,6 @@ const secretNames = new Set([
   "FIRECRAWL_API_KEY",
   "DEEPGRAM_API_KEY",
   "GEMINI_API_KEY",
-  "OPENROUTER_API_KEY",
 ]);
 
 async function loadEnvFile(filePath: string, options: { override?: boolean } = {}) {

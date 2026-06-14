@@ -159,7 +159,7 @@ const scene = createVisualizerAdScene({
   candidateIndex: 0,
   generationBatchId: "batch_1",
   model: "test-model",
-  provider: "openrouter",
+  provider: "gemini",
   now: 123,
 });
 assert.equal(scene.format, "visualizer");
@@ -179,7 +179,7 @@ const variedScenes = Array.from({ length: 8 }, (_, index) => createVisualizerAdS
   candidateIndex: index,
   generationBatchId: "batch_1",
   model: "test-model",
-  provider: "openrouter",
+  provider: "gemini",
   now: 123,
 }));
 assert.ok(
@@ -215,48 +215,24 @@ assert.equal(geminiResult.providerStatus.provider, "gemini");
 assert.equal(geminiResult.providerStatus.status, "used");
 assert.equal(geminiResult.candidates[0]?.headline, "Your Competitor Shows Up First");
 
-const openRouterFallbackResult = await generateAdCandidatesFromResearch(research, {
+const geminiFailureFallbackResult = await generateAdCandidatesFromResearch(research, {
   count: 1,
   geminiApiKey: "test-gemini-key",
+  geminiModel: "test-gemini-model",
   geminiGenerateContent: async () => {
     throw new Error("Gemini quota exhausted.");
   },
-  openRouterApiKey: "test-openrouter-key",
-  openRouterModel: "test-openrouter-model",
-  fetcher: async () => new Response(JSON.stringify({
-    choices: [
-      {
-        message: {
-          content: JSON.stringify({
-            candidates: [
-              {
-                angleId: "tracked-revenue",
-                headline: "Tracked Revenue From AI Search",
-                subheadline: "First ChatGPT mention in 14 days from managed Reddit visibility campaigns.",
-                ctaText: "See the proof",
-                headlineType: "receipt_drop",
-                selectedPain: "D2C operators are trying to show up when buyers ask AI tools for recommendations.",
-                selectedProof: "First ChatGPT mention in 14 days.",
-              },
-            ],
-          }),
-        },
-      },
-    ],
-  }), {
-    status: 200,
-    headers: { "content-type": "application/json" },
-  }),
 });
-assert.equal(openRouterFallbackResult.provider, "openrouter");
-assert.equal(openRouterFallbackResult.model, "test-openrouter-model");
-assert.equal(openRouterFallbackResult.providerStatus.reason.includes("Gemini failed"), true);
-assert.equal(openRouterFallbackResult.candidates[0]?.headline, "Tracked Revenue From AI Search");
+assert.equal(geminiFailureFallbackResult.provider, "deterministic");
+assert.equal(geminiFailureFallbackResult.model, "test-gemini-model");
+assert.equal(geminiFailureFallbackResult.providerStatus.provider, "gemini");
+assert.equal(geminiFailureFallbackResult.providerStatus.status, "failed");
+assert.equal(geminiFailureFallbackResult.providerStatus.reason.includes("Gemini quota exhausted."), true);
+assert.ok(geminiFailureFallbackResult.candidates.length >= 1);
 
 const deterministicResult = await generateAdCandidatesFromResearch(research, {
   count: 1,
   geminiApiKey: "",
-  openRouterApiKey: "",
 });
 assert.equal(deterministicResult.provider, "deterministic");
 assert.equal(deterministicResult.providerStatus.status, "skipped");

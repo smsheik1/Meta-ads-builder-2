@@ -1,6 +1,6 @@
 # Create Generator Simplification Plan
 
-Status: Phases 1-2 implemented and verified locally. Phases 3-4 remain pending.
+Status: Phases 1-4 implemented and verified locally.
 
 ## Goal
 
@@ -26,7 +26,7 @@ Remove `/create`'s individual component editing behavior: selection overlays, se
 - Create share link.
 - Save design.
 - All ideas / brand dump visibility where useful.
-- Open in builder as the eventual path for detailed edits.
+- Builder handoff later, once a real builder route exists.
 
 ## Functionality That Moves To Builder
 
@@ -73,9 +73,9 @@ Rules:
 - Keep Zustand small: `uiStatus` and `playbackStatus` stay; scene data, Convex data, audio URLs, render jobs, and format data stay out.
 - URL inputs, modals, and audio playback must block reroll.
 
-## Phase 3: Protect Render, Share, And Download Parity
+## Phase 3: Protect Render, Share, Download, Reroll, And Paywall Behavior
 
-Status: pending.
+Status: complete as of the behavior smoke-test pass.
 
 Ensure preview, share, and download all consume the same active scene contract through `AdRenderSurface`.
 
@@ -84,12 +84,18 @@ Rules:
 - Canvas preview, Remotion export, and share pages use the same renderer path.
 - Mini-editor leftovers must not affect export.
 - Caption text and audio state must survive the simplified `/create` flow.
+- Focused behavior tests cover full-scene reroll, modal/input reroll gates, renderer parity, and paywall gates.
 
 ## Phase 4: Guardrail Tests And Cleanup
 
-Status: pending.
+Status: complete as of the cleanup pass.
 
 Remove obsolete tests/components tied to `/create` editing and add tests for the simplified generator contract.
+
+Cleanup completed:
+- Removed OpenRouter ad-generation fallback.
+- Removed unused `cn()` helper and `class-variance-authority`, `clsx`, and `tailwind-merge`.
+- Removed dead builder buttons until a real builder route exists.
 
 Required coverage:
 - No selection overlay import/render in `/create`.

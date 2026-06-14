@@ -11,7 +11,7 @@ URL input
 -> Convex creates researchRun
 -> Firecrawl reads website markdown and branding
 -> Wiggly normalizes brand facts and visual vibe
--> OpenRouter writes ad ideas from evidence
+-> Gemini writes ad ideas from evidence, or deterministic fallback is used
 -> Convex stores AdScene candidates
 -> /create renders selected AdScene
 -> user rerolls/locks/selects
