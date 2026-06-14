@@ -12,6 +12,7 @@ export function CreateCanvasColumn({
   adScenesCount,
   isAudioPlaying,
   onRerollScene,
+  onOpenAudioPanel,
   placeholderVariantIndex,
   previewPlatform,
   previewTimeSeconds,
@@ -23,6 +24,7 @@ export function CreateCanvasColumn({
   adScenesCount: number;
   isAudioPlaying: boolean;
   onRerollScene: () => void;
+  onOpenAudioPanel: () => void;
   placeholderVariantIndex: number;
   previewPlatform: PreviewPlatform;
   previewTimeSeconds: number;
@@ -57,6 +59,7 @@ export function CreateCanvasColumn({
           rerollFlash={rerollFlash}
           timeSeconds={previewTimeSeconds}
           placeholderVariantIndex={placeholderVariantIndex}
+          onOpenAudioPanel={onOpenAudioPanel}
         />
 
           <section className="mx-auto mt-4 w-full max-w-[390px] rounded-[28px] border border-slate-200 bg-white p-3 shadow-[0_20px_54px_rgba(15,23,42,0.12)]">

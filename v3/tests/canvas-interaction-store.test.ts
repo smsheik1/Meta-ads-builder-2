@@ -115,11 +115,12 @@ assert.ok(
   "/create must not ship a selection overlay; per-slot editing belongs in /builder.",
 );
 assert.ok(
-  !previewChromeSource.includes('data-preview-audio-action="true"'),
-  "/create canvas must not expose a canvas-level add-audio hover/action; audio lives in normal controls.",
+  previewChromeSource.includes('data-preview-audio-action="true"') &&
+    previewChromeSource.includes("onOpenAudioPanel?: () => void") &&
+    previewChromeSource.includes("shouldShowAudioAction"),
+  "/create may expose only the visible add-audio CTA over the rendered audio placeholder.",
 );
 for (const forbiddenPreviewControl of [
-  "<button",
   "data-preview-control-overlay",
   "data-preview-play-overlay",
   "onOpenCaptionEditor",

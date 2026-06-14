@@ -1,6 +1,7 @@
 "use client";
 import {
   Bookmark,
+  AudioLines,
   ChevronUp,
   Heart,
   MessageCircle,
@@ -39,6 +40,7 @@ export function PhonePreviewFrame({
   rerollFlash = null,
   timeSeconds,
   placeholderVariantIndex = 0,
+  onOpenAudioPanel,
 }: {
   scene: AdScene | null;
   result: StoredWebsiteResearchResult | null;
@@ -47,6 +49,7 @@ export function PhonePreviewFrame({
   rerollFlash?: RenderFlashState | null;
   timeSeconds: number;
   placeholderVariantIndex?: number;
+  onOpenAudioPanel?: () => void;
 }) {
   const brandName = scene?.brand.name || result?.brand.name || "Your brand";
   const brandLogoUrl = scene?.brand.logoUrl || scene?.brand.faviconUrl || result?.brand.logoUrl || result?.brand.faviconUrl || "";
@@ -60,6 +63,7 @@ export function PhonePreviewFrame({
   const isDark = true;
   const renderScene = scene ?? createStarterPlaceholderScene(placeholderVariantIndex);
   const renderMotionMode = scene ? motionMode : "idle";
+  const shouldShowAudioAction = renderScene.audio.status !== "generated" && Boolean(onOpenAudioPanel);
   const frameClassName = youtubePlatform
     ? "relative mx-auto h-[420px] w-[640px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25"
     : "relative mx-auto h-[720px] w-[360px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25";
@@ -77,6 +81,18 @@ export function PhonePreviewFrame({
         rerollFlash={rerollFlash}
         timeSeconds={timeSeconds}
       />
+      {shouldShowAudioAction ? (
+        <button
+          type="button"
+          onClick={onOpenAudioPanel}
+          className="absolute left-1/2 top-[74.7%] z-20 inline-flex -translate-x-1/2 items-center justify-center gap-3 rounded-full bg-white px-[6.7cqw] py-[3.6cqw] text-[3.2cqw] font-black text-[#52627A] shadow-[0_18px_45px_rgba(15,23,42,0.08)] transition hover:-translate-x-1/2 hover:-translate-y-0.5 hover:shadow-[0_22px_54px_rgba(15,23,42,0.13)]"
+          aria-label="Add audio for this ad"
+          data-preview-audio-action="true"
+        >
+          <AudioLines className="size-[6.1cqw]" />
+          Add audio for this ad
+        </button>
+      ) : null}
     </div>
   );
 

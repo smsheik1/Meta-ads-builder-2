@@ -30,6 +30,7 @@ assert(
   "spacebar-reroll-button",
   "1 reroll this session",
   "Add audio for this ad",
+  ".first()",
   "Fresh visitor must be able to add audio before submitting a website.",
   "data-dialogue-editor='modal'",
   "Download video",
@@ -46,7 +47,6 @@ assert(
 [
   "data-preview-selection-overlay",
   "data-preview-selectable-slot",
-  "data-preview-audio-action",
   "Spacebar rerolls the",
   "wiggly:v3:create-session",
   "defaultRenderScene",

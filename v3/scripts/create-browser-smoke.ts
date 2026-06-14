@@ -42,7 +42,7 @@ async function main() {
 
     await page.locator("[data-preview-ad-viewport]").first().waitFor({ state: "visible" });
     await page.locator("[data-preview-phone-frame]").waitFor({ state: "visible" });
-    const addAudioButton = page.getByRole("button", { name: "Add audio for this ad" });
+    const addAudioButton = page.getByRole("button", { name: "Add audio for this ad" }).first();
     await addAudioButton.waitFor({ state: "visible" });
     assert(await addAudioButton.isEnabled(), "Fresh visitor must be able to add audio before submitting a website.");
     await page.getByRole("button", { name: "Download video" }).waitFor({ state: "visible" });
