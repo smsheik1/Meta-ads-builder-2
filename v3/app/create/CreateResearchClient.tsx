@@ -1060,12 +1060,8 @@ function ResearchConnected() {
             <CreateCanvasColumn
               adScenesCount={adScenes.length}
               isAudioPlaying={isAudioPlaying}
-              onOpenCaptionEditor={openCaptionPanel}
               onRerollScene={onRerollScene}
-              onTogglePlayback={onTogglePreviewPlayback}
-              hasGeneratedAudio={hasGeneratedAudio}
               placeholderVariantIndex={placeholderVariantIndex}
-              playableAudioUrl={playableAudioUrl}
               previewPlatform={previewPlatform}
               previewTimeSeconds={previewTimeSeconds}
               rerollCount={rerollCount}

@@ -137,7 +137,6 @@ test("preview route renders ad pixels through AdRenderSurface", () => {
     result: null,
     platform: "instagram-feed",
     timeSeconds: 0.4,
-    previewReady: true,
   }));
 
   assert.equal((html.match(/data-render-surface="ad"/g) || []).length, 1);

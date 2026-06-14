@@ -118,6 +118,17 @@ assert.ok(
   !previewChromeSource.includes('data-preview-audio-action="true"'),
   "/create canvas must not expose a canvas-level add-audio hover/action; audio lives in normal controls.",
 );
+for (const forbiddenPreviewControl of [
+  "data-preview-control-overlay",
+  "data-preview-play-overlay",
+  "onOpenCaptionEditor",
+  "onTogglePlayback",
+]) {
+  assert.ok(
+    !previewChromeSource.includes(forbiddenPreviewControl),
+    `/create preview chrome must be preview-only, not action UI: ${forbiddenPreviewControl}`,
+  );
+}
 
 for (const forbiddenStoreReference of [
   "convex/",

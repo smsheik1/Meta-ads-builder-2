@@ -12,12 +12,8 @@ import { PhonePreviewFrame, type PreviewPlatform } from "./CreatePreviewChrome";
 export function CreateCanvasColumn({
   adScenesCount,
   isAudioPlaying,
-  onOpenCaptionEditor,
   onRerollScene,
-  onTogglePlayback,
   placeholderVariantIndex,
-  hasGeneratedAudio,
-  playableAudioUrl,
   previewPlatform,
   previewTimeSeconds,
   rerollCount,
@@ -27,12 +23,8 @@ export function CreateCanvasColumn({
 }: {
   adScenesCount: number;
   isAudioPlaying: boolean;
-  onOpenCaptionEditor: () => void;
   onRerollScene: () => void;
-  onTogglePlayback: () => void;
   placeholderVariantIndex: number;
-  hasGeneratedAudio: boolean;
-  playableAudioUrl: string;
   previewPlatform: PreviewPlatform;
   previewTimeSeconds: number;
   rerollCount: number;
@@ -66,11 +58,6 @@ export function CreateCanvasColumn({
           motionMode={isAudioPlaying ? "audio" : "idle"}
           rerollFlash={rerollFlash}
           timeSeconds={previewTimeSeconds}
-          onOpenCaptionEditor={onOpenCaptionEditor}
-          onTogglePlayback={onTogglePlayback}
-          captionsReady={hasGeneratedAudio}
-          previewReady={Boolean(playableAudioUrl)}
-          isAudioPlaying={isAudioPlaying}
           placeholderVariantIndex={placeholderVariantIndex}
         />
 

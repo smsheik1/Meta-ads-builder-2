@@ -2,14 +2,11 @@
 import {
   Bookmark,
   ChevronUp,
-  Captions,
   Heart,
   MessageCircle,
   MoreHorizontal,
-  Play,
   Send,
   Share2,
-  Square,
   ThumbsUp,
   VolumeX,
 } from "lucide-react";
@@ -41,11 +38,6 @@ export function PhonePreviewFrame({
   motionMode = "auto",
   rerollFlash = null,
   timeSeconds,
-  onOpenCaptionEditor,
-  onTogglePlayback,
-  captionsReady = false,
-  previewReady = false,
-  isAudioPlaying = false,
   placeholderVariantIndex = 0,
 }: {
   scene: AdScene | null;
@@ -54,11 +46,6 @@ export function PhonePreviewFrame({
   motionMode?: RenderMotionMode;
   rerollFlash?: RenderFlashState | null;
   timeSeconds: number;
-  onOpenCaptionEditor?: () => void;
-  onTogglePlayback?: () => void;
-  captionsReady?: boolean;
-  previewReady?: boolean;
-  isAudioPlaying?: boolean;
   placeholderVariantIndex?: number;
 }) {
   const brandName = scene?.brand.name || result?.brand.name || "Your brand";
@@ -284,35 +271,6 @@ export function PhonePreviewFrame({
         </div>
       ) : null}
 
-      <div
-        className={cx(
-          "absolute left-1/2 z-40 flex -translate-x-1/2 items-center gap-2",
-          youtubePlatform ? "bottom-1" : "bottom-[86px]",
-        )}
-        data-preview-control-overlay={previewFrameId}
-      >
-        <button
-          type="button"
-          data-preview-play-overlay={previewFrameId}
-          onClick={onTogglePlayback}
-          disabled={!previewReady || !onTogglePlayback}
-          className="flex items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-2xl shadow-slate-950/25 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isAudioPlaying ? <Square className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
-          {isAudioPlaying ? "Stop preview" : "Play this ad"}
-        </button>
-        {captionsReady && onOpenCaptionEditor ? (
-          <button
-            type="button"
-            onClick={onOpenCaptionEditor}
-            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-2xl shadow-slate-950/12 transition hover:-translate-y-0.5 hover:bg-slate-50 hover:text-slate-950"
-            title="Edit captions"
-            aria-label="Edit captions"
-          >
-            <Captions className="h-5 w-5" />
-          </button>
-        ) : null}
-      </div>
     </div>
   );
 }
