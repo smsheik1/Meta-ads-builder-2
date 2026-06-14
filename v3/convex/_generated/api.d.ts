@@ -15,6 +15,7 @@ import type * as dialogueScripts from "../dialogueScripts.js";
 import type * as renderJobs from "../renderJobs.js";
 import type * as researchRuns from "../researchRuns.js";
 import type * as researchStorage from "../researchStorage.js";
+import type * as savedDesigns from "../savedDesigns.js";
 import type * as sessions from "../sessions.js";
 import type * as sharePages from "../sharePages.js";
 
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   renderJobs: typeof renderJobs;
   researchRuns: typeof researchRuns;
   researchStorage: typeof researchStorage;
+  savedDesigns: typeof savedDesigns;
   sessions: typeof sessions;
   sharePages: typeof sharePages;
 }>;

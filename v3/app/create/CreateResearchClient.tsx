@@ -19,6 +19,12 @@ import type {
 } from "@/features/formats/types";
 import { getFormatModule } from "@/features/formats/registry";
 import { useCanvasActions } from "@/features/create/canvasInteractionStore";
+import {
+  canSaveDesignWithoutPaywall,
+  createSavedDesignId,
+  FREE_SAVED_DESIGN_LIMIT,
+  type SavedAdSceneDesign,
+} from "@/features/create/savedDesigns";
 import { createDefaultSceneLocks, rerollScene } from "@/features/create/reroll";
 import { useCanvasKeyboard } from "@/features/create/useCanvasKeyboard";
 import { isStoredWebsiteResearchFailure } from "@/features/research/types";
@@ -165,6 +171,8 @@ function ResearchConnected() {
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [renderError, setRenderError] = useState("");
   const [anonymousId, setAnonymousId] = useState("");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [saveError, setSaveError] = useState("");
   const [error, setError] = useState("");
   const [billingStatus, setBillingStatus] = useState<BillingStatus | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -173,10 +181,13 @@ function ResearchConnected() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const analysisUpgradeKeyRef = useRef("");
   const rerollFlashTimeoutRef = useRef<number | null>(null);
+  const savedDesigns = useQuery(api.savedDesigns.list, anonymousId ? { anonymousId } : "skip") as SavedAdSceneDesign[] | undefined;
   const latestGeneration = useQuery(api.adScenes.latestForAnonymousId, anonymousId ? { anonymousId } : "skip") as {
     result: StoredWebsiteResearchResult;
     scenes: AdScene[];
   } | null | undefined;
+  const saveDesign = useMutation(api.savedDesigns.saveFromScene);
+  const savedDesignItems = savedDesigns || [];
   const canvasActions = useCanvasActions();
   const brandDetailsOpen = activeModal === "brand-details";
   const dialoguePanelOpen = activeModal === "dialogue";
@@ -335,6 +346,11 @@ function ResearchConnected() {
     resetPreviewPlayback();
   };
 
+  const resetSaveState = () => {
+    setSaveStatus("idle");
+    setSaveError("");
+  };
+
   const openBrandDetails = () => {
     setModal("brand-details");
   };
@@ -456,6 +472,7 @@ function ResearchConnected() {
     setAudioStatus(nextScene.audio.status === "generated" ? "ready" : "idle");
     setAudioError("");
     resetDialogueState();
+    resetSaveState();
     triggerRerollFlash(getSceneDefaultFlashSlots(nextScene));
   }, [adScenes, resetPreviewPlayback, selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
@@ -471,6 +488,7 @@ function ResearchConnected() {
     resetShareState();
     resetRenderState();
     resetAudioState();
+    resetSaveState();
     setAdStatusNote(`${scenes.length} ads ready. Press spacebar to find a stronger version.`);
     setAdStatus("ready");
     canvasActions.finishBusy();
@@ -546,6 +564,7 @@ function ResearchConnected() {
     resetDialogueState();
     closeBrandDetails();
     closeCaptionPanel();
+    resetSaveState();
     setAdStatusNote(hadExistingCanvas ? "Reading website. Keeping this canvas stable until the new ads are ready." : "");
     setError("");
     let researchCompleted = false;
@@ -713,6 +732,7 @@ function ResearchConnected() {
     });
     resetRenderState();
     resetShareState();
+    resetSaveState();
   };
 
   const onGenerateAudio = async () => {
@@ -796,6 +816,38 @@ function ResearchConnected() {
     }
   };
 
+  const onSaveSelectedDesign = async () => {
+    if (!selectedScene) return;
+    const designId = createSavedDesignId(selectedScene);
+    const alreadySaved = savedDesignItems.some((design) => design.id === designId);
+    const paid = Boolean(billingStatus?.paid);
+
+    if (!canSaveDesignWithoutPaywall({
+      alreadySaved,
+      paid,
+      savedCount: savedDesignItems.length,
+    })) {
+      setSaveStatus("idle");
+      setSaveError("");
+      setModal("paywall");
+      return;
+    }
+
+    setSaveStatus("loading");
+    setSaveError("");
+
+    try {
+      await saveDesign({
+        anonymousId: getCurrentAnonymousId(),
+        scene: selectedScene,
+      });
+      setSaveStatus("ready");
+    } catch (nextError) {
+      setSaveStatus("error");
+      setSaveError(nextError instanceof Error ? nextError.message : "Could not save this design.");
+    }
+  };
+
   const onSelectAdIdea = (scene: AdScene, index: number) => {
     resetPreviewPlayback();
     setSelectedScene(scene);
@@ -856,6 +908,16 @@ function ResearchConnected() {
   const hasEmptyEditedCaption = generatedCaptions.some((caption) => !caption.text.trim());
   const selectedDialogueScript = dialogueScripts[selectedDialogueIndex] || null;
   const dialogueCanGenerateAudio = Boolean(selectedScene && selectedDialogueScript && selectedDialogueScript.lines.some((line) => line.text.trim()));
+  const selectedSavedDesignId = selectedScene ? createSavedDesignId(selectedScene) : "";
+  const selectedDesignIsSaved = Boolean(selectedSavedDesignId && savedDesignItems.some((design) => design.id === selectedSavedDesignId));
+  const saveCounterLabel = billingStatus?.paid
+    ? ""
+    : `(${Math.min(savedDesignItems.length, FREE_SAVED_DESIGN_LIMIT)}/${FREE_SAVED_DESIGN_LIMIT})`;
+  const saveStatusLabel = saveStatus === "loading"
+    ? "Saving"
+    : saveStatus === "ready" || selectedDesignIsSaved
+      ? "Saved"
+      : "Save";
   const renderBusy = currentRenderStatus === "loading"
     || currentRenderStatus === "queued"
     || currentRenderStatus === "claimed"
@@ -879,7 +941,7 @@ function ResearchConnected() {
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-500">Wiggly beta pass</p>
-                <h2 className="mt-2 text-3xl font-black leading-tight">You used your 2 free runs.</h2>
+                <h2 className="mt-2 text-3xl font-black leading-tight">Loving Wiggly?</h2>
               </div>
               <button
                 type="button"
@@ -894,7 +956,7 @@ function ResearchConnected() {
               </button>
             </div>
             <p className="text-sm font-semibold leading-6 text-slate-600">
-              Start with 7 days of unlimited Wiggly for $1. After that, keep unlimited access for $9/month as an early user, 50% off the normal $19.95.
+              You hit a free limit. Start with 7 days of unlimited Wiggly for $1. After that, keep unlimited access for $9/month as an early user, 50% off the normal $19.95.
             </p>
             <button
               type="button"
@@ -971,6 +1033,7 @@ function ResearchConnected() {
                 onOpenAudioPanel={onOpenAudioPanel}
                 onOpenCaptionEditor={openCaptionPanel}
                 onPreviewPlatformChange={setPreviewPlatform}
+                onSaveSelectedDesign={() => void onSaveSelectedDesign()}
                 onTogglePreviewPlayback={onTogglePreviewPlayback}
                 playableAudioUrl={playableAudioUrl}
                 previewPlatform={previewPlatform}
@@ -979,6 +1042,11 @@ function ResearchConnected() {
                 renderErrorMessage={renderJob?.error || renderError}
                 renderStatusLabel={renderStatusLabel}
                 renderWorkerHealthy={renderWorkerHealthy}
+                saveCounterLabel={saveCounterLabel}
+                saveError={saveError}
+                saveStatus={saveStatus}
+                saveStatusLabel={saveStatusLabel}
+                selectedDesignIsSaved={selectedDesignIsSaved}
                 shareError={shareError}
                 shareStatus={shareStatus}
                 shareUrl={shareUrl}
