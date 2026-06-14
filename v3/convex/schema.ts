@@ -112,18 +112,6 @@ export default defineSchema({
     .index("by_sessionId_and_updatedAt", ["sessionId", "updatedAt"])
     .index("by_storageId", ["storageId"]),
 
-  savedDesigns: defineTable({
-    sessionId: v.string(),
-    designId: v.string(),
-    title: v.string(),
-    format: v.string(),
-    scene: v.any(),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  })
-    .index("by_sessionId_and_updatedAt", ["sessionId", "updatedAt"])
-    .index("by_sessionId_and_designId", ["sessionId", "designId"]),
-
   sharePages: defineTable({
     slug: v.string(),
     sessionId: v.string(),

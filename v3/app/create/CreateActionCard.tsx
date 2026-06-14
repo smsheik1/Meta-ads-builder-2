@@ -1,5 +1,4 @@
 import {
-  BookmarkPlus,
   Check,
   Download,
   ExternalLink,
@@ -10,8 +9,6 @@ import {
 } from "lucide-react";
 import { previewPlatformOptions, type PreviewPlatform } from "./CreatePreviewChrome";
 
-type SaveStatus = "idle" | "loading" | "ready" | "error";
-
 export function CreateActionCard({
   currentRenderStatus,
   hasGeneratedAudio,
@@ -20,7 +17,6 @@ export function CreateActionCard({
   onCreateShareLink,
   onOpenAudioPanel,
   onOpenCaptionEditor,
-  onSaveSelectedDesign,
   onTogglePreviewPlayback,
   playableAudioUrl,
   previewPlatform,
@@ -29,10 +25,6 @@ export function CreateActionCard({
   renderErrorMessage,
   renderStatusLabel,
   renderWorkerHealthy,
-  saveError,
-  saveStatus,
-  saveStatusLabel,
-  selectedDesignIsSaved,
   shareError,
   shareStatus,
   shareUrl,
@@ -47,7 +39,6 @@ export function CreateActionCard({
   onOpenAudioPanel: () => void;
   onOpenCaptionEditor: () => void;
   onPreviewPlatformChange: (platform: PreviewPlatform) => void;
-  onSaveSelectedDesign: () => void;
   onTogglePreviewPlayback: () => void;
   playableAudioUrl: string;
   previewPlatform: PreviewPlatform;
@@ -56,10 +47,6 @@ export function CreateActionCard({
   renderErrorMessage: string;
   renderStatusLabel: string;
   renderWorkerHealthy: boolean | null;
-  saveError: string;
-  saveStatus: SaveStatus;
-  saveStatusLabel: string;
-  selectedDesignIsSaved: boolean;
   shareError: string;
   shareStatus: "idle" | "loading" | "ready" | "error";
   shareUrl: string;
@@ -138,40 +125,17 @@ export function CreateActionCard({
         </a>
       ) : null}
 
-      <div className="mt-2 grid grid-cols-2 gap-2">
+      <div className="mt-2">
         <button
           type="button"
           onClick={onTogglePreviewPlayback}
           disabled={!playableAudioUrl}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Play className="size-4" />
           {isAudioPlaying ? "Stop" : "Play"}
         </button>
-
-        <button
-          type="button"
-          onClick={onSaveSelectedDesign}
-          disabled={!hasSelectedScene || saveStatus === "loading"}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-          title={selectedDesignIsSaved ? "Saved to designs" : "Save this ad to designs"}
-        >
-          {saveStatus === "loading" ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : saveStatus === "ready" || selectedDesignIsSaved ? (
-            <Check className="size-4 text-emerald-500" />
-          ) : (
-            <BookmarkPlus className="size-4" />
-          )}
-          {saveStatusLabel}
-        </button>
       </div>
-
-      {saveError ? (
-        <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">
-          {saveError}
-        </p>
-      ) : null}
 
       {shareError ? (
         <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-xs font-black leading-5 text-red-700">

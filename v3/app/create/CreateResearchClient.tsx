@@ -19,10 +19,6 @@ import type {
 } from "@/features/formats/types";
 import { getFormatModule } from "@/features/formats/registry";
 import { useCanvasActions } from "@/features/create/canvasInteractionStore";
-import {
-  createSavedDesignId,
-  type SavedAdSceneDesign,
-} from "@/features/create/savedDesigns";
 import { createDefaultSceneLocks, rerollScene } from "@/features/create/reroll";
 import { useCanvasKeyboard } from "@/features/create/useCanvasKeyboard";
 import { isStoredWebsiteResearchFailure } from "@/features/research/types";
@@ -169,8 +165,6 @@ function ResearchConnected() {
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [renderError, setRenderError] = useState("");
   const [anonymousId, setAnonymousId] = useState("");
-  const [saveStatus, setSaveStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
-  const [saveError, setSaveError] = useState("");
   const [error, setError] = useState("");
   const [billingStatus, setBillingStatus] = useState<BillingStatus | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -179,13 +173,10 @@ function ResearchConnected() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const analysisUpgradeKeyRef = useRef("");
   const rerollFlashTimeoutRef = useRef<number | null>(null);
-  const savedDesigns = useQuery(api.savedDesigns.list, anonymousId ? { anonymousId } : "skip") as SavedAdSceneDesign[] | undefined;
   const latestGeneration = useQuery(api.adScenes.latestForAnonymousId, anonymousId ? { anonymousId } : "skip") as {
     result: StoredWebsiteResearchResult;
     scenes: AdScene[];
   } | null | undefined;
-  const saveDesign = useMutation(api.savedDesigns.saveFromScene);
-  const savedDesignItems = savedDesigns || [];
   const canvasActions = useCanvasActions();
   const brandDetailsOpen = activeModal === "brand-details";
   const dialoguePanelOpen = activeModal === "dialogue";
@@ -344,11 +335,6 @@ function ResearchConnected() {
     resetPreviewPlayback();
   };
 
-  const resetSaveState = () => {
-    setSaveStatus("idle");
-    setSaveError("");
-  };
-
   const openBrandDetails = () => {
     setModal("brand-details");
   };
@@ -470,7 +456,6 @@ function ResearchConnected() {
     setAudioStatus(nextScene.audio.status === "generated" ? "ready" : "idle");
     setAudioError("");
     resetDialogueState();
-    resetSaveState();
     triggerRerollFlash(getSceneDefaultFlashSlots(nextScene));
   }, [adScenes, resetPreviewPlayback, selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
@@ -486,7 +471,6 @@ function ResearchConnected() {
     resetShareState();
     resetRenderState();
     resetAudioState();
-    resetSaveState();
     setAdStatusNote(`${scenes.length} ads ready. Press spacebar to find a stronger version.`);
     setAdStatus("ready");
     canvasActions.finishBusy();
@@ -562,7 +546,6 @@ function ResearchConnected() {
     resetDialogueState();
     closeBrandDetails();
     closeCaptionPanel();
-    resetSaveState();
     setAdStatusNote(hadExistingCanvas ? "Reading website. Keeping this canvas stable until the new ads are ready." : "");
     setError("");
     let researchCompleted = false;
@@ -730,7 +713,6 @@ function ResearchConnected() {
     });
     resetRenderState();
     resetShareState();
-    resetSaveState();
   };
 
   const onGenerateAudio = async () => {
@@ -814,23 +796,6 @@ function ResearchConnected() {
     }
   };
 
-  const onSaveSelectedDesign = async () => {
-    if (!selectedScene) return;
-    setSaveStatus("loading");
-    setSaveError("");
-
-    try {
-      await saveDesign({
-        anonymousId: getCurrentAnonymousId(),
-        scene: selectedScene,
-      });
-      setSaveStatus("ready");
-    } catch (nextError) {
-      setSaveStatus("error");
-      setSaveError(nextError instanceof Error ? nextError.message : "Could not save this design.");
-    }
-  };
-
   const onSelectAdIdea = (scene: AdScene, index: number) => {
     resetPreviewPlayback();
     setSelectedScene(scene);
@@ -891,13 +856,6 @@ function ResearchConnected() {
   const hasEmptyEditedCaption = generatedCaptions.some((caption) => !caption.text.trim());
   const selectedDialogueScript = dialogueScripts[selectedDialogueIndex] || null;
   const dialogueCanGenerateAudio = Boolean(selectedScene && selectedDialogueScript && selectedDialogueScript.lines.some((line) => line.text.trim()));
-  const selectedSavedDesignId = selectedScene ? createSavedDesignId(selectedScene) : "";
-  const selectedDesignIsSaved = Boolean(selectedSavedDesignId && savedDesignItems.some((design) => design.id === selectedSavedDesignId));
-  const saveStatusLabel = saveStatus === "loading"
-    ? "Saving"
-    : saveStatus === "ready" || selectedDesignIsSaved
-      ? "Saved"
-      : "Save";
   const renderBusy = currentRenderStatus === "loading"
     || currentRenderStatus === "queued"
     || currentRenderStatus === "claimed"
@@ -1013,7 +971,6 @@ function ResearchConnected() {
                 onOpenAudioPanel={onOpenAudioPanel}
                 onOpenCaptionEditor={openCaptionPanel}
                 onPreviewPlatformChange={setPreviewPlatform}
-                onSaveSelectedDesign={() => void onSaveSelectedDesign()}
                 onTogglePreviewPlayback={onTogglePreviewPlayback}
                 playableAudioUrl={playableAudioUrl}
                 previewPlatform={previewPlatform}
@@ -1022,10 +979,6 @@ function ResearchConnected() {
                 renderErrorMessage={renderJob?.error || renderError}
                 renderStatusLabel={renderStatusLabel}
                 renderWorkerHealthy={renderWorkerHealthy}
-                saveError={saveError}
-                saveStatus={saveStatus}
-                saveStatusLabel={saveStatusLabel}
-                selectedDesignIsSaved={selectedDesignIsSaved}
                 shareError={shareError}
                 shareStatus={shareStatus}
                 shareUrl={shareUrl}
