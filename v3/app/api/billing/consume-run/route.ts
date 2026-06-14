@@ -3,6 +3,7 @@ import {
   consumeWorkflowRun,
   getBillingStatus,
   getOrSetBillingSessionId,
+  hasPaidAccess,
   isPaywallEnabled,
   readPaidUntil,
 } from "@/lib/billing";
@@ -12,7 +13,7 @@ export async function POST() {
 
   const sessionId = await getOrSetBillingSessionId();
   const paidUntil = await readPaidUntil(sessionId);
-  if (paidUntil > Date.now()) return NextResponse.json(await getBillingStatus());
+  if (hasPaidAccess(paidUntil)) return NextResponse.json(await getBillingStatus());
 
   const usage = consumeWorkflowRun(sessionId);
   if (!usage.ok) {

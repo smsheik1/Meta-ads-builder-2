@@ -4,7 +4,10 @@ import { useEffect, type RefObject } from "react";
 import { getCanvasCanRerollNow } from "./canvasInteractionStore";
 
 export function isEditableShortcutTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
+  if (!target) return false;
+  if (typeof HTMLElement !== "undefined" && !(target instanceof HTMLElement)) return false;
+  if (!("closest" in target) || typeof target.closest !== "function") return false;
+
   return Boolean(
     target.closest(
       'input, textarea, select, [contenteditable="true"], [contenteditable=""], [role="textbox"]',
@@ -12,7 +15,7 @@ export function isEditableShortcutTarget(target: EventTarget | null): boolean {
   );
 }
 
-function isRerollSpacebarKey(event: KeyboardEvent): boolean {
+export function isRerollSpacebarKey(event: Pick<KeyboardEvent, "key" | "code">): boolean {
   return event.key === " " || event.key === "Spacebar" || event.code === "Space";
 }
 
