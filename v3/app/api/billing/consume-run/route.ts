@@ -17,7 +17,7 @@ export async function POST() {
   const usage = consumeWorkflowRun(sessionId);
   if (!usage.ok) {
     return NextResponse.json({
-      error: "You used your 2 free Wiggly runs. Unlock more for $1.",
+      error: "You used your 2 free Wiggly runs. Start unlimited access for $1.",
       code: "PAYWALL_REQUIRED",
       freeRemaining: 0,
       resetAt: usage.resetAt,

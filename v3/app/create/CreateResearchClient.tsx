@@ -1083,7 +1083,7 @@ function ResearchConnected() {
               </button>
             </div>
             <p className="text-sm font-semibold leading-6 text-slate-600">
-              Keep generating ads, rerolling ideas, and testing Wiggly for the next 7 days.
+              Start with 7 days of unlimited Wiggly for $1. After that, keep unlimited access for $9/month as an early user, 50% off the normal $19.95.
             </p>
             <button
               type="button"
@@ -1091,9 +1091,9 @@ function ResearchConnected() {
               disabled={checkoutLoading}
               className="mt-6 flex h-13 w-full items-center justify-center rounded-2xl bg-slate-950 px-5 text-base font-black text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800 disabled:cursor-progress disabled:opacity-70"
             >
-              {checkoutLoading ? "Starting checkout..." : "Continue for $1"}
+              {checkoutLoading ? "Starting checkout..." : "Start unlimited for $1"}
             </button>
-            <p className="mt-3 text-center text-xs font-bold text-slate-400">No signup wall. Just a tiny paid test.</p>
+            <p className="mt-3 text-center text-xs font-bold text-slate-400">$1 today, then $9/month after 7 days. Cancel anytime in Stripe.</p>
             <p className="mt-2 text-center text-xs font-semibold text-slate-400">
               If anything gets weird or you have ideas, email me directly: buildwithshaz@gmail.com.
             </p>
