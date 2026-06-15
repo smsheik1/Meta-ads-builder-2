@@ -4,7 +4,7 @@ import {
   DEFAULT_NVIDIA_NIM_BASE_URL,
   type NvidiaNimChatCompletion,
 } from "../../llm/nvidiaNim";
-import { DEFAULT_NVIDIA_NIM_MEME_MODEL } from "./models";
+import { DEFAULT_NVIDIA_NIM_MEME_MODEL } from "../../llm/nvidiaNimModels";
 import { buildMemePrompt } from "./prompt";
 import { MEME_TEMPLATES, getMemeTemplate, type MemeTemplate } from "./templates";
 
@@ -100,57 +100,6 @@ const parseJsonObject = (value: string, providerLabel = "AI provider") => {
 type ExtractMemeVariantsOptions = {
   providerLabel?: string;
   repairSlotText?: boolean;
-};
-
-const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, label: string) => {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<never>((_, reject) => {
-        timeout = setTimeout(() => reject(new Error(`${label} timed out.`)), timeoutMs);
-      }),
-    ]);
-  } finally {
-    if (timeout) clearTimeout(timeout);
-  }
-};
-
-const callNvidiaNim = async ({
-  apiKey,
-  baseUrl,
-  model,
-  prompt,
-  timeoutMs,
-  nvidiaNimChatCompletion,
-}: {
-  apiKey: string;
-  baseUrl: string;
-  model: string;
-  prompt: string;
-  timeoutMs: number;
-  nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
-}) => {
-  if (nvidiaNimChatCompletion) {
-    return withTimeout(
-      nvidiaNimChatCompletion({ model, prompt, apiKey, baseUrl, timeoutMs }),
-      timeoutMs,
-      "NVIDIA NIM meme generation",
-    );
-  }
-
-  return withTimeout(
-    callNvidiaNimChat({
-      apiKey,
-      baseUrl,
-      label: "NVIDIA NIM meme generation",
-      model,
-      prompt,
-      timeoutMs,
-    }),
-    timeoutMs,
-    "NVIDIA NIM meme generation",
-  );
 };
 
 function deterministicSlotsForTemplate(
@@ -253,13 +202,14 @@ export async function generateMemeVariantsFromResearch(
 
   if (nvidiaNimApiKey && !isDisabled(process.env.NVIDIA_NIM_ENABLED)) {
     try {
-      const content = await callNvidiaNim({
+      const content = await callNvidiaNimChat({
         apiKey: nvidiaNimApiKey,
         baseUrl: nvidiaNimBaseUrl,
+        label: "NVIDIA NIM meme generation",
         model: nvidiaNimModel,
+        nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
         prompt,
         timeoutMs,
-        nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
       });
       let variants: MemeVariant[];
       try {
@@ -268,13 +218,14 @@ export async function generateMemeVariantsFromResearch(
           repairSlotText: true,
         });
       } catch {
-        const retryContent = await callNvidiaNim({
+        const retryContent = await callNvidiaNimChat({
           apiKey: nvidiaNimApiKey,
           baseUrl: nvidiaNimBaseUrl,
+          label: "NVIDIA NIM meme generation",
           model: nvidiaNimModel,
+          nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
           prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Every required slot must be present, under maxChars, and a complete thought. Return only the JSON object.`,
           timeoutMs,
-          nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
         });
         variants = extractMemeVariantsFromResponse(retryContent, {
           providerLabel: "NVIDIA NIM",

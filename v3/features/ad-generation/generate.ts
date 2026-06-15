@@ -2,9 +2,10 @@ import { GoogleGenAI } from "@google/genai";
 import {
   callNvidiaNimChat,
   DEFAULT_NVIDIA_NIM_BASE_URL,
-  DEFAULT_NVIDIA_NIM_MODEL,
   type NvidiaNimChatCompletion,
 } from "../llm/nvidiaNim";
+import { DEFAULT_NVIDIA_NIM_AD_IDEA_MODEL } from "../llm/nvidiaNimModels";
+import { withTimeout } from "../llm/timeout";
 import { isWebsiteChromeText } from "../research/firecrawl";
 import type { StoredWebsiteResearchResult } from "../research/types";
 import type { AdSceneCandidate, HeadlineType } from "../scene/types";
@@ -14,7 +15,6 @@ type GeminiGenerateContent = (input: { model: string; prompt: string }) => Promi
 
 export const DEFAULT_AD_IDEA_COUNT = 50;
 export const DEFAULT_GEMINI_AD_IDEA_MODEL = "gemini-3.1-flash-lite";
-export const DEFAULT_NVIDIA_NIM_AD_IDEA_MODEL = DEFAULT_NVIDIA_NIM_MODEL;
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 
@@ -42,8 +42,6 @@ export type GenerateAdCandidatesOptions = {
   nvidiaNimBaseUrl?: string;
   nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
   nvidiaNimModel?: string;
-  apiKey?: string;
-  model?: string;
   count?: number;
   timeoutMs?: number;
 };
@@ -417,20 +415,6 @@ export const extractAdCandidatesFromResponse = (
 
 const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.test(String(value || ""));
 
-const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, label: string) => {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<never>((_, reject) => {
-        timeout = setTimeout(() => reject(new Error(`${label} timed out.`)), timeoutMs);
-      }),
-    ]);
-  } finally {
-    if (timeout) clearTimeout(timeout);
-  }
-};
-
 const callGemini = async ({
   apiKey,
   model,
@@ -460,43 +444,6 @@ const callGemini = async ({
   return response.text || "{\"candidates\":[]}";
 };
 
-const callNvidiaNim = async ({
-  apiKey,
-  baseUrl,
-  model,
-  prompt,
-  timeoutMs,
-  nvidiaNimChatCompletion,
-}: {
-  apiKey: string;
-  baseUrl: string;
-  model: string;
-  prompt: string;
-  timeoutMs: number;
-  nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
-}) => {
-  if (nvidiaNimChatCompletion) {
-    return withTimeout(
-      nvidiaNimChatCompletion({ model, prompt, apiKey, baseUrl, timeoutMs }),
-      timeoutMs,
-      "NVIDIA NIM ad generation",
-    );
-  }
-
-  return withTimeout(
-    callNvidiaNimChat({
-      apiKey,
-      baseUrl,
-      label: "NVIDIA NIM ad generation",
-      model,
-      prompt,
-      timeoutMs,
-    }),
-    timeoutMs,
-    "NVIDIA NIM ad generation",
-  );
-};
-
 const topUpCandidates = (
   candidates: AdSceneCandidate[],
   fallback: AdSceneCandidate[],
@@ -514,7 +461,6 @@ export const generateAdCandidatesFromResearch = async (
   const prompt = buildAdIdeasPrompt(research, count);
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const nvidiaNimModel = options.nvidiaNimModel
-    || options.model
     || process.env.NVIDIA_NIM_AD_MODEL
     || DEFAULT_NVIDIA_NIM_AD_IDEA_MODEL;
   const nvidiaNimBaseUrl = options.nvidiaNimBaseUrl
@@ -522,17 +468,19 @@ export const generateAdCandidatesFromResearch = async (
     || DEFAULT_NVIDIA_NIM_BASE_URL;
   const nvidiaNimApiKey = options.nvidiaNimApiKey ?? process.env.NVIDIA_NIM_API_KEY;
   const geminiModel = options.geminiModel || process.env.GEMINI_AD_MODEL || DEFAULT_GEMINI_AD_IDEA_MODEL;
-  const geminiApiKey = options.geminiApiKey ?? options.apiKey ?? process.env.GEMINI_API_KEY;
+  const geminiApiKey = options.geminiApiKey ?? process.env.GEMINI_API_KEY;
+  let nvidiaNimFailureReason = "";
 
   if (nvidiaNimApiKey && !isDisabled(process.env.NVIDIA_NIM_ENABLED)) {
     try {
-      const content = await callNvidiaNim({
+      const content = await callNvidiaNimChat({
         apiKey: nvidiaNimApiKey,
         baseUrl: nvidiaNimBaseUrl,
+        label: "NVIDIA NIM ad generation",
         model: nvidiaNimModel,
+        nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
         prompt,
         timeoutMs,
-        nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
       });
       const candidates = extractAdCandidatesFromResponse(content, fallback, count, "NVIDIA NIM");
 
@@ -547,20 +495,9 @@ export const generateAdCandidatesFromResearch = async (
         },
       };
     } catch (error) {
-      const reason = error instanceof Error
-        ? `${error.message} Used deterministic website evidence ideas.`
-        : "NVIDIA NIM failed; used deterministic website evidence ideas.";
-
-      return {
-        candidates: fallback,
-        model: nvidiaNimModel,
-        provider: "deterministic",
-        providerStatus: {
-          provider: "nvidia-nim",
-          status: "failed",
-          reason,
-        },
-      };
+      nvidiaNimFailureReason = error instanceof Error
+        ? `${error.message} Trying Gemini backup ad generation.`
+        : "NVIDIA NIM failed; trying Gemini backup ad generation.";
     }
   }
 
@@ -582,7 +519,9 @@ export const generateAdCandidatesFromResearch = async (
         providerStatus: {
           provider: "gemini",
           status: "used",
-          reason: `Generated ${count} ad ideas with ${geminiModel}.`,
+          reason: nvidiaNimFailureReason
+            ? `NVIDIA NIM failed; generated ${count} backup ad ideas with ${geminiModel}.`
+            : `Generated ${count} ad ideas with ${geminiModel}.`,
         },
       };
     } catch (error) {
@@ -605,12 +544,12 @@ export const generateAdCandidatesFromResearch = async (
 
   return {
     candidates: fallback,
-    model: geminiModel,
+    model: nvidiaNimFailureReason ? nvidiaNimModel : geminiModel,
     provider: "deterministic",
     providerStatus: {
-      provider: "gemini",
-      status: "skipped",
-      reason: "Gemini was not configured; used deterministic website evidence ideas.",
+      provider: nvidiaNimFailureReason ? "nvidia-nim" : "gemini",
+      status: nvidiaNimFailureReason ? "failed" : "skipped",
+      reason: nvidiaNimFailureReason || "Gemini was not configured; used deterministic website evidence ideas.",
     },
   };
 };

@@ -1,3 +1,5 @@
+import { withTimeout } from "./timeout";
+
 export const DEFAULT_NVIDIA_NIM_BASE_URL = "https://integrate.api.nvidia.com/v1";
 export const DEFAULT_NVIDIA_NIM_MODEL = "moonshotai/kimi-k2.6";
 
@@ -14,6 +16,7 @@ export const callNvidiaNimChat = async ({
   baseUrl,
   label,
   model,
+  nvidiaNimChatCompletion,
   prompt,
   temperature = 0.7,
   timeoutMs,
@@ -22,10 +25,19 @@ export const callNvidiaNimChat = async ({
   baseUrl: string;
   label: string;
   model: string;
+  nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
   prompt: string;
   temperature?: number;
   timeoutMs: number;
 }) => {
+  if (nvidiaNimChatCompletion) {
+    return withTimeout(
+      nvidiaNimChatCompletion({ model, prompt, apiKey, baseUrl, timeoutMs }),
+      timeoutMs,
+      label,
+    );
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   const response = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {

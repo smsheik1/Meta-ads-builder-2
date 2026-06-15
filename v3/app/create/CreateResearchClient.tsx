@@ -20,7 +20,7 @@ import type {
 import {
   DEFAULT_NVIDIA_NIM_MEME_MODEL,
   DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL,
-} from "@/features/formats/meme/models";
+} from "@/features/llm/nvidiaNimModels";
 import { getFormatModule } from "@/features/formats/registry";
 import { useActiveCanvasPanel, useCanvasActions } from "@/features/create/canvasInteractionStore";
 import {

@@ -260,6 +260,35 @@ assert.ok(nimCuratedResult.providerStatus.some((status) => (
   status.provider === "nvidia-nim-curator" && status.status === "used"
 )));
 
+const nimFailureGeminiBackupCuratedResult = await curateWebsiteResearchResult(shopifyResult, {
+  nvidiaNimApiKey: "test-nim-key",
+  nvidiaNimModel: "test-kimi-model",
+  nvidiaNimChatCompletion: async () => {
+    throw new Error("NIM free tier unavailable.");
+  },
+  geminiApiKey: "test-gemini-key",
+  geminiModel: "test-gemini-model",
+  geminiGenerateContent: async () => JSON.stringify({
+    brandName: "David's Cookies",
+    offer: "Fresh baked cookies and giftable desserts delivered for memorable occasions.",
+    audience: "People sending cookies and desserts for birthdays and thank-you gifts.",
+    buyerMoments: ["Someone forgot the birthday and needs a dessert gift that can still ship."],
+    proof: ["We're known for our cookies, but we make so much more, including cheesecakes."],
+    siteLanguage: ["Cookie Delivery | Gift Baskets | Fresh Baked"],
+    ctaDirection: "Shop cookies",
+    visualNotes: [],
+    droppedNoiseSummary: [],
+    confidence: "high",
+  }),
+});
+assert.equal(nimFailureGeminiBackupCuratedResult.brandBrief.offer, "Fresh baked cookies and giftable desserts delivered for memorable occasions.");
+assert.ok(nimFailureGeminiBackupCuratedResult.providerStatus.some((status) => (
+  status.provider === "nvidia-nim-curator" && status.status === "failed"
+)));
+assert.ok(nimFailureGeminiBackupCuratedResult.providerStatus.some((status) => (
+  status.provider === "gemini-curator" && status.status === "used"
+)));
+
 const curatedShopifyResult = await fetchWebsiteResearchWithFirecrawl("davidscookies.com", {
   apiKey: "test-firecrawl-key",
   fetcher: async () => new Response(JSON.stringify({
@@ -281,11 +310,11 @@ Fresh baked cookies, gift baskets, cheesecakes, and specialty desserts delivered
   }), {
     status: 200,
     headers: { "content-type": "application/json" },
-  }),
-  curator: {
-    apiKey: "test-gemini-key",
-    nvidiaNimApiKey: "",
-    geminiGenerateContent: async ({ prompt }) => {
+	  }),
+	  curator: {
+	    geminiApiKey: "test-gemini-key",
+	    nvidiaNimApiKey: "",
+	    geminiGenerateContent: async ({ prompt }) => {
       assert.ok(prompt.includes("Ignore website chrome"));
       assert.ok(prompt.includes("High-protein snack bars with a soft, marshmallow-like texture."));
       assert.ok(prompt.includes("Scheduling software for teams"));
@@ -369,11 +398,11 @@ OGTool connects Reddit visibility to ChatGPT recommendation moments.
         </head>
       </html>
     `, { status: 200 }),
-  },
-  curator: {
-    apiKey: "test-gemini-key",
-    nvidiaNimApiKey: "",
-    geminiGenerateContent: async ({ prompt }) => {
+	  },
+	  curator: {
+	    geminiApiKey: "test-gemini-key",
+	    nvidiaNimApiKey: "",
+	    geminiGenerateContent: async ({ prompt }) => {
       assert.ok(prompt.includes("Reddit campaigns give ChatGPT"));
       return JSON.stringify({
         brandName: "OGTool",

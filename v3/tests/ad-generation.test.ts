@@ -223,6 +223,35 @@ assert.equal(nvidiaNimResult.providerStatus.provider, "nvidia-nim");
 assert.equal(nvidiaNimResult.providerStatus.status, "used");
 assert.equal(nvidiaNimResult.candidates[0]?.headline, "Your Competitor Shows Up First");
 
+const nvidiaNimFailureGeminiBackupResult = await generateAdCandidatesFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-nim-key",
+  nvidiaNimModel: "test-kimi-model",
+  nvidiaNimChatCompletion: async () => {
+    throw new Error("NIM free tier unavailable.");
+  },
+  geminiApiKey: "test-gemini-key",
+  geminiModel: "test-gemini-model",
+  geminiGenerateContent: async () => JSON.stringify({
+    candidates: [
+      {
+        angleId: "gemini-backup",
+        headline: "ChatGPT Finds Your Competitor",
+        subheadline: "Buyers ask ChatGPT for recommendations, and OGTool helps your brand show up.",
+        ctaText: "See the proof",
+        headlineType: "painful_moment",
+        selectedPain: "Buyers ask ChatGPT for recommendations and your competitor shows up first.",
+        selectedProof: "First ChatGPT mention in 14 days.",
+      },
+    ],
+  }),
+});
+assert.equal(nvidiaNimFailureGeminiBackupResult.provider, "gemini");
+assert.equal(nvidiaNimFailureGeminiBackupResult.model, "test-gemini-model");
+assert.equal(nvidiaNimFailureGeminiBackupResult.providerStatus.provider, "gemini");
+assert.equal(nvidiaNimFailureGeminiBackupResult.providerStatus.status, "used");
+assert.ok(nvidiaNimFailureGeminiBackupResult.providerStatus.reason.includes("NVIDIA NIM failed"));
+
 const geminiResult = await generateAdCandidatesFromResearch(research, {
   count: 1,
   nvidiaNimApiKey: "",

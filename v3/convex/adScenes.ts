@@ -26,32 +26,43 @@ export const generateFromResearch: ReturnType<typeof action> = action({
       researchRunId,
     });
     const generationBatchId = createGenerationBatchId();
-    const generation = format === "meme"
-      ? await generateMemeVariantsFromResearch(research, { nvidiaNimModel: memeModel })
-      : null;
-    const visualizerGeneration = format === "visualizer"
-      ? await generateAdCandidatesFromResearch(research, {
-        count,
-        nvidiaNimModel: visualizerModel,
-      })
-      : null;
-    const scenes = generation
-      ? generation.variants.map((variant, index) => createMemeAdScene({
+    if (format === "meme") {
+      const generation = await generateMemeVariantsFromResearch(research, { nvidiaNimModel: memeModel });
+      const scenes = generation.variants.map((variant, index) => createMemeAdScene({
         research,
         variant,
         candidateIndex: index,
         generationBatchId,
         model: generation.model,
         provider: generation.provider,
-      }))
-      : visualizerGeneration!.candidates.map((candidate, index) => createVisualizerAdScene({
-        research,
-        candidate,
-        candidateIndex: index,
-        generationBatchId,
-        model: visualizerGeneration!.model,
-        provider: visualizerGeneration!.provider,
       }));
+      const { sceneIds } = await ctx.runMutation(internal.adSceneStorage.saveGeneratedScenes, {
+        sessionId: research.sessionId,
+        researchRunId,
+        brandSnapshotId: research.brandSnapshotId,
+        scenes,
+      });
+
+      return {
+        generationBatchId,
+        sceneIds,
+        scenes,
+        providerStatus: generation.providerStatus,
+      };
+    }
+
+    const generation = await generateAdCandidatesFromResearch(research, {
+      count,
+      nvidiaNimModel: visualizerModel,
+    });
+    const scenes = generation.candidates.map((candidate, index) => createVisualizerAdScene({
+      research,
+      candidate,
+      candidateIndex: index,
+      generationBatchId,
+      model: generation.model,
+      provider: generation.provider,
+    }));
 
     const { sceneIds } = await ctx.runMutation(internal.adSceneStorage.saveGeneratedScenes, {
       sessionId: research.sessionId,
@@ -64,7 +75,7 @@ export const generateFromResearch: ReturnType<typeof action> = action({
       generationBatchId,
       sceneIds,
       scenes,
-      providerStatus: (generation || visualizerGeneration)!.providerStatus,
+      providerStatus: generation.providerStatus,
     };
   },
 });
