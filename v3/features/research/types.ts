@@ -1,5 +1,5 @@
 export type ResearchProviderStatus = {
-  provider: "firecrawl" | "gemini-curator";
+  provider: "jina" | "firecrawl" | "gemini-curator";
   status: "used" | "failed" | "skipped";
   reason: string;
 };

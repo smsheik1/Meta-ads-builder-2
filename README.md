@@ -83,13 +83,17 @@ GEMINI_API_KEY=
 DEEPGRAM_API_KEY=
 ```
 
+Website research tries Jina Reader first with an 8 second timeout. `FIRECRAWL_API_KEY`
+is still needed as the hard-site fallback for weak, blocked, timed-out, or JS-heavy
+Jina reads.
+
 Never commit real API keys.
 
 ### Local Convex Env
 
 Convex actions do not automatically inherit `v3/.env.local` or the root `.env`.
-If local website research says Firecrawl is not configured, set the action env
-vars on the local Convex deployment:
+If local website research needs the Firecrawl fallback, set the action env vars
+on the local Convex deployment:
 
 ```bash
 cd v3

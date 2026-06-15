@@ -19,6 +19,15 @@ export type FirecrawlOptions = {
   timeoutMs?: number;
   includeScreenshot?: boolean;
   curator?: BrandCuratorOptions;
+  jina?: {
+    enabled?: boolean;
+    fetcher?: Fetcher;
+    htmlMetadataFetcher?: Fetcher;
+    timeoutMs?: number;
+    htmlMetadataTimeoutMs?: number;
+    minMarkdownChars?: number;
+    minUsefulLines?: number;
+  };
 };
 
 export type FirecrawlPayload = {
@@ -32,14 +41,27 @@ export type FirecrawlPayload = {
 };
 
 const FIRECRAWL_SCRAPE_URL = "https://api.firecrawl.dev/v2/scrape";
+const JINA_READER_BASE_URL = "https://r.jina.ai/http://";
 export const DEFAULT_FIRECRAWL_TIMEOUT_MS = 60_000;
+export const DEFAULT_JINA_READER_TIMEOUT_MS = 8_000;
+export const DEFAULT_JINA_HTML_METADATA_TIMEOUT_MS = 4_000;
+export const DEFAULT_JINA_MIN_MARKDOWN_CHARS = 500;
+export const DEFAULT_JINA_MIN_USEFUL_LINES = 8;
 const MAX_MARKDOWN_CHARS = 24_000;
 const FIRECRAWL_TIMEOUT_MESSAGE = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const chromeTextPattern = /\b(skip to content|cart is empty|continue shopping|log in|login|check out|checkout|add to cart|quantity|subtotal|loading|have an account|gift message|discount code|multiple addresses?|free shipping not applied|regular price|sale price|sold out|password|newsletter|privacy policy|terms of service)\b/i;
 const standalonePricePattern = /^(?:from\s+)?\$[\d,.]+(?:\s*-\s*\$[\d,.]+)?$/i;
 const imageAltNoisePattern = /\b(decorative|background image|hero image|image|photo|picture|screenshot|graphic|illustration)\b/i;
 
+const decodeHtmlEntities = (value: string) => value
+  .replace(/&amp;/gi, "&")
+  .replace(/&quot;/gi, "\"")
+  .replace(/&#39;|&apos;/gi, "'")
+  .replace(/&lt;/gi, "<")
+  .replace(/&gt;/gi, ">");
+
 const cleanText = (value: unknown, maxLength = 260) => String(value ?? "")
+  .replace(/&(?:amp|quot|#39|apos|lt|gt);/gi, (entity) => decodeHtmlEntities(entity))
   .replace(/!\[[^\]]*]\([^)]+\)/g, " ")
   .replace(/!\[[^\]]*]\[[^\]]*]/g, " ")
   .replace(/!\[[^\]]*]/g, " ")
@@ -84,6 +106,13 @@ const metadataText = (
   maxLength = 260,
 ) => cleanText(keys.map((key) => metadata[key]).find(Boolean) || fallback, maxLength);
 
+const rawMetadataText = (
+  metadata: Record<string, unknown>,
+  keys: string[],
+  fallback = "",
+  maxLength = 900,
+) => cleanText(keys.map((key) => metadata[key]).find(Boolean) || fallback, maxLength);
+
 const resolveMaybeUrl = (value: unknown, baseUrl: string) => {
   const cleaned = cleanText(value, 900);
   if (!cleaned || cleaned.startsWith("data:") || cleaned.startsWith("blob:")) return null;
@@ -105,7 +134,19 @@ const screenshotUrlFromFirecrawl = (screenshot: unknown, baseUrl: string) => {
 };
 
 const titleToBrand = (title: string, host: string) => {
-  const firstChunk = cleanText(title, 80).split(/\s+[|-]\s+/)[0]?.trim();
+  const hostBase = host.replace(/^www\./, "").split(".")[0] || "";
+  const compactHost = hostBase.replace(/[^a-z0-9]/gi, "").toLowerCase();
+  const chunks = cleanText(title, 160)
+    .split(/\s+[|–—-]\s+/)
+    .map((chunk) => cleanText(chunk, 80))
+    .filter(Boolean);
+  const matchingChunk = chunks.find((chunk) => {
+    const compactChunk = chunk.replace(/[^a-z0-9]/gi, "").toLowerCase();
+    return compactHost.length >= 4 && (compactChunk.includes(compactHost) || compactHost.includes(compactChunk));
+  });
+  if (matchingChunk && matchingChunk.length >= 2 && matchingChunk.length <= 48) return matchingChunk;
+
+  const firstChunk = chunks[0]?.trim();
   if (firstChunk && firstChunk.length >= 2 && firstChunk.length <= 48) return firstChunk;
 
   return host
@@ -216,6 +257,16 @@ const assertUsefulMarkdown = (markdown: string) => {
   }
 };
 
+const assertUsefulJinaMarkdown = (
+  markdown: string,
+  options: Pick<Required<NonNullable<FirecrawlOptions["jina"]>>, "minMarkdownChars" | "minUsefulLines">,
+) => {
+  const evidence = parseMarkdownEvidence(markdown);
+  if (markdown.trim().length < options.minMarkdownChars || evidence.rawMarkdown.split("\n").length < options.minUsefulLines) {
+    throw new Error("Jina returned weak page copy.");
+  }
+};
+
 export const isAbortLikeError = (error: unknown) => {
   const record = error && typeof error === "object" ? error as Record<string, unknown> : {};
   const name = String(record.name || "");
@@ -318,6 +369,190 @@ export const normalizeFirecrawlPayload = (
   };
 };
 
+const parseJinaReaderText = (text: string) => {
+  const title = text.match(/^Title:\s*(.+)$/m)?.[1]?.trim() || "";
+  const sourceUrl = text.match(/^URL Source:\s*(.+)$/m)?.[1]?.trim() || "";
+  const markdown = text.includes("Markdown Content:")
+    ? text.split("Markdown Content:").slice(1).join("Markdown Content:").trim()
+    : text.trim();
+
+  return { title, sourceUrl, markdown };
+};
+
+const attrPattern = (name: string) => new RegExp(`${name}\\s*=\\s*["']([^"']+)["']`, "i");
+
+const tagAttr = (tag: string, name: string) => tag.match(attrPattern(name))?.[1]?.trim() || "";
+
+const metaContent = (html: string, key: string) => {
+  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`<meta\\b(?=[^>]*(?:property|name)\\s*=\\s*["']${escaped}["'])[^>]*>`, "i");
+  const tag = html.match(pattern)?.[0] || "";
+  return tag ? tagAttr(tag, "content") : "";
+};
+
+const linkHref = (html: string, relPattern: RegExp) => {
+  const links = html.match(/<link\b[^>]*>/gi) || [];
+  const tag = links.find((candidate) => relPattern.test(tagAttr(candidate, "rel")));
+  return tag ? tagAttr(tag, "href") : "";
+};
+
+const titleFromHtml = (html: string) => cleanText(html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "", 160);
+
+const parseBasicHtmlMetadata = (html: string, baseUrl: string) => {
+  const metadata: Record<string, unknown> = {
+    sourceURL: baseUrl,
+    title: titleFromHtml(html),
+    ogTitle: metaContent(html, "og:title"),
+    description: metaContent(html, "description"),
+    ogDescription: metaContent(html, "og:description"),
+    ogSiteName: metaContent(html, "og:site_name"),
+    ogImage: metaContent(html, "og:image"),
+    themeColor: metaContent(html, "theme-color"),
+    favicon: linkHref(html, /\b(icon|shortcut icon|apple-touch-icon)\b/i),
+  };
+
+  return Object.fromEntries(Object.entries(metadata).filter(([, value]) => cleanText(value, 900)));
+};
+
+const fetchBasicHtmlMetadata = async (
+  url: string,
+  options: Pick<NonNullable<FirecrawlOptions["jina"]>, "htmlMetadataFetcher" | "htmlMetadataTimeoutMs"> = {},
+) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), options.htmlMetadataTimeoutMs ?? DEFAULT_JINA_HTML_METADATA_TIMEOUT_MS);
+
+  try {
+    const response = await (options.htmlMetadataFetcher ?? fetch)(url, {
+      headers: { accept: "text/html,application/xhtml+xml" },
+      signal: controller.signal,
+    });
+    if (!response.ok) return {};
+    const html = await response.text();
+    return parseBasicHtmlMetadata(html, url);
+  } catch {
+    return {};
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+export const normalizeJinaReaderPayload = (
+  inputUrl: string,
+  readerText: string,
+  htmlMetadata: Record<string, unknown> = {},
+): WebsiteResearchResult => {
+  const websiteUrl = normalizePublicWebsiteUrl(inputUrl);
+  const parsed = parseJinaReaderText(readerText);
+  const metadata: Record<string, unknown> = {
+    sourceURL: parsed.sourceUrl || websiteUrl.href,
+    title: parsed.title,
+    ...htmlMetadata,
+  };
+  const markdown = parsed.markdown;
+
+  assertUsefulMarkdown(markdown);
+
+  const evidence = parseMarkdownEvidence(markdown);
+  const finalUrl = rawMetadataText(metadata, ["sourceURL", "url"], websiteUrl.href, 900);
+  const title = metadataText(
+    metadata,
+    ["ogTitle", "title"],
+    parsed.title || evidence.headings[0] || websiteUrl.hostname,
+    120,
+  );
+  const description = metadataText(
+    metadata,
+    ["ogDescription", "description"],
+    evidence.paragraphs[0] || "",
+    280,
+  );
+  const brandName = metadataText(
+    metadata,
+    ["ogSiteName", "siteName", "applicationName"],
+    titleToBrand(title, websiteUrl.hostname),
+    60,
+  );
+  const faviconUrl = resolveMaybeUrl(
+    metadata.favicon || metadata.faviconUrl || metadata.icon,
+    finalUrl,
+  ) || new URL("/favicon.ico", websiteUrl.origin).href;
+  const ogImageUrl = resolveMaybeUrl(metadata.ogImage || metadata.image, finalUrl);
+  const colors = colorsFromFirecrawl({}, metadata);
+
+  const result: Omit<WebsiteResearchResult, "brandBrief"> = {
+    websiteUrl: websiteUrl.href,
+    finalUrl,
+    host: websiteUrl.hostname,
+    brand: {
+      name: brandName,
+      url: finalUrl,
+      host: websiteUrl.hostname,
+      title,
+      description,
+      faviconUrl,
+      logoUrl: null,
+      ogImageUrl,
+      screenshotUrl: null,
+      colors,
+      fonts: { feel: "unknown" },
+      vibeTags: buildVibeTags(metadata, {}, evidence),
+    },
+    evidence: {
+      ...evidence,
+      receipts: {
+        ...evidence.receipts,
+        exactSiteLanguage: unique([title, ...evidence.receipts.exactSiteLanguage, description], 8),
+      },
+    },
+    metadata,
+    branding: {},
+    providerStatus: [{
+      provider: "jina",
+      status: "used",
+      reason: `Jina read ${evidence.paragraphs.length} page snippets.`,
+    }],
+  };
+
+  return {
+    ...result,
+    brandBrief: buildFallbackBrandBrief(result),
+  };
+};
+
+const fetchWebsiteResearchWithJina = async (
+  inputUrl: string,
+  options: NonNullable<FirecrawlOptions["jina"]> = {},
+) => {
+  const websiteUrl = normalizePublicWebsiteUrl(inputUrl);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_JINA_READER_TIMEOUT_MS);
+
+  try {
+    const readerUrl = `${JINA_READER_BASE_URL}${websiteUrl.href}`;
+    const [response, htmlMetadata] = await Promise.all([
+      (options.fetcher ?? fetch)(readerUrl, {
+        headers: { accept: "text/plain" },
+        signal: controller.signal,
+      }),
+      fetchBasicHtmlMetadata(websiteUrl.href, options),
+    ]);
+    if (!response.ok) throw new Error(`Jina returned ${response.status}.`);
+
+    const readerText = await response.text();
+    const parsed = parseJinaReaderText(readerText);
+    assertUsefulJinaMarkdown(parsed.markdown, {
+      minMarkdownChars: options.minMarkdownChars ?? DEFAULT_JINA_MIN_MARKDOWN_CHARS,
+      minUsefulLines: options.minUsefulLines ?? DEFAULT_JINA_MIN_USEFUL_LINES,
+    });
+
+    return normalizeJinaReaderPayload(websiteUrl.href, readerText, htmlMetadata);
+  } catch (error) {
+    throw new Error(toWebsiteResearchErrorMessage(error));
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
 export const firecrawlRequestShape = (
   url: string,
   options: Pick<FirecrawlOptions, "includeScreenshot"> = {},
@@ -342,6 +577,18 @@ export const fetchWebsiteResearchWithFirecrawl = async (
 ) => {
   const websiteUrl = normalizePublicWebsiteUrl(inputUrl);
   const apiKey = options.apiKey ?? process.env.FIRECRAWL_API_KEY;
+  const shouldTryJina = options.jina?.enabled !== false && (!options.fetcher || Boolean(options.jina?.fetcher));
+  let jinaFailureReason = "";
+
+  if (shouldTryJina) {
+    try {
+      const jinaResult = await fetchWebsiteResearchWithJina(inputUrl, options.jina);
+      return curateWebsiteResearchResult(jinaResult, options.curator);
+    } catch (error) {
+      jinaFailureReason = toWebsiteResearchErrorMessage(error);
+      // Firecrawl remains the hard-site fallback for weak, blocked, or timed-out Jina reads.
+    }
+  }
 
   if (!apiKey) {
     throw new Error("Firecrawl is required for website research, but it is not configured.");
@@ -372,8 +619,21 @@ export const fetchWebsiteResearchWithFirecrawl = async (
       throw new Error("Firecrawl could not read that website.");
     }
 
+    const firecrawlResult = normalizeFirecrawlPayload(websiteUrl.href, payload);
     return curateWebsiteResearchResult(
-      normalizeFirecrawlPayload(websiteUrl.href, payload),
+      jinaFailureReason
+        ? {
+          ...firecrawlResult,
+          providerStatus: [
+            {
+              provider: "jina",
+              status: "failed",
+              reason: `${jinaFailureReason} Used Firecrawl fallback.`,
+            },
+            ...firecrawlResult.providerStatus,
+          ],
+        }
+        : firecrawlResult,
       options.curator,
     );
   } catch (error) {
