@@ -8,8 +8,8 @@ const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
   scripts: Record<string, string>;
 };
 
-assert.ok(workflow.includes("workflow_dispatch"), "v3 deploy must be manually triggered until live smoke passes.");
-assert.ok(!workflow.includes("on:\n  push"), "v3 deploy must not auto-run on push yet.");
+assert.ok(workflow.includes("workflow_dispatch"), "v3 deploy must remain manually triggerable for retries.");
+assert.ok(workflow.includes("push:") && workflow.includes("- main"), "v3 deploy must auto-run when main is updated.");
 assert.ok(workflow.includes("V3_CONVEX_DEPLOY_KEY"), "v3 deploy must use a v3-specific Convex deploy key.");
 assert.ok(!workflow.includes("secrets.CONVEX_DEPLOY_KEY"), "v3 deploy must not use the legacy Convex deploy key.");
 assert.ok(workflow.includes("scripts/deploy-v3-oracle.sh"), "v3 workflow must call the v3 deploy script.");
@@ -32,6 +32,10 @@ assert.ok(script.includes("wiggly-v3"), "v3 app must have its own PM2 app name."
 assert.ok(script.includes("wiggly-v3-render-worker"), "v3 render worker must have its own PM2 app name.");
 assert.ok(script.includes("npx convex deploy"), "v3 deploy must sync Convex functions before smoke.");
 assert.ok(script.includes("CONVEX_DEPLOY_KEY=\"$V3_CONVEX_DEPLOY_KEY\""), "script must map v3 key to Convex CLI env.");
+assert.ok(
+  script.includes("npm ci --workspaces=false --include=optional"),
+  "v3 deploy must install from the standalone v3 lockfile with optional native packages.",
+);
 assert.ok(script.includes("V3_PUBLIC_HOST"), "v3 deploy script must own the optional public host route.");
 assert.ok(script.includes("proxy_pass http://127.0.0.1:$V3_PORT"), "v3 public host must proxy to the v3 app port.");
 assert.ok(script.includes("/etc/letsencrypt/live/$V3_PUBLIC_HOST"), "v3 deploy script must preserve HTTPS when a cert exists.");
@@ -45,7 +49,7 @@ assert.ok(packageJson.scripts["runtime:health"], "v3 package must expose runtime
 assert.ok(runtimeDoc.includes("V3_CONVEX_DEPLOY_KEY"));
 assert.ok(runtimeDoc.includes("Do not reuse the legacy `CONVEX_DEPLOY_KEY`"));
 assert.ok(runtimeDoc.includes("V3_PUBLIC_HOST"));
-assert.ok(workflow.includes("v3.wiggly.agentenamel.com"));
+assert.ok(workflow.includes("V3_PUBLIC_HOST: wiggly.agentenamel.com"));
 assert.ok(
   !workflow.includes("vars.V3_PUBLIC_HOST"),
   "v3 deploy must not let a stale repo variable override the canonical HTTPS preview host.",
