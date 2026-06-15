@@ -189,6 +189,7 @@ const colorsFromFirecrawl = (
   const rawColors = [
     metadata.themeColor,
     metadata["theme-color"],
+    ...(Array.isArray(metadata.colors) ? metadata.colors : []),
     ...(Array.isArray(branding.colors) ? branding.colors : []),
   ];
   return rawColors
@@ -398,7 +399,53 @@ const linkHref = (html: string, relPattern: RegExp) => {
 
 const titleFromHtml = (html: string) => cleanText(html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "", 160);
 
-const parseBasicHtmlMetadata = (html: string, baseUrl: string) => {
+const jsonLdLogo = (value: unknown): string => {
+  if (!value) return "";
+  if (typeof value === "string") return "";
+  if (Array.isArray(value)) return value.map(jsonLdLogo).find(Boolean) || "";
+  if (typeof value !== "object") return "";
+
+  const record = value as Record<string, unknown>;
+  if (typeof record.logo === "string") return cleanText(record.logo, 900);
+  if (Array.isArray(record.logo)) return record.logo.map((item) => {
+    if (typeof item === "string") return cleanText(item, 900);
+    if (item && typeof item === "object") return cleanText((item as Record<string, unknown>).url, 900);
+    return "";
+  }).find(Boolean) || "";
+  if (record.logo && typeof record.logo === "object") {
+    const directLogoUrl = cleanText((record.logo as Record<string, unknown>).url, 900);
+    if (directLogoUrl) return directLogoUrl;
+  }
+
+  return Object.values(record).map(jsonLdLogo).find(Boolean) || "";
+};
+
+const logoFromJsonLd = (html: string) => {
+  const scripts = html.match(/<script\b(?=[^>]*type\s*=\s*["']application\/ld\+json["'])[^>]*>[\s\S]*?<\/script>/gi) || [];
+
+  for (const script of scripts) {
+    const rawJson = script.match(/<script\b[^>]*>([\s\S]*?)<\/script>/i)?.[1] || "";
+    try {
+      const logo = jsonLdLogo(JSON.parse(decodeHtmlEntities(rawJson.trim())));
+      if (logo) return logo;
+    } catch {
+      // Ignore malformed structured data; normal metadata still carries the scrape.
+    }
+  }
+
+  return "";
+};
+
+const colorsFromHtml = (html: string) => {
+  const matches = html.matchAll(/#([0-9a-f]{6})\b|%23([0-9a-f]{6})\b/gi);
+  return Array.from(matches)
+    .map((match) => `#${match[1] || match[2]}`.toUpperCase())
+    .filter((color, index, all) => all.indexOf(color) === index)
+    .slice(0, 8);
+};
+
+export const parseBasicHtmlMetadata = (html: string, baseUrl: string) => {
+  const colors = colorsFromHtml(html);
   const metadata: Record<string, unknown> = {
     sourceURL: baseUrl,
     title: titleFromHtml(html),
@@ -407,11 +454,15 @@ const parseBasicHtmlMetadata = (html: string, baseUrl: string) => {
     ogDescription: metaContent(html, "og:description"),
     ogSiteName: metaContent(html, "og:site_name"),
     ogImage: metaContent(html, "og:image"),
+    logo: logoFromJsonLd(html),
     themeColor: metaContent(html, "theme-color"),
     favicon: linkHref(html, /\b(icon|shortcut icon|apple-touch-icon)\b/i),
+    colors,
   };
 
-  return Object.fromEntries(Object.entries(metadata).filter(([, value]) => cleanText(value, 900)));
+  return Object.fromEntries(Object.entries(metadata).filter(([, value]) => (
+    Array.isArray(value) ? value.length > 0 : cleanText(value, 900)
+  )));
 };
 
 const fetchBasicHtmlMetadata = async (
@@ -476,6 +527,7 @@ export const normalizeJinaReaderPayload = (
     metadata.favicon || metadata.faviconUrl || metadata.icon,
     finalUrl,
   ) || new URL("/favicon.ico", websiteUrl.origin).href;
+  const logoUrl = resolveMaybeUrl(metadata.logo || metadata.logoUrl, finalUrl);
   const ogImageUrl = resolveMaybeUrl(metadata.ogImage || metadata.image, finalUrl);
   const colors = colorsFromFirecrawl({}, metadata);
 
@@ -490,7 +542,7 @@ export const normalizeJinaReaderPayload = (
       title,
       description,
       faviconUrl,
-      logoUrl: null,
+      logoUrl,
       ogImageUrl,
       screenshotUrl: null,
       colors,

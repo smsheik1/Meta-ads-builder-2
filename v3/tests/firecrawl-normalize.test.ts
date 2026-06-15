@@ -13,6 +13,7 @@ import {
   isWebsiteChromeText,
   normalizeFirecrawlPayload,
   normalizeJinaReaderPayload,
+  parseBasicHtmlMetadata,
   toWebsiteResearchErrorMessage,
 } from "../features/research/firecrawl";
 
@@ -191,6 +192,48 @@ assert.deepEqual(jinaResult.brand.colors, ["#82DFFF"]);
 assert.equal(jinaResult.brand.logoUrl, null);
 assert.equal(jinaResult.providerStatus[0]?.provider, "jina");
 assert.ok(jinaResult.providerStatus[0]?.reason.includes("Jina read"));
+
+const agentEnamelMetadata = parseBasicHtmlMetadata(`
+  <html>
+    <head>
+      <title>Agent Enamel</title>
+      <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Agent Enamel",
+          "logo": "https://agentenamel.com/logo.png"
+        }
+      </script>
+      <link rel="icon" href="data:image/svg+xml,%3Csvg fill='%2300b95b'%3E%3C/svg%3E">
+    </head>
+    <body>
+      <span class="text-[#00b95b]">Agent</span>
+      <span class="text-[#006366]">Enamel</span>
+    </body>
+  </html>
+`, "https://agentenamel.com/");
+assert.equal(agentEnamelMetadata.logo, "https://agentenamel.com/logo.png");
+assert.deepEqual(agentEnamelMetadata.colors, ["#00B95B", "#006366"]);
+
+const jinaBrandAssetResult = normalizeJinaReaderPayload("agentenamel.com", `
+Title: Agent Enamel
+
+URL Source: https://agentenamel.com/
+
+Markdown Content:
+# Agent Enamel
+An AI-powered receptionist for dental practices.
+Answer every missed call before patients call someone else.
+72% of callers who reach voicemail hang up without leaving a message.
+Dental offices use Agent Enamel when front desks are overloaded.
+Convert missed calls into booked appointments.
+Capture after-hours callers automatically.
+Protect revenue from missed patient calls.
+Give callers a polished first impression.
+`, agentEnamelMetadata);
+assert.equal(jinaBrandAssetResult.brand.logoUrl, "https://agentenamel.com/logo.png");
+assert.deepEqual(jinaBrandAssetResult.brand.colors, ["#00B95B", "#006366"]);
 
 const jinaBankResult = normalizeJinaReaderPayload("https://www.usbank.com", `
 Title: Personal Banking, Credit Cards, Loans &amp; Investing | U.S. Bank
