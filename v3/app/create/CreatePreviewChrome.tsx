@@ -1,7 +1,6 @@
 "use client";
 import {
   Bookmark,
-  AudioLines,
   ChevronUp,
   Heart,
   MessageCircle,
@@ -86,13 +85,10 @@ export function PhonePreviewFrame({
         <button
           type="button"
           onClick={onOpenAudioPanel}
-          className="absolute left-1/2 top-[74.7%] z-20 inline-flex -translate-x-1/2 items-center justify-center gap-3 rounded-full bg-white px-[6.7cqw] py-[3.6cqw] text-[3.2cqw] font-black text-[#52627A] shadow-[0_18px_45px_rgba(15,23,42,0.08)] transition hover:-translate-x-1/2 hover:-translate-y-0.5 hover:shadow-[0_22px_54px_rgba(15,23,42,0.13)]"
+          className="absolute left-1/2 top-[74.7%] z-20 h-[14cqw] w-[52cqw] -translate-x-1/2 rounded-full bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-slate-900"
           aria-label="Add audio for this ad"
           data-preview-audio-action="true"
-        >
-          <AudioLines className="size-[6.1cqw]" />
-          Add audio for this ad
-        </button>
+        />
       ) : null}
     </div>
   );
