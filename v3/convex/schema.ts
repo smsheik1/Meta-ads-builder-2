@@ -52,7 +52,9 @@ export default defineSchema({
     screenshotUrl: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index("by_researchRunId", ["researchRunId"]),
+  })
+    .index("by_researchRunId", ["researchRunId"])
+    .index("by_host_and_updatedAt", ["host", "updatedAt"]),
 
   adScenes: defineTable({
     sessionId: v.string(),

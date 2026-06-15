@@ -1,5 +1,5 @@
 export type ResearchProviderStatus = {
-  provider: "jina" | "firecrawl" | "gemini-curator" | "nvidia-nim-curator";
+  provider: "jina" | "firecrawl" | "brand-cache" | "brandfetch" | "html-brand-assets" | "gemini-curator" | "nvidia-nim-curator";
   status: "used" | "failed" | "skipped";
   reason: string;
 };

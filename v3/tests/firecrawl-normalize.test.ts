@@ -17,6 +17,8 @@ import {
   toWebsiteResearchErrorMessage,
 } from "../features/research/firecrawl";
 
+process.env.BRANDFETCH_API_KEY = "";
+
 assert.ok(
   DEFAULT_FIRECRAWL_TIMEOUT_MS >= 60_000,
   "Firecrawl needs a real-world timeout budget; successful scrapes often land around 20-30 seconds.",
@@ -464,6 +466,64 @@ OGTool connects Reddit visibility to ChatGPT recommendation moments.
 });
 assert.equal(jinaFirstResult.providerStatus[0]?.provider, "jina");
 assert.equal(jinaFirstResult.brandBrief.offer, "Fully managed Reddit and ChatGPT visibility campaigns.");
+
+const brandfetchEnrichedResult = await fetchWebsiteResearchWithFirecrawl("brandfetch.com", {
+  apiKey: "test-firecrawl-key",
+  fetcher: async () => {
+    throw new Error("Firecrawl should not run when Jina is useful.");
+  },
+  jina: {
+    fetcher: async () => new Response(`
+Title: Brandfetch
+
+URL Source: https://brandfetch.com/
+
+Markdown Content:
+# Brandfetch
+Brandfetch helps developers fetch brand assets by domain.
+Teams use Brandfetch when they need logos, colors, fonts, and brand metadata.
+The Brand API returns structured brand data for product experiences.
+Developers use it to make generated creative stay visually on brand.
+Brandfetch supports brand asset lookup for many companies.
+This page has enough useful copy for the Jina reader threshold.
+Brand assets should be resolved separately from page copy.
+The API helps products avoid broken target-site logo metadata.
+    `, { status: 200 }),
+    htmlMetadataFetcher: async () => new Response("<html><head><title>Brandfetch</title></head></html>", { status: 200 }),
+  },
+  brandAssets: {
+    apiKey: "test-brandfetch-key",
+    fetcher: (async (requestUrl) => {
+      const url = String(requestUrl);
+      if (url === "https://api.brandfetch.io/v2/brands/domain/brandfetch.com") {
+        return new Response(JSON.stringify({
+          logos: [{
+            type: "logo",
+            theme: "light",
+            formats: [{ src: "https://cdn.brandfetch.com/logo.png", format: "png" }],
+          }],
+          colors: [
+            { hex: "#FFFFFF", type: "light" },
+            { hex: "#00B95B", type: "brand" },
+          ],
+          fonts: [{ name: "Inter Display" }, { name: "Inter" }],
+        }), { status: 200 });
+      }
+      if (url === "https://cdn.brandfetch.com/logo.png") return new Response("", { status: 200 });
+      throw new Error(`Unexpected Brandfetch integration fetch: ${url}`);
+    }) as typeof fetch,
+  },
+  curator: {
+    geminiApiKey: "",
+    nvidiaNimApiKey: "",
+  },
+});
+assert.equal(brandfetchEnrichedResult.brand.logoUrl, "https://cdn.brandfetch.com/logo.png");
+assert.equal(brandfetchEnrichedResult.brand.colors[0], "#00B95B");
+assert.equal(brandfetchEnrichedResult.brand.fonts.heading, "Inter Display");
+assert.ok(brandfetchEnrichedResult.providerStatus.some((status) => (
+  status.provider === "brandfetch" && status.status === "used"
+)));
 
 const deadImageMetadataResult = await fetchWebsiteResearchWithFirecrawl("agentenamel.com", {
   apiKey: "test-firecrawl-key",

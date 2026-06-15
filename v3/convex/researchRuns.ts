@@ -5,6 +5,7 @@ import {
   fetchWebsiteResearchWithFirecrawl,
   toWebsiteResearchErrorMessage,
 } from "../features/research/firecrawl";
+import { normalizePublicWebsiteUrl } from "../features/research/url";
 
 export const runWebsiteResearch: ReturnType<typeof action> = action({
   args: {
@@ -18,7 +19,13 @@ export const runWebsiteResearch: ReturnType<typeof action> = action({
     });
 
     try {
-      const result = await fetchWebsiteResearchWithFirecrawl(url);
+      const websiteUrl = normalizePublicWebsiteUrl(url);
+      const cachedBrand = await ctx.runQuery(internal.researchStorage.latestBrandSnapshotForHost, {
+        host: websiteUrl.hostname,
+      });
+      const result = await fetchWebsiteResearchWithFirecrawl(url, {
+        brandAssets: { cachedBrand },
+      });
       const { brandSnapshotId } = await ctx.runMutation(internal.researchStorage.saveReady, {
         researchRunId,
         sessionId,

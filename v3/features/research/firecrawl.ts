@@ -3,6 +3,11 @@ import {
   curateWebsiteResearchResult,
   type BrandCuratorOptions,
 } from "./brandCurator";
+import {
+  resolveBrandAssets,
+  type CachedBrandAssets,
+  type BrandAssetResolution,
+} from "./brandAssets";
 import { normalizePublicWebsiteUrl } from "./url";
 import type {
   BrandSnapshot,
@@ -27,6 +32,11 @@ export type FirecrawlOptions = {
     htmlMetadataTimeoutMs?: number;
     minMarkdownChars?: number;
     minUsefulLines?: number;
+  };
+  brandAssets?: {
+    apiKey?: string;
+    fetcher?: Fetcher;
+    cachedBrand?: CachedBrandAssets | null;
   };
 };
 
@@ -198,6 +208,10 @@ const colorsFromFirecrawl = (
     .filter((color, index, all) => all.indexOf(color) === index)
     .slice(0, 8);
 };
+
+const hasHtmlBrandAssets = (metadata: Record<string, unknown>) => (
+  Boolean(metadata.logo || metadata.favicon || metadata.ogImage || (Array.isArray(metadata.colors) && metadata.colors.length))
+);
 
 const logoUrlFromFirecrawl = (
   metadata: Record<string, unknown>,
@@ -593,12 +607,44 @@ export const normalizeJinaReaderPayload = (
       provider: "jina",
       status: "used",
       reason: `Jina read ${evidence.paragraphs.length} page snippets.`,
-    }],
+    }, ...(hasHtmlBrandAssets(metadata) ? [{
+      provider: "html-brand-assets" as const,
+      status: "used" as const,
+      reason: "Read brand assets from website HTML.",
+    }] : [])],
   };
 
   return {
     ...result,
     brandBrief: buildFallbackBrandBrief(result),
+  };
+};
+
+const mergeBrandAssets = (
+  research: WebsiteResearchResult,
+  resolution: BrandAssetResolution,
+): WebsiteResearchResult => {
+  const assets = resolution.brand;
+  return {
+    ...research,
+    brand: {
+      ...research.brand,
+      faviconUrl: assets.faviconUrl ?? research.brand.faviconUrl,
+      logoUrl: assets.logoUrl ?? research.brand.logoUrl,
+      ogImageUrl: assets.ogImageUrl ?? research.brand.ogImageUrl,
+      screenshotUrl: assets.screenshotUrl ?? research.brand.screenshotUrl,
+      colors: assets.colors?.length ? assets.colors : research.brand.colors,
+      fonts: assets.fonts && assets.fonts.feel !== "unknown" ? assets.fonts : research.brand.fonts,
+      vibeTags: assets.vibeTags?.length ? assets.vibeTags : research.brand.vibeTags,
+    },
+    branding: {
+      ...research.branding,
+      ...resolution.branding,
+    },
+    providerStatus: [
+      ...research.providerStatus,
+      ...resolution.providerStatus,
+    ],
   };
 };
 
@@ -666,7 +712,14 @@ export const fetchWebsiteResearchWithFirecrawl = async (
   if (shouldTryJina) {
     try {
       const jinaResult = await fetchWebsiteResearchWithJina(inputUrl, options.jina);
-      return curateWebsiteResearchResult(jinaResult, options.curator);
+      const assetResolution = await resolveBrandAssets({
+        domain: websiteUrl.hostname,
+        htmlColors: jinaResult.brand.colors,
+        cachedBrand: options.brandAssets?.cachedBrand,
+        apiKey: options.brandAssets?.apiKey,
+        fetcher: options.brandAssets?.fetcher,
+      });
+      return curateWebsiteResearchResult(mergeBrandAssets(jinaResult, assetResolution), options.curator);
     } catch (error) {
       jinaFailureReason = toWebsiteResearchErrorMessage(error);
       // Firecrawl remains the hard-site fallback for weak, blocked, or timed-out Jina reads.
@@ -703,20 +756,28 @@ export const fetchWebsiteResearchWithFirecrawl = async (
     }
 
     const firecrawlResult = normalizeFirecrawlPayload(websiteUrl.href, payload);
+    const assetResolution = await resolveBrandAssets({
+      domain: websiteUrl.hostname,
+      htmlColors: firecrawlResult.brand.colors,
+      cachedBrand: options.brandAssets?.cachedBrand,
+      apiKey: options.brandAssets?.apiKey,
+      fetcher: options.brandAssets?.fetcher,
+    });
+    const enrichedFirecrawlResult = mergeBrandAssets(firecrawlResult, assetResolution);
     return curateWebsiteResearchResult(
       jinaFailureReason
         ? {
-          ...firecrawlResult,
+          ...enrichedFirecrawlResult,
           providerStatus: [
             {
               provider: "jina",
               status: "failed",
               reason: `${jinaFailureReason} Used Firecrawl fallback.`,
             },
-            ...firecrawlResult.providerStatus,
+            ...enrichedFirecrawlResult.providerStatus,
           ],
         }
-        : firecrawlResult,
+        : enrichedFirecrawlResult,
       options.curator,
     );
   } catch (error) {
