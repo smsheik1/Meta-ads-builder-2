@@ -22,6 +22,42 @@ export type FormatValidationResult = {
   errors: string[];
 };
 
+export type FormatEditorOption = {
+  label: string;
+  value: string;
+};
+
+export type FormatTextEditorField = {
+  id: string;
+  label: string;
+  kind: "text" | "textarea";
+};
+
+export type FormatStyleEditorField = {
+  id: string;
+  label: string;
+  kind: "color";
+};
+
+export type FormatSpecificEditorField =
+  | {
+    id: string;
+    label: string;
+    kind: "select" | "preset";
+    options: readonly FormatEditorOption[];
+  }
+  | {
+    id: string;
+    label: string;
+    kind: "audio" | "captions";
+  };
+
+export type FormatEditorSchema = {
+  text: readonly FormatTextEditorField[];
+  style: readonly FormatStyleEditorField[];
+  format: readonly FormatSpecificEditorField[];
+};
+
 export type AdFormatModule<
   TFormat extends string = AdFormatId,
   TScene extends AdSceneBase<string, AdSceneStyleBase, { preset: string }> = AdScene,
@@ -29,6 +65,7 @@ export type AdFormatModule<
   id: TFormat;
   label: string;
   defaultSlots: readonly RenderFlashRole[];
+  editorSchema: FormatEditorSchema;
   RenderComponent: ComponentType<FormatRenderProps<TScene>>;
   validate(scene: TScene): FormatValidationResult;
 };

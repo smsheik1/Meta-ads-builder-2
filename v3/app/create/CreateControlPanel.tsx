@@ -1,9 +1,9 @@
 import { AudioLines, Captions, Grid2X2, Palette, Type } from "lucide-react";
 import type { PreviewPlatform } from "./CreatePreviewChrome";
 import type { CanvasInteractionPanel } from "@/features/create/canvasInteractionStore";
-import type { AdScene, AdSceneVisualizerStyle, VisualizerAdSceneStyle } from "@/features/scene/types";
-import { visualizerSceneVariants } from "@/features/scene/visualizerVariants";
-import { visualizerEditorSchema } from "@/features/formats/visualizer/schema";
+import { getFormatModule } from "@/features/formats/registry";
+import type { FormatSpecificEditorField } from "@/features/formats/types";
+import type { AdScene } from "@/features/scene/types";
 
 export type CreatePanelId = CanvasInteractionPanel;
 
@@ -31,9 +31,9 @@ export function CreateControlPanel({
   onOpenCaptionEditor,
   onPanelChange,
   onPreviewPlatformChange,
+  onUpdateFormatPreset,
   onUpdateCreativeField,
   onUpdateStyleColor,
-  onUpdateVisualizerPreset,
   previewPlatform,
   selectedScene,
 }: {
@@ -45,12 +45,13 @@ export function CreateControlPanel({
   onOpenCaptionEditor: () => void;
   onPanelChange: (panel: CreatePanelId | null) => void;
   onPreviewPlatformChange: (platform: PreviewPlatform) => void;
-  onUpdateCreativeField: (field: "headline" | "subheadline" | "ctaText", value: string) => void;
-  onUpdateStyleColor: (field: keyof Pick<VisualizerAdSceneStyle, "backgroundColor" | "textColor" | "accentColor" | "visualizerColor">, value: string) => void;
-  onUpdateVisualizerPreset: (visualizer: AdSceneVisualizerStyle) => void;
+  onUpdateFormatPreset: (fieldId: string, value: string) => void;
+  onUpdateCreativeField: (field: string, value: string) => void;
+  onUpdateStyleColor: (field: string, value: string) => void;
   previewPlatform: PreviewPlatform;
   selectedScene: AdScene | null;
 }) {
+  const editorSchema = selectedScene ? getFormatModule(selectedScene.format).editorSchema : null;
   const colorPalette = uniqueColors([
     ...(selectedScene?.brand.colors || []),
     selectedScene?.style.backgroundColor || "",
@@ -97,10 +98,10 @@ export function CreateControlPanel({
         </div>
       ) : null}
 
-      {selectedScene && activePanel === "text" ? (
+      {selectedScene && editorSchema && activePanel === "text" ? (
         <div className="mt-4 space-y-3">
-          {visualizerEditorSchema.text.map((field) => {
-            const value = selectedScene.creative[field.id];
+          {editorSchema.text.map((field) => {
+            const value = String(selectedScene.creative[field.id as keyof typeof selectedScene.creative] || "");
             return (
               <label key={field.id} className="block">
                 <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
@@ -125,10 +126,10 @@ export function CreateControlPanel({
         </div>
       ) : null}
 
-      {selectedScene && activePanel === "style" ? (
+      {selectedScene && editorSchema && activePanel === "style" ? (
         <div className="mt-4 space-y-4">
-          {visualizerEditorSchema.style.map((field) => {
-            const value = selectedScene.style[field.id];
+          {editorSchema.style.map((field) => {
+            const value = String(selectedScene.style[field.id as keyof typeof selectedScene.style] || "#000000");
             return (
               <div key={field.id}>
                 <label className="flex items-center justify-between gap-3">
@@ -165,75 +166,123 @@ export function CreateControlPanel({
         </div>
       ) : null}
 
-      {selectedScene && activePanel === "format" ? (
+      {selectedScene && editorSchema && activePanel === "format" ? (
         <div className="mt-4 space-y-4">
-          <label className="block">
-            <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
-              {visualizerEditorSchema.format[0].label}
-            </span>
-            <select
-              value={previewPlatform}
-              onChange={(event) => onPreviewPlatformChange(event.target.value as PreviewPlatform)}
-              className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-950 outline-none transition focus:border-slate-400"
-              aria-label="Choose preview"
-            >
-              {visualizerEditorSchema.format[0].options.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </label>
-
-          <div>
-            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Visualizer style</p>
-            <div className="grid grid-cols-2 gap-2">
-              {visualizerSceneVariants.map((variant) => {
-                const label = visualizerEditorSchema.format[1].options.find((option) => option.value === variant.id)?.label || variant.id;
-                return (
-                  <button
-                    key={variant.id}
-                    type="button"
-                    onClick={() => onUpdateVisualizerPreset(variant.visualizer)}
-                    className="min-h-12 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left text-xs font-black leading-4 text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-            <div className="flex items-start gap-3">
-              <AudioLines className="mt-0.5 size-5 shrink-0 text-slate-500" />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-black text-slate-950">Audio visualizer input</p>
-                <p className="mt-1 text-xs font-bold leading-5 text-slate-500">
-                  {hasGeneratedAudio ? "Audio is attached. Replace it or edit captions." : "Add audio to animate captions and visualizer bars."}
-                </p>
-              </div>
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={onOpenAudioPanel}
-                disabled={audioStatus === "loading"}
-                className="flex min-h-11 items-center justify-center rounded-2xl bg-slate-950 px-3 text-xs font-black text-white transition hover:bg-slate-800 disabled:cursor-progress disabled:opacity-50"
-              >
-                {hasGeneratedAudio ? "Replace audio" : "Add audio"}
-              </button>
-              <button
-                type="button"
-                onClick={onOpenCaptionEditor}
-                disabled={!hasGeneratedAudio}
-                className="flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <Captions className="size-4" />
-                Captions
-              </button>
-            </div>
-          </div>
+          {editorSchema.format.map((field) => (
+            <FormatField
+              key={field.id}
+              audioStatus={audioStatus}
+              field={field}
+              hasGeneratedAudio={hasGeneratedAudio}
+              onOpenAudioPanel={onOpenAudioPanel}
+              onOpenCaptionEditor={onOpenCaptionEditor}
+              onPreviewPlatformChange={onPreviewPlatformChange}
+              onUpdateFormatPreset={onUpdateFormatPreset}
+              previewPlatform={previewPlatform}
+            />
+          ))}
         </div>
       ) : null}
     </section>
+  );
+}
+
+function FormatField({
+  audioStatus,
+  field,
+  hasGeneratedAudio,
+  onOpenAudioPanel,
+  onOpenCaptionEditor,
+  onPreviewPlatformChange,
+  onUpdateFormatPreset,
+  previewPlatform,
+}: {
+  audioStatus: "idle" | "loading" | "ready" | "error";
+  field: FormatSpecificEditorField;
+  hasGeneratedAudio: boolean;
+  onOpenAudioPanel: () => void;
+  onOpenCaptionEditor: () => void;
+  onPreviewPlatformChange: (platform: PreviewPlatform) => void;
+  onUpdateFormatPreset: (fieldId: string, value: string) => void;
+  previewPlatform: PreviewPlatform;
+}) {
+  if (field.kind === "select") {
+    return (
+      <label className="block">
+        <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+          {field.label}
+        </span>
+        <select
+          value={field.id === "previewPlatform" ? previewPlatform : ""}
+          onChange={(event) => {
+            if (field.id === "previewPlatform") onPreviewPlatformChange(event.target.value as PreviewPlatform);
+          }}
+          className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-950 outline-none transition focus:border-slate-400"
+          aria-label={field.label}
+        >
+          {field.options.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+      </label>
+    );
+  }
+
+  if (field.kind === "preset") {
+    return (
+      <div>
+        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+          {field.label}
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {field.options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => onUpdateFormatPreset(field.id, option.value)}
+              className="min-h-12 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left text-xs font-black leading-4 text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (field.kind === "audio") {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+        <div className="flex items-start gap-3">
+          <AudioLines className="mt-0.5 size-5 shrink-0 text-slate-500" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-black text-slate-950">{field.label}</p>
+            <p className="mt-1 text-xs font-bold leading-5 text-slate-500">
+              {hasGeneratedAudio ? "Audio is attached. Replace it or edit captions." : "Add audio to animate captions and visualizer bars."}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onOpenAudioPanel}
+          disabled={audioStatus === "loading"}
+          className="mt-3 flex min-h-11 w-full items-center justify-center rounded-2xl bg-slate-950 px-3 text-xs font-black text-white transition hover:bg-slate-800 disabled:cursor-progress disabled:opacity-50"
+        >
+          {hasGeneratedAudio ? "Replace audio" : "Add audio"}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onOpenCaptionEditor}
+      disabled={!hasGeneratedAudio}
+      className="flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      <Captions className="size-4" />
+      {field.label}
+    </button>
   );
 }

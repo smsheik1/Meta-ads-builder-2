@@ -34,7 +34,8 @@ import type {
   StoredWebsiteResearchResult,
 } from "@/features/research/types";
 import { getClientRendererVersion } from "@/features/render/rendererVersion";
-import type { AdScene, AdSceneVisualizerStyle, VisualizerAdSceneStyle } from "@/features/scene/types";
+import type { AdScene, AdSceneVisualizerStyle } from "@/features/scene/types";
+import { visualizerSceneVariants } from "@/features/scene/visualizerVariants";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
 import { CreateCaptionModal } from "./CreateCaptionModal";
 import { BrandDumpModal } from "./CreateBrandDumpModal";
@@ -476,10 +477,8 @@ function ResearchConnected() {
     if (flashRoles.length) triggerRerollFlash(flashRoles);
   }, [selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
-  const onUpdateCreativeField = useCallback((
-    field: "headline" | "subheadline" | "ctaText",
-    value: string,
-  ) => {
+  const onUpdateCreativeField = useCallback((field: string, value: string) => {
+    if (field !== "headline" && field !== "subheadline" && field !== "ctaText") return;
     if (!selectedScene || selectedScene.creative[field] === value) return;
     replaceSelectedSceneAndInvalidate({
       ...selectedScene,
@@ -490,10 +489,13 @@ function ResearchConnected() {
     }, field === "headline" ? ["headline"] : []);
   }, [replaceSelectedSceneAndInvalidate, selectedScene]);
 
-  const onUpdateStyleColor = useCallback((
-    field: keyof Pick<VisualizerAdSceneStyle, "backgroundColor" | "textColor" | "accentColor" | "visualizerColor">,
-    value: string,
-  ) => {
+  const onUpdateStyleColor = useCallback((field: string, value: string) => {
+    if (
+      field !== "backgroundColor" &&
+      field !== "textColor" &&
+      field !== "accentColor" &&
+      field !== "visualizerColor"
+    ) return;
     if (!selectedScene || selectedScene.style[field] === value) return;
     replaceSelectedSceneAndInvalidate({
       ...selectedScene,
@@ -514,6 +516,12 @@ function ResearchConnected() {
       },
     }, ["visualizer"]);
   }, [replaceSelectedSceneAndInvalidate, selectedScene]);
+
+  const onUpdateFormatPreset = useCallback((fieldId: string, value: string) => {
+    if (fieldId !== "visualizerPreset") return;
+    const variant = visualizerSceneVariants.find((item) => item.id === value);
+    if (variant) onUpdateVisualizerPreset(variant.visualizer);
+  }, [onUpdateVisualizerPreset]);
 
   const onRerollScene = useCallback(() => {
     if (!adScenes.length || !selectedScene) {
@@ -1187,7 +1195,7 @@ function ResearchConnected() {
                 onPreviewPlatformChange={setPreviewPlatform}
                 onUpdateCreativeField={onUpdateCreativeField}
                 onUpdateStyleColor={onUpdateStyleColor}
-                onUpdateVisualizerPreset={onUpdateVisualizerPreset}
+                onUpdateFormatPreset={onUpdateFormatPreset}
                 previewPlatform={previewPlatform}
                 selectedScene={selectedScene}
               />
