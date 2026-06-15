@@ -69,9 +69,17 @@ Ask these questions before writing code:
 - For layout fixes, capture or inspect dimensions/screenshots so oversized, clipped, or off-screen UI cannot slip through.
 - If two attempts fail or the same bug class keeps moving around, stop and report the deeper blocker instead of pushing through.
 
+## Next.js App Structure
+
+- Use Next.js App Router defaults in `v3/app`: route folders own `page.tsx`, route-specific client shells, and route-local UI.
+- Keep reusable product logic outside routes in `v3/features/*`; keep shared utilities in `v3/lib`; keep Convex code in `v3/convex`; keep Remotion entry code in `v3/remotion-entry`.
+- Default components to server components. Add `"use client"` only for components that need browser APIs, local state, effects, event handlers, or Convex client hooks.
+- Do not add new top-level source folders or parallel app structures without a clear reason.
+
 ## UI Components
 
-- For normal app UI, check shadcn first before hand-rolling controls: buttons, dialogs, sheets, inputs, textareas, selects, tabs/toggle groups, badges, alerts, separators, scroll areas, and tooltips.
+- For normal app UI, use shadcn first: buttons, dialogs, sheets, inputs, textareas, selects, tabs/toggle groups, badges, alerts, separators, scroll areas, and tooltips.
+- Do not hand-roll normal app UI when a shadcn component fits. If a custom control is truly needed, keep it small and explain why shadcn was not the right fit.
 - Do not rewrite existing working UI to shadcn just for purity. Adopt shadcn incrementally when touching a surface or building new app-shell controls.
 - Keep Wiggly's product canvas custom. `AdRenderSurface`, format renderers, preview chrome, Remotion/share/download rendering, and ad pixels are not generic shadcn UI.
 - Do not let shadcn replace Wiggly architecture rules: one renderer, passive render surface, complete `AdScene` payloads, no hidden interactivity, and guardrail tests still win.
