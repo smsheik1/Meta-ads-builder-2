@@ -42,6 +42,10 @@ const cleanSlotText = (value: unknown, maxLength: number) => String(value ?? "")
   .slice(0, maxLength)
   .trim();
 
+const wordCount = (value: string) => value.split(/\s+/).filter(Boolean).length;
+
+const limitWords = (value: string, maxWords: number) => value.split(/\s+/).filter(Boolean).slice(0, maxWords).join(" ");
+
 const parseJsonObject = (value: string, providerLabel = "AI provider") => {
   const trimmed = value.trim();
   const jsonText = trimmed.startsWith("{")
@@ -105,21 +109,21 @@ function deterministicSlotsForTemplate(
 
   const byTemplate: Record<string, Record<string, string>> = {
     drake: {
-      topText: pain,
-      bottomText: offer,
+      topText: limitWords(pain, 7),
+      bottomText: limitWords(offer, 7),
     },
     two_buttons: {
       leftButton: "keep guessing",
       rightButton: `try ${brand}`,
-      captionText: pain,
+      captionText: limitWords(pain, 9),
     },
     this_is_fine: {
-      captionText: pain,
+      captionText: limitWords(pain, 8),
     },
     expanding_brain: {
-      level1Text: "guess what works",
-      level2Text: proof,
-      level3Text: offer,
+      level1Text: "Guessing what works",
+      level2Text: limitWords(proof, 5),
+      level3Text: limitWords(offer, 5),
       level4Text: `${brand} makes it obvious`,
     },
   };
@@ -157,7 +161,7 @@ export function extractMemeVariantsFromResponse(content: string): MemeVariant[] 
     let valid = true;
     for (const slot of template.slots) {
       const text = cleanSlotText(slotsPayload[slot.id], slot.maxChars + 40);
-      if (!text || text.length > slot.maxChars) valid = false;
+      if (!text || text.length > slot.maxChars || wordCount(text) > slot.maxWords) valid = false;
       if (template.id === "this_is_fine" && /this\s+is\s+fine/i.test(text)) valid = false;
       slots[slot.id] = text;
     }
@@ -195,7 +199,7 @@ export async function generateMemeVariantsFromResearch(
         const retryContent = await callGemini({
           apiKey: geminiApiKey,
           model: geminiModel,
-          prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Every required slot must be present and under maxChars. Return only the JSON object.`,
+          prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Every required slot must be present and under maxChars and maxWords. Return only the JSON object.`,
           timeoutMs,
           geminiGenerateContent: options.geminiGenerateContent,
         });

@@ -8,6 +8,7 @@ export type MemeSlot = {
   width: number;
   height: number;
   maxChars: number;
+  maxWords: number;
   maxLines: number;
   fontSize: number;
   textCase: MemeTextCase;
@@ -45,6 +46,7 @@ export const MEME_TEMPLATES = [
         width: 500,
         height: 500,
         maxChars: 54,
+        maxWords: 7,
         maxLines: 4,
         fontSize: 52,
         textCase: "uppercase",
@@ -58,6 +60,7 @@ export const MEME_TEMPLATES = [
         width: 500,
         height: 450,
         maxChars: 54,
+        maxWords: 7,
         maxLines: 4,
         fontSize: 52,
         textCase: "uppercase",
@@ -67,7 +70,7 @@ export const MEME_TEMPLATES = [
     semantics: {
       situations: "A buyer rejects the old annoying way and chooses the brand's better way.",
       tone: "clear contrast, slightly smug, instantly readable",
-      textPatterns: "Top slot is the painful old behavior. Bottom slot is the brand-native better choice.",
+      textPatterns: "Top slot is the painful old behavior. Bottom slot is the brand-native better choice. Both should be parallel, short phrases.",
     },
     directorsNotes: "Make the bottom choice feel obviously smarter. Keep both slots short and parallel.",
   },
@@ -86,6 +89,7 @@ export const MEME_TEMPLATES = [
         width: 160,
         height: 150,
         maxChars: 34,
+        maxWords: 4,
         maxLines: 3,
         fontSize: 22,
         textCase: "uppercase",
@@ -99,6 +103,7 @@ export const MEME_TEMPLATES = [
         width: 150,
         height: 145,
         maxChars: 34,
+        maxWords: 4,
         maxLines: 3,
         fontSize: 22,
         textCase: "uppercase",
@@ -112,6 +117,7 @@ export const MEME_TEMPLATES = [
         width: 420,
         height: 250,
         maxChars: 70,
+        maxWords: 9,
         maxLines: 4,
         fontSize: 34,
         textCase: "mixed",
@@ -140,6 +146,7 @@ export const MEME_TEMPLATES = [
         width: 250,
         height: 86,
         maxChars: 58,
+        maxWords: 8,
         maxLines: 3,
         fontSize: 24,
         textCase: "mixed",
@@ -167,7 +174,8 @@ export const MEME_TEMPLATES = [
         y: 34,
         width: 390,
         height: 225,
-        maxChars: 54,
+        maxChars: 38,
+        maxWords: 5,
         maxLines: 4,
         fontSize: 34,
         textCase: "mixed",
@@ -180,7 +188,8 @@ export const MEME_TEMPLATES = [
         y: 330,
         width: 390,
         height: 225,
-        maxChars: 54,
+        maxChars: 38,
+        maxWords: 5,
         maxLines: 4,
         fontSize: 34,
         textCase: "mixed",
@@ -193,7 +202,8 @@ export const MEME_TEMPLATES = [
         y: 630,
         width: 390,
         height: 225,
-        maxChars: 54,
+        maxChars: 38,
+        maxWords: 5,
         maxLines: 4,
         fontSize: 34,
         textCase: "mixed",
@@ -206,7 +216,8 @@ export const MEME_TEMPLATES = [
         y: 925,
         width: 390,
         height: 225,
-        maxChars: 54,
+        maxChars: 38,
+        maxWords: 5,
         maxLines: 4,
         fontSize: 34,
         textCase: "mixed",
@@ -216,9 +227,9 @@ export const MEME_TEMPLATES = [
     semantics: {
       situations: "Four escalating ways to understand the offer, ending with the funniest or sharpest reframe.",
       tone: "escalating, playful, increasingly absurd",
-      textPatterns: "Each level should get more specific, more knowing, or more unhinged in a useful way.",
+      textPatterns: "Level 1 is the naive/basic move. Level 2 is a slightly smarter tactic. Level 3 is the specific brand-native insight. Level 4 is the punchline or sharp aha.",
     },
-    directorsNotes: "Make level four the punchline. Avoid four generic benefits; it should feel like a ladder.",
+    directorsNotes: "Make level four the punchline. Avoid four generic benefits; it must feel like an escalating ladder with short, distinct phrases.",
   },
 ] as const satisfies readonly MemeTemplate[];
 

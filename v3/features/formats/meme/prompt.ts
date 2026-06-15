@@ -15,6 +15,7 @@ export function buildMemePrompt(research: StoredWebsiteResearchResult) {
       id: slot.id,
       label: slot.label,
       maxChars: slot.maxChars,
+      maxWords: slot.maxWords,
       maxLines: slot.maxLines,
       textCase: slot.textCase,
     })),
@@ -46,7 +47,11 @@ RULES:
 - Reference the specific offer or buyer moment, not generic SaaS lines.
 - Every required slot must be present.
 - Stay under each slot's maxChars hard limit.
+- Stay under each slot's maxWords hard limit.
+- Write short meme-native phrases, not complete marketing sentences.
 - The LLM must not output coordinates, styles, image URLs, or layout data.
+- For Drake, the two slots must be a clear old-way versus better-way contrast.
+- For Expanding Brain, the four slots must form a real escalation ladder: naive move, smarter move, specific brand insight, punchline/aha. Do not write four disconnected benefits.
 - For This Is Fine, the caption must name the fire and must not say "this is fine".
 - If a template feels odd for the brand, lean into useful absurdity instead of skipping it.
 

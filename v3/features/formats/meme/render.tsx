@@ -20,7 +20,7 @@ function getSlotText(scene: MemeAdScene, slot: MemeSlot) {
 }
 
 function getSlotStyle(slot: MemeSlot, templateWidth: number, templateHeight: number): CSSProperties {
-  const fontSize = Math.max(12, Math.min(slot.fontSize, Math.floor(slot.height / Math.max(1, slot.maxLines) * 0.78)));
+  const fontSize = Math.max(11, Math.min(slot.fontSize, Math.floor(slot.height / Math.max(1, slot.maxLines) * 0.72)));
 
   return {
     position: "absolute",
@@ -32,7 +32,7 @@ function getSlotStyle(slot: MemeSlot, templateWidth: number, templateHeight: num
     alignItems: "center",
     justifyContent: slot.align === "left" ? "flex-start" : "center",
     overflow: "hidden",
-    padding: "0.4em",
+    padding: "0.35em",
     textAlign: slot.align || "center",
     color: "#fff",
     fontFamily: "Impact, Haettenschweiler, 'Arial Black', sans-serif",
@@ -51,21 +51,27 @@ export function MemeFormatRenderer({
 }: FormatRenderProps<MemeAdScene>) {
   const template = getMemeTemplate(scene.layout.templateId);
   if (!template) return null;
+  const templateAspect = template.width / template.height;
+  const fitByHeight = templateAspect < 0.8;
 
   return (
     <div
-      className="mx-auto"
+      className="flex h-full w-full items-center justify-center bg-white"
       data-format="meme"
       data-meme-template={template.id}
       style={{
-        width: "min(100%, 640px)",
         containerType: "inline-size",
       }}
     >
       <div
-        className="relative overflow-hidden rounded-[1rem] bg-white shadow-2xl shadow-slate-950/20"
+        data-meme-artboard={template.id}
+        className="relative overflow-hidden bg-white shadow-2xl shadow-slate-950/10"
         style={{
           aspectRatio: `${template.width} / ${template.height}`,
+          height: fitByHeight ? "100%" : "auto",
+          maxHeight: "100%",
+          maxWidth: "100%",
+          width: fitByHeight ? "auto" : "100%",
         }}
       >
         <img

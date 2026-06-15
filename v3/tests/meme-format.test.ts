@@ -102,6 +102,21 @@ assert.throws(
   /incomplete meme variants/,
 );
 
+assert.throws(
+  () => extractMemeVariantsFromResponse(JSON.stringify({
+    variants: MEME_TEMPLATES.map((template) => ({
+      templateId: template.id,
+      slots: Object.fromEntries(template.slots.map((slot) => [
+        slot.id,
+        slot.id === "level1Text"
+          ? "one two three four five six"
+          : `copy ${slot.id}`.slice(0, slot.maxChars),
+      ])),
+    })),
+  })),
+  /incomplete meme variants/,
+);
+
 const retryResult = await generateMemeVariantsFromResearch(research, {
   geminiApiKey: "test-key",
   geminiModel: "test-model",
@@ -143,6 +158,7 @@ const html = renderToStaticMarkup(createElement(AdRenderSurface, {
 }));
 assert.ok(html.includes('data-format="meme"'));
 assert.ok(html.includes('data-meme-template="drake"'));
+assert.ok(html.includes('data-meme-artboard="drake"'));
 assert.ok(html.includes("/memes/drake.png"));
 assert.ok(html.includes('data-meme-slot="topText"'));
 
