@@ -23,18 +23,26 @@ function getSlotText(scene: MemeAdScene, slot: MemeSlot) {
 }
 
 function getSlotStyle(slot: MemeSlot, templateWidth: number, templateHeight: number): CSSProperties {
-  const posterText = slot.textStyle === "poster";
-
   return {
     position: "absolute",
     left: `${(slot.x / templateWidth) * 100}%`,
     top: `${(slot.y / templateHeight) * 100}%`,
     width: `${(slot.width / templateWidth) * 100}%`,
     height: `${(slot.height / templateHeight) * 100}%`,
+    overflow: "hidden",
+  };
+}
+
+function getSlotFitBoxStyle(slot: MemeSlot): CSSProperties {
+  const posterText = slot.textStyle === "poster";
+
+  return {
+    position: "absolute",
+    inset: 0,
+    boxSizing: "border-box",
     display: "flex",
     alignItems: "center",
     justifyContent: slot.align === "left" ? "flex-start" : "center",
-    overflow: "visible",
     padding: posterText ? "0.2em" : "0.25em",
     textAlign: slot.align || "center",
     color: posterText ? "#050505" : "#fff",
@@ -64,12 +72,15 @@ function getSlotTextInnerStyle(slot: MemeSlot): CSSProperties {
   };
 }
 
-function shrinkToSlotHeight(element: HTMLElement) {
+function shrinkToSlotBounds(element: HTMLElement) {
   const parent = element.parentElement;
   if (!parent) return;
 
   let fontSize = Number.parseFloat(window.getComputedStyle(element).fontSize);
-  while (fontSize > minFitFontSize && element.scrollHeight > parent.clientHeight) {
+  while (
+    fontSize > minFitFontSize
+    && (element.scrollWidth > parent.clientWidth || element.scrollHeight > parent.clientHeight)
+  ) {
     fontSize -= 1;
     element.style.fontSize = `${fontSize}px`;
   }
@@ -94,7 +105,7 @@ function MemeSlotText({
       multiLine: true,
     });
     fit.fit({ sync: true });
-    shrinkToSlotHeight(element);
+    shrinkToSlotBounds(element);
 
     return () => fit.unsubscribe();
   }, [slot.fontSize, text]);
@@ -149,7 +160,9 @@ export function MemeFormatRenderer({
               data-meme-slot={slot.id}
               style={getSlotStyle(slot, template.width, template.height)}
             >
-              <MemeSlotText slot={slot} text={text} />
+              <div style={getSlotFitBoxStyle(slot)}>
+                <MemeSlotText slot={slot} text={text} />
+              </div>
             </div>
           );
         })}
