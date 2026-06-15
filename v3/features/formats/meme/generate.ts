@@ -1,9 +1,12 @@
 import type { StoredWebsiteResearchResult } from "../../research/types";
+import {
+  callNvidiaNimChat,
+  DEFAULT_NVIDIA_NIM_BASE_URL,
+  type NvidiaNimChatCompletion,
+} from "../../llm/nvidiaNim";
 import { DEFAULT_NVIDIA_NIM_MEME_MODEL } from "./models";
 import { buildMemePrompt } from "./prompt";
 import { MEME_TEMPLATES, getMemeTemplate, type MemeTemplate } from "./templates";
-
-export const DEFAULT_NVIDIA_NIM_BASE_URL = "https://integrate.api.nvidia.com/v1";
 
 export type MemeVariant = {
   templateId: string;
@@ -20,14 +23,6 @@ export type GenerateMemeVariantsResult = {
     reason: string;
   };
 };
-
-type NvidiaNimChatCompletion = (input: {
-  model: string;
-  prompt: string;
-  apiKey: string;
-  baseUrl: string;
-  timeoutMs: number;
-}) => Promise<string>;
 
 type GenerateMemeVariantsOptions = {
   nvidiaNimApiKey?: string;
@@ -144,29 +139,18 @@ const callNvidiaNim = async ({
     );
   }
 
-  const response = await withTimeout(fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${apiKey}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
+  return withTimeout(
+    callNvidiaNimChat({
+      apiKey,
+      baseUrl,
+      label: "NVIDIA NIM meme generation",
       model,
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      response_format: { type: "json_object" },
+      prompt,
+      timeoutMs,
     }),
-  }), timeoutMs, "NVIDIA NIM meme generation");
-
-  if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(`NVIDIA NIM failed with ${response.status}${body ? `: ${body.slice(0, 300)}` : ""}`);
-  }
-
-  const payload = await response.json() as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  return payload.choices?.[0]?.message?.content || "{\"variants\":[]}";
+    timeoutMs,
+    "NVIDIA NIM meme generation",
+  );
 };
 
 function deterministicSlotsForTemplate(

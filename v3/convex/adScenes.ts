@@ -19,8 +19,9 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     count: v.optional(v.number()),
     format: v.optional(v.union(v.literal("visualizer"), v.literal("meme"))),
     memeModel: v.optional(v.string()),
+    visualizerModel: v.optional(v.string()),
   },
-  handler: async (ctx, { researchRunId, count, format = "visualizer", memeModel }) => {
+  handler: async (ctx, { researchRunId, count, format = "visualizer", memeModel, visualizerModel }) => {
     const research = await ctx.runQuery(internal.adSceneStorage.loadResearchForGeneration, {
       researchRunId,
     });
@@ -29,7 +30,10 @@ export const generateFromResearch: ReturnType<typeof action> = action({
       ? await generateMemeVariantsFromResearch(research, { nvidiaNimModel: memeModel })
       : null;
     const visualizerGeneration = format === "visualizer"
-      ? await generateAdCandidatesFromResearch(research, { count })
+      ? await generateAdCandidatesFromResearch(research, {
+        count,
+        nvidiaNimModel: visualizerModel,
+      })
       : null;
     const scenes = generation
       ? generation.variants.map((variant, index) => createMemeAdScene({

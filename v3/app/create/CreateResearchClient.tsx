@@ -17,7 +17,10 @@ import type {
   RenderFlashRole,
   RenderFlashState,
 } from "@/features/formats/types";
-import { DEFAULT_NVIDIA_NIM_MEME_MODEL } from "@/features/formats/meme/models";
+import {
+  DEFAULT_NVIDIA_NIM_MEME_MODEL,
+  DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL,
+} from "@/features/formats/meme/models";
 import { getFormatModule } from "@/features/formats/registry";
 import { useActiveCanvasPanel, useCanvasActions } from "@/features/create/canvasInteractionStore";
 import {
@@ -150,6 +153,7 @@ function ResearchConnected() {
   const [result, setResult] = useState<StoredWebsiteResearchResult | null>(null);
   const [selectedAdFormat, setSelectedAdFormat] = useState<AdFormatId>("visualizer");
   const [selectedMemeModel, setSelectedMemeModel] = useState(DEFAULT_NVIDIA_NIM_MEME_MODEL);
+  const [selectedVisualizerModel, setSelectedVisualizerModel] = useState(DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL);
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
@@ -602,12 +606,14 @@ function ResearchConnected() {
     count = 50,
     format: AdFormatId = "visualizer",
     memeModel?: string,
+    visualizerModel?: string,
   ) => {
     const generationArgs = {
       researchRunId,
       count,
       format,
       ...(format === "meme" && memeModel ? { memeModel } : {}),
+      ...(format === "visualizer" && visualizerModel ? { visualizerModel } : {}),
     };
     const nextGeneration = await generateAdScenes(generationArgs) as AdSceneGenerationResponse;
 
@@ -718,6 +724,7 @@ function ResearchConnected() {
         selectedAdFormat === "meme" ? 4 : 50,
         selectedAdFormat,
         selectedMemeModel,
+        selectedVisualizerModel,
       );
       setProgressStage("preparing-canvas");
       setResult(nextResult);
@@ -1138,8 +1145,10 @@ function ResearchConnected() {
             ? `${billingStatus.freeRemaining} of ${billingStatus.freeLimit} free runs left`
             : ""}
           memeModel={selectedMemeModel}
+          visualizerModel={selectedVisualizerModel}
           onFormatChange={setSelectedAdFormat}
           onMemeModelChange={setSelectedMemeModel}
+          onVisualizerModelChange={setSelectedVisualizerModel}
           onSubmit={onSubmit}
           onUrlChange={setUrl}
           progressFacts={pendingProgressFacts}

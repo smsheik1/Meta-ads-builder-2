@@ -112,10 +112,10 @@ Repeat that command for each env var used by Convex actions through the
 FIRECRAWL_API_KEY=
 GEMINI_API_KEY=
 GEMINI_ENABLED=true
-GEMINI_AD_MODEL=gemini-3.1-flash-lite
-GEMINI_BRAND_CURATOR_MODEL=gemini-3.1-flash-lite
 GEMINI_DIALOGUE_MODEL=gemini-3.1-flash-lite
 NVIDIA_NIM_API_KEY=
+NVIDIA_NIM_AD_MODEL=moonshotai/kimi-k2.6
+NVIDIA_NIM_BRAND_CURATOR_MODEL=moonshotai/kimi-k2.6
 NVIDIA_NIM_MEME_MODEL=moonshotai/kimi-k2.6
 NVIDIA_NIM_BASE_URL=https://integrate.api.nvidia.com/v1
 NVIDIA_NIM_ENABLED=true

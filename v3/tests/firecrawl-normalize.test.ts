@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   buildBrandCuratorPrompt,
+  curateWebsiteResearchResult,
   normalizeBrandBriefPayload,
 } from "../features/research/brandCurator";
 import {
@@ -235,6 +236,30 @@ assert.deepEqual(normalizedEmptyBrief.proof, []);
 assert.deepEqual(normalizedEmptyBrief.siteLanguage, []);
 assert.deepEqual(normalizedEmptyBrief.visualNotes, []);
 
+const nimCuratedResult = await curateWebsiteResearchResult(shopifyResult, {
+  nvidiaNimApiKey: "test-nim-key",
+  nvidiaNimModel: "test-kimi-model",
+  nvidiaNimChatCompletion: async ({ prompt }) => {
+    assert.ok(prompt.includes("David's Cookies"));
+    return JSON.stringify({
+      brandName: "David's Cookies",
+      offer: "Fresh baked cookies and giftable desserts delivered for memorable occasions.",
+      audience: "People sending cookies, gift baskets, and desserts for birthdays and thank-you gifts.",
+      buyerMoments: ["Someone forgot the birthday and needs a dessert gift that can still ship."],
+      proof: ["We're known for our cookies, but we make so much more, including cheesecakes."],
+      siteLanguage: ["Cookie Delivery | Gift Baskets | Fresh Baked"],
+      ctaDirection: "Shop cookies",
+      visualNotes: [],
+      droppedNoiseSummary: ["Continue shopping"],
+      confidence: "high",
+    });
+  },
+});
+assert.equal(nimCuratedResult.brandBrief.offer, "Fresh baked cookies and giftable desserts delivered for memorable occasions.");
+assert.ok(nimCuratedResult.providerStatus.some((status) => (
+  status.provider === "nvidia-nim-curator" && status.status === "used"
+)));
+
 const curatedShopifyResult = await fetchWebsiteResearchWithFirecrawl("davidscookies.com", {
   apiKey: "test-firecrawl-key",
   fetcher: async () => new Response(JSON.stringify({
@@ -259,6 +284,7 @@ Fresh baked cookies, gift baskets, cheesecakes, and specialty desserts delivered
   }),
   curator: {
     apiKey: "test-gemini-key",
+    nvidiaNimApiKey: "",
     geminiGenerateContent: async ({ prompt }) => {
       assert.ok(prompt.includes("Ignore website chrome"));
       assert.ok(prompt.includes("High-protein snack bars with a soft, marshmallow-like texture."));
@@ -346,6 +372,7 @@ OGTool connects Reddit visibility to ChatGPT recommendation moments.
   },
   curator: {
     apiKey: "test-gemini-key",
+    nvidiaNimApiKey: "",
     geminiGenerateContent: async ({ prompt }) => {
       assert.ok(prompt.includes("Reddit campaigns give ChatGPT"));
       return JSON.stringify({

@@ -1,4 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
+import {
+  callNvidiaNimChat,
+  DEFAULT_NVIDIA_NIM_BASE_URL,
+  DEFAULT_NVIDIA_NIM_MODEL,
+  type NvidiaNimChatCompletion,
+} from "../llm/nvidiaNim";
 import { isWebsiteChromeText } from "../research/firecrawl";
 import type { StoredWebsiteResearchResult } from "../research/types";
 import type { AdSceneCandidate, HeadlineType } from "../scene/types";
@@ -8,6 +14,7 @@ type GeminiGenerateContent = (input: { model: string; prompt: string }) => Promi
 
 export const DEFAULT_AD_IDEA_COUNT = 50;
 export const DEFAULT_GEMINI_AD_IDEA_MODEL = "gemini-3.1-flash-lite";
+export const DEFAULT_NVIDIA_NIM_AD_IDEA_MODEL = DEFAULT_NVIDIA_NIM_MODEL;
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 
@@ -19,10 +26,10 @@ const headlineTypes: HeadlineType[] = [
   "transformation",
 ];
 
-export type AdGenerationProvider = "gemini" | "deterministic";
+export type AdGenerationProvider = "gemini" | "nvidia-nim" | "deterministic";
 
 export type AdGenerationProviderStatus = {
-  provider: "gemini";
+  provider: "gemini" | "nvidia-nim";
   status: "used" | "skipped" | "failed";
   reason: string;
 };
@@ -31,6 +38,10 @@ export type GenerateAdCandidatesOptions = {
   geminiApiKey?: string;
   geminiGenerateContent?: GeminiGenerateContent;
   geminiModel?: string;
+  nvidiaNimApiKey?: string;
+  nvidiaNimBaseUrl?: string;
+  nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
+  nvidiaNimModel?: string;
   apiKey?: string;
   model?: string;
   count?: number;
@@ -449,6 +460,43 @@ const callGemini = async ({
   return response.text || "{\"candidates\":[]}";
 };
 
+const callNvidiaNim = async ({
+  apiKey,
+  baseUrl,
+  model,
+  prompt,
+  timeoutMs,
+  nvidiaNimChatCompletion,
+}: {
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+  prompt: string;
+  timeoutMs: number;
+  nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
+}) => {
+  if (nvidiaNimChatCompletion) {
+    return withTimeout(
+      nvidiaNimChatCompletion({ model, prompt, apiKey, baseUrl, timeoutMs }),
+      timeoutMs,
+      "NVIDIA NIM ad generation",
+    );
+  }
+
+  return withTimeout(
+    callNvidiaNimChat({
+      apiKey,
+      baseUrl,
+      label: "NVIDIA NIM ad generation",
+      model,
+      prompt,
+      timeoutMs,
+    }),
+    timeoutMs,
+    "NVIDIA NIM ad generation",
+  );
+};
+
 const topUpCandidates = (
   candidates: AdSceneCandidate[],
   fallback: AdSceneCandidate[],
@@ -465,8 +513,56 @@ export const generateAdCandidatesFromResearch = async (
   const fallback = buildDeterministicAdCandidates(research, count);
   const prompt = buildAdIdeasPrompt(research, count);
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const nvidiaNimModel = options.nvidiaNimModel
+    || options.model
+    || process.env.NVIDIA_NIM_AD_MODEL
+    || DEFAULT_NVIDIA_NIM_AD_IDEA_MODEL;
+  const nvidiaNimBaseUrl = options.nvidiaNimBaseUrl
+    || process.env.NVIDIA_NIM_BASE_URL
+    || DEFAULT_NVIDIA_NIM_BASE_URL;
+  const nvidiaNimApiKey = options.nvidiaNimApiKey ?? process.env.NVIDIA_NIM_API_KEY;
   const geminiModel = options.geminiModel || process.env.GEMINI_AD_MODEL || DEFAULT_GEMINI_AD_IDEA_MODEL;
   const geminiApiKey = options.geminiApiKey ?? options.apiKey ?? process.env.GEMINI_API_KEY;
+
+  if (nvidiaNimApiKey && !isDisabled(process.env.NVIDIA_NIM_ENABLED)) {
+    try {
+      const content = await callNvidiaNim({
+        apiKey: nvidiaNimApiKey,
+        baseUrl: nvidiaNimBaseUrl,
+        model: nvidiaNimModel,
+        prompt,
+        timeoutMs,
+        nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
+      });
+      const candidates = extractAdCandidatesFromResponse(content, fallback, count, "NVIDIA NIM");
+
+      return {
+        candidates: topUpCandidates(candidates, fallback, count),
+        model: nvidiaNimModel,
+        provider: "nvidia-nim",
+        providerStatus: {
+          provider: "nvidia-nim",
+          status: "used",
+          reason: `Generated ${count} ad ideas with ${nvidiaNimModel}.`,
+        },
+      };
+    } catch (error) {
+      const reason = error instanceof Error
+        ? `${error.message} Used deterministic website evidence ideas.`
+        : "NVIDIA NIM failed; used deterministic website evidence ideas.";
+
+      return {
+        candidates: fallback,
+        model: nvidiaNimModel,
+        provider: "deterministic",
+        providerStatus: {
+          provider: "nvidia-nim",
+          status: "failed",
+          reason,
+        },
+      };
+    }
+  }
 
   if (geminiApiKey && !isDisabled(process.env.GEMINI_ENABLED)) {
     try {

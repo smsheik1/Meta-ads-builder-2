@@ -1,5 +1,8 @@
 import { Check, Circle, Loader2, Wand2 } from "lucide-react";
-import { NIM_MEME_MODEL_OPTIONS } from "@/features/formats/meme/models";
+import {
+  NIM_MEME_MODEL_OPTIONS,
+  NIM_VISUALIZER_MODEL_OPTIONS,
+} from "@/features/formats/meme/models";
 import type { AdFormatId } from "@/features/scene/types";
 
 type LoadStatus = "idle" | "loading" | "ready" | "error";
@@ -114,8 +117,10 @@ export function CreateLeftColumn({
   format,
   freeRunsLabel,
   memeModel,
+  visualizerModel,
   onFormatChange,
   onMemeModelChange,
+  onVisualizerModelChange,
   onSubmit,
   onUrlChange,
   progressFacts,
@@ -130,8 +135,10 @@ export function CreateLeftColumn({
   format: AdFormatId;
   freeRunsLabel?: string;
   memeModel: string;
+  visualizerModel: string;
   onFormatChange: (format: AdFormatId) => void;
   onMemeModelChange: (model: string) => void;
+  onVisualizerModelChange: (model: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onUrlChange: (url: string) => void;
   progressFacts: WebsiteSubmitProgressFacts | null;
@@ -190,6 +197,25 @@ export function CreateLeftColumn({
             {format === "meme" ? "Four brand-aligned meme drafts, ready to spacebar through." : "Audio visualizer ads with voice, captions, and MP4 export."}
           </span>
         </label>
+
+        {format === "visualizer" ? (
+          <label className="block">
+            <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Visualizer model</span>
+            <select
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
+              aria-label="Visualizer generation model"
+              value={visualizerModel}
+              onChange={(event) => onVisualizerModelChange(event.target.value)}
+            >
+              {NIM_VISUALIZER_MODEL_OPTIONS.map((model) => (
+                <option key={model.id} value={model.id}>{model.label}</option>
+              ))}
+            </select>
+            <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
+              Development picker for comparing visualizer copy models.
+            </span>
+          </label>
+        ) : null}
 
         {format === "meme" ? (
           <label className="block">

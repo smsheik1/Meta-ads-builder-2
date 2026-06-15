@@ -199,8 +199,33 @@ assert.ok(
   "Generated scenes must include multiple visualizer colors when the brand palette is sparse.",
 );
 
+const nvidiaNimResult = await generateAdCandidatesFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-nim-key",
+  nvidiaNimModel: "test-kimi-model",
+  nvidiaNimChatCompletion: async () => JSON.stringify({
+    candidates: [
+      {
+        angleId: "competitor-chatgpt",
+        headline: "Your Competitor Shows Up First",
+        subheadline: "Buyers ask ChatGPT for recommendations and your competitor shows up first.",
+        ctaText: "See the proof",
+        headlineType: "contrast",
+        selectedPain: "Buyers ask ChatGPT for recommendations and your competitor shows up first.",
+        selectedProof: "First ChatGPT mention in 14 days.",
+      },
+    ],
+  }),
+});
+assert.equal(nvidiaNimResult.provider, "nvidia-nim");
+assert.equal(nvidiaNimResult.model, "test-kimi-model");
+assert.equal(nvidiaNimResult.providerStatus.provider, "nvidia-nim");
+assert.equal(nvidiaNimResult.providerStatus.status, "used");
+assert.equal(nvidiaNimResult.candidates[0]?.headline, "Your Competitor Shows Up First");
+
 const geminiResult = await generateAdCandidatesFromResearch(research, {
   count: 1,
+  nvidiaNimApiKey: "",
   geminiApiKey: "test-gemini-key",
   geminiModel: "test-gemini-model",
   geminiGenerateContent: async () => JSON.stringify({
@@ -225,6 +250,7 @@ assert.equal(geminiResult.candidates[0]?.headline, "Your Competitor Shows Up Fir
 
 const geminiFailureFallbackResult = await generateAdCandidatesFromResearch(research, {
   count: 1,
+  nvidiaNimApiKey: "",
   geminiApiKey: "test-gemini-key",
   geminiModel: "test-gemini-model",
   geminiGenerateContent: async () => {
@@ -240,6 +266,7 @@ assert.ok(geminiFailureFallbackResult.candidates.length >= 1);
 
 const deterministicResult = await generateAdCandidatesFromResearch(research, {
   count: 1,
+  nvidiaNimApiKey: "",
   geminiApiKey: "",
 });
 assert.equal(deterministicResult.provider, "deterministic");
