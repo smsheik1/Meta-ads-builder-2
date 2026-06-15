@@ -139,6 +139,24 @@ assert.throws(
   /incomplete meme variants/,
 );
 
+const repaired = extractMemeVariantsFromResponse(JSON.stringify({
+  variants: MEME_TEMPLATES.map((template) => ({
+    templateId: template.id,
+    slots: Object.fromEntries(template.slots.map((slot) => [
+      slot.id,
+      slot.id === "level1Text"
+        ? "A managed service that ranks brands on ChatGPT and Reddit"
+        : `copy ${slot.id}`.slice(0, slot.maxChars),
+    ])),
+  })),
+}), { repairSlotText: true, providerLabel: "NVIDIA NIM" });
+assert.equal(repaired.length, 4);
+assert.ok(repaired.every((variant) => Object.values(variant.slots).every((value) => value.length > 0)));
+assert.ok(repaired.every((variant) => {
+  const template = MEME_TEMPLATES.find((item) => item.id === variant.templateId)!;
+  return template.slots.every((slot) => variant.slots[slot.id]!.length <= slot.maxChars);
+}));
+
 const retryResult = await generateMemeVariantsFromResearch(research, {
   nvidiaNimApiKey: "test-key",
   nvidiaNimBaseUrl: "https://nim.test/v1",

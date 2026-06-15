@@ -102,6 +102,11 @@ const parseJsonObject = (value: string, providerLabel = "AI provider") => {
   return JSON.parse(jsonText) as Record<string, unknown>;
 };
 
+type ExtractMemeVariantsOptions = {
+  providerLabel?: string;
+  repairSlotText?: boolean;
+};
+
 const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, label: string) => {
   let timeout: ReturnType<typeof setTimeout> | null = null;
   try {
@@ -208,8 +213,12 @@ export function buildDeterministicMemeVariants(research: StoredWebsiteResearchRe
   }));
 }
 
-export function extractMemeVariantsFromResponse(content: string): MemeVariant[] {
-  const payload = parseJsonObject(content, "Gemini");
+export function extractMemeVariantsFromResponse(
+  content: string,
+  options: ExtractMemeVariantsOptions = {},
+): MemeVariant[] {
+  const providerLabel = options.providerLabel || "Meme provider";
+  const payload = parseJsonObject(content, providerLabel);
   const variants = Array.isArray(payload.variants) ? payload.variants : [];
   const byTemplate = new Map<string, MemeVariant>();
 
@@ -226,7 +235,10 @@ export function extractMemeVariantsFromResponse(content: string): MemeVariant[] 
     const slots: Record<string, string> = {};
     let valid = true;
     for (const slot of template.slots) {
-      const text = normalizeSlotText(slotsPayload[slot.id]);
+      const rawText = normalizeSlotText(slotsPayload[slot.id]);
+      const text = options.repairSlotText && (rawText.length > slot.maxChars || endsWithDanglingWord(rawText))
+        ? fitSlotText(rawText, slot.maxWords, slot.maxChars)
+        : rawText;
       if (!text || text.length > slot.maxChars) valid = false;
       if (endsWithDanglingWord(text)) valid = false;
       if (template.id === "this_is_fine" && /this\s+is\s+fine/i.test(text)) valid = false;
@@ -236,7 +248,7 @@ export function extractMemeVariantsFromResponse(content: string): MemeVariant[] 
   }
 
   const normalized = MEME_TEMPLATES.map((template) => byTemplate.get(template.id)).filter(Boolean) as MemeVariant[];
-  if (normalized.length !== MEME_TEMPLATES.length) throw new Error("Gemini returned incomplete meme variants.");
+  if (normalized.length !== MEME_TEMPLATES.length) throw new Error(`${providerLabel} returned incomplete meme variants.`);
   return normalized;
 }
 
@@ -267,7 +279,10 @@ export async function generateMemeVariantsFromResearch(
       });
       let variants: MemeVariant[];
       try {
-        variants = extractMemeVariantsFromResponse(content);
+        variants = extractMemeVariantsFromResponse(content, {
+          providerLabel: "NVIDIA NIM",
+          repairSlotText: true,
+        });
       } catch {
         const retryContent = await callNvidiaNim({
           apiKey: nvidiaNimApiKey,
@@ -277,7 +292,10 @@ export async function generateMemeVariantsFromResearch(
           timeoutMs,
           nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
         });
-        variants = extractMemeVariantsFromResponse(retryContent);
+        variants = extractMemeVariantsFromResponse(retryContent, {
+          providerLabel: "NVIDIA NIM",
+          repairSlotText: true,
+        });
       }
 
       return {
