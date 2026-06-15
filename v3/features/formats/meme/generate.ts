@@ -6,7 +6,7 @@ import {
 } from "../../llm/nvidiaNim";
 import { DEFAULT_NVIDIA_NIM_MEME_MODEL } from "../../llm/nvidiaNimModels";
 import { buildMemePrompt } from "./prompt";
-import { MEME_TEMPLATES, getMemeTemplate, type MemeTemplate } from "./templates";
+import { MEME_TEMPLATES, getMemeTemplate } from "./templates";
 
 export type MemeVariant = {
   templateId: string;
@@ -16,10 +16,10 @@ export type MemeVariant = {
 export type GenerateMemeVariantsResult = {
   variants: MemeVariant[];
   model: string;
-  provider: "nvidia-nim" | "deterministic";
+  provider: "nvidia-nim";
   providerStatus: {
     provider: "nvidia-nim";
-    status: "used" | "skipped" | "failed";
+    status: "used";
     reason: string;
   };
 };
@@ -102,50 +102,6 @@ type ExtractMemeVariantsOptions = {
   repairSlotText?: boolean;
 };
 
-function deterministicSlotsForTemplate(
-  template: MemeTemplate,
-  research: StoredWebsiteResearchResult,
-): Record<string, string> {
-  const brand = research.brandBrief.brandName || research.brand.name;
-  const pain = research.brandBrief.buyerMoments[0] || research.brandBrief.audience || "the messy old way";
-  const offer = research.brandBrief.offer || research.brand.description || brand;
-  const proof = research.brandBrief.proof[0] || research.brandBrief.siteLanguage[0] || offer;
-
-  const byTemplate: Record<string, Record<string, string>> = {
-    drake: {
-      topText: limitWords(pain, 7),
-      bottomText: limitWords(offer, 7),
-    },
-    woman_yelling_cat: {
-      yellingText: limitWords(pain, 7),
-      catResponseText: limitWords(offer, 7),
-    },
-    this_is_fine: {
-      topText: limitWords(pain, 9),
-      bottomText: `${brand} stays calm`,
-    },
-    expanding_brain: {
-      level1Text: "Guessing what works",
-      level2Text: limitWords(proof, 5),
-      level3Text: limitWords(offer, 5),
-      level4Text: `${brand} makes it obvious`,
-    },
-  };
-
-  const defaults = byTemplate[template.id] || {};
-  return Object.fromEntries(template.slots.map((slot) => [
-    slot.id,
-    fitSlotText(defaults[slot.id] || offer, slot.maxWords, slot.maxChars),
-  ]));
-}
-
-export function buildDeterministicMemeVariants(research: StoredWebsiteResearchResult): MemeVariant[] {
-  return MEME_TEMPLATES.map((template) => ({
-    templateId: template.id,
-    slots: deterministicSlotsForTemplate(template, research),
-  }));
-}
-
 export function extractMemeVariantsFromResponse(
   content: string,
   options: ExtractMemeVariantsOptions = {},
@@ -189,7 +145,6 @@ export async function generateMemeVariantsFromResearch(
   research: StoredWebsiteResearchResult,
   options: GenerateMemeVariantsOptions = {},
 ): Promise<GenerateMemeVariantsResult> {
-  const fallback = buildDeterministicMemeVariants(research);
   const prompt = buildMemePrompt(research);
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const nvidiaNimModel = options.nvidiaNimModel
@@ -200,75 +155,57 @@ export async function generateMemeVariantsFromResearch(
     || DEFAULT_NVIDIA_NIM_BASE_URL;
   const nvidiaNimApiKey = options.nvidiaNimApiKey ?? process.env.NVIDIA_NIM_API_KEY;
 
-  if (nvidiaNimApiKey && !isDisabled(process.env.NVIDIA_NIM_ENABLED)) {
+  if (!nvidiaNimApiKey) {
+    throw new Error("NVIDIA NIM meme generation is not configured.");
+  }
+  if (isDisabled(process.env.NVIDIA_NIM_ENABLED)) {
+    throw new Error("NVIDIA NIM meme generation is disabled.");
+  }
+
+  try {
+    const content = await callNvidiaNimChat({
+      apiKey: nvidiaNimApiKey,
+      baseUrl: nvidiaNimBaseUrl,
+      label: "NVIDIA NIM meme generation",
+      model: nvidiaNimModel,
+      nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
+      prompt,
+      timeoutMs,
+    });
+    let variants: MemeVariant[];
     try {
-      const content = await callNvidiaNimChat({
+      variants = extractMemeVariantsFromResponse(content, {
+        providerLabel: "NVIDIA NIM",
+        repairSlotText: true,
+      });
+    } catch {
+      const retryContent = await callNvidiaNimChat({
         apiKey: nvidiaNimApiKey,
         baseUrl: nvidiaNimBaseUrl,
         label: "NVIDIA NIM meme generation",
         model: nvidiaNimModel,
         nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
-        prompt,
+        prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Every required slot must be present, under maxChars, and a complete thought. Return only the JSON object.`,
         timeoutMs,
       });
-      let variants: MemeVariant[];
-      try {
-        variants = extractMemeVariantsFromResponse(content, {
-          providerLabel: "NVIDIA NIM",
-          repairSlotText: true,
-        });
-      } catch {
-        const retryContent = await callNvidiaNimChat({
-          apiKey: nvidiaNimApiKey,
-          baseUrl: nvidiaNimBaseUrl,
-          label: "NVIDIA NIM meme generation",
-          model: nvidiaNimModel,
-          nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
-          prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Every required slot must be present, under maxChars, and a complete thought. Return only the JSON object.`,
-          timeoutMs,
-        });
-        variants = extractMemeVariantsFromResponse(retryContent, {
-          providerLabel: "NVIDIA NIM",
-          repairSlotText: true,
-        });
-      }
-
-      return {
-        variants,
-        model: nvidiaNimModel,
-        provider: "nvidia-nim",
-        providerStatus: {
-          provider: "nvidia-nim",
-          status: "used",
-          reason: `Generated ${MEME_TEMPLATES.length} meme ideas with ${nvidiaNimModel}.`,
-        },
-      };
-    } catch (error) {
-      const reason = error instanceof Error
-        ? `${error.message} Used deterministic meme ideas.`
-        : "NVIDIA NIM failed; used deterministic meme ideas.";
-
-      return {
-        variants: fallback,
-        model: nvidiaNimModel,
-        provider: "deterministic",
-        providerStatus: {
-          provider: "nvidia-nim",
-          status: "failed",
-          reason,
-        },
-      };
+      variants = extractMemeVariantsFromResponse(retryContent, {
+        providerLabel: "NVIDIA NIM",
+        repairSlotText: true,
+      });
     }
-  }
 
-  return {
-    variants: fallback,
-    model: nvidiaNimModel,
-    provider: "deterministic",
-    providerStatus: {
+    return {
+      variants,
+      model: nvidiaNimModel,
       provider: "nvidia-nim",
-      status: "skipped",
-      reason: "NVIDIA NIM was not configured; used deterministic meme ideas.",
-    },
-  };
+      providerStatus: {
+        provider: "nvidia-nim",
+        status: "used",
+        reason: `Generated ${MEME_TEMPLATES.length} meme ideas with ${nvidiaNimModel}.`,
+      },
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "unknown error";
+    throw new Error(`NVIDIA NIM meme generation failed: ${message}`);
+  }
 }

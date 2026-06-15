@@ -3,7 +3,6 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { buildMemePrompt } from "../features/formats/meme/prompt";
 import {
-  buildDeterministicMemeVariants,
   extractMemeVariantsFromResponse,
   generateMemeVariantsFromResearch,
 } from "../features/formats/meme/generate";
@@ -181,6 +180,34 @@ assert.equal(retryResult.model, "test-kimi-model");
 assert.equal(retryResult.providerStatus.provider, "nvidia-nim");
 assert.equal(retryResult.variants.length, 4);
 
+await assert.rejects(
+  () => generateMemeVariantsFromResearch(research, {
+    nvidiaNimApiKey: "",
+    nvidiaNimModel: "test-kimi-model",
+  }),
+  /NVIDIA NIM meme generation is not configured/,
+);
+
+await assert.rejects(
+  () => generateMemeVariantsFromResearch(research, {
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimModel: "test-kimi-model",
+    nvidiaNimChatCompletion: async () => {
+      throw new Error("provider exploded");
+    },
+  }),
+  /NVIDIA NIM meme generation failed: provider exploded/,
+);
+
+await assert.rejects(
+  () => generateMemeVariantsFromResearch(research, {
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimModel: "test-kimi-model",
+    nvidiaNimChatCompletion: async () => JSON.stringify({ variants: [] }),
+  }),
+  /NVIDIA NIM meme generation failed: NVIDIA NIM returned incomplete meme variants/,
+);
+
 const brandCases = [
   research,
   {
@@ -231,21 +258,21 @@ for (const brandCase of brandCases) {
   assert.equal(result.variants.length, MEME_TEMPLATES.length);
 }
 
-const deterministic = buildDeterministicMemeVariants(research);
-assert.ok(Object.values(deterministic[0]!.slots).every((value) => !/\b(and|for|that|on|get)$/i.test(value)));
-const scenes = deterministic.map((variant, index) => createMemeAdScene({
+const scenes = parsed.map((variant, index) => createMemeAdScene({
   research,
   variant,
   candidateIndex: index,
   generationBatchId: "meme-batch",
   model: "test-model",
-  provider: "deterministic",
+  provider: "nvidia-nim",
   now: 123,
 }));
 
 assert.equal(scenes.length, 4);
 assert.ok(scenes.every((scene) => scene.format === "meme"));
 assert.equal(scenes[0]!.layout.templateId, "drake");
+assert.equal(scenes[0]!.creative.subheadline, research.brandBrief.offer);
+assert.ok(!scenes[0]!.creative.subheadline.includes("bottom choice"));
 
 const html = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene: scenes[0]!,
@@ -262,8 +289,8 @@ const rerolled = rerollScene(scenes, scenes[0]!, 0, createDefaultSceneLocks());
 assert.equal(rerolled.index, 1);
 assert.equal(rerolled.scene?.format, "meme");
 assert.equal(rerolled.scene?.layout.templateId, "woman_yelling_cat");
-assert.ok(deterministic.some((variant) => variant.templateId === "this_is_fine" && "topText" in variant.slots && "bottomText" in variant.slots));
-assert.ok(deterministic.some((variant) => variant.templateId === "woman_yelling_cat" && "yellingText" in variant.slots && "catResponseText" in variant.slots));
+assert.ok(parsed.some((variant) => variant.templateId === "this_is_fine" && "topText" in variant.slots && "bottomText" in variant.slots));
+assert.ok(parsed.some((variant) => variant.templateId === "woman_yelling_cat" && "yellingText" in variant.slots && "catResponseText" in variant.slots));
 
 const savedDesign = {
   id: createSavedDesignId(scenes[0]!),

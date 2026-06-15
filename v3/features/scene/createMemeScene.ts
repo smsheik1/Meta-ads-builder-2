@@ -43,7 +43,7 @@ export const createMemeAdScene = ({
     creative: {
       angleId: `${template.id}-${candidateIndex + 1}`,
       headline,
-      subheadline: template.directorsNotes,
+      subheadline: research.brandBrief.offer || research.brand.description,
       ctaText: research.brandBrief.ctaDirection || "See more",
       headlineType: "contrast",
       selectedPain: research.brandBrief.buyerMoments[0] || research.brandBrief.audience,
