@@ -20,6 +20,16 @@ REQUIRED_ENV_VARS=(
   GEMINI_API_KEY
 )
 
+CONVEX_ACTION_ENV_VARS=(
+  FIRECRAWL_API_KEY
+  BRANDFETCH_API_KEY
+  GEMINI_API_KEY
+  NVIDIA_NIM_API_KEY
+  NVIDIA_NIM_BASE_URL
+  TTS_MODEL
+  DEEPGRAM_API_KEY
+)
+
 for env_var in "${REQUIRED_ENV_VARS[@]}"; do
   if [ -z "${!env_var:-}" ]; then
     echo "Missing required v3 production env var: $env_var" >&2
@@ -56,6 +66,12 @@ if [ -f package-lock.json ]; then
 else
   npm install --workspaces=false --include=optional
 fi
+
+for env_var in "${CONVEX_ACTION_ENV_VARS[@]}"; do
+  if [ -n "${!env_var:-}" ]; then
+    npx convex env set "$env_var" "${!env_var}" >/dev/null
+  fi
+done
 
 npx convex deploy
 npm run test
