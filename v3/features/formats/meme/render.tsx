@@ -6,6 +6,7 @@ import { getMemeTemplate, type MemeSlot } from "./templates";
 
 const minFitFontSize = 14;
 const maxFitFontSize = 96;
+const textStrokeGuardPx = 8;
 const textShadow = [
   "2px 2px 0 #000",
   "-2px 2px 0 #000",
@@ -35,15 +36,16 @@ function getSlotStyle(slot: MemeSlot, templateWidth: number, templateHeight: num
 
 function getSlotFitBoxStyle(slot: MemeSlot): CSSProperties {
   const posterText = slot.textStyle === "poster";
+  const horizontalInset = posterText ? "7%" : "6%";
+  const verticalInset = posterText ? "8%" : "6%";
 
   return {
     position: "absolute",
-    inset: 0,
+    inset: `${verticalInset} ${horizontalInset}`,
     boxSizing: "border-box",
     display: "flex",
     alignItems: "center",
     justifyContent: slot.align === "left" ? "flex-start" : "center",
-    padding: posterText ? "0.2em" : "0.25em",
     textAlign: slot.align || "center",
     color: posterText ? "#050505" : "#fff",
     fontFamily: posterText
@@ -77,9 +79,11 @@ function shrinkToSlotBounds(element: HTMLElement) {
   if (!parent) return;
 
   let fontSize = Number.parseFloat(window.getComputedStyle(element).fontSize);
+  const maxWidth = Math.max(1, parent.clientWidth - textStrokeGuardPx);
+  const maxHeight = Math.max(1, parent.clientHeight - textStrokeGuardPx);
   while (
     fontSize > minFitFontSize
-    && (element.scrollWidth > parent.clientWidth || element.scrollHeight > parent.clientHeight)
+    && (element.scrollWidth > maxWidth || element.scrollHeight > maxHeight)
   ) {
     fontSize -= 1;
     element.style.fontSize = `${fontSize}px`;
