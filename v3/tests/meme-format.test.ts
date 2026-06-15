@@ -139,6 +139,7 @@ assert.equal(retryResult.provider, "gemini");
 assert.equal(retryResult.variants.length, 4);
 
 const deterministic = buildDeterministicMemeVariants(research);
+assert.ok(Object.values(deterministic[0]!.slots).every((value) => !/\b(and|for|that|on|get)$/i.test(value)));
 const scenes = deterministic.map((variant, index) => createMemeAdScene({
   research,
   variant,

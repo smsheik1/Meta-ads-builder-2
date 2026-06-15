@@ -33,18 +33,27 @@ const DEFAULT_TIMEOUT_MS = 30_000;
 
 const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.test(String(value || ""));
 
-const cleanSlotText = (value: unknown, maxLength: number) => String(value ?? "")
+const normalizeSlotText = (value: unknown) => String(value ?? "")
   .replace(/!\[[^\]]*]\([^)]+\)/g, " ")
   .replace(/!\[[^\]]*]\[[^\]]*]/g, " ")
   .replace(/!\[[^\]]*]/g, " ")
   .replace(/\s+/g, " ")
-  .trim()
-  .slice(0, maxLength)
   .trim();
 
 const wordCount = (value: string) => value.split(/\s+/).filter(Boolean).length;
 
 const limitWords = (value: string, maxWords: number) => value.split(/\s+/).filter(Boolean).slice(0, maxWords).join(" ");
+
+const limitCharsAtWordBoundary = (value: string, maxChars: number) => {
+  if (value.length <= maxChars) return value;
+  const clipped = value.slice(0, maxChars).trim();
+  const lastSpace = clipped.lastIndexOf(" ");
+  return (lastSpace > 0 ? clipped.slice(0, lastSpace) : clipped).trim();
+};
+
+const fitSlotText = (value: unknown, maxWords: number, maxChars: number) => (
+  limitCharsAtWordBoundary(limitWords(normalizeSlotText(value), maxWords), maxChars)
+);
 
 const parseJsonObject = (value: string, providerLabel = "AI provider") => {
   const trimmed = value.trim();
@@ -131,7 +140,7 @@ function deterministicSlotsForTemplate(
   const defaults = byTemplate[template.id] || {};
   return Object.fromEntries(template.slots.map((slot) => [
     slot.id,
-    cleanSlotText(defaults[slot.id] || offer, slot.maxChars),
+    fitSlotText(defaults[slot.id] || offer, slot.maxWords, slot.maxChars),
   ]));
 }
 
@@ -160,7 +169,7 @@ export function extractMemeVariantsFromResponse(content: string): MemeVariant[] 
     const slots: Record<string, string> = {};
     let valid = true;
     for (const slot of template.slots) {
-      const text = cleanSlotText(slotsPayload[slot.id], slot.maxChars + 40);
+      const text = normalizeSlotText(slotsPayload[slot.id]);
       if (!text || text.length > slot.maxChars || wordCount(text) > slot.maxWords) valid = false;
       if (template.id === "this_is_fine" && /this\s+is\s+fine/i.test(text)) valid = false;
       slots[slot.id] = text;
