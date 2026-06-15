@@ -56,6 +56,11 @@ Ask these questions before writing code:
 - Prefer small, reversible changes.
 - Commit after each completed phase so rollback points stay obvious.
 - Push after a clean phase or clean set of phases once checks pass; do not leave important checkpoints local-only unless the user explicitly says not to push.
+- After a PR is merged, treat that branch as finished. Switch back to `main`, pull the latest `origin/main`, and create a fresh branch before doing new work.
+- Use one branch per coherent task or phase set. Good branch names are scoped and disposable, such as `fix/meme-text-fit`, `feat/meme-format-mvp`, `docs/branch-workflow-rules`, or `deploy/auto-main`.
+- Stay on the same branch only while finishing the same coherent task. Do not keep adding unrelated fixes after the PR has merged; that creates noisy compare views and confusing rollback points.
+- If a branch has already been merged and one tiny follow-up is needed, create a new follow-up branch from updated `main` instead of pushing more commits to the merged branch.
+- Keep PRs boring: one purpose, clear title, focused diff, tests/checks noted. If the PR description needs a timeline to explain what happened, the branch is probably too broad.
 - Keep page components thin; move format-specific behavior into format modules.
 - Preserve the current product split unless the user explicitly approves changing it.
 - When in doubt, keep `/create` simpler and move advanced editing to `/builder`.
