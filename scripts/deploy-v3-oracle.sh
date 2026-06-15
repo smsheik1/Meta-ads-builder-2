@@ -44,15 +44,16 @@ RENDERER_VERSION="${RENDERER_VERSION:-$(git rev-parse --short HEAD)}"
 export RENDERER_VERSION
 export NEXT_PUBLIC_RENDERER_VERSION="$RENDERER_VERSION"
 
-# Native packages like esbuild validate downloaded binaries during install. Use
-# a clean dependency tree on deploy so stale native binaries cannot leak across
-# versions on the long-lived Oracle host.
+# Native packages like esbuild validate downloaded binaries during install.
+# Keep v3's deploy install standalone even though the repo root has workspaces,
+# otherwise npm can mix root workspace metadata with v3's nested lockfile.
 rm -rf node_modules
+unset ESBUILD_BINARY_PATH
 
 if [ -f package-lock.json ]; then
-  npm ci
+  npm ci --workspaces=false --include=optional
 else
-  npm install
+  npm install --workspaces=false --include=optional
 fi
 
 npx convex deploy
