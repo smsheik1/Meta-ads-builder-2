@@ -68,8 +68,9 @@ stop the partial dev process and restart from the repo root with `npm run dev`.
 
 ## Environment
 
-Use `v3/.env.local` for local v3 development. Required production secrets are
-documented in `docs/v3-production-runtime.md`.
+Use `v3/.env.local` for local v3 development. The root `.env` is legacy and
+should stay empty. Required production secrets are documented in
+`docs/v3-production-runtime.md`.
 
 Common local keys:
 
@@ -79,6 +80,7 @@ NEXT_PUBLIC_V3_CONVEX_URL=
 NEXT_PUBLIC_V3_CONVEX_SITE_URL=
 V3_CONVEX_DEPLOY_KEY=
 FIRECRAWL_API_KEY=
+BRANDFETCH_API_KEY=
 GEMINI_API_KEY=
 DEEPGRAM_API_KEY=
 ```
@@ -91,7 +93,7 @@ Never commit real API keys.
 
 ### Local Convex Env
 
-Convex actions do not automatically inherit `v3/.env.local` or the root `.env`.
+Convex actions do not automatically inherit `v3/.env.local`.
 If local website research needs the Firecrawl fallback, set the action env vars
 on the local Convex deployment:
 
@@ -110,6 +112,7 @@ Repeat that command for each env var used by Convex actions through the
 
 ```bash
 FIRECRAWL_API_KEY=
+BRANDFETCH_API_KEY=
 GEMINI_API_KEY=
 GEMINI_ENABLED=true
 GEMINI_DIALOGUE_MODEL=gemini-3.1-flash-lite

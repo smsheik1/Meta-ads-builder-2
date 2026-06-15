@@ -38,6 +38,7 @@ Worker/server:
 ```text
 V3_CONVEX_URL
 FIRECRAWL_API_KEY
+BRANDFETCH_API_KEY
 NVIDIA_NIM_API_KEY
 GEMINI_API_KEY
 NVIDIA_NIM_AD_MODEL optional, defaults to moonshotai/kimi-k2.6
