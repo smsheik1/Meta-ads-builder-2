@@ -1,4 +1,5 @@
 import { Check, Circle, Loader2, Wand2 } from "lucide-react";
+import type { AdFormatId } from "@/features/scene/types";
 
 type LoadStatus = "idle" | "loading" | "ready" | "error";
 export type WebsiteSubmitProgressStage = "reading-site" | "writing-ads" | "preparing-canvas" | null;
@@ -13,16 +14,16 @@ export type WebsiteSubmitProgressFacts = {
 
 const pillClass = "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-slate-500 shadow-sm";
 
-const progressRows = [
+const getProgressRows = (format: AdFormatId) => [
   { id: "reading-site", label: "Reading website" },
   { id: "brand-proof", label: "Pulling brand proof" },
   { id: "selling-angle", label: "Finding selling angle" },
-  { id: "writing-ads", label: "Writing 50 ads" },
+  { id: "writing-ads", label: format === "meme" ? "Writing 4 memes" : "Writing 50 ads" },
   { id: "preparing-canvas", label: "Preparing canvas" },
 ] as const;
 
 function getProgressState(
-  rowId: (typeof progressRows)[number]["id"],
+  rowId: ReturnType<typeof getProgressRows>[number]["id"],
   stage: WebsiteSubmitProgressStage,
 ) {
   if (stage === "reading-site") return rowId === "reading-site" ? "active" : "pending";
@@ -36,14 +37,17 @@ function getProgressState(
 
 function CreateResearchProgressCard({
   facts,
+  format,
   showSlowResearchMessage,
   stage,
 }: {
   facts: WebsiteSubmitProgressFacts | null;
+  format: AdFormatId;
   showSlowResearchMessage: boolean;
   stage: WebsiteSubmitProgressStage;
 }) {
   if (!stage) return null;
+  const progressRows = getProgressRows(format);
 
   const factRows = facts
     ? [
@@ -106,7 +110,9 @@ export function CreateLeftColumn({
   adScenesCount,
   adStatus,
   error,
+  format,
   freeRunsLabel,
+  onFormatChange,
   onSubmit,
   onUrlChange,
   progressFacts,
@@ -118,7 +124,9 @@ export function CreateLeftColumn({
   adScenesCount: number;
   adStatus: LoadStatus;
   error: string;
+  format: AdFormatId;
   freeRunsLabel?: string;
+  onFormatChange: (format: AdFormatId) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onUrlChange: (url: string) => void;
   progressFacts: WebsiteSubmitProgressFacts | null;
@@ -131,17 +139,17 @@ export function CreateLeftColumn({
   const submitLabel = status === "loading"
     ? "Reading website"
     : adStatus === "loading"
-      ? "Writing ideas"
+      ? format === "meme" ? "Writing memes" : "Writing ideas"
       : "Generate ads";
 
   return (
     <div className="max-w-xl">
       <p className={pillClass}>
         <Wand2 className="size-4 text-[#4F46E5]" />
-        {adScenesCount ? "Ads ready to review" : "Add a voice clip first"}
+        {adScenesCount ? "Ads ready to review" : "Add a website first"}
       </p>
       <h1 className="mt-4 text-4xl font-black leading-tight tracking-normal text-slate-950 sm:text-5xl lg:text-7xl">
-        Make video ads without learning video editing.
+        Make ads without learning editing.
       </h1>
       <p className="mt-4 max-w-full text-base font-semibold leading-7 text-slate-600 sm:mt-6 sm:text-lg sm:leading-8 md:max-w-lg">
         Wiggly reads the site, finds the selling angle, and fills the canvas with polished ads you can preview, save, download, or edit.
@@ -163,17 +171,18 @@ export function CreateLeftColumn({
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Ad writing model</span>
+          <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Format</span>
           <select
             className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
-            aria-label="Ad writing model"
-            value="auto"
-            onChange={() => {}}
+            aria-label="Ad format"
+            value={format}
+            onChange={(event) => onFormatChange(event.target.value as AdFormatId)}
           >
-            <option value="auto">Auto best available (Auto)</option>
+            <option value="visualizer">Visualizer Ad</option>
+            <option value="meme">Meme Ad</option>
           </select>
           <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
-            Auto is best for users. Pick a model when testing headline quality.
+            {format === "meme" ? "Four brand-aligned meme drafts, ready to spacebar through." : "Audio visualizer ads with voice, captions, and MP4 export."}
           </span>
         </label>
 
@@ -194,6 +203,7 @@ export function CreateLeftColumn({
 
         <CreateResearchProgressCard
           facts={progressFacts}
+          format={format}
           showSlowResearchMessage={showSlowResearchMessage}
           stage={progressStage}
         />

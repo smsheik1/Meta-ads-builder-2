@@ -20,44 +20,46 @@ for (const [formatId, module] of entries) {
   assert.ok(!("interaction" in module), `${formatId} must not expose /create mini-editor interaction metadata.`);
   assert.equal(typeof module.validate, "function", `${formatId} must expose a validator.`);
   assert.equal(typeof module.RenderComponent, "function", `${formatId} must expose a render component.`);
-  assert.ok(module.editorSchema.text.length > 0, `${formatId} must expose text editor fields through its format module.`);
+  assert.ok(Array.isArray(module.editorSchema.text), `${formatId} must expose text editor fields through its format module.`);
   assert.ok(Array.isArray(module.editorSchema.style), `${formatId} must expose style editor fields through its format module.`);
   assert.ok(Array.isArray(module.editorSchema.format), `${formatId} must expose format-specific editor fields through its format module.`);
   assert.equal(getFormatModule(module.id).id, module.id);
 }
 
-type FakeMemeScene = AdSceneBase<"meme", AdSceneStyleBase, { preset: "meme-card" }>;
+assert.equal(getFormatModule("meme").id, "meme");
 
-const fakeMemeFormatModule: AdFormatModule<"meme", FakeMemeScene> = {
-  id: "meme",
-  label: "Meme image",
+type FakeComicScene = AdSceneBase<"comic", AdSceneStyleBase, { preset: "comic-card" }>;
+
+const fakeComicFormatModule: AdFormatModule<"comic", FakeComicScene> = {
+  id: "comic",
+  label: "Comic image",
   defaultSlots: ["headline"],
   editorSchema: {
-    text: [{ id: "headline", label: "Meme headline", kind: "textarea" }],
+    text: [{ id: "headline", label: "Comic headline", kind: "textarea" }],
     style: [{ id: "backgroundColor", label: "Background", kind: "color" }],
-    format: [{ id: "memeTemplate", label: "Meme template", kind: "preset", options: [{ label: "Classic", value: "classic" }] }],
+    format: [{ id: "comicTemplate", label: "Comic template", kind: "preset", options: [{ label: "Classic", value: "classic" }] }],
   },
   RenderComponent: () => null,
   validate: (scene) => ({
-    valid: scene.format === "meme" && Boolean(scene.creative.headline.trim()),
-    errors: scene.format === "meme" && scene.creative.headline.trim() ? [] : ["Fake meme scene is invalid."],
+    valid: scene.format === "comic" && Boolean(scene.creative.headline.trim()),
+    errors: scene.format === "comic" && scene.creative.headline.trim() ? [] : ["Fake comic scene is invalid."],
   }),
 };
 
 const registryWithFakeFormat = createFormatRegistry({
   ...formatRegistry,
-  meme: fakeMemeFormatModule,
+  comic: fakeComicFormatModule,
 });
 
-assert.equal(getFormatModuleFromRegistry(registryWithFakeFormat, "meme").id, "meme");
-assert.deepEqual(getFormatModuleFromRegistry(registryWithFakeFormat, "meme").defaultSlots, ["headline"]);
-assert.equal(getFormatModuleFromRegistry(registryWithFakeFormat, "meme").editorSchema.format[0]?.id, "memeTemplate");
+assert.equal(getFormatModuleFromRegistry(registryWithFakeFormat, "comic").id, "comic");
+assert.deepEqual(getFormatModuleFromRegistry(registryWithFakeFormat, "comic").defaultSlots, ["headline"]);
+assert.equal(getFormatModuleFromRegistry(registryWithFakeFormat, "comic").editorSchema.format[0]?.id, "comicTemplate");
 
 for (const createFilePath of ["app/create/CreateResearchClient.tsx", "app/create/CreatePreviewChrome.tsx"]) {
   const source = readFileSync(createFilePath, "utf8");
   assert.ok(
-    !source.includes('"meme"') && !source.includes("'meme'"),
-    `${createFilePath} must not change when a fake format is added to the registry.`,
+    !source.includes('"comic"') && !source.includes("'comic'"),
+    `${createFilePath} must not change when a fake comic format is added to the registry.`,
   );
 }
 

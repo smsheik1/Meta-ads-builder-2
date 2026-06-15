@@ -2,7 +2,7 @@ import type { BrandSnapshot, ResearchReceipts } from "../research/types";
 
 export const AD_SCENE_VERSION = 1 as const;
 
-export type AdFormatId = "visualizer";
+export type AdFormatId = "visualizer" | "meme";
 
 export type HeadlineType =
   | "painful_moment"
@@ -122,4 +122,14 @@ export type VisualizerAdScene = AdSceneBase<
   { preset: "centered-hero" }
 >;
 
-export type AdScene = VisualizerAdScene;
+export type MemeAdScene = AdSceneBase<
+  "meme",
+  AdSceneStyleBase,
+  {
+    preset: "meme-template";
+    templateId: string;
+    slots: Record<string, string>;
+  }
+>;
+
+export type AdScene = VisualizerAdScene | MemeAdScene;

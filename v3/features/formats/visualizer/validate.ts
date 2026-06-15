@@ -1,7 +1,7 @@
-import type { AdScene } from "../../scene/types";
+import type { VisualizerAdScene } from "../../scene/types";
 import type { FormatValidationResult } from "../types";
 
-export const validateVisualizerScene = (scene: AdScene): FormatValidationResult => {
+export const validateVisualizerScene = (scene: VisualizerAdScene): FormatValidationResult => {
   const errors: string[] = [];
 
   if (scene.format !== "visualizer") errors.push("Scene format must be visualizer.");

@@ -1,8 +1,8 @@
 import type { StoredWebsiteResearchResult } from "../research/types";
 import {
   AD_SCENE_VERSION,
-  type AdScene,
   type AdSceneCandidate,
+  type VisualizerAdScene,
 } from "./types";
 import {
   createTintedVisualizerBackground,
@@ -35,9 +35,9 @@ export const createVisualizerAdScene = ({
   candidateIndex: number;
   generationBatchId: string;
   model: string;
-  provider: AdScene["metadata"]["provider"];
+  provider: VisualizerAdScene["metadata"]["provider"];
   now?: number;
-}): AdScene => {
+}): VisualizerAdScene => {
   const accentColor = pickSceneAccentColor(research.brand.colors);
   const visualizerVariant = getVisualizerVariantForCandidate(candidateIndex);
   const visualizerColor = pickVisualizerColorForCandidate(research.brand.colors, candidateIndex);

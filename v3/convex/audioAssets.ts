@@ -46,6 +46,12 @@ const attachAudioWithVoiceVisualizerPreset = (
       audio,
     };
   }
+  if (scene.format !== "visualizer") {
+    return {
+      ...scene,
+      audio,
+    };
+  }
 
   const decision = explainVoiceVisualizerPresetFromAnalysis(audio.analysis, audio.durationMs);
   const visualizer = applyVoiceVisualizerPreset(

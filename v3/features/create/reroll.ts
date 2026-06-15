@@ -20,19 +20,19 @@ export function getNextSceneIndex(currentIndex: number, sceneCount: number): num
   return (safeCurrentIndex + 1) % sceneCount;
 }
 
-export function applySceneLocks(currentScene: AdScene, nextScene: AdScene, locks: SceneLocks): AdScene {
+export function applySceneLocks<TScene extends AdScene>(currentScene: TScene, nextScene: TScene, locks: SceneLocks): TScene {
   return {
     ...nextScene,
     audio: locks.audio ? currentScene.audio : nextScene.audio,
   };
 }
 
-export function rerollScene(
-  scenes: AdScene[],
-  selectedScene: AdScene | null,
+export function rerollScene<TScene extends AdScene>(
+  scenes: TScene[],
+  selectedScene: TScene | null,
   selectedIndex: number,
   locks: SceneLocks,
-): { scene: AdScene | null; index: number } {
+): { scene: TScene | null; index: number } {
   if (!scenes.length) {
     return { scene: null, index: -1 };
   }

@@ -34,7 +34,7 @@ import type {
   StoredWebsiteResearchResult,
 } from "@/features/research/types";
 import { getClientRendererVersion } from "@/features/render/rendererVersion";
-import type { AdScene, AdSceneVisualizerStyle } from "@/features/scene/types";
+import type { AdFormatId, AdScene, AdSceneVisualizerStyle } from "@/features/scene/types";
 import { visualizerSceneVariants } from "@/features/scene/visualizerVariants";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
 import { CreateCaptionModal } from "./CreateCaptionModal";
@@ -147,6 +147,7 @@ function ResearchConnected() {
   const [shareStatus, setShareStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [renderStatus, setRenderStatus] = useState<"idle" | "loading" | "queued" | "error">("idle");
   const [result, setResult] = useState<StoredWebsiteResearchResult | null>(null);
+  const [selectedAdFormat, setSelectedAdFormat] = useState<AdFormatId>("visualizer");
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
@@ -490,24 +491,44 @@ function ResearchConnected() {
   }, [replaceSelectedSceneAndInvalidate, selectedScene]);
 
   const onUpdateStyleColor = useCallback((field: string, value: string) => {
-    if (
-      field !== "backgroundColor" &&
-      field !== "textColor" &&
-      field !== "accentColor" &&
-      field !== "visualizerColor"
-    ) return;
-    if (!selectedScene || selectedScene.style[field] === value) return;
+    if (!selectedScene) return;
+
+    if (field === "visualizerColor") {
+      if (selectedScene.format !== "visualizer" || selectedScene.style.visualizerColor === value) return;
+      replaceSelectedSceneAndInvalidate({
+        ...selectedScene,
+        style: {
+          ...selectedScene.style,
+          visualizerColor: value,
+        },
+      }, ["visualizer", "captions"]);
+      return;
+    }
+
+    if (field !== "backgroundColor" && field !== "textColor" && field !== "accentColor") return;
+    if (selectedScene.style[field] === value) return;
+    if (selectedScene.format === "visualizer") {
+      replaceSelectedSceneAndInvalidate({
+        ...selectedScene,
+        style: {
+          ...selectedScene.style,
+          [field]: value,
+        },
+      }, field === "accentColor" ? ["visualizer", "captions"] : ["headline", "visualizer", "captions"]);
+      return;
+    }
+
     replaceSelectedSceneAndInvalidate({
       ...selectedScene,
       style: {
         ...selectedScene.style,
         [field]: value,
       },
-    }, field === "visualizerColor" || field === "accentColor" ? ["visualizer", "captions"] : ["headline", "visualizer", "captions"]);
+    }, []);
   }, [replaceSelectedSceneAndInvalidate, selectedScene]);
 
   const onUpdateVisualizerPreset = useCallback((visualizer: AdSceneVisualizerStyle) => {
-    if (!selectedScene || selectedScene.style.visualizer === visualizer) return;
+    if (!selectedScene || selectedScene.format !== "visualizer" || selectedScene.style.visualizer === visualizer) return;
     replaceSelectedSceneAndInvalidate({
       ...selectedScene,
       style: {
@@ -574,10 +595,15 @@ function ResearchConnected() {
     canvasActions.finishBusy();
   };
 
-  const generateScenesForResearch = async (researchRunId: Id<"researchRuns">, count = 50) => {
+  const generateScenesForResearch = async (
+    researchRunId: Id<"researchRuns">,
+    count = 50,
+    format: AdFormatId = "visualizer",
+  ) => {
     const nextGeneration = await generateAdScenes({
       researchRunId,
       count,
+      format,
     }) as AdSceneGenerationResponse;
 
     return nextGeneration.scenes || [];
@@ -682,7 +708,11 @@ function ResearchConnected() {
       setShowSlowResearchMessage(false);
       setProgressStage("writing-ads");
       canvasActions.beginBusy("ad-generation");
-      const nextScenes = await generateScenesForResearch(nextResult.researchRunId as Id<"researchRuns">, 50);
+      const nextScenes = await generateScenesForResearch(
+        nextResult.researchRunId as Id<"researchRuns">,
+        selectedAdFormat === "meme" ? 4 : 50,
+        selectedAdFormat,
+      );
       setProgressStage("preparing-canvas");
       setResult(nextResult);
       setStatus("ready");
@@ -1097,9 +1127,11 @@ function ResearchConnected() {
           adScenesCount={adScenes.length}
           adStatus={adStatus}
           error={error}
+          format={selectedAdFormat}
           freeRunsLabel={billingStatus && !billingStatus.paid && billingStatus.freeRemaining !== null
             ? `${billingStatus.freeRemaining} of ${billingStatus.freeLimit} free runs left`
             : ""}
+          onFormatChange={setSelectedAdFormat}
           onSubmit={onSubmit}
           onUrlChange={setUrl}
           progressFacts={pendingProgressFacts}
@@ -1147,6 +1179,7 @@ function ResearchConnected() {
                 savedDesigns={savedDesignItems}
                 saveStatus={saveStatus}
                 saveStatusLabel={saveStatusLabel}
+                selectedFormat={selectedScene?.format || null}
                 selectedDesignIsSaved={selectedDesignIsSaved}
                 shareError={shareError}
                 shareStatus={shareStatus}

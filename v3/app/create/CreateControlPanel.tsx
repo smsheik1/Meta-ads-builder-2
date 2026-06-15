@@ -57,7 +57,7 @@ export function CreateControlPanel({
     selectedScene?.style.backgroundColor || "",
     selectedScene?.style.textColor || "",
     selectedScene?.style.accentColor || "",
-    selectedScene?.style.visualizerColor || "",
+    selectedScene?.format === "visualizer" ? selectedScene.style.visualizerColor : "",
     ...curatedColors,
   ]);
 

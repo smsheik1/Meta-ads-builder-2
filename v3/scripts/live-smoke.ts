@@ -130,7 +130,11 @@ function assertSameFrozenScene(inputScene: AdScene, shareScene: AdScene) {
   if (shareScene.brand.name !== inputScene.brand.name) problems.push("brand drifted");
   if (shareScene.creative.headline !== inputScene.creative.headline) problems.push("headline drifted");
   if (shareScene.creative.subheadline !== inputScene.creative.subheadline) problems.push("subheadline drifted");
-  if (shareScene.style.visualizerColor !== inputScene.style.visualizerColor) problems.push("visualizer color drifted");
+  if (
+    shareScene.format === "visualizer" &&
+    inputScene.format === "visualizer" &&
+    shareScene.style.visualizerColor !== inputScene.style.visualizerColor
+  ) problems.push("visualizer color drifted");
   if (shareScene.audio.status !== inputScene.audio.status) problems.push("audio status drifted");
   if (
     shareScene.audio.status === "generated" &&

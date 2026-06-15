@@ -6,10 +6,10 @@ import {
   rerollScene,
 } from "../features/create/reroll";
 import { createGeneratedSceneAudio } from "../features/audio/sceneAudio";
-import type { AdScene } from "../features/scene/types";
+import type { VisualizerAdScene } from "../features/scene/types";
 import { getVisualizerVariantForCandidate } from "../features/scene/visualizerVariants";
 
-function makeScene(index: number): AdScene {
+function makeScene(index: number): VisualizerAdScene {
   return {
     version: 1,
     format: "visualizer",
@@ -98,7 +98,7 @@ assert.equal(rerolled.scene?.metadata, scenes[1]!.metadata);
 assert.equal(rerolled.scene?.creative.headline, "Headline 1");
 assert.equal(rerolled.scene?.creative.subheadline, "Subheadline 1");
 
-const currentSceneWithAudio: AdScene = {
+const currentSceneWithAudio: VisualizerAdScene = {
   ...scenes[0]!,
   audio: createGeneratedSceneAudio({
     storageId: "audio-storage-0",
