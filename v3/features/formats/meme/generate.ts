@@ -37,10 +37,9 @@ const normalizeSlotText = (value: unknown) => String(value ?? "")
   .replace(/!\[[^\]]*]\([^)]+\)/g, " ")
   .replace(/!\[[^\]]*]\[[^\]]*]/g, " ")
   .replace(/!\[[^\]]*]/g, " ")
+  .replace(/https?:\/\/\S+/gi, " ")
   .replace(/\s+/g, " ")
   .trim();
-
-const wordCount = (value: string) => value.split(/\s+/).filter(Boolean).length;
 
 const DANGLING_ENDING_WORDS = new Set([
   "a",
@@ -201,7 +200,7 @@ export function extractMemeVariantsFromResponse(content: string): MemeVariant[] 
     let valid = true;
     for (const slot of template.slots) {
       const text = normalizeSlotText(slotsPayload[slot.id]);
-      if (!text || text.length > slot.maxChars || wordCount(text) > slot.maxWords) valid = false;
+      if (!text || text.length > slot.maxChars) valid = false;
       if (endsWithDanglingWord(text)) valid = false;
       if (template.id === "this_is_fine" && /this\s+is\s+fine/i.test(text)) valid = false;
       slots[slot.id] = text;
@@ -240,7 +239,7 @@ export async function generateMemeVariantsFromResearch(
         const retryContent = await callGemini({
           apiKey: geminiApiKey,
           model: geminiModel,
-          prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Every required slot must be present and under maxChars and maxWords. Return only the JSON object.`,
+          prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Every required slot must be present, under maxChars, and a complete thought. Return only the JSON object.`,
           timeoutMs,
           geminiGenerateContent: options.geminiGenerateContent,
         });

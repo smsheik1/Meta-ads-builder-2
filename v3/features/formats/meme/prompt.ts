@@ -15,13 +15,15 @@ export function buildMemePrompt(research: StoredWebsiteResearchResult) {
       id: slot.id,
       label: slot.label,
       maxChars: slot.maxChars,
-      maxWords: slot.maxWords,
       maxLines: slot.maxLines,
       textCase: slot.textCase,
     })),
   }));
 
-  return `You are writing brand-specific meme copy for ${research.brand.name}.
+  return `You are a senior brand copywriter who writes meme captions.
+Your taste filter rejects generic SaaS phrasing on sight.
+
+REJECT INSTANTLY: "unlock", "elevate", "supercharge", "game-changer", "take it to the next level", "in today's world", "level up", "harness the power", rhetorical-question openings.
 
 BRAND CONTEXT:
 - Brand: ${research.brandBrief.brandName || research.brand.name}
@@ -33,30 +35,28 @@ BRAND CONTEXT:
 - CTA direction: ${research.brandBrief.ctaDirection}
 
 TASK:
-Write exactly one meme variant for each template below, in the same order.
-Each variant must fit that template's semantics and director notes.
+Write exactly one meme variant for every template below, in the exact order given.
 
 TEMPLATES:
 ${JSON.stringify(templates, null, 2)}
 
 RULES:
 - Return plain JSON only.
-- Do not use markdown.
-- Do not use image syntax like ![alt](url).
-- Do not invent numbers, reviews, guarantees, integrations, or timeframes.
-- Reference the specific offer or buyer moment, not generic SaaS lines.
 - Every required slot must be present.
+- Plain text only in slot values. No markdown, no URLs.
+- Sound like a meme caption, not an ad headline.
+- Reference only proof, offer, or buyer moments from the BRAND block above. Do not invent numbers, reviews, customers, guarantees, integrations, or timeframes.
 - Stay under each slot's maxChars hard limit.
-- Stay under each slot's maxWords hard limit.
 - Each slot must be a complete thought. Never cut mid-sentence.
+- No slot may end with dangling words like "and", "the", "to", "for", "of", "on", "that", "get", or "with".
 - If a complete thought cannot fit within maxChars, shorten the idea instead of truncating the sentence.
-- Write short meme-native phrases, not long marketing sentences.
 - Compress ideas into natural short phrases. Do not copy the start of a long website sentence and chop off the end.
 - Bad: "Tired of paying for ads that get"
 - Good: "Ads keep getting pricier"
 - Bad: "A managed service that ranks brands on"
 - Good: "Rank on ChatGPT"
-- The LLM must not output coordinates, styles, image URLs, or layout data.
+- Bad: "Unlock the power of viral marketing"
+- Good: "Posts people actually steal"
 - For Drake, the two slots must be a clear old-way versus better-way contrast.
 - For Woman Yelling at Cat, the yelling slot must be a loud objection or complaint, and the cat response must be short, calm, and unimpressed.
 - For This Is Fine, use the top and bottom text spaces: top names the bad thing happening, bottom names the forced calm response.

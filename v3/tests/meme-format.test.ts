@@ -92,8 +92,10 @@ assert.equal(parsed.length, 4);
 assert.ok(!("x" in parsed[0]!));
 
 const prompt = buildMemePrompt(research);
+assert.ok(prompt.includes("Your taste filter rejects generic SaaS phrasing"));
 assert.ok(prompt.includes("Each slot must be a complete thought"));
-assert.ok(prompt.includes("Ads keep getting pricier"));
+assert.ok(prompt.includes("Posts people actually steal"));
+assert.ok(!prompt.includes("maxWords"));
 
 assert.throws(
   () => extractMemeVariantsFromResponse(JSON.stringify({
@@ -114,7 +116,7 @@ assert.throws(
       slots: Object.fromEntries(template.slots.map((slot) => [
         slot.id,
         slot.id === "level1Text"
-          ? "one two three four five six"
+          ? "x".repeat(slot.maxChars + 1)
           : `copy ${slot.id}`.slice(0, slot.maxChars),
       ])),
     })),
