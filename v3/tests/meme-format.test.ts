@@ -255,6 +255,8 @@ assert.ok(html.includes('data-meme-template="drake"'));
 assert.ok(html.includes('data-meme-artboard="drake"'));
 assert.ok(html.includes("/memes/drake.png"));
 assert.ok(html.includes('data-meme-slot="topText"'));
+assert.ok(!html.includes("-webkit-line-clamp"));
+assert.ok(!html.includes("text-overflow"));
 
 const rerolled = rerollScene(scenes, scenes[0]!, 0, createDefaultSceneLocks());
 assert.equal(rerolled.index, 1);
