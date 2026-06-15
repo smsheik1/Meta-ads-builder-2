@@ -271,6 +271,8 @@ const scenes = parsed.map((variant, index) => createMemeAdScene({
 assert.equal(scenes.length, 4);
 assert.ok(scenes.every((scene) => scene.format === "meme"));
 assert.equal(scenes[0]!.layout.templateId, "drake");
+assert.equal(scenes[0]!.creative.subheadline, research.brandBrief.offer);
+assert.ok(!scenes[0]!.creative.subheadline.includes("bottom choice"));
 
 const html = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene: scenes[0]!,
