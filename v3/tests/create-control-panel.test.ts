@@ -42,6 +42,17 @@ assert.ok(
   "Inline status feedback must be capped at two visible banners.",
 );
 assert.ok(
+  quickActionsSource.includes("data-create-saved-library-trigger") &&
+    quickActionsSource.includes("SheetContent") &&
+    quickActionsSource.includes("data-create-saved-design-item"),
+  "Saved designs must open from normal app UI, not canvas hover UI.",
+);
+assert.ok(
+  createClientSource.includes("restoreSavedDesignSelection") &&
+    createClientSource.includes("onLoadSavedDesign={onLoadSavedDesign}"),
+  "Saved designs must load back onto /create as complete AdScene payloads.",
+);
+assert.ok(
   quickActionsSource.includes("onClick={hasAudio ? onTogglePreviewPlayback : onOpenAudioPanel}") &&
     quickActionsSource.includes("disabled={hasAudio && !hasSelectedScene}") &&
     quickActionsSource.includes('aria-label={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio for this ad"}'),

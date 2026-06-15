@@ -23,6 +23,7 @@ import {
   canSaveDesignWithoutPaywall,
   createSavedDesignId,
   FREE_SAVED_DESIGN_LIMIT,
+  restoreSavedDesignSelection,
   type SavedAdSceneDesign,
 } from "@/features/create/savedDesigns";
 import { createDefaultSceneLocks, rerollScene } from "@/features/create/reroll";
@@ -920,6 +921,27 @@ function ResearchConnected() {
     }
   };
 
+  const onLoadSavedDesign = (design: SavedAdSceneDesign) => {
+    const restored = restoreSavedDesignSelection({
+      scenes: adScenes,
+      design,
+    });
+
+    resetPreviewPlayback();
+    setSelectedScene(restored.selectedScene);
+    setSelectedSceneIndex(restored.selectedSceneIndex);
+    setAdScenes(restored.scenes);
+    setAdStatus("ready");
+    setAdStatusNote("Saved design loaded. Press spacebar to keep exploring ideas.");
+    setAudioStatus(restored.selectedScene.audio.status === "generated" ? "ready" : "idle");
+    setAudioError("");
+    resetDialogueState();
+    resetShareState();
+    resetRenderState();
+    resetSaveState();
+    canvasActions.interactionReset();
+  };
+
   const onSelectAdIdea = (scene: AdScene, index: number) => {
     resetPreviewPlayback();
     setSelectedScene(scene);
@@ -1102,6 +1124,7 @@ function ResearchConnected() {
                 isAudioPlaying={isAudioPlaying}
                 onCreateRenderJob={() => void onCreateRenderJob()}
                 onCreateShareLink={() => void onCreateShareLink()}
+                onLoadSavedDesign={onLoadSavedDesign}
                 onOpenAudioPanel={onOpenAudioPanel}
                 onSaveSelectedDesign={() => void onSaveSelectedDesign()}
                 onTogglePreviewPlayback={onTogglePreviewPlayback}
@@ -1113,6 +1136,7 @@ function ResearchConnected() {
                 renderWorkerHealthy={renderWorkerHealthy}
                 saveCounterLabel={saveCounterLabel}
                 saveError={saveError}
+                savedDesigns={savedDesignItems}
                 saveStatus={saveStatus}
                 saveStatusLabel={saveStatusLabel}
                 selectedDesignIsSaved={selectedDesignIsSaved}
