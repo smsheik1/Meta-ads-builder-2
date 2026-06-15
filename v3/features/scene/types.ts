@@ -106,7 +106,7 @@ export type AdSceneBase<
     researchRunId: string;
     brandSnapshotId: string;
     model: string;
-    provider: "gemini" | "deterministic";
+    provider: "gemini" | "nvidia-nim" | "deterministic";
     generatedAt: number;
   };
 };

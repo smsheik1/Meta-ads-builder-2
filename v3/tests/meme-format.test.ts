@@ -140,9 +140,10 @@ assert.throws(
 );
 
 const retryResult = await generateMemeVariantsFromResearch(research, {
-  geminiApiKey: "test-key",
-  geminiModel: "test-model",
-  geminiGenerateContent: async ({ prompt }) => {
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimBaseUrl: "https://nim.test/v1",
+  nvidiaNimModel: "test-kimi-model",
+  nvidiaNimChatCompletion: async ({ prompt }) => {
     if (prompt.includes("previous output was invalid")) return JSON.stringify(payload);
     return JSON.stringify({
       variants: [
@@ -157,8 +158,60 @@ const retryResult = await generateMemeVariantsFromResearch(research, {
     });
   },
 });
-assert.equal(retryResult.provider, "gemini");
+assert.equal(retryResult.provider, "nvidia-nim");
+assert.equal(retryResult.model, "test-kimi-model");
+assert.equal(retryResult.providerStatus.provider, "nvidia-nim");
 assert.equal(retryResult.variants.length, 4);
+
+const brandCases = [
+  research,
+  {
+    ...research,
+    brand: {
+      ...research.brand,
+      name: "Acme CRM",
+      description: "A CRM that keeps sales follow-ups from falling through the cracks.",
+    },
+    brandBrief: {
+      ...research.brandBrief,
+      brandName: "Acme CRM",
+      offer: "A CRM that keeps sales follow-ups from falling through the cracks.",
+      audience: "Small sales teams juggling too many leads.",
+      buyerMoments: ["A hot lead goes cold because nobody followed up."],
+      proof: ["Follow-up reminders and pipeline tracking in one place."],
+      siteLanguage: ["Never miss the next follow-up"],
+      ctaDirection: "Try Acme CRM",
+    },
+  },
+  {
+    ...research,
+    brand: {
+      ...research.brand,
+      name: "CalmDesk",
+      description: "A support inbox that turns angry tickets into clear next steps.",
+    },
+    brandBrief: {
+      ...research.brandBrief,
+      brandName: "CalmDesk",
+      offer: "A support inbox that turns angry tickets into clear next steps.",
+      audience: "Support teams drowning in messy customer threads.",
+      buyerMoments: ["The inbox is on fire before lunch."],
+      proof: ["Triage, ownership, and suggested replies in one workspace."],
+      siteLanguage: ["Make support feel calmer"],
+      ctaDirection: "Try CalmDesk",
+    },
+  },
+];
+
+for (const brandCase of brandCases) {
+  const result = await generateMemeVariantsFromResearch(brandCase, {
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimModel: "test-kimi-model",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payload),
+  });
+  assert.equal(result.provider, "nvidia-nim");
+  assert.equal(result.variants.length, MEME_TEMPLATES.length);
+}
 
 const deterministic = buildDeterministicMemeVariants(research);
 assert.ok(Object.values(deterministic[0]!.slots).every((value) => !/\b(and|for|that|on|get)$/i.test(value)));
