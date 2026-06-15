@@ -112,13 +112,13 @@ function deterministicSlotsForTemplate(
       topText: limitWords(pain, 7),
       bottomText: limitWords(offer, 7),
     },
-    two_buttons: {
-      leftButton: "keep guessing",
-      rightButton: `try ${brand}`,
-      captionText: limitWords(pain, 9),
+    woman_yelling_cat: {
+      yellingText: limitWords(pain, 7),
+      catResponseText: limitWords(offer, 7),
     },
     this_is_fine: {
-      captionText: limitWords(pain, 8),
+      topText: limitWords(pain, 9),
+      bottomText: `${brand} stays calm`,
     },
     expanding_brain: {
       level1Text: "Guessing what works",

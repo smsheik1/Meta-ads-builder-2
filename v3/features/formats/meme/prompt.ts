@@ -51,6 +51,8 @@ RULES:
 - Write short meme-native phrases, not complete marketing sentences.
 - The LLM must not output coordinates, styles, image URLs, or layout data.
 - For Drake, the two slots must be a clear old-way versus better-way contrast.
+- For Woman Yelling at Cat, the yelling slot must be a loud objection or complaint, and the cat response must be short, calm, and unimpressed.
+- For This Is Fine, use the top and bottom text spaces: top names the bad thing happening, bottom names the forced calm response.
 - For Expanding Brain, the four slots must form a real escalation ladder: naive move, smarter move, specific brand insight, punchline/aha. Do not write four disconnected benefits.
 - For This Is Fine, the caption must name the fire and must not say "this is fine".
 - If a template feels odd for the brand, lean into useful absurdity instead of skipping it.

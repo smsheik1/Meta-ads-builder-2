@@ -73,7 +73,7 @@ const research: StoredWebsiteResearchResult = {
 assert.equal(MEME_TEMPLATES.length, 4);
 assert.deepEqual(MEME_TEMPLATES.map((template) => template.id), [
   "drake",
-  "two_buttons",
+  "woman_yelling_cat",
   "this_is_fine",
   "expanding_brain",
 ]);
@@ -95,7 +95,7 @@ assert.throws(
     variants: [
       {
         templateId: "this_is_fine",
-        slots: { captionText: "this is fine" },
+        slots: { topText: "this is fine", bottomText: "stay calm" },
       },
     ],
   })),
@@ -165,7 +165,9 @@ assert.ok(html.includes('data-meme-slot="topText"'));
 const rerolled = rerollScene(scenes, scenes[0]!, 0, createDefaultSceneLocks());
 assert.equal(rerolled.index, 1);
 assert.equal(rerolled.scene?.format, "meme");
-assert.equal(rerolled.scene?.layout.templateId, "two_buttons");
+assert.equal(rerolled.scene?.layout.templateId, "woman_yelling_cat");
+assert.ok(deterministic.some((variant) => variant.templateId === "this_is_fine" && "topText" in variant.slots && "bottomText" in variant.slots));
+assert.ok(deterministic.some((variant) => variant.templateId === "woman_yelling_cat" && "yellingText" in variant.slots && "catResponseText" in variant.slots));
 
 const savedDesign = {
   id: createSavedDesignId(scenes[0]!),

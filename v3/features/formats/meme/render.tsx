@@ -21,6 +21,7 @@ function getSlotText(scene: MemeAdScene, slot: MemeSlot) {
 
 function getSlotStyle(slot: MemeSlot, templateWidth: number, templateHeight: number): CSSProperties {
   const fontSize = Math.max(11, Math.min(slot.fontSize, Math.floor(slot.height / Math.max(1, slot.maxLines) * 0.72)));
+  const posterText = slot.textStyle === "poster";
 
   return {
     position: "absolute",
@@ -34,14 +35,16 @@ function getSlotStyle(slot: MemeSlot, templateWidth: number, templateHeight: num
     overflow: "hidden",
     padding: "0.35em",
     textAlign: slot.align || "center",
-    color: "#fff",
-    fontFamily: "Impact, Haettenschweiler, 'Arial Black', sans-serif",
+    color: posterText ? "#050505" : "#fff",
+    fontFamily: posterText
+      ? "Arial Black, Impact, var(--font-geist-sans), sans-serif"
+      : "Impact, Haettenschweiler, 'Arial Black', sans-serif",
     fontSize: `clamp(12px, ${(fontSize / templateWidth) * 100}cqw, ${fontSize}px)`,
     fontWeight: 900,
-    lineHeight: 1.05,
+    lineHeight: posterText ? 0.96 : 1.05,
     letterSpacing: "0.01em",
     overflowWrap: "break-word",
-    textShadow,
+    textShadow: posterText ? "none" : textShadow,
     textTransform: slot.textCase === "uppercase" ? "uppercase" : "none",
   };
 }
