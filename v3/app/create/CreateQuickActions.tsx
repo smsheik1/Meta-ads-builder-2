@@ -89,8 +89,8 @@ export function CreateQuickActions({
   shareStatus: "idle" | "loading" | "ready" | "error";
   shareUrl: string;
 }) {
-  const renderWorkerOffline = renderWorkerHealthy === false;
   const memeSceneSelected = selectedFormat === "meme";
+  const renderWorkerOffline = !memeSceneSelected && renderWorkerHealthy === false;
   const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline;
   const downloadLabel = memeSceneSelected ? "PNG" : "MP4";
   const downloadTitle = memeSceneSelected
