@@ -151,7 +151,7 @@ function ResearchConnected() {
   const [shareStatus, setShareStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [renderStatus, setRenderStatus] = useState<"idle" | "loading" | "queued" | "error">("idle");
   const [result, setResult] = useState<StoredWebsiteResearchResult | null>(null);
-  const [selectedAdFormat, setSelectedAdFormat] = useState<AdFormatId>("visualizer");
+  const [selectedAdFormat, setSelectedAdFormat] = useState<AdFormatId>("meme");
   const [selectedMemeModel, setSelectedMemeModel] = useState(DEFAULT_NVIDIA_NIM_MEME_MODEL);
   const [selectedVisualizerModel, setSelectedVisualizerModel] = useState(DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL);
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);

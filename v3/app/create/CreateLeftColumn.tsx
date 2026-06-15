@@ -230,8 +230,8 @@ export function CreateLeftColumn({
             value={format}
             onChange={(event) => onFormatChange(event.target.value as AdFormatId)}
           >
-            <option value="visualizer">Visualizer Ad</option>
             <option value="meme">Meme Ad</option>
+            <option value="visualizer">Visualizer Ad</option>
           </select>
           <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
             {format === "meme" ? "Four brand-aligned meme drafts, ready to spacebar through." : "Audio visualizer ads with voice, captions, and MP4 export."}
