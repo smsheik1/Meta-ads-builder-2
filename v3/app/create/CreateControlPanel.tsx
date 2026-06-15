@@ -1,10 +1,11 @@
 import { AudioLines, Captions, Grid2X2, Palette, Type } from "lucide-react";
 import type { PreviewPlatform } from "./CreatePreviewChrome";
+import type { CanvasInteractionPanel } from "@/features/create/canvasInteractionStore";
 import type { AdScene, AdSceneVisualizerStyle, VisualizerAdSceneStyle } from "@/features/scene/types";
 import { visualizerSceneVariants } from "@/features/scene/visualizerVariants";
 import { visualizerEditorSchema } from "@/features/formats/visualizer/schema";
 
-export type CreatePanelId = "text" | "style" | "format";
+export type CreatePanelId = CanvasInteractionPanel;
 
 const panelOptions: Array<{ id: CreatePanelId; label: string; Icon: typeof Type }> = [
   { id: "text", label: "Text", Icon: Type },

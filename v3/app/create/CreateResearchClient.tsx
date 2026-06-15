@@ -18,7 +18,7 @@ import type {
   RenderFlashState,
 } from "@/features/formats/types";
 import { getFormatModule } from "@/features/formats/registry";
-import { useCanvasActions } from "@/features/create/canvasInteractionStore";
+import { useActiveCanvasPanel, useCanvasActions } from "@/features/create/canvasInteractionStore";
 import {
   canSaveDesignWithoutPaywall,
   createSavedDesignId,
@@ -39,7 +39,7 @@ import { getV3ConvexUrl } from "@/lib/convexEnv";
 import { CreateCaptionModal } from "./CreateCaptionModal";
 import { BrandDumpModal } from "./CreateBrandDumpModal";
 import { CreateCanvasColumn } from "./CreateCanvasColumn";
-import { CreateControlPanel, type CreatePanelId } from "./CreateControlPanel";
+import { CreateControlPanel } from "./CreateControlPanel";
 import { CreateCreativeBriefCard } from "./CreateCreativeBriefCard";
 import { CreateDialogueModal } from "./CreateDialogueModal";
 import { CreateIdeasList } from "./CreateIdeasList";
@@ -150,7 +150,6 @@ function ResearchConnected() {
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
   const [previewPlatform, setPreviewPlatform] = useState<PreviewPlatform>("instagram-feed");
-  const [activeCreatePanel, setActiveCreatePanel] = useState<CreatePanelId | null>(null);
   const [rerollCount, setRerollCount] = useState(0);
   const [rerollFlash, setRerollFlash] = useState<RenderFlashState | null>(null);
   const [placeholderVariantIndex, setPlaceholderVariantIndex] = useState(0);
@@ -191,6 +190,7 @@ function ResearchConnected() {
   const saveDesign = useMutation(api.savedDesigns.saveFromScene);
   const savedDesignItems = savedDesigns || [];
   const canvasActions = useCanvasActions();
+  const activeCreatePanel = useActiveCanvasPanel();
   const brandDetailsOpen = activeModal === "brand-details";
   const dialoguePanelOpen = activeModal === "dialogue";
   const captionPanelOpen = activeModal === "captions";
@@ -1180,7 +1180,10 @@ function ResearchConnected() {
                 hasSelectedScene={Boolean(selectedScene)}
                 onOpenAudioPanel={onOpenAudioPanel}
                 onOpenCaptionEditor={openCaptionPanel}
-                onPanelChange={setActiveCreatePanel}
+                onPanelChange={(panel) => {
+                  if (panel) canvasActions.openPanel(panel);
+                  else canvasActions.closePanel();
+                }}
                 onPreviewPlatformChange={setPreviewPlatform}
                 onUpdateCreativeField={onUpdateCreativeField}
                 onUpdateStyleColor={onUpdateStyleColor}

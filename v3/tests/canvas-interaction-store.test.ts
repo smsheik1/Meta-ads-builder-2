@@ -36,6 +36,14 @@ assert.equal(pausedInDialogueModal.uiStatus, "modal:dialogue", "Stopping playbac
 assert.equal(pausedInDialogueModal.playbackStatus, "paused", "Stopping playback must preserve modal state.");
 assert.equal(getCanvasCanReroll(pausedInDialogueModal), false, "Modal still blocks reroll after playback stops.");
 
+const textPanelOpen = reduceCanvasInteractionState(idle, { type: "openPanel", panel: "text" });
+assert.equal(textPanelOpen.activePanel, "text", "Panel state must live in the canvas interaction store.");
+assert.equal(getCanvasCanReroll(textPanelOpen), true, "Opening a normal side panel must not block full-scene reroll.");
+const textPanelClosed = reduceCanvasInteractionState(textPanelOpen, { type: "closePanel", panel: "text" });
+assert.equal(textPanelClosed.activePanel, null, "Closing the active panel should clear panel state.");
+const wrongPanelClosed = reduceCanvasInteractionState(textPanelOpen, { type: "closePanel", panel: "style" });
+assert.equal(wrongPanelClosed.activePanel, "text", "Closing a different panel should not clear the active panel.");
+
 const reset = reduceCanvasInteractionState(playingInDialogueModal, { type: "interactionReset" });
 assert.deepEqual(reset, idle, "Interaction reset must clear only transient UI/playback state.");
 
@@ -63,6 +71,10 @@ for (const { file, source } of createSources) {
   assert.ok(
     !/\bconst\s*\[\s*(?:canvasMode|uiStatus|canvasUiStatus)\s*,[^\]]+\]\s*=\s*useState\b/.test(source),
     `${file} must not keep canvas UI status in local useState.`,
+  );
+  assert.ok(
+    !/\bconst\s*\[\s*activeCreatePanel\s*,[^\]]+\]\s*=\s*useState\b/.test(source),
+    `${file} must not keep /create panel state in local useState.`,
   );
 }
 
