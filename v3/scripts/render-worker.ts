@@ -17,6 +17,7 @@ const v3Root = path.resolve(dirname, "..");
 const repoRoot = path.resolve(v3Root, "..");
 const renderEntry = path.join(v3Root, "remotion-entry", "index.ts");
 const outputDir = path.join(v3Root, "tmp", "renders");
+const bundleDir = path.join(v3Root, "tmp", "remotion-bundle");
 const heartbeatIntervalMs = 5000;
 
 type ClaimedRenderJob = {
@@ -173,8 +174,10 @@ async function main() {
   const rendererVersion = getWorkerRendererVersion();
   const workerId = `${hostname()}-${process.pid}`;
   const client = new ConvexHttpClient(getConvexUrl());
+  await rm(bundleDir, { recursive: true, force: true });
   const serveUrl = await bundle({
     entryPoint: renderEntry,
+    outDir: bundleDir,
     webpackOverride: (config) => config,
   });
   await mkdir(outputDir, { recursive: true });
@@ -193,6 +196,7 @@ async function main() {
     } while (watch);
   } finally {
     clearInterval(heartbeatTimer);
+    await rm(bundleDir, { recursive: true, force: true });
   }
 }
 
