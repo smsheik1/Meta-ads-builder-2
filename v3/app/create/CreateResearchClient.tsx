@@ -17,6 +17,7 @@ import type {
   RenderFlashRole,
   RenderFlashState,
 } from "@/features/formats/types";
+import { DEFAULT_NVIDIA_NIM_MEME_MODEL } from "@/features/formats/meme/models";
 import { getFormatModule } from "@/features/formats/registry";
 import { useActiveCanvasPanel, useCanvasActions } from "@/features/create/canvasInteractionStore";
 import {
@@ -148,6 +149,7 @@ function ResearchConnected() {
   const [renderStatus, setRenderStatus] = useState<"idle" | "loading" | "queued" | "error">("idle");
   const [result, setResult] = useState<StoredWebsiteResearchResult | null>(null);
   const [selectedAdFormat, setSelectedAdFormat] = useState<AdFormatId>("visualizer");
+  const [selectedMemeModel, setSelectedMemeModel] = useState(DEFAULT_NVIDIA_NIM_MEME_MODEL);
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
@@ -599,12 +601,15 @@ function ResearchConnected() {
     researchRunId: Id<"researchRuns">,
     count = 50,
     format: AdFormatId = "visualizer",
+    memeModel?: string,
   ) => {
-    const nextGeneration = await generateAdScenes({
+    const generationArgs = {
       researchRunId,
       count,
       format,
-    }) as AdSceneGenerationResponse;
+      ...(format === "meme" && memeModel ? { memeModel } : {}),
+    };
+    const nextGeneration = await generateAdScenes(generationArgs) as AdSceneGenerationResponse;
 
     return nextGeneration.scenes || [];
   };
@@ -712,6 +717,7 @@ function ResearchConnected() {
         nextResult.researchRunId as Id<"researchRuns">,
         selectedAdFormat === "meme" ? 4 : 50,
         selectedAdFormat,
+        selectedMemeModel,
       );
       setProgressStage("preparing-canvas");
       setResult(nextResult);
@@ -1131,7 +1137,9 @@ function ResearchConnected() {
           freeRunsLabel={billingStatus && !billingStatus.paid && billingStatus.freeRemaining !== null
             ? `${billingStatus.freeRemaining} of ${billingStatus.freeLimit} free runs left`
             : ""}
+          memeModel={selectedMemeModel}
           onFormatChange={setSelectedAdFormat}
+          onMemeModelChange={setSelectedMemeModel}
           onSubmit={onSubmit}
           onUrlChange={setUrl}
           progressFacts={pendingProgressFacts}

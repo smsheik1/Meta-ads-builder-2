@@ -1,4 +1,5 @@
 import { Check, Circle, Loader2, Wand2 } from "lucide-react";
+import { NIM_MEME_MODEL_OPTIONS } from "@/features/formats/meme/models";
 import type { AdFormatId } from "@/features/scene/types";
 
 type LoadStatus = "idle" | "loading" | "ready" | "error";
@@ -112,7 +113,9 @@ export function CreateLeftColumn({
   error,
   format,
   freeRunsLabel,
+  memeModel,
   onFormatChange,
+  onMemeModelChange,
   onSubmit,
   onUrlChange,
   progressFacts,
@@ -126,7 +129,9 @@ export function CreateLeftColumn({
   error: string;
   format: AdFormatId;
   freeRunsLabel?: string;
+  memeModel: string;
   onFormatChange: (format: AdFormatId) => void;
+  onMemeModelChange: (model: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onUrlChange: (url: string) => void;
   progressFacts: WebsiteSubmitProgressFacts | null;
@@ -185,6 +190,25 @@ export function CreateLeftColumn({
             {format === "meme" ? "Four brand-aligned meme drafts, ready to spacebar through." : "Audio visualizer ads with voice, captions, and MP4 export."}
           </span>
         </label>
+
+        {format === "meme" ? (
+          <label className="block">
+            <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Meme model</span>
+            <select
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
+              aria-label="Meme generation model"
+              value={memeModel}
+              onChange={(event) => onMemeModelChange(event.target.value)}
+            >
+              {NIM_MEME_MODEL_OPTIONS.map((model) => (
+                <option key={model.id} value={model.id}>{model.label}</option>
+              ))}
+            </select>
+            <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
+              Development picker for comparing meme copy models.
+            </span>
+          </label>
+        ) : null}
 
         <button
           type="submit"

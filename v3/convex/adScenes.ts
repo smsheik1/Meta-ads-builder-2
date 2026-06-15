@@ -18,14 +18,15 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     researchRunId: v.id("researchRuns"),
     count: v.optional(v.number()),
     format: v.optional(v.union(v.literal("visualizer"), v.literal("meme"))),
+    memeModel: v.optional(v.string()),
   },
-  handler: async (ctx, { researchRunId, count, format = "visualizer" }) => {
+  handler: async (ctx, { researchRunId, count, format = "visualizer", memeModel }) => {
     const research = await ctx.runQuery(internal.adSceneStorage.loadResearchForGeneration, {
       researchRunId,
     });
     const generationBatchId = createGenerationBatchId();
     const generation = format === "meme"
-      ? await generateMemeVariantsFromResearch(research)
+      ? await generateMemeVariantsFromResearch(research, { nvidiaNimModel: memeModel })
       : null;
     const visualizerGeneration = format === "visualizer"
       ? await generateAdCandidatesFromResearch(research, { count })

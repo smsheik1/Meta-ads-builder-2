@@ -1,8 +1,8 @@
 import type { StoredWebsiteResearchResult } from "../../research/types";
+import { DEFAULT_NVIDIA_NIM_MEME_MODEL } from "./models";
 import { buildMemePrompt } from "./prompt";
 import { MEME_TEMPLATES, getMemeTemplate, type MemeTemplate } from "./templates";
 
-export const DEFAULT_NVIDIA_NIM_MEME_MODEL = "moonshotai/kimi-k2.6";
 export const DEFAULT_NVIDIA_NIM_BASE_URL = "https://integrate.api.nvidia.com/v1";
 
 export type MemeVariant = {
