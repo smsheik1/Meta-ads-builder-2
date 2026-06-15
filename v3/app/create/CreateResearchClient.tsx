@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
+import { toPng } from "html-to-image";
 import {
   ShieldAlert,
 } from "lucide-react";
@@ -64,6 +65,14 @@ const slowResearchMessageDelayMs = 8000;
 
 const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const fallbackUploadedAudioDurationMs = 8000;
+
+function slugifyDownloadName(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48) || "wiggly-ad";
+}
 
 type AdSceneGenerationResponse = {
   scenes: AdScene[];
@@ -166,6 +175,7 @@ function ResearchConnected() {
   const [pendingProgressFacts, setPendingProgressFacts] = useState<WebsiteSubmitProgressFacts | null>(null);
   const [showSlowResearchMessage, setShowSlowResearchMessage] = useState(false);
   const [renderJobId, setRenderJobId] = useState<Id<"renderJobs"> | null>(null);
+  const [memeDownloadBusy, setMemeDownloadBusy] = useState(false);
   const renderJob = useQuery(api.renderJobs.getStatus, renderJobId ? { renderJobId } : "skip");
   const renderWorkerReadiness = useQuery(api.renderJobs.workerReadiness, {});
   const [shareUrl, setShareUrl] = useState("");
@@ -1032,6 +1042,39 @@ function ResearchConnected() {
     }
   };
 
+  const onDownloadMemePng = async () => {
+    if (!selectedScene || selectedScene.format !== "meme" || memeDownloadBusy) return;
+
+    const artboard = createEditorScopeRef.current?.querySelector<HTMLElement>("[data-meme-artboard]");
+    if (!artboard) {
+      setRenderStatus("error");
+      setRenderError("Could not find the meme canvas to download.");
+      return;
+    }
+
+    setMemeDownloadBusy(true);
+    setRenderError("");
+
+    try {
+      await document.fonts?.ready;
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+      const dataUrl = await toPng(artboard, {
+        cacheBust: true,
+        pixelRatio: 3,
+      });
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = `${slugifyDownloadName(`${selectedScene.brand.name}-${selectedScene.creative.headline}`)}.png`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (nextError) {
+      setRenderError(nextError instanceof Error ? nextError.message : "PNG download failed.");
+    } finally {
+      setMemeDownloadBusy(false);
+    }
+  };
+
   const currentRenderStatus = renderJob?.status || renderStatus;
   const renderWorkerHealthy = renderWorkerReadiness?.workerHealthy ?? null;
   const renderProgress = renderJob?.progress ?? (renderStatus === "loading" ? 2 : 0);
@@ -1181,6 +1224,7 @@ function ResearchConnected() {
                 isAudioPlaying={isAudioPlaying}
                 onCreateRenderJob={() => void onCreateRenderJob()}
                 onCreateShareLink={() => void onCreateShareLink()}
+                onDownloadMemePng={() => void onDownloadMemePng()}
                 onLoadSavedDesign={onLoadSavedDesign}
                 onOpenAudioPanel={onOpenAudioPanel}
                 onSaveSelectedDesign={() => void onSaveSelectedDesign()}
@@ -1191,6 +1235,7 @@ function ResearchConnected() {
                 renderErrorMessage={renderJob?.error || renderError}
                 renderStatusLabel={renderStatusLabel}
                 renderWorkerHealthy={renderWorkerHealthy}
+                memeDownloadBusy={memeDownloadBusy}
                 saveCounterLabel={saveCounterLabel}
                 saveError={saveError}
                 savedDesigns={savedDesignItems}
