@@ -1,4 +1,4 @@
-import { access, mkdir, readFile } from "node:fs/promises";
+import { access, mkdir, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { bundle } from "@remotion/bundler";
@@ -14,6 +14,7 @@ const v3Root = path.resolve(dirname, "..");
 const repoRoot = path.resolve(v3Root, "..");
 const renderEntry = path.join(v3Root, "remotion-entry", "index.ts");
 const outputDir = path.join(v3Root, "tmp", "renders");
+const healthBundleDir = path.join(v3Root, "tmp", "runtime-health-remotion-bundle");
 
 type HealthStatus = "pass" | "fail";
 
@@ -157,8 +158,10 @@ async function checkRemotionRuntime() {
 
   try {
     await mkdir(outputDir, { recursive: true });
+    await rm(healthBundleDir, { recursive: true, force: true });
     const serveUrl = await bundle({
       entryPoint: renderEntry,
+      outDir: healthBundleDir,
       webpackOverride: (config) => config,
     });
     const compositions = await getCompositions(serveUrl);
@@ -179,6 +182,8 @@ async function checkRemotionRuntime() {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Remotion check failed.";
     checks.push(fail("remotion:bundle", message));
+  } finally {
+    await rm(healthBundleDir, { recursive: true, force: true });
   }
 
   return checks;

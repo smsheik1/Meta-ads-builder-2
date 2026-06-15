@@ -83,13 +83,17 @@ GEMINI_API_KEY=
 DEEPGRAM_API_KEY=
 ```
 
+Website research tries Jina Reader first with an 8 second timeout. `FIRECRAWL_API_KEY`
+is still needed as the hard-site fallback for weak, blocked, timed-out, or JS-heavy
+Jina reads.
+
 Never commit real API keys.
 
 ### Local Convex Env
 
 Convex actions do not automatically inherit `v3/.env.local` or the root `.env`.
-If local website research says Firecrawl is not configured, set the action env
-vars on the local Convex deployment:
+If local website research needs the Firecrawl fallback, set the action env vars
+on the local Convex deployment:
 
 ```bash
 cd v3
@@ -108,9 +112,13 @@ Repeat that command for each env var used by Convex actions through the
 FIRECRAWL_API_KEY=
 GEMINI_API_KEY=
 GEMINI_ENABLED=true
-GEMINI_AD_MODEL=gemini-3.1-flash-lite
-GEMINI_BRAND_CURATOR_MODEL=gemini-3.1-flash-lite
 GEMINI_DIALOGUE_MODEL=gemini-3.1-flash-lite
+NVIDIA_NIM_API_KEY=
+NVIDIA_NIM_AD_MODEL=moonshotai/kimi-k2.6
+NVIDIA_NIM_BRAND_CURATOR_MODEL=moonshotai/kimi-k2.6
+NVIDIA_NIM_MEME_MODEL=moonshotai/kimi-k2.6
+NVIDIA_NIM_BASE_URL=https://integrate.api.nvidia.com/v1
+NVIDIA_NIM_ENABLED=true
 DEEPGRAM_API_KEY=
 DEEPGRAM_ENABLED=true
 TTS_ENABLED=true

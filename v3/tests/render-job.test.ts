@@ -22,6 +22,10 @@ assert.ok(
   "Render worker must only claim jobs for its own renderer version.",
 );
 assert.ok(
+  workerSource.includes("outDir: bundleDir") && workerSource.includes("rm(bundleDir"),
+  "Render worker must use and clean a controlled Remotion bundle directory instead of leaking default /tmp bundles.",
+);
+assert.ok(
   remotionSource.includes("@remotion/media") && remotionSource.includes("<Audio"),
   "Remotion render path must layer generated audio without changing the visual renderer.",
 );

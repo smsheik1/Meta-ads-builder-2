@@ -1,6 +1,10 @@
-import { GoogleGenAI } from "@google/genai";
 import type { StoredWebsiteResearchResult } from "../../research/types";
-import { DEFAULT_GEMINI_AD_IDEA_MODEL } from "../../ad-generation/generate";
+import {
+  callNvidiaNimChat,
+  DEFAULT_NVIDIA_NIM_BASE_URL,
+  type NvidiaNimChatCompletion,
+} from "../../llm/nvidiaNim";
+import { DEFAULT_NVIDIA_NIM_MEME_MODEL } from "../../llm/nvidiaNimModels";
 import { buildMemePrompt } from "./prompt";
 import { MEME_TEMPLATES, getMemeTemplate, type MemeTemplate } from "./templates";
 
@@ -12,20 +16,19 @@ export type MemeVariant = {
 export type GenerateMemeVariantsResult = {
   variants: MemeVariant[];
   model: string;
-  provider: "gemini" | "deterministic";
+  provider: "nvidia-nim" | "deterministic";
   providerStatus: {
-    provider: "gemini";
+    provider: "nvidia-nim";
     status: "used" | "skipped" | "failed";
     reason: string;
   };
 };
 
-type GeminiGenerateContent = (input: { model: string; prompt: string }) => Promise<string>;
-
 type GenerateMemeVariantsOptions = {
-  geminiApiKey?: string;
-  geminiGenerateContent?: GeminiGenerateContent;
-  geminiModel?: string;
+  nvidiaNimApiKey?: string;
+  nvidiaNimBaseUrl?: string;
+  nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
+  nvidiaNimModel?: string;
   timeoutMs?: number;
 };
 
@@ -94,47 +97,9 @@ const parseJsonObject = (value: string, providerLabel = "AI provider") => {
   return JSON.parse(jsonText) as Record<string, unknown>;
 };
 
-const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, label: string) => {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<never>((_, reject) => {
-        timeout = setTimeout(() => reject(new Error(`${label} timed out.`)), timeoutMs);
-      }),
-    ]);
-  } finally {
-    if (timeout) clearTimeout(timeout);
-  }
-};
-
-const callGemini = async ({
-  apiKey,
-  model,
-  prompt,
-  timeoutMs,
-  geminiGenerateContent,
-}: {
-  apiKey: string;
-  model: string;
-  prompt: string;
-  timeoutMs: number;
-  geminiGenerateContent?: GeminiGenerateContent;
-}) => {
-  if (geminiGenerateContent) {
-    return withTimeout(geminiGenerateContent({ model, prompt }), timeoutMs, "Gemini meme generation");
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
-  const response = await withTimeout(ai.models.generateContent({
-    model,
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-    },
-  }), timeoutMs, "Gemini meme generation");
-
-  return response.text || "{\"variants\":[]}";
+type ExtractMemeVariantsOptions = {
+  providerLabel?: string;
+  repairSlotText?: boolean;
 };
 
 function deterministicSlotsForTemplate(
@@ -181,8 +146,12 @@ export function buildDeterministicMemeVariants(research: StoredWebsiteResearchRe
   }));
 }
 
-export function extractMemeVariantsFromResponse(content: string): MemeVariant[] {
-  const payload = parseJsonObject(content, "Gemini");
+export function extractMemeVariantsFromResponse(
+  content: string,
+  options: ExtractMemeVariantsOptions = {},
+): MemeVariant[] {
+  const providerLabel = options.providerLabel || "Meme provider";
+  const payload = parseJsonObject(content, providerLabel);
   const variants = Array.isArray(payload.variants) ? payload.variants : [];
   const byTemplate = new Map<string, MemeVariant>();
 
@@ -199,7 +168,10 @@ export function extractMemeVariantsFromResponse(content: string): MemeVariant[] 
     const slots: Record<string, string> = {};
     let valid = true;
     for (const slot of template.slots) {
-      const text = normalizeSlotText(slotsPayload[slot.id]);
+      const rawText = normalizeSlotText(slotsPayload[slot.id]);
+      const text = options.repairSlotText && (rawText.length > slot.maxChars || endsWithDanglingWord(rawText))
+        ? fitSlotText(rawText, slot.maxWords, slot.maxChars)
+        : rawText;
       if (!text || text.length > slot.maxChars) valid = false;
       if (endsWithDanglingWord(text)) valid = false;
       if (template.id === "this_is_fine" && /this\s+is\s+fine/i.test(text)) valid = false;
@@ -209,7 +181,7 @@ export function extractMemeVariantsFromResponse(content: string): MemeVariant[] 
   }
 
   const normalized = MEME_TEMPLATES.map((template) => byTemplate.get(template.id)).filter(Boolean) as MemeVariant[];
-  if (normalized.length !== MEME_TEMPLATES.length) throw new Error("Gemini returned incomplete meme variants.");
+  if (normalized.length !== MEME_TEMPLATES.length) throw new Error(`${providerLabel} returned incomplete meme variants.`);
   return normalized;
 }
 
@@ -220,53 +192,68 @@ export async function generateMemeVariantsFromResearch(
   const fallback = buildDeterministicMemeVariants(research);
   const prompt = buildMemePrompt(research);
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const geminiModel = options.geminiModel || process.env.GEMINI_AD_MODEL || DEFAULT_GEMINI_AD_IDEA_MODEL;
-  const geminiApiKey = options.geminiApiKey ?? process.env.GEMINI_API_KEY;
+  const nvidiaNimModel = options.nvidiaNimModel
+    || process.env.NVIDIA_NIM_MEME_MODEL
+    || DEFAULT_NVIDIA_NIM_MEME_MODEL;
+  const nvidiaNimBaseUrl = options.nvidiaNimBaseUrl
+    || process.env.NVIDIA_NIM_BASE_URL
+    || DEFAULT_NVIDIA_NIM_BASE_URL;
+  const nvidiaNimApiKey = options.nvidiaNimApiKey ?? process.env.NVIDIA_NIM_API_KEY;
 
-  if (geminiApiKey && !isDisabled(process.env.GEMINI_ENABLED)) {
+  if (nvidiaNimApiKey && !isDisabled(process.env.NVIDIA_NIM_ENABLED)) {
     try {
-      const content = await callGemini({
-        apiKey: geminiApiKey,
-        model: geminiModel,
+      const content = await callNvidiaNimChat({
+        apiKey: nvidiaNimApiKey,
+        baseUrl: nvidiaNimBaseUrl,
+        label: "NVIDIA NIM meme generation",
+        model: nvidiaNimModel,
+        nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
         prompt,
         timeoutMs,
-        geminiGenerateContent: options.geminiGenerateContent,
       });
       let variants: MemeVariant[];
       try {
-        variants = extractMemeVariantsFromResponse(content);
+        variants = extractMemeVariantsFromResponse(content, {
+          providerLabel: "NVIDIA NIM",
+          repairSlotText: true,
+        });
       } catch {
-        const retryContent = await callGemini({
-          apiKey: geminiApiKey,
-          model: geminiModel,
+        const retryContent = await callNvidiaNimChat({
+          apiKey: nvidiaNimApiKey,
+          baseUrl: nvidiaNimBaseUrl,
+          label: "NVIDIA NIM meme generation",
+          model: nvidiaNimModel,
+          nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
           prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Every required slot must be present, under maxChars, and a complete thought. Return only the JSON object.`,
           timeoutMs,
-          geminiGenerateContent: options.geminiGenerateContent,
         });
-        variants = extractMemeVariantsFromResponse(retryContent);
+        variants = extractMemeVariantsFromResponse(retryContent, {
+          providerLabel: "NVIDIA NIM",
+          repairSlotText: true,
+        });
       }
 
       return {
         variants,
-        model: geminiModel,
-        provider: "gemini",
+        model: nvidiaNimModel,
+        provider: "nvidia-nim",
         providerStatus: {
-          provider: "gemini",
+          provider: "nvidia-nim",
           status: "used",
-          reason: `Generated ${MEME_TEMPLATES.length} meme ideas with ${geminiModel}.`,
+          reason: `Generated ${MEME_TEMPLATES.length} meme ideas with ${nvidiaNimModel}.`,
         },
       };
     } catch (error) {
       const reason = error instanceof Error
         ? `${error.message} Used deterministic meme ideas.`
-        : "Gemini failed; used deterministic meme ideas.";
+        : "NVIDIA NIM failed; used deterministic meme ideas.";
 
       return {
         variants: fallback,
-        model: geminiModel,
+        model: nvidiaNimModel,
         provider: "deterministic",
         providerStatus: {
-          provider: "gemini",
+          provider: "nvidia-nim",
           status: "failed",
           reason,
         },
@@ -276,12 +263,12 @@ export async function generateMemeVariantsFromResearch(
 
   return {
     variants: fallback,
-    model: geminiModel,
+    model: nvidiaNimModel,
     provider: "deterministic",
     providerStatus: {
-      provider: "gemini",
+      provider: "nvidia-nim",
       status: "skipped",
-      reason: "Gemini was not configured; used deterministic meme ideas.",
+      reason: "NVIDIA NIM was not configured; used deterministic meme ideas.",
     },
   };
 }

@@ -1,4 +1,8 @@
 import { Check, Circle, Loader2, Wand2 } from "lucide-react";
+import {
+  NIM_MEME_MODEL_OPTIONS,
+  NIM_VISUALIZER_MODEL_OPTIONS,
+} from "@/features/llm/nvidiaNimModels";
 import type { AdFormatId } from "@/features/scene/types";
 
 type LoadStatus = "idle" | "loading" | "ready" | "error";
@@ -13,6 +17,11 @@ export type WebsiteSubmitProgressFacts = {
 };
 
 const pillClass = "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-slate-500 shadow-sm";
+
+type ModelOption = {
+  id: string;
+  label: string;
+};
 
 const getProgressRows = (format: AdFormatId) => [
   { id: "reading-site", label: "Reading website" },
@@ -106,13 +115,52 @@ function CreateResearchProgressCard({
   );
 }
 
+function ModelSelect({
+  ariaLabel,
+  helper,
+  label,
+  onChange,
+  options,
+  value,
+}: {
+  ariaLabel: string;
+  helper: string;
+  label: string;
+  onChange: (model: string) => void;
+  options: readonly ModelOption[];
+  value: string;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">{label}</span>
+      <select
+        className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
+        aria-label={ariaLabel}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      >
+        {options.map((model) => (
+          <option key={model.id} value={model.id}>{model.label}</option>
+        ))}
+      </select>
+      <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
+        {helper}
+      </span>
+    </label>
+  );
+}
+
 export function CreateLeftColumn({
   adScenesCount,
   adStatus,
   error,
   format,
   freeRunsLabel,
+  memeModel,
+  visualizerModel,
   onFormatChange,
+  onMemeModelChange,
+  onVisualizerModelChange,
   onSubmit,
   onUrlChange,
   progressFacts,
@@ -126,7 +174,11 @@ export function CreateLeftColumn({
   error: string;
   format: AdFormatId;
   freeRunsLabel?: string;
+  memeModel: string;
+  visualizerModel: string;
   onFormatChange: (format: AdFormatId) => void;
+  onMemeModelChange: (model: string) => void;
+  onVisualizerModelChange: (model: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onUrlChange: (url: string) => void;
   progressFacts: WebsiteSubmitProgressFacts | null;
@@ -178,13 +230,35 @@ export function CreateLeftColumn({
             value={format}
             onChange={(event) => onFormatChange(event.target.value as AdFormatId)}
           >
-            <option value="visualizer">Visualizer Ad</option>
             <option value="meme">Meme Ad</option>
+            <option value="visualizer">Visualizer Ad</option>
           </select>
           <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
             {format === "meme" ? "Four brand-aligned meme drafts, ready to spacebar through." : "Audio visualizer ads with voice, captions, and MP4 export."}
           </span>
         </label>
+
+        {format === "visualizer" ? (
+          <ModelSelect
+            ariaLabel="Visualizer generation model"
+            helper="Development picker for comparing visualizer copy models."
+            label="Visualizer model"
+            onChange={onVisualizerModelChange}
+            options={NIM_VISUALIZER_MODEL_OPTIONS}
+            value={visualizerModel}
+          />
+        ) : null}
+
+        {format === "meme" ? (
+          <ModelSelect
+            ariaLabel="Meme generation model"
+            helper="Development picker for comparing meme copy models."
+            label="Meme model"
+            onChange={onMemeModelChange}
+            options={NIM_MEME_MODEL_OPTIONS}
+            value={memeModel}
+          />
+        ) : null}
 
         <button
           type="submit"

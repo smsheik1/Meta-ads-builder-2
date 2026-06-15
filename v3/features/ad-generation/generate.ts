@@ -1,4 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
+import {
+  callNvidiaNimChat,
+  DEFAULT_NVIDIA_NIM_BASE_URL,
+  type NvidiaNimChatCompletion,
+} from "../llm/nvidiaNim";
+import { DEFAULT_NVIDIA_NIM_AD_IDEA_MODEL } from "../llm/nvidiaNimModels";
+import { withTimeout } from "../llm/timeout";
 import { isWebsiteChromeText } from "../research/firecrawl";
 import type { StoredWebsiteResearchResult } from "../research/types";
 import type { AdSceneCandidate, HeadlineType } from "../scene/types";
@@ -19,10 +26,10 @@ const headlineTypes: HeadlineType[] = [
   "transformation",
 ];
 
-export type AdGenerationProvider = "gemini" | "deterministic";
+export type AdGenerationProvider = "gemini" | "nvidia-nim" | "deterministic";
 
 export type AdGenerationProviderStatus = {
-  provider: "gemini";
+  provider: "gemini" | "nvidia-nim";
   status: "used" | "skipped" | "failed";
   reason: string;
 };
@@ -31,8 +38,10 @@ export type GenerateAdCandidatesOptions = {
   geminiApiKey?: string;
   geminiGenerateContent?: GeminiGenerateContent;
   geminiModel?: string;
-  apiKey?: string;
-  model?: string;
+  nvidiaNimApiKey?: string;
+  nvidiaNimBaseUrl?: string;
+  nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
+  nvidiaNimModel?: string;
   count?: number;
   timeoutMs?: number;
 };
@@ -406,20 +415,6 @@ export const extractAdCandidatesFromResponse = (
 
 const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.test(String(value || ""));
 
-const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, label: string) => {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<never>((_, reject) => {
-        timeout = setTimeout(() => reject(new Error(`${label} timed out.`)), timeoutMs);
-      }),
-    ]);
-  } finally {
-    if (timeout) clearTimeout(timeout);
-  }
-};
-
 const callGemini = async ({
   apiKey,
   model,
@@ -465,8 +460,46 @@ export const generateAdCandidatesFromResearch = async (
   const fallback = buildDeterministicAdCandidates(research, count);
   const prompt = buildAdIdeasPrompt(research, count);
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const nvidiaNimModel = options.nvidiaNimModel
+    || process.env.NVIDIA_NIM_AD_MODEL
+    || DEFAULT_NVIDIA_NIM_AD_IDEA_MODEL;
+  const nvidiaNimBaseUrl = options.nvidiaNimBaseUrl
+    || process.env.NVIDIA_NIM_BASE_URL
+    || DEFAULT_NVIDIA_NIM_BASE_URL;
+  const nvidiaNimApiKey = options.nvidiaNimApiKey ?? process.env.NVIDIA_NIM_API_KEY;
   const geminiModel = options.geminiModel || process.env.GEMINI_AD_MODEL || DEFAULT_GEMINI_AD_IDEA_MODEL;
-  const geminiApiKey = options.geminiApiKey ?? options.apiKey ?? process.env.GEMINI_API_KEY;
+  const geminiApiKey = options.geminiApiKey ?? process.env.GEMINI_API_KEY;
+  let nvidiaNimFailureReason = "";
+
+  if (nvidiaNimApiKey && !isDisabled(process.env.NVIDIA_NIM_ENABLED)) {
+    try {
+      const content = await callNvidiaNimChat({
+        apiKey: nvidiaNimApiKey,
+        baseUrl: nvidiaNimBaseUrl,
+        label: "NVIDIA NIM ad generation",
+        model: nvidiaNimModel,
+        nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
+        prompt,
+        timeoutMs,
+      });
+      const candidates = extractAdCandidatesFromResponse(content, fallback, count, "NVIDIA NIM");
+
+      return {
+        candidates: topUpCandidates(candidates, fallback, count),
+        model: nvidiaNimModel,
+        provider: "nvidia-nim",
+        providerStatus: {
+          provider: "nvidia-nim",
+          status: "used",
+          reason: `Generated ${count} ad ideas with ${nvidiaNimModel}.`,
+        },
+      };
+    } catch (error) {
+      nvidiaNimFailureReason = error instanceof Error
+        ? `${error.message} Trying Gemini backup ad generation.`
+        : "NVIDIA NIM failed; trying Gemini backup ad generation.";
+    }
+  }
 
   if (geminiApiKey && !isDisabled(process.env.GEMINI_ENABLED)) {
     try {
@@ -486,7 +519,9 @@ export const generateAdCandidatesFromResearch = async (
         providerStatus: {
           provider: "gemini",
           status: "used",
-          reason: `Generated ${count} ad ideas with ${geminiModel}.`,
+          reason: nvidiaNimFailureReason
+            ? `NVIDIA NIM failed; generated ${count} backup ad ideas with ${geminiModel}.`
+            : `Generated ${count} ad ideas with ${geminiModel}.`,
         },
       };
     } catch (error) {
@@ -509,12 +544,12 @@ export const generateAdCandidatesFromResearch = async (
 
   return {
     candidates: fallback,
-    model: geminiModel,
+    model: nvidiaNimFailureReason ? nvidiaNimModel : geminiModel,
     provider: "deterministic",
     providerStatus: {
-      provider: "gemini",
-      status: "skipped",
-      reason: "Gemini was not configured; used deterministic website evidence ideas.",
+      provider: nvidiaNimFailureReason ? "nvidia-nim" : "gemini",
+      status: nvidiaNimFailureReason ? "failed" : "skipped",
+      reason: nvidiaNimFailureReason || "Gemini was not configured; used deterministic website evidence ideas.",
     },
   };
 };

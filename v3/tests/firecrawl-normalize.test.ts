@@ -1,15 +1,18 @@
 import assert from "node:assert/strict";
 import {
   buildBrandCuratorPrompt,
+  curateWebsiteResearchResult,
   normalizeBrandBriefPayload,
 } from "../features/research/brandCurator";
 import {
   DEFAULT_FIRECRAWL_TIMEOUT_MS,
+  DEFAULT_JINA_READER_TIMEOUT_MS,
   fetchWebsiteResearchWithFirecrawl,
   firecrawlRequestShape,
   isAbortLikeError,
   isWebsiteChromeText,
   normalizeFirecrawlPayload,
+  normalizeJinaReaderPayload,
   toWebsiteResearchErrorMessage,
 } from "../features/research/firecrawl";
 
@@ -17,6 +20,7 @@ assert.ok(
   DEFAULT_FIRECRAWL_TIMEOUT_MS >= 60_000,
   "Firecrawl needs a real-world timeout budget; successful scrapes often land around 20-30 seconds.",
 );
+assert.equal(DEFAULT_JINA_READER_TIMEOUT_MS, 8_000);
 
 const result = normalizeFirecrawlPayload("ogtool.com", {
   success: true,
@@ -159,6 +163,55 @@ assert.ok(!markdownImageEvidence.includes("Decorative background image"));
 assert.ok(!markdownImageEvidence.includes("!Fin messenger"));
 assert.ok(markdownImageResult.evidence.paragraphs.some((paragraph) => paragraph.includes("AI support agents")));
 
+const jinaResult = normalizeJinaReaderPayload("ogtool.com", `
+Title: OGTool | ChatGPT Visibility
+
+URL Source: https://ogtool.com/
+
+Markdown Content:
+# OGTool
+Fully managed Reddit and ChatGPT visibility campaigns.
+First ChatGPT mention in 14 days.
+D2C founders are trying to show up when buyers ask AI tools for recommendations.
+Customer said the team generated 42 citations in two weeks.
+Stop losing AI search visibility to competitors.
+Book a strategy call to see where your brand already appears.
+`, {
+  ogSiteName: "OGTool",
+  ogTitle: "OGTool | ChatGPT Visibility",
+  ogDescription: "Fully managed Reddit and ChatGPT visibility campaigns.",
+  favicon: "/favicon.ico",
+  ogImage: "/og.png",
+  themeColor: "#82DFFF",
+});
+assert.equal(jinaResult.brand.name, "OGTool");
+assert.equal(jinaResult.brand.faviconUrl, "https://ogtool.com/favicon.ico");
+assert.equal(jinaResult.brand.ogImageUrl, "https://ogtool.com/og.png");
+assert.deepEqual(jinaResult.brand.colors, ["#82DFFF"]);
+assert.equal(jinaResult.brand.logoUrl, null);
+assert.equal(jinaResult.providerStatus[0]?.provider, "jina");
+assert.ok(jinaResult.providerStatus[0]?.reason.includes("Jina read"));
+
+const jinaBankResult = normalizeJinaReaderPayload("https://www.usbank.com", `
+Title: Personal Banking, Credit Cards, Loans &amp; Investing | U.S. Bank
+
+URL Source: https://www.usbank.com/
+
+Markdown Content:
+# Personal Banking, Credit Cards, Loans &amp; Investing | U.S. Bank
+Bank accounts, credit cards, mortgages, loans, and investing services.
+Online and mobile banking tools help customers manage money.
+Customers compare credit cards, checking accounts, and loan options.
+Open a checking account online.
+Explore mortgage and home loan options.
+Find investing and wealth management services.
+Manage accounts through mobile banking.
+Get customer support for banking needs.
+`);
+assert.equal(jinaBankResult.brand.name, "U.S. Bank");
+assert.equal(jinaBankResult.brand.title, "Personal Banking, Credit Cards, Loans & Investing | U.S. Bank");
+assert.ok(jinaBankResult.brandBrief.offer.includes("Credit Cards, Loans & Investing"));
+
 const curatorPrompt = buildBrandCuratorPrompt(shopifyResult);
 assert.ok(curatorPrompt.includes("Study these examples for shape only"));
 assert.ok(curatorPrompt.includes("buyerMoments = specific situations, not features"));
@@ -183,6 +236,59 @@ assert.deepEqual(normalizedEmptyBrief.proof, []);
 assert.deepEqual(normalizedEmptyBrief.siteLanguage, []);
 assert.deepEqual(normalizedEmptyBrief.visualNotes, []);
 
+const nimCuratedResult = await curateWebsiteResearchResult(shopifyResult, {
+  nvidiaNimApiKey: "test-nim-key",
+  nvidiaNimModel: "test-kimi-model",
+  nvidiaNimChatCompletion: async ({ prompt }) => {
+    assert.ok(prompt.includes("David's Cookies"));
+    return JSON.stringify({
+      brandName: "David's Cookies",
+      offer: "Fresh baked cookies and giftable desserts delivered for memorable occasions.",
+      audience: "People sending cookies, gift baskets, and desserts for birthdays and thank-you gifts.",
+      buyerMoments: ["Someone forgot the birthday and needs a dessert gift that can still ship."],
+      proof: ["We're known for our cookies, but we make so much more, including cheesecakes."],
+      siteLanguage: ["Cookie Delivery | Gift Baskets | Fresh Baked"],
+      ctaDirection: "Shop cookies",
+      visualNotes: [],
+      droppedNoiseSummary: ["Continue shopping"],
+      confidence: "high",
+    });
+  },
+});
+assert.equal(nimCuratedResult.brandBrief.offer, "Fresh baked cookies and giftable desserts delivered for memorable occasions.");
+assert.ok(nimCuratedResult.providerStatus.some((status) => (
+  status.provider === "nvidia-nim-curator" && status.status === "used"
+)));
+
+const nimFailureGeminiBackupCuratedResult = await curateWebsiteResearchResult(shopifyResult, {
+  nvidiaNimApiKey: "test-nim-key",
+  nvidiaNimModel: "test-kimi-model",
+  nvidiaNimChatCompletion: async () => {
+    throw new Error("NIM free tier unavailable.");
+  },
+  geminiApiKey: "test-gemini-key",
+  geminiModel: "test-gemini-model",
+  geminiGenerateContent: async () => JSON.stringify({
+    brandName: "David's Cookies",
+    offer: "Fresh baked cookies and giftable desserts delivered for memorable occasions.",
+    audience: "People sending cookies and desserts for birthdays and thank-you gifts.",
+    buyerMoments: ["Someone forgot the birthday and needs a dessert gift that can still ship."],
+    proof: ["We're known for our cookies, but we make so much more, including cheesecakes."],
+    siteLanguage: ["Cookie Delivery | Gift Baskets | Fresh Baked"],
+    ctaDirection: "Shop cookies",
+    visualNotes: [],
+    droppedNoiseSummary: [],
+    confidence: "high",
+  }),
+});
+assert.equal(nimFailureGeminiBackupCuratedResult.brandBrief.offer, "Fresh baked cookies and giftable desserts delivered for memorable occasions.");
+assert.ok(nimFailureGeminiBackupCuratedResult.providerStatus.some((status) => (
+  status.provider === "nvidia-nim-curator" && status.status === "failed"
+)));
+assert.ok(nimFailureGeminiBackupCuratedResult.providerStatus.some((status) => (
+  status.provider === "gemini-curator" && status.status === "used"
+)));
+
 const curatedShopifyResult = await fetchWebsiteResearchWithFirecrawl("davidscookies.com", {
   apiKey: "test-firecrawl-key",
   fetcher: async () => new Response(JSON.stringify({
@@ -204,10 +310,11 @@ Fresh baked cookies, gift baskets, cheesecakes, and specialty desserts delivered
   }), {
     status: 200,
     headers: { "content-type": "application/json" },
-  }),
-  curator: {
-    apiKey: "test-gemini-key",
-    geminiGenerateContent: async ({ prompt }) => {
+	  }),
+	  curator: {
+	    geminiApiKey: "test-gemini-key",
+	    nvidiaNimApiKey: "",
+	    geminiGenerateContent: async ({ prompt }) => {
       assert.ok(prompt.includes("Ignore website chrome"));
       assert.ok(prompt.includes("High-protein snack bars with a soft, marshmallow-like texture."));
       assert.ok(prompt.includes("Scheduling software for teams"));
@@ -250,6 +357,105 @@ assert.ok(!productBriefText.includes("Continue shopping"));
 assert.ok(!productBriefText.includes("Regular price"));
 assert.ok(!productBriefText.includes("Your cart is empty"));
 assert.ok(curatedShopifyResult.brandBrief.droppedNoiseSummary.includes("Continue shopping"));
+
+const jinaFirstResult = await fetchWebsiteResearchWithFirecrawl("ogtool.com", {
+  apiKey: "test-firecrawl-key",
+  fetcher: async () => {
+    throw new Error("Firecrawl should not run when Jina is useful.");
+  },
+  jina: {
+    fetcher: async (requestUrl) => {
+      assert.equal(String(requestUrl), "https://r.jina.ai/http://https://ogtool.com/");
+      return new Response(`
+Title: OGTool | ChatGPT Visibility
+
+URL Source: https://ogtool.com/
+
+Markdown Content:
+# OGTool
+Fully managed Reddit and ChatGPT visibility campaigns.
+First ChatGPT mention in 14 days.
+D2C founders are trying to show up when buyers ask AI tools for recommendations.
+Customer said the team generated 42 citations in two weeks.
+Stop losing AI search visibility to competitors.
+Book a strategy call to see where your brand already appears.
+Reddit campaigns give ChatGPT the citations it trusts.
+Managed campaigns turn Reddit conversations into durable AI-search proof.
+The service finds relevant communities, writes useful posts, and tracks citations.
+Founders use it when paid ads get pricier and organic discovery matters more.
+OGTool connects Reddit visibility to ChatGPT recommendation moments.
+`, { status: 200 });
+    },
+    htmlMetadataFetcher: async () => new Response(`
+      <html>
+        <head>
+          <title>OGTool | ChatGPT Visibility</title>
+          <meta property="og:site_name" content="OGTool">
+          <meta property="og:description" content="Fully managed Reddit and ChatGPT visibility campaigns.">
+          <meta property="og:image" content="/og.png">
+          <meta name="theme-color" content="#82DFFF">
+          <link rel="icon" href="/favicon.ico">
+        </head>
+      </html>
+    `, { status: 200 }),
+	  },
+	  curator: {
+	    geminiApiKey: "test-gemini-key",
+	    nvidiaNimApiKey: "",
+	    geminiGenerateContent: async ({ prompt }) => {
+      assert.ok(prompt.includes("Reddit campaigns give ChatGPT"));
+      return JSON.stringify({
+        brandName: "OGTool",
+        offer: "Fully managed Reddit and ChatGPT visibility campaigns.",
+        audience: "D2C founders trying to show up when buyers ask AI tools for recommendations.",
+        buyerMoments: ["Stop losing AI search visibility to competitors."],
+        proof: ["First ChatGPT mention in 14 days."],
+        siteLanguage: ["ChatGPT Visibility"],
+        ctaDirection: "Book a call",
+        visualNotes: ["Use brand colors: #82DFFF"],
+        droppedNoiseSummary: [],
+        confidence: "high",
+      });
+    },
+  },
+});
+assert.equal(jinaFirstResult.providerStatus[0]?.provider, "jina");
+assert.equal(jinaFirstResult.brandBrief.offer, "Fully managed Reddit and ChatGPT visibility campaigns.");
+
+let firecrawlFallbackCalled = false;
+const fallbackResult = await fetchWebsiteResearchWithFirecrawl("ogtool.com", {
+  apiKey: "test-firecrawl-key",
+  fetcher: async () => {
+    firecrawlFallbackCalled = true;
+    return new Response(JSON.stringify({
+      success: true,
+      data: {
+        markdown: `
+# OGTool
+Fully managed Reddit and ChatGPT visibility campaigns.
+First ChatGPT mention in 14 days.
+D2C founders are trying to show up when buyers ask AI tools for recommendations.
+Customer said the team generated 42 citations in two weeks.
+Stop losing AI search visibility to competitors.
+        `,
+        metadata: {
+          sourceURL: "https://ogtool.com/",
+          ogTitle: "OGTool | ChatGPT Visibility",
+          ogDescription: "Fully managed Reddit and ChatGPT visibility campaigns.",
+          ogSiteName: "OGTool",
+        },
+      },
+    }), { status: 200 });
+  },
+  jina: {
+    fetcher: async () => new Response("Title: Empty\n\nMarkdown Content:\nMenu\nLogin", { status: 200 }),
+    htmlMetadataFetcher: async () => new Response("", { status: 200 }),
+  },
+});
+assert.equal(firecrawlFallbackCalled, true);
+assert.equal(fallbackResult.providerStatus[0]?.provider, "jina");
+assert.equal(fallbackResult.providerStatus[0]?.status, "failed");
+assert.equal(fallbackResult.providerStatus[1]?.provider, "firecrawl");
 
 assert.throws(
   () => normalizeFirecrawlPayload("ogtool.com", { success: true, data: { markdown: "short" } }),

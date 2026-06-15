@@ -1,4 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
+import {
+  callNvidiaNimChat,
+  DEFAULT_NVIDIA_NIM_BASE_URL,
+  type NvidiaNimChatCompletion,
+} from "../llm/nvidiaNim";
+import { DEFAULT_NVIDIA_NIM_BRAND_CURATOR_MODEL } from "../llm/nvidiaNimModels";
+import { withTimeout } from "../llm/timeout";
 import type { BrandBrief, WebsiteResearchResult } from "./types";
 
 type CuratableResearch = Omit<WebsiteResearchResult, "brandBrief"> & {
@@ -8,10 +15,14 @@ type CuratableResearch = Omit<WebsiteResearchResult, "brandBrief"> & {
 type GeminiGenerateContent = (input: { model: string; prompt: string }) => Promise<string>;
 
 export type BrandCuratorOptions = {
-  apiKey?: string;
-  model?: string;
+  geminiApiKey?: string;
+  geminiModel?: string;
   timeoutMs?: number;
   geminiGenerateContent?: GeminiGenerateContent;
+  nvidiaNimApiKey?: string;
+  nvidiaNimBaseUrl?: string;
+  nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
+  nvidiaNimModel?: string;
 };
 
 export const DEFAULT_GEMINI_BRAND_CURATOR_MODEL = "gemini-3.1-flash-lite";
@@ -88,27 +99,13 @@ const normalizeConfidence = (value: unknown, fallback: BrandBrief["confidence"])
 
 const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.test(String(value || ""));
 
-const parseJsonObject = (value: string) => {
+const parseJsonObject = (value: string, providerLabel = "AI provider") => {
   const trimmed = value.trim();
   const jsonText = trimmed.startsWith("{")
     ? trimmed
     : trimmed.match(/\{[\s\S]*\}/)?.[0] || "";
-  if (!jsonText) throw new Error("Gemini brand curator returned no JSON.");
+  if (!jsonText) throw new Error(`${providerLabel} brand curator returned no JSON.`);
   return JSON.parse(jsonText) as Record<string, unknown>;
-};
-
-const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, label: string) => {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<never>((_, reject) => {
-        timeout = setTimeout(() => reject(new Error(`${label} timed out.`)), timeoutMs);
-      }),
-    ]);
-  } finally {
-    if (timeout) clearTimeout(timeout);
-  }
 };
 
 export const buildFallbackBrandBrief = (research: CuratableResearch): BrandBrief => {
@@ -360,15 +357,58 @@ export const curateWebsiteResearchResult = async (
   options: BrandCuratorOptions = {},
 ): Promise<WebsiteResearchResult> => {
   const fallback = buildFallbackBrandBrief(research);
-  const apiKey = options.apiKey ?? process.env.GEMINI_API_KEY;
-  const model = options.model || process.env.GEMINI_BRAND_CURATOR_MODEL || DEFAULT_GEMINI_BRAND_CURATOR_MODEL;
+  const nvidiaNimApiKey = options.nvidiaNimApiKey ?? process.env.NVIDIA_NIM_API_KEY;
+  const nvidiaNimModel = options.nvidiaNimModel || process.env.NVIDIA_NIM_BRAND_CURATOR_MODEL || DEFAULT_NVIDIA_NIM_BRAND_CURATOR_MODEL;
+  const nvidiaNimBaseUrl = options.nvidiaNimBaseUrl || process.env.NVIDIA_NIM_BASE_URL || DEFAULT_NVIDIA_NIM_BASE_URL;
+  const geminiApiKey = options.geminiApiKey ?? process.env.GEMINI_API_KEY;
+  const geminiModel = options.geminiModel || process.env.GEMINI_BRAND_CURATOR_MODEL || DEFAULT_GEMINI_BRAND_CURATOR_MODEL;
+  let nvidiaNimFailureStatus: WebsiteResearchResult["providerStatus"][number] | null = null;
 
-  if (!apiKey || isDisabled(process.env.GEMINI_ENABLED)) {
+  if (nvidiaNimApiKey && !isDisabled(process.env.NVIDIA_NIM_ENABLED)) {
+    try {
+      const content = await callNvidiaNimChat({
+        apiKey: nvidiaNimApiKey,
+        baseUrl: nvidiaNimBaseUrl,
+        label: "NVIDIA NIM brand curator",
+        model: nvidiaNimModel,
+        nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
+        prompt: buildBrandCuratorPrompt(research),
+        temperature: 0.35,
+        timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+      });
+      const brandBrief = normalizeBrandBriefPayload(parseJsonObject(content, "NVIDIA NIM"), fallback);
+
+      return {
+        ...research,
+        brandBrief,
+        providerStatus: [
+          ...research.providerStatus,
+          {
+            provider: "nvidia-nim-curator",
+            status: "used",
+            reason: `NVIDIA NIM curated website evidence with ${nvidiaNimModel} at ${brandBrief.confidence} confidence.`,
+          },
+        ],
+      };
+    } catch (error) {
+      const reason = error instanceof Error
+        ? `${error.message} Trying Gemini backup curator.`
+        : "NVIDIA NIM brand curator failed; trying Gemini backup curator.";
+      nvidiaNimFailureStatus = {
+        provider: "nvidia-nim-curator",
+        status: "failed",
+        reason,
+      };
+    }
+  }
+
+  if (!geminiApiKey || isDisabled(process.env.GEMINI_ENABLED)) {
     return {
       ...research,
       brandBrief: fallback,
       providerStatus: [
         ...research.providerStatus,
+        ...(nvidiaNimFailureStatus ? [nvidiaNimFailureStatus] : []),
         {
           provider: "gemini-curator",
           status: "skipped",
@@ -380,19 +420,20 @@ export const curateWebsiteResearchResult = async (
 
   try {
     const content = await callGeminiCurator({
-      apiKey,
-      model,
+      apiKey: geminiApiKey,
+      model: geminiModel,
       prompt: buildBrandCuratorPrompt(research),
       timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
       geminiGenerateContent: options.geminiGenerateContent,
     });
-    const brandBrief = normalizeBrandBriefPayload(parseJsonObject(content), fallback);
+    const brandBrief = normalizeBrandBriefPayload(parseJsonObject(content, "Gemini"), fallback);
 
     return {
       ...research,
       brandBrief,
       providerStatus: [
         ...research.providerStatus,
+        ...(nvidiaNimFailureStatus ? [nvidiaNimFailureStatus] : []),
         {
           provider: "gemini-curator",
           status: "used",
@@ -410,6 +451,7 @@ export const curateWebsiteResearchResult = async (
       brandBrief: fallback,
       providerStatus: [
         ...research.providerStatus,
+        ...(nvidiaNimFailureStatus ? [nvidiaNimFailureStatus] : []),
         {
           provider: "gemini-curator",
           status: "failed",

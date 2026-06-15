@@ -1,6 +1,9 @@
 name: Deploy v3 to Oracle
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 concurrency:
@@ -21,9 +24,18 @@ jobs:
       DEEPGRAM_API_KEY: ${{ secrets.DEEPGRAM_API_KEY }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      NVIDIA_NIM_API_KEY: ${{ secrets.NVIDIA_NIM_API_KEY }}
+      NVIDIA_NIM_BASE_URL: ${{ vars.NVIDIA_NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1' }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      APP_URL: ${{ vars.APP_URL || 'https://wiggly.agentenamel.com' }}
+      V3_PUBLIC_BASE_URL: ${{ vars.V3_PUBLIC_BASE_URL || 'https://wiggly.agentenamel.com' }}
+      PAID_PASS_PRICE_CENTS: ${{ vars.PAID_PASS_PRICE_CENTS || '100' }}
+      PAID_PASS_DAYS: ${{ vars.PAID_PASS_DAYS || '7' }}
+      EARLY_ACCESS_MONTHLY_PRICE_CENTS: ${{ vars.EARLY_ACCESS_MONTHLY_PRICE_CENTS || '900' }}
       TTS_MODEL: gemini-3.1-flash-tts-preview
       V3_PORT: "3020"
-      V3_PUBLIC_HOST: v3.wiggly.agentenamel.com
+      V3_PUBLIC_HOST: wiggly.agentenamel.com
       PM2_V3_APP_NAME: wiggly-v3
       PM2_V3_WORKER_APP_NAME: wiggly-v3-render-worker
 
@@ -34,7 +46,7 @@ jobs:
           host: ${{ secrets.ORACLE_HOST }}
           username: ${{ secrets.ORACLE_USER }}
           key: ${{ secrets.ORACLE_SSH_KEY }}
-          envs: DEPLOY_BRANCH,V3_CONVEX_DEPLOY_KEY,V3_CONVEX_URL,NEXT_PUBLIC_V3_CONVEX_URL,NEXT_PUBLIC_V3_CONVEX_SITE_URL,FIRECRAWL_API_KEY,DEEPGRAM_API_KEY,GEMINI_API_KEY,OPENROUTER_API_KEY,TTS_MODEL,V3_PORT,V3_PUBLIC_HOST,PM2_V3_APP_NAME,PM2_V3_WORKER_APP_NAME
+          envs: DEPLOY_BRANCH,V3_CONVEX_DEPLOY_KEY,V3_CONVEX_URL,NEXT_PUBLIC_V3_CONVEX_URL,NEXT_PUBLIC_V3_CONVEX_SITE_URL,FIRECRAWL_API_KEY,DEEPGRAM_API_KEY,GEMINI_API_KEY,OPENROUTER_API_KEY,NVIDIA_NIM_API_KEY,NVIDIA_NIM_BASE_URL,STRIPE_SECRET_KEY,SESSION_SECRET,APP_URL,V3_PUBLIC_BASE_URL,PAID_PASS_PRICE_CENTS,PAID_PASS_DAYS,EARLY_ACCESS_MONTHLY_PRICE_CENTS,TTS_MODEL,V3_PORT,V3_PUBLIC_HOST,PM2_V3_APP_NAME,PM2_V3_WORKER_APP_NAME
           script_stop: true
           script: |
             set -euo pipefail

@@ -139,10 +139,29 @@ assert.throws(
   /incomplete meme variants/,
 );
 
+const repaired = extractMemeVariantsFromResponse(JSON.stringify({
+  variants: MEME_TEMPLATES.map((template) => ({
+    templateId: template.id,
+    slots: Object.fromEntries(template.slots.map((slot) => [
+      slot.id,
+      slot.id === "level1Text"
+        ? "A managed service that ranks brands on ChatGPT and Reddit"
+        : `copy ${slot.id}`.slice(0, slot.maxChars),
+    ])),
+  })),
+}), { repairSlotText: true, providerLabel: "NVIDIA NIM" });
+assert.equal(repaired.length, 4);
+assert.ok(repaired.every((variant) => Object.values(variant.slots).every((value) => value.length > 0)));
+assert.ok(repaired.every((variant) => {
+  const template = MEME_TEMPLATES.find((item) => item.id === variant.templateId)!;
+  return template.slots.every((slot) => variant.slots[slot.id]!.length <= slot.maxChars);
+}));
+
 const retryResult = await generateMemeVariantsFromResearch(research, {
-  geminiApiKey: "test-key",
-  geminiModel: "test-model",
-  geminiGenerateContent: async ({ prompt }) => {
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimBaseUrl: "https://nim.test/v1",
+  nvidiaNimModel: "test-kimi-model",
+  nvidiaNimChatCompletion: async ({ prompt }) => {
     if (prompt.includes("previous output was invalid")) return JSON.stringify(payload);
     return JSON.stringify({
       variants: [
@@ -157,8 +176,60 @@ const retryResult = await generateMemeVariantsFromResearch(research, {
     });
   },
 });
-assert.equal(retryResult.provider, "gemini");
+assert.equal(retryResult.provider, "nvidia-nim");
+assert.equal(retryResult.model, "test-kimi-model");
+assert.equal(retryResult.providerStatus.provider, "nvidia-nim");
 assert.equal(retryResult.variants.length, 4);
+
+const brandCases = [
+  research,
+  {
+    ...research,
+    brand: {
+      ...research.brand,
+      name: "Acme CRM",
+      description: "A CRM that keeps sales follow-ups from falling through the cracks.",
+    },
+    brandBrief: {
+      ...research.brandBrief,
+      brandName: "Acme CRM",
+      offer: "A CRM that keeps sales follow-ups from falling through the cracks.",
+      audience: "Small sales teams juggling too many leads.",
+      buyerMoments: ["A hot lead goes cold because nobody followed up."],
+      proof: ["Follow-up reminders and pipeline tracking in one place."],
+      siteLanguage: ["Never miss the next follow-up"],
+      ctaDirection: "Try Acme CRM",
+    },
+  },
+  {
+    ...research,
+    brand: {
+      ...research.brand,
+      name: "CalmDesk",
+      description: "A support inbox that turns angry tickets into clear next steps.",
+    },
+    brandBrief: {
+      ...research.brandBrief,
+      brandName: "CalmDesk",
+      offer: "A support inbox that turns angry tickets into clear next steps.",
+      audience: "Support teams drowning in messy customer threads.",
+      buyerMoments: ["The inbox is on fire before lunch."],
+      proof: ["Triage, ownership, and suggested replies in one workspace."],
+      siteLanguage: ["Make support feel calmer"],
+      ctaDirection: "Try CalmDesk",
+    },
+  },
+];
+
+for (const brandCase of brandCases) {
+  const result = await generateMemeVariantsFromResearch(brandCase, {
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimModel: "test-kimi-model",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payload),
+  });
+  assert.equal(result.provider, "nvidia-nim");
+  assert.equal(result.variants.length, MEME_TEMPLATES.length);
+}
 
 const deterministic = buildDeterministicMemeVariants(research);
 assert.ok(Object.values(deterministic[0]!.slots).every((value) => !/\b(and|for|that|on|get)$/i.test(value)));
@@ -184,6 +255,8 @@ assert.ok(html.includes('data-meme-template="drake"'));
 assert.ok(html.includes('data-meme-artboard="drake"'));
 assert.ok(html.includes("/memes/drake.png"));
 assert.ok(html.includes('data-meme-slot="topText"'));
+assert.ok(!html.includes("-webkit-line-clamp"));
+assert.ok(!html.includes("text-overflow"));
 
 const rerolled = rerollScene(scenes, scenes[0]!, 0, createDefaultSceneLocks());
 assert.equal(rerolled.index, 1);

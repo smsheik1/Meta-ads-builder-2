@@ -38,7 +38,11 @@ Worker/server:
 ```text
 V3_CONVEX_URL
 FIRECRAWL_API_KEY
+NVIDIA_NIM_API_KEY
 GEMINI_API_KEY
+NVIDIA_NIM_AD_MODEL optional, defaults to moonshotai/kimi-k2.6
+NVIDIA_NIM_BRAND_CURATOR_MODEL optional, defaults to moonshotai/kimi-k2.6
+NVIDIA_NIM_MEME_MODEL optional, defaults to moonshotai/kimi-k2.6
 TTS_MODEL optional, defaults to the pinned Gemini TTS model
 ```
 
@@ -71,7 +75,7 @@ npm run runtime:health
 The health script checks:
 
 - v3 Convex URL is present.
-- Firecrawl and Gemini keys are present without printing secret values.
+- Firecrawl, NVIDIA NIM, and Gemini keys are present without printing secret values.
 - Gemini and TTS feature flags are not disabled.
 - TTS model is unset or matches the pinned Gemini TTS model.
 - Convex public functions are reachable.
