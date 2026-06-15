@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { buildMemePrompt } from "../features/formats/meme/prompt";
 import {
   buildDeterministicMemeVariants,
   extractMemeVariantsFromResponse,
@@ -90,6 +91,12 @@ const parsed = extractMemeVariantsFromResponse(JSON.stringify(payload));
 assert.equal(parsed.length, 4);
 assert.ok(!("x" in parsed[0]!));
 
+const prompt = buildMemePrompt(research);
+assert.ok(prompt.includes("Your taste filter rejects generic SaaS phrasing"));
+assert.ok(prompt.includes("Each slot must be a complete thought"));
+assert.ok(prompt.includes("Posts people actually steal"));
+assert.ok(!prompt.includes("maxWords"));
+
 assert.throws(
   () => extractMemeVariantsFromResponse(JSON.stringify({
     variants: [
@@ -109,7 +116,22 @@ assert.throws(
       slots: Object.fromEntries(template.slots.map((slot) => [
         slot.id,
         slot.id === "level1Text"
-          ? "one two three four five six"
+          ? "x".repeat(slot.maxChars + 1)
+          : `copy ${slot.id}`.slice(0, slot.maxChars),
+      ])),
+    })),
+  })),
+  /incomplete meme variants/,
+);
+
+assert.throws(
+  () => extractMemeVariantsFromResponse(JSON.stringify({
+    variants: MEME_TEMPLATES.map((template) => ({
+      templateId: template.id,
+      slots: Object.fromEntries(template.slots.map((slot) => [
+        slot.id,
+        template.id === "woman_yelling_cat" && slot.id === "yellingText"
+          ? "Tired of paying for ads that get"
           : `copy ${slot.id}`.slice(0, slot.maxChars),
       ])),
     })),

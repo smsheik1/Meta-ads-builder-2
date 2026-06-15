@@ -37,10 +37,40 @@ const normalizeSlotText = (value: unknown) => String(value ?? "")
   .replace(/!\[[^\]]*]\([^)]+\)/g, " ")
   .replace(/!\[[^\]]*]\[[^\]]*]/g, " ")
   .replace(/!\[[^\]]*]/g, " ")
+  .replace(/https?:\/\/\S+/gi, " ")
   .replace(/\s+/g, " ")
   .trim();
 
-const wordCount = (value: string) => value.split(/\s+/).filter(Boolean).length;
+const DANGLING_ENDING_WORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "every",
+  "for",
+  "from",
+  "get",
+  "gets",
+  "in",
+  "of",
+  "on",
+  "or",
+  "that",
+  "the",
+  "to",
+  "with",
+  "your",
+]);
+
+const endsWithDanglingWord = (value: string) => {
+  const lastWord = value.trim().toLowerCase().match(/[a-z0-9]+$/)?.[0] || "";
+  return DANGLING_ENDING_WORDS.has(lastWord);
+};
+
+const trimDanglingEnding = (value: string) => {
+  const words = value.split(/\s+/).filter(Boolean);
+  while (words.length > 1 && endsWithDanglingWord(words.join(" "))) words.pop();
+  return words.join(" ");
+};
 
 const limitWords = (value: string, maxWords: number) => value.split(/\s+/).filter(Boolean).slice(0, maxWords).join(" ");
 
@@ -52,7 +82,7 @@ const limitCharsAtWordBoundary = (value: string, maxChars: number) => {
 };
 
 const fitSlotText = (value: unknown, maxWords: number, maxChars: number) => (
-  limitCharsAtWordBoundary(limitWords(normalizeSlotText(value), maxWords), maxChars)
+  trimDanglingEnding(limitCharsAtWordBoundary(limitWords(normalizeSlotText(value), maxWords), maxChars))
 );
 
 const parseJsonObject = (value: string, providerLabel = "AI provider") => {
@@ -170,7 +200,8 @@ export function extractMemeVariantsFromResponse(content: string): MemeVariant[] 
     let valid = true;
     for (const slot of template.slots) {
       const text = normalizeSlotText(slotsPayload[slot.id]);
-      if (!text || text.length > slot.maxChars || wordCount(text) > slot.maxWords) valid = false;
+      if (!text || text.length > slot.maxChars) valid = false;
+      if (endsWithDanglingWord(text)) valid = false;
       if (template.id === "this_is_fine" && /this\s+is\s+fine/i.test(text)) valid = false;
       slots[slot.id] = text;
     }
@@ -208,7 +239,7 @@ export async function generateMemeVariantsFromResearch(
         const retryContent = await callGemini({
           apiKey: geminiApiKey,
           model: geminiModel,
-          prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Every required slot must be present and under maxChars and maxWords. Return only the JSON object.`,
+          prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Every required slot must be present, under maxChars, and a complete thought. Return only the JSON object.`,
           timeoutMs,
           geminiGenerateContent: options.geminiGenerateContent,
         });
