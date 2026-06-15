@@ -74,6 +74,18 @@ assert.ok(
   "The primary audio quick action must open the audio modal before a website exists and switch to playback after audio exists.",
 );
 assert.ok(
+  createClientSource.includes("import { toPng } from \"html-to-image\"") &&
+    createClientSource.includes("const onDownloadMemePng = async () =>") &&
+    createClientSource.includes("[data-meme-artboard]") &&
+    quickActionsSource.includes("onClick={memeSceneSelected ? onDownloadMemePng : onCreateRenderJob}") &&
+    quickActionsSource.includes('const downloadLabel = memeSceneSelected ? "PNG" : "MP4"'),
+  "Meme downloads must export the rendered meme artboard as PNG instead of routing through the MP4 render worker.",
+);
+assert.ok(
+  !quickActionsSource.includes("Meme PNG export is coming next."),
+  "Meme download must not be left as deferred UI.",
+);
+assert.ok(
   createClientSource.includes("resetShareState();") &&
     createClientSource.includes("resetRenderState();") &&
     createClientSource.includes("resetSaveState();"),

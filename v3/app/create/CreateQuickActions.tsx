@@ -38,6 +38,7 @@ export function CreateQuickActions({
   isAudioPlaying,
   onCreateRenderJob,
   onCreateShareLink,
+  onDownloadMemePng,
   onLoadSavedDesign,
   onOpenAudioPanel,
   onSaveSelectedDesign,
@@ -48,6 +49,7 @@ export function CreateQuickActions({
   renderErrorMessage,
   renderStatusLabel,
   renderWorkerHealthy,
+  memeDownloadBusy,
   saveCounterLabel,
   saveError,
   savedDesigns,
@@ -64,6 +66,7 @@ export function CreateQuickActions({
   isAudioPlaying: boolean;
   onCreateRenderJob: () => void;
   onCreateShareLink: () => void;
+  onDownloadMemePng: () => void;
   onLoadSavedDesign: (design: SavedAdSceneDesign) => void;
   onOpenAudioPanel: () => void;
   onSaveSelectedDesign: () => void;
@@ -74,6 +77,7 @@ export function CreateQuickActions({
   renderErrorMessage: string;
   renderStatusLabel: string;
   renderWorkerHealthy: boolean | null;
+  memeDownloadBusy: boolean;
   saveCounterLabel: string;
   saveError: string;
   savedDesigns: SavedAdSceneDesign[];
@@ -87,7 +91,13 @@ export function CreateQuickActions({
 }) {
   const renderWorkerOffline = renderWorkerHealthy === false;
   const memeSceneSelected = selectedFormat === "meme";
-  const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline || memeSceneSelected;
+  const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline;
+  const downloadLabel = memeSceneSelected ? "PNG" : "MP4";
+  const downloadTitle = memeSceneSelected
+    ? "Download this meme as a PNG"
+    : renderWorkerOffline
+      ? "Start npm run dev from the repo root to run the render worker."
+      : "Download this ad as an MP4";
   const hasAudio = Boolean(playableAudioUrl);
   const banners = [
     saveError ? { id: "save-error", className: "border-red-100 bg-red-50 text-red-700", message: saveError } : null,
@@ -172,20 +182,20 @@ export function CreateQuickActions({
         ) : (
           <button
             type="button"
-            onClick={onCreateRenderJob}
-            disabled={renderButtonDisabled}
+            onClick={memeSceneSelected ? onDownloadMemePng : onCreateRenderJob}
+            disabled={memeSceneSelected ? !hasSelectedScene || memeDownloadBusy : renderButtonDisabled}
             className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl bg-slate-950 text-[10px] font-black uppercase tracking-[0.12em] text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-35"
-            aria-label={renderStatusLabel}
-            title={memeSceneSelected ? "Meme PNG export is coming next." : renderWorkerOffline ? "Start npm run dev from the repo root to run the render worker." : "Download this ad as an MP4"}
+            aria-label={memeSceneSelected ? "Download PNG" : renderStatusLabel}
+            title={downloadTitle}
           >
-            {renderBusy || currentRenderStatus === "loading" ? (
+            {memeDownloadBusy || renderBusy || currentRenderStatus === "loading" ? (
               <Loader2 className="size-4 animate-spin" />
             ) : currentRenderStatus === "ready" ? (
               <Check className="size-4" />
             ) : (
               <Download className="size-4" />
             )}
-            MP4
+            {downloadLabel}
           </button>
         )}
       </div>
