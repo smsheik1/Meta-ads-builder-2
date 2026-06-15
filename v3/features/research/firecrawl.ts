@@ -324,7 +324,7 @@ export const normalizeFirecrawlPayload = (
   const faviconUrl = resolveMaybeUrl(
     metadata.favicon || metadata.faviconUrl || metadata.icon,
     finalUrl,
-  ) || new URL("/favicon.ico", websiteUrl.origin).href;
+  );
   const logoUrl = logoUrlFromFirecrawl(metadata, branding, finalUrl);
   const ogImageUrl = resolveMaybeUrl(metadata.ogImage || metadata.image, finalUrl);
   const screenshotUrl = screenshotUrlFromFirecrawl(data.screenshot, finalUrl);
@@ -465,6 +465,32 @@ export const parseBasicHtmlMetadata = (html: string, baseUrl: string) => {
   )));
 };
 
+const verifiedImageMetadata = async (
+  metadata: Record<string, unknown>,
+  baseUrl: string,
+  fetcher: Fetcher,
+  signal: AbortSignal,
+) => {
+  const result = { ...metadata };
+
+  await Promise.all(["logo", "favicon", "ogImage"].map(async (key) => {
+    const url = resolveMaybeUrl(result[key], baseUrl);
+    if (!url) {
+      delete result[key];
+      return;
+    }
+
+    try {
+      const response = await fetcher(url, { method: "HEAD", signal });
+      if (!response.ok) delete result[key];
+    } catch {
+      delete result[key];
+    }
+  }));
+
+  return result;
+};
+
 const fetchBasicHtmlMetadata = async (
   url: string,
   options: Pick<NonNullable<FirecrawlOptions["jina"]>, "htmlMetadataFetcher" | "htmlMetadataTimeoutMs"> = {},
@@ -479,7 +505,12 @@ const fetchBasicHtmlMetadata = async (
     });
     if (!response.ok) return {};
     const html = await response.text();
-    return parseBasicHtmlMetadata(html, url);
+    return verifiedImageMetadata(
+      parseBasicHtmlMetadata(html, url),
+      url,
+      options.htmlMetadataFetcher ?? fetch,
+      controller.signal,
+    );
   } catch {
     return {};
   } finally {
@@ -526,7 +557,7 @@ export const normalizeJinaReaderPayload = (
   const faviconUrl = resolveMaybeUrl(
     metadata.favicon || metadata.faviconUrl || metadata.icon,
     finalUrl,
-  ) || new URL("/favicon.ico", websiteUrl.origin).href;
+  );
   const logoUrl = resolveMaybeUrl(metadata.logo || metadata.logoUrl, finalUrl);
   const ogImageUrl = resolveMaybeUrl(metadata.ogImage || metadata.image, finalUrl);
   const colors = colorsFromFirecrawl({}, metadata);

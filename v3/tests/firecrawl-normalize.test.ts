@@ -465,6 +465,56 @@ OGTool connects Reddit visibility to ChatGPT recommendation moments.
 assert.equal(jinaFirstResult.providerStatus[0]?.provider, "jina");
 assert.equal(jinaFirstResult.brandBrief.offer, "Fully managed Reddit and ChatGPT visibility campaigns.");
 
+const deadImageMetadataResult = await fetchWebsiteResearchWithFirecrawl("agentenamel.com", {
+  apiKey: "test-firecrawl-key",
+  fetcher: async () => {
+    throw new Error("Firecrawl should not run when Jina is useful.");
+  },
+  jina: {
+    fetcher: async () => new Response(`
+Title: Agent Enamel
+
+URL Source: https://agentenamel.com/
+
+Markdown Content:
+# Agent Enamel
+An AI-powered receptionist for dental practices.
+Answer every missed call before patients call someone else.
+72% of callers who reach voicemail hang up without leaving a message.
+Dental offices use Agent Enamel when front desks are overloaded.
+Convert missed calls into booked appointments.
+Capture after-hours callers automatically.
+Protect revenue from missed patient calls.
+Give callers a polished first impression.
+Agent Enamel gives practices a consistent phone presence during lunch, after hours, and peak call windows.
+Practices can follow up faster because caller details are captured instead of disappearing into voicemail.
+The service helps dental teams sound responsive without hiring another full-time receptionist.
+New patient calls are answered with enough context to keep the conversation moving toward an appointment.
+    `, { status: 200 }),
+    htmlMetadataFetcher: async (requestUrl) => {
+      if (String(requestUrl) === "https://agentenamel.com/") {
+        return new Response(`
+          <html>
+            <head>
+              <title>Agent Enamel</title>
+              <meta property="og:image" content="/og-image.jpg">
+              <script type="application/ld+json">
+                { "@type": "Organization", "logo": "https://agentenamel.com/logo.png" }
+              </script>
+              <link rel="icon" href="/favicon.ico">
+            </head>
+          </html>
+        `, { status: 200 });
+      }
+
+      return new Response("", { status: 404 });
+    },
+  },
+});
+assert.equal(deadImageMetadataResult.brand.logoUrl, null);
+assert.equal(deadImageMetadataResult.brand.faviconUrl, null);
+assert.equal(deadImageMetadataResult.brand.ogImageUrl, null);
+
 let firecrawlFallbackCalled = false;
 const fallbackResult = await fetchWebsiteResearchWithFirecrawl("ogtool.com", {
   apiKey: "test-firecrawl-key",
