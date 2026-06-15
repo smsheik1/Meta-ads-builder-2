@@ -45,9 +45,11 @@ export RENDERER_VERSION
 export NEXT_PUBLIC_RENDERER_VERSION="$RENDERER_VERSION"
 
 # Esbuild validates its downloaded binary during install. The Oracle host has
-# previously reused stale esbuild binaries across deploys, so clear only those
-# package artifacts before npm restores the lockfile versions.
+# previously reused stale esbuild binaries across deploys, including from npm's
+# package cache, so clear only those package artifacts before npm restores the
+# lockfile versions.
 rm -rf node_modules/esbuild node_modules/@esbuild node_modules/.bin/esbuild
+npm cache rm esbuild @esbuild/linux-x64 --force >/dev/null 2>&1 || true
 
 if [ -f package-lock.json ]; then
   npm ci
