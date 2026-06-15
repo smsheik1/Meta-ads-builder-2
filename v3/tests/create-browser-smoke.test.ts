@@ -29,6 +29,11 @@ assert(
 [
   "spacebar-reroll-button",
   "1 reroll this session",
+  "Add audio for this ad",
+  "Audio CTA should stay compact inside the canvas.",
+  ".first()",
+  "Fresh visitor must be able to add audio before submitting a website.",
+  "data-dialogue-editor='modal'",
   "Download video",
   "create share link",
   "data-create-format-rail='v3'",
@@ -43,7 +48,6 @@ assert(
 [
   "data-preview-selection-overlay",
   "data-preview-selectable-slot",
-  "data-preview-audio-action",
   "Spacebar rerolls the",
   "wiggly:v3:create-session",
   "defaultRenderScene",

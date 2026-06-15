@@ -39,6 +39,7 @@ export function PhonePreviewFrame({
   rerollFlash = null,
   timeSeconds,
   placeholderVariantIndex = 0,
+  onOpenAudioPanel,
 }: {
   scene: AdScene | null;
   result: StoredWebsiteResearchResult | null;
@@ -47,6 +48,7 @@ export function PhonePreviewFrame({
   rerollFlash?: RenderFlashState | null;
   timeSeconds: number;
   placeholderVariantIndex?: number;
+  onOpenAudioPanel?: () => void;
 }) {
   const brandName = scene?.brand.name || result?.brand.name || "Your brand";
   const brandLogoUrl = scene?.brand.logoUrl || scene?.brand.faviconUrl || result?.brand.logoUrl || result?.brand.faviconUrl || "";
@@ -60,6 +62,7 @@ export function PhonePreviewFrame({
   const isDark = true;
   const renderScene = scene ?? createStarterPlaceholderScene(placeholderVariantIndex);
   const renderMotionMode = scene ? motionMode : "idle";
+  const shouldShowAudioAction = renderScene.audio.status !== "generated" && Boolean(onOpenAudioPanel);
   const frameClassName = youtubePlatform
     ? "relative mx-auto h-[420px] w-[640px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25"
     : "relative mx-auto h-[720px] w-[360px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25";
@@ -69,6 +72,7 @@ export function PhonePreviewFrame({
     <div
       className={cx("relative overflow-hidden bg-[#fbfaf5]", className)}
       data-preview-ad-viewport={previewFrameId}
+      style={{ containerType: "inline-size" }}
     >
       <AdRenderSurface
         className="h-full"
@@ -77,6 +81,15 @@ export function PhonePreviewFrame({
         rerollFlash={rerollFlash}
         timeSeconds={timeSeconds}
       />
+      {shouldShowAudioAction ? (
+        <button
+          type="button"
+          onClick={onOpenAudioPanel}
+          className="absolute left-1/2 top-[74.7%] z-20 h-[14cqw] w-[52cqw] -translate-x-1/2 rounded-full bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-slate-900"
+          aria-label="Add audio for this ad"
+          data-preview-audio-action="true"
+        />
+      ) : null}
     </div>
   );
 

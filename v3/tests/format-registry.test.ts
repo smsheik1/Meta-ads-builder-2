@@ -20,6 +20,9 @@ for (const [formatId, module] of entries) {
   assert.ok(!("interaction" in module), `${formatId} must not expose /create mini-editor interaction metadata.`);
   assert.equal(typeof module.validate, "function", `${formatId} must expose a validator.`);
   assert.equal(typeof module.RenderComponent, "function", `${formatId} must expose a render component.`);
+  assert.ok(module.editorSchema.text.length > 0, `${formatId} must expose text editor fields through its format module.`);
+  assert.ok(Array.isArray(module.editorSchema.style), `${formatId} must expose style editor fields through its format module.`);
+  assert.ok(Array.isArray(module.editorSchema.format), `${formatId} must expose format-specific editor fields through its format module.`);
   assert.equal(getFormatModule(module.id).id, module.id);
 }
 
@@ -29,6 +32,11 @@ const fakeMemeFormatModule: AdFormatModule<"meme", FakeMemeScene> = {
   id: "meme",
   label: "Meme image",
   defaultSlots: ["headline"],
+  editorSchema: {
+    text: [{ id: "headline", label: "Meme headline", kind: "textarea" }],
+    style: [{ id: "backgroundColor", label: "Background", kind: "color" }],
+    format: [{ id: "memeTemplate", label: "Meme template", kind: "preset", options: [{ label: "Classic", value: "classic" }] }],
+  },
   RenderComponent: () => null,
   validate: (scene) => ({
     valid: scene.format === "meme" && Boolean(scene.creative.headline.trim()),
@@ -43,6 +51,7 @@ const registryWithFakeFormat = createFormatRegistry({
 
 assert.equal(getFormatModuleFromRegistry(registryWithFakeFormat, "meme").id, "meme");
 assert.deepEqual(getFormatModuleFromRegistry(registryWithFakeFormat, "meme").defaultSlots, ["headline"]);
+assert.equal(getFormatModuleFromRegistry(registryWithFakeFormat, "meme").editorSchema.format[0]?.id, "memeTemplate");
 
 for (const createFilePath of ["app/create/CreateResearchClient.tsx", "app/create/CreatePreviewChrome.tsx"]) {
   const source = readFileSync(createFilePath, "utf8");

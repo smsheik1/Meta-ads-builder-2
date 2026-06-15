@@ -43,6 +43,29 @@ export function canSaveDesignWithoutPaywall({
   return paid || alreadySaved || savedCount < freeLimit;
 }
 
+export function restoreSavedDesignSelection({
+  scenes,
+  design,
+}: {
+  scenes: AdScene[];
+  design: SavedAdSceneDesign;
+}) {
+  const existingIndex = scenes.findIndex((scene) => createSavedDesignId(scene) === design.id);
+  if (existingIndex >= 0) {
+    return {
+      scenes: scenes.map((scene, index) => (index === existingIndex ? design.scene : scene)),
+      selectedSceneIndex: existingIndex,
+      selectedScene: design.scene,
+    };
+  }
+
+  return {
+    scenes: [design.scene, ...scenes],
+    selectedSceneIndex: 0,
+    selectedScene: design.scene,
+  };
+}
+
 export const assertSavableAdScene = (value: unknown): AdScene => {
   const scene = value && typeof value === "object" ? value as Partial<AdScene> : null;
 

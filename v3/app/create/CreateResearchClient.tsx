@@ -18,11 +18,12 @@ import type {
   RenderFlashState,
 } from "@/features/formats/types";
 import { getFormatModule } from "@/features/formats/registry";
-import { useCanvasActions } from "@/features/create/canvasInteractionStore";
+import { useActiveCanvasPanel, useCanvasActions } from "@/features/create/canvasInteractionStore";
 import {
   canSaveDesignWithoutPaywall,
   createSavedDesignId,
   FREE_SAVED_DESIGN_LIMIT,
+  restoreSavedDesignSelection,
   type SavedAdSceneDesign,
 } from "@/features/create/savedDesigns";
 import { createDefaultSceneLocks, rerollScene } from "@/features/create/reroll";
@@ -33,12 +34,13 @@ import type {
   StoredWebsiteResearchResult,
 } from "@/features/research/types";
 import { getClientRendererVersion } from "@/features/render/rendererVersion";
-import type { AdScene, AdSceneVisualizerStyle, VisualizerAdSceneStyle } from "@/features/scene/types";
+import type { AdScene, AdSceneVisualizerStyle } from "@/features/scene/types";
+import { visualizerSceneVariants } from "@/features/scene/visualizerVariants";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
 import { CreateCaptionModal } from "./CreateCaptionModal";
 import { BrandDumpModal } from "./CreateBrandDumpModal";
 import { CreateCanvasColumn } from "./CreateCanvasColumn";
-import { CreateControlPanel, type CreatePanelId } from "./CreateControlPanel";
+import { CreateControlPanel } from "./CreateControlPanel";
 import { CreateCreativeBriefCard } from "./CreateCreativeBriefCard";
 import { CreateDialogueModal } from "./CreateDialogueModal";
 import { CreateIdeasList } from "./CreateIdeasList";
@@ -50,7 +52,7 @@ import {
 import type { PreviewPlatform } from "./CreatePreviewChrome";
 import { CreateQuickActions } from "./CreateQuickActions";
 import { WigglyMark } from "./WigglyMark";
-import { placeholderAdSurfaceVariantCount } from "./createStarterScene";
+import { createStarterPlaceholderScene, placeholderAdSurfaceVariantCount } from "./createStarterScene";
 import { getAnonymousId } from "./createSession";
 
 const rerollFlashMs = 680;
@@ -149,7 +151,6 @@ function ResearchConnected() {
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
   const [previewPlatform, setPreviewPlatform] = useState<PreviewPlatform>("instagram-feed");
-  const [activeCreatePanel, setActiveCreatePanel] = useState<CreatePanelId | null>(null);
   const [rerollCount, setRerollCount] = useState(0);
   const [rerollFlash, setRerollFlash] = useState<RenderFlashState | null>(null);
   const [placeholderVariantIndex, setPlaceholderVariantIndex] = useState(0);
@@ -190,6 +191,7 @@ function ResearchConnected() {
   const saveDesign = useMutation(api.savedDesigns.saveFromScene);
   const savedDesignItems = savedDesigns || [];
   const canvasActions = useCanvasActions();
+  const activeCreatePanel = useActiveCanvasPanel();
   const brandDetailsOpen = activeModal === "brand-details";
   const dialoguePanelOpen = activeModal === "dialogue";
   const captionPanelOpen = activeModal === "captions";
@@ -376,11 +378,26 @@ function ResearchConnected() {
     setModal(null);
   };
 
+  const ensureSelectedScene = useCallback(() => {
+    if (selectedScene) return selectedScene;
+
+    const starterScene = createStarterPlaceholderScene(placeholderVariantIndex);
+    setSelectedScene(starterScene);
+    setSelectedSceneIndex(0);
+    setAdScenes([starterScene]);
+    setAdStatus("ready");
+    setAdStatusNote("Custom starter ad ready. Add audio, then save, share, or download it.");
+    return starterScene;
+  }, [placeholderVariantIndex, selectedScene]);
+
   const replaceSelectedScene = useCallback((nextScene: AdScene) => {
     setSelectedScene(nextScene);
-    setAdScenes((scenes) => scenes.map((scene, index) => (
-      index === selectedSceneIndex ? nextScene : scene
-    )));
+    setAdScenes((scenes) => {
+      if (!scenes.length) return [nextScene];
+      return scenes.map((scene, index) => (
+        index === selectedSceneIndex ? nextScene : scene
+      ));
+    });
   }, [selectedSceneIndex]);
 
   useEffect(() => {
@@ -460,10 +477,8 @@ function ResearchConnected() {
     if (flashRoles.length) triggerRerollFlash(flashRoles);
   }, [selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
-  const onUpdateCreativeField = useCallback((
-    field: "headline" | "subheadline" | "ctaText",
-    value: string,
-  ) => {
+  const onUpdateCreativeField = useCallback((field: string, value: string) => {
+    if (field !== "headline" && field !== "subheadline" && field !== "ctaText") return;
     if (!selectedScene || selectedScene.creative[field] === value) return;
     replaceSelectedSceneAndInvalidate({
       ...selectedScene,
@@ -474,10 +489,13 @@ function ResearchConnected() {
     }, field === "headline" ? ["headline"] : []);
   }, [replaceSelectedSceneAndInvalidate, selectedScene]);
 
-  const onUpdateStyleColor = useCallback((
-    field: keyof Pick<VisualizerAdSceneStyle, "backgroundColor" | "textColor" | "accentColor" | "visualizerColor">,
-    value: string,
-  ) => {
+  const onUpdateStyleColor = useCallback((field: string, value: string) => {
+    if (
+      field !== "backgroundColor" &&
+      field !== "textColor" &&
+      field !== "accentColor" &&
+      field !== "visualizerColor"
+    ) return;
     if (!selectedScene || selectedScene.style[field] === value) return;
     replaceSelectedSceneAndInvalidate({
       ...selectedScene,
@@ -498,6 +516,12 @@ function ResearchConnected() {
       },
     }, ["visualizer"]);
   }, [replaceSelectedSceneAndInvalidate, selectedScene]);
+
+  const onUpdateFormatPreset = useCallback((fieldId: string, value: string) => {
+    if (fieldId !== "visualizerPreset") return;
+    const variant = visualizerSceneVariants.find((item) => item.id === value);
+    if (variant) onUpdateVisualizerPreset(variant.visualizer);
+  }, [onUpdateVisualizerPreset]);
 
   const onRerollScene = useCallback(() => {
     if (!adScenes.length || !selectedScene) {
@@ -726,7 +750,8 @@ function ResearchConnected() {
   };
 
   const onOpenAudioPanel = () => {
-    if (!selectedScene || audioStatus === "loading") return;
+    if (audioStatus === "loading") return;
+    ensureSelectedScene();
     if (dialoguePanelOpen) {
       closeDialoguePanel();
     } else {
@@ -904,6 +929,27 @@ function ResearchConnected() {
     }
   };
 
+  const onLoadSavedDesign = (design: SavedAdSceneDesign) => {
+    const restored = restoreSavedDesignSelection({
+      scenes: adScenes,
+      design,
+    });
+
+    resetPreviewPlayback();
+    setSelectedScene(restored.selectedScene);
+    setSelectedSceneIndex(restored.selectedSceneIndex);
+    setAdScenes(restored.scenes);
+    setAdStatus("ready");
+    setAdStatusNote("Saved design loaded. Press spacebar to keep exploring ideas.");
+    setAudioStatus(restored.selectedScene.audio.status === "generated" ? "ready" : "idle");
+    setAudioError("");
+    resetDialogueState();
+    resetShareState();
+    resetRenderState();
+    resetSaveState();
+    canvasActions.interactionReset();
+  };
+
   const onSelectAdIdea = (scene: AdScene, index: number) => {
     resetPreviewPlayback();
     setSelectedScene(scene);
@@ -1068,6 +1114,7 @@ function ResearchConnected() {
             <CreateCanvasColumn
               adScenesCount={adScenes.length}
               isAudioPlaying={isAudioPlaying}
+              onOpenAudioPanel={onOpenAudioPanel}
               onRerollScene={onRerollScene}
               placeholderVariantIndex={placeholderVariantIndex}
               previewPlatform={previewPlatform}
@@ -1085,6 +1132,8 @@ function ResearchConnected() {
                 isAudioPlaying={isAudioPlaying}
                 onCreateRenderJob={() => void onCreateRenderJob()}
                 onCreateShareLink={() => void onCreateShareLink()}
+                onLoadSavedDesign={onLoadSavedDesign}
+                onOpenAudioPanel={onOpenAudioPanel}
                 onSaveSelectedDesign={() => void onSaveSelectedDesign()}
                 onTogglePreviewPlayback={onTogglePreviewPlayback}
                 playableAudioUrl={playableAudioUrl}
@@ -1095,6 +1144,7 @@ function ResearchConnected() {
                 renderWorkerHealthy={renderWorkerHealthy}
                 saveCounterLabel={saveCounterLabel}
                 saveError={saveError}
+                savedDesigns={savedDesignItems}
                 saveStatus={saveStatus}
                 saveStatusLabel={saveStatusLabel}
                 selectedDesignIsSaved={selectedDesignIsSaved}
@@ -1138,11 +1188,14 @@ function ResearchConnected() {
                 hasSelectedScene={Boolean(selectedScene)}
                 onOpenAudioPanel={onOpenAudioPanel}
                 onOpenCaptionEditor={openCaptionPanel}
-                onPanelChange={setActiveCreatePanel}
+                onPanelChange={(panel) => {
+                  if (panel) canvasActions.openPanel(panel);
+                  else canvasActions.closePanel();
+                }}
                 onPreviewPlatformChange={setPreviewPlatform}
                 onUpdateCreativeField={onUpdateCreativeField}
                 onUpdateStyleColor={onUpdateStyleColor}
-                onUpdateVisualizerPreset={onUpdateVisualizerPreset}
+                onUpdateFormatPreset={onUpdateFormatPreset}
                 previewPlatform={previewPlatform}
                 selectedScene={selectedScene}
               />

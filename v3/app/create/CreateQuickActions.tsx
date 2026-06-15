@@ -1,4 +1,5 @@
 import {
+  AudioLines,
   BookmarkPlus,
   Check,
   Download,
@@ -7,10 +8,28 @@ import {
   Play,
   Share2,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import type { SavedAdSceneDesign } from "@/features/create/savedDesigns";
 
 type SaveStatus = "idle" | "loading" | "ready" | "error";
 
 const statusBannerBaseClass = "rounded-2xl border px-4 py-3 text-xs font-black leading-5";
+
+const formatSavedDate = (timestamp: number) => new Intl.DateTimeFormat("en", {
+  month: "short",
+  day: "numeric",
+}).format(new Date(timestamp));
 
 export function CreateQuickActions({
   currentRenderStatus,
@@ -18,6 +37,8 @@ export function CreateQuickActions({
   isAudioPlaying,
   onCreateRenderJob,
   onCreateShareLink,
+  onLoadSavedDesign,
+  onOpenAudioPanel,
   onSaveSelectedDesign,
   onTogglePreviewPlayback,
   playableAudioUrl,
@@ -28,6 +49,7 @@ export function CreateQuickActions({
   renderWorkerHealthy,
   saveCounterLabel,
   saveError,
+  savedDesigns,
   saveStatus,
   saveStatusLabel,
   selectedDesignIsSaved,
@@ -40,6 +62,8 @@ export function CreateQuickActions({
   isAudioPlaying: boolean;
   onCreateRenderJob: () => void;
   onCreateShareLink: () => void;
+  onLoadSavedDesign: (design: SavedAdSceneDesign) => void;
+  onOpenAudioPanel: () => void;
   onSaveSelectedDesign: () => void;
   onTogglePreviewPlayback: () => void;
   playableAudioUrl: string;
@@ -50,6 +74,7 @@ export function CreateQuickActions({
   renderWorkerHealthy: boolean | null;
   saveCounterLabel: string;
   saveError: string;
+  savedDesigns: SavedAdSceneDesign[];
   saveStatus: SaveStatus;
   saveStatusLabel: string;
   selectedDesignIsSaved: boolean;
@@ -59,6 +84,7 @@ export function CreateQuickActions({
 }) {
   const renderWorkerOffline = renderWorkerHealthy === false;
   const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline;
+  const hasAudio = Boolean(playableAudioUrl);
   const banners = [
     saveError ? { id: "save-error", className: "border-red-100 bg-red-50 text-red-700", message: saveError } : null,
     shareError ? { id: "share-error", className: "border-red-100 bg-red-50 text-red-700", message: shareError } : null,
@@ -74,14 +100,14 @@ export function CreateQuickActions({
       <div className="grid grid-cols-4 gap-2 rounded-[1.35rem] border border-slate-200 bg-white p-2 shadow-xl shadow-slate-950/8">
         <button
           type="button"
-          onClick={onTogglePreviewPlayback}
-          disabled={!playableAudioUrl}
+          onClick={hasAudio ? onTogglePreviewPlayback : onOpenAudioPanel}
+          disabled={hasAudio && !hasSelectedScene}
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-black uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35"
-          aria-label={isAudioPlaying ? "Stop audio preview" : "Play audio preview"}
-          title={isAudioPlaying ? "Stop audio preview" : "Play audio preview"}
+          aria-label={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio for this ad"}
+          title={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio for this ad"}
         >
-          <Play className="size-4" />
-          {isAudioPlaying ? "Stop" : "Play"}
+          {hasAudio ? <Play className="size-4" /> : <AudioLines className="size-4" />}
+          {hasAudio ? (isAudioPlaying ? "Stop" : "Play") : "Add audio"}
         </button>
 
         <button
@@ -99,7 +125,7 @@ export function CreateQuickActions({
           ) : (
             <BookmarkPlus className="size-4" />
           )}
-          <span>{saveStatusLabel}</span>
+          <span>{saveCounterLabel ? `${saveStatusLabel} ${saveCounterLabel}` : saveStatusLabel}</span>
         </button>
 
         {shareUrl ? (
@@ -169,6 +195,65 @@ export function CreateQuickActions({
           {banner.message}
         </p>
       ))}
+
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 w-full justify-between rounded-2xl border-slate-200 bg-white px-4 text-xs font-black uppercase tracking-[0.12em] text-slate-700 shadow-lg shadow-slate-950/5"
+            data-create-saved-library-trigger="true"
+          >
+            <span>Saved designs</span>
+            <Badge variant="secondary" className="rounded-full font-black">
+              {savedDesigns.length}
+            </Badge>
+          </Button>
+        </SheetTrigger>
+        <SheetContent className="w-[380px] border-slate-200 bg-white p-0 sm:max-w-[420px]">
+          <SheetHeader className="border-b border-slate-200 px-5 py-5 text-left">
+            <SheetTitle className="text-2xl font-black tracking-tight text-slate-950">
+              Saved designs
+            </SheetTitle>
+            <SheetDescription className="font-semibold text-slate-500">
+              Open a saved ad back onto the canvas.
+            </SheetDescription>
+          </SheetHeader>
+          <ScrollArea className="h-[calc(100vh-120px)]">
+            <div className="space-y-3 p-4">
+              {savedDesigns.length ? savedDesigns.map((design) => (
+                <SheetClose key={design.id} asChild>
+                  <button
+                    type="button"
+                    onClick={() => onLoadSavedDesign(design)}
+                    className="w-full rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+                    data-create-saved-design-item={design.id}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="line-clamp-2 text-sm font-black leading-snug text-slate-950">
+                        {design.title}
+                      </p>
+                      <Badge variant="outline" className="shrink-0 rounded-full text-[10px] font-black uppercase">
+                        {design.format.replace(/-/g, " ")}
+                      </Badge>
+                    </div>
+                    <p className="mt-2 text-xs font-bold leading-5 text-slate-500">
+                      {design.scene.brand.name} · saved {formatSavedDate(design.updatedAt)}
+                    </p>
+                  </button>
+                </SheetClose>
+              )) : (
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-center">
+                  <p className="text-sm font-black text-slate-950">No saved designs yet.</p>
+                  <p className="mt-2 text-xs font-semibold leading-5 text-slate-500">
+                    Save an ad, then it will show up here.
+                  </p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
     </section>
   );
 }
