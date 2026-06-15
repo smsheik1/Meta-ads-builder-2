@@ -19,8 +19,27 @@ function getSlotText(scene: MemeAdScene, slot: MemeSlot) {
   return slot.textCase === "uppercase" ? value.toUpperCase() : value;
 }
 
-function getSlotStyle(slot: MemeSlot, templateWidth: number, templateHeight: number): CSSProperties {
-  const fontSize = Math.max(12, Math.min(slot.fontSize, Math.floor(slot.height / Math.max(1, slot.maxLines) * 0.9)));
+function estimateFittedFontSize(slot: MemeSlot, text: string) {
+  const maxLines = Math.max(1, slot.maxLines);
+  const maxFontSize = Math.max(12, Math.min(slot.fontSize, Math.floor((slot.height / maxLines) * 0.88)));
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  const longestWordLength = Math.max(1, ...words.map((word) => word.length));
+  const averageCharWidth = slot.textStyle === "poster" ? 0.58 : 0.64;
+  const charsPerLine = Math.max(1, Math.floor(slot.width / (maxFontSize * averageCharWidth)));
+  const estimatedLines = Math.max(
+    1,
+    Math.ceil(text.length / charsPerLine),
+    Math.ceil(longestWordLength / charsPerLine),
+  );
+  const lineScale = estimatedLines > maxLines ? (maxLines / estimatedLines) * 0.92 : 1;
+  const visibleLines = Math.min(maxLines, estimatedLines);
+  const verticalCap = Math.floor((slot.height / visibleLines) * 0.72);
+
+  return Math.max(10, Math.min(maxFontSize * lineScale, verticalCap));
+}
+
+function getSlotStyle(slot: MemeSlot, templateWidth: number, templateHeight: number, text: string): CSSProperties {
+  const fontSize = estimateFittedFontSize(slot, text);
   const posterText = slot.textStyle === "poster";
 
   return {
@@ -43,9 +62,21 @@ function getSlotStyle(slot: MemeSlot, templateWidth: number, templateHeight: num
     fontWeight: 900,
     lineHeight: posterText ? 0.95 : 0.94,
     letterSpacing: "0",
-    overflowWrap: "break-word",
+    overflowWrap: "normal",
+    wordBreak: "normal",
+    hyphens: "none",
     textShadow: posterText ? "none" : textShadow,
     textTransform: slot.textCase === "uppercase" ? "uppercase" : "none",
+  };
+}
+
+function getSlotTextInnerStyle(slot: MemeSlot): CSSProperties {
+  return {
+    display: "-webkit-box",
+    maxWidth: "100%",
+    overflow: "hidden",
+    WebkitBoxOrient: "vertical",
+    WebkitLineClamp: slot.maxLines,
   };
 }
 
@@ -83,15 +114,19 @@ export function MemeFormatRenderer({
           src={template.image}
           className="absolute inset-0 size-full select-none object-cover"
         />
-        {template.slots.map((slot) => (
-          <div
-            key={slot.id}
-            data-meme-slot={slot.id}
-            style={getSlotStyle(slot, template.width, template.height)}
-          >
-            {getSlotText(scene, slot)}
-          </div>
-        ))}
+        {template.slots.map((slot) => {
+          const text = getSlotText(scene, slot);
+
+          return (
+            <div
+              key={slot.id}
+              data-meme-slot={slot.id}
+              style={getSlotStyle(slot, template.width, template.height, text)}
+            >
+              <span style={getSlotTextInnerStyle(slot)}>{text}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

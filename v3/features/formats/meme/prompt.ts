@@ -48,7 +48,14 @@ RULES:
 - Every required slot must be present.
 - Stay under each slot's maxChars hard limit.
 - Stay under each slot's maxWords hard limit.
-- Write short meme-native phrases, not complete marketing sentences.
+- Each slot must be a complete thought. Never cut mid-sentence.
+- If a complete thought cannot fit within maxChars, shorten the idea instead of truncating the sentence.
+- Write short meme-native phrases, not long marketing sentences.
+- Compress ideas into natural short phrases. Do not copy the start of a long website sentence and chop off the end.
+- Bad: "Tired of paying for ads that get"
+- Good: "Ads keep getting pricier"
+- Bad: "A managed service that ranks brands on"
+- Good: "Rank on ChatGPT"
 - The LLM must not output coordinates, styles, image URLs, or layout data.
 - For Drake, the two slots must be a clear old-way versus better-way contrast.
 - For Woman Yelling at Cat, the yelling slot must be a loud objection or complaint, and the cat response must be short, calm, and unimpressed.
