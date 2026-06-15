@@ -1,4 +1,3 @@
-import fitty from "fitty";
 import { useEffect, useRef, type CSSProperties } from "react";
 import type { MemeAdScene } from "../../scene/types";
 import type { FormatRenderProps } from "../types";
@@ -65,8 +64,8 @@ function getSlotFitBoxStyle(slot: MemeSlot): CSSProperties {
 
 function getSlotTextInnerStyle(slot: MemeSlot): CSSProperties {
   return {
-    display: "inline-block",
-    maxWidth: "100%",
+    display: "block",
+    boxSizing: "border-box",
     whiteSpace: "normal",
     overflowWrap: "normal",
     wordBreak: "normal",
@@ -74,20 +73,35 @@ function getSlotTextInnerStyle(slot: MemeSlot): CSSProperties {
   };
 }
 
-function shrinkToSlotBounds(element: HTMLElement) {
+function fitTextToSlotBounds(element: HTMLElement, maxFontSize: number) {
   const parent = element.parentElement;
   if (!parent) return;
 
-  let fontSize = Number.parseFloat(window.getComputedStyle(element).fontSize);
   const maxWidth = Math.max(1, parent.clientWidth - textStrokeGuardPx);
   const maxHeight = Math.max(1, parent.clientHeight - textStrokeGuardPx);
-  while (
-    fontSize > minFitFontSize
-    && (element.scrollWidth > maxWidth || element.scrollHeight > maxHeight)
-  ) {
-    fontSize -= 1;
+  element.style.width = `${maxWidth}px`;
+  element.style.maxWidth = `${maxWidth}px`;
+
+  const fitsAt = (fontSize: number) => {
     element.style.fontSize = `${fontSize}px`;
+    return element.scrollWidth <= maxWidth && element.scrollHeight <= maxHeight;
+  };
+
+  let low = minFitFontSize;
+  let high = Math.max(minFitFontSize, maxFontSize);
+  let best = minFitFontSize;
+
+  for (let i = 0; i < 8; i += 1) {
+    const mid = (low + high) / 2;
+    if (fitsAt(mid)) {
+      best = mid;
+      low = mid;
+    } else {
+      high = mid;
+    }
   }
+
+  element.style.fontSize = `${Math.floor(best)}px`;
 }
 
 function MemeSlotText({
@@ -102,16 +116,27 @@ function MemeSlotText({
   useEffect(() => {
     const element = textRef.current;
     if (!element) return undefined;
+    const parent = element.parentElement;
+    const maxFontSize = Math.min(slot.fontSize, maxFitFontSize);
+    let animationFrame = 0;
 
-    const fit = fitty(element, {
-      minSize: minFitFontSize,
-      maxSize: Math.min(slot.fontSize, maxFitFontSize),
-      multiLine: true,
-    });
-    fit.fit({ sync: true });
-    shrinkToSlotBounds(element);
+    const fit = () => {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = window.requestAnimationFrame(() => fitTextToSlotBounds(element, maxFontSize));
+    };
 
-    return () => fit.unsubscribe();
+    fit();
+    const resizeObserver = parent && "ResizeObserver" in window
+      ? new ResizeObserver(fit)
+      : null;
+    if (parent) resizeObserver?.observe(parent);
+    window.addEventListener("resize", fit);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", fit);
+    };
   }, [slot.fontSize, text]);
 
   return (
