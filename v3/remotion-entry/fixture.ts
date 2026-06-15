@@ -1,6 +1,6 @@
-import type { AdScene } from "../features/scene/types";
+import type { VisualizerAdScene } from "../features/scene/types";
 
-export const defaultRenderScene: AdScene = {
+export const defaultRenderScene: VisualizerAdScene = {
   version: 1,
   format: "visualizer",
   brand: {

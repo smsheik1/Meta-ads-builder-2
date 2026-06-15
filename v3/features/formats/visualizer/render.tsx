@@ -10,7 +10,7 @@ import { useRenderAssetComponents } from "../../render/RenderAssetContext";
 import { legacyCreateVisualizerStyle } from "../../scene/visualizerStyle";
 import type { FormatRenderProps } from "../types";
 import { LegacyIdleVisualizer } from "./LegacyIdleVisualizer";
-import type { AdSceneAudioAnalysis } from "../../scene/types";
+import type { AdSceneAudioAnalysis, VisualizerAdScene } from "../../scene/types";
 
 const frameRate = 60;
 
@@ -18,7 +18,7 @@ const getReadableTextColor = (color: string) => (
   /^#[0-9A-F]{6}$/i.test(color) ? color : "#070B1D"
 );
 
-const getLogoSource = (scene: FormatRenderProps["scene"]) => (
+const getLogoSource = (scene: VisualizerAdScene) => (
   scene.brand.logoUrl || scene.brand.faviconUrl || scene.brand.ogImageUrl || ""
 );
 
@@ -89,7 +89,7 @@ export function VisualizerFormatRenderer({
   rerollFlash = null,
   scene,
   timeSeconds = 0,
-}: FormatRenderProps) {
+}: FormatRenderProps<VisualizerAdScene>) {
   const { Image } = useRenderAssetComponents();
   const frame = Math.max(0, Math.floor(timeSeconds * frameRate));
   const analysis = scene.audio.status === "generated" ? scene.audio.analysis : null;

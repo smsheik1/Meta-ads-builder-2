@@ -2,7 +2,9 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { action, query } from "./_generated/server";
 import { generateAdCandidatesFromResearch } from "../features/ad-generation/generate";
+import { generateMemeVariantsFromResearch } from "../features/formats/meme/generate";
 import { buildFallbackBrandBrief } from "../features/research/brandCurator";
+import { createMemeAdScene } from "../features/scene/createMemeScene";
 import { createVisualizerAdScene } from "../features/scene/createVisualizerScene";
 import type { StoredWebsiteResearchResult } from "../features/research/types";
 import type { AdScene } from "../features/scene/types";
@@ -15,21 +17,36 @@ export const generateFromResearch: ReturnType<typeof action> = action({
   args: {
     researchRunId: v.id("researchRuns"),
     count: v.optional(v.number()),
+    format: v.optional(v.union(v.literal("visualizer"), v.literal("meme"))),
   },
-  handler: async (ctx, { researchRunId, count }) => {
+  handler: async (ctx, { researchRunId, count, format = "visualizer" }) => {
     const research = await ctx.runQuery(internal.adSceneStorage.loadResearchForGeneration, {
       researchRunId,
     });
     const generationBatchId = createGenerationBatchId();
-    const generation = await generateAdCandidatesFromResearch(research, { count });
-    const scenes = generation.candidates.map((candidate, index) => createVisualizerAdScene({
-      research,
-      candidate,
-      candidateIndex: index,
-      generationBatchId,
-      model: generation.model,
-      provider: generation.provider,
-    }));
+    const generation = format === "meme"
+      ? await generateMemeVariantsFromResearch(research)
+      : null;
+    const visualizerGeneration = format === "visualizer"
+      ? await generateAdCandidatesFromResearch(research, { count })
+      : null;
+    const scenes = generation
+      ? generation.variants.map((variant, index) => createMemeAdScene({
+        research,
+        variant,
+        candidateIndex: index,
+        generationBatchId,
+        model: generation.model,
+        provider: generation.provider,
+      }))
+      : visualizerGeneration!.candidates.map((candidate, index) => createVisualizerAdScene({
+        research,
+        candidate,
+        candidateIndex: index,
+        generationBatchId,
+        model: visualizerGeneration!.model,
+        provider: visualizerGeneration!.provider,
+      }));
 
     const { sceneIds } = await ctx.runMutation(internal.adSceneStorage.saveGeneratedScenes, {
       sessionId: research.sessionId,
@@ -42,7 +59,7 @@ export const generateFromResearch: ReturnType<typeof action> = action({
       generationBatchId,
       sceneIds,
       scenes,
-      providerStatus: generation.providerStatus,
+      providerStatus: (generation || visualizerGeneration)!.providerStatus,
     };
   },
 });

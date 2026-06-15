@@ -21,6 +21,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import type { SavedAdSceneDesign } from "@/features/create/savedDesigns";
+import type { AdFormatId } from "@/features/scene/types";
 
 type SaveStatus = "idle" | "loading" | "ready" | "error";
 
@@ -52,6 +53,7 @@ export function CreateQuickActions({
   savedDesigns,
   saveStatus,
   saveStatusLabel,
+  selectedFormat,
   selectedDesignIsSaved,
   shareError,
   shareStatus,
@@ -77,13 +79,15 @@ export function CreateQuickActions({
   savedDesigns: SavedAdSceneDesign[];
   saveStatus: SaveStatus;
   saveStatusLabel: string;
+  selectedFormat: AdFormatId | null;
   selectedDesignIsSaved: boolean;
   shareError: string;
   shareStatus: "idle" | "loading" | "ready" | "error";
   shareUrl: string;
 }) {
   const renderWorkerOffline = renderWorkerHealthy === false;
-  const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline;
+  const memeSceneSelected = selectedFormat === "meme";
+  const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline || memeSceneSelected;
   const hasAudio = Boolean(playableAudioUrl);
   const banners = [
     saveError ? { id: "save-error", className: "border-red-100 bg-red-50 text-red-700", message: saveError } : null,
@@ -144,10 +148,10 @@ export function CreateQuickActions({
           <button
             type="button"
             onClick={onCreateShareLink}
-            disabled={!hasSelectedScene || shareStatus === "loading"}
+            disabled={!hasSelectedScene || shareStatus === "loading" || memeSceneSelected}
             className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-black uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35"
             aria-label={shareStatus === "ready" ? "Share link copied" : "Create share link"}
-            title="Create share link"
+            title={memeSceneSelected ? "Meme share pages are coming next." : "Create share link"}
           >
             {shareStatus === "loading" ? <Loader2 className="size-4 animate-spin" /> : <Share2 className="size-4" />}
             Share
@@ -172,7 +176,7 @@ export function CreateQuickActions({
             disabled={renderButtonDisabled}
             className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl bg-slate-950 text-[10px] font-black uppercase tracking-[0.12em] text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-35"
             aria-label={renderStatusLabel}
-            title={renderWorkerOffline ? "Start npm run dev from the repo root to run the render worker." : "Download this ad as an MP4"}
+            title={memeSceneSelected ? "Meme PNG export is coming next." : renderWorkerOffline ? "Start npm run dev from the repo root to run the render worker." : "Download this ad as an MP4"}
           >
             {renderBusy || currentRenderStatus === "loading" ? (
               <Loader2 className="size-4 animate-spin" />

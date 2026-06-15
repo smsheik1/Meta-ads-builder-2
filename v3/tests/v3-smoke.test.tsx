@@ -22,14 +22,14 @@ import {
   type WorkflowUsage,
 } from "../lib/billing";
 import { defaultRenderScene } from "../remotion-entry/fixture";
-import type { AdScene } from "../features/scene/types";
+import type { VisualizerAdScene } from "../features/scene/types";
 
 function test(name: string, fn: () => void) {
   fn();
   console.log(`ok - ${name}`);
 }
 
-function makeScene(index: number): AdScene {
+function makeScene(index: number): VisualizerAdScene {
   return {
     ...defaultRenderScene,
     brand: {
