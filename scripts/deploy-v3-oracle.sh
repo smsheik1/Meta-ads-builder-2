@@ -48,12 +48,16 @@ export NEXT_PUBLIC_RENDERER_VERSION="$RENDERER_VERSION"
 # a clean dependency tree on deploy so stale native binaries cannot leak across
 # versions on the long-lived Oracle host.
 rm -rf node_modules
+unset ESBUILD_BINARY_PATH
+NPM_DEPLOY_CACHE="/tmp/wiggly-v3-npm-cache-$RENDERER_VERSION"
+rm -rf "$NPM_DEPLOY_CACHE"
 
 if [ -f package-lock.json ]; then
-  npm ci
+  npm ci --cache "$NPM_DEPLOY_CACHE"
 else
-  npm install
+  npm install --cache "$NPM_DEPLOY_CACHE"
 fi
+rm -rf "$NPM_DEPLOY_CACHE"
 
 npx convex deploy
 npm run test
