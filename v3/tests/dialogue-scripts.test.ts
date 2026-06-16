@@ -16,6 +16,11 @@ assert.ok(prompt.includes(defaultRenderScene.creative.selectedProof), "Dialogue 
 assert.ok(prompt.includes("Never mention Wiggly"), "Dialogue prompt must protect the product boundary.");
 assert.ok(prompt.includes("FORMAT-SPECIFIC EXAMPLES"), "Dialogue prompt must include visualizer-specific examples.");
 assert.ok(prompt.includes("Local service"), "Dialogue prompt must include a local service example.");
+assert.ok(prompt.includes("CACHED AD ANGLES"), "Dialogue prompt must consume cached ad angles.");
+assert.ok(prompt.includes("a competitor shows up first in a ChatGPT recommendation"), "Dialogue prompt must pass ad angle moments.");
+assert.ok(prompt.includes("Every script must use a different adAngle"), "Dialogue prompt must enforce distinct angles.");
+assert.ok(prompt.includes("Each script must be exactly 4 lines"), "Dialogue prompt must avoid undefined extra pitch lines.");
+assert.ok(prompt.includes("Tone must be one of"), "Dialogue prompt must constrain TTS tones.");
 
 const fallbackScripts = buildFallbackDialogueScripts(defaultRenderScene, 5);
 assert.equal(fallbackScripts.length, 5);
@@ -42,6 +47,7 @@ const dirty = cleanDialogueScriptForVoiceover({
 });
 assert.equal(dirty.title, "Test, script");
 assert.equal(dirty.lines[0]!.speaker, "Ava");
+assert.equal(dirty.lines[0]!.tone, "skeptical");
 assert.equal(dirty.lines[0]!.text, "Hello, there");
 
 const generated = await generateDialogueScriptsForScene(defaultRenderScene, {
@@ -57,6 +63,7 @@ const generated = await generateDialogueScriptsForScene(defaultRenderScene, {
           { speaker: "Sam", tone: "calm", text: "Yeah, that was the real gap." },
           { speaker: "Ava", tone: "curious", text: "What changed on your side?" },
           { speaker: "Sam", tone: "plain", text: "First ChatGPT mention in 14 days." },
+          { speaker: "Ava", tone: "interested", text: "Send me that." },
         ],
       },
     ],
@@ -66,5 +73,9 @@ const generated = await generateDialogueScriptsForScene(defaultRenderScene, {
 assert.equal(generated.scripts.length, 2, "Gemini scripts should top up with fallback scripts.");
 assert.equal(generated.provider, "gemini");
 assert.equal(generated.scripts[0]!.lines[0]!.speaker, "Ava");
+assert.equal(generated.scripts[0]!.lines.length, 4);
+assert.equal(generated.scripts[0]!.lines[0]!.tone, "skeptical");
+assert.equal(generated.scripts[0]!.lines[2]!.tone, "skeptical");
+assert.equal(generated.scripts[0]!.lines[3]!.tone, "calm");
 
 console.log("dialogue-scripts tests passed");

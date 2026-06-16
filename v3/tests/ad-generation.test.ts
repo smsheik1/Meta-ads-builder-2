@@ -216,6 +216,7 @@ assert.equal(scene.version, 1);
 assert.equal(scene.brand.receipts.specificClaims[0], "First ChatGPT mention in 14 days.");
 assert.equal(scene.metadata.researchRunId, "research_1");
 assert.equal(scene.metadata.model, "test-model");
+assert.deepEqual(scene.metadata.adAngles, research.adAngles);
 assert.equal(scene.style.visualizer?.type, "waveform-strip");
 assert.equal(scene.style.visualizer?.barCount, 24);
 assert.equal(scene.style.visualizer?.gain, 1.7);

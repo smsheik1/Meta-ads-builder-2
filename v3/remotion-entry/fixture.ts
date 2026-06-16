@@ -72,5 +72,12 @@ export const defaultRenderScene: VisualizerAdScene = {
     model: "fixture",
     provider: "deterministic",
     generatedAt: 123,
+    adAngles: [{
+      buyer: "D2C founder",
+      moment: "a competitor shows up first in a ChatGPT recommendation",
+      pain: "buyers trust the answer before they ever visit a site",
+      proof: "First ChatGPT mention in 14 days.",
+      sitePhrase: "ChatGPT mentions in 14 days",
+    }],
   },
 };

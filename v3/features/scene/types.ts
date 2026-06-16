@@ -1,4 +1,4 @@
-import type { BrandSnapshot, ResearchReceipts } from "../research/types";
+import type { BrandAdAngle, BrandSnapshot, ResearchReceipts } from "../research/types";
 
 export const AD_SCENE_VERSION = 1 as const;
 
@@ -108,6 +108,7 @@ export type AdSceneBase<
     model: string;
     provider: "gemini" | "nvidia-nim" | "deterministic";
     generatedAt: number;
+    adAngles?: BrandAdAngle[];
   };
 };
 

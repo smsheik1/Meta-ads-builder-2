@@ -33,7 +33,8 @@ export const DEFAULT_GEMINI_DIALOGUE_MODEL = "gemini-3.1-flash-lite";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const maxScripts = 8;
-const maxLinesPerScript = 8;
+const maxLinesPerScript = 4;
+const allowedTones = ["frustrated", "calm", "surprised", "skeptical", "casual", "relieved"] as const;
 
 const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.test(String(value || ""));
 
@@ -61,6 +62,21 @@ const listForPrompt = (items: string[] | undefined, maxItems = 8) => {
     : "[]";
 };
 
+const adAnglesForPrompt = (scene: AdScene) => {
+  const adAngles = (scene.metadata.adAngles || [])
+    .map((angle) => ({
+      buyer: cleanText(angle.buyer, 120),
+      moment: cleanText(angle.moment, 180),
+      pain: cleanText(angle.pain, 180),
+      proof: cleanText(angle.proof, 180),
+      sitePhrase: angle.sitePhrase ? cleanText(angle.sitePhrase, 140) : null,
+    }))
+    .filter((angle) => angle.buyer || angle.moment || angle.pain || angle.proof)
+    .slice(0, 8);
+
+  return adAngles.length ? JSON.stringify(adAngles, null, 2) : "[]";
+};
+
 const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number, label: string) => {
   let timeout: ReturnType<typeof setTimeout> | undefined;
   const timeoutPromise = new Promise<never>((_, reject) => {
@@ -86,13 +102,17 @@ const parseJsonObject = (value: string) => {
 };
 
 const speakerForIndex = (index: number) => (index % 2 === 0 ? "Ava" : "Sam");
+const normalizeTone = (value: unknown, lineIndex: number) => {
+  const tone = cleanText(value, 36).toLowerCase();
+  return allowedTones.find((allowedTone) => allowedTone === tone) || (lineIndex % 2 === 0 ? "skeptical" : "calm");
+};
 
 export const cleanDialogueScriptForVoiceover = (script: DialogueScript): DialogueScript => ({
   title: cleanText(script.title, 80) || "Conversation Ad",
   angle: cleanText(script.angle, 160) || "Two people talking about the offer.",
   lines: script.lines.map((line, index) => ({
     speaker: cleanText(line.speaker, 24) || speakerForIndex(index),
-    tone: cleanText(line.tone, 36) || (index % 2 === 0 ? "curious" : "calm"),
+    tone: normalizeTone(line.tone, index),
     text: cleanText(line.text, 180),
   })).filter((line) => line.text),
 });
@@ -129,7 +149,7 @@ const normalizeDialogueScriptsPayload = (payload: unknown, count: number): Dialo
         lines,
       });
     })
-    .filter((script) => script.lines.length >= 4)
+    .filter((script) => script.lines.length === 4)
     .slice(0, count);
 };
 
@@ -269,11 +289,15 @@ ${listForPrompt(receipts.exactSiteLanguage)}
 namedProof:
 ${listForPrompt(receipts.namedProof)}
 
+CACHED AD ANGLES:
+Use these first when available. Each script must be built on a different adAngle.
+${adAnglesForPrompt(scene)}
+
 BEFORE writing each script, decide:
 - Setting: where are they? texting, car, hallway, Slack DM, front counter, voice note, or another real place
 - Relationship: who are they? co-founder/co-founder, boss/employee, two operators, friend/friend, founder/customer
-- Pain: ONE specific buyerMoment from RECEIPTS or the selected ad pain
-- Proof: ONE specific claim, namedProof, or selected ad proof
+- Angle: ONE adAngle from CACHED AD ANGLES. If none exist, use ONE specific buyerMoment from RECEIPTS or the selected ad pain
+- Proof: the chosen adAngle proof, ONE specific claim, namedProof, or selected ad proof
 
 The proof must land like a casual receipt dropped in conversation, not a pitch.
 
@@ -289,6 +313,11 @@ REQUIRED SHAPE:
 - Line 2: B reacts like a friend or operator. Do not pitch yet.
 - Line 3: A asks what changed, asks for the link, calls BS, or asks what they did next.
 - Line 4: B drops the proof casually, then names the brand or mechanism only if it sounds natural.
+
+DISTINCTNESS:
+- Every script must use a different adAngle when CACHED AD ANGLES has enough options.
+- Every script must use a different setting and a different relationship.
+- Do not write reworded versions of the same conversation.
 
 STUDY THESE EXAMPLES. Copy the rhythm, not the specifics. Never copy names, settings, industries, numbers, phrases, titles, or lines from these examples.
 
@@ -331,11 +360,12 @@ BANNED PHRASES:
 
 RULES:
 - Return exactly ${normalizeCount(count)} scripts.
-- Each script should be 4-6 lines.
+- Each script must be exactly 4 lines.
 - Use the same two speakers, Ava and Sam.
 - No fake names, fake stats, fake testimonials, or made-up claims.
-- If proof is weak, use the selected headline/subheadline instead of inventing numbers.
-- Never mention Wiggly. Wiggly is the internal builder.
+- If proof is weak, stay vague and human instead of quoting marketing copy or inventing numbers.
+- Tone must be one of: frustrated, calm, surprised, skeptical, casual, relieved.
+- Name the brand above (${cleanText(scene.brand.name, 80)}) only if natural. Never mention Wiggly.
 - No em dashes or en dashes.
 - Every line must sound like fluent English that can be read aloud.
 
@@ -345,6 +375,10 @@ Return ONLY valid JSON:
     {
       "title": "short option title",
       "angle": "short strategy angle",
+      "chosenSetting": "setting used for this script",
+      "chosenRelationship": "relationship used for this script",
+      "chosenBuyerMoment": "the adAngle moment or receipt moment used",
+      "chosenProof": "the adAngle proof or receipt proof used",
       "lines": [
         {"speaker": "Ava", "tone": "frustrated", "text": "line"},
         {"speaker": "Sam", "tone": "calm", "text": "line"}
