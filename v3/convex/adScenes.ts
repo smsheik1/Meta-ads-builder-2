@@ -3,9 +3,11 @@ import { internal } from "./_generated/api";
 import { action, query } from "./_generated/server";
 import { generateAdCandidatesFromResearch } from "../features/ad-generation/generate";
 import { generateMemeVariantsFromResearch } from "../features/formats/meme/generate";
+import { generateWereSorryVariantsFromResearch } from "../features/formats/were-sorry/generate";
 import { buildFallbackBrandBrief } from "../features/research/brandCurator";
 import { createMemeAdScene } from "../features/scene/createMemeScene";
 import { createVisualizerAdScene } from "../features/scene/createVisualizerScene";
+import { createWereSorryAdScene } from "../features/scene/createWereSorryScene";
 import type { StoredWebsiteResearchResult } from "../features/research/types";
 import type { AdScene } from "../features/scene/types";
 
@@ -17,7 +19,7 @@ export const generateFromResearch: ReturnType<typeof action> = action({
   args: {
     researchRunId: v.id("researchRuns"),
     count: v.optional(v.number()),
-    format: v.optional(v.union(v.literal("visualizer"), v.literal("meme"))),
+    format: v.optional(v.union(v.literal("visualizer"), v.literal("meme"), v.literal("were-sorry"))),
     memeModel: v.optional(v.string()),
     visualizerModel: v.optional(v.string()),
   },
@@ -29,6 +31,31 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     if (format === "meme") {
       const generation = await generateMemeVariantsFromResearch(research, { nvidiaNimModel: memeModel });
       const scenes = generation.variants.map((variant, index) => createMemeAdScene({
+        research,
+        variant,
+        candidateIndex: index,
+        generationBatchId,
+        model: generation.model,
+        provider: generation.provider,
+      }));
+      const { sceneIds } = await ctx.runMutation(internal.adSceneStorage.saveGeneratedScenes, {
+        sessionId: research.sessionId,
+        researchRunId,
+        brandSnapshotId: research.brandSnapshotId,
+        scenes,
+      });
+
+      return {
+        generationBatchId,
+        sceneIds,
+        scenes,
+        providerStatus: generation.providerStatus,
+      };
+    }
+
+    if (format === "were-sorry") {
+      const generation = await generateWereSorryVariantsFromResearch(research, { count });
+      const scenes = generation.variants.map((variant, index) => createWereSorryAdScene({
         research,
         variant,
         candidateIndex: index,

@@ -27,7 +27,14 @@ const getProgressRows = (format: AdFormatId) => [
   { id: "reading-site", label: "Reading website" },
   { id: "brand-proof", label: "Pulling brand proof" },
   { id: "selling-angle", label: "Finding selling angle" },
-  { id: "writing-ads", label: format === "meme" ? "Writing 4 memes" : "Writing 50 ads" },
+  {
+    id: "writing-ads",
+    label: format === "meme"
+      ? "Writing 12 memes"
+      : format === "were-sorry"
+        ? "Writing 8 apologies"
+        : "Writing 50 ads",
+  },
   { id: "preparing-canvas", label: "Preparing canvas" },
 ] as const;
 
@@ -191,8 +198,17 @@ export function CreateLeftColumn({
   const submitLabel = status === "loading"
     ? "Reading website"
     : adStatus === "loading"
-      ? format === "meme" ? "Writing memes" : "Writing ideas"
+      ? format === "meme"
+        ? "Writing memes"
+        : format === "were-sorry"
+          ? "Writing apologies"
+          : "Writing ideas"
       : "Generate ads";
+  const formatHelper = format === "meme"
+    ? "Twelve brand-aligned meme drafts, ready to spacebar through."
+    : format === "were-sorry"
+      ? "Eight wink-apology posts for the Instagram trend."
+      : "Audio visualizer ads with voice, captions, and MP4 export.";
 
   return (
     <div className="max-w-xl">
@@ -231,10 +247,11 @@ export function CreateLeftColumn({
             onChange={(event) => onFormatChange(event.target.value as AdFormatId)}
           >
             <option value="meme">Meme Ad</option>
+            <option value="were-sorry">We're Sorry Ad</option>
             <option value="visualizer">Visualizer Ad</option>
           </select>
           <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
-            {format === "meme" ? "Four brand-aligned meme drafts, ready to spacebar through." : "Audio visualizer ads with voice, captions, and MP4 export."}
+            {formatHelper}
           </span>
         </label>
 
