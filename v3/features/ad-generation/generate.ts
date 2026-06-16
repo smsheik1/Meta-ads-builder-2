@@ -240,6 +240,14 @@ export const normalizeAdCandidatePayload = (
   if (headline.length < 8 || headline.length > 72 || includesBannedWord(headline)) return null;
   if (subheadline.length < 24 || subheadline.length > 180 || includesBannedWord(subheadline)) return null;
   if (isBadAdText(headline) || isBadAdText(subheadline)) return null;
+  if (record.selfCheckPassed || record.chosenBuyerMoment || record.chosenProof) {
+    console.info("Ad candidate scaffold", {
+      headline,
+      chosenBuyerMoment: selectedPain,
+      chosenProof: selectedProof,
+      selfCheckPassed: cleanText(record.selfCheckPassed, 220),
+    });
+  }
 
   return {
     angleId: slugify(cleanText(record.angleId, 80) || headline || fallback.angleId),
@@ -285,6 +293,28 @@ const candidateFromReceipt = (
   };
 };
 
+const candidateFromAngle = (
+  research: StoredWebsiteResearchResult,
+  index: number,
+  angle: NonNullable<StoredWebsiteResearchResult["adAngles"]>[number],
+): AdSceneCandidate => {
+  const headline = cleanTextOnBoundary(angle.moment || angle.sitePhrase || angle.proof, 72) ||
+    `${research.brand.name} Makes The Moment Clear`;
+  return {
+    angleId: slugify(`${headline}-${index + 1}`),
+    headline,
+    subheadline: clampSentence(
+      `${angle.pain} ${angle.proof}`,
+      research.brandBrief.offer || research.brand.description,
+      180,
+    ),
+    ctaText: ensureCta(research.brandBrief.ctaDirection, index),
+    headlineType: headlineTypes[index % headlineTypes.length],
+    selectedPain: angle.moment || angle.pain,
+    selectedProof: angle.proof,
+  };
+};
+
 export const buildDeterministicAdCandidates = (
   research: StoredWebsiteResearchResult,
   count = DEFAULT_AD_IDEA_COUNT,
@@ -311,6 +341,15 @@ export const buildDeterministicAdCandidates = (
 
   const candidates: AdSceneCandidate[] = [];
   const seen = new Set<string>();
+
+  for (const angle of (research.adAngles || [])) {
+    if (candidates.length >= normalizedCount) break;
+    const candidate = candidateFromAngle(research, candidates.length, angle);
+    const key = candidate.headline.toLowerCase();
+    if (seen.has(key) || isBadAdText(candidate.headline) || isBadAdText(candidate.subheadline)) continue;
+    seen.add(key);
+    candidates.push(candidate);
+  }
 
   for (let index = 0; candidates.length < normalizedCount && index < normalizedCount * 8; index += 1) {
     const proof = cleanProofs[index % Math.max(1, cleanProofs.length)] || research.brand.description;

@@ -362,6 +362,7 @@ export const normalizeFirecrawlPayload = (
       fonts: fontsFromFirecrawl(branding),
       vibeTags: buildVibeTags(metadata, branding, evidence),
     },
+    adAngles: [],
     evidence: {
       ...evidence,
       receipts: {
@@ -594,6 +595,7 @@ export const normalizeJinaReaderPayload = (
       fonts: { feel: "unknown" },
       vibeTags: buildVibeTags(metadata, {}, evidence),
     },
+    adAngles: [],
     evidence: {
       ...evidence,
       receipts: {

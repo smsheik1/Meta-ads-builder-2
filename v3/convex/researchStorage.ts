@@ -64,6 +64,7 @@ export const saveReady: ReturnType<typeof internalMutation> = internalMutation({
       screenshotUrl: research.brand.screenshotUrl || undefined,
       branding: research.branding,
       brandBrief: research.brandBrief,
+      adAngles: research.adAngles || [],
       receipts: research.evidence.receipts,
       evidence: research.evidence,
       metadata: research.metadata,
@@ -73,6 +74,39 @@ export const saveReady: ReturnType<typeof internalMutation> = internalMutation({
     });
 
     return { brandSnapshotId };
+  },
+});
+
+export const latestAdAnglesForHost: ReturnType<typeof internalQuery> = internalQuery({
+  args: {
+    host: v.string(),
+  },
+  handler: async (ctx, { host }) => {
+    const row = await ctx.db
+      .query("brandAdAngles")
+      .withIndex("by_host_and_updatedAt", (q) => q.eq("host", host))
+      .order("desc")
+      .first();
+
+    return row?.angles || null;
+  },
+});
+
+export const saveAdAnglesForHost: ReturnType<typeof internalMutation> = internalMutation({
+  args: {
+    host: v.string(),
+    angles: v.any(),
+    providerStatus: v.any(),
+  },
+  handler: async (ctx, { host, angles, providerStatus }) => {
+    const now = Date.now();
+    await ctx.db.insert("brandAdAngles", {
+      host,
+      angles,
+      providerStatus,
+      createdAt: now,
+      updatedAt: now,
+    });
   },
 });
 

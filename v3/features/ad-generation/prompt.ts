@@ -14,6 +14,16 @@ const listForPrompt = (items: string[], maxItems = 8) => JSON.stringify(
   items.map((item) => cleanText(item, 220)).filter(Boolean).slice(0, maxItems),
 );
 
+const adAnglesForPrompt = (research: StoredWebsiteResearchResult) => JSON.stringify(
+  (research.adAngles || []).slice(0, 8).map((angle) => ({
+    buyer: cleanText(angle.buyer, 120),
+    moment: cleanText(angle.moment, 160),
+    pain: cleanText(angle.pain, 180),
+    proof: cleanText(angle.proof, 180),
+    sitePhrase: angle.sitePhrase ? cleanText(angle.sitePhrase, 180) : null,
+  })),
+);
+
 export const bannedAdWords = [
   "unlock",
   "elevate",
@@ -64,6 +74,9 @@ Curator confidence: ${research.brandBrief.confidence}
 RAW WEBSITE BACKUP (use only if it supports the curated brief; ignore navigation, cart, login, checkout, loading, and standalone price text):
 Headings: ${listForPrompt(research.evidence.headings, 10)}
 Paragraphs: ${listForPrompt(research.evidence.paragraphs, 10)}
+
+CACHED AD ANGLES (use these first when present; one angle per candidate):
+${adAnglesForPrompt(research)}
 
 PICK THE BEST STUFF FIRST FOR EACH CANDIDATE:
 - Best buyer: who is most likely to care?

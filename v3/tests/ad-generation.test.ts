@@ -56,6 +56,22 @@ const research: StoredWebsiteResearchResult = {
 	    droppedNoiseSummary: [],
 	    confidence: "high",
 	  },
+  adAngles: [
+    {
+      buyer: "D2C operator",
+      moment: "buyers ask ChatGPT and a competitor shows up first",
+      pain: "the brand loses the recommendation before the website visit",
+      proof: "First ChatGPT mention in 14 days.",
+      sitePhrase: "ChatGPT mentions in 14 days",
+    },
+    {
+      buyer: "D2C founder",
+      moment: "AI recommendation searches happen before the site visit",
+      pain: "the brand is invisible in the research step",
+      proof: "A customer generated 42 citations in two weeks.",
+      sitePhrase: "Secure Google front-page rankings and AI brand citations",
+    },
+  ],
 	  evidence: {
     headings: [
       "Get mentioned by ChatGPT",
@@ -117,6 +133,8 @@ assert.ok(prompt.includes("Do not repeat the same headline structure more than 3
 assert.ok(prompt.includes("FORMAT-SPECIFIC OUTPUT EXAMPLES"));
 assert.ok(prompt.includes("Headlines must carry the whole visible visualizer ad"));
 assert.ok(prompt.includes("Subheadline is supporting metadata for dialogue/share context"));
+assert.ok(prompt.includes("CACHED AD ANGLES"));
+assert.ok(prompt.includes("buyers ask ChatGPT and a competitor shows up first"));
 assert.ok(prompt.includes("Return only a JSON array"));
 assert.ok(prompt.includes("DISTINCTNESS REQUIREMENT"));
 assert.ok(prompt.includes(bannedAdWords.join(", ")));
@@ -126,6 +144,8 @@ assert.equal(deterministic.length, 50);
 assert.ok(deterministic.every((candidate) => candidate.headline.length >= 8));
 assert.ok(deterministic.every((candidate) => candidate.subheadline.length >= 24));
 assert.ok(deterministic.every((candidate) => !/#\d+$/.test(candidate.headline)));
+assert.equal(deterministic[0]?.selectedProof, "First ChatGPT mention in 14 days.");
+assert.equal(deterministic[1]?.selectedProof, "A customer generated 42 citations in two weeks.");
 
 assert.equal(
   normalizeAdCandidatePayload({

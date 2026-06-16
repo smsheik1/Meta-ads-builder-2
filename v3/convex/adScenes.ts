@@ -149,6 +149,7 @@ export const latestForAnonymousId: ReturnType<typeof query> = query({
       evidence: researchRun.evidence,
       metadata: researchRun.metadata || {},
       branding: researchRun.branding || {},
+      adAngles: researchRun.adAngles || [],
       providerStatus: researchRun.providerStatus || [],
     };
 
