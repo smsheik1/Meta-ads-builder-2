@@ -521,6 +521,11 @@ The API helps products avoid broken target-site logo metadata.
 assert.equal(brandfetchEnrichedResult.brand.logoUrl, "https://cdn.brandfetch.com/logo.png");
 assert.equal(brandfetchEnrichedResult.brand.colors[0], "#00B95B");
 assert.equal(brandfetchEnrichedResult.brand.fonts.heading, "Inter Display");
+assert.deepEqual(brandfetchEnrichedResult.branding.brandAssetFinalDecision, {
+  domain: "brandfetch.com",
+  finalLogoUrl: "https://cdn.brandfetch.com/logo.png",
+  finalLogoSource: "brandfetch-or-cache:logoUrl",
+});
 assert.ok(brandfetchEnrichedResult.providerStatus.some((status) => (
   status.provider === "brandfetch" && status.status === "used"
 )));

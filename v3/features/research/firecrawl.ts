@@ -236,7 +236,7 @@ const fontsFromFirecrawl = (branding: Record<string, unknown>): BrandSnapshot["f
     : {};
   const heading = cleanText(rawFonts.heading || rawFonts.display, 80);
   const body = cleanText(rawFonts.body || rawFonts.text, 80);
-  const signature = `${heading} ${body}`.toLowerCase();
+  const signature = `${heading} ${body}`.trim().toLowerCase();
   const feel = signature.includes("serif")
     ? "serif"
     : signature.includes("mono")
@@ -627,12 +627,25 @@ const mergeBrandAssets = (
   resolution: BrandAssetResolution,
 ): WebsiteResearchResult => {
   const assets = resolution.brand;
+  const logoUrl = assets.logoUrl ?? research.brand.logoUrl;
+  const faviconUrl = assets.faviconUrl ?? research.brand.faviconUrl;
+  const finalLogoUrl = logoUrl || faviconUrl || null;
+  const finalLogoSource = logoUrl
+    ? assets.logoUrl ? "brandfetch-or-cache:logoUrl" : "html:logoUrl"
+    : faviconUrl
+      ? assets.faviconUrl ? "brandfetch-or-cache:faviconUrl" : "html:faviconUrl"
+      : "initials";
+  console.info("Final brand asset decision", {
+    domain: research.host,
+    finalLogoUrl,
+    finalLogoSource,
+  });
   return {
     ...research,
     brand: {
       ...research.brand,
-      faviconUrl: assets.faviconUrl ?? research.brand.faviconUrl,
-      logoUrl: assets.logoUrl ?? research.brand.logoUrl,
+      faviconUrl,
+      logoUrl,
       ogImageUrl: assets.ogImageUrl ?? research.brand.ogImageUrl,
       screenshotUrl: assets.screenshotUrl ?? research.brand.screenshotUrl,
       colors: assets.colors?.length ? assets.colors : research.brand.colors,
@@ -642,6 +655,11 @@ const mergeBrandAssets = (
     branding: {
       ...research.branding,
       ...resolution.branding,
+      brandAssetFinalDecision: {
+        domain: research.host,
+        finalLogoUrl,
+        finalLogoSource,
+      },
     },
     providerStatus: [
       ...research.providerStatus,

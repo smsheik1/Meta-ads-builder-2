@@ -23,6 +23,9 @@ assert.deepEqual(normalizeBrandfetchFonts([
   body: "Inter",
   feel: "display",
 });
+assert.deepEqual(normalizeBrandfetchFonts(undefined), {
+  feel: "unknown",
+});
 
 assert.deepEqual(selectBrandfetchLogoCandidates([
   {
@@ -82,6 +85,7 @@ assert.equal(brandfetchCalls, 1);
 assert.equal(resolved.brand.logoUrl, "https://cdn.brandfetch.com/logo.png");
 assert.deepEqual(resolved.brand.colors, ["#00B95B", "#FFFFFF"]);
 assert.equal(resolved.brand.fonts?.heading, "Inter Display");
+assert.equal((resolved.branding.brandAssetDecision as { finalLogoUrl?: string }).finalLogoUrl, "https://cdn.brandfetch.com/logo.png");
 assert.equal(resolved.providerStatus[0]?.provider, "brandfetch");
 assert.equal(resolved.providerStatus[0]?.status, "used");
 
@@ -99,6 +103,7 @@ const cached = await resolveBrandAssets({
 assert.equal(cached.brand.logoUrl, null);
 assert.deepEqual(cached.brand.colors, ["#00B95B"]);
 assert.equal(cached.providerStatus[0]?.provider, "brand-cache");
+assert.equal((cached.branding.brandAssetDecision as { finalLogoSource?: string }).finalLogoSource, "initials");
 
 const skipped = await resolveBrandAssets({
   domain: "brandfetch.com",

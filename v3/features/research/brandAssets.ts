@@ -13,6 +13,13 @@ export type BrandAssetResolution = {
   providerStatus: ResearchProviderStatus[];
 };
 
+type BrandAssetDecision = {
+  source: string;
+  url: string | null;
+  status: "accepted" | "rejected";
+  reason: string;
+};
+
 type BrandfetchColor = {
   hex?: unknown;
   type?: unknown;
@@ -90,7 +97,7 @@ export const normalizeBrandfetchFonts = (fonts: unknown): BrandSnapshot["fonts"]
   const body = list.find((item) => /\b(body|text|sans|serif)\b/i.test(item) && item !== heading) ||
     list.find((item) => item !== heading) ||
     heading;
-  const signature = `${heading} ${body}`.toLowerCase();
+  const signature = `${heading} ${body}`.trim().toLowerCase();
   const feel = signature.includes("serif")
     ? "serif"
     : signature.includes("mono")
@@ -135,35 +142,65 @@ export const selectBrandfetchLogoCandidates = (logos: unknown) => (
       .filter(Boolean))
 );
 
-const validImageUrl = async (url: string, fetcher: Fetcher) => {
+const checkImageUrl = async (url: string, fetcher: Fetcher) => {
   try {
     let response = await fetcher(url, { method: "HEAD" });
     if (!response.ok || response.status === 405) {
       response = await fetcher(url, { method: "GET" });
     }
-    return response.ok;
+    return response.ok
+      ? { ok: true, reason: "URL resolved." }
+      : { ok: false, reason: `URL returned ${response.status}.` };
   } catch {
-    return false;
+    return { ok: false, reason: "URL fetch failed." };
   }
 };
 
-const firstValidImageUrl = async (urls: string[], fetcher: Fetcher) => {
+const validImageUrl = async (url: string, fetcher: Fetcher) => (
+  (await checkImageUrl(url, fetcher)).ok
+);
+
+const firstValidImageUrl = async (
+  source: string,
+  urls: string[],
+  fetcher: Fetcher,
+  decisions: BrandAssetDecision[],
+) => {
   for (const url of urls) {
-    if (await validImageUrl(url, fetcher)) return url;
+    const check = await checkImageUrl(url, fetcher);
+    decisions.push({
+      source,
+      url,
+      status: check.ok ? "accepted" : "rejected",
+      reason: check.reason,
+    });
+    if (check.ok) return url;
   }
   return null;
 };
 
 const cacheHasAssets = (brand: CachedBrandAssets | null | undefined) => (
-  Boolean(brand && (brand.logoUrl || brand.faviconUrl || brand.ogImageUrl || brand.colors?.length || (brand.fonts && brand.fonts.feel !== "unknown")))
+  Boolean(brand && (brand.logoUrl || brand.faviconUrl || brand.colors?.length || (brand.fonts && brand.fonts.feel !== "unknown")))
 );
 
-const verifiedCachedBrand = async (brand: CachedBrandAssets, fetcher: Fetcher) => {
+const verifiedCachedBrand = async (
+  brand: CachedBrandAssets,
+  fetcher: Fetcher,
+  decisions: BrandAssetDecision[],
+) => {
   const result = { ...brand };
 
-  for (const key of ["logoUrl", "faviconUrl", "ogImageUrl"] as const) {
+  for (const key of ["logoUrl", "faviconUrl"] as const) {
     const url = result[key];
-    if (url && !(await validImageUrl(url, fetcher))) result[key] = null;
+    if (!url) continue;
+    const check = await checkImageUrl(url, fetcher);
+    decisions.push({
+      source: `brand-cache:${key}`,
+      url,
+      status: check.ok ? "accepted" : "rejected",
+      reason: check.reason,
+    });
+    if (!check.ok) result[key] = null;
   }
 
   return result;
@@ -182,12 +219,28 @@ export const resolveBrandAssets = async ({
   apiKey?: string;
   fetcher?: Fetcher;
 }): Promise<BrandAssetResolution> => {
+  const decisions: BrandAssetDecision[] = [];
   if (cacheHasAssets(cachedBrand)) {
-    const verifiedBrand = await verifiedCachedBrand(cachedBrand || {}, fetcher);
+    const verifiedBrand = await verifiedCachedBrand(cachedBrand || {}, fetcher, decisions);
     if (cacheHasAssets(verifiedBrand)) {
+      const finalLogoUrl = verifiedBrand.logoUrl || verifiedBrand.faviconUrl || null;
+      console.info("Brand asset decision", {
+        domain,
+        finalLogoUrl,
+        finalLogoSource: verifiedBrand.logoUrl ? "brand-cache:logoUrl" : verifiedBrand.faviconUrl ? "brand-cache:faviconUrl" : "initials",
+        decisions,
+      });
       return {
         brand: verifiedBrand,
-        branding: { source: "brand-cache" },
+        branding: {
+          source: "brand-cache",
+          brandAssetDecision: {
+            domain,
+            finalLogoUrl,
+            finalLogoSource: verifiedBrand.logoUrl ? "brand-cache:logoUrl" : verifiedBrand.faviconUrl ? "brand-cache:faviconUrl" : "initials",
+            decisions,
+          },
+        },
         providerStatus: [{
           provider: "brand-cache",
           status: "used",
@@ -221,7 +274,8 @@ export const resolveBrandAssets = async ({
     if (!response.ok) throw new Error(`Brandfetch returned ${response.status}.`);
 
     const payload = await response.json() as BrandfetchPayload;
-    const logoUrl = await firstValidImageUrl(selectBrandfetchLogoCandidates(payload.logos), fetcher);
+    const logoCandidates = selectBrandfetchLogoCandidates(payload.logos);
+    const logoUrl = await firstValidImageUrl("brandfetch:logo", logoCandidates, fetcher, decisions);
     const colors = normalizeBrandfetchColors(payload.colors, htmlColors);
     const fonts = normalizeBrandfetchFonts(payload.fonts);
     const brand: CachedBrandAssets = {
@@ -232,10 +286,38 @@ export const resolveBrandAssets = async ({
       fonts,
     };
     const useful = Boolean(brand.name || brand.description || brand.logoUrl || colors.length || fonts.feel !== "unknown");
+    const colorTypes = (Array.isArray(payload.colors) ? payload.colors : [])
+      .map((color) => clean((color as BrandfetchColor).type, 40))
+      .filter(Boolean);
+    const finalLogoSource = logoUrl ? "brandfetch:logo" : "html-or-initials";
+    console.info("Brand asset decision", {
+      domain,
+      qualityScore: payload.qualityScore,
+      brandfetchLogoCandidates: logoCandidates.length,
+      colorTypes,
+      selectedPrimaryColor: colors[0] || null,
+      fontsFound: fonts.feel !== "unknown",
+      finalLogoUrl: logoUrl,
+      finalLogoSource,
+      decisions,
+    });
 
     return {
       brand,
-      branding: { brandfetch: payload },
+      branding: {
+        brandfetch: payload,
+        brandAssetDecision: {
+          domain,
+          qualityScore: payload.qualityScore,
+          brandfetchLogoCandidates: logoCandidates.length,
+          colorTypes,
+          selectedPrimaryColor: colors[0] || null,
+          fontsFound: fonts.feel !== "unknown",
+          finalLogoUrl: logoUrl,
+          finalLogoSource,
+          decisions,
+        },
+      },
       providerStatus: [{
         provider: "brandfetch",
         status: useful ? "used" : "skipped",
