@@ -6,14 +6,6 @@ import {
 } from "./types";
 import { pickSceneAccentColor } from "./createVisualizerScene";
 
-const badgeOptions = [
-  "Public apology",
-  "Brand statement",
-  "Our bad",
-  "Tiny apology",
-  "Sorry note",
-];
-
 export const createWereSorryAdScene = ({
   research,
   variant,
@@ -47,12 +39,12 @@ export const createWereSorryAdScene = ({
     },
     creative: {
       angleId: `were-sorry-${candidateIndex + 1}`,
-      headline: variant.apology,
-      subheadline: variant.makeGood,
-      ctaText: variant.ctaText,
+      headline: variant.apologyHeader,
+      subheadline: variant.legalOpener,
+      ctaText: research.brandBrief.ctaDirection || "Learn more",
       headlineType: "contrast",
-      selectedPain: variant.selectedPain || variant.angle,
-      selectedProof: variant.selectedProof || research.brandBrief.proof[0] || research.brandBrief.offer,
+      selectedPain: variant.angle,
+      selectedProof: variant.confessions[0] || research.brandBrief.proof[0] || research.brandBrief.offer,
     },
     style: {
       backgroundColor: "#FFF7ED",
@@ -67,9 +59,10 @@ export const createWereSorryAdScene = ({
     },
     layout: {
       preset: "were-sorry-poster",
-      apology: variant.apology,
-      makeGood: variant.makeGood,
-      badgeText: badgeOptions[candidateIndex % badgeOptions.length]!,
+      apologyHeader: variant.apologyHeader,
+      legalOpener: variant.legalOpener,
+      confessions: variant.confessions,
+      signoff: variant.signoff,
     },
     metadata: {
       candidateIndex,

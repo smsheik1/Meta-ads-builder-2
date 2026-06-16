@@ -1,7 +1,7 @@
 export const wereSorryEditorSchema = {
   text: [
-    { id: "headline", label: "Apology", kind: "textarea" },
-    { id: "subheadline", label: "Make-good line", kind: "textarea" },
+    { id: "headline", label: "Statement title", kind: "textarea" },
+    { id: "subheadline", label: "Legal opener", kind: "textarea" },
     { id: "ctaText", label: "CTA", kind: "text" },
   ],
   style: [

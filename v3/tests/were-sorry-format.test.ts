@@ -71,15 +71,21 @@ const research: StoredWebsiteResearchResult = {
 
 const variants = Array.from({ length: DEFAULT_WERE_SORRY_VARIANT_COUNT }, (_, index) => ({
   angle: `distinct angle ${index + 1}`,
-  apology: index === 0
-    ? "Sorry your front desk has competition now."
-    : `Sorry missed calls got called out ${index + 1}.`,
-  makeGood: index === 0
-    ? "Agent Enamel answers the dental calls that used to slip."
-    : `A real buyer moment, written without fake proof ${index + 1}.`,
-  ctaText: "Book a demo",
-  selectedPain: `buyer pain ${index + 1}`,
-  selectedProof: index % 2 ? "Answers calls and books patients." : "",
+  apologyHeader: index === 0 ? "An Official Apology" : `Official Apology ${index + 1}`,
+  legalOpener: index === 0
+    ? "It has come to our attention that some calls stopped slipping away."
+    : `We take full responsibility for buyer moment ${index + 1}.`,
+  confessions: index === 0
+    ? [
+      "We apologize that your front desk stopped losing calls after lunch.",
+      "We regret that more callers found a path onto the schedule.",
+    ]
+    : [
+      `We apologize for making buyer pain ${index + 1} easier to spot.`,
+      `We regret that proof point ${index + 1} became harder to ignore.`,
+    ],
+  signoff: "Sincerely, Agent Enamel",
+  selfCheckPassed: "The wrapper reads real and the confessions are specific.",
 }));
 
 const payload = { variants };
@@ -88,9 +94,10 @@ assert.equal(parsed.length, DEFAULT_WERE_SORRY_VARIANT_COUNT);
 assert.deepEqual(parsed[0], variants[0]);
 
 const prompt = buildWereSorryPrompt(research);
-assert.ok(prompt.includes("Write exactly 8 distinct \"We're sorry\" ad variants"));
-assert.ok(prompt.includes("Only mention a discount, coupon, stock-out, sale, or free offer if the BRAND CONTEXT explicitly says it"));
-assert.ok(prompt.includes("If proof is thin, build the joke on the buyer moment or pain alone"));
+assert.ok(prompt.includes("Official Apology"));
+assert.ok(prompt.includes("HARD SAFETY GATE"));
+assert.ok(prompt.includes("Every confession = a real benefit"));
+assert.ok(prompt.includes("Only mention a discount, coupon, sale, free offer, or stock-out if the brand context explicitly says it"));
 assert.ok(prompt.includes("\"variants\""));
 
 assert.throws(
@@ -98,13 +105,22 @@ assert.throws(
     variants: [
       {
         angle: "generic",
-        apology: "Unlock revolutionary growth",
-        makeGood: "Premium solution for everyone",
-        ctaText: "Learn more",
+        apologyHeader: "An Official Apology",
+        legalOpener: "We take full responsibility for revolutionary growth.",
+        confessions: ["We unlock game-changing value.", "We elevate everything."],
+        signoff: "Sincerely, Agent Enamel",
       },
     ],
   })),
   /incomplete we're sorry variants/,
+);
+
+assert.throws(
+  () => extractWereSorryVariantsFromResponse(JSON.stringify({
+    suitable: false,
+    reason: "Trust-sensitive territory.",
+  })),
+  /marked we're sorry format unsuitable/,
 );
 
 await assert.rejects(
@@ -152,7 +168,8 @@ const scenes = parsed.map((variant, index) => createWereSorryAdScene({
 assert.equal(scenes.length, DEFAULT_WERE_SORRY_VARIANT_COUNT);
 assert.ok(scenes.every((scene) => scene.format === "were-sorry"));
 assert.equal(scenes[0]!.layout.preset, "were-sorry-poster");
-assert.equal(scenes[0]!.creative.headline, variants[0]!.apology);
+assert.equal(scenes[0]!.creative.headline, variants[0]!.apologyHeader);
+assert.deepEqual(scenes[0]!.layout.confessions, variants[0]!.confessions);
 assert.equal(scenes[0]!.style.accentColor, "#22C55E");
 
 const html = renderToStaticMarkup(createElement(AdRenderSurface, {
@@ -160,14 +177,16 @@ const html = renderToStaticMarkup(createElement(AdRenderSurface, {
 }));
 assert.ok(html.includes('data-format="were-sorry"'));
 assert.ok(html.includes('data-were-sorry-card="true"'));
-assert.ok(html.includes("Sorry your front desk has competition now."));
-assert.ok(html.includes("Book a demo"));
+assert.ok(html.includes("An Official Apology"));
+assert.ok(html.includes('data-were-sorry-confessions="true"'));
+assert.ok(html.includes("We apologize that your front desk stopped losing calls after lunch."));
+assert.ok(html.includes("Sincerely, Agent Enamel"));
 assert.ok(html.includes("https://cdn.example/logo.png"));
 
 const rerolled = rerollScene(scenes, scenes[0]!, 0, createDefaultSceneLocks());
 assert.equal(rerolled.index, 1);
 assert.equal(rerolled.scene?.format, "were-sorry");
-assert.equal(rerolled.scene?.creative.headline, variants[1]!.apology);
+assert.equal(rerolled.scene?.creative.headline, variants[1]!.apologyHeader);
 
 const savedDesign = {
   id: createSavedDesignId(scenes[0]!),
