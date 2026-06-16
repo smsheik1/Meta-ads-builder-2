@@ -1,5 +1,5 @@
 import type { StoredWebsiteResearchResult } from "../../research/types";
-import { MEME_TEMPLATES } from "./templates";
+import { MEME_TEMPLATES, MEME_VARIATIONS_PER_TEMPLATE } from "./templates";
 
 const cleanList = (items: string[], fallback: string) => (
   items.length ? items.slice(0, 6).join("; ") : fallback
@@ -35,7 +35,8 @@ BRAND CONTEXT:
 - CTA direction: ${research.brandBrief.ctaDirection}
 
 TASK:
-Write exactly one meme variant for every template below, in the exact order given.
+Write exactly ${MEME_VARIATIONS_PER_TEMPLATE} distinct meme variants for every template below, grouped in the exact template order given.
+Total variants required: ${MEME_TEMPLATES.length * MEME_VARIATIONS_PER_TEMPLATE}.
 
 TEMPLATES:
 ${JSON.stringify(templates, null, 2)}
@@ -43,6 +44,7 @@ ${JSON.stringify(templates, null, 2)}
 RULES:
 - Return plain JSON only.
 - Every required slot must be present.
+- For each template, write ${MEME_VARIATIONS_PER_TEMPLATE} genuinely different angles, not tiny rewrites of the same joke.
 - Plain text only in slot values. No markdown, no URLs.
 - Sound like a meme caption, not an ad headline.
 - Reference only proof, offer, or buyer moments from the BRAND block above. Do not invent numbers, reviews, customers, guarantees, integrations, or timeframes.

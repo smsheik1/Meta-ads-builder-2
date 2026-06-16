@@ -31,6 +31,8 @@ export type MemeTemplate = {
   directorsNotes: string;
 };
 
+export const MEME_VARIATIONS_PER_TEMPLATE = 3;
+
 export const MEME_TEMPLATES = [
   {
     id: "drake",
