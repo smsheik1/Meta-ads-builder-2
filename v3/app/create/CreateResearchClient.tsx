@@ -212,6 +212,7 @@ function ResearchConnected() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const analysisUpgradeKeyRef = useRef("");
   const rerollFlashTimeoutRef = useRef<number | null>(null);
+  const researchByUrlRef = useRef(new Map<string, StoredWebsiteResearchResult>());
   const savedDesigns = useQuery(api.savedDesigns.list, anonymousId ? { anonymousId } : "skip") as SavedAdSceneDesign[] | undefined;
   const latestGeneration = useQuery(api.adScenes.latestForAnonymousId, anonymousId ? { anonymousId } : "skip") as {
     result: StoredWebsiteResearchResult;
@@ -308,6 +309,7 @@ function ResearchConnected() {
     if (result || adScenes.length || !latestGeneration?.scenes.length) return;
 
     const restoredScene = latestGeneration.scenes[0] || null;
+    rememberResearchForReuse(latestGeneration.result);
     setResult(latestGeneration.result);
     setStatus("ready");
     setAdScenes(latestGeneration.scenes);
@@ -326,6 +328,16 @@ function ResearchConnected() {
   ]);
 
   const getCurrentAnonymousId = () => anonymousId || getAnonymousId();
+
+  const rememberResearchForReuse = (research: StoredWebsiteResearchResult) => {
+    for (const value of [research.websiteUrl, research.finalUrl]) {
+      try {
+        researchByUrlRef.current.set(normalizedUrlKey(value), research);
+      } catch {
+        // Ignore malformed historical rows; fresh submits are validated before storage.
+      }
+    }
+  };
 
   const resetPreviewPlayback = useCallback(() => {
     setIsAudioPlaying(false);
@@ -643,9 +655,14 @@ function ResearchConnected() {
   };
 
   const getReusableResearchForUrl = (value: string) => {
-    if (!result?.researchRunId) return null;
     try {
-      return normalizedUrlKey(value) === normalizedUrlKey(result.websiteUrl) ? result : null;
+      const key = normalizedUrlKey(value);
+      const cached = researchByUrlRef.current.get(key);
+      if (cached?.researchRunId) return cached;
+      return result?.researchRunId && (
+        key === normalizedUrlKey(result.websiteUrl) ||
+        key === normalizedUrlKey(result.finalUrl)
+      ) ? result : null;
     } catch {
       return null;
     }
@@ -805,6 +822,7 @@ function ResearchConnected() {
         selectedVisualizerModel,
       );
       setProgressStage("preparing-canvas");
+      rememberResearchForReuse(nextResult);
       setResult(nextResult);
       setStatus("ready");
       applyGeneratedScenes(nextScenes);

@@ -94,8 +94,10 @@ assert.ok(
 assert.ok(
   createClientSource.includes("normalizePublicWebsiteUrl") &&
     createClientSource.includes("getReusableResearchForUrl") &&
-    createClientSource.includes("normalizedUrlKey(value) === normalizedUrlKey(result.websiteUrl)"),
-  "Format changes must reuse stored research by normalized URL instead of domain.",
+    createClientSource.includes("researchByUrlRef") &&
+    createClientSource.includes("rememberResearchForReuse") &&
+    createClientSource.includes("for (const value of [research.websiteUrl, research.finalUrl])"),
+  "Format changes must reuse stored research by normalized URL instead of domain or transient result state.",
 );
 assert.ok(
   createClientSource.includes("onFormatChange={onFormatChange}") &&
