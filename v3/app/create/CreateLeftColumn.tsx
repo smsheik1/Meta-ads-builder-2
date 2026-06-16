@@ -33,7 +33,9 @@ const getProgressRows = (format: AdFormatId) => [
       ? "Writing 12 memes"
       : format === "were-sorry"
         ? "Writing 8 apologies"
-        : "Writing 50 ads",
+        : format === "video-meme"
+          ? "Writing 8 bear memes"
+          : "Writing 50 ads",
   },
   { id: "preparing-canvas", label: "Preparing canvas" },
 ] as const;
@@ -202,13 +204,17 @@ export function CreateLeftColumn({
         ? "Writing memes"
         : format === "were-sorry"
           ? "Writing apologies"
-          : "Writing ideas"
+          : format === "video-meme"
+            ? "Writing bear memes"
+            : "Writing ideas"
       : "Generate ads";
   const formatHelper = format === "meme"
     ? "Twelve brand-aligned meme drafts, ready to spacebar through."
     : format === "were-sorry"
       ? "Eight wink-apology posts for the Instagram trend."
-      : "Audio visualizer ads with voice, captions, and MP4 export.";
+      : format === "video-meme"
+        ? "Eight bear-sniff reaction captions for MP4 meme export."
+        : "Audio visualizer ads with voice, captions, and MP4 export.";
 
   return (
     <div className="max-w-xl">
@@ -248,6 +254,7 @@ export function CreateLeftColumn({
           >
             <option value="meme">Meme Ad</option>
             <option value="were-sorry">We're Sorry Ad</option>
+            <option value="video-meme">Video Meme</option>
             <option value="visualizer">Visualizer Ad</option>
           </select>
           <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">

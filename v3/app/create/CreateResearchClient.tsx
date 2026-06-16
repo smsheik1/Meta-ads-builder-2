@@ -90,10 +90,26 @@ type BillingStatus = {
 
 type CreateModal = "brand-details" | "dialogue" | "captions" | "paywall" | null;
 
+type ReusableResearch = {
+  researchRunId: string;
+  facts: WebsiteSubmitProgressFacts | null;
+};
+
 function getResearchActionErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : String(error || "");
   if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) return researchTimeoutMessage;
   return message || "Website research failed.";
+}
+
+function getAdGenerationErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || "");
+  if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) {
+    if (/we'?re sorry/i.test(message)) {
+      return "We're Sorry copy generation timed out after reusing the saved research. Try again.";
+    }
+    return "Ad generation timed out after reusing the saved research. Try again.";
+  }
+  return message || "Ad generation failed.";
 }
 
 function getSceneDefaultFlashSlots(scene: AdScene): RenderFlashRole[] {
@@ -103,6 +119,7 @@ function getSceneDefaultFlashSlots(scene: AdScene): RenderFlashRole[] {
 function getGenerationCount(format: AdFormatId) {
   if (format === "meme") return 12;
   if (format === "were-sorry") return 8;
+  if (format === "video-meme") return 8;
   return 50;
 }
 
@@ -129,6 +146,16 @@ function getWebsiteSubmitProgressFacts(result: StoredWebsiteResearchResult): Web
     colorCount: result.brand.colors.length,
     proofCount: result.brandBrief.proof.length || result.evidence.receipts.specificClaims.length || result.evidence.receipts.namedProof.length,
     buyerMomentCount: result.brandBrief.buyerMoments.length || result.evidence.receipts.buyerMoments.length,
+  };
+}
+
+function getSceneProgressFacts(scene: AdScene): WebsiteSubmitProgressFacts {
+  return {
+    brandName: scene.brand.name || scene.brand.host,
+    hasLogo: Boolean(scene.brand.logoUrl || scene.brand.faviconUrl),
+    colorCount: scene.brand.colors.length,
+    proofCount: scene.brand.receipts.specificClaims.length || scene.brand.receipts.namedProof.length,
+    buyerMomentCount: scene.brand.receipts.buyerMoments.length,
   };
 }
 
@@ -211,6 +238,7 @@ function ResearchConnected() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const analysisUpgradeKeyRef = useRef("");
   const rerollFlashTimeoutRef = useRef<number | null>(null);
+  const researchByUrlRef = useRef(new Map<string, StoredWebsiteResearchResult>());
   const savedDesigns = useQuery(api.savedDesigns.list, anonymousId ? { anonymousId } : "skip") as SavedAdSceneDesign[] | undefined;
   const latestGeneration = useQuery(api.adScenes.latestForAnonymousId, anonymousId ? { anonymousId } : "skip") as {
     result: StoredWebsiteResearchResult;
@@ -307,11 +335,14 @@ function ResearchConnected() {
     if (result || adScenes.length || !latestGeneration?.scenes.length) return;
 
     const restoredScene = latestGeneration.scenes[0] || null;
+    rememberResearchForReuse(latestGeneration.result);
+    setUrl(latestGeneration.result.websiteUrl);
     setResult(latestGeneration.result);
     setStatus("ready");
     setAdScenes(latestGeneration.scenes);
     setSelectedScene(restoredScene);
     setSelectedSceneIndex(0);
+    if (restoredScene) setSelectedAdFormat(restoredScene.format);
     canvasActions.interactionReset();
     setRerollCount(0);
     setAdStatus("ready");
@@ -325,6 +356,16 @@ function ResearchConnected() {
   ]);
 
   const getCurrentAnonymousId = () => anonymousId || getAnonymousId();
+
+  const rememberResearchForReuse = (research: StoredWebsiteResearchResult) => {
+    for (const value of [research.websiteUrl, research.finalUrl]) {
+      try {
+        researchByUrlRef.current.set(normalizedUrlKey(value), research);
+      } catch {
+        // Ignore malformed historical rows; fresh submits are validated before storage.
+      }
+    }
+  };
 
   const resetPreviewPlayback = useCallback(() => {
     setIsAudioPlaying(false);
@@ -642,22 +683,50 @@ function ResearchConnected() {
   };
 
   const getReusableResearchForUrl = (value: string) => {
-    if (!result?.researchRunId) return null;
     try {
-      return normalizedUrlKey(value) === normalizedUrlKey(result.websiteUrl) ? result : null;
+      const key = normalizedUrlKey(value);
+      const cached = researchByUrlRef.current.get(key);
+      if (cached?.researchRunId) {
+        return {
+          researchRunId: cached.researchRunId,
+          facts: getWebsiteSubmitProgressFacts(cached),
+        };
+      }
+      if (result?.researchRunId && (
+        key === normalizedUrlKey(result.websiteUrl) ||
+        key === normalizedUrlKey(result.finalUrl)
+      )) {
+        return {
+          researchRunId: result.researchRunId,
+          facts: getWebsiteSubmitProgressFacts(result),
+        };
+      }
+      if (selectedScene?.metadata.researchRunId) {
+        const sceneKeys = [
+          selectedScene.brand.url,
+          selectedScene.brand.host ? `https://${selectedScene.brand.host}/` : "",
+        ].filter(Boolean).map(normalizedUrlKey);
+        if (sceneKeys.includes(key)) {
+          return {
+            researchRunId: selectedScene.metadata.researchRunId,
+            facts: getSceneProgressFacts(selectedScene),
+          };
+        }
+      }
+      return null;
     } catch {
       return null;
     }
   };
 
   const generateScenesOnly = async (
-    research: StoredWebsiteResearchResult,
+    research: ReusableResearch,
     format: AdFormatId,
   ) => {
     setStatus("ready");
     setAdStatus("loading");
     setProgressStage("writing-ads");
-    setPendingProgressFacts(getWebsiteSubmitProgressFacts(research));
+    setPendingProgressFacts(research.facts);
     setShowSlowResearchMessage(false);
     canvasActions.beginBusy("ad-generation");
     resetShareState();
@@ -685,7 +754,7 @@ function ResearchConnected() {
       canvasActions.finishBusy();
       setAdStatus("error");
       setAdStatusNote(adScenes.length ? "Previous ads are still on the canvas. New ad generation failed." : "");
-      setError(getResearchActionErrorMessage(nextError));
+      setError(getAdGenerationErrorMessage(nextError));
     }
   };
 
@@ -804,6 +873,7 @@ function ResearchConnected() {
         selectedVisualizerModel,
       );
       setProgressStage("preparing-canvas");
+      rememberResearchForReuse(nextResult);
       setResult(nextResult);
       setStatus("ready");
       applyGeneratedScenes(nextScenes);
@@ -816,7 +886,7 @@ function ResearchConnected() {
         setStatus(hadExistingCanvas ? "ready" : "error");
         setAdStatus("error");
         setAdStatusNote(hadExistingCanvas ? "Previous ads are still on the canvas. New ad generation failed." : "");
-        setError(message);
+        setError(getAdGenerationErrorMessage(nextError));
       } else {
         setStatus(hadExistingCanvas ? "ready" : "error");
         keepPreviousCanvasAfterFailure();
@@ -1064,6 +1134,8 @@ function ResearchConnected() {
     });
 
     resetPreviewPlayback();
+    setUrl(restored.selectedScene.brand.url || url);
+    setSelectedAdFormat(restored.selectedScene.format);
     setSelectedScene(restored.selectedScene);
     setSelectedSceneIndex(restored.selectedSceneIndex);
     setAdScenes(restored.scenes);

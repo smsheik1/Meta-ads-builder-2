@@ -195,6 +195,18 @@ assert.equal(retryResult.model, "test-kimi-model");
 assert.equal(retryResult.providerStatus.provider, "nvidia-nim");
 assert.equal(retryResult.variants.length, 12);
 
+let defaultTimeoutMs = 0;
+await generateMemeVariantsFromResearch(research, {
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimBaseUrl: "https://nim.test/v1",
+  nvidiaNimModel: "test-kimi-model",
+  nvidiaNimChatCompletion: async ({ timeoutMs }) => {
+    defaultTimeoutMs = timeoutMs;
+    return JSON.stringify(payload);
+  },
+});
+assert.ok(defaultTimeoutMs >= 60_000, "Meme generation needs a longer timeout than the default 30s NIM call.");
+
 await assert.rejects(
   () => generateMemeVariantsFromResearch(research, {
     nvidiaNimApiKey: "",

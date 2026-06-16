@@ -40,20 +40,33 @@ export const callNvidiaNimChat = async ({
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${apiKey}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: "user", content: prompt }],
-      temperature,
-      response_format: { type: "json_object" },
-    }),
-    signal: controller.signal,
-  }).finally(() => clearTimeout(timeout));
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        temperature,
+        response_format: { type: "json_object" },
+      }),
+      signal: controller.signal,
+    });
+  } catch (error) {
+    const errorText = error instanceof Error
+      ? `${error.name} ${error.message}`
+      : `${(error as { name?: unknown } | null)?.name || ""} ${(error as { message?: unknown } | null)?.message || ""}`.trim() || String(error || "");
+    if (/\b(aborterror|aborted)\b/i.test(errorText)) {
+      throw new Error(`${label} timed out after ${Math.round(timeoutMs / 1000)}s.`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!response.ok) {
     const body = await response.text().catch(() => "");
