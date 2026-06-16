@@ -322,36 +322,34 @@ DISTINCTNESS:
 STUDY THESE EXAMPLES. Copy the rhythm, not the specifics. Never copy names, settings, industries, numbers, phrases, titles, or lines from these examples.
 
 Example 1:
-Ava (tired): "Just got the Q4 ad invoice. Fourteen grand for leads we used to get for six."
+Ava (frustrated): "Just got the Q4 ad invoice. Fourteen grand for leads we used to get for six."
 Sam (calm): "We stopped trying to win every auction."
 Ava: "Then where are the buyers coming from."
 Sam: "The recommendation searches. We show up before they even hit a site."
-Ava: "How fast did that happen."
-Sam: "First ranking in two weeks. Tracked revenue followed."
 
 Example 2:
 Ava (frustrated): "We had three good booking requests sit unanswered while I was on jobs."
-Sam (practical): "That is the leak. Not demand, response time."
+Sam (calm): "That is the leak. Not demand, response time."
 Ava: "I hate that the best leads arrive when nobody can reply."
 Sam: "The new setup catches those moments and books the next step."
 
 FORMAT-SPECIFIC EXAMPLES. Copy the conversational shape, not the facts.
 
 Local service:
-Ava (annoyed): "Three calls came in after closing yesterday. All from people ready to book."
-Sam (plain): "That is the expensive part, the lead was already warm."
-Ava: "So what did they change?"
-Sam: "The receptionist answers after hours and gets the appointment on the calendar."
+Ava (frustrated): "The dishwasher died at 8pm and every repair shop form said tomorrow."
+Sam (calm): "That is when people stop comparing and just want a slot."
+Ava: "Who actually picked it up?"
+Sam: "The shop with live evening booking. I grabbed the first morning window."
 
 Operator workflow:
-Ava (focused): "Our competitor showed up in the AI answer again. We were not even mentioned."
-Sam (calm): "That is where buyers are checking before they visit a site."
-Ava: "Did the visibility work actually move?"
-Sam: "First mention showed up in 14 days. That was the receipt."
+Ava (skeptical): "Inventory said we had twelve left. The warehouse found three."
+Sam (calm): "That mismatch is what keeps support buried."
+Ava: "Did the new scan flow actually fix it?"
+Sam: "By Friday, the counts matched before the pick list went out."
 
 Ecommerce:
-Ava (rushed): "I forgot the gift and the party is this weekend."
-Sam (warm): "Then do not make it complicated."
+Ava (frustrated): "I forgot the gift and the party is this weekend."
+Sam (calm): "Then do not make it complicated."
 Ava: "What would you send?"
 Sam: "Fresh baked cookies. It still feels personal, and it ships like a real gift."
 

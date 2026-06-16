@@ -24,6 +24,10 @@ assert.ok(prompt.includes("Speakers strictly alternate: Ava, Sam, Ava, Sam"), "D
 assert.ok(prompt.includes("Tone must be one of"), "Dialogue prompt must constrain TTS tones.");
 assert.ok(prompt.includes("natural next step"), "Dialogue prompt must end with a natural CTA step.");
 assert.ok(prompt.includes(defaultRenderScene.creative.ctaText), "Dialogue prompt must pass the CTA into ending guidance.");
+assert.ok(!prompt.includes("How fast did that happen."), "Dialogue examples must not leak 6-line scripts.");
+assert.ok(!/\((?:tired|practical|annoyed|plain|focused|warm|rushed)\):/.test(prompt), "Dialogue example tones must stay in the allowed enum.");
+assert.ok(prompt.includes("The dishwasher died at 8pm"), "Local-service example should stay away from dental phones.");
+assert.ok(prompt.includes("Inventory said we had twelve left"), "Operator example should stay away from AI-visibility framing.");
 
 const fallbackScripts = buildFallbackDialogueScripts(defaultRenderScene, 5);
 assert.equal(fallbackScripts.length, 5);
