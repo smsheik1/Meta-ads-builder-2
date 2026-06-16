@@ -87,6 +87,35 @@ Good:
 - "Protein bars that don't taste like punishment."
 - "Forgot the birthday? Cookies still ship."
 
+HEADLINE CALIBRATION EXAMPLES:
+These teach the difference between concrete and generic. Do not copy them. They are from other industries to show the pattern, not to be reused. Match this level of specificity using this brand's evidence.
+
+GENERIC bad -> CONCRETE good
+
+Dental practice:
+Bad: "Quality Dental Care You Can Trust"
+Good: "Drowning in Monday morning phone calls?"
+Bad: "Your Smile, Our Priority"
+Good: "The patient called. Nobody picked up."
+
+Bookkeeping software:
+Bad: "Smart Bookkeeping for Small Business"
+Good: "Tax season shouldn't cost you a weekend"
+Bad: "Save Time and Money Today"
+Good: "47 receipts. One shoebox. Sound familiar?"
+
+Meal-prep delivery:
+Bad: "Healthy Meals Delivered to Your Door"
+Good: "It's 6pm and the fridge is still empty"
+Bad: "Eat Better, Live Better"
+Good: "Skip the 'what's for dinner' fight"
+
+WHY THE GOOD ONES WORK:
+- They name a specific moment the buyer has lived: a time, a scene, or a friction.
+- They make the buyer think "that's literally me" within 2 seconds.
+- They imply a stake without inventing numbers.
+- A good headline could only belong to this kind of buyer. If it works verbatim for any company in the category, it is too generic.
+
 DECIDE HEADLINE TYPE BEFORE WRITING:
 Pick ONE shape for each headline:
 1. painful_moment - a concrete annoying moment the buyer recognizes.

@@ -108,6 +108,7 @@ const prompt = buildAdIdeasPrompt(research, 50);
 assert.ok(prompt.includes("STUDY THESE EXAMPLES"));
 assert.ok(prompt.includes("DECIDE HEADLINE TYPE BEFORE WRITING"));
 assert.ok(prompt.includes("CONCRETE HEADLINE TEST"));
+assert.ok(prompt.includes("HEADLINE CALIBRATION EXAMPLES"));
 assert.ok(prompt.includes("Do not average the whole brief"));
 assert.ok(prompt.includes("SEO/title restatements"));
 assert.ok(prompt.includes("Use at least 3 different CTA verbs"));
