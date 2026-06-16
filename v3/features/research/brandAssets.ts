@@ -210,21 +210,29 @@ export const resolveBrandAssets = async ({
   domain,
   htmlColors = [],
   cachedBrand,
-  apiKey = process.env.BRANDFETCH_API_KEY,
+  apiKey,
+  brandfetchEnabled,
   fetcher = fetch,
 }: {
   domain: string;
   htmlColors?: string[];
   cachedBrand?: CachedBrandAssets | null;
   apiKey?: string;
+  brandfetchEnabled?: boolean;
   fetcher?: Fetcher;
 }): Promise<BrandAssetResolution> => {
   const decisions: BrandAssetDecision[] = [];
+  const configuredApiKey = apiKey ?? process.env.BRANDFETCH_API_KEY;
+  const shouldUseBrandfetch = brandfetchEnabled ?? (
+    apiKey !== undefined
+      ? Boolean(apiKey)
+      : /^(1|true|on|enabled)$/i.test(process.env.BRANDFETCH_ENABLED || "")
+  );
   let cachedFallback: CachedBrandAssets | null = null;
   if (cacheHasAssets(cachedBrand)) {
     const verifiedBrand = await verifiedCachedBrand(cachedBrand || {}, fetcher, decisions);
     cachedFallback = verifiedBrand;
-    if (verifiedBrand.logoUrl || verifiedBrand.faviconUrl || !apiKey) {
+    if (verifiedBrand.logoUrl || verifiedBrand.faviconUrl || !shouldUseBrandfetch || !configuredApiKey) {
       const finalLogoUrl = verifiedBrand.logoUrl || verifiedBrand.faviconUrl || null;
       console.info("Brand asset decision", {
         domain,
@@ -254,25 +262,27 @@ export const resolveBrandAssets = async ({
       source: "brand-cache",
       url: null,
       status: "rejected",
-      reason: "Cached brand assets had no valid logo or favicon; trying Brandfetch logo lookup.",
+      reason: shouldUseBrandfetch ? "Cached brand assets had no valid logo or favicon; trying Brandfetch logo lookup." : "Brandfetch is disabled.",
     });
   }
 
-  if (!apiKey) {
+  if (!shouldUseBrandfetch || !configuredApiKey) {
     return {
       brand: {},
       branding: {},
       providerStatus: [{
         provider: "brandfetch",
         status: "skipped",
-        reason: "Brandfetch skipped because BRANDFETCH_API_KEY is not configured.",
+        reason: shouldUseBrandfetch
+          ? "Brandfetch skipped because BRANDFETCH_API_KEY is not configured."
+          : "Brandfetch skipped because BRANDFETCH_ENABLED is not true.",
       }],
     };
   }
 
   try {
     const response = await fetcher(`${BRANDFETCH_URL}/${encodeURIComponent(domain)}`, {
-      headers: { authorization: `Bearer ${apiKey}` },
+      headers: { authorization: `Bearer ${configuredApiKey}` },
     });
     const quota = response.headers.get("x-api-key-quota");
     const usage = response.headers.get("x-api-key-approximate-usage");
