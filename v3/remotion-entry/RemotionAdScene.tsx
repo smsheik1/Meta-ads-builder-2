@@ -7,7 +7,7 @@ import type { AdScene } from "../features/scene/types";
 
 const remotionFontFaceCss = buildWigglyFontFaceCss((path) => staticFile(path.replace(/^\//, "")));
 
-const RemotionVideoAsset: RenderVideoComponent = ({ src, ...props }) => (
+const RemotionVideoAsset: RenderVideoComponent = ({ onTimeUpdate: _onTimeUpdate, src, ...props }) => (
   <OffthreadVideo
     {...props}
     src={src.startsWith("/") ? staticFile(src.replace(/^\//, "")) : src}

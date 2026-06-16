@@ -461,10 +461,20 @@ assert.equal(getAdSceneDurationInFrames(pinguScenes[0]!, 60), 510);
 
 const pinguHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene: pinguScenes[0]!,
+  timeSeconds: 0,
 }));
 assert.ok(pinguHtml.includes('data-video-meme-template="pingu-noot-noot"'));
 assert.ok(pinguHtml.includes('data-video-meme-setup-text="true"'));
-assert.ok(pinguHtml.includes('data-video-meme-dread-text="true"'));
+assert.ok(!pinguHtml.includes('data-video-meme-dread-text="true"'));
+assert.ok(pinguHtml.includes(pinguVariants[0]!.slots.setupText));
+
+const pinguDreadHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: pinguScenes[0]!,
+  timeSeconds: 4,
+}));
+assert.ok(!pinguDreadHtml.includes('data-video-meme-setup-text="true"'));
+assert.ok(pinguDreadHtml.includes('data-video-meme-dread-text="true"'));
+assert.ok(pinguDreadHtml.includes(pinguVariants[0]!.slots.dreadText));
 
 const darwinScenes = parsedDarwin.map((variant, index) => createVideoMemeAdScene({
   research,

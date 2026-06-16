@@ -1,4 +1,5 @@
 "use client";
+import { useMemo } from "react";
 import {
   Bookmark,
   ChevronUp,
@@ -15,6 +16,7 @@ import type {
   RenderMotionMode,
 } from "@/features/formats/types";
 import { AdRenderSurface } from "@/features/render/AdRenderSurface";
+import { RenderAssetProvider, type RenderImageComponent, type RenderVideoComponent } from "@/features/render/RenderAssetContext";
 import type { AdScene } from "@/features/scene/types";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
 import { BrandAvatar, StatusBar } from "./CreatePreviewChromeParts";
@@ -30,6 +32,7 @@ export const previewPlatformOptions: Array<{ label: string; value: PreviewPlatfo
 ];
 
 const cx = (...classes: Array<string | false | null | undefined>) => classes.filter(Boolean).join(" ");
+const PreviewImage = "img" as unknown as RenderImageComponent;
 
 export function PhonePreviewFrame({
   scene,
@@ -40,6 +43,7 @@ export function PhonePreviewFrame({
   timeSeconds,
   placeholderVariantIndex = 0,
   onOpenAudioPanel,
+  onPreviewTimeChange,
 }: {
   scene: AdScene | null;
   result: StoredWebsiteResearchResult | null;
@@ -49,6 +53,7 @@ export function PhonePreviewFrame({
   timeSeconds: number;
   placeholderVariantIndex?: number;
   onOpenAudioPanel?: () => void;
+  onPreviewTimeChange?: (timeSeconds: number) => void;
 }) {
   const brandName = scene?.brand.name || result?.brand.name || "Your brand";
   const brandLogoUrl = scene?.brand.logoUrl || scene?.brand.faviconUrl || result?.brand.logoUrl || result?.brand.faviconUrl || "";
@@ -67,6 +72,18 @@ export function PhonePreviewFrame({
     ? "relative mx-auto h-[420px] w-[640px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25"
     : "relative mx-auto h-[720px] w-[360px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25";
   const previewFrameId = `legacy-${platform}`;
+  const PreviewVideo = useMemo<RenderVideoComponent>(() => {
+    const PreviewVideoAsset: RenderVideoComponent = ({ onTimeUpdate, ...props }) => (
+      <video
+        {...props}
+        onTimeUpdate={(event) => {
+          onTimeUpdate?.(event);
+          onPreviewTimeChange?.(event.currentTarget.currentTime);
+        }}
+      />
+    );
+    return PreviewVideoAsset;
+  }, [onPreviewTimeChange]);
 
   const renderAdViewport = (className: string) => (
     <div
@@ -74,13 +91,15 @@ export function PhonePreviewFrame({
       data-preview-ad-viewport={previewFrameId}
       style={{ containerType: "inline-size" }}
     >
-      <AdRenderSurface
-        className="h-full"
-        scene={renderScene}
-        motionMode={renderMotionMode}
-        rerollFlash={rerollFlash}
-        timeSeconds={timeSeconds}
-      />
+      <RenderAssetProvider Image={PreviewImage} Video={PreviewVideo}>
+        <AdRenderSurface
+          className="h-full"
+          scene={renderScene}
+          motionMode={renderMotionMode}
+          rerollFlash={rerollFlash}
+          timeSeconds={timeSeconds}
+        />
+      </RenderAssetProvider>
       {shouldShowAudioAction ? (
         <button
           type="button"

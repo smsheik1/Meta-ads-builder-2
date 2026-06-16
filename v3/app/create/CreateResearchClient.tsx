@@ -1380,6 +1380,7 @@ function ResearchConnected() {
               adScenesCount={adScenes.length}
               isAudioPlaying={isAudioPlaying}
               onOpenAudioPanel={onOpenAudioPanel}
+              onPreviewTimeChange={setPreviewTimeSeconds}
               onRerollScene={onRerollScene}
               placeholderVariantIndex={placeholderVariantIndex}
               previewPlatform={previewPlatform}

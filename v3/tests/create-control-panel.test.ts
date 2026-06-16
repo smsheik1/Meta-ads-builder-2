@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 
 const createClientSource = readFileSync("app/create/CreateResearchClient.tsx", "utf8");
 const controlPanelSource = readFileSync("app/create/CreateControlPanel.tsx", "utf8");
+const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
 const visualizerSchemaSource = readFileSync("features/formats/visualizer/schema.ts", "utf8");
 const visualizerModuleSource = readFileSync("features/formats/visualizer/index.ts", "utf8");
@@ -124,6 +125,12 @@ assert.ok(
     createClientSource.includes("We're Sorry copy generation timed out after reusing the saved research.") &&
     createClientSource.includes("setError(getAdGenerationErrorMessage(nextError))"),
   "Ad generation timeouts must not be reported as website research timeouts.",
+);
+assert.ok(
+  previewChromeSource.includes("useMemo<RenderVideoComponent>") &&
+    previewChromeSource.includes("onPreviewTimeChange?.(event.currentTarget.currentTime)") &&
+    previewChromeSource.includes("<RenderAssetProvider Image={PreviewImage} Video={PreviewVideo}>"),
+  "Preview video assets must keep a stable component identity so timed video meme captions do not restart the clip on every time update.",
 );
 
 console.log("create-control-panel tests passed");
