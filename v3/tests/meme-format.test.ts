@@ -82,15 +82,24 @@ const variantsForAllTemplates = (
   slotText: (template: (typeof MEME_TEMPLATES)[number], slot: (typeof MEME_TEMPLATES)[number]["slots"][number], variantIndex: number) => string = (_template, slot, variantIndex) => (
     `copy ${variantIndex + 1} ${slot.id}`.slice(0, slot.maxChars)
   ),
-) => MEME_TEMPLATES.flatMap((template) => Array.from({ length: MEME_VARIATIONS_PER_TEMPLATE }, (_, variantIndex) => ({
+) => MEME_TEMPLATES.map((template) => ({
   templateId: template.id,
-  x: 100,
-  y: 200,
-  slots: Object.fromEntries(template.slots.map((slot) => [slot.id, slotText(template, slot, variantIndex)])),
-})));
+  variants: Array.from({ length: MEME_VARIATIONS_PER_TEMPLATE }, (_, variantIndex) => ({
+    angle: `angle ${variantIndex + 1} for ${template.id}`,
+    x: 100,
+    y: 200,
+    slots: Object.fromEntries(template.slots.map((slot) => [slot.id, slotText(template, slot, variantIndex)])),
+  })),
+}));
+
+const flatVariantsForAllTemplates = (
+  slotText?: Parameters<typeof variantsForAllTemplates>[0],
+) => variantsForAllTemplates(slotText).flatMap((group) => (
+  group.variants.map((variant) => ({ ...variant, templateId: group.templateId }))
+));
 
 const payload = {
-  variants: variantsForAllTemplates(),
+  templates: variantsForAllTemplates(),
 };
 const parsed = extractMemeVariantsFromResponse(JSON.stringify(payload));
 assert.equal(parsed.length, 12);
@@ -105,14 +114,21 @@ assert.ok(prompt.includes("Each slot must be a complete thought"));
 assert.ok(prompt.includes("Posts people actually steal"));
 assert.ok(prompt.includes("Write exactly 3 distinct meme variants for every template"));
 assert.ok(prompt.includes("Total variants required: 12"));
+assert.ok(prompt.includes("Each variant must include an \"angle\" field"));
+assert.ok(prompt.includes("No two variants in the same template may share the same angle"));
+assert.ok(prompt.includes("If proof is thin, build the joke on the buyer moment or pain alone"));
+assert.ok(prompt.includes("Name the brand in at most one slot per variant"));
+assert.ok(prompt.includes("\"templates\""));
 assert.ok(!prompt.includes("maxWords"));
 
 assert.throws(
   () => extractMemeVariantsFromResponse(JSON.stringify({
-    variants: [
+    templates: [
       {
         templateId: "this_is_fine",
-        slots: { topText: "this is fine", bottomText: "stay calm" },
+        variants: [
+          { angle: "bad line", slots: { topText: "this is fine", bottomText: "stay calm" } },
+        ],
       },
     ],
   })),
@@ -121,7 +137,7 @@ assert.throws(
 
 assert.throws(
   () => extractMemeVariantsFromResponse(JSON.stringify({
-    variants: variantsForAllTemplates((_template, slot) => (
+    variants: flatVariantsForAllTemplates((_template, slot) => (
       slot.id === "level1Text"
         ? "x".repeat(slot.maxChars + 1)
         : `copy ${slot.id}`.slice(0, slot.maxChars)
@@ -132,7 +148,7 @@ assert.throws(
 
 assert.throws(
   () => extractMemeVariantsFromResponse(JSON.stringify({
-    variants: variantsForAllTemplates((template, slot) => (
+    variants: flatVariantsForAllTemplates((template, slot) => (
       template.id === "woman_yelling_cat" && slot.id === "yellingText"
         ? "Tired of paying for ads that get"
         : `copy ${slot.id}`.slice(0, slot.maxChars)
@@ -142,9 +158,9 @@ assert.throws(
 );
 
 const repaired = extractMemeVariantsFromResponse(JSON.stringify({
-  variants: variantsForAllTemplates((_template, slot) => (
+  variants: flatVariantsForAllTemplates((_template, slot) => (
     slot.id === "level1Text"
-      ? "A managed service that ranks brands on ChatGPT and Reddit"
+      ? "Managed rankings across ChatGPT Reddit"
       : `copy ${slot.id}`.slice(0, slot.maxChars)
   )),
 }), { repairSlotText: true, providerLabel: "NVIDIA NIM" });
@@ -206,6 +222,11 @@ await assert.rejects(
   }),
   /NVIDIA NIM meme generation failed: NVIDIA NIM returned incomplete meme variants/,
 );
+
+const legacyFlatParsed = extractMemeVariantsFromResponse(JSON.stringify({
+  variants: flatVariantsForAllTemplates(),
+}));
+assert.equal(legacyFlatParsed.length, 12);
 
 const brandCases = [
   research,

@@ -108,7 +108,21 @@ export function extractMemeVariantsFromResponse(
 ): MemeVariant[] {
   const providerLabel = options.providerLabel || "Meme provider";
   const payload = parseJsonObject(content, providerLabel);
-  const variants = Array.isArray(payload.variants) ? payload.variants : [];
+  const variants = Array.isArray(payload.templates)
+    ? payload.templates.flatMap((templateGroup) => {
+      if (!templateGroup || typeof templateGroup !== "object") return [];
+      const group = templateGroup as Record<string, unknown>;
+      const templateId = String(group.templateId || "");
+      const groupVariants = Array.isArray(group.variants) ? group.variants : [];
+      return groupVariants.map((variant) => (
+        variant && typeof variant === "object"
+          ? { ...variant as Record<string, unknown>, templateId }
+          : variant
+      ));
+    })
+    : Array.isArray(payload.variants)
+      ? payload.variants
+      : [];
   const byTemplate = new Map<string, MemeVariant[]>();
 
   for (const item of variants) {
