@@ -53,7 +53,7 @@ export type FirecrawlPayload = {
 
 const FIRECRAWL_SCRAPE_URL = "https://api.firecrawl.dev/v2/scrape";
 const JINA_READER_BASE_URL = "https://r.jina.ai/http://";
-export const DEFAULT_FIRECRAWL_TIMEOUT_MS = 60_000;
+export const DEFAULT_FIRECRAWL_TIMEOUT_MS = 120_000;
 export const DEFAULT_JINA_READER_TIMEOUT_MS = 8_000;
 export const DEFAULT_JINA_HTML_METADATA_TIMEOUT_MS = 4_000;
 export const DEFAULT_JINA_MIN_MARKDOWN_CHARS = 500;
