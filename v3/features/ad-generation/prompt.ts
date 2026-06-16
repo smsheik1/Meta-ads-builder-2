@@ -110,6 +110,24 @@ Good: "It's 6pm and the fridge is still empty"
 Bad: "Eat Better, Live Better"
 Good: "Skip the 'what's for dinner' fight"
 
+E-commerce apparel:
+Bad: "Premium Activewear for Every Body"
+Good: "Leggings that don't go sheer when you squat"
+Bad: "Shop Our New Collection"
+Good: "The pockets actually fit your phone"
+
+E-commerce skincare:
+Bad: "Glow With Confidence"
+Good: "For the breakout you can feel coming"
+Bad: "Clinically Proven Ingredients"
+Good: "Three drops. That's the whole routine."
+
+E-commerce home/kitchen:
+Bad: "Upgrade Your Kitchen Today"
+Good: "The pan nothing sticks to. Even eggs."
+Bad: "Quality You Can Taste"
+Good: "Stop scrubbing burnt rice off your pot"
+
 WHY THE GOOD ONES WORK:
 - They name a specific moment the buyer has lived: a time, a scene, or a friction.
 - They make the buyer think "that's literally me" within 2 seconds.
