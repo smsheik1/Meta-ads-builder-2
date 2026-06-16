@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 
 import { spawn } from "node:child_process";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const commands = [
   {
     name: "next",
     color: "\x1b[36m",
-    args: ["run", "dev", "-w", "@wiggly/v3"],
+    args: ["run", "dev:next", "-w", "@wiggly/v3"],
   },
   {
     name: "convex",
@@ -43,7 +47,7 @@ function shutdown(signal = "SIGTERM") {
 
 for (const command of commands) {
   const child = spawn("npm", command.args, {
-    cwd: process.cwd(),
+    cwd: repoRoot,
     env: process.env,
     stdio: ["ignore", "pipe", "pipe"],
   });
