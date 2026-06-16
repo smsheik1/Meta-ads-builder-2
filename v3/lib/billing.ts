@@ -7,7 +7,10 @@ const dayMs = 24 * 60 * 60 * 1000;
 
 const isDisabled = (value: string | undefined) => ["0", "false", "off", "no"].includes(String(value || "").trim().toLowerCase());
 
-export const isPaywallEnabled = () => !isDisabled(process.env.PAYWALL_ENABLED);
+export const isPaywallEnabled = (
+  nodeEnv = process.env.NODE_ENV,
+  paywallEnabled = process.env.PAYWALL_ENABLED,
+) => nodeEnv === "production" && !isDisabled(paywallEnabled);
 export const freeWorkflowRunLimit = () => Number(process.env.FREE_WORKFLOW_RUN_LIMIT || 2);
 export const freeWorkflowResetDays = () => Number(process.env.FREE_WORKFLOW_RESET_DAYS || 7);
 export const paidPassDays = () => Number(process.env.PAID_PASS_DAYS || 7);
@@ -172,6 +175,16 @@ export async function getBillingStatus() {
   const paidUntil = await readPaidUntil(sessionId);
   const usage = readWorkflowUsage(sessionId);
   const paid = hasPaidAccess(paidUntil);
+  if (!isPaywallEnabled()) {
+    return {
+      paid: true,
+      paidUntil: 0,
+      freeLimit: freeWorkflowRunLimit(),
+      freeUsed: 0,
+      freeRemaining: null,
+      resetAt: usage.resetAt,
+    };
+  }
   return {
     paid,
     paidUntil,
