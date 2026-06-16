@@ -120,10 +120,60 @@ Brand: fresh cookie delivery
 Bad: "Cookie Delivery | Gift Baskets"
 Good: "Forgot the birthday? Cookies still ship."
 
+FORMAT-SPECIFIC OUTPUT EXAMPLES. Copy the quality bar, not the facts:
+Example A:
+Evidence:
+- Brand: AI dental receptionist
+- Buyer moment: calls arrive after the front desk leaves
+- Proof: answers after-hours calls and books appointments
+Good candidate:
+{
+  "angleId": "after-hours-leads",
+  "headline": "Your front desk went home. The lead didn't.",
+  "subheadline": "Supporting context only: after-hours callers still need a human-sounding answer and a booked next step.",
+  "ctaText": "Hear it answer",
+  "headlineType": "painful_moment",
+  "selectedPain": "calls arrive after the front desk leaves",
+  "selectedProof": "answers after-hours calls and books appointments"
+}
+
+Example B:
+Evidence:
+- Brand: AI search visibility service
+- Buyer moment: competitors show up in AI answers first
+- Proof: first ChatGPT mention in 14 days
+Good candidate:
+{
+  "angleId": "competitor-ai-answers",
+  "headline": "ChatGPT found your competitor first.",
+  "subheadline": "Supporting context only: buyers ask AI tools for recommendations before they ever reach a website.",
+  "ctaText": "See the proof",
+  "headlineType": "contrast",
+  "selectedPain": "competitors show up in AI answers first",
+  "selectedProof": "first ChatGPT mention in 14 days"
+}
+
+Example C:
+Evidence:
+- Brand: fresh cookie delivery
+- Buyer moment: someone forgot a gift
+- Proof: fresh baked cookies ship as gifts
+Good candidate:
+{
+  "angleId": "forgotten-gift",
+  "headline": "Forgot the gift? Cookies still ship.",
+  "subheadline": "Supporting context only: a fresh cookie box gives late gift senders a simple save.",
+  "ctaText": "Send cookies",
+  "headlineType": "painful_moment",
+  "selectedPain": "someone forgot a gift",
+  "selectedProof": "fresh baked cookies ship as gifts"
+}
+
 WHAT TO WRITE:
 - Generate exactly ${count} candidates.
-- Headlines must be punchy, concrete, and easy to read on a phone.
-- Subheadline must be one sentence. Lead with proof or a buyer moment, then explain the promise.
+- Headlines must carry the whole visible visualizer ad. They are the main canvas copy.
+- Subheadline is supporting metadata for dialogue/share context. It is not visible on the visualizer canvas.
+- Subheadline must be one sentence. Lead with proof or a buyer moment, then explain the promise without adding new claims.
 - CTA should be 2-5 words, start with an action verb, and name a specific next step or outcome.
 - Use at least 3 different CTA verbs across the list when generating 10 or more candidates.
 - Match the CTA to the business category:

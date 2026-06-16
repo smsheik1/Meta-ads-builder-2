@@ -306,6 +306,26 @@ Sam (practical): "That is the leak. Not demand, response time."
 Ava: "I hate that the best leads arrive when nobody can reply."
 Sam: "The new setup catches those moments and books the next step."
 
+FORMAT-SPECIFIC EXAMPLES. Copy the conversational shape, not the facts.
+
+Local service:
+Ava (annoyed): "Three calls came in after closing yesterday. All from people ready to book."
+Sam (plain): "That is the expensive part, the lead was already warm."
+Ava: "So what did they change?"
+Sam: "The receptionist answers after hours and gets the appointment on the calendar."
+
+Operator workflow:
+Ava (focused): "Our competitor showed up in the AI answer again. We were not even mentioned."
+Sam (calm): "That is where buyers are checking before they visit a site."
+Ava: "Did the visibility work actually move?"
+Sam: "First mention showed up in 14 days. That was the receipt."
+
+Ecommerce:
+Ava (rushed): "I forgot the gift and the party is this weekend."
+Sam (warm): "Then do not make it complicated."
+Ava: "What would you send?"
+Sam: "Fresh baked cookies. It still feels personal, and it ships like a real gift."
+
 BANNED PHRASES:
 "this tool", "is it working", "will that really make a difference", "I'm worried", "I don't understand", "how does it work", "what's your secret", "unlock", "elevate", "transform your business"
 

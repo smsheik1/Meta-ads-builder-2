@@ -14,6 +14,8 @@ assert.ok(prompt.includes("REQUIRED SHAPE"), "Dialogue prompt must force a real 
 assert.ok(prompt.includes("specificClaims"), "Dialogue prompt must pass receipt claims.");
 assert.ok(prompt.includes(defaultRenderScene.creative.selectedProof), "Dialogue prompt must include selected proof.");
 assert.ok(prompt.includes("Never mention Wiggly"), "Dialogue prompt must protect the product boundary.");
+assert.ok(prompt.includes("FORMAT-SPECIFIC EXAMPLES"), "Dialogue prompt must include visualizer-specific examples.");
+assert.ok(prompt.includes("Local service"), "Dialogue prompt must include a local service example.");
 
 const fallbackScripts = buildFallbackDialogueScripts(defaultRenderScene, 5);
 assert.equal(fallbackScripts.length, 5);

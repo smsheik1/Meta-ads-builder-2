@@ -112,6 +112,9 @@ assert.ok(prompt.includes("Do not average the whole brief"));
 assert.ok(prompt.includes("SEO/title restatements"));
 assert.ok(prompt.includes("Use at least 3 different CTA verbs"));
 assert.ok(prompt.includes("Do not repeat the same headline structure more than 3 times in a row"));
+assert.ok(prompt.includes("FORMAT-SPECIFIC OUTPUT EXAMPLES"));
+assert.ok(prompt.includes("Headlines must carry the whole visible visualizer ad"));
+assert.ok(prompt.includes("Subheadline is supporting metadata for dialogue/share context"));
 assert.ok(prompt.includes("Return only JSON"));
 assert.ok(prompt.includes(bannedAdWords.join(", ")));
 
