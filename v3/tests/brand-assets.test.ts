@@ -106,6 +106,22 @@ assert.deepEqual(cached.brand.colors, ["#00B95B"]);
 assert.equal(cached.providerStatus[0]?.provider, "brand-cache");
 assert.equal((cached.branding.brandAssetDecision as { finalLogoSource?: string }).finalLogoSource, "initials");
 
+const originalBrandfetchApiKey = process.env.BRANDFETCH_API_KEY;
+process.env.BRANDFETCH_API_KEY = "env-key-that-should-not-run";
+const envDisabled = await resolveBrandAssets({
+  domain: "env-disabled.example",
+  fetcher: (async () => {
+    throw new Error("Brandfetch should be opt-in even when env key exists.");
+  }) as typeof fetch,
+});
+assert.equal(envDisabled.providerStatus[0]?.provider, "brandfetch");
+assert.equal(envDisabled.providerStatus[0]?.status, "skipped");
+if (originalBrandfetchApiKey === undefined) {
+  delete process.env.BRANDFETCH_API_KEY;
+} else {
+  process.env.BRANDFETCH_API_KEY = originalBrandfetchApiKey;
+}
+
 let colorOnlyCacheBrandfetchCalls = 0;
 const colorOnlyCache = await resolveBrandAssets({
   domain: "cached-colors.example",
