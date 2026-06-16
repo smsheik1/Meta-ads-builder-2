@@ -8,6 +8,7 @@ import {
 
 export type RenderImageComponent = ComponentType<{
   alt?: string;
+  className?: string;
   src: string;
   style?: CSSProperties;
 }>;

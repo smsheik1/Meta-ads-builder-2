@@ -49,6 +49,7 @@ export function CreateQuickActions({
   renderErrorMessage,
   renderStatusLabel,
   renderWorkerHealthy,
+  audioError,
   memeDownloadBusy,
   saveCounterLabel,
   saveError,
@@ -77,6 +78,7 @@ export function CreateQuickActions({
   renderErrorMessage: string;
   renderStatusLabel: string;
   renderWorkerHealthy: boolean | null;
+  audioError: string;
   memeDownloadBusy: boolean;
   saveCounterLabel: string;
   saveError: string;
@@ -90,7 +92,8 @@ export function CreateQuickActions({
   shareUrl: string;
 }) {
   const memeSceneSelected = selectedFormat === "meme";
-  const shareSupported = selectedFormat === "visualizer";
+  const hasAudio = Boolean(playableAudioUrl);
+  const shareSupported = selectedFormat === "visualizer" || (selectedFormat === "jingle" && hasAudio);
   const renderWorkerOffline = !memeSceneSelected && renderWorkerHealthy === false;
   const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline;
   const downloadLabel = memeSceneSelected ? "PNG" : "MP4";
@@ -99,8 +102,8 @@ export function CreateQuickActions({
     : renderWorkerOffline
       ? "Start npm run dev from the repo root to run the render worker."
       : "Download this ad as an MP4";
-  const hasAudio = Boolean(playableAudioUrl);
   const banners = [
+    audioError ? { id: "audio-error", className: "border-red-100 bg-red-50 text-red-700", message: audioError } : null,
     saveError ? { id: "save-error", className: "border-red-100 bg-red-50 text-red-700", message: saveError } : null,
     shareError ? { id: "share-error", className: "border-red-100 bg-red-50 text-red-700", message: shareError } : null,
     renderErrorMessage ? { id: "render-error", className: "border-red-100 bg-red-50 text-red-700", message: renderErrorMessage } : null,

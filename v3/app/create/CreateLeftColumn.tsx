@@ -36,6 +36,8 @@ const getProgressRows = (format: AdFormatId, videoMemeTemplateId: VideoMemeTempl
         ? "Writing 8 apologies"
         : format === "video-meme"
           ? `Writing ${getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8} video memes`
+          : format === "jingle"
+            ? "Writing 3 jingles"
           : "Writing 50 ads",
   },
   { id: "preparing-canvas", label: "Preparing canvas" },
@@ -213,6 +215,8 @@ export function CreateLeftColumn({
           ? "Writing apologies"
           : format === "video-meme"
             ? "Writing video memes"
+            : format === "jingle"
+              ? "Writing jingles"
             : "Writing ideas"
       : "Generate ads";
   const formatHelper = format === "meme"
@@ -221,6 +225,8 @@ export function CreateLeftColumn({
       ? "Eight wink-apology posts for the Instagram trend."
       : format === "video-meme"
         ? "Eight reaction captions for the selected video meme."
+        : format === "jingle"
+          ? "Three short hip hop brand jingles. Music generates only for the selected one."
         : "Audio visualizer ads with voice, captions, and MP4 export.";
 
   return (
@@ -262,6 +268,7 @@ export function CreateLeftColumn({
             <option value="meme">Meme Ad</option>
             <option value="were-sorry">We're Sorry Ad</option>
             <option value="video-meme">Video Meme</option>
+            <option value="jingle">Brand Jingle</option>
             <option value="visualizer">Visualizer Ad</option>
           </select>
           <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">

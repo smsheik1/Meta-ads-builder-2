@@ -97,7 +97,7 @@ export const createGeneratedSceneAudio = ({
   captions: AdSceneCaption[];
   analysis?: AdSceneAudioAnalysis;
   model: string;
-  provider?: "gemini" | "upload";
+  provider?: "gemini" | "upload" | "elevenlabs";
 }): AdSceneAudio => ({
   status: "generated",
   storageId,

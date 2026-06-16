@@ -125,6 +125,7 @@ function getGenerationCount(format: AdFormatId, videoMemeTemplateId: VideoMemeTe
   if (format === "meme") return 12;
   if (format === "were-sorry") return 8;
   if (format === "video-meme") return getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8;
+  if (format === "jingle") return 3;
   return 50;
 }
 
@@ -192,6 +193,7 @@ function ResearchConnected() {
   const generateAdScenes = useAction(api.adScenes.generateFromResearch);
   const generateDialogueScripts = useAction(api.dialogueScripts.generateForScene);
   const generateDialogueAudioForScene = useAction(api.audioAssets.generateDialogueForScene);
+  const generateJingleAudioForScene = useAction(api.audioAssets.generateJingleForScene);
   const attachUploadedAudioForScene = useAction(api.audioAssets.attachUploadedToScene);
   const createAudioUploadUrl = useMutation(api.audioAssets.createUploadUrl);
   const createSharePage = useMutation(api.sharePages.createFromScene);
@@ -556,6 +558,36 @@ function ResearchConnected() {
     if (flashRoles.length) triggerRerollFlash(flashRoles);
   }, [selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
+  const generateJingleMusicForScene = useCallback(async (scene: AdScene) => {
+    if (scene.format !== "jingle" || scene.audio.status === "generated" || audioStatus === "loading") return;
+    const sceneKey = createSavedDesignId(scene);
+    setAudioStatus("loading");
+    setAudioError("");
+    resetShareState();
+    resetRenderState();
+    canvasActions.beginBusy("audio-generation");
+
+    try {
+      const result = await generateJingleAudioForScene({
+        anonymousId: getCurrentAnonymousId(),
+        scene,
+      }) as { scene: AdScene };
+      resetPreviewPlayback();
+      setAdScenes((scenes) => scenes.map((candidate) => (
+        createSavedDesignId(candidate) === sceneKey ? result.scene : candidate
+      )));
+      setSelectedScene((current) => (
+        current && createSavedDesignId(current) === sceneKey ? result.scene : current
+      ));
+      setAudioStatus("ready");
+      canvasActions.finishBusy();
+    } catch (nextError) {
+      setAudioStatus("error");
+      setAudioError(nextError instanceof Error ? nextError.message : "Music generation failed.");
+      canvasActions.finishBusy();
+    }
+  }, [audioStatus, canvasActions, generateJingleAudioForScene, resetPreviewPlayback]);
+
   const onUpdateCreativeField = useCallback((field: string, value: string) => {
     if (field !== "headline" && field !== "subheadline" && field !== "ctaText") return;
     if (!selectedScene || selectedScene.creative[field] === value) return;
@@ -633,7 +665,7 @@ function ResearchConnected() {
     const currentGeneratedAudio = selectedScene.audio.status === "generated" ? selectedScene.audio : null;
     const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, {
       ...createDefaultSceneLocks(),
-      audio: Boolean(currentGeneratedAudio),
+      audio: selectedScene.format !== "jingle" && Boolean(currentGeneratedAudio),
     });
     if (!next.scene) return;
 
@@ -653,7 +685,10 @@ function ResearchConnected() {
     resetDialogueState();
     resetSaveState();
     triggerRerollFlash(getSceneDefaultFlashSlots(nextScene));
-  }, [adScenes, resetPreviewPlayback, selectedScene, selectedSceneIndex, triggerRerollFlash]);
+    if (nextScene.format === "jingle" && nextScene.audio.status !== "generated") {
+      void generateJingleMusicForScene(nextScene);
+    }
+  }, [adScenes, generateJingleMusicForScene, resetPreviewPlayback, selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
   const applyGeneratedScenes = (scenes: AdScene[]) => {
     if (!scenes.length) throw new Error("Ad idea generation returned no ads.");
@@ -671,6 +706,9 @@ function ResearchConnected() {
     setAdStatusNote(`${scenes.length} ads ready. Press spacebar to find a stronger version.`);
     setAdStatus("ready");
     canvasActions.finishBusy();
+    if (firstScene?.format === "jingle" && firstScene.audio.status !== "generated") {
+      void generateJingleMusicForScene(firstScene);
+    }
   };
 
   const generateScenesForResearch = async (
@@ -971,7 +1009,11 @@ function ResearchConnected() {
 
   const onOpenAudioPanel = () => {
     if (audioStatus === "loading") return;
-    ensureSelectedScene();
+    const scene = ensureSelectedScene();
+    if (scene.format === "jingle") {
+      void generateJingleMusicForScene(scene);
+      return;
+    }
     if (dialoguePanelOpen) {
       closeDialoguePanel();
     } else {
@@ -1183,6 +1225,9 @@ function ResearchConnected() {
     resetDialogueState();
     resetShareState();
     resetRenderState();
+    if (scene.format === "jingle" && scene.audio.status !== "generated") {
+      void generateJingleMusicForScene(scene);
+    }
   };
 
   const onCreateRenderJob = async () => {
@@ -1409,6 +1454,7 @@ function ResearchConnected() {
                 renderErrorMessage={renderJob?.error || renderError}
                 renderStatusLabel={renderStatusLabel}
                 renderWorkerHealthy={renderWorkerHealthy}
+                audioError={audioError}
                 memeDownloadBusy={memeDownloadBusy}
                 saveCounterLabel={saveCounterLabel}
                 saveError={saveError}

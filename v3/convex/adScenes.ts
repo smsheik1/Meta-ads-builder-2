@@ -3,10 +3,12 @@ import { internal } from "./_generated/api";
 import { action, query } from "./_generated/server";
 import { generateAdCandidatesFromResearch } from "../features/ad-generation/generate";
 import { generateMemeVariantsFromResearch } from "../features/formats/meme/generate";
+import { generateJingleVariantsFromResearch } from "../features/formats/jingle/generate";
 import { generateVideoMemeVariantsFromResearch } from "../features/formats/video-meme/generate";
 import { generateWereSorryVariantsFromResearch } from "../features/formats/were-sorry/generate";
 import { buildFallbackBrandBrief } from "../features/research/brandCurator";
 import { createMemeAdScene } from "../features/scene/createMemeScene";
+import { createJingleAdScene } from "../features/scene/createJingleScene";
 import { createVideoMemeAdScene } from "../features/scene/createVideoMemeScene";
 import { createVisualizerAdScene } from "../features/scene/createVisualizerScene";
 import { createWereSorryAdScene } from "../features/scene/createWereSorryScene";
@@ -21,7 +23,7 @@ export const generateFromResearch: ReturnType<typeof action> = action({
   args: {
     researchRunId: v.id("researchRuns"),
     count: v.optional(v.number()),
-    format: v.optional(v.union(v.literal("visualizer"), v.literal("meme"), v.literal("were-sorry"), v.literal("video-meme"))),
+    format: v.optional(v.union(v.literal("visualizer"), v.literal("meme"), v.literal("were-sorry"), v.literal("video-meme"), v.literal("jingle"))),
     memeModel: v.optional(v.string()),
     videoMemeTemplateId: v.optional(v.union(v.literal("bear-sniff"), v.literal("pingu-noot-noot"), v.literal("darwin-journey"))),
     visualizerModel: v.optional(v.string()),
@@ -84,6 +86,31 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     if (format === "video-meme") {
       const generation = await generateVideoMemeVariantsFromResearch(research, { count, templateId: videoMemeTemplateId });
       const scenes = generation.variants.map((variant, index) => createVideoMemeAdScene({
+        research,
+        variant,
+        candidateIndex: index,
+        generationBatchId,
+        model: generation.model,
+        provider: generation.provider,
+      }));
+      const { sceneIds } = await ctx.runMutation(internal.adSceneStorage.saveGeneratedScenes, {
+        sessionId: research.sessionId,
+        researchRunId,
+        brandSnapshotId: research.brandSnapshotId,
+        scenes,
+      });
+
+      return {
+        generationBatchId,
+        sceneIds,
+        scenes,
+        providerStatus: generation.providerStatus,
+      };
+    }
+
+    if (format === "jingle") {
+      const generation = await generateJingleVariantsFromResearch(research, { count });
+      const scenes = generation.variants.map((variant, index) => createJingleAdScene({
         research,
         variant,
         candidateIndex: index,
