@@ -73,6 +73,7 @@ export const createMemeAdScene = ({
       model,
       provider,
       generatedAt: now,
+      adAngles: research.adAngles || [],
     },
   };
 };

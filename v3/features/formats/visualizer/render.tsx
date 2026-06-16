@@ -19,7 +19,7 @@ const getReadableTextColor = (color: string) => (
 );
 
 const getLogoSource = (scene: VisualizerAdScene) => (
-  scene.brand.logoUrl || scene.brand.faviconUrl || scene.brand.ogImageUrl || ""
+  scene.brand.logoUrl || scene.brand.faviconUrl || ""
 );
 
 const trimHeadline = (headline: string) => headline

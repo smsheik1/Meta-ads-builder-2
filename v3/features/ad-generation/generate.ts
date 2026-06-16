@@ -180,13 +180,13 @@ const fallbackHeadlineTemplates = (
     .filter((headline) => !isBadAdText(headline) && !includesBannedWord(headline));
 };
 
-const parseJsonObject = (value: string, providerLabel = "AI provider") => {
+const parseJsonPayload = (value: string, providerLabel = "AI provider") => {
   const trimmed = value.trim();
-  const jsonText = trimmed.startsWith("{")
+  const jsonText = trimmed.startsWith("{") || trimmed.startsWith("[")
     ? trimmed
-    : trimmed.match(/\{[\s\S]*\}/)?.[0] || "";
+    : trimmed.match(/\{[\s\S]*\}/)?.[0] || trimmed.match(/\[[\s\S]*\]/)?.[0] || "";
   if (!jsonText) throw new Error(`${providerLabel} returned no JSON.`);
-  return JSON.parse(jsonText) as Record<string, unknown>;
+  return JSON.parse(jsonText) as unknown;
 };
 
 const asArray = (value: unknown) => (Array.isArray(value) ? value : []);
@@ -234,10 +234,20 @@ export const normalizeAdCandidatePayload = (
   const record = value as Record<string, unknown>;
   const headline = cleanText(record.headline, 72);
   const subheadline = cleanText(record.subheadline, 180);
+  const selectedPain = cleanText(record.selectedPain || record.chosenBuyerMoment, 220);
+  const selectedProof = cleanText(record.selectedProof || record.chosenProof, 220);
 
   if (headline.length < 8 || headline.length > 72 || includesBannedWord(headline)) return null;
   if (subheadline.length < 24 || subheadline.length > 180 || includesBannedWord(subheadline)) return null;
   if (isBadAdText(headline) || isBadAdText(subheadline)) return null;
+  if (record.selfCheckPassed || record.chosenBuyerMoment || record.chosenProof) {
+    console.info("Ad candidate scaffold", {
+      headline,
+      chosenBuyerMoment: selectedPain,
+      chosenProof: selectedProof,
+      selfCheckPassed: cleanText(record.selfCheckPassed, 220),
+    });
+  }
 
   return {
     angleId: slugify(cleanText(record.angleId, 80) || headline || fallback.angleId),
@@ -245,8 +255,8 @@ export const normalizeAdCandidatePayload = (
     subheadline,
     ctaText: ensureCta(cleanText(record.ctaText, 34), index),
     headlineType: normalizeHeadlineType(record.headlineType, index),
-    selectedPain: cleanText(record.selectedPain, 220) || fallback.selectedPain,
-    selectedProof: cleanText(record.selectedProof, 220) || fallback.selectedProof,
+    selectedPain: selectedPain || fallback.selectedPain,
+    selectedProof: selectedProof || fallback.selectedProof,
   };
 };
 
@@ -283,6 +293,28 @@ const candidateFromReceipt = (
   };
 };
 
+const candidateFromAngle = (
+  research: StoredWebsiteResearchResult,
+  index: number,
+  angle: NonNullable<StoredWebsiteResearchResult["adAngles"]>[number],
+): AdSceneCandidate => {
+  const headline = cleanTextOnBoundary(angle.moment || angle.sitePhrase || angle.proof, 72) ||
+    `${research.brand.name} Makes The Moment Clear`;
+  return {
+    angleId: slugify(`${headline}-${index + 1}`),
+    headline,
+    subheadline: clampSentence(
+      `${angle.pain} ${angle.proof}`,
+      research.brandBrief.offer || research.brand.description,
+      180,
+    ),
+    ctaText: ensureCta(research.brandBrief.ctaDirection, index),
+    headlineType: headlineTypes[index % headlineTypes.length],
+    selectedPain: angle.moment || angle.pain,
+    selectedProof: angle.proof,
+  };
+};
+
 export const buildDeterministicAdCandidates = (
   research: StoredWebsiteResearchResult,
   count = DEFAULT_AD_IDEA_COUNT,
@@ -309,6 +341,15 @@ export const buildDeterministicAdCandidates = (
 
   const candidates: AdSceneCandidate[] = [];
   const seen = new Set<string>();
+
+  for (const angle of (research.adAngles || [])) {
+    if (candidates.length >= normalizedCount) break;
+    const candidate = candidateFromAngle(research, candidates.length, angle);
+    const key = candidate.headline.toLowerCase();
+    if (seen.has(key) || isBadAdText(candidate.headline) || isBadAdText(candidate.subheadline)) continue;
+    seen.add(key);
+    candidates.push(candidate);
+  }
 
   for (let index = 0; candidates.length < normalizedCount && index < normalizedCount * 8; index += 1) {
     const proof = cleanProofs[index % Math.max(1, cleanProofs.length)] || research.brand.description;
@@ -395,10 +436,13 @@ export const extractAdCandidatesFromResponse = (
   count = DEFAULT_AD_IDEA_COUNT,
   providerLabel = "AI provider",
 ) => {
-  const payload = parseJsonObject(content, providerLabel);
+  const payload = parseJsonPayload(content, providerLabel);
   const normalizedCount = normalizeCount(count);
   const seen = new Set<string>();
-  const parsed = asArray(payload.candidates)
+  const candidatePayload = Array.isArray(payload)
+    ? payload
+    : asArray((payload as Record<string, unknown>).candidates);
+  const parsed = candidatePayload
     .map((item, index) => normalizeAdCandidatePayload(item, fallback[index % fallback.length], index))
     .filter((item): item is AdSceneCandidate => Boolean(item))
     .filter((item) => {

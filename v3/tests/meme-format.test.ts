@@ -6,7 +6,7 @@ import {
   extractMemeVariantsFromResponse,
   generateMemeVariantsFromResearch,
 } from "../features/formats/meme/generate";
-import { MEME_TEMPLATES } from "../features/formats/meme/templates";
+import { MEME_TEMPLATES, MEME_VARIATIONS_PER_TEMPLATE } from "../features/formats/meme/templates";
 import { createMemeAdScene } from "../features/scene/createMemeScene";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import { rerollScene, createDefaultSceneLocks } from "../features/create/reroll";
@@ -78,30 +78,57 @@ assert.deepEqual(MEME_TEMPLATES.map((template) => template.id), [
   "expanding_brain",
 ]);
 
-const payload = {
-  variants: MEME_TEMPLATES.map((template) => ({
-    templateId: template.id,
+const variantsForAllTemplates = (
+  slotText: (template: (typeof MEME_TEMPLATES)[number], slot: (typeof MEME_TEMPLATES)[number]["slots"][number], variantIndex: number) => string = (_template, slot, variantIndex) => (
+    `copy ${variantIndex + 1} ${slot.id}`.slice(0, slot.maxChars)
+  ),
+) => MEME_TEMPLATES.map((template) => ({
+  templateId: template.id,
+  variants: Array.from({ length: MEME_VARIATIONS_PER_TEMPLATE }, (_, variantIndex) => ({
+    angle: `angle ${variantIndex + 1} for ${template.id}`,
     x: 100,
     y: 200,
-    slots: Object.fromEntries(template.slots.map((slot) => [slot.id, `copy ${slot.id}`.slice(0, slot.maxChars)])),
+    slots: Object.fromEntries(template.slots.map((slot) => [slot.id, slotText(template, slot, variantIndex)])),
   })),
+}));
+
+const flatVariantsForAllTemplates = (
+  slotText?: Parameters<typeof variantsForAllTemplates>[0],
+) => variantsForAllTemplates(slotText).flatMap((group) => (
+  group.variants.map((variant) => ({ ...variant, templateId: group.templateId }))
+));
+
+const payload = {
+  templates: variantsForAllTemplates(),
 };
 const parsed = extractMemeVariantsFromResponse(JSON.stringify(payload));
-assert.equal(parsed.length, 4);
+assert.equal(parsed.length, 12);
+assert.deepEqual(parsed.map((variant) => variant.templateId), MEME_TEMPLATES.flatMap((template) => (
+  Array.from({ length: MEME_VARIATIONS_PER_TEMPLATE }, () => template.id)
+)));
 assert.ok(!("x" in parsed[0]!));
 
 const prompt = buildMemePrompt(research);
 assert.ok(prompt.includes("Your taste filter rejects generic SaaS phrasing"));
 assert.ok(prompt.includes("Each slot must be a complete thought"));
 assert.ok(prompt.includes("Posts people actually steal"));
+assert.ok(prompt.includes("Write exactly 3 distinct meme variants for every template"));
+assert.ok(prompt.includes("Total variants required: 12"));
+assert.ok(prompt.includes("Each variant must include an \"angle\" field"));
+assert.ok(prompt.includes("No two variants in the same template may share the same angle"));
+assert.ok(prompt.includes("If proof is thin, build the joke on the buyer moment or pain alone"));
+assert.ok(prompt.includes("Name the brand in at most one slot per variant"));
+assert.ok(prompt.includes("\"templates\""));
 assert.ok(!prompt.includes("maxWords"));
 
 assert.throws(
   () => extractMemeVariantsFromResponse(JSON.stringify({
-    variants: [
+    templates: [
       {
         templateId: "this_is_fine",
-        slots: { topText: "this is fine", bottomText: "stay calm" },
+        variants: [
+          { angle: "bad line", slots: { topText: "this is fine", bottomText: "stay calm" } },
+        ],
       },
     ],
   })),
@@ -110,46 +137,34 @@ assert.throws(
 
 assert.throws(
   () => extractMemeVariantsFromResponse(JSON.stringify({
-    variants: MEME_TEMPLATES.map((template) => ({
-      templateId: template.id,
-      slots: Object.fromEntries(template.slots.map((slot) => [
-        slot.id,
-        slot.id === "level1Text"
-          ? "x".repeat(slot.maxChars + 1)
-          : `copy ${slot.id}`.slice(0, slot.maxChars),
-      ])),
-    })),
+    variants: flatVariantsForAllTemplates((_template, slot) => (
+      slot.id === "level1Text"
+        ? "x".repeat(slot.maxChars + 1)
+        : `copy ${slot.id}`.slice(0, slot.maxChars)
+    )),
   })),
   /incomplete meme variants/,
 );
 
 assert.throws(
   () => extractMemeVariantsFromResponse(JSON.stringify({
-    variants: MEME_TEMPLATES.map((template) => ({
-      templateId: template.id,
-      slots: Object.fromEntries(template.slots.map((slot) => [
-        slot.id,
-        template.id === "woman_yelling_cat" && slot.id === "yellingText"
-          ? "Tired of paying for ads that get"
-          : `copy ${slot.id}`.slice(0, slot.maxChars),
-      ])),
-    })),
+    variants: flatVariantsForAllTemplates((template, slot) => (
+      template.id === "woman_yelling_cat" && slot.id === "yellingText"
+        ? "Tired of paying for ads that get"
+        : `copy ${slot.id}`.slice(0, slot.maxChars)
+    )),
   })),
   /incomplete meme variants/,
 );
 
 const repaired = extractMemeVariantsFromResponse(JSON.stringify({
-  variants: MEME_TEMPLATES.map((template) => ({
-    templateId: template.id,
-    slots: Object.fromEntries(template.slots.map((slot) => [
-      slot.id,
-      slot.id === "level1Text"
-        ? "A managed service that ranks brands on ChatGPT and Reddit"
-        : `copy ${slot.id}`.slice(0, slot.maxChars),
-    ])),
-  })),
+  variants: flatVariantsForAllTemplates((_template, slot) => (
+    slot.id === "level1Text"
+      ? "Managed rankings across ChatGPT Reddit"
+      : `copy ${slot.id}`.slice(0, slot.maxChars)
+  )),
 }), { repairSlotText: true, providerLabel: "NVIDIA NIM" });
-assert.equal(repaired.length, 4);
+assert.equal(repaired.length, 12);
 assert.ok(repaired.every((variant) => Object.values(variant.slots).every((value) => value.length > 0)));
 assert.ok(repaired.every((variant) => {
   const template = MEME_TEMPLATES.find((item) => item.id === variant.templateId)!;
@@ -178,7 +193,7 @@ const retryResult = await generateMemeVariantsFromResearch(research, {
 assert.equal(retryResult.provider, "nvidia-nim");
 assert.equal(retryResult.model, "test-kimi-model");
 assert.equal(retryResult.providerStatus.provider, "nvidia-nim");
-assert.equal(retryResult.variants.length, 4);
+assert.equal(retryResult.variants.length, 12);
 
 await assert.rejects(
   () => generateMemeVariantsFromResearch(research, {
@@ -207,6 +222,11 @@ await assert.rejects(
   }),
   /NVIDIA NIM meme generation failed: NVIDIA NIM returned incomplete meme variants/,
 );
+
+const legacyFlatParsed = extractMemeVariantsFromResponse(JSON.stringify({
+  variants: flatVariantsForAllTemplates(),
+}));
+assert.equal(legacyFlatParsed.length, 12);
 
 const brandCases = [
   research,
@@ -255,7 +275,7 @@ for (const brandCase of brandCases) {
     nvidiaNimChatCompletion: async () => JSON.stringify(payload),
   });
   assert.equal(result.provider, "nvidia-nim");
-  assert.equal(result.variants.length, MEME_TEMPLATES.length);
+  assert.equal(result.variants.length, MEME_TEMPLATES.length * MEME_VARIATIONS_PER_TEMPLATE);
 }
 
 const scenes = parsed.map((variant, index) => createMemeAdScene({
@@ -268,9 +288,12 @@ const scenes = parsed.map((variant, index) => createMemeAdScene({
   now: 123,
 }));
 
-assert.equal(scenes.length, 4);
+assert.equal(scenes.length, 12);
 assert.ok(scenes.every((scene) => scene.format === "meme"));
 assert.equal(scenes[0]!.layout.templateId, "drake");
+assert.equal(scenes[1]!.layout.templateId, "drake");
+assert.equal(scenes[2]!.layout.templateId, "drake");
+assert.equal(scenes[3]!.layout.templateId, "woman_yelling_cat");
 assert.equal(scenes[0]!.creative.subheadline, research.brandBrief.offer);
 assert.ok(!scenes[0]!.creative.subheadline.includes("bottom choice"));
 
@@ -288,7 +311,10 @@ assert.ok(!html.includes("text-overflow"));
 const rerolled = rerollScene(scenes, scenes[0]!, 0, createDefaultSceneLocks());
 assert.equal(rerolled.index, 1);
 assert.equal(rerolled.scene?.format, "meme");
-assert.equal(rerolled.scene?.layout.templateId, "woman_yelling_cat");
+assert.equal(rerolled.scene?.layout.templateId, "drake");
+const rerolledToNextTemplate = rerollScene(scenes, scenes[2]!, 2, createDefaultSceneLocks());
+assert.equal(rerolledToNextTemplate.index, 3);
+assert.equal(rerolledToNextTemplate.scene?.layout.templateId, "woman_yelling_cat");
 assert.ok(parsed.some((variant) => variant.templateId === "this_is_fine" && "topText" in variant.slots && "bottomText" in variant.slots));
 assert.ok(parsed.some((variant) => variant.templateId === "woman_yelling_cat" && "yellingText" in variant.slots && "catResponseText" in variant.slots));
 

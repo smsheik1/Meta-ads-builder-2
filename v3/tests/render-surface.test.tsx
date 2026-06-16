@@ -131,6 +131,21 @@ assert.ok(flashHtml.includes("wiggly-reroll-shine-headline"), "Reroll flash must
 assert.ok(flashHtml.includes("wiggly-reroll-shine-visualizer"), "Reroll flash must shine the visualizer slot.");
 assert.ok(flashHtml.includes("wiggly-reroll-shine-captions"), "Reroll flash must shine the caption/audio slot.");
 
+const ogOnlyLogoHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: {
+    ...scene,
+    brand: {
+      ...scene.brand,
+      faviconUrl: null,
+      logoUrl: null,
+      ogImageUrl: "https://example.com/social-card.png",
+    },
+  },
+  timeSeconds: 1,
+}));
+assert.ok(!ogOnlyLogoHtml.includes("social-card.png"), "Visualizer must not use OG social cards as logo marks.");
+assert.ok(ogOnlyLogoHtml.includes("OGTool"), "Visualizer must show initials/name when no logo or favicon exists.");
+
 const generatedAudioScene: AdScene = {
   ...scene,
   audio: {

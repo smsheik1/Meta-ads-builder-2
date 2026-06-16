@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { internalMutation } from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
 import type { WebsiteResearchResult } from "../features/research/types";
 
 export const createPending: ReturnType<typeof internalMutation> = internalMutation({
@@ -64,6 +64,7 @@ export const saveReady: ReturnType<typeof internalMutation> = internalMutation({
       screenshotUrl: research.brand.screenshotUrl || undefined,
       branding: research.branding,
       brandBrief: research.brandBrief,
+      adAngles: research.adAngles || [],
       receipts: research.evidence.receipts,
       evidence: research.evidence,
       metadata: research.metadata,
@@ -73,6 +74,69 @@ export const saveReady: ReturnType<typeof internalMutation> = internalMutation({
     });
 
     return { brandSnapshotId };
+  },
+});
+
+export const latestAdAnglesForHost: ReturnType<typeof internalQuery> = internalQuery({
+  args: {
+    host: v.string(),
+  },
+  handler: async (ctx, { host }) => {
+    const row = await ctx.db
+      .query("brandAdAngles")
+      .withIndex("by_host_and_updatedAt", (q) => q.eq("host", host))
+      .order("desc")
+      .first();
+
+    return row?.angles || null;
+  },
+});
+
+export const saveAdAnglesForHost: ReturnType<typeof internalMutation> = internalMutation({
+  args: {
+    host: v.string(),
+    angles: v.any(),
+    providerStatus: v.any(),
+  },
+  handler: async (ctx, { host, angles, providerStatus }) => {
+    const now = Date.now();
+    await ctx.db.insert("brandAdAngles", {
+      host,
+      angles,
+      providerStatus,
+      createdAt: now,
+      updatedAt: now,
+    });
+  },
+});
+
+export const latestBrandSnapshotForHost: ReturnType<typeof internalQuery> = internalQuery({
+  args: {
+    host: v.string(),
+  },
+  handler: async (ctx, { host }) => {
+    const snapshot = await ctx.db
+      .query("brandSnapshots")
+      .withIndex("by_host_and_updatedAt", (q) => q.eq("host", host))
+      .order("desc")
+      .first();
+
+    if (!snapshot) return null;
+
+    return {
+      name: snapshot.name,
+      url: snapshot.url,
+      host: snapshot.host || host,
+      title: snapshot.title || "",
+      description: snapshot.description || "",
+      faviconUrl: snapshot.faviconUrl || null,
+      logoUrl: snapshot.logoUrl || null,
+      ogImageUrl: snapshot.ogImageUrl || null,
+      screenshotUrl: snapshot.screenshotUrl || null,
+      colors: snapshot.colors || [],
+      fonts: snapshot.fonts || { feel: "unknown" },
+      vibeTags: snapshot.vibeTags || [],
+    };
   },
 });
 

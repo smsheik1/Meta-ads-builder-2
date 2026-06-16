@@ -26,6 +26,7 @@ export default defineSchema({
     screenshotUrl: v.optional(v.string()),
     branding: v.optional(v.any()),
     brandBrief: v.optional(v.any()),
+    adAngles: v.optional(v.any()),
     receipts: v.optional(v.any()),
     evidence: v.optional(v.any()),
     metadata: v.optional(v.any()),
@@ -52,7 +53,17 @@ export default defineSchema({
     screenshotUrl: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index("by_researchRunId", ["researchRunId"]),
+  })
+    .index("by_researchRunId", ["researchRunId"])
+    .index("by_host_and_updatedAt", ["host", "updatedAt"]),
+
+  brandAdAngles: defineTable({
+    host: v.string(),
+    angles: v.any(),
+    providerStatus: v.optional(v.any()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_host_and_updatedAt", ["host", "updatedAt"]),
 
   adScenes: defineTable({
     sessionId: v.string(),

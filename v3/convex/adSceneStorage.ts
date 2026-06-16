@@ -46,6 +46,7 @@ export const loadResearchForGeneration: ReturnType<typeof internalQuery> = inter
       evidence: researchRun.evidence,
       metadata: researchRun.metadata || {},
       branding: researchRun.branding || {},
+      adAngles: researchRun.adAngles || [],
       providerStatus: researchRun.providerStatus || [],
     };
 

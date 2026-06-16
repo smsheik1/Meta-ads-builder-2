@@ -2,6 +2,26 @@
 
 This file is the product memory for things we intentionally defer. When we make a practical v1 tradeoff, add it here immediately so it does not depend on anyone remembering a chat thread.
 
+## Event Demo Wow Moment
+
+### Build a booth-ready option browser
+
+**Status:** Planned
+
+**Why:** We are taking Wiggly to an event with an iPad and need every booth visit to feel like a fast "wow" moment for that brand. The demo should make it obvious that Wiggly can generate lots of usable directions, then let us spacebar through them without dead ends.
+
+**Goal:** Make `/create` generate enough distinct, on-brand options per format that a user can quickly browse variations live.
+
+**Acceptance criteria:**
+- Current 4 image meme templates generate 3 variations each, for 12 meme scenes total.
+- Spacebar cycles through all meme variations, not just one scene per template.
+- Video memes are added as the next meme-format expansion path.
+- Add a brand jingle format that turns the brand brief into a short, memorable audio-first concept.
+- Add a "We're sorry" format inspired by the Instagram trend: brands apologize for being too good, selling out, or needing to make it up with an offer.
+- "We're sorry" outputs can support both playful apology-only copy and apology-plus-discount/offer copy when the brand evidence supports it.
+- All new formats still use `AdRenderSurface` and complete `AdScene` payloads.
+- The iPad demo can start from a booth's website URL and quickly spacebar through a varied set of options.
+
 ## Next Rendering Improvements
 
 ### Make Remotion visualizers truly audio-reactive

@@ -5,6 +5,8 @@ import {
   fetchWebsiteResearchWithFirecrawl,
   toWebsiteResearchErrorMessage,
 } from "../features/research/firecrawl";
+import { extractAdAnglesFromResearch } from "../features/research/adAngles";
+import { normalizePublicWebsiteUrl } from "../features/research/url";
 
 export const runWebsiteResearch: ReturnType<typeof action> = action({
   args: {
@@ -18,7 +20,44 @@ export const runWebsiteResearch: ReturnType<typeof action> = action({
     });
 
     try {
-      const result = await fetchWebsiteResearchWithFirecrawl(url);
+      const websiteUrl = normalizePublicWebsiteUrl(url);
+      const cachedBrand = await ctx.runQuery(internal.researchStorage.latestBrandSnapshotForHost, {
+        host: websiteUrl.hostname,
+      });
+      let result = await fetchWebsiteResearchWithFirecrawl(url, {
+        brandAssets: { cachedBrand },
+      });
+      const cachedAdAngles = await ctx.runQuery(internal.researchStorage.latestAdAnglesForHost, {
+        host: result.host,
+      });
+      if (cachedAdAngles?.length) {
+        result = {
+          ...result,
+          adAngles: cachedAdAngles,
+          providerStatus: [
+            ...result.providerStatus,
+            {
+              provider: "ad-angles",
+              status: "used",
+              reason: `Reused cached ad angles for ${result.host}.`,
+            },
+          ],
+        };
+      } else {
+        const angles = await extractAdAnglesFromResearch(result);
+        result = {
+          ...result,
+          adAngles: angles.adAngles,
+          providerStatus: [...result.providerStatus, angles.providerStatus],
+        };
+        if (angles.adAngles.length) {
+          await ctx.runMutation(internal.researchStorage.saveAdAnglesForHost, {
+            host: result.host,
+            angles: angles.adAngles,
+            providerStatus: angles.providerStatus,
+          });
+        }
+      }
       const { brandSnapshotId } = await ctx.runMutation(internal.researchStorage.saveReady, {
         researchRunId,
         sessionId,

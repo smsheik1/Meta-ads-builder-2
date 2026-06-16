@@ -6,7 +6,7 @@ import {
 } from "../../llm/nvidiaNim";
 import { DEFAULT_NVIDIA_NIM_MEME_MODEL } from "../../llm/nvidiaNimModels";
 import { buildMemePrompt } from "./prompt";
-import { MEME_TEMPLATES, getMemeTemplate } from "./templates";
+import { MEME_TEMPLATES, MEME_VARIATIONS_PER_TEMPLATE, getMemeTemplate } from "./templates";
 
 export type MemeVariant = {
   templateId: string;
@@ -108,8 +108,22 @@ export function extractMemeVariantsFromResponse(
 ): MemeVariant[] {
   const providerLabel = options.providerLabel || "Meme provider";
   const payload = parseJsonObject(content, providerLabel);
-  const variants = Array.isArray(payload.variants) ? payload.variants : [];
-  const byTemplate = new Map<string, MemeVariant>();
+  const variants = Array.isArray(payload.templates)
+    ? payload.templates.flatMap((templateGroup) => {
+      if (!templateGroup || typeof templateGroup !== "object") return [];
+      const group = templateGroup as Record<string, unknown>;
+      const templateId = String(group.templateId || "");
+      const groupVariants = Array.isArray(group.variants) ? group.variants : [];
+      return groupVariants.map((variant) => (
+        variant && typeof variant === "object"
+          ? { ...variant as Record<string, unknown>, templateId }
+          : variant
+      ));
+    })
+    : Array.isArray(payload.variants)
+      ? payload.variants
+      : [];
+  const byTemplate = new Map<string, MemeVariant[]>();
 
   for (const item of variants) {
     if (!item || typeof item !== "object") continue;
@@ -133,11 +147,19 @@ export function extractMemeVariantsFromResponse(
       if (template.id === "this_is_fine" && /this\s+is\s+fine/i.test(text)) valid = false;
       slots[slot.id] = text;
     }
-    if (valid) byTemplate.set(template.id, { templateId: template.id, slots });
+    if (valid) {
+      const templateVariants = byTemplate.get(template.id) || [];
+      if (templateVariants.length < MEME_VARIATIONS_PER_TEMPLATE) {
+        templateVariants.push({ templateId: template.id, slots });
+        byTemplate.set(template.id, templateVariants);
+      }
+    }
   }
 
-  const normalized = MEME_TEMPLATES.map((template) => byTemplate.get(template.id)).filter(Boolean) as MemeVariant[];
-  if (normalized.length !== MEME_TEMPLATES.length) throw new Error(`${providerLabel} returned incomplete meme variants.`);
+  const normalized = MEME_TEMPLATES.flatMap((template) => byTemplate.get(template.id) || []);
+  if (normalized.length !== MEME_TEMPLATES.length * MEME_VARIATIONS_PER_TEMPLATE) {
+    throw new Error(`${providerLabel} returned incomplete meme variants.`);
+  }
   return normalized;
 }
 
@@ -185,7 +207,7 @@ export async function generateMemeVariantsFromResearch(
         label: "NVIDIA NIM meme generation",
         model: nvidiaNimModel,
         nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
-        prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Every required slot must be present, under maxChars, and a complete thought. Return only the JSON object.`,
+        prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Return exactly ${MEME_VARIATIONS_PER_TEMPLATE} variants per template, every required slot must be present, under maxChars, and a complete thought. Return only the JSON object.`,
         timeoutMs,
       });
       variants = extractMemeVariantsFromResponse(retryContent, {
@@ -201,7 +223,7 @@ export async function generateMemeVariantsFromResearch(
       providerStatus: {
         provider: "nvidia-nim",
         status: "used",
-        reason: `Generated ${MEME_TEMPLATES.length} meme ideas with ${nvidiaNimModel}.`,
+        reason: `Generated ${MEME_TEMPLATES.length * MEME_VARIATIONS_PER_TEMPLATE} meme ideas with ${nvidiaNimModel}.`,
       },
     };
   } catch (error) {

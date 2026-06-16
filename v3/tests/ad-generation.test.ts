@@ -56,6 +56,22 @@ const research: StoredWebsiteResearchResult = {
 	    droppedNoiseSummary: [],
 	    confidence: "high",
 	  },
+  adAngles: [
+    {
+      buyer: "D2C operator",
+      moment: "buyers ask ChatGPT and a competitor shows up first",
+      pain: "the brand loses the recommendation before the website visit",
+      proof: "First ChatGPT mention in 14 days.",
+      sitePhrase: "ChatGPT mentions in 14 days",
+    },
+    {
+      buyer: "D2C founder",
+      moment: "AI recommendation searches happen before the site visit",
+      pain: "the brand is invisible in the research step",
+      proof: "A customer generated 42 citations in two weeks.",
+      sitePhrase: "Secure Google front-page rankings and AI brand citations",
+    },
+  ],
 	  evidence: {
     headings: [
       "Get mentioned by ChatGPT",
@@ -108,11 +124,19 @@ const prompt = buildAdIdeasPrompt(research, 50);
 assert.ok(prompt.includes("STUDY THESE EXAMPLES"));
 assert.ok(prompt.includes("DECIDE HEADLINE TYPE BEFORE WRITING"));
 assert.ok(prompt.includes("CONCRETE HEADLINE TEST"));
+assert.ok(prompt.includes("HEADLINE CALIBRATION EXAMPLES"));
+assert.ok(prompt.includes("E-COMMERCE PATTERN"));
 assert.ok(prompt.includes("Do not average the whole brief"));
 assert.ok(prompt.includes("SEO/title restatements"));
 assert.ok(prompt.includes("Use at least 3 different CTA verbs"));
 assert.ok(prompt.includes("Do not repeat the same headline structure more than 3 times in a row"));
-assert.ok(prompt.includes("Return only JSON"));
+assert.ok(prompt.includes("FORMAT-SPECIFIC OUTPUT EXAMPLES"));
+assert.ok(prompt.includes("Headlines must carry the whole visible visualizer ad"));
+assert.ok(prompt.includes("Subheadline is supporting metadata for dialogue/share context"));
+assert.ok(prompt.includes("CACHED AD ANGLES"));
+assert.ok(prompt.includes("buyers ask ChatGPT and a competitor shows up first"));
+assert.ok(prompt.includes("Return only a JSON array"));
+assert.ok(prompt.includes("DISTINCTNESS REQUIREMENT"));
 assert.ok(prompt.includes(bannedAdWords.join(", ")));
 
 const deterministic = buildDeterministicAdCandidates(research, 50);
@@ -120,6 +144,8 @@ assert.equal(deterministic.length, 50);
 assert.ok(deterministic.every((candidate) => candidate.headline.length >= 8));
 assert.ok(deterministic.every((candidate) => candidate.subheadline.length >= 24));
 assert.ok(deterministic.every((candidate) => !/#\d+$/.test(candidate.headline)));
+assert.equal(deterministic[0]?.selectedProof, "First ChatGPT mention in 14 days.");
+assert.equal(deterministic[1]?.selectedProof, "A customer generated 42 citations in two weeks.");
 
 assert.equal(
   normalizeAdCandidatePayload({
@@ -161,6 +187,21 @@ const parsed = extractAdCandidatesFromResponse(JSON.stringify({
 assert.equal(parsed.length, 1);
 assert.equal(parsed[0]?.headlineType, "contrast");
 
+const parsedScaffold = extractAdCandidatesFromResponse(JSON.stringify([
+  {
+    headlineType: "painful_moment",
+    chosenBuyerMoment: "Buyers ask ChatGPT for recommendations and your competitor shows up first.",
+    chosenProof: "First ChatGPT mention in 14 days.",
+    headline: "ChatGPT Found Them First",
+    subheadline: "Buyers ask ChatGPT for recommendations before they ever visit your website.",
+    ctaText: "See the proof",
+    selfCheckPassed: "This only fits brands losing visibility inside AI recommendation moments.",
+  },
+]), [fallback], 1);
+assert.equal(parsedScaffold.length, 1);
+assert.equal(parsedScaffold[0]?.selectedPain, "Buyers ask ChatGPT for recommendations and your competitor shows up first.");
+assert.equal(parsedScaffold[0]?.selectedProof, "First ChatGPT mention in 14 days.");
+
 const scene = createVisualizerAdScene({
   research,
   candidate: parsed[0]!,
@@ -175,6 +216,7 @@ assert.equal(scene.version, 1);
 assert.equal(scene.brand.receipts.specificClaims[0], "First ChatGPT mention in 14 days.");
 assert.equal(scene.metadata.researchRunId, "research_1");
 assert.equal(scene.metadata.model, "test-model");
+assert.deepEqual(scene.metadata.adAngles, research.adAngles);
 assert.equal(scene.style.visualizer?.type, "waveform-strip");
 assert.equal(scene.style.visualizer?.barCount, 24);
 assert.equal(scene.style.visualizer?.gain, 1.7);

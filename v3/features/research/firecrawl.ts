@@ -3,6 +3,11 @@ import {
   curateWebsiteResearchResult,
   type BrandCuratorOptions,
 } from "./brandCurator";
+import {
+  resolveBrandAssets,
+  type CachedBrandAssets,
+  type BrandAssetResolution,
+} from "./brandAssets";
 import { normalizePublicWebsiteUrl } from "./url";
 import type {
   BrandSnapshot,
@@ -27,6 +32,12 @@ export type FirecrawlOptions = {
     htmlMetadataTimeoutMs?: number;
     minMarkdownChars?: number;
     minUsefulLines?: number;
+  };
+  brandAssets?: {
+    enabled?: boolean;
+    apiKey?: string;
+    fetcher?: Fetcher;
+    cachedBrand?: CachedBrandAssets | null;
   };
 };
 
@@ -113,9 +124,24 @@ const rawMetadataText = (
   maxLength = 900,
 ) => cleanText(keys.map((key) => metadata[key]).find(Boolean) || fallback, maxLength);
 
-const resolveMaybeUrl = (value: unknown, baseUrl: string) => {
-  const cleaned = cleanText(value, 900);
-  if (!cleaned || cleaned.startsWith("data:") || cleaned.startsWith("blob:")) return null;
+const resolveMaybeUrl = (
+  value: unknown,
+  baseUrl: string,
+  options: { allowDataImage?: boolean } = {},
+) => {
+  const cleaned = decodeHtmlEntities(String(value ?? ""))
+    .trim()
+    .slice(0, 4_000);
+  if (!cleaned || cleaned.startsWith("blob:")) return null;
+  if (cleaned.startsWith("data:")) {
+    if (
+      options.allowDataImage === true &&
+      /^data:image\/(?:svg\+xml|png|jpe?g|webp)(?:;[^,]*)?,/i.test(cleaned)
+    ) {
+      return cleaned;
+    }
+    return null;
+  }
 
   try {
     return new URL(cleaned, baseUrl).href;
@@ -123,6 +149,14 @@ const resolveMaybeUrl = (value: unknown, baseUrl: string) => {
     return null;
   }
 };
+
+const objectFromUnknown = (value: unknown) => (
+  value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+);
+
+const brandingImage = (branding: Record<string, unknown>, key: string) => objectFromUnknown(branding.images)[key];
 
 const screenshotUrlFromFirecrawl = (screenshot: unknown, baseUrl: string) => {
   if (typeof screenshot === "string") return resolveMaybeUrl(screenshot, baseUrl);
@@ -186,11 +220,21 @@ const colorsFromFirecrawl = (
   branding: Record<string, unknown>,
   metadata: Record<string, unknown>,
 ) => {
+  const colorValues = (value: unknown): unknown[] => {
+    if (Array.isArray(value)) return value.flatMap(colorValues);
+    if (value && typeof value === "object") {
+      const record = value as Record<string, unknown>;
+      if (typeof record.hex === "string") return [record.hex];
+      return Object.values(record).flatMap(colorValues);
+    }
+    return [value];
+  };
+
   const rawColors = [
     metadata.themeColor,
     metadata["theme-color"],
-    ...(Array.isArray(metadata.colors) ? metadata.colors : []),
-    ...(Array.isArray(branding.colors) ? branding.colors : []),
+    ...colorValues(metadata.colors),
+    ...colorValues(branding.colors),
   ];
   return rawColors
     .map((color) => String(color ?? "").trim().toUpperCase())
@@ -198,6 +242,10 @@ const colorsFromFirecrawl = (
     .filter((color, index, all) => all.indexOf(color) === index)
     .slice(0, 8);
 };
+
+const hasHtmlBrandAssets = (metadata: Record<string, unknown>) => (
+  Boolean(metadata.logo || metadata.favicon || metadata.ogImage || (Array.isArray(metadata.colors) && metadata.colors.length))
+);
 
 const logoUrlFromFirecrawl = (
   metadata: Record<string, unknown>,
@@ -207,22 +255,52 @@ const logoUrlFromFirecrawl = (
   const candidates = [
     branding.logo,
     branding.logoUrl,
+    brandingImage(branding, "logo"),
     metadata.logo,
     metadata.logoUrl,
     metadata.favicon,
     metadata.faviconUrl,
     metadata.icon,
+    brandingImage(branding, "favicon"),
   ];
-  return candidates.map((candidate) => resolveMaybeUrl(candidate, finalUrl)).find(Boolean) || null;
+  return candidates.map((candidate) => resolveMaybeUrl(candidate, finalUrl, { allowDataImage: true })).find(Boolean) || null;
 };
 
 const fontsFromFirecrawl = (branding: Record<string, unknown>): BrandSnapshot["fonts"] => {
-  const rawFonts = branding.fonts && typeof branding.fonts === "object"
-    ? branding.fonts as Record<string, unknown>
-    : {};
-  const heading = cleanText(rawFonts.heading || rawFonts.display, 80);
-  const body = cleanText(rawFonts.body || rawFonts.text, 80);
-  const signature = `${heading} ${body}`.toLowerCase();
+  const rawFonts = objectFromUnknown(branding.fonts);
+  const typography = objectFromUnknown(branding.typography);
+  const fontFamilies = objectFromUnknown(typography.fontFamilies);
+  const fontStacks = objectFromUnknown(typography.fontStacks);
+  const fontList = Array.isArray(branding.fonts)
+    ? branding.fonts.map(objectFromUnknown)
+    : [];
+  const fontByRole = (pattern: RegExp) => cleanText(
+    fontList.find((font) => pattern.test(cleanText(font.role, 40)))?.family,
+    80,
+  );
+  const stackHead = (value: unknown) => Array.isArray(value) ? value[0] : "";
+  const heading = cleanText(
+    rawFonts.heading ||
+      rawFonts.display ||
+      fontFamilies.heading ||
+      fontFamilies.display ||
+      fontByRole(/\b(heading|display|headline)\b/i) ||
+      stackHead(fontStacks.heading) ||
+      fontFamilies.primary,
+    80,
+  );
+  const body = cleanText(
+    rawFonts.body ||
+      rawFonts.text ||
+      fontFamilies.body ||
+      fontFamilies.paragraph ||
+      fontByRole(/\b(body|text|paragraph)\b/i) ||
+      stackHead(fontStacks.body) ||
+      fontFamilies.primary ||
+      heading,
+    80,
+  );
+  const signature = `${heading} ${body}`.trim().toLowerCase();
   const feel = signature.includes("serif")
     ? "serif"
     : signature.includes("mono")
@@ -322,11 +400,16 @@ export const normalizeFirecrawlPayload = (
     60,
   );
   const faviconUrl = resolveMaybeUrl(
-    metadata.favicon || metadata.faviconUrl || metadata.icon,
+    metadata.favicon || metadata.faviconUrl || metadata.icon || brandingImage(branding, "favicon"),
     finalUrl,
+    { allowDataImage: true },
   );
   const logoUrl = logoUrlFromFirecrawl(metadata, branding, finalUrl);
-  const ogImageUrl = resolveMaybeUrl(metadata.ogImage || metadata.image, finalUrl);
+  const ogImageUrl = resolveMaybeUrl(
+    metadata.ogImage || metadata.image || brandingImage(branding, "ogImage"),
+    finalUrl,
+    { allowDataImage: true },
+  );
   const screenshotUrl = screenshotUrlFromFirecrawl(data.screenshot, finalUrl);
   const colors = colorsFromFirecrawl(branding, metadata);
 
@@ -348,6 +431,7 @@ export const normalizeFirecrawlPayload = (
       fonts: fontsFromFirecrawl(branding),
       vibeTags: buildVibeTags(metadata, branding, evidence),
     },
+    adAngles: [],
     evidence: {
       ...evidence,
       receipts: {
@@ -580,6 +664,7 @@ export const normalizeJinaReaderPayload = (
       fonts: { feel: "unknown" },
       vibeTags: buildVibeTags(metadata, {}, evidence),
     },
+    adAngles: [],
     evidence: {
       ...evidence,
       receipts: {
@@ -593,12 +678,62 @@ export const normalizeJinaReaderPayload = (
       provider: "jina",
       status: "used",
       reason: `Jina read ${evidence.paragraphs.length} page snippets.`,
-    }],
+    }, ...(hasHtmlBrandAssets(metadata) ? [{
+      provider: "html-brand-assets" as const,
+      status: "used" as const,
+      reason: "Read brand assets from website HTML.",
+    }] : [])],
   };
 
   return {
     ...result,
     brandBrief: buildFallbackBrandBrief(result),
+  };
+};
+
+const mergeBrandAssets = (
+  research: WebsiteResearchResult,
+  resolution: BrandAssetResolution,
+): WebsiteResearchResult => {
+  const assets = resolution.brand;
+  const logoUrl = assets.logoUrl ?? research.brand.logoUrl;
+  const faviconUrl = assets.faviconUrl ?? research.brand.faviconUrl;
+  const finalLogoUrl = logoUrl || faviconUrl || null;
+  const finalLogoSource = logoUrl
+    ? assets.logoUrl ? "brandfetch-or-cache:logoUrl" : "html:logoUrl"
+    : faviconUrl
+      ? assets.faviconUrl ? "brandfetch-or-cache:faviconUrl" : "html:faviconUrl"
+      : "initials";
+  console.info("Final brand asset decision", {
+    domain: research.host,
+    finalLogoUrl,
+    finalLogoSource,
+  });
+  return {
+    ...research,
+    brand: {
+      ...research.brand,
+      faviconUrl,
+      logoUrl,
+      ogImageUrl: assets.ogImageUrl ?? research.brand.ogImageUrl,
+      screenshotUrl: assets.screenshotUrl ?? research.brand.screenshotUrl,
+      colors: assets.colors?.length ? assets.colors : research.brand.colors,
+      fonts: assets.fonts && assets.fonts.feel !== "unknown" ? assets.fonts : research.brand.fonts,
+      vibeTags: assets.vibeTags?.length ? assets.vibeTags : research.brand.vibeTags,
+    },
+    branding: {
+      ...research.branding,
+      ...resolution.branding,
+      brandAssetFinalDecision: {
+        domain: research.host,
+        finalLogoUrl,
+        finalLogoSource,
+      },
+    },
+    providerStatus: [
+      ...research.providerStatus,
+      ...resolution.providerStatus,
+    ],
   };
 };
 
@@ -660,18 +795,17 @@ export const fetchWebsiteResearchWithFirecrawl = async (
 ) => {
   const websiteUrl = normalizePublicWebsiteUrl(inputUrl);
   const apiKey = options.apiKey ?? process.env.FIRECRAWL_API_KEY;
-  const shouldTryJina = options.jina?.enabled !== false && (!options.fetcher || Boolean(options.jina?.fetcher));
-  let jinaFailureReason = "";
-
-  if (shouldTryJina) {
-    try {
-      const jinaResult = await fetchWebsiteResearchWithJina(inputUrl, options.jina);
-      return curateWebsiteResearchResult(jinaResult, options.curator);
-    } catch (error) {
-      jinaFailureReason = toWebsiteResearchErrorMessage(error);
-      // Firecrawl remains the hard-site fallback for weak, blocked, or timed-out Jina reads.
-    }
-  }
+  const mergeOptionalBrandAssets = async (research: WebsiteResearchResult) => {
+    if (options.brandAssets?.enabled !== true) return research;
+    const assetResolution = await resolveBrandAssets({
+      domain: websiteUrl.hostname,
+      htmlColors: research.brand.colors,
+      cachedBrand: options.brandAssets.cachedBrand,
+      apiKey: options.brandAssets.apiKey,
+      fetcher: options.brandAssets.fetcher,
+    });
+    return mergeBrandAssets(research, assetResolution);
+  };
 
   if (!apiKey) {
     throw new Error("Firecrawl is required for website research, but it is not configured.");
@@ -703,23 +837,16 @@ export const fetchWebsiteResearchWithFirecrawl = async (
     }
 
     const firecrawlResult = normalizeFirecrawlPayload(websiteUrl.href, payload);
-    return curateWebsiteResearchResult(
-      jinaFailureReason
-        ? {
-          ...firecrawlResult,
-          providerStatus: [
-            {
-              provider: "jina",
-              status: "failed",
-              reason: `${jinaFailureReason} Used Firecrawl fallback.`,
-            },
-            ...firecrawlResult.providerStatus,
-          ],
-        }
-        : firecrawlResult,
-      options.curator,
-    );
+    return curateWebsiteResearchResult(await mergeOptionalBrandAssets(firecrawlResult), options.curator);
   } catch (error) {
+    if (options.jina?.enabled === true) {
+      try {
+        const jinaResult = await fetchWebsiteResearchWithJina(inputUrl, options.jina);
+        return curateWebsiteResearchResult(await mergeOptionalBrandAssets(jinaResult), options.curator);
+      } catch {
+        // Report the primary Firecrawl error; Jina is only an explicit fallback now.
+      }
+    }
     throw new Error(toWebsiteResearchErrorMessage(error));
   } finally {
     clearTimeout(timeout);

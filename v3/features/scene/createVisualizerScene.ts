@@ -87,6 +87,7 @@ export const createVisualizerAdScene = ({
       model,
       provider,
       generatedAt: now,
+      adAngles: research.adAngles || [],
     },
   };
 };

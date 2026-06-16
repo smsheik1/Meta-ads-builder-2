@@ -1,5 +1,5 @@
 import type { StoredWebsiteResearchResult } from "../../research/types";
-import { MEME_TEMPLATES } from "./templates";
+import { MEME_TEMPLATES, MEME_VARIATIONS_PER_TEMPLATE } from "./templates";
 
 const cleanList = (items: string[], fallback: string) => (
   items.length ? items.slice(0, 6).join("; ") : fallback
@@ -35,7 +35,9 @@ BRAND CONTEXT:
 - CTA direction: ${research.brandBrief.ctaDirection}
 
 TASK:
-Write exactly one meme variant for every template below, in the exact order given.
+Write exactly ${MEME_VARIATIONS_PER_TEMPLATE} distinct meme variants for every template below, grouped in the exact template order given.
+Total variants required: ${MEME_TEMPLATES.length * MEME_VARIATIONS_PER_TEMPLATE}.
+Before writing each template's ${MEME_VARIATIONS_PER_TEMPLATE} variants, pick ${MEME_VARIATIONS_PER_TEMPLATE} different buyer moments or angles from the BRAND block.
 
 TEMPLATES:
 ${JSON.stringify(templates, null, 2)}
@@ -43,9 +45,14 @@ ${JSON.stringify(templates, null, 2)}
 RULES:
 - Return plain JSON only.
 - Every required slot must be present.
+- For each template, write ${MEME_VARIATIONS_PER_TEMPLATE} genuinely different angles, not tiny rewrites of the same joke.
+- Each variant must include an "angle" field naming the buyer moment or proof it uses.
+- No two variants in the same template may share the same angle.
 - Plain text only in slot values. No markdown, no URLs.
 - Sound like a meme caption, not an ad headline.
 - Reference only proof, offer, or buyer moments from the BRAND block above. Do not invent numbers, reviews, customers, guarantees, integrations, or timeframes.
+- If proof is thin, build the joke on the buyer moment or pain alone. A meme about the problem is stronger than a fake stat.
+- Name the brand in at most one slot per variant, and only if it lands like a punchline, not a logo drop.
 - Stay under each slot's maxChars hard limit.
 - Each slot must be a complete thought. Never cut mid-sentence.
 - No slot may end with dangling words like "and", "the", "to", "for", "of", "on", "that", "get", or "with".
@@ -59,19 +66,24 @@ RULES:
 - Good: "Posts people actually steal"
 - For Drake, the two slots must be a clear old-way versus better-way contrast.
 - For Woman Yelling at Cat, the yelling slot must be a loud objection or complaint, and the cat response must be short, calm, and unimpressed.
-- For This Is Fine, use the top and bottom text spaces: top names the bad thing happening, bottom names the forced calm response.
+- For This Is Fine, use the top and bottom text spaces: top names the bad thing happening, bottom is the forced-calm line in the brand's own words, never the literal phrase "this is fine".
 - For Expanding Brain, the four slots must form a real escalation ladder: naive move, smarter move, specific brand insight, punchline/aha. Do not write four disconnected benefits.
 - For This Is Fine, the caption must name the fire and must not say "this is fine".
 - If a template feels odd for the brand, lean into useful absurdity instead of skipping it.
 
 OUTPUT SHAPE:
 {
-  "variants": [
+  "templates": [
     {
       "templateId": "template id from the registry",
-      "slots": {
-        "slotId": "copy for that slot"
-      }
+      "variants": [
+        {
+          "angle": "buyer moment or proof this variant uses",
+          "slots": {
+            "slotId": "copy for that slot"
+          }
+        }
+      ]
     }
   ]
 }`;

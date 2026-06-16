@@ -14,6 +14,16 @@ const listForPrompt = (items: string[], maxItems = 8) => JSON.stringify(
   items.map((item) => cleanText(item, 220)).filter(Boolean).slice(0, maxItems),
 );
 
+const adAnglesForPrompt = (research: StoredWebsiteResearchResult) => JSON.stringify(
+  (research.adAngles || []).slice(0, 8).map((angle) => ({
+    buyer: cleanText(angle.buyer, 120),
+    moment: cleanText(angle.moment, 160),
+    pain: cleanText(angle.pain, 180),
+    proof: cleanText(angle.proof, 180),
+    sitePhrase: angle.sitePhrase ? cleanText(angle.sitePhrase, 180) : null,
+  })),
+);
+
 export const bannedAdWords = [
   "unlock",
   "elevate",
@@ -65,6 +75,9 @@ RAW WEBSITE BACKUP (use only if it supports the curated brief; ignore navigation
 Headings: ${listForPrompt(research.evidence.headings, 10)}
 Paragraphs: ${listForPrompt(research.evidence.paragraphs, 10)}
 
+CACHED AD ANGLES (use these first when present; one angle per candidate):
+${adAnglesForPrompt(research)}
+
 PICK THE BEST STUFF FIRST FOR EACH CANDIDATE:
 - Best buyer: who is most likely to care?
 - One buyer moment: the specific situation that makes them want this now.
@@ -86,6 +99,62 @@ Good:
 - "That listing was gone before lunch."
 - "Protein bars that don't taste like punishment."
 - "Forgot the birthday? Cookies still ship."
+
+HEADLINE CALIBRATION EXAMPLES:
+These teach the difference between concrete and generic. Do not copy them. They are from other industries to show the pattern, not to be reused. Match this level of specificity using this brand's evidence.
+
+GENERIC bad -> CONCRETE good
+
+Dental practice:
+Bad: "Quality Dental Care You Can Trust"
+Good: "Drowning in Monday morning phone calls?"
+Bad: "Your Smile, Our Priority"
+Good: "The patient called. Nobody picked up."
+
+Bookkeeping software:
+Bad: "Smart Bookkeeping for Small Business"
+Good: "Tax season shouldn't cost you a weekend"
+Bad: "Save Time and Money Today"
+Good: "47 receipts. One shoebox. Sound familiar?"
+
+Meal-prep delivery:
+Bad: "Healthy Meals Delivered to Your Door"
+Good: "It's 6pm and the fridge is still empty"
+Bad: "Eat Better, Live Better"
+Good: "Skip the 'what's for dinner' fight"
+
+E-commerce apparel:
+Bad: "Premium Activewear for Every Body"
+Good: "Leggings that don't go sheer when you squat"
+Bad: "Shop Our New Collection"
+Good: "The pockets actually fit your phone"
+
+E-commerce skincare:
+Bad: "Glow With Confidence"
+Good: "For the breakout you can feel coming"
+Bad: "Clinically Proven Ingredients"
+Good: "Three drops. That's the whole routine."
+
+E-commerce home/kitchen:
+Bad: "Upgrade Your Kitchen Today"
+Good: "The pan nothing sticks to. Even eggs."
+Bad: "Quality You Can Taste"
+Good: "Stop scrubbing burnt rice off your pot"
+
+E-COMMERCE PATTERN:
+Generic e-commerce headlines describe the category.
+Great e-commerce headlines name:
+- the specific objection the buyer is quietly worried about
+- the moment of use where the product has to prove itself
+- a concrete product detail that signals "they get it"
+
+Do not invent proof. For e-commerce, never make up clinical claims, bestseller status, review counts, discounts, guarantees, materials, ingredients, or performance claims unless the website evidence says them.
+
+WHY THE GOOD ONES WORK:
+- They name a specific moment the buyer has lived: a time, a scene, or a friction.
+- They make the buyer think "that's literally me" within 2 seconds.
+- They imply a stake without inventing numbers.
+- A good headline could only belong to this kind of buyer. If it works verbatim for any company in the category, it is too generic.
 
 DECIDE HEADLINE TYPE BEFORE WRITING:
 Pick ONE shape for each headline:
@@ -120,10 +189,60 @@ Brand: fresh cookie delivery
 Bad: "Cookie Delivery | Gift Baskets"
 Good: "Forgot the birthday? Cookies still ship."
 
+FORMAT-SPECIFIC OUTPUT EXAMPLES. Copy the quality bar, not the facts:
+Example A:
+Evidence:
+- Brand: AI dental receptionist
+- Buyer moment: calls arrive after the front desk leaves
+- Proof: answers after-hours calls and books appointments
+Good candidate:
+{
+  "angleId": "after-hours-leads",
+  "headline": "Your front desk went home. The lead didn't.",
+  "subheadline": "Supporting context only: after-hours callers still need a human-sounding answer and a booked next step.",
+  "ctaText": "Hear it answer",
+  "headlineType": "painful_moment",
+  "selectedPain": "calls arrive after the front desk leaves",
+  "selectedProof": "answers after-hours calls and books appointments"
+}
+
+Example B:
+Evidence:
+- Brand: AI search visibility service
+- Buyer moment: competitors show up in AI answers first
+- Proof: first ChatGPT mention in 14 days
+Good candidate:
+{
+  "angleId": "competitor-ai-answers",
+  "headline": "ChatGPT found your competitor first.",
+  "subheadline": "Supporting context only: buyers ask AI tools for recommendations before they ever reach a website.",
+  "ctaText": "See the proof",
+  "headlineType": "contrast",
+  "selectedPain": "competitors show up in AI answers first",
+  "selectedProof": "first ChatGPT mention in 14 days"
+}
+
+Example C:
+Evidence:
+- Brand: fresh cookie delivery
+- Buyer moment: someone forgot a gift
+- Proof: fresh baked cookies ship as gifts
+Good candidate:
+{
+  "angleId": "forgotten-gift",
+  "headline": "Forgot the gift? Cookies still ship.",
+  "subheadline": "Supporting context only: a fresh cookie box gives late gift senders a simple save.",
+  "ctaText": "Send cookies",
+  "headlineType": "painful_moment",
+  "selectedPain": "someone forgot a gift",
+  "selectedProof": "fresh baked cookies ship as gifts"
+}
+
 WHAT TO WRITE:
 - Generate exactly ${count} candidates.
-- Headlines must be punchy, concrete, and easy to read on a phone.
-- Subheadline must be one sentence. Lead with proof or a buyer moment, then explain the promise.
+- Headlines must carry the whole visible visualizer ad. They are the main canvas copy.
+- Subheadline is supporting metadata for dialogue/share context. It is not visible on the visualizer canvas.
+- Subheadline must be one sentence. Lead with proof or a buyer moment, then explain the promise without adding new claims.
 - CTA should be 2-5 words, start with an action verb, and name a specific next step or outcome.
 - Use at least 3 different CTA verbs across the list when generating 10 or more candidates.
 - Match the CTA to the business category:
@@ -155,21 +274,25 @@ HARD RULES:
 - Headline must be 8-72 characters.
 - Subheadline must be 24-180 characters.
 - ctaText must be 2-5 words.
-- selectedPain and selectedProof must be copied or closely paraphrased from CURATED BRAND BRIEF.
-- Return only JSON.
+- chosenBuyerMoment and chosenProof must be copied or closely paraphrased from CURATED BRAND BRIEF.
 
-JSON SHAPE:
+OUTPUT FORMAT:
+Return only a JSON array of exactly ${count} objects, each with these fields in order:
+
 {
-  "candidates": [
-    {
-      "angleId": "short-kebab-case",
-      "headline": "...",
-      "subheadline": "...",
-      "ctaText": "...",
-      "headlineType": "painful_moment | receipt_drop | callout | contrast | transformation",
-      "selectedPain": "...",
-      "selectedProof": "..."
-    }
-  ]
+  "headlineType": "one of: painful_moment | receipt_drop | callout | contrast | transformation",
+  "chosenBuyerMoment": "the ONE specific buyer moment this candidate is built on",
+  "chosenProof": "the ONE specific proof / site phrase / product truth used",
+  "headline": "8-72 chars (aim 25-60). The whole visible ad. Carries the most effort.",
+  "subheadline": "24-180 chars. Secondary metadata for share/dialogue context only.",
+  "ctaText": "2-5 words, starts with an action verb",
+  "selfCheckPassed": "one sentence: why this headline could ONLY belong to this brand's buyer (run the competitor-swap test)"
 }
+
+DISTINCTNESS REQUIREMENT (critical):
+- Every candidate MUST use a DIFFERENT headlineType, a DIFFERENT chosenBuyerMoment, and a DIFFERENT chosenProof.
+- No two candidates may be reworded versions of the same angle.
+- If you have fewer strong distinct angles than ${count}, still make each one distinct and concrete rather than padding with near-duplicates.
+
+Spend your best effort on the headline. The subheadline is secondary and does not render on the canvas.
 `;

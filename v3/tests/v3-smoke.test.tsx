@@ -18,6 +18,7 @@ import {
 import {
   consumeWorkflowUsageSnapshot,
   hasPaidAccess,
+  isPaywallEnabled,
   readWorkflowUsageSnapshot,
   type WorkflowUsage,
 } from "../lib/billing";
@@ -165,6 +166,12 @@ test("paywall allows two free website runs then gates the next run", () => {
   const third = consumeWorkflowUsageSnapshot(usage, now + 2, 2, sevenDaysMs);
   assert.equal(third.ok, false);
   assert.equal(third.usage.remaining, 0);
+});
+
+test("paywall is production-only for local testing", () => {
+  assert.equal(isPaywallEnabled("development", undefined), false);
+  assert.equal(isPaywallEnabled("production", undefined), true);
+  assert.equal(isPaywallEnabled("production", "0"), false);
 });
 
 test("paid access bypasses the free-run gate window", () => {

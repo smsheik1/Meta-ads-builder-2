@@ -1,5 +1,13 @@
 export type ResearchProviderStatus = {
-  provider: "jina" | "firecrawl" | "gemini-curator" | "nvidia-nim-curator";
+  provider:
+    | "jina"
+    | "firecrawl"
+    | "brand-cache"
+    | "brandfetch"
+    | "html-brand-assets"
+    | "ad-angles"
+    | "gemini-curator"
+    | "nvidia-nim-curator";
   status: "used" | "failed" | "skipped";
   reason: string;
 };
@@ -50,12 +58,21 @@ export type BrandBrief = {
   confidence: "low" | "medium" | "high";
 };
 
+export type BrandAdAngle = {
+  buyer: string;
+  moment: string;
+  pain: string;
+  proof: string;
+  sitePhrase: string | null;
+};
+
 export type WebsiteResearchResult = {
   websiteUrl: string;
   finalUrl: string;
   host: string;
   brand: BrandSnapshot;
   brandBrief: BrandBrief;
+  adAngles?: BrandAdAngle[];
   evidence: ResearchEvidence;
   metadata: Record<string, unknown>;
   branding: Record<string, unknown>;
