@@ -14,7 +14,9 @@ export function validateVideoMemeScene(scene: VideoMemeAdScene): FormatValidatio
   if (!scene.layout.slots.caption?.trim()) errors.push("Video meme caption is missing.");
   if (!scene.creative?.headline?.trim()) errors.push("Video meme headline is missing.");
   if (scene.layout.slots.caption.length > (template?.captionMaxChars || 90)) errors.push("Video meme caption is too long.");
-  if (!/^This bear sniffs\b/i.test(scene.layout.slots.caption)) errors.push("Video meme caption must use the bear pattern.");
+  if (template && !template.patternPrefixes.some((prefix) => scene.layout.slots.caption.toLowerCase().startsWith(prefix.toLowerCase()))) {
+    errors.push("Video meme caption does not match the selected template pattern.");
+  }
   if (!scene.layout.videoSrc?.trim()) errors.push("Video meme video source is missing.");
   if (!Number.isFinite(scene.layout.durationSeconds) || scene.layout.durationSeconds <= 0) errors.push("Video meme duration is invalid.");
 

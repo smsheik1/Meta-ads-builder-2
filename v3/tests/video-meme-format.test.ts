@@ -108,6 +108,30 @@ const parsed = extractVideoMemeVariantsFromResponse(JSON.stringify(payload), {
 assert.equal(parsed.length, VIDEO_MEME_VARIANT_COUNT);
 assert.deepEqual(parsed[0], variants[0]);
 
+const pinguVariants = Array.from({ length: VIDEO_MEME_VARIANT_COUNT }, (_, index) => ({
+  angle: `distinct pingu angle ${index + 1}`,
+  target: `urgent trigger ${index + 1}`,
+  clipId: "pingu-noot-noot" as const,
+  caption: [
+    "When the patient says they called three times yesterday.",
+    "POV: the front desk realizes lunch calls still count.",
+    "When the after-hours voicemail has four new patients waiting.",
+    "POV: the owner checks missed calls after a full hygiene day.",
+    "When the phone rings while everyone is checking in patients.",
+    "POV: the morning rush starts before anyone opens the inbox.",
+    "When the hot lead asks if anyone is actually available.",
+    "POV: Tuesday has an empty chair and the call log explains why.",
+  ][index]!,
+  mode: index % 2 ? "realization" as const : "alarm" as const,
+  selfCheckPassed: "The caption names a concrete alarm moment and never names the product.",
+}));
+const parsedPingu = extractVideoMemeVariantsFromResponse(JSON.stringify({ variants: pinguVariants }), {
+  brandNames: [research.brand.name, research.brandBrief.brandName],
+  templateId: "pingu-noot-noot",
+});
+assert.equal(parsedPingu.length, VIDEO_MEME_VARIANT_COUNT);
+assert.equal(parsedPingu[0]!.clipId, "pingu-noot-noot");
+
 const prompt = buildVideoMemePrompt(research);
 assert.ok(prompt.includes("This bear sniffs people who want to quit their job."));
 assert.ok(prompt.includes("This bear sniffs people updating LinkedIn at office hours."));
@@ -115,6 +139,12 @@ assert.ok(prompt.includes("This bear sniffs people with eleven half-used serums 
 assert.ok(prompt.includes("Default to caught mode."));
 assert.ok(prompt.includes("Never name the brand or product"));
 assert.ok(prompt.includes('"clipId": "bear-sniff"'));
+
+const pinguPrompt = buildVideoMemePrompt(research, VIDEO_MEME_VARIANT_COUNT, "pingu-noot-noot");
+assert.ok(pinguPrompt.includes("Pingu Noot Noot Meme"));
+assert.ok(pinguPrompt.includes("The noot-noot clip is an ALARM."));
+assert.ok(pinguPrompt.includes('"clipId": "pingu-noot-noot"'));
+assert.ok(pinguPrompt.includes('Caption must start with "When" or "POV:"'));
 
 assert.throws(
   () => extractVideoMemeVariantsFromResponse(JSON.stringify({
@@ -127,7 +157,7 @@ assert.throws(
   () => extractVideoMemeVariantsFromResponse(JSON.stringify({
     variants: variants.map((variant, index) => ({
       ...variant,
-      clipId: index === 0 ? "penguin-noot-noot" : "bear-sniff",
+      clipId: index === 0 ? "pingu-noot-noot" : "bear-sniff",
     })),
   })),
   /incomplete video meme variants/,
@@ -257,6 +287,19 @@ assert.ok(html.includes('data-video-meme-caption-position="top"'));
 assert.ok(html.includes('data-video-meme-caption-text="true"'));
 assert.ok(html.includes(variants[0]!.caption));
 assert.ok(!html.includes("muted"), "Video meme preview must not force-mute source clip audio.");
+
+const pinguScenes = parsedPingu.map((variant, index) => createVideoMemeAdScene({
+  research,
+  variant,
+  candidateIndex: index,
+  generationBatchId: "pingu-batch",
+  model: "test-model",
+  provider: "nvidia-nim",
+  now: 123,
+}));
+assert.equal(pinguScenes[0]!.layout.templateId, "pingu-noot-noot");
+assert.equal(pinguScenes[0]!.layout.videoSrc, "/video-memes/pingu-noot-noot.mp4");
+assert.equal(getAdSceneDurationInFrames(pinguScenes[0]!, 60), 510);
 
 const rerolled = rerollScene(scenes, scenes[0]!, 0, createDefaultSceneLocks());
 assert.equal(rerolled.index, 1);

@@ -22,6 +22,7 @@ import {
   DEFAULT_NVIDIA_NIM_MEME_MODEL,
   DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL,
 } from "@/features/llm/nvidiaNimModels";
+import type { VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
 import { getFormatModule } from "@/features/formats/registry";
 import { useActiveCanvasPanel, useCanvasActions } from "@/features/create/canvasInteractionStore";
 import {
@@ -78,6 +79,10 @@ function slugifyDownloadName(value: string) {
 type AdSceneGenerationResponse = {
   scenes: AdScene[];
 };
+
+const getSceneVideoMemeTemplateId = (scene: AdScene | null): VideoMemeTemplateId | null => (
+  scene?.format === "video-meme" ? scene.layout.templateId : null
+);
 
 type BillingStatus = {
   paid: boolean;
@@ -200,6 +205,7 @@ function ResearchConnected() {
   const [result, setResult] = useState<StoredWebsiteResearchResult | null>(null);
   const [selectedAdFormat, setSelectedAdFormat] = useState<AdFormatId>("meme");
   const [selectedMemeModel, setSelectedMemeModel] = useState(DEFAULT_NVIDIA_NIM_MEME_MODEL);
+  const [selectedVideoMemeTemplateId, setSelectedVideoMemeTemplateId] = useState<VideoMemeTemplateId>("bear-sniff");
   const [selectedVisualizerModel, setSelectedVisualizerModel] = useState(DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL);
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
@@ -342,7 +348,11 @@ function ResearchConnected() {
     setAdScenes(latestGeneration.scenes);
     setSelectedScene(restoredScene);
     setSelectedSceneIndex(0);
-    if (restoredScene) setSelectedAdFormat(restoredScene.format);
+    if (restoredScene) {
+      setSelectedAdFormat(restoredScene.format);
+      const templateId = getSceneVideoMemeTemplateId(restoredScene);
+      if (templateId) setSelectedVideoMemeTemplateId(templateId);
+    }
     canvasActions.interactionReset();
     setRerollCount(0);
     setAdStatus("ready");
@@ -668,6 +678,7 @@ function ResearchConnected() {
     count = 50,
     format: AdFormatId = "visualizer",
     memeModel?: string,
+    videoMemeTemplateId: VideoMemeTemplateId = selectedVideoMemeTemplateId,
     visualizerModel?: string,
   ) => {
     const generationArgs = {
@@ -675,6 +686,7 @@ function ResearchConnected() {
       count,
       format,
       ...(format === "meme" && memeModel ? { memeModel } : {}),
+      ...(format === "video-meme" ? { videoMemeTemplateId } : {}),
       ...(format === "visualizer" && visualizerModel ? { visualizerModel } : {}),
     };
     const nextGeneration = await generateAdScenes(generationArgs) as AdSceneGenerationResponse;
@@ -722,6 +734,7 @@ function ResearchConnected() {
   const generateScenesOnly = async (
     research: ReusableResearch,
     format: AdFormatId,
+    videoMemeTemplateId: VideoMemeTemplateId = selectedVideoMemeTemplateId,
   ) => {
     setStatus("ready");
     setAdStatus("loading");
@@ -744,6 +757,7 @@ function ResearchConnected() {
         getGenerationCount(format),
         format,
         selectedMemeModel,
+        videoMemeTemplateId,
         selectedVisualizerModel,
       );
       setProgressStage("preparing-canvas");
@@ -870,6 +884,7 @@ function ResearchConnected() {
         getGenerationCount(selectedAdFormat),
         selectedAdFormat,
         selectedMemeModel,
+        selectedVideoMemeTemplateId,
         selectedVisualizerModel,
       );
       setProgressStage("preparing-canvas");
@@ -901,6 +916,13 @@ function ResearchConnected() {
     const reusableResearch = getReusableResearchForUrl(url);
     if (!reusableResearch || status === "loading" || adStatus === "loading") return;
     void generateScenesOnly(reusableResearch, format);
+  };
+
+  const onVideoMemeTemplateChange = (templateId: VideoMemeTemplateId) => {
+    setSelectedVideoMemeTemplateId(templateId);
+    const reusableResearch = getReusableResearchForUrl(url);
+    if (selectedAdFormat !== "video-meme" || !reusableResearch || status === "loading" || adStatus === "loading") return;
+    void generateScenesOnly(reusableResearch, "video-meme", templateId);
   };
 
   const startCheckout = async () => {
@@ -1136,6 +1158,8 @@ function ResearchConnected() {
     resetPreviewPlayback();
     setUrl(restored.selectedScene.brand.url || url);
     setSelectedAdFormat(restored.selectedScene.format);
+    const templateId = getSceneVideoMemeTemplateId(restored.selectedScene);
+    if (templateId) setSelectedVideoMemeTemplateId(templateId);
     setSelectedScene(restored.selectedScene);
     setSelectedSceneIndex(restored.selectedSceneIndex);
     setAdScenes(restored.scenes);
@@ -1335,9 +1359,11 @@ function ResearchConnected() {
             ? `${billingStatus.freeRemaining} of ${billingStatus.freeLimit} free runs left`
             : ""}
           memeModel={selectedMemeModel}
+          videoMemeTemplateId={selectedVideoMemeTemplateId}
           visualizerModel={selectedVisualizerModel}
           onFormatChange={onFormatChange}
           onMemeModelChange={setSelectedMemeModel}
+          onVideoMemeTemplateChange={onVideoMemeTemplateChange}
           onVisualizerModelChange={setSelectedVisualizerModel}
           onSubmit={onSubmit}
           onUrlChange={setUrl}

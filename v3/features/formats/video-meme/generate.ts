@@ -6,14 +6,14 @@ import {
 import { DEFAULT_NVIDIA_NIM_VIDEO_MEME_MODEL } from "../../llm/nvidiaNimModels";
 import type { StoredWebsiteResearchResult } from "../../research/types";
 import { buildVideoMemePrompt } from "./prompt";
-import { VIDEO_MEME_VARIANT_COUNT, getVideoMemeTemplate } from "./templates";
+import { VIDEO_MEME_VARIANT_COUNT, getVideoMemeTemplate, type VideoMemeTemplateId } from "./templates";
 
-export type VideoMemeMode = "caught" | "flattering";
+export type VideoMemeMode = "caught" | "flattering" | "alarm" | "realization";
 
 export type VideoMemeVariant = {
   angle: string;
   target: string;
-  clipId: "bear-sniff";
+  clipId: VideoMemeTemplateId;
   caption: string;
   mode: VideoMemeMode;
   selfCheckPassed: string;
@@ -36,6 +36,7 @@ type GenerateVideoMemeVariantsOptions = {
   nvidiaNimBaseUrl?: string;
   nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
   nvidiaNimModel?: string;
+  templateId?: VideoMemeTemplateId;
   timeoutMs?: number;
 };
 
@@ -43,6 +44,7 @@ type ExtractVideoMemeVariantsOptions = {
   brandNames?: string[];
   count?: number;
   providerLabel?: string;
+  templateId?: VideoMemeTemplateId;
 };
 
 const DEFAULT_TIMEOUT_MS = 60_000;
@@ -102,14 +104,18 @@ const namesBrand = (caption: string, brandNames: string[]) => {
   return uniqueBrandNames(brandNames).some((name) => lowerCaption.includes(name));
 };
 
+const matchesTemplatePattern = (caption: string, prefixes: readonly string[]) => (
+  prefixes.some((prefix) => caption.toLowerCase().startsWith(prefix.toLowerCase()))
+);
+
 export function extractVideoMemeVariantsFromResponse(
   content: string,
   options: ExtractVideoMemeVariantsOptions = {},
 ): VideoMemeVariant[] {
   const providerLabel = options.providerLabel || "Video meme provider";
   const expectedCount = normalizeCount(options.count);
-  const template = getVideoMemeTemplate("bear-sniff");
-  if (!template) throw new Error("Bear sniff template is missing.");
+  const template = getVideoMemeTemplate(options.templateId || "bear-sniff");
+  if (!template) throw new Error("Video meme template is missing.");
 
   const payload = parseJsonObject(content, providerLabel);
   const rawVariants = Array.isArray(payload.variants) ? payload.variants : [];
@@ -131,10 +137,10 @@ export function extractVideoMemeVariantsFromResponse(
     const targetKey = cleanKey(target);
     const captionKey = cleanKey(caption);
 
-    if (clipId !== "bear-sniff") continue;
-    if (mode !== "caught" && mode !== "flattering") continue;
+    if (clipId !== template.id) continue;
+    if (!template.allowedModes.includes(mode)) continue;
     if (!angle || !target || !caption || !selfCheckPassed) continue;
-    if (!/^This bear sniffs\b/i.test(caption)) continue;
+    if (!matchesTemplatePattern(caption, template.patternPrefixes)) continue;
     if (caption.length > template.captionMaxChars) continue;
     if (hasDanglingEnding(caption)) continue;
     if (includesBannedWord(caption)) continue;
@@ -147,7 +153,7 @@ export function extractVideoMemeVariantsFromResponse(
     variants.push({
       angle,
       target,
-      clipId: "bear-sniff",
+      clipId: template.id,
       caption,
       mode,
       selfCheckPassed,
@@ -165,7 +171,10 @@ export async function generateVideoMemeVariantsFromResearch(
   options: GenerateVideoMemeVariantsOptions = {},
 ): Promise<GenerateVideoMemeVariantsResult> {
   const count = normalizeCount(options.count);
-  const prompt = buildVideoMemePrompt(research, count);
+  const templateId = options.templateId || "bear-sniff";
+  const prompt = buildVideoMemePrompt(research, count, templateId);
+  const template = getVideoMemeTemplate(templateId);
+  if (!template) throw new Error(`Unknown video meme template: ${templateId}`);
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const nvidiaNimModel = options.nvidiaNimModel
     || process.env.NVIDIA_NIM_VIDEO_MEME_MODEL
@@ -203,6 +212,7 @@ export async function generateVideoMemeVariantsFromResearch(
         brandNames,
         count,
         providerLabel: "NVIDIA NIM",
+        templateId,
       });
     } catch {
       const retryContent = await callNvidiaNimChat({
@@ -211,13 +221,14 @@ export async function generateVideoMemeVariantsFromResearch(
         label: "NVIDIA NIM video meme generation",
         model: nvidiaNimModel,
         nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
-        prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Return exactly ${count} variants. Every variant needs a unique angle, unique target, clipId "bear-sniff", caption starting with "This bear sniffs", mode caught or flattering, and selfCheckPassed. Never name the brand/product. Return only the JSON object.`,
+        prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Return exactly ${count} variants. Every variant needs a unique angle, unique target, clipId "${template.id}", a caption matching this clip's required pattern, mode ${template.allowedModes.join(" or ")}, and selfCheckPassed. Never name the brand/product. Return only the JSON object.`,
         timeoutMs,
       });
       variants = extractVideoMemeVariantsFromResponse(retryContent, {
         brandNames,
         count,
         providerLabel: "NVIDIA NIM",
+        templateId,
       });
     }
 
@@ -228,7 +239,7 @@ export async function generateVideoMemeVariantsFromResearch(
       providerStatus: {
         provider: "nvidia-nim",
         status: "used",
-        reason: `Generated ${count} video meme captions with ${nvidiaNimModel}.`,
+        reason: `Generated ${count} ${template.name} captions with ${nvidiaNimModel}.`,
       },
     };
   } catch (error) {

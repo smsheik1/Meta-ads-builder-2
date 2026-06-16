@@ -1,5 +1,5 @@
 import type { StoredWebsiteResearchResult } from "../../research/types";
-import { VIDEO_MEME_VARIANT_COUNT, getVideoMemeTemplate } from "./templates";
+import { VIDEO_MEME_VARIANT_COUNT, getVideoMemeTemplate, type VideoMemeTemplateId } from "./templates";
 
 const cleanList = (items: string[], fallback: string) => (
   items.length ? items.slice(0, 8).join("; ") : fallback
@@ -8,7 +8,7 @@ const cleanList = (items: string[], fallback: string) => (
 export function buildVideoMemePrompt(
   research: StoredWebsiteResearchResult,
   count = VIDEO_MEME_VARIANT_COUNT,
-  templateId = "bear-sniff",
+  templateId: VideoMemeTemplateId = "bear-sniff",
 ) {
   const template = getVideoMemeTemplate(templateId);
   if (!template) throw new Error(`Unknown video meme template: ${templateId}`);
@@ -37,42 +37,15 @@ BRAND CONTEXT:
 CLIP:
 - clipId: ${template.id}
 - name: ${template.name}
-- fixed caption family:
-  - Primary: "This bear sniffs people who \${secretBehavior}"
-  - Also allowed when more natural: "This bear sniffs \${specificGroup} \${secretBehavior}"
 - notes: ${template.notes}
-
-BEAR-SNIFF CALIBRATION EXAMPLES:
-These teach the PATTERN. Do NOT copy them. They are from other contexts to show the shape, not to reuse.
-
-The strongest bear captions expose a SECRET behavior or thought, like the bear is a lie detector. The comedy is being CAUGHT, not being complimented.
-
-VIRAL PATTERN (caught in the act):
-"This bear sniffs people who want to quit their job."
-"This bear sniffs people updating LinkedIn at office hours."
-"This bear sniffs people with eleven half-used serums in the drawer."
-Why they work: each names a SECRET the viewer recognizes in themselves. The bear exposing it is the joke. Viewers tag a friend who is guilty of it.
-
-WEAKER PATTERN (flattering claim, use sparingly):
-"This bear sniffs people who never miss a client call."
-Why it is weaker: it is a compliment, not an exposure. Still works, but lower share rate. Use only when no secret-behavior angle exists.
-
-DEAD (do not write):
-"This bear sniffs successful business owners."  (too vague, no specific behavior)
-"This bear sniffs people who use [Brand]."  (names the product, nobody tags themselves for using a tool)
-"This bear sniffs people who want to transform their business."  (marketing language, not a real human thought)
-
-MODES:
-- caught: primary mode. Exposes a secret behavior, private thought, guilty work habit, or embarrassing buyer moment.
-- flattering: fallback mode. Names an aspirational identity or after-state. Use sparingly.
+${template.promptNotes}
 
 RULES:
 - Write exactly ${count} variants.
-- Default to caught mode.
 - Each variant must use a DIFFERENT ad angle, buyer moment, or proof. Include an "angle" field naming it.
-- Each variant must use a DIFFERENT "target" naming the exact person/group/behavior being sniffed.
+- Each variant must use a DIFFERENT "target" naming the exact person/group/behavior/reaction trigger.
 - No two captions may be rewordings of the same target.
-- Caption must start with "This bear sniffs".
+- clipId must be exactly "${template.id}".
 - Caption is one line only. No second caption, no subtext, no CTA, no hashtags, no emojis.
 - Never name the brand or product in the caption.
 - Caption must be deadpan and flat. Do NOT add hype, exclamation marks, "amazing", "best", or adjectives the clip already supplies.
@@ -94,10 +67,10 @@ OUTPUT SHAPE:
   "variants": [
     {
       "angle": "the benefit, buyer moment, pain, or proof this variant uses",
-      "target": "the specific person/group/behavior the bear is sniffing",
-      "clipId": "bear-sniff",
-      "caption": "This bear sniffs ...",
-      "mode": "caught | flattering",
+      "target": "the specific person/group/behavior/reaction trigger",
+      "clipId": "${template.id}",
+      "caption": "a one-line caption matching this clip's required pattern",
+      "mode": "${template.allowedModes.join(" | ")}",
       "selfCheckPassed": "one line: why a viewer would tag someone and why it names an identity/behavior, not the product"
     }
   ]

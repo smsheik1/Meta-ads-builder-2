@@ -150,7 +150,7 @@ export type VideoMemeAdScene = AdSceneBase<
   AdSceneStyleBase,
   {
     preset: "video-meme-template";
-    templateId: "bear-sniff";
+    templateId: "bear-sniff" | "pingu-noot-noot";
     videoSrc: string;
     durationSeconds: number;
     captionPosition: "top";

@@ -68,11 +68,12 @@ assert.ok(
   "Saved designs must load back onto /create as complete AdScene payloads.",
 );
 assert.ok(
-  createClientSource.includes("setUrl(latestGeneration.result.websiteUrl)") &&
+    createClientSource.includes("setUrl(latestGeneration.result.websiteUrl)") &&
     createClientSource.includes("setUrl(restored.selectedScene.brand.url || url)") &&
-    createClientSource.includes("if (restoredScene) setSelectedAdFormat(restoredScene.format)") &&
-    createClientSource.includes("setSelectedAdFormat(restored.selectedScene.format)"),
-  "Restored scenes must restore URL and format state so same-brand format switches do not reread the wrong site.",
+    createClientSource.includes("setSelectedAdFormat(restoredScene.format)") &&
+    createClientSource.includes("setSelectedAdFormat(restored.selectedScene.format)") &&
+    createClientSource.includes("setSelectedVideoMemeTemplateId(templateId)"),
+  "Restored scenes must restore URL, format, and video meme template state so same-brand format switches do not reread the wrong site.",
 );
 assert.ok(
   quickActionsSource.includes("onClick={hasAudio ? onTogglePreviewPlayback : onOpenAudioPanel}") &&

@@ -3,6 +3,7 @@ import {
   NIM_MEME_MODEL_OPTIONS,
   NIM_VISUALIZER_MODEL_OPTIONS,
 } from "@/features/llm/nvidiaNimModels";
+import { VIDEO_MEME_TEMPLATES, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
 import type { AdFormatId } from "@/features/scene/types";
 
 type LoadStatus = "idle" | "loading" | "ready" | "error";
@@ -34,7 +35,7 @@ const getProgressRows = (format: AdFormatId) => [
       : format === "were-sorry"
         ? "Writing 8 apologies"
         : format === "video-meme"
-          ? "Writing 8 bear memes"
+          ? "Writing 8 video memes"
           : "Writing 50 ads",
   },
   { id: "preparing-canvas", label: "Preparing canvas" },
@@ -166,9 +167,11 @@ export function CreateLeftColumn({
   format,
   freeRunsLabel,
   memeModel,
+  videoMemeTemplateId,
   visualizerModel,
   onFormatChange,
   onMemeModelChange,
+  onVideoMemeTemplateChange,
   onVisualizerModelChange,
   onSubmit,
   onUrlChange,
@@ -184,9 +187,11 @@ export function CreateLeftColumn({
   format: AdFormatId;
   freeRunsLabel?: string;
   memeModel: string;
+  videoMemeTemplateId: VideoMemeTemplateId;
   visualizerModel: string;
   onFormatChange: (format: AdFormatId) => void;
   onMemeModelChange: (model: string) => void;
+  onVideoMemeTemplateChange: (templateId: VideoMemeTemplateId) => void;
   onVisualizerModelChange: (model: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onUrlChange: (url: string) => void;
@@ -205,7 +210,7 @@ export function CreateLeftColumn({
         : format === "were-sorry"
           ? "Writing apologies"
           : format === "video-meme"
-            ? "Writing bear memes"
+            ? "Writing video memes"
             : "Writing ideas"
       : "Generate ads";
   const formatHelper = format === "meme"
@@ -213,7 +218,7 @@ export function CreateLeftColumn({
     : format === "were-sorry"
       ? "Eight wink-apology posts for the Instagram trend."
       : format === "video-meme"
-        ? "Eight bear-sniff reaction captions for MP4 meme export."
+        ? "Eight reaction captions for the selected video meme."
         : "Audio visualizer ads with voice, captions, and MP4 export.";
 
   return (
@@ -282,6 +287,25 @@ export function CreateLeftColumn({
             options={NIM_MEME_MODEL_OPTIONS}
             value={memeModel}
           />
+        ) : null}
+
+        {format === "video-meme" ? (
+          <label className="block">
+            <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Video meme</span>
+            <select
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
+              aria-label="Video meme template"
+              value={videoMemeTemplateId}
+              onChange={(event) => onVideoMemeTemplateChange(event.target.value as VideoMemeTemplateId)}
+            >
+              {VIDEO_MEME_TEMPLATES.map((template) => (
+                <option key={template.id} value={template.id}>{template.name}</option>
+              ))}
+            </select>
+            <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
+              Bear sniffs secrets. Pingu noot-noots urgent moments.
+            </span>
+          </label>
         ) : null}
 
         <button
