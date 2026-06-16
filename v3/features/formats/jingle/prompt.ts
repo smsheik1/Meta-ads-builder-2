@@ -1,6 +1,6 @@
 import type { StoredWebsiteResearchResult } from "../../research/types";
 
-export const JINGLE_VARIANT_COUNT = 3;
+export const JINGLE_VARIANT_COUNT = 1;
 export const JINGLE_MUSIC_LENGTH_MS = 20_000;
 export const JINGLE_MAX_MUSIC_LENGTH_MS = 30_000;
 export const JINGLE_MODEL_ID = "music_v2";
@@ -26,7 +26,7 @@ export const buildJinglePrompt = (
   )).join("\n");
 
   return `You are a senior jingle copywriter and music director.
-Write exactly ${count} short, catchy, singable modern hip hop brand jingles.
+Write exactly ${count} short, catchy, singable modern hip hop brand jingle.
 Each output object is a composition plan for ElevenLabs Music v2.
 
 BRAND CONTEXT:

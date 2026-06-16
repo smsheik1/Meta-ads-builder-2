@@ -68,6 +68,21 @@ const slowResearchMessageDelayMs = 8000;
 const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const fallbackUploadedAudioDurationMs = 8000;
 
+function getMusicGenerationErrorMessage(error: unknown) {
+  const rawMessage = error instanceof Error ? error.message : String(error || "");
+  const message = rawMessage
+    .replace(/^Uncaught Error:\s*/i, "")
+    .replace(/\s+at\s+[\s\S]*$/m, "")
+    .trim();
+
+  if (/paid_plan_required|payment_required|402/i.test(message)) {
+    return "Music generation failed: ElevenLabs Music requires a paid plan for this API key.";
+  }
+  if (!message) return "Music generation failed.";
+  if (/^music generation failed/i.test(message)) return message;
+  return `Music generation failed: ${message}`;
+}
+
 function slugifyDownloadName(value: string) {
   return value
     .toLowerCase()
@@ -125,7 +140,7 @@ function getGenerationCount(format: AdFormatId, videoMemeTemplateId: VideoMemeTe
   if (format === "meme") return 12;
   if (format === "were-sorry") return 8;
   if (format === "video-meme") return getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8;
-  if (format === "jingle") return 3;
+  if (format === "jingle") return 1;
   return 50;
 }
 
@@ -583,7 +598,7 @@ function ResearchConnected() {
       canvasActions.finishBusy();
     } catch (nextError) {
       setAudioStatus("error");
-      setAudioError(nextError instanceof Error ? nextError.message : "Music generation failed.");
+      setAudioError(getMusicGenerationErrorMessage(nextError));
       canvasActions.finishBusy();
     }
   }, [audioStatus, canvasActions, generateJingleAudioForScene, resetPreviewPlayback]);

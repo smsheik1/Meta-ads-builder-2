@@ -45,7 +45,7 @@ type GenerateJingleVariantsOptions = {
 };
 
 const DEFAULT_TIMEOUT_MS = 60_000;
-const requiredStyles = ["modern hip hop", "90 BPM", "confident vocal delivery"];
+const basePositiveStyles = ["modern hip hop", "90 BPM", "confident vocal delivery", "punchy 808 bass", "crisp hi-hats", "clean trap drums", "polished studio production"];
 const artistReferences = [
   "drake",
   "kendrick",
@@ -88,7 +88,7 @@ const parseJsonObject = (value: string, providerLabel = "AI provider") => {
 
 const normalizeCount = (count?: number) => {
   if (!Number.isFinite(count)) return JINGLE_VARIANT_COUNT;
-  return Math.max(1, Math.min(3, Math.floor(count ?? JINGLE_VARIANT_COUNT)));
+  return Math.max(1, Math.min(JINGLE_VARIANT_COUNT, Math.floor(count ?? JINGLE_VARIANT_COUNT)));
 };
 
 const lyricLines = (text: string) => text
@@ -121,13 +121,18 @@ const normalizeChunk = (chunk: Record<string, unknown>): JingleCompositionChunk 
   if (contextAdherence !== "high") return null;
   if (namesArtist(`${text} ${positiveStyles.join(" ")} ${negativeStyles.join(" ")}`)) return null;
   if (hasInventedNumber(lyricLines(text).join(" "))) return null;
-  if (!requiredStyles.every((style) => positiveStyles.some((item: string) => item.toLowerCase() === style.toLowerCase()))) return null;
+  const normalizedPositiveStyles = [...basePositiveStyles];
+  for (const style of positiveStyles) {
+    if (!normalizedPositiveStyles.some((item) => item.toLowerCase() === style.toLowerCase())) {
+      normalizedPositiveStyles.push(style);
+    }
+  }
 
   return {
     text,
     duration_ms: Math.round(durationMs),
-    positive_styles: positiveStyles,
-    negative_styles: negativeStyles,
+    positive_styles: normalizedPositiveStyles.slice(0, 8),
+    negative_styles: negativeStyles.length ? negativeStyles : ["sad", "slow", "lo-fi", "distorted", "off-key"],
     context_adherence: "high",
   };
 };
@@ -187,10 +192,10 @@ export function extractJingleVariantsFromResponse(
     });
   }
 
-  if (variants.length !== expectedCount) {
+  if (variants.length < expectedCount) {
     throw new Error(`${providerLabel} returned incomplete jingle variants.`);
   }
-  return variants;
+  return variants.slice(0, expectedCount);
 }
 
 export async function generateJingleVariantsFromResearch(

@@ -37,7 +37,7 @@ const getProgressRows = (format: AdFormatId, videoMemeTemplateId: VideoMemeTempl
         : format === "video-meme"
           ? `Writing ${getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8} video memes`
           : format === "jingle"
-            ? "Writing 3 jingles"
+            ? "Writing 1 jingle"
           : "Writing 50 ads",
   },
   { id: "preparing-canvas", label: "Preparing canvas" },
@@ -226,7 +226,7 @@ export function CreateLeftColumn({
       : format === "video-meme"
         ? "Eight reaction captions for the selected video meme."
         : format === "jingle"
-          ? "Three short hip hop brand jingles. Music generates only for the selected one."
+          ? "One short hip hop brand jingle. No extra music generations."
         : "Audio visualizer ads with voice, captions, and MP4 export.";
 
   return (

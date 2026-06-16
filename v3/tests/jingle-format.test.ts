@@ -106,45 +106,54 @@ const makeVariant = (index: number, angle = `AI answer visibility angle ${index}
 
 const variants = [makeVariant(1), makeVariant(2, "competitors show up first"), makeVariant(3, "brand visibility tracking")];
 const parsed = extractJingleVariantsFromResponse(JSON.stringify({ variants }));
-assert.equal(parsed.length, 3);
+assert.equal(parsed.length, 1);
 assert.equal(parsed[0]!.brandPhonetic, "Oh Gee Tool");
 assert.equal(parsed[0]!.compositionPlan.chunks.length, 3);
 
+const looseStylesVariant = makeVariant(1, "loose style wording");
+looseStylesVariant.compositionPlan.chunks = looseStylesVariant.compositionPlan.chunks.map((chunk) => ({
+  ...chunk,
+  positive_styles: ["modern hip-hop", "confident rap vocal"],
+}));
+const parsedLooseStyles = extractJingleVariantsFromResponse(JSON.stringify({ variants: [looseStylesVariant] }));
+assert.ok(parsedLooseStyles[0]!.compositionPlan.chunks[0]!.positive_styles.includes("modern hip hop"));
+assert.ok(parsedLooseStyles[0]!.compositionPlan.chunks[0]!.positive_styles.includes("90 BPM"));
+
 assert.throws(
-  () => extractJingleVariantsFromResponse(JSON.stringify({ variants: variants.slice(0, 2) })),
+  () => extractJingleVariantsFromResponse(JSON.stringify({ variants: [] })),
   /incomplete jingle variants/,
 );
 assert.throws(
   () => extractJingleVariantsFromResponse(JSON.stringify({
-    variants: variants.map((variant, index) => index === 0 ? {
-      ...variant,
+    variants: [{
+      ...variants[0]!,
       musicLengthMs: 31000,
       compositionPlan: {
-        chunks: variant.compositionPlan.chunks.map((chunk) => ({ ...chunk, duration_ms: index === 0 ? 31000 : chunk.duration_ms })),
+        chunks: variants[0]!.compositionPlan.chunks.map((chunk) => ({ ...chunk, duration_ms: 31000 })),
       },
-    } : variant),
+    }],
   })),
   /incomplete jingle variants/,
 );
 assert.throws(
   () => extractJingleVariantsFromResponse(JSON.stringify({
-    variants: variants.map((variant, index) => index === 0 ? {
-      ...variant,
+    variants: [{
+      ...variants[0]!,
       compositionPlan: {
-        chunks: variant.compositionPlan.chunks.map((chunk) => ({ ...chunk, positive_styles: [...baseStyles, "like Drake"] })),
+        chunks: variants[0]!.compositionPlan.chunks.map((chunk) => ({ ...chunk, positive_styles: [...baseStyles, "like Drake"] })),
       },
-    } : variant),
+    }],
   })),
   /incomplete jingle variants/,
 );
 assert.throws(
   () => extractJingleVariantsFromResponse(JSON.stringify({
-    variants: variants.map((variant, index) => index === 0 ? {
-      ...variant,
+    variants: [{
+      ...variants[0]!,
       compositionPlan: {
-        chunks: variant.compositionPlan.chunks.map((chunk) => ({ ...chunk, text: chunk.text.replace("AI answers move fast", "AI answers grew 47 percent") })),
+        chunks: variants[0]!.compositionPlan.chunks.map((chunk) => ({ ...chunk, text: chunk.text.replace("AI answers move fast", "AI answers grew 47 percent") })),
       },
-    } : variant),
+    }],
   })),
   /incomplete jingle variants/,
 );
@@ -166,11 +175,11 @@ const generated = await generateJingleVariantsFromResearch(research, {
   nvidiaNimBaseUrl: "https://nim.test/v1",
   nvidiaNimModel: "test-kimi-model",
   nvidiaNimChatCompletion: async ({ prompt: callPrompt }) => {
-    assert.ok(callPrompt.includes("Write exactly 3 short"));
+    assert.ok(callPrompt.includes("Write exactly 1 short"));
     return JSON.stringify({ variants });
   },
 });
-assert.equal(generated.variants.length, 3);
+assert.equal(generated.variants.length, 1);
 assert.equal(generated.provider, "nvidia-nim");
 
 const scenes = parsed.map((variant, index) => createJingleAdScene({

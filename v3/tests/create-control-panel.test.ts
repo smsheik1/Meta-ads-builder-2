@@ -127,6 +127,12 @@ assert.ok(
   "Ad generation timeouts must not be reported as website research timeouts.",
 );
 assert.ok(
+  createClientSource.includes("getMusicGenerationErrorMessage") &&
+    createClientSource.includes("ElevenLabs Music requires a paid plan for this API key") &&
+    createClientSource.includes("setAudioError(getMusicGenerationErrorMessage(nextError))"),
+  "Jingle audio failures must surface a clear visible music-generation error instead of a raw Convex stack.",
+);
+assert.ok(
   previewChromeSource.includes("useMemo<RenderVideoComponent>") &&
     previewChromeSource.includes("onPreviewTimeChange?.(event.currentTarget.currentTime)") &&
     previewChromeSource.includes("<RenderAssetProvider Image={PreviewImage} Video={PreviewVideo}>"),
