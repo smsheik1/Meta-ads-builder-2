@@ -3,9 +3,25 @@ import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import type { AdScene } from "../features/scene/types";
-import { assertShareableAdScene } from "../features/share/shareScene";
 
 const workerStaleAfterMs = 15000;
+
+const isRecord = (value: unknown): value is Record<string, unknown> => (
+  typeof value === "object" && value !== null
+);
+
+const assertRenderableAdScene = (value: unknown): AdScene => {
+  if (!isRecord(value)) throw new Error("Render scene is missing.");
+
+  const scene = value as AdScene;
+  if (scene.version !== 1) throw new Error("Render scene version is not supported.");
+  if (!scene.brand?.name?.trim()) throw new Error("Render scene brand name is missing.");
+  if (!scene.creative?.headline?.trim()) throw new Error("Render scene headline is missing.");
+  if (scene.format === "video-meme" && !scene.layout.videoSrc?.trim()) {
+    throw new Error("Render scene video source is missing.");
+  }
+  return scene;
+};
 
 const ensureAnonymousSession = async (
   ctx: MutationCtx,
@@ -58,7 +74,7 @@ export const createFromScene: ReturnType<typeof mutation> = mutation({
     rendererVersion: v.string(),
   },
   handler: async (ctx, { anonymousId, rendererVersion, scene }) => {
-    const renderScene = assertShareableAdScene(scene);
+    const renderScene = assertRenderableAdScene(scene);
     const now = Date.now();
     const sessionId = await ensureAnonymousSession(ctx, anonymousId);
     const sceneId = await ctx.db.insert("adScenes", {

@@ -29,6 +29,10 @@ assert.ok(
   remotionSource.includes("@remotion/media") && remotionSource.includes("<Audio"),
   "Remotion render path must layer generated audio without changing the visual renderer.",
 );
+assert.ok(
+  remotionSource.includes("OffthreadVideo") && !remotionSource.includes("import { AbsoluteFill, Img, Video"),
+  "Remotion video meme exports must use OffthreadVideo so MP4 assets render reliably in headless export.",
+);
 
 const renderJobsSource = readFileSync("convex/renderJobs.ts", "utf8");
 assert.ok(
@@ -39,6 +43,11 @@ assert.ok(
   renderJobsSource.includes("rendererVersion,") &&
   renderJobsSource.includes('q.field("rendererVersion")'),
   "Render jobs must persist rendererVersion and claim by matching rendererVersion.",
+);
+assert.ok(
+  renderJobsSource.includes("assertRenderableAdScene") &&
+    !renderJobsSource.includes("assertShareableAdScene"),
+  "MP4 render jobs must not reuse share-only scene validation; video-meme download can be supported while share stays disabled.",
 );
 
 console.log("render-job tests passed");
