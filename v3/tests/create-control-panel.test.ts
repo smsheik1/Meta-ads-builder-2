@@ -68,6 +68,13 @@ assert.ok(
   "Saved designs must load back onto /create as complete AdScene payloads.",
 );
 assert.ok(
+  createClientSource.includes("setUrl(latestGeneration.result.websiteUrl)") &&
+    createClientSource.includes("setUrl(restored.selectedScene.brand.url || url)") &&
+    createClientSource.includes("if (restoredScene) setSelectedAdFormat(restoredScene.format)") &&
+    createClientSource.includes("setSelectedAdFormat(restored.selectedScene.format)"),
+  "Restored scenes must restore URL and format state so same-brand format switches do not reread the wrong site.",
+);
+assert.ok(
   quickActionsSource.includes("onClick={hasAudio ? onTogglePreviewPlayback : onOpenAudioPanel}") &&
     quickActionsSource.includes("disabled={hasAudio && !hasSelectedScene}") &&
     quickActionsSource.includes('aria-label={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio for this ad"}'),
@@ -110,6 +117,12 @@ assert.ok(
   createClientSource.indexOf("const reusableResearch = getReusableResearchForUrl(url)") <
     createClientSource.indexOf('fetchBillingJson("/api/billing/consume-run"'),
   "Same-URL format regeneration must not consume a paid/free research run.",
+);
+assert.ok(
+  createClientSource.includes("getAdGenerationErrorMessage") &&
+    createClientSource.includes("We're Sorry copy generation timed out after reusing the saved research.") &&
+    createClientSource.includes("setError(getAdGenerationErrorMessage(nextError))"),
+  "Ad generation timeouts must not be reported as website research timeouts.",
 );
 
 console.log("create-control-panel tests passed");

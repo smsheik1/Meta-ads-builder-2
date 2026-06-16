@@ -36,7 +36,7 @@ type GenerateWereSorryVariantsOptions = {
   timeoutMs?: number;
 };
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 60_000;
 const maxVariants = 12;
 const bannedWords = [
   "unlock",

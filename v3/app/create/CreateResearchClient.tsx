@@ -101,6 +101,17 @@ function getResearchActionErrorMessage(error: unknown) {
   return message || "Website research failed.";
 }
 
+function getAdGenerationErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || "");
+  if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) {
+    if (/we'?re sorry/i.test(message)) {
+      return "We're Sorry copy generation timed out after reusing the saved research. Try again.";
+    }
+    return "Ad generation timed out after reusing the saved research. Try again.";
+  }
+  return message || "Ad generation failed.";
+}
+
 function getSceneDefaultFlashSlots(scene: AdScene): RenderFlashRole[] {
   return [...getFormatModule(scene.format).defaultSlots];
 }
@@ -325,11 +336,13 @@ function ResearchConnected() {
 
     const restoredScene = latestGeneration.scenes[0] || null;
     rememberResearchForReuse(latestGeneration.result);
+    setUrl(latestGeneration.result.websiteUrl);
     setResult(latestGeneration.result);
     setStatus("ready");
     setAdScenes(latestGeneration.scenes);
     setSelectedScene(restoredScene);
     setSelectedSceneIndex(0);
+    if (restoredScene) setSelectedAdFormat(restoredScene.format);
     canvasActions.interactionReset();
     setRerollCount(0);
     setAdStatus("ready");
@@ -741,7 +754,7 @@ function ResearchConnected() {
       canvasActions.finishBusy();
       setAdStatus("error");
       setAdStatusNote(adScenes.length ? "Previous ads are still on the canvas. New ad generation failed." : "");
-      setError(getResearchActionErrorMessage(nextError));
+      setError(getAdGenerationErrorMessage(nextError));
     }
   };
 
@@ -873,7 +886,7 @@ function ResearchConnected() {
         setStatus(hadExistingCanvas ? "ready" : "error");
         setAdStatus("error");
         setAdStatusNote(hadExistingCanvas ? "Previous ads are still on the canvas. New ad generation failed." : "");
-        setError(message);
+        setError(getAdGenerationErrorMessage(nextError));
       } else {
         setStatus(hadExistingCanvas ? "ready" : "error");
         keepPreviousCanvasAfterFailure();
@@ -1121,6 +1134,8 @@ function ResearchConnected() {
     });
 
     resetPreviewPlayback();
+    setUrl(restored.selectedScene.brand.url || url);
+    setSelectedAdFormat(restored.selectedScene.format);
     setSelectedScene(restored.selectedScene);
     setSelectedSceneIndex(restored.selectedSceneIndex);
     setAdScenes(restored.scenes);
