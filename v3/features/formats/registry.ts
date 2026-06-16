@@ -2,6 +2,7 @@ import type { AdFormatId } from "../scene/types";
 import type { AdFormatModule } from "./types";
 import { memeFormatModule } from "./meme";
 import { visualizerFormatModule } from "./visualizer";
+import { wereSorryFormatModule } from "./were-sorry";
 
 export type AnyAdFormatModule = AdFormatModule<string, any>;
 
@@ -10,6 +11,7 @@ export const createFormatRegistry = <TModules extends Record<string, AnyAdFormat
 export const formatRegistry = createFormatRegistry({
   visualizer: visualizerFormatModule,
   meme: memeFormatModule,
+  "were-sorry": wereSorryFormatModule,
 } satisfies Record<AdFormatId, AnyAdFormatModule>);
 
 export const getFormatModuleFromRegistry = <

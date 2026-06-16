@@ -99,6 +99,12 @@ function getSceneDefaultFlashSlots(scene: AdScene): RenderFlashRole[] {
   return [...getFormatModule(scene.format).defaultSlots];
 }
 
+function getGenerationCount(format: AdFormatId) {
+  if (format === "meme") return 12;
+  if (format === "were-sorry") return 8;
+  return 50;
+}
+
 async function fetchBillingJson(url: string, init?: RequestInit) {
   const response = await fetch(url, init);
   const payload = await response.json().catch(() => null);
@@ -731,7 +737,7 @@ function ResearchConnected() {
       canvasActions.beginBusy("ad-generation");
       const nextScenes = await generateScenesForResearch(
         nextResult.researchRunId as Id<"researchRuns">,
-        selectedAdFormat === "meme" ? 4 : 50,
+        getGenerationCount(selectedAdFormat),
         selectedAdFormat,
         selectedMemeModel,
         selectedVisualizerModel,

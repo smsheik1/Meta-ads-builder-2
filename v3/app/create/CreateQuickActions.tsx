@@ -90,6 +90,7 @@ export function CreateQuickActions({
   shareUrl: string;
 }) {
   const memeSceneSelected = selectedFormat === "meme";
+  const shareSupported = selectedFormat === "visualizer";
   const renderWorkerOffline = !memeSceneSelected && renderWorkerHealthy === false;
   const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline;
   const downloadLabel = memeSceneSelected ? "PNG" : "MP4";
@@ -158,10 +159,10 @@ export function CreateQuickActions({
           <button
             type="button"
             onClick={onCreateShareLink}
-            disabled={!hasSelectedScene || shareStatus === "loading" || memeSceneSelected}
+            disabled={!hasSelectedScene || shareStatus === "loading" || !shareSupported}
             className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-black uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35"
             aria-label={shareStatus === "ready" ? "Share link copied" : "Create share link"}
-            title={memeSceneSelected ? "Meme share pages are coming next." : "Create share link"}
+            title={shareSupported ? "Create share link" : "Share pages are coming next for this format."}
           >
             {shareStatus === "loading" ? <Loader2 className="size-4 animate-spin" /> : <Share2 className="size-4" />}
             Share
