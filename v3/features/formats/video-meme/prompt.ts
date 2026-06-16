@@ -19,9 +19,48 @@ export function buildVideoMemePrompt(
     proof: angle.proof,
     sitePhrase: angle.sitePhrase,
   }));
+  const isPingu = template.id === "pingu-noot-noot";
+  const slotRules = isPingu
+    ? `- templateId must be exactly "pingu-noot-noot".
+- Return slots.setupText and slots.dreadText. Do not return caption.
+- Each setupText and dreadText must be under ${template.captionMaxChars} characters.
+- Never name the brand or product in either slot.`
+    : `- clipId must be exactly "${template.id}".
+- Caption is one line only. No second caption, no subtext, no CTA, no hashtags, no emojis.
+- Never name the brand or product in the caption.
+- Caption must be under ${template.captionMaxChars} characters total, complete thought, never cut mid-sentence.`;
+  const outputShape = isPingu
+    ? `{
+  "variants": [
+    {
+      "angle": "the pain or buyer moment this pair uses",
+      "templateId": "pingu-noot-noot",
+      "slots": {
+        "setupText": "the calm in-the-moment thought",
+        "dreadText": "the specific comic-dread thought that undercuts setupText"
+      },
+      "selfCheckPassed": "one line: why the dread pays off the setup and why the target buyer recognizes it"
+    }
+  ]
+}`
+    : `{
+  "variants": [
+    {
+      "angle": "the benefit, buyer moment, pain, or proof this variant uses",
+      "target": "the specific person/group/behavior/reaction trigger",
+      "clipId": "${template.id}",
+      "caption": "a one-line caption matching this clip's required pattern",
+      "mode": "${template.allowedModes.join(" | ")}",
+      "selfCheckPassed": "one line: why a viewer would tag someone and why it names an identity/behavior, not the product"
+    }
+  ]
+}`;
+  const intro = isPingu
+    ? `Each meme is a two-beat text pair pinned over a known reaction video clip. The clip supplies the punchline and emotion. Your text only sets up the calm thought and the dread thought, deadpan. You are not writing an ad.`
+    : `Each meme is ONE line of text pinned over a known reaction video clip. The clip supplies the punchline and emotion. Your caption only sets up WHO or WHAT, deadpan. You are not writing an ad. You are writing a caption a real person would tag a friend in.`;
 
-  return `You are a senior brand copywriter writing single-caption reaction-clip memes.
-Each meme is ONE line of text pinned over a known reaction video clip. The clip supplies the punchline and emotion. Your caption only sets up WHO or WHAT, deadpan. You are not writing an ad. You are writing a caption a real person would tag a friend in.
+  return `You are a senior brand copywriter writing reaction-clip memes.
+${intro}
 
 THE CLIP DOES THE WORK. The footage is the joke. Your caption is the setup, never the payoff.
 
@@ -43,36 +82,20 @@ ${template.promptNotes}
 RULES:
 - Write exactly ${count} variants.
 - Each variant must use a DIFFERENT ad angle, buyer moment, or proof. Include an "angle" field naming it.
-- Each variant must use a DIFFERENT "target" naming the exact person/group/behavior/reaction trigger.
-- No two captions may be rewordings of the same target.
-- clipId must be exactly "${template.id}".
-- Caption is one line only. No second caption, no subtext, no CTA, no hashtags, no emojis.
-- Never name the brand or product in the caption.
-- Caption must be deadpan and flat. Do NOT add hype, exclamation marks, "amazing", "best", or adjectives the clip already supplies.
-- Every caption must trace to the brand context or cached ad angles. Do not invent numbers, reviews, awards, guarantees, integrations, timeframes, or discounts.
-- If proof is thin, build the caption on the buyer moment or pain. A caught-in-the-act caption about the problem is stronger than a fake stat.
+${slotRules}
+- Text must be deadpan and flat. Do NOT add hype, exclamation marks, "amazing", "best", or adjectives the clip already supplies.
+- Every variant must trace to the brand context or cached ad angles. Do not invent numbers, reviews, awards, guarantees, integrations, timeframes, or discounts.
+- If proof is thin, build on the buyer moment or pain. A specific problem beat is stronger than a fake stat.
 - Avoid hype words: unlock, elevate, supercharge, game-changer, revolutionary, level up, transform.
 - No em dashes or en dashes.
-- Caption must be under ${template.captionMaxChars} characters total, complete thought, never cut mid-sentence.
 - No line may end on a dangling word like "and", "the", "to", "for", "of", "on", "with", "that".
 
 SELF-CHECK before returning each variant:
 - Would a real person tag themselves or a coworker in this? If no, it is too salesy or too vague.
-- Does the caption expose an identity/behavior/thought and NOT the product? If it names the product, rewrite.
-- Is the target specific enough that swapping in a competitor would feel wrong? If generic, rewrite.
-- Did I let the clip carry the punchline instead of writing the joke into the caption?
+- Does the text expose an identity/behavior/thought and NOT the product? If it names the product, rewrite.
+- Is the idea specific enough that swapping in a competitor would feel wrong? If generic, rewrite.
+- Did I let the clip carry the comedy instead of explaining the joke?
 
 OUTPUT SHAPE:
-{
-  "variants": [
-    {
-      "angle": "the benefit, buyer moment, pain, or proof this variant uses",
-      "target": "the specific person/group/behavior/reaction trigger",
-      "clipId": "${template.id}",
-      "caption": "a one-line caption matching this clip's required pattern",
-      "mode": "${template.allowedModes.join(" | ")}",
-      "selfCheckPassed": "one line: why a viewer would tag someone and why it names an identity/behavior, not the product"
-    }
-  ]
-}`;
+${outputShape}`;
 }

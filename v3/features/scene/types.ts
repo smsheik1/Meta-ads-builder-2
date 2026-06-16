@@ -155,7 +155,9 @@ export type VideoMemeAdScene = AdSceneBase<
     durationSeconds: number;
     captionPosition: "top";
     slots: {
-      caption: string;
+      caption?: string;
+      setupText?: string;
+      dreadText?: string;
     };
   }
 >;

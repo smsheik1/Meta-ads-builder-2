@@ -1,4 +1,5 @@
 export const VIDEO_MEME_VARIANT_COUNT = 8;
+export const PINGU_NOOT_NOOT_VARIANT_COUNT = 3;
 
 export type VideoMemeTemplateId = "bear-sniff" | "pingu-noot-noot";
 
@@ -9,6 +10,7 @@ export type VideoMemeTemplate = {
   durationSeconds: number;
   captionPosition: "top";
   captionMaxChars: number;
+  variantCount: number;
   patternPrefixes: readonly string[];
   allowedModes: readonly string[];
   notes: string;
@@ -23,6 +25,7 @@ export const VIDEO_MEME_TEMPLATES: readonly VideoMemeTemplate[] = [
     durationSeconds: 8,
     captionPosition: "top",
     captionMaxChars: 90,
+    variantCount: VIDEO_MEME_VARIANT_COUNT,
     patternPrefixes: ["This bear sniffs"],
     allowedModes: ["caught", "flattering"],
     notes: "The bear is a secret-sniffer. The strongest captions expose a hidden thought, guilty work habit, or embarrassing buyer moment.",
@@ -64,38 +67,53 @@ RULES:
     videoSrc: "/video-memes/pingu-noot-noot.mp4",
     durationSeconds: 8.5,
     captionPosition: "top",
-    captionMaxChars: 86,
-    patternPrefixes: ["When", "POV:"],
-    allowedModes: ["alarm", "realization"],
-    notes: "Pingu is a noot-noot alarm. The caption names the moment that triggers a sudden warning, panic, or public realization.",
-    promptNotes: `fixed caption family:
-  - Primary: "When \${specificBadMoment}"
-  - Also allowed when more natural: "POV: \${specificPerson} \${realizesOrGetsCaught}"
+    captionMaxChars: 70,
+    variantCount: PINGU_NOOT_NOOT_VARIANT_COUNT,
+    patternPrefixes: [],
+    allowedModes: ["comic_dread"],
+    notes: "Pingu is a two-beat comic dread meme. The setup is calm; the dread line lands on the dramatic close-up.",
+    promptNotes: `FORMAT FRAME:
+This is a comedy meme. It treats a tiny, specific work annoyance as if it were a grand tragedy. The clip moves from calm Pingu to a frozen dramatic close-up as opera music swells. The comedy comes from the mismatch: a normal moment gets an absurdly serious reaction.
 
 PINGU NOOT-NOOT CALIBRATION EXAMPLES:
 These teach the PATTERN. Do NOT copy them. They are from other contexts to show the shape, not to reuse.
 
-The noot-noot clip is an ALARM. The caption should set up the exact moment where someone realizes something is wrong, gets called out, or has to urgently react.
+Write ONE matched before/after pair:
+- setupText: the calm/confident thought right before reality hits
+- dreadText: the comic doom thought when the dramatic close-up lands
 
-STRONG PATTERN (alarm / realization):
-"When the client says they sent the brief in the last email."
-"POV: the inventory count finally catches up with the Shopify dashboard."
-"When your manager asks who followed up with the hot lead."
-Why they work: each names a specific trigger. The clip supplies the loud reaction.
+Both slots must read like thoughts happening right now, not captions describing a situation.
+Bad: "the client changed the brief"
+Good: "client says the old brief was better"
+
+Strong:
+"client approved the final version" -> "client: can we go back to v1"
+"just pushed the update, heading home" -> "the update was on prod"
+"schedule looks light today" -> "every patient calls at the exact same minute"
+"campaign numbers look amazing" -> "CEO asks which channel drove revenue"
+"the post just went viral" -> "out of stock by noon"
+
+Weak:
+"we get a lot of calls" -> "we miss some calls"
+Why weak: no real flip, too generic.
 
 DEAD (do not write):
-"When business owners want growth."  (too generic)
-"POV: someone uses [Brand]."  (names the product, not a human moment)
-"When you transform your workflow."  (marketing language)
+"transform your front desk" -> "with [Brand]"  (marketing + names product)
+"things are fine" -> "things are bad"  (vague, no specific moment)
 
 MODES:
-- alarm: primary mode. Names a concrete trigger that would make the buyer mentally shout noot-noot.
-- realization: secondary mode. Names the instant someone realizes the hidden problem is real.
+- comic_dread only. Positive or aspirational angles do NOT fit this clip.
 
 RULES:
-- Default to alarm mode.
-- Caption must start with "When" or "POV:".
-- Caption should set up the noot-noot reaction, not explain the solution.`,
+- setupText must feel calm, even smug.
+- dreadText must directly undercut setupText.
+- The text is flat and literal; the clip and music supply the comedy.
+- Do not add jokes, winks, commentary, or explanations to the text.
+- Do not write generic dread words like panic, disaster, nightmare, chaos, doomed, or things go wrong.
+- Name the actual specific thing that went wrong.
+- Each slot must be under 70 characters.
+- Return templateId "pingu-noot-noot", not clipId.
+- Output slots.setupText and slots.dreadText. Do not output caption.`,
   },
 ] as const;
 

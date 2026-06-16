@@ -22,7 +22,7 @@ import {
   DEFAULT_NVIDIA_NIM_MEME_MODEL,
   DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL,
 } from "@/features/llm/nvidiaNimModels";
-import type { VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
+import { getVideoMemeTemplate, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
 import { getFormatModule } from "@/features/formats/registry";
 import { useActiveCanvasPanel, useCanvasActions } from "@/features/create/canvasInteractionStore";
 import {
@@ -121,10 +121,10 @@ function getSceneDefaultFlashSlots(scene: AdScene): RenderFlashRole[] {
   return [...getFormatModule(scene.format).defaultSlots];
 }
 
-function getGenerationCount(format: AdFormatId) {
+function getGenerationCount(format: AdFormatId, videoMemeTemplateId: VideoMemeTemplateId = "bear-sniff") {
   if (format === "meme") return 12;
   if (format === "were-sorry") return 8;
-  if (format === "video-meme") return 8;
+  if (format === "video-meme") return getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8;
   return 50;
 }
 
@@ -754,7 +754,7 @@ function ResearchConnected() {
     try {
       const nextScenes = await generateScenesForResearch(
         research.researchRunId as Id<"researchRuns">,
-        getGenerationCount(format),
+        getGenerationCount(format, videoMemeTemplateId),
         format,
         selectedMemeModel,
         videoMemeTemplateId,
@@ -881,7 +881,7 @@ function ResearchConnected() {
       canvasActions.beginBusy("ad-generation");
       const nextScenes = await generateScenesForResearch(
         nextResult.researchRunId as Id<"researchRuns">,
-        getGenerationCount(selectedAdFormat),
+        getGenerationCount(selectedAdFormat, selectedVideoMemeTemplateId),
         selectedAdFormat,
         selectedMemeModel,
         selectedVideoMemeTemplateId,

@@ -8,13 +8,17 @@ import type { StoredWebsiteResearchResult } from "../../research/types";
 import { buildVideoMemePrompt } from "./prompt";
 import { VIDEO_MEME_VARIANT_COUNT, getVideoMemeTemplate, type VideoMemeTemplateId } from "./templates";
 
-export type VideoMemeMode = "caught" | "flattering" | "alarm" | "realization";
+export type VideoMemeMode = "caught" | "flattering" | "comic_dread";
 
 export type VideoMemeVariant = {
   angle: string;
   target: string;
   clipId: VideoMemeTemplateId;
-  caption: string;
+  caption?: string;
+  slots?: {
+    setupText?: string;
+    dreadText?: string;
+  };
   mode: VideoMemeMode;
   selfCheckPassed: string;
 };
@@ -61,9 +65,9 @@ const bannedWords = [
 
 const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.test(String(value || ""));
 
-const normalizeCount = (count?: number) => {
-  if (!Number.isFinite(count)) return VIDEO_MEME_VARIANT_COUNT;
-  return Math.max(1, Math.min(maxVariants, Math.floor(count ?? VIDEO_MEME_VARIANT_COUNT)));
+const normalizeCount = (count?: number, defaultCount = VIDEO_MEME_VARIANT_COUNT) => {
+  if (!Number.isFinite(count)) return defaultCount;
+  return Math.max(1, Math.min(maxVariants, Math.floor(count ?? defaultCount)));
 };
 
 const cleanText = (value: unknown, maxLength = 220) => String(value ?? "")
@@ -84,6 +88,7 @@ const includesBannedWord = (value: string) => {
 };
 
 const hasDanglingEnding = (value: string) => /\b(?:and|the|to|for|of|on|with|that)$/i.test(value.trim());
+const hasGenericDread = (value: string) => /\b(?:panic|disaster|nightmare|chaos|doomed|things go wrong)\b/i.test(value);
 
 const parseJsonObject = (value: string, providerLabel = "AI provider") => {
   const trimmed = value.trim();
@@ -113,14 +118,15 @@ export function extractVideoMemeVariantsFromResponse(
   options: ExtractVideoMemeVariantsOptions = {},
 ): VideoMemeVariant[] {
   const providerLabel = options.providerLabel || "Video meme provider";
-  const expectedCount = normalizeCount(options.count);
   const template = getVideoMemeTemplate(options.templateId || "bear-sniff");
   if (!template) throw new Error("Video meme template is missing.");
+  const expectedCount = normalizeCount(options.count, template.variantCount);
 
   const payload = parseJsonObject(content, providerLabel);
   const rawVariants = Array.isArray(payload.variants) ? payload.variants : [];
   const seenAngles = new Set<string>();
   const seenCaptions = new Set<string>();
+  const seenDreadTexts = new Set<string>();
   const seenTargets = new Set<string>();
   const variants: VideoMemeVariant[] = [];
 
@@ -128,16 +134,45 @@ export function extractVideoMemeVariantsFromResponse(
     if (!item || typeof item !== "object") continue;
     const record = item as Record<string, unknown>;
     const angle = cleanText(record.angle, 140);
-    const target = cleanText(record.target, 140);
+    const slots = record.slots && typeof record.slots === "object" ? record.slots as Record<string, unknown> : {};
+    const setupText = cleanText(slots.setupText, template.captionMaxChars + 20);
+    const dreadText = cleanText(slots.dreadText, template.captionMaxChars + 20);
+    const target = cleanText(record.target || dreadText, 140);
     const caption = cleanText(record.caption, template.captionMaxChars + 20);
-    const clipId = String(record.clipId || "");
+    const clipId = String(record.clipId || record.templateId || "");
     const mode = String(record.mode || "") as VideoMemeMode;
     const selfCheckPassed = cleanText(record.selfCheckPassed, 220);
     const angleKey = cleanKey(angle);
     const targetKey = cleanKey(target);
     const captionKey = cleanKey(caption);
+    const pairKey = cleanKey(`${setupText} -> ${dreadText}`);
+    const dreadKey = cleanKey(dreadText);
 
     if (clipId !== template.id) continue;
+    if (template.id === "pingu-noot-noot") {
+      if (!angle || !setupText || !dreadText || !selfCheckPassed) continue;
+      if (setupText.length > template.captionMaxChars || dreadText.length > template.captionMaxChars) continue;
+      if (hasDanglingEnding(setupText) || hasDanglingEnding(dreadText)) continue;
+      if (includesBannedWord(setupText) || includesBannedWord(dreadText) || hasGenericDread(dreadText)) continue;
+      if (namesBrand(`${setupText} ${dreadText}`, options.brandNames || [])) continue;
+      if (/^This bear sniffs\b/i.test(`${setupText} ${dreadText}`)) continue;
+      if (seenAngles.has(angleKey) || seenTargets.has(targetKey) || seenCaptions.has(pairKey) || seenDreadTexts.has(dreadKey)) continue;
+
+      seenAngles.add(angleKey);
+      seenTargets.add(targetKey);
+      seenCaptions.add(pairKey);
+      seenDreadTexts.add(dreadKey);
+      variants.push({
+        angle,
+        target,
+        clipId: template.id,
+        slots: { setupText, dreadText },
+        mode: "comic_dread",
+        selfCheckPassed,
+      });
+      continue;
+    }
+
     if (!template.allowedModes.includes(mode)) continue;
     if (!angle || !target || !caption || !selfCheckPassed) continue;
     if (!matchesTemplatePattern(caption, template.patternPrefixes)) continue;
@@ -170,11 +205,11 @@ export async function generateVideoMemeVariantsFromResearch(
   research: StoredWebsiteResearchResult,
   options: GenerateVideoMemeVariantsOptions = {},
 ): Promise<GenerateVideoMemeVariantsResult> {
-  const count = normalizeCount(options.count);
   const templateId = options.templateId || "bear-sniff";
-  const prompt = buildVideoMemePrompt(research, count, templateId);
   const template = getVideoMemeTemplate(templateId);
   if (!template) throw new Error(`Unknown video meme template: ${templateId}`);
+  const count = normalizeCount(options.count, template.variantCount);
+  const prompt = buildVideoMemePrompt(research, count, templateId);
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const nvidiaNimModel = options.nvidiaNimModel
     || process.env.NVIDIA_NIM_VIDEO_MEME_MODEL

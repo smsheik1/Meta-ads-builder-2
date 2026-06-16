@@ -24,7 +24,7 @@ type ModelOption = {
   label: string;
 };
 
-const getProgressRows = (format: AdFormatId) => [
+const getProgressRows = (format: AdFormatId, videoMemeTemplateId: VideoMemeTemplateId = "bear-sniff") => [
   { id: "reading-site", label: "Reading website" },
   { id: "brand-proof", label: "Pulling brand proof" },
   { id: "selling-angle", label: "Finding selling angle" },
@@ -35,7 +35,7 @@ const getProgressRows = (format: AdFormatId) => [
       : format === "were-sorry"
         ? "Writing 8 apologies"
         : format === "video-meme"
-          ? "Writing 8 video memes"
+          ? videoMemeTemplateId === "pingu-noot-noot" ? "Writing 3 Pingu memes" : "Writing 8 bear memes"
           : "Writing 50 ads",
   },
   { id: "preparing-canvas", label: "Preparing canvas" },
@@ -59,14 +59,16 @@ function CreateResearchProgressCard({
   format,
   showSlowResearchMessage,
   stage,
+  videoMemeTemplateId,
 }: {
   facts: WebsiteSubmitProgressFacts | null;
   format: AdFormatId;
   showSlowResearchMessage: boolean;
   stage: WebsiteSubmitProgressStage;
+  videoMemeTemplateId: VideoMemeTemplateId;
 }) {
   if (!stage) return null;
-  const progressRows = getProgressRows(format);
+  const progressRows = getProgressRows(format, videoMemeTemplateId);
 
   const factRows = facts
     ? [
@@ -328,6 +330,7 @@ export function CreateLeftColumn({
           format={format}
           showSlowResearchMessage={showSlowResearchMessage}
           stage={progressStage}
+          videoMemeTemplateId={videoMemeTemplateId}
         />
       </form>
 

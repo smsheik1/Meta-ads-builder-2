@@ -27,6 +27,7 @@ export const createVideoMemeAdScene = ({
 }): VideoMemeAdScene => {
   const template = getVideoMemeTemplate(variant.clipId);
   if (!template) throw new Error(`Unknown video meme template: ${variant.clipId}`);
+  const headline = variant.caption || variant.slots?.dreadText || variant.slots?.setupText || "";
 
   return {
     version: AD_SCENE_VERSION,
@@ -42,7 +43,7 @@ export const createVideoMemeAdScene = ({
     },
     creative: {
       angleId: `${template.id}-${candidateIndex + 1}`,
-      headline: variant.caption,
+      headline,
       subheadline: variant.angle,
       ctaText: research.brandBrief.ctaDirection || "Learn more",
       headlineType: "callout",
@@ -67,7 +68,9 @@ export const createVideoMemeAdScene = ({
       durationSeconds: template.durationSeconds,
       captionPosition: template.captionPosition,
       slots: {
-        caption: variant.caption,
+        ...(variant.caption ? { caption: variant.caption } : {}),
+        ...(variant.slots?.setupText ? { setupText: variant.slots.setupText } : {}),
+        ...(variant.slots?.dreadText ? { dreadText: variant.slots.dreadText } : {}),
       },
     },
     metadata: {
