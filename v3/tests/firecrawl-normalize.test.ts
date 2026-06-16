@@ -75,6 +75,59 @@ assert.ok(result.evidence.receipts.buyerMoments.includes("Stop losing AI search 
 assert.ok(result.evidence.receipts.namedProof.includes("Customer said the team generated 42 citations in two weeks."));
 assert.ok(result.providerStatus[0]?.reason.includes("Firecrawl read"));
 
+const firecrawlBrandingObjectResult = normalizeFirecrawlPayload("agentenamel.com", {
+  success: true,
+  data: {
+    markdown: `
+# Agent Enamel
+An AI-powered receptionist for dental practices.
+Answer every missed call before patients call someone else.
+Convert missed calls into booked appointments.
+Capture after-hours callers automatically.
+Dental offices use Agent Enamel when front desks are overloaded.
+Protect revenue from missed patient calls.
+Give callers a polished first impression.
+    `,
+    metadata: {
+      sourceURL: "https://agentenamel.com/",
+      ogTitle: "Agent Enamel",
+      ogDescription: "An AI-powered receptionist for dental practices.",
+    },
+    branding: {
+      images: {
+        logo: null,
+        favicon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext%3EAE%3C/text%3E%3C/svg%3E",
+        ogImage: "https://agentenamel.com/og-image.jpg",
+      },
+      colors: {
+        primary: "#00bc7d",
+        accent: "#006366",
+        textPrimary: "#0f172b",
+      },
+      fonts: [{
+        family: "Inter",
+        role: "body",
+      }],
+      typography: {
+        fontFamilies: {
+          heading: "Inter",
+          primary: "Inter",
+        },
+      },
+    },
+  },
+});
+assert.equal(firecrawlBrandingObjectResult.brand.logoUrl?.startsWith("data:image/svg+xml,"), true);
+assert.equal(firecrawlBrandingObjectResult.brand.faviconUrl?.startsWith("data:image/svg+xml,"), true);
+assert.equal(firecrawlBrandingObjectResult.brand.logoUrl?.includes("viewBox='0 0 100 100'"), true);
+assert.equal(firecrawlBrandingObjectResult.brand.ogImageUrl, "https://agentenamel.com/og-image.jpg");
+assert.deepEqual(firecrawlBrandingObjectResult.brand.colors, ["#00BC7D", "#006366", "#0F172B"]);
+assert.deepEqual(firecrawlBrandingObjectResult.brand.fonts, {
+  heading: "Inter",
+  body: "Inter",
+  feel: "sans",
+});
+
 const shape = firecrawlRequestShape("https://ogtool.com/");
 assert.deepEqual(shape.formats, [
   "markdown",
@@ -355,11 +408,11 @@ Fresh baked cookies, gift baskets, cheesecakes, and specialty desserts delivered
   }), {
     status: 200,
     headers: { "content-type": "application/json" },
-	  }),
-	  curator: {
-	    geminiApiKey: "test-gemini-key",
-	    nvidiaNimApiKey: "",
-	    geminiGenerateContent: async ({ prompt }) => {
+  }),
+  curator: {
+    geminiApiKey: "test-gemini-key",
+    nvidiaNimApiKey: "",
+    geminiGenerateContent: async ({ prompt }) => {
       assert.ok(prompt.includes("Ignore website chrome"));
       assert.ok(prompt.includes("High-protein snack bars with a soft, marshmallow-like texture."));
       assert.ok(prompt.includes("Scheduling software for teams"));
@@ -403,20 +456,12 @@ assert.ok(!productBriefText.includes("Regular price"));
 assert.ok(!productBriefText.includes("Your cart is empty"));
 assert.ok(curatedShopifyResult.brandBrief.droppedNoiseSummary.includes("Continue shopping"));
 
-const jinaFirstResult = await fetchWebsiteResearchWithFirecrawl("ogtool.com", {
+const firecrawlPrimaryResult = await fetchWebsiteResearchWithFirecrawl("ogtool.com", {
   apiKey: "test-firecrawl-key",
-  fetcher: async () => {
-    throw new Error("Firecrawl should not run when Jina is useful.");
-  },
-  jina: {
-    fetcher: async (requestUrl) => {
-      assert.equal(String(requestUrl), "https://r.jina.ai/http://https://ogtool.com/");
-      return new Response(`
-Title: OGTool | ChatGPT Visibility
-
-URL Source: https://ogtool.com/
-
-Markdown Content:
+  fetcher: async () => new Response(JSON.stringify({
+    success: true,
+    data: {
+      markdown: `
 # OGTool
 Fully managed Reddit and ChatGPT visibility campaigns.
 First ChatGPT mention in 14 days.
@@ -429,25 +474,22 @@ Managed campaigns turn Reddit conversations into durable AI-search proof.
 The service finds relevant communities, writes useful posts, and tracks citations.
 Founders use it when paid ads get pricier and organic discovery matters more.
 OGTool connects Reddit visibility to ChatGPT recommendation moments.
-`, { status: 200 });
+      `,
+      metadata: {
+        sourceURL: "https://ogtool.com/",
+        ogTitle: "OGTool | ChatGPT Visibility",
+        ogDescription: "Fully managed Reddit and ChatGPT visibility campaigns.",
+        ogSiteName: "OGTool",
+        ogImage: "https://ogtool.com/og.png",
+        themeColor: "#82DFFF",
+        favicon: "https://ogtool.com/favicon.ico",
+      },
     },
-    htmlMetadataFetcher: async () => new Response(`
-      <html>
-        <head>
-          <title>OGTool | ChatGPT Visibility</title>
-          <meta property="og:site_name" content="OGTool">
-          <meta property="og:description" content="Fully managed Reddit and ChatGPT visibility campaigns.">
-          <meta property="og:image" content="/og.png">
-          <meta name="theme-color" content="#82DFFF">
-          <link rel="icon" href="/favicon.ico">
-        </head>
-      </html>
-    `, { status: 200 }),
-	  },
-	  curator: {
-	    geminiApiKey: "test-gemini-key",
-	    nvidiaNimApiKey: "",
-	    geminiGenerateContent: async ({ prompt }) => {
+  }), { status: 200 }),
+  curator: {
+    geminiApiKey: "test-gemini-key",
+    nvidiaNimApiKey: "",
+    geminiGenerateContent: async ({ prompt }) => {
       assert.ok(prompt.includes("Reddit campaigns give ChatGPT"));
       return JSON.stringify({
         brandName: "OGTool",
@@ -464,34 +506,33 @@ OGTool connects Reddit visibility to ChatGPT recommendation moments.
     },
   },
 });
-assert.equal(jinaFirstResult.providerStatus[0]?.provider, "jina");
-assert.equal(jinaFirstResult.brandBrief.offer, "Fully managed Reddit and ChatGPT visibility campaigns.");
+assert.equal(firecrawlPrimaryResult.providerStatus[0]?.provider, "firecrawl");
+assert.equal(firecrawlPrimaryResult.brandBrief.offer, "Fully managed Reddit and ChatGPT visibility campaigns.");
 
 const brandfetchEnrichedResult = await fetchWebsiteResearchWithFirecrawl("brandfetch.com", {
   apiKey: "test-firecrawl-key",
-  fetcher: async () => {
-    throw new Error("Firecrawl should not run when Jina is useful.");
-  },
-  jina: {
-    fetcher: async () => new Response(`
-Title: Brandfetch
-
-URL Source: https://brandfetch.com/
-
-Markdown Content:
+  fetcher: async () => new Response(JSON.stringify({
+    success: true,
+    data: {
+      markdown: `
 # Brandfetch
 Brandfetch helps developers fetch brand assets by domain.
 Teams use Brandfetch when they need logos, colors, fonts, and brand metadata.
 The Brand API returns structured brand data for product experiences.
 Developers use it to make generated creative stay visually on brand.
 Brandfetch supports brand asset lookup for many companies.
-This page has enough useful copy for the Jina reader threshold.
+This page has enough useful copy for Firecrawl.
 Brand assets should be resolved separately from page copy.
 The API helps products avoid broken target-site logo metadata.
-    `, { status: 200 }),
-    htmlMetadataFetcher: async () => new Response("<html><head><title>Brandfetch</title></head></html>", { status: 200 }),
-  },
+      `,
+      metadata: {
+        sourceURL: "https://brandfetch.com/",
+        ogTitle: "Brandfetch",
+      },
+    },
+  }), { status: 200 }),
   brandAssets: {
+    enabled: true,
     apiKey: "test-brandfetch-key",
     fetcher: (async (requestUrl) => {
       const url = String(requestUrl);
@@ -533,9 +574,10 @@ assert.ok(brandfetchEnrichedResult.providerStatus.some((status) => (
 const deadImageMetadataResult = await fetchWebsiteResearchWithFirecrawl("agentenamel.com", {
   apiKey: "test-firecrawl-key",
   fetcher: async () => {
-    throw new Error("Firecrawl should not run when Jina is useful.");
+    throw new Error("Firecrawl unavailable for explicit Jina fallback test.");
   },
   jina: {
+    enabled: true,
     fetcher: async () => new Response(`
 Title: Agent Enamel
 
@@ -611,9 +653,7 @@ Stop losing AI search visibility to competitors.
   },
 });
 assert.equal(firecrawlFallbackCalled, true);
-assert.equal(fallbackResult.providerStatus[0]?.provider, "jina");
-assert.equal(fallbackResult.providerStatus[0]?.status, "failed");
-assert.equal(fallbackResult.providerStatus[1]?.provider, "firecrawl");
+assert.equal(fallbackResult.providerStatus[0]?.provider, "firecrawl");
 
 assert.throws(
   () => normalizeFirecrawlPayload("ogtool.com", { success: true, data: { markdown: "short" } }),
