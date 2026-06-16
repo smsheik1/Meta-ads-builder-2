@@ -96,7 +96,9 @@ assert.ok(
     createClientSource.includes("getReusableResearchForUrl") &&
     createClientSource.includes("researchByUrlRef") &&
     createClientSource.includes("rememberResearchForReuse") &&
-    createClientSource.includes("for (const value of [research.websiteUrl, research.finalUrl])"),
+    createClientSource.includes("for (const value of [research.websiteUrl, research.finalUrl])") &&
+    createClientSource.includes("selectedScene?.metadata.researchRunId") &&
+    createClientSource.includes("getSceneProgressFacts(selectedScene)"),
   "Format changes must reuse stored research by normalized URL instead of domain or transient result state.",
 );
 assert.ok(

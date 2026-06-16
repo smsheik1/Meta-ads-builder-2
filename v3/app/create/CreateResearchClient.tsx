@@ -90,6 +90,11 @@ type BillingStatus = {
 
 type CreateModal = "brand-details" | "dialogue" | "captions" | "paywall" | null;
 
+type ReusableResearch = {
+  researchRunId: string;
+  facts: WebsiteSubmitProgressFacts | null;
+};
+
 function getResearchActionErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : String(error || "");
   if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) return researchTimeoutMessage;
@@ -130,6 +135,16 @@ function getWebsiteSubmitProgressFacts(result: StoredWebsiteResearchResult): Web
     colorCount: result.brand.colors.length,
     proofCount: result.brandBrief.proof.length || result.evidence.receipts.specificClaims.length || result.evidence.receipts.namedProof.length,
     buyerMomentCount: result.brandBrief.buyerMoments.length || result.evidence.receipts.buyerMoments.length,
+  };
+}
+
+function getSceneProgressFacts(scene: AdScene): WebsiteSubmitProgressFacts {
+  return {
+    brandName: scene.brand.name || scene.brand.host,
+    hasLogo: Boolean(scene.brand.logoUrl || scene.brand.faviconUrl),
+    colorCount: scene.brand.colors.length,
+    proofCount: scene.brand.receipts.specificClaims.length || scene.brand.receipts.namedProof.length,
+    buyerMomentCount: scene.brand.receipts.buyerMoments.length,
   };
 }
 
@@ -658,24 +673,47 @@ function ResearchConnected() {
     try {
       const key = normalizedUrlKey(value);
       const cached = researchByUrlRef.current.get(key);
-      if (cached?.researchRunId) return cached;
-      return result?.researchRunId && (
+      if (cached?.researchRunId) {
+        return {
+          researchRunId: cached.researchRunId,
+          facts: getWebsiteSubmitProgressFacts(cached),
+        };
+      }
+      if (result?.researchRunId && (
         key === normalizedUrlKey(result.websiteUrl) ||
         key === normalizedUrlKey(result.finalUrl)
-      ) ? result : null;
+      )) {
+        return {
+          researchRunId: result.researchRunId,
+          facts: getWebsiteSubmitProgressFacts(result),
+        };
+      }
+      if (selectedScene?.metadata.researchRunId) {
+        const sceneKeys = [
+          selectedScene.brand.url,
+          selectedScene.brand.host ? `https://${selectedScene.brand.host}/` : "",
+        ].filter(Boolean).map(normalizedUrlKey);
+        if (sceneKeys.includes(key)) {
+          return {
+            researchRunId: selectedScene.metadata.researchRunId,
+            facts: getSceneProgressFacts(selectedScene),
+          };
+        }
+      }
+      return null;
     } catch {
       return null;
     }
   };
 
   const generateScenesOnly = async (
-    research: StoredWebsiteResearchResult,
+    research: ReusableResearch,
     format: AdFormatId,
   ) => {
     setStatus("ready");
     setAdStatus("loading");
     setProgressStage("writing-ads");
-    setPendingProgressFacts(getWebsiteSubmitProgressFacts(research));
+    setPendingProgressFacts(research.facts);
     setShowSlowResearchMessage(false);
     canvasActions.beginBusy("ad-generation");
     resetShareState();
