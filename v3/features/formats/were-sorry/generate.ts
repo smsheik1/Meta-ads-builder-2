@@ -9,11 +9,11 @@ import { DEFAULT_WERE_SORRY_VARIANT_COUNT, buildWereSorryPrompt } from "./prompt
 
 export type WereSorryVariant = {
   angle: string;
-  apology: string;
-  makeGood: string;
-  ctaText: string;
-  selectedPain: string;
-  selectedProof: string;
+  apologyHeader: string;
+  legalOpener: string;
+  confessions: string[];
+  signoff: string;
+  selfCheckPassed: string;
 };
 
 export type GenerateWereSorryVariantsResult = {
@@ -68,17 +68,7 @@ const includesBannedWord = (value: string) => {
   return bannedWords.some((word) => lower.includes(word));
 };
 
-const startsWithApology = (value: string) => /^(sorry|we'?re sorry)\b/i.test(value.trim());
-
-const ensureCta = (value: unknown, fallback: string, index: number) => {
-  const cleaned = cleanText(value, 34);
-  const words = cleaned.split(/\s+/).filter(Boolean);
-  if (words.length >= 2 && words.length <= 5 && /^[a-z]+/i.test(cleaned) && !includesBannedWord(cleaned)) return cleaned;
-  const fallbackCleaned = cleanText(fallback, 34);
-  const fallbackWords = fallbackCleaned.split(/\s+/).filter(Boolean);
-  if (fallbackWords.length >= 2 && fallbackWords.length <= 5) return fallbackCleaned;
-  return ["See the offer", "Try it now", "Book a demo", "Shop the drop"][index % 4]!;
-};
+const hasDanglingEnding = (value: string) => /\b(?:and|the|to|for|of|on|with)$/i.test(value.trim());
 
 const parseJsonObject = (value: string, providerLabel = "AI provider") => {
   const trimmed = value.trim();
@@ -95,37 +85,43 @@ export function extractWereSorryVariantsFromResponse(
   providerLabel = "Were sorry provider",
 ): WereSorryVariant[] {
   const payload = parseJsonObject(content, providerLabel);
+  if (payload.suitable === false) {
+    throw new Error(`${providerLabel} marked we're sorry format unsuitable: ${cleanText(payload.reason, 180) || "no reason"}`);
+  }
   const expectedCount = normalizeCount(count);
   const rawVariants = Array.isArray(payload.variants) ? payload.variants : [];
   const seenAngles = new Set<string>();
-  const seenApologies = new Set<string>();
+  const seenHeaders = new Set<string>();
   const variants: WereSorryVariant[] = [];
 
   for (const item of rawVariants) {
     if (!item || typeof item !== "object") continue;
     const record = item as Record<string, unknown>;
-    const apology = cleanText(record.apology, 78);
-    const makeGood = cleanText(record.makeGood, 120);
+    const apologyHeader = cleanText(record.apologyHeader, 40);
+    const legalOpener = cleanText(record.legalOpener, 120);
+    const confessions = Array.isArray(record.confessions)
+      ? record.confessions.map((confession) => cleanText(confession, 110)).filter(Boolean).slice(0, 3)
+      : [];
+    const signoff = cleanText(record.signoff, 60);
+    const selfCheckPassed = cleanText(record.selfCheckPassed, 220);
     const angle = cleanText(record.angle, 140);
-    const selectedPain = cleanText(record.selectedPain || angle, 160);
-    const selectedProof = cleanText(record.selectedProof, 160);
     const angleKey = angle.toLowerCase();
-    const apologyKey = apology.toLowerCase();
+    const headerKey = `${apologyHeader} ${legalOpener}`.toLowerCase();
 
-    if (!angle || !apology || !makeGood) continue;
-    if (!startsWithApology(apology)) continue;
-    if (includesBannedWord(`${apology} ${makeGood}`)) continue;
-    if (seenAngles.has(angleKey) || seenApologies.has(apologyKey)) continue;
+    if (!angle || !apologyHeader || !legalOpener || !signoff || confessions.length < 2) continue;
+    if (confessions.some(hasDanglingEnding)) continue;
+    if (includesBannedWord(`${apologyHeader} ${legalOpener} ${confessions.join(" ")}`)) continue;
+    if (seenAngles.has(angleKey) || seenHeaders.has(headerKey)) continue;
 
     seenAngles.add(angleKey);
-    seenApologies.add(apologyKey);
+    seenHeaders.add(headerKey);
     variants.push({
       angle,
-      apology,
-      makeGood,
-      ctaText: ensureCta(record.ctaText, "", variants.length),
-      selectedPain,
-      selectedProof,
+      apologyHeader,
+      legalOpener,
+      confessions,
+      signoff,
+      selfCheckPassed,
     });
   }
 
@@ -177,7 +173,7 @@ export async function generateWereSorryVariantsFromResearch(
         label: "NVIDIA NIM we're sorry generation",
         model: nvidiaNimModel,
         nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
-        prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Return exactly ${count} variants, each with a unique angle, apology, makeGood, ctaText, selectedPain, and selectedProof. Return only the JSON object.`,
+        prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Return exactly ${count} variants, each with a unique angle, apologyHeader, legalOpener, 2-3 confessions, signoff, and selfCheckPassed. Return only the JSON object.`,
         timeoutMs,
       });
       variants = extractWereSorryVariantsFromResponse(retryContent, count, "NVIDIA NIM");

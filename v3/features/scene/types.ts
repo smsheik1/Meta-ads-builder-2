@@ -138,9 +138,10 @@ export type WereSorryAdScene = AdSceneBase<
   AdSceneStyleBase,
   {
     preset: "were-sorry-poster";
-    apology: string;
-    makeGood: string;
-    badgeText: string;
+    apologyHeader: string;
+    legalOpener: string;
+    confessions: string[];
+    signoff: string;
   }
 >;
 
