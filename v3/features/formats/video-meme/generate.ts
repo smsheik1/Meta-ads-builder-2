@@ -8,7 +8,13 @@ import type { StoredWebsiteResearchResult } from "../../research/types";
 import { buildVideoMemePrompt } from "./prompt";
 import { VIDEO_MEME_VARIANT_COUNT, getVideoMemeTemplate, type VideoMemeTemplateId } from "./templates";
 
-export type VideoMemeMode = "caught" | "flattering" | "comic_dread";
+export type VideoMemeMode =
+  | "caught"
+  | "flattering"
+  | "comic_dread"
+  | "customer_pain"
+  | "business_pain"
+  | "goofy_exaggeration";
 
 export type VideoMemeVariant = {
   angle: string;
@@ -16,6 +22,7 @@ export type VideoMemeVariant = {
   clipId: VideoMemeTemplateId;
   caption?: string;
   slots?: {
+    caption?: string;
     setupText?: string;
     dreadText?: string;
   };
@@ -89,6 +96,7 @@ const includesBannedWord = (value: string) => {
 
 const hasDanglingEnding = (value: string) => /\b(?:and|the|to|for|of|on|with|that)$/i.test(value.trim());
 const hasGenericDread = (value: string) => /\b(?:panic|disaster|nightmare|chaos|doomed|things go wrong)\b/i.test(value);
+const namesUnderlyingPain = (value: string) => /\b(?:real pain|underlying pain|pain underneath|traces to|based on)\b/i.test(value);
 
 const parseJsonObject = (value: string, providerLabel = "AI provider") => {
   const trimmed = value.trim();
@@ -137,8 +145,8 @@ export function extractVideoMemeVariantsFromResponse(
     const slots = record.slots && typeof record.slots === "object" ? record.slots as Record<string, unknown> : {};
     const setupText = cleanText(slots.setupText, template.captionMaxChars + 20);
     const dreadText = cleanText(slots.dreadText, template.captionMaxChars + 20);
-    const target = cleanText(record.target || dreadText, 140);
-    const caption = cleanText(record.caption, template.captionMaxChars + 20);
+    const caption = cleanText(record.caption || slots.caption, template.captionMaxChars + 20);
+    const target = cleanText(record.target || dreadText || record.angle, 140);
     const clipId = String(record.clipId || record.templateId || "");
     const mode = String(record.mode || "") as VideoMemeMode;
     const selfCheckPassed = cleanText(record.selfCheckPassed, 220);
@@ -168,6 +176,33 @@ export function extractVideoMemeVariantsFromResponse(
         clipId: template.id,
         slots: { setupText, dreadText },
         mode: "comic_dread",
+        selfCheckPassed,
+      });
+      continue;
+    }
+
+    if (template.id === "darwin-journey") {
+      if (!template.allowedModes.includes(mode)) continue;
+      if (!angle || !target || !caption || !selfCheckPassed) continue;
+      if (setupText || dreadText) continue;
+      if (/^This bear sniffs\b/i.test(caption)) continue;
+      if (caption.length > template.captionMaxChars) continue;
+      if (hasDanglingEnding(caption)) continue;
+      if (includesBannedWord(caption)) continue;
+      if (namesBrand(caption, options.brandNames || [])) continue;
+      if (mode === "goofy_exaggeration" && !namesUnderlyingPain(selfCheckPassed)) continue;
+      if (seenAngles.has(angleKey) || seenTargets.has(targetKey) || seenCaptions.has(captionKey)) continue;
+
+      seenAngles.add(angleKey);
+      seenTargets.add(targetKey);
+      seenCaptions.add(captionKey);
+      variants.push({
+        angle,
+        target,
+        clipId: template.id,
+        caption,
+        slots: { caption },
+        mode,
         selfCheckPassed,
       });
       continue;
@@ -250,13 +285,18 @@ export async function generateVideoMemeVariantsFromResearch(
         templateId,
       });
     } catch {
+      const retryShape = template.id === "pingu-noot-noot"
+        ? `templateId "${template.id}", slots.setupText, slots.dreadText`
+        : template.id === "darwin-journey"
+          ? `templateId "${template.id}", slots.caption`
+          : `clipId "${template.id}", a caption matching this clip's required pattern`;
       const retryContent = await callNvidiaNimChat({
         apiKey: nvidiaNimApiKey,
         baseUrl: nvidiaNimBaseUrl,
         label: "NVIDIA NIM video meme generation",
         model: nvidiaNimModel,
         nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
-        prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Return exactly ${count} variants. Every variant needs a unique angle, unique target, clipId "${template.id}", a caption matching this clip's required pattern, mode ${template.allowedModes.join(" or ")}, and selfCheckPassed. Never name the brand/product. Return only the JSON object.`,
+        prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Return exactly ${count} variants. Every variant needs a unique angle, unique target, ${retryShape}, mode ${template.allowedModes.join(" or ")}, and selfCheckPassed. Never name the brand/product. Return only the JSON object.`,
         timeoutMs,
       });
       variants = extractVideoMemeVariantsFromResponse(retryContent, {

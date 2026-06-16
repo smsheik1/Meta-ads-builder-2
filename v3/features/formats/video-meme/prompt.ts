@@ -20,11 +20,18 @@ export function buildVideoMemePrompt(
     sitePhrase: angle.sitePhrase,
   }));
   const isPingu = template.id === "pingu-noot-noot";
+  const isDarwin = template.id === "darwin-journey";
   const slotRules = isPingu
     ? `- templateId must be exactly "pingu-noot-noot".
 - Return slots.setupText and slots.dreadText. Do not return caption.
 - Each setupText and dreadText must be under ${template.captionMaxChars} characters.
 - Never name the brand or product in either slot.`
+    : isDarwin
+      ? `- templateId must be exactly "darwin-journey".
+- Return slots.caption. Do not return setupText or dreadText.
+- Caption is one line only. No second caption, no subtext, no CTA, no hashtags, no emojis.
+- Never name the brand or product in the caption.
+- Caption must be under ${template.captionMaxChars} characters total, complete thought, never cut mid-sentence.`
     : `- clipId must be exactly "${template.id}".
 - Caption is one line only. No second caption, no subtext, no CTA, no hashtags, no emojis.
 - Never name the brand or product in the caption.
@@ -43,6 +50,20 @@ export function buildVideoMemePrompt(
     }
   ]
 }`
+    : isDarwin
+      ? `{
+  "variants": [
+    {
+      "angle": "the pain/persona being framed",
+      "templateId": "darwin-journey",
+      "mode": "${template.allowedModes.join(" | ")}",
+      "slots": {
+        "caption": "the single Darwin caption"
+      },
+      "selfCheckPassed": "one line: why calm-vs-chaos lands, which mode it is, and for goofy mode the real pain underneath"
+    }
+  ]
+}`
     : `{
   "variants": [
     {
@@ -57,6 +78,8 @@ export function buildVideoMemePrompt(
 }`;
   const intro = isPingu
     ? `Each meme is a two-beat text pair pinned over a known reaction video clip. The clip supplies the punchline and emotion. Your text only sets up the calm thought and the dread thought, deadpan. You are not writing an ad.`
+    : isDarwin
+      ? `Each meme is ONE caption pinned over a known reaction video clip. The clip supplies Darwin's blank calm and the chaotic journey. Your caption names the persona and the specific pain stack they survived, deadpan. You are not writing an ad.`
     : `Each meme is ONE line of text pinned over a known reaction video clip. The clip supplies the punchline and emotion. Your caption only sets up WHO or WHAT, deadpan. You are not writing an ad. You are writing a caption a real person would tag a friend in.`;
 
   return `You are a senior brand copywriter writing reaction-clip memes.

@@ -13,6 +13,7 @@ export function VideoMemeFormatRenderer({
 }: FormatRenderProps<VideoMemeAdScene>) {
   const { Video } = useRenderAssetComponents();
   const isPingu = scene.layout.templateId === "pingu-noot-noot";
+  const isDarwin = scene.layout.templateId === "darwin-journey";
   const caption = scene.creative.headline || scene.layout.slots.caption || scene.layout.slots.dreadText || "";
   const setupText = scene.layout.slots.setupText || "";
   const dreadText = scene.layout.slots.dreadText || "";
@@ -64,6 +65,16 @@ export function VideoMemeFormatRenderer({
             </p>
           </div>
         </>
+      ) : isDarwin ? (
+        <div className="pointer-events-none absolute inset-x-[4.5cqw] top-[4cqw] flex justify-center">
+          <p
+            className={`max-w-[94%] text-center text-[5.1cqw] font-black leading-[1.04] tracking-normal text-white drop-shadow-[0_0.3cqw_0_rgba(0,0,0,0.9)] ${flashHeadline}`}
+            data-video-meme-caption-text="true"
+            style={captionWrapStyle}
+          >
+            {caption}
+          </p>
+        </div>
       ) : (
         <div className="pointer-events-none absolute inset-x-[4.5cqw] top-[4cqw] flex justify-center">
           <p

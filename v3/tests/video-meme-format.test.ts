@@ -6,7 +6,7 @@ import {
   extractVideoMemeVariantsFromResponse,
   generateVideoMemeVariantsFromResearch,
 } from "../features/formats/video-meme/generate";
-import { PINGU_NOOT_NOOT_VARIANT_COUNT, VIDEO_MEME_VARIANT_COUNT } from "../features/formats/video-meme/templates";
+import { DARWIN_JOURNEY_VARIANT_COUNT, PINGU_NOOT_NOOT_VARIANT_COUNT, VIDEO_MEME_VARIANT_COUNT } from "../features/formats/video-meme/templates";
 import { createDefaultSceneLocks, rerollScene } from "../features/create/reroll";
 import { assertSavableAdScene, createSavedDesignId, restoreSavedDesignSelection } from "../features/create/savedDesigns";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
@@ -126,6 +126,37 @@ assert.equal(parsedPingu.length, PINGU_NOOT_NOOT_VARIANT_COUNT);
 assert.equal(parsedPingu[0]!.clipId, "pingu-noot-noot");
 assert.equal(parsedPingu[0]!.slots?.setupText, "schedule looks light today");
 
+const darwinVariants = [
+  {
+    angle: "customer calls multiple dentists and hits voicemail",
+    templateId: "darwin-journey" as const,
+    mode: "customer_pain" as const,
+    slots: { caption: "POV: the patient who called 4 dentists and got voicemail at every one" },
+    selfCheckPassed: "Calm face contrasts with a specific patient pain stack.",
+  },
+  {
+    angle: "front desk survives busy season and stacked voicemails",
+    templateId: "darwin-journey" as const,
+    mode: "business_pain" as const,
+    slots: { caption: "POV: the front desk after flu season, 30 voicemails, and a triple-booked Monday" },
+    selfCheckPassed: "Calm face contrasts with a specific operator workload.",
+  },
+  {
+    angle: "missed calls overwhelming the voicemail box",
+    templateId: "darwin-journey" as const,
+    mode: "goofy_exaggeration" as const,
+    slots: { caption: "POV: the front desk whose voicemail box filed a restraining order" },
+    selfCheckPassed: "The goofy line is based on the real pain underneath: missed calls piling up.",
+  },
+];
+const parsedDarwin = extractVideoMemeVariantsFromResponse(JSON.stringify({ variants: darwinVariants }), {
+  brandNames: [research.brand.name, research.brandBrief.brandName],
+  templateId: "darwin-journey",
+});
+assert.equal(parsedDarwin.length, DARWIN_JOURNEY_VARIANT_COUNT);
+assert.equal(parsedDarwin[0]!.clipId, "darwin-journey");
+assert.equal(parsedDarwin[0]!.caption, darwinVariants[0]!.slots.caption);
+
 const prompt = buildVideoMemePrompt(research);
 assert.ok(prompt.includes("This bear sniffs people who want to quit their job."));
 assert.ok(prompt.includes("This bear sniffs people updating LinkedIn at office hours."));
@@ -141,6 +172,14 @@ assert.ok(pinguPrompt.includes("setupText"));
 assert.ok(pinguPrompt.includes("dreadText"));
 assert.ok(pinguPrompt.includes("Do not write generic dread words"));
 assert.ok(pinguPrompt.includes('"templateId": "pingu-noot-noot"'));
+
+const darwinPrompt = buildVideoMemePrompt(research, DARWIN_JOURNEY_VARIANT_COUNT, "darwin-journey");
+assert.ok(darwinPrompt.includes("Darwin's Journey"));
+assert.ok(darwinPrompt.includes("Write exactly 3 variants."));
+assert.ok(darwinPrompt.includes("POV: the ${persona} who survived ${specific stacked pains}"));
+assert.ok(darwinPrompt.includes("Prefer a mode mix when evidence supports it"));
+assert.ok(darwinPrompt.includes("real pain underneath"));
+assert.ok(darwinPrompt.includes('"templateId": "darwin-journey"'));
 
 assert.throws(
   () => extractVideoMemeVariantsFromResponse(JSON.stringify({
@@ -218,6 +257,106 @@ assert.throws(
       target: index === 1 ? variants[0]!.target : variant.target,
     })),
   })),
+  /incomplete video meme variants/,
+);
+
+assert.throws(
+  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
+    variants: darwinVariants.map((variant, index) => ({
+      ...variant,
+      templateId: index === 0 ? "bear-sniff" : "darwin-journey",
+    })),
+  }), {
+    templateId: "darwin-journey",
+  }),
+  /incomplete video meme variants/,
+);
+
+assert.throws(
+  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
+    variants: darwinVariants.map((variant, index) => ({
+      ...variant,
+      slots: index === 0 ? {} : variant.slots,
+    })),
+  }), {
+    templateId: "darwin-journey",
+  }),
+  /incomplete video meme variants/,
+);
+
+assert.throws(
+  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
+    variants: darwinVariants.map((variant, index) => ({
+      ...variant,
+      slots: index === 0 ? { caption: "POV: Agent Enamel users calmly watching every call get booked" } : variant.slots,
+    })),
+  }), {
+    brandNames: [research.brand.name, research.brandBrief.brandName],
+    templateId: "darwin-journey",
+  }),
+  /incomplete video meme variants/,
+);
+
+assert.throws(
+  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
+    variants: darwinVariants.map((variant, index) => ({
+      ...variant,
+      slots: index === 0 ? { caption: "This bear sniffs front desks after a triple-booked Monday" } : variant.slots,
+    })),
+  }), {
+    templateId: "darwin-journey",
+  }),
+  /incomplete video meme variants/,
+);
+
+assert.throws(
+  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
+    variants: darwinVariants.map((variant, index) => ({
+      ...variant,
+      slots: index === 0 ? {
+        caption: "POV: the front desk after a caption that keeps going past the readable top band and should never be accepted here",
+      } : variant.slots,
+    })),
+  }), {
+    templateId: "darwin-journey",
+  }),
+  /incomplete video meme variants/,
+);
+
+assert.throws(
+  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
+    variants: darwinVariants.map((variant, index) => ({
+      ...variant,
+      slots: index === 0 ? { setupText: "schedule looks light", dreadText: "voicemail is full" } : variant.slots,
+    })),
+  }), {
+    templateId: "darwin-journey",
+  }),
+  /incomplete video meme variants/,
+);
+
+assert.throws(
+  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
+    variants: darwinVariants.map((variant, index) => ({
+      ...variant,
+      angle: index === 1 ? darwinVariants[0]!.angle : variant.angle,
+    })),
+  }), {
+    templateId: "darwin-journey",
+  }),
+  /incomplete video meme variants/,
+);
+
+assert.throws(
+  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
+    variants: darwinVariants.map((variant, index) => ({
+      ...variant,
+      mode: index === 2 ? "goofy_exaggeration" : variant.mode,
+      selfCheckPassed: index === 2 ? "It is silly and specific." : variant.selfCheckPassed,
+    })),
+  }), {
+    templateId: "darwin-journey",
+  }),
   /incomplete video meme variants/,
 );
 
@@ -305,6 +444,27 @@ const pinguHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
 assert.ok(pinguHtml.includes('data-video-meme-template="pingu-noot-noot"'));
 assert.ok(pinguHtml.includes('data-video-meme-setup-text="true"'));
 assert.ok(pinguHtml.includes('data-video-meme-dread-text="true"'));
+
+const darwinScenes = parsedDarwin.map((variant, index) => createVideoMemeAdScene({
+  research,
+  variant,
+  candidateIndex: index,
+  generationBatchId: "darwin-batch",
+  model: "test-model",
+  provider: "nvidia-nim",
+  now: 123,
+}));
+assert.equal(darwinScenes[0]!.layout.templateId, "darwin-journey");
+assert.equal(darwinScenes[0]!.layout.videoSrc, "/video-memes/darwin-journey.mp4");
+assert.equal(darwinScenes[0]!.layout.durationSeconds, 19.39);
+assert.equal(darwinScenes[0]!.layout.slots.caption, darwinVariants[0]!.slots.caption);
+
+const darwinHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: darwinScenes[0]!,
+}));
+assert.ok(darwinHtml.includes('data-video-meme-template="darwin-journey"'));
+assert.ok(darwinHtml.includes('data-video-meme-caption-text="true"'));
+assert.ok(darwinHtml.includes(darwinVariants[0]!.slots.caption));
 
 const rerolled = rerollScene(scenes, scenes[0]!, 0, createDefaultSceneLocks());
 assert.equal(rerolled.index, 1);

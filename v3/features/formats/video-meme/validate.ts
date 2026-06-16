@@ -24,7 +24,7 @@ export function validateVideoMemeScene(scene: VideoMemeAdScene): FormatValidatio
     const caption = scene.layout.slots.caption || "";
     if (!caption.trim()) errors.push("Video meme caption is missing.");
     if (caption.length > (template?.captionMaxChars || 90)) errors.push("Video meme caption is too long.");
-    if (template && !template.patternPrefixes.some((prefix) => caption.toLowerCase().startsWith(prefix.toLowerCase()))) {
+    if (template && template.patternPrefixes.length && !template.patternPrefixes.some((prefix) => caption.toLowerCase().startsWith(prefix.toLowerCase()))) {
       errors.push("Video meme caption does not match the selected template pattern.");
     }
   }

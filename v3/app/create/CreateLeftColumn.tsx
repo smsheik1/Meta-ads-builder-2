@@ -3,7 +3,7 @@ import {
   NIM_MEME_MODEL_OPTIONS,
   NIM_VISUALIZER_MODEL_OPTIONS,
 } from "@/features/llm/nvidiaNimModels";
-import { VIDEO_MEME_TEMPLATES, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
+import { VIDEO_MEME_TEMPLATES, getVideoMemeTemplate, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
 import type { AdFormatId } from "@/features/scene/types";
 
 type LoadStatus = "idle" | "loading" | "ready" | "error";
@@ -35,7 +35,7 @@ const getProgressRows = (format: AdFormatId, videoMemeTemplateId: VideoMemeTempl
       : format === "were-sorry"
         ? "Writing 8 apologies"
         : format === "video-meme"
-          ? videoMemeTemplateId === "pingu-noot-noot" ? "Writing 3 Pingu memes" : "Writing 8 bear memes"
+          ? `Writing ${getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8} video memes`
           : "Writing 50 ads",
   },
   { id: "preparing-canvas", label: "Preparing canvas" },
@@ -305,7 +305,7 @@ export function CreateLeftColumn({
               ))}
             </select>
             <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
-              Bear sniffs secrets. Pingu noot-noots urgent moments.
+              Bear sniffs secrets. Pingu noot-noots urgent moments. Darwin stays calm through chaos.
             </span>
           </label>
         ) : null}

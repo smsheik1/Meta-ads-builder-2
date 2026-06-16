@@ -1,7 +1,8 @@
 export const VIDEO_MEME_VARIANT_COUNT = 8;
 export const PINGU_NOOT_NOOT_VARIANT_COUNT = 3;
+export const DARWIN_JOURNEY_VARIANT_COUNT = 3;
 
-export type VideoMemeTemplateId = "bear-sniff" | "pingu-noot-noot";
+export type VideoMemeTemplateId = "bear-sniff" | "pingu-noot-noot" | "darwin-journey";
 
 export type VideoMemeTemplate = {
   id: VideoMemeTemplateId;
@@ -114,6 +115,59 @@ RULES:
 - Each slot must be under 70 characters.
 - Return templateId "pingu-noot-noot", not clipId.
 - Output slots.setupText and slots.dreadText. Do not output caption.`,
+  },
+  {
+    id: "darwin-journey",
+    name: "Darwin's Journey",
+    videoSrc: "/video-memes/darwin-journey.mp4",
+    durationSeconds: 19.39,
+    captionPosition: "top",
+    captionMaxChars: 90,
+    variantCount: DARWIN_JOURNEY_VARIANT_COUNT,
+    patternPrefixes: [],
+    allowedModes: ["customer_pain", "business_pain", "goofy_exaggeration"],
+    notes: "Darwin stays blank-faced while chaos blurs past. The caption names who stayed calm and what brand-specific pain they survived.",
+    promptNotes: `FORMAT FRAME:
+This is a comedy meme. Darwin sits calm and blank-faced while wildly chaotic environments blur past behind him. The joke is the mismatch: visible calm versus the absurd amount of specific pain they clearly survived.
+
+DARWIN JOURNEY CALIBRATION EXAMPLES:
+These teach the PATTERN. Do NOT copy them. They are from other contexts to show the shape, not to reuse.
+
+Strong customer_pain:
+"POV: the patient who called 4 dentists and got voicemail at every one"
+
+Strong business_pain:
+"POV: the front desk after flu season, 30 voicemails, and a triple-booked Monday"
+
+Strong goofy_exaggeration:
+"POV: the front desk whose voicemail box filed a restraining order"
+
+Weak:
+"When work gets crazy"
+Why weak: generic chaos, no specific persona or pain stack.
+
+Dead:
+"When your coffee spills and your wifi dies"
+Why dead: random off-brand trouble, not a brand pain.
+
+CAPTION PATTERNS:
+- "POV: the \${persona} who survived \${specific stacked pains}"
+- "When your calm doesn't match the \${specific thing you just got through}"
+- "\${specific persona} after \${specific pain stack}"
+
+MODES:
+- customer_pain: the buyer's POV after surviving the bad version of the problem.
+- business_pain: the operator's POV after surviving the workload or grind.
+- goofy_exaggeration: a real brand pain exaggerated absurdly. Not random internet chaos.
+
+RULES:
+- Single caption only. Return slots.caption.
+- Prefer a mode mix when evidence supports it, but never force a weak mode.
+- Name the actual pain stack. Do not call it chaos, stress, or things getting crazy.
+- Goofy variants must exaggerate a real brand pain, and selfCheckPassed must name the real pain underneath.
+- Do not use "This bear sniffs".
+- Do not use setupText or dreadText.
+- Return templateId "darwin-journey", not clipId.`,
   },
 ] as const;
 

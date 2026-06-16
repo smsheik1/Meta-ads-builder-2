@@ -23,7 +23,7 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     count: v.optional(v.number()),
     format: v.optional(v.union(v.literal("visualizer"), v.literal("meme"), v.literal("were-sorry"), v.literal("video-meme"))),
     memeModel: v.optional(v.string()),
-    videoMemeTemplateId: v.optional(v.union(v.literal("bear-sniff"), v.literal("pingu-noot-noot"))),
+    videoMemeTemplateId: v.optional(v.union(v.literal("bear-sniff"), v.literal("pingu-noot-noot"), v.literal("darwin-journey"))),
     visualizerModel: v.optional(v.string()),
   },
   handler: async (ctx, { researchRunId, count, format = "visualizer", memeModel, videoMemeTemplateId, visualizerModel }) => {
