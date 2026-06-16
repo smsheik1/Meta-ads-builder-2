@@ -128,6 +128,15 @@ Good: "The pan nothing sticks to. Even eggs."
 Bad: "Quality You Can Taste"
 Good: "Stop scrubbing burnt rice off your pot"
 
+E-COMMERCE PATTERN:
+Generic e-commerce headlines describe the category.
+Great e-commerce headlines name:
+- the specific objection the buyer is quietly worried about
+- the moment of use where the product has to prove itself
+- a concrete product detail that signals "they get it"
+
+Do not invent proof. For e-commerce, never make up clinical claims, bestseller status, review counts, discounts, guarantees, materials, ingredients, or performance claims unless the website evidence says them.
+
 WHY THE GOOD ONES WORK:
 - They name a specific moment the buyer has lived: a time, a scene, or a friction.
 - They make the buyer think "that's literally me" within 2 seconds.
