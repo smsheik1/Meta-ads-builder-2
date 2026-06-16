@@ -22,6 +22,8 @@ assert.ok(prompt.includes("Every script must use a different adAngle"), "Dialogu
 assert.ok(prompt.includes("Each script must be exactly 4 lines"), "Dialogue prompt must avoid undefined extra pitch lines.");
 assert.ok(prompt.includes("Speakers strictly alternate: Ava, Sam, Ava, Sam"), "Dialogue prompt must force speaker alternation.");
 assert.ok(prompt.includes("Tone must be one of"), "Dialogue prompt must constrain TTS tones.");
+assert.ok(prompt.includes("natural next step"), "Dialogue prompt must end with a natural CTA step.");
+assert.ok(prompt.includes(defaultRenderScene.creative.ctaText), "Dialogue prompt must pass the CTA into ending guidance.");
 
 const fallbackScripts = buildFallbackDialogueScripts(defaultRenderScene, 5);
 assert.equal(fallbackScripts.length, 5);

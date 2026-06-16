@@ -312,7 +312,7 @@ REQUIRED SHAPE:
 - Line 1: A drops a specific moment, number, time, place, tab, meeting, metric, or customer quote. Not a feeling.
 - Line 2: B reacts like a friend or operator. Do not pitch yet.
 - Line 3: A asks what changed, asks for the link, calls BS, or asks what they did next.
-- Line 4: B drops the proof casually. Name the brand only if it sounds natural, never as a pitch.
+- Line 4: B drops the proof casually, then ends with the natural next step the listener should take. Name the brand only if it sounds natural, never as a pitch.
 
 DISTINCTNESS:
 - Every script must use a different adAngle when CACHED AD ANGLES has enough options.
@@ -365,6 +365,7 @@ RULES:
 - Speakers strictly alternate: Ava, Sam, Ava, Sam.
 - No fake names, fake stats, fake testimonials, or made-up claims.
 - If proof is weak, stay vague and human instead of quoting marketing copy or inventing numbers.
+- The ending should imply or say the CTA (${cleanText(scene.creative.ctaText, 80)}) only when it sounds like something a person would actually say.
 - Tone must be one of: frustrated, calm, surprised, skeptical, casual, relieved.
 - Name the brand above (${cleanText(scene.brand.name, 80)}) only if natural. Never mention Wiggly.
 - No em dashes or en dashes.
