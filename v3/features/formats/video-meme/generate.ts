@@ -77,6 +77,8 @@ const normalizeCount = (count?: number, defaultCount = VIDEO_MEME_VARIANT_COUNT)
   return Math.max(1, Math.min(maxVariants, Math.floor(count ?? defaultCount)));
 };
 
+const getProviderRequestCount = (count: number) => Math.min(maxVariants, count + Math.max(2, Math.ceil(count / 3)));
+
 const cleanText = (value: unknown, maxLength = 220) => String(value ?? "")
   .replace(/!\[[^\]]*]\([^)]+\)/g, " ")
   .replace(/https?:\/\/\S+/gi, " ")
@@ -230,10 +232,10 @@ export function extractVideoMemeVariantsFromResponse(
     });
   }
 
-  if (variants.length !== expectedCount) {
+  if (variants.length < expectedCount) {
     throw new Error(`${providerLabel} returned incomplete video meme variants.`);
   }
-  return variants;
+  return variants.slice(0, expectedCount);
 }
 
 export async function generateVideoMemeVariantsFromResearch(
@@ -244,7 +246,8 @@ export async function generateVideoMemeVariantsFromResearch(
   const template = getVideoMemeTemplate(templateId);
   if (!template) throw new Error(`Unknown video meme template: ${templateId}`);
   const count = normalizeCount(options.count, template.variantCount);
-  const prompt = buildVideoMemePrompt(research, count, templateId);
+  const providerRequestCount = getProviderRequestCount(count);
+  const prompt = buildVideoMemePrompt(research, providerRequestCount, templateId);
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const nvidiaNimModel = options.nvidiaNimModel
     || process.env.NVIDIA_NIM_VIDEO_MEME_MODEL
@@ -296,7 +299,7 @@ export async function generateVideoMemeVariantsFromResearch(
         label: "NVIDIA NIM video meme generation",
         model: nvidiaNimModel,
         nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
-        prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Return exactly ${count} variants. Every variant needs a unique angle, unique target, ${retryShape}, mode ${template.allowedModes.join(" or ")}, and selfCheckPassed. Never name the brand/product. Return only the JSON object.`,
+        prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Return exactly ${providerRequestCount} variants so at least ${count} pass validation. Every variant needs a unique angle, unique target, ${retryShape}, mode ${template.allowedModes.join(" or ")}, and selfCheckPassed. Never name the brand/product. Return only the JSON object.`,
         timeoutMs,
       });
       variants = extractVideoMemeVariantsFromResponse(retryContent, {

@@ -108,6 +108,21 @@ const parsed = extractVideoMemeVariantsFromResponse(JSON.stringify(payload), {
 assert.equal(parsed.length, VIDEO_MEME_VARIANT_COUNT);
 assert.deepEqual(parsed[0], variants[0]);
 
+const parsedOversampled = extractVideoMemeVariantsFromResponse(JSON.stringify({
+  variants: [
+    ...variants,
+    {
+      ...variants[0]!,
+      angle: "extra valid bear angle",
+      target: "extra valid bear target",
+      caption: "This bear sniffs people checking the call log after lunch.",
+    },
+  ],
+}), {
+  brandNames: [research.brand.name, research.brandBrief.brandName],
+});
+assert.equal(parsedOversampled.length, VIDEO_MEME_VARIANT_COUNT);
+
 const pinguVariants = Array.from({ length: PINGU_NOOT_NOOT_VARIANT_COUNT }, (_, index) => ({
   angle: `distinct pingu angle ${index + 1}`,
   templateId: "pingu-noot-noot" as const,
@@ -373,7 +388,13 @@ const retryResult = await generateVideoMemeVariantsFromResearch(research, {
   nvidiaNimBaseUrl: "https://nim.test/v1",
   nvidiaNimModel: "test-kimi-model",
   nvidiaNimChatCompletion: async ({ prompt: callPrompt }) => {
-    if (callPrompt.includes("previous output was invalid")) return JSON.stringify(payload);
+    assert.ok(callPrompt.includes("Write exactly 11 variants"));
+    if (callPrompt.includes("previous output was invalid")) return JSON.stringify({ variants: [...variants, ...variants.slice(0, 3).map((variant, index) => ({
+      ...variant,
+      angle: `retry extra angle ${index}`,
+      target: `retry extra target ${index}`,
+      caption: `This bear sniffs people checking missed calls after ${index + 1} meetings.`,
+    }))] });
     return JSON.stringify({ variants: [] });
   },
 });
