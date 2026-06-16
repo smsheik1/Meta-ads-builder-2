@@ -33,7 +33,8 @@ export const DEFAULT_GEMINI_DIALOGUE_MODEL = "gemini-3.1-flash-lite";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const maxScripts = 8;
-const maxLinesPerScript = 4;
+const dialogueLinesPerScript = 6;
+const maxLinesPerScript = dialogueLinesPerScript;
 const allowedTones = ["frustrated", "calm", "surprised", "skeptical", "casual", "relieved"] as const;
 
 const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.test(String(value || ""));
@@ -111,7 +112,7 @@ export const cleanDialogueScriptForVoiceover = (script: DialogueScript): Dialogu
   title: cleanText(script.title, 80) || "Conversation Ad",
   angle: cleanText(script.angle, 160) || "Two people talking about the offer.",
   lines: script.lines.map((line, index) => ({
-    speaker: cleanText(line.speaker, 24) || speakerForIndex(index),
+    speaker: speakerForIndex(index),
     tone: normalizeTone(line.tone, index),
     text: cleanText(line.text, 180),
   })).filter((line) => line.text),
@@ -149,7 +150,7 @@ const normalizeDialogueScriptsPayload = (payload: unknown, count: number): Dialo
         lines,
       });
     })
-    .filter((script) => script.lines.length === 4)
+    .filter((script) => script.lines.length === dialogueLinesPerScript)
     .slice(0, count);
 };
 
@@ -166,6 +167,7 @@ export const buildFallbackDialogueScripts = (scene: AdScene, count = DEFAULT_DIA
   const cta = cleanText(scene.creative.ctaText, 44) || "See it";
   const proofLine = proof ? `${proof}. That is the receipt.` : `${brandName} makes the next step feel obvious.`;
   const painLine = pain || `People keep missing what ${brandName} actually does.`;
+  const ctaLine = `${brandName}. ${cta}.`;
 
   const scripts: DialogueScript[] = [
     {
@@ -174,49 +176,58 @@ export const buildFallbackDialogueScripts = (scene: AdScene, count = DEFAULT_DIA
       lines: [
         { speaker: "Ava", tone: "frustrated", text: painLine },
         { speaker: "Sam", tone: "calm", text: "Yeah, that is the part most ads skip." },
-        { speaker: "Ava", tone: "curious", text: "So what would you lead with instead?" },
-        { speaker: "Sam", tone: "matter-of-fact", text: `${proofLine} Then point them to ${cta}.` },
+        { speaker: "Ava", tone: "skeptical", text: "So what would you lead with instead?" },
+        { speaker: "Sam", tone: "calm", text: proofLine },
+        { speaker: "Ava", tone: "surprised", text: "Okay, what is the next step?" },
+        { speaker: "Sam", tone: "casual", text: ctaLine },
       ],
     },
     {
       title: "The Link Ask",
       angle: "The proof sounds useful enough that the other person asks for the link.",
       lines: [
-        { speaker: "Ava", tone: "direct", text: `I keep seeing the same issue, ${painLine}` },
-        { speaker: "Sam", tone: "practical", text: `That is exactly why ${brandName} stands out.` },
+        { speaker: "Ava", tone: "frustrated", text: `I keep seeing the same issue, ${painLine}` },
+        { speaker: "Sam", tone: "calm", text: `That is exactly why ${brandName} stands out.` },
         { speaker: "Ava", tone: "skeptical", text: "Wait, what changed?" },
         { speaker: "Sam", tone: "casual", text: proofLine },
-        { speaker: "Ava", tone: "interested", text: "Send me that." },
+        { speaker: "Ava", tone: "relieved", text: "Send me that." },
+        { speaker: "Sam", tone: "casual", text: ctaLine },
       ],
     },
     {
       title: "Before The Pitch",
       angle: "The opening names the real moment before the brand is mentioned.",
       lines: [
-        { speaker: "Ava", tone: "tired", text: painLine },
-        { speaker: "Sam", tone: "warm", text: "I would not start with a pitch. I would start right there." },
-        { speaker: "Ava", tone: "thinking", text: `Then the headline is basically, ${headline}.` },
-        { speaker: "Sam", tone: "clear", text: `${proofLine} That makes it feel real.` },
+        { speaker: "Ava", tone: "frustrated", text: painLine },
+        { speaker: "Sam", tone: "calm", text: "I would not start with a pitch. I would start right there." },
+        { speaker: "Ava", tone: "skeptical", text: `Then the headline is basically, ${headline}.` },
+        { speaker: "Sam", tone: "calm", text: `${proofLine} That makes it feel real.` },
+        { speaker: "Ava", tone: "surprised", text: "What should someone do after hearing that?" },
+        { speaker: "Sam", tone: "casual", text: ctaLine },
       ],
     },
     {
       title: "Operator Check",
       angle: "Two operators translate a messy website claim into a human ad line.",
       lines: [
-        { speaker: "Ava", tone: "focused", text: `If I only had five seconds, I would say ${headline}.` },
-        { speaker: "Sam", tone: "thoughtful", text: "Good. But make the reason feel like something that happened." },
-        { speaker: "Ava", tone: "curious", text: "Like what?" },
-        { speaker: "Sam", tone: "steady", text: proofLine },
+        { speaker: "Ava", tone: "skeptical", text: `If I only had five seconds, I would say ${headline}.` },
+        { speaker: "Sam", tone: "calm", text: "Good. But make the reason feel like something that happened." },
+        { speaker: "Ava", tone: "skeptical", text: "Like what?" },
+        { speaker: "Sam", tone: "calm", text: proofLine },
+        { speaker: "Ava", tone: "relieved", text: "That is the part I would remember." },
+        { speaker: "Sam", tone: "casual", text: ctaLine },
       ],
     },
     {
       title: "The Simple Version",
       angle: "The ad becomes a conversation instead of a feature list.",
       lines: [
-        { speaker: "Ava", tone: "honest", text: "Most ads make this sound way more complicated than it is." },
-        { speaker: "Sam", tone: "easy", text: `Then keep it simple. ${painLine}` },
-        { speaker: "Ava", tone: "curious", text: `And ${brandName} is the next step?` },
-        { speaker: "Sam", tone: "confident", text: `${proofLine} ${cta}.` },
+        { speaker: "Ava", tone: "frustrated", text: "Most ads make this sound way more complicated than it is." },
+        { speaker: "Sam", tone: "calm", text: `Then keep it simple. ${painLine}` },
+        { speaker: "Ava", tone: "skeptical", text: `And ${brandName} is the next step?` },
+        { speaker: "Sam", tone: "calm", text: proofLine },
+        { speaker: "Ava", tone: "relieved", text: "That is enough for me to check it out." },
+        { speaker: "Sam", tone: "casual", text: ctaLine },
       ],
     },
   ];
@@ -264,7 +275,7 @@ export const buildDialogueScriptsPrompt = (scene: AdScene, count = DEFAULT_DIALO
 
 OBJECTIVE:
 Write ${normalizeCount(count)} natural, overheard conversation options for the brand below.
-These scripts will become two-speaker audio for a social video ad.
+These scripts will become two-speaker audio for a social video ad that plays on mute first, so the conversation needs enough runway that the key beats land after a viewer's sound turns on.
 
 BRAND:
 Name: ${cleanText(scene.brand.name, 80)}
@@ -294,8 +305,8 @@ Use these first when available. Each script must be built on a different adAngle
 ${adAnglesForPrompt(scene)}
 
 BEFORE writing each script, decide:
-- Setting: where are they? texting, car, hallway, Slack DM, front counter, voice note, or another real place
-- Relationship: who are they? co-founder/co-founder, boss/employee, two operators, friend/friend, founder/customer
+- Setting: texting, car, hallway, Slack DM, front counter, voice note, or another real place
+- Relationship: co-founder/co-founder, boss/employee, two operators, friend/friend, founder/customer
 - Angle: ONE adAngle from CACHED AD ANGLES. If none exist, use ONE specific buyerMoment from RECEIPTS or the selected ad pain
 - Proof: the chosen adAngle proof, ONE specific claim, namedProof, or selected ad proof
 
@@ -308,62 +319,56 @@ BANNED SHAPE. Do not produce:
 - B: receipt
 That is an infomercial structure. Real overheard conversations do not work that way.
 
-REQUIRED SHAPE:
-- Line 1: A drops a specific moment, number, time, place, tab, meeting, metric, or customer quote. Not a feeling.
-- Line 2: B reacts like a friend or operator. Do not pitch yet.
-- Line 3: A asks what changed, asks for the link, calls BS, or asks what they did next.
-- Line 4: B drops the proof casually, then ends with the natural next step the listener should take. Name the brand only if it sounds natural, never as a pitch.
+REQUIRED SHAPE (exactly 6 lines, speakers strictly alternate Ava, Sam, Ava, Sam, Ava, Sam):
+- Line 1: A drops a specific moment, number, time, place, tab, meeting, metric, or customer quote. Not a feeling. This is the hook and must read well as on-screen text on mute.
+- Line 2: B reacts like a friend or operator. Does not pitch.
+- Line 3: A probes: asks what changed, asks what they did, or calls BS.
+- Line 4: B drops the proof casually. Names the brand only if natural, never as a pitch.
+- Line 5: A wants in. Asks for the name, the link, or how to start. The CTA comes from A pulling, never from B pushing.
+- Line 6: B answers plainly with the brand name or next step, flat and human, not a pitch or a recap. This carries ${cleanText(scene.creative.ctaText, 80)} as something a person would actually say.
 
 DISTINCTNESS:
 - Every script must use a different adAngle when CACHED AD ANGLES has enough options.
 - Every script must use a different setting and a different relationship.
 - Do not write reworded versions of the same conversation.
 
-STUDY THESE EXAMPLES. Copy the rhythm, not the specifics. Never copy names, settings, industries, numbers, phrases, titles, or lines from these examples.
-
-Example 1:
-Ava (frustrated): "Just got the Q4 ad invoice. Fourteen grand for leads we used to get for six."
-Sam (calm): "We stopped trying to win every auction."
-Ava: "Then where are the buyers coming from."
-Sam: "The recommendation searches. We show up before they even hit a site."
-
-Example 2:
-Ava (frustrated): "We had three good booking requests sit unanswered while I was on jobs."
-Sam (calm): "That is the leak. Not demand, response time."
-Ava: "I hate that the best leads arrive when nobody can reply."
-Sam: "The new setup catches those moments and books the next step."
-
-FORMAT-SPECIFIC EXAMPLES. Copy the conversational shape, not the facts.
+STUDY THESE EXAMPLES. Copy the rhythm, not the specifics. Never copy names, settings, industries, numbers, phrases, titles, or lines.
 
 Local service:
-Ava (frustrated): "The dishwasher died at 8pm and every repair shop form said tomorrow."
+Ava (frustrated): "The dishwasher died at 8pm and every repair form said tomorrow."
 Sam (calm): "That is when people stop comparing and just want a slot."
 Ava: "Who actually picked it up?"
-Sam: "The shop with live evening booking. I grabbed the first morning window."
+Sam: "The shop with live evening booking. Grabbed the first morning window."
+Ava (surprised): "Okay, who was that, I have one dying too."
+Sam (casual): "Northside. Booked it from my phone in under a minute."
 
 Operator workflow:
-Ava (skeptical): "Inventory said we had twelve left. The warehouse found three."
+Ava (skeptical): "Inventory said twelve left. The warehouse found three."
 Sam (calm): "That mismatch is what keeps support buried."
-Ava: "Did the new scan flow actually fix it?"
-Sam: "By Friday, the counts matched before the pick list went out."
+Ava (frustrated): "Did the new scan flow actually fix it?"
+Sam (calm): "By Friday the counts matched before the pick list went out."
+Ava (surprised): "What's it called, I want this before peak season."
+Sam (casual): "I'll drop you the link. Took an afternoon to set up."
 
 Ecommerce:
 Ava (frustrated): "I forgot the gift and the party is this weekend."
 Sam (calm): "Then do not make it complicated."
-Ava: "What would you send?"
-Sam: "Fresh baked cookies. It still feels personal, and it ships like a real gift."
+Ava (skeptical): "What would you send?"
+Sam (calm): "Fresh baked cookies. Feels personal, ships like a real gift."
+Ava (relieved): "Perfect, where do I order?"
+Sam (casual): "I'll text you the site, you can have it out by tonight."
 
 BANNED PHRASES:
 "this tool", "is it working", "will that really make a difference", "I'm worried", "I don't understand", "how does it work", "what's your secret", "unlock", "elevate", "transform your business"
 
 RULES:
 - Return exactly ${normalizeCount(count)} scripts.
-- Each script must be exactly 4 lines.
+- Each script must be exactly 6 lines.
 - Use the same two speakers, Ava and Sam.
-- Speakers strictly alternate: Ava, Sam, Ava, Sam.
+- Speakers strictly alternate: Ava, Sam, Ava, Sam, Ava, Sam.
 - No fake names, fake stats, fake testimonials, or made-up claims.
 - If proof is weak, stay vague and human instead of quoting marketing copy or inventing numbers.
-- The ending should imply or say the CTA (${cleanText(scene.creative.ctaText, 80)}) only when it sounds like something a person would actually say.
+- The CTA must come from A asking, never from B pitching. Line 6 carries ${cleanText(scene.creative.ctaText, 80)} as a natural human reply.
 - Tone must be one of: frustrated, calm, surprised, skeptical, casual, relieved.
 - Name the brand above (${cleanText(scene.brand.name, 80)}) only if natural. Never mention Wiggly.
 - No em dashes or en dashes.

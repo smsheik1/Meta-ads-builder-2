@@ -14,26 +14,25 @@ assert.ok(prompt.includes("REQUIRED SHAPE"), "Dialogue prompt must force a real 
 assert.ok(prompt.includes("specificClaims"), "Dialogue prompt must pass receipt claims.");
 assert.ok(prompt.includes(defaultRenderScene.creative.selectedProof), "Dialogue prompt must include selected proof.");
 assert.ok(prompt.includes("Never mention Wiggly"), "Dialogue prompt must protect the product boundary.");
-assert.ok(prompt.includes("FORMAT-SPECIFIC EXAMPLES"), "Dialogue prompt must include visualizer-specific examples.");
 assert.ok(prompt.includes("Local service"), "Dialogue prompt must include a local service example.");
 assert.ok(prompt.includes("CACHED AD ANGLES"), "Dialogue prompt must consume cached ad angles.");
 assert.ok(prompt.includes("a competitor shows up first in a ChatGPT recommendation"), "Dialogue prompt must pass ad angle moments.");
 assert.ok(prompt.includes("Every script must use a different adAngle"), "Dialogue prompt must enforce distinct angles.");
-assert.ok(prompt.includes("Each script must be exactly 4 lines"), "Dialogue prompt must avoid undefined extra pitch lines.");
-assert.ok(prompt.includes("Speakers strictly alternate: Ava, Sam, Ava, Sam"), "Dialogue prompt must force speaker alternation.");
+assert.ok(prompt.includes("Each script must be exactly 6 lines"), "Dialogue prompt must define the full audio script length.");
+assert.ok(prompt.includes("Speakers strictly alternate: Ava, Sam, Ava, Sam, Ava, Sam"), "Dialogue prompt must force speaker alternation.");
 assert.ok(prompt.includes("Tone must be one of"), "Dialogue prompt must constrain TTS tones.");
-assert.ok(prompt.includes("natural next step"), "Dialogue prompt must end with a natural CTA step.");
+assert.ok(prompt.includes("The CTA must come from A asking"), "Dialogue prompt must make CTA pull-based.");
 assert.ok(prompt.includes(defaultRenderScene.creative.ctaText), "Dialogue prompt must pass the CTA into ending guidance.");
-assert.ok(!prompt.includes("How fast did that happen."), "Dialogue examples must not leak 6-line scripts.");
+assert.ok(prompt.includes("plays on mute first"), "Dialogue prompt must account for muted social playback.");
 assert.ok(!/\((?:tired|practical|annoyed|plain|focused|warm|rushed)\):/.test(prompt), "Dialogue example tones must stay in the allowed enum.");
 assert.ok(prompt.includes("The dishwasher died at 8pm"), "Local-service example should stay away from dental phones.");
-assert.ok(prompt.includes("Inventory said we had twelve left"), "Operator example should stay away from AI-visibility framing.");
+assert.ok(prompt.includes("Inventory said twelve left"), "Operator example should stay away from AI-visibility framing.");
 
 const fallbackScripts = buildFallbackDialogueScripts(defaultRenderScene, 5);
 assert.equal(fallbackScripts.length, 5);
 for (const script of fallbackScripts) {
-  assert.ok(script.lines.length >= 4, "Fallback scripts must be conversation-length.");
-  assert.ok(new Set(script.lines.map((line) => line.speaker)).size >= 2, "Fallback scripts must use two speakers.");
+  assert.equal(script.lines.length, 6, "Fallback scripts must match the dialogue contract.");
+  assert.deepEqual(script.lines.map((line) => line.speaker), ["Ava", "Sam", "Ava", "Sam", "Ava", "Sam"]);
   assert.ok(script.lines.some((line) => line.text.includes(defaultRenderScene.creative.selectedProof)), "Fallback should use the selected proof.");
 }
 
@@ -48,12 +47,13 @@ const dirty = cleanDialogueScriptForVoiceover({
   title: "  Test — script ",
   angle: "  One — angle ",
   lines: [
-    { speaker: "", tone: "", text: " Hello — there   " },
-    { speaker: "Sam", tone: "calm", text: "  Proof.  " },
+    { speaker: "Wrong", tone: "", text: " Hello — there   " },
+    { speaker: "Wrong", tone: "calm", text: "  Proof.  " },
   ],
 });
 assert.equal(dirty.title, "Test, script");
 assert.equal(dirty.lines[0]!.speaker, "Ava");
+assert.equal(dirty.lines[1]!.speaker, "Sam");
 assert.equal(dirty.lines[0]!.tone, "skeptical");
 assert.equal(dirty.lines[0]!.text, "Hello, there");
 
@@ -71,6 +71,8 @@ const generated = await generateDialogueScriptsForScene(defaultRenderScene, {
           { speaker: "Ava", tone: "curious", text: "What changed on your side?" },
           { speaker: "Sam", tone: "plain", text: "First ChatGPT mention in 14 days." },
           { speaker: "Ava", tone: "interested", text: "Send me that." },
+          { speaker: "Sam", tone: "casual", text: "See the proof." },
+          { speaker: "Ava", tone: "relieved", text: "Extra line should be trimmed." },
         ],
       },
     ],
@@ -80,7 +82,8 @@ const generated = await generateDialogueScriptsForScene(defaultRenderScene, {
 assert.equal(generated.scripts.length, 2, "Gemini scripts should top up with fallback scripts.");
 assert.equal(generated.provider, "gemini");
 assert.equal(generated.scripts[0]!.lines[0]!.speaker, "Ava");
-assert.equal(generated.scripts[0]!.lines.length, 4);
+assert.equal(generated.scripts[0]!.lines.length, 6);
+assert.deepEqual(generated.scripts[0]!.lines.map((line) => line.speaker), ["Ava", "Sam", "Ava", "Sam", "Ava", "Sam"]);
 assert.equal(generated.scripts[0]!.lines[0]!.tone, "skeptical");
 assert.equal(generated.scripts[0]!.lines[2]!.tone, "skeptical");
 assert.equal(generated.scripts[0]!.lines[3]!.tone, "calm");
