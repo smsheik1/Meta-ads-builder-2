@@ -105,6 +105,31 @@ assert.deepEqual(cached.brand.colors, ["#00B95B"]);
 assert.equal(cached.providerStatus[0]?.provider, "brand-cache");
 assert.equal((cached.branding.brandAssetDecision as { finalLogoSource?: string }).finalLogoSource, "initials");
 
+let colorOnlyCacheBrandfetchCalls = 0;
+const colorOnlyCache = await resolveBrandAssets({
+  domain: "cached-colors.example",
+  apiKey: "test-brandfetch-key",
+  cachedBrand: {
+    colors: ["#123456"],
+    fonts: { feel: "sans" },
+  },
+  fetcher: (async (requestUrl) => {
+    const url = String(requestUrl);
+    if (url === "https://api.brandfetch.io/v2/brands/domain/cached-colors.example") {
+      colorOnlyCacheBrandfetchCalls += 1;
+      return new Response(JSON.stringify({
+        logos: [],
+        colors: [],
+        fonts: [],
+      }), { status: 200 });
+    }
+    throw new Error(`Unexpected fetch for color-only cache: ${url}`);
+  }) as typeof fetch,
+});
+assert.equal(colorOnlyCacheBrandfetchCalls, 1);
+assert.deepEqual(colorOnlyCache.brand.colors, ["#123456"]);
+assert.equal(colorOnlyCache.providerStatus[0]?.provider, "brandfetch");
+
 const skipped = await resolveBrandAssets({
   domain: "brandfetch.com",
   apiKey: "",

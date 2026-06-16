@@ -220,9 +220,11 @@ export const resolveBrandAssets = async ({
   fetcher?: Fetcher;
 }): Promise<BrandAssetResolution> => {
   const decisions: BrandAssetDecision[] = [];
+  let cachedFallback: CachedBrandAssets | null = null;
   if (cacheHasAssets(cachedBrand)) {
     const verifiedBrand = await verifiedCachedBrand(cachedBrand || {}, fetcher, decisions);
-    if (cacheHasAssets(verifiedBrand)) {
+    cachedFallback = verifiedBrand;
+    if (verifiedBrand.logoUrl || verifiedBrand.faviconUrl || !apiKey) {
       const finalLogoUrl = verifiedBrand.logoUrl || verifiedBrand.faviconUrl || null;
       console.info("Brand asset decision", {
         domain,
@@ -248,6 +250,12 @@ export const resolveBrandAssets = async ({
         }],
       };
     }
+    decisions.push({
+      source: "brand-cache",
+      url: null,
+      status: "rejected",
+      reason: "Cached brand assets had no valid logo or favicon; trying Brandfetch logo lookup.",
+    });
   }
 
   if (!apiKey) {
@@ -282,8 +290,8 @@ export const resolveBrandAssets = async ({
       name: clean(payload.name, 80),
       description: clean(payload.description || payload.longDescription, 280),
       logoUrl,
-      colors,
-      fonts,
+      colors: colors.length ? colors : cachedFallback?.colors || [],
+      fonts: fonts.feel !== "unknown" ? fonts : cachedFallback?.fonts || fonts,
     };
     const useful = Boolean(brand.name || brand.description || brand.logoUrl || colors.length || fonts.feel !== "unknown");
     const colorTypes = (Array.isArray(payload.colors) ? payload.colors : [])
@@ -329,7 +337,7 @@ export const resolveBrandAssets = async ({
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error || "Brandfetch failed.");
     return {
-      brand: {},
+      brand: cachedFallback || {},
       branding: {},
       providerStatus: [{
         provider: "brandfetch",
