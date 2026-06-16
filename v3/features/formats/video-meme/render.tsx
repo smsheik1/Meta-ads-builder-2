@@ -33,7 +33,6 @@ export function VideoMemeFormatRenderer({
         src={scene.layout.videoSrc}
         className="absolute inset-0 size-full object-cover"
         autoPlay
-        muted
         loop
         playsInline
         preload="auto"

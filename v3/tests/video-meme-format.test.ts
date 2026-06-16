@@ -256,6 +256,7 @@ assert.ok(html.includes('/video-memes/bear-sniff.mp4'));
 assert.ok(html.includes('data-video-meme-caption-position="top"'));
 assert.ok(html.includes('data-video-meme-caption-text="true"'));
 assert.ok(html.includes(variants[0]!.caption));
+assert.ok(!html.includes("muted"), "Video meme preview must not force-mute source clip audio.");
 
 const rerolled = rerollScene(scenes, scenes[0]!, 0, createDefaultSceneLocks());
 assert.equal(rerolled.index, 1);
