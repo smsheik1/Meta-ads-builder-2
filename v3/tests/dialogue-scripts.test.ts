@@ -20,6 +20,7 @@ assert.ok(prompt.includes("CACHED AD ANGLES"), "Dialogue prompt must consume cac
 assert.ok(prompt.includes("a competitor shows up first in a ChatGPT recommendation"), "Dialogue prompt must pass ad angle moments.");
 assert.ok(prompt.includes("Every script must use a different adAngle"), "Dialogue prompt must enforce distinct angles.");
 assert.ok(prompt.includes("Each script must be exactly 4 lines"), "Dialogue prompt must avoid undefined extra pitch lines.");
+assert.ok(prompt.includes("Speakers strictly alternate: Ava, Sam, Ava, Sam"), "Dialogue prompt must force speaker alternation.");
 assert.ok(prompt.includes("Tone must be one of"), "Dialogue prompt must constrain TTS tones.");
 
 const fallbackScripts = buildFallbackDialogueScripts(defaultRenderScene, 5);
