@@ -38,6 +38,7 @@ import type {
   StoredWebsiteResearchResponse,
   StoredWebsiteResearchResult,
 } from "@/features/research/types";
+import { normalizePublicWebsiteUrl } from "@/features/research/url";
 import { getClientRendererVersion } from "@/features/render/rendererVersion";
 import type { AdFormatId, AdScene, AdSceneVisualizerStyle } from "@/features/scene/types";
 import { visualizerSceneVariants } from "@/features/scene/visualizerVariants";
@@ -103,6 +104,10 @@ function getGenerationCount(format: AdFormatId) {
   if (format === "meme") return 12;
   if (format === "were-sorry") return 8;
   return 50;
+}
+
+function normalizedUrlKey(value: string) {
+  return normalizePublicWebsiteUrl(value).href;
 }
 
 async function fetchBillingJson(url: string, init?: RequestInit) {
@@ -636,6 +641,54 @@ function ResearchConnected() {
     return nextGeneration.scenes || [];
   };
 
+  const getReusableResearchForUrl = (value: string) => {
+    if (!result?.researchRunId) return null;
+    try {
+      return normalizedUrlKey(value) === normalizedUrlKey(result.websiteUrl) ? result : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const generateScenesOnly = async (
+    research: StoredWebsiteResearchResult,
+    format: AdFormatId,
+  ) => {
+    setStatus("ready");
+    setAdStatus("loading");
+    setProgressStage("writing-ads");
+    setPendingProgressFacts(getWebsiteSubmitProgressFacts(research));
+    setShowSlowResearchMessage(false);
+    canvasActions.beginBusy("ad-generation");
+    resetShareState();
+    resetRenderState();
+    resetPreviewPlayback();
+    resetDialogueState();
+    closeCaptionPanel();
+    resetSaveState();
+    setError("");
+    setAdStatusNote("Reusing website research. Generating this format only.");
+
+    try {
+      const nextScenes = await generateScenesForResearch(
+        research.researchRunId as Id<"researchRuns">,
+        getGenerationCount(format),
+        format,
+        selectedMemeModel,
+        selectedVisualizerModel,
+      );
+      setProgressStage("preparing-canvas");
+      applyGeneratedScenes(nextScenes);
+      clearSubmitProgress();
+    } catch (nextError) {
+      clearSubmitProgress();
+      canvasActions.finishBusy();
+      setAdStatus("error");
+      setAdStatusNote(adScenes.length ? "Previous ads are still on the canvas. New ad generation failed." : "");
+      setError(getResearchActionErrorMessage(nextError));
+    }
+  };
+
   useCanvasKeyboard({
     editorScopeRef: createEditorScopeRef,
     onReroll: onRerollScene,
@@ -678,6 +731,14 @@ function ResearchConnected() {
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const hadExistingCanvas = Boolean(selectedScene || adScenes.length);
+    // TODO: add an explicit same-URL refresh control if stale site content becomes a real problem.
+    const reusableResearch = getReusableResearchForUrl(url);
+    if (reusableResearch) {
+      closeBrandDetails();
+      closeCaptionPanel();
+      await generateScenesOnly(reusableResearch, selectedAdFormat);
+      return;
+    }
     const keepPreviousCanvasAfterFailure = () => {
       setAdStatus(hadExistingCanvas ? "ready" : "error");
       if (hadExistingCanvas) {
@@ -762,6 +823,14 @@ function ResearchConnected() {
         setError(message);
       }
     }
+  };
+
+  const onFormatChange = (format: AdFormatId) => {
+    if (format === selectedAdFormat) return;
+    setSelectedAdFormat(format);
+    const reusableResearch = getReusableResearchForUrl(url);
+    if (!reusableResearch || status === "loading" || adStatus === "loading") return;
+    void generateScenesOnly(reusableResearch, format);
   };
 
   const startCheckout = async () => {
@@ -1195,7 +1264,7 @@ function ResearchConnected() {
             : ""}
           memeModel={selectedMemeModel}
           visualizerModel={selectedVisualizerModel}
-          onFormatChange={setSelectedAdFormat}
+          onFormatChange={onFormatChange}
           onMemeModelChange={setSelectedMemeModel}
           onVisualizerModelChange={setSelectedVisualizerModel}
           onSubmit={onSubmit}
