@@ -180,13 +180,13 @@ const fallbackHeadlineTemplates = (
     .filter((headline) => !isBadAdText(headline) && !includesBannedWord(headline));
 };
 
-const parseJsonObject = (value: string, providerLabel = "AI provider") => {
+const parseJsonPayload = (value: string, providerLabel = "AI provider") => {
   const trimmed = value.trim();
-  const jsonText = trimmed.startsWith("{")
+  const jsonText = trimmed.startsWith("{") || trimmed.startsWith("[")
     ? trimmed
-    : trimmed.match(/\{[\s\S]*\}/)?.[0] || "";
+    : trimmed.match(/\{[\s\S]*\}/)?.[0] || trimmed.match(/\[[\s\S]*\]/)?.[0] || "";
   if (!jsonText) throw new Error(`${providerLabel} returned no JSON.`);
-  return JSON.parse(jsonText) as Record<string, unknown>;
+  return JSON.parse(jsonText) as unknown;
 };
 
 const asArray = (value: unknown) => (Array.isArray(value) ? value : []);
@@ -234,6 +234,8 @@ export const normalizeAdCandidatePayload = (
   const record = value as Record<string, unknown>;
   const headline = cleanText(record.headline, 72);
   const subheadline = cleanText(record.subheadline, 180);
+  const selectedPain = cleanText(record.selectedPain || record.chosenBuyerMoment, 220);
+  const selectedProof = cleanText(record.selectedProof || record.chosenProof, 220);
 
   if (headline.length < 8 || headline.length > 72 || includesBannedWord(headline)) return null;
   if (subheadline.length < 24 || subheadline.length > 180 || includesBannedWord(subheadline)) return null;
@@ -245,8 +247,8 @@ export const normalizeAdCandidatePayload = (
     subheadline,
     ctaText: ensureCta(cleanText(record.ctaText, 34), index),
     headlineType: normalizeHeadlineType(record.headlineType, index),
-    selectedPain: cleanText(record.selectedPain, 220) || fallback.selectedPain,
-    selectedProof: cleanText(record.selectedProof, 220) || fallback.selectedProof,
+    selectedPain: selectedPain || fallback.selectedPain,
+    selectedProof: selectedProof || fallback.selectedProof,
   };
 };
 
@@ -395,10 +397,13 @@ export const extractAdCandidatesFromResponse = (
   count = DEFAULT_AD_IDEA_COUNT,
   providerLabel = "AI provider",
 ) => {
-  const payload = parseJsonObject(content, providerLabel);
+  const payload = parseJsonPayload(content, providerLabel);
   const normalizedCount = normalizeCount(count);
   const seen = new Set<string>();
-  const parsed = asArray(payload.candidates)
+  const candidatePayload = Array.isArray(payload)
+    ? payload
+    : asArray((payload as Record<string, unknown>).candidates);
+  const parsed = candidatePayload
     .map((item, index) => normalizeAdCandidatePayload(item, fallback[index % fallback.length], index))
     .filter((item): item is AdSceneCandidate => Boolean(item))
     .filter((item) => {

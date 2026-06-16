@@ -117,7 +117,8 @@ assert.ok(prompt.includes("Do not repeat the same headline structure more than 3
 assert.ok(prompt.includes("FORMAT-SPECIFIC OUTPUT EXAMPLES"));
 assert.ok(prompt.includes("Headlines must carry the whole visible visualizer ad"));
 assert.ok(prompt.includes("Subheadline is supporting metadata for dialogue/share context"));
-assert.ok(prompt.includes("Return only JSON"));
+assert.ok(prompt.includes("Return only a JSON array"));
+assert.ok(prompt.includes("DISTINCTNESS REQUIREMENT"));
 assert.ok(prompt.includes(bannedAdWords.join(", ")));
 
 const deterministic = buildDeterministicAdCandidates(research, 50);
@@ -165,6 +166,21 @@ const parsed = extractAdCandidatesFromResponse(JSON.stringify({
 }), [fallback], 1);
 assert.equal(parsed.length, 1);
 assert.equal(parsed[0]?.headlineType, "contrast");
+
+const parsedScaffold = extractAdCandidatesFromResponse(JSON.stringify([
+  {
+    headlineType: "painful_moment",
+    chosenBuyerMoment: "Buyers ask ChatGPT for recommendations and your competitor shows up first.",
+    chosenProof: "First ChatGPT mention in 14 days.",
+    headline: "ChatGPT Found Them First",
+    subheadline: "Buyers ask ChatGPT for recommendations before they ever visit your website.",
+    ctaText: "See the proof",
+    selfCheckPassed: "This only fits brands losing visibility inside AI recommendation moments.",
+  },
+]), [fallback], 1);
+assert.equal(parsedScaffold.length, 1);
+assert.equal(parsedScaffold[0]?.selectedPain, "Buyers ask ChatGPT for recommendations and your competitor shows up first.");
+assert.equal(parsedScaffold[0]?.selectedProof, "First ChatGPT mention in 14 days.");
 
 const scene = createVisualizerAdScene({
   research,

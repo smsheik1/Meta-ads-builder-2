@@ -261,21 +261,25 @@ HARD RULES:
 - Headline must be 8-72 characters.
 - Subheadline must be 24-180 characters.
 - ctaText must be 2-5 words.
-- selectedPain and selectedProof must be copied or closely paraphrased from CURATED BRAND BRIEF.
-- Return only JSON.
+- chosenBuyerMoment and chosenProof must be copied or closely paraphrased from CURATED BRAND BRIEF.
 
-JSON SHAPE:
+OUTPUT FORMAT:
+Return only a JSON array of exactly ${count} objects, each with these fields in order:
+
 {
-  "candidates": [
-    {
-      "angleId": "short-kebab-case",
-      "headline": "...",
-      "subheadline": "...",
-      "ctaText": "...",
-      "headlineType": "painful_moment | receipt_drop | callout | contrast | transformation",
-      "selectedPain": "...",
-      "selectedProof": "..."
-    }
-  ]
+  "headlineType": "one of: painful_moment | receipt_drop | callout | contrast | transformation",
+  "chosenBuyerMoment": "the ONE specific buyer moment this candidate is built on",
+  "chosenProof": "the ONE specific proof / site phrase / product truth used",
+  "headline": "8-72 chars (aim 25-60). The whole visible ad. Carries the most effort.",
+  "subheadline": "24-180 chars. Secondary metadata for share/dialogue context only.",
+  "ctaText": "2-5 words, starts with an action verb",
+  "selfCheckPassed": "one sentence: why this headline could ONLY belong to this brand's buyer (run the competitor-swap test)"
 }
+
+DISTINCTNESS REQUIREMENT (critical):
+- Every candidate MUST use a DIFFERENT headlineType, a DIFFERENT chosenBuyerMoment, and a DIFFERENT chosenProof.
+- No two candidates may be reworded versions of the same angle.
+- If you have fewer strong distinct angles than ${count}, still make each one distinct and concrete rather than padding with near-duplicates.
+
+Spend your best effort on the headline. The subheadline is secondary and does not render on the canvas.
 `;
