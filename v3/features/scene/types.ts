@@ -2,7 +2,7 @@ import type { BrandAdAngle, BrandSnapshot, ResearchReceipts } from "../research/
 
 export const AD_SCENE_VERSION = 1 as const;
 
-export type AdFormatId = "visualizer" | "meme" | "were-sorry";
+export type AdFormatId = "visualizer" | "meme" | "were-sorry" | "video-meme";
 
 export type HeadlineType =
   | "painful_moment"
@@ -145,4 +145,19 @@ export type WereSorryAdScene = AdSceneBase<
   }
 >;
 
-export type AdScene = VisualizerAdScene | MemeAdScene | WereSorryAdScene;
+export type VideoMemeAdScene = AdSceneBase<
+  "video-meme",
+  AdSceneStyleBase,
+  {
+    preset: "video-meme-template";
+    templateId: "bear-sniff";
+    videoSrc: string;
+    durationSeconds: number;
+    captionPosition: "top";
+    slots: {
+      caption: string;
+    };
+  }
+>;
+
+export type AdScene = VisualizerAdScene | MemeAdScene | WereSorryAdScene | VideoMemeAdScene;

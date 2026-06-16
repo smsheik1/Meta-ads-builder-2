@@ -103,6 +103,7 @@ function getSceneDefaultFlashSlots(scene: AdScene): RenderFlashRole[] {
 function getGenerationCount(format: AdFormatId) {
   if (format === "meme") return 12;
   if (format === "were-sorry") return 8;
+  if (format === "video-meme") return 8;
   return 50;
 }
 

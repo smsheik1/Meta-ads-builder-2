@@ -12,21 +12,36 @@ export type RenderImageComponent = ComponentType<{
   style?: CSSProperties;
 }>;
 
+export type RenderVideoComponent = ComponentType<{
+  autoPlay?: boolean;
+  className?: string;
+  loop?: boolean;
+  muted?: boolean;
+  playsInline?: boolean;
+  preload?: string;
+  src: string;
+  style?: CSSProperties;
+}>;
+
 const defaultImageComponent = "img" as unknown as RenderImageComponent;
+const defaultVideoComponent = "video" as unknown as RenderVideoComponent;
 
 const RenderAssetContext = createContext({
   Image: defaultImageComponent,
+  Video: defaultVideoComponent,
 });
 
 export function RenderAssetProvider({
   children,
   Image,
+  Video = defaultVideoComponent,
 }: {
   children: ReactNode;
   Image: RenderImageComponent;
+  Video?: RenderVideoComponent;
 }) {
   return (
-    <RenderAssetContext.Provider value={{ Image }}>
+    <RenderAssetContext.Provider value={{ Image, Video }}>
       {children}
     </RenderAssetContext.Provider>
   );

@@ -14,6 +14,9 @@ export const getAdSceneDurationInFrames = (
   const audioDurationSeconds = scene.audio.status === "generated"
     ? scene.audio.durationSeconds
     : 0;
+  if (scene.format === "video-meme") {
+    return Math.ceil(Math.max(1, scene.layout.durationSeconds, audioDurationSeconds + 0.35) * fps);
+  }
   const durationSeconds = Math.max(5, audioDurationSeconds + 0.35);
   return Math.ceil(durationSeconds * fps);
 };
