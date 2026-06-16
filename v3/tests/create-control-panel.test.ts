@@ -91,5 +91,21 @@ assert.ok(
     createClientSource.includes("resetSaveState();"),
   "Scene mutations must invalidate stale share/render/save UI state.",
 );
+assert.ok(
+  createClientSource.includes("normalizePublicWebsiteUrl") &&
+    createClientSource.includes("getReusableResearchForUrl") &&
+    createClientSource.includes("normalizedUrlKey(value) === normalizedUrlKey(result.websiteUrl)"),
+  "Format changes must reuse stored research by normalized URL instead of domain.",
+);
+assert.ok(
+  createClientSource.includes("onFormatChange={onFormatChange}") &&
+    !createClientSource.includes("onFormatChange={setSelectedAdFormat}"),
+  "Format dropdown changes must route through the reuse-aware generation handler.",
+);
+assert.ok(
+  createClientSource.indexOf("const reusableResearch = getReusableResearchForUrl(url)") <
+    createClientSource.indexOf('fetchBillingJson("/api/billing/consume-run"'),
+  "Same-URL format regeneration must not consume a paid/free research run.",
+);
 
 console.log("create-control-panel tests passed");
