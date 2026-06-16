@@ -91,6 +91,7 @@ assert.equal(resolved.providerStatus[0]?.status, "used");
 
 const cached = await resolveBrandAssets({
   domain: "brandfetch.com",
+  apiKey: "",
   cachedBrand: {
     logoUrl: "https://cached.example/dead-logo.png",
     colors: ["#00B95B"],
