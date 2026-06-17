@@ -102,6 +102,8 @@ assert.ok(
 );
 assert.ok(
   createClientSource.includes("normalizePublicWebsiteUrl") &&
+  createClientSource.includes("latestReadyForAnonymousIdAndUrl") &&
+  createClientSource.includes("cachedResearchForUrl") &&
     createClientSource.includes("getReusableResearchForUrl") &&
     createClientSource.includes("researchByUrlRef") &&
     createClientSource.includes("rememberResearchForReuse") &&

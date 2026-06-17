@@ -269,6 +269,10 @@ function ResearchConnected() {
     result: StoredWebsiteResearchResult;
     scenes: AdScene[];
   } | null | undefined;
+  const cachedResearchForUrl = useQuery(
+    api.researchRuns.latestReadyForAnonymousIdAndUrl,
+    anonymousId && url.trim() ? { anonymousId, url } : "skip",
+  ) as StoredWebsiteResearchResult | null | undefined;
   const saveDesign = useMutation(api.savedDesigns.saveFromScene);
   const savedDesignItems = savedDesigns || [];
   const canvasActions = useCanvasActions();
@@ -757,6 +761,16 @@ function ResearchConnected() {
         return {
           researchRunId: cached.researchRunId,
           facts: getWebsiteSubmitProgressFacts(cached),
+        };
+      }
+      if (cachedResearchForUrl?.researchRunId && (
+        key === normalizedUrlKey(cachedResearchForUrl.websiteUrl) ||
+        key === normalizedUrlKey(cachedResearchForUrl.finalUrl)
+      )) {
+        rememberResearchForReuse(cachedResearchForUrl);
+        return {
+          researchRunId: cachedResearchForUrl.researchRunId,
+          facts: getWebsiteSubmitProgressFacts(cachedResearchForUrl),
         };
       }
       if (result?.researchRunId && (

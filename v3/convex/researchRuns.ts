@@ -5,8 +5,10 @@ import {
   fetchWebsiteResearchWithFirecrawl,
   toWebsiteResearchErrorMessage,
 } from "../features/research/firecrawl";
+import { buildFallbackBrandBrief } from "../features/research/brandCurator";
 import { extractAdAnglesFromResearch } from "../features/research/adAngles";
 import { normalizePublicWebsiteUrl } from "../features/research/url";
+import type { StoredWebsiteResearchResult } from "../features/research/types";
 
 export const runWebsiteResearch: ReturnType<typeof action> = action({
   args: {
@@ -104,4 +106,84 @@ export const getLatestForSession: ReturnType<typeof query> = query({
     .withIndex("by_sessionId_and_updatedAt", (q) => q.eq("sessionId", sessionId))
     .order("desc")
     .first(),
+});
+
+export const latestReadyForAnonymousIdAndUrl: ReturnType<typeof query> = query({
+  args: {
+    anonymousId: v.string(),
+    url: v.string(),
+  },
+  handler: async (ctx, { anonymousId, url }) => {
+    let targetUrl: URL;
+    try {
+      targetUrl = normalizePublicWebsiteUrl(url);
+    } catch {
+      return null;
+    }
+
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_anonymousId", (q) => q.eq("anonymousId", anonymousId))
+      .first();
+    if (!session) return null;
+
+    const targetKey = targetUrl.href;
+    const rows = await ctx.db
+      .query("researchRuns")
+      .withIndex("by_sessionId_and_updatedAt", (q) => q.eq("sessionId", session._id))
+      .order("desc")
+      .take(50);
+    const researchRun = rows.find((row) => {
+      if (row.status !== "ready") return false;
+      return [row.url, row.finalUrl]
+        .filter(Boolean)
+        .some((value) => {
+          try {
+            return normalizePublicWebsiteUrl(value!).href === targetKey;
+          } catch {
+            return false;
+          }
+        });
+    });
+    if (!researchRun || !researchRun.evidence) return null;
+
+    const brandSnapshot = await ctx.db
+      .query("brandSnapshots")
+      .withIndex("by_researchRunId", (q) => q.eq("researchRunId", researchRun._id))
+      .first();
+    if (!brandSnapshot) return null;
+
+    const research = {
+      sessionId: researchRun.sessionId,
+      researchRunId: researchRun._id,
+      brandSnapshotId: brandSnapshot._id,
+      websiteUrl: researchRun.url,
+      finalUrl: researchRun.finalUrl || brandSnapshot.url,
+      host: researchRun.host || brandSnapshot.host || "",
+      brand: {
+        name: brandSnapshot.name,
+        url: brandSnapshot.url,
+        host: brandSnapshot.host || "",
+        title: brandSnapshot.title || "",
+        description: brandSnapshot.description || "",
+        faviconUrl: brandSnapshot.faviconUrl || null,
+        logoUrl: brandSnapshot.logoUrl || null,
+        ogImageUrl: brandSnapshot.ogImageUrl || null,
+        screenshotUrl: brandSnapshot.screenshotUrl || null,
+        colors: brandSnapshot.colors,
+        fonts: brandSnapshot.fonts,
+        vibeTags: brandSnapshot.vibeTags,
+      },
+      evidence: researchRun.evidence,
+      metadata: researchRun.metadata || {},
+      branding: researchRun.branding || {},
+      adAngles: researchRun.adAngles || [],
+      providerStatus: researchRun.providerStatus || [],
+    };
+
+    return {
+      ...research,
+      brandBrief: researchRun.brandBrief || buildFallbackBrandBrief(research),
+    } satisfies StoredWebsiteResearchResult;
+  },
 });
