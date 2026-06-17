@@ -63,10 +63,10 @@ assert.ok(
   "Render worker readiness must only report healthy workers for the same renderer version as the client.",
 );
 assert.ok(
-  rendererVersionSource.includes("Record<AdFormatId, true>") &&
-    rendererVersionSource.includes("jingle: true") &&
-    rendererVersionSource.includes("Object.keys(renderFormatSupport)"),
-  "Renderer version must include supported formats so old workers cannot claim newly added format jobs.",
+  rendererVersionSource.includes('defaultRendererVersion = "local-dev:render-contract-v2"') &&
+    !rendererVersionSource.includes("renderFormatSupport") &&
+    !rendererVersionSource.includes("Record<AdFormatId"),
+  "Renderer version must be a single render contract so old workers cannot claim incompatible jobs without duplicating the format registry.",
 );
 assert.ok(
   renderJobsSource.includes("assertRenderableAdScene") &&

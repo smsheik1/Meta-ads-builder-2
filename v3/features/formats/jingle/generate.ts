@@ -8,7 +8,6 @@ import type { StoredWebsiteResearchResult } from "../../research/types";
 import type { JingleCompositionChunk } from "../../scene/types";
 import {
   buildJinglePrompt,
-  JINGLE_MAX_MUSIC_LENGTH_MS,
   JINGLE_MUSIC_LENGTH_MS,
   JINGLE_VARIANT_COUNT,
 } from "./prompt";
@@ -36,7 +35,6 @@ export type GenerateJingleVariantsResult = {
 };
 
 type GenerateJingleVariantsOptions = {
-  count?: number;
   nvidiaNimApiKey?: string;
   nvidiaNimBaseUrl?: string;
   nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
@@ -86,11 +84,6 @@ const parseJsonObject = (value: string, providerLabel = "AI provider") => {
   return JSON.parse(jsonText) as Record<string, unknown>;
 };
 
-const normalizeCount = (count?: number) => {
-  if (!Number.isFinite(count)) return JINGLE_VARIANT_COUNT;
-  return Math.max(1, Math.min(JINGLE_VARIANT_COUNT, Math.floor(count ?? JINGLE_VARIANT_COUNT)));
-};
-
 const lyricLines = (text: string) => text
   .split("\n")
   .map((line) => cleanText(line, 120))
@@ -121,12 +114,7 @@ const normalizeChunk = (chunk: Record<string, unknown>): JingleCompositionChunk 
   if (contextAdherence !== "high") return null;
   if (namesArtist(`${text} ${positiveStyles.join(" ")} ${negativeStyles.join(" ")}`)) return null;
   if (hasInventedNumber(lyricLines(text).join(" "))) return null;
-  const normalizedPositiveStyles = [...basePositiveStyles];
-  for (const style of positiveStyles) {
-    if (!normalizedPositiveStyles.some((item) => item.toLowerCase() === style.toLowerCase())) {
-      normalizedPositiveStyles.push(style);
-    }
-  }
+  const normalizedPositiveStyles = Array.from(new Set([...basePositiveStyles, ...positiveStyles]));
 
   return {
     text,
@@ -139,10 +127,8 @@ const normalizeChunk = (chunk: Record<string, unknown>): JingleCompositionChunk 
 
 export function extractJingleVariantsFromResponse(
   content: string,
-  count = JINGLE_VARIANT_COUNT,
   providerLabel = "Jingle provider",
 ): JingleVariant[] {
-  const expectedCount = normalizeCount(count);
   const payload = parseJsonObject(content, providerLabel);
   const rawVariants = Array.isArray(payload.variants) ? payload.variants : [];
   const seenAngles = new Set<string>();
@@ -173,7 +159,7 @@ export function extractJingleVariantsFromResponse(
     if (seenAngles.has(angleKey) || seenHooks.has(hookKey)) continue;
     if (chunks.length !== 3) continue;
     if (!chunks[0].text.startsWith("[Hook]") || !chunks[1].text.startsWith("[Verse]") || !chunks[2].text.startsWith("[Hook]")) continue;
-    if (musicLengthMs !== JINGLE_MUSIC_LENGTH_MS || musicLengthMs > JINGLE_MAX_MUSIC_LENGTH_MS) continue;
+    if (musicLengthMs !== JINGLE_MUSIC_LENGTH_MS) continue;
     if (durationSum !== musicLengthMs) continue;
     if (!hookLines.join(" ").toLowerCase().includes(brandPhonetic.toLowerCase())) continue;
     if (!finalHookLines.join(" ").toLowerCase().includes(brandPhonetic.toLowerCase())) continue;
@@ -192,18 +178,17 @@ export function extractJingleVariantsFromResponse(
     });
   }
 
-  if (variants.length < expectedCount) {
+  if (variants.length < JINGLE_VARIANT_COUNT) {
     throw new Error(`${providerLabel} returned incomplete jingle variants.`);
   }
-  return variants.slice(0, expectedCount);
+  return variants.slice(0, JINGLE_VARIANT_COUNT);
 }
 
 export async function generateJingleVariantsFromResearch(
   research: StoredWebsiteResearchResult,
   options: GenerateJingleVariantsOptions = {},
 ): Promise<GenerateJingleVariantsResult> {
-  const count = normalizeCount(options.count);
-  const prompt = buildJinglePrompt(research, count);
+  const prompt = buildJinglePrompt(research);
   const nvidiaNimModel = options.nvidiaNimModel
     || process.env.NVIDIA_NIM_JINGLE_MODEL
     || DEFAULT_NVIDIA_NIM_JINGLE_MODEL;
@@ -225,7 +210,7 @@ export async function generateJingleVariantsFromResearch(
       prompt,
       timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
     });
-    const variants = extractJingleVariantsFromResponse(content, count, "NVIDIA NIM");
+    const variants = extractJingleVariantsFromResponse(content, "NVIDIA NIM");
 
     return {
       variants,
@@ -234,7 +219,7 @@ export async function generateJingleVariantsFromResearch(
       providerStatus: {
         provider: "nvidia-nim",
         status: "used",
-        reason: `Generated ${count} jingle plans with ${nvidiaNimModel}.`,
+        reason: `Generated ${JINGLE_VARIANT_COUNT} jingle plan with ${nvidiaNimModel}.`,
       },
     };
   } catch (error) {

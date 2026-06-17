@@ -109,7 +109,7 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     }
 
     if (format === "jingle") {
-      const generation = await generateJingleVariantsFromResearch(research, { count });
+      const generation = await generateJingleVariantsFromResearch(research);
       const scenes = generation.variants.map((variant, index) => createJingleAdScene({
         research,
         variant,

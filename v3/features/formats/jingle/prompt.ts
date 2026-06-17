@@ -11,10 +11,7 @@ const clean = (value: unknown, maxLength = 1200) => String(value ?? "")
   .slice(0, maxLength)
   .trim();
 
-export const buildJinglePrompt = (
-  research: StoredWebsiteResearchResult,
-  count = JINGLE_VARIANT_COUNT,
-) => {
+export const buildJinglePrompt = (research: StoredWebsiteResearchResult) => {
   const brandName = clean(research.brandBrief.brandName || research.brand.name, 120);
   const offer = clean(research.brandBrief.offer || research.brand.description, 700);
   const audience = clean(research.brandBrief.audience, 500);
@@ -26,7 +23,7 @@ export const buildJinglePrompt = (
   )).join("\n");
 
   return `You are a senior jingle copywriter and music director.
-Write exactly ${count} short, catchy, singable modern hip hop brand jingle.
+Write exactly ${JINGLE_VARIANT_COUNT} short, catchy, singable modern hip hop brand jingle.
 Each output object is a composition plan for ElevenLabs Music v2.
 
 BRAND CONTEXT:

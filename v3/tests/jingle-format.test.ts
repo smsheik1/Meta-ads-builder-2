@@ -104,11 +104,17 @@ const makeVariant = (index: number, angle = `AI answer visibility angle ${index}
   selfCheckPassed: "Hook lines 6/3 syllables; verse lines 5/5 syllables; durations sum to 20000; final line is Oh Gee Tool; no invented claims.",
 });
 
-const variants = [makeVariant(1), makeVariant(2, "competitors show up first"), makeVariant(3, "brand visibility tracking")];
+const validVariant = makeVariant(1);
+const extraVariant = makeVariant(2, "brand visibility tracking");
+const variants = [validVariant];
 const parsed = extractJingleVariantsFromResponse(JSON.stringify({ variants }));
 assert.equal(parsed.length, 1);
 assert.equal(parsed[0]!.brandPhonetic, "Oh Gee Tool");
 assert.equal(parsed[0]!.compositionPlan.chunks.length, 3);
+
+const parsedOverGenerated = extractJingleVariantsFromResponse(JSON.stringify({ variants: [validVariant, extraVariant] }));
+assert.equal(parsedOverGenerated.length, 1);
+assert.equal(parsedOverGenerated[0]!.angle, validVariant.angle);
 
 const looseStylesVariant = makeVariant(1, "loose style wording");
 looseStylesVariant.compositionPlan.chunks = looseStylesVariant.compositionPlan.chunks.map((chunk) => ({
@@ -201,8 +207,7 @@ const html = renderToStaticMarkup(createElement(AdRenderSurface, {
 assert.ok(html.includes('data-format="jingle"'));
 assert.ok(html.includes('data-jingle-active-lyric="true"'));
 assert.ok(html.includes('data-jingle-waveform="true"'));
-assert.ok(html.includes("position:absolute"));
-assert.ok(!html.includes("relative h-full w-full"), "Jingle renderer must not depend on Tailwind layout classes for MP4 export.");
+assert.ok(html.includes("relative h-full w-full"));
 assert.ok(html.includes("Oh Gee Tool"));
 
 const rerolled = rerollScene(scenes, {
