@@ -8,6 +8,7 @@ import {
 
 export type RenderImageComponent = ComponentType<{
   alt?: string;
+  className?: string;
   src: string;
   style?: CSSProperties;
 }>;
@@ -17,6 +18,7 @@ export type RenderVideoComponent = ComponentType<{
   className?: string;
   loop?: boolean;
   muted?: boolean;
+  onTimeUpdate?: (event: { currentTarget: { currentTime: number } }) => void;
   playsInline?: boolean;
   preload?: string;
   src: string;

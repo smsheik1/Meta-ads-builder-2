@@ -1,4 +1,4 @@
-export const defaultRendererVersion = "local-dev";
+export const defaultRendererVersion = "local-dev:render-contract-v2";
 
 export const getClientRendererVersion = () => (
   process.env.NEXT_PUBLIC_RENDERER_VERSION || defaultRendererVersion

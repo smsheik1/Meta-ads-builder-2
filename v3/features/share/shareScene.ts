@@ -11,12 +11,15 @@ export function assertShareableAdScene(value: unknown): AdScene {
 
   const scene = value as AdScene;
   if (scene.version !== 1) throw new Error("Share scene version is not supported.");
-  if (scene.format !== "visualizer") throw new Error("Share scene format is not supported yet.");
+  if (scene.format !== "visualizer" && scene.format !== "jingle") throw new Error("Share scene format is not supported yet.");
   if (!scene.brand?.name?.trim()) throw new Error("Share scene brand name is missing.");
   if (!scene.creative?.headline?.trim()) throw new Error("Share scene headline is missing.");
   if (!scene.creative?.subheadline?.trim()) throw new Error("Share scene subheadline is missing.");
-  if (!/^#[0-9A-F]{6}$/i.test(scene.style?.visualizerColor || "")) {
+  if (scene.format === "visualizer" && !/^#[0-9A-F]{6}$/i.test(scene.style?.visualizerColor || "")) {
     throw new Error("Share scene visualizer color is invalid.");
+  }
+  if (scene.format === "jingle" && scene.audio.status !== "generated") {
+    throw new Error("Generate music before sharing this jingle.");
   }
   if (scene.audio.status === "generated") {
     if (!scene.audio.storageId?.trim()) throw new Error("Share scene audio storage is missing.");

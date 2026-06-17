@@ -3,9 +3,25 @@ import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import type { AdScene } from "../features/scene/types";
-import { assertShareableAdScene } from "../features/share/shareScene";
 
 const workerStaleAfterMs = 15000;
+
+const isRecord = (value: unknown): value is Record<string, unknown> => (
+  typeof value === "object" && value !== null
+);
+
+const assertRenderableAdScene = (value: unknown): AdScene => {
+  if (!isRecord(value)) throw new Error("Render scene is missing.");
+
+  const scene = value as AdScene;
+  if (scene.version !== 1) throw new Error("Render scene version is not supported.");
+  if (!scene.brand?.name?.trim()) throw new Error("Render scene brand name is missing.");
+  if (!scene.creative?.headline?.trim()) throw new Error("Render scene headline is missing.");
+  if (scene.format === "video-meme" && !scene.layout.videoSrc?.trim()) {
+    throw new Error("Render scene video source is missing.");
+  }
+  return scene;
+};
 
 const ensureAnonymousSession = async (
   ctx: MutationCtx,
@@ -58,7 +74,7 @@ export const createFromScene: ReturnType<typeof mutation> = mutation({
     rendererVersion: v.string(),
   },
   handler: async (ctx, { anonymousId, rendererVersion, scene }) => {
-    const renderScene = assertShareableAdScene(scene);
+    const renderScene = assertRenderableAdScene(scene);
     const now = Date.now();
     const sessionId = await ensureAnonymousSession(ctx, anonymousId);
     const sceneId = await ctx.db.insert("adScenes", {
@@ -110,32 +126,38 @@ export const getStatus: ReturnType<typeof query> = query({
 });
 
 export const workerReadiness: ReturnType<typeof query> = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    rendererVersion: v.string(),
+  },
+  handler: async (ctx, { rendererVersion }) => {
     const now = Date.now();
     const queued = await ctx.db
       .query("renderJobs")
       .withIndex("by_status_and_updatedAt", (q) => q.eq("status", "queued"))
+      .filter((q) => q.eq(q.field("rendererVersion"), rendererVersion))
       .take(1);
     const claimed = await ctx.db
       .query("renderJobs")
       .withIndex("by_status_and_updatedAt", (q) => q.eq("status", "claimed"))
+      .filter((q) => q.eq(q.field("rendererVersion"), rendererVersion))
       .take(1);
     const rendering = await ctx.db
       .query("renderJobs")
       .withIndex("by_status_and_updatedAt", (q) => q.eq("status", "rendering"))
+      .filter((q) => q.eq(q.field("rendererVersion"), rendererVersion))
       .take(1);
     const workers = await ctx.db
       .query("renderWorkers")
       .collect();
-    const freshWorkers = workers.filter((worker) => now - worker.lastSeenAt <= workerStaleAfterMs);
+    const matchingWorkers = workers.filter((worker) => worker.rendererVersion === rendererVersion);
+    const freshWorkers = matchingWorkers.filter((worker) => now - worker.lastSeenAt <= workerStaleAfterMs);
 
     return {
       queued: queued.length,
       active: claimed.length + rendering.length,
       workerHealthy: freshWorkers.length > 0,
       workerCount: freshWorkers.length,
-      lastSeenAt: workers.reduce<number | null>((latest, worker) => (
+      lastSeenAt: matchingWorkers.reduce<number | null>((latest, worker) => (
         latest === null || worker.lastSeenAt > latest ? worker.lastSeenAt : latest
       ), null),
       staleAfterMs: workerStaleAfterMs,

@@ -1,5 +1,5 @@
 import { Audio } from "@remotion/media";
-import { AbsoluteFill, Img, Video, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Img, OffthreadVideo, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import { buildWigglyFontFaceCss } from "../features/render/fontStack";
 import { RenderAssetProvider, type RenderVideoComponent } from "../features/render/RenderAssetContext";
@@ -7,8 +7,8 @@ import type { AdScene } from "../features/scene/types";
 
 const remotionFontFaceCss = buildWigglyFontFaceCss((path) => staticFile(path.replace(/^\//, "")));
 
-const RemotionVideoAsset: RenderVideoComponent = ({ src, ...props }) => (
-  <Video
+const RemotionVideoAsset: RenderVideoComponent = ({ onTimeUpdate: _onTimeUpdate, src, ...props }) => (
+  <OffthreadVideo
     {...props}
     src={src.startsWith("/") ? staticFile(src.replace(/^\//, "")) : src}
   />

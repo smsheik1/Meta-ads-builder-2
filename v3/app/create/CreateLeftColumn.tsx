@@ -3,6 +3,8 @@ import {
   NIM_MEME_MODEL_OPTIONS,
   NIM_VISUALIZER_MODEL_OPTIONS,
 } from "@/features/llm/nvidiaNimModels";
+import { JINGLE_STYLES, type JingleStyleId } from "@/features/formats/jingle/prompt";
+import { VIDEO_MEME_TEMPLATES, getVideoMemeTemplate, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
 import type { AdFormatId } from "@/features/scene/types";
 
 type LoadStatus = "idle" | "loading" | "ready" | "error";
@@ -23,7 +25,7 @@ type ModelOption = {
   label: string;
 };
 
-const getProgressRows = (format: AdFormatId) => [
+const getProgressRows = (format: AdFormatId, videoMemeTemplateId: VideoMemeTemplateId = "bear-sniff") => [
   { id: "reading-site", label: "Reading website" },
   { id: "brand-proof", label: "Pulling brand proof" },
   { id: "selling-angle", label: "Finding selling angle" },
@@ -34,7 +36,9 @@ const getProgressRows = (format: AdFormatId) => [
       : format === "were-sorry"
         ? "Writing 8 apologies"
         : format === "video-meme"
-          ? "Writing 8 bear memes"
+          ? `Writing ${getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8} video memes`
+          : format === "jingle"
+            ? "Writing 1 jingle"
           : "Writing 50 ads",
   },
   { id: "preparing-canvas", label: "Preparing canvas" },
@@ -58,14 +62,16 @@ function CreateResearchProgressCard({
   format,
   showSlowResearchMessage,
   stage,
+  videoMemeTemplateId,
 }: {
   facts: WebsiteSubmitProgressFacts | null;
   format: AdFormatId;
   showSlowResearchMessage: boolean;
   stage: WebsiteSubmitProgressStage;
+  videoMemeTemplateId: VideoMemeTemplateId;
 }) {
   if (!stage) return null;
-  const progressRows = getProgressRows(format);
+  const progressRows = getProgressRows(format, videoMemeTemplateId);
 
   const factRows = facts
     ? [
@@ -166,9 +172,13 @@ export function CreateLeftColumn({
   format,
   freeRunsLabel,
   memeModel,
+  jingleStyleId,
+  videoMemeTemplateId,
   visualizerModel,
   onFormatChange,
+  onJingleStyleChange,
   onMemeModelChange,
+  onVideoMemeTemplateChange,
   onVisualizerModelChange,
   onSubmit,
   onUrlChange,
@@ -184,9 +194,13 @@ export function CreateLeftColumn({
   format: AdFormatId;
   freeRunsLabel?: string;
   memeModel: string;
+  jingleStyleId: JingleStyleId;
+  videoMemeTemplateId: VideoMemeTemplateId;
   visualizerModel: string;
   onFormatChange: (format: AdFormatId) => void;
+  onJingleStyleChange: (styleId: JingleStyleId) => void;
   onMemeModelChange: (model: string) => void;
+  onVideoMemeTemplateChange: (templateId: VideoMemeTemplateId) => void;
   onVisualizerModelChange: (model: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onUrlChange: (url: string) => void;
@@ -205,7 +219,9 @@ export function CreateLeftColumn({
         : format === "were-sorry"
           ? "Writing apologies"
           : format === "video-meme"
-            ? "Writing bear memes"
+            ? "Writing video memes"
+            : format === "jingle"
+              ? "Writing jingles"
             : "Writing ideas"
       : "Generate ads";
   const formatHelper = format === "meme"
@@ -213,7 +229,9 @@ export function CreateLeftColumn({
     : format === "were-sorry"
       ? "Eight wink-apology posts for the Instagram trend."
       : format === "video-meme"
-        ? "Eight bear-sniff reaction captions for MP4 meme export."
+        ? "Eight reaction captions for the selected video meme."
+        : format === "jingle"
+          ? "One short hip hop brand jingle. No extra music generations."
         : "Audio visualizer ads with voice, captions, and MP4 export.";
 
   return (
@@ -255,6 +273,7 @@ export function CreateLeftColumn({
             <option value="meme">Meme Ad</option>
             <option value="were-sorry">We're Sorry Ad</option>
             <option value="video-meme">Video Meme</option>
+            <option value="jingle">Brand Jingle</option>
             <option value="visualizer">Visualizer Ad</option>
           </select>
           <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
@@ -284,6 +303,44 @@ export function CreateLeftColumn({
           />
         ) : null}
 
+        {format === "video-meme" ? (
+          <label className="block">
+            <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Video meme</span>
+            <select
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
+              aria-label="Video meme template"
+              value={videoMemeTemplateId}
+              onChange={(event) => onVideoMemeTemplateChange(event.target.value as VideoMemeTemplateId)}
+            >
+              {VIDEO_MEME_TEMPLATES.map((template) => (
+                <option key={template.id} value={template.id}>{template.name}</option>
+              ))}
+            </select>
+            <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
+              Bear sniffs secrets. Pingu noot-noots urgent moments. Darwin stays calm through chaos.
+            </span>
+          </label>
+        ) : null}
+
+        {format === "jingle" ? (
+          <label className="block">
+            <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Song style</span>
+            <select
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
+              aria-label="Jingle song style"
+              value={jingleStyleId}
+              onChange={(event) => onJingleStyleChange(event.target.value as JingleStyleId)}
+            >
+              {JINGLE_STYLES.map((style) => (
+                <option key={style.id} value={style.id}>{style.label}</option>
+              ))}
+            </select>
+            <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
+              {JINGLE_STYLES.find((style) => style.id === jingleStyleId)?.helper || "Pick the music lane for this jingle."}
+            </span>
+          </label>
+        ) : null}
+
         <button
           type="submit"
           disabled={submitIsBusy}
@@ -304,6 +361,7 @@ export function CreateLeftColumn({
           format={format}
           showSlowResearchMessage={showSlowResearchMessage}
           stage={progressStage}
+          videoMemeTemplateId={videoMemeTemplateId}
         />
       </form>
 

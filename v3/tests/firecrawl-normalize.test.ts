@@ -20,8 +20,8 @@ import {
 process.env.BRANDFETCH_API_KEY = "";
 
 assert.ok(
-  DEFAULT_FIRECRAWL_TIMEOUT_MS >= 60_000,
-  "Firecrawl needs a real-world timeout budget; successful scrapes often land around 20-30 seconds.",
+  DEFAULT_FIRECRAWL_TIMEOUT_MS >= 120_000,
+  "Firecrawl needs enough budget for heavy hosted funnels that can exceed 60 seconds.",
 );
 assert.equal(DEFAULT_JINA_READER_TIMEOUT_MS, 8_000);
 

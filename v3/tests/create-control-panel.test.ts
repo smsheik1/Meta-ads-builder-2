@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 
 const createClientSource = readFileSync("app/create/CreateResearchClient.tsx", "utf8");
 const controlPanelSource = readFileSync("app/create/CreateControlPanel.tsx", "utf8");
+const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
 const visualizerSchemaSource = readFileSync("features/formats/visualizer/schema.ts", "utf8");
 const visualizerModuleSource = readFileSync("features/formats/visualizer/index.ts", "utf8");
@@ -68,11 +69,12 @@ assert.ok(
   "Saved designs must load back onto /create as complete AdScene payloads.",
 );
 assert.ok(
-  createClientSource.includes("setUrl(latestGeneration.result.websiteUrl)") &&
+    createClientSource.includes("setUrl(latestGeneration.result.websiteUrl)") &&
     createClientSource.includes("setUrl(restored.selectedScene.brand.url || url)") &&
-    createClientSource.includes("if (restoredScene) setSelectedAdFormat(restoredScene.format)") &&
-    createClientSource.includes("setSelectedAdFormat(restored.selectedScene.format)"),
-  "Restored scenes must restore URL and format state so same-brand format switches do not reread the wrong site.",
+    createClientSource.includes("setSelectedAdFormat(restoredScene.format)") &&
+    createClientSource.includes("setSelectedAdFormat(restored.selectedScene.format)") &&
+    createClientSource.includes("setSelectedVideoMemeTemplateId(templateId)"),
+  "Restored scenes must restore URL, format, and video meme template state so same-brand format switches do not reread the wrong site.",
 );
 assert.ok(
   quickActionsSource.includes("onClick={hasAudio ? onTogglePreviewPlayback : onOpenAudioPanel}") &&
@@ -100,6 +102,8 @@ assert.ok(
 );
 assert.ok(
   createClientSource.includes("normalizePublicWebsiteUrl") &&
+  createClientSource.includes("latestReadyForAnonymousIdAndUrl") &&
+  createClientSource.includes("cachedResearchForUrl") &&
     createClientSource.includes("getReusableResearchForUrl") &&
     createClientSource.includes("researchByUrlRef") &&
     createClientSource.includes("rememberResearchForReuse") &&
@@ -123,6 +127,18 @@ assert.ok(
     createClientSource.includes("We're Sorry copy generation timed out after reusing the saved research.") &&
     createClientSource.includes("setError(getAdGenerationErrorMessage(nextError))"),
   "Ad generation timeouts must not be reported as website research timeouts.",
+);
+assert.ok(
+  createClientSource.includes("getMusicGenerationErrorMessage") &&
+    createClientSource.includes("ElevenLabs Music requires a paid plan for this API key") &&
+    createClientSource.includes("setAudioError(getMusicGenerationErrorMessage(nextError))"),
+  "Jingle audio failures must surface a clear visible music-generation error instead of a raw Convex stack.",
+);
+assert.ok(
+  previewChromeSource.includes("useMemo<RenderVideoComponent>") &&
+    previewChromeSource.includes("onPreviewTimeChange?.(event.currentTarget.currentTime)") &&
+    previewChromeSource.includes("<RenderAssetProvider Image={PreviewImage} Video={PreviewVideo}>"),
+  "Preview video assets must keep a stable component identity so timed video meme captions do not restart the clip on every time update.",
 );
 
 console.log("create-control-panel tests passed");

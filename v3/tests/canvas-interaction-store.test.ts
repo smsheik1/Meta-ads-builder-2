@@ -91,6 +91,10 @@ assert.ok(
   keyboardSource.includes("getCanvasCanRerollNow()"),
   "Spacebar handler must ask the store at keypress time, not from stale React render state.",
 );
+assert.ok(
+  keyboardSource.indexOf("event.preventDefault();") < keyboardSource.indexOf("if (!getCanvasCanRerollNow()) return;"),
+  "Spacebar handler must prevent browser scroll before skipping reroll while /create is busy.",
+);
 
 for (const forbiddenStoreShape of [
   "selectedSlot",

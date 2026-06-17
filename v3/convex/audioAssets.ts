@@ -3,6 +3,7 @@ import { internal } from "./_generated/api";
 import { action, internalMutation, mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { generateGeminiDialogueVoiceover, generateGeminiVoiceover } from "../features/audio/geminiTts";
+import { generateElevenLabsJingleMusic } from "../features/audio/elevenlabsMusic";
 import {
   DEEPGRAM_TRANSCRIPTION_MODEL,
   transcribeAudioWithDeepgram,
@@ -28,6 +29,12 @@ const maxUploadedAudioDurationMs = 60_000;
 const isWavMimeType = (mimeType: string) => (
   mimeType.toLowerCase().includes("wav") || mimeType.toLowerCase().includes("wave")
 );
+
+const assertJingleScene = (scene: AdScene) => {
+  if (scene.format !== "jingle") throw new Error("Music generation is only available for jingle scenes.");
+  if (scene.audio.status === "generated") throw new Error("This jingle already has generated music.");
+  return scene;
+};
 
 const cleanUploadName = (value: string | undefined) => String(value || "Uploaded audio")
   .replace(/[—–]/g, ", ")
@@ -218,6 +225,56 @@ export const generateDialogueForScene: ReturnType<typeof action> = action({
     return {
       audio,
       scene: attachAudioWithVoiceVisualizerPreset(audioScene, audio),
+    };
+  },
+});
+
+export const generateJingleForScene: ReturnType<typeof action> = action({
+  args: {
+    anonymousId: v.string(),
+    scene: v.any(),
+  },
+  handler: async (ctx, { anonymousId, scene }) => {
+    const jingleScene = assertJingleScene(scene as AdScene);
+    const sessionId = await ctx.runMutation(internal.sessions.ensureAnonymousSession, {
+      anonymousId,
+    });
+    const result = await generateElevenLabsJingleMusic({ scene: jingleScene });
+    const storageId = await ctx.storage.store(new Blob([result.bytes], {
+      type: result.mimeType,
+    }));
+    const sceneKey = getSceneAudioKey(jingleScene);
+    const saved = await ctx.runMutation(internal.audioAssets.saveGenerated, {
+      sessionId,
+      sceneKey,
+      storageId,
+      mimeType: result.mimeType,
+      durationMs: result.durationMs,
+      transcript: result.transcript,
+      provider: result.provider,
+      model: result.model,
+    });
+    const url = saved.url || await ctx.storage.getUrl(storageId);
+
+    if (!url) throw new Error("Generated jingle music was stored, but no playable URL was returned.");
+
+    const audio = createGeneratedSceneAudio({
+      storageId,
+      url,
+      mimeType: result.mimeType,
+      durationMs: result.durationMs,
+      transcript: result.transcript,
+      captions: result.captions,
+      model: result.model,
+      provider: result.provider,
+    });
+
+    return {
+      audio,
+      scene: {
+        ...jingleScene,
+        audio,
+      },
     };
   },
 });

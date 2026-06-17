@@ -22,6 +22,8 @@ import {
   DEFAULT_NVIDIA_NIM_MEME_MODEL,
   DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL,
 } from "@/features/llm/nvidiaNimModels";
+import { DEFAULT_JINGLE_STYLE_ID, type JingleStyleId } from "@/features/formats/jingle/prompt";
+import { getVideoMemeTemplate, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
 import { getFormatModule } from "@/features/formats/registry";
 import { useActiveCanvasPanel, useCanvasActions } from "@/features/create/canvasInteractionStore";
 import {
@@ -67,6 +69,21 @@ const slowResearchMessageDelayMs = 8000;
 const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const fallbackUploadedAudioDurationMs = 8000;
 
+function getMusicGenerationErrorMessage(error: unknown) {
+  const rawMessage = error instanceof Error ? error.message : String(error || "");
+  const message = rawMessage
+    .replace(/^Uncaught Error:\s*/i, "")
+    .replace(/\s+at\s+[\s\S]*$/m, "")
+    .trim();
+
+  if (/paid_plan_required|payment_required|402/i.test(message)) {
+    return "Music generation failed: ElevenLabs Music requires a paid plan for this API key.";
+  }
+  if (!message) return "Music generation failed.";
+  if (/^music generation failed/i.test(message)) return message;
+  return `Music generation failed: ${message}`;
+}
+
 function slugifyDownloadName(value: string) {
   return value
     .toLowerCase()
@@ -78,6 +95,10 @@ function slugifyDownloadName(value: string) {
 type AdSceneGenerationResponse = {
   scenes: AdScene[];
 };
+
+const getSceneVideoMemeTemplateId = (scene: AdScene | null): VideoMemeTemplateId | null => (
+  scene?.format === "video-meme" ? scene.layout.templateId : null
+);
 
 type BillingStatus = {
   paid: boolean;
@@ -116,10 +137,11 @@ function getSceneDefaultFlashSlots(scene: AdScene): RenderFlashRole[] {
   return [...getFormatModule(scene.format).defaultSlots];
 }
 
-function getGenerationCount(format: AdFormatId) {
+function getGenerationCount(format: AdFormatId, videoMemeTemplateId: VideoMemeTemplateId = "bear-sniff") {
   if (format === "meme") return 12;
   if (format === "were-sorry") return 8;
-  if (format === "video-meme") return 8;
+  if (format === "video-meme") return getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8;
+  if (format === "jingle") return 1;
   return 50;
 }
 
@@ -187,6 +209,7 @@ function ResearchConnected() {
   const generateAdScenes = useAction(api.adScenes.generateFromResearch);
   const generateDialogueScripts = useAction(api.dialogueScripts.generateForScene);
   const generateDialogueAudioForScene = useAction(api.audioAssets.generateDialogueForScene);
+  const generateJingleAudioForScene = useAction(api.audioAssets.generateJingleForScene);
   const attachUploadedAudioForScene = useAction(api.audioAssets.attachUploadedToScene);
   const createAudioUploadUrl = useMutation(api.audioAssets.createUploadUrl);
   const createSharePage = useMutation(api.sharePages.createFromScene);
@@ -200,7 +223,9 @@ function ResearchConnected() {
   const [result, setResult] = useState<StoredWebsiteResearchResult | null>(null);
   const [selectedAdFormat, setSelectedAdFormat] = useState<AdFormatId>("meme");
   const [selectedMemeModel, setSelectedMemeModel] = useState(DEFAULT_NVIDIA_NIM_MEME_MODEL);
+  const [selectedVideoMemeTemplateId, setSelectedVideoMemeTemplateId] = useState<VideoMemeTemplateId>("bear-sniff");
   const [selectedVisualizerModel, setSelectedVisualizerModel] = useState(DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL);
+  const [selectedJingleStyleId, setSelectedJingleStyleId] = useState<JingleStyleId>(DEFAULT_JINGLE_STYLE_ID);
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
@@ -215,7 +240,9 @@ function ResearchConnected() {
   const [renderJobId, setRenderJobId] = useState<Id<"renderJobs"> | null>(null);
   const [memeDownloadBusy, setMemeDownloadBusy] = useState(false);
   const renderJob = useQuery(api.renderJobs.getStatus, renderJobId ? { renderJobId } : "skip");
-  const renderWorkerReadiness = useQuery(api.renderJobs.workerReadiness, {});
+  const renderWorkerReadiness = useQuery(api.renderJobs.workerReadiness, {
+    rendererVersion: getClientRendererVersion(),
+  });
   const [shareUrl, setShareUrl] = useState("");
   const [shareError, setShareError] = useState("");
   const [audioError, setAudioError] = useState("");
@@ -244,6 +271,10 @@ function ResearchConnected() {
     result: StoredWebsiteResearchResult;
     scenes: AdScene[];
   } | null | undefined;
+  const cachedResearchForUrl = useQuery(
+    api.researchRuns.latestReadyForAnonymousIdAndUrl,
+    anonymousId && url.trim() ? { anonymousId, url } : "skip",
+  ) as StoredWebsiteResearchResult | null | undefined;
   const saveDesign = useMutation(api.savedDesigns.saveFromScene);
   const savedDesignItems = savedDesigns || [];
   const canvasActions = useCanvasActions();
@@ -342,7 +373,11 @@ function ResearchConnected() {
     setAdScenes(latestGeneration.scenes);
     setSelectedScene(restoredScene);
     setSelectedSceneIndex(0);
-    if (restoredScene) setSelectedAdFormat(restoredScene.format);
+    if (restoredScene) {
+      setSelectedAdFormat(restoredScene.format);
+      const templateId = getSceneVideoMemeTemplateId(restoredScene);
+      if (templateId) setSelectedVideoMemeTemplateId(templateId);
+    }
     canvasActions.interactionReset();
     setRerollCount(0);
     setAdStatus("ready");
@@ -546,6 +581,36 @@ function ResearchConnected() {
     if (flashRoles.length) triggerRerollFlash(flashRoles);
   }, [selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
+  const generateJingleMusicForScene = useCallback(async (scene: AdScene) => {
+    if (scene.format !== "jingle" || scene.audio.status === "generated" || audioStatus === "loading") return;
+    const sceneKey = createSavedDesignId(scene);
+    setAudioStatus("loading");
+    setAudioError("");
+    resetShareState();
+    resetRenderState();
+    canvasActions.beginBusy("audio-generation");
+
+    try {
+      const result = await generateJingleAudioForScene({
+        anonymousId: getCurrentAnonymousId(),
+        scene,
+      }) as { scene: AdScene };
+      resetPreviewPlayback();
+      setAdScenes((scenes) => scenes.map((candidate) => (
+        createSavedDesignId(candidate) === sceneKey ? result.scene : candidate
+      )));
+      setSelectedScene((current) => (
+        current && createSavedDesignId(current) === sceneKey ? result.scene : current
+      ));
+      setAudioStatus("ready");
+      canvasActions.finishBusy();
+    } catch (nextError) {
+      setAudioStatus("error");
+      setAudioError(getMusicGenerationErrorMessage(nextError));
+      canvasActions.finishBusy();
+    }
+  }, [audioStatus, canvasActions, generateJingleAudioForScene, resetPreviewPlayback]);
+
   const onUpdateCreativeField = useCallback((field: string, value: string) => {
     if (field !== "headline" && field !== "subheadline" && field !== "ctaText") return;
     if (!selectedScene || selectedScene.creative[field] === value) return;
@@ -623,7 +688,7 @@ function ResearchConnected() {
     const currentGeneratedAudio = selectedScene.audio.status === "generated" ? selectedScene.audio : null;
     const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, {
       ...createDefaultSceneLocks(),
-      audio: Boolean(currentGeneratedAudio),
+      audio: selectedScene.format !== "jingle" && Boolean(currentGeneratedAudio),
     });
     if (!next.scene) return;
 
@@ -643,7 +708,10 @@ function ResearchConnected() {
     resetDialogueState();
     resetSaveState();
     triggerRerollFlash(getSceneDefaultFlashSlots(nextScene));
-  }, [adScenes, resetPreviewPlayback, selectedScene, selectedSceneIndex, triggerRerollFlash]);
+    if (nextScene.format === "jingle" && nextScene.audio.status !== "generated") {
+      void generateJingleMusicForScene(nextScene);
+    }
+  }, [adScenes, generateJingleMusicForScene, resetPreviewPlayback, selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
   const applyGeneratedScenes = (scenes: AdScene[]) => {
     if (!scenes.length) throw new Error("Ad idea generation returned no ads.");
@@ -661,6 +729,9 @@ function ResearchConnected() {
     setAdStatusNote(`${scenes.length} ads ready. Press spacebar to find a stronger version.`);
     setAdStatus("ready");
     canvasActions.finishBusy();
+    if (firstScene?.format === "jingle" && firstScene.audio.status !== "generated") {
+      void generateJingleMusicForScene(firstScene);
+    }
   };
 
   const generateScenesForResearch = async (
@@ -668,14 +739,18 @@ function ResearchConnected() {
     count = 50,
     format: AdFormatId = "visualizer",
     memeModel?: string,
+    videoMemeTemplateId: VideoMemeTemplateId = selectedVideoMemeTemplateId,
     visualizerModel?: string,
+    jingleStyleId: JingleStyleId = selectedJingleStyleId,
   ) => {
     const generationArgs = {
       researchRunId,
       count,
       format,
       ...(format === "meme" && memeModel ? { memeModel } : {}),
+      ...(format === "video-meme" ? { videoMemeTemplateId } : {}),
       ...(format === "visualizer" && visualizerModel ? { visualizerModel } : {}),
+      ...(format === "jingle" ? { jingleStyleId } : {}),
     };
     const nextGeneration = await generateAdScenes(generationArgs) as AdSceneGenerationResponse;
 
@@ -690,6 +765,16 @@ function ResearchConnected() {
         return {
           researchRunId: cached.researchRunId,
           facts: getWebsiteSubmitProgressFacts(cached),
+        };
+      }
+      if (cachedResearchForUrl?.researchRunId && (
+        key === normalizedUrlKey(cachedResearchForUrl.websiteUrl) ||
+        key === normalizedUrlKey(cachedResearchForUrl.finalUrl)
+      )) {
+        rememberResearchForReuse(cachedResearchForUrl);
+        return {
+          researchRunId: cachedResearchForUrl.researchRunId,
+          facts: getWebsiteSubmitProgressFacts(cachedResearchForUrl),
         };
       }
       if (result?.researchRunId && (
@@ -722,6 +807,7 @@ function ResearchConnected() {
   const generateScenesOnly = async (
     research: ReusableResearch,
     format: AdFormatId,
+    videoMemeTemplateId: VideoMemeTemplateId = selectedVideoMemeTemplateId,
   ) => {
     setStatus("ready");
     setAdStatus("loading");
@@ -741,10 +827,12 @@ function ResearchConnected() {
     try {
       const nextScenes = await generateScenesForResearch(
         research.researchRunId as Id<"researchRuns">,
-        getGenerationCount(format),
+        getGenerationCount(format, videoMemeTemplateId),
         format,
         selectedMemeModel,
+        videoMemeTemplateId,
         selectedVisualizerModel,
+        selectedJingleStyleId,
       );
       setProgressStage("preparing-canvas");
       applyGeneratedScenes(nextScenes);
@@ -867,10 +955,12 @@ function ResearchConnected() {
       canvasActions.beginBusy("ad-generation");
       const nextScenes = await generateScenesForResearch(
         nextResult.researchRunId as Id<"researchRuns">,
-        getGenerationCount(selectedAdFormat),
+        getGenerationCount(selectedAdFormat, selectedVideoMemeTemplateId),
         selectedAdFormat,
         selectedMemeModel,
+        selectedVideoMemeTemplateId,
         selectedVisualizerModel,
+        selectedJingleStyleId,
       );
       setProgressStage("preparing-canvas");
       rememberResearchForReuse(nextResult);
@@ -901,6 +991,13 @@ function ResearchConnected() {
     const reusableResearch = getReusableResearchForUrl(url);
     if (!reusableResearch || status === "loading" || adStatus === "loading") return;
     void generateScenesOnly(reusableResearch, format);
+  };
+
+  const onVideoMemeTemplateChange = (templateId: VideoMemeTemplateId) => {
+    setSelectedVideoMemeTemplateId(templateId);
+    const reusableResearch = getReusableResearchForUrl(url);
+    if (selectedAdFormat !== "video-meme" || !reusableResearch || status === "loading" || adStatus === "loading") return;
+    void generateScenesOnly(reusableResearch, "video-meme", templateId);
   };
 
   const startCheckout = async () => {
@@ -949,7 +1046,11 @@ function ResearchConnected() {
 
   const onOpenAudioPanel = () => {
     if (audioStatus === "loading") return;
-    ensureSelectedScene();
+    const scene = ensureSelectedScene();
+    if (scene.format === "jingle") {
+      void generateJingleMusicForScene(scene);
+      return;
+    }
     if (dialoguePanelOpen) {
       closeDialoguePanel();
     } else {
@@ -1136,6 +1237,8 @@ function ResearchConnected() {
     resetPreviewPlayback();
     setUrl(restored.selectedScene.brand.url || url);
     setSelectedAdFormat(restored.selectedScene.format);
+    const templateId = getSceneVideoMemeTemplateId(restored.selectedScene);
+    if (templateId) setSelectedVideoMemeTemplateId(templateId);
     setSelectedScene(restored.selectedScene);
     setSelectedSceneIndex(restored.selectedSceneIndex);
     setAdScenes(restored.scenes);
@@ -1159,6 +1262,9 @@ function ResearchConnected() {
     resetDialogueState();
     resetShareState();
     resetRenderState();
+    if (scene.format === "jingle" && scene.audio.status !== "generated") {
+      void generateJingleMusicForScene(scene);
+    }
   };
 
   const onCreateRenderJob = async () => {
@@ -1335,9 +1441,13 @@ function ResearchConnected() {
             ? `${billingStatus.freeRemaining} of ${billingStatus.freeLimit} free runs left`
             : ""}
           memeModel={selectedMemeModel}
+          jingleStyleId={selectedJingleStyleId}
+          videoMemeTemplateId={selectedVideoMemeTemplateId}
           visualizerModel={selectedVisualizerModel}
           onFormatChange={onFormatChange}
+          onJingleStyleChange={setSelectedJingleStyleId}
           onMemeModelChange={setSelectedMemeModel}
+          onVideoMemeTemplateChange={onVideoMemeTemplateChange}
           onVisualizerModelChange={setSelectedVisualizerModel}
           onSubmit={onSubmit}
           onUrlChange={setUrl}
@@ -1354,6 +1464,7 @@ function ResearchConnected() {
               adScenesCount={adScenes.length}
               isAudioPlaying={isAudioPlaying}
               onOpenAudioPanel={onOpenAudioPanel}
+              onPreviewTimeChange={setPreviewTimeSeconds}
               onRerollScene={onRerollScene}
               placeholderVariantIndex={placeholderVariantIndex}
               previewPlatform={previewPlatform}
@@ -1382,6 +1493,7 @@ function ResearchConnected() {
                 renderErrorMessage={renderJob?.error || renderError}
                 renderStatusLabel={renderStatusLabel}
                 renderWorkerHealthy={renderWorkerHealthy}
+                audioError={audioError}
                 memeDownloadBusy={memeDownloadBusy}
                 saveCounterLabel={saveCounterLabel}
                 saveError={saveError}

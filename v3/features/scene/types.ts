@@ -2,7 +2,7 @@ import type { BrandAdAngle, BrandSnapshot, ResearchReceipts } from "../research/
 
 export const AD_SCENE_VERSION = 1 as const;
 
-export type AdFormatId = "visualizer" | "meme" | "were-sorry" | "video-meme";
+export type AdFormatId = "visualizer" | "meme" | "were-sorry" | "video-meme" | "jingle";
 
 export type HeadlineType =
   | "painful_moment"
@@ -50,7 +50,7 @@ export type AdSceneAudio =
     transcript: string;
     captions: AdSceneCaption[];
     analysis?: AdSceneAudioAnalysis;
-    provider: "gemini" | "upload";
+    provider: "gemini" | "upload" | "elevenlabs";
     model: string;
     generatedAt: number;
   };
@@ -150,14 +150,40 @@ export type VideoMemeAdScene = AdSceneBase<
   AdSceneStyleBase,
   {
     preset: "video-meme-template";
-    templateId: "bear-sniff";
+    templateId: "bear-sniff" | "pingu-noot-noot" | "darwin-journey";
     videoSrc: string;
     durationSeconds: number;
     captionPosition: "top";
     slots: {
-      caption: string;
+      caption?: string;
+      setupText?: string;
+      dreadText?: string;
     };
   }
 >;
 
-export type AdScene = VisualizerAdScene | MemeAdScene | WereSorryAdScene | VideoMemeAdScene;
+export type JingleCompositionChunk = {
+  text: string;
+  duration_ms: number;
+  positive_styles: string[];
+  negative_styles: string[];
+  context_adherence: "high";
+};
+
+export type JingleAdScene = AdSceneBase<
+  "jingle",
+  AdSceneStyleBase,
+  {
+    preset: "jingle-lyrics";
+    brandPhonetic: string;
+    angle: string;
+    lyrics: string[];
+    musicLengthMs: number;
+    compositionPlan: {
+      chunks: JingleCompositionChunk[];
+    };
+    selfCheckPassed: string;
+  }
+>;
+
+export type AdScene = VisualizerAdScene | MemeAdScene | WereSorryAdScene | VideoMemeAdScene | JingleAdScene;

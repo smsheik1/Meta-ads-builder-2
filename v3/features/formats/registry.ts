@@ -1,6 +1,7 @@
 import type { AdFormatId } from "../scene/types";
 import type { AdFormatModule } from "./types";
 import { memeFormatModule } from "./meme";
+import { jingleFormatModule } from "./jingle";
 import { videoMemeFormatModule } from "./video-meme";
 import { visualizerFormatModule } from "./visualizer";
 import { wereSorryFormatModule } from "./were-sorry";
@@ -14,6 +15,7 @@ export const formatRegistry = createFormatRegistry({
   meme: memeFormatModule,
   "were-sorry": wereSorryFormatModule,
   "video-meme": videoMemeFormatModule,
+  jingle: jingleFormatModule,
 } satisfies Record<AdFormatId, AnyAdFormatModule>);
 
 export const getFormatModuleFromRegistry = <

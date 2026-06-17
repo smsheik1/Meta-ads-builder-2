@@ -1,14 +1,13 @@
-import type { VideoMemeVariant } from "../formats/video-meme/generate";
-import { getVideoMemeTemplate } from "../formats/video-meme/templates";
+import type { JingleVariant } from "../formats/jingle/generate";
 import type { StoredWebsiteResearchResult } from "../research/types";
 import {
   AD_SCENE_VERSION,
   type AdScene,
-  type VideoMemeAdScene,
+  type JingleAdScene,
 } from "./types";
 import { pickSceneAccentColor } from "./createVisualizerScene";
 
-export const createVideoMemeAdScene = ({
+export const createJingleAdScene = ({
   research,
   variant,
   candidateIndex,
@@ -18,20 +17,19 @@ export const createVideoMemeAdScene = ({
   now = Date.now(),
 }: {
   research: StoredWebsiteResearchResult;
-  variant: VideoMemeVariant;
+  variant: JingleVariant;
   candidateIndex: number;
   generationBatchId: string;
   model: string;
   provider: AdScene["metadata"]["provider"];
   now?: number;
-}): VideoMemeAdScene => {
-  const template = getVideoMemeTemplate(variant.clipId);
-  if (!template) throw new Error(`Unknown video meme template: ${variant.clipId}`);
-  const headline = variant.caption || variant.slots?.dreadText || variant.slots?.setupText || "";
+}): JingleAdScene => {
+  const hook = variant.lyrics[0] || variant.brandPhonetic;
+  const accentColor = pickSceneAccentColor(research.brand.colors);
 
   return {
     version: AD_SCENE_VERSION,
-    format: "video-meme",
+    format: "jingle",
     brand: {
       ...research.brand,
       receipts: {
@@ -42,18 +40,18 @@ export const createVideoMemeAdScene = ({
       },
     },
     creative: {
-      angleId: `${template.id}-${candidateIndex + 1}`,
-      headline,
+      angleId: `jingle-${candidateIndex + 1}`,
+      headline: hook,
       subheadline: variant.angle,
       ctaText: research.brandBrief.ctaDirection || "Learn more",
       headlineType: "callout",
-      selectedPain: variant.target,
+      selectedPain: variant.angle,
       selectedProof: variant.angle,
     },
     style: {
-      backgroundColor: "#000000",
+      backgroundColor: "#07111F",
       textColor: "#FFFFFF",
-      accentColor: pickSceneAccentColor(research.brand.colors),
+      accentColor,
       fontFeel: research.brand.fonts.feel,
     },
     audio: {
@@ -62,16 +60,13 @@ export const createVideoMemeAdScene = ({
       captions: [],
     },
     layout: {
-      preset: "video-meme-template",
-      templateId: template.id,
-      videoSrc: template.videoSrc,
-      durationSeconds: template.durationSeconds,
-      captionPosition: template.captionPosition,
-      slots: {
-        ...(variant.caption ? { caption: variant.caption } : {}),
-        ...(variant.slots?.setupText ? { setupText: variant.slots.setupText } : {}),
-        ...(variant.slots?.dreadText ? { dreadText: variant.slots.dreadText } : {}),
-      },
+      preset: "jingle-lyrics",
+      brandPhonetic: variant.brandPhonetic,
+      angle: variant.angle,
+      lyrics: variant.lyrics,
+      musicLengthMs: variant.musicLengthMs,
+      compositionPlan: variant.compositionPlan,
+      selfCheckPassed: variant.selfCheckPassed,
     },
     metadata: {
       candidateIndex,

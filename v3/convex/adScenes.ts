@@ -3,15 +3,17 @@ import { internal } from "./_generated/api";
 import { action, query } from "./_generated/server";
 import { generateAdCandidatesFromResearch } from "../features/ad-generation/generate";
 import { generateMemeVariantsFromResearch } from "../features/formats/meme/generate";
+import { generateJingleVariantsFromResearch } from "../features/formats/jingle/generate";
 import { generateVideoMemeVariantsFromResearch } from "../features/formats/video-meme/generate";
 import { generateWereSorryVariantsFromResearch } from "../features/formats/were-sorry/generate";
-import { buildFallbackBrandBrief } from "../features/research/brandCurator";
 import { createMemeAdScene } from "../features/scene/createMemeScene";
+import { createJingleAdScene } from "../features/scene/createJingleScene";
 import { createVideoMemeAdScene } from "../features/scene/createVideoMemeScene";
 import { createVisualizerAdScene } from "../features/scene/createVisualizerScene";
 import { createWereSorryAdScene } from "../features/scene/createWereSorryScene";
 import type { StoredWebsiteResearchResult } from "../features/research/types";
 import type { AdScene } from "../features/scene/types";
+import { toStoredResearchResult } from "./researchStorage";
 
 const createGenerationBatchId = () => (
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
@@ -21,11 +23,13 @@ export const generateFromResearch: ReturnType<typeof action> = action({
   args: {
     researchRunId: v.id("researchRuns"),
     count: v.optional(v.number()),
-    format: v.optional(v.union(v.literal("visualizer"), v.literal("meme"), v.literal("were-sorry"), v.literal("video-meme"))),
+    format: v.optional(v.union(v.literal("visualizer"), v.literal("meme"), v.literal("were-sorry"), v.literal("video-meme"), v.literal("jingle"))),
     memeModel: v.optional(v.string()),
+    videoMemeTemplateId: v.optional(v.union(v.literal("bear-sniff"), v.literal("pingu-noot-noot"), v.literal("darwin-journey"))),
     visualizerModel: v.optional(v.string()),
+    jingleStyleId: v.optional(v.union(v.literal("modern-hip-hop"), v.literal("cinematic-trap-diss"))),
   },
-  handler: async (ctx, { researchRunId, count, format = "visualizer", memeModel, visualizerModel }) => {
+  handler: async (ctx, { researchRunId, count, format = "visualizer", memeModel, videoMemeTemplateId, visualizerModel, jingleStyleId }) => {
     const research = await ctx.runQuery(internal.adSceneStorage.loadResearchForGeneration, {
       researchRunId,
     });
@@ -81,8 +85,33 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     }
 
     if (format === "video-meme") {
-      const generation = await generateVideoMemeVariantsFromResearch(research, { count });
+      const generation = await generateVideoMemeVariantsFromResearch(research, { count, templateId: videoMemeTemplateId });
       const scenes = generation.variants.map((variant, index) => createVideoMemeAdScene({
+        research,
+        variant,
+        candidateIndex: index,
+        generationBatchId,
+        model: generation.model,
+        provider: generation.provider,
+      }));
+      const { sceneIds } = await ctx.runMutation(internal.adSceneStorage.saveGeneratedScenes, {
+        sessionId: research.sessionId,
+        researchRunId,
+        brandSnapshotId: research.brandSnapshotId,
+        scenes,
+      });
+
+      return {
+        generationBatchId,
+        sceneIds,
+        scenes,
+        providerStatus: generation.providerStatus,
+      };
+    }
+
+    if (format === "jingle") {
+      const generation = await generateJingleVariantsFromResearch(research, { jingleStyleId });
+      const scenes = generation.variants.map((variant, index) => createJingleAdScene({
         research,
         variant,
         candidateIndex: index,
@@ -179,39 +208,8 @@ export const latestForAnonymousId: ReturnType<typeof query> = query({
       .first();
     if (!brandSnapshot || !researchRun.evidence) return null;
 
-    const research = {
-      sessionId: researchRun.sessionId,
-      researchRunId: firstRow.researchRunId,
-      brandSnapshotId: brandSnapshot._id,
-      websiteUrl: researchRun.url,
-      finalUrl: researchRun.finalUrl || brandSnapshot.url,
-      host: researchRun.host || brandSnapshot.host || "",
-      brand: {
-        name: brandSnapshot.name,
-        url: brandSnapshot.url,
-        host: brandSnapshot.host || "",
-        title: brandSnapshot.title || "",
-        description: brandSnapshot.description || "",
-        faviconUrl: brandSnapshot.faviconUrl || null,
-        logoUrl: brandSnapshot.logoUrl || null,
-        ogImageUrl: brandSnapshot.ogImageUrl || null,
-        screenshotUrl: brandSnapshot.screenshotUrl || null,
-        colors: brandSnapshot.colors,
-        fonts: brandSnapshot.fonts,
-        vibeTags: brandSnapshot.vibeTags,
-      },
-      evidence: researchRun.evidence,
-      metadata: researchRun.metadata || {},
-      branding: researchRun.branding || {},
-      adAngles: researchRun.adAngles || [],
-      providerStatus: researchRun.providerStatus || [],
-    };
-
     return {
-      result: {
-        ...research,
-        brandBrief: researchRun.brandBrief || buildFallbackBrandBrief(research),
-      } satisfies StoredWebsiteResearchResult,
+      result: toStoredResearchResult(researchRun, brandSnapshot, firstRow.researchRunId),
       scenes: batchRows.map((row) => row.scene as AdScene),
     };
   },

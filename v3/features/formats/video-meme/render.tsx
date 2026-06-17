@@ -6,13 +6,20 @@ import type { FormatRenderProps } from "../types";
 const captionWrapStyle: CSSProperties = {
   textWrap: "balance",
 };
+const pinguDreadStartsAtSeconds = 4;
 
 export function VideoMemeFormatRenderer({
   scene,
   rerollFlash,
+  timeSeconds = 0,
 }: FormatRenderProps<VideoMemeAdScene>) {
   const { Video } = useRenderAssetComponents();
-  const caption = scene.creative.headline || scene.layout.slots.caption;
+  const isPingu = scene.layout.templateId === "pingu-noot-noot";
+  const isDarwin = scene.layout.templateId === "darwin-journey";
+  const caption = scene.creative.headline || scene.layout.slots.caption || scene.layout.slots.dreadText || "";
+  const setupText = scene.layout.slots.setupText || "";
+  const dreadText = scene.layout.slots.dreadText || "";
+  const shouldShowPinguDread = isPingu && (timeSeconds ?? 0) >= pinguDreadStartsAtSeconds;
   const flashHeadline = rerollFlash?.roles.includes("headline")
     ? "wiggly-reroll-shine wiggly-reroll-shine-headline"
     : "";
@@ -24,6 +31,8 @@ export function VideoMemeFormatRenderer({
       data-video-meme-template={scene.layout.templateId}
       data-video-meme-caption-position={scene.layout.captionPosition}
       data-video-meme-caption={caption}
+      data-video-meme-setup-text={setupText || undefined}
+      data-video-meme-dread-text={dreadText || undefined}
       style={{
         color: "#FFFFFF",
         containerType: "inline-size",
@@ -33,21 +42,45 @@ export function VideoMemeFormatRenderer({
         src={scene.layout.videoSrc}
         className="absolute inset-0 size-full object-cover"
         autoPlay
-        muted
         loop
         playsInline
         preload="auto"
       />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[32%] bg-gradient-to-b from-black/70 via-black/25 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-[4.5cqw] top-[4cqw] flex justify-center">
-        <p
-          className={`max-w-[94%] rounded-[1.4cqw] bg-black/68 px-[4.2cqw] py-[2.8cqw] text-center text-[5.7cqw] font-black leading-[0.98] tracking-normal text-white shadow-2xl shadow-black/30 ${flashHeadline}`}
-          data-video-meme-caption-text="true"
-          style={captionWrapStyle}
-        >
-          {caption}
-        </p>
-      </div>
+      {isPingu ? (
+        <>
+          <div className={`pointer-events-none absolute inset-x-[4.5cqw] ${shouldShowPinguDread ? "top-[12cqw]" : "top-[4cqw]"} flex justify-center`}>
+            <p
+              className={`max-w-[94%] rounded-[1.4cqw] bg-black/72 px-[4.2cqw] py-[2.4cqw] text-center text-[5.2cqw] font-black leading-[1] tracking-normal text-white shadow-2xl shadow-black/30 ${flashHeadline}`}
+              data-video-meme-setup-text={shouldShowPinguDread ? undefined : "true"}
+              data-video-meme-dread-text={shouldShowPinguDread ? "true" : undefined}
+              style={captionWrapStyle}
+            >
+              {shouldShowPinguDread ? dreadText : setupText}
+            </p>
+          </div>
+        </>
+      ) : isDarwin ? (
+        <div className="pointer-events-none absolute inset-x-[4.5cqw] top-[4cqw] flex justify-center">
+          <p
+            className={`max-w-[94%] text-center text-[5.1cqw] font-black leading-[1.04] tracking-normal text-white drop-shadow-[0_0.3cqw_0_rgba(0,0,0,0.9)] ${flashHeadline}`}
+            data-video-meme-caption-text="true"
+            style={captionWrapStyle}
+          >
+            {caption}
+          </p>
+        </div>
+      ) : (
+        <div className="pointer-events-none absolute inset-x-[4.5cqw] top-[4cqw] flex justify-center">
+          <p
+            className={`max-w-[94%] rounded-[1.4cqw] bg-black/68 px-[4.2cqw] py-[2.8cqw] text-center text-[5.7cqw] font-black leading-[0.98] tracking-normal text-white shadow-2xl shadow-black/30 ${flashHeadline}`}
+            data-video-meme-caption-text="true"
+            style={captionWrapStyle}
+          >
+            {caption}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
