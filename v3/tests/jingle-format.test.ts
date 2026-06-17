@@ -183,6 +183,31 @@ const phoneticDisplayHtml = renderToStaticMarkup(createElement(AdRenderSurface, 
 assert.ok(phoneticDisplayHtml.includes("OGTool"));
 assert.ok(!phoneticDisplayHtml.includes(">Oh Gee Tool<"));
 
+const captionPhoneticDisplayHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: {
+    ...phoneticDisplayScene,
+    audio: {
+      status: "generated",
+      storageId: "audio_1",
+      url: "https://example.com/jingle.mp3",
+      mimeType: "audio/mpeg",
+      durationMs: 20000,
+      durationSeconds: 20,
+      transcript: "O GEE Tool",
+      captions: [{
+        startMs: 0,
+        endMs: 20000,
+        text: "O GEE Tool",
+      }],
+      provider: "elevenlabs",
+      model: "music_v2",
+      generatedAt: 1,
+    },
+  },
+}));
+assert.ok(captionPhoneticDisplayHtml.includes("OGTool"));
+assert.ok(!captionPhoneticDisplayHtml.includes(">O GEE Tool<"));
+
 const rerolled = rerollScene(scenes, {
   ...scenes[0]!,
   audio: {

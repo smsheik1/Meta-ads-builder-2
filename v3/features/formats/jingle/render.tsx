@@ -7,6 +7,21 @@ import type { FormatRenderProps } from "../types";
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const fill: CSSProperties = { position: "absolute", inset: 0 };
 
+const phoneticAliases = (phonetic: string) => Array.from(new Set([
+  phonetic,
+  phonetic.replace(/\bOh\b/gi, "O"),
+  phonetic.replace(/\bGee\b/gi, "GEE"),
+  phonetic.replace(/\bOh\b/gi, "O").replace(/\bGee\b/gi, "GEE"),
+  phonetic.replace(/\bGee\b/gi, "G"),
+  phonetic.replace(/\bOh\b/gi, "O").replace(/\bGee\b/gi, "G"),
+].filter(Boolean)));
+
+const displayLyricForBrand = (lyric: string, brandName: string, brandPhonetic: string) =>
+  phoneticAliases(brandPhonetic).reduce(
+    (display, alias) => display.replace(new RegExp(escapeRegExp(alias), "gi"), brandName),
+    lyric,
+  );
+
 export function JingleFormatRenderer({
   scene,
   timeSeconds = 0,
@@ -17,7 +32,7 @@ export function JingleFormatRenderer({
     || scene.layout.lyrics[0]
     || scene.creative.headline;
   const displayLyric = scene.layout.brandPhonetic
-    ? activeLyric.replace(new RegExp(escapeRegExp(scene.layout.brandPhonetic), "gi"), scene.brand.name)
+    ? displayLyricForBrand(activeLyric, scene.brand.name, scene.layout.brandPhonetic)
     : activeLyric;
   const analysis = scene.audio.status === "generated" ? scene.audio.analysis : null;
   const frameIndex = Math.max(0, Math.floor(timeSeconds * (analysis?.fps || 60)));
