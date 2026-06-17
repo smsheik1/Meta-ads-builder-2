@@ -2,13 +2,22 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const remotionSource = readFileSync("remotion-entry/RemotionAdScene.tsx", "utf8");
+const remotionEntrySource = readFileSync("remotion-entry/index.ts", "utf8");
 const workerSource = readFileSync("scripts/render-worker.ts", "utf8");
 const rendererVersionSource = readFileSync("features/render/rendererVersion.ts", "utf8");
 const createClientSource = readFileSync("app/create/CreateResearchClient.tsx", "utf8");
+const appGlobalsSource = readFileSync("app/globals.css", "utf8");
+const renderGlobalsSource = readFileSync("features/render/renderGlobals.css", "utf8");
 
 assert.ok(
   remotionSource.includes("AdRenderSurface"),
   "Remotion render path must use the shared AdRenderSurface.",
+);
+assert.ok(
+  remotionEntrySource.includes("../features/render/renderGlobals.css") &&
+    appGlobalsSource.includes("../features/render/renderGlobals.css") &&
+    renderGlobalsSource.includes("@import \"tailwindcss\""),
+  "Preview and Remotion export must share render CSS so AdRenderSurface output stays visually aligned.",
 );
 assert.ok(
   workerSource.includes("adSceneCompositionId"),
