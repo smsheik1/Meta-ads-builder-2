@@ -20,7 +20,7 @@ const commands = [
   {
     name: "render",
     color: "\x1b[32m",
-    args: ["run", "render-worker:watch", "-w", "@wiggly/v3"],
+    args: ["run", "render-worker:dev", "-w", "@wiggly/v3"],
   },
 ];
 

@@ -8,9 +8,10 @@ const devAll = readFileSync("../scripts/dev-all.mjs", "utf8");
 assert.equal(rootPackage.scripts.dev, "node scripts/dev-all.mjs");
 assert.equal(v3Package.scripts.dev, "node ../scripts/dev-all.mjs");
 assert.equal(v3Package.scripts["dev:next"], "next dev -p 3020");
+assert.equal(v3Package.scripts["render-worker:dev"], "tsx watch scripts/render-worker.ts --watch");
 assert.ok(devAll.includes('args: ["run", "dev:next", "-w", "@wiggly/v3"]'));
 assert.ok(devAll.includes('args: ["run", "convex:dev", "-w", "@wiggly/v3"]'));
-assert.ok(devAll.includes('args: ["run", "render-worker:watch", "-w", "@wiggly/v3"]'));
+assert.ok(devAll.includes('args: ["run", "render-worker:dev", "-w", "@wiggly/v3"]'));
 assert.ok(devAll.includes("const repoRoot ="));
 
 console.log("dev-stack tests passed");
