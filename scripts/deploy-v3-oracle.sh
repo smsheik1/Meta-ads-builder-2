@@ -76,7 +76,6 @@ npm run test
 npm run typecheck
 npm run build
 npm run remotion:still
-npm run runtime:health
 
 export NODE_ENV=production
 export PORT="$V3_PORT"
@@ -89,6 +88,9 @@ pm2 start npm --name "$V3_WORKER_APP_NAME" --update-env -- run render-worker:wat
 
 pm2 save
 pm2 status
+
+sleep 3
+npm run runtime:health
 
 if [ -n "$V3_PUBLIC_HOST" ]; then
   if ! [[ "$V3_PUBLIC_HOST" =~ ^[A-Za-z0-9.-]+$ ]]; then
