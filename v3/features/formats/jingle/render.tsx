@@ -3,6 +3,8 @@ import { useRenderAssetComponents } from "../../render/RenderAssetContext";
 import type { JingleAdScene } from "../../scene/types";
 import type { FormatRenderProps } from "../types";
 
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 export function JingleFormatRenderer({
   scene,
   timeSeconds = 0,
@@ -12,6 +14,9 @@ export function JingleFormatRenderer({
   const activeLyric = getVisibleCaptionText(scene.audio, timeSeconds)
     || scene.layout.lyrics[0]
     || scene.creative.headline;
+  const displayLyric = scene.layout.brandPhonetic
+    ? activeLyric.replace(new RegExp(escapeRegExp(scene.layout.brandPhonetic), "gi"), scene.brand.name)
+    : activeLyric;
   const analysis = scene.audio.status === "generated" ? scene.audio.analysis : null;
   const frameIndex = Math.max(0, Math.floor(timeSeconds * (analysis?.fps || 60)));
   const audioLevel = analysis?.levels[Math.min(analysis.levels.length - 1, frameIndex)] || 0;
@@ -72,7 +77,7 @@ export function JingleFormatRenderer({
           className={`text-balance text-center text-[8.2cqw] font-black leading-[0.98] tracking-normal text-white drop-shadow-[0_0.7cqw_0_rgba(0,0,0,0.35)] ${flashHeadline}`.trim()}
           data-jingle-active-lyric="true"
         >
-          {activeLyric}
+          {displayLyric}
         </p>
       </div>
 

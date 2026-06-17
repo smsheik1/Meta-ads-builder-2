@@ -166,6 +166,19 @@ assert.ok(html.includes('data-jingle-waveform="true"'));
 assert.ok(html.includes("relative h-full w-full"));
 assert.ok(html.includes("Oh Gee Tool"));
 
+const phoneticDisplayScene = {
+  ...scenes[0]!,
+  layout: {
+    ...scenes[0]!.layout,
+    lyrics: ["Oh Gee Tool"],
+  },
+};
+const phoneticDisplayHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: phoneticDisplayScene,
+}));
+assert.ok(phoneticDisplayHtml.includes("OGTool"));
+assert.ok(!phoneticDisplayHtml.includes(">Oh Gee Tool<"));
+
 const rerolled = rerollScene(scenes, {
   ...scenes[0]!,
   audio: {

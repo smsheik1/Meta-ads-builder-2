@@ -127,6 +127,7 @@ export function extractJingleVariantsFromResponse(
         .map((chunk) => chunk && typeof chunk === "object" ? normalizeChunk(chunk as Record<string, unknown>) : null)
         .filter((chunk): chunk is JingleCompositionChunk => Boolean(chunk))
       : [];
+    // ponytail: syllable counts are review-only for MVP; add real prosody scoring after bad outputs prove it is worth the false-reject risk.
     const selfCheckPassed = cleanText(record.selfCheckPassed, 260);
     const hookLines = chunks[0] ? lyricLines(chunks[0].text) : [];
     const finalHookLines = chunks[2] ? lyricLines(chunks[2].text) : [];
