@@ -22,6 +22,7 @@ import {
   DEFAULT_NVIDIA_NIM_MEME_MODEL,
   DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL,
 } from "@/features/llm/nvidiaNimModels";
+import { DEFAULT_JINGLE_STYLE_ID, type JingleStyleId } from "@/features/formats/jingle/prompt";
 import { getVideoMemeTemplate, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
 import { getFormatModule } from "@/features/formats/registry";
 import { useActiveCanvasPanel, useCanvasActions } from "@/features/create/canvasInteractionStore";
@@ -224,6 +225,7 @@ function ResearchConnected() {
   const [selectedMemeModel, setSelectedMemeModel] = useState(DEFAULT_NVIDIA_NIM_MEME_MODEL);
   const [selectedVideoMemeTemplateId, setSelectedVideoMemeTemplateId] = useState<VideoMemeTemplateId>("bear-sniff");
   const [selectedVisualizerModel, setSelectedVisualizerModel] = useState(DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL);
+  const [selectedJingleStyleId, setSelectedJingleStyleId] = useState<JingleStyleId>(DEFAULT_JINGLE_STYLE_ID);
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
@@ -739,6 +741,7 @@ function ResearchConnected() {
     memeModel?: string,
     videoMemeTemplateId: VideoMemeTemplateId = selectedVideoMemeTemplateId,
     visualizerModel?: string,
+    jingleStyleId: JingleStyleId = selectedJingleStyleId,
   ) => {
     const generationArgs = {
       researchRunId,
@@ -747,6 +750,7 @@ function ResearchConnected() {
       ...(format === "meme" && memeModel ? { memeModel } : {}),
       ...(format === "video-meme" ? { videoMemeTemplateId } : {}),
       ...(format === "visualizer" && visualizerModel ? { visualizerModel } : {}),
+      ...(format === "jingle" ? { jingleStyleId } : {}),
     };
     const nextGeneration = await generateAdScenes(generationArgs) as AdSceneGenerationResponse;
 
@@ -828,6 +832,7 @@ function ResearchConnected() {
         selectedMemeModel,
         videoMemeTemplateId,
         selectedVisualizerModel,
+        selectedJingleStyleId,
       );
       setProgressStage("preparing-canvas");
       applyGeneratedScenes(nextScenes);
@@ -955,6 +960,7 @@ function ResearchConnected() {
         selectedMemeModel,
         selectedVideoMemeTemplateId,
         selectedVisualizerModel,
+        selectedJingleStyleId,
       );
       setProgressStage("preparing-canvas");
       rememberResearchForReuse(nextResult);
@@ -1435,9 +1441,11 @@ function ResearchConnected() {
             ? `${billingStatus.freeRemaining} of ${billingStatus.freeLimit} free runs left`
             : ""}
           memeModel={selectedMemeModel}
+          jingleStyleId={selectedJingleStyleId}
           videoMemeTemplateId={selectedVideoMemeTemplateId}
           visualizerModel={selectedVisualizerModel}
           onFormatChange={onFormatChange}
+          onJingleStyleChange={setSelectedJingleStyleId}
           onMemeModelChange={setSelectedMemeModel}
           onVideoMemeTemplateChange={onVideoMemeTemplateChange}
           onVisualizerModelChange={setSelectedVisualizerModel}

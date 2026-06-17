@@ -91,6 +91,13 @@ looseStylesVariant.compositionPlan.chunks = looseStylesVariant.compositionPlan.c
 const parsedLooseStyles = extractJingleVariantsFromResponse(JSON.stringify({ variants: [looseStylesVariant] }));
 assert.ok(parsedLooseStyles[0]!.compositionPlan.chunks[0]!.positive_styles.includes("modern hip hop"));
 assert.ok(parsedLooseStyles[0]!.compositionPlan.chunks[0]!.positive_styles.includes("90 BPM"));
+const parsedCinematicStyles = extractJingleVariantsFromResponse(
+  JSON.stringify({ variants: [looseStylesVariant] }),
+  "Jingle provider",
+  "cinematic-trap-diss",
+);
+assert.ok(parsedCinematicStyles[0]!.compositionPlan.chunks[0]!.positive_styles.includes("cinematic trap diss rap"));
+assert.ok(parsedCinematicStyles[0]!.compositionPlan.chunks[0]!.positive_styles.includes("95 BPM"));
 
 assert.throws(
   () => extractJingleVariantsFromResponse(JSON.stringify({ variants: [] })),
@@ -126,6 +133,10 @@ assert.ok(prompt.includes("90 BPM"));
 assert.ok(prompt.includes("Final lyric line is brandPhonetic") || prompt.includes("FINAL lyric line is the phonetic brand name"));
 assert.ok(prompt.includes('"Agent Enamel" -> "Agent Enamel"'));
 assert.ok(!prompt.includes("Ay-jent"));
+const cinematicPrompt = buildJinglePrompt(research, "cinematic-trap-diss");
+assert.ok(cinematicPrompt.includes("cinematic trap diss rap"));
+assert.ok(cinematicPrompt.includes("95 BPM"));
+assert.ok(cinematicPrompt.includes("diss the buyer's old problem"));
 
 await assert.rejects(
   () => generateJingleVariantsFromResearch(research, {
@@ -145,6 +156,17 @@ const generated = await generateJingleVariantsFromResearch(research, {
 });
 assert.equal(generated.variants.length, 1);
 assert.equal(generated.provider, "nvidia-nim");
+const cinematicGenerated = await generateJingleVariantsFromResearch(research, {
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimBaseUrl: "https://nim.test/v1",
+  nvidiaNimModel: "test-kimi-model",
+  jingleStyleId: "cinematic-trap-diss",
+  nvidiaNimChatCompletion: async ({ prompt: callPrompt }) => {
+    assert.ok(callPrompt.includes("cinematic trap diss rap"));
+    return JSON.stringify({ variants });
+  },
+});
+assert.ok(cinematicGenerated.variants[0]!.compositionPlan.chunks[0]!.positive_styles.includes("cinematic trap diss rap"));
 
 const scenes = parsed.map((variant, index) => createJingleAdScene({
   research,

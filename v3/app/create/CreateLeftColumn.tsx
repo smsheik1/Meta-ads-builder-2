@@ -3,6 +3,7 @@ import {
   NIM_MEME_MODEL_OPTIONS,
   NIM_VISUALIZER_MODEL_OPTIONS,
 } from "@/features/llm/nvidiaNimModels";
+import { JINGLE_STYLES, type JingleStyleId } from "@/features/formats/jingle/prompt";
 import { VIDEO_MEME_TEMPLATES, getVideoMemeTemplate, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
 import type { AdFormatId } from "@/features/scene/types";
 
@@ -171,9 +172,11 @@ export function CreateLeftColumn({
   format,
   freeRunsLabel,
   memeModel,
+  jingleStyleId,
   videoMemeTemplateId,
   visualizerModel,
   onFormatChange,
+  onJingleStyleChange,
   onMemeModelChange,
   onVideoMemeTemplateChange,
   onVisualizerModelChange,
@@ -191,9 +194,11 @@ export function CreateLeftColumn({
   format: AdFormatId;
   freeRunsLabel?: string;
   memeModel: string;
+  jingleStyleId: JingleStyleId;
   videoMemeTemplateId: VideoMemeTemplateId;
   visualizerModel: string;
   onFormatChange: (format: AdFormatId) => void;
+  onJingleStyleChange: (styleId: JingleStyleId) => void;
   onMemeModelChange: (model: string) => void;
   onVideoMemeTemplateChange: (templateId: VideoMemeTemplateId) => void;
   onVisualizerModelChange: (model: string) => void;
@@ -313,6 +318,25 @@ export function CreateLeftColumn({
             </select>
             <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
               Bear sniffs secrets. Pingu noot-noots urgent moments. Darwin stays calm through chaos.
+            </span>
+          </label>
+        ) : null}
+
+        {format === "jingle" ? (
+          <label className="block">
+            <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Song style</span>
+            <select
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
+              aria-label="Jingle song style"
+              value={jingleStyleId}
+              onChange={(event) => onJingleStyleChange(event.target.value as JingleStyleId)}
+            >
+              {JINGLE_STYLES.map((style) => (
+                <option key={style.id} value={style.id}>{style.label}</option>
+              ))}
+            </select>
+            <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
+              {JINGLE_STYLES.find((style) => style.id === jingleStyleId)?.helper || "Pick the music lane for this jingle."}
             </span>
           </label>
         ) : null}

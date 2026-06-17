@@ -8,6 +8,9 @@ import type { StoredWebsiteResearchResult } from "../../research/types";
 import type { JingleCompositionChunk } from "../../scene/types";
 import {
   buildJinglePrompt,
+  DEFAULT_JINGLE_STYLE_ID,
+  getJingleStyle,
+  type JingleStyleId,
   JINGLE_MUSIC_LENGTH_MS,
   JINGLE_VARIANT_COUNT,
 } from "./prompt";
@@ -39,11 +42,11 @@ type GenerateJingleVariantsOptions = {
   nvidiaNimBaseUrl?: string;
   nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
   nvidiaNimModel?: string;
+  jingleStyleId?: JingleStyleId;
   timeoutMs?: number;
 };
 
 const DEFAULT_TIMEOUT_MS = 60_000;
-const basePositiveStyles = ["modern hip hop", "90 BPM", "confident vocal delivery", "punchy 808 bass", "crisp hi-hats", "clean trap drums", "polished studio production"];
 
 const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.test(String(value || ""));
 
@@ -77,7 +80,8 @@ const lyricLines = (text: string) => text
 
 const hasInventedNumber = (text: string) => /\d|percent|guarantee|guaranteed|#1|award|discount|off\b/i.test(text);
 
-const normalizeChunk = (chunk: Record<string, unknown>): JingleCompositionChunk | null => {
+const normalizeChunk = (chunk: Record<string, unknown>, styleId: JingleStyleId): JingleCompositionChunk | null => {
+  const style = getJingleStyle(styleId);
   const text = cleanLyricText(chunk.text);
   const durationMs = Number(chunk.duration_ms ?? chunk.durationMs);
   const rawPositiveStyles = chunk.positive_styles ?? chunk.positiveStyles;
@@ -94,7 +98,7 @@ const normalizeChunk = (chunk: Record<string, unknown>): JingleCompositionChunk 
   if (durationMs < 3000 || durationMs > 120000) return null;
   if (contextAdherence !== "high") return null;
   if (hasInventedNumber(lyricLines(text).join(" "))) return null;
-  const normalizedPositiveStyles = Array.from(new Set([...basePositiveStyles, ...positiveStyles]));
+  const normalizedPositiveStyles = Array.from(new Set([...style.positiveStyles, ...positiveStyles]));
 
   return {
     text,
@@ -108,6 +112,7 @@ const normalizeChunk = (chunk: Record<string, unknown>): JingleCompositionChunk 
 export function extractJingleVariantsFromResponse(
   content: string,
   providerLabel = "Jingle provider",
+  styleId: JingleStyleId = DEFAULT_JINGLE_STYLE_ID,
 ): JingleVariant[] {
   const payload = parseJsonObject(content, providerLabel);
   const rawVariants = Array.isArray(payload.variants) ? payload.variants : [];
@@ -124,7 +129,7 @@ export function extractJingleVariantsFromResponse(
     const compositionPlan = record.compositionPlan || record.composition_plan;
     const chunks = compositionPlan && typeof compositionPlan === "object" && Array.isArray((compositionPlan as Record<string, unknown>).chunks)
       ? ((compositionPlan as Record<string, unknown>).chunks as unknown[])
-        .map((chunk) => chunk && typeof chunk === "object" ? normalizeChunk(chunk as Record<string, unknown>) : null)
+        .map((chunk) => chunk && typeof chunk === "object" ? normalizeChunk(chunk as Record<string, unknown>, styleId) : null)
         .filter((chunk): chunk is JingleCompositionChunk => Boolean(chunk))
       : [];
     // ponytail: syllable counts are review-only for MVP; add real prosody scoring after bad outputs prove it is worth the false-reject risk.
@@ -169,7 +174,8 @@ export async function generateJingleVariantsFromResearch(
   research: StoredWebsiteResearchResult,
   options: GenerateJingleVariantsOptions = {},
 ): Promise<GenerateJingleVariantsResult> {
-  const prompt = buildJinglePrompt(research);
+  const jingleStyleId = options.jingleStyleId || DEFAULT_JINGLE_STYLE_ID;
+  const prompt = buildJinglePrompt(research, jingleStyleId);
   const nvidiaNimModel = options.nvidiaNimModel
     || process.env.NVIDIA_NIM_JINGLE_MODEL
     || DEFAULT_NVIDIA_NIM_JINGLE_MODEL;
@@ -191,7 +197,7 @@ export async function generateJingleVariantsFromResearch(
       prompt,
       timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
     });
-    const variants = extractJingleVariantsFromResponse(content, "NVIDIA NIM");
+    const variants = extractJingleVariantsFromResponse(content, "NVIDIA NIM", jingleStyleId);
 
     return {
       variants,

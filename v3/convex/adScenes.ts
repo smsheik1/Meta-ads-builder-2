@@ -27,8 +27,9 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     memeModel: v.optional(v.string()),
     videoMemeTemplateId: v.optional(v.union(v.literal("bear-sniff"), v.literal("pingu-noot-noot"), v.literal("darwin-journey"))),
     visualizerModel: v.optional(v.string()),
+    jingleStyleId: v.optional(v.union(v.literal("modern-hip-hop"), v.literal("cinematic-trap-diss"))),
   },
-  handler: async (ctx, { researchRunId, count, format = "visualizer", memeModel, videoMemeTemplateId, visualizerModel }) => {
+  handler: async (ctx, { researchRunId, count, format = "visualizer", memeModel, videoMemeTemplateId, visualizerModel, jingleStyleId }) => {
     const research = await ctx.runQuery(internal.adSceneStorage.loadResearchForGeneration, {
       researchRunId,
     });
@@ -109,7 +110,7 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     }
 
     if (format === "jingle") {
-      const generation = await generateJingleVariantsFromResearch(research);
+      const generation = await generateJingleVariantsFromResearch(research, { jingleStyleId });
       const scenes = generation.variants.map((variant, index) => createJingleAdScene({
         research,
         variant,
