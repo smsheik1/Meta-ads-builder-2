@@ -165,6 +165,10 @@ assert.ok(html.includes('data-jingle-active-lyric="true"'));
 assert.ok(html.includes('data-jingle-waveform="true"'));
 assert.ok(html.includes("relative h-full w-full"));
 assert.ok(html.includes("Oh Gee Tool"));
+assert.ok(html.includes("position:relative"));
+assert.ok(html.includes("text-align:center"));
+assert.ok(html.includes("bottom:10cqw"));
+assert.ok(html.includes("width:1.8cqw"));
 
 const phoneticDisplayScene = {
   ...scenes[0]!,

@@ -17,7 +17,7 @@ assert.ok(
   remotionEntrySource.includes("../features/render/renderGlobals.css") &&
     appGlobalsSource.includes("../features/render/renderGlobals.css") &&
     renderGlobalsSource.includes("@import \"tailwindcss\""),
-  "Preview and Remotion export must share render CSS so AdRenderSurface output stays visually aligned.",
+  "Preview and Remotion export must import shared render CSS for base fonts and animations.",
 );
 assert.ok(
   workerSource.includes("adSceneCompositionId"),
