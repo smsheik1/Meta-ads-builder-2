@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 
 const remotionSource = readFileSync("remotion-entry/RemotionAdScene.tsx", "utf8");
 const workerSource = readFileSync("scripts/render-worker.ts", "utf8");
+const rendererVersionSource = readFileSync("features/render/rendererVersion.ts", "utf8");
+const createClientSource = readFileSync("app/create/CreateResearchClient.tsx", "utf8");
 
 assert.ok(
   remotionSource.includes("AdRenderSurface"),
@@ -41,8 +43,21 @@ assert.ok(
 );
 assert.ok(
   renderJobsSource.includes("rendererVersion,") &&
-  renderJobsSource.includes('q.field("rendererVersion")'),
+    renderJobsSource.includes('q.field("rendererVersion")'),
   "Render jobs must persist rendererVersion and claim by matching rendererVersion.",
+);
+assert.ok(
+  renderJobsSource.includes("args: {\n    rendererVersion: v.string(),\n  }") &&
+    renderJobsSource.includes("worker.rendererVersion === rendererVersion") &&
+    createClientSource.includes("api.renderJobs.workerReadiness") &&
+    createClientSource.includes("rendererVersion: getClientRendererVersion()"),
+  "Render worker readiness must only report healthy workers for the same renderer version as the client.",
+);
+assert.ok(
+  rendererVersionSource.includes("Record<AdFormatId, true>") &&
+    rendererVersionSource.includes("jingle: true") &&
+    rendererVersionSource.includes("Object.keys(renderFormatSupport)"),
+  "Renderer version must include supported formats so old workers cannot claim newly added format jobs.",
 );
 assert.ok(
   renderJobsSource.includes("assertRenderableAdScene") &&

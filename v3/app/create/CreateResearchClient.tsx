@@ -238,7 +238,9 @@ function ResearchConnected() {
   const [renderJobId, setRenderJobId] = useState<Id<"renderJobs"> | null>(null);
   const [memeDownloadBusy, setMemeDownloadBusy] = useState(false);
   const renderJob = useQuery(api.renderJobs.getStatus, renderJobId ? { renderJobId } : "skip");
-  const renderWorkerReadiness = useQuery(api.renderJobs.workerReadiness, {});
+  const renderWorkerReadiness = useQuery(api.renderJobs.workerReadiness, {
+    rendererVersion: getClientRendererVersion(),
+  });
   const [shareUrl, setShareUrl] = useState("");
   const [shareError, setShareError] = useState("");
   const [audioError, setAudioError] = useState("");

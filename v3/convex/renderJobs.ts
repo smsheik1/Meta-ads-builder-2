@@ -126,32 +126,38 @@ export const getStatus: ReturnType<typeof query> = query({
 });
 
 export const workerReadiness: ReturnType<typeof query> = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    rendererVersion: v.string(),
+  },
+  handler: async (ctx, { rendererVersion }) => {
     const now = Date.now();
     const queued = await ctx.db
       .query("renderJobs")
       .withIndex("by_status_and_updatedAt", (q) => q.eq("status", "queued"))
+      .filter((q) => q.eq(q.field("rendererVersion"), rendererVersion))
       .take(1);
     const claimed = await ctx.db
       .query("renderJobs")
       .withIndex("by_status_and_updatedAt", (q) => q.eq("status", "claimed"))
+      .filter((q) => q.eq(q.field("rendererVersion"), rendererVersion))
       .take(1);
     const rendering = await ctx.db
       .query("renderJobs")
       .withIndex("by_status_and_updatedAt", (q) => q.eq("status", "rendering"))
+      .filter((q) => q.eq(q.field("rendererVersion"), rendererVersion))
       .take(1);
     const workers = await ctx.db
       .query("renderWorkers")
       .collect();
-    const freshWorkers = workers.filter((worker) => now - worker.lastSeenAt <= workerStaleAfterMs);
+    const matchingWorkers = workers.filter((worker) => worker.rendererVersion === rendererVersion);
+    const freshWorkers = matchingWorkers.filter((worker) => now - worker.lastSeenAt <= workerStaleAfterMs);
 
     return {
       queued: queued.length,
       active: claimed.length + rendering.length,
       workerHealthy: freshWorkers.length > 0,
       workerCount: freshWorkers.length,
-      lastSeenAt: workers.reduce<number | null>((latest, worker) => (
+      lastSeenAt: matchingWorkers.reduce<number | null>((latest, worker) => (
         latest === null || worker.lastSeenAt > latest ? worker.lastSeenAt : latest
       ), null),
       staleAfterMs: workerStaleAfterMs,
