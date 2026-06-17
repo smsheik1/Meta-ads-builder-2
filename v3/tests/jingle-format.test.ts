@@ -200,6 +200,9 @@ const html = renderToStaticMarkup(createElement(AdRenderSurface, {
 }));
 assert.ok(html.includes('data-format="jingle"'));
 assert.ok(html.includes('data-jingle-active-lyric="true"'));
+assert.ok(html.includes('data-jingle-waveform="true"'));
+assert.ok(html.includes("position:absolute"));
+assert.ok(!html.includes("relative h-full w-full"), "Jingle renderer must not depend on Tailwind layout classes for MP4 export.");
 assert.ok(html.includes("Oh Gee Tool"));
 
 const rerolled = rerollScene(scenes, {
