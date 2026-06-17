@@ -28,11 +28,11 @@ export function useCanvasKeyboard({ editorScopeRef, onReroll }: UseCanvasKeyboar
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!isRerollSpacebarKey(event)) return;
-      if (!getCanvasCanRerollNow()) return;
       if (isEditableShortcutTarget(event.target) || isEditableShortcutTarget(document.activeElement)) return;
       if (!editorScopeRef.current) return;
 
       event.preventDefault();
+      if (!getCanvasCanRerollNow()) return;
       onReroll();
     };
 
