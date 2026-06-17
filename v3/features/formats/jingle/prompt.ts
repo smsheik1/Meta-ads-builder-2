@@ -18,6 +18,14 @@ export const JINGLE_STYLES = [
     helper: "Dark intro, gritty rap verses, shouted chant hook.",
     positiveStyles: ["cinematic trap diss rap", "viral meme anthem", "95 BPM", "hard 808s", "trap hi-hat rolls", "marching drums", "low gritty rap verses", "shouted melodic chant hook"],
     negativeStyles: ["sad", "slow", "lo-fi", "soft acoustic", "off-key", "real politicians", "real parties"],
+    toneRules: [
+      "Diss the OLD PROBLEM like it is the villain. Never diss a real person, party, group, competitor, or customer.",
+      "Use contrast as the spine: they were stuck in the old pain, now the brand outcome wins.",
+      "Hook is chantable and repetitive, built around brandPhonetic so the brand lands as the chant.",
+      "Verse is low, plain, and confrontational. Keep shouted energy for the hook.",
+      "The old problem loses. The brand lands as the winner, not as an ad.",
+      "No goofy insults, fake beef, cruelty, or real targets. Attitude comes from confidence.",
+    ],
   },
 ] as const;
 export type JingleStyleId = typeof JINGLE_STYLES[number]["id"];
@@ -45,6 +53,9 @@ export const buildJinglePrompt = (
   const adAngles = (research.adAngles || []).slice(0, 8).map((angle) => (
     `- buyer: ${clean(angle.buyer, 90)} | moment: ${clean(angle.moment, 140)} | pain: ${clean(angle.pain, 140)} | proof: ${clean(angle.proof, 140)}`
   )).join("\n");
+  const toneRules = "toneRules" in style && Array.isArray(style.toneRules)
+    ? `\nSTYLE-SPECIFIC TONE:\n${style.toneRules.map((rule, index) => `${index + 1}. ${rule}`).join("\n")}\n`
+    : "";
 
   return `You are a senior jingle copywriter and music director.
 Write exactly ${JINGLE_VARIANT_COUNT} short, catchy, singable ${style.label} brand jingle.
@@ -74,6 +85,7 @@ STYLE FOR EVERY CHUNK:
 positive_styles must include these exact ideas, in English, with no artist/song/band references:
 ${style.positiveStyles.join(", ")}
 negative_styles should avoid: ${style.negativeStyles.join(", ")}
+${toneRules}
 
 CRAFT RULES:
 - Lines in the same section must have matching or near-matching syllable counts.

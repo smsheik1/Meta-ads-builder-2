@@ -137,6 +137,10 @@ const cinematicPrompt = buildJinglePrompt(research, "cinematic-trap-diss");
 assert.ok(cinematicPrompt.includes("cinematic trap diss rap"));
 assert.ok(cinematicPrompt.includes("95 BPM"));
 assert.ok(cinematicPrompt.includes("diss the buyer's old problem"));
+assert.ok(cinematicPrompt.includes("STYLE-SPECIFIC TONE"));
+assert.ok(cinematicPrompt.includes("Diss the OLD PROBLEM"));
+assert.ok(cinematicPrompt.includes("brand lands as the chant"));
+assert.ok(cinematicPrompt.includes("Keep shouted energy for the hook"));
 
 await assert.rejects(
   () => generateJingleVariantsFromResearch(research, {
