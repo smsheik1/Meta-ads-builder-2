@@ -42,8 +42,8 @@ ${adAngles || "- none"}
 WHAT A JINGLE IS HERE:
 - A tiny 20 second hip hop track.
 - Exactly 3 chunks: [Hook] 6000ms, [Verse] 8000ms, [Hook] 6000ms.
-- The first hook contains the phonetic brand name.
-- The final hook repeats the payoff and the FINAL lyric line is the phonetic brand name.
+- The first hook contains brandPhonetic.
+- The final hook repeats the payoff and the FINAL lyric line is brandPhonetic.
 - The verse names exactly ONE evidence-based pain or benefit.
 
 STYLE FOR EVERY CHUNK:
@@ -62,9 +62,10 @@ CRAFT RULES:
 - If proof is thin, use the buyer moment or pain instead of inventing a claim.
 
 BRAND PHONETIC:
-- Easy names can use the brand as-is.
-- Unusual spelling, capitalization, numbers, or pronunciation risk must be respelled.
-- Examples: "OGTool" -> "Oh Gee Tool"; "Agent Enamel" -> "Ay-jent Ee-nam-ul".
+- If the brand is made of normal English words, use the real spelling exactly as brandPhonetic.
+- Only respell unusual casing, acronyms, numbers, made-up words, or names with real pronunciation risk.
+- Do not respell ordinary English words into syllables. It can create a fake accent.
+- Examples: "Agent Enamel" -> "Agent Enamel"; "David's Cookies" -> "David's Cookies"; "OGTool" -> "Oh Gee Tool".
 
 OUTPUT:
 Return only valid JSON in this shape:

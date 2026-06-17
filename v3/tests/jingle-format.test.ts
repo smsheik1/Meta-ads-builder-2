@@ -124,6 +124,8 @@ const prompt = buildJinglePrompt(research);
 assert.ok(prompt.includes("modern hip hop"));
 assert.ok(prompt.includes("90 BPM"));
 assert.ok(prompt.includes("Final lyric line is brandPhonetic") || prompt.includes("FINAL lyric line is the phonetic brand name"));
+assert.ok(prompt.includes('"Agent Enamel" -> "Agent Enamel"'));
+assert.ok(!prompt.includes("Ay-jent"));
 
 await assert.rejects(
   () => generateJingleVariantsFromResearch(research, {
