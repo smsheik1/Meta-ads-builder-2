@@ -40,6 +40,7 @@ export function AdRenderSurface({
       data-format={scene.format}
       style={{
         width: "100%",
+        height: "100%",
         containerType: "inline-size",
         ...style,
       }}

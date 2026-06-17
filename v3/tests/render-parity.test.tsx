@@ -167,6 +167,10 @@ assert.ok(
   "AdRenderSurface must delegate actual pixels to the format registry.",
 );
 assert.ok(
+  renderSurfaceSource.includes('height: "100%"'),
+  "AdRenderSurface must own full-frame height so absolute-positioned format renderers cannot collapse in MP4 export.",
+);
+assert.ok(
   workerSource.includes("getWorkerRendererVersion") &&
     renderJobsSource.includes('q.field("rendererVersion")'),
   "Render jobs must be version-locked so stale workers cannot render current preview jobs.",
@@ -194,6 +198,7 @@ const videoHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
 
 for (const html of [previewHtml, directPreviewHtml, videoHtml]) {
   assert.ok(html.includes('data-render-surface="ad"'), "Every visual path must include the shared render surface marker.");
+  assert.ok(html.includes("height:100%"), "Every visual path must give AdRenderSurface full-frame height.");
   assert.ok(html.includes('data-format="visualizer"'), "Every visual path must preserve the scene format.");
   assert.ok(html.includes("Your Competitor Shows Up First"), "Every visual path must render the same headline.");
   assert.ok(html.includes("First ChatGPT mention in 14 days."), "Every visual path must render the same caption/proof text.");
