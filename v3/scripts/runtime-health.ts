@@ -6,6 +6,7 @@ import { getCompositions } from "@remotion/renderer";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../convex/_generated/api";
 import { PINNED_TTS_MODEL } from "../features/audio/sceneAudio";
+import { getWorkerRendererVersion } from "../features/render/rendererVersion";
 import { adSceneCompositionId, adSceneFps } from "../remotion-entry/Root";
 
 const filename = fileURLToPath(import.meta.url);
@@ -125,7 +126,9 @@ async function checkConvexConnectivity(convexUrl: string) {
   }
 
   try {
-    const readiness = await client.query(api.renderJobs.workerReadiness, {});
+    const readiness = await client.query(api.renderJobs.workerReadiness, {
+      rendererVersion: getWorkerRendererVersion(),
+    });
     checks.push(readiness.workerHealthy
       ? pass(
         "worker:queue",

@@ -144,9 +144,13 @@ assert.deepEqual(
 const previewSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const shareSource = readFileSync("app/s/[slug]/ShareSceneClient.tsx", "utf8");
 const remotionSource = readFileSync("remotion-entry/RemotionAdScene.tsx", "utf8");
+const remotionEntrySource = readFileSync("remotion-entry/index.ts", "utf8");
 const renderSurfaceSource = readFileSync("features/render/AdRenderSurface.tsx", "utf8");
 const workerSource = readFileSync("scripts/render-worker.ts", "utf8");
 const renderJobsSource = readFileSync("convex/renderJobs.ts", "utf8");
+const rendererVersionSource = readFileSync("features/render/rendererVersion.ts", "utf8");
+const appGlobalsSource = readFileSync("app/globals.css", "utf8");
+const renderGlobalsSource = readFileSync("features/render/renderGlobals.css", "utf8");
 
 assert.equal(
   (previewSource.match(/<AdRenderSurface/g) || []).length,
@@ -162,6 +166,12 @@ assert.ok(
   "MP4 renders must route through the same AdRenderSurface in video mode.",
 );
 assert.ok(
+  remotionEntrySource.includes("../features/render/renderGlobals.css") &&
+    appGlobalsSource.includes("../features/render/renderGlobals.css") &&
+    renderGlobalsSource.includes("@import \"tailwindcss\""),
+  "Preview and Remotion export must import shared render CSS for base fonts and animations.",
+);
+assert.ok(
   renderSurfaceSource.includes("getFormatModule(scene.format)") &&
     renderSurfaceSource.includes("FormatRenderer"),
   "AdRenderSurface must delegate actual pixels to the format registry.",
@@ -174,6 +184,39 @@ assert.ok(
   workerSource.includes("getWorkerRendererVersion") &&
     renderJobsSource.includes('q.field("rendererVersion")'),
   "Render jobs must be version-locked so stale workers cannot render current preview jobs.",
+);
+assert.ok(
+  workerSource.includes("adSceneCompositionId") &&
+    workerSource.includes("api.renderJobs.markReady") &&
+    workerSource.includes("rendererVersion: getWorkerRendererVersion()"),
+  "Render worker must use the shared composition id, mark completed jobs, and claim only its renderer version.",
+);
+assert.ok(
+  workerSource.includes("outDir: bundleDir") && workerSource.includes("rm(bundleDir"),
+  "Render worker must clean its controlled Remotion bundle directory.",
+);
+assert.ok(
+  remotionSource.includes("@remotion/media") &&
+    remotionSource.includes("<Audio") &&
+    remotionSource.includes("OffthreadVideo"),
+  "Remotion exports must layer generated audio and render MP4 assets without a second visual renderer.",
+);
+assert.ok(
+  renderJobsSource.includes("rendererVersion: v.string()") &&
+    renderJobsSource.includes("args: {\n    rendererVersion: v.string(),\n  }") &&
+    renderJobsSource.includes("worker.rendererVersion === rendererVersion"),
+  "Render job creation and worker readiness must require matching renderer versions.",
+);
+assert.ok(
+  rendererVersionSource.includes('defaultRendererVersion = "local-dev:render-contract-v2"') &&
+    !rendererVersionSource.includes("renderFormatSupport") &&
+    !rendererVersionSource.includes("Record<AdFormatId"),
+  "Renderer version must be one render contract, not a duplicate format registry.",
+);
+assert.ok(
+  renderJobsSource.includes("assertRenderableAdScene") &&
+    !renderJobsSource.includes("assertShareableAdScene"),
+  "MP4 render jobs must not reuse share-only scene validation.",
 );
 
 const previewHtml = renderToStaticMarkup(createElement(PhonePreviewFrame, {

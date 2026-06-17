@@ -4,24 +4,16 @@ import {
   extractAdAnglesFromResearch,
   normalizeAdAnglesPayload,
 } from "../features/research/adAngles";
-import type { WebsiteResearchResult } from "../features/research/types";
+import { makeResearch } from "./helpers/research";
 
-const research: WebsiteResearchResult = {
-  websiteUrl: "https://agentenamel.com/",
-  finalUrl: "https://agentenamel.com/",
-  host: "agentenamel.com",
+const research = makeResearch({
   brand: {
+    ...makeResearch().brand,
     name: "Agent Enamel",
-    url: "https://agentenamel.com/",
-    host: "agentenamel.com",
     title: "Agent Enamel | AI dental receptionist",
     description: "AI receptionist for dental practices that answers calls and books appointments.",
-    faviconUrl: null,
     logoUrl: null,
-    ogImageUrl: null,
-    screenshotUrl: null,
     colors: ["#19C37D"],
-    fonts: { feel: "sans" },
     vibeTags: [],
   },
   brandBrief: {
@@ -51,7 +43,7 @@ const research: WebsiteResearchResult = {
   metadata: {},
   branding: {},
   providerStatus: [],
-};
+});
 
 const prompt = buildAdAnglesPrompt(research);
 assert.ok(prompt.includes("You are extracting AD ANGLES"));

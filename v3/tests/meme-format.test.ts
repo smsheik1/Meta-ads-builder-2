@@ -11,12 +11,9 @@ import { createMemeAdScene } from "../features/scene/createMemeScene";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import { rerollScene, createDefaultSceneLocks } from "../features/create/reroll";
 import { assertSavableAdScene, createSavedDesignId, restoreSavedDesignSelection } from "../features/create/savedDesigns";
-import type { StoredWebsiteResearchResult } from "../features/research/types";
+import { makeResearch } from "./helpers/research";
 
-const research: StoredWebsiteResearchResult = {
-  sessionId: "session_1",
-  researchRunId: "research_1",
-  brandSnapshotId: "brand_1",
+const research = makeResearch({
   websiteUrl: "https://davidscookies.com/",
   finalUrl: "https://davidscookies.com/",
   host: "davidscookies.com",
@@ -68,7 +65,7 @@ const research: StoredWebsiteResearchResult = {
   metadata: {},
   branding: {},
   providerStatus: [],
-};
+});
 
 assert.equal(MEME_TEMPLATES.length, 4);
 assert.deepEqual(MEME_TEMPLATES.map((template) => template.id), [

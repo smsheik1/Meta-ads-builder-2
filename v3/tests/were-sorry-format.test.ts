@@ -10,12 +10,9 @@ import { createWereSorryAdScene } from "../features/scene/createWereSorryScene";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import { rerollScene, createDefaultSceneLocks } from "../features/create/reroll";
 import { assertSavableAdScene, createSavedDesignId, restoreSavedDesignSelection } from "../features/create/savedDesigns";
-import type { StoredWebsiteResearchResult } from "../features/research/types";
+import { makeResearch } from "./helpers/research";
 
-const research: StoredWebsiteResearchResult = {
-  sessionId: "session_1",
-  researchRunId: "research_1",
-  brandSnapshotId: "brand_1",
+const research = makeResearch({
   websiteUrl: "https://agentenamel.com/",
   finalUrl: "https://agentenamel.com/",
   host: "agentenamel.com",
@@ -67,7 +64,7 @@ const research: StoredWebsiteResearchResult = {
   metadata: {},
   branding: {},
   providerStatus: [],
-};
+});
 
 const variants = Array.from({ length: DEFAULT_WERE_SORRY_VARIANT_COUNT }, (_, index) => ({
   angle: `distinct angle ${index + 1}`,

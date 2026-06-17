@@ -99,33 +99,28 @@ const parsedCinematicStyles = extractJingleVariantsFromResponse(
 assert.ok(parsedCinematicStyles[0]!.compositionPlan.chunks[0]!.positive_styles.includes("cinematic trap diss rap"));
 assert.ok(parsedCinematicStyles[0]!.compositionPlan.chunks[0]!.positive_styles.includes("95 BPM"));
 
-assert.throws(
-  () => extractJingleVariantsFromResponse(JSON.stringify({ variants: [] })),
-  /incomplete jingle variants/,
-);
-assert.throws(
-  () => extractJingleVariantsFromResponse(JSON.stringify({
-    variants: [{
-      ...variants[0]!,
-      musicLengthMs: 31000,
-      compositionPlan: {
-        chunks: variants[0]!.compositionPlan.chunks.map((chunk) => ({ ...chunk, duration_ms: 31000 })),
-      },
-    }],
-  })),
-  /incomplete jingle variants/,
-);
-assert.throws(
-  () => extractJingleVariantsFromResponse(JSON.stringify({
-    variants: [{
-      ...variants[0]!,
-      compositionPlan: {
-        chunks: variants[0]!.compositionPlan.chunks.map((chunk) => ({ ...chunk, text: chunk.text.replace("AI answers move fast", "AI answers grew 47 percent") })),
-      },
-    }],
-  })),
-  /incomplete jingle variants/,
-);
+const invalidJingleCases = [
+  [],
+  [{
+    ...validVariant,
+    musicLengthMs: 31000,
+    compositionPlan: {
+      chunks: validVariant.compositionPlan.chunks.map((chunk) => ({ ...chunk, duration_ms: 31000 })),
+    },
+  }],
+  [{
+    ...validVariant,
+    compositionPlan: {
+      chunks: validVariant.compositionPlan.chunks.map((chunk) => ({ ...chunk, text: chunk.text.replace("AI answers move fast", "AI answers grew 47 percent") })),
+    },
+  }],
+];
+for (const invalidVariants of invalidJingleCases) {
+  assert.throws(
+    () => extractJingleVariantsFromResponse(JSON.stringify({ variants: invalidVariants })),
+    /incomplete jingle variants/,
+  );
+}
 
 const prompt = buildJinglePrompt(research);
 assert.ok(prompt.includes("modern hip hop"));
