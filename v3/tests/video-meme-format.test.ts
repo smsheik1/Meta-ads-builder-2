@@ -11,92 +11,26 @@ import { createDefaultSceneLocks, rerollScene } from "../features/create/reroll"
 import { assertSavableAdScene, createSavedDesignId, restoreSavedDesignSelection } from "../features/create/savedDesigns";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import { createVideoMemeAdScene } from "../features/scene/createVideoMemeScene";
-import type { StoredWebsiteResearchResult } from "../features/research/types";
 import { getAdSceneDurationInFrames } from "../remotion-entry/Root";
+import { makeResearch } from "./helpers/research";
 
-const research: StoredWebsiteResearchResult = {
-  sessionId: "session_1",
-  researchRunId: "research_1",
-  brandSnapshotId: "brand_1",
-  websiteUrl: "https://agentenamel.com/",
-  finalUrl: "https://agentenamel.com/",
-  host: "agentenamel.com",
-  brand: {
-    name: "Agent Enamel",
-    url: "https://agentenamel.com/",
-    host: "agentenamel.com",
-    title: "Agent Enamel",
-    description: "An AI receptionist that answers dental calls and books patients.",
-    faviconUrl: null,
-    logoUrl: "https://cdn.example/logo.png",
-    ogImageUrl: null,
-    screenshotUrl: null,
-    colors: ["#22C55E", "#0F172A"],
-    fonts: {
-      feel: "sans",
-    },
-    vibeTags: ["calm"],
-  },
-  brandBrief: {
-    brandName: "Agent Enamel",
-    offer: "An AI receptionist that answers dental calls and books patients.",
-    audience: "Dental practices missing calls while the front desk is busy.",
-    buyerMoments: [
-      "The patient called while the front desk was already juggling check-ins.",
-      "After-hours callers leave before anyone can call back.",
-      "Lunch breaks send new patients to voicemail.",
-      "Missed calls turn into empty chair time.",
-    ],
-    proof: [
-      "Answers calls and books patients.",
-      "Built for dental practices.",
-      "Handles callers when the team is busy.",
-    ],
-    siteLanguage: ["AI receptionist", "Books patients", "Answers dental calls"],
-    ctaDirection: "Book a demo",
-    visualNotes: [],
-    droppedNoiseSummary: [],
-    confidence: "high",
-  },
-  evidence: {
-    headings: ["AI receptionist for dental practices"],
-    paragraphs: ["An AI receptionist that answers dental calls and books patients."],
-    receipts: {
-      specificClaims: ["Answers calls and books patients."],
-      buyerMoments: ["The patient called while the front desk was busy."],
-      exactSiteLanguage: ["AI receptionist"],
-      namedProof: [],
-    },
-    rawMarkdown: "# Agent Enamel",
-  },
-  metadata: {},
-  branding: {},
-  adAngles: [
-    {
-      buyer: "dental practice owner",
-      moment: "phones pile up during check-ins",
-      pain: "new patients hit voicemail",
-      proof: "answers calls and books patients",
-      sitePhrase: "Books patients",
-    },
-  ],
-  providerStatus: [],
-};
+const research = makeResearch();
 
+const bearCaptionSuffixes = [
+  "sending callers to voicemail at lunch",
+  "checking caller ID during the morning rush",
+  "pretending missed calls are no big deal",
+  "saying they will call back after one more chart",
+  "wondering who answered after hours",
+  "letting the phone ring through check-ins",
+  "losing new patients to a busy signal",
+  "asking why Tuesday has an empty chair",
+];
 const variants = Array.from({ length: VIDEO_MEME_VARIANT_COUNT }, (_, index) => ({
   angle: `distinct bear angle ${index + 1}`,
   target: `front desks guilty behavior ${index + 1}`,
   clipId: "bear-sniff" as const,
-  caption: [
-    "This bear sniffs front desks sending callers to voicemail at lunch.",
-    "This bear sniffs people checking caller ID during the morning rush.",
-    "This bear sniffs practices pretending missed calls are no big deal.",
-    "This bear sniffs teams saying they will call back after one more chart.",
-    "This bear sniffs owners wondering who answered after hours.",
-    "This bear sniffs people letting the phone ring through check-ins.",
-    "This bear sniffs offices losing new patients to a busy signal.",
-    "This bear sniffs dentists asking why Tuesday has an empty chair.",
-  ][index]!,
+  caption: `This bear sniffs people ${bearCaptionSuffixes[index]!}.`,
   mode: "caught" as const,
   selfCheckPassed: "The caption exposes a recognizable hidden behavior and never names the product.",
 }));
@@ -196,184 +130,64 @@ assert.ok(darwinPrompt.includes("Prefer a mode mix when evidence supports it"));
 assert.ok(darwinPrompt.includes("real pain underneath"));
 assert.ok(darwinPrompt.includes('"templateId": "darwin-journey"'));
 
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
-    variants: variants.slice(0, 7),
-  })),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
-    variants: variants.map((variant, index) => ({
-      ...variant,
-      clipId: index === 0 ? "pingu-noot-noot" : "bear-sniff",
-    })),
-  })),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
-    variants: variants.map((variant, index) => ({
-      ...variant,
-      caption: index === 0 ? "This cat watches front desks miss calls." : variant.caption,
-    })),
-  })),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
-    variants: variants.map((variant, index) => ({
-      ...variant,
-      caption: index === 0 ? "This bear sniffs Agent Enamel users missing zero calls." : variant.caption,
-    })),
-  }), {
-    brandNames: [research.brand.name, research.brandBrief.brandName],
-  }),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
-    variants: variants.map((variant, index) => ({
-      ...variant,
-      caption: index === 0 ? "This bear sniffs people writing captions so long they cover the whole clip before the bear even reacts and nobody can read it" : variant.caption,
-    })),
-  })),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
-    variants: variants.map((variant, index) => ({
-      ...variant,
-      caption: index === 1 ? variants[0]!.caption : variant.caption,
-    })),
-  })),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
-    variants: variants.map((variant, index) => ({
-      ...variant,
-      angle: index === 1 ? variants[0]!.angle : variant.angle,
-    })),
-  })),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
-    variants: variants.map((variant, index) => ({
-      ...variant,
-      target: index === 1 ? variants[0]!.target : variant.target,
-    })),
-  })),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
+const invalidVideoMemeCases = [
+  { variants: variants.slice(0, 7) },
+  { variants: variants.map((variant, index) => ({ ...variant, clipId: index === 0 ? "pingu-noot-noot" : "bear-sniff" })) },
+  { variants: variants.map((variant, index) => ({ ...variant, caption: index === 0 ? "This cat watches front desks miss calls." : variant.caption })) },
+  {
+    variants: variants.map((variant, index) => ({ ...variant, caption: index === 0 ? "This bear sniffs Agent Enamel users missing zero calls." : variant.caption })),
+    options: { brandNames: [research.brand.name, research.brandBrief.brandName] },
+  },
+  { variants: variants.map((variant, index) => ({ ...variant, caption: index === 0 ? "This bear sniffs people writing captions so long they cover the whole clip before the bear even reacts and nobody can read it" : variant.caption })) },
+  { variants: variants.map((variant, index) => ({ ...variant, caption: index === 1 ? variants[0]!.caption : variant.caption })) },
+  { variants: variants.map((variant, index) => ({ ...variant, angle: index === 1 ? variants[0]!.angle : variant.angle })) },
+  { variants: variants.map((variant, index) => ({ ...variant, target: index === 1 ? variants[0]!.target : variant.target })) },
+  {
+    variants: darwinVariants.map((variant, index) => ({ ...variant, templateId: index === 0 ? "bear-sniff" : "darwin-journey" })),
+    options: { templateId: "darwin-journey" as const },
+  },
+  {
+    variants: darwinVariants.map((variant, index) => ({ ...variant, slots: index === 0 ? {} : variant.slots })),
+    options: { templateId: "darwin-journey" as const },
+  },
+  {
+    variants: darwinVariants.map((variant, index) => ({ ...variant, slots: index === 0 ? { caption: "POV: Agent Enamel users calmly watching every call get booked" } : variant.slots })),
+    options: { brandNames: [research.brand.name, research.brandBrief.brandName], templateId: "darwin-journey" as const },
+  },
+  {
+    variants: darwinVariants.map((variant, index) => ({ ...variant, slots: index === 0 ? { caption: "This bear sniffs front desks after a triple-booked Monday" } : variant.slots })),
+    options: { templateId: "darwin-journey" as const },
+  },
+  {
     variants: darwinVariants.map((variant, index) => ({
       ...variant,
-      templateId: index === 0 ? "bear-sniff" : "darwin-journey",
+      slots: index === 0 ? { caption: "POV: the front desk after a caption that keeps going past the readable top band and should never be accepted here" } : variant.slots,
     })),
-  }), {
-    templateId: "darwin-journey",
-  }),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
-    variants: darwinVariants.map((variant, index) => ({
-      ...variant,
-      slots: index === 0 ? {} : variant.slots,
-    })),
-  }), {
-    templateId: "darwin-journey",
-  }),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
-    variants: darwinVariants.map((variant, index) => ({
-      ...variant,
-      slots: index === 0 ? { caption: "POV: Agent Enamel users calmly watching every call get booked" } : variant.slots,
-    })),
-  }), {
-    brandNames: [research.brand.name, research.brandBrief.brandName],
-    templateId: "darwin-journey",
-  }),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
-    variants: darwinVariants.map((variant, index) => ({
-      ...variant,
-      slots: index === 0 ? { caption: "This bear sniffs front desks after a triple-booked Monday" } : variant.slots,
-    })),
-  }), {
-    templateId: "darwin-journey",
-  }),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
-    variants: darwinVariants.map((variant, index) => ({
-      ...variant,
-      slots: index === 0 ? {
-        caption: "POV: the front desk after a caption that keeps going past the readable top band and should never be accepted here",
-      } : variant.slots,
-    })),
-  }), {
-    templateId: "darwin-journey",
-  }),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
-    variants: darwinVariants.map((variant, index) => ({
-      ...variant,
-      slots: index === 0 ? { setupText: "schedule looks light", dreadText: "voicemail is full" } : variant.slots,
-    })),
-  }), {
-    templateId: "darwin-journey",
-  }),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
-    variants: darwinVariants.map((variant, index) => ({
-      ...variant,
-      angle: index === 1 ? darwinVariants[0]!.angle : variant.angle,
-    })),
-  }), {
-    templateId: "darwin-journey",
-  }),
-  /incomplete video meme variants/,
-);
-
-assert.throws(
-  () => extractVideoMemeVariantsFromResponse(JSON.stringify({
+    options: { templateId: "darwin-journey" as const },
+  },
+  {
+    variants: darwinVariants.map((variant, index) => ({ ...variant, slots: index === 0 ? { setupText: "schedule looks light", dreadText: "voicemail is full" } : variant.slots })),
+    options: { templateId: "darwin-journey" as const },
+  },
+  {
+    variants: darwinVariants.map((variant, index) => ({ ...variant, angle: index === 1 ? darwinVariants[0]!.angle : variant.angle })),
+    options: { templateId: "darwin-journey" as const },
+  },
+  {
     variants: darwinVariants.map((variant, index) => ({
       ...variant,
       mode: index === 2 ? "goofy_exaggeration" : variant.mode,
       selfCheckPassed: index === 2 ? "It is silly and specific." : variant.selfCheckPassed,
     })),
-  }), {
-    templateId: "darwin-journey",
-  }),
-  /incomplete video meme variants/,
-);
+    options: { templateId: "darwin-journey" as const },
+  },
+];
+for (const testCase of invalidVideoMemeCases) {
+  assert.throws(
+    () => extractVideoMemeVariantsFromResponse(JSON.stringify({ variants: testCase.variants }), testCase.options),
+    /incomplete video meme variants/,
+  );
+}
 
 await assert.rejects(
   () => generateVideoMemeVariantsFromResearch(research, {

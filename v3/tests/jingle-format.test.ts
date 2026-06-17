@@ -11,63 +11,30 @@ import {
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import { createJingleAdScene } from "../features/scene/createJingleScene";
 import { assertShareableAdScene } from "../features/share/shareScene";
-import type { StoredWebsiteResearchResult } from "../features/research/types";
+import { makeResearch } from "./helpers/research";
 
-const research: StoredWebsiteResearchResult = {
-  sessionId: "session_1",
-  researchRunId: "research_1",
-  brandSnapshotId: "brand_1",
+const research = makeResearch({
   websiteUrl: "https://ogtool.com/",
   finalUrl: "https://ogtool.com/",
   host: "ogtool.com",
   brand: {
+    ...makeResearch().brand,
     name: "OGTool",
     url: "https://ogtool.com/",
     host: "ogtool.com",
     title: "OGTool",
     description: "Track whether AI answers mention your brand.",
-    faviconUrl: null,
-    logoUrl: null,
-    ogImageUrl: null,
-    screenshotUrl: null,
-    colors: ["#4F46E5", "#0F172A"],
-    fonts: { feel: "sans" },
-    vibeTags: ["sharp"],
   },
   brandBrief: {
+    ...makeResearch().brandBrief,
     brandName: "OGTool",
     offer: "Track whether AI answers mention your brand.",
     audience: "marketers who need to know if AI search is recommending them.",
     buyerMoments: ["The CEO asks why competitors show up in AI answers first."],
     proof: ["Tracks brand visibility in AI answers."],
     siteLanguage: ["AI answers", "brand visibility"],
-    ctaDirection: "Try it",
-    visualNotes: [],
-    droppedNoiseSummary: [],
-    confidence: "high",
   },
-  evidence: {
-    headings: ["Track your AI visibility"],
-    paragraphs: ["See where your brand shows up in AI answers."],
-    receipts: {
-      specificClaims: ["Tracks brand visibility in AI answers."],
-      buyerMoments: ["Competitors show up first in AI answers."],
-      exactSiteLanguage: ["AI answers"],
-      namedProof: [],
-    },
-    rawMarkdown: "# OGTool",
-  },
-  metadata: {},
-  branding: {},
-  providerStatus: [],
-  adAngles: [{
-    buyer: "growth marketer",
-    moment: "the CEO asks about AI answers",
-    pain: "competitors show up first",
-    proof: "tracks brand visibility in AI answers",
-    sitePhrase: "AI answers",
-  }],
-};
+});
 
 const baseStyles = ["modern hip hop", "90 BPM", "confident vocal delivery", "punchy 808 bass", "crisp hi-hats", "clean trap drums", "polished studio production"];
 const negativeStyles = ["sad", "slow", "lo-fi", "distorted", "off-key"];
@@ -136,17 +103,6 @@ assert.throws(
       musicLengthMs: 31000,
       compositionPlan: {
         chunks: variants[0]!.compositionPlan.chunks.map((chunk) => ({ ...chunk, duration_ms: 31000 })),
-      },
-    }],
-  })),
-  /incomplete jingle variants/,
-);
-assert.throws(
-  () => extractJingleVariantsFromResponse(JSON.stringify({
-    variants: [{
-      ...variants[0]!,
-      compositionPlan: {
-        chunks: variants[0]!.compositionPlan.chunks.map((chunk) => ({ ...chunk, positive_styles: [...baseStyles, "like Drake"] })),
       },
     }],
   })),

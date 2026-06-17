@@ -77,7 +77,7 @@ const normalizeCount = (count?: number, defaultCount = VIDEO_MEME_VARIANT_COUNT)
   return Math.max(1, Math.min(maxVariants, Math.floor(count ?? defaultCount)));
 };
 
-const getProviderRequestCount = (count: number) => Math.min(maxVariants, count + Math.max(2, Math.ceil(count / 3)));
+const getProviderRequestCount = (count: number) => Math.min(maxVariants, count + 3);
 
 const cleanText = (value: unknown, maxLength = 220) => String(value ?? "")
   .replace(/!\[[^\]]*]\([^)]+\)/g, " ")
@@ -139,6 +139,26 @@ export function extractVideoMemeVariantsFromResponse(
   const seenDreadTexts = new Set<string>();
   const seenTargets = new Set<string>();
   const variants: VideoMemeVariant[] = [];
+  const acceptVariant = (
+    variant: VideoMemeVariant,
+    keys: { angle: string; target: string; caption: string; dreadText?: string },
+  ) => {
+    if (
+      seenAngles.has(keys.angle) ||
+      seenTargets.has(keys.target) ||
+      seenCaptions.has(keys.caption) ||
+      (keys.dreadText && seenDreadTexts.has(keys.dreadText))
+    ) {
+      return false;
+    }
+
+    seenAngles.add(keys.angle);
+    seenTargets.add(keys.target);
+    seenCaptions.add(keys.caption);
+    if (keys.dreadText) seenDreadTexts.add(keys.dreadText);
+    variants.push(variant);
+    return true;
+  };
 
   for (const item of rawVariants) {
     if (!item || typeof item !== "object") continue;
@@ -166,20 +186,14 @@ export function extractVideoMemeVariantsFromResponse(
       if (includesBannedWord(setupText) || includesBannedWord(dreadText) || hasGenericDread(dreadText)) continue;
       if (namesBrand(`${setupText} ${dreadText}`, options.brandNames || [])) continue;
       if (/^This bear sniffs\b/i.test(`${setupText} ${dreadText}`)) continue;
-      if (seenAngles.has(angleKey) || seenTargets.has(targetKey) || seenCaptions.has(pairKey) || seenDreadTexts.has(dreadKey)) continue;
-
-      seenAngles.add(angleKey);
-      seenTargets.add(targetKey);
-      seenCaptions.add(pairKey);
-      seenDreadTexts.add(dreadKey);
-      variants.push({
+      acceptVariant({
         angle,
         target,
         clipId: template.id,
         slots: { setupText, dreadText },
         mode: "comic_dread",
         selfCheckPassed,
-      });
+      }, { angle: angleKey, target: targetKey, caption: pairKey, dreadText: dreadKey });
       continue;
     }
 
@@ -193,12 +207,7 @@ export function extractVideoMemeVariantsFromResponse(
       if (includesBannedWord(caption)) continue;
       if (namesBrand(caption, options.brandNames || [])) continue;
       if (mode === "goofy_exaggeration" && !namesUnderlyingPain(selfCheckPassed)) continue;
-      if (seenAngles.has(angleKey) || seenTargets.has(targetKey) || seenCaptions.has(captionKey)) continue;
-
-      seenAngles.add(angleKey);
-      seenTargets.add(targetKey);
-      seenCaptions.add(captionKey);
-      variants.push({
+      acceptVariant({
         angle,
         target,
         clipId: template.id,
@@ -206,7 +215,7 @@ export function extractVideoMemeVariantsFromResponse(
         slots: { caption },
         mode,
         selfCheckPassed,
-      });
+      }, { angle: angleKey, target: targetKey, caption: captionKey });
       continue;
     }
 
@@ -217,19 +226,14 @@ export function extractVideoMemeVariantsFromResponse(
     if (hasDanglingEnding(caption)) continue;
     if (includesBannedWord(caption)) continue;
     if (namesBrand(caption, options.brandNames || [])) continue;
-    if (seenAngles.has(angleKey) || seenTargets.has(targetKey) || seenCaptions.has(captionKey)) continue;
-
-    seenAngles.add(angleKey);
-    seenTargets.add(targetKey);
-    seenCaptions.add(captionKey);
-    variants.push({
+    acceptVariant({
       angle,
       target,
       clipId: template.id,
       caption,
       mode,
       selfCheckPassed,
-    });
+    }, { angle: angleKey, target: targetKey, caption: captionKey });
   }
 
   if (variants.length < expectedCount) {

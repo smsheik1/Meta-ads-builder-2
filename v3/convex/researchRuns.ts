@@ -5,10 +5,9 @@ import {
   fetchWebsiteResearchWithFirecrawl,
   toWebsiteResearchErrorMessage,
 } from "../features/research/firecrawl";
-import { buildFallbackBrandBrief } from "../features/research/brandCurator";
 import { extractAdAnglesFromResearch } from "../features/research/adAngles";
 import { normalizePublicWebsiteUrl } from "../features/research/url";
-import type { StoredWebsiteResearchResult } from "../features/research/types";
+import { toStoredResearchResult } from "./researchStorage";
 
 export const runWebsiteResearch: ReturnType<typeof action> = action({
   args: {
@@ -153,37 +152,6 @@ export const latestReadyForAnonymousIdAndUrl: ReturnType<typeof query> = query({
       .first();
     if (!brandSnapshot) return null;
 
-    const research = {
-      sessionId: researchRun.sessionId,
-      researchRunId: researchRun._id,
-      brandSnapshotId: brandSnapshot._id,
-      websiteUrl: researchRun.url,
-      finalUrl: researchRun.finalUrl || brandSnapshot.url,
-      host: researchRun.host || brandSnapshot.host || "",
-      brand: {
-        name: brandSnapshot.name,
-        url: brandSnapshot.url,
-        host: brandSnapshot.host || "",
-        title: brandSnapshot.title || "",
-        description: brandSnapshot.description || "",
-        faviconUrl: brandSnapshot.faviconUrl || null,
-        logoUrl: brandSnapshot.logoUrl || null,
-        ogImageUrl: brandSnapshot.ogImageUrl || null,
-        screenshotUrl: brandSnapshot.screenshotUrl || null,
-        colors: brandSnapshot.colors,
-        fonts: brandSnapshot.fonts,
-        vibeTags: brandSnapshot.vibeTags,
-      },
-      evidence: researchRun.evidence,
-      metadata: researchRun.metadata || {},
-      branding: researchRun.branding || {},
-      adAngles: researchRun.adAngles || [],
-      providerStatus: researchRun.providerStatus || [],
-    };
-
-    return {
-      ...research,
-      brandBrief: researchRun.brandBrief || buildFallbackBrandBrief(research),
-    } satisfies StoredWebsiteResearchResult;
+    return toStoredResearchResult(researchRun, brandSnapshot);
   },
 });

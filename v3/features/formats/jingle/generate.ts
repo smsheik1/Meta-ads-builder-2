@@ -44,20 +44,6 @@ type GenerateJingleVariantsOptions = {
 
 const DEFAULT_TIMEOUT_MS = 60_000;
 const basePositiveStyles = ["modern hip hop", "90 BPM", "confident vocal delivery", "punchy 808 bass", "crisp hi-hats", "clean trap drums", "polished studio production"];
-const artistReferences = [
-  "drake",
-  "kendrick",
-  "kanye",
-  "jay-z",
-  "beyonce",
-  "taylor swift",
-  "rihanna",
-  "bad bunny",
-  "travis scott",
-  "nicki minaj",
-  "snoop",
-  "eminem",
-];
 
 const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.test(String(value || ""));
 
@@ -89,11 +75,6 @@ const lyricLines = (text: string) => text
   .map((line) => cleanText(line, 120))
   .filter((line) => line && !/^\[[^\]]+]$/.test(line));
 
-const namesArtist = (value: string) => {
-  const lower = value.toLowerCase();
-  return artistReferences.some((name) => lower.includes(name));
-};
-
 const hasInventedNumber = (text: string) => /\d|percent|guarantee|guaranteed|#1|award|discount|off\b/i.test(text);
 
 const normalizeChunk = (chunk: Record<string, unknown>): JingleCompositionChunk | null => {
@@ -112,7 +93,6 @@ const normalizeChunk = (chunk: Record<string, unknown>): JingleCompositionChunk 
   if (!text || !Number.isFinite(durationMs)) return null;
   if (durationMs < 3000 || durationMs > 120000) return null;
   if (contextAdherence !== "high") return null;
-  if (namesArtist(`${text} ${positiveStyles.join(" ")} ${negativeStyles.join(" ")}`)) return null;
   if (hasInventedNumber(lyricLines(text).join(" "))) return null;
   const normalizedPositiveStyles = Array.from(new Set([...basePositiveStyles, ...positiveStyles]));
 

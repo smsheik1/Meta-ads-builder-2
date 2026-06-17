@@ -6,7 +6,6 @@ import { generateMemeVariantsFromResearch } from "../features/formats/meme/gener
 import { generateJingleVariantsFromResearch } from "../features/formats/jingle/generate";
 import { generateVideoMemeVariantsFromResearch } from "../features/formats/video-meme/generate";
 import { generateWereSorryVariantsFromResearch } from "../features/formats/were-sorry/generate";
-import { buildFallbackBrandBrief } from "../features/research/brandCurator";
 import { createMemeAdScene } from "../features/scene/createMemeScene";
 import { createJingleAdScene } from "../features/scene/createJingleScene";
 import { createVideoMemeAdScene } from "../features/scene/createVideoMemeScene";
@@ -14,6 +13,7 @@ import { createVisualizerAdScene } from "../features/scene/createVisualizerScene
 import { createWereSorryAdScene } from "../features/scene/createWereSorryScene";
 import type { StoredWebsiteResearchResult } from "../features/research/types";
 import type { AdScene } from "../features/scene/types";
+import { toStoredResearchResult } from "./researchStorage";
 
 const createGenerationBatchId = () => (
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
@@ -207,39 +207,8 @@ export const latestForAnonymousId: ReturnType<typeof query> = query({
       .first();
     if (!brandSnapshot || !researchRun.evidence) return null;
 
-    const research = {
-      sessionId: researchRun.sessionId,
-      researchRunId: firstRow.researchRunId,
-      brandSnapshotId: brandSnapshot._id,
-      websiteUrl: researchRun.url,
-      finalUrl: researchRun.finalUrl || brandSnapshot.url,
-      host: researchRun.host || brandSnapshot.host || "",
-      brand: {
-        name: brandSnapshot.name,
-        url: brandSnapshot.url,
-        host: brandSnapshot.host || "",
-        title: brandSnapshot.title || "",
-        description: brandSnapshot.description || "",
-        faviconUrl: brandSnapshot.faviconUrl || null,
-        logoUrl: brandSnapshot.logoUrl || null,
-        ogImageUrl: brandSnapshot.ogImageUrl || null,
-        screenshotUrl: brandSnapshot.screenshotUrl || null,
-        colors: brandSnapshot.colors,
-        fonts: brandSnapshot.fonts,
-        vibeTags: brandSnapshot.vibeTags,
-      },
-      evidence: researchRun.evidence,
-      metadata: researchRun.metadata || {},
-      branding: researchRun.branding || {},
-      adAngles: researchRun.adAngles || [],
-      providerStatus: researchRun.providerStatus || [],
-    };
-
     return {
-      result: {
-        ...research,
-        brandBrief: researchRun.brandBrief || buildFallbackBrandBrief(research),
-      } satisfies StoredWebsiteResearchResult,
+      result: toStoredResearchResult(researchRun, brandSnapshot, firstRow.researchRunId),
       scenes: batchRows.map((row) => row.scene as AdScene),
     };
   },
