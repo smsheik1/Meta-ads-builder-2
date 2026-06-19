@@ -240,17 +240,13 @@ export function buildBrickMusicVideoClips(storyboard: BrickStoryboard): JingleMu
 
 export async function generateReplicateNanoBanana2Image({
   replicateApiToken,
-  model = BRICK_STORYBOARD_IMAGE_MODEL,
   prompt,
-  timeoutMs = DEFAULT_TIMEOUT_MS,
 }: {
   replicateApiToken: string;
-  model?: string;
   prompt: string;
-  timeoutMs?: number;
 }) {
   if (!replicateApiToken) throw new Error("Replicate image generation is not configured.");
-  const [owner, name] = model.split("/");
+  const [owner, name] = BRICK_STORYBOARD_IMAGE_MODEL.split("/");
   if (!owner || !name) throw new Error("Replicate image model is invalid.");
 
   const prediction = await withTimeout(fetch(`https://api.replicate.com/v1/models/${owner}/${name}/predictions`, {
@@ -268,12 +264,12 @@ export async function generateReplicateNanoBanana2Image({
         output_format: "jpg",
       },
     }),
-  }), timeoutMs, "Replicate Nano Banana 2 image generation");
+  }), DEFAULT_TIMEOUT_MS, "Replicate Nano Banana 2 image generation");
   const payload = await prediction.json().catch(() => null) as { output?: string; error?: string; detail?: string } | null;
   if (!prediction.ok) throw new Error(payload?.error || payload?.detail || "Replicate Nano Banana 2 image generation failed.");
   if (!payload?.output) throw new Error("Replicate Nano Banana 2 returned no image.");
 
-  const imageResponse = await withTimeout(fetch(payload.output), timeoutMs, "Replicate image download");
+  const imageResponse = await withTimeout(fetch(payload.output), DEFAULT_TIMEOUT_MS, "Replicate image download");
   if (!imageResponse.ok) throw new Error("Replicate Nano Banana 2 image download failed.");
   return {
     bytes: new Uint8Array(await imageResponse.arrayBuffer()),

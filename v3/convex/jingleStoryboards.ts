@@ -49,7 +49,6 @@ async function generateStoryboardImageWithRetry({
   try {
     return await generateReplicateNanoBanana2Image({
       replicateApiToken,
-      model: BRICK_STORYBOARD_IMAGE_MODEL,
       prompt,
     });
   } catch (error) {
@@ -57,17 +56,46 @@ async function generateStoryboardImageWithRetry({
       await sleep(replicateThrottleDelayMs);
       return generateReplicateNanoBanana2Image({
         replicateApiToken,
-        model: BRICK_STORYBOARD_IMAGE_MODEL,
         prompt,
       });
     }
     if (!retryPrompt) throw error;
     return generateReplicateNanoBanana2Image({
       replicateApiToken,
-      model: BRICK_STORYBOARD_IMAGE_MODEL,
       prompt: retryPrompt,
     });
   }
+}
+
+async function storeStoryboardImage({
+  ctx,
+  replicateApiToken,
+  prompt,
+  retryPrompt,
+}: {
+  ctx: {
+    storage: {
+      store: (blob: Blob) => Promise<Id<"_storage">>;
+      getUrl: (storageId: Id<"_storage">) => Promise<string | null>;
+    };
+  };
+  replicateApiToken: string;
+  prompt: string;
+  retryPrompt?: string;
+}): Promise<BrickStoryboardImage> {
+  const result = await generateStoryboardImageWithRetry({
+    replicateApiToken,
+    prompt,
+    retryPrompt,
+  });
+  const storageId = await ctx.storage.store(new Blob([result.bytes], {
+    type: result.mimeType,
+  }));
+  return {
+    storageId: String(storageId),
+    url: await ctx.storage.getUrl(storageId),
+    mimeType: result.mimeType,
+  };
 }
 
 export const saveGenerated: ReturnType<typeof internalMutation> = internalMutation({
@@ -135,22 +163,15 @@ export const regenerateBrickShot: ReturnType<typeof action> = action({
     const prompt = `${shot.shotPrompt}\n\nREFERENCE WORLD TO MATCH:\n${referencePrompt}`;
     const retryPrompt = `${shot.shotPrompt}\n\nUse the same toy-brick stage, palette, and brick brand sign from the reference frame. Simple vertical still. No captions or subtitles.`;
 
-    const result = await generateStoryboardImageWithRetry({
+    const image = await storeStoryboardImage({
+      ctx,
       replicateApiToken,
       prompt,
       retryPrompt,
     });
-
-    const storageId = await ctx.storage.store(new Blob([result.bytes], {
-      type: result.mimeType,
-    }));
     const nextShot = {
       ...shot,
-      image: {
-        storageId: String(storageId),
-        url: await ctx.storage.getUrl(storageId),
-        mimeType: result.mimeType,
-      },
+      image,
       status: "ok" as const,
       error: undefined,
     };
@@ -412,10 +433,6 @@ export const animateBrickBoard: ReturnType<typeof action> = action({
       });
     }
 
-    await ctx.runMutation(internal.jingleStoryboards.patchStoryboard, {
-      storyboardId,
-      storyboard: nextStoryboard,
-    });
     return { storyboard: nextStoryboard };
   },
 });
@@ -436,33 +453,11 @@ export const generateBrickForScene: ReturnType<typeof action> = action({
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
     if (!replicateApiToken) throw new Error("Replicate image generation is not configured.");
 
-    const storeImage = async (prompt: string): Promise<BrickStoryboardImage> => {
-      const result = await generateStoryboardImageWithRetry({
-        replicateApiToken,
-        prompt,
-      });
-      const storageId = await ctx.storage.store(new Blob([result.bytes], {
-        type: result.mimeType,
-      }));
-      return {
-        storageId: String(storageId),
-        url: await ctx.storage.getUrl(storageId),
-        mimeType: result.mimeType,
-      };
-    };
-    const storeImageWithRetry = async (prompt: string, retryPrompt: string) => {
-      try {
-        return await storeImage(prompt);
-      } catch (error) {
-        if (isReplicateThrottleError(error)) {
-          await sleep(replicateThrottleDelayMs);
-          return storeImage(prompt);
-        }
-        return storeImage(retryPrompt);
-      }
-    };
-
-    const referenceImage = await storeImage(promptPlan.referenceFramePrompt);
+    const referenceImage = await storeStoryboardImage({
+      ctx,
+      replicateApiToken,
+      prompt: promptPlan.referenceFramePrompt,
+    });
     const storyboard: BrickStoryboard = {
       jingleSceneId: String(sceneId),
       visualStyle: BRICK_MUSIC_VIDEO_STYLE_ID,
@@ -482,7 +477,12 @@ export const generateBrickForScene: ReturnType<typeof action> = action({
         const retryPrompt = `${shot.shotPrompt}\n\nUse the same toy-brick stage, palette, and brick brand sign from the reference frame. Simple vertical still. No captions or subtitles.`;
         storyboard.shots.push({
           ...shot,
-          image: await storeImageWithRetry(conditionedPrompt, retryPrompt),
+          image: await storeStoryboardImage({
+            ctx,
+            replicateApiToken,
+            prompt: conditionedPrompt,
+            retryPrompt,
+          }),
           status: "ok",
         });
       } catch (error) {
