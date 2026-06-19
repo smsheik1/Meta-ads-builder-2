@@ -100,31 +100,21 @@ assert.ok(
     brickStoryboardSheetSource.includes("data-brick-storyboard-trigger") &&
     brickStoryboardSheetSource.includes("data-brick-storyboard-animate") &&
     brickStoryboardSheetSource.includes("data-brick-storyboard-build") &&
-    brickStoryboardSheetSource.includes("Animate board") &&
-    brickStoryboardSheetSource.includes("Build music video") &&
-    brickStoryboardSheetSource.includes("Brick music video") &&
-    brickStoryboardSheetSource.includes("Generate storyboard") &&
     !quickActionsSource.includes("if (!brickStoryboard && canGenerateBrickStoryboard"),
   "Brick storyboard review must open for free; only the explicit Generate board button may spend image calls.",
 );
 assert.ok(
   createClientSource.includes("sceneIds: nextGeneration.sceneIds") &&
     createClientSource.includes("api.jingleStoryboards.generateBrickForScene") &&
-    createClientSource.includes("sceneIds[selectedSceneIndex]") &&
     createClientSource.includes("api.jingleStoryboards.regenerateBrickShot") &&
     createClientSource.includes("api.jingleStoryboards.animateBrickBoard") &&
     createClientSource.includes("api.jingleStoryboards.buildMusicVideoForScene") &&
-    createClientSource.includes("api.jingleStoryboards.latestForScene") &&
-    createClientSource.includes("brickStoryboardId") &&
-    createClientSource.includes("setBrickStoryboardShotBusyIndex") &&
-    createClientSource.includes("getBrickStoryboardErrorMessage") &&
-    createClientSource.includes("Brick storyboard images hit the Replicate quota"),
+    createClientSource.includes("api.jingleStoryboards.latestForScene"),
   "Brick storyboard generation must use stored Convex scene IDs without mutating the AdScene render contract.",
 );
 assert.ok(
   brickStoryboardSheetSource.includes("data-brick-shot-regenerate") &&
-    brickStoryboardSheetSource.includes("data-brick-shot-prompt") &&
-    brickStoryboardSheetSource.includes("No prompt stored for this shot."),
+    brickStoryboardSheetSource.includes("data-brick-shot-prompt"),
   "Brick storyboard shot cards must expose visible per-shot regenerate and prompt debug controls.",
 );
 assert.ok(

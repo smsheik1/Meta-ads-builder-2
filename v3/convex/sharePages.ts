@@ -3,6 +3,7 @@ import { mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import type { AdScene } from "../features/scene/types";
+import { refreshJingleMusicVideoUrls } from "./sceneUrlRefresh";
 import {
   assertShareableAdScene,
   createShareSlug,
@@ -54,33 +55,6 @@ const refreshSceneAudioUrl = async (
     audio: {
       ...scene.audio,
       url,
-    },
-  };
-};
-
-const refreshJingleMusicVideoUrls = async (
-  ctx: QueryCtx,
-  scene: AdScene,
-) => {
-  if (scene.format !== "jingle" || !scene.layout.musicVideo) return scene;
-
-  return {
-    ...scene,
-    layout: {
-      ...scene.layout,
-      musicVideo: {
-        ...scene.layout.musicVideo,
-        clips: await Promise.all(scene.layout.musicVideo.clips.map(async (clip) => ({
-          ...clip,
-          url: await ctx.storage.getUrl(clip.storageId as Id<"_storage">),
-        }))),
-        stitchedVideo: scene.layout.musicVideo.stitchedVideo
-          ? {
-            ...scene.layout.musicVideo.stitchedVideo,
-            url: await ctx.storage.getUrl(scene.layout.musicVideo.stitchedVideo.storageId as Id<"_storage">),
-          }
-          : undefined,
-      },
     },
   };
 };

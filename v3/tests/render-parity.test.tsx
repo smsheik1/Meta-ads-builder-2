@@ -237,6 +237,7 @@ const remotionEntrySource = readFileSync("remotion-entry/index.ts", "utf8");
 const renderSurfaceSource = readFileSync("features/render/AdRenderSurface.tsx", "utf8");
 const workerSource = readFileSync("scripts/render-worker.ts", "utf8");
 const renderJobsSource = readFileSync("convex/renderJobs.ts", "utf8");
+const sceneUrlRefreshSource = readFileSync("convex/sceneUrlRefresh.ts", "utf8");
 const rendererVersionSource = readFileSync("features/render/rendererVersion.ts", "utf8");
 const jingleRendererSource = readFileSync("features/formats/jingle/render.tsx", "utf8");
 const appGlobalsSource = readFileSync("app/globals.css", "utf8");
@@ -297,8 +298,8 @@ assert.ok(
 );
 assert.ok(
   renderJobsSource.includes("refreshJingleMusicVideoUrls") &&
-    renderJobsSource.includes("scene.layout.musicVideo.clips") &&
-    renderJobsSource.includes("scene.layout.musicVideo.stitchedVideo"),
+    sceneUrlRefreshSource.includes("scene.layout.musicVideo.clips") &&
+    sceneUrlRefreshSource.includes("scene.layout.musicVideo.stitchedVideo"),
   "Render jobs must refresh stored music-video clip and stitched-video URLs before export.",
 );
 assert.ok(

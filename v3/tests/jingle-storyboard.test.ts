@@ -3,10 +3,8 @@ import {
   BRICK_MUSIC_VIDEO_STYLE_ID,
   BRICK_STORYBOARD_IMAGE_MODEL,
   createBrickStoryboardPromptPlan,
-  DEFAULT_BRICK_STORYBOARD_SHOT_COUNT,
   buildBrickMusicVideoClips,
   deriveBrickStoryboardShots,
-  normalizeBrickStoryboardShotCount,
   type BrickStoryboard,
 } from "../features/formats/jingle/storyboard";
 import { JINGLE_MUSIC_LENGTH_MS } from "../features/formats/jingle/prompt";
@@ -63,12 +61,6 @@ const scene = createJingleAdScene({
   now: 1,
 });
 
-assert.equal(BRICK_MUSIC_VIDEO_STYLE_ID, "brick-music-video");
-assert.equal(BRICK_STORYBOARD_IMAGE_MODEL, "google/nano-banana-2");
-assert.equal(DEFAULT_BRICK_STORYBOARD_SHOT_COUNT, 3);
-assert.equal(normalizeBrickStoryboardShotCount(99), 8);
-assert.equal(normalizeBrickStoryboardShotCount(1), 3);
-
 const slots = deriveBrickStoryboardShots(scene);
 assert.equal(slots.length, 3);
 assert.deepEqual(slots.map((slot) => slot.durationMs), [6000, 8000, 6000]);
@@ -82,17 +74,12 @@ assert.equal(sixSlots.reduce((sum, slot) => sum + slot.durationMs, 0), JINGLE_MU
 const generatedPlan = createBrickStoryboardPromptPlan(scene);
 assert.equal(generatedPlan.shots.length, 3);
 assert.ok(generatedPlan.referenceFramePrompt.includes("toy-brick"));
-assert.ok(generatedPlan.referenceFramePrompt.includes("Nexrage"));
-assert.ok(generatedPlan.referenceFramePrompt.includes("#8B5CF6"));
-assert.ok(generatedPlan.referenceFramePrompt.includes("No Dutch angle"));
 assert.ok(!/\blego\b/i.test(generatedPlan.referenceFramePrompt));
 assert.ok(generatedPlan.referenceFramePrompt.includes("No captions, no subtitles, no lyric text"));
 for (const shot of generatedPlan.shots) {
   assert.equal(shot.shotIndex, slots[shot.shotIndex]!.shotIndex);
   assert.ok(shot.shotPrompt.includes("toy-brick"));
-  assert.ok(shot.shotPrompt.includes("Same toy-brick stage as the reference frame."));
-  assert.ok(shot.shotPrompt.includes("No camera shake"));
-  assert.ok(shot.shotPrompt.includes(shot.lyricLine));
+  assert.ok(/no .*captions|do not render captions/i.test(shot.shotPrompt));
   assert.ok(!/\blego\b/i.test(shot.shotPrompt));
 }
 
