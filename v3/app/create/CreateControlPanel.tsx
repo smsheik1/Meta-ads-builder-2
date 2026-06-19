@@ -109,12 +109,14 @@ export function CreateControlPanel({
                 </span>
                 {field.kind === "textarea" ? (
                   <textarea
+                    suppressHydrationWarning
                     value={value}
                     onChange={(event) => onUpdateCreativeField(field.id, event.target.value)}
                     className="min-h-20 w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black leading-5 text-slate-950 outline-none transition focus:border-slate-400"
                   />
                 ) : (
                   <input
+                    suppressHydrationWarning
                     value={value}
                     onChange={(event) => onUpdateCreativeField(field.id, event.target.value)}
                     className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-950 outline-none transition focus:border-slate-400"
@@ -137,6 +139,7 @@ export function CreateControlPanel({
                     {field.label}
                   </span>
                   <input
+                    suppressHydrationWarning
                     type="color"
                     value={value}
                     onChange={(event) => onUpdateStyleColor(field.id, event.target.value)}
@@ -213,6 +216,7 @@ function FormatField({
           {field.label}
         </span>
         <select
+          suppressHydrationWarning
           value={field.id === "previewPlatform" ? previewPlatform : ""}
           onChange={(event) => {
             if (field.id === "previewPlatform") onPreviewPlatformChange(event.target.value as PreviewPlatform);

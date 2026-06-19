@@ -1,5 +1,5 @@
 "use client";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Bookmark,
   ChevronUp,
@@ -68,22 +68,76 @@ export function PhonePreviewFrame({
   const renderScene = scene ?? createStarterPlaceholderScene(placeholderVariantIndex);
   const renderMotionMode = scene ? motionMode : "idle";
   const shouldShowAudioAction = renderScene.audio.status !== "generated" && Boolean(onOpenAudioPanel);
+  const syncVideoTimeToPreview = renderScene.audio.status !== "generated";
   const frameClassName = youtubePlatform
     ? "relative mx-auto h-[420px] w-[640px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25"
     : "relative mx-auto h-[720px] w-[360px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25";
   const previewFrameId = `legacy-${platform}`;
   const PreviewVideo = useMemo<RenderVideoComponent>(() => {
-    const PreviewVideoAsset: RenderVideoComponent = ({ onTimeUpdate, ...props }) => (
-      <video
-        {...props}
-        onTimeUpdate={(event) => {
-          onTimeUpdate?.(event);
-          onPreviewTimeChange?.(event.currentTarget.currentTime);
-        }}
-      />
-    );
+    const PreviewVideoAsset: RenderVideoComponent = ({
+      active = true,
+      clipEndSeconds: _clipEndSeconds,
+      clipStartSeconds: _clipStartSeconds,
+      clipTimeSeconds,
+      onTimeUpdate,
+      ...props
+    }) => {
+      const videoRef = useRef<HTMLVideoElement | null>(null);
+      const [playBlocked, setPlayBlocked] = useState(false);
+
+      useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+        if (!props.autoPlay || !active) {
+          video.pause();
+          return;
+        }
+        setPlayBlocked(false);
+        void video.play().catch(() => setPlayBlocked(true));
+      }, [active, props.autoPlay, props.src]);
+
+      useEffect(() => {
+        const video = videoRef.current;
+        if (!video || !active || typeof clipTimeSeconds !== "number") return;
+        if (Math.abs(video.currentTime - clipTimeSeconds) > 0.35) {
+          video.currentTime = clipTimeSeconds;
+        }
+      }, [active, clipTimeSeconds, props.src]);
+
+      const playVideo = () => {
+        const video = videoRef.current;
+        if (!video) return;
+        void video.play().then(() => setPlayBlocked(false)).catch(() => setPlayBlocked(true));
+      };
+
+      return (
+        <>
+          <video
+            {...props}
+            ref={videoRef}
+            onPlay={() => setPlayBlocked(false)}
+            onTimeUpdate={(event) => {
+              onTimeUpdate?.(event);
+              if (syncVideoTimeToPreview) {
+                onPreviewTimeChange?.(event.currentTarget.currentTime);
+              }
+            }}
+          />
+          {playBlocked ? (
+            <button
+              type="button"
+              className="absolute inset-x-[10cqw] bottom-[6cqw] z-30 rounded-full bg-white px-4 py-3 text-sm font-black text-slate-950 shadow-2xl shadow-black/35"
+              data-video-preview-play-button="true"
+              onClick={playVideo}
+            >
+              Play video
+            </button>
+          ) : null}
+        </>
+      );
+    };
     return PreviewVideoAsset;
-  }, [onPreviewTimeChange]);
+  }, [onPreviewTimeChange, syncVideoTimeToPreview]);
 
   const renderAdViewport = (className: string) => (
     <div

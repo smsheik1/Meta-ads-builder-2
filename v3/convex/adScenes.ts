@@ -4,11 +4,15 @@ import { action, query } from "./_generated/server";
 import { generateAdCandidatesFromResearch } from "../features/ad-generation/generate";
 import { generateMemeVariantsFromResearch } from "../features/formats/meme/generate";
 import { generateJingleVariantsFromResearch } from "../features/formats/jingle/generate";
+import { generateBrainrotVariantsFromResearch } from "../features/formats/brainrot/generate";
+import { generateTextMessageVariantsFromResearch } from "../features/formats/text-message/generate";
 import { generateVideoMemeVariantsFromResearch } from "../features/formats/video-meme/generate";
 import { generateWereSorryVariantsFromResearch } from "../features/formats/were-sorry/generate";
 import { createMemeAdScene } from "../features/scene/createMemeScene";
 import { createJingleAdScene } from "../features/scene/createJingleScene";
+import { createBrainrotAdScene } from "../features/scene/createBrainrotScene";
 import { createVideoMemeAdScene } from "../features/scene/createVideoMemeScene";
+import { createTextMessageAdScene } from "../features/scene/createTextMessageScene";
 import { createVisualizerAdScene } from "../features/scene/createVisualizerScene";
 import { createWereSorryAdScene } from "../features/scene/createWereSorryScene";
 import type { StoredWebsiteResearchResult } from "../features/research/types";
@@ -23,7 +27,7 @@ export const generateFromResearch: ReturnType<typeof action> = action({
   args: {
     researchRunId: v.id("researchRuns"),
     count: v.optional(v.number()),
-    format: v.optional(v.union(v.literal("visualizer"), v.literal("meme"), v.literal("were-sorry"), v.literal("video-meme"), v.literal("jingle"))),
+    format: v.optional(v.union(v.literal("visualizer"), v.literal("meme"), v.literal("were-sorry"), v.literal("video-meme"), v.literal("jingle"), v.literal("text-message"), v.literal("brainrot"))),
     memeModel: v.optional(v.string()),
     videoMemeTemplateId: v.optional(v.union(v.literal("bear-sniff"), v.literal("pingu-noot-noot"), v.literal("darwin-journey"))),
     visualizerModel: v.optional(v.string()),
@@ -134,6 +138,56 @@ export const generateFromResearch: ReturnType<typeof action> = action({
       };
     }
 
+    if (format === "text-message") {
+      const generation = await generateTextMessageVariantsFromResearch(research, { count });
+      const scenes = generation.variants.map((variant, index) => createTextMessageAdScene({
+        research,
+        variant,
+        candidateIndex: index,
+        generationBatchId,
+        model: generation.model,
+        provider: generation.provider,
+      }));
+      const { sceneIds } = await ctx.runMutation(internal.adSceneStorage.saveGeneratedScenes, {
+        sessionId: research.sessionId,
+        researchRunId,
+        brandSnapshotId: research.brandSnapshotId,
+        scenes,
+      });
+
+      return {
+        generationBatchId,
+        sceneIds,
+        scenes,
+        providerStatus: generation.providerStatus,
+      };
+    }
+
+    if (format === "brainrot") {
+      const generation = await generateBrainrotVariantsFromResearch(research);
+      const scenes = generation.variants.map((variant, index) => createBrainrotAdScene({
+        research,
+        variant,
+        candidateIndex: index,
+        generationBatchId,
+        model: generation.model,
+        provider: generation.provider,
+      }));
+      const { sceneIds } = await ctx.runMutation(internal.adSceneStorage.saveGeneratedScenes, {
+        sessionId: research.sessionId,
+        researchRunId,
+        brandSnapshotId: research.brandSnapshotId,
+        scenes,
+      });
+
+      return {
+        generationBatchId,
+        sceneIds,
+        scenes,
+        providerStatus: generation.providerStatus,
+      };
+    }
+
     const generation = await generateAdCandidatesFromResearch(research, {
       count,
       nvidiaNimModel: visualizerModel,
@@ -210,6 +264,7 @@ export const latestForAnonymousId: ReturnType<typeof query> = query({
 
     return {
       result: toStoredResearchResult(researchRun, brandSnapshot, firstRow.researchRunId),
+      sceneIds: batchRows.map((row) => row._id),
       scenes: batchRows.map((row) => row.scene as AdScene),
     };
   },

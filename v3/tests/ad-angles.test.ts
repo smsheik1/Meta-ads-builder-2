@@ -58,6 +58,20 @@ const normalized = normalizeAdAnglesPayload([
     sitePhrase: "books appointments",
   },
   {
+    buyer: "practice manager",
+    moment: "staff are helping a patient while the phone keeps ringing",
+    pain: "the team has to choose between the person in front of them and the caller",
+    proof: "answers missed calls after hours",
+    sitePhrase: "AI dental receptionist",
+  },
+  {
+    buyer: "front desk lead",
+    moment: "Monday starts with a voicemail backlog",
+    pain: "callbacks pile up before the schedule is stable",
+    proof: "books appointments from calls",
+    sitePhrase: "books appointments",
+  },
+  {
     buyer: "duplicate",
     moment: "the patient called after closing",
     pain: "same",
@@ -66,16 +80,29 @@ const normalized = normalizeAdAnglesPayload([
   },
   { buyer: "thin" },
 ]);
-assert.equal(normalized.length, 1);
+assert.equal(normalized.length, 3);
 assert.equal(normalized[0]?.sitePhrase, "books appointments");
+assert.throws(
+  () => normalizeAdAnglesPayload([normalized[0]]),
+  /fewer than 3 usable angles/,
+);
 
 const generated = await extractAdAnglesFromResearch(research, {
   nvidiaNimApiKey: "test-nim-key",
   nvidiaNimChatCompletion: async () => JSON.stringify(normalized),
 });
-assert.equal(generated.adAngles.length, 1);
+assert.equal(generated.adAngles.length, 3);
 assert.equal(generated.providerStatus.provider, "ad-angles");
 assert.equal(generated.providerStatus.status, "used");
+
+const underFloor = await extractAdAnglesFromResearch(research, {
+  nvidiaNimApiKey: "test-nim-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify([normalized[0]]),
+  geminiApiKey: "",
+});
+assert.deepEqual(underFloor.adAngles, []);
+assert.equal(underFloor.providerStatus.status, "failed");
+assert.match(underFloor.providerStatus.reason, /fewer than 3 usable angles/);
 
 const failed = await extractAdAnglesFromResearch(research, {
   nvidiaNimApiKey: "test-nim-key",

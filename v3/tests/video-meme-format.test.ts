@@ -278,6 +278,10 @@ const pinguHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
   timeSeconds: 0,
 }));
 assert.ok(pinguHtml.includes('data-video-meme-template="pingu-noot-noot"'));
+assert.ok(pinguHtml.includes("position:relative"));
+assert.ok(pinguHtml.includes("object-fit:cover"));
+assert.ok(pinguHtml.includes("background:rgba(0,0,0,0.72)"));
+assert.ok(pinguHtml.includes("font-size:5.2cqw"));
 assert.ok(pinguHtml.includes('data-video-meme-setup-text="true"'));
 assert.ok(!pinguHtml.includes('data-video-meme-dread-text="true"'));
 assert.ok(pinguHtml.includes(pinguVariants[0]!.slots.setupText));

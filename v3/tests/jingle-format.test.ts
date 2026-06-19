@@ -186,12 +186,47 @@ const html = renderToStaticMarkup(createElement(AdRenderSurface, {
 assert.ok(html.includes('data-format="jingle"'));
 assert.ok(html.includes('data-jingle-active-lyric="true"'));
 assert.ok(html.includes('data-jingle-waveform="true"'));
-assert.ok(html.includes("relative h-full w-full"));
 assert.ok(html.includes("Oh Gee Tool"));
 assert.ok(html.includes("position:relative"));
 assert.ok(html.includes("text-align:center"));
 assert.ok(html.includes("bottom:10cqw"));
 assert.ok(html.includes("width:1.8cqw"));
+
+const musicVideoScene = {
+  ...scenes[0]!,
+  layout: {
+    ...scenes[0]!.layout,
+    musicVideo: {
+      sourceStoryboardId: "storyboard_1",
+      builtAt: 1,
+      clips: [
+        { shotIndex: 0, storageId: "video_0", url: "https://example.com/hook.mp4", startMs: 0, endMs: 6000 },
+        { shotIndex: 1, storageId: "video_1", url: "https://example.com/verse.mp4", startMs: 6000, endMs: 14000 },
+        { shotIndex: 2, storageId: "video_2", url: "https://example.com/hook-2.mp4", startMs: 14000, endMs: 20000 },
+      ],
+      stitchedVideo: {
+        storageId: "stitched_video",
+        url: "https://example.com/stitched.mp4",
+        mimeType: "video/mp4",
+        durationMs: 20000,
+        builtAt: 2,
+      },
+    },
+  },
+};
+const musicVideoHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: musicVideoScene,
+  timeSeconds: 7,
+}));
+assert.ok(musicVideoHtml.includes('data-jingle-music-video="true"'));
+assert.ok(musicVideoHtml.includes('data-jingle-stitched-music-video="true"'));
+assert.ok(musicVideoHtml.includes("https://example.com/stitched.mp4"));
+assert.ok(!musicVideoHtml.includes("https://example.com/hook.mp4"));
+assert.ok(!musicVideoHtml.includes("https://example.com/verse.mp4"));
+assert.ok(!musicVideoHtml.includes("https://example.com/hook-2.mp4"));
+assert.ok(musicVideoHtml.includes("object-fit:cover"));
+assert.ok(!musicVideoHtml.includes('data-jingle-waveform="true"'));
+assert.ok(!musicVideoHtml.includes("translateX"));
 
 const phoneticDisplayScene = {
   ...scenes[0]!,

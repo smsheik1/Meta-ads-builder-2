@@ -4,8 +4,10 @@ import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PhonePreviewFrame } from "../app/create/CreatePreviewChrome";
+import { brainrotCtaDurationMs } from "../features/formats/brainrot/render";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import type { AdScene } from "../features/scene/types";
+import { adSceneFps, getAdSceneDurationInFrames } from "../remotion-entry/Root";
 
 const repoRoot = process.cwd();
 
@@ -108,6 +110,93 @@ const parityScene: AdScene = {
   },
 };
 
+const textMessageParityScene: AdScene = {
+  ...parityScene,
+  format: "text-message",
+  creative: {
+    ...parityScene.creative,
+    headline: "did your office answer calls at lunch?",
+    subheadline: "ours added OGTool",
+  },
+  style: {
+    backgroundColor: "#FFFFFF",
+    textColor: "#111827",
+    accentColor: "#82DFFF",
+    fontFeel: "sans",
+  },
+  audio: {
+    status: "none",
+    transcript: "",
+    captions: [],
+  },
+  layout: {
+    preset: "text-message-screenshot",
+    contactName: "Jordan",
+    timestampLabel: "Today 9:41 AM",
+    messages: [
+      { side: "left", text: "did your ads get weird again?" },
+      { side: "right", text: "yep. spend up, leads flat" },
+      { side: "left", text: "ours switched to OGTool" },
+      { side: "right", text: "send me that" },
+    ],
+  },
+};
+
+const brainrotParityScene: AdScene = {
+  ...parityScene,
+  format: "brainrot",
+  creative: {
+    ...parityScene.creative,
+    headline: "ad spend up again",
+    subheadline: "brainrot banter",
+  },
+  style: {
+    backgroundColor: "#000000",
+    textColor: "#FFFFFF",
+    accentColor: "#82DFFF",
+    fontFeel: "sans",
+  },
+  audio: {
+    status: "generated",
+    storageId: "brainrot_audio",
+    url: "https://example.com/brainrot.wav",
+    mimeType: "audio/wav",
+    durationMs: 7200,
+    durationSeconds: 7.2,
+    transcript: "ad spend up again\nand leads still flat",
+    captions: [
+      { text: "ad spend up again", startMs: 0, endMs: 1000 },
+      { text: "and leads still flat", startMs: 1200, endMs: 2400 },
+      { text: "that is the whole spreadsheet crying", startMs: 2600, endMs: 3600 },
+      { text: "the buyer moment is brutal", startMs: 3800, endMs: 4800 },
+      { text: "OGTool makes the trail visible", startMs: 5000, endMs: 6000 },
+      { text: "finally, receipts instead of vibes", startMs: 6200, endMs: 7200 },
+    ],
+    provider: "fish-studio",
+    model: "fish-audio/s2-pro",
+    generatedAt: 123,
+  },
+  layout: {
+    preset: "brainrot-dialogue",
+    backgroundVideoSrc: "/brainrot/block-parkour.mp4",
+    characters: {
+      leftSpriteSrc: "/brainrot/peter.png",
+      rightSpriteSrc: "/brainrot/stewie.png",
+    },
+    beats: [
+      { speaker: "left", text: "ad spend up again", startMs: 0, durationMs: 1000 },
+      { speaker: "right", text: "and leads still flat", startMs: 1200, durationMs: 1200 },
+      { speaker: "left", text: "that is the whole spreadsheet crying", startMs: 2600, durationMs: 1000 },
+      { speaker: "right", text: "the buyer moment is brutal", startMs: 3800, durationMs: 1000 },
+      { speaker: "left", text: "OGTool makes the trail visible", startMs: 5000, durationMs: 1000 },
+      { speaker: "right", text: "finally, receipts instead of vibes", startMs: 6200, durationMs: 1000 },
+    ],
+    beatGapMs: 200,
+    angle: "ad spend pain",
+    selfCheckPassed: "Both speakers roast the same buyer pain.",
+  },
+};
+
 function getSourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
     const fullPath = join(dir, entry);
@@ -149,6 +238,7 @@ const renderSurfaceSource = readFileSync("features/render/AdRenderSurface.tsx", 
 const workerSource = readFileSync("scripts/render-worker.ts", "utf8");
 const renderJobsSource = readFileSync("convex/renderJobs.ts", "utf8");
 const rendererVersionSource = readFileSync("features/render/rendererVersion.ts", "utf8");
+const jingleRendererSource = readFileSync("features/formats/jingle/render.tsx", "utf8");
 const appGlobalsSource = readFileSync("app/globals.css", "utf8");
 const renderGlobalsSource = readFileSync("features/render/renderGlobals.css", "utf8");
 
@@ -198,8 +288,30 @@ assert.ok(
 assert.ok(
   remotionSource.includes("@remotion/media") &&
     remotionSource.includes("<Audio") &&
-    remotionSource.includes("OffthreadVideo"),
-  "Remotion exports must layer generated audio and render MP4 assets without a second visual renderer.",
+    remotionSource.includes("RemotionImageAsset") &&
+    remotionSource.includes("resolveRenderAssetSrc") &&
+    remotionSource.includes("OffthreadVideo") &&
+    remotionSource.includes("clipStartSeconds") &&
+    remotionSource.includes("<Sequence"),
+  "Remotion exports must layer generated audio and render public image/video assets through the shared asset provider.",
+);
+assert.ok(
+  renderJobsSource.includes("refreshJingleMusicVideoUrls") &&
+    renderJobsSource.includes("scene.layout.musicVideo.clips") &&
+    renderJobsSource.includes("scene.layout.musicVideo.stitchedVideo"),
+  "Render jobs must refresh stored music-video clip and stitched-video URLs before export.",
+);
+assert.ok(
+  workerSource.includes("api.jingleStoryboards.claimNextStitch") &&
+    workerSource.includes("ffmpeg music video stitch") &&
+    workerSource.includes("api.jingleStoryboards.markStitchReady"),
+  "Brick music videos must be stitched into one stored MP4 by the worker before the shared renderer plays them.",
+);
+assert.ok(
+  jingleRendererSource.includes("stitchedMusicVideo") &&
+    jingleRendererSource.includes("data-jingle-stitched-music-video") &&
+    !jingleRendererSource.includes("data-jingle-music-video-active"),
+  "Jingle music-video rendering must use one stitched video asset, not swap source clips at playback time.",
 );
 assert.ok(
   renderJobsSource.includes("rendererVersion: v.string()") &&
@@ -249,5 +361,80 @@ for (const html of [previewHtml, directPreviewHtml, videoHtml]) {
   assert.ok(html.includes("Made with Wiggly"), "Every visual path must render the same watermark.");
   assert.ok(html.includes('data-visualizer-motion="audio-analysis"'), "Every visual path must use the same audio visualizer branch while playing/rendering.");
 }
+
+const textMessagePreviewHtml = renderToStaticMarkup(createElement(PhonePreviewFrame, {
+    scene: textMessageParityScene,
+    result: null,
+    platform: "instagram-feed",
+    motionMode: "idle",
+    timeSeconds: 0,
+  }));
+
+assert.ok(
+  textMessagePreviewHtml.includes('data-preview-phone-header="instagram-feed"') &&
+    textMessagePreviewHtml.includes('data-preview-phone-footer="instagram-feed"') &&
+    textMessagePreviewHtml.includes('data-text-message-status-bar="true"'),
+  "Text message preview must stay an Instagram feed post containing a native-looking Messages screenshot.",
+);
+
+for (const html of [
+  textMessagePreviewHtml,
+  renderToStaticMarkup(createElement(AdRenderSurface, {
+    scene: textMessageParityScene,
+    mode: "preview",
+    motionMode: "idle",
+  })),
+  renderToStaticMarkup(createElement(AdRenderSurface, {
+    scene: textMessageParityScene,
+    mode: "video",
+    motionMode: "idle",
+  })),
+]) {
+  assert.ok(html.includes('data-render-surface="ad"'), "Text message preview/export must use the shared render surface.");
+  assert.ok(html.includes('data-format="text-message"'), "Text message preview/export must preserve the format.");
+  assert.ok(html.includes('data-text-message-screen="true"'), "Text message preview/export must render the screenshot surface.");
+  assert.ok(html.includes('data-text-message-status-bar="true"'), "Text message preview/export must render native phone status chrome.");
+  assert.ok(html.includes('data-text-message-bubble="left"') && html.includes('data-text-message-bubble="right"'), "Text message preview/export must render both bubble sides.");
+  assert.ok(html.includes("background-color:#0A84FF"), "Text message preview/export must keep critical right-bubble color inline.");
+  assert.ok(html.includes("overflow:hidden"), "Text message preview/export must not scroll the screenshot.");
+}
+
+for (const html of [
+  renderToStaticMarkup(createElement(PhonePreviewFrame, {
+    scene: brainrotParityScene,
+    result: null,
+    platform: "instagram-feed",
+    motionMode: "audio",
+    timeSeconds: 0.5,
+  })),
+  renderToStaticMarkup(createElement(AdRenderSurface, {
+    scene: brainrotParityScene,
+    mode: "preview",
+    motionMode: "audio",
+    timeSeconds: 0.5,
+  })),
+  renderToStaticMarkup(createElement(AdRenderSurface, {
+    scene: brainrotParityScene,
+    mode: "video",
+    motionMode: "audio",
+    timeSeconds: 0.5,
+  })),
+]) {
+  assert.ok(html.includes('data-render-surface="ad"'), "Brainrot preview/export must use the shared render surface.");
+  assert.ok(html.includes('data-format="brainrot"'), "Brainrot preview/export must preserve the format.");
+  assert.ok(html.includes("/brainrot/block-parkour.mp4"), "Brainrot preview/export must use the stored parkour asset.");
+  assert.ok(html.includes("/brainrot/peter.png") && html.includes("/brainrot/stewie.png"), "Brainrot preview/export must render both character sprites.");
+  assert.ok(html.includes("object-fit:cover"), "Brainrot preview/export must keep background cover critical pixels inline.");
+  assert.ok(html.includes("bottom:30cqw"), "Brainrot preview/export must keep caption placement inline.");
+  assert.ok(html.includes("opacity:0.42"), "Brainrot preview/export must keep inactive speaker opacity inline.");
+  assert.ok(html.includes("ad spend up again"), "Brainrot preview/export must render the active beat caption.");
+}
+assert.equal(
+  getAdSceneDurationInFrames(brainrotParityScene, adSceneFps),
+  Math.ceil((brainrotParityScene.audio.status === "generated"
+    ? brainrotParityScene.audio.durationSeconds + (brainrotCtaDurationMs / 1000)
+    : 5) * adSceneFps),
+  "Brainrot export must keep the CTA end card after generated audio ends.",
+);
 
 console.log("render-parity tests passed");

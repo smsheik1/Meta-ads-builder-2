@@ -81,6 +81,52 @@ assert.equal(
 assert.equal(slugifyShareTitle("   "), "wiggly-ad");
 
 assert.equal(assertShareableAdScene(scene), scene);
+const generatedAudio = {
+  status: "generated" as const,
+  storageId: "brainrot-audio",
+  url: "https://example.com/brainrot.wav",
+  mimeType: "audio/wav",
+  durationMs: 9000,
+  durationSeconds: 9,
+  transcript: "Wait, your CAC is still climbing?",
+  captions: [{ text: "Wait, your CAC is still climbing?", startMs: 0, endMs: 1200 }],
+  provider: "fish-studio" as const,
+  model: "s2-pro",
+  generatedAt: 123,
+};
+const brainrotScene: AdScene = {
+  ...scene,
+  format: "brainrot",
+  audio: generatedAudio,
+  layout: {
+    preset: "brainrot-dialogue",
+    backgroundVideoSrc: "/brainrot/block-parkour.mp4",
+    characters: {
+      leftSpriteSrc: "/brainrot/peter.png",
+      rightSpriteSrc: "/brainrot/stewie.png",
+    },
+    beats: [
+      { speaker: "left", text: "Wait, your CAC is still climbing?", startMs: 0, durationMs: 1200 },
+      { speaker: "right", text: "Yeah, because every channel is cooked.", startMs: 1400, durationMs: 1400 },
+    ],
+    beatGapMs: 200,
+    ctaText: "Learn more",
+    angle: "paid channels are getting expensive",
+    selfCheckPassed: "Beat one hooks the pain and the reveal is traceable.",
+  },
+};
+assert.equal(assertShareableAdScene(brainrotScene), brainrotScene);
+assert.throws(
+  () => assertShareableAdScene({
+    ...brainrotScene,
+    audio: {
+      status: "none",
+      transcript: "",
+      captions: [],
+    },
+  }),
+  /Generate audio before sharing this brainrot video/,
+);
 assert.throws(
   () => assertShareableAdScene({
     ...scene,

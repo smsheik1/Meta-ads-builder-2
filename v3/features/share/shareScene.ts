@@ -11,7 +11,7 @@ export function assertShareableAdScene(value: unknown): AdScene {
 
   const scene = value as AdScene;
   if (scene.version !== 1) throw new Error("Share scene version is not supported.");
-  if (scene.format !== "visualizer" && scene.format !== "jingle") throw new Error("Share scene format is not supported yet.");
+  if (scene.format !== "visualizer" && scene.format !== "jingle" && scene.format !== "text-message" && scene.format !== "brainrot") throw new Error("Share scene format is not supported yet.");
   if (!scene.brand?.name?.trim()) throw new Error("Share scene brand name is missing.");
   if (!scene.creative?.headline?.trim()) throw new Error("Share scene headline is missing.");
   if (!scene.creative?.subheadline?.trim()) throw new Error("Share scene subheadline is missing.");
@@ -20,6 +20,9 @@ export function assertShareableAdScene(value: unknown): AdScene {
   }
   if (scene.format === "jingle" && scene.audio.status !== "generated") {
     throw new Error("Generate music before sharing this jingle.");
+  }
+  if (scene.format === "brainrot" && scene.audio.status !== "generated") {
+    throw new Error("Generate audio before sharing this brainrot video.");
   }
   if (scene.audio.status === "generated") {
     if (!scene.audio.storageId?.trim()) throw new Error("Share scene audio storage is missing.");

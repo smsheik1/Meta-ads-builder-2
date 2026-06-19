@@ -42,7 +42,12 @@ import type {
 } from "@/features/research/types";
 import { normalizePublicWebsiteUrl } from "@/features/research/url";
 import { getClientRendererVersion } from "@/features/render/rendererVersion";
-import type { AdFormatId, AdScene, AdSceneVisualizerStyle } from "@/features/scene/types";
+import type {
+  AdFormatId,
+  AdScene,
+  AdSceneVisualizerStyle,
+  JingleAdScene,
+} from "@/features/scene/types";
 import { visualizerSceneVariants } from "@/features/scene/visualizerVariants";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
 import { CreateCaptionModal } from "./CreateCaptionModal";
@@ -84,6 +89,37 @@ function getMusicGenerationErrorMessage(error: unknown) {
   return `Music generation failed: ${message}`;
 }
 
+function getBrickStoryboardErrorMessage(error: unknown) {
+  const rawMessage = error instanceof Error ? error.message : String(error || "");
+  const message = rawMessage
+    .replace(/^\[CONVEX[^\]]*]\s*/i, "")
+    .replace(/^\[Request ID:[^\]]+]\s*/i, "")
+    .replace(/^Server Error\s*/i, "")
+    .replace(/^Uncaught Error:\s*/i, "")
+    .replace(/^Uncaught ApiError:\s*/i, "")
+    .replace(/\s+at\s+[\s\S]*$/m, "")
+    .trim();
+  const apiMessage = message.match(/"message"\s*:\s*"([^"]+)"/)?.[1];
+  const cleanMessage = apiMessage || message;
+
+  if (/timed out|timeout/i.test(cleanMessage)) {
+    return "Brick storyboard generation timed out. Try again, or use a shorter jingle.";
+  }
+  if (/Replicate image generation is not configured/i.test(cleanMessage)) {
+    return "Brick storyboard images are not configured. Add the Replicate API token, then try again.";
+  }
+  if (/quota exceeded|exceeded your current quota|rate-limit|rate limits/i.test(cleanMessage)) {
+    return "Brick storyboard images hit the Replicate quota for this API token.";
+  }
+  if (/not found for API version|is not supported/i.test(cleanMessage)) {
+    return "Brick storyboard images failed because the configured image model is unavailable.";
+  }
+  if (/Nano Banana 2 returned no image|Replicate Nano Banana 2/i.test(cleanMessage)) {
+    return cleanMessage;
+  }
+  return cleanMessage || "Brick storyboard generation failed.";
+}
+
 function slugifyDownloadName(value: string) {
   return value
     .toLowerCase()
@@ -94,6 +130,7 @@ function slugifyDownloadName(value: string) {
 
 type AdSceneGenerationResponse = {
   scenes: AdScene[];
+  sceneIds?: Id<"adScenes">[];
 };
 
 const getSceneVideoMemeTemplateId = (scene: AdScene | null): VideoMemeTemplateId | null => (
@@ -142,6 +179,8 @@ function getGenerationCount(format: AdFormatId, videoMemeTemplateId: VideoMemeTe
   if (format === "were-sorry") return 8;
   if (format === "video-meme") return getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8;
   if (format === "jingle") return 1;
+  if (format === "text-message") return 6;
+  if (format === "brainrot") return 3;
   return 50;
 }
 
@@ -210,6 +249,11 @@ function ResearchConnected() {
   const generateDialogueScripts = useAction(api.dialogueScripts.generateForScene);
   const generateDialogueAudioForScene = useAction(api.audioAssets.generateDialogueForScene);
   const generateJingleAudioForScene = useAction(api.audioAssets.generateJingleForScene);
+  const generateBrainrotAudioForScene = useAction(api.audioAssets.generateBrainrotForScene);
+  const generateBrickStoryboardForScene = useAction(api.jingleStoryboards.generateBrickForScene);
+  const regenerateBrickShotForScene = useAction(api.jingleStoryboards.regenerateBrickShot);
+  const animateBrickStoryboardForScene = useAction(api.jingleStoryboards.animateBrickBoard);
+  const buildBrickMusicVideoForScene = useMutation(api.jingleStoryboards.buildMusicVideoForScene);
   const attachUploadedAudioForScene = useAction(api.audioAssets.attachUploadedToScene);
   const createAudioUploadUrl = useMutation(api.audioAssets.createUploadUrl);
   const createSharePage = useMutation(api.sharePages.createFromScene);
@@ -227,6 +271,7 @@ function ResearchConnected() {
   const [selectedVisualizerModel, setSelectedVisualizerModel] = useState(DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL);
   const [selectedJingleStyleId, setSelectedJingleStyleId] = useState<JingleStyleId>(DEFAULT_JINGLE_STYLE_ID);
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
+  const [sceneIds, setSceneIds] = useState<Array<Id<"adScenes"> | null>>([]);
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
   const [previewPlatform, setPreviewPlatform] = useState<PreviewPlatform>("instagram-feed");
@@ -254,6 +299,13 @@ function ResearchConnected() {
   const [previewTimeSeconds, setPreviewTimeSeconds] = useState(1.1);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [renderError, setRenderError] = useState("");
+  const [brickStoryboardStatus, setBrickStoryboardStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [brickStoryboardAnimationStatus, setBrickStoryboardAnimationStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [brickStoryboardBuildStatus, setBrickStoryboardBuildStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [brickStoryboardError, setBrickStoryboardError] = useState("");
+  const [brickStoryboard, setBrickStoryboard] = useState<any>(null);
+  const [brickStoryboardId, setBrickStoryboardId] = useState<Id<"jingleStoryboards"> | null>(null);
+  const [brickStoryboardShotBusyIndex, setBrickStoryboardShotBusyIndex] = useState<number | null>(null);
   const [anonymousId, setAnonymousId] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [saveError, setSaveError] = useState("");
@@ -270,11 +322,22 @@ function ResearchConnected() {
   const latestGeneration = useQuery(api.adScenes.latestForAnonymousId, anonymousId ? { anonymousId } : "skip") as {
     result: StoredWebsiteResearchResult;
     scenes: AdScene[];
+    sceneIds?: Id<"adScenes">[];
   } | null | undefined;
   const cachedResearchForUrl = useQuery(
     api.researchRuns.latestReadyForAnonymousIdAndUrl,
     anonymousId && url.trim() ? { anonymousId, url } : "skip",
   ) as StoredWebsiteResearchResult | null | undefined;
+  const selectedSceneId = sceneIds[selectedSceneIndex] || null;
+  const latestBrickStoryboard = useQuery(
+    api.jingleStoryboards.latestForScene,
+    selectedScene?.format === "jingle" && selectedSceneId ? { sceneId: selectedSceneId } : "skip",
+  ) as {
+    _id: Id<"jingleStoryboards">;
+    storyboard: unknown;
+    stitchStatus?: "queued" | "claimed" | "rendering" | "ready" | "failed";
+    stitchError?: string;
+  } | null | undefined;
   const saveDesign = useMutation(api.savedDesigns.saveFromScene);
   const savedDesignItems = savedDesigns || [];
   const canvasActions = useCanvasActions();
@@ -371,6 +434,7 @@ function ResearchConnected() {
     setResult(latestGeneration.result);
     setStatus("ready");
     setAdScenes(latestGeneration.scenes);
+    setSceneIds(latestGeneration.sceneIds || latestGeneration.scenes.map(() => null));
     setSelectedScene(restoredScene);
     setSelectedSceneIndex(0);
     if (restoredScene) {
@@ -437,6 +501,16 @@ function ResearchConnected() {
     setRenderError("");
   };
 
+  const resetBrickStoryboardState = () => {
+    setBrickStoryboardStatus("idle");
+    setBrickStoryboardAnimationStatus("idle");
+    setBrickStoryboardBuildStatus("idle");
+    setBrickStoryboardError("");
+    setBrickStoryboard(null);
+    setBrickStoryboardId(null);
+    setBrickStoryboardShotBusyIndex(null);
+  };
+
   const resetDialogueState = () => {
     setModal(null);
     setDialogueStatus("idle");
@@ -489,6 +563,7 @@ function ResearchConnected() {
     setSelectedScene(starterScene);
     setSelectedSceneIndex(0);
     setAdScenes([starterScene]);
+    setSceneIds([null]);
     setAdStatus("ready");
     setAdStatusNote("Custom starter ad ready. Add audio, then save, share, or download it.");
     return starterScene;
@@ -548,6 +623,46 @@ function ResearchConnected() {
     };
   }, [selectedScene, selectedSceneIndex]);
 
+  useEffect(() => {
+    if (!latestBrickStoryboard) return;
+    setBrickStoryboardId(latestBrickStoryboard._id);
+    setBrickStoryboard(latestBrickStoryboard.storyboard);
+    setBrickStoryboardStatus("ready");
+
+    if (latestBrickStoryboard.stitchStatus === "queued" ||
+      latestBrickStoryboard.stitchStatus === "claimed" ||
+      latestBrickStoryboard.stitchStatus === "rendering") {
+      setBrickStoryboardBuildStatus("loading");
+    } else if (latestBrickStoryboard.stitchStatus === "ready") {
+      setBrickStoryboardBuildStatus("ready");
+    } else if (latestBrickStoryboard.stitchStatus === "failed") {
+      setBrickStoryboardBuildStatus("error");
+      setBrickStoryboardError(latestBrickStoryboard.stitchError || "Music video stitch failed.");
+    }
+
+    const storyboardMusicVideo = (latestBrickStoryboard.storyboard as {
+      musicVideo?: JingleAdScene["layout"]["musicVideo"];
+    })?.musicVideo;
+    const stitchedVideo = storyboardMusicVideo?.stitchedVideo;
+    if (!stitchedVideo || !selectedScene || selectedScene.format !== "jingle") return;
+    if (selectedScene.layout.musicVideo?.stitchedVideo?.storageId === stitchedVideo.storageId) return;
+
+    const nextScene: AdScene = {
+      ...selectedScene,
+      layout: {
+        ...selectedScene.layout,
+        musicVideo: storyboardMusicVideo,
+      },
+    };
+    setSelectedScene(nextScene);
+    setAdScenes((scenes) => scenes.map((scene, index) => (
+      index === selectedSceneIndex ? nextScene : scene
+    )));
+    resetShareState();
+    resetRenderState();
+    resetSaveState();
+  }, [latestBrickStoryboard, selectedScene, selectedSceneIndex]);
+
   const triggerRerollFlash = useCallback((roles: RenderFlashRole[]) => {
     if (rerollFlashTimeoutRef.current) {
       window.clearTimeout(rerollFlashTimeoutRef.current);
@@ -578,11 +693,22 @@ function ResearchConnected() {
     resetShareState();
     resetRenderState();
     resetSaveState();
+    resetBrickStoryboardState();
     if (flashRoles.length) triggerRerollFlash(flashRoles);
   }, [selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
-  const generateJingleMusicForScene = useCallback(async (scene: AdScene) => {
-    if (scene.format !== "jingle" || scene.audio.status === "generated" || audioStatus === "loading") return;
+  const generateSceneAudio = useCallback(async (
+    scene: AdScene,
+    sceneId: Id<"adScenes"> | null | undefined,
+    {
+      format,
+      action,
+    }: {
+      format: "jingle" | "brainrot";
+      action: (args: { anonymousId: string; sceneId?: Id<"adScenes">; scene: AdScene }) => Promise<unknown>;
+    },
+  ) => {
+    if (scene.format !== format || scene.audio.status === "generated" || audioStatus === "loading") return;
     const sceneKey = createSavedDesignId(scene);
     setAudioStatus("loading");
     setAudioError("");
@@ -591,8 +717,9 @@ function ResearchConnected() {
     canvasActions.beginBusy("audio-generation");
 
     try {
-      const result = await generateJingleAudioForScene({
+      const result = await action({
         anonymousId: getCurrentAnonymousId(),
+        ...(sceneId ? { sceneId } : {}),
         scene,
       }) as { scene: AdScene };
       resetPreviewPlayback();
@@ -609,7 +736,21 @@ function ResearchConnected() {
       setAudioError(getMusicGenerationErrorMessage(nextError));
       canvasActions.finishBusy();
     }
-  }, [audioStatus, canvasActions, generateJingleAudioForScene, resetPreviewPlayback]);
+  }, [audioStatus, canvasActions, resetPreviewPlayback, resetRenderState, resetShareState]);
+
+  const generateJingleMusicForScene = useCallback((scene: AdScene, sceneId?: Id<"adScenes"> | null) => (
+    generateSceneAudio(scene, sceneId, {
+      format: "jingle",
+      action: generateJingleAudioForScene,
+    })
+  ), [generateJingleAudioForScene, generateSceneAudio]);
+
+  const generateBrainrotAudioForSceneSelected = useCallback((scene: AdScene, sceneId?: Id<"adScenes"> | null) => (
+    generateSceneAudio(scene, sceneId, {
+      format: "brainrot",
+      action: generateBrainrotAudioForScene,
+    })
+  ), [generateBrainrotAudioForScene, generateSceneAudio]);
 
   const onUpdateCreativeField = useCallback((field: string, value: string) => {
     if (field !== "headline" && field !== "subheadline" && field !== "ctaText") return;
@@ -688,7 +829,7 @@ function ResearchConnected() {
     const currentGeneratedAudio = selectedScene.audio.status === "generated" ? selectedScene.audio : null;
     const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, {
       ...createDefaultSceneLocks(),
-      audio: selectedScene.format !== "jingle" && Boolean(currentGeneratedAudio),
+      audio: selectedScene.format !== "jingle" && selectedScene.format !== "brainrot" && Boolean(currentGeneratedAudio),
     });
     if (!next.scene) return;
 
@@ -709,15 +850,19 @@ function ResearchConnected() {
     resetSaveState();
     triggerRerollFlash(getSceneDefaultFlashSlots(nextScene));
     if (nextScene.format === "jingle" && nextScene.audio.status !== "generated") {
-      void generateJingleMusicForScene(nextScene);
+      void generateJingleMusicForScene(nextScene, sceneIds[next.index]);
     }
-  }, [adScenes, generateJingleMusicForScene, resetPreviewPlayback, selectedScene, selectedSceneIndex, triggerRerollFlash]);
+    if (nextScene.format === "brainrot" && nextScene.audio.status !== "generated") {
+      void generateBrainrotAudioForSceneSelected(nextScene, sceneIds[next.index]);
+    }
+  }, [adScenes, generateBrainrotAudioForSceneSelected, generateJingleMusicForScene, resetPreviewPlayback, sceneIds, selectedScene, selectedSceneIndex, triggerRerollFlash]);
 
-  const applyGeneratedScenes = (scenes: AdScene[]) => {
+  const applyGeneratedScenes = (scenes: AdScene[], nextSceneIds: Array<Id<"adScenes"> | null> = []) => {
     if (!scenes.length) throw new Error("Ad idea generation returned no ads.");
 
     const firstScene = scenes[0] || null;
     setAdScenes(scenes);
+    setSceneIds(nextSceneIds.length ? nextSceneIds : scenes.map(() => null));
     setSelectedScene(firstScene);
     setSelectedSceneIndex(0);
     canvasActions.interactionReset();
@@ -726,11 +871,15 @@ function ResearchConnected() {
     resetRenderState();
     resetAudioState();
     resetSaveState();
+    resetBrickStoryboardState();
     setAdStatusNote(`${scenes.length} ads ready. Press spacebar to find a stronger version.`);
     setAdStatus("ready");
     canvasActions.finishBusy();
     if (firstScene?.format === "jingle" && firstScene.audio.status !== "generated") {
-      void generateJingleMusicForScene(firstScene);
+      void generateJingleMusicForScene(firstScene, nextSceneIds[0]);
+    }
+    if (firstScene?.format === "brainrot" && firstScene.audio.status !== "generated") {
+      void generateBrainrotAudioForSceneSelected(firstScene, nextSceneIds[0]);
     }
   };
 
@@ -754,7 +903,10 @@ function ResearchConnected() {
     };
     const nextGeneration = await generateAdScenes(generationArgs) as AdSceneGenerationResponse;
 
-    return nextGeneration.scenes || [];
+    return {
+      scenes: nextGeneration.scenes || [],
+      sceneIds: nextGeneration.sceneIds || [],
+    };
   };
 
   const getReusableResearchForUrl = (value: string) => {
@@ -825,7 +977,7 @@ function ResearchConnected() {
     setAdStatusNote("Reusing website research. Generating this format only.");
 
     try {
-      const nextScenes = await generateScenesForResearch(
+      const nextGeneration = await generateScenesForResearch(
         research.researchRunId as Id<"researchRuns">,
         getGenerationCount(format, videoMemeTemplateId),
         format,
@@ -835,7 +987,7 @@ function ResearchConnected() {
         selectedJingleStyleId,
       );
       setProgressStage("preparing-canvas");
-      applyGeneratedScenes(nextScenes);
+      applyGeneratedScenes(nextGeneration.scenes, nextGeneration.sceneIds);
       clearSubmitProgress();
     } catch (nextError) {
       clearSubmitProgress();
@@ -953,7 +1105,7 @@ function ResearchConnected() {
       setShowSlowResearchMessage(false);
       setProgressStage("writing-ads");
       canvasActions.beginBusy("ad-generation");
-      const nextScenes = await generateScenesForResearch(
+      const nextGeneration = await generateScenesForResearch(
         nextResult.researchRunId as Id<"researchRuns">,
         getGenerationCount(selectedAdFormat, selectedVideoMemeTemplateId),
         selectedAdFormat,
@@ -966,7 +1118,7 @@ function ResearchConnected() {
       rememberResearchForReuse(nextResult);
       setResult(nextResult);
       setStatus("ready");
-      applyGeneratedScenes(nextScenes);
+      applyGeneratedScenes(nextGeneration.scenes, nextGeneration.sceneIds);
       clearSubmitProgress();
     } catch (nextError) {
       clearSubmitProgress();
@@ -1048,7 +1200,11 @@ function ResearchConnected() {
     if (audioStatus === "loading") return;
     const scene = ensureSelectedScene();
     if (scene.format === "jingle") {
-      void generateJingleMusicForScene(scene);
+      void generateJingleMusicForScene(scene, sceneIds[selectedSceneIndex]);
+      return;
+    }
+    if (scene.format === "brainrot") {
+      void generateBrainrotAudioForSceneSelected(scene, sceneIds[selectedSceneIndex]);
       return;
     }
     if (dialoguePanelOpen) {
@@ -1242,6 +1398,7 @@ function ResearchConnected() {
     setSelectedScene(restored.selectedScene);
     setSelectedSceneIndex(restored.selectedSceneIndex);
     setAdScenes(restored.scenes);
+    setSceneIds(restored.scenes.map(() => null));
     setAdStatus("ready");
     setAdStatusNote("Saved design loaded. Press spacebar to keep exploring ideas.");
     setAudioStatus(restored.selectedScene.audio.status === "generated" ? "ready" : "idle");
@@ -1250,6 +1407,7 @@ function ResearchConnected() {
     resetShareState();
     resetRenderState();
     resetSaveState();
+    resetBrickStoryboardState();
     canvasActions.interactionReset();
   };
 
@@ -1262,8 +1420,103 @@ function ResearchConnected() {
     resetDialogueState();
     resetShareState();
     resetRenderState();
+    resetBrickStoryboardState();
     if (scene.format === "jingle" && scene.audio.status !== "generated") {
-      void generateJingleMusicForScene(scene);
+      void generateJingleMusicForScene(scene, sceneIds[index]);
+    }
+    if (scene.format === "brainrot" && scene.audio.status !== "generated") {
+      void generateBrainrotAudioForSceneSelected(scene, sceneIds[index]);
+    }
+  };
+
+  const onGenerateBrickStoryboard = async () => {
+    const sceneId = sceneIds[selectedSceneIndex];
+    if (!selectedScene || selectedScene.format !== "jingle" || selectedScene.audio.status !== "generated" || !sceneId) return;
+    setBrickStoryboardStatus("loading");
+    setBrickStoryboardError("");
+
+    try {
+      const result = await generateBrickStoryboardForScene({
+        anonymousId: getCurrentAnonymousId(),
+        sceneId,
+        scene: selectedScene,
+      }) as { storyboardId: Id<"jingleStoryboards">; storyboard: unknown };
+      setBrickStoryboardId(result.storyboardId);
+      setBrickStoryboard(result.storyboard);
+      setBrickStoryboardStatus("ready");
+      setBrickStoryboardAnimationStatus("idle");
+    } catch (nextError) {
+      setBrickStoryboardStatus("error");
+      setBrickStoryboardError(getBrickStoryboardErrorMessage(nextError));
+    }
+  };
+
+  const onRegenerateBrickShot = async (shotIndex: number) => {
+    if (!brickStoryboardId || !brickStoryboard || brickStoryboardShotBusyIndex !== null) return;
+    setBrickStoryboardShotBusyIndex(shotIndex);
+    setBrickStoryboardError("");
+
+    try {
+      const result = await regenerateBrickShotForScene({
+        storyboardId: brickStoryboardId,
+        storyboard: brickStoryboard,
+        shotIndex,
+      }) as { storyboard: unknown };
+      setBrickStoryboard(result.storyboard);
+      setBrickStoryboardStatus("ready");
+    } catch (nextError) {
+      setBrickStoryboardError(getBrickStoryboardErrorMessage(nextError));
+    } finally {
+      setBrickStoryboardShotBusyIndex(null);
+    }
+  };
+
+  const onAnimateBrickStoryboard = async () => {
+    if (!brickStoryboardId || !brickStoryboard || brickStoryboardAnimationStatus === "loading") return;
+    setBrickStoryboardAnimationStatus("loading");
+    setBrickStoryboardError("");
+
+    try {
+      const result = await animateBrickStoryboardForScene({
+        storyboardId: brickStoryboardId,
+        storyboard: brickStoryboard,
+      }) as { storyboard: unknown };
+      setBrickStoryboard(result.storyboard);
+      setBrickStoryboardAnimationStatus("ready");
+    } catch (nextError) {
+      setBrickStoryboardAnimationStatus("error");
+      setBrickStoryboardError(getBrickStoryboardErrorMessage(nextError));
+    }
+  };
+
+  const onBuildBrickMusicVideo = async () => {
+    const sceneId = sceneIds[selectedSceneIndex];
+    if (!sceneId || !brickStoryboardId || !selectedScene || selectedScene.format !== "jingle" || brickStoryboardBuildStatus === "loading") return;
+    if (renderWorkerReadiness && !renderWorkerReadiness.workerHealthy) {
+      setBrickStoryboardBuildStatus("error");
+      setBrickStoryboardError("Render worker is offline. Start `npm run dev` from the repo root so the music video stitcher can run.");
+      return;
+    }
+    setBrickStoryboardBuildStatus("loading");
+    setBrickStoryboardError("");
+
+    try {
+      const result = await buildBrickMusicVideoForScene({
+        sceneId,
+        storyboardId: brickStoryboardId,
+      }) as { scene: AdScene; storyboard: unknown };
+      setSelectedScene(result.scene);
+      setAdScenes((scenes) => scenes.map((scene, index) => (
+        index === selectedSceneIndex ? result.scene : scene
+      )));
+      setBrickStoryboard(result.storyboard);
+      resetShareState();
+      resetRenderState();
+      resetSaveState();
+      setBrickStoryboardBuildStatus("loading");
+    } catch (nextError) {
+      setBrickStoryboardBuildStatus("error");
+      setBrickStoryboardError(getBrickStoryboardErrorMessage(nextError));
     }
   };
 
@@ -1343,9 +1596,10 @@ function ResearchConnected() {
         : currentRenderStatus === "rendering"
           ? `Rendering ${renderProgress}%`
           : "Download video";
-  const hasGeneratedAudio = selectedScene?.audio.status === "generated";
-  const playableAudioUrl = selectedScene?.audio.status === "generated" ? selectedScene.audio.url : "";
-  const generatedCaptions = selectedScene?.audio.status === "generated" ? selectedScene.audio.captions : [];
+  const selectedAudio = selectedScene?.audio.status === "generated" ? selectedScene.audio : null;
+  const hasGeneratedAudio = Boolean(selectedAudio);
+  const playableAudioUrl = selectedAudio?.url || "";
+  const generatedCaptions = selectedAudio?.captions || [];
   const hasEmptyEditedCaption = generatedCaptions.some((caption) => !caption.text.trim());
   const selectedDialogueScript = dialogueScripts[selectedDialogueIndex] || null;
   const dialogueCanGenerateAudio = Boolean(selectedScene && selectedDialogueScript && selectedDialogueScript.lines.some((line) => line.text.trim()));
@@ -1437,9 +1691,6 @@ function ResearchConnected() {
           adStatus={adStatus}
           error={error}
           format={selectedAdFormat}
-          freeRunsLabel={billingStatus && !billingStatus.paid && billingStatus.freeRemaining !== null
-            ? `${billingStatus.freeRemaining} of ${billingStatus.freeLimit} free runs left`
-            : ""}
           memeModel={selectedMemeModel}
           jingleStyleId={selectedJingleStyleId}
           videoMemeTemplateId={selectedVideoMemeTemplateId}
@@ -1480,13 +1731,18 @@ function ResearchConnected() {
                 currentRenderStatus={currentRenderStatus}
                 hasSelectedScene={Boolean(selectedScene)}
                 isAudioPlaying={isAudioPlaying}
+                onAnimateBrickStoryboard={() => void onAnimateBrickStoryboard()}
+                onBuildBrickMusicVideo={() => void onBuildBrickMusicVideo()}
                 onCreateRenderJob={() => void onCreateRenderJob()}
                 onCreateShareLink={() => void onCreateShareLink()}
                 onDownloadMemePng={() => void onDownloadMemePng()}
+                onGenerateBrickStoryboard={() => void onGenerateBrickStoryboard()}
+                onRegenerateBrickShot={(shotIndex) => void onRegenerateBrickShot(shotIndex)}
                 onLoadSavedDesign={onLoadSavedDesign}
                 onOpenAudioPanel={onOpenAudioPanel}
                 onSaveSelectedDesign={() => void onSaveSelectedDesign()}
                 onTogglePreviewPlayback={onTogglePreviewPlayback}
+                audioStatus={audioStatus}
                 playableAudioUrl={playableAudioUrl}
                 renderBusy={renderBusy}
                 renderDownloadUrl={renderDownloadUrl}
@@ -1494,6 +1750,17 @@ function ResearchConnected() {
                 renderStatusLabel={renderStatusLabel}
                 renderWorkerHealthy={renderWorkerHealthy}
                 audioError={audioError}
+                brickStoryboard={brickStoryboard}
+                brickStoryboardAnimationStatus={brickStoryboardAnimationStatus}
+                brickStoryboardBuildStatus={brickStoryboardBuildStatus}
+                brickStoryboardError={brickStoryboardError}
+                brickStoryboardShotBusyIndex={brickStoryboardShotBusyIndex}
+                brickStoryboardStatus={brickStoryboardStatus}
+                canGenerateBrickStoryboard={Boolean(
+                  selectedScene?.format === "jingle" &&
+                  selectedScene.audio.status === "generated" &&
+                  sceneIds[selectedSceneIndex],
+                )}
                 memeDownloadBusy={memeDownloadBusy}
                 saveCounterLabel={saveCounterLabel}
                 saveError={saveError}
@@ -1611,7 +1878,33 @@ function ResearchConnected() {
 }
 
 export function CreateResearchClient() {
+  const [clientReady, setClientReady] = useState(false);
   const convexConfigured = Boolean(getV3ConvexUrl());
+
+  useEffect(() => {
+    setClientReady(true);
+  }, []);
+
+  if (!clientReady) {
+    return (
+      <section className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-7xl items-center px-6">
+        <div>
+          <div className="flex items-center gap-3">
+            <WigglyMark size="sm" />
+            <div>
+              <p className="text-2xl font-black leading-none tracking-normal text-slate-950">Wiggly</p>
+              <p className="mt-1 text-xs font-black uppercase tracking-[0.28em] text-slate-400">
+                Audio that looks expensive
+              </p>
+            </div>
+          </div>
+          <p className="mt-10 text-5xl font-black leading-tight tracking-normal text-slate-950">
+            Make ads without learning editing.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   if (!convexConfigured) {
     return (

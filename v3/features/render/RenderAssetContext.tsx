@@ -14,8 +14,12 @@ export type RenderImageComponent = ComponentType<{
 }>;
 
 export type RenderVideoComponent = ComponentType<{
+  active?: boolean;
   autoPlay?: boolean;
   className?: string;
+  clipEndSeconds?: number;
+  clipStartSeconds?: number;
+  clipTimeSeconds?: number;
   loop?: boolean;
   muted?: boolean;
   onTimeUpdate?: (event: { currentTarget: { currentTime: number } }) => void;
@@ -26,9 +30,18 @@ export type RenderVideoComponent = ComponentType<{
 }>;
 
 const defaultImageComponent = "img" as unknown as RenderImageComponent;
-const defaultVideoComponent = "video" as unknown as RenderVideoComponent;
+const defaultVideoComponent: RenderVideoComponent = ({
+  active: _active,
+  clipEndSeconds: _clipEndSeconds,
+  clipStartSeconds: _clipStartSeconds,
+  clipTimeSeconds: _clipTimeSeconds,
+  ...props
+}) => <video {...props} />;
 
-const RenderAssetContext = createContext({
+const RenderAssetContext = createContext<{
+  Image: RenderImageComponent;
+  Video: RenderVideoComponent;
+}>({
   Image: defaultImageComponent,
   Video: defaultVideoComponent,
 });

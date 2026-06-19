@@ -2,7 +2,7 @@ import type { BrandAdAngle, BrandSnapshot, ResearchReceipts } from "../research/
 
 export const AD_SCENE_VERSION = 1 as const;
 
-export type AdFormatId = "visualizer" | "meme" | "were-sorry" | "video-meme" | "jingle";
+export type AdFormatId = "visualizer" | "meme" | "were-sorry" | "video-meme" | "jingle" | "text-message" | "brainrot";
 
 export type HeadlineType =
   | "painful_moment"
@@ -50,7 +50,7 @@ export type AdSceneAudio =
     transcript: string;
     captions: AdSceneCaption[];
     analysis?: AdSceneAudioAnalysis;
-    provider: "gemini" | "upload" | "elevenlabs";
+    provider: "gemini" | "upload" | "elevenlabs" | "fish-studio";
     model: string;
     generatedAt: number;
   };
@@ -170,6 +170,22 @@ export type JingleCompositionChunk = {
   context_adherence: "high";
 };
 
+export type JingleMusicVideoClip = {
+  shotIndex: number;
+  storageId: string;
+  url: string | null;
+  startMs: number;
+  endMs: number;
+};
+
+export type JingleMusicVideoStitchedVideo = {
+  storageId: string;
+  url: string | null;
+  mimeType: string;
+  durationMs: number;
+  builtAt: number;
+};
+
 export type JingleAdScene = AdSceneBase<
   "jingle",
   AdSceneStyleBase,
@@ -182,8 +198,60 @@ export type JingleAdScene = AdSceneBase<
     compositionPlan: {
       chunks: JingleCompositionChunk[];
     };
+    musicVideo?: {
+      sourceStoryboardId: string;
+      clips: JingleMusicVideoClip[];
+      stitchedVideo?: JingleMusicVideoStitchedVideo;
+      builtAt: number;
+    };
     selfCheckPassed: string;
   }
 >;
 
-export type AdScene = VisualizerAdScene | MemeAdScene | WereSorryAdScene | VideoMemeAdScene | JingleAdScene;
+export type TextMessageAdScene = AdSceneBase<
+  "text-message",
+  AdSceneStyleBase,
+  {
+    preset: "text-message-screenshot";
+    contactName: string;
+    timestampLabel: string;
+    messages: Array<{
+      side: "left" | "right";
+      text: string;
+    }>;
+  }
+>;
+
+export type BrainrotBeat = {
+  speaker: "left" | "right";
+  text: string;
+  startMs?: number;
+  durationMs?: number;
+};
+
+export type BrainrotAdScene = AdSceneBase<
+  "brainrot",
+  AdSceneStyleBase,
+  {
+    preset: "brainrot-dialogue";
+    backgroundVideoSrc: string;
+    characters: {
+      leftSpriteSrc: string;
+      rightSpriteSrc: string;
+    };
+    beats: BrainrotBeat[];
+    beatGapMs: number;
+    ctaText?: string;
+    angle: string;
+    selfCheckPassed: string;
+  }
+>;
+
+export type AdScene =
+  | VisualizerAdScene
+  | MemeAdScene
+  | WereSorryAdScene
+  | VideoMemeAdScene
+  | JingleAdScene
+  | TextMessageAdScene
+  | BrainrotAdScene;

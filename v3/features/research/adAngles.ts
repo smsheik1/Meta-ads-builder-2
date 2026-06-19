@@ -27,6 +27,7 @@ export type ResolveAdAnglesResult = {
 };
 
 export const DEFAULT_GEMINI_AD_ANGLES_MODEL = "gemini-3.1-flash-lite";
+export const MIN_AD_ANGLES = 3;
 const DEFAULT_TIMEOUT_MS = 20_000;
 
 const cleanText = (value: unknown, maxLength = 260) => String(value ?? "")
@@ -53,7 +54,7 @@ const parseJsonArray = (value: string, providerLabel = "AI provider") => {
 
 export const normalizeAdAnglesPayload = (payload: unknown): BrandAdAngle[] => {
   const seen = new Set<string>();
-  return (Array.isArray(payload) ? payload : [])
+  const angles = (Array.isArray(payload) ? payload : [])
     .map((item) => {
       const record = item && typeof item === "object" ? item as Record<string, unknown> : {};
       return {
@@ -72,6 +73,10 @@ export const normalizeAdAnglesPayload = (payload: unknown): BrandAdAngle[] => {
       return true;
     })
     .slice(0, 8);
+  if (angles.length < MIN_AD_ANGLES) {
+    throw new Error(`Ad angle extraction returned fewer than ${MIN_AD_ANGLES} usable angles.`);
+  }
+  return angles;
 };
 
 export const buildAdAnglesPrompt = (research: WebsiteResearchResult) => {
@@ -89,7 +94,7 @@ export const buildAdAnglesPrompt = (research: WebsiteResearchResult) => {
   return `You are extracting AD ANGLES for ${brandName} from website evidence.
 
 An ad angle is ONE complete, linked idea a buyer would instantly recognize.
-Your job is to find the 5-8 STRONGEST distinct angles in the evidence, not to invent them.
+Your job is to find the STRONGEST distinct angles in the evidence, not to invent them.
 
 INPUTS:
 - Brand: ${brandName} - ${brandTitle}
@@ -102,7 +107,7 @@ WHAT EACH ANGLE MUST CONTAIN:
   "buyer": "the specific person, not a category (e.g. 'solo dental practice owner', not 'dentists')",
   "moment": "a specific lived moment this buyer has actually experienced (e.g. 'phones flooding at Monday open')",
   "pain": "the stake - what it costs them, in plain words, NO invented numbers",
-  "proof": "the ONE concrete thing this brand does that resolves it - must trace to the evidence",
+  "proof": "the ONE concrete action or capability this brand does that resolves it - must trace to the evidence",
   "sitePhrase": "an exact phrase from the site that backs this, or null if none exists"
 }
 
@@ -110,16 +115,20 @@ HARD RULES:
 - Every angle MUST be traceable to the evidence. If you can't point to a phrase or fact, drop the angle.
 - NO invented numbers, stats, claims, or proof. If the site doesn't say it, it doesn't exist.
 - Each angle must be DISTINCT: a different buyer moment AND a different proof. No rewordings.
+- DIVERSITY: angles must cover DIFFERENT pains or benefits, not several flavors of the same one. If three angles all circle one pain, keep the strongest and cut the rest.
 - "moment" must be a specific scene, not a feeling. Bad: "wants reliability." Good: "the patient called, nobody picked up."
-- Prefer FEWER strong, concrete angles over padding to 8 with weak ones.
+- "proof" must be a specific action or capability, not a benefit-claim. Bad: "saves you time." Good: "answers missed calls after hours."
+- Return 3-8 angles. Prefer FEWER strong, concrete, distinct angles over padding. Returning 4 great angles beats 8 with filler.
 - If proof is thin across the whole site, return only the angles you can actually support and set "proof" honestly.
 
 SELF-CHECK before returning each angle:
 - Could this angle ONLY belong to this brand's buyer? If swapping in a competitor still works, the angle is too generic - cut it.
 - Is the moment something the buyer has physically lived through? If it's abstract, cut it.
+- Is the proof a specific action/capability, not a benefit-claim? If vague, sharpen it or cut it.
+- Across the full set: are these DIFFERENT pains, or the same one reworded? If same, cut duplicates.
 
 OUTPUT:
-Return ONLY a JSON array of 5-8 angle objects in the shape above. No commentary.`;
+Return ONLY a JSON array of 3-8 angle objects in the shape above. No commentary.`;
 };
 
 const callGeminiAngles = async ({
