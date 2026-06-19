@@ -67,6 +67,33 @@ const refreshSceneAudioUrl = async (
   };
 };
 
+const refreshJingleMusicVideoUrls = async (
+  ctx: MutationCtx,
+  scene: AdScene,
+) => {
+  if (scene.format !== "jingle" || !scene.layout.musicVideo) return scene;
+
+  return {
+    ...scene,
+    layout: {
+      ...scene.layout,
+      musicVideo: {
+        ...scene.layout.musicVideo,
+        clips: await Promise.all(scene.layout.musicVideo.clips.map(async (clip) => ({
+          ...clip,
+          url: await ctx.storage.getUrl(clip.storageId as Id<"_storage">),
+        }))),
+        stitchedVideo: scene.layout.musicVideo.stitchedVideo
+          ? {
+            ...scene.layout.musicVideo.stitchedVideo,
+            url: await ctx.storage.getUrl(scene.layout.musicVideo.stitchedVideo.storageId as Id<"_storage">),
+          }
+          : undefined,
+      },
+    },
+  };
+};
+
 export const createFromScene: ReturnType<typeof mutation> = mutation({
   args: {
     anonymousId: v.string(),
@@ -227,7 +254,7 @@ export const claimNext: ReturnType<typeof mutation> = mutation({
       updatedAt: now,
     });
 
-    const renderScene = await refreshSceneAudioUrl(ctx, scene.scene as AdScene);
+    const renderScene = await refreshJingleMusicVideoUrls(ctx, await refreshSceneAudioUrl(ctx, scene.scene as AdScene));
 
     return {
       renderJobId: job._id,

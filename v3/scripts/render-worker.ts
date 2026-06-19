@@ -1,3 +1,4 @@
+import { spawn } from "node:child_process";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { hostname } from "node:os";
 import path from "node:path";
@@ -8,7 +9,7 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
 import { getWorkerRendererVersion } from "../features/render/rendererVersion";
-import type { AdScene } from "../features/scene/types";
+import type { AdScene, JingleMusicVideoClip } from "../features/scene/types";
 import { adSceneCompositionId } from "../remotion-entry/Root";
 
 const filename = fileURLToPath(import.meta.url);
@@ -23,6 +24,12 @@ const heartbeatIntervalMs = 5000;
 type ClaimedRenderJob = {
   renderJobId: Id<"renderJobs">;
   scene: AdScene;
+};
+
+type ClaimedStitchJob = {
+  storyboardId: Id<"jingleStoryboards">;
+  clips: JingleMusicVideoClip[];
+  durationMs: number;
 };
 
 async function loadEnvFile(filePath: string, options: { override?: boolean } = {}) {
@@ -101,6 +108,106 @@ async function uploadMp4(client: ConvexHttpClient, filePath: string) {
   return payload.storageId;
 }
 
+async function runProcess(command: string, args: string[], label: string) {
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn(command, args, { stdio: ["ignore", "ignore", "pipe"] });
+    let stderr = "";
+    child.stderr.on("data", (chunk) => {
+      stderr += String(chunk);
+      if (stderr.length > 8000) stderr = stderr.slice(-8000);
+    });
+    child.on("error", (error) => {
+      reject(new Error(`${label} could not start: ${serializeError(error)}`));
+    });
+    child.on("close", (code) => {
+      if (code === 0) {
+        resolve();
+        return;
+      }
+      reject(new Error(`${label} failed with code ${code}: ${stderr.trim() || "no stderr"}`));
+    });
+  });
+}
+
+async function downloadFile(url: string, filePath: string) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Could not download stitch source ${response.status}.`);
+  await writeFile(filePath, new Uint8Array(await response.arrayBuffer()));
+}
+
+async function stitchVideoJob(client: ConvexHttpClient, job: ClaimedStitchJob) {
+  const stitchDir = path.join(outputDir, `stitch-${job.storyboardId}`);
+  const outputLocation = path.join(stitchDir, "stitched.mp4");
+  await mkdir(stitchDir, { recursive: true });
+  try {
+    await client.mutation(api.jingleStoryboards.markStitchRendering, {
+      storyboardId: job.storyboardId,
+      progress: 10,
+    });
+
+    const sortedClips = job.clips.slice().sort((a, b) => a.startMs - b.startMs);
+    if (!sortedClips.length) throw new Error("Music video stitch has no source clips.");
+    for (const clip of sortedClips) {
+      if (!clip.url) throw new Error(`Music video stitch source ${clip.shotIndex + 1} has no URL.`);
+    }
+
+    const inputArgs: string[] = [];
+    for (const [index, clip] of sortedClips.entries()) {
+      const inputPath = path.join(stitchDir, `clip-${index}.mp4`);
+      await downloadFile(clip.url!, inputPath);
+      inputArgs.push("-i", inputPath);
+    }
+
+    await client.mutation(api.jingleStoryboards.markStitchRendering, {
+      storyboardId: job.storyboardId,
+      progress: 35,
+    });
+
+    const filterParts = sortedClips.map((clip, index) => {
+      const durationSeconds = Math.max(0.1, (clip.endMs - clip.startMs) / 1000).toFixed(3);
+      return `[${index}:v]fps=30,scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1,tpad=stop_mode=clone:stop_duration=${durationSeconds},trim=duration=${durationSeconds},setpts=PTS-STARTPTS[v${index}]`;
+    });
+    const concatInputs = sortedClips.map((_, index) => `[v${index}]`).join("");
+    const filterComplex = `${filterParts.join(";")};${concatInputs}concat=n=${sortedClips.length}:v=1:a=0[outv]`;
+    await runProcess("ffmpeg", [
+      "-y",
+      ...inputArgs,
+      "-filter_complex",
+      filterComplex,
+      "-map",
+      "[outv]",
+      "-an",
+      "-r",
+      "30",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "veryfast",
+      "-crf",
+      "18",
+      "-pix_fmt",
+      "yuv420p",
+      "-movflags",
+      "+faststart",
+      outputLocation,
+    ], "ffmpeg music video stitch");
+
+    await client.mutation(api.jingleStoryboards.markStitchRendering, {
+      storyboardId: job.storyboardId,
+      progress: 85,
+    });
+    const storageId = await uploadMp4(client, outputLocation);
+    await client.mutation(api.jingleStoryboards.markStitchReady, {
+      storyboardId: job.storyboardId,
+      storageId,
+      durationMs: job.durationMs,
+      mimeType: "video/mp4",
+    });
+  } finally {
+    await rm(stitchDir, { recursive: true, force: true });
+  }
+}
+
 async function renderJob(client: ConvexHttpClient, serveUrl: string, job: ClaimedRenderJob) {
   const outputLocation = path.join(outputDir, `${job.renderJobId}.mp4`);
   await mkdir(outputDir, { recursive: true });
@@ -168,6 +275,31 @@ async function runOnce(client: ConvexHttpClient, serveUrl: string) {
   return true;
 }
 
+async function runStitchOnce(client: ConvexHttpClient) {
+  let job = null;
+  try {
+    job = await client.mutation(api.jingleStoryboards.claimNextStitch, {});
+  } catch (error) {
+    console.warn(`Render worker could not claim a stitch job: ${serializeError(error)}`);
+    return false;
+  }
+
+  if (!job) return false;
+
+  try {
+    await stitchVideoJob(client, job as ClaimedStitchJob);
+    console.log(`Stitched music video ${job.storyboardId}`);
+  } catch (error) {
+    await client.mutation(api.jingleStoryboards.markStitchFailed, {
+      storyboardId: (job as ClaimedStitchJob).storyboardId,
+      error: serializeError(error),
+    });
+    console.error(`Failed stitch ${(job as ClaimedStitchJob).storyboardId}: ${serializeError(error)}`);
+  }
+
+  return true;
+}
+
 async function main() {
   await loadLocalEnv();
   const watch = process.argv.includes("--watch");
@@ -190,7 +322,7 @@ async function main() {
 
   try {
     do {
-      const didWork = await runOnce(client, serveUrl);
+      const didWork = await runOnce(client, serveUrl) || await runStitchOnce(client);
       if (!watch) break;
       if (!didWork) await wait(3000);
     } while (watch);

@@ -123,6 +123,30 @@ export default defineSchema({
     .index("by_sessionId_and_updatedAt", ["sessionId", "updatedAt"])
     .index("by_storageId", ["storageId"]),
 
+  jingleStoryboards: defineTable({
+    sessionId: v.string(),
+    sceneId: v.id("adScenes"),
+    visualStyle: v.string(),
+    imageModel: v.string(),
+    shotCount: v.number(),
+    storyboard: v.any(),
+    stitchStatus: v.optional(v.union(
+      v.literal("queued"),
+      v.literal("claimed"),
+      v.literal("rendering"),
+      v.literal("ready"),
+      v.literal("failed"),
+    )),
+    stitchProgress: v.optional(v.number()),
+    stitchError: v.optional(v.string()),
+    stitchOutputStorageId: v.optional(v.id("_storage")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_sessionId_and_updatedAt", ["sessionId", "updatedAt"])
+    .index("by_sceneId_and_updatedAt", ["sceneId", "updatedAt"])
+    .index("by_stitchStatus_and_updatedAt", ["stitchStatus", "updatedAt"]),
+
   savedDesigns: defineTable({
     sessionId: v.string(),
     designId: v.string(),

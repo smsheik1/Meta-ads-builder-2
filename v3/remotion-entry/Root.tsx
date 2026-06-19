@@ -1,4 +1,5 @@
 import { Composition } from "remotion";
+import { brainrotCtaDurationMs } from "../features/formats/brainrot/render";
 import type { AdScene } from "../features/scene/types";
 import { defaultRenderScene } from "./fixture";
 import { RemotionAdScene } from "./RemotionAdScene";
@@ -17,7 +18,8 @@ export const getAdSceneDurationInFrames = (
   if (scene.format === "video-meme") {
     return Math.ceil(Math.max(1, scene.layout.durationSeconds, audioDurationSeconds + 0.35) * fps);
   }
-  const durationSeconds = Math.max(5, audioDurationSeconds + 0.35);
+  const extraSeconds = scene.format === "brainrot" ? brainrotCtaDurationMs / 1000 : 0.35;
+  const durationSeconds = Math.max(5, audioDurationSeconds + extraSeconds);
   return Math.ceil(durationSeconds * fps);
 };
 

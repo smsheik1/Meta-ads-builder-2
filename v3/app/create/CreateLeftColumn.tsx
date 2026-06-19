@@ -149,6 +149,7 @@ function ModelSelect({
     <label className="block">
       <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">{label}</span>
       <select
+        suppressHydrationWarning
         className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
         aria-label={ariaLabel}
         value={value}
@@ -170,7 +171,6 @@ export function CreateLeftColumn({
   adStatus,
   error,
   format,
-  freeRunsLabel,
   memeModel,
   jingleStyleId,
   videoMemeTemplateId,
@@ -192,7 +192,6 @@ export function CreateLeftColumn({
   adStatus: LoadStatus;
   error: string;
   format: AdFormatId;
-  freeRunsLabel?: string;
   memeModel: string;
   jingleStyleId: JingleStyleId;
   videoMemeTemplateId: VideoMemeTemplateId;
@@ -222,6 +221,10 @@ export function CreateLeftColumn({
             ? "Writing video memes"
             : format === "jingle"
               ? "Writing jingles"
+              : format === "text-message"
+                ? "Writing texts"
+                : format === "brainrot"
+                  ? "Writing brainrot"
             : "Writing ideas"
       : "Generate ads";
   const formatHelper = format === "meme"
@@ -232,6 +235,10 @@ export function CreateLeftColumn({
         ? "Eight reaction captions for the selected video meme."
         : format === "jingle"
           ? "One short hip hop brand jingle. No extra music generations."
+          : format === "text-message"
+            ? "Six iMessage-style screenshots that feel like a real customer text."
+            : format === "brainrot"
+              ? "Three two-character Minecraft Brainrot scripts with Fish voices."
         : "Audio visualizer ads with voice, captions, and MP4 export.";
 
   return (
@@ -255,6 +262,7 @@ export function CreateLeftColumn({
           <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Website</span>
           <input
             id="website-url"
+            suppressHydrationWarning
             value={url}
             onChange={(event) => onUrlChange(event.target.value)}
             className="h-13 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
@@ -265,6 +273,7 @@ export function CreateLeftColumn({
         <label className="block">
           <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Format</span>
           <select
+            suppressHydrationWarning
             className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
             aria-label="Ad format"
             value={format}
@@ -274,6 +283,8 @@ export function CreateLeftColumn({
             <option value="were-sorry">We're Sorry Ad</option>
             <option value="video-meme">Video Meme</option>
             <option value="jingle">Brand Jingle</option>
+            <option value="text-message">iMessage Ad</option>
+            <option value="brainrot">Minecraft Brainrot</option>
             <option value="visualizer">Visualizer Ad</option>
           </select>
           <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
@@ -307,6 +318,7 @@ export function CreateLeftColumn({
           <label className="block">
             <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Video meme</span>
             <select
+              suppressHydrationWarning
               className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
               aria-label="Video meme template"
               value={videoMemeTemplateId}
@@ -326,6 +338,7 @@ export function CreateLeftColumn({
           <label className="block">
             <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Song style</span>
             <select
+              suppressHydrationWarning
               className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
               aria-label="Jingle song style"
               value={jingleStyleId}
@@ -349,12 +362,6 @@ export function CreateLeftColumn({
           {submitIsBusy ? <Loader2 className="size-5 animate-spin" /> : <Wand2 className="size-5" />}
           {submitLabel}
         </button>
-
-        {freeRunsLabel ? (
-          <p className="text-center text-xs font-black uppercase tracking-wide text-slate-400">
-            {freeRunsLabel}
-          </p>
-        ) : null}
 
         <CreateResearchProgressCard
           facts={progressFacts}

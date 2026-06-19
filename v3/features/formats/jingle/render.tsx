@@ -24,10 +24,11 @@ const displayLyricForBrand = (lyric: string, brandName: string, brandPhonetic: s
 
 export function JingleFormatRenderer({
   scene,
+  motionMode = "auto",
   timeSeconds = 0,
   rerollFlash,
 }: FormatRenderProps<JingleAdScene>) {
-  const { Image } = useRenderAssetComponents();
+  const { Image, Video } = useRenderAssetComponents();
   const activeLyric = getVisibleCaptionText(scene.audio, timeSeconds)
     || scene.layout.lyrics[0]
     || scene.creative.headline;
@@ -42,12 +43,16 @@ export function JingleFormatRenderer({
   const flashHeadline = rerollFlash?.roles.includes("headline")
     ? "wiggly-reroll-shine wiggly-reroll-shine-headline"
     : "";
+  const stitchedMusicVideo = scene.layout.musicVideo?.stitchedVideo || null;
+  const hasMusicVideo = Boolean(stitchedMusicVideo?.url);
+  const shouldPlayMusicVideo = motionMode !== "idle";
 
   return (
     <div
       data-format="jingle"
       data-jingle-brand-phonetic={scene.layout.brandPhonetic}
       data-jingle-music-length-ms={scene.layout.musicLengthMs}
+      data-jingle-music-video={hasMusicVideo ? "true" : undefined}
       className="relative h-full w-full overflow-hidden"
       style={{
         position: "relative",
@@ -59,31 +64,55 @@ export function JingleFormatRenderer({
         containerType: "inline-size",
       }}
     >
-      <div
-        className="absolute inset-0 opacity-30"
-        style={{
-          ...fill,
-          opacity: 0.3,
-          backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
-          backgroundSize: "8cqw 100%",
-          transform: `translateX(${-(timeSeconds % 1) * 8}cqw)`,
-        }}
-      />
-      <div
-        className="absolute left-[10cqw] top-[12cqw] size-[46cqw] rounded-full blur-[8cqw]"
-        style={{
-          position: "absolute",
-          left: "10cqw",
-          top: "12cqw",
-          width: "46cqw",
-          height: "46cqw",
-          borderRadius: "9999px",
-          filter: "blur(8cqw)",
-          background: scene.style.accentColor,
-          opacity: 0.22,
-          transform: `scale(${pulse})`,
-        }}
-      />
+      {hasMusicVideo ? (
+        <div data-jingle-stitched-music-video="true" style={fill}>
+          <Video
+            src={stitchedMusicVideo!.url!}
+            active
+            autoPlay={shouldPlayMusicVideo}
+            clipEndSeconds={stitchedMusicVideo!.durationMs / 1000}
+            clipStartSeconds={0}
+            clipTimeSeconds={timeSeconds}
+            muted
+            playsInline
+            preload="auto"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        </div>
+      ) : null}
+      {!hasMusicVideo ? (
+        <div
+          className="absolute inset-0 opacity-30"
+          style={{
+            ...fill,
+            opacity: 0.3,
+            backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
+            backgroundSize: "8cqw 100%",
+            transform: `translateX(${-(timeSeconds % 1) * 8}cqw)`,
+          }}
+        />
+      ) : null}
+      {!hasMusicVideo ? (
+        <div
+          className="absolute left-[10cqw] top-[12cqw] size-[46cqw] rounded-full blur-[8cqw]"
+          style={{
+            position: "absolute",
+            left: "10cqw",
+            top: "12cqw",
+            width: "46cqw",
+            height: "46cqw",
+            borderRadius: "9999px",
+            filter: "blur(8cqw)",
+            background: scene.style.accentColor,
+            opacity: 0.22,
+            transform: `scale(${pulse})`,
+          }}
+        />
+      ) : null}
       <div
         className="absolute inset-x-[6cqw] top-[6cqw] flex items-center gap-[2.6cqw]"
         style={{
@@ -190,37 +219,39 @@ export function JingleFormatRenderer({
         </p>
       </div>
 
-      <div
-        data-jingle-waveform="true"
-        className="absolute inset-x-[9cqw] bottom-[10cqw] flex h-[14cqw] items-end justify-center gap-[1.2cqw]"
-        style={{
-          position: "absolute",
-          left: "9cqw",
-          right: "9cqw",
-          bottom: "10cqw",
-          display: "flex",
-          height: "14cqw",
-          alignItems: "flex-end",
-          justifyContent: "center",
-          gap: "1.2cqw",
-        }}
-      >
-        {Array.from({ length: 18 }, (_, index) => {
-          const height = 22 + (((index * 17) % 41) * pulse);
-          return (
-            <span
-              key={index}
-              className="w-[1.8cqw] rounded-full bg-white/80"
-              style={{
-                width: "1.8cqw",
-                height: `${Math.min(92, height)}%`,
-                borderRadius: "9999px",
-                background: "rgba(255,255,255,0.8)",
-              }}
-            />
-          );
-        })}
-      </div>
+      {!hasMusicVideo ? (
+        <div
+          data-jingle-waveform="true"
+          className="absolute inset-x-[9cqw] bottom-[10cqw] flex h-[14cqw] items-end justify-center gap-[1.2cqw]"
+          style={{
+            position: "absolute",
+            left: "9cqw",
+            right: "9cqw",
+            bottom: "10cqw",
+            display: "flex",
+            height: "14cqw",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            gap: "1.2cqw",
+          }}
+        >
+          {Array.from({ length: 18 }, (_, index) => {
+            const height = 22 + (((index * 17) % 41) * pulse);
+            return (
+              <span
+                key={index}
+                className="w-[1.8cqw] rounded-full bg-white/80"
+                style={{
+                  width: "1.8cqw",
+                  height: `${Math.min(92, height)}%`,
+                  borderRadius: "9999px",
+                  background: "rgba(255,255,255,0.8)",
+                }}
+              />
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 }

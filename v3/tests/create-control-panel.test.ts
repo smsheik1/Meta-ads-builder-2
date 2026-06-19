@@ -2,9 +2,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const createClientSource = readFileSync("app/create/CreateResearchClient.tsx", "utf8");
+const createCaptionModalSource = readFileSync("app/create/CreateCaptionModal.tsx", "utf8");
 const controlPanelSource = readFileSync("app/create/CreateControlPanel.tsx", "utf8");
+const createDialogueModalSource = readFileSync("app/create/CreateDialogueModal.tsx", "utf8");
+const createLeftColumnSource = readFileSync("app/create/CreateLeftColumn.tsx", "utf8");
+const rootLayoutSource = readFileSync("app/layout.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
+const brickStoryboardSheetSource = readFileSync("app/create/CreateBrickStoryboardSheet.tsx", "utf8");
 const visualizerSchemaSource = readFileSync("features/formats/visualizer/schema.ts", "utf8");
 const visualizerModuleSource = readFileSync("features/formats/visualizer/index.ts", "utf8");
 
@@ -16,6 +21,33 @@ assert.ok(
   createClientSource.includes("<CreateQuickActions") && createClientSource.includes("<CreateControlPanel"),
   "/create must use compact quick actions plus the panel control surface.",
 );
+assert.ok(
+  createClientSource.includes("const [clientReady, setClientReady] = useState(false)") &&
+    createClientSource.includes("if (!clientReady)") &&
+    createClientSource.indexOf("if (!clientReady)") < createClientSource.indexOf("return <ResearchConnected />"),
+  "/create must not SSR interactive controls that browser extensions can mutate before hydration.",
+);
+assert.ok(
+  createClientSource.includes('if (format === "text-message") return 6') &&
+    createLeftColumnSource.includes('<option value="text-message">iMessage Ad</option>'),
+  "/create must expose iMessage Ad and generate six static text-message variants.",
+);
+
+const nativeControlPattern = /<(?:input|select|textarea)\b/g;
+const countMatches = (source: string, pattern: RegExp) => source.match(pattern)?.length || 0;
+const assertHydrationGuards = (source: string, expectedControls: number, name: string) => {
+  assert.equal(countMatches(source, nativeControlPattern), expectedControls, `${name} native form control count changed; update hydration guard coverage.`);
+  assert.equal(countMatches(source, /suppressHydrationWarning/g), expectedControls, `${name} native form controls must suppress extension-injected hydration attrs.`);
+};
+
+assert.ok(
+  rootLayoutSource.includes("<body suppressHydrationWarning>"),
+  "Root body must suppress extension-injected hydration attrs before React boots.",
+);
+assertHydrationGuards(createLeftColumnSource, 5, "CreateLeftColumn");
+assertHydrationGuards(controlPanelSource, 4, "CreateControlPanel");
+assertHydrationGuards(createDialogueModalSource, 2, "CreateDialogueModal");
+assertHydrationGuards(createCaptionModalSource, 1, "CreateCaptionModal");
 
 for (const railLabel of ["Text", "Style", "Format"]) {
   assert.ok(controlPanelSource.includes(`label: "${railLabel}"`), `Create rail must expose ${railLabel}.`);
@@ -64,6 +96,38 @@ assert.ok(
   "Saved designs must open from normal app UI, not canvas hover UI.",
 );
 assert.ok(
+  quickActionsSource.includes('const showBrickStoryboard = selectedFormat === "jingle" && hasPlayableAudio') &&
+    brickStoryboardSheetSource.includes("data-brick-storyboard-trigger") &&
+    brickStoryboardSheetSource.includes("data-brick-storyboard-animate") &&
+    brickStoryboardSheetSource.includes("data-brick-storyboard-build") &&
+    brickStoryboardSheetSource.includes("Animate board") &&
+    brickStoryboardSheetSource.includes("Build music video") &&
+    brickStoryboardSheetSource.includes("Brick music video") &&
+    brickStoryboardSheetSource.includes("Generate storyboard") &&
+    !quickActionsSource.includes("if (!brickStoryboard && canGenerateBrickStoryboard"),
+  "Brick storyboard review must open for free; only the explicit Generate board button may spend image calls.",
+);
+assert.ok(
+  createClientSource.includes("sceneIds: nextGeneration.sceneIds") &&
+    createClientSource.includes("api.jingleStoryboards.generateBrickForScene") &&
+    createClientSource.includes("sceneIds[selectedSceneIndex]") &&
+    createClientSource.includes("api.jingleStoryboards.regenerateBrickShot") &&
+    createClientSource.includes("api.jingleStoryboards.animateBrickBoard") &&
+    createClientSource.includes("api.jingleStoryboards.buildMusicVideoForScene") &&
+    createClientSource.includes("api.jingleStoryboards.latestForScene") &&
+    createClientSource.includes("brickStoryboardId") &&
+    createClientSource.includes("setBrickStoryboardShotBusyIndex") &&
+    createClientSource.includes("getBrickStoryboardErrorMessage") &&
+    createClientSource.includes("Brick storyboard images hit the Replicate quota"),
+  "Brick storyboard generation must use stored Convex scene IDs without mutating the AdScene render contract.",
+);
+assert.ok(
+  brickStoryboardSheetSource.includes("data-brick-shot-regenerate") &&
+    brickStoryboardSheetSource.includes("data-brick-shot-prompt") &&
+    brickStoryboardSheetSource.includes("No prompt stored for this shot."),
+  "Brick storyboard shot cards must expose visible per-shot regenerate and prompt debug controls.",
+);
+assert.ok(
   createClientSource.includes("restoreSavedDesignSelection") &&
     createClientSource.includes("onLoadSavedDesign={onLoadSavedDesign}"),
   "Saved designs must load back onto /create as complete AdScene payloads.",
@@ -77,10 +141,21 @@ assert.ok(
   "Restored scenes must restore URL, format, and video meme template state so same-brand format switches do not reread the wrong site.",
 );
 assert.ok(
-  quickActionsSource.includes("onClick={hasAudio ? onTogglePreviewPlayback : onOpenAudioPanel}") &&
-    quickActionsSource.includes("disabled={hasAudio && !hasSelectedScene}") &&
-    quickActionsSource.includes('aria-label={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio for this ad"}'),
-  "The primary audio quick action must open the audio modal before a website exists and switch to playback after audio exists.",
+  createClientSource.includes("const selectedAudio = selectedScene?.audio.status === \"generated\" ? selectedScene.audio : null") &&
+    createClientSource.includes("const playableAudioUrl = selectedAudio?.url || \"\"") &&
+    createClientSource.includes("...(sceneId ? { sceneId } : {})") &&
+    quickActionsSource.includes("const hasPlayableAudio = Boolean(playableAudioUrl)") &&
+    quickActionsSource.includes('selectedFormat === "jingle" || selectedFormat === "brainrot"') &&
+    quickActionsSource.includes('((selectedFormat === "jingle" || selectedFormat === "brainrot") && hasPlayableAudio)') &&
+    quickActionsSource.includes('audioStatus === "loading"') &&
+    quickActionsSource.includes("onClick={hasPlayableAudio ? onTogglePreviewPlayback : onOpenAudioPanel}") &&
+    quickActionsSource.includes('"Audio pending"'),
+  "The primary audio quick action must derive from selected scene audio and never show Add Audio for pending generated-audio formats.",
+);
+assert.ok(
+  previewChromeSource.includes("data-video-preview-play-button") &&
+    previewChromeSource.includes("video.play().catch"),
+  "Unmuted video meme previews must show a visible play button when browser autoplay is blocked.",
 );
 assert.ok(
   createClientSource.includes("import { toPng } from \"html-to-image\"") &&
@@ -136,9 +211,11 @@ assert.ok(
 );
 assert.ok(
   previewChromeSource.includes("useMemo<RenderVideoComponent>") &&
+    previewChromeSource.includes('const syncVideoTimeToPreview = renderScene.audio.status !== "generated"') &&
+    previewChromeSource.includes("if (syncVideoTimeToPreview)") &&
     previewChromeSource.includes("onPreviewTimeChange?.(event.currentTarget.currentTime)") &&
     previewChromeSource.includes("<RenderAssetProvider Image={PreviewImage} Video={PreviewVideo}>"),
-  "Preview video assets must keep a stable component identity so timed video meme captions do not restart the clip on every time update.",
+  "Preview video assets may drive timing only when generated audio is not already the master clock.",
 );
 
 console.log("create-control-panel tests passed");

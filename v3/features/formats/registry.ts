@@ -3,6 +3,8 @@ import type { AdFormatModule } from "./types";
 import { memeFormatModule } from "./meme";
 import { jingleFormatModule } from "./jingle";
 import { videoMemeFormatModule } from "./video-meme";
+import { textMessageFormatModule } from "./text-message";
+import { brainrotFormatModule } from "./brainrot";
 import { visualizerFormatModule } from "./visualizer";
 import { wereSorryFormatModule } from "./were-sorry";
 
@@ -16,6 +18,8 @@ export const formatRegistry = createFormatRegistry({
   "were-sorry": wereSorryFormatModule,
   "video-meme": videoMemeFormatModule,
   jingle: jingleFormatModule,
+  "text-message": textMessageFormatModule,
+  brainrot: brainrotFormatModule,
 } satisfies Record<AdFormatId, AnyAdFormatModule>);
 
 export const getFormatModuleFromRegistry = <

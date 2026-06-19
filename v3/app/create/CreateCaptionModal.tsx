@@ -57,6 +57,7 @@ export function CreateCaptionModal({
                     <span>{Math.round(caption.startMs / 100) / 10}s - {Math.round(caption.endMs / 100) / 10}s</span>
                   </span>
                   <textarea
+                    suppressHydrationWarning
                     value={caption.text}
                     onChange={(event) => onUpdateCaptionText(index, event.target.value)}
                     rows={3}

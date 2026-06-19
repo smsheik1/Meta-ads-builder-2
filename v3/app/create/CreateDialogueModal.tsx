@@ -65,6 +65,7 @@ export function CreateDialogueModal({
               {audioIsLoading ? <Loader2 className="size-5 animate-spin" /> : <Upload className="size-5" />}
               Upload your audio
               <input
+                suppressHydrationWarning
                 type="file"
                 accept="audio/*"
                 className="sr-only"
@@ -157,6 +158,7 @@ export function CreateDialogueModal({
                           </span>
                         </span>
                         <textarea
+                          suppressHydrationWarning
                           value={line.text}
                           onChange={(event) => onUpdateDialogueLineText(index, event.target.value)}
                           rows={3}

@@ -241,6 +241,7 @@ Rules:
 - If a list field has no real evidence, return [] for that field. Never pad with weak filler.
 - Do not include cart, login, checkout, loading, navigation, or standalone price text in buyerMoments, proof, or siteLanguage.
 - Site language must be copied from the website evidence.
+- If the same phrase is both navigation and brand substance, keep it in siteLanguage only if it sells the offer, not if it is just a menu label.
 - Do not use a page title, SEO title, or brand name alone as the offer.
 
 Study these examples for shape only:

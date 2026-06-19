@@ -2,8 +2,10 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { action, internalMutation, mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
+import type { ActionCtx } from "./_generated/server";
 import { generateGeminiDialogueVoiceover, generateGeminiVoiceover } from "../features/audio/geminiTts";
 import { generateElevenLabsJingleMusic } from "../features/audio/elevenlabsMusic";
+import { generateFishBrainrotDialogue } from "../features/audio/fishStudio";
 import {
   DEEPGRAM_TRANSCRIPTION_MODEL,
   transcribeAudioWithDeepgram,
@@ -21,7 +23,7 @@ import {
 import { cleanDialogueScriptForVoiceover } from "../features/dialogue/dialogueScripts";
 import { assertShareableAdScene } from "../features/share/shareScene";
 import { legacyCreateVisualizerStyle } from "../features/scene/visualizerStyle";
-import type { AdScene, AdSceneAudio, AdSceneCaption } from "../features/scene/types";
+import type { AdScene, AdSceneAudio, AdSceneAudioAnalysis, AdSceneCaption } from "../features/scene/types";
 
 const storageIdFromString = (storageId: string) => storageId as Id<"_storage">;
 const maxUploadedAudioDurationMs = 60_000;
@@ -33,6 +35,12 @@ const isWavMimeType = (mimeType: string) => (
 const assertJingleScene = (scene: AdScene) => {
   if (scene.format !== "jingle") throw new Error("Music generation is only available for jingle scenes.");
   if (scene.audio.status === "generated") throw new Error("This jingle already has generated music.");
+  return scene;
+};
+
+const assertBrainrotScene = (scene: AdScene) => {
+  if (scene.format !== "brainrot") throw new Error("Brainrot audio generation is only available for brainrot scenes.");
+  if (scene.audio.status === "generated") throw new Error("This brainrot scene already has generated audio.");
   return scene;
 };
 
@@ -73,6 +81,80 @@ const attachAudioWithVoiceVisualizerPreset = (
       visualizer,
     },
     audio,
+  };
+};
+
+type GeneratedAudioResult = {
+  bytes: Uint8Array;
+  mimeType: string;
+  durationMs: number;
+  transcript: string;
+  captions: AdSceneCaption[];
+  analysis?: AdSceneAudioAnalysis;
+  provider: "elevenlabs" | "fish-studio";
+  model: string;
+  scene?: AdScene;
+};
+
+const storeGeneratedAudioAndPatchScene = async ({
+  ctx,
+  sessionId,
+  scene,
+  sceneId,
+  result,
+  missingUrlMessage,
+}: {
+  ctx: ActionCtx;
+  sessionId: string;
+  scene: AdScene;
+  sceneId?: Id<"adScenes">;
+  result: GeneratedAudioResult;
+  missingUrlMessage: string;
+}) => {
+  const storageId = await ctx.storage.store(new Blob([result.bytes], {
+    type: result.mimeType,
+  }));
+  const sceneKey = getSceneAudioKey(scene);
+  const saved = await ctx.runMutation(internal.audioAssets.saveGenerated, {
+    sessionId,
+    sceneKey,
+    storageId,
+    mimeType: result.mimeType,
+    durationMs: result.durationMs,
+    transcript: result.transcript,
+    provider: result.provider,
+    model: result.model,
+  });
+  const url = saved.url || await ctx.storage.getUrl(storageId);
+
+  if (!url) throw new Error(missingUrlMessage);
+
+  const audio = createGeneratedSceneAudio({
+    storageId,
+    url,
+    mimeType: result.mimeType,
+    durationMs: result.durationMs,
+    transcript: result.transcript,
+    captions: result.captions,
+    analysis: result.analysis,
+    model: result.model,
+    provider: result.provider,
+  });
+
+  const nextScene = {
+    ...(result.scene || scene),
+    audio,
+  };
+  if (sceneId) {
+    await ctx.runMutation(internal.adSceneStorage.patchScene, {
+      sceneId,
+      scene: nextScene,
+    });
+  }
+
+  return {
+    audio,
+    scene: nextScene,
   };
 };
 
@@ -232,50 +314,46 @@ export const generateDialogueForScene: ReturnType<typeof action> = action({
 export const generateJingleForScene: ReturnType<typeof action> = action({
   args: {
     anonymousId: v.string(),
+    sceneId: v.optional(v.id("adScenes")),
     scene: v.any(),
   },
-  handler: async (ctx, { anonymousId, scene }) => {
+  handler: async (ctx, { anonymousId, sceneId, scene }) => {
     const jingleScene = assertJingleScene(scene as AdScene);
     const sessionId = await ctx.runMutation(internal.sessions.ensureAnonymousSession, {
       anonymousId,
     });
     const result = await generateElevenLabsJingleMusic({ scene: jingleScene });
-    const storageId = await ctx.storage.store(new Blob([result.bytes], {
-      type: result.mimeType,
-    }));
-    const sceneKey = getSceneAudioKey(jingleScene);
-    const saved = await ctx.runMutation(internal.audioAssets.saveGenerated, {
+    return storeGeneratedAudioAndPatchScene({
+      ctx,
       sessionId,
-      sceneKey,
-      storageId,
-      mimeType: result.mimeType,
-      durationMs: result.durationMs,
-      transcript: result.transcript,
-      provider: result.provider,
-      model: result.model,
+      scene: jingleScene,
+      sceneId,
+      result,
+      missingUrlMessage: "Generated jingle music was stored, but no playable URL was returned.",
     });
-    const url = saved.url || await ctx.storage.getUrl(storageId);
+  },
+});
 
-    if (!url) throw new Error("Generated jingle music was stored, but no playable URL was returned.");
-
-    const audio = createGeneratedSceneAudio({
-      storageId,
-      url,
-      mimeType: result.mimeType,
-      durationMs: result.durationMs,
-      transcript: result.transcript,
-      captions: result.captions,
-      model: result.model,
-      provider: result.provider,
+export const generateBrainrotForScene: ReturnType<typeof action> = action({
+  args: {
+    anonymousId: v.string(),
+    sceneId: v.optional(v.id("adScenes")),
+    scene: v.any(),
+  },
+  handler: async (ctx, { anonymousId, sceneId, scene }) => {
+    const brainrotScene = assertBrainrotScene(scene as AdScene);
+    const sessionId = await ctx.runMutation(internal.sessions.ensureAnonymousSession, {
+      anonymousId,
     });
-
-    return {
-      audio,
-      scene: {
-        ...jingleScene,
-        audio,
-      },
-    };
+    const result = await generateFishBrainrotDialogue({ scene: brainrotScene });
+    return storeGeneratedAudioAndPatchScene({
+      ctx,
+      sessionId,
+      scene: brainrotScene,
+      sceneId,
+      result,
+      missingUrlMessage: "Generated brainrot audio was stored, but no playable URL was returned.",
+    });
   },
 });
 

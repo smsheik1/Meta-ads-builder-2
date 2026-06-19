@@ -21,9 +21,12 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import type { SavedAdSceneDesign } from "@/features/create/savedDesigns";
+import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
 import type { AdFormatId } from "@/features/scene/types";
+import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
 
 type SaveStatus = "idle" | "loading" | "ready" | "error";
+type BrickStoryboardStatus = "idle" | "loading" | "ready" | "error";
 
 const statusBannerBaseClass = "rounded-2xl border px-4 py-3 text-xs font-black leading-5";
 
@@ -38,11 +41,16 @@ export function CreateQuickActions({
   isAudioPlaying,
   onCreateRenderJob,
   onCreateShareLink,
+  onAnimateBrickStoryboard,
+  onBuildBrickMusicVideo,
   onDownloadMemePng,
+  onGenerateBrickStoryboard,
+  onRegenerateBrickShot,
   onLoadSavedDesign,
   onOpenAudioPanel,
   onSaveSelectedDesign,
   onTogglePreviewPlayback,
+  audioStatus,
   playableAudioUrl,
   renderBusy,
   renderDownloadUrl,
@@ -50,6 +58,13 @@ export function CreateQuickActions({
   renderStatusLabel,
   renderWorkerHealthy,
   audioError,
+  brickStoryboard,
+  brickStoryboardAnimationStatus,
+  brickStoryboardBuildStatus,
+  brickStoryboardError,
+  brickStoryboardShotBusyIndex,
+  brickStoryboardStatus,
+  canGenerateBrickStoryboard,
   memeDownloadBusy,
   saveCounterLabel,
   saveError,
@@ -67,11 +82,16 @@ export function CreateQuickActions({
   isAudioPlaying: boolean;
   onCreateRenderJob: () => void;
   onCreateShareLink: () => void;
+  onAnimateBrickStoryboard: () => void;
+  onBuildBrickMusicVideo: () => void;
   onDownloadMemePng: () => void;
+  onGenerateBrickStoryboard: () => void;
+  onRegenerateBrickShot: (shotIndex: number) => void;
   onLoadSavedDesign: (design: SavedAdSceneDesign) => void;
   onOpenAudioPanel: () => void;
   onSaveSelectedDesign: () => void;
   onTogglePreviewPlayback: () => void;
+  audioStatus: "idle" | "loading" | "ready" | "error";
   playableAudioUrl: string;
   renderBusy: boolean;
   renderDownloadUrl: string;
@@ -79,6 +99,13 @@ export function CreateQuickActions({
   renderStatusLabel: string;
   renderWorkerHealthy: boolean | null;
   audioError: string;
+  brickStoryboard: BrickStoryboard | null;
+  brickStoryboardAnimationStatus: BrickStoryboardStatus;
+  brickStoryboardBuildStatus: BrickStoryboardStatus;
+  brickStoryboardError: string;
+  brickStoryboardShotBusyIndex: number | null;
+  brickStoryboardStatus: BrickStoryboardStatus;
+  canGenerateBrickStoryboard: boolean;
   memeDownloadBusy: boolean;
   saveCounterLabel: string;
   saveError: string;
@@ -92,8 +119,10 @@ export function CreateQuickActions({
   shareUrl: string;
 }) {
   const memeSceneSelected = selectedFormat === "meme";
-  const hasAudio = Boolean(playableAudioUrl);
-  const shareSupported = selectedFormat === "visualizer" || (selectedFormat === "jingle" && hasAudio);
+  const hasPlayableAudio = Boolean(playableAudioUrl);
+  const generatedAudioPending = (selectedFormat === "jingle" || selectedFormat === "brainrot") && !hasPlayableAudio && audioStatus === "loading";
+  const shareSupported = selectedFormat === "visualizer" || selectedFormat === "text-message" || ((selectedFormat === "jingle" || selectedFormat === "brainrot") && hasPlayableAudio);
+  const showBrickStoryboard = selectedFormat === "jingle" && hasPlayableAudio;
   const renderWorkerOffline = !memeSceneSelected && renderWorkerHealthy === false;
   const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline;
   const downloadLabel = memeSceneSelected ? "PNG" : "MP4";
@@ -118,14 +147,14 @@ export function CreateQuickActions({
       <div className="grid grid-cols-4 gap-2 rounded-[1.35rem] border border-slate-200 bg-white p-2 shadow-xl shadow-slate-950/8">
         <button
           type="button"
-          onClick={hasAudio ? onTogglePreviewPlayback : onOpenAudioPanel}
-          disabled={hasAudio && !hasSelectedScene}
+          onClick={hasPlayableAudio ? onTogglePreviewPlayback : onOpenAudioPanel}
+          disabled={(hasPlayableAudio && !hasSelectedScene) || generatedAudioPending}
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-black uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35"
-          aria-label={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio for this ad"}
-          title={hasAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : "Add audio for this ad"}
+          aria-label={hasPlayableAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : generatedAudioPending ? "Audio pending" : "Add audio for this ad"}
+          title={hasPlayableAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : generatedAudioPending ? "Generated audio is still being created." : "Add audio for this ad"}
         >
-          {hasAudio ? <Play className="size-4" /> : <AudioLines className="size-4" />}
-          {hasAudio ? (isAudioPlaying ? "Stop" : "Play") : "Add audio"}
+          {hasPlayableAudio ? <Play className="size-4" /> : <AudioLines className="size-4" />}
+          {hasPlayableAudio ? (isAudioPlaying ? "Stop" : "Play") : generatedAudioPending ? "Audio pending" : "Add audio"}
         </button>
 
         <button
@@ -213,6 +242,22 @@ export function CreateQuickActions({
           {banner.message}
         </p>
       ))}
+
+      {showBrickStoryboard ? (
+        <CreateBrickStoryboardSheet
+          brickStoryboard={brickStoryboard}
+          brickStoryboardAnimationStatus={brickStoryboardAnimationStatus}
+          brickStoryboardBuildStatus={brickStoryboardBuildStatus}
+          brickStoryboardError={brickStoryboardError}
+          brickStoryboardShotBusyIndex={brickStoryboardShotBusyIndex}
+          brickStoryboardStatus={brickStoryboardStatus}
+          canGenerateBrickStoryboard={canGenerateBrickStoryboard}
+          onAnimateBrickStoryboard={onAnimateBrickStoryboard}
+          onBuildBrickMusicVideo={onBuildBrickMusicVideo}
+          onGenerateBrickStoryboard={onGenerateBrickStoryboard}
+          onRegenerateBrickShot={onRegenerateBrickShot}
+        />
+      ) : null}
 
       <Sheet>
         <SheetTrigger asChild>

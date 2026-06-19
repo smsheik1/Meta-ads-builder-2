@@ -88,3 +88,16 @@ export const saveGeneratedScenes: ReturnType<typeof internalMutation> = internal
     return { sceneIds };
   },
 });
+
+export const patchScene: ReturnType<typeof internalMutation> = internalMutation({
+  args: {
+    sceneId: v.id("adScenes"),
+    scene: v.any(),
+  },
+  handler: async (ctx, { sceneId, scene }) => {
+    await ctx.db.patch(sceneId, {
+      scene,
+      updatedAt: Date.now(),
+    });
+  },
+});
