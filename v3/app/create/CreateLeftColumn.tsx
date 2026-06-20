@@ -33,17 +33,15 @@ const getProgressRows = (format: AdFormatId, videoMemeTemplateId: VideoMemeTempl
   { id: "selling-angle", label: "Finding selling angle" },
   {
     id: "writing-ads",
-    label: format === "meme"
-      ? "Writing 12 memes"
-      : format === "were-sorry"
-        ? "Writing 8 apologies"
-        : format === "video-meme"
-          ? `Writing ${getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8} video memes`
-          : format === "jingle"
-            ? "Writing 1 jingle"
-            : format === "reviews"
-              ? "Writing 4 proof ads"
-              : "Writing 50 ads",
+    label: format === "meme" ? "Writing 12 memes" : format === "were-sorry"
+      ? "Writing 8 apologies"
+      : format === "video-meme"
+        ? `Writing ${getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8} video memes`
+        : format === "jingle"
+          ? "Writing 1 jingle"
+          : format === "reviews"
+            ? "Writing 4 proof ads"
+            : "Writing 50 ads",
   },
   { id: "preparing-canvas", label: "Preparing canvas" },
 ] as const;
@@ -61,13 +59,7 @@ function getProgressState(
   return "pending";
 }
 
-function CreateResearchProgressCard({
-  facts,
-  format,
-  showSlowResearchMessage,
-  stage,
-  videoMemeTemplateId,
-}: {
+function CreateResearchProgressCard({ facts, format, showSlowResearchMessage, stage, videoMemeTemplateId }: {
   facts: WebsiteSubmitProgressFacts | null;
   format: AdFormatId;
   showSlowResearchMessage: boolean;
@@ -77,15 +69,7 @@ function CreateResearchProgressCard({
   if (!stage) return null;
   const progressRows = getProgressRows(format, videoMemeTemplateId);
 
-  const factRows = facts
-    ? [
-        facts.brandName ? `Found ${facts.brandName}` : "",
-        facts.hasLogo ? "Found logo" : "",
-        facts.colorCount ? `Found ${facts.colorCount} brand colors` : "",
-        facts.proofCount ? `Found ${facts.proofCount} proof points` : "",
-        facts.buyerMomentCount ? `Found ${facts.buyerMomentCount} buyer moments` : "",
-      ].filter(Boolean)
-    : [];
+  const factRows = facts ? [facts.brandName ? `Found ${facts.brandName}` : "", facts.hasLogo ? "Found logo" : "", facts.colorCount ? `Found ${facts.colorCount} brand colors` : "", facts.proofCount ? `Found ${facts.proofCount} proof points` : "", facts.buyerMomentCount ? `Found ${facts.buyerMomentCount} buyer moments` : ""].filter(Boolean) : [];
 
   return (
     <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-3">
@@ -293,14 +277,16 @@ export function CreateLeftColumn({
             value={format}
             onChange={(event) => onFormatChange(event.target.value as AdFormatId)}
           >
-            <option value="meme">Meme Ad</option>
-            <option value="were-sorry">We're Sorry Ad</option>
-            <option value="video-meme">Video Meme</option>
-            <option value="jingle">Brand Jingle</option>
-            <option value="text-message">iMessage Ad</option>
-            <option value="brainrot">Minecraft Brainrot</option>
-            <option value="reviews">Reviews Proof Ad</option>
-            <option value="visualizer">Visualizer Ad</option>
+            {[
+              ["meme", "Meme Ad"],
+              ["were-sorry", "We're Sorry Ad"],
+              ["video-meme", "Video Meme"],
+              ["jingle", "Brand Jingle"],
+              ["text-message", "iMessage Ad"],
+              ["brainrot", "Minecraft Brainrot"],
+              ["reviews", "Reviews Proof Ad"],
+              ["visualizer", "Visualizer Ad"],
+            ].map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
           <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
             {formatHelper}
