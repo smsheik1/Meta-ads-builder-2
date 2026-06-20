@@ -1,9 +1,8 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
-import type { Id } from "./_generated/dataModel";
 import type { AdScene } from "../features/scene/types";
-import { refreshJingleMusicVideoUrls } from "./sceneUrlRefresh";
+import { refreshJingleMusicVideoUrls, refreshSceneAudioUrls } from "./sceneUrlRefresh";
 
 const workerStaleAfterMs = 15000;
 
@@ -49,24 +48,6 @@ const ensureAnonymousSession = async (
 const cleanWorkerError = (error: string) => (
   error.replace(/\s+/g, " ").trim().slice(0, 500) || "Render failed."
 );
-
-const refreshSceneAudioUrl = async (
-  ctx: MutationCtx,
-  scene: AdScene,
-) => {
-  if (scene.audio.status !== "generated" || !scene.audio.storageId) return scene;
-
-  const url = await ctx.storage.getUrl(scene.audio.storageId as Id<"_storage">);
-  if (!url) return scene;
-
-  return {
-    ...scene,
-    audio: {
-      ...scene.audio,
-      url,
-    },
-  };
-};
 
 export const createFromScene: ReturnType<typeof mutation> = mutation({
   args: {
@@ -228,7 +209,7 @@ export const claimNext: ReturnType<typeof mutation> = mutation({
       updatedAt: now,
     });
 
-    const renderScene = await refreshJingleMusicVideoUrls(ctx, await refreshSceneAudioUrl(ctx, scene.scene as AdScene));
+    const renderScene = await refreshJingleMusicVideoUrls(ctx, await refreshSceneAudioUrls(ctx, scene.scene as AdScene));
 
     return {
       renderJobId: job._id,

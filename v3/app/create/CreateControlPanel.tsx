@@ -1,4 +1,4 @@
-import { AudioLines, Captions, Grid2X2, Palette, Type } from "lucide-react";
+import { AudioLines, Captions, Grid2X2, Music2, Palette, Trash2, Type, Upload } from "lucide-react";
 import type { PreviewPlatform } from "./CreatePreviewChrome";
 import type { CanvasInteractionPanel } from "@/features/create/canvasInteractionStore";
 import { getFormatModule } from "@/features/formats/registry";
@@ -25,10 +25,15 @@ const uniqueColors = (colors: string[]) => [...new Set(colors.filter((color) => 
 export function CreateControlPanel({
   activePanel,
   audioStatus,
+  backgroundMusicError,
+  backgroundMusicStatus,
   hasGeneratedAudio,
   hasSelectedScene,
   onOpenAudioPanel,
   onOpenCaptionEditor,
+  onRemoveBackgroundMusic,
+  onUpdateBackgroundMusicVolume,
+  onUploadBackgroundMusic,
   onPanelChange,
   onPreviewPlatformChange,
   onUpdateFormatPreset,
@@ -39,10 +44,15 @@ export function CreateControlPanel({
 }: {
   activePanel: CreatePanelId | null;
   audioStatus: "idle" | "loading" | "ready" | "error";
+  backgroundMusicError: string;
+  backgroundMusicStatus: "idle" | "loading" | "error";
   hasGeneratedAudio: boolean;
   hasSelectedScene: boolean;
   onOpenAudioPanel: () => void;
   onOpenCaptionEditor: () => void;
+  onRemoveBackgroundMusic: () => void;
+  onUpdateBackgroundMusicVolume: (volume: number) => void;
+  onUploadBackgroundMusic: (file: File | null) => void;
   onPanelChange: (panel: CreatePanelId | null) => void;
   onPreviewPlatformChange: (platform: PreviewPlatform) => void;
   onUpdateFormatPreset: (fieldId: string, value: string) => void;
@@ -175,13 +185,19 @@ export function CreateControlPanel({
             <FormatField
               key={field.id}
               audioStatus={audioStatus}
+              backgroundMusicError={backgroundMusicError}
+              backgroundMusicStatus={backgroundMusicStatus}
               field={field}
               hasGeneratedAudio={hasGeneratedAudio}
               onOpenAudioPanel={onOpenAudioPanel}
               onOpenCaptionEditor={onOpenCaptionEditor}
+              onRemoveBackgroundMusic={onRemoveBackgroundMusic}
+              onUpdateBackgroundMusicVolume={onUpdateBackgroundMusicVolume}
+              onUploadBackgroundMusic={onUploadBackgroundMusic}
               onPreviewPlatformChange={onPreviewPlatformChange}
               onUpdateFormatPreset={onUpdateFormatPreset}
               previewPlatform={previewPlatform}
+              selectedScene={selectedScene}
             />
           ))}
         </div>
@@ -192,22 +208,34 @@ export function CreateControlPanel({
 
 function FormatField({
   audioStatus,
+  backgroundMusicError,
+  backgroundMusicStatus,
   field,
   hasGeneratedAudio,
   onOpenAudioPanel,
   onOpenCaptionEditor,
+  onRemoveBackgroundMusic,
+  onUpdateBackgroundMusicVolume,
+  onUploadBackgroundMusic,
   onPreviewPlatformChange,
   onUpdateFormatPreset,
   previewPlatform,
+  selectedScene,
 }: {
   audioStatus: "idle" | "loading" | "ready" | "error";
+  backgroundMusicError: string;
+  backgroundMusicStatus: "idle" | "loading" | "error";
   field: FormatSpecificEditorField;
   hasGeneratedAudio: boolean;
   onOpenAudioPanel: () => void;
   onOpenCaptionEditor: () => void;
+  onRemoveBackgroundMusic: () => void;
+  onUpdateBackgroundMusicVolume: (volume: number) => void;
+  onUploadBackgroundMusic: (file: File | null) => void;
   onPreviewPlatformChange: (platform: PreviewPlatform) => void;
   onUpdateFormatPreset: (fieldId: string, value: string) => void;
   previewPlatform: PreviewPlatform;
+  selectedScene: AdScene | null;
 }) {
   if (field.kind === "select") {
     return (
@@ -255,6 +283,10 @@ function FormatField({
   }
 
   if (field.kind === "audio") {
+    const showBackgroundMusic = field.id === "audio" && selectedScene?.format === "visualizer";
+    const backgroundMusic = selectedScene?.backgroundMusic;
+    const musicBusy = backgroundMusicStatus === "loading";
+
     return (
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
         <div className="flex items-start gap-3">
@@ -274,6 +306,68 @@ function FormatField({
         >
           {hasGeneratedAudio ? "Replace audio" : "Add audio"}
         </button>
+        {showBackgroundMusic ? (
+          <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-3">
+            <div className="flex items-start gap-3">
+              <Music2 className="mt-0.5 size-4 shrink-0 text-slate-500" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-black text-slate-950">Background music</p>
+                <p className="mt-1 truncate text-[11px] font-bold text-slate-500">
+                  {backgroundMusic ? backgroundMusic.fileName : "Upload a quiet bed under the voiceover."}
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <label className={`flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-950 px-3 text-[11px] font-black text-white transition hover:bg-slate-800 ${musicBusy ? "pointer-events-none opacity-50" : ""}`}>
+                <Upload className="size-3.5" />
+                {musicBusy ? "Uploading" : backgroundMusic ? "Replace music" : "Add music"}
+                <input
+                  suppressHydrationWarning
+                  type="file"
+                  accept="audio/*"
+                  className="sr-only"
+                  disabled={musicBusy}
+                  onChange={(event) => {
+                    const file = event.currentTarget.files?.[0] || null;
+                    event.currentTarget.value = "";
+                    onUploadBackgroundMusic(file);
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={onRemoveBackgroundMusic}
+                disabled={!backgroundMusic || musicBusy}
+                className="flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-black text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Trash2 className="size-3.5" />
+                Remove
+              </button>
+            </div>
+            {backgroundMusic ? (
+              <label className="mt-3 block">
+                <span className="mb-1 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                  <span>Music volume</span>
+                  <span>{Math.round(backgroundMusic.volume * 100)}%</span>
+                </span>
+                <input
+                  suppressHydrationWarning
+                  type="range"
+                  min="0"
+                  max="0.5"
+                  step="0.01"
+                  value={backgroundMusic.volume}
+                  onChange={(event) => onUpdateBackgroundMusicVolume(Number(event.currentTarget.value))}
+                  className="w-full accent-slate-950"
+                  aria-label="Background music volume"
+                />
+              </label>
+            ) : null}
+            {backgroundMusicStatus === "error" && backgroundMusicError ? (
+              <p className="mt-2 text-[11px] font-black leading-4 text-red-600">{backgroundMusicError}</p>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     );
   }

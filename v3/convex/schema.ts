@@ -26,8 +26,9 @@ export default defineSchema({
     screenshotUrl: v.optional(v.string()),
     branding: v.optional(v.any()),
     brandBrief: v.optional(v.any()),
-    adAngles: v.optional(v.any()),
-    receipts: v.optional(v.any()),
+	    adAngles: v.optional(v.any()),
+	    productCatalog: v.optional(v.any()),
+	    receipts: v.optional(v.any()),
     evidence: v.optional(v.any()),
     metadata: v.optional(v.any()),
     providerStatus: v.optional(v.any()),
@@ -146,6 +147,19 @@ export default defineSchema({
     .index("by_sessionId_and_updatedAt", ["sessionId", "updatedAt"])
     .index("by_sceneId_and_updatedAt", ["sceneId", "updatedAt"])
     .index("by_stitchStatus_and_updatedAt", ["stitchStatus", "updatedAt"]),
+
+  productPhotoshoots: defineTable({
+    sessionId: v.string(),
+    researchRunId: v.id("researchRuns"),
+    productHandle: v.string(),
+    imageModel: v.string(),
+    aspectRatio: v.string(),
+    board: v.any(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_sessionId_and_updatedAt", ["sessionId", "updatedAt"])
+    .index("by_researchRunId_and_updatedAt", ["researchRunId", "updatedAt"]),
 
   savedDesigns: defineTable({
     sessionId: v.string(),

@@ -2,7 +2,7 @@ import type { BrandAdAngle, BrandSnapshot, ResearchReceipts } from "../research/
 
 export const AD_SCENE_VERSION = 1 as const;
 
-export type AdFormatId = "visualizer" | "meme" | "were-sorry" | "video-meme" | "jingle" | "text-message" | "brainrot";
+export type AdFormatId = "visualizer" | "meme" | "were-sorry" | "video-meme" | "jingle" | "text-message" | "brainrot" | "reviews";
 
 export type HeadlineType =
   | "painful_moment"
@@ -55,6 +55,18 @@ export type AdSceneAudio =
     generatedAt: number;
   };
 
+export type AdSceneBackgroundMusic = {
+  status: "uploaded";
+  storageId: string;
+  url: string;
+  mimeType: string;
+  durationMs: number;
+  fileName: string;
+  volume: number;
+  loop: true;
+  addedAt: number;
+};
+
 export type AdSceneVisualizerStyle = {
   type: "bars-bottom" | "bars-center" | "waveform-strip";
   barCount: number;
@@ -99,6 +111,7 @@ export type AdSceneBase<
   };
   style: TStyle;
   audio: AdSceneAudio;
+  backgroundMusic?: AdSceneBackgroundMusic;
   layout: TLayout;
   metadata: {
     candidateIndex: number;
@@ -109,6 +122,7 @@ export type AdSceneBase<
     provider: "gemini" | "nvidia-nim" | "deterministic";
     generatedAt: number;
     adAngles?: BrandAdAngle[];
+    selectedProductHandles?: string[];
   };
 };
 
@@ -247,6 +261,40 @@ export type BrainrotAdScene = AdSceneBase<
   }
 >;
 
+export type ReviewsProofItem = {
+  type: "review";
+  text: string;
+  rating?: number;
+  sourceName?: string;
+  sourceUrl?: string;
+  provider: "website";
+};
+
+export type ReviewsProductAnchor = {
+  title: string;
+  handle: string;
+  url: string;
+  imageUrl: string | null;
+  imageAlt: string | null;
+  isBestSeller: boolean;
+};
+
+export type ReviewsAdScene = AdSceneBase<
+  "reviews",
+  AdSceneStyleBase,
+  {
+    preset: "reviews-proof-card";
+    proof: ReviewsProofItem;
+    proofIndex: number;
+    proofTotal: number;
+    proofText: string;
+    headline: string;
+    ctaText: string;
+    productAnchor?: ReviewsProductAnchor;
+    backgroundImages: string[];
+  }
+>;
+
 export type AdScene =
   | VisualizerAdScene
   | MemeAdScene
@@ -254,4 +302,5 @@ export type AdScene =
   | VideoMemeAdScene
   | JingleAdScene
   | TextMessageAdScene
-  | BrainrotAdScene;
+  | BrainrotAdScene
+  | ReviewsAdScene;

@@ -30,3 +30,25 @@ export async function refreshJingleMusicVideoUrls(
     },
   };
 }
+
+export async function refreshSceneAudioUrls(
+  ctx: StorageCtx,
+  scene: AdScene,
+) {
+  const audioUrl = scene.audio.status === "generated" && scene.audio.storageId
+    ? await ctx.storage.getUrl(scene.audio.storageId as Id<"_storage">)
+    : null;
+  const musicUrl = scene.backgroundMusic?.storageId
+    ? await ctx.storage.getUrl(scene.backgroundMusic.storageId as Id<"_storage">)
+    : null;
+
+  return {
+    ...scene,
+    audio: audioUrl && scene.audio.status === "generated"
+      ? { ...scene.audio, url: audioUrl }
+      : scene.audio,
+    backgroundMusic: musicUrl && scene.backgroundMusic
+      ? { ...scene.backgroundMusic, url: musicUrl }
+      : scene.backgroundMusic,
+  };
+}

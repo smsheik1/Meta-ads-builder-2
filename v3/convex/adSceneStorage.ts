@@ -1,8 +1,7 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
-import { buildFallbackBrandBrief } from "../features/research/brandCurator";
-import type { StoredWebsiteResearchResult } from "../features/research/types";
 import type { AdScene } from "../features/scene/types";
+import { toStoredResearchResult } from "./researchStorage";
 
 export const loadResearchForGeneration: ReturnType<typeof internalQuery> = internalQuery({
   args: {
@@ -22,38 +21,7 @@ export const loadResearchForGeneration: ReturnType<typeof internalQuery> = inter
       throw new Error("Research run is missing website evidence.");
     }
 
-    const research = {
-      sessionId: researchRun.sessionId,
-      researchRunId,
-      brandSnapshotId: brandSnapshot._id,
-      websiteUrl: researchRun.url,
-      finalUrl: researchRun.finalUrl || brandSnapshot.url,
-      host: researchRun.host || brandSnapshot.host || "",
-      brand: {
-        name: brandSnapshot.name,
-        url: brandSnapshot.url,
-        host: brandSnapshot.host || "",
-        title: brandSnapshot.title || "",
-        description: brandSnapshot.description || "",
-        faviconUrl: brandSnapshot.faviconUrl || null,
-        logoUrl: brandSnapshot.logoUrl || null,
-        ogImageUrl: brandSnapshot.ogImageUrl || null,
-        screenshotUrl: brandSnapshot.screenshotUrl || null,
-        colors: brandSnapshot.colors,
-        fonts: brandSnapshot.fonts,
-        vibeTags: brandSnapshot.vibeTags,
-      },
-      evidence: researchRun.evidence,
-      metadata: researchRun.metadata || {},
-      branding: researchRun.branding || {},
-      adAngles: researchRun.adAngles || [],
-      providerStatus: researchRun.providerStatus || [],
-    };
-
-    return {
-      ...research,
-      brandBrief: researchRun.brandBrief || buildFallbackBrandBrief(research),
-    } satisfies StoredWebsiteResearchResult;
+    return toStoredResearchResult(researchRun, brandSnapshot, researchRunId);
   },
 });
 
