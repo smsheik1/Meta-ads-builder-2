@@ -33,6 +33,14 @@ export function assertShareableAdScene(value: unknown): AdScene {
     }
     if (!scene.audio.transcript?.trim()) throw new Error("Share scene audio transcript is missing.");
   }
+  if (scene.backgroundMusic) {
+    if (!scene.backgroundMusic.storageId?.trim()) throw new Error("Share scene background music storage is missing.");
+    if (!scene.backgroundMusic.url?.trim()) throw new Error("Share scene background music URL is missing.");
+    if (!scene.backgroundMusic.mimeType?.trim()) throw new Error("Share scene background music type is missing.");
+    if (!Number.isFinite(scene.backgroundMusic.durationMs) || scene.backgroundMusic.durationMs <= 0) {
+      throw new Error("Share scene background music duration is invalid.");
+    }
+  }
 
   return scene;
 }

@@ -5,6 +5,7 @@ import { jingleFormatModule } from "./jingle";
 import { videoMemeFormatModule } from "./video-meme";
 import { textMessageFormatModule } from "./text-message";
 import { brainrotFormatModule } from "./brainrot";
+import { reviewsFormatModule } from "./reviews";
 import { visualizerFormatModule } from "./visualizer";
 import { wereSorryFormatModule } from "./were-sorry";
 
@@ -20,6 +21,7 @@ export const formatRegistry = createFormatRegistry({
   jingle: jingleFormatModule,
   "text-message": textMessageFormatModule,
   brainrot: brainrotFormatModule,
+  reviews: reviewsFormatModule,
 } satisfies Record<AdFormatId, AnyAdFormatModule>);
 
 export const getFormatModuleFromRegistry = <

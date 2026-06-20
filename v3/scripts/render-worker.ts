@@ -10,7 +10,7 @@ import { api } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
 import { getWorkerRendererVersion } from "../features/render/rendererVersion";
 import type { AdScene, JingleMusicVideoClip } from "../features/scene/types";
-import { adSceneCompositionId } from "../remotion-entry/Root";
+import { adSceneCompositionId, adSceneFps, getAdSceneDurationInFrames } from "../remotion-entry/Root";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -131,7 +131,7 @@ async function runProcess(command: string, args: string[], label: string) {
 
 async function downloadFile(url: string, filePath: string) {
   const response = await fetch(url);
-  if (!response.ok) throw new Error(`Could not download stitch source ${response.status}.`);
+  if (!response.ok) throw new Error(`Could not download render source ${response.status}.`);
   await writeFile(filePath, new Uint8Array(await response.arrayBuffer()));
 }
 
@@ -210,6 +210,7 @@ async function stitchVideoJob(client: ConvexHttpClient, job: ClaimedStitchJob) {
 
 async function renderJob(client: ConvexHttpClient, serveUrl: string, job: ClaimedRenderJob) {
   const outputLocation = path.join(outputDir, `${job.renderJobId}.mp4`);
+  const mixedOutputLocation = path.join(outputDir, `${job.renderJobId}-mixed.mp4`);
   await mkdir(outputDir, { recursive: true });
   await client.mutation(api.renderJobs.markRendering, {
     renderJobId: job.renderJobId,
@@ -240,12 +241,60 @@ async function renderJob(client: ConvexHttpClient, serveUrl: string, job: Claime
     renderJobId: job.renderJobId,
     progress: Math.max(90, latestRenderProgress),
   });
-  const storageId = await uploadMp4(client, outputLocation);
+
+  let uploadLocation = outputLocation;
+  const backgroundMusic = job.scene.backgroundMusic;
+  if (backgroundMusic) {
+    if (job.scene.audio.status !== "generated") {
+      throw new Error("Background music export requires generated voice audio.");
+    }
+    if (!backgroundMusic.url) {
+      throw new Error("Background music URL is missing.");
+    }
+
+    const musicExtension = backgroundMusic.mimeType.includes("wav")
+      ? "wav"
+      : backgroundMusic.mimeType.includes("mp4")
+        ? "m4a"
+        : "mp3";
+    const musicPath = path.join(outputDir, `${job.renderJobId}-music.${musicExtension}`);
+    const durationSeconds = (getAdSceneDurationInFrames(job.scene, adSceneFps) / adSceneFps).toFixed(3);
+    await downloadFile(backgroundMusic.url, musicPath);
+    await runProcess("ffmpeg", [
+      "-y",
+      "-i",
+      outputLocation,
+      "-stream_loop",
+      "-1",
+      "-i",
+      musicPath,
+      "-filter_complex",
+      `[1:a]volume=${backgroundMusic.volume ?? 0.18},atrim=0:${durationSeconds},asetpts=PTS-STARTPTS[bed];[0:a][bed]amix=inputs=2:duration=longest:dropout_transition=0[a]`,
+      "-map",
+      "0:v",
+      "-map",
+      "[a]",
+      "-c:v",
+      "copy",
+      "-c:a",
+      "aac",
+      "-b:a",
+      "192k",
+      "-movflags",
+      "+faststart",
+      mixedOutputLocation,
+    ], "ffmpeg background music mix");
+    uploadLocation = mixedOutputLocation;
+    await rm(musicPath, { force: true });
+  }
+
+  const storageId = await uploadMp4(client, uploadLocation);
   await client.mutation(api.renderJobs.markReady, {
     renderJobId: job.renderJobId,
     storageId,
   });
   await rm(outputLocation, { force: true });
+  await rm(mixedOutputLocation, { force: true });
 }
 
 async function runOnce(client: ConvexHttpClient, serveUrl: string) {

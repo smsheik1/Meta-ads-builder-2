@@ -241,9 +241,13 @@ export function buildBrickMusicVideoClips(storyboard: BrickStoryboard): JingleMu
 export async function generateReplicateNanoBanana2Image({
   replicateApiToken,
   prompt,
+  imageInput = [],
+  aspectRatio = "9:16",
 }: {
   replicateApiToken: string;
   prompt: string;
+  imageInput?: string[];
+  aspectRatio?: "1:1" | "4:5" | "9:16" | "match_input_image";
 }) {
   if (!replicateApiToken) throw new Error("Replicate image generation is not configured.");
   const [owner, name] = BRICK_STORYBOARD_IMAGE_MODEL.split("/");
@@ -259,7 +263,8 @@ export async function generateReplicateNanoBanana2Image({
     body: JSON.stringify({
       input: {
         prompt,
-        aspect_ratio: "9:16",
+        ...(imageInput.length ? { image_input: imageInput } : {}),
+        aspect_ratio: aspectRatio,
         resolution: "1K",
         output_format: "jpg",
       },

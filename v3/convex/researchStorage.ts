@@ -34,8 +34,9 @@ export function toStoredResearchResult(
     evidence: researchRun.evidence,
     metadata: researchRun.metadata || {},
     branding: researchRun.branding || {},
-    adAngles: researchRun.adAngles || [],
-    providerStatus: researchRun.providerStatus || [],
+	    adAngles: researchRun.adAngles || [],
+	    productCatalog: researchRun.productCatalog || null,
+	    providerStatus: researchRun.providerStatus || [],
   };
 
   return {
@@ -105,8 +106,9 @@ export const saveReady: ReturnType<typeof internalMutation> = internalMutation({
       screenshotUrl: research.brand.screenshotUrl || undefined,
       branding: research.branding,
       brandBrief: research.brandBrief,
-      adAngles: research.adAngles || [],
-      receipts: research.evidence.receipts,
+	      adAngles: research.adAngles || [],
+	      productCatalog: research.productCatalog || undefined,
+	      receipts: research.evidence.receipts,
       evidence: research.evidence,
       metadata: research.metadata,
       providerStatus: research.providerStatus,

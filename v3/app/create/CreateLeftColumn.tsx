@@ -5,7 +5,9 @@ import {
 } from "@/features/llm/nvidiaNimModels";
 import { JINGLE_STYLES, type JingleStyleId } from "@/features/formats/jingle/prompt";
 import { VIDEO_MEME_TEMPLATES, getVideoMemeTemplate, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
+import type { ProductCatalog } from "@/features/research/types";
 import type { AdFormatId } from "@/features/scene/types";
+import { CreateReviewsProductPicker } from "./CreateReviewsProductPicker";
 
 type LoadStatus = "idle" | "loading" | "ready" | "error";
 export type WebsiteSubmitProgressStage = "reading-site" | "writing-ads" | "preparing-canvas" | null;
@@ -39,7 +41,9 @@ const getProgressRows = (format: AdFormatId, videoMemeTemplateId: VideoMemeTempl
           ? `Writing ${getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8} video memes`
           : format === "jingle"
             ? "Writing 1 jingle"
-          : "Writing 50 ads",
+            : format === "reviews"
+              ? "Writing 4 proof ads"
+              : "Writing 50 ads",
   },
   { id: "preparing-canvas", label: "Preparing canvas" },
 ] as const;
@@ -172,12 +176,15 @@ export function CreateLeftColumn({
   error,
   format,
   memeModel,
+  productCatalog,
+  selectedReviewProductHandles,
   jingleStyleId,
   videoMemeTemplateId,
   visualizerModel,
   onFormatChange,
   onJingleStyleChange,
   onMemeModelChange,
+  onReviewProductSelectionChange,
   onVideoMemeTemplateChange,
   onVisualizerModelChange,
   onSubmit,
@@ -193,12 +200,15 @@ export function CreateLeftColumn({
   error: string;
   format: AdFormatId;
   memeModel: string;
+  productCatalog?: ProductCatalog | null;
+  selectedReviewProductHandles: string[];
   jingleStyleId: JingleStyleId;
   videoMemeTemplateId: VideoMemeTemplateId;
   visualizerModel: string;
   onFormatChange: (format: AdFormatId) => void;
   onJingleStyleChange: (styleId: JingleStyleId) => void;
   onMemeModelChange: (model: string) => void;
+  onReviewProductSelectionChange: (handles: string[]) => void;
   onVideoMemeTemplateChange: (templateId: VideoMemeTemplateId) => void;
   onVisualizerModelChange: (model: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
@@ -225,7 +235,9 @@ export function CreateLeftColumn({
                 ? "Writing texts"
                 : format === "brainrot"
                   ? "Writing brainrot"
-            : "Writing ideas"
+                  : format === "reviews"
+                    ? "Writing proof ads"
+                    : "Writing ideas"
       : "Generate ads";
   const formatHelper = format === "meme"
     ? "Twelve brand-aligned meme drafts, ready to spacebar through."
@@ -239,7 +251,9 @@ export function CreateLeftColumn({
             ? "Six iMessage-style screenshots that feel like a real customer text."
             : format === "brainrot"
               ? "Three two-character Minecraft Brainrot scripts with Fish voices."
-        : "Audio visualizer ads with voice, captions, and MP4 export.";
+              : format === "reviews"
+                ? "Four proof ads using only verbatim website reviews and claims."
+                : "Audio visualizer ads with voice, captions, and MP4 export.";
 
   return (
     <div className="max-w-xl">
@@ -247,7 +261,7 @@ export function CreateLeftColumn({
         <Wand2 className="size-4 text-[#4F46E5]" />
         {adScenesCount ? "Ads ready to review" : "Add a website first"}
       </p>
-      <h1 className="mt-4 text-4xl font-black leading-tight tracking-normal text-slate-950 sm:text-5xl lg:text-7xl">
+      <h1 className="wiggly-hero-headline mt-4 text-4xl font-black leading-tight tracking-normal text-slate-950 sm:text-5xl lg:text-7xl">
         Make ads without learning editing.
       </h1>
       <p className="mt-4 max-w-full text-base font-semibold leading-7 text-slate-600 sm:mt-6 sm:text-lg sm:leading-8 md:max-w-lg">
@@ -285,6 +299,7 @@ export function CreateLeftColumn({
             <option value="jingle">Brand Jingle</option>
             <option value="text-message">iMessage Ad</option>
             <option value="brainrot">Minecraft Brainrot</option>
+            <option value="reviews">Reviews Proof Ad</option>
             <option value="visualizer">Visualizer Ad</option>
           </select>
           <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
@@ -352,6 +367,14 @@ export function CreateLeftColumn({
               {JINGLE_STYLES.find((style) => style.id === jingleStyleId)?.helper || "Pick the music lane for this jingle."}
             </span>
           </label>
+        ) : null}
+
+        {format === "reviews" ? (
+          <CreateReviewsProductPicker
+            catalog={productCatalog}
+            selectedHandles={selectedReviewProductHandles}
+            onSelectionChange={onReviewProductSelectionChange}
+          />
         ) : null}
 
         <button

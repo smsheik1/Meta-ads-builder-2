@@ -27,6 +27,8 @@ import type { AdScene, AdSceneAudio, AdSceneAudioAnalysis, AdSceneCaption } from
 
 const storageIdFromString = (storageId: string) => storageId as Id<"_storage">;
 const maxUploadedAudioDurationMs = 60_000;
+const backgroundMusicVolume = 0.18;
+const clampBackgroundMusicVolume = (volume: number) => Math.max(0, Math.min(1, Number.isFinite(volume) ? volume : backgroundMusicVolume));
 
 const isWavMimeType = (mimeType: string) => (
   mimeType.toLowerCase().includes("wav") || mimeType.toLowerCase().includes("wave")
@@ -158,6 +160,18 @@ const storeGeneratedAudioAndPatchScene = async ({
   };
 };
 
+const patchSceneIfPersisted = async (
+  ctx: ActionCtx,
+  sceneId: Id<"adScenes"> | undefined,
+  scene: AdScene,
+) => {
+  if (!sceneId) return;
+  await ctx.runMutation(internal.adSceneStorage.patchScene, {
+    sceneId,
+    scene,
+  });
+};
+
 export const createUploadUrl: ReturnType<typeof mutation> = mutation({
   args: {},
   handler: async (ctx) => ctx.storage.generateUploadUrl(),
@@ -219,8 +233,9 @@ export const generateForScene: ReturnType<typeof action> = action({
   args: {
     anonymousId: v.string(),
     scene: v.any(),
+    sceneId: v.optional(v.id("adScenes")),
   },
-  handler: async (ctx, { anonymousId, scene }) => {
+  handler: async (ctx, { anonymousId, scene, sceneId }) => {
     const audioScene = assertShareableAdScene(scene);
     const sessionId = await ctx.runMutation(internal.sessions.ensureAnonymousSession, {
       anonymousId,
@@ -255,9 +270,12 @@ export const generateForScene: ReturnType<typeof action> = action({
       model: result.model,
     });
 
+    const nextScene = attachAudioWithVoiceVisualizerPreset(audioScene, audio);
+    await patchSceneIfPersisted(ctx, sceneId, nextScene);
+
     return {
       audio,
-      scene: attachAudioWithVoiceVisualizerPreset(audioScene, audio),
+      scene: nextScene,
     };
   },
 });
@@ -266,9 +284,10 @@ export const generateDialogueForScene: ReturnType<typeof action> = action({
   args: {
     anonymousId: v.string(),
     scene: v.any(),
+    sceneId: v.optional(v.id("adScenes")),
     script: v.any(),
   },
-  handler: async (ctx, { anonymousId, scene, script }) => {
+  handler: async (ctx, { anonymousId, scene, sceneId, script }) => {
     const audioScene = assertShareableAdScene(scene);
     const dialogueScript = cleanDialogueScriptForVoiceover(script);
     const sessionId = await ctx.runMutation(internal.sessions.ensureAnonymousSession, {
@@ -304,9 +323,12 @@ export const generateDialogueForScene: ReturnType<typeof action> = action({
       model: result.model,
     });
 
+    const nextScene = attachAudioWithVoiceVisualizerPreset(audioScene, audio);
+    await patchSceneIfPersisted(ctx, sceneId, nextScene);
+
     return {
       audio,
-      scene: attachAudioWithVoiceVisualizerPreset(audioScene, audio),
+      scene: nextScene,
     };
   },
 });
@@ -425,5 +447,89 @@ export const attachUploadedToScene: ReturnType<typeof action> = action({
       audio,
       scene: attachAudioWithVoiceVisualizerPreset(audioScene, audio),
     };
+  },
+});
+
+export const attachBackgroundMusicToScene: ReturnType<typeof action> = action({
+  args: {
+    scene: v.any(),
+    sceneId: v.optional(v.id("adScenes")),
+    storageId: v.id("_storage"),
+    mimeType: v.string(),
+    durationMs: v.number(),
+    fileName: v.optional(v.string()),
+  },
+  handler: async (ctx, {
+    scene,
+    sceneId,
+    storageId,
+    mimeType,
+    durationMs,
+    fileName,
+  }) => {
+    const audioScene = assertShareableAdScene(scene);
+    const safeMimeType = mimeType.trim() || "audio/mpeg";
+    if (!safeMimeType.toLowerCase().startsWith("audio/")) throw new Error("Choose an audio file.");
+
+    const url = await ctx.storage.getUrl(storageId);
+    if (!url) throw new Error("Background music was stored, but no playable URL was returned.");
+
+    const nextScene: AdScene = {
+      ...audioScene,
+      backgroundMusic: {
+        status: "uploaded",
+        storageId,
+        url,
+        mimeType: safeMimeType,
+        durationMs: Math.max(1000, Math.min(maxUploadedAudioDurationMs, Math.round(durationMs || 0))),
+        fileName: cleanUploadName(fileName),
+        volume: backgroundMusicVolume,
+        loop: true,
+        addedAt: Date.now(),
+      },
+    };
+
+    await patchSceneIfPersisted(ctx, sceneId, nextScene);
+
+    return { scene: nextScene };
+  },
+});
+
+export const removeBackgroundMusicFromScene: ReturnType<typeof action> = action({
+  args: {
+    scene: v.any(),
+    sceneId: v.optional(v.id("adScenes")),
+  },
+  handler: async (ctx, { scene, sceneId }) => {
+    const audioScene = assertShareableAdScene(scene);
+    const { backgroundMusic: _backgroundMusic, ...nextScene } = audioScene;
+
+    await patchSceneIfPersisted(ctx, sceneId, nextScene as AdScene);
+
+    return { scene: nextScene as AdScene };
+  },
+});
+
+export const updateBackgroundMusicVolumeOnScene: ReturnType<typeof action> = action({
+  args: {
+    scene: v.any(),
+    sceneId: v.optional(v.id("adScenes")),
+    volume: v.number(),
+  },
+  handler: async (ctx, { scene, sceneId, volume }) => {
+    const audioScene = assertShareableAdScene(scene);
+    if (!audioScene.backgroundMusic) throw new Error("Background music is missing.");
+
+    const nextScene: AdScene = {
+      ...audioScene,
+      backgroundMusic: {
+        ...audioScene.backgroundMusic,
+        volume: clampBackgroundMusicVolume(volume),
+      },
+    };
+
+    await patchSceneIfPersisted(ctx, sceneId, nextScene);
+
+    return { scene: nextScene };
   },
 });
