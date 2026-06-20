@@ -1,9 +1,8 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import type { MutationCtx, QueryCtx } from "./_generated/server";
-import type { Id } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
 import type { AdScene } from "../features/scene/types";
-import { refreshJingleMusicVideoUrls } from "./sceneUrlRefresh";
+import { refreshJingleMusicVideoUrls, refreshSceneAudioUrls } from "./sceneUrlRefresh";
 import {
   assertShareableAdScene,
   createShareSlug,
@@ -39,24 +38,6 @@ const ensureAnonymousSession = async (
     createdAt: now,
     updatedAt: now,
   });
-};
-
-const refreshSceneAudioUrl = async (
-  ctx: QueryCtx,
-  scene: AdScene,
-) => {
-  if (scene.audio.status !== "generated" || !scene.audio.storageId) return scene;
-
-  const url = await ctx.storage.getUrl(scene.audio.storageId as Id<"_storage">);
-  if (!url) return scene;
-
-  return {
-    ...scene,
-    audio: {
-      ...scene.audio,
-      url,
-    },
-  };
 };
 
 export const createFromScene: ReturnType<typeof mutation> = mutation({
@@ -129,7 +110,7 @@ export const getBySlug: ReturnType<typeof query> = query({
 
     const scene = await ctx.db.get(sharePage.sceneId);
     if (!scene) return null;
-    const shareScene = await refreshJingleMusicVideoUrls(ctx, await refreshSceneAudioUrl(ctx, scene.scene as AdScene));
+    const shareScene = await refreshJingleMusicVideoUrls(ctx, await refreshSceneAudioUrls(ctx, scene.scene as AdScene));
 
     return {
       slug: sharePage.slug,

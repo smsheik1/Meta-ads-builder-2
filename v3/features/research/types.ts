@@ -5,9 +5,10 @@ export type ResearchProviderStatus = {
     | "brand-cache"
     | "brandfetch"
     | "html-brand-assets"
-    | "ad-angles"
-    | "gemini-curator"
-    | "nvidia-nim-curator";
+	    | "ad-angles"
+	    | "gemini-curator"
+	    | "nvidia-nim-curator"
+	    | "product-catalog";
   status: "used" | "failed" | "skipped";
   reason: string;
 };
@@ -66,6 +67,34 @@ export type BrandAdAngle = {
   sitePhrase: string | null;
 };
 
+export type ProductCatalogItem = {
+  title: string;
+  handle: string;
+  url: string;
+  imageUrl: string | null;
+  imageAlt: string | null;
+  productType: string | null;
+  vendor: string | null;
+  priceMin: number | null;
+  priceMax: number | null;
+  currency: string | null;
+  available: boolean | null;
+  badges: Array<"best-seller">;
+};
+
+export type ProductCatalog = {
+  provider: "shopify-products-json" | "shopify-product-sitemap" | "woocommerce-store-api";
+  sourceUrl: string;
+  groups: {
+    bestSellers: string[];
+  };
+  summary: {
+    productCount: number;
+    bestSellerCount: number;
+  };
+  products: ProductCatalogItem[];
+};
+
 export type WebsiteResearchResult = {
   websiteUrl: string;
   finalUrl: string;
@@ -73,6 +102,7 @@ export type WebsiteResearchResult = {
   brand: BrandSnapshot;
   brandBrief: BrandBrief;
   adAngles?: BrandAdAngle[];
+  productCatalog?: ProductCatalog | null;
   evidence: ResearchEvidence;
   metadata: Record<string, unknown>;
   branding: Record<string, unknown>;

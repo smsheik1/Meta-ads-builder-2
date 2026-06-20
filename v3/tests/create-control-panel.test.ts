@@ -6,6 +6,7 @@ const createCaptionModalSource = readFileSync("app/create/CreateCaptionModal.tsx
 const controlPanelSource = readFileSync("app/create/CreateControlPanel.tsx", "utf8");
 const createDialogueModalSource = readFileSync("app/create/CreateDialogueModal.tsx", "utf8");
 const createLeftColumnSource = readFileSync("app/create/CreateLeftColumn.tsx", "utf8");
+const reviewsProductPickerSource = readFileSync("app/create/CreateReviewsProductPicker.tsx", "utf8");
 const rootLayoutSource = readFileSync("app/layout.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
@@ -32,6 +33,13 @@ assert.ok(
     createLeftColumnSource.includes('<option value="text-message">iMessage Ad</option>'),
   "/create must expose iMessage Ad and generate six static text-message variants.",
 );
+assert.ok(
+  createClientSource.includes('if (format === "reviews") return 4') &&
+    createLeftColumnSource.includes('<option value="reviews">Reviews Proof Ad</option>') &&
+    reviewsProductPickerSource.includes("Choose proof products") &&
+    createClientSource.includes("selectedProductHandles"),
+  "/create must expose Reviews Proof Ad, product selection, and generate four proof variants.",
+);
 
 const nativeControlPattern = /<(?:input|select|textarea)\b/g;
 const countMatches = (source: string, pattern: RegExp) => source.match(pattern)?.length || 0;
@@ -45,7 +53,8 @@ assert.ok(
   "Root body must suppress extension-injected hydration attrs before React boots.",
 );
 assertHydrationGuards(createLeftColumnSource, 5, "CreateLeftColumn");
-assertHydrationGuards(controlPanelSource, 4, "CreateControlPanel");
+assertHydrationGuards(reviewsProductPickerSource, 1, "CreateReviewsProductPicker");
+assertHydrationGuards(controlPanelSource, 6, "CreateControlPanel");
 assertHydrationGuards(createDialogueModalSource, 2, "CreateDialogueModal");
 assertHydrationGuards(createCaptionModalSource, 1, "CreateCaptionModal");
 
@@ -69,6 +78,21 @@ assert.ok(
   visualizerSchemaSource.includes('{ id: "audio", label: "Audio", kind: "audio" }') &&
     visualizerSchemaSource.includes('{ id: "captions", label: "Captions", kind: "captions" }'),
   "Audio and captions must live under the visualizer format schema.",
+);
+assert.ok(
+  controlPanelSource.includes("Background music") &&
+    controlPanelSource.includes("Replace music") &&
+    controlPanelSource.includes("Remove") &&
+    controlPanelSource.includes("Music volume"),
+  "Visualizer audio controls must expose visible background music upload/replace/remove/volume actions.",
+);
+assert.ok(
+  controlPanelSource.includes('const musicBusy = backgroundMusicStatus === "loading"') &&
+    createClientSource.includes("const [backgroundMusicStatus") &&
+    createClientSource.includes("updateBackgroundMusicVolumeOnScene") &&
+    createClientSource.includes("backgroundMusicVolumeSaveTimeoutRef") &&
+    !createClientSource.includes('selectedScene.format !== "visualizer" || audioStatus === "loading"'),
+  "Background music upload must not be blocked by primary voice audio generation state.",
 );
 assert.ok(
   visualizerModuleSource.includes("editorSchema: visualizerEditorSchema"),
@@ -139,7 +163,13 @@ assert.ok(
     quickActionsSource.includes('((selectedFormat === "jingle" || selectedFormat === "brainrot") && hasPlayableAudio)') &&
     quickActionsSource.includes('audioStatus === "loading"') &&
     quickActionsSource.includes("onClick={hasPlayableAudio ? onTogglePreviewPlayback : onOpenAudioPanel}") &&
-    quickActionsSource.includes('"Audio pending"'),
+    quickActionsSource.includes('"Audio pending"') &&
+    quickActionsSource.includes('const visualizerAudioReady = selectedFormat === "visualizer" && hasPlayableAudio') &&
+    quickActionsSource.includes('"Regenerate audio"') &&
+    createClientSource.includes("onRegenerateVisualizerAudio") &&
+    createClientSource.includes("count: 1") &&
+    createClientSource.includes("generateDialogueAudioForScene({") &&
+    !createClientSource.includes("api.audioAssets.generateForScene"),
   "The primary audio quick action must derive from selected scene audio and never show Add Audio for pending generated-audio formats.",
 );
 assert.ok(

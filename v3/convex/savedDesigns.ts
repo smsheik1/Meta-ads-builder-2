@@ -1,8 +1,8 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
-import type { Id } from "./_generated/dataModel";
 import type { AdScene } from "../features/scene/types";
+import { refreshSceneAudioUrls } from "./sceneUrlRefresh";
 import {
   assertSavableAdScene,
   createSavedDesignId,
@@ -45,24 +45,6 @@ const getAnonymousSessionId = async (
   return session?._id || null;
 };
 
-const refreshSceneAudioUrl = async (
-  ctx: QueryCtx,
-  scene: AdScene,
-) => {
-  if (scene.audio.status !== "generated" || !scene.audio.storageId) return scene;
-
-  const url = await ctx.storage.getUrl(scene.audio.storageId as Id<"_storage">);
-  if (!url) return scene;
-
-  return {
-    ...scene,
-    audio: {
-      ...scene.audio,
-      url,
-    },
-  };
-};
-
 const toSavedDesign = async (
   ctx: QueryCtx,
   row: {
@@ -80,7 +62,7 @@ const toSavedDesign = async (
     id: row.designId,
     title: row.title,
     format: scene.format,
-    scene: await refreshSceneAudioUrl(ctx, scene),
+    scene: await refreshSceneAudioUrls(ctx, scene),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };

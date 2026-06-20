@@ -22,8 +22,11 @@ import {
 } from "@/components/ui/sheet";
 import type { SavedAdSceneDesign } from "@/features/create/savedDesigns";
 import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
+import type { ProductPhotoshootBoard } from "@/features/product-photoshoot/photoshoot";
+import type { ProductCatalog } from "@/features/research/types";
 import type { AdFormatId } from "@/features/scene/types";
 import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
+import { CreateProductPhotoshootSheet } from "./CreateProductPhotoshootSheet";
 
 type SaveStatus = "idle" | "loading" | "ready" | "error";
 type BrickStoryboardStatus = "idle" | "loading" | "ready" | "error";
@@ -45,10 +48,15 @@ export function CreateQuickActions({
   onBuildBrickMusicVideo,
   onDownloadMemePng,
   onGenerateBrickStoryboard,
+  onGenerateProductPhotoshoot,
+  onRegenerateFailedProductPhotoShots,
   onRegenerateBrickShot,
+  onRegenerateProductPhotoShot,
+  onRegenerateVisualizerAudio,
   onLoadSavedDesign,
   onOpenAudioPanel,
   onSaveSelectedDesign,
+  onSelectedPhotoshootProductChange,
   onTogglePreviewPlayback,
   audioStatus,
   playableAudioUrl,
@@ -65,13 +73,20 @@ export function CreateQuickActions({
   brickStoryboardShotBusyIndex,
   brickStoryboardStatus,
   canGenerateBrickStoryboard,
+  canGenerateProductPhotoshoot,
   memeDownloadBusy,
+  productCatalog,
+  productPhotoshoot,
+  productPhotoshootError,
+  productPhotoshootShotBusyIndex,
+  productPhotoshootStatus,
   saveCounterLabel,
   saveError,
   savedDesigns,
   saveStatus,
   saveStatusLabel,
   selectedFormat,
+  selectedPhotoshootProductHandle,
   selectedDesignIsSaved,
   shareError,
   shareStatus,
@@ -86,10 +101,15 @@ export function CreateQuickActions({
   onBuildBrickMusicVideo: () => void;
   onDownloadMemePng: () => void;
   onGenerateBrickStoryboard: () => void;
+  onGenerateProductPhotoshoot: () => void;
+  onRegenerateFailedProductPhotoShots: () => void;
   onRegenerateBrickShot: (shotIndex: number) => void;
+  onRegenerateProductPhotoShot: (shotIndex: number) => void;
+  onRegenerateVisualizerAudio: () => void;
   onLoadSavedDesign: (design: SavedAdSceneDesign) => void;
   onOpenAudioPanel: () => void;
   onSaveSelectedDesign: () => void;
+  onSelectedPhotoshootProductChange: (handle: string) => void;
   onTogglePreviewPlayback: () => void;
   audioStatus: "idle" | "loading" | "ready" | "error";
   playableAudioUrl: string;
@@ -106,13 +126,20 @@ export function CreateQuickActions({
   brickStoryboardShotBusyIndex: number | null;
   brickStoryboardStatus: BrickStoryboardStatus;
   canGenerateBrickStoryboard: boolean;
+  canGenerateProductPhotoshoot: boolean;
   memeDownloadBusy: boolean;
+  productCatalog: ProductCatalog | null | undefined;
+  productPhotoshoot: ProductPhotoshootBoard | null;
+  productPhotoshootError: string;
+  productPhotoshootShotBusyIndex: number | null;
+  productPhotoshootStatus: BrickStoryboardStatus;
   saveCounterLabel: string;
   saveError: string;
   savedDesigns: SavedAdSceneDesign[];
   saveStatus: SaveStatus;
   saveStatusLabel: string;
   selectedFormat: AdFormatId | null;
+  selectedPhotoshootProductHandle: string;
   selectedDesignIsSaved: boolean;
   shareError: string;
   shareStatus: "idle" | "loading" | "ready" | "error";
@@ -120,7 +147,8 @@ export function CreateQuickActions({
 }) {
   const memeSceneSelected = selectedFormat === "meme";
   const hasPlayableAudio = Boolean(playableAudioUrl);
-  const generatedAudioPending = (selectedFormat === "jingle" || selectedFormat === "brainrot") && !hasPlayableAudio && audioStatus === "loading";
+  const generatedAudioPending = !hasPlayableAudio && audioStatus === "loading";
+  const visualizerAudioReady = selectedFormat === "visualizer" && hasPlayableAudio;
   const shareSupported = selectedFormat === "visualizer" || selectedFormat === "text-message" || ((selectedFormat === "jingle" || selectedFormat === "brainrot") && hasPlayableAudio);
   const showBrickStoryboard = selectedFormat === "jingle" && hasPlayableAudio;
   const renderWorkerOffline = !memeSceneSelected && renderWorkerHealthy === false;
@@ -233,6 +261,20 @@ export function CreateQuickActions({
         )}
       </div>
 
+      {visualizerAudioReady ? (
+        <button
+          type="button"
+          onClick={onRegenerateVisualizerAudio}
+          disabled={!hasSelectedScene || audioStatus === "loading"}
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-[10px] font-black uppercase tracking-[0.16em] text-slate-600 shadow-lg shadow-slate-950/5 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+          aria-label="Regenerate visualizer audio"
+          title="Regenerate the one-shot voiceover for this visualizer ad"
+        >
+          {audioStatus === "loading" ? <Loader2 className="size-4 animate-spin" /> : <AudioLines className="size-4" />}
+          {audioStatus === "loading" ? "Regenerating audio" : "Regenerate audio"}
+        </button>
+      ) : null}
+
       {banners.map((banner) => (
         <p
           key={banner.id}
@@ -258,6 +300,20 @@ export function CreateQuickActions({
           onRegenerateBrickShot={onRegenerateBrickShot}
         />
       ) : null}
+
+      <CreateProductPhotoshootSheet
+        board={productPhotoshoot}
+        canGenerate={canGenerateProductPhotoshoot}
+        catalog={productCatalog}
+        error={productPhotoshootError}
+        onGenerate={onGenerateProductPhotoshoot}
+        onRegenerateFailedShots={onRegenerateFailedProductPhotoShots}
+        onRegenerateShot={onRegenerateProductPhotoShot}
+        onSelectedProductChange={onSelectedPhotoshootProductChange}
+        selectedProductHandle={selectedPhotoshootProductHandle}
+        shotBusyIndex={productPhotoshootShotBusyIndex}
+        status={productPhotoshootStatus}
+      />
 
       <Sheet>
         <SheetTrigger asChild>

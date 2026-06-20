@@ -78,6 +78,18 @@ select {
   animation-name: wigglyIdleBarStrong;
 }
 
+.wiggly-hero-headline {
+  transform-origin: 50% 56%;
+  animation: wigglyHeroHeadline 2.6s ease-in-out infinite;
+  color: transparent;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.95) 0 6%, transparent 12%),
+    linear-gradient(110deg, #8b35ff 0%, #4b6cff 34%, #a53cff 62%, #6f2cff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: 0 8px 24px rgba(109, 92, 255, 0.22);
+}
+
 .wiggly-reroll-shine {
   isolation: isolate;
   overflow: hidden;
@@ -164,6 +176,25 @@ select {
   100% {
     opacity: 1;
     transform: scaleY(1.22);
+  }
+}
+
+@keyframes wigglyHeroHeadline {
+  0%,
+  100% {
+    transform: rotate(-1.2deg) skewX(-2.2deg) scaleX(0.985) translateY(0);
+  }
+
+  28% {
+    transform: rotate(1deg) skewX(2.6deg) scaleX(1.028) translateY(-4px);
+  }
+
+  58% {
+    transform: rotate(-0.7deg) skewX(-1.8deg) scaleX(0.998) translateY(2px);
+  }
+
+  78% {
+    transform: rotate(0.45deg) skewX(1.2deg) scaleX(1.014) translateY(-2px);
   }
 }
 

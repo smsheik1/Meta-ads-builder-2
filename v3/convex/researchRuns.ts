@@ -6,6 +6,7 @@ import {
   toWebsiteResearchErrorMessage,
 } from "../features/research/firecrawl";
 import { extractAdAnglesFromResearch } from "../features/research/adAngles";
+import { fetchEcommerceProductCatalog } from "../features/research/productCatalog";
 import { normalizePublicWebsiteUrl } from "../features/research/url";
 import { toStoredResearchResult } from "./researchStorage";
 
@@ -28,6 +29,12 @@ export const runWebsiteResearch: ReturnType<typeof action> = action({
       let result = await fetchWebsiteResearchWithFirecrawl(url, {
         brandAssets: { cachedBrand },
       });
+      const productCatalog = await fetchEcommerceProductCatalog(result.finalUrl || url);
+      result = {
+        ...result,
+        productCatalog: productCatalog.catalog,
+        providerStatus: [...result.providerStatus, productCatalog.providerStatus],
+      };
       const cachedAdAngles = await ctx.runQuery(internal.researchStorage.latestAdAnglesForHost, {
         host: result.host,
       });

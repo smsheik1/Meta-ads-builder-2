@@ -197,6 +197,53 @@ const brainrotParityScene: AdScene = {
   },
 };
 
+const reviewsParityScene: AdScene = {
+  ...parityScene,
+  format: "reviews",
+  creative: {
+    ...parityScene.creative,
+    headline: "Proof people can taste",
+    subheadline: "The cookies arrived fresh and everyone asked where they came from.",
+    ctaText: "Shop gifts",
+    selectedProof: "The cookies arrived fresh and everyone asked where they came from.",
+  },
+  style: {
+    backgroundColor: "#F8FAFC",
+    textColor: "#0F172A",
+    accentColor: "#EF1B1B",
+    fontFeel: "sans",
+  },
+  audio: {
+    status: "none",
+    transcript: "",
+    captions: [],
+  },
+  layout: {
+    preset: "reviews-proof-card",
+    proof: {
+      type: "review",
+      text: "The cookies arrived fresh and everyone asked where they came from.",
+      rating: 5,
+      sourceName: "Mia R.",
+      provider: "website",
+    },
+    proofIndex: 0,
+    proofTotal: 4,
+    proofText: "The cookies arrived fresh and everyone asked where they came from.",
+    headline: "Proof people can taste",
+    ctaText: "Shop gifts",
+    productAnchor: {
+      title: "Butter Pecan Meltaway Tin",
+      handle: "butter-pecan-meltaway-tin",
+      url: "https://example.com/products/butter-pecan-meltaway-tin",
+      imageUrl: "https://example.com/cookie-tin.jpg",
+      imageAlt: "Butter Pecan Meltaway Tin",
+      isBestSeller: true,
+    },
+    backgroundImages: ["https://example.com/cookie-tin.jpg"],
+  },
+};
+
 function getSourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
     const fullPath = join(dir, entry);
@@ -298,9 +345,18 @@ assert.ok(
 );
 assert.ok(
   renderJobsSource.includes("refreshJingleMusicVideoUrls") &&
+    renderJobsSource.includes("refreshSceneAudioUrls") &&
     sceneUrlRefreshSource.includes("scene.layout.musicVideo.clips") &&
-    sceneUrlRefreshSource.includes("scene.layout.musicVideo.stitchedVideo"),
-  "Render jobs must refresh stored music-video clip and stitched-video URLs before export.",
+    sceneUrlRefreshSource.includes("scene.layout.musicVideo.stitchedVideo") &&
+    sceneUrlRefreshSource.includes("backgroundMusic"),
+  "Render jobs must refresh stored audio, background music, music-video clip, and stitched-video URLs before export.",
+);
+assert.ok(
+  workerSource.includes("ffmpeg background music mix") &&
+    workerSource.includes("amix=inputs=2") &&
+    workerSource.includes("backgroundMusic.volume") &&
+    workerSource.includes("getAdSceneDurationInFrames"),
+  "Render worker must mix uploaded background music into one final MP4 audio track.",
 );
 assert.ok(
   workerSource.includes("api.jingleStoryboards.claimNextStitch") &&
@@ -437,5 +493,35 @@ assert.equal(
     : 5) * adSceneFps),
   "Brainrot export must keep the CTA end card after generated audio ends.",
 );
+
+for (const html of [
+  renderToStaticMarkup(createElement(PhonePreviewFrame, {
+    scene: reviewsParityScene,
+    result: null,
+    platform: "instagram-feed",
+    motionMode: "idle",
+    timeSeconds: 0,
+  })),
+  renderToStaticMarkup(createElement(AdRenderSurface, {
+    scene: reviewsParityScene,
+    mode: "preview",
+    motionMode: "idle",
+  })),
+  renderToStaticMarkup(createElement(AdRenderSurface, {
+    scene: reviewsParityScene,
+    mode: "video",
+    motionMode: "idle",
+  })),
+]) {
+  assert.ok(html.includes('data-render-surface="ad"'), "Reviews preview/export must use the shared render surface.");
+  assert.ok(html.includes('data-format="reviews"'), "Reviews preview/export must preserve the format.");
+  assert.ok(html.includes('data-reviews-card="true"'), "Reviews preview/export must render the proof card.");
+  assert.ok(html.includes('data-reviews-image-rail="true"'), "Reviews preview/export must render the image rail.");
+  assert.ok(html.includes('data-reviews-product-context="true"'), "Reviews preview/export must render product context.");
+  assert.ok(html.includes("Butter Pecan Meltaway Tin"), "Reviews preview/export must render the product anchor.");
+  assert.ok(html.includes("The cookies arrived fresh"), "Reviews preview/export must render verbatim proof text.");
+  assert.ok(html.includes("background-color:rgba(255,255,255,0.94)"), "Reviews preview/export must keep proof card fill inline.");
+  assert.ok(html.includes("border-radius:6cqw"), "Reviews preview/export must keep proof card radius inline.");
+}
 
 console.log("render-parity tests passed");
