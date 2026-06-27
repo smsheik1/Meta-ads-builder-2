@@ -161,7 +161,7 @@ export const regenerateBrickShot: ReturnType<typeof action> = action({
     if (!shot) throw new Error("Storyboard shot not found.");
     const referencePrompt = nextStoryboard.referenceFrame.prompt;
     const prompt = `${shot.shotPrompt}\n\nREFERENCE WORLD TO MATCH:\n${referencePrompt}`;
-    const retryPrompt = `${shot.shotPrompt}\n\nUse the same narrative Lego world, palette, hero object, and Lego brand sign from the reference frame. Simple vertical still. No captions or subtitles.`;
+    const retryPrompt = `${shot.shotPrompt}\n\nUse the same narrative brick-style miniature world, palette, and recurring hero object from the reference frame. One single full-frame vertical 9:16 still. No storyboard sheet, collage, split-screen, panels, captions, subtitles, readable logos, brand names, brand signage, realistic human faces, trademarked toy names, or extra text. Block-figure characters only.`;
 
     const image = await storeStoryboardImage({
       ctx,
@@ -390,18 +390,13 @@ export const animateBrickBoard: ReturnType<typeof action> = action({
         shotIndex: shot.shotIndex,
         durationMs: shot.durationMs,
         hasImageUrl: Boolean(shot.image?.url),
-        promptLength: shot.shotPrompt.length,
+        promptLength: shot.animationPrompt?.length ?? 0,
       });
-      const prompt = [
-        shot.shotPrompt,
-        "Style & Mood: polished lyric-driven Lego music video B-roll, clean commercial lighting, brand-color world.",
-        "Dynamic Description: animate this exact Lego still with one visible physical action from the shot prompt. Keep the camera locked-off and stable.",
-        "Static Description: preserve the same Lego world, brand sign, hero object, characters, lighting, camera angle, and palette from the input image. No stage performance, band, DJ, concert crowd, shake, handheld movement, rotation, zoom, sideways frame, captions, subtitles, lyrics, color labels, or extra text.",
-      ].join(" ");
+      if (!shot.animationPrompt) throw new Error(`Shot ${shot.shotIndex + 1} is missing its Seedance animation prompt.`);
       const result = await generateReplicateSeedanceVideo({
         replicateApiToken,
         imageUrl: shot.image!.url!,
-        prompt,
+        prompt: shot.animationPrompt,
         durationSeconds: shot.durationMs / 1000,
       });
       const storageId = await ctx.storage.store(new Blob([result.bytes], {
@@ -463,6 +458,7 @@ export const generateBrickForScene: ReturnType<typeof action> = action({
       imageModel: BRICK_STORYBOARD_IMAGE_MODEL,
       shotCount: promptPlan.shots.length,
       storyPlan,
+      storyboardSheetPrompt: promptPlan.storyboardSheetPrompt,
       referenceFrame: {
         prompt: promptPlan.referenceFramePrompt,
         image: referenceImage,
@@ -474,7 +470,7 @@ export const generateBrickForScene: ReturnType<typeof action> = action({
     for (const shot of promptPlan.shots) {
       try {
         const conditionedPrompt = `${shot.shotPrompt}\n\nREFERENCE WORLD TO MATCH:\n${promptPlan.referenceFramePrompt}`;
-        const retryPrompt = `${shot.shotPrompt}\n\nUse the same narrative Lego world, palette, hero object, and Lego brand sign from the reference frame. Simple vertical still. No captions or subtitles.`;
+        const retryPrompt = `${shot.shotPrompt}\n\nUse the same narrative brick-style miniature world, palette, and recurring hero object from the reference frame. One single full-frame vertical 9:16 still. No storyboard sheet, collage, split-screen, panels, captions, subtitles, readable logos, brand names, brand signage, realistic human faces, trademarked toy names, or extra text. Block-figure characters only.`;
         storyboard.shots.push({
           ...shot,
           image: await storeStoryboardImage({
