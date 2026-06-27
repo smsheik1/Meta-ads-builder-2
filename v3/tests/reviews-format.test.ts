@@ -13,6 +13,7 @@ import {
   extractReviewsVariantsFromResponse,
   generateReviewsVariantsFromResearch,
 } from "../features/formats/reviews/generate";
+import { validateReviewsScene } from "../features/formats/reviews/validate";
 import { REVIEWS_VARIANT_COUNT, buildReviewsPrompt } from "../features/formats/reviews/prompt";
 import { createReviewsAdScene } from "../features/scene/createReviewsScene";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
@@ -427,5 +428,17 @@ const legacyScene = {
 const legacyHtml = renderToStaticMarkup(createElement(AdRenderSurface, { scene: legacyScene }));
 assert.ok(legacyHtml.includes("4 of 4 reviews"));
 assert.ok(!legacyHtml.includes("4 of 1 reviews"));
+
+const legacyProofTypeScene = {
+  ...scene,
+  layout: {
+    ...scene.layout,
+    proof: {
+      ...scene.layout.proof,
+      type: "review_count",
+    },
+  },
+} as unknown as typeof scene;
+assert.ok(validateReviewsScene(legacyProofTypeScene).valid);
 
 console.log("reviews-format tests passed");

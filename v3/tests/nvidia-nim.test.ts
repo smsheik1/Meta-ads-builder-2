@@ -37,6 +37,26 @@ await assert.rejects(
   /NVIDIA NIM plain abort timed out after/,
 );
 
+let capturedBody: Record<string, unknown> = {};
+globalThis.fetch = ((_input: RequestInfo | URL, init?: RequestInit) => {
+  capturedBody = JSON.parse(String(init?.body || "{}")) as Record<string, unknown>;
+  return Promise.resolve(new Response(JSON.stringify({
+    choices: [{ message: { content: "{\"ok\":true}" } }],
+  }), { status: 200 }));
+}) as typeof fetch;
+
+const content = await callNvidiaNimChat({
+  apiKey: "test-key",
+  baseUrl: "https://nim.test/v1",
+  label: "NVIDIA NIM max token test",
+  model: "test-model",
+  prompt: "{}",
+  maxTokens: 1800,
+  timeoutMs: 1000,
+});
+assert.equal(content, "{\"ok\":true}");
+assert.equal(capturedBody?.max_tokens, 1800);
+
 globalThis.fetch = originalFetch;
 
 console.log("nvidia-nim tests passed");

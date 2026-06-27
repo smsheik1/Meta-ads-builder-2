@@ -9,6 +9,7 @@ export type NvidiaNimChatCompletion = (input: {
   apiKey: string;
   baseUrl: string;
   timeoutMs: number;
+  maxTokens?: number;
 }) => Promise<string>;
 
 export const callNvidiaNimChat = async ({
@@ -18,6 +19,7 @@ export const callNvidiaNimChat = async ({
   model,
   nvidiaNimChatCompletion,
   prompt,
+  maxTokens,
   temperature = 0.7,
   timeoutMs,
 }: {
@@ -27,12 +29,13 @@ export const callNvidiaNimChat = async ({
   model: string;
   nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
   prompt: string;
+  maxTokens?: number;
   temperature?: number;
   timeoutMs: number;
 }) => {
   if (nvidiaNimChatCompletion) {
     return withTimeout(
-      nvidiaNimChatCompletion({ model, prompt, apiKey, baseUrl, timeoutMs }),
+      nvidiaNimChatCompletion({ model, prompt, apiKey, baseUrl, timeoutMs, maxTokens }),
       timeoutMs,
       label,
     );
@@ -52,6 +55,7 @@ export const callNvidiaNimChat = async ({
         model,
         messages: [{ role: "user", content: prompt }],
         temperature,
+        ...(maxTokens ? { max_tokens: maxTokens } : {}),
         response_format: { type: "json_object" },
       }),
       signal: controller.signal,

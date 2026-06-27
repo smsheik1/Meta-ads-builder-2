@@ -1,3 +1,9 @@
+import {
+  callNvidiaNimChat,
+  DEFAULT_NVIDIA_NIM_BASE_URL,
+  type NvidiaNimChatCompletion,
+} from "../../llm/nvidiaNim";
+import { DEFAULT_NVIDIA_NIM_JINGLE_MODEL } from "../../llm/nvidiaNimModels";
 import { withTimeout } from "../../llm/timeout";
 import type {
   JingleAdScene,
@@ -7,7 +13,7 @@ import type {
 
 export const BRICK_MUSIC_VIDEO_STYLE_ID = "brick-music-video" as const;
 export const BRICK_STORYBOARD_IMAGE_MODEL = "google/nano-banana-2";
-export const BRICK_STORYBOARD_VIDEO_MODEL = "bytedance/seedance-2.0-fast";
+export const BRICK_STORYBOARD_VIDEO_MODEL = "bytedance/seedance-2.0-mini";
 export const DEFAULT_BRICK_STORYBOARD_SHOT_COUNT = 3;
 
 export type BrickStoryboardSlot = {
@@ -26,6 +32,18 @@ export type BrickStoryboardPromptPlan = {
   }>;
 };
 
+export type BrickStoryboardStoryShot = {
+  shotIndex: number;
+  lyricLine: string;
+  sceneDescription: string;
+  motionHint: string;
+  heroObject: string;
+};
+
+export type BrickStoryboardStoryPlan = {
+  shots: BrickStoryboardStoryShot[];
+};
+
 export type BrickStoryboardImage = {
   storageId: string;
   url: string | null;
@@ -37,6 +55,7 @@ export type BrickStoryboard = {
   visualStyle: typeof BRICK_MUSIC_VIDEO_STYLE_ID;
   imageModel: typeof BRICK_STORYBOARD_IMAGE_MODEL;
   shotCount: number;
+  storyPlan?: BrickStoryboardStoryPlan;
   musicVideo?: {
     sourceStoryboardId: string;
     clips: JingleMusicVideoClip[];
@@ -59,6 +78,8 @@ export type BrickStoryboard = {
 };
 
 const DEFAULT_TIMEOUT_MS = 90_000;
+const DEFAULT_STORY_DIRECTOR_TIMEOUT_MS = 60_000;
+const DEFAULT_STORY_DIRECTOR_MAX_TOKENS = 4096;
 const sleep = (durationMs: number) => new Promise((resolve) => setTimeout(resolve, durationMs));
 
 const cleanText = (value: unknown, maxLength = 1400) => String(value ?? "")
@@ -77,17 +98,25 @@ const lyricLines = (text: string) => text
   .map((line) => cleanText(line, 140))
   .filter((line) => line && !/^\[[^\]]+]$/.test(line));
 
-export const normalizeBrickStoryboardShotCount = (shotCount = DEFAULT_BRICK_STORYBOARD_SHOT_COUNT) =>
-  Math.min(8, Math.max(3, Math.round(shotCount)));
+const parseJsonObject = (value: string, providerLabel = "AI provider") => {
+  const trimmed = value.trim();
+  const jsonText = trimmed.startsWith("{")
+    ? trimmed
+    : trimmed.match(/\{[\s\S]*\}/)?.[0] || "";
+  if (!jsonText) throw new Error(`${providerLabel} returned no JSON.`);
+  try {
+    return JSON.parse(jsonText) as Record<string, unknown>;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const suffix = jsonText.slice(-240).replace(/\s+/g, " ").trim();
+    throw new Error(`${providerLabel} returned malformed JSON: ${message}. JSON ended with: ${suffix}`);
+  }
+};
 
-export function deriveBrickStoryboardShots(
-  scene: JingleAdScene,
-  shotCount = DEFAULT_BRICK_STORYBOARD_SHOT_COUNT,
-): BrickStoryboardSlot[] {
+export function deriveBrickStoryboardShots(scene: JingleAdScene): BrickStoryboardSlot[] {
   const chunks = scene.layout.compositionPlan.chunks;
-  const targetCount = normalizeBrickStoryboardShotCount(shotCount);
   const counts = chunks.map(() => 1);
-  for (let extra = targetCount - chunks.length; extra > 0; extra -= 1) {
+  for (let extra = DEFAULT_BRICK_STORYBOARD_SHOT_COUNT - chunks.length; extra > 0; extra -= 1) {
     let bestIndex = 0;
     for (let index = 1; index < chunks.length; index += 1) {
       if ((chunks[index]!.duration_ms / counts[index]!) > (chunks[bestIndex]!.duration_ms / counts[bestIndex]!)) {
@@ -130,44 +159,18 @@ const cameraSetups = [
   "wide low-angle vertical shot",
   "medium three-quarter side shot",
   "close front-facing vertical shot",
-  "overhead three-quarter vertical shot",
-  "wide tracking shot",
-  "medium low-angle push-in",
-  "close side-profile shot",
-  "wide top-lit stage shot",
-];
-
-const subjectPlacements = [
-  "toy-brick performer centered on a stepped stage",
-  "toy-brick crew at frame left facing a brick console",
-  "toy-brick mascot near frame right beside stacked speaker towers",
-  "toy-brick crowd silhouettes along the lower frame",
-  "toy-brick lead figure crossing the center aisle",
-  "toy-brick DJ behind a raised block platform",
-  "toy-brick camera rig pointed at the brick brand sign",
-  "toy-brick dancers spaced across tiered risers",
 ];
 
 const setDetails = [
-  "brick-built brand name sign on the rear wall",
-  "stacked brick speaker columns using the brand palette",
-  "striped brick floor tiles in the brand colors",
-  "small brick light trusses over the stage",
-  "brick skyline pieces behind the performer",
-  "blocky brick turntables on the center platform",
-  "brick stair risers leading to the rear sign",
-  "brick side panels with alternating brand-color blocks",
+  "Lego-built brand name sign integrated into a storefront",
+  "brand-color brick streets, counters, packages, and signal lights",
+  "small Lego customers, carts, screens, and animated brick props",
 ];
 
 const motionNotes = [
-  "Locked camera; the performer steps one brick forward.",
-  "Locked camera; the light bar sweeps across the set.",
-  "Locked camera; the subject raises one arm on the beat.",
-  "Locked camera; the crowd blocks bounce in place.",
-  "Locked camera; stage lights blink in sequence.",
-  "Locked camera; the speaker blocks pulse gently.",
-  "Locked camera; the side-stage lights sweep once.",
-  "Locked camera; the full toy-brick set stays upright and steady.",
+  "Locked camera; the hero object moves once in a clean readable action.",
+  "Locked camera; a Lego character reacts while one set piece changes state.",
+  "Locked camera; brand-color bricks ripple through the scene on the beat.",
 ];
 
 const styleSummary = (scene: JingleAdScene) => scene.layout.compositionPlan.chunks[0]?.positive_styles
@@ -183,17 +186,161 @@ const angleContext = (scene: JingleAdScene) => cleanText(
   220,
 );
 
+const bannedStoryPattern = /\b(stage performance|concert|band|dj|subtitles?|captions?|lyric text|testimonial|guarantee|guaranteed|#1|award|discount)\b/i;
+
+const normalizeComparableText = (value: unknown) => cleanText(value, 260).replace(/\s+/g, " ");
+
+export function buildBrickStoryboardStoryPrompt(scene: JingleAdScene) {
+  const colors = brandPalette(scene);
+  const angle = angleContext(scene);
+  const slots = deriveBrickStoryboardShots(scene);
+  const ctaDirection = cleanText(scene.creative.ctaText || "Learn more", 80);
+  return [
+    "You are a Lego music video B-roll director for a brand jingle.",
+    "Return ONLY valid JSON. Return B-roll beats only, NOT image prompts.",
+    "",
+    "REQUIRED JSON CONTRACT:",
+    "- Return one flat top-level JSON object with EXACTLY one top-level key: shots.",
+    "- Do not add visualPremise, recurringHeroObject, worldSetting, storyPremise, premise, setting, hero, or storyPlan.",
+    "- shots must contain exactly 3 objects using the exact keys: shotIndex, lyricLine, sceneDescription, motionHint, heroObject.",
+    "- Keep every string short. sceneDescription max 140 chars. motionHint max 90 chars. heroObject max 60 chars.",
+    "- Do not use double quote characters inside any string value. Use apostrophes if needed.",
+    JSON.stringify({
+      shots: [
+        { shotIndex: 0, lyricLine: slots[0]?.lyricLine || "exact lyric line", sceneDescription: "literal Lego B-roll visual for this lyric", motionHint: "one simple physical motion", heroObject: "object in this shot" },
+        { shotIndex: 1, lyricLine: slots[1]?.lyricLine || "exact lyric line", sceneDescription: "literal Lego B-roll visual for this lyric", motionHint: "one simple physical motion", heroObject: "object in this shot" },
+        { shotIndex: 2, lyricLine: slots[2]?.lyricLine || "exact lyric line", sceneDescription: `literal Lego B-roll visual that turns ${ctaDirection} into action`, motionHint: "one simple CTA-driven physical motion", heroObject: "object in this shot" },
+      ],
+    }, null, 2),
+    "",
+    "BRAND:",
+    `- Name: ${scene.brand.name}`,
+    `- Description: ${cleanText(scene.brand.description, 260)}`,
+    `- Jingle angle: ${angle}`,
+    `- CTA direction: ${ctaDirection}`,
+    `- Brand colors: ${colors}`,
+    `- Music style: ${styleSummary(scene)}`,
+    "",
+    "LYRIC SLOTS (return exactly one shot for each row; do not split, merge, reorder, or add shots):",
+    "shotIndex | startMs | endMs | durationMs | section | lyricLine",
+    slots
+      .map((slot) => `${slot.shotIndex} | ${slot.startMs} | ${slot.endMs} | ${slot.durationMs} | ${slot.section} | ${slot.lyricLine}`)
+      .join("\n"),
+    "",
+    "RULES:",
+    "- Each sceneDescription must visually depict what the assigned lyric means as vivid Lego B-roll.",
+    "- Do not force a sales funnel, problem/escalation/payoff structure, stage performance, or generic brand wallpaper.",
+    "- Every motionHint must be a concrete visible action a viewer can understand without reading lyrics.",
+    "- Use a consistent heroObject family across shots: product, package, dashboard, phone, cart, inbox, calendar, storefront, or service desk.",
+    `- The final shot sceneDescription must incorporate the CTA direction "${ctaDirection}" as a physical Lego action, not as text.`,
+    "- No stage performance, band, DJ, concert crowd, captions, subtitles, lyric text, CTA text, buttons, or fake claims.",
+    "- No invented stats, ratings, reviews, discounts, guarantees, awards, competitors, or claims beyond the brand context.",
+    "- Do not write camera directions, provider prompts, style tags, or image prompts.",
+  ].join("\n");
+}
+
+export function extractBrickStoryboardStoryPlan(
+  content: string,
+  slots: BrickStoryboardSlot[],
+  providerLabel = "Story Director",
+): BrickStoryboardStoryPlan {
+  const payload = parseJsonObject(content, providerLabel);
+  const unexpectedTopLevelKeys = Object.keys(payload).filter((key) => key !== "shots");
+  if (unexpectedTopLevelKeys.length) {
+    throw new Error(`${providerLabel} returned unexpected top-level keys: ${unexpectedTopLevelKeys.slice(0, 8).join(", ")}.`);
+  }
+  const rawShots = Array.isArray(payload.shots) ? payload.shots : [];
+
+  if (slots.length !== DEFAULT_BRICK_STORYBOARD_SHOT_COUNT || rawShots.length !== slots.length) {
+    throw new Error(`${providerLabel} must return exactly 3 B-roll shots, one per lyric slot.`);
+  }
+
+  const shots = rawShots.map((item, index) => {
+    if (!item || typeof item !== "object") {
+      throw new Error(`${providerLabel} returned an invalid story shot.`);
+    }
+    const record = item as Record<string, unknown>;
+    if ("role" in record) {
+      throw new Error(`${providerLabel} used the old problem/escalation/payoff story shape.`);
+    }
+    if ("visualMetaphor" in record || "physicalEvent" in record) {
+      throw new Error(`${providerLabel} used the old visualMetaphor/physicalEvent story shape.`);
+    }
+    const slot = slots[index]!;
+    const shotIndex = Math.round(Number(record.shotIndex));
+    const lyricLine = cleanText(record.lyricLine, 180);
+    const sceneDescription = cleanText(record.sceneDescription, 240);
+    const motionHint = cleanText(record.motionHint, 160);
+    const heroObject = cleanText(record.heroObject, 140);
+    const combined = `${lyricLine} ${sceneDescription} ${motionHint} ${heroObject}`;
+
+    if (shotIndex !== slot.shotIndex) {
+      throw new Error(`${providerLabel} story shots must preserve lyric slot indexes.`);
+    }
+    if (normalizeComparableText(lyricLine) !== normalizeComparableText(slot.lyricLine)) {
+      throw new Error(`${providerLabel} story shot ${slot.shotIndex + 1} must use the exact assigned lyric line.`);
+    }
+    if (!sceneDescription || !motionHint || !heroObject) {
+      throw new Error(`${providerLabel} returned an incomplete B-roll story shot.`);
+    }
+    if (bannedStoryPattern.test(combined)) {
+      throw new Error(`${providerLabel} used banned stage, caption, or fake-claim language.`);
+    }
+    return { shotIndex, lyricLine, sceneDescription, motionHint, heroObject };
+  });
+
+  return { shots };
+}
+
+export async function generateBrickStoryboardStoryPlan(
+  scene: JingleAdScene,
+  options: {
+    nvidiaNimApiKey?: string;
+    nvidiaNimBaseUrl?: string;
+    nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
+    nvidiaNimModel?: string;
+    timeoutMs?: number;
+  } = {},
+) {
+  const nvidiaNimApiKey = options.nvidiaNimApiKey ?? process.env.NVIDIA_NIM_API_KEY;
+  if (!nvidiaNimApiKey) throw new Error("NVIDIA NIM brick story director is not configured.");
+  if (/^(0|false|off|disabled)$/i.test(String(process.env.NVIDIA_NIM_ENABLED || ""))) {
+    throw new Error("NVIDIA NIM brick story director is disabled.");
+  }
+
+  const content = await callNvidiaNimChat({
+    apiKey: nvidiaNimApiKey,
+    baseUrl: options.nvidiaNimBaseUrl || process.env.NVIDIA_NIM_BASE_URL || DEFAULT_NVIDIA_NIM_BASE_URL,
+    label: "NVIDIA NIM brick story director",
+    model: options.nvidiaNimModel || process.env.NVIDIA_NIM_JINGLE_MODEL || DEFAULT_NVIDIA_NIM_JINGLE_MODEL,
+    nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
+    prompt: buildBrickStoryboardStoryPrompt(scene),
+    maxTokens: DEFAULT_STORY_DIRECTOR_MAX_TOKENS,
+    temperature: 0.35,
+    timeoutMs: options.timeoutMs ?? DEFAULT_STORY_DIRECTOR_TIMEOUT_MS,
+  });
+  return extractBrickStoryboardStoryPlan(
+    content,
+    deriveBrickStoryboardShots(scene),
+    "NVIDIA NIM brick story director",
+  );
+}
+
 export function createBrickStoryboardPromptPlan(
   scene: JingleAdScene,
-  shotCount = DEFAULT_BRICK_STORYBOARD_SHOT_COUNT,
+  storyPlan: BrickStoryboardStoryPlan,
 ): BrickStoryboardPromptPlan {
-  const slots = deriveBrickStoryboardShots(scene, shotCount);
+  const slots = deriveBrickStoryboardShots(scene);
   const colors = brandPalette(scene);
+  const heroObjects = storyPlan.shots.map((shot) => shot.heroObject).filter(Boolean).join(", ");
+  const sceneDescriptions = storyPlan.shots.map((shot) => shot.sceneDescription).join(" Then ");
   const referenceFramePrompt = cleanText(
     [
-      `Vertical 9:16 toy-brick music video stage for ${scene.brand.name}.`,
+      `Vertical 9:16 Lego music-video B-roll world for ${scene.brand.name}.`,
       `Use dominant brick palette ${colors}.`,
-      `Build a single consistent stage with a brick-built ${scene.brand.name} name sign, stacked speaker columns, tiered risers, and a clean dark studio backdrop.`,
+      `Create one consistent Lego world that can support these lyric visuals: ${sceneDescriptions}.`,
+      `Recurring hero object family: ${heroObjects || "brand product and service desk"}.`,
+      `Include a Lego-built ${scene.brand.name} name sign as an in-world object.`,
       `Lighting style matches ${styleSummary(scene)}.`,
       "Locked-off upright vertical composition. No Dutch angle, no sideways frame, no handheld camera.",
       "No captions, no subtitles, no lyric text, no readable ad copy besides the brand name sign.",
@@ -203,14 +350,13 @@ export function createBrickStoryboardPromptPlan(
 
   const shots = slots.map((slot) => {
     const index = slot.shotIndex % cameraSetups.length;
+    const storyShot = storyPlan.shots.find((shot) => shot.shotIndex === slot.shotIndex);
+    if (!storyShot) throw new Error(`Story Director output is missing shot ${slot.shotIndex + 1}.`);
     const shotPrompt = cleanText(
       [
-        `${cameraSetups[index]}, ${subjectPlacements[index]}, ${slot.section} section,`,
-        `directional rim light and soft front fill using ${colors},`,
-        `${setDetails[index]},`,
-        `physical action tied to the lyric "${cleanText(slot.lyricLine, 90)}" and brand angle "${angleContext(scene)}".`,
-        motionNotes[index],
-        "Same toy-brick stage as the reference frame. Upright vertical 9:16 frame. No camera shake, no rotation, no handheld motion. Do not render captions, subtitles, lyric text, or extra readable ad copy.",
+        `Style & Mood: lyric-driven Lego music-video B-roll, ${styleSummary(scene)}, brand palette ${colors}.`,
+        `Dynamic Description: ${cameraSetups[index]}, visualizing the lyric "${cleanText(slot.lyricLine, 120)}". Scene: ${storyShot.sceneDescription}. Motion: ${storyShot.motionHint}. Hero object: ${storyShot.heroObject}. ${motionNotes[index]}`,
+        `Static Description: no stage performance, no band, no DJ, no concert crowd. Same Lego world as the reference frame, ${setDetails[index]}, directional rim light, soft front fill, upright vertical 9:16 frame. No camera shake, rotation, handheld motion, captions, subtitles, lyric text, CTA text, buttons, or extra readable ad copy.`,
       ].join(" "),
       1800,
     );

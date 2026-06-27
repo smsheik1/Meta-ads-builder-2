@@ -19,9 +19,6 @@ export function validateReviewsScene(scene: ReviewsAdScene): FormatValidationRes
     errors.push("Reviews proof text must be verbatim from scraped proof.");
   }
   if (scene.layout.proof.provider !== "website") errors.push("Reviews proof provider is invalid.");
-  if (scene.layout.proof.type !== "review") {
-    errors.push("Reviews proof type is invalid.");
-  }
   if (!Number.isInteger(scene.layout.proofIndex) || scene.layout.proofIndex < 0) errors.push("Reviews proof index is invalid.");
   if (!scene.layout.headline?.trim()) errors.push("Reviews headline is missing.");
   if (!scene.layout.ctaText?.trim()) errors.push("Reviews CTA is missing.");

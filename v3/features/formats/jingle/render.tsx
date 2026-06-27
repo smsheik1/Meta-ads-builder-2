@@ -46,6 +46,49 @@ export function JingleFormatRenderer({
   const stitchedMusicVideo = scene.layout.musicVideo?.stitchedVideo || null;
   const hasMusicVideo = Boolean(stitchedMusicVideo?.url);
   const shouldPlayMusicVideo = motionMode !== "idle";
+  const lyricWrapStyle: CSSProperties = hasMusicVideo
+    ? {
+      position: "absolute",
+      left: "6cqw",
+      right: "6cqw",
+      bottom: "11cqw",
+      display: "flex",
+      justifyContent: "center",
+      padding: "2.2cqw 3cqw",
+      borderRadius: "3.4cqw",
+      background: "rgba(0,0,0,0.56)",
+      boxShadow: "0 2cqw 5cqw rgba(0,0,0,0.38)",
+    }
+    : {
+      position: "absolute",
+      left: "7cqw",
+      right: "7cqw",
+      top: "32%",
+    };
+  const lyricTextStyle: CSSProperties = hasMusicVideo
+    ? {
+      margin: 0,
+      maxWidth: "100%",
+      color: "#ffffff",
+      fontSize: "5.6cqw",
+      fontWeight: 950,
+      lineHeight: 1.05,
+      letterSpacing: 0,
+      textAlign: "center",
+      textWrap: "balance",
+      textShadow: "0 0.45cqw 0 rgba(0,0,0,0.9), 0 0 1.4cqw rgba(0,0,0,0.7)",
+    }
+    : {
+      margin: 0,
+      color: "#ffffff",
+      fontSize: "8.2cqw",
+      fontWeight: 900,
+      lineHeight: 0.98,
+      letterSpacing: 0,
+      textAlign: "center",
+      textWrap: "balance",
+      textShadow: "0 0.7cqw 0 rgba(0,0,0,0.35)",
+    };
 
   return (
     <div
@@ -192,27 +235,12 @@ export function JingleFormatRenderer({
       </div>
 
       <div
-        className="absolute inset-x-[7cqw] top-[32%]"
-        style={{
-          position: "absolute",
-          left: "7cqw",
-          right: "7cqw",
-          top: "32%",
-        }}
+        data-jingle-music-video-lyric={hasMusicVideo ? "true" : undefined}
+        style={lyricWrapStyle}
       >
         <p
-          className={`text-balance text-center text-[8.2cqw] font-black leading-[0.98] tracking-normal text-white drop-shadow-[0_0.7cqw_0_rgba(0,0,0,0.35)] ${flashHeadline}`.trim()}
-          style={{
-            margin: 0,
-            color: "#ffffff",
-            fontSize: "8.2cqw",
-            fontWeight: 900,
-            lineHeight: 0.98,
-            letterSpacing: 0,
-            textAlign: "center",
-            textWrap: "balance",
-            textShadow: "0 0.7cqw 0 rgba(0,0,0,0.35)",
-          }}
+          className={flashHeadline || undefined}
+          style={lyricTextStyle}
           data-jingle-active-lyric="true"
         >
           {displayLyric}
