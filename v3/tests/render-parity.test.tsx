@@ -367,8 +367,11 @@ assert.ok(
 assert.ok(
   jingleRendererSource.includes("stitchedMusicVideo") &&
     jingleRendererSource.includes("data-jingle-stitched-music-video") &&
+    jingleRendererSource.includes("data-jingle-music-video-lyric") &&
+    jingleRendererSource.includes('bottom: "11cqw"') &&
+    jingleRendererSource.includes('fontSize: "5.6cqw"') &&
     !jingleRendererSource.includes("data-jingle-music-video-active"),
-  "Jingle music-video rendering must use one stitched video asset, not swap source clips at playback time.",
+  "Jingle music-video rendering must use one stitched video asset and lower-third lyric pixels, not source swapping or a preview-only caption layout.",
 );
 assert.ok(
   renderJobsSource.includes("rendererVersion: v.string()") &&

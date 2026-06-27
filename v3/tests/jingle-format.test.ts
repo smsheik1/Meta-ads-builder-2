@@ -186,6 +186,7 @@ const html = renderToStaticMarkup(createElement(AdRenderSurface, {
 assert.ok(html.includes('data-format="jingle"'));
 assert.ok(html.includes('data-jingle-active-lyric="true"'));
 assert.ok(html.includes('data-jingle-waveform="true"'));
+assert.ok(!html.includes('data-jingle-music-video-lyric="true"'));
 assert.ok(html.includes("Oh Gee Tool"));
 assert.ok(html.includes("position:relative"));
 assert.ok(html.includes("text-align:center"));
@@ -225,6 +226,8 @@ assert.ok(!musicVideoHtml.includes("https://example.com/hook.mp4"));
 assert.ok(!musicVideoHtml.includes("https://example.com/verse.mp4"));
 assert.ok(!musicVideoHtml.includes("https://example.com/hook-2.mp4"));
 assert.ok(musicVideoHtml.includes("object-fit:cover"));
+assert.ok(musicVideoHtml.includes('data-jingle-music-video-lyric="true"'));
+assert.ok(musicVideoHtml.includes("bottom:11cqw"));
 assert.ok(!musicVideoHtml.includes('data-jingle-waveform="true"'));
 assert.ok(!musicVideoHtml.includes("translateX"));
 

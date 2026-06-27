@@ -6,9 +6,9 @@ import type { Id } from "./_generated/dataModel";
 import {
   BRICK_MUSIC_VIDEO_STYLE_ID,
   BRICK_STORYBOARD_IMAGE_MODEL,
-  DEFAULT_BRICK_STORYBOARD_SHOT_COUNT,
   buildBrickMusicVideoClips,
   createBrickStoryboardPromptPlan,
+  generateBrickStoryboardStoryPlan,
   generateReplicateNanoBanana2Image,
   generateReplicateSeedanceVideo,
   type BrickStoryboard,
@@ -161,7 +161,7 @@ export const regenerateBrickShot: ReturnType<typeof action> = action({
     if (!shot) throw new Error("Storyboard shot not found.");
     const referencePrompt = nextStoryboard.referenceFrame.prompt;
     const prompt = `${shot.shotPrompt}\n\nREFERENCE WORLD TO MATCH:\n${referencePrompt}`;
-    const retryPrompt = `${shot.shotPrompt}\n\nUse the same toy-brick stage, palette, and brick brand sign from the reference frame. Simple vertical still. No captions or subtitles.`;
+    const retryPrompt = `${shot.shotPrompt}\n\nUse the same narrative Lego world, palette, hero object, and Lego brand sign from the reference frame. Simple vertical still. No captions or subtitles.`;
 
     const image = await storeStoryboardImage({
       ctx,
@@ -394,10 +394,9 @@ export const animateBrickBoard: ReturnType<typeof action> = action({
       });
       const prompt = [
         shot.shotPrompt,
-        "Animate this exact toy-brick still into a short music-video shot.",
-        "Keep the same stage, brick brand sign, characters, lighting, camera angle, and palette.",
-        "Use a locked-off stable camera. No shake, no handheld movement, no rotation, no zoom, no sideways frame.",
-        "Only animate simple toy-brick subject motion and light pulses. No captions, subtitles, lyrics, color labels, or extra text.",
+        "Style & Mood: polished lyric-driven Lego music video B-roll, clean commercial lighting, brand-color world.",
+        "Dynamic Description: animate this exact Lego still with one visible physical action from the shot prompt. Keep the camera locked-off and stable.",
+        "Static Description: preserve the same Lego world, brand sign, hero object, characters, lighting, camera angle, and palette from the input image. No stage performance, band, DJ, concert crowd, shake, handheld movement, rotation, zoom, sideways frame, captions, subtitles, lyrics, color labels, or extra text.",
       ].join(" ");
       const result = await generateReplicateSeedanceVideo({
         replicateApiToken,
@@ -442,14 +441,14 @@ export const generateBrickForScene: ReturnType<typeof action> = action({
     anonymousId: v.string(),
     sceneId: v.id("adScenes"),
     scene: v.any(),
-    shotCount: v.optional(v.number()),
   },
-  handler: async (ctx, { anonymousId, sceneId, scene, shotCount }) => {
+  handler: async (ctx, { anonymousId, sceneId, scene }) => {
     const jingleScene = assertJingleScene(scene as AdScene);
     const sessionId = await ctx.runMutation(internal.sessions.ensureAnonymousSession, {
       anonymousId,
     });
-    const promptPlan = createBrickStoryboardPromptPlan(jingleScene, shotCount ?? DEFAULT_BRICK_STORYBOARD_SHOT_COUNT);
+    const storyPlan = await generateBrickStoryboardStoryPlan(jingleScene);
+    const promptPlan = createBrickStoryboardPromptPlan(jingleScene, storyPlan);
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
     if (!replicateApiToken) throw new Error("Replicate image generation is not configured.");
 
@@ -463,6 +462,7 @@ export const generateBrickForScene: ReturnType<typeof action> = action({
       visualStyle: BRICK_MUSIC_VIDEO_STYLE_ID,
       imageModel: BRICK_STORYBOARD_IMAGE_MODEL,
       shotCount: promptPlan.shots.length,
+      storyPlan,
       referenceFrame: {
         prompt: promptPlan.referenceFramePrompt,
         image: referenceImage,
@@ -474,7 +474,7 @@ export const generateBrickForScene: ReturnType<typeof action> = action({
     for (const shot of promptPlan.shots) {
       try {
         const conditionedPrompt = `${shot.shotPrompt}\n\nREFERENCE WORLD TO MATCH:\n${promptPlan.referenceFramePrompt}`;
-        const retryPrompt = `${shot.shotPrompt}\n\nUse the same toy-brick stage, palette, and brick brand sign from the reference frame. Simple vertical still. No captions or subtitles.`;
+        const retryPrompt = `${shot.shotPrompt}\n\nUse the same narrative Lego world, palette, hero object, and Lego brand sign from the reference frame. Simple vertical still. No captions or subtitles.`;
         storyboard.shots.push({
           ...shot,
           image: await storeStoryboardImage({
