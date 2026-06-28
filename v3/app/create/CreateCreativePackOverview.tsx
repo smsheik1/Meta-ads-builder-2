@@ -16,7 +16,6 @@ export type CreativePackOverviewGroup = {
   sceneIds: Array<Id<"adScenes"> | null>;
   researchResult?: StoredWebsiteResearchResult;
   message?: string;
-  readyAt?: number;
 };
 
 const statusCopy: Record<CreativePackGroupStatus, string> = {

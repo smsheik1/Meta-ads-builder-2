@@ -1087,7 +1087,6 @@ function ResearchConnected() {
         sceneIds: nextSceneIds.length ? nextSceneIds : scenes.map(() => null),
         status: "ready",
         message: "",
-        readyAt: Date.now(),
       };
     }));
   };
@@ -1248,7 +1247,6 @@ function ResearchConnected() {
         scenes: adScenes,
         sceneIds,
         researchResult: result || undefined,
-        readyAt: Date.now(),
       };
     }
 
@@ -1521,7 +1519,6 @@ function ResearchConnected() {
           sceneIds: generation.sceneIds || [],
           researchResult: research.result || result || group.researchResult,
           message: "",
-          readyAt: Date.now(),
         }));
         // TODO(analytics): creative_pack_group_ready.
 
