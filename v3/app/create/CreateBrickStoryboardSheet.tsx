@@ -224,11 +224,22 @@ export function CreateBrickStoryboardSheet({
                           >
                             <summary className="flex h-9 cursor-pointer list-none items-center justify-center gap-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.12em] text-slate-700 [&::-webkit-details-marker]:hidden">
                               <FileText className="size-3" />
-                              Prompt
+                              Prompts
                             </summary>
-                            <pre className="max-h-44 overflow-auto whitespace-pre-wrap rounded-b-2xl border-t border-slate-200 bg-slate-950 p-3 text-[11px] font-bold leading-5 text-slate-100">
-                              {shot.shotPrompt || "No prompt stored for this shot."}
-                            </pre>
+                            <div className="max-h-64 overflow-auto rounded-b-2xl border-t border-slate-200 bg-slate-950 p-3 text-[11px] font-bold leading-5 text-slate-100">
+                              <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                                Still image prompt
+                              </p>
+                              <pre className="whitespace-pre-wrap font-inherit">
+                                {shot.shotPrompt || "No still prompt stored for this shot."}
+                              </pre>
+                              <p className="mb-2 mt-4 border-t border-white/10 pt-3 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                                Seedance video prompt
+                              </p>
+                              <pre className="whitespace-pre-wrap font-inherit">
+                                {shot.animationPrompt || "No video prompt stored for this shot."}
+                              </pre>
+                            </div>
                           </details>
                         </div>
                       </div>

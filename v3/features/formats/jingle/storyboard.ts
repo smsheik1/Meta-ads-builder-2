@@ -14,7 +14,17 @@ import type {
 export const BRICK_MUSIC_VIDEO_STYLE_ID = "brick-music-video" as const;
 export const BRICK_STORYBOARD_IMAGE_MODEL = "google/nano-banana-2";
 export const BRICK_STORYBOARD_VIDEO_MODEL = "bytedance/seedance-2.0-mini";
+export const BRICK_STORYBOARD_VIDEO_RESOLUTION = "480p";
 export const DEFAULT_BRICK_STORYBOARD_SHOT_COUNT = 3;
+const BRICK_STORYBOARD_FUN_MECHANISMS = [
+  "physical_metaphor",
+  "tiny_disaster",
+  "dramatic_reveal",
+  "crowd_reaction",
+  "chase_or_motion",
+  "visual_joke",
+  "scale_exaggeration",
+] as const;
 
 export type BrickStoryboardSlot = {
   section: "hook" | "verse";
@@ -27,22 +37,27 @@ export type BrickStoryboardSlot = {
 
 export type BrickStoryboardPromptPlan = {
   referenceFramePrompt: string;
+  storyboardSheetPrompt: string;
   shots: Array<BrickStoryboardSlot & {
     shotPrompt: string;
+    animationPrompt: string;
   }>;
 };
 
 export type BrickStoryboardStoryShot = {
   shotIndex: number;
   lyricLine: string;
+  funMechanism: BrickStoryboardFunMechanism;
   sceneDescription: string;
   motionHint: string;
-  heroObject: string;
 };
 
 export type BrickStoryboardStoryPlan = {
+  recurringHeroObject: string;
   shots: BrickStoryboardStoryShot[];
 };
+
+export type BrickStoryboardFunMechanism = typeof BRICK_STORYBOARD_FUN_MECHANISMS[number];
 
 export type BrickStoryboardImage = {
   storageId: string;
@@ -56,6 +71,7 @@ export type BrickStoryboard = {
   imageModel: typeof BRICK_STORYBOARD_IMAGE_MODEL;
   shotCount: number;
   storyPlan?: BrickStoryboardStoryPlan;
+  storyboardSheetPrompt?: string;
   musicVideo?: {
     sourceStoryboardId: string;
     clips: JingleMusicVideoClip[];
@@ -70,6 +86,7 @@ export type BrickStoryboard = {
   };
   shots: Array<BrickStoryboardSlot & {
     shotPrompt: string;
+    animationPrompt?: string;
     image?: BrickStoryboardImage;
     video?: BrickStoryboardImage;
     status: "pending" | "ok" | "failed";
@@ -79,7 +96,7 @@ export type BrickStoryboard = {
 
 const DEFAULT_TIMEOUT_MS = 90_000;
 const DEFAULT_STORY_DIRECTOR_TIMEOUT_MS = 60_000;
-const DEFAULT_STORY_DIRECTOR_MAX_TOKENS = 4096;
+const DEFAULT_STORY_DIRECTOR_MAX_TOKENS = 2400;
 const sleep = (durationMs: number) => new Promise((resolve) => setTimeout(resolve, durationMs));
 
 const cleanText = (value: unknown, maxLength = 1400) => String(value ?? "")
@@ -115,6 +132,35 @@ const parseJsonObject = (value: string, providerLabel = "AI provider") => {
 
 export function deriveBrickStoryboardShots(scene: JingleAdScene): BrickStoryboardSlot[] {
   const chunks = scene.layout.compositionPlan.chunks;
+  if (chunks.length > DEFAULT_BRICK_STORYBOARD_SHOT_COUNT) {
+    const totalDuration = chunks.reduce((sum, chunk) => sum + chunk.duration_ms, 0);
+    if (totalDuration <= 0) return [];
+    const chunkAtTime = (timeMs: number) => {
+      let cursor = 0;
+      for (const chunk of chunks) {
+        cursor += chunk.duration_ms;
+        if (timeMs < cursor) return chunk;
+      }
+      return chunks[chunks.length - 1]!;
+    };
+    return Array.from({ length: DEFAULT_BRICK_STORYBOARD_SHOT_COUNT }, (_, shotIndex) => {
+      const startMs = Math.round((totalDuration * shotIndex) / DEFAULT_BRICK_STORYBOARD_SHOT_COUNT);
+      const endMs = shotIndex === DEFAULT_BRICK_STORYBOARD_SHOT_COUNT - 1
+        ? totalDuration
+        : Math.round((totalDuration * (shotIndex + 1)) / DEFAULT_BRICK_STORYBOARD_SHOT_COUNT);
+      const chunk = chunkAtTime(startMs + ((endMs - startMs) / 2));
+      const lines = lyricLines(chunk.text);
+      return {
+        section: sectionName(chunk.text),
+        shotIndex,
+        durationMs: endMs - startMs,
+        startMs,
+        endMs,
+        lyricLine: lines[0] || scene.creative.headline,
+      };
+    });
+  }
+
   const counts = chunks.map(() => 1);
   for (let extra = DEFAULT_BRICK_STORYBOARD_SHOT_COUNT - chunks.length; extra > 0; extra -= 1) {
     let bestIndex = 0;
@@ -162,16 +208,22 @@ const cameraSetups = [
 ];
 
 const setDetails = [
-  "Lego-built brand name sign integrated into a storefront",
-  "brand-color brick streets, counters, packages, and signal lights",
-  "small Lego customers, carts, screens, and animated brick props",
+  "brick-built brand storefront sign integrated into the set",
+  "brand-color modular brick streets, counters, product displays, and signal lights",
+  "small block-figure customers, carts, screens, and animated brick props",
 ];
 
-const motionNotes = [
-  "Locked camera; the hero object moves once in a clean readable action.",
-  "Locked camera; a Lego character reacts while one set piece changes state.",
-  "Locked camera; brand-color bricks ripple through the scene on the beat.",
-];
+const stillFrameRules = [
+  "One single full-frame 9:16 image.",
+  "One miniature brick-style scene, one camera angle, one frozen moment in time.",
+  "The scene should read instantly as one clear visual idea: large hero object, simple background, obvious action, strong foreground and midground separation.",
+  "No storyboard sheet, comic strip, collage, split-screen, contact sheet, before-after layout, panel borders, horizontal dividers, or multiple frames.",
+  "No realistic human faces. Block-figure characters only.",
+  "Stable upright vertical frame, no sideways framing, no Dutch angle.",
+  "No captions, subtitles, lyric text, CTA text, buttons, or extra readable ad copy beyond in-world brand signage.",
+].join(" ");
+
+const animationNegativeRules = "No stage performance, band, DJ, concert crowd, shake, handheld movement, rotation, zoom, sideways frame, cuts, crop drift, captions, subtitles, lyrics, color labels, realistic human faces, trademarked toy names, or newly added extra text.";
 
 const styleSummary = (scene: JingleAdScene) => scene.layout.compositionPlan.chunks[0]?.positive_styles
   .slice(0, 8)
@@ -186,9 +238,23 @@ const angleContext = (scene: JingleAdScene) => cleanText(
   220,
 );
 
-const bannedStoryPattern = /\b(stage performance|concert|band|dj|subtitles?|captions?|lyric text|testimonial|guarantee|guaranteed|#1|award|discount)\b/i;
+const bannedStoryPattern = /\b(stage performance|concert|band|dj|subtitles?|captions?|lyric text|testimonial|guarantee|guaranteed|#1|award|discount|realistic human faces?|trademarked|lego|minifigures?)\b/i;
+const bannedHeroObjectPattern = /\b(realistic human faces?|trademarked)\b/i;
+const genericContainerPattern = /\b(box|boxes|cardboard|carton|crate|shipping box|delivery box|package|parcel)\b/i;
+const productSpecificObjectPattern = /\b(cookie|cookies|brownie|brownies|cake|cheesecake|tin|tray|platter|product|bottle|apparel|shirt|shoe|skincare|serum|dashboard|phone|calendar|inbox|cart|storefront|service desk)\b/i;
+const readableHeroTextPattern = /\b(label|logo|wordmark|brand name|readable text|lettering|printed name)\b/i;
+const productOnlyScenePattern = /\b(product-only|tabletop|showroom|still life|still-life|packshot|catalog shot|product render|product placement|generic brand(?:ed)? wallpaper)\b/i;
+const ALLOWED_FUN_MECHANISMS = new Set<BrickStoryboardFunMechanism>(BRICK_STORYBOARD_FUN_MECHANISMS);
 
 const normalizeComparableText = (value: unknown) => cleanText(value, 260).replace(/\s+/g, " ");
+
+export const toSeedanceSafeBrickPrompt = (value: string) => value
+  .replace(/\bLego-built\b/gi, "brick-built")
+  .replace(/\bLego minifigures?\b/gi, "plastic brick characters")
+  .replace(/\bLego world\b/gi, "snap-together brick world")
+  .replace(/\bminifigures?\b/gi, "plastic brick characters")
+  .replace(/\bLego\b/gi, "brick-style")
+  .replace(/\btoy-brick\b/gi, "brick-style miniature");
 
 export function buildBrickStoryboardStoryPrompt(scene: JingleAdScene) {
   const colors = brandPalette(scene);
@@ -196,20 +262,25 @@ export function buildBrickStoryboardStoryPrompt(scene: JingleAdScene) {
   const slots = deriveBrickStoryboardShots(scene);
   const ctaDirection = cleanText(scene.creative.ctaText || "Learn more", 80);
   return [
-    "You are a Lego music video B-roll director for a brand jingle.",
+    "You are a brick-style miniature music video B-roll director for a brand jingle.",
     "Return ONLY valid JSON. Return B-roll beats only, NOT image prompts.",
     "",
     "REQUIRED JSON CONTRACT:",
-    "- Return one flat top-level JSON object with EXACTLY one top-level key: shots.",
-    "- Do not add visualPremise, recurringHeroObject, worldSetting, storyPremise, premise, setting, hero, or storyPlan.",
-    "- shots must contain exactly 3 objects using the exact keys: shotIndex, lyricLine, sceneDescription, motionHint, heroObject.",
-    "- Keep every string short. sceneDescription max 140 chars. motionHint max 90 chars. heroObject max 60 chars.",
-    "- Do not use double quote characters inside any string value. Use apostrophes if needed.",
+    "- Return one flat top-level JSON object with EXACTLY two top-level keys: recurringHeroObject and shots.",
+    "- recurringHeroObject is the one physical miniature brick-style object that appears in all 3 shots.",
+    "- recurringHeroObject describes the recurring brand/product motif. It can be the catalyst, prize, signal, tool, or payoff, but it does not need to dominate every frame.",
+    "- recurringHeroObject describes shape, color, and use only. Do not include brand name, logo, readable label, wordmark, or text.",
+    "- Do not add visualPremise, worldSetting, storyPremise, premise, setting, hero, or storyPlan.",
+    "- shots must contain exactly 3 objects using the exact keys: shotIndex, lyricLine, funMechanism, sceneDescription, motionHint.",
+    `- funMechanism must be one of: ${BRICK_STORYBOARD_FUN_MECHANISMS.join(", ")}.`,
+    "- Do not write camera directions, provider prompts, style tags, image prompts, or shotPrompt text.",
+    "- Keep every string short. recurringHeroObject max 60 chars. sceneDescription max 140 chars. motionHint max 90 chars.",
     JSON.stringify({
+      recurringHeroObject: "red brick cookie tin",
       shots: [
-        { shotIndex: 0, lyricLine: slots[0]?.lyricLine || "exact lyric line", sceneDescription: "literal Lego B-roll visual for this lyric", motionHint: "one simple physical motion", heroObject: "object in this shot" },
-        { shotIndex: 1, lyricLine: slots[1]?.lyricLine || "exact lyric line", sceneDescription: "literal Lego B-roll visual for this lyric", motionHint: "one simple physical motion", heroObject: "object in this shot" },
-        { shotIndex: 2, lyricLine: slots[2]?.lyricLine || "exact lyric line", sceneDescription: `literal Lego B-roll visual that turns ${ctaDirection} into action`, motionHint: "one simple CTA-driven physical motion", heroObject: "object in this shot" },
+        { shotIndex: 0, lyricLine: slots[0]?.lyricLine || "exact lyric line", funMechanism: "dramatic_reveal", sceneDescription: "oven door blasts warm light as a crowd of block-figures gasps at the red tin sliding out", motionHint: "the tin slides halfway onto a waiting scooter rack" },
+        { shotIndex: 1, lyricLine: slots[1]?.lyricLine || "exact lyric line", funMechanism: "tiny_disaster", sceneDescription: "dusty gray stale snacks topple like a tiny disaster while the red tin races along a bright brick path", motionHint: "the tin knocks one stale display aside" },
+        { shotIndex: 2, lyricLine: slots[2]?.lyricLine || "exact lyric line", funMechanism: "crowd_reaction", sceneDescription: "front door opens to warm cookie glow as a family crowd reaches for the red tin like treasure", motionHint: "the lid lifts and steam rises as hands reach in" },
       ],
     }, null, 2),
     "",
@@ -228,14 +299,28 @@ export function buildBrickStoryboardStoryPrompt(scene: JingleAdScene) {
       .join("\n"),
     "",
     "RULES:",
-    "- Each sceneDescription must visually depict what the assigned lyric means as vivid Lego B-roll.",
+    "- Return story beats only. Do not write camera directions, provider prompts, style tags, image prompts, or shotPrompt text.",
+    "- North star: Lyric -> surprising miniature event -> visible reaction -> brand payoff.",
+    "- Each shot must be fun with audio muted. It should make the viewer think: 'wait, what is happening now?'",
+    "- Each shot must use a different funMechanism.",
+    "- If the lyric is an idiom, make it physical. If it names a pain, show the consequence. If it names a benefit, show the world reacting. If it has attitude, exaggerate it.",
+    "- Each sceneDescription must include at least two cinematic ingredients: visible character reaction, old-vs-new contrast, object in motion, environmental stakes, crowd/social proof energy, visual joke, or dramatic scale.",
+    "- Each sceneDescription must describe one frozen peak moment, not a sequence of actions. Prefer 'the tin is halfway onto the scooter rack' over 'the baker slides the tin onto the scooter'.",
+    "- Each sceneDescription must contain no more than two distinct spatial zones: foreground and background only. No three-zone compositions.",
+    "- Every motionHint must be one concrete visible action a viewer can understand without reading lyrics.",
+    "- Each sceneDescription must visually depict what the assigned lyric means as vivid brick-style B-roll.",
+    "- Reject quiet product-only still lifes, showroom shots, tabletop product renders, and generic branded wallpaper.",
     "- Do not force a sales funnel, problem/escalation/payoff structure, stage performance, or generic brand wallpaper.",
-    "- Every motionHint must be a concrete visible action a viewer can understand without reading lyrics.",
-    "- Use a consistent heroObject family across shots: product, package, dashboard, phone, cart, inbox, calendar, storefront, or service desk.",
-    `- The final shot sceneDescription must incorporate the CTA direction "${ctaDirection}" as a physical Lego action, not as text.`,
-    "- No stage performance, band, DJ, concert crowd, captions, subtitles, lyric text, CTA text, buttons, or fake claims.",
+    "- Pick exactly one recurringHeroObject. If product imagery or product language exists, derive it from the actual product or use moment: cookie tray, cookie tin, cheesecake slice, brownie platter, skincare bottle, apparel pocket, dashboard, phone, calendar, inbox, cart, storefront, or service desk.",
+    "- The recurringHeroObject must not include brand name, logo, label, wordmark, or readable text. Use color, shape, and product type instead.",
+    "- Never choose a generic box, crate, carton, shipping box, delivery box, parcel, or package as the recurringHeroObject unless that container is literally the product being sold.",
+    "- Every sceneDescription and motionHint must include that same recurringHeroObject as a recognizable motif, but it must not be the whole shot. Product/brand motif can be the catalyst, prize, signal, tool, or payoff.",
+    "- The reference frame locks the world; the recurringHeroObject gets the same lock.",
+    `- The final shot should turn the CTA direction "${ctaDirection}" into a visible physical action, never baked text, a button, or a caption.`,
+    "- No stage performance, band, DJ, concert crowd, captions, subtitles, lyric text, CTA text, buttons, panel layouts, realistic human faces, or fake claims. Block-figure characters only.",
+    "- Brand name or logo may appear only as natural in-world set dressing, such as a storefront sign, product tin label, menu board, delivery van side, or product display. Do not turn it into a caption, subtitle, CTA button, or floating ad copy.",
+    "- Do not use trademarked toy names. Use brick-style miniature, modular brick, and block-figure language instead.",
     "- No invented stats, ratings, reviews, discounts, guarantees, awards, competitors, or claims beyond the brand context.",
-    "- Do not write camera directions, provider prompts, style tags, or image prompts.",
   ].join("\n");
 }
 
@@ -243,11 +328,27 @@ export function extractBrickStoryboardStoryPlan(
   content: string,
   slots: BrickStoryboardSlot[],
   providerLabel = "Story Director",
+  options: { ctaDirection?: string; brandName?: string } = {},
 ): BrickStoryboardStoryPlan {
   const payload = parseJsonObject(content, providerLabel);
-  const unexpectedTopLevelKeys = Object.keys(payload).filter((key) => key !== "shots");
+  const unexpectedTopLevelKeys = Object.keys(payload).filter((key) => !["recurringHeroObject", "shots"].includes(key));
   if (unexpectedTopLevelKeys.length) {
     throw new Error(`${providerLabel} returned unexpected top-level keys: ${unexpectedTopLevelKeys.slice(0, 8).join(", ")}.`);
+  }
+  const recurringHeroObject = cleanText(toSeedanceSafeBrickPrompt(cleanText(payload.recurringHeroObject, 140)), 140);
+  if (!recurringHeroObject) {
+    throw new Error(`${providerLabel} must choose one recurring hero object.`);
+  }
+  if (bannedHeroObjectPattern.test(recurringHeroObject)) {
+    throw new Error(`${providerLabel} used banned language in the recurring hero object: ${recurringHeroObject}.`);
+  }
+  if (genericContainerPattern.test(recurringHeroObject) && !productSpecificObjectPattern.test(recurringHeroObject)) {
+    throw new Error(`${providerLabel} recurring hero object must not be a generic box or package.`);
+  }
+  const normalizedHeroObject = normalizeComparableText(recurringHeroObject).toLowerCase();
+  const normalizedBrandName = normalizeComparableText(options.brandName || "").toLowerCase();
+  if (readableHeroTextPattern.test(recurringHeroObject) || (normalizedBrandName && normalizedHeroObject.includes(normalizedBrandName))) {
+    throw new Error(`${providerLabel} recurring hero object must not include the brand name, label, logo, or readable text.`);
   }
   const rawShots = Array.isArray(payload.shots) ? payload.shots : [];
 
@@ -255,24 +356,31 @@ export function extractBrickStoryboardStoryPlan(
     throw new Error(`${providerLabel} must return exactly 3 B-roll shots, one per lyric slot.`);
   }
 
+  const seenFunMechanisms = new Set<BrickStoryboardFunMechanism>();
   const shots = rawShots.map((item, index) => {
     if (!item || typeof item !== "object") {
       throw new Error(`${providerLabel} returned an invalid story shot.`);
     }
     const record = item as Record<string, unknown>;
+    if ("eventArchetype" in record || "lyricInterpretation" in record || "cinematicIngredients" in record) {
+      throw new Error(`${providerLabel} returned extra story fields instead of the lean funMechanism story shape.`);
+    }
     if ("role" in record) {
       throw new Error(`${providerLabel} used the old problem/escalation/payoff story shape.`);
     }
     if ("visualMetaphor" in record || "physicalEvent" in record) {
       throw new Error(`${providerLabel} used the old visualMetaphor/physicalEvent story shape.`);
     }
+    if ("heroObject" in record && normalizeComparableText(record.heroObject) !== normalizeComparableText(recurringHeroObject)) {
+      throw new Error(`${providerLabel} story shots must share the recurring hero object.`);
+    }
     const slot = slots[index]!;
     const shotIndex = Math.round(Number(record.shotIndex));
     const lyricLine = cleanText(record.lyricLine, 180);
+    const funMechanism = cleanText(record.funMechanism, 80) as BrickStoryboardFunMechanism;
     const sceneDescription = cleanText(record.sceneDescription, 240);
     const motionHint = cleanText(record.motionHint, 160);
-    const heroObject = cleanText(record.heroObject, 140);
-    const combined = `${lyricLine} ${sceneDescription} ${motionHint} ${heroObject}`;
+    const combined = `${lyricLine} ${sceneDescription} ${motionHint}`;
 
     if (shotIndex !== slot.shotIndex) {
       throw new Error(`${providerLabel} story shots must preserve lyric slot indexes.`);
@@ -280,16 +388,26 @@ export function extractBrickStoryboardStoryPlan(
     if (normalizeComparableText(lyricLine) !== normalizeComparableText(slot.lyricLine)) {
       throw new Error(`${providerLabel} story shot ${slot.shotIndex + 1} must use the exact assigned lyric line.`);
     }
-    if (!sceneDescription || !motionHint || !heroObject) {
+    if (!ALLOWED_FUN_MECHANISMS.has(funMechanism)) {
+      throw new Error(`${providerLabel} story shot ${slot.shotIndex + 1} must use a valid funMechanism.`);
+    }
+    if (seenFunMechanisms.has(funMechanism)) {
+      throw new Error(`${providerLabel} must use a different funMechanism for each story shot.`);
+    }
+    seenFunMechanisms.add(funMechanism);
+    if (!sceneDescription || !motionHint) {
       throw new Error(`${providerLabel} returned an incomplete B-roll story shot.`);
     }
     if (bannedStoryPattern.test(combined)) {
       throw new Error(`${providerLabel} used banned stage, caption, or fake-claim language.`);
     }
-    return { shotIndex, lyricLine, sceneDescription, motionHint, heroObject };
+    if (productOnlyScenePattern.test(combined)) {
+      throw new Error(`${providerLabel} returned a quiet product-only or showroom scene instead of a fun miniature event.`);
+    }
+    return { shotIndex, lyricLine, funMechanism, sceneDescription, motionHint };
   });
 
-  return { shots };
+  return { recurringHeroObject, shots };
 }
 
 export async function generateBrickStoryboardStoryPlan(
@@ -323,6 +441,7 @@ export async function generateBrickStoryboardStoryPlan(
     content,
     deriveBrickStoryboardShots(scene),
     "NVIDIA NIM brick story director",
+    { ctaDirection: scene.creative.ctaText || "", brandName: scene.brand.name },
   );
 }
 
@@ -332,20 +451,28 @@ export function createBrickStoryboardPromptPlan(
 ): BrickStoryboardPromptPlan {
   const slots = deriveBrickStoryboardShots(scene);
   const colors = brandPalette(scene);
-  const heroObjects = storyPlan.shots.map((shot) => shot.heroObject).filter(Boolean).join(", ");
   const sceneDescriptions = storyPlan.shots.map((shot) => shot.sceneDescription).join(" Then ");
   const referenceFramePrompt = cleanText(
     [
-      `Vertical 9:16 Lego music-video B-roll world for ${scene.brand.name}.`,
+      "Single full-frame vertical 9:16 brick-style music-video B-roll reference still for this brand.",
       `Use dominant brick palette ${colors}.`,
-      `Create one consistent Lego world that can support these lyric visuals: ${sceneDescriptions}.`,
-      `Recurring hero object family: ${heroObjects || "brand product and service desk"}.`,
-      `Include a Lego-built ${scene.brand.name} name sign as an in-world object.`,
-      `Lighting style matches ${styleSummary(scene)}.`,
-      "Locked-off upright vertical composition. No Dutch angle, no sideways frame, no handheld camera.",
-      "No captions, no subtitles, no lyric text, no readable ad copy besides the brand name sign.",
+      `Create one consistent brick-style miniature world that can support these lyric visuals: ${sceneDescriptions}.`,
+      `Recurring hero object locked across all shots: ${storyPlan.recurringHeroObject}.`,
+      `Include a tasteful in-world ${scene.brand.name} storefront sign, product tin label, menu board, delivery van mark, or product display as set dressing.`,
+      "Stable upright vertical frame, no sideways framing, no Dutch angle.",
+      "Polished commercial miniature lighting, crisp product-detail lighting, energetic music-video composition.",
+      stillFrameRules,
     ].join(" "),
     1800,
+  );
+  const storyboardSheetPrompt = cleanText(
+    [
+      "Experimental 3-panel brick-style storyboard sheet for internal review.",
+      `Use the same brick-style world, palette ${colors}, and recurring hero object ${storyPlan.recurringHeroObject}.`,
+      "Three horizontal panels stacked vertically, one for each lyric slot, showing the intended sequence for human review only.",
+      "This is NOT a Seedance input and not a single shot still.",
+    ].join(" "),
+    1200,
   );
 
   const shots = slots.map((slot) => {
@@ -354,16 +481,31 @@ export function createBrickStoryboardPromptPlan(
     if (!storyShot) throw new Error(`Story Director output is missing shot ${slot.shotIndex + 1}.`);
     const shotPrompt = cleanText(
       [
-        `Style & Mood: lyric-driven Lego music-video B-roll, ${styleSummary(scene)}, brand palette ${colors}.`,
-        `Dynamic Description: ${cameraSetups[index]}, visualizing the lyric "${cleanText(slot.lyricLine, 120)}". Scene: ${storyShot.sceneDescription}. Motion: ${storyShot.motionHint}. Hero object: ${storyShot.heroObject}. ${motionNotes[index]}`,
-        `Static Description: no stage performance, no band, no DJ, no concert crowd. Same Lego world as the reference frame, ${setDetails[index]}, directional rim light, soft front fill, upright vertical 9:16 frame. No camera shake, rotation, handheld motion, captions, subtitles, lyric text, CTA text, buttons, or extra readable ad copy.`,
+        `Single full-frame 9:16 brick-style commercial still, ${cameraSetups[index]}.`,
+        "One frozen moment visualizing this jingle slot's idea without rendering lyric text.",
+        `Scene: ${storyShot.sceneDescription}.`,
+        `Recurring hero object: ${storyPlan.recurringHeroObject}.`,
+        `Keep any ${scene.brand.name} branding as natural in-world set dressing only.`,
+        `Same brick-style miniature world as the reference frame, ${setDetails[index]}, brand palette ${colors}, directional rim light, soft front fill, crisp product-detail lighting.`,
+        stillFrameRules,
       ].join(" "),
       1800,
     );
-    return { ...slot, shotPrompt };
+    const animationPrompt = cleanText(
+      [
+        `Animate this exact single-frame brick-style miniature still into one short music-video B-roll shot.`,
+        `Motion: ${storyShot.motionHint}.`,
+        `Keep the recurring hero object ${storyPlan.recurringHeroObject} visually consistent with the input still and reference world.`,
+        "Animate only the described motion; preserve the input still's composition, objects, characters, and visual identity.",
+        "Stable camera with only subtle cinematic push-in allowed.",
+        animationNegativeRules,
+      ].join(" "),
+      1200,
+    );
+    return { ...slot, shotPrompt, animationPrompt };
   });
 
-  return { referenceFramePrompt, shots };
+  return { referenceFramePrompt, storyboardSheetPrompt, shots };
 }
 
 export function buildBrickMusicVideoClips(storyboard: BrickStoryboard): JingleMusicVideoClip[] {
@@ -398,7 +540,6 @@ export async function generateReplicateNanoBanana2Image({
   if (!replicateApiToken) throw new Error("Replicate image generation is not configured.");
   const [owner, name] = BRICK_STORYBOARD_IMAGE_MODEL.split("/");
   if (!owner || !name) throw new Error("Replicate image model is invalid.");
-
   const prediction = await withTimeout(fetch(`https://api.replicate.com/v1/models/${owner}/${name}/predictions`, {
     method: "POST",
     headers: {
@@ -443,11 +584,12 @@ export async function generateReplicateSeedanceVideo({
 }) {
   if (!replicateApiToken) throw new Error("Replicate video generation is not configured.");
   const duration = Math.min(15, Math.max(5, Math.round(durationSeconds)));
+  const safePrompt = toSeedanceSafeBrickPrompt(prompt);
   console.log("[brick-video] seedance request", {
     model: BRICK_STORYBOARD_VIDEO_MODEL,
     duration,
     hasImageUrl: Boolean(imageUrl),
-    promptLength: prompt.length,
+    promptLength: safePrompt.length,
   });
 
   const prediction = await withTimeout(fetch(`https://api.replicate.com/v1/models/${BRICK_STORYBOARD_VIDEO_MODEL}/predictions`, {
@@ -460,10 +602,10 @@ export async function generateReplicateSeedanceVideo({
     body: JSON.stringify({
       input: {
         image: imageUrl,
-        prompt,
+        prompt: safePrompt,
         duration,
         aspect_ratio: "9:16",
-        resolution: "720p",
+        resolution: BRICK_STORYBOARD_VIDEO_RESOLUTION,
         generate_audio: false,
       },
     }),

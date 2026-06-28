@@ -161,7 +161,7 @@ export const regenerateBrickShot: ReturnType<typeof action> = action({
     if (!shot) throw new Error("Storyboard shot not found.");
     const referencePrompt = nextStoryboard.referenceFrame.prompt;
     const prompt = `${shot.shotPrompt}\n\nREFERENCE WORLD TO MATCH:\n${referencePrompt}`;
-    const retryPrompt = `${shot.shotPrompt}\n\nUse the same narrative Lego world, palette, hero object, and Lego brand sign from the reference frame. Simple vertical still. No captions or subtitles.`;
+    const retryPrompt = `${shot.shotPrompt}\n\nUse the same narrative brick-style miniature world, palette, and recurring hero object from the reference frame. One single full-frame vertical 9:16 still. No storyboard sheet, collage, split-screen, panels, captions, subtitles, readable logos, brand names, brand signage, realistic human faces, trademarked toy names, or extra text. Block-figure characters only.`;
 
     const image = await storeStoryboardImage({
       ctx,
@@ -383,56 +383,76 @@ export const animateBrickBoard: ReturnType<typeof action> = action({
       throw new Error("Animate board needs every shot image to be OK first.");
     }
 
-    for (const shot of nextStoryboard.shots) {
-      if (shot.video?.url) continue;
+    const animatedShotResults = await Promise.all(nextStoryboard.shots.map(async (shot) => {
+      if (shot.video?.url) return { shot };
       console.log("[brick-video] animating shot", {
         storyboardId,
         shotIndex: shot.shotIndex,
         durationMs: shot.durationMs,
         hasImageUrl: Boolean(shot.image?.url),
-        promptLength: shot.shotPrompt.length,
+        promptLength: shot.animationPrompt?.length ?? 0,
       });
-      const prompt = [
-        shot.shotPrompt,
-        "Style & Mood: polished lyric-driven Lego music video B-roll, clean commercial lighting, brand-color world.",
-        "Dynamic Description: animate this exact Lego still with one visible physical action from the shot prompt. Keep the camera locked-off and stable.",
-        "Static Description: preserve the same Lego world, brand sign, hero object, characters, lighting, camera angle, and palette from the input image. No stage performance, band, DJ, concert crowd, shake, handheld movement, rotation, zoom, sideways frame, captions, subtitles, lyrics, color labels, or extra text.",
-      ].join(" ");
-      const result = await generateReplicateSeedanceVideo({
-        replicateApiToken,
-        imageUrl: shot.image!.url!,
-        prompt,
-        durationSeconds: shot.durationMs / 1000,
-      });
-      const storageId = await ctx.storage.store(new Blob([result.bytes], {
-        type: result.mimeType,
-      }));
-      const videoUrl = await ctx.storage.getUrl(storageId);
-      console.log("[brick-video] shot stored", {
-        storyboardId,
-        shotIndex: shot.shotIndex,
-        mimeType: result.mimeType,
-        hasVideoUrl: Boolean(videoUrl),
-      });
-      nextStoryboard.shots = nextStoryboard.shots.map((candidate) => (
-        candidate.shotIndex === shot.shotIndex
-          ? {
-            ...candidate,
+      try {
+        if (!shot.animationPrompt) throw new Error(`Shot ${shot.shotIndex + 1} is missing its Seedance animation prompt.`);
+        const result = await generateReplicateSeedanceVideo({
+          replicateApiToken,
+          imageUrl: shot.image!.url!,
+          prompt: shot.animationPrompt,
+          durationSeconds: shot.durationMs / 1000,
+        });
+        const storageId = await ctx.storage.store(new Blob([result.bytes], {
+          type: result.mimeType,
+        }));
+        const videoUrl = await ctx.storage.getUrl(storageId);
+        console.log("[brick-video] shot stored", {
+          storyboardId,
+          shotIndex: shot.shotIndex,
+          mimeType: result.mimeType,
+          hasVideoUrl: Boolean(videoUrl),
+        });
+        return {
+          shot: {
+            ...shot,
             video: {
               storageId: String(storageId),
               url: videoUrl,
               mimeType: result.mimeType,
             },
-          }
-          : candidate
-      ));
-      await ctx.runMutation(internal.jingleStoryboards.patchStoryboard, {
-        storyboardId,
-        storyboard: nextStoryboard,
-      });
-    }
+            error: undefined,
+          },
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Seedance animation failed.";
+        console.log("[brick-video] shot animation failed", {
+          storyboardId,
+          shotIndex: shot.shotIndex,
+          error: message,
+        });
+        return {
+          shot: {
+            ...shot,
+            error: message,
+          },
+          error: `Shot ${shot.shotIndex + 1}: ${message}`,
+        };
+      }
+    }));
 
-    return { storyboard: nextStoryboard };
+    const animatedShotsByIndex = new Map(animatedShotResults.map((result) => [result.shot.shotIndex, result.shot]));
+    nextStoryboard.shots = nextStoryboard.shots.map((shot) => animatedShotsByIndex.get(shot.shotIndex) || shot);
+    await ctx.runMutation(internal.jingleStoryboards.patchStoryboard, {
+      storyboardId,
+      storyboard: nextStoryboard,
+    });
+
+    const animationErrors = animatedShotResults
+      .map((result) => result.error)
+      .filter((error): error is string => Boolean(error));
+
+    return {
+      storyboard: nextStoryboard,
+      error: animationErrors.length ? animationErrors.join(" ") : undefined,
+    };
   },
 });
 
@@ -452,30 +472,16 @@ export const generateBrickForScene: ReturnType<typeof action> = action({
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
     if (!replicateApiToken) throw new Error("Replicate image generation is not configured.");
 
-    const referenceImage = await storeStoryboardImage({
+    const referenceImagePromise = storeStoryboardImage({
       ctx,
       replicateApiToken,
       prompt: promptPlan.referenceFramePrompt,
     });
-    const storyboard: BrickStoryboard = {
-      jingleSceneId: String(sceneId),
-      visualStyle: BRICK_MUSIC_VIDEO_STYLE_ID,
-      imageModel: BRICK_STORYBOARD_IMAGE_MODEL,
-      shotCount: promptPlan.shots.length,
-      storyPlan,
-      referenceFrame: {
-        prompt: promptPlan.referenceFramePrompt,
-        image: referenceImage,
-        status: "ok",
-      },
-      shots: [],
-    };
-
-    for (const shot of promptPlan.shots) {
+    const shotResultsPromise = Promise.all(promptPlan.shots.map(async (shot) => {
       try {
         const conditionedPrompt = `${shot.shotPrompt}\n\nREFERENCE WORLD TO MATCH:\n${promptPlan.referenceFramePrompt}`;
-        const retryPrompt = `${shot.shotPrompt}\n\nUse the same narrative Lego world, palette, hero object, and Lego brand sign from the reference frame. Simple vertical still. No captions or subtitles.`;
-        storyboard.shots.push({
+        const retryPrompt = `${shot.shotPrompt}\n\nUse the same narrative brick-style miniature world, palette, and recurring hero object from the reference frame. One single full-frame vertical 9:16 still. No storyboard sheet, collage, split-screen, panels, captions, subtitles, readable logos, brand names, brand signage, realistic human faces, trademarked toy names, or extra text. Block-figure characters only.`;
+        return {
           ...shot,
           image: await storeStoryboardImage({
             ctx,
@@ -483,16 +489,32 @@ export const generateBrickForScene: ReturnType<typeof action> = action({
             prompt: conditionedPrompt,
             retryPrompt,
           }),
-          status: "ok",
-        });
+          status: "ok" as const,
+        };
       } catch (error) {
-        storyboard.shots.push({
+        return {
           ...shot,
-          status: "failed",
+          status: "failed" as const,
           error: error instanceof Error ? error.message : "Shot image generation failed.",
-        });
+        };
       }
-    }
+    }));
+    const [referenceImage, shotResults] = await Promise.all([referenceImagePromise, shotResultsPromise]);
+
+    const storyboard: BrickStoryboard = {
+      jingleSceneId: String(sceneId),
+      visualStyle: BRICK_MUSIC_VIDEO_STYLE_ID,
+      imageModel: BRICK_STORYBOARD_IMAGE_MODEL,
+      shotCount: promptPlan.shots.length,
+      storyPlan,
+      storyboardSheetPrompt: promptPlan.storyboardSheetPrompt,
+      referenceFrame: {
+        prompt: promptPlan.referenceFramePrompt,
+        image: referenceImage,
+        status: "ok",
+      },
+      shots: shotResults,
+    };
 
     const { storyboardId } = await ctx.runMutation(internal.jingleStoryboards.saveGenerated, {
       sessionId,

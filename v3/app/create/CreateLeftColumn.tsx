@@ -245,7 +245,18 @@ export function CreateLeftColumn({
         <Wand2 className="size-4 text-[#4F46E5]" />
         {adScenesCount ? "Ads ready to review" : "Add a website first"}
       </p>
-      <h1 className="wiggly-hero-headline mt-4 text-4xl font-black leading-tight tracking-normal text-slate-950 sm:text-5xl lg:text-7xl">
+      <h1
+        className="wiggly-hero-headline mt-4 text-4xl font-black leading-tight tracking-normal text-slate-950 sm:text-5xl lg:text-7xl"
+        style={{
+          animation: "none",
+          background: "none",
+          backgroundClip: "border-box",
+          color: "#020617",
+          textShadow: "none",
+          transform: "none",
+          WebkitBackgroundClip: "border-box",
+        }}
+      >
         Make ads without learning editing.
       </h1>
       <p className="mt-4 max-w-full text-base font-semibold leading-7 text-slate-600 sm:mt-6 sm:text-lg sm:leading-8 md:max-w-lg">
