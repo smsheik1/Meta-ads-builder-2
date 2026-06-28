@@ -111,8 +111,20 @@ function getBrickStoryboardErrorMessage(error: unknown) {
   const apiMessage = message.match(/"message"\s*:\s*"([^"]+)"/)?.[1];
   const cleanMessage = apiMessage || message;
 
+  if (/NVIDIA NIM brick story director.*timed out|brick story director.*timeout/i.test(cleanMessage)) {
+    return "Brick Story Director timed out before image generation. Try again.";
+  }
+  if (/Replicate Nano Banana 2 image generation.*timed out|Nano Banana.*timeout/i.test(cleanMessage)) {
+    return "Nano Banana image generation timed out while building storyboard stills. Try again.";
+  }
+  if (/Replicate image download.*timed out|image download.*timeout/i.test(cleanMessage)) {
+    return "Storyboard image download timed out. Try again.";
+  }
+  if (/Replicate Seedance.*timed out|Seedance.*timeout/i.test(cleanMessage)) {
+    return "Seedance video generation timed out. Try animating the board again.";
+  }
   if (/timed out|timeout/i.test(cleanMessage)) {
-    return "Brick storyboard generation timed out. Try again, or use a shorter jingle.";
+    return cleanMessage;
   }
   if (/Replicate image generation is not configured/i.test(cleanMessage)) {
     return "Brick storyboard images are not configured. Add the Replicate API token, then try again.";
@@ -1776,9 +1788,14 @@ function ResearchConnected() {
       const result = await animateBrickStoryboardForScene({
         storyboardId: brickStoryboardId,
         storyboard: brickStoryboard,
-      }) as { storyboard: unknown };
+      }) as { storyboard: unknown; error?: string };
       setBrickStoryboard(result.storyboard);
-      setBrickStoryboardAnimationStatus("ready");
+      if (result.error) {
+        setBrickStoryboardAnimationStatus("error");
+        setBrickStoryboardError(getBrickStoryboardErrorMessage(new Error(result.error)));
+      } else {
+        setBrickStoryboardAnimationStatus("ready");
+      }
     } catch (nextError) {
       setBrickStoryboardAnimationStatus("error");
       setBrickStoryboardError(getBrickStoryboardErrorMessage(nextError));
@@ -2051,7 +2068,7 @@ function ResearchConnected() {
             className="h-16 w-auto rounded-xl object-contain"
           />
           <p className="mt-1 text-xs font-black uppercase tracking-[0.28em] text-slate-400">
-            Audio that looks expensive
+            Ads without the hard part
           </p>
         </div>
       </header>
@@ -2320,10 +2337,21 @@ export function CreateResearchClient() {
               className="h-16 w-auto rounded-xl object-contain"
             />
             <p className="mt-1 text-xs font-black uppercase tracking-[0.28em] text-slate-400">
-              Audio that looks expensive
+              Ads without the hard part
             </p>
           </div>
-          <p className="wiggly-hero-headline mt-10 text-5xl font-black leading-tight tracking-normal text-slate-950">
+          <p
+            className="wiggly-hero-headline mt-10 text-5xl font-black leading-tight tracking-normal text-slate-950"
+            style={{
+              animation: "none",
+              background: "none",
+              backgroundClip: "border-box",
+              color: "#020617",
+              textShadow: "none",
+              transform: "none",
+              WebkitBackgroundClip: "border-box",
+            }}
+          >
             Make ads without learning editing.
           </p>
         </div>

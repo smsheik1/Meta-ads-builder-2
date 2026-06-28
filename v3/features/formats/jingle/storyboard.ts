@@ -14,7 +14,17 @@ import type {
 export const BRICK_MUSIC_VIDEO_STYLE_ID = "brick-music-video" as const;
 export const BRICK_STORYBOARD_IMAGE_MODEL = "google/nano-banana-2";
 export const BRICK_STORYBOARD_VIDEO_MODEL = "bytedance/seedance-2.0-mini";
+export const BRICK_STORYBOARD_VIDEO_RESOLUTION = "480p";
 export const DEFAULT_BRICK_STORYBOARD_SHOT_COUNT = 3;
+const BRICK_STORYBOARD_FUN_MECHANISMS = [
+  "physical_metaphor",
+  "tiny_disaster",
+  "dramatic_reveal",
+  "crowd_reaction",
+  "chase_or_motion",
+  "visual_joke",
+  "scale_exaggeration",
+] as const;
 
 export type BrickStoryboardSlot = {
   section: "hook" | "verse";
@@ -37,6 +47,7 @@ export type BrickStoryboardPromptPlan = {
 export type BrickStoryboardStoryShot = {
   shotIndex: number;
   lyricLine: string;
+  funMechanism: BrickStoryboardFunMechanism;
   sceneDescription: string;
   motionHint: string;
 };
@@ -45,6 +56,8 @@ export type BrickStoryboardStoryPlan = {
   recurringHeroObject: string;
   shots: BrickStoryboardStoryShot[];
 };
+
+export type BrickStoryboardFunMechanism = typeof BRICK_STORYBOARD_FUN_MECHANISMS[number];
 
 export type BrickStoryboardImage = {
   storageId: string;
@@ -83,7 +96,7 @@ export type BrickStoryboard = {
 
 const DEFAULT_TIMEOUT_MS = 90_000;
 const DEFAULT_STORY_DIRECTOR_TIMEOUT_MS = 60_000;
-const DEFAULT_STORY_DIRECTOR_MAX_TOKENS = 4096;
+const DEFAULT_STORY_DIRECTOR_MAX_TOKENS = 2400;
 const sleep = (durationMs: number) => new Promise((resolve) => setTimeout(resolve, durationMs));
 
 const cleanText = (value: unknown, maxLength = 1400) => String(value ?? "")
@@ -226,16 +239,14 @@ const angleContext = (scene: JingleAdScene) => cleanText(
 );
 
 const bannedStoryPattern = /\b(stage performance|concert|band|dj|subtitles?|captions?|lyric text|testimonial|guarantee|guaranteed|#1|award|discount|realistic human faces?|trademarked|lego|minifigures?)\b/i;
+const bannedHeroObjectPattern = /\b(realistic human faces?|trademarked)\b/i;
 const genericContainerPattern = /\b(box|boxes|cardboard|carton|crate|shipping box|delivery box|package|parcel)\b/i;
 const productSpecificObjectPattern = /\b(cookie|cookies|brownie|brownies|cake|cheesecake|tin|tray|platter|product|bottle|apparel|shirt|shoe|skincare|serum|dashboard|phone|calendar|inbox|cart|storefront|service desk)\b/i;
 const readableHeroTextPattern = /\b(label|logo|wordmark|brand name|readable text|lettering|printed name)\b/i;
+const productOnlyScenePattern = /\b(product-only|tabletop|showroom|still life|still-life|packshot|catalog shot|product render|product placement|generic brand(?:ed)? wallpaper)\b/i;
+const ALLOWED_FUN_MECHANISMS = new Set<BrickStoryboardFunMechanism>(BRICK_STORYBOARD_FUN_MECHANISMS);
 
 const normalizeComparableText = (value: unknown) => cleanText(value, 260).replace(/\s+/g, " ");
-const CTA_TOKEN_STOP_WORDS = new Set(["the", "and", "for", "with", "your", "you", "this", "that", "from", "into", "now"]);
-const meaningfulCtaTokens = (value: unknown) => cleanText(value, 160)
-  .toLowerCase()
-  .split(/[^a-z0-9]+/)
-  .filter((token) => token.length >= 3 && !CTA_TOKEN_STOP_WORDS.has(token));
 
 export const toSeedanceSafeBrickPrompt = (value: string) => value
   .replace(/\bLego-built\b/gi, "brick-built")
@@ -250,8 +261,6 @@ export function buildBrickStoryboardStoryPrompt(scene: JingleAdScene) {
   const angle = angleContext(scene);
   const slots = deriveBrickStoryboardShots(scene);
   const ctaDirection = cleanText(scene.creative.ctaText || "Learn more", 80);
-  const ctaKeywords = meaningfulCtaTokens(ctaDirection);
-  const ctaKeywordText = ctaKeywords.length ? ctaKeywords.join(", ") : "none";
   return [
     "You are a brick-style miniature music video B-roll director for a brand jingle.",
     "Return ONLY valid JSON. Return B-roll beats only, NOT image prompts.",
@@ -259,16 +268,19 @@ export function buildBrickStoryboardStoryPrompt(scene: JingleAdScene) {
     "REQUIRED JSON CONTRACT:",
     "- Return one flat top-level JSON object with EXACTLY two top-level keys: recurringHeroObject and shots.",
     "- recurringHeroObject is the one physical miniature brick-style object that appears in all 3 shots.",
-    "- recurringHeroObject describes product shape, color, and use only. Do not include brand name, logo, readable label, wordmark, or text.",
+    "- recurringHeroObject describes the recurring brand/product motif. It can be the catalyst, prize, signal, tool, or payoff, but it does not need to dominate every frame.",
+    "- recurringHeroObject describes shape, color, and use only. Do not include brand name, logo, readable label, wordmark, or text.",
     "- Do not add visualPremise, worldSetting, storyPremise, premise, setting, hero, or storyPlan.",
-    "- shots must contain exactly 3 objects using the exact keys: shotIndex, lyricLine, sceneDescription, motionHint.",
+    "- shots must contain exactly 3 objects using the exact keys: shotIndex, lyricLine, funMechanism, sceneDescription, motionHint.",
+    `- funMechanism must be one of: ${BRICK_STORYBOARD_FUN_MECHANISMS.join(", ")}.`,
+    "- Do not write camera directions, provider prompts, style tags, image prompts, or shotPrompt text.",
     "- Keep every string short. recurringHeroObject max 60 chars. sceneDescription max 140 chars. motionHint max 90 chars.",
     JSON.stringify({
-      recurringHeroObject: "one shared product or offer object across all 3 shots",
+      recurringHeroObject: "red brick cookie tin",
       shots: [
-        { shotIndex: 0, lyricLine: slots[0]?.lyricLine || "exact lyric line", sceneDescription: "literal brick-style B-roll visual for this lyric using the recurring hero object", motionHint: "one simple physical motion" },
-        { shotIndex: 1, lyricLine: slots[1]?.lyricLine || "exact lyric line", sceneDescription: "literal brick-style B-roll visual for this lyric using the same recurring hero object", motionHint: "one simple physical motion" },
-        { shotIndex: 2, lyricLine: slots[2]?.lyricLine || "exact lyric line", sceneDescription: `literal brick-style B-roll visual that turns ${ctaDirection} into action using the recurring hero object`, motionHint: "one simple CTA-driven physical motion" },
+        { shotIndex: 0, lyricLine: slots[0]?.lyricLine || "exact lyric line", funMechanism: "dramatic_reveal", sceneDescription: "oven door blasts warm light as a crowd of block-figures gasps at the red tin sliding out", motionHint: "the tin slides halfway onto a waiting scooter rack" },
+        { shotIndex: 1, lyricLine: slots[1]?.lyricLine || "exact lyric line", funMechanism: "tiny_disaster", sceneDescription: "dusty gray stale snacks topple like a tiny disaster while the red tin races along a bright brick path", motionHint: "the tin knocks one stale display aside" },
+        { shotIndex: 2, lyricLine: slots[2]?.lyricLine || "exact lyric line", funMechanism: "crowd_reaction", sceneDescription: "front door opens to warm cookie glow as a family crowd reaches for the red tin like treasure", motionHint: "the lid lifts and steam rises as hands reach in" },
       ],
     }, null, 2),
     "",
@@ -277,7 +289,6 @@ export function buildBrickStoryboardStoryPrompt(scene: JingleAdScene) {
     `- Description: ${cleanText(scene.brand.description, 260)}`,
     `- Jingle angle: ${angle}`,
     `- CTA direction: ${ctaDirection}`,
-    `- CTA parser keywords: ${ctaKeywordText}`,
     `- Brand colors: ${colors}`,
     `- Music style: ${styleSummary(scene)}`,
     "",
@@ -288,23 +299,28 @@ export function buildBrickStoryboardStoryPrompt(scene: JingleAdScene) {
       .join("\n"),
     "",
     "RULES:",
+    "- Return story beats only. Do not write camera directions, provider prompts, style tags, image prompts, or shotPrompt text.",
+    "- North star: Lyric -> surprising miniature event -> visible reaction -> brand payoff.",
+    "- Each shot must be fun with audio muted. It should make the viewer think: 'wait, what is happening now?'",
+    "- Each shot must use a different funMechanism.",
+    "- If the lyric is an idiom, make it physical. If it names a pain, show the consequence. If it names a benefit, show the world reacting. If it has attitude, exaggerate it.",
+    "- Each sceneDescription must include at least two cinematic ingredients: visible character reaction, old-vs-new contrast, object in motion, environmental stakes, crowd/social proof energy, visual joke, or dramatic scale.",
+    "- Each sceneDescription must describe one frozen peak moment, not a sequence of actions. Prefer 'the tin is halfway onto the scooter rack' over 'the baker slides the tin onto the scooter'.",
+    "- Each sceneDescription must contain no more than two distinct spatial zones: foreground and background only. No three-zone compositions.",
+    "- Every motionHint must be one concrete visible action a viewer can understand without reading lyrics.",
     "- Each sceneDescription must visually depict what the assigned lyric means as vivid brick-style B-roll.",
+    "- Reject quiet product-only still lifes, showroom shots, tabletop product renders, and generic branded wallpaper.",
     "- Do not force a sales funnel, problem/escalation/payoff structure, stage performance, or generic brand wallpaper.",
-    "- Every motionHint must be a concrete visible action a viewer can understand without reading lyrics.",
     "- Pick exactly one recurringHeroObject. If product imagery or product language exists, derive it from the actual product or use moment: cookie tray, cookie tin, cheesecake slice, brownie platter, skincare bottle, apparel pocket, dashboard, phone, calendar, inbox, cart, storefront, or service desk.",
     "- The recurringHeroObject must not include brand name, logo, label, wordmark, or readable text. Use color, shape, and product type instead.",
     "- Never choose a generic box, crate, carton, shipping box, delivery box, parcel, or package as the recurringHeroObject unless that container is literally the product being sold.",
-    "- Every sceneDescription and motionHint must include that same recurringHeroObject as a recognizable motif, but it must not be the whole shot. Each shot still needs a different setting, action, and visual composition.",
-    "- Each sceneDescription must contain no more than two distinct spatial zones: foreground and background only. No three-zone compositions.",
-    "- Each sceneDescription must describe one frozen peak moment, not a sequence of actions. Prefer 'the tin is halfway onto the scooter rack' over 'the baker slides the tin onto the scooter'.",
+    "- Every sceneDescription and motionHint must include that same recurringHeroObject as a recognizable motif, but it must not be the whole shot. Product/brand motif can be the catalyst, prize, signal, tool, or payoff.",
     "- The reference frame locks the world; the recurringHeroObject gets the same lock.",
-    `- The highest shotIndex must incorporate the CTA direction "${ctaDirection}" as a physical brick-style action in sceneDescription or motionHint, never as baked text, a button, or a caption.`,
-    `- Parser safety: the highest shotIndex sceneDescription or motionHint must include at least one exact CTA parser keyword naturally as part of the physical action: ${ctaKeywordText}.`,
+    `- The final shot should turn the CTA direction "${ctaDirection}" into a visible physical action, never baked text, a button, or a caption.`,
     "- No stage performance, band, DJ, concert crowd, captions, subtitles, lyric text, CTA text, buttons, panel layouts, realistic human faces, or fake claims. Block-figure characters only.",
     "- Brand name or logo may appear only as natural in-world set dressing, such as a storefront sign, product tin label, menu board, delivery van side, or product display. Do not turn it into a caption, subtitle, CTA button, or floating ad copy.",
     "- Do not use trademarked toy names. Use brick-style miniature, modular brick, and block-figure language instead.",
     "- No invented stats, ratings, reviews, discounts, guarantees, awards, competitors, or claims beyond the brand context.",
-    "- Do not write camera directions, provider prompts, style tags, or image prompts.",
   ].join("\n");
 }
 
@@ -319,12 +335,12 @@ export function extractBrickStoryboardStoryPlan(
   if (unexpectedTopLevelKeys.length) {
     throw new Error(`${providerLabel} returned unexpected top-level keys: ${unexpectedTopLevelKeys.slice(0, 8).join(", ")}.`);
   }
-  const recurringHeroObject = cleanText(payload.recurringHeroObject, 140);
+  const recurringHeroObject = cleanText(toSeedanceSafeBrickPrompt(cleanText(payload.recurringHeroObject, 140)), 140);
   if (!recurringHeroObject) {
     throw new Error(`${providerLabel} must choose one recurring hero object.`);
   }
-  if (bannedStoryPattern.test(recurringHeroObject)) {
-    throw new Error(`${providerLabel} used banned language in the recurring hero object.`);
+  if (bannedHeroObjectPattern.test(recurringHeroObject)) {
+    throw new Error(`${providerLabel} used banned language in the recurring hero object: ${recurringHeroObject}.`);
   }
   if (genericContainerPattern.test(recurringHeroObject) && !productSpecificObjectPattern.test(recurringHeroObject)) {
     throw new Error(`${providerLabel} recurring hero object must not be a generic box or package.`);
@@ -340,11 +356,15 @@ export function extractBrickStoryboardStoryPlan(
     throw new Error(`${providerLabel} must return exactly 3 B-roll shots, one per lyric slot.`);
   }
 
+  const seenFunMechanisms = new Set<BrickStoryboardFunMechanism>();
   const shots = rawShots.map((item, index) => {
     if (!item || typeof item !== "object") {
       throw new Error(`${providerLabel} returned an invalid story shot.`);
     }
     const record = item as Record<string, unknown>;
+    if ("eventArchetype" in record || "lyricInterpretation" in record || "cinematicIngredients" in record) {
+      throw new Error(`${providerLabel} returned extra story fields instead of the lean funMechanism story shape.`);
+    }
     if ("role" in record) {
       throw new Error(`${providerLabel} used the old problem/escalation/payoff story shape.`);
     }
@@ -357,6 +377,7 @@ export function extractBrickStoryboardStoryPlan(
     const slot = slots[index]!;
     const shotIndex = Math.round(Number(record.shotIndex));
     const lyricLine = cleanText(record.lyricLine, 180);
+    const funMechanism = cleanText(record.funMechanism, 80) as BrickStoryboardFunMechanism;
     const sceneDescription = cleanText(record.sceneDescription, 240);
     const motionHint = cleanText(record.motionHint, 160);
     const combined = `${lyricLine} ${sceneDescription} ${motionHint}`;
@@ -367,23 +388,24 @@ export function extractBrickStoryboardStoryPlan(
     if (normalizeComparableText(lyricLine) !== normalizeComparableText(slot.lyricLine)) {
       throw new Error(`${providerLabel} story shot ${slot.shotIndex + 1} must use the exact assigned lyric line.`);
     }
+    if (!ALLOWED_FUN_MECHANISMS.has(funMechanism)) {
+      throw new Error(`${providerLabel} story shot ${slot.shotIndex + 1} must use a valid funMechanism.`);
+    }
+    if (seenFunMechanisms.has(funMechanism)) {
+      throw new Error(`${providerLabel} must use a different funMechanism for each story shot.`);
+    }
+    seenFunMechanisms.add(funMechanism);
     if (!sceneDescription || !motionHint) {
       throw new Error(`${providerLabel} returned an incomplete B-roll story shot.`);
     }
     if (bannedStoryPattern.test(combined)) {
       throw new Error(`${providerLabel} used banned stage, caption, or fake-claim language.`);
     }
-    return { shotIndex, lyricLine, sceneDescription, motionHint };
-  });
-
-  const ctaTokens = meaningfulCtaTokens(options.ctaDirection || "");
-  if (ctaTokens.length) {
-    const finalShot = shots.reduce((best, shot) => (shot.shotIndex > best.shotIndex ? shot : best), shots[0]!);
-    const finalShotText = `${finalShot.sceneDescription} ${finalShot.motionHint}`.toLowerCase();
-    if (!ctaTokens.some((token) => finalShotText.includes(token))) {
-      throw new Error(`${providerLabel} final story shot must reference the CTA direction as a physical action.`);
+    if (productOnlyScenePattern.test(combined)) {
+      throw new Error(`${providerLabel} returned a quiet product-only or showroom scene instead of a fun miniature event.`);
     }
-  }
+    return { shotIndex, lyricLine, funMechanism, sceneDescription, motionHint };
+  });
 
   return { recurringHeroObject, shots };
 }
@@ -583,7 +605,7 @@ export async function generateReplicateSeedanceVideo({
         prompt: safePrompt,
         duration,
         aspect_ratio: "9:16",
-        resolution: "720p",
+        resolution: BRICK_STORYBOARD_VIDEO_RESOLUTION,
         generate_audio: false,
       },
     }),

@@ -54,10 +54,7 @@ export function JingleFormatRenderer({
       bottom: "11cqw",
       display: "flex",
       justifyContent: "center",
-      padding: "2.2cqw 3cqw",
-      borderRadius: "3.4cqw",
-      background: "rgba(0,0,0,0.56)",
-      boxShadow: "0 2cqw 5cqw rgba(0,0,0,0.38)",
+      pointerEvents: "none",
     }
     : {
       position: "absolute",
@@ -76,7 +73,7 @@ export function JingleFormatRenderer({
       letterSpacing: 0,
       textAlign: "center",
       textWrap: "balance",
-      textShadow: "0 0.45cqw 0 rgba(0,0,0,0.9), 0 0 1.4cqw rgba(0,0,0,0.7)",
+      textShadow: "0 0.45cqw 0 rgba(0,0,0,0.95), 0 0 1.2cqw rgba(0,0,0,0.85), 0 0 2.4cqw rgba(0,0,0,0.72)",
     }
     : {
       margin: 0,

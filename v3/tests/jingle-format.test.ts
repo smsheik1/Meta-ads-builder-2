@@ -228,6 +228,7 @@ assert.ok(!musicVideoHtml.includes("https://example.com/hook-2.mp4"));
 assert.ok(musicVideoHtml.includes("object-fit:cover"));
 assert.ok(musicVideoHtml.includes('data-jingle-music-video-lyric="true"'));
 assert.ok(musicVideoHtml.includes("bottom:11cqw"));
+assert.ok(!musicVideoHtml.includes("rgba(0,0,0,0.56)"));
 assert.ok(!musicVideoHtml.includes('data-jingle-waveform="true"'));
 assert.ok(!musicVideoHtml.includes("translateX"));
 

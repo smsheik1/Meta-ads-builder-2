@@ -30,12 +30,12 @@ assert.ok(
 );
 assert.ok(
   createClientSource.includes('if (format === "text-message") return 6') &&
-    createLeftColumnSource.includes('<option value="text-message">iMessage Ad</option>'),
+    createLeftColumnSource.includes('["text-message", "iMessage Ad"]'),
   "/create must expose iMessage Ad and generate six static text-message variants.",
 );
 assert.ok(
   createClientSource.includes('if (format === "reviews") return 4') &&
-    createLeftColumnSource.includes('<option value="reviews">Reviews Proof Ad</option>') &&
+    createLeftColumnSource.includes('["reviews", "Reviews Proof Ad"]') &&
     reviewsProductPickerSource.includes("Choose proof products") &&
     createClientSource.includes("selectedProductHandles"),
   "/create must expose Reviews Proof Ad, product selection, and generate four proof variants.",
@@ -138,8 +138,11 @@ assert.ok(
 );
 assert.ok(
   brickStoryboardSheetSource.includes("data-brick-shot-regenerate") &&
-    brickStoryboardSheetSource.includes("data-brick-shot-prompt"),
-  "Brick storyboard shot cards must expose visible per-shot regenerate and prompt debug controls.",
+    brickStoryboardSheetSource.includes("data-brick-shot-prompt") &&
+    brickStoryboardSheetSource.includes("Still image prompt") &&
+    brickStoryboardSheetSource.includes("Seedance video prompt") &&
+    brickStoryboardSheetSource.includes("shot.animationPrompt"),
+  "Brick storyboard shot cards must expose visible regenerate controls plus still-image and Seedance video prompts.",
 );
 assert.ok(
   createClientSource.includes("restoreSavedDesignSelection") &&

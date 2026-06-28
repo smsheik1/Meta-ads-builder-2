@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   BRICK_MUSIC_VIDEO_STYLE_ID,
   BRICK_STORYBOARD_IMAGE_MODEL,
+  BRICK_STORYBOARD_VIDEO_RESOLUTION,
   buildBrickStoryboardStoryPrompt,
   createBrickStoryboardPromptPlan,
   buildBrickMusicVideoClips,
@@ -108,18 +110,21 @@ const storyPlan: BrickStoryboardStoryPlan = {
     {
       shotIndex: 0,
       lyricLine: slots[0]!.lyricLine,
+      funMechanism: "dramatic_reveal",
       sceneDescription: "a bright signal tower rises above the brick-style city",
       motionHint: "purple signal bricks climb upward from the search dashboard",
     },
     {
       shotIndex: 1,
       lyricLine: slots[1]!.lyricLine,
+      funMechanism: "tiny_disaster",
       sceneDescription: "rival names appear as blocks while the brand dashboard starts lighting up",
       motionHint: "a block-figure character turns red rival tiles into purple brand tiles",
     },
     {
       shotIndex: 2,
       lyricLine: slots[2]!.lyricLine,
+      funMechanism: "crowd_reaction",
       sceneDescription: "booking a demo becomes a block-figure hand pressing the glowing dashboard action lever",
       motionHint: "the hero object opens a lit path from the dashboard to a booked calendar tile",
     },
@@ -129,21 +134,37 @@ const storyPlan: BrickStoryboardStoryPlan = {
 const storyPrompt = buildBrickStoryboardStoryPrompt(scene);
 assert.ok(storyPrompt.includes("Return B-roll beats only, NOT image prompts"));
 assert.ok(storyPrompt.includes("EXACTLY two top-level keys: recurringHeroObject and shots"));
-assert.ok(storyPrompt.includes("sceneDescription, motionHint"));
+assert.ok(storyPrompt.includes("funMechanism, sceneDescription, motionHint"));
 assert.ok(!storyPrompt.includes("Do not use double quote characters inside any string value"));
 assert.ok(storyPrompt.includes("LYRIC SLOTS"));
-assert.ok(storyPrompt.includes("recurringHeroObject describes product shape, color, and use only"));
+assert.ok(storyPrompt.includes("red brick cookie tin"));
+assert.ok(storyPrompt.includes("dramatic_reveal"));
+assert.ok(storyPrompt.includes("tiny_disaster"));
+assert.ok(storyPrompt.includes("crowd_reaction"));
+assert.ok(storyPrompt.includes("oven door blasts warm light as a crowd of block-figures gasps"));
+assert.ok(storyPrompt.includes("the tin knocks one stale display aside"));
+assert.ok(!storyPrompt.includes("literal brick-style B-roll visual"));
+assert.ok(!storyPrompt.includes("one simple CTA-driven physical motion"));
+assert.ok(storyPrompt.includes("recurringHeroObject describes the recurring brand/product motif"));
+assert.ok(storyPrompt.includes("Do not write camera directions, provider prompts, style tags, image prompts, or shotPrompt text"));
+assert.ok(storyPrompt.includes("Lyric -> surprising miniature event -> visible reaction -> brand payoff"));
+assert.ok(storyPrompt.includes("fun with audio muted"));
+assert.ok(storyPrompt.includes("different funMechanism"));
+assert.ok(storyPrompt.includes("visible character reaction, old-vs-new contrast, object in motion"));
+assert.ok(!storyPrompt.includes("eventArchetype"));
+assert.ok(!storyPrompt.includes("lyricInterpretation"));
+assert.ok(!storyPrompt.includes("cinematicIngredients"));
 assert.ok(storyPrompt.includes("must include that same recurringHeroObject as a recognizable motif"));
 assert.ok(storyPrompt.includes("it must not be the whole shot"));
 assert.ok(storyPrompt.includes("must not include brand name, logo, label, wordmark, or readable text"));
 assert.ok(storyPrompt.includes("Never choose a generic box"));
 assert.ok(storyPrompt.includes("no more than two distinct spatial zones"));
 assert.ok(storyPrompt.includes("one frozen peak moment"));
-assert.ok(storyPrompt.includes("CTA parser keywords: book, demo"));
-assert.ok(storyPrompt.includes('highest shotIndex must incorporate the CTA direction "Book a demo"'));
-assert.ok(storyPrompt.includes("as a physical brick-style action in sceneDescription or motionHint"));
-assert.ok(storyPrompt.includes("must include at least one exact CTA parser keyword naturally"));
-assert.ok(storyPrompt.includes("never as baked text, a button, or a caption"));
+assert.ok(storyPrompt.includes('final shot should turn the CTA direction "Book a demo" into a visible physical action'));
+assert.ok(!storyPrompt.includes("CTA action words"));
+assert.ok(!storyPrompt.includes("CTA action word"));
+assert.ok(!storyPrompt.includes("Parser safety"));
+assert.ok(storyPrompt.includes("never baked text, a button, or a caption"));
 assert.ok(storyPrompt.includes("No stage performance, band, DJ, concert crowd, captions, subtitles, lyric text, CTA text, buttons, panel layouts, realistic human faces"));
 assert.ok(storyPrompt.includes("Brand name or logo may appear only as natural in-world set dressing"));
 assert.ok(storyPrompt.includes("product tin label"));
@@ -154,6 +175,15 @@ assert.ok(!storyPrompt.includes('"role"'));
 assert.deepEqual(
   extractBrickStoryboardStoryPlan(JSON.stringify(storyPlan), slots, "Story Director", { ctaDirection: "Book a demo" }),
   storyPlan,
+);
+assert.equal(
+  extractBrickStoryboardStoryPlan(
+    JSON.stringify({ ...storyPlan, recurringHeroObject: "Lego cookie tin" }),
+    slots,
+    "Story Director",
+    { ctaDirection: "Book a demo" },
+  ).recurringHeroObject,
+  "brick-style cookie tin",
 );
 let storyDirectorMaxTokens: number | undefined;
 assert.deepEqual(
@@ -167,7 +197,8 @@ assert.deepEqual(
   }),
   storyPlan,
 );
-assert.equal(storyDirectorMaxTokens, 4096);
+assert.equal(storyDirectorMaxTokens, 2400);
+assert.equal(BRICK_STORYBOARD_VIDEO_RESOLUTION, "480p");
 const invalidStoryPlans = [
   [
     { shots: storyPlan.shots },
@@ -188,6 +219,56 @@ const invalidStoryPlans = [
   [
     { ...storyPlan, recurringHeroObject: "red cookie tin with printed logo" },
     /must not include the brand name, label, logo, or readable text/,
+  ],
+  [
+    {
+      ...storyPlan,
+      shots: storyPlan.shots.map((shot) => (shot.shotIndex === 1 ? {
+        ...shot,
+        funMechanism: "not_fun",
+      } : shot)),
+    },
+    /valid funMechanism/,
+  ],
+  [
+    {
+      ...storyPlan,
+      shots: storyPlan.shots.map((shot) => (shot.shotIndex === 1 ? {
+        ...shot,
+        funMechanism: storyPlan.shots[0]!.funMechanism,
+      } : shot)),
+    },
+    /different funMechanism/,
+  ],
+  [
+    {
+      ...storyPlan,
+      shots: storyPlan.shots.map((shot) => (shot.shotIndex === 1 ? {
+        ...shot,
+        sceneDescription: "quiet tabletop product render in a generic branded wallpaper setup",
+      } : shot)),
+    },
+    /product-only or showroom scene/,
+  ],
+  [
+    {
+      ...storyPlan,
+      shots: storyPlan.shots.map((shot) => (shot.shotIndex === 1 ? {
+        ...shot,
+        eventArchetype: "public_spectacle",
+      } : shot)),
+    },
+    /extra story fields/,
+  ],
+  [
+    {
+      ...storyPlan,
+      shots: storyPlan.shots.map((shot) => (shot.shotIndex === 1 ? {
+        ...shot,
+        cinematicIngredients: ["crowd_reaction"],
+      } : shot)),
+    },
+    /extra story fields/,
   ],
   [
     {
@@ -267,17 +348,6 @@ for (const [plan, errorPattern] of invalidStoryPlans) {
     errorPattern,
   );
 }
-assert.throws(
-  () => extractBrickStoryboardStoryPlan(JSON.stringify({
-    ...storyPlan,
-    shots: storyPlan.shots.map((shot) => (shot.shotIndex === 2 ? {
-      ...shot,
-      sceneDescription: "purple signal tiles brighten across the brick-style city",
-      motionHint: "the dashboard door slides open to a glowing road",
-    } : shot)),
-  }), slots, "Story Director", { ctaDirection: "Book a demo" }),
-  /final story shot must reference the CTA direction/,
-);
 const generatedPlan = createBrickStoryboardPromptPlan(scene, storyPlan);
 assert.equal(
   toSeedanceSafeBrickPrompt("Lego-built storefront in a Lego world with Lego minifigures and one Lego tray"),
@@ -354,6 +424,23 @@ assert.throws(
     shots: storyboard.shots.map((shot, index) => (index === 1 ? { ...shot, video: undefined } : shot)),
   }),
   /needs a generated video/,
+);
+
+const storyboardActionSource = readFileSync(new URL("../convex/jingleStoryboards.ts", import.meta.url), "utf8");
+const animateBrickBoardSource = storyboardActionSource.match(/export const animateBrickBoard[\s\S]*?export const generateBrickForScene/)?.[0] || "";
+assert.ok(storyboardActionSource.includes("const referenceImagePromise = storeStoryboardImage"), "Reference image generation should not block shot image generation.");
+assert.ok(storyboardActionSource.includes("const shotResultsPromise = Promise.all(promptPlan.shots.map(async (shot)"), "Shot stills should generate in parallel.");
+assert.ok(storyboardActionSource.includes("await Promise.all([referenceImagePromise, shotResultsPromise])"), "Reference and shot stills should resolve in parallel.");
+assert.ok(animateBrickBoardSource.includes("Promise.all(nextStoryboard.shots.map(async (shot)"), "Seedance clips should generate in parallel.");
+assert.ok(animateBrickBoardSource.includes("animationErrors.length"), "Parallel animation should surface partial failures.");
+assert.equal(
+  (animateBrickBoardSource.match(/patchStoryboard/g) || []).length,
+  1,
+  "Parallel Seedance generation must patch the storyboard once to avoid Convex write conflicts.",
+);
+assert.ok(
+  !/for \(const shot of nextStoryboard\.shots\)[\s\S]*await generateReplicateSeedanceVideo/.test(animateBrickBoardSource),
+  "Seedance animation must not regress to one-shot-at-a-time generation.",
 );
 
 console.log("jingle-storyboard tests passed");
