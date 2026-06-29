@@ -255,6 +255,7 @@ export function CreateCreativePackOverview({
               data-creative-pack-card={group.format}
               data-creative-pack-card-status={group.status}
               data-creative-pack-card-ready={ready ? "true" : "false"}
+              data-creative-pack-card-selected={selected ? "true" : "false"}
               data-creative-pack-action={group.actionLabel || ""}
             >
               <div className="flex items-center justify-between gap-3">

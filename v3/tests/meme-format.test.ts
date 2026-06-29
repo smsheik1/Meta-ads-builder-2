@@ -79,9 +79,10 @@ const variantsForAllTemplates = (
   slotText: (template: (typeof MEME_TEMPLATES)[number], slot: (typeof MEME_TEMPLATES)[number]["slots"][number], variantIndex: number) => string = (_template, slot, variantIndex) => (
     `copy ${variantIndex + 1} ${slot.id}`.slice(0, slot.maxChars)
   ),
+  variationsPerTemplate = MEME_VARIATIONS_PER_TEMPLATE,
 ) => MEME_TEMPLATES.map((template) => ({
   templateId: template.id,
-  variants: Array.from({ length: MEME_VARIATIONS_PER_TEMPLATE }, (_, variantIndex) => ({
+  variants: Array.from({ length: variationsPerTemplate }, (_, variantIndex) => ({
     angle: `angle ${variantIndex + 1} for ${template.id}`,
     x: 100,
     y: 200,
@@ -117,6 +118,15 @@ assert.ok(prompt.includes("If proof is thin, build the joke on the buyer moment 
 assert.ok(prompt.includes("Name the brand in at most one slot per variant"));
 assert.ok(prompt.includes("\"templates\""));
 assert.ok(!prompt.includes("maxWords"));
+
+const creativePackPrompt = buildMemePrompt(research, { variationsPerTemplate: 1 });
+assert.ok(creativePackPrompt.includes("Write exactly 1 distinct meme variants for every template"));
+assert.ok(creativePackPrompt.includes("Total variants required: 4"));
+
+const creativePackParsed = extractMemeVariantsFromResponse(JSON.stringify({
+  templates: variantsForAllTemplates(undefined, 1),
+}), { variationsPerTemplate: 1 });
+assert.equal(creativePackParsed.length, 4);
 
 assert.throws(
   () => extractMemeVariantsFromResponse(JSON.stringify({
@@ -191,6 +201,18 @@ assert.equal(retryResult.provider, "nvidia-nim");
 assert.equal(retryResult.model, "test-kimi-model");
 assert.equal(retryResult.providerStatus.provider, "nvidia-nim");
 assert.equal(retryResult.variants.length, 12);
+
+const creativePackGeneration = await generateMemeVariantsFromResearch(research, {
+  count: 4,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimBaseUrl: "https://nim.test/v1",
+  nvidiaNimModel: "test-kimi-model",
+  nvidiaNimChatCompletion: async ({ prompt }) => {
+    assert.ok(prompt.includes("Total variants required: 4"));
+    return JSON.stringify({ templates: variantsForAllTemplates(undefined, 1) });
+  },
+});
+assert.equal(creativePackGeneration.variants.length, 4);
 
 let defaultTimeoutMs = 0;
 await generateMemeVariantsFromResearch(research, {

@@ -25,6 +25,7 @@ export type GenerateMemeVariantsResult = {
 };
 
 type GenerateMemeVariantsOptions = {
+  count?: number;
   nvidiaNimApiKey?: string;
   nvidiaNimBaseUrl?: string;
   nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
@@ -35,6 +36,10 @@ type GenerateMemeVariantsOptions = {
 const DEFAULT_TIMEOUT_MS = 60_000;
 
 const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.test(String(value || ""));
+
+const getVariationsPerTemplate = (count?: number) => (
+  count ? Math.max(1, Math.ceil(count / MEME_TEMPLATES.length)) : MEME_VARIATIONS_PER_TEMPLATE
+);
 
 const normalizeSlotText = (value: unknown) => String(value ?? "")
   .replace(/!\[[^\]]*]\([^)]+\)/g, " ")
@@ -100,6 +105,7 @@ const parseJsonObject = (value: string, providerLabel = "AI provider") => {
 type ExtractMemeVariantsOptions = {
   providerLabel?: string;
   repairSlotText?: boolean;
+  variationsPerTemplate?: number;
 };
 
 export function extractMemeVariantsFromResponse(
@@ -107,6 +113,7 @@ export function extractMemeVariantsFromResponse(
   options: ExtractMemeVariantsOptions = {},
 ): MemeVariant[] {
   const providerLabel = options.providerLabel || "Meme provider";
+  const variationsPerTemplate = options.variationsPerTemplate ?? MEME_VARIATIONS_PER_TEMPLATE;
   const payload = parseJsonObject(content, providerLabel);
   const variants = Array.isArray(payload.templates)
     ? payload.templates.flatMap((templateGroup) => {
@@ -149,7 +156,7 @@ export function extractMemeVariantsFromResponse(
     }
     if (valid) {
       const templateVariants = byTemplate.get(template.id) || [];
-      if (templateVariants.length < MEME_VARIATIONS_PER_TEMPLATE) {
+      if (templateVariants.length < variationsPerTemplate) {
         templateVariants.push({ templateId: template.id, slots });
         byTemplate.set(template.id, templateVariants);
       }
@@ -157,7 +164,7 @@ export function extractMemeVariantsFromResponse(
   }
 
   const normalized = MEME_TEMPLATES.flatMap((template) => byTemplate.get(template.id) || []);
-  if (normalized.length !== MEME_TEMPLATES.length * MEME_VARIATIONS_PER_TEMPLATE) {
+  if (normalized.length !== MEME_TEMPLATES.length * variationsPerTemplate) {
     throw new Error(`${providerLabel} returned incomplete meme variants.`);
   }
   return normalized;
@@ -167,7 +174,8 @@ export async function generateMemeVariantsFromResearch(
   research: StoredWebsiteResearchResult,
   options: GenerateMemeVariantsOptions = {},
 ): Promise<GenerateMemeVariantsResult> {
-  const prompt = buildMemePrompt(research);
+  const variationsPerTemplate = getVariationsPerTemplate(options.count);
+  const prompt = buildMemePrompt(research, { variationsPerTemplate });
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const nvidiaNimModel = options.nvidiaNimModel
     || process.env.NVIDIA_NIM_MEME_MODEL
@@ -199,6 +207,7 @@ export async function generateMemeVariantsFromResearch(
       variants = extractMemeVariantsFromResponse(content, {
         providerLabel: "NVIDIA NIM",
         repairSlotText: true,
+        variationsPerTemplate,
       });
     } catch {
       const retryContent = await callNvidiaNimChat({
@@ -207,23 +216,25 @@ export async function generateMemeVariantsFromResearch(
         label: "NVIDIA NIM meme generation",
         model: nvidiaNimModel,
         nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
-        prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Return exactly ${MEME_VARIATIONS_PER_TEMPLATE} variants per template, every required slot must be present, under maxChars, and a complete thought. Return only the JSON object.`,
+        prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Return exactly ${variationsPerTemplate} variants per template, every required slot must be present, under maxChars, and a complete thought. Return only the JSON object.`,
         timeoutMs,
       });
       variants = extractMemeVariantsFromResponse(retryContent, {
         providerLabel: "NVIDIA NIM",
         repairSlotText: true,
+        variationsPerTemplate,
       });
     }
+    const selectedVariants = options.count ? variants.slice(0, options.count) : variants;
 
     return {
-      variants,
+      variants: selectedVariants,
       model: nvidiaNimModel,
       provider: "nvidia-nim",
       providerStatus: {
         provider: "nvidia-nim",
         status: "used",
-        reason: `Generated ${MEME_TEMPLATES.length * MEME_VARIATIONS_PER_TEMPLATE} meme ideas with ${nvidiaNimModel}.`,
+        reason: `Generated ${selectedVariants.length} meme ideas with ${nvidiaNimModel}.`,
       },
     };
   } catch (error) {
