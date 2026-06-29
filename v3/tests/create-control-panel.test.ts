@@ -40,6 +40,18 @@ assert.ok(
     createClientSource.includes("selectedProductHandles"),
   "/create must expose Reviews Proof Ad, product selection, and generate four proof variants.",
 );
+assert.ok(
+  !createClientSource.includes("data-creative-pack-hover-dock") &&
+    !createClientSource.includes("<CreateCreativePackOverview"),
+  "Creative Pack status must not render as an overlapping hover dock on the canvas side.",
+);
+assert.ok(
+  createLeftColumnSource.includes('data-creative-pack-mini-status="true"') &&
+    createLeftColumnSource.includes("data-creative-pack-mini-chip={packFormat}") &&
+    createLeftColumnSource.includes("CREATIVE_PACK_FORMATS.map") &&
+    createLeftColumnSource.includes("onCreativePackGroupSelect"),
+  "Creative Pack status must render as visible per-format chips inside the left form.",
+);
 
 const nativeControlPattern = /<(?:input|select|textarea)\b/g;
 const countMatches = (source: string, pattern: RegExp) => source.match(pattern)?.length || 0;

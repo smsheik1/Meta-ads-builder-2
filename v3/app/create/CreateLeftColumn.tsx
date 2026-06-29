@@ -1,11 +1,16 @@
-import { Check, Circle, Loader2, Wand2 } from "lucide-react";
+import { Check, Circle, Loader2, Wand2, XCircle } from "lucide-react";
 import {
   NIM_MEME_MODEL_OPTIONS,
   NIM_VISUALIZER_MODEL_OPTIONS,
 } from "@/features/llm/nvidiaNimModels";
 import { JINGLE_STYLES, type JingleStyleId } from "@/features/formats/jingle/prompt";
 import { VIDEO_MEME_TEMPLATES, getVideoMemeTemplate, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
-import type { CreativePackStatus } from "@/features/create/creativePack";
+import {
+  CREATIVE_PACK_FORMATS,
+  type CreativePackFormat,
+  type CreativePackGroupStatus,
+  type CreativePackStatus,
+} from "@/features/create/creativePack";
 import type { ProductCatalog } from "@/features/research/types";
 import type { AdFormatId } from "@/features/scene/types";
 import { CreateReviewsProductPicker } from "./CreateReviewsProductPicker";
@@ -27,6 +32,24 @@ const pillClass = "inline-flex items-center gap-2 rounded-full border border-sla
 type ModelOption = {
   id: string;
   label: string;
+};
+
+type CreativePackMiniGroup = {
+  format: CreativePackFormat;
+  label: string;
+  status: CreativePackGroupStatus;
+  scenes: unknown[];
+  publicMessage?: string;
+  message?: string;
+};
+
+const creativePackStatusLabel: Record<CreativePackGroupStatus, string> = {
+  pending: "Loading",
+  generating: "Loading",
+  "still-cooking": "Still cooking",
+  ready: "Ready",
+  "needs-retry": "Needs retry",
+  cancelled: "Cancelled",
 };
 
 const getProgressRows = (format: AdFormatId, videoMemeTemplateId: VideoMemeTemplateId = "bear-sniff") => [
@@ -156,10 +179,89 @@ function ModelSelect({
   );
 }
 
+function CreativePackMiniStatus({
+  groups,
+  onSelectGroup,
+  selectedFormat,
+  status,
+}: {
+  groups: CreativePackMiniGroup[];
+  onSelectGroup?: (format: CreativePackFormat) => void;
+  selectedFormat?: CreativePackFormat | null;
+  status: CreativePackStatus;
+}) {
+  if (!groups.length) return null;
+
+  const groupByFormat = new Map(groups.map((group) => [group.format, group]));
+  const packBusy = status === "researching" || status === "generating";
+
+  return (
+    <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-3" data-creative-pack-mini-status="true">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Creative pack</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+          {groups.filter((group) => group.status === "ready").length}/{CREATIVE_PACK_FORMATS.length} ready
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {CREATIVE_PACK_FORMATS.map(({ format: packFormat, label }) => {
+          const group = groupByFormat.get(packFormat);
+          const groupStatus = group?.status || "pending";
+          const ready = groupStatus === "ready" && Boolean(group?.scenes.length);
+          const selected = selectedFormat === packFormat;
+          const loading = packBusy && (groupStatus === "pending" || groupStatus === "generating" || groupStatus === "still-cooking");
+          const failed = groupStatus === "needs-retry" || groupStatus === "cancelled";
+          const statusText = creativePackStatusLabel[groupStatus];
+          const title = `${label}: ${statusText}`;
+
+          return (
+            <button
+              key={packFormat}
+              type="button"
+              title={title}
+              aria-label={title}
+              disabled={!ready}
+              onClick={() => {
+                if (ready) onSelectGroup?.(packFormat);
+              }}
+              className={`flex h-9 min-w-0 items-center gap-2 rounded-2xl border px-2.5 text-left transition ${
+                selected
+                  ? "border-slate-950 bg-slate-950 text-white shadow-lg shadow-slate-950/10"
+                  : ready
+                    ? "border-emerald-100 bg-white text-slate-950 hover:border-emerald-200 hover:shadow-sm"
+                    : failed
+                      ? "border-rose-100 bg-white text-slate-500"
+                      : "border-slate-100 bg-white text-slate-500"
+              } disabled:cursor-default`}
+              data-creative-pack-mini-chip={packFormat}
+              data-creative-pack-mini-chip-status={groupStatus}
+            >
+              <span className="grid size-4 shrink-0 place-items-center">
+                {ready ? (
+                  <Check className={`size-4 ${selected ? "text-white" : "text-emerald-500"}`} />
+                ) : failed ? (
+                  <XCircle className="size-4 text-rose-400" />
+                ) : loading ? (
+                  <Loader2 className="size-4 animate-spin text-indigo-500" />
+                ) : (
+                  <Circle className="size-3 text-slate-300" />
+                )}
+              </span>
+              <span className="min-w-0 truncate text-xs font-black">{label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function CreateLeftColumn({
   adScenesCount,
   adStatus,
+  creativePackGroups = [],
   creativePackStatus,
+  selectedCreativePackFormat,
   error,
   format,
   memeModel,
@@ -171,6 +273,7 @@ export function CreateLeftColumn({
   onFormatChange,
   onGenerateCreativePack,
   onCancelCreativePack,
+  onCreativePackGroupSelect,
   onJingleStyleChange,
   onMemeModelChange,
   onReviewProductSelectionChange,
@@ -186,7 +289,9 @@ export function CreateLeftColumn({
 }: {
   adScenesCount: number;
   adStatus: LoadStatus;
+  creativePackGroups?: CreativePackMiniGroup[];
   creativePackStatus: CreativePackStatus;
+  selectedCreativePackFormat?: CreativePackFormat | null;
   error: string;
   format: AdFormatId;
   memeModel: string;
@@ -198,6 +303,7 @@ export function CreateLeftColumn({
   onFormatChange: (format: AdFormatId) => void;
   onGenerateCreativePack: () => void;
   onCancelCreativePack: () => void;
+  onCreativePackGroupSelect?: (format: CreativePackFormat) => void;
   onJingleStyleChange: (styleId: JingleStyleId) => void;
   onMemeModelChange: (model: string) => void;
   onReviewProductSelectionChange: (handles: string[]) => void;
@@ -214,7 +320,9 @@ export function CreateLeftColumn({
   const creativePackBusy = creativePackStatus === "researching" || creativePackStatus === "generating";
   const singleSubmitBusy = status === "loading" || adStatus === "loading";
   const submitIsBusy = singleSubmitBusy || creativePackBusy;
-  const submitLabel = status === "loading"
+  const submitLabel = creativePackBusy
+    ? "Creative pack running"
+    : status === "loading"
     ? "Reading website"
     : adStatus === "loading"
       ? format === "meme"
@@ -427,13 +535,22 @@ export function CreateLeftColumn({
           ) : null}
         </div>
 
-        <CreateResearchProgressCard
-          facts={progressFacts}
-          format={format}
-          showSlowResearchMessage={showSlowResearchMessage}
-          stage={progressStage}
-          videoMemeTemplateId={videoMemeTemplateId}
-        />
+        {creativePackGroups.length ? (
+          <CreativePackMiniStatus
+            groups={creativePackGroups}
+            onSelectGroup={onCreativePackGroupSelect}
+            selectedFormat={selectedCreativePackFormat}
+            status={creativePackStatus}
+          />
+        ) : (
+          <CreateResearchProgressCard
+            facts={progressFacts}
+            format={format}
+            showSlowResearchMessage={showSlowResearchMessage}
+            stage={progressStage}
+            videoMemeTemplateId={videoMemeTemplateId}
+          />
+        )}
       </form>
 
       {errorPanel}
