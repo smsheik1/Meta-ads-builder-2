@@ -52,6 +52,37 @@ function StatusIcon({ status }: { status: CreativePackGroupStatus }) {
   return <Clock3 className="size-4 text-slate-300" />;
 }
 
+function getCardState({
+  ready,
+  selected,
+  status,
+}: {
+  ready: boolean;
+  selected: boolean;
+  status: CreativePackGroupStatus;
+}) {
+  if (selected) return "opened";
+  if (ready) return "ready";
+  if (status === "needs-retry") return "needs-retry";
+  if (status === "cancelled") return "cancelled";
+  return "loading";
+}
+
+function getCardStatusLabel({
+  ready,
+  selected,
+  status,
+}: {
+  ready: boolean;
+  selected: boolean;
+  status: CreativePackGroupStatus;
+}) {
+  if (selected) return "Opened";
+  if (ready) return "Ready";
+  if (status === "generating") return "Cooking";
+  return statusCopy[status];
+}
+
 function getSceneThumbnailText(scene: AdScene | undefined) {
   if (!scene) return "";
   if (scene.format === "text-message") return scene.layout.messages[0]?.text || scene.creative.headline;
@@ -130,13 +161,13 @@ function ResearchBeat({
 
 function AudioSkeleton({ selected }: { selected: boolean }) {
   return (
-    <div className="flex h-12 items-end justify-center gap-1">
-      {Array.from({ length: 13 }).map((_, index) => (
+    <div className="flex h-8 items-end justify-center gap-1">
+      {Array.from({ length: 9 }).map((_, index) => (
         <span
           key={index}
-          className={`w-1.5 rounded-full ${selected ? "bg-white/50" : "bg-slate-300"} animate-pulse`}
+          className={`w-1 rounded-full ${selected ? "bg-white/55" : "bg-slate-300"} animate-pulse`}
           style={{
-            height: `${12 + ((index * 7) % 24)}px`,
+            height: `${9 + ((index * 7) % 18)}px`,
             animationDelay: `${index * 70}ms`,
           }}
         />
@@ -148,10 +179,9 @@ function AudioSkeleton({ selected }: { selected: boolean }) {
 function TextSkeleton({ selected }: { selected: boolean }) {
   const color = selected ? "bg-white/25" : "bg-slate-200";
   return (
-    <div className="space-y-2">
-      <span className={`block h-3 w-11/12 rounded-full ${color}`} />
-      <span className={`block h-3 w-2/3 rounded-full ${color}`} />
-      <span className={`block h-3 w-4/5 rounded-full ${color}`} />
+    <div className="space-y-1.5">
+      <span className={`block h-2.5 w-11/12 rounded-full ${color}`} />
+      <span className={`block h-2.5 w-2/3 rounded-full ${color}`} />
     </div>
   );
 }
@@ -191,15 +221,16 @@ export function CreateCreativePackOverview({
 
   return (
     <section
-      className={`rounded-[28px] border border-slate-200 bg-white/90 p-4 shadow-xl shadow-slate-950/8 ${moneyShotActive ? "animate-[creativePackPulse_900ms_ease-out_1]" : ""}`}
+      className={`w-full rounded-[28px] border border-slate-200 bg-white/95 p-3 shadow-xl shadow-slate-950/8 backdrop-blur ${moneyShotActive ? "animate-[creativePackPulse_900ms_ease-out_1]" : ""}`}
       data-creative-pack-overview="true"
+      data-creative-pack-dock="true"
       data-creative-pack-status={status}
       data-creative-pack-ready-count={readyCount}
     >
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <div>
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-indigo-500">Creative Pack</p>
-          <h2 className="mt-1 text-2xl font-black leading-tight text-slate-950">{title}</h2>
+          <h2 className="mt-1 text-xl font-black leading-tight text-slate-950">{title}</h2>
         </div>
         <div className="flex items-center gap-2">
           {busy && onCancel ? (
@@ -223,11 +254,13 @@ export function CreateCreativePackOverview({
         <ResearchBeat facts={researchFacts} url={researchUrl} />
       ) : null}
 
-      {groups.length ? <div className="grid grid-cols-2 gap-3">
+      {groups.length ? <div className="grid gap-2">
         {groups.map((group, index) => {
           const firstScene = group.scenes[0];
           const selected = selectedFormat === group.format;
           const ready = group.status === "ready" && group.scenes.length > 0;
+          const cardState = getCardState({ ready, selected, status: group.status });
+          const statusLabel = getCardStatusLabel({ ready, selected, status: group.status });
           const thumbnailText = getSceneThumbnailText(firstScene);
           const logoUrl = firstScene?.brand.logoUrl || firstScene?.brand.faviconUrl || "";
           const publicMessage = group.publicMessage || group.message || (busy ? "Waiting its turn." : statusCopy[group.status]);
@@ -238,21 +271,22 @@ export function CreateCreativePackOverview({
               type="button"
               onClick={() => ready && onSelectGroup(group.format)}
               disabled={!ready}
-              className={`min-h-[154px] rounded-[22px] border p-3 text-left transition duration-300 ${
+              className={`rounded-[20px] border p-3 text-left transition duration-300 ${
                 selected
                   ? "border-slate-950 bg-slate-950 text-white shadow-xl shadow-slate-950/15"
                   : ready
-                    ? "border-slate-200 bg-white text-slate-950 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-950/10"
+                    ? "border-emerald-100 bg-white text-slate-950 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-950/10"
                     : group.status === "needs-retry"
                       ? "border-rose-100 bg-rose-50/60 text-slate-500"
                       : "border-slate-100 bg-slate-50 text-slate-500"
-              } ${ready ? "scale-100 opacity-100" : "scale-[0.98] opacity-90"} animate-[creativePackCardIn_420ms_ease-out_both]`}
+              } ${ready ? "scale-100 opacity-100" : "scale-[0.99] opacity-90"} ${moneyShotActive && ready ? "animate-[creativePackReadyGlow_760ms_ease-out_both]" : "animate-[creativePackCardIn_420ms_ease-out_both]"}`}
               style={{
                 animationDelay: `${index * 110}ms`,
                 transitionDelay: ready ? `${index * 45}ms` : "0ms",
               }}
               data-creative-pack-card={group.format}
               data-creative-pack-card-status={group.status}
+              data-creative-pack-card-state={cardState}
               data-creative-pack-card-ready={ready ? "true" : "false"}
               data-creative-pack-card-selected={selected ? "true" : "false"}
               data-creative-pack-action={group.actionLabel || ""}
@@ -269,27 +303,27 @@ export function CreateCreativePackOverview({
                   <div className="min-w-0">
                     <p className="truncate text-sm font-black">{group.label}</p>
                     <p className={`text-[10px] font-black uppercase tracking-[0.16em] ${selected ? "text-white/55" : "text-slate-400"}`}>
-                      {ready ? `${group.scenes.length} ads` : statusCopy[group.status]}
+                      {ready ? `${group.scenes.length} ${group.scenes.length === 1 ? "ad" : "ads"} · ${statusLabel}` : statusLabel}
                     </p>
                   </div>
                 </div>
                 <StatusIcon status={group.status} />
               </div>
 
-              <div className={`mt-3 min-h-[72px] rounded-[18px] px-3 py-3 ${selected ? "bg-white/10" : "bg-slate-100"}`}>
+              <div className={`mt-2 min-h-[52px] rounded-[16px] px-3 py-2.5 ${selected ? "bg-white/10" : ready ? "bg-emerald-50/70" : "bg-slate-100"}`}>
                 {ready ? (
-                  <p className="line-clamp-3 text-sm font-black leading-5">
+                  <p className="line-clamp-2 text-sm font-black leading-5">
                     {thumbnailText || "Ready to preview"}
                   </p>
                 ) : group.status === "pending" || group.status === "generating" || group.status === "still-cooking" ? (
                   <div>
                     {isCreativePackAudioFormat(group.format) ? <AudioSkeleton selected={selected} /> : <TextSkeleton selected={selected} />}
-                    <p className="mt-2 text-xs font-bold leading-5">
+                    <p className="mt-1.5 line-clamp-2 text-xs font-bold leading-4">
                       {publicMessage}
                     </p>
                   </div>
                 ) : (
-                  <p className="text-xs font-bold leading-5">
+                  <p className="text-xs font-bold leading-4">
                     {publicMessage}
                     {debug && group.debugMessage ? (
                       <span className="mt-2 block rounded-xl bg-white/70 px-2 py-1 text-[10px] font-bold leading-4 text-slate-500">

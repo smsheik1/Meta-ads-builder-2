@@ -2635,6 +2635,7 @@ function ResearchConnected() {
   const creativePackDebug = process.env.NODE_ENV !== "production" || (
     typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debugPack") === "1"
   );
+  const creativePackDockVisible = creativePackStatus === "researching" || creativePackGroups.length > 0;
 
   useEffect(() => {
     if (currentRenderStatus === "ready" || currentRenderStatus === "failed" || currentRenderStatus === "error") {
@@ -2704,7 +2705,7 @@ function ResearchConnected() {
         </div>
       </header>
 
-      <section className="mx-auto grid max-w-7xl items-center gap-8 py-6 sm:gap-10 sm:py-8 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[0.82fr_1.18fr] lg:gap-16 lg:py-10">
+      <section className="mx-auto grid max-w-[1500px] items-center gap-8 py-6 sm:gap-10 sm:py-8 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[minmax(300px,0.62fr)_minmax(760px,1.38fr)] lg:gap-8 lg:py-10">
         <CreateLeftColumn
           adScenesCount={adScenes.length}
           adStatus={adStatus}
@@ -2746,7 +2747,24 @@ function ResearchConnected() {
         />
 
         <div className="space-y-4">
-          <div className="grid items-center gap-5 sm:gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]">
+          <div className={creativePackDockVisible
+            ? "grid items-start gap-4 sm:gap-5 xl:grid-cols-[minmax(300px,320px)_minmax(340px,420px)] 2xl:grid-cols-[minmax(300px,320px)_minmax(340px,420px)_minmax(250px,310px)]"
+            : "grid items-center gap-5 sm:gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]"
+          }>
+            {creativePackDockVisible ? (
+              <CreateCreativePackOverview
+                debug={creativePackDebug}
+                groups={creativePackGroups}
+                moneyShotActive={creativePackMoneyShotActive}
+                onCancel={creativePackStatus === "researching" || creativePackStatus === "generating" ? onCancelCreativePack : undefined}
+                selectedFormat={selectedCreativePackFormat}
+                status={creativePackStatus}
+                researchFacts={pendingProgressFacts}
+                researchUrl={url}
+                onSelectGroup={selectCreativePackGroup}
+              />
+            ) : null}
+
             <CreateCanvasColumn
               adScenesCount={adScenes.length}
               isAudioPlaying={isAudioPlaying}
@@ -2762,7 +2780,7 @@ function ResearchConnected() {
               selectedScene={selectedScene}
             />
 
-            <aside className="space-y-4">
+            <aside className={creativePackDockVisible ? "space-y-4 xl:col-span-2 2xl:col-span-1" : "space-y-4"}>
               <CreateQuickActions
                 currentRenderStatus={currentRenderStatus}
                 hasSelectedScene={Boolean(selectedScene)}
@@ -2908,18 +2926,6 @@ function ResearchConnected() {
               />
             </aside>
           </div>
-
-          <CreateCreativePackOverview
-            debug={creativePackDebug}
-            groups={creativePackGroups}
-            moneyShotActive={creativePackMoneyShotActive}
-            onCancel={creativePackStatus === "researching" || creativePackStatus === "generating" ? onCancelCreativePack : undefined}
-            selectedFormat={selectedCreativePackFormat}
-            status={creativePackStatus}
-            researchFacts={pendingProgressFacts}
-            researchUrl={url}
-            onSelectGroup={selectCreativePackGroup}
-          />
         </div>
       </section>
 

@@ -202,6 +202,23 @@ select {
   }
 }
 
+@keyframes creativePackReadyGlow {
+  0% {
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0);
+    transform: translateY(0) scale(1);
+  }
+
+  45% {
+    box-shadow: 0 18px 42px rgba(16, 185, 129, 0.22);
+    transform: translateY(-2px) scale(1.018);
+  }
+
+  100% {
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0);
+    transform: translateY(0) scale(1);
+  }
+}
+
 @keyframes wiggly-reroll-glint {
   0% {
     opacity: 0;
