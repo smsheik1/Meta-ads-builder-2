@@ -161,13 +161,13 @@ function ResearchBeat({
 
 function AudioSkeleton({ selected }: { selected: boolean }) {
   return (
-    <div className="flex h-8 items-end justify-center gap-1">
+    <div className="flex h-5 items-end justify-start gap-0.5">
       {Array.from({ length: 9 }).map((_, index) => (
         <span
           key={index}
-          className={`w-1 rounded-full ${selected ? "bg-white/55" : "bg-slate-300"} animate-pulse`}
+          className={`w-0.5 rounded-full ${selected ? "bg-white/55" : "bg-slate-300"} animate-pulse`}
           style={{
-            height: `${9 + ((index * 7) % 18)}px`,
+            height: `${6 + ((index * 7) % 13)}px`,
             animationDelay: `${index * 70}ms`,
           }}
         />
@@ -179,9 +179,9 @@ function AudioSkeleton({ selected }: { selected: boolean }) {
 function TextSkeleton({ selected }: { selected: boolean }) {
   const color = selected ? "bg-white/25" : "bg-slate-200";
   return (
-    <div className="space-y-1.5">
-      <span className={`block h-2.5 w-11/12 rounded-full ${color}`} />
-      <span className={`block h-2.5 w-2/3 rounded-full ${color}`} />
+    <div className="space-y-1">
+      <span className={`block h-2 w-11/12 rounded-full ${color}`} />
+      <span className={`block h-2 w-2/3 rounded-full ${color}`} />
     </div>
   );
 }
@@ -264,6 +264,8 @@ export function CreateCreativePackOverview({
           const thumbnailText = getSceneThumbnailText(firstScene);
           const logoUrl = firstScene?.brand.logoUrl || firstScene?.brand.faviconUrl || "";
           const publicMessage = group.publicMessage || group.message || (busy ? "Waiting its turn." : statusCopy[group.status]);
+          const waiting = group.status === "pending" || group.status === "generating" || group.status === "still-cooking";
+          const failed = group.status === "needs-retry" || group.status === "cancelled";
 
           return (
             <button
@@ -271,7 +273,7 @@ export function CreateCreativePackOverview({
               type="button"
               onClick={() => ready && onSelectGroup(group.format)}
               disabled={!ready}
-              className={`rounded-[20px] border p-3 text-left transition duration-300 ${
+              className={`rounded-[18px] border px-3 py-2.5 text-left transition duration-300 ${
                 selected
                   ? "border-slate-950 bg-slate-950 text-white shadow-xl shadow-slate-950/15"
                   : ready
@@ -310,29 +312,35 @@ export function CreateCreativePackOverview({
                 <StatusIcon status={group.status} />
               </div>
 
-              <div className={`mt-2 min-h-[52px] rounded-[16px] px-3 py-2.5 ${selected ? "bg-white/10" : ready ? "bg-emerald-50/70" : "bg-slate-100"}`}>
-                {ready ? (
+              {selected ? (
+                <div className="mt-2 rounded-[16px] bg-white/10 px-3 py-2.5">
                   <p className="line-clamp-2 text-sm font-black leading-5">
                     {thumbnailText || "Ready to preview"}
                   </p>
-                ) : group.status === "pending" || group.status === "generating" || group.status === "still-cooking" ? (
-                  <div>
-                    {isCreativePackAudioFormat(group.format) ? <AudioSkeleton selected={selected} /> : <TextSkeleton selected={selected} />}
-                    <p className="mt-1.5 line-clamp-2 text-xs font-bold leading-4">
-                      {publicMessage}
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-xs font-bold leading-4">
+                </div>
+              ) : ready ? (
+                <p className="mt-1 line-clamp-1 text-xs font-black leading-4 text-slate-500">
+                  {thumbnailText || "Ready to preview"}
+                </p>
+              ) : waiting ? (
+                <div className="mt-2 rounded-[14px] bg-slate-100 px-3 py-2">
+                  {isCreativePackAudioFormat(group.format) ? <AudioSkeleton selected={selected} /> : <TextSkeleton selected={selected} />}
+                  <p className="mt-1 line-clamp-1 text-[11px] font-bold leading-4 text-slate-500">
                     {publicMessage}
-                    {debug && group.debugMessage ? (
-                      <span className="mt-2 block rounded-xl bg-white/70 px-2 py-1 text-[10px] font-bold leading-4 text-slate-500">
-                        Details: {group.debugMessage}
-                      </span>
-                    ) : null}
                   </p>
-                )}
-              </div>
+                </div>
+              ) : failed ? (
+                <div className="mt-1">
+                  <p className="line-clamp-1 text-xs font-black leading-4 text-slate-500">
+                    {publicMessage}
+                  </p>
+                  {debug && group.debugMessage ? (
+                    <p className="mt-1 line-clamp-2 rounded-xl bg-white/70 px-2 py-1 text-[10px] font-bold leading-4 text-slate-500">
+                      Details: {group.debugMessage}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
             </button>
           );
         })}

@@ -2632,9 +2632,8 @@ function ResearchConnected() {
     || currentRenderStatus === "queued"
     || currentRenderStatus === "claimed"
     || currentRenderStatus === "rendering";
-  const creativePackDebug = process.env.NODE_ENV !== "production" || (
-    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debugPack") === "1"
-  );
+  const creativePackDebug = typeof window !== "undefined"
+    && new URLSearchParams(window.location.search).get("debugPack") === "1";
   const creativePackDockVisible = creativePackStatus === "researching" || creativePackGroups.length > 0;
 
   useEffect(() => {
@@ -2705,66 +2704,72 @@ function ResearchConnected() {
         </div>
       </header>
 
-      <section className="mx-auto grid max-w-[1500px] items-center gap-8 py-6 sm:gap-10 sm:py-8 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[minmax(300px,0.62fr)_minmax(760px,1.38fr)] lg:gap-8 lg:py-10">
-        <CreateLeftColumn
-          adScenesCount={adScenes.length}
-          adStatus={adStatus}
-          creativePackStatus={creativePackStatus}
-          error={error}
-          format={selectedAdFormat}
-          memeModel={selectedMemeModel}
-          productCatalog={result ? result.productCatalog || null : undefined}
-          selectedReviewProductHandles={selectedReviewProductHandles}
-          jingleStyleId={selectedJingleStyleId}
-          videoMemeTemplateId={selectedVideoMemeTemplateId}
-          visualizerModel={selectedVisualizerModel}
-          onFormatChange={onFormatChange}
-          onGenerateCreativePack={() => void onGenerateCreativePack()}
-          onCancelCreativePack={onCancelCreativePack}
-          onJingleStyleChange={setSelectedJingleStyleId}
-          onMemeModelChange={setSelectedMemeModel}
-          onReviewProductSelectionChange={(handles) => setSelectedReviewProductHandles(normalizeReviewProductHandles(handles))}
-          onVideoMemeTemplateChange={onVideoMemeTemplateChange}
-          onVisualizerModelChange={setSelectedVisualizerModel}
-          onSubmit={onSubmit}
-          onUrlChange={(nextUrl) => {
-            setUrl(nextUrl);
-            setSelectedReviewProductHandles([]);
-            setSelectedPhotoshootProductHandle("");
-            setCreativePackStatus("idle");
-            setCreativePackGroups([]);
-            setSelectedCreativePackFormat(null);
-            setCreativePackMoneyShotActive(false);
-            creativePackUserSelectedRef.current = false;
-            creativePackMoneyShotTriggeredRef.current = false;
-            resetProductPhotoshootState();
-          }}
-          progressFacts={pendingProgressFacts}
-          progressStage={progressStage}
-          showSlowResearchMessage={showSlowResearchMessage}
-          status={status}
-          url={url}
-        />
+      <section className={creativePackDockVisible
+        ? "mx-auto grid max-w-[1280px] items-start gap-6 py-6 sm:py-8 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[minmax(300px,340px)_minmax(760px,1fr)] lg:py-10"
+        : "mx-auto grid max-w-[1500px] items-center gap-8 py-6 sm:gap-10 sm:py-8 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[minmax(300px,0.62fr)_minmax(760px,1.38fr)] lg:gap-8 lg:py-10"
+      }>
+        <div className={creativePackDockVisible ? "space-y-4" : ""}>
+          <CreateLeftColumn
+            adScenesCount={adScenes.length}
+            adStatus={adStatus}
+            compact={creativePackDockVisible}
+            creativePackStatus={creativePackStatus}
+            error={error}
+            format={selectedAdFormat}
+            memeModel={selectedMemeModel}
+            productCatalog={result ? result.productCatalog || null : undefined}
+            selectedReviewProductHandles={selectedReviewProductHandles}
+            jingleStyleId={selectedJingleStyleId}
+            videoMemeTemplateId={selectedVideoMemeTemplateId}
+            visualizerModel={selectedVisualizerModel}
+            onFormatChange={onFormatChange}
+            onGenerateCreativePack={() => void onGenerateCreativePack()}
+            onCancelCreativePack={onCancelCreativePack}
+            onJingleStyleChange={setSelectedJingleStyleId}
+            onMemeModelChange={setSelectedMemeModel}
+            onReviewProductSelectionChange={(handles) => setSelectedReviewProductHandles(normalizeReviewProductHandles(handles))}
+            onVideoMemeTemplateChange={onVideoMemeTemplateChange}
+            onVisualizerModelChange={setSelectedVisualizerModel}
+            onSubmit={onSubmit}
+            onUrlChange={(nextUrl) => {
+              setUrl(nextUrl);
+              setSelectedReviewProductHandles([]);
+              setSelectedPhotoshootProductHandle("");
+              setCreativePackStatus("idle");
+              setCreativePackGroups([]);
+              setSelectedCreativePackFormat(null);
+              setCreativePackMoneyShotActive(false);
+              creativePackUserSelectedRef.current = false;
+              creativePackMoneyShotTriggeredRef.current = false;
+              resetProductPhotoshootState();
+            }}
+            progressFacts={pendingProgressFacts}
+            progressStage={progressStage}
+            showSlowResearchMessage={showSlowResearchMessage}
+            status={status}
+            url={url}
+          />
+
+          {creativePackDockVisible ? (
+            <CreateCreativePackOverview
+              debug={creativePackDebug}
+              groups={creativePackGroups}
+              moneyShotActive={creativePackMoneyShotActive}
+              onCancel={creativePackStatus === "researching" || creativePackStatus === "generating" ? onCancelCreativePack : undefined}
+              selectedFormat={selectedCreativePackFormat}
+              status={creativePackStatus}
+              researchFacts={pendingProgressFacts}
+              researchUrl={url}
+              onSelectGroup={selectCreativePackGroup}
+            />
+          ) : null}
+        </div>
 
         <div className="space-y-4">
           <div className={creativePackDockVisible
-            ? "grid items-start gap-4 sm:gap-5 xl:grid-cols-[minmax(300px,320px)_minmax(340px,420px)] 2xl:grid-cols-[minmax(300px,320px)_minmax(340px,420px)_minmax(250px,310px)]"
+            ? "grid items-start gap-5 xl:grid-cols-[minmax(340px,420px)_minmax(260px,320px)]"
             : "grid items-center gap-5 sm:gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]"
           }>
-            {creativePackDockVisible ? (
-              <CreateCreativePackOverview
-                debug={creativePackDebug}
-                groups={creativePackGroups}
-                moneyShotActive={creativePackMoneyShotActive}
-                onCancel={creativePackStatus === "researching" || creativePackStatus === "generating" ? onCancelCreativePack : undefined}
-                selectedFormat={selectedCreativePackFormat}
-                status={creativePackStatus}
-                researchFacts={pendingProgressFacts}
-                researchUrl={url}
-                onSelectGroup={selectCreativePackGroup}
-              />
-            ) : null}
-
             <CreateCanvasColumn
               adScenesCount={adScenes.length}
               isAudioPlaying={isAudioPlaying}
@@ -2780,7 +2785,7 @@ function ResearchConnected() {
               selectedScene={selectedScene}
             />
 
-            <aside className={creativePackDockVisible ? "space-y-4 xl:col-span-2 2xl:col-span-1" : "space-y-4"}>
+            <aside className="space-y-4">
               <CreateQuickActions
                 currentRenderStatus={currentRenderStatus}
                 hasSelectedScene={Boolean(selectedScene)}
