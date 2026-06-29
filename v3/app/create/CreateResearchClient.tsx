@@ -1224,28 +1224,6 @@ function ResearchConnected() {
     )));
   };
 
-  const logCreativePackGroupEvent = (
-    format: CreativePackFormat,
-    event: string,
-    update: Partial<CreativePackOverviewGroup> = {},
-  ) => {
-    updateCreativePackGroup(format, (group) => ({
-      ...group,
-      ...update,
-      elapsedMs: update.startedAt || group.startedAt ? Date.now() - (update.startedAt || group.startedAt || Date.now()) : group.elapsedMs,
-      events: [...(group.events || []), `${new Date().toISOString()} ${event}`].slice(-8),
-    }));
-  };
-
-  const getCreativePackGenerationCount = (format: CreativePackFormat) => {
-    if (format === "reviews") return 4;
-    if (format === "text-message") return 4;
-    if (format === "meme") return 4;
-    if (format === "were-sorry") return 4;
-    if (format === "video-meme") return 3;
-    return 1;
-  };
-
   const isCreativePackGroupPlayable = (format: CreativePackFormat, scenes: AdScene[]) => {
     if (!scenes.length) return false;
     if (!isCreativePackAudioFormat(format)) return true;
@@ -1382,10 +1360,11 @@ function ResearchConnected() {
     format: CreativePackFormat,
   ) => {
     const researchResult = research.result || result;
+    const packFormat = CREATIVE_PACK_FORMATS.find((item) => item.format === format);
     const reviewProductHandles = format === "reviews" ? getCreativePackReviewProductHandles(researchResult) : [];
     const generation = await generateScenesForResearch(
       research.researchRunId as Id<"researchRuns">,
-      getCreativePackGenerationCount(format),
+      packFormat?.count || 1,
       format,
       selectedMemeModel,
       selectedVideoMemeTemplateId,
@@ -1425,7 +1404,7 @@ function ResearchConnected() {
     setCreativePackStatus("cancelled");
     setCreativePackGroups((groups) => groups.map((group) => (
       group.status === "pending" || group.status === "generating" || group.status === "still-cooking"
-        ? { ...group, status: "cancelled", message: "Cancelled.", publicMessage: "Cancelled.", events: [...(group.events || []), `${new Date().toISOString()} cancelled`] }
+        ? { ...group, status: "cancelled", message: "Cancelled.", publicMessage: "Cancelled." }
         : group
     )));
     const hasReadyPackGroup = creativePackGroups.some((group) => group.status === "ready" && group.scenes.length);
@@ -1668,16 +1647,17 @@ function ResearchConnected() {
         message: "Generating now.",
         publicMessage: isCreativePackAudioFormat(format) ? "Writing it, then attaching audio." : "Generating now.",
         debugMessage: "",
-        events: [...(group.events || []), `${new Date().toISOString()} started ${label}`],
       }));
       softTimer = setTimeout(() => {
         if (creativePackRunRef.current?.id !== runToken.id || runToken.cancelled || terminalFormats.has(format)) return;
-        logCreativePackGroupEvent(format, "still cooking", {
+        updateCreativePackGroup(format, (group) => ({
+          ...group,
           status: "still-cooking",
           publicMessage: "Still cooking.",
           message: "Still cooking.",
           debugMessage: `${label} passed ${Math.round(CREATIVE_PACK_SOFT_TIMEOUT_MS / 1000)}s but is still running.`,
-        });
+          elapsedMs: Date.now() - startedAt,
+        }));
         // TODO(analytics): creative_pack_group_still_cooking.
       }, CREATIVE_PACK_SOFT_TIMEOUT_MS);
 
@@ -1710,7 +1690,6 @@ function ResearchConnected() {
           publicMessage: "",
           debugMessage: "",
           elapsedMs: Date.now() - startedAt,
-          events: [...(group.events || []), `${new Date().toISOString()} ready ${label}`].slice(-8),
         }));
         // TODO(analytics): creative_pack_group_ready.
         maybeTriggerMoneyShot();
@@ -1725,7 +1704,6 @@ function ResearchConnected() {
             message: "Cancelled.",
             publicMessage: "Cancelled.",
             elapsedMs: Date.now() - startedAt,
-            events: [...(group.events || []), `${new Date().toISOString()} cancelled ${label}`].slice(-8),
           }));
           return;
         }
@@ -1737,7 +1715,6 @@ function ResearchConnected() {
           publicMessage: "Needs retry.",
           debugMessage: getAdGenerationErrorMessage(nextError),
           elapsedMs: Date.now() - startedAt,
-          events: [...(group.events || []), `${new Date().toISOString()} needs retry ${label}`].slice(-8),
         }));
         // TODO(analytics): creative_pack_group_unavailable.
         maybeTriggerMoneyShot();

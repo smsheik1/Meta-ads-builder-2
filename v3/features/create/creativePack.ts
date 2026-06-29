@@ -6,17 +6,15 @@ export const CREATIVE_PACK_HARD_TIMEOUT_MS = 60_000;
 export const CREATIVE_PACK_MONEY_SHOT_READY_COUNT = 5;
 
 export const CREATIVE_PACK_FORMATS = [
-  { format: "reviews", label: "Reviews" },
-  { format: "video-meme", label: "Video Meme" },
-  { format: "meme", label: "Memes" },
-  { format: "text-message", label: "iMessage" },
-  { format: "were-sorry", label: "Apology" },
-  { format: "visualizer", label: "Visualizer" },
-  { format: "jingle", label: "Jingle" },
-  { format: "brainrot", label: "Brainrot" },
+  { format: "reviews", label: "Reviews", count: 4 },
+  { format: "video-meme", label: "Video Meme", count: 3 },
+  { format: "meme", label: "Memes", count: 4 },
+  { format: "text-message", label: "iMessage", count: 4 },
+  { format: "were-sorry", label: "Apology", count: 4 },
+  { format: "visualizer", label: "Visualizer", count: 1 },
+  { format: "jingle", label: "Jingle", count: 1 },
+  { format: "brainrot", label: "Brainrot", count: 1 },
 ] as const;
-
-export const CREATIVE_PACK_EXCLUDED_FORMATS = [] as const satisfies readonly AdFormatId[];
 
 export type CreativePackFormat = typeof CREATIVE_PACK_FORMATS[number]["format"];
 export type CreativePackStatus = "idle" | "researching" | "generating" | "ready" | "error" | "cancelled";

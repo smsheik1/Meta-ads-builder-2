@@ -34,7 +34,6 @@ export type CreativePackOverviewGroup = {
   actionLabel?: string;
   publicMessage?: string;
   debugMessage?: string;
-  events?: string[];
 };
 
 const statusCopy: Record<CreativePackGroupStatus, string> = {
