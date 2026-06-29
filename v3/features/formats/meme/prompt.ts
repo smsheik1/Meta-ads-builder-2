@@ -5,7 +5,15 @@ const cleanList = (items: string[], fallback: string) => (
   items.length ? items.slice(0, 6).join("; ") : fallback
 );
 
-export function buildMemePrompt(research: StoredWebsiteResearchResult) {
+type BuildMemePromptOptions = {
+  variationsPerTemplate?: number;
+};
+
+export function buildMemePrompt(
+  research: StoredWebsiteResearchResult,
+  options: BuildMemePromptOptions = {},
+) {
+  const variationsPerTemplate = options.variationsPerTemplate ?? MEME_VARIATIONS_PER_TEMPLATE;
   const templates = MEME_TEMPLATES.map((template) => ({
     id: template.id,
     name: template.name,
@@ -35,9 +43,9 @@ BRAND CONTEXT:
 - CTA direction: ${research.brandBrief.ctaDirection}
 
 TASK:
-Write exactly ${MEME_VARIATIONS_PER_TEMPLATE} distinct meme variants for every template below, grouped in the exact template order given.
-Total variants required: ${MEME_TEMPLATES.length * MEME_VARIATIONS_PER_TEMPLATE}.
-Before writing each template's ${MEME_VARIATIONS_PER_TEMPLATE} variants, pick ${MEME_VARIATIONS_PER_TEMPLATE} different buyer moments or angles from the BRAND block.
+Write exactly ${variationsPerTemplate} distinct meme variants for every template below, grouped in the exact template order given.
+Total variants required: ${MEME_TEMPLATES.length * variationsPerTemplate}.
+Before writing each template's ${variationsPerTemplate} variants, pick ${variationsPerTemplate} different buyer moments or angles from the BRAND block.
 
 TEMPLATES:
 ${JSON.stringify(templates, null, 2)}
@@ -45,7 +53,7 @@ ${JSON.stringify(templates, null, 2)}
 RULES:
 - Return plain JSON only.
 - Every required slot must be present.
-- For each template, write ${MEME_VARIATIONS_PER_TEMPLATE} genuinely different angles, not tiny rewrites of the same joke.
+- For each template, write ${variationsPerTemplate} genuinely different angles, not tiny rewrites of the same joke.
 - Each variant must include an "angle" field naming the buyer moment or proof it uses.
 - No two variants in the same template may share the same angle.
 - Plain text only in slot values. No markdown, no URLs.

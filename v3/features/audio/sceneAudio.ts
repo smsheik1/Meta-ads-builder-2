@@ -7,6 +7,8 @@ export const MAX_CAPTION_WORDS_ON_SCREEN = 7;
 const minimumAudioDurationMs = 4200;
 const maximumAudioDurationMs = 28000;
 export const MAX_CAPTION_EDIT_TEXT_LENGTH = 180;
+const maxStoredAnalysisFps = 30;
+const maxStoredAnalysisBands = 24;
 
 const cleanText = (value: unknown) => String(value ?? "")
   .replace(/[—–]/g, ", ")
@@ -78,6 +80,46 @@ export const createCaptionsForVoiceover = (
   });
 };
 
+const resampleIndex = (sourceLength: number, targetIndex: number, targetLength: number) => {
+  if (sourceLength <= 1 || targetLength <= 1) return 0;
+  return Math.min(
+    sourceLength - 1,
+    Math.max(0, Math.round((targetIndex / (targetLength - 1)) * (sourceLength - 1))),
+  );
+};
+
+export const compactSceneAudioAnalysis = (
+  analysis: AdSceneAudioAnalysis | null | undefined,
+): AdSceneAudioAnalysis | undefined => {
+  if (!analysis?.levels.length) return analysis || undefined;
+
+  const sourceFps = Math.max(1, analysis.fps || maxStoredAnalysisFps);
+  const sourceBands = analysis.bands[0]?.length || 0;
+  if (sourceFps <= maxStoredAnalysisFps && sourceBands <= maxStoredAnalysisBands) {
+    return analysis;
+  }
+
+  const targetFps = Math.min(sourceFps, maxStoredAnalysisFps);
+  const targetBandCount = Math.max(0, Math.min(sourceBands, maxStoredAnalysisBands));
+  const durationSeconds = analysis.levels.length / sourceFps;
+  const targetFrameCount = Math.max(1, Math.ceil(durationSeconds * targetFps));
+  const levels = Array.from({ length: targetFrameCount }, (_, index) => (
+    analysis.levels[resampleIndex(analysis.levels.length, index, targetFrameCount)] ?? 0
+  ));
+  const bands = Array.from({ length: targetFrameCount }, (_, frameIndex) => {
+    const sourceFrame = analysis.bands[resampleIndex(analysis.bands.length, frameIndex, targetFrameCount)] || [];
+    return Array.from({ length: targetBandCount }, (_, bandIndex) => (
+      sourceFrame[resampleIndex(sourceFrame.length, bandIndex, targetBandCount)] ?? 0
+    ));
+  });
+
+  return {
+    fps: targetFps,
+    levels,
+    bands,
+  };
+};
+
 export const createGeneratedSceneAudio = ({
   storageId,
   url,
@@ -107,7 +149,7 @@ export const createGeneratedSceneAudio = ({
   durationSeconds: durationMs / 1000,
   transcript,
   captions,
-  analysis,
+  analysis: compactSceneAudioAnalysis(analysis),
   provider,
   model,
   generatedAt: Date.now(),

@@ -5,6 +5,7 @@ import {
 } from "@/features/llm/nvidiaNimModels";
 import { JINGLE_STYLES, type JingleStyleId } from "@/features/formats/jingle/prompt";
 import { VIDEO_MEME_TEMPLATES, getVideoMemeTemplate, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
+import type { CreativePackStatus } from "@/features/create/creativePack";
 import type { ProductCatalog } from "@/features/research/types";
 import type { AdFormatId } from "@/features/scene/types";
 import { CreateReviewsProductPicker } from "./CreateReviewsProductPicker";
@@ -16,6 +17,7 @@ export type WebsiteSubmitProgressFacts = {
   brandName: string;
   hasLogo: boolean;
   colorCount: number;
+  productCount?: number;
   proofCount: number;
   buyerMomentCount: number;
 };
@@ -157,6 +159,7 @@ function ModelSelect({
 export function CreateLeftColumn({
   adScenesCount,
   adStatus,
+  creativePackStatus,
   error,
   format,
   memeModel,
@@ -166,6 +169,8 @@ export function CreateLeftColumn({
   videoMemeTemplateId,
   visualizerModel,
   onFormatChange,
+  onGenerateCreativePack,
+  onCancelCreativePack,
   onJingleStyleChange,
   onMemeModelChange,
   onReviewProductSelectionChange,
@@ -181,6 +186,7 @@ export function CreateLeftColumn({
 }: {
   adScenesCount: number;
   adStatus: LoadStatus;
+  creativePackStatus: CreativePackStatus;
   error: string;
   format: AdFormatId;
   memeModel: string;
@@ -190,6 +196,8 @@ export function CreateLeftColumn({
   videoMemeTemplateId: VideoMemeTemplateId;
   visualizerModel: string;
   onFormatChange: (format: AdFormatId) => void;
+  onGenerateCreativePack: () => void;
+  onCancelCreativePack: () => void;
   onJingleStyleChange: (styleId: JingleStyleId) => void;
   onMemeModelChange: (model: string) => void;
   onReviewProductSelectionChange: (handles: string[]) => void;
@@ -203,7 +211,9 @@ export function CreateLeftColumn({
   status: LoadStatus;
   url: string;
 }) {
-  const submitIsBusy = status === "loading" || adStatus === "loading";
+  const creativePackBusy = creativePackStatus === "researching" || creativePackStatus === "generating";
+  const singleSubmitBusy = status === "loading" || adStatus === "loading";
+  const submitIsBusy = singleSubmitBusy || creativePackBusy;
   const submitLabel = status === "loading"
     ? "Reading website"
     : adStatus === "loading"
@@ -223,6 +233,11 @@ export function CreateLeftColumn({
                     ? "Writing proof ads"
                     : "Writing ideas"
       : "Generate ads";
+  const packLabel = creativePackStatus === "researching"
+    ? "Reading site for pack"
+    : creativePackStatus === "generating"
+      ? "Generating creative pack"
+      : "Generate creative pack";
   const formatHelper = format === "meme"
     ? "Twelve brand-aligned meme drafts, ready to spacebar through."
     : format === "were-sorry"
@@ -382,6 +397,30 @@ export function CreateLeftColumn({
           {submitIsBusy ? <Loader2 className="size-5 animate-spin" /> : <Wand2 className="size-5" />}
           {submitLabel}
         </button>
+
+        <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+          <button
+            type="button"
+            disabled={submitIsBusy}
+            onClick={onGenerateCreativePack}
+            className={`flex h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-950 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 ${creativePackBusy ? "cursor-progress" : ""} disabled:cursor-not-allowed disabled:opacity-45`}
+            data-generate-creative-pack
+          >
+            {creativePackBusy ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4 text-indigo-500" />}
+            {packLabel}
+          </button>
+
+          {creativePackBusy ? (
+            <button
+              type="button"
+              onClick={onCancelCreativePack}
+              className="flex h-12 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-600 transition hover:border-slate-300 hover:bg-white hover:text-slate-950"
+              data-cancel-creative-pack
+            >
+              Cancel
+            </button>
+          ) : null}
+        </div>
 
         <CreateResearchProgressCard
           facts={progressFacts}

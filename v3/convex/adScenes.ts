@@ -43,7 +43,7 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     });
     const generationBatchId = createGenerationBatchId();
     if (format === "meme") {
-      const generation = await generateMemeVariantsFromResearch(research, { nvidiaNimModel: memeModel });
+      const generation = await generateMemeVariantsFromResearch(research, { count, nvidiaNimModel: memeModel });
       const scenes = generation.variants.map((variant, index) => createMemeAdScene({
         research,
         variant,

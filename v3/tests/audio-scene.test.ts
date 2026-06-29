@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
+  compactSceneAudioAnalysis,
   createCaptionsForVoiceover,
   createGeneratedSceneAudio,
   createVoiceoverLines,
@@ -82,6 +83,40 @@ assert.equal(uploadedAudio.status, "generated");
 assert.equal(uploadedAudio.provider, "upload");
 assert.equal(uploadedAudio.model, "deepgram-listen-smart-format-diarized");
 assert.equal(getVisibleCaptionText(uploadedAudio, 0.1), "Uploaded Deepgram caption");
+
+const oversizedAnalysis = {
+  fps: 60,
+  levels: Array.from({ length: 600 }, (_, index) => (index % 100) / 100),
+  bands: Array.from({ length: 600 }, (_, frameIndex) => (
+    Array.from({ length: 52 }, (_, bandIndex) => ((frameIndex + bandIndex) % 100) / 100)
+  )),
+};
+const compactedAnalysis = compactSceneAudioAnalysis(oversizedAnalysis);
+assert.equal(compactedAnalysis?.fps, 30);
+assert.ok((compactedAnalysis?.levels.length || 0) <= oversizedAnalysis.levels.length / 2 + 1);
+assert.equal(compactedAnalysis?.bands[0]?.length, 24);
+
+const compactedAudio = createGeneratedSceneAudio({
+  storageId: "large-analysis-audio-storage-id",
+  url: "https://example.com/large-analysis.wav",
+  mimeType: "audio/wav",
+  durationMs: 10_000,
+  transcript: "Large analysis should be stored compactly.",
+  captions: [
+    {
+      text: "Large analysis should be stored compactly.",
+      startMs: 0,
+      endMs: 10_000,
+    },
+  ],
+  analysis: oversizedAnalysis,
+  model: "gemini-3.1-flash-tts-preview",
+});
+assert.equal(compactedAudio.status, "generated");
+if (compactedAudio.status === "generated") {
+  assert.equal(compactedAudio.analysis?.fps, 30);
+  assert.equal(compactedAudio.analysis?.bands[0]?.length, 24);
+}
 
 const quietDecision = explainVoiceVisualizerPresetFromAnalysis({
   fps: 30,
