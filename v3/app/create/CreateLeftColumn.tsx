@@ -159,7 +159,6 @@ function ModelSelect({
 export function CreateLeftColumn({
   adScenesCount,
   adStatus,
-  compact = false,
   creativePackStatus,
   error,
   format,
@@ -187,7 +186,6 @@ export function CreateLeftColumn({
 }: {
   adScenesCount: number;
   adStatus: LoadStatus;
-  compact?: boolean;
   creativePackStatus: CreativePackStatus;
   error: string;
   format: AdFormatId;
@@ -260,68 +258,6 @@ export function CreateLeftColumn({
       {error}
     </div>
   ) : null;
-
-  if (compact) {
-    return (
-      <div>
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            onGenerateCreativePack();
-          }}
-          className="space-y-3 rounded-[24px] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-indigo-500">Wiggly create</p>
-              <p className="mt-1 text-base font-black leading-tight text-slate-950">Build from one URL</p>
-            </div>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
-              Pack
-            </span>
-          </div>
-
-          <label className="block" htmlFor="website-url">
-            <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Website</span>
-            <input
-              id="website-url"
-              suppressHydrationWarning
-              value={url}
-              onChange={(event) => onUrlChange(event.target.value)}
-              className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
-              placeholder="https://yourbrand.com"
-            />
-          </label>
-
-          <div className="grid gap-2">
-            <button
-              type="submit"
-              disabled={submitIsBusy}
-              className={`flex h-12 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 text-sm font-black text-white shadow-xl shadow-slate-950/15 transition hover:bg-slate-800 ${creativePackBusy ? "cursor-progress" : ""} disabled:cursor-not-allowed disabled:opacity-45`}
-              data-generate-creative-pack
-            >
-              {creativePackBusy ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />}
-              {packLabel}
-            </button>
-
-            {creativePackBusy ? (
-              <button
-                type="button"
-                onClick={onCancelCreativePack}
-                className="flex h-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-600 transition hover:border-slate-300 hover:bg-white hover:text-slate-950"
-                data-cancel-creative-pack
-              >
-                Cancel
-              </button>
-            ) : null}
-          </div>
-
-        </form>
-
-        {errorPanel}
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-xl">

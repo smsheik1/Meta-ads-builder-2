@@ -2635,6 +2635,7 @@ function ResearchConnected() {
   const creativePackDebug = typeof window !== "undefined"
     && new URLSearchParams(window.location.search).get("debugPack") === "1";
   const creativePackDockVisible = creativePackStatus === "researching" || creativePackGroups.length > 0;
+  const creativePackReadyCount = creativePackGroups.filter((group) => group.status === "ready").length;
 
   useEffect(() => {
     if (currentRenderStatus === "ready" || currentRenderStatus === "failed" || currentRenderStatus === "error") {
@@ -2704,15 +2705,11 @@ function ResearchConnected() {
         </div>
       </header>
 
-      <section className={creativePackDockVisible
-        ? "mx-auto grid max-w-[1280px] items-start gap-6 py-6 sm:py-8 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[minmax(300px,340px)_minmax(760px,1fr)] lg:py-10"
-        : "mx-auto grid max-w-[1500px] items-center gap-8 py-6 sm:gap-10 sm:py-8 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[minmax(300px,0.62fr)_minmax(760px,1.38fr)] lg:gap-8 lg:py-10"
-      }>
-        <div className={creativePackDockVisible ? "space-y-4" : ""}>
+      <section className="mx-auto grid max-w-[1500px] items-center gap-8 py-6 sm:gap-10 sm:py-8 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[minmax(300px,0.62fr)_minmax(760px,1.38fr)] lg:gap-8 lg:py-10">
+        <div>
           <CreateLeftColumn
             adScenesCount={adScenes.length}
             adStatus={adStatus}
-            compact={creativePackDockVisible}
             creativePackStatus={creativePackStatus}
             error={error}
             format={selectedAdFormat}
@@ -2749,27 +2746,59 @@ function ResearchConnected() {
             status={status}
             url={url}
           />
-
-          {creativePackDockVisible ? (
-            <CreateCreativePackOverview
-              debug={creativePackDebug}
-              groups={creativePackGroups}
-              moneyShotActive={creativePackMoneyShotActive}
-              onCancel={creativePackStatus === "researching" || creativePackStatus === "generating" ? onCancelCreativePack : undefined}
-              selectedFormat={selectedCreativePackFormat}
-              status={creativePackStatus}
-              researchFacts={pendingProgressFacts}
-              researchUrl={url}
-              onSelectGroup={selectCreativePackGroup}
-            />
-          ) : null}
         </div>
 
-        <div className="space-y-4">
-          <div className={creativePackDockVisible
-            ? "grid items-start gap-5 xl:grid-cols-[minmax(340px,420px)_minmax(260px,320px)]"
-            : "grid items-center gap-5 sm:gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]"
-          }>
+        <div className="relative space-y-4">
+          {creativePackDockVisible ? (
+            <div
+              className="group absolute -left-16 top-1/2 z-50 hidden -translate-y-1/2 lg:block"
+              data-creative-pack-hover-dock="true"
+            >
+              <button
+                type="button"
+                className="flex w-14 flex-col items-center gap-2 rounded-[22px] border border-slate-200 bg-white/95 px-2 py-3 text-slate-950 shadow-xl shadow-slate-950/10 backdrop-blur transition hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
+                aria-label="Show creative pack"
+              >
+                <span className="grid size-9 place-items-center rounded-2xl bg-slate-950 text-[13px] font-black text-white">
+                  {creativePackReadyCount}
+                </span>
+                <span className="text-[9px] font-black uppercase leading-3 tracking-[0.16em] text-slate-400">
+                  Pack
+                </span>
+              </button>
+              <div className="pointer-events-none absolute right-full top-1/2 mr-3 w-[340px] max-h-[calc(100vh-7rem)] -translate-y-1/2 translate-x-3 overflow-y-auto opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-x-0 group-focus-within:opacity-100">
+                <CreateCreativePackOverview
+                  debug={creativePackDebug}
+                  groups={creativePackGroups}
+                  moneyShotActive={creativePackMoneyShotActive}
+                  onCancel={creativePackStatus === "researching" || creativePackStatus === "generating" ? onCancelCreativePack : undefined}
+                  selectedFormat={selectedCreativePackFormat}
+                  status={creativePackStatus}
+                  researchFacts={pendingProgressFacts}
+                  researchUrl={url}
+                  onSelectGroup={selectCreativePackGroup}
+                />
+              </div>
+            </div>
+          ) : null}
+
+          {creativePackDockVisible ? (
+            <div className="lg:hidden">
+              <CreateCreativePackOverview
+                debug={creativePackDebug}
+                groups={creativePackGroups}
+                moneyShotActive={creativePackMoneyShotActive}
+                onCancel={creativePackStatus === "researching" || creativePackStatus === "generating" ? onCancelCreativePack : undefined}
+                selectedFormat={selectedCreativePackFormat}
+                status={creativePackStatus}
+                researchFacts={pendingProgressFacts}
+                researchUrl={url}
+                onSelectGroup={selectCreativePackGroup}
+              />
+            </div>
+          ) : null}
+
+          <div className="grid items-center gap-5 sm:gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]">
             <CreateCanvasColumn
               adScenesCount={adScenes.length}
               isAudioPlaying={isAudioPlaying}
