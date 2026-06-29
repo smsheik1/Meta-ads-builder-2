@@ -17,6 +17,7 @@ export type WebsiteSubmitProgressFacts = {
   brandName: string;
   hasLogo: boolean;
   colorCount: number;
+  productCount?: number;
   proofCount: number;
   buyerMomentCount: number;
 };

@@ -173,6 +173,35 @@ select {
   }
 }
 
+@keyframes creativePackCardIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes creativePackPulse {
+  0% {
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    transform: scale(1);
+  }
+
+  42% {
+    box-shadow: 0 24px 70px rgba(79, 70, 229, 0.22);
+    transform: scale(1.012);
+  }
+
+  100% {
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    transform: scale(1);
+  }
+}
+
 @keyframes wiggly-reroll-glint {
   0% {
     opacity: 0;

@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
+  CREATIVE_PACK_HARD_TIMEOUT_MS,
+  CREATIVE_PACK_MONEY_SHOT_READY_COUNT,
   CREATIVE_PACK_CONCURRENCY,
   CREATIVE_PACK_EXCLUDED_FORMATS,
   CREATIVE_PACK_FORMATS,
-  CREATIVE_PACK_FORMAT_TIMEOUT_MS,
+  CREATIVE_PACK_SHOWCASE_PRIORITY,
+  CREATIVE_PACK_SOFT_TIMEOUT_MS,
   isCreativePackFormat,
 } from "../features/create/creativePack";
 
@@ -14,16 +17,23 @@ const overviewSource = readFileSync("app/create/CreateCreativePackOverview.tsx",
 
 assert.deepEqual(
   CREATIVE_PACK_FORMATS.map((item) => item.format),
-  ["reviews", "video-meme", "meme", "text-message", "were-sorry", "visualizer"],
-  "Creative Pack MVP must include only the cheap default formats in the planned order.",
+  ["reviews", "video-meme", "meme", "text-message", "were-sorry", "visualizer", "jingle", "brainrot"],
+  "Creative Pack must include cheap text/image/audio formats in the planned shell-wave order.",
 );
 assert.deepEqual(
   CREATIVE_PACK_EXCLUDED_FORMATS,
-  ["jingle", "brainrot"],
-  "Creative Pack MVP must exclude paid generated-audio formats.",
+  [],
+  "Creative Pack must not exclude cheap generated-audio formats.",
 );
 assert.equal(CREATIVE_PACK_CONCURRENCY, 3, "Creative Pack must run exactly three format generations at once.");
-assert.equal(CREATIVE_PACK_FORMAT_TIMEOUT_MS, 20_000, "Creative Pack must time out each format after 20 seconds.");
+assert.equal(CREATIVE_PACK_SOFT_TIMEOUT_MS, 20_000, "Creative Pack must mark slow cards as still cooking after 20 seconds.");
+assert.equal(CREATIVE_PACK_HARD_TIMEOUT_MS, 60_000, "Creative Pack must mark cards needs retry after 60 seconds.");
+assert.equal(CREATIVE_PACK_MONEY_SHOT_READY_COUNT, 5, "Creative Pack money-shot threshold must fire when five directions are ready.");
+assert.deepEqual(
+  CREATIVE_PACK_SHOWCASE_PRIORITY,
+  ["jingle", "brainrot", "visualizer", "video-meme", "reviews", "text-message", "meme", "were-sorry"],
+  "Creative Pack showcase must prioritize ready audio/video cards before text cards.",
+);
 
 for (const format of CREATIVE_PACK_FORMATS.map((item) => item.format)) {
   assert.equal(isCreativePackFormat(format), true, `${format} should be recognized as a Creative Pack format.`);
@@ -39,17 +49,34 @@ assert.ok(
   "/create must expose visible Generate Creative Pack and Cancel controls.",
 );
 assert.ok(
-  createClientSource.includes("withCreativePackTimeout") &&
-    createClientSource.includes("CREATIVE_PACK_FORMAT_TIMEOUT_MS") &&
+  createClientSource.includes("withCreativePackHardTimeout") &&
+    createClientSource.includes("CREATIVE_PACK_SOFT_TIMEOUT_MS") &&
+    createClientSource.includes("CREATIVE_PACK_HARD_TIMEOUT_MS") &&
     createClientSource.includes("CREATIVE_PACK_CONCURRENCY") &&
     createClientSource.includes("autoGenerateAudio: false"),
-  "Creative Pack must enforce timeout/concurrency and suppress paid auto-audio prewarming.",
+  "Creative Pack must enforce soft/hard timing, concurrency, and suppress selected-scene auto-audio prewarming.",
+);
+assert.ok(
+  createClientSource.includes("generateCreativePackAudioForScene") &&
+    createClientSource.includes("generateJingleAudioForScene") &&
+    createClientSource.includes("generateBrainrotAudioForScene") &&
+    createClientSource.includes("generateDialogueAudioForScene") &&
+    createClientSource.includes("returned no playable audio"),
+  "Creative Pack audio groups must become ready only after playable audio is attached.",
 );
 assert.ok(
   createClientSource.includes("setCreativePackGroups((groups) => groups.map((group) => (") &&
     createClientSource.includes('status: "cancelled"') &&
-    createClientSource.includes("Cancelled before it started."),
+    createClientSource.includes("Cancelled."),
   "Creative Pack cancel must preserve completed groups and mark pending work cancelled.",
+);
+assert.ok(
+  createClientSource.includes("creativePackUserSelectedRef") &&
+    createClientSource.includes("firstReadyPackFormatByPriority") &&
+    createClientSource.includes("creativePackMoneyShotTriggeredRef") &&
+    createClientSource.includes("selectedCreativePackFormatRef.current") &&
+    createClientSource.includes("isCreativePackGroupPlayable(format, scenes)"),
+  "Creative Pack must not auto-open during generation and must showcase the first ready priority card after the money shot.",
 );
 assert.ok(
   createClientSource.includes("getDefaultReviewProductHandles") &&
@@ -60,7 +87,10 @@ assert.ok(
 assert.ok(
   overviewSource.includes('data-creative-pack-overview="true"') &&
     overviewSource.includes("data-creative-pack-card") &&
-    overviewSource.includes("transitionDelay") &&
+    overviewSource.includes("Reading your brand") &&
+    overviewSource.includes("Still cooking") &&
+    overviewSource.includes("Needs retry") &&
+    overviewSource.includes("creativePackCardIn") &&
     overviewSource.includes("grid grid-cols-2"),
-  "Creative Pack overview must render all groups in a compact reveal grid.",
+  "Creative Pack overview must render research beat, shell wave, and product-safe card states.",
 );
