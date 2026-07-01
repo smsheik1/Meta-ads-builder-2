@@ -1,19 +1,23 @@
 import { v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { api } from "./_generated/api";
+import { action, mutation } from "./_generated/server";
 import { isValidWaitlistEmail, normalizeWaitlistEmail } from "../features/waitlist/email";
+import { syncWaitlistSignupToLoops } from "../features/waitlist/loops";
+
+const signupArgs = {
+  email: v.string(),
+  source: v.optional(v.string()),
+  referrer: v.optional(v.string()),
+  utmSource: v.optional(v.string()),
+  utmMedium: v.optional(v.string()),
+  utmCampaign: v.optional(v.string()),
+  utmContent: v.optional(v.string()),
+  ref: v.optional(v.string()),
+  userAgent: v.optional(v.string()),
+};
 
 export const join: ReturnType<typeof mutation> = mutation({
-  args: {
-    email: v.string(),
-    source: v.optional(v.string()),
-    referrer: v.optional(v.string()),
-    utmSource: v.optional(v.string()),
-    utmMedium: v.optional(v.string()),
-    utmCampaign: v.optional(v.string()),
-    utmContent: v.optional(v.string()),
-    ref: v.optional(v.string()),
-    userAgent: v.optional(v.string()),
-  },
+  args: signupArgs,
   handler: async (ctx, args) => {
     const email = normalizeWaitlistEmail(args.email);
     if (!isValidWaitlistEmail(email)) {
@@ -51,3 +55,28 @@ export const join: ReturnType<typeof mutation> = mutation({
   },
 });
 
+export const joinAndSync: ReturnType<typeof action> = action({
+  args: signupArgs,
+  handler: async (ctx, args) => {
+    const email = normalizeWaitlistEmail(args.email);
+    if (!isValidWaitlistEmail(email)) {
+      throw new Error("Enter a real email address.");
+    }
+
+    const result = await ctx.runMutation(api.waitlist.join, args);
+    await syncWaitlistSignupToLoops({
+      email,
+      source: args.source,
+      referrer: args.referrer,
+      utmSource: args.utmSource,
+      utmMedium: args.utmMedium,
+      utmCampaign: args.utmCampaign,
+      utmContent: args.utmContent,
+      ref: args.ref,
+    }, {
+      apiKey: process.env.LOOPS_API_KEY,
+    });
+
+    return result;
+  },
+});
