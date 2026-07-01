@@ -29,7 +29,7 @@ export const DEFAULT_GEMINI_BRAND_CURATOR_MODEL = "gemini-3.1-flash-lite";
 
 const DEFAULT_TIMEOUT_MS = 20_000;
 const MAX_MARKDOWN_CHARS = 14_000;
-const noisePattern = /\b(skip to content|cart is empty|continue shopping|log in|login|check out|checkout|add to cart|quantity|subtotal|loading|have an account|gift message|discount code|free shipping not applied|regular price|sale price|sold out|newsletter|privacy policy|terms of service|powered by tolstoy)\b/i;
+const noisePattern = /\b(skip to content|cart is empty|continue shopping|log in|login|check out|checkout|add to cart|quantity|subtotal|loading|have an account|gift message|discount code|free shipping not applied|regular price|sale price|sold out|newsletter|privacy policy|terms of service|powered by tolstoy|something went wrong|try refreshing(?: the)?(?: page)?|site still doesn'?t load|this page couldn'?t load|page couldn'?t load|unknown due to site error|technical difficulties|site is currently experiencing technical difficulties)\b/i;
 const standalonePricePattern = /^(?:from\s+)?\$[\d,.]+(?:\s*-\s*\$[\d,.]+)?$/i;
 const imageAltNoisePattern = /\b(decorative|background image|hero image|image|photo|picture|screenshot|graphic|illustration)\b/i;
 
@@ -46,7 +46,7 @@ const cleanText = (value: unknown, maxLength = 260) => String(value ?? "")
   .slice(0, maxLength)
   .trim();
 
-const isNoiseText = (value: unknown) => {
+export const isBrandResearchNoiseText = (value: unknown) => {
   const cleaned = cleanText(value, 260);
   if (!cleaned) return true;
   if (standalonePricePattern.test(cleaned)) return true;
@@ -58,6 +58,7 @@ const isNoiseText = (value: unknown) => {
   if (noisePattern.test(cleaned)) return true;
   return false;
 };
+const isNoiseText = isBrandResearchNoiseText;
 
 const unique = (items: unknown[], maxItems: number, maxLength = 220) => items
   .map((item) => cleanText(item, maxLength))
@@ -166,20 +167,27 @@ export const normalizeBrandBriefPayload = (
   const record = root.brandBrief && typeof root.brandBrief === "object"
     ? root.brandBrief as Record<string, unknown>
     : root;
-  const proof = unique(asArray(record.proof), 8);
-  const buyerMoments = unique(asArray(record.buyerMoments), 8);
-  const siteLanguage = unique(asArray(record.siteLanguage), 8);
-  const visualNotes = unique(asArray(record.visualNotes), 6);
+  const proofInput = asArray(record.proof);
+  const buyerMomentInput = asArray(record.buyerMoments);
+  const siteLanguageInput = asArray(record.siteLanguage);
+  const visualNotesInput = asArray(record.visualNotes);
+  const proof = unique(proofInput, 8);
+  const buyerMoments = unique(buyerMomentInput, 8);
+  const siteLanguage = unique(siteLanguageInput, 8);
+  const visualNotes = unique(visualNotesInput, 6);
+  const listOrFallback = (input: unknown[], cleaned: string[], fallbackItems: string[]) => (
+    cleaned.length || input.length === 0 ? cleaned : fallbackItems
+  );
 
   return {
     brandName: firstUseful([record.brandName], fallback.brandName, 80),
     offer: firstUseful([record.offer], fallback.offer, 150),
     audience: firstUseful([record.audience], fallback.audience, 150),
-    buyerMoments: buyerMoments.length || hasArrayField(record, "buyerMoments") ? buyerMoments : fallback.buyerMoments,
-    proof: proof.length || hasArrayField(record, "proof") ? proof : fallback.proof,
-    siteLanguage: siteLanguage.length || hasArrayField(record, "siteLanguage") ? siteLanguage : fallback.siteLanguage,
+    buyerMoments: hasArrayField(record, "buyerMoments") ? listOrFallback(buyerMomentInput, buyerMoments, fallback.buyerMoments) : fallback.buyerMoments,
+    proof: hasArrayField(record, "proof") ? listOrFallback(proofInput, proof, fallback.proof) : fallback.proof,
+    siteLanguage: hasArrayField(record, "siteLanguage") ? listOrFallback(siteLanguageInput, siteLanguage, fallback.siteLanguage) : fallback.siteLanguage,
     ctaDirection: firstUseful([record.ctaDirection], fallback.ctaDirection, 48),
-    visualNotes: visualNotes.length || hasArrayField(record, "visualNotes") ? visualNotes : fallback.visualNotes,
+    visualNotes: hasArrayField(record, "visualNotes") ? listOrFallback(visualNotesInput, visualNotes, fallback.visualNotes) : fallback.visualNotes,
     droppedNoiseSummary: uniqueLoose(asArray(record.droppedNoiseSummary), 8),
     confidence: normalizeConfidence(record.confidence, fallback.confidence),
   };

@@ -159,7 +159,20 @@ export function CreateBrickStoryboardSheet({
               <section className="space-y-3">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Shots</p>
                 <div className="grid grid-cols-2 gap-3">
-                  {brickStoryboardShots.map((shot) => (
+                  {brickStoryboardShots.map((shot) => {
+                    const shotVideoFailed = shot.status === "ok" && Boolean(shot.image?.url) && !shot.video?.url && Boolean(shot.error);
+                    const shotImageBusy = brickStoryboardShotBusyIndex === shot.shotIndex;
+                    const shotRetryDisabled = brickStoryboardBusy ||
+                      brickStoryboardBuilding ||
+                      brickStoryboardAnimating ||
+                      brickStoryboardShotBusyIndex !== null;
+                    const shotRetryLabel = shotVideoFailed
+                      ? "Retry video"
+                      : shot.image?.url
+                        ? "New image"
+                        : "Retry image";
+
+                    return (
                     <article
                       key={shot.shotIndex}
                       className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg shadow-slate-950/5"
@@ -206,25 +219,31 @@ export function CreateBrickStoryboardSheet({
                           <Button
                             type="button"
                             variant="outline"
-                            disabled={brickStoryboardBusy || brickStoryboardBuilding || brickStoryboardShotBusyIndex !== null}
-                            onClick={() => onRegenerateBrickShot(shot.shotIndex)}
-                            className="h-9 rounded-2xl border-slate-200 text-[10px] font-black uppercase tracking-[0.12em]"
-                            data-brick-shot-regenerate={shot.shotIndex}
+                            disabled={shotRetryDisabled}
+                            onClick={() => {
+                              if (shotVideoFailed) onAnimateBrickStoryboard();
+                              else onRegenerateBrickShot(shot.shotIndex);
+                            }}
+                            className="h-9 min-w-0 overflow-hidden rounded-2xl border-slate-200 px-2 text-[10px] font-black uppercase tracking-[0.08em]"
+                            data-brick-shot-regenerate={shotVideoFailed ? undefined : shot.shotIndex}
+                            data-brick-shot-retry-video={shotVideoFailed ? shot.shotIndex : undefined}
                           >
-                            {brickStoryboardShotBusyIndex === shot.shotIndex ? (
-                              <Loader2 className="mr-2 size-3 animate-spin" />
+                            {shotImageBusy || (shotVideoFailed && brickStoryboardAnimating) ? (
+                              <Loader2 className="mr-1.5 size-3 shrink-0 animate-spin" />
+                            ) : shotVideoFailed ? (
+                              <Film className="mr-1.5 size-3 shrink-0" />
                             ) : (
-                              <RotateCcw className="mr-2 size-3" />
+                              <RotateCcw className="mr-1.5 size-3 shrink-0" />
                             )}
-                            Retry
+                            <span className="min-w-0 truncate">{shotRetryLabel}</span>
                           </Button>
                           <details
-                            className="group rounded-2xl border border-slate-200 bg-white"
+                            className="group min-w-0 rounded-2xl border border-slate-200 bg-white"
                             data-brick-shot-prompt={shot.shotIndex}
                           >
-                            <summary className="flex h-9 cursor-pointer list-none items-center justify-center gap-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.12em] text-slate-700 [&::-webkit-details-marker]:hidden">
-                              <FileText className="size-3" />
-                              Prompts
+                            <summary className="flex h-9 cursor-pointer list-none items-center justify-center gap-1.5 overflow-hidden rounded-2xl px-2 text-[10px] font-black uppercase tracking-[0.08em] text-slate-700 [&::-webkit-details-marker]:hidden">
+                              <FileText className="size-3 shrink-0" />
+                              <span className="min-w-0 truncate">Prompts</span>
                             </summary>
                             <div className="max-h-64 overflow-auto rounded-b-2xl border-t border-slate-200 bg-slate-950 p-3 text-[11px] font-bold leading-5 text-slate-100">
                               <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
@@ -244,7 +263,8 @@ export function CreateBrickStoryboardSheet({
                         </div>
                       </div>
                     </article>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             </>

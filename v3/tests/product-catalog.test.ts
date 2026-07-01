@@ -120,6 +120,32 @@ assert.equal(headlessShopify.catalog?.products[0]?.handle, "fits-everybody-t-shi
 assert.equal(headlessShopify.catalog?.products[0]?.imageUrl, "https://skims.test/fits.webp?auto=format&w=800");
 assert.deepEqual(headlessShopify.catalog?.groups.bestSellers, ["fits-everybody-t-shirt-onyx"]);
 
+const shopifyWithoutJsonImages = await fetchEcommerceProductCatalog("https://imagefix.test/", {
+  fetcher: fetchFromRoutes([
+    [/^https:\/\/imagefix\.test\/products\.json\?limit=250$/, () => jsonResponse({
+      products: [{
+        title: "Red Gift Tin",
+        handle: "red-gift-tin",
+        images: [],
+        variants: [{ price: "39.00", available: true, currency_code: "USD" }],
+      }],
+    })],
+    [/\/collections\/[^/]+\/products\.json/, () => textResponse("", 404, "application/json")],
+    [/\/collections\//, () => textResponse(`<html>
+        <div class="product-card">
+          <a href="/products/red-gift-tin">
+            <img src="https://imagefix.test/red-gift-tin.png" alt="Red Gift Tin" />
+          </a>
+        </div>
+      </html>`)],
+  ]),
+});
+
+assert.equal(shopifyWithoutJsonImages.providerStatus.status, "used");
+assert.equal(shopifyWithoutJsonImages.catalog?.products.length, 1);
+assert.equal(shopifyWithoutJsonImages.catalog?.products[0]?.handle, "red-gift-tin");
+assert.equal(shopifyWithoutJsonImages.catalog?.products[0]?.imageUrl, "https://imagefix.test/red-gift-tin.png");
+
 const wooCommerce = await fetchEcommerceProductCatalog("https://cookies.test/", {
   fetcher: fetchFromRoutes([
     [/\/products\.json\?limit=250/, () => textResponse("<html>not shopify</html>", 404)],

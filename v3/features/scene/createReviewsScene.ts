@@ -6,8 +6,11 @@ import {
   type ReviewsAdScene,
   type ReviewsProductAnchor,
   type ReviewsProofItem,
+  type ReviewsTemplate,
 } from "./types";
 import { pickSceneAccentColor } from "./createVisualizerScene";
+
+export const REVIEWS_SCENE_TEMPLATES = ["proof-card", "minimal-quote"] as const satisfies readonly ReviewsTemplate[];
 
 const toProductAnchor = (
   product: NonNullable<StoredWebsiteResearchResult["productCatalog"]>["products"][number] | undefined,
@@ -48,6 +51,7 @@ export const createReviewsAdScene = ({
   model,
   provider,
   selectedProductHandles = [],
+  template = "proof-card",
   now = Date.now(),
 }: {
   proofItems: ReviewsProofItem[];
@@ -58,6 +62,7 @@ export const createReviewsAdScene = ({
   model: string;
   provider: ReviewsAdScene["metadata"]["provider"];
   selectedProductHandles?: string[];
+  template?: ReviewsTemplate;
   now?: number;
 }): ReviewsAdScene => {
   const proof = proofItems[variant.proofIndex];
@@ -99,6 +104,7 @@ export const createReviewsAdScene = ({
     },
     layout: {
       preset: "reviews-proof-card",
+      template,
       proof,
       proofIndex: variant.proofIndex,
       proofTotal: proofItems.length,
@@ -120,4 +126,44 @@ export const createReviewsAdScene = ({
       selectedProductHandles,
     },
   };
+};
+
+export const createReviewsAdScenes = ({
+  proofItems,
+  research,
+  variants,
+  requestedSceneCount,
+  generationBatchId,
+  model,
+  provider,
+  selectedProductHandles = [],
+  now = Date.now(),
+}: {
+  proofItems: ReviewsProofItem[];
+  research: StoredWebsiteResearchResult;
+  variants: ReviewsVariant[];
+  requestedSceneCount?: number;
+  generationBatchId: string;
+  model: string;
+  provider: ReviewsAdScene["metadata"]["provider"];
+  selectedProductHandles?: string[];
+  now?: number;
+}) => {
+  const sceneCount = Math.max(1, requestedSceneCount || variants.length * REVIEWS_SCENE_TEMPLATES.length);
+  let candidateIndex = 0;
+
+  return REVIEWS_SCENE_TEMPLATES.flatMap((template) => (
+    variants.map((variant) => createReviewsAdScene({
+      proofItems,
+      research,
+      variant,
+      candidateIndex: candidateIndex++,
+      generationBatchId,
+      model,
+      provider,
+      selectedProductHandles,
+      template,
+      now,
+    }))
+  )).slice(0, sceneCount);
 };

@@ -244,6 +244,92 @@ const reviewsParityScene: AdScene = {
   },
 };
 
+const motionStoryParityScene: AdScene = {
+  ...parityScene,
+  format: "motion-story",
+  creative: {
+    ...parityScene.creative,
+    headline: "The gift that actually gets remembered",
+    subheadline: "my mom for her birthday and she loved every fresh bite",
+    ctaText: "Send the box they talk about",
+    selectedProof: "my mom for her birthday and she loved every fresh bite",
+  },
+  style: {
+    backgroundColor: "#070B1D",
+    textColor: "#FFFFFF",
+    accentColor: "#D6001C",
+    fontFeel: "sans",
+  },
+  audio: {
+    status: "none",
+    transcript: "",
+    captions: [],
+  },
+  layout: {
+    preset: "motion-story-product",
+    durationMs: 20_000,
+    product: {
+      title: "Birthday Cookie Tin",
+      handle: "birthday-cookie-tin",
+      imageUrl: "https://example.com/product.jpg",
+      cutoutUrl: "https://example.com/product-cutout.png",
+      url: "https://example.com/products/birthday-cookie-tin",
+      isBestSeller: true,
+    },
+    proof: {
+      originalText: "I sent this cookie tin to my mom for her birthday and she loved every fresh bite.",
+      displayText: "my mom for her birthday and she loved every fresh bite",
+      sourceName: "Sarah K.",
+      rating: 5,
+      proofIndex: 0,
+      strengthReason: "Specific gift moment plus emotional reaction.",
+    },
+    beats: [
+      {
+        role: "hook",
+        motion: "kinetic-reveal",
+        headline: "The gift that actually gets remembered",
+        startMs: 0,
+        endMs: 3000,
+      },
+      {
+        role: "product",
+        motion: "image-expand",
+        headline: "Birthday Cookie Tin",
+        supportingText: "Fresh-baked and shipped to the door.",
+        startMs: 3000,
+        endMs: 8000,
+      },
+      {
+        role: "proof",
+        motion: "proof-card",
+        headline: "Real birthday proof",
+        supportingText: "my mom for her birthday and she loved every fresh bite",
+        startMs: 8000,
+        endMs: 16000,
+      },
+      {
+        role: "cta",
+        motion: "cta-slam",
+        headline: "Send the box they talk about",
+        startMs: 16000,
+        endMs: 20000,
+      },
+    ],
+    brandLockup: {
+      logoUrl: "https://example.com/logo.png",
+      fallbackText: "David's Cookies",
+    },
+    musicBed: {
+      id: "polished-upbeat",
+      src: "/motion-story/music/polished-upbeat.mp3",
+      volume: 0.18,
+      loop: true,
+    },
+    shareCopy: "A better birthday gift, backed by real reviews.",
+  },
+};
+
 function getSourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
     const fullPath = join(dir, entry);
@@ -336,6 +422,7 @@ assert.ok(
 assert.ok(
   remotionSource.includes("@remotion/media") &&
     remotionSource.includes("<Audio") &&
+    remotionSource.includes("motionStoryMusicSrc") &&
     remotionSource.includes("RemotionImageAsset") &&
     remotionSource.includes("resolveRenderAssetSrc") &&
     remotionSource.includes("OffthreadVideo") &&
@@ -526,5 +613,43 @@ for (const html of [
   assert.ok(html.includes("background-color:rgba(255,255,255,0.94)"), "Reviews preview/export must keep proof card fill inline.");
   assert.ok(html.includes("border-radius:6cqw"), "Reviews preview/export must keep proof card radius inline.");
 }
+
+for (const html of [
+  renderToStaticMarkup(createElement(PhonePreviewFrame, {
+    scene: motionStoryParityScene,
+    result: null,
+    platform: "instagram-feed",
+    motionMode: "idle",
+    timeSeconds: 0.5,
+  })),
+  renderToStaticMarkup(createElement(AdRenderSurface, {
+    scene: motionStoryParityScene,
+    mode: "preview",
+    motionMode: "idle",
+    timeSeconds: 0.5,
+  })),
+  renderToStaticMarkup(createElement(AdRenderSurface, {
+    scene: motionStoryParityScene,
+    mode: "video",
+    motionMode: "idle",
+    timeSeconds: 0.5,
+  })),
+]) {
+  assert.ok(html.includes('data-render-surface="ad"'), "Motion Story preview/export must use the shared render surface.");
+  assert.ok(html.includes('data-format="motion-story"'), "Motion Story preview/export must preserve the format.");
+  assert.ok(html.includes('data-motion-story-screen="true"'), "Motion Story preview/export must render the product-story surface.");
+  assert.ok(html.includes('data-motion-story-beat="hook"'), "Motion Story preview/export must render the fixed hook beat.");
+  assert.ok(html.includes('data-motion-story-proof-card="true"'), "Motion Story preview/export must render the real proof card.");
+  assert.ok(html.includes("The gift that actually gets remembered"), "Motion Story preview/export must render the hook.");
+  assert.ok(html.includes("https://example.com/product-cutout.png"), "Motion Story preview/export must use the product cutout.");
+  assert.ok(html.includes("object-fit:contain"), "Motion Story preview/export must keep product sizing critical pixels inline.");
+  assert.ok(html.includes("position:absolute"), "Motion Story preview/export must keep beat positioning critical pixels inline.");
+}
+
+assert.equal(
+  getAdSceneDurationInFrames(motionStoryParityScene, adSceneFps),
+  Math.ceil(20 * adSceneFps),
+  "Motion Story export must use the fixed 20 second timeline.",
+);
 
 console.log("render-parity tests passed");

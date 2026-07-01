@@ -152,6 +152,29 @@ assert.equal(isWebsiteChromeText("Continue shopping"), true);
 assert.equal(isWebsiteChromeText("Regular price~~$0.00~~Sale price"), true);
 assert.equal(isWebsiteChromeText("Cookie Delivery | Gift Baskets | Fresh Baked"), false);
 assert.equal(isWebsiteChromeText("!Fin messenger UI decorative background image"), true);
+assert.equal(isWebsiteChromeText("Something went wrong"), true);
+assert.equal(isWebsiteChromeText("Try refreshing the page. If the site still doesn't load, please try again."), true);
+
+const errorPageResult = normalizeFirecrawlPayload("maxjerky.com", {
+  success: true,
+  data: {
+    markdown: `
+# Something went wrong
+Try refreshing the page. If the site still doesn't load, please try again.
+The site is currently experiencing technical difficulties.
+    `,
+    metadata: {
+      sourceURL: "https://www.maxjerky.com/",
+      title: "Something went wrong",
+      ogTitle: "Something went wrong",
+      ogDescription: "Try refreshing the page.",
+    },
+  },
+});
+assert.equal(errorPageResult.brand.name, "maxjerky.com");
+assert.equal(errorPageResult.brand.title, "maxjerky.com");
+assert.equal(errorPageResult.evidence.rawMarkdown, "");
+assert.doesNotMatch(errorPageResult.brandBrief.offer, /refreshing|went wrong|technical difficulties/i);
 
 const shopifyResult = normalizeFirecrawlPayload("davidscookies.com", {
   success: true,
@@ -333,6 +356,26 @@ assert.deepEqual(normalizedEmptyBrief.buyerMoments, []);
 assert.deepEqual(normalizedEmptyBrief.proof, []);
 assert.deepEqual(normalizedEmptyBrief.siteLanguage, []);
 assert.deepEqual(normalizedEmptyBrief.visualNotes, []);
+
+const normalizedErrorBrief = normalizeBrandBriefPayload({
+  brandName: "Something went wrong",
+  offer: "Try refreshing the page.",
+  audience: "Unknown due to site error.",
+  buyerMoments: ["If the site still doesn't load, please try again."],
+  proof: ["The site is currently experiencing technical difficulties."],
+  siteLanguage: ["Something went wrong"],
+  visualNotes: [],
+  ctaDirection: "Try refreshing",
+  droppedNoiseSummary: [],
+  confidence: "low",
+}, shopifyResult.brandBrief);
+assert.equal(normalizedErrorBrief.brandName, shopifyResult.brandBrief.brandName);
+assert.equal(normalizedErrorBrief.offer, shopifyResult.brandBrief.offer);
+assert.equal(normalizedErrorBrief.audience, shopifyResult.brandBrief.audience);
+assert.deepEqual(normalizedErrorBrief.buyerMoments, shopifyResult.brandBrief.buyerMoments);
+assert.deepEqual(normalizedErrorBrief.proof, shopifyResult.brandBrief.proof);
+assert.deepEqual(normalizedErrorBrief.siteLanguage, shopifyResult.brandBrief.siteLanguage);
+assert.equal(normalizedErrorBrief.ctaDirection, shopifyResult.brandBrief.ctaDirection);
 
 const nimCuratedResult = await curateWebsiteResearchResult(shopifyResult, {
   nvidiaNimApiKey: "test-nim-key",

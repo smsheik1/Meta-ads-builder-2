@@ -11,6 +11,7 @@ const rootLayoutSource = readFileSync("app/layout.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
 const brickStoryboardSheetSource = readFileSync("app/create/CreateBrickStoryboardSheet.tsx", "utf8");
+const creativeBriefSource = readFileSync("app/create/CreateCreativeBriefCard.tsx", "utf8");
 const visualizerSchemaSource = readFileSync("features/formats/visualizer/schema.ts", "utf8");
 const visualizerModuleSource = readFileSync("features/formats/visualizer/index.ts", "utf8");
 
@@ -34,11 +35,40 @@ assert.ok(
   "/create must expose iMessage Ad and generate six static text-message variants.",
 );
 assert.ok(
-  createClientSource.includes('if (format === "reviews") return 4') &&
+  createClientSource.includes('if (format === "reviews") return 8') &&
     createLeftColumnSource.includes('["reviews", "Reviews Proof Ad"]') &&
     reviewsProductPickerSource.includes("Choose proof products") &&
     createClientSource.includes("selectedProductHandles"),
-  "/create must expose Reviews Proof Ad, product selection, and generate four proof variants.",
+  "/create must expose Reviews Proof Ad, product selection, and generate eight review template scenes.",
+);
+assert.ok(
+  createClientSource.includes('if (format === "motion-story") return 4') &&
+    createLeftColumnSource.includes('["motion-story", "Motion Story"]') &&
+    createClientSource.includes('format === "reviews" || format === "motion-story"') &&
+    quickActionsSource.includes('selectedFormat === "motion-story"') &&
+    createClientSource.includes('requiresProductImage: selectedAdFormat === "motion-story"') &&
+    createClientSource.includes('requiresProductImage: format === "motion-story"'),
+  "/create must expose Motion Story, product selection, playable music preview, and generate four manual variants.",
+);
+assert.ok(
+  !createClientSource.includes("data-creative-pack-hover-dock") &&
+    !createClientSource.includes("<CreateCreativePackOverview"),
+  "Creative Pack status must not render as an overlapping hover dock on the canvas side.",
+);
+assert.ok(
+  createLeftColumnSource.includes('data-creative-pack-mini-status="true"') &&
+    createLeftColumnSource.includes("data-creative-pack-mini-chip={packFormat}") &&
+    createLeftColumnSource.includes("CREATIVE_PACK_FORMATS.map") &&
+    createLeftColumnSource.includes("onCreativePackGroupSelect") &&
+    createLeftColumnSource.includes("onCreativePackGroupRetry") &&
+    createLeftColumnSource.includes("`${label} · Retry`"),
+  "Creative Pack status must render visible per-format chips with failed-format retry inside the left form.",
+);
+assert.ok(
+  createClientSource.includes("api.adScenes.listForResearchRun") &&
+    createClientSource.includes("hydrateCreativePackGroupsFromSceneRows") &&
+    createClientSource.includes("minimumReadyFormats: 2"),
+  "/create must hydrate the Creative Pack rail from saved research-run scenes after refresh.",
 );
 
 const nativeControlPattern = /<(?:input|select|textarea)\b/g;
@@ -138,11 +168,16 @@ assert.ok(
 );
 assert.ok(
   brickStoryboardSheetSource.includes("data-brick-shot-regenerate") &&
+    brickStoryboardSheetSource.includes("data-brick-shot-retry-video") &&
+    brickStoryboardSheetSource.includes("shotVideoFailed") &&
+    brickStoryboardSheetSource.includes("Retry video") &&
+    brickStoryboardSheetSource.includes("New image") &&
+    brickStoryboardSheetSource.includes("className=\"min-w-0 truncate\"") &&
     brickStoryboardSheetSource.includes("data-brick-shot-prompt") &&
     brickStoryboardSheetSource.includes("Still image prompt") &&
     brickStoryboardSheetSource.includes("Seedance video prompt") &&
     brickStoryboardSheetSource.includes("shot.animationPrompt"),
-  "Brick storyboard shot cards must expose visible regenerate controls plus still-image and Seedance video prompts.",
+  "Brick storyboard shot cards must expose distinct visible image-regenerate and Seedance-video retry controls plus both prompts.",
 );
 assert.ok(
   createClientSource.includes("restoreSavedDesignSelection") &&
@@ -159,9 +194,14 @@ assert.ok(
 );
 assert.ok(
   createClientSource.includes("const selectedAudio = selectedScene?.audio.status === \"generated\" ? selectedScene.audio : null") &&
-    createClientSource.includes("const playableAudioUrl = selectedAudio?.url || \"\"") &&
+    createClientSource.includes("const selectedMotionStoryMusicUrl = selectedScene?.format === \"motion-story\" ? selectedScene.layout.musicBed.src : \"\"") &&
+    createClientSource.includes("const playableAudioUrl = selectedAudio?.url || selectedMotionStoryMusicUrl") &&
+    createClientSource.includes("if (!audio) return") &&
+    createClientSource.includes("void audio.play()") &&
+    createClientSource.includes("src={playableAudioUrl}") &&
     createClientSource.includes("...(sceneId ? { sceneId } : {})") &&
     quickActionsSource.includes("const hasPlayableAudio = Boolean(playableAudioUrl)") &&
+    quickActionsSource.includes('selectedFormat === "motion-story"') &&
     quickActionsSource.includes('selectedFormat === "jingle" || selectedFormat === "brainrot"') &&
     quickActionsSource.includes('((selectedFormat === "jingle" || selectedFormat === "brainrot") && hasPlayableAudio)') &&
     quickActionsSource.includes('audioStatus === "loading"') &&
@@ -176,21 +216,41 @@ assert.ok(
   "The primary audio quick action must derive from selected scene audio and never show Add Audio for pending generated-audio formats.",
 );
 assert.ok(
+  createClientSource.includes("const generateScenesOnly = async") &&
+    createClientSource.includes("if (research.result) {") &&
+    createClientSource.includes("setResult(research.result)") &&
+    createClientSource.includes("setUrl(research.result.websiteUrl)"),
+  "Generating one format from cached research must restore the research result so the Creative Brief stays visible.",
+);
+assert.ok(
   previewChromeSource.includes("data-video-preview-play-button") &&
     previewChromeSource.includes("video.play().catch"),
   "Unmuted video meme previews must show a visible play button when browser autoplay is blocked.",
 );
 assert.ok(
   createClientSource.includes("import { toPng } from \"html-to-image\"") &&
-    createClientSource.includes("const onDownloadMemePng = async () =>") &&
+    createClientSource.includes("const onDownloadStaticPng = async () =>") &&
     createClientSource.includes("[data-meme-artboard]") &&
-    quickActionsSource.includes("onClick={memeSceneSelected ? onDownloadMemePng : onCreateRenderJob}") &&
-    quickActionsSource.includes('const downloadLabel = memeSceneSelected ? "PNG" : "MP4"'),
-  "Meme downloads must export the rendered meme artboard as PNG instead of routing through the MP4 render worker.",
+    createClientSource.includes('[data-render-surface="ad"][data-format="${selectedScene.format}"]') &&
+    quickActionsSource.includes('selectedFormat === "text-message"') &&
+    quickActionsSource.includes("onClick={staticPngSelected ? onDownloadStaticPng : onCreateRenderJob}") &&
+    quickActionsSource.includes('const downloadLabel = staticPngSelected ? "PNG" : "MP4"'),
+  "Static formats must export the rendered AdRenderSurface as PNG instead of routing through the MP4 render worker.",
 );
 assert.ok(
   !quickActionsSource.includes("Meme PNG export is coming next."),
   "Meme download must not be left as deferred UI.",
+);
+assert.ok(
+  !quickActionsSource.includes("const showProductPhotoshoot") &&
+    !quickActionsSource.includes("{showProductPhotoshoot ? ("),
+  "Product photoshoot must not appear as a helper tile inside ad-format quick actions.",
+);
+assert.ok(
+  creativeBriefSource.includes('data-create-brief-products="true"') &&
+    creativeBriefSource.includes("productCount") &&
+    creativeBriefSource.includes("bestSellerCount"),
+  "Creative Brief must surface the products Wiggly found during research.",
 );
 assert.ok(
   createClientSource.includes("resetShareState();") &&

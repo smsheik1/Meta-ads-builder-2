@@ -22,6 +22,119 @@ function StarRow({ rating }: { rating?: number }) {
   );
 }
 
+function MinimalQuoteReviewsRenderer({ scene, reviewText, sourceName }: {
+  scene: ReviewsAdScene;
+  reviewText: string;
+  sourceName?: string;
+}) {
+  const logoSource = scene.brand.logoUrl || scene.brand.faviconUrl || "";
+  const quoteFontSize = reviewText.length > 150 ? "5.9cqw" : reviewText.length > 95 ? "6.7cqw" : "7.7cqw";
+  const hasAttribution = Boolean(sourceName || scene.layout.proof.rating);
+
+  return (
+    <div
+      data-format="reviews"
+      data-reviews-screen="true"
+      data-reviews-template="minimal-quote"
+      data-reviews-minimal-quote="true"
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        containerType: "inline-size",
+        overflow: "hidden",
+        backgroundColor: "#F7F7F5",
+        color: "#050505",
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+      }}
+    >
+      <section
+        style={{
+          position: "absolute",
+          inset: "14cqw 9cqw 8cqw 11cqw",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+        }}
+      >
+        <div
+          aria-hidden="true"
+          data-reviews-minimal-quote-mark="true"
+          style={{
+            color: "#050505",
+            fontSize: "30cqw",
+            fontWeight: 950,
+            lineHeight: 0.62,
+            letterSpacing: 0,
+          }}
+        >
+          “
+        </div>
+        <h2
+          data-reviews-proof-text="true"
+          data-reviews-minimal-quote-text="true"
+          style={{
+            maxWidth: "78cqw",
+            margin: "6cqw 0 0",
+            color: "#050505",
+            fontSize: quoteFontSize,
+            fontWeight: 500,
+            lineHeight: 1.14,
+            letterSpacing: 0,
+          }}
+        >
+          {reviewText}
+        </h2>
+        {hasAttribution ? (
+          <div
+            data-reviews-minimal-attribution="true"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "1.5cqw",
+              marginTop: "6.5cqw",
+              color: "#050505",
+              fontSize: "3.4cqw",
+              fontWeight: 500,
+              lineHeight: 1.2,
+            }}
+          >
+            {sourceName ? <strong style={{ fontWeight: 850 }}>{sourceName}</strong> : null}
+            <StarRow rating={scene.layout.proof.rating} />
+          </div>
+        ) : null}
+        <div style={{ flex: 1 }} />
+        <footer
+          data-reviews-minimal-brand-lockup="true"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "2cqw",
+            color: "#050505",
+            fontSize: "4.1cqw",
+            fontWeight: 850,
+            lineHeight: 1,
+          }}
+        >
+          {logoSource ? (
+            <img
+              alt=""
+              src={logoSource}
+              style={{
+                width: "7cqw",
+                height: "7cqw",
+                objectFit: "contain",
+              }}
+            />
+          ) : null}
+          <span>{scene.brand.name}</span>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
 export function ReviewsFormatRenderer({
   scene,
   rerollFlash,
@@ -41,10 +154,15 @@ export function ReviewsFormatRenderer({
   const proofNumber = Math.max(1, scene.layout.proofIndex + 1);
   const proofTotal = Math.max(proofNumber, scene.layout.proofTotal || 0);
 
+  if ((scene.layout.template || "proof-card") === "minimal-quote") {
+    return <MinimalQuoteReviewsRenderer scene={scene} reviewText={reviewText} sourceName={sourceName} />;
+  }
+
   return (
     <div
       data-format="reviews"
       data-reviews-screen="true"
+      data-reviews-template="proof-card"
       style={{
         position: "relative",
         width: "100%",

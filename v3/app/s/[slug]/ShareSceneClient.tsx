@@ -29,7 +29,11 @@ export function ShareSceneClient({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [previewTimeSeconds, setPreviewTimeSeconds] = useState(1.1);
-  const playableAudioUrl = scene?.audio.status === "generated" ? scene.audio.url : "";
+  const playableAudioUrl = scene?.audio.status === "generated"
+    ? scene.audio.url
+    : scene?.format === "motion-story"
+      ? scene.layout.musicBed.src
+      : "";
   const hasPlayableAudio = Boolean(playableAudioUrl);
 
   useEffect(() => {

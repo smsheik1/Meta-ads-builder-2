@@ -15,7 +15,10 @@ import {
 } from "../features/formats/reviews/generate";
 import { validateReviewsScene } from "../features/formats/reviews/validate";
 import { REVIEWS_VARIANT_COUNT, buildReviewsPrompt } from "../features/formats/reviews/prompt";
-import { createReviewsAdScene } from "../features/scene/createReviewsScene";
+import {
+  createReviewsAdScene,
+  createReviewsAdScenes,
+} from "../features/scene/createReviewsScene";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import { makeResearch } from "./helpers/research";
 
@@ -392,6 +395,7 @@ const scene = createReviewsAdScene({
 
 assert.equal(scene.format, "reviews");
 assert.equal(scene.layout.preset, "reviews-proof-card");
+assert.equal(scene.layout.template, "proof-card");
 assert.equal(scene.layout.proofIndex, parsed[0]!.proofIndex);
 assert.equal(scene.layout.proofTotal, namedReviewProofItems.length);
 assert.equal(scene.layout.proofText, parsed[0]!.proofText);
@@ -417,10 +421,51 @@ assert.ok(!html.includes("Verbatim from website"));
 assert.ok(!html.includes("Sponsored proof"));
 assert.ok(!html.includes('data-reviews-cta="true"'));
 
+const manualReviewScenes = createReviewsAdScenes({
+  proofItems: namedReviewProofItems,
+  research,
+  variants: parsed,
+  requestedSceneCount: 8,
+  generationBatchId: "reviews-batch",
+  model: "test-model",
+  provider: "nvidia-nim",
+  selectedProductHandles: ["butter-pecan-meltaway-tin"],
+  now: 123,
+});
+assert.equal(manualReviewScenes.length, 8);
+assert.deepEqual(manualReviewScenes.slice(0, 4).map((item) => item.layout.template), ["proof-card", "proof-card", "proof-card", "proof-card"]);
+assert.deepEqual(manualReviewScenes.slice(4).map((item) => item.layout.template), ["minimal-quote", "minimal-quote", "minimal-quote", "minimal-quote"]);
+assert.equal(manualReviewScenes[0]!.layout.proofText, manualReviewScenes[4]!.layout.proofText);
+
+const packReviewScenes = createReviewsAdScenes({
+  proofItems: namedReviewProofItems,
+  research,
+  variants: parsed.slice(0, 2),
+  requestedSceneCount: 4,
+  generationBatchId: "reviews-pack-batch",
+  model: "test-model",
+  provider: "nvidia-nim",
+  now: 123,
+});
+assert.equal(packReviewScenes.length, 4);
+assert.deepEqual(packReviewScenes.map((item) => item.layout.template), ["proof-card", "proof-card", "minimal-quote", "minimal-quote"]);
+
+const minimalQuoteHtml = renderToStaticMarkup(createElement(AdRenderSurface, { scene: manualReviewScenes[4]! }));
+assert.ok(minimalQuoteHtml.includes('data-format="reviews"'));
+assert.ok(minimalQuoteHtml.includes('data-reviews-template="minimal-quote"'));
+assert.ok(minimalQuoteHtml.includes('data-reviews-minimal-quote-mark="true"'));
+assert.ok(minimalQuoteHtml.includes('data-reviews-minimal-quote-text="true"'));
+assert.ok(minimalQuoteHtml.includes('data-reviews-minimal-brand-lockup="true"'));
+assert.ok(minimalQuoteHtml.includes("Julia B."));
+assert.ok(minimalQuoteHtml.includes("David&#x27;s Cookies"));
+assert.ok(!minimalQuoteHtml.includes('data-reviews-image-rail="true"'));
+assert.ok(!minimalQuoteHtml.includes("Best seller review"));
+
 const legacyScene = {
   ...scene,
   layout: {
     ...scene.layout,
+    template: undefined,
     proofIndex: 3,
     proofTotal: undefined,
   },
@@ -428,6 +473,16 @@ const legacyScene = {
 const legacyHtml = renderToStaticMarkup(createElement(AdRenderSurface, { scene: legacyScene }));
 assert.ok(legacyHtml.includes("4 of 4 reviews"));
 assert.ok(!legacyHtml.includes("4 of 1 reviews"));
+assert.ok(validateReviewsScene(legacyScene).valid);
+
+const invalidTemplateScene = {
+  ...scene,
+  layout: {
+    ...scene.layout,
+    template: "poster-quote",
+  },
+} as unknown as typeof scene;
+assert.equal(validateReviewsScene(invalidTemplateScene).valid, false);
 
 const legacyProofTypeScene = {
   ...scene,

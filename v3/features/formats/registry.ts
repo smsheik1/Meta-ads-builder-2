@@ -6,6 +6,7 @@ import { videoMemeFormatModule } from "./video-meme";
 import { textMessageFormatModule } from "./text-message";
 import { brainrotFormatModule } from "./brainrot";
 import { reviewsFormatModule } from "./reviews";
+import { motionStoryFormatModule } from "./motion-story";
 import { visualizerFormatModule } from "./visualizer";
 import { wereSorryFormatModule } from "./were-sorry";
 
@@ -22,6 +23,7 @@ export const formatRegistry = createFormatRegistry({
   "text-message": textMessageFormatModule,
   brainrot: brainrotFormatModule,
   reviews: reviewsFormatModule,
+  "motion-story": motionStoryFormatModule,
 } satisfies Record<AdFormatId, AnyAdFormatModule>);
 
 export const getFormatModuleFromRegistry = <

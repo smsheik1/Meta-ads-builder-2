@@ -96,24 +96,47 @@ for (const shot of shots) {
   assert.match(shot.prompt, /Do not alter the product package, logo, label/);
   assert.match(shot.prompt, /no captions, no watermarks/i);
 }
+const seasonalShot = shots.find((shot) => shot.family === "seasonal");
+assert.ok(seasonalShot?.prompt.includes("only when the source product or brand evidence clearly supports them"));
+assert.ok(seasonalShot?.prompt.includes("neutral giftable campaign setting"));
 
-const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
+const leftColumnSource = readFileSync("app/create/CreateLeftColumn.tsx", "utf8");
 const sheetSource = readFileSync("app/create/CreateProductPhotoshootSheet.tsx", "utf8");
 const clientSource = readFileSync("app/create/CreateResearchClient.tsx", "utf8");
 const convexSource = readFileSync("convex/productPhotoshoots.ts", "utf8");
-assert.ok(quickActionsSource.includes("CreateProductPhotoshootSheet"));
-assert.ok(sheetSource.includes("data-product-photoshoot-trigger"));
-assert.ok(sheetSource.includes("data-product-photoshoot-regenerate-failed"));
-assert.ok(sheetSource.includes("data-product-shot-regenerate"));
-assert.ok(sheetSource.includes("data-product-shot-prompt"));
-assert.ok(sheetSource.includes("shots ready"));
-assert.ok(sheetSource.includes("needs retry"));
-assert.ok(sheetSource.includes("Regenerate all shots"));
-assert.ok(sheetSource.includes("bg-slate-100 text-slate-500"));
-assert.ok(clientSource.includes("api.productPhotoshoots.generateForResearch"));
-assert.ok(clientSource.includes("api.productPhotoshoots.regenerateShot"));
-assert.ok(clientSource.includes("onRegenerateFailedProductPhotoShots"));
-assert.ok(clientSource.includes(".filter((shot) => shot.status === \"failed\")"));
+const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
+const creativePackSource = readFileSync("features/create/creativePack.ts", "utf8");
+assert.ok(
+  leftColumnSource.includes('"Product Photoshoot"') &&
+    leftColumnSource.includes("Generate product shots"),
+  "Product Photoshoot must be selectable from the format picker.",
+);
+assert.ok(
+  clientSource.includes("CreateProductPhotoshootWorkspace") &&
+    clientSource.includes("productPhotoshootMode ? (") &&
+    clientSource.includes("!productPhotoshootMode ? ("),
+  "Product Photoshoot must use its asset workspace instead of the phone preview.",
+);
+assert.ok(
+  clientSource.includes("api.productPhotoshoots.generateForResearch") &&
+    clientSource.includes("if (!isAdSceneCreateFormat(selectedAdFormat)) return"),
+  "Product Photoshoot generation must call the photoshoot action, not AdScene generation.",
+);
+assert.ok(
+  sheetSource.includes("data-product-photoshoot-workspace") &&
+    sheetSource.includes("data-product-photoshoot-generate"),
+  "Product Photoshoot workspace must expose visible generate controls.",
+);
+assert.ok(
+  !quickActionsSource.includes("productPhotoshoot") &&
+    !creativePackSource.includes("product-photoshoot"),
+  "Product Photoshoot must not appear as a quick-action helper or Creative Pack format.",
+);
+assert.ok(
+  convexSource.includes("PRODUCT_PHOTOSHOOT_FULL_GENERATION_LIMIT") &&
+    convexSource.includes("Product photoshoot limit reached for this site."),
+  "Full Product Photoshoot generation must keep the session cost cap.",
+);
 assert.ok(convexSource.includes("isReplicateHardStopError"));
 assert.ok(convexSource.includes("if (isReplicateHardStopError(error)) throw error"));
 assert.ok(convexSource.indexOf("internal.productPhotoshoots.saveGenerated") < convexSource.indexOf("for (const shot of shots)"));

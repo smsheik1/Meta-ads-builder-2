@@ -22,11 +22,8 @@ import {
 } from "@/components/ui/sheet";
 import type { SavedAdSceneDesign } from "@/features/create/savedDesigns";
 import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
-import type { ProductPhotoshootBoard } from "@/features/product-photoshoot/photoshoot";
-import type { ProductCatalog } from "@/features/research/types";
 import type { AdFormatId } from "@/features/scene/types";
 import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
-import { CreateProductPhotoshootSheet } from "./CreateProductPhotoshootSheet";
 
 type SaveStatus = "idle" | "loading" | "ready" | "error";
 type BrickStoryboardStatus = "idle" | "loading" | "ready" | "error";
@@ -46,17 +43,13 @@ export function CreateQuickActions({
   onCreateShareLink,
   onAnimateBrickStoryboard,
   onBuildBrickMusicVideo,
-  onDownloadMemePng,
+  onDownloadStaticPng,
   onGenerateBrickStoryboard,
-  onGenerateProductPhotoshoot,
-  onRegenerateFailedProductPhotoShots,
   onRegenerateBrickShot,
-  onRegenerateProductPhotoShot,
   onRegenerateVisualizerAudio,
   onLoadSavedDesign,
   onOpenAudioPanel,
   onSaveSelectedDesign,
-  onSelectedPhotoshootProductChange,
   onTogglePreviewPlayback,
   audioStatus,
   playableAudioUrl,
@@ -73,20 +66,13 @@ export function CreateQuickActions({
   brickStoryboardShotBusyIndex,
   brickStoryboardStatus,
   canGenerateBrickStoryboard,
-  canGenerateProductPhotoshoot,
-  memeDownloadBusy,
-  productCatalog,
-  productPhotoshoot,
-  productPhotoshootError,
-  productPhotoshootShotBusyIndex,
-  productPhotoshootStatus,
+  staticPngDownloadBusy,
   saveCounterLabel,
   saveError,
   savedDesigns,
   saveStatus,
   saveStatusLabel,
   selectedFormat,
-  selectedPhotoshootProductHandle,
   selectedDesignIsSaved,
   shareError,
   shareStatus,
@@ -99,17 +85,13 @@ export function CreateQuickActions({
   onCreateShareLink: () => void;
   onAnimateBrickStoryboard: () => void;
   onBuildBrickMusicVideo: () => void;
-  onDownloadMemePng: () => void;
+  onDownloadStaticPng: () => void;
   onGenerateBrickStoryboard: () => void;
-  onGenerateProductPhotoshoot: () => void;
-  onRegenerateFailedProductPhotoShots: () => void;
   onRegenerateBrickShot: (shotIndex: number) => void;
-  onRegenerateProductPhotoShot: (shotIndex: number) => void;
   onRegenerateVisualizerAudio: () => void;
   onLoadSavedDesign: (design: SavedAdSceneDesign) => void;
   onOpenAudioPanel: () => void;
   onSaveSelectedDesign: () => void;
-  onSelectedPhotoshootProductChange: (handle: string) => void;
   onTogglePreviewPlayback: () => void;
   audioStatus: "idle" | "loading" | "ready" | "error";
   playableAudioUrl: string;
@@ -126,36 +108,30 @@ export function CreateQuickActions({
   brickStoryboardShotBusyIndex: number | null;
   brickStoryboardStatus: BrickStoryboardStatus;
   canGenerateBrickStoryboard: boolean;
-  canGenerateProductPhotoshoot: boolean;
-  memeDownloadBusy: boolean;
-  productCatalog: ProductCatalog | null | undefined;
-  productPhotoshoot: ProductPhotoshootBoard | null;
-  productPhotoshootError: string;
-  productPhotoshootShotBusyIndex: number | null;
-  productPhotoshootStatus: BrickStoryboardStatus;
+  staticPngDownloadBusy: boolean;
   saveCounterLabel: string;
   saveError: string;
   savedDesigns: SavedAdSceneDesign[];
   saveStatus: SaveStatus;
   saveStatusLabel: string;
   selectedFormat: AdFormatId | null;
-  selectedPhotoshootProductHandle: string;
   selectedDesignIsSaved: boolean;
   shareError: string;
   shareStatus: "idle" | "loading" | "ready" | "error";
   shareUrl: string;
 }) {
-  const memeSceneSelected = selectedFormat === "meme";
+  const staticPngSelected = selectedFormat === "meme" || selectedFormat === "text-message" || selectedFormat === "reviews" || selectedFormat === "were-sorry";
   const hasPlayableAudio = Boolean(playableAudioUrl);
   const generatedAudioPending = !hasPlayableAudio && audioStatus === "loading";
   const visualizerAudioReady = selectedFormat === "visualizer" && hasPlayableAudio;
-  const shareSupported = selectedFormat === "visualizer" || selectedFormat === "text-message" || ((selectedFormat === "jingle" || selectedFormat === "brainrot") && hasPlayableAudio);
+  const shareSupported = selectedFormat === "visualizer" || selectedFormat === "text-message" || selectedFormat === "motion-story" || ((selectedFormat === "jingle" || selectedFormat === "brainrot") && hasPlayableAudio);
   const showBrickStoryboard = selectedFormat === "jingle" && hasPlayableAudio;
-  const renderWorkerOffline = !memeSceneSelected && renderWorkerHealthy === false;
+  const renderWorkerOffline = !staticPngSelected && renderWorkerHealthy === false;
   const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline;
-  const downloadLabel = memeSceneSelected ? "PNG" : "MP4";
-  const downloadTitle = memeSceneSelected
-    ? "Download this meme as a PNG"
+  const activeRenderDownloadUrl = staticPngSelected ? "" : renderDownloadUrl;
+  const downloadLabel = staticPngSelected ? "PNG" : "MP4";
+  const downloadTitle = staticPngSelected
+    ? "Download this static ad as a PNG"
     : renderWorkerOffline
       ? "Start npm run dev from the repo root to run the render worker."
       : "Download this ad as an MP4";
@@ -229,13 +205,14 @@ export function CreateQuickActions({
           </button>
         )}
 
-        {renderDownloadUrl ? (
+        {activeRenderDownloadUrl ? (
           <a
             className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl bg-slate-950 text-[10px] font-black uppercase tracking-[0.12em] text-white transition hover:bg-slate-800"
-            href={renderDownloadUrl}
+            href={activeRenderDownloadUrl}
             download
             aria-label="Download MP4"
             title="Download MP4"
+            data-create-download-action="true"
           >
             <ExternalLink className="size-4" />
             MP4
@@ -243,13 +220,14 @@ export function CreateQuickActions({
         ) : (
           <button
             type="button"
-            onClick={memeSceneSelected ? onDownloadMemePng : onCreateRenderJob}
-            disabled={memeSceneSelected ? !hasSelectedScene || memeDownloadBusy : renderButtonDisabled}
+            onClick={staticPngSelected ? onDownloadStaticPng : onCreateRenderJob}
+            disabled={staticPngSelected ? !hasSelectedScene || staticPngDownloadBusy : renderButtonDisabled}
             className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl bg-slate-950 text-[10px] font-black uppercase tracking-[0.12em] text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-35"
-            aria-label={memeSceneSelected ? "Download PNG" : renderStatusLabel}
+            aria-label={staticPngSelected ? "Download PNG" : renderStatusLabel}
             title={downloadTitle}
+            data-create-download-action="true"
           >
-            {memeDownloadBusy || renderBusy || currentRenderStatus === "loading" ? (
+            {staticPngDownloadBusy || renderBusy || currentRenderStatus === "loading" ? (
               <Loader2 className="size-4 animate-spin" />
             ) : currentRenderStatus === "ready" ? (
               <Check className="size-4" />
@@ -300,20 +278,6 @@ export function CreateQuickActions({
           onRegenerateBrickShot={onRegenerateBrickShot}
         />
       ) : null}
-
-      <CreateProductPhotoshootSheet
-        board={productPhotoshoot}
-        canGenerate={canGenerateProductPhotoshoot}
-        catalog={productCatalog}
-        error={productPhotoshootError}
-        onGenerate={onGenerateProductPhotoshoot}
-        onRegenerateFailedShots={onRegenerateFailedProductPhotoShots}
-        onRegenerateShot={onRegenerateProductPhotoShot}
-        onSelectedProductChange={onSelectedPhotoshootProductChange}
-        selectedProductHandle={selectedPhotoshootProductHandle}
-        shotBusyIndex={productPhotoshootShotBusyIndex}
-        status={productPhotoshootStatus}
-      />
 
       <Sheet>
         <SheetTrigger asChild>

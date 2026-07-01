@@ -127,6 +127,71 @@ assert.throws(
   }),
   /Generate audio before sharing this brainrot video/,
 );
+
+const motionStoryScene: AdScene = {
+  ...scene,
+  format: "motion-story",
+  creative: {
+    ...scene.creative,
+    headline: "The gift that actually gets remembered",
+    subheadline: "my mom for her birthday and she loved every fresh bite",
+    ctaText: "Send the box they talk about",
+    selectedProof: "my mom for her birthday and she loved every fresh bite",
+  },
+  style: {
+    backgroundColor: "#070B1D",
+    textColor: "#FFFFFF",
+    accentColor: "#D6001C",
+    fontFeel: "sans",
+  },
+  layout: {
+    preset: "motion-story-product",
+    durationMs: 20_000,
+    product: {
+      title: "Birthday Cookie Tin",
+      handle: "birthday-cookie-tin",
+      imageUrl: "https://example.com/product.jpg",
+      cutoutUrl: "https://example.com/product-cutout.png",
+      isBestSeller: true,
+    },
+    proof: {
+      originalText: "I sent this cookie tin to my mom for her birthday and she loved every fresh bite.",
+      displayText: "my mom for her birthday and she loved every fresh bite",
+      proofIndex: 0,
+      strengthReason: "Specific gift moment plus emotional reaction.",
+    },
+    beats: [
+      { role: "hook", motion: "kinetic-reveal", headline: "The gift that actually gets remembered", startMs: 0, endMs: 3000 },
+      { role: "product", motion: "image-expand", headline: "Birthday Cookie Tin", startMs: 3000, endMs: 8000 },
+      { role: "proof", motion: "proof-card", headline: "Real birthday proof", startMs: 8000, endMs: 16000 },
+      { role: "cta", motion: "cta-slam", headline: "Send the box they talk about", startMs: 16000, endMs: 20000 },
+    ],
+    brandLockup: {
+      fallbackText: "David's Cookies",
+    },
+    musicBed: {
+      id: "polished-upbeat",
+      src: "/motion-story/music/polished-upbeat.mp3",
+      volume: 0.18,
+      loop: true,
+    },
+    shareCopy: "A better birthday gift, backed by real reviews.",
+  },
+};
+assert.equal(assertShareableAdScene(motionStoryScene), motionStoryScene);
+assert.throws(
+  () => assertShareableAdScene({
+    ...motionStoryScene,
+    layout: {
+      ...motionStoryScene.layout,
+      musicBed: {
+        ...motionStoryScene.layout.musicBed,
+        src: "",
+      },
+    },
+  }),
+  /Motion Story music is missing/,
+);
 assert.throws(
   () => assertShareableAdScene({
     ...scene,

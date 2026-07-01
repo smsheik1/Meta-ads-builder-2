@@ -155,6 +155,7 @@ export const regenerateBrickShot: ReturnType<typeof action> = action({
     const currentStoryboard = storyboard as BrickStoryboard;
     const nextStoryboard: BrickStoryboard = {
       ...currentStoryboard,
+      musicVideo: undefined,
       shots: [...currentStoryboard.shots],
     };
     const shot = nextStoryboard.shots.find((item) => item.shotIndex === shotIndex);
@@ -172,6 +173,7 @@ export const regenerateBrickShot: ReturnType<typeof action> = action({
     const nextShot = {
       ...shot,
       image,
+      video: undefined,
       status: "ok" as const,
       error: undefined,
     };

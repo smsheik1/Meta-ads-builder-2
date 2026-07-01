@@ -376,6 +376,29 @@ const buildCatalogResult = (
   };
 };
 
+const mergeProductsWithFallbackImages = (
+  products: ProductCatalogItem[],
+  fallbackProducts: ProductCatalogItem[],
+  bestSellerHandles: Set<string>,
+) => {
+  const productsByHandle = new Map<string, ProductCatalogItem>();
+  for (const product of products) productsByHandle.set(product.handle, product);
+
+  for (const product of fallbackProducts) {
+    const existing = productsByHandle.get(product.handle);
+    productsByHandle.set(product.handle, {
+      ...(existing || product),
+      imageUrl: existing?.imageUrl || product.imageUrl,
+      imageAlt: existing?.imageAlt || product.imageAlt,
+      badges: bestSellerHandles.has(product.handle)
+        ? ["best-seller"]
+        : (existing?.badges.length ? existing.badges : product.badges),
+    });
+  }
+
+  return [...productsByHandle.values()];
+};
+
 export async function fetchEcommerceProductCatalog(
   inputUrl: string,
   options: {
@@ -409,26 +432,22 @@ export async function fetchEcommerceProductCatalog(
           "from WooCommerce Store API",
         );
       }
+    }
 
+    if (!products.length || !products.some((product) => product.imageUrl)) {
       const sitemapProducts = await fetchSitemapProducts(fetcher, websiteUrl.origin, timeoutMs, explicitBestSellers.handles);
-      const productsByHandle = new Map<string, ProductCatalogItem>();
-      for (const product of explicitBestSellers.products) productsByHandle.set(product.handle, product);
-      for (const product of sitemapProducts?.products || []) {
-        const existing = productsByHandle.get(product.handle);
-        productsByHandle.set(product.handle, {
-          ...product,
-          ...existing,
-          badges: explicitBestSellers.handles.has(product.handle) ? ["best-seller"] : product.badges,
-        });
-      }
-      const fallbackProducts = [...productsByHandle.values()];
+      const fallbackProducts = mergeProductsWithFallbackImages(
+        products,
+        [...explicitBestSellers.products, ...(sitemapProducts?.products || [])],
+        explicitBestSellers.handles,
+      );
 
-      if (fallbackProducts.length) {
+      if (fallbackProducts.length && (!products.length || fallbackProducts.some((product) => product.imageUrl))) {
         return buildCatalogResult(
           "shopify-product-sitemap",
           sitemapProducts?.sourceUrl || new URL("/collections/best-sellers", websiteUrl.origin).toString(),
           fallbackProducts,
-          "from sitemap/collection fallbacks",
+          products.length ? "with images from sitemap/collection fallbacks" : "from sitemap/collection fallbacks",
         );
       }
     }

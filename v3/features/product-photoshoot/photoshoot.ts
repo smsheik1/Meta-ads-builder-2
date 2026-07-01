@@ -3,6 +3,7 @@ import type { ProductCatalogItem, StoredWebsiteResearchResult } from "../researc
 export const PRODUCT_PHOTOSHOOT_IMAGE_MODEL = "google/nano-banana-2";
 export const PRODUCT_PHOTOSHOOT_SHOT_COUNT = 6;
 export const PRODUCT_PHOTOSHOOT_ASPECT_RATIO = "4:5" as const;
+export const PRODUCT_PHOTOSHOOT_FULL_GENERATION_LIMIT = 3;
 
 export type ProductPhotoshootImage = {
   storageId: string;
@@ -91,7 +92,7 @@ export function createProductPhotoshootPromptPlan(
       shotIndex: 4,
       family: "seasonal",
       label: "Seasonal campaign",
-      prompt: `${base} Stage the unchanged product in a tasteful seasonal campaign environment with warm highlights, clean foreground, and background props that reinforce gifting without adding readable text.`,
+      prompt: `${base} Stage the unchanged product in a tasteful campaign environment with warm highlights, clean foreground, and background props that reinforce gifting without adding readable text. Use specific seasonal or holiday cues only when the source product or brand evidence clearly supports them; otherwise use a neutral giftable campaign setting.`,
     },
     {
       shotIndex: 5,

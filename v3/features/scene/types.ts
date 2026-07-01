@@ -2,7 +2,7 @@ import type { BrandAdAngle, BrandSnapshot, ResearchReceipts } from "../research/
 
 export const AD_SCENE_VERSION = 1 as const;
 
-export type AdFormatId = "visualizer" | "meme" | "were-sorry" | "video-meme" | "jingle" | "text-message" | "brainrot" | "reviews";
+export type AdFormatId = "visualizer" | "meme" | "were-sorry" | "video-meme" | "jingle" | "text-message" | "brainrot" | "reviews" | "motion-story";
 
 export type HeadlineType =
   | "painful_moment"
@@ -279,11 +279,14 @@ export type ReviewsProductAnchor = {
   isBestSeller: boolean;
 };
 
+export type ReviewsTemplate = "proof-card" | "minimal-quote";
+
 export type ReviewsAdScene = AdSceneBase<
   "reviews",
   AdSceneStyleBase,
   {
     preset: "reviews-proof-card";
+    template?: ReviewsTemplate;
     proof: ReviewsProofItem;
     proofIndex: number;
     proofTotal: number;
@@ -295,6 +298,66 @@ export type ReviewsAdScene = AdSceneBase<
   }
 >;
 
+export type MotionStoryMusicBedId = "polished-upbeat" | "warm-premium" | "playful-retail" | "bold-retail";
+export type MotionStoryBeatRole = "hook" | "product" | "proof" | "cta";
+export type MotionStoryBeatMotion = "kinetic-reveal" | "image-expand" | "proof-card" | "cta-slam";
+
+export type MotionStoryBeat = {
+  role: MotionStoryBeatRole;
+  motion: MotionStoryBeatMotion;
+  headline: string;
+  supportingText?: string;
+  startMs: number;
+  endMs: number;
+};
+
+export type MotionStoryProduct = {
+  title: string;
+  handle: string;
+  imageUrl: string;
+  cutoutUrl: string;
+  url?: string;
+  isBestSeller: boolean;
+};
+
+export type MotionStoryProof = {
+  originalText: string;
+  displayText: string;
+  sourceName?: string;
+  rating?: number;
+  aggregateText?: string;
+  proofIndex: number;
+  strengthReason: string;
+};
+
+export type MotionStoryAdScene = AdSceneBase<
+  "motion-story",
+  AdSceneStyleBase,
+  {
+    preset: "motion-story-product";
+    durationMs: 20000;
+    product: MotionStoryProduct;
+    proof: MotionStoryProof;
+    beats: [
+      MotionStoryBeat & { role: "hook"; motion: "kinetic-reveal"; startMs: 0; endMs: 3000 },
+      MotionStoryBeat & { role: "product"; motion: "image-expand"; startMs: 3000; endMs: 8000 },
+      MotionStoryBeat & { role: "proof"; motion: "proof-card"; startMs: 8000; endMs: 16000 },
+      MotionStoryBeat & { role: "cta"; motion: "cta-slam"; startMs: 16000; endMs: 20000 },
+    ];
+    brandLockup: {
+      logoUrl?: string;
+      fallbackText: string;
+    };
+    musicBed: {
+      id: MotionStoryMusicBedId;
+      src: string;
+      volume: 0.18;
+      loop: true;
+    };
+    shareCopy: string;
+  }
+>;
+
 export type AdScene =
   | VisualizerAdScene
   | MemeAdScene
@@ -303,4 +366,5 @@ export type AdScene =
   | JingleAdScene
   | TextMessageAdScene
   | BrainrotAdScene
-  | ReviewsAdScene;
+  | ReviewsAdScene
+  | MotionStoryAdScene;
