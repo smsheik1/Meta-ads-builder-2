@@ -8,6 +8,7 @@ export type CanvasInteractionBusyReason =
   | "ad-generation"
   | "audio-generation"
   | "audio-upload"
+  | "product-photoshoot"
   | "render";
 export type CanvasInteractionModal = "brand-dump" | "dialogue" | "captions";
 export type CanvasInteractionUiStatus =

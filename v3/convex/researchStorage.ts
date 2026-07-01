@@ -2,27 +2,67 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internalMutation, internalQuery } from "./_generated/server";
-import { buildFallbackBrandBrief } from "../features/research/brandCurator";
-import type { StoredWebsiteResearchResult, WebsiteResearchResult } from "../features/research/types";
+import {
+  buildFallbackBrandBrief,
+  isBrandResearchNoiseText,
+  normalizeBrandBriefPayload,
+} from "../features/research/brandCurator";
+import type { ResearchEvidence, StoredWebsiteResearchResult, WebsiteResearchResult } from "../features/research/types";
+
+const titleizeHost = (host: string) => (
+  host
+    .replace(/^www\./, "")
+    .split(".")[0]
+    ?.split(/[\s-]+/)
+    .filter(Boolean)
+    .map((part) => `${part[0]?.toUpperCase()}${part.slice(1).toLowerCase()}`)
+    .join(" ") || "Brand"
+);
+
+const storedTextOrFallback = (value: unknown, fallback: string) => (
+  isBrandResearchNoiseText(value) ? fallback : String(value || fallback)
+);
+
+const filterStoredEvidence = (evidence: ResearchEvidence): ResearchEvidence => {
+  const cleanList = (items: string[]) => items.filter((item) => !isBrandResearchNoiseText(item));
+  const rawLines = evidence.rawMarkdown
+    .split(/\n+/)
+    .filter((line) => !isBrandResearchNoiseText(line));
+
+  return {
+    headings: cleanList(evidence.headings),
+    paragraphs: cleanList(evidence.paragraphs),
+    receipts: {
+      specificClaims: cleanList(evidence.receipts.specificClaims),
+      buyerMoments: cleanList(evidence.receipts.buyerMoments),
+      exactSiteLanguage: cleanList(evidence.receipts.exactSiteLanguage),
+      namedProof: cleanList(evidence.receipts.namedProof),
+    },
+    rawMarkdown: rawLines.join("\n"),
+  };
+};
 
 export function toStoredResearchResult(
   researchRun: Doc<"researchRuns">,
   brandSnapshot: Doc<"brandSnapshots">,
   researchRunId: Id<"researchRuns"> = researchRun._id,
 ) {
+  const host = researchRun.host || brandSnapshot.host || "";
+  const fallbackBrandName = titleizeHost(host || brandSnapshot.url);
+  const evidence = filterStoredEvidence(researchRun.evidence);
   const research = {
     sessionId: researchRun.sessionId,
     researchRunId,
     brandSnapshotId: brandSnapshot._id,
     websiteUrl: researchRun.url,
     finalUrl: researchRun.finalUrl || brandSnapshot.url,
-    host: researchRun.host || brandSnapshot.host || "",
+    host,
     brand: {
-      name: brandSnapshot.name,
+      name: storedTextOrFallback(brandSnapshot.name, fallbackBrandName),
       url: brandSnapshot.url,
       host: brandSnapshot.host || "",
-      title: brandSnapshot.title || "",
-      description: brandSnapshot.description || "",
+      title: storedTextOrFallback(brandSnapshot.title, fallbackBrandName),
+      description: storedTextOrFallback(brandSnapshot.description, ""),
       faviconUrl: brandSnapshot.faviconUrl || null,
       logoUrl: brandSnapshot.logoUrl || null,
       ogImageUrl: brandSnapshot.ogImageUrl || null,
@@ -31,7 +71,7 @@ export function toStoredResearchResult(
       fonts: brandSnapshot.fonts,
       vibeTags: brandSnapshot.vibeTags,
     },
-    evidence: researchRun.evidence,
+    evidence,
     metadata: researchRun.metadata || {},
     branding: researchRun.branding || {},
 	    adAngles: researchRun.adAngles || [],
@@ -41,7 +81,7 @@ export function toStoredResearchResult(
 
   return {
     ...research,
-    brandBrief: researchRun.brandBrief || buildFallbackBrandBrief(research),
+    brandBrief: normalizeBrandBriefPayload(researchRun.brandBrief || {}, buildFallbackBrandBrief(research)),
   } satisfies StoredWebsiteResearchResult;
 }
 

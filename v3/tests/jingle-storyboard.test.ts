@@ -428,6 +428,7 @@ assert.throws(
 
 const storyboardActionSource = readFileSync(new URL("../convex/jingleStoryboards.ts", import.meta.url), "utf8");
 const animateBrickBoardSource = storyboardActionSource.match(/export const animateBrickBoard[\s\S]*?export const generateBrickForScene/)?.[0] || "";
+const regenerateBrickShotSource = storyboardActionSource.match(/export const regenerateBrickShot[\s\S]*?export const buildMusicVideoForScene/)?.[0] || "";
 assert.ok(storyboardActionSource.includes("const referenceImagePromise = storeStoryboardImage"), "Reference image generation should not block shot image generation.");
 assert.ok(storyboardActionSource.includes("const shotResultsPromise = Promise.all(promptPlan.shots.map(async (shot)"), "Shot stills should generate in parallel.");
 assert.ok(storyboardActionSource.includes("await Promise.all([referenceImagePromise, shotResultsPromise])"), "Reference and shot stills should resolve in parallel.");
@@ -442,5 +443,7 @@ assert.ok(
   !/for \(const shot of nextStoryboard\.shots\)[\s\S]*await generateReplicateSeedanceVideo/.test(animateBrickBoardSource),
   "Seedance animation must not regress to one-shot-at-a-time generation.",
 );
+assert.ok(regenerateBrickShotSource.includes("musicVideo: undefined"), "Regenerating a still must clear the built music video.");
+assert.ok(regenerateBrickShotSource.includes("video: undefined"), "Regenerating a still must clear the old Seedance clip for that shot.");
 
 console.log("jingle-storyboard tests passed");

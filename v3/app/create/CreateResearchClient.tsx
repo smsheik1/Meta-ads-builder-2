@@ -26,6 +26,7 @@ import { DEFAULT_JINGLE_STYLE_ID, type JingleStyleId } from "@/features/formats/
 import {
   getDefaultReviewProductHandles,
   normalizeReviewProductHandles,
+  productCatalogHasProductImage,
 } from "@/features/formats/reviews/productSelection";
 import { getVideoMemeTemplate, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
 import { getFormatModule } from "@/features/formats/registry";
@@ -43,9 +44,12 @@ import {
   CREATIVE_PACK_CONCURRENCY,
   CREATIVE_PACK_FORMATS,
   getCreativePackFormatLabel,
+  hasPlayableCreativePackScenes,
+  hydrateCreativePackGroupsFromSceneRows,
   isCreativePackAudioFormat,
   isCreativePackFormat,
   isCreativePackTerminalStatus,
+  type CreativePackSceneRow,
   type CreativePackFormat,
   type CreativePackStatus,
 } from "@/features/create/creativePack";
@@ -77,10 +81,7 @@ import { CreateCaptionModal } from "./CreateCaptionModal";
 import { BrandDumpModal } from "./CreateBrandDumpModal";
 import { CreateCanvasColumn } from "./CreateCanvasColumn";
 import { CreateControlPanel } from "./CreateControlPanel";
-import {
-  CreateCreativePackOverview,
-  type CreativePackOverviewGroup,
-} from "./CreateCreativePackOverview";
+import type { CreativePackOverviewGroup } from "./CreateCreativePackOverview";
 import { CreateCreativeBriefCard } from "./CreateCreativeBriefCard";
 import { CreateDialogueModal } from "./CreateDialogueModal";
 import { CreateIdeasList } from "./CreateIdeasList";
@@ -91,8 +92,14 @@ import {
 } from "./CreateLeftColumn";
 import type { PreviewPlatform } from "./CreatePreviewChrome";
 import { CreateQuickActions } from "./CreateQuickActions";
+import { CreateProductPhotoshootWorkspace } from "./CreateProductPhotoshootSheet";
 import { WigglyMark } from "./WigglyMark";
 import { createStarterPlaceholderScene, placeholderAdSurfaceVariantCount } from "./createStarterScene";
+import {
+  PRODUCT_PHOTOSHOOT_FORMAT,
+  isAdSceneCreateFormat,
+  type CreateFormatId,
+} from "./createFormats";
 import { getAnonymousId } from "./createSession";
 
 const rerollFlashMs = 680;
@@ -247,8 +254,28 @@ function getGenerationCount(format: AdFormatId, videoMemeTemplateId: VideoMemeTe
   if (format === "jingle") return 1;
   if (format === "text-message") return 6;
   if (format === "brainrot") return 3;
-  if (format === "reviews") return 4;
+  if (format === "reviews") return 8;
+  if (format === "motion-story") return 4;
   return 50;
+}
+
+const staticPngFormats = new Set<AdFormatId>(["meme", "text-message", "reviews", "were-sorry"]);
+
+function getDefaultPhotoshootProductHandle(productCatalog: StoredWebsiteResearchResult["productCatalog"] | null | undefined) {
+  const products = productCatalog?.products || [];
+  const bestSeller = products.find((product) => product.imageUrl && product.badges?.includes("best-seller"));
+  const firstWithImage = products.find((product) => product.imageUrl);
+  return (bestSeller || firstWithImage)?.handle || "";
+}
+
+function getProductPhotoshootSetupError(result: StoredWebsiteResearchResult | null | undefined) {
+  if (!result?.researchRunId) {
+    return "Product Photoshoot needs website research before it can generate product shots. Submit a Shopify-style store first.";
+  }
+  if (!productCatalogHasProductImage(result.productCatalog)) {
+    return "Product Photoshoot could not find any product images for this site. Try a Shopify product page or a store with visible product photos.";
+  }
+  return "Product Photoshoot needs a selected product with an image. Choose a product with an image, then try again.";
 }
 
 function normalizedUrlKey(value: string) {
@@ -354,7 +381,7 @@ function ResearchConnected() {
   const [shareStatus, setShareStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [renderStatus, setRenderStatus] = useState<"idle" | "loading" | "queued" | "error">("idle");
   const [result, setResult] = useState<StoredWebsiteResearchResult | null>(null);
-  const [selectedAdFormat, setSelectedAdFormat] = useState<AdFormatId>("meme");
+  const [selectedAdFormat, setSelectedAdFormat] = useState<CreateFormatId>("meme");
   const [selectedMemeModel, setSelectedMemeModel] = useState(DEFAULT_NVIDIA_NIM_MEME_MODEL);
   const [selectedVideoMemeTemplateId, setSelectedVideoMemeTemplateId] = useState<VideoMemeTemplateId>("bear-sniff");
   const [selectedVisualizerModel, setSelectedVisualizerModel] = useState(DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL);
@@ -363,7 +390,7 @@ function ResearchConnected() {
   const [creativePackStatus, setCreativePackStatus] = useState<CreativePackStatus>("idle");
   const [creativePackGroups, setCreativePackGroups] = useState<CreativePackOverviewGroup[]>([]);
   const [selectedCreativePackFormat, setSelectedCreativePackFormat] = useState<CreativePackFormat | null>(null);
-  const [creativePackMoneyShotActive, setCreativePackMoneyShotActive] = useState(false);
+  const [, setCreativePackMoneyShotActive] = useState(false);
   const [adScenes, setAdScenes] = useState<AdScene[]>([]);
   const [sceneIds, setSceneIds] = useState<Array<Id<"adScenes"> | null>>([]);
   const [selectedScene, setSelectedScene] = useState<AdScene | null>(null);
@@ -377,7 +404,7 @@ function ResearchConnected() {
   const [pendingProgressFacts, setPendingProgressFacts] = useState<WebsiteSubmitProgressFacts | null>(null);
   const [showSlowResearchMessage, setShowSlowResearchMessage] = useState(false);
   const [renderJobId, setRenderJobId] = useState<Id<"renderJobs"> | null>(null);
-  const [memeDownloadBusy, setMemeDownloadBusy] = useState(false);
+  const [staticPngDownloadBusy, setStaticPngDownloadBusy] = useState(false);
   const renderJob = useQuery(api.renderJobs.getStatus, renderJobId ? { renderJobId } : "skip");
   const renderWorkerReadiness = useQuery(api.renderJobs.workerReadiness, {
     rendererVersion: getClientRendererVersion(),
@@ -426,7 +453,7 @@ function ResearchConnected() {
   const creativePackRunKeysRef = useRef(new Set<string>());
   const creativePackPreviousStateRef = useRef<{
     result: StoredWebsiteResearchResult | null;
-    selectedAdFormat: AdFormatId;
+    selectedAdFormat: CreateFormatId;
     selectedReviewProductHandles: string[];
     url: string;
   } | null>(null);
@@ -461,6 +488,10 @@ function ResearchConnected() {
     productHandle: string;
     board: ProductPhotoshootBoard;
   } | null | undefined;
+  const researchRunSceneRows = useQuery(
+    api.adScenes.listForResearchRun,
+    result?.researchRunId ? { researchRunId: result.researchRunId as Id<"researchRuns"> } : "skip",
+  ) as Array<CreativePackSceneRow<Id<"adScenes">>> | undefined;
   const saveDesign = useMutation(api.savedDesigns.saveFromScene);
   const savedDesignItems = savedDesigns || [];
   const canvasActions = useCanvasActions();
@@ -569,6 +600,7 @@ function ResearchConnected() {
     setSelectedSceneIndex(0);
     if (restoredScene) {
       setSelectedAdFormat(restoredScene.format);
+      setSelectedCreativePackFormat(isCreativePackFormat(restoredScene.format) ? restoredScene.format : null);
       const templateId = getSceneVideoMemeTemplateId(restoredScene);
       if (templateId) setSelectedVideoMemeTemplateId(templateId);
     }
@@ -614,7 +646,7 @@ function ResearchConnected() {
 
   const onTogglePreviewPlayback = useCallback(() => {
     const audio = audioRef.current;
-    if (!audio || selectedScene?.audio.status !== "generated") return;
+    if (!audio) return;
 
     if (audio.paused) {
       void audio.play();
@@ -622,7 +654,7 @@ function ResearchConnected() {
     }
 
     audio.pause();
-  }, [selectedScene?.audio.status]);
+  }, []);
 
   const resetShareState = () => {
     setShareStatus("idle");
@@ -808,7 +840,8 @@ function ResearchConnected() {
 
   useEffect(() => {
     const products = result?.productCatalog?.products || [];
-    if (!products.length) {
+    const defaultHandle = getDefaultPhotoshootProductHandle(result?.productCatalog);
+    if (!defaultHandle) {
       setSelectedPhotoshootProductHandle("");
       resetProductPhotoshootState();
       return;
@@ -816,9 +849,7 @@ function ResearchConnected() {
     if (selectedPhotoshootProductHandle && products.some((product) => product.handle === selectedPhotoshootProductHandle)) {
       return;
     }
-    const bestSeller = products.find((product) => product.badges?.includes("best-seller") && product.imageUrl);
-    const firstWithImage = products.find((product) => product.imageUrl);
-    setSelectedPhotoshootProductHandle((bestSeller || firstWithImage || products[0])?.handle || "");
+    setSelectedPhotoshootProductHandle(defaultHandle);
   }, [result?.researchRunId, result?.productCatalog, selectedPhotoshootProductHandle]);
 
   useEffect(() => {
@@ -1094,9 +1125,9 @@ function ResearchConnected() {
         ...group,
         scenes,
         sceneIds: nextSceneIds.length ? nextSceneIds : scenes.map(() => null),
-        status: isCreativePackGroupPlayable(firstScene.format, scenes) ? "ready" : group.status,
-        message: isCreativePackGroupPlayable(firstScene.format, scenes) ? "" : group.message,
-        publicMessage: isCreativePackGroupPlayable(firstScene.format, scenes) ? "" : group.publicMessage,
+        status: hasPlayableCreativePackScenes(firstScene.format, scenes) ? "ready" : group.status,
+        message: hasPlayableCreativePackScenes(firstScene.format, scenes) ? "" : group.message,
+        publicMessage: hasPlayableCreativePackScenes(firstScene.format, scenes) ? "" : group.publicMessage,
       };
     }));
   };
@@ -1154,7 +1185,7 @@ function ResearchConnected() {
       ...(format === "video-meme" ? { videoMemeTemplateId } : {}),
       ...(format === "visualizer" && visualizerModel ? { visualizerModel } : {}),
       ...(format === "jingle" ? { jingleStyleId } : {}),
-      ...(format === "reviews" ? { selectedProductHandles: normalizeReviewProductHandles(reviewProductHandles) } : {}),
+      ...(format === "reviews" || format === "motion-story" ? { selectedProductHandles: normalizeReviewProductHandles(reviewProductHandles) } : {}),
     };
     const nextGeneration = await generateAdScenes(generationArgs) as AdSceneGenerationResponse;
 
@@ -1164,39 +1195,43 @@ function ResearchConnected() {
     };
   };
 
-  const getReusableResearchForUrl = (value: string) => {
+  const getReusableResearchForUrl = (
+    value: string,
+    options: { requiresProductImage?: boolean } = {},
+  ) => {
     try {
+      const toReusableResearch = (research: StoredWebsiteResearchResult | null | undefined) => {
+        if (!research?.researchRunId) return null;
+        if (options.requiresProductImage && !productCatalogHasProductImage(research.productCatalog)) return null;
+        return {
+          researchRunId: research.researchRunId,
+          facts: getWebsiteSubmitProgressFacts(research),
+          result: research,
+        };
+      };
       const key = normalizedUrlKey(value);
       const cached = researchByUrlRef.current.get(key);
-      if (cached?.researchRunId) {
-        return {
-          researchRunId: cached.researchRunId,
-          facts: getWebsiteSubmitProgressFacts(cached),
-          result: cached,
-        };
-      }
+      const cachedReusable = toReusableResearch(cached);
+      if (cachedReusable) return cachedReusable;
       if (cachedResearchForUrl?.researchRunId && (
         key === normalizedUrlKey(cachedResearchForUrl.websiteUrl) ||
         key === normalizedUrlKey(cachedResearchForUrl.finalUrl)
       )) {
-        rememberResearchForReuse(cachedResearchForUrl);
-        return {
-          researchRunId: cachedResearchForUrl.researchRunId,
-          facts: getWebsiteSubmitProgressFacts(cachedResearchForUrl),
-          result: cachedResearchForUrl,
-        };
+        const reusable = toReusableResearch(cachedResearchForUrl);
+        if (reusable) {
+          rememberResearchForReuse(cachedResearchForUrl);
+          return reusable;
+        }
       }
       if (result?.researchRunId && (
         key === normalizedUrlKey(result.websiteUrl) ||
         key === normalizedUrlKey(result.finalUrl)
       )) {
-        return {
-          researchRunId: result.researchRunId,
-          facts: getWebsiteSubmitProgressFacts(result),
-          result,
-        };
+        const reusable = toReusableResearch(result);
+        if (reusable) return reusable;
       }
       if (selectedScene?.metadata.researchRunId) {
+        if (options.requiresProductImage) return null;
         const sceneKeys = [
           selectedScene.brand.url,
           selectedScene.brand.host ? `https://${selectedScene.brand.host}/` : "",
@@ -1224,15 +1259,50 @@ function ResearchConnected() {
     )));
   };
 
-  const isCreativePackGroupPlayable = (format: CreativePackFormat, scenes: AdScene[]) => {
-    if (!scenes.length) return false;
-    if (!isCreativePackAudioFormat(format)) return true;
-    return scenes.some((scene) => scene.audio.status === "generated" && Boolean(scene.audio.url));
-  };
-
   const firstReadyPackFormatByPriority = (readyFormats: Set<CreativePackFormat>) => (
     CREATIVE_PACK_SHOWCASE_PRIORITY.find((format) => readyFormats.has(format)) || null
   );
+
+  useEffect(() => {
+    if (!result?.researchRunId || creativePackGroups.length || !researchRunSceneRows?.length) return;
+    if (creativePackStatus === "researching" || creativePackStatus === "generating") return;
+
+    try {
+      const currentUrlKey = normalizedUrlKey(url);
+      const resultUrlKeys = [result.websiteUrl, result.finalUrl]
+        .filter(Boolean)
+        .map((value) => normalizedUrlKey(value));
+      if (!resultUrlKeys.includes(currentUrlKey)) return;
+    } catch {
+      return;
+    }
+
+    const hydratedGroups = hydrateCreativePackGroupsFromSceneRows({
+      minimumReadyFormats: 2,
+      rows: researchRunSceneRows,
+    });
+    if (!hydratedGroups.length) return;
+
+    setCreativePackGroups(hydratedGroups.map((group) => ({
+      ...group,
+      researchResult: result,
+    })));
+    setCreativePackStatus("ready");
+
+    const selectedFormat = selectedScene?.format;
+    if (!selectedCreativePackFormat && selectedFormat && isCreativePackFormat(selectedFormat)) {
+      selectedCreativePackFormatRef.current = selectedFormat;
+      setSelectedCreativePackFormat(selectedFormat);
+    }
+  }, [
+    creativePackGroups.length,
+    creativePackStatus,
+    researchRunSceneRows,
+    result,
+    selectedCreativePackFormat,
+    selectedScene?.format,
+    url,
+  ]);
 
   const getCreativePackReviewProductHandles = (researchResult: StoredWebsiteResearchResult | undefined | null) => {
     const selectedHandles = normalizeReviewProductHandles(selectedReviewProductHandles);
@@ -1253,13 +1323,13 @@ function ResearchConnected() {
       group.status === "ready" &&
       group.scenes[0]?.metadata.researchRunId === researchRunId
     ));
-    if (existingGroup?.scenes.length && isCreativePackGroupPlayable(format, existingGroup.scenes)) return existingGroup;
+    if (existingGroup?.scenes.length && hasPlayableCreativePackScenes(format, existingGroup.scenes)) return existingGroup;
 
     if (
       adScenes.length &&
       adScenes[0]?.format === format &&
       adScenes[0]?.metadata.researchRunId === researchRunId &&
-      isCreativePackGroupPlayable(format, adScenes)
+      hasPlayableCreativePackScenes(format, adScenes)
     ) {
       return {
         format,
@@ -1361,7 +1431,7 @@ function ResearchConnected() {
   ) => {
     const researchResult = research.result || result;
     const packFormat = CREATIVE_PACK_FORMATS.find((item) => item.format === format);
-    const reviewProductHandles = format === "reviews" ? getCreativePackReviewProductHandles(researchResult) : [];
+    const reviewProductHandles = format === "reviews" || format === "motion-story" ? getCreativePackReviewProductHandles(researchResult) : [];
     const generation = await generateScenesForResearch(
       research.researchRunId as Id<"researchRuns">,
       packFormat?.count || 1,
@@ -1379,7 +1449,7 @@ function ResearchConnected() {
       scenes = scenes.slice(0, 1);
       sceneIds = sceneIds.slice(0, 1);
     }
-    if (format === "visualizer" || format === "jingle") {
+    if (format === "visualizer" || format === "jingle" || format === "motion-story") {
       scenes = scenes.slice(0, 1);
       sceneIds = sceneIds.slice(0, 1);
     }
@@ -1395,6 +1465,109 @@ function ResearchConnected() {
       scenes,
       sceneIds,
     };
+  };
+
+  const retryCreativePackGroup = async (format: CreativePackFormat) => {
+    const group = creativePackGroups.find((candidate) => candidate.format === format);
+    const researchResult = group?.researchResult || result;
+    const reusableResearch = researchResult
+      ? {
+        researchRunId: researchResult.researchRunId,
+        facts: getWebsiteSubmitProgressFacts(researchResult),
+        result: researchResult,
+      }
+      : getReusableResearchForUrl(url);
+    if (!reusableResearch) {
+      updateCreativePackGroup(format, (candidate) => ({
+        ...candidate,
+        status: "needs-retry",
+        publicMessage: "Run the pack again.",
+        message: "Run the pack again.",
+        debugMessage: "No cached research was available for this retry.",
+      }));
+      return;
+    }
+
+    const label = getCreativePackFormatLabel(format);
+    const startedAt = Date.now();
+    let softTimer: ReturnType<typeof setTimeout> | null = null;
+    setCreativePackStatus("generating");
+    setError("");
+    updateCreativePackGroup(format, (candidate) => ({
+      ...candidate,
+      status: "generating",
+      startedAt,
+      elapsedMs: 0,
+      actionLabel: isCreativePackAudioFormat(format) ? "Generating playable audio" : "Generating ads",
+      publicMessage: isCreativePackAudioFormat(format) ? "Writing it, then attaching audio." : "Generating now.",
+      message: "Generating now.",
+      debugMessage: "",
+    }));
+
+    softTimer = setTimeout(() => {
+      updateCreativePackGroup(format, (candidate) => (
+        candidate.status === "generating"
+          ? {
+            ...candidate,
+            status: "still-cooking",
+            publicMessage: "Still cooking.",
+            message: "Still cooking.",
+            debugMessage: `${label} passed ${Math.round(CREATIVE_PACK_SOFT_TIMEOUT_MS / 1000)}s but is still running.`,
+            elapsedMs: Date.now() - startedAt,
+          }
+          : candidate
+      ));
+    }, CREATIVE_PACK_SOFT_TIMEOUT_MS);
+
+    try {
+      const generation = await withCreativePackHardTimeout(
+        generateCreativePackFormat(reusableResearch, format),
+        CREATIVE_PACK_HARD_TIMEOUT_MS,
+        label,
+      );
+      if (softTimer) clearTimeout(softTimer);
+      const scenes = generation.scenes || [];
+      if (!scenes.length) throw new Error(`${label} returned no ads.`);
+      if (!hasPlayableCreativePackScenes(format, scenes)) throw new Error(`${label} returned no playable audio.`);
+
+      updateCreativePackGroup(format, (candidate) => ({
+        ...candidate,
+        status: "ready",
+        scenes,
+        sceneIds: generation.sceneIds || [],
+        researchResult: reusableResearch.result || candidate.researchResult,
+        publicMessage: "",
+        message: "",
+        debugMessage: "",
+        elapsedMs: Date.now() - startedAt,
+      }));
+      setCreativePackStatus("ready");
+      if (!creativePackUserSelectedRef.current) {
+        selectedCreativePackFormatRef.current = format;
+        setSelectedCreativePackFormat(format);
+        setSelectedAdFormat(format);
+        if (reusableResearch.result) {
+          rememberResearchForReuse(reusableResearch.result);
+          setResult(reusableResearch.result);
+          setUrl(reusableResearch.result.websiteUrl);
+        }
+        applyGeneratedScenes(scenes, generation.sceneIds || [], {
+          autoGenerateAudio: false,
+          note: `${label} is ready from your creative pack retry.`,
+        });
+      }
+    } catch (nextError) {
+      if (softTimer) clearTimeout(softTimer);
+      updateCreativePackGroup(format, (candidate) => ({
+        ...candidate,
+        status: "needs-retry",
+        publicMessage: "Needs retry.",
+        message: "Needs retry.",
+        debugMessage: getAdGenerationErrorMessage(nextError),
+        elapsedMs: Date.now() - startedAt,
+      }));
+      setCreativePackStatus("ready");
+    }
   };
 
   const onCancelCreativePack = () => {
@@ -1671,7 +1844,7 @@ function ResearchConnected() {
         if (creativePackRunRef.current?.id !== runToken.id) return;
         const scenes = generation.scenes || [];
         if (!scenes.length) throw new Error(`${getCreativePackFormatLabel(format)} returned no ads.`);
-        if (!isCreativePackGroupPlayable(format, scenes)) throw new Error(`${label} returned no playable audio.`);
+        if (!hasPlayableCreativePackScenes(format, scenes)) throw new Error(`${label} returned no playable audio.`);
 
         readyFormats.add(format);
         terminalFormats.add(format);
@@ -1758,6 +1931,11 @@ function ResearchConnected() {
     format: AdFormatId,
     videoMemeTemplateId: VideoMemeTemplateId = selectedVideoMemeTemplateId,
   ) => {
+    if (research.result) {
+      rememberResearchForReuse(research.result);
+      setResult(research.result);
+      setUrl(research.result.websiteUrl);
+    }
     setStatus("ready");
     setAdStatus("loading");
     setProgressStage("writing-ads");
@@ -1775,7 +1953,7 @@ function ResearchConnected() {
 
     try {
       const selectedReviewHandles = normalizeReviewProductHandles(selectedReviewProductHandles);
-      const reviewProductHandles = format === "reviews"
+      const reviewProductHandles = format === "reviews" || format === "motion-story"
         ? selectedReviewHandles.length
           ? selectedReviewHandles
           : getDefaultReviewProductHandles((research.result || result)?.productCatalog)
@@ -1804,31 +1982,24 @@ function ResearchConnected() {
 
   useCanvasKeyboard({
     editorScopeRef: createEditorScopeRef,
-    onReroll: onRerollScene,
+    onReroll: selectedAdFormat === PRODUCT_PHOTOSHOOT_FORMAT ? () => {} : onRerollScene,
   });
 
   useEffect(() => {
-    if (!selectedScene) return;
-
-    const shouldRunClock = selectedScene.audio.status === "generated" && isAudioPlaying;
-    if (!shouldRunClock) return;
+    if (!isAudioPlaying) return;
 
     let animationFrame = 0;
 
     const tick = () => {
       const currentAudio = audioRef.current;
-      if (currentAudio && !currentAudio.paused) {
-        setPreviewTimeSeconds(currentAudio.currentTime);
-        animationFrame = window.requestAnimationFrame(tick);
-      }
+      if (!currentAudio || currentAudio.paused) return;
+      setPreviewTimeSeconds(currentAudio.currentTime);
+      animationFrame = window.requestAnimationFrame(tick);
     };
 
     animationFrame = window.requestAnimationFrame(tick);
     return () => window.cancelAnimationFrame(animationFrame);
-  }, [
-    isAudioPlaying,
-    selectedScene?.audio.status,
-  ]);
+  }, [isAudioPlaying]);
 
   useEffect(() => {
     if (!brandDetailsOpen) return;
@@ -1845,10 +2016,22 @@ function ResearchConnected() {
     event.preventDefault();
     const hadExistingCanvas = Boolean(selectedScene || adScenes.length);
     // TODO: add an explicit same-URL refresh control if stale site content becomes a real problem.
-    const reusableResearch = getReusableResearchForUrl(url);
+    const reusableResearch = getReusableResearchForUrl(url, {
+      requiresProductImage: selectedAdFormat === "motion-story" || selectedAdFormat === PRODUCT_PHOTOSHOOT_FORMAT,
+    });
     if (reusableResearch) {
       closeBrandDetails();
       closeCaptionPanel();
+      if (selectedAdFormat === PRODUCT_PHOTOSHOOT_FORMAT) {
+        setStatus("ready");
+        setAdStatus("idle");
+        clearSubmitProgress();
+        await generateProductPhotoshootBoard({
+          researchResult: reusableResearch.result || result,
+        });
+        return;
+      }
+      if (!isAdSceneCreateFormat(selectedAdFormat)) return;
       await generateScenesOnly(reusableResearch, selectedAdFormat);
       return;
     }
@@ -1907,14 +2090,27 @@ function ResearchConnected() {
       researchCompleted = true;
       const defaultReviewProductHandles = getDefaultReviewProductHandles(nextResult.productCatalog);
       if (defaultReviewProductHandles.length) setSelectedReviewProductHandles(defaultReviewProductHandles);
-      if (selectedAdFormat === "reviews") {
+      if (selectedAdFormat === PRODUCT_PHOTOSHOOT_FORMAT) {
+        rememberResearchForReuse(nextResult);
+        setResult(nextResult);
+        setStatus("ready");
+        setAdStatus("idle");
+        clearSubmitProgress();
+        canvasActions.finishBusy();
+        await generateProductPhotoshootBoard({
+          researchResult: nextResult,
+          productHandle: getDefaultPhotoshootProductHandle(nextResult.productCatalog),
+        });
+        return;
+      }
+      if (selectedAdFormat === "reviews" || selectedAdFormat === "motion-story") {
         rememberResearchForReuse(nextResult);
         setResult(nextResult);
         setStatus("ready");
         setAdStatus(hadExistingCanvas ? "ready" : "idle");
         setAdStatusNote(defaultReviewProductHandles.length
-          ? "Best sellers are selected. Adjust products if needed, then generate proof ads."
-          : "Choose products if available, then generate proof ads.");
+          ? "Best sellers are selected. Adjust products if needed, then generate."
+          : "Choose products if available, then generate.");
         clearSubmitProgress();
         canvasActions.finishBusy();
         return;
@@ -1923,6 +2119,7 @@ function ResearchConnected() {
       setShowSlowResearchMessage(false);
       setProgressStage("writing-ads");
       canvasActions.beginBusy("ad-generation");
+      if (!isAdSceneCreateFormat(selectedAdFormat)) return;
       const nextGeneration = await generateScenesForResearch(
         nextResult.researchRunId as Id<"researchRuns">,
         getGenerationCount(selectedAdFormat, selectedVideoMemeTemplateId),
@@ -1956,18 +2153,26 @@ function ResearchConnected() {
     }
   };
 
-  const onFormatChange = (format: AdFormatId) => {
+  const onFormatChange = (format: CreateFormatId) => {
     if (format === selectedAdFormat) return;
     setSelectedAdFormat(format);
-    setSelectedCreativePackFormat(isCreativePackFormat(format) ? format : null);
-    const reusableResearch = getReusableResearchForUrl(url);
-    if (format === "reviews") {
-      const defaults = getDefaultReviewProductHandles(reusableResearch?.result?.productCatalog || result?.productCatalog);
-      if (!selectedReviewProductHandles.length && defaults.length) setSelectedReviewProductHandles(defaults);
-      setAdStatusNote(reusableResearch ? "Choose proof products, then generate review ads." : "");
+    setSelectedCreativePackFormat(isAdSceneCreateFormat(format) && isCreativePackFormat(format) ? format : null);
+    const reusableResearch = getReusableResearchForUrl(url, {
+      requiresProductImage: format === "motion-story" || format === PRODUCT_PHOTOSHOOT_FORMAT,
+    });
+    if (format === PRODUCT_PHOTOSHOOT_FORMAT) {
+      const defaultHandle = getDefaultPhotoshootProductHandle(reusableResearch?.result?.productCatalog || result?.productCatalog);
+      if (defaultHandle) setSelectedPhotoshootProductHandle(defaultHandle);
+      setAdStatusNote(reusableResearch ? "Pick a product, then generate six product shots." : "");
       return;
     }
-    if (!reusableResearch || status === "loading" || adStatus === "loading") return;
+    if (format === "reviews" || format === "motion-story") {
+      const defaults = getDefaultReviewProductHandles(reusableResearch?.result?.productCatalog || result?.productCatalog);
+      if (!selectedReviewProductHandles.length && defaults.length) setSelectedReviewProductHandles(defaults);
+      setAdStatusNote(reusableResearch ? "Choose products, then generate this format." : "");
+      return;
+    }
+    if (!reusableResearch || status === "loading" || adStatus === "loading" || !isAdSceneCreateFormat(format)) return;
     void generateScenesOnly(reusableResearch, format);
   };
 
@@ -2400,6 +2605,8 @@ function ResearchConnected() {
       }) as { storyboard: unknown };
       setBrickStoryboard(result.storyboard);
       setBrickStoryboardStatus("ready");
+      setBrickStoryboardAnimationStatus("idle");
+      setBrickStoryboardBuildStatus("idle");
     } catch (nextError) {
       setBrickStoryboardError(getBrickStoryboardErrorMessage(nextError));
     } finally {
@@ -2461,28 +2668,80 @@ function ResearchConnected() {
     }
   };
 
-  const onGenerateProductPhotoshoot = async () => {
-    if (!result?.researchRunId || !selectedPhotoshootProductHandle || productPhotoshootStatus === "loading") return;
+  const generateProductPhotoshootBoard = async ({
+    productHandle,
+    researchResult,
+  }: {
+    productHandle?: string;
+    researchResult?: StoredWebsiteResearchResult | null;
+  } = {}) => {
+    const activeResult = researchResult || result;
+    const activeProductHandle = productHandle || selectedPhotoshootProductHandle || getDefaultPhotoshootProductHandle(activeResult?.productCatalog);
+    if (productPhotoshootStatus === "loading") return;
+    if (!activeResult?.researchRunId || !activeProductHandle) {
+      const message = getProductPhotoshootSetupError(activeResult);
+      if (activeResult) {
+        rememberResearchForReuse(activeResult);
+        setResult(activeResult);
+        setUrl(activeResult.websiteUrl);
+        setPendingProgressFacts(getWebsiteSubmitProgressFacts(activeResult));
+      }
+      setStatus(activeResult?.researchRunId ? "ready" : "error");
+      setAdStatus("error");
+      setAdStatusNote(message);
+      setProductPhotoshootStatus("error");
+      setProductPhotoshootError(message);
+      setError(message);
+      clearSubmitProgress();
+      canvasActions.finishBusy();
+      return;
+    }
+
+    rememberResearchForReuse(activeResult);
+    setResult(activeResult);
+    setUrl(activeResult.websiteUrl);
+    setSelectedPhotoshootProductHandle(activeProductHandle);
+    setStatus("ready");
+    setAdStatus("loading");
+    setProgressStage("writing-ads");
+    setPendingProgressFacts(getWebsiteSubmitProgressFacts(activeResult));
+    setShowSlowResearchMessage(false);
+    setAdStatusNote("Generating product assets from the selected product reference.");
+    canvasActions.beginBusy("product-photoshoot");
     setProductPhotoshootStatus("loading");
     setProductPhotoshootError("");
+    setProductPhotoshootId(null);
+    setProductPhotoshoot(null);
 
     try {
       const nextResult = await generateProductPhotoshootForResearch({
         anonymousId: getCurrentAnonymousId(),
-        researchRunId: result.researchRunId as Id<"researchRuns">,
-        productHandle: selectedPhotoshootProductHandle,
+        researchRunId: activeResult.researchRunId as Id<"researchRuns">,
+        productHandle: activeProductHandle,
       }) as { photoshootId: Id<"productPhotoshoots">; board: ProductPhotoshootBoard };
       setProductPhotoshootId(nextResult.photoshootId);
       setProductPhotoshoot(nextResult.board);
       setProductPhotoshootStatus("ready");
+      setAdStatus("ready");
+      setAdStatusNote("Product photoshoot ready. Regenerate individual shots or download the assets you like.");
+      clearSubmitProgress();
+      canvasActions.finishBusy();
     } catch (nextError) {
       if (!hasUsableProductPhotoshootBoard(productPhotoshoot)) {
         setProductPhotoshootId(null);
         setProductPhotoshoot(null);
       }
       setProductPhotoshootStatus("error");
+      setAdStatus("error");
       setProductPhotoshootError(getProductPhotoshootErrorMessage(nextError));
+      setError(getProductPhotoshootErrorMessage(nextError));
+      clearSubmitProgress();
+      canvasActions.finishBusy();
     }
+  };
+
+  const onGenerateProductPhotoshoot = async () => {
+    await generateProductPhotoshootBoard();
   };
 
   const onRegenerateProductPhotoShot = async (shotIndex: number) => {
@@ -2562,17 +2821,20 @@ function ResearchConnected() {
     }
   };
 
-  const onDownloadMemePng = async () => {
-    if (!selectedScene || selectedScene.format !== "meme" || memeDownloadBusy) return;
+  const onDownloadStaticPng = async () => {
+    if (!selectedScene || !staticPngFormats.has(selectedScene.format) || staticPngDownloadBusy) return;
 
-    const artboard = createEditorScopeRef.current?.querySelector<HTMLElement>("[data-meme-artboard]");
+    const targetSelector = selectedScene.format === "meme"
+      ? "[data-meme-artboard]"
+      : `[data-render-surface="ad"][data-format="${selectedScene.format}"]`;
+    const artboard = createEditorScopeRef.current?.querySelector<HTMLElement>(targetSelector);
     if (!artboard) {
       setRenderStatus("error");
-      setRenderError("Could not find the meme canvas to download.");
+      setRenderError("Could not find the static ad canvas to download.");
       return;
     }
 
-    setMemeDownloadBusy(true);
+    setStaticPngDownloadBusy(true);
     setRenderError("");
 
     try {
@@ -2591,7 +2853,7 @@ function ResearchConnected() {
     } catch (nextError) {
       setRenderError(nextError instanceof Error ? nextError.message : "PNG download failed.");
     } finally {
-      setMemeDownloadBusy(false);
+      setStaticPngDownloadBusy(false);
     }
   };
 
@@ -2611,9 +2873,10 @@ function ResearchConnected() {
           ? `Rendering ${renderProgress}%`
           : "Download video";
   const selectedAudio = selectedScene?.audio.status === "generated" ? selectedScene.audio : null;
+  const selectedMotionStoryMusicUrl = selectedScene?.format === "motion-story" ? selectedScene.layout.musicBed.src : "";
   const selectedBackgroundMusic = selectedScene?.backgroundMusic || null;
-  const hasGeneratedAudio = Boolean(selectedAudio);
-  const playableAudioUrl = selectedAudio?.url || "";
+  const hasGeneratedAudio = Boolean(selectedAudio || selectedMotionStoryMusicUrl);
+  const playableAudioUrl = selectedAudio?.url || selectedMotionStoryMusicUrl;
   const generatedCaptions = selectedAudio?.captions || [];
   const hasEmptyEditedCaption = generatedCaptions.some((caption) => !caption.text.trim());
   const selectedDialogueScript = dialogueScripts[selectedDialogueIndex] || null;
@@ -2632,11 +2895,12 @@ function ResearchConnected() {
     || currentRenderStatus === "queued"
     || currentRenderStatus === "claimed"
     || currentRenderStatus === "rendering";
-  const creativePackDebug = process.env.NODE_ENV !== "production" || (
-    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debugPack") === "1"
+  const productPhotoshootMode = selectedAdFormat === PRODUCT_PHOTOSHOOT_FORMAT;
+  const canGenerateProductPhotoshoot = Boolean(
+    result?.researchRunId &&
+    selectedPhotoshootProductHandle &&
+    result.productCatalog?.products.some((product) => product.handle === selectedPhotoshootProductHandle && product.imageUrl),
   );
-  const creativePackDockVisible = creativePackStatus === "researching" || creativePackGroups.length > 0;
-
   useEffect(() => {
     if (currentRenderStatus === "ready" || currentRenderStatus === "failed" || currentRenderStatus === "error") {
       canvasActions.finishBusy();
@@ -2706,65 +2970,69 @@ function ResearchConnected() {
       </header>
 
       <section className="mx-auto grid max-w-[1500px] items-center gap-8 py-6 sm:gap-10 sm:py-8 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[minmax(300px,0.62fr)_minmax(760px,1.38fr)] lg:gap-8 lg:py-10">
-        <CreateLeftColumn
-          adScenesCount={adScenes.length}
-          adStatus={adStatus}
-          creativePackStatus={creativePackStatus}
-          error={error}
-          format={selectedAdFormat}
-          memeModel={selectedMemeModel}
-          productCatalog={result ? result.productCatalog || null : undefined}
-          selectedReviewProductHandles={selectedReviewProductHandles}
-          jingleStyleId={selectedJingleStyleId}
-          videoMemeTemplateId={selectedVideoMemeTemplateId}
-          visualizerModel={selectedVisualizerModel}
-          onFormatChange={onFormatChange}
-          onGenerateCreativePack={() => void onGenerateCreativePack()}
-          onCancelCreativePack={onCancelCreativePack}
-          onJingleStyleChange={setSelectedJingleStyleId}
-          onMemeModelChange={setSelectedMemeModel}
-          onReviewProductSelectionChange={(handles) => setSelectedReviewProductHandles(normalizeReviewProductHandles(handles))}
-          onVideoMemeTemplateChange={onVideoMemeTemplateChange}
-          onVisualizerModelChange={setSelectedVisualizerModel}
-          onSubmit={onSubmit}
-          onUrlChange={(nextUrl) => {
-            setUrl(nextUrl);
-            setSelectedReviewProductHandles([]);
-            setSelectedPhotoshootProductHandle("");
-            setCreativePackStatus("idle");
-            setCreativePackGroups([]);
-            setSelectedCreativePackFormat(null);
-            setCreativePackMoneyShotActive(false);
-            creativePackUserSelectedRef.current = false;
-            creativePackMoneyShotTriggeredRef.current = false;
-            resetProductPhotoshootState();
-          }}
-          progressFacts={pendingProgressFacts}
-          progressStage={progressStage}
-          showSlowResearchMessage={showSlowResearchMessage}
-          status={status}
-          url={url}
-        />
+        <div>
+          <CreateLeftColumn
+            adScenesCount={adScenes.length}
+            adStatus={adStatus}
+            creativePackGroups={creativePackGroups}
+            creativePackStatus={creativePackStatus}
+            selectedCreativePackFormat={selectedCreativePackFormat}
+            error={error}
+            format={selectedAdFormat}
+            memeModel={selectedMemeModel}
+            productCatalog={result ? result.productCatalog || null : undefined}
+            selectedReviewProductHandles={selectedReviewProductHandles}
+            jingleStyleId={selectedJingleStyleId}
+            videoMemeTemplateId={selectedVideoMemeTemplateId}
+            visualizerModel={selectedVisualizerModel}
+            onFormatChange={onFormatChange}
+            onGenerateCreativePack={() => void onGenerateCreativePack()}
+            onCancelCreativePack={onCancelCreativePack}
+            onCreativePackGroupRetry={(format) => void retryCreativePackGroup(format)}
+            onCreativePackGroupSelect={selectCreativePackGroup}
+            onJingleStyleChange={setSelectedJingleStyleId}
+            onMemeModelChange={setSelectedMemeModel}
+            onReviewProductSelectionChange={(handles) => setSelectedReviewProductHandles(normalizeReviewProductHandles(handles))}
+            onVideoMemeTemplateChange={onVideoMemeTemplateChange}
+            onVisualizerModelChange={setSelectedVisualizerModel}
+            onSubmit={onSubmit}
+            onUrlChange={(nextUrl) => {
+              setUrl(nextUrl);
+              setSelectedReviewProductHandles([]);
+              setSelectedPhotoshootProductHandle("");
+              setCreativePackStatus("idle");
+              setCreativePackGroups([]);
+              setSelectedCreativePackFormat(null);
+              setCreativePackMoneyShotActive(false);
+              creativePackUserSelectedRef.current = false;
+              creativePackMoneyShotTriggeredRef.current = false;
+              resetProductPhotoshootState();
+            }}
+            progressFacts={pendingProgressFacts}
+            progressStage={progressStage}
+            showSlowResearchMessage={showSlowResearchMessage}
+            status={status}
+            url={url}
+          />
+        </div>
 
-        <div className="space-y-4">
-          <div className={creativePackDockVisible
-            ? "grid items-start gap-4 sm:gap-5 xl:grid-cols-[minmax(300px,320px)_minmax(340px,420px)] 2xl:grid-cols-[minmax(300px,320px)_minmax(340px,420px)_minmax(250px,310px)]"
-            : "grid items-center gap-5 sm:gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]"
-          }>
-            {creativePackDockVisible ? (
-              <CreateCreativePackOverview
-                debug={creativePackDebug}
-                groups={creativePackGroups}
-                moneyShotActive={creativePackMoneyShotActive}
-                onCancel={creativePackStatus === "researching" || creativePackStatus === "generating" ? onCancelCreativePack : undefined}
-                selectedFormat={selectedCreativePackFormat}
-                status={creativePackStatus}
-                researchFacts={pendingProgressFacts}
-                researchUrl={url}
-                onSelectGroup={selectCreativePackGroup}
-              />
-            ) : null}
-
+        <div className="relative space-y-4">
+          {productPhotoshootMode ? (
+            <CreateProductPhotoshootWorkspace
+              board={productPhotoshoot}
+              canGenerate={canGenerateProductPhotoshoot}
+              catalog={result?.productCatalog}
+              error={productPhotoshootError}
+              onGenerate={() => void onGenerateProductPhotoshoot()}
+              onRegenerateFailedShots={() => void onRegenerateFailedProductPhotoShots()}
+              onRegenerateShot={(shotIndex) => void onRegenerateProductPhotoShot(shotIndex)}
+              onSelectedProductChange={setSelectedPhotoshootProductHandle}
+              selectedProductHandle={selectedPhotoshootProductHandle}
+              shotBusyIndex={productPhotoshootShotBusyIndex}
+              status={productPhotoshootStatus}
+            />
+          ) : (
+          <div className="grid items-center gap-5 sm:gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]">
             <CreateCanvasColumn
               adScenesCount={adScenes.length}
               isAudioPlaying={isAudioPlaying}
@@ -2780,7 +3048,7 @@ function ResearchConnected() {
               selectedScene={selectedScene}
             />
 
-            <aside className={creativePackDockVisible ? "space-y-4 xl:col-span-2 2xl:col-span-1" : "space-y-4"}>
+            <aside className="space-y-4">
               <CreateQuickActions
                 currentRenderStatus={currentRenderStatus}
                 hasSelectedScene={Boolean(selectedScene)}
@@ -2789,17 +3057,13 @@ function ResearchConnected() {
                 onBuildBrickMusicVideo={() => void onBuildBrickMusicVideo()}
                 onCreateRenderJob={() => void onCreateRenderJob()}
                 onCreateShareLink={() => void onCreateShareLink()}
-                onDownloadMemePng={() => void onDownloadMemePng()}
+                onDownloadStaticPng={() => void onDownloadStaticPng()}
                 onGenerateBrickStoryboard={() => void onGenerateBrickStoryboard()}
-                onGenerateProductPhotoshoot={() => void onGenerateProductPhotoshoot()}
                 onRegenerateBrickShot={(shotIndex) => void onRegenerateBrickShot(shotIndex)}
-                onRegenerateFailedProductPhotoShots={() => void onRegenerateFailedProductPhotoShots()}
-                onRegenerateProductPhotoShot={(shotIndex) => void onRegenerateProductPhotoShot(shotIndex)}
                 onRegenerateVisualizerAudio={onRegenerateVisualizerAudio}
                 onLoadSavedDesign={onLoadSavedDesign}
                 onOpenAudioPanel={onOpenAudioPanel}
                 onSaveSelectedDesign={() => void onSaveSelectedDesign()}
-                onSelectedPhotoshootProductChange={setSelectedPhotoshootProductHandle}
                 onTogglePreviewPlayback={onTogglePreviewPlayback}
                 audioStatus={audioStatus}
                 playableAudioUrl={playableAudioUrl}
@@ -2820,24 +3084,13 @@ function ResearchConnected() {
                   selectedScene.audio.status === "generated" &&
                   sceneIds[selectedSceneIndex],
                 )}
-                canGenerateProductPhotoshoot={Boolean(
-                  result?.researchRunId &&
-                  selectedPhotoshootProductHandle &&
-                  result.productCatalog?.products.some((product) => product.handle === selectedPhotoshootProductHandle && product.imageUrl),
-                )}
-                memeDownloadBusy={memeDownloadBusy}
-                productCatalog={result?.productCatalog}
-                productPhotoshoot={productPhotoshoot}
-                productPhotoshootError={productPhotoshootError}
-                productPhotoshootShotBusyIndex={productPhotoshootShotBusyIndex}
-                productPhotoshootStatus={productPhotoshootStatus}
+                staticPngDownloadBusy={staticPngDownloadBusy}
                 saveCounterLabel={saveCounterLabel}
                 saveError={saveError}
                 savedDesigns={savedDesignItems}
                 saveStatus={saveStatus}
                 saveStatusLabel={saveStatusLabel}
-                selectedFormat={selectedScene?.format || null}
-                selectedPhotoshootProductHandle={selectedPhotoshootProductHandle}
+                selectedFormat={selectedScene?.format || (isAdSceneCreateFormat(selectedAdFormat) ? selectedAdFormat : null)}
                 selectedDesignIsSaved={selectedDesignIsSaved}
                 shareError={shareError}
                 shareStatus={shareStatus}
@@ -2926,9 +3179,11 @@ function ResearchConnected() {
               />
             </aside>
           </div>
+          )}
         </div>
       </section>
 
+      {!productPhotoshootMode ? (
       <div className="mx-auto max-w-7xl pb-14">
         <CreateIdeasList
           scenes={adScenes}
@@ -2936,6 +3191,7 @@ function ResearchConnected() {
           onSelectScene={onSelectAdIdea}
         />
       </div>
+      ) : null}
 
       {result && brandDetailsOpen ? (
         <BrandDumpModal

@@ -12,6 +12,9 @@ export function validateReviewsScene(scene: ReviewsAdScene): FormatValidationRes
   const errors: string[] = [];
   if (scene.format !== "reviews") errors.push("Reviews scene format is invalid.");
   if (scene.layout.preset !== "reviews-proof-card") errors.push("Reviews layout preset is invalid.");
+  if (scene.layout.template && scene.layout.template !== "proof-card" && scene.layout.template !== "minimal-quote") {
+    errors.push("Reviews template is invalid.");
+  }
   if (!scene.brand?.name?.trim()) errors.push("Reviews brand is missing.");
   if (!scene.layout.proof?.text?.trim()) errors.push("Reviews proof is missing.");
   if (!scene.layout.proofText?.trim()) errors.push("Reviews proof text is missing.");

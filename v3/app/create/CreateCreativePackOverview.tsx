@@ -90,6 +90,7 @@ function getSceneThumbnailText(scene: AdScene | undefined) {
   if (scene.format === "video-meme") return scene.layout.slots.caption || scene.layout.slots.setupText || scene.creative.headline;
   if (scene.format === "jingle") return scene.layout.lyrics || scene.creative.headline;
   if (scene.format === "brainrot") return scene.layout.beats[0]?.text || scene.creative.headline;
+  if (scene.format === "motion-story") return scene.layout.beats[0]?.headline || scene.layout.proof.displayText;
   return scene.creative.headline || scene.creative.subheadline;
 }
 

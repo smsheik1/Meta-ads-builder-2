@@ -6,16 +6,19 @@ import {
   CREATIVE_PACK_FORMATS,
   CREATIVE_PACK_SHOWCASE_PRIORITY,
   CREATIVE_PACK_SOFT_TIMEOUT_MS,
+  hasPlayableCreativePackScenes,
+  hydrateCreativePackGroupsFromSceneRows,
   isCreativePackAudioFormat,
   isCreativePackFormat,
   isCreativePackTerminalStatus,
 } from "../features/create/creativePack";
+import type { AdScene } from "../features/scene/types";
 
 const formatIds = CREATIVE_PACK_FORMATS.map((item) => item.format);
 const formatIdStrings = formatIds as readonly string[];
 assert.deepEqual(
   formatIds,
-  ["reviews", "video-meme", "meme", "text-message", "were-sorry", "visualizer", "jingle", "brainrot"],
+  ["reviews", "video-meme", "meme", "text-message", "were-sorry", "visualizer", "motion-story", "jingle", "brainrot"],
   "Creative Pack must include cheap text/image/audio formats in the planned shell-wave order.",
 );
 assert.deepEqual(
@@ -27,6 +30,7 @@ assert.deepEqual(
     "text-message": 4,
     "were-sorry": 4,
     visualizer: 1,
+    "motion-story": 1,
     jingle: 1,
     brainrot: 1,
   },
@@ -39,7 +43,7 @@ assert.equal(CREATIVE_PACK_HARD_TIMEOUT_MS, 60_000, "Creative Pack must mark car
 assert.equal(CREATIVE_PACK_MONEY_SHOT_READY_COUNT, 5, "Creative Pack money-shot threshold must fire when five directions are ready.");
 assert.deepEqual(
   CREATIVE_PACK_SHOWCASE_PRIORITY,
-  ["jingle", "brainrot", "visualizer", "video-meme", "reviews", "text-message", "meme", "were-sorry"],
+  ["jingle", "brainrot", "motion-story", "visualizer", "video-meme", "reviews", "text-message", "meme", "were-sorry"],
   "Creative Pack showcase must prioritize ready audio/video cards before text cards.",
 );
 
@@ -50,7 +54,42 @@ assert.equal(isCreativePackAudioFormat("jingle"), true);
 assert.equal(isCreativePackAudioFormat("brainrot"), true);
 assert.equal(isCreativePackAudioFormat("visualizer"), true);
 assert.equal(isCreativePackAudioFormat("reviews"), false);
+assert.equal(isCreativePackAudioFormat("motion-story"), false);
 assert.equal(isCreativePackTerminalStatus("ready"), true);
 assert.equal(isCreativePackTerminalStatus("needs-retry"), true);
 assert.equal(isCreativePackTerminalStatus("cancelled"), true);
 assert.equal(isCreativePackTerminalStatus("still-cooking"), false);
+
+const fakeScene = (format: string, audioUrl = "") => ({
+  audio: audioUrl ? { status: "generated", url: audioUrl } : { status: "idle" },
+  format,
+}) as AdScene;
+
+const hydratedGroups = hydrateCreativePackGroupsFromSceneRows({
+  rows: [
+    { _id: "old-review-1", format: "reviews", generationBatchId: "old", candidateIndex: 0, updatedAt: 1, scene: fakeScene("reviews") },
+    { _id: "review-2", format: "reviews", generationBatchId: "new", candidateIndex: 1, updatedAt: 5, scene: fakeScene("reviews") },
+    { _id: "review-1", format: "reviews", generationBatchId: "new", candidateIndex: 0, updatedAt: 5, scene: fakeScene("reviews") },
+    { _id: "jingle-1", format: "jingle", generationBatchId: "jingle", candidateIndex: 0, updatedAt: 4, scene: fakeScene("jingle", "https://example.com/jingle.mp3") },
+    { _id: "brainrot-1", format: "brainrot", generationBatchId: "brainrot", candidateIndex: 0, updatedAt: 3, scene: fakeScene("brainrot") },
+  ],
+});
+const hydratedReviews = hydratedGroups.find((group) => group.format === "reviews");
+const hydratedJingle = hydratedGroups.find((group) => group.format === "jingle");
+const hydratedBrainrot = hydratedGroups.find((group) => group.format === "brainrot");
+const hydratedMotionStory = hydratedGroups.find((group) => group.format === "motion-story");
+assert.equal(hydratedGroups.length, CREATIVE_PACK_FORMATS.length, "Reload hydration must rebuild the full pack rail when multiple pack formats exist.");
+assert.deepEqual(hydratedReviews?.sceneIds, ["review-1", "review-2"], "Reload hydration must keep the newest batch for each format and preserve candidate order.");
+assert.equal(hydratedReviews?.status, "ready");
+assert.equal(hydratedJingle?.status, "ready", "Generated audio formats should hydrate as ready.");
+assert.equal(hydratedBrainrot?.status, "needs-retry", "Audio formats without playable audio should hydrate as retryable.");
+assert.equal(hydratedMotionStory?.status, "needs-retry", "Missing pack formats should hydrate as retryable instead of disappearing.");
+assert.deepEqual(
+  hydrateCreativePackGroupsFromSceneRows({
+    rows: [{ _id: "only-review", format: "reviews", generationBatchId: "reviews", candidateIndex: 0, updatedAt: 1, scene: fakeScene("reviews") }],
+  }),
+  [],
+  "A normal single-format generation must not hydrate into a Creative Pack rail.",
+);
+assert.equal(hasPlayableCreativePackScenes("reviews", [fakeScene("reviews")]), true);
+assert.equal(hasPlayableCreativePackScenes("jingle", [fakeScene("jingle")]), false);

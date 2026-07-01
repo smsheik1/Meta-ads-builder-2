@@ -18,7 +18,7 @@ for (const modal of ["brand-dump", "dialogue", "captions"] as const) {
   assert.equal(getCanvasCanReroll(state), false, `Spacebar should be blocked in modal:${modal}.`);
 }
 
-for (const reason of ["website-research", "ad-generation", "audio-generation", "audio-upload", "render"] as const) {
+for (const reason of ["website-research", "ad-generation", "audio-generation", "audio-upload", "product-photoshoot", "render"] as const) {
   const state = reduceCanvasInteractionState(idle, { type: "beginBusy", reason });
   assert.equal(getCanvasCanReroll(state), false, `Spacebar should be blocked in busy:${reason}.`);
 }

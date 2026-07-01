@@ -1,9 +1,10 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { action, internalMutation, query } from "./_generated/server";
+import { action, internalMutation, internalQuery, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import {
   PRODUCT_PHOTOSHOOT_ASPECT_RATIO,
+  PRODUCT_PHOTOSHOOT_FULL_GENERATION_LIMIT,
   PRODUCT_PHOTOSHOOT_IMAGE_MODEL,
   createProductPhotoshootPromptPlan,
   findPhotoshootProduct,
@@ -113,6 +114,20 @@ export const latestForResearch: ReturnType<typeof query> = query({
   },
 });
 
+export const countForSessionResearch: ReturnType<typeof internalQuery> = internalQuery({
+  args: {
+    sessionId: v.string(),
+    researchRunId: v.id("researchRuns"),
+  },
+  handler: async (ctx, { sessionId, researchRunId }) => {
+    const boards = await ctx.db
+      .query("productPhotoshoots")
+      .withIndex("by_researchRunId_and_updatedAt", (q) => q.eq("researchRunId", researchRunId))
+      .collect();
+    return boards.filter((board) => board.sessionId === sessionId).length;
+  },
+});
+
 export const generateForResearch: ReturnType<typeof action> = action({
   args: {
     anonymousId: v.string(),
@@ -126,6 +141,13 @@ export const generateForResearch: ReturnType<typeof action> = action({
     const sessionId = await ctx.runMutation(internal.sessions.ensureAnonymousSession, {
       anonymousId,
     });
+    const generationCount = await ctx.runQuery(internal.productPhotoshoots.countForSessionResearch, {
+      sessionId,
+      researchRunId,
+    });
+    if (generationCount >= PRODUCT_PHOTOSHOOT_FULL_GENERATION_LIMIT) {
+      throw new Error(`Product photoshoot limit reached for this site. You can generate up to ${PRODUCT_PHOTOSHOOT_FULL_GENERATION_LIMIT} full boards per session; use per-shot retry for individual fixes.`);
+    }
     const research = await ctx.runQuery(internal.adSceneStorage.loadResearchForGeneration, {
       researchRunId,
     });

@@ -18,3 +18,7 @@ export const getDefaultReviewProductHandles = (catalog: ProductCatalog | null | 
 
 export const normalizeReviewProductHandles = (handles: string[] = []) => [...new Set(handles.map((handle) => handle.trim()).filter(Boolean))]
   .slice(0, MAX_REVIEW_PRODUCT_SELECTION);
+
+export const productCatalogHasProductImage = (catalog: ProductCatalog | null | undefined) => (
+  (catalog?.products || []).some((product) => Boolean(product.imageUrl))
+);

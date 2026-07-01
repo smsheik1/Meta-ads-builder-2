@@ -1,14 +1,19 @@
-import { Check, Circle, Loader2, Wand2 } from "lucide-react";
+import { Check, Circle, Loader2, Wand2, XCircle } from "lucide-react";
 import {
   NIM_MEME_MODEL_OPTIONS,
   NIM_VISUALIZER_MODEL_OPTIONS,
 } from "@/features/llm/nvidiaNimModels";
 import { JINGLE_STYLES, type JingleStyleId } from "@/features/formats/jingle/prompt";
 import { VIDEO_MEME_TEMPLATES, getVideoMemeTemplate, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
-import type { CreativePackStatus } from "@/features/create/creativePack";
+import {
+  CREATIVE_PACK_FORMATS,
+  type CreativePackFormat,
+  type CreativePackGroupStatus,
+  type CreativePackStatus,
+} from "@/features/create/creativePack";
 import type { ProductCatalog } from "@/features/research/types";
-import type { AdFormatId } from "@/features/scene/types";
 import { CreateReviewsProductPicker } from "./CreateReviewsProductPicker";
+import { PRODUCT_PHOTOSHOOT_FORMAT, type CreateFormatId } from "./createFormats";
 
 type LoadStatus = "idle" | "loading" | "ready" | "error";
 export type WebsiteSubmitProgressStage = "reading-site" | "writing-ads" | "preparing-canvas" | null;
@@ -29,7 +34,25 @@ type ModelOption = {
   label: string;
 };
 
-const getProgressRows = (format: AdFormatId, videoMemeTemplateId: VideoMemeTemplateId = "bear-sniff") => [
+type CreativePackMiniGroup = {
+  format: CreativePackFormat;
+  label: string;
+  status: CreativePackGroupStatus;
+  scenes: unknown[];
+  publicMessage?: string;
+  message?: string;
+};
+
+const creativePackStatusLabel: Record<CreativePackGroupStatus, string> = {
+  pending: "Loading",
+  generating: "Loading",
+  "still-cooking": "Still cooking",
+  ready: "Ready",
+  "needs-retry": "Needs retry",
+  cancelled: "Cancelled",
+};
+
+const getProgressRows = (format: CreateFormatId, videoMemeTemplateId: VideoMemeTemplateId = "bear-sniff") => [
   { id: "reading-site", label: "Reading website" },
   { id: "brand-proof", label: "Pulling brand proof" },
   { id: "selling-angle", label: "Finding selling angle" },
@@ -41,8 +64,12 @@ const getProgressRows = (format: AdFormatId, videoMemeTemplateId: VideoMemeTempl
         ? `Writing ${getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8} video memes`
         : format === "jingle"
           ? "Writing 1 jingle"
+          : format === PRODUCT_PHOTOSHOOT_FORMAT
+            ? "Generating 6 product shots"
           : format === "reviews"
             ? "Writing 4 proof ads"
+            : format === "motion-story"
+              ? "Writing 4 motion stories"
             : "Writing 50 ads",
   },
   { id: "preparing-canvas", label: "Preparing canvas" },
@@ -63,7 +90,7 @@ function getProgressState(
 
 function CreateResearchProgressCard({ facts, format, showSlowResearchMessage, stage, videoMemeTemplateId }: {
   facts: WebsiteSubmitProgressFacts | null;
-  format: AdFormatId;
+  format: CreateFormatId;
   showSlowResearchMessage: boolean;
   stage: WebsiteSubmitProgressStage;
   videoMemeTemplateId: VideoMemeTemplateId;
@@ -156,10 +183,93 @@ function ModelSelect({
   );
 }
 
+function CreativePackMiniStatus({
+  groups,
+  onRetryGroup,
+  onSelectGroup,
+  selectedFormat,
+  status,
+}: {
+  groups: CreativePackMiniGroup[];
+  onRetryGroup?: (format: CreativePackFormat) => void;
+  onSelectGroup?: (format: CreativePackFormat) => void;
+  selectedFormat?: CreativePackFormat | null;
+  status: CreativePackStatus;
+}) {
+  if (!groups.length) return null;
+
+  const groupByFormat = new Map(groups.map((group) => [group.format, group]));
+  const packBusy = status === "researching" || status === "generating";
+
+  return (
+    <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-3" data-creative-pack-mini-status="true">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Creative pack</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+          {groups.filter((group) => group.status === "ready").length}/{CREATIVE_PACK_FORMATS.length} ready
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {CREATIVE_PACK_FORMATS.map(({ format: packFormat, label }) => {
+          const group = groupByFormat.get(packFormat);
+          const groupStatus = group?.status || "pending";
+          const ready = groupStatus === "ready" && Boolean(group?.scenes.length);
+          const selected = selectedFormat === packFormat;
+          const loading = groupStatus === "pending" || groupStatus === "generating" || groupStatus === "still-cooking";
+          const failed = groupStatus === "needs-retry" || groupStatus === "cancelled";
+          const statusText = creativePackStatusLabel[groupStatus];
+          const retryable = failed && !packBusy && Boolean(onRetryGroup);
+          const title = `${label}: ${statusText}${retryable ? ". Retry this format." : ""}`;
+
+          return (
+            <button
+              key={packFormat}
+              type="button"
+              title={title}
+              aria-label={title}
+              disabled={loading || (!ready && !retryable)}
+              onClick={() => {
+                if (ready) onSelectGroup?.(packFormat);
+                else if (retryable) onRetryGroup?.(packFormat);
+              }}
+              className={`flex h-9 min-w-0 items-center gap-2 rounded-2xl border px-2.5 text-left transition ${
+                selected
+                  ? "border-slate-950 bg-slate-950 text-white shadow-lg shadow-slate-950/10"
+                  : ready
+                    ? "border-emerald-100 bg-white text-slate-950 hover:border-emerald-200 hover:shadow-sm"
+                    : failed
+                      ? "border-rose-100 bg-white text-slate-500"
+                      : "border-slate-100 bg-white text-slate-500"
+              } disabled:cursor-default`}
+              data-creative-pack-mini-chip={packFormat}
+              data-creative-pack-mini-chip-status={groupStatus}
+            >
+              <span className="grid size-4 shrink-0 place-items-center">
+                {ready ? (
+                  <Check className={`size-4 ${selected ? "text-white" : "text-emerald-500"}`} />
+                ) : failed ? (
+                  <XCircle className="size-4 text-rose-400" />
+                ) : loading ? (
+                  <Loader2 className="size-4 animate-spin text-indigo-500" />
+                ) : (
+                  <Circle className="size-3 text-slate-300" />
+                )}
+              </span>
+              <span className="min-w-0 truncate text-xs font-black">{failed ? `${label} · Retry` : label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function CreateLeftColumn({
   adScenesCount,
   adStatus,
+  creativePackGroups = [],
   creativePackStatus,
+  selectedCreativePackFormat,
   error,
   format,
   memeModel,
@@ -171,6 +281,8 @@ export function CreateLeftColumn({
   onFormatChange,
   onGenerateCreativePack,
   onCancelCreativePack,
+  onCreativePackGroupRetry,
+  onCreativePackGroupSelect,
   onJingleStyleChange,
   onMemeModelChange,
   onReviewProductSelectionChange,
@@ -186,18 +298,22 @@ export function CreateLeftColumn({
 }: {
   adScenesCount: number;
   adStatus: LoadStatus;
+  creativePackGroups?: CreativePackMiniGroup[];
   creativePackStatus: CreativePackStatus;
+  selectedCreativePackFormat?: CreativePackFormat | null;
   error: string;
-  format: AdFormatId;
+  format: CreateFormatId;
   memeModel: string;
   productCatalog?: ProductCatalog | null;
   selectedReviewProductHandles: string[];
   jingleStyleId: JingleStyleId;
   videoMemeTemplateId: VideoMemeTemplateId;
   visualizerModel: string;
-  onFormatChange: (format: AdFormatId) => void;
+  onFormatChange: (format: CreateFormatId) => void;
   onGenerateCreativePack: () => void;
   onCancelCreativePack: () => void;
+  onCreativePackGroupRetry?: (format: CreativePackFormat) => void;
+  onCreativePackGroupSelect?: (format: CreativePackFormat) => void;
   onJingleStyleChange: (styleId: JingleStyleId) => void;
   onMemeModelChange: (model: string) => void;
   onReviewProductSelectionChange: (handles: string[]) => void;
@@ -214,10 +330,14 @@ export function CreateLeftColumn({
   const creativePackBusy = creativePackStatus === "researching" || creativePackStatus === "generating";
   const singleSubmitBusy = status === "loading" || adStatus === "loading";
   const submitIsBusy = singleSubmitBusy || creativePackBusy;
-  const submitLabel = status === "loading"
+  const submitLabel = creativePackBusy
+    ? "Creative pack running"
+    : status === "loading"
     ? "Reading website"
     : adStatus === "loading"
-      ? format === "meme"
+      ? format === PRODUCT_PHOTOSHOOT_FORMAT
+        ? "Generating shots"
+        : format === "meme"
         ? "Writing memes"
         : format === "were-sorry"
           ? "Writing apologies"
@@ -231,14 +351,20 @@ export function CreateLeftColumn({
                   ? "Writing brainrot"
                   : format === "reviews"
                     ? "Writing proof ads"
+                    : format === "motion-story"
+                      ? "Writing stories"
                     : "Writing ideas"
-      : "Generate ads";
+      : format === PRODUCT_PHOTOSHOOT_FORMAT
+        ? "Generate product shots"
+        : "Generate ads";
   const packLabel = creativePackStatus === "researching"
     ? "Reading site for pack"
     : creativePackStatus === "generating"
       ? "Generating creative pack"
       : "Generate creative pack";
-  const formatHelper = format === "meme"
+  const formatHelper = format === PRODUCT_PHOTOSHOOT_FORMAT
+    ? "Six polished 4:5 product stills for social, website, PDP, email, and organic posts."
+    : format === "meme"
     ? "Twelve brand-aligned meme drafts, ready to spacebar through."
     : format === "were-sorry"
       ? "Eight wink-apology posts for the Instagram trend."
@@ -251,8 +377,15 @@ export function CreateLeftColumn({
             : format === "brainrot"
               ? "Three two-character Minecraft Brainrot scripts with Fish voices."
               : format === "reviews"
-                ? "Four proof ads using only verbatim website reviews and claims."
+                ? "Eight proof ads across review-card and minimal quote styles."
+                : format === "motion-story"
+                  ? "Four premium motion-graphics product stories using a real product and real review."
                 : "Audio visualizer ads with voice, captions, and MP4 export.";
+  const errorPanel = status === "error" || adStatus === "error" ? (
+    <div className="mt-5 rounded-[22px] border border-red-100 bg-red-50 p-4 text-sm font-black leading-6 text-red-700">
+      {error}
+    </div>
+  ) : null;
 
   return (
     <div className="max-w-xl">
@@ -301,7 +434,7 @@ export function CreateLeftColumn({
             className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
             aria-label="Ad format"
             value={format}
-            onChange={(event) => onFormatChange(event.target.value as AdFormatId)}
+            onChange={(event) => onFormatChange(event.target.value as CreateFormatId)}
           >
             {[
               ["meme", "Meme Ad"],
@@ -311,6 +444,8 @@ export function CreateLeftColumn({
               ["text-message", "iMessage Ad"],
               ["brainrot", "Minecraft Brainrot"],
               ["reviews", "Reviews Proof Ad"],
+              ["motion-story", "Motion Story"],
+              [PRODUCT_PHOTOSHOOT_FORMAT, "Product Photoshoot"],
               ["visualizer", "Visualizer Ad"],
             ].map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
@@ -381,7 +516,7 @@ export function CreateLeftColumn({
           </label>
         ) : null}
 
-        {format === "reviews" ? (
+        {format === "reviews" || format === "motion-story" ? (
           <CreateReviewsProductPicker
             catalog={productCatalog}
             selectedHandles={selectedReviewProductHandles}
@@ -422,20 +557,26 @@ export function CreateLeftColumn({
           ) : null}
         </div>
 
-        <CreateResearchProgressCard
-          facts={progressFacts}
-          format={format}
-          showSlowResearchMessage={showSlowResearchMessage}
-          stage={progressStage}
-          videoMemeTemplateId={videoMemeTemplateId}
-        />
+        {creativePackGroups.length ? (
+          <CreativePackMiniStatus
+            groups={creativePackGroups}
+            onRetryGroup={onCreativePackGroupRetry}
+            onSelectGroup={onCreativePackGroupSelect}
+            selectedFormat={selectedCreativePackFormat}
+            status={creativePackStatus}
+          />
+        ) : (
+          <CreateResearchProgressCard
+            facts={progressFacts}
+            format={format}
+            showSlowResearchMessage={showSlowResearchMessage}
+            stage={progressStage}
+            videoMemeTemplateId={videoMemeTemplateId}
+          />
+        )}
       </form>
 
-      {status === "error" || adStatus === "error" ? (
-        <div className="mt-5 rounded-[22px] border border-red-100 bg-red-50 p-4 text-sm font-black leading-6 text-red-700">
-          {error}
-        </div>
-      ) : null}
+      {errorPanel}
     </div>
   );
 }

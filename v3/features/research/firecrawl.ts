@@ -61,6 +61,7 @@ export const DEFAULT_JINA_MIN_USEFUL_LINES = 8;
 const MAX_MARKDOWN_CHARS = 24_000;
 const FIRECRAWL_TIMEOUT_MESSAGE = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const chromeTextPattern = /\b(skip to content|cart is empty|continue shopping|log in|login|check out|checkout|add to cart|quantity|subtotal|loading|have an account|gift message|discount code|multiple addresses?|free shipping not applied|regular price|sale price|sold out|password|newsletter|privacy policy|terms of service)\b/i;
+const siteErrorTextPattern = /\b(something went wrong|try refreshing(?: the)?(?: page)?|site still doesn'?t load|this page couldn'?t load|page couldn'?t load|unknown due to site error|technical difficulties|site is currently experiencing technical difficulties)\b/i;
 const standalonePricePattern = /^(?:from\s+)?\$[\d,.]+(?:\s*-\s*\$[\d,.]+)?$/i;
 const imageAltNoisePattern = /\b(decorative|background image|hero image|image|photo|picture|screenshot|graphic|illustration)\b/i;
 
@@ -87,6 +88,7 @@ const cleanText = (value: unknown, maxLength = 260) => String(value ?? "")
 export const isWebsiteChromeText = (value: unknown) => {
   const cleaned = cleanText(value, 260);
   if (!cleaned) return true;
+  if (siteErrorTextPattern.test(cleaned)) return true;
   if (standalonePricePattern.test(cleaned)) return true;
   if (/^_?\\?\*+/.test(cleaned)) return true;
   if (/^!/.test(cleaned)) return true;
@@ -115,7 +117,10 @@ const metadataText = (
   keys: string[],
   fallback = "",
   maxLength = 260,
-) => cleanText(keys.map((key) => metadata[key]).find(Boolean) || fallback, maxLength);
+) => cleanText(keys.map((key) => metadata[key]).find((value) => {
+  const text = cleanText(value, maxLength);
+  return text && !isWebsiteChromeText(text);
+}) || fallback, maxLength);
 
 const rawMetadataText = (
   metadata: Record<string, unknown>,
