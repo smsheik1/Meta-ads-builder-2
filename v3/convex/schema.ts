@@ -8,6 +8,20 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_anonymousId", ["anonymousId"]),
 
+  waitlistSignups: defineTable({
+    email: v.string(),
+    source: v.optional(v.string()),
+    referrer: v.optional(v.string()),
+    utmSource: v.optional(v.string()),
+    utmMedium: v.optional(v.string()),
+    utmCampaign: v.optional(v.string()),
+    utmContent: v.optional(v.string()),
+    ref: v.optional(v.string()),
+    userAgent: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_email", ["email"]),
+
   researchRuns: defineTable({
     sessionId: v.string(),
     url: v.string(),
