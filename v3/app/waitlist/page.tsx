@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { WaitlistPage } from "./waitlist/WaitlistPage";
+import { WaitlistPage } from "./WaitlistPage";
 
 export const metadata: Metadata = {
   title: "Wiggly Early Access",
   description: "One URL. Eight ad formats. Sixty seconds.",
 };
 
-export default function HomePage() {
+export default function Page() {
   return <WaitlistPage />;
 }
 
