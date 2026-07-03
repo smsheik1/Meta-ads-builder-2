@@ -84,6 +84,12 @@ select {
   text-shadow: none;
 }
 
+.wiggly-preview-bounce {
+  animation: wigglyPreviewBounce 880ms ease-in-out infinite;
+  transform-origin: center bottom;
+  will-change: transform;
+}
+
 .wiggly-reroll-shine {
   isolation: isolate;
   overflow: hidden;
@@ -275,8 +281,20 @@ select {
   }
 }
 
+@keyframes wigglyPreviewBounce {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  45% {
+    transform: translateY(-8px) scale(1.03);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wiggly-idle-bar,
+  .wiggly-preview-bounce,
   .wiggly-reroll-shine,
   .wiggly-reroll-shine::before,
   .wiggly-reroll-shine::after {

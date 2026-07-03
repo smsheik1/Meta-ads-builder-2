@@ -2,8 +2,11 @@ import {
   AudioLines,
   BookmarkPlus,
   Check,
+  Clapperboard,
   Download,
   ExternalLink,
+  Film,
+  Image as ImageIcon,
   Loader2,
   Play,
   Share2,
@@ -22,7 +25,7 @@ import {
 } from "@/components/ui/sheet";
 import type { SavedAdSceneDesign } from "@/features/create/savedDesigns";
 import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
-import type { AdFormatId } from "@/features/scene/types";
+import type { AdFormatId, ThreeDBreakdownAdScene } from "@/features/scene/types";
 import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
 
 type SaveStatus = "idle" | "loading" | "ready" | "error";
@@ -46,6 +49,11 @@ export function CreateQuickActions({
   onDownloadStaticPng,
   onGenerateBrickStoryboard,
   onRegenerateBrickShot,
+  onRegenerateBrickShotVideo,
+  onGenerateThreeDImages,
+  onRegenerateThreeDImage,
+  onAnimateThreeDClips,
+  onRegenerateThreeDClip,
   onRegenerateVisualizerAudio,
   onLoadSavedDesign,
   onOpenAudioPanel,
@@ -64,8 +72,15 @@ export function CreateQuickActions({
   brickStoryboardBuildStatus,
   brickStoryboardError,
   brickStoryboardShotBusyIndex,
+  brickStoryboardVideoBusyIndex,
   brickStoryboardStatus,
   canGenerateBrickStoryboard,
+  threeDAnimationStatus,
+  threeDError,
+  threeDImageBusyIndex,
+  threeDImageStatus,
+  threeDScene,
+  threeDVideoBusyIndex,
   staticPngDownloadBusy,
   saveCounterLabel,
   saveError,
@@ -88,6 +103,11 @@ export function CreateQuickActions({
   onDownloadStaticPng: () => void;
   onGenerateBrickStoryboard: () => void;
   onRegenerateBrickShot: (shotIndex: number) => void;
+  onRegenerateBrickShotVideo: (shotIndex: number) => void;
+  onGenerateThreeDImages: () => void;
+  onRegenerateThreeDImage: (shotIndex: number) => void;
+  onAnimateThreeDClips: () => void;
+  onRegenerateThreeDClip: (shotIndex: number) => void;
   onRegenerateVisualizerAudio: () => void;
   onLoadSavedDesign: (design: SavedAdSceneDesign) => void;
   onOpenAudioPanel: () => void;
@@ -106,8 +126,15 @@ export function CreateQuickActions({
   brickStoryboardBuildStatus: BrickStoryboardStatus;
   brickStoryboardError: string;
   brickStoryboardShotBusyIndex: number | null;
+  brickStoryboardVideoBusyIndex: number | null;
   brickStoryboardStatus: BrickStoryboardStatus;
   canGenerateBrickStoryboard: boolean;
+  threeDAnimationStatus: BrickStoryboardStatus;
+  threeDError: string;
+  threeDImageBusyIndex: number | null;
+  threeDImageStatus: BrickStoryboardStatus;
+  threeDScene: ThreeDBreakdownAdScene | null;
+  threeDVideoBusyIndex: number | null;
   staticPngDownloadBusy: boolean;
   saveCounterLabel: string;
   saveError: string;
@@ -124,15 +151,20 @@ export function CreateQuickActions({
   const hasPlayableAudio = Boolean(playableAudioUrl);
   const generatedAudioPending = !hasPlayableAudio && audioStatus === "loading";
   const visualizerAudioReady = selectedFormat === "visualizer" && hasPlayableAudio;
-  const shareSupported = selectedFormat === "visualizer" || selectedFormat === "text-message" || selectedFormat === "motion-story" || ((selectedFormat === "jingle" || selectedFormat === "brainrot") && hasPlayableAudio);
-  const showBrickStoryboard = selectedFormat === "jingle" && hasPlayableAudio;
+  const shareSupported = selectedFormat === "visualizer" || selectedFormat === "text-message" || selectedFormat === "motion-story" || ((selectedFormat === "jingle" || selectedFormat === "brainrot" || selectedFormat === "three-d-breakdown") && hasPlayableAudio);
+  const showBrickStoryboard = selectedFormat === "jingle";
+  const showThreeDBreakdownAssembly = selectedFormat === "three-d-breakdown" && threeDScene;
+  const threeDClipsReady = Boolean(threeDScene?.layout.shots.every((shot) => shot.video?.status === "ready"));
+  const threeDRenderBlocked = selectedFormat === "three-d-breakdown" && !threeDClipsReady;
   const renderWorkerOffline = !staticPngSelected && renderWorkerHealthy === false;
-  const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline;
+  const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline || threeDRenderBlocked;
   const activeRenderDownloadUrl = staticPngSelected ? "" : renderDownloadUrl;
   const downloadLabel = staticPngSelected ? "PNG" : "MP4";
   const downloadTitle = staticPngSelected
     ? "Download this static ad as a PNG"
-    : renderWorkerOffline
+    : threeDRenderBlocked
+      ? "Generate 3D images and animate clips before building the MP4."
+      : renderWorkerOffline
       ? "Start npm run dev from the repo root to run the render worker."
       : "Download this ad as an MP4";
   const banners = [
@@ -270,12 +302,32 @@ export function CreateQuickActions({
           brickStoryboardBuildStatus={brickStoryboardBuildStatus}
           brickStoryboardError={brickStoryboardError}
           brickStoryboardShotBusyIndex={brickStoryboardShotBusyIndex}
+          brickStoryboardVideoBusyIndex={brickStoryboardVideoBusyIndex}
           brickStoryboardStatus={brickStoryboardStatus}
           canGenerateBrickStoryboard={canGenerateBrickStoryboard}
           onAnimateBrickStoryboard={onAnimateBrickStoryboard}
           onBuildBrickMusicVideo={onBuildBrickMusicVideo}
           onGenerateBrickStoryboard={onGenerateBrickStoryboard}
           onRegenerateBrickShot={onRegenerateBrickShot}
+          onRegenerateBrickShotVideo={onRegenerateBrickShotVideo}
+        />
+      ) : null}
+
+      {showThreeDBreakdownAssembly ? (
+        <ThreeDBreakdownAssemblyCard
+          animationStatus={threeDAnimationStatus}
+          currentRenderStatus={currentRenderStatus}
+          error={threeDError}
+          imageBusyIndex={threeDImageBusyIndex}
+          imageStatus={threeDImageStatus}
+          onAnimateClips={onAnimateThreeDClips}
+          onBuildFinalVideo={onCreateRenderJob}
+          onGenerateImages={onGenerateThreeDImages}
+          onRegenerateClip={onRegenerateThreeDClip}
+          onRegenerateImage={onRegenerateThreeDImage}
+          renderBusy={renderBusy}
+          scene={threeDScene}
+          videoBusyIndex={threeDVideoBusyIndex}
         />
       ) : null}
 
@@ -337,6 +389,198 @@ export function CreateQuickActions({
           </ScrollArea>
         </SheetContent>
       </Sheet>
+    </section>
+  );
+}
+
+function statusPill(status: BrickStoryboardStatus) {
+  if (status === "ready") return "Ready";
+  if (status === "loading") return "Building";
+  if (status === "error") return "Failed";
+  return "Needs work";
+}
+
+function ThreeDBreakdownAssemblyCard({
+  animationStatus,
+  currentRenderStatus,
+  error,
+  imageBusyIndex,
+  imageStatus,
+  onAnimateClips,
+  onBuildFinalVideo,
+  onGenerateImages,
+  onRegenerateClip,
+  onRegenerateImage,
+  renderBusy,
+  scene,
+  videoBusyIndex,
+}: {
+  animationStatus: BrickStoryboardStatus;
+  currentRenderStatus: string;
+  error: string;
+  imageBusyIndex: number | null;
+  imageStatus: BrickStoryboardStatus;
+  onAnimateClips: () => void;
+  onBuildFinalVideo: () => void;
+  onGenerateImages: () => void;
+  onRegenerateClip: (shotIndex: number) => void;
+  onRegenerateImage: (shotIndex: number) => void;
+  renderBusy: boolean;
+  scene: ThreeDBreakdownAdScene;
+  videoBusyIndex: number | null;
+}) {
+  const imagesReady = scene.layout.shots.every((shot) => shot.image?.status === "ready");
+  const videosReady = scene.layout.shots.every((shot) => shot.video?.status === "ready");
+  const finalReady = currentRenderStatus === "ready";
+  const finalStatus = renderBusy ? "Building" : finalReady ? "Final ready" : videosReady ? "Needs MP4" : "Needs clips";
+  const storyDirectionNumber = (scene.metadata.candidateIndex ?? 0) + 1;
+  const stepClass = "rounded-2xl border border-slate-200 bg-slate-50 p-3";
+
+  return (
+    <section className="rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/6" data-three-d-breakdown-assembly-card="true">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Assembly line</p>
+          <h3 className="mt-1 text-lg font-black text-slate-950">3D Breakdown</h3>
+          <p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">
+            Story direction {storyDirectionNumber}. Press Spacebar to compare before generating images.
+          </p>
+        </div>
+        <Badge variant="outline" className="rounded-full text-[10px] font-black uppercase">
+          {videosReady ? "Clips ready" : imagesReady ? "Images ready" : "Script ready"}
+        </Badge>
+      </div>
+
+      <div className="space-y-2">
+        <div className={stepClass}>
+          <div className="flex items-center gap-2 text-sm font-black text-slate-950">
+            <Clapperboard className="size-4" />
+            Script
+            <Badge className="ml-auto rounded-full bg-emerald-50 text-[10px] font-black text-emerald-700">Ready</Badge>
+          </div>
+          <div className="mt-2 space-y-1.5">
+            {scene.layout.scriptBeats.map((beat) => (
+              <div key={`${beat.role}-${beat.startMs}`} className="rounded-xl bg-white px-3 py-2" data-three-d-script-beat="true">
+                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">{beat.role.replace(/-/g, " ")}</p>
+                <p className="mt-1 text-xs font-semibold leading-4 text-slate-600">{beat.narration}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className={stepClass}>
+          <div className="flex items-center gap-2 text-sm font-black text-slate-950">
+            <ImageIcon className="size-4" />
+            Images
+            <Badge variant="outline" className="ml-auto rounded-full text-[10px] font-black uppercase">
+              {statusPill(imageStatus)}
+            </Badge>
+          </div>
+          <div className="mt-3 grid gap-2">
+            {scene.layout.shots.map((shot) => (
+              <div key={shot.shotIndex} className="rounded-2xl border border-slate-200 bg-white p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Shot {shot.shotIndex}</p>
+                    <p className="mt-1 line-clamp-2 text-xs font-black leading-4 text-slate-950">{shot.sceneDescription}</p>
+                  </div>
+                  <Badge variant={shot.image?.status === "ready" ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
+                    {shot.image?.status || "idle"}
+                  </Badge>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-2 h-9 w-full rounded-xl text-[10px] font-black uppercase tracking-[0.14em]"
+                  onClick={() => onRegenerateImage(shot.shotIndex)}
+                  disabled={imageBusyIndex !== null || imageStatus === "loading"}
+                >
+                  {imageBusyIndex === shot.shotIndex ? <Loader2 className="mr-2 size-3.5 animate-spin" /> : null}
+                  New image
+                </Button>
+              </div>
+            ))}
+          </div>
+          <Button
+            type="button"
+            className="mt-3 h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
+            onClick={onGenerateImages}
+            disabled={imageStatus === "loading"}
+          >
+            {imageStatus === "loading" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImageIcon className="mr-2 size-4" />}
+            Generate 3D images
+          </Button>
+        </div>
+
+        <div className={stepClass}>
+          <div className="flex items-center gap-2 text-sm font-black text-slate-950">
+            <Film className="size-4" />
+            Animation
+            <Badge variant="outline" className="ml-auto rounded-full text-[10px] font-black uppercase">
+              {statusPill(animationStatus)}
+            </Badge>
+          </div>
+          <div className="mt-3 grid gap-2">
+            {scene.layout.shots.map((shot) => (
+              <div key={shot.shotIndex} className="rounded-2xl border border-slate-200 bg-white p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs font-black text-slate-950">Shot {shot.shotIndex}</p>
+                  <Badge variant={shot.video?.status === "ready" ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
+                    {shot.video?.status || "idle"}
+                  </Badge>
+                </div>
+                {shot.video?.status === "failed" && shot.video.error ? (
+                  <p className="mt-2 line-clamp-3 text-[11px] font-bold leading-4 text-red-600">{shot.video.error}</p>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-2 h-9 w-full rounded-xl text-[10px] font-black uppercase tracking-[0.14em]"
+                  onClick={() => onRegenerateClip(shot.shotIndex)}
+                  disabled={videoBusyIndex !== null || animationStatus === "loading" || shot.image?.status !== "ready"}
+                >
+                  {videoBusyIndex === shot.shotIndex ? <Loader2 className="mr-2 size-3.5 animate-spin" /> : null}
+                  Retry animation
+                </Button>
+              </div>
+            ))}
+          </div>
+          <Button
+            type="button"
+            className="mt-3 h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
+            onClick={onAnimateClips}
+            disabled={!imagesReady || animationStatus === "loading"}
+          >
+            {animationStatus === "loading" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Film className="mr-2 size-4" />}
+            Animate clips
+          </Button>
+        </div>
+
+        <div className={stepClass}>
+          <div className="flex items-center gap-2 text-sm font-black text-slate-950">
+            <Download className="size-4" />
+            Final Video
+            <Badge variant={finalReady ? "default" : "outline"} className="ml-auto rounded-full text-[10px] font-black uppercase">
+              {finalStatus}
+            </Badge>
+          </div>
+          <Button
+            type="button"
+            className="mt-3 h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
+            onClick={onBuildFinalVideo}
+            disabled={!videosReady || renderBusy}
+          >
+            {renderBusy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Download className="mr-2 size-4" />}
+            Build final video
+          </Button>
+        </div>
+      </div>
+
+      {error ? (
+        <p className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
+          {error}
+        </p>
+      ) : null}
     </section>
   );
 }

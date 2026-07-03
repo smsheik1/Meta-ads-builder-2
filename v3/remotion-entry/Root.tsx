@@ -18,7 +18,7 @@ export const getAdSceneDurationInFrames = (
   if (scene.format === "video-meme") {
     return Math.ceil(Math.max(1, scene.layout.durationSeconds, audioDurationSeconds + 0.35) * fps);
   }
-  if (scene.format === "motion-story") {
+  if (scene.format === "motion-story" || scene.format === "three-d-breakdown") {
     return Math.ceil((scene.layout.durationMs / 1000) * fps);
   }
   const extraSeconds = scene.format === "brainrot" ? brainrotCtaDurationMs / 1000 : 0.35;

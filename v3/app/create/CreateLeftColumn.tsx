@@ -12,6 +12,7 @@ import {
   type CreativePackStatus,
 } from "@/features/create/creativePack";
 import type { ProductCatalog } from "@/features/research/types";
+import { CreateFormatCompareSheet, SelectedCreateFormatBento } from "./CreateFormatGuide";
 import { CreateReviewsProductPicker } from "./CreateReviewsProductPicker";
 import { PRODUCT_PHOTOSHOOT_FORMAT, type CreateFormatId } from "./createFormats";
 
@@ -70,7 +71,9 @@ const getProgressRows = (format: CreateFormatId, videoMemeTemplateId: VideoMemeT
             ? "Writing 4 proof ads"
             : format === "motion-story"
               ? "Writing 4 motion stories"
-            : "Writing 50 ads",
+              : format === "three-d-breakdown"
+                ? "Writing 2 story directions"
+                : "Writing 50 ads",
   },
   { id: "preparing-canvas", label: "Preparing canvas" },
 ] as const;
@@ -88,7 +91,8 @@ function getProgressState(
   return "pending";
 }
 
-function CreateResearchProgressCard({ facts, format, showSlowResearchMessage, stage, videoMemeTemplateId }: {
+function CreateResearchProgressCard({ adGenerationStatusLabel, facts, format, showSlowResearchMessage, stage, videoMemeTemplateId }: {
+  adGenerationStatusLabel: string;
   facts: WebsiteSubmitProgressFacts | null;
   format: CreateFormatId;
   showSlowResearchMessage: boolean;
@@ -125,7 +129,11 @@ function CreateResearchProgressCard({ facts, format, showSlowResearchMessage, st
         })}
       </div>
 
-      {showSlowResearchMessage ? (
+      {adGenerationStatusLabel ? (
+        <p className="mt-3 rounded-2xl bg-white px-3 py-2 text-xs font-semibold leading-5 text-slate-500">
+          {adGenerationStatusLabel}
+        </p>
+      ) : showSlowResearchMessage ? (
         <p className="mt-3 rounded-2xl bg-white px-3 py-2 text-xs font-semibold leading-5 text-slate-500">
           Still reading. Some sites take longer, but your canvas will update when ads are ready.
         </p>
@@ -290,6 +298,7 @@ export function CreateLeftColumn({
   onVisualizerModelChange,
   onSubmit,
   onUrlChange,
+  adGenerationStatusLabel,
   progressFacts,
   progressStage,
   showSlowResearchMessage,
@@ -321,6 +330,7 @@ export function CreateLeftColumn({
   onVisualizerModelChange: (model: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onUrlChange: (url: string) => void;
+  adGenerationStatusLabel: string;
   progressFacts: WebsiteSubmitProgressFacts | null;
   progressStage: WebsiteSubmitProgressStage;
   showSlowResearchMessage: boolean;
@@ -353,7 +363,9 @@ export function CreateLeftColumn({
                     ? "Writing proof ads"
                     : format === "motion-story"
                       ? "Writing stories"
-                    : "Writing ideas"
+                      : format === "three-d-breakdown"
+                        ? "Writing 3D stories"
+                        : "Writing ideas"
       : format === PRODUCT_PHOTOSHOOT_FORMAT
         ? "Generate product shots"
         : "Generate ads";
@@ -362,39 +374,30 @@ export function CreateLeftColumn({
     : creativePackStatus === "generating"
       ? "Generating creative pack"
       : "Generate creative pack";
-  const formatHelper = format === PRODUCT_PHOTOSHOOT_FORMAT
-    ? "Six polished 4:5 product stills for social, website, PDP, email, and organic posts."
-    : format === "meme"
-    ? "Twelve brand-aligned meme drafts, ready to spacebar through."
-    : format === "were-sorry"
-      ? "Eight wink-apology posts for the Instagram trend."
-      : format === "video-meme"
-        ? "Eight reaction captions for the selected video meme."
-        : format === "jingle"
-          ? "One short hip hop brand jingle. No extra music generations."
-          : format === "text-message"
-            ? "Six iMessage-style screenshots that feel like a real customer text."
-            : format === "brainrot"
-              ? "Three two-character Minecraft Brainrot scripts with Fish voices."
-              : format === "reviews"
-                ? "Eight proof ads across review-card and minimal quote styles."
-                : format === "motion-story"
-                  ? "Four premium motion-graphics product stories using a real product and real review."
-                : "Audio visualizer ads with voice, captions, and MP4 export.";
   const errorPanel = status === "error" || adStatus === "error" ? (
     <div className="mt-5 rounded-[22px] border border-red-100 bg-red-50 p-4 text-sm font-black leading-6 text-red-700">
       {error}
     </div>
   ) : null;
+  const workingMode = Boolean(
+    url.trim() ||
+      adScenesCount ||
+      progressStage ||
+      creativePackStatus !== "idle" ||
+      productCatalog?.products?.length,
+  );
+  const pillLabel = adScenesCount ? "Ads ready to review" : workingMode ? "Website ready" : "Add a website first";
 
   return (
     <div className="max-w-xl">
       <p className={pillClass}>
         <Wand2 className="size-4 text-[#4F46E5]" />
-        {adScenesCount ? "Ads ready to review" : "Add a website first"}
+        {pillLabel}
       </p>
       <h1
-        className="wiggly-hero-headline mt-4 text-4xl font-black leading-tight tracking-normal text-slate-950 sm:text-5xl lg:text-7xl"
+        className={`wiggly-hero-headline mt-4 text-4xl font-black leading-tight tracking-normal text-slate-950 sm:text-5xl ${
+          workingMode ? "lg:text-5xl" : "lg:text-7xl"
+        }`}
         style={{
           animation: "none",
           background: "none",
@@ -407,13 +410,15 @@ export function CreateLeftColumn({
       >
         Make ads without learning editing.
       </h1>
-      <p className="mt-4 max-w-full text-base font-semibold leading-7 text-slate-600 sm:mt-6 sm:text-lg sm:leading-8 md:max-w-lg">
+      <p className={`mt-4 max-w-full text-base font-semibold leading-7 text-slate-600 sm:text-lg sm:leading-8 md:max-w-lg ${
+        workingMode ? "hidden 2xl:block" : "sm:mt-6"
+      }`}>
         Wiggly reads the site, finds the selling angle, and fills the canvas with polished ads you can preview, save, download, or edit.
       </p>
 
       <form
         onSubmit={onSubmit}
-        className="mt-8 space-y-3 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8"
+        className={`${workingMode ? "mt-5" : "mt-8"} space-y-3 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/8`}
       >
         <label className="block" htmlFor="website-url">
           <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Website</span>
@@ -427,8 +432,11 @@ export function CreateLeftColumn({
           />
         </label>
 
-        <label className="block">
-          <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Format</span>
+        <div className="block">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Format</span>
+            <CreateFormatCompareSheet format={format} onFormatChange={onFormatChange} />
+          </div>
           <select
             suppressHydrationWarning
             className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-900 outline-none transition focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
@@ -445,14 +453,13 @@ export function CreateLeftColumn({
               ["brainrot", "Minecraft Brainrot"],
               ["reviews", "Reviews Proof Ad"],
               ["motion-story", "Motion Story"],
+              ["three-d-breakdown", "3D Breakdown"],
               [PRODUCT_PHOTOSHOOT_FORMAT, "Product Photoshoot"],
               ["visualizer", "Visualizer Ad"],
             ].map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
-          <span className="mt-1.5 block min-h-4 text-xs font-semibold text-slate-400">
-            {formatHelper}
-          </span>
-        </label>
+          <SelectedCreateFormatBento format={format} />
+        </div>
 
         {format === "visualizer" ? (
           <ModelSelect
@@ -567,6 +574,7 @@ export function CreateLeftColumn({
           />
         ) : (
           <CreateResearchProgressCard
+            adGenerationStatusLabel={adGenerationStatusLabel}
             facts={progressFacts}
             format={format}
             showSlowResearchMessage={showSlowResearchMessage}

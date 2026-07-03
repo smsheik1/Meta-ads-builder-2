@@ -2,7 +2,7 @@ import type { BrandAdAngle, BrandSnapshot, ResearchReceipts } from "../research/
 
 export const AD_SCENE_VERSION = 1 as const;
 
-export type AdFormatId = "visualizer" | "meme" | "were-sorry" | "video-meme" | "jingle" | "text-message" | "brainrot" | "reviews" | "motion-story";
+export type AdFormatId = "visualizer" | "meme" | "were-sorry" | "video-meme" | "jingle" | "text-message" | "brainrot" | "reviews" | "motion-story" | "three-d-breakdown";
 
 export type HeadlineType =
   | "painful_moment"
@@ -358,6 +358,102 @@ export type MotionStoryAdScene = AdSceneBase<
   }
 >;
 
+export type ThreeDBreakdownMusicBedId = "polished-upbeat" | "warm-premium" | "playful-retail";
+export type ThreeDBreakdownScriptBeatRole = "consequence" | "context" | "mechanism" | "revelation" | "punchline";
+export type ThreeDBreakdownShotRole = "consequence" | "mechanism" | "revelation";
+export type ThreeDBreakdownMediaStatus = "idle" | "generating" | "ready" | "failed";
+export type ThreeDBreakdownEvidenceUseType = "feature" | "mechanism" | "offer" | "review" | "material" | "process" | "guarantee" | "shipping" | "proof" | "category" | "claim";
+export type ThreeDBreakdownRevealPattern = "exploded-product" | "xray-cutaway" | "chaos-to-order" | "physicalized-ui" | "invisible-problem" | "miniature-world" | "process-pipeline" | "proof-blocks" | "before-after-reconstruction" | "impact-chain";
+export type ThreeDBreakdownPrimarySiteType = "ecommerce" | "saas" | "local-service" | "restaurant-food" | "nonprofit" | "portfolio" | "unclear";
+export type ThreeDBreakdownRiskFlag = "health" | "medical" | "legal" | "financial" | "beauty" | "regulated";
+export type ThreeDBreakdownClaimRisk = "low" | "medium" | "high";
+
+export type ThreeDBreakdownScriptBeat = {
+  role: ThreeDBreakdownScriptBeatRole;
+  narration: string;
+  startMs: number;
+  endMs: number;
+};
+
+export type ThreeDBreakdownMediaRef = {
+  status: ThreeDBreakdownMediaStatus;
+  url?: string;
+  storageId?: string;
+  mimeType?: string;
+  error?: string;
+};
+
+export type ThreeDBreakdownShot = {
+  shotIndex: 1 | 2 | 3;
+  role: ThreeDBreakdownShotRole;
+  captionText: string;
+  sceneDescription: string;
+  explainerDevice: string;
+  physicalAction: string;
+  imagePrompt: string;
+  animationPrompt: string;
+  image?: ThreeDBreakdownMediaRef;
+  video?: ThreeDBreakdownMediaRef;
+};
+
+export type ThreeDBreakdownAdScene = AdSceneBase<
+  "three-d-breakdown",
+  AdSceneStyleBase,
+  {
+    preset: "three-d-breakdown";
+    durationMs: number;
+    scriptBeats: [
+      ThreeDBreakdownScriptBeat & { role: "consequence" },
+      ThreeDBreakdownScriptBeat & { role: "context" },
+      ThreeDBreakdownScriptBeat & { role: "mechanism" },
+      ThreeDBreakdownScriptBeat & { role: "revelation" },
+      ThreeDBreakdownScriptBeat & { role: "punchline" },
+    ];
+    shots: [
+      ThreeDBreakdownShot & { shotIndex: 1; role: "consequence" },
+      ThreeDBreakdownShot & { shotIndex: 2; role: "mechanism" },
+      ThreeDBreakdownShot & { shotIndex: 3; role: "revelation" },
+    ];
+    musicBed: {
+      id: ThreeDBreakdownMusicBedId;
+      src: string;
+      volume: 0.12;
+      loop: true;
+    };
+    storyContract: {
+      primarySiteType: ThreeDBreakdownPrimarySiteType;
+      riskFlags: ThreeDBreakdownRiskFlag[];
+      visualWorld: string;
+      lighting: string;
+      cameraStyle: string;
+      recurringObjects: string[];
+      variantAngle: string;
+      customerProblem: string;
+      mechanismSummary: string;
+      visualMetaphor: string;
+      evidenceIndex: number;
+      evidenceUseType: ThreeDBreakdownEvidenceUseType;
+      wowMomentType: ThreeDBreakdownRevealPattern;
+      wowMoment: string;
+      viewerLearns: string;
+      claimRisk: ThreeDBreakdownClaimRisk;
+      claimRiskReason: string;
+    };
+    groundedEvidence: {
+      evidenceIndex: number;
+      type: "review" | "product" | "claim" | "guarantee" | "result" | "shipping" | "site-language";
+      evidenceUseType: ThreeDBreakdownEvidenceUseType;
+      text: string;
+      sourceUrl: string;
+      scrapedAt: number;
+      sourceName?: string;
+      visualPotentialScore?: number;
+      whyVisual?: string;
+      possibleRevealPatterns?: ThreeDBreakdownRevealPattern[];
+    };
+  }
+>;
+
 export type AdScene =
   | VisualizerAdScene
   | MemeAdScene
@@ -367,4 +463,5 @@ export type AdScene =
   | TextMessageAdScene
   | BrainrotAdScene
   | ReviewsAdScene
-  | MotionStoryAdScene;
+  | MotionStoryAdScene
+  | ThreeDBreakdownAdScene;

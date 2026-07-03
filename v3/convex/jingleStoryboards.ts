@@ -98,6 +98,45 @@ async function storeStoryboardImage({
   };
 }
 
+async function storeStoryboardVideo({
+  ctx,
+  replicateApiToken,
+  shot,
+}: {
+  ctx: {
+    storage: {
+      store: (blob: Blob) => Promise<Id<"_storage">>;
+      getUrl: (storageId: Id<"_storage">) => Promise<string | null>;
+    };
+  };
+  replicateApiToken: string;
+  shot: BrickStoryboard["shots"][number];
+}): Promise<BrickStoryboard["shots"][number]> {
+  if (!shot.image?.url) throw new Error(`Shot ${shot.shotIndex + 1} needs a still image first.`);
+  if (!shot.animationPrompt) throw new Error(`Shot ${shot.shotIndex + 1} is missing its Seedance animation prompt.`);
+
+  const result = await generateReplicateSeedanceVideo({
+    replicateApiToken,
+    imageUrl: shot.image.url,
+    prompt: shot.animationPrompt,
+    durationSeconds: shot.durationMs / 1000,
+  });
+  const storageId = await ctx.storage.store(new Blob([result.bytes], {
+    type: result.mimeType,
+  }));
+  const videoUrl = await ctx.storage.getUrl(storageId);
+  return {
+    ...shot,
+    video: {
+      storageId: String(storageId),
+      url: videoUrl,
+      mimeType: result.mimeType,
+    },
+    status: "ok",
+    error: undefined,
+  };
+}
+
 export const saveGenerated: ReturnType<typeof internalMutation> = internalMutation({
   args: {
     sessionId: v.string(),
@@ -122,11 +161,37 @@ export const patchStoryboard: ReturnType<typeof internalMutation> = internalMuta
   args: {
     storyboardId: v.id("jingleStoryboards"),
     storyboard: v.any(),
+    clearSceneMusicVideo: v.optional(v.boolean()),
   },
-  handler: async (ctx, { storyboardId, storyboard }) => {
+  handler: async (ctx, { storyboardId, storyboard, clearSceneMusicVideo }) => {
+    const now = Date.now();
     await ctx.db.patch(storyboardId, {
       storyboard,
-      updatedAt: Date.now(),
+      ...(clearSceneMusicVideo ? {
+        stitchStatus: undefined,
+        stitchProgress: undefined,
+        stitchError: undefined,
+        stitchOutputStorageId: undefined,
+      } : {}),
+      updatedAt: now,
+    });
+
+    if (!clearSceneMusicVideo) return;
+    const storyboardRow = await ctx.db.get(storyboardId);
+    if (!storyboardRow) return;
+    const sceneRow = await ctx.db.get(storyboardRow.sceneId);
+    if (!sceneRow) return;
+    const scene = sceneRow.scene as AdScene;
+    if (scene.format !== "jingle" || !scene.layout.musicVideo) return;
+    await ctx.db.patch(storyboardRow.sceneId, {
+      scene: {
+        ...scene,
+        layout: {
+          ...scene.layout,
+          musicVideo: undefined,
+        },
+      },
+      updatedAt: now,
     });
   },
 });
@@ -183,6 +248,43 @@ export const regenerateBrickShot: ReturnType<typeof action> = action({
     await ctx.runMutation(internal.jingleStoryboards.patchStoryboard, {
       storyboardId,
       storyboard: nextStoryboard,
+      clearSceneMusicVideo: true,
+    });
+    return { storyboard: nextStoryboard };
+  },
+});
+
+export const regenerateBrickShotVideo: ReturnType<typeof action> = action({
+  args: {
+    storyboardId: v.id("jingleStoryboards"),
+    storyboard: v.any(),
+    shotIndex: v.number(),
+  },
+  handler: async (ctx, { storyboardId, storyboard, shotIndex }) => {
+    const replicateApiToken = process.env.REPLICATE_API_TOKEN;
+    if (!replicateApiToken) throw new Error("Replicate video generation is not configured.");
+
+    const currentStoryboard = storyboard as BrickStoryboard;
+    const nextStoryboard: BrickStoryboard = {
+      ...currentStoryboard,
+      musicVideo: undefined,
+      shots: [...currentStoryboard.shots],
+    };
+    const shot = nextStoryboard.shots.find((item) => item.shotIndex === shotIndex);
+    if (!shot) throw new Error("Storyboard shot not found.");
+
+    const nextShot = await storeStoryboardVideo({
+      ctx,
+      replicateApiToken,
+      shot,
+    });
+    nextStoryboard.shots = nextStoryboard.shots.map((item) => (
+      item.shotIndex === shotIndex ? nextShot : item
+    ));
+    await ctx.runMutation(internal.jingleStoryboards.patchStoryboard, {
+      storyboardId,
+      storyboard: nextStoryboard,
+      clearSceneMusicVideo: true,
     });
     return { storyboard: nextStoryboard };
   },
@@ -395,34 +497,18 @@ export const animateBrickBoard: ReturnType<typeof action> = action({
         promptLength: shot.animationPrompt?.length ?? 0,
       });
       try {
-        if (!shot.animationPrompt) throw new Error(`Shot ${shot.shotIndex + 1} is missing its Seedance animation prompt.`);
-        const result = await generateReplicateSeedanceVideo({
+        const nextShot = await storeStoryboardVideo({
+          ctx,
           replicateApiToken,
-          imageUrl: shot.image!.url!,
-          prompt: shot.animationPrompt,
-          durationSeconds: shot.durationMs / 1000,
+          shot,
         });
-        const storageId = await ctx.storage.store(new Blob([result.bytes], {
-          type: result.mimeType,
-        }));
-        const videoUrl = await ctx.storage.getUrl(storageId);
         console.log("[brick-video] shot stored", {
           storyboardId,
           shotIndex: shot.shotIndex,
-          mimeType: result.mimeType,
-          hasVideoUrl: Boolean(videoUrl),
+          mimeType: nextShot.video?.mimeType,
+          hasVideoUrl: Boolean(nextShot.video?.url),
         });
-        return {
-          shot: {
-            ...shot,
-            video: {
-              storageId: String(storageId),
-              url: videoUrl,
-              mimeType: result.mimeType,
-            },
-            error: undefined,
-          },
-        };
+        return { shot: nextShot };
       } catch (error) {
         const message = error instanceof Error ? error.message : "Seedance animation failed.";
         console.log("[brick-video] shot animation failed", {

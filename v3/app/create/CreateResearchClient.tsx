@@ -22,7 +22,8 @@ import {
   DEFAULT_NVIDIA_NIM_MEME_MODEL,
   DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL,
 } from "@/features/llm/nvidiaNimModels";
-import { DEFAULT_JINGLE_STYLE_ID, type JingleStyleId } from "@/features/formats/jingle/prompt";
+import { DEFAULT_JINGLE_STYLE_ID, JINGLE_STYLES, type JingleStyleId } from "@/features/formats/jingle/prompt";
+import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
 import {
   getDefaultReviewProductHandles,
   normalizeReviewProductHandles,
@@ -74,6 +75,7 @@ import type {
   AdScene,
   AdSceneVisualizerStyle,
   JingleAdScene,
+  ThreeDBreakdownAdScene,
 } from "@/features/scene/types";
 import { visualizerSceneVariants } from "@/features/scene/visualizerVariants";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
@@ -104,9 +106,19 @@ import { getAnonymousId } from "./createSession";
 
 const rerollFlashMs = 680;
 const slowResearchMessageDelayMs = 8000;
+const threeDAllShotsBusyIndex = 0;
+
+type ThreeDMediaUiStatus = "idle" | "loading" | "ready" | "error";
 
 const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const fallbackUploadedAudioDurationMs = 8000;
+
+function getThreeDBreakdownLoadingLabel(elapsedSeconds: number) {
+  if (elapsedSeconds >= 90) return "Still waiting on NVIDIA NIM. Slow, not frozen.";
+  if (elapsedSeconds >= 45) return "Checking strict 3D story rules";
+  if (elapsedSeconds >= 15) return "Writing 3D story directions";
+  return "Finding visual evidence";
+}
 
 function getMusicGenerationErrorMessage(error: unknown) {
   const rawMessage = error instanceof Error ? error.message : String(error || "");
@@ -203,6 +215,11 @@ type ApplyGeneratedScenesOptions = {
   note?: string;
 };
 
+type RenderableSceneEntry = {
+  scene: AdScene;
+  sceneId: Id<"adScenes"> | null;
+};
+
 const getSceneVideoMemeTemplateId = (scene: AdScene | null): VideoMemeTemplateId | null => (
   scene?.format === "video-meme" ? scene.layout.templateId : null
 );
@@ -235,16 +252,49 @@ function getAdGenerationErrorMessage(error: unknown) {
   const message = rawMessage.match(/Uncaught Error:\s*([\s\S]*?)(?:\s+at\s|\n\s+at\s| Called by client|$)/)?.[1]?.trim()
     || rawMessage.replace(/^\[CONVEX[^\]]+]\s*\[Request ID:[^\]]+]\s*Server Error\s*/i, "").trim();
   if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) {
-    if (/we'?re sorry/i.test(message)) {
-      return "We're Sorry copy generation timed out after reusing the saved research. Try again.";
+    if (/NVIDIA NIM|Gemini|Replicate|Seedance|Nano Banana|director/i.test(message)) {
+      return `${message.replace(/[.\s]*$/, "")}. Try again.`;
     }
-    return "Ad generation timed out after reusing the saved research. Try again.";
+    if (/we'?re sorry/i.test(message)) {
+      return "We're Sorry copy generation timed out. Try again.";
+    }
+    return "Ad generation timed out. Try again.";
   }
   return message || "Ad generation failed.";
 }
 
 function getSceneDefaultFlashSlots(scene: AdScene): RenderFlashRole[] {
   return [...getFormatModule(scene.format).defaultSlots];
+}
+
+function isRenderableScene(scene: AdScene | null | undefined): scene is AdScene {
+  if (!scene) return false;
+  try {
+    return getFormatModule(scene.format).validate(scene).valid;
+  } catch {
+    return false;
+  }
+}
+
+function getRenderableSceneEntries(
+  scenes: AdScene[],
+  sceneIds: Array<Id<"adScenes"> | null> = [],
+): RenderableSceneEntry[] {
+  return scenes
+    .map((scene, index) => ({
+      scene,
+      sceneId: sceneIds[index] || null,
+    }))
+    .filter((entry) => isRenderableScene(entry.scene));
+}
+
+function assertRenderableScenes(scenes: AdScene[]) {
+  for (const scene of scenes) {
+    const validation = getFormatModule(scene.format).validate(scene);
+    if (!validation.valid) {
+      throw new Error(`Generated ${scene.format} scene is out of date. ${validation.errors.join(" ")}`);
+    }
+  }
 }
 
 function getGenerationCount(format: AdFormatId, videoMemeTemplateId: VideoMemeTemplateId = "bear-sniff") {
@@ -256,7 +306,14 @@ function getGenerationCount(format: AdFormatId, videoMemeTemplateId: VideoMemeTe
   if (format === "brainrot") return 3;
   if (format === "reviews") return 8;
   if (format === "motion-story") return 4;
+  if (format === "three-d-breakdown") return 2;
   return 50;
+}
+
+function getNextJingleStyleId(styleId: JingleStyleId): JingleStyleId {
+  const styleIds = JINGLE_STYLES.map((style) => style.id);
+  const currentIndex = styleIds.indexOf(styleId);
+  return styleIds[(currentIndex + 1) % styleIds.length] || DEFAULT_JINGLE_STYLE_ID;
 }
 
 const staticPngFormats = new Set<AdFormatId>(["meme", "text-message", "reviews", "were-sorry"]);
@@ -294,14 +351,16 @@ async function fetchBillingJson(url: string, init?: RequestInit) {
   return payload as BillingStatus & { url?: string };
 }
 
-function withCreativePackHardTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string) {
+function withClientTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  label: string,
+  timeoutMessage = `${label} timed out. Try again.`,
+) {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   const timeout = new Promise<T>((_, reject) => {
-    timeoutId = setTimeout(() => {
-      reject(new Error(`${label} needs retry after ${Math.round(timeoutMs / 1000)}s.`));
-    }, timeoutMs);
+    timeoutId = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
   });
-
   return Promise.race([
     promise.finally(() => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -358,11 +417,17 @@ function ResearchConnected() {
   const runWebsiteResearch = useAction(api.researchRuns.runWebsiteResearch);
   const generateAdScenes = useAction(api.adScenes.generateFromResearch);
   const generateDialogueScripts = useAction(api.dialogueScripts.generateForScene);
+  const generateVoiceoverForScene = useAction(api.audioAssets.generateForScene);
   const generateDialogueAudioForScene = useAction(api.audioAssets.generateDialogueForScene);
   const generateJingleAudioForScene = useAction(api.audioAssets.generateJingleForScene);
   const generateBrainrotAudioForScene = useAction(api.audioAssets.generateBrainrotForScene);
+  const generateThreeDImagesForScene = useAction(api.adScenes.generateThreeDImages);
+  const regenerateThreeDImageForScene = useAction(api.adScenes.regenerateThreeDImage);
+  const animateThreeDClipsForScene = useAction(api.adScenes.animateThreeDClips);
+  const regenerateThreeDClipForScene = useAction(api.adScenes.regenerateThreeDClip);
   const generateBrickStoryboardForScene = useAction(api.jingleStoryboards.generateBrickForScene);
   const regenerateBrickShotForScene = useAction(api.jingleStoryboards.regenerateBrickShot);
+  const regenerateBrickShotVideoForScene = useAction(api.jingleStoryboards.regenerateBrickShotVideo);
   const animateBrickStoryboardForScene = useAction(api.jingleStoryboards.animateBrickBoard);
   const buildBrickMusicVideoForScene = useMutation(api.jingleStoryboards.buildMusicVideoForScene);
   const generateProductPhotoshootForResearch = useAction(api.productPhotoshoots.generateForResearch);
@@ -403,6 +468,7 @@ function ResearchConnected() {
   const [progressStage, setProgressStage] = useState<WebsiteSubmitProgressStage>(null);
   const [pendingProgressFacts, setPendingProgressFacts] = useState<WebsiteSubmitProgressFacts | null>(null);
   const [showSlowResearchMessage, setShowSlowResearchMessage] = useState(false);
+  const [adGenerationElapsedSeconds, setAdGenerationElapsedSeconds] = useState(0);
   const [renderJobId, setRenderJobId] = useState<Id<"renderJobs"> | null>(null);
   const [staticPngDownloadBusy, setStaticPngDownloadBusy] = useState(false);
   const renderJob = useQuery(api.renderJobs.getStatus, renderJobId ? { renderJobId } : "skip");
@@ -429,6 +495,10 @@ function ResearchConnected() {
   const [brickStoryboard, setBrickStoryboard] = useState<any>(null);
   const [brickStoryboardId, setBrickStoryboardId] = useState<Id<"jingleStoryboards"> | null>(null);
   const [brickStoryboardShotBusyIndex, setBrickStoryboardShotBusyIndex] = useState<number | null>(null);
+  const [brickStoryboardVideoBusyIndex, setBrickStoryboardVideoBusyIndex] = useState<number | null>(null);
+  const [threeDError, setThreeDError] = useState("");
+  const [threeDImageBusyIndex, setThreeDImageBusyIndex] = useState<number | null>(null);
+  const [threeDVideoBusyIndex, setThreeDVideoBusyIndex] = useState<number | null>(null);
   const [productPhotoshootStatus, setProductPhotoshootStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [productPhotoshootError, setProductPhotoshootError] = useState("");
   const [productPhotoshoot, setProductPhotoshoot] = useState<ProductPhotoshootBoard | null>(null);
@@ -587,15 +657,32 @@ function ResearchConnected() {
   }, [progressStage]);
 
   useEffect(() => {
+    if (adStatus !== "loading" || progressStage !== "writing-ads") {
+      setAdGenerationElapsedSeconds(0);
+      return;
+    }
+
+    setAdGenerationElapsedSeconds(0);
+    const startedAt = Date.now();
+    const intervalId = window.setInterval(() => {
+      setAdGenerationElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [adStatus, progressStage, selectedAdFormat]);
+
+  useEffect(() => {
     if (result || adScenes.length || !latestGeneration?.scenes.length) return;
 
-    const restoredScene = latestGeneration.scenes[0] || null;
+    const latestSceneIds = latestGeneration.sceneIds || latestGeneration.scenes.map(() => null);
+    const renderableEntries = getRenderableSceneEntries(latestGeneration.scenes, latestSceneIds);
+    const restoredScene = renderableEntries[0]?.scene || null;
     rememberResearchForReuse(latestGeneration.result);
     setUrl(latestGeneration.result.websiteUrl);
     setResult(latestGeneration.result);
     setStatus("ready");
-    setAdScenes(latestGeneration.scenes);
-    setSceneIds(latestGeneration.sceneIds || latestGeneration.scenes.map(() => null));
+    setAdScenes(renderableEntries.map((entry) => entry.scene));
+    setSceneIds(renderableEntries.map((entry) => entry.sceneId));
     setSelectedScene(restoredScene);
     setSelectedSceneIndex(0);
     if (restoredScene) {
@@ -603,11 +690,17 @@ function ResearchConnected() {
       setSelectedCreativePackFormat(isCreativePackFormat(restoredScene.format) ? restoredScene.format : null);
       const templateId = getSceneVideoMemeTemplateId(restoredScene);
       if (templateId) setSelectedVideoMemeTemplateId(templateId);
+    } else {
+      setSelectedCreativePackFormat(null);
     }
     canvasActions.interactionReset();
     setRerollCount(0);
-    setAdStatus("ready");
-    setAdStatusNote(`${latestGeneration.scenes.length} ads restored. Press spacebar to find a stronger version.`);
+    setAdStatus(restoredScene ? "ready" : "idle");
+    setAdStatusNote(
+      restoredScene
+        ? `${renderableEntries.length} ads restored. Press spacebar to find a stronger version.`
+        : "Previous saved ads used an older format contract. Generate again.",
+    );
     setAudioStatus(restoredScene?.audio.status === "generated" ? "ready" : "idle");
   }, [
     adScenes.length,
@@ -676,6 +769,13 @@ function ResearchConnected() {
     setBrickStoryboard(null);
     setBrickStoryboardId(null);
     setBrickStoryboardShotBusyIndex(null);
+    setBrickStoryboardVideoBusyIndex(null);
+  };
+
+  const resetThreeDBreakdownState = () => {
+    setThreeDError("");
+    setThreeDImageBusyIndex(null);
+    setThreeDVideoBusyIndex(null);
   };
 
   const resetProductPhotoshootState = () => {
@@ -753,6 +853,17 @@ function ResearchConnected() {
       ));
     });
   }, [selectedSceneIndex]);
+
+  const clearSelectedJingleMusicVideo = useCallback(() => {
+    if (!selectedScene || selectedScene.format !== "jingle" || !selectedScene.layout.musicVideo) return;
+    replaceSelectedScene({
+      ...selectedScene,
+      layout: {
+        ...selectedScene.layout,
+        musicVideo: undefined,
+      },
+    });
+  }, [replaceSelectedScene, selectedScene]);
 
   useEffect(() => {
     if (selectedScene?.audio.status !== "generated") return;
@@ -912,7 +1023,7 @@ function ResearchConnected() {
       format,
       action,
     }: {
-      format: "jingle" | "brainrot";
+      format: "jingle" | "brainrot" | "three-d-breakdown";
       action: (args: { anonymousId: string; sceneId?: Id<"adScenes">; scene: AdScene }) => Promise<unknown>;
     },
   ) => {
@@ -1071,45 +1182,6 @@ function ResearchConnected() {
     if (variant) onUpdateVisualizerPreset(variant.visualizer);
   }, [onUpdateVisualizerPreset]);
 
-  const onRerollScene = useCallback(() => {
-    if (!adScenes.length || !selectedScene) {
-      setPlaceholderVariantIndex((index) => (index + 1) % placeholderAdSurfaceVariantCount);
-      setRerollCount((count) => count + 1);
-      triggerRerollFlash(["headline", "visualizer", "captions"]);
-      return;
-    }
-
-    const currentGeneratedAudio = selectedScene.audio.status === "generated" ? selectedScene.audio : null;
-    const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, {
-      ...createDefaultSceneLocks(),
-      audio: selectedScene.format !== "jingle" && selectedScene.format !== "brainrot" && Boolean(currentGeneratedAudio),
-    });
-    if (!next.scene) return;
-
-    const nextScene = next.scene;
-    const shouldKeepPlayback = nextScene.audio.status === "generated" && currentGeneratedAudio?.url === nextScene.audio.url;
-
-    if (!shouldKeepPlayback) {
-      resetPreviewPlayback();
-    }
-    setSelectedScene(nextScene);
-    setSelectedSceneIndex(next.index);
-    setRerollCount((count) => count + 1);
-    resetShareState();
-    resetRenderState();
-    setAudioStatus(nextScene.audio.status === "generated" ? "ready" : "idle");
-    setAudioError("");
-    resetDialogueState();
-    resetSaveState();
-    triggerRerollFlash(getSceneDefaultFlashSlots(nextScene));
-    if (nextScene.format === "jingle" && nextScene.audio.status !== "generated") {
-      void generateJingleMusicForScene(nextScene, sceneIds[next.index]);
-    }
-    if (nextScene.format === "brainrot" && nextScene.audio.status !== "generated") {
-      void generateBrainrotAudioForSceneSelected(nextScene, sceneIds[next.index]);
-    }
-  }, [adScenes, generateBrainrotAudioForSceneSelected, generateJingleMusicForScene, resetPreviewPlayback, sceneIds, selectedScene, selectedSceneIndex, triggerRerollFlash]);
-
   const syncCreativePackGroupFromScenes = (scenes: AdScene[], nextSceneIds: Array<Id<"adScenes"> | null> = []) => {
     const firstScene = scenes[0] || null;
     if (!firstScene || !isCreativePackFormat(firstScene.format)) return;
@@ -1138,6 +1210,7 @@ function ResearchConnected() {
     options: ApplyGeneratedScenesOptions = {},
   ) => {
     if (!scenes.length) throw new Error("Ad idea generation returned no ads.");
+    assertRenderableScenes(scenes);
 
     const firstScene = scenes[0] || null;
     setAdScenes(scenes);
@@ -1151,6 +1224,7 @@ function ResearchConnected() {
     resetAudioState();
     resetSaveState();
     resetBrickStoryboardState();
+    resetThreeDBreakdownState();
     syncCreativePackGroupFromScenes(scenes, nextSceneIds);
     setAdStatusNote(options.note || `${scenes.length} ads ready. Press spacebar to find a stronger version.`);
     setAdStatus("ready");
@@ -1187,12 +1261,32 @@ function ResearchConnected() {
       ...(format === "jingle" ? { jingleStyleId } : {}),
       ...(format === "reviews" || format === "motion-story" ? { selectedProductHandles: normalizeReviewProductHandles(reviewProductHandles) } : {}),
     };
-    const nextGeneration = await generateAdScenes(generationArgs) as AdSceneGenerationResponse;
+    const startedAt = Date.now();
+    console.info("[wiggly:ad-generation] client:start", {
+      count,
+      format,
+      researchRunId: String(researchRunId),
+    });
+    try {
+      const nextGeneration = await generateAdScenes(generationArgs) as AdSceneGenerationResponse;
+      console.info("[wiggly:ad-generation] client:ready", {
+        elapsedMs: Date.now() - startedAt,
+        format,
+        sceneCount: nextGeneration.scenes?.length || 0,
+      });
+      return {
+        scenes: nextGeneration.scenes || [],
+        sceneIds: nextGeneration.sceneIds || [],
+      };
+    } catch (error) {
+      console.error("[wiggly:ad-generation] client:error", {
+        elapsedMs: Date.now() - startedAt,
+        format,
+        message: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
 
-    return {
-      scenes: nextGeneration.scenes || [],
-      sceneIds: nextGeneration.sceneIds || [],
-    };
   };
 
   const getReusableResearchForUrl = (
@@ -1520,10 +1614,11 @@ function ResearchConnected() {
     }, CREATIVE_PACK_SOFT_TIMEOUT_MS);
 
     try {
-      const generation = await withCreativePackHardTimeout(
+      const generation = await withClientTimeout(
         generateCreativePackFormat(reusableResearch, format),
         CREATIVE_PACK_HARD_TIMEOUT_MS,
         label,
+        `${label} needs retry after ${Math.round(CREATIVE_PACK_HARD_TIMEOUT_MS / 1000)}s.`,
       );
       if (softTimer) clearTimeout(softTimer);
       const scenes = generation.scenes || [];
@@ -1835,10 +1930,11 @@ function ResearchConnected() {
       }, CREATIVE_PACK_SOFT_TIMEOUT_MS);
 
       try {
-        const generation = await withCreativePackHardTimeout(
+        const generation = await withClientTimeout(
           generateCreativePackFormat(research, format),
           CREATIVE_PACK_HARD_TIMEOUT_MS,
           label,
+          `${label} needs retry after ${Math.round(CREATIVE_PACK_HARD_TIMEOUT_MS / 1000)}s.`,
         );
         if (softTimer) clearTimeout(softTimer);
         if (creativePackRunRef.current?.id !== runToken.id) return;
@@ -1930,6 +2026,7 @@ function ResearchConnected() {
     research: ReusableResearch,
     format: AdFormatId,
     videoMemeTemplateId: VideoMemeTemplateId = selectedVideoMemeTemplateId,
+    options: { jingleStyleId?: JingleStyleId; loadingNote?: string; note?: string } = {},
   ) => {
     if (research.result) {
       rememberResearchForReuse(research.result);
@@ -1949,7 +2046,7 @@ function ResearchConnected() {
     closeCaptionPanel();
     resetSaveState();
     setError("");
-    setAdStatusNote("Reusing website research. Generating this format only.");
+    setAdStatusNote(options.loadingNote || "Reusing website research. Generating this format only.");
 
     try {
       const selectedReviewHandles = normalizeReviewProductHandles(selectedReviewProductHandles);
@@ -1965,11 +2062,13 @@ function ResearchConnected() {
         selectedMemeModel,
         videoMemeTemplateId,
         selectedVisualizerModel,
-        selectedJingleStyleId,
+        options.jingleStyleId || selectedJingleStyleId,
         reviewProductHandles,
       );
       setProgressStage("preparing-canvas");
-      applyGeneratedScenes(nextGeneration.scenes, nextGeneration.sceneIds);
+      applyGeneratedScenes(nextGeneration.scenes, nextGeneration.sceneIds, {
+        note: options.note,
+      });
       clearSubmitProgress();
     } catch (nextError) {
       clearSubmitProgress();
@@ -1979,6 +2078,86 @@ function ResearchConnected() {
       setError(getAdGenerationErrorMessage(nextError));
     }
   };
+
+  const onRerollScene = useCallback(() => {
+    if (status === "loading" || adStatus === "loading" || audioStatus === "loading") return;
+
+    if (selectedScene?.format === "jingle" && selectedScene.metadata.researchRunId) {
+      const nextJingleStyleId = getNextJingleStyleId(selectedJingleStyleId);
+      const nextJingleStyle = JINGLE_STYLES.find((style) => style.id === nextJingleStyleId);
+      setRerollCount((count) => count + 1);
+      triggerRerollFlash(["headline", "visualizer", "captions"]);
+      setSelectedJingleStyleId(nextJingleStyleId);
+      void generateScenesOnly(
+        {
+          researchRunId: selectedScene.metadata.researchRunId,
+          facts: result ? getWebsiteSubmitProgressFacts(result) : getSceneProgressFacts(selectedScene),
+          result: result || undefined,
+        },
+        "jingle",
+        selectedVideoMemeTemplateId,
+        {
+          jingleStyleId: nextJingleStyleId,
+          loadingNote: `Making a ${nextJingleStyle?.label || "new"} jingle...`,
+          note: `${nextJingleStyle?.label || "New"} jingle ready. Press spacebar to make another one.`,
+        },
+      );
+      return;
+    }
+
+    if (!adScenes.length || !selectedScene) {
+      setPlaceholderVariantIndex((index) => (index + 1) % placeholderAdSurfaceVariantCount);
+      setRerollCount((count) => count + 1);
+      triggerRerollFlash(["headline", "visualizer", "captions"]);
+      return;
+    }
+
+    const currentGeneratedAudio = selectedScene.audio.status === "generated" ? selectedScene.audio : null;
+    const next = rerollScene(adScenes, selectedScene, selectedSceneIndex, {
+      ...createDefaultSceneLocks(),
+      audio: selectedScene.format !== "jingle" && selectedScene.format !== "brainrot" && Boolean(currentGeneratedAudio),
+    });
+    if (!next.scene) return;
+
+    const nextScene = next.scene;
+    const shouldKeepPlayback = nextScene.audio.status === "generated" && currentGeneratedAudio?.url === nextScene.audio.url;
+
+    if (!shouldKeepPlayback) {
+      resetPreviewPlayback();
+    }
+    setSelectedScene(nextScene);
+    setSelectedSceneIndex(next.index);
+    setRerollCount((count) => count + 1);
+    resetShareState();
+    resetRenderState();
+    setAudioStatus(nextScene.audio.status === "generated" ? "ready" : "idle");
+    setAudioError("");
+    resetDialogueState();
+    resetSaveState();
+    triggerRerollFlash(getSceneDefaultFlashSlots(nextScene));
+    if (nextScene.format === "jingle" && nextScene.audio.status !== "generated") {
+      void generateJingleMusicForScene(nextScene, sceneIds[next.index]);
+    }
+    if (nextScene.format === "brainrot" && nextScene.audio.status !== "generated") {
+      void generateBrainrotAudioForSceneSelected(nextScene, sceneIds[next.index]);
+    }
+  }, [
+    adScenes,
+    adStatus,
+    audioStatus,
+    generateBrainrotAudioForSceneSelected,
+    generateJingleMusicForScene,
+    generateScenesOnly,
+    resetPreviewPlayback,
+    result,
+    sceneIds,
+    selectedJingleStyleId,
+    selectedScene,
+    selectedSceneIndex,
+    selectedVideoMemeTemplateId,
+    status,
+    triggerRerollFlash,
+  ]);
 
   useCanvasKeyboard({
     editorScopeRef: createEditorScopeRef,
@@ -2236,6 +2415,13 @@ function ResearchConnected() {
     }
     if (scene.format === "brainrot") {
       void generateBrainrotAudioForSceneSelected(scene, sceneIds[selectedSceneIndex]);
+      return;
+    }
+    if (scene.format === "three-d-breakdown") {
+      void generateSceneAudio(scene, sceneIds[selectedSceneIndex], {
+        format: "three-d-breakdown",
+        action: generateVoiceoverForScene,
+      });
       return;
     }
     if (dialoguePanelOpen) {
@@ -2524,20 +2710,28 @@ function ResearchConnected() {
       scenes: adScenes,
       design,
     });
+    const renderableEntries = getRenderableSceneEntries(restored.scenes);
+    const restoredSceneIndex = renderableEntries.findIndex((entry) => entry.scene === restored.selectedScene);
+    const selectedEntry = renderableEntries[restoredSceneIndex >= 0 ? restoredSceneIndex : 0] || null;
+    if (!selectedEntry) {
+      setError("That saved design uses an older format contract. Generate it again.");
+      setAdStatusNote("Saved design could not be loaded because its scene format is out of date.");
+      return;
+    }
 
     resetPreviewPlayback();
-    setUrl(restored.selectedScene.brand.url || url);
-    setSelectedAdFormat(restored.selectedScene.format);
-    setSelectedCreativePackFormat(isCreativePackFormat(restored.selectedScene.format) ? restored.selectedScene.format : null);
-    const templateId = getSceneVideoMemeTemplateId(restored.selectedScene);
+    setUrl(selectedEntry.scene.brand.url || url);
+    setSelectedAdFormat(selectedEntry.scene.format);
+    setSelectedCreativePackFormat(isCreativePackFormat(selectedEntry.scene.format) ? selectedEntry.scene.format : null);
+    const templateId = getSceneVideoMemeTemplateId(selectedEntry.scene);
     if (templateId) setSelectedVideoMemeTemplateId(templateId);
-    setSelectedScene(restored.selectedScene);
-    setSelectedSceneIndex(restored.selectedSceneIndex);
-    setAdScenes(restored.scenes);
-    setSceneIds(restored.scenes.map(() => null));
+    setSelectedScene(selectedEntry.scene);
+    setSelectedSceneIndex(restoredSceneIndex >= 0 ? restoredSceneIndex : 0);
+    setAdScenes(renderableEntries.map((entry) => entry.scene));
+    setSceneIds(renderableEntries.map(() => null));
     setAdStatus("ready");
     setAdStatusNote("Saved design loaded. Press spacebar to keep exploring ideas.");
-    setAudioStatus(restored.selectedScene.audio.status === "generated" ? "ready" : "idle");
+    setAudioStatus(selectedEntry.scene.audio.status === "generated" ? "ready" : "idle");
     setAudioError("");
     setBackgroundMusicStatus("idle");
     setBackgroundMusicError("");
@@ -2593,7 +2787,7 @@ function ResearchConnected() {
   };
 
   const onRegenerateBrickShot = async (shotIndex: number) => {
-    if (!brickStoryboardId || !brickStoryboard || brickStoryboardShotBusyIndex !== null) return;
+    if (!brickStoryboardId || !brickStoryboard || brickStoryboardShotBusyIndex !== null || brickStoryboardVideoBusyIndex !== null) return;
     setBrickStoryboardShotBusyIndex(shotIndex);
     setBrickStoryboardError("");
 
@@ -2607,6 +2801,10 @@ function ResearchConnected() {
       setBrickStoryboardStatus("ready");
       setBrickStoryboardAnimationStatus("idle");
       setBrickStoryboardBuildStatus("idle");
+      clearSelectedJingleMusicVideo();
+      resetShareState();
+      resetRenderState();
+      resetSaveState();
     } catch (nextError) {
       setBrickStoryboardError(getBrickStoryboardErrorMessage(nextError));
     } finally {
@@ -2614,8 +2812,34 @@ function ResearchConnected() {
     }
   };
 
+  const onRegenerateBrickShotVideo = async (shotIndex: number) => {
+    if (!brickStoryboardId || !brickStoryboard || brickStoryboardVideoBusyIndex !== null || brickStoryboardShotBusyIndex !== null) return;
+    setBrickStoryboardVideoBusyIndex(shotIndex);
+    setBrickStoryboardError("");
+
+    try {
+      const result = await regenerateBrickShotVideoForScene({
+        storyboardId: brickStoryboardId,
+        storyboard: brickStoryboard,
+        shotIndex,
+      }) as { storyboard: BrickStoryboard };
+      setBrickStoryboard(result.storyboard);
+      setBrickStoryboardAnimationStatus(result.storyboard.shots.every((shot) => shot.video?.url) ? "ready" : "idle");
+      setBrickStoryboardBuildStatus("idle");
+      clearSelectedJingleMusicVideo();
+      resetShareState();
+      resetRenderState();
+      resetSaveState();
+    } catch (nextError) {
+      setBrickStoryboardAnimationStatus("error");
+      setBrickStoryboardError(getBrickStoryboardErrorMessage(nextError));
+    } finally {
+      setBrickStoryboardVideoBusyIndex(null);
+    }
+  };
+
   const onAnimateBrickStoryboard = async () => {
-    if (!brickStoryboardId || !brickStoryboard || brickStoryboardAnimationStatus === "loading") return;
+    if (!brickStoryboardId || !brickStoryboard || brickStoryboardAnimationStatus === "loading" || brickStoryboardVideoBusyIndex !== null || brickStoryboardShotBusyIndex !== null) return;
     setBrickStoryboardAnimationStatus("loading");
     setBrickStoryboardError("");
 
@@ -2665,6 +2889,128 @@ function ResearchConnected() {
     } catch (nextError) {
       setBrickStoryboardBuildStatus("error");
       setBrickStoryboardError(getBrickStoryboardErrorMessage(nextError));
+    }
+  };
+
+  const updateSelectedThreeDScene = (nextScene: ThreeDBreakdownAdScene) => {
+    setSelectedScene(nextScene);
+    setAdScenes((scenes) => scenes.map((scene, index) => (
+      index === selectedSceneIndex ? nextScene : scene
+    )));
+    resetShareState();
+    resetRenderState();
+    resetSaveState();
+  };
+
+  const selectedThreeDScene = selectedScene?.format === "three-d-breakdown" ? selectedScene : null;
+  const threeDImageStatus: ThreeDMediaUiStatus = threeDImageBusyIndex !== null
+    ? "loading"
+    : selectedThreeDScene?.layout.shots.every((shot) => shot.image?.status === "ready")
+      ? "ready"
+      : selectedThreeDScene?.layout.shots.some((shot) => shot.image?.status === "failed")
+        ? "error"
+        : "idle";
+  const threeDAnimationStatus: ThreeDMediaUiStatus = threeDVideoBusyIndex !== null
+    ? "loading"
+    : selectedThreeDScene?.layout.shots.every((shot) => shot.video?.status === "ready")
+      ? "ready"
+      : selectedThreeDScene?.layout.shots.some((shot) => shot.video?.status === "failed")
+        ? "error"
+        : "idle";
+
+  const getThreeDErrorFromScene = (scene: ThreeDBreakdownAdScene) => {
+    const imageFailure = scene.layout.shots.find((shot) => shot.image?.status === "failed");
+    const videoFailure = scene.layout.shots.find((shot) => shot.video?.status === "failed");
+    return imageFailure?.image?.error || videoFailure?.video?.error || "";
+  };
+
+  const onGenerateThreeDImages = async () => {
+    const sceneId = sceneIds[selectedSceneIndex];
+    if (!selectedScene || selectedScene.format !== "three-d-breakdown" || !sceneId || threeDImageStatus === "loading") return;
+    setThreeDImageBusyIndex(threeDAllShotsBusyIndex);
+    setThreeDError("");
+    resetShareState();
+    resetRenderState();
+    resetSaveState();
+    try {
+      const result = await generateThreeDImagesForScene({
+        sceneId,
+        scene: selectedScene,
+      }) as { scene: ThreeDBreakdownAdScene };
+      updateSelectedThreeDScene(result.scene);
+      setThreeDError(getThreeDErrorFromScene(result.scene));
+    } catch (nextError) {
+      setThreeDError(nextError instanceof Error ? nextError.message : "3D image generation failed.");
+    } finally {
+      setThreeDImageBusyIndex(null);
+    }
+  };
+
+  const onRegenerateThreeDImage = async (shotIndex: number) => {
+    const sceneId = sceneIds[selectedSceneIndex];
+    if (!selectedScene || selectedScene.format !== "three-d-breakdown" || !sceneId || threeDImageBusyIndex !== null || threeDVideoBusyIndex !== null) return;
+    setThreeDImageBusyIndex(shotIndex);
+    setThreeDError("");
+    resetShareState();
+    resetRenderState();
+    resetSaveState();
+    try {
+      const result = await regenerateThreeDImageForScene({
+        sceneId,
+        scene: selectedScene,
+        shotIndex,
+      }) as { scene: ThreeDBreakdownAdScene };
+      updateSelectedThreeDScene(result.scene);
+      setThreeDError(getThreeDErrorFromScene(result.scene));
+    } catch (nextError) {
+      setThreeDError(nextError instanceof Error ? nextError.message : "3D image generation failed.");
+    } finally {
+      setThreeDImageBusyIndex(null);
+    }
+  };
+
+  const onAnimateThreeDClips = async () => {
+    const sceneId = sceneIds[selectedSceneIndex];
+    if (!selectedScene || selectedScene.format !== "three-d-breakdown" || !sceneId || threeDAnimationStatus === "loading") return;
+    setThreeDVideoBusyIndex(threeDAllShotsBusyIndex);
+    setThreeDError("");
+    resetShareState();
+    resetRenderState();
+    resetSaveState();
+    try {
+      const result = await animateThreeDClipsForScene({
+        sceneId,
+        scene: selectedScene,
+      }) as { scene: ThreeDBreakdownAdScene };
+      updateSelectedThreeDScene(result.scene);
+      setThreeDError(getThreeDErrorFromScene(result.scene));
+    } catch (nextError) {
+      setThreeDError(nextError instanceof Error ? nextError.message : "3D animation failed.");
+    } finally {
+      setThreeDVideoBusyIndex(null);
+    }
+  };
+
+  const onRegenerateThreeDClip = async (shotIndex: number) => {
+    const sceneId = sceneIds[selectedSceneIndex];
+    if (!selectedScene || selectedScene.format !== "three-d-breakdown" || !sceneId || threeDVideoBusyIndex !== null || threeDImageBusyIndex !== null) return;
+    setThreeDVideoBusyIndex(shotIndex);
+    setThreeDError("");
+    resetShareState();
+    resetRenderState();
+    resetSaveState();
+    try {
+      const result = await regenerateThreeDClipForScene({
+        sceneId,
+        scene: selectedScene,
+        shotIndex,
+      }) as { scene: ThreeDBreakdownAdScene };
+      updateSelectedThreeDScene(result.scene);
+      setThreeDError(getThreeDErrorFromScene(result.scene));
+    } catch (nextError) {
+      setThreeDError(nextError instanceof Error ? nextError.message : "3D animation failed.");
+    } finally {
+      setThreeDVideoBusyIndex(null);
     }
   };
 
@@ -2895,6 +3241,20 @@ function ResearchConnected() {
     || currentRenderStatus === "queued"
     || currentRenderStatus === "claimed"
     || currentRenderStatus === "rendering";
+  const adGenerationStatusLabel = selectedAdFormat === "three-d-breakdown" && adStatus === "loading" && progressStage === "writing-ads"
+    ? getThreeDBreakdownLoadingLabel(adGenerationElapsedSeconds)
+    : "";
+  const previewBusyLabel = status === "loading"
+    ? "Reading your brand"
+    : adStatus === "loading"
+      ? adGenerationStatusLabel || "Making your next version"
+      : audioStatus === "loading"
+        ? "Making audio"
+        : renderBusy
+          ? renderStatusLabel
+          : staticPngDownloadBusy
+            ? "Making PNG"
+            : "";
   const productPhotoshootMode = selectedAdFormat === PRODUCT_PHOTOSHOOT_FORMAT;
   const canGenerateProductPhotoshoot = Boolean(
     result?.researchRunId &&
@@ -2969,7 +3329,7 @@ function ResearchConnected() {
         </div>
       </header>
 
-      <section className="mx-auto grid max-w-[1500px] items-center gap-8 py-6 sm:gap-10 sm:py-8 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[minmax(300px,0.62fr)_minmax(760px,1.38fr)] lg:gap-8 lg:py-10">
+      <section className="mx-auto grid max-w-[1500px] items-start gap-8 py-5 sm:gap-10 sm:py-6 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[minmax(300px,0.62fr)_minmax(760px,1.38fr)] lg:gap-8">
         <div>
           <CreateLeftColumn
             adScenesCount={adScenes.length}
@@ -3008,6 +3368,7 @@ function ResearchConnected() {
               creativePackMoneyShotTriggeredRef.current = false;
               resetProductPhotoshootState();
             }}
+            adGenerationStatusLabel={adGenerationStatusLabel}
             progressFacts={pendingProgressFacts}
             progressStage={progressStage}
             showSlowResearchMessage={showSlowResearchMessage}
@@ -3032,7 +3393,7 @@ function ResearchConnected() {
               status={productPhotoshootStatus}
             />
           ) : (
-          <div className="grid items-center gap-5 sm:gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]">
+          <div className="grid items-start gap-5 sm:gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]">
             <CreateCanvasColumn
               adScenesCount={adScenes.length}
               isAudioPlaying={isAudioPlaying}
@@ -3040,8 +3401,10 @@ function ResearchConnected() {
               onPreviewTimeChange={setPreviewTimeSeconds}
               onRerollScene={onRerollScene}
               placeholderVariantIndex={placeholderVariantIndex}
+              previewBusyLabel={previewBusyLabel}
               previewPlatform={previewPlatform}
               previewTimeSeconds={previewTimeSeconds}
+              rerollBusy={status === "loading" || adStatus === "loading" || audioStatus === "loading"}
               rerollCount={rerollCount}
               rerollFlash={rerollFlash}
               result={result}
@@ -3059,7 +3422,12 @@ function ResearchConnected() {
                 onCreateShareLink={() => void onCreateShareLink()}
                 onDownloadStaticPng={() => void onDownloadStaticPng()}
                 onGenerateBrickStoryboard={() => void onGenerateBrickStoryboard()}
+                onGenerateThreeDImages={() => void onGenerateThreeDImages()}
                 onRegenerateBrickShot={(shotIndex) => void onRegenerateBrickShot(shotIndex)}
+                onRegenerateBrickShotVideo={(shotIndex) => void onRegenerateBrickShotVideo(shotIndex)}
+                onRegenerateThreeDImage={(shotIndex) => void onRegenerateThreeDImage(shotIndex)}
+                onAnimateThreeDClips={() => void onAnimateThreeDClips()}
+                onRegenerateThreeDClip={(shotIndex) => void onRegenerateThreeDClip(shotIndex)}
                 onRegenerateVisualizerAudio={onRegenerateVisualizerAudio}
                 onLoadSavedDesign={onLoadSavedDesign}
                 onOpenAudioPanel={onOpenAudioPanel}
@@ -3078,12 +3446,19 @@ function ResearchConnected() {
                 brickStoryboardBuildStatus={brickStoryboardBuildStatus}
                 brickStoryboardError={brickStoryboardError}
                 brickStoryboardShotBusyIndex={brickStoryboardShotBusyIndex}
+                brickStoryboardVideoBusyIndex={brickStoryboardVideoBusyIndex}
                 brickStoryboardStatus={brickStoryboardStatus}
                 canGenerateBrickStoryboard={Boolean(
                   selectedScene?.format === "jingle" &&
                   selectedScene.audio.status === "generated" &&
                   sceneIds[selectedSceneIndex],
                 )}
+                threeDAnimationStatus={threeDAnimationStatus}
+                threeDError={threeDError}
+                threeDImageBusyIndex={threeDImageBusyIndex}
+                threeDImageStatus={threeDImageStatus}
+                threeDScene={selectedThreeDScene}
+                threeDVideoBusyIndex={threeDVideoBusyIndex}
                 staticPngDownloadBusy={staticPngDownloadBusy}
                 saveCounterLabel={saveCounterLabel}
                 saveError={saveError}
@@ -3233,45 +3608,7 @@ function ResearchConnected() {
 }
 
 export function CreateResearchClient() {
-  const [clientReady, setClientReady] = useState(false);
   const convexConfigured = Boolean(getV3ConvexUrl());
-
-  useEffect(() => {
-    setClientReady(true);
-  }, []);
-
-  if (!clientReady) {
-    return (
-      <section className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-7xl items-center px-6">
-        <div>
-          <div>
-            <img
-              src="/wiggly-wordmark-3d-crop.png"
-              alt="Wiggly"
-              className="h-16 w-auto rounded-xl object-contain"
-            />
-            <p className="mt-1 text-xs font-black uppercase tracking-[0.28em] text-slate-400">
-              Ads without the hard part
-            </p>
-          </div>
-          <p
-            className="wiggly-hero-headline mt-10 text-5xl font-black leading-tight tracking-normal text-slate-950"
-            style={{
-              animation: "none",
-              background: "none",
-              backgroundClip: "border-box",
-              color: "#020617",
-              textShadow: "none",
-              transform: "none",
-              WebkitBackgroundClip: "border-box",
-            }}
-          >
-            Make ads without learning editing.
-          </p>
-        </div>
-      </section>
-    );
-  }
 
   if (!convexConfigured) {
     return (

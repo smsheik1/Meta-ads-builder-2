@@ -78,7 +78,13 @@ const lyricLines = (text: string) => text
   .map((line) => cleanText(line, 120))
   .filter((line) => line && !/^\[[^\]]+]$/.test(line));
 
-const hasInventedNumber = (text: string) => /\d|percent|guarantee|guaranteed|#1|award|discount|off\b/i.test(text);
+const comparableLyric = (value: unknown) => cleanText(value, 160)
+  .toLowerCase()
+  .replace(/[’]/g, "'")
+  .replace(/[^a-z0-9]+/g, " ")
+  .trim();
+
+const hasInventedNumber = (text: string) => /\b(percent|guarantee|guaranteed|award|discount)\b|#\s*1|\d+\s*%\b|\d+\s+percent|\d+\s+off\b/i.test(text);
 
 const normalizeChunk = (chunk: Record<string, unknown>, styleId: JingleStyleId): JingleCompositionChunk | null => {
   const style = getJingleStyle(styleId);
@@ -124,7 +130,7 @@ export function extractJingleVariantsFromResponse(
     if (!item || typeof item !== "object") continue;
     const record = item as Record<string, unknown>;
     const angle = cleanText(record.angle, 160);
-    const brandPhonetic = cleanText(record.brandPhonetic, 80);
+    const brandPhonetic = cleanText(record.brandPhonetic ?? record.brand_phonetic, 80);
     const musicLengthMs = Math.round(Number(record.musicLengthMs ?? record.music_length_ms));
     const compositionPlan = record.compositionPlan || record.composition_plan;
     const chunks = compositionPlan && typeof compositionPlan === "object" && Array.isArray((compositionPlan as Record<string, unknown>).chunks)
@@ -133,7 +139,7 @@ export function extractJingleVariantsFromResponse(
         .filter((chunk): chunk is JingleCompositionChunk => Boolean(chunk))
       : [];
     // ponytail: syllable counts are review-only for MVP; add real prosody scoring after bad outputs prove it is worth the false-reject risk.
-    const selfCheckPassed = cleanText(record.selfCheckPassed, 260);
+    const selfCheckPassed = cleanText(record.selfCheckPassed ?? record.self_check_passed, 260);
     const hookLines = chunks[0] ? lyricLines(chunks[0].text) : [];
     const finalHookLines = chunks[2] ? lyricLines(chunks[2].text) : [];
     const lyrics = chunks.flatMap((chunk) => lyricLines(chunk.text));
@@ -147,9 +153,10 @@ export function extractJingleVariantsFromResponse(
     if (!chunks[0].text.startsWith("[Hook]") || !chunks[1].text.startsWith("[Verse]") || !chunks[2].text.startsWith("[Hook]")) continue;
     if (musicLengthMs !== JINGLE_MUSIC_LENGTH_MS) continue;
     if (durationSum !== musicLengthMs) continue;
-    if (!hookLines.join(" ").toLowerCase().includes(brandPhonetic.toLowerCase())) continue;
-    if (!finalHookLines.join(" ").toLowerCase().includes(brandPhonetic.toLowerCase())) continue;
-    if (finalHookLines.at(-1)?.toLowerCase() !== brandPhonetic.toLowerCase()) continue;
+    const comparableBrand = comparableLyric(brandPhonetic);
+    if (!comparableLyric(hookLines.join(" ")).includes(comparableBrand)) continue;
+    if (!comparableLyric(finalHookLines.join(" ")).includes(comparableBrand)) continue;
+    if (comparableLyric(finalHookLines.at(-1)) !== comparableBrand) continue;
     if (!lyrics.length) continue;
 
     seenAngles.add(angleKey);
