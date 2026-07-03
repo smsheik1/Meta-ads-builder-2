@@ -396,6 +396,12 @@ export type ThreeDBreakdownShot = {
   video?: ThreeDBreakdownMediaRef;
 };
 
+export type ThreeDBreakdownStoryboardBoard = {
+  frameCount: 6;
+  imagePrompt: string;
+  image?: ThreeDBreakdownMediaRef;
+};
+
 export type ThreeDBreakdownAdScene = AdSceneBase<
   "three-d-breakdown",
   AdSceneStyleBase,
@@ -414,6 +420,7 @@ export type ThreeDBreakdownAdScene = AdSceneBase<
       ThreeDBreakdownShot & { shotIndex: 2; role: "mechanism" },
       ThreeDBreakdownShot & { shotIndex: 3; role: "revelation" },
     ];
+    storyboardBoard?: ThreeDBreakdownStoryboardBoard;
     musicBed: {
       id: ThreeDBreakdownMusicBedId;
       src: string;

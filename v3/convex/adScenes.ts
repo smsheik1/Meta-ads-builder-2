@@ -68,6 +68,21 @@ const withUpdatedThreeDShot = (
   },
 });
 
+const withUpdatedThreeDStoryboardBoard = (
+  scene: ThreeDBreakdownAdScene,
+  update: (board: NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>) => NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>,
+): ThreeDBreakdownAdScene => {
+  const board = scene.layout.storyboardBoard;
+  if (!board) return scene;
+  return {
+    ...scene,
+    layout: {
+      ...scene.layout,
+      storyboardBoard: update(board),
+    },
+  };
+};
+
 const storeThreeDBytes = async (
   ctx: {
     storage: {
@@ -428,6 +443,36 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
     if (!replicateApiToken) throw new Error("Replicate image generation is not configured for 3D Breakdown.");
     let nextScene = assertThreeDBreakdownScene(scene as AdScene);
+
+    const storyboardBoard = nextScene.layout.storyboardBoard;
+    if (storyboardBoard?.imagePrompt) {
+      nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
+        ...board,
+        image: { status: "generating" },
+      }));
+      await patchThreeDScene(ctx, sceneId, nextScene);
+      try {
+        const image = await generateReplicateNanoBanana2Image({
+          replicateApiToken,
+          prompt: storyboardBoard.imagePrompt,
+          aspectRatio: "9:16",
+        });
+        const stored = await storeThreeDBytes(ctx, image.bytes, image.mimeType);
+        nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
+          ...board,
+          image: { status: "ready", ...stored },
+        }));
+      } catch (error) {
+        nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
+          ...board,
+          image: {
+            status: "failed",
+            error: error instanceof Error ? error.message : "3D storyboard board generation failed.",
+          },
+        }));
+      }
+      await patchThreeDScene(ctx, sceneId, nextScene);
+    }
 
     for (const shot of nextScene.layout.shots) {
       nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({

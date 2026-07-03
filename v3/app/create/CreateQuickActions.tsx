@@ -432,6 +432,8 @@ function ThreeDBreakdownAssemblyCard({
   const imagesReady = scene.layout.shots.every((shot) => shot.image?.status === "ready");
   const videosReady = scene.layout.shots.every((shot) => shot.video?.status === "ready");
   const finalReady = currentRenderStatus === "ready";
+  const storyboardBoard = scene.layout.storyboardBoard;
+  const storyboardBoardStatus = storyboardBoard?.image?.status || "idle";
   const finalStatus = renderBusy ? "Building" : finalReady ? "Final ready" : videosReady ? "Needs MP4" : "Needs clips";
   const storyDirectionNumber = (scene.metadata.candidateIndex ?? 0) + 1;
   const stepClass = "rounded-2xl border border-slate-200 bg-slate-50 p-3";
@@ -476,6 +478,39 @@ function ThreeDBreakdownAssemblyCard({
               {statusPill(imageStatus)}
             </Badge>
           </div>
+          {storyboardBoard ? (
+            <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-3" data-three-d-storyboard-board="true">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Storyboard board</p>
+                  <p className="mt-1 text-xs font-black leading-4 text-slate-950">One six-frame visual plan for the whole ad.</p>
+                </div>
+                <Badge variant={storyboardBoardStatus === "ready" ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
+                  {storyboardBoardStatus}
+                </Badge>
+              </div>
+              {storyboardBoard.image?.url ? (
+                <img
+                  src={storyboardBoard.image.url}
+                  alt="Six-frame 3D Breakdown storyboard board"
+                  className="mt-3 aspect-[9/16] w-full rounded-2xl border border-slate-100 object-cover"
+                />
+              ) : storyboardBoardStatus === "generating" ? (
+                <div className="mt-3 flex aspect-[9/16] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-xs font-black uppercase tracking-[0.14em] text-slate-400">
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Drawing board
+                </div>
+              ) : storyboardBoardStatus === "failed" ? (
+                <p className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
+                  {storyboardBoard.image?.error || "Storyboard board failed. Production shots may still be available."}
+                </p>
+              ) : (
+                <p className="mt-3 rounded-2xl bg-slate-50 px-3 py-2 text-xs font-bold leading-5 text-slate-500">
+                  Generate 3D images to draw the storyboard board and production stills.
+                </p>
+              )}
+            </div>
+          ) : null}
           <div className="mt-3 grid gap-2">
             {scene.layout.shots.map((shot) => (
               <div key={shot.shotIndex} className="rounded-2xl border border-slate-200 bg-white p-3">

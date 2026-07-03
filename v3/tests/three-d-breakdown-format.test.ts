@@ -127,6 +127,9 @@ assert.ok(prompt.includes("One missing approval can freeze an entire launch."));
 assert.ok(prompt.includes("The bottle was never the disposable part."));
 assert.ok(prompt.includes("Renderer CTA, not narration:"));
 assert.ok(prompt.includes("1-5 word visual emphasis, not CTA or slogan"));
+assert.ok(prompt.includes("\"storyboardBoard\""));
+assert.ok(prompt.includes("one vertical 9:16 storyboard artist board with exactly 6 framed panels"));
+assert.ok(prompt.includes("panel 4 Shot 2 wow reveal"));
 assert.ok(prompt.includes("exploded-product"));
 
 const makeVariant = ({
@@ -160,6 +163,10 @@ const makeVariant = ({
     { role: "revelation", narration: revelation, startMs: 13000, endMs: 18000 },
     { role: "punchline", narration: "The backup gift becomes remembered.", startMs: 18000, endMs: 20000 },
   ],
+  storyboardBoard: {
+    frameCount: 6,
+    imagePrompt: "One vertical 9:16 storyboard artist board with exactly 6 framed panels in a 2-column by 3-row layout, miniature red gift table diorama, red cookie tin recurring object, warm bakery lighting, no text, no captions, no logos.",
+  },
   shots: [
     {
       shotIndex: 1,
@@ -237,6 +244,8 @@ assert.equal(observedMaxTokens, 4000);
 assert.equal(generated.variants.length, 2);
 assert.equal(generated.variants[0]?.scriptBeats.length, 5);
 assert.equal(generated.variants[0]?.shots.length, 3);
+assert.equal(generated.variants[0]?.storyboardBoard.frameCount, 6);
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("6 framed panels"));
 
 const compactNearMissVariant = makeVariant();
 compactNearMissVariant.scriptBeats = [
@@ -422,6 +431,8 @@ assert.equal(scene.format, "three-d-breakdown");
 assert.equal(scene.layout.durationMs, 20_000);
 assert.equal(scene.layout.scriptBeats.length, 5);
 assert.equal(scene.layout.shots.length, 3);
+assert.equal(scene.layout.storyboardBoard?.frameCount, 6);
+assert.equal(scene.layout.storyboardBoard?.image?.status, "idle");
 assert.equal(scene.layout.musicBed.volume, 0.12);
 assert.equal(scene.layout.storyContract.wowMomentType, "proof-blocks");
 assert.ok(scene.layout.groundedEvidence.sourceUrl.includes("davidscookies"));

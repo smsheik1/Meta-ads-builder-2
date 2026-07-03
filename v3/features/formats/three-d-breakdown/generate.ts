@@ -13,6 +13,7 @@ import type {
   ThreeDBreakdownRiskFlag,
   ThreeDBreakdownScriptBeat,
   ThreeDBreakdownShot,
+  ThreeDBreakdownStoryboardBoard,
 } from "../../scene/types";
 import { extractThreeDBreakdownEvidence, type ThreeDBreakdownEvidenceItem } from "./evidence";
 import {
@@ -46,6 +47,7 @@ export type ThreeDBreakdownVariant = {
   viewerLearns: string;
   claimRisk: ThreeDBreakdownClaimRisk;
   claimRiskReason: string;
+  storyboardBoard: ThreeDBreakdownStoryboardBoard;
   scriptBeats: ThreeDBreakdownScriptBeat[];
   shots: ThreeDBreakdownShot[];
 };
@@ -206,6 +208,26 @@ const parseShots = (value: unknown): ThreeDBreakdownShot[] => {
   }) as ThreeDBreakdownShot[];
 };
 
+const parseStoryboardBoard = (value: unknown): ThreeDBreakdownStoryboardBoard => {
+  const raw = typeof value === "string"
+    ? { frameCount: 6, imagePrompt: value }
+    : value as Record<string, unknown>;
+  if (!raw || typeof raw !== "object") {
+    throw new Error("3D Breakdown storyboard board is missing.");
+  }
+  if (raw.frameCount !== 6) {
+    throw new Error("3D Breakdown storyboard board must have 6 frames.");
+  }
+  const imagePrompt = cleanText(raw.imagePrompt, 1800);
+  if (!imagePrompt) throw new Error("3D Breakdown storyboard board image prompt is missing.");
+  assertNoBannedText(imagePrompt);
+  return {
+    frameCount: 6,
+    imagePrompt,
+    image: { status: "idle" },
+  };
+};
+
 const parseVariants = (
   parsed: Record<string, unknown>,
   evidenceItems: ThreeDBreakdownEvidenceItem[],
@@ -243,6 +265,7 @@ const parseVariants = (
     });
     return {
       ...parsedVariantBase,
+      storyboardBoard: parseStoryboardBoard(rawVariant.storyboardBoard ?? rawVariant.storyboardImagePrompt),
       scriptBeats,
       shots: parseShots(rawVariant.shots),
     };

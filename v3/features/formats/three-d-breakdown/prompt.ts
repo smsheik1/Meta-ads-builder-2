@@ -84,6 +84,10 @@ Return JSON only:
       "viewerLearns": "what the viewer understands after the reveal",
       "claimRisk": "low | medium | high",
       "claimRiskReason": "why the claims are safe and grounded",
+      "storyboardBoard": {
+        "frameCount": 6,
+        "imagePrompt": "one 6-frame storyboard board image prompt covering the full 20-second ad"
+      },
       "scriptBeats": [
         { "role": "consequence", "narration": "...", "startMs": 0, "endMs": 3000 },
         { "role": "context", "narration": "...", "startMs": 3000, "endMs": 8000 },
@@ -233,6 +237,11 @@ Reveal pattern rules:
 - Decorative product explosions, rotations, dashboards, lifestyle shots, and cool visuals unrelated to the offer fail.
 
 Image prompt rules:
+- storyboardBoard.imagePrompt is NOT a production shot. It is one vertical 9:16 storyboard artist board with exactly 6 framed panels, arranged as a clean 2-column by 3-row board, showing the full story from consequence to final proof/payoff.
+- The storyboard board must use the same visualWorld, lighting, cameraStyle, recurringObjects, brand colors, and evidence-driven mechanism as the production shots.
+- The storyboard board should feel like a director's visual planning sheet: six cinematic keyframes, clear panel gutters, consistent world, no readable text, no captions, no logos, no UI labels, no speech bubbles.
+- The storyboard board should include: panel 1 consequence, panel 2 context escalation, panel 3 mechanism setup, panel 4 Shot 2 wow reveal, panel 5 evidence/payoff, panel 6 final punchline frame.
+- The storyboard board is for user understanding and planning. The individual shot imagePrompts remain the production stills used for animation.
 - Cinematic 3D documentary explainer render, high-contrast dimensional world, textured realistic materials, dramatic camera depth, volumetric or rim lighting, not a clean product poster.
 - Preferred visual grammar when no stronger brand-specific world exists: photorealistic 3D object/action on a bright blue/cyan clinical blueprint grid stage, full-width technical grid floor receding into the background, subtle grid wall, lab-clean realism, strong subject/background separation, medium close-up instructional camera, no text.
 - The subject must be physically grounded on or intersecting the grid plane; the grid reads as a measurement/engineering space, not a flat wallpaper or decorative pattern.

@@ -181,6 +181,12 @@ assert.ok(
   "3D Breakdown Script ready state must show all narration beats, not only the first line.",
 );
 assert.ok(
+  quickActionsSource.includes('data-three-d-storyboard-board="true"') &&
+    quickActionsSource.includes("One six-frame visual plan for the whole ad.") &&
+    quickActionsSource.includes("Generate 3D images to draw the storyboard board and production stills."),
+  "3D Breakdown Images step must show the generated six-frame storyboard board separately from production stills.",
+);
+assert.ok(
   quickActionsSource.includes("Story direction {storyDirectionNumber}") &&
     quickActionsSource.includes("Press Spacebar to compare before generating images."),
   "3D Breakdown must explain that generated scripts are story directions users can compare before paid media.",

@@ -74,6 +74,7 @@ export function createThreeDBreakdownAdScene({
       durationMs: THREE_D_BREAKDOWN_DURATION_MS,
       scriptBeats: variant.scriptBeats as ThreeDBreakdownAdScene["layout"]["scriptBeats"],
       shots: variant.shots as ThreeDBreakdownAdScene["layout"]["shots"],
+      storyboardBoard: variant.storyboardBoard,
       musicBed,
       storyContract: {
         ...siteContract,
