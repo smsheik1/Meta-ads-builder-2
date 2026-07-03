@@ -22,6 +22,12 @@ export const getSceneAudioKey = (scene: AdScene) => [
 ].join(":");
 
 export const createVoiceoverLines = (scene: AdScene) => {
+  if (scene.format === "three-d-breakdown") {
+    return scene.layout.scriptBeats
+      .map((beat) => cleanText(beat.narration))
+      .filter(Boolean);
+  }
+
   const proof = cleanText(scene.creative.selectedProof);
   const subheadline = cleanText(scene.creative.subheadline);
   const cta = cleanText(scene.creative.ctaText);
@@ -34,12 +40,19 @@ export const createVoiceoverLines = (scene: AdScene) => {
 };
 
 export const createVoiceoverPrompt = (scene: AdScene) => (
-  [
-    "Read this as a short, natural Meta ad voiceover.",
-    "Sound conversational, confident, and human. Do not sound like a movie trailer or corporate pitch.",
-    "",
-    createVoiceoverLines(scene).join(". "),
-  ].join("\n")
+  scene.format === "three-d-breakdown"
+    ? [
+      "Read this as a cinematic but grounded explainer voiceover.",
+      "Sound documentary, curious, and clear. Do not overact. Do not sound like a movie trailer.",
+      "",
+      createVoiceoverLines(scene).join(". "),
+    ].join("\n")
+    : [
+      "Read this as a short, natural Meta ad voiceover.",
+      "Sound conversational, confident, and human. Do not sound like a movie trailer or corporate pitch.",
+      "",
+      createVoiceoverLines(scene).join(". "),
+    ].join("\n")
 );
 
 export const estimateVoiceoverDurationMs = (scene: AdScene) => {
@@ -58,6 +71,15 @@ export const createCaptionsForVoiceover = (
   scene: AdScene,
   durationMs = estimateVoiceoverDurationMs(scene),
 ): AdSceneCaption[] => {
+  if (scene.format === "three-d-breakdown") {
+    const targetDurationMs = scene.layout.durationMs;
+    return scene.layout.scriptBeats.map((beat) => ({
+      text: cleanText(beat.narration),
+      startMs: Math.round((beat.startMs / targetDurationMs) * durationMs),
+      endMs: Math.round((beat.endMs / targetDurationMs) * durationMs),
+    }));
+  }
+
   const lines = createVoiceoverLines(scene);
   const weights = lines.map((line) => Math.max(3, line.split(/\s+/).filter(Boolean).length));
   const totalWeight = weights.reduce((sum, weight) => sum + weight, 0) || 1;

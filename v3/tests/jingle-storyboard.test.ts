@@ -167,7 +167,7 @@ assert.ok(!storyPrompt.includes("Parser safety"));
 assert.ok(storyPrompt.includes("never baked text, a button, or a caption"));
 assert.ok(storyPrompt.includes("No stage performance, band, DJ, concert crowd, captions, subtitles, lyric text, CTA text, buttons, panel layouts, realistic human faces"));
 assert.ok(storyPrompt.includes("Brand name or logo may appear only as natural in-world set dressing"));
-assert.ok(storyPrompt.includes("product tin label"));
+assert.ok(!storyPrompt.includes("product tin label"));
 assert.ok(storyPrompt.includes("Do not use trademarked toy names"));
 assert.ok(!/\bLego\b/i.test(storyPrompt));
 assert.ok(!storyPrompt.includes('"role"'));
@@ -184,6 +184,24 @@ assert.equal(
     { ctaDirection: "Book a demo" },
   ).recurringHeroObject,
   "brick-style cookie tin",
+);
+assert.equal(
+  extractBrickStoryboardStoryPlan(
+    JSON.stringify({ ...storyPlan, recurringHeroObject: "red tin with David's Cookies label" }),
+    slots,
+    "Story Director",
+    { ctaDirection: "Book a demo", brandName: "David's Cookies" },
+  ).recurringHeroObject,
+  "red tin",
+);
+assert.equal(
+  extractBrickStoryboardStoryPlan(
+    JSON.stringify({ ...storyPlan, recurringHeroObject: "red cookie tin with printed logo" }),
+    slots,
+    "Story Director",
+    { ctaDirection: "Book a demo" },
+  ).recurringHeroObject,
+  "red cookie tin",
 );
 let storyDirectorMaxTokens: number | undefined;
 assert.deepEqual(
@@ -211,14 +229,6 @@ const invalidStoryPlans = [
   [
     { ...storyPlan, recurringHeroObject: "generic delivery box" },
     /must not be a generic box or package/,
-  ],
-  [
-    { ...storyPlan, recurringHeroObject: "red tin with David's Cookies label" },
-    /must not include the brand name, label, logo, or readable text/,
-  ],
-  [
-    { ...storyPlan, recurringHeroObject: "red cookie tin with printed logo" },
-    /must not include the brand name, label, logo, or readable text/,
   ],
   [
     {
@@ -429,6 +439,7 @@ assert.throws(
 const storyboardActionSource = readFileSync(new URL("../convex/jingleStoryboards.ts", import.meta.url), "utf8");
 const animateBrickBoardSource = storyboardActionSource.match(/export const animateBrickBoard[\s\S]*?export const generateBrickForScene/)?.[0] || "";
 const regenerateBrickShotSource = storyboardActionSource.match(/export const regenerateBrickShot[\s\S]*?export const buildMusicVideoForScene/)?.[0] || "";
+const regenerateBrickShotVideoSource = storyboardActionSource.match(/export const regenerateBrickShotVideo[\s\S]*?export const buildMusicVideoForScene/)?.[0] || "";
 assert.ok(storyboardActionSource.includes("const referenceImagePromise = storeStoryboardImage"), "Reference image generation should not block shot image generation.");
 assert.ok(storyboardActionSource.includes("const shotResultsPromise = Promise.all(promptPlan.shots.map(async (shot)"), "Shot stills should generate in parallel.");
 assert.ok(storyboardActionSource.includes("await Promise.all([referenceImagePromise, shotResultsPromise])"), "Reference and shot stills should resolve in parallel.");
@@ -445,5 +456,10 @@ assert.ok(
 );
 assert.ok(regenerateBrickShotSource.includes("musicVideo: undefined"), "Regenerating a still must clear the built music video.");
 assert.ok(regenerateBrickShotSource.includes("video: undefined"), "Regenerating a still must clear the old Seedance clip for that shot.");
+assert.ok(regenerateBrickShotVideoSource.includes("shotIndex: v.number()"), "Retrying animation must target one shot.");
+assert.ok(regenerateBrickShotVideoSource.includes("storeStoryboardVideo"), "Retrying animation must use the Seedance video path.");
+assert.ok(regenerateBrickShotVideoSource.includes("clearSceneMusicVideo: true"), "Retrying animation must clear stale final music videos.");
+assert.ok(!regenerateBrickShotVideoSource.includes("storeStoryboardImage"), "Retrying animation must not regenerate the still image.");
+assert.ok(storyboardActionSource.includes("stitchStatus: undefined"), "Clearing a built music video must clear stale stitch status.");
 
 console.log("jingle-storyboard tests passed");

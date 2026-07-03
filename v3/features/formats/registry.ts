@@ -7,6 +7,7 @@ import { textMessageFormatModule } from "./text-message";
 import { brainrotFormatModule } from "./brainrot";
 import { reviewsFormatModule } from "./reviews";
 import { motionStoryFormatModule } from "./motion-story";
+import { threeDBreakdownFormatModule } from "./three-d-breakdown";
 import { visualizerFormatModule } from "./visualizer";
 import { wereSorryFormatModule } from "./were-sorry";
 
@@ -24,6 +25,7 @@ export const formatRegistry = createFormatRegistry({
   brainrot: brainrotFormatModule,
   reviews: reviewsFormatModule,
   "motion-story": motionStoryFormatModule,
+  "three-d-breakdown": threeDBreakdownFormatModule,
 } satisfies Record<AdFormatId, AnyAdFormatModule>);
 
 export const getFormatModuleFromRegistry = <

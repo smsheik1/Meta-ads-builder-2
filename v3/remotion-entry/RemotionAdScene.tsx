@@ -48,17 +48,20 @@ export function RemotionAdScene({ scene }: { scene: AdScene }) {
   const audio = scene.audio.status === "generated" && scene.audio.url
     ? scene.audio
     : null;
-  const motionStoryMusicSrc = scene.format === "motion-story"
-    ? scene.layout.musicBed.src
+  const musicBed = scene.format === "motion-story" || scene.format === "three-d-breakdown"
+    ? scene.layout.musicBed
+    : null;
+  const motionStoryMusicSrc = musicBed
+    ? musicBed.src
     : "";
 
   return (
     <AbsoluteFill style={{ background: scene.style.backgroundColor }}>
       {audio ? <Audio src={audio.url} /> : null}
-      {!audio && motionStoryMusicSrc ? (
+      {motionStoryMusicSrc ? (
         <Audio
           src={resolveRenderAssetSrc(motionStoryMusicSrc)}
-          volume={scene.format === "motion-story" ? scene.layout.musicBed.volume : 0.18}
+          volume={musicBed?.volume ?? 0.18}
         />
       ) : null}
       <RenderAssetProvider Image={RemotionImageAsset} Video={RemotionVideoAsset}>

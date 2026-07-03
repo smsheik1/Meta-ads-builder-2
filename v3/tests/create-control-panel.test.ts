@@ -6,6 +6,7 @@ const createCaptionModalSource = readFileSync("app/create/CreateCaptionModal.tsx
 const controlPanelSource = readFileSync("app/create/CreateControlPanel.tsx", "utf8");
 const createDialogueModalSource = readFileSync("app/create/CreateDialogueModal.tsx", "utf8");
 const createLeftColumnSource = readFileSync("app/create/CreateLeftColumn.tsx", "utf8");
+const canvasColumnSource = readFileSync("app/create/CreateCanvasColumn.tsx", "utf8");
 const reviewsProductPickerSource = readFileSync("app/create/CreateReviewsProductPicker.tsx", "utf8");
 const rootLayoutSource = readFileSync("app/layout.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
@@ -14,6 +15,7 @@ const brickStoryboardSheetSource = readFileSync("app/create/CreateBrickStoryboar
 const creativeBriefSource = readFileSync("app/create/CreateCreativeBriefCard.tsx", "utf8");
 const visualizerSchemaSource = readFileSync("features/formats/visualizer/schema.ts", "utf8");
 const visualizerModuleSource = readFileSync("features/formats/visualizer/index.ts", "utf8");
+const globalsSource = readFileSync("app/globals.css", "utf8");
 
 assert.ok(
   !createClientSource.includes("<CreateActionCard"),
@@ -24,10 +26,21 @@ assert.ok(
   "/create must use compact quick actions plus the panel control surface.",
 );
 assert.ok(
-  createClientSource.includes("const [clientReady, setClientReady] = useState(false)") &&
-    createClientSource.includes("if (!clientReady)") &&
-    createClientSource.indexOf("if (!clientReady)") < createClientSource.indexOf("return <ResearchConnected />"),
-  "/create must not SSR interactive controls that browser extensions can mutate before hydration.",
+  createClientSource.includes("grid max-w-[1500px] items-start") &&
+    createClientSource.includes("grid items-start gap-5") &&
+    !createClientSource.includes("grid max-w-[1500px] items-center") &&
+    !createClientSource.includes("grid items-center gap-5"),
+  "/create must top-align the desktop tool surface so the phone and action rail do not fall below the fold at 100% zoom.",
+);
+assert.ok(
+  previewChromeSource.includes('aspect-[1/2] h-[clamp(470px,calc(100vh-15rem),720px)]') &&
+    !previewChromeSource.includes("h-[720px] w-[360px]"),
+  "/create phone preview must shrink on short desktop viewports instead of forcing a fixed 720px-tall phone.",
+);
+assert.ok(
+  !createClientSource.includes("clientReady") &&
+    createClientSource.includes("return <ResearchConnected />"),
+  "/create must render the app directly; a clientReady hydration gate can strand users on a blank/loading shell.",
 );
 assert.ok(
   createClientSource.includes('if (format === "text-message") return 6') &&
@@ -65,10 +78,24 @@ assert.ok(
   "Creative Pack status must render visible per-format chips with failed-format retry inside the left form.",
 );
 assert.ok(
+  createLeftColumnSource.includes('workingMode ? "Website ready"') &&
+    createLeftColumnSource.includes('adScenesCount ? "Ads ready to review"'),
+  "/create must not tell users to add a website after research exists but generation failed.",
+);
+assert.ok(
   createClientSource.includes("api.adScenes.listForResearchRun") &&
     createClientSource.includes("hydrateCreativePackGroupsFromSceneRows") &&
     createClientSource.includes("minimumReadyFormats: 2"),
   "/create must hydrate the Creative Pack rail from saved research-run scenes after refresh.",
+);
+assert.ok(
+  createClientSource.includes("function isRenderableScene") &&
+    createClientSource.includes("getFormatModule(scene.format).validate(scene).valid") &&
+    createClientSource.includes("getRenderableSceneEntries(latestGeneration.scenes") &&
+    createClientSource.includes("Previous saved ads used an older format contract. Generate again.") &&
+    createClientSource.includes("assertRenderableScenes(scenes)") &&
+    createClientSource.includes("That saved design uses an older format contract. Generate it again."),
+  "/create must validate persisted/generated scenes before selecting them so stale format contracts cannot crash AdRenderSurface.",
 );
 
 const nativeControlPattern = /<(?:input|select|textarea)\b/g;
@@ -144,23 +171,50 @@ assert.ok(
   "Inline status feedback must be capped at two visible banners.",
 );
 assert.ok(
+  quickActionsSource.includes("threeDRenderBlocked") &&
+    quickActionsSource.includes("Generate 3D images and animate clips before building the MP4."),
+  "3D Breakdown must not allow the global MP4 action before generated clips exist.",
+);
+assert.ok(
+  quickActionsSource.includes("scene.layout.scriptBeats.map") &&
+    quickActionsSource.includes('data-three-d-script-beat="true"'),
+  "3D Breakdown Script ready state must show all narration beats, not only the first line.",
+);
+assert.ok(
+  quickActionsSource.includes("Story direction {storyDirectionNumber}") &&
+    quickActionsSource.includes("Press Spacebar to compare before generating images."),
+  "3D Breakdown must explain that generated scripts are story directions users can compare before paid media.",
+);
+assert.ok(
   quickActionsSource.includes("data-create-saved-library-trigger") &&
     quickActionsSource.includes("SheetContent") &&
     quickActionsSource.includes("data-create-saved-design-item"),
   "Saved designs must open from normal app UI, not canvas hover UI.",
 );
 assert.ok(
-  quickActionsSource.includes('const showBrickStoryboard = selectedFormat === "jingle" && hasPlayableAudio') &&
-    brickStoryboardSheetSource.includes("data-brick-storyboard-trigger") &&
+    quickActionsSource.includes('const showBrickStoryboard = selectedFormat === "jingle"') &&
+    brickStoryboardSheetSource.includes("data-music-video-assembly-card") &&
+    brickStoryboardSheetSource.includes("data-music-video-assembly-toggle") &&
+    brickStoryboardSheetSource.includes("data-music-video-assembly-compact-steps") &&
+    brickStoryboardSheetSource.includes("aria-expanded={!collapsed}") &&
+    brickStoryboardSheetSource.includes("Assembly line") &&
+    brickStoryboardSheetSource.includes("Collapse") &&
+    !brickStoryboardSheetSource.includes("Build health") &&
+    brickStoryboardSheetSource.includes("Song") &&
+    brickStoryboardSheetSource.includes("Scenes") &&
+    brickStoryboardSheetSource.includes("Images") &&
+    brickStoryboardSheetSource.includes("Animation") &&
+    brickStoryboardSheetSource.includes("Final Video") &&
     brickStoryboardSheetSource.includes("data-brick-storyboard-animate") &&
     brickStoryboardSheetSource.includes("data-brick-storyboard-build") &&
     !quickActionsSource.includes("if (!brickStoryboard && canGenerateBrickStoryboard"),
-  "Brick storyboard review must open for free; only the explicit Generate board button may spend image calls.",
+  "Jingle music video assembly rail must stay in the right panel and only explicit buttons may spend image/video calls.",
 );
 assert.ok(
   createClientSource.includes("sceneIds: nextGeneration.sceneIds") &&
     createClientSource.includes("api.jingleStoryboards.generateBrickForScene") &&
     createClientSource.includes("api.jingleStoryboards.regenerateBrickShot") &&
+    createClientSource.includes("api.jingleStoryboards.regenerateBrickShotVideo") &&
     createClientSource.includes("api.jingleStoryboards.animateBrickBoard") &&
     createClientSource.includes("api.jingleStoryboards.buildMusicVideoForScene") &&
     createClientSource.includes("api.jingleStoryboards.latestForScene"),
@@ -169,15 +223,16 @@ assert.ok(
 assert.ok(
   brickStoryboardSheetSource.includes("data-brick-shot-regenerate") &&
     brickStoryboardSheetSource.includes("data-brick-shot-retry-video") &&
-    brickStoryboardSheetSource.includes("shotVideoFailed") &&
-    brickStoryboardSheetSource.includes("Retry video") &&
+    brickStoryboardSheetSource.includes("Retry animation") &&
     brickStoryboardSheetSource.includes("New image") &&
-    brickStoryboardSheetSource.includes("className=\"min-w-0 truncate\"") &&
+    brickStoryboardSheetSource.includes("data-brick-shot-card") &&
     brickStoryboardSheetSource.includes("data-brick-shot-prompt") &&
     brickStoryboardSheetSource.includes("Still image prompt") &&
     brickStoryboardSheetSource.includes("Seedance video prompt") &&
-    brickStoryboardSheetSource.includes("shot.animationPrompt"),
-  "Brick storyboard shot cards must expose distinct visible image-regenerate and Seedance-video retry controls plus both prompts.",
+    !brickStoryboardSheetSource.includes("Retry video") &&
+    createClientSource.includes("brickStoryboardVideoBusyIndex") &&
+    createClientSource.includes("onRegenerateBrickShotVideo"),
+  "Functional assembly rail must expose distinct visible image-regenerate and Seedance-video retry controls plus prompts.",
 );
 assert.ok(
   createClientSource.includes("restoreSavedDesignSelection") &&
@@ -186,9 +241,9 @@ assert.ok(
 );
 assert.ok(
     createClientSource.includes("setUrl(latestGeneration.result.websiteUrl)") &&
-    createClientSource.includes("setUrl(restored.selectedScene.brand.url || url)") &&
+    createClientSource.includes("setUrl(selectedEntry.scene.brand.url || url)") &&
     createClientSource.includes("setSelectedAdFormat(restoredScene.format)") &&
-    createClientSource.includes("setSelectedAdFormat(restored.selectedScene.format)") &&
+    createClientSource.includes("setSelectedAdFormat(selectedEntry.scene.format)") &&
     createClientSource.includes("setSelectedVideoMemeTemplateId(templateId)"),
   "Restored scenes must restore URL, format, and video meme template state so same-brand format switches do not reread the wrong site.",
 );
@@ -203,7 +258,7 @@ assert.ok(
     quickActionsSource.includes("const hasPlayableAudio = Boolean(playableAudioUrl)") &&
     quickActionsSource.includes('selectedFormat === "motion-story"') &&
     quickActionsSource.includes('selectedFormat === "jingle" || selectedFormat === "brainrot"') &&
-    quickActionsSource.includes('((selectedFormat === "jingle" || selectedFormat === "brainrot") && hasPlayableAudio)') &&
+    quickActionsSource.includes('selectedFormat === "three-d-breakdown"') &&
     quickActionsSource.includes('audioStatus === "loading"') &&
     quickActionsSource.includes("onClick={hasPlayableAudio ? onTogglePreviewPlayback : onOpenAudioPanel}") &&
     quickActionsSource.includes('"Audio pending"') &&
@@ -212,8 +267,9 @@ assert.ok(
     createClientSource.includes("onRegenerateVisualizerAudio") &&
     createClientSource.includes("count: 1") &&
     createClientSource.includes("generateDialogueAudioForScene({") &&
-    !createClientSource.includes("api.audioAssets.generateForScene"),
-  "The primary audio quick action must derive from selected scene audio and never show Add Audio for pending generated-audio formats.",
+    createClientSource.includes("api.audioAssets.generateForScene") &&
+    createClientSource.includes('format: "three-d-breakdown"'),
+  "The primary audio quick action must derive from selected scene audio and 3D Breakdown must use the existing generated voiceover path.",
 );
 assert.ok(
   createClientSource.includes("const generateScenesOnly = async") &&
@@ -282,15 +338,58 @@ assert.ok(
 );
 assert.ok(
   createClientSource.includes("getAdGenerationErrorMessage") &&
-    createClientSource.includes("We're Sorry copy generation timed out after reusing the saved research.") &&
+    createClientSource.includes("We're Sorry copy generation timed out. Try again.") &&
+    createClientSource.includes("Ad generation timed out. Try again.") &&
+    createClientSource.includes("/NVIDIA NIM|Gemini|Replicate|Seedance|Nano Banana|director/i.test(message)") &&
+    createClientSource.includes("const nextGeneration = await generateAdScenes(generationArgs) as AdSceneGenerationResponse") &&
+    !createClientSource.includes("Ad generation timed out after reusing the saved research.") &&
     createClientSource.includes("setError(getAdGenerationErrorMessage(nextError))"),
-  "Ad generation timeouts must not be reported as website research timeouts.",
+  "Manual ad generation must not use a fake client timer or blame saved research for slow provider calls.",
 );
 assert.ok(
   createClientSource.includes("getMusicGenerationErrorMessage") &&
     createClientSource.includes("ElevenLabs Music requires a paid plan for this API key") &&
     createClientSource.includes("setAudioError(getMusicGenerationErrorMessage(nextError))"),
   "Jingle audio failures must surface a clear visible music-generation error instead of a raw Convex stack.",
+);
+assert.ok(
+  createClientSource.includes("function getNextJingleStyleId(styleId: JingleStyleId): JingleStyleId") &&
+    createClientSource.includes("JINGLE_STYLES.map((style) => style.id)") &&
+    createClientSource.includes('selectedScene?.format === "jingle"') &&
+    createClientSource.includes('if (status === "loading" || adStatus === "loading" || audioStatus === "loading") return;') &&
+    createClientSource.includes("setRerollCount((count) => count + 1)") &&
+    createClientSource.includes('triggerRerollFlash(["headline", "visualizer", "captions"])') &&
+    createClientSource.includes("const nextJingleStyleId = getNextJingleStyleId(selectedJingleStyleId)") &&
+    createClientSource.includes("setSelectedJingleStyleId(nextJingleStyleId)") &&
+    createClientSource.includes('loadingNote: `Making a ${nextJingleStyle?.label || "new"} jingle...`') &&
+    createClientSource.includes("jingleStyleId: nextJingleStyleId"),
+  "Spacebar on Brand Jingle must visibly start work once, then rotate song style instead of silently cycling one scene.",
+);
+assert.ok(
+  canvasColumnSource.includes("rerollBusy: boolean") &&
+    canvasColumnSource.includes("disabled={rerollBusy}") &&
+    canvasColumnSource.includes("Making your next version...") &&
+    createClientSource.includes('rerollBusy={status === "loading" || adStatus === "loading" || audioStatus === "loading"}'),
+  "The spacebar reroll control must show an immediate busy state so users do not spam duplicate generations.",
+);
+assert.ok(
+  canvasColumnSource.includes("/wiggly-wordmark-3d-crop.png") &&
+    canvasColumnSource.includes("wiggly-preview-bounce") &&
+    globalsSource.includes("@keyframes wigglyPreviewBounce"),
+  "The preview loading overlay must use the bouncing Wiggly logo instead of a generic spinner.",
+);
+assert.ok(
+  createClientSource.includes("const previewBusyLabel = status === \"loading\"") &&
+    createClientSource.includes("function getThreeDBreakdownLoadingLabel(elapsedSeconds: number)") &&
+    createClientSource.includes("Still waiting on NVIDIA NIM. Slow, not frozen.") &&
+    createClientSource.includes("adGenerationStatusLabel={adGenerationStatusLabel}") &&
+    createLeftColumnSource.includes("Writing 2 story directions") &&
+    createLeftColumnSource.includes("adGenerationStatusLabel ? (") &&
+    createClientSource.includes('previewBusyLabel={previewBusyLabel}') &&
+    canvasColumnSource.includes("previewBusyLabel: string") &&
+    canvasColumnSource.includes("data-preview-loading-overlay") &&
+    canvasColumnSource.includes("{previewBusyLabel}"),
+  "The phone preview must show a visible loading overlay while /create is doing work.",
 );
 assert.ok(
   previewChromeSource.includes("useMemo<RenderVideoComponent>") &&

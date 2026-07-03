@@ -248,6 +248,25 @@ const ALLOWED_FUN_MECHANISMS = new Set<BrickStoryboardFunMechanism>(BRICK_STORYB
 
 const normalizeComparableText = (value: unknown) => cleanText(value, 260).replace(/\s+/g, " ");
 
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const stripReadableHeroText = (value: string, brandName = "") => {
+  let next = value;
+  const brand = cleanText(brandName, 120);
+  if (brand) {
+    next = next.replace(new RegExp(escapeRegExp(brand), "gi"), "");
+  }
+  return cleanText(
+    next
+      .replace(/\s+\b(?:with|including|featuring|showing)\b\s+(?:a\s+|the\s+)?(?:readable\s+)?(?:brand\s+)?(?:name|label|logo|wordmark|lettering|printed name|text)\b.*$/i, "")
+      .replace(/\s+\b(?:with|including|featuring|showing)\b\s+(?:a\s+|the\s+)?printed\s+(?:label|logo|wordmark|name|text)\b.*$/i, "")
+      .replace(/\b(?:readable\s+)?(?:brand\s+)?(?:name|label|logo|wordmark|lettering|printed name|text)\b/gi, "")
+      .replace(/\s+(?:with|including|featuring|showing)\s*$/i, "")
+      .replace(/\s{2,}/g, " "),
+    140,
+  );
+};
+
 export const toSeedanceSafeBrickPrompt = (value: string) => value
   .replace(/\bLego-built\b/gi, "brick-built")
   .replace(/\bLego minifigures?\b/gi, "plastic brick characters")
@@ -269,7 +288,7 @@ export function buildBrickStoryboardStoryPrompt(scene: JingleAdScene) {
     "- Return one flat top-level JSON object with EXACTLY two top-level keys: recurringHeroObject and shots.",
     "- recurringHeroObject is the one physical miniature brick-style object that appears in all 3 shots.",
     "- recurringHeroObject describes the recurring brand/product motif. It can be the catalyst, prize, signal, tool, or payoff, but it does not need to dominate every frame.",
-    "- recurringHeroObject describes shape, color, and use only. Do not include brand name, logo, readable label, wordmark, or text.",
+    "- recurringHeroObject describes shape, color, and use only. Example: red cookie tin. Never include brand name, logo, readable label, wordmark, or text.",
     "- Do not add visualPremise, worldSetting, storyPremise, premise, setting, hero, or storyPlan.",
     "- shots must contain exactly 3 objects using the exact keys: shotIndex, lyricLine, funMechanism, sceneDescription, motionHint.",
     `- funMechanism must be one of: ${BRICK_STORYBOARD_FUN_MECHANISMS.join(", ")}.`,
@@ -318,7 +337,7 @@ export function buildBrickStoryboardStoryPrompt(scene: JingleAdScene) {
     "- The reference frame locks the world; the recurringHeroObject gets the same lock.",
     `- The final shot should turn the CTA direction "${ctaDirection}" into a visible physical action, never baked text, a button, or a caption.`,
     "- No stage performance, band, DJ, concert crowd, captions, subtitles, lyric text, CTA text, buttons, panel layouts, realistic human faces, or fake claims. Block-figure characters only.",
-    "- Brand name or logo may appear only as natural in-world set dressing, such as a storefront sign, product tin label, menu board, delivery van side, or product display. Do not turn it into a caption, subtitle, CTA button, or floating ad copy.",
+    "- Brand name or logo may appear only as natural in-world set dressing, such as a storefront sign, menu board, delivery van side, or product display. Do not put brand text in recurringHeroObject, captions, subtitles, CTA buttons, or floating ad copy.",
     "- Do not use trademarked toy names. Use brick-style miniature, modular brick, and block-figure language instead.",
     "- No invented stats, ratings, reviews, discounts, guarantees, awards, competitors, or claims beyond the brand context.",
   ].join("\n");
@@ -335,7 +354,10 @@ export function extractBrickStoryboardStoryPlan(
   if (unexpectedTopLevelKeys.length) {
     throw new Error(`${providerLabel} returned unexpected top-level keys: ${unexpectedTopLevelKeys.slice(0, 8).join(", ")}.`);
   }
-  const recurringHeroObject = cleanText(toSeedanceSafeBrickPrompt(cleanText(payload.recurringHeroObject, 140)), 140);
+  const recurringHeroObject = stripReadableHeroText(
+    cleanText(toSeedanceSafeBrickPrompt(cleanText(payload.recurringHeroObject, 140)), 140),
+    options.brandName,
+  );
   if (!recurringHeroObject) {
     throw new Error(`${providerLabel} must choose one recurring hero object.`);
   }

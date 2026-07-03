@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createDefaultSceneLocks, rerollScene } from "../features/create/reroll";
 import { generateElevenLabsJingleMusic } from "../features/audio/elevenlabsMusic";
-import { JINGLE_MUSIC_LENGTH_MS, buildJinglePrompt } from "../features/formats/jingle/prompt";
+import { JINGLE_MUSIC_LENGTH_MS, JINGLE_STYLES, buildJinglePrompt } from "../features/formats/jingle/prompt";
 import {
   extractJingleVariantsFromResponse,
   generateJingleVariantsFromResearch,
@@ -99,6 +100,46 @@ const parsedCinematicStyles = extractJingleVariantsFromResponse(
 assert.ok(parsedCinematicStyles[0]!.compositionPlan.chunks[0]!.positive_styles.includes("cinematic trap diss rap"));
 assert.ok(parsedCinematicStyles[0]!.compositionPlan.chunks[0]!.positive_styles.includes("95 BPM"));
 
+const appleLikeVariant = {
+  angle: "new phone launch energy",
+  brand_phonetic: "Apple",
+  music_length_ms: JINGLE_MUSIC_LENGTH_MS,
+  composition_plan: {
+    chunks: [
+      {
+        text: "[Hook]\niPhone 16 in your hand\nApple!",
+        duration_ms: 6000,
+        positive_styles: baseStyles,
+        negative_styles: negativeStyles,
+        context_adherence: "high",
+      },
+      {
+        text: "[Verse]\nPocket glow, camera clean\nDaily stuff feels smooth",
+        duration_ms: 8000,
+        positive_styles: baseStyles,
+        negative_styles: negativeStyles,
+        context_adherence: "high",
+      },
+      {
+        text: "[Hook]\niPhone 16 in your hand\nApple!",
+        duration_ms: 6000,
+        positive_styles: baseStyles,
+        negative_styles: negativeStyles,
+        context_adherence: "high",
+      },
+    ],
+  },
+  self_check_passed: "durations sum to 20000; final line is Apple; no invented claims.",
+};
+const parsedAppleLike = extractJingleVariantsFromResponse(JSON.stringify({ variants: [appleLikeVariant] }));
+assert.equal(parsedAppleLike[0]!.brandPhonetic, "Apple");
+assert.equal(parsedAppleLike[0]!.lyrics.at(-1), "Apple!");
+
+const adScenesActionSource = readFileSync(new URL("../convex/adScenes.ts", import.meta.url), "utf8");
+for (const style of JINGLE_STYLES) {
+  assert.ok(adScenesActionSource.includes(`v.literal("${style.id}")`), `Convex jingleStyleId validator must accept ${style.id}.`);
+}
+
 const invalidJingleCases = [
   [],
   [{
@@ -136,6 +177,10 @@ assert.ok(cinematicPrompt.includes("STYLE-SPECIFIC TONE"));
 assert.ok(cinematicPrompt.includes("Diss the OLD PROBLEM"));
 assert.ok(cinematicPrompt.includes("brand lands as the chant"));
 assert.ok(cinematicPrompt.includes("Keep shouted energy for the hook"));
+const retailDancePrompt = buildJinglePrompt(research, "retail-dance");
+assert.ok(retailDancePrompt.includes("dance pop"));
+assert.ok(retailDancePrompt.includes("118 BPM"));
+assert.ok(retailDancePrompt.includes("chantable vocal hook"));
 
 await assert.rejects(
   () => generateJingleVariantsFromResearch(research, {

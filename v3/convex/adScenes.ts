@@ -1,7 +1,12 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { action, query } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { generateAdCandidatesFromResearch } from "../features/ad-generation/generate";
+import {
+  generateReplicateNanoBanana2Image,
+  generateReplicateSeedanceVideo,
+} from "../features/formats/jingle/storyboard";
 import { generateMemeVariantsFromResearch } from "../features/formats/meme/generate";
 import { generateJingleVariantsFromResearch } from "../features/formats/jingle/generate";
 import { generateBrainrotVariantsFromResearch } from "../features/formats/brainrot/generate";
@@ -10,6 +15,7 @@ import { generateMotionStoryVariantsFromResearch, pickMotionStoryProduct } from 
 import { generateReviewsVariantsFromResearch } from "../features/formats/reviews/generate";
 import { normalizeReviewProductHandles, productCatalogHasProductImage } from "../features/formats/reviews/productSelection";
 import { generateTextMessageVariantsFromResearch } from "../features/formats/text-message/generate";
+import { generateThreeDBreakdownVariantsFromResearch } from "../features/formats/three-d-breakdown/generate";
 import { generateVideoMemeVariantsFromResearch } from "../features/formats/video-meme/generate";
 import { generateWereSorryVariantsFromResearch } from "../features/formats/were-sorry/generate";
 import { fetchEcommerceProductCatalog } from "../features/research/productCatalog";
@@ -20,32 +26,103 @@ import { createMotionStoryAdScene } from "../features/scene/createMotionStorySce
 import { createReviewsAdScenes, REVIEWS_SCENE_TEMPLATES } from "../features/scene/createReviewsScene";
 import { createVideoMemeAdScene } from "../features/scene/createVideoMemeScene";
 import { createTextMessageAdScene } from "../features/scene/createTextMessageScene";
+import { createThreeDBreakdownAdScene } from "../features/scene/createThreeDBreakdownScene";
 import { createVisualizerAdScene } from "../features/scene/createVisualizerScene";
 import { createWereSorryAdScene } from "../features/scene/createWereSorryScene";
 import type { StoredWebsiteResearchResult } from "../features/research/types";
-import type { AdScene } from "../features/scene/types";
+import type { AdScene, ThreeDBreakdownAdScene, ThreeDBreakdownShot } from "../features/scene/types";
 import { toStoredResearchResult } from "./researchStorage";
 
 const createGenerationBatchId = () => (
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 );
 
+const assertThreeDBreakdownScene = (scene: AdScene): ThreeDBreakdownAdScene => {
+  if (scene.format !== "three-d-breakdown") throw new Error("3D Breakdown action received the wrong scene format.");
+  return scene;
+};
+
+const getThreeDShot = (scene: ThreeDBreakdownAdScene, shotIndex: number) => {
+  const shot = scene.layout.shots.find((item) => item.shotIndex === shotIndex);
+  if (!shot) throw new Error("3D Breakdown shot not found.");
+  return shot;
+};
+
+const patchThreeDScene = async (
+  ctx: any,
+  sceneId: Id<"adScenes">,
+  scene: ThreeDBreakdownAdScene,
+) => ctx.runMutation(internal.adSceneStorage.patchScene, { sceneId, scene });
+
+const withUpdatedThreeDShot = (
+  scene: ThreeDBreakdownAdScene,
+  shotIndex: number,
+  update: (shot: ThreeDBreakdownShot) => ThreeDBreakdownShot,
+): ThreeDBreakdownAdScene => ({
+  ...scene,
+  layout: {
+    ...scene.layout,
+    shots: scene.layout.shots.map((shot) => (
+      shot.shotIndex === shotIndex ? update(shot) : shot
+    )) as ThreeDBreakdownAdScene["layout"]["shots"],
+  },
+});
+
+const storeThreeDBytes = async (
+  ctx: {
+    storage: {
+      store: (blob: Blob) => Promise<Id<"_storage">>;
+      getUrl: (storageId: Id<"_storage">) => Promise<string | null>;
+    };
+  },
+  bytes: Uint8Array,
+  mimeType: string,
+) => {
+  const storageId = await ctx.storage.store(new Blob([bytes], { type: mimeType }));
+  const url = await ctx.storage.getUrl(storageId);
+  if (!url) throw new Error("3D Breakdown media storage returned no URL.");
+  return { storageId: String(storageId), url, mimeType };
+};
+
 export const generateFromResearch: ReturnType<typeof action> = action({
   args: {
     researchRunId: v.id("researchRuns"),
     count: v.optional(v.number()),
-    format: v.optional(v.union(v.literal("visualizer"), v.literal("meme"), v.literal("were-sorry"), v.literal("video-meme"), v.literal("jingle"), v.literal("text-message"), v.literal("brainrot"), v.literal("reviews"), v.literal("motion-story"))),
+    format: v.optional(v.union(v.literal("visualizer"), v.literal("meme"), v.literal("were-sorry"), v.literal("video-meme"), v.literal("jingle"), v.literal("text-message"), v.literal("brainrot"), v.literal("reviews"), v.literal("motion-story"), v.literal("three-d-breakdown"))),
     memeModel: v.optional(v.string()),
     videoMemeTemplateId: v.optional(v.union(v.literal("bear-sniff"), v.literal("pingu-noot-noot"), v.literal("darwin-journey"))),
     visualizerModel: v.optional(v.string()),
-    jingleStyleId: v.optional(v.union(v.literal("modern-hip-hop"), v.literal("cinematic-trap-diss"))),
+    jingleStyleId: v.optional(v.union(v.literal("modern-hip-hop"), v.literal("cinematic-trap-diss"), v.literal("pop-rap-hook"), v.literal("retail-dance"), v.literal("funky-commercial"))),
     selectedProductHandles: v.optional(v.array(v.string())),
   },
   handler: async (ctx, { researchRunId, count, format = "visualizer", memeModel, videoMemeTemplateId, visualizerModel, jingleStyleId, selectedProductHandles }) => {
+    const startedAt = Date.now();
+    const generationBatchId = createGenerationBatchId();
+    console.log("[wiggly:ad-generation] action:start", {
+      count,
+      format,
+      generationBatchId,
+      researchRunId: String(researchRunId),
+    });
+    console.log("[wiggly:ad-generation] research:load:start", {
+      generationBatchId,
+      researchRunId: String(researchRunId),
+    });
     const research = await ctx.runQuery(internal.adSceneStorage.loadResearchForGeneration, {
       researchRunId,
     });
-    const generationBatchId = createGenerationBatchId();
+    console.log("[wiggly:ad-generation] research:load:ready", {
+      brand: research.brand.name,
+      elapsedMs: Date.now() - startedAt,
+      format,
+      generationBatchId,
+      host: research.host,
+    });
+    console.log("[wiggly:ad-generation] format:start", {
+      count,
+      format,
+      generationBatchId,
+    });
     if (format === "meme") {
       const generation = await generateMemeVariantsFromResearch(research, { count, nvidiaNimModel: memeModel });
       const scenes = generation.variants.map((variant, index) => createMemeAdScene({
@@ -286,6 +363,33 @@ export const generateFromResearch: ReturnType<typeof action> = action({
       };
     }
 
+    if (format === "three-d-breakdown") {
+      const generation = await generateThreeDBreakdownVariantsFromResearch(research, { count });
+      const scenes = generation.variants.map((variant, index) => createThreeDBreakdownAdScene({
+        evidenceItems: generation.evidenceItems,
+        research,
+        siteContract: generation.siteContract,
+        variant,
+        candidateIndex: index,
+        generationBatchId,
+        model: generation.model,
+        provider: generation.provider,
+      }));
+      const { sceneIds } = await ctx.runMutation(internal.adSceneStorage.saveGeneratedScenes, {
+        sessionId: research.sessionId,
+        researchRunId,
+        brandSnapshotId: research.brandSnapshotId,
+        scenes,
+      });
+
+      return {
+        generationBatchId,
+        sceneIds,
+        scenes,
+        providerStatus: generation.providerStatus,
+      };
+    }
+
     const generation = await generateAdCandidatesFromResearch(research, {
       count,
       nvidiaNimModel: visualizerModel,
@@ -312,6 +416,195 @@ export const generateFromResearch: ReturnType<typeof action> = action({
       scenes,
       providerStatus: generation.providerStatus,
     };
+  },
+});
+
+export const generateThreeDImages: ReturnType<typeof action> = action({
+  args: {
+    sceneId: v.id("adScenes"),
+    scene: v.any(),
+  },
+  handler: async (ctx, { sceneId, scene }) => {
+    const replicateApiToken = process.env.REPLICATE_API_TOKEN;
+    if (!replicateApiToken) throw new Error("Replicate image generation is not configured for 3D Breakdown.");
+    let nextScene = assertThreeDBreakdownScene(scene as AdScene);
+
+    for (const shot of nextScene.layout.shots) {
+      nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({
+        ...item,
+        image: { status: "generating" },
+        video: { status: "idle" },
+      }));
+      await patchThreeDScene(ctx, sceneId, nextScene);
+      try {
+        const image = await generateReplicateNanoBanana2Image({
+          replicateApiToken,
+          prompt: shot.imagePrompt,
+          aspectRatio: "9:16",
+        });
+        const stored = await storeThreeDBytes(ctx, image.bytes, image.mimeType);
+        nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({
+          ...item,
+          image: { status: "ready", ...stored },
+          video: { status: "idle" },
+        }));
+      } catch (error) {
+        nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({
+          ...item,
+          image: {
+            status: "failed",
+            error: error instanceof Error ? error.message : "3D image generation failed.",
+          },
+          video: { status: "idle" },
+        }));
+      }
+      await patchThreeDScene(ctx, sceneId, nextScene);
+    }
+
+    return { scene: nextScene };
+  },
+});
+
+export const regenerateThreeDImage: ReturnType<typeof action> = action({
+  args: {
+    sceneId: v.id("adScenes"),
+    scene: v.any(),
+    shotIndex: v.number(),
+  },
+  handler: async (ctx, { sceneId, scene, shotIndex }) => {
+    const replicateApiToken = process.env.REPLICATE_API_TOKEN;
+    if (!replicateApiToken) throw new Error("Replicate image generation is not configured for 3D Breakdown.");
+    let nextScene = assertThreeDBreakdownScene(scene as AdScene);
+    const shot = getThreeDShot(nextScene, shotIndex);
+    nextScene = withUpdatedThreeDShot(nextScene, shotIndex, (item) => ({
+      ...item,
+      image: { status: "generating" },
+      video: { status: "idle" },
+    }));
+    await patchThreeDScene(ctx, sceneId, nextScene);
+
+    try {
+      const image = await generateReplicateNanoBanana2Image({
+        replicateApiToken,
+        prompt: shot.imagePrompt,
+        aspectRatio: "9:16",
+      });
+      const stored = await storeThreeDBytes(ctx, image.bytes, image.mimeType);
+      nextScene = withUpdatedThreeDShot(nextScene, shotIndex, (item) => ({
+        ...item,
+        image: { status: "ready", ...stored },
+        video: { status: "idle" },
+      }));
+    } catch (error) {
+      nextScene = withUpdatedThreeDShot(nextScene, shotIndex, (item) => ({
+        ...item,
+        image: {
+          status: "failed",
+          error: error instanceof Error ? error.message : "3D image generation failed.",
+        },
+        video: { status: "idle" },
+      }));
+    }
+    await patchThreeDScene(ctx, sceneId, nextScene);
+    return { scene: nextScene };
+  },
+});
+
+export const animateThreeDClips: ReturnType<typeof action> = action({
+  args: {
+    sceneId: v.id("adScenes"),
+    scene: v.any(),
+  },
+  handler: async (ctx, { sceneId, scene }) => {
+    const replicateApiToken = process.env.REPLICATE_API_TOKEN;
+    if (!replicateApiToken) throw new Error("Replicate video generation is not configured for 3D Breakdown.");
+    let nextScene = assertThreeDBreakdownScene(scene as AdScene);
+
+    for (const shot of nextScene.layout.shots) {
+      if (shot.image?.status !== "ready" || !shot.image.url) {
+        nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({
+          ...item,
+          video: { status: "failed", error: "Generate this shot image before animating it." },
+        }));
+        await patchThreeDScene(ctx, sceneId, nextScene);
+        continue;
+      }
+      nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({
+        ...item,
+        video: { status: "generating" },
+      }));
+      await patchThreeDScene(ctx, sceneId, nextScene);
+      try {
+        const video = await generateReplicateSeedanceVideo({
+          replicateApiToken,
+          imageUrl: shot.image.url,
+          prompt: shot.animationPrompt,
+          durationSeconds: 7,
+        });
+        const stored = await storeThreeDBytes(ctx, video.bytes, video.mimeType);
+        nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({
+          ...item,
+          video: { status: "ready", ...stored },
+        }));
+      } catch (error) {
+        nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({
+          ...item,
+          video: {
+            status: "failed",
+            error: error instanceof Error ? error.message : "3D animation failed.",
+          },
+        }));
+      }
+      await patchThreeDScene(ctx, sceneId, nextScene);
+    }
+
+    return { scene: nextScene };
+  },
+});
+
+export const regenerateThreeDClip: ReturnType<typeof action> = action({
+  args: {
+    sceneId: v.id("adScenes"),
+    scene: v.any(),
+    shotIndex: v.number(),
+  },
+  handler: async (ctx, { sceneId, scene, shotIndex }) => {
+    const replicateApiToken = process.env.REPLICATE_API_TOKEN;
+    if (!replicateApiToken) throw new Error("Replicate video generation is not configured for 3D Breakdown.");
+    let nextScene = assertThreeDBreakdownScene(scene as AdScene);
+    const shot = getThreeDShot(nextScene, shotIndex);
+    if (shot.image?.status !== "ready" || !shot.image.url) {
+      throw new Error("Generate this 3D image before retrying animation.");
+    }
+    nextScene = withUpdatedThreeDShot(nextScene, shotIndex, (item) => ({
+      ...item,
+      video: { status: "generating" },
+    }));
+    await patchThreeDScene(ctx, sceneId, nextScene);
+
+    try {
+      const video = await generateReplicateSeedanceVideo({
+        replicateApiToken,
+        imageUrl: shot.image.url,
+        prompt: shot.animationPrompt,
+        durationSeconds: 7,
+      });
+      const stored = await storeThreeDBytes(ctx, video.bytes, video.mimeType);
+      nextScene = withUpdatedThreeDShot(nextScene, shotIndex, (item) => ({
+        ...item,
+        video: { status: "ready", ...stored },
+      }));
+    } catch (error) {
+      nextScene = withUpdatedThreeDShot(nextScene, shotIndex, (item) => ({
+        ...item,
+        video: {
+          status: "failed",
+          error: error instanceof Error ? error.message : "3D animation failed.",
+        },
+      }));
+    }
+    await patchThreeDScene(ctx, sceneId, nextScene);
+    return { scene: nextScene };
   },
 });
 

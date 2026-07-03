@@ -27,6 +27,27 @@ export const JINGLE_STYLES = [
       "No goofy insults, fake beef, cruelty, or real targets. Attitude comes from confidence.",
     ],
   },
+  {
+    id: "pop-rap-hook",
+    label: "Pop Rap Hook",
+    helper: "Bright, catchy 100 BPM melodic rap hook.",
+    positiveStyles: ["pop rap", "100 BPM", "bright melodic hook", "clean confident vocal", "bouncy bass", "snappy claps", "glossy commercial production"],
+    negativeStyles: ["sad", "dark", "lo-fi", "distorted", "off-key", "aggressive diss"],
+  },
+  {
+    id: "retail-dance",
+    label: "Retail Dance",
+    helper: "Glossy 118 BPM dance-pop retail anthem.",
+    positiveStyles: ["dance pop", "118 BPM", "four-on-the-floor kick", "glossy synth bass", "hand claps", "chantable vocal hook", "bright retail energy"],
+    negativeStyles: ["sad", "slow", "lo-fi", "acoustic ballad", "off-key", "dark"],
+  },
+  {
+    id: "funky-commercial",
+    label: "Funky Commercial",
+    helper: "Playful 105 BPM funk-pop brand jingle.",
+    positiveStyles: ["funk pop", "105 BPM", "playful bass guitar", "hand claps", "warm keys", "group hook", "upbeat commercial polish"],
+    negativeStyles: ["sad", "slow", "lo-fi", "heavy trap", "off-key", "dark"],
+  },
 ] as const;
 export type JingleStyleId = typeof JINGLE_STYLES[number]["id"];
 export const DEFAULT_JINGLE_STYLE_ID: JingleStyleId = "modern-hip-hop";
@@ -92,7 +113,7 @@ CRAFT RULES:
 - Use short, common, punchy words that rap cleanly.
 - Brand name appears in both hooks using brandPhonetic.
 - Final lyric line is brandPhonetic only.
-- No invented stats, numbers, discounts, offers, guarantees, reviews, awards, or features.
+- No invented stats, percentages, discounts, offers, guarantees, reviews, awards, or features.
 - No jargon, hype words, hashtags, emojis, em dashes, or en dashes.
 - Never name real artists, bands, songs, or copyrighted style references.
 - For satirical/diss styles, diss the buyer's old problem, never a real person, party, or group.

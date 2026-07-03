@@ -70,8 +70,8 @@ export function PhonePreviewFrame({
   const shouldShowAudioAction = renderScene.audio.status !== "generated" && Boolean(onOpenAudioPanel);
   const syncVideoTimeToPreview = renderScene.audio.status !== "generated";
   const frameClassName = youtubePlatform
-    ? "relative mx-auto h-[420px] w-[640px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25"
-    : "relative mx-auto h-[720px] w-[360px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25";
+    ? "relative mx-auto aspect-[32/21] w-full max-w-[640px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25"
+    : "relative mx-auto aspect-[1/2] h-[clamp(470px,calc(100vh-15rem),720px)] w-auto overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25";
   const previewFrameId = `legacy-${platform}`;
   const PreviewVideo = useMemo<RenderVideoComponent>(() => {
     const PreviewVideoAsset: RenderVideoComponent = ({
@@ -174,7 +174,7 @@ export function PhonePreviewFrame({
       {feedPlatform ? (
         <div className="flex h-full flex-col overflow-hidden">
           <div
-            className="flex h-[60px] shrink-0 items-center justify-between border-b border-slate-900 bg-black px-3 py-2.5"
+            className="flex h-[8.333%] shrink-0 items-center justify-between border-b border-slate-900 bg-black px-3 py-2.5"
             data-preview-phone-header={platform}
           >
             <div className="flex min-w-0 items-center gap-2">
@@ -189,10 +189,10 @@ export function PhonePreviewFrame({
             <MoreHorizontal className="size-5 shrink-0 text-white" />
           </div>
 
-          {renderAdViewport("h-[450px] shrink-0")}
+          {renderAdViewport("min-h-0 flex-1")}
 
           <div
-            className="relative h-[210px] shrink-0 border-t border-slate-900 bg-black px-3 py-3 text-white"
+            className="relative h-[29.167%] shrink-0 border-t border-slate-900 bg-black px-3 py-3 text-white"
             data-preview-phone-footer={platform}
           >
             {instagramFeed ? (
@@ -249,7 +249,7 @@ export function PhonePreviewFrame({
       {verticalPlatform ? (
         <div className="absolute inset-0 overflow-hidden bg-black">
           <div className="absolute inset-0 flex items-center justify-center">
-            {renderAdViewport("h-[450px] w-full")}
+            {renderAdViewport("h-[62.5%] w-full")}
           </div>
           {storiesPlatform ? (
             <div className="pointer-events-none absolute inset-0 z-30 flex flex-col justify-between">
