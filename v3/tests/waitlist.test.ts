@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { isValidWaitlistEmail, normalizeWaitlistEmail } from "../features/waitlist/email";
+import { syncWaitlistSignupToLoops } from "../features/waitlist/loops";
 
 const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), "utf8");
@@ -18,5 +19,43 @@ assert.ok(existsSync(join(root, "app/waitlist/page.tsx")), "/waitlist route shou
 const schema = read("convex/schema.ts");
 assert.ok(schema.includes("waitlistSignups"), "Convex schema should store waitlist signups.");
 assert.ok(schema.includes(".index(\"by_email\""), "Waitlist signups should dedupe by email.");
+
+const loopsCalls: Array<{ url: string; method?: string; body: any }> = [];
+await syncWaitlistSignupToLoops({
+  email: "founder@wiggly.so",
+  source: "linkedin",
+  referrer: "https://linkedin.com/",
+  utmSource: "li",
+  utmCampaign: "launch",
+  ref: "post",
+}, {
+  apiKey: "test-key",
+  fetcher: async (url, init) => {
+    loopsCalls.push({
+      url,
+      method: init.method,
+      body: JSON.parse(String(init.body)),
+    });
+    return new Response(JSON.stringify({ success: true }), { status: 200 });
+  },
+});
+assert.equal(loopsCalls[0].url, "https://app.loops.so/api/v1/contacts/update");
+assert.equal(loopsCalls[0].method, "PUT");
+assert.equal(loopsCalls[0].body.userGroup, "early-access");
+assert.equal(loopsCalls[0].body.utmCampaign, "launch");
+assert.equal(loopsCalls[1].url, "https://app.loops.so/api/v1/events/send");
+assert.equal(loopsCalls[1].method, "POST");
+assert.equal(loopsCalls[1].body.eventName, "waitlist_signup");
+await assert.rejects(
+  () => syncWaitlistSignupToLoops({ email: "founder@wiggly.so" }, { apiKey: "" }),
+  /LOOPS_API_KEY/,
+);
+await assert.rejects(
+  () => syncWaitlistSignupToLoops({ email: "founder@wiggly.so" }, {
+    apiKey: "test-key",
+    fetcher: async () => new Response("server exploded", { status: 500 }),
+  }),
+  /server exploded/,
+);
 
 console.log("waitlist tests passed");

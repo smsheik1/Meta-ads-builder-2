@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMutation } from "convex/react";
+import { useAction } from "convex/react";
 import { type FormEvent, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { isValidWaitlistEmail, normalizeWaitlistEmail } from "@/features/waitlist/email";
 
 export function WaitlistSignupForm() {
   const params = useSearchParams();
-  const joinWaitlist = useMutation(api.waitlist.join);
+  const joinWaitlist = useAction(api.waitlist.joinAndSync);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
