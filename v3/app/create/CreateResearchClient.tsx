@@ -422,9 +422,6 @@ function ResearchConnected() {
   const generateJingleAudioForScene = useAction(api.audioAssets.generateJingleForScene);
   const generateBrainrotAudioForScene = useAction(api.audioAssets.generateBrainrotForScene);
   const generateThreeDImagesForScene = useAction(api.adScenes.generateThreeDImages);
-  const regenerateThreeDImageForScene = useAction(api.adScenes.regenerateThreeDImage);
-  const animateThreeDClipsForScene = useAction(api.adScenes.animateThreeDClips);
-  const regenerateThreeDClipForScene = useAction(api.adScenes.regenerateThreeDClip);
   const generateBrickStoryboardForScene = useAction(api.jingleStoryboards.generateBrickForScene);
   const regenerateBrickShotForScene = useAction(api.jingleStoryboards.regenerateBrickShot);
   const regenerateBrickShotVideoForScene = useAction(api.jingleStoryboards.regenerateBrickShotVideo);
@@ -498,7 +495,6 @@ function ResearchConnected() {
   const [brickStoryboardVideoBusyIndex, setBrickStoryboardVideoBusyIndex] = useState<number | null>(null);
   const [threeDError, setThreeDError] = useState("");
   const [threeDImageBusyIndex, setThreeDImageBusyIndex] = useState<number | null>(null);
-  const [threeDVideoBusyIndex, setThreeDVideoBusyIndex] = useState<number | null>(null);
   const [productPhotoshootStatus, setProductPhotoshootStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [productPhotoshootError, setProductPhotoshootError] = useState("");
   const [productPhotoshoot, setProductPhotoshoot] = useState<ProductPhotoshootBoard | null>(null);
@@ -775,7 +771,6 @@ function ResearchConnected() {
   const resetThreeDBreakdownState = () => {
     setThreeDError("");
     setThreeDImageBusyIndex(null);
-    setThreeDVideoBusyIndex(null);
   };
 
   const resetProductPhotoshootState = () => {
@@ -2915,9 +2910,7 @@ function ResearchConnected() {
       : selectedThreeDStoryboardFramesFailed
         ? "error"
         : "idle";
-  const threeDAnimationStatus: ThreeDMediaUiStatus = threeDVideoBusyIndex !== null
-    ? "loading"
-    : selectedThreeDStoryboardFramesReady
+  const threeDAnimationStatus: ThreeDMediaUiStatus = selectedThreeDStoryboardFramesReady
       ? "ready"
       : selectedThreeDScene?.layout.shots.some((shot) => shot.video?.status === "failed")
         ? "error"
@@ -2952,74 +2945,6 @@ function ResearchConnected() {
       setThreeDError(nextError instanceof Error ? nextError.message : "3D image generation failed.");
     } finally {
       setThreeDImageBusyIndex(null);
-    }
-  };
-
-  const onRegenerateThreeDImage = async (shotIndex: number) => {
-    const sceneId = sceneIds[selectedSceneIndex];
-    if (!selectedScene || selectedScene.format !== "three-d-breakdown" || !sceneId || threeDImageBusyIndex !== null || threeDVideoBusyIndex !== null) return;
-    setThreeDImageBusyIndex(shotIndex);
-    setThreeDError("");
-    resetShareState();
-    resetRenderState();
-    resetSaveState();
-    try {
-      const result = await regenerateThreeDImageForScene({
-        sceneId,
-        scene: selectedScene,
-        shotIndex,
-      }) as { scene: ThreeDBreakdownAdScene };
-      updateSelectedThreeDScene(result.scene);
-      setThreeDError(getThreeDErrorFromScene(result.scene));
-    } catch (nextError) {
-      setThreeDError(nextError instanceof Error ? nextError.message : "3D image generation failed.");
-    } finally {
-      setThreeDImageBusyIndex(null);
-    }
-  };
-
-  const onAnimateThreeDClips = async () => {
-    const sceneId = sceneIds[selectedSceneIndex];
-    if (!selectedScene || selectedScene.format !== "three-d-breakdown" || !sceneId || threeDAnimationStatus === "loading") return;
-    setThreeDVideoBusyIndex(threeDAllShotsBusyIndex);
-    setThreeDError("");
-    resetShareState();
-    resetRenderState();
-    resetSaveState();
-    try {
-      const result = await animateThreeDClipsForScene({
-        sceneId,
-        scene: selectedScene,
-      }) as { scene: ThreeDBreakdownAdScene };
-      updateSelectedThreeDScene(result.scene);
-      setThreeDError(getThreeDErrorFromScene(result.scene));
-    } catch (nextError) {
-      setThreeDError(nextError instanceof Error ? nextError.message : "3D animation failed.");
-    } finally {
-      setThreeDVideoBusyIndex(null);
-    }
-  };
-
-  const onRegenerateThreeDClip = async (shotIndex: number) => {
-    const sceneId = sceneIds[selectedSceneIndex];
-    if (!selectedScene || selectedScene.format !== "three-d-breakdown" || !sceneId || threeDVideoBusyIndex !== null || threeDImageBusyIndex !== null) return;
-    setThreeDVideoBusyIndex(shotIndex);
-    setThreeDError("");
-    resetShareState();
-    resetRenderState();
-    resetSaveState();
-    try {
-      const result = await regenerateThreeDClipForScene({
-        sceneId,
-        scene: selectedScene,
-        shotIndex,
-      }) as { scene: ThreeDBreakdownAdScene };
-      updateSelectedThreeDScene(result.scene);
-      setThreeDError(getThreeDErrorFromScene(result.scene));
-    } catch (nextError) {
-      setThreeDError(nextError instanceof Error ? nextError.message : "3D animation failed.");
-    } finally {
-      setThreeDVideoBusyIndex(null);
     }
   };
 
@@ -3434,9 +3359,6 @@ function ResearchConnected() {
                 onGenerateThreeDImages={() => void onGenerateThreeDImages()}
                 onRegenerateBrickShot={(shotIndex) => void onRegenerateBrickShot(shotIndex)}
                 onRegenerateBrickShotVideo={(shotIndex) => void onRegenerateBrickShotVideo(shotIndex)}
-                onRegenerateThreeDImage={(shotIndex) => void onRegenerateThreeDImage(shotIndex)}
-                onAnimateThreeDClips={() => void onAnimateThreeDClips()}
-                onRegenerateThreeDClip={(shotIndex) => void onRegenerateThreeDClip(shotIndex)}
                 onRegenerateVisualizerAudio={onRegenerateVisualizerAudio}
                 onLoadSavedDesign={onLoadSavedDesign}
                 onOpenAudioPanel={onOpenAudioPanel}
@@ -3464,10 +3386,8 @@ function ResearchConnected() {
                 )}
                 threeDAnimationStatus={threeDAnimationStatus}
                 threeDError={threeDError}
-                threeDImageBusyIndex={threeDImageBusyIndex}
                 threeDImageStatus={threeDImageStatus}
                 threeDScene={selectedThreeDScene}
-                threeDVideoBusyIndex={threeDVideoBusyIndex}
                 staticPngDownloadBusy={staticPngDownloadBusy}
                 saveCounterLabel={saveCounterLabel}
                 saveError={saveError}

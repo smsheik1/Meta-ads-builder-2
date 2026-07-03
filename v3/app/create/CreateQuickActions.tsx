@@ -51,9 +51,6 @@ export function CreateQuickActions({
   onRegenerateBrickShot,
   onRegenerateBrickShotVideo,
   onGenerateThreeDImages,
-  onRegenerateThreeDImage,
-  onAnimateThreeDClips,
-  onRegenerateThreeDClip,
   onRegenerateVisualizerAudio,
   onLoadSavedDesign,
   onOpenAudioPanel,
@@ -77,10 +74,8 @@ export function CreateQuickActions({
   canGenerateBrickStoryboard,
   threeDAnimationStatus,
   threeDError,
-  threeDImageBusyIndex,
   threeDImageStatus,
   threeDScene,
-  threeDVideoBusyIndex,
   staticPngDownloadBusy,
   saveCounterLabel,
   saveError,
@@ -105,9 +100,6 @@ export function CreateQuickActions({
   onRegenerateBrickShot: (shotIndex: number) => void;
   onRegenerateBrickShotVideo: (shotIndex: number) => void;
   onGenerateThreeDImages: () => void;
-  onRegenerateThreeDImage: (shotIndex: number) => void;
-  onAnimateThreeDClips: () => void;
-  onRegenerateThreeDClip: (shotIndex: number) => void;
   onRegenerateVisualizerAudio: () => void;
   onLoadSavedDesign: (design: SavedAdSceneDesign) => void;
   onOpenAudioPanel: () => void;
@@ -131,10 +123,8 @@ export function CreateQuickActions({
   canGenerateBrickStoryboard: boolean;
   threeDAnimationStatus: BrickStoryboardStatus;
   threeDError: string;
-  threeDImageBusyIndex: number | null;
   threeDImageStatus: BrickStoryboardStatus;
   threeDScene: ThreeDBreakdownAdScene | null;
-  threeDVideoBusyIndex: number | null;
   staticPngDownloadBusy: boolean;
   saveCounterLabel: string;
   saveError: string;
@@ -318,16 +308,11 @@ export function CreateQuickActions({
           animationStatus={threeDAnimationStatus}
           currentRenderStatus={currentRenderStatus}
           error={threeDError}
-          imageBusyIndex={threeDImageBusyIndex}
           imageStatus={threeDImageStatus}
-          onAnimateClips={onAnimateThreeDClips}
           onBuildFinalVideo={onCreateRenderJob}
           onGenerateImages={onGenerateThreeDImages}
-          onRegenerateClip={onRegenerateThreeDClip}
-          onRegenerateImage={onRegenerateThreeDImage}
           renderBusy={renderBusy}
           scene={threeDScene}
-          videoBusyIndex={threeDVideoBusyIndex}
         />
       ) : null}
 
@@ -404,30 +389,20 @@ function ThreeDBreakdownAssemblyCard({
   animationStatus,
   currentRenderStatus,
   error,
-  imageBusyIndex,
   imageStatus,
-  onAnimateClips,
   onBuildFinalVideo,
   onGenerateImages,
-  onRegenerateClip,
-  onRegenerateImage,
   renderBusy,
   scene,
-  videoBusyIndex,
 }: {
   animationStatus: BrickStoryboardStatus;
   currentRenderStatus: string;
   error: string;
-  imageBusyIndex: number | null;
   imageStatus: BrickStoryboardStatus;
-  onAnimateClips: () => void;
   onBuildFinalVideo: () => void;
   onGenerateImages: () => void;
-  onRegenerateClip: (shotIndex: number) => void;
-  onRegenerateImage: (shotIndex: number) => void;
   renderBusy: boolean;
   scene: ThreeDBreakdownAdScene;
-  videoBusyIndex: number | null;
 }) {
   const storyboardBoard = scene.layout.storyboardBoard;
   const storyboardFrames = storyboardBoard?.frames || [];

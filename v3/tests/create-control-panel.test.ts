@@ -197,6 +197,15 @@ assert.ok(
   "3D Breakdown preflight must show two planned Seedance clips without firing video generation.",
 );
 assert.ok(
+  !quickActionsSource.includes("onAnimateThreeDClips") &&
+    !quickActionsSource.includes("onRegenerateThreeDClip") &&
+    !quickActionsSource.includes("onRegenerateThreeDImage") &&
+    !createClientSource.includes("onAnimateThreeDClips") &&
+    !createClientSource.includes("onRegenerateThreeDClip") &&
+    !createClientSource.includes("onRegenerateThreeDImage"),
+  "3D Breakdown /create UI must not keep the old three-shot image/video retry wiring while the preflight flow stops before Seedance.",
+);
+assert.ok(
   adScenesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH") &&
     adScenesSource.includes("getThreeDImageInput") &&
     adScenesSource.includes("imageInput,") &&
