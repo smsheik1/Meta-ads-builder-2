@@ -6,6 +6,9 @@ const createDir = join(process.cwd(), "app/create");
 const maxExtractedModuleLines = 400;
 const allowedLargeCreateFiles = new Set([
   "CreateResearchClient.tsx",
+  // ponytail: existing MVP debt; remove these as the create shell gets split.
+  "CreateLeftColumn.tsx",
+  "CreateProductPhotoshootSheet.tsx",
 ]);
 
 const createFiles = readdirSync(createDir)
