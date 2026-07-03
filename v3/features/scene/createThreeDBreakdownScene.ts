@@ -1,5 +1,5 @@
 import type { ThreeDBreakdownSiteContract, ThreeDBreakdownVariant } from "../formats/three-d-breakdown/generate";
-import { getThreeDBreakdownMusicBed, getThreeDBreakdownMusicBedId } from "../formats/three-d-breakdown/music";
+import { getThreeDBreakdownMusicBed, getThreeDBreakdownMusicBedId, THREE_D_BREAKDOWN_DURATION_MS } from "../formats/three-d-breakdown/music";
 import type { ThreeDBreakdownEvidenceItem } from "../formats/three-d-breakdown/evidence";
 import type { StoredWebsiteResearchResult } from "../research/types";
 import { pickSceneAccentColor } from "./createVisualizerScene";
@@ -71,7 +71,7 @@ export function createThreeDBreakdownAdScene({
     },
     layout: {
       preset: "three-d-breakdown",
-      durationMs: 21_000,
+      durationMs: THREE_D_BREAKDOWN_DURATION_MS,
       scriptBeats: variant.scriptBeats as ThreeDBreakdownAdScene["layout"]["scriptBeats"],
       shots: variant.shots as ThreeDBreakdownAdScene["layout"]["shots"],
       musicBed,

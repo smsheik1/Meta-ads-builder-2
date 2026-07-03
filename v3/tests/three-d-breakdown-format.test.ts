@@ -10,6 +10,7 @@ import {
   THREE_D_BREAKDOWN_MAX_TOKENS,
   THREE_D_BREAKDOWN_VARIANT_COUNT,
 } from "../features/formats/three-d-breakdown/prompt";
+import { THREE_D_BREAKDOWN_DURATION_MS } from "../features/formats/three-d-breakdown/music";
 import { validateThreeDBreakdownScene } from "../features/formats/three-d-breakdown/validate";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import { createThreeDBreakdownAdScene } from "../features/scene/createThreeDBreakdownScene";
@@ -91,6 +92,7 @@ const prompt = buildThreeDBreakdownPrompt({ count: 1, evidence: evidenceItems, r
 const twoDirectionPrompt = buildThreeDBreakdownPrompt({ count: THREE_D_BREAKDOWN_VARIANT_COUNT, evidence: evidenceItems, research });
 assert.equal(THREE_D_BREAKDOWN_VARIANT_COUNT, 2);
 assert.equal(THREE_D_BREAKDOWN_MAX_TOKENS, 4000);
+assert.equal(THREE_D_BREAKDOWN_DURATION_MS, 20_000);
 assert.ok(prompt.includes("ZachDFilms-style high-retention short-form documentary pacing"));
 assert.ok(prompt.includes("high-retention short-form documentary pacing"));
 assert.ok(prompt.includes("Use ZachDFilms as an internal pacing reference only."));
@@ -156,7 +158,7 @@ const makeVariant = ({
     { role: "context", narration: "Everyone brought something thoughtful, while the backup box still looked last minute.", startMs: 3000, endMs: 8000 },
     { role: "mechanism", narration: "A red cookie tin slides in, and scattered proof blocks assemble around it.", startMs: 8000, endMs: 13000 },
     { role: "revelation", narration: revelation, startMs: 13000, endMs: 18000 },
-    { role: "punchline", narration: "The backup gift becomes remembered.", startMs: 18000, endMs: 21000 },
+    { role: "punchline", narration: "The backup gift becomes remembered.", startMs: 18000, endMs: 20000 },
   ],
   shots: [
     {
@@ -242,7 +244,7 @@ compactNearMissVariant.scriptBeats = [
   { role: "context", narration: "The backup box looked late.", startMs: 3000, endMs: 8000 },
   { role: "mechanism", narration: "A red cookie tin slides in as proof blocks lock around it.", startMs: 8000, endMs: 13000 },
   { role: "revelation", narration: "Fresh cookies arrived fast. Buyers said they tasted homemade.", startMs: 13000, endMs: 18000 },
-  { role: "punchline", narration: "The backup gift becomes remembered.", startMs: 18000, endMs: 21000 },
+  { role: "punchline", narration: "The backup gift becomes remembered.", startMs: 18000, endMs: 20000 },
 ];
 compactNearMissVariant.shots[2] = {
   ...compactNearMissVariant.shots[2],
@@ -417,6 +419,7 @@ const scene = createThreeDBreakdownAdScene({
   variant: generated.variants[0]!,
 });
 assert.equal(scene.format, "three-d-breakdown");
+assert.equal(scene.layout.durationMs, 20_000);
 assert.equal(scene.layout.scriptBeats.length, 5);
 assert.equal(scene.layout.shots.length, 3);
 assert.equal(scene.layout.musicBed.volume, 0.12);
