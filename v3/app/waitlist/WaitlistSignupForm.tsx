@@ -6,8 +6,29 @@ import { useAction } from "convex/react";
 import { type FormEvent, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { isValidWaitlistEmail, normalizeWaitlistEmail } from "@/features/waitlist/email";
+import { getV3ConvexUrl } from "@/lib/convexEnv";
 
 export function WaitlistSignupForm() {
+  if (!getV3ConvexUrl()) return <WaitlistSignupUnavailable />;
+  return <WaitlistSignupFields />;
+}
+
+function WaitlistSignupUnavailable() {
+  return (
+    <div className="mt-8 max-w-xl rounded-[1.65rem] border border-[#d9ceff] bg-white/88 p-4 shadow-[0_24px_54px_rgba(38,25,91,0.12)] backdrop-blur">
+      <p className="text-sm font-black uppercase tracking-[0.14em] text-[#6845df]">Early access is open.</p>
+      <p className="mt-2 text-base font-bold leading-6 text-[#30364d]">Enter Wiggly now and make your first creative pack.</p>
+      <Link
+        href="/create"
+        className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-[#07071a] px-5 text-sm font-black text-white shadow-[0_18px_40px_rgba(38,25,91,0.22)] transition hover:bg-[#17132d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7c55ff]"
+      >
+        Enter Wiggly
+      </Link>
+    </div>
+  );
+}
+
+function WaitlistSignupFields() {
   const params = useSearchParams();
   const joinWaitlist = useAction(api.waitlist.joinAndSync);
   const [email, setEmail] = useState("");

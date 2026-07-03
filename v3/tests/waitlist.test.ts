@@ -12,9 +12,18 @@ assert.equal(isValidWaitlistEmail("shaz@wiggly.so"), true);
 assert.equal(isValidWaitlistEmail("not-an-email"), false);
 
 const homePage = read("app/page.tsx");
+const waitlistPage = read("app/waitlist/WaitlistPage.tsx");
+const waitlistForm = read("app/waitlist/WaitlistSignupForm.tsx");
+const homepagePreviewCarousel = read("app/waitlist/HomepagePreviewCarousel.tsx");
 assert.ok(homePage.includes("WaitlistPage"), "Root route should render early access page.");
 assert.ok(!homePage.includes("redirect(\"/create\")"), "Root route should not redirect straight to /create.");
 assert.ok(existsSync(join(root, "app/waitlist/page.tsx")), "/waitlist route should exist.");
+assert.ok(waitlistPage.includes("HomepagePreviewCarousel"), "Homepage should show a product preview carousel.");
+assert.ok(!waitlistPage.includes("creative-pack-demo.mp4"), "Homepage preview must not depend on a missing demo video asset.");
+assert.ok(homepagePreviewCarousel.includes("PhonePreviewFrame"), "Homepage preview should reuse the shared preview frame.");
+assert.ok(!homepagePreviewCarousel.includes("AdRenderSurface"), "Homepage preview must not add a second direct render surface path.");
+assert.ok(waitlistForm.includes("getV3ConvexUrl"), "Waitlist form should not mount Convex hooks without a Convex URL.");
+assert.ok(waitlistForm.includes("WaitlistSignupFields"), "Waitlist form should keep Convex hooks inside the configured form.");
 
 const schema = read("convex/schema.ts");
 assert.ok(schema.includes("waitlistSignups"), "Convex schema should store waitlist signups.");

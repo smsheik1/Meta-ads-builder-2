@@ -90,6 +90,15 @@ select {
   will-change: transform;
 }
 
+.wiggly-home-preview-card {
+  animation: wigglyHomePreviewCard 14s cubic-bezier(0.16, 1, 0.3, 1) infinite both;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-34%) scale(0.94) rotate(-5deg);
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
 .wiggly-reroll-shine {
   isolation: isolate;
   overflow: hidden;
@@ -292,8 +301,28 @@ select {
   }
 }
 
+@keyframes wigglyHomePreviewCard {
+  0% {
+    opacity: 0;
+    transform: translateX(-34%) scale(0.94) rotate(-5deg);
+  }
+
+  3.571%,
+  25% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotate(0);
+  }
+
+  28.571%,
+  100% {
+    opacity: 0;
+    transform: translateX(34%) scale(0.94) rotate(5deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wiggly-idle-bar,
+  .wiggly-home-preview-card,
   .wiggly-preview-bounce,
   .wiggly-reroll-shine,
   .wiggly-reroll-shine::before,

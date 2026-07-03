@@ -6,6 +6,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Wiggly v3",
   description: "Clean Wiggly rebuild: URL to brand-matched video ads.",
+  icons: {
+    icon: "/wiggly-logo.svg",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
