@@ -206,6 +206,13 @@ assert.ok(
   "3D Breakdown /create UI must not keep the old three-shot image/video retry wiring while the preflight flow stops before Seedance.",
 );
 assert.ok(
+  !adScenesSource.includes("export const animateThreeDClips") &&
+    !adScenesSource.includes("export const regenerateThreeDClip") &&
+    !adScenesSource.includes("export const regenerateThreeDImage") &&
+    !adScenesSource.includes("generateReplicateSeedanceVideo"),
+  "3D Breakdown backend must not keep the old three-shot media actions; the next video path should be the new two-clip Seedance implementation.",
+);
+assert.ok(
   adScenesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH") &&
     adScenesSource.includes("getThreeDImageInput") &&
     adScenesSource.includes("imageInput,") &&

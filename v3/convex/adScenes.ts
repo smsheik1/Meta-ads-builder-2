@@ -3,10 +3,7 @@ import { internal } from "./_generated/api";
 import { action, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { generateAdCandidatesFromResearch } from "../features/ad-generation/generate";
-import {
-  generateReplicateNanoBanana2Image,
-  generateReplicateSeedanceVideo,
-} from "../features/formats/jingle/storyboard";
+import { generateReplicateNanoBanana2Image } from "../features/formats/jingle/storyboard";
 import { generateMemeVariantsFromResearch } from "../features/formats/meme/generate";
 import { generateJingleVariantsFromResearch } from "../features/formats/jingle/generate";
 import { generateBrainrotVariantsFromResearch } from "../features/formats/brainrot/generate";
@@ -31,7 +28,7 @@ import { createThreeDBreakdownAdScene } from "../features/scene/createThreeDBrea
 import { createVisualizerAdScene } from "../features/scene/createVisualizerScene";
 import { createWereSorryAdScene } from "../features/scene/createWereSorryScene";
 import type { StoredWebsiteResearchResult } from "../features/research/types";
-import type { AdScene, ThreeDBreakdownAdScene, ThreeDBreakdownShot } from "../features/scene/types";
+import type { AdScene, ThreeDBreakdownAdScene } from "../features/scene/types";
 import { toStoredResearchResult } from "./researchStorage";
 
 const createGenerationBatchId = () => (
@@ -57,12 +54,6 @@ const assertThreeDBreakdownScene = (scene: AdScene): ThreeDBreakdownAdScene => {
   return scene;
 };
 
-const getThreeDShot = (scene: ThreeDBreakdownAdScene, shotIndex: number) => {
-  const shot = scene.layout.shots.find((item) => item.shotIndex === shotIndex);
-  if (!shot) throw new Error("3D Breakdown shot not found.");
-  return shot;
-};
-
 const patchThreeDScene = async (
   ctx: any,
   sceneId: Id<"adScenes">,
@@ -76,20 +67,6 @@ const getThreeDImageInput = (scene: ThreeDBreakdownAdScene) => [
     ? []
     : (scene.layout.referenceImages?.brandImageUrls || [])),
 ].filter(Boolean).slice(0, 4);
-
-const withUpdatedThreeDShot = (
-  scene: ThreeDBreakdownAdScene,
-  shotIndex: number,
-  update: (shot: ThreeDBreakdownShot) => ThreeDBreakdownShot,
-): ThreeDBreakdownAdScene => ({
-  ...scene,
-  layout: {
-    ...scene.layout,
-    shots: scene.layout.shots.map((shot) => (
-      shot.shotIndex === shotIndex ? update(shot) : shot
-    )) as ThreeDBreakdownAdScene["layout"]["shots"],
-  },
-});
 
 const withUpdatedThreeDStoryboardBoard = (
   scene: ThreeDBreakdownAdScene,
@@ -524,151 +501,6 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
       await patchThreeDScene(ctx, sceneId, nextScene);
     }
 
-    return { scene: nextScene };
-  },
-});
-
-export const regenerateThreeDImage: ReturnType<typeof action> = action({
-  args: {
-    sceneId: v.id("adScenes"),
-    scene: v.any(),
-    shotIndex: v.number(),
-  },
-  handler: async (ctx, { sceneId, scene, shotIndex }) => {
-    const replicateApiToken = process.env.REPLICATE_API_TOKEN;
-    if (!replicateApiToken) throw new Error("Replicate image generation is not configured for 3D Breakdown.");
-    let nextScene = assertThreeDBreakdownScene(scene as AdScene);
-    const shot = getThreeDShot(nextScene, shotIndex);
-    const imageInput = getThreeDImageInput(nextScene);
-    nextScene = withUpdatedThreeDShot(nextScene, shotIndex, (item) => ({
-      ...item,
-      image: { status: "generating" },
-      video: { status: "idle" },
-    }));
-    await patchThreeDScene(ctx, sceneId, nextScene);
-
-    try {
-      const image = await generateReplicateNanoBanana2Image({
-        replicateApiToken,
-        prompt: shot.imagePrompt,
-        imageInput,
-        aspectRatio: "9:16",
-      });
-      const stored = await storeThreeDBytes(ctx, image.bytes, image.mimeType);
-      nextScene = withUpdatedThreeDShot(nextScene, shotIndex, (item) => ({
-        ...item,
-        image: { status: "ready", ...stored },
-        video: { status: "idle" },
-      }));
-    } catch (error) {
-      nextScene = withUpdatedThreeDShot(nextScene, shotIndex, (item) => ({
-        ...item,
-        image: {
-          status: "failed",
-          error: error instanceof Error ? error.message : "3D image generation failed.",
-        },
-        video: { status: "idle" },
-      }));
-    }
-    await patchThreeDScene(ctx, sceneId, nextScene);
-    return { scene: nextScene };
-  },
-});
-
-export const animateThreeDClips: ReturnType<typeof action> = action({
-  args: {
-    sceneId: v.id("adScenes"),
-    scene: v.any(),
-  },
-  handler: async (ctx, { sceneId, scene }) => {
-    const replicateApiToken = process.env.REPLICATE_API_TOKEN;
-    if (!replicateApiToken) throw new Error("Replicate video generation is not configured for 3D Breakdown.");
-    let nextScene = assertThreeDBreakdownScene(scene as AdScene);
-
-    for (const shot of nextScene.layout.shots) {
-      if (shot.image?.status !== "ready" || !shot.image.url) {
-        nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({
-          ...item,
-          video: { status: "failed", error: "Generate this shot image before animating it." },
-        }));
-        await patchThreeDScene(ctx, sceneId, nextScene);
-        continue;
-      }
-      nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({
-        ...item,
-        video: { status: "generating" },
-      }));
-      await patchThreeDScene(ctx, sceneId, nextScene);
-      try {
-        const video = await generateReplicateSeedanceVideo({
-          replicateApiToken,
-          imageUrl: shot.image.url,
-          prompt: shot.animationPrompt,
-          durationSeconds: 7,
-        });
-        const stored = await storeThreeDBytes(ctx, video.bytes, video.mimeType);
-        nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({
-          ...item,
-          video: { status: "ready", ...stored },
-        }));
-      } catch (error) {
-        nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({
-          ...item,
-          video: {
-            status: "failed",
-            error: error instanceof Error ? error.message : "3D animation failed.",
-          },
-        }));
-      }
-      await patchThreeDScene(ctx, sceneId, nextScene);
-    }
-
-    return { scene: nextScene };
-  },
-});
-
-export const regenerateThreeDClip: ReturnType<typeof action> = action({
-  args: {
-    sceneId: v.id("adScenes"),
-    scene: v.any(),
-    shotIndex: v.number(),
-  },
-  handler: async (ctx, { sceneId, scene, shotIndex }) => {
-    const replicateApiToken = process.env.REPLICATE_API_TOKEN;
-    if (!replicateApiToken) throw new Error("Replicate video generation is not configured for 3D Breakdown.");
-    let nextScene = assertThreeDBreakdownScene(scene as AdScene);
-    const shot = getThreeDShot(nextScene, shotIndex);
-    if (shot.image?.status !== "ready" || !shot.image.url) {
-      throw new Error("Generate this 3D image before retrying animation.");
-    }
-    nextScene = withUpdatedThreeDShot(nextScene, shotIndex, (item) => ({
-      ...item,
-      video: { status: "generating" },
-    }));
-    await patchThreeDScene(ctx, sceneId, nextScene);
-
-    try {
-      const video = await generateReplicateSeedanceVideo({
-        replicateApiToken,
-        imageUrl: shot.image.url,
-        prompt: shot.animationPrompt,
-        durationSeconds: 7,
-      });
-      const stored = await storeThreeDBytes(ctx, video.bytes, video.mimeType);
-      nextScene = withUpdatedThreeDShot(nextScene, shotIndex, (item) => ({
-        ...item,
-        video: { status: "ready", ...stored },
-      }));
-    } catch (error) {
-      nextScene = withUpdatedThreeDShot(nextScene, shotIndex, (item) => ({
-        ...item,
-        video: {
-          status: "failed",
-          error: error instanceof Error ? error.message : "3D animation failed.",
-        },
-      }));
-    }
-    await patchThreeDScene(ctx, sceneId, nextScene);
     return { scene: nextScene };
   },
 });
