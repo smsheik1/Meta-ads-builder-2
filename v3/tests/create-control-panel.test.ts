@@ -13,6 +13,7 @@ const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "
 const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
 const brickStoryboardSheetSource = readFileSync("app/create/CreateBrickStoryboardSheet.tsx", "utf8");
 const creativeBriefSource = readFileSync("app/create/CreateCreativeBriefCard.tsx", "utf8");
+const adScenesSource = readFileSync("convex/adScenes.ts", "utf8");
 const visualizerSchemaSource = readFileSync("features/formats/visualizer/schema.ts", "utf8");
 const visualizerModuleSource = readFileSync("features/formats/visualizer/index.ts", "utf8");
 const globalsSource = readFileSync("app/globals.css", "utf8");
@@ -185,6 +186,13 @@ assert.ok(
     quickActionsSource.includes("One six-frame visual plan for the whole ad.") &&
     quickActionsSource.includes("Generate 3D images to draw the storyboard board and production stills."),
   "3D Breakdown Images step must show the generated six-frame storyboard board separately from production stills.",
+);
+assert.ok(
+  adScenesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH") &&
+    adScenesSource.includes("getThreeDImageInput") &&
+    adScenesSource.includes("imageInput,") &&
+    adScenesSource.includes("scene.layout.referenceImages?.productImageUrls"),
+  "3D Breakdown image generation must pass the style reference sheet plus product/brand references to Nano Banana.",
 );
 assert.ok(
   quickActionsSource.includes("Story direction {storyDirectionNumber}") &&

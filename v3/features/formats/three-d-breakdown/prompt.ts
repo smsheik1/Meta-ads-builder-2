@@ -239,11 +239,13 @@ Reveal pattern rules:
 Image prompt rules:
 - storyboardBoard.imagePrompt is NOT a production shot. It is one vertical 9:16 storyboard artist board with exactly 6 framed panels, arranged as a clean 2-column by 3-row board, showing the full story from consequence to final proof/payoff.
 - The storyboard board must use the same visualWorld, lighting, cameraStyle, recurringObjects, brand colors, and evidence-driven mechanism as the production shots.
-- The storyboard board should feel like a director's visual planning sheet: six cinematic keyframes, clear panel gutters, consistent world, no readable text, no captions, no logos, no UI labels, no speech bubbles.
-- The storyboard board should include: panel 1 consequence, panel 2 context escalation, panel 3 mechanism setup, panel 4 Shot 2 wow reveal, panel 5 evidence/payoff, panel 6 final punchline frame.
+- If a style reference sheet is provided to the image model, use it for visual grammar only: clean blue/cyan instructional stage, close camera, one central subject, caption-safe lower area, visible mechanism progression, simple procedural 3D explainer style. Do not copy its exact objects, panels, colors, fake caption bars, story, or composition.
+- The storyboard board should feel like a director's visual planning sheet: six cinematic keyframes, clear panel gutters, consistent world, one dominant subject/mechanism per panel, no readable text, no captions, no logos, no UI labels, no speech bubbles.
+- The storyboard board must show a readable transformation sequence, not six unrelated scenes: panel 1 problem state, panel 2 context escalation, panel 3 mechanism setup, panel 4 Shot 2 wow reveal, panel 5 evidence/payoff, panel 6 final transformed state.
 - The storyboard board is for user understanding and planning. The individual shot imagePrompts remain the production stills used for animation.
+- Visual target: short-form procedural 3D explainer, one central subject filling most of the vertical frame, clean light blue/cyan instructional background or blueprint-grid stage, close camera, visible mechanism progression, and an immediate before-to-after transformation.
 - Cinematic 3D documentary explainer render, high-contrast dimensional world, textured realistic materials, dramatic camera depth, volumetric or rim lighting, not a clean product poster.
-- Preferred visual grammar when no stronger brand-specific world exists: photorealistic 3D object/action on a bright blue/cyan clinical blueprint grid stage, full-width technical grid floor receding into the background, subtle grid wall, lab-clean realism, strong subject/background separation, medium close-up instructional camera, no text.
+- Preferred visual grammar when no stronger brand-specific world exists: photorealistic 3D object/action on a bright blue/cyan clinical blueprint grid stage, full-width technical grid floor receding into the background, subtle grid wall, lab-clean realism, strong subject/background separation, close-up or medium close-up instructional camera, no generated text.
 - The subject must be physically grounded on or intersecting the grid plane; the grid reads as a measurement/engineering space, not a flat wallpaper or decorative pattern.
 - Do not use plain white/gray studio backgrounds, isolated floating objects, typography-led graphics, abstract splash particles, receipt/poster layouts, or marketing still-life compositions.
 - Each imagePrompt must imply a real 3D scene with setting, camera angle, subject/object, physical action, lighting, mood, and render style.
@@ -254,7 +256,7 @@ Image prompt rules:
 - All 3 shots must reference the shared visualWorld and at least one recurringObject.
 - Do not output ordinary office, laptop-on-desk, tabletop, or generic workspace scenes unless they are visibly transformed into a 3D breakdown/cutaway/mechanism visual.
 - One full-frame vertical 9:16 scene, one clear object/action, no text overlays, no captions, no logos as readable text unless already on product packaging.
-- Do not ask the image model to generate readable receipts, signs, screens, UI labels, labels, handwritten notes, or document text. Represent text-based evidence as physical tokens, blocks, counters, or unlabeled objects instead.
+- Do not ask the image model to generate readable receipts, signs, screens, UI labels, labels, handwritten notes, document text, or subtitles. Captions are renderer overlays later, not pixels in the generated image. Represent text-based evidence as physical tokens, blocks, counters, or unlabeled objects instead.
 - Avoid realistic human faces. Hands, silhouettes, props, machines, cutaways, and diagrams are better.
 - If product imagery exists, preserve product shape, colors, packaging cues, and category; do not invent labels/logos/text. If product imagery does not exist, use abstract 3D metaphors tied to category/evidence and do not invent a specific product design.
 

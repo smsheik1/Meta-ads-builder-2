@@ -33,6 +33,13 @@ export function createThreeDBreakdownAdScene({
   if (!evidence) throw new Error("3D Breakdown evidence item is missing.");
   const accentColor = pickSceneAccentColor(research.brand.colors);
   const musicBed = getThreeDBreakdownMusicBed(getThreeDBreakdownMusicBedId(candidateIndex));
+  const productImageUrls = (research.productCatalog?.products || [])
+    .map((product) => product.imageUrl)
+    .filter((url): url is string => Boolean(url))
+    .slice(0, 2);
+  const brandImageUrls = [research.brand.ogImageUrl, research.brand.screenshotUrl, research.brand.logoUrl]
+    .filter((url): url is string => Boolean(url))
+    .slice(0, 2);
   const firstBeat = variant.scriptBeats[0]!;
   const revelationBeat = variant.scriptBeats.find((beat) => beat.role === "revelation") || variant.scriptBeats[3]!;
   const punchlineBeat = variant.scriptBeats.find((beat) => beat.role === "punchline") || variant.scriptBeats[4]!;
@@ -75,6 +82,10 @@ export function createThreeDBreakdownAdScene({
       scriptBeats: variant.scriptBeats as ThreeDBreakdownAdScene["layout"]["scriptBeats"],
       shots: variant.shots as ThreeDBreakdownAdScene["layout"]["shots"],
       storyboardBoard: variant.storyboardBoard,
+      referenceImages: {
+        productImageUrls,
+        brandImageUrls,
+      },
       musicBed,
       storyContract: {
         ...siteContract,

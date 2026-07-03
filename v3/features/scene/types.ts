@@ -421,6 +421,10 @@ export type ThreeDBreakdownAdScene = AdSceneBase<
       ThreeDBreakdownShot & { shotIndex: 3; role: "revelation" },
     ];
     storyboardBoard?: ThreeDBreakdownStoryboardBoard;
+    referenceImages?: {
+      productImageUrls: string[];
+      brandImageUrls: string[];
+    };
     musicBed: {
       id: ThreeDBreakdownMusicBedId;
       src: string;

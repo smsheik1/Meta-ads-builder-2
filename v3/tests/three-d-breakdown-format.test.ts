@@ -60,12 +60,33 @@ const research = makeResearch({
     },
     rawMarkdown: "# Customer reviews",
   },
+  productCatalog: {
+    provider: "shopify-products-json",
+    sourceUrl: "https://davidscookies.com/products.json",
+    groups: { bestSellers: ["butter-pecan-tin"] },
+    summary: { productCount: 1, bestSellerCount: 1 },
+    products: [{
+      title: "Butter Pecan Meltaways Tin",
+      handle: "butter-pecan-tin",
+      url: "https://davidscookies.com/products/butter-pecan-tin",
+      imageUrl: "https://cdn.example/davids-cookie-tin.png",
+      imageAlt: "David's Cookies tin",
+      productType: "Cookie tin",
+      vendor: "David's Cookies",
+      priceMin: null,
+      priceMax: null,
+      currency: null,
+      available: true,
+      badges: ["best-seller"],
+    }],
+  },
 });
 
 const evidenceItems = extractThreeDBreakdownEvidence(research);
 assert.ok(evidenceItems.length >= 2);
 assert.ok(evidenceItems.every((item) => item.sourceUrl));
 assert.ok(evidenceItems.every((item) => item.possibleRevealPatterns.length > 0));
+const reviewEvidence = evidenceItems.find((item) => item.evidenceUseType === "review") || evidenceItems[0]!;
 
 const promptInjectionResearch = makeResearch({
   brandBrief: {
@@ -130,6 +151,9 @@ assert.ok(prompt.includes("1-5 word visual emphasis, not CTA or slogan"));
 assert.ok(prompt.includes("\"storyboardBoard\""));
 assert.ok(prompt.includes("one vertical 9:16 storyboard artist board with exactly 6 framed panels"));
 assert.ok(prompt.includes("panel 4 Shot 2 wow reveal"));
+assert.ok(prompt.includes("style reference sheet"));
+assert.ok(prompt.includes("not six unrelated scenes"));
+assert.ok(prompt.includes("Captions are renderer overlays later"));
 assert.ok(prompt.includes("exploded-product"));
 
 const makeVariant = ({
@@ -137,8 +161,8 @@ const makeVariant = ({
   customerProblem = "last-minute dessert gifting",
   mechanismSummary = "cookie tin fills the missing gift moment",
   visualMetaphor = "empty gift table becomes proof-backed gift table",
-  evidenceIndex = 0,
-  evidenceUseType = "review",
+  evidenceIndex = reviewEvidence.evidenceIndex,
+  evidenceUseType = reviewEvidence.evidenceUseType,
   wowMomentType = "proof-blocks",
   wowMoment = "Proof blocks assemble around the cookie tin as it fills the empty gift spot.",
   viewerLearns = "The gift works because buyers describe fast delivery and homemade taste.",
@@ -215,8 +239,8 @@ const variantsPayload = {
       customerProblem: "sending thoughtful gifts across distance",
       mechanismSummary: "cookie tin proof blocks cross the map",
       visualMetaphor: "proof blocks travel across a miniature map",
-      evidenceIndex: 0,
-      evidenceUseType: "review",
+      evidenceIndex: reviewEvidence.evidenceIndex,
+      evidenceUseType: reviewEvidence.evidenceUseType,
       wowMomentType: "proof-blocks",
       wowMoment: "Proof blocks travel with the red cookie tin from bakery door to a distant gift table.",
       viewerLearns: "The gift still works across distance because buyers describe fast arrival and homemade taste.",
@@ -433,6 +457,7 @@ assert.equal(scene.layout.scriptBeats.length, 5);
 assert.equal(scene.layout.shots.length, 3);
 assert.equal(scene.layout.storyboardBoard?.frameCount, 6);
 assert.equal(scene.layout.storyboardBoard?.image?.status, "idle");
+assert.deepEqual(scene.layout.referenceImages?.productImageUrls, ["https://cdn.example/davids-cookie-tin.png"]);
 assert.equal(scene.layout.musicBed.volume, 0.12);
 assert.equal(scene.layout.storyContract.wowMomentType, "proof-blocks");
 assert.ok(scene.layout.groundedEvidence.sourceUrl.includes("davidscookies"));

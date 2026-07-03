@@ -37,6 +37,20 @@ const createGenerationBatchId = () => (
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 );
 
+const THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH = "/three-d-breakdown/references/procedural-3d-style-contact-sheet-v1.png";
+
+const getThreeDPublicBaseUrl = () => {
+  const raw = process.env.WIGGLY_PUBLIC_BASE_URL || process.env.APP_URL || process.env.VERCEL_URL || "";
+  if (!raw.trim()) return "";
+  const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  return withProtocol.replace(/\/+$/, "");
+};
+
+const getThreeDStyleReferenceUrl = () => {
+  const baseUrl = getThreeDPublicBaseUrl();
+  return baseUrl ? `${baseUrl}${THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH}` : "";
+};
+
 const assertThreeDBreakdownScene = (scene: AdScene): ThreeDBreakdownAdScene => {
   if (scene.format !== "three-d-breakdown") throw new Error("3D Breakdown action received the wrong scene format.");
   return scene;
@@ -53,6 +67,14 @@ const patchThreeDScene = async (
   sceneId: Id<"adScenes">,
   scene: ThreeDBreakdownAdScene,
 ) => ctx.runMutation(internal.adSceneStorage.patchScene, { sceneId, scene });
+
+const getThreeDImageInput = (scene: ThreeDBreakdownAdScene) => [
+  getThreeDStyleReferenceUrl(),
+  ...(scene.layout.referenceImages?.productImageUrls || []),
+  ...((scene.layout.referenceImages?.productImageUrls || []).length
+    ? []
+    : (scene.layout.referenceImages?.brandImageUrls || [])),
+].filter(Boolean).slice(0, 4);
 
 const withUpdatedThreeDShot = (
   scene: ThreeDBreakdownAdScene,
@@ -443,6 +465,7 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
     if (!replicateApiToken) throw new Error("Replicate image generation is not configured for 3D Breakdown.");
     let nextScene = assertThreeDBreakdownScene(scene as AdScene);
+    const imageInput = getThreeDImageInput(nextScene);
 
     const storyboardBoard = nextScene.layout.storyboardBoard;
     if (storyboardBoard?.imagePrompt) {
@@ -455,6 +478,7 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
         const image = await generateReplicateNanoBanana2Image({
           replicateApiToken,
           prompt: storyboardBoard.imagePrompt,
+          imageInput,
           aspectRatio: "9:16",
         });
         const stored = await storeThreeDBytes(ctx, image.bytes, image.mimeType);
@@ -485,6 +509,7 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
         const image = await generateReplicateNanoBanana2Image({
           replicateApiToken,
           prompt: shot.imagePrompt,
+          imageInput,
           aspectRatio: "9:16",
         });
         const stored = await storeThreeDBytes(ctx, image.bytes, image.mimeType);
@@ -521,6 +546,7 @@ export const regenerateThreeDImage: ReturnType<typeof action> = action({
     if (!replicateApiToken) throw new Error("Replicate image generation is not configured for 3D Breakdown.");
     let nextScene = assertThreeDBreakdownScene(scene as AdScene);
     const shot = getThreeDShot(nextScene, shotIndex);
+    const imageInput = getThreeDImageInput(nextScene);
     nextScene = withUpdatedThreeDShot(nextScene, shotIndex, (item) => ({
       ...item,
       image: { status: "generating" },
@@ -532,6 +558,7 @@ export const regenerateThreeDImage: ReturnType<typeof action> = action({
       const image = await generateReplicateNanoBanana2Image({
         replicateApiToken,
         prompt: shot.imagePrompt,
+        imageInput,
         aspectRatio: "9:16",
       });
       const stored = await storeThreeDBytes(ctx, image.bytes, image.mimeType);
