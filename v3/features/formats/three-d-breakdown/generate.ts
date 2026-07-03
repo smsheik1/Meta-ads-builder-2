@@ -221,9 +221,18 @@ const parseStoryboardBoard = (value: unknown): ThreeDBreakdownStoryboardBoard =>
   const imagePrompt = cleanText(raw.imagePrompt, 1800);
   if (!imagePrompt) throw new Error("3D Breakdown storyboard board image prompt is missing.");
   assertNoBannedText(imagePrompt);
+  const lockedPrompt = [
+    "Create one vertical 9:16 storyboard artist planning board for a 20-second 3D Breakdown.",
+    "EXACTLY SIX framed panels arranged 2 columns by 3 rows with clean gutters.",
+    "Use one coherent procedural 3D explainer world on a clean blue/cyan blueprint-grid stage, close camera, one dominant subject/action per panel.",
+    "If image references are provided, use the style reference frame only for visual grammar and use product/brand references only for shape, color, packaging cues, and material cues.",
+    `Story sequence to visualize: ${imagePrompt}`,
+    "Panel order: panel 1 problem state, panel 2 context escalation, panel 3 mechanism setup, panel 4 peak impossible-to-film wow reveal, panel 5 evidence/payoff, panel 6 final transformed state.",
+    "No captions, no caption bars, no black lower bars, no progress bars, no readable text, no UI labels, no speech bubbles, no receipts, no posters, no typography-led design.",
+  ].join(" ");
   return {
     frameCount: 6,
-    imagePrompt,
+    imagePrompt: lockedPrompt,
     image: { status: "idle" },
   };
 };

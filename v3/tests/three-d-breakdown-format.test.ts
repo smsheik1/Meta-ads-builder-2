@@ -270,6 +270,8 @@ assert.equal(generated.variants[0]?.scriptBeats.length, 5);
 assert.equal(generated.variants[0]?.shots.length, 3);
 assert.equal(generated.variants[0]?.storyboardBoard.frameCount, 6);
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("6 framed panels"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("EXACTLY SIX framed panels arranged 2 columns by 3 rows"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("no black lower bars"));
 
 const compactNearMissVariant = makeVariant();
 compactNearMissVariant.scriptBeats = [
