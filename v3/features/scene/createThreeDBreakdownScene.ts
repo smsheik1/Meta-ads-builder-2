@@ -1,6 +1,7 @@
 import type { ThreeDBreakdownSiteContract, ThreeDBreakdownVariant } from "../formats/three-d-breakdown/generate";
 import { getThreeDBreakdownMusicBed, getThreeDBreakdownMusicBedId, THREE_D_BREAKDOWN_DURATION_MS } from "../formats/three-d-breakdown/music";
 import type { ThreeDBreakdownEvidenceItem } from "../formats/three-d-breakdown/evidence";
+import { createThreeDClipPlans, createThreeDStoryboardFrames } from "../formats/three-d-breakdown/storyboardFrames";
 import type { StoredWebsiteResearchResult } from "../research/types";
 import { pickSceneAccentColor } from "./createVisualizerScene";
 import {
@@ -81,7 +82,27 @@ export function createThreeDBreakdownAdScene({
       durationMs: THREE_D_BREAKDOWN_DURATION_MS,
       scriptBeats: variant.scriptBeats as ThreeDBreakdownAdScene["layout"]["scriptBeats"],
       shots: variant.shots as ThreeDBreakdownAdScene["layout"]["shots"],
-      storyboardBoard: variant.storyboardBoard,
+      storyboardBoard: {
+        ...variant.storyboardBoard,
+        frames: variant.storyboardBoard.frames || createThreeDStoryboardFrames(),
+      },
+      clipPlans: createThreeDClipPlans({
+        scriptBeats: variant.scriptBeats as ThreeDBreakdownAdScene["layout"]["scriptBeats"],
+        storyContract: {
+          ...siteContract,
+          variantAngle: variant.variantAngle,
+          customerProblem: variant.customerProblem,
+          mechanismSummary: variant.mechanismSummary,
+          visualMetaphor: variant.visualMetaphor,
+          evidenceIndex: variant.evidenceIndex,
+          evidenceUseType: variant.evidenceUseType,
+          wowMomentType: variant.wowMomentType,
+          wowMoment: variant.wowMoment,
+          viewerLearns: variant.viewerLearns,
+          claimRisk: variant.claimRisk,
+          claimRiskReason: variant.claimRiskReason,
+        },
+      }),
       referenceImages: {
         productImageUrls,
         brandImageUrls,

@@ -29,6 +29,30 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
   if (scene.layout.storyboardBoard) {
     if (scene.layout.storyboardBoard.frameCount !== 6) errors.push("3D Breakdown storyboard board must have 6 frames.");
     if (!scene.layout.storyboardBoard.imagePrompt?.trim()) errors.push("3D Breakdown storyboard board image prompt is missing.");
+    if (!Array.isArray(scene.layout.storyboardBoard.frames) || scene.layout.storyboardBoard.frames.length !== 6) {
+      errors.push("3D Breakdown storyboard board must define 6 panel frames.");
+    } else {
+      scene.layout.storyboardBoard.frames.forEach((frame, index) => {
+        if (frame.frameIndex !== index + 1) errors.push(`3D Breakdown storyboard frame ${index + 1} index is invalid.`);
+        if (!frame.label?.trim()) errors.push(`3D Breakdown storyboard frame ${index + 1} label is missing.`);
+        if (!frame.crop || typeof frame.crop.x !== "number" || typeof frame.crop.y !== "number" || typeof frame.crop.width !== "number" || typeof frame.crop.height !== "number") {
+          errors.push(`3D Breakdown storyboard frame ${index + 1} crop is invalid.`);
+        }
+      });
+    }
+  }
+  if (!Array.isArray(scene.layout.clipPlans) || scene.layout.clipPlans.length !== 2) {
+    errors.push("3D Breakdown must define 2 clip plans.");
+  } else {
+    scene.layout.clipPlans.forEach((clipPlan, index) => {
+      if (clipPlan.clipIndex !== index + 1) errors.push(`3D Breakdown clip plan ${index + 1} index is invalid.`);
+      if (clipPlan.durationSeconds !== 10) errors.push(`3D Breakdown clip plan ${index + 1} duration is invalid.`);
+      if (!clipPlan.prompt?.trim()) errors.push(`3D Breakdown clip plan ${index + 1} prompt is missing.`);
+      const expectedFrames = index === 0 ? [1, 2, 3] : [4, 5, 6];
+      if (JSON.stringify(clipPlan.frameIndexes) !== JSON.stringify(expectedFrames)) {
+        errors.push(`3D Breakdown clip plan ${index + 1} frame mapping is invalid.`);
+      }
+    });
   }
 
   if (!Array.isArray(scene.layout.scriptBeats) || scene.layout.scriptBeats.length !== THREE_D_SCRIPT_BEATS.length) {

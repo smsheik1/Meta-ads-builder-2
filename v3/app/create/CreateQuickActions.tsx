@@ -429,12 +429,15 @@ function ThreeDBreakdownAssemblyCard({
   scene: ThreeDBreakdownAdScene;
   videoBusyIndex: number | null;
 }) {
-  const imagesReady = scene.layout.shots.every((shot) => shot.image?.status === "ready");
+  const storyboardBoard = scene.layout.storyboardBoard;
+  const storyboardFrames = storyboardBoard?.frames || [];
+  const framesReady = storyboardFrames.length === 6 && storyboardFrames.every((frame) => frame.image?.status === "ready");
+  const framesFailed = storyboardFrames.some((frame) => frame.image?.status === "failed");
+  const clipPlans = scene.layout.clipPlans || [];
   const videosReady = scene.layout.shots.every((shot) => shot.video?.status === "ready");
   const finalReady = currentRenderStatus === "ready";
-  const storyboardBoard = scene.layout.storyboardBoard;
   const storyboardBoardStatus = storyboardBoard?.image?.status || "idle";
-  const finalStatus = renderBusy ? "Building" : finalReady ? "Final ready" : videosReady ? "Needs MP4" : "Needs clips";
+  const finalStatus = renderBusy ? "Building" : finalReady ? "Final ready" : videosReady ? "Needs MP4" : framesReady ? "Ready for Seedance" : "Needs frames";
   const storyDirectionNumber = (scene.metadata.candidateIndex ?? 0) + 1;
   const stepClass = "rounded-2xl border border-slate-200 bg-slate-50 p-3";
 
@@ -449,7 +452,7 @@ function ThreeDBreakdownAssemblyCard({
           </p>
         </div>
         <Badge variant="outline" className="rounded-full text-[10px] font-black uppercase">
-          {videosReady ? "Clips ready" : imagesReady ? "Images ready" : "Script ready"}
+          {videosReady ? "Clips ready" : framesReady ? "Frames ready" : "Script ready"}
         </Badge>
       </div>
 
@@ -473,7 +476,7 @@ function ThreeDBreakdownAssemblyCard({
         <div className={stepClass}>
           <div className="flex items-center gap-2 text-sm font-black text-slate-950">
             <ImageIcon className="size-4" />
-            Images
+            Storyboard frames
             <Badge variant="outline" className="ml-auto rounded-full text-[10px] font-black uppercase">
               {statusPill(imageStatus)}
             </Badge>
@@ -506,36 +509,40 @@ function ThreeDBreakdownAssemblyCard({
                 </p>
               ) : (
                 <p className="mt-3 rounded-2xl bg-slate-50 px-3 py-2 text-xs font-bold leading-5 text-slate-500">
-                  Generate 3D images to draw the storyboard board and production stills.
+                  Generate the six-frame storyboard board. Wiggly will crop it into frame references automatically.
                 </p>
               )}
             </div>
           ) : null}
-          <div className="mt-3 grid gap-2">
-            {scene.layout.shots.map((shot) => (
-              <div key={shot.shotIndex} className="rounded-2xl border border-slate-200 bg-white p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Shot {shot.shotIndex}</p>
-                    <p className="mt-1 line-clamp-2 text-xs font-black leading-4 text-slate-950">{shot.sceneDescription}</p>
+          {storyboardFrames.length ? (
+            <div className="mt-3 grid grid-cols-2 gap-2" data-three-d-storyboard-frames="true">
+              {storyboardFrames.map((frame) => (
+                <div key={frame.frameIndex} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                  <div className="flex items-center justify-between gap-2 px-2.5 py-2">
+                    <div>
+                      <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Frame {frame.frameIndex}</p>
+                      <p className="text-[10px] font-black leading-3 text-slate-950">{frame.label}</p>
+                    </div>
+                    <Badge variant={frame.image?.status === "ready" ? "default" : "outline"} className="rounded-full px-2 text-[9px] font-black uppercase">
+                      {frame.image?.status || "idle"}
+                    </Badge>
                   </div>
-                  <Badge variant={shot.image?.status === "ready" ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
-                    {shot.image?.status || "idle"}
-                  </Badge>
+                  {frame.image?.url ? (
+                    <img src={frame.image.url} alt={`Storyboard frame ${frame.frameIndex}`} className="aspect-[6/7] w-full object-cover" />
+                  ) : (
+                    <div className="flex aspect-[6/7] items-center justify-center bg-slate-50 text-[10px] font-black uppercase tracking-[0.12em] text-slate-300">
+                      {frame.image?.status === "generating" ? <Loader2 className="size-4 animate-spin" /> : "Pending"}
+                    </div>
+                  )}
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="mt-2 h-9 w-full rounded-xl text-[10px] font-black uppercase tracking-[0.14em]"
-                  onClick={() => onRegenerateImage(shot.shotIndex)}
-                  disabled={imageBusyIndex !== null || imageStatus === "loading"}
-                >
-                  {imageBusyIndex === shot.shotIndex ? <Loader2 className="mr-2 size-3.5 animate-spin" /> : null}
-                  New image
-                </Button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : null}
+          {framesFailed ? (
+            <p className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
+              One or more storyboard frame crops failed. Regenerate the storyboard board.
+            </p>
+          ) : null}
           <Button
             type="button"
             className="mt-3 h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
@@ -543,52 +550,51 @@ function ThreeDBreakdownAssemblyCard({
             disabled={imageStatus === "loading"}
           >
             {imageStatus === "loading" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImageIcon className="mr-2 size-4" />}
-            Generate 3D images
+            Generate storyboard frames
           </Button>
         </div>
 
         <div className={stepClass}>
           <div className="flex items-center gap-2 text-sm font-black text-slate-950">
             <Film className="size-4" />
-            Animation
+            Seedance clip plan
             <Badge variant="outline" className="ml-auto rounded-full text-[10px] font-black uppercase">
-              {statusPill(animationStatus)}
+              {framesReady ? "Ready" : statusPill(animationStatus)}
             </Badge>
           </div>
           <div className="mt-3 grid gap-2">
-            {scene.layout.shots.map((shot) => (
-              <div key={shot.shotIndex} className="rounded-2xl border border-slate-200 bg-white p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs font-black text-slate-950">Shot {shot.shotIndex}</p>
-                  <Badge variant={shot.video?.status === "ready" ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
-                    {shot.video?.status || "idle"}
+            {clipPlans.map((clipPlan) => (
+              <div key={clipPlan.clipIndex} className="rounded-2xl border border-slate-200 bg-white p-3" data-three-d-clip-plan="true">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Clip {clipPlan.clipIndex} · {clipPlan.durationSeconds}s</p>
+                    <p className="mt-1 text-xs font-black leading-4 text-slate-950">{clipPlan.label}</p>
+                  </div>
+                  <Badge variant={framesReady ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
+                    {framesReady ? "Ready" : "Needs frames"}
                   </Badge>
                 </div>
-                {shot.video?.status === "failed" && shot.video.error ? (
-                  <p className="mt-2 line-clamp-3 text-[11px] font-bold leading-4 text-red-600">{shot.video.error}</p>
-                ) : null}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="mt-2 h-9 w-full rounded-xl text-[10px] font-black uppercase tracking-[0.14em]"
-                  onClick={() => onRegenerateClip(shot.shotIndex)}
-                  disabled={videoBusyIndex !== null || animationStatus === "loading" || shot.image?.status !== "ready"}
-                >
-                  {videoBusyIndex === shot.shotIndex ? <Loader2 className="mr-2 size-3.5 animate-spin" /> : null}
-                  Retry animation
-                </Button>
+                <div className="mt-3 grid grid-cols-3 gap-1.5">
+                  {clipPlan.frameIndexes.map((frameIndex) => {
+                    const frame = storyboardFrames.find((item) => item.frameIndex === frameIndex);
+                    return frame?.image?.url ? (
+                      <img key={frameIndex} src={frame.image.url} alt={`Clip ${clipPlan.clipIndex} frame ${frameIndex}`} className="aspect-[6/7] rounded-lg object-cover" />
+                    ) : (
+                      <div key={frameIndex} className="flex aspect-[6/7] items-center justify-center rounded-lg bg-slate-50 text-[9px] font-black text-slate-300">
+                        {frameIndex}
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="mt-3 line-clamp-4 rounded-xl bg-slate-50 px-3 py-2 text-[11px] font-bold leading-4 text-slate-500">
+                  {clipPlan.prompt}
+                </p>
               </div>
             ))}
           </div>
-          <Button
-            type="button"
-            className="mt-3 h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
-            onClick={onAnimateClips}
-            disabled={!imagesReady || animationStatus === "loading"}
-          >
-            {animationStatus === "loading" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Film className="mr-2 size-4" />}
-            Animate clips
-          </Button>
+          <p className="mt-3 rounded-2xl bg-slate-950 px-3 py-2 text-center text-[11px] font-black uppercase tracking-[0.12em] text-white">
+            {framesReady ? "Preflight complete · next step is 2 Seedance calls" : "Generate storyboard frames first"}
+          </p>
         </div>
 
         <div className={stepClass}>
@@ -606,7 +612,7 @@ function ThreeDBreakdownAssemblyCard({
             disabled={!videosReady || renderBusy}
           >
             {renderBusy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Download className="mr-2 size-4" />}
-            Build final video
+            Build after Seedance
           </Button>
         </div>
       </div>

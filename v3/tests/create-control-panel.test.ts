@@ -184,8 +184,17 @@ assert.ok(
 assert.ok(
   quickActionsSource.includes('data-three-d-storyboard-board="true"') &&
     quickActionsSource.includes("One six-frame visual plan for the whole ad.") &&
-    quickActionsSource.includes("Generate 3D images to draw the storyboard board and production stills."),
-  "3D Breakdown Images step must show the generated six-frame storyboard board separately from production stills.",
+    quickActionsSource.includes('data-three-d-storyboard-frames="true"') &&
+    quickActionsSource.includes("Wiggly will crop it into frame references automatically."),
+  "3D Breakdown Images step must show the generated six-frame storyboard board and cropped frame references.",
+);
+assert.ok(
+  quickActionsSource.includes('data-three-d-clip-plan="true"') &&
+    quickActionsSource.includes("clipPlans.map") &&
+    quickActionsSource.includes("clipPlan.frameIndexes.map") &&
+    quickActionsSource.includes("Clip {clipPlan.clipIndex}") &&
+    quickActionsSource.includes("Preflight complete · next step is 2 Seedance calls"),
+  "3D Breakdown preflight must show two planned Seedance clips without firing video generation.",
 );
 assert.ok(
   adScenesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH") &&

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import jpeg from "jpeg-js";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { extractThreeDBreakdownEvidence } from "../features/formats/three-d-breakdown/evidence";
@@ -10,11 +11,13 @@ import {
   THREE_D_BREAKDOWN_MAX_TOKENS,
   THREE_D_BREAKDOWN_VARIANT_COUNT,
 } from "../features/formats/three-d-breakdown/prompt";
+import { cropThreeDStoryboardFrames } from "../features/formats/three-d-breakdown/storyboardFrames";
 import { THREE_D_BREAKDOWN_DURATION_MS } from "../features/formats/three-d-breakdown/music";
 import { validateThreeDBreakdownScene } from "../features/formats/three-d-breakdown/validate";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import { createThreeDBreakdownAdScene } from "../features/scene/createThreeDBreakdownScene";
 import { makeResearch } from "./helpers/research";
+import { PNG } from "pngjs";
 
 const research = makeResearch({
   websiteUrl: "https://davidscookies.com/",
@@ -272,6 +275,42 @@ assert.equal(generated.variants[0]?.storyboardBoard.frameCount, 6);
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("6 framed panels"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("EXACTLY SIX framed panels arranged 2 columns by 3 rows"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("no black lower bars"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Panel 1 cannot be an empty stage"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("visible subject, object, and physical action"));
+
+const storyboardTestImage = new PNG({ width: 600, height: 900 });
+const cellColors = [
+  [255, 0, 0],
+  [0, 255, 0],
+  [0, 0, 255],
+  [255, 255, 0],
+  [255, 0, 255],
+  [0, 255, 255],
+];
+for (let row = 0; row < 3; row += 1) {
+  for (let col = 0; col < 2; col += 1) {
+    const color = cellColors[row * 2 + col]!;
+    for (let y = row * 300; y < (row + 1) * 300; y += 1) {
+      for (let x = col * 300; x < (col + 1) * 300; x += 1) {
+        const index = (y * 600 + x) * 4;
+        storyboardTestImage.data[index] = color[0]!;
+        storyboardTestImage.data[index + 1] = color[1]!;
+        storyboardTestImage.data[index + 2] = color[2]!;
+        storyboardTestImage.data[index + 3] = 255;
+      }
+    }
+  }
+}
+const croppedFrames = cropThreeDStoryboardFrames(PNG.sync.write(storyboardTestImage), "image/png");
+assert.equal(croppedFrames.length, 6);
+assert.deepEqual(croppedFrames.map((frame) => frame.frameIndex), [1, 2, 3, 4, 5, 6]);
+assert.ok(croppedFrames.every((frame) => frame.mimeType === "image/png" && frame.bytes.length > 100));
+const mislabeledJpegFrames = cropThreeDStoryboardFrames(
+  jpeg.encode({ data: storyboardTestImage.data, width: storyboardTestImage.width, height: storyboardTestImage.height }, 80).data,
+  "image/png",
+);
+assert.equal(mislabeledJpegFrames.length, 6);
+assert.ok(mislabeledJpegFrames.every((frame) => frame.mimeType === "image/png" && frame.bytes.length > 100));
 
 const compactNearMissVariant = makeVariant();
 compactNearMissVariant.scriptBeats = [
@@ -459,6 +498,11 @@ assert.equal(scene.layout.scriptBeats.length, 5);
 assert.equal(scene.layout.shots.length, 3);
 assert.equal(scene.layout.storyboardBoard?.frameCount, 6);
 assert.equal(scene.layout.storyboardBoard?.image?.status, "idle");
+assert.equal(scene.layout.storyboardBoard?.frames?.length, 6);
+assert.deepEqual(scene.layout.storyboardBoard?.frames?.map((frame) => frame.frameIndex), [1, 2, 3, 4, 5, 6]);
+assert.deepEqual(scene.layout.clipPlans?.map((clip) => clip.frameIndexes), [[1, 2, 3], [4, 5, 6]]);
+assert.equal(scene.layout.clipPlans?.[0]?.durationSeconds, 10);
+assert.equal(scene.layout.clipPlans?.[1]?.durationSeconds, 10);
 assert.deepEqual(scene.layout.referenceImages?.productImageUrls, ["https://cdn.example/davids-cookie-tin.png"]);
 assert.equal(scene.layout.musicBed.volume, 0.12);
 assert.equal(scene.layout.storyContract.wowMomentType, "proof-blocks");

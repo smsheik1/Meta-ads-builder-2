@@ -16,6 +16,7 @@ import { generateReviewsVariantsFromResearch } from "../features/formats/reviews
 import { normalizeReviewProductHandles, productCatalogHasProductImage } from "../features/formats/reviews/productSelection";
 import { generateTextMessageVariantsFromResearch } from "../features/formats/text-message/generate";
 import { generateThreeDBreakdownVariantsFromResearch } from "../features/formats/three-d-breakdown/generate";
+import { createThreeDStoryboardFrames, cropThreeDStoryboardFrames } from "../features/formats/three-d-breakdown/storyboardFrames";
 import { generateVideoMemeVariantsFromResearch } from "../features/formats/video-meme/generate";
 import { generateWereSorryVariantsFromResearch } from "../features/formats/were-sorry/generate";
 import { fetchEcommerceProductCatalog } from "../features/research/productCatalog";
@@ -472,6 +473,10 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
       nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
         ...board,
         image: { status: "generating" },
+        frames: (board.frames?.length === 6 ? board.frames : createThreeDStoryboardFrames()).map((frame) => ({
+          ...frame,
+          image: { status: "generating" as const },
+        })),
       }));
       await patchThreeDScene(ctx, sceneId, nextScene);
       try {
@@ -482,9 +487,23 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
           aspectRatio: "9:16",
         });
         const stored = await storeThreeDBytes(ctx, image.bytes, image.mimeType);
+        const frameCrops = cropThreeDStoryboardFrames(image.bytes, image.mimeType);
+        const baseFrames = storyboardBoard.frames?.length === 6
+          ? storyboardBoard.frames
+          : createThreeDStoryboardFrames();
+        const storedFrames = await Promise.all(frameCrops.map(async (frameCrop) => {
+          const frameStored = await storeThreeDBytes(ctx, frameCrop.bytes, frameCrop.mimeType);
+          const frame = baseFrames.find((item) => item.frameIndex === frameCrop.frameIndex)
+            || createThreeDStoryboardFrames().find((item) => item.frameIndex === frameCrop.frameIndex)!;
+          return {
+            ...frame,
+            image: { status: "ready" as const, ...frameStored },
+          };
+        }));
         nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
           ...board,
           image: { status: "ready", ...stored },
+          frames: storedFrames as NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["frames"],
         }));
       } catch (error) {
         nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
@@ -493,39 +512,13 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
             status: "failed",
             error: error instanceof Error ? error.message : "3D storyboard board generation failed.",
           },
-        }));
-      }
-      await patchThreeDScene(ctx, sceneId, nextScene);
-    }
-
-    for (const shot of nextScene.layout.shots) {
-      nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({
-        ...item,
-        image: { status: "generating" },
-        video: { status: "idle" },
-      }));
-      await patchThreeDScene(ctx, sceneId, nextScene);
-      try {
-        const image = await generateReplicateNanoBanana2Image({
-          replicateApiToken,
-          prompt: shot.imagePrompt,
-          imageInput,
-          aspectRatio: "9:16",
-        });
-        const stored = await storeThreeDBytes(ctx, image.bytes, image.mimeType);
-        nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({
-          ...item,
-          image: { status: "ready", ...stored },
-          video: { status: "idle" },
-        }));
-      } catch (error) {
-        nextScene = withUpdatedThreeDShot(nextScene, shot.shotIndex, (item) => ({
-          ...item,
-          image: {
-            status: "failed",
-            error: error instanceof Error ? error.message : "3D image generation failed.",
-          },
-          video: { status: "idle" },
+          frames: (board.frames?.length === 6 ? board.frames : createThreeDStoryboardFrames()).map((frame) => ({
+            ...frame,
+            image: {
+              status: "failed" as const,
+              error: error instanceof Error ? error.message : "3D storyboard board generation failed.",
+            },
+          })),
         }));
       }
       await patchThreeDScene(ctx, sceneId, nextScene);

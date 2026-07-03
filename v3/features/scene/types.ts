@@ -400,6 +400,23 @@ export type ThreeDBreakdownStoryboardBoard = {
   frameCount: 6;
   imagePrompt: string;
   image?: ThreeDBreakdownMediaRef;
+  frames?: Array<{
+    frameIndex: 1 | 2 | 3 | 4 | 5 | 6;
+    role: "problem" | "escalation" | "mechanism-setup" | "wow-reveal" | "payoff" | "final-state";
+    label: string;
+    crop: { x: number; y: number; width: number; height: number };
+    image?: ThreeDBreakdownMediaRef;
+  }>;
+};
+
+export type ThreeDBreakdownClipPlan = {
+  clipIndex: 1 | 2;
+  label: string;
+  startMs: number;
+  endMs: number;
+  durationSeconds: 10;
+  frameIndexes: [1, 2, 3] | [4, 5, 6];
+  prompt: string;
 };
 
 export type ThreeDBreakdownAdScene = AdSceneBase<
@@ -421,6 +438,7 @@ export type ThreeDBreakdownAdScene = AdSceneBase<
       ThreeDBreakdownShot & { shotIndex: 3; role: "revelation" },
     ];
     storyboardBoard?: ThreeDBreakdownStoryboardBoard;
+    clipPlans?: [ThreeDBreakdownClipPlan & { clipIndex: 1 }, ThreeDBreakdownClipPlan & { clipIndex: 2 }];
     referenceImages?: {
       productImageUrls: string[];
       brandImageUrls: string[];

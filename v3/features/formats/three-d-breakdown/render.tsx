@@ -17,6 +17,12 @@ function getActiveShot(scene: ThreeDBreakdownAdScene, timelineMs: number) {
   return scene.layout.shots[2];
 }
 
+function getActiveStoryboardFrame(scene: ThreeDBreakdownAdScene, timelineMs: number) {
+  const frames = scene.layout.storyboardBoard?.frames || [];
+  const frameIndex = clamp(Math.floor(timelineMs / (scene.layout.durationMs / 6)), 0, 5);
+  return frames[frameIndex];
+}
+
 function getFallbackCaption(scene: ThreeDBreakdownAdScene, timelineMs: number) {
   const beat = scene.layout.scriptBeats.find((item) => timelineMs >= item.startMs && timelineMs <= item.endMs)
     || scene.layout.scriptBeats[0];
@@ -30,12 +36,14 @@ export function ThreeDBreakdownFormatRenderer({
   const { Image, Video } = useRenderAssetComponents();
   const timelineMs = getTimelineMs(scene, timeSeconds);
   const activeShot = getActiveShot(scene, timelineMs);
+  const activeStoryboardFrame = getActiveStoryboardFrame(scene, timelineMs);
   const caption = scene.audio.status === "generated"
     ? getVisibleCaptionText(scene.audio, timeSeconds) || getFallbackCaption(scene, timelineMs)
     : activeShot?.captionText || getFallbackCaption(scene, timelineMs);
   const brandColor = scene.style.accentColor || "#7DD3FC";
   const videoUrl = activeShot?.video?.status === "ready" ? activeShot.video.url : "";
   const imageUrl = activeShot?.image?.status === "ready" ? activeShot.image.url : "";
+  const storyboardFrameUrl = activeStoryboardFrame?.image?.status === "ready" ? activeStoryboardFrame.image.url : "";
 
   return (
     <div
@@ -58,6 +66,12 @@ export function ThreeDBreakdownFormatRenderer({
       ) : imageUrl ? (
         <Image
           src={imageUrl}
+          alt=""
+          className="absolute inset-0 size-full object-cover"
+        />
+      ) : storyboardFrameUrl ? (
+        <Image
+          src={storyboardFrameUrl}
           alt=""
           className="absolute inset-0 size-full object-cover"
         />

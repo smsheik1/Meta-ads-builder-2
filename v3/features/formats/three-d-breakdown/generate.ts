@@ -228,6 +228,7 @@ const parseStoryboardBoard = (value: unknown): ThreeDBreakdownStoryboardBoard =>
     "If image references are provided, use the style reference frame only for visual grammar and use product/brand references only for shape, color, packaging cues, and material cues.",
     `Story sequence to visualize: ${imagePrompt}`,
     "Panel order: panel 1 problem state, panel 2 context escalation, panel 3 mechanism setup, panel 4 peak impossible-to-film wow reveal, panel 5 evidence/payoff, panel 6 final transformed state.",
+    "Every panel must contain a visible subject, object, and physical action. Panel 1 cannot be an empty stage; it must show friction physically blocking, piling up, splitting, leaking, breaking, compressing, tangling, or creating tension.",
     "No captions, no caption bars, no black lower bars, no progress bars, no readable text, no UI labels, no speech bubbles, no receipts, no posters, no typography-led design.",
   ].join(" ");
   return {
