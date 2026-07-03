@@ -37,7 +37,7 @@ const createGenerationBatchId = () => (
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 );
 
-const THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH = "/three-d-breakdown/references/procedural-3d-style-contact-sheet-v1.png";
+const THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH = "/three-d-breakdown/references/procedural-3d-style-frame-v1.png";
 
 const getThreeDPublicBaseUrl = () => {
   const raw = process.env.WIGGLY_PUBLIC_BASE_URL || process.env.APP_URL || process.env.VERCEL_URL || "";

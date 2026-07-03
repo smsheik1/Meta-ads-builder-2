@@ -192,7 +192,7 @@ assert.ok(
     adScenesSource.includes("getThreeDImageInput") &&
     adScenesSource.includes("imageInput,") &&
     adScenesSource.includes("scene.layout.referenceImages?.productImageUrls"),
-  "3D Breakdown image generation must pass the style reference sheet plus product/brand references to Nano Banana.",
+  "3D Breakdown image generation must pass the style reference frame plus product/brand references to Nano Banana.",
 );
 assert.ok(
   quickActionsSource.includes("Story direction {storyDirectionNumber}") &&

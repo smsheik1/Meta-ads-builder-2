@@ -151,7 +151,7 @@ assert.ok(prompt.includes("1-5 word visual emphasis, not CTA or slogan"));
 assert.ok(prompt.includes("\"storyboardBoard\""));
 assert.ok(prompt.includes("one vertical 9:16 storyboard artist board with exactly 6 framed panels"));
 assert.ok(prompt.includes("panel 4 Shot 2 wow reveal"));
-assert.ok(prompt.includes("style reference sheet"));
+assert.ok(prompt.includes("style reference frame"));
 assert.ok(prompt.includes("not six unrelated scenes"));
 assert.ok(prompt.includes("Captions are renderer overlays later"));
 assert.ok(prompt.includes("exploded-product"));
