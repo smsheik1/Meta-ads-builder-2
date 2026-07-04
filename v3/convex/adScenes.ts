@@ -45,6 +45,8 @@ const getThreeDPublicBaseUrl = () => {
 };
 
 const getThreeDStyleReferenceUrl = () => {
+  const explicitUrl = process.env.THREE_D_BREAKDOWN_STYLE_REFERENCE_URL || "";
+  if (explicitUrl.trim()) return explicitUrl.trim();
   const baseUrl = getThreeDPublicBaseUrl();
   return baseUrl ? `${baseUrl}${THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH}` : "";
 };
@@ -52,7 +54,7 @@ const getThreeDStyleReferenceUrl = () => {
 const requireThreeDStyleReferenceUrl = () => {
   const url = getThreeDStyleReferenceUrl();
   if (!url) {
-    throw new Error("3D Breakdown style reference is not configured. Set WIGGLY_PUBLIC_BASE_URL to a public Wiggly deployment before generating storyboard frames.");
+    throw new Error("3D Breakdown style reference is not configured. Set THREE_D_BREAKDOWN_STYLE_REFERENCE_URL or WIGGLY_PUBLIC_BASE_URL before generating storyboard frames.");
   }
   return url;
 };

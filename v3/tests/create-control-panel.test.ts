@@ -221,8 +221,9 @@ assert.ok(
 );
 assert.ok(
   adScenesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH") &&
+    adScenesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_URL") &&
     adScenesSource.includes("requireThreeDStyleReferenceUrl") &&
-    adScenesSource.includes("Set WIGGLY_PUBLIC_BASE_URL to a public Wiggly deployment") &&
+    adScenesSource.includes("Set THREE_D_BREAKDOWN_STYLE_REFERENCE_URL or WIGGLY_PUBLIC_BASE_URL") &&
     adScenesSource.includes("getThreeDImageInput") &&
     adScenesSource.includes("imageInput,") &&
     adScenesSource.includes("scene.layout.referenceImages?.productImageUrls"),
