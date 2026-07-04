@@ -173,7 +173,7 @@ assert.ok(
 );
 assert.ok(
   quickActionsSource.includes("threeDRenderBlocked") &&
-    quickActionsSource.includes("Generate 3D images and animate clips before building the MP4."),
+    quickActionsSource.includes("Generate storyboard frames and Seedance clips before building the MP4."),
   "3D Breakdown must not allow the global MP4 action before generated clips exist.",
 );
 assert.ok(

@@ -238,7 +238,7 @@ Reveal pattern rules:
 
 Image prompt rules:
 - storyboardBoard.imagePrompt is NOT a production shot. It is one vertical 9:16 storyboard artist board with exactly 6 framed panels, arranged as a clean 2-column by 3-row board, showing the full story from consequence to final proof/payoff.
-- The storyboard board must use the same visualWorld, lighting, cameraStyle, recurringObjects, brand colors, and evidence-driven mechanism as the production shots.
+- The storyboard board must use the same visualWorld, lighting, cameraStyle, recurringObjects, brand colors, and evidence-driven mechanism as the final video.
 - If a style reference frame is provided to the image model, use it for visual grammar only: clean blue/cyan instructional stage, close camera, one central subject, visible mechanism progression, simple procedural 3D explainer style. Do not copy its exact object, colors, story, border, or composition.
 - The storyboard board should feel like a director's visual planning sheet: six cinematic keyframes, clear panel gutters, consistent world, one dominant subject/mechanism per panel, no readable text, no captions, no caption bars, no progress bars, no logos, no UI labels, no speech bubbles.
 - The storyboard board must show a readable transformation sequence, not six unrelated scenes: panel 1 problem state, panel 2 context escalation, panel 3 mechanism setup, panel 4 Shot 2 wow reveal, panel 5 evidence/payoff, panel 6 final transformed state.

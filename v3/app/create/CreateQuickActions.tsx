@@ -153,7 +153,7 @@ export function CreateQuickActions({
   const downloadTitle = staticPngSelected
     ? "Download this static ad as a PNG"
     : threeDRenderBlocked
-      ? "Generate 3D images and animate clips before building the MP4."
+      ? "Generate storyboard frames and Seedance clips before building the MP4."
       : renderWorkerOffline
       ? "Start npm run dev from the repo root to run the render worker."
       : "Download this ad as an MP4";
@@ -480,7 +480,7 @@ function ThreeDBreakdownAssemblyCard({
                 </div>
               ) : storyboardBoardStatus === "failed" ? (
                 <p className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
-                  {storyboardBoard.image?.error || "Storyboard board failed. Production shots may still be available."}
+                  {storyboardBoard.image?.error || "Storyboard board failed. Regenerate the six-frame board."}
                 </p>
               ) : (
                 <p className="mt-3 rounded-2xl bg-slate-50 px-3 py-2 text-xs font-bold leading-5 text-slate-500">
