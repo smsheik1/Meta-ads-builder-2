@@ -49,6 +49,14 @@ const getThreeDStyleReferenceUrl = () => {
   return baseUrl ? `${baseUrl}${THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH}` : "";
 };
 
+const requireThreeDStyleReferenceUrl = () => {
+  const url = getThreeDStyleReferenceUrl();
+  if (!url) {
+    throw new Error("3D Breakdown style reference is not configured. Set WIGGLY_PUBLIC_BASE_URL to a public Wiggly deployment before generating storyboard frames.");
+  }
+  return url;
+};
+
 const assertThreeDBreakdownScene = (scene: AdScene): ThreeDBreakdownAdScene => {
   if (scene.format !== "three-d-breakdown") throw new Error("3D Breakdown action received the wrong scene format.");
   return scene;
@@ -60,13 +68,16 @@ const patchThreeDScene = async (
   scene: ThreeDBreakdownAdScene,
 ) => ctx.runMutation(internal.adSceneStorage.patchScene, { sceneId, scene });
 
-const getThreeDImageInput = (scene: ThreeDBreakdownAdScene) => [
-  getThreeDStyleReferenceUrl(),
-  ...(scene.layout.referenceImages?.productImageUrls || []),
-  ...((scene.layout.referenceImages?.productImageUrls || []).length
-    ? []
-    : (scene.layout.referenceImages?.brandImageUrls || [])),
-].filter(Boolean).slice(0, 4);
+const getThreeDImageInput = (scene: ThreeDBreakdownAdScene) => {
+  const styleReferenceUrl = requireThreeDStyleReferenceUrl();
+  return [
+    styleReferenceUrl,
+    ...(scene.layout.referenceImages?.productImageUrls || []),
+    ...((scene.layout.referenceImages?.productImageUrls || []).length
+      ? []
+      : (scene.layout.referenceImages?.brandImageUrls || [])),
+  ].filter(Boolean).slice(0, 4);
+};
 
 const withUpdatedThreeDStoryboardBoard = (
   scene: ThreeDBreakdownAdScene,

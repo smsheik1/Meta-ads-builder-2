@@ -221,10 +221,12 @@ assert.ok(
 );
 assert.ok(
   adScenesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH") &&
+    adScenesSource.includes("requireThreeDStyleReferenceUrl") &&
+    adScenesSource.includes("Set WIGGLY_PUBLIC_BASE_URL to a public Wiggly deployment") &&
     adScenesSource.includes("getThreeDImageInput") &&
     adScenesSource.includes("imageInput,") &&
     adScenesSource.includes("scene.layout.referenceImages?.productImageUrls"),
-  "3D Breakdown image generation must pass the style reference frame plus product/brand references to Nano Banana.",
+  "3D Breakdown image generation must require the style reference frame plus product/brand references before Nano Banana.",
 );
 assert.ok(
   quickActionsSource.includes("Story direction {storyDirectionNumber}") &&
