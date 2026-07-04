@@ -503,6 +503,7 @@ assert.deepEqual(scene.layout.storyboardBoard?.frames?.map((frame) => frame.fram
 assert.deepEqual(scene.layout.clipPlans?.map((clip) => clip.frameIndexes), [[1, 2, 3], [4, 5, 6]]);
 assert.equal(scene.layout.clipPlans?.[0]?.durationSeconds, 10);
 assert.equal(scene.layout.clipPlans?.[1]?.durationSeconds, 10);
+assert.deepEqual(scene.layout.clipPlans?.map((clip) => clip.video?.status), ["idle", "idle"]);
 assert.deepEqual(scene.layout.referenceImages?.productImageUrls, ["https://cdn.example/davids-cookie-tin.png"]);
 assert.equal(scene.layout.musicBed.volume, 0.12);
 assert.equal(scene.layout.storyContract.wowMomentType, "proof-blocks");

@@ -144,7 +144,8 @@ export function CreateQuickActions({
   const shareSupported = selectedFormat === "visualizer" || selectedFormat === "text-message" || selectedFormat === "motion-story" || ((selectedFormat === "jingle" || selectedFormat === "brainrot" || selectedFormat === "three-d-breakdown") && hasPlayableAudio);
   const showBrickStoryboard = selectedFormat === "jingle";
   const showThreeDBreakdownAssembly = selectedFormat === "three-d-breakdown" && threeDScene;
-  const threeDClipsReady = Boolean(threeDScene?.layout.shots.every((shot) => shot.video?.status === "ready"));
+  const threeDClipPlans = threeDScene?.layout.clipPlans || [];
+  const threeDClipsReady = threeDClipPlans.length === 2 && threeDClipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
   const threeDRenderBlocked = selectedFormat === "three-d-breakdown" && !threeDClipsReady;
   const renderWorkerOffline = !staticPngSelected && renderWorkerHealthy === false;
   const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline || threeDRenderBlocked;
@@ -409,7 +410,7 @@ function ThreeDBreakdownAssemblyCard({
   const framesReady = storyboardFrames.length === 6 && storyboardFrames.every((frame) => frame.image?.status === "ready");
   const framesFailed = storyboardFrames.some((frame) => frame.image?.status === "failed");
   const clipPlans = scene.layout.clipPlans || [];
-  const videosReady = scene.layout.shots.every((shot) => shot.video?.status === "ready");
+  const videosReady = clipPlans.length === 2 && clipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
   const finalReady = currentRenderStatus === "ready";
   const storyboardBoardStatus = storyboardBoard?.image?.status || "idle";
   const finalStatus = renderBusy ? "Building" : finalReady ? "Final ready" : videosReady ? "Needs MP4" : framesReady ? "Ready for Seedance" : "Needs frames";
@@ -534,7 +535,7 @@ function ThreeDBreakdownAssemblyCard({
             <Film className="size-4" />
             Seedance clip plan
             <Badge variant="outline" className="ml-auto rounded-full text-[10px] font-black uppercase">
-              {framesReady ? "Ready" : statusPill(animationStatus)}
+              {videosReady ? "Clips ready" : framesReady ? "Ready" : statusPill(animationStatus)}
             </Badge>
           </div>
           <div className="mt-3 grid gap-2">
@@ -545,8 +546,17 @@ function ThreeDBreakdownAssemblyCard({
                     <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Clip {clipPlan.clipIndex} · {clipPlan.durationSeconds}s</p>
                     <p className="mt-1 text-xs font-black leading-4 text-slate-950">{clipPlan.label}</p>
                   </div>
-                  <Badge variant={framesReady ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
-                    {framesReady ? "Ready" : "Needs frames"}
+                  <Badge
+                    variant={clipPlan.video?.status === "ready" || (framesReady && !clipPlan.video?.status) ? "default" : "outline"}
+                    className="rounded-full text-[10px] font-black uppercase"
+                  >
+                    {clipPlan.video?.status === "ready"
+                      ? "Ready"
+                      : clipPlan.video?.status === "failed"
+                        ? "Failed"
+                        : framesReady
+                          ? "Plan ready"
+                          : "Needs frames"}
                   </Badge>
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-1.5">

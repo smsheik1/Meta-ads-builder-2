@@ -173,6 +173,8 @@ assert.ok(
 );
 assert.ok(
   quickActionsSource.includes("threeDRenderBlocked") &&
+    quickActionsSource.includes("threeDClipPlans.length === 2") &&
+    quickActionsSource.includes("threeDClipPlans.every((clipPlan) => clipPlan.video?.status === \"ready\")") &&
     quickActionsSource.includes("Generate storyboard frames and Seedance clips before building the MP4."),
   "3D Breakdown must not allow the global MP4 action before generated clips exist.",
 );
@@ -192,9 +194,14 @@ assert.ok(
   quickActionsSource.includes('data-three-d-clip-plan="true"') &&
     quickActionsSource.includes("clipPlans.map") &&
     quickActionsSource.includes("clipPlan.frameIndexes.map") &&
+    quickActionsSource.includes("clipPlan.video?.status") &&
     quickActionsSource.includes("Clip {clipPlan.clipIndex}") &&
     quickActionsSource.includes("Preflight complete · next step is 2 Seedance calls"),
   "3D Breakdown preflight must show two planned Seedance clips without firing video generation.",
+);
+assert.ok(
+  !quickActionsSource.includes("scene.layout.shots.every((shot) => shot.video?.status === \"ready\")"),
+  "3D Breakdown final-video readiness must use two clip plans, not retired three-shot video state.",
 );
 assert.ok(
   !quickActionsSource.includes("onAnimateThreeDClips") &&

@@ -2903,6 +2903,8 @@ function ResearchConnected() {
     && selectedThreeDStoryboardFrames.every((frame) => frame.image?.status === "ready");
   const selectedThreeDStoryboardFramesFailed = selectedThreeDStoryboardFrames.some((frame) => frame.image?.status === "failed")
     || selectedThreeDScene?.layout.storyboardBoard?.image?.status === "failed";
+  const selectedThreeDClipPlans = selectedThreeDScene?.layout.clipPlans || [];
+  const selectedThreeDClipsFailed = selectedThreeDClipPlans.some((clipPlan) => clipPlan.video?.status === "failed");
   const threeDImageStatus: ThreeDMediaUiStatus = threeDImageBusyIndex !== null
     ? "loading"
     : selectedThreeDStoryboardFramesReady
@@ -2910,11 +2912,11 @@ function ResearchConnected() {
       : selectedThreeDStoryboardFramesFailed
         ? "error"
         : "idle";
-  const threeDAnimationStatus: ThreeDMediaUiStatus = selectedThreeDStoryboardFramesReady
+  const threeDAnimationStatus: ThreeDMediaUiStatus = selectedThreeDClipsFailed
+    ? "error"
+    : selectedThreeDStoryboardFramesReady
       ? "ready"
-      : selectedThreeDScene?.layout.shots.some((shot) => shot.video?.status === "failed")
-        ? "error"
-        : "idle";
+      : "idle";
 
   const getThreeDErrorFromScene = (scene: ThreeDBreakdownAdScene) => {
     const boardFailure = scene.layout.storyboardBoard?.image?.status === "failed"
@@ -2922,8 +2924,8 @@ function ResearchConnected() {
       : "";
     const frameFailure = scene.layout.storyboardBoard?.frames?.find((frame) => frame.image?.status === "failed");
     const imageFailure = scene.layout.shots.find((shot) => shot.image?.status === "failed");
-    const videoFailure = scene.layout.shots.find((shot) => shot.video?.status === "failed");
-    return boardFailure || frameFailure?.image?.error || imageFailure?.image?.error || videoFailure?.video?.error || "";
+    const clipFailure = scene.layout.clipPlans?.find((clipPlan) => clipPlan.video?.status === "failed");
+    return boardFailure || frameFailure?.image?.error || imageFailure?.image?.error || clipFailure?.video?.error || "";
   };
 
   const onGenerateThreeDImages = async () => {

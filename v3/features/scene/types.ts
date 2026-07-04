@@ -417,6 +417,7 @@ export type ThreeDBreakdownClipPlan = {
   durationSeconds: 10;
   frameIndexes: [1, 2, 3] | [4, 5, 6];
   prompt: string;
+  video?: ThreeDBreakdownMediaRef;
 };
 
 export type ThreeDBreakdownAdScene = AdSceneBase<

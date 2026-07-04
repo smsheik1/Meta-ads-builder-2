@@ -90,6 +90,7 @@ export const createThreeDClipPlans = (
         `Narrative: ${consequence} ${context} ${mechanism}`,
         "Move from problem state into mechanism setup. Preserve product identity, framing, blue-grid 3D world, and no generated text.",
       ].join(" "),
+      video: { status: "idle" },
     } as ThreeDBreakdownClipPlan & { clipIndex: 1 },
     {
       clipIndex: 2,
@@ -104,6 +105,7 @@ export const createThreeDClipPlans = (
         `Narrative: ${mechanism} ${revelation} ${punchline}`,
         "Make the reveal the strongest motion, then settle into the final transformed state. Preserve product identity and no generated text.",
       ].join(" "),
+      video: { status: "idle" },
     } as ThreeDBreakdownClipPlan & { clipIndex: 2 },
   ];
 };
