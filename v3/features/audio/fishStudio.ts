@@ -1,5 +1,9 @@
 import { analyzeGeneratedWavAudio } from "./audioAnalysis";
-import type { AdSceneCaption, BrainrotAdScene } from "../scene/types";
+import {
+  createCaptionsForVoiceover,
+  createVoiceoverLines,
+} from "./sceneAudio";
+import type { AdSceneCaption, BrainrotAdScene, ThreeDBreakdownAdScene } from "../scene/types";
 import {
   BRAINROT_LEFT_VOICE_ID,
   BRAINROT_RIGHT_VOICE_ID,
@@ -7,6 +11,8 @@ import {
 
 const FISH_TTS_URL = "https://api.fish.audio/v1/tts";
 export const FISH_STUDIO_BRAINROT_MODEL = "fish-audio/s2-pro";
+export const THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID = "0873499c22e24d13b074fa76d27562e5";
+export const FISH_STUDIO_THREE_D_BREAKDOWN_MODEL = `fish-audio/s2-pro:${THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID}`;
 const fishSampleRate = 44_100;
 const fishChannels = 1;
 const fishBitsPerSample = 16;
@@ -194,11 +200,13 @@ const voiceIdForSpeaker = (speaker: "left" | "right") => (
 const generateFishWav = async ({
   apiKey,
   fetcher,
+  speed = 1.2,
   text,
   voiceId,
 }: {
   apiKey: string;
   fetcher: typeof fetch;
+  speed?: number;
   text: string;
   voiceId: string;
 }) => {
@@ -225,7 +233,7 @@ const generateFishWav = async ({
       condition_on_previous_chunks: false,
       early_stop_threshold: 1,
       prosody: {
-        speed: 1.2,
+        speed,
         volume: 0,
         normalize_loudness: true,
       },
@@ -269,6 +277,40 @@ export async function generateFishBrainrotDialogue({
     ...stitched,
     mimeType: "audio/wav",
     model: FISH_STUDIO_BRAINROT_MODEL,
+    provider: "fish-studio" as const,
+  };
+}
+
+export async function generateFishThreeDBreakdownVoiceover({
+  apiKey = process.env.FISH_STUDIO_APIKEY,
+  fetcher = fetch,
+  scene,
+}: {
+  apiKey?: string;
+  fetcher?: typeof fetch;
+  scene: ThreeDBreakdownAdScene;
+}) {
+  if (!apiKey) throw new Error("Fish Studio 3D Breakdown voice is not configured.");
+  if (scene.audio.status === "generated") throw new Error("This 3D Breakdown already has generated audio.");
+
+  const lines = createVoiceoverLines(scene);
+  const bytes = await generateFishWav({
+    apiKey,
+    fetcher,
+    speed: 1.1,
+    text: lines.join(". "),
+    voiceId: THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID,
+  });
+  const parsed = parsePcmWav(bytes);
+
+  return {
+    bytes,
+    mimeType: "audio/wav",
+    durationMs: parsed.durationMs,
+    transcript: lines.join("\n"),
+    captions: createCaptionsForVoiceover(scene, parsed.durationMs),
+    analysis: analyzeGeneratedWavAudio(bytes) || undefined,
+    model: FISH_STUDIO_THREE_D_BREAKDOWN_MODEL,
     provider: "fish-studio" as const,
   };
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import { Check, Circle, Loader2, Wand2, XCircle } from "lucide-react";
 import {
   NIM_MEME_MODEL_OPTIONS,

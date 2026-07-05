@@ -9,6 +9,8 @@ test-results/
 output/
 tmp/
 playwright-report/
+.playwright-cli/
+**/.playwright-cli/
 .DS_Store
 *.log
 .env*

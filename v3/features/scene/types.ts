@@ -358,7 +358,6 @@ export type MotionStoryAdScene = AdSceneBase<
   }
 >;
 
-export type ThreeDBreakdownMusicBedId = "polished-upbeat" | "warm-premium" | "playful-retail";
 export type ThreeDBreakdownScriptBeatRole = "consequence" | "context" | "mechanism" | "revelation" | "punchline";
 export type ThreeDBreakdownShotRole = "consequence" | "mechanism" | "revelation";
 export type ThreeDBreakdownMediaStatus = "idle" | "generating" | "ready" | "failed";
@@ -367,6 +366,8 @@ export type ThreeDBreakdownRevealPattern = "exploded-product" | "xray-cutaway" |
 export type ThreeDBreakdownPrimarySiteType = "ecommerce" | "saas" | "local-service" | "restaurant-food" | "nonprofit" | "portfolio" | "unclear";
 export type ThreeDBreakdownRiskFlag = "health" | "medical" | "legal" | "financial" | "beauty" | "regulated";
 export type ThreeDBreakdownClaimRisk = "low" | "medium" | "high";
+export type ThreeDBreakdownClipIndex = 1 | 2 | 3 | 4;
+export type ThreeDBreakdownStoryboardFrameIndex = 1 | 2 | 3 | 4 | 5 | 6;
 
 export type ThreeDBreakdownScriptBeat = {
   role: ThreeDBreakdownScriptBeatRole;
@@ -410,12 +411,12 @@ export type ThreeDBreakdownStoryboardBoard = {
 };
 
 export type ThreeDBreakdownClipPlan = {
-  clipIndex: 1 | 2;
+  clipIndex: ThreeDBreakdownClipIndex;
   label: string;
   startMs: number;
   endMs: number;
-  durationSeconds: 10;
-  frameIndexes: [1, 2, 3] | [4, 5, 6];
+  durationSeconds: 5;
+  frameIndexes: ThreeDBreakdownStoryboardFrameIndex[];
   prompt: string;
   video?: ThreeDBreakdownMediaRef;
 };
@@ -439,16 +440,15 @@ export type ThreeDBreakdownAdScene = AdSceneBase<
       ThreeDBreakdownShot & { shotIndex: 3; role: "revelation" },
     ];
     storyboardBoard?: ThreeDBreakdownStoryboardBoard;
-    clipPlans?: [ThreeDBreakdownClipPlan & { clipIndex: 1 }, ThreeDBreakdownClipPlan & { clipIndex: 2 }];
+    clipPlans?: [
+      ThreeDBreakdownClipPlan & { clipIndex: 1 },
+      ThreeDBreakdownClipPlan & { clipIndex: 2 },
+      ThreeDBreakdownClipPlan & { clipIndex: 3 },
+      ThreeDBreakdownClipPlan & { clipIndex: 4 },
+    ];
     referenceImages?: {
       productImageUrls: string[];
       brandImageUrls: string[];
-    };
-    musicBed: {
-      id: ThreeDBreakdownMusicBedId;
-      src: string;
-      volume: 0.12;
-      loop: true;
     };
     storyContract: {
       primarySiteType: ThreeDBreakdownPrimarySiteType;

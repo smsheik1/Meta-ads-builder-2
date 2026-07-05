@@ -3,7 +3,6 @@ import { internal } from "./_generated/api";
 import { action, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { generateAdCandidatesFromResearch } from "../features/ad-generation/generate";
-import { generateReplicateNanoBanana2Image } from "../features/formats/jingle/storyboard";
 import { generateMemeVariantsFromResearch } from "../features/formats/meme/generate";
 import { generateJingleVariantsFromResearch } from "../features/formats/jingle/generate";
 import { generateBrainrotVariantsFromResearch } from "../features/formats/brainrot/generate";
@@ -13,7 +12,6 @@ import { generateReviewsVariantsFromResearch } from "../features/formats/reviews
 import { normalizeReviewProductHandles, productCatalogHasProductImage } from "../features/formats/reviews/productSelection";
 import { generateTextMessageVariantsFromResearch } from "../features/formats/text-message/generate";
 import { generateThreeDBreakdownVariantsFromResearch } from "../features/formats/three-d-breakdown/generate";
-import { createThreeDStoryboardFrames, cropThreeDStoryboardFrames } from "../features/formats/three-d-breakdown/storyboardFrames";
 import { generateVideoMemeVariantsFromResearch } from "../features/formats/video-meme/generate";
 import { generateWereSorryVariantsFromResearch } from "../features/formats/were-sorry/generate";
 import { fetchEcommerceProductCatalog } from "../features/research/productCatalog";
@@ -28,89 +26,12 @@ import { createThreeDBreakdownAdScene } from "../features/scene/createThreeDBrea
 import { createVisualizerAdScene } from "../features/scene/createVisualizerScene";
 import { createWereSorryAdScene } from "../features/scene/createWereSorryScene";
 import type { StoredWebsiteResearchResult } from "../features/research/types";
-import type { AdScene, ThreeDBreakdownAdScene } from "../features/scene/types";
+import type { AdScene } from "../features/scene/types";
 import { toStoredResearchResult } from "./researchStorage";
 
 const createGenerationBatchId = () => (
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 );
-
-const THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH = "/three-d-breakdown/references/procedural-3d-style-frame-v1.png";
-
-const getThreeDPublicBaseUrl = () => {
-  const raw = process.env.WIGGLY_PUBLIC_BASE_URL || process.env.APP_URL || process.env.VERCEL_URL || "";
-  if (!raw.trim()) return "";
-  const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-  return withProtocol.replace(/\/+$/, "");
-};
-
-const getThreeDStyleReferenceUrl = () => {
-  const explicitUrl = process.env.THREE_D_BREAKDOWN_STYLE_REFERENCE_URL || "";
-  if (explicitUrl.trim()) return explicitUrl.trim();
-  const baseUrl = getThreeDPublicBaseUrl();
-  return baseUrl ? `${baseUrl}${THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH}` : "";
-};
-
-const requireThreeDStyleReferenceUrl = () => {
-  const url = getThreeDStyleReferenceUrl();
-  if (!url) {
-    throw new Error("3D Breakdown style reference is not configured. Set THREE_D_BREAKDOWN_STYLE_REFERENCE_URL or WIGGLY_PUBLIC_BASE_URL before generating storyboard frames.");
-  }
-  return url;
-};
-
-const assertThreeDBreakdownScene = (scene: AdScene): ThreeDBreakdownAdScene => {
-  if (scene.format !== "three-d-breakdown") throw new Error("3D Breakdown action received the wrong scene format.");
-  return scene;
-};
-
-const patchThreeDScene = async (
-  ctx: any,
-  sceneId: Id<"adScenes">,
-  scene: ThreeDBreakdownAdScene,
-) => ctx.runMutation(internal.adSceneStorage.patchScene, { sceneId, scene });
-
-const getThreeDImageInput = (scene: ThreeDBreakdownAdScene) => {
-  const styleReferenceUrl = requireThreeDStyleReferenceUrl();
-  return [
-    styleReferenceUrl,
-    ...(scene.layout.referenceImages?.productImageUrls || []),
-    ...((scene.layout.referenceImages?.productImageUrls || []).length
-      ? []
-      : (scene.layout.referenceImages?.brandImageUrls || [])),
-  ].filter(Boolean).slice(0, 4);
-};
-
-const withUpdatedThreeDStoryboardBoard = (
-  scene: ThreeDBreakdownAdScene,
-  update: (board: NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>) => NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>,
-): ThreeDBreakdownAdScene => {
-  const board = scene.layout.storyboardBoard;
-  if (!board) return scene;
-  return {
-    ...scene,
-    layout: {
-      ...scene.layout,
-      storyboardBoard: update(board),
-    },
-  };
-};
-
-const storeThreeDBytes = async (
-  ctx: {
-    storage: {
-      store: (blob: Blob) => Promise<Id<"_storage">>;
-      getUrl: (storageId: Id<"_storage">) => Promise<string | null>;
-    };
-  },
-  bytes: Uint8Array,
-  mimeType: string,
-) => {
-  const storageId = await ctx.storage.store(new Blob([bytes], { type: mimeType }));
-  const url = await ctx.storage.getUrl(storageId);
-  if (!url) throw new Error("3D Breakdown media storage returned no URL.");
-  return { storageId: String(storageId), url, mimeType };
-};
 
 export const generateFromResearch: ReturnType<typeof action> = action({
   args: {
@@ -444,77 +365,6 @@ export const generateFromResearch: ReturnType<typeof action> = action({
       scenes,
       providerStatus: generation.providerStatus,
     };
-  },
-});
-
-export const generateThreeDImages: ReturnType<typeof action> = action({
-  args: {
-    sceneId: v.id("adScenes"),
-    scene: v.any(),
-  },
-  handler: async (ctx, { sceneId, scene }) => {
-    const replicateApiToken = process.env.REPLICATE_API_TOKEN;
-    if (!replicateApiToken) throw new Error("Replicate image generation is not configured for 3D Breakdown.");
-    let nextScene = assertThreeDBreakdownScene(scene as AdScene);
-    const imageInput = getThreeDImageInput(nextScene);
-
-    const storyboardBoard = nextScene.layout.storyboardBoard;
-    if (storyboardBoard?.imagePrompt) {
-      nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
-        ...board,
-        image: { status: "generating" },
-        frames: (board.frames?.length === 6 ? board.frames : createThreeDStoryboardFrames()).map((frame) => ({
-          ...frame,
-          image: { status: "generating" as const },
-        })),
-      }));
-      await patchThreeDScene(ctx, sceneId, nextScene);
-      try {
-        const image = await generateReplicateNanoBanana2Image({
-          replicateApiToken,
-          prompt: storyboardBoard.imagePrompt,
-          imageInput,
-          aspectRatio: "9:16",
-        });
-        const stored = await storeThreeDBytes(ctx, image.bytes, image.mimeType);
-        const frameCrops = cropThreeDStoryboardFrames(image.bytes, image.mimeType);
-        const baseFrames = storyboardBoard.frames?.length === 6
-          ? storyboardBoard.frames
-          : createThreeDStoryboardFrames();
-        const storedFrames = await Promise.all(frameCrops.map(async (frameCrop) => {
-          const frameStored = await storeThreeDBytes(ctx, frameCrop.bytes, frameCrop.mimeType);
-          const frame = baseFrames.find((item) => item.frameIndex === frameCrop.frameIndex)
-            || createThreeDStoryboardFrames().find((item) => item.frameIndex === frameCrop.frameIndex)!;
-          return {
-            ...frame,
-            image: { status: "ready" as const, ...frameStored },
-          };
-        }));
-        nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
-          ...board,
-          image: { status: "ready", ...stored },
-          frames: storedFrames as NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["frames"],
-        }));
-      } catch (error) {
-        nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
-          ...board,
-          image: {
-            status: "failed",
-            error: error instanceof Error ? error.message : "3D storyboard board generation failed.",
-          },
-          frames: (board.frames?.length === 6 ? board.frames : createThreeDStoryboardFrames()).map((frame) => ({
-            ...frame,
-            image: {
-              status: "failed" as const,
-              error: error instanceof Error ? error.message : "3D storyboard board generation failed.",
-            },
-          })),
-        }));
-      }
-      await patchThreeDScene(ctx, sceneId, nextScene);
-    }
-
-    return { scene: nextScene };
   },
 });
 

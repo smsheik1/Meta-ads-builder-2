@@ -3,7 +3,7 @@ import {
   DEFAULT_NVIDIA_NIM_BASE_URL,
   type NvidiaNimChatCompletion,
 } from "../../llm/nvidiaNim";
-import { DEFAULT_NVIDIA_NIM_WERE_SORRY_MODEL } from "../../llm/nvidiaNimModels";
+import { DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL } from "../../llm/nvidiaNimModels";
 import type { StoredWebsiteResearchResult } from "../../research/types";
 import type {
   ThreeDBreakdownClaimRisk,
@@ -21,10 +21,13 @@ import {
   buildThreeDBreakdownPrompt,
   THREE_D_BREAKDOWN_MAX_TOKENS,
   THREE_D_BREAKDOWN_VARIANT_COUNT,
+  THREE_D_MAX_SCRIPT_WORDS,
+  THREE_D_MIN_SCRIPT_WORDS,
   THREE_D_REVEAL_PATTERNS,
   THREE_D_SCRIPT_BEATS,
   THREE_D_SHOT_CONTRACT,
 } from "./prompt";
+import { createThreeDStoryboardFrames } from "./storyboardContracts";
 
 export type ThreeDBreakdownSiteContract = {
   primarySiteType: ThreeDBreakdownPrimarySiteType;
@@ -63,10 +66,14 @@ export type ThreeDBreakdownGeneration = {
 
 const DEFAULT_TIMEOUT_MS = 75_000;
 const bannedTextPattern = /\b(zachdfilms|zackdfilms|zach d films|zack d films|creator style|teal\/dark fingerprint)\b/i;
-const regulatedUnsafePattern = /\b(cures?|prevents?|diagnos(?:e|is)|treats?|revenue|legal outcome|safe(?:ty)?|guaranteed result|guaranteed to|risk[- ]free|clinically proven|doctor[- ]recommended)\b/i;
+const forbiddenNarrationPattern = /\b(introducing|discover|experience|meet|designed to|helps you|lets you|so you can|perfect for|boost|streamline|optimize|unlock|seamless|powerful|all-in-one|premium|high-quality|game changer|smarter way|solution|take control|level up|get started|shop now|try today|learn more|for a reason|the evidence shows|the website says|the site says)\b/i;
+const brokenNarrationPattern = /\bali\s+ve\b|\bprotect(?:s|ed|ing)? alive\b/i;
+const transcriptOpeningPattern = /^(when|if|once|imagine|before|after|inside|without|most|many|some|a|an|the|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|hundred|thousand|every|each|she|he|someone|something|\d)\b/i;
+const transcriptConnectorPattern = /\b(when|if|once|as|but|so|because|then|finally|while|before|after|meaning|until|by)\b/gi;
+const abstractPunchlinePattern = /^(presence|clarity|confidence|value|connection|impact|control|growth|trust|success)\b/i;
+const regulatedUnsafePattern = /\b(cures?|diagnos(?:e|is)|treats?|clinically proven|doctor[- ]recommended|risk[- ]free|legal outcome|guaranteed result|guaranteed to)\b|\b(?:prevents?|eliminates?)\s+(?:disease|pain|cavities|infection|injury|illness|complications|lawsuits?|legal risk|financial loss)\b|\b(?:doubles?|triples?|guarantees?|increases?)\s+(?:revenue|profit|sales|return|roi)\b/i;
 const primarySiteTypes: ThreeDBreakdownPrimarySiteType[] = ["ecommerce", "saas", "local-service", "restaurant-food", "nonprofit", "portfolio", "unclear"];
 const riskFlags: ThreeDBreakdownRiskFlag[] = ["health", "medical", "legal", "financial", "beauty", "regulated"];
-const evidenceUseTypes: ThreeDBreakdownEvidenceUseType[] = ["feature", "mechanism", "offer", "review", "material", "process", "guarantee", "shipping", "proof", "category", "claim"];
 const claimRisks: ThreeDBreakdownClaimRisk[] = ["low", "medium", "high"];
 const weakSiteCopy = "This page does not contain enough concrete evidence for a 3D Breakdown. Try a product, features, testimonials, case-study, or offer page - or use Visualizer for a lighter ad from this URL.";
 const MIN_VISUAL_POTENTIAL_SCORE = 0.7;
@@ -99,6 +106,59 @@ const assertNoBannedText = (value: string) => {
   }
 };
 
+const assertNoQuotedImageText = (value: string, label: string) => {
+  if (/(^|[\s([{])["'][A-Za-z0-9][^"']{1,48}["']/.test(value)) {
+    throw new Error(`3D Breakdown ${label} must not include quoted readable text.`);
+  }
+};
+
+const countWords = (value: string) => (
+  value.match(/[A-Za-z0-9]+(?:['-][A-Za-z0-9]+)?/g)?.length || 0
+);
+
+const sentenceCount = (value: string) => {
+  const withoutDecimals = value.replace(/\d[.,]\d/g, "0");
+  const sentences = withoutDecimals
+    .split(/[.!?]+(?=\s|$)/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return Math.max(1, sentences.length);
+};
+
+const assertTranscriptScriptShape = (beats: ThreeDBreakdownScriptBeat[]) => {
+  const combined = beats.map((beat) => beat.narration).join(" ");
+  const totalWords = countWords(combined);
+  if (totalWords < THREE_D_MIN_SCRIPT_WORDS || totalWords > THREE_D_MAX_SCRIPT_WORDS) {
+    throw new Error(`3D Breakdown script must be ${THREE_D_MIN_SCRIPT_WORDS}-${THREE_D_MAX_SCRIPT_WORDS} words.`);
+  }
+  beats.forEach((beat, index) => {
+    if (sentenceCount(beat.narration) !== 1) {
+      throw new Error(`3D Breakdown beat ${index + 1} must be one sentence.`);
+    }
+    if (forbiddenNarrationPattern.test(beat.narration)) {
+      throw new Error("3D Breakdown script contains forbidden ad-style narration.");
+    }
+    if (brokenNarrationPattern.test(beat.narration)) {
+      throw new Error("3D Breakdown script contains broken or awkward narration wording.");
+    }
+  });
+  const opener = beats[0]?.narration || "";
+  if (!transcriptOpeningPattern.test(opener)) {
+    throw new Error("3D Breakdown script must open with a concrete incident.");
+  }
+  const connectorCount = combined.match(transcriptConnectorPattern)?.length || 0;
+  if (connectorCount < 2) {
+    throw new Error("3D Breakdown script must use transcript-style causal connectors.");
+  }
+  const punchline = beats[beats.length - 1]?.narration || "";
+  if (countWords(punchline) > 7) {
+    throw new Error("3D Breakdown punchline must be 7 words or fewer.");
+  }
+  if (abstractPunchlinePattern.test(punchline)) {
+    throw new Error("3D Breakdown punchline must not start with an abstract noun.");
+  }
+};
+
 const parseStringArray = (value: unknown, label: string, max = 6) => {
   if (!Array.isArray(value)) throw new Error(`3D Breakdown ${label} must be an array.`);
   const parsed = value.map((item) => cleanText(item, 80)).filter(Boolean).slice(0, max);
@@ -111,6 +171,17 @@ const parseEnum = <T extends string>(value: unknown, valid: readonly T[], label:
     throw new Error(`3D Breakdown ${label} is invalid.`);
   }
   return value as T;
+};
+
+const parseRiskFlags = (value: unknown) => {
+  if (!Array.isArray(value)) throw new Error("3D Breakdown riskFlags must be an array.");
+  const uniqueFlags = Array.from(new Set(value));
+  uniqueFlags.forEach((flag) => {
+    if (!riskFlags.includes(flag as ThreeDBreakdownRiskFlag)) {
+      throw new Error("3D Breakdown riskFlags contains an invalid flag.");
+    }
+  });
+  return riskFlags.filter((flag) => uniqueFlags.includes(flag));
 };
 
 const assertClaimRisk = ({
@@ -128,16 +199,13 @@ const assertClaimRisk = ({
   if (siteContract.riskFlags.length && regulatedUnsafePattern.test(combined)) {
     throw new Error("3D Breakdown regulated-risk script contains unsafe claim language.");
   }
-  if (variant.evidenceUseType !== evidence.evidenceUseType) {
-    throw new Error("3D Breakdown variant evidenceUseType must match selected evidence.");
-  }
 };
 
 const parseScriptBeats = (value: unknown): ThreeDBreakdownScriptBeat[] => {
   if (!Array.isArray(value) || value.length !== THREE_D_SCRIPT_BEATS.length) {
     throw new Error("3D Breakdown needs exactly 5 narration beats.");
   }
-  return value.map((beat, index) => {
+  const beats = value.map((beat, index) => {
     const raw = beat as Record<string, unknown>;
     const contract = THREE_D_SCRIPT_BEATS[index]!;
     const narration = cleanText(raw.narration, 180);
@@ -153,12 +221,12 @@ const parseScriptBeats = (value: unknown): ThreeDBreakdownScriptBeat[] => {
       endMs: contract.endMs,
     };
   }) as ThreeDBreakdownScriptBeat[];
+  assertTranscriptScriptShape(beats);
+  return beats;
 };
 
 const parseSiteContract = (parsed: Record<string, unknown>): ThreeDBreakdownSiteContract => {
-  const parsedRiskFlags = Array.isArray(parsed.riskFlags)
-    ? parsed.riskFlags.map((flag) => parseEnum(flag, riskFlags, "risk flag"))
-    : (() => { throw new Error("3D Breakdown riskFlags must be an array."); })();
+  const parsedRiskFlags = parseRiskFlags(parsed.riskFlags);
   const siteContract = {
     primarySiteType: parseEnum(parsed.primarySiteType, primarySiteTypes, "primarySiteType"),
     riskFlags: parsedRiskFlags,
@@ -173,26 +241,67 @@ const parseSiteContract = (parsed: Record<string, unknown>): ThreeDBreakdownSite
   return siteContract;
 };
 
+const defaultShotField = (
+  index: number,
+  field: "captionText" | "sceneDescription" | "explainerDevice" | "physicalAction" | "imagePrompt" | "animationPrompt",
+) => {
+  const role = THREE_D_SHOT_CONTRACT[index]!.role;
+  if (role === "consequence") {
+    return {
+      captionText: "Something breaks.",
+      sceneDescription: "The shared 3D world shows the customer friction physically blocking the main recurring object.",
+      explainerDevice: "Miniature problem cutaway",
+      physicalAction: "The main recurring object blocks, piles up, or tangles to create visible friction.",
+      imagePrompt: "Cinematic 3D explainer scene showing customer friction physically blocking the recurring object on a blue blueprint-grid stage, no text, no realistic faces.",
+      animationPrompt: "The blocked object strains once while the camera pushes in.",
+    }[field];
+  }
+  if (role === "mechanism") {
+    return {
+      captionText: "The mechanism appears.",
+      sceneDescription: "The shared 3D world reveals the hidden mechanism through an impossible-to-film cutaway.",
+      explainerDevice: "Impossible-to-film mechanism reveal",
+      physicalAction: "The mechanism opens, splits, assembles, or locks together to reveal how the offer works.",
+      imagePrompt: "Cinematic 3D mechanism reveal with floating layers, cutaway parts, and unmarked proof objects on a blue blueprint-grid stage, no text, no realistic faces.",
+      animationPrompt: "The mechanism opens and locks together in one clean motion.",
+    }[field];
+  }
+  return {
+    captionText: "Proof lands.",
+    sceneDescription: "The shared 3D world connects the selected evidence to the final transformed state.",
+    explainerDevice: "Proof payoff cutaway",
+    physicalAction: "Unmarked proof objects settle into place as the final transformation becomes visible.",
+    imagePrompt: "Cinematic 3D proof payoff scene with unmarked proof blocks settling into the transformed world on a blue blueprint-grid stage, no text, no realistic faces.",
+    animationPrompt: "Unmarked proof objects settle as the final state holds.",
+  }[field];
+};
+
 const parseShots = (value: unknown): ThreeDBreakdownShot[] => {
-  if (!Array.isArray(value) || value.length !== THREE_D_SHOT_CONTRACT.length) {
+  if (!Array.isArray(value) || value.length < THREE_D_SHOT_CONTRACT.length) {
     throw new Error("3D Breakdown needs exactly 3 visual shots.");
   }
-  return value.map((shot, index) => {
+  return THREE_D_SHOT_CONTRACT.map((contract, index) => {
+    const shot = value.find((item) => {
+      const raw = item as Record<string, unknown>;
+      return raw.shotIndex === contract.shotIndex || raw.role === contract.role;
+    }) || value[index];
     const raw = shot as Record<string, unknown>;
-    const contract = THREE_D_SHOT_CONTRACT[index]!;
-    if (raw.shotIndex !== contract.shotIndex || raw.role !== contract.role) {
+    if (
+      (raw.shotIndex !== undefined && raw.shotIndex !== contract.shotIndex) ||
+      (raw.role !== undefined && raw.role !== contract.role)
+    ) {
       throw new Error(`3D Breakdown shot ${index + 1} contract is invalid.`);
     }
-    const captionText = cleanText(raw.captionText, 90);
-    const sceneDescription = cleanText(raw.sceneDescription, 260);
-    const explainerDevice = cleanText(raw.explainerDevice, 120);
-    const physicalAction = cleanText(raw.physicalAction, 140);
-    const imagePrompt = cleanText(raw.imagePrompt, 1400);
-    const animationPrompt = cleanText(raw.animationPrompt, 900);
+    const captionText = cleanText(raw.captionText, 90) || defaultShotField(index, "captionText");
+    const sceneDescription = cleanText(raw.sceneDescription, 260) || defaultShotField(index, "sceneDescription");
+    const explainerDevice = cleanText(raw.explainerDevice, 120) || defaultShotField(index, "explainerDevice");
+    const physicalAction = cleanText(raw.physicalAction, 140) || defaultShotField(index, "physicalAction");
+    const imagePrompt = cleanText(raw.imagePrompt, 1400) || defaultShotField(index, "imagePrompt");
+    const animationPrompt = cleanText(raw.animationPrompt, 900) || defaultShotField(index, "animationPrompt");
     for (const text of [captionText, sceneDescription, explainerDevice, physicalAction, imagePrompt, animationPrompt]) {
-      if (!text) throw new Error(`3D Breakdown shot ${index + 1} is incomplete.`);
       assertNoBannedText(text);
     }
+    assertNoQuotedImageText(imagePrompt, `shot ${index + 1} image prompt`);
     return {
       shotIndex: contract.shotIndex,
       role: contract.role,
@@ -221,20 +330,34 @@ const parseStoryboardBoard = (value: unknown): ThreeDBreakdownStoryboardBoard =>
   const imagePrompt = cleanText(raw.imagePrompt, 1800);
   if (!imagePrompt) throw new Error("3D Breakdown storyboard board image prompt is missing.");
   assertNoBannedText(imagePrompt);
+  assertNoQuotedImageText(imagePrompt, "storyboard board image prompt");
   const lockedPrompt = [
-    "Create one vertical 9:16 storyboard artist planning board for a 20-second 3D Breakdown.",
-    "EXACTLY SIX framed panels arranged 2 columns by 3 rows with clean gutters.",
-    "Use one coherent procedural 3D explainer world on a clean blue/cyan blueprint-grid stage, close camera, one dominant subject/action per panel.",
+    "Create a six-frame production visual plan for a 20-second 3D Breakdown.",
+    "The backend will expand this plan into SIX separate vertical 9:16 production keyframes for Seedance references.",
+    "Do not generate one board, collage, contact sheet, comic strip, split screen, panel grid, or multi-frame image.",
+    "Use one coherent procedural 3D explainer world on a clean blue/cyan blueprint-grid stage, close camera, one dominant subject/action per frame.",
     "If image references are provided, use the style reference frame only for visual grammar and use product/brand references only for shape, color, packaging cues, and material cues.",
     `Story sequence to visualize: ${imagePrompt}`,
-    "Panel order: panel 1 problem state, panel 2 context escalation, panel 3 mechanism setup, panel 4 peak impossible-to-film wow reveal, panel 5 evidence/payoff, panel 6 final transformed state.",
-    "Every panel must contain a visible subject, object, and physical action. Panel 1 cannot be an empty stage; it must show friction physically blocking, piling up, splitting, leaking, breaking, compressing, tangling, or creating tension.",
-    "No captions, no caption bars, no black lower bars, no progress bars, no readable text, no UI labels, no speech bubbles, no receipts, no posters, no typography-led design.",
+    "Frame order: frame 1 problem state, frame 2 context escalation, frame 3 mechanism setup, frame 4 peak impossible-to-film wow reveal, frame 5 evidence/payoff, frame 6 final transformed state.",
+    "For ecommerce mechanism teardowns, reinterpret the frame order as: frame 1 false assumption/common use, frame 2 hidden physical obstacle, frame 3 first component/mechanism, frame 4 peak cutaway or delivery reveal, frame 5 unified evidence/payoff frame where the engineered product stays central and any ordinary-version contrast appears only as a small unmarked remnant/token/background residue, frame 6 final product payoff.",
+    "Frame 5 must not be a split-screen, side-by-side divider, comparison chart, two-column layout, before/after wall, vertical seam, or separated left/right comparison because frame 5 becomes a Seedance production reference image.",
+    "Frame 5 must show the engineered product intact, protected, or controlled as the main subject. Do not crack, shatter, melt, break, leak, or fail the central product in frame 5; any failed ordinary version must be a small separate side remnant, debris token, or background residue.",
+    "For ecommerce, make the plan feel like a fast product-science teardown short: repeated product/package anchoring, quick visual resets, macro mechanism close-ups, component or particle movement, and a final product payoff composition.",
+    "Use at least four distinct visual modules across the six frames: product/scale intro, hidden obstacle, mechanism machine or cutaway, ingredient/component movement, unified ordinary-to-engineered payoff, final product payoff.",
+    "Do not let the same close-up product angle dominate more than two frames. Keep the visual story changing every frame.",
+    "For ecommerce plans, use a recurring stylized human demo character/body proxy as the continuity spine in at least four frames, including the first and final frame. Frame 1 and frame 6 must show the character's full body or torso prominently beside the product; at least one middle frame should show the same body proxy, tiny scale figure, hand, pointer, or probe. Mechanism close-ups may use the same hand, pointer, probe, or scale proxy, but do not satisfy the character requirement with anonymous fingers only.",
+    "Do not create a faceless biology montage. Internal body, gut, cell-wall, or process visuals should feel like environments the same demo character enters, scales against, points into, or returns from.",
+    "Frame 6 should resemble a clean product payoff: product large, demo character body/torso nearby, and 2-4 blank proof/benefit/component cards or tokens arranged around it for renderer overlays.",
+    "Every frame must contain a visible subject, object, and physical action. Frame 1 cannot be an empty stage; it must show friction physically blocking, piling up, splitting, leaking, breaking, compressing, tangling, or creating tension.",
+    "No frame labels, no frame numbers, no captions, no caption bars, no black lower bars, no progress bars, no readable text, no UI labels, no speech bubbles, no receipts, no posters, no typography-led design.",
+    "No words, letters, numbers, percentages, ratings, price tags, labels, handwriting, UI copy, text-like glyphs, icons, arrows, checkmarks, X marks, or alphanumeric marks anywhere inside frames. Do not write FRAME 1, FRAME 2, scene labels, headings, or any other annotations.",
+    "If proof or numeric evidence appears in the story, visualize it as blank physical tokens, unmarked blocks, unlabeled counters, plain geometric tokens, or motion only.",
   ].join(" ");
   return {
     frameCount: 6,
     imagePrompt: lockedPrompt,
     image: { status: "idle" },
+    frames: createThreeDStoryboardFrames(),
   };
 };
 
@@ -255,7 +378,7 @@ const parseVariants = (
       mechanismSummary: cleanText(rawVariant.mechanismSummary, 180),
       visualMetaphor: cleanText(rawVariant.visualMetaphor, 160),
       evidenceIndex,
-      evidenceUseType: parseEnum(rawVariant.evidenceUseType, evidenceUseTypes, "evidenceUseType"),
+      evidenceUseType: evidence.evidenceUseType,
       wowMomentType: parseEnum(rawVariant.wowMomentType, THREE_D_REVEAL_PATTERNS, "wowMomentType"),
       wowMoment: cleanText(rawVariant.wowMoment, 220),
       viewerLearns: cleanText(rawVariant.viewerLearns, 220),
@@ -347,7 +470,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     nvidiaNimApiKey = process.env.NVIDIA_NIM_API_KEY || "",
     nvidiaNimBaseUrl = process.env.NVIDIA_NIM_BASE_URL || DEFAULT_NVIDIA_NIM_BASE_URL,
     nvidiaNimChatCompletion,
-    nvidiaNimModel = process.env.NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL || DEFAULT_NVIDIA_NIM_WERE_SORRY_MODEL,
+    nvidiaNimModel = process.env.NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL || DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL,
   }: {
     count?: number;
     nvidiaNimApiKey?: string;

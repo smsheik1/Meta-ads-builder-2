@@ -67,17 +67,95 @@ export const estimateVoiceoverDurationMs = (scene: AdScene) => {
   );
 };
 
+const splitThreeDBreakdownCaptionLine = (value: string) => {
+  const normalized = cleanText(value)
+    .replace(/\bis built to protect\b/gi, "protects")
+    .replace(/\bcan break\b/gi, "breaks")
+    .replace(/\bcan scatter\b/gi, "scatters")
+    .replace(/^(but|then|and|so)\s+/i, "")
+    .replace(/\s+long before\b.+$/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const clauses = normalized
+    .split(/\b(?:and|but|then|so|because|while|until)\b/i)
+    .map((part) => cleanText(part).replace(/^(but|then|and|so)\s+/i, ""))
+    .filter(Boolean);
+  const chunks: string[] = [];
+  const maxWords = 4;
+  const maxChars = 32;
+  const trailingPrepositions = new Set(["after", "before", "for", "from", "inside", "into", "of", "through", "to", "with"]);
+
+  for (const clause of clauses.length ? clauses : [normalized]) {
+    const words = clause.split(/\s+/).filter(Boolean);
+    let current: string[] = [];
+
+    for (const word of words) {
+      const candidate = [...current, word].join(" ");
+      if (current.length && (current.length + 1 > maxWords || candidate.length > maxChars)) {
+        const trailingWord = current[current.length - 1]?.replace(/[^\w]+$/g, "").toLowerCase();
+        if (trailingWord && trailingPrepositions.has(trailingWord) && current.length > 1) {
+          const moved = current.pop()!;
+          chunks.push(current.join(" "));
+          current = [moved, word];
+          continue;
+        }
+        chunks.push(current.join(" "));
+        current = [word];
+      } else {
+        current.push(word);
+      }
+    }
+
+    if (current.length) chunks.push(current.join(" "));
+  }
+
+  const last = chunks[chunks.length - 1];
+  const previous = chunks[chunks.length - 2];
+  if (
+    last &&
+    previous &&
+    last.split(/\s+/).length <= 2 &&
+    `${previous} ${last}`.length <= maxChars &&
+    previous.split(/\s+/).length + last.split(/\s+/).length <= MAX_CAPTION_WORDS_ON_SCREEN
+  ) {
+    chunks.splice(chunks.length - 2, 2, `${previous} ${last}`);
+  }
+
+  return chunks.filter(Boolean);
+};
+
 export const createCaptionsForVoiceover = (
   scene: AdScene,
   durationMs = estimateVoiceoverDurationMs(scene),
 ): AdSceneCaption[] => {
   if (scene.format === "three-d-breakdown") {
     const targetDurationMs = scene.layout.durationMs;
-    return scene.layout.scriptBeats.map((beat) => ({
-      text: cleanText(beat.narration),
-      startMs: Math.round((beat.startMs / targetDurationMs) * durationMs),
-      endMs: Math.round((beat.endMs / targetDurationMs) * durationMs),
-    }));
+    const captions: AdSceneCaption[] = [];
+
+    for (const beat of scene.layout.scriptBeats) {
+      const chunks = splitThreeDBreakdownCaptionLine(beat.narration);
+      const beatStart = Math.round((beat.startMs / targetDurationMs) * durationMs);
+      const beatEnd = Math.round((beat.endMs / targetDurationMs) * durationMs);
+      const weights = chunks.map((chunk) => Math.max(1, chunk.split(/\s+/).filter(Boolean).length));
+      const totalWeight = weights.reduce((sum, weight) => sum + weight, 0) || 1;
+      let cursor = beatStart;
+
+      chunks.forEach((chunk, index) => {
+        const isLast = index === chunks.length - 1;
+        const chunkDuration = isLast
+          ? Math.max(360, beatEnd - cursor)
+          : Math.max(360, Math.round(((beatEnd - beatStart) * weights[index]!) / totalWeight));
+        const endMs = isLast ? beatEnd : Math.min(beatEnd, cursor + chunkDuration);
+        captions.push({
+          text: chunk,
+          startMs: cursor,
+          endMs,
+        });
+        cursor = endMs;
+      });
+    }
+
+    return captions;
   }
 
   const lines = createVoiceoverLines(scene);
@@ -195,9 +273,12 @@ export const getVisibleCaptionText = (
     timeMs >= caption.startMs && timeMs <= caption.endMs
   ));
 
-  return current
-    ? getCaptionWindowText(current, timeSeconds)
-    : getCaptionWindowText(captions[0], captions[0]?.startMs ? captions[0].startMs / 1000 : 0);
+  if (current) return getCaptionWindowText(current, timeSeconds);
+  const firstCaption = captions[0];
+  if (firstCaption && timeMs < firstCaption.startMs) {
+    return getCaptionWindowText(firstCaption, firstCaption.startMs / 1000);
+  }
+  return "";
 };
 
 export const getCaptionWindowText = (

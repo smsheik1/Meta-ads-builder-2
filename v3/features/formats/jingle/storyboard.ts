@@ -12,7 +12,7 @@ import type {
 } from "../../scene/types";
 
 export const BRICK_MUSIC_VIDEO_STYLE_ID = "brick-music-video" as const;
-export const BRICK_STORYBOARD_IMAGE_MODEL = "google/nano-banana-2";
+export const BRICK_STORYBOARD_IMAGE_MODEL = "google/nano-banana-2-lite";
 export const BRICK_STORYBOARD_VIDEO_MODEL = "bytedance/seedance-2.0-mini";
 export const BRICK_STORYBOARD_VIDEO_RESOLUTION = "480p";
 export const DEFAULT_BRICK_STORYBOARD_SHOT_COUNT = 3;
@@ -574,17 +574,50 @@ export async function generateReplicateNanoBanana2Image({
         prompt,
         ...(imageInput.length ? { image_input: imageInput } : {}),
         aspect_ratio: aspectRatio,
-        resolution: "1K",
         output_format: "jpg",
       },
     }),
-  }), DEFAULT_TIMEOUT_MS, "Replicate Nano Banana 2 image generation");
-  const payload = await prediction.json().catch(() => null) as { output?: string; error?: string; detail?: string } | null;
-  if (!prediction.ok) throw new Error(payload?.error || payload?.detail || "Replicate Nano Banana 2 image generation failed.");
-  if (!payload?.output) throw new Error("Replicate Nano Banana 2 returned no image.");
+  }), DEFAULT_TIMEOUT_MS, "Replicate Nano Banana image generation");
+  let payload = await prediction.json().catch(() => null) as {
+    id?: string;
+    status?: string;
+    urls?: { get?: string };
+    output?: string | string[];
+    error?: string;
+    detail?: string;
+    logs?: string;
+  } | null;
+  if (!prediction.ok) throw new Error(payload?.error || payload?.detail || "Replicate Nano Banana image generation failed.");
+  console.log("[brick-image] nano banana prediction created", {
+    id: payload?.id,
+    status: payload?.status,
+    hasOutput: Boolean(payload?.output),
+    hasGetUrl: Boolean(payload?.urls?.get),
+    error: payload?.error || null,
+  });
 
-  const imageResponse = await withTimeout(fetch(payload.output), DEFAULT_TIMEOUT_MS, "Replicate image download");
-  if (!imageResponse.ok) throw new Error("Replicate Nano Banana 2 image download failed.");
+  for (let attempt = 0; payload?.urls?.get && !payload.output && !["succeeded", "failed", "canceled"].includes(payload.status || "") && attempt < 24; attempt += 1) {
+    await sleep(5_000);
+    const nextResponse = await withTimeout(fetch(payload.urls.get, {
+      headers: { Authorization: `Bearer ${replicateApiToken}` },
+    }), DEFAULT_TIMEOUT_MS, "Replicate Nano Banana prediction polling");
+    payload = await nextResponse.json().catch(() => payload);
+    console.log("[brick-image] nano banana poll", {
+      id: payload?.id,
+      status: payload?.status,
+      hasOutput: Boolean(payload?.output),
+      error: payload?.error || null,
+    });
+  }
+
+  if (payload?.status === "failed" || payload?.status === "canceled") {
+    throw new Error(`Replicate Nano Banana ${payload.status}: ${payload.error || payload.logs || "no provider error returned"}`);
+  }
+  const outputUrl = Array.isArray(payload?.output) ? payload.output[0] : payload?.output;
+  if (!outputUrl) throw new Error("Replicate Nano Banana returned no image.");
+
+  const imageResponse = await withTimeout(fetch(outputUrl), DEFAULT_TIMEOUT_MS, "Replicate image download");
+  if (!imageResponse.ok) throw new Error("Replicate Nano Banana image download failed.");
   return {
     bytes: new Uint8Array(await imageResponse.arrayBuffer()),
     mimeType: imageResponse.headers.get("content-type") || "image/jpeg",

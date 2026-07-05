@@ -8,6 +8,12 @@ export const adSceneCompositionId = "AdSceneMp4";
 export const adSceneFps = 60;
 export const adSceneDurationInFrames = adSceneFps * 5;
 
+export const getAdSceneDimensions = (scene: AdScene) => (
+  scene.format === "three-d-breakdown"
+    ? { width: 1080, height: 1920 }
+    : { width: 1080, height: 1350 }
+);
+
 export const getAdSceneDurationInFrames = (
   scene: AdScene,
   fps = adSceneFps,
@@ -37,6 +43,7 @@ export function RemotionRoot() {
       durationInFrames={adSceneDurationInFrames}
       calculateMetadata={({ props }) => ({
         durationInFrames: getAdSceneDurationInFrames(props.scene),
+        ...getAdSceneDimensions(props.scene),
       })}
       defaultProps={{
         scene: defaultRenderScene,

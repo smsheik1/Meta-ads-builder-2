@@ -1,7 +1,7 @@
 import type { ThreeDBreakdownSiteContract, ThreeDBreakdownVariant } from "../formats/three-d-breakdown/generate";
-import { getThreeDBreakdownMusicBed, getThreeDBreakdownMusicBedId, THREE_D_BREAKDOWN_DURATION_MS } from "../formats/three-d-breakdown/music";
+import { THREE_D_BREAKDOWN_DURATION_MS } from "../formats/three-d-breakdown/music";
 import type { ThreeDBreakdownEvidenceItem } from "../formats/three-d-breakdown/evidence";
-import { createThreeDClipPlans, createThreeDStoryboardFrames } from "../formats/three-d-breakdown/storyboardFrames";
+import { createThreeDClipPlans, createThreeDStoryboardFrames } from "../formats/three-d-breakdown/storyboardContracts";
 import type { StoredWebsiteResearchResult } from "../research/types";
 import { pickSceneAccentColor } from "./createVisualizerScene";
 import {
@@ -33,7 +33,6 @@ export function createThreeDBreakdownAdScene({
   const evidence = evidenceItems.find((item) => item.evidenceIndex === variant.evidenceIndex);
   if (!evidence) throw new Error("3D Breakdown evidence item is missing.");
   const accentColor = pickSceneAccentColor(research.brand.colors);
-  const musicBed = getThreeDBreakdownMusicBed(getThreeDBreakdownMusicBedId(candidateIndex));
   const productImageUrls = (research.productCatalog?.products || [])
     .map((product) => product.imageUrl)
     .filter((url): url is string => Boolean(url))
@@ -107,7 +106,6 @@ export function createThreeDBreakdownAdScene({
         productImageUrls,
         brandImageUrls,
       },
-      musicBed,
       storyContract: {
         ...siteContract,
         variantAngle: variant.variantAngle,

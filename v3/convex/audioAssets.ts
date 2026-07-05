@@ -5,7 +5,10 @@ import type { Id } from "./_generated/dataModel";
 import type { ActionCtx } from "./_generated/server";
 import { generateGeminiDialogueVoiceover, generateGeminiVoiceover } from "../features/audio/geminiTts";
 import { generateElevenLabsJingleMusic } from "../features/audio/elevenlabsMusic";
-import { generateFishBrainrotDialogue } from "../features/audio/fishStudio";
+import {
+  generateFishBrainrotDialogue,
+  generateFishThreeDBreakdownVoiceover,
+} from "../features/audio/fishStudio";
 import {
   DEEPGRAM_TRANSCRIPTION_MODEL,
   transcribeAudioWithDeepgram,
@@ -240,6 +243,18 @@ export const generateForScene: ReturnType<typeof action> = action({
     const sessionId = await ctx.runMutation(internal.sessions.ensureAnonymousSession, {
       anonymousId,
     });
+    if (audioScene.format === "three-d-breakdown") {
+      const result = await generateFishThreeDBreakdownVoiceover({ scene: audioScene });
+      return storeGeneratedAudioAndPatchScene({
+        ctx,
+        sessionId,
+        scene: audioScene,
+        sceneId,
+        result,
+        missingUrlMessage: "Generated 3D Breakdown voiceover was stored, but no playable URL was returned.",
+      });
+    }
+
     const result = await generateGeminiVoiceover(audioScene);
     const storageId = await ctx.storage.store(new Blob([result.bytes], {
       type: result.mimeType,

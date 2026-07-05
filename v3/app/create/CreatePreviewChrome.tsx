@@ -66,6 +66,7 @@ export function PhonePreviewFrame({
   const verticalPlatform = reelsPlatform || storiesPlatform;
   const isDark = true;
   const renderScene = scene ?? createStarterPlaceholderScene(placeholderVariantIndex);
+  const fullHeightVerticalAd = renderScene.format === "three-d-breakdown";
   const renderMotionMode = scene ? motionMode : "idle";
   const shouldShowAudioAction = renderScene.audio.status !== "generated" && Boolean(onOpenAudioPanel);
   const syncVideoTimeToPreview = renderScene.audio.status !== "generated";
@@ -77,7 +78,7 @@ export function PhonePreviewFrame({
     const PreviewVideoAsset: RenderVideoComponent = ({
       active = true,
       clipEndSeconds: _clipEndSeconds,
-      clipStartSeconds: _clipStartSeconds,
+      clipStartSeconds,
       clipTimeSeconds,
       onTimeUpdate,
       ...props
@@ -119,7 +120,7 @@ export function PhonePreviewFrame({
             onTimeUpdate={(event) => {
               onTimeUpdate?.(event);
               if (syncVideoTimeToPreview) {
-                onPreviewTimeChange?.(event.currentTarget.currentTime);
+                onPreviewTimeChange?.((clipStartSeconds || 0) + event.currentTarget.currentTime);
               }
             }}
           />
@@ -249,7 +250,7 @@ export function PhonePreviewFrame({
       {verticalPlatform ? (
         <div className="absolute inset-0 overflow-hidden bg-black">
           <div className="absolute inset-0 flex items-center justify-center">
-            {renderAdViewport("h-[62.5%] w-full")}
+            {renderAdViewport(fullHeightVerticalAd ? "h-full w-full" : "h-[62.5%] w-full")}
           </div>
           {storiesPlatform ? (
             <div className="pointer-events-none absolute inset-0 z-30 flex flex-col justify-between">

@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
-import jpeg from "jpeg-js";
+import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import {
+  buildPcmWav,
+  FISH_STUDIO_THREE_D_BREAKDOWN_MODEL,
+  generateFishThreeDBreakdownVoiceover,
+  THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID,
+} from "../features/audio/fishStudio";
 import { extractThreeDBreakdownEvidence } from "../features/formats/three-d-breakdown/evidence";
 import {
   generateThreeDBreakdownVariantsFromResearch,
@@ -11,13 +17,13 @@ import {
   THREE_D_BREAKDOWN_MAX_TOKENS,
   THREE_D_BREAKDOWN_VARIANT_COUNT,
 } from "../features/formats/three-d-breakdown/prompt";
-import { cropThreeDStoryboardFrames } from "../features/formats/three-d-breakdown/storyboardFrames";
 import { THREE_D_BREAKDOWN_DURATION_MS } from "../features/formats/three-d-breakdown/music";
 import { validateThreeDBreakdownScene } from "../features/formats/three-d-breakdown/validate";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import { createThreeDBreakdownAdScene } from "../features/scene/createThreeDBreakdownScene";
+import type { ThreeDBreakdownAdScene } from "../features/scene/types";
+import { getRenderMusicBed } from "../remotion-entry/RemotionAdScene";
 import { makeResearch } from "./helpers/research";
-import { PNG } from "pngjs";
 
 const research = makeResearch({
   websiteUrl: "https://davidscookies.com/",
@@ -89,6 +95,8 @@ const evidenceItems = extractThreeDBreakdownEvidence(research);
 assert.ok(evidenceItems.length >= 2);
 assert.ok(evidenceItems.every((item) => item.sourceUrl));
 assert.ok(evidenceItems.every((item) => item.possibleRevealPatterns.length > 0));
+const productBadgeEvidence = evidenceItems.find((item) => /Butter Pecan Meltaways Tin/i.test(item.text));
+assert.equal(productBadgeEvidence?.evidenceUseType, "proof");
 const reviewEvidence = evidenceItems.find((item) => item.evidenceUseType === "review") || evidenceItems[0]!;
 
 const promptInjectionResearch = makeResearch({
@@ -112,52 +120,175 @@ assert.equal(
   false,
 );
 
+const agentMechanismEvidence = extractThreeDBreakdownEvidence(makeResearch())
+  .find((item) => /answers calls and books patients/i.test(item.text));
+assert.equal(agentMechanismEvidence?.evidenceUseType, "mechanism");
+assert.ok((agentMechanismEvidence?.visualPotentialScore || 0) >= 0.7);
+
+const intercomMechanismResearch = makeResearch({
+  websiteUrl: "https://intercom.com/",
+  finalUrl: "https://intercom.com/",
+  host: "intercom.com",
+  brandBrief: {
+    ...research.brandBrief,
+    brandName: "Intercom",
+    offer: "AI customer service platform with Fin AI Agent, help desk, and omnichannel support.",
+    audience: "Support leaders trying to reduce repetitive tickets without losing service quality.",
+    buyerMoments: ["The same customer question keeps becoming new support tickets."],
+    proof: ["Fin AI Agent resolves customer questions across support channels."],
+    siteLanguage: ["AI customer service", "Fin AI Agent", "help desk", "omnichannel"],
+  },
+  evidence: {
+    ...research.evidence,
+    paragraphs: ["Fin AI Agent resolves customer questions across support channels."],
+    receipts: {
+      specificClaims: ["Intercom combines AI agent, help desk, and support channels."],
+      buyerMoments: ["The same customer question keeps becoming new support tickets."],
+      exactSiteLanguage: ["AI customer service", "Fin AI Agent", "help desk", "omnichannel"],
+      namedProof: [],
+    },
+  },
+});
+const intercomMechanismEvidence = extractThreeDBreakdownEvidence(intercomMechanismResearch)
+  .find((item) => /resolves customer questions/i.test(item.text));
+assert.equal(intercomMechanismEvidence?.evidenceUseType, "mechanism");
+assert.ok((intercomMechanismEvidence?.visualPotentialScore || 0) >= 0.7);
+
+const seedMechanismResearch = makeResearch({
+  websiteUrl: "https://seed.com/",
+  finalUrl: "https://seed.com/daily-synbiotic",
+  host: "seed.com",
+  brand: {
+    ...research.brand,
+    name: "Seed",
+    url: "https://seed.com/",
+    host: "seed.com",
+    title: "Seed DS-01 Daily Synbiotic",
+    description: "Daily synbiotic with probiotic and prebiotic technology.",
+    colors: ["#0C5F56", "#D8E7D7", "#F7F3EA"],
+  },
+  brandBrief: {
+    ...research.brandBrief,
+    brandName: "Seed",
+    offer: "DS-01 Daily Synbiotic with probiotic strains, prebiotics, and ViaCap delivery technology.",
+    audience: "People buying a probiotic that needs to survive digestion and reach the colon.",
+    buyerMoments: ["A customer takes a probiotic and assumes the bacteria survive digestion."],
+    proof: [
+      "DS-01 uses ViaCap capsule-in-capsule technology.",
+      "The probiotic core is designed to survive digestion and reach the colon.",
+    ],
+    siteLanguage: ["ViaCap", "capsule-in-capsule", "24 probiotic strains", "prebiotics", "colon"],
+  },
+  evidence: {
+    ...research.evidence,
+    paragraphs: [
+      "DS-01 uses ViaCap capsule-in-capsule technology to protect the probiotic core through digestion.",
+      "The formula combines 24 probiotic strains with prebiotics.",
+    ],
+    receipts: {
+      specificClaims: [
+        "ViaCap capsule-in-capsule technology protects the probiotic core through digestion.",
+        "DS-01 combines probiotic strains and prebiotics in one daily synbiotic.",
+      ],
+      buyerMoments: ["A probiotic capsule has to survive the trip through digestion."],
+      exactSiteLanguage: ["ViaCap", "capsule-in-capsule", "probiotic core", "prebiotics", "colon"],
+      namedProof: [],
+    },
+  },
+  productCatalog: {
+    provider: "shopify-products-json",
+    sourceUrl: "https://seed.com/products.json",
+    groups: { bestSellers: ["ds-01"] },
+    summary: { productCount: 1, bestSellerCount: 1 },
+    products: [{
+      title: "DS-01 Daily Synbiotic",
+      handle: "ds-01",
+      url: "https://seed.com/daily-synbiotic",
+      imageUrl: "https://cdn.example/seed-ds-01.png",
+      imageAlt: "Seed DS-01 Daily Synbiotic",
+      productType: "Synbiotic",
+      vendor: "Seed",
+      priceMin: null,
+      priceMax: null,
+      currency: null,
+      available: true,
+      badges: ["best-seller"],
+    }],
+  },
+});
+const seedEvidenceItems = extractThreeDBreakdownEvidence(seedMechanismResearch);
+const seedTopEvidence = seedEvidenceItems[0]!;
+assert.match(seedTopEvidence.text, /ViaCap|capsule-in-capsule|probiotic core|digestion/i);
+assert.equal(seedTopEvidence.evidenceUseType, "mechanism");
+assert.ok(seedTopEvidence.visualPotentialScore >= 0.9);
+assert.ok(seedTopEvidence.possibleRevealPatterns.includes("process-pipeline"));
+
 const prompt = buildThreeDBreakdownPrompt({ count: 1, evidence: evidenceItems, research });
+const seedPrompt = buildThreeDBreakdownPrompt({ count: 1, evidence: seedEvidenceItems, research: seedMechanismResearch });
 const twoDirectionPrompt = buildThreeDBreakdownPrompt({ count: THREE_D_BREAKDOWN_VARIANT_COUNT, evidence: evidenceItems, research });
+const ecommerceReferenceDoc = readFileSync(new URL("../../docs/three-d-breakdown-ecommerce-reference.md", import.meta.url), "utf8");
+const ecommerceStyleReferenceBytes = readFileSync(new URL("../public/three-d-breakdown/references/ecommerce-teardown-style-reference-v1.jpg", import.meta.url));
 assert.equal(THREE_D_BREAKDOWN_VARIANT_COUNT, 2);
 assert.equal(THREE_D_BREAKDOWN_MAX_TOKENS, 4000);
 assert.equal(THREE_D_BREAKDOWN_DURATION_MS, 20_000);
+assert.ok(ecommerceStyleReferenceBytes.byteLength > 5_000, "3D Breakdown ecommerce style reference image must stay checked in.");
+assert.ok(ecommerceReferenceDoc.includes("Speed/change density: 10/10"));
+assert.ok(ecommerceReferenceDoc.includes("Bright blue/cyan technical grid floor and wall."));
+assert.ok(ecommerceReferenceDoc.includes("One visible state change per frame or roughly every second in video."));
+assert.ok(ecommerceReferenceDoc.includes("Do not keep trying provider calls"));
+assert.ok(prompt.length < 15_000, `3D Breakdown director prompt is too large: ${prompt.length} chars`);
+assert.ok(seedPrompt.length < 15_000, `Seed director prompt is too large: ${seedPrompt.length} chars`);
 assert.ok(prompt.includes("ZachDFilms-style high-retention short-form documentary pacing"));
-assert.ok(prompt.includes("high-retention short-form documentary pacing"));
-assert.ok(prompt.includes("Use ZachDFilms as an internal pacing reference only."));
-assert.ok(prompt.includes("mini-doc narrations"));
-assert.ok(prompt.includes("narration must not sound like ad copy"));
-assert.ok(prompt.includes("Assume the viewer is not problem-aware and is not shopping."));
-assert.ok(prompt.includes("underlying problem discovered through the strange consequence"));
+assert.ok(prompt.includes("product-science teardown"));
+assert.ok(prompt.includes("bright blue/cyan clinical grid"));
+assert.ok(prompt.includes("Use [] for no riskFlags"));
 assert.ok(prompt.includes("Write exactly 1 variant."));
 assert.ok(twoDirectionPrompt.includes("Write exactly 2 variants."));
-assert.ok(prompt.includes("Keep the JSON compact."));
-assert.ok(prompt.includes("No invented reviews, numbers, guarantees, results, source names, customer names, or claims."));
+assert.ok(prompt.includes("Keep JSON compact."));
+assert.ok(prompt.includes("No invented reviews, numbers, results, guarantees, source names, customer names, or claims."));
 assert.ok(prompt.includes("Total narration must be 45-65 words"));
 assert.ok(prompt.includes("Third-person documentary voice."));
-assert.ok(prompt.includes("Do not include CTA language in narration."));
-assert.ok(prompt.includes("Forbidden narration language:"));
-assert.ok(prompt.includes("The phone rang while both hands were trapped behind a mask and gloves."));
-assert.ok(prompt.includes("One customer question split into five identical tickets overnight."));
-assert.ok(prompt.includes("Do not write \"the evidence shows\" in narration"));
-assert.ok(prompt.includes("Dentists do not need voice AI"));
+assert.ok(prompt.includes("Do not say \"the website says\" or \"the evidence shows\"."));
+assert.ok(prompt.includes("She missed it, but the cookies arrived."));
+assert.ok(prompt.includes("The call became a booking."));
 assert.ok(prompt.includes("A website making a risky claim does not automatically make that claim safe to repeat."));
-assert.ok(prompt.includes("pick the one that can create the strongest impossible-to-film 3D reveal"));
-assert.ok(prompt.includes("Decorative product explosions, rotations, dashboards, lifestyle shots"));
-assert.ok(prompt.includes("Do not use plain white/gray studio backgrounds"));
-assert.ok(prompt.includes("clinical blueprint grid stage"));
-assert.ok(prompt.includes("physically grounded on or intersecting the grid plane"));
-assert.ok(prompt.includes("Do not ask the image model to generate readable receipts"));
-assert.ok(prompt.includes("setting, camera angle, subject/object, physical action, lighting, mood, and render style"));
-assert.ok(prompt.includes("problem -> product benefit -> feature -> proof -> CTA"));
-assert.ok(prompt.includes("The output must feel custom to this brand"));
-assert.ok(prompt.includes("A shopper earned cash back"));
-assert.ok(prompt.includes("One missing approval can freeze an entire launch."));
-assert.ok(prompt.includes("The bottle was never the disposable part."));
+assert.ok(prompt.includes("Pick the most visual evidence item."));
+assert.ok(prompt.includes("plain white product posters"));
+assert.ok(prompt.includes("Do not ask the image model to generate readable text"));
+assert.ok(prompt.includes("blank physical tokens, unmarked blocks, unlabeled counters"));
+assert.ok(prompt.includes("plain geometric tokens"));
+assert.ok(prompt.includes("false assumption -> hidden physical obstacle -> mechanism/component 1"));
+assert.ok(prompt.includes("Avoid unsupported body outcome language"));
+assert.ok(prompt.includes("A probiotic capsule enters digestion and everyone assumes it survives the trip."));
+assert.ok(prompt.includes("The trip was the product."));
+assert.ok(prompt.includes("quick visual resets"));
+assert.ok(prompt.includes("at least four distinct visual modules"));
+assert.ok(prompt.includes("Do not let the same close-up product angle dominate more than two frames."));
+assert.ok(prompt.includes("Ecommerce videos must feel like an embodied product-science teardown"));
+assert.ok(prompt.includes("same demo character, body proxy"));
+assert.ok(prompt.includes("full-body or torso demo character"));
+assert.ok(prompt.includes("Avoid giant disembodied hands"));
+assert.ok(prompt.includes("recurring stylized human demo character"));
+assert.ok(prompt.includes("Do not create a faceless biology montage"));
+assert.ok(prompt.includes("at least four of six frames"));
+assert.ok(prompt.includes("visual-reference artifacts only"));
+assert.ok(prompt.includes("product/scale intro, hidden obstacle, mechanism machine/cutaway"));
+assert.ok(prompt.includes("capsule stays capsule-shaped"));
+assert.ok(prompt.includes("never become a generic jar, cylinder, cup, bucket, bowl, tube, or poster object"));
 assert.ok(prompt.includes("Renderer CTA, not narration:"));
-assert.ok(prompt.includes("1-5 word visual emphasis, not CTA or slogan"));
+assert.ok(prompt.includes("1-5 words"));
 assert.ok(prompt.includes("\"storyboardBoard\""));
-assert.ok(prompt.includes("one vertical 9:16 storyboard artist board with exactly 6 framed panels"));
-assert.ok(prompt.includes("panel 4 Shot 2 wow reveal"));
-assert.ok(prompt.includes("style reference frame"));
-assert.ok(prompt.includes("not six unrelated scenes"));
-assert.ok(prompt.includes("Captions are renderer overlays later"));
+assert.ok(prompt.includes("six-frame production visual plan"));
+assert.ok(prompt.includes("backend expands the six-frame production visual plan"));
+assert.ok(prompt.includes("frame 4 peak cutaway or delivery reveal"));
+assert.ok(prompt.includes("frame 1 false assumption/common use"));
+assert.ok(prompt.includes("frame 5 unified evidence/payoff"));
+assert.ok(prompt.includes("No split screen, no comparison chart, no multi-panel image"));
 assert.ok(prompt.includes("exploded-product"));
+assert.ok(seedPrompt.includes("DS-01 Daily Synbiotic"));
+assert.ok(seedPrompt.includes("ViaCap"));
+assert.ok(seedPrompt.includes("capsule-in-capsule"));
+assert.ok(seedPrompt.includes("probiotic core"));
 
 const makeVariant = ({
   variantAngle = "birthday gift consequence",
@@ -169,8 +300,11 @@ const makeVariant = ({
   wowMomentType = "proof-blocks",
   wowMoment = "Proof blocks assemble around the cookie tin as it fills the empty gift spot.",
   viewerLearns = "The gift works because buyers describe fast delivery and homemade taste.",
-  revelation = "Real buyers said fresh cookies arrived fast and tasted homemade.",
-  consequence = "The birthday gift table had one empty spot.",
+  context = "Everyone said it was fine, but the table still looked unfinished.",
+  mechanism = "Then a David's Cookies tin showed up, ready to open and share.",
+  revelation = "More than 1,500 buyers rate David's Cookies 4.6 stars.",
+  punchline = "She missed it, but the cookies arrived.",
+  consequence = "When the birthday started, her gift still had not arrived.",
 } = {}) => ({
   variantAngle,
   customerProblem,
@@ -185,14 +319,14 @@ const makeVariant = ({
   claimRiskReason: "Uses only selected review or shipping evidence with no stronger claim.",
   scriptBeats: [
     { role: "consequence", narration: consequence, startMs: 0, endMs: 3000 },
-    { role: "context", narration: "Everyone brought something thoughtful, while the backup box still looked last minute.", startMs: 3000, endMs: 8000 },
-    { role: "mechanism", narration: "A red cookie tin slides in, and scattered proof blocks assemble around it.", startMs: 8000, endMs: 13000 },
+    { role: "context", narration: context, startMs: 3000, endMs: 8000 },
+    { role: "mechanism", narration: mechanism, startMs: 8000, endMs: 13000 },
     { role: "revelation", narration: revelation, startMs: 13000, endMs: 18000 },
-    { role: "punchline", narration: "The backup gift becomes remembered.", startMs: 18000, endMs: 20000 },
+    { role: "punchline", narration: punchline, startMs: 18000, endMs: 20000 },
   ],
   storyboardBoard: {
     frameCount: 6,
-    imagePrompt: "One vertical 9:16 storyboard artist board with exactly 6 framed panels in a 2-column by 3-row layout, miniature red gift table diorama, red cookie tin recurring object, warm bakery lighting, no text, no captions, no logos.",
+    imagePrompt: "One storyboard artist board with exactly 6 tall phone-frame panels in a 3-column by 2-row layout, miniature red gift table diorama, red cookie tin recurring object, warm bakery lighting, no text, no captions, no logos.",
   },
   shots: [
     {
@@ -247,8 +381,9 @@ const variantsPayload = {
       wowMomentType: "proof-blocks",
       wowMoment: "Proof blocks travel with the red cookie tin from bakery door to a distant gift table.",
       viewerLearns: "The gift still works across distance because buyers describe fast arrival and homemade taste.",
-      consequence: "The thank-you gift had nowhere local to go.",
-      revelation: "Real buyers said fresh cookies arrived fast and tasted homemade.",
+      consequence: "When the thank-you gift had nowhere local to go, the table stayed empty.",
+      revelation: "More than 1,500 buyers rate David's Cookies 4.6 stars.",
+      punchline: "Distance stopped mattering.",
     }),
   ],
 };
@@ -272,45 +407,43 @@ assert.equal(generated.variants.length, 2);
 assert.equal(generated.variants[0]?.scriptBeats.length, 5);
 assert.equal(generated.variants[0]?.shots.length, 3);
 assert.equal(generated.variants[0]?.storyboardBoard.frameCount, 6);
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("6 framed panels"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("EXACTLY SIX framed panels arranged 2 columns by 3 rows"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("six-frame production visual plan"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("SIX separate vertical 9:16 production keyframes"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not generate one board, collage, contact sheet"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("no black lower bars"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Panel 1 cannot be an empty stage"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Frame 1 cannot be an empty stage"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("false assumption/common use"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("unified evidence/payoff frame"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Frame 5 must not be a split-screen"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not crack, shatter, melt, break, leak, or fail the central product in frame 5"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("fast product-science teardown short"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("at least four distinct visual modules"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("same close-up product angle dominate more than two frames"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("recurring stylized human demo character/body proxy"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("continuity spine"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not create a faceless biology montage"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("character's full body or torso"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("clean product payoff"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("visible subject, object, and physical action"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("No words, letters, numbers, percentages, ratings"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("blank physical tokens, unmarked blocks, unlabeled counters"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("checkmarks, X marks"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("plain geometric tokens"));
 
-const storyboardTestImage = new PNG({ width: 600, height: 900 });
-const cellColors = [
-  [255, 0, 0],
-  [0, 255, 0],
-  [0, 0, 255],
-  [255, 255, 0],
-  [255, 0, 255],
-  [0, 255, 255],
-];
-for (let row = 0; row < 3; row += 1) {
-  for (let col = 0; col < 2; col += 1) {
-    const color = cellColors[row * 2 + col]!;
-    for (let y = row * 300; y < (row + 1) * 300; y += 1) {
-      for (let x = col * 300; x < (col + 1) * 300; x += 1) {
-        const index = (y * 600 + x) * 4;
-        storyboardTestImage.data[index] = color[0]!;
-        storyboardTestImage.data[index + 1] = color[1]!;
-        storyboardTestImage.data[index + 2] = color[2]!;
-        storyboardTestImage.data[index + 3] = 255;
-      }
-    }
-  }
-}
-const croppedFrames = cropThreeDStoryboardFrames(PNG.sync.write(storyboardTestImage), "image/png");
-assert.equal(croppedFrames.length, 6);
-assert.deepEqual(croppedFrames.map((frame) => frame.frameIndex), [1, 2, 3, 4, 5, 6]);
-assert.ok(croppedFrames.every((frame) => frame.mimeType === "image/png" && frame.bytes.length > 100));
-const mislabeledJpegFrames = cropThreeDStoryboardFrames(
-  jpeg.encode({ data: storyboardTestImage.data, width: storyboardTestImage.width, height: storyboardTestImage.height }, 80).data,
-  "image/png",
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([{
+      ...makeVariant(),
+      storyboardBoard: {
+        frameCount: 6,
+        imagePrompt: "Six vertical frames on a blue grid with 'gut health' written above the capsule.",
+      },
+    }])),
+  }),
+  /quoted readable text/,
 );
-assert.equal(mislabeledJpegFrames.length, 6);
-assert.ok(mislabeledJpegFrames.every((frame) => frame.mimeType === "image/png" && frame.bytes.length > 100));
 
 const compactNearMissVariant = makeVariant();
 compactNearMissVariant.scriptBeats = [
@@ -325,12 +458,80 @@ compactNearMissVariant.shots[2] = {
   sceneDescription: "Red gift table shows warm cookies beside the red cookie tin as the proof lands.",
   imagePrompt: "Cinematic warm cookies beside a red tin on a red gift table, brand-red light, no realistic faces.",
 };
-const compactNearMiss = await generateThreeDBreakdownVariantsFromResearch(research, {
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([compactNearMissVariant])),
+  }),
+  /script must be 45-65 words|beat 4 must be one sentence/,
+);
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+      consequence: "Discover thoughtful cookie gifts before the birthday begins.",
+    })])),
+  }),
+  /forbidden ad-style narration|concrete incident/,
+);
+
+const factualMadeForGeneration = await generateThreeDBreakdownVariantsFromResearch(research, {
   count: 1,
   nvidiaNimApiKey: "test-key",
-  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([compactNearMissVariant])),
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+    mechanism: "Then the cookie tin was built for opening and sharing at the table.",
+  })])),
 });
-assert.equal(compactNearMiss.variants.length, 1);
+assert.equal(factualMadeForGeneration.variants.length, 1);
+
+const mechanismTeardownOpening = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+    consequence: "Most probiotics enter digestion and everyone assumes they survive the trip.",
+    context: "Then stomach acid turns that trip into the first real test.",
+    mechanism: "But ViaCap shields the probiotic core while prebiotics move with it.",
+    revelation: "The selected proof says the delivery system reaches the colon.",
+    punchline: "The trip was the product.",
+  })])),
+});
+assert.equal(mechanismTeardownOpening.variants.length, 1);
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+      revelation: "ViaCap is built to protect ali ve the probiotic core through digestion.",
+    })])),
+  }),
+  /broken or awkward narration wording/,
+);
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+      revelation: "The Butter Pecan Meltaways Tin is David's best seller for a reason.",
+    })])),
+  }),
+  /forbidden ad-style narration/,
+);
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+      punchline: "Presence finally had weight.",
+    })])),
+  }),
+  /abstract noun/,
+);
 
 const extraVariantResult = await generateThreeDBreakdownVariantsFromResearch(research, {
   count: 1,
@@ -338,6 +539,92 @@ const extraVariantResult = await generateThreeDBreakdownVariantsFromResearch(res
   nvidiaNimChatCompletion: async () => JSON.stringify(variantsPayload),
 });
 assert.equal(extraVariantResult.variants.length, 1);
+
+const concreteCountOpenerResult = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+    consequence: "Twenty-four cookie tins crossed the map while the table stayed unfinished.",
+  })])),
+});
+assert.equal(concreteCountOpenerResult.variants[0]?.scriptBeats[0]?.narration.startsWith("Twenty-four"), true);
+
+const evidenceTypeMismatchResult = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([{
+    ...variantsPayload.variants[0],
+    evidenceUseType: reviewEvidence.evidenceUseType === "proof" ? "feature" : "proof",
+  }])),
+});
+assert.equal(evidenceTypeMismatchResult.variants[0]?.evidenceUseType, reviewEvidence.evidenceUseType);
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify({
+      ...variantsPayload,
+      riskFlags: ["dental", "HIPAA privacy", "none"],
+      variants: [makeVariant()],
+    }),
+  }),
+  /invalid flag/,
+);
+
+const dentalRiskResult = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify({
+    ...variantsPayload,
+    riskFlags: ["medical", "regulated"],
+    variants: [makeVariant({
+      consequence: "The patient called after hours, and the front desk never heard it.",
+      context: "By lunch, the missed call had become an empty appointment slot.",
+      mechanism: "Then the voicemail turned into a booking path before anyone looked up.",
+      revelation: "Missed calls become booked appointments through voice AI.",
+      punchline: "The call became the booking.",
+    })],
+  }),
+});
+assert.deepEqual(dentalRiskResult.siteContract.riskFlags, ["medical", "regulated"]);
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify({
+      ...variantsPayload,
+      riskFlags: ["health", "regulated"],
+      variants: [makeVariant({
+        consequence: "The patient waited while a cavity got worse.",
+        revelation: "The product prevents cavities before the pain starts.",
+      })],
+    }),
+  }),
+  /unsafe claim language/,
+);
+
+const messyDirectorVariant = makeVariant();
+messyDirectorVariant.shots = [
+  ...messyDirectorVariant.shots,
+  {
+    ...messyDirectorVariant.shots[2],
+    shotIndex: 4,
+    role: "revelation",
+  },
+] as typeof messyDirectorVariant.shots;
+delete (messyDirectorVariant.shots[2] as Record<string, unknown>).physicalAction;
+delete (messyDirectorVariant.shots[2] as Record<string, unknown>).imagePrompt;
+const normalizedMessyDirector = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([messyDirectorVariant])),
+});
+assert.equal(normalizedMessyDirector.variants[0]?.shots.length, 3);
+assert.equal(normalizedMessyDirector.variants[0]?.shots[2]?.shotIndex, 3);
+assert.ok(normalizedMessyDirector.variants[0]?.shots[2]?.physicalAction.includes("Unmarked proof objects"));
+assert.ok(normalizedMessyDirector.variants[0]?.shots[2]?.imagePrompt.includes("unmarked proof blocks"));
 
 await assert.rejects(
   () => generateThreeDBreakdownVariantsFromResearch(research, {
@@ -499,16 +786,77 @@ assert.equal(scene.layout.shots.length, 3);
 assert.equal(scene.layout.storyboardBoard?.frameCount, 6);
 assert.equal(scene.layout.storyboardBoard?.image?.status, "idle");
 assert.equal(scene.layout.storyboardBoard?.frames?.length, 6);
+assert.ok(scene.layout.storyboardBoard?.imagePrompt.includes("at least four distinct visual modules"));
+assert.ok(scene.layout.storyboardBoard?.imagePrompt.includes("including the first and final frame"));
 assert.deepEqual(scene.layout.storyboardBoard?.frames?.map((frame) => frame.frameIndex), [1, 2, 3, 4, 5, 6]);
-assert.deepEqual(scene.layout.clipPlans?.map((clip) => clip.frameIndexes), [[1, 2, 3], [4, 5, 6]]);
-assert.equal(scene.layout.clipPlans?.[0]?.durationSeconds, 10);
-assert.equal(scene.layout.clipPlans?.[1]?.durationSeconds, 10);
-assert.deepEqual(scene.layout.clipPlans?.map((clip) => clip.video?.status), ["idle", "idle"]);
+assert.deepEqual(scene.layout.clipPlans?.map((clip) => clip.frameIndexes), [[1, 2], [2, 3], [4, 5], [5, 6]]);
+assert.deepEqual(scene.layout.clipPlans?.map((clip) => clip.durationSeconds), [5, 5, 5, 5]);
+assert.deepEqual(scene.layout.clipPlans?.map((clip) => [clip.startMs, clip.endMs]), [[0, 5000], [5000, 10000], [10000, 15000], [15000, 20000]]);
+assert.ok(scene.layout.clipPlans?.every((clip) => clip.prompt.length <= 3900), "Seedance clip prompts must stay below Replicate's 4000 character limit.");
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("Change visual state about every second"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("no blank color wipes"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("fast ecommerce product-teardown short"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("recurring product or package"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("four quick micro-beats"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("0-1s setup"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("second and third micro-beats"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("stylized human demo character"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("faceless object loop"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("module variety"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("A capsule stays capsule-shaped"));
+assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("never transform the capsule into an open cup"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("stylized human demo character body or torso"));
+assert.ok(scene.layout.clipPlans?.[1]?.prompt.includes("inside the body/pathway or process world"));
+assert.ok(scene.layout.clipPlans?.[3]?.prompt.includes("human-scale final transformed state with the demo character body or torso"));
+assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("Start from storyboard frame 4"));
+assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("unified evidence/payoff state from frame 5"));
+assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("without using a split-screen comparison"));
+assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("never as an open cup"));
+assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("transparent capsule shell"));
+assert.ok(scene.layout.clipPlans?.[3]?.prompt.includes("clean product payoff composition"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("no checkmarks"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("Every frame must contain a visible demo character/body proxy"));
+assert.deepEqual(scene.layout.clipPlans?.map((clip) => clip.video?.status), ["idle", "idle", "idle", "idle"]);
 assert.deepEqual(scene.layout.referenceImages?.productImageUrls, ["https://cdn.example/davids-cookie-tin.png"]);
-assert.equal(scene.layout.musicBed.volume, 0.12);
+const threeDImageActionSource = readFileSync(new URL("../convex/threeDImages.ts", import.meta.url), "utf8");
+assert.ok(threeDImageActionSource.includes("image: { status: \"generating\" }"));
+assert.ok(threeDImageActionSource.includes("video: { status: \"idle\" as const }"), "Regenerating production frames must clear stale 3D clip videos.");
+assert.ok(threeDImageActionSource.includes("continuity anchor"));
+assert.ok(threeDImageActionSource.includes("character is the body/customer/scale proxy"));
+assert.ok(threeDImageActionSource.includes("full-body or torso character"));
+assert.ok(threeDImageActionSource.includes("faceless biology montage"));
+assert.ok(threeDImageActionSource.includes("transparent torso, gut tunnel, intestinal wall, acid bath"));
+assert.ok(threeDImageActionSource.includes("Do not keep every frame on the same empty blue tabletop"));
+assert.ok(threeDImageActionSource.includes("Avoid giant disembodied hands"));
+assert.ok(threeDImageActionSource.includes("capsule stays capsule-shaped"));
+assert.ok(threeDImageActionSource.includes("never as a generic jar, cylinder, cup, bucket, bowl, tube, or poster object"));
+assert.equal(getRenderMusicBed(scene), null, "3D Breakdown exports should use voiceover only, no background music bed.");
 assert.equal(scene.layout.storyContract.wowMomentType, "proof-blocks");
 assert.ok(scene.layout.groundedEvidence.sourceUrl.includes("davidscookies"));
-assert.equal(validateThreeDBreakdownScene(scene).valid, true);
+const sceneValidation = validateThreeDBreakdownScene(scene);
+assert.deepEqual(sceneValidation.errors, []);
+assert.equal(sceneValidation.valid, true);
+
+const fishVoiceRequests: Record<string, unknown>[] = [];
+const fishResult = await generateFishThreeDBreakdownVoiceover({
+  apiKey: "test-fish-key",
+  scene,
+  fetcher: async (_url, init) => {
+    fishVoiceRequests.push(JSON.parse(String(init?.body || "{}")) as Record<string, unknown>);
+    return new Response(buildPcmWav(new Uint8Array(44_100 * 2)), {
+      status: 200,
+      headers: { "Content-Type": "audio/wav" },
+    });
+  },
+});
+assert.equal(THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID, "0873499c22e24d13b074fa76d27562e5");
+assert.equal(fishResult.provider, "fish-studio");
+assert.equal(fishResult.model, FISH_STUDIO_THREE_D_BREAKDOWN_MODEL);
+assert.equal(fishVoiceRequests[0]?.reference_id, THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID);
+assert.equal(fishVoiceRequests[0]?.format, "wav");
+assert.equal((fishVoiceRequests[0]?.prosody as Record<string, unknown>)?.speed, 1.1);
+assert.ok(fishResult.captions.length >= 5);
+assert.ok(fishResult.transcript.includes("When the birthday started, her gift still had not arrived."));
 
 const markup = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene,
@@ -517,5 +865,77 @@ const markup = renderToStaticMarkup(createElement(AdRenderSurface, {
 }));
 assert.ok(markup.includes('data-format="three-d-breakdown"'));
 assert.ok(markup.includes("data-three-d-breakdown-screen"));
+assert.ok(markup.includes("data-three-d-breakdown-keyword-captions"));
+assert.ok(markup.includes("#FDE047"));
+const firstCaptionMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene,
+  style: { width: 360, height: 640 },
+  timeSeconds: 1,
+}));
+const secondCaptionMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene,
+  style: { width: 360, height: 640 },
+  timeSeconds: 2.6,
+}));
+assert.ok(firstCaptionMarkup.includes("BIRTHDAY"));
+assert.ok(secondCaptionMarkup.includes("ARRIVED"));
+assert.notEqual(firstCaptionMarkup, secondCaptionMarkup, "3D Breakdown captions should change inside long narration beats.");
+const earlyPayoffMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene,
+  style: { width: 360, height: 640 },
+  timeSeconds: 15,
+}));
+const finalPayoffMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene,
+  style: { width: 360, height: 640 },
+  timeSeconds: 18,
+}));
+assert.ok(!earlyPayoffMarkup.includes("data-three-d-breakdown-final-payoff"));
+assert.ok(!finalPayoffMarkup.includes("data-three-d-breakdown-final-payoff"));
+assert.ok(!finalPayoffMarkup.includes("The gift works because buyers"));
+assert.ok(!markup.includes("rgba(15,23,42,.72)"));
+
+const sceneWithClips: ThreeDBreakdownAdScene = {
+  ...scene,
+  layout: {
+    ...scene.layout,
+    clipPlans: scene.layout.clipPlans!.map((clipPlan, index) => ({
+      ...clipPlan,
+      video: {
+        status: "ready" as const,
+        url: `https://cdn.example/clip-${index + 1}.mp4`,
+        storageId: `clip-${index + 1}`,
+        mimeType: "video/mp4",
+      },
+    })) as ThreeDBreakdownAdScene["layout"]["clipPlans"],
+  },
+};
+const firstHalfMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: sceneWithClips,
+  style: { width: 360, height: 640 },
+  timeSeconds: 4,
+}));
+assert.ok(firstHalfMarkup.includes("clip-1.mp4"));
+assert.ok(!firstHalfMarkup.includes("clip-2.mp4"));
+assert.ok(firstHalfMarkup.includes("object-fit:cover"));
+assert.ok(firstHalfMarkup.includes("z-index:10"));
+const secondClipMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: sceneWithClips,
+  style: { width: 360, height: 640 },
+  timeSeconds: 7,
+}));
+assert.ok(secondClipMarkup.includes("clip-2.mp4"));
+const thirdClipMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: sceneWithClips,
+  style: { width: 360, height: 640 },
+  timeSeconds: 12,
+}));
+assert.ok(thirdClipMarkup.includes("clip-3.mp4"));
+const fourthClipMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: sceneWithClips,
+  style: { width: 360, height: 640 },
+  timeSeconds: 17,
+}));
+assert.ok(fourthClipMarkup.includes("clip-4.mp4"));
 
 console.log("three-d-breakdown format tests passed");

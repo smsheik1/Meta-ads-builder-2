@@ -85,7 +85,7 @@ const research = {
 
 const product = findPhotoshootProduct(research, "butter-pecan-tin");
 assert.ok(product);
-assert.equal(PRODUCT_PHOTOSHOOT_IMAGE_MODEL, "google/nano-banana-2");
+assert.equal(PRODUCT_PHOTOSHOOT_IMAGE_MODEL, "google/nano-banana-2-lite");
 assert.equal(PRODUCT_PHOTOSHOOT_ASPECT_RATIO, "4:5");
 
 const shots = createProductPhotoshootPromptPlan(research, product);

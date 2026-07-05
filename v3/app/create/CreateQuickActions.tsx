@@ -1,3 +1,5 @@
+"use client";
+
 import {
   AudioLines,
   BookmarkPlus,
@@ -25,7 +27,7 @@ import {
 } from "@/components/ui/sheet";
 import type { SavedAdSceneDesign } from "@/features/create/savedDesigns";
 import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
-import type { AdFormatId, ThreeDBreakdownAdScene } from "@/features/scene/types";
+import type { AdFormatId, ThreeDBreakdownAdScene, ThreeDBreakdownClipIndex } from "@/features/scene/types";
 import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
 
 type SaveStatus = "idle" | "loading" | "ready" | "error";
@@ -48,6 +50,7 @@ export function CreateQuickActions({
   onBuildBrickMusicVideo,
   onDownloadStaticPng,
   onGenerateBrickStoryboard,
+  onGenerateThreeDClip,
   onRegenerateBrickShot,
   onRegenerateBrickShotVideo,
   onGenerateThreeDImages,
@@ -73,6 +76,7 @@ export function CreateQuickActions({
   brickStoryboardStatus,
   canGenerateBrickStoryboard,
   threeDAnimationStatus,
+  threeDClipBusyIndex,
   threeDError,
   threeDImageStatus,
   threeDScene,
@@ -97,6 +101,7 @@ export function CreateQuickActions({
   onBuildBrickMusicVideo: () => void;
   onDownloadStaticPng: () => void;
   onGenerateBrickStoryboard: () => void;
+  onGenerateThreeDClip: (clipIndex: ThreeDBreakdownClipIndex) => void;
   onRegenerateBrickShot: (shotIndex: number) => void;
   onRegenerateBrickShotVideo: (shotIndex: number) => void;
   onGenerateThreeDImages: () => void;
@@ -122,6 +127,7 @@ export function CreateQuickActions({
   brickStoryboardStatus: BrickStoryboardStatus;
   canGenerateBrickStoryboard: boolean;
   threeDAnimationStatus: BrickStoryboardStatus;
+  threeDClipBusyIndex: number | null;
   threeDError: string;
   threeDImageStatus: BrickStoryboardStatus;
   threeDScene: ThreeDBreakdownAdScene | null;
@@ -145,15 +151,18 @@ export function CreateQuickActions({
   const showBrickStoryboard = selectedFormat === "jingle";
   const showThreeDBreakdownAssembly = selectedFormat === "three-d-breakdown" && threeDScene;
   const threeDClipPlans = threeDScene?.layout.clipPlans || [];
-  const threeDClipsReady = threeDClipPlans.length === 2 && threeDClipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
-  const threeDRenderBlocked = selectedFormat === "three-d-breakdown" && !threeDClipsReady;
+  const threeDClipsReady = threeDClipPlans.length === 4 && threeDClipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
+  const threeDVoiceoverBlocked = selectedFormat === "three-d-breakdown" && !hasPlayableAudio;
+  const threeDRenderBlocked = selectedFormat === "three-d-breakdown" && (!threeDClipsReady || threeDVoiceoverBlocked);
   const renderWorkerOffline = !staticPngSelected && renderWorkerHealthy === false;
   const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline || threeDRenderBlocked;
   const activeRenderDownloadUrl = staticPngSelected ? "" : renderDownloadUrl;
   const downloadLabel = staticPngSelected ? "PNG" : "MP4";
   const downloadTitle = staticPngSelected
     ? "Download this static ad as a PNG"
-    : threeDRenderBlocked
+    : threeDVoiceoverBlocked
+      ? "Add the documentary voiceover before building the MP4."
+      : threeDRenderBlocked
       ? "Generate storyboard frames and Seedance clips before building the MP4."
       : renderWorkerOffline
       ? "Start npm run dev from the repo root to run the render worker."
@@ -309,11 +318,14 @@ export function CreateQuickActions({
           animationStatus={threeDAnimationStatus}
           currentRenderStatus={currentRenderStatus}
           error={threeDError}
+          hasVoiceover={hasPlayableAudio}
           imageStatus={threeDImageStatus}
           onBuildFinalVideo={onCreateRenderJob}
+          onGenerateClip={onGenerateThreeDClip}
           onGenerateImages={onGenerateThreeDImages}
           renderBusy={renderBusy}
           scene={threeDScene}
+          threeDClipBusyIndex={threeDClipBusyIndex}
         />
       ) : null}
 
@@ -392,28 +404,40 @@ function ThreeDBreakdownAssemblyCard({
   error,
   imageStatus,
   onBuildFinalVideo,
+  onGenerateClip,
   onGenerateImages,
+  hasVoiceover,
   renderBusy,
   scene,
+  threeDClipBusyIndex,
 }: {
   animationStatus: BrickStoryboardStatus;
   currentRenderStatus: string;
   error: string;
   imageStatus: BrickStoryboardStatus;
   onBuildFinalVideo: () => void;
+  onGenerateClip: (clipIndex: ThreeDBreakdownClipIndex) => void;
   onGenerateImages: () => void;
+  hasVoiceover: boolean;
   renderBusy: boolean;
   scene: ThreeDBreakdownAdScene;
+  threeDClipBusyIndex: number | null;
 }) {
   const storyboardBoard = scene.layout.storyboardBoard;
   const storyboardFrames = storyboardBoard?.frames || [];
   const framesReady = storyboardFrames.length === 6 && storyboardFrames.every((frame) => frame.image?.status === "ready");
   const framesFailed = storyboardFrames.some((frame) => frame.image?.status === "failed");
   const clipPlans = scene.layout.clipPlans || [];
-  const videosReady = clipPlans.length === 2 && clipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
+  const getPreviousClipReady = (clipIndex: ThreeDBreakdownClipIndex) => {
+    if (clipIndex === 1) return true;
+    const previousClipIndex = (clipIndex - 1) as ThreeDBreakdownClipIndex;
+    return clipPlans.some((clipPlan) => clipPlan.clipIndex === previousClipIndex && clipPlan.video?.status === "ready");
+  };
+  const nextClipPlan = clipPlans.find((clipPlan) => clipPlan.video?.status !== "ready");
+  const videosReady = clipPlans.length === 4 && clipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
   const finalReady = currentRenderStatus === "ready";
   const storyboardBoardStatus = storyboardBoard?.image?.status || "idle";
-  const finalStatus = renderBusy ? "Building" : finalReady ? "Final ready" : videosReady ? "Needs MP4" : framesReady ? "Ready for Seedance" : "Needs frames";
+  const finalStatus = renderBusy ? "Building" : finalReady ? "Final ready" : !hasVoiceover ? "Needs voice" : videosReady ? "Needs MP4" : framesReady ? "Ready for Seedance" : "Needs frames";
   const storyDirectionNumber = (scene.metadata.candidateIndex ?? 0) + 1;
   const stepClass = "rounded-2xl border border-slate-200 bg-slate-50 p-3";
 
@@ -458,36 +482,14 @@ function ThreeDBreakdownAssemblyCard({
             </Badge>
           </div>
           {storyboardBoard ? (
-            <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-3" data-three-d-storyboard-board="true">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Storyboard board</p>
-                  <p className="mt-1 text-xs font-black leading-4 text-slate-950">One six-frame visual plan for the whole ad.</p>
-                </div>
-                <Badge variant={storyboardBoardStatus === "ready" ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
-                  {storyboardBoardStatus}
-                </Badge>
+            <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2" data-three-d-storyboard-board="true">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Storyboard board</p>
+                <p className="mt-0.5 text-xs font-black leading-4 text-slate-950">One six-frame visual plan.</p>
               </div>
-              {storyboardBoard.image?.url ? (
-                <img
-                  src={storyboardBoard.image.url}
-                  alt="Six-frame 3D Breakdown storyboard board"
-                  className="mt-3 aspect-[9/16] w-full rounded-2xl border border-slate-100 object-cover"
-                />
-              ) : storyboardBoardStatus === "generating" ? (
-                <div className="mt-3 flex aspect-[9/16] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Drawing board
-                </div>
-              ) : storyboardBoardStatus === "failed" ? (
-                <p className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
-                  {storyboardBoard.image?.error || "Storyboard board failed. Regenerate the six-frame board."}
-                </p>
-              ) : (
-                <p className="mt-3 rounded-2xl bg-slate-50 px-3 py-2 text-xs font-bold leading-5 text-slate-500">
-                  Generate the six-frame storyboard board. Wiggly will crop it into frame references automatically.
-                </p>
-              )}
+              <Badge variant={storyboardBoardStatus === "ready" ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
+                {storyboardBoardStatus}
+              </Badge>
             </div>
           ) : null}
           {storyboardFrames.length ? (
@@ -526,33 +528,39 @@ function ThreeDBreakdownAssemblyCard({
             disabled={imageStatus === "loading"}
           >
             {imageStatus === "loading" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImageIcon className="mr-2 size-4" />}
-            Generate storyboard frames
+            Generate frames
           </Button>
         </div>
 
         <div className={stepClass}>
           <div className="flex items-center gap-2 text-sm font-black text-slate-950">
             <Film className="size-4" />
-            Seedance clip plan
+            Video clip plan
             <Badge variant="outline" className="ml-auto rounded-full text-[10px] font-black uppercase">
               {videosReady ? "Clips ready" : framesReady ? "Ready" : statusPill(animationStatus)}
             </Badge>
           </div>
           <div className="mt-3 grid gap-2">
-            {clipPlans.map((clipPlan) => (
-              <div key={clipPlan.clipIndex} className="rounded-2xl border border-slate-200 bg-white p-3" data-three-d-clip-plan="true">
+            {clipPlans.map((clipPlan) => {
+              const clipBusy = threeDClipBusyIndex === clipPlan.clipIndex;
+              const clipReady = clipPlan.video?.status === "ready";
+              const clipFailed = clipPlan.video?.status === "failed";
+              return (
+                <div key={clipPlan.clipIndex} className="rounded-2xl border border-slate-200 bg-white p-3" data-three-d-clip-plan="true">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Clip {clipPlan.clipIndex} · {clipPlan.durationSeconds}s</p>
                     <p className="mt-1 text-xs font-black leading-4 text-slate-950">{clipPlan.label}</p>
                   </div>
                   <Badge
-                    variant={clipPlan.video?.status === "ready" || (framesReady && !clipPlan.video?.status) ? "default" : "outline"}
+                    variant={clipReady || (framesReady && !clipPlan.video?.status) ? "default" : "outline"}
                     className="rounded-full text-[10px] font-black uppercase"
                   >
-                    {clipPlan.video?.status === "ready"
+                    {clipBusy
+                      ? "Generating"
+                      : clipReady
                       ? "Ready"
-                      : clipPlan.video?.status === "failed"
+                      : clipFailed
                         ? "Failed"
                         : framesReady
                           ? "Plan ready"
@@ -571,14 +579,37 @@ function ThreeDBreakdownAssemblyCard({
                     );
                   })}
                 </div>
-                <p className="mt-3 line-clamp-4 rounded-xl bg-slate-50 px-3 py-2 text-[11px] font-bold leading-4 text-slate-500">
-                  {clipPlan.prompt}
-                </p>
-              </div>
-            ))}
+                <Button
+                  type="button"
+                  className="mt-3 h-9 w-full rounded-2xl bg-slate-950 text-[11px] font-black uppercase tracking-[0.12em] text-white disabled:bg-slate-200 disabled:text-slate-400"
+                  onClick={() => onGenerateClip(clipPlan.clipIndex)}
+                  disabled={!framesReady || threeDClipBusyIndex !== null || !getPreviousClipReady(clipPlan.clipIndex)}
+                  data-three-d-generate-clip={clipPlan.clipIndex}
+                >
+                  {clipBusy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Film className="mr-2 size-4" />}
+                  {clipReady
+                    ? `Regenerate clip ${clipPlan.clipIndex}`
+                    : !getPreviousClipReady(clipPlan.clipIndex)
+                      ? `Generate clip ${clipPlan.clipIndex - 1} first`
+                      : `Generate clip ${clipPlan.clipIndex}`}
+                </Button>
+                {clipFailed ? (
+                  <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-[11px] font-bold leading-4 text-red-700">
+                    {clipPlan.video?.error || "Seedance clip generation failed."}
+                  </p>
+                ) : null}
+                </div>
+              );
+            })}
           </div>
           <p className="mt-3 rounded-2xl bg-slate-950 px-3 py-2 text-center text-[11px] font-black uppercase tracking-[0.12em] text-white">
-            {framesReady ? "Preflight complete · next step is 2 Seedance calls" : "Generate storyboard frames first"}
+            {videosReady
+              ? "All clips ready · build the final MP4"
+              : !framesReady
+                ? "Generate storyboard frames first"
+                : nextClipPlan
+                  ? `Generate clip ${nextClipPlan.clipIndex} next`
+                  : "Preflight complete · generate clip 1"}
           </p>
         </div>
 
@@ -594,10 +625,10 @@ function ThreeDBreakdownAssemblyCard({
             type="button"
             className="mt-3 h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
             onClick={onBuildFinalVideo}
-            disabled={!videosReady || renderBusy}
+            disabled={!videosReady || !hasVoiceover || renderBusy}
           >
             {renderBusy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Download className="mr-2 size-4" />}
-            Build after Seedance
+            {!hasVoiceover ? "Add voice first" : "Build after clips"}
           </Button>
         </div>
       </div>

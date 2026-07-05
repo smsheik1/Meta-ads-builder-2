@@ -4,7 +4,7 @@ import type {
   ThreeDBreakdownShotRole,
 } from "../../scene/types";
 import type { FormatValidationResult } from "../types";
-import { THREE_D_BREAKDOWN_DURATION_MS, THREE_D_BREAKDOWN_MUSIC_VOLUME } from "./music";
+import { THREE_D_BREAKDOWN_DURATION_MS } from "./music";
 import { THREE_D_REVEAL_PATTERNS, THREE_D_SCRIPT_BEATS, THREE_D_SHOT_CONTRACT } from "./prompt";
 
 export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): FormatValidationResult {
@@ -12,10 +12,6 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
   if (scene.format !== "three-d-breakdown") errors.push("3D Breakdown format is invalid.");
   if (scene.layout.preset !== "three-d-breakdown") errors.push("3D Breakdown preset is invalid.");
   if (scene.layout.durationMs !== THREE_D_BREAKDOWN_DURATION_MS) errors.push("3D Breakdown duration is invalid.");
-  if (scene.layout.musicBed?.volume !== THREE_D_BREAKDOWN_MUSIC_VOLUME) errors.push("3D Breakdown music volume is invalid.");
-  if (!scene.layout.musicBed?.src?.trim()) errors.push("3D Breakdown music source is missing.");
-  if (!scene.layout.musicBed?.id) errors.push("3D Breakdown music bed is invalid.");
-  if (scene.layout.musicBed?.loop !== true) errors.push("3D Breakdown music bed must loop.");
   if (!scene.layout.groundedEvidence?.text?.trim()) errors.push("3D Breakdown grounded evidence is missing.");
   if (!scene.layout.groundedEvidence?.sourceUrl?.trim()) errors.push("3D Breakdown grounded evidence source URL is missing.");
   if (!scene.layout.groundedEvidence?.evidenceUseType) errors.push("3D Breakdown grounded evidence use type is missing.");
@@ -41,14 +37,15 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
       });
     }
   }
-  if (!Array.isArray(scene.layout.clipPlans) || scene.layout.clipPlans.length !== 2) {
-    errors.push("3D Breakdown must define 2 clip plans.");
+  const expectedClipFrameIndexes = [[1, 2], [2, 3], [4, 5], [5, 6]];
+  if (!Array.isArray(scene.layout.clipPlans) || scene.layout.clipPlans.length !== 4) {
+    errors.push("3D Breakdown must define 4 clip plans.");
   } else {
     scene.layout.clipPlans.forEach((clipPlan, index) => {
       if (clipPlan.clipIndex !== index + 1) errors.push(`3D Breakdown clip plan ${index + 1} index is invalid.`);
-      if (clipPlan.durationSeconds !== 10) errors.push(`3D Breakdown clip plan ${index + 1} duration is invalid.`);
+      if (clipPlan.durationSeconds !== 5) errors.push(`3D Breakdown clip plan ${index + 1} duration is invalid.`);
       if (!clipPlan.prompt?.trim()) errors.push(`3D Breakdown clip plan ${index + 1} prompt is missing.`);
-      const expectedFrames = index === 0 ? [1, 2, 3] : [4, 5, 6];
+      const expectedFrames = expectedClipFrameIndexes[index];
       if (JSON.stringify(clipPlan.frameIndexes) !== JSON.stringify(expectedFrames)) {
         errors.push(`3D Breakdown clip plan ${index + 1} frame mapping is invalid.`);
       }

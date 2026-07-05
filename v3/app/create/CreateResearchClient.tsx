@@ -32,6 +32,10 @@ import {
 import { getVideoMemeTemplate, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
 import { getFormatModule } from "@/features/formats/registry";
 import {
+  createThreeDClipPlans,
+  createThreeDStoryboardFrames,
+} from "@/features/formats/three-d-breakdown/storyboardContracts";
+import {
   getProductPhotoshootPartialStopMessage,
   hasUsableProductPhotoshootBoard,
   type ProductPhotoshootBoard,
@@ -76,6 +80,7 @@ import type {
   AdSceneVisualizerStyle,
   JingleAdScene,
   ThreeDBreakdownAdScene,
+  ThreeDBreakdownClipIndex,
 } from "@/features/scene/types";
 import { visualizerSceneVariants } from "@/features/scene/visualizerVariants";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
@@ -151,7 +156,7 @@ function getBrickStoryboardErrorMessage(error: unknown) {
   if (/NVIDIA NIM brick story director.*timed out|brick story director.*timeout/i.test(cleanMessage)) {
     return "Brick Story Director timed out before image generation. Try again.";
   }
-  if (/Replicate Nano Banana 2 image generation.*timed out|Nano Banana.*timeout/i.test(cleanMessage)) {
+  if (/Replicate Nano Banana image generation.*timed out|Nano Banana.*timeout/i.test(cleanMessage)) {
     return "Nano Banana image generation timed out while building storyboard stills. Try again.";
   }
   if (/Replicate image download.*timed out|image download.*timeout/i.test(cleanMessage)) {
@@ -172,7 +177,7 @@ function getBrickStoryboardErrorMessage(error: unknown) {
   if (/not found for API version|is not supported/i.test(cleanMessage)) {
     return "Brick storyboard images failed because the configured image model is unavailable.";
   }
-  if (/Nano Banana 2 returned no image|Replicate Nano Banana 2/i.test(cleanMessage)) {
+  if (/Nano Banana returned no image|Replicate Nano Banana/i.test(cleanMessage)) {
     return cleanMessage;
   }
   return cleanMessage || "Brick storyboard generation failed.";
@@ -276,11 +281,43 @@ function isRenderableScene(scene: AdScene | null | undefined): scene is AdScene 
   }
 }
 
+function normalizeThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): ThreeDBreakdownAdScene {
+  const storyboardBoard = scene.layout.storyboardBoard
+    ? {
+      ...scene.layout.storyboardBoard,
+      frames: scene.layout.storyboardBoard.frames?.length === 6
+        ? scene.layout.storyboardBoard.frames
+        : createThreeDStoryboardFrames(),
+    }
+    : scene.layout.storyboardBoard;
+  const clipPlans = scene.layout.clipPlans?.length === 4
+    ? scene.layout.clipPlans
+    : createThreeDClipPlans({
+      scriptBeats: scene.layout.scriptBeats,
+      storyContract: scene.layout.storyContract,
+    });
+
+  return {
+    ...scene,
+    layout: {
+      ...scene.layout,
+      storyboardBoard,
+      clipPlans,
+    },
+  };
+}
+
+function normalizeGeneratedScenes(scenes: AdScene[]): AdScene[] {
+  return scenes.map((scene) => (
+    scene.format === "three-d-breakdown" ? normalizeThreeDBreakdownScene(scene) : scene
+  ));
+}
+
 function getRenderableSceneEntries(
   scenes: AdScene[],
   sceneIds: Array<Id<"adScenes"> | null> = [],
 ): RenderableSceneEntry[] {
-  return scenes
+  return normalizeGeneratedScenes(scenes)
     .map((scene, index) => ({
       scene,
       sceneId: sceneIds[index] || null,
@@ -421,7 +458,8 @@ function ResearchConnected() {
   const generateDialogueAudioForScene = useAction(api.audioAssets.generateDialogueForScene);
   const generateJingleAudioForScene = useAction(api.audioAssets.generateJingleForScene);
   const generateBrainrotAudioForScene = useAction(api.audioAssets.generateBrainrotForScene);
-  const generateThreeDImagesForScene = useAction(api.adScenes.generateThreeDImages);
+  const generateThreeDImagesForScene = useAction(api.threeDImages.generateThreeDImages);
+  const generateThreeDClipForScene = useAction(api.threeDImages.generateThreeDClip);
   const generateBrickStoryboardForScene = useAction(api.jingleStoryboards.generateBrickForScene);
   const regenerateBrickShotForScene = useAction(api.jingleStoryboards.regenerateBrickShot);
   const regenerateBrickShotVideoForScene = useAction(api.jingleStoryboards.regenerateBrickShotVideo);
@@ -495,6 +533,7 @@ function ResearchConnected() {
   const [brickStoryboardVideoBusyIndex, setBrickStoryboardVideoBusyIndex] = useState<number | null>(null);
   const [threeDError, setThreeDError] = useState("");
   const [threeDImageBusyIndex, setThreeDImageBusyIndex] = useState<number | null>(null);
+  const [threeDClipBusyIndex, setThreeDClipBusyIndex] = useState<number | null>(null);
   const [productPhotoshootStatus, setProductPhotoshootStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [productPhotoshootError, setProductPhotoshootError] = useState("");
   const [productPhotoshoot, setProductPhotoshoot] = useState<ProductPhotoshootBoard | null>(null);
@@ -668,6 +707,12 @@ function ResearchConnected() {
   }, [adStatus, progressStage, selectedAdFormat]);
 
   useEffect(() => {
+    if (selectedAdFormat === "three-d-breakdown" && previewPlatform === "instagram-feed") {
+      setPreviewPlatform("reels");
+    }
+  }, [previewPlatform, selectedAdFormat]);
+
+  useEffect(() => {
     if (result || adScenes.length || !latestGeneration?.scenes.length) return;
 
     const latestSceneIds = latestGeneration.sceneIds || latestGeneration.scenes.map(() => null);
@@ -771,6 +816,7 @@ function ResearchConnected() {
   const resetThreeDBreakdownState = () => {
     setThreeDError("");
     setThreeDImageBusyIndex(null);
+    setThreeDClipBusyIndex(null);
   };
 
   const resetProductPhotoshootState = () => {
@@ -1204,12 +1250,13 @@ function ResearchConnected() {
     nextSceneIds: Array<Id<"adScenes"> | null> = [],
     options: ApplyGeneratedScenesOptions = {},
   ) => {
-    if (!scenes.length) throw new Error("Ad idea generation returned no ads.");
-    assertRenderableScenes(scenes);
+    const normalizedScenes = normalizeGeneratedScenes(scenes);
+    if (!normalizedScenes.length) throw new Error("Ad idea generation returned no ads.");
+    assertRenderableScenes(normalizedScenes);
 
-    const firstScene = scenes[0] || null;
-    setAdScenes(scenes);
-    setSceneIds(nextSceneIds.length ? nextSceneIds : scenes.map(() => null));
+    const firstScene = normalizedScenes[0] || null;
+    setAdScenes(normalizedScenes);
+    setSceneIds(nextSceneIds.length ? nextSceneIds : normalizedScenes.map(() => null));
     setSelectedScene(firstScene);
     setSelectedSceneIndex(0);
     canvasActions.interactionReset();
@@ -1220,8 +1267,8 @@ function ResearchConnected() {
     resetSaveState();
     resetBrickStoryboardState();
     resetThreeDBreakdownState();
-    syncCreativePackGroupFromScenes(scenes, nextSceneIds);
-    setAdStatusNote(options.note || `${scenes.length} ads ready. Press spacebar to find a stronger version.`);
+    syncCreativePackGroupFromScenes(normalizedScenes, nextSceneIds);
+    setAdStatusNote(options.note || `${normalizedScenes.length} ads ready. Press spacebar to find a stronger version.`);
     setAdStatus("ready");
     canvasActions.finishBusy();
     if (options.autoGenerateAudio === false) return;
@@ -2914,9 +2961,13 @@ function ResearchConnected() {
         : "idle";
   const threeDAnimationStatus: ThreeDMediaUiStatus = selectedThreeDClipsFailed
     ? "error"
-    : selectedThreeDStoryboardFramesReady
-      ? "ready"
-      : "idle";
+    : threeDClipBusyIndex !== null
+      ? "loading"
+      : selectedThreeDClipPlans.length === 4 && selectedThreeDClipPlans.every((clipPlan) => clipPlan.video?.status === "ready")
+        ? "ready"
+        : selectedThreeDStoryboardFramesReady
+          ? "idle"
+          : "idle";
 
   const getThreeDErrorFromScene = (scene: ThreeDBreakdownAdScene) => {
     const boardFailure = scene.layout.storyboardBoard?.image?.status === "failed"
@@ -2947,6 +2998,42 @@ function ResearchConnected() {
       setThreeDError(nextError instanceof Error ? nextError.message : "3D image generation failed.");
     } finally {
       setThreeDImageBusyIndex(null);
+    }
+  };
+
+  const onGenerateThreeDClip = async (clipIndex: ThreeDBreakdownClipIndex) => {
+    const sceneId = sceneIds[selectedSceneIndex];
+    if (!selectedScene || selectedScene.format !== "three-d-breakdown" || !sceneId || threeDClipBusyIndex !== null) return;
+    const clipPlans = selectedScene.layout.clipPlans || [];
+    if (clipIndex > 1) {
+      const previousClipIndex = (clipIndex - 1) as ThreeDBreakdownClipIndex;
+      const previousClipReady = clipPlans.some((clipPlan) => clipPlan.clipIndex === previousClipIndex && clipPlan.video?.status === "ready");
+      if (!previousClipReady) {
+        setThreeDError(`Generate 3D Breakdown clip ${previousClipIndex} before clip ${clipIndex}.`);
+        return;
+      }
+    }
+    if (!clipPlans.some((clipPlan) => clipPlan.clipIndex === clipIndex)) {
+      setThreeDError(`3D Breakdown clip ${clipIndex} is not planned.`);
+      return;
+    }
+    setThreeDClipBusyIndex(clipIndex);
+    setThreeDError("");
+    resetShareState();
+    resetRenderState();
+    resetSaveState();
+    try {
+      const result = await generateThreeDClipForScene({
+        sceneId,
+        scene: selectedScene,
+        clipIndex,
+      }) as { scene: ThreeDBreakdownAdScene };
+      updateSelectedThreeDScene(result.scene);
+      setThreeDError(getThreeDErrorFromScene(result.scene));
+    } catch (nextError) {
+      setThreeDError(nextError instanceof Error ? nextError.message : "3D clip generation failed.");
+    } finally {
+      setThreeDClipBusyIndex(null);
     }
   };
 
@@ -3358,6 +3445,7 @@ function ResearchConnected() {
                 onCreateShareLink={() => void onCreateShareLink()}
                 onDownloadStaticPng={() => void onDownloadStaticPng()}
                 onGenerateBrickStoryboard={() => void onGenerateBrickStoryboard()}
+                onGenerateThreeDClip={(clipIndex) => void onGenerateThreeDClip(clipIndex)}
                 onGenerateThreeDImages={() => void onGenerateThreeDImages()}
                 onRegenerateBrickShot={(shotIndex) => void onRegenerateBrickShot(shotIndex)}
                 onRegenerateBrickShotVideo={(shotIndex) => void onRegenerateBrickShotVideo(shotIndex)}
@@ -3387,6 +3475,7 @@ function ResearchConnected() {
                   sceneIds[selectedSceneIndex],
                 )}
                 threeDAnimationStatus={threeDAnimationStatus}
+                threeDClipBusyIndex={threeDClipBusyIndex}
                 threeDError={threeDError}
                 threeDImageStatus={threeDImageStatus}
                 threeDScene={selectedThreeDScene}
