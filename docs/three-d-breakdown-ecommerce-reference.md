@@ -6,6 +6,10 @@ Reference file:
 
 `/Users/shaz/Downloads/Franky_Shaw_-_70_Retention_with_my_v5_Framework_If_you_want_ads_that_hold_attent_InWQ2f.mp4`
 
+Second reference file:
+
+`/Users/shaz/Downloads/Franky_Shaw_-_Not_all_AI_ads_are_the_same._Using_my_v5_framework_which_I_don_t_h_Slo5Ef.mp4`
+
 Local analysis artifacts:
 
 - `/tmp/wiggly-reference-analysis/ecommerce-reference-contact-sheet.jpg`
@@ -35,6 +39,22 @@ Required ingredients:
 - Captions are renderer overlays.
 - One visible state change per frame or roughly every second in video.
 - Four or more visual modules across the 20 seconds: product/scale intro, hidden obstacle, mechanism machine or cutaway, component/particle movement, evidence payoff, final product payoff.
+
+## Second Reference Transcript
+
+After the game, a steel box arrived. Inside, beige compression socks for tired legs. He immediately thought of his grandmother. Through one sock, he pictured a rocking chair and a very long flight. Clearly, he decided they weren't for him. Then the beige shell cracked away, revealing Hollow socks: black, athletic, and completely rebuilt with soft alpaca fiber. He pulled them just below his knees. The graduated compression supported his legs, and he could still move freely, so he trained in them. They stayed up, stayed comfortable, and never interrupted a cut, jump, or landing. Athlete, pilot, golfer, surgeon. Compression socks aren't just for one kind of person. They were simply first to notice. Hollow, reimagined compression socks for everyday movement. Learn more and meet the pair your legs may actually enjoy. Oh, hello.
+
+## Second Reference Pattern
+
+- Concrete incident first: the box arrives after a game.
+- False classification: the athlete assumes the product is for a grandmother or long flight.
+- Product POV gag: the sock becomes a portal into the wrong mental model.
+- Literal reveal: the beige old-product shell cracks away.
+- Rebuild proof: black athletic sock, alpaca fiber, graduated compression.
+- Use test: pull below knees, move, cut, jump, land.
+- Audience expansion: athlete, pilot, golfer, surgeon.
+- Final reframing: the old audience noticed first, but the product is for everyday movement.
+- Clean product close with brand/product, not a feature list.
 
 ## Six Keyframes
 

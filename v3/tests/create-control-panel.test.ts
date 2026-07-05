@@ -199,8 +199,10 @@ assert.ok(
 );
 assert.ok(
   quickActionsSource.includes("scene.layout.scriptBeats.map") &&
-    quickActionsSource.includes('data-three-d-script-beat="true"'),
-  "3D Breakdown Script ready state must show all narration beats, not only the first line.",
+    quickActionsSource.includes('data-three-d-script-beat="true"') &&
+    quickActionsSource.includes("scene.layout.storyContract.referenceScript") &&
+    quickActionsSource.includes('data-three-d-reference-script="true"'),
+  "3D Breakdown Script ready state must show the narrator script when present plus all narration beats, not only the first line.",
 );
 assert.ok(
   quickActionsSource.includes('data-three-d-storyboard-board="true"') &&

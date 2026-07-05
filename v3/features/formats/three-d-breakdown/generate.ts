@@ -23,6 +23,7 @@ import {
   THREE_D_BREAKDOWN_MAX_TOKENS,
   THREE_D_BREAKDOWN_VARIANT_COUNT,
   THREE_D_MAX_SCRIPT_WORDS,
+  THREE_D_FORBIDDEN_NARRATION_TERMS,
   THREE_D_MIN_SCRIPT_WORDS,
   THREE_D_REVEAL_PATTERNS,
   THREE_D_SCRIPT_BEATS,
@@ -46,6 +47,7 @@ export type ThreeDBreakdownVariant = {
   customerProblem: string;
   mechanismSummary: string;
   visualMetaphor: string;
+  referenceScript?: string;
   evidenceIndex: number;
   evidenceUseType: ThreeDBreakdownEvidenceUseType;
   wowMomentType: ThreeDBreakdownRevealPattern;
@@ -68,8 +70,12 @@ export type ThreeDBreakdownGeneration = {
 };
 
 const DEFAULT_TIMEOUT_MS = 75_000;
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const bannedTextPattern = /\b(zachdfilms|zackdfilms|zach d films|zack d films|creator style|teal\/dark fingerprint)\b/i;
-const forbiddenNarrationPattern = /\b(introducing|discover|experience|meet|designed to|helps you|lets you|so you can|perfect for|boost|streamline|optimize|unlock|seamless|powerful|all-in-one|premium|high-quality|game changer|smarter way|solution|take control|level up|get started|shop now|try today|learn more|for a reason|the evidence shows|the website says|the site says)\b/i;
+const forbiddenNarrationPattern = new RegExp(
+  `\\b(${THREE_D_FORBIDDEN_NARRATION_TERMS.map(escapeRegex).join("|")})\\b`,
+  "i",
+);
 const brokenNarrationPattern = /\bali\s+ve\b|\bprotect(?:s|ed|ing)? alive\b/i;
 const transcriptOpeningPattern = /^(when|if|once|imagine|before|after|inside|without|most|many|some|a|an|the|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|hundred|thousand|every|each|she|he|someone|something|\d)\b/i;
 const transcriptConnectorPattern = /\b(when|if|once|as|but|so|because|then|finally|while|before|after|meaning|until|by)\b/gi;
@@ -139,8 +145,9 @@ const assertTranscriptScriptShape = (beats: ThreeDBreakdownScriptBeat[]) => {
     if (sentenceCount(beat.narration) !== 1) {
       throw new Error(`3D Breakdown beat ${index + 1} must be one sentence.`);
     }
-    if (forbiddenNarrationPattern.test(beat.narration)) {
-      throw new Error("3D Breakdown script contains forbidden ad-style narration.");
+    const forbiddenMatch = beat.narration.match(forbiddenNarrationPattern)?.[0];
+    if (forbiddenMatch) {
+      throw new Error(`3D Breakdown script contains forbidden ad-style narration: ${forbiddenMatch}.`);
     }
     if (brokenNarrationPattern.test(beat.narration)) {
       throw new Error("3D Breakdown script contains broken or awkward narration wording.");
@@ -161,6 +168,76 @@ const assertTranscriptScriptShape = (beats: ThreeDBreakdownScriptBeat[]) => {
   if (abstractPunchlinePattern.test(punchline)) {
     throw new Error("3D Breakdown punchline must not start with an abstract noun.");
   }
+};
+
+const referenceScriptConnectorPattern = /\b(assum(?:e|es|ed|ing)|but|that's why|that is why|so|then|another problem|compare|not by)\b/gi;
+const presenterNarrationPattern = /\b(i am|i'm|i'll|let me|watch me|today i|my favorite|we're going to|i want to show|i recommend)\b/i;
+const referenceScriptMinWords = 85;
+const referenceScriptMaxWords = 180;
+const productScienceEvidenceTypes = new Set<ThreeDBreakdownEvidenceUseType>(["feature", "mechanism", "material", "process"]);
+const shippingLikeEvidenceTypes = new Set<ThreeDBreakdownEvidenceUseType>(["shipping", "offer", "guarantee"]);
+const logisticsContextTerms = new Set(["sorting", "truck", "warehouse", "transit"]);
+const unsupportedMechanismTerms = [
+  ["compression", /\bcompress(?:ion|es|ed|ing)?\b/i],
+  ["impact", /\bimpact\b/i],
+  ["interlocking", /\binterlocking\b/i],
+  ["rigid", /\brigid\b/i],
+  ["humidity", /\bhumidity\b/i],
+  ["moisture", /\bmoisture\b/i],
+  ["permeable", /\bpermeable\b/i],
+  ["vibration", /\bvibration\b/i],
+  ["geometry", /\bgeometry\b/i],
+  ["engineered", /\bengineer(?:ed|ing)?\b/i],
+  ["protect", /\bprotect(?:s|ed|ing|ion)?\b/i],
+  ["paper cup", /\bpaper cups?\b/i],
+  ["wall", /\bwalls?\b/i],
+  ["seam", /\bseams?\b/i],
+  ["sorting", /\bsorting\b/i],
+  ["truck", /\btrucks?\b/i],
+  ["warehouse", /\bwarehouse\b/i],
+  ["same-day", /\bsame[- ]day\b/i],
+  ["oven", /\boven\b/i],
+  ["aroma", /\baroma\b/i],
+  ["transit", /\btransit\b/i],
+  ["structure", /\bstructure\b/i],
+  ["dented", /\bdented\b/i],
+  ["crumple", /\bcrumple\b/i],
+  ["intact", /\bintact\b/i],
+  ["trackable", /\btrackable\b/i],
+] as const;
+
+const assertReferenceScriptGrounding = (script: string, evidence: ThreeDBreakdownEvidenceItem) => {
+  if (productScienceEvidenceTypes.has(evidence.evidenceUseType)) return;
+  const evidenceText = evidence.text.toLowerCase();
+  for (const [term, pattern] of unsupportedMechanismTerms) {
+    if (shippingLikeEvidenceTypes.has(evidence.evidenceUseType) && logisticsContextTerms.has(term)) continue;
+    if (pattern.test(script) && !evidenceText.includes(term)) {
+      throw new Error(`3D Breakdown Style B referenceScript invented product mechanism details not supported by evidence: ${term}.`);
+    }
+  }
+};
+
+const parseReferenceScript = (value: unknown, visualStyle: ThreeDBreakdownVisualStyle, evidence: ThreeDBreakdownEvidenceItem) => {
+  const script = cleanText(value, 2400);
+  if (visualStyle !== "presenter-teardown-vsl") return script || undefined;
+  if (!script) throw new Error("3D Breakdown Style B referenceScript is missing.");
+  if (presenterNarrationPattern.test(script)) {
+    throw new Error("3D Breakdown Style B referenceScript must use an unseen narrator, not presenter lines.");
+  }
+  assertNoBannedText(script);
+  assertReferenceScriptGrounding(script, evidence);
+  const words = countWords(script);
+  if (words < referenceScriptMinWords || words > referenceScriptMaxWords) {
+    throw new Error(`3D Breakdown Style B referenceScript must be ${referenceScriptMinWords}-${referenceScriptMaxWords} words.`);
+  }
+  if (sentenceCount(script) < 8) {
+    throw new Error("3D Breakdown Style B referenceScript must have reference-style short sentences.");
+  }
+  const connectorCount = script.match(referenceScriptConnectorPattern)?.length || 0;
+  if (connectorCount < 5 || !/\bassum(?:e|es|ed|ing)\b/i.test(script) || !/\bbut\b/i.test(script)) {
+    throw new Error("3D Breakdown Style B referenceScript must follow the assumption-problem-mechanism-comparison spine.");
+  }
+  return script;
 };
 
 const parseStringArray = (value: unknown, label: string, max = 6) => {
@@ -369,7 +446,10 @@ const parseVariants = (
     const rawVariant = variant as Record<string, unknown>;
     const evidenceIndex = Number(rawVariant.evidenceIndex);
     const evidence = evidenceItems.find((item) => item.evidenceIndex === evidenceIndex);
-    if (!evidence) throw new Error(`3D Breakdown variant ${index + 1} references invalid evidence.`);
+    if (!evidence) {
+      const allowedEvidenceIds = evidenceItems.map((item) => item.evidenceIndex).join(", ");
+      throw new Error(`3D Breakdown variant ${index + 1} references invalid evidence; use one of: ${allowedEvidenceIds}.`);
+    }
     const parsedVariantBase = {
       visualStyle: parseEnum(rawVariant.visualStyle, visualStyles, "visualStyle"),
       variantAngle: cleanText(rawVariant.variantAngle ?? rawVariant.angle, 120),
@@ -384,11 +464,23 @@ const parseVariants = (
       claimRisk: parseEnum(rawVariant.claimRisk, claimRisks, "claimRisk"),
       claimRiskReason: cleanText(rawVariant.claimRiskReason, 220),
     };
+    const referenceScript = parseReferenceScript(rawVariant.referenceScript, parsedVariantBase.visualStyle, evidence);
     for (const [key, value] of Object.entries(parsedVariantBase)) {
       if (typeof value === "string" && !value) throw new Error(`3D Breakdown variant ${index + 1} ${key} is missing.`);
       if (typeof value === "string") assertNoBannedText(value);
     }
     const scriptBeats = parseScriptBeats(rawVariant.scriptBeats);
+    if (parsedVariantBase.visualStyle === "presenter-teardown-vsl") {
+      assertReferenceScriptGrounding([
+        referenceScript,
+        parsedVariantBase.customerProblem,
+        parsedVariantBase.mechanismSummary,
+        parsedVariantBase.visualMetaphor,
+        parsedVariantBase.wowMoment,
+        parsedVariantBase.viewerLearns,
+        ...scriptBeats.map((beat) => beat.narration),
+      ].filter(Boolean).join(" "), evidence);
+    }
     assertClaimRisk({
       beats: scriptBeats,
       evidence,
@@ -397,6 +489,7 @@ const parseVariants = (
     });
     return {
       ...parsedVariantBase,
+      referenceScript,
       storyboardBoard: parseStoryboardBoard(rawVariant.storyboardBoard ?? rawVariant.storyboardImagePrompt, parsedVariantBase.visualStyle),
       scriptBeats,
       shots: parseShots(rawVariant.shots),
@@ -511,7 +604,10 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     || Boolean(research.adAngles?.some((angle) => cleanText(angle.pain, 120)));
   const hasConcreteEvidence = evidenceItems.some((item) => item.evidenceUseType !== "category" && item.visualPotentialScore >= 0.5);
   const directorEvidenceItems = evidenceItems.filter((item) => (
-    item.evidenceUseType !== "category" && item.visualPotentialScore >= MIN_VISUAL_POTENTIAL_SCORE
+    item.evidenceUseType !== "category" && (
+      item.visualPotentialScore >= MIN_VISUAL_POTENTIAL_SCORE ||
+      (shippingLikeEvidenceTypes.has(item.evidenceUseType) && item.visualPotentialScore >= 0.55)
+    )
   ));
   if (!hasOffer) throw new Error(`${weakSiteCopy} missing_offer`);
   if (!hasProblem) throw new Error(`${weakSiteCopy} missing_problem`);
@@ -532,7 +628,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     model: nvidiaNimModel,
     nvidiaNimChatCompletion,
     prompt: directorPrompt,
-    temperature: 0.65,
+    temperature: 0.45,
     timeoutMs: DEFAULT_TIMEOUT_MS,
   });
   console.log("[wiggly:3d-breakdown] director:call:start", {

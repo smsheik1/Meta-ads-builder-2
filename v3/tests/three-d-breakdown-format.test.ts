@@ -98,6 +98,8 @@ assert.ok(evidenceItems.every((item) => item.possibleRevealPatterns.length > 0))
 const productBadgeEvidence = evidenceItems.find((item) => /Butter Pecan Meltaways Tin/i.test(item.text));
 assert.equal(productBadgeEvidence?.evidenceUseType, "proof");
 const reviewEvidence = evidenceItems.find((item) => item.evidenceUseType === "review") || evidenceItems[0]!;
+const shippingEvidence = evidenceItems.find((item) => item.evidenceUseType === "shipping");
+assert.ok(shippingEvidence, "David's Cookies fixture should expose shipping evidence for Style B context.");
 
 const promptInjectionResearch = makeResearch({
   brandBrief: {
@@ -250,12 +252,15 @@ assert.ok(seedPrompt.length < 15_000, `Seed director prompt is too large: ${seed
   "user assumption -> hidden obstacle",
   "The narrator teaches the hidden mechanism",
   "The person demonstrates use only; the unseen narrator explains.",
+  "referenceScript",
+  "85-180 words",
+  "Then compress that script into the 5 scriptBeats",
   "product-science teardown",
   "bright blue/cyan clinical grid",
   "Use [] for no riskFlags",
   "Write exactly 1 variant.",
   "No invented reviews, numbers, results, guarantees, source names, customer names, or claims.",
-  "Total narration must be 45-65 words",
+  "Total narration must be 40-75 words",
   "Pick the most visual evidence item.",
   "Do not ask the image model to generate readable text",
   "six-frame production visual plan",
@@ -288,12 +293,14 @@ const makeVariant = ({
   revelation = "More than 1,500 buyers rate David's Cookies 4.6 stars.",
   punchline = "She missed it, but the cookies arrived.",
   consequence = "When the birthday started, her gift still had not arrived.",
+  referenceScript = "When someone sends a cookie tin, they assume the box carries the whole birthday. But a stale backup gift can make the table feel unfinished before anyone says it out loud. That's why the product has to do more than arrive. It has to open cleanly, look giftable, and feel ready to share. But there's another problem. A pretty box can still taste like a compromise if the cookies feel old. So David's Cookies anchors the product in fresh baked dessert gifting. Then the proof becomes practical. Buyers describe cookies that arrived fast and tasted homemade. So compare them. One gift is a generic box that fills space. The other is a cookie tin built for opening, passing around, and making the missing moment feel handled.",
 } = {}) => ({
   visualStyle,
   variantAngle,
   customerProblem,
   mechanismSummary,
   visualMetaphor,
+  referenceScript,
   evidenceIndex,
   evidenceUseType,
   wowMomentType,
@@ -391,6 +398,8 @@ assert.equal(observedMaxTokens, 4000);
 assert.equal(generated.variants.length, 2);
 assert.equal(generated.variants[0]?.visualStyle, "toy-character-vsl");
 assert.equal(generated.variants[1]?.visualStyle, "presenter-teardown-vsl");
+assert.ok(generated.variants[1]?.referenceScript?.includes("So compare them."));
+assert.ok(!/watch me|i am showing/i.test(generated.variants[1]?.referenceScript || ""));
 assert.equal(generated.variants[0]?.scriptBeats.length, 5);
 assert.equal(generated.variants[0]?.shots.length, 3);
 assert.equal(generated.variants[0]?.storyboardBoard.frameCount, 6);
@@ -436,6 +445,84 @@ await assert.rejects(
   /quoted readable text/,
 );
 
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+      visualStyle: "presenter-teardown-vsl",
+      referenceScript: "",
+    })])),
+  }),
+  /referenceScript is missing/,
+);
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+      visualStyle: "presenter-teardown-vsl",
+      referenceScript: "I am showing you this cookie tin because I think it is premium. Watch me explain why it is perfect for gifts.",
+    })])),
+  }),
+  /referenceScript must be 85-180 words|unseen narrator/,
+);
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+      visualStyle: "presenter-teardown-vsl",
+      referenceScript: "You order the tin and assume the box does the protecting. Then the first corner drop in the sorting facility turns that assumption into the first real test. Most dessert boxes are folded cardboard with a prayer. But the Butter Pecan Meltaways Tin is a rigid cylinder with an interlocking lid that creates a compression shell around the contents. That shell distributes impact force around the cookies instead of through them. Inside, each cookie sits in its own paper cup nest, isolated from vibration damage. So the box does not just hold the product. It is the first mechanism. Then there is the second problem: moisture. The sealed tin traps humidity from the fresh-baked state, preventing the dry-out that happens in permeable packaging. Compare a crushed, stale delivery to a tin that arrives with structure and moisture intact. The difference is not luck. It is engineered geometry. That is why the tin matters more than the ribbon.",
+    })])),
+  }),
+  /invented product mechanism details/,
+);
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+      visualStyle: "presenter-teardown-vsl",
+      referenceScript: "Everyone assumes shipped cookies arrive stale. That assumption kills the gift before it opens. But the real problem is not the recipe. It is the gap between oven and door. David's Cookies closes that gap with a sealed tin made for transit. The tin locks in freshness so the first crack releases oven aroma. Then there is another problem. The sender never sees the reaction. That is why the best seller status matters. It is proof that the chain works. Fast shipping plus sealed tin plus real reviews equals a moment that lands. Compare that to a box that sits in a warehouse. The difference is the tin.",
+    })])),
+  }),
+  /invented product mechanism details/,
+);
+
+const shippingContextVariant = makeVariant({
+  visualStyle: "presenter-teardown-vsl",
+  evidenceIndex: shippingEvidence.evidenceIndex,
+  evidenceUseType: shippingEvidence.evidenceUseType,
+  referenceScript: "Everyone assumes a dessert gift is only about the bite. But distance becomes the hidden problem before the box even moves. That's why shipping matters. A gift tin has to cross the map and still feel like a real birthday gesture. But there is another problem. The sender cannot stand at the door and explain the thought. So the proof has to travel with the product. The nationwide shipping promise makes the gift possible. The cookie moment makes it personal. So compare them. One gift stays local. The other can cross the map.",
+  mechanismSummary: "nationwide shipping turns a local dessert into a sendable gift moment",
+  revelation: "Gift tins ship nationwide for birthdays and thank-you moments.",
+});
+const shippingContextResult = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([shippingContextVariant])),
+});
+assert.equal(shippingContextResult.variants[0]?.evidenceUseType, "shipping");
+
+const inventedBehaviorVariant = makeVariant({ visualStyle: "presenter-teardown-vsl" });
+inventedBehaviorVariant.scriptBeats = inventedBehaviorVariant.scriptBeats.map((beat) => (
+  beat.role === "revelation"
+    ? { ...beat, narration: "So warehouse sorting protects every tin before anyone opens it." }
+    : beat
+));
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([inventedBehaviorVariant])),
+  }),
+  /invented product mechanism details/,
+);
+
 const compactNearMissVariant = makeVariant();
 compactNearMissVariant.scriptBeats = [
   { role: "consequence", narration: "The gift table had one empty spot.", startMs: 0, endMs: 3000 },
@@ -455,7 +542,7 @@ await assert.rejects(
     nvidiaNimApiKey: "test-key",
     nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([compactNearMissVariant])),
   }),
-  /script must be 45-65 words|beat 4 must be one sentence/,
+  /script must be 40-75 words|beat 4 must be one sentence/,
 );
 
 await assert.rejects(
@@ -704,15 +791,20 @@ const weakVisualEvidenceResearch = makeResearch({
   },
   productCatalog: null,
 });
-await assert.rejects(
-  () => generateThreeDBreakdownVariantsFromResearch(weakVisualEvidenceResearch, {
-    nvidiaNimApiKey: "test-key",
-    nvidiaNimChatCompletion: async () => {
-      throw new Error("Story Director should not be called for weak visual evidence.");
-    },
-  }),
-  /weak_visual_evidence/,
-);
+const shippingOnlyEvidence = extractThreeDBreakdownEvidence(weakVisualEvidenceResearch)[0]!;
+const shippingOnlyResult = await generateThreeDBreakdownVariantsFromResearch(weakVisualEvidenceResearch, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+    visualStyle: "presenter-teardown-vsl",
+    evidenceIndex: shippingOnlyEvidence.evidenceIndex,
+    evidenceUseType: shippingOnlyEvidence.evidenceUseType,
+    referenceScript: "Everyone assumes distance makes a dessert gift less personal. But the hidden problem starts before anyone opens the box. A gift has to cross the map and still feel intentional. That's why nationwide shipping matters. It turns a local dessert into something sendable. But there is another problem. The sender cannot explain the thought at the doorstep. So the product moment has to carry it. The shipping promise gets the gift there. The dessert moment makes it feel chosen. So compare them. One gift stops at the bakery. The other crosses the map.",
+    mechanismSummary: "nationwide shipping turns a local dessert into a sendable gift moment",
+    revelation: "Gift boxes ship nationwide to your door.",
+  })])),
+});
+assert.equal(shippingOnlyResult.variants[0]?.evidenceUseType, "shipping");
 
 const restrictedResearch = makeResearch({
   brand: {
@@ -769,6 +861,16 @@ const scene = createThreeDBreakdownAdScene({
   siteContract: generated.siteContract,
   variant: generated.variants[0]!,
 });
+const styleBScene = createThreeDBreakdownAdScene({
+  candidateIndex: 1,
+  evidenceItems: generated.evidenceItems,
+  generationBatchId: "batch_1",
+  model: generated.model,
+  provider: generated.provider,
+  research,
+  siteContract: generated.siteContract,
+  variant: generated.variants[1]!,
+});
 assert.equal(scene.format, "three-d-breakdown");
 assert.equal(scene.layout.durationMs, 20_000);
 assert.equal(scene.layout.scriptBeats.length, 5);
@@ -801,6 +903,7 @@ assert.ok(threeDImageActionSource.includes("storyboard board must define 6 frame
 assert.equal(getRenderMusicBed(scene), null, "3D Breakdown exports should use voiceover only, no background music bed.");
 assert.equal(scene.layout.storyContract.wowMomentType, "proof-blocks");
 assert.equal(scene.layout.storyContract.visualStyle, "toy-character-vsl");
+assert.ok(styleBScene.layout.storyContract.referenceScript?.includes("So compare them."));
 assert.ok(scene.layout.groundedEvidence.sourceUrl.includes("davidscookies"));
 const sceneValidation = validateThreeDBreakdownScene(scene);
 assert.deepEqual(sceneValidation.errors, []);

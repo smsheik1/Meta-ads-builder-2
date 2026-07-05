@@ -464,6 +464,14 @@ function ThreeDBreakdownAssemblyCard({
             <Badge className="ml-auto rounded-full bg-emerald-50 text-[10px] font-black text-emerald-700">Ready</Badge>
           </div>
           <div className="mt-2 space-y-1.5">
+            {scene.layout.storyContract.referenceScript ? (
+              <div className="rounded-xl border border-slate-200 bg-white px-3 py-2" data-three-d-reference-script="true">
+                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Narrator script</p>
+                <p className="mt-1 max-h-40 overflow-y-auto text-xs font-semibold leading-5 text-slate-600">
+                  {scene.layout.storyContract.referenceScript}
+                </p>
+              </div>
+            ) : null}
             {scene.layout.scriptBeats.map((beat) => (
               <div key={`${beat.role}-${beat.startMs}`} className="rounded-xl bg-white px-3 py-2" data-three-d-script-beat="true">
                 <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">{beat.role.replace(/-/g, " ")}</p>

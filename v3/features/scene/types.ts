@@ -462,6 +462,7 @@ export type ThreeDBreakdownAdScene = AdSceneBase<
       customerProblem: string;
       mechanismSummary: string;
       visualMetaphor: string;
+      referenceScript?: string;
       evidenceIndex: number;
       evidenceUseType: ThreeDBreakdownEvidenceUseType;
       wowMomentType: ThreeDBreakdownRevealPattern;
