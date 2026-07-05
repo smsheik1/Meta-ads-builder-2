@@ -66,10 +66,10 @@ export const createThreeDClipPlans = (
   const isPresenterStyle = sceneInput.storyContract.visualStyle === "presenter-teardown-vsl";
   const clipDirections = isPresenterStyle
     ? [
-      "Open with a human presenter, torso, hands, or over-shoulder demonstrator handling the product in a real ecommerce setting, then reveal the hidden problem through the product use moment. Preserve product identity and no generated text.",
+      "Open with a human demo subject, torso, hands, or over-shoulder demonstrator handling the product in a real ecommerce setting, then reveal the hidden problem through the product use moment. The person is visual demonstration only; the unseen narrator carries the explanation. Preserve product identity and no generated text.",
       "Cut from practical product handling into the hidden customer/product problem becoming physical. Use a real surface or product-use setup first, then a quick 3D explanatory insert only if it clarifies the problem. Preserve product identity and no generated text.",
-      "This is the peak presenter-teardown reveal. Start from storyboard frame 4 as a 3D cutaway, overlay, x-ray, floating component split, or impossible mechanism insert, then return toward frame 5's proof/payoff product moment. Do not use toy-character anatomy or a faceless blue-grid biology montage. Preserve product identity and no generated text.",
-      "Land the evidence payoff, then return to the human/product final with presenter, torso, hands, or product-in-use payoff visible. Hold the final practical product frame long enough for Wiggly overlays, and do not turn into a logo-only end card.",
+      "This is the peak narrator-led ecommerce teardown reveal. Start from storyboard frame 4 as a 3D cutaway, overlay, x-ray, floating component split, or impossible mechanism insert, then return toward frame 5's proof/payoff product moment. Do not use toy-character anatomy or a faceless blue-grid biology montage. Preserve product identity and no generated text.",
+      "Land the evidence payoff, then return to the human/product final with demo subject, torso, hands, or product-in-use payoff visible. Hold the final practical product frame long enough for Wiggly overlays, and do not turn into a logo-only end card.",
     ]
     : [
       "Open with the stylized human demo character body or torso acting as the scale/customer/body proxy beside the product, then push into the hidden internal problem physically appearing. Preserve product identity, blue-grid 3D world, and no generated text.",

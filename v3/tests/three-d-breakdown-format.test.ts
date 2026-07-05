@@ -245,6 +245,11 @@ assert.ok(seedPrompt.length < 15_000, `Seed director prompt is too large: ${seed
   "presenter-teardown-vsl",
   "Style A - toy-character-vsl",
   "Style B - presenter-teardown-vsl",
+  "unseen omniscient narrator",
+  "The visual human/demo subject is not the narrator",
+  "user assumption -> hidden obstacle",
+  "The narrator teaches the hidden mechanism",
+  "The person demonstrates use only; the unseen narrator explains.",
   "product-science teardown",
   "bright blue/cyan clinical grid",
   "Use [] for no riskFlags",
@@ -404,7 +409,8 @@ assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("same clos
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Visual style: toy-character-vsl"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("recurring stylized human demo character/body proxy"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("Visual style: presenter-teardown-vsl"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human presenter, torso, hands"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human demo subject, torso, hands"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("demonstration/retention footage only"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("continuity spine"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not create a faceless biology montage"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("character's full body or torso"));
