@@ -27,16 +27,13 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
     if (!scene.layout.storyboardBoard.imagePrompt?.trim()) errors.push("3D Breakdown storyboard board image prompt is missing.");
     if (!Array.isArray(scene.layout.storyboardBoard.frames) || scene.layout.storyboardBoard.frames.length !== 6) {
       errors.push("3D Breakdown storyboard board must define 6 panel frames.");
-    } else {
-      scene.layout.storyboardBoard.frames.forEach((frame, index) => {
-        if (frame.frameIndex !== index + 1) errors.push(`3D Breakdown storyboard frame ${index + 1} index is invalid.`);
-        if (!frame.label?.trim()) errors.push(`3D Breakdown storyboard frame ${index + 1} label is missing.`);
-        if (!frame.crop || typeof frame.crop.x !== "number" || typeof frame.crop.y !== "number" || typeof frame.crop.width !== "number" || typeof frame.crop.height !== "number") {
-          errors.push(`3D Breakdown storyboard frame ${index + 1} crop is invalid.`);
-        }
-      });
-    }
-  }
+	    } else {
+	      scene.layout.storyboardBoard.frames.forEach((frame, index) => {
+	        if (frame.frameIndex !== index + 1) errors.push(`3D Breakdown storyboard frame ${index + 1} index is invalid.`);
+	        if (!frame.label?.trim()) errors.push(`3D Breakdown storyboard frame ${index + 1} label is missing.`);
+	      });
+	    }
+	  }
   const expectedClipFrameIndexes = [[1, 2], [2, 3], [4, 5], [5, 6]];
   if (!Array.isArray(scene.layout.clipPlans) || scene.layout.clipPlans.length !== 4) {
     errors.push("3D Breakdown must define 4 clip plans.");

@@ -518,7 +518,7 @@ function ThreeDBreakdownAssemblyCard({
           ) : null}
           {framesFailed ? (
             <p className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
-              One or more storyboard frame crops failed. Regenerate the storyboard board.
+              One or more storyboard frames failed. Generate frames again.
             </p>
           ) : null}
           <Button

@@ -1,7 +1,7 @@
 import type { ThreeDBreakdownSiteContract, ThreeDBreakdownVariant } from "../formats/three-d-breakdown/generate";
 import { THREE_D_BREAKDOWN_DURATION_MS } from "../formats/three-d-breakdown/music";
 import type { ThreeDBreakdownEvidenceItem } from "../formats/three-d-breakdown/evidence";
-import { createThreeDClipPlans, createThreeDStoryboardFrames } from "../formats/three-d-breakdown/storyboardContracts";
+import { createThreeDClipPlans } from "../formats/three-d-breakdown/storyboardContracts";
 import type { StoredWebsiteResearchResult } from "../research/types";
 import { pickSceneAccentColor } from "./createVisualizerScene";
 import {
@@ -43,6 +43,7 @@ export function createThreeDBreakdownAdScene({
   const firstBeat = variant.scriptBeats[0]!;
   const revelationBeat = variant.scriptBeats.find((beat) => beat.role === "revelation") || variant.scriptBeats[3]!;
   const punchlineBeat = variant.scriptBeats.find((beat) => beat.role === "punchline") || variant.scriptBeats[4]!;
+  if (!variant.storyboardBoard.frames?.length) throw new Error("3D Breakdown storyboard frames are missing.");
 
   return {
     version: AD_SCENE_VERSION,
@@ -83,7 +84,7 @@ export function createThreeDBreakdownAdScene({
       shots: variant.shots as ThreeDBreakdownAdScene["layout"]["shots"],
       storyboardBoard: {
         ...variant.storyboardBoard,
-        frames: variant.storyboardBoard.frames || createThreeDStoryboardFrames(),
+        frames: variant.storyboardBoard.frames,
       },
       clipPlans: createThreeDClipPlans({
         scriptBeats: variant.scriptBeats as ThreeDBreakdownAdScene["layout"]["scriptBeats"],

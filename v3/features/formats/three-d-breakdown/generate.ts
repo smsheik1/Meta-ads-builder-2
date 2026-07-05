@@ -241,41 +241,6 @@ const parseSiteContract = (parsed: Record<string, unknown>): ThreeDBreakdownSite
   return siteContract;
 };
 
-const defaultShotField = (
-  index: number,
-  field: "captionText" | "sceneDescription" | "explainerDevice" | "physicalAction" | "imagePrompt" | "animationPrompt",
-) => {
-  const role = THREE_D_SHOT_CONTRACT[index]!.role;
-  if (role === "consequence") {
-    return {
-      captionText: "Something breaks.",
-      sceneDescription: "The shared 3D world shows the customer friction physically blocking the main recurring object.",
-      explainerDevice: "Miniature problem cutaway",
-      physicalAction: "The main recurring object blocks, piles up, or tangles to create visible friction.",
-      imagePrompt: "Cinematic 3D explainer scene showing customer friction physically blocking the recurring object on a blue blueprint-grid stage, no text, no realistic faces.",
-      animationPrompt: "The blocked object strains once while the camera pushes in.",
-    }[field];
-  }
-  if (role === "mechanism") {
-    return {
-      captionText: "The mechanism appears.",
-      sceneDescription: "The shared 3D world reveals the hidden mechanism through an impossible-to-film cutaway.",
-      explainerDevice: "Impossible-to-film mechanism reveal",
-      physicalAction: "The mechanism opens, splits, assembles, or locks together to reveal how the offer works.",
-      imagePrompt: "Cinematic 3D mechanism reveal with floating layers, cutaway parts, and unmarked proof objects on a blue blueprint-grid stage, no text, no realistic faces.",
-      animationPrompt: "The mechanism opens and locks together in one clean motion.",
-    }[field];
-  }
-  return {
-    captionText: "Proof lands.",
-    sceneDescription: "The shared 3D world connects the selected evidence to the final transformed state.",
-    explainerDevice: "Proof payoff cutaway",
-    physicalAction: "Unmarked proof objects settle into place as the final transformation becomes visible.",
-    imagePrompt: "Cinematic 3D proof payoff scene with unmarked proof blocks settling into the transformed world on a blue blueprint-grid stage, no text, no realistic faces.",
-    animationPrompt: "Unmarked proof objects settle as the final state holds.",
-  }[field];
-};
-
 const parseShots = (value: unknown): ThreeDBreakdownShot[] => {
   if (!Array.isArray(value) || value.length < THREE_D_SHOT_CONTRACT.length) {
     throw new Error("3D Breakdown needs exactly 3 visual shots.");
@@ -292,12 +257,17 @@ const parseShots = (value: unknown): ThreeDBreakdownShot[] => {
     ) {
       throw new Error(`3D Breakdown shot ${index + 1} contract is invalid.`);
     }
-    const captionText = cleanText(raw.captionText, 90) || defaultShotField(index, "captionText");
-    const sceneDescription = cleanText(raw.sceneDescription, 260) || defaultShotField(index, "sceneDescription");
-    const explainerDevice = cleanText(raw.explainerDevice, 120) || defaultShotField(index, "explainerDevice");
-    const physicalAction = cleanText(raw.physicalAction, 140) || defaultShotField(index, "physicalAction");
-    const imagePrompt = cleanText(raw.imagePrompt, 1400) || defaultShotField(index, "imagePrompt");
-    const animationPrompt = cleanText(raw.animationPrompt, 900) || defaultShotField(index, "animationPrompt");
+    const requireShotField = (field: "captionText" | "sceneDescription" | "explainerDevice" | "physicalAction" | "imagePrompt" | "animationPrompt", maxLength: number) => {
+      const parsed = cleanText(raw[field], maxLength);
+      if (!parsed) throw new Error(`3D Breakdown shot ${index + 1} ${field} is missing.`);
+      return parsed;
+    };
+    const captionText = requireShotField("captionText", 90);
+    const sceneDescription = requireShotField("sceneDescription", 260);
+    const explainerDevice = requireShotField("explainerDevice", 120);
+    const physicalAction = requireShotField("physicalAction", 140);
+    const imagePrompt = requireShotField("imagePrompt", 1400);
+    const animationPrompt = requireShotField("animationPrompt", 900);
     for (const text of [captionText, sceneDescription, explainerDevice, physicalAction, imagePrompt, animationPrompt]) {
       assertNoBannedText(text);
     }

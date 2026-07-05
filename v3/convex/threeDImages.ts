@@ -4,9 +4,7 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { action } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
-import { generateReplicateNanoBanana2Image } from "../features/formats/jingle/storyboard";
-import { generateReplicateSeedanceVideo } from "../features/formats/jingle/storyboard";
-import { createThreeDStoryboardFrames } from "../features/formats/three-d-breakdown/storyboardContracts";
+import { generateReplicateNanoBanana2Image, generateReplicateSeedanceVideo } from "../features/formats/jingle/storyboard";
 import type {
   AdScene,
   ThreeDBreakdownAdScene,
@@ -30,6 +28,14 @@ const THREE_D_SEEDANCE_PROMPT_SUFFIX = [
   "No readable text, captions, labels, numbers, logos, UI copy, subtitles, icons, arrows, checkmarks, or X marks.",
   "If a reference image contains captions, shirt text, labels, or logos, treat them as style artifacts only and do not reproduce them.",
   "Show proof concepts as blank physical tokens, unmarked objects, light, steam, crumbs, ribbon, or motion only.",
+].join(" ");
+
+const THREE_D_IMAGE_STYLE_RULES = [
+  "Bright blue/cyan blueprint-grid stage, flat readable lab lighting, close product-science camera, strong subject/background separation.",
+  "Use the recurring stylized demo character/body proxy as the continuity anchor; intro and final frames show a body or torso, while mechanism frames may use the same hand, pointer, probe, scale figure, or body cutaway.",
+  "Avoid faceless biology montages, dark rooms, black voids, smoky sci-fi labs, luxury product-card stills, empty negative space, posters, UI cards, and typography-led graphics.",
+  "Preserve product shape, color, material, packaging cues, and category. Capsules stay capsule-shaped, bottles stay bottles, packaging stays packaging; all labels remain blank and unreadable.",
+  "No readable text, logos, letters, numbers, captions, UI copy, arrows, checkmarks, X marks, or label-like rectangles. Show proof as blank physical tokens, particles, light, steam, crumbs, ribbon, or motion.",
 ].join(" ");
 
 const getThreeDPublicBaseUrl = () => {
@@ -184,24 +190,14 @@ const buildThreeDProductionFramePrompt = (
     `Shared visual world: ${contract.visualWorld}. Lighting: ${contract.lighting}. Camera: ${contract.cameraStyle}. Recurring objects: ${recurringObjects}.`,
     getThreeDFrameNarrative(scene, frameIndex),
     getThreeDGuideInstruction(frameIndex),
-    "Visual grammar: close camera, bright blue/cyan technical grid floor and wall, flat readable lab lighting, product-science demo, macro mechanism detail, strong subject/background separation.",
-    "Reference target: fast ecommerce supplement teardown with a recurring stylized human demo character/body proxy, saturated blue clinical grid, crisp close macro product science, and a visible state change in every frame.",
-    "The reference feel is embodied demonstration, not spokesperson presentation: intro and final frames need a visible toy-like character body/torso, while mechanism close-ups use the same character hand, pointer, probe, tiny scale figure, or body proxy.",
-    "The demo character is the continuity anchor and body/customer/scale proxy, not decoration; it should make the teardown feel human and understandable across frames.",
-    "Do not satisfy the character requirement with anonymous fingers only in the intro or final frame; show an actual stylized body/torso there.",
-    "Intro/final human-scale frames should not be macro product pinches. Avoid giant disembodied hands, giant gloves, or product-only close-ups when the demo character should anchor the story.",
-    "Do not create a faceless biology montage. Body/gut/cell-wall visuals should be framed as environments the recurring demo character enters, scales against, points into, or returns from.",
+    THREE_D_IMAGE_STYLE_RULES,
+    "The demo character is the body/customer/scale proxy, not a presenter; product meaning comes from cause/effect, mechanism reveals, and 3D transformations.",
     "For supplement/digestive products, include internal-body journey imagery when relevant: transparent torso, gut tunnel, intestinal wall, acid bath, cell wall, particles traveling, or protected capsule passing through a pathway.",
     "Do not keep every frame on the same empty blue tabletop. The blue/cyan instructional palette should unify body cutaways, process tunnels, mechanism machines, and final stage shots.",
     "If a style reference contains captions, shirt text, labels, or logos, ignore those text details and preserve only the 3D texture, blue stage, scale, guide energy, and macro mechanism language.",
-    "Do not use a dark green lab, moody spotlight cone, black void, smoky sci-fi room, luxury hero render, or shadow-heavy cinematic product-card look.",
     "Do not make quiet product-card stills. Do not leave empty negative space for captions. The physical mechanism must carry the frame.",
     "For capsules or supplement products, preserve exact capsule identity: capsule stays capsule-shaped, nested capsules stay nested, contents appear as contained beads/particles or controlled cutaway release, never as a generic jar, cylinder, cup, bucket, bowl, tube, or poster object.",
-    "Do not generate posters, wall text, data panels, white paragraph blocks, UI cards, line charts, text boxes, or label-like rectangles. Use only blank geometric tokens and physical objects.",
     "Use warm amber/gold ingredient particles or clean glowing payload beads for active contents. Avoid black ash, dirty dust, or explosion debris unless it is a tiny obstacle remnant in frame 2.",
-    "If product or brand references include labels or logos, preserve product shape, color, material, and packaging cues but make all labels blank and unreadable.",
-    "No readable text, no brand wordmarks, no logos, no letters, no numbers, no UI copy, no captions, no subtitles, no arrows, no checkmarks, no X marks.",
-    "Show proof or numeric ideas only as blank physical tokens, unmarked blocks, particles, light, or motion.",
   ].join(" ");
 };
 
@@ -217,96 +213,95 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
     const imageInput = getThreeDImageInput(nextScene);
 
     const storyboardBoard = nextScene.layout.storyboardBoard;
-    if (storyboardBoard?.imagePrompt) {
-      console.log("[wiggly:3d-breakdown] production-frames:start", {
-        imageInputCount: imageInput.length,
-        hasFrames: storyboardBoard.frames?.length || 0,
-      });
-      const fallbackFrames = createThreeDStoryboardFrames();
-      const baseFrames = storyboardBoard.frames?.length === 6
-        ? storyboardBoard.frames
-        : fallbackFrames;
+    if (!storyboardBoard?.imagePrompt) throw new Error("3D Breakdown storyboard board image prompt is missing.");
+    if (!Array.isArray(storyboardBoard.frames) || storyboardBoard.frames.length !== 6) {
+      throw new Error("3D Breakdown storyboard board must define 6 frames before image generation.");
+    }
+    const baseFrames = storyboardBoard.frames;
+    console.log("[wiggly:3d-breakdown] production-frames:start", {
+      imageInputCount: imageInput.length,
+      hasFrames: baseFrames.length,
+    });
+    nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
+      ...board,
+      image: { status: "generating" },
+      frames: baseFrames.map((frame) => ({
+        ...frame,
+        image: { status: "generating" as const },
+      })),
+    }));
+    if (nextScene.layout.clipPlans?.length) {
+      nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => ({
+        ...plan,
+        video: { status: "idle" as const },
+      })) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
+    }
+    await patchThreeDScene(ctx, sceneId, nextScene);
+    let activeFrameIndex: ThreeDBreakdownStoryboardFrameIndex | null = null;
+    const storedFrames: NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["frames"] = [];
+    try {
+      for (const frame of baseFrames) {
+        activeFrameIndex = frame.frameIndex;
+        const prompt = buildThreeDProductionFramePrompt(nextScene, frame.frameIndex);
+        console.log("[wiggly:3d-breakdown] production-frame:start", {
+          frameIndex: frame.frameIndex,
+          promptLength: prompt.length,
+        });
+        const image = await generateReplicateNanoBanana2Image({
+          replicateApiToken,
+          prompt,
+          imageInput,
+          aspectRatio: "9:16",
+        });
+        const frameStored = await storeThreeDBytes(ctx, image.bytes, image.mimeType);
+        console.log("[wiggly:3d-breakdown] production-frame:ready", {
+          frameIndex: frame.frameIndex,
+          mimeType: image.mimeType,
+        });
+        storedFrames.push({
+          ...frame,
+          image: { status: "ready" as const, ...frameStored },
+        });
+        activeFrameIndex = null;
+      }
       nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
         ...board,
-        image: { status: "generating" },
-        frames: baseFrames.map((frame) => ({
-          ...frame,
-          image: { status: "generating" as const },
-        })),
+        image: { status: "ready" },
+        frames: storedFrames,
       }));
-      if (nextScene.layout.clipPlans?.length) {
-        nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => ({
-          ...plan,
-          video: { status: "idle" as const },
-        })) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
-      }
-      await patchThreeDScene(ctx, sceneId, nextScene);
-      let activeFrameIndex: ThreeDBreakdownStoryboardFrameIndex | null = null;
-      const storedFrames: NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["frames"] = [];
-      try {
-        for (const frame of baseFrames) {
-          activeFrameIndex = frame.frameIndex;
-          const prompt = buildThreeDProductionFramePrompt(nextScene, frame.frameIndex);
-          console.log("[wiggly:3d-breakdown] production-frame:start", {
-            frameIndex: frame.frameIndex,
-            promptLength: prompt.length,
-          });
-          const image = await generateReplicateNanoBanana2Image({
-            replicateApiToken,
-            prompt,
-            imageInput,
-            aspectRatio: "9:16",
-          });
-          const frameStored = await storeThreeDBytes(ctx, image.bytes, image.mimeType);
-          console.log("[wiggly:3d-breakdown] production-frame:ready", {
-            frameIndex: frame.frameIndex,
-            mimeType: image.mimeType,
-          });
-          storedFrames.push({
-            ...frame,
-            image: { status: "ready" as const, ...frameStored },
-          });
-          activeFrameIndex = null;
-        }
-        nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
-          ...board,
-          image: { status: "ready" },
-          frames: storedFrames,
-        }));
-        console.log("[wiggly:3d-breakdown] production-frames:ready", {
-          frameCount: storedFrames.length,
-        });
-      } catch (error) {
-        console.warn("[wiggly:3d-breakdown] production-frames:failed", {
-          message: error instanceof Error ? error.message : String(error),
-        });
-        nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
-          ...board,
-          image: {
-            status: "failed",
-            error: error instanceof Error ? error.message : "3D production frame generation failed.",
-          },
-          frames: baseFrames.map((frame) => {
-            const storedFrame = storedFrames.find((stored) => stored.frameIndex === frame.frameIndex);
-            if (storedFrame) return storedFrame;
-            if (activeFrameIndex === frame.frameIndex) {
-              return {
-                ...frame,
-                image: {
-                  status: "failed" as const,
-                  error: error instanceof Error ? error.message : "3D production frame generation failed.",
-                },
-              };
-            }
+      console.log("[wiggly:3d-breakdown] production-frames:ready", {
+        frameCount: storedFrames.length,
+      });
+    } catch (error) {
+      console.warn("[wiggly:3d-breakdown] production-frames:failed", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+      nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
+        ...board,
+        image: {
+          status: "failed",
+          error: error instanceof Error ? error.message : "3D production frame generation failed.",
+        },
+        frames: baseFrames.map((frame) => {
+          const storedFrame = storedFrames.find((stored) => stored.frameIndex === frame.frameIndex);
+          if (storedFrame) return storedFrame;
+          if (activeFrameIndex === frame.frameIndex) {
             return {
               ...frame,
-              image: { status: "idle" as const },
+              image: {
+                status: "failed" as const,
+                error: error instanceof Error ? error.message : "3D production frame generation failed.",
+              },
             };
-          }),
-        }));
-      }
-      await patchThreeDScene(ctx, sceneId, nextScene);
+          }
+          return {
+            ...frame,
+            image: { status: "idle" as const },
+          };
+        }),
+      }));
     }
+    await patchThreeDScene(ctx, sceneId, nextScene);
 
     return { scene: nextScene };
   },

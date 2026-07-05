@@ -401,14 +401,13 @@ export type ThreeDBreakdownStoryboardBoard = {
   frameCount: 6;
   imagePrompt: string;
   image?: ThreeDBreakdownMediaRef;
-  frames?: Array<{
-    frameIndex: 1 | 2 | 3 | 4 | 5 | 6;
-    role: "problem" | "escalation" | "mechanism-setup" | "wow-reveal" | "payoff" | "final-state";
-    label: string;
-    crop: { x: number; y: number; width: number; height: number };
-    image?: ThreeDBreakdownMediaRef;
-  }>;
-};
+	  frames?: Array<{
+	    frameIndex: 1 | 2 | 3 | 4 | 5 | 6;
+	    role: "problem" | "escalation" | "mechanism-setup" | "wow-reveal" | "payoff" | "final-state";
+	    label: string;
+	    image?: ThreeDBreakdownMediaRef;
+	  }>;
+	};
 
 export type ThreeDBreakdownClipPlan = {
   clipIndex: ThreeDBreakdownClipIndex;

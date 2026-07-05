@@ -238,53 +238,23 @@ assert.ok(ecommerceReferenceDoc.includes("One visible state change per frame or 
 assert.ok(ecommerceReferenceDoc.includes("Do not keep trying provider calls"));
 assert.ok(prompt.length < 15_000, `3D Breakdown director prompt is too large: ${prompt.length} chars`);
 assert.ok(seedPrompt.length < 15_000, `Seed director prompt is too large: ${seedPrompt.length} chars`);
-assert.ok(prompt.includes("ZachDFilms-style high-retention short-form documentary pacing"));
-assert.ok(prompt.includes("product-science teardown"));
-assert.ok(prompt.includes("bright blue/cyan clinical grid"));
-assert.ok(prompt.includes("Use [] for no riskFlags"));
-assert.ok(prompt.includes("Write exactly 1 variant."));
+[
+  "ZachDFilms-style high-retention short-form documentary pacing",
+  "product-science teardown",
+  "bright blue/cyan clinical grid",
+  "Use [] for no riskFlags",
+  "Write exactly 1 variant.",
+  "No invented reviews, numbers, results, guarantees, source names, customer names, or claims.",
+  "Total narration must be 45-65 words",
+  "Pick the most visual evidence item.",
+  "Do not ask the image model to generate readable text",
+  "six-frame production visual plan",
+  "No split screen, no comparison chart, no multi-panel image",
+  "A website making a risky claim does not automatically make that claim safe to repeat.",
+].forEach((expected) => assert.ok(prompt.includes(expected), `3D Breakdown prompt missing: ${expected}`));
 assert.ok(twoDirectionPrompt.includes("Write exactly 2 variants."));
-assert.ok(prompt.includes("Keep JSON compact."));
-assert.ok(prompt.includes("No invented reviews, numbers, results, guarantees, source names, customer names, or claims."));
-assert.ok(prompt.includes("Total narration must be 45-65 words"));
-assert.ok(prompt.includes("Third-person documentary voice."));
-assert.ok(prompt.includes("Do not say \"the website says\" or \"the evidence shows\"."));
-assert.ok(prompt.includes("She missed it, but the cookies arrived."));
-assert.ok(prompt.includes("The call became a booking."));
-assert.ok(prompt.includes("A website making a risky claim does not automatically make that claim safe to repeat."));
-assert.ok(prompt.includes("Pick the most visual evidence item."));
-assert.ok(prompt.includes("plain white product posters"));
-assert.ok(prompt.includes("Do not ask the image model to generate readable text"));
-assert.ok(prompt.includes("blank physical tokens, unmarked blocks, unlabeled counters"));
-assert.ok(prompt.includes("plain geometric tokens"));
-assert.ok(prompt.includes("false assumption -> hidden physical obstacle -> mechanism/component 1"));
-assert.ok(prompt.includes("Avoid unsupported body outcome language"));
 assert.ok(prompt.includes("A probiotic capsule enters digestion and everyone assumes it survives the trip."));
 assert.ok(prompt.includes("The trip was the product."));
-assert.ok(prompt.includes("quick visual resets"));
-assert.ok(prompt.includes("at least four distinct visual modules"));
-assert.ok(prompt.includes("Do not let the same close-up product angle dominate more than two frames."));
-assert.ok(prompt.includes("Ecommerce videos must feel like an embodied product-science teardown"));
-assert.ok(prompt.includes("same demo character, body proxy"));
-assert.ok(prompt.includes("full-body or torso demo character"));
-assert.ok(prompt.includes("Avoid giant disembodied hands"));
-assert.ok(prompt.includes("recurring stylized human demo character"));
-assert.ok(prompt.includes("Do not create a faceless biology montage"));
-assert.ok(prompt.includes("at least four of six frames"));
-assert.ok(prompt.includes("visual-reference artifacts only"));
-assert.ok(prompt.includes("product/scale intro, hidden obstacle, mechanism machine/cutaway"));
-assert.ok(prompt.includes("capsule stays capsule-shaped"));
-assert.ok(prompt.includes("never become a generic jar, cylinder, cup, bucket, bowl, tube, or poster object"));
-assert.ok(prompt.includes("Renderer CTA, not narration:"));
-assert.ok(prompt.includes("1-5 words"));
-assert.ok(prompt.includes("\"storyboardBoard\""));
-assert.ok(prompt.includes("six-frame production visual plan"));
-assert.ok(prompt.includes("backend expands the six-frame production visual plan"));
-assert.ok(prompt.includes("frame 4 peak cutaway or delivery reveal"));
-assert.ok(prompt.includes("frame 1 false assumption/common use"));
-assert.ok(prompt.includes("frame 5 unified evidence/payoff"));
-assert.ok(prompt.includes("No split screen, no comparison chart, no multi-panel image"));
-assert.ok(prompt.includes("exploded-product"));
 assert.ok(seedPrompt.includes("DS-01 Daily Synbiotic"));
 assert.ok(seedPrompt.includes("ViaCap"));
 assert.ok(seedPrompt.includes("capsule-in-capsule"));
@@ -616,15 +586,14 @@ messyDirectorVariant.shots = [
 ] as typeof messyDirectorVariant.shots;
 delete (messyDirectorVariant.shots[2] as Record<string, unknown>).physicalAction;
 delete (messyDirectorVariant.shots[2] as Record<string, unknown>).imagePrompt;
-const normalizedMessyDirector = await generateThreeDBreakdownVariantsFromResearch(research, {
-  count: 1,
-  nvidiaNimApiKey: "test-key",
-  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([messyDirectorVariant])),
-});
-assert.equal(normalizedMessyDirector.variants[0]?.shots.length, 3);
-assert.equal(normalizedMessyDirector.variants[0]?.shots[2]?.shotIndex, 3);
-assert.ok(normalizedMessyDirector.variants[0]?.shots[2]?.physicalAction.includes("Unmarked proof objects"));
-assert.ok(normalizedMessyDirector.variants[0]?.shots[2]?.imagePrompt.includes("unmarked proof blocks"));
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([messyDirectorVariant])),
+  }),
+  /shot 3 physicalAction is missing/,
+);
 
 await assert.rejects(
   () => generateThreeDBreakdownVariantsFromResearch(research, {
@@ -793,43 +762,21 @@ assert.deepEqual(scene.layout.clipPlans?.map((clip) => clip.frameIndexes), [[1, 
 assert.deepEqual(scene.layout.clipPlans?.map((clip) => clip.durationSeconds), [5, 5, 5, 5]);
 assert.deepEqual(scene.layout.clipPlans?.map((clip) => [clip.startMs, clip.endMs]), [[0, 5000], [5000, 10000], [10000, 15000], [15000, 20000]]);
 assert.ok(scene.layout.clipPlans?.every((clip) => clip.prompt.length <= 3900), "Seedance clip prompts must stay below Replicate's 4000 character limit.");
-assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("Change visual state about every second"));
-assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("no blank color wipes"));
-assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("fast ecommerce product-teardown short"));
-assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("recurring product or package"));
 assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("four quick micro-beats"));
 assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("0-1s setup"));
 assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("second and third micro-beats"));
-assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("stylized human demo character"));
-assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("faceless object loop"));
 assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("module variety"));
-assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("A capsule stays capsule-shaped"));
-assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("never transform the capsule into an open cup"));
-assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("stylized human demo character body or torso"));
-assert.ok(scene.layout.clipPlans?.[1]?.prompt.includes("inside the body/pathway or process world"));
-assert.ok(scene.layout.clipPlans?.[3]?.prompt.includes("human-scale final transformed state with the demo character body or torso"));
 assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("Start from storyboard frame 4"));
 assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("unified evidence/payoff state from frame 5"));
 assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("without using a split-screen comparison"));
-assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("never as an open cup"));
-assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("transparent capsule shell"));
 assert.ok(scene.layout.clipPlans?.[3]?.prompt.includes("clean product payoff composition"));
-assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("no checkmarks"));
-assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("Every frame must contain a visible demo character/body proxy"));
 assert.deepEqual(scene.layout.clipPlans?.map((clip) => clip.video?.status), ["idle", "idle", "idle", "idle"]);
 assert.deepEqual(scene.layout.referenceImages?.productImageUrls, ["https://cdn.example/davids-cookie-tin.png"]);
 const threeDImageActionSource = readFileSync(new URL("../convex/threeDImages.ts", import.meta.url), "utf8");
 assert.ok(threeDImageActionSource.includes("image: { status: \"generating\" }"));
 assert.ok(threeDImageActionSource.includes("video: { status: \"idle\" as const }"), "Regenerating production frames must clear stale 3D clip videos.");
-assert.ok(threeDImageActionSource.includes("continuity anchor"));
-assert.ok(threeDImageActionSource.includes("character is the body/customer/scale proxy"));
-assert.ok(threeDImageActionSource.includes("full-body or torso character"));
-assert.ok(threeDImageActionSource.includes("faceless biology montage"));
-assert.ok(threeDImageActionSource.includes("transparent torso, gut tunnel, intestinal wall, acid bath"));
-assert.ok(threeDImageActionSource.includes("Do not keep every frame on the same empty blue tabletop"));
-assert.ok(threeDImageActionSource.includes("Avoid giant disembodied hands"));
-assert.ok(threeDImageActionSource.includes("capsule stays capsule-shaped"));
-assert.ok(threeDImageActionSource.includes("never as a generic jar, cylinder, cup, bucket, bowl, tube, or poster object"));
+assert.ok(threeDImageActionSource.includes("THREE_D_IMAGE_STYLE_RULES"));
+assert.ok(threeDImageActionSource.includes("storyboard board must define 6 frames before image generation"));
 assert.equal(getRenderMusicBed(scene), null, "3D Breakdown exports should use voiceover only, no background music bed.");
 assert.equal(scene.layout.storyContract.wowMomentType, "proof-blocks");
 assert.ok(scene.layout.groundedEvidence.sourceUrl.includes("davidscookies"));

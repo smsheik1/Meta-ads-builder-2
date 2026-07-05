@@ -16,7 +16,6 @@ const brickStoryboardSheetSource = readFileSync("app/create/CreateBrickStoryboar
 const creativeBriefSource = readFileSync("app/create/CreateCreativeBriefCard.tsx", "utf8");
 const adScenesSource = readFileSync("convex/adScenes.ts", "utf8");
 const threeDImagesSource = readFileSync("convex/threeDImages.ts", "utf8");
-const storyboardContractsSource = readFileSync("features/formats/three-d-breakdown/storyboardContracts.ts", "utf8");
 const jingleStoryboardSource = readFileSync("features/formats/jingle/storyboard.ts", "utf8");
 const visualizerSchemaSource = readFileSync("features/formats/visualizer/schema.ts", "utf8");
 const visualizerModuleSource = readFileSync("features/formats/visualizer/index.ts", "utf8");
@@ -110,11 +109,9 @@ assert.ok(
 assert.ok(
   createClientSource.includes("function isRenderableScene") &&
     createClientSource.includes("getFormatModule(scene.format).validate(scene).valid") &&
-    createClientSource.includes("function normalizeThreeDBreakdownScene") &&
-    createClientSource.includes("normalizeGeneratedScenes(scenes)") &&
     createClientSource.includes("getRenderableSceneEntries(latestGeneration.scenes") &&
     createClientSource.includes("Previous saved ads used an older format contract. Generate again.") &&
-    createClientSource.includes("assertRenderableScenes(normalizedScenes)") &&
+    createClientSource.includes("assertRenderableScenes(scenes)") &&
     createClientSource.includes("That saved design uses an older format contract. Generate it again."),
   "/create must validate persisted/generated scenes before selecting them so stale format contracts cannot crash AdRenderSurface.",
 );
@@ -210,7 +207,7 @@ assert.ok(
     quickActionsSource.includes("One six-frame visual plan.") &&
     quickActionsSource.includes('data-three-d-storyboard-frames="true"') &&
     !quickActionsSource.includes("Six-frame 3D Breakdown storyboard board"),
-  "3D Breakdown Images step must show compact storyboard status plus cropped frame references without duplicating the full board preview.",
+  "3D Breakdown Images step must show compact storyboard status plus frame references without duplicating the full board preview.",
 );
 assert.ok(
   quickActionsSource.includes('data-three-d-clip-plan="true"') &&
@@ -261,35 +258,16 @@ assert.ok(
     threeDImagesSource.includes("ecommerce-teardown-style-reference-v1.jpg") &&
     threeDImagesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_URL") &&
     threeDImagesSource.includes("requireThreeDStyleReferenceUrl") &&
-    threeDImagesSource.includes("Set THREE_D_BREAKDOWN_STYLE_REFERENCE_URL or WIGGLY_PUBLIC_BASE_URL") &&
     threeDImagesSource.includes("getThreeDImageInput") &&
-    !threeDImagesSource.includes("filterReachableThreeDImageReferences") &&
-    !threeDImagesSource.includes("Skipping unreachable 3D Breakdown image reference") &&
-    !threeDImagesSource.includes("ensureThreeDStoryboardFrameReferences") &&
-    !threeDImagesSource.includes("storyboard:crop:repair:start") &&
-    !threeDImagesSource.includes("cropThreeDStoryboardFrames") &&
-    !threeDImagesSource.includes("storyboard:crop:ready") &&
-    !threeDImagesSource.includes("fetchThreeDMediaBytes") &&
     threeDImagesSource.includes("buildThreeDProductionFramePrompt") &&
-    threeDImagesSource.includes("This is a single Seedance reference image, not a storyboard board.") &&
-    threeDImagesSource.includes("Do not create a grid, contact sheet, comic strip, split screen, collage, panel border, gutter") &&
-    threeDImagesSource.includes("make all labels blank and unreadable") &&
-    threeDImagesSource.includes("shirt text, labels, or logos") &&
-    threeDImagesSource.includes("recurring demo character/body proxy") &&
     threeDImagesSource.includes("production-frame:start") &&
     threeDImagesSource.includes("activeFrameIndex") &&
-    threeDImagesSource.includes("const storedFrame = storedFrames.find") &&
-    threeDImagesSource.includes("if (storedFrame) return storedFrame") &&
-    threeDImagesSource.includes('image: { status: "idle" as const }') &&
+    threeDImagesSource.includes("storyboard board must define 6 frames before image generation") &&
+    !threeDImagesSource.includes("createThreeDStoryboardFrames") &&
     !threeDImagesSource.includes("Promise.all(baseFrames.map") &&
     threeDImagesSource.includes("buildThreeDSeedancePrompt") &&
     threeDImagesSource.includes("THREE_D_SEEDANCE_MAX_PROMPT_CHARS = 3900") &&
     threeDImagesSource.includes("seedancePromptLength") &&
-    threeDImagesSource.includes("do not morph products into cups") &&
-    !threeDImagesSource.includes("Keep tins and packaging plain") &&
-    storyboardContractsSource.includes("Render all proof, address, handwriting, label, rating, number, receipt, or note concepts as blank physical cues only.") &&
-    !threeDImagesSource.includes('method: "HEAD"') &&
-    !threeDImagesSource.includes('Range: "bytes=0-0"') &&
     threeDImagesSource.includes("imageInput,") &&
     threeDImagesSource.includes("scene.layout.referenceImages?.productImageUrls"),
   "3D Breakdown media generation must require the style reference and expose explicit sequential Seedance clips without preflight/repair scaffolding.",

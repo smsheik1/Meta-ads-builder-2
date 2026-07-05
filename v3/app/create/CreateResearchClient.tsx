@@ -32,10 +32,6 @@ import {
 import { getVideoMemeTemplate, type VideoMemeTemplateId } from "@/features/formats/video-meme/templates";
 import { getFormatModule } from "@/features/formats/registry";
 import {
-  createThreeDClipPlans,
-  createThreeDStoryboardFrames,
-} from "@/features/formats/three-d-breakdown/storyboardContracts";
-import {
   getProductPhotoshootPartialStopMessage,
   hasUsableProductPhotoshootBoard,
   type ProductPhotoshootBoard,
@@ -281,43 +277,11 @@ function isRenderableScene(scene: AdScene | null | undefined): scene is AdScene 
   }
 }
 
-function normalizeThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): ThreeDBreakdownAdScene {
-  const storyboardBoard = scene.layout.storyboardBoard
-    ? {
-      ...scene.layout.storyboardBoard,
-      frames: scene.layout.storyboardBoard.frames?.length === 6
-        ? scene.layout.storyboardBoard.frames
-        : createThreeDStoryboardFrames(),
-    }
-    : scene.layout.storyboardBoard;
-  const clipPlans = scene.layout.clipPlans?.length === 4
-    ? scene.layout.clipPlans
-    : createThreeDClipPlans({
-      scriptBeats: scene.layout.scriptBeats,
-      storyContract: scene.layout.storyContract,
-    });
-
-  return {
-    ...scene,
-    layout: {
-      ...scene.layout,
-      storyboardBoard,
-      clipPlans,
-    },
-  };
-}
-
-function normalizeGeneratedScenes(scenes: AdScene[]): AdScene[] {
-  return scenes.map((scene) => (
-    scene.format === "three-d-breakdown" ? normalizeThreeDBreakdownScene(scene) : scene
-  ));
-}
-
 function getRenderableSceneEntries(
   scenes: AdScene[],
   sceneIds: Array<Id<"adScenes"> | null> = [],
 ): RenderableSceneEntry[] {
-  return normalizeGeneratedScenes(scenes)
+  return scenes
     .map((scene, index) => ({
       scene,
       sceneId: sceneIds[index] || null,
@@ -1250,13 +1214,12 @@ function ResearchConnected() {
     nextSceneIds: Array<Id<"adScenes"> | null> = [],
     options: ApplyGeneratedScenesOptions = {},
   ) => {
-    const normalizedScenes = normalizeGeneratedScenes(scenes);
-    if (!normalizedScenes.length) throw new Error("Ad idea generation returned no ads.");
-    assertRenderableScenes(normalizedScenes);
+    if (!scenes.length) throw new Error("Ad idea generation returned no ads.");
+    assertRenderableScenes(scenes);
 
-    const firstScene = normalizedScenes[0] || null;
-    setAdScenes(normalizedScenes);
-    setSceneIds(nextSceneIds.length ? nextSceneIds : normalizedScenes.map(() => null));
+    const firstScene = scenes[0] || null;
+    setAdScenes(scenes);
+    setSceneIds(nextSceneIds.length ? nextSceneIds : scenes.map(() => null));
     setSelectedScene(firstScene);
     setSelectedSceneIndex(0);
     canvasActions.interactionReset();
@@ -1267,8 +1230,8 @@ function ResearchConnected() {
     resetSaveState();
     resetBrickStoryboardState();
     resetThreeDBreakdownState();
-    syncCreativePackGroupFromScenes(normalizedScenes, nextSceneIds);
-    setAdStatusNote(options.note || `${normalizedScenes.length} ads ready. Press spacebar to find a stronger version.`);
+    syncCreativePackGroupFromScenes(scenes, nextSceneIds);
+    setAdStatusNote(options.note || `${scenes.length} ads ready. Press spacebar to find a stronger version.`);
     setAdStatus("ready");
     canvasActions.finishBusy();
     if (options.autoGenerateAudio === false) return;

@@ -20,28 +20,15 @@ export const THREE_D_STORYBOARD_FRAME_CONTRACTS: NonNullable<ThreeDBreakdownStor
   frameIndex: (index + 1) as StoryboardFrame["frameIndex"],
   role,
   label,
-  crop: {
-    x: (index % 3) / 3,
-    y: Math.floor(index / 3) / 2,
-    width: 1 / 3,
-    height: 0.5,
-  },
   image: { status: "idle" },
 }));
 
 export const createThreeDStoryboardFrames = () => (
   THREE_D_STORYBOARD_FRAME_CONTRACTS.map((frame) => ({
     ...frame,
-    crop: { ...frame.crop },
     image: { status: "idle" as const },
   }))
 );
-
-const noGeneratedTextPrompt = [
-  "Render all proof, address, handwriting, label, rating, number, receipt, or note concepts as blank physical cues only.",
-  "Use blank product forms, blank cards, unmarked blocks, plain geometric tokens, crumbs, ribbon, light, steam, and motion instead of words or marks.",
-  "No readable text, no letters, no numbers, no labels, no logos, no captions, no UI copy, no icons, no arrows, no checkmarks, no X marks.",
-].join(" ");
 
 const createClipPrompt = ({
   clipIndex,
@@ -61,23 +48,9 @@ const createClipPrompt = ({
   `Animate storyboard frame${frameIndexes.length > 1 ? "s" : ""} ${frameIndexes.join("-")} as clip ${clipIndex} of 4, vertical 9:16, 5 seconds.`,
   `World: ${world}. Recurring objects: ${recurringObjects}. Narrative: ${narrative}`,
   direction,
-  "fast ecommerce product-teardown short on a bright blue/cyan technical grid stage. Keep the recurring product or package anchored.",
-  "Reference feel: bright clinical product-science explainer, flat readable lighting, saturated cyan grid floor and wall, crisp toy-like 3D objects, constant visual teaching moments.",
-  "Do not use dark cinematic rooms, black voids, moody spotlights, smoke-only sci-fi labs, luxury product-card lighting, or slow atmospheric reveals.",
   "Use four quick micro-beats: 0-1s setup, 1-2.3s obstruction/change, 2.3-3.8s reveal, 3.8-5s payoff/reset.",
-  "Change visual state about every second with camera pushes, object motion, particles, cutaways, component reveals, or mechanical cause/effect.",
   "The second and third micro-beats must change the object, camera scale, or mechanism; no static product with drifting particles.",
-  "Every frame must contain a visible demo character/body proxy, product, character hand, mechanism, particles, or physical obstacle; never cut to plain dark screens, empty blue grids, empty gradients, or caption-only moments.",
-  "Keep a recurring stylized human demo character, body proxy, or scale figure consistent so it reads as an embodied product-science demo, not a faceless object loop or biology montage.",
-  "Intro and final-payoff motion must clearly feature the toy-like demo character body or torso beside the product; mechanism clips can switch to the same character hand, probe, pointer, tiny scale figure, or body proxy after the character has been established.",
-  "For supplement/digestive products, vary the world across the clip: blue grid stage, transparent torso, gut tunnel, intestinal wall, acid bath, mechanism machine, and final product payoff can all share the cyan instructional palette.",
-  "Do not hold a plain capsule on an empty grid for more than one micro-beat; every second should teach a new piece of the mechanism.",
-  "If a style reference contains captions, shirt text, labels, or logos, ignore those text details and preserve only the blue stage, chunky 3D texture, guide energy, scale, and macro mechanism language.",
   "Maintain module variety: product anchor, hidden obstacle, mechanism machine, ingredient/component movement, unified payoff, or clean final product card.",
-  "Use direct cuts, pushes, reveals, and mechanical transformations; no blank color wipes, fog-only transitions, empty gradients, or slow lingering setup.",
-  "Preserve object identity. A capsule stays capsule-shaped, a bottle stays bottle-shaped, packaging stays packaging.",
-  "Capsules may release contents through a seam, transparent wall, dissolved outer layer, or controlled capsule opening; never transform the capsule into an open cup, bucket, bowl, or generic container.",
-  noGeneratedTextPrompt,
 ].join(" ");
 
 export const createThreeDClipPlans = (
