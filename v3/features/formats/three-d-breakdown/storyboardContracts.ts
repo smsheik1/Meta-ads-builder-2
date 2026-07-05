@@ -63,6 +63,20 @@ export const createThreeDClipPlans = (
   const punchline = sceneInput.scriptBeats[4]?.narration || "The final state resolves.";
   const world = sceneInput.storyContract.visualWorld;
   const recurringObjects = sceneInput.storyContract.recurringObjects.join(", ");
+  const isPresenterStyle = sceneInput.storyContract.visualStyle === "presenter-teardown-vsl";
+  const clipDirections = isPresenterStyle
+    ? [
+      "Open with a human presenter, torso, hands, or over-shoulder demonstrator handling the product in a real ecommerce setting, then reveal the hidden problem through the product use moment. Preserve product identity and no generated text.",
+      "Cut from practical product handling into the hidden customer/product problem becoming physical. Use a real surface or product-use setup first, then a quick 3D explanatory insert only if it clarifies the problem. Preserve product identity and no generated text.",
+      "This is the peak presenter-teardown reveal. Start from storyboard frame 4 as a 3D cutaway, overlay, x-ray, floating component split, or impossible mechanism insert, then return toward frame 5's proof/payoff product moment. Do not use toy-character anatomy or a faceless blue-grid biology montage. Preserve product identity and no generated text.",
+      "Land the evidence payoff, then return to the human/product final with presenter, torso, hands, or product-in-use payoff visible. Hold the final practical product frame long enough for Wiggly overlays, and do not turn into a logo-only end card.",
+    ]
+    : [
+      "Open with the stylized human demo character body or torso acting as the scale/customer/body proxy beside the product, then push into the hidden internal problem physically appearing. Preserve product identity, blue-grid 3D world, and no generated text.",
+      "Escalate the hidden problem inside the body/pathway or process world into a physical obstruction, breakdown, pile-up, leak, split, or blocked path. End on the mechanism setup, ready for the reveal. Preserve product identity and no generated text.",
+      "This is the peak wow reveal. Start from storyboard frame 4, then move into the unified evidence/payoff state from frame 5 without using a split-screen comparison. Reveal why the engineered version survives. Keep the product sealed and capsule-shaped; if contents appear, suspend them as particles inside a transparent capsule shell or controlled cutaway, never as an open cup, tube, bucket, bowl, or generic container. Preserve product identity and no generated text.",
+      "Land the evidence payoff, then return to a human-scale final transformed state with the demo character body or torso beside the clean product payoff composition. Resolve the physical problem clearly, hold the final branded world long enough for Wiggly overlays, and do not turn into a logo-only end card.",
+    ];
 
   return [
     {
@@ -78,7 +92,7 @@ export const createThreeDClipPlans = (
         world,
         recurringObjects,
         narrative: `${consequence} ${context}`,
-        direction: "Open with the stylized human demo character body or torso acting as the scale/customer/body proxy beside the product, then push into the hidden internal problem physically appearing. Preserve product identity, blue-grid 3D world, and no generated text.",
+        direction: clipDirections[0],
       }),
       video: { status: "idle" },
     },
@@ -95,7 +109,7 @@ export const createThreeDClipPlans = (
         world,
         recurringObjects,
         narrative: `${context} ${mechanism}`,
-        direction: "Escalate the hidden problem inside the body/pathway or process world into a physical obstruction, breakdown, pile-up, leak, split, or blocked path. End on the mechanism setup, ready for the reveal. Preserve product identity and no generated text.",
+        direction: clipDirections[1],
       }),
       video: { status: "idle" },
     },
@@ -112,7 +126,7 @@ export const createThreeDClipPlans = (
         world,
         recurringObjects,
         narrative: `${mechanism} ${revelation}`,
-        direction: "This is the peak wow reveal. Start from storyboard frame 4, then move into the unified evidence/payoff state from frame 5 without using a split-screen comparison. Reveal why the engineered version survives. Keep the product sealed and capsule-shaped; if contents appear, suspend them as particles inside a transparent capsule shell or controlled cutaway, never as an open cup, tube, bucket, bowl, or generic container. Preserve product identity and no generated text.",
+        direction: clipDirections[2],
       }),
       video: { status: "idle" },
     },
@@ -129,7 +143,7 @@ export const createThreeDClipPlans = (
         world,
         recurringObjects,
         narrative: `${revelation} ${punchline}`,
-        direction: "Land the evidence payoff, then return to a human-scale final transformed state with the demo character body or torso beside the clean product payoff composition. Resolve the physical problem clearly, hold the final branded world long enough for Wiggly overlays, and do not turn into a logo-only end card.",
+        direction: clipDirections[3],
       }),
       video: { status: "idle" },
     },

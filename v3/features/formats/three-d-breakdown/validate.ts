@@ -5,7 +5,7 @@ import type {
 } from "../../scene/types";
 import type { FormatValidationResult } from "../types";
 import { THREE_D_BREAKDOWN_DURATION_MS } from "./music";
-import { THREE_D_REVEAL_PATTERNS, THREE_D_SCRIPT_BEATS, THREE_D_SHOT_CONTRACT } from "./prompt";
+import { THREE_D_REVEAL_PATTERNS, THREE_D_SCRIPT_BEATS, THREE_D_SHOT_CONTRACT, THREE_D_VISUAL_STYLES } from "./prompt";
 
 export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): FormatValidationResult {
   const errors: string[] = [];
@@ -17,6 +17,7 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
   if (!scene.layout.groundedEvidence?.evidenceUseType) errors.push("3D Breakdown grounded evidence use type is missing.");
   if (!scene.layout.groundedEvidence?.scrapedAt) errors.push("3D Breakdown grounded evidence timestamp is missing.");
   if (!scene.layout.storyContract?.visualWorld?.trim()) errors.push("3D Breakdown story visual world is missing.");
+  if (!THREE_D_VISUAL_STYLES.includes(scene.layout.storyContract?.visualStyle)) errors.push("3D Breakdown visual style is invalid.");
   if (!scene.layout.storyContract?.lighting?.trim()) errors.push("3D Breakdown story lighting is missing.");
   if (!scene.layout.storyContract?.cameraStyle?.trim()) errors.push("3D Breakdown story camera style is missing.");
   if (!Array.isArray(scene.layout.storyContract?.riskFlags)) errors.push("3D Breakdown risk flags must be an array.");

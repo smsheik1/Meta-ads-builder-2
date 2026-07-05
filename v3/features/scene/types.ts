@@ -366,6 +366,7 @@ export type ThreeDBreakdownRevealPattern = "exploded-product" | "xray-cutaway" |
 export type ThreeDBreakdownPrimarySiteType = "ecommerce" | "saas" | "local-service" | "restaurant-food" | "nonprofit" | "portfolio" | "unclear";
 export type ThreeDBreakdownRiskFlag = "health" | "medical" | "legal" | "financial" | "beauty" | "regulated";
 export type ThreeDBreakdownClaimRisk = "low" | "medium" | "high";
+export type ThreeDBreakdownVisualStyle = "toy-character-vsl" | "presenter-teardown-vsl";
 export type ThreeDBreakdownClipIndex = 1 | 2 | 3 | 4;
 export type ThreeDBreakdownStoryboardFrameIndex = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -450,6 +451,7 @@ export type ThreeDBreakdownAdScene = AdSceneBase<
       brandImageUrls: string[];
     };
     storyContract: {
+      visualStyle: ThreeDBreakdownVisualStyle;
       primarySiteType: ThreeDBreakdownPrimarySiteType;
       riskFlags: ThreeDBreakdownRiskFlag[];
       visualWorld: string;

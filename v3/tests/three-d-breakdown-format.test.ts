@@ -240,6 +240,11 @@ assert.ok(prompt.length < 15_000, `3D Breakdown director prompt is too large: ${
 assert.ok(seedPrompt.length < 15_000, `Seed director prompt is too large: ${seedPrompt.length} chars`);
 [
   "ZachDFilms-style high-retention short-form documentary pacing",
+  "visualStyle",
+  "toy-character-vsl",
+  "presenter-teardown-vsl",
+  "Style A - toy-character-vsl",
+  "Style B - presenter-teardown-vsl",
   "product-science teardown",
   "bright blue/cyan clinical grid",
   "Use [] for no riskFlags",
@@ -253,6 +258,8 @@ assert.ok(seedPrompt.length < 15_000, `Seed director prompt is too large: ${seed
   "A website making a risky claim does not automatically make that claim safe to repeat.",
 ].forEach((expected) => assert.ok(prompt.includes(expected), `3D Breakdown prompt missing: ${expected}`));
 assert.ok(twoDirectionPrompt.includes("Write exactly 2 variants."));
+assert.ok(twoDirectionPrompt.includes("variant 1 with visualStyle toy-character-vsl"));
+assert.ok(twoDirectionPrompt.includes("variant 2 with visualStyle presenter-teardown-vsl"));
 assert.ok(prompt.includes("A probiotic capsule enters digestion and everyone assumes it survives the trip."));
 assert.ok(prompt.includes("The trip was the product."));
 assert.ok(seedPrompt.includes("DS-01 Daily Synbiotic"));
@@ -261,6 +268,7 @@ assert.ok(seedPrompt.includes("capsule-in-capsule"));
 assert.ok(seedPrompt.includes("probiotic core"));
 
 const makeVariant = ({
+  visualStyle = "toy-character-vsl",
   variantAngle = "birthday gift consequence",
   customerProblem = "last-minute dessert gifting",
   mechanismSummary = "cookie tin fills the missing gift moment",
@@ -276,6 +284,7 @@ const makeVariant = ({
   punchline = "She missed it, but the cookies arrived.",
   consequence = "When the birthday started, her gift still had not arrived.",
 } = {}) => ({
+  visualStyle,
   variantAngle,
   customerProblem,
   mechanismSummary,
@@ -342,6 +351,7 @@ const variantsPayload = {
   variants: [
     makeVariant(),
     makeVariant({
+      visualStyle: "presenter-teardown-vsl",
       variantAngle: "nationwide gift shipping",
       customerProblem: "sending thoughtful gifts across distance",
       mechanismSummary: "cookie tin proof blocks cross the map",
@@ -374,6 +384,8 @@ const generated = await generateThreeDBreakdownVariantsFromResearch(research, {
 });
 assert.equal(observedMaxTokens, 4000);
 assert.equal(generated.variants.length, 2);
+assert.equal(generated.variants[0]?.visualStyle, "toy-character-vsl");
+assert.equal(generated.variants[1]?.visualStyle, "presenter-teardown-vsl");
 assert.equal(generated.variants[0]?.scriptBeats.length, 5);
 assert.equal(generated.variants[0]?.shots.length, 3);
 assert.equal(generated.variants[0]?.storyboardBoard.frameCount, 6);
@@ -389,7 +401,10 @@ assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not cr
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("fast product-science teardown short"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("at least four distinct visual modules"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("same close-up product angle dominate more than two frames"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Visual style: toy-character-vsl"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("recurring stylized human demo character/body proxy"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("Visual style: presenter-teardown-vsl"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human presenter, torso, hands"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("continuity spine"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not create a faceless biology montage"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("character's full body or torso"));
@@ -775,10 +790,11 @@ assert.deepEqual(scene.layout.referenceImages?.productImageUrls, ["https://cdn.e
 const threeDImageActionSource = readFileSync(new URL("../convex/threeDImages.ts", import.meta.url), "utf8");
 assert.ok(threeDImageActionSource.includes("image: { status: \"generating\" }"));
 assert.ok(threeDImageActionSource.includes("video: { status: \"idle\" as const }"), "Regenerating production frames must clear stale 3D clip videos.");
-assert.ok(threeDImageActionSource.includes("THREE_D_IMAGE_STYLE_RULES"));
+assert.ok(threeDImageActionSource.includes("getThreeDImageStyleRules"));
 assert.ok(threeDImageActionSource.includes("storyboard board must define 6 frames before image generation"));
 assert.equal(getRenderMusicBed(scene), null, "3D Breakdown exports should use voiceover only, no background music bed.");
 assert.equal(scene.layout.storyContract.wowMomentType, "proof-blocks");
+assert.equal(scene.layout.storyContract.visualStyle, "toy-character-vsl");
 assert.ok(scene.layout.groundedEvidence.sourceUrl.includes("davidscookies"));
 const sceneValidation = validateThreeDBreakdownScene(scene);
 assert.deepEqual(sceneValidation.errors, []);

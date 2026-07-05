@@ -15,25 +15,39 @@ import type {
 
 const THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH = "/three-d-breakdown/references/ecommerce-teardown-style-reference-v1.jpg";
 const THREE_D_SEEDANCE_MAX_PROMPT_CHARS = 3900;
-const THREE_D_SEEDANCE_PROMPT_SUFFIX = [
+const getThreeDSeedancePromptSuffix = (scene: ThreeDBreakdownAdScene) => [
   "Use the provided storyboard frame as the first frame reference.",
-  "Preserve the bright blue/cyan clinical-grid procedural 3D explainer world, product identity, recurring demo character/body proxy, and composition.",
-  "Keep lighting bright, readable, and flat like a product-science classroom; avoid dark cinematic rooms, black voids, moody spotlights, smoke-only sci-fi labs, and luxury product-card lighting.",
+  scene.layout.storyContract.visualStyle === "presenter-teardown-vsl"
+    ? "Preserve the presenter-led ecommerce teardown style: human presenter, torso, hands, or over-shoulder demonstrator plus product handling, practical product-use surfaces, and short 3D explanatory inserts."
+    : "Preserve the bright blue/cyan clinical-grid procedural 3D explainer world, product identity, recurring demo character/body proxy, and composition.",
+  scene.layout.storyContract.visualStyle === "presenter-teardown-vsl"
+    ? "Keep lighting practical, bright, creator-ad readable, and product-focused; avoid toy-character anatomy, faceless biology montages, all-blue tabletop repetition, dark cinematic rooms, black voids, and logo-only end cards."
+    : "Keep lighting bright, readable, and flat like a product-science classroom; avoid dark cinematic rooms, black voids, moody spotlights, smoke-only sci-fi labs, and luxury product-card lighting.",
   "Capsules stay capsules, bottles stay bottles, packaging stays packaging; do not morph products into cups, buckets, bowls, or unrelated lab vessels.",
   "Use direct cuts, pushes, reveals, and mechanical transformations; no blank color wipes, fog-only transitions, empty gradients, or slow lingering setup.",
-  "Make the motion feel embodied: keep a stylized human demo character, body proxy, or scale figure returning throughout the clip as the continuity spine, with frame 1 and final-payoff moments showing the character body or torso beside the product.",
+  scene.layout.storyContract.visualStyle === "presenter-teardown-vsl"
+    ? "Make the motion feel embodied through the same presenter, hands, torso, over-shoulder angle, or product-use demonstration returning throughout the clip."
+    : "Make the motion feel embodied: keep a stylized human demo character, body proxy, or scale figure returning throughout the clip as the continuity spine, with frame 1 and final-payoff moments showing the character body or torso beside the product.",
   "Change visual state about every second; use body/pathway travel, macro cutaways, mechanism machines, particle motion, or product payoff resets instead of holding a static capsule render.",
-  "Every frame must contain a visible demo character/body proxy, product, mechanism, character hand, particles, or physical obstacle; never cut to a plain dark screen, empty blue grid, empty gradient, or caption-only moment.",
+  scene.layout.storyContract.visualStyle === "presenter-teardown-vsl"
+    ? "Every frame must contain visible presenter/hands/torso, product, product-use setup, mechanism insert, particles, or physical obstacle; never cut to a plain dark screen, empty blue grid, empty gradient, or caption-only moment."
+    : "Every frame must contain a visible demo character/body proxy, product, mechanism, character hand, particles, or physical obstacle; never cut to a plain dark screen, empty blue grid, empty gradient, or caption-only moment.",
   "If you need a transition, use an object wipe, camera push, particle burst, component reveal, or foreground product pass so the frame remains visually active.",
   "No readable text, captions, labels, numbers, logos, UI copy, subtitles, icons, arrows, checkmarks, or X marks.",
   "If a reference image contains captions, shirt text, labels, or logos, treat them as style artifacts only and do not reproduce them.",
   "Show proof concepts as blank physical tokens, unmarked objects, light, steam, crumbs, ribbon, or motion only.",
 ].join(" ");
 
-const THREE_D_IMAGE_STYLE_RULES = [
-  "Bright blue/cyan blueprint-grid stage, flat readable lab lighting, close product-science camera, strong subject/background separation.",
-  "Use the recurring stylized demo character/body proxy as the continuity anchor; intro and final frames show a body or torso, while mechanism frames may use the same hand, pointer, probe, scale figure, or body cutaway.",
-  "Avoid faceless biology montages, dark rooms, black voids, smoky sci-fi labs, luxury product-card stills, empty negative space, posters, UI cards, and typography-led graphics.",
+const getThreeDImageStyleRules = (scene: ThreeDBreakdownAdScene) => [
+  scene.layout.storyContract.visualStyle === "presenter-teardown-vsl"
+    ? "Presenter-led ecommerce product teardown: practical product-use setting, human presenter/torso/hands/over-shoulder demonstrator, product handling, bright creator-ad lighting, and short 3D mechanism inserts."
+    : "Bright blue/cyan blueprint-grid stage, flat readable lab lighting, close product-science camera, strong subject/background separation.",
+  scene.layout.storyContract.visualStyle === "presenter-teardown-vsl"
+    ? "Use the same human/product relationship as the continuity anchor; intro and final frames show presenter/torso/hands with the product, while mechanism frames may use a 3D overlay, macro cutaway, x-ray, or product interior insert."
+    : "Use the recurring stylized demo character/body proxy as the continuity anchor; intro and final frames show a body or torso, while mechanism frames may use the same hand, pointer, probe, scale figure, or body cutaway.",
+  scene.layout.storyContract.visualStyle === "presenter-teardown-vsl"
+    ? "Avoid toy-character anatomy, cartoon body-wall characters, pure biology montages, all-blue tabletop repetition, dark voids, luxury product-card stills, empty negative space, posters, UI cards, and typography-led graphics."
+    : "Avoid faceless biology montages, dark rooms, black voids, smoky sci-fi labs, luxury product-card stills, empty negative space, posters, UI cards, and typography-led graphics.",
   "Preserve product shape, color, material, packaging cues, and category. Capsules stay capsule-shaped, bottles stay bottles, packaging stays packaging; all labels remain blank and unreadable.",
   "No readable text, logos, letters, numbers, captions, UI copy, arrows, checkmarks, X marks, or label-like rectangles. Show proof as blank physical tokens, particles, light, steam, crumbs, ribbon, or motion.",
 ].join(" ");
@@ -99,13 +113,14 @@ const withUpdatedThreeDStoryboardBoard = (
   };
 };
 
-const buildThreeDSeedancePrompt = (clipPlan: ThreeDBreakdownClipPlan) => {
-  const fullPrompt = [clipPlan.prompt, THREE_D_SEEDANCE_PROMPT_SUFFIX].join(" ");
+const buildThreeDSeedancePrompt = (scene: ThreeDBreakdownAdScene, clipPlan: ThreeDBreakdownClipPlan) => {
+  const promptSuffix = getThreeDSeedancePromptSuffix(scene);
+  const fullPrompt = [clipPlan.prompt, promptSuffix].join(" ");
   if (fullPrompt.length <= THREE_D_SEEDANCE_MAX_PROMPT_CHARS) return fullPrompt;
-  const availableClipChars = Math.max(800, THREE_D_SEEDANCE_MAX_PROMPT_CHARS - THREE_D_SEEDANCE_PROMPT_SUFFIX.length - 1);
+  const availableClipChars = Math.max(800, THREE_D_SEEDANCE_MAX_PROMPT_CHARS - promptSuffix.length - 1);
   return [
     clipPlan.prompt.slice(0, availableClipChars).trim(),
-    THREE_D_SEEDANCE_PROMPT_SUFFIX,
+    promptSuffix,
   ].join(" ");
 };
 
@@ -155,6 +170,17 @@ const getThreeDFrameNarrative = (
   const shot1 = shots[0];
   const shot2 = shots[1];
   const shot3 = shots[2];
+  if (contract.visualStyle === "presenter-teardown-vsl") {
+    const presenterFrameDirections: Record<ThreeDBreakdownStoryboardFrameIndex, string> = {
+      1: `False assumption / common use. Narration: ${consequence}. Show a human presenter, torso, hands, or over-shoulder demonstrator with the product in a real ecommerce use setting before the hidden problem is revealed. Use ${shot1.explainerDevice}; physical action: the ordinary use is demonstrated and the risk is implied.`,
+      2: `Hidden problem. Narration: ${context}. During real product handling, opening, eating, applying, wearing, or setup, make the hidden customer/product problem physically visible without turning it into a toy-character biology scene. Continue ${shot1.sceneDescription}.`,
+      3: `Mechanism setup. Narration: ${mechanism}. Show hands or presenter demonstrating the exact product detail that leads into the 3D mechanism reveal. Use ${shot2.explainerDevice}; physical action: ${shot2.physicalAction}.`,
+      4: `Peak 3D teardown insert. Narration: ${mechanism} ${revelation}. Use ${contract.wowMomentType}: ${contract.wowMoment}. Viewer learns: ${contract.viewerLearns}. This should feel like an impossible product cutaway or overlay inserted into a real product demo.`,
+      5: `Evidence payoff. Narration: ${revelation}. Return from the 3D insert to a practical product payoff moment with the selected evidence represented as blank physical tokens, product behavior, or product-use result.`,
+      6: `Final human/product payoff. Narration: ${punchline}. Show the presenter, torso, hands, or over-shoulder demonstrator clearly with the product in a clean final ecommerce frame, with blank proof/component tokens for renderer captions later.`,
+    };
+    return presenterFrameDirections[frameIndex];
+  }
   const frameDirections: Record<ThreeDBreakdownStoryboardFrameIndex, string> = {
     1: `False assumption / common use. Narration: ${consequence}. Show a full-body or torso recurring human demo character on the blue clinical grid stage using or scaling the intact product before anything fails. The character is the body/customer/scale proxy and should be prominent, roughly one-third to one-half of frame height, with the product visible beside or in the character's hand; do not use a giant anonymous hand macro. Keep it clean and human-scale; no explosion, damage, debris, or acid yet. Use ${shot1.explainerDevice}; physical action: the ordinary use is shown and the risk is implied.`,
     2: `Hidden obstacle. Narration: ${context}. Move into the internal journey: transparent torso, gut tunnel, intestinal wall, acid bath, blockage, pile-up, compression, or tension. This is where an ordinary unprotected version visibly struggles while the main product identity stays clear. Continue ${shot1.sceneDescription}.`,
@@ -166,7 +192,19 @@ const getThreeDFrameNarrative = (
   return frameDirections[frameIndex];
 };
 
-const getThreeDGuideInstruction = (frameIndex: ThreeDBreakdownStoryboardFrameIndex) => {
+const getThreeDGuideInstructionForStyle = (
+  visualStyle: ThreeDBreakdownAdScene["layout"]["storyContract"]["visualStyle"],
+  frameIndex: ThreeDBreakdownStoryboardFrameIndex,
+) => {
+  if (visualStyle === "presenter-teardown-vsl") {
+    if (frameIndex === 1 || frameIndex === 3 || frameIndex === 6) {
+      return "Show the human presenter, torso, hands, or over-shoulder demonstrator clearly enough to anchor the product demo. Keep it practical and ecommerce-native, not toy-like. Do not clone a known person from a reference, and keep all clothing/product labels unreadable.";
+    }
+    if (frameIndex === 4) {
+      return "Use this as the 3D explanatory insert: macro cutaway, x-ray, overlay, floating component split, invisible-problem reveal, or mechanism teardown. It should feel connected to the real product demo, not like a separate toy world.";
+    }
+    return "Keep the product-use demo visible through hands, presenter edge, over-shoulder framing, product surface, or practical environment so this does not become a detached object render.";
+  }
   if (frameIndex === 1 || frameIndex === 3 || frameIndex === 6) {
     return "Show the recurring stylized human demo character clearly enough to anchor the scene, toy-like with goggles or lab-demo energy. Frame 1 and frame 6 require a prominent full-body or torso character, not just fingers, a pointer, or a giant anonymous hand. Keep the product readable, keep the character functioning as body/customer/scale proxy, and keep clothing completely blank with no readable text.";
   }
@@ -189,9 +227,11 @@ const buildThreeDProductionFramePrompt = (
     "Use one central subject/action filling most of the vertical frame.",
     `Shared visual world: ${contract.visualWorld}. Lighting: ${contract.lighting}. Camera: ${contract.cameraStyle}. Recurring objects: ${recurringObjects}.`,
     getThreeDFrameNarrative(scene, frameIndex),
-    getThreeDGuideInstruction(frameIndex),
-    THREE_D_IMAGE_STYLE_RULES,
-    "The demo character is the body/customer/scale proxy, not a presenter; product meaning comes from cause/effect, mechanism reveals, and 3D transformations.",
+    getThreeDGuideInstructionForStyle(contract.visualStyle, frameIndex),
+    getThreeDImageStyleRules(scene),
+    contract.visualStyle === "presenter-teardown-vsl"
+      ? "The human demonstrator is the continuity spine; product meaning comes from handling, use, quick teardown inserts, and visible cause/effect."
+      : "The demo character is the body/customer/scale proxy, not a presenter; product meaning comes from cause/effect, mechanism reveals, and 3D transformations.",
     "For supplement/digestive products, include internal-body journey imagery when relevant: transparent torso, gut tunnel, intestinal wall, acid bath, cell wall, particles traveling, or protected capsule passing through a pathway.",
     "Do not keep every frame on the same empty blue tabletop. The blue/cyan instructional palette should unify body cutaways, process tunnels, mechanism machines, and final stage shots.",
     "If a style reference contains captions, shirt text, labels, or logos, ignore those text details and preserve only the 3D texture, blue stage, scale, guide energy, and macro mechanism language.",
@@ -340,7 +380,7 @@ export const generateThreeDClip: ReturnType<typeof action> = action({
     await patchThreeDScene(ctx, sceneId, nextScene);
 
     try {
-      const seedancePrompt = buildThreeDSeedancePrompt(clipPlan);
+      const seedancePrompt = buildThreeDSeedancePrompt(nextScene, clipPlan);
       console.log("[wiggly:3d-breakdown] seedance:clip:start", {
         clipIndex: typedClipIndex,
         durationSeconds: clipPlan.durationSeconds,

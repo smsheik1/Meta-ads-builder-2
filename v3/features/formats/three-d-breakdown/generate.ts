@@ -14,6 +14,7 @@ import type {
   ThreeDBreakdownScriptBeat,
   ThreeDBreakdownShot,
   ThreeDBreakdownStoryboardBoard,
+  ThreeDBreakdownVisualStyle,
 } from "../../scene/types";
 import { extractThreeDBreakdownEvidence, type ThreeDBreakdownEvidenceItem } from "./evidence";
 import {
@@ -26,6 +27,7 @@ import {
   THREE_D_REVEAL_PATTERNS,
   THREE_D_SCRIPT_BEATS,
   THREE_D_SHOT_CONTRACT,
+  THREE_D_VISUAL_STYLES,
 } from "./prompt";
 import { createThreeDStoryboardFrames } from "./storyboardContracts";
 
@@ -39,6 +41,7 @@ export type ThreeDBreakdownSiteContract = {
 };
 
 export type ThreeDBreakdownVariant = {
+  visualStyle: ThreeDBreakdownVisualStyle;
   variantAngle: string;
   customerProblem: string;
   mechanismSummary: string;
@@ -75,6 +78,7 @@ const regulatedUnsafePattern = /\b(cures?|diagnos(?:e|is)|treats?|clinically pro
 const primarySiteTypes: ThreeDBreakdownPrimarySiteType[] = ["ecommerce", "saas", "local-service", "restaurant-food", "nonprofit", "portfolio", "unclear"];
 const riskFlags: ThreeDBreakdownRiskFlag[] = ["health", "medical", "legal", "financial", "beauty", "regulated"];
 const claimRisks: ThreeDBreakdownClaimRisk[] = ["low", "medium", "high"];
+const visualStyles: ThreeDBreakdownVisualStyle[] = [...THREE_D_VISUAL_STYLES];
 const weakSiteCopy = "This page does not contain enough concrete evidence for a 3D Breakdown. Try a product, features, testimonials, case-study, or offer page - or use Visualizer for a lighter ad from this URL.";
 const MIN_VISUAL_POTENTIAL_SCORE = 0.7;
 const restrictedVerticalPattern = /\b(alcohol|beer|wine|vodka|whiskey|liquor|nicotine|tobacco|vape|cbd|thc|cannabis|marijuana|gambling|casino|betting|weapon|gun|rifle|ammo|adult product|porn|sex toy|political campaign|crypto|investment return|counterfeit|illegal service|extremist)\b/i;
@@ -287,7 +291,32 @@ const parseShots = (value: unknown): ThreeDBreakdownShot[] => {
   }) as ThreeDBreakdownShot[];
 };
 
-const parseStoryboardBoard = (value: unknown): ThreeDBreakdownStoryboardBoard => {
+const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
+  visualStyle === "presenter-teardown-vsl"
+    ? [
+      "Visual style: presenter-teardown-vsl.",
+      "The six frames must feel like a real ecommerce creator/product teardown, not a toy-character science world.",
+      "Use a human presenter, torso, hands, or over-shoulder demonstrator as the continuity spine in at least four frames, including frame 1 and frame 6.",
+      "Frame 1: presenter or hands show the product in a real use setting while the false assumption appears visually.",
+      "Frame 2: the hidden customer/product problem appears during actual product use, handling, opening, eating, applying, wearing, or setup.",
+      "Frame 3: hands or presenter demonstrate the product detail that sets up the mechanism.",
+      "Frame 4: peak impossible-to-film 3D overlay, cutaway, x-ray, component split, invisible-problem reveal, or mechanism insert.",
+      "Frame 5: return from the 3D insert into a practical proof/payoff product moment with blank tokens or physical cues.",
+      "Frame 6: clean human/product final with presenter, torso, hands, or product-in-use payoff, plus blank overlay-safe tokens.",
+      "Use real-world ecommerce spaces where useful: kitchen, countertop, desk, package opening surface, bathroom counter, table, sink, simple creator studio, or hand-demo setup.",
+      "Do not use toy-character anatomy, cartoon wall characters, faceless biology montages, or all-blue tabletop repetition.",
+    ]
+    : [
+      "Visual style: toy-character-vsl.",
+      "Use a bright blue/cyan clinical grid stage with crisp 3D objects, flat readable lab lighting, and hard subject separation.",
+      "Use a recurring stylized human demo character/body proxy as the continuity spine in at least four frames, including the first and final frame.",
+      "Frame 1 and frame 6 must show the character's full body or torso prominently beside the product; at least one middle frame should show the same body proxy, tiny scale figure, hand, pointer, or probe.",
+      "Do not create a faceless biology montage. Internal body, gut, cell-wall, or process visuals should feel like environments the same demo character enters, scales against, points into, or returns from.",
+      "Frame 6 should resemble a clean product payoff: product large, demo character body/torso nearby, and 2-4 blank proof/benefit/component cards or tokens arranged around it for renderer overlays.",
+    ]
+);
+
+const parseStoryboardBoard = (value: unknown, visualStyle: ThreeDBreakdownVisualStyle): ThreeDBreakdownStoryboardBoard => {
   const raw = typeof value === "string"
     ? { frameCount: 6, imagePrompt: value }
     : value as Record<string, unknown>;
@@ -315,9 +344,7 @@ const parseStoryboardBoard = (value: unknown): ThreeDBreakdownStoryboardBoard =>
     "For ecommerce, make the plan feel like a fast product-science teardown short: repeated product/package anchoring, quick visual resets, macro mechanism close-ups, component or particle movement, and a final product payoff composition.",
     "Use at least four distinct visual modules across the six frames: product/scale intro, hidden obstacle, mechanism machine or cutaway, ingredient/component movement, unified ordinary-to-engineered payoff, final product payoff.",
     "Do not let the same close-up product angle dominate more than two frames. Keep the visual story changing every frame.",
-    "For ecommerce plans, use a recurring stylized human demo character/body proxy as the continuity spine in at least four frames, including the first and final frame. Frame 1 and frame 6 must show the character's full body or torso prominently beside the product; at least one middle frame should show the same body proxy, tiny scale figure, hand, pointer, or probe. Mechanism close-ups may use the same hand, pointer, probe, or scale proxy, but do not satisfy the character requirement with anonymous fingers only.",
-    "Do not create a faceless biology montage. Internal body, gut, cell-wall, or process visuals should feel like environments the same demo character enters, scales against, points into, or returns from.",
-    "Frame 6 should resemble a clean product payoff: product large, demo character body/torso nearby, and 2-4 blank proof/benefit/component cards or tokens arranged around it for renderer overlays.",
+    ...getStoryboardStyleRules(visualStyle),
     "Every frame must contain a visible subject, object, and physical action. Frame 1 cannot be an empty stage; it must show friction physically blocking, piling up, splitting, leaking, breaking, compressing, tangling, or creating tension.",
     "No frame labels, no frame numbers, no captions, no caption bars, no black lower bars, no progress bars, no readable text, no UI labels, no speech bubbles, no receipts, no posters, no typography-led design.",
     "No words, letters, numbers, percentages, ratings, price tags, labels, handwriting, UI copy, text-like glyphs, icons, arrows, checkmarks, X marks, or alphanumeric marks anywhere inside frames. Do not write FRAME 1, FRAME 2, scene labels, headings, or any other annotations.",
@@ -343,6 +370,7 @@ const parseVariants = (
     const evidence = evidenceItems.find((item) => item.evidenceIndex === evidenceIndex);
     if (!evidence) throw new Error(`3D Breakdown variant ${index + 1} references invalid evidence.`);
     const parsedVariantBase = {
+      visualStyle: parseEnum(rawVariant.visualStyle, visualStyles, "visualStyle"),
       variantAngle: cleanText(rawVariant.variantAngle ?? rawVariant.angle, 120),
       customerProblem: cleanText(rawVariant.customerProblem, 160),
       mechanismSummary: cleanText(rawVariant.mechanismSummary, 180),
@@ -368,7 +396,7 @@ const parseVariants = (
     });
     return {
       ...parsedVariantBase,
-      storyboardBoard: parseStoryboardBoard(rawVariant.storyboardBoard ?? rawVariant.storyboardImagePrompt),
+      storyboardBoard: parseStoryboardBoard(rawVariant.storyboardBoard ?? rawVariant.storyboardImagePrompt, parsedVariantBase.visualStyle),
       scriptBeats,
       shots: parseShots(rawVariant.shots),
     };
@@ -377,6 +405,11 @@ const parseVariants = (
     throw new Error(`3D Breakdown director returned ${variants.length} variants; expected at least ${requestedCount}.`);
   }
   const selectedVariants = variants.slice(0, requestedCount);
+  if (requestedCount > 1) {
+    if (selectedVariants[0]?.visualStyle !== "toy-character-vsl" || selectedVariants[1]?.visualStyle !== "presenter-teardown-vsl") {
+      throw new Error("3D Breakdown manual generation must return toy-character-vsl first and presenter-teardown-vsl second.");
+    }
+  }
   if (selectedVariants.length > 1) {
     for (let index = 0; index < selectedVariants.length - 1; index += 1) {
       const a = selectedVariants[index]!;

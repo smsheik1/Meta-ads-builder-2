@@ -90,6 +90,7 @@ export function createThreeDBreakdownAdScene({
         scriptBeats: variant.scriptBeats as ThreeDBreakdownAdScene["layout"]["scriptBeats"],
         storyContract: {
           ...siteContract,
+          visualStyle: variant.visualStyle,
           variantAngle: variant.variantAngle,
           customerProblem: variant.customerProblem,
           mechanismSummary: variant.mechanismSummary,
@@ -109,6 +110,7 @@ export function createThreeDBreakdownAdScene({
       },
       storyContract: {
         ...siteContract,
+        visualStyle: variant.visualStyle,
         variantAngle: variant.variantAngle,
         customerProblem: variant.customerProblem,
         mechanismSummary: variant.mechanismSummary,
