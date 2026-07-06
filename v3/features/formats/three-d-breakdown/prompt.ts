@@ -245,14 +245,14 @@ Style A - toy-character-vsl:
 Style B - presenter-teardown-vsl:
 - Reference-matching ecommerce style: fast unseen-narrator product teardown with a recurring silent 3D demonstrator and impossible 3D inserts.
 - The human-like demo subject is silent continuity: 3D person, torso, hands, or over-shoulder demonstrator handling products and showing scale.
-- Visible face: casual demo person with simple face, cap/goggles, everyday shirt; never faceless, lab/medical, or PPE.
+- Visible face: casual demo person, visible eyes, cap/goggles on head; no sunglasses, faceless, lab/medical, or PPE.
 - Every frame lives in one bright blue grid lab world with crisp product-science lighting and readable 9:16 composition.
 - The demonstrator uses props, capsules, pipes, particles, scale comparisons, product handling, and lab-demo gestures to make the hidden problem visible.
 - Use oversized tactile props: clear tubes, jars, glasses, capsules, particles, piles, blocks, pipes, trays, or product-use surfaces.
 - Use 3D for impossible explanation: cutaway, overlay, floating components, particles, invisible problem, cross-section, proof tokens, or a mechanism machine.
 - At least 5 of 6 frames include demo subject, torso, hands, over-shoulder view, or product-use surface. Frames 1 and 6 show human/product relationship.
 - Reference formula: ${THREE_D_STYLE_B_REFERENCE_FORMULA}. This same formula can expand to 60 seconds later; for MVP compress it into 20 seconds.
-- Avoid faceless mannequins, faceless anatomy montages, biology-doc visuals, random gut tunnels, sterile cleanrooms, lab coats, dark rooms, toy anatomy, and logo-only endings.
+- Avoid faceless mannequins, biology-doc visuals, random gut tunnels, sterile cleanrooms, huge counters, sunglasses, lab coats, dark rooms, toy anatomy, and logo-only endings.
 
 - Supplement/digestive products should use a body journey: transparent torso, gut path, acid bath, particles traveling, or capsule pathway.
 - Product category alone fails. Prefer mechanism, process, material, component, product detail, or concrete feature evidence.

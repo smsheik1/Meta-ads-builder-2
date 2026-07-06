@@ -45,13 +45,13 @@ const getThreeDImageStyleRules = (scene: ThreeDBreakdownAdScene) => {
   const isPresenterStyle = scene.layout.storyContract.visualStyle === "presenter-teardown-vsl";
   return [
     isPresenterStyle
-      ? "Unseen-narrator ecommerce product teardown: bright blue clinical grid lab, one recurring casual silent 3D demonstrator/scale figure with simple neutral face, cap/goggles, everyday shirt, product-demo posture, product handling, oversized tactile props, capsules, pipes, particles, scale comparisons, bright creator-ad lighting, and short 3D mechanism inserts."
+      ? "Unseen-narrator ecommerce product teardown: bright blue clinical grid lab, one recurring casual silent 3D demonstrator/scale figure with visible eyes, cap/goggles on head, everyday shirt, product-demo posture, product handling, oversized tactile props, capsules, pipes, particles, scale comparisons, bright creator-ad lighting, and short 3D mechanism inserts."
       : "Bright blue/cyan blueprint-grid stage, flat readable lab lighting, close product-science camera, strong subject/background separation.",
     isPresenterStyle
       ? "Use the same silent demonstrator/product relationship as the continuity anchor; intro and final frames show demonstrator/torso/hands with the product in the blue grid lab, while mechanism frames may use a 3D overlay, macro cutaway, x-ray, or product interior insert."
       : "Use the recurring stylized demo character/body proxy as the continuity anchor; intro and final frames show a body or torso, while mechanism frames may use the same hand, pointer, probe, scale figure, or body cutaway.",
     isPresenterStyle
-      ? "Avoid toy-character anatomy, faceless mannequin presenters, lab technicians, doctor-like presenters, sterile PPE workers, cartoon body-wall characters, faceless anatomy montages, random gut tunnels, pure biology-documentary visuals, dark voids, luxury product-card stills, empty negative space, posters, UI cards, and typography-led graphics."
+      ? "Avoid toy-character anatomy, faceless mannequin presenters, sunglasses, lab technicians, doctor-like presenters, sterile PPE workers, cartoon body-wall characters, faceless anatomy montages, random gut tunnels, pure biology-documentary visuals, dark voids, huge empty counters, luxury product-card stills, empty negative space, posters, UI cards, and typography-led graphics."
       : "Avoid faceless biology montages, dark rooms, black voids, smoky sci-fi labs, luxury product-card stills, empty negative space, posters, UI cards, and typography-led graphics.",
     "Preserve product shape, color, material, packaging cues, and category. Capsules stay capsule-shaped, bottles stay bottles, packaging stays packaging; all labels remain blank and unreadable.",
     "If a bottle, jar, pouch, box, card, or package faces camera, make the front surface completely blank matte material or rotate the label side away from camera. Never render brand names, logos, label panels, ingredient text, badge text, tiny copy, pseudo-letters, or fake product labels.",
@@ -197,7 +197,7 @@ const getThreeDFrameNarrative = (
   const withFramePlan = (direction: string) => [framePlan, direction].filter(Boolean).join(" ");
 	  if (contract.visualStyle === "presenter-teardown-vsl") {
     const presenterFrameDirections: Record<ThreeDBreakdownStoryboardFrameIndex, string> = {
-      1: `False assumption / common use. Narration: ${consequence}. Show a casual silent recurring 3D demonstrator/scale figure in a bright blue clinical grid lab handling the product before the hidden problem is revealed. Include a tactile demo prop or product-use surface. Use ${shot1.explainerDevice}; physical action: the ordinary use is demonstrated and the risk is implied.`,
+      1: `False assumption / common use. Narration: ${consequence}. Show a casual silent recurring 3D demonstrator/scale figure in a bright blue clinical grid lab handling the product before the hidden problem is revealed. Include a tactile demo prop or product-use surface, but no huge empty counter foreground. Use ${shot1.explainerDevice}; physical action: the ordinary use is demonstrated and the risk is implied.`,
       2: `Hidden problem. Narration: ${context}. In the same blue grid lab, the casual silent demonstrator points to a product path, pipe, capsule route, particle flow, oversized prop comparison, clear jar, glass, or scale object where the hidden obstacle becomes physically visible. Continue ${shot1.sceneDescription}.`,
       3: `Mechanism setup. Narration: ${mechanism}. Show casual demonstrator hands or torso silently demonstrating the exact product detail that leads into the 3D mechanism reveal with a tactile prop, pipe, jar, capsule, tray, or product-use surface. Use ${shot2.explainerDevice}; physical action: ${shot2.physicalAction}.`,
 	      4: `Peak 3D teardown insert. Narration: ${mechanism} ${revelation}. Use ${contract.wowMomentType}: ${contract.wowMoment}. Viewer learns: ${contract.viewerLearns}. This should feel like an impossible product cutaway, x-ray, pipe demo, floating component split, or particle mechanism inside the same blue lab.`,
@@ -223,7 +223,7 @@ const getThreeDGuideInstructionForStyle = (
 ) => {
 	  if (visualStyle === "presenter-teardown-vsl") {
 	    if (frameIndex === 1 || frameIndex === 3 || frameIndex === 6) {
-      return "Show the same casual silent generic 3D demonstrator, torso, hands, or over-shoulder product demo clearly enough to anchor the product demo. Keep it in the blue clinical grid lab with everyday creator-ad clothing, cap/goggles, and tactile props; not toy-like, not lifestyle, not lab technician. Do not clone a known person from a reference, and keep all clothing/product labels unreadable.";
+      return "Show the same casual silent generic 3D demonstrator, torso, hands, or over-shoulder product demo clearly enough to anchor the product demo. Keep it in the blue clinical grid lab with everyday creator-ad clothing, visible eyes, cap/goggles on head, and tactile props; no sunglasses, not toy-like, not lifestyle, not lab technician. Do not clone a known person from a reference, and keep all clothing/product labels unreadable.";
 	    }
 	    if (frameIndex === 4) {
 	      return "Use this as the 3D explanatory insert: macro cutaway, x-ray, overlay, floating component split, pipe/pathway demo, invisible-problem reveal, or mechanism teardown. It must still feel connected to the same blue grid product demo, not like a separate biology documentary.";
@@ -293,6 +293,7 @@ const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
     scene.layout.storyboardBoard?.imagePrompt || "",
     `Internal reading-order still plan, never visible as text: ${framePlan}.`,
     "The written plan and descriptions are internal instructions only; do not draw any of these words, headings, or annotations.",
+    "No huge blank tables, empty counters, empty foreground blocks, sterile white workbenches, or dead product-card whitespace; every still must feel cropped like active video footage.",
     "No readable text, captions, subtitles, logos, labels, numbers, UI copy, arrows, checkmarks, X marks, fake writing, or product-label typography anywhere.",
     "If reference images contain text, logos, or blue cleanup mask bands, ignore those cleanup artifacts and preserve only product shape, color, material, scale, and composition cues.",
     "Captions, CTA, product logo, and proof text are renderer overlays later.",

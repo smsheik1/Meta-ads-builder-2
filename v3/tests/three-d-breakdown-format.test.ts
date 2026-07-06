@@ -632,6 +632,7 @@ assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("Visual st
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("silent recurring demonstrator"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human-like demo subject, torso, hands"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("casual creator-ad 3D person"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("no sunglasses"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("oversized tactile demo props"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("lab-coat scientists"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("demonstration/retention footage only"));
@@ -1206,6 +1207,7 @@ assert.ok(threeDImageActionSource.includes("blue cleanup mask bands"));
 assert.ok(threeDImageActionSource.includes("casual silent 3D demonstrator"));
 assert.ok(threeDImageActionSource.includes("oversized tactile props"));
 assert.ok(threeDImageActionSource.includes("not lab technician"));
+assert.ok(threeDImageActionSource.includes("No huge blank tables"));
 assert.ok(threeDImageActionSource.includes("image: { status: isPresenterStyle ? \"generating\" : \"idle\" }"));
 assert.ok(threeDImageActionSource.includes("video: { status: \"idle\" as const }"), "Regenerating production frames must clear stale 3D clip videos.");
 assert.ok(threeDImageActionSource.includes("getThreeDImageStyleRules"));
