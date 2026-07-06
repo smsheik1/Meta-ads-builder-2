@@ -28,7 +28,7 @@ const getThreeDSeedancePromptSuffix = (scene: ThreeDBreakdownAdScene) => {
     "Capsules stay capsules, bottles stay bottles, packaging stays packaging; do not morph products into cups, buckets, bowls, or unrelated lab vessels.",
     "Use direct cuts, pushes, reveals, and mechanical transformations; no blank color wipes, fog-only transitions, empty gradients, or slow lingering setup.",
     isPresenterStyle
-      ? "Make the motion feel embodied through the same casual silent demonstrator, hands, torso, over-shoulder angle, or product-use demonstration returning throughout the clip; do not make them a lab technician, doctor, scientist, or sterile PPE worker."
+      ? "Make the motion feel embodied through the same casual silent demonstrator, hands, torso, body-route view, over-shoulder angle, or product-use demonstration returning throughout the clip; narrator/captions present the argument, the human only demonstrates."
       : "Make the motion feel embodied: keep a stylized human demo character, body proxy, or scale figure returning throughout the clip as the continuity spine, with frame 1 and final-payoff moments showing the character body or torso beside the product.",
     "Change visual state about every second; use body/pathway travel, macro cutaways, mechanism machines, particle motion, or product payoff resets instead of holding a static capsule render.",
     isPresenterStyle
@@ -257,8 +257,8 @@ const buildThreeDProductionFramePrompt = (
 	    contract.visualStyle === "presenter-teardown-vsl"
       ? "The silent generic demonstrator/scale figure is the continuity spine; product meaning comes from handling, use, props, pipes, particle paths, quick teardown inserts, and visible cause/effect."
 	      : "The demo character is the body/customer/scale proxy, not a presenter; product meaning comes from cause/effect, mechanism reveals, and 3D transformations.",
-	    contract.visualStyle === "presenter-teardown-vsl"
-      ? "For supplement/digestive products, show the capsule/product journey as a silent-demonstrator blue-grid lab demo: clear pipes, transparent route, acid bath prop, particle flow, capsule pathway, and cutaway mechanism. Avoid detached gut tunnels or faceless anatomy montages."
+    contract.visualStyle === "presenter-teardown-vsl"
+      ? "For supplement/digestive products, match the reference grammar: demonstrator with capsule/cup, transparent torso or body-route, macro obstacle, machine/pipe mechanism, demonstrator/product payoff, final bottle/product close. Avoid detached gut tunnels or faceless anatomy montages."
 	      : "For supplement/digestive products, include internal-body journey imagery when relevant: transparent torso, gut tunnel, intestinal wall, acid bath, cell wall, particles traveling, or protected capsule passing through a pathway.",
 	    contract.visualStyle === "presenter-teardown-vsl"
       ? "Do not keep every frame on the same empty blue tabletop. The blue clinical palette should unify silent-demonstrator demo frames, pipe/pathway props, mechanism inserts, particle movement, and final product stage shots."
@@ -287,7 +287,7 @@ const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
     "Each still must fill its cell edge-to-edge; no blank white rows, title bands, empty margins, or presentation whitespace.",
     "This is not final footage and not a single hero image.",
     contract.visualStyle === "presenter-teardown-vsl"
-      ? "Reference style: recurring silent generic 3D demonstrator/scale figure, bright blue clinical grid lab world, product handling, props, capsules, pipes, particles, scale comparisons, and one impossible 3D mechanism insert."
+      ? "Reference style: recurring silent generic 3D demonstrator/scale figure, bright blue clinical grid lab world, product handling, body-route props, capsules, pipes, particles, scale comparisons, and one impossible 3D mechanism insert."
       : "Reference style: recurring stylized demo character/body proxy in a bright blue/cyan clinical grid product-science world.",
     `Shared visual world: ${contract.visualWorld}. Lighting: ${contract.lighting}. Camera: ${contract.cameraStyle}. Recurring objects: ${contract.recurringObjects.join(", ")}.`,
     scene.layout.storyboardBoard?.imagePrompt || "",

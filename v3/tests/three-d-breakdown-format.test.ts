@@ -633,6 +633,8 @@ assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("silent re
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human-like demo subject, torso, hands"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("casual creator-ad 3D person"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("no sunglasses"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("narrator and captions present the argument"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("transparent torso or body-route"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("oversized tactile demo props"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("lab-coat scientists"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("demonstration/retention footage only"));
@@ -1207,6 +1209,8 @@ assert.ok(threeDImageActionSource.includes("blue cleanup mask bands"));
 assert.ok(threeDImageActionSource.includes("casual silent 3D demonstrator"));
 assert.ok(threeDImageActionSource.includes("oversized tactile props"));
 assert.ok(threeDImageActionSource.includes("not lab technician"));
+assert.ok(threeDImageActionSource.includes("transparent torso or body-route"));
+assert.ok(threeDImageActionSource.includes("the human only demonstrates"));
 assert.ok(threeDImageActionSource.includes("No huge blank tables"));
 assert.ok(threeDImageActionSource.includes("image: { status: isPresenterStyle ? \"generating\" : \"idle\" }"));
 assert.ok(threeDImageActionSource.includes("video: { status: \"idle\" as const }"), "Regenerating production frames must clear stale 3D clip videos.");

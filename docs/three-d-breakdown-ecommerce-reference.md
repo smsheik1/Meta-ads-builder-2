@@ -20,7 +20,7 @@ Local analysis artifacts:
 ## Baseline Ratings
 
 - Script: 9/10. It starts with a hidden problem the customer does not already understand, then turns product mechanism into the answer.
-- Visuals: 9.5/10. Blue clinical grid world, chunky 3D objects, macro product-science details, and recurring host/guide energy make it instantly readable.
+- Visuals: 9.5/10. Blue clinical grid world, chunky 3D objects, macro product-science details, and a recurring silent demonstrator/scale figure make it instantly readable.
 - Speed/change density: 10/10. The first 20 seconds changes object state, camera scale, or mechanism roughly every 0.5-1.5 seconds.
 - Continuity: 9/10. The world stays coherent while each beat introduces a new module.
 - Wiggly current baseline before the latest prompt tightening: about 5.5/10 visually. The output was too flat, too poster-like, not hosted enough, and did not have enough product-science continuity.
@@ -33,12 +33,14 @@ Required ingredients:
 
 - Bright blue/cyan technical grid floor and wall.
 - Flat readable lab lighting, not moody cinematic darkness.
-- A small recurring guide, hand, pointer, or scale proxy in most frames.
+- A recurring silent demonstrator, torso, hand, pointer, or scale proxy in most frames.
+- The human never performs the ad copy. Narrator/captions carry the argument; the human only demonstrates scale, use, and cause/effect.
 - One product or package identity anchored across the sequence.
 - No generated readable text, captions, labels, logos, numbers, checkmarks, or arrows inside images.
 - Captions are renderer overlays.
 - One visible state change per frame or roughly every second in video.
-- Four or more visual modules across the 20 seconds: product/scale intro, hidden obstacle, mechanism machine or cutaway, component/particle movement, evidence payoff, final product payoff.
+- Four or more visual modules across the 20 seconds: product/scale intro, body/pathway or hidden obstacle, mechanism machine or cutaway, component/particle movement, evidence payoff, final product payoff.
+- For supplement/digestive products, the original reference grammar is: demonstrator with capsule/cup, transparent torso or body-route, macro obstacle, machine/pipe mechanism, demonstrator/product proof, final bottle/product close.
 
 ## Second Reference Transcript
 
@@ -56,27 +58,25 @@ After the game, a steel box arrived. Inside, beige compression socks for tired l
 - Final reframing: the old audience noticed first, but the product is for everyday movement.
 - Clean product close with brand/product, not a feature list.
 
-## Six Keyframes
+## Six-Frame Storyboard Board
 
-The storyboard plan should expand into six separate vertical production keyframes:
+The first paid-ish visual gate is one 6-frame storyboard board for visual QA. It is not final footage.
 
 1. False assumption/common use.
-2. Hidden physical obstacle.
-3. First mechanism/component setup.
+2. Hidden physical obstacle, body route, or product path.
+3. First mechanism/component setup with the silent demonstrator, torso, hands, or prop demo still anchoring the world.
 4. Peak impossible-to-film cutaway or delivery reveal.
 5. Unified evidence/payoff with the engineered product central.
 6. Final product payoff with blank tokens for renderer overlays.
 
-The six frames are reference images for animation. They must not be a collage, contact sheet, split screen, or labeled storyboard board.
+The board is allowed to be a contact sheet for QA only. Individual production anchors later must not be a collage, split screen, or labeled storyboard.
 
 ## 20 Second Clip Rhythm
 
-MVP duration is 20 seconds. Current assembly splits it into four 5-second clips:
+MVP duration is 20 seconds. Current target assembly splits it into two 10-second clips:
 
-1. Clip 1: false assumption into hidden problem.
-2. Clip 2: hidden problem into mechanism setup.
-3. Clip 3: peak mechanism reveal into evidence payoff.
-4. Clip 4: evidence payoff into final product state.
+1. Clip 1: frames 1-3, false assumption into hidden problem and mechanism setup.
+2. Clip 2: frames 4-6, peak mechanism reveal into evidence payoff and final product state.
 
 Each clip needs quick micro-beats: setup, obstruction/change, reveal, payoff/reset.
 
