@@ -16,6 +16,11 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
   if (!scene.layout.groundedEvidence?.sourceUrl?.trim()) errors.push("3D Breakdown grounded evidence source URL is missing.");
   if (!scene.layout.groundedEvidence?.evidenceUseType) errors.push("3D Breakdown grounded evidence use type is missing.");
   if (!scene.layout.groundedEvidence?.scrapedAt) errors.push("3D Breakdown grounded evidence timestamp is missing.");
+  if (scene.layout.productAnchor) {
+    if (!scene.layout.productAnchor.title?.trim()) errors.push("3D Breakdown product anchor title is missing.");
+    if (!scene.layout.productAnchor.url?.trim()) errors.push("3D Breakdown product anchor URL is missing.");
+    if (!scene.layout.productAnchor.imageUrl?.trim()) errors.push("3D Breakdown product anchor image is missing.");
+  }
   if (!scene.layout.storyContract?.visualWorld?.trim()) errors.push("3D Breakdown story visual world is missing.");
   if (!THREE_D_VISUAL_STYLES.includes(scene.layout.storyContract?.visualStyle)) errors.push("3D Breakdown visual style is invalid.");
   if (!scene.layout.storyContract?.lighting?.trim()) errors.push("3D Breakdown story lighting is missing.");
@@ -35,13 +40,15 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
 	      });
 	    }
 	  }
-  const expectedClipFrameIndexes = [[1, 2], [2, 3], [4, 5], [5, 6]];
-  if (!Array.isArray(scene.layout.clipPlans) || scene.layout.clipPlans.length !== 4) {
-    errors.push("3D Breakdown must define 4 clip plans.");
+  const isPresenterStyle = scene.layout.storyContract?.visualStyle === "presenter-teardown-vsl";
+  const expectedClipFrameIndexes = isPresenterStyle ? [[1, 2, 3], [4, 5, 6]] : [[1, 2], [2, 3], [4, 5], [5, 6]];
+  const expectedClipDuration = isPresenterStyle ? 10 : 5;
+  if (!Array.isArray(scene.layout.clipPlans) || scene.layout.clipPlans.length !== expectedClipFrameIndexes.length) {
+    errors.push(`3D Breakdown must define ${expectedClipFrameIndexes.length} clip plans.`);
   } else {
     scene.layout.clipPlans.forEach((clipPlan, index) => {
       if (clipPlan.clipIndex !== index + 1) errors.push(`3D Breakdown clip plan ${index + 1} index is invalid.`);
-      if (clipPlan.durationSeconds !== 5) errors.push(`3D Breakdown clip plan ${index + 1} duration is invalid.`);
+      if (clipPlan.durationSeconds !== expectedClipDuration) errors.push(`3D Breakdown clip plan ${index + 1} duration is invalid.`);
       if (!clipPlan.prompt?.trim()) errors.push(`3D Breakdown clip plan ${index + 1} prompt is missing.`);
       const expectedFrames = expectedClipFrameIndexes[index];
       if (JSON.stringify(clipPlan.frameIndexes) !== JSON.stringify(expectedFrames)) {

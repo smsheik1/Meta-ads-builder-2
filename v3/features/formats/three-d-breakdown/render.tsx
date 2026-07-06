@@ -128,6 +128,8 @@ export function ThreeDBreakdownFormatRenderer({
   const clipEndSeconds = activeClipPlan ? activeClipPlan.endMs / 1000 : undefined;
   const clipTimeSeconds = activeClipPlan ? Math.max(0, timelineMs / 1000 - clipStartSeconds) : timeSeconds;
   const captionWords = getCaptionWords(caption);
+  const productAnchor = scene.layout.productAnchor;
+  const showFinalProductAnchor = Boolean(productAnchor?.imageUrl && timelineMs >= scene.layout.durationMs - 3000);
 
   return (
     <div
@@ -211,6 +213,43 @@ export function ThreeDBreakdownFormatRenderer({
           </div>
         </div>
       )}
+
+      {showFinalProductAnchor && productAnchor ? (
+        <div
+          data-three-d-breakdown-final-payoff="true"
+          style={{
+            position: "absolute",
+            left: "8%",
+            right: "8%",
+            bottom: "31%",
+            zIndex: 8,
+            display: "flex",
+            justifyContent: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: "68%",
+              padding: "4%",
+              borderRadius: "5cqw",
+              background: "linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.84))",
+              boxShadow: "0 2.4cqw 8cqw rgba(0,0,0,.34)",
+            }}
+          >
+            <Image
+              src={productAnchor.imageUrl}
+              alt={productAnchor.imageAlt || productAnchor.title}
+              style={{
+                display: "block",
+                width: "100%",
+                maxHeight: "29cqh",
+                objectFit: "contain",
+              }}
+            />
+          </div>
+        </div>
+      ) : null}
 
       <div
         className="absolute inset-x-[5.5%] bottom-[16%] z-10 flex flex-wrap items-center justify-center gap-x-[1.5cqw] gap-y-[0.8cqw]"

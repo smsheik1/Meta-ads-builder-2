@@ -10,10 +10,13 @@ import {
 } from "../features/audio/fishStudio";
 import { extractThreeDBreakdownEvidence } from "../features/formats/three-d-breakdown/evidence";
 import {
+  generateThreeDBreakdownStoryDirectionsFromResearch,
   generateThreeDBreakdownVariantsFromResearch,
 } from "../features/formats/three-d-breakdown/generate";
 import {
   buildThreeDBreakdownPrompt,
+  buildThreeDBreakdownStoryDirectionsPrompt,
+  buildThreeDBreakdownStyleBScriptPrompt,
   THREE_D_BREAKDOWN_MAX_TOKENS,
   THREE_D_BREAKDOWN_VARIANT_COUNT,
 } from "../features/formats/three-d-breakdown/prompt";
@@ -178,8 +181,9 @@ const seedMechanismResearch = makeResearch({
     proof: [
       "DS-01 uses ViaCap capsule-in-capsule technology.",
       "The probiotic core is designed to survive digestion and reach the colon.",
+      "Seed says the body is home to 38 trillion microbes that affect digestion, immunity, and more.",
     ],
-    siteLanguage: ["ViaCap", "capsule-in-capsule", "24 probiotic strains", "prebiotics", "colon"],
+    siteLanguage: ["ViaCap", "capsule-in-capsule", "24 probiotic strains", "prebiotics", "colon", "38 trillion microbes"],
   },
   evidence: {
     ...research.evidence,
@@ -191,6 +195,7 @@ const seedMechanismResearch = makeResearch({
       specificClaims: [
         "ViaCap capsule-in-capsule technology protects the probiotic core through digestion.",
         "DS-01 combines probiotic strains and prebiotics in one daily synbiotic.",
+        "The body is home to 38 trillion microbes.",
       ],
       buyerMoments: ["A probiotic capsule has to survive the trip through digestion."],
       exactSiteLanguage: ["ViaCap", "capsule-in-capsule", "probiotic core", "prebiotics", "colon"],
@@ -224,10 +229,16 @@ assert.match(seedTopEvidence.text, /ViaCap|capsule-in-capsule|probiotic core|dig
 assert.equal(seedTopEvidence.evidenceUseType, "mechanism");
 assert.ok(seedTopEvidence.visualPotentialScore >= 0.9);
 assert.ok(seedTopEvidence.possibleRevealPatterns.includes("process-pipeline"));
+const seedMicrobeEvidence = seedEvidenceItems.find((item) => /38 trillion microbes/i.test(item.text));
+assert.ok(seedMicrobeEvidence, "Seed fixture should keep the 38 trillion microbes evidence eligible for story slates.");
+assert.ok((seedMicrobeEvidence?.visualPotentialScore || 0) >= 0.7);
+assert.ok(seedMicrobeEvidence?.possibleRevealPatterns.includes("miniature-world"));
 
 const prompt = buildThreeDBreakdownPrompt({ count: 1, evidence: evidenceItems, research });
 const seedPrompt = buildThreeDBreakdownPrompt({ count: 1, evidence: seedEvidenceItems, research: seedMechanismResearch });
 const twoDirectionPrompt = buildThreeDBreakdownPrompt({ count: THREE_D_BREAKDOWN_VARIANT_COUNT, evidence: evidenceItems, research });
+const styleBScriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({ evidence: evidenceItems, research });
+const storyDirectionsPrompt = buildThreeDBreakdownStoryDirectionsPrompt({ evidence: evidenceItems, research });
 const ecommerceReferenceDoc = readFileSync(new URL("../../docs/three-d-breakdown-ecommerce-reference.md", import.meta.url), "utf8");
 const ecommerceStyleReferenceBytes = readFileSync(new URL("../public/three-d-breakdown/references/ecommerce-teardown-style-reference-v1.jpg", import.meta.url));
 assert.equal(THREE_D_BREAKDOWN_VARIANT_COUNT, 2);
@@ -238,44 +249,125 @@ assert.ok(ecommerceReferenceDoc.includes("Speed/change density: 10/10"));
 assert.ok(ecommerceReferenceDoc.includes("Bright blue/cyan technical grid floor and wall."));
 assert.ok(ecommerceReferenceDoc.includes("One visible state change per frame or roughly every second in video."));
 assert.ok(ecommerceReferenceDoc.includes("Do not keep trying provider calls"));
-assert.ok(prompt.length < 15_000, `3D Breakdown director prompt is too large: ${prompt.length} chars`);
-assert.ok(seedPrompt.length < 15_000, `Seed director prompt is too large: ${seedPrompt.length} chars`);
+assert.ok(prompt.length < 16_000, `3D Breakdown director prompt is too large: ${prompt.length} chars`);
+assert.ok(seedPrompt.length < 16_000, `Seed director prompt is too large: ${seedPrompt.length} chars`);
+assert.ok(styleBScriptPrompt.length < 8_200, `3D Breakdown Style B script prompt is too large: ${styleBScriptPrompt.length} chars`);
+assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions prompt is too large: ${storyDirectionsPrompt.length} chars`);
 [
-  "ZachDFilms-style high-retention short-form documentary pacing",
+  "ZachDFilms-style high-retention documentary pacing",
   "visualStyle",
   "toy-character-vsl",
   "presenter-teardown-vsl",
   "Style A - toy-character-vsl",
   "Style B - presenter-teardown-vsl",
   "unseen omniscient narrator",
-  "The visual human/demo subject is not the narrator",
-  "user assumption -> hidden obstacle",
+  "visual human/demo subject is only a silent demonstrator/scale reference",
+  "concrete use -> false classification",
+  "Include a literal transformation verb",
   "The narrator teaches the hidden mechanism",
-  "The person demonstrates use only; the unseen narrator explains.",
+  "recurring silent 3D demonstrator",
   "referenceScript",
-  "85-180 words",
+  "110-160 words",
   "Then compress that script into the 5 scriptBeats",
+  "ordinary human moment -> strange hidden world/problem",
+  "ctaLine is separate from referenceScript/scriptBeats",
   "product-science teardown",
   "bright blue/cyan clinical grid",
   "Use [] for no riskFlags",
   "Write exactly 1 variant.",
   "No invented reviews, numbers, results, guarantees, source names, customer names, or claims.",
-  "Total narration must be 40-75 words",
+  "Total narration must be 35-80 words",
   "Pick the most visual evidence item.",
-  "Do not ask the image model to generate readable text",
-  "six-frame production visual plan",
-  "No split screen, no comparison chart, no multi-panel image",
+  "Do not ask the image model for readable text",
+  "one six-panel storyboard board",
+  "Storyboard-board prompts are the only place where a six-panel board is allowed",
   "A website making a risky claim does not automatically make that claim safe to repeat.",
 ].forEach((expected) => assert.ok(prompt.includes(expected), `3D Breakdown prompt missing: ${expected}`));
 assert.ok(twoDirectionPrompt.includes("Write exactly 2 variants."));
 assert.ok(twoDirectionPrompt.includes("variant 1 with visualStyle toy-character-vsl"));
 assert.ok(twoDirectionPrompt.includes("variant 2 with visualStyle presenter-teardown-vsl"));
-assert.ok(prompt.includes("A probiotic capsule enters digestion and everyone assumes it survives the trip."));
-assert.ok(prompt.includes("The trip was the product."));
+assert.ok(styleBScriptPrompt.includes("Wiggly Style B Script Director"));
+assert.ok(styleBScriptPrompt.includes("Do not write storyboard, shots, image prompts, animation prompts, or captions."));
+assert.ok(styleBScriptPrompt.includes("unseen omniscient narrator"));
+assert.ok(styleBScriptPrompt.includes("referenceScript must be 110-160 words"));
+assert.ok(styleBScriptPrompt.includes("Start with human curiosity before selling"));
+assert.ok(styleBScriptPrompt.includes("ctaLine is separate from referenceScript"));
+assert.ok(styleBScriptPrompt.includes("use the selected evidenceIndex/evidenceUseType exactly"));
+assert.ok(styleBScriptPrompt.includes("higher-scoring evidence into supporting context only"));
+assert.ok(styleBScriptPrompt.includes("For review/proof/shipping, do not invent package physics"));
+assert.ok(storyDirectionsPrompt.includes("Wiggly 3D Breakdown Story Slate Director"));
+assert.ok(storyDirectionsPrompt.includes("Write exactly 5 directions."));
+assert.ok(storyDirectionsPrompt.includes("directionId values must be idea-1, idea-2, idea-3, idea-4, idea-5."));
+assert.ok(storyDirectionsPrompt.includes("Do not write the final script."));
+assert.ok(storyDirectionsPrompt.includes("shortSummary should explain start, escalation, reveal, and payoff."));
+assert.ok(storyDirectionsPrompt.includes("visualEngine must describe the physical 3D reveal"));
 assert.ok(seedPrompt.includes("DS-01 Daily Synbiotic"));
 assert.ok(seedPrompt.includes("ViaCap"));
 assert.ok(seedPrompt.includes("capsule-in-capsule"));
 assert.ok(seedPrompt.includes("probiotic core"));
+
+const makeStoryboardFrames = () => [
+  {
+    frameIndex: 1,
+    role: "problem",
+    label: "Problem state",
+    visual: "Hands place a red cookie tin beside an empty birthday table setting while the gift spot feels unresolved.",
+    camera: "Medium hand-demo shot pushing toward the empty spot.",
+    motion: "Tin enters frame, the empty gift spot subtly blocks the table flow.",
+    overlayText: "Gift still missing",
+    editingNote: "Start immediately with practical product handling and no intro.",
+  },
+  {
+    frameIndex: 2,
+    role: "escalation",
+    label: "Escalation",
+    visual: "The camera dives toward the table gap as blank proof tokens hover where a reaction should be.",
+    camera: "Fast punch-in from tabletop to miniature proof space.",
+    motion: "Tokens drift apart and expose the hidden occasion pressure.",
+    overlayText: "The gap shows",
+    editingNote: "Make the hidden social pressure visible without text in the image.",
+  },
+  {
+    frameIndex: 3,
+    role: "mechanism-setup",
+    label: "Mechanism setup",
+    visual: "Hands open the red tin and cookie pieces become the center of a small practical product teardown.",
+    camera: "Macro tabletop close-up with the tin anchored in frame.",
+    motion: "Lid lifts, cookie pieces settle, and proof tokens begin forming a ring.",
+    overlayText: "Tin opens",
+    editingNote: "This is the product detail setup before the impossible reveal.",
+  },
+  {
+    frameIndex: 4,
+    role: "wow-reveal",
+    label: "Wow reveal",
+    visual: "Proof blocks assemble in midair around the cookie tin and lock the empty table gap closed.",
+    camera: "Impossible macro cutaway orbit around the tin and floating proof blocks.",
+    motion: "Blocks snap together, then the table gap visibly collapses.",
+    overlayText: "Proof locks in",
+    editingNote: "Peak impossible-to-film reveal with the tin still central.",
+  },
+  {
+    frameIndex: 5,
+    role: "payoff",
+    label: "Evidence payoff",
+    visual: "The product returns to a practical table moment with cookies shared and blank proof tokens settled nearby.",
+    camera: "Warm overhead product-use shot returning from the cutaway.",
+    motion: "Tokens land softly while hands move cookies toward guests.",
+    overlayText: "Handled",
+    editingNote: "Connect the proof to a real payoff, not a logo card.",
+  },
+  {
+    frameIndex: 6,
+    role: "final-state",
+    label: "Final state",
+    visual: "Clean final hand-demo frame with the red tin open, cookies visible, and blank overlay-safe tokens nearby.",
+    camera: "Locked final product shot with enough room for renderer overlays.",
+    motion: "Hands stop, product holds, and the final frame feels ready for CTA.",
+    overlayText: "Send the gift",
+    editingNote: "Hold cleanly for the final overlay and avoid generated text.",
+  },
+];
 
 const makeVariant = ({
   visualStyle = "toy-character-vsl",
@@ -292,8 +384,9 @@ const makeVariant = ({
   mechanism = "Then a David's Cookies tin showed up, ready to open and share.",
   revelation = "More than 1,500 buyers rate David's Cookies 4.6 stars.",
   punchline = "She missed it, but the cookies arrived.",
+  ctaLine = "Shop memorable cookie gifts from David's Cookies.",
   consequence = "When the birthday started, her gift still had not arrived.",
-  referenceScript = "When someone sends a cookie tin, they assume the box carries the whole birthday. But a stale backup gift can make the table feel unfinished before anyone says it out loud. That's why the product has to do more than arrive. It has to open cleanly, look giftable, and feel ready to share. But there's another problem. A pretty box can still taste like a compromise if the cookies feel old. So David's Cookies anchors the product in fresh baked dessert gifting. Then the proof becomes practical. Buyers describe cookies that arrived fast and tasted homemade. So compare them. One gift is a generic box that fills space. The other is a cookie tin built for opening, passing around, and making the missing moment feel handled.",
+  referenceScript = "When someone sends a cookie tin, they assume the box carries the whole birthday. Through the lid, they picture a polite backup dessert nobody remembers. But a stale backup gift can make the table feel unfinished before anyone says it out loud. Then that backup feeling peels away. A red tin opens into cookies made for passing around. The first test is arrival. The second test is taste. Buyers describe cookies that arrived fast and tasted homemade. So the tin becomes proof in motion. Birthday, thank-you, office, client. Cookies are not just for one sweet tooth. Those moments were simply first to notice. One box fills space. The other makes the missing gift feel handled.",
 } = {}) => ({
   visualStyle,
   variantAngle,
@@ -301,6 +394,7 @@ const makeVariant = ({
   mechanismSummary,
   visualMetaphor,
   referenceScript,
+  ctaLine,
   evidenceIndex,
   evidenceUseType,
   wowMomentType,
@@ -317,7 +411,8 @@ const makeVariant = ({
   ],
   storyboardBoard: {
     frameCount: 6,
-    imagePrompt: "One storyboard artist board with exactly 6 tall phone-frame panels in a 3-column by 2-row layout, miniature red gift table diorama, red cookie tin recurring object, warm bakery lighting, no text, no captions, no logos.",
+    imagePrompt: "Six distinct vertical production keyframes in a miniature red gift table diorama, red cookie tin recurring object, warm bakery lighting, no text, no captions, no logos.",
+    frames: makeStoryboardFrames(),
   },
   shots: [
     {
@@ -384,33 +479,147 @@ const payloadWithVariants = (variants: unknown[]) => ({
   variants,
 });
 
+const makeStoryDirection = (index: number, overrides: Record<string, unknown> = {}) => ({
+  directionId: `idea-${index}`,
+  hookLine: `A cookie tin can arrive fast and still fail the gift test ${index}.`,
+  subheadline: "A proof-led gift story.",
+  shortSummary: "The sender thinks the gift is handled. The table still feels unfinished. Then real arrival and homemade-taste proof turns the tin into the remembered moment.",
+  category: index % 2 === 0 ? "Proof reveal" : "Customer tension",
+  whyCompelling: "It turns a normal dessert gift into a visible anxiety-and-proof story.",
+  adAngle: "A gift has to feel remembered, not merely delivered.",
+  visualEngine: "Proof blocks travel with the red tin and lock into the empty gift spot.",
+  evidenceIndex: reviewEvidence.evidenceIndex,
+  evidenceUseType: reviewEvidence.evidenceUseType,
+  possibleRevealPatterns: ["proof-blocks", "impact-chain"],
+  ...overrides,
+});
+
+const storyDirectionPayload = {
+  recommendedDirectionId: "idea-1",
+  directions: [1, 2, 3, 4, 5].map((index) => makeStoryDirection(index)),
+};
+
+const styleBScriptPlanPayload = (overrides: Record<string, unknown> = {}) => {
+  const variant = makeVariant({
+    visualStyle: "presenter-teardown-vsl",
+    variantAngle: "nationwide gift shipping",
+    customerProblem: "sending thoughtful gifts across distance",
+    mechanismSummary: "cookie tin proof blocks cross the map",
+    visualMetaphor: "proof blocks travel across a miniature map",
+    evidenceIndex: reviewEvidence.evidenceIndex,
+    evidenceUseType: reviewEvidence.evidenceUseType,
+    wowMomentType: "proof-blocks",
+    wowMoment: "Proof blocks travel with the red cookie tin from bakery door to a distant gift table.",
+    viewerLearns: "The gift still works across distance because buyers describe fast arrival and homemade taste.",
+  });
+  return {
+    visualStyle: "presenter-teardown-vsl",
+    variantAngle: variant.variantAngle,
+    customerProblem: variant.customerProblem,
+    mechanismSummary: variant.mechanismSummary,
+    visualMetaphor: variant.visualMetaphor,
+    referenceScript: variant.referenceScript,
+    evidenceIndex: variant.evidenceIndex,
+    evidenceUseType: variant.evidenceUseType,
+    wowMomentType: variant.wowMomentType,
+    wowMoment: variant.wowMoment,
+    viewerLearns: variant.viewerLearns,
+    claimRisk: variant.claimRisk,
+    claimRiskReason: variant.claimRiskReason,
+    ctaLine: variant.ctaLine,
+    ...overrides,
+  };
+};
+
+let storySlateCalls = 0;
+const storySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimBaseUrl: "https://nim.test/v1",
+  nvidiaNimModel: "test-3d-breakdown",
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    storySlateCalls += 1;
+    assert.ok(directorPrompt.includes("Story Slate Director"));
+    assert.ok(!directorPrompt.includes("Nano Banana"));
+    assert.ok(!directorPrompt.includes("Seedance"));
+    return JSON.stringify(storyDirectionPayload);
+  },
+});
+assert.equal(storySlateCalls, 1);
+assert.equal(storySlate.directions.length, 5);
+assert.equal(storySlate.recommendedDirectionId, "idea-1");
+assert.equal(storySlate.directions[0]?.evidenceUseType, reviewEvidence.evidenceUseType);
+assert.ok(storySlate.directions[0]?.visualEngine.includes("Proof blocks"));
+
+const selectedStoryDirection = storySlate.directions[0]!;
+const selectedDirectionPrompt = buildThreeDBreakdownPrompt({
+  count: 1,
+  evidence: evidenceItems,
+  research,
+  selectedStoryDirection,
+});
+const selectedStyleBScriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({
+  evidence: evidenceItems,
+  research,
+  selectedStoryDirection,
+});
+assert.ok(selectedDirectionPrompt.includes("Selected story direction:"));
+assert.ok(selectedDirectionPrompt.includes(selectedStoryDirection.hookLine));
+assert.ok(selectedStyleBScriptPrompt.includes("Selected story direction:"));
+assert.ok(selectedStyleBScriptPrompt.includes(selectedStoryDirection.adAngle));
+
+let selectedDirectionCalls = 0;
+const selectedDirectionGeneration = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => {
+    selectedDirectionCalls += 1;
+    throw new Error("Selected story directions should not require another NIM director call.");
+  },
+  selectedStoryDirection,
+});
+assert.equal(selectedDirectionCalls, 0);
+assert.equal(selectedDirectionGeneration.variants.length, 1);
+assert.ok(selectedDirectionGeneration.variants[0]?.variantAngle.startsWith("A gift has to feel remembered"));
+assert.equal(selectedDirectionGeneration.variants[0]?.visualStyle, "presenter-teardown-vsl");
+
 let observedMaxTokens: number | undefined;
+let observedDirectorCalls = 0;
 const generated = await generateThreeDBreakdownVariantsFromResearch(research, {
   nvidiaNimApiKey: "test-key",
   nvidiaNimBaseUrl: "https://nim.test/v1",
   nvidiaNimModel: "test-3d-breakdown",
-  nvidiaNimChatCompletion: async ({ maxTokens }) => {
+  nvidiaNimChatCompletion: async ({ maxTokens, prompt: directorPrompt }) => {
     observedMaxTokens = maxTokens;
-    return JSON.stringify(variantsPayload);
+    observedDirectorCalls += 1;
+    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+      return JSON.stringify(styleBScriptPlanPayload());
+    }
+    const mainPayload = JSON.parse(JSON.stringify(variantsPayload));
+    mainPayload.variants[1].referenceScript = "I am showing you this tin. Watch me explain it.";
+    return JSON.stringify(mainPayload);
   },
 });
 assert.equal(observedMaxTokens, 4000);
+assert.equal(observedDirectorCalls, 2);
 assert.equal(generated.variants.length, 2);
 assert.equal(generated.variants[0]?.visualStyle, "toy-character-vsl");
 assert.equal(generated.variants[1]?.visualStyle, "presenter-teardown-vsl");
-assert.ok(generated.variants[1]?.referenceScript?.includes("So compare them."));
+assert.ok(generated.variants[1]?.referenceScript?.includes("they picture a polite backup dessert"));
+assert.ok(generated.variants[1]?.referenceScript?.includes("backup feeling peels away"));
+assert.ok(generated.variants[1]?.referenceScript?.includes("Birthday, thank-you, office, client"));
 assert.ok(!/watch me|i am showing/i.test(generated.variants[1]?.referenceScript || ""));
 assert.equal(generated.variants[0]?.scriptBeats.length, 5);
 assert.equal(generated.variants[0]?.shots.length, 3);
 assert.equal(generated.variants[0]?.storyboardBoard.frameCount, 6);
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("six-frame production visual plan"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("SIX separate vertical 9:16 production keyframes"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not generate one board, collage, contact sheet"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("six-panel storyboard board"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("visual QA before video generation"));
+assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not generate one board"));
+assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("SIX separate vertical 9:16 production keyframes"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("no black lower bars"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Frame 1 cannot be an empty stage"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Panel 1 cannot be an empty stage"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("false assumption/common use"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("unified evidence/payoff frame"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Frame 5 must not be a split-screen"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Panel 5 must not be a split-screen"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not crack, shatter, melt, break, leak, or fail the central product in frame 5"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("fast product-science teardown short"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("at least four distinct visual modules"));
@@ -418,7 +627,8 @@ assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("same clos
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Visual style: toy-character-vsl"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("recurring stylized human demo character/body proxy"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("Visual style: presenter-teardown-vsl"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human demo subject, torso, hands"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("silent recurring demonstrator"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human-like demo subject, torso, hands"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("demonstration/retention footage only"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("continuity spine"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not create a faceless biology montage"));
@@ -429,6 +639,36 @@ assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("No words,
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("blank physical tokens, unmarked blocks, unlabeled counters"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("checkmarks, X marks"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("plain geometric tokens"));
+assert.equal(generated.variants[0]?.storyboardBoard.frames?.length, 6);
+assert.equal(generated.variants[0]?.storyboardBoard.frames?.[0]?.visual, "Hands place a red cookie tin beside an empty birthday table setting while the gift spot feels unresolved.");
+assert.equal(generated.variants[0]?.storyboardBoard.frames?.[3]?.role, "wow-reveal");
+assert.equal(generated.variants[0]?.storyboardBoard.frames?.[3]?.motion, "Blocks snap together, then the table gap visibly collapses.");
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Detailed frame plan to preserve"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Frame 4 Wow reveal; visual: Proof blocks assemble"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("overlay metadata only: Proof locks in"));
+assert.ok(prompt.includes("Compress the 60-second high-retention storyboard instinct into exactly six 20-second storyboard panels."));
+assert.ok(prompt.includes("2 hidden obstacle/invisible problem/impossible zoom"));
+assert.ok(prompt.includes("overlayText is metadata for Wiggly renderer overlays only"));
+
+const timingDriftPayload = JSON.parse(JSON.stringify(variantsPayload));
+timingDriftPayload.variants[0].scriptBeats = [
+  { role: "consequence", narration: "When the birthday started, her gift still had not arrived.", startMs: 0, endMs: 4000 },
+  { role: "context", narration: "Everyone said it was fine, but the table still looked unfinished.", startMs: 4000, endMs: 7000 },
+  { role: "mechanism", narration: "Then a David's Cookies tin showed up, ready to open and share.", startMs: 7000, endMs: 14000 },
+  { role: "revelation", narration: "More than 1,500 buyers rate David's Cookies 4.6 stars.", startMs: 14000, endMs: 19000 },
+  { role: "punchline", narration: "She missed it, but the cookies arrived.", startMs: 19000, endMs: 20000 },
+];
+const timingDriftResult = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimBaseUrl: "https://nim.test/v1",
+  nvidiaNimModel: "test-3d-breakdown",
+  nvidiaNimChatCompletion: async () => JSON.stringify(timingDriftPayload),
+});
+assert.deepEqual(
+  timingDriftResult.variants[0]?.scriptBeats.map((beat) => [beat.startMs, beat.endMs]),
+  [[0, 3000], [3000, 7000], [7000, 12000], [12000, 16000], [16000, 20000]],
+);
 
 await assert.rejects(
   () => generateThreeDBreakdownVariantsFromResearch(research, {
@@ -439,10 +679,26 @@ await assert.rejects(
       storyboardBoard: {
         frameCount: 6,
         imagePrompt: "Six vertical frames on a blue grid with 'gut health' written above the capsule.",
+        frames: makeStoryboardFrames(),
       },
     }])),
   }),
   /quoted readable text/,
+);
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([{
+      ...makeVariant(),
+      storyboardBoard: {
+        frameCount: 6,
+        imagePrompt: "Six distinct vertical production keyframes with red cookie tin proof blocks.",
+      },
+    }])),
+  }),
+  /include exactly 6 detailed frames/,
 );
 
 await assert.rejects(
@@ -466,7 +722,19 @@ await assert.rejects(
       referenceScript: "I am showing you this cookie tin because I think it is premium. Watch me explain why it is perfect for gifts.",
     })])),
   }),
-  /referenceScript must be 85-180 words|unseen narrator/,
+  /referenceScript must be 110-160 words|unseen narrator/,
+);
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+      visualStyle: "presenter-teardown-vsl",
+      referenceScript: "When a buyer receives it, they assume the box handled the moment. Through the package, they picture the old problem. But the failure starts before anyone opens it. Then that assumption peels away. The product reveals hidden proof. The first test is arrival. The second is use. So evidence becomes visible. One audience notices first. Another sees the same reason. One version fills space. The other changes the moment. The sender pictured a forgettable tin. They assumed distance would flatten the gesture. The label peels. The occasion emerges. The recipient lifts the lid. Taste confirms what shipping promised. The sender becomes present without being there. A birthday becomes remembered. A thank-you lands. The same tin ships nationwide. The same proof repeats. Distance becomes the mechanism. Arrival becomes the evidence.",
+    })])),
+  }),
+  /copied generic prompt-template wording/,
 );
 
 await assert.rejects(
@@ -484,10 +752,10 @@ await assert.rejects(
 await assert.rejects(
   () => generateThreeDBreakdownVariantsFromResearch(research, {
     count: 1,
-    nvidiaNimApiKey: "test-key",
-    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
-      visualStyle: "presenter-teardown-vsl",
-      referenceScript: "Everyone assumes shipped cookies arrive stale. That assumption kills the gift before it opens. But the real problem is not the recipe. It is the gap between oven and door. David's Cookies closes that gap with a sealed tin made for transit. The tin locks in freshness so the first crack releases oven aroma. Then there is another problem. The sender never sees the reaction. That is why the best seller status matters. It is proof that the chain works. Fast shipping plus sealed tin plus real reviews equals a moment that lands. Compare that to a box that sits in a warehouse. The difference is the tin.",
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+    visualStyle: "presenter-teardown-vsl",
+      referenceScript: "Everyone assumes shipped cookies arrive stale. Through the box, they picture a backup dessert losing its moment in the warehouse. But the real problem is not the recipe. It is the gap between oven and door. Then the ordinary box peels away. David's Cookies closes that gap with a sealed tin made for transit. The tin protects freshness so the first crack releases oven aroma. The first test is sorting. The second test is shipping. Then there is another problem. The sender never sees the reaction. Fast shipping plus sealed tin plus real reviews equals a moment that lands. Birthday, thank-you, office, client. One gift sits in a warehouse. The other arrives with freshness intact.",
     })])),
   }),
   /invented product mechanism details/,
@@ -497,7 +765,7 @@ const shippingContextVariant = makeVariant({
   visualStyle: "presenter-teardown-vsl",
   evidenceIndex: shippingEvidence.evidenceIndex,
   evidenceUseType: shippingEvidence.evidenceUseType,
-  referenceScript: "Everyone assumes a dessert gift is only about the bite. But distance becomes the hidden problem before the box even moves. That's why shipping matters. A gift tin has to cross the map and still feel like a real birthday gesture. But there is another problem. The sender cannot stand at the door and explain the thought. So the proof has to travel with the product. The nationwide shipping promise makes the gift possible. The cookie moment makes it personal. So compare them. One gift stays local. The other can cross the map.",
+  referenceScript: "When someone sends dessert across town, they assume the bite is the whole gift. Through the box, they picture a local bakery moment that only works nearby. But distance becomes the hidden problem before the order even moves. Then the local-only idea peels away. A gift tin crosses the map and can still arrive as a birthday gesture. Then the box opens into the moment they meant to send. The first test is shipping. The second test is opening. So the nationwide shipping promise makes the gift possible. But the cookie moment makes it personal. Birthday, thank-you, office, client. Dessert is not just for the room you can reach. Those moments were simply first to notice. One gift stays local. The other crosses the map.",
   mechanismSummary: "nationwide shipping turns a local dessert into a sendable gift moment",
   revelation: "Gift tins ship nationwide for birthdays and thank-you moments.",
 });
@@ -507,6 +775,29 @@ const shippingContextResult = await generateThreeDBreakdownVariantsFromResearch(
   nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([shippingContextVariant])),
 });
 assert.equal(shippingContextResult.variants[0]?.evidenceUseType, "shipping");
+
+const arrivalContextVariant = makeVariant({
+  visualStyle: "presenter-teardown-vsl",
+  referenceScript: "When someone sends a cookie tin, they assume the birthday is already handled. Through the box, they picture a polite backup dessert stuck in a warehouse. But that warehouse delay is not the whole story. Then the backup feeling peels away. A red tin opens into a gift made for passing around. The first test is waiting. The second test is arrival. The lid becomes the handoff. Buyers describe cookies that arrived fast and tasted homemade. So the tin becomes proof in motion. Birthday, thank-you, office, client. Cookies are not just for one sweet tooth. Those moments were simply first to notice. One box fills space. The other makes the missing gift feel handled.",
+});
+const arrivalContextResult = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([arrivalContextVariant])),
+});
+assert.equal(arrivalContextResult.variants[0]?.visualStyle, "presenter-teardown-vsl");
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+      visualStyle: "presenter-teardown-vsl",
+      referenceScript: `${arrivalContextVariant.referenceScript} It outnumbers human cells.`,
+    })])),
+  }),
+  /human-cell comparison/,
+);
 
 const inventedBehaviorVariant = makeVariant({ visualStyle: "presenter-teardown-vsl" });
 inventedBehaviorVariant.scriptBeats = inventedBehaviorVariant.scriptBeats.map((beat) => (
@@ -542,7 +833,7 @@ await assert.rejects(
     nvidiaNimApiKey: "test-key",
     nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([compactNearMissVariant])),
   }),
-  /script must be 40-75 words|beat 4 must be one sentence/,
+  /script must be 35-80 words|beat 4 must be one sentence/,
 );
 
 await assert.rejects(
@@ -799,7 +1090,7 @@ const shippingOnlyResult = await generateThreeDBreakdownVariantsFromResearch(wea
     visualStyle: "presenter-teardown-vsl",
     evidenceIndex: shippingOnlyEvidence.evidenceIndex,
     evidenceUseType: shippingOnlyEvidence.evidenceUseType,
-    referenceScript: "Everyone assumes distance makes a dessert gift less personal. But the hidden problem starts before anyone opens the box. A gift has to cross the map and still feel intentional. That's why nationwide shipping matters. It turns a local dessert into something sendable. But there is another problem. The sender cannot explain the thought at the doorstep. So the product moment has to carry it. The shipping promise gets the gift there. The dessert moment makes it feel chosen. So compare them. One gift stops at the bakery. The other crosses the map.",
+    referenceScript: "When someone sends dessert to another city, they assume distance makes the gift less personal. Through the box, they picture a local treat losing its meaning before it arrives. But the hidden problem starts before anyone opens it. Then the local-only idea peels away. A gift box can cross the map and still feel intentional. The first test is shipping. The second test is opening. So the nationwide shipping promise gets the gift to the door. But the dessert moment makes it feel chosen. Birthday, thank-you, office, client. Dessert is not just for the people nearby. Those moments were simply first to notice. One gift stops at the bakery. The other crosses the map.",
     mechanismSummary: "nationwide shipping turns a local dessert into a sendable gift moment",
     revelation: "Gift boxes ship nationwide to your door.",
   })])),
@@ -889,21 +1180,38 @@ assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("four quick micro-beats")
 assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("0-1s setup"));
 assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("second and third micro-beats"));
 assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("module variety"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("Follow the selected storyboard details exactly"));
+assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("Hands place a red cookie tin"));
 assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("Start from storyboard frame 4"));
 assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("unified evidence/payoff state from frame 5"));
 assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("without using a split-screen comparison"));
+assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("Proof blocks assemble in midair around the cookie tin"));
 assert.ok(scene.layout.clipPlans?.[3]?.prompt.includes("clean product payoff composition"));
+assert.ok(scene.layout.clipPlans?.[3]?.prompt.includes("Clean final hand-demo frame"));
 assert.deepEqual(scene.layout.clipPlans?.map((clip) => clip.video?.status), ["idle", "idle", "idle", "idle"]);
 assert.deepEqual(scene.layout.referenceImages?.productImageUrls, ["https://cdn.example/davids-cookie-tin.png"]);
+assert.equal(scene.layout.productAnchor?.title, "Butter Pecan Meltaways Tin");
+assert.equal(scene.layout.productAnchor?.imageUrl, "https://cdn.example/davids-cookie-tin.png");
 const threeDImageActionSource = readFileSync(new URL("../convex/threeDImages.ts", import.meta.url), "utf8");
-assert.ok(threeDImageActionSource.includes("image: { status: \"generating\" }"));
+assert.ok(threeDImageActionSource.includes("image: { status: isPresenterStyle ? \"generating\" : \"idle\" }"));
 assert.ok(threeDImageActionSource.includes("video: { status: \"idle\" as const }"), "Regenerating production frames must clear stale 3D clip videos.");
 assert.ok(threeDImageActionSource.includes("getThreeDImageStyleRules"));
 assert.ok(threeDImageActionSource.includes("storyboard board must define 6 frames before image generation"));
 assert.equal(getRenderMusicBed(scene), null, "3D Breakdown exports should use voiceover only, no background music bed.");
 assert.equal(scene.layout.storyContract.wowMomentType, "proof-blocks");
 assert.equal(scene.layout.storyContract.visualStyle, "toy-character-vsl");
-assert.ok(styleBScene.layout.storyContract.referenceScript?.includes("So compare them."));
+assert.equal(scene.creative.ctaText, "Shop memorable cookie gifts from David's Cookies.");
+assert.equal(scene.layout.storyContract.ctaLine, "Shop memorable cookie gifts from David's Cookies.");
+assert.ok(styleBScene.layout.storyContract.referenceScript?.includes("backup feeling peels away"));
+assert.ok(styleBScene.layout.storyContract.referenceScript?.includes("Birthday, thank-you, office, client"));
+assert.equal(styleBScene.layout.storyContract.ctaLine, "Shop memorable cookie gifts from David's Cookies.");
+assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => clip.frameIndexes), [[1, 2, 3], [4, 5, 6]]);
+assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => clip.durationSeconds), [10, 10]);
+assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => [clip.startMs, clip.endMs]), [[0, 10000], [10000, 20000]]);
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("clip 1 of 2"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("six quick micro-beats"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("silent human-like demonstrator"));
+assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("silent-demonstrator/product proof payoff"));
 assert.ok(scene.layout.groundedEvidence.sourceUrl.includes("davidscookies"));
 const sceneValidation = validateThreeDBreakdownScene(scene);
 assert.deepEqual(sceneValidation.errors, []);
@@ -963,7 +1271,8 @@ const finalPayoffMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
   timeSeconds: 18,
 }));
 assert.ok(!earlyPayoffMarkup.includes("data-three-d-breakdown-final-payoff"));
-assert.ok(!finalPayoffMarkup.includes("data-three-d-breakdown-final-payoff"));
+assert.ok(finalPayoffMarkup.includes("data-three-d-breakdown-final-payoff"));
+assert.ok(finalPayoffMarkup.includes("https://cdn.example/davids-cookie-tin.png"));
 assert.ok(!finalPayoffMarkup.includes("The gift works because buyers"));
 assert.ok(!markup.includes("rgba(15,23,42,.72)"));
 

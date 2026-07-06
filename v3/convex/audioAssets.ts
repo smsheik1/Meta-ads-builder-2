@@ -483,6 +483,9 @@ export const attachBackgroundMusicToScene: ReturnType<typeof action> = action({
     fileName,
   }) => {
     const audioScene = assertShareableAdScene(scene);
+    if (audioScene.format === "three-d-breakdown") {
+      throw new Error("3D Breakdown uses voiceover only; background music is disabled for this format.");
+    }
     const safeMimeType = mimeType.trim() || "audio/mpeg";
     if (!safeMimeType.toLowerCase().startsWith("audio/")) throw new Error("Choose an audio file.");
 

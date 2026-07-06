@@ -1,5 +1,4 @@
 "use client";
-
 import {
   AudioLines,
   BookmarkPlus,
@@ -12,6 +11,7 @@ import {
   Loader2,
   Play,
   Share2,
+  Sparkles,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/sheet";
 import type { SavedAdSceneDesign } from "@/features/create/savedDesigns";
 import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
+import type { ThreeDBreakdownStoryDirection } from "@/features/formats/three-d-breakdown/storyDirections";
 import type { AdFormatId, ThreeDBreakdownAdScene, ThreeDBreakdownClipIndex } from "@/features/scene/types";
 import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
 
@@ -80,7 +81,12 @@ export function CreateQuickActions({
   threeDError,
   threeDImageStatus,
   threeDScene,
+  threeDStoryDirectionError,
+  threeDStoryDirections,
+  threeDStoryDirectionStatus,
   staticPngDownloadBusy,
+  onSelectThreeDStoryDirection,
+  onUseThreeDStoryDirection,
   saveCounterLabel,
   saveError,
   savedDesigns,
@@ -88,6 +94,7 @@ export function CreateQuickActions({
   saveStatusLabel,
   selectedFormat,
   selectedDesignIsSaved,
+  selectedThreeDStoryDirectionId,
   shareError,
   shareStatus,
   shareUrl,
@@ -131,7 +138,12 @@ export function CreateQuickActions({
   threeDError: string;
   threeDImageStatus: BrickStoryboardStatus;
   threeDScene: ThreeDBreakdownAdScene | null;
+  threeDStoryDirectionError: string;
+  threeDStoryDirections: ThreeDBreakdownStoryDirection[];
+  threeDStoryDirectionStatus: BrickStoryboardStatus;
   staticPngDownloadBusy: boolean;
+  onSelectThreeDStoryDirection: (directionId: string) => void;
+  onUseThreeDStoryDirection: (direction: ThreeDBreakdownStoryDirection) => void;
   saveCounterLabel: string;
   saveError: string;
   savedDesigns: SavedAdSceneDesign[];
@@ -139,6 +151,7 @@ export function CreateQuickActions({
   saveStatusLabel: string;
   selectedFormat: AdFormatId | null;
   selectedDesignIsSaved: boolean;
+  selectedThreeDStoryDirectionId: string;
   shareError: string;
   shareStatus: "idle" | "loading" | "ready" | "error";
   shareUrl: string;
@@ -149,9 +162,10 @@ export function CreateQuickActions({
   const visualizerAudioReady = selectedFormat === "visualizer" && hasPlayableAudio;
   const shareSupported = selectedFormat === "visualizer" || selectedFormat === "text-message" || selectedFormat === "motion-story" || ((selectedFormat === "jingle" || selectedFormat === "brainrot" || selectedFormat === "three-d-breakdown") && hasPlayableAudio);
   const showBrickStoryboard = selectedFormat === "jingle";
+  const showThreeDStoryDirections = selectedFormat === "three-d-breakdown" && !threeDScene && (threeDStoryDirections.length > 0 || threeDStoryDirectionStatus === "loading" || Boolean(threeDStoryDirectionError));
   const showThreeDBreakdownAssembly = selectedFormat === "three-d-breakdown" && threeDScene;
   const threeDClipPlans = threeDScene?.layout.clipPlans || [];
-  const threeDClipsReady = threeDClipPlans.length === 4 && threeDClipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
+  const threeDClipsReady = threeDClipPlans.length > 0 && threeDClipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
   const threeDVoiceoverBlocked = selectedFormat === "three-d-breakdown" && !hasPlayableAudio;
   const threeDRenderBlocked = selectedFormat === "three-d-breakdown" && (!threeDClipsReady || threeDVoiceoverBlocked);
   const renderWorkerOffline = !staticPngSelected && renderWorkerHealthy === false;
@@ -313,6 +327,17 @@ export function CreateQuickActions({
         />
       ) : null}
 
+      {showThreeDStoryDirections ? (
+        <ThreeDBreakdownStoryDirectionsCard
+          directions={threeDStoryDirections}
+          error={threeDStoryDirectionError}
+          onSelectDirection={onSelectThreeDStoryDirection}
+          onUseDirection={onUseThreeDStoryDirection}
+          selectedDirectionId={selectedThreeDStoryDirectionId}
+          status={threeDStoryDirectionStatus}
+        />
+      ) : null}
+
       {showThreeDBreakdownAssembly ? (
         <ThreeDBreakdownAssemblyCard
           animationStatus={threeDAnimationStatus}
@@ -391,6 +416,105 @@ export function CreateQuickActions({
   );
 }
 
+function ThreeDBreakdownStoryDirectionsCard({
+  directions,
+  error,
+  onSelectDirection,
+  onUseDirection,
+  selectedDirectionId,
+  status,
+}: {
+  directions: ThreeDBreakdownStoryDirection[];
+  error: string;
+  onSelectDirection: (directionId: string) => void;
+  onUseDirection: (direction: ThreeDBreakdownStoryDirection) => void;
+  selectedDirectionId: string;
+  status: BrickStoryboardStatus;
+}) {
+  const selectedDirection = directions.find((direction) => direction.directionId === selectedDirectionId) || directions[0] || null;
+
+  return (
+    <section className="rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/6" data-three-d-story-directions-card="true">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Story directions</p>
+          <h3 className="mt-1 text-lg font-black text-slate-950">Pick the premise</h3>
+          <p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">
+            Choose the story before spending on images or video.
+          </p>
+        </div>
+        <Badge variant="outline" className="rounded-full text-[10px] font-black uppercase">
+          {status === "loading" ? "Finding ideas" : `${directions.length || 0} ideas`}
+        </Badge>
+      </div>
+
+      {status === "loading" ? (
+        <div className="flex min-h-28 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-xs font-black uppercase tracking-[0.12em] text-slate-400">
+          <Loader2 className="mr-2 size-4 animate-spin" />
+          Building story slate
+        </div>
+      ) : null}
+
+      {directions.length ? (
+        <div className="space-y-2">
+          {directions.map((direction) => {
+            const selected = direction.directionId === selectedDirectionId;
+            return (
+              <article
+                key={direction.directionId}
+                className={`rounded-2xl border p-3 transition ${selected ? "border-slate-950 bg-slate-950 text-white shadow-lg shadow-slate-950/12" : "border-slate-200 bg-slate-50 text-slate-950"}`}
+                data-three-d-story-direction={direction.directionId}
+              >
+                <button
+                  type="button"
+                  onClick={() => onSelectDirection(direction.directionId)}
+                  className="w-full text-left"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className={`text-[9px] font-black uppercase tracking-[0.16em] ${selected ? "text-white/55" : "text-slate-400"}`}>
+                        {direction.category}
+                      </p>
+                      <h4 className="mt-1 text-sm font-black leading-4">{direction.hookLine}</h4>
+                      <p className={`mt-1 text-[11px] font-bold leading-4 ${selected ? "text-white/70" : "text-slate-500"}`}>
+                        {direction.subheadline}
+                      </p>
+                    </div>
+                    {selected ? <Check className="mt-1 size-4 shrink-0" /> : <Sparkles className="mt-1 size-4 shrink-0 text-slate-400" />}
+                  </div>
+                </button>
+                <details className={`mt-3 rounded-xl border px-3 py-2 text-[11px] font-semibold leading-4 ${selected ? "border-white/15 bg-white/10 text-white/75" : "border-slate-200 bg-white text-slate-600"}`}>
+                  <summary className="cursor-pointer text-[10px] font-black uppercase tracking-[0.12em]">
+                    Why this works
+                  </summary>
+                  <p className="mt-2">{direction.shortSummary}</p>
+                  <p className="mt-2"><span className="font-black">Angle:</span> {direction.adAngle}</p>
+                  <p className="mt-2"><span className="font-black">3D reveal:</span> {direction.visualEngine}</p>
+                  <p className="mt-2"><span className="font-black">Why compelling:</span> {direction.whyCompelling}</p>
+                </details>
+                <Button
+                  type="button"
+                  onClick={() => onUseDirection(direction)}
+                  className={`mt-3 h-9 w-full rounded-2xl text-[11px] font-black uppercase tracking-[0.12em] ${selected ? "bg-white text-slate-950 hover:bg-slate-100" : "bg-slate-950 text-white hover:bg-slate-800"}`}
+                  data-three-d-use-story-direction={direction.directionId}
+                >
+                  Use direction
+                </Button>
+              </article>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {error ? (
+        <p className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
+          {error}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
 function statusPill(status: BrickStoryboardStatus) {
   if (status === "ready") return "Ready";
   if (status === "loading") return "Building";
@@ -425,16 +549,20 @@ function ThreeDBreakdownAssemblyCard({
 }) {
   const storyboardBoard = scene.layout.storyboardBoard;
   const storyboardFrames = storyboardBoard?.frames || [];
-  const framesReady = storyboardFrames.length === 6 && storyboardFrames.every((frame) => frame.image?.status === "ready");
-  const framesFailed = storyboardFrames.some((frame) => frame.image?.status === "failed");
   const clipPlans = scene.layout.clipPlans || [];
+  const requiredFrameIndexes = Array.from(new Set(clipPlans.map((clipPlan) => clipPlan.frameIndexes[0]).filter(Boolean)));
+  const requiredFrames = requiredFrameIndexes.length
+    ? storyboardFrames.filter((frame) => requiredFrameIndexes.includes(frame.frameIndex))
+    : storyboardFrames;
+  const framesReady = requiredFrames.length > 0 && requiredFrames.every((frame) => frame.image?.status === "ready");
+  const framesFailed = storyboardFrames.some((frame) => frame.image?.status === "failed");
   const getPreviousClipReady = (clipIndex: ThreeDBreakdownClipIndex) => {
     if (clipIndex === 1) return true;
     const previousClipIndex = (clipIndex - 1) as ThreeDBreakdownClipIndex;
     return clipPlans.some((clipPlan) => clipPlan.clipIndex === previousClipIndex && clipPlan.video?.status === "ready");
   };
   const nextClipPlan = clipPlans.find((clipPlan) => clipPlan.video?.status !== "ready");
-  const videosReady = clipPlans.length === 4 && clipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
+  const videosReady = clipPlans.length > 0 && clipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
   const finalReady = currentRenderStatus === "ready";
   const storyboardBoardStatus = storyboardBoard?.image?.status || "idle";
   const finalStatus = renderBusy ? "Building" : finalReady ? "Final ready" : !hasVoiceover ? "Needs voice" : videosReady ? "Needs MP4" : framesReady ? "Ready for Seedance" : "Needs frames";
@@ -490,14 +618,19 @@ function ThreeDBreakdownAssemblyCard({
             </Badge>
           </div>
           {storyboardBoard ? (
-            <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2" data-three-d-storyboard-board="true">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Storyboard board</p>
-                <p className="mt-0.5 text-xs font-black leading-4 text-slate-950">One six-frame visual plan.</p>
+            <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white" data-three-d-storyboard-board="true">
+              <div className="flex items-center justify-between gap-3 px-3 py-2">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Storyboard board</p>
+                  <p className="mt-0.5 text-xs font-black leading-4 text-slate-950">One six-panel visual QA plan.</p>
+                </div>
+                <Badge variant={storyboardBoardStatus === "ready" ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
+                  {storyboardBoardStatus}
+                </Badge>
               </div>
-              <Badge variant={storyboardBoardStatus === "ready" ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
-                {storyboardBoardStatus}
-              </Badge>
+              {storyboardBoard.image?.url ? (
+                <img src={storyboardBoard.image.url} alt="3D Breakdown storyboard board" className="aspect-[9/16] w-full object-cover" />
+              ) : null}
             </div>
           ) : null}
           {storyboardFrames.length ? (
@@ -510,7 +643,7 @@ function ThreeDBreakdownAssemblyCard({
                       <p className="text-[10px] font-black leading-3 text-slate-950">{frame.label}</p>
                     </div>
                     <Badge variant={frame.image?.status === "ready" ? "default" : "outline"} className="rounded-full px-2 text-[9px] font-black uppercase">
-                      {frame.image?.status || "idle"}
+                      {frame.image?.status || (requiredFrameIndexes.includes(frame.frameIndex) ? "idle" : "plan")}
                     </Badge>
                   </div>
                   {frame.image?.url ? (

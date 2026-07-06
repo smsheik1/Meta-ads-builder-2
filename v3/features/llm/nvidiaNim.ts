@@ -1,7 +1,7 @@
 import { withTimeout } from "./timeout";
 
 export const DEFAULT_NVIDIA_NIM_BASE_URL = "https://integrate.api.nvidia.com/v1";
-export const DEFAULT_NVIDIA_NIM_MODEL = "moonshotai/kimi-k2.6";
+export const DEFAULT_NVIDIA_NIM_MODEL = "z-ai/glm-5.2";
 
 export type NvidiaNimChatCompletion = (input: {
   model: string;

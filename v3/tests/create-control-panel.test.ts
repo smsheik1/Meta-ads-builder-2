@@ -107,6 +107,18 @@ assert.ok(
   "/create must hydrate the Creative Pack rail from saved research-run scenes after refresh.",
 );
 assert.ok(
+  createClientSource.includes("api.adScenes.generateThreeDStoryDirections") &&
+    createClientSource.includes("generateThreeDStoryDirectionSlate") &&
+    createClientSource.includes("threeDStoryDirection: direction") &&
+    createClientSource.includes('format === "three-d-breakdown" && !options.threeDStoryDirection') &&
+    quickActionsSource.includes("data-three-d-story-directions-card") &&
+    quickActionsSource.includes("Pick the premise") &&
+    !quickActionsSource.includes("data-three-d-use-manual-story-direction") &&
+    adScenesSource.includes("export const generateThreeDStoryDirections") &&
+    adScenesSource.includes("threeDStoryDirection: v.optional"),
+  "3D Breakdown must show a five-card story slate before generating the script/media pipeline.",
+);
+assert.ok(
   createClientSource.includes("function isRenderableScene") &&
     createClientSource.includes("getFormatModule(scene.format).validate(scene).valid") &&
     createClientSource.includes("getRenderableSceneEntries(latestGeneration.scenes") &&
@@ -189,10 +201,10 @@ assert.ok(
   "Inline status feedback must be capped at two visible banners.",
 );
 assert.ok(
-  quickActionsSource.includes("threeDRenderBlocked") &&
-    quickActionsSource.includes("threeDVoiceoverBlocked") &&
-    quickActionsSource.includes("threeDClipPlans.length === 4") &&
-    quickActionsSource.includes("threeDClipPlans.every((clipPlan) => clipPlan.video?.status === \"ready\")") &&
+	  quickActionsSource.includes("threeDRenderBlocked") &&
+	    quickActionsSource.includes("threeDVoiceoverBlocked") &&
+	    quickActionsSource.includes("threeDClipPlans.length > 0") &&
+	    quickActionsSource.includes("threeDClipPlans.every((clipPlan) => clipPlan.video?.status === \"ready\")") &&
     quickActionsSource.includes("Add the documentary voiceover before building the MP4.") &&
     quickActionsSource.includes("Generate storyboard frames and Seedance clips before building the MP4."),
   "3D Breakdown must not allow the global MP4 action before generated clips and voiceover exist.",
@@ -205,9 +217,9 @@ assert.ok(
   "3D Breakdown Script ready state must show the narrator script when present plus all narration beats, not only the first line.",
 );
 assert.ok(
-  quickActionsSource.includes('data-three-d-storyboard-board="true"') &&
-    quickActionsSource.includes("One six-frame visual plan.") &&
-    quickActionsSource.includes('data-three-d-storyboard-frames="true"') &&
+	  quickActionsSource.includes('data-three-d-storyboard-board="true"') &&
+	    quickActionsSource.includes("One six-panel visual QA plan.") &&
+	    quickActionsSource.includes('data-three-d-storyboard-frames="true"') &&
     !quickActionsSource.includes("Six-frame 3D Breakdown storyboard board"),
   "3D Breakdown Images step must show compact storyboard status plus frame references without duplicating the full board preview.",
 );

@@ -11,7 +11,10 @@ import { generateMotionStoryVariantsFromResearch, pickMotionStoryProduct } from 
 import { generateReviewsVariantsFromResearch } from "../features/formats/reviews/generate";
 import { normalizeReviewProductHandles, productCatalogHasProductImage } from "../features/formats/reviews/productSelection";
 import { generateTextMessageVariantsFromResearch } from "../features/formats/text-message/generate";
-import { generateThreeDBreakdownVariantsFromResearch } from "../features/formats/three-d-breakdown/generate";
+import {
+  generateThreeDBreakdownStoryDirectionsFromResearch,
+  generateThreeDBreakdownVariantsFromResearch,
+} from "../features/formats/three-d-breakdown/generate";
 import { generateVideoMemeVariantsFromResearch } from "../features/formats/video-meme/generate";
 import { generateWereSorryVariantsFromResearch } from "../features/formats/were-sorry/generate";
 import { fetchEcommerceProductCatalog } from "../features/research/productCatalog";
@@ -33,6 +36,41 @@ const createGenerationBatchId = () => (
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 );
 
+const threeDStoryDirectionValidator = v.object({
+  directionId: v.string(),
+  hookLine: v.string(),
+  subheadline: v.string(),
+  shortSummary: v.string(),
+  category: v.string(),
+  whyCompelling: v.string(),
+  adAngle: v.string(),
+  visualEngine: v.string(),
+  evidenceIndex: v.number(),
+  evidenceUseType: v.union(v.literal("feature"), v.literal("mechanism"), v.literal("offer"), v.literal("review"), v.literal("material"), v.literal("process"), v.literal("guarantee"), v.literal("shipping"), v.literal("proof"), v.literal("category"), v.literal("claim")),
+  possibleRevealPatterns: v.array(v.union(v.literal("exploded-product"), v.literal("xray-cutaway"), v.literal("chaos-to-order"), v.literal("physicalized-ui"), v.literal("invisible-problem"), v.literal("miniature-world"), v.literal("process-pipeline"), v.literal("proof-blocks"), v.literal("before-after-reconstruction"), v.literal("impact-chain"))),
+});
+
+export const generateThreeDStoryDirections: ReturnType<typeof action> = action({
+  args: {
+    researchRunId: v.id("researchRuns"),
+  },
+  handler: async (ctx, { researchRunId }) => {
+    const startedAt = Date.now();
+    console.log("[wiggly:ad-generation] 3d-story-slate:start", {
+      researchRunId: String(researchRunId),
+    });
+    const research = await ctx.runQuery(internal.adSceneStorage.loadResearchForGeneration, {
+      researchRunId,
+    });
+    const generation = await generateThreeDBreakdownStoryDirectionsFromResearch(research);
+    console.log("[wiggly:ad-generation] 3d-story-slate:ready", {
+      elapsedMs: Date.now() - startedAt,
+      storyDirectionCount: generation.directions.length,
+    });
+    return generation;
+  },
+});
+
 export const generateFromResearch: ReturnType<typeof action> = action({
   args: {
     researchRunId: v.id("researchRuns"),
@@ -43,8 +81,9 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     visualizerModel: v.optional(v.string()),
     jingleStyleId: v.optional(v.union(v.literal("modern-hip-hop"), v.literal("cinematic-trap-diss"), v.literal("pop-rap-hook"), v.literal("retail-dance"), v.literal("funky-commercial"))),
     selectedProductHandles: v.optional(v.array(v.string())),
+    threeDStoryDirection: v.optional(threeDStoryDirectionValidator),
   },
-  handler: async (ctx, { researchRunId, count, format = "visualizer", memeModel, videoMemeTemplateId, visualizerModel, jingleStyleId, selectedProductHandles }) => {
+  handler: async (ctx, { researchRunId, count, format = "visualizer", memeModel, videoMemeTemplateId, visualizerModel, jingleStyleId, selectedProductHandles, threeDStoryDirection }) => {
     const startedAt = Date.now();
     const generationBatchId = createGenerationBatchId();
     console.log("[wiggly:ad-generation] action:start", {
@@ -313,7 +352,10 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     }
 
     if (format === "three-d-breakdown") {
-      const generation = await generateThreeDBreakdownVariantsFromResearch(research, { count });
+      const generation = await generateThreeDBreakdownVariantsFromResearch(research, {
+        count,
+        selectedStoryDirection: threeDStoryDirection || null,
+      });
       const scenes = generation.variants.map((variant, index) => createThreeDBreakdownAdScene({
         evidenceItems: generation.evidenceItems,
         research,

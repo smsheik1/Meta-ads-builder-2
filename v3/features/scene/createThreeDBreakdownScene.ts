@@ -33,10 +33,14 @@ export function createThreeDBreakdownAdScene({
   const evidence = evidenceItems.find((item) => item.evidenceIndex === variant.evidenceIndex);
   if (!evidence) throw new Error("3D Breakdown evidence item is missing.");
   const accentColor = pickSceneAccentColor(research.brand.colors);
-  const productImageUrls = (research.productCatalog?.products || [])
+  const productsWithImages = (research.productCatalog?.products || [])
+    .filter((product) => Boolean(product.imageUrl));
+  const productImageUrls = productsWithImages
     .map((product) => product.imageUrl)
     .filter((url): url is string => Boolean(url))
     .slice(0, 2);
+  const anchorProduct = productsWithImages.find((product) => product.badges.includes("best-seller"))
+    || productsWithImages[0];
   const brandImageUrls = [research.brand.ogImageUrl, research.brand.screenshotUrl, research.brand.logoUrl]
     .filter((url): url is string => Boolean(url))
     .slice(0, 2);
@@ -61,7 +65,7 @@ export function createThreeDBreakdownAdScene({
       angleId: `three-d-breakdown-${candidateIndex + 1}`,
       headline: firstBeat.narration,
       subheadline: variant.variantAngle,
-      ctaText: punchlineBeat.narration,
+      ctaText: variant.ctaLine || punchlineBeat.narration,
       headlineType: "receipt_drop",
       selectedPain: variant.customerProblem,
       selectedProof: revelationBeat.narration,
@@ -88,6 +92,7 @@ export function createThreeDBreakdownAdScene({
       },
       clipPlans: createThreeDClipPlans({
         scriptBeats: variant.scriptBeats as ThreeDBreakdownAdScene["layout"]["scriptBeats"],
+        storyboardBoard: variant.storyboardBoard,
         storyContract: {
           ...siteContract,
           visualStyle: variant.visualStyle,
@@ -96,6 +101,7 @@ export function createThreeDBreakdownAdScene({
           mechanismSummary: variant.mechanismSummary,
           visualMetaphor: variant.visualMetaphor,
           referenceScript: variant.referenceScript,
+          ctaLine: variant.ctaLine,
           evidenceIndex: variant.evidenceIndex,
           evidenceUseType: variant.evidenceUseType,
           wowMomentType: variant.wowMomentType,
@@ -109,6 +115,12 @@ export function createThreeDBreakdownAdScene({
         productImageUrls,
         brandImageUrls,
       },
+      productAnchor: anchorProduct && anchorProduct.imageUrl ? {
+        title: anchorProduct.title,
+        url: anchorProduct.url,
+        imageUrl: anchorProduct.imageUrl,
+        imageAlt: anchorProduct.imageAlt,
+      } : undefined,
       storyContract: {
         ...siteContract,
         visualStyle: variant.visualStyle,
@@ -117,6 +129,7 @@ export function createThreeDBreakdownAdScene({
         mechanismSummary: variant.mechanismSummary,
         visualMetaphor: variant.visualMetaphor,
         referenceScript: variant.referenceScript,
+        ctaLine: variant.ctaLine,
         evidenceIndex: variant.evidenceIndex,
         evidenceUseType: variant.evidenceUseType,
         wowMomentType: variant.wowMomentType,

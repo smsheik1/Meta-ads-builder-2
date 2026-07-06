@@ -1,5 +1,20 @@
 import assert from "node:assert/strict";
-import { callNvidiaNimChat } from "../features/llm/nvidiaNim";
+import { callNvidiaNimChat, DEFAULT_NVIDIA_NIM_MODEL } from "../features/llm/nvidiaNim";
+import {
+  DEFAULT_NVIDIA_NIM_AD_IDEA_MODEL,
+  DEFAULT_NVIDIA_NIM_BRAND_CURATOR_MODEL,
+  DEFAULT_NVIDIA_NIM_MEME_MODEL,
+  DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL,
+  NIM_MODEL_OPTIONS,
+} from "../features/llm/nvidiaNimModels";
+
+assert.equal(DEFAULT_NVIDIA_NIM_MODEL, "z-ai/glm-5.2");
+assert.equal(DEFAULT_NVIDIA_NIM_AD_IDEA_MODEL, "z-ai/glm-5.2");
+assert.equal(DEFAULT_NVIDIA_NIM_BRAND_CURATOR_MODEL, "z-ai/glm-5.2");
+assert.equal(DEFAULT_NVIDIA_NIM_MEME_MODEL, "z-ai/glm-5.2");
+assert.equal(DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL, "z-ai/glm-5.2");
+assert.equal(NIM_MODEL_OPTIONS[0]?.id, "z-ai/glm-5.2");
+assert.equal(NIM_MODEL_OPTIONS[0]?.label, "GLM-5.2");
 
 const originalFetch = globalThis.fetch;
 

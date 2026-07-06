@@ -23,16 +23,12 @@ export const THREE_D_STORYBOARD_FRAME_CONTRACTS: NonNullable<ThreeDBreakdownStor
   image: { status: "idle" },
 }));
 
-export const createThreeDStoryboardFrames = () => (
-  THREE_D_STORYBOARD_FRAME_CONTRACTS.map((frame) => ({
-    ...frame,
-    image: { status: "idle" as const },
-  }))
-);
-
 const createClipPrompt = ({
   clipIndex,
   frameIndexes,
+  framePlan,
+  durationSeconds,
+  totalClips,
   world,
   recurringObjects,
   narrative,
@@ -40,21 +36,53 @@ const createClipPrompt = ({
 }: {
   clipIndex: ThreeDBreakdownClipIndex;
   frameIndexes: ThreeDBreakdownStoryboardFrameIndex[];
+  framePlan: string;
+  durationSeconds: number;
+  totalClips: number;
   world: string;
   recurringObjects: string;
   narrative: string;
   direction: string;
 }) => [
-  `Animate storyboard frame${frameIndexes.length > 1 ? "s" : ""} ${frameIndexes.join("-")} as clip ${clipIndex} of 4, vertical 9:16, 5 seconds.`,
+  `Animate storyboard frame${frameIndexes.length > 1 ? "s" : ""} ${frameIndexes.join("-")} as clip ${clipIndex} of ${totalClips}, vertical 9:16, ${durationSeconds} seconds.`,
   `World: ${world}. Recurring objects: ${recurringObjects}. Narrative: ${narrative}`,
+  framePlan,
   direction,
-  "Use four quick micro-beats: 0-1s setup, 1-2.3s obstruction/change, 2.3-3.8s reveal, 3.8-5s payoff/reset.",
+  durationSeconds >= 10
+    ? "Use six quick micro-beats: setup, obstruction, zoom, mechanism change, payoff, and reset/hold; change object state every 1-1.7 seconds."
+    : "Use four quick micro-beats: 0-1s setup, 1-2.3s obstruction/change, 2.3-3.8s reveal, 3.8-5s payoff/reset.",
   "The second and third micro-beats must change the object, camera scale, or mechanism; no static product with drifting particles.",
   "Maintain module variety: product anchor, hidden obstacle, mechanism machine, ingredient/component movement, unified payoff, or clean final product card.",
 ].join(" ");
 
+const summarizeStoryboardFrameForClip = (frame?: StoryboardFrame) => {
+  if (!frame) return "";
+  const details = [
+    `Frame ${frame.frameIndex} ${frame.label}`,
+    frame.visual ? `visual: ${frame.visual}` : "",
+    frame.camera ? `camera: ${frame.camera}` : "",
+    frame.motion ? `motion: ${frame.motion}` : "",
+    frame.editingNote ? `edit: ${frame.editingNote}` : "",
+  ].filter(Boolean);
+  return details.join("; ");
+};
+
+const getClipFramePlan = (
+  storyboardBoard: ThreeDBreakdownStoryboardBoard | undefined,
+  frameIndexes: ThreeDBreakdownStoryboardFrameIndex[],
+) => {
+  const frames = storyboardBoard?.frames || [];
+  const framePlan = frameIndexes
+    .map((frameIndex) => summarizeStoryboardFrameForClip(frames.find((frame) => frame.frameIndex === frameIndex)))
+    .filter(Boolean)
+    .join(" | ");
+  return framePlan
+    ? `Follow the selected storyboard details exactly: ${framePlan}. Overlay words are added by Wiggly later; do not generate readable text.`
+    : "Follow the selected storyboard frames exactly. Overlay words are added by Wiggly later; do not generate readable text.";
+};
+
 export const createThreeDClipPlans = (
-  sceneInput: Pick<ThreeDBreakdownAdScene["layout"], "scriptBeats" | "storyContract">,
+  sceneInput: Pick<ThreeDBreakdownAdScene["layout"], "scriptBeats" | "storyContract" | "storyboardBoard">,
 ): ThreeDBreakdownAdScene["layout"]["clipPlans"] => {
   const consequence = sceneInput.scriptBeats[0]?.narration || "The problem starts.";
   const context = sceneInput.scriptBeats[1]?.narration || "The problem escalates.";
@@ -66,10 +94,8 @@ export const createThreeDClipPlans = (
   const isPresenterStyle = sceneInput.storyContract.visualStyle === "presenter-teardown-vsl";
   const clipDirections = isPresenterStyle
     ? [
-      "Open with a human demo subject, torso, hands, or over-shoulder demonstrator handling the product in a real ecommerce setting, then reveal the hidden problem through the product use moment. The person is visual demonstration only; the unseen narrator carries the explanation. Preserve product identity and no generated text.",
-      "Cut from practical product handling into the hidden customer/product problem becoming physical. Use a real surface or product-use setup first, then a quick 3D explanatory insert only if it clarifies the problem. Preserve product identity and no generated text.",
-      "This is the peak narrator-led ecommerce teardown reveal. Start from storyboard frame 4 as a 3D cutaway, overlay, x-ray, floating component split, or impossible mechanism insert, then return toward frame 5's proof/payoff product moment. Do not use toy-character anatomy or a faceless blue-grid biology montage. Preserve product identity and no generated text.",
-      "Land the evidence payoff, then return to the human/product final with demo subject, torso, hands, or product-in-use payoff visible. Hold the final practical product frame long enough for Wiggly overlays, and do not turn into a logo-only end card.",
+      "Open in the bright blue clinical grid lab with the same silent human-like demonstrator handling the product. Move from false assumption to hidden obstacle to mechanism setup. The person demonstrates only; the unseen narrator explains. Preserve product identity and no generated text.",
+      "Start on the peak 3D teardown reveal, then return to silent-demonstrator/product proof payoff and final product close. Use one impossible insert, then visible product handling. Do not become faceless anatomy, biology stock footage, empty blue grid, or logo-only end card.",
     ]
     : [
       "Open with the stylized human demo character body or torso acting as the scale/customer/body proxy beside the product, then push into the hidden internal problem physically appearing. Preserve product identity, blue-grid 3D world, and no generated text.",
@@ -77,6 +103,51 @@ export const createThreeDClipPlans = (
       "This is the peak wow reveal. Start from storyboard frame 4, then move into the unified evidence/payoff state from frame 5 without using a split-screen comparison. Reveal why the engineered version survives. Keep the product sealed and capsule-shaped; if contents appear, suspend them as particles inside a transparent capsule shell or controlled cutaway, never as an open cup, tube, bucket, bowl, or generic container. Preserve product identity and no generated text.",
       "Land the evidence payoff, then return to a human-scale final transformed state with the demo character body or torso beside the clean product payoff composition. Resolve the physical problem clearly, hold the final branded world long enough for Wiggly overlays, and do not turn into a logo-only end card.",
     ];
+
+  if (isPresenterStyle) {
+    return [
+      {
+        clipIndex: 1,
+        label: "Clip 1: assumption to hidden problem",
+        startMs: 0,
+        endMs: 10_000,
+        durationSeconds: 10,
+        frameIndexes: [1, 2, 3],
+        prompt: createClipPrompt({
+          clipIndex: 1,
+          durationSeconds: 10,
+          totalClips: 2,
+          frameIndexes: [1, 2, 3],
+          framePlan: getClipFramePlan(sceneInput.storyboardBoard, [1, 2, 3]),
+          world,
+          recurringObjects,
+          narrative: `${consequence} ${context} ${mechanism}`,
+          direction: clipDirections[0],
+        }),
+        video: { status: "idle" },
+      },
+      {
+        clipIndex: 2,
+        label: "Clip 2: reveal to product close",
+        startMs: 10_000,
+        endMs: 20_000,
+        durationSeconds: 10,
+        frameIndexes: [4, 5, 6],
+        prompt: createClipPrompt({
+          clipIndex: 2,
+          durationSeconds: 10,
+          totalClips: 2,
+          frameIndexes: [4, 5, 6],
+          framePlan: getClipFramePlan(sceneInput.storyboardBoard, [4, 5, 6]),
+          world,
+          recurringObjects,
+          narrative: `${mechanism} ${revelation} ${punchline}`,
+          direction: clipDirections[1],
+        }),
+        video: { status: "idle" },
+      },
+    ];
+  }
 
   return [
     {
@@ -88,7 +159,10 @@ export const createThreeDClipPlans = (
       frameIndexes: [1, 2],
       prompt: createClipPrompt({
         clipIndex: 1,
+        durationSeconds: 5,
+        totalClips: 4,
         frameIndexes: [1, 2],
+        framePlan: getClipFramePlan(sceneInput.storyboardBoard, [1, 2]),
         world,
         recurringObjects,
         narrative: `${consequence} ${context}`,
@@ -105,7 +179,10 @@ export const createThreeDClipPlans = (
       frameIndexes: [2, 3],
       prompt: createClipPrompt({
         clipIndex: 2,
+        durationSeconds: 5,
+        totalClips: 4,
         frameIndexes: [2, 3],
+        framePlan: getClipFramePlan(sceneInput.storyboardBoard, [2, 3]),
         world,
         recurringObjects,
         narrative: `${context} ${mechanism}`,
@@ -122,7 +199,10 @@ export const createThreeDClipPlans = (
       frameIndexes: [4, 5],
       prompt: createClipPrompt({
         clipIndex: 3,
+        durationSeconds: 5,
+        totalClips: 4,
         frameIndexes: [4, 5],
+        framePlan: getClipFramePlan(sceneInput.storyboardBoard, [4, 5]),
         world,
         recurringObjects,
         narrative: `${mechanism} ${revelation}`,
@@ -139,7 +219,10 @@ export const createThreeDClipPlans = (
       frameIndexes: [5, 6],
       prompt: createClipPrompt({
         clipIndex: 4,
+        durationSeconds: 5,
+        totalClips: 4,
         frameIndexes: [5, 6],
+        framePlan: getClipFramePlan(sceneInput.storyboardBoard, [5, 6]),
         world,
         recurringObjects,
         narrative: `${revelation} ${punchline}`,

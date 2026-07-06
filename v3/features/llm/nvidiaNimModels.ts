@@ -10,6 +10,7 @@ export const DEFAULT_NVIDIA_NIM_WERE_SORRY_MODEL = DEFAULT_NVIDIA_NIM_MODEL;
 export const DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL = DEFAULT_NVIDIA_NIM_MODEL;
 
 export const NIM_MODEL_OPTIONS = [
+  { id: "z-ai/glm-5.2", label: "GLM-5.2" },
   { id: "moonshotai/kimi-k2.6", label: "Kimi K2.6" },
   { id: "deepseek-ai/deepseek-v4-flash", label: "DeepSeek V4 Flash" },
   { id: "deepseek-ai/deepseek-v4-pro", label: "DeepSeek V4 Pro" },

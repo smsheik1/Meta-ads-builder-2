@@ -99,8 +99,8 @@ const visualProfileForEvidence = (
     !/\b(strains?|probiotic|prebiotic|capsule|core|viacap|outer|inner|shield|protect|survive)\b/i.test(text)
   ) {
     return {
-      visualPotentialScore: 0.52,
-      whyVisual: "A broad microbiome fact can support context, but it is weaker than a product mechanism.",
+      visualPotentialScore: 0.72,
+      whyVisual: "A quantified hidden-world fact can become a strong curiosity hook and miniature-world reveal.",
       possibleRevealPatterns: ["miniature-world", "invisible-problem"],
     };
   }

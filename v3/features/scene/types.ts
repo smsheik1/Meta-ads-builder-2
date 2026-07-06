@@ -402,23 +402,35 @@ export type ThreeDBreakdownStoryboardBoard = {
   frameCount: 6;
   imagePrompt: string;
   image?: ThreeDBreakdownMediaRef;
-	  frames?: Array<{
-	    frameIndex: 1 | 2 | 3 | 4 | 5 | 6;
-	    role: "problem" | "escalation" | "mechanism-setup" | "wow-reveal" | "payoff" | "final-state";
-	    label: string;
-	    image?: ThreeDBreakdownMediaRef;
-	  }>;
-	};
+  frames?: Array<{
+    frameIndex: 1 | 2 | 3 | 4 | 5 | 6;
+    role: "problem" | "escalation" | "mechanism-setup" | "wow-reveal" | "payoff" | "final-state";
+    label: string;
+    visual?: string;
+    camera?: string;
+    motion?: string;
+    overlayText?: string;
+    editingNote?: string;
+    image?: ThreeDBreakdownMediaRef;
+  }>;
+};
 
 export type ThreeDBreakdownClipPlan = {
   clipIndex: ThreeDBreakdownClipIndex;
   label: string;
   startMs: number;
   endMs: number;
-  durationSeconds: 5;
+  durationSeconds: number;
   frameIndexes: ThreeDBreakdownStoryboardFrameIndex[];
   prompt: string;
   video?: ThreeDBreakdownMediaRef;
+};
+
+export type ThreeDBreakdownProductAnchor = {
+  title: string;
+  url: string;
+  imageUrl: string;
+  imageAlt: string | null;
 };
 
 export type ThreeDBreakdownAdScene = AdSceneBase<
@@ -440,16 +452,12 @@ export type ThreeDBreakdownAdScene = AdSceneBase<
       ThreeDBreakdownShot & { shotIndex: 3; role: "revelation" },
     ];
     storyboardBoard?: ThreeDBreakdownStoryboardBoard;
-    clipPlans?: [
-      ThreeDBreakdownClipPlan & { clipIndex: 1 },
-      ThreeDBreakdownClipPlan & { clipIndex: 2 },
-      ThreeDBreakdownClipPlan & { clipIndex: 3 },
-      ThreeDBreakdownClipPlan & { clipIndex: 4 },
-    ];
+    clipPlans?: ThreeDBreakdownClipPlan[];
     referenceImages?: {
       productImageUrls: string[];
       brandImageUrls: string[];
     };
+    productAnchor?: ThreeDBreakdownProductAnchor;
     storyContract: {
       visualStyle: ThreeDBreakdownVisualStyle;
       primarySiteType: ThreeDBreakdownPrimarySiteType;
@@ -463,6 +471,7 @@ export type ThreeDBreakdownAdScene = AdSceneBase<
       mechanismSummary: string;
       visualMetaphor: string;
       referenceScript?: string;
+      ctaLine?: string;
       evidenceIndex: number;
       evidenceUseType: ThreeDBreakdownEvidenceUseType;
       wowMomentType: ThreeDBreakdownRevealPattern;
