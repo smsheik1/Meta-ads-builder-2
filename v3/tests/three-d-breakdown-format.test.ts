@@ -1211,6 +1211,8 @@ assert.ok(threeDImageActionSource.includes("oversized tactile props"));
 assert.ok(threeDImageActionSource.includes("not lab technician"));
 assert.ok(threeDImageActionSource.includes("transparent torso or body-route"));
 assert.ok(threeDImageActionSource.includes("the human only demonstrates"));
+assert.ok(threeDImageActionSource.includes("silent demonstrator visible in the same blue-grid world"));
+assert.ok(threeDImageActionSource.includes("do not detach into a standalone macro tube"));
 assert.ok(threeDImageActionSource.includes("No huge blank tables"));
 assert.ok(threeDImageActionSource.includes("image: { status: isPresenterStyle ? \"generating\" : \"idle\" }"));
 assert.ok(threeDImageActionSource.includes("video: { status: \"idle\" as const }"), "Regenerating production frames must clear stale 3D clip videos.");

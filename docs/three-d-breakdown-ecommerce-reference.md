@@ -70,6 +70,7 @@ The first paid-ish visual gate is one 6-frame storyboard board for visual QA. It
 6. Final product payoff with blank tokens for renderer overlays.
 
 The board is allowed to be a contact sheet for QA only. Individual production anchors later must not be a collage, split screen, or labeled storyboard.
+The second-half reveal anchor must keep the product and silent demonstrator in the same blue-grid world; do not detach the mechanism into a standalone macro tube or biology insert.
 
 ## 20 Second Clip Rhythm
 

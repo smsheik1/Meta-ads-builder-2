@@ -30,6 +30,9 @@ const getThreeDSeedancePromptSuffix = (scene: ThreeDBreakdownAdScene) => {
     isPresenterStyle
       ? "Make the motion feel embodied through the same casual silent demonstrator, hands, torso, body-route view, over-shoulder angle, or product-use demonstration returning throughout the clip; narrator/captions present the argument, the human only demonstrates."
       : "Make the motion feel embodied: keep a stylized human demo character, body proxy, or scale figure returning throughout the clip as the continuity spine, with frame 1 and final-payoff moments showing the character body or torso beside the product.",
+    isPresenterStyle
+      ? "During the peak mechanism reveal, keep the product jar/package and silent demonstrator visible in the same blue-grid world as scale anchors; do not detach into a standalone macro tube or biology insert."
+      : "",
     "Change visual state about every second; use body/pathway travel, macro cutaways, mechanism machines, particle motion, or product payoff resets instead of holding a static capsule render.",
     isPresenterStyle
       ? "Every frame must contain visible silent demonstrator/hands/torso, product, product-use setup, mechanism insert, particles, pipes, scale props, or physical obstacle; never cut to a plain dark screen, empty blue grid, empty gradient, or caption-only moment."
@@ -200,7 +203,7 @@ const getThreeDFrameNarrative = (
       1: `False assumption / common use. Narration: ${consequence}. Show a casual silent recurring 3D demonstrator/scale figure in a bright blue clinical grid lab handling the product before the hidden problem is revealed. Include a tactile demo prop or product-use surface, but no huge empty counter foreground. Use ${shot1.explainerDevice}; physical action: the ordinary use is demonstrated and the risk is implied.`,
       2: `Hidden problem. Narration: ${context}. In the same blue grid lab, the casual silent demonstrator points to a product path, pipe, capsule route, particle flow, oversized prop comparison, clear jar, glass, or scale object where the hidden obstacle becomes physically visible. Continue ${shot1.sceneDescription}.`,
       3: `Mechanism setup. Narration: ${mechanism}. Show casual demonstrator hands or torso silently demonstrating the exact product detail that leads into the 3D mechanism reveal with a tactile prop, pipe, jar, capsule, tray, or product-use surface. Use ${shot2.explainerDevice}; physical action: ${shot2.physicalAction}.`,
-	      4: `Peak 3D teardown insert. Narration: ${mechanism} ${revelation}. Use ${contract.wowMomentType}: ${contract.wowMoment}. Viewer learns: ${contract.viewerLearns}. This should feel like an impossible product cutaway, x-ray, pipe demo, floating component split, or particle mechanism inside the same blue lab.`,
+	      4: `Peak 3D teardown insert. Narration: ${mechanism} ${revelation}. Use ${contract.wowMomentType}: ${contract.wowMoment}. Viewer learns: ${contract.viewerLearns}. This should feel like an impossible product cutaway, x-ray, pipe demo, floating component split, or particle mechanism inside the same blue lab, with product jar/package and silent demonstrator still present as scale anchors.`,
       5: `Evidence payoff. Narration: ${revelation}. Return from the 3D insert to the silent-demonstrator/product demo with selected evidence represented as blank physical tokens, product behavior, component movement, or product-use result.`,
       6: `Final human/product payoff. Narration: ${punchline}. Show the casual silent demonstrator, torso, hands, or over-shoulder product demo clearly with the product in a clean final blue-grid ecommerce frame, with blank proof/component tokens for renderer captions later.`,
 	    };
@@ -260,7 +263,7 @@ const buildThreeDProductionFramePrompt = (
     contract.visualStyle === "presenter-teardown-vsl"
       ? "For supplement/digestive products, match the reference grammar: demonstrator with capsule/cup, transparent torso or body-route, macro obstacle, machine/pipe mechanism, demonstrator/product payoff, final bottle/product close. Avoid detached gut tunnels or faceless anatomy montages."
 	      : "For supplement/digestive products, include internal-body journey imagery when relevant: transparent torso, gut tunnel, intestinal wall, acid bath, cell wall, particles traveling, or protected capsule passing through a pathway.",
-	    contract.visualStyle === "presenter-teardown-vsl"
+    contract.visualStyle === "presenter-teardown-vsl"
       ? "Do not keep every frame on the same empty blue tabletop. The blue clinical palette should unify silent-demonstrator demo frames, pipe/pathway props, mechanism inserts, particle movement, and final product stage shots."
 	      : "Do not keep every frame on the same empty blue tabletop. The blue/cyan instructional palette should unify body cutaways, process tunnels, mechanism machines, and final stage shots.",
     "If a style reference contains captions, shirt text, labels, logos, or blue cleanup mask bands, ignore those cleanup artifacts and preserve only the 3D texture, blue stage, scale, guide energy, and macro mechanism language.",
