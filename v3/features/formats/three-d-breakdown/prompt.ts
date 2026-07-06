@@ -168,7 +168,7 @@ Return JSON only:
       "claimRiskReason": "claim safety reason",
       "storyboardBoard": {
         "frameCount": 6,
-        "imagePrompt": "one six-panel storyboard board for visual QA before video spend",
+        "imagePrompt": "one unlabeled six-still contact sheet for visual QA before video spend",
         "frames": [
           { "frameIndex": 1, "role": "problem", "label": "Problem state", "visual": "...", "camera": "...", "motion": "...", "overlayText": "renderer overlay only", "editingNote": "..." },
           "...repeat for frame 2 escalation, frame 3 mechanism-setup, frame 4 wow-reveal, frame 5 payoff, frame 6 final-state"
@@ -245,12 +245,13 @@ Style A - toy-character-vsl:
 Style B - presenter-teardown-vsl:
 - Reference-matching ecommerce style: fast unseen-narrator product teardown with a recurring silent 3D demonstrator and impossible 3D inserts.
 - The human-like demo subject is not a talking presenter. They are the recurring visual continuity spine: a generic 3D person, torso, hands, or over-shoulder product demonstrator who silently handles products and shows scale.
+- Visible face: simple neutral 3D cap/goggles, never a faceless mannequin.
 - Every frame lives in one bright blue clinical grid lab world with a grid floor/wall, crisp product-science lighting, and readable 9:16 composition.
 - The demonstrator uses props, capsules, pipes, particles, scale comparisons, product handling, and lab-demo gestures to make the hidden problem visible.
 - Use 3D for impossible explanation: cutaway, overlay, floating components, particles, invisible problem, cross-section, proof tokens, or a mechanism machine.
 - At least 5 of 6 frames include the silent demo subject, torso, hands, over-shoulder view, or connected product-use surface. Frame 1 and 6 show human/product relationship.
 - Reference formula: ${THREE_D_STYLE_B_REFERENCE_FORMULA}. This same formula can expand to 60 seconds later; for MVP compress it into 20 seconds.
-- Avoid faceless anatomy montages, biology-documentary visuals, random gut tunnels, abstract science posters, all-blue empty tabletop repetition, dark cinematic rooms, toy-character anatomy, and logo-only endings.
+- Avoid faceless mannequins, faceless anatomy montages, biology-documentary visuals, random gut tunnels, abstract science posters, all-blue empty tabletop repetition, dark cinematic rooms, toy-character anatomy, and logo-only endings.
 
 - Supplement/digestive products should use a body journey: transparent torso, gut path, acid bath, particles traveling, or capsule pathway.
 - Product category alone fails. Prefer mechanism, process, material, component, product detail, or concrete feature evidence.
@@ -258,7 +259,7 @@ Style B - presenter-teardown-vsl:
 - If no product imagery exists, use abstract 3D metaphors and do not invent specific product design.
 
 Storyboard contract:
-- Compress the 60-second high-retention storyboard instinct into exactly six 20-second storyboard panels.
+- Compress the 60-second high-retention storyboard instinct into exactly six unlabeled 20-second film stills.
 - storyboardBoard.frames is the visual QA plan before video spend; do not make it decorative.
 - Each frame must include visual, camera, motion, overlayText, editingNote.
 - overlayText is metadata for Wiggly renderer overlays only; 2-5 words; never generated inside images.
@@ -267,7 +268,7 @@ Storyboard contract:
 
 Visual speed target from the ecommerce reference:
 - Change object state roughly every 0.5-1.5 seconds; this 20-second MVP must feel fast, not like three slow hero shots.
-- storyboardBoard.imagePrompt describes one six-panel storyboard board with six distinct vertical panels for visual QA, not final video footage.
+- storyboardBoard.imagePrompt describes one unlabeled six-still contact sheet for visual QA, not final footage.
 - Six-frame order: 1 false use, 2 hidden obstacle, 3 mechanism setup, 4 peak cutaway, 5 payoff, 6 final product.
 - Use at least four modules: product intro, hidden obstacle, mechanism/cutaway, moving parts, payoff, final product.
 - Do not repeat one product angle more than two frames or morph products into generic containers/posters.
@@ -285,8 +286,8 @@ Image prompt rules:
 - Do not include quoted words or label text inside storyboardBoard.imagePrompt or shot imagePrompt; use blank tokens or physical objects instead.
 - Captions, logo, CTA, and proof are renderer overlays, not image pixels.
 - Represent proof/numbers as blank tokens, unmarked blocks, unlabeled counters, plain shapes, or motion.
-- Production keyframe image prompts must ask for one clear vertical 9:16 3D scene with one dominant subject/action. Storyboard-board prompts are the only place where a six-panel board is allowed.
-- The subject must be grounded on or intersect the blue/cyan grid plane.
+- Production keyframe prompts ask for one clear vertical 9:16 3D scene. Storyboard prompts are the only place where a six-still sheet is allowed.
+- Subject must touch the blue/cyan grid plane.
 
 Claim-risk rules: low passes if grounded; medium cannot be stronger than evidence; high needs exact support plus safe risk flags. For regulated flags, exact support is not enough; reject unsafe cure, prevention, diagnosis, revenue, legal outcome, safety, or guaranteed-result claims. A website making a risky claim does not automatically make that claim safe to repeat.
 

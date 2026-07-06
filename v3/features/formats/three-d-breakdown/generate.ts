@@ -540,6 +540,7 @@ const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
       "Visual style: presenter-teardown-vsl.",
       "The six frames must feel like a real ecommerce product teardown with an unseen narrator and a silent recurring demonstrator, not a toy-character science world.",
       "Use a human-like demo subject, torso, hands, product-use surface, or over-shoulder demonstrator as the visual continuity spine in at least four frames, including frame 1 and frame 6.",
+      "When the demo subject's face is visible, use a simple neutral 3D face with cap/goggles like the reference; do not create a faceless mannequin.",
       "The person is demonstration/retention footage only; they do not speak, point to captions, introduce the product, or become the narrator.",
       "Frame 1: demo subject or hands show the product in a real use setting while the false assumption appears visually.",
       "Frame 2: the hidden customer/product problem appears during actual product use, handling, opening, eating, applying, wearing, or setup.",
@@ -618,30 +619,29 @@ const parseStoryboardBoard = (value: unknown, visualStyle: ThreeDBreakdownVisual
   assertNoQuotedImageText(imagePrompt, "storyboard board image prompt");
   const frames = parseStoryboardFrames(raw.frames);
   const framePlanText = frames.map((frame) => [
-    `Frame ${frame.frameIndex} ${frame.label}`,
-    `visual: ${frame.visual}`,
-    `camera: ${frame.camera}`,
-    `motion: ${frame.motion}`,
-    `edit: ${frame.editingNote}`,
-    `overlay metadata only: ${frame.overlayText}`,
-  ].join("; ")).join(" | ");
+    `visual ${frame.visual}`,
+    `camera ${frame.camera}`,
+    `motion ${frame.motion}`,
+  ].join("; ")).join(" / next silent still: ");
   const lockedPrompt = [
-    "Create ONE vertical 9:16 six-panel storyboard board for visual QA before video generation.",
-    "Use six stacked cinematic storyboard panels in one image, separated by thin clean gutters, like a production storyboard/contact board.",
+    "Create ONE vertical 9:16 image containing six raw, unlabeled film stills for visual QA before video generation.",
+    "Arrange the six stills in a clean 2-column by 3-row contact sheet with thin white gutters only.",
+    "Each still must fill its cell edge-to-edge; no blank white rows, title bands, empty margins, or presentation whitespace.",
     "This is not final footage and not a single hero frame. It is a full-board visual plan that lets a human judge the whole 20-second story before spending video credits.",
     "Use one coherent procedural 3D explainer world on a clean blue/cyan blueprint-grid stage, close camera, one dominant subject/action per panel.",
     "If image references are provided, use the style reference frame only for visual grammar and use product/brand references only for shape, color, packaging cues, and material cues.",
     `Story sequence to visualize: ${imagePrompt}`,
-    `Detailed frame plan to preserve: ${framePlanText}`,
-    "Frame order: frame 1 problem state, frame 2 context escalation, frame 3 mechanism setup, frame 4 peak impossible-to-film wow reveal, frame 5 evidence/payoff, frame 6 final transformed state.",
-    "For ecommerce mechanism teardowns, reinterpret the panel order as: panel 1 false assumption/common use, panel 2 hidden physical obstacle, panel 3 first component/mechanism, panel 4 peak cutaway or delivery reveal, panel 5 unified evidence/payoff frame where the selected product stays central and any ordinary-version contrast appears only as a small unmarked remnant/token/background residue, panel 6 final product payoff.",
-    "Panel 5 must not be a split-screen, side-by-side divider, comparison chart, two-column layout, before/after wall, vertical seam, or separated left/right comparison because later production anchors must stay coherent.",
-    "Frame 5 must keep the selected product stable and central as the main subject. Do not crack, shatter, melt, break, leak, or fail the central product in frame 5; any failed ordinary version must be a small separate side remnant, debris token, or background residue.",
+    `Internal reading-order still plan to preserve, never visible as text: ${framePlanText}`,
+    "Sequence, visually: ordinary-use setup; hidden obstacle; mechanism setup; peak impossible-to-film reveal; evidence/payoff; final transformed product state.",
+    "For ecommerce mechanism teardowns, show common use first, then hidden physical obstacle, then first component/mechanism, then peak cutaway or delivery reveal, then a unified evidence/payoff frame where the selected product stays central and any ordinary-version contrast appears only as a small unmarked remnant/token/background residue, then final product payoff.",
+    "The fifth visual beat must not be a split-screen, side-by-side divider, comparison chart, two-column layout, before/after wall, vertical seam, or separated left/right comparison because later production anchors must stay coherent.",
+    "The fifth visual beat must keep the selected product stable and central as the main subject. Do not crack, shatter, melt, break, leak, or fail the central product in that beat; any failed ordinary version must be a small separate side remnant, debris token, or background residue.",
     "For ecommerce, make the plan feel like a fast product-science teardown short: repeated product/package anchoring, quick visual resets, macro mechanism close-ups, component or particle movement, and a final product payoff composition.",
     "Use at least four distinct visual modules across the six frames: product/scale intro, hidden obstacle, mechanism machine or cutaway, ingredient/component movement, unified ordinary-to-selected-product payoff, final product payoff.",
     "Do not let the same close-up product angle dominate more than two frames. Keep the visual story changing every frame.",
     ...getStoryboardStyleRules(visualStyle),
-    "Every panel must contain a visible subject, object, and physical action. Panel 1 cannot be an empty stage; it must show friction physically blocking, piling up, splitting, leaking, breaking, tangling, or creating tension.",
+    "Every panel must contain a visible subject, object, and physical action. The first panel cannot be an empty stage; it must show friction physically blocking, piling up, splitting, leaking, breaking, tangling, or creating tension.",
+    "The written still plan and any overlayText values are internal instructions only. Do not draw any of those words.",
     "No panel labels, no panel numbers, no captions, no caption bars, no black lower bars, no progress bars, no readable text, no UI labels, no speech bubbles, no receipts, no posters, no typography-led design.",
     "No words, letters, numbers, percentages, ratings, price tags, labels, handwriting, UI copy, text-like glyphs, icons, arrows, checkmarks, X marks, or alphanumeric marks anywhere inside panels. Do not write FRAME 1, FRAME 2, scene labels, headings, or any other annotations.",
     "If proof or numeric evidence appears in the story, visualize it as blank physical tokens, unmarked blocks, unlabeled counters, plain geometric tokens, or motion only.",
@@ -992,16 +992,19 @@ const createSelectedDirectionStoryboard = ({
 	    },
 	  ];
   const framePlanText = frames.map((frame) => (
-    `Frame ${frame.frameIndex}: ${frame.visual} Camera: ${frame.camera} Motion: ${frame.motion}`
-  )).join(" ");
+    `visual ${frame.visual}; camera ${frame.camera}; motion ${frame.motion}`
+  )).join(" / next silent still: ");
 	  return {
 	    frameCount: 6,
 	    imagePrompt: [
-      "Create one vertical 9:16 six-panel storyboard board for a 20-second ecommerce product-science teardown.",
+      "Create one vertical 9:16 image containing six raw, unlabeled film stills for a 20-second ecommerce product-science teardown.",
+      "Arrange the six stills in a clean 2-column by 3-row contact sheet with thin white gutters only.",
+      "Each still must fill its cell edge-to-edge; no blank white rows, title bands, empty margins, or presentation whitespace.",
       "Use a recurring silent 3D demonstrator/scale figure in a bright blue clinical grid lab, plus product handling and one impossible 3D insert.",
-	      `Shared world: ${siteContract.visualWorld}. Lighting: ${siteContract.lighting}. Camera: ${siteContract.cameraStyle}.`,
-	      `Recurring objects: ${siteContract.recurringObjects.join(", ")}.`,
-	      "No readable text, labels, captions, logos, receipts, numbers, arrows, icons, or UI inside the generated frames.",
+      `Shared world: ${siteContract.visualWorld}. Lighting: ${siteContract.lighting}. Camera: ${siteContract.cameraStyle}.`,
+      `Recurring objects: ${siteContract.recurringObjects.join(", ")}.`,
+      "No readable text, labels, captions, logos, receipts, numbers, arrows, icons, panel headings, beat numbers, or UI inside the generated frames.",
+      "The written still descriptions are internal instructions only; do not draw any of those words.",
       framePlanText,
     ].join(" "),
     image: { status: "idle" },

@@ -13,7 +13,7 @@ import type {
   ThreeDBreakdownStoryboardFrameIndex,
 } from "../features/scene/types";
 
-const THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH = "/three-d-breakdown/references/ecommerce-teardown-style-reference-v1.jpg";
+const THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH = "/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v5.jpg";
 const THREE_D_SEEDANCE_MAX_PROMPT_CHARS = 3900;
 const getThreeDSeedancePromptSuffix = (scene: ThreeDBreakdownAdScene) => {
   const isPresenterStyle = scene.layout.storyContract.visualStyle === "presenter-teardown-vsl";
@@ -36,7 +36,7 @@ const getThreeDSeedancePromptSuffix = (scene: ThreeDBreakdownAdScene) => {
       : "Every frame must contain a visible demo character/body proxy, product, mechanism, character hand, particles, or physical obstacle; never cut to a plain dark screen, empty blue grid, empty gradient, or caption-only moment.",
     "If you need a transition, use an object wipe, camera push, particle burst, component reveal, or foreground product pass so the frame remains visually active.",
     "No readable text, captions, labels, numbers, logos, UI copy, subtitles, icons, arrows, checkmarks, or X marks.",
-    "If a reference image contains captions, shirt text, labels, or logos, treat them as style artifacts only and do not reproduce them.",
+    "If a reference image contains captions, shirt text, labels, logos, or blue cleanup mask bands, treat them as style-cleanup artifacts only and do not reproduce them.",
     "Show proof concepts as blank physical tokens, unmarked objects, light, steam, crumbs, ribbon, or motion only.",
   ].join(" ");
 };
@@ -45,13 +45,13 @@ const getThreeDImageStyleRules = (scene: ThreeDBreakdownAdScene) => {
   const isPresenterStyle = scene.layout.storyContract.visualStyle === "presenter-teardown-vsl";
   return [
     isPresenterStyle
-      ? "Unseen-narrator ecommerce product teardown: bright blue clinical grid lab, one recurring silent 3D demonstrator/scale figure, product handling, props, capsules, pipes, particles, scale comparisons, bright creator-ad lighting, and short 3D mechanism inserts."
+      ? "Unseen-narrator ecommerce product teardown: bright blue clinical grid lab, one recurring silent 3D demonstrator/scale figure with a simple neutral face/cap/goggles, product handling, props, capsules, pipes, particles, scale comparisons, bright creator-ad lighting, and short 3D mechanism inserts."
       : "Bright blue/cyan blueprint-grid stage, flat readable lab lighting, close product-science camera, strong subject/background separation.",
     isPresenterStyle
       ? "Use the same silent demonstrator/product relationship as the continuity anchor; intro and final frames show demonstrator/torso/hands with the product in the blue grid lab, while mechanism frames may use a 3D overlay, macro cutaway, x-ray, or product interior insert."
       : "Use the recurring stylized demo character/body proxy as the continuity anchor; intro and final frames show a body or torso, while mechanism frames may use the same hand, pointer, probe, scale figure, or body cutaway.",
     isPresenterStyle
-      ? "Avoid toy-character anatomy, cartoon body-wall characters, faceless anatomy montages, random gut tunnels, pure biology-documentary visuals, dark voids, luxury product-card stills, empty negative space, posters, UI cards, and typography-led graphics."
+      ? "Avoid toy-character anatomy, faceless mannequin presenters, cartoon body-wall characters, faceless anatomy montages, random gut tunnels, pure biology-documentary visuals, dark voids, luxury product-card stills, empty negative space, posters, UI cards, and typography-led graphics."
       : "Avoid faceless biology montages, dark rooms, black voids, smoky sci-fi labs, luxury product-card stills, empty negative space, posters, UI cards, and typography-led graphics.",
     "Preserve product shape, color, material, packaging cues, and category. Capsules stay capsule-shaped, bottles stay bottles, packaging stays packaging; all labels remain blank and unreadable.",
     "If a bottle, jar, pouch, box, card, or package faces camera, make the front surface completely blank matte material or rotate the label side away from camera. Never render brand names, logos, label panels, ingredient text, badge text, tiny copy, pseudo-letters, or fake product labels.",
@@ -263,7 +263,7 @@ const buildThreeDProductionFramePrompt = (
 	    contract.visualStyle === "presenter-teardown-vsl"
       ? "Do not keep every frame on the same empty blue tabletop. The blue clinical palette should unify silent-demonstrator demo frames, pipe/pathway props, mechanism inserts, particle movement, and final product stage shots."
 	      : "Do not keep every frame on the same empty blue tabletop. The blue/cyan instructional palette should unify body cutaways, process tunnels, mechanism machines, and final stage shots.",
-    "If a style reference contains captions, shirt text, labels, or logos, ignore those text details and preserve only the 3D texture, blue stage, scale, guide energy, and macro mechanism language.",
+    "If a style reference contains captions, shirt text, labels, logos, or blue cleanup mask bands, ignore those cleanup artifacts and preserve only the 3D texture, blue stage, scale, guide energy, and macro mechanism language.",
     "If product reference images include labels or logos, use them only to infer product category, color, silhouette, material, and packaging shape. Do not copy any text, logo, label layout, badge, icon, dosage copy, or pseudo-writing from the reference image.",
     "Brand identity, captions, CTA, and proof text are added by Wiggly renderer overlays later; the generated frame must contain no readable or fake text anywhere.",
     "Do not make quiet product-card stills. Do not leave empty negative space for captions. The physical mechanism must carry the frame.",
@@ -275,24 +275,26 @@ const buildThreeDProductionFramePrompt = (
 const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
   const contract = scene.layout.storyContract;
   const framePlan = (scene.layout.storyboardBoard?.frames || []).map((frame) => (
-    `Panel ${frame.frameIndex} ${frame.label}: ${[
+    [
       frame.visual ? `visual ${frame.visual}` : "",
       frame.camera ? `camera ${frame.camera}` : "",
       frame.motion ? `motion ${frame.motion}` : "",
-    ].filter(Boolean).join("; ")}`
-  )).join(" | ");
+    ].filter(Boolean).join("; ")
+  )).join(" / next silent still: ");
   return [
-    "Create ONE vertical 9:16 six-panel storyboard board for visual QA before video generation.",
-    "Use six stacked cinematic storyboard panels in one image, clearly separated by thin white gutters.",
-    "This is a storyboard/contact board, not final footage and not a single hero image.",
+    "Create ONE vertical 9:16 image containing six raw, unlabeled film stills for visual QA before video generation.",
+    "Arrange the six stills in a clean 2-column by 3-row contact sheet with thin white gutters only.",
+    "Each still must fill its cell edge-to-edge; no blank white rows, title bands, empty margins, or presentation whitespace.",
+    "This is not final footage and not a single hero image.",
     contract.visualStyle === "presenter-teardown-vsl"
       ? "Reference style: recurring silent generic 3D demonstrator/scale figure, bright blue clinical grid lab world, product handling, props, capsules, pipes, particles, scale comparisons, and one impossible 3D mechanism insert."
       : "Reference style: recurring stylized demo character/body proxy in a bright blue/cyan clinical grid product-science world.",
     `Shared visual world: ${contract.visualWorld}. Lighting: ${contract.lighting}. Camera: ${contract.cameraStyle}. Recurring objects: ${contract.recurringObjects.join(", ")}.`,
     scene.layout.storyboardBoard?.imagePrompt || "",
-    framePlan,
+    `Internal reading-order still plan, never visible as text: ${framePlan}.`,
+    "The written plan and descriptions are internal instructions only; do not draw any of these words, headings, or annotations.",
     "No readable text, captions, subtitles, logos, labels, numbers, UI copy, arrows, checkmarks, X marks, fake writing, or product-label typography anywhere.",
-    "If reference images contain text or logos, ignore text details and preserve only product shape, color, material, scale, and composition cues.",
+    "If reference images contain text, logos, or blue cleanup mask bands, ignore those cleanup artifacts and preserve only product shape, color, material, scale, and composition cues.",
     "Captions, CTA, product logo, and proof text are renderer overlays later.",
   ].join(" ");
 };

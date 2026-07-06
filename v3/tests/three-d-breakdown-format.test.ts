@@ -240,7 +240,7 @@ const twoDirectionPrompt = buildThreeDBreakdownPrompt({ count: THREE_D_BREAKDOWN
 const styleBScriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({ evidence: evidenceItems, research });
 const storyDirectionsPrompt = buildThreeDBreakdownStoryDirectionsPrompt({ evidence: evidenceItems, research });
 const ecommerceReferenceDoc = readFileSync(new URL("../../docs/three-d-breakdown-ecommerce-reference.md", import.meta.url), "utf8");
-const ecommerceStyleReferenceBytes = readFileSync(new URL("../public/three-d-breakdown/references/ecommerce-teardown-style-reference-v1.jpg", import.meta.url));
+const ecommerceStyleReferenceBytes = readFileSync(new URL("../public/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v5.jpg", import.meta.url));
 assert.equal(THREE_D_BREAKDOWN_VARIANT_COUNT, 2);
 assert.equal(THREE_D_BREAKDOWN_MAX_TOKENS, 4000);
 assert.equal(THREE_D_BREAKDOWN_DURATION_MS, 20_000);
@@ -279,8 +279,8 @@ assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions p
   "Total narration must be 35-80 words",
   "Pick the most visual evidence item.",
   "Do not ask the image model for readable text",
-  "one six-panel storyboard board",
-  "Storyboard-board prompts are the only place where a six-panel board is allowed",
+  "one unlabeled six-still contact sheet",
+  "Storyboard prompts are the only place where a six-still sheet is allowed",
   "A website making a risky claim does not automatically make that claim safe to repeat.",
 ].forEach((expected) => assert.ok(prompt.includes(expected), `3D Breakdown prompt missing: ${expected}`));
 assert.ok(twoDirectionPrompt.includes("Write exactly 2 variants."));
@@ -611,16 +611,18 @@ assert.ok(!/watch me|i am showing/i.test(generated.variants[1]?.referenceScript 
 assert.equal(generated.variants[0]?.scriptBeats.length, 5);
 assert.equal(generated.variants[0]?.shots.length, 3);
 assert.equal(generated.variants[0]?.storyboardBoard.frameCount, 6);
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("six-panel storyboard board"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("six raw, unlabeled film stills"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("2-column by 3-row contact sheet"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Each still must fill its cell edge-to-edge"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("visual QA before video generation"));
 assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not generate one board"));
 assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("SIX separate vertical 9:16 production keyframes"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("no black lower bars"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Panel 1 cannot be an empty stage"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("false assumption/common use"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("The first panel cannot be an empty stage"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("show common use first"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("unified evidence/payoff frame"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Panel 5 must not be a split-screen"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not crack, shatter, melt, break, leak, or fail the central product in frame 5"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("The fifth visual beat must not be a split-screen"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not crack, shatter, melt, break, leak, or fail the central product in that beat"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("fast product-science teardown short"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("at least four distinct visual modules"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("same close-up product angle dominate more than two frames"));
@@ -643,10 +645,13 @@ assert.equal(generated.variants[0]?.storyboardBoard.frames?.length, 6);
 assert.equal(generated.variants[0]?.storyboardBoard.frames?.[0]?.visual, "Hands place a red cookie tin beside an empty birthday table setting while the gift spot feels unresolved.");
 assert.equal(generated.variants[0]?.storyboardBoard.frames?.[3]?.role, "wow-reveal");
 assert.equal(generated.variants[0]?.storyboardBoard.frames?.[3]?.motion, "Blocks snap together, then the table gap visibly collapses.");
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Detailed frame plan to preserve"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Frame 4 Wow reveal; visual: Proof blocks assemble"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("overlay metadata only: Proof locks in"));
-assert.ok(prompt.includes("Compress the 60-second high-retention storyboard instinct into exactly six 20-second storyboard panels."));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Internal reading-order still plan to preserve"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("visual Proof blocks assemble"));
+assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("Visual beat 4"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("internal instructions only"));
+assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("overlay metadata only"));
+assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("Frame 4 Wow reveal"));
+assert.ok(prompt.includes("Compress the 60-second high-retention storyboard instinct into exactly six unlabeled 20-second film stills."));
 assert.ok(prompt.includes("2 hidden obstacle/invisible problem/impossible zoom"));
 assert.ok(prompt.includes("overlayText is metadata for Wiggly renderer overlays only"));
 
@@ -1193,6 +1198,8 @@ assert.deepEqual(scene.layout.referenceImages?.productImageUrls, ["https://cdn.e
 assert.equal(scene.layout.productAnchor?.title, "Butter Pecan Meltaways Tin");
 assert.equal(scene.layout.productAnchor?.imageUrl, "https://cdn.example/davids-cookie-tin.png");
 const threeDImageActionSource = readFileSync(new URL("../convex/threeDImages.ts", import.meta.url), "utf8");
+assert.ok(threeDImageActionSource.includes("ecommerce-teardown-style-reference-clean-v5.jpg"));
+assert.ok(threeDImageActionSource.includes("blue cleanup mask bands"));
 assert.ok(threeDImageActionSource.includes("image: { status: isPresenterStyle ? \"generating\" : \"idle\" }"));
 assert.ok(threeDImageActionSource.includes("video: { status: \"idle\" as const }"), "Regenerating production frames must clear stale 3D clip videos.");
 assert.ok(threeDImageActionSource.includes("getThreeDImageStyleRules"));
