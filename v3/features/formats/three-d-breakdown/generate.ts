@@ -540,7 +540,7 @@ const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
       "Visual style: presenter-teardown-vsl.",
       "The six frames must feel like a real ecommerce product teardown with an unseen narrator and a silent recurring demonstrator, not a toy-character science world.",
       "Use a human-like demo subject, torso, hands, product-use surface, or over-shoulder demonstrator as the visual continuity spine in at least four frames, including frame 1 and frame 6.",
-      "When the demo subject's face is visible, use a simple neutral 3D face with cap/goggles like the reference; do not create a faceless mannequin.",
+      "When the demo subject's face is visible, use a casual creator-ad 3D person with a simple neutral face, cap/goggles, everyday shirt, and product-demo posture; do not create a faceless mannequin, lab technician, doctor, scientist, or sterile PPE worker.",
       "The person is demonstration/retention footage only; they do not speak, point to captions, introduce the product, or become the narrator.",
       "Frame 1: demo subject or hands show the product in a real use setting while the false assumption appears visually.",
       "Frame 2: the hidden customer/product problem appears during actual product use, handling, opening, eating, applying, wearing, or setup.",
@@ -548,8 +548,9 @@ const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
       "Frame 4: peak impossible-to-film 3D overlay, cutaway, x-ray, component split, invisible-problem reveal, or mechanism insert.",
       "Frame 5: return from the 3D insert into a practical proof/payoff product moment with blank tokens or physical cues.",
       "Frame 6: clean human/product final with demo subject, torso, hands, or product-in-use payoff, plus blank overlay-safe tokens.",
-      "Use real-world ecommerce spaces where useful: kitchen, countertop, desk, package opening surface, bathroom counter, table, sink, simple creator studio, or hand-demo setup.",
-      "Do not use toy-character anatomy, cartoon wall characters, faceless biology montages, or all-blue tabletop repetition.",
+      "Use oversized tactile demo props like clear tubes, jars, glasses, capsules, particles, piles, blocks, pipes, scoops, scales, trays, or product-use surfaces so the demo feels physically staged, not like a generic science diagram.",
+      "Use real-world ecommerce spaces where useful, but keep the reference spine: bright blue grid floor/wall, casual demo person, product handling, oversized prop comparison, and macro mechanism inserts.",
+      "Do not use toy-character anatomy, cartoon wall characters, faceless biology montages, all-blue tabletop repetition, sterile cleanroom emptiness, lab-coat scientists, or doctor-like presenters.",
     ]
     : [
       "Visual style: toy-character-vsl.",
