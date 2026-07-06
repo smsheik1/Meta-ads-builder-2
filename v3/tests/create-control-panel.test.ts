@@ -269,7 +269,7 @@ assert.ok(
     threeDImagesSource.includes("generateReplicateSeedanceVideo") &&
     jingleStoryboardSource.includes("generate_audio: false") &&
     threeDImagesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH") &&
-    threeDImagesSource.includes("ecommerce-teardown-style-reference-clean-v5.jpg") &&
+    threeDImagesSource.includes("ecommerce-teardown-style-reference-clean-v6.jpg") &&
     threeDImagesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_URL") &&
     threeDImagesSource.includes("requireThreeDStyleReferenceUrl") &&
     threeDImagesSource.includes("getThreeDImageInput") &&

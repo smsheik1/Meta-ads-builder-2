@@ -15,7 +15,7 @@ Local analysis artifacts:
 - `/tmp/wiggly-reference-analysis/ecommerce-reference-contact-sheet.jpg`
 - `/tmp/wiggly-reference-analysis/ecommerce-reference-first20-2fps.jpg`
 - `/tmp/wiggly-reference-analysis/ecommerce-style-reference-2x2.jpg`
-- `v3/public/three-d-breakdown/references/ecommerce-teardown-style-reference-v1.jpg`
+- `v3/public/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v6.jpg`
 
 ## Baseline Ratings
 
@@ -35,8 +35,10 @@ Required ingredients:
 - Flat readable lab lighting, not moody cinematic darkness.
 - A recurring silent demonstrator, torso, hand, pointer, or scale proxy in most frames.
 - The human never performs the ad copy. Narrator/captions carry the argument; the human only demonstrates scale, use, and cause/effect.
+- The checked-in style reference keeps the source captions visible because they are part of the source frames, but image/video prompts must treat those captions, shirt text, and labels as reference artifacts only. Real Wiggly captions are renderer overlays.
 - One product or package identity anchored across the sequence.
 - No generated readable text, captions, labels, logos, numbers, checkmarks, or arrows inside images.
+- Brand names, product names, evidence text, CTA copy, and overlay text may appear in prompt context, but image/video providers must render blank packages/tokens only. v10 failed this by writing product text in the final panel; v11 is the current accepted storyboard direction.
 - Captions are renderer overlays.
 - One visible state change per frame or roughly every second in video.
 - Four or more visual modules across the 20 seconds: product/scale intro, body/pathway or hidden obstacle, mechanism machine or cutaway, component/particle movement, evidence payoff, final product payoff.
@@ -71,6 +73,12 @@ The first paid-ish visual gate is one 6-frame storyboard board for visual QA. It
 
 The board is allowed to be a contact sheet for QA only. Individual production anchors later must not be a collage, split screen, or labeled storyboard.
 The second-half reveal anchor must keep the product and silent demonstrator in the same blue-grid world; do not detach the mechanism into a standalone macro tube or biology insert.
+
+Current accepted Seed visual gate artifacts:
+
+- Storyboard board: `output/three-d-breakdown/seed-style-b-storyboard-board-v11.jpg`
+- Clip 1 production anchor: `output/three-d-breakdown/seed-style-b-production-anchor-clip1-v2.jpg`
+- Clip 2 production anchor: `output/three-d-breakdown/seed-style-b-production-anchor-clip2-v3.jpg`
 
 ## 20 Second Clip Rhythm
 

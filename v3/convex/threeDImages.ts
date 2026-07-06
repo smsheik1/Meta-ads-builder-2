@@ -13,7 +13,7 @@ import type {
   ThreeDBreakdownStoryboardFrameIndex,
 } from "../features/scene/types";
 
-const THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH = "/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v5.jpg";
+const THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH = "/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v6.jpg";
 const THREE_D_SEEDANCE_MAX_PROMPT_CHARS = 3900;
 const getThreeDSeedancePromptSuffix = (scene: ThreeDBreakdownAdScene) => {
   const isPresenterStyle = scene.layout.storyContract.visualStyle === "presenter-teardown-vsl";
@@ -39,7 +39,8 @@ const getThreeDSeedancePromptSuffix = (scene: ThreeDBreakdownAdScene) => {
       : "Every frame must contain a visible demo character/body proxy, product, mechanism, character hand, particles, or physical obstacle; never cut to a plain dark screen, empty blue grid, empty gradient, or caption-only moment.",
     "If you need a transition, use an object wipe, camera push, particle burst, component reveal, or foreground product pass so the frame remains visually active.",
     "No readable text, captions, labels, numbers, logos, UI copy, subtitles, icons, arrows, checkmarks, or X marks.",
-    "If a reference image contains captions, shirt text, labels, logos, or blue cleanup mask bands, treat them as style-cleanup artifacts only and do not reproduce them.",
+    "Even when brand names, product names, evidence text, CTA, or overlay words appear in context, never render those words in image pixels; use blank packages and blank physical tokens instead.",
+    "If a reference image contains captions, shirt text, labels, or logos, treat them as visual-reference artifacts only and do not reproduce them.",
     "Show proof concepts as blank physical tokens, unmarked objects, light, steam, crumbs, ribbon, or motion only.",
   ].join(" ");
 };
@@ -59,6 +60,7 @@ const getThreeDImageStyleRules = (scene: ThreeDBreakdownAdScene) => {
     "Preserve product shape, color, material, packaging cues, and category. Capsules stay capsule-shaped, bottles stay bottles, packaging stays packaging; all labels remain blank and unreadable.",
     "If a bottle, jar, pouch, box, card, or package faces camera, make the front surface completely blank matte material or rotate the label side away from camera. Never render brand names, logos, label panels, ingredient text, badge text, tiny copy, pseudo-letters, or fake product labels.",
     "No readable text, logos, letters, numbers, captions, UI copy, arrows, checkmarks, X marks, or label-like rectangles. Show proof as blank physical tokens, particles, light, steam, crumbs, ribbon, or motion.",
+    "Even if brand names, product names, evidence text, CTA, or overlay words are present in scene context, keep all image pixels text-free with blank packages and blank tokens.",
   ].join(" ");
 };
 
@@ -266,7 +268,7 @@ const buildThreeDProductionFramePrompt = (
     contract.visualStyle === "presenter-teardown-vsl"
       ? "Do not keep every frame on the same empty blue tabletop. The blue clinical palette should unify silent-demonstrator demo frames, pipe/pathway props, mechanism inserts, particle movement, and final product stage shots."
 	      : "Do not keep every frame on the same empty blue tabletop. The blue/cyan instructional palette should unify body cutaways, process tunnels, mechanism machines, and final stage shots.",
-    "If a style reference contains captions, shirt text, labels, logos, or blue cleanup mask bands, ignore those cleanup artifacts and preserve only the 3D texture, blue stage, scale, guide energy, and macro mechanism language.",
+    "If a style reference contains captions, shirt text, labels, or logos, ignore those reference artifacts and preserve only the 3D texture, blue stage, scale, silent-demonstrator energy, and macro mechanism language.",
     "If product reference images include labels or logos, use them only to infer product category, color, silhouette, material, and packaging shape. Do not copy any text, logo, label layout, badge, icon, dosage copy, or pseudo-writing from the reference image.",
     "Brand identity, captions, CTA, and proof text are added by Wiggly renderer overlays later; the generated frame must contain no readable or fake text anywhere.",
     "Do not make quiet product-card stills. Do not leave empty negative space for captions. The physical mechanism must carry the frame.",
@@ -298,7 +300,7 @@ const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
     "The written plan and descriptions are internal instructions only; do not draw any of these words, headings, or annotations.",
     "No huge blank tables, empty counters, empty foreground blocks, sterile white workbenches, or dead product-card whitespace; every still must feel cropped like active video footage.",
     "No readable text, captions, subtitles, logos, labels, numbers, UI copy, arrows, checkmarks, X marks, fake writing, or product-label typography anywhere.",
-    "If reference images contain text, logos, or blue cleanup mask bands, ignore those cleanup artifacts and preserve only product shape, color, material, scale, and composition cues.",
+    "If reference images contain text or logos, ignore those reference artifacts and preserve only product shape, color, material, scale, and composition cues.",
     "Captions, CTA, product logo, and proof text are renderer overlays later.",
   ].join(" ");
 };

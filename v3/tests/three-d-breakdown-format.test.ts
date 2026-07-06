@@ -240,13 +240,15 @@ const twoDirectionPrompt = buildThreeDBreakdownPrompt({ count: THREE_D_BREAKDOWN
 const styleBScriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({ evidence: evidenceItems, research });
 const storyDirectionsPrompt = buildThreeDBreakdownStoryDirectionsPrompt({ evidence: evidenceItems, research });
 const ecommerceReferenceDoc = readFileSync(new URL("../../docs/three-d-breakdown-ecommerce-reference.md", import.meta.url), "utf8");
-const ecommerceStyleReferenceBytes = readFileSync(new URL("../public/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v5.jpg", import.meta.url));
+const ecommerceStyleReferenceBytes = readFileSync(new URL("../public/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v6.jpg", import.meta.url));
 assert.equal(THREE_D_BREAKDOWN_VARIANT_COUNT, 2);
 assert.equal(THREE_D_BREAKDOWN_MAX_TOKENS, 4000);
 assert.equal(THREE_D_BREAKDOWN_DURATION_MS, 20_000);
 assert.ok(ecommerceStyleReferenceBytes.byteLength > 5_000, "3D Breakdown ecommerce style reference image must stay checked in.");
 assert.ok(ecommerceReferenceDoc.includes("Speed/change density: 10/10"));
 assert.ok(ecommerceReferenceDoc.includes("Bright blue/cyan technical grid floor and wall."));
+assert.ok(ecommerceReferenceDoc.includes("captions, shirt text, and labels as reference artifacts only"));
+assert.ok(ecommerceReferenceDoc.includes("v10 failed this by writing product text"));
 assert.ok(ecommerceReferenceDoc.includes("One visible state change per frame or roughly every second in video."));
 assert.ok(ecommerceReferenceDoc.includes("Do not keep trying provider calls"));
 assert.ok(prompt.length < 16_000, `3D Breakdown director prompt is too large: ${prompt.length} chars`);
@@ -1204,8 +1206,9 @@ assert.deepEqual(scene.layout.referenceImages?.productImageUrls, ["https://cdn.e
 assert.equal(scene.layout.productAnchor?.title, "Butter Pecan Meltaways Tin");
 assert.equal(scene.layout.productAnchor?.imageUrl, "https://cdn.example/davids-cookie-tin.png");
 const threeDImageActionSource = readFileSync(new URL("../convex/threeDImages.ts", import.meta.url), "utf8");
-assert.ok(threeDImageActionSource.includes("ecommerce-teardown-style-reference-clean-v5.jpg"));
-assert.ok(threeDImageActionSource.includes("blue cleanup mask bands"));
+assert.ok(threeDImageActionSource.includes("ecommerce-teardown-style-reference-clean-v6.jpg"));
+assert.ok(threeDImageActionSource.includes("captions, shirt text, labels, or logos"));
+assert.ok(threeDImageActionSource.includes("never render those words in image pixels"));
 assert.ok(threeDImageActionSource.includes("casual silent 3D demonstrator"));
 assert.ok(threeDImageActionSource.includes("oversized tactile props"));
 assert.ok(threeDImageActionSource.includes("not lab technician"));
