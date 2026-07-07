@@ -1,6 +1,7 @@
 import type { ThreeDBreakdownMusicBedId } from "../../scene/types";
 
-export const THREE_D_BREAKDOWN_DURATION_MS = 21_000;
+export const THREE_D_BREAKDOWN_LEGACY_DURATION_MS = 21_000;
+export const THREE_D_BREAKDOWN_DURATION_MS = 20_000;
 export const THREE_D_BREAKDOWN_MUSIC_VOLUME = 0.12 as const;
 
 const musicSrcById: Record<ThreeDBreakdownMusicBedId, string> = {

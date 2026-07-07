@@ -1,5 +1,5 @@
 import type { ThreeDBreakdownSiteContract, ThreeDBreakdownVariant } from "../formats/three-d-breakdown/generate";
-import { getThreeDBreakdownMusicBed, getThreeDBreakdownMusicBedId } from "../formats/three-d-breakdown/music";
+import { THREE_D_BREAKDOWN_DURATION_MS } from "../formats/three-d-breakdown/music";
 import type { ThreeDBreakdownEvidenceItem } from "../formats/three-d-breakdown/evidence";
 import type { StoredWebsiteResearchResult } from "../research/types";
 import { pickSceneAccentColor } from "./createVisualizerScene";
@@ -32,7 +32,6 @@ export function createThreeDBreakdownAdScene({
   const evidence = evidenceItems.find((item) => item.evidenceIndex === variant.evidenceIndex);
   if (!evidence) throw new Error("3D Breakdown evidence item is missing.");
   const accentColor = pickSceneAccentColor(research.brand.colors);
-  const musicBed = getThreeDBreakdownMusicBed(getThreeDBreakdownMusicBedId(candidateIndex));
   const firstBeat = variant.scriptBeats[0]!;
   const revelationBeat = variant.scriptBeats.find((beat) => beat.role === "revelation") || variant.scriptBeats[3]!;
   const punchlineBeat = variant.scriptBeats.find((beat) => beat.role === "punchline") || variant.scriptBeats[4]!;
@@ -71,10 +70,9 @@ export function createThreeDBreakdownAdScene({
     },
     layout: {
       preset: "three-d-breakdown",
-      durationMs: 21_000,
+      durationMs: THREE_D_BREAKDOWN_DURATION_MS,
       scriptBeats: variant.scriptBeats as ThreeDBreakdownAdScene["layout"]["scriptBeats"],
       shots: variant.shots as ThreeDBreakdownAdScene["layout"]["shots"],
-      musicBed,
       storyContract: {
         ...siteContract,
         variantAngle: variant.variantAngle,
