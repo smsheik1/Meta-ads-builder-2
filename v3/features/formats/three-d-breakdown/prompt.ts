@@ -217,7 +217,6 @@ Style B narration spine:
 - Include a literal transformation verb like cracks, peels, falls away, reveals, rebuilds, snaps, turns, stacks, or locks.
 - Include a use test where the product is worn/opened/tasted/applied/carried/used/moved/shared/trained/handled.
 - Include audience expansion: show the product is not only for the assumed user or moment.
-- Product is revealed through mechanisms, not by a person.
 - If a story direction was selected, stay on that premise even when another evidence item scores higher.
 - Open with curiosity before selling. Prefer "You think..." / "A person assumes..." / "Every time..." when it fits.
 - ctaLine is separate from referenceScript/scriptBeats and may use Shop/Start/Try/Visit.
@@ -235,7 +234,8 @@ Style B - presenter-teardown-vsl:
 - Fast unseen-narrator ecommerce teardown with recurring silent 3D demonstrator/scale figure and impossible 3D inserts.
 - Show, don't tell. Each sentence becomes visible action: handling, route, failure, scattering, layers, mechanism, machine, or payoff.
 - The visuals do the heavy lifting: make product, route, obstacle, or mechanism visibly change state.
-- Founder prompt discipline: visual fingerprint, recurring subject/product, action, camera, lighting, mood, consistency.
+- Match reference energy: hard resets, prop worlds, floods, machine cutaways; no calm renders.
+- Founder prompt discipline: fingerprint, subject/product, action, camera, light, consistency.
 - If a narration sentence cannot become a visible production still with a changed object state, rewrite the sentence before returning JSON.
 - Demonstrator is not host; they wear, hold, open, swallow, pour, carry, train in, or stand behind product/path.
 - Human is silent continuity: full body, torso, hands, or over-shoulder demo.
@@ -244,13 +244,12 @@ Style B - presenter-teardown-vsl:
 - Each frame uses this skeleton: locked style, recurring demonstrator/product, scene action, camera/framing, lighting, color/mood, consistency.
 - If a face appears, use a casual 3D demo person; no mannequin, anatomy model, test dummy, blue gloves, mask, lab/medical costume, or PPE.
 - Every frame lives in one blue technical grid studio with crisp lighting and readable 9:16 composition.
-- Demonstrator uses tactile props: tubes, jars, capsules, particles, piles, blocks, pipes, trays.
-- At least 5 of 6 frames include the recurring demo subject, body-route, hands, or product-use surface. Frames 1 and 6 show the human/product relationship.
-- Across six frames, include separate modules: human/product use, body-route/path, obstacle, mechanism pipe, particles, final payoff.
+- Across six frames include human/product use, body-route/path, obstacle, mechanism pipe, particles, payoff; frames 1 and 6 show human/product relationship.
 - Formula: ${THREE_D_STYLE_B_REFERENCE_FORMULA}; compress to 20 seconds.
+- Supplement/digestive: frame 3 crowded particle pile-up; frame 4 machine-room wow with pipe, fans, valves, protected capsule core, active flow.
 - Avoid mannequins, anatomy models, test dummies, talking presenter gestures, biology-doc visuals, random gut tunnels, cleanrooms, huge counters, medical costumes, and logo-only endings.
 
-- Supplement/digestive: demonstrator with capsule/cup, semi-transparent torso/body-route, obstacle wall, pipe/machine mechanism, product payoff, final blank bottle/package. No gloves or medical mannequin.
+- Supplement/digestive: demonstrator with capsule/cup, torso/body-route, obstacle wall, pipe/machine mechanism, product payoff, final blank bottle/package. No gloves or medical mannequin.
 - Supplement/digestive obstacle frames: clean graphic product-science footage with blue body-route, tidy pink cell-wall/obstacle, visible particles; no wet gut, gore, organ close-up, or gross macro.
 - Product category alone fails. Prefer mechanism, process, material, component, product detail, or concrete feature evidence.
 - If product imagery exists, preserve shape, colors, packaging cues, and category. Do not invent labels/logos/text; without imagery, use abstract 3D metaphors.
@@ -271,6 +270,7 @@ Visual speed target from the ecommerce reference:
 - storyboardBoard.imagePrompt describes one unlabeled six-still contact sheet for QA, not final footage.
 - Six-frame order: 1 false use, 2 hidden obstacle, 3 mechanism setup, 4 peak cutaway, 5 payoff, 6 final product.
 - Use at least four modules: product intro, hidden obstacle, mechanism/cutaway, moving parts, payoff, final product.
+- Prefer dense obstacles, particle floods, routes, machinery, fans, valves, tubes, tactile props over beauty renders.
 - Do not repeat one product angle more than two frames or morph products into generic containers.
 - Frame 6 is clean final stage for Wiggly's real product overlay; do not recreate exact packaging.
 

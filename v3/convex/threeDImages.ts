@@ -312,6 +312,7 @@ const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
     "Create ONE vertical 9:16 image containing six raw, unlabeled film stills for visual QA before video generation.",
     "Arrange the six stills in a clean 2-column by 3-row contact sheet with thin white gutters only.",
     "Each still must fill its cell edge-to-edge; no blank white rows, title bands, empty margins, or presentation whitespace.",
+    "Absolute text ban: the image must contain zero words and zero letters. Do not draw headings, titles, labels, frame numbers, UI, arrows, icons, shirt text, product text, fake writing, glyphs, or alphanumeric marks.",
     "This is not final footage and not a single hero image.",
     contract.visualStyle === "presenter-teardown-vsl"
       ? "Reference style: recurring casual silent 3D demonstrator/scale figure, bright blue technical grid product-demo studio, product handling, transparent torso/body-route or cell-wall footage for supplement stories, obstacle wall or pile-up, capsules, pipes, particles, scale comparisons, mechanism machine/cutaway, and one impossible 3D mechanism insert."
@@ -330,10 +331,16 @@ const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
     "The written plan and descriptions are internal instructions only; do not draw any of these words, headings, or annotations.",
     "No huge blank tables, empty counters, empty foreground blocks, sterile white workbenches, or dead product-card whitespace; every still must feel cropped like active video footage.",
     contract.visualStyle === "presenter-teardown-vsl"
+      ? "Match the reference energy: dense tactile prop worlds, particle floods, obstacle texture, industrial machine-room cutaways, hard visual resets, and active physical teaching frames instead of calm product renders."
+      : "",
+    contract.visualStyle === "presenter-teardown-vsl"
       ? "Use the same recurring casual silent 3D demonstrator/scale figure across the contact sheet; full body or torso is preferred in the first and final still, hands/product detail can appear in middle stills. No blue medical gloves, latex gloves, nitrile gloves, PPE, lab coats, doctors, scientists, mannequins, or training anatomy models. Final still must include a blank supplement bottle/jar/package silhouette plus capsule."
       : "",
     contract.visualStyle === "presenter-teardown-vsl"
       ? "Across the six stills, include distinct teaching modules instead of repeating one blue tabletop: human/product use, hidden body-route or product path, obstacle wall/pile-up, mechanism machine or pipe, moving particles/components, and final product payoff."
+      : "",
+    contract.visualStyle === "presenter-teardown-vsl"
+      ? "For supplement/digestive stories, make the obstacle still crowded and kinetic with particles piling up or scattering, and make the mechanism still a true machine-room wow with pipes, fans, valves, protected capsule core, and active flow."
       : "",
     contract.visualStyle === "presenter-teardown-vsl"
       ? "Supplement/digestive hidden-obstacle stills should be clean graphic product-science footage: blue route, tidy pink cell-wall/obstacle surface, visible particles, and crisp lighting. Do not render wet fleshy intestine tunnels, gore, horror anatomy, detached organ close-ups, or gross medical macro shots."
