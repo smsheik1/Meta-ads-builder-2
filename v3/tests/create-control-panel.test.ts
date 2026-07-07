@@ -225,6 +225,12 @@ assert.ok(
   "3D Breakdown Images step must show compact storyboard status plus frame references without duplicating the full board preview.",
 );
 assert.ok(
+  quickActionsSource.includes('data-three-d-anchor-errors="true"') &&
+    quickActionsSource.includes("Frame {frame.frameIndex}:") &&
+    quickActionsSource.includes("frame.image?.error"),
+  "3D Breakdown anchor failures must expose the failed frame and provider error instead of only generic retry copy.",
+);
+assert.ok(
   quickActionsSource.includes('data-three-d-clip-plan="true"') &&
     quickActionsSource.includes("clipPlans.map") &&
     quickActionsSource.includes("clipPlan.frameIndexes.map") &&
@@ -280,6 +286,8 @@ assert.ok(
     threeDImagesSource.includes("storyboard-gate:ready") &&
     threeDImagesSource.includes("buildThreeDProductionFramePrompt") &&
     threeDImagesSource.includes("production-frame:start") &&
+    threeDImagesSource.includes("anchorFramesToGenerate") &&
+    threeDImagesSource.includes("frame.image?.status !== \"ready\"") &&
     threeDImagesSource.includes("activeFrameIndex") &&
     threeDImagesSource.includes("storyboard board must define 6 frames before image generation") &&
     !threeDImagesSource.includes("createThreeDStoryboardFrames") &&
@@ -290,6 +298,14 @@ assert.ok(
     threeDImagesSource.includes("imageInput,") &&
     threeDImagesSource.includes("scene.layout.referenceImages?.productImageUrls"),
   "3D Breakdown media generation must require the style reference and expose explicit sequential Seedance clips without preflight/repair scaffolding.",
+);
+const productionFramesReadyIndex = threeDImagesSource.indexOf('console.log("[wiggly:3d-breakdown] production-frames:ready"');
+const preserveReadyAnchorIndex = threeDImagesSource.indexOf('if (frame.image?.status === "ready") return frame;');
+assert.ok(
+  preserveReadyAnchorIndex !== -1 &&
+    productionFramesReadyIndex !== -1 &&
+    preserveReadyAnchorIndex < productionFramesReadyIndex,
+  "3D Breakdown anchor retry must preserve previously ready anchors when saving newly generated anchors.",
 );
 assert.ok(
   jingleStoryboardSource.includes('BRICK_STORYBOARD_IMAGE_MODEL = "google/nano-banana-2-lite"') &&

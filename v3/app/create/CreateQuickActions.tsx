@@ -556,6 +556,7 @@ function ThreeDBreakdownAssemblyCard({
     : storyboardFrames;
   const framesReady = requiredFrames.length > 0 && requiredFrames.every((frame) => frame.image?.status === "ready");
   const framesFailed = storyboardFrames.some((frame) => frame.image?.status === "failed");
+  const failedFrames = storyboardFrames.filter((frame) => frame.image?.status === "failed");
   const getPreviousClipReady = (clipIndex: ThreeDBreakdownClipIndex) => {
     if (clipIndex === 1) return true;
     const previousClipIndex = (clipIndex - 1) as ThreeDBreakdownClipIndex;
@@ -679,9 +680,18 @@ function ThreeDBreakdownAssemblyCard({
               Storyboard generation failed. Generate the storyboard again before production anchors.
             </p>
           ) : framesFailed ? (
-            <p className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
-              One or more production anchors failed. Generate anchors again.
-            </p>
+            <div className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
+              <p>One or more production anchors failed. Generate anchors again.</p>
+              {failedFrames.length ? (
+                <div className="mt-2 space-y-1" data-three-d-anchor-errors="true">
+                  {failedFrames.map((frame) => (
+                    <p key={frame.frameIndex}>
+                      Frame {frame.frameIndex}: {frame.image?.error || "Anchor image generation failed."}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           ) : null}
           <Button
             type="button"

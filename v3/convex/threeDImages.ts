@@ -392,12 +392,15 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
     if (isPresenterStyle && imageMode === "anchors" && storyboardBoard.image?.status !== "ready") {
       throw new Error("Generate the 3D Breakdown storyboard board before production anchors.");
     }
+    const anchorFramesToGenerate = baseFrames.filter((frame) => (
+      requiredAnchorFrameIndexes.includes(frame.frameIndex) && frame.image?.status !== "ready"
+    ));
     nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
       ...board,
       image: generateBoard ? { status: "generating" as const } : board.image,
       frames: baseFrames.map((frame) => ({
         ...frame,
-        image: generateAnchors && requiredAnchorFrameIndexes.includes(frame.frameIndex)
+        image: generateAnchors && anchorFramesToGenerate.some((anchorFrame) => anchorFrame.frameIndex === frame.frameIndex)
           ? { status: "generating" as const }
           : frame.image?.status === "ready" ? frame.image : { status: "idle" as const },
       })),
@@ -458,7 +461,7 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
         return { scene: nextScene };
       }
 
-      for (const frame of baseFrames.filter((frame) => requiredAnchorFrameIndexes.includes(frame.frameIndex))) {
+      for (const frame of anchorFramesToGenerate) {
         activeFrameIndex = frame.frameIndex;
         const prompt = buildThreeDProductionFramePrompt(nextScene, frame.frameIndex);
         console.log("[wiggly:3d-breakdown] production-frame:start", {
@@ -485,11 +488,14 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
       nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
         ...board,
         image: storedBoardImage || board.image || { status: "ready" },
-        frames: baseFrames.map((frame) => storedFrames.find((stored) => stored.frameIndex === frame.frameIndex) || {
-          ...frame,
-          image: requiredAnchorFrameIndexes.includes(frame.frameIndex)
-            ? { status: "idle" as const }
-            : { status: "idle" as const },
+        frames: baseFrames.map((frame) => {
+          const storedFrame = storedFrames.find((stored) => stored.frameIndex === frame.frameIndex);
+          if (storedFrame) return storedFrame;
+          if (frame.image?.status === "ready") return frame;
+          return {
+            ...frame,
+            image: { status: "idle" as const },
+          };
         }),
       }));
       console.log("[wiggly:3d-breakdown] production-frames:ready", {
