@@ -177,7 +177,7 @@ export function CreateQuickActions({
     : threeDVoiceoverBlocked
       ? "Add the documentary voiceover before building the MP4."
       : threeDRenderBlocked
-      ? "Generate storyboard frames and Seedance clips before building the MP4."
+      ? "Generate the storyboard, production anchors, and Seedance clips before building the MP4."
       : renderWorkerOffline
       ? "Start npm run dev from the repo root to run the render worker."
       : "Download this ad as an MP4";
@@ -565,6 +565,23 @@ function ThreeDBreakdownAssemblyCard({
   const videosReady = clipPlans.length > 0 && clipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
   const finalReady = currentRenderStatus === "ready";
   const storyboardBoardStatus = storyboardBoard?.image?.status || "idle";
+  const isPresenterStyle = scene.layout.storyContract.visualStyle === "presenter-teardown-vsl";
+  const storyboardBoardReady = storyboardBoardStatus === "ready";
+  const storyboardBoardFailed = storyboardBoardStatus === "failed";
+  const imageButtonLabel = imageStatus === "loading"
+    ? "Generating..."
+    : isPresenterStyle && !storyboardBoardReady
+      ? "Generate storyboard"
+      : isPresenterStyle && !framesReady
+        ? "Generate anchors"
+        : "Generate frames";
+  const storyboardHelperCopy = isPresenterStyle
+    ? storyboardBoardReady
+      ? framesReady
+        ? "Storyboard and production anchors are ready for animation."
+        : "Storyboard is ready. Generate production anchors only after the board looks right."
+      : "Generate the six-panel storyboard first. Stop here until it matches the reference."
+    : "Generate the production frames before animation.";
   const finalStatus = renderBusy ? "Building" : finalReady ? "Final ready" : !hasVoiceover ? "Needs voice" : videosReady ? "Needs MP4" : framesReady ? "Ready for Seedance" : "Needs frames";
   const storyDirectionNumber = (scene.metadata.candidateIndex ?? 0) + 1;
   const stepClass = "rounded-2xl border border-slate-200 bg-slate-50 p-3";
@@ -622,7 +639,7 @@ function ThreeDBreakdownAssemblyCard({
               <div className="flex items-center justify-between gap-3 px-3 py-2">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Storyboard board</p>
-                  <p className="mt-0.5 text-xs font-black leading-4 text-slate-950">One six-panel visual QA plan.</p>
+                  <p className="mt-0.5 text-xs font-black leading-4 text-slate-950">{storyboardHelperCopy}</p>
                 </div>
                 <Badge variant={storyboardBoardStatus === "ready" ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
                   {storyboardBoardStatus}
@@ -657,9 +674,13 @@ function ThreeDBreakdownAssemblyCard({
               ))}
             </div>
           ) : null}
-          {framesFailed ? (
+          {storyboardBoardFailed ? (
             <p className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
-              One or more storyboard frames failed. Generate frames again.
+              Storyboard generation failed. Generate the storyboard again before production anchors.
+            </p>
+          ) : framesFailed ? (
+            <p className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
+              One or more production anchors failed. Generate anchors again.
             </p>
           ) : null}
           <Button
@@ -669,7 +690,7 @@ function ThreeDBreakdownAssemblyCard({
             disabled={imageStatus === "loading"}
           >
             {imageStatus === "loading" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImageIcon className="mr-2 size-4" />}
-            Generate frames
+            {imageButtonLabel}
           </Button>
         </div>
 
@@ -747,7 +768,7 @@ function ThreeDBreakdownAssemblyCard({
             {videosReady
               ? "All clips ready · build the final MP4"
               : !framesReady
-                ? "Generate storyboard frames first"
+                ? isPresenterStyle && storyboardBoardReady ? "Generate production anchors first" : "Generate storyboard first"
                 : nextClipPlan
                   ? `Generate clip ${nextClipPlan.clipIndex} next`
                   : "Preflight complete · generate clip 1"}

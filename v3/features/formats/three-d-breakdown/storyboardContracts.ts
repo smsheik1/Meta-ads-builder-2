@@ -46,6 +46,9 @@ const createClipPrompt = ({
 }) => [
   `Animate storyboard frame${frameIndexes.length > 1 ? "s" : ""} ${frameIndexes.join("-")} as clip ${clipIndex} of ${totalClips}, vertical 9:16, ${durationSeconds} seconds.`,
   `World: ${world}. Recurring objects: ${recurringObjects}. Narrative: ${narrative}`,
+  "Show, don't tell: every narration line must become a visible physical action, transformation, obstacle, reveal, or payoff. The visuals do the explaining; captions only emphasize.",
+  "Maxfusion visual rule: if the line says the body, product, ingredient, problem, or mechanism changes state, the clip must show that state change physically.",
+  "Keep the silent demonstrator physically involved in the proof when present: wearing, holding, opening, swallowing, pouring, carrying, training in, or standing directly behind the product path.",
   framePlan,
   direction,
   durationSeconds >= 10
@@ -94,8 +97,10 @@ export const createThreeDClipPlans = (
   const isPresenterStyle = sceneInput.storyContract.visualStyle === "presenter-teardown-vsl";
   const clipDirections = isPresenterStyle
     ? [
-      "Open in the bright blue clinical grid lab with the same silent human-like demonstrator handling the product. Move from false assumption to hidden obstacle to mechanism setup. The person demonstrates only; the unseen narrator explains. Preserve product identity and no generated text.",
-      "Start on the peak 3D teardown reveal, then return to silent-demonstrator/product proof payoff and final product close. Use one impossible insert, then visible product handling. Do not become faceless anatomy, biology stock footage, empty blue grid, or logo-only end card.",
+      "False assumption beat: open in the bright blue technical grid product-demo studio with the same recurring casual silent 3D demonstrator/scale figure handling the product. Full body or torso is preferred before the first macro push. Show the ordinary product use or mistaken mental model physically; no talking, no text-led explanation.",
+      "Hidden problem beat: make the invisible obstacle visible through a body-route, obstacle tank, clear pipe, gut-route, tidy pink cell-wall surface, or prop machine anchored to the same demonstrator/product path. The problem must break, block, scatter, pile up, or create visible friction. Keep it clean and graphic; no wet fleshy intestine tunnel, standalone beaker demo, smooth bald mannequin, PPE, doctors, gross medical macro, or faceless biology montage.",
+      "Mechanism reveal beat: this is the peak teardown. Start from storyboard frame 4, then reveal the engineered mechanism changing state through an impossible-to-film cutaway, pipe, particle path, nested capsule, exploded layer, or process machine. Show the mechanism solving the exact obstacle, not a static product close-up.",
+      "Payoff beat: return from the 3D insert to silent-demonstrator/product proof payoff and final clean product close. Show evidence/payoff as organized motion, protected particles, proof tokens, or product handling. Hold the final blue-grid product world for overlays; no logo-only end card and no generated text.",
     ]
     : [
       "Open with the stylized human demo character body or torso acting as the scale/customer/body proxy beside the product, then push into the hidden internal problem physically appearing. Preserve product identity, blue-grid 3D world, and no generated text.",
@@ -103,51 +108,6 @@ export const createThreeDClipPlans = (
       "This is the peak wow reveal. Start from storyboard frame 4, then move into the unified evidence/payoff state from frame 5 without using a split-screen comparison. Reveal why the engineered version survives. Keep the product sealed and capsule-shaped; if contents appear, suspend them as particles inside a transparent capsule shell or controlled cutaway, never as an open cup, tube, bucket, bowl, or generic container. Preserve product identity and no generated text.",
       "Land the evidence payoff, then return to a human-scale final transformed state with the demo character body or torso beside the clean product payoff composition. Resolve the physical problem clearly, hold the final branded world long enough for Wiggly overlays, and do not turn into a logo-only end card.",
     ];
-
-  if (isPresenterStyle) {
-    return [
-      {
-        clipIndex: 1,
-        label: "Clip 1: assumption to hidden problem",
-        startMs: 0,
-        endMs: 10_000,
-        durationSeconds: 10,
-        frameIndexes: [1, 2, 3],
-        prompt: createClipPrompt({
-          clipIndex: 1,
-          durationSeconds: 10,
-          totalClips: 2,
-          frameIndexes: [1, 2, 3],
-          framePlan: getClipFramePlan(sceneInput.storyboardBoard, [1, 2, 3]),
-          world,
-          recurringObjects,
-          narrative: `${consequence} ${context} ${mechanism}`,
-          direction: clipDirections[0],
-        }),
-        video: { status: "idle" },
-      },
-      {
-        clipIndex: 2,
-        label: "Clip 2: reveal to product close",
-        startMs: 10_000,
-        endMs: 20_000,
-        durationSeconds: 10,
-        frameIndexes: [4, 5, 6],
-        prompt: createClipPrompt({
-          clipIndex: 2,
-          durationSeconds: 10,
-          totalClips: 2,
-          frameIndexes: [4, 5, 6],
-          framePlan: getClipFramePlan(sceneInput.storyboardBoard, [4, 5, 6]),
-          world,
-          recurringObjects,
-          narrative: `${mechanism} ${revelation} ${punchline}`,
-          direction: clipDirections[1],
-        }),
-        video: { status: "idle" },
-      },
-    ];
-  }
 
   return [
     {

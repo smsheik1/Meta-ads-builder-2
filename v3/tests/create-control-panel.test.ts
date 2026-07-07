@@ -206,7 +206,7 @@ assert.ok(
 	    quickActionsSource.includes("threeDClipPlans.length > 0") &&
 	    quickActionsSource.includes("threeDClipPlans.every((clipPlan) => clipPlan.video?.status === \"ready\")") &&
     quickActionsSource.includes("Add the documentary voiceover before building the MP4.") &&
-    quickActionsSource.includes("Generate storyboard frames and Seedance clips before building the MP4."),
+    quickActionsSource.includes("Generate the storyboard, production anchors, and Seedance clips before building the MP4."),
   "3D Breakdown must not allow the global MP4 action before generated clips and voiceover exist.",
 );
 assert.ok(
@@ -218,7 +218,8 @@ assert.ok(
 );
 assert.ok(
 	  quickActionsSource.includes('data-three-d-storyboard-board="true"') &&
-	    quickActionsSource.includes("One six-panel visual QA plan.") &&
+	    quickActionsSource.includes("Generate the six-panel storyboard first. Stop here until it matches the reference.") &&
+	    quickActionsSource.includes("Generate anchors") &&
 	    quickActionsSource.includes('data-three-d-storyboard-frames="true"') &&
     !quickActionsSource.includes("Six-frame 3D Breakdown storyboard board"),
   "3D Breakdown Images step must show compact storyboard status plus frame references without duplicating the full board preview.",
@@ -237,7 +238,7 @@ assert.ok(
     quickActionsSource.includes("data-three-d-generate-clip={clipPlan.clipIndex}") &&
     !quickActionsSource.includes('data-three-d-clip-preview={clipPlan.clipIndex}') &&
     !quickActionsSource.includes("{clipPlan.prompt}"),
-  "3D Breakdown preflight must show four planned clips and expose explicit sequential Seedance actions without debug prompt/player chrome.",
+  "3D Breakdown preflight must show planned clips and expose explicit sequential Seedance actions without debug prompt/player chrome.",
 );
 assert.ok(
   !quickActionsSource.includes("scene.layout.shots.every((shot) => shot.video?.status === \"ready\")"),
@@ -269,10 +270,14 @@ assert.ok(
     threeDImagesSource.includes("generateReplicateSeedanceVideo") &&
     jingleStoryboardSource.includes("generate_audio: false") &&
     threeDImagesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH") &&
-    threeDImagesSource.includes("ecommerce-teardown-style-reference-clean-v6.jpg") &&
+    threeDImagesSource.includes("ecommerce-teardown-style-reference-clean-v7.jpg") &&
     threeDImagesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_URL") &&
     threeDImagesSource.includes("requireThreeDStyleReferenceUrl") &&
     threeDImagesSource.includes("getThreeDImageInput") &&
+    threeDImagesSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("all")))') &&
+    threeDImagesSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")') &&
+    threeDImagesSource.includes("Generate the 3D Breakdown storyboard board before production anchors.") &&
+    threeDImagesSource.includes("storyboard-gate:ready") &&
     threeDImagesSource.includes("buildThreeDProductionFramePrompt") &&
     threeDImagesSource.includes("production-frame:start") &&
     threeDImagesSource.includes("activeFrameIndex") &&

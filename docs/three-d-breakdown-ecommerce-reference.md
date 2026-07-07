@@ -15,12 +15,12 @@ Local analysis artifacts:
 - `/tmp/wiggly-reference-analysis/ecommerce-reference-contact-sheet.jpg`
 - `/tmp/wiggly-reference-analysis/ecommerce-reference-first20-2fps.jpg`
 - `/tmp/wiggly-reference-analysis/ecommerce-style-reference-2x2.jpg`
-- `v3/public/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v6.jpg`
+- `v3/public/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v7.jpg`
 
 ## Baseline Ratings
 
 - Script: 9/10. It starts with a hidden problem the customer does not already understand, then turns product mechanism into the answer.
-- Visuals: 9.5/10. Blue clinical grid world, chunky 3D objects, macro product-science details, and a recurring silent demonstrator/scale figure make it instantly readable.
+- Visuals: 9.5/10. Blue technical grid world, chunky 3D objects, macro product-science details, and a recurring silent 3D demonstrator/scale figure make it instantly readable.
 - Speed/change density: 10/10. The first 20 seconds changes object state, camera scale, or mechanism roughly every 0.5-1.5 seconds.
 - Continuity: 9/10. The world stays coherent while each beat introduces a new module.
 - Wiggly current baseline before the latest prompt tightening: about 5.5/10 visually. The output was too flat, too poster-like, not hosted enough, and did not have enough product-science continuity.
@@ -33,16 +33,39 @@ Required ingredients:
 
 - Bright blue/cyan technical grid floor and wall.
 - Flat readable lab lighting, not moody cinematic darkness.
-- A recurring silent demonstrator, torso, hand, pointer, or scale proxy in most frames.
+- A recurring silent 3D demonstrator/scale figure in most frames: full body, torso, hands, over-shoulder view, pointer, or product-use surface depending on the beat.
+- The demonstrator is not a narrator, doctor, lab technician, mannequin, or test dummy. Avoid medical PPE, masks, lab coats, scientist costumes, and blue gloves. A plain cap or non-medical goggles perched on the head are okay when they read as casual creator/demo styling, but the character must never look like a clinician.
 - The human never performs the ad copy. Narrator/captions carry the argument; the human only demonstrates scale, use, and cause/effect.
-- The checked-in style reference keeps the source captions visible because they are part of the source frames, but image/video prompts must treat those captions, shirt text, and labels as reference artifacts only. Real Wiggly captions are renderer overlays.
+- The checked-in style reference is text-free on purpose. It preserves the silent demonstrator, blue-grid world, body-route, product path, mechanism insert, and final payoff without asking image models to copy source captions or shirt text. Real Wiggly captions are renderer overlays.
 - One product or package identity anchored across the sequence.
 - No generated readable text, captions, labels, logos, numbers, checkmarks, or arrows inside images.
 - Brand names, product names, evidence text, CTA copy, and overlay text may appear in prompt context, but image/video providers must render blank packages/tokens only. v10 failed this by writing product text in the final panel; v11 is the current accepted storyboard direction.
 - Captions are renderer overlays.
 - One visible state change per frame or roughly every second in video.
 - Four or more visual modules across the 20 seconds: product/scale intro, body/pathway or hidden obstacle, mechanism machine or cutaway, component/particle movement, evidence payoff, final product payoff.
-- For supplement/digestive products, the original reference grammar is: demonstrator with capsule/cup, transparent torso or body-route, macro obstacle, machine/pipe mechanism, demonstrator/product proof, final bottle/product close.
+- The best frames teach with objects, not explanation: the demonstrator uses or wears the product, the hidden route/obstacle appears, particles/components move, a machine/cutaway changes state, and the final product resolves the lesson.
+- Maxfusion founder rule: each script line must become a visible object/action before it becomes an image prompt. If the narration says a body, product, ingredient, or mechanism changes state, the frame must show that change instead of relying on text.
+- Every generated frame needs a concrete prompt skeleton: locked style, recurring demonstrator/product, scene action, camera/framing, lighting, color/mood, and consistency. If any frame cannot be described this way, it is too vague for this format.
+- Apply the founder prompt discipline to every storyboard still and production anchor: visual fingerprint first, recurring subject/product second, then concrete action, camera/framing, lighting, color/mood, and consistency. The frame must feel like footage from the same ad, not a standalone AI image sample.
+- Each frame needs one visible before/after state change: object moves, layer peels, path blocks, capsule travels, particles scatter, mechanism opens, or payoff resolves.
+- The demonstrator must stay consistent across frames: same face, cap/goggles if used, shirt color, body scale, and product relationship. Reference consistency matters more than inventing a fresh character pose in every panel.
+- For supplement/digestive products, the original reference grammar is: full-body demonstrator with capsule/cup, transparent torso or body-route, macro obstacle wall, machine/pipe mechanism, demonstrator/product proof, final bottle/product close.
+- Do not overcorrect this into a standalone beaker or generic lab-chamber demo. The original uses transparent torso, gut route, cell-wall, and body/pathway footage, but it stays tied to the same silent demonstrator, product, capsule, and blue-grid world.
+- "Avoid biology montage" means avoid detached stock-science footage. Reference-style body-route/cell-wall visuals are correct when the demonstrator, product path, capsule particles, or scale proxy remains the continuity anchor.
+- Hidden obstacle frames should look like clean graphic product-science footage: blue body-route, tidy pink cell-wall/obstacle surface, visible particles, and crisp grid-world lighting. Avoid wet fleshy intestine tunnels, gore, horror anatomy, disconnected organ close-ups, or gross medical macro shots.
+
+## Original First-20s Reference Map
+
+The opening 20 seconds of the original reference is the clearest Seed target:
+
+1. Full-body human holds the supplement and swallows it.
+2. Camera cuts into the same body with transparent torso and digestive route.
+3. Golden particles move through gut/pathway space.
+4. A pink cell-wall obstacle appears and physically blocks or piles up the particles.
+5. The video returns to the full-body demonstrator to show what happens before the ingredient becomes available.
+6. The brand mechanism appears as a physical product-science machine, then returns to the demonstrator/product world.
+
+This is the key lesson: it is not generic biology footage. It is a silent human/product demo that repeatedly jumps into physical mechanism modules and returns to the same blue-grid product world.
 
 ## Second Reference Transcript
 
@@ -66,7 +89,7 @@ The first paid-ish visual gate is one 6-frame storyboard board for visual QA. It
 
 1. False assumption/common use.
 2. Hidden physical obstacle, body route, or product path.
-3. First mechanism/component setup with the silent demonstrator, torso, hands, or prop demo still anchoring the world.
+3. First mechanism/component setup with the silent demonstrator, torso, hands, full-body scale figure, or prop demo still anchoring the world.
 4. Peak impossible-to-film cutaway or delivery reveal.
 5. Unified evidence/payoff with the engineered product central.
 6. Final product payoff with blank tokens for renderer overlays.
@@ -76,18 +99,22 @@ The second-half reveal anchor must keep the product and silent demonstrator in t
 
 Current accepted Seed visual gate artifacts:
 
-- Storyboard board: `output/three-d-breakdown/seed-style-b-storyboard-board-v11.jpg`
-- Clip 1 production anchor: `output/three-d-breakdown/seed-style-b-production-anchor-clip1-v2.jpg`
-- Clip 2 production anchor: `output/three-d-breakdown/seed-style-b-production-anchor-clip2-v3.jpg`
+- Storyboard board direction: `output/three-d-breakdown/seed-style-b-storyboard-board-v20-reference-balance.jpg`
+- Current four-beat rough: `output/three-d-breakdown/final-assembly/seed-reference-match-v5-captioned-voice.mp4`
+- Current four-beat contact sheet: `output/three-d-breakdown/final-assembly/seed-reference-match-v5-2fps-contact.jpg`
 
 ## 20 Second Clip Rhythm
 
-MVP duration is 20 seconds. Current target assembly splits it into two 10-second clips:
+MVP duration is 20 seconds. Current target assembly splits it into four 5-second teaching blocks:
 
-1. Clip 1: frames 1-3, false assumption into hidden problem and mechanism setup.
-2. Clip 2: frames 4-6, peak mechanism reveal into evidence payoff and final product state.
+1. Clip 1: frames 1-2, false assumption and ordinary product use.
+2. Clip 2: frames 2-3, hidden problem and first mechanism setup.
+3. Clip 3: frames 4-5, peak mechanism reveal and evidence payoff.
+4. Clip 4: frames 5-6, proof payoff and clean final product state.
 
-Each clip needs quick micro-beats: setup, obstruction/change, reveal, payoff/reset.
+Each clip needs quick micro-beats: setup, obstruction/change, reveal, payoff/reset. The reference changes object state, camera scale, or mechanism almost every second, so four shorter clips are a better match than two slow 10-second drifts.
+
+Clip 1 and clip 2 for supplement/digestive brands must include the body-route or hidden internal obstacle, not only an external jar/beaker. The accepted direction should restore reference-style transparent torso/pathway or cell-wall footage while keeping it attached to the silent demonstrator/product story.
 
 ## Current Provider Stop Condition
 

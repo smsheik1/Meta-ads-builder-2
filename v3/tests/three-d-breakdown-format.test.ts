@@ -240,16 +240,23 @@ const twoDirectionPrompt = buildThreeDBreakdownPrompt({ count: THREE_D_BREAKDOWN
 const styleBScriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({ evidence: evidenceItems, research });
 const storyDirectionsPrompt = buildThreeDBreakdownStoryDirectionsPrompt({ evidence: evidenceItems, research });
 const ecommerceReferenceDoc = readFileSync(new URL("../../docs/three-d-breakdown-ecommerce-reference.md", import.meta.url), "utf8");
-const ecommerceStyleReferenceBytes = readFileSync(new URL("../public/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v6.jpg", import.meta.url));
+const ecommerceStyleReferenceBytes = readFileSync(new URL("../public/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v7.jpg", import.meta.url));
 assert.equal(THREE_D_BREAKDOWN_VARIANT_COUNT, 2);
 assert.equal(THREE_D_BREAKDOWN_MAX_TOKENS, 4000);
 assert.equal(THREE_D_BREAKDOWN_DURATION_MS, 20_000);
 assert.ok(ecommerceStyleReferenceBytes.byteLength > 5_000, "3D Breakdown ecommerce style reference image must stay checked in.");
 assert.ok(ecommerceReferenceDoc.includes("Speed/change density: 10/10"));
 assert.ok(ecommerceReferenceDoc.includes("Bright blue/cyan technical grid floor and wall."));
-assert.ok(ecommerceReferenceDoc.includes("captions, shirt text, and labels as reference artifacts only"));
+assert.ok(ecommerceReferenceDoc.includes("style reference is text-free on purpose"));
 assert.ok(ecommerceReferenceDoc.includes("v10 failed this by writing product text"));
 assert.ok(ecommerceReferenceDoc.includes("One visible state change per frame or roughly every second in video."));
+assert.ok(ecommerceReferenceDoc.includes("four 5-second teaching blocks"));
+assert.ok(ecommerceReferenceDoc.includes("The best frames teach with objects"));
+assert.ok(ecommerceReferenceDoc.includes("Maxfusion founder rule"));
+assert.ok(ecommerceReferenceDoc.includes("clean graphic product-science footage"));
+assert.ok(ecommerceReferenceDoc.includes("Original First-20s Reference Map"));
+assert.ok(ecommerceReferenceDoc.includes("same face, cap/goggles if used, shirt color"));
+assert.ok(ecommerceReferenceDoc.includes("not generic biology footage"));
 assert.ok(ecommerceReferenceDoc.includes("Do not keep trying provider calls"));
 assert.ok(prompt.length < 16_000, `3D Breakdown director prompt is too large: ${prompt.length} chars`);
 assert.ok(seedPrompt.length < 16_000, `Seed director prompt is too large: ${seedPrompt.length} chars`);
@@ -262,30 +269,42 @@ assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions p
   "presenter-teardown-vsl",
   "Style A - toy-character-vsl",
   "Style B - presenter-teardown-vsl",
-  "unseen omniscient narrator",
-  "visual human/demo subject is only a silent demonstrator/scale reference",
-  "concrete use -> false classification",
+  "voice is unseen",
+  "human/demo subject is a recurring silent 3D demonstrator/scale figure",
+  "use -> false classification",
   "Include a literal transformation verb",
-  "The narrator teaches the hidden mechanism",
-  "recurring silent 3D demonstrator",
+  "Narrator teaches; visuals demonstrate.",
+  "recurring silent 3D demonstrator/scale figure",
   "referenceScript",
   "110-160 words",
   "Then compress that script into the 5 scriptBeats",
-  "ordinary human moment -> strange hidden world/problem",
+  "Every narration line must have a visual job",
+  "Maxfusion visual rule",
+  "If a line cannot be drawn as a specific object/action",
+  "Show, don't tell",
+  "The visuals do the heavy lifting",
+  "Demonstrator is not host",
+  "Founder prompt discipline",
+  "If a narration sentence cannot become a visible production still",
+  "same face, cap/goggles if used, shirt color",
+  "locked style, recurring demonstrator/product, scene action",
+  "human/product use, body-route/path, obstacle, mechanism pipe",
+  "clean graphic product-science footage",
+  "no wet gut, gore, organ close-up",
   "ctaLine is separate from referenceScript/scriptBeats",
   "product-science teardown",
-  "bright blue/cyan clinical grid",
+  "bright blue/cyan technical grid",
   "Use [] for no riskFlags",
-  "Write exactly 1 variant.",
+  "Write 1 variant.",
   "No invented reviews, numbers, results, guarantees, source names, customer names, or claims.",
   "Total narration must be 35-80 words",
-  "Pick the most visual evidence item.",
+  "pick the most visual evidence item",
   "Do not ask the image model for readable text",
   "one unlabeled six-still contact sheet",
   "Storyboard prompts are the only place where a six-still sheet is allowed",
   "A website making a risky claim does not automatically make that claim safe to repeat.",
 ].forEach((expected) => assert.ok(prompt.includes(expected), `3D Breakdown prompt missing: ${expected}`));
-assert.ok(twoDirectionPrompt.includes("Write exactly 2 variants."));
+assert.ok(twoDirectionPrompt.includes("Write 2 variants."));
 assert.ok(twoDirectionPrompt.includes("variant 1 with visualStyle toy-character-vsl"));
 assert.ok(twoDirectionPrompt.includes("variant 2 with visualStyle presenter-teardown-vsl"));
 assert.ok(styleBScriptPrompt.includes("Wiggly Style B Script Director"));
@@ -632,11 +651,16 @@ assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Visual st
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("recurring stylized human demo character/body proxy"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("Visual style: presenter-teardown-vsl"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("silent recurring demonstrator"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human-like demo subject, torso, hands"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("full body, torso, hands"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("casual creator-ad 3D person"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("no sunglasses"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human/product use, transparent body-route or product path"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("obstacle wall or pile-up"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("same face, cap/goggles if used, shirt color"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("locked style, recurring demonstrator/product, scene action"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("founder prompt discipline"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("one visible state change"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("smooth bald mannequin"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("narrator and captions present the argument"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("transparent torso or body-route"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("oversized tactile demo props"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("lab-coat scientists"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("demonstration/retention footage only"));
@@ -660,6 +684,11 @@ assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("internal 
 assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("overlay metadata only"));
 assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("Frame 4 Wow reveal"));
 assert.ok(prompt.includes("Compress the 60-second high-retention storyboard instinct into exactly six unlabeled 20-second film stills."));
+assert.ok(prompt.includes("Every narration line must have a visual job"));
+assert.ok(prompt.includes("Show, don't tell"));
+assert.ok(prompt.includes("Each frame must visualize one narration line/causal turn"));
+assert.ok(prompt.includes("same face, cap/goggles if used, shirt color"));
+assert.ok(prompt.includes("locked style, recurring demonstrator/product, scene action"));
 assert.ok(prompt.includes("2 hidden obstacle/invisible problem/impossible zoom"));
 assert.ok(prompt.includes("overlayText is metadata for Wiggly renderer overlays only"));
 
@@ -1206,18 +1235,26 @@ assert.deepEqual(scene.layout.referenceImages?.productImageUrls, ["https://cdn.e
 assert.equal(scene.layout.productAnchor?.title, "Butter Pecan Meltaways Tin");
 assert.equal(scene.layout.productAnchor?.imageUrl, "https://cdn.example/davids-cookie-tin.png");
 const threeDImageActionSource = readFileSync(new URL("../convex/threeDImages.ts", import.meta.url), "utf8");
-assert.ok(threeDImageActionSource.includes("ecommerce-teardown-style-reference-clean-v6.jpg"));
+assert.ok(threeDImageActionSource.includes("ecommerce-teardown-style-reference-clean-v7.jpg"));
 assert.ok(threeDImageActionSource.includes("captions, shirt text, labels, or logos"));
 assert.ok(threeDImageActionSource.includes("never render those words in image pixels"));
-assert.ok(threeDImageActionSource.includes("casual silent 3D demonstrator"));
+assert.ok(threeDImageActionSource.includes("recurring casual silent 3D demonstrator/scale figure"));
 assert.ok(threeDImageActionSource.includes("oversized tactile props"));
-assert.ok(threeDImageActionSource.includes("not lab technician"));
-assert.ok(threeDImageActionSource.includes("transparent torso or body-route"));
+assert.ok(threeDImageActionSource.includes("No smooth bald mannequins, blank anatomy models"));
+assert.ok(threeDImageActionSource.includes("semi-transparent torso overlay, body-route"));
+assert.ok(threeDImageActionSource.includes("This does not ban reference-style semi-transparent torso"));
+assert.ok(threeDImageActionSource.includes("do not ban body-route visuals"));
 assert.ok(threeDImageActionSource.includes("the human only demonstrates"));
-assert.ok(threeDImageActionSource.includes("silent demonstrator visible in the same blue-grid world"));
+assert.ok(threeDImageActionSource.includes("same demonstrator face, cap/goggles if used, shirt color"));
+assert.ok(threeDImageActionSource.includes("locked style, recurring demonstrator/product, one scene action"));
+assert.ok(threeDImageActionSource.includes("silent demonstrator or body-route anchor visible in the same blue-grid world"));
 assert.ok(threeDImageActionSource.includes("do not detach into a standalone macro tube"));
+assert.ok(threeDImageActionSource.includes("do not overcorrect into a standalone beaker demo"));
 assert.ok(threeDImageActionSource.includes("No huge blank tables"));
-assert.ok(threeDImageActionSource.includes("image: { status: isPresenterStyle ? \"generating\" : \"idle\" }"));
+assert.ok(threeDImageActionSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("all")))'));
+assert.ok(threeDImageActionSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")'));
+assert.ok(threeDImageActionSource.includes("Generate the 3D Breakdown storyboard board before production anchors."));
+assert.ok(threeDImageActionSource.includes("storyboard-gate:ready"));
 assert.ok(threeDImageActionSource.includes("video: { status: \"idle\" as const }"), "Regenerating production frames must clear stale 3D clip videos.");
 assert.ok(threeDImageActionSource.includes("getThreeDImageStyleRules"));
 assert.ok(threeDImageActionSource.includes("storyboard board must define 6 frames before image generation"));
@@ -1229,13 +1266,15 @@ assert.equal(scene.layout.storyContract.ctaLine, "Shop memorable cookie gifts fr
 assert.ok(styleBScene.layout.storyContract.referenceScript?.includes("backup feeling peels away"));
 assert.ok(styleBScene.layout.storyContract.referenceScript?.includes("Birthday, thank-you, office, client"));
 assert.equal(styleBScene.layout.storyContract.ctaLine, "Shop memorable cookie gifts from David's Cookies.");
-assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => clip.frameIndexes), [[1, 2, 3], [4, 5, 6]]);
-assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => clip.durationSeconds), [10, 10]);
-assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => [clip.startMs, clip.endMs]), [[0, 10000], [10000, 20000]]);
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("clip 1 of 2"));
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("six quick micro-beats"));
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("silent human-like demonstrator"));
-assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("silent-demonstrator/product proof payoff"));
+assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => clip.frameIndexes), [[1, 2], [2, 3], [4, 5], [5, 6]]);
+assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => clip.durationSeconds), [5, 5, 5, 5]);
+assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => [clip.startMs, clip.endMs]), [[0, 5000], [5000, 10000], [10000, 15000], [15000, 20000]]);
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("clip 1 of 4"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("four quick micro-beats"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("every narration line must become a visible physical action"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("recurring casual silent 3D demonstrator/scale figure"));
+assert.ok(styleBScene.layout.clipPlans?.[2]?.prompt.includes("peak teardown"));
+assert.ok(styleBScene.layout.clipPlans?.[3]?.prompt.includes("proof payoff"));
 assert.ok(scene.layout.groundedEvidence.sourceUrl.includes("davidscookies"));
 const sceneValidation = validateThreeDBreakdownScene(scene);
 assert.deepEqual(sceneValidation.errors, []);

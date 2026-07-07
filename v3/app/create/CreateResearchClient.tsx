@@ -3000,6 +3000,8 @@ function ResearchConnected() {
   };
 
   const selectedThreeDScene = selectedScene?.format === "three-d-breakdown" ? selectedScene : null;
+  const selectedThreeDPresenterStyle = selectedThreeDScene?.layout.storyContract.visualStyle === "presenter-teardown-vsl";
+  const selectedThreeDStoryboardBoardReady = selectedThreeDScene?.layout.storyboardBoard?.image?.status === "ready";
   const selectedThreeDStoryboardFrames = selectedThreeDScene?.layout.storyboardBoard?.frames || [];
   const selectedThreeDClipPlans = selectedThreeDScene?.layout.clipPlans || [];
   const selectedThreeDRequiredFrameIndexes = Array.from(new Set(
@@ -3049,9 +3051,15 @@ function ResearchConnected() {
     resetRenderState();
     resetSaveState();
     try {
+      const mode = selectedThreeDPresenterStyle
+        ? selectedThreeDStoryboardBoardReady && !selectedThreeDStoryboardFramesReady
+          ? "anchors"
+          : "storyboard"
+        : "all";
       const result = await generateThreeDImagesForScene({
         sceneId,
         scene: selectedScene,
+        mode,
       }) as { scene: ThreeDBreakdownAdScene };
       updateSelectedThreeDScene(result.scene);
       setThreeDError(getThreeDErrorFromScene(result.scene));

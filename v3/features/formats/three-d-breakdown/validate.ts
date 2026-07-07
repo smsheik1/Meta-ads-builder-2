@@ -40,9 +40,8 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
 	      });
 	    }
 	  }
-  const isPresenterStyle = scene.layout.storyContract?.visualStyle === "presenter-teardown-vsl";
-  const expectedClipFrameIndexes = isPresenterStyle ? [[1, 2, 3], [4, 5, 6]] : [[1, 2], [2, 3], [4, 5], [5, 6]];
-  const expectedClipDuration = isPresenterStyle ? 10 : 5;
+  const expectedClipFrameIndexes = [[1, 2], [2, 3], [4, 5], [5, 6]];
+  const expectedClipDuration = 5;
   if (!Array.isArray(scene.layout.clipPlans) || scene.layout.clipPlans.length !== expectedClipFrameIndexes.length) {
     errors.push(`3D Breakdown must define ${expectedClipFrameIndexes.length} clip plans.`);
   } else {
