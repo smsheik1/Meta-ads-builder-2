@@ -27,6 +27,12 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
   if (!Array.isArray(scene.layout.storyContract?.riskFlags)) errors.push("3D Breakdown risk flags must be an array.");
   if (!Array.isArray(scene.layout.storyContract?.recurringObjects) || !scene.layout.storyContract.recurringObjects.length) errors.push("3D Breakdown recurring objects are missing.");
   if (!THREE_D_REVEAL_PATTERNS.includes(scene.layout.storyContract?.wowMomentType)) errors.push("3D Breakdown wow moment pattern is invalid.");
+  if (scene.layout.finalVideo) {
+    if (scene.layout.finalVideo.status !== "ready") errors.push("3D Breakdown final video status is invalid.");
+    if (!scene.layout.finalVideo.url?.trim()) errors.push("3D Breakdown final video URL is missing.");
+    if (!scene.layout.finalVideo.storageId?.trim()) errors.push("3D Breakdown final video storage is missing.");
+    if (scene.layout.finalVideo.durationMs !== undefined && scene.layout.finalVideo.durationMs !== scene.layout.durationMs) errors.push("3D Breakdown final video duration is invalid.");
+  }
   if (scene.layout.storyboardBoard) {
     if (scene.layout.storyboardBoard.frameCount !== 6) errors.push("3D Breakdown storyboard board must have 6 frames.");
     if (!scene.layout.storyboardBoard.imagePrompt?.trim()) errors.push("3D Breakdown storyboard board image prompt is missing.");

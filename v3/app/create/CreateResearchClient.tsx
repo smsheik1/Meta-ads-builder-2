@@ -532,6 +532,7 @@ function ResearchConnected() {
   const researchByUrlRef = useRef(new Map<string, StoredWebsiteResearchResult>());
   const creativePackRunRef = useRef<{ id: number; cancelled: boolean } | null>(null);
   const creativePackRunKeysRef = useRef(new Set<string>());
+  const shareResetRenderJobRef = useRef("");
   const creativePackPreviousStateRef = useRef<{
     result: StoredWebsiteResearchResult | null;
     selectedAdFormat: CreateFormatId;
@@ -2482,10 +2483,28 @@ function ResearchConnected() {
     setShareError("");
 
     try {
+      const sceneForShare = selectedScene.format === "three-d-breakdown"
+        && renderJob?.status === "ready"
+        && renderJob.downloadUrl
+        && renderJob.outputStorageId
+        ? {
+          ...selectedScene,
+          layout: {
+            ...selectedScene.layout,
+            finalVideo: {
+              status: "ready" as const,
+              url: renderJob.downloadUrl,
+              storageId: String(renderJob.outputStorageId),
+              mimeType: "video/mp4",
+              durationMs: selectedScene.layout.durationMs,
+            },
+          },
+        }
+        : selectedScene;
       const share = await createSharePage({
         anonymousId: getCurrentAnonymousId(),
-        scene: selectedScene,
-        ctaUrl: selectedScene.brand.url,
+        scene: sceneForShare,
+        ctaUrl: sceneForShare.brand.url,
         previewPlatform,
       }) as { path: string };
       const nextShareUrl = `${window.location.origin}${share.path}`;
@@ -3383,7 +3402,16 @@ function ResearchConnected() {
     if (currentRenderStatus === "ready" || currentRenderStatus === "failed" || currentRenderStatus === "error") {
       canvasActions.finishBusy();
     }
-  }, [canvasActions, currentRenderStatus]);
+    if (
+      currentRenderStatus === "ready" &&
+      selectedScene?.format === "three-d-breakdown" &&
+      renderJob?.renderJobId &&
+      shareResetRenderJobRef.current !== String(renderJob.renderJobId)
+    ) {
+      shareResetRenderJobRef.current = String(renderJob.renderJobId);
+      resetShareState();
+    }
+  }, [canvasActions, currentRenderStatus, renderJob?.renderJobId, selectedScene?.format]);
 
   return (
     <div

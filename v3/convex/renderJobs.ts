@@ -102,6 +102,7 @@ export const getStatus: ReturnType<typeof query> = query({
       progress: job.progress,
       error: job.error,
       downloadUrl,
+      outputStorageId: job.outputStorageId,
       updatedAt: job.updatedAt,
     };
   },

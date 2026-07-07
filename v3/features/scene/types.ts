@@ -426,6 +426,10 @@ export type ThreeDBreakdownClipPlan = {
   video?: ThreeDBreakdownMediaRef;
 };
 
+export type ThreeDBreakdownFinalVideo = ThreeDBreakdownMediaRef & {
+  durationMs?: number;
+};
+
 export type ThreeDBreakdownProductAnchor = {
   title: string;
   url: string;
@@ -458,6 +462,7 @@ export type ThreeDBreakdownAdScene = AdSceneBase<
       brandImageUrls: string[];
     };
     productAnchor?: ThreeDBreakdownProductAnchor;
+    finalVideo?: ThreeDBreakdownFinalVideo;
     storyContract: {
       visualStyle: ThreeDBreakdownVisualStyle;
       primarySiteType: ThreeDBreakdownPrimarySiteType;

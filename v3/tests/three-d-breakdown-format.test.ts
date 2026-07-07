@@ -1375,4 +1375,35 @@ const fourthClipMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
 }));
 assert.ok(fourthClipMarkup.includes("clip-4.mp4"));
 
+const sceneWithFinalVideo: ThreeDBreakdownAdScene = {
+  ...sceneWithClips,
+  layout: {
+    ...sceneWithClips.layout,
+    finalVideo: {
+      status: "ready",
+      url: "https://cdn.example/final-three-d-breakdown.mp4",
+      storageId: "final-three-d-breakdown",
+      mimeType: "video/mp4",
+      durationMs: sceneWithClips.layout.durationMs,
+    },
+  },
+};
+const finalPreviewMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: sceneWithFinalVideo,
+  mode: "preview",
+  style: { width: 360, height: 640 },
+  timeSeconds: 4,
+}));
+assert.ok(finalPreviewMarkup.includes("final-three-d-breakdown.mp4"));
+assert.ok(!finalPreviewMarkup.includes("clip-1.mp4"));
+assert.ok(!finalPreviewMarkup.includes("data-three-d-breakdown-keyword-captions"), "Preview/share should not double-render captions over the finished MP4.");
+const finalExportMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: sceneWithFinalVideo,
+  mode: "video",
+  style: { width: 360, height: 640 },
+  timeSeconds: 4,
+}));
+assert.ok(!finalExportMarkup.includes("final-three-d-breakdown.mp4"), "MP4 export must not render a previous final MP4 back into itself.");
+assert.ok(finalExportMarkup.includes("clip-1.mp4"));
+
 console.log("three-d-breakdown format tests passed");

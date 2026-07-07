@@ -470,6 +470,12 @@ assert.ok(
   "Scene mutations must invalidate stale share/render/save UI state.",
 );
 assert.ok(
+  createClientSource.includes("shareResetRenderJobRef") &&
+    createClientSource.includes('selectedScene?.format === "three-d-breakdown"') &&
+    createClientSource.includes("currentRenderStatus === \"ready\""),
+  "3D Breakdown render completion must invalidate stale share links so new links include the final MP4.",
+);
+assert.ok(
   createClientSource.includes("normalizePublicWebsiteUrl") &&
   createClientSource.includes("latestReadyForAnonymousIdAndUrl") &&
   createClientSource.includes("cachedResearchForUrl") &&

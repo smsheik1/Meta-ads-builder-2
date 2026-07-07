@@ -229,6 +229,8 @@ assert.equal(sanitizeCtaUrl("not a url", undefined), undefined);
 
 const sharePageSource = readFileSync("app/s/[slug]/page.tsx", "utf8");
 const shareClientSource = readFileSync("app/s/[slug]/ShareSceneClient.tsx", "utf8");
+const sharePagesSource = readFileSync("convex/sharePages.ts", "utf8");
+const sceneUrlRefreshSource = readFileSync("convex/sceneUrlRefresh.ts", "utf8");
 assert.ok(
   sharePageSource.includes("ConvexHttpClient") &&
     sharePageSource.includes("api.sharePages.getBySlug"),
@@ -243,6 +245,11 @@ assert.ok(
   shareClientSource.includes('href="/create"') &&
     shareClientSource.includes("Made with Wiggly"),
   "Share pages must include the small Made with Wiggly link back to /create.",
+);
+assert.ok(
+  sharePagesSource.includes("refreshThreeDBreakdownFinalVideoUrls") &&
+    sceneUrlRefreshSource.includes("scene.layout.finalVideo.storageId"),
+  "Share pages must refresh stored 3D Breakdown final MP4 URLs instead of falling back to source clips.",
 );
 
 console.log("share-scene tests passed");

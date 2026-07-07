@@ -101,6 +101,8 @@ function getCaptionWords(value: string) {
 
 export function ThreeDBreakdownFormatRenderer({
   scene,
+  mode,
+  motionMode = "auto",
   timeSeconds = 0,
 }: FormatRenderProps<ThreeDBreakdownAdScene>) {
   const { Image, Video } = useRenderAssetComponents();
@@ -108,6 +110,10 @@ export function ThreeDBreakdownFormatRenderer({
   const activeShot = getActiveShot(scene, timelineMs);
   const activeClipPlan = getActiveClipPlan(scene, timelineMs);
   const activeStoryboardFrame = getActiveStoryboardFrame(scene, timelineMs);
+  const finalVideo = scene.layout.finalVideo?.status === "ready" && scene.layout.finalVideo.url
+    ? scene.layout.finalVideo
+    : null;
+  const shouldUseFinalVideo = Boolean(finalVideo && mode !== "video");
   const rawCaption = scene.audio.status === "generated"
     ? getVisibleCaptionText(scene.audio, timeSeconds) || getFallbackCaption(scene, timelineMs)
     : activeShot?.captionText || getFallbackCaption(scene, timelineMs);
@@ -115,16 +121,22 @@ export function ThreeDBreakdownFormatRenderer({
     ? rawCaption
     : getCaptionForTimeline(scene, timelineMs, rawCaption);
   const brandColor = scene.style.accentColor || "#7DD3FC";
-  const videoUrl = activeClipPlan?.video?.status === "ready"
+  const videoUrl = finalVideo && shouldUseFinalVideo
+    ? finalVideo.url
+    : activeClipPlan?.video?.status === "ready"
     ? activeClipPlan.video.url
     : activeShot?.video?.status === "ready"
       ? activeShot.video.url
       : "";
   const imageUrl = activeShot?.image?.status === "ready" ? activeShot.image.url : "";
   const storyboardFrameUrl = activeStoryboardFrame?.image?.status === "ready" ? activeStoryboardFrame.image.url : "";
-  const clipStartSeconds = activeClipPlan ? activeClipPlan.startMs / 1000 : 0;
-  const clipEndSeconds = activeClipPlan ? activeClipPlan.endMs / 1000 : undefined;
-  const clipTimeSeconds = activeClipPlan ? Math.max(0, timelineMs / 1000 - clipStartSeconds) : timeSeconds;
+  const clipStartSeconds = shouldUseFinalVideo ? 0 : activeClipPlan ? activeClipPlan.startMs / 1000 : 0;
+  const clipEndSeconds = shouldUseFinalVideo
+    ? (finalVideo?.durationMs || scene.layout.durationMs) / 1000
+    : activeClipPlan ? activeClipPlan.endMs / 1000 : undefined;
+  const clipTimeSeconds = shouldUseFinalVideo
+    ? timelineMs / 1000
+    : activeClipPlan ? Math.max(0, timelineMs / 1000 - clipStartSeconds) : timeSeconds;
   const captionWords = getCaptionWords(caption);
   const productAnchor = scene.layout.productAnchor;
   const showFinalProductAnchor = Boolean(productAnchor?.imageUrl && timelineMs >= scene.layout.durationMs - 3000);
@@ -152,7 +164,28 @@ export function ThreeDBreakdownFormatRenderer({
           backgroundSize: "42px 42px",
         }}
       />
-      {videoUrl ? (
+      {shouldUseFinalVideo && finalVideo ? (
+        <Video
+          src={finalVideo.url!}
+          className="absolute inset-0 size-full object-cover"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            zIndex: 1,
+          }}
+          active
+          autoPlay={motionMode !== "idle"}
+          muted
+          playsInline
+          preload="auto"
+          clipEndSeconds={clipEndSeconds}
+          clipStartSeconds={0}
+          clipTimeSeconds={clipTimeSeconds}
+        />
+      ) : videoUrl ? (
         <Video
           src={videoUrl}
           className="absolute inset-0 size-full object-cover"
@@ -212,7 +245,7 @@ export function ThreeDBreakdownFormatRenderer({
         </div>
       )}
 
-      {showFinalProductAnchor && productAnchor ? (
+      {!shouldUseFinalVideo && showFinalProductAnchor && productAnchor ? (
         <div
           data-three-d-breakdown-final-payoff="true"
           style={{
@@ -249,6 +282,7 @@ export function ThreeDBreakdownFormatRenderer({
         </div>
       ) : null}
 
+      {!shouldUseFinalVideo ? (
       <div
         className="absolute inset-x-[5.5%] bottom-[16%] z-10 flex flex-wrap items-center justify-center gap-x-[1.5cqw] gap-y-[0.8cqw]"
         data-three-d-breakdown-keyword-captions="true"
@@ -290,6 +324,7 @@ export function ThreeDBreakdownFormatRenderer({
           );
         })}
       </div>
+      ) : null}
     </div>
   );
 }
