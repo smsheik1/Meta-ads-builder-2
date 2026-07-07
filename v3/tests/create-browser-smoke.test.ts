@@ -34,7 +34,7 @@ assert(
   ".first()",
   "Fresh visitor must be able to add audio before submitting a website.",
   "data-dialogue-editor='modal'",
-  "Download video",
+  "data-create-download-action='true'",
   "create share link",
   "data-create-format-rail='v3'",
   "name: \"Text\"",
