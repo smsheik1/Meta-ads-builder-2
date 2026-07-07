@@ -95,12 +95,17 @@ export const createThreeDClipPlans = (
   const world = sceneInput.storyContract.visualWorld;
   const recurringObjects = sceneInput.storyContract.recurringObjects.join(", ");
   const isPresenterStyle = sceneInput.storyContract.visualStyle === "presenter-teardown-vsl";
+  const presenterClipDirections = [
+    "False assumption beat: open in the bright blue technical grid product-demo studio with the same recurring casual silent 3D demonstrator/scale figure handling the product. Show the ordinary product use or mistaken mental model physically; no talking, no text-led explanation.",
+    "Hidden route beat: snap from the human-scale product moment into a visible body-route, clear pipe, product path, or guided transit route anchored to the same demonstrator/product. Make the invisible trip visible as one clean physical path.",
+    "Hidden problem beat: make the obstacle physically block, scatter, pile up, break, leak, or create friction in the same blue-grid world. Keep it clean and graphic; no wet fleshy intestine tunnel, standalone beaker demo, smooth bald mannequin, PPE, doctors, gross medical macro, or faceless biology montage.",
+    "Mechanism reveal beat: this is the peak teardown. Reveal the engineered mechanism changing state through an impossible-to-film cutaway, pipe, particle path, nested capsule, exploded layer, or process machine. Show the mechanism solving the exact obstacle, not a static product close-up.",
+    "Proof payoff beat: connect the selected evidence to visible payoff through organized motion, protected particles, proof tokens, product handling, or the mechanism arriving intact. This must feel like the proof landed, not like a logo card.",
+    "Clean product reframe beat: return to silent-demonstrator/product proof payoff and final clean product close in the same blue-grid world. Hold a CTA-safe final composition for overlays; no logo-only end card and no generated text.",
+  ];
   const clipDirections = isPresenterStyle
     ? [
-      "False assumption beat: open in the bright blue technical grid product-demo studio with the same recurring casual silent 3D demonstrator/scale figure handling the product. Full body or torso is preferred before the first macro push. Show the ordinary product use or mistaken mental model physically; no talking, no text-led explanation.",
-      "Hidden problem beat: make the invisible obstacle visible through a body-route, obstacle tank, clear pipe, gut-route, tidy pink cell-wall surface, or prop machine anchored to the same demonstrator/product path. The problem must break, block, scatter, pile up, or create visible friction. Keep it clean and graphic; no wet fleshy intestine tunnel, standalone beaker demo, smooth bald mannequin, PPE, doctors, gross medical macro, or faceless biology montage.",
-      "Mechanism reveal beat: this is the peak teardown. Start from storyboard frame 4, then reveal the engineered mechanism changing state through an impossible-to-film cutaway, pipe, particle path, nested capsule, exploded layer, or process machine. Show the mechanism solving the exact obstacle, not a static product close-up.",
-      "Payoff beat: return from the 3D insert to silent-demonstrator/product proof payoff and final clean product close. Show evidence/payoff as organized motion, protected particles, proof tokens, or product handling. Hold the final blue-grid product world for overlays; no logo-only end card and no generated text.",
+      ...presenterClipDirections,
     ]
     : [
       "Open with the stylized human demo character body or torso acting as the scale/customer/body proxy beside the product, then push into the hidden internal problem physically appearing. Preserve product identity, blue-grid 3D world, and no generated text.",
@@ -108,6 +113,58 @@ export const createThreeDClipPlans = (
       "This is the peak wow reveal. Start from storyboard frame 4, then move into the unified evidence/payoff state from frame 5 without using a split-screen comparison. Reveal why the engineered version survives. Keep the product sealed and capsule-shaped; if contents appear, suspend them as particles inside a transparent capsule shell or controlled cutaway, never as an open cup, tube, bucket, bowl, or generic container. Preserve product identity and no generated text.",
       "Land the evidence payoff, then return to a human-scale final transformed state with the demo character body or torso beside the clean product payoff composition. Resolve the physical problem clearly, hold the final branded world long enough for Wiggly overlays, and do not turn into a logo-only end card.",
     ];
+
+  if (isPresenterStyle) {
+    const presenterTimings = [
+      [0, 3_000],
+      [3_000, 6_500],
+      [6_500, 10_000],
+      [10_000, 13_500],
+      [13_500, 17_000],
+      [17_000, 20_000],
+    ] as const;
+    const presenterLabels = [
+      "Clip 1: false assumption",
+      "Clip 2: hidden route",
+      "Clip 3: hidden obstacle",
+      "Clip 4: mechanism reveal",
+      "Clip 5: proof payoff",
+      "Clip 6: product reframe",
+    ] as const;
+    const presenterNarratives = [
+      consequence,
+      context,
+      `${context} ${mechanism}`,
+      mechanism,
+      revelation,
+      `${revelation} ${punchline}`,
+    ];
+
+    return presenterTimings.map(([startMs, endMs], index) => {
+      const clipIndex = (index + 1) as ThreeDBreakdownClipIndex;
+      const frameIndex = (index + 1) as ThreeDBreakdownStoryboardFrameIndex;
+      return {
+        clipIndex,
+        label: presenterLabels[index],
+        startMs,
+        endMs,
+        durationSeconds: 5,
+        frameIndexes: [frameIndex],
+        prompt: createClipPrompt({
+          clipIndex,
+          durationSeconds: 5,
+          totalClips: presenterTimings.length,
+          frameIndexes: [frameIndex],
+          framePlan: getClipFramePlan(sceneInput.storyboardBoard, [frameIndex]),
+          world,
+          recurringObjects,
+          narrative: presenterNarratives[index] || consequence,
+          direction: clipDirections[index] || presenterClipDirections[index] || presenterClipDirections[0],
+        }),
+        video: { status: "idle" as const },
+      };
+    });
+  }
 
   return [
     {

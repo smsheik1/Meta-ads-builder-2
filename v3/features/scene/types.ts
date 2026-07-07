@@ -367,7 +367,7 @@ export type ThreeDBreakdownPrimarySiteType = "ecommerce" | "saas" | "local-servi
 export type ThreeDBreakdownRiskFlag = "health" | "medical" | "legal" | "financial" | "beauty" | "regulated";
 export type ThreeDBreakdownClaimRisk = "low" | "medium" | "high";
 export type ThreeDBreakdownVisualStyle = "toy-character-vsl" | "presenter-teardown-vsl";
-export type ThreeDBreakdownClipIndex = 1 | 2 | 3 | 4;
+export type ThreeDBreakdownClipIndex = 1 | 2 | 3 | 4 | 5 | 6;
 export type ThreeDBreakdownStoryboardFrameIndex = 1 | 2 | 3 | 4 | 5 | 6;
 
 export type ThreeDBreakdownScriptBeat = {

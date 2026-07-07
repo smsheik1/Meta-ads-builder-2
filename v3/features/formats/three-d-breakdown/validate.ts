@@ -40,7 +40,11 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
 	      });
 	    }
 	  }
-  const expectedClipFrameIndexes = [[1, 2], [2, 3], [4, 5], [5, 6]];
+  const isPresenterStyle = scene.layout.storyContract?.visualStyle === "presenter-teardown-vsl";
+  const expectedClipFrameIndexes = isPresenterStyle ? [[1], [2], [3], [4], [5], [6]] : [[1, 2], [2, 3], [4, 5], [5, 6]];
+  const expectedClipTimings = isPresenterStyle
+    ? [[0, 3_000], [3_000, 6_500], [6_500, 10_000], [10_000, 13_500], [13_500, 17_000], [17_000, 20_000]]
+    : [[0, 5_000], [5_000, 10_000], [10_000, 15_000], [15_000, 20_000]];
   const expectedClipDuration = 5;
   if (!Array.isArray(scene.layout.clipPlans) || scene.layout.clipPlans.length !== expectedClipFrameIndexes.length) {
     errors.push(`3D Breakdown must define ${expectedClipFrameIndexes.length} clip plans.`);
@@ -50,8 +54,12 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
       if (clipPlan.durationSeconds !== expectedClipDuration) errors.push(`3D Breakdown clip plan ${index + 1} duration is invalid.`);
       if (!clipPlan.prompt?.trim()) errors.push(`3D Breakdown clip plan ${index + 1} prompt is missing.`);
       const expectedFrames = expectedClipFrameIndexes[index];
+      const expectedTiming = expectedClipTimings[index];
       if (JSON.stringify(clipPlan.frameIndexes) !== JSON.stringify(expectedFrames)) {
         errors.push(`3D Breakdown clip plan ${index + 1} frame mapping is invalid.`);
+      }
+      if (expectedTiming && (clipPlan.startMs !== expectedTiming[0] || clipPlan.endMs !== expectedTiming[1])) {
+        errors.push(`3D Breakdown clip plan ${index + 1} timing is invalid.`);
       }
     });
   }
