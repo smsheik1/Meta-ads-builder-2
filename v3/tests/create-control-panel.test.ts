@@ -16,6 +16,7 @@ const brickStoryboardSheetSource = readFileSync("app/create/CreateBrickStoryboar
 const creativeBriefSource = readFileSync("app/create/CreateCreativeBriefCard.tsx", "utf8");
 const adScenesSource = readFileSync("convex/adScenes.ts", "utf8");
 const threeDImagesSource = readFileSync("convex/threeDImages.ts", "utf8");
+const storyboardContractsSource = readFileSync("features/formats/three-d-breakdown/storyboardContracts.ts", "utf8");
 const jingleStoryboardSource = readFileSync("features/formats/jingle/storyboard.ts", "utf8");
 const visualizerSchemaSource = readFileSync("features/formats/visualizer/schema.ts", "utf8");
 const visualizerModuleSource = readFileSync("features/formats/visualizer/index.ts", "utf8");
@@ -220,6 +221,10 @@ assert.ok(
 	  quickActionsSource.includes('data-three-d-storyboard-board="true"') &&
 	    quickActionsSource.includes("Generate the six-panel storyboard first. Stop here until it matches the reference.") &&
 	    quickActionsSource.includes("Generate anchors") &&
+	    quickActionsSource.includes("Anchors ready") &&
+	    quickActionsSource.includes("assemblyStatusLabel") &&
+	    quickActionsSource.includes('isPresenterStyle ? "Anchors ready" : "Frames ready"') &&
+	    quickActionsSource.includes("requiredFrames.map") &&
 	    quickActionsSource.includes('data-three-d-storyboard-frames="true"') &&
     !quickActionsSource.includes("Six-frame 3D Breakdown storyboard board"),
   "3D Breakdown Images step must show compact storyboard status plus frame references without duplicating the full board preview.",
@@ -231,9 +236,10 @@ assert.ok(
   "3D Breakdown anchor failures must expose the failed frame and provider error instead of only generic retry copy.",
 );
 assert.ok(
-  quickActionsSource.includes('data-three-d-clip-plan="true"') &&
+	  quickActionsSource.includes('data-three-d-clip-plan="true"') &&
     quickActionsSource.includes("clipPlans.map") &&
-    quickActionsSource.includes("clipPlan.frameIndexes.map") &&
+    quickActionsSource.includes("isPresenterStyle ? [clipPlan.frameIndexes[0]] : clipPlan.frameIndexes") &&
+    quickActionsSource.includes("Frames {clipPlan.frameIndexes.join(\"-\")}") &&
     quickActionsSource.includes("clipPlan.video?.status") &&
     quickActionsSource.includes("Clip {clipPlan.clipIndex}") &&
     quickActionsSource.includes("All clips ready · build the final MP4") &&
@@ -245,6 +251,20 @@ assert.ok(
     !quickActionsSource.includes('data-three-d-clip-preview={clipPlan.clipIndex}') &&
     !quickActionsSource.includes("{clipPlan.prompt}"),
   "3D Breakdown preflight must show planned clips and expose explicit sequential Seedance actions without debug prompt/player chrome.",
+);
+assert.ok(
+  storyboardContractsSource.includes("const presenterFrameGroups") &&
+    storyboardContractsSource.includes("[[1, 2, 3], [4, 5, 6]]") &&
+    storyboardContractsSource.includes("Time-code the clip into storyboard sub-shots") &&
+    storyboardContractsSource.includes("durationSeconds: 10") &&
+    !storyboardContractsSource.includes("Clip 6: product reframe"),
+  "Presenter teardown 3D Breakdown must use two 10s clips from the six-frame storyboard, not six separate Seedance clips.",
+);
+assert.ok(
+  !createClientSource.includes("min-w-[1280px]") &&
+    !createClientSource.includes("overflow-x-auto") &&
+    createClientSource.includes("overflow-x-hidden"),
+  "/create must not force horizontal desktop scroll at normal 100% browser zoom.",
 );
 assert.ok(
   !quickActionsSource.includes("scene.layout.shots.every((shot) => shot.video?.status === \"ready\")"),

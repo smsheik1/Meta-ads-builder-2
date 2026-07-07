@@ -40,11 +40,11 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
 	    }
 	  }
   const isPresenterStyle = scene.layout.storyContract?.visualStyle === "presenter-teardown-vsl";
-  const expectedClipFrameIndexes = isPresenterStyle ? [[1], [2], [3], [4], [5], [6]] : [[1, 2], [2, 3], [4, 5], [5, 6]];
+  const expectedClipFrameIndexes = isPresenterStyle ? [[1, 2, 3], [4, 5, 6]] : [[1, 2], [2, 3], [4, 5], [5, 6]];
   const expectedClipTimings = isPresenterStyle
-    ? [[0, 3_000], [3_000, 6_500], [6_500, 10_000], [10_000, 13_500], [13_500, 17_000], [17_000, 20_000]]
+    ? [[0, 10_000], [10_000, 20_000]]
     : [[0, 5_000], [5_000, 10_000], [10_000, 15_000], [15_000, 20_000]];
-  const expectedClipDuration = 5;
+  const expectedClipDuration = isPresenterStyle ? 10 : 5;
   if (!Array.isArray(scene.layout.clipPlans) || scene.layout.clipPlans.length !== expectedClipFrameIndexes.length) {
     errors.push(`3D Breakdown must define ${expectedClipFrameIndexes.length} clip plans.`);
   } else {

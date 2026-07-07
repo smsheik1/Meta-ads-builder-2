@@ -126,6 +126,16 @@ const getThreeDImageInput = (scene: ThreeDBreakdownAdScene) => {
   ].filter(Boolean))).slice(0, 4);
 };
 
+const getThreeDAnchorImageInput = (scene: ThreeDBreakdownAdScene, baseImageInput: string[]) => {
+  const storyboardImageUrl = scene.layout.storyboardBoard?.image?.status === "ready"
+    ? scene.layout.storyboardBoard.image.url
+    : "";
+  return Array.from(new Set([
+    storyboardImageUrl,
+    ...baseImageInput,
+  ].filter((url): url is string => Boolean(url)))).slice(0, 5);
+};
+
 const withUpdatedThreeDStoryboardBoard = (
   scene: ThreeDBreakdownAdScene,
   update: (board: NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>) => NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>,
@@ -269,8 +279,11 @@ const buildThreeDProductionFramePrompt = (
   return [
     "Create ONE vertical 9:16 production keyframe for a high-retention procedural 3D explainer ad.",
     "This is a single Seedance reference image, not a storyboard board.",
+    `Use the provided 6-panel storyboard board as the visual source of truth. Recreate panel ${frameIndex} as a clean vertical production keyframe.`,
+    "Preserve the storyboard panel's demonstrator identity, gender, age, face shape, shirt color, product silhouette, blue grid world, camera relationship, and scene logic.",
+    "Crop or expand the panel only enough to make one vertical 9:16 production frame; do not invent a different person, outfit, prop setup, product category, or anatomy scene.",
     "Do not create a grid, contact sheet, comic strip, split screen, collage, panel border, gutter, horizontal divider, caption bar, or multi-frame layout.",
-    "Use one central subject/action filling most of the vertical frame.",
+    "Use the corresponding panel's central subject/action filling most of the vertical frame.",
     `Shared visual world: ${contract.visualWorld}. Lighting: ${contract.lighting}. Camera: ${contract.cameraStyle}. Recurring objects: ${recurringObjects}.`,
     getThreeDFrameNarrative(scene, frameIndex),
 	    getThreeDGuideInstructionForStyle(contract.visualStyle, frameIndex),
@@ -464,14 +477,17 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
       for (const frame of anchorFramesToGenerate) {
         activeFrameIndex = frame.frameIndex;
         const prompt = buildThreeDProductionFramePrompt(nextScene, frame.frameIndex);
+        const anchorImageInput = getThreeDAnchorImageInput(nextScene, imageInput);
         console.log("[wiggly:3d-breakdown] production-frame:start", {
           frameIndex: frame.frameIndex,
+          imageInputCount: anchorImageInput.length,
+          usesStoryboardReference: anchorImageInput.some((url) => url === nextScene.layout.storyboardBoard?.image?.url),
           promptLength: prompt.length,
         });
         const image = await generateReplicateNanoBanana2Image({
           replicateApiToken,
           prompt,
-          imageInput,
+          imageInput: anchorImageInput,
           aspectRatio: "9:16",
         });
         const frameStored = await storeThreeDBytes(ctx, image.bytes, image.mimeType);

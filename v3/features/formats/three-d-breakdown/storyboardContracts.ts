@@ -45,6 +45,7 @@ const createClipPrompt = ({
   direction: string;
 }) => [
   `Animate storyboard frame${frameIndexes.length > 1 ? "s" : ""} ${frameIndexes.join("-")} as clip ${clipIndex} of ${totalClips}, vertical 9:16, ${durationSeconds} seconds.`,
+  getClipTimingPlan(frameIndexes, durationSeconds),
   `World: ${world}. Recurring objects: ${recurringObjects}. Narrative: ${narrative}`,
   "Show, don't tell: every narration line must become a visible physical action, transformation, obstacle, reveal, or payoff. The visuals do the explaining; captions only emphasize.",
   "Maxfusion visual rule: if the line says the body, product, ingredient, problem, or mechanism changes state, the clip must show that state change physically.",
@@ -57,6 +58,22 @@ const createClipPrompt = ({
   "The second and third micro-beats must change the object, camera scale, or mechanism; no static product with drifting particles.",
   "Maintain module variety: product anchor, hidden obstacle, mechanism machine, ingredient/component movement, unified payoff, or clean final product card.",
 ].join(" ");
+
+const getClipTimingPlan = (
+  frameIndexes: ThreeDBreakdownStoryboardFrameIndex[],
+  durationSeconds: number,
+) => {
+  if (frameIndexes.length <= 1) {
+    return `Use storyboard frame ${frameIndexes[0]} as the visual anchor for the full ${durationSeconds}s clip, with motion inside the scene instead of switching to another concept.`;
+  }
+  const segmentSeconds = durationSeconds / frameIndexes.length;
+  const timing = frameIndexes.map((frameIndex, index) => {
+    const start = (index * segmentSeconds).toFixed(1);
+    const end = ((index + 1) * segmentSeconds).toFixed(1);
+    return `${start}-${end}s = frame ${frameIndex}`;
+  }).join("; ");
+  return `Time-code the clip into storyboard sub-shots: ${timing}. Use hard cuts, whip zooms, or push-through transitions between frames; do not blend them into one vague drifting scene.`;
+};
 
 const summarizeStoryboardFrameForClip = (frame?: StoryboardFrame) => {
   if (!frame) return "";
@@ -116,50 +133,51 @@ export const createThreeDClipPlans = (
 
   if (isPresenterStyle) {
     const presenterTimings = [
-      [0, 3_000],
-      [3_000, 6_500],
-      [6_500, 10_000],
-      [10_000, 13_500],
-      [13_500, 17_000],
-      [17_000, 20_000],
+      [0, 10_000],
+      [10_000, 20_000],
     ] as const;
     const presenterLabels = [
-      "Clip 1: false assumption",
-      "Clip 2: hidden route",
-      "Clip 3: hidden obstacle",
-      "Clip 4: mechanism reveal",
-      "Clip 5: proof payoff",
-      "Clip 6: product reframe",
+      "Clip 1: frames 1-3",
+      "Clip 2: frames 4-6",
     ] as const;
     const presenterNarratives = [
-      consequence,
-      context,
       `${context} ${mechanism}`,
-      mechanism,
-      revelation,
       `${revelation} ${punchline}`,
+    ];
+    const presenterFrameGroups: ThreeDBreakdownStoryboardFrameIndex[][] = [[1, 2, 3], [4, 5, 6]];
+    const presenterDirections = [
+      [
+        presenterClipDirections[0],
+        presenterClipDirections[1],
+        presenterClipDirections[2],
+      ].join(" "),
+      [
+        presenterClipDirections[3],
+        presenterClipDirections[4],
+        presenterClipDirections[5],
+      ].join(" "),
     ];
 
     return presenterTimings.map(([startMs, endMs], index) => {
       const clipIndex = (index + 1) as ThreeDBreakdownClipIndex;
-      const frameIndex = (index + 1) as ThreeDBreakdownStoryboardFrameIndex;
+      const frameIndexes = presenterFrameGroups[index] || [1, 2, 3];
       return {
         clipIndex,
         label: presenterLabels[index],
         startMs,
         endMs,
-        durationSeconds: 5,
-        frameIndexes: [frameIndex],
+        durationSeconds: 10,
+        frameIndexes,
         prompt: createClipPrompt({
           clipIndex,
-          durationSeconds: 5,
+          durationSeconds: 10,
           totalClips: presenterTimings.length,
-          frameIndexes: [frameIndex],
-          framePlan: getClipFramePlan(sceneInput.storyboardBoard, [frameIndex]),
+          frameIndexes,
+          framePlan: getClipFramePlan(sceneInput.storyboardBoard, frameIndexes),
           world,
           recurringObjects,
           narrative: presenterNarratives[index] || consequence,
-          direction: clipDirections[index] || presenterClipDirections[index] || presenterClipDirections[0],
+          direction: presenterDirections[index] || presenterClipDirections[0],
         }),
         video: { status: "idle" as const },
       };

@@ -575,6 +575,8 @@ function ThreeDBreakdownAssemblyCard({
       ? "Generate storyboard"
       : isPresenterStyle && !framesReady
         ? "Generate anchors"
+        : isPresenterStyle
+          ? "Anchors ready"
         : "Generate frames";
   const storyboardHelperCopy = isPresenterStyle
     ? storyboardBoardReady
@@ -584,6 +586,11 @@ function ThreeDBreakdownAssemblyCard({
       : "Generate the six-panel storyboard first. Stop here until it matches the reference."
     : "Generate the production frames before animation.";
   const finalStatus = renderBusy ? "Building" : finalReady ? "Final ready" : !hasVoiceover ? "Needs voice" : videosReady ? "Needs MP4" : framesReady ? "Ready for Seedance" : "Needs frames";
+  const assemblyStatusLabel = videosReady
+    ? "Clips ready"
+    : framesReady
+      ? (isPresenterStyle ? "Anchors ready" : "Frames ready")
+      : "Script ready";
   const storyDirectionNumber = (scene.metadata.candidateIndex ?? 0) + 1;
   const stepClass = "rounded-2xl border border-slate-200 bg-slate-50 p-3";
 
@@ -598,7 +605,7 @@ function ThreeDBreakdownAssemblyCard({
           </p>
         </div>
         <Badge variant="outline" className="rounded-full text-[10px] font-black uppercase">
-          {videosReady ? "Clips ready" : framesReady ? "Frames ready" : "Script ready"}
+          {assemblyStatusLabel}
         </Badge>
       </div>
 
@@ -630,7 +637,7 @@ function ThreeDBreakdownAssemblyCard({
         <div className={stepClass}>
           <div className="flex items-center gap-2 text-sm font-black text-slate-950">
             <ImageIcon className="size-4" />
-            Storyboard frames
+            {isPresenterStyle ? "Storyboard & anchors" : "Storyboard frames"}
             <Badge variant="outline" className="ml-auto rounded-full text-[10px] font-black uppercase">
               {statusPill(imageStatus)}
             </Badge>
@@ -651,14 +658,22 @@ function ThreeDBreakdownAssemblyCard({
               ) : null}
             </div>
           ) : null}
-          {storyboardFrames.length ? (
+          {requiredFrames.length ? (
             <div className="mt-3 grid grid-cols-2 gap-2" data-three-d-storyboard-frames="true">
-              {storyboardFrames.map((frame) => (
+              {requiredFrames.map((frame) => {
+                const clipPlan = clipPlans.find((plan) => plan.frameIndexes[0] === frame.frameIndex);
+                const frameLabel = isPresenterStyle && clipPlan
+                  ? `Anchor ${clipPlan.clipIndex}`
+                  : `Frame ${frame.frameIndex}`;
+                const detailLabel = isPresenterStyle && clipPlan
+                  ? `Frames ${clipPlan.frameIndexes.join("-")}`
+                  : frame.label;
+                return (
                 <div key={frame.frameIndex} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
                   <div className="flex items-center justify-between gap-2 px-2.5 py-2">
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Frame {frame.frameIndex}</p>
-                      <p className="text-[10px] font-black leading-3 text-slate-950">{frame.label}</p>
+                      <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">{frameLabel}</p>
+                      <p className="text-[10px] font-black leading-3 text-slate-950">{detailLabel}</p>
                     </div>
                     <Badge variant={frame.image?.status === "ready" ? "default" : "outline"} className="rounded-full px-2 text-[9px] font-black uppercase">
                       {frame.image?.status || (requiredFrameIndexes.includes(frame.frameIndex) ? "idle" : "plan")}
@@ -672,7 +687,8 @@ function ThreeDBreakdownAssemblyCard({
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           ) : null}
           {storyboardBoardFailed ? (
@@ -697,7 +713,7 @@ function ThreeDBreakdownAssemblyCard({
             type="button"
             className="mt-3 h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
             onClick={onGenerateImages}
-            disabled={imageStatus === "loading"}
+            disabled={imageStatus === "loading" || (isPresenterStyle && storyboardBoardReady && framesReady)}
           >
             {imageStatus === "loading" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImageIcon className="mr-2 size-4" />}
             {imageButtonLabel}
@@ -740,7 +756,7 @@ function ThreeDBreakdownAssemblyCard({
                   </Badge>
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-1.5">
-                  {clipPlan.frameIndexes.map((frameIndex) => {
+                  {(isPresenterStyle ? [clipPlan.frameIndexes[0]] : clipPlan.frameIndexes).map((frameIndex) => {
                     const frame = storyboardFrames.find((item) => item.frameIndex === frameIndex);
                     return frame?.image?.url ? (
                       <img key={frameIndex} src={frame.image.url} alt={`Clip ${clipPlan.clipIndex} frame ${frameIndex}`} className="aspect-[6/7] rounded-lg object-cover" />
@@ -750,6 +766,11 @@ function ThreeDBreakdownAssemblyCard({
                       </div>
                     );
                   })}
+                  {isPresenterStyle ? (
+                    <div className="col-span-2 flex aspect-[12/7] items-center justify-center rounded-lg bg-slate-50 px-2 text-center text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                      Frames {clipPlan.frameIndexes.join("-")}
+                    </div>
+                  ) : null}
                 </div>
                 <Button
                   type="button"
