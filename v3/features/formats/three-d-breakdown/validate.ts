@@ -4,18 +4,22 @@ import type {
   ThreeDBreakdownShotRole,
 } from "../../scene/types";
 import type { FormatValidationResult } from "../types";
-import { THREE_D_BREAKDOWN_DURATION_MS, THREE_D_BREAKDOWN_MUSIC_VOLUME } from "./music";
-import { THREE_D_REVEAL_PATTERNS, THREE_D_SCRIPT_BEATS, THREE_D_SHOT_CONTRACT } from "./prompt";
+import { THREE_D_BREAKDOWN_DURATION_MS, THREE_D_BREAKDOWN_LEGACY_DURATION_MS, THREE_D_BREAKDOWN_MUSIC_VOLUME } from "./music";
+import { THREE_D_LEGACY_SCRIPT_BEATS, THREE_D_REVEAL_PATTERNS, THREE_D_SCRIPT_BEATS, THREE_D_SHOT_CONTRACT } from "./prompt";
+
+const scriptBeatContracts = [THREE_D_SCRIPT_BEATS, THREE_D_LEGACY_SCRIPT_BEATS] as const;
 
 export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): FormatValidationResult {
   const errors: string[] = [];
   if (scene.format !== "three-d-breakdown") errors.push("3D Breakdown format is invalid.");
   if (scene.layout.preset !== "three-d-breakdown") errors.push("3D Breakdown preset is invalid.");
-  if (scene.layout.durationMs !== THREE_D_BREAKDOWN_DURATION_MS) errors.push("3D Breakdown duration is invalid.");
-  if (scene.layout.musicBed?.volume !== THREE_D_BREAKDOWN_MUSIC_VOLUME) errors.push("3D Breakdown music volume is invalid.");
-  if (!scene.layout.musicBed?.src?.trim()) errors.push("3D Breakdown music source is missing.");
-  if (!scene.layout.musicBed?.id) errors.push("3D Breakdown music bed is invalid.");
-  if (scene.layout.musicBed?.loop !== true) errors.push("3D Breakdown music bed must loop.");
+  if (scene.layout.durationMs !== THREE_D_BREAKDOWN_DURATION_MS && scene.layout.durationMs !== THREE_D_BREAKDOWN_LEGACY_DURATION_MS) errors.push("3D Breakdown duration is invalid.");
+  if (scene.layout.musicBed) {
+    if (scene.layout.musicBed.volume !== THREE_D_BREAKDOWN_MUSIC_VOLUME) errors.push("3D Breakdown music volume is invalid.");
+    if (!scene.layout.musicBed.src?.trim()) errors.push("3D Breakdown music source is missing.");
+    if (!scene.layout.musicBed.id) errors.push("3D Breakdown music bed is invalid.");
+    if (scene.layout.musicBed.loop !== true) errors.push("3D Breakdown music bed must loop.");
+  }
   if (!scene.layout.groundedEvidence?.text?.trim()) errors.push("3D Breakdown grounded evidence is missing.");
   if (!scene.layout.groundedEvidence?.sourceUrl?.trim()) errors.push("3D Breakdown grounded evidence source URL is missing.");
   if (!scene.layout.groundedEvidence?.evidenceUseType) errors.push("3D Breakdown grounded evidence use type is missing.");
@@ -30,11 +34,17 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
   if (!Array.isArray(scene.layout.scriptBeats) || scene.layout.scriptBeats.length !== THREE_D_SCRIPT_BEATS.length) {
     errors.push("3D Breakdown script beats are invalid.");
   } else {
+    const matchingContract = scriptBeatContracts.find((contract) => (
+      scene.layout.scriptBeats.every((beat, index) => {
+        const expected = contract[index];
+        return expected && beat.role === expected.role && beat.startMs === expected.startMs && beat.endMs === expected.endMs;
+      })
+    ));
     scene.layout.scriptBeats.forEach((beat, index) => {
-      const contract = THREE_D_SCRIPT_BEATS[index];
+      const contract = matchingContract?.[index] || THREE_D_SCRIPT_BEATS[index];
       if (!contract) return;
       if (beat.role !== contract.role as ThreeDBreakdownScriptBeatRole) errors.push(`3D Breakdown beat ${index + 1} role is invalid.`);
-      if (beat.startMs !== contract.startMs || beat.endMs !== contract.endMs) errors.push(`3D Breakdown beat ${index + 1} timing is invalid.`);
+      if (!matchingContract && (beat.startMs !== contract.startMs || beat.endMs !== contract.endMs)) errors.push(`3D Breakdown beat ${index + 1} timing is invalid.`);
       if (!beat.narration?.trim()) errors.push(`3D Breakdown beat ${index + 1} narration is missing.`);
     });
   }

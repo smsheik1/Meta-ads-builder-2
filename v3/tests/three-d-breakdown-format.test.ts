@@ -153,10 +153,10 @@ const makeVariant = ({
   claimRiskReason: "Uses only selected review or shipping evidence with no stronger claim.",
   scriptBeats: [
     { role: "consequence", narration: consequence, startMs: 0, endMs: 3000 },
-    { role: "context", narration: "Everyone brought something thoughtful, while the backup box still looked last minute.", startMs: 3000, endMs: 8000 },
-    { role: "mechanism", narration: "A red cookie tin slides in, and scattered proof blocks assemble around it.", startMs: 8000, endMs: 13000 },
-    { role: "revelation", narration: revelation, startMs: 13000, endMs: 18000 },
-    { role: "punchline", narration: "The backup gift becomes remembered.", startMs: 18000, endMs: 21000 },
+    { role: "context", narration: "Everyone brought something thoughtful, while the backup box still looked last minute.", startMs: 3000, endMs: 7000 },
+    { role: "mechanism", narration: "A red cookie tin slides in, and scattered proof blocks assemble around it.", startMs: 7000, endMs: 12000 },
+    { role: "revelation", narration: revelation, startMs: 12000, endMs: 16000 },
+    { role: "punchline", narration: "The backup gift becomes remembered.", startMs: 16000, endMs: 20000 },
   ],
   shots: [
     {
@@ -239,10 +239,10 @@ assert.equal(generated.variants[0]?.shots.length, 3);
 const compactNearMissVariant = makeVariant();
 compactNearMissVariant.scriptBeats = [
   { role: "consequence", narration: "The gift table had one empty spot.", startMs: 0, endMs: 3000 },
-  { role: "context", narration: "The backup box looked late.", startMs: 3000, endMs: 8000 },
-  { role: "mechanism", narration: "A red cookie tin slides in as proof blocks lock around it.", startMs: 8000, endMs: 13000 },
-  { role: "revelation", narration: "Fresh cookies arrived fast. Buyers said they tasted homemade.", startMs: 13000, endMs: 18000 },
-  { role: "punchline", narration: "The backup gift becomes remembered.", startMs: 18000, endMs: 21000 },
+  { role: "context", narration: "The backup box looked late.", startMs: 3000, endMs: 7000 },
+  { role: "mechanism", narration: "A red cookie tin slides in as proof blocks lock around it.", startMs: 7000, endMs: 12000 },
+  { role: "revelation", narration: "Fresh cookies arrived fast. Buyers said they tasted homemade.", startMs: 12000, endMs: 16000 },
+  { role: "punchline", narration: "The backup gift becomes remembered.", startMs: 16000, endMs: 20000 },
 ];
 compactNearMissVariant.shots[2] = {
   ...compactNearMissVariant.shots[2],
@@ -437,10 +437,33 @@ const scene = createThreeDBreakdownAdScene({
 assert.equal(scene.format, "three-d-breakdown");
 assert.equal(scene.layout.scriptBeats.length, 5);
 assert.equal(scene.layout.shots.length, 3);
-assert.equal(scene.layout.musicBed.volume, 0.12);
+assert.equal(scene.layout.durationMs, 20_000);
+assert.equal(scene.layout.musicBed, undefined);
 assert.equal(scene.layout.storyContract.wowMomentType, "proof-blocks");
 assert.ok(scene.layout.groundedEvidence.sourceUrl.includes("davidscookies"));
 assert.equal(validateThreeDBreakdownScene(scene).valid, true);
+
+const legacyTwentyOneSecondScene = {
+  ...scene,
+  layout: {
+    ...scene.layout,
+    durationMs: 21_000,
+    scriptBeats: [
+      { ...scene.layout.scriptBeats[0], startMs: 0, endMs: 3000 },
+      { ...scene.layout.scriptBeats[1], startMs: 3000, endMs: 8000 },
+      { ...scene.layout.scriptBeats[2], startMs: 8000, endMs: 13000 },
+      { ...scene.layout.scriptBeats[3], startMs: 13000, endMs: 18000 },
+      { ...scene.layout.scriptBeats[4], startMs: 18000, endMs: 21000 },
+    ],
+    musicBed: {
+      id: "polished-upbeat",
+      src: "/motion-story/music/polished-upbeat.mp3",
+      volume: 0.12,
+      loop: true,
+    },
+  },
+} as typeof scene;
+assert.equal(validateThreeDBreakdownScene(legacyTwentyOneSecondScene).valid, true);
 
 const markup = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene,
