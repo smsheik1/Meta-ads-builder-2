@@ -37,14 +37,18 @@ function getFallbackCaption(scene: ThreeDBreakdownAdScene, timelineMs: number) {
   return beat?.narration || scene.creative.headline;
 }
 
-function cleanCaptionWords(value: string) {
+function normalizeCaption(value: string) {
   return value
     .replace(/\bis built to protect\b/gi, "protects")
     .replace(/\bcan break\b/gi, "breaks")
     .replace(/\bcan scatter\b/gi, "scatters")
     .replace(/[^A-Za-z0-9'% -]/g, " ")
     .replace(/\s+/g, " ")
-    .trim()
+    .trim();
+}
+
+function cleanCaptionWords(value: string) {
+  return normalizeCaption(value)
     .split(" ")
     .filter(Boolean);
 }
@@ -68,13 +72,7 @@ function splitCaptionClause(value: string, maxWords = 5) {
 }
 
 function getCaptionChunks(value: string) {
-  const normalized = value
-    .replace(/\bis built to protect\b/gi, "protects")
-    .replace(/\bcan break\b/gi, "breaks")
-    .replace(/\bcan scatter\b/gi, "scatters")
-    .replace(/[^A-Za-z0-9'% -]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const normalized = normalizeCaption(value);
   const clauses = normalized
     .split(/\b(?:and|but|then|so|because|while|until)\b/i)
     .map((part) => part.trim())

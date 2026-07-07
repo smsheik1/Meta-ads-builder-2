@@ -1,10 +1,10 @@
 import type { StoredWebsiteResearchResult } from "../../research/types";
 import type { ThreeDBreakdownEvidenceItem } from "./evidence";
-import { THREE_D_BREAKDOWN_DURATION_MS } from "./music";
 import type { ThreeDBreakdownStoryDirection } from "./storyDirections";
 
 export const THREE_D_BREAKDOWN_VARIANT_COUNT = 2;
 export const THREE_D_BREAKDOWN_MAX_TOKENS = 4000;
+export const THREE_D_BREAKDOWN_DURATION_MS = 20_000;
 export const THREE_D_MIN_SCRIPT_WORDS = 35;
 export const THREE_D_MAX_SCRIPT_WORDS = 80;
 export const THREE_D_REFERENCE_SCRIPT_MIN_WORDS = 110;

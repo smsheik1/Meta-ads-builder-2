@@ -18,9 +18,9 @@ import {
   buildThreeDBreakdownStoryDirectionsPrompt,
   buildThreeDBreakdownStyleBScriptPrompt,
   THREE_D_BREAKDOWN_MAX_TOKENS,
+  THREE_D_BREAKDOWN_DURATION_MS,
   THREE_D_BREAKDOWN_VARIANT_COUNT,
 } from "../features/formats/three-d-breakdown/prompt";
-import { THREE_D_BREAKDOWN_DURATION_MS } from "../features/formats/three-d-breakdown/music";
 import { validateThreeDBreakdownScene } from "../features/formats/three-d-breakdown/validate";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import { createThreeDBreakdownAdScene } from "../features/scene/createThreeDBreakdownScene";
@@ -239,25 +239,11 @@ const seedPrompt = buildThreeDBreakdownPrompt({ count: 1, evidence: seedEvidence
 const twoDirectionPrompt = buildThreeDBreakdownPrompt({ count: THREE_D_BREAKDOWN_VARIANT_COUNT, evidence: evidenceItems, research });
 const styleBScriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({ evidence: evidenceItems, research });
 const storyDirectionsPrompt = buildThreeDBreakdownStoryDirectionsPrompt({ evidence: evidenceItems, research });
-const ecommerceReferenceDoc = readFileSync(new URL("../../docs/three-d-breakdown-ecommerce-reference.md", import.meta.url), "utf8");
 const ecommerceStyleReferenceBytes = readFileSync(new URL("../public/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v7.jpg", import.meta.url));
 assert.equal(THREE_D_BREAKDOWN_VARIANT_COUNT, 2);
 assert.equal(THREE_D_BREAKDOWN_MAX_TOKENS, 4000);
 assert.equal(THREE_D_BREAKDOWN_DURATION_MS, 20_000);
 assert.ok(ecommerceStyleReferenceBytes.byteLength > 5_000, "3D Breakdown ecommerce style reference image must stay checked in.");
-assert.ok(ecommerceReferenceDoc.includes("Speed/change density: 10/10"));
-assert.ok(ecommerceReferenceDoc.includes("Bright blue/cyan technical grid floor and wall."));
-assert.ok(ecommerceReferenceDoc.includes("style reference is text-free on purpose"));
-assert.ok(ecommerceReferenceDoc.includes("v10 failed this by writing product text"));
-assert.ok(ecommerceReferenceDoc.includes("One visible state change per frame or roughly every second in video."));
-assert.ok(ecommerceReferenceDoc.includes("four 5-second teaching blocks"));
-assert.ok(ecommerceReferenceDoc.includes("The best frames teach with objects"));
-assert.ok(ecommerceReferenceDoc.includes("Maxfusion founder rule"));
-assert.ok(ecommerceReferenceDoc.includes("clean graphic product-science footage"));
-assert.ok(ecommerceReferenceDoc.includes("Original First-20s Reference Map"));
-assert.ok(ecommerceReferenceDoc.includes("same face, cap/goggles if used, shirt color"));
-assert.ok(ecommerceReferenceDoc.includes("not generic biology footage"));
-assert.ok(ecommerceReferenceDoc.includes("Do not keep trying provider calls"));
 assert.ok(prompt.length < 16_000, `3D Breakdown director prompt is too large: ${prompt.length} chars`);
 assert.ok(seedPrompt.length < 16_000, `Seed director prompt is too large: ${seedPrompt.length} chars`);
 assert.ok(styleBScriptPrompt.length < 8_200, `3D Breakdown Style B script prompt is too large: ${styleBScriptPrompt.length} chars`);

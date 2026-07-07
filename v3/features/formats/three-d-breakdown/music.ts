@@ -1,1 +1,0 @@
-export const THREE_D_BREAKDOWN_DURATION_MS = 20_000;

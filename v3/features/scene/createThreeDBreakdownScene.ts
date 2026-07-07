@@ -1,6 +1,6 @@
 import type { ThreeDBreakdownSiteContract, ThreeDBreakdownVariant } from "../formats/three-d-breakdown/generate";
-import { THREE_D_BREAKDOWN_DURATION_MS } from "../formats/three-d-breakdown/music";
 import type { ThreeDBreakdownEvidenceItem } from "../formats/three-d-breakdown/evidence";
+import { THREE_D_BREAKDOWN_DURATION_MS } from "../formats/three-d-breakdown/prompt";
 import { createThreeDClipPlans } from "../formats/three-d-breakdown/storyboardContracts";
 import type { StoredWebsiteResearchResult } from "../research/types";
 import { pickSceneAccentColor } from "./createVisualizerScene";
@@ -48,6 +48,23 @@ export function createThreeDBreakdownAdScene({
   const revelationBeat = variant.scriptBeats.find((beat) => beat.role === "revelation") || variant.scriptBeats[3]!;
   const punchlineBeat = variant.scriptBeats.find((beat) => beat.role === "punchline") || variant.scriptBeats[4]!;
   if (!variant.storyboardBoard.frames?.length) throw new Error("3D Breakdown storyboard frames are missing.");
+  const storyContract: ThreeDBreakdownAdScene["layout"]["storyContract"] = {
+    ...siteContract,
+    visualStyle: variant.visualStyle,
+    variantAngle: variant.variantAngle,
+    customerProblem: variant.customerProblem,
+    mechanismSummary: variant.mechanismSummary,
+    visualMetaphor: variant.visualMetaphor,
+    referenceScript: variant.referenceScript,
+    ctaLine: variant.ctaLine,
+    evidenceIndex: variant.evidenceIndex,
+    evidenceUseType: variant.evidenceUseType,
+    wowMomentType: variant.wowMomentType,
+    wowMoment: variant.wowMoment,
+    viewerLearns: variant.viewerLearns,
+    claimRisk: variant.claimRisk,
+    claimRiskReason: variant.claimRiskReason,
+  };
 
   return {
     version: AD_SCENE_VERSION,
@@ -93,23 +110,7 @@ export function createThreeDBreakdownAdScene({
       clipPlans: createThreeDClipPlans({
         scriptBeats: variant.scriptBeats as ThreeDBreakdownAdScene["layout"]["scriptBeats"],
         storyboardBoard: variant.storyboardBoard,
-        storyContract: {
-          ...siteContract,
-          visualStyle: variant.visualStyle,
-          variantAngle: variant.variantAngle,
-          customerProblem: variant.customerProblem,
-          mechanismSummary: variant.mechanismSummary,
-          visualMetaphor: variant.visualMetaphor,
-          referenceScript: variant.referenceScript,
-          ctaLine: variant.ctaLine,
-          evidenceIndex: variant.evidenceIndex,
-          evidenceUseType: variant.evidenceUseType,
-          wowMomentType: variant.wowMomentType,
-          wowMoment: variant.wowMoment,
-          viewerLearns: variant.viewerLearns,
-          claimRisk: variant.claimRisk,
-          claimRiskReason: variant.claimRiskReason,
-        },
+        storyContract,
       }),
       referenceImages: {
         productImageUrls,
@@ -121,23 +122,7 @@ export function createThreeDBreakdownAdScene({
         imageUrl: anchorProduct.imageUrl,
         imageAlt: anchorProduct.imageAlt,
       } : undefined,
-      storyContract: {
-        ...siteContract,
-        visualStyle: variant.visualStyle,
-        variantAngle: variant.variantAngle,
-        customerProblem: variant.customerProblem,
-        mechanismSummary: variant.mechanismSummary,
-        visualMetaphor: variant.visualMetaphor,
-        referenceScript: variant.referenceScript,
-        ctaLine: variant.ctaLine,
-        evidenceIndex: variant.evidenceIndex,
-        evidenceUseType: variant.evidenceUseType,
-        wowMomentType: variant.wowMomentType,
-        wowMoment: variant.wowMoment,
-        viewerLearns: variant.viewerLearns,
-        claimRisk: variant.claimRisk,
-        claimRiskReason: variant.claimRiskReason,
-      },
+      storyContract,
       groundedEvidence: {
         ...evidence,
         scrapedAt: now,
