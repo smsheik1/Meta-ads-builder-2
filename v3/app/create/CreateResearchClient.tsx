@@ -251,6 +251,9 @@ function getAdGenerationErrorMessage(error: unknown) {
   const rawMessage = error instanceof Error ? error.message : String(error || "");
   const message = rawMessage.match(/Uncaught Error:\s*([\s\S]*?)(?:\s+at\s|\n\s+at\s| Called by client|$)/)?.[1]?.trim()
     || rawMessage.replace(/^\[CONVEX[^\]]+]\s*\[Request ID:[^\]]+]\s*Server Error\s*/i, "").trim();
+  if (/DEGRADED function cannot be invoked|function cannot be invoked.*DEGRADED/i.test(message)) {
+    return "NVIDIA NIM is temporarily unavailable for 3D Breakdown story writing. Try again in a minute.";
+  }
   if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) {
     if (/NVIDIA NIM|Gemini|Replicate|Seedance|Nano Banana|director/i.test(message)) {
       return `${message.replace(/[.\s]*$/, "")}. Try again.`;
