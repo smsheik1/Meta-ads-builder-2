@@ -263,6 +263,24 @@ const extraVariantResult = await generateThreeDBreakdownVariantsFromResearch(res
 });
 assert.equal(extraVariantResult.variants.length, 1);
 
+const degradedModelsSeen: string[] = [];
+const degradedFallbackResult = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimFallbackModels: ["healthy-story-model"],
+  nvidiaNimModel: "degraded-story-model",
+  nvidiaNimChatCompletion: async ({ model }) => {
+    degradedModelsSeen.push(model);
+    if (model === "degraded-story-model") {
+      throw new Error("NVIDIA NIM 3D Breakdown story slate failed with 400: {\"status\":400,\"title\":\"Bad Request\",\"detail\":\"Function id 'abc': DEGRADED function cannot be invoked\"}");
+    }
+    return JSON.stringify(payloadWithVariants([variantsPayload.variants[0]]));
+  },
+});
+assert.deepEqual(degradedModelsSeen, ["degraded-story-model", "healthy-story-model"]);
+assert.equal(degradedFallbackResult.model, "healthy-story-model");
+assert.equal(degradedFallbackResult.variants.length, 1);
+
 await assert.rejects(
   () => generateThreeDBreakdownVariantsFromResearch(research, {
     count: 1,

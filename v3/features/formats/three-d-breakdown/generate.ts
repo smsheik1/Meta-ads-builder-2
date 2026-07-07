@@ -3,7 +3,10 @@ import {
   DEFAULT_NVIDIA_NIM_BASE_URL,
   type NvidiaNimChatCompletion,
 } from "../../llm/nvidiaNim";
-import { DEFAULT_NVIDIA_NIM_WERE_SORRY_MODEL } from "../../llm/nvidiaNimModels";
+import {
+  DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_FALLBACK_MODELS,
+  DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL,
+} from "../../llm/nvidiaNimModels";
 import type { StoredWebsiteResearchResult } from "../../research/types";
 import type {
   ThreeDBreakdownClaimRisk,
@@ -76,6 +79,18 @@ const cleanText = (value: unknown, maxLength = 900) => String(value ?? "")
   .trim()
   .slice(0, maxLength)
   .trim();
+
+const parseModelList = (value: string | undefined) => (value || "")
+  .split(",")
+  .map((model) => model.trim())
+  .filter(Boolean);
+
+const uniqueModels = (models: string[]) => Array.from(new Set(models.filter(Boolean)));
+
+const isNvidiaNimDegradedError = (error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error || "");
+  return /\bDEGRADED\b.*function cannot be invoked|function cannot be invoked.*\bDEGRADED\b/i.test(message);
+};
 
 const parseJsonObject = (value: string) => {
   const trimmed = value.trim();
@@ -314,12 +329,14 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     nvidiaNimApiKey = process.env.NVIDIA_NIM_API_KEY || "",
     nvidiaNimBaseUrl = process.env.NVIDIA_NIM_BASE_URL || DEFAULT_NVIDIA_NIM_BASE_URL,
     nvidiaNimChatCompletion,
-    nvidiaNimModel = process.env.NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL || DEFAULT_NVIDIA_NIM_WERE_SORRY_MODEL,
+    nvidiaNimFallbackModels = parseModelList(process.env.NVIDIA_NIM_THREE_D_BREAKDOWN_FALLBACK_MODELS),
+    nvidiaNimModel = process.env.NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL || DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL,
   }: {
     count?: number;
     nvidiaNimApiKey?: string;
     nvidiaNimBaseUrl?: string;
     nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
+    nvidiaNimFallbackModels?: string[];
     nvidiaNimModel?: string;
   } = {},
 ): Promise<ThreeDBreakdownGeneration> {
@@ -364,67 +381,103 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     requestedCount,
   });
   const prompt = buildThreeDBreakdownPrompt({ count: requestedCount, evidence: directorEvidenceItems, research });
-  const callDirector = (directorPrompt: string) => callNvidiaNimChat({
+  const modelsToTry = uniqueModels([
+    nvidiaNimModel,
+    ...nvidiaNimFallbackModels,
+    ...DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_FALLBACK_MODELS,
+  ]);
+  const callDirector = (directorPrompt: string, model: string) => callNvidiaNimChat({
     apiKey: nvidiaNimApiKey,
     baseUrl: nvidiaNimBaseUrl,
     label: "NVIDIA NIM 3D Breakdown director",
     maxTokens: THREE_D_BREAKDOWN_MAX_TOKENS,
-    model: nvidiaNimModel,
+    model,
     nvidiaNimChatCompletion,
     prompt: directorPrompt,
     temperature: 0.65,
     timeoutMs: DEFAULT_TIMEOUT_MS,
   });
-  console.log("[wiggly:3d-breakdown] director:call:start", {
-    attempt: "initial",
-    elapsedMs: Date.now() - startedAt,
-    timeoutMs: DEFAULT_TIMEOUT_MS,
-  });
-  const raw = await callDirector(prompt);
-  console.log("[wiggly:3d-breakdown] director:call:ready", {
-    attempt: "initial",
-    elapsedMs: Date.now() - startedAt,
-    responseChars: raw.length,
-  });
-  let parsedGeneration: ReturnType<typeof parseDirectorOutput>;
-  try {
-    parsedGeneration = parseDirectorOutput(raw, directorEvidenceItems, requestedCount);
-  } catch (error) {
-    console.warn("[wiggly:3d-breakdown] director:parse:retry", {
-      elapsedMs: Date.now() - startedAt,
-      message: error instanceof Error ? error.message : String(error),
-    });
-    const retryPrompt = buildThreeDBreakdownRetryPrompt({
-      originalPrompt: prompt,
-      validationErrors: [structuredErrorFrom(error)],
-    });
+
+  const runDirectorWithModel = async (model: string) => {
     console.log("[wiggly:3d-breakdown] director:call:start", {
-      attempt: "retry",
+      attempt: "initial",
       elapsedMs: Date.now() - startedAt,
+      model,
       timeoutMs: DEFAULT_TIMEOUT_MS,
     });
-    const retryRaw = await callDirector(retryPrompt);
+    const raw = await callDirector(prompt, model);
     console.log("[wiggly:3d-breakdown] director:call:ready", {
-      attempt: "retry",
+      attempt: "initial",
       elapsedMs: Date.now() - startedAt,
-      responseChars: retryRaw.length,
+      model,
+      responseChars: raw.length,
     });
-    parsedGeneration = parseDirectorOutput(retryRaw, directorEvidenceItems, requestedCount);
+    try {
+      return parseDirectorOutput(raw, directorEvidenceItems, requestedCount);
+    } catch (error) {
+      console.warn("[wiggly:3d-breakdown] director:parse:retry", {
+        elapsedMs: Date.now() - startedAt,
+        message: error instanceof Error ? error.message : String(error),
+        model,
+      });
+      const retryPrompt = buildThreeDBreakdownRetryPrompt({
+        originalPrompt: prompt,
+        validationErrors: [structuredErrorFrom(error)],
+      });
+      console.log("[wiggly:3d-breakdown] director:call:start", {
+        attempt: "retry",
+        elapsedMs: Date.now() - startedAt,
+        model,
+        timeoutMs: DEFAULT_TIMEOUT_MS,
+      });
+      const retryRaw = await callDirector(retryPrompt, model);
+      console.log("[wiggly:3d-breakdown] director:call:ready", {
+        attempt: "retry",
+        elapsedMs: Date.now() - startedAt,
+        model,
+        responseChars: retryRaw.length,
+      });
+      return parseDirectorOutput(retryRaw, directorEvidenceItems, requestedCount);
+    }
+  };
+
+  let parsedGeneration: ReturnType<typeof parseDirectorOutput> | null = null;
+  let usedModel = nvidiaNimModel;
+  let lastDegradedError: unknown = null;
+  for (const [index, model] of modelsToTry.entries()) {
+    try {
+      parsedGeneration = await runDirectorWithModel(model);
+      usedModel = model;
+      break;
+    } catch (error) {
+      if (!isNvidiaNimDegradedError(error)) throw error;
+      lastDegradedError = error;
+      console.warn("[wiggly:3d-breakdown] director:model:degraded", {
+        elapsedMs: Date.now() - startedAt,
+        hasFallback: index < modelsToTry.length - 1,
+        model,
+      });
+    }
+  }
+  if (!parsedGeneration) {
+    const message = lastDegradedError instanceof Error ? lastDegradedError.message : String(lastDegradedError || "");
+    throw new Error(`NVIDIA NIM 3D Breakdown story slate is temporarily unavailable because the hosted model function is degraded. Try again shortly.${message ? ` (${message.slice(0, 180)})` : ""}`);
   }
   console.log("[wiggly:3d-breakdown] ready", {
     elapsedMs: Date.now() - startedAt,
+    model: usedModel,
     variantCount: parsedGeneration.variants.length,
   });
   return {
     siteContract: parsedGeneration.siteContract,
     variants: parsedGeneration.variants,
     evidenceItems,
-    model: nvidiaNimModel,
+    model: usedModel,
     provider: "nvidia-nim",
     providerStatus: {
       provider: "nvidia-nim-curator",
       status: "used",
-      reason: `Generated ${parsedGeneration.variants.length} 3D Breakdown script variants with grounded evidence.`,
+      reason: `Generated ${parsedGeneration.variants.length} 3D Breakdown script variants with grounded evidence using ${usedModel}.`,
     },
   };
 }
