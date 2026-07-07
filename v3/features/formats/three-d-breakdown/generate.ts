@@ -96,6 +96,8 @@ const forbiddenNarrationPattern = new RegExp(
 const brokenNarrationPattern = /\bali\s+ve\b|\bprotect(?:s|ed|ing)? alive\b/i;
 const transcriptOpeningPattern = /^(when|if|once|imagine|before|after|inside|without|most|many|some|a|an|the|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|hundred|thousand|every|each|she|he|someone|something|\d)\b/i;
 const abstractPunchlinePattern = /^(presence|clarity|confidence|value|connection|impact|control|growth|trust|success)\b/i;
+const ctaActionPattern = /\b(shop|start|try|visit|order|get|book|support|join|subscribe|buy)\b/i;
+const fakeCtaPattern = /\b(the\s+)?(?:journey|trip|route|path|difference|proof|evidence|moment|mechanism)\s+(?:is|was|became)\s+the\s+(?:product|proof|point|difference|mechanism)\b/i;
 const regulatedUnsafePattern = /\b(cures?|diagnos(?:e|is)|treats?|clinically proven|doctor[- ]recommended|risk[- ]free|legal outcome|guaranteed result|guaranteed to)\b|\b(?:prevents?|eliminates?)\s+(?:disease|pain|cavities|infection|injury|illness|complications|lawsuits?|legal risk|financial loss)\b|\b(?:doubles?|triples?|guarantees?|increases?)\s+(?:revenue|profit|sales|return|roi)\b/i;
 const primarySiteTypes: ThreeDBreakdownPrimarySiteType[] = ["ecommerce", "saas", "local-service", "restaurant-food", "nonprofit", "portfolio", "unclear"];
 const riskFlags: ThreeDBreakdownRiskFlag[] = ["health", "medical", "legal", "financial", "beauty", "regulated"];
@@ -179,6 +181,20 @@ const assertTranscriptScriptShape = (beats: ThreeDBreakdownScriptBeat[]) => {
   }
   if (abstractPunchlinePattern.test(punchline)) {
     throw new Error("3D Breakdown punchline must not start with an abstract noun.");
+  }
+};
+
+const assertCtaLineShape = (value: string) => {
+  const ctaLine = cleanText(value, 180);
+  if (!ctaLine) throw new Error("3D Breakdown CTA line is missing.");
+  if (fakeCtaPattern.test(ctaLine)) {
+    throw new Error("3D Breakdown CTA line must be a direct action, not a poetic closer.");
+  }
+  if (!ctaActionPattern.test(ctaLine)) {
+    throw new Error("3D Breakdown CTA line must include a clear action verb.");
+  }
+  if (countWords(ctaLine) < 3) {
+    throw new Error("3D Breakdown CTA line is too short.");
   }
 };
 
@@ -422,6 +438,7 @@ const parseStyleBScriptPlanOutput = (
     claimRisk: parseEnum(parsed.claimRisk, claimRisks, "claimRisk"),
     claimRiskReason: cleanText(parsed.claimRiskReason, 220),
   };
+  assertCtaLineShape(plan.ctaLine);
   for (const [key, value] of Object.entries(plan)) {
     if (typeof value === "string" && !value) {
       throw new Error(`3D Breakdown Style B script plan ${key} is missing.`);
@@ -709,6 +726,7 @@ const parseVariants = (
         : parseEnum(rawVariant.claimRisk, claimRisks, "claimRisk"),
       claimRiskReason: cleanText(lockedScript?.claimRiskReason ?? rawVariant.claimRiskReason, 220),
     };
+    assertCtaLineShape(parsedVariantBase.ctaLine);
     const referenceScript = parseReferenceScript(lockedScript?.referenceScript ?? rawVariant.referenceScript, parsedVariantBase.visualStyle, evidence, evidenceItems);
     for (const [key, value] of Object.entries(parsedVariantBase)) {
       if (typeof value === "string" && !value) throw new Error(`3D Breakdown variant ${index + 1} ${key} is missing.`);
@@ -1075,7 +1093,7 @@ const createSelectedDirectionVariant = ({
     },
     {
       role: "punchline" as const,
-      narration: "The journey is the product.",
+      narration: "The hidden route finally matters.",
       startMs: THREE_D_SCRIPT_BEATS[4]!.startMs,
       endMs: THREE_D_SCRIPT_BEATS[4]!.endMs,
     },
@@ -1134,7 +1152,7 @@ const createSelectedDirectionVariant = ({
     mechanismSummary: shortPhrase(direction.visualEngine || direction.subheadline, "product mechanism reveal", 170),
     visualMetaphor: shortPhrase(direction.visualEngine, "hidden route becomes visible", 150),
     referenceScript: scriptBeats.map((beat) => beat.narration).join(" "),
-    ctaLine: `${brandName}: see the mechanism.`,
+    ctaLine: `Visit ${brandName} to see the mechanism.`,
     evidenceIndex: evidence.evidenceIndex,
     evidenceUseType: evidence.evidenceUseType,
     wowMomentType: direction.possibleRevealPatterns[0] || "xray-cutaway",

@@ -99,6 +99,12 @@ function getCaptionWords(value: string) {
   return words.slice(0, words.length > 6 ? 6 : words.length).map((word) => word.toUpperCase());
 }
 
+function getFinalCtaText(scene: ThreeDBreakdownAdScene) {
+  return String(scene.creative.ctaText || scene.layout.storyContract.ctaLine || "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function ThreeDBreakdownFormatRenderer({
   scene,
   mode,
@@ -138,6 +144,8 @@ export function ThreeDBreakdownFormatRenderer({
     ? timelineMs / 1000
     : activeClipPlan ? Math.max(0, timelineMs / 1000 - clipStartSeconds) : timeSeconds;
   const captionWords = getCaptionWords(caption);
+  const finalCtaText = getFinalCtaText(scene);
+  const showFinalCta = Boolean(finalCtaText && timelineMs >= scene.layout.durationMs - 3600);
   const productAnchor = scene.layout.productAnchor;
   const showFinalProductAnchor = Boolean(productAnchor?.imageUrl && timelineMs >= scene.layout.durationMs - 3000);
 
@@ -282,7 +290,7 @@ export function ThreeDBreakdownFormatRenderer({
         </div>
       ) : null}
 
-      {!shouldUseFinalVideo ? (
+      {!showFinalCta && !shouldUseFinalVideo ? (
       <div
         className="absolute inset-x-[5.5%] bottom-[16%] z-10 flex flex-wrap items-center justify-center gap-x-[1.5cqw] gap-y-[0.8cqw]"
         data-three-d-breakdown-keyword-captions="true"
@@ -324,6 +332,42 @@ export function ThreeDBreakdownFormatRenderer({
           );
         })}
       </div>
+      ) : null}
+
+      {showFinalCta ? (
+        <div
+          data-three-d-breakdown-final-cta="true"
+          style={{
+            position: "absolute",
+            left: "6%",
+            right: "6%",
+            bottom: "24%",
+            zIndex: 14,
+            display: "flex",
+            justifyContent: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: "100%",
+              padding: "3.1cqw 4.4cqw",
+              borderRadius: "4.8cqw",
+              background: "linear-gradient(180deg, rgba(255,255,255,.97), rgba(235,245,255,.92))",
+              boxShadow: "0 1.2cqw 0 rgba(2,6,23,.95), 0 2.4cqw 8cqw rgba(0,0,0,.42)",
+              color: "#020617",
+              fontSize: "4.35cqw",
+              fontWeight: 950,
+              letterSpacing: "0",
+              lineHeight: 0.96,
+              overflowWrap: "break-word",
+              textAlign: "center",
+              textTransform: "none",
+            }}
+          >
+            {finalCtaText}
+          </div>
+        </div>
       ) : null}
     </div>
   );

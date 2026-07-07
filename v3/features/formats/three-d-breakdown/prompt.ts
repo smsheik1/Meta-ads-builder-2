@@ -155,7 +155,7 @@ Return JSON only:
       "mechanismSummary": "specific mechanism",
       "visualMetaphor": "physical metaphor",
       "referenceScript": "Style B only: full 110-160 word unseen-narrator VSL script",
-      "ctaLine": "Style B only: short renderer-overlay CTA, not part of narration",
+      "ctaLine": "Style B only: direct final CTA, not narration",
       "evidenceIndex": 0,
       "evidenceUseType": "feature | mechanism | offer | review | material | process | guarantee | shipping | proof | category | claim",
       "wowMomentType": "one of: ${THREE_D_REVEAL_PATTERNS.join(" | ")}",
@@ -190,6 +190,8 @@ Script contract:
 - Total narration must be ${THREE_D_MIN_SCRIPT_WORDS}-${THREE_D_MAX_SCRIPT_WORDS} words.
 - Each beat: one sentence.
 - Punchline max 7 words.
+- ctaLine must make a real viewer action obvious.
+- Never use an abstract closer as ctaLine.
 - Documentary tone.
 - Maxfusion visual rule: translate every narration sentence into one concrete visible action. If body/product/ingredient/problem/mechanism changes state, show that change.
 - Every narration line must have a visual job: transformation, cutaway, obstacle, route, reaction, or payoff.
@@ -219,8 +221,7 @@ Style B narration spine:
 - Include audience expansion: show the product is not only for the assumed user or moment.
 - If a story direction was selected, stay on that premise even when another evidence item scores higher.
 - Open with curiosity before selling. Prefer "You think..." / "A person assumes..." / "Every time..." when it fits.
-- ctaLine is separate from referenceScript/scriptBeats and may use Shop/Start/Try/Visit.
-- ctaLine mentions product/brand plus action, no new claim.
+- ctaLine is separate: product/brand/site plus action.
 - For review/proof/shipping, write proof-chain VSL: tokens, reactions, calendars, maps, unboxing, distance, occasion pressure, or proof gap.
 - Do not invent package, material, freshness, ingredient, delivery, chemistry, or engineering mechanics unless evidence says them.
 - Open with an assumption or incident, never "Meet", "Watch me", or "This brand".
@@ -277,7 +278,7 @@ Visual speed target from the ecommerce reference:
 Shot mapping:
 - Shot 1 = consequence + context: friction blocking, piling up, splitting, leaking, breaking, compressing, tangling, or creating tension.
 - Shot 2 = mechanism + wow reveal: peak visual moment using one approved wowMomentType: ${THREE_D_REVEAL_PATTERNS.join(", ")}.
-- Shot 3 = revelation + punchline: selected evidence becomes payoff, never a logo/end card.
+- Shot 3 = revelation + punchline + CTA-safe final frame: selected evidence becomes payoff, never a logo/end card.
 - All shots reference visualWorld, at least one recurringObject, explainerDevice, and physicalAction.
 
 Image rules:
@@ -456,7 +457,7 @@ Return JSON only:
   "mechanismSummary": "specific proof/mechanism",
   "visualMetaphor": "specific physical metaphor",
   "referenceScript": "110-160 words, 10-24 short documentary sentences",
-  "ctaLine": "short renderer-overlay CTA, not narrator copy",
+  "ctaLine": "direct final CTA, not narrator copy",
   "evidenceIndex": 0,
   "evidenceUseType": "feature | mechanism | offer | review | material | process | guarantee | shipping | proof | claim",
   "wowMomentType": "one of: ${THREE_D_REVEAL_PATTERNS.join(" | ")}",
@@ -480,8 +481,9 @@ Rules:
 - Include a literal reveal/rebuild verb: cracks, peels, falls away, reveals, rebuilds, snaps, turns, stacks, locks, or opens.
 - Include a product use test: opened, tasted, worn, applied, carried, used, shared, handled, or arrived.
 - Include audience expansion: not only/not just/first to notice or specific audiences.
-- End with a product reframe, not a slogan or CTA.
-- ctaLine is separate from referenceScript. It should be 7-16 words, mention the brand/product, and give one clear action. It may say Shop/Start/Try/Visit.
+- End referenceScript with a product reframe, not a slogan. Put the conversion instruction in ctaLine.
+- ctaLine is 7-16 words, brand/product/site plus one clear action.
+- ctaLine must be conversion copy.
 - Do not put CTA inside referenceScript.
 - Use this hybrid rhythm when it fits: ordinary moment -> hidden world/problem -> felt friction -> weird turn -> product mechanism/support -> CTA overlay.
 - Do not add science comparisons like "outnumber human cells" unless that exact comparison is in evidence.

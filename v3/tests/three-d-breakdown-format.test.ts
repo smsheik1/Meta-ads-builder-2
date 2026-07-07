@@ -277,13 +277,15 @@ assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions p
   "human/product use, body-route/path, obstacle, mechanism pipe",
   "clean graphic product-science footage",
   "no wet gut, gore, organ close-up",
-  "ctaLine is separate from referenceScript/scriptBeats",
+  "ctaLine is separate: product/brand/site plus action",
   "product-science teardown",
   "bright blue/cyan technical grid",
   "Use [] for no riskFlags",
   "Write 1 variant.",
   "No invented reviews, numbers, results, guarantees, source names, customer names, or claims.",
   "Total narration must be 35-80 words",
+  "ctaLine must make a real viewer action obvious",
+  "Never use an abstract closer as ctaLine",
   "pick the most visual evidence item",
   "Do not ask the image model for readable text",
   "one unlabeled six-still contact sheet",
@@ -298,7 +300,8 @@ assert.ok(styleBScriptPrompt.includes("Do not write storyboard, shots, image pro
 assert.ok(styleBScriptPrompt.includes("unseen omniscient narrator"));
 assert.ok(styleBScriptPrompt.includes("referenceScript must be 110-160 words"));
 assert.ok(styleBScriptPrompt.includes("Start with human curiosity before selling"));
-assert.ok(styleBScriptPrompt.includes("ctaLine is separate from referenceScript"));
+assert.ok(styleBScriptPrompt.includes("ctaLine is 7-16 words"));
+assert.ok(styleBScriptPrompt.includes("ctaLine must be conversion copy"));
 assert.ok(styleBScriptPrompt.includes("use the selected evidenceIndex/evidenceUseType exactly"));
 assert.ok(styleBScriptPrompt.includes("higher-scoring evidence into supporting context only"));
 assert.ok(styleBScriptPrompt.includes("For review/proof/shipping, do not invent package physics"));
@@ -869,6 +872,17 @@ await assert.rejects(
     count: 1,
     nvidiaNimApiKey: "test-key",
     nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+      ctaLine: "The journey is the product.",
+    })])),
+  }),
+  /CTA line must be a direct action/,
+);
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
       consequence: "Discover thoughtful cookie gifts before the birthday begins.",
     })])),
   }),
@@ -1397,6 +1411,14 @@ const finalPreviewMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
 assert.ok(finalPreviewMarkup.includes("final-three-d-breakdown.mp4"));
 assert.ok(!finalPreviewMarkup.includes("clip-1.mp4"));
 assert.ok(!finalPreviewMarkup.includes("data-three-d-breakdown-keyword-captions"), "Preview/share should not double-render captions over the finished MP4.");
+const finalCtaMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: sceneWithFinalVideo,
+  mode: "preview",
+  style: { width: 360, height: 640 },
+  timeSeconds: 18.5,
+}));
+assert.ok(finalCtaMarkup.includes('data-three-d-breakdown-final-cta="true"'));
+assert.ok(finalCtaMarkup.includes("Shop memorable cookie gifts"));
 const finalExportMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene: sceneWithFinalVideo,
   mode: "video",
