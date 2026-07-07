@@ -57,7 +57,7 @@ async function main() {
     await page.locator("[data-create-format-rail='v3']").waitFor({ state: "visible" });
     await page.getByRole("button", { name: "Text" }).waitFor({ state: "visible" });
     await page.getByRole("button", { name: "Style" }).waitFor({ state: "visible" });
-    await page.getByRole("button", { name: "Format" }).waitFor({ state: "visible" });
+    await page.getByRole("button", { name: "Format", exact: true }).waitFor({ state: "visible" });
 
     const previewBefore = await page.locator("[data-preview-ad-viewport]").first().textContent();
     await page.getByTestId("spacebar-reroll-button").click();
