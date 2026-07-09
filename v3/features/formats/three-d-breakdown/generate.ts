@@ -98,6 +98,7 @@ const transcriptOpeningPattern = /^(when|if|once|imagine|before|after|inside|wit
 const abstractPunchlinePattern = /^(presence|clarity|confidence|value|connection|impact|control|growth|trust|success)\b/i;
 const ctaActionPattern = /\b(shop|start|try|visit|order|get|book|support|join|subscribe|buy)\b/i;
 const fakeCtaPattern = /\b(the\s+)?(?:journey|trip|route|path|difference|proof|evidence|moment|mechanism)\s+(?:is|was|became)\s+the\s+(?:product|proof|point|difference|mechanism)\b/i;
+const abstractCtaPattern = /\b(?:see|watch|view|learn)\s+(?:the\s+)?(?:journey|trip|route|path|proof|evidence|mechanism|difference)\b|\b(?:visible|hidden)\s+mechanism\b/i;
 const regulatedUnsafePattern = /\b(cures?|diagnos(?:e|is)|treats?|clinically proven|doctor[- ]recommended|risk[- ]free|legal outcome|guaranteed result|guaranteed to)\b|\b(?:prevents?|eliminates?)\s+(?:disease|pain|cavities|infection|injury|illness|complications|lawsuits?|legal risk|financial loss)\b|\b(?:doubles?|triples?|guarantees?|increases?)\s+(?:revenue|profit|sales|return|roi)\b/i;
 const primarySiteTypes: ThreeDBreakdownPrimarySiteType[] = ["ecommerce", "saas", "local-service", "restaurant-food", "nonprofit", "portfolio", "unclear"];
 const riskFlags: ThreeDBreakdownRiskFlag[] = ["health", "medical", "legal", "financial", "beauty", "regulated"];
@@ -179,6 +180,9 @@ const assertTranscriptScriptShape = (beats: ThreeDBreakdownScriptBeat[]) => {
   if (countWords(punchline) > 7) {
     throw new Error("3D Breakdown punchline must be 7 words or fewer.");
   }
+  if (fakeCtaPattern.test(punchline) || abstractCtaPattern.test(punchline)) {
+    throw new Error("3D Breakdown punchline must not sell the mechanism instead of the product.");
+  }
   if (abstractPunchlinePattern.test(punchline)) {
     throw new Error("3D Breakdown punchline must not start with an abstract noun.");
   }
@@ -189,6 +193,9 @@ const assertCtaLineShape = (value: string) => {
   if (!ctaLine) throw new Error("3D Breakdown CTA line is missing.");
   if (fakeCtaPattern.test(ctaLine)) {
     throw new Error("3D Breakdown CTA line must be a direct action, not a poetic closer.");
+  }
+  if (abstractCtaPattern.test(ctaLine)) {
+    throw new Error("3D Breakdown CTA line must sell the product action, not the mechanism.");
   }
   if (!ctaActionPattern.test(ctaLine)) {
     throw new Error("3D Breakdown CTA line must include a clear action verb.");
@@ -885,6 +892,38 @@ const shortPhrase = (value: string, fallback: string, maxLength = 34) => {
   return cleaned || fallback;
 };
 
+const inferProductCategory = (research: StoredWebsiteResearchResult) => {
+  const product = research.productCatalog?.products?.[0];
+  const text = [
+    product?.productType || "",
+    product?.title || "",
+    research.brandBrief.offer,
+    research.brand.description,
+  ].join(" ");
+  if (/\bgumm(?:y|ies)\b/i.test(text)) return "gummies";
+  if (/\bcapsules?\b/i.test(text)) return "capsules";
+  if (/\bsynbiotic|probiotic\b/i.test(text)) return "daily synbiotic";
+  if (/\bcookies?|brownies?|dessert\b/i.test(text)) return "dessert gifts";
+  if (/\bdrink|beverage|soda|water\b/i.test(text)) return "drinks";
+  if (/\bserum|cream|lotion|skincare\b/i.test(text)) return "skincare";
+  return shortPhrase(product?.productType || product?.title || research.brandBrief.offer, "product", 36).toLowerCase();
+};
+
+const buyerActionCta = (research: StoredWebsiteResearchResult) => {
+  const brandName = cleanText(research.brandBrief.brandName || research.brand.name, 60) || "the brand";
+  const ctaDirection = cleanText(research.brandBrief.ctaDirection, 80);
+  if (ctaDirection && ctaActionPattern.test(ctaDirection) && !abstractCtaPattern.test(ctaDirection) && !fakeCtaPattern.test(ctaDirection)) {
+    return /\b(from|at|with|on)\b/i.test(ctaDirection)
+      ? ensureSentence(ctaDirection, `Try ${brandName}`)
+      : ensureSentence(`${ctaDirection} from ${brandName}`, `Try ${brandName}`);
+  }
+  const category = inferProductCategory(research);
+  if (/\b(cookie|dessert|gift)\b/i.test(category)) return `Shop ${brandName} ${category}.`;
+  if (/\bgumm(?:y|ies)\b/i.test(category)) return `Try ${brandName} gummies.`;
+  if (/\bcapsule|synbiotic|probiotic|supplement|vitamin|greens?\b/i.test(category)) return `Try ${brandName} ${category}.`;
+  return `Get ${brandName} today.`;
+};
+
 const evidenceNarration = (evidence: ThreeDBreakdownEvidenceItem) => {
   const text = evidence.text;
   if (/\bviacap\b/i.test(text) && /\bstomach acid\b/i.test(text)) {
@@ -921,7 +960,7 @@ const mechanismNarration = (
   const combined = `${direction.visualEngine} ${direction.shortSummary} ${evidence.text}`;
   if (/\bviacap\b/i.test(combined)) return `${brandName}'s ViaCap turns that route into a protected capsule journey.`;
   if (/\bcapsule\b/i.test(combined)) return `${brandName} turns the capsule into a delivery system.`;
-  return ensureSentence(`${brandName} turns that route into a visible mechanism`, "The product turns the obstacle into a visible mechanism", 115);
+  return ensureSentence(`${brandName} makes the hidden product path visible`, "The product makes the hidden path visible", 115);
 };
 
 const createSelectedDirectionSiteContract = (
@@ -1021,7 +1060,7 @@ const createSelectedDirectionStoryboard = ({
 	    },
 	    {
 	      ...THREE_D_STORYBOARD_FRAME_CONTRACTS[5]!,
-      visual: "Clean final casual-demonstrator-and-product payoff frame in the blue technical grid studio with room for renderer CTA overlay.",
+      visual: "Clean final casual-demonstrator-and-real-product payoff frame in the blue technical grid studio with the selected product hero clearly staged for renderer CTA overlay.",
       camera: "Locked product-and-demonstrator hero shot.",
       motion: "Subtle hold with one final product movement.",
 	      overlayText: "Final payoff",
@@ -1152,7 +1191,7 @@ const createSelectedDirectionVariant = ({
     mechanismSummary: shortPhrase(direction.visualEngine || direction.subheadline, "product mechanism reveal", 170),
     visualMetaphor: shortPhrase(direction.visualEngine, "hidden route becomes visible", 150),
     referenceScript: scriptBeats.map((beat) => beat.narration).join(" "),
-    ctaLine: `Visit ${brandName} to see the mechanism.`,
+    ctaLine: buyerActionCta(research),
     evidenceIndex: evidence.evidenceIndex,
     evidenceUseType: evidence.evidenceUseType,
     wowMomentType: direction.possibleRevealPatterns[0] || "xray-cutaway",

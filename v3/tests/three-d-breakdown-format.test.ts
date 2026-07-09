@@ -13,6 +13,7 @@ import {
   generateThreeDBreakdownStoryDirectionsFromResearch,
   generateThreeDBreakdownVariantsFromResearch,
 } from "../features/formats/three-d-breakdown/generate";
+import type { ThreeDBreakdownVariant } from "../features/formats/three-d-breakdown/generate";
 import {
   buildThreeDBreakdownPrompt,
   buildThreeDBreakdownStoryDirectionsPrompt,
@@ -23,7 +24,10 @@ import {
 } from "../features/formats/three-d-breakdown/prompt";
 import { validateThreeDBreakdownScene } from "../features/formats/three-d-breakdown/validate";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
-import { createThreeDBreakdownAdScene } from "../features/scene/createThreeDBreakdownScene";
+import {
+  createThreeDBreakdownAdScene,
+  selectThreeDBreakdownProductAnchor,
+} from "../features/scene/createThreeDBreakdownScene";
 import type { ThreeDBreakdownAdScene } from "../features/scene/types";
 import { getRenderMusicBed } from "../remotion-entry/RemotionAdScene";
 import { makeResearch } from "./helpers/research";
@@ -234,6 +238,99 @@ assert.ok(seedMicrobeEvidence, "Seed fixture should keep the 38 trillion microbe
 assert.ok((seedMicrobeEvidence?.visualPotentialScore || 0) >= 0.7);
 assert.ok(seedMicrobeEvidence?.possibleRevealPatterns.includes("miniature-world"));
 
+const grunsProductResearch = makeResearch({
+  websiteUrl: "https://gruns.co/",
+  finalUrl: "https://gruns.co/",
+  host: "gruns.co",
+  brand: {
+    ...research.brand,
+    name: "Grüns",
+    description: "Daily nutrition gummies.",
+  },
+  brandBrief: {
+    ...research.brandBrief,
+    brandName: "Grüns",
+    offer: "Daily nutrition gummies with vitamins, minerals, prebiotics, and whole-food ingredients.",
+    audience: "People who want an easier daily nutrition routine.",
+    ctaDirection: "Try Grüns gummies",
+  },
+  productCatalog: {
+    provider: "shopify-products-json",
+    sourceUrl: "https://gruns.co/products.json",
+    groups: { bestSellers: ["daily-gummies"] },
+    summary: { productCount: 2, bestSellerCount: 1 },
+    products: [
+      {
+        title: "Grüns Logo Hat",
+        handle: "logo-hat",
+        url: "https://gruns.co/products/logo-hat",
+        imageUrl: "https://cdn.example/gruns-hat.png",
+        imageAlt: "Grüns logo hat",
+        productType: "Hat",
+        vendor: "Grüns",
+        priceMin: null,
+        priceMax: null,
+        currency: null,
+        available: true,
+        badges: ["best-seller"],
+      },
+      {
+        title: "Grüns Daily Nutrition Gummies",
+        handle: "daily-gummies",
+        url: "https://gruns.co/products/daily-gummies",
+        imageUrl: "https://cdn.example/gruns-gummies.png",
+        imageAlt: "Grüns daily nutrition gummies pouch and gummies",
+        productType: "Gummies",
+        vendor: "Grüns",
+        priceMin: null,
+        priceMax: null,
+        currency: null,
+        available: true,
+        badges: [],
+      },
+    ],
+  },
+});
+assert.equal(selectThreeDBreakdownProductAnchor(grunsProductResearch)?.title, "Grüns Daily Nutrition Gummies");
+
+const merchOnlySupplementResearch = makeResearch({
+  websiteUrl: "https://gruns.co/",
+  finalUrl: "https://gruns.co/",
+  host: "gruns.co",
+  brand: {
+    ...research.brand,
+    name: "Grüns",
+    description: "Daily nutrition gummies.",
+  },
+  brandBrief: {
+    ...research.brandBrief,
+    brandName: "Grüns",
+    offer: "Daily nutrition gummies with vitamins, minerals, prebiotics, and whole-food ingredients.",
+    audience: "People who want an easier daily nutrition routine.",
+  },
+  productCatalog: {
+    provider: "shopify-products-json",
+    sourceUrl: "https://gruns.co/products.json",
+    groups: { bestSellers: ["logo-hat"] },
+    summary: { productCount: 1, bestSellerCount: 1 },
+    products: [{
+      title: "Grüns Logo Hat",
+      handle: "logo-hat",
+      url: "https://gruns.co/products/logo-hat",
+      imageUrl: "https://cdn.example/gruns-hat.png",
+      imageAlt: "Grüns logo hat",
+      productType: "Hat",
+      vendor: "Grüns",
+      priceMin: null,
+      priceMax: null,
+      currency: null,
+      available: true,
+      badges: ["best-seller"],
+    }],
+  },
+});
+assert.equal(selectThreeDBreakdownProductAnchor(merchOnlySupplementResearch), undefined);
+
 const prompt = buildThreeDBreakdownPrompt({ count: 1, evidence: evidenceItems, research });
 const seedPrompt = buildThreeDBreakdownPrompt({ count: 1, evidence: seedEvidenceItems, research: seedMechanismResearch });
 const twoDirectionPrompt = buildThreeDBreakdownPrompt({ count: THREE_D_BREAKDOWN_VARIANT_COUNT, evidence: evidenceItems, research });
@@ -287,9 +384,15 @@ assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions p
   "ctaLine must make a real viewer action obvious",
   "Never use an abstract closer as ctaLine",
   "pick the most visual evidence item",
+  "Production truth: 5 script beats, 6 storyboard frames",
   "Do not ask the image model for readable text",
   "one unlabeled six-still contact sheet",
   "Storyboard prompts are the only place where a six-still sheet is allowed",
+  "Never end with see the mechanism",
+  "name the plain product category once",
+  "product imagery is required before paid visual generation",
+  "do not use hats, merch, logos, icons, or accessories unless the site is apparel",
+  "Frame 6 resolves to the real selected product/category",
   "A website making a risky claim does not automatically make that claim safe to repeat.",
 ].forEach((expected) => assert.ok(prompt.includes(expected), `3D Breakdown prompt missing: ${expected}`));
 assert.ok(twoDirectionPrompt.includes("Write 2 variants."));
@@ -302,6 +405,8 @@ assert.ok(styleBScriptPrompt.includes("referenceScript must be 110-160 words"));
 assert.ok(styleBScriptPrompt.includes("Start with human curiosity before selling"));
 assert.ok(styleBScriptPrompt.includes("ctaLine is 7-16 words"));
 assert.ok(styleBScriptPrompt.includes("ctaLine must be conversion copy"));
+assert.ok(styleBScriptPrompt.includes("ctaLine must sell the product action, not the mechanism"));
+assert.ok(styleBScriptPrompt.includes("name the plain product category once"));
 assert.ok(styleBScriptPrompt.includes("use the selected evidenceIndex/evidenceUseType exactly"));
 assert.ok(styleBScriptPrompt.includes("higher-scoring evidence into supporting context only"));
 assert.ok(styleBScriptPrompt.includes("For review/proof/shipping, do not invent package physics"));
@@ -316,7 +421,9 @@ assert.ok(seedPrompt.includes("ViaCap"));
 assert.ok(seedPrompt.includes("capsule-in-capsule"));
 assert.ok(seedPrompt.includes("probiotic core"));
 
-const makeStoryboardFrames = () => [
+type StoryboardFrames = NonNullable<ThreeDBreakdownVariant["storyboardBoard"]>["frames"];
+
+const makeStoryboardFrames = (): StoryboardFrames => [
   {
     frameIndex: 1,
     role: "problem",
@@ -379,6 +486,14 @@ const makeStoryboardFrames = () => [
   },
 ];
 
+type MakeVariantOptions = Partial<Omit<ThreeDBreakdownVariant, "scriptBeats" | "storyboardBoard" | "shots">> & {
+  consequence?: string;
+  context?: string;
+  mechanism?: string;
+  revelation?: string;
+  punchline?: string;
+};
+
 const makeVariant = ({
   visualStyle = "toy-character-vsl",
   variantAngle = "birthday gift consequence",
@@ -397,7 +512,7 @@ const makeVariant = ({
   ctaLine = "Shop memorable cookie gifts from David's Cookies.",
   consequence = "When the birthday started, her gift still had not arrived.",
   referenceScript = "When someone sends a cookie tin, they assume the box carries the whole birthday. Through the lid, they picture a polite backup dessert nobody remembers. But a stale backup gift can make the table feel unfinished before anyone says it out loud. Then that backup feeling peels away. A red tin opens into cookies made for passing around. The first test is arrival. The second test is taste. Buyers describe cookies that arrived fast and tasted homemade. So the tin becomes proof in motion. Birthday, thank-you, office, client. Cookies are not just for one sweet tooth. Those moments were simply first to notice. One box fills space. The other makes the missing gift feel handled.",
-} = {}) => ({
+}: MakeVariantOptions = {}): ThreeDBreakdownVariant => ({
   visualStyle,
   variantAngle,
   customerProblem,
@@ -883,6 +998,17 @@ await assert.rejects(
     count: 1,
     nvidiaNimApiKey: "test-key",
     nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+      ctaLine: "Visit David's Cookies to see the mechanism.",
+    })])),
+  }),
+  /CTA line must sell the product action/,
+);
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
       consequence: "Discover thoughtful cookie gifts before the birthday begins.",
     })])),
   }),
@@ -898,18 +1024,20 @@ const factualMadeForGeneration = await generateThreeDBreakdownVariantsFromResear
 });
 assert.equal(factualMadeForGeneration.variants.length, 1);
 
-const mechanismTeardownOpening = await generateThreeDBreakdownVariantsFromResearch(research, {
-  count: 1,
-  nvidiaNimApiKey: "test-key",
-  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
-    consequence: "Most probiotics enter digestion and everyone assumes they survive the trip.",
-    context: "Then stomach acid turns that trip into the first real test.",
-    mechanism: "But ViaCap shields the probiotic core while prebiotics move with it.",
-    revelation: "The selected proof says the delivery system reaches the colon.",
-    punchline: "The trip was the product.",
-  })])),
-});
-assert.equal(mechanismTeardownOpening.variants.length, 1);
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+      consequence: "Most probiotics enter digestion and everyone assumes they survive the trip.",
+      context: "Then stomach acid turns that trip into the first real test.",
+      mechanism: "But ViaCap shields the probiotic core while prebiotics move with it.",
+      revelation: "The selected proof says the delivery system reaches the colon.",
+      punchline: "The trip was the product.",
+    })])),
+  }),
+  /punchline must not sell the mechanism/,
+);
 
 await assert.rejects(
   () => generateThreeDBreakdownVariantsFromResearch(research, {
@@ -1204,6 +1332,24 @@ const styleBScene = createThreeDBreakdownAdScene({
   siteContract: generated.siteContract,
   variant: generated.variants[1]!,
 });
+const merchOnlyEvidenceItems = extractThreeDBreakdownEvidence(merchOnlySupplementResearch);
+assert.throws(
+  () => createThreeDBreakdownAdScene({
+    candidateIndex: 0,
+    evidenceItems: merchOnlyEvidenceItems,
+    generationBatchId: "batch_merch_only",
+    model: generated.model,
+    provider: generated.provider,
+    research: merchOnlySupplementResearch,
+    siteContract: generated.siteContract,
+    variant: makeVariant({
+      visualStyle: "presenter-teardown-vsl",
+      evidenceIndex: merchOnlyEvidenceItems[0]!.evidenceIndex,
+      evidenceUseType: merchOnlyEvidenceItems[0]!.evidenceUseType,
+    }),
+  }),
+  /needs a real product image/,
+);
 assert.equal(scene.format, "three-d-breakdown");
 assert.equal(scene.layout.durationMs, 20_000);
 assert.equal(scene.layout.scriptBeats.length, 5);

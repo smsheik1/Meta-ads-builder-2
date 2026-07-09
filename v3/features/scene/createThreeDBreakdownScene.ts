@@ -2,12 +2,77 @@ import type { ThreeDBreakdownSiteContract, ThreeDBreakdownVariant } from "../for
 import type { ThreeDBreakdownEvidenceItem } from "../formats/three-d-breakdown/evidence";
 import { THREE_D_BREAKDOWN_DURATION_MS } from "../formats/three-d-breakdown/prompt";
 import { createThreeDClipPlans } from "../formats/three-d-breakdown/storyboardContracts";
-import type { StoredWebsiteResearchResult } from "../research/types";
+import type { ProductCatalogItem, StoredWebsiteResearchResult } from "../research/types";
 import { pickSceneAccentColor } from "./createVisualizerScene";
 import {
   AD_SCENE_VERSION,
   type ThreeDBreakdownAdScene,
 } from "./types";
+
+const missingProductImageMessage = "3D Breakdown needs a real product image for this site. Use a product page, add a product image, or switch to Reviews/Visualizer.";
+
+const apparelTerms = /\b(apparel|clothing|fashion|wear|wearing|shirt|t-shirt|tee|hoodie|sweatshirt|jacket|pants|leggings|shorts|hat|cap|beanie|sock|socks)\b/i;
+const merchTerms = /\b(merch|merchandise|hat|cap|beanie|shirt|t-shirt|tee|hoodie|sweatshirt|sticker|tote|poster|gift card|keychain)\b/i;
+const productHeroTerms = /\b(gumm(?:y|ies)|capsule|capsules|jar|bottle|pouch|pack|package|box|tin|bag|bundle|kit|supplement|probiotic|synbiotic|vitamin|greens?|cookie|cookies|brownie|brownies|snack|bar|serum|cream|lotion|shampoo|drink|can|bottle)\b/i;
+const logoOnlyTerms = /\b(logo|favicon|icon|mark)\b/i;
+
+const productText = (product: ProductCatalogItem) => [
+  product.title,
+  product.productType || "",
+  product.imageAlt || "",
+].join(" ");
+
+const isApparelSite = (research: StoredWebsiteResearchResult) => {
+  const products = research.productCatalog?.products || [];
+  const copy = [
+    research.brand.description,
+    research.brandBrief.offer,
+    research.brandBrief.audience,
+    ...research.brandBrief.siteLanguage,
+  ].join(" ");
+  if (/\b(apparel|clothing|fashion|wardrobe|wearable basics|activewear|streetwear)\b/i.test(copy)) return true;
+  if (!products.length) return false;
+  const apparelCount = products.filter((product) => apparelTerms.test(productText(product))).length;
+  return apparelCount >= Math.max(2, Math.ceil(products.length * 0.6));
+};
+
+const scoreProductHeroCandidate = (
+  research: StoredWebsiteResearchResult,
+  product: ProductCatalogItem,
+) => {
+  if (!product.imageUrl) return Number.NEGATIVE_INFINITY;
+  const text = productText(product);
+  const apparelSite = isApparelSite(research);
+  let score = 0;
+  if (product.badges.includes("best-seller")) score += 20;
+  if (product.available === true) score += 4;
+  if (productHeroTerms.test(text)) score += 35;
+  if (/\b(best seller|daily|starter|welcome|signature|assorted|original)\b/i.test(text)) score += 6;
+  if (logoOnlyTerms.test(text)) score -= 45;
+  if (merchTerms.test(text) && !apparelSite) score -= 90;
+  return score;
+};
+
+export const selectThreeDBreakdownProductAnchor = (
+  research: StoredWebsiteResearchResult,
+): ThreeDBreakdownAdScene["layout"]["productAnchor"] => {
+  const scoredProducts = (research.productCatalog?.products || [])
+    .map((product, index) => ({
+      product,
+      index,
+      score: scoreProductHeroCandidate(research, product),
+    }))
+    .filter((item) => item.product.imageUrl && item.score > Number.NEGATIVE_INFINITY)
+    .sort((a, b) => b.score - a.score || a.index - b.index);
+  const selected = scoredProducts.find((item) => item.score >= 0)?.product;
+  if (!selected?.imageUrl) return undefined;
+  return {
+    title: selected.title,
+    url: selected.url,
+    imageUrl: selected.imageUrl,
+    imageAlt: selected.imageAlt,
+  };
+};
 
 export function createThreeDBreakdownAdScene({
   candidateIndex,
@@ -33,14 +98,11 @@ export function createThreeDBreakdownAdScene({
   const evidence = evidenceItems.find((item) => item.evidenceIndex === variant.evidenceIndex);
   if (!evidence) throw new Error("3D Breakdown evidence item is missing.");
   const accentColor = pickSceneAccentColor(research.brand.colors);
-  const productsWithImages = (research.productCatalog?.products || [])
-    .filter((product) => Boolean(product.imageUrl));
-  const productImageUrls = productsWithImages
-    .map((product) => product.imageUrl)
-    .filter((url): url is string => Boolean(url))
-    .slice(0, 2);
-  const anchorProduct = productsWithImages.find((product) => product.badges.includes("best-seller"))
-    || productsWithImages[0];
+  const productAnchor = selectThreeDBreakdownProductAnchor(research);
+  if (variant.visualStyle === "presenter-teardown-vsl" && !productAnchor?.imageUrl) {
+    throw new Error(missingProductImageMessage);
+  }
+  const productImageUrls = productAnchor?.imageUrl ? [productAnchor.imageUrl] : [];
   const brandImageUrls = [research.brand.ogImageUrl, research.brand.screenshotUrl, research.brand.logoUrl]
     .filter((url): url is string => Boolean(url))
     .slice(0, 2);
@@ -116,12 +178,7 @@ export function createThreeDBreakdownAdScene({
         productImageUrls,
         brandImageUrls,
       },
-      productAnchor: anchorProduct && anchorProduct.imageUrl ? {
-        title: anchorProduct.title,
-        url: anchorProduct.url,
-        imageUrl: anchorProduct.imageUrl,
-        imageAlt: anchorProduct.imageAlt,
-      } : undefined,
+      productAnchor,
       storyContract,
       groundedEvidence: {
         ...evidence,
