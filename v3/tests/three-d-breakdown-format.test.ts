@@ -1536,15 +1536,14 @@ assert.ok(threeDImageActionSource.includes("do not invent a new package, mannequ
 assert.ok(threeDImageActionSource.includes("do not overcorrect into a standalone beaker demo"));
 assert.ok(threeDImageActionSource.includes("No huge blank tables"));
 assert.ok(threeDImageActionSource.includes("Wiggly adds the exact product packshot in the final renderer end card"));
-assert.ok(threeDImageActionSource.includes("do not invent a new package, mannequin, presenter"));
-assert.ok(threeDImageActionSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("all")))'));
+assert.ok(threeDImageActionSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("regenerate-anchors"), v.literal("all")))'));
 assert.ok(threeDImageActionSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")'));
 assert.ok(threeDImageActionSource.includes("Generate the 3D Breakdown storyboard board before production anchors."));
 assert.ok(threeDImageActionSource.includes("getThreeDAnchorImageInput"), "Production anchors must include the generated storyboard board as an image reference.");
 assert.ok(threeDImageActionSource.includes("storyboardBoard?.image?.status === \"ready\""), "Production anchors must only use a ready storyboard board reference.");
 assert.ok(threeDImageActionSource.includes("scene.layout.productAnchor?.imageUrl"), "Production anchors must keep the selected product reference beside the storyboard.");
 assert.ok(!threeDImageActionSource.includes("getThreeDAnchorImageInput(nextScene, imageInput)"), "Production anchors must not receive competing style and site references after storyboard approval.");
-assert.ok(threeDImageActionSource.includes("replaceReadyAnchors: v.optional(v.boolean())"), "Ready anchors must support explicit visual-QA regeneration.");
+assert.ok(threeDImageActionSource.includes('imageMode === "regenerate-anchors"'), "Ready anchors must support explicit visual-QA regeneration.");
 assert.ok(threeDImageActionSource.includes("Recreate panel"), "Production anchor prompts must bind each frame to its storyboard panel.");
 assert.ok(threeDImageActionSource.includes("usesStoryboardReference"), "Production-frame logs must expose whether the storyboard reference was sent.");
 assert.ok(threeDImageActionSource.includes("storyboard-gate:ready"));

@@ -3068,8 +3068,7 @@ function ResearchConnected() {
   };
 
   const onGenerateThreeDImages = async (
-    modeOverride?: "storyboard" | "anchors" | "all",
-    replaceReadyAnchors = false,
+    modeOverride?: "storyboard" | "anchors" | "regenerate-anchors" | "all",
   ) => {
     const sceneId = sceneIds[selectedSceneIndex];
     if (!selectedScene || selectedScene.format !== "three-d-breakdown" || !sceneId || threeDImageStatus === "loading") return;
@@ -3088,7 +3087,6 @@ function ResearchConnected() {
         sceneId,
         scene: selectedScene,
         mode,
-        ...(replaceReadyAnchors ? { replaceReadyAnchors: true } : {}),
       }) as { scene: ThreeDBreakdownAdScene };
       updateSelectedThreeDScene(result.scene);
       setThreeDError(getThreeDErrorFromScene(result.scene));
@@ -3582,9 +3580,7 @@ function ResearchConnected() {
                 onDownloadStaticPng={() => void onDownloadStaticPng()}
                 onGenerateBrickStoryboard={() => void onGenerateBrickStoryboard()}
                 onGenerateThreeDClip={(clipIndex) => void onGenerateThreeDClip(clipIndex)}
-                onGenerateThreeDImages={() => void onGenerateThreeDImages()}
-                onRegenerateThreeDStoryboard={() => void onGenerateThreeDImages("storyboard")}
-                onRegenerateThreeDAnchors={() => void onGenerateThreeDImages("anchors", true)}
+                onGenerateThreeDImages={(mode) => void onGenerateThreeDImages(mode)}
                 onRegenerateBrickShot={(shotIndex) => void onRegenerateBrickShot(shotIndex)}
                 onRegenerateBrickShotVideo={(shotIndex) => void onRegenerateBrickShotVideo(shotIndex)}
                 onRegenerateVisualizerAudio={onRegenerateVisualizerAudio}

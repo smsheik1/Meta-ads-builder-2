@@ -399,10 +399,9 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
   args: {
     sceneId: v.id("adScenes"),
     scene: v.any(),
-    mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("all"))),
-    replaceReadyAnchors: v.optional(v.boolean()),
+    mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("regenerate-anchors"), v.literal("all"))),
   },
-  handler: async (ctx, { sceneId, scene, mode, replaceReadyAnchors }) => {
+  handler: async (ctx, { sceneId, scene, mode }) => {
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
     if (!replicateApiToken) throw new Error("Replicate image generation is not configured for 3D Breakdown.");
     let nextScene = assertThreeDBreakdownScene(scene as AdScene);
@@ -423,13 +422,14 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
       ? getRequiredAnchorFrameIndexes(nextScene)
       : baseFrames.map((frame) => frame.frameIndex);
     const imageMode = mode || (isPresenterStyle ? "storyboard" : "all");
+    const regenerateAnchors = imageMode === "regenerate-anchors";
     const generateBoard = isPresenterStyle && (imageMode === "storyboard" || imageMode === "all");
-    const generateAnchors = !isPresenterStyle || imageMode === "anchors" || imageMode === "all";
-    if (isPresenterStyle && imageMode === "anchors" && storyboardBoard.image?.status !== "ready") {
+    const generateAnchors = !isPresenterStyle || imageMode === "anchors" || regenerateAnchors || imageMode === "all";
+    if (isPresenterStyle && generateAnchors && !generateBoard && storyboardBoard.image?.status !== "ready") {
       throw new Error("Generate the 3D Breakdown storyboard board before production anchors.");
     }
     const anchorFramesToGenerate = baseFrames.filter((frame) => (
-      requiredAnchorFrameIndexes.includes(frame.frameIndex) && (replaceReadyAnchors || frame.image?.status !== "ready")
+      requiredAnchorFrameIndexes.includes(frame.frameIndex) && (regenerateAnchors || frame.image?.status !== "ready")
     ));
     nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
       ...board,

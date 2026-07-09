@@ -314,12 +314,12 @@ assert.ok(
     threeDImagesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_URL") &&
     threeDImagesSource.includes("requireThreeDStyleReferenceUrl") &&
     threeDImagesSource.includes("getThreeDImageInput") &&
-    threeDImagesSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("all")))') &&
+    threeDImagesSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("regenerate-anchors"), v.literal("all")))') &&
     threeDImagesSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")') &&
-    createClientSource.includes('onGenerateThreeDImages("storyboard")') &&
+    quickActionsSource.includes('onGenerateImages("storyboard")') &&
     quickActionsSource.includes('data-three-d-regenerate-storyboard="true"') &&
     quickActionsSource.includes("Regenerate storyboard") &&
-    createClientSource.includes('onGenerateThreeDImages("anchors", true)') &&
+    quickActionsSource.includes('onGenerateImages("regenerate-anchors")') &&
     quickActionsSource.includes('data-three-d-regenerate-anchors="true"') &&
     quickActionsSource.includes("Regenerate anchors") &&
     threeDImagesSource.includes("generateBoard && !generateAnchors") &&
@@ -329,7 +329,7 @@ assert.ok(
     threeDImagesSource.includes("production-frame:start") &&
     threeDImagesSource.includes("anchorFramesToGenerate") &&
     threeDImagesSource.includes("frame.image?.status !== \"ready\"") &&
-    threeDImagesSource.includes("replaceReadyAnchors || frame.image?.status !== \"ready\"") &&
+    threeDImagesSource.includes("regenerateAnchors || frame.image?.status !== \"ready\"") &&
     threeDImagesSource.includes("activeFrameIndex") &&
     threeDImagesSource.includes("storyboard board must define 6 frames before image generation") &&
     !threeDImagesSource.includes("createThreeDStoryboardFrames") &&

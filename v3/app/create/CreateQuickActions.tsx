@@ -35,6 +35,7 @@ import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
 
 type SaveStatus = "idle" | "loading" | "ready" | "error";
 type BrickStoryboardStatus = "idle" | "loading" | "ready" | "error";
+type ThreeDImageGenerationMode = "storyboard" | "anchors" | "regenerate-anchors" | "all";
 type ThreeDStoryboardFrame = NonNullable<NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["frames"]>[number];
 
 const statusBannerBaseClass = "rounded-2xl border px-4 py-3 text-xs font-black leading-5";
@@ -92,8 +93,6 @@ export function CreateQuickActions({
   onDownloadStaticPng,
   onGenerateBrickStoryboard,
   onGenerateThreeDClip,
-  onRegenerateThreeDAnchors,
-  onRegenerateThreeDStoryboard,
   onRegenerateBrickShot,
   onRegenerateBrickShotVideo,
   onGenerateThreeDImages,
@@ -151,11 +150,9 @@ export function CreateQuickActions({
   onDownloadStaticPng: () => void;
   onGenerateBrickStoryboard: () => void;
   onGenerateThreeDClip: (clipIndex: ThreeDBreakdownClipIndex) => void;
-  onRegenerateThreeDAnchors: () => void;
-  onRegenerateThreeDStoryboard: () => void;
   onRegenerateBrickShot: (shotIndex: number) => void;
   onRegenerateBrickShotVideo: (shotIndex: number) => void;
-  onGenerateThreeDImages: () => void;
+  onGenerateThreeDImages: (mode?: ThreeDImageGenerationMode) => void;
   onRegenerateVisualizerAudio: () => void;
   onLoadSavedDesign: (design: SavedAdSceneDesign) => void;
   onOpenAudioPanel: () => void;
@@ -393,8 +390,6 @@ export function CreateQuickActions({
           onBuildFinalVideo={onCreateRenderJob}
           onGenerateClip={onGenerateThreeDClip}
           onGenerateImages={onGenerateThreeDImages}
-          onRegenerateAnchors={onRegenerateThreeDAnchors}
-          onRegenerateStoryboard={onRegenerateThreeDStoryboard}
           renderBusy={renderBusy}
           scene={threeDScene}
           threeDClipBusyIndex={threeDClipBusyIndex}
@@ -578,8 +573,6 @@ function ThreeDBreakdownAssemblyCard({
   onBuildFinalVideo,
   onGenerateClip,
   onGenerateImages,
-  onRegenerateAnchors,
-  onRegenerateStoryboard,
   hasVoiceover,
   renderBusy,
   scene,
@@ -592,9 +585,7 @@ function ThreeDBreakdownAssemblyCard({
   onAddVoice: () => void;
   onBuildFinalVideo: () => void;
   onGenerateClip: (clipIndex: ThreeDBreakdownClipIndex) => void;
-  onGenerateImages: () => void;
-  onRegenerateAnchors: () => void;
-  onRegenerateStoryboard: () => void;
+  onGenerateImages: (mode?: ThreeDImageGenerationMode) => void;
   hasVoiceover: boolean;
   renderBusy: boolean;
   scene: ThreeDBreakdownAdScene;
@@ -777,7 +768,7 @@ function ThreeDBreakdownAssemblyCard({
               type="button"
               variant="outline"
               className="mt-3 h-10 w-full rounded-2xl border-slate-300 bg-white text-xs font-black uppercase tracking-[0.12em] text-slate-700"
-              onClick={onRegenerateStoryboard}
+              onClick={() => onGenerateImages("storyboard")}
               disabled={imageStatus === "loading"}
               data-three-d-regenerate-storyboard="true"
             >
@@ -790,7 +781,7 @@ function ThreeDBreakdownAssemblyCard({
               type="button"
               variant="outline"
               className="mt-3 h-10 w-full rounded-2xl border-slate-300 bg-white text-xs font-black uppercase tracking-[0.12em] text-slate-700"
-              onClick={onRegenerateAnchors}
+              onClick={() => onGenerateImages("regenerate-anchors")}
               disabled={imageStatus === "loading"}
               data-three-d-regenerate-anchors="true"
             >
@@ -801,7 +792,7 @@ function ThreeDBreakdownAssemblyCard({
           <Button
             type="button"
             className="mt-3 h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
-            onClick={onGenerateImages}
+            onClick={() => onGenerateImages()}
             disabled={imageStatus === "loading" || (isPresenterStyle && storyboardBoardReady && framesReady)}
           >
             {imageStatus === "loading" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImageIcon className="mr-2 size-4" />}
