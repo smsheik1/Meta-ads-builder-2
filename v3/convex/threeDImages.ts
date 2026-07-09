@@ -15,9 +15,18 @@ import type {
 
 const THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH = "/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v7.jpg";
 const THREE_D_SEEDANCE_MAX_PROMPT_CHARS = 3900;
+const getThreeDProductAnchorInstruction = (
+  scene: ThreeDBreakdownAdScene,
+  fallback = "",
+) => {
+  const productAnchor = scene.layout.productAnchor;
+  return productAnchor
+    ? `Selected product anchor: ${productAnchor.title}. Preserve its category, silhouette, dominant colors, scale, physical relationship, and packaging/product form from the reference image. Final payoff must show this product/category; do not replace it with merch, hats, apparel, logo-only objects, generic props, generic bottles, abstract mechanisms, or another product category.`
+    : fallback;
+};
+
 const getThreeDSeedancePromptSuffix = (scene: ThreeDBreakdownAdScene) => {
   const isPresenterStyle = scene.layout.storyContract.visualStyle === "presenter-teardown-vsl";
-  const productAnchor = scene.layout.productAnchor;
   return [
     "Use the provided storyboard frame as the first frame reference.",
     isPresenterStyle
@@ -30,9 +39,7 @@ const getThreeDSeedancePromptSuffix = (scene: ThreeDBreakdownAdScene) => {
       ? "For supplement/digestive stories, do not overcorrect into a standalone beaker demo: transparent torso, body-route, gut-route, or cell-wall footage is correct when it remains anchored to the same silent demonstrator, product path, capsule particles, or scale proxy."
       : "",
     "Capsules stay capsules, bottles stay bottles, packaging stays packaging; do not morph products into cups, buckets, bowls, or unrelated lab vessels.",
-    productAnchor
-      ? `Selected ecommerce product anchor: ${productAnchor.title}. Preserve this product's category, silhouette, dominant colors, scale, and physical relationship from the reference image; do not replace it with merch, hats, apparel, logo-only objects, generic props, or a different product category.`
-      : "",
+    getThreeDProductAnchorInstruction(scene),
     "Use direct cuts, pushes, reveals, and mechanical transformations; no blank color wipes, fog-only transitions, empty gradients, or slow lingering setup.",
     isPresenterStyle
       ? "Make the motion feel embodied through the same silent demonstrator returning throughout the clip: full body, torso, hands, body-route view, over-shoulder angle, or product-use demonstration depending on the beat; narrator/captions present the argument, the human only demonstrates."
@@ -54,7 +61,6 @@ const getThreeDSeedancePromptSuffix = (scene: ThreeDBreakdownAdScene) => {
 
 const getThreeDImageStyleRules = (scene: ThreeDBreakdownAdScene) => {
   const isPresenterStyle = scene.layout.storyContract.visualStyle === "presenter-teardown-vsl";
-  const productAnchor = scene.layout.productAnchor;
   return [
     isPresenterStyle
       ? "Unseen-narrator ecommerce product teardown: bright blue technical grid product-demo studio, recurring casual silent 3D demonstrator/scale figure with everyday clothing and product-demo posture, product handling, oversized tactile props, capsules, pipes, particles, scale comparisons, bright creator-ad lighting, and short 3D mechanism inserts. The demonstrator may appear full-body, torso, hands, or over-shoulder depending on the beat. No smooth bald mannequins, blank anatomy models, test dummies, medical masks, latex gloves, nitrile gloves, PPE, lab coats, doctors, or scientists."
@@ -79,9 +85,7 @@ const getThreeDImageStyleRules = (scene: ThreeDBreakdownAdScene) => {
       ? "For supplement/digestive obstacle frames, use clean graphic product-science visuals: blue body-route, tidy pink cell-wall or obstacle surface, visible particles, crisp grid-world lighting. Avoid wet fleshy intestine tunnels, gore, horror anatomy, disconnected organ close-ups, and gross medical macro shots."
       : "",
     "Preserve product shape, color, material, packaging cues, and category. Capsules stay capsule-shaped, bottles stay bottles, packaging stays packaging; all labels remain blank and unreadable.",
-    productAnchor
-      ? `Selected ecommerce product anchor: ${productAnchor.title}. Use the product reference only for product shape, category, color, packaging silhouette, scale, and material cues. The final payoff must physically show this selected product/category, not a hat, merch item, logo, icon, generic bottle, or abstract mechanism.`
-      : "",
+    getThreeDProductAnchorInstruction(scene),
     "If a bottle, jar, pouch, box, card, or package faces camera, make the front surface completely blank matte material or rotate the label side away from camera. Never render brand names, logos, label panels, ingredient text, badge text, tiny copy, pseudo-letters, or fake product labels.",
     "No readable text, logos, letters, numbers, captions, UI copy, arrows, checkmarks, X marks, or label-like rectangles. Show proof as blank physical tokens, particles, light, steam, crumbs, ribbon, or motion.",
     "Even if brand names, product names, evidence text, CTA, or overlay words are present in scene context, keep all image pixels text-free with blank packages and blank tokens.",
@@ -284,15 +288,12 @@ const buildThreeDProductionFramePrompt = (
 ) => {
   const contract = scene.layout.storyContract;
   const recurringObjects = contract.recurringObjects.join(", ");
-  const productAnchor = scene.layout.productAnchor;
   return [
     "Create ONE vertical 9:16 production keyframe for a high-retention procedural 3D explainer ad.",
     "This is a single Seedance reference image, not a storyboard board.",
     `Use the provided 6-panel storyboard board as the visual source of truth. Recreate panel ${frameIndex} as a clean vertical production keyframe.`,
     "Preserve the storyboard panel's demonstrator identity, gender, age, face shape, shirt color, product silhouette, blue grid world, camera relationship, and scene logic.",
-    productAnchor
-      ? `Selected product anchor: ${productAnchor.title}. Preserve its product category, silhouette, color family, and packaging/product form from the reference image. Do not turn it into merch, a hat, apparel, a logo object, a generic supplement bottle, or unrelated packaging.`
-      : "If no product reference exists, use only abstract product-category shapes and do not invent specific packaging.",
+    getThreeDProductAnchorInstruction(scene, "If no product reference exists, use only abstract product-category shapes and do not invent specific packaging."),
     "Crop or expand the panel only enough to make one vertical 9:16 production frame; do not invent a different person, outfit, prop setup, product category, or anatomy scene.",
     "Do not create a grid, contact sheet, comic strip, split screen, collage, panel border, gutter, horizontal divider, caption bar, or multi-frame layout.",
     "Use the corresponding panel's central subject/action filling most of the vertical frame.",
@@ -326,7 +327,6 @@ const buildThreeDProductionFramePrompt = (
 
 const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
   const contract = scene.layout.storyContract;
-  const productAnchor = scene.layout.productAnchor;
   const framePlan = (scene.layout.storyboardBoard?.frames || []).map((frame) => (
     [
       frame.visual ? `visual ${frame.visual}` : "",
@@ -347,9 +347,7 @@ const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
       ? "Character consistency lock: same demonstrator face, cap/goggles if used, shirt color, body scale, product silhouette, and product relationship across all six stills."
       : "Character consistency lock: same demo character shape, product silhouette, blue-grid world, and product relationship across all six stills.",
     "Each still needs the prompt skeleton: locked style, recurring demonstrator/product, scene action, camera/framing, lighting, color/mood, and consistency.",
-    productAnchor
-      ? `Selected product anchor: ${productAnchor.title}. Use the provided product reference to preserve product category, silhouette, dominant colors, scale, and packaging/product form across the storyboard. Do not replace it with merch, a hat, apparel, logo-only object, icon, generic prop, or unrelated bottle.`
-      : "No specific product image was selected; use blank category-level product forms only and do not invent branded packaging.",
+    getThreeDProductAnchorInstruction(scene, "No specific product image was selected; use blank category-level product forms only and do not invent branded packaging."),
     "Each still must feel like a planned production frame from the same ad, not a decorative prompt sample: same world, one concrete action, one visible state change, clear camera, clear lighting.",
     contract.visualStyle === "presenter-teardown-vsl"
       ? "Maxfusion visual rule: every script line becomes a visible physical action first. Show product handling, body route, obstacle, particle movement, mechanism change, or payoff; never create a topic poster or static product illustration under narration."

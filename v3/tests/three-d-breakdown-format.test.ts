@@ -374,7 +374,6 @@ assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions p
   "human/product use, body-route/path, obstacle, mechanism pipe",
   "clean graphic product-science footage",
   "no wet gut, gore, organ close-up",
-  "ctaLine is separate: product/brand/site plus action",
   "product-science teardown",
   "bright blue/cyan technical grid",
   "Use [] for no riskFlags",

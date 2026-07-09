@@ -224,9 +224,6 @@ Style B narration spine:
 - Include audience expansion: show the product is not only for the assumed user or moment.
 - If a story direction was selected, stay on that premise even when another evidence item scores higher.
 - Open with curiosity before selling. Prefer "You think..." / "A person assumes..." / "Every time..." when it fits.
-- ctaLine is separate: product/brand/site plus action.
-- ctaLine must sell the product action, not the explanation. Ban see the mechanism, visible mechanism, journey is the product, and trip is the product.
-- ctaLine should prefer the plain product/category when known: Try Grüns gummies, Get Seed DS-01, Shop David's Cookies gifts, or the closest evidence-backed equivalent.
 - For review/proof/shipping, write proof-chain VSL: tokens, reactions, calendars, maps, unboxing, distance, occasion pressure, or proof gap.
 - Do not invent package, material, freshness, ingredient, delivery, chemistry, or engineering mechanics unless evidence says them.
 - Open with an assumption or incident, never "Meet", "Watch me", or "This brand".
