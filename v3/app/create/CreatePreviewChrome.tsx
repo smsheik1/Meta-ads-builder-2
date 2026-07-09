@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Bookmark,
   ChevronUp,
@@ -42,6 +42,7 @@ export function PhonePreviewFrame({
   rerollFlash = null,
   timeSeconds,
   placeholderVariantIndex = 0,
+  onFinalVideoElement,
   onOpenAudioPanel,
   onPreviewTimeChange,
 }: {
@@ -52,6 +53,7 @@ export function PhonePreviewFrame({
   rerollFlash?: RenderFlashState | null;
   timeSeconds: number;
   placeholderVariantIndex?: number;
+  onFinalVideoElement?: (element: HTMLVideoElement | null) => void;
   onOpenAudioPanel?: () => void;
   onPreviewTimeChange?: (timeSeconds: number) => void;
 }) {
@@ -69,7 +71,10 @@ export function PhonePreviewFrame({
   const fullHeightVerticalAd = renderScene.format === "three-d-breakdown";
   const renderMotionMode = scene ? motionMode : "idle";
   const shouldShowAudioAction = renderScene.audio.status !== "generated" && Boolean(onOpenAudioPanel);
-  const syncVideoTimeToPreview = renderScene.audio.status !== "generated";
+  const finalCompositedVideoUrl = renderScene.format === "three-d-breakdown" && renderScene.layout.finalVideo?.status === "ready"
+    ? renderScene.layout.finalVideo.url
+    : "";
+  const syncVideoTimeToPreview = renderScene.audio.status !== "generated" || Boolean(finalCompositedVideoUrl);
   const frameClassName = youtubePlatform
     ? "relative mx-auto aspect-[32/21] w-full max-w-[640px] overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25"
     : "relative mx-auto aspect-[1/2] h-[clamp(470px,calc(100vh-15rem),720px)] w-auto overflow-hidden rounded-[30px] border border-slate-800 bg-black text-white shadow-2xl shadow-slate-950/25";
@@ -85,6 +90,11 @@ export function PhonePreviewFrame({
     }) => {
       const videoRef = useRef<HTMLVideoElement | null>(null);
       const [playBlocked, setPlayBlocked] = useState(false);
+      const isFinalCompositedVideo = Boolean(finalCompositedVideoUrl && props.src === finalCompositedVideoUrl);
+      const setVideoElement = useCallback((element: HTMLVideoElement | null) => {
+        videoRef.current = element;
+        if (isFinalCompositedVideo) onFinalVideoElement?.(element);
+      }, [isFinalCompositedVideo, onFinalVideoElement]);
 
       useEffect(() => {
         const video = videoRef.current;
@@ -99,7 +109,7 @@ export function PhonePreviewFrame({
 
       useEffect(() => {
         const video = videoRef.current;
-        if (!video || !active || typeof clipTimeSeconds !== "number") return;
+        if (!video || !active || !video.paused || typeof clipTimeSeconds !== "number") return;
         if (Math.abs(video.currentTime - clipTimeSeconds) > 0.35) {
           video.currentTime = clipTimeSeconds;
         }
@@ -115,7 +125,8 @@ export function PhonePreviewFrame({
         <>
           <video
             {...props}
-            ref={videoRef}
+            ref={setVideoElement}
+            muted={isFinalCompositedVideo ? false : props.muted}
             onPlay={() => setPlayBlocked(false)}
             onTimeUpdate={(event) => {
               onTimeUpdate?.(event);
@@ -138,7 +149,7 @@ export function PhonePreviewFrame({
       );
     };
     return PreviewVideoAsset;
-  }, [onPreviewTimeChange, syncVideoTimeToPreview]);
+  }, [finalCompositedVideoUrl, onFinalVideoElement, onPreviewTimeChange, syncVideoTimeToPreview]);
 
   const renderAdViewport = (className: string) => (
     <div

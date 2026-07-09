@@ -526,6 +526,7 @@ function ResearchConnected() {
   const createEditorScopeRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const backgroundMusicRef = useRef<HTMLAudioElement | null>(null);
+  const finalVideoPreviewRef = useRef<HTMLVideoElement | null>(null);
   const analysisUpgradeKeyRef = useRef("");
   const rerollFlashTimeoutRef = useRef<number | null>(null);
   const backgroundMusicVolumeSaveTimeoutRef = useRef<number | null>(null);
@@ -728,6 +729,15 @@ function ResearchConnected() {
   ]);
 
   const getCurrentAnonymousId = () => anonymousId || getAnonymousId();
+  const selectedFinalVideoUrl = selectedScene?.format === "three-d-breakdown" && selectedScene.layout.finalVideo?.status === "ready"
+    ? selectedScene.layout.finalVideo.url
+    : "";
+  const selectedFinalVideoDurationSeconds = selectedScene?.format === "three-d-breakdown"
+    ? selectedScene.layout.durationMs / 1000
+    : 0;
+  const onFinalVideoElement = useCallback((element: HTMLVideoElement | null) => {
+    finalVideoPreviewRef.current = element;
+  }, []);
 
   const rememberResearchForReuse = (research: StoredWebsiteResearchResult) => {
     for (const value of [research.websiteUrl, research.finalUrl]) {
@@ -752,10 +762,35 @@ function ResearchConnected() {
       backgroundMusic.pause();
       backgroundMusic.currentTime = 0;
     }
+    const finalVideo = finalVideoPreviewRef.current;
+    if (finalVideo) {
+      finalVideo.pause();
+      finalVideo.currentTime = 0;
+    }
     setPreviewTimeSeconds(1.1);
   }, [canvasActions]);
 
   const onTogglePreviewPlayback = useCallback(() => {
+    const finalVideo = selectedFinalVideoUrl ? finalVideoPreviewRef.current : null;
+    if (finalVideo) {
+      if (finalVideo.paused) {
+        if (finalVideo.ended) finalVideo.currentTime = 0;
+        setPreviewTimeSeconds(finalVideo.currentTime);
+        setIsAudioPlaying(true);
+        canvasActions.playbackStarted();
+        void finalVideo.play().catch(() => {
+          setIsAudioPlaying(false);
+          canvasActions.playbackStopped();
+        });
+      } else {
+        finalVideo.pause();
+        setIsAudioPlaying(false);
+        canvasActions.playbackStopped();
+        setPreviewTimeSeconds(finalVideo.currentTime);
+      }
+      return;
+    }
+
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -765,7 +800,19 @@ function ResearchConnected() {
     }
 
     audio.pause();
-  }, []);
+  }, [canvasActions, selectedFinalVideoUrl]);
+
+  useEffect(() => {
+    const finalVideo = selectedFinalVideoUrl ? finalVideoPreviewRef.current : null;
+    if (!finalVideo) return;
+    const onEnded = () => {
+      setIsAudioPlaying(false);
+      canvasActions.playbackStopped();
+      setPreviewTimeSeconds(finalVideo.duration || selectedFinalVideoDurationSeconds);
+    };
+    finalVideo.addEventListener("ended", onEnded);
+    return () => finalVideo.removeEventListener("ended", onEnded);
+  }, [canvasActions, selectedFinalVideoDurationSeconds, selectedFinalVideoUrl]);
 
   const resetShareState = () => {
     setShareStatus("idle");
@@ -3554,6 +3601,7 @@ function ResearchConnected() {
             <CreateCanvasColumn
               adScenesCount={adScenes.length}
               isAudioPlaying={isAudioPlaying}
+              onFinalVideoElement={onFinalVideoElement}
               onOpenAudioPanel={onOpenAudioPanel}
               onPreviewTimeChange={setPreviewTimeSeconds}
               onRerollScene={onRerollScene}

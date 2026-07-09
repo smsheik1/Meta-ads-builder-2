@@ -583,11 +583,15 @@ assert.ok(
 );
 assert.ok(
   previewChromeSource.includes("useMemo<RenderVideoComponent>") &&
-    previewChromeSource.includes('const syncVideoTimeToPreview = renderScene.audio.status !== "generated"') &&
+    previewChromeSource.includes('renderScene.audio.status !== "generated" || Boolean(finalCompositedVideoUrl)') &&
+    previewChromeSource.includes('!video.paused || typeof clipTimeSeconds !== "number"') &&
+    previewChromeSource.includes("muted={isFinalCompositedVideo ? false : props.muted}") &&
     previewChromeSource.includes("if (syncVideoTimeToPreview)") &&
     previewChromeSource.includes("onPreviewTimeChange?.((clipStartSeconds || 0) + event.currentTarget.currentTime)") &&
+    createClientSource.includes("finalVideoPreviewRef") &&
+    createClientSource.includes("void finalVideo.play()") &&
     previewChromeSource.includes("<RenderAssetProvider Image={PreviewImage} Video={PreviewVideo}>"),
-  "Preview video assets may drive timing only when generated audio is not already the master clock, and multi-clip formats must preserve clip offsets.",
+  "A composited final MP4 must own preview timing and audio without corrective seeks while it is playing.",
 );
 
 console.log("create-control-panel tests passed");
