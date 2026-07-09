@@ -225,9 +225,11 @@ assert.ok(
 	    quickActionsSource.includes("assemblyStatusLabel") &&
 	    quickActionsSource.includes('isPresenterStyle ? "Anchors ready" : "Frames ready"') &&
 	    quickActionsSource.includes("requiredFrames.map") &&
+	    quickActionsSource.includes("storyboardBoard.imagePrompt") &&
+	    quickActionsSource.includes("formatStoryboardFramePrompt(frame)") &&
 	    quickActionsSource.includes('data-three-d-storyboard-frames="true"') &&
     !quickActionsSource.includes("Six-frame 3D Breakdown storyboard board"),
-  "3D Breakdown Images step must show compact storyboard status plus frame references without duplicating the full board preview.",
+  "3D Breakdown Images step must show compact storyboard status, frame references, and inspectable prompts without duplicating the full board preview.",
 );
 assert.ok(
   quickActionsSource.includes('data-three-d-anchor-errors="true"') &&
@@ -248,9 +250,11 @@ assert.ok(
     quickActionsSource.includes("Generate clip ${nextClipPlan.clipIndex} next") &&
     quickActionsSource.includes("Generate clip ${clipPlan.clipIndex - 1} first") &&
     quickActionsSource.includes("data-three-d-generate-clip={clipPlan.clipIndex}") &&
-    !quickActionsSource.includes('data-three-d-clip-preview={clipPlan.clipIndex}') &&
-    !quickActionsSource.includes("{clipPlan.prompt}"),
-  "3D Breakdown preflight must show planned clips and expose explicit sequential Seedance actions without debug prompt/player chrome.",
+    quickActionsSource.includes("PromptHelp") &&
+    quickActionsSource.includes("clipPlan.prompt") &&
+    quickActionsSource.includes('data-three-d-prompt-help="true"') &&
+    !quickActionsSource.includes('data-three-d-clip-preview={clipPlan.clipIndex}'),
+  "3D Breakdown preflight must show planned clips, inspectable prompts, and explicit sequential Seedance actions without player chrome.",
 );
 assert.ok(
   storyboardContractsSource.includes("const presenterFrameGroups") &&

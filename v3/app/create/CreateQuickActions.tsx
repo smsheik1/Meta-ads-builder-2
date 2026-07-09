@@ -4,6 +4,7 @@ import {
   BookmarkPlus,
   Check,
   Clapperboard,
+  CircleHelp,
   Download,
   ExternalLink,
   Film,
@@ -33,6 +34,7 @@ import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
 
 type SaveStatus = "idle" | "loading" | "ready" | "error";
 type BrickStoryboardStatus = "idle" | "loading" | "ready" | "error";
+type ThreeDStoryboardFrame = NonNullable<NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["frames"]>[number];
 
 const statusBannerBaseClass = "rounded-2xl border px-4 py-3 text-xs font-black leading-5";
 
@@ -40,6 +42,43 @@ const formatSavedDate = (timestamp: number) => new Intl.DateTimeFormat("en", {
   month: "short",
   day: "numeric",
 }).format(new Date(timestamp));
+
+const formatStoryboardFramePrompt = (frame: ThreeDStoryboardFrame) => [
+  `Frame ${frame.frameIndex}: ${frame.label}`,
+  `Role: ${frame.role}`,
+  frame.visual ? `Visual: ${frame.visual}` : null,
+  frame.camera ? `Camera: ${frame.camera}` : null,
+  frame.motion ? `Motion: ${frame.motion}` : null,
+  frame.overlayText ? `Renderer overlay: ${frame.overlayText}` : null,
+  frame.editingNote ? `Editing note: ${frame.editingNote}` : null,
+].filter(Boolean).join("\n");
+
+function PromptHelp({ label, prompt, className = "" }: { label: string; prompt?: string; className?: string }) {
+  const cleanPrompt = prompt?.trim();
+  if (!cleanPrompt) {
+    return null;
+  }
+
+  return (
+    <div className={`group/prompt text-left ${className}`} data-three-d-prompt-help="true" data-three-d-prompt-label={label}>
+      <button
+        type="button"
+        className="inline-flex h-7 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500 shadow-sm transition hover:border-slate-300 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-300"
+        title={cleanPrompt}
+        aria-label={`Show ${label}`}
+      >
+        <CircleHelp className="size-3.5" />
+        Prompt
+      </button>
+      <div className="mt-2 hidden rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-xl group-hover/prompt:block group-focus-within/prompt:block">
+        <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">{label}</p>
+        <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words text-[10px] font-semibold leading-4 text-slate-100">
+          {cleanPrompt}
+        </pre>
+      </div>
+    </div>
+  );
+}
 
 export function CreateQuickActions({
   currentRenderStatus,
@@ -653,6 +692,11 @@ function ThreeDBreakdownAssemblyCard({
                   {storyboardBoardStatus}
                 </Badge>
               </div>
+              <PromptHelp
+                label="Storyboard image prompt"
+                prompt={storyboardBoard.imagePrompt}
+                className="px-3 pb-2"
+              />
               {storyboardBoard.image?.url ? (
                 <img src={storyboardBoard.image.url} alt="3D Breakdown storyboard board" className="aspect-[9/16] w-full object-cover" />
               ) : null}
@@ -679,6 +723,11 @@ function ThreeDBreakdownAssemblyCard({
                       {frame.image?.status || (requiredFrameIndexes.includes(frame.frameIndex) ? "idle" : "plan")}
                     </Badge>
                   </div>
+                  <PromptHelp
+                    label={`${frameLabel} image prompt`}
+                    prompt={formatStoryboardFramePrompt(frame)}
+                    className="px-2.5 pb-2"
+                  />
                   {frame.image?.url ? (
                     <img src={frame.image.url} alt={`Storyboard frame ${frame.frameIndex}`} className="aspect-[6/7] w-full object-cover" />
                   ) : (
@@ -755,6 +804,11 @@ function ThreeDBreakdownAssemblyCard({
                           : "Needs frames"}
                   </Badge>
                 </div>
+                <PromptHelp
+                  label={`Clip ${clipPlan.clipIndex} video prompt`}
+                  prompt={clipPlan.prompt}
+                  className="mt-3"
+                />
                 <div className="mt-3 grid grid-cols-3 gap-1.5">
                   {(isPresenterStyle ? [clipPlan.frameIndexes[0]] : clipPlan.frameIndexes).map((frameIndex) => {
                     const frame = storyboardFrames.find((item) => item.frameIndex === frameIndex);
