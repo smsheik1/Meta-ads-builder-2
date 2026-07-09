@@ -246,7 +246,11 @@ assert.ok(
     quickActionsSource.includes("Clip {clipPlan.clipIndex}") &&
     quickActionsSource.includes("All clips ready · build the final MP4") &&
     quickActionsSource.includes("Needs voice") &&
-    quickActionsSource.includes("Add voice first") &&
+    quickActionsSource.includes("onAddVoice={onOpenAudioPanel}") &&
+    quickActionsSource.includes("onClick={hasVoiceover ? onBuildFinalVideo : onAddVoice}") &&
+    quickActionsSource.includes("disabled={!videosReady || renderBusy}") &&
+    quickActionsSource.includes("Add voice") &&
+    quickActionsSource.includes("Build final video") &&
     quickActionsSource.includes("Generate clip ${nextClipPlan.clipIndex} next") &&
     quickActionsSource.includes("Generate clip ${clipPlan.clipIndex - 1} first") &&
     quickActionsSource.includes("data-three-d-generate-clip={clipPlan.clipIndex}") &&

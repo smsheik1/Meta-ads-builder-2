@@ -384,6 +384,7 @@ export function CreateQuickActions({
           error={threeDError}
           hasVoiceover={hasPlayableAudio}
           imageStatus={threeDImageStatus}
+          onAddVoice={onOpenAudioPanel}
           onBuildFinalVideo={onCreateRenderJob}
           onGenerateClip={onGenerateThreeDClip}
           onGenerateImages={onGenerateThreeDImages}
@@ -566,6 +567,7 @@ function ThreeDBreakdownAssemblyCard({
   currentRenderStatus,
   error,
   imageStatus,
+  onAddVoice,
   onBuildFinalVideo,
   onGenerateClip,
   onGenerateImages,
@@ -578,6 +580,7 @@ function ThreeDBreakdownAssemblyCard({
   currentRenderStatus: string;
   error: string;
   imageStatus: BrickStoryboardStatus;
+  onAddVoice: () => void;
   onBuildFinalVideo: () => void;
   onGenerateClip: (clipIndex: ThreeDBreakdownClipIndex) => void;
   onGenerateImages: () => void;
@@ -871,11 +874,15 @@ function ThreeDBreakdownAssemblyCard({
           <Button
             type="button"
             className="mt-3 h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
-            onClick={onBuildFinalVideo}
-            disabled={!videosReady || !hasVoiceover || renderBusy}
+            onClick={hasVoiceover ? onBuildFinalVideo : onAddVoice}
+            disabled={!videosReady || renderBusy}
           >
-            {renderBusy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Download className="mr-2 size-4" />}
-            {!hasVoiceover ? "Add voice first" : "Build after clips"}
+            {renderBusy
+              ? <Loader2 className="mr-2 size-4 animate-spin" />
+              : hasVoiceover
+                ? <Download className="mr-2 size-4" />
+                : <AudioLines className="mr-2 size-4" />}
+            {!videosReady ? "Build after clips" : !hasVoiceover ? "Add voice" : "Build final video"}
           </Button>
         </div>
       </div>
