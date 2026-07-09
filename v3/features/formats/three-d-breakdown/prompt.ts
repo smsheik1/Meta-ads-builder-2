@@ -242,7 +242,7 @@ Style B - presenter-teardown-vsl:
 - Demonstrator is not host; they wear, hold, open, swallow, pour, carry, train in, or stand behind product/path.
 - Human is silent continuity: full body, torso, hands, or over-shoulder demo.
 - Narrator/captions argue; human demonstrates scale/use/cause-effect.
-- Keep the demonstrator consistent: same face, cap/goggles if used, shirt color, body scale, and product relationship.
+- Keep the demonstrator consistent: same face, plain shirt color, body scale, and product relationship. No branded caps, hats, hoodies, shirts, totes, merch, or character outfit details may become the product or final payoff.
 - Each frame uses this skeleton: locked style, recurring demonstrator/product, scene action, camera/framing, lighting, color/mood, consistency.
 - If a face appears, use a casual 3D demo person; no mannequin, anatomy model, test dummy, blue gloves, mask, lab/medical costume, or PPE.
 - Across six frames include human/product use, body-route/path, obstacle, mechanism pipe, particles, payoff; frames 1 and 6 show human/product relationship.

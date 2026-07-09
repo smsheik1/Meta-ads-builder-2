@@ -23,6 +23,7 @@ import {
   THREE_D_BREAKDOWN_VARIANT_COUNT,
 } from "../features/formats/three-d-breakdown/prompt";
 import { validateThreeDBreakdownScene } from "../features/formats/three-d-breakdown/validate";
+import { DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL } from "../features/llm/nvidiaNimModels";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import {
   createThreeDBreakdownAdScene,
@@ -293,6 +294,117 @@ const grunsProductResearch = makeResearch({
 });
 assert.equal(selectThreeDBreakdownProductAnchor(grunsProductResearch)?.title, "Grüns Daily Nutrition Gummies");
 
+const grunsLiveOrderResearch = makeResearch({
+  websiteUrl: "https://gruns.co/",
+  finalUrl: "https://gruns.co/",
+  host: "gruns.co",
+  brand: {
+    ...research.brand,
+    name: "Grüns",
+    description: "Daily nutrition gummies.",
+  },
+  brandBrief: {
+    ...research.brandBrief,
+    brandName: "Grüns",
+    offer: "Daily nutritional superfood gummies containing 60+ ingredients including fruits, vegetables, vitamins, and minerals.",
+    audience: "Busy individuals looking for a simple, tasty way to bridge nutritional gaps without powders or pills.",
+    ctaDirection: "Try Grüns gummies",
+  },
+  productCatalog: {
+    provider: "shopify-products-json",
+    sourceUrl: "https://gruns.co/products.json",
+    groups: { bestSellers: [] },
+    summary: { productCount: 6, bestSellerCount: 0 },
+    products: [
+      {
+        title: "The Bodega Hüdie",
+        handle: "gruns-retro-washed-fleece-hoodie",
+        url: "https://gruns.co/products/gruns-retro-washed-fleece-hoodie",
+        imageUrl: "https://cdn.example/hoodie.webp",
+        imageAlt: null,
+        productType: null,
+        vendor: "Grüns",
+        priceMin: null,
+        priceMax: null,
+        currency: null,
+        available: true,
+        badges: [],
+      },
+      {
+        title: "The Call Me Tee",
+        handle: "gruns-ecosoft-cotton-lyocell-midweight-tee",
+        url: "https://gruns.co/products/gruns-ecosoft-cotton-lyocell-midweight-tee",
+        imageUrl: "https://cdn.example/tee.webp",
+        imageAlt: null,
+        productType: null,
+        vendor: "Grüns",
+        priceMin: null,
+        priceMax: null,
+        currency: null,
+        available: true,
+        badges: [],
+      },
+      {
+        title: "Grüns Bodega Tote",
+        handle: "gruns-spacious-canvas-tote-with-color-zipper-pocket",
+        url: "https://gruns.co/products/gruns-spacious-canvas-tote-with-color-zipper-pocket",
+        imageUrl: "https://cdn.example/tote.png",
+        imageAlt: null,
+        productType: null,
+        vendor: "Grüns",
+        priceMin: null,
+        priceMax: null,
+        currency: null,
+        available: true,
+        badges: [],
+      },
+      {
+        title: "Grüns Trucker Hat",
+        handle: "gruns-logo-hat",
+        url: "https://gruns.co/products/gruns-logo-hat",
+        imageUrl: "https://cdn.example/hat.png",
+        imageAlt: null,
+        productType: null,
+        vendor: "Grüns",
+        priceMin: null,
+        priceMax: null,
+        currency: null,
+        available: true,
+        badges: [],
+      },
+      {
+        title: "Grüns Kids",
+        handle: "gruns-kids",
+        url: "https://gruns.co/products/gruns-kids",
+        imageUrl: "https://cdn.example/gruns-kids.webp",
+        imageAlt: null,
+        productType: null,
+        vendor: "Grüns",
+        priceMin: null,
+        priceMax: null,
+        currency: null,
+        available: true,
+        badges: [],
+      },
+      {
+        title: "Grüns",
+        handle: "gruns",
+        url: "https://gruns.co/products/gruns",
+        imageUrl: "https://cdn.example/gruns.webp",
+        imageAlt: null,
+        productType: null,
+        vendor: "Grüns",
+        priceMin: null,
+        priceMax: null,
+        currency: null,
+        available: true,
+        badges: [],
+      },
+    ],
+  },
+});
+assert.equal(selectThreeDBreakdownProductAnchor(grunsLiveOrderResearch)?.title, "Grüns");
+
 const merchOnlySupplementResearch = makeResearch({
   websiteUrl: "https://gruns.co/",
   finalUrl: "https://gruns.co/",
@@ -340,6 +452,7 @@ const ecommerceStyleReferenceBytes = readFileSync(new URL("../public/three-d-bre
 assert.equal(THREE_D_BREAKDOWN_VARIANT_COUNT, 2);
 assert.equal(THREE_D_BREAKDOWN_MAX_TOKENS, 4000);
 assert.equal(THREE_D_BREAKDOWN_DURATION_MS, 20_000);
+assert.equal(DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL, "z-ai/glm-5.2");
 assert.ok(ecommerceStyleReferenceBytes.byteLength > 5_000, "3D Breakdown ecommerce style reference image must stay checked in.");
 assert.ok(prompt.length < 16_000, `3D Breakdown director prompt is too large: ${prompt.length} chars`);
 assert.ok(seedPrompt.length < 16_000, `Seed director prompt is too large: ${seedPrompt.length} chars`);
@@ -369,7 +482,7 @@ assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions p
   "Demonstrator is not host",
   "Founder prompt discipline",
   "If a narration sentence cannot become a visible production still",
-  "same face, cap/goggles if used, shirt color",
+  "same face, plain shirt color",
   "locked style, recurring demonstrator/product, scene action",
   "human/product use, body-route/path, obstacle, mechanism pipe",
   "clean graphic product-science footage",
@@ -758,7 +871,8 @@ assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("full body
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("casual creator-ad 3D person"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human/product use, transparent body-route or product path"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("obstacle wall or pile-up"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("same face, cap/goggles if used, shirt color"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("same face, plain shirt color"));
+assert.ok(!generated.variants[1]?.storyboardBoard.imagePrompt.includes("cap/goggles"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("locked style, recurring demonstrator/product, scene action"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("founder prompt discipline"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("one visible state change"));
@@ -790,7 +904,8 @@ assert.ok(prompt.includes("Compress the 60-second high-retention storyboard inst
 assert.ok(prompt.includes("Every narration line must have a visual job"));
 assert.ok(prompt.includes("Show, don't tell"));
 assert.ok(prompt.includes("Each frame must visualize one narration line/causal turn"));
-assert.ok(prompt.includes("same face, cap/goggles if used, shirt color"));
+assert.ok(prompt.includes("same face, plain shirt color"));
+assert.ok(prompt.includes("No branded caps, hats, hoodies, shirts, totes, merch, or character outfit details may become the product or final payoff."));
 assert.ok(prompt.includes("locked style, recurring demonstrator/product, scene action"));
 assert.ok(prompt.includes("2 hidden obstacle/invisible problem/impossible zoom"));
 assert.ok(prompt.includes("overlayText is metadata for Wiggly renderer overlays only"));
@@ -1390,7 +1505,11 @@ assert.ok(threeDImageActionSource.includes("semi-transparent torso overlay, body
 assert.ok(threeDImageActionSource.includes("This does not ban reference-style semi-transparent torso"));
 assert.ok(threeDImageActionSource.includes("do not ban body-route visuals"));
 assert.ok(threeDImageActionSource.includes("the human only demonstrates"));
-assert.ok(threeDImageActionSource.includes("same demonstrator face, cap/goggles if used, shirt color"));
+assert.ok(threeDImageActionSource.includes("same demonstrator face, plain shirt color"));
+assert.ok(threeDImageActionSource.includes("Show the product as a plain blank version"));
+assert.ok(threeDImageActionSource.includes("Erase every readable label"));
+assert.ok(threeDImageActionSource.includes("no bear, logo, wordmark, label panel, icons, or decorative graphics"));
+assert.ok(threeDImageActionSource.includes("The selected product anchor is the only allowed product hero."));
 assert.ok(threeDImageActionSource.includes("locked style, recurring demonstrator/product, one scene action"));
 assert.ok(threeDImageActionSource.includes("silent demonstrator or body-route anchor visible in the same blue-grid world"));
 assert.ok(threeDImageActionSource.includes("do not detach into a standalone macro tube"));

@@ -20,8 +20,9 @@ const getThreeDProductAnchorInstruction = (
   fallback = "",
 ) => {
   const productAnchor = scene.layout.productAnchor;
+  const imageHint = productAnchor?.imageAlt ? ` Product reference hint: ${productAnchor.imageAlt}.` : "";
   return productAnchor
-    ? `Selected product anchor: ${productAnchor.title}. Preserve its category, silhouette, dominant colors, scale, physical relationship, and packaging/product form from the reference image. Final payoff must show this product/category; do not replace it with merch, hats, apparel, logo-only objects, generic props, generic bottles, abstract mechanisms, or another product category.`
+    ? `Selected product anchor: ${productAnchor.title}.${imageHint} Use the reference image only for category, silhouette, dominant colors, scale, physical relationship, and packaging/product form. Do not copy any front-label artwork from the reference. Erase every readable label, logo, word, badge, icon, mascot, graphic mark, glyph, and pseudo-letter from the generated pixels. Show the product as a plain blank version of the same pouch, jar, bottle, pack, capsule, gummy, or package form; if the reference is a green pouch, render a smooth unmarked green pouch with no bear, logo, wordmark, label panel, icons, or decorative graphics. The selected product anchor is the only allowed product hero. Clothing, headwear, caps, hats, hoodies, shirts, totes, stickers, merch, logos, icons, and character outfits must never become the product or final payoff unless the selected product itself is apparel. Final payoff must show this product/category; do not replace it with merch, hats, apparel, logo-only objects, generic props, generic bottles, abstract mechanisms, or another product category.`
     : fallback;
 };
 
@@ -63,13 +64,13 @@ const getThreeDImageStyleRules = (scene: ThreeDBreakdownAdScene) => {
   const isPresenterStyle = scene.layout.storyContract.visualStyle === "presenter-teardown-vsl";
   return [
     isPresenterStyle
-      ? "Unseen-narrator ecommerce product teardown: bright blue technical grid product-demo studio, recurring casual silent 3D demonstrator/scale figure with everyday clothing and product-demo posture, product handling, oversized tactile props, capsules, pipes, particles, scale comparisons, bright creator-ad lighting, and short 3D mechanism inserts. The demonstrator may appear full-body, torso, hands, or over-shoulder depending on the beat. No smooth bald mannequins, blank anatomy models, test dummies, medical masks, latex gloves, nitrile gloves, PPE, lab coats, doctors, or scientists."
+      ? "Unseen-narrator ecommerce product teardown: bright blue technical grid product-demo studio, recurring casual silent 3D demonstrator/scale figure with plain everyday clothing and product-demo posture, product handling, oversized tactile props, capsules, pipes, particles, scale comparisons, bright creator-ad lighting, and short 3D mechanism inserts. The demonstrator may appear full-body, torso, hands, or over-shoulder depending on the beat. No branded caps, hats, hoodies, shirts, totes, merch, smooth bald mannequins, blank anatomy models, test dummies, medical masks, latex gloves, nitrile gloves, PPE, lab coats, doctors, or scientists."
       : "Bright blue/cyan blueprint-grid stage, flat readable lab lighting, close product-science camera, strong subject/background separation.",
     isPresenterStyle
       ? "Use the same silent demonstrator/product relationship as the continuity anchor; intro and final frames show full-body or torso demonstrator with the product in the blue technical grid studio, while mechanism frames may use hands, a 3D overlay, macro cutaway, x-ray, or product interior insert."
       : "Use the recurring stylized demo character/body proxy as the continuity anchor; intro and final frames show a body or torso, while mechanism frames may use the same hand, pointer, probe, scale figure, or body cutaway.",
     isPresenterStyle
-      ? "Keep the same demonstrator face, cap/goggles if used, shirt color, body scale, product silhouette, and blue-grid world across all frames; consistency matters more than inventing a fresh character pose."
+      ? "Keep the same demonstrator face, plain shirt color, body scale, product silhouette, and blue-grid world across all frames; consistency matters more than inventing a fresh character pose. Do not put brand logos, readable marks, caps, hats, or merch on the demonstrator."
       : "Keep the same demo character shape, product silhouette, blue-grid world, and scale across all frames; consistency matters more than inventing a fresh scene.",
     isPresenterStyle
       ? "Maxfusion visual rule: each narration line must become a visible product/body/mechanism action before it becomes an image prompt. Show the state change physically; do not rely on text or topic illustration."
@@ -167,11 +168,13 @@ const buildThreeDSeedancePrompt = (scene: ThreeDBreakdownAdScene, clipPlan: Thre
   const promptSuffix = getThreeDSeedancePromptSuffix(scene);
   const fullPrompt = [clipPlan.prompt, promptSuffix].join(" ");
   if (fullPrompt.length <= THREE_D_SEEDANCE_MAX_PROMPT_CHARS) return fullPrompt;
-  const availableClipChars = Math.max(800, THREE_D_SEEDANCE_MAX_PROMPT_CHARS - promptSuffix.length - 1);
+
+  const trimmedSuffix = promptSuffix.slice(0, 2200).trim();
+  const availableClipChars = Math.max(600, THREE_D_SEEDANCE_MAX_PROMPT_CHARS - trimmedSuffix.length - 1);
   return [
     clipPlan.prompt.slice(0, availableClipChars).trim(),
-    promptSuffix,
-  ].join(" ");
+    trimmedSuffix,
+  ].join(" ").slice(0, THREE_D_SEEDANCE_MAX_PROMPT_CHARS);
 };
 
 const withUpdatedThreeDClipPlans = (
@@ -266,7 +269,7 @@ const getThreeDGuideInstructionForStyle = (
 ) => {
 	  if (visualStyle === "presenter-teardown-vsl") {
 	    if (frameIndex === 1 || frameIndex === 3 || frameIndex === 6) {
-      return "Show the same recurring casual silent 3D demonstrator/scale figure clearly enough to anchor the product demo; full body or torso is preferred for frame 1 and frame 6, with hands or over-shoulder framing acceptable for product detail. Keep it in the blue technical grid studio with everyday creator-ad clothing and tactile props; no smooth bald mannequins, blank anatomy models, test dummies, sunglasses, blue gloves, latex gloves, nitrile gloves, medical masks, PPE, lab coats, doctors, scientists, toy-like character, lifestyle influencer, or lab technician. Do not clone a known person from a reference, and keep all clothing/product labels unreadable.";
+      return "Show the same recurring casual silent 3D demonstrator/scale figure clearly enough to anchor the product demo; full body or torso is preferred for frame 1 and frame 6, with hands or over-shoulder framing acceptable for product detail. Keep it in the blue technical grid studio with plain everyday creator-ad clothing and tactile props; no branded caps, hats, hoodies, shirts, totes, merch, smooth bald mannequins, blank anatomy models, test dummies, sunglasses, blue gloves, latex gloves, nitrile gloves, medical masks, PPE, lab coats, doctors, scientists, toy-like character, lifestyle influencer, or lab technician. Do not clone a known person from a reference, and keep all clothing/product labels unreadable.";
 	    }
 	    if (frameIndex === 4) {
 	      return "Use this as the 3D explanatory insert: macro cutaway, x-ray, overlay, floating component split, pipe/pathway demo, invisible-problem reveal, or mechanism teardown. It must still feel connected to the same blue grid product demo, not like a separate biology documentary.";
@@ -344,7 +347,7 @@ const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
       ? "Reference style: recurring casual silent 3D demonstrator/scale figure, bright blue technical grid product-demo studio, product handling, transparent torso/body-route or cell-wall footage for supplement stories, obstacle wall or pile-up, capsules, pipes, particles, scale comparisons, mechanism machine/cutaway, and one impossible 3D mechanism insert."
       : "Reference style: recurring stylized demo character/body proxy in a bright blue/cyan technical grid product-science world.",
     contract.visualStyle === "presenter-teardown-vsl"
-      ? "Character consistency lock: same demonstrator face, cap/goggles if used, shirt color, body scale, product silhouette, and product relationship across all six stills."
+      ? "Character consistency lock: same demonstrator face, plain shirt color, body scale, product silhouette, and product relationship across all six stills. No branded caps, hats, hoodies, shirts, totes, or merch as product stand-ins."
       : "Character consistency lock: same demo character shape, product silhouette, blue-grid world, and product relationship across all six stills.",
     "Each still needs the prompt skeleton: locked style, recurring demonstrator/product, scene action, camera/framing, lighting, color/mood, and consistency.",
     getThreeDProductAnchorInstruction(scene, "No specific product image was selected; use blank category-level product forms only and do not invent branded packaging."),
@@ -361,7 +364,7 @@ const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
       ? "Match the reference energy: dense tactile prop worlds, particle floods, obstacle texture, industrial machine-room cutaways, hard visual resets, and active physical teaching frames instead of calm product renders."
       : "",
     contract.visualStyle === "presenter-teardown-vsl"
-      ? "Use the same recurring casual silent 3D demonstrator/scale figure across the contact sheet; full body or torso is preferred in the first and final still, hands/product detail can appear in middle stills. No blue medical gloves, latex gloves, nitrile gloves, PPE, lab coats, doctors, scientists, mannequins, or training anatomy models. Final still must include a blank supplement bottle/jar/package silhouette plus capsule."
+      ? "Use the same recurring casual silent 3D demonstrator/scale figure across the contact sheet; full body or torso is preferred in the first and final still, hands/product detail can appear in middle stills. No branded caps, hats, hoodies, shirts, totes, merch, blue medical gloves, latex gloves, nitrile gloves, PPE, lab coats, doctors, scientists, mannequins, or training anatomy models. Final still must include the selected product anchor as a blank supplement bottle/jar/package/pouch silhouette plus capsule/gummy only when that matches the reference product."
       : "",
     contract.visualStyle === "presenter-teardown-vsl"
       ? "Across the six stills, include distinct teaching modules instead of repeating one blue tabletop: human/product use, hidden body-route or product path, obstacle wall/pile-up, mechanism machine or pipe, moving particles/components, and final product payoff."

@@ -320,6 +320,7 @@ assert.ok(
     !threeDImagesSource.includes("Promise.all(baseFrames.map") &&
     threeDImagesSource.includes("buildThreeDSeedancePrompt") &&
     threeDImagesSource.includes("THREE_D_SEEDANCE_MAX_PROMPT_CHARS = 3900") &&
+    threeDImagesSource.includes(".slice(0, THREE_D_SEEDANCE_MAX_PROMPT_CHARS)") &&
     threeDImagesSource.includes("seedancePromptLength") &&
     threeDImagesSource.includes("imageInput,") &&
     threeDImagesSource.includes("scene.layout.referenceImages?.productImageUrls"),

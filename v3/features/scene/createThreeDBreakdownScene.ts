@@ -11,15 +11,21 @@ import {
 
 const missingProductImageMessage = "3D Breakdown needs a real product image for this site. Use a product page, add a product image, or switch to Reviews/Visualizer.";
 
-const apparelTerms = /\b(apparel|clothing|fashion|wear|wearing|shirt|t-shirt|tee|hoodie|sweatshirt|jacket|pants|leggings|shorts|hat|cap|beanie|sock|socks)\b/i;
-const merchTerms = /\b(merch|merchandise|hat|cap|beanie|shirt|t-shirt|tee|hoodie|sweatshirt|sticker|tote|poster|gift card|keychain)\b/i;
-const productHeroTerms = /\b(gumm(?:y|ies)|capsule|capsules|jar|bottle|pouch|pack|package|box|tin|bag|bundle|kit|supplement|probiotic|synbiotic|vitamin|greens?|cookie|cookies|brownie|brownies|snack|bar|serum|cream|lotion|shampoo|drink|can|bottle)\b/i;
+const normalizeProductText = (value: string) => value
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/ü/gi, "u");
+
+const apparelTerms = /\b(apparel|clothing|fashion|wear|wearing|shirt|t-shirt|tee|hoodie|hudie|sweatshirt|jacket|pants|leggings|shorts|hat|cap|beanie|sock|socks)\b/i;
+const merchTerms = /\b(merch|merchandise|hat|cap|beanie|shirt|t-shirt|tee|hoodie|hudie|sweatshirt|sticker|tote|poster|gift card|keychain|bodega|trucker)\b/i;
+const productHeroTerms = /\b(gumm(?:y|ies)|capsule|capsules|jar|bottle|pouch|pack|package|box|tin|bag|bundle|kit|supplement|probiotic|synbiotic|vitamin|greens?|gruns|cookie|cookies|brownie|brownies|snack|bar|serum|cream|lotion|shampoo|drink|can|bottle)\b/i;
 const logoOnlyTerms = /\b(logo|favicon|icon|mark)\b/i;
 
 const productText = (product: ProductCatalogItem) => [
   product.title,
   product.productType || "",
   product.imageAlt || "",
+  product.url,
 ].join(" ");
 
 const isApparelSite = (research: StoredWebsiteResearchResult) => {
@@ -41,12 +47,16 @@ const scoreProductHeroCandidate = (
   product: ProductCatalogItem,
 ) => {
   if (!product.imageUrl) return Number.NEGATIVE_INFINITY;
-  const text = productText(product);
+  const text = normalizeProductText(productText(product));
   const apparelSite = isApparelSite(research);
-  let score = 0;
+  const hasProductHeroLanguage = productHeroTerms.test(text);
+  const brandName = normalizeProductText(research.brand.name).trim().toLowerCase();
+  const productTitle = normalizeProductText(product.title).trim().toLowerCase();
+  let score = apparelSite ? 0 : -20;
   if (product.badges.includes("best-seller")) score += 20;
   if (product.available === true) score += 4;
-  if (productHeroTerms.test(text)) score += 35;
+  if (hasProductHeroLanguage) score += 35;
+  if (brandName && productTitle === brandName) score += 20;
   if (/\b(best seller|daily|starter|welcome|signature|assorted|original)\b/i.test(text)) score += 6;
   if (logoOnlyTerms.test(text)) score -= 45;
   if (merchTerms.test(text) && !apparelSite) score -= 90;
