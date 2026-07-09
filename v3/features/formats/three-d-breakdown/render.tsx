@@ -42,7 +42,7 @@ function normalizeCaption(value: string) {
     .replace(/\bis built to protect\b/gi, "protects")
     .replace(/\bcan break\b/gi, "breaks")
     .replace(/\bcan scatter\b/gi, "scatters")
-    .replace(/[^A-Za-z0-9'% -]/g, " ")
+    .replace(/[^\p{L}\p{N}'% -]/gu, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -77,10 +77,10 @@ function getCaptionChunks(value: string) {
     .split(/\b(?:and|but|then|so|because|while|until)\b/i)
     .map((part) => part.trim())
     .filter(Boolean)
-    .flatMap((part) => splitCaptionClause(part));
+    .flatMap((part) => splitCaptionClause(part, 6));
 
   if (clauses.length) return clauses;
-  return splitCaptionClause(normalized);
+  return splitCaptionClause(normalized, 6);
 }
 
 function getCaptionForTimeline(scene: ThreeDBreakdownAdScene, timelineMs: number, fallback: string) {
@@ -145,9 +145,13 @@ export function ThreeDBreakdownFormatRenderer({
     : activeClipPlan ? Math.max(0, timelineMs / 1000 - clipStartSeconds) : timeSeconds;
   const captionWords = getCaptionWords(caption);
   const finalCtaText = getFinalCtaText(scene);
-  const showFinalCta = Boolean(finalCtaText && timelineMs >= scene.layout.durationMs - 3600);
   const productAnchor = scene.layout.productAnchor;
-  const showFinalProductAnchor = Boolean(productAnchor?.imageUrl && timelineMs >= scene.layout.durationMs - 3000);
+  const playbackMs = timeSeconds * 1000;
+  const endCardStartMs = scene.layout.durationMs - 4000;
+  const endCardTransitionStartMs = endCardStartMs - 300;
+  const endCardOpacity = clamp((playbackMs - endCardTransitionStartMs) / 300, 0, 1);
+  const showFinalCta = Boolean(!shouldUseFinalVideo && finalCtaText && playbackMs >= endCardStartMs);
+  const showEndCard = Boolean(!shouldUseFinalVideo && productAnchor?.imageUrl && playbackMs >= endCardTransitionStartMs);
 
   return (
     <div
@@ -253,27 +257,33 @@ export function ThreeDBreakdownFormatRenderer({
         </div>
       )}
 
-      {!shouldUseFinalVideo && showFinalProductAnchor && productAnchor ? (
+      {showEndCard && productAnchor ? (
         <div
           data-three-d-breakdown-final-payoff="true"
+          data-three-d-breakdown-end-card="true"
           style={{
             position: "absolute",
-            left: "8%",
-            right: "8%",
-            bottom: "31%",
-            zIndex: 8,
+            inset: 0,
+            zIndex: 12,
             display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
             justifyContent: "center",
+            padding: "10% 9% 9%",
+            background: "#F8FAF7",
+            color: "#0F172A",
+            opacity: endCardOpacity,
             pointerEvents: "none",
           }}
         >
           <div
             style={{
-              maxWidth: "68%",
-              padding: "4%",
-              borderRadius: "5cqw",
-              background: "linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.84))",
-              boxShadow: "0 2.4cqw 8cqw rgba(0,0,0,.34)",
+              position: "relative",
+              display: "flex",
+              width: "100%",
+              minHeight: "55%",
+              alignItems: "flex-end",
+              justifyContent: "center",
             }}
           >
             <Image
@@ -281,11 +291,68 @@ export function ThreeDBreakdownFormatRenderer({
               alt={productAnchor.imageAlt || productAnchor.title}
               style={{
                 display: "block",
-                width: "100%",
-                maxHeight: "29cqh",
+                position: "relative",
+                zIndex: 2,
+                width: "78%",
+                maxHeight: "48cqh",
                 objectFit: "contain",
+                filter: "drop-shadow(0 2.2cqw 2.8cqw rgba(15,23,42,.18))",
               }}
             />
+            <div
+              data-three-d-breakdown-product-plinth="true"
+              style={{
+                position: "absolute",
+                left: "13%",
+                right: "13%",
+                bottom: "-1.5cqh",
+                height: "3.6cqh",
+                borderRadius: "999px",
+                background: brandColor,
+                boxShadow: "0 1.1cqh 2.4cqh rgba(15,23,42,.16)",
+              }}
+            />
+          </div>
+
+          <div
+            style={{
+              minHeight: "25%",
+              marginTop: "5cqh",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              textAlign: "center",
+              opacity: showFinalCta ? 1 : 0,
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                color: "#475569",
+                fontSize: "3.1cqw",
+                fontWeight: 850,
+                letterSpacing: "0",
+                lineHeight: 1,
+              }}
+            >
+              {productAnchor.title}
+            </p>
+            <p
+              data-three-d-breakdown-final-cta="true"
+              style={{
+                maxWidth: "92%",
+                margin: "2.2cqh 0 0",
+                color: "#0F172A",
+                fontSize: "6.2cqw",
+                fontWeight: 950,
+                letterSpacing: "0",
+                lineHeight: 0.96,
+                overflowWrap: "break-word",
+              }}
+            >
+              {finalCtaText}
+            </p>
           </div>
         </div>
       ) : null}
@@ -334,7 +401,7 @@ export function ThreeDBreakdownFormatRenderer({
       </div>
       ) : null}
 
-      {showFinalCta ? (
+      {showFinalCta && !showEndCard ? (
         <div
           data-three-d-breakdown-final-cta="true"
           style={{

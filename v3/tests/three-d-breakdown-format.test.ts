@@ -27,8 +27,10 @@ import { DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL } from "../features/llm/nvid
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import {
   createThreeDBreakdownAdScene,
+  selectThreeDBreakdownBuyerCta,
   selectThreeDBreakdownProductAnchor,
 } from "../features/scene/createThreeDBreakdownScene";
+import { createCaptionsForVoiceover } from "../features/audio/sceneAudio";
 import type { ThreeDBreakdownAdScene } from "../features/scene/types";
 import { getRenderMusicBed } from "../remotion-entry/RemotionAdScene";
 import { makeResearch } from "./helpers/research";
@@ -404,6 +406,24 @@ const grunsLiveOrderResearch = makeResearch({
   },
 });
 assert.equal(selectThreeDBreakdownProductAnchor(grunsLiveOrderResearch)?.title, "Grüns");
+assert.equal(selectThreeDBreakdownBuyerCta({
+  generatedCta: "Start your daily routine from Grüns.",
+  siteCta: "Try Grüns gummies.",
+  productTitle: "Grüns",
+  brandName: "Grüns",
+}), "Try Grüns gummies.");
+assert.equal(selectThreeDBreakdownBuyerCta({
+  generatedCta: "See the mechanism.",
+  siteCta: "The journey is the product.",
+  productTitle: "Grüns",
+  brandName: "Grüns",
+}), "Shop Grüns");
+assert.equal(selectThreeDBreakdownBuyerCta({
+  generatedCta: "Get your daily Grüns.",
+  siteCta: "Shop now.",
+  productTitle: "Grüns",
+  brandName: "Grüns",
+}), "Get your daily Grüns.");
 
 const merchOnlySupplementResearch = makeResearch({
   websiteUrl: "https://gruns.co/",
@@ -1511,15 +1531,20 @@ assert.ok(threeDImageActionSource.includes("Erase every readable label"));
 assert.ok(threeDImageActionSource.includes("no bear, logo, wordmark, label panel, icons, or decorative graphics"));
 assert.ok(threeDImageActionSource.includes("The selected product anchor is the only allowed product hero."));
 assert.ok(threeDImageActionSource.includes("locked style, recurring demonstrator/product, one scene action"));
-assert.ok(threeDImageActionSource.includes("silent demonstrator or body-route anchor visible in the same blue-grid world"));
-assert.ok(threeDImageActionSource.includes("do not detach into a standalone macro tube"));
+assert.ok(threeDImageActionSource.includes("keep the same body-route, payload, hands, or demonstrator anchor visible"));
+assert.ok(threeDImageActionSource.includes("do not invent a new package, mannequin, presenter"));
 assert.ok(threeDImageActionSource.includes("do not overcorrect into a standalone beaker demo"));
 assert.ok(threeDImageActionSource.includes("No huge blank tables"));
+assert.ok(threeDImageActionSource.includes("Wiggly adds the exact product packshot in the final renderer end card"));
+assert.ok(threeDImageActionSource.includes("do not invent a new package, mannequin, presenter"));
 assert.ok(threeDImageActionSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("all")))'));
 assert.ok(threeDImageActionSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")'));
 assert.ok(threeDImageActionSource.includes("Generate the 3D Breakdown storyboard board before production anchors."));
 assert.ok(threeDImageActionSource.includes("getThreeDAnchorImageInput"), "Production anchors must include the generated storyboard board as an image reference.");
 assert.ok(threeDImageActionSource.includes("storyboardBoard?.image?.status === \"ready\""), "Production anchors must only use a ready storyboard board reference.");
+assert.ok(threeDImageActionSource.includes("scene.layout.productAnchor?.imageUrl"), "Production anchors must keep the selected product reference beside the storyboard.");
+assert.ok(!threeDImageActionSource.includes("getThreeDAnchorImageInput(nextScene, imageInput)"), "Production anchors must not receive competing style and site references after storyboard approval.");
+assert.ok(threeDImageActionSource.includes("replaceReadyAnchors: v.optional(v.boolean())"), "Ready anchors must support explicit visual-QA regeneration.");
 assert.ok(threeDImageActionSource.includes("Recreate panel"), "Production anchor prompts must bind each frame to its storyboard panel.");
 assert.ok(threeDImageActionSource.includes("usesStoryboardReference"), "Production-frame logs must expose whether the storyboard reference was sent.");
 assert.ok(threeDImageActionSource.includes("storyboard-gate:ready"));
@@ -1541,11 +1566,19 @@ assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("clip 1 of 2"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("Time-code the clip into storyboard sub-shots"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("0.0-3.3s = frame 1"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("six quick micro-beats"));
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("every narration line must become a visible physical action"));
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("recurring casual silent 3D demonstrator/scale figure"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("every idea must become a visible physical action"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("same recurring casual silent 3D demonstrator"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("Clip 1 motion target"));
 assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("peak teardown"));
-assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("Proof payoff"));
-assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("product reframe"));
+assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("physical payoff"));
+assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("separate product end card"));
+assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("do not invent a bottle, jar, pouch, label, logo, mannequin, or presenter"));
+assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("Clip 2 motion target"));
+assert.ok(styleBScene.layout.clipPlans?.every((clip) => !clip.prompt.includes("Narrative:")));
+assert.ok(styleBScene.layout.clipPlans?.every((clip) => !clip.prompt.includes(styleBScene.layout.scriptBeats[0]?.narration || "__missing__")));
+assert.ok(styleBScene.layout.clipPlans?.every((clip) => clip.prompt.includes("Wiggly adds every word after video generation")));
+assert.ok(styleBScene.layout.storyboardBoard?.imagePrompt.includes("no more than two front-facing waist-up product-holding"));
+assert.ok(styleBScene.layout.storyboardBoard?.imagePrompt.includes("mouth, esophagus, stomach, and intestines"));
 assert.ok(scene.layout.groundedEvidence.sourceUrl.includes("davidscookies"));
 const sceneValidation = validateThreeDBreakdownScene(scene);
 assert.deepEqual(sceneValidation.errors, []);
@@ -1597,7 +1630,12 @@ assert.notEqual(firstCaptionMarkup, secondCaptionMarkup, "3D Breakdown captions 
 const earlyPayoffMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene,
   style: { width: 360, height: 640 },
-  timeSeconds: 15,
+  timeSeconds: 15.5,
+}));
+const payoffStartMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene,
+  style: { width: 360, height: 640 },
+  timeSeconds: 16,
 }));
 const finalPayoffMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene,
@@ -1605,8 +1643,13 @@ const finalPayoffMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
   timeSeconds: 18,
 }));
 assert.ok(!earlyPayoffMarkup.includes("data-three-d-breakdown-final-payoff"));
+assert.ok(payoffStartMarkup.includes("data-three-d-breakdown-final-payoff"));
+assert.ok(payoffStartMarkup.includes("Shop memorable cookie gifts"));
 assert.ok(finalPayoffMarkup.includes("data-three-d-breakdown-final-payoff"));
+assert.ok(finalPayoffMarkup.includes('data-three-d-breakdown-product-plinth="true"'));
+assert.ok(finalPayoffMarkup.includes("#F8FAF7"));
 assert.ok(finalPayoffMarkup.includes("https://cdn.example/davids-cookie-tin.png"));
+assert.ok(finalPayoffMarkup.includes("Shop memorable cookie gifts"));
 assert.ok(!finalPayoffMarkup.includes("The gift works because buyers"));
 assert.ok(!markup.includes("rgba(15,23,42,.72)"));
 
@@ -1681,8 +1724,20 @@ const finalCtaMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
   style: { width: 360, height: 640 },
   timeSeconds: 18.5,
 }));
-assert.ok(finalCtaMarkup.includes('data-three-d-breakdown-final-cta="true"'));
-assert.ok(finalCtaMarkup.includes("Shop memorable cookie gifts"));
+assert.ok(!finalCtaMarkup.includes('data-three-d-breakdown-final-cta="true"'), "Finished MP4 preview must not double-render the baked end card or CTA.");
+
+const unicodeCaptionScene: ThreeDBreakdownAdScene = {
+  ...styleBScene,
+  layout: {
+    ...styleBScene.layout,
+    scriptBeats: styleBScene.layout.scriptBeats.map((beat, index) => (
+      index === 4 ? { ...beat, narration: "Get your daily Grüns gummies." } : beat
+    )) as ThreeDBreakdownAdScene["layout"]["scriptBeats"],
+  },
+};
+const unicodeCaptions = createCaptionsForVoiceover(unicodeCaptionScene, 20_000);
+assert.ok(unicodeCaptions.some((caption) => caption.text.includes("Grüns")), "3D captions must preserve accented brand spelling.");
+assert.ok(unicodeCaptions.every((caption) => caption.text.split(/\s+/).length <= 6), "3D captions must stay in readable phrases of at most six words.");
 const finalExportMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene: sceneWithFinalVideo,
   mode: "video",

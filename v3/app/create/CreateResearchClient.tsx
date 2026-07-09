@@ -1250,6 +1250,7 @@ function ResearchConnected() {
     resetSaveState();
     resetBrickStoryboardState();
     resetThreeDBreakdownState();
+    if (firstScene?.format === "three-d-breakdown") resetThreeDStoryDirections();
     syncCreativePackGroupFromScenes(scenes, nextSceneIds);
     setAdStatusNote(options.note || `${scenes.length} ads ready. Press spacebar to find a stronger version.`);
     setAdStatus("ready");
@@ -2160,11 +2161,16 @@ function ResearchConnected() {
       });
       clearSubmitProgress();
     } catch (nextError) {
+      const message = getAdGenerationErrorMessage(nextError);
       clearSubmitProgress();
       canvasActions.finishBusy();
       setAdStatus("error");
       setAdStatusNote(adScenes.length ? "Previous ads are still on the canvas. New ad generation failed." : "");
-      setError(getAdGenerationErrorMessage(nextError));
+      setError(message);
+      if (format === "three-d-breakdown" && options.threeDStoryDirection) {
+        setThreeDStoryDirectionStatus("error");
+        setThreeDStoryDirectionError(message);
+      }
     }
   };
 
@@ -3061,7 +3067,10 @@ function ResearchConnected() {
     return boardFailure || frameFailure?.image?.error || imageFailure?.image?.error || clipFailure?.video?.error || "";
   };
 
-  const onGenerateThreeDImages = async () => {
+  const onGenerateThreeDImages = async (
+    modeOverride?: "storyboard" | "anchors" | "all",
+    replaceReadyAnchors = false,
+  ) => {
     const sceneId = sceneIds[selectedSceneIndex];
     if (!selectedScene || selectedScene.format !== "three-d-breakdown" || !sceneId || threeDImageStatus === "loading") return;
     setThreeDImageBusyIndex(threeDAllShotsBusyIndex);
@@ -3070,15 +3079,16 @@ function ResearchConnected() {
     resetRenderState();
     resetSaveState();
     try {
-      const mode = selectedThreeDPresenterStyle
+      const mode = modeOverride || (selectedThreeDPresenterStyle
         ? selectedThreeDStoryboardBoardReady && !selectedThreeDStoryboardFramesReady
           ? "anchors"
           : "storyboard"
-        : "all";
+        : "all");
       const result = await generateThreeDImagesForScene({
         sceneId,
         scene: selectedScene,
         mode,
+        ...(replaceReadyAnchors ? { replaceReadyAnchors: true } : {}),
       }) as { scene: ThreeDBreakdownAdScene };
       updateSelectedThreeDScene(result.scene);
       setThreeDError(getThreeDErrorFromScene(result.scene));
@@ -3139,6 +3149,9 @@ function ResearchConnected() {
       return;
     }
     setSelectedThreeDStoryDirectionId(direction.directionId);
+    setThreeDStoryDirectionStatus("loading");
+    setThreeDStoryDirectionError("");
+    setError("");
     void generateScenesOnly(
       reusableResearch,
       "three-d-breakdown",
@@ -3570,6 +3583,8 @@ function ResearchConnected() {
                 onGenerateBrickStoryboard={() => void onGenerateBrickStoryboard()}
                 onGenerateThreeDClip={(clipIndex) => void onGenerateThreeDClip(clipIndex)}
                 onGenerateThreeDImages={() => void onGenerateThreeDImages()}
+                onRegenerateThreeDStoryboard={() => void onGenerateThreeDImages("storyboard")}
+                onRegenerateThreeDAnchors={() => void onGenerateThreeDImages("anchors", true)}
                 onRegenerateBrickShot={(shotIndex) => void onRegenerateBrickShot(shotIndex)}
                 onRegenerateBrickShotVideo={(shotIndex) => void onRegenerateBrickShotVideo(shotIndex)}
                 onRegenerateVisualizerAudio={onRegenerateVisualizerAudio}

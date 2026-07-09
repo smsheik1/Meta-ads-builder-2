@@ -41,23 +41,30 @@ const createClipPrompt = ({
   totalClips: number;
   world: string;
   recurringObjects: string;
-  narrative: string;
+  narrative?: string;
   direction: string;
 }) => [
   `Animate storyboard frame${frameIndexes.length > 1 ? "s" : ""} ${frameIndexes.join("-")} as clip ${clipIndex} of ${totalClips}, vertical 9:16, ${durationSeconds} seconds.`,
   getClipTimingPlan(frameIndexes, durationSeconds),
-  `World: ${world}. Recurring objects: ${recurringObjects}. Narrative: ${narrative}`,
-  "Show, don't tell: every narration line must become a visible physical action, transformation, obstacle, reveal, or payoff. The visuals do the explaining; captions only emphasize.",
+  `World: ${world}. Recurring objects: ${recurringObjects}.`,
+  narrative ? `Physical scene meaning, expressed only as objects and motion: ${narrative}` : "",
+  "Show, don't tell: every idea must become a visible physical action, transformation, obstacle, reveal, or payoff.",
   "Maxfusion visual rule: if the line says the body, product, ingredient, problem, or mechanism changes state, the clip must show that state change physically.",
   "Keep the silent demonstrator physically involved in the proof when present: wearing, holding, opening, swallowing, pouring, carrying, training in, or standing directly behind the product path.",
   framePlan,
   direction,
+  totalClips === 2
+    ? clipIndex === 1
+      ? "Clip 1 motion target: begin with physical product use, push through to the body or product route, then make the obstacle visibly block, scatter, pile up, break, or leak before the cut."
+      : "Clip 2 motion target: expose the mechanism, visibly change or clear the obstacle, land the selected evidence as physical motion, then hold on the resolved mechanism before Wiggly's separate product end card."
+    : "",
   durationSeconds >= 10
     ? "Use six quick micro-beats: setup, obstruction, zoom, mechanism change, payoff, and reset/hold; change object state every 1-1.7 seconds."
     : "Use four quick micro-beats: 0-1s setup, 1-2.3s obstruction/change, 2.3-3.8s reveal, 3.8-5s payoff/reset.",
   "The second and third micro-beats must change the object, camera scale, or mechanism; no static product with drifting particles.",
   "Maintain module variety: product anchor, hidden obstacle, mechanism machine, ingredient/component movement, unified payoff, or clean final product card.",
-].join(" ");
+  "Do not generate typography, title cards, captions, subtitles, labels, logos, letters, numbers, or pseudo-writing. Wiggly adds every word after video generation.",
+].filter(Boolean).join(" ");
 
 const getClipTimingPlan = (
   frameIndexes: ThreeDBreakdownStoryboardFrameIndex[],
@@ -101,6 +108,28 @@ const getClipFramePlan = (
     : "Follow the selected storyboard frames exactly. Overlay words are added by Wiggly later; do not generate readable text.";
 };
 
+const getPresenterClipFramePlan = (
+  storyboardBoard: ThreeDBreakdownStoryboardBoard | undefined,
+  frameIndexes: ThreeDBreakdownStoryboardFrameIndex[],
+) => {
+  const frames = storyboardBoard?.frames || [];
+  const framePlan = frameIndexes
+    .map((frameIndex) => {
+      const frame = frames.find((item) => item.frameIndex === frameIndex);
+      if (!frame) return "";
+      return [
+        `Frame ${frameIndex}`,
+        frame.camera ? `camera: ${frame.camera}` : "",
+        frame.motion ? `physical motion: ${frame.motion}` : "",
+      ].filter(Boolean).join("; ");
+    })
+    .filter(Boolean)
+    .join(" | ");
+  return framePlan
+    ? `Use these camera and motion cues only: ${framePlan}. Never turn prompt words into visible text.`
+    : "Follow the approved storyboard composition and physical motion. Never generate visible text.";
+};
+
 export const createThreeDClipPlans = (
   sceneInput: Pick<ThreeDBreakdownAdScene["layout"], "scriptBeats" | "storyContract" | "storyboardBoard">,
 ): ThreeDBreakdownAdScene["layout"]["clipPlans"] => {
@@ -113,12 +142,12 @@ export const createThreeDClipPlans = (
   const recurringObjects = sceneInput.storyContract.recurringObjects.join(", ");
   const isPresenterStyle = sceneInput.storyContract.visualStyle === "presenter-teardown-vsl";
   const presenterClipDirections = [
-    "False assumption beat: open in the bright blue technical grid product-demo studio with the same recurring casual silent 3D demonstrator/scale figure handling the product. Show the ordinary product use or mistaken mental model physically; no talking, no text-led explanation.",
-    "Hidden route beat: snap from the human-scale product moment into a visible body-route, clear pipe, product path, or guided transit route anchored to the same demonstrator/product. Make the invisible trip visible as one clean physical path.",
-    "Hidden problem beat: make the obstacle physically block, scatter, pile up, break, leak, or create friction in the same blue-grid world. Keep it clean and graphic; no wet fleshy intestine tunnel, standalone beaker demo, smooth bald mannequin, PPE, doctors, gross medical macro, or faceless biology montage.",
-    "Mechanism reveal beat: this is the peak teardown. Reveal the engineered mechanism changing state through an impossible-to-film cutaway, pipe, particle path, nested capsule, exploded layer, or process machine. Show the mechanism solving the exact obstacle, not a static product close-up.",
-    "Proof payoff beat: connect the selected evidence to visible payoff through organized motion, protected particles, proof tokens, product handling, or the mechanism arriving intact. This must feel like the proof landed, not like a logo card.",
-    "Clean product reframe beat: return to silent-demonstrator/product proof payoff and final clean product close in the same blue-grid world. Hold a CTA-safe final composition for overlays; no logo-only end card and no generated text.",
+    "Open in the bright blue technical grid product-demo studio with the same recurring casual silent 3D demonstrator handling the product. Show ordinary product use and visible physical pressure; no talking or typography.",
+    "Push from the human-scale product moment into a clean body route, clear pipe, or guided transit path anchored to the same demonstrator and product. Follow one moving payload through the route.",
+    "Make the obstacle physically block, scatter, pile up, break, leak, or create friction in the same blue-grid world. Keep it clean and graphic; no wet fleshy intestine tunnel, standalone beaker demo, mannequin, PPE, doctors, or faceless biology montage.",
+    "Create the peak teardown with an impossible-to-film cutaway, pipe, particle path, nested capsule, exploded layer, or process machine changing state. The mechanism must visibly alter the exact obstacle.",
+    "Carry the selected evidence into an organized physical payoff through moving protected particles, blank proof tokens, or the payload arriving intact. Do not introduce packaging, logos, title cards, or new people.",
+    "Hold on the resolved mechanism in the same blue-grid world. Wiggly supplies the real product end card afterward, so do not invent a bottle, jar, pouch, label, logo, mannequin, or presenter.",
   ];
   const clipDirections = isPresenterStyle
     ? [
@@ -173,7 +202,7 @@ export const createThreeDClipPlans = (
           durationSeconds: 10,
           totalClips: presenterTimings.length,
           frameIndexes,
-          framePlan: getClipFramePlan(sceneInput.storyboardBoard, frameIndexes),
+          framePlan: getPresenterClipFramePlan(sceneInput.storyboardBoard, frameIndexes),
           world,
           recurringObjects,
           narrative: presenterNarratives[index] || consequence,

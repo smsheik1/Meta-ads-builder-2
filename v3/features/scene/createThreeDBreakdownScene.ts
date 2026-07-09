@@ -10,6 +10,38 @@ import {
 } from "./types";
 
 const missingProductImageMessage = "3D Breakdown needs a real product image for this site. Use a product page, add a product image, or switch to Reviews/Visualizer.";
+const buyerActionPattern = /\b(shop|try|get|buy|order|start|choose|book|download|subscribe|visit)\b/i;
+const unusableCtaPattern = /\b(see the mechanism|the journey is the product|visible mechanism|start\b.{0,64}\bfrom\b)\b/i;
+
+const cleanCtaText = (value: string | null | undefined) => String(value || "")
+  .replace(/\s+/g, " ")
+  .trim()
+  .slice(0, 90);
+
+const isUsableBuyerCta = (value: string) => (
+  buyerActionPattern.test(value) && !unusableCtaPattern.test(value)
+);
+
+export const selectThreeDBreakdownBuyerCta = ({
+  generatedCta,
+  siteCta,
+  productTitle,
+  brandName,
+}: {
+  generatedCta?: string;
+  siteCta?: string;
+  productTitle?: string;
+  brandName: string;
+}) => {
+  const candidates = [generatedCta, siteCta]
+    .map(cleanCtaText)
+    .filter(Boolean);
+  const supportedCta = candidates.find(isUsableBuyerCta);
+  if (supportedCta) return supportedCta;
+
+  const subject = cleanCtaText(productTitle) || cleanCtaText(brandName) || "this product";
+  return `Shop ${subject}`.slice(0, 90);
+};
 
 const normalizeProductText = (value: string) => value
   .normalize("NFD")
@@ -118,7 +150,12 @@ export function createThreeDBreakdownAdScene({
     .slice(0, 2);
   const firstBeat = variant.scriptBeats[0]!;
   const revelationBeat = variant.scriptBeats.find((beat) => beat.role === "revelation") || variant.scriptBeats[3]!;
-  const punchlineBeat = variant.scriptBeats.find((beat) => beat.role === "punchline") || variant.scriptBeats[4]!;
+  const buyerCtaText = selectThreeDBreakdownBuyerCta({
+    generatedCta: variant.ctaLine,
+    siteCta: research.brandBrief.ctaDirection,
+    productTitle: productAnchor?.title,
+    brandName: research.brand.name,
+  });
   if (!variant.storyboardBoard.frames?.length) throw new Error("3D Breakdown storyboard frames are missing.");
   const storyContract: ThreeDBreakdownAdScene["layout"]["storyContract"] = {
     ...siteContract,
@@ -128,7 +165,7 @@ export function createThreeDBreakdownAdScene({
     mechanismSummary: variant.mechanismSummary,
     visualMetaphor: variant.visualMetaphor,
     referenceScript: variant.referenceScript,
-    ctaLine: variant.ctaLine,
+    ctaLine: buyerCtaText,
     evidenceIndex: variant.evidenceIndex,
     evidenceUseType: variant.evidenceUseType,
     wowMomentType: variant.wowMomentType,
@@ -154,7 +191,7 @@ export function createThreeDBreakdownAdScene({
       angleId: `three-d-breakdown-${candidateIndex + 1}`,
       headline: firstBeat.narration,
       subheadline: variant.variantAngle,
-      ctaText: variant.ctaLine || punchlineBeat.narration,
+      ctaText: buyerCtaText,
       headlineType: "receipt_drop",
       selectedPain: variant.customerProblem,
       selectedProof: revelationBeat.narration,

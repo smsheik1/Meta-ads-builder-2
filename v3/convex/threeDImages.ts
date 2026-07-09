@@ -5,6 +5,7 @@ import { internal } from "./_generated/api";
 import { action } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { generateReplicateNanoBanana2Image, generateReplicateSeedanceVideo } from "../features/formats/jingle/storyboard";
+import { createThreeDClipPlans } from "../features/formats/three-d-breakdown/storyboardContracts";
 import type {
   AdScene,
   ThreeDBreakdownAdScene,
@@ -40,15 +41,15 @@ const getThreeDSeedancePromptSuffix = (scene: ThreeDBreakdownAdScene) => {
       ? "For supplement/digestive stories, do not overcorrect into a standalone beaker demo: transparent torso, body-route, gut-route, or cell-wall footage is correct when it remains anchored to the same silent demonstrator, product path, capsule particles, or scale proxy."
       : "",
     "Capsules stay capsules, bottles stay bottles, packaging stays packaging; do not morph products into cups, buckets, bowls, or unrelated lab vessels.",
-    getThreeDProductAnchorInstruction(scene),
+    "Do not invent new product packaging, jars, bottles, labels, logos, readable marks, or people that are absent from the provided start frame. Wiggly adds the exact product packshot in the final renderer end card.",
     "Use direct cuts, pushes, reveals, and mechanical transformations; no blank color wipes, fog-only transitions, empty gradients, or slow lingering setup.",
     isPresenterStyle
-      ? "Make the motion feel embodied through the same silent demonstrator returning throughout the clip: full body, torso, hands, body-route view, over-shoulder angle, or product-use demonstration depending on the beat; narrator/captions present the argument, the human only demonstrates."
+      ? "Make the motion feel embodied through the same silent demonstrator returning throughout the clip: full body, torso, hands, body-route view, over-shoulder angle, or product-use demonstration depending on the beat. A separate voiceover presents the argument; the human only demonstrates and no text appears in the video pixels."
       : "Make the motion feel embodied: keep a stylized human demo character, body proxy, or scale figure returning throughout the clip as the continuity spine, with frame 1 and final-payoff moments showing the character body or torso beside the product.",
     isPresenterStyle
-      ? "During the peak mechanism reveal, keep the product jar/package and silent demonstrator or body-route anchor visible in the same blue-grid world; do not detach into a standalone macro tube or faceless stock-biology insert."
+      ? "During the peak mechanism reveal, keep the same body-route, payload, hands, or demonstrator anchor visible in the blue-grid world; do not invent a new package, mannequin, presenter, or faceless stock-biology insert."
       : "",
-    "Change visual state about every second; use body/pathway travel, macro cutaways, mechanism machines, particle motion, or product payoff resets instead of holding a static capsule render.",
+    "Change visual state about every second; use body/pathway travel, macro cutaways, mechanism machines, particle motion, or resolved-mechanism holds instead of holding a static capsule render.",
     isPresenterStyle
       ? "Every frame must contain visible silent demonstrator/full body/torso/hands, product, product-use setup, mechanism insert, particles, pipes, scale props, or physical obstacle; never cut to a plain dark screen, empty blue grid, empty gradient, or caption-only moment."
       : "Every frame must contain a visible demo character/body proxy, product, mechanism, character hand, particles, or physical obstacle; never cut to a plain dark screen, empty blue grid, empty gradient, or caption-only moment.",
@@ -139,13 +140,13 @@ const getThreeDImageInput = (scene: ThreeDBreakdownAdScene) => {
   ].filter(Boolean))).slice(0, 4);
 };
 
-const getThreeDAnchorImageInput = (scene: ThreeDBreakdownAdScene, baseImageInput: string[]) => {
+const getThreeDAnchorImageInput = (scene: ThreeDBreakdownAdScene) => {
   const storyboardImageUrl = scene.layout.storyboardBoard?.image?.status === "ready"
     ? scene.layout.storyboardBoard.image.url
     : "";
   return Array.from(new Set([
     storyboardImageUrl,
-    ...baseImageInput,
+    scene.layout.productAnchor?.imageUrl || "",
   ].filter((url): url is string => Boolean(url)))).slice(0, 5);
 };
 
@@ -369,6 +370,9 @@ const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
     contract.visualStyle === "presenter-teardown-vsl"
       ? "Across the six stills, include distinct teaching modules instead of repeating one blue tabletop: human/product use, hidden body-route or product path, obstacle wall/pile-up, mechanism machine or pipe, moving particles/components, and final product payoff."
       : "",
+    contract.visualStyle === "presenter-teardown-vsl"
+      ? "Use no more than two front-facing waist-up product-holding stills. For swallowed supplements, capsules, probiotics, or gummies, show the digestive route through mouth, esophagus, stomach, and intestines; never substitute lungs or respiratory anatomy unless the evidence is respiratory."
+      : "",
     "Frame 6 must physically resolve to the selected product/category as a blank-label product hero ready for Wiggly CTA overlays; never end on only a mechanism, hat, logo, icon, or abstract science object.",
     contract.visualStyle === "presenter-teardown-vsl"
       ? "For supplement/digestive stories, make the obstacle still crowded and kinetic with particles piling up or scattering, and make the mechanism still a true machine-room wow with pipes, fans, valves, protected capsule core, and active flow."
@@ -396,8 +400,9 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
     sceneId: v.id("adScenes"),
     scene: v.any(),
     mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("all"))),
+    replaceReadyAnchors: v.optional(v.boolean()),
   },
-  handler: async (ctx, { sceneId, scene, mode }) => {
+  handler: async (ctx, { sceneId, scene, mode, replaceReadyAnchors }) => {
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
     if (!replicateApiToken) throw new Error("Replicate image generation is not configured for 3D Breakdown.");
     let nextScene = assertThreeDBreakdownScene(scene as AdScene);
@@ -424,14 +429,16 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
       throw new Error("Generate the 3D Breakdown storyboard board before production anchors.");
     }
     const anchorFramesToGenerate = baseFrames.filter((frame) => (
-      requiredAnchorFrameIndexes.includes(frame.frameIndex) && frame.image?.status !== "ready"
+      requiredAnchorFrameIndexes.includes(frame.frameIndex) && (replaceReadyAnchors || frame.image?.status !== "ready")
     ));
     nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
       ...board,
       image: generateBoard ? { status: "generating" as const } : board.image,
       frames: baseFrames.map((frame) => ({
         ...frame,
-        image: generateAnchors && anchorFramesToGenerate.some((anchorFrame) => anchorFrame.frameIndex === frame.frameIndex)
+        image: generateBoard && !generateAnchors
+          ? { status: "idle" as const }
+          : generateAnchors && anchorFramesToGenerate.some((anchorFrame) => anchorFrame.frameIndex === frame.frameIndex)
           ? { status: "generating" as const }
           : frame.image?.status === "ready" ? frame.image : { status: "idle" as const },
       })),
@@ -481,7 +488,7 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
           image: storedBoardImage || board.image || { status: "ready" },
           frames: baseFrames.map((frame) => ({
             ...frame,
-            image: frame.image?.status === "ready" ? frame.image : { status: "idle" as const },
+            image: { status: "idle" as const },
           })),
         }));
         console.log("[wiggly:3d-breakdown] storyboard-gate:ready", {
@@ -495,7 +502,7 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
       for (const frame of anchorFramesToGenerate) {
         activeFrameIndex = frame.frameIndex;
         const prompt = buildThreeDProductionFramePrompt(nextScene, frame.frameIndex);
-        const anchorImageInput = getThreeDAnchorImageInput(nextScene, imageInput);
+        const anchorImageInput = getThreeDAnchorImageInput(nextScene);
         console.log("[wiggly:3d-breakdown] production-frame:start", {
           frameIndex: frame.frameIndex,
           imageInputCount: anchorImageInput.length,
@@ -589,7 +596,19 @@ export const generateThreeDClip: ReturnType<typeof action> = action({
 
     let nextScene = assertThreeDBreakdownScene(scene as AdScene);
     const storyboardFrames = nextScene.layout.storyboardBoard?.frames || [];
-    const clipPlans = nextScene.layout.clipPlans;
+    const existingClipPlans = nextScene.layout.clipPlans || [];
+    const refreshedClipPlans = createThreeDClipPlans(nextScene.layout) || [];
+    const clipPlans = refreshedClipPlans.map((plan) => ({
+      ...plan,
+      video: existingClipPlans.find((existing) => existing.clipIndex === plan.clipIndex)?.video || plan.video,
+    })) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>;
+    nextScene = {
+      ...nextScene,
+      layout: {
+        ...nextScene.layout,
+        clipPlans,
+      },
+    };
     const clipPlan = clipPlans?.find((clip) => clip.clipIndex === typedClipIndex);
     if (!clipPlans || !clipPlan) throw new Error("3D Breakdown clip plan is missing.");
     if (typedClipIndex > 1) {

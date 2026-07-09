@@ -120,6 +120,12 @@ assert.ok(
   "3D Breakdown must show a five-card story slate before generating the script/media pipeline.",
 );
 assert.ok(
+  createClientSource.includes('if (firstScene?.format === "three-d-breakdown") resetThreeDStoryDirections();') &&
+    createClientSource.includes('setThreeDStoryDirectionStatus("loading")') &&
+    createClientSource.includes('setThreeDStoryDirectionError(message)'),
+  "Choosing a 3D story direction must clear stale slate state after success and expose a recoverable error after failure.",
+);
+assert.ok(
   createClientSource.includes("function isRenderableScene") &&
     createClientSource.includes("getFormatModule(scene.format).validate(scene).valid") &&
     createClientSource.includes("getRenderableSceneEntries(latestGeneration.scenes") &&
@@ -252,11 +258,13 @@ assert.ok(
     quickActionsSource.includes("Generate clip ${nextClipPlan.clipIndex} next") &&
     quickActionsSource.includes("Generate clip ${clipPlan.clipIndex - 1} first") &&
     quickActionsSource.includes("data-three-d-generate-clip={clipPlan.clipIndex}") &&
+    quickActionsSource.includes("data-three-d-clip-preview={clipPlan.clipIndex}") &&
+    quickActionsSource.includes("autoPlay") &&
+    quickActionsSource.includes("playsInline") &&
     quickActionsSource.includes("PromptHelp") &&
     quickActionsSource.includes("clipPlan.prompt") &&
-    quickActionsSource.includes('data-three-d-prompt-help="true"') &&
-    !quickActionsSource.includes('data-three-d-clip-preview={clipPlan.clipIndex}'),
-  "3D Breakdown preflight must show planned clips, inspectable prompts, and explicit sequential Seedance actions without player chrome.",
+    quickActionsSource.includes('data-three-d-prompt-help="true"'),
+  "3D Breakdown preflight must show planned clips, inspectable prompts, visible ready previews, and explicit sequential Seedance actions.",
 );
 assert.ok(
   storyboardContractsSource.includes("const presenterFrameGroups") &&
@@ -308,23 +316,37 @@ assert.ok(
     threeDImagesSource.includes("getThreeDImageInput") &&
     threeDImagesSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("all")))') &&
     threeDImagesSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")') &&
+    createClientSource.includes('onGenerateThreeDImages("storyboard")') &&
+    quickActionsSource.includes('data-three-d-regenerate-storyboard="true"') &&
+    quickActionsSource.includes("Regenerate storyboard") &&
+    createClientSource.includes('onGenerateThreeDImages("anchors", true)') &&
+    quickActionsSource.includes('data-three-d-regenerate-anchors="true"') &&
+    quickActionsSource.includes("Regenerate anchors") &&
+    threeDImagesSource.includes("generateBoard && !generateAnchors") &&
     threeDImagesSource.includes("Generate the 3D Breakdown storyboard board before production anchors.") &&
     threeDImagesSource.includes("storyboard-gate:ready") &&
     threeDImagesSource.includes("buildThreeDProductionFramePrompt") &&
     threeDImagesSource.includes("production-frame:start") &&
     threeDImagesSource.includes("anchorFramesToGenerate") &&
     threeDImagesSource.includes("frame.image?.status !== \"ready\"") &&
+    threeDImagesSource.includes("replaceReadyAnchors || frame.image?.status !== \"ready\"") &&
     threeDImagesSource.includes("activeFrameIndex") &&
     threeDImagesSource.includes("storyboard board must define 6 frames before image generation") &&
     !threeDImagesSource.includes("createThreeDStoryboardFrames") &&
     !threeDImagesSource.includes("Promise.all(baseFrames.map") &&
     threeDImagesSource.includes("buildThreeDSeedancePrompt") &&
+    threeDImagesSource.includes("createThreeDClipPlans(nextScene.layout)") &&
     threeDImagesSource.includes("THREE_D_SEEDANCE_MAX_PROMPT_CHARS = 3900") &&
     threeDImagesSource.includes(".slice(0, THREE_D_SEEDANCE_MAX_PROMPT_CHARS)") &&
     threeDImagesSource.includes("seedancePromptLength") &&
     threeDImagesSource.includes("imageInput,") &&
     threeDImagesSource.includes("scene.layout.referenceImages?.productImageUrls"),
   "3D Breakdown media generation must require the style reference and expose explicit sequential Seedance clips without preflight/repair scaffolding.",
+);
+assert.ok(
+  threeDImagesSource.includes("scene.layout.productAnchor?.imageUrl") &&
+    !threeDImagesSource.includes("getThreeDAnchorImageInput(nextScene, imageInput)"),
+  "Production anchors must use only the approved storyboard and selected product references, not competing site/style images.",
 );
 const productionFramesReadyIndex = threeDImagesSource.indexOf('console.log("[wiggly:3d-breakdown] production-frames:ready"');
 const preserveReadyAnchorIndex = threeDImagesSource.indexOf('if (frame.image?.status === "ready") return frame;');
