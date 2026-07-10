@@ -12,6 +12,7 @@ Companion documents:
 
 - [Architecture contract](./static-format-package-architecture-contract.md)
 - [Acceptance plan](./static-format-package-acceptance-plan.md)
+- [Open-source research ledger](./static-format-package-open-source-ledger.md)
 
 ## 1. Product in One Sentence
 

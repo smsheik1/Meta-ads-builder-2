@@ -9,6 +9,7 @@ Related documents:
 
 - [Product requirements](./reference-first-static-format-packages-prd.md)
 - [Architecture contract](./static-format-package-architecture-contract.md)
+- [Open-source research ledger](./static-format-package-open-source-ledger.md)
 - [Wiggly engineering rules](./wiggly-engineering-rules.md)
 
 This document makes the PRD executable without turning it into a test specification. Passing one gate does not imply the others passed:

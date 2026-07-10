@@ -9,6 +9,7 @@ Related documents:
 
 - [Product requirements](./reference-first-static-format-packages-prd.md)
 - [Acceptance plan](./static-format-package-acceptance-plan.md)
+- [Open-source research ledger](./static-format-package-open-source-ledger.md)
 - [Wiggly engineering rules](./wiggly-engineering-rules.md)
 
 This document preserves the technical constraints that should not burden the founder-facing PRD. It defines boundaries and invariants, not final framework, library, database-table, or provider implementation. Technical research may refine names and storage layout, but it may not violate these contracts without explicit approval.
