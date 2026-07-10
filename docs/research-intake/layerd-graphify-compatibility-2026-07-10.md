@@ -1,6 +1,6 @@
 # LayerD Graphify Compatibility Assessment
 
-- Status: Structural assessment complete; visual-quality benchmark still required
+- Status: Structural assessment and one-image smoke complete; combined-stack benchmark still required
 - Date: 2026-07-10
 - Source: [CyberAgentAILab/LayerD](https://github.com/CyberAgentAILab/LayerD)
 - Source commit: `21aef937a0371614adb4d961f52d02409cb8ecc7`
@@ -27,7 +27,9 @@ The important distinction is:
 
 That narrower role is still valuable. It can supply much of the hard pixel separation, erasure, alpha, bounding-box, and ordering work while Wiggly, PaddleOCR, font classification, and semantic vision turn trustworthy pieces into native Text, Image, Shape, and Group layers.
 
-**Decision:** keep LayerD as the primary decomposition benchmark candidate. Do not promote it to a production dependency until it passes the saved-reference visual benchmark.
+The first Codex-reference smoke test confirms this boundary. LayerD alone does not meet Wiggly's editability goal: it recovered a clean background and high-fidelity composite, but produced only two foreground depth layers, fragmented text into letter-sized connected components, and left a large opaque white region around the handshake cutout.
+
+**Decision:** retain LayerD conditionally as a pixel-separation substrate. Do not consume `LayerOrganizer` output as Maker layers, and do not promote LayerD to a production dependency until the combined LayerD + PaddleOCR + semantic-vision pipeline passes the saved-reference benchmark.
 
 ## 2. Graph Artifacts
 
@@ -198,12 +200,62 @@ This is compatible with the agreed quality-first three-to-five-minute analysis w
 - Targeted `path`, `explain`, `affected`, and multigraph-diagnostic queries
 - Manual source trace of decomposition, organization, classification, OCR, SVG, and PSD paths
 - Python 3.10 syntax compilation of `src` and `tests`: passed
-- Model checkpoint and full inference were not downloaded or run during this structural assessment
+- Two full CPU inference runs on the 1080 by 1080 Codex reference using three maximum iterations
+- Default and `fg_refine=False` runs produced byte-identical layer and reconstruction PNGs
 - Upstream unit tests were not installed because the base dependency set includes the full PyTorch inference stack
 
-This proves the integration boundary and output semantics. It does not prove mask quality, latency, visual fidelity, or the 85% editability gate.
+This proves the integration boundary and establishes one real output baseline. It does not prove the combined stack, varied-reference quality, or the 85% editability gate.
 
-## 9. Required Saved-Reference Benchmark
+## 9. Codex Reference Smoke Result
+
+Input:
+
+```text
+/Users/shaz/Downloads/OAI_Knowledge-Worker_Static_AllPlugins_Emoji-bnw_US_1x1png.jpeg
+```
+
+Local evidence:
+
+```text
+/Users/shaz/.graphify/benchmarks/layerd-codex-2026-07-10/output-cpu-3/
+```
+
+| Measurement | Result |
+| --- | --- |
+| Input | 1080 by 1080 JPEG |
+| Hardware path | Apple Silicon CPU; no paid or hosted inference |
+| Model work | 67.1 seconds total; 63.4 seconds decomposition and organization |
+| Peak resident memory | Approximately 5.7 GB on the default run; approximately 8.0 GB on the repeated variant |
+| Raw output | 3 layers: reconstructed white background, handshake layer, combined typography/logo layer |
+| Organized output | 40 elements: one full-canvas background, one handshake region, and 38 mostly letter or partial-word fragments |
+| Type labels | 40 `vector`, 0 `text`, 0 `image`; expected without OCR but not useful as semantic editability |
+| Composite fidelity | SSIM 0.9948, MAE 0.51/255, PSNR 29.34 dB |
+| Refinement check | Disabling foreground refinement produced byte-identical image outputs |
+
+What worked:
+
+- Completed locally in roughly one minute after weights were cached.
+- Reconstructed a convincing white background with the foreground removed.
+- Preserved the complete ad with excellent composite similarity.
+- Separated the handshake from the combined text/logo layer.
+
+What failed for Wiggly editability:
+
+- It found depth-like pixel layers, not semantic design layers.
+- Connected-component organization split words into individual letters and partial words.
+- The handshake's extracted region contains a mostly opaque white patch, so moving it would reveal a visible block.
+- All flat content was labeled `vector`, even though no native vectors were recovered.
+- No text string, font, word grouping, role, or confidence reached the final element contract.
+
+Operational defects found before inference:
+
+1. Python 3.10 import fails with current Pydantic because LayerD uses `typing.TypedDict`; Python 3.12 works.
+2. The unconstrained core dependency installs Transformers 5.13, which fails while loading BiRefNet. Pinning `transformers==4.48.0` works without modifying LayerD source.
+3. A reproducible worker must pin Python 3.12, Transformers 4.48, the LayerD commit, model revision, and all weights rather than installing the unconstrained project at runtime.
+
+Smoke ruling: **partial pass as a reconstruction substrate; fail as a standalone editable-layer solution.** PaddleOCR must now prove it can group the typography into real text boxes, while semantic vision must supply roles and grouping. The handshake mask remains a candidate for explicit SAM refinement or a different decomposition model if it recurs across references.
+
+## 10. Required Saved-Reference Benchmark
 
 Run the Codex reference and 8 to 10 assistant-saved static ads through an isolated worker using the same inputs and parameters.
 
@@ -232,7 +284,7 @@ If LayerD fails, classify the failure before adding another model:
 - Semantics or grouping wrong: improve the selected vision model and Maker review.
 - Simple shapes remain raster: add a bounded shape reconstruction heuristic.
 
-## 10. Reproduction Commands
+## 11. Reproduction Commands
 
 ```bash
 graphify clone https://github.com/CyberAgentAILab/LayerD
@@ -259,6 +311,24 @@ graphify explain \
   --graph graphify-out/graph.json
 
 graphify global add graphify-out/graph.json --as layerd
+```
+
+Smoke environment and run:
+
+```bash
+cd /Users/shaz/.graphify/repos/CyberAgentAILab/LayerD
+uv venv --python 3.12 .venv312
+uv pip install --python .venv312/bin/python -e .
+uv pip install --python .venv312/bin/python 'transformers==4.48.0'
+
+HF_HOME=/Users/shaz/.graphify/benchmarks/layerd-codex-2026-07-10/cache \
+TORCH_HOME=/Users/shaz/.graphify/benchmarks/layerd-codex-2026-07-10/cache/torch \
+.venv312/bin/python \
+  /Users/shaz/.graphify/benchmarks/layerd-codex-2026-07-10/run_layerd_smoke.py \
+  /Users/shaz/Downloads/OAI_Knowledge-Worker_Static_AllPlugins_Emoji-bnw_US_1x1png.jpeg \
+  /Users/shaz/.graphify/benchmarks/layerd-codex-2026-07-10/output-cpu-3 \
+  --iterations 3 \
+  --device cpu
 ```
 
 No `graphify extract`, `graphify label`, or LLM-backed clustering was used.
