@@ -7,7 +7,7 @@
 
 ## 1. Ruthless Verdict
 
-GLM was useful as a repository scout and poor as a systems architect.
+GLM was a good repository scout and poor as a systems architect for this specific integration.
 
 It found several projects worth investigating, especially Avnac, Polotno, BackgroundR, Step1X-Edit, and future anonymous-account linking through the Convex ecosystem. It then overclaimed what those projects solve, combined incompatible scene and rendering systems, ignored Wiggly's existing code, and erased the hardest integration work from its schedule.
 
@@ -15,15 +15,17 @@ The existing Wiggly plan is the stronger foundation because it starts from the a
 
 ### Scores
 
-| Dimension | Wiggly plan | GLM research | Verdict |
+The previous single 3.2 score mixed scouting value with architecture quality and was therefore misleading. The corrected assessment reports them separately. The architecture score is the equal-weight average of the five non-discovery dimensions.
+
+| Dimension | Wiggly plan | GLM proposed stack | Verdict |
 | --- | ---: | ---: | --- |
-| Candidate discovery | 8/10 | 7/10 | GLM added several worthwhile leads |
+| Candidate discovery, scored separately | 8/10 | **7/10** | GLM added several worthwhile leads |
 | Factual accuracy | 9/10 | 4/10 | Several GLM descriptions do not match the named repositories |
 | Fit to the existing repository | 9/10 | 2/10 | GLM largely reasoned as if Wiggly did not exist yet |
 | Architecture coherence | 9/10 | 2/10 | GLM proposed competing scene models, stores, and renderers |
 | MVP restraint | 9/10 | 3/10 | GLM pulled billing, teams, dashboards, video, and multiple image runtimes into a static Maker MVP |
 | Estimate credibility | 7/10 | 1/10 | The 0-day, two-week, and 5–8% claims have no defensible counting method |
-| Overall | **8.5/10** | **3.2/10** | Use GLM as a source of leads, not as the build plan |
+| Architecture and execution average | **8.6/10** | **2.4/10** | Use GLM as a source of leads, not as the build plan |
 
 ## 2. Head-to-Head Decision Matrix
 
@@ -38,7 +40,7 @@ The existing Wiggly plan is the stronger foundation because it starts from the a
 | Reference decomposition | LayerD plus normalization and explicit unsupported outcomes | LayerD to Polotno JSON | Wiggly | LayerD is a shared good find; Wiggly has the more complete contract |
 | OCR and fonts | PaddleOCR plus font-classify | Not specified | Wiggly | Keep the Wiggly pipeline |
 | Semantic reconstruction | Benchmark Kimi K2.6 against MiniMax M3 with a fixed schema | Treat reconstruction as mostly LayerD wiring | Wiggly | GLM underestimates semantic-role and Format-formula recovery |
-| Website and product research | Extend Wiggly's existing evidence-bearing Shopify, WooCommerce, brand, and product extraction | Replace or accelerate it with browser-use/ad-use | Wiggly | `ad-use` is a demo ad generator, not a replacement research subsystem |
+| Website and product research | Extend Wiggly's existing evidence-bearing Shopify, WooCommerce, brand, and product extraction | Replace or accelerate it with browser-use/ad-use | Unresolved quality; Wiggly is the architectural incumbent | The Wiggly code path exists, but its success rate is not benchmarked; test browser-use only on a measured failure corpus |
 | Structured model output | NVIDIA NIM guided JSON plus Zod and fail-visible validation | Instructor plus GLM | Wiggly | Instructor is unnecessary while NIM supplies schema-constrained output directly |
 | Format instructions | One copy/pasteable `SKILL.md` per Format, validated against typed data | A Format skill and prompt, details unspecified | Wiggly | Keep the Agent Skills envelope and Wiggly trust boundary |
 | Image generation policy | Explicit, manual, one-at-a-time, only when a Format requires it | Compose several generators, inpainting tools, batch flows, and fallbacks | Wiggly | Do not add an image runtime before a real Format proves it is needed |
@@ -54,6 +56,8 @@ The existing Wiggly plan is the stronger foundation because it starts from the a
 ### It starts from the system that exists
 
 Wiggly already has a Next.js 16 and React 19 app, Convex persistence, anonymous sessions, storage uploads, brand research, product extraction, render jobs, audio assets, saved designs, and share pages. Replacing that foundation with a starter is not leverage. It is a transplant.
+
+The research pipeline's **existence and architecture** are verified in the repository: Firecrawl normalization, persisted research runs and brand snapshots, evidence receipts, Shopify product JSON and sitemap/collection fallbacks, and WooCommerce Store API extraction are implemented. Its **real-world success rate and output quality are not yet verified**. The current automated coverage is also thin. Wiggly therefore wins the incumbent architecture decision, not the quality benchmark. browser-use remains a challenger on pages the incumbent demonstrably fails to extract.
 
 Graphify also shows that `CreateResearchClient.tsx`, `formats/registry.ts`, `AdRenderSurface.tsx`, and `scene/types.ts` are high-impact nodes. The Wiggly plan contains the change by adding one data-driven static Format engine. GLM's plan would route multiple foreign document models through those hotspots.
 
@@ -110,6 +114,10 @@ Step1X-Edit is active and publishes code, weights, evaluation data, text-to-imag
 ### Anonymous-to-account linking is a useful future capability
 
 Convex with Better Auth supports an Anonymous plugin, and Better Auth exposes an account-link callback where Wiggly could transfer app-owned projects. GLM was right to surface the workflow. It was wrong to imply that the recommended Ents starter already supplied it or that the transfer of Wiggly-owned data was automatic.
+
+### The scouting contribution deserves its own score
+
+Avnac, BackgroundR, Step1X-Edit, browser-use, Polotno, LayerD, and the Convex ecosystem were useful leads. A single 3.2 rating unfairly implied that the research added little value and mixed unlike dimensions. The corrected judgment is **7/10 for candidate scouting** and **2.4/10 for the proposed integrated Wiggly architecture**.
 
 ## 5. Where GLM Is Factually or Architecturally Wrong
 
@@ -189,6 +197,24 @@ A visual reroll must respect Maker-approved policies, Player overrides, locks, c
 - IOPaint or Inpaint Anything as current dependencies
 - ComfyUI as production orchestration
 - Billing, organizations, public marketplace administration, and video in the Maker-first slice
+
+### Corrected merged truth
+
+| Decision | Correct status | Correction to GLM's merged table |
+| --- | --- | --- |
+| LayerD | Primary reconstruction benchmark candidate | Not production-locked until the saved-reference benchmark passes |
+| PaddleOCR | Primary OCR benchmark candidate | Add to the benchmark, not blindly to production |
+| Storia font-classify | Primary font-recovery benchmark candidate | Add to the benchmark, not blindly to production |
+| SAM | Deferred conditional tool | Test only for measured mask-refinement failures after the baseline pipeline |
+| Editor architecture | One authoritative renderer is locked | A full editor is not categorically banned; Polotno may compete only as a separate architecture that preserves one render path |
+| Editor mechanics | Avnac primitives versus the Daybrush assembly | Spike decides; neither is production-locked |
+| Structured output | NVIDIA NIM guided JSON plus Zod | Locked; do not add Instructor |
+| BackgroundR | Watchlist and pattern source | Do not treat it as the brand-alignment runtime |
+| Step1X-Edit | Deferred image-edit benchmark | Trigger only when a real Format needs generative image editing |
+| IOPaint | Dropped | Archived and unnecessary |
+| Convex starters | Reject as Wiggly's base | Mine isolated examples later; “use with caveats” is still too generous |
+| browser-use | Failure-corpus challenger | The incumbent Wiggly pipeline exists but has not won a quality benchmark |
+| New Wiggly-owned work | Plan around 30–40% | Re-estimate only after the reconstruction and editor spikes |
 
 ## 8. What Is Still Unknown and Needs Evidence
 
