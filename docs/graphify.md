@@ -145,3 +145,20 @@ graphify affected "scene_types" \
 
 If a query misses, open `graphify-out/GRAPH_TREE.html` and copy the exact node
 label Graphify generated.
+
+## External Project Graphs
+
+Open-source candidates are graphed in isolated clones before any code is copied into Wiggly. The local global graph currently contains:
+
+| Tag | Source | Commit | Local graph | Assessment |
+| --- | --- | --- | --- | --- |
+| `wiggly` | This repository | Current branch snapshot | `/Users/shaz/.codex/worktrees/e18f/Meta-ads-builder-2/graphify-out/graph.json` | This document |
+| `avnac` | [xt42io/avnac](https://github.com/xt42io/avnac) | `dc9cc8b6daf66dc13e8b61f922d736f986ee7d9b` | `/Users/shaz/.graphify/repos/xt42io/avnac/graphify-out/graph.json` | [Avnac compatibility assessment](./research-intake/avnac-graphify-compatibility-2026-07-10.md) |
+
+Global graph path:
+
+```text
+/Users/shaz/.graphify/global-graph.json
+```
+
+The global graph does not prove cross-repository compatibility. Use each candidate graph to find subsystem boundaries, then record explicit adapters and rejected ownership overlaps in a compatibility assessment.
