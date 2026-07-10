@@ -17,6 +17,7 @@ Assessed external research:
 
 - [GLM open-source research, organized into review packets](./research-intake/glm-open-source-2026-07-10/README.md)
 - [Ruthless comparison and rulings](./research-intake/glm-open-source-2026-07-10/05-assessment.md)
+- [Qwen Image Layered Codex-reference smoke](./research-intake/qwen-image-layered-smoke-2026-07-10.md)
 
 Only the candidates explicitly promoted below change the stack. The remainder stay rejected or deferred.
 
@@ -127,7 +128,7 @@ Benchmark Kimi K2.6 and MiniMax M3 on the same inputs and schema. Select one pro
 
 | Candidate | Possible role | Why it is not primary today |
 | --- | --- | --- |
-| [Qwen-Image-Layered](https://github.com/QwenLM/Qwen-Image-Layered) | Deep decomposition of difficult decorative or photographic references | Heavy diffusion inference; outputs RGBA layers rather than native editable text; benchmark only after LayerD gaps are measured |
+| [Qwen-Image-Layered](https://github.com/QwenLM/Qwen-Image-Layered) | Conditional comparison or recovery candidate for measured LayerD mask failures; [one Replicate smoke complete](./research-intake/qwen-image-layered-smoke-2026-07-10.md) | The Codex run found useful visual groups in 17.5 seconds, but duplicated content, left full-canvas alpha residue and a white repair block, downsampled to 640 pixels, and returned only 7 of 8 layers after a false safety rejection; not suitable as the default or a runtime fallback |
 | [OmniPSD](https://github.com/showlab/OmniPSD) | Poster-to-PSD research and extract/erase ideas | Requires multiple Flux-based expert models and substantial runtime setup |
 | [LIVE](https://github.com/Picsart-AI-Research/LIVE-Layerwise-Image-Vectorization) | Vectorizing simple raster decorations | Older and operationally heavy; not needed when locked raster is acceptable |
 | [SAM 3](https://github.com/facebookresearch/sam3) | Explicit Maker action to select an object or refine a mask | LayerD already performs matting; SAM does not supply the complete layered design or semantic Format |
@@ -223,3 +224,4 @@ For each change, record:
 | 2026-07-10 | Select Moveable + Selecto as the primary editor-mechanics spike and retain Avnac as a reference | AST-only Graphify at Moveable `75069102` and Selecto `7c75ef57`; source builds pass; published packages mount on React 19.2; both operate on existing DOM and emit events without owning an app scene or renderer | Build one bounded adapter spike after `StaticAdScene` geometry exists; compare Avnac only for simpler snapping behavior |
 | 2026-07-10 | Keep LayerD as the primary decomposition benchmark, but narrow it to an offline reconstruction worker | AST-only Graphify at LayerD `21aef937`; 1,541 nodes and 3,266 links; source trace proves every `Element` is a cropped RGBA raster with a box and coarse label, while SVG and PSD exports remain pixel layers | Benchmark the Codex reference plus 8 to 10 saved ads with PaddleOCR and semantic vision; normalize only successful evidence into Wiggly Text, Image, Shape, and Group drafts |
 | 2026-07-10 | Retain LayerD conditionally as a pixel-separation substrate after the first real smoke | On the Codex ad it produced a strong composite and clean white background, but only two foreground depth layers; its organizer returned 38 letter/partial-word fragments plus a handshake with an opaque white patch; Python and Transformers also required exact pins | Graphify and run PaddleOCR on the same reference before testing semantic vision; compare a different decomposer or explicit SAM repair only if mask failures recur |
+| 2026-07-10 | Keep Qwen Image Layered as a conditional comparison, not the primary decomposer | One authorized Replicate run requested 8 PNG layers and completed in 17.5 seconds; 7 were returned after a false safety rejection, while the survivors contained duplicated elements, broad alpha residue, and a white repair block | Do not retry this reference now; test PaddleOCR plus semantic vision on LayerD first, then use Qwen only against measured failures on the saved-reference corpus |
