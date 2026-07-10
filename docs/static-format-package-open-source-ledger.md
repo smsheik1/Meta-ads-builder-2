@@ -13,6 +13,12 @@ Related documents:
 - [Graphify guide](./graphify.md)
 - [Engineering rules](./wiggly-engineering-rules.md)
 
+Unassessed research intake:
+
+- [GLM open-source research, organized into review packets](./research-intake/glm-open-source-2026-07-10/README.md)
+
+Candidates in the intake remain unverified and do not change the approved statuses below until reviewed.
+
 ## 1. Purpose
 
 This ledger keeps the build-versus-borrow research out of chat history. Update it as benchmarks, new projects, and implementation evidence change the recommendation.
