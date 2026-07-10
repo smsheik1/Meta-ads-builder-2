@@ -793,11 +793,13 @@ const storySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(rese
   nvidiaNimApiKey: "test-key",
   nvidiaNimBaseUrl: "https://nim.test/v1",
   nvidiaNimModel: "test-3d-breakdown",
-  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt, stream, structuredOutput }) => {
     storySlateCalls += 1;
     assert.ok(directorPrompt.includes("Story Slate Director"));
     assert.ok(!directorPrompt.includes("Nano Banana"));
     assert.ok(!directorPrompt.includes("Seedance"));
+    assert.equal(stream, true);
+    assert.equal(structuredOutput, false);
     return JSON.stringify(storyDirectionPayload);
   },
 });

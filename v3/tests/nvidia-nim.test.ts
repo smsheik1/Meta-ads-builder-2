@@ -72,6 +72,33 @@ const content = await callNvidiaNimChat({
 assert.equal(content, "{\"ok\":true}");
 assert.equal(capturedBody?.max_tokens, 1800);
 
+globalThis.fetch = ((_input: RequestInfo | URL, init?: RequestInit) => {
+  capturedBody = JSON.parse(String(init?.body || "{}")) as Record<string, unknown>;
+  const encoder = new TextEncoder();
+  return Promise.resolve(new Response(new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode("data: {\"choices\":[{\"delta\":{\"content\":\"{\\\"ok\\\":\"}}]}\n\n"));
+      controller.enqueue(encoder.encode("data: {\"choices\":[{\"delta\":{\"content\":\"true}\"}}]}\n\n"));
+      controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+      controller.close();
+    },
+  }), { status: 200 }));
+}) as typeof fetch;
+
+const streamedContent = await callNvidiaNimChat({
+  apiKey: "test-key",
+  baseUrl: "https://nim.test/v1",
+  label: "NVIDIA NIM streaming test",
+  model: "z-ai/glm-5.2",
+  prompt: "{}",
+  stream: true,
+  structuredOutput: false,
+  timeoutMs: 1000,
+});
+assert.equal(streamedContent, "{\"ok\":true}");
+assert.equal(capturedBody?.stream, true);
+assert.equal("response_format" in capturedBody, false);
+
 globalThis.fetch = originalFetch;
 
 console.log("nvidia-nim tests passed");

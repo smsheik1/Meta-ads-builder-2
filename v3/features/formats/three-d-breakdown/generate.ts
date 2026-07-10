@@ -1242,6 +1242,8 @@ export async function generateThreeDBreakdownStoryDirectionsFromResearch(
     model: nvidiaNimModel,
     nvidiaNimChatCompletion,
     prompt: directorPrompt,
+    stream: true,
+    structuredOutput: false,
     temperature: 0.62,
     timeoutMs: DEFAULT_TIMEOUT_MS,
   });
