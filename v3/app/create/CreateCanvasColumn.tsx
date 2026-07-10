@@ -4,8 +4,10 @@ import { Sparkles } from "lucide-react";
 import type { MouseEvent, PointerEvent } from "react";
 import { useRef } from "react";
 import type { RenderFlashState } from "@/features/formats/types";
-import { ThreeDBreakdownStoryDirectionCanvas } from "@/features/formats/three-d-breakdown/StoryDirectionCanvas";
-import type { ThreeDBreakdownStoryDirection } from "@/features/formats/three-d-breakdown/storyDirections";
+import {
+  ThreeDBreakdownProgressCanvas,
+  type ThreeDBreakdownProgressState,
+} from "@/features/formats/three-d-breakdown/ProgressCanvas";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
 import type { AdScene } from "@/features/scene/types";
 import { PhonePreviewFrame, type PreviewPlatform } from "./CreatePreviewChrome";
@@ -26,7 +28,7 @@ export function CreateCanvasColumn({
   rerollFlash,
   result,
   selectedScene,
-  threeDStorySlate,
+  threeDProgress,
 }: {
   adScenesCount: number;
   isAudioPlaying: boolean;
@@ -43,12 +45,7 @@ export function CreateCanvasColumn({
   rerollFlash: RenderFlashState | null;
   result: StoredWebsiteResearchResult | null;
   selectedScene: AdScene | null;
-  threeDStorySlate: {
-    direction: ThreeDBreakdownStoryDirection | null;
-    directionCount: number;
-    directionIndex: number;
-    status: "idle" | "loading" | "ready" | "error";
-  } | null;
+  threeDProgress: ThreeDBreakdownProgressState | null;
 }) {
   const lastPointerRerollAtRef = useRef(0);
 
@@ -68,13 +65,8 @@ export function CreateCanvasColumn({
   return (
     <div className="relative flex flex-col items-center gap-3 lg:block">
       <div>
-        {threeDStorySlate ? (
-          <ThreeDBreakdownStoryDirectionCanvas
-            direction={threeDStorySlate.direction}
-            directionCount={threeDStorySlate.directionCount}
-            directionIndex={threeDStorySlate.directionIndex}
-            status={threeDStorySlate.status}
-          />
+        {threeDProgress ? (
+          <ThreeDBreakdownProgressCanvas progress={threeDProgress} />
         ) : (
           <>
             <div className="relative">

@@ -3072,11 +3072,7 @@ function ResearchConnected() {
   };
 
   const selectedThreeDScene = selectedScene?.format === "three-d-breakdown" ? selectedScene : null;
-  const selectedThreeDStoryDirection = threeDStoryDirections.find((direction) => direction.directionId === selectedThreeDStoryDirectionId)
-    || threeDStoryDirections[0]
-    || null;
-  const selectedThreeDStoryDirectionIndex = Math.max(0, threeDStoryDirections.findIndex((direction) => direction.directionId === selectedThreeDStoryDirection?.directionId));
-  const showThreeDStorySlateCanvas = selectedAdFormat === "three-d-breakdown" && (
+  const showThreeDStoryDirectionStage = selectedAdFormat === "three-d-breakdown" && (
     !selectedThreeDScene
     || threeDStoryDirectionStatus !== "idle"
     || threeDStoryDirections.length > 0
@@ -3096,6 +3092,8 @@ function ResearchConnected() {
   const selectedThreeDStoryboardFramesFailed = selectedThreeDStoryboardFrames.some((frame) => frame.image?.status === "failed")
     || selectedThreeDScene?.layout.storyboardBoard?.image?.status === "failed";
   const selectedThreeDClipsFailed = selectedThreeDClipPlans.some((clipPlan) => clipPlan.video?.status === "failed");
+  const selectedThreeDClipsReady = selectedThreeDClipPlans.length > 0
+    && selectedThreeDClipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
   const threeDImageStatus: ThreeDMediaUiStatus = threeDImageBusyIndex !== null
     ? "loading"
     : selectedThreeDStoryboardFramesReady
@@ -3107,7 +3105,7 @@ function ResearchConnected() {
     ? "error"
     : threeDClipBusyIndex !== null
       ? "loading"
-      : selectedThreeDClipPlans.length > 0 && selectedThreeDClipPlans.every((clipPlan) => clipPlan.video?.status === "ready")
+      : selectedThreeDClipsReady
         ? "ready"
         : selectedThreeDStoryboardFramesReady
           ? "idle"
@@ -3445,6 +3443,106 @@ function ResearchConnected() {
     || currentRenderStatus === "queued"
     || currentRenderStatus === "claimed"
     || currentRenderStatus === "rendering";
+  const selectedSceneForCanvas: AdScene | null = selectedThreeDScene
+    && renderJob?.status === "ready"
+    && renderJob.downloadUrl
+    && renderJob.outputStorageId
+    ? {
+      ...selectedThreeDScene,
+      layout: {
+        ...selectedThreeDScene.layout,
+        finalVideo: {
+          status: "ready" as const,
+          url: renderJob.downloadUrl,
+          storageId: String(renderJob.outputStorageId),
+          mimeType: "video/mp4",
+          durationMs: selectedThreeDScene.layout.durationMs,
+        },
+      },
+    }
+    : selectedScene;
+  const selectedThreeDFinalVideoReady = selectedSceneForCanvas?.format === "three-d-breakdown"
+    && selectedSceneForCanvas.layout.finalVideo?.status === "ready";
+  const showThreeDProgressCanvas = selectedAdFormat === "three-d-breakdown" && !selectedThreeDFinalVideoReady;
+  const threeDProgress = (() => {
+    if (!showThreeDProgressCanvas) return null;
+
+    if (!selectedThreeDScene) {
+      const writingScript = threeDStoryDirections.length > 0 && threeDStoryDirectionStatus === "loading";
+      const scriptFailed = threeDStoryDirections.length > 0 && threeDStoryDirectionStatus === "error";
+      const scriptStage = writingScript || scriptFailed;
+      return {
+        activeMessage: writingScript
+          ? "Writing your narrator script"
+          : scriptFailed
+            ? "The script needs another try"
+            : threeDStoryDirectionStatus === "loading"
+            ? "Finding five story ideas"
+            : threeDStoryDirectionStatus === "error"
+              ? "Story ideas need another try"
+              : "Choose a story on the right",
+        activeStatus: threeDStoryDirectionStatus === "loading"
+          ? "working" as const
+          : threeDStoryDirectionStatus === "error"
+            ? "error" as const
+            : "waiting" as const,
+        activeStep: scriptStage ? 1 : 0,
+        completedSteps: scriptStage ? 1 : 0,
+      };
+    }
+
+    if (!selectedThreeDStoryboardBoardReady) {
+      return {
+        activeMessage: threeDImageStatus === "loading"
+          ? "Drawing your six-frame storyboard"
+          : threeDImageStatus === "error"
+            ? "The storyboard needs another try"
+            : "Ready to generate the storyboard",
+        activeStatus: threeDImageStatus === "loading" ? "working" as const : threeDImageStatus === "error" ? "error" as const : "waiting" as const,
+        activeStep: 2,
+        completedSteps: 2,
+      };
+    }
+
+    if (!selectedThreeDStoryboardFramesReady) {
+      return {
+        activeMessage: threeDImageStatus === "loading"
+          ? "Creating two polished video scenes"
+          : threeDImageStatus === "error"
+            ? "The video scenes need another try"
+            : "Ready to create the video scenes",
+        activeStatus: threeDImageStatus === "loading" ? "working" as const : threeDImageStatus === "error" ? "error" as const : "waiting" as const,
+        activeStep: 3,
+        completedSteps: 3,
+      };
+    }
+
+    const selectedThreeDVoiceReady = selectedThreeDScene.audio.status === "generated";
+    if (!selectedThreeDClipsReady || !selectedThreeDVoiceReady) {
+      const motionOrVoiceLoading = threeDAnimationStatus === "loading" || audioStatus === "loading";
+      const motionOrVoiceError = threeDAnimationStatus === "error" || audioStatus === "error";
+      return {
+        activeMessage: motionOrVoiceLoading
+          ? selectedThreeDClipsReady ? "Recording the narrator voice" : "Animating your video"
+          : motionOrVoiceError
+            ? "Motion or voice needs another try"
+            : selectedThreeDClipsReady
+              ? "Ready to add the narrator voice"
+              : "Ready to animate the video",
+        activeStatus: motionOrVoiceLoading ? "working" as const : motionOrVoiceError ? "error" as const : "waiting" as const,
+        activeStep: 4,
+        completedSteps: 4,
+      };
+    }
+
+    const renderFailed = currentRenderStatus === "failed" || currentRenderStatus === "error";
+    return {
+      activeMessage: renderBusy ? renderStatusLabel : renderFailed ? "The final video needs another try" : "Ready to build the final video",
+      activeStatus: renderBusy ? "working" as const : renderFailed ? "error" as const : "waiting" as const,
+      activeStep: 5,
+      completedSteps: 5,
+    };
+  })();
   const adGenerationStatusLabel = selectedAdFormat === "three-d-breakdown" && adStatus === "loading" && progressStage === "writing-ads"
     ? getThreeDBreakdownLoadingLabel(adGenerationElapsedSeconds)
     : "";
@@ -3622,13 +3720,8 @@ function ResearchConnected() {
               rerollCount={rerollCount}
               rerollFlash={rerollFlash}
               result={result}
-              selectedScene={selectedScene}
-              threeDStorySlate={showThreeDStorySlateCanvas ? {
-                direction: selectedThreeDStoryDirection,
-                directionCount: threeDStoryDirections.length,
-                directionIndex: selectedThreeDStoryDirectionIndex,
-                status: threeDStoryDirectionStatus,
-              } : null}
+              selectedScene={selectedSceneForCanvas}
+              threeDProgress={threeDProgress}
             />
 
             <aside className="space-y-4">
@@ -3676,7 +3769,7 @@ function ResearchConnected() {
                 threeDError={threeDError}
                 threeDImageStatus={threeDImageStatus}
                 threeDScene={selectedThreeDScene}
-                threeDStorySlateActive={showThreeDStorySlateCanvas}
+                threeDStorySlateActive={showThreeDStoryDirectionStage}
                 threeDStoryDirectionError={threeDStoryDirectionError}
                 threeDStoryDirections={threeDStoryDirections}
                 threeDStoryDirectionStatus={threeDStoryDirectionStatus}
@@ -3748,7 +3841,7 @@ function ResearchConnected() {
                 />
               ) : null}
 
-              {!showThreeDStorySlateCanvas ? (
+              {!showThreeDStoryDirectionStage ? (
                 <CreateControlPanel
                   activePanel={activeCreatePanel}
                   audioStatus={audioStatus}
@@ -3786,7 +3879,7 @@ function ResearchConnected() {
 
       {!productPhotoshootMode ? (
       <div className="mx-auto max-w-7xl pb-14">
-        {!showThreeDStorySlateCanvas ? (
+        {!showThreeDStoryDirectionStage ? (
           <CreateIdeasList
             scenes={adScenes}
             selectedSceneIndex={selectedSceneIndex}

@@ -16,7 +16,7 @@ const brickStoryboardSheetSource = readFileSync("app/create/CreateBrickStoryboar
 const creativeBriefSource = readFileSync("app/create/CreateCreativeBriefCard.tsx", "utf8");
 const adScenesSource = readFileSync("convex/adScenes.ts", "utf8");
 const threeDImagesSource = readFileSync("convex/threeDImages.ts", "utf8");
-const threeDStoryCanvasSource = readFileSync("features/formats/three-d-breakdown/StoryDirectionCanvas.tsx", "utf8");
+const threeDProgressCanvasSource = readFileSync("features/formats/three-d-breakdown/ProgressCanvas.tsx", "utf8");
 const storyboardContractsSource = readFileSync("features/formats/three-d-breakdown/storyboardContracts.ts", "utf8");
 const jingleStoryboardSource = readFileSync("features/formats/jingle/storyboard.ts", "utf8");
 const visualizerSchemaSource = readFileSync("features/formats/visualizer/schema.ts", "utf8");
@@ -39,24 +39,30 @@ assert.ok(
   "/create must top-align the desktop tool surface so the phone and action rail do not fall below the fold at 100% zoom.",
 );
 assert.ok(
-  createClientSource.includes("showThreeDStorySlateCanvas") &&
-    canvasColumnSource.includes("threeDStorySlate ?") &&
-    canvasColumnSource.includes("<ThreeDBreakdownStoryDirectionCanvas") &&
+  createClientSource.includes("showThreeDStoryDirectionStage") &&
+    createClientSource.includes("showThreeDProgressCanvas") &&
+    createClientSource.includes("selectedSceneForCanvas") &&
+    createClientSource.includes("const scriptFailed = threeDStoryDirections.length > 0") &&
+    canvasColumnSource.includes("threeDProgress ?") &&
+    canvasColumnSource.includes("<ThreeDBreakdownProgressCanvas") &&
     quickActionsSource.includes("!showThreeDStorySlateStage ?") &&
     quickActionsSource.includes("threeDStorySlateActive: boolean") &&
     quickActionsSource.includes('data-create-global-actions="true"') &&
-    createClientSource.includes("!showThreeDStorySlateCanvas ? (") &&
-    threeDStoryCanvasSource.includes('data-three-d-story-slate-canvas="true"') &&
-    threeDStoryCanvasSource.includes("3D reveal") &&
-    threeDStoryCanvasSource.includes("Direction {directionIndex + 1} of {directionCount}") &&
-    threeDStoryCanvasSource.includes('aspect-[1/2] h-[clamp(470px,calc(100vh-15rem),720px)]') &&
-    threeDStoryCanvasSource.includes("Your final video will appear here") &&
-    !threeDStoryCanvasSource.includes("Selected treatment") &&
-    !threeDStoryCanvasSource.includes("The premise") &&
-    !threeDStoryCanvasSource.includes("Next: script") &&
-    !threeDStoryCanvasSource.includes("Learn More") &&
-    !threeDStoryCanvasSource.includes("Add audio"),
-  "3D story selection must show a treatment canvas and hide finished-ad chrome until a real scene exists.",
+    createClientSource.includes("!showThreeDStoryDirectionStage ? (") &&
+    threeDProgressCanvasSource.includes('data-three-d-progress-canvas="true"') &&
+    threeDProgressCanvasSource.includes('aspect-[1/2] h-[clamp(470px,calc(100vh-15rem),720px)]') &&
+    threeDProgressCanvasSource.includes("Choose your story") &&
+    threeDProgressCanvasSource.includes("Write the script") &&
+    threeDProgressCanvasSource.includes("Build the storyboard") &&
+    threeDProgressCanvasSource.includes("Create the scenes") &&
+    threeDProgressCanvasSource.includes("Add motion + voice") &&
+    threeDProgressCanvasSource.includes("Finish the video") &&
+    threeDProgressCanvasSource.includes("Your final video will appear here") &&
+    !threeDProgressCanvasSource.includes("Hidden mechanism") &&
+    !threeDProgressCanvasSource.includes("3D reveal") &&
+    !threeDProgressCanvasSource.includes("Learn More") &&
+    !threeDProgressCanvasSource.includes("Add audio"),
+  "3D Breakdown must show a plain-English progress tracker until the final video replaces it.",
 );
 assert.ok(
   previewChromeSource.includes('aspect-[1/2] h-[clamp(470px,calc(100vh-15rem),720px)]') &&
