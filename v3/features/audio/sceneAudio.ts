@@ -81,8 +81,8 @@ const splitThreeDBreakdownCaptionLine = (value: string) => {
     .map((part) => cleanText(part).replace(/^(but|then|and|so)\s+/i, ""))
     .filter(Boolean);
   const chunks: string[] = [];
-  const maxWords = 6;
-  const maxChars = 42;
+  const maxWords = 4;
+  const maxChars = 32;
   const trailingPrepositions = new Set(["after", "before", "for", "from", "inside", "into", "of", "through", "to", "with"]);
 
   for (const clause of clauses.length ? clauses : [normalized]) {
