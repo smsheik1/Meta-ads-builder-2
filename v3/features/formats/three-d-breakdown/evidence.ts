@@ -42,7 +42,7 @@ const rejectChrome = (text: string) => (
 
 const classifyEvidence = (text: string): ThreeDBreakdownEvidenceType => {
   if (/stars?|review|love|ordered|arrived|bought|sent|tasted|recommend/i.test(text)) return "review";
-  if (/ship|deliver|arrive|nationwide|door/i.test(text)) return "shipping";
+  if (/\b(ship|ships|shipping|delivery|delivered|delivering|arrives?|arrived|nationwide|door)\b/i.test(text)) return "shipping";
   if (/guarantee|warranty|return|refund/i.test(text)) return "guarantee";
   if (/result|saved|increased|reduced|faster|more|less|\d+%/i.test(text)) return "result";
   return "claim";
@@ -55,11 +55,23 @@ const classifyUseType = (
   if (type === "review") return "review";
   if (type === "shipping") return "shipping";
   if (type === "guarantee") return "guarantee";
-  if (/\b(refill|snap|modular|reusable|assemble|connect|automate|sync|integrat|workflow|pipeline|engine|system|process|method)\b/i.test(text)) return "mechanism";
-  if (/\b(material|ingredient|cotton|steel|aluminum|ceramic|wool|protein|fiber|component|part|layer)\b/i.test(text)) return "material";
+  if (
+    /\b(refill|snap|modular|reusable|assemble|connect|automate|automatic|automatically|sync|integrat|workflow|pipeline|engine|system|process|method)\b/i.test(text) ||
+    /\b(answer|answers|book|books|schedule|schedules|resolve|resolves|route|routes|convert|converts|turn|turns|capture|captures)\b/i.test(text) ||
+    /\b(ai agent|ai receptionist|help desk|omnichannel|support channels?|booking path)\b/i.test(text) ||
+    /\b(delivery system|targeted delivery|delayed release|release|survive|survives|survival|protect|protects|shield|shields|carry|carries|transport|bioavailability|absorb|absorbs|absorption|disperse|dispersed)\b/i.test(text) ||
+    /\b(capsule-in-capsule|capsule inside|outer capsule|inner capsule|nested capsule|viacap|via cap|stomach acid|colon|gut barrier)\b/i.test(text)
+  ) return "mechanism";
+  if (/\b(standardized|extract|formula|formulation|blend|strain|strains|cfu|prebiotic|probiotic|postbiotic|bacteria|bacterial|ingredient|turmeric|curcumin|piperine|black pepper|mct oil|ginger|vitamin|mineral|component|part|layer|material|cotton|steel|aluminum|ceramic|wool|protein|fiber)\b/i.test(text)) return "material";
+  if (/\b(clinical trial|clinically studied|tested|study|studies|validated|assayed|sequenced|stability|potency|standardized)\b/i.test(text)) return "process";
   if (/\b(how it works|made with|built with|powered by|uses|includes|contains)\b/i.test(text)) return "feature";
   if (/\b(discount|sale|pricing|price|free trial|free shipping|bundle|offer)\b/i.test(text)) return "offer";
-  if (type === "product") return /\b(best seller|price|tin|box|kit|bundle|pack|system|tool)\b/i.test(text) ? "feature" : "category";
+  if (type === "product") {
+    if (/\bbest seller\b/i.test(text)) return "proof";
+    if (/\b(price|\$|discount|sale|bundle|offer)\b/i.test(text)) return "offer";
+    if (/\b(system|tool|kit)\b/i.test(text)) return "feature";
+    return "category";
+  }
   if (type === "result") return "proof";
   return "claim";
 };
@@ -72,18 +84,38 @@ const visualProfileForEvidence = (
   whyVisual: string;
   possibleRevealPatterns: ThreeDBreakdownRevealPattern[];
 } => {
+  if (
+    /\b(clinically studied|clinical|health transformations?|reduces? bloating|healthy regularity|sustained support)\b/i.test(text) &&
+    !/\b(outer capsule|inner capsule|capsule-in-capsule|viacap|stomach acid|probiotic core|delivery system|protect|shields?|survive|24 probiotic strains|prebiotics?)\b/i.test(text)
+  ) {
+    return {
+      visualPotentialScore: 0.46,
+      whyVisual: "This is claim or proof language, but it does not expose a concrete visual mechanism for the 3D reveal.",
+      possibleRevealPatterns: ["proof-blocks", "impact-chain"],
+    };
+  }
+  if (
+    /\b(microbes?|bacteria)\b/i.test(text) &&
+    !/\b(strains?|probiotic|prebiotic|capsule|core|viacap|outer|inner|shield|protect|survive)\b/i.test(text)
+  ) {
+    return {
+      visualPotentialScore: 0.72,
+      whyVisual: "A quantified hidden-world fact can become a strong curiosity hook and miniature-world reveal.",
+      possibleRevealPatterns: ["miniature-world", "invisible-problem"],
+    };
+  }
   if (evidenceUseType === "mechanism") {
     return {
       visualPotentialScore: 0.94,
-      whyVisual: "A mechanism can become the peak 3D reveal by showing parts snapping, flowing, or assembling.",
-      possibleRevealPatterns: ["exploded-product", "xray-cutaway", "chaos-to-order", "physicalized-ui", "process-pipeline"],
+      whyVisual: "A mechanism can become the peak 3D reveal by showing parts protecting, flowing, surviving, snapping, or assembling.",
+      possibleRevealPatterns: ["exploded-product", "xray-cutaway", "process-pipeline", "invisible-problem", "chaos-to-order"],
     };
   }
-  if (evidenceUseType === "material" || evidenceUseType === "feature") {
+  if (evidenceUseType === "material" || evidenceUseType === "feature" || evidenceUseType === "process") {
     return {
-      visualPotentialScore: 0.82,
-      whyVisual: "A concrete feature or material can be opened, layered, or shown as a physical transformation.",
-      possibleRevealPatterns: ["exploded-product", "xray-cutaway", "miniature-world", "process-pipeline"],
+      visualPotentialScore: evidenceUseType === "process" ? 0.86 : 0.82,
+      whyVisual: "A concrete feature, process, ingredient, or material can be opened, layered, measured, or shown as a formula stack.",
+      possibleRevealPatterns: ["exploded-product", "xray-cutaway", "miniature-world", "process-pipeline", "proof-blocks"],
     };
   }
   if (evidenceUseType === "review" || evidenceUseType === "proof") {

@@ -31,6 +31,24 @@ export async function refreshJingleMusicVideoUrls(
   };
 }
 
+export async function refreshThreeDBreakdownFinalVideoUrls(
+  ctx: StorageCtx,
+  scene: AdScene,
+) {
+  if (scene.format !== "three-d-breakdown" || !scene.layout.finalVideo?.storageId) return scene;
+  const url = await ctx.storage.getUrl(scene.layout.finalVideo.storageId as Id<"_storage">);
+  return {
+    ...scene,
+    layout: {
+      ...scene.layout,
+      finalVideo: {
+        ...scene.layout.finalVideo,
+        url: url || scene.layout.finalVideo.url,
+      },
+    },
+  };
+}
+
 export async function refreshSceneAudioUrls(
   ctx: StorageCtx,
   scene: AdScene,

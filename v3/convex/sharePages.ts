@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import type { AdScene } from "../features/scene/types";
-import { refreshJingleMusicVideoUrls, refreshSceneAudioUrls } from "./sceneUrlRefresh";
+import { refreshJingleMusicVideoUrls, refreshSceneAudioUrls, refreshThreeDBreakdownFinalVideoUrls } from "./sceneUrlRefresh";
 import {
   assertShareableAdScene,
   createShareSlug,
@@ -110,7 +110,10 @@ export const getBySlug: ReturnType<typeof query> = query({
 
     const scene = await ctx.db.get(sharePage.sceneId);
     if (!scene) return null;
-    const shareScene = await refreshJingleMusicVideoUrls(ctx, await refreshSceneAudioUrls(ctx, scene.scene as AdScene));
+    const shareScene = await refreshThreeDBreakdownFinalVideoUrls(
+      ctx,
+      await refreshJingleMusicVideoUrls(ctx, await refreshSceneAudioUrls(ctx, scene.scene as AdScene)),
+    );
 
     return {
       slug: sharePage.slug,

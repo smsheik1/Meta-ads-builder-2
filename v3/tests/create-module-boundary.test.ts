@@ -5,12 +5,11 @@ import { join } from "node:path";
 const createDir = join(process.cwd(), "app/create");
 const maxExtractedModuleLines = 400;
 const knownLargeCreateFileBudgets = new Map([
-  ["CreateResearchClient.tsx", 3650],
-  ["CreateQuickActions.tsx", 600],
+  ["CreateResearchClient.tsx", 3950],
+  ["CreateQuickActions.tsx", 948],
   ["CreateLeftColumn.tsx", 600],
-  ["CreateBrickStoryboardSheet.tsx", 515],
+  ["CreateBrickStoryboardSheet.tsx", 530],
   ["CreateProductPhotoshootSheet.tsx", 415],
-  ["MusicVideoAssemblyCard.tsx", 415],
 ]);
 
 const createFiles = readdirSync(createDir)

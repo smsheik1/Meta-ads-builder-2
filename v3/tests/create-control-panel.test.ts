@@ -10,9 +10,15 @@ const canvasColumnSource = readFileSync("app/create/CreateCanvasColumn.tsx", "ut
 const reviewsProductPickerSource = readFileSync("app/create/CreateReviewsProductPicker.tsx", "utf8");
 const rootLayoutSource = readFileSync("app/layout.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
+const remotionRootSource = readFileSync("remotion-entry/Root.tsx", "utf8");
 const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
 const brickStoryboardSheetSource = readFileSync("app/create/CreateBrickStoryboardSheet.tsx", "utf8");
 const creativeBriefSource = readFileSync("app/create/CreateCreativeBriefCard.tsx", "utf8");
+const adScenesSource = readFileSync("convex/adScenes.ts", "utf8");
+const threeDImagesSource = readFileSync("convex/threeDImages.ts", "utf8");
+const threeDProgressCanvasSource = readFileSync("features/formats/three-d-breakdown/ProgressCanvas.tsx", "utf8");
+const storyboardContractsSource = readFileSync("features/formats/three-d-breakdown/storyboardContracts.ts", "utf8");
+const jingleStoryboardSource = readFileSync("features/formats/jingle/storyboard.ts", "utf8");
 const visualizerSchemaSource = readFileSync("features/formats/visualizer/schema.ts", "utf8");
 const visualizerModuleSource = readFileSync("features/formats/visualizer/index.ts", "utf8");
 const globalsSource = readFileSync("app/globals.css", "utf8");
@@ -33,9 +39,49 @@ assert.ok(
   "/create must top-align the desktop tool surface so the phone and action rail do not fall below the fold at 100% zoom.",
 );
 assert.ok(
+  createClientSource.includes("showThreeDStoryDirectionStage") &&
+    createClientSource.includes("showThreeDProgressCanvas") &&
+    createClientSource.includes("selectedSceneForCanvas") &&
+    createClientSource.includes("const scriptFailed = threeDStoryDirections.length > 0") &&
+    canvasColumnSource.includes("threeDProgress ?") &&
+    canvasColumnSource.includes("<ThreeDBreakdownProgressCanvas") &&
+    quickActionsSource.includes("!showThreeDStorySlateStage ?") &&
+    quickActionsSource.includes("threeDStorySlateActive: boolean") &&
+    quickActionsSource.includes('data-create-global-actions="true"') &&
+    createClientSource.includes("!showThreeDStoryDirectionStage ? (") &&
+    threeDProgressCanvasSource.includes('data-three-d-progress-canvas="true"') &&
+    threeDProgressCanvasSource.includes('aspect-[1/2] h-[clamp(470px,calc(100vh-15rem),720px)]') &&
+    threeDProgressCanvasSource.includes("Choose your story") &&
+    threeDProgressCanvasSource.includes("Write the script") &&
+    threeDProgressCanvasSource.includes("Build the storyboard") &&
+    threeDProgressCanvasSource.includes("Create the scenes") &&
+    threeDProgressCanvasSource.includes("Add motion + voice") &&
+    threeDProgressCanvasSource.includes("Finish the video") &&
+    threeDProgressCanvasSource.includes("Your final video will appear here") &&
+    !threeDProgressCanvasSource.includes("Hidden mechanism") &&
+    !threeDProgressCanvasSource.includes("3D reveal") &&
+    !threeDProgressCanvasSource.includes("Learn More") &&
+    !threeDProgressCanvasSource.includes("Add audio"),
+  "3D Breakdown must show a plain-English progress tracker until the final video replaces it.",
+);
+assert.ok(
   previewChromeSource.includes('aspect-[1/2] h-[clamp(470px,calc(100vh-15rem),720px)]') &&
     !previewChromeSource.includes("h-[720px] w-[360px]"),
   "/create phone preview must shrink on short desktop viewports instead of forcing a fixed 720px-tall phone.",
+);
+assert.ok(
+  previewChromeSource.includes('renderScene.format === "three-d-breakdown"') &&
+    previewChromeSource.includes('fullHeightVerticalAd ? "h-full w-full" : "h-[62.5%] w-full"') &&
+    createClientSource.includes('selectedAdFormat === "three-d-breakdown" && previewPlatform === "instagram-feed"') &&
+    createClientSource.includes('setPreviewPlatform("reels")'),
+  "3D Breakdown must use the full Reels preview canvas instead of a cropped feed-style viewport.",
+);
+assert.ok(
+  remotionRootSource.includes('scene.format === "three-d-breakdown"') &&
+    remotionRootSource.includes("height: 1920") &&
+    remotionRootSource.includes("height: 1350") &&
+    remotionRootSource.includes("...getAdSceneDimensions(props.scene)"),
+  "3D Breakdown MP4 export must be 9:16 while existing feed formats keep their 4:5 export dimensions.",
 );
 assert.ok(
   !createClientSource.includes("clientReady") &&
@@ -87,6 +133,24 @@ assert.ok(
     createClientSource.includes("hydrateCreativePackGroupsFromSceneRows") &&
     createClientSource.includes("minimumReadyFormats: 2"),
   "/create must hydrate the Creative Pack rail from saved research-run scenes after refresh.",
+);
+assert.ok(
+  createClientSource.includes("api.adScenes.generateThreeDStoryDirections") &&
+    createClientSource.includes("generateThreeDStoryDirectionSlate") &&
+    createClientSource.includes("threeDStoryDirection: direction") &&
+    createClientSource.includes('format === "three-d-breakdown" && !options.threeDStoryDirection') &&
+    quickActionsSource.includes("data-three-d-story-directions-card") &&
+    quickActionsSource.includes("Pick the premise") &&
+    !quickActionsSource.includes("data-three-d-use-manual-story-direction") &&
+    adScenesSource.includes("export const generateThreeDStoryDirections") &&
+    adScenesSource.includes("threeDStoryDirection: v.optional"),
+  "3D Breakdown must show a five-card story slate before generating the script/media pipeline.",
+);
+assert.ok(
+  createClientSource.includes('if (firstScene?.format === "three-d-breakdown") resetThreeDStoryDirections();') &&
+    createClientSource.includes('setThreeDStoryDirectionStatus("loading")') &&
+    createClientSource.includes('setThreeDStoryDirectionError(message)'),
+  "Choosing a 3D story direction must clear stale slate state after success and expose a recoverable error after failure.",
 );
 assert.ok(
   createClientSource.includes("function isRenderableScene") &&
@@ -171,14 +235,161 @@ assert.ok(
   "Inline status feedback must be capped at two visible banners.",
 );
 assert.ok(
-  quickActionsSource.includes("threeDRenderBlocked") &&
-    quickActionsSource.includes("Generate 3D images and animate clips before building the MP4."),
-  "3D Breakdown must not allow the global MP4 action before generated clips exist.",
+	  quickActionsSource.includes("threeDRenderBlocked") &&
+	    quickActionsSource.includes("threeDVoiceoverBlocked") &&
+	    quickActionsSource.includes("threeDClipPlans.length > 0") &&
+	    quickActionsSource.includes("threeDClipPlans.every((clipPlan) => clipPlan.video?.status === \"ready\")") &&
+    quickActionsSource.includes("Add the documentary voiceover before building the MP4.") &&
+    quickActionsSource.includes("Generate the storyboard, production anchors, and Seedance clips before building the MP4."),
+  "3D Breakdown must not allow the global MP4 action before generated clips and voiceover exist.",
 );
 assert.ok(
   quickActionsSource.includes("scene.layout.scriptBeats.map") &&
-    quickActionsSource.includes('data-three-d-script-beat="true"'),
-  "3D Breakdown Script ready state must show all narration beats, not only the first line.",
+    quickActionsSource.includes('data-three-d-script-beat="true"') &&
+    quickActionsSource.includes("scene.layout.storyContract.referenceScript") &&
+    quickActionsSource.includes('data-three-d-reference-script="true"'),
+  "3D Breakdown Script ready state must show the narrator script when present plus all narration beats, not only the first line.",
+);
+assert.ok(
+	  quickActionsSource.includes('data-three-d-storyboard-board="true"') &&
+	    quickActionsSource.includes("Generate the six-panel storyboard first. Stop here until it matches the reference.") &&
+	    quickActionsSource.includes("Generate anchors") &&
+	    quickActionsSource.includes("Anchors ready") &&
+	    quickActionsSource.includes("assemblyStatusLabel") &&
+	    quickActionsSource.includes('isPresenterStyle ? "Anchors ready" : "Frames ready"') &&
+	    quickActionsSource.includes("requiredFrames.map") &&
+	    quickActionsSource.includes("storyboardBoard.imagePrompt") &&
+	    quickActionsSource.includes("formatStoryboardFramePrompt(frame)") &&
+	    quickActionsSource.includes('data-three-d-storyboard-frames="true"') &&
+    !quickActionsSource.includes("Six-frame 3D Breakdown storyboard board"),
+  "3D Breakdown Images step must show compact storyboard status, frame references, and inspectable prompts without duplicating the full board preview.",
+);
+assert.ok(
+  quickActionsSource.includes('data-three-d-anchor-errors="true"') &&
+    quickActionsSource.includes("Frame {frame.frameIndex}:") &&
+    quickActionsSource.includes("frame.image?.error"),
+  "3D Breakdown anchor failures must expose the failed frame and provider error instead of only generic retry copy.",
+);
+assert.ok(
+	  quickActionsSource.includes('data-three-d-clip-plan="true"') &&
+    quickActionsSource.includes("clipPlans.map") &&
+    quickActionsSource.includes("isPresenterStyle ? [clipPlan.frameIndexes[0]] : clipPlan.frameIndexes") &&
+    quickActionsSource.includes("Frames {clipPlan.frameIndexes.join(\"-\")}") &&
+    quickActionsSource.includes("clipPlan.video?.status") &&
+    quickActionsSource.includes("Clip {clipPlan.clipIndex}") &&
+    quickActionsSource.includes("All clips ready · build the final MP4") &&
+    quickActionsSource.includes("Needs voice") &&
+    quickActionsSource.includes("onAddVoice={onOpenAudioPanel}") &&
+    quickActionsSource.includes("onClick={hasVoiceover ? onBuildFinalVideo : onAddVoice}") &&
+    quickActionsSource.includes("disabled={!videosReady || renderBusy}") &&
+    quickActionsSource.includes("Generate clip ${nextClipPlan.clipIndex} next") &&
+    quickActionsSource.includes("Generate clip ${clipPlan.clipIndex - 1} first") &&
+    quickActionsSource.includes("data-three-d-generate-clip={clipPlan.clipIndex}") &&
+    quickActionsSource.includes("data-three-d-clip-preview={clipPlan.clipIndex}") &&
+    quickActionsSource.includes("autoPlay") &&
+    quickActionsSource.includes("playsInline") &&
+    quickActionsSource.includes("PromptHelp") &&
+    quickActionsSource.includes("clipPlan.prompt") &&
+    quickActionsSource.includes('data-three-d-prompt-help="true"'),
+  "3D Breakdown preflight must show planned clips, inspectable prompts, visible ready previews, and explicit sequential Seedance actions.",
+);
+assert.ok(
+  storyboardContractsSource.includes("const presenterFrameGroups") &&
+    storyboardContractsSource.includes("[[1, 2, 3], [4, 5, 6]]") &&
+    storyboardContractsSource.includes("Time-code the clip into storyboard sub-shots") &&
+    storyboardContractsSource.includes("durationSeconds: 10") &&
+    !storyboardContractsSource.includes("Clip 6: product reframe"),
+  "Presenter teardown 3D Breakdown must use two 10s clips from the six-frame storyboard, not six separate Seedance clips.",
+);
+assert.ok(
+  !createClientSource.includes("min-w-[1280px]") &&
+    !createClientSource.includes("overflow-x-auto") &&
+    createClientSource.includes("overflow-x-hidden"),
+  "/create must not force horizontal desktop scroll at normal 100% browser zoom.",
+);
+assert.ok(
+  !quickActionsSource.includes("scene.layout.shots.every((shot) => shot.video?.status === \"ready\")"),
+  "3D Breakdown final-video readiness must use clip plans, not retired three-shot video state.",
+);
+assert.ok(
+  !quickActionsSource.includes("onAnimateThreeDClips") &&
+    !quickActionsSource.includes("onRegenerateThreeDClip") &&
+    !quickActionsSource.includes("onRegenerateThreeDImage") &&
+    !createClientSource.includes("onAnimateThreeDClips") &&
+    !createClientSource.includes("onRegenerateThreeDClip") &&
+    !createClientSource.includes("onRegenerateThreeDImage"),
+  "3D Breakdown /create UI must not keep the old three-shot image/video retry wiring while the preflight flow stops before Seedance.",
+);
+assert.ok(
+  !adScenesSource.includes("export const animateThreeDClips") &&
+    !adScenesSource.includes("export const regenerateThreeDClip") &&
+    !adScenesSource.includes("export const regenerateThreeDImage") &&
+    !adScenesSource.includes("generateReplicateSeedanceVideo"),
+  "3D Breakdown backend must not keep the old three-shot media actions inside adScenes.",
+);
+assert.ok(
+    createClientSource.includes("api.threeDImages.generateThreeDImages") &&
+    createClientSource.includes("api.threeDImages.generateThreeDClip") &&
+    threeDImagesSource.includes('"use node"') &&
+    threeDImagesSource.includes("export const generateThreeDClip") &&
+    threeDImagesSource.includes("clipIndex < 1 || clipIndex > 6") &&
+    threeDImagesSource.includes("Generate 3D Breakdown clip ${previousClipIndex} before clip ${typedClipIndex}.") &&
+    threeDImagesSource.includes("generateReplicateSeedanceVideo") &&
+    jingleStoryboardSource.includes("generate_audio: false") &&
+    threeDImagesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH") &&
+    threeDImagesSource.includes("ecommerce-teardown-style-reference-clean-v7.jpg") &&
+    threeDImagesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_URL") &&
+    threeDImagesSource.includes("requireThreeDStyleReferenceUrl") &&
+    threeDImagesSource.includes("getThreeDImageInput") &&
+    threeDImagesSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("regenerate-anchors"), v.literal("all")))') &&
+    threeDImagesSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")') &&
+    quickActionsSource.includes('onGenerateImages("storyboard")') &&
+    quickActionsSource.includes('data-three-d-regenerate-storyboard="true"') &&
+    quickActionsSource.includes("Regenerate storyboard") &&
+    quickActionsSource.includes('onGenerateImages("regenerate-anchors")') &&
+    quickActionsSource.includes('data-three-d-regenerate-anchors="true"') &&
+    quickActionsSource.includes("Regenerate anchors") &&
+    threeDImagesSource.includes("generateBoard && !generateAnchors") &&
+    threeDImagesSource.includes("Generate the 3D Breakdown storyboard board before production anchors.") &&
+    threeDImagesSource.includes("storyboard-gate:ready") &&
+    threeDImagesSource.includes("buildThreeDProductionFramePrompt") &&
+    threeDImagesSource.includes("production-frame:start") &&
+    threeDImagesSource.includes("anchorFramesToGenerate") &&
+    threeDImagesSource.includes("frame.image?.status !== \"ready\"") &&
+    threeDImagesSource.includes("regenerateAnchors || frame.image?.status !== \"ready\"") &&
+    threeDImagesSource.includes("activeFrameIndex") &&
+    threeDImagesSource.includes("storyboard board must define 6 frames before image generation") &&
+    !threeDImagesSource.includes("createThreeDStoryboardFrames") &&
+    !threeDImagesSource.includes("Promise.all(baseFrames.map") &&
+    threeDImagesSource.includes("buildThreeDSeedancePrompt") &&
+    threeDImagesSource.includes("createThreeDClipPlans(nextScene.layout)") &&
+    threeDImagesSource.includes("THREE_D_SEEDANCE_MAX_PROMPT_CHARS = 3900") &&
+    threeDImagesSource.includes(".slice(0, THREE_D_SEEDANCE_MAX_PROMPT_CHARS)") &&
+    threeDImagesSource.includes("seedancePromptLength") &&
+    threeDImagesSource.includes("imageInput,") &&
+    threeDImagesSource.includes("scene.layout.referenceImages?.productImageUrls"),
+  "3D Breakdown media generation must require the style reference and expose explicit sequential Seedance clips without preflight/repair scaffolding.",
+);
+assert.ok(
+  threeDImagesSource.includes("scene.layout.productAnchor?.imageUrl") &&
+    !threeDImagesSource.includes("getThreeDAnchorImageInput(nextScene, imageInput)"),
+  "Production anchors must use only the approved storyboard and selected product references, not competing site/style images.",
+);
+const productionFramesReadyIndex = threeDImagesSource.indexOf('console.log("[wiggly:3d-breakdown] production-frames:ready"');
+const preserveReadyAnchorIndex = threeDImagesSource.indexOf('if (frame.image?.status === "ready") return frame;');
+assert.ok(
+  preserveReadyAnchorIndex !== -1 &&
+    productionFramesReadyIndex !== -1 &&
+    preserveReadyAnchorIndex < productionFramesReadyIndex,
+  "3D Breakdown anchor retry must preserve previously ready anchors when saving newly generated anchors.",
+);
+assert.ok(
+  jingleStoryboardSource.includes('BRICK_STORYBOARD_IMAGE_MODEL = "google/nano-banana-2-lite"') &&
+    jingleStoryboardSource.includes("Replicate Nano Banana prediction polling") &&
+    jingleStoryboardSource.includes("Array.isArray(payload?.output)") &&
+    jingleStoryboardSource.includes("payload?.status === \"failed\" || payload?.status === \"canceled\"") &&
+    !jingleStoryboardSource.includes('resolution: "1K"'),
+  "Replicate image generation must use Nano Banana 2 Lite and poll created predictions instead of treating delayed output as a missing image.",
 );
 assert.ok(
   quickActionsSource.includes("Story direction {storyDirectionNumber}") &&
@@ -315,6 +526,12 @@ assert.ok(
   "Scene mutations must invalidate stale share/render/save UI state.",
 );
 assert.ok(
+  createClientSource.includes("shareResetRenderJobRef") &&
+    createClientSource.includes('selectedScene?.format === "three-d-breakdown"') &&
+    createClientSource.includes("currentRenderStatus === \"ready\""),
+  "3D Breakdown render completion must invalidate stale share links so new links include the final MP4.",
+);
+assert.ok(
   createClientSource.includes("normalizePublicWebsiteUrl") &&
   createClientSource.includes("latestReadyForAnonymousIdAndUrl") &&
   createClientSource.includes("cachedResearchForUrl") &&
@@ -393,11 +610,15 @@ assert.ok(
 );
 assert.ok(
   previewChromeSource.includes("useMemo<RenderVideoComponent>") &&
-    previewChromeSource.includes('const syncVideoTimeToPreview = renderScene.audio.status !== "generated"') &&
+    previewChromeSource.includes('renderScene.audio.status !== "generated" || Boolean(finalCompositedVideoUrl)') &&
+    previewChromeSource.includes('!video.paused || typeof clipTimeSeconds !== "number"') &&
+    previewChromeSource.includes("muted={isFinalCompositedVideo ? false : props.muted}") &&
     previewChromeSource.includes("if (syncVideoTimeToPreview)") &&
-    previewChromeSource.includes("onPreviewTimeChange?.(event.currentTarget.currentTime)") &&
+    previewChromeSource.includes("onPreviewTimeChange?.((clipStartSeconds || 0) + event.currentTarget.currentTime)") &&
+    createClientSource.includes("finalVideoPreviewRef") &&
+    createClientSource.includes("void finalVideo.play()") &&
     previewChromeSource.includes("<RenderAssetProvider Image={PreviewImage} Video={PreviewVideo}>"),
-  "Preview video assets may drive timing only when generated audio is not already the master clock.",
+  "A composited final MP4 must own preview timing and audio without corrective seeks while it is playing.",
 );
 
 console.log("create-control-panel tests passed");

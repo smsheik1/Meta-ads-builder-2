@@ -42,15 +42,17 @@ const RemotionVideoAsset: RenderVideoComponent = ({
   );
 };
 
+export function getRenderMusicBed(scene: AdScene) {
+  return scene.format === "motion-story" ? scene.layout.musicBed : null;
+}
+
 export function RemotionAdScene({ scene }: { scene: AdScene }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const audio = scene.audio.status === "generated" && scene.audio.url
     ? scene.audio
     : null;
-  const musicBed = scene.format === "motion-story" || scene.format === "three-d-breakdown"
-    ? scene.layout.musicBed
-    : null;
+  const musicBed = getRenderMusicBed(scene);
   const motionStoryMusicSrc = musicBed
     ? musicBed.src
     : "";

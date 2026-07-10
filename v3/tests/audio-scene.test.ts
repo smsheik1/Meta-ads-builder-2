@@ -39,7 +39,7 @@ assert.equal(audio.durationSeconds, 6.2);
 assert.equal(audio.provider, "gemini");
 assert.ok(captions.length >= 2);
 assert.equal(getVisibleCaptionText(audio, 0.1), captions[0]!.text);
-assert.equal(getVisibleCaptionText(audio, 10), captions[0]!.text);
+assert.equal(getVisibleCaptionText(audio, 10), "");
 assert.ok(getAdSceneDurationInFrames(scene) > 60 * 6);
 
 const longCaption = {
@@ -162,5 +162,63 @@ const uploadHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
 }));
 assert.ok(uploadHtml.includes("Uploaded Deepgram caption"));
 assert.ok(!uploadHtml.includes("Add audio for this ad"));
+
+const threeDScene = {
+  format: "three-d-breakdown",
+  layout: {
+    durationMs: 20_000,
+    scriptBeats: [
+      {
+        role: "consequence",
+        narration: "A probiotic capsule enters digestion and everyone assumes it survives the trip.",
+        startMs: 0,
+        endMs: 3000,
+      },
+      {
+        role: "context",
+        narration: "But stomach acid breaks fragile bacteria apart long before the colon.",
+        startMs: 3000,
+        endMs: 8000,
+      },
+      {
+        role: "mechanism",
+        narration: "Then Seed puts one capsule inside another.",
+        startMs: 8000,
+        endMs: 13000,
+      },
+      {
+        role: "revelation",
+        narration: "ViaCap is built to protect the probiotic core through digestion.",
+        startMs: 13000,
+        endMs: 18000,
+      },
+      {
+        role: "punchline",
+        narration: "The trip was the product.",
+        startMs: 18000,
+        endMs: 20_000,
+      },
+    ],
+  },
+} as any;
+const threeDCaptions = createCaptionsForVoiceover(threeDScene, 17_412).map((caption) => caption.text);
+const threeDAudio = createGeneratedSceneAudio({
+  storageId: "three-d-audio-storage-id",
+  url: "https://example.com/three-d.wav",
+  mimeType: "audio/wav",
+  durationMs: 17_412,
+  transcript: threeDScene.layout.scriptBeats.map((beat: any) => beat.narration).join("\n"),
+  captions: createCaptionsForVoiceover(threeDScene, 17_412),
+  model: "fish-studio",
+  provider: "fish-studio",
+});
+assert.ok(!threeDCaptions.includes("apart long before the colon."));
+assert.ok(!threeDCaptions.some((text) => text.split(/\s+/).length > MAX_CAPTION_WORDS_ON_SCREEN));
+assert.ok(!threeDCaptions.some((text) => text.split(/\s+/).length > 5));
+assert.ok(!threeDCaptions.some((text) => text.length > 32));
+assert.ok(threeDCaptions.includes("stomach acid breaks fragile"));
+assert.ok(threeDCaptions.includes("everyone assumes it survives"));
+assert.ok(threeDCaptions.includes("ViaCap protects the probiotic"));
+assert.equal(getVisibleCaptionText(threeDAudio, 19.2), "");
 
 console.log("audio-scene tests passed");

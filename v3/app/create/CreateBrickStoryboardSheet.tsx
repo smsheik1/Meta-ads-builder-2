@@ -15,9 +15,25 @@ import {
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
-import type { MusicVideoAssemblyCardProps } from "./MusicVideoAssemblyCard";
+import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
 
-export type CreateBrickStoryboardSheetProps = MusicVideoAssemblyCardProps;
+type BrickStoryboardStatus = "idle" | "loading" | "ready" | "error";
+
+export type CreateBrickStoryboardSheetProps = {
+  brickStoryboard: BrickStoryboard | null;
+  brickStoryboardAnimationStatus: BrickStoryboardStatus;
+  brickStoryboardBuildStatus: BrickStoryboardStatus;
+  brickStoryboardError: string;
+  brickStoryboardShotBusyIndex: number | null;
+  brickStoryboardVideoBusyIndex: number | null;
+  brickStoryboardStatus: BrickStoryboardStatus;
+  canGenerateBrickStoryboard: boolean;
+  onAnimateBrickStoryboard: () => void;
+  onBuildBrickMusicVideo: () => void;
+  onGenerateBrickStoryboard: () => void;
+  onRegenerateBrickShot: (shotIndex: number) => void;
+  onRegenerateBrickShotVideo: (shotIndex: number) => void;
+};
 
 type StageId = "song" | "scenes" | "images" | "animation" | "final";
 type StageStatus = "ready" | "failed" | "building" | "needs";
@@ -257,8 +273,8 @@ function ScenesStage({
   busy: boolean;
   canGenerate: boolean;
   onGenerate: () => void;
-  shots: NonNullable<MusicVideoAssemblyCardProps["brickStoryboard"]>["shots"];
-  storyShots: NonNullable<NonNullable<MusicVideoAssemblyCardProps["brickStoryboard"]>["storyPlan"]>["shots"];
+  shots: NonNullable<CreateBrickStoryboardSheetProps["brickStoryboard"]>["shots"];
+  storyShots: NonNullable<NonNullable<CreateBrickStoryboardSheetProps["brickStoryboard"]>["storyPlan"]>["shots"];
 }) {
   return (
     <div className="space-y-3">
@@ -305,8 +321,8 @@ function ImagesStage({
   anyBusy: boolean;
   busyIndex: number | null;
   onRegenerate: (shotIndex: number) => void;
-  shots: NonNullable<MusicVideoAssemblyCardProps["brickStoryboard"]>["shots"];
-  storyShots: NonNullable<NonNullable<MusicVideoAssemblyCardProps["brickStoryboard"]>["storyPlan"]>["shots"];
+  shots: NonNullable<CreateBrickStoryboardSheetProps["brickStoryboard"]>["shots"];
+  storyShots: NonNullable<NonNullable<CreateBrickStoryboardSheetProps["brickStoryboard"]>["storyPlan"]>["shots"];
 }) {
   if (!shots.length) {
     return <p className="text-xs font-bold leading-5 text-slate-500">Generate scenes first.</p>;
@@ -382,7 +398,7 @@ function AnimationStage({
   canAnimate: boolean;
   onAnimate: () => void;
   onRetry: (shotIndex: number) => void;
-  shots: NonNullable<MusicVideoAssemblyCardProps["brickStoryboard"]>["shots"];
+  shots: NonNullable<CreateBrickStoryboardSheetProps["brickStoryboard"]>["shots"];
   videoBusyIndex: number | null;
   videoReadyCount: number;
 }) {

@@ -1,6 +1,6 @@
 import type { ProductCatalogItem, StoredWebsiteResearchResult } from "../research/types";
 
-export const PRODUCT_PHOTOSHOOT_IMAGE_MODEL = "google/nano-banana-2";
+export const PRODUCT_PHOTOSHOOT_IMAGE_MODEL = "google/nano-banana-2-lite";
 export const PRODUCT_PHOTOSHOOT_SHOT_COUNT = 6;
 export const PRODUCT_PHOTOSHOOT_ASPECT_RATIO = "4:5" as const;
 export const PRODUCT_PHOTOSHOOT_FULL_GENERATION_LIMIT = 3;

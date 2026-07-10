@@ -1,5 +1,20 @@
 import assert from "node:assert/strict";
-import { callNvidiaNimChat } from "../features/llm/nvidiaNim";
+import { callNvidiaNimChat, DEFAULT_NVIDIA_NIM_MODEL } from "../features/llm/nvidiaNim";
+import {
+  DEFAULT_NVIDIA_NIM_AD_IDEA_MODEL,
+  DEFAULT_NVIDIA_NIM_BRAND_CURATOR_MODEL,
+  DEFAULT_NVIDIA_NIM_MEME_MODEL,
+  DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL,
+  NIM_MODEL_OPTIONS,
+} from "../features/llm/nvidiaNimModels";
+
+assert.equal(DEFAULT_NVIDIA_NIM_MODEL, "z-ai/glm-5.2");
+assert.equal(DEFAULT_NVIDIA_NIM_AD_IDEA_MODEL, "z-ai/glm-5.2");
+assert.equal(DEFAULT_NVIDIA_NIM_BRAND_CURATOR_MODEL, "z-ai/glm-5.2");
+assert.equal(DEFAULT_NVIDIA_NIM_MEME_MODEL, "z-ai/glm-5.2");
+assert.equal(DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL, "z-ai/glm-5.2");
+assert.equal(NIM_MODEL_OPTIONS[0]?.id, "z-ai/glm-5.2");
+assert.equal(NIM_MODEL_OPTIONS[0]?.label, "GLM-5.2");
 
 const originalFetch = globalThis.fetch;
 
@@ -56,6 +71,33 @@ const content = await callNvidiaNimChat({
 });
 assert.equal(content, "{\"ok\":true}");
 assert.equal(capturedBody?.max_tokens, 1800);
+
+globalThis.fetch = ((_input: RequestInfo | URL, init?: RequestInit) => {
+  capturedBody = JSON.parse(String(init?.body || "{}")) as Record<string, unknown>;
+  const encoder = new TextEncoder();
+  return Promise.resolve(new Response(new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode("data: {\"choices\":[{\"delta\":{\"content\":\"{\\\"ok\\\":\"}}]}\n\n"));
+      controller.enqueue(encoder.encode("data: {\"choices\":[{\"delta\":{\"content\":\"true}\"}}]}\n\n"));
+      controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+      controller.close();
+    },
+  }), { status: 200 }));
+}) as typeof fetch;
+
+const streamedContent = await callNvidiaNimChat({
+  apiKey: "test-key",
+  baseUrl: "https://nim.test/v1",
+  label: "NVIDIA NIM streaming test",
+  model: "z-ai/glm-5.2",
+  prompt: "{}",
+  stream: true,
+  structuredOutput: false,
+  timeoutMs: 1000,
+});
+assert.equal(streamedContent, "{\"ok\":true}");
+assert.equal(capturedBody?.stream, true);
+assert.equal("response_format" in capturedBody, false);
 
 globalThis.fetch = originalFetch;
 

@@ -358,7 +358,6 @@ export type MotionStoryAdScene = AdSceneBase<
   }
 >;
 
-export type ThreeDBreakdownMusicBedId = "polished-upbeat" | "warm-premium" | "playful-retail";
 export type ThreeDBreakdownScriptBeatRole = "consequence" | "context" | "mechanism" | "revelation" | "punchline";
 export type ThreeDBreakdownShotRole = "consequence" | "mechanism" | "revelation";
 export type ThreeDBreakdownMediaStatus = "idle" | "generating" | "ready" | "failed";
@@ -367,6 +366,9 @@ export type ThreeDBreakdownRevealPattern = "exploded-product" | "xray-cutaway" |
 export type ThreeDBreakdownPrimarySiteType = "ecommerce" | "saas" | "local-service" | "restaurant-food" | "nonprofit" | "portfolio" | "unclear";
 export type ThreeDBreakdownRiskFlag = "health" | "medical" | "legal" | "financial" | "beauty" | "regulated";
 export type ThreeDBreakdownClaimRisk = "low" | "medium" | "high";
+export type ThreeDBreakdownVisualStyle = "toy-character-vsl" | "presenter-teardown-vsl";
+export type ThreeDBreakdownClipIndex = 1 | 2 | 3 | 4 | 5 | 6;
+export type ThreeDBreakdownStoryboardFrameIndex = 1 | 2 | 3 | 4 | 5 | 6;
 
 export type ThreeDBreakdownScriptBeat = {
   role: ThreeDBreakdownScriptBeatRole;
@@ -396,6 +398,45 @@ export type ThreeDBreakdownShot = {
   video?: ThreeDBreakdownMediaRef;
 };
 
+export type ThreeDBreakdownStoryboardBoard = {
+  frameCount: 6;
+  imagePrompt: string;
+  image?: ThreeDBreakdownMediaRef;
+  frames?: Array<{
+    frameIndex: 1 | 2 | 3 | 4 | 5 | 6;
+    role: "problem" | "escalation" | "mechanism-setup" | "wow-reveal" | "payoff" | "final-state";
+    label: string;
+    visual?: string;
+    camera?: string;
+    motion?: string;
+    overlayText?: string;
+    editingNote?: string;
+    image?: ThreeDBreakdownMediaRef;
+  }>;
+};
+
+export type ThreeDBreakdownClipPlan = {
+  clipIndex: ThreeDBreakdownClipIndex;
+  label: string;
+  startMs: number;
+  endMs: number;
+  durationSeconds: number;
+  frameIndexes: ThreeDBreakdownStoryboardFrameIndex[];
+  prompt: string;
+  video?: ThreeDBreakdownMediaRef;
+};
+
+export type ThreeDBreakdownFinalVideo = ThreeDBreakdownMediaRef & {
+  durationMs?: number;
+};
+
+export type ThreeDBreakdownProductAnchor = {
+  title: string;
+  url: string;
+  imageUrl: string;
+  imageAlt: string | null;
+};
+
 export type ThreeDBreakdownAdScene = AdSceneBase<
   "three-d-breakdown",
   AdSceneStyleBase,
@@ -415,12 +456,21 @@ export type ThreeDBreakdownAdScene = AdSceneBase<
       ThreeDBreakdownShot & { shotIndex: 3; role: "revelation" },
     ];
     musicBed?: {
-      id: ThreeDBreakdownMusicBedId;
+      id: "polished-upbeat" | "warm-premium" | "playful-retail";
       src: string;
       volume: 0.12;
       loop: true;
     };
+    storyboardBoard?: ThreeDBreakdownStoryboardBoard;
+    clipPlans?: ThreeDBreakdownClipPlan[];
+    referenceImages?: {
+      productImageUrls: string[];
+      brandImageUrls: string[];
+    };
+    productAnchor?: ThreeDBreakdownProductAnchor;
+    finalVideo?: ThreeDBreakdownFinalVideo;
     storyContract: {
+      visualStyle: ThreeDBreakdownVisualStyle;
       primarySiteType: ThreeDBreakdownPrimarySiteType;
       riskFlags: ThreeDBreakdownRiskFlag[];
       visualWorld: string;
@@ -431,6 +481,8 @@ export type ThreeDBreakdownAdScene = AdSceneBase<
       customerProblem: string;
       mechanismSummary: string;
       visualMetaphor: string;
+      referenceScript?: string;
+      ctaLine?: string;
       evidenceIndex: number;
       evidenceUseType: ThreeDBreakdownEvidenceUseType;
       wowMomentType: ThreeDBreakdownRevealPattern;

@@ -8,9 +8,9 @@ coverage/
 test-results/
 output/
 tmp/
+playwright-report/
 .playwright-cli/
 **/.playwright-cli/
-playwright-report/
 .DS_Store
 *.log
 .env*
