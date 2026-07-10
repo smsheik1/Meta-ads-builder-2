@@ -47,9 +47,13 @@ assert.ok(
     quickActionsSource.includes('data-create-global-actions="true"') &&
     createClientSource.includes("!showThreeDStorySlateCanvas ? (") &&
     threeDStoryCanvasSource.includes('data-three-d-story-slate-canvas="true"') &&
-    threeDStoryCanvasSource.includes("The premise") &&
-    threeDStoryCanvasSource.includes("Visual reveal") &&
-    threeDStoryCanvasSource.includes("Next: script") &&
+    threeDStoryCanvasSource.includes("3D reveal") &&
+    threeDStoryCanvasSource.includes("Direction {directionIndex + 1} of {directionCount}") &&
+    threeDStoryCanvasSource.includes('aspect-[1/2] h-[clamp(470px,calc(100vh-15rem),720px)]') &&
+    threeDStoryCanvasSource.includes("Your final video will appear here") &&
+    !threeDStoryCanvasSource.includes("Selected treatment") &&
+    !threeDStoryCanvasSource.includes("The premise") &&
+    !threeDStoryCanvasSource.includes("Next: script") &&
     !threeDStoryCanvasSource.includes("Learn More") &&
     !threeDStoryCanvasSource.includes("Add audio"),
   "3D story selection must show a treatment canvas and hide finished-ad chrome until a real scene exists.",

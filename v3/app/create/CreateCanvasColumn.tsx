@@ -70,7 +70,6 @@ export function CreateCanvasColumn({
       <div>
         {threeDStorySlate ? (
           <ThreeDBreakdownStoryDirectionCanvas
-            brandName={result?.brand.name || ""}
             direction={threeDStorySlate.direction}
             directionCount={threeDStorySlate.directionCount}
             directionIndex={threeDStorySlate.directionIndex}
