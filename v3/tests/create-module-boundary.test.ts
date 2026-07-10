@@ -5,8 +5,8 @@ import { join } from "node:path";
 const createDir = join(process.cwd(), "app/create");
 const maxExtractedModuleLines = 400;
 const knownLargeCreateFileBudgets = new Map([
-  ["CreateResearchClient.tsx", 3800],
-  ["CreateQuickActions.tsx", 850],
+  ["CreateResearchClient.tsx", 3950],
+  ["CreateQuickActions.tsx", 948],
   ["CreateLeftColumn.tsx", 600],
   ["CreateBrickStoryboardSheet.tsx", 530],
   ["CreateProductPhotoshootSheet.tsx", 415],

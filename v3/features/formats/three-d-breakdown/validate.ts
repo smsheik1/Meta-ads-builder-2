@@ -4,13 +4,24 @@ import type {
   ThreeDBreakdownShotRole,
 } from "../../scene/types";
 import type { FormatValidationResult } from "../types";
-import { THREE_D_BREAKDOWN_DURATION_MS, THREE_D_REVEAL_PATTERNS, THREE_D_SCRIPT_BEATS, THREE_D_SHOT_CONTRACT, THREE_D_VISUAL_STYLES } from "./prompt";
+import {
+  THREE_D_BREAKDOWN_DURATION_MS,
+  THREE_D_BREAKDOWN_LEGACY_DURATION_MS,
+  THREE_D_LEGACY_SCRIPT_BEATS,
+  THREE_D_REVEAL_PATTERNS,
+  THREE_D_SCRIPT_BEATS,
+  THREE_D_SHOT_CONTRACT,
+  THREE_D_VISUAL_STYLES,
+} from "./prompt";
+
+const scriptBeatContracts = [THREE_D_SCRIPT_BEATS, THREE_D_LEGACY_SCRIPT_BEATS] as const;
 
 export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): FormatValidationResult {
   const errors: string[] = [];
+  const isLegacyScene = scene.layout.durationMs === THREE_D_BREAKDOWN_LEGACY_DURATION_MS;
   if (scene.format !== "three-d-breakdown") errors.push("3D Breakdown format is invalid.");
   if (scene.layout.preset !== "three-d-breakdown") errors.push("3D Breakdown preset is invalid.");
-  if (scene.layout.durationMs !== THREE_D_BREAKDOWN_DURATION_MS) errors.push("3D Breakdown duration is invalid.");
+  if (scene.layout.durationMs !== THREE_D_BREAKDOWN_DURATION_MS && !isLegacyScene) errors.push("3D Breakdown duration is invalid.");
   if (!scene.layout.groundedEvidence?.text?.trim()) errors.push("3D Breakdown grounded evidence is missing.");
   if (!scene.layout.groundedEvidence?.sourceUrl?.trim()) errors.push("3D Breakdown grounded evidence source URL is missing.");
   if (!scene.layout.groundedEvidence?.evidenceUseType) errors.push("3D Breakdown grounded evidence use type is missing.");
@@ -21,7 +32,7 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
     if (!scene.layout.productAnchor.imageUrl?.trim()) errors.push("3D Breakdown product anchor image is missing.");
   }
   if (!scene.layout.storyContract?.visualWorld?.trim()) errors.push("3D Breakdown story visual world is missing.");
-  if (!THREE_D_VISUAL_STYLES.includes(scene.layout.storyContract?.visualStyle)) errors.push("3D Breakdown visual style is invalid.");
+  if (!isLegacyScene && !THREE_D_VISUAL_STYLES.includes(scene.layout.storyContract?.visualStyle)) errors.push("3D Breakdown visual style is invalid.");
   if (!scene.layout.storyContract?.lighting?.trim()) errors.push("3D Breakdown story lighting is missing.");
   if (!scene.layout.storyContract?.cameraStyle?.trim()) errors.push("3D Breakdown story camera style is missing.");
   if (!Array.isArray(scene.layout.storyContract?.riskFlags)) errors.push("3D Breakdown risk flags must be an array.");
@@ -51,7 +62,9 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
     ? [[0, 10_000], [10_000, 20_000]]
     : [[0, 5_000], [5_000, 10_000], [10_000, 15_000], [15_000, 20_000]];
   const expectedClipDuration = isPresenterStyle ? 10 : 5;
-  if (!Array.isArray(scene.layout.clipPlans) || scene.layout.clipPlans.length !== expectedClipFrameIndexes.length) {
+  if (isLegacyScene && !scene.layout.clipPlans) {
+    // Existing shared scenes predate storyboard clip plans and remain viewable.
+  } else if (!Array.isArray(scene.layout.clipPlans) || scene.layout.clipPlans.length !== expectedClipFrameIndexes.length) {
     errors.push(`3D Breakdown must define ${expectedClipFrameIndexes.length} clip plans.`);
   } else {
     scene.layout.clipPlans.forEach((clipPlan, index) => {
@@ -72,11 +85,17 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
   if (!Array.isArray(scene.layout.scriptBeats) || scene.layout.scriptBeats.length !== THREE_D_SCRIPT_BEATS.length) {
     errors.push("3D Breakdown script beats are invalid.");
   } else {
+    const matchingContract = scriptBeatContracts.find((contract) => (
+      scene.layout.scriptBeats.every((beat, index) => {
+        const expected = contract[index];
+        return expected && beat.role === expected.role && beat.startMs === expected.startMs && beat.endMs === expected.endMs;
+      })
+    ));
     scene.layout.scriptBeats.forEach((beat, index) => {
-      const contract = THREE_D_SCRIPT_BEATS[index];
+      const contract = matchingContract?.[index] || THREE_D_SCRIPT_BEATS[index];
       if (!contract) return;
       if (beat.role !== contract.role as ThreeDBreakdownScriptBeatRole) errors.push(`3D Breakdown beat ${index + 1} role is invalid.`);
-      if (beat.startMs !== contract.startMs || beat.endMs !== contract.endMs) errors.push(`3D Breakdown beat ${index + 1} timing is invalid.`);
+      if (!matchingContract && (beat.startMs !== contract.startMs || beat.endMs !== contract.endMs)) errors.push(`3D Breakdown beat ${index + 1} timing is invalid.`);
       if (!beat.narration?.trim()) errors.push(`3D Breakdown beat ${index + 1} narration is missing.`);
     });
   }

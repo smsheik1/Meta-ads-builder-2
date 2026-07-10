@@ -1585,6 +1585,34 @@ const sceneValidation = validateThreeDBreakdownScene(scene);
 assert.deepEqual(sceneValidation.errors, []);
 assert.equal(sceneValidation.valid, true);
 
+const legacyScene = {
+  ...scene,
+  layout: {
+    ...scene.layout,
+    durationMs: 21_000,
+    scriptBeats: [
+      { ...scene.layout.scriptBeats[0], startMs: 0, endMs: 3000 },
+      { ...scene.layout.scriptBeats[1], startMs: 3000, endMs: 8000 },
+      { ...scene.layout.scriptBeats[2], startMs: 8000, endMs: 13000 },
+      { ...scene.layout.scriptBeats[3], startMs: 13000, endMs: 18000 },
+      { ...scene.layout.scriptBeats[4], startMs: 18000, endMs: 21000 },
+    ],
+    storyboardBoard: undefined,
+    clipPlans: undefined,
+    musicBed: {
+      id: "polished-upbeat",
+      src: "/motion-story/music/polished-upbeat.mp3",
+      volume: 0.12,
+      loop: true,
+    },
+    storyContract: {
+      ...scene.layout.storyContract,
+      visualStyle: undefined,
+    },
+  },
+} as unknown as typeof scene;
+assert.equal(validateThreeDBreakdownScene(legacyScene).valid, true);
+
 const fishVoiceRequests: Record<string, unknown>[] = [];
 const fishResult = await generateFishThreeDBreakdownVoiceover({
   apiKey: "test-fish-key",

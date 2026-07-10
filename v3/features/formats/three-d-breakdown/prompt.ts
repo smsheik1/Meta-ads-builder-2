@@ -5,6 +5,7 @@ import type { ThreeDBreakdownStoryDirection } from "./storyDirections";
 export const THREE_D_BREAKDOWN_VARIANT_COUNT = 2;
 export const THREE_D_BREAKDOWN_MAX_TOKENS = 4000;
 export const THREE_D_BREAKDOWN_DURATION_MS = 20_000;
+export const THREE_D_BREAKDOWN_LEGACY_DURATION_MS = 21_000;
 export const THREE_D_MIN_SCRIPT_WORDS = 35;
 export const THREE_D_MAX_SCRIPT_WORDS = 80;
 export const THREE_D_REFERENCE_SCRIPT_MIN_WORDS = 110;
@@ -79,6 +80,14 @@ export const THREE_D_SCRIPT_BEATS = [
   { role: "mechanism", startMs: 7000, endMs: 12000 },
   { role: "revelation", startMs: 12000, endMs: 16000 },
   { role: "punchline", startMs: 16000, endMs: THREE_D_BREAKDOWN_DURATION_MS },
+] as const;
+
+export const THREE_D_LEGACY_SCRIPT_BEATS = [
+  { role: "consequence", startMs: 0, endMs: 3000 },
+  { role: "context", startMs: 3000, endMs: 8000 },
+  { role: "mechanism", startMs: 8000, endMs: 13000 },
+  { role: "revelation", startMs: 13000, endMs: 18000 },
+  { role: "punchline", startMs: 18000, endMs: THREE_D_BREAKDOWN_LEGACY_DURATION_MS },
 ] as const;
 
 export const THREE_D_STYLE_B_REFERENCE_FORMULA = [
