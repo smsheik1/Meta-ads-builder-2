@@ -3072,6 +3072,15 @@ function ResearchConnected() {
   };
 
   const selectedThreeDScene = selectedScene?.format === "three-d-breakdown" ? selectedScene : null;
+  const selectedThreeDStoryDirection = threeDStoryDirections.find((direction) => direction.directionId === selectedThreeDStoryDirectionId)
+    || threeDStoryDirections[0]
+    || null;
+  const selectedThreeDStoryDirectionIndex = Math.max(0, threeDStoryDirections.findIndex((direction) => direction.directionId === selectedThreeDStoryDirection?.directionId));
+  const showThreeDStorySlateCanvas = selectedAdFormat === "three-d-breakdown" && (
+    !selectedThreeDScene
+    || threeDStoryDirectionStatus !== "idle"
+    || threeDStoryDirections.length > 0
+  );
   const selectedThreeDPresenterStyle = selectedThreeDScene?.layout.storyContract.visualStyle === "presenter-teardown-vsl";
   const selectedThreeDStoryboardBoardReady = selectedThreeDScene?.layout.storyboardBoard?.image?.status === "ready";
   const selectedThreeDStoryboardFrames = selectedThreeDScene?.layout.storyboardBoard?.frames || [];
@@ -3614,6 +3623,12 @@ function ResearchConnected() {
               rerollFlash={rerollFlash}
               result={result}
               selectedScene={selectedScene}
+              threeDStorySlate={showThreeDStorySlateCanvas ? {
+                direction: selectedThreeDStoryDirection,
+                directionCount: threeDStoryDirections.length,
+                directionIndex: selectedThreeDStoryDirectionIndex,
+                status: threeDStoryDirectionStatus,
+              } : null}
             />
 
             <aside className="space-y-4">
@@ -3661,6 +3676,7 @@ function ResearchConnected() {
                 threeDError={threeDError}
                 threeDImageStatus={threeDImageStatus}
                 threeDScene={selectedThreeDScene}
+                threeDStorySlateActive={showThreeDStorySlateCanvas}
                 threeDStoryDirectionError={threeDStoryDirectionError}
                 threeDStoryDirections={threeDStoryDirections}
                 threeDStoryDirectionStatus={threeDStoryDirectionStatus}
@@ -3732,29 +3748,31 @@ function ResearchConnected() {
                 />
               ) : null}
 
-              <CreateControlPanel
-                activePanel={activeCreatePanel}
-                audioStatus={audioStatus}
-                backgroundMusicError={backgroundMusicError}
-                backgroundMusicStatus={backgroundMusicStatus}
-                hasGeneratedAudio={hasGeneratedAudio}
-                hasSelectedScene={Boolean(selectedScene)}
-                onOpenAudioPanel={onOpenAudioPanel}
-                onOpenCaptionEditor={openCaptionPanel}
-                onRemoveBackgroundMusic={onRemoveBackgroundMusic}
-                onUpdateBackgroundMusicVolume={onUpdateBackgroundMusicVolume}
-                onUploadBackgroundMusic={(file) => void onUploadBackgroundMusic(file)}
-                onPanelChange={(panel) => {
-                  if (panel) canvasActions.openPanel(panel);
-                  else canvasActions.closePanel();
-                }}
-                onPreviewPlatformChange={setPreviewPlatform}
-                onUpdateCreativeField={onUpdateCreativeField}
-                onUpdateStyleColor={onUpdateStyleColor}
-                onUpdateFormatPreset={onUpdateFormatPreset}
-                previewPlatform={previewPlatform}
-                selectedScene={selectedScene}
-              />
+              {!showThreeDStorySlateCanvas ? (
+                <CreateControlPanel
+                  activePanel={activeCreatePanel}
+                  audioStatus={audioStatus}
+                  backgroundMusicError={backgroundMusicError}
+                  backgroundMusicStatus={backgroundMusicStatus}
+                  hasGeneratedAudio={hasGeneratedAudio}
+                  hasSelectedScene={Boolean(selectedScene)}
+                  onOpenAudioPanel={onOpenAudioPanel}
+                  onOpenCaptionEditor={openCaptionPanel}
+                  onRemoveBackgroundMusic={onRemoveBackgroundMusic}
+                  onUpdateBackgroundMusicVolume={onUpdateBackgroundMusicVolume}
+                  onUploadBackgroundMusic={(file) => void onUploadBackgroundMusic(file)}
+                  onPanelChange={(panel) => {
+                    if (panel) canvasActions.openPanel(panel);
+                    else canvasActions.closePanel();
+                  }}
+                  onPreviewPlatformChange={setPreviewPlatform}
+                  onUpdateCreativeField={onUpdateCreativeField}
+                  onUpdateStyleColor={onUpdateStyleColor}
+                  onUpdateFormatPreset={onUpdateFormatPreset}
+                  previewPlatform={previewPlatform}
+                  selectedScene={selectedScene}
+                />
+              ) : null}
 
               <CreateCreativeBriefCard
                 onOpenDetails={openBrandDetails}
@@ -3768,11 +3786,13 @@ function ResearchConnected() {
 
       {!productPhotoshootMode ? (
       <div className="mx-auto max-w-7xl pb-14">
-        <CreateIdeasList
-          scenes={adScenes}
-          selectedSceneIndex={selectedSceneIndex}
-          onSelectScene={onSelectAdIdea}
-        />
+        {!showThreeDStorySlateCanvas ? (
+          <CreateIdeasList
+            scenes={adScenes}
+            selectedSceneIndex={selectedSceneIndex}
+            onSelectScene={onSelectAdIdea}
+          />
+        ) : null}
       </div>
       ) : null}
 

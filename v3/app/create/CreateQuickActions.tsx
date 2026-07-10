@@ -122,6 +122,7 @@ export function CreateQuickActions({
   threeDError,
   threeDImageStatus,
   threeDScene,
+  threeDStorySlateActive,
   threeDStoryDirectionError,
   threeDStoryDirections,
   threeDStoryDirectionStatus,
@@ -179,6 +180,7 @@ export function CreateQuickActions({
   threeDError: string;
   threeDImageStatus: BrickStoryboardStatus;
   threeDScene: ThreeDBreakdownAdScene | null;
+  threeDStorySlateActive: boolean;
   threeDStoryDirectionError: string;
   threeDStoryDirections: ThreeDBreakdownStoryDirection[];
   threeDStoryDirectionStatus: BrickStoryboardStatus;
@@ -203,13 +205,14 @@ export function CreateQuickActions({
   const visualizerAudioReady = selectedFormat === "visualizer" && hasPlayableAudio;
   const shareSupported = selectedFormat === "visualizer" || selectedFormat === "text-message" || selectedFormat === "motion-story" || ((selectedFormat === "jingle" || selectedFormat === "brainrot" || selectedFormat === "three-d-breakdown") && hasPlayableAudio);
   const showBrickStoryboard = selectedFormat === "jingle";
-  const showThreeDStoryDirections = selectedFormat === "three-d-breakdown" && !threeDScene && (threeDStoryDirections.length > 0 || threeDStoryDirectionStatus === "loading" || Boolean(threeDStoryDirectionError));
+  const showThreeDStorySlateStage = threeDStorySlateActive;
+  const showThreeDStoryDirections = showThreeDStorySlateStage && (threeDStoryDirections.length > 0 || threeDStoryDirectionStatus === "loading" || Boolean(threeDStoryDirectionError));
   const showThreeDBreakdownAssembly = selectedFormat === "three-d-breakdown" && threeDScene;
   const threeDClipPlans = threeDScene?.layout.clipPlans || [];
   const threeDClipsReady = threeDClipPlans.length > 0 && threeDClipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
   const threeDVoiceoverBlocked = selectedFormat === "three-d-breakdown" && !hasPlayableAudio;
   const threeDRenderBlocked = selectedFormat === "three-d-breakdown" && (!threeDClipsReady || threeDVoiceoverBlocked);
-  const renderWorkerOffline = !staticPngSelected && renderWorkerHealthy === false;
+  const renderWorkerOffline = hasSelectedScene && !staticPngSelected && renderWorkerHealthy === false;
   const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline || threeDRenderBlocked;
   const activeRenderDownloadUrl = staticPngSelected ? "" : renderDownloadUrl;
   const downloadLabel = staticPngSelected ? "PNG" : "MP4";
@@ -235,7 +238,11 @@ export function CreateQuickActions({
 
   return (
     <section className="space-y-3" data-create-quick-actions="v3">
-      <div className="grid grid-cols-4 gap-2 rounded-[1.35rem] border border-slate-200 bg-white p-2 shadow-xl shadow-slate-950/8">
+      {!showThreeDStorySlateStage ? (
+        <div
+          className="grid grid-cols-4 gap-2 rounded-[1.35rem] border border-slate-200 bg-white p-2 shadow-xl shadow-slate-950/8"
+          data-create-global-actions="true"
+        >
         <button
           type="button"
           onClick={hasPlayableAudio ? onTogglePreviewPlayback : onOpenAudioPanel}
@@ -324,7 +331,8 @@ export function CreateQuickActions({
             {downloadLabel}
           </button>
         )}
-      </div>
+        </div>
+      ) : null}
 
       {visualizerAudioReady ? (
         <button
@@ -396,31 +404,32 @@ export function CreateQuickActions({
         />
       ) : null}
 
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-11 w-full justify-between rounded-2xl border-slate-200 bg-white px-4 text-xs font-black uppercase tracking-[0.12em] text-slate-700 shadow-lg shadow-slate-950/5"
-            data-create-saved-library-trigger="true"
-          >
-            <span>Saved designs</span>
-            <Badge variant="secondary" className="rounded-full font-black">
-              {savedDesigns.length}
-            </Badge>
-          </Button>
-        </SheetTrigger>
-        <SheetContent className="w-[380px] border-slate-200 bg-white p-0 sm:max-w-[420px]">
-          <SheetHeader className="border-b border-slate-200 px-5 py-5 text-left">
-            <SheetTitle className="text-2xl font-black tracking-tight text-slate-950">
-              Saved designs
-            </SheetTitle>
-            <SheetDescription className="font-semibold text-slate-500">
-              Open a saved ad back onto the canvas.
-            </SheetDescription>
-          </SheetHeader>
-          <ScrollArea className="h-[calc(100vh-120px)]">
-            <div className="space-y-3 p-4">
+      {!showThreeDStorySlateStage ? (
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 w-full justify-between rounded-2xl border-slate-200 bg-white px-4 text-xs font-black uppercase tracking-[0.12em] text-slate-700 shadow-lg shadow-slate-950/5"
+              data-create-saved-library-trigger="true"
+            >
+              <span>Saved designs</span>
+              <Badge variant="secondary" className="rounded-full font-black">
+                {savedDesigns.length}
+              </Badge>
+            </Button>
+          </SheetTrigger>
+          <SheetContent className="w-[380px] border-slate-200 bg-white p-0 sm:max-w-[420px]">
+            <SheetHeader className="border-b border-slate-200 px-5 py-5 text-left">
+              <SheetTitle className="text-2xl font-black tracking-tight text-slate-950">
+                Saved designs
+              </SheetTitle>
+              <SheetDescription className="font-semibold text-slate-500">
+                Open a saved ad back onto the canvas.
+              </SheetDescription>
+            </SheetHeader>
+            <ScrollArea className="h-[calc(100vh-120px)]">
+              <div className="space-y-3 p-4">
               {savedDesigns.length ? savedDesigns.map((design) => (
                 <SheetClose key={design.id} asChild>
                   <button
@@ -450,10 +459,11 @@ export function CreateQuickActions({
                   </p>
                 </div>
               )}
-            </div>
-          </ScrollArea>
-        </SheetContent>
-      </Sheet>
+              </div>
+            </ScrollArea>
+          </SheetContent>
+        </Sheet>
+      ) : null}
     </section>
   );
 }

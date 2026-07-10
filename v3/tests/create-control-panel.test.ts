@@ -16,6 +16,7 @@ const brickStoryboardSheetSource = readFileSync("app/create/CreateBrickStoryboar
 const creativeBriefSource = readFileSync("app/create/CreateCreativeBriefCard.tsx", "utf8");
 const adScenesSource = readFileSync("convex/adScenes.ts", "utf8");
 const threeDImagesSource = readFileSync("convex/threeDImages.ts", "utf8");
+const threeDStoryCanvasSource = readFileSync("features/formats/three-d-breakdown/StoryDirectionCanvas.tsx", "utf8");
 const storyboardContractsSource = readFileSync("features/formats/three-d-breakdown/storyboardContracts.ts", "utf8");
 const jingleStoryboardSource = readFileSync("features/formats/jingle/storyboard.ts", "utf8");
 const visualizerSchemaSource = readFileSync("features/formats/visualizer/schema.ts", "utf8");
@@ -36,6 +37,22 @@ assert.ok(
     !createClientSource.includes("grid max-w-[1500px] items-center") &&
     !createClientSource.includes("grid items-center gap-5"),
   "/create must top-align the desktop tool surface so the phone and action rail do not fall below the fold at 100% zoom.",
+);
+assert.ok(
+  createClientSource.includes("showThreeDStorySlateCanvas") &&
+    canvasColumnSource.includes("threeDStorySlate ?") &&
+    canvasColumnSource.includes("<ThreeDBreakdownStoryDirectionCanvas") &&
+    quickActionsSource.includes("!showThreeDStorySlateStage ?") &&
+    quickActionsSource.includes("threeDStorySlateActive: boolean") &&
+    quickActionsSource.includes('data-create-global-actions="true"') &&
+    createClientSource.includes("!showThreeDStorySlateCanvas ? (") &&
+    threeDStoryCanvasSource.includes('data-three-d-story-slate-canvas="true"') &&
+    threeDStoryCanvasSource.includes("The premise") &&
+    threeDStoryCanvasSource.includes("Visual reveal") &&
+    threeDStoryCanvasSource.includes("Next: script") &&
+    !threeDStoryCanvasSource.includes("Learn More") &&
+    !threeDStoryCanvasSource.includes("Add audio"),
+  "3D story selection must show a treatment canvas and hide finished-ad chrome until a real scene exists.",
 );
 assert.ok(
   previewChromeSource.includes('aspect-[1/2] h-[clamp(470px,calc(100vh-15rem),720px)]') &&
