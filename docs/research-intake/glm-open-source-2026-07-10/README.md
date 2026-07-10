@@ -1,6 +1,6 @@
 # GLM Open-Source Research Intake
 
-- Status: Organized, unverified, and not approved
+- Status: Organized and assessed; only explicitly promoted benchmarks affect the living ledger
 - Received: 2026-07-10
 - Source: Founder-provided GLM research
 - Product-code impact: None
@@ -13,8 +13,9 @@ This folder preserves and organizes a large external research response before Wi
 2. [Editor, reconstruction, scraping, and structured output](./02-editor-reconstruction-and-generation.md)
 3. [AI image and inpainting tooling](./03-ai-image-tooling.md)
 4. [Leverage claims, estimates, risks, and UX concepts](./04-leverage-estimates-and-concepts.md)
+5. [Ruthless comparison against the Wiggly plan](./05-assessment.md)
 
-The [raw intake](./raw-intake.md) is preserved separately so trimming does not destroy context.
+The [raw intake](./raw-intake.md) is preserved separately so trimming does not destroy context. The assessment is the decision record; the earlier packets remain a faithful organization of GLM's claims.
 
 ## Recommended review order
 

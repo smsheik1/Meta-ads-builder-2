@@ -13,11 +13,12 @@ Related documents:
 - [Graphify guide](./graphify.md)
 - [Engineering rules](./wiggly-engineering-rules.md)
 
-Unassessed research intake:
+Assessed external research:
 
 - [GLM open-source research, organized into review packets](./research-intake/glm-open-source-2026-07-10/README.md)
+- [Ruthless comparison and rulings](./research-intake/glm-open-source-2026-07-10/05-assessment.md)
 
-Candidates in the intake remain unverified and do not change the approved statuses below until reviewed.
+Only the candidates explicitly promoted below change the stack. The remainder stay rejected or deferred.
 
 ## 1. Purpose
 
@@ -63,8 +64,9 @@ Graphify is part of every architecture decision for this project.
 | Font matching | [Storia font-classify](https://github.com/Storia-AI/font-classify) | Primary benchmark candidate | Closest match across roughly 3,000 Google Fonts, ONNX checkpoint | Font availability checks, Maker confirmation, substitution, durable storage |
 | Semantic reference analysis | [Kimi K2.6](https://build.nvidia.com/moonshotai/kimi-k2.6/modelcard) | Benchmark | Image understanding and structured design reasoning | Wiggly schema, prompt, confidence, evidence, unsupported outcome |
 | Semantic reference analysis | [MiniMax M3](https://build.nvidia.com/minimaxai/minimax-m3/modelcard) | Benchmark | Image understanding and design-oriented reasoning | Same as Kimi; select one winner, never a runtime fallback |
-| Transform handles | [Moveable](https://github.com/daybrush/moveable) | Recommended if spike passes | Drag, resize, rotate, group, snap, clip overlays | Normalized geometry, semantic commands, complete scene snapshots |
-| Multi-selection | [Selecto](https://github.com/daybrush/selecto) | Recommended if needed in Maker v0 | Click and marquee selection over DOM elements | Selection state and Maker/Player permissions |
+| Editor mechanics | [Avnac](https://github.com/xt42io/avnac) scene primitives | Primary benchmark challenger | Current React 19/Zustand geometry, selection, transforms, snapping, grouping, rendering/export patterns, and regression tests | Extracting only compatible primitives, semantic commands, normalized scene ownership, `AdRenderSurface` parity |
+| Transform handles | [Moveable](https://github.com/daybrush/moveable) | Baseline benchmark candidate | Drag, resize, rotate, group, snap, clip overlays | Normalized geometry, semantic commands, complete scene snapshots |
+| Multi-selection | [Selecto](https://github.com/daybrush/selecto) | Baseline benchmark candidate | Click and marquee selection over DOM elements | Selection state and Maker/Player permissions |
 | Layer ordering | [dnd-kit](https://github.com/clauderic/dnd-kit) | Recommended | Accessible sortable layer list | Z-order command and persisted component tree |
 | Undo and redo | [Zundo](https://github.com/charkour/zundo) | Recommended | Zustand temporal history | Transaction boundaries and dedicated editor-draft state |
 | Image crop UI | [react-easy-crop](https://github.com/ValentinH/react-easy-crop) | Later if Moveable clipping is insufficient | Crop interaction | Persisted crop geometry and renderer behavior |
@@ -132,6 +134,11 @@ Benchmark Kimi K2.6 and MiniMax M3 on the same inputs and schema. Select one pro
 | Qwen Image Edit | Explicit, manually requested layer or AI-image edit | Not needed for initial reconstruction; all paid/generative actions must remain visible and manual |
 | NVIDIA Nemotron OCR v2 | Hosted OCR challenger | Benchmark only if PaddleOCR quality or hosting becomes a measured blocker |
 | `@scena/react-guides` | Rulers and persistent guides | Moveable snapping may already be enough for Maker v0 |
+| [Polotno SDK](https://polotno.com/docs/overview) | Complete static editor as a separate buy-versus-build architecture | It owns a MobX-backed scene, Konva canvas, schema, editor, and export. Spike it separately; never combine it with LayerHub or treat it as a passive component inside `AdRenderSurface` |
+| [BackgroundR](https://github.com/google-marketing-solutions/backgroundr) | Prompt-composition and image-quality-scoring idea source | Google Sheets, Apps Script, Drive, bulk generation, and auto-regeneration do not fit Wiggly; it does not deterministically enforce native-layer Visual Policy |
+| [Step1X-Edit](https://github.com/stepfun-ai/Step1X-Edit) | Later explicit product or scene image-editing benchmark | The self-hosted v1 runtime is heavy; wait until a real Format proves the need and compare against Nano Banana one image at a time |
+| Convex + Better Auth Anonymous plugin | Future anonymous-project claim flow | Current Maker-first scope does not require general accounts; Wiggly must still implement ownership transfer and idempotency |
+| `browser-use` | Fallback benchmark for pages the current research pipeline cannot extract | Do not add a Python browser agent until a measured failure corpus exists |
 
 ## 7. Evaluated and Rejected for the Current Architecture
 
@@ -148,6 +155,15 @@ Benchmark Kimi K2.6 and MiniMax M3 on the same inputs and schema. Select one pro
 | Workflow engines or agent graphs | Do not add | Convex actions, explicit statuses, semantic commands, and pure resolvers cover the MVP |
 | General authentication product | Do not add | The MVP needs only a minimal server-enforced internal Maker gate |
 | Runtime model router or fallback framework | Do not add | Conflicts with the locked fail-visible, no-fallback policy |
+| `get-convex/convex-saas` as Wiggly's base | Do not transplant | A useful greenfield TanStack/Vite SaaS starter, but Wiggly already has the relevant Next.js/Convex runtime; mine isolated billing or email examples only when needed |
+| `get-convex/ents-saas-starter` as Wiggly's base | Do not transplant | Clerk-based and materially behind Wiggly's dependency line; relations do not provide Wiggly's immutable publication semantics for free |
+| LayerHub `react-design-editor` | Do not use | The named repository is unavailable, historically used Fabric.js, and cannot be a zero-day React 19 editor dependency |
+| LayerHub + Polotno + Konva | Do not assemble | Competing document models, stores, and renderers with no coherent owner |
+| `browser-use` / `ad-use` as the main research pipeline | Do not use | `ad-use` is a final-raster ad-generation example, not product catalog and evidence extraction |
+| Instructor around NVIDIA NIM | Do not add | NIM already supports guided JSON; existing Zod supplies runtime validation |
+| AI E-Commerce Media Studio runtime | Do not adopt | Small reference app with Replicate/local fallbacks, retries, video, Celery/Redis, and a separate storage/job stack |
+| IOPaint | Do not add | Archived in 2025 and based on an older independent Python/WebUI image stack |
+| Inpaint Anything | Do not add | 2023 research implementation around original SAM and older inpainting models; retain only the click-mask-edit interaction idea |
 
 ## 8. Wiggly-Owned Strategic Code
 
@@ -196,5 +212,9 @@ For each change, record:
 | --- | --- | --- | --- |
 | 2026-07-10 | Use the existing Wiggly runtime and borrow the Maker mechanics and reconstruction pipeline | Repo inventory, Graphify blast-radius queries, primary-source project review | Run the saved-reference benchmark |
 | 2026-07-10 | Make LayerD plus PaddleOCR the initial reconstruction baseline | LayerD produces structured graphic-design layers but does not yet include complete OCR | Measure against Codex plus 8 to 10 assistant-saved references |
-| 2026-07-10 | Use headless DOM overlays instead of a full canvas editor | `AdRenderSurface` parity contract and Graphify dependencies | Spike Moveable with one normalized static layer scene |
+| 2026-07-10 | Prefer DOM-native editing over a second canvas renderer unless a full-editor spike proves decisively better | `AdRenderSurface` parity contract and Graphify dependencies | Compare Avnac primitives with Moveable + Selecto on one normalized static layer scene |
 | 2026-07-10 | Keep one copy/pasteable skill per Format, separate from structured geometry and policy | Agent Skills convention plus Wiggly trust boundary | Validate headings and slot references with the Format schema |
+| 2026-07-10 | Reject GLM's starter transplant and LayerHub/Polotno/Konva combined stack | Existing Wiggly runtime, current repository verification, and one-renderer contract | Keep the current additive static-package architecture |
+| 2026-07-10 | Promote Avnac scene primitives to the main editor-mechanics benchmark | Current React 19/Zustand implementation includes geometry, snapping, transforms, grouping, export patterns, and tests | Compare against Moveable + Selecto + dnd-kit + Zundo in one bounded spike |
+| 2026-07-10 | Keep Polotno as a separate alternate-architecture spike | Complete current SDK and canonical schema, but it owns its scene, store, canvas, and export path | Reject unless one authoritative Polotno-backed static scene can preserve preview/builder/share/download parity |
+| 2026-07-10 | Defer BackgroundR, Step1X-Edit, Better Auth, and browser-use until their triggering needs exist | Primary-source review and locked MVP boundaries | Benchmark only against a real image-edit slot, account-claim flow, or extraction-failure corpus |
