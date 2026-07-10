@@ -154,6 +154,8 @@ Open-source candidates are graphed in isolated clones before any code is copied 
 | --- | --- | --- | --- | --- |
 | `wiggly` | This repository | Current branch snapshot | `/Users/shaz/.codex/worktrees/e18f/Meta-ads-builder-2/graphify-out/graph.json` | This document |
 | `avnac` | [xt42io/avnac](https://github.com/xt42io/avnac) | `dc9cc8b6daf66dc13e8b61f922d736f986ee7d9b` | `/Users/shaz/.graphify/repos/xt42io/avnac/graphify-out/graph.json` | [Avnac compatibility assessment](./research-intake/avnac-graphify-compatibility-2026-07-10.md) |
+| `moveable` | [daybrush/moveable](https://github.com/daybrush/moveable) | `75069102f30c88cd89ecaaa8ca7e5f7434e54807` | `/Users/shaz/.graphify/repos/daybrush/moveable/graphify-out/graph.json` | [Moveable + Selecto assessment](./research-intake/moveable-selecto-graphify-compatibility-2026-07-10.md) |
+| `selecto` | [daybrush/selecto](https://github.com/daybrush/selecto) | `7c75ef57790ffc197afdab0f49127ce38d3707b9` | `/Users/shaz/.graphify/repos/daybrush/selecto/graphify-out/graph.json` | [Moveable + Selecto assessment](./research-intake/moveable-selecto-graphify-compatibility-2026-07-10.md) |
 
 Global graph path:
 
