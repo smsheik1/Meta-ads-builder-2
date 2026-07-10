@@ -40,6 +40,11 @@ const productPhotoshootChips = CREATE_FORMAT_GUIDES[PRODUCT_PHOTOSHOOT_FORMAT].b
 assert.ok(productPhotoshootChips.includes("Asset"));
 assert.ok(!productPhotoshootChips.includes("Conversion"));
 
+const threeDBreakdownGuide = CREATE_FORMAT_GUIDES["three-d-breakdown"];
+assert.equal(threeDBreakdownGuide.output, "5 directions → 1 script");
+assert.ok(threeDBreakdownGuide.why.includes("five consequence-first story directions"));
+assert.ok(threeDBreakdownGuide.why.includes("you choose one script"));
+
 const guideSource = readFileSync("app/create/CreateFormatGuide.tsx", "utf8");
 
 assert.ok(guideSource.includes("data-create-format-compare-trigger"));
