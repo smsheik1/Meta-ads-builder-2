@@ -21,6 +21,7 @@ Assessed external research:
 - [PaddleOCR Codex-reference smoke](./research-intake/paddleocr-codex-smoke-2026-07-10.md)
 - [Vision + SAM 3 Codex-reference smoke](./research-intake/vision-sam3-codex-smoke-2026-07-10.md)
 - [MiniMax M3 Codex-reference semantic smoke](./research-intake/minimax-m3-codex-smoke-2026-07-10.md)
+- [Gemma 4 Codex-reference semantic smoke](./research-intake/gemma4-codex-smoke-2026-07-10.md)
 
 Only the candidates explicitly promoted below change the stack. The remainder stay rejected or deferred.
 
@@ -68,7 +69,8 @@ Graphify is part of every architecture decision for this project.
 | OCR and text boxes | [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) | Primary benchmark candidate; [first smoke passed](./research-intake/paddleocr-codex-smoke-2026-07-10.md) | Recovered all 9 Codex-reference text regions as coherent rotated polygons, with 8 exact strings and 98.25% character accuracy | Saved-reference corpus, font matching, slot binding, semantic reading order, low-confidence correction, text fitting, engine/runtime decision |
 | Font matching | [Storia font-classify](https://github.com/Storia-AI/font-classify) | Primary benchmark candidate | Closest match across roughly 3,000 Google Fonts, ONNX checkpoint | Font availability checks, Maker confirmation, substitution, durable storage |
 | Semantic reference analysis | [Kimi K2.6](https://build.nvidia.com/moonshotai/kimi-k2.6/modelcard) | Hosted benchmark blocked on 2026-07-10 | Intended image understanding and structured design reasoning; no quality evidence because NVIDIA returned a provider-level 404 before inference | Confirm a callable endpoint or self-hosting path before another benchmark; never silently substitute a VLM |
-| Semantic reference analysis | [MiniMax M3](https://build.nvidia.com/minimaxai/minimax-m3/modelcard) | Current benchmark leader; [first semantic and SAM-handoff smoke passed](./research-intake/minimax-m3-codex-smoke-2026-07-10.md) | Correctly identified both asset roles and replacement behavior, described the formula, and produced SAM prompts whose selected masks matched the simple-prompt masks above 99% IoU | Never trust its geometry; include OCR-backed text roles in the full schema, tighten coherent reroll-group proposals, and pass the saved-reference corpus before production selection |
+| Semantic reference analysis | [Gemma 4 31B IT](https://build.nvidia.com/google/gemma-4-31b-it) | Provisional benchmark leader; [first full-contract semantic and SAM-handoff smoke passed](./research-intake/gemma4-codex-smoke-2026-07-10.md) | Bound all 9 OCR strings and both assets into the exact focal, supporting, and footer Reroll Groups; short prompts reproduced the correct SAM masks above 99.7% IoU | One-image result took 69.1 seconds, added one unnecessary Maker question, and used a fuller contract than the MiniMax smoke; pass the identical saved-reference corpus before production selection |
+| Semantic reference analysis | [MiniMax M3](https://build.nvidia.com/minimaxai/minimax-m3/modelcard) | Secondary speed baseline; [first semantic and SAM-handoff smoke passed](./research-intake/minimax-m3-codex-smoke-2026-07-10.md) | Correctly identified both asset roles and replacement behavior in 8.5 seconds, described the broad formula, and produced SAM prompts whose selected masks matched the simple-prompt masks above 99% IoU | Never trust its geometry; its narrower smoke conflated focal Slack with the peer list and did not prove complete OCR-backed Reroll Groups; rerun the full contract for a controlled comparison if corpus evidence warrants it |
 | Editor mechanics reference | [Avnac](https://github.com/xt42io/avnac) scene primitives | Secondary code-mining and comparison source; [Graphify assessment complete](./research-intake/avnac-graphify-compatibility-2026-07-10.md) | Pure snapping and geometry; selected overlay, reorder, resize, crop, grouping, keyboard, and AI-command patterns | Wiggly types and semantic commands; do not import Avnac's scene model, document store, canvas renderer, export path, or editor shell |
 | Transform handles | [Moveable](https://github.com/daybrush/moveable) | Recommended primary spike candidate; [Graphify assessment complete](./research-intake/moveable-selecto-graphify-compatibility-2026-07-10.md) | Event-driven drag, resize, rotate, group targets, snap, bounds, and visible DOM control chrome | Transient adapter, normalized geometry, semantic pointer-up commands, complete scene snapshots, bundle measurement |
 | Multi-selection | [Selecto](https://github.com/daybrush/selecto) | Recommended Moveable companion; [Graphify assessment complete](./research-intake/moveable-selecto-graphify-compatibility-2026-07-10.md) | Click and marquee selection over existing DOM elements | Stable layer-ID mapping, authoritative interaction-store selection, Maker/Player permissions |
@@ -94,7 +96,7 @@ Reference image
   -> LayerD
   -> PaddleOCR
   -> font-classify
-  -> MiniMax M3 (current lead; corpus pending)
+  -> Gemma 4 31B IT (provisional lead; corpus pending)
   -> Wiggly-normalized draft JSON
   -> side-by-side reference and reconstructed render
 ```
@@ -126,7 +128,7 @@ Reference image
 
 ### Model decision rule
 
-MiniMax M3 is the current semantic benchmark leader after Kimi's hosted endpoint failed before inference. Production selection still waits for the same schema across the saved-reference corpus. If Kimi later becomes callable, compare it separately; never ship both as silent fallbacks.
+Gemma 4 31B IT is the provisional semantic benchmark leader because it completed the most representative Wiggly evidence contract and recovered the exact focal, supporting, and footer groups. This was not an equal-prompt model shootout: the earlier MiniMax smoke used a narrower schema. Production selection waits for the same contract across the saved-reference corpus. If Kimi later becomes callable, compare it separately; never ship multiple models as silent fallbacks.
 
 ## 6. Secondary and Watchlist Candidates
 
@@ -232,3 +234,4 @@ For each change, record:
 | 2026-07-10 | Promote SAM 3 to the primary asset-localization and mask-refinement benchmark candidate | One pinned Replicate prediction found the handshake at 0.957 and correct footer logo at 0.738; one 0.350 false logo candidate was rejected by score; flat-white deterministic cleanup produced clean movable assets and removals | Verify the runner or official-weight deployment, keep Maker confirmation, and test arbitrary backgrounds on the saved-reference corpus |
 | 2026-07-10 | Mark the Kimi K2.6 hosted semantic benchmark blocked rather than judging its quality | The single structured multimodal request failed before inference with NVIDIA `404 Function not found`; no retry or fallback ran | Confirm a callable Kimi endpoint or separately approve MiniMax M3 as the next semantic-vision benchmark |
 | 2026-07-10 | Make MiniMax M3 the current semantic benchmark leader while rejecting its coordinates | One structured NIM call returned both correct identities and roles in 8.5 seconds; MiniMax-generated prompts produced correct SAM masks above 99% IoU with the prior masks, but its handshake box had zero overlap and a 144-pixel center error | Use MiniMax for formula/roles/policies/concept proposals only; let PaddleOCR and SAM own geometry, then test the full evidence contract on the saved-reference corpus |
+| 2026-07-10 | Promote Gemma 4 31B IT to provisional semantic lead and keep MiniMax as the speed baseline | One no-retry NIM call bound all OCR text and assets into the exact three Reroll Groups; its short prompts produced the correct SAM masks at 0.957 and 0.910 confidence, but semantic latency was 69.1 seconds and the prompts were not identical across models | Run Gemma's full evidence contract on the saved-reference corpus; production selection and any controlled MiniMax rematch remain pending |
