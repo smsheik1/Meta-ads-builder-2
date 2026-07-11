@@ -149,6 +149,8 @@ A Campaign Play supplies the list items and `activeItemId`. The resolver binds t
 
 One item record references several declared Fields or assets. For example, a listicle item can contain `number`, `label`, and `imageAssetId` while still counting as one logical item. Its Fields retain the source evidence IDs. The Maker schema defines the allowed item fields; the model cannot flatten those fields into extra items or invent new fields at generation time.
 
+Each item value has one reference shape: `{ key, refType, refId }`. `key` identifies the Maker-declared item field, `refType` is `field` or `asset`, and `refId` must exist in the draft. Nullable `fieldId`/`assetId` alternatives and conflicting dual references are not supported.
+
 For the Codex reference:
 
 ```text

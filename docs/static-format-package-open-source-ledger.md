@@ -29,6 +29,7 @@ Assessed external research:
 - [Three-image untouched holdout smoke](./research-intake/static-reference-holdout-3-smoke-2026-07-10.md)
 - [NVIDIA NIM structured-output capability probe](./research-intake/nim-structured-output-capability-probe-2026-07-10.md)
 - [Schema-enforced two-image untouched holdout](./research-intake/static-reference-schema-holdout-2-smoke-2026-07-10.md)
+- [Field + List contract v1.1 offline revision](./research-intake/field-list-contract-v1-1-offline-2026-07-11.md)
 
 Only the candidates explicitly promoted below change the stack. The remainder stay rejected or deferred.
 
@@ -140,7 +141,7 @@ Reference image
 
 ### Model decision rule
 
-Gemma 4 31B IT remains the provisional semantic benchmark leader, but the pipeline is not selected. Its required `response_format.json_schema` transport eliminated malformed syntax on two new references, yet one response still violated a nested required property and neither passed semantic activation. Strengthen List binding and platform-chrome instructions before using new holdouts. Only a repeatable formula or semantic-reasoning failure after those contract fixes justifies one challenger comparison; never ship multiple models as silent fallbacks.
+Gemma 4 31B IT remains the provisional semantic benchmark leader, but the pipeline is not selected. Its required `response_format.json_schema` transport eliminated malformed syntax on two new references, yet one response still violated a nested required property and neither passed semantic activation. The v1.1 contract now removes nullable List alternatives and names the platform, gallery, and evidence-ownership policies; seven offline fixtures pass. Use only new frozen references for the next holdout. Only a repeatable formula or semantic-reasoning failure after these contract fixes justifies one challenger comparison; never ship multiple models as silent fallbacks.
 
 ## 6. Secondary and Watchlist Candidates
 
@@ -257,3 +258,4 @@ For each change, record:
 | 2026-07-10 | Fail the first untouched holdout gate and require provider-native schema enforcement before more references | OCR passed 3/3, but only the Story returned valid structured semantics and it was partial; LinkedIn returned malformed `{ {` JSON and the comparison request returned NVIDIA 504; no retries or fallbacks ran | Keep Field/List concepts, add a synthetic `guided_json` capability probe, use new holdouts afterward, and do not spend SAM requests yet |
 | 2026-07-10 | Pin structured-output transport per NIM model/backend and pass the Gemma capability gate | Top-level `guided_json` was silently ignored and produced fenced, schema-invalid output; NVIDIA's documented `response_format.json_schema` path returned strict JSON that passed the full Draft-07 Field/List schema in 71.225 seconds | Use `response_format.json_schema` for Gemma 4, retain local validation and fail-visible behavior, then run new untouched semantic holdouts before SAM |
 | 2026-07-10 | Fail the first schema-enforced untouched holdout and keep local validation authoritative | Both new references returned strict JSON and strong formulas, but Onepage duplicated OCR evidence and crossed the Story chrome boundary; Marpipe omitted four required List `field_key` properties, collapsed four examples into two, and under-scoped reroll coherence | Keep Gemma provisional, harden List binding and platform policy, run full Draft-07 before semantic checks, use new holdouts afterward, and do not spend SAM requests yet |
+| 2026-07-11 | Replace the nullable List binding with contract v1.1 and pass the offline regression gate | `field_key + field_id + asset_id + oneOf` became `key + ref_type + ref_id`; explicit policies cover native platform chrome, repeated gallery items, and compound OCR Fields; all seven fixtures pass | Freeze new references for the next one-shot semantic holdout; do not reuse prior holdouts or spend SAM requests yet |

@@ -113,3 +113,7 @@ Key files:
 - `gemma-output/*/raw-response.json`
 - `holdout-assessment.json`
 - `holdout-result-board.png`
+
+## Follow-Up
+
+The offline [Field + List contract v1.1 revision](./field-list-contract-v1-1-offline-2026-07-11.md) subsequently replaced nullable List bindings with `key + ref_type + ref_id`, added explicit platform and repeated-example policies, and passed seven regression fixtures without making another provider request.
