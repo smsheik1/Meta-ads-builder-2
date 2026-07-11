@@ -196,7 +196,7 @@ export function MakerBuilderClient() {
             value={version?.title || activeDraft.title}
             onChange={(event) => draftChanged(updateFormatDraft(activeDraft, { title: event.target.value }))}
           />
-          <Badge className={readOnly ? "bg-emerald-100 text-emerald-800" : "bg-violet-100 text-violet-800"}>{readOnly ? `Published v${version?.version}` : "Draft"}</Badge>
+          <Badge className={cn("whitespace-nowrap", readOnly ? "bg-emerald-100 text-emerald-800" : "bg-violet-100 text-violet-800")}>{readOnly ? `Published v${version?.version}` : "Draft"}</Badge>
         </div>
         <div className="flex items-center gap-3">
           <p className={`hidden text-xs font-bold md:block ${status === "failed" ? "text-red-600" : "text-slate-500"}`} role="status">{message}</p>
