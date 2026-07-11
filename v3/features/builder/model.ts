@@ -176,6 +176,21 @@ export function replaceStaticLayer(
   return { ...scene, layout: { ...scene.layout, layers } };
 }
 
+export function findStaticLayer(layers: StaticAdLayer[], layerId: string): StaticAdLayer | null {
+  for (const layer of layers) {
+    if (layer.id === layerId) return layer;
+    if (layer.type === "group") {
+      const nested = findStaticLayer(layer.children, layerId);
+      if (nested) return nested;
+    }
+  }
+  return null;
+}
+
+export function flattenStaticLayers(layers: StaticAdLayer[]): StaticAdLayer[] {
+  return layers.flatMap((layer) => [layer, ...(layer.type === "group" ? flattenStaticLayers(layer.children) : [])]);
+}
+
 export function updateFormatDraft(
   draft: FormatDraft,
   update: Partial<Pick<FormatDraft, "title" | "scene" | "analysis" | "skill">>,

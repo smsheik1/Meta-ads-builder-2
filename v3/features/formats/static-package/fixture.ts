@@ -81,7 +81,7 @@ export function createStaticPackageFixture(sourceName = "Codex integrations refe
         textLayer("supporting-tools", "GitHub\nSheets\nAsana\nDocs", 570, -35, 430, 520, 104, "#AFAFAF", 420),
         textLayer("active-brand", "Codex", 98, 475, 395, 125, 112, "#050505", 520),
         textLayer("relationship-symbol", "🤝", 492, 493, 118, 100, 82, "#111111", 500),
-        textLayer("active-tool", "Slack", 640, 475, 350, 125, 112, "#050505", 520),
+        { ...textLayer("active-tool", "Slack", 640, 475, 350, 125, 112, "#050505", 520), name: "Active tool", semanticRole: "list:integration_tools:active" },
         textLayer("remaining-tools", "Gmail\nSlides", 635, 605, 340, 250, 104, "#C7C7C7", 420),
         textLayer("footer-mark", "◉", 110, 878, 100, 90, 72, "#050505", 600),
         textLayer("footer-cta", "Work with Codex", 222, 879, 590, 90, 56, "#050505", 500),

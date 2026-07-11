@@ -357,10 +357,11 @@ assert.deepEqual(
   adRenderSurfaceImporters,
   [
     "app/create/CreatePreviewChrome.tsx",
+    "features/builder/BuilderCanvas.tsx",
     "features/render/AdRenderSurface.tsx",
     "remotion-entry/RemotionAdScene.tsx",
   ],
-  "Only the shared preview chrome and Remotion entry may draw ad pixels through AdRenderSurface.",
+  "Only /create, /builder, and Remotion may draw ad pixels through AdRenderSurface.",
 );
 
 const previewSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
