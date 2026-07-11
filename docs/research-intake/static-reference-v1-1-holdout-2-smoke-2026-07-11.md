@@ -122,3 +122,7 @@ Key files:
 - `gemma-output/*/semantic-analysis.json`
 - `holdout-assessment.json`
 - `holdout-result-board.png`
+
+## Follow-Up
+
+The subsequent [offline semantic-policy refinement](./semantic-policy-refinements-offline-2026-07-11.md) kept v1.1 unchanged, added explicit occluded-card, UI-intent, and locked-raster policies, and passed nine regression fixtures without another provider request.

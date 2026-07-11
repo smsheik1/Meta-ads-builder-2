@@ -392,6 +392,8 @@ Each axis contains evidence and visible uncertainties. A high formula score neve
 
 Before OCR or semantic analysis, deterministic intake normalizes oversized images. When a photo or screenshot contains material outside the intended creative, the Maker sees the proposed creative bounds and confirms or adjusts the crop. Wiggly does not add a separate model call merely to guess the crop.
 
+If operating-system or application UI may itself be the intended formula, the provisional analysis uses the existing Maker-question path to confirm that intent. Native UI outside the confirmed target remains capture chrome. Wiggly does not add platform-specific classifiers for this ambiguity.
+
 For each proposed List, analysis evidence contains:
 
 - List ID, meaning, and overall confidence
@@ -415,7 +417,7 @@ Hybrid reconstruction rules:
 - List candidates normalize into logical typed items rather than one item per OCR fragment.
 - Analysis records list membership separately from current display role and active state.
 - The Maker can correct the list, active item, supporting order, and presentation-slot bindings before publication.
-- Complex decoration may remain locked raster.
+- Complex illustration and decoration default to one locked raster; the Maker may explicitly mark independently replaceable parts variable.
 - Makers can replace, unlock, redraw, relabel, regroup, or change fixed/variable behavior.
 - Every text layer binds to a Wiggly-bundled font, durably stored Maker upload, or approved substitute.
 - Publication fails visibly until unavailable fonts have approved substitutes.
