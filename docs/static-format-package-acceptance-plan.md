@@ -96,7 +96,7 @@ Unsupported inputs stop visibly and do not receive a fake near-finished claim.
 | Complete draft | Upload a suitable reference without notes | Wiggly returns layers, formula, skill, Fields, Lists, display bindings, groups, policies, compatibility, questions, and confidence before requiring configuration |
 | Semantic list | Use a reference where one item is visually emphasized inside a larger list | Wiggly records one list, the complete item set, the current active item, and fixed active/supporting presentation slots without treating membership and display role as mutually exclusive |
 | List boundary | Analyze wrapped copy, a name plus handle, repeated package text, and a fixed three-line claim | Each logical value becomes one multi-evidence Field or coherent Reroll Group; none becomes a List merely because OCR returned several regions |
-| Typed list items | Analyze a five-row listicle where every row contains a number, multi-line label, and image | Wiggly returns exactly five logical item records whose declared fields link to all relevant evidence; it does not flatten the rows into number/title fragments |
+| Typed list items | Analyze a five-row listicle where every row contains a number, multi-line label, and image | Wiggly returns exactly five logical item records; scalar values and evidence live directly in each item, asset values reference declared assets, and no hidden backing Fields or flattened fragments appear |
 | Visual List completeness | Analyze the David's collage with six result scenes | Wiggly returns all six scene assets as six logical items or visibly lowers asset confidence and asks for Maker correction; it never silently claims five is complete |
 | Repeated gallery completeness | Analyze a product-to-video gallery with four visually distinct pairs and one enlarged active example | Wiggly returns four source items, marks the matching item active, and never collapses the supporting thumbnails into one gallery blob |
 | Occluded card completeness | Analyze an overlapping notification or card stack | Every visible container remains one logical item; occlusion never merges adjacent cards, titles, bodies, or icons |
@@ -105,10 +105,10 @@ Unsupported inputs stop visibly and do not receive a fake near-finished claim.
 | Compound OCR evidence | Analyze a focal phrase whose OCR box contains more than one semantic word, such as `50 Beta` | The MVP keeps one compound Field when splitting would reuse evidence; no OCR evidence ID belongs to two Fields |
 | Active-item reassignment | Select a different list item in Maker preview | The selected value moves into the fixed active presentation slot, the previous active value returns to support, no item duplicates or disappears, and geometry remains unchanged |
 | List policy scopes | Analyze the Codex reference, adapt it to another brand, then visual-reroll it | Reference membership and active state remain truthful; Maker-approved item content and active selection may change across Campaign Plays; visual reroll changes neither |
-| List validation | Supply an unknown active ID, two active items, or conflicting derived slot values | Validation rejects the draft or Campaign Play visibly; no repair model or fallback runs |
-| Provider-enforced schema | Inspect one semantic request and one Campaign-Play request | Each sends the pinned versioned JSON Schema through its proven NIM model/backend transport, then passes local runtime validation; Gemma uses `response_format.json_schema`, and prompt-only JSON instructions do not qualify |
-| Malformed structured output | Return invalid JSON, missing required keys, or an undeclared key | The attempt fails visibly, no draft or batch activates, and no parser heuristic, repair model, automatic retry, or fallback runs |
-| Provider timeout | Return HTTP 504 from NIM | The attempt fails visibly while the prior draft or batch remains usable; only a visible user action may start a new attempt |
+| List validation | Supply an unknown active ID, unknown asset ID, scalar value without evidence, duplicate evidence owner, or dense cluster as editable scalar content | Validation rejects the draft or Campaign Play visibly; no repair model or fallback runs |
+| Versioned schema boundary | Inspect one semantic request and one Campaign-Play request | Each records a pinned model, provider, prompt, and schema version and passes local Draft-07 plus semantic validation before activation; provider-native schema enforcement is required when available |
+| Structured-output envelope | Return bare JSON, one exact `json` Markdown fence, prose plus JSON, malformed JSON, missing keys, or undeclared keys | Bare JSON and one exact fence envelope parse to the same object; prose, nested fences, malformed JSON, and invalid contracts fail visibly with no semantic repair, automatic retry, or fallback |
+| Provider timeout | Return a provider timeout or terminal failed prediction | The attempt fails visibly while the prior draft or batch remains usable; only a visible user action may start a new attempt |
 | Hybrid reconstruction | Use a reference with editable text and a complex illustrated scene | Text and simple elements are native; the complex scene defaults to a clearly locked raster layer unless the Maker explicitly marks parts replaceable |
 | Source isolation | Upload a photo of an ad and a screenshot containing app chrome | Oversized input is normalized deterministically; the proposed creative bounds are visible and Maker-confirmable before expensive reconstruction; app or camera context is not published as accidental creative content |
 | Platform CTA boundary | Analyze a Story screenshot containing a platform link sticker | The sticker is excluded as platform chrome by default; a Maker may explicitly recreate an equivalent native CTA Field and shape |
@@ -190,7 +190,8 @@ Pass only if every surface uses `AdRenderSurface` and produces matching ad pixel
 
 ### Vision and reconstruction
 
-- Record the provisional stage owners in test evidence: PaddleOCR for text, Gemma 4 31B IT through NVIDIA NIM for semantics, SAM 3 for non-text masks, and LayerD only when pixel separation is needed.
+- Record the provisional stage owners in test evidence: PaddleOCR for text, pinned Gemma 4 26B A4B through Replicate for semantics, SAM 3 for non-text masks, and LayerD only when pixel separation is needed.
+- Keep Gemma 4 26B A4B provisional until three fresh v1.2 holdouts pass; record Replicate cold boot/queue separately from `predict_time`.
 - Confirm stage outputs normalize through Wiggly rather than writing scenes directly.
 - Report confidence.
 - Confirm unsupported inputs stop visibly.

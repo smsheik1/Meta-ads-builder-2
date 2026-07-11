@@ -147,9 +147,11 @@ It declares:
 
 A Campaign Play supplies the list items and `activeItemId`. The resolver binds the active item's value to the fixed active presentation slot and binds the remaining values to fixed supporting presentation slots. It reassigns content; it does not move layers, mutate geometry, or create a new layer tree.
 
-One item record references several declared Fields or assets. For example, a listicle item can contain `number`, `label`, and `imageAssetId` while still counting as one logical item. Its Fields retain the source evidence IDs. The Maker schema defines the allowed item fields; the model cannot flatten those fields into extra items or invent new fields at generation time.
+One item record owns its scalar values directly and may reference declared assets. For example, a listicle item can contain `number`, `label`, and `image` while still counting as one logical item. Scalar values retain their own source evidence IDs inside the List item; they do not require duplicate top-level backing Fields. Singleton content outside Lists remains an ordinary Field.
 
-Each item value has one reference shape: `{ key, refType, refId }`. `key` identifies the Maker-declared item field, `refType` is `field` or `asset`, and `refId` must exist in the draft. Nullable `fieldId`/`assetId` alternatives and conflicting dual references are not supported.
+Every item value has one shape: `{ key, value, evidence_ids }`. `key` identifies the Maker-declared item field, whose schema already declares `text`, `number`, `url`, or `asset`; the value does not repeat that type. For scalar fields, `value` is the source value and `evidence_ids` is nonempty. For an asset field, `value` is an existing asset ID and `evidence_ids` is empty because the referenced asset owns its evidence. Nullable alternative IDs, hidden backing Fields, repeated type tags, and conflicting dual references are not supported.
+
+Assets may own OCR evidence when text is inseparable from the visual. A synthetic dense-text cluster may be owned only by one `locked_raster` asset or by an explicit exclusion. It never becomes an ordinary Field or scalar List value. This keeps the audit trail without pretending that tiny text inside a screenshot collage is independently editable.
 
 For the Codex reference:
 
@@ -180,6 +182,9 @@ List validation rejects:
 - Too few or too many items
 - An active item repeated in supporting slots
 - A model response that supplies both authoritative list values and conflicting derived slot values
+- Scalar List values without evidence
+- List asset values that duplicate asset-owned evidence or reference an unknown asset
+- Synthetic dense-text clusters claimed as editable scalar values
 
 ### 3.7 Reroll Group
 
@@ -397,14 +402,14 @@ If operating-system or application UI may itself be the intended formula, the pr
 For each proposed List, analysis evidence contains:
 
 - List ID, meaning, and overall confidence
-- Item IDs linked to OCR or SAM evidence IDs, with membership confidence
+- Item IDs with direct typed scalar values and their OCR evidence IDs, plus asset IDs whose evidence is owned by the asset
 - Optional `activeItemId`, active-state evidence, and confidence
 - Proposed active and supporting presentation-slot bindings
 - Maker-editable rules for whether item content, active selection, and supporting order may change across Campaign Plays and batches
 - Asset replacement bindings such as Player brand logo, fixed reference asset, or Maker-approved variable symbol
 - Uncertainties and only genuinely blocking Maker questions
 
-For every ordinary Field or typed list field, analysis records all contributing OCR, mask, and asset evidence IDs. The normalizer must preserve logical grouping: source line count and OCR region count never determine list item count.
+For every ordinary Field, scalar List value, and evidence-bearing asset, analysis records all contributing OCR, mask, and asset evidence IDs. Every OCR evidence ID has exactly one owner across Fields, List values, assets, and exclusions. The normalizer must preserve logical grouping: source line count and OCR region count never determine list item count.
 
 The model proposes this evidence; the Wiggly normalizer validates it against declared layers and creates the authoritative draft. List membership and display role are scored separately in benchmarks and remain separately editable by the Maker.
 
@@ -415,6 +420,8 @@ Hybrid reconstruction rules:
 - Text, images, logos, emoji, simple shapes, and groups become native layers when confidence is sufficient.
 - Wrapped text and other multi-region values normalize into one logical Field with multiple evidence links.
 - List candidates normalize into logical typed items rather than one item per OCR fragment.
+- Scalar List values stay inside their item records instead of becoming top-level backing Fields.
+- Dense nested OCR clusters normalize into one locked-raster asset unless the Maker explicitly excludes or separates them.
 - Analysis records list membership separately from current display role and active state.
 - The Maker can correct the list, active item, supporting order, and presentation-slot bindings before publication.
 - Complex illustration and decoration default to one locked raster; the Maker may explicitly mark independently replaceable parts variable.
@@ -626,12 +633,14 @@ The provisional benchmark stack is:
 ```text
 LayerD when pixel separation is needed
   + PaddleOCR for text and text geometry
-  + Gemma 4 31B IT through NVIDIA NIM for semantic analysis
+  + Gemma 4 26B A4B through a pinned Replicate deployment for semantic analysis
   + SAM 3 for non-text candidates and masks
   -> Wiggly normalization and Maker confirmation
 ```
 
-These are complementary stage owners, not fallbacks for one another. Each stage emits evidence and confidence; none writes `StaticAdScene` directly. A failed required stage stops visibly without switching models. Production selection remains pending the 8-to-10-reference corpus using the revised list-aware contract.
+Gemma 4 26B A4B is the provisional latency leader, not yet a production selection. Its first pinned run completed inference in 20.664 seconds after cold boot, recovered the main formula and three-item benefit List, and then failed the v1.1 semantic contract. Contract v1.2 removes the repeated backing-Field failure class before three fresh holdouts decide selection.
+
+These are complementary stage owners, not fallbacks for one another. Each stage emits evidence and confidence; none writes `StaticAdScene` directly. A failed required stage stops visibly without switching models. Production selection remains pending three fresh v1.2 holdouts followed by the broader 8-to-10-reference quality corpus.
 
 ### Image generation
 
@@ -675,6 +684,6 @@ The architecture plan must benchmark current open-source and hosted options for:
 8. Model quality, latency, memory, licensing, and commercial-use constraints
 9. Minimal internal Maker authorization without a general account product
 
-The first Codex-reference smoke provisionally selected PaddleOCR, Gemma 4 31B IT, and SAM 3 for their separate evidence roles, with LayerD remaining conditional. The saved-reference corpus must test list membership, active state, presentation binding, deterministic reassignment, and cleanup burden before production selection. Reuse proven components only when they reduce development time without violating the single-renderer contract.
+The benchmark sequence provisionally selected PaddleOCR, Replicate-hosted Gemma 4 26B A4B, and SAM 3 for their separate evidence roles, with LayerD remaining conditional. Gemma 4 31B remains the quality reference but its public NIM path repeatedly timed out. Gemma 4 26B A4B must pass three fresh v1.2 holdouts before production selection. The broader saved-reference corpus must still test list membership, active state, presentation binding, deterministic reassignment, and cleanup burden. Reuse proven components only when they reduce development time without violating the single-renderer contract.
 
 Implementation must proceed through fresh scoped branches, reversible phases, clean commits, required tests, and pushes. No product-code work begins until the benchmark, revised architecture, and phased plan receive founder approval.

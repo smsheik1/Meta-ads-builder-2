@@ -1,0 +1,251 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wiggly.local/schemas/field-list-analysis-v1.2.schema.json",
+  "title": "Wiggly Field List Analysis v1.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "suitability",
+    "formula",
+    "fields",
+    "lists",
+    "excluded_evidence",
+    "assets",
+    "reroll_groups",
+    "maker_questions",
+    "uncertainties"
+  ],
+  "properties": {
+    "suitability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classification",
+        "reason",
+        "target_creative",
+        "crop_required",
+        "capture_chrome_present",
+        "confidence"
+      ],
+      "properties": {
+        "classification": {"enum": ["supported", "unsupported"]},
+        "reason": {"type": "string"},
+        "target_creative": {"type": "string"},
+        "crop_required": {"type": "boolean"},
+        "capture_chrome_present": {"type": "boolean"},
+        "confidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["formula", "reconstruction", "crop_chrome", "assets"],
+          "properties": {
+            "formula": {"type": "number", "minimum": 0, "maximum": 1},
+            "reconstruction": {"type": "number", "minimum": 0, "maximum": 1},
+            "crop_chrome": {"type": "number", "minimum": 0, "maximum": 1},
+            "assets": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        }
+      }
+    },
+    "formula": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["premise", "visual_mechanic", "cross_brand_adaptation_rule"],
+      "properties": {
+        "premise": {"type": "string"},
+        "visual_mechanic": {"type": "string"},
+        "cross_brand_adaptation_rule": {"type": "string"}
+      }
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "meaning",
+          "kind",
+          "evidence_ids",
+          "source_value",
+          "variable_policy",
+          "display_role",
+          "confidence"
+        ],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "meaning": {"type": "string"},
+          "kind": {"enum": ["text", "number", "url"]},
+          "evidence_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^text_(?:[0-9]{2,}|cluster_[0-9]{2,})$"}
+          },
+          "source_value": {"type": "string"},
+          "variable_policy": {
+            "enum": ["fixed_reference", "brand_bound", "campaign_variable", "evidence_bound"]
+          },
+          "display_role": {
+            "enum": ["active", "supporting", "focal", "footer", "body", "label", "chrome", "incidental"]
+          },
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "lists": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "meaning",
+          "item_fields",
+          "source_items",
+          "active_item_id",
+          "content_policy",
+          "active_selection_policy",
+          "supporting_order_policy",
+          "cross_brand_adaptation_rule",
+          "confidence"
+        ],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "meaning": {"type": "string"},
+          "item_fields": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["key", "kind", "required"],
+              "properties": {
+                "key": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+                "kind": {"enum": ["text", "number", "url", "asset"]},
+                "required": {"type": "boolean"}
+              }
+            }
+          },
+          "source_items": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "values"],
+              "properties": {
+                "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+                "values": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["key", "value", "evidence_ids"],
+                    "properties": {
+                      "key": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+                      "value": {"type": "string"},
+                      "evidence_ids": {
+                        "type": "array",
+                        "uniqueItems": true,
+                        "items": {"type": "string", "pattern": "^text_(?:[0-9]{2,}|cluster_[0-9]{2,})$"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "active_item_id": {"type": ["string", "null"]},
+          "content_policy": {"enum": ["fixed_reference", "brand_bound", "campaign_variable"]},
+          "active_selection_policy": {"enum": ["fixed", "maker_variable", "campaign_variable"]},
+          "supporting_order_policy": {"enum": ["fixed", "maker_variable", "campaign_variable"]},
+          "cross_brand_adaptation_rule": {"type": "string"},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "excluded_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_id", "scope", "reason", "confidence"],
+        "properties": {
+          "evidence_id": {"type": "string", "pattern": "^text_(?:[0-9]{2,}|cluster_[0-9]{2,})$"},
+          "scope": {"enum": ["capture_chrome", "incidental_environment", "uncertain"]},
+          "reason": {"type": "string"},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "identity",
+          "role",
+          "scope",
+          "binding_policy",
+          "evidence_ids",
+          "sam_prompt",
+          "required_for_formula",
+          "confidence"
+        ],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "identity": {"type": "string"},
+          "role": {"type": "string"},
+          "scope": {"enum": ["creative_content", "capture_chrome", "incidental_environment", "uncertain"]},
+          "binding_policy": {"enum": ["fixed_reference", "brand_bound", "campaign_variable", "locked_raster"]},
+          "evidence_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^text_(?:[0-9]{2,}|cluster_[0-9]{2,})$"}
+          },
+          "sam_prompt": {"type": "string", "minLength": 1},
+          "required_for_formula": {"type": "boolean"},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "reroll_groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "meaning", "members", "rule"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "meaning": {"type": "string"},
+          "members": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "id"],
+              "properties": {
+                "kind": {"enum": ["field", "list", "asset"]},
+                "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"}
+              }
+            }
+          },
+          "rule": {"type": "string"}
+        }
+      }
+    },
+    "maker_questions": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {"type": "string"}
+    },
+    "uncertainties": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}

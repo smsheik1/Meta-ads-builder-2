@@ -1,7 +1,7 @@
 # Wiggly Static Format Package Open-Source Ledger
 
 - Status: Living research document
-- Last updated: 2026-07-10
+- Last updated: 2026-07-11
 - Scope: Reference-first static Format Packages and the Maker-first MVP
 - Product-code status: Not started
 
@@ -33,6 +33,8 @@ Assessed external research:
 - [Field + List v1.1 two-image fresh holdout](./research-intake/static-reference-v1-1-holdout-2-smoke-2026-07-11.md)
 - [Semantic policy refinements offline](./research-intake/semantic-policy-refinements-offline-2026-07-11.md)
 - [Final fresh semantic holdout provider 504](./research-intake/semantic-final-holdout-provider-504-2026-07-11.md)
+- [Replicate Gemma 4 26B A4B benchmark](./research-intake/replicate-gemma4-26b-a4b-benchmark-2026-07-11.md)
+- [Field + List contract v1.2 offline revision](./research-intake/field-list-contract-v1-2-offline-2026-07-11.md)
 
 Only the candidates explicitly promoted below change the stack. The remainder stay rejected or deferred.
 
@@ -80,7 +82,8 @@ Graphify is part of every architecture decision for this project.
 | OCR and text boxes | [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) | Primary benchmark candidate; [five-reference intake smoke complete](./research-intake/static-reference-corpus-5-smoke-2026-07-10.md) | Recovered 8 to 39 evidence regions per reference; after deterministic long-edge normalization, the final screenshots completed in 11 to 17 seconds | Photo-of-poster OCR took 313 seconds before normalization; add Maker-confirmed creative crop, then benchmark font matching, slot binding, reading order, correction, and fitting |
 | Font matching | [Storia font-classify](https://github.com/Storia-AI/font-classify) | Primary benchmark candidate | Closest match across roughly 3,000 Google Fonts, ONNX checkpoint | Font availability checks, Maker confirmation, substitution, durable storage |
 | Semantic reference analysis | [Kimi K2.6](https://build.nvidia.com/moonshotai/kimi-k2.6/modelcard) | Hosted benchmark blocked on 2026-07-10 | Intended image understanding and structured design reasoning; no quality evidence because NVIDIA returned a provider-level 404 before inference | Confirm a callable endpoint or self-hosting path before another benchmark; never silently substitute a VLM |
-| Semantic reference analysis | [Gemma 4 31B IT](https://build.nvidia.com/google/gemma-4-31b-it) | Provisional semantic leader, pipeline not selected; [v1.1 structural holdout passed, quality remained partial](./research-intake/static-reference-v1-1-holdout-2-smoke-2026-07-11.md) | Two fresh responses passed strict JSON, Draft-07 v1.1, exact evidence ownership, local invariants, and formula recovery; the cartoon returned exactly five tasks | Notification cards merged under occlusion; complex illustration policy, source ambiguity, confidence, and presentation semantics remain partial |
+| Semantic reference analysis | [Gemma 4 31B IT](https://build.nvidia.com/google/gemma-4-31b-it) | Quality reference; public NIM path blocked | Two fresh v1.1 responses passed strict JSON, Draft-07, exact evidence ownership, local invariants, and formula recovery | Repeated raw and compacted public-NIM requests returned 504 before output; retain as quality reference rather than the interactive Maker candidate |
+| Semantic reference analysis | [Gemma 4 26B A4B](https://replicate.com/prunaai/gemma-4-26b-a4b-fast) | Provisional Maker-analysis candidate; [first Replicate benchmark and v1.2 offline revision complete](./research-intake/field-list-contract-v1-2-offline-2026-07-11.md) | Pinned inference completed in 20.664 seconds excluding cold boot, recovered the main formula and three-benefit List; v1.2 removes the repeated backing-Field failure class | Must pass three genuinely fresh v1.2 holdouts; native CTA boundary and locked-raster policy remain critical gates |
 | Semantic reference analysis | [MiniMax M3](https://build.nvidia.com/minimaxai/minimax-m3/modelcard) | Secondary speed baseline; [first semantic and SAM-handoff smoke passed](./research-intake/minimax-m3-codex-smoke-2026-07-10.md) | Correctly identified both asset roles and replacement behavior in 8.5 seconds, described the broad formula, and produced SAM prompts whose selected masks matched the simple-prompt masks above 99% IoU | Never trust its geometry; its narrower smoke did not represent current active state separately from collection membership; rerun only if the revised corpus exposes a Gemma failure |
 | Editor mechanics reference | [Avnac](https://github.com/xt42io/avnac) scene primitives | Secondary code-mining and comparison source; [Graphify assessment complete](./research-intake/avnac-graphify-compatibility-2026-07-10.md) | Pure snapping and geometry; selected overlay, reorder, resize, crop, grouping, keyboard, and AI-command patterns | Wiggly types and semantic commands; do not import Avnac's scene model, document store, canvas renderer, export path, or editor shell |
 | Transform handles | [Moveable](https://github.com/daybrush/moveable) | Recommended primary spike candidate; [Graphify assessment complete](./research-intake/moveable-selecto-graphify-compatibility-2026-07-10.md) | Event-driven drag, resize, rotate, group targets, snap, bounds, and visible DOM control chrome | Transient adapter, normalized geometry, semantic pointer-up commands, complete scene snapshots, bundle measurement |
@@ -107,7 +110,7 @@ Reference image
   -> LayerD
   -> PaddleOCR
   -> font-classify
-  -> Gemma 4 31B IT (provisional lead; corpus pending)
+  -> Gemma 4 26B A4B on pinned Replicate version (provisional; three fresh v1.2 holdouts pending)
   -> Wiggly-normalized draft JSON
   -> side-by-side reference and reconstructed render
 ```
@@ -144,7 +147,7 @@ Reference image
 
 ### Model decision rule
 
-Gemma 4 31B IT remains the provisional semantic benchmark leader, but the pipeline is not selected. Field + List v1.1 passed both prior fresh structural gates, and nine offline policy fixtures pass. The frozen Codecademy request and its explicitly authorized retry both ended with NVIDIA HTTP 504 before model output. Draw no prompt or model-quality conclusion, stop raw retries, and compact dense nested locked-raster OCR before another provider validation. Never ship multiple models as silent fallbacks.
+Gemma 4 26B A4B is the provisional Maker-analysis candidate, not yet the production selection. Its first pinned Replicate inference completed in 20.664 seconds excluding cold boot and recovered the main formula and benefit List, but v1.1 failed structurally and semantically. Field + List v1.2 removes backing Fields for repeated scalar values, lets assets own dense OCR, and passes 11 new plus 9 existing offline tests. Freeze three genuinely new v1.2 holdouts before another paid request. Never ship multiple models as silent fallbacks.
 
 ## 6. Secondary and Watchlist Candidates
 
@@ -271,3 +274,4 @@ For each change, record:
 | 2026-07-11 | Isolate the timeout to the Gemma 4 NIM path with Mistral as a controlled latency probe | After omitting one unsupported Gemma-specific transport flag, Mistral completed the same image, compacted evidence, v1.1 schema, and prompt through the same public gateway in about 60 seconds; strict JSON and Draft-07 passed, but local validation rejected its omission of `text_cluster_01` | Do not adopt Mistral as a fallback; stop public-Gemma retries and test the exact frozen Gemma request on a dedicated or self-hosted deployment if Gemma remains required |
 | 2026-07-11 | End the public-NIM Gemma-family sweep with no winner | Regular Gemma 4 26B A4B was absent from the authenticated catalog; DiffusionGemma finished in 2.922 seconds but failed strict output and core semantic policies; Gemma 3 12B returned account-level function 404; Gemma 3n E4B returned 504 around 214 seconds | Stop testing smaller public-NIM Gemmas; with explicit billable-call authorization, test Replicate's pinned Pruna-optimized regular Gemma 4 26B A4B on a separate provider branch |
 | 2026-07-11 | Keep Replicate Gemma 4 26B A4B as the latency leader but fail its semantic gate | One pinned, authorized prediction separated ~230.66 seconds of cold boot/queue from 20.664 seconds of inference; the fenced diagnostic JSON recovered the main formula and three-item benefit List but omitted four evidence IDs, invented backing Field references, kept native CTA chrome, and split the locked UI collage into variable assets | Do not repair or rerun Codecademy; review whether repeated List-backing failures expose a prompt defect or unnecessary contract indirection before any fresh model gate |
+| 2026-07-11 | Replace List backing Fields with direct v1.2 item ownership and keep 26B provisional | Cross-model failures showed that v1.1 forced repeated scalar content through duplicate top-level Fields plus references; v1.2 uses one direct value shape, lets locked assets own dense OCR, permits one exact JSON fence envelope, and passes 11 new plus 9 immutable v1.1 tests | Freeze three genuinely fresh ads and announce exactly three pinned Replicate requests before the final model gate; no product code or SAM yet |
