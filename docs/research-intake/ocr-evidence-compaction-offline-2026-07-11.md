@@ -5,7 +5,7 @@
 - Scope: deterministic preprocessing only
 - Provider requests: zero
 - SAM, Replicate, or image-generation requests: zero
-- Result: **Pass offline; provider validation still required**
+- Result: **Pass offline; public NIM validation still returned HTTP 504**
 
 ## Why This Exists
 
@@ -75,8 +75,34 @@ This is intentionally not:
 
 If a reference does not contain one clear dense component, compaction does nothing. Maker correction continues to operate against the raw evidence.
 
+## Authorized Provider Validation
+
+After the offline gate passed, the founder explicitly authorized one compacted Gemma 4 request through NVIDIA NIM.
+
+The request used:
+
+- the same image;
+- the same Gemma 4 31B IT model;
+- the same Field + List v1.1 schema;
+- the same structured-output transport;
+- the same prompt policies, temperature, seed, and token ceiling;
+- 16 semantic evidence regions instead of 49.
+
+NVIDIA returned HTTP 504 after approximately 225 seconds, before any model output. No `raw-response.json` or `semantic-analysis.json` exists. No automatic retry, fallback model, repair, SAM, Replicate, or image-generation request ran.
+
+This separates two conclusions:
+
+1. The compactor itself passes its offline contract and is still useful for removing irrelevant nested OCR burden.
+2. The compactor did not solve this public NIM gateway failure, so the 504 should no longer be attributed primarily to the count of OCR evidence regions.
+
+The public Gemma endpoint is now blocked for this validation path. Do not keep tuning the prompt, schema, or compaction thresholds from a failure that produced no model output.
+
+Provider evidence:
+
+- `/Users/shaz/.graphify/benchmarks/static-reference-semantic-final-holdout-2026-07-11/gemma-output/codecademy_flash_sale_story-compacted-1/REQUEST_SENTINEL.json`
+
 ## Next Gate
 
-Run at most one explicitly authorized Gemma 4 request using the compact semantic summary. That run is a latency/path validation of the compactor, not a clean semantic holdout because the reference has already been inspected. If it returns valid structured output, use a genuinely fresh reference with compaction enabled for the final semantic-quality gate. If it still returns 504, stop changing the evidence contract and test the same model outside the public gateway.
+Test the same Gemma 4 model on a deployment that is not behind this public gateway timeout. Preserve Field + List v1.1 and the compacted evidence exactly so the deployment path is the only changed variable. A successful path check still requires a genuinely fresh reference for the final semantic-quality gate.
 
 No fallback model should be added, and SAM remains blocked until valid semantics pass.
