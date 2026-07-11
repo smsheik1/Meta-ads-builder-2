@@ -64,7 +64,7 @@ Long term, anyone should be able to create Formats for themselves, their team, o
 
 ### 4.1 Maker experience
 
-The Maker opens the Maker context in `/builder` and uploads one static reference image. Written notes are optional; image-only input must work.
+The Maker opens the Maker context in `/builder` and uploads one static reference image. Written notes are optional; image-only input must work. If a photo or screenshot contains material outside the intended ad, Wiggly proposes the creative bounds and the Maker confirms or adjusts the crop before reconstruction.
 
 Wiggly analyzes the image and returns a complete draft before asking the Maker to configure a wizard. The draft includes:
 
@@ -78,7 +78,7 @@ Wiggly analyzes the image and returns a complete draft before asking the Maker t
 - Supported business types
 - Required inputs and conditional questions
 - Campaign, visual, asset, fitting, and validation policies
-- Reconstruction confidence and automatic quality checks
+- Separate formula, reconstruction, crop/chrome, and asset confidence plus automatic quality checks
 
 Analysis may take three to five minutes. Quality matters more than throughput for the MVP.
 
@@ -126,8 +126,8 @@ A Format is a reusable static-ad recipe, not executable code. At a product level
 
 - **Layer Template:** one editable visual composition built from text, image, shape, and group primitives.
 - **Semantic Formula:** the premise of the ad and the meaning of its components.
-- **Semantic Slots:** variable content such as brand name, highlighted benefit, supporting item, emoji, product image, proof point, or CTA.
-- **Semantic Collections:** finite related items with an optional active item and fixed active/supporting presentation slots.
+- **Semantic Slots:** variable content such as brand name, highlighted benefit, supporting item, emoji, product image, proof point, or CTA; one logical slot may be supported by several OCR or asset regions.
+- **Semantic Collections:** finite interchangeable logical items, optionally expressed as typed records, with an optional active item and fixed active/supporting presentation slots.
 - **Reroll Groups:** slots and collections that must change together so the ad remains coherent.
 - **Format Skill:** one copy/pasteable instruction document explaining how to adapt the formula intelligently.
 - **Campaign Strategy Policy:** Maker-approved bounds for audiences, funnel stages, objectives, triggers, motivations, exclusions, and unsupported uses.
@@ -140,6 +140,8 @@ A Format is a reusable static-ad recipe, not executable code. At a product level
 Each MVP Format Version contains exactly one Layer Template. Alternate layouts are separate Format cards, not visual rerolls.
 
 Collection membership and current display role are separate. In the Codex reference, GitHub, Sheets, Asana, Docs, Slack, Gmail, and Slides belong to one integration collection; `Slack` happens to be the active item in the supplied frame. A different play may make GitHub active by reassigning values to the same fixed presentation slots. It does not create, move, or restyle arbitrary layers.
+
+Collections are not a generic grouping mechanism. Wrapped text, metadata, repeated OCR fragments, and fixed line sequences remain ordinary slots or groups. A logical list item may combine a number, label, and image without being split into three collection members.
 
 The application registers the generic static engine once. Publishing another Format adds data, not another renderer or another branch in `/create`.
 
@@ -240,9 +242,9 @@ Nano Banana 2 Lite is locked for implementation test images. The production imag
 
 - The assistant can turn one suitable reference into a published Format without code or manual database edits.
 - Wiggly presents a complete draft before configuration.
-- Suitable high-confidence references reach at least 85% editability coverage, with 95% as the stretch target.
+- Supported references with high reconstruction and asset confidence reach at least 85% editability coverage, with 95% as the stretch target.
 - Median assistant cleanup time after analysis is five minutes or less.
-- Uncertainty and unsupported references are visible rather than hidden.
+- Uncertainty and unsupported references are visible rather than hidden; confidence in the formula never masks weak reconstruction, crop/chrome, or asset confidence.
 
 ### 10.2 Player success
 

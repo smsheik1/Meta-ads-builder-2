@@ -123,15 +123,19 @@ A variable bound to one or more layer properties. It declares:
 
 Examples include `brand_name`, `highlighted_benefit`, `active_partner`, `supporting_partner_1`, `relationship_emoji`, `product_image`, and `cta`.
 
+A Semantic Slot may cite multiple OCR, mask, or asset evidence IDs when one logical value spans several source regions. A wrapped quote, a name plus handle, or a three-line claim remains one slot or one coherent Reroll Group; repeated source fragments do not make it a collection.
+
 ### 3.6 Semantic Collection and Display State
 
 A Semantic Collection is a finite ordered set of interchangeable content items that share one meaning. It prevents Wiggly from confusing membership with the role an item happens to play in the current render.
+
+Collections exist only when the logical items may be selected, reordered, replaced, truncated, or assigned distinct display roles. Multi-line text, repeated OCR sightings of the same value, metadata clusters, and a fixed ordered sentence sequence are not collections.
 
 It declares:
 
 - Stable collection ID and meaning
 - Item value type plus minimum and maximum count
-- Stable item IDs inside each Campaign Play
+- Stable typed item records inside each Campaign Play
 - Whether zero or one active item is required
 - One optional `active` presentation slot
 - Ordered `supporting` presentation slots
@@ -139,6 +143,8 @@ It declares:
 - Optional Reroll Group membership
 
 A Campaign Play supplies the collection items and `activeItemId`. The resolver binds the active item's value to the fixed active presentation slot and binds the remaining values to fixed supporting presentation slots. It reassigns content; it does not move layers, mutate geometry, or create a new layer tree.
+
+One item record may contain several declared fields and cite several source evidence IDs. For example, a listicle item can contain `number`, `label`, and `imageAssetId` while still counting as one logical item. The Maker schema defines the allowed fields; the model cannot flatten those fields into extra items or invent new fields at generation time.
 
 For the Codex reference:
 
@@ -284,7 +290,7 @@ A slot value may be:
 - `{ kind: "asset", assetId }`
 - `{ kind: "pendingAiImage", requestSpec }`
 
-A collection item uses the same value union and adds a stable item ID. Presentation-slot values are derived by the resolver and are never duplicated in model output.
+A scalar collection item uses the same value union and adds a stable item ID. A typed collection item adds a schema-declared record of slot-compatible fields. Presentation-slot values are derived by the resolver and are never duplicated in model output.
 
 Arbitrary URLs and undeclared assets are rejected. `assetId` must already exist in the Ad Project's durable candidate registry. `pendingAiImage` is inert and cannot invoke a provider.
 
@@ -365,11 +371,21 @@ Format Version
 
 ## 4. Reconstruction and Publication
 
-Analysis returns one explicit outcome:
+Analysis returns one explicit support outcome:
 
-- **Supported, high confidence:** near-finished complete draft
-- **Supported, low confidence:** best-effort complete draft with visible uncertainty
+- **Supported:** a complete draft whose remaining risk is explained by separate confidence axes
 - **Unsupported:** visible stop with an explanation and no editability claim
+
+A supported result reports four independent confidence axes instead of one overall high/low label:
+
+- **Formula confidence:** whether the semantic premise and adaptation rule are understood
+- **Reconstruction confidence:** whether intended editable layers and geometry can be recovered
+- **Crop and chrome confidence:** whether the intended creative is isolated from camera framing or app UI
+- **Asset confidence:** whether required logos, products, people, symbols, and decoration can be localized and made editable
+
+Each axis contains evidence and visible uncertainties. A high formula score never upgrades weak reconstruction or asset evidence.
+
+Before OCR or semantic analysis, deterministic intake normalizes oversized images. When a photo or screenshot contains material outside the intended creative, the Maker sees the proposed creative bounds and confirms or adjusts the crop. Wiggly does not add a separate model call merely to guess the crop.
 
 For each proposed Semantic Collection, analysis evidence contains:
 
@@ -377,14 +393,21 @@ For each proposed Semantic Collection, analysis evidence contains:
 - Item IDs linked to OCR or SAM evidence IDs, with membership confidence
 - Optional `activeItemId`, active-state evidence, and confidence
 - Proposed active and supporting presentation-slot bindings
-- Maker-editable rules for whether items, active selection, and order may reroll
+- Maker-editable rules for whether item content, active selection, and supporting order may change across Campaign Plays and batches
+- Asset replacement bindings such as Player brand logo, fixed reference asset, or Maker-approved variable symbol
 - Uncertainties and only genuinely blocking Maker questions
 
+For every ordinary Semantic Slot or typed collection field, analysis records all contributing OCR, mask, and asset evidence IDs. The normalizer must preserve logical grouping: source line count and OCR region count never determine collection item count.
+
 The model proposes this evidence; the Wiggly normalizer validates it against declared layers and creates the authoritative draft. Collection membership and display role are scored separately in benchmarks and remain separately editable by the Maker.
+
+These content policies are not Visual Policy. Visual reroll remains style-only and never changes collection items or `activeItemId`. A reference may have a fixed source item set while its reusable Format requires variable Player-facing item content; analysis must state both scopes rather than collapsing them into one `fixed` label.
 
 Hybrid reconstruction rules:
 
 - Text, images, logos, emoji, simple shapes, and groups become native layers when confidence is sufficient.
+- Wrapped text and other multi-region values normalize into one logical slot or group with multiple evidence links.
+- Collection candidates normalize into logical typed items rather than one item per OCR fragment.
 - Analysis records collection membership separately from current display role and active state.
 - The Maker can correct the collection, active item, supporting order, and presentation-slot bindings before publication.
 - Complex decoration may remain locked raster.

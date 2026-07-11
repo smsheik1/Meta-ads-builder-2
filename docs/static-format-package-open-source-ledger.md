@@ -23,6 +23,8 @@ Assessed external research:
 - [MiniMax M3 Codex-reference semantic smoke](./research-intake/minimax-m3-codex-smoke-2026-07-10.md)
 - [Gemma 4 Codex-reference semantic smoke](./research-intake/gemma4-codex-smoke-2026-07-10.md)
 - [Gemma 4 vision-challenger smoke](./research-intake/vision-challengers-codex-smoke-2026-07-10.md)
+- [Gemma 4 collection-aware contract smoke](./research-intake/gemma4-collection-contract-smoke-2026-07-10.md)
+- [First five-reference static corpus smoke](./research-intake/static-reference-corpus-5-smoke-2026-07-10.md)
 
 Only the candidates explicitly promoted below change the stack. The remainder stay rejected or deferred.
 
@@ -67,10 +69,10 @@ Graphify is part of every architecture decision for this project.
 | --- | --- | --- | --- | --- |
 | Graphic-design decomposition | [LayerD](https://github.com/CyberAgentAILab/LayerD) | Conditional reconstruction substrate; [Graphify and first smoke complete](./research-intake/layerd-graphify-compatibility-2026-07-10.md) | Iterative BiRefNet matting plus LaMa background inpainting and raw RGBA depth-like layers; first Codex run recovered the background and a high-fidelity composite in about one CPU minute | Ignore its connected-component layers and coarse type labels as product semantics; PaddleOCR, vision, normalization, confidence, durable assets, and mask repair remain required |
 | Asset localization and mask refinement | [SAM 3](https://github.com/facebookresearch/sam3) | Primary benchmark candidate; [first Codex smoke passed](./research-intake/vision-sam3-codex-smoke-2026-07-10.md) | Text, box, or point prompted masks, boxes, and confidence; found the handshake and footer logo, and deterministic flat-white cleanup produced movable transparent assets | Verify the hosted runner or deploy official weights; semantic prompt proposal, false-positive filtering, arbitrary-background alpha/inpainting, Maker confirmation, and saved-reference corpus |
-| OCR and text boxes | [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) | Primary benchmark candidate; [first smoke passed](./research-intake/paddleocr-codex-smoke-2026-07-10.md) | Recovered all 9 Codex-reference text regions as coherent rotated polygons, with 8 exact strings and 98.25% character accuracy | Saved-reference corpus, font matching, slot binding, semantic reading order, low-confidence correction, text fitting, engine/runtime decision |
+| OCR and text boxes | [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) | Primary benchmark candidate; [five-reference intake smoke complete](./research-intake/static-reference-corpus-5-smoke-2026-07-10.md) | Recovered 8 to 39 evidence regions per reference; after deterministic long-edge normalization, the final screenshots completed in 11 to 17 seconds | Photo-of-poster OCR took 313 seconds before normalization; add Maker-confirmed creative crop, then benchmark font matching, slot binding, reading order, correction, and fitting |
 | Font matching | [Storia font-classify](https://github.com/Storia-AI/font-classify) | Primary benchmark candidate | Closest match across roughly 3,000 Google Fonts, ONNX checkpoint | Font availability checks, Maker confirmation, substitution, durable storage |
 | Semantic reference analysis | [Kimi K2.6](https://build.nvidia.com/moonshotai/kimi-k2.6/modelcard) | Hosted benchmark blocked on 2026-07-10 | Intended image understanding and structured design reasoning; no quality evidence because NVIDIA returned a provider-level 404 before inference | Confirm a callable endpoint or self-hosting path before another benchmark; never silently substitute a VLM |
-| Semantic reference analysis | [Gemma 4 31B IT](https://build.nvidia.com/google/gemma-4-31b-it) | Provisional benchmark leader; [semantic smoke, SAM handoff, and two-challenger comparison complete](./research-intake/vision-challengers-codex-smoke-2026-07-10.md) | Recognized `Slack` as the current focal partner, recovered the strongest reusable formula, and proposed short prompts whose selected SAM masks matched the simple-prompt masks above 99.7% IoU | The original rubric did not separate collection membership from current display role; one-image analysis took 69.1 seconds and added one unnecessary question; pass the revised collection-aware corpus before production selection |
+| Semantic reference analysis | [Gemma 4 31B IT](https://build.nvidia.com/google/gemma-4-31b-it) | Provisional benchmark leader; [formula passed 5/5, normalization contract failed](./research-intake/static-reference-corpus-5-smoke-2026-07-10.md) | Recovered the correct reusable formula for all five references, separated capture chrome in four with one partial, and proposed strong cross-brand adaptations in four with one partial | The contract overproduced collections in every reference and Gemma marked all five high confidence; add multi-evidence slots, typed items, and split confidence axes before production selection |
 | Semantic reference analysis | [MiniMax M3](https://build.nvidia.com/minimaxai/minimax-m3/modelcard) | Secondary speed baseline; [first semantic and SAM-handoff smoke passed](./research-intake/minimax-m3-codex-smoke-2026-07-10.md) | Correctly identified both asset roles and replacement behavior in 8.5 seconds, described the broad formula, and produced SAM prompts whose selected masks matched the simple-prompt masks above 99% IoU | Never trust its geometry; its narrower smoke did not represent current active state separately from collection membership; rerun only if the revised corpus exposes a Gemma failure |
 | Editor mechanics reference | [Avnac](https://github.com/xt42io/avnac) scene primitives | Secondary code-mining and comparison source; [Graphify assessment complete](./research-intake/avnac-graphify-compatibility-2026-07-10.md) | Pure snapping and geometry; selected overlay, reorder, resize, crop, grouping, keyboard, and AI-command patterns | Wiggly types and semantic commands; do not import Avnac's scene model, document store, canvas renderer, export path, or editor shell |
 | Transform handles | [Moveable](https://github.com/daybrush/moveable) | Recommended primary spike candidate; [Graphify assessment complete](./research-intake/moveable-selecto-graphify-compatibility-2026-07-10.md) | Event-driven drag, resize, rotate, group targets, snap, bounds, and visible DOM control chrome | Transient adapter, normalized geometry, semantic pointer-up commands, complete scene snapshots, bundle measurement |
@@ -104,17 +106,18 @@ Reference image
 
 ### Record for every reference
 
-- Suitable, low-confidence, or unsupported classification
+- Supported or unsupported outcome plus independently calibrated formula, reconstruction, crop/chrome, and asset confidence
 - Native text recovery rate
 - Meaningful variable-element recovery rate
 - Locked-raster coverage
 - Layer geometry accuracy
 - OCR and font accuracy
 - Semantic-role accuracy
-- Semantic Collection membership accuracy
+- Multi-evidence slot grouping and logical Semantic Collection item accuracy
 - Active-item and supporting display-role accuracy
 - Presentation-slot binding accuracy, including no duplicates or dropped items
 - Correctness of proposed slots, collections, Reroll Groups, and reroll behavior
+- Correct separation of reference state, cross-brand Format adaptation, active selection, and style-only visual reroll
 - Quality of the generated Format skill and policies
 - Total analysis latency
 - Peak memory or hosted cost where observable
@@ -124,7 +127,7 @@ Reference image
 
 ### Pass gates
 
-- At least 85% editability coverage for every supported high-confidence holdout
+- At least 85% editability coverage for every supported holdout with high reconstruction and asset confidence
 - Median assistant cleanup time of five minutes or less after analysis
 - Explicit unsupported outcomes instead of fake complete drafts
 - No reference-specific code or database correction
@@ -133,7 +136,7 @@ Reference image
 
 ### Model decision rule
 
-Gemma 4 31B IT is the provisional semantic benchmark leader because it produced the strongest current-state interpretation and reusable formula. The original schema incorrectly forced collection membership and display role into mutually exclusive groups, so no model has yet passed the revised contract. Production selection waits for Gemma to pass that collection-aware contract across the saved-reference corpus. If a repeatable failure appears, compare one challenger separately; never ship multiple models as silent fallbacks.
+Gemma 4 31B IT is the provisional semantic benchmark leader because it recovered the reusable formula in all five corpus references. No model has passed the complete normalization contract: the revised collection schema still confuses multi-region values with interchangeable items, and one overall confidence label hid reconstruction risk. Production selection waits for Gemma to pass multi-evidence slots, typed collection items, and split confidence axes across the saved-reference corpus. If a repeatable model failure remains after the contract is corrected, compare one challenger separately; never ship multiple models as silent fallbacks.
 
 ## 6. Secondary and Watchlist Candidates
 
@@ -244,3 +247,5 @@ For each change, record:
 | 2026-07-10 | Promote Gemma 4 31B IT to provisional semantic lead under the original rubric and keep MiniMax as the speed baseline | One no-retry NIM call bound all OCR text and assets into the required three legacy groups; its short prompts produced the correct SAM masks at 0.957 and 0.910 confidence, but semantic latency was 69.1 seconds | Revise the evidence contract if the reference exposes a missing semantic distinction; production selection remains pending |
 | 2026-07-10 | Keep Gemma 4 as provisional lead after testing the only two credible catalog challengers under the legacy rubric | Nemotron returned inconsistent core membership and took 86.0 seconds; Mistral Large 3 returned all seven integrations together but did not mark `Slack` as active despite completing in 9.8 seconds | Stop testing weaker models on this image and correct the active-state rubric before the corpus |
 | 2026-07-10 | Replace mutually exclusive focal/support classification with Semantic Collections and active display state | Founder clarification established that Slack is both one of seven integrations and the currently active item; the legacy rubric could not represent both truths | Keep Gemma provisional, revise the contract and corpus rubric, and do not use the prior comparison graphic as a collection-recovery score |
+| 2026-07-10 | Keep the collection structure but separate reusable policy scopes before the corpus | The one-shot Gemma rerun recovered 7/7 members, active Slack, 6/6 support assignments, fixed slots, and zero duplicates/drops, but marked collection content, logo, and symbol fixed | Do not rerun this image; clarify reference state versus cross-brand adaptation, active selection, asset replacement, and visual reroll in the finalized corpus prompt |
+| 2026-07-10 | Keep Gemma as semantic lead after the first five-reference corpus, but reject the current normalization contract | Formula recovery passed 5/5 and scope/adaptation mostly passed; collection modeling produced 4 failures and 1 partial, while all five references were labeled high confidence | Add multi-evidence slots, typed logical collection items, split confidence axes, and Maker-confirmed source crop; defer corpus SAM until those candidates normalize correctly |

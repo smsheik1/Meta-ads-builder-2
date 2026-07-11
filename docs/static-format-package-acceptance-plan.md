@@ -30,7 +30,7 @@ The defining end-to-end test uses the supplied 1:1 OpenAI reference: Codex and S
 3. Wiggly identifies the logo, handshake emoji, CTA, hierarchy, semantic premise, the seven-item integration collection, and `Slack` as the currently active item rather than a permanently separate category.
 4. Wiggly returns a complete draft containing native and locked-raster layers, roles, slots, Semantic Collections, active/supporting presentation bindings, Reroll Groups, skill, business compatibility, required inputs, and policies.
 5. The assistant makes corrections visually.
-6. Cleanup takes no more than five minutes after analysis for this suitable high-confidence reference.
+6. Cleanup takes no more than five minutes after analysis for this reference when reconstruction and asset confidence are high.
 7. She reviews the skill and structured policies.
 8. She runs the required eight-ad test brand.
 9. All eight test ads pass automatic checks and human review.
@@ -73,23 +73,19 @@ Before editability and cleanup become launch claims:
 
 1. Assemble 8 to 10 structurally different references from the internal assistant's saved ads.
 2. Mark at least three as holdouts not used to tune prompts, thresholds, or normalization.
-3. Record every reference's suitability before seeing results so failures cannot be quietly removed.
+3. Record every reference's support expectation plus separate formula, reconstruction, crop/chrome, and asset-confidence expectations before seeing results so failures cannot be quietly removed.
 4. Run every reference through the same `static-package` engine and the same finalized collection-aware semantic contract.
 5. Use no reference-specific code or manual database correction.
 6. Review every meaningful variable visual element.
-7. Score collection membership, current active item, supporting presentation order, display-role binding, and reroll behavior separately.
+7. Score ordinary multi-evidence slots, logical collection item count, collection membership, current active item, supporting presentation order, display-role binding, and reroll behavior separately.
 8. Measure whether intended properties can be changed independently without redrawing the reference.
-9. Require at least 85% editability coverage for every supported high-confidence holdout.
+9. Require at least 85% editability coverage for every supported holdout with high reconstruction and asset confidence.
 10. Treat 95% as the stretch target.
 11. Require zero invalid active-item references, duplicate active/supporting assignments, or silent collection item loss in a publishable draft.
 12. Require median assistant cleanup time of five minutes or less after analysis.
 13. Require all eight ads in every published test batch to be coherent, visually sound, and strategically distinct.
 
-The system must explicitly distinguish:
-
-- Supported, high confidence
-- Supported, low confidence
-- Unsupported
+The system must explicitly distinguish supported from unsupported and report formula, reconstruction, crop/chrome, and asset confidence separately.
 
 Unsupported inputs stop visibly and do not receive a fake near-finished claim.
 
@@ -99,9 +95,15 @@ Unsupported inputs stop visibly and do not receive a fake near-finished claim.
 | --- | --- | --- |
 | Complete draft | Upload a suitable reference without notes | Wiggly returns layers, formula, skill, slots, collections, display bindings, groups, policies, compatibility, questions, and confidence before requiring configuration |
 | Semantic collection | Use a reference where one item is visually emphasized inside a larger list | Wiggly records one collection, the complete item set, the current active item, and fixed active/supporting presentation slots without treating membership and display role as mutually exclusive |
+| Collection boundary | Analyze wrapped copy, a name plus handle, repeated package text, and a fixed three-line claim | Each logical value becomes one multi-evidence slot or coherent group; none becomes a collection merely because OCR returned several regions |
+| Typed collection items | Analyze a five-row listicle where every row contains a number, multi-line label, and image | Wiggly returns exactly five logical item records whose declared fields link to all relevant evidence; it does not flatten the rows into number/title fragments |
 | Active-item reassignment | Select a different collection item in Maker preview | The selected value moves into the fixed active presentation slot, the previous active value returns to support, no item duplicates or disappears, and geometry remains unchanged |
+| Collection policy scopes | Analyze the Codex reference, adapt it to another brand, then visual-reroll it | Reference membership and active state remain truthful; Maker-approved item content and active selection may change across Campaign Plays; visual reroll changes neither |
 | Collection validation | Supply an unknown active ID, two active items, or conflicting derived slot values | Validation rejects the draft or Campaign Play visibly; no repair model or fallback runs |
 | Hybrid reconstruction | Use a reference with editable text and complex decoration | Text and simple elements are native; complex decoration may remain a clearly locked raster layer |
+| Source isolation | Upload a photo of an ad and a screenshot containing app chrome | Oversized input is normalized deterministically; the proposed creative bounds are visible and Maker-confirmable before expensive reconstruction; app or camera context is not published as accidental creative content |
+| Confidence calibration | Analyze a reference with an obvious formula but difficult crop, masks, or decoration | Formula confidence may be high while reconstruction, crop/chrome, or asset confidence remains lower; no overall score hides the weaker axis |
+| Evidence-bound proof | Analyze a social-proof reference containing engagement counts | Counts remain source-backed proof, fixed reference decoration, or an explicitly optional verified field; generation cannot invent them as ordinary campaign-variable copy |
 | Maker drag-and-drop | Move, resize, rotate, group, reorder, lock, hide, duplicate, and delete layers | Saved draft reopens with the exact intended structure |
 | Natural-language skill edit | Ask for a new purchase-motivation rule | A GLM proposal and diff appear; nothing changes until `Apply` |
 | Raw skill edit | Copy, change, and paste the underlying skill | Valid changes save; unknown slots or schema changes are rejected |
