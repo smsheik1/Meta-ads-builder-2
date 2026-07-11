@@ -4,14 +4,14 @@
 - Reference: Codecademy flash-sale Story
 - Model: Gemma 4 31B IT through NVIDIA NIM
 - Contract: Field + List v1.1 with semantic-policy refinements
-- Requests: Exactly one
-- Result: **Inconclusive — NVIDIA HTTP 504 before model output**
+- Requests: One initial request plus one explicitly authorized retry
+- Result: **Blocked — NVIDIA HTTP 504 twice before model output**
 
 ## Verdict
 
-The final fresh semantic holdout did not produce semantic evidence.
+The final fresh semantic holdout did not produce semantic evidence across two identical attempts.
 
-NVIDIA returned HTTP 504 after the guarded request. No model response, partial output, or JSON content exists. Wiggly did not retry, repair, switch models, run SAM, call Replicate, or generate an image.
+NVIDIA returned HTTP 504 after the guarded initial request. The founder explicitly authorized one `Try again`; the identical frozen retry also returned HTTP 504. No model response, partial output, or JSON content exists. Wiggly did not retry automatically, repair, switch models, run SAM, call Replicate, or generate an image.
 
 Do not score Gemma, the prompt, or Field + List v1.1 from this provider incident.
 
@@ -25,12 +25,14 @@ The expected reusable formula is:
 
 > A branded flash-sale creative pairs one oversized discount with a three-benefit checklist and a locked product-experience collage.
 
-The source remains eligible for one explicit retry because:
+The explicit retry was valid because:
 
 - no semantic output was observed;
 - the schema and prompt remain unchanged after the failure;
 - no expectation was edited from model evidence;
-- the request sentinel prevents accidental duplicate submission.
+- a new attempt directory preserved the original failed sentinel.
+
+The source is no longer eligible for another unchanged raw retry. Two consecutive provider failures are enough evidence to stop resubmitting the same workload.
 
 ## OCR
 
@@ -55,15 +57,29 @@ The request sentinel records:
 - automatic retry `false`;
 - fallback model `false`.
 
-This matches the architecture and acceptance plan: provider failure remains visible, prior evidence remains intact, and only an explicit user action may start another attempt.
+The retry sentinel separately records the founder's explicit authorization and its second provider 504. This matches the architecture and acceptance plan: provider failure remains visible, prior evidence remains intact, and automatic retries never run.
+
+## Offline Density Finding
+
+The request files were not unusually large:
+
+- prepared JPEG: 85,133 bytes;
+- OCR summary: 5,109 bytes;
+- v1.1 schema: 8,010 bytes.
+
+The semantic workload was dense. PaddleOCR returned 49 evidence regions, and 37 were tiny regions 14 pixels high or less, mostly nested inside the product-interface collage. Exact evidence accounting would require the model to classify or bind every region in a long constrained response.
+
+The leading hypothesis is structured-output workload behind the public NIM gateway, not upload size. Do not change Gemma's semantic quality score from this inference; no output exists.
 
 ## Decision
 
-1. Mark the holdout inconclusive, not failed semantic quality.
+1. Mark semantic quality inconclusive and the provider path blocked for this raw dense workload.
 2. Do not change the schema or prompt from a provider 504.
 3. Preserve the frozen reference and expectations.
-4. Require an explicit `Try again` before submitting the same request.
-5. Do not run SAM until a valid semantic response passes the gate.
+4. Do not submit a third unchanged retry.
+5. Before another provider validation, deterministically compact dense nested OCR that belongs inside a locked raster, while retaining the original child evidence mapping for audit.
+6. Alternatively, test the same model on a deployment without the public gateway timeout; do not introduce a fallback model.
+7. Do not run SAM until a valid semantic response passes the gate.
 
 ## Evidence
 
@@ -76,7 +92,8 @@ Key files:
 - `holdout-manifest.json`
 - `ocr-output/*`
 - `gemma-output/codecademy_flash_sale_story/REQUEST_SENTINEL.json`
+- `gemma-output/codecademy_flash_sale_story-retry-1/REQUEST_SENTINEL.json`
 - `holdout-assessment.json`
 - `holdout-result-board.png`
 
-There is intentionally no `raw-response.json` or `semantic-analysis.json`.
+There is intentionally no `raw-response.json` or `semantic-analysis.json` for either attempt.

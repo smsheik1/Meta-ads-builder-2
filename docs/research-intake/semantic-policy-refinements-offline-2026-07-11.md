@@ -93,4 +93,4 @@ Key files:
 
 ## Follow-Up
 
-The next [fresh semantic holdout](./semantic-final-holdout-provider-504-2026-07-11.md) was inconclusive because NVIDIA returned HTTP 504 before model output. No prompt or schema conclusion was drawn, and only an explicit retry may reuse the frozen reference.
+The next [fresh semantic holdout](./semantic-final-holdout-provider-504-2026-07-11.md) was blocked because NVIDIA returned HTTP 504 before model output on both the initial request and one explicitly authorized identical retry. No prompt or schema conclusion was drawn; unchanged retries stopped after the second failure.
