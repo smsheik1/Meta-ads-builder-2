@@ -108,33 +108,36 @@ Every layer has:
 - Visibility and lock state
 - Style
 - Optional semantic role
-- Optional Semantic Collection presentation binding
+- Optional List presentation binding
 
-### 3.5 Semantic Slot
+### 3.5 Field
 
 A variable bound to one or more layer properties. It declares:
 
 - Meaning
 - Value type
 - Required or optional status
+- Content policy: `fixed_reference`, `brand_bound`, `campaign_variable`, or `evidence_bound`
 - Constraints
 - Fitting policy
 - Optional Reroll Group membership
 
-Examples include `brand_name`, `highlighted_benefit`, `active_partner`, `supporting_partner_1`, `relationship_emoji`, `product_image`, and `cta`.
+Examples include `brand_name`, `highlighted_benefit`, `relationship_emoji`, `product_image`, `quote`, `proof_count`, and `cta`.
 
-A Semantic Slot may cite multiple OCR, mask, or asset evidence IDs when one logical value spans several source regions. A wrapped quote, a name plus handle, or a three-line claim remains one slot or one coherent Reroll Group; repeated source fragments do not make it a collection.
+A Field may cite multiple OCR, mask, or asset evidence IDs when one logical value spans several source regions. A wrapped quote remains one Field; a fixed three-line claim remains three Fields in one coherent Reroll Group. Repeated source fragments do not make a List.
 
-### 3.6 Semantic Collection and Display State
+An `evidence_bound` Field is proof, not free copy. Ratings, engagement counts, revenue, testimonials, and similar values require Brand Brief evidence or an explicit Player answer; otherwise the Format's declared fallback is to hide the optional Field or ask a Required Question. GLM cannot invent the value.
 
-A Semantic Collection is a finite ordered set of interchangeable content items that share one meaning. It prevents Wiggly from confusing membership with the role an item happens to play in the current render.
+### 3.6 List and Display State
 
-Collections exist only when the logical items may be selected, reordered, replaced, truncated, or assigned distinct display roles. Multi-line text, repeated OCR sightings of the same value, metadata clusters, and a fixed ordered sentence sequence are not collections.
+A List is a finite ordered set of interchangeable content items that share one meaning. It prevents Wiggly from confusing membership with the role an item happens to play in the current render.
+
+Lists exist only when the logical items may be selected, reordered, replaced, truncated, or assigned distinct display roles. Multi-line text, repeated OCR sightings of the same value, metadata clusters, and a fixed ordered sentence sequence are not lists.
 
 It declares:
 
-- Stable collection ID and meaning
-- Item value type plus minimum and maximum count
+- Stable list ID and meaning
+- Declared item-field schema plus minimum and maximum count
 - Stable typed item records inside each Campaign Play
 - Whether zero or one active item is required
 - One optional `active` presentation slot
@@ -142,17 +145,17 @@ It declares:
 - Assignment rules for ordering, truncation, empty slots, and duplication
 - Optional Reroll Group membership
 
-A Campaign Play supplies the collection items and `activeItemId`. The resolver binds the active item's value to the fixed active presentation slot and binds the remaining values to fixed supporting presentation slots. It reassigns content; it does not move layers, mutate geometry, or create a new layer tree.
+A Campaign Play supplies the list items and `activeItemId`. The resolver binds the active item's value to the fixed active presentation slot and binds the remaining values to fixed supporting presentation slots. It reassigns content; it does not move layers, mutate geometry, or create a new layer tree.
 
-One item record may contain several declared fields and cite several source evidence IDs. For example, a listicle item can contain `number`, `label`, and `imageAssetId` while still counting as one logical item. The Maker schema defines the allowed fields; the model cannot flatten those fields into extra items or invent new fields at generation time.
+One item record references several declared Fields or assets. For example, a listicle item can contain `number`, `label`, and `imageAssetId` while still counting as one logical item. Its Fields retain the source evidence IDs. The Maker schema defines the allowed item fields; the model cannot flatten those fields into extra items or invent new fields at generation time.
 
 For the Codex reference:
 
 ```text
-integration_collection.items
+integration_list.items
   = GitHub, Sheets, Asana, Docs, Slack, Gmail, Slides
 
-integration_collection.activeItemId
+integration_list.activeItemId
   = Slack
 
 active presentation slot
@@ -162,23 +165,23 @@ supporting presentation slots
   = supporting_partner_1 ... supporting_partner_6
 ```
 
-`Slack` is therefore both a member of the integration collection and the currently active partner. Those are not competing labels. Another Campaign Play may select `GitHub` as active without changing the template structure.
+`Slack` is therefore both a member of the integration list and the currently active partner. Those are not competing labels. Another Campaign Play may select `GitHub` as active without changing the template structure.
 
 The MVP supports only three display roles: `active`, `supporting`, and `hidden`. The Layer Template and Visual Policy own their appearance. A model never invents display-role names or style objects.
 
-Collection validation rejects:
+List validation rejects:
 
-- An `activeItemId` not present in the collection
+- An `activeItemId` not present in the list
 - More than one active item
 - Duplicate display assignment unless the Maker explicitly allows duplication
 - Unknown presentation slots
 - Too few or too many items
 - An active item repeated in supporting slots
-- A model response that supplies both authoritative collection values and conflicting derived slot values
+- A model response that supplies both authoritative list values and conflicting derived slot values
 
 ### 3.7 Reroll Group
 
-A set of slots and Semantic Collections that must change coherently. A brand name, integration collection, relationship symbol, and CTA may belong to one group so generation and later Player overrides preserve their shared idea. Collection membership, active selection, and supporting assignments are one semantic snapshot when the collection is locked.
+A set of Fields and Lists that must change coherently. A brand name, integration List, relationship symbol, and CTA may belong to one group so generation and later Player overrides preserve their shared idea. List membership, active selection, and supporting assignments are one semantic snapshot when the List is locked.
 
 ### 3.8 Format Skill
 
@@ -277,20 +280,20 @@ The Maker defines what a Format requires. Wiggly asks only when the Brand Brief 
 
 The exact GLM output unit for one of eight stable variant positions:
 
-- `slotValues`: ordinary values keyed only to declared non-collection slot IDs
-- `collectionValues`: item records and optional `activeItemId` keyed only to declared collection IDs
+- `fieldValues`: ordinary values keyed only to declared Field IDs
+- `listValues`: item records and optional `activeItemId` keyed only to declared list IDs
 - `placementCopy`: primary text, headline, optional description, and CTA
 - `strategy`: the structured campaign object
 - `semanticVisualIntent`: treatment intent constrained by the Visual Policy
 
-A slot value may be:
+A Field value may be:
 
 - Text
 - An allowed enum
 - `{ kind: "asset", assetId }`
 - `{ kind: "pendingAiImage", requestSpec }`
 
-A scalar collection item uses the same value union and adds a stable item ID. A typed collection item adds a schema-declared record of slot-compatible fields. Presentation-slot values are derived by the resolver and are never duplicated in model output.
+A scalar List item uses the same value union and adds a stable item ID. A typed List item adds a schema-declared record of Field-compatible values. Presentation-slot values are derived by the resolver and are never duplicated in model output.
 
 Arbitrary URLs and undeclared assets are rejected. `assetId` must already exist in the Ad Project's durable candidate registry. `pendingAiImage` is inert and cannot invoke a provider.
 
@@ -342,7 +345,7 @@ One stable variant position inside an Ad Project. It owns:
 - Durable asset bindings
 - Property overrides
 - Group-level content locks
-- Collection snapshots and active-item locks
+- List snapshots and active-item locks
 - Structural instance overrides
 
 Player changes never alter the Format Version or the other seven instances.
@@ -387,9 +390,9 @@ Each axis contains evidence and visible uncertainties. A high formula score neve
 
 Before OCR or semantic analysis, deterministic intake normalizes oversized images. When a photo or screenshot contains material outside the intended creative, the Maker sees the proposed creative bounds and confirms or adjusts the crop. Wiggly does not add a separate model call merely to guess the crop.
 
-For each proposed Semantic Collection, analysis evidence contains:
+For each proposed List, analysis evidence contains:
 
-- Collection ID, meaning, and overall confidence
+- List ID, meaning, and overall confidence
 - Item IDs linked to OCR or SAM evidence IDs, with membership confidence
 - Optional `activeItemId`, active-state evidence, and confidence
 - Proposed active and supporting presentation-slot bindings
@@ -397,19 +400,19 @@ For each proposed Semantic Collection, analysis evidence contains:
 - Asset replacement bindings such as Player brand logo, fixed reference asset, or Maker-approved variable symbol
 - Uncertainties and only genuinely blocking Maker questions
 
-For every ordinary Semantic Slot or typed collection field, analysis records all contributing OCR, mask, and asset evidence IDs. The normalizer must preserve logical grouping: source line count and OCR region count never determine collection item count.
+For every ordinary Field or typed list field, analysis records all contributing OCR, mask, and asset evidence IDs. The normalizer must preserve logical grouping: source line count and OCR region count never determine list item count.
 
-The model proposes this evidence; the Wiggly normalizer validates it against declared layers and creates the authoritative draft. Collection membership and display role are scored separately in benchmarks and remain separately editable by the Maker.
+The model proposes this evidence; the Wiggly normalizer validates it against declared layers and creates the authoritative draft. List membership and display role are scored separately in benchmarks and remain separately editable by the Maker.
 
-These content policies are not Visual Policy. Visual reroll remains style-only and never changes collection items or `activeItemId`. A reference may have a fixed source item set while its reusable Format requires variable Player-facing item content; analysis must state both scopes rather than collapsing them into one `fixed` label.
+These content policies are not Visual Policy. Visual reroll remains style-only and never changes list items or `activeItemId`. A reference may have a fixed source item set while its reusable Format requires variable Player-facing item content; analysis must state both scopes rather than collapsing them into one `fixed` label.
 
 Hybrid reconstruction rules:
 
 - Text, images, logos, emoji, simple shapes, and groups become native layers when confidence is sufficient.
-- Wrapped text and other multi-region values normalize into one logical slot or group with multiple evidence links.
-- Collection candidates normalize into logical typed items rather than one item per OCR fragment.
-- Analysis records collection membership separately from current display role and active state.
-- The Maker can correct the collection, active item, supporting order, and presentation-slot bindings before publication.
+- Wrapped text and other multi-region values normalize into one logical Field with multiple evidence links.
+- List candidates normalize into logical typed items rather than one item per OCR fragment.
+- Analysis records list membership separately from current display role and active state.
+- The Maker can correct the list, active item, supporting order, and presentation-slot bindings before publication.
 - Complex decoration may remain locked raster.
 - Makers can replace, unlock, redraw, relabel, regroup, or change fixed/variable behavior.
 - Every text layer binds to a Wiggly-bundled font, durably stored Maker upload, or approved substitute.
@@ -417,8 +420,8 @@ Hybrid reconstruction rules:
 
 Publication blockers include:
 
-- Missing required slots or placeholders
-- Invalid collection membership, active selection, or presentation binding
+- Missing required Fields or placeholders
+- Invalid list membership, active selection, or presentation binding
 - Invalid asset bindings
 - Empty required text
 - Text overflow or unapproved clipping
@@ -446,9 +449,9 @@ Before generation:
 After generation:
 
 1. Validate the eight Campaign Plays atomically.
-2. Reject unknown slots, collections, item IDs, asset IDs, and unsupported claims.
-3. Validate collection membership and active selections before deriving presentation slots.
-4. Resolve deterministic collection assignment, fitting, and placeholder scenes.
+2. Reject unknown Fields, Lists, item IDs, asset IDs, and unsupported claims.
+3. Validate list membership and active selections before deriving presentation slots.
+4. Resolve deterministic list assignment, fitting, and placeholder scenes.
 5. Make the new batch active only if the entire content batch is valid.
 6. Keep required manual AI slots visibly `assetPending`.
 
@@ -469,7 +472,7 @@ Visual reroll:
 - Affects only the currently viewed instance
 - Changes only policy-approved style properties
 - Preserves content, geometry, and component structure
-- Preserves collection membership, active item, and display-role assignment
+- Preserves list membership, active item, and display-role assignment
 - Is deterministic and model-free
 - Uses campaign intent so the treatment is appropriate, not merely different
 
@@ -485,11 +488,11 @@ Visual reroll skips explicitly overridden properties.
 
 Content coherence operates at Reroll Group level:
 
-- Editing any content member locks a snapshot of the whole group's current `slotValues` and `collectionValues`.
-- Editing a rendered collection item or changing its active selection snapshots the whole collection, including ordered items and `activeItemId`.
+- Editing any content member locks a snapshot of the whole group's current `fieldValues` and `listValues`.
+- Editing a rendered list item or changing its active selection snapshots the whole list, including ordered items and `activeItemId`.
 - Compatible new batches update only unlocked groups.
 - Resetting the group returns control to the active Campaign Play.
-- An ungrouped content slot locks independently.
+- An ungrouped Field locks independently.
 
 Ad Projects stay pinned to their original Format Version; no migration is guessed if a later version changes slots.
 
@@ -501,7 +504,7 @@ Generation never changes layer structure. Explicit Player actions may:
 - Delete a layer, stored as a tombstone for its stable ID
 - Duplicate a layer or subtree, creating new instance-only IDs
 
-A duplicate snapshots resolved content and style and has no Semantic Slot or Visual Policy binding. Later rerolls do not silently change it.
+A duplicate snapshots resolved content and style and has no Field or Visual Policy binding. Later rerolls do not silently change it.
 
 ## 7. Assets, Fonts, and AI Images
 
@@ -549,8 +552,8 @@ Expected events include:
 - `referenceUploaded`
 - `formatDraftAnalyzed`
 - `layerRoleChanged`
-- `semanticCollectionChanged`
-- `collectionActiveItemChanged`
+- `semanticListChanged`
+- `listActiveItemChanged`
 - `rerollGroupChanged`
 - `formatTestStarted`
 - `formatPublished`
@@ -620,7 +623,7 @@ LayerD when pixel separation is needed
   -> Wiggly normalization and Maker confirmation
 ```
 
-These are complementary stage owners, not fallbacks for one another. Each stage emits evidence and confidence; none writes `StaticAdScene` directly. A failed required stage stops visibly without switching models. Production selection remains pending the 8-to-10-reference corpus using the revised collection-aware contract.
+These are complementary stage owners, not fallbacks for one another. Each stage emits evidence and confidence; none writes `StaticAdScene` directly. A failed required stage stops visibly without switching models. Production selection remains pending the 8-to-10-reference corpus using the revised list-aware contract.
 
 ### Image generation
 
@@ -664,6 +667,6 @@ The architecture plan must benchmark current open-source and hosted options for:
 8. Model quality, latency, memory, licensing, and commercial-use constraints
 9. Minimal internal Maker authorization without a general account product
 
-The first Codex-reference smoke provisionally selected PaddleOCR, Gemma 4 31B IT, and SAM 3 for their separate evidence roles, with LayerD remaining conditional. The saved-reference corpus must test collection membership, active state, presentation binding, deterministic reassignment, and cleanup burden before production selection. Reuse proven components only when they reduce development time without violating the single-renderer contract.
+The first Codex-reference smoke provisionally selected PaddleOCR, Gemma 4 31B IT, and SAM 3 for their separate evidence roles, with LayerD remaining conditional. The saved-reference corpus must test list membership, active state, presentation binding, deterministic reassignment, and cleanup burden before production selection. Reuse proven components only when they reduce development time without violating the single-renderer contract.
 
 Implementation must proceed through fresh scoped branches, reversible phases, clean commits, required tests, and pushes. No product-code work begins until the benchmark, revised architecture, and phased plan receive founder approval.
