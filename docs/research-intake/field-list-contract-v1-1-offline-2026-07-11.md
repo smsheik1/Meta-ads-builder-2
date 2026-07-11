@@ -114,3 +114,7 @@ Key files:
 - `field-list-analysis-v1.1.schema.json`
 - `run_gemma_corpus_item.py`
 - `test_contract_v2.py`
+
+## Follow-Up
+
+The subsequent [two-image fresh holdout](./static-reference-v1-1-holdout-2-smoke-2026-07-11.md) passed strict JSON, Draft-07 v1.1, evidence ownership, and local semantic invariants on both references. Final semantic quality remained partial because of an occluded-card merge and overconfident hybrid-reconstruction decisions; no new List representation is warranted.
