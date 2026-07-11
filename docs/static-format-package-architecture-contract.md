@@ -438,6 +438,8 @@ MVP Maker publishing is protected by a minimal server-enforced internal gate. Ge
 
 GLM 5.2 through NVIDIA NIM produces exactly eight Campaign Plays in a Wiggly-defined structured response. Skill prose cannot redefine the schema.
 
+Every Gemma semantic-analysis request and GLM Campaign-Play request uses a versioned provider-native JSON Schema through NVIDIA NIM `guided_json`; asking for JSON in prompt prose is not schema enforcement. Local Zod validation still runs after decoding. Malformed, incomplete, or schema-invalid output stops visibly without a parser heuristic, repair model, automatic retry, or fallback.
+
 Before generation:
 
 1. The Player sees and confirms the selected product.
@@ -456,6 +458,8 @@ After generation:
 6. Keep required manual AI slots visibly `assetPending`.
 
 There is no speculative repair agent in the MVP. Deterministic validation rejects invalid output visibly. Provider or validation failure preserves the last usable batch.
+
+A provider timeout or 5xx response becomes a visible failed-attempt state. A visible `Try again` action may create a new explicit attempt; Wiggly never retries automatically or switches models behind the user's back.
 
 ## 6. Rerolls and Overrides
 

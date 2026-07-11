@@ -80,7 +80,7 @@ Wiggly analyzes the image and returns a complete draft before asking the Maker t
 - Campaign, visual, asset, fitting, and validation policies
 - Separate formula, reconstruction, crop/chrome, and asset confidence plus automatic quality checks
 
-Analysis may take three to five minutes. Quality matters more than throughput for the MVP.
+Analysis may take three to five minutes. Quality matters more than throughput for the MVP, but the wait is never a frozen screen. The Maker sees truthful stages such as reading text, understanding the formula, isolating assets, and building the draft. Provider or validation failure becomes a visible stopped state with an explicit `Try again`; Wiggly never retries or switches models automatically.
 
 The Maker can correct every decision through a visual canvas: select, drag, resize, rotate, reorder, group, lock, hide, duplicate, delete, edit text and images, change typography and colors, rename roles and slots, define what rerolls, set input requirements, and preview the Format on a test brand.
 
