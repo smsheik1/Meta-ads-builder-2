@@ -97,6 +97,8 @@ This separates two conclusions:
 
 The public Gemma endpoint is now blocked for this validation path. Do not keep tuning the prompt, schema, or compaction thresholds from a failure that produced no model output.
 
+A subsequent controlled Mistral run completed the same compacted workload through the same public gateway in about 60 seconds. That isolates the timeout to Gemma's model/backend path rather than a universal gateway or request-size failure. Mistral still failed local semantic validation and is not a fallback candidate from this result.
+
 Provider evidence:
 
 - `/Users/shaz/.graphify/benchmarks/static-reference-semantic-final-holdout-2026-07-11/gemma-output/codecademy_flash_sale_story-compacted-1/REQUEST_SENTINEL.json`
