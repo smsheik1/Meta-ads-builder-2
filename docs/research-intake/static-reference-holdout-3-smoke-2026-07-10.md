@@ -47,9 +47,10 @@ The valid Story response correctly grouped the seven OCR fragments of the primar
 
 ## Root Cause
 
-The benchmark runner used a JSON-shaped prompt plus local validation, not an actual provider-enforced JSON Schema. That is insufficient. NVIDIA's official structured-generation documentation recommends `guided_json` for reliability and downstream schema conformance:
+The benchmark runner used a JSON-shaped prompt plus local validation, not an actual provider-enforced JSON Schema. That is insufficient. A later capability probe established that this Gemma VLM variant requires OpenAI-style `response_format.json_schema`; a top-level `guided_json` property is silently ignored:
 
-- [NVIDIA NIM structured generation](https://docs.nvidia.com/nim/large-language-models/1.15.0/structured-generation.html)
+- [NVIDIA NIM structured-output capability probe](./nim-structured-output-capability-probe-2026-07-10.md)
+- [NVIDIA VLM container variants](https://docs.nvidia.com/nim/vision-language-models/1.7.0/nim-container-variants.html#structured-generation-guided-decoding)
 
 The malformed response is therefore partly a benchmark-integration defect, not proof that Field and List are wrong. The HTTP 504 is a real provider failure and must remain visible under the no-fallback policy.
 
@@ -57,13 +58,13 @@ The malformed response is therefore partly a benchmark-integration defect, not p
 
 1. Keep Field, List, and Reroll Group as the semantic concepts.
 2. Do not promote the Gemma semantic pipeline to production selection.
-3. Replace prompt-only JSON with a versioned provider-native `guided_json` schema, followed by local runtime validation.
+3. Replace prompt-only JSON with a versioned provider-native schema through the model/backend's pinned transport, followed by local runtime validation.
 4. Reject invalid output without a repair model or silent parser heuristic.
 5. Keep provider 504 visible; any retry must be an explicit new user action, never an automatic fallback.
 6. Exclude platform-supplied Story link stickers by default; the Maker may intentionally recreate a native CTA Field and shape.
 7. Calibrate reconstruction and asset confidence from actual OCR, crop, SAM, and normalization evidence rather than the model's self-score.
 8. Do not retry these three references or relabel them as untouched holdouts after the pipeline changes.
-9. Run a small synthetic `guided_json` capability probe, then use three new untouched references for the next holdout gate.
+9. Run a small synthetic schema-enforcement capability probe, then use three new untouched references for the next holdout gate. The capability probe subsequently passed with `response_format.json_schema`.
 10. Do not spend SAM requests until the semantic gate passes.
 
 ## Evidence

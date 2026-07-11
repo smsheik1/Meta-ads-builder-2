@@ -438,7 +438,7 @@ MVP Maker publishing is protected by a minimal server-enforced internal gate. Ge
 
 GLM 5.2 through NVIDIA NIM produces exactly eight Campaign Plays in a Wiggly-defined structured response. Skill prose cannot redefine the schema.
 
-Every Gemma semantic-analysis request and GLM Campaign-Play request uses a versioned provider-native JSON Schema through NVIDIA NIM `guided_json`; asking for JSON in prompt prose is not schema enforcement. Local Zod validation still runs after decoding. Malformed, incomplete, or schema-invalid output stops visibly without a parser heuristic, repair model, automatic retry, or fallback.
+Every Gemma semantic-analysis request and GLM Campaign-Play request uses a versioned provider-native JSON Schema through the transport pinned to that NVIDIA NIM model/backend profile; asking for JSON in prompt prose is not schema enforcement. Gemma 4 uses `response_format.json_schema`, because its hosted VLM variant does not enforce a top-level `guided_json` property. The GLM profile must pass its own capability probe before product use. Local Zod validation still runs after decoding. Malformed, incomplete, or schema-invalid output stops visibly without a parser heuristic, repair model, automatic retry, or fallback.
 
 Before generation:
 
