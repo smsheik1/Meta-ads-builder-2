@@ -27,8 +27,8 @@ The defining end-to-end test uses the supplied 1:1 OpenAI reference: Codex and S
 
 1. The internal assistant opens the Maker context in `/builder`.
 2. She uploads the reference with no code, database edit, or required written explanation.
-3. Wiggly identifies the logo, emphasized relationship, handshake emoji, surrounding list, CTA, hierarchy, and semantic premise.
-4. Wiggly returns a complete draft containing native and locked-raster layers, roles, slots, Reroll Groups, skill, business compatibility, required inputs, and policies.
+3. Wiggly identifies the logo, handshake emoji, CTA, hierarchy, semantic premise, the seven-item integration collection, and `Slack` as the currently active item rather than a permanently separate category.
+4. Wiggly returns a complete draft containing native and locked-raster layers, roles, slots, Semantic Collections, active/supporting presentation bindings, Reroll Groups, skill, business compatibility, required inputs, and policies.
 5. The assistant makes corrections visually.
 6. Cleanup takes no more than five minutes after analysis for this suitable high-confidence reference.
 7. She reviews the skill and structured policies.
@@ -46,7 +46,7 @@ The defining end-to-end test uses the supplied 1:1 OpenAI reference: Codex and S
 6. Wiggly asks only essential questions the website could not answer reliably.
 7. The Player clicks `Create my ads`.
 8. GLM 5.2 through NVIDIA NIM returns exactly eight valid Campaign Plays.
-9. The eight remain recognizably based on the reference while varying motivations, supporting items, emoji, CTA, strategy, and appropriate visual treatment.
+9. The eight remain recognizably based on the reference while varying motivations, collection content, active selection, emoji, CTA, strategy, and appropriate visual treatment.
 10. Guidance for each ad appears under `How to run this ad`.
 
 ### Interaction and output path
@@ -71,16 +71,19 @@ The Codex scenario proves the workflow, not general reconstruction quality.
 
 Before editability and cleanup become launch claims:
 
-1. Select at least three structurally different holdout references not used to tune the system.
-2. Record reference suitability before seeing results so failures cannot be quietly removed.
-3. Run every holdout through the same `static-package` engine.
-4. Use no reference-specific code or manual database correction.
-5. Review every meaningful variable visual element.
-6. Measure whether its intended properties can be changed independently without redrawing the reference.
-7. Require at least 85% editability coverage for every supported high-confidence holdout.
-8. Treat 95% as the stretch target.
-9. Require median assistant cleanup time of five minutes or less after analysis.
-10. Require all eight ads in every published test batch to be coherent, visually sound, and strategically distinct.
+1. Assemble 8 to 10 structurally different references from the internal assistant's saved ads.
+2. Mark at least three as holdouts not used to tune prompts, thresholds, or normalization.
+3. Record every reference's suitability before seeing results so failures cannot be quietly removed.
+4. Run every reference through the same `static-package` engine and the same finalized collection-aware semantic contract.
+5. Use no reference-specific code or manual database correction.
+6. Review every meaningful variable visual element.
+7. Score collection membership, current active item, supporting presentation order, display-role binding, and reroll behavior separately.
+8. Measure whether intended properties can be changed independently without redrawing the reference.
+9. Require at least 85% editability coverage for every supported high-confidence holdout.
+10. Treat 95% as the stretch target.
+11. Require zero invalid active-item references, duplicate active/supporting assignments, or silent collection item loss in a publishable draft.
+12. Require median assistant cleanup time of five minutes or less after analysis.
+13. Require all eight ads in every published test batch to be coherent, visually sound, and strategically distinct.
 
 The system must explicitly distinguish:
 
@@ -94,7 +97,10 @@ Unsupported inputs stop visibly and do not receive a fake near-finished claim.
 
 | Capability | Required test | Pass condition |
 | --- | --- | --- |
-| Complete draft | Upload a suitable reference without notes | Wiggly returns layers, formula, skill, slots, groups, policies, compatibility, questions, and confidence before requiring configuration |
+| Complete draft | Upload a suitable reference without notes | Wiggly returns layers, formula, skill, slots, collections, display bindings, groups, policies, compatibility, questions, and confidence before requiring configuration |
+| Semantic collection | Use a reference where one item is visually emphasized inside a larger list | Wiggly records one collection, the complete item set, the current active item, and fixed active/supporting presentation slots without treating membership and display role as mutually exclusive |
+| Active-item reassignment | Select a different collection item in Maker preview | The selected value moves into the fixed active presentation slot, the previous active value returns to support, no item duplicates or disappears, and geometry remains unchanged |
+| Collection validation | Supply an unknown active ID, two active items, or conflicting derived slot values | Validation rejects the draft or Campaign Play visibly; no repair model or fallback runs |
 | Hybrid reconstruction | Use a reference with editable text and complex decoration | Text and simple elements are native; complex decoration may remain a clearly locked raster layer |
 | Maker drag-and-drop | Move, resize, rotate, group, reorder, lock, hide, duplicate, and delete layers | Saved draft reopens with the exact intended structure |
 | Natural-language skill edit | Ask for a new purchase-motivation rule | A GLM proposal and diff appear; nothing changes until `Apply` |
@@ -112,6 +118,7 @@ Unsupported inputs stop visibly and do not receive a fake near-finished claim.
 | Campaign-appropriate style | Compare holiday, proof, and retargeting plays | Treatments fit intent and remain within the Maker policy |
 | Property overrides | Change position, size, font, and color, then reroll | Explicit overrides persist until individually reset |
 | Coherent content overrides | Edit one member of a Reroll Group, then generate a new batch | The whole group snapshot persists until group reset |
+| Collection content override | Edit the active or a supporting collection item, then generate a new batch | Ordered items, active selection, and the containing Reroll Group snapshot persist until reset |
 | Structural delete | Delete a bound layer, then reroll and reopen | Tombstone persists and the layer does not reappear |
 | Structural duplicate | Duplicate a bound layer, then reroll | Duplicate remains an instance-only detached snapshot |
 | Manual AI image | Use a Format with a required AI slot | Slot remains inert until a visible explicit click |
@@ -171,10 +178,11 @@ Pass only if every surface uses `AdRenderSurface` and produces matching ad pixel
 
 ### Vision and reconstruction
 
-- Expose the selected provider and model in test evidence.
+- Record the provisional stage owners in test evidence: PaddleOCR for text, Gemma 4 31B IT through NVIDIA NIM for semantics, SAM 3 for non-text masks, and LayerD only when pixel separation is needed.
+- Confirm stage outputs normalize through Wiggly rather than writing scenes directly.
 - Report confidence.
 - Confirm unsupported inputs stop visibly.
-- Confirm no silent provider switch.
+- Confirm no silent provider switch or stage substitution.
 
 ### AI images
 

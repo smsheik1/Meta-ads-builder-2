@@ -108,6 +108,7 @@ Every layer has:
 - Visibility and lock state
 - Style
 - Optional semantic role
+- Optional Semantic Collection presentation binding
 
 ### 3.5 Semantic Slot
 
@@ -120,13 +121,60 @@ A variable bound to one or more layer properties. It declares:
 - Fitting policy
 - Optional Reroll Group membership
 
-Examples include `brand_name`, `highlighted_benefit`, `supporting_item_1`, `relationship_emoji`, `product_image`, and `cta`.
+Examples include `brand_name`, `highlighted_benefit`, `active_partner`, `supporting_partner_1`, `relationship_emoji`, `product_image`, and `cta`.
 
-### 3.6 Reroll Group
+### 3.6 Semantic Collection and Display State
 
-A set of slots that must change coherently. A headline, supporting list, emoji, and CTA may belong to one group so generation and later Player overrides preserve their shared idea.
+A Semantic Collection is a finite ordered set of interchangeable content items that share one meaning. It prevents Wiggly from confusing membership with the role an item happens to play in the current render.
 
-### 3.7 Format Skill
+It declares:
+
+- Stable collection ID and meaning
+- Item value type plus minimum and maximum count
+- Stable item IDs inside each Campaign Play
+- Whether zero or one active item is required
+- One optional `active` presentation slot
+- Ordered `supporting` presentation slots
+- Assignment rules for ordering, truncation, empty slots, and duplication
+- Optional Reroll Group membership
+
+A Campaign Play supplies the collection items and `activeItemId`. The resolver binds the active item's value to the fixed active presentation slot and binds the remaining values to fixed supporting presentation slots. It reassigns content; it does not move layers, mutate geometry, or create a new layer tree.
+
+For the Codex reference:
+
+```text
+integration_collection.items
+  = GitHub, Sheets, Asana, Docs, Slack, Gmail, Slides
+
+integration_collection.activeItemId
+  = Slack
+
+active presentation slot
+  = active_partner
+
+supporting presentation slots
+  = supporting_partner_1 ... supporting_partner_6
+```
+
+`Slack` is therefore both a member of the integration collection and the currently active partner. Those are not competing labels. Another Campaign Play may select `GitHub` as active without changing the template structure.
+
+The MVP supports only three display roles: `active`, `supporting`, and `hidden`. The Layer Template and Visual Policy own their appearance. A model never invents display-role names or style objects.
+
+Collection validation rejects:
+
+- An `activeItemId` not present in the collection
+- More than one active item
+- Duplicate display assignment unless the Maker explicitly allows duplication
+- Unknown presentation slots
+- Too few or too many items
+- An active item repeated in supporting slots
+- A model response that supplies both authoritative collection values and conflicting derived slot values
+
+### 3.7 Reroll Group
+
+A set of slots and Semantic Collections that must change coherently. A brand name, integration collection, relationship symbol, and CTA may belong to one group so generation and later Player overrides preserve their shared idea. Collection membership, active selection, and supporting assignments are one semantic snapshot when the collection is locked.
+
+### 3.8 Format Skill
 
 One copy/pasteable instruction document per Format. Its required sections are:
 
@@ -153,7 +201,7 @@ Natural-language `Propose changes` uses GLM 5.2 through NVIDIA NIM only after an
 
 Each Creative Batch records the skill hash, system-prompt version, exact model ID, and schema version used.
 
-### 3.8 Campaign Strategy Policy
+### 3.9 Campaign Strategy Policy
 
 Structured Maker-approved bounds for:
 
@@ -166,7 +214,7 @@ Structured Maker-approved bounds for:
 
 GLM chooses the strongest evidence-grounded mix of eight inside this policy. The same structured strategy object powers internal generation and the plain-language `How to run this ad` view; the system must not maintain competing campaign taxonomies.
 
-### 3.9 Visual Policy
+### 3.10 Visual Policy
 
 A bounded deterministic policy containing:
 
@@ -178,7 +226,7 @@ A bounded deterministic policy containing:
 
 The resolver selects valid combinations from the policy, a stored seed, and the Campaign Play's semantic visual intent. Saved ads store resolved visual values so algorithm changes cannot alter existing pixels.
 
-### 3.10 Validation Policy
+### 3.11 Validation Policy
 
 A small publication contract containing:
 
@@ -190,7 +238,7 @@ A small publication contract containing:
 
 A claimed business type is mechanically invalid if it lacks a strategy-policy mapping, lacks required-input coverage, or has not passed its required eight-ad test brand. Semantic quality still requires Maker review.
 
-### 3.11 Asset Slot Policy
+### 3.12 Asset Slot Policy
 
 Every image-like slot declares allowed sources and priority:
 
@@ -202,13 +250,13 @@ Every image-like slot declares allowed sources and priority:
 
 A missing required asset causes a visible Player question or action. The system never silently substitutes an unapproved source or starts image generation.
 
-### 3.12 Brand Brief
+### 3.13 Brand Brief
 
 An immutable project snapshot of website-derived brand identity, products, offer, audience, buyer moments, proof, visual assets, voice, and grounded language.
 
 The MVP uses website evidence only. Audience ideas, motivations, objections, and occasions may be inferred only as labeled hypotheses with evidence and confidence.
 
-### 3.13 Required Question
+### 3.14 Required Question
 
 The four MVP answer types are:
 
@@ -219,11 +267,12 @@ The four MVP answer types are:
 
 The Maker defines what a Format requires. Wiggly asks only when the Brand Brief cannot supply a reliable answer.
 
-### 3.14 Campaign Play
+### 3.15 Campaign Play
 
 The exact GLM output unit for one of eight stable variant positions:
 
-- `slotValues`: values keyed only to declared slot IDs
+- `slotValues`: ordinary values keyed only to declared non-collection slot IDs
+- `collectionValues`: item records and optional `activeItemId` keyed only to declared collection IDs
 - `placementCopy`: primary text, headline, optional description, and CTA
 - `strategy`: the structured campaign object
 - `semanticVisualIntent`: treatment intent constrained by the Visual Policy
@@ -235,11 +284,13 @@ A slot value may be:
 - `{ kind: "asset", assetId }`
 - `{ kind: "pendingAiImage", requestSpec }`
 
+A collection item uses the same value union and adds a stable item ID. Presentation-slot values are derived by the resolver and are never duplicated in model output.
+
 Arbitrary URLs and undeclared assets are rejected. `assetId` must already exist in the Ad Project's durable candidate registry. `pendingAiImage` is inert and cannot invoke a provider.
 
 Campaign Plays become immutable after validation. GLM never returns rendered pixels or an arbitrary layer tree.
 
-### 3.15 Creative Batch
+### 3.16 Creative Batch
 
 An immutable atomic set of exactly eight Campaign Plays. Variant positions have stable IDs within the Ad Project.
 
@@ -247,7 +298,7 @@ A new batch passes schema, slot, evidence, and render-placeholder validation bef
 
 The MVP exposes only the active batch. Prior batches may be retained internally for integrity and rollback, but visible history is deferred.
 
-### 3.16 Ad Project
+### 3.17 Ad Project
 
 The anonymous-session-owned Player aggregate. It is created after product selection and essential answers but before GLM generation.
 
@@ -276,7 +327,7 @@ Readiness states belong to the project's envelope around an immutable batch:
 
 An `assetPending` batch may be active so the Player can use completed parts. Export and share remain blocked for affected outputs until required failures are resolved.
 
-### 3.17 Ad Instance
+### 3.18 Ad Instance
 
 One stable variant position inside an Ad Project. It owns:
 
@@ -285,11 +336,12 @@ One stable variant position inside an Ad Project. It owns:
 - Durable asset bindings
 - Property overrides
 - Group-level content locks
+- Collection snapshots and active-item locks
 - Structural instance overrides
 
 Player changes never alter the Format Version or the other seven instances.
 
-### 3.18 StaticAdScene
+### 3.19 StaticAdScene
 
 The separately versioned, complete, JSON-safe scene for `static-package`. It carries:
 
@@ -319,9 +371,22 @@ Analysis returns one explicit outcome:
 - **Supported, low confidence:** best-effort complete draft with visible uncertainty
 - **Unsupported:** visible stop with an explanation and no editability claim
 
+For each proposed Semantic Collection, analysis evidence contains:
+
+- Collection ID, meaning, and overall confidence
+- Item IDs linked to OCR or SAM evidence IDs, with membership confidence
+- Optional `activeItemId`, active-state evidence, and confidence
+- Proposed active and supporting presentation-slot bindings
+- Maker-editable rules for whether items, active selection, and order may reroll
+- Uncertainties and only genuinely blocking Maker questions
+
+The model proposes this evidence; the Wiggly normalizer validates it against declared layers and creates the authoritative draft. Collection membership and display role are scored separately in benchmarks and remain separately editable by the Maker.
+
 Hybrid reconstruction rules:
 
 - Text, images, logos, emoji, simple shapes, and groups become native layers when confidence is sufficient.
+- Analysis records collection membership separately from current display role and active state.
+- The Maker can correct the collection, active item, supporting order, and presentation-slot bindings before publication.
 - Complex decoration may remain locked raster.
 - Makers can replace, unlock, redraw, relabel, regroup, or change fixed/variable behavior.
 - Every text layer binds to a Wiggly-bundled font, durably stored Maker upload, or approved substitute.
@@ -330,6 +395,7 @@ Hybrid reconstruction rules:
 Publication blockers include:
 
 - Missing required slots or placeholders
+- Invalid collection membership, active selection, or presentation binding
 - Invalid asset bindings
 - Empty required text
 - Text overflow or unapproved clipping
@@ -357,10 +423,11 @@ Before generation:
 After generation:
 
 1. Validate the eight Campaign Plays atomically.
-2. Reject unknown slots, asset IDs, and unsupported claims.
-3. Resolve deterministic fitting and placeholder scenes.
-4. Make the new batch active only if the entire content batch is valid.
-5. Keep required manual AI slots visibly `assetPending`.
+2. Reject unknown slots, collections, item IDs, asset IDs, and unsupported claims.
+3. Validate collection membership and active selections before deriving presentation slots.
+4. Resolve deterministic collection assignment, fitting, and placeholder scenes.
+5. Make the new batch active only if the entire content batch is valid.
+6. Keep required manual AI slots visibly `assetPending`.
 
 There is no speculative repair agent in the MVP. Deterministic validation rejects invalid output visibly. Provider or validation failure preserves the last usable batch.
 
@@ -379,6 +446,7 @@ Visual reroll:
 - Affects only the currently viewed instance
 - Changes only policy-approved style properties
 - Preserves content, geometry, and component structure
+- Preserves collection membership, active item, and display-role assignment
 - Is deterministic and model-free
 - Uses campaign intent so the treatment is appropriate, not merely different
 
@@ -394,7 +462,8 @@ Visual reroll skips explicitly overridden properties.
 
 Content coherence operates at Reroll Group level:
 
-- Editing any content member locks a snapshot of the whole group's current `slotValues`.
+- Editing any content member locks a snapshot of the whole group's current `slotValues` and `collectionValues`.
+- Editing a rendered collection item or changing its active selection snapshots the whole collection, including ordered items and `activeItemId`.
 - Compatible new batches update only unlocked groups.
 - Resetting the group returns control to the active Campaign Play.
 - An ungrouped content slot locks independently.
@@ -457,6 +526,8 @@ Expected events include:
 - `referenceUploaded`
 - `formatDraftAnalyzed`
 - `layerRoleChanged`
+- `semanticCollectionChanged`
+- `collectionActiveItemChanged`
 - `rerollGroupChanged`
 - `formatTestStarted`
 - `formatPublished`
@@ -516,7 +587,17 @@ This policy applies to the new static engine only. Existing format providers rem
 
 ### Vision and decomposition
 
-The production stack is intentionally unselected until benchmarking. The chosen path must emit the structured draft, expose confidence, and fail visibly without silent provider switching.
+The provisional benchmark stack is:
+
+```text
+LayerD when pixel separation is needed
+  + PaddleOCR for text and text geometry
+  + Gemma 4 31B IT through NVIDIA NIM for semantic analysis
+  + SAM 3 for non-text candidates and masks
+  -> Wiggly normalization and Maker confirmation
+```
+
+These are complementary stage owners, not fallbacks for one another. Each stage emits evidence and confidence; none writes `StaticAdScene` directly. A failed required stage stops visibly without switching models. Production selection remains pending the 8-to-10-reference corpus using the revised collection-aware contract.
 
 ### Image generation
 
@@ -546,7 +627,7 @@ There is no billing UI in this MVP.
 - No new bespoke static Format should be added while this engine is being built.
 - Style B remains the independent current 3D Breakdown priority.
 
-## 12. Research Required Before Implementation Planning
+## 12. Remaining Research Before Implementation Planning
 
 The architecture plan must benchmark current open-source and hosted options for:
 
@@ -560,6 +641,6 @@ The architecture plan must benchmark current open-source and hosted options for:
 8. Model quality, latency, memory, licensing, and commercial-use constraints
 9. Minimal internal Maker authorization without a general account product
 
-LayerD, Qwen Image Layered, Qwen Layered Control, SAM-family projects, and NVIDIA vision models are candidates, not approved dependencies. Reuse proven components only when they reduce development time without violating the single-renderer contract.
+The first Codex-reference smoke provisionally selected PaddleOCR, Gemma 4 31B IT, and SAM 3 for their separate evidence roles, with LayerD remaining conditional. The saved-reference corpus must test collection membership, active state, presentation binding, deterministic reassignment, and cleanup burden before production selection. Reuse proven components only when they reduce development time without violating the single-renderer contract.
 
 Implementation must proceed through fresh scoped branches, reversible phases, clean commits, required tests, and pushes. No product-code work begins until the benchmark, revised architecture, and phased plan receive founder approval.

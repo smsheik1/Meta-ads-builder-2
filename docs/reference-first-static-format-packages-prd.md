@@ -72,7 +72,7 @@ Wiggly analyzes the image and returns a complete draft before asking the Maker t
 - Locked raster layers for complex decorative regions
 - Layer names and semantic roles
 - Fixed and variable properties
-- Semantic slots and coherent reroll groups
+- Semantic slots, collections, active/supporting display roles, and coherent reroll groups
 - A plain-language explanation of the ad's formula
 - One editable Format skill
 - Supported business types
@@ -127,7 +127,8 @@ A Format is a reusable static-ad recipe, not executable code. At a product level
 - **Layer Template:** one editable visual composition built from text, image, shape, and group primitives.
 - **Semantic Formula:** the premise of the ad and the meaning of its components.
 - **Semantic Slots:** variable content such as brand name, highlighted benefit, supporting item, emoji, product image, proof point, or CTA.
-- **Reroll Groups:** slots that must change together so the ad remains coherent.
+- **Semantic Collections:** finite related items with an optional active item and fixed active/supporting presentation slots.
+- **Reroll Groups:** slots and collections that must change together so the ad remains coherent.
 - **Format Skill:** one copy/pasteable instruction document explaining how to adapt the formula intelligently.
 - **Campaign Strategy Policy:** Maker-approved bounds for audiences, funnel stages, objectives, triggers, motivations, exclusions, and unsupported uses.
 - **Visual Policy:** Maker-approved colors, typography treatments, backgrounds, borders, shadows, and fixed properties.
@@ -137,6 +138,8 @@ A Format is a reusable static-ad recipe, not executable code. At a product level
 - **Required Questions:** short text, single choice, product selection, or asset upload, asked only when the brand brief lacks reliable information.
 
 Each MVP Format Version contains exactly one Layer Template. Alternate layouts are separate Format cards, not visual rerolls.
+
+Collection membership and current display role are separate. In the Codex reference, GitHub, Sheets, Asana, Docs, Slack, Gmail, and Slides belong to one integration collection; `Slack` happens to be the active item in the supplied frame. A different play may make GitHub active by reassigning values to the same fixed presentation slots. It does not create, move, or restyle arbitrary layers.
 
 The application registers the generic static engine once. Publishing another Format adds data, not another renderer or another branch in `/create`.
 
@@ -148,7 +151,7 @@ The eight outputs are not random copy variations. Each must represent a delibera
 
 Each play includes:
 
-- Canvas content for the declared slots
+- Canvas content for declared slots and collections, including any active-item selection
 - Primary text, headline, optional description, and CTA
 - Creative direction
 - Funnel or audience stage
@@ -205,7 +208,7 @@ Every completed batch must contain eight coherent, visually sound, strategically
 
 Player changes in `/builder` become instance overrides. Position, size, font, color, imagery, text, visibility, and structural edits persist across content cycling, visual rerolls, download, share, and compatible new batches until reset.
 
-Content edits preserve Reroll Group coherence. Editing one member locks the current content of the whole group until the Player resets it. Visual rerolls change only properties the Player has not overridden.
+Content edits preserve Reroll Group coherence. Editing one member locks the current content of the whole group until the Player resets it. Editing a collection member or active selection preserves the collection's ordered items and current active item as one snapshot. Visual rerolls change only properties the Player has not overridden and never change which collection item is active.
 
 Generation never changes layer structure. Players may explicitly hide, delete, duplicate, or rearrange layers inside their own ad instance without changing the published Format or the other seven ads.
 
