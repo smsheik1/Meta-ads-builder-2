@@ -187,6 +187,20 @@ export default defineSchema({
     .index("by_sessionId_and_updatedAt", ["sessionId", "updatedAt"])
     .index("by_sessionId_and_designId", ["sessionId", "designId"]),
 
+  formatDrafts: defineTable({
+    draftId: v.string(),
+    draft: v.any(),
+  }).index("by_draftId", ["draftId"]),
+
+  formatVersions: defineTable({
+    versionId: v.string(),
+    draftId: v.string(),
+    version: v.number(),
+    snapshot: v.any(),
+  })
+    .index("by_versionId", ["versionId"])
+    .index("by_draftId_and_version", ["draftId", "version"]),
+
   sharePages: defineTable({
     slug: v.string(),
     sessionId: v.string(),
