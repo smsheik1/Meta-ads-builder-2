@@ -1,4 +1,4 @@
-import type { AdFormatId } from "../scene/types";
+import type { RenderableAdFormatId } from "../scene/types";
 import type { AdFormatModule } from "./types";
 import { memeFormatModule } from "./meme";
 import { jingleFormatModule } from "./jingle";
@@ -10,6 +10,7 @@ import { motionStoryFormatModule } from "./motion-story";
 import { threeDBreakdownFormatModule } from "./three-d-breakdown";
 import { visualizerFormatModule } from "./visualizer";
 import { wereSorryFormatModule } from "./were-sorry";
+import { staticPackageFormatModule } from "./static-package";
 
 export type AnyAdFormatModule = AdFormatModule<string, any>;
 
@@ -26,7 +27,8 @@ export const formatRegistry = createFormatRegistry({
   reviews: reviewsFormatModule,
   "motion-story": motionStoryFormatModule,
   "three-d-breakdown": threeDBreakdownFormatModule,
-} satisfies Record<AdFormatId, AnyAdFormatModule>);
+  "static-package": staticPackageFormatModule,
+} satisfies Record<RenderableAdFormatId, AnyAdFormatModule>);
 
 export const getFormatModuleFromRegistry = <
   TModules extends Record<string, AnyAdFormatModule>,
@@ -40,6 +42,6 @@ export const getFormatModuleFromRegistry = <
   return module;
 };
 
-export const getFormatModule = (format: AdFormatId): AdFormatModule => {
+export const getFormatModule = (format: RenderableAdFormatId): AdFormatModule => {
   return getFormatModuleFromRegistry(formatRegistry, format) as AdFormatModule;
 };

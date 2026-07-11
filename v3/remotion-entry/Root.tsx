@@ -1,6 +1,6 @@
 import { Composition } from "remotion";
 import { brainrotCtaDurationMs } from "../features/formats/brainrot/render";
-import type { AdScene } from "../features/scene/types";
+import type { RenderableAdScene } from "../features/scene/types";
 import { defaultRenderScene } from "./fixture";
 import { RemotionAdScene } from "./RemotionAdScene";
 
@@ -8,14 +8,16 @@ export const adSceneCompositionId = "AdSceneMp4";
 export const adSceneFps = 60;
 export const adSceneDurationInFrames = adSceneFps * 5;
 
-export const getAdSceneDimensions = (scene: AdScene) => (
+export const getAdSceneDimensions = (scene: RenderableAdScene) => (
   scene.format === "three-d-breakdown"
     ? { width: 1080, height: 1920 }
+    : scene.format === "static-package"
+      ? { width: scene.layout.canvas.width, height: scene.layout.canvas.height }
     : { width: 1080, height: 1350 }
 );
 
 export const getAdSceneDurationInFrames = (
-  scene: AdScene,
+  scene: RenderableAdScene,
   fps = adSceneFps,
 ) => {
   const audioDurationSeconds = scene.audio.status === "generated"

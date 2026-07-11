@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { AdFormatId, AdScene, AdSceneBase, AdSceneStyleBase } from "../scene/types";
+import type { AdSceneBase, AdSceneStyleBase, RenderableAdFormatId, RenderableAdScene } from "../scene/types";
 
 export type RenderMode = "preview" | "poster" | "video";
 export type RenderMotionMode = "auto" | "idle" | "audio";
@@ -9,7 +9,7 @@ export type RenderFlashState = {
   roles: RenderFlashRole[];
 };
 
-export type FormatRenderProps<TScene extends AdSceneBase<string, AdSceneStyleBase, { preset: string }> = AdScene> = {
+export type FormatRenderProps<TScene extends AdSceneBase<string, AdSceneStyleBase, { preset: string }> = RenderableAdScene> = {
   scene: TScene;
   mode: RenderMode;
   timeSeconds?: number;
@@ -59,8 +59,8 @@ export type FormatEditorSchema = {
 };
 
 export type AdFormatModule<
-  TFormat extends string = AdFormatId,
-  TScene extends AdSceneBase<string, AdSceneStyleBase, { preset: string }> = AdScene,
+  TFormat extends string = RenderableAdFormatId,
+  TScene extends AdSceneBase<string, AdSceneStyleBase, { preset: string }> = RenderableAdScene,
 > = {
   id: TFormat;
   label: string;

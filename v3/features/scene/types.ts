@@ -3,6 +3,7 @@ import type { BrandAdAngle, BrandSnapshot, ResearchReceipts } from "../research/
 export const AD_SCENE_VERSION = 1 as const;
 
 export type AdFormatId = "visualizer" | "meme" | "were-sorry" | "video-meme" | "jingle" | "text-message" | "brainrot" | "reviews" | "motion-story" | "three-d-breakdown";
+export type RenderableAdFormatId = AdFormatId | "static-package";
 
 export type HeadlineType =
   | "painful_moment"
@@ -506,6 +507,73 @@ export type ThreeDBreakdownAdScene = AdSceneBase<
   }
 >;
 
+export type StaticLayerBinding = "fixed" | "brand" | "campaign" | "proof" | "locked";
+
+export type StaticLayerBase = {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  visible: boolean;
+  locked: boolean;
+  opacity: number;
+  zIndex: number;
+  binding: StaticLayerBinding;
+  semanticRole: string;
+};
+
+export type StaticTextLayer = StaticLayerBase & {
+  type: "text";
+  text: string;
+  color: string;
+  fontFamily: string;
+  fontSize: number;
+  fontWeight: number;
+  lineHeight: number;
+  textAlign: "left" | "center" | "right";
+};
+
+export type StaticImageLayer = StaticLayerBase & {
+  type: "image";
+  src: string;
+  alt: string;
+  objectFit: "contain" | "cover" | "fill";
+  borderRadius: number;
+};
+
+export type StaticShapeLayer = StaticLayerBase & {
+  type: "shape";
+  shape: "rectangle" | "ellipse";
+  fill: string;
+  borderColor: string;
+  borderWidth: number;
+  borderRadius: number;
+};
+
+export type StaticGroupLayer = StaticLayerBase & {
+  type: "group";
+  children: StaticAdLayer[];
+};
+
+export type StaticAdLayer = StaticTextLayer | StaticImageLayer | StaticShapeLayer | StaticGroupLayer;
+
+export type StaticPackageAdScene = AdSceneBase<
+  "static-package",
+  AdSceneStyleBase,
+  {
+    preset: "static-package";
+    canvas: {
+      width: number;
+      height: number;
+      backgroundColor: string;
+    };
+    layers: StaticAdLayer[];
+  }
+>;
+
 export type AdScene =
   | VisualizerAdScene
   | MemeAdScene
@@ -517,3 +585,5 @@ export type AdScene =
   | ReviewsAdScene
   | MotionStoryAdScene
   | ThreeDBreakdownAdScene;
+
+export type RenderableAdScene = AdScene | StaticPackageAdScene;

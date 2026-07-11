@@ -1,11 +1,11 @@
 import type { CSSProperties } from "react";
 import { getFormatModule } from "../formats/registry";
 import type { RenderFlashState, RenderMode, RenderMotionMode } from "../formats/types";
-import type { AdScene } from "../scene/types";
+import type { RenderableAdScene } from "../scene/types";
 import { WIGGLY_FONT_FACE_CSS } from "./fontStack";
 
 export type AdRenderSurfaceProps = {
-  scene: AdScene;
+  scene: RenderableAdScene;
   mode?: RenderMode;
   motionMode?: RenderMotionMode;
   rerollFlash?: RenderFlashState | null;
