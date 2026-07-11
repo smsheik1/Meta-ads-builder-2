@@ -88,4 +88,4 @@ The reproducible corpus runner, OCR overlays, raw NIM responses, normalized outp
 
 `/Users/shaz/.graphify/benchmarks/static-reference-corpus-5-2026-07-10`
 
-The aggregate assessment is `corpus-assessment.json`; the visual board is `corpus-summary-board.png`.
+The aggregate assessment is `corpus-assessment.json`. The primary annotated comparison is `corpus-semantic-overlay-board.png`; orange outlines show evidence Gemma incorrectly promoted into collection items, green shows ordinary creative evidence, and red shows capture chrome to exclude. The text-only scorecard is `corpus-summary-board.png`.
