@@ -6,9 +6,11 @@
 - Input: Existing Wiggly wordmark crop, not a tuned or holdout ad
 - Result: **Pass after correcting the model-specific transport**
 
+> Follow-up: the simple capability probe passed, but a later [two-image schema-enforced holdout](./static-reference-schema-holdout-2-smoke-2026-07-10.md) produced one nested-schema violation. Provider-constrained decoding improves reliability; local validation remains authoritative.
+
 ## Verdict
 
-The versioned Field + List contract can be enforced by the hosted Gemma endpoint, but this model must receive it through OpenAI-style `response_format` with `type: json_schema`.
+The hosted Gemma endpoint can constrain the versioned Field + List contract on a simple probe, but this model must receive it through OpenAI-style `response_format` with `type: json_schema`. A later complex holdout showed that the endpoint may still omit a nested required property, so Wiggly must never assume provider success equals local schema success.
 
 A top-level `guided_json` property is the wrong transport for this Gemma 4 NIM variant. NVIDIA accepted that request but ignored the constraint: the response was Markdown-fenced JSON and contained the forbidden property `capture_capture_chrome_present`. Wiggly's strict parser rejected it. No fence stripping, parser heuristic, repair model, or fallback ran.
 
