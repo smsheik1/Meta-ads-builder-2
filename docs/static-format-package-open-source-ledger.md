@@ -32,6 +32,7 @@ Assessed external research:
 - [Field + List contract v1.1 offline revision](./research-intake/field-list-contract-v1-1-offline-2026-07-11.md)
 - [Field + List v1.1 two-image fresh holdout](./research-intake/static-reference-v1-1-holdout-2-smoke-2026-07-11.md)
 - [Semantic policy refinements offline](./research-intake/semantic-policy-refinements-offline-2026-07-11.md)
+- [Final fresh semantic holdout provider 504](./research-intake/semantic-final-holdout-provider-504-2026-07-11.md)
 
 Only the candidates explicitly promoted below change the stack. The remainder stay rejected or deferred.
 
@@ -143,7 +144,7 @@ Reference image
 
 ### Model decision rule
 
-Gemma 4 31B IT remains the provisional semantic benchmark leader, but the pipeline is not selected. Field + List v1.1 passed both fresh structural gates and recovered both formulas, including exactly five cartoon tasks. The follow-up prompt now preserves occluded cards, asks one existing Maker question for UI-as-formula ambiguity, and defaults complex art to locked raster; nine offline fixtures pass without changing the schema. Use only new frozen references for the next holdout. Only a repeatable formula or semantic-reasoning failure after those changes justifies one challenger comparison; never ship multiple models as silent fallbacks.
+Gemma 4 31B IT remains the provisional semantic benchmark leader, but the pipeline is not selected. Field + List v1.1 passed both prior fresh structural gates, and nine offline policy fixtures pass. The final Codecademy reference is frozen, but its first request ended with NVIDIA HTTP 504 before model output. Draw no prompt or model conclusion from the provider incident; only an explicit retry may reuse that frozen request. Never ship multiple models as silent fallbacks.
 
 ## 6. Secondary and Watchlist Candidates
 
@@ -263,3 +264,4 @@ For each change, record:
 | 2026-07-11 | Replace the nullable List binding with contract v1.1 and pass the offline regression gate | `field_key + field_id + asset_id + oneOf` became `key + ref_type + ref_id`; explicit policies cover native platform chrome, repeated gallery items, and compound OCR Fields; all seven fixtures pass | Freeze new references for the next one-shot semantic holdout; do not reuse prior holdouts or spend SAM requests yet |
 | 2026-07-11 | Keep v1.1 after it passes two fresh structural gates, but fail the overall semantic-quality gate | Both responses passed strict JSON, Draft-07, exact evidence ownership, and local invariants; the cartoon returned exactly five tasks, while Notification Center merged AirPods and Uber and the cartoon overestimated variable illustration assets | Do not add another List shape; rely on Maker crop intent, harden occluded-card completeness and locked-raster defaults, then use new holdouts before SAM |
 | 2026-07-11 | Close the three fresh-holdout policy gaps without changing v1.1 | Existing Maker questions now resolve UI-as-formula intent; occluded cards remain separate List items; complex art defaults to one locked raster; all nine offline fixtures pass | Freeze new references for one-shot semantic validation; do not reuse prior holdouts or spend SAM requests yet |
+| 2026-07-11 | Mark the Codecademy final holdout inconclusive after provider 504 | Frozen expectations and 49 OCR regions exist, but NVIDIA returned HTTP 504 before any model output; no retry, fallback, repair, SAM, or Replicate call ran | Preserve the frozen request unchanged; require an explicit Try again and draw no semantic conclusion from the outage |

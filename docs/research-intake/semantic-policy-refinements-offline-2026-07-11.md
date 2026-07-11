@@ -90,3 +90,7 @@ Key files:
 
 - `run_gemma_corpus_item.py`
 - `test_contract_v2.py`
+
+## Follow-Up
+
+The next [fresh semantic holdout](./semantic-final-holdout-provider-504-2026-07-11.md) was inconclusive because NVIDIA returned HTTP 504 before model output. No prompt or schema conclusion was drawn, and only an explicit retry may reuse the frozen reference.
