@@ -3,6 +3,7 @@ import type { FormatDraft } from "../../builder/model";
 import { flattenStaticLayers } from "../../builder/model";
 import type { ProductCatalog, ProductCatalogItem, StoredWebsiteResearchResult } from "../../research/types";
 import type { StaticAdLayer, StaticImageLayer, StaticPackageAdScene, StaticTextLayer } from "../../scene/types";
+import { fitStaticTextLayer } from "./textFit";
 
 const semanticId = z.string().regex(/^[a-z][a-z0-9_]*$/);
 const bindingSchema = z.enum(["fixed", "brand", "campaign", "proof", "locked"]);
@@ -250,17 +251,6 @@ const pickBrandAccent = (research: StoredWebsiteResearchResult, background: stri
   research.brand.colors.find((color) => contrastRatio(color, background) >= 3) || fallback
 );
 
-const fitText = (layer: StaticTextLayer, text: string): StaticTextLayer => {
-  let fontSize = layer.fontSize;
-  while (fontSize > 10) {
-    const charactersPerLine = Math.max(1, Math.floor(layer.width / (fontSize * 0.68)));
-    const lines = Math.max(1, Math.floor(layer.height / (fontSize * layer.lineHeight)));
-    if (text.length <= charactersPerLine * lines) break;
-    fontSize -= 2;
-  }
-  return { ...layer, text, fontSize };
-};
-
 const asImageLayer = (layer: StaticAdLayer, src: string, alt: string): StaticImageLayer => ({
   ...layer,
   type: "image",
@@ -308,16 +298,16 @@ const resolveLayers = ({
 
     if (roleType === "field" && roleId && nextLayer.type === "text") {
       const value = fields.get(roleId);
-      if (value) nextLayer = fitText(nextLayer, value);
+      if (value) nextLayer = fitStaticTextLayer(nextLayer, value);
     }
     if (roleType === "list" && roleId && nextLayer.type === "text") {
       const plannedList = lists.get(roleId);
       if (plannedList && itemId === "active") {
         const active = plannedList.items.find((item) => item.id === plannedList.activeItemId) || plannedList.items[0];
-        if (active?.values[0]?.value) nextLayer = fitText(nextLayer, active.values[0].value);
+        if (active?.values[0]?.value) nextLayer = fitStaticTextLayer(nextLayer, active.values[0].value);
       } else if (plannedList && itemId && key) {
         const value = plannedList.items.find((item) => item.id === itemId)?.values.find((itemValue) => itemValue.key === key)?.value;
-        if (value) nextLayer = fitText(nextLayer, value);
+        if (value) nextLayer = fitStaticTextLayer(nextLayer, value);
       }
     }
     if (roleType === "asset" && roleId) {

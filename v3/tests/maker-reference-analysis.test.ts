@@ -61,6 +61,29 @@ assert.equal(draft.scene.layout.layers.find((layer) => layer.semanticRole === "f
 assert.equal(draft.scene.layout.layers.find((layer) => layer.semanticRole === "asset:brand_mark")?.type, "image");
 assert.notDeepEqual(draft.scene, createMakerDraftFixture().scene, "Live reconstruction must not reuse the Codex fixture scene.");
 
+const multilineAnalysis = structuredClone(makerAnalysisFixture);
+multilineAnalysis.fields[0] = {
+  ...multilineAnalysis.fields[0]!,
+  value: "Lifestyle inflation",
+  evidence_ids: ["text_01", "text_02"],
+};
+const multilineOcr = structuredClone(ocr);
+multilineOcr.texts[0] = { ...multilineOcr.texts[0]!, text: "LIFESTYLE", polygon: [[0, 0], [140, 0], [140, 21], [0, 21]] };
+multilineOcr.texts[1] = { ...multilineOcr.texts[1]!, text: "INFLATION", polygon: [[0, 26], [140, 26], [140, 47], [0, 47]] };
+const multilineDraft = createMakerDraftFromAnalysis({
+  id: "multiline-text-draft",
+  fileName: "tall-reference.jpg",
+  analysis: multilineAnalysis,
+  artifacts: {
+    referenceImageUrl: "data:image/jpeg;base64,reference",
+    backgroundImageUrl: "data:image/jpeg;base64,background",
+    ocr: multilineOcr,
+    refinedAssets: [{ assetId: "brand_mark", imageUrl: "data:image/png;base64,logo", x: 10, y: 900, width: 90, height: 90 }],
+  },
+});
+const multilineLayer = multilineDraft.scene.layout.layers.find((layer) => layer.semanticRole === "field:brand_name");
+assert.ok(multilineLayer?.type === "text" && multilineLayer.fontSize <= 20, "Grouped OCR lines must fit inside their combined box instead of clipping.");
+
 const saved = createSavedReferenceDraftFixture({ id: "saved-live", fileName: "codex.jpg", imageUrl: "data:image/jpeg;base64,reference", now: 123 });
 const savedAnalysis = validateMakerAnalysisEvidence(savedCodexReferenceAnalysis, savedCodexOcr);
 assert.equal(savedAnalysis.fields.length, 2);

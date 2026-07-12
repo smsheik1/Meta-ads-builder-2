@@ -7,6 +7,7 @@ import type {
   StaticPackageAdScene,
   StaticTextLayer,
 } from "../scene/types";
+import { fitStaticTextLayer } from "../formats/static-package/textFit";
 import {
   makerAnalysisSchema,
   type FormatDraft,
@@ -162,7 +163,7 @@ const textLayer = ({
   zIndex: number;
 }): StaticTextLayer => {
   const bounds = evidenceBounds(evidenceIds, ocr);
-  return {
+  return fitStaticTextLayer({
     id,
     type: "text",
     name,
@@ -184,7 +185,7 @@ const textLayer = ({
     fontWeight: 600,
     lineHeight: 1.08,
     textAlign: "left",
-  };
+  }, text);
 };
 
 const createSkill = (analysis: MakerAnalysis) => `# ${analysis.formula.premise}
