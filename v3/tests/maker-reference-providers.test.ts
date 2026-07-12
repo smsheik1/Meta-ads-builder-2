@@ -39,16 +39,18 @@ assert.equal(gemma.analysis.formula.premise, makerAnalysisFixture.formula.premis
 assert.equal(gemmaRequests, 1, "Gemma must run once with no retry.");
 assert.equal(gemmaUrls[0], "https://openrouter.ai/api/v1/chat/completions");
 assert.equal(gemmaBodies[0]?.model, "google/gemma-4-31b-it");
-assert.equal((gemmaBodies[0]?.response_format as { type?: string }).type, "json_schema");
-assert.equal((gemmaBodies[0]?.response_format as { json_schema?: { strict?: boolean } }).json_schema?.strict, true);
-assert.equal(gemmaBodies[0]?.structured_outputs, true);
+assert.deepEqual(gemmaBodies[0]?.response_format, { type: "json_object" });
+assert.equal("structured_outputs" in gemmaBodies[0]!, false);
 assert.deepEqual(gemmaBodies[0]?.provider, {
   order: ["DeepInfra"],
   allow_fallbacks: false,
   require_parameters: true,
 });
 assert.equal("chat_template_kwargs" in gemmaBodies[0]!, false);
-assert.equal(JSON.stringify(gemmaBodies[0]?.response_format).includes("uniqueItems"), false);
+const gemmaMessages = gemmaBodies[0]?.messages as Array<{ content?: Array<{ type?: string; text?: string }> }>;
+const gemmaPrompt = gemmaMessages?.[0]?.content?.find((part) => part.type === "text")?.text || "";
+assert.match(gemmaPrompt, /Return exactly one valid JSON object/);
+assert.match(gemmaPrompt, /maker_questions: string\[\]/);
 
 let providerFailureRequests = 0;
 await assert.rejects(

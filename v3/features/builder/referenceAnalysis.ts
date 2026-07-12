@@ -106,6 +106,14 @@ ${JSON.stringify(evidence)}
 
 Return the communication formula, singleton editable Fields, repeated Lists, visual assets, coherent Reroll Groups, and at most three blocking Maker questions.
 
+Return exactly one valid JSON object with these keys and shapes:
+- formula: { premise: string, visual_mechanic: string, adaptation_rule: string }
+- fields: [{ id, value, evidence_ids: string[], binding }]
+- lists: [{ id, binding, items: [{ id, values: [{ key, value, evidence_ids: string[] }], asset_ids: string[] }], active_item_id: string | null }]
+- assets: [{ id, label, evidence_ids: string[], binding, sam_prompt }]
+- reroll_groups: [{ id, members: string[], instruction }]
+- maker_questions: string[]
+
 Rules:
 - use each creative OCR evidence ID at most once; never invent an ID
 - native status bars, account headers, platform CTA stickers, captions, reactions, and footers stay unassigned
@@ -123,7 +131,7 @@ Rules:
 - binding is fixed, brand, campaign, proof, or locked as allowed by the schema
 - Reroll Group members use existing Field, List, or asset IDs
 - sam_prompt is 1 to 6 literal words
-- do not return coordinates, explanations, or extra keys`;
+- do not return Markdown, coordinates, explanations, or extra keys`;
 }
 
 const evidenceBounds = (ids: string[], ocr: PaddleOcrResult) => {

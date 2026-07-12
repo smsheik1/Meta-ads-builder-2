@@ -7,7 +7,6 @@ import {
   buildMakerAnalysisPrompt,
   createMakerDraftFromAnalysis,
   editableTextEvidenceIds,
-  makerAnalysisJsonSchema,
   paddleOcrResultSchema,
   validateMakerAnalysisEvidence,
   type PaddleOcrResult,
@@ -21,14 +20,6 @@ const GEMMA_PROVIDER = "DeepInfra";
 const SAM3_VERSION = "1bf97763d5dfd3a1584adca913a8ef4b43c684fca97e04e39e4c50a3a5e09650";
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 const REPLICATE_PREDICTIONS_URL = "https://api.replicate.com/v1/predictions";
-
-// OpenRouter's Gemma backends do not implement the `uniqueItems` grammar keyword.
-// The canonical schema remains unchanged and makerAnalysisSchema enforces the same
-// uniqueness rules after decoding, so acceptance is not relaxed here.
-const openRouterMakerAnalysisSchema = JSON.parse(
-  JSON.stringify(makerAnalysisJsonSchema()),
-  (key, value) => key === "uniqueItems" ? undefined : value,
-) as ReturnType<typeof makerAnalysisJsonSchema>;
 
 type OcrFile = PaddleOcrResult & {
   timing?: { initializationSeconds?: number; predictionSeconds?: number };
@@ -125,19 +116,13 @@ export async function callGemmaReferenceAnalysis({
         seed: 777,
         max_tokens: 4096,
         stream: false,
-        structured_outputs: true,
         provider: {
           order: [GEMMA_PROVIDER],
           allow_fallbacks: false,
           require_parameters: true,
         },
         response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "maker_analysis_mvp",
-            strict: true,
-            schema: openRouterMakerAnalysisSchema,
-          },
+          type: "json_object",
         },
       }),
       signal: controller.signal,
