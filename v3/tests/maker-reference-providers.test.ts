@@ -1,0 +1,103 @@
+import assert from "node:assert/strict";
+import { makerAnalysisFixture } from "../features/builder/fixture";
+import {
+  callGemmaReferenceAnalysis,
+  callSam3AssetRefinement,
+} from "../features/builder/referenceAnalysis.server";
+import type { PaddleOcrResult } from "../features/builder/referenceAnalysis";
+
+const ocr: PaddleOcrResult = {
+  width: 1080,
+  height: 1080,
+  texts: Array.from({ length: 20 }, (_, index) => ({
+    id: `text_${String(index + 1).padStart(2, "0")}`,
+    text: `Evidence ${index + 1}`,
+    confidence: 0.99,
+    polygon: [[0, 0], [100, 0], [100, 40], [0, 40]],
+    textColor: "#111111",
+  })),
+};
+
+let gemmaRequests = 0;
+const gemmaUrls: string[] = [];
+const gemmaBodies: Record<string, unknown>[] = [];
+const gemma = await callGemmaReferenceAnalysis({
+  apiKey: "test-key",
+  imageUrl: "data:image/jpeg;base64,test",
+  ocr,
+  fetcher: async (url, init) => {
+    gemmaRequests += 1;
+    gemmaUrls.push(String(url));
+    gemmaBodies.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
+    return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(makerAnalysisFixture) } }] }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  },
+});
+assert.equal(gemma.analysis.formula.premise, makerAnalysisFixture.formula.premise);
+assert.equal(gemmaRequests, 1, "Gemma must run once with no retry.");
+assert.equal(gemmaUrls[0], "https://openrouter.ai/api/v1/chat/completions");
+assert.equal(gemmaBodies[0]?.model, "google/gemma-4-31b-it");
+assert.equal((gemmaBodies[0]?.response_format as { type?: string }).type, "json_schema");
+assert.equal((gemmaBodies[0]?.response_format as { json_schema?: { strict?: boolean } }).json_schema?.strict, true);
+assert.equal(gemmaBodies[0]?.structured_outputs, true);
+assert.deepEqual(gemmaBodies[0]?.provider, {
+  order: ["DeepInfra"],
+  allow_fallbacks: false,
+  require_parameters: true,
+});
+assert.equal("chat_template_kwargs" in gemmaBodies[0]!, false);
+assert.equal(JSON.stringify(gemmaBodies[0]?.response_format).includes("uniqueItems"), false);
+
+let providerFailureRequests = 0;
+await assert.rejects(
+  callGemmaReferenceAnalysis({
+    apiKey: "test-key",
+    imageUrl: "data:image/jpeg;base64,test",
+    ocr,
+    fetcher: async () => {
+      providerFailureRequests += 1;
+      return new Response(JSON.stringify({ error: { message: "provider exploded" } }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    },
+  }),
+  /OpenRouter Gemma 4 31B analysis failed: provider exploded/,
+);
+assert.equal(providerFailureRequests, 1, "OpenRouter provider errors must fail without retry or fallback.");
+
+let emptySamRequests = 0;
+const emptySam = await callSam3AssetRefinement({
+  assets: [],
+  imageUrl: "data:image/jpeg;base64,test",
+  token: "test-token",
+  fetcher: async () => {
+    emptySamRequests += 1;
+    throw new Error("SAM should not run");
+  },
+});
+assert.equal(emptySamRequests, 0, "SAM must not run when no non-locked asset needs refinement.");
+assert.deepEqual(emptySam.results, []);
+
+let samRequests = 0;
+const samBodies: Record<string, unknown>[] = [];
+const sam = await callSam3AssetRefinement({
+  assets: [makerAnalysisFixture.assets[0]!],
+  imageUrl: "data:image/jpeg;base64,test",
+  token: "test-token",
+  fetcher: async (url, init) => {
+    samRequests += 1;
+    if (String(url).includes("predictions")) {
+      samBodies.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
+      return new Response(JSON.stringify({ status: "succeeded", output: { results: ["https://fixture.test/result.json"] } }), { status: 201 });
+    }
+    return new Response(JSON.stringify({ boxes: [[1, 2, 3, 4]], scores: [0.9], masks: [[[1]]], masks_offset: [[1, 2]] }), { status: 200 });
+  },
+});
+assert.equal(samRequests, 2);
+assert.equal(sam.results[0]?.assetId, "brand_mark");
+assert.equal(((samBodies[0]?.input as { prompts?: string[] }).prompts || []).length, 1);
+
+console.log("maker reference provider tests passed");

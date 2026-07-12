@@ -7,7 +7,7 @@ import {
   type RenderImageComponent,
   type RenderVideoComponent,
 } from "../features/render/RenderAssetContext";
-import type { AdScene } from "../features/scene/types";
+import type { RenderableAdScene } from "../features/scene/types";
 
 const remotionFontFaceCss = buildWigglyFontFaceCss((path) => staticFile(path.replace(/^\//, "")));
 const resolveRenderAssetSrc = (src: string) => src.startsWith("/") ? staticFile(src.replace(/^\//, "")) : src;
@@ -42,11 +42,11 @@ const RemotionVideoAsset: RenderVideoComponent = ({
   );
 };
 
-export function getRenderMusicBed(scene: AdScene) {
+export function getRenderMusicBed(scene: RenderableAdScene) {
   return scene.format === "motion-story" ? scene.layout.musicBed : null;
 }
 
-export function RemotionAdScene({ scene }: { scene: AdScene }) {
+export function RemotionAdScene({ scene }: { scene: RenderableAdScene }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const audio = scene.audio.status === "generated" && scene.audio.url

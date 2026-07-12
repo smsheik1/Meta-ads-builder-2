@@ -442,7 +442,7 @@ MVP Maker publishing is protected by a minimal server-enforced internal gate. Ge
 
 GLM 5.2 through NVIDIA NIM produces exactly eight Campaign Plays in a Wiggly-defined structured response. Skill prose cannot redefine the schema.
 
-Every Gemma semantic-analysis request and GLM Campaign-Play request uses a versioned provider-native JSON Schema through the transport pinned to that NVIDIA NIM model/backend profile; asking for JSON in prompt prose is not schema enforcement. Gemma 4 uses `response_format.json_schema`, because its hosted VLM variant does not enforce a top-level `guided_json` property. Provider-constrained decoding is not authoritative: a schema-enforced holdout still omitted nested required properties. The GLM profile must pass its own capability probe before product use. Local Zod validation and semantic invariants always run after decoding. Malformed, incomplete, schema-invalid, or semantically invalid output stops visibly without a parser heuristic, repair model, automatic retry, or fallback.
+Every Gemma semantic-analysis request and GLM Campaign-Play request uses a provider-native JSON Schema through its pinned transport; asking for JSON in prompt prose is not schema enforcement. Maker analysis uses exact Gemma 4 31B through OpenRouter's pinned DeepInfra backend with provider fallbacks disabled. GLM remains on NVIDIA NIM. The active Maker MVP contract is the six-key [`maker-analysis-mvp` schema](./research-intake/schemas/maker-analysis-mvp.schema.json); earlier Field/List schemas are benchmark history, not additional runtime paths. Gemma 4 uses strict `response_format.json_schema`. OpenRouter's provider-facing schema omits only the unsupported `uniqueItems` grammar hint while the canonical schema and local Zod validation still enforce uniqueness. Invalid output stops visibly without repair, automatic retry, or fallback.
 
 Before generation:
 
@@ -621,17 +621,17 @@ This policy applies to the new static engine only. Existing format providers rem
 
 ### Vision and decomposition
 
-The provisional benchmark stack is:
+The Maker MVP stack is:
 
 ```text
 LayerD when pixel separation is needed
   + PaddleOCR for text and text geometry
-  + Gemma 4 31B IT through NVIDIA NIM for semantic analysis
+  + Gemma 4 31B IT through OpenRouter's pinned DeepInfra backend for semantic analysis
   + SAM 3 for non-text candidates and masks
   -> Wiggly normalization and Maker confirmation
 ```
 
-These are complementary stage owners, not fallbacks for one another. Each stage emits evidence and confidence; none writes `StaticAdScene` directly. A failed required stage stops visibly without switching models. Production selection remains pending the 8-to-10-reference corpus using the revised list-aware contract.
+These are complementary stage owners, not fallbacks for one another. Each stage emits evidence and confidence; none writes `StaticAdScene` directly. A failed required stage stops visibly without switching models. Gemma's model and transport are selected for the Maker MVP; the broader reconstruction stack still earns expansion through the saved-reference corpus.
 
 ### Image generation
 

@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wiggly.local/schemas/maker-analysis-mvp.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["formula", "fields", "lists", "assets", "reroll_groups", "maker_questions"],
+  "properties": {
+    "formula": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["premise", "visual_mechanic", "adaptation_rule"],
+      "properties": {
+        "premise": {"type": "string"},
+        "visual_mechanic": {"type": "string"},
+        "adaptation_rule": {"type": "string"}
+      }
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "value", "evidence_ids", "binding"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "value": {"type": "string"},
+          "evidence_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^text_(?:[0-9]{2,}|cluster_[0-9]{2,})$"}
+          },
+          "binding": {"enum": ["fixed", "brand", "campaign", "proof"]}
+        }
+      }
+    },
+    "lists": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "binding", "items", "active_item_id"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "binding": {"enum": ["fixed", "brand", "campaign"]},
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "values", "asset_ids"],
+              "properties": {
+                "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+                "values": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["key", "value", "evidence_ids"],
+                    "properties": {
+                      "key": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+                      "value": {"type": "string"},
+                      "evidence_ids": {
+                        "type": "array",
+                        "minItems": 1,
+                        "uniqueItems": true,
+                        "items": {"type": "string", "pattern": "^text_(?:[0-9]{2,}|cluster_[0-9]{2,})$"}
+                      }
+                    }
+                  }
+                },
+                "asset_ids": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"}
+                }
+              }
+            }
+          },
+          "active_item_id": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "evidence_ids", "binding", "sam_prompt"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "label": {"type": "string"},
+          "evidence_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^text_(?:[0-9]{2,}|cluster_[0-9]{2,})$"}
+          },
+          "binding": {"enum": ["fixed", "brand", "campaign", "locked"]},
+          "sam_prompt": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "reroll_groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "members", "instruction"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "members": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"}
+          },
+          "instruction": {"type": "string"}
+        }
+      }
+    },
+    "maker_questions": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {"type": "string"}
+    }
+  }
+}
