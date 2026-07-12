@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 
 const workflow = readFileSync("../.github/workflows/deploy-v3-oracle.yml", "utf8");
 const script = readFileSync("../scripts/deploy-v3-oracle.sh", "utf8");
+const makerSetup = readFileSync("scripts/setup-maker-analysis.sh", "utf8");
+const makerOcr = readFileSync("scripts/maker-reference-ocr.py", "utf8");
 const runtimeDoc = readFileSync("../docs/v3-production-runtime.md", "utf8");
 const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
   scripts: Record<string, string>;
@@ -13,6 +15,9 @@ assert.ok(workflow.includes("push:") && workflow.includes("- main"), "v3 deploy 
 assert.ok(workflow.includes("V3_CONVEX_DEPLOY_KEY"), "v3 deploy must use a v3-specific Convex deploy key.");
 assert.ok(!workflow.includes("secrets.CONVEX_DEPLOY_KEY"), "v3 deploy must not use the legacy Convex deploy key.");
 assert.ok(workflow.includes("scripts/deploy-v3-oracle.sh"), "v3 workflow must call the v3 deploy script.");
+assert.ok(workflow.includes("REPLICATE_API_TOKEN: ${{ secrets.REPLICATE_API_TOKEN }}"), "Maker deploy must receive the Replicate secret.");
+assert.ok(workflow.includes('WIGGLY_MAKER_LIVE_ANALYSIS: "true"'), "Production dogfood must enable live Maker analysis.");
+assert.ok(workflow.includes("command_timeout: 40m"), "The first PaddleOCR install needs an explicit SSH timeout.");
 
 for (const requiredScript of [
   "npm run test",
@@ -31,6 +36,21 @@ assert.ok(
 assert.ok(script.includes("wiggly-v3"), "v3 app must have its own PM2 app name.");
 assert.ok(script.includes("wiggly-v3-render-worker"), "v3 render worker must have its own PM2 app name.");
 assert.ok(script.includes("npx convex deploy"), "v3 deploy must sync Convex functions before smoke.");
+assert.ok(script.includes("OPENROUTER_API_KEY REPLICATE_API_TOKEN"), "Maker deploy must fail visibly when provider secrets are missing.");
+assert.ok(script.includes("MAKER_REQUIREMENTS_HASH"), "Maker deploy must cache PaddleOCR by requirements hash.");
+assert.ok(script.includes("bash scripts/setup-maker-analysis.sh"), "Maker deploy must install and prewarm PaddleOCR.");
+for (const setting of [
+  'engine="transformers"',
+  'device="cpu"',
+  'lang="en"',
+  'ocr_version="PP-OCRv5"',
+  "use_doc_orientation_classify=False",
+  "use_doc_unwarping=False",
+  "use_textline_orientation=False",
+  "return_word_box=False",
+]) {
+  assert.ok(makerSetup.includes(setting) && makerOcr.includes(setting), `Maker prewarm must match runtime OCR setting ${setting}.`);
+}
 assert.ok(script.includes("CONVEX_DEPLOY_KEY=\"$V3_CONVEX_DEPLOY_KEY\""), "script must map v3 key to Convex CLI env.");
 assert.ok(
   script.includes("npm ci --workspaces=false --include=optional"),
