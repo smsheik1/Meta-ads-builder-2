@@ -7,9 +7,9 @@ import {
 } from "../features/formats/static-package/testFixture";
 import {
   createMakerFormatTestContract,
+  createMakerFormatTestGuidedJson,
   createMakerFormatTestScenes,
   getDefaultMakerTestProductHandle,
-  nextMakerTestVariationIndex,
   selectMakerTestProduct,
   validateMakerFormatTestGeneration,
 } from "../features/formats/static-package/testRuntime";
@@ -29,6 +29,9 @@ assert.equal(getDefaultMakerTestProductHandle(makerTestResearchFixture.productCa
 assert.equal(getDefaultMakerTestProductHandle({ ...makerTestResearchFixture.productCatalog!, products: [makerTestResearchFixture.productCatalog!.products[0]!] }), "blueberry-pie");
 
 const generation = createMakerFormatTestGenerationFixture(contract);
+const guidedJson = JSON.stringify(createMakerFormatTestGuidedJson(contract));
+assert.match(guidedJson, /\"enum\":\[\"brand_name\"/);
+assert.match(guidedJson, /\"maxItems\":7/);
 assert.equal(validateMakerFormatTestGeneration(contract, generation).variations.length, 3);
 const missingField = structuredClone(generation);
 missingField.variations[0]!.fields.pop();
@@ -75,10 +78,6 @@ assert.ok(
   "Long rerolled List values must shrink to stay inside the Maker-approved box.",
 );
 assert.equal(scenes[0]?.metadata.selectedProductHandles?.[0], "blueberry-pie");
-
-assert.equal(nextMakerTestVariationIndex(0, 3), 1);
-assert.equal(nextMakerTestVariationIndex(1, 3), 2);
-assert.equal(nextMakerTestVariationIndex(2, 3), 0);
 
 let capturedPrompt = "";
 const generated = await generateMakerFormatTestVariations({

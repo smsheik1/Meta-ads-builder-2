@@ -357,6 +357,7 @@ assert.deepEqual(
   adRenderSurfaceImporters,
   [
     "app/create/CreatePreviewChrome.tsx",
+    "app/create/MakerFormatTestClient.tsx",
     "features/builder/BuilderCanvas.tsx",
     "features/render/AdRenderSurface.tsx",
     "remotion-entry/RemotionAdScene.tsx",

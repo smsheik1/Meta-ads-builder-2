@@ -6,6 +6,7 @@ import {
 } from "../../llm/nvidiaNim";
 import type { ProductCatalogItem, StoredWebsiteResearchResult } from "../../research/types";
 import {
+  createMakerFormatTestGuidedJson,
   createMakerFormatTestPrompt,
   validateMakerFormatTestGeneration,
   type MakerFormatTestContract,
@@ -35,6 +36,7 @@ export async function generateMakerFormatTestVariations({
     apiKey: nvidiaNimApiKey,
     baseUrl: nvidiaNimBaseUrl,
     label: "NVIDIA NIM Maker Format test",
+    guidedJson: createMakerFormatTestGuidedJson(contract),
     maxTokens: 5_000,
     model: nvidiaNimModel,
     nvidiaNimChatCompletion,

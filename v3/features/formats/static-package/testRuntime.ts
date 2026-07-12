@@ -58,6 +58,55 @@ export const makerFormatTestGenerationSchema = z.object({
 export type MakerFormatTestVariation = z.infer<typeof makerFormatTestVariationSchema>;
 export type MakerFormatTestGeneration = z.infer<typeof makerFormatTestGenerationSchema>;
 
+type JsonSchema = Record<string, unknown>;
+
+const schemaProperty = (schema: JsonSchema, name: string) => (
+  (schema.properties as Record<string, JsonSchema>)[name]!
+);
+
+const schemaItems = (schema: JsonSchema) => schema.items as JsonSchema;
+
+const constrainIdArray = (schema: JsonSchema, values: string[]) => {
+  schema.minItems = values.length;
+  schema.maxItems = values.length;
+  if (values.length) schemaProperty(schemaItems(schema), "id").enum = values;
+};
+
+export function createMakerFormatTestGuidedJson(contractValue: MakerFormatTestContract) {
+  const contract = makerFormatTestContractSchema.parse(contractValue);
+  const schema = z.toJSONSchema(makerFormatTestGenerationSchema) as JsonSchema;
+  const variation = schemaItems(schemaProperty(schema, "variations"));
+  const mutableFields = contract.fields.filter((field) => field.mutable);
+  const mutableLists = contract.lists.filter((list) => list.mutable);
+  const mutableAssets = contract.assets.filter((asset) => asset.mutable);
+
+  constrainIdArray(schemaProperty(variation, "fields"), ids(mutableFields));
+  const lists = schemaProperty(variation, "lists");
+  constrainIdArray(lists, ids(mutableLists));
+  const list = schemaItems(lists);
+  const itemIds = ids(mutableLists.flatMap((source) => source.items));
+  const activeItemId = schemaProperty(list, "activeItemId");
+  activeItemId.anyOf = [{ type: "string", enum: itemIds }, { type: "null" }];
+  const items = schemaProperty(list, "items");
+  const itemCounts = mutableLists.map((source) => source.items.length);
+  if (itemCounts.length) {
+    items.minItems = Math.min(...itemCounts);
+    items.maxItems = Math.max(...itemCounts);
+  }
+  if (itemIds.length) schemaProperty(schemaItems(items), "id").enum = itemIds;
+  const values = schemaProperty(schemaItems(items), "values");
+  const sourceValues = mutableLists.flatMap((source) => source.items.flatMap((item) => item.values));
+  const valueCounts = mutableLists.flatMap((source) => source.items.map((item) => item.values.length));
+  if (valueCounts.length) {
+    values.minItems = Math.min(...valueCounts);
+    values.maxItems = Math.max(...valueCounts);
+  }
+  const valueKeys = [...new Set(sourceValues.map((value) => value.key))].sort();
+  if (valueKeys.length) schemaProperty(schemaItems(values), "key").enum = valueKeys;
+  constrainIdArray(schemaProperty(variation, "assets"), ids(mutableAssets));
+  return schema;
+}
+
 const mutableBindings = new Set(["brand", "campaign", "proof"]);
 const layerIsMutable = (layer: StaticAdLayer) => !layer.locked && mutableBindings.has(layer.binding);
 
@@ -172,11 +221,6 @@ export function selectMakerTestProduct(catalog: ProductCatalog | null | undefine
   const selected = products.find((product) => product.handle === (handle || products[0]!.handle));
   if (!selected) throw new Error("The selected product was not found in this website catalog.");
   return selected;
-}
-
-export function nextMakerTestVariationIndex(current: number, count: number) {
-  if (count <= 0) return 0;
-  return (current + 1) % count;
 }
 
 const hexToRgb = (value: string) => {

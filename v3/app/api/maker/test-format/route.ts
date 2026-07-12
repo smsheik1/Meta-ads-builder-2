@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { ProductCatalogItem, StoredWebsiteResearchResult } from "@/features/research/types";
+import type { StoredWebsiteResearchResult } from "@/features/research/types";
 import { generateMakerFormatTestVariations } from "@/features/formats/static-package/testGeneration.server";
 import {
   makerFormatTestContractSchema,
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     if (!research?.researchRunId || !research.brand?.name || !research.brandBrief) {
       return NextResponse.json({ error: "Website research is missing or incomplete." }, { status: 400 });
     }
-    const product = selectMakerTestProduct(research.productCatalog, String(payload.productHandle || "")) as ProductCatalogItem | null;
+    const product = selectMakerTestProduct(research.productCatalog, String(payload.productHandle || ""));
     const answers = (payload.answers || []).slice(0, 3).map((answer) => ({
       question: String(answer.question || "").trim(),
       answer: String(answer.answer || "").trim(),

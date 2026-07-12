@@ -21,7 +21,6 @@ import {
   createMakerFormatTestContract,
   createMakerFormatTestScenes,
   getDefaultMakerTestProductHandle,
-  nextMakerTestVariationIndex,
   selectMakerTestProduct,
   type MakerFormatTestContract,
   type MakerFormatTestGeneration,
@@ -85,7 +84,7 @@ function MakerFormatTestSession({ draftId, fixture, runGeneration, runResearch }
 
   const advanceVariation = () => {
     if (status !== "generated") return;
-    setSelectedIndex((index) => nextMakerTestVariationIndex(index, scenes.length));
+    setSelectedIndex((index) => (index + 1) % scenes.length);
   };
 
   useEffect(() => {

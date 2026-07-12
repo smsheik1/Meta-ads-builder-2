@@ -17,7 +17,7 @@ assert.match(testClientSource, /Product to advertise/);
 assert.match(testClientSource, /Full creative brief/);
 assert.match(testClientSource, /Generate test ads/);
 assert.match(testClientSource, /event\.code !== "Space"/);
-assert.match(testClientSource, /nextMakerTestVariationIndex/);
+assert.match(testClientSource, /\(index \+ 1\) % scenes\.length/);
 assert.match(testClientSource, /AdRenderSurface/);
 assert.match(testClientSource, /createMakerFormatTestScenes/);
 assert.match(testClientSource, /loadLocalDraft/);

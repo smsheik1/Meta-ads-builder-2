@@ -72,6 +72,19 @@ const content = await callNvidiaNimChat({
 assert.equal(content, "{\"ok\":true}");
 assert.equal(capturedBody?.max_tokens, 1800);
 
+const guidedJson = { type: "object", properties: { ok: { type: "boolean" } }, required: ["ok"] };
+await callNvidiaNimChat({
+  apiKey: "test-key",
+  baseUrl: "https://nim.test/v1",
+  guidedJson,
+  label: "NVIDIA NIM guided JSON test",
+  model: "test-model",
+  prompt: "{}",
+  timeoutMs: 1000,
+});
+assert.deepEqual(capturedBody?.guided_json, guidedJson);
+assert.equal("response_format" in capturedBody, false);
+
 globalThis.fetch = ((_input: RequestInfo | URL, init?: RequestInit) => {
   capturedBody = JSON.parse(String(init?.body || "{}")) as Record<string, unknown>;
   const encoder = new TextEncoder();
