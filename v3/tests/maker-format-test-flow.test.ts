@@ -19,6 +19,8 @@ assert.match(testClientSource, /Generate test ads/);
 assert.match(testClientSource, /event\.code !== "Space"/);
 assert.match(testClientSource, /\(index \+ 1\) % scenes\.length/);
 assert.match(testClientSource, /AdRenderSurface/);
+assert.match(testClientSource, /previewCanvas\.width.*previewCanvas\.height/, "Maker test preview must preserve the scene's canvas ratio.");
+assert.doesNotMatch(testClientSource, /data-maker-test-preview[^>]*aspect-square/, "Maker test preview must not crush non-square Formats into a square.");
 assert.match(testClientSource, /createMakerFormatTestScenes/);
 assert.match(testClientSource, /loadLocalDraft/);
 assert.doesNotMatch(testClientSource, /saveLocalDraft|publishLocalDraft|Replicate|image generation/i);

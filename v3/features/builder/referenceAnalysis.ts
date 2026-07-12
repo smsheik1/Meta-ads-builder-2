@@ -76,6 +76,23 @@ export function validateMakerAnalysisEvidence(value: unknown, ocr: PaddleOcrResu
   return analysis;
 }
 
+export function normalizeMakerAnalysisRerollBindings(value: MakerAnalysis): MakerAnalysis {
+  const analysis = structuredClone(value);
+  const rerollMembers = new Set(analysis.reroll_groups.flatMap((group) => group.members));
+
+  for (const field of analysis.fields) {
+    if (rerollMembers.has(field.id) && field.binding === "fixed") field.binding = "campaign";
+  }
+  for (const list of analysis.lists) {
+    if (rerollMembers.has(list.id) && list.binding === "fixed") list.binding = "campaign";
+  }
+  for (const asset of analysis.assets) {
+    if (rerollMembers.has(asset.id) && asset.binding === "fixed") asset.binding = "campaign";
+  }
+
+  return analysis;
+}
+
 export function makerAnalysisJsonSchema() {
   return makerAnalysisMvpJsonSchema;
 }
@@ -96,6 +113,7 @@ Rules:
 - active_item_id is null unless one List item is visually emphasized
 - ask only for missing information that is not visible and blocks a useful draft
 - every formula-critical Field, List, and asset belongs to a Reroll Group
+- members of a Reroll Group must use a mutable binding allowed for that component (brand or campaign, plus proof for Fields); fixed and locked components stay outside Reroll Groups
 - wrapped text is one Field, not a List
 - repeated rows or benefits are one List item each and share the same value keys
 - keep each List item's text and asset IDs together
@@ -218,7 +236,7 @@ export function createMakerDraftFromAnalysis({
   now?: number;
 }): FormatDraft {
   const ocr = paddleOcrResultSchema.parse(artifacts.ocr);
-  const analysis = validateMakerAnalysisEvidence(rawAnalysis, ocr);
+  const analysis = normalizeMakerAnalysisRerollBindings(validateMakerAnalysisEvidence(rawAnalysis, ocr));
   const layers: StaticAdLayer[] = [];
 
   const background: StaticImageLayer = {

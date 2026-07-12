@@ -7,6 +7,7 @@ import {
   replaceStaticLayer,
   updateFormatDraft,
   validateFormatDraft,
+  validateFormatDraftReady,
 } from "../features/builder/model";
 
 const draft = createMakerDraftFixture({ now: 100 });
@@ -20,6 +21,14 @@ assert.equal(makerAnalysisSchema.safeParse(unknownAsset).success, false);
 const splitActiveItem = structuredClone(makerAnalysisFixture);
 splitActiveItem.lists[0]!.active_item_id = "not_in_the_list";
 assert.equal(makerAnalysisSchema.safeParse(splitActiveItem).success, false);
+
+const fakeRerollDraft = structuredClone(draft);
+fakeRerollDraft.analysis.fields.forEach((field) => { field.binding = "fixed"; });
+fakeRerollDraft.analysis.lists.forEach((list) => { list.binding = "fixed"; });
+fakeRerollDraft.analysis.assets.forEach((asset) => { asset.binding = "fixed"; });
+assert.equal(validateFormatDraft(fakeRerollDraft).valid, true, "A structurally valid draft must remain editable even when it is not ready to test.");
+assert.match(validateFormatDraftReady({ ...fakeRerollDraft, analysis: { ...fakeRerollDraft.analysis, reroll_groups: [] } }).errors.join(" "), /Choose at least one component/);
+assert.match(validateFormatDraftReady(fakeRerollDraft).errors.join(" "), /cannot reroll because every component is fixed or locked/);
 
 const movedScene = replaceStaticLayer(draft.scene, "active-tool", (layer) => ({ ...layer, x: layer.x + 40 }));
 const movedDraft = updateFormatDraft(draft, { scene: movedScene }, 200);

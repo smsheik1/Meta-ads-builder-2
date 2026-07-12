@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { FormatDraft } from "../../builder/model";
-import { flattenStaticLayers } from "../../builder/model";
+import { flattenStaticLayers, validateFormatDraftReady } from "../../builder/model";
 import type { ProductCatalog, ProductCatalogItem, StoredWebsiteResearchResult } from "../../research/types";
 import type { StaticAdLayer, StaticImageLayer, StaticPackageAdScene, StaticTextLayer } from "../../scene/types";
 import { fitStaticTextLayer } from "./textFit";
@@ -112,6 +112,8 @@ const mutableBindings = new Set(["brand", "campaign", "proof"]);
 const layerIsMutable = (layer: StaticAdLayer) => !layer.locked && mutableBindings.has(layer.binding);
 
 export function createMakerFormatTestContract(draft: FormatDraft): MakerFormatTestContract {
+  const validation = validateFormatDraftReady(draft);
+  if (!validation.valid) throw new Error(validation.errors.join(" "));
   const layers = flattenStaticLayers(draft.scene.layout.layers);
   const roleLayers = (role: string, prefix = false) => layers.filter((layer) => (
     prefix ? layer.semanticRole.startsWith(role) : layer.semanticRole === role

@@ -131,6 +131,26 @@ export function validateFormatDraft(value: FormatDraft) {
   return { valid: errors.length === 0, errors };
 }
 
+export function validateFormatDraftReady(value: FormatDraft) {
+  const validation = validateFormatDraft(value);
+  const errors = [...validation.errors];
+  const analysisValidation = makerAnalysisSchema.safeParse(value.analysis);
+  if (analysisValidation.success) {
+    const mutableIds = new Set([
+      ...analysisValidation.data.fields.filter((field) => field.binding !== "fixed").map((field) => field.id),
+      ...analysisValidation.data.lists.filter((list) => list.binding !== "fixed").map((list) => list.id),
+      ...analysisValidation.data.assets.filter((asset) => asset.binding !== "fixed" && asset.binding !== "locked").map((asset) => asset.id),
+    ]);
+    if (mutableIds.size === 0) errors.push("Choose at least one component that changes before testing or publishing.");
+    for (const group of analysisValidation.data.reroll_groups) {
+      if (!group.members.some((member) => mutableIds.has(member))) {
+        errors.push(`“${group.instruction}” cannot reroll because every component is fixed or locked.`);
+      }
+    }
+  }
+  return { valid: errors.length === 0, errors };
+}
+
 export function assertFormatDraft(value: unknown): FormatDraft {
   if (!value || typeof value !== "object") throw new Error("Format draft is missing.");
   const draft = value as FormatDraft;
@@ -142,7 +162,7 @@ export function assertFormatDraft(value: unknown): FormatDraft {
 export function assertFormatVersion(value: unknown): FormatVersion {
   if (!value || typeof value !== "object") throw new Error("Format version is missing.");
   const version = value as FormatVersion;
-  const draftValidation = validateFormatDraft({
+  const draftValidation = validateFormatDraftReady({
     ...version,
     id: version.draftId,
     status: "published",
@@ -207,7 +227,7 @@ export function updateFormatDraft(
 }
 
 export function createFormatVersion(draft: FormatDraft, version: number, now = Date.now()): FormatVersion {
-  const validation = validateFormatDraft(draft);
+  const validation = validateFormatDraftReady(draft);
   if (!validation.valid) throw new Error(validation.errors.join(" "));
   return {
     id: `${draft.id}:v${version}`,

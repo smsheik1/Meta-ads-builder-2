@@ -80,6 +80,7 @@ function MakerFormatTestSession({ draftId, fixture, runGeneration, runResearch }
   const questionsComplete = contract ? contract.questions.every((question) => answers[question]?.trim()) : false;
   const productComplete = products.length <= 1 || Boolean(selectedProductHandle);
   const selectedScene = scenes[selectedIndex] || null;
+  const previewCanvas = selectedScene?.layout.canvas || draft?.scene.layout.canvas;
   const busy = status === "researching" || status === "generating";
 
   const advanceVariation = () => {
@@ -202,7 +203,11 @@ function MakerFormatTestSession({ draftId, fixture, runGeneration, runResearch }
 
         <section className="lg:sticky lg:top-6 lg:self-start">
           <div className="rounded-[34px] border border-black/10 bg-[#e8e4da] p-5 shadow-inner">
-            <div className="mx-auto aspect-square w-full max-w-[680px] overflow-hidden rounded-2xl bg-white shadow-2xl" data-maker-test-preview="true">
+            <div
+              className="mx-auto w-full max-w-[680px] overflow-hidden rounded-2xl bg-white shadow-2xl"
+              data-maker-test-preview="true"
+              style={previewCanvas ? { aspectRatio: `${previewCanvas.width} / ${previewCanvas.height}` } : undefined}
+            >
               {selectedScene ? <AdRenderSurface scene={selectedScene} motionMode="idle" /> : <div className="grid h-full place-items-center p-10 text-center"><div><FlaskConical className="mx-auto size-10 text-violet-500" /><p className="mt-4 text-xl font-black">Your cross-brand test will appear here.</p><p className="mt-2 text-sm font-semibold text-slate-500">Read a website, choose a product, then generate three directions.</p></div></div>}
             </div>
           </div>

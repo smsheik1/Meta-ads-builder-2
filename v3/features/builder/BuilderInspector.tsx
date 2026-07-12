@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Lock, Unlock } from "lucide-react";
 import type { StaticAdLayer, StaticLayerBinding } from "../scene/types";
-import { findStaticLayer, flattenStaticLayers, replaceStaticLayer, updateFormatDraft, validateFormatDraft, type FormatDraft } from "./model";
+import { findStaticLayer, flattenStaticLayers, replaceStaticLayer, updateFormatDraft, validateFormatDraftReady, type FormatDraft } from "./model";
 
 const bindings: StaticLayerBinding[] = ["fixed", "brand", "campaign", "proof", "locked"];
 const selectClass = "h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-slate-950";
@@ -25,11 +25,42 @@ export function BuilderInspector({
   selectedLayerId: string | null;
 }) {
   const selectedLayer = selectedLayerId ? findStaticLayer(draft.scene.layout.layers, selectedLayerId) : null;
-  const validation = validateFormatDraft(draft);
+  const validation = validateFormatDraftReady(draft);
   const updateLayer = (patch: Partial<StaticAdLayer>) => {
     if (!selectedLayerId) return;
     const scene = replaceStaticLayer(draft.scene, selectedLayerId, (layer) => ({ ...layer, ...patch } as StaticAdLayer));
     draftChanged(updateFormatDraft(draft, { scene }));
+  };
+  const bindingChanged = (semanticRole: string, binding: StaticLayerBinding) => {
+    const [roleType, roleId] = semanticRole.split(":");
+    if (!roleType || !roleId || !["field", "list", "asset"].includes(roleType)) return;
+    const matchesRole = (layer: StaticAdLayer) => roleType === "list"
+      ? layer.semanticRole.startsWith(`list:${roleId}:`)
+      : layer.semanticRole === `${roleType}:${roleId}`;
+    const updateLayers = (layers: StaticAdLayer[]): StaticAdLayer[] => layers.map((layer) => {
+      if (layer.type === "group") return { ...layer, children: updateLayers(layer.children) };
+      return matchesRole(layer) ? { ...layer, binding, locked: binding === "locked" } : layer;
+    });
+    const analysis = structuredClone(draft.analysis);
+    if (roleType === "field") {
+      const field = analysis.fields.find((item) => item.id === roleId);
+      if (field) field.binding = binding === "locked" ? "fixed" : binding;
+    }
+    if (roleType === "list") {
+      const list = analysis.lists.find((item) => item.id === roleId);
+      if (list) list.binding = binding === "fixed" || binding === "locked" ? "fixed" : binding === "brand" ? "brand" : "campaign";
+    }
+    if (roleType === "asset") {
+      const asset = analysis.assets.find((item) => item.id === roleId);
+      if (asset) asset.binding = binding === "proof" ? "campaign" : binding;
+    }
+    if (binding === "fixed" || binding === "locked") {
+      analysis.reroll_groups = analysis.reroll_groups
+        .map((group) => ({ ...group, members: group.members.filter((member) => member !== roleId) }))
+        .filter((group) => group.members.length > 0);
+    }
+    const scene = { ...draft.scene, layout: { ...draft.scene.layout, layers: updateLayers(draft.scene.layout.layers) } };
+    draftChanged(updateFormatDraft(draft, { analysis, scene }));
   };
   const updateAnalysis = (change: (analysis: FormatDraft["analysis"]) => void) => {
     const analysis = structuredClone(draft.analysis);
@@ -100,11 +131,24 @@ export function BuilderInspector({
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="layer-binding">Changes with</Label>
-                  <select id="layer-binding" className={selectClass} disabled={readOnly} value={selectedLayer.binding} onChange={(event) => updateLayer({ binding: event.target.value as StaticLayerBinding })}>
+                  <select id="layer-binding" className={selectClass} disabled={readOnly} value={selectedLayer.binding} onChange={(event) => bindingChanged(selectedLayer.semanticRole, event.target.value as StaticLayerBinding)}>
                     {bindings.map((binding) => <option key={binding} value={binding}>{binding}</option>)}
                   </select>
                 </div>
-                <Button type="button" variant="outline" className="w-full" disabled={readOnly} onClick={() => updateLayer({ locked: !selectedLayer.locked })}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={readOnly}
+                  onClick={() => {
+                    const roleType = selectedLayer.semanticRole.split(":")[0];
+                    if (["field", "list", "asset"].includes(roleType || "")) {
+                      bindingChanged(selectedLayer.semanticRole, selectedLayer.locked ? "fixed" : "locked");
+                    } else {
+                      updateLayer({ locked: !selectedLayer.locked });
+                    }
+                  }}
+                >
                   {selectedLayer.locked ? <Unlock /> : <Lock />}
                   {selectedLayer.locked ? "Unlock layer" : "Lock layer"}
                 </Button>
@@ -183,9 +227,7 @@ export function BuilderInspector({
                 <Input aria-label={`${asset.id} label`} disabled={readOnly} value={asset.label} onChange={(event) => updateAnalysis((analysis) => {
                   analysis.assets[assetIndex]!.label = event.target.value;
                 })} />
-                <select className={selectClass} aria-label={`${asset.id} binding`} disabled={readOnly} value={asset.binding} onChange={(event) => updateAnalysis((analysis) => {
-                  analysis.assets[assetIndex]!.binding = event.target.value as typeof asset.binding;
-                })}>
+                <select className={selectClass} aria-label={`${asset.id} binding`} disabled={readOnly} value={asset.binding} onChange={(event) => bindingChanged(`asset:${asset.id}`, event.target.value as StaticLayerBinding)}>
                   {(["fixed", "brand", "campaign", "locked"] as const).map((binding) => <option key={binding} value={binding}>{binding}</option>)}
                 </select>
               </div>

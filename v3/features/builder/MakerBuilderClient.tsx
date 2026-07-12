@@ -12,7 +12,7 @@ import { BuilderCanvas } from "./BuilderCanvas";
 import { BuilderInspector } from "./BuilderInspector";
 import { useBuilderInteractionActions, useSelectedBuilderLayerId } from "./interactionStore";
 import { loadLocalDraft, loadLocalVersion, publishLocalDraft, saveLocalDraft } from "./localRepository";
-import { assertFormatDraft, flattenStaticLayers, makerAnalysisSchema, updateFormatDraft, validateFormatDraft, type FormatDraft, type FormatVersion } from "./model";
+import { assertFormatDraft, flattenStaticLayers, makerAnalysisSchema, updateFormatDraft, validateFormatDraftReady, type FormatDraft, type FormatVersion } from "./model";
 import { createSavedReferenceDraftFixture } from "./savedReferenceFixture";
 import { createMakerFormatTestDraftFixture } from "../formats/static-package/testFixture";
 import { mergeMakerAnalysisActivity, type MakerAnalysisActivity, type MakerAnalysisStreamMessage } from "./analysisProgress";
@@ -223,7 +223,7 @@ export function MakerBuilderClient() {
 
   const publish = () => {
     if (!draft) return;
-    const validation = validateFormatDraft(draft);
+    const validation = validateFormatDraftReady(draft);
     if (!validation.valid) {
       setStatus("failed");
       setMessage(`Resolve ${validation.errors.length} publish issue${validation.errors.length === 1 ? "" : "s"} first.`);
@@ -297,6 +297,7 @@ export function MakerBuilderClient() {
   }
 
   if (!activeDraft || !visibleScene) return null;
+  const draftValidation = validateFormatDraftReady(activeDraft);
 
   return (
     <main className={cn("flex h-screen min-h-[720px] flex-col overflow-hidden bg-[#f6f2e8] text-slate-950", cloudDisconnected && "mt-8 h-[calc(100vh-2rem)]")} data-maker-builder="true">
@@ -319,8 +320,10 @@ export function MakerBuilderClient() {
             <Button variant="outline" onClick={() => window.location.assign(`/builder?draft=${encodeURIComponent(activeDraft.id)}`)}>Open draft</Button>
           ) : (
             <>
-              <Button asChild variant="outline"><a href={`/create?makerTest=${encodeURIComponent(activeDraft.id)}${typeof window !== "undefined" && new URLSearchParams(window.location.search).get("makerTestFixture") === "saved" ? "&makerTestFixture=saved" : ""}`}><FlaskConical /> Test with a brand</a></Button>
-              <Button disabled={!validateFormatDraft(activeDraft).valid} onClick={publish}><Check /> Publish version</Button>
+              {draftValidation.valid
+                ? <Button asChild variant="outline"><a href={`/create?makerTest=${encodeURIComponent(activeDraft.id)}${typeof window !== "undefined" && new URLSearchParams(window.location.search).get("makerTestFixture") === "saved" ? "&makerTestFixture=saved" : ""}`}><FlaskConical /> Test with a brand</a></Button>
+                : <Button disabled variant="outline"><FlaskConical /> Test with a brand</Button>}
+              <Button disabled={!draftValidation.valid} onClick={publish}><Check /> Publish version</Button>
             </>
           )}
         </div>
