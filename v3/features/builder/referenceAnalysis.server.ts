@@ -14,6 +14,7 @@ import {
   type RefinedAsset,
 } from "./referenceAnalysis";
 import type { MakerAnalysis } from "./model";
+import type { MakerAnalysisActivity } from "./analysisProgress";
 
 const GEMMA_MODEL = "google/gemma-4-31b-it";
 const GEMMA_PROVIDER = "DeepInfra";
@@ -170,11 +171,13 @@ export async function callSam3AssetRefinement({
   assets,
   fetcher,
   imageUrl,
+  onStatus,
   token,
 }: {
   assets: MakerAnalysis["assets"];
   fetcher: typeof fetch;
   imageUrl: string;
+  onStatus?: (status: string) => void;
   token: string;
 }) {
   if (assets.length === 0) return { results: [] as Array<{ assetId: string; result: SamResult }>, elapsedSeconds: 0 };
@@ -201,6 +204,8 @@ export async function callSam3AssetRefinement({
       },
     }),
   }, "SAM 3 refinement")).body;
+  let lastStatus = String(prediction.status || "queued");
+  onStatus?.(lastStatus);
   const deadline = Date.now() + 240_000;
   while (!["succeeded", "failed", "canceled"].includes(String(prediction.status))) {
     if (Date.now() >= deadline) throw new Error("SAM 3 refinement timed out after 240 seconds.");
@@ -208,6 +213,11 @@ export async function callSam3AssetRefinement({
     if (!getUrl) throw new Error("SAM 3 did not return a polling URL.");
     await new Promise((resolve) => setTimeout(resolve, 2_000));
     prediction = (await fetchJson(fetcher, getUrl, { headers: { authorization: `Bearer ${token}` } }, "SAM 3 status")).body;
+    const nextStatus = String(prediction.status || "processing");
+    if (nextStatus !== lastStatus) {
+      lastStatus = nextStatus;
+      onStatus?.(nextStatus);
+    }
   }
   if (prediction.status !== "succeeded") throw new Error(`SAM 3 refinement ${String(prediction.status)}${prediction.error ? `: ${String(prediction.error)}` : "."}`);
   const urls = ((prediction.output as { results?: unknown[] } | undefined)?.results || []).map(String);
@@ -219,29 +229,85 @@ export async function callSam3AssetRefinement({
   return { results, elapsedSeconds: Math.round((Date.now() - startedAt) / 100) / 10 };
 }
 
-export async function analyzeMakerReference(file: File) {
+export async function analyzeMakerReference(
+  file: File,
+  onProgress: (activity: MakerAnalysisActivity) => void = () => {},
+) {
   const fetcher = fetch;
   const openRouterApiKey = process.env.OPENROUTER_API_KEY;
   if (!openRouterApiKey) throw new Error("OpenRouter Maker analysis is not configured.");
+  const startedAt = Date.now();
+  const report = (
+    id: string,
+    label: string,
+    status: MakerAnalysisActivity["status"],
+    detail?: string,
+  ) => onProgress({
+    id,
+    label,
+    status,
+    detail,
+    elapsedSeconds: Math.round((Date.now() - startedAt) / 1000),
+  });
   const workDir = await mkdtemp(path.join(tmpdir(), "wiggly-maker-analysis-"));
   try {
+    report("prepare", "Preparing the reference", "active", "Creating an isolated workspace for this image.");
     const inputPath = path.join(workDir, `input${file.type === "image/png" ? ".png" : file.type === "image/webp" ? ".webp" : ".jpg"}`);
     await writeFile(inputPath, Buffer.from(await file.arrayBuffer()));
     const python = await resolvePython();
     const script = path.join(/*turbopackIgnore: true*/ process.cwd(), "scripts", "maker-reference-ocr.py");
+    report("prepare", "Preparing the reference", "complete", "Image copied and the OCR runtime is ready.");
+    report("ocr", "Reading every text region", "active", "PaddleOCR is locating words and their exact positions.");
     await runPython(python, [script, "ocr", inputPath, workDir], 180_000);
     const rawOcr = JSON.parse(await readFile(path.join(workDir, "ocr.json"), "utf8")) as OcrFile;
     const ocr = paddleOcrResultSchema.parse({ width: rawOcr.width, height: rawOcr.height, texts: rawOcr.texts });
     if (ocr.texts.length === 0) throw new Error("PaddleOCR found no editable text in this reference.");
+    const ocrSeconds = Math.round((((rawOcr.timing?.initializationSeconds || 0) + (rawOcr.timing?.predictionSeconds || 0)) * 10)) / 10;
+    report("ocr", "Reading every text region", "complete", `${ocr.texts.length} text region${ocr.texts.length === 1 ? "" : "s"} found in ${ocrSeconds}s.`);
     const referenceImageUrl = await dataUrl(path.join(workDir, "reference.jpg"), "image/jpeg");
     const visionImageUrl = await dataUrl(path.join(workDir, "vision.jpg"), "image/jpeg");
+    report("semantic", "Understanding how the ad works", "active", "Gemma 4 via OpenRouter is matching the visual structure to the OCR evidence.");
     const semantic = await callGemmaReferenceAnalysis({ apiKey: openRouterApiKey, fetcher, imageUrl: visionImageUrl, ocr });
+    report(
+      "semantic",
+      "Understanding how the ad works",
+      "complete",
+      `${semantic.analysis.fields.length} field${semantic.analysis.fields.length === 1 ? "" : "s"}, ${semantic.analysis.lists.length} list${semantic.analysis.lists.length === 1 ? "" : "s"}, and ${semantic.analysis.assets.length} asset${semantic.analysis.assets.length === 1 ? "" : "s"} understood in ${semantic.elapsedSeconds}s.`,
+    );
     const refinableAssets = assetsNeedingRefinement(semantic.analysis);
+    report(
+      "asset-plan",
+      "Planning editable assets",
+      "complete",
+      refinableAssets.length
+        ? `${refinableAssets.length} asset${refinableAssets.length === 1 ? "" : "s"} will be separated: ${refinableAssets.map((asset) => asset.label).join(", ")}.`
+        : "No visual assets need AI separation for this reference.",
+    );
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
     if (refinableAssets.length > 0 && !replicateApiToken) {
       throw new Error(`SAM 3 is required for ${refinableAssets.length} editable asset${refinableAssets.length === 1 ? "" : "s"}, but Replicate is not configured.`);
     }
-    const sam = await callSam3AssetRefinement({ assets: refinableAssets, fetcher, imageUrl: referenceImageUrl, token: replicateApiToken || "" });
+    if (refinableAssets.length > 0) {
+      report("sam", "Separating editable visual assets", "active", `SAM 3 is receiving ${refinableAssets.length} targeted prompt${refinableAssets.length === 1 ? "" : "s"}.`);
+    }
+    const sam = await callSam3AssetRefinement({
+      assets: refinableAssets,
+      fetcher,
+      imageUrl: referenceImageUrl,
+      onStatus: (samStatus) => report(
+        "sam",
+        "Separating editable visual assets",
+        "active",
+        samStatus === "starting" ? "Replicate is starting the SAM 3 worker."
+          : samStatus === "processing" ? "SAM 3 is tracing the requested asset boundaries."
+            : `SAM 3 job status: ${samStatus}.`,
+      ),
+      token: replicateApiToken || "",
+    });
+    if (refinableAssets.length > 0) {
+      report("sam", "Separating editable visual assets", "complete", `${sam.results.length} asset${sam.results.length === 1 ? "" : "s"} separated in ${sam.elapsedSeconds}s.`);
+    }
+    report("compose", "Rebuilding the editable artwork", "active", "Removing editable regions from the background and composing clean layers.");
     await writeFile(path.join(workDir, "claims.json"), JSON.stringify({ editableTextEvidenceIds: editableTextEvidenceIds(semantic.analysis) }));
     await writeFile(path.join(workDir, "sam.json"), JSON.stringify(sam.results));
     await runPython(python, [
@@ -261,6 +327,13 @@ export async function analyzeMakerReference(file: File) {
       ...asset,
       imageUrl: await dataUrl(path.join(workDir, fileName), "image/png"),
     })));
+    report(
+      "compose",
+      "Rebuilding the editable artwork",
+      "complete",
+      `${refinedAssets.length} transparent asset${refinedAssets.length === 1 ? "" : "s"} and a clean background created${composition.warnings.length ? ` with ${composition.warnings.length} item${composition.warnings.length === 1 ? "" : "s"} to review` : ""}.`,
+    );
+    report("draft", "Packaging the Maker draft", "active", "Creating editable layers, reroll groups, and the format skill.");
     const draft = createMakerDraftFromAnalysis({
       id: crypto.randomUUID(),
       fileName: file.name,
@@ -272,16 +345,19 @@ export async function analyzeMakerReference(file: File) {
         refinedAssets,
       },
     });
+    report("draft", "Packaging the Maker draft", "complete", "The editable scene, formula, assets, and skill are ready.");
     return {
       draft,
       warnings: composition.warnings,
       timing: {
-        ocrSeconds: Math.round((((rawOcr.timing?.initializationSeconds || 0) + (rawOcr.timing?.predictionSeconds || 0)) * 10)) / 10,
+        ocrSeconds,
         semanticSeconds: semantic.elapsedSeconds,
         samSeconds: sam.elapsedSeconds,
       },
     };
   } finally {
+    report("cleanup", "Cleaning up temporary files", "active", "Removing the temporary analysis workspace.");
     await rm(workDir, { recursive: true, force: true });
+    report("cleanup", "Cleaning up temporary files", "complete", "Temporary files removed.");
   }
 }

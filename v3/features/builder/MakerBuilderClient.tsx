@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Check, ChevronLeft, FileImage, Layers3, LoaderCircle, Sparkles, Upload } from "lucide-react";
+import { Check, ChevronLeft, CircleX, FileImage, Layers3, LoaderCircle, Sparkles, Upload } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
@@ -14,8 +14,51 @@ import { useBuilderInteractionActions, useSelectedBuilderLayerId } from "./inter
 import { loadLocalDraft, loadLocalVersion, publishLocalDraft, saveLocalDraft } from "./localRepository";
 import { assertFormatDraft, flattenStaticLayers, makerAnalysisSchema, updateFormatDraft, validateFormatDraft, type FormatDraft, type FormatVersion } from "./model";
 import { createSavedReferenceDraftFixture } from "./savedReferenceFixture";
+import { mergeMakerAnalysisActivity, type MakerAnalysisActivity, type MakerAnalysisStreamMessage } from "./analysisProgress";
 
 type UploadReference = { fileName: string; imageUrl: string; file?: File };
+
+const fixtureActivity: Array<Omit<MakerAnalysisActivity, "elapsedSeconds">> = [
+  { id: "upload", label: "Reference received", detail: "Saved test reference is ready for analysis.", status: "complete" },
+  { id: "ocr", label: "Reading every text region", detail: "OCR evidence loaded from the saved live result.", status: "complete" },
+  { id: "semantic", label: "Understanding how the ad works", detail: "Formula, fields, lists, and assets loaded.", status: "complete" },
+  { id: "sam", label: "Separating editable visual assets", detail: "Saved SAM 3 asset boundaries loaded.", status: "complete" },
+  { id: "compose", label: "Rebuilding the editable artwork", detail: "Clean background and editable layers assembled.", status: "complete" },
+  { id: "draft", label: "Packaging the Maker draft", detail: "The saved editable package is ready.", status: "complete" },
+];
+
+function AnalysisActivityFeed({ activities, elapsedSeconds, failed }: { activities: MakerAnalysisActivity[]; elapsedSeconds: number; failed: boolean }) {
+  return (
+    <div className="mt-5 overflow-hidden rounded-3xl border border-violet-200 bg-violet-50/70" aria-label="Live analysis activity">
+      <div className="flex items-start justify-between gap-4 border-b border-violet-200 px-4 py-3">
+        <div>
+          <p className="text-sm font-black text-violet-950">{failed ? "Analysis stopped" : "Building your editable draft"}</p>
+          <p className="mt-0.5 text-xs font-semibold text-violet-700">Live milestones from the actual analysis pipeline.</p>
+        </div>
+        <Badge className="bg-white text-violet-800 shadow-sm">{elapsedSeconds}s</Badge>
+      </div>
+      <div className="max-h-64 space-y-1 overflow-y-auto p-2" role="log" aria-live="polite">
+        {activities.map((activity) => (
+          <div key={activity.id} className={cn("flex gap-3 rounded-2xl px-3 py-2.5", activity.status === "active" && "bg-white shadow-sm")}>
+            <span className={cn("mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full", activity.status === "complete" ? "bg-emerald-100 text-emerald-700" : activity.status === "failed" ? "bg-red-100 text-red-700" : "bg-violet-100 text-violet-700")}>
+              {activity.status === "complete" ? <Check className="size-3.5" /> : activity.status === "failed" ? <CircleX className="size-3.5" /> : <LoaderCircle className="size-3.5 animate-spin" />}
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-baseline justify-between gap-3">
+                <p className="text-xs font-black text-slate-900">{activity.label}</p>
+                <span className="shrink-0 text-[10px] font-bold text-slate-400">{activity.elapsedSeconds}s</span>
+              </div>
+              {activity.detail ? <p className="mt-0.5 text-xs font-medium leading-4 text-slate-600">{activity.detail}</p> : null}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="border-t border-violet-200 px-4 py-2.5 text-xs font-semibold text-violet-700">
+        {failed ? "The completed steps stay visible so you can see exactly where the analysis stopped." : "The slowest references can take a few minutes. This feed will keep moving as each real stage finishes."}
+      </p>
+    </div>
+  );
+}
 
 export function MakerBuilderClient() {
   const [reference, setReference] = useState<UploadReference | null>(null);
@@ -24,6 +67,7 @@ export function MakerBuilderClient() {
   const [status, setStatus] = useState<"idle" | "analyzing" | "ready" | "published" | "failed">("idle");
   const [message, setMessage] = useState("Upload one saved ad to start.");
   const [analysisSeconds, setAnalysisSeconds] = useState(0);
+  const [analysisActivity, setAnalysisActivity] = useState<MakerAnalysisActivity[]>([]);
   const selectedLayerId = useSelectedBuilderLayerId();
   const interactionActions = useBuilderInteractionActions();
   const readOnly = Boolean(version);
@@ -87,6 +131,7 @@ export function MakerBuilderClient() {
       setReference({ fileName: file.name, imageUrl: String(reader.result || ""), file });
       setStatus("idle");
       setMessage("Reference ready. Build the editable draft when you are ready.");
+      setAnalysisActivity([]);
     };
     reader.onerror = () => {
       setStatus("failed");
@@ -97,8 +142,11 @@ export function MakerBuilderClient() {
 
   const analyzeReference = async () => {
     if (!reference?.file) return;
+    const analysisStartedAt = Date.now();
     setStatus("analyzing");
-    setMessage("Reading text, understanding the formula, and separating editable assets…");
+    setMessage("Building your editable draft…");
+    const activityChanged = (activity: MakerAnalysisActivity) => setAnalysisActivity((current) => mergeMakerAnalysisActivity(current, activity));
+    setAnalysisActivity([{ id: "upload", label: "Uploading the reference", detail: "Sending this image to Wiggly's isolated analysis workspace.", status: "active", elapsedSeconds: 0 }]);
     try {
       const fixture = new URLSearchParams(window.location.search).get("analysisFixture");
       if (fixture === "invalid") {
@@ -108,7 +156,11 @@ export function MakerBuilderClient() {
       let nextDraft: FormatDraft;
       let readyMessage: string;
       if (fixture === "saved") {
-        await new Promise((resolve) => window.setTimeout(resolve, 180));
+        const fixtureStartedAt = Date.now();
+        for (const activity of fixtureActivity) {
+          await new Promise((resolve) => window.setTimeout(resolve, 350));
+          activityChanged({ ...activity, elapsedSeconds: Math.round((Date.now() - fixtureStartedAt) / 1000) });
+        }
         nextDraft = createSavedReferenceDraftFixture({
           id: crypto.randomUUID(),
           fileName: reference.fileName,
@@ -119,17 +171,34 @@ export function MakerBuilderClient() {
         const form = new FormData();
         form.set("reference", reference.file);
         const response = await fetch("/api/builder/analyze", { method: "POST", body: form });
-        const payload = await response.json() as {
-          draft?: unknown;
-          error?: string;
-          warnings?: string[];
-          timing?: { ocrSeconds?: number; semanticSeconds?: number; samSeconds?: number };
-        };
-        if (!response.ok || !payload.draft) throw new Error(payload.error || "Reference analysis stopped without a draft.");
-        nextDraft = assertFormatDraft(payload.draft);
-        const totalSeconds = Object.values(payload.timing || {}).reduce((total, value) => total + (value || 0), 0);
-        readyMessage = payload.warnings?.length
-          ? `Draft built in ${Math.round(totalSeconds)}s with ${payload.warnings.length} item${payload.warnings.length === 1 ? "" : "s"} to review.`
+        if (!response.ok) {
+          const payload = await response.json() as { error?: string };
+          throw new Error(payload.error || "Reference analysis stopped without a draft.");
+        }
+        if (!response.body) throw new Error("Reference analysis returned no activity stream.");
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let completed: Extract<MakerAnalysisStreamMessage, { type: "complete" }>["result"] | null = null;
+        while (true) {
+          const chunk = await reader.read();
+          buffer += decoder.decode(chunk.value, { stream: !chunk.done });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            const streamed = JSON.parse(line) as MakerAnalysisStreamMessage;
+            if (streamed.type === "progress") activityChanged(streamed.activity);
+            if (streamed.type === "error") throw new Error(streamed.error);
+            if (streamed.type === "complete") completed = streamed.result;
+          }
+          if (chunk.done) break;
+        }
+        if (!completed?.draft) throw new Error("Reference analysis stopped without a draft.");
+        nextDraft = assertFormatDraft(completed.draft);
+        const totalSeconds = Object.values(completed.timing || {}).reduce((total, value) => total + (value || 0), 0);
+        readyMessage = completed.warnings?.length
+          ? `Draft built in ${Math.round(totalSeconds)}s with ${completed.warnings.length} item${completed.warnings.length === 1 ? "" : "s"} to review.`
           : `Editable draft built from this reference in ${Math.round(totalSeconds)}s.`;
       }
       saveLocalDraft(nextDraft);
@@ -140,10 +209,15 @@ export function MakerBuilderClient() {
       setMessage(readyMessage);
       window.history.replaceState({}, "", `/builder?draft=${encodeURIComponent(nextDraft.id)}`);
     } catch (error) {
-      setStatus("failed");
-      setMessage(error instanceof Error && error.message.startsWith("Analysis stopped:")
+      const failureMessage = error instanceof Error && error.message.startsWith("Analysis stopped:")
         ? error.message
-        : `Analysis stopped: ${error instanceof Error ? error.message : "The response was invalid."} Nothing was repaired or retried.`);
+        : `Analysis stopped: ${error instanceof Error ? error.message : "The response was invalid."} Nothing was repaired or retried.`;
+      setAnalysisActivity((current) => mergeMakerAnalysisActivity(
+        current.map((activity) => activity.status === "active" ? { ...activity, status: "failed" as const } : activity),
+        { id: "stopped", label: "Analysis stopped", detail: failureMessage, status: "failed", elapsedSeconds: Math.round((Date.now() - analysisStartedAt) / 1000) },
+      ));
+      setStatus("failed");
+      setMessage(failureMessage);
     }
   };
 
@@ -212,6 +286,9 @@ export function MakerBuilderClient() {
                   Build draft
                 </Button>
               </div>
+              {(status === "analyzing" || status === "failed") && analysisActivity.length > 0
+                ? <AnalysisActivityFeed activities={analysisActivity} elapsedSeconds={analysisSeconds} failed={status === "failed"} />
+                : null}
             </div>
           </section>
         </div>
