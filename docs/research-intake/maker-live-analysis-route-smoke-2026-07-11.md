@@ -23,6 +23,8 @@ Each attempt used `google/gemma-4-31b-it`, `response_format.json_schema`, temper
 
 The first attempt did expose one application defect—the semantic request reused the larger OCR image—and that defect is fixed. The final known-reference request still timed out after the image size and schema matched the product contract, while the same reference had previously completed in 25.100 seconds. Current live acceptance is therefore blocked by the public Gemma NIM path, not by the local OCR, normalizer, editor, or fixture-backed browser flow.
 
+A continuation probe isolated the hosted model from Wiggly's multimodal request. NVIDIA's `/v1/models` catalog returned HTTP 200 and still listed `google/gemma-4-31b-it`, but a same-model text-only request containing only “Reply with OK,” with no image, schema, or structured-output transport and only eight output tokens, returned zero bytes before a 45-second client timeout. This rules out Wiggly's image size, OCR evidence, Draft-07 schema, and SAM handoff as the active timeout cause.
+
 ## Decision
 
 Keep the working route and fail-visible behavior. Do not add retries, a backup model, more schema versions, or speculative jobs infrastructure. The next live check should use the same model on a non-public-gateway deployment or wait for the NVIDIA endpoint to recover. Until then, use the saved successful provider output for repeatable Playwright QA.
