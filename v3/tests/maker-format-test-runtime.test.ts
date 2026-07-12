@@ -21,6 +21,7 @@ const contract = createMakerFormatTestContract(draft);
 assert.deepEqual(contract.questions, ["What occasion should this ad focus on?"]);
 assert.equal(contract.lists[0]?.mutable, true);
 assert.equal(contract.assets[0]?.mutable, true);
+assert.deepEqual(contract.rerollGroups[0]?.members, ["brand_name", "relationship_symbol", "cta", "integration_tools", "brand_mark"]);
 
 assert.throws(() => selectMakerTestProduct(makerTestResearchFixture.productCatalog, ""), /Choose the product/);
 const selectedProduct = selectMakerTestProduct(makerTestResearchFixture.productCatalog, "blueberry-pie");

@@ -23,6 +23,7 @@ assert.match(testClientSource, /createMakerFormatTestScenes/);
 assert.match(testClientSource, /loadLocalDraft/);
 assert.doesNotMatch(testClientSource, /saveLocalDraft|publishLocalDraft|Replicate|image generation/i);
 assert.match(testRouteSource, /generateMakerFormatTestVariations/);
+assert.match(testRouteSource, /contract\.questions\.some/, "The API must reject unanswered Maker questions.");
 assert.doesNotMatch(testRouteSource, /fallback|retry|REPLICATE_API_TOKEN|OPENROUTER_API_KEY/i);
 
 console.log("maker format test flow tests passed");
