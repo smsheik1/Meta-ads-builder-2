@@ -1,0 +1,5 @@
+paddleocr==3.5.0
+paddlex==3.5.2
+torch==2.13.0
+torchvision==0.28.0
+transformers==5.13.0

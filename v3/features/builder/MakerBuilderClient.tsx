@@ -13,9 +13,9 @@ import { BuilderInspector } from "./BuilderInspector";
 import { createMakerDraftFixture } from "./fixture";
 import { useBuilderInteractionActions, useSelectedBuilderLayerId } from "./interactionStore";
 import { loadLocalDraft, loadLocalVersion, publishLocalDraft, saveLocalDraft } from "./localRepository";
-import { flattenStaticLayers, makerAnalysisSchema, updateFormatDraft, validateFormatDraft, type FormatDraft, type FormatVersion } from "./model";
+import { assertFormatDraft, flattenStaticLayers, makerAnalysisSchema, updateFormatDraft, validateFormatDraft, type FormatDraft, type FormatVersion } from "./model";
 
-type UploadReference = { fileName: string; imageUrl: string };
+type UploadReference = { fileName: string; imageUrl: string; file?: File };
 
 export function MakerBuilderClient() {
   const [reference, setReference] = useState<UploadReference | null>(null);
@@ -23,6 +23,7 @@ export function MakerBuilderClient() {
   const [version, setVersion] = useState<FormatVersion | null>(null);
   const [status, setStatus] = useState<"idle" | "analyzing" | "ready" | "published" | "failed">("idle");
   const [message, setMessage] = useState("Upload one saved ad to start.");
+  const [analysisSeconds, setAnalysisSeconds] = useState(0);
   const selectedLayerId = useSelectedBuilderLayerId();
   const interactionActions = useBuilderInteractionActions();
   const readOnly = Boolean(version);
@@ -57,6 +58,16 @@ export function MakerBuilderClient() {
     }
   }, []);
 
+  useEffect(() => {
+    if (status !== "analyzing") {
+      setAnalysisSeconds(0);
+      return;
+    }
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => setAnalysisSeconds(Math.floor((Date.now() - startedAt) / 1000)), 1_000);
+    return () => window.clearInterval(timer);
+  }, [status]);
+
   const draftChanged = (nextDraft: FormatDraft) => {
     saveLocalDraft(nextDraft);
     setDraft(nextDraft);
@@ -73,7 +84,7 @@ export function MakerBuilderClient() {
     }
     const reader = new FileReader();
     reader.onload = () => {
-      setReference({ fileName: file.name, imageUrl: String(reader.result || "") });
+      setReference({ fileName: file.name, imageUrl: String(reader.result || ""), file });
       setStatus("idle");
       setMessage("Reference ready. Build the editable draft when you are ready.");
     };
@@ -85,29 +96,53 @@ export function MakerBuilderClient() {
   };
 
   const analyzeReference = async () => {
-    if (!reference) return;
+    if (!reference?.file) return;
     setStatus("analyzing");
-    setMessage("Reading saved analysis and building editable layers…");
-    await new Promise((resolve) => window.setTimeout(resolve, 180));
+    setMessage("Reading text, understanding the formula, and separating editable assets…");
     try {
-      if (new URLSearchParams(window.location.search).get("analysisFixture") === "invalid") {
+      const fixture = new URLSearchParams(window.location.search).get("analysisFixture");
+      if (fixture === "invalid") {
         makerAnalysisSchema.parse({ formula: {}, fields: [], lists: [], assets: [], reroll_groups: [], maker_questions: [] });
       }
-      const nextDraft = createMakerDraftFixture({
-        id: crypto.randomUUID(),
-        fileName: reference.fileName,
-        imageUrl: reference.imageUrl,
-      });
+      let nextDraft: FormatDraft;
+      let readyMessage: string;
+      if (fixture === "saved") {
+        await new Promise((resolve) => window.setTimeout(resolve, 180));
+        nextDraft = createMakerDraftFixture({
+          id: crypto.randomUUID(),
+          fileName: reference.fileName,
+          imageUrl: reference.imageUrl,
+        });
+        readyMessage = "Editable draft built from the saved live-analysis fixture. No API call was made.";
+      } else {
+        const form = new FormData();
+        form.set("reference", reference.file);
+        const response = await fetch("/api/builder/analyze", { method: "POST", body: form });
+        const payload = await response.json() as {
+          draft?: unknown;
+          error?: string;
+          warnings?: string[];
+          timing?: { ocrSeconds?: number; semanticSeconds?: number; samSeconds?: number };
+        };
+        if (!response.ok || !payload.draft) throw new Error(payload.error || "Reference analysis stopped without a draft.");
+        nextDraft = assertFormatDraft(payload.draft);
+        const totalSeconds = Object.values(payload.timing || {}).reduce((total, value) => total + (value || 0), 0);
+        readyMessage = payload.warnings?.length
+          ? `Draft built in ${Math.round(totalSeconds)}s with ${payload.warnings.length} item${payload.warnings.length === 1 ? "" : "s"} to review.`
+          : `Editable draft built from this reference in ${Math.round(totalSeconds)}s.`;
+      }
       saveLocalDraft(nextDraft);
       setDraft(nextDraft);
       setVersion(null);
       interactionActions.interactionReset();
       setStatus("ready");
-      setMessage("Editable draft built from the saved analysis fixture. No API call was made.");
+      setMessage(readyMessage);
       window.history.replaceState({}, "", `/builder?draft=${encodeURIComponent(nextDraft.id)}`);
-    } catch {
+    } catch (error) {
       setStatus("failed");
-      setMessage("Analysis stopped: the saved response is invalid. Nothing was repaired or retried.");
+      setMessage(error instanceof Error && error.message.startsWith("Analysis stopped:")
+        ? error.message
+        : `Analysis stopped: ${error instanceof Error ? error.message : "The response was invalid."} Nothing was repaired or retried.`);
     }
   };
 
@@ -168,7 +203,9 @@ export function MakerBuilderClient() {
               </Label>
               <Input id="reference-upload" className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => referenceSelected(event.target.files?.[0])} />
               <div className="mt-5 flex items-center justify-between gap-4">
-                <p className={`text-sm font-semibold ${status === "failed" ? "text-red-600" : "text-slate-500"}`} role="status">{message}</p>
+                <p className={`text-sm font-semibold ${status === "failed" ? "text-red-600" : "text-slate-500"}`} role="status">
+                  {message}{status === "analyzing" ? ` ${analysisSeconds}s` : ""}
+                </p>
                 <Button className="shrink-0 rounded-full px-5" disabled={!reference || status === "analyzing"} onClick={analyzeReference}>
                   {status === "analyzing" ? <LoaderCircle className="animate-spin" /> : <Sparkles />}
                   Build draft

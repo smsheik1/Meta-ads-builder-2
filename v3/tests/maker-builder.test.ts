@@ -45,6 +45,7 @@ assert.equal(
   3,
   "Drag, resize, and rotate must clear temporary Moveable transforms before saving scene geometry.",
 );
-assert.doesNotMatch(clientSource, /NVIDIA|Replicate|fetch\(/);
+assert.match(clientSource, /fetch\("\/api\/builder\/analyze"/);
+assert.doesNotMatch(clientSource, /NVIDIA_NIM_API_KEY|REPLICATE_API_TOKEN|integrate\.api\.nvidia\.com|api\.replicate\.com/);
 
 console.log("maker builder tests passed");
