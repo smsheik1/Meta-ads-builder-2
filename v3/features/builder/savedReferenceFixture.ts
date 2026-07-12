@@ -1,18 +1,17 @@
 import { createMakerDraftFromAnalysis, type PaddleOcrResult } from "./referenceAnalysis";
 import type { MakerAnalysis } from "./model";
 
-// Saved from the successful 2026-07-11 Gemma 4 31B NIM regression so browser
-// QA never spends another provider call.
+// Saved from the successful 2026-07-12 Gemma 4 31B OpenRouter/DeepInfra run so
+// browser QA never spends another provider call.
 export const savedCodexReferenceAnalysis: MakerAnalysis = {
   formula: {
-    premise: "Integration of [Product] with a variety of popular workplace tools.",
-    visual_mechanic: "A central product name paired with a handshake emoji, flanked by a vertical list of integrated apps, with the primary integration highlighted.",
-    adaptation_rule: "The central pair represents the primary focus, while the faded list represents the broader ecosystem of compatibility.",
+    premise: "Codex integrates with your favorite productivity tools.",
+    visual_mechanic: "A central brand name connected via a handshake emoji to a vertical list of integrated software names.",
+    adaptation_rule: "The list of tools can be swapped based on the target audience's tech stack.",
   },
   fields: [
-    { id: "field_product", value: "Codex", evidence_ids: ["text_05"], binding: "brand" },
-    { id: "field_primary_integration", value: "Slack", evidence_ids: ["text_06"], binding: "fixed" },
-    { id: "field_cta", value: "Work with Codex", evidence_ids: ["text_09"], binding: "fixed" },
+    { id: "field_brand", value: "Codex", evidence_ids: ["text_05"], binding: "brand" },
+    { id: "field_cta", value: "Work with Codex", evidence_ids: ["text_09"], binding: "campaign" },
   ],
   lists: [{
     id: "list_integrations",
@@ -22,23 +21,24 @@ export const savedCodexReferenceAnalysis: MakerAnalysis = {
       ["item_2", "Sheets", "text_02"],
       ["item_3", "Asana", "text_03"],
       ["item_4", "Docs", "text_04"],
-      ["item_5", "Gmail", "text_07"],
-      ["item_6", "Slides", "text_08"],
+      ["item_5", "Slack", "text_06"],
+      ["item_6", "Gmail", "text_07"],
+      ["item_7", "Slides", "text_08"],
     ].map(([id, value, evidenceId]) => ({
       id: id!,
       values: [{ key: "app_name", value: value!, evidence_ids: [evidenceId!] }],
       asset_ids: [],
     })),
-    active_item_id: null,
+    active_item_id: "item_5",
   }],
   assets: [
-    { id: "asset_handshake", label: "handshake emoji", evidence_ids: [], binding: "locked", sam_prompt: "handshake emoji" },
-    { id: "asset_logo", label: "Codex logo", evidence_ids: [], binding: "brand", sam_prompt: "abstract swirl logo" },
+    { id: "asset_logo", label: "Codex Logo", evidence_ids: [], binding: "brand", sam_prompt: "minimalist spiral logo" },
+    { id: "asset_handshake", label: "Handshake Emoji", evidence_ids: [], binding: "fixed", sam_prompt: "handshake emoji" },
   ],
   reroll_groups: [
-    { id: "group_core_offer", members: ["field_product", "field_primary_integration", "asset_handshake"], instruction: "Swap the primary integration app to highlight different partnerships." },
-    { id: "group_ecosystem", members: ["list_integrations"], instruction: "Update the list of apps to match the industry of the primary integration." },
-    { id: "group_footer", members: ["field_cta", "asset_logo"], instruction: "Adjust CTA text based on the campaign goal." },
+    { id: "group_brand", members: ["field_brand", "asset_logo"], instruction: "Update brand identity" },
+    { id: "group_integrations", members: ["list_integrations"], instruction: "Change the set of integrated tools" },
+    { id: "group_cta", members: ["field_cta"], instruction: "Modify the call to action" },
   ],
   maker_questions: [],
 };

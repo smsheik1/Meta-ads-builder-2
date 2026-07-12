@@ -1,6 +1,6 @@
 # Maker `/builder` MVP Execution Plan
 
-- Status: Ready to implement
+- Status: Implemented and verified
 - Date: 2026-07-11
 - Scope: One internal Maker turns one static reference ad into one reusable, published Format
 
@@ -23,8 +23,8 @@ This phase proves the Maker workflow. It does not build the Player campaign expe
 - One generic `static-package` format module; published Formats are data, never new React components or registry keys.
 - Preview, builder canvas, publish verification, and later export/share all use `AdRenderSurface`.
 - Native editable primitives are Text, Image, Shape, and Group. Complex decoration stays a locked raster by default.
-- Gemma 4 31B through NVIDIA NIM performs semantic analysis only after an explicit click.
-- PaddleOCR provides text evidence. SAM 3 is deferred until the basic Maker correction loop works.
+- Gemma 4 31B through OpenRouter's pinned DeepInfra backend performs semantic analysis only after an explicit click; provider fallbacks are disabled.
+- PaddleOCR provides text evidence. SAM 3 runs only when a non-text asset actually needs refinement.
 - Invalid model output stops visibly. There is no repair model, retry, or fallback.
 - A partial but structurally valid draft proceeds to Maker correction.
 - The Maker can edit the underlying Format skill as plain text.

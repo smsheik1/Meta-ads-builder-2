@@ -62,7 +62,9 @@ assert.equal(draft.scene.layout.layers.find((layer) => layer.semanticRole === "a
 assert.notDeepEqual(draft.scene, createMakerDraftFixture().scene, "Live reconstruction must not reuse the Codex fixture scene.");
 
 const saved = createSavedReferenceDraftFixture({ id: "saved-live", fileName: "codex.jpg", imageUrl: "data:image/jpeg;base64,reference", now: 123 });
-assert.equal(validateMakerAnalysisEvidence(savedCodexReferenceAnalysis, savedCodexOcr).fields.length, 3);
+const savedAnalysis = validateMakerAnalysisEvidence(savedCodexReferenceAnalysis, savedCodexOcr);
+assert.equal(savedAnalysis.fields.length, 2);
+assert.equal(savedAnalysis.lists[0]?.items.find((item) => item.id === savedAnalysis.lists[0]?.active_item_id)?.values[0]?.value, "Slack");
 assert.equal(saved.scene.metadata.model, "google/gemma-4-31b-it");
 assert.equal(saved.scene.layout.layers.filter((layer) => layer.type === "text").length, 9);
 assert.ok(Math.abs(saved.scene.layout.layers.find((layer) => layer.semanticRole === "list:list_integrations:item_2:app_name")?.rotation || 0) > 5, "Rotated OCR evidence must preserve its angle without inflating the layer box.");

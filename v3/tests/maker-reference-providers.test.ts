@@ -19,13 +19,15 @@ const ocr: PaddleOcrResult = {
 };
 
 let gemmaRequests = 0;
+const gemmaUrls: string[] = [];
 const gemmaBodies: Record<string, unknown>[] = [];
 const gemma = await callGemmaReferenceAnalysis({
   apiKey: "test-key",
   imageUrl: "data:image/jpeg;base64,test",
   ocr,
-  fetcher: async (_url, init) => {
+  fetcher: async (url, init) => {
     gemmaRequests += 1;
+    gemmaUrls.push(String(url));
     gemmaBodies.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
     return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(makerAnalysisFixture) } }] }), {
       status: 200,
@@ -35,8 +37,36 @@ const gemma = await callGemmaReferenceAnalysis({
 });
 assert.equal(gemma.analysis.formula.premise, makerAnalysisFixture.formula.premise);
 assert.equal(gemmaRequests, 1, "Gemma must run once with no retry.");
+assert.equal(gemmaUrls[0], "https://openrouter.ai/api/v1/chat/completions");
 assert.equal(gemmaBodies[0]?.model, "google/gemma-4-31b-it");
 assert.equal((gemmaBodies[0]?.response_format as { type?: string }).type, "json_schema");
+assert.equal((gemmaBodies[0]?.response_format as { json_schema?: { strict?: boolean } }).json_schema?.strict, true);
+assert.equal(gemmaBodies[0]?.structured_outputs, true);
+assert.deepEqual(gemmaBodies[0]?.provider, {
+  order: ["DeepInfra"],
+  allow_fallbacks: false,
+  require_parameters: true,
+});
+assert.equal("chat_template_kwargs" in gemmaBodies[0]!, false);
+assert.equal(JSON.stringify(gemmaBodies[0]?.response_format).includes("uniqueItems"), false);
+
+let providerFailureRequests = 0;
+await assert.rejects(
+  callGemmaReferenceAnalysis({
+    apiKey: "test-key",
+    imageUrl: "data:image/jpeg;base64,test",
+    ocr,
+    fetcher: async () => {
+      providerFailureRequests += 1;
+      return new Response(JSON.stringify({ error: { message: "provider exploded" } }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    },
+  }),
+  /OpenRouter Gemma 4 31B analysis failed: provider exploded/,
+);
+assert.equal(providerFailureRequests, 1, "OpenRouter provider errors must fail without retry or fallback.");
 
 let emptySamRequests = 0;
 const emptySam = await callSam3AssetRefinement({

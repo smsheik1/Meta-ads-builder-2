@@ -52,6 +52,8 @@ assert.match(clientSource, /The analysis response failed the Maker schema/);
 assert.doesNotMatch(clientSource, /NVIDIA_NIM_API_KEY|REPLICATE_API_TOKEN|integrate\.api\.nvidia\.com|api\.replicate\.com/);
 assert.match(analysisServerSource, /vision\.jpg[\s\S]*callGemmaReferenceAnalysis/);
 assert.doesNotMatch(analysisServerSource, /callGemmaReferenceAnalysis\([^)]*referenceImageUrl/);
+assert.match(analysisServerSource, /OPENROUTER_API_KEY/);
+assert.doesNotMatch(analysisServerSource, /NVIDIA_NIM_API_KEY|NVIDIA_NIM_MAKER_MODEL|integrate\.api\.nvidia\.com/);
 assert.match(inspectorSource, /list:\$\{list\.id\}:\$\{item\.id\}:\$\{itemValue\.key\}/, "Live List edits must update their reconstructed scene layer.");
 
 console.log("maker builder tests passed");

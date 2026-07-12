@@ -16,9 +16,18 @@ import {
 import type { MakerAnalysis } from "./model";
 
 const GEMMA_MODEL = "google/gemma-4-31b-it";
+const GEMMA_PROVIDER = "DeepInfra";
 const SAM3_VERSION = "1bf97763d5dfd3a1584adca913a8ef4b43c684fca97e04e39e4c50a3a5e09650";
-const NIM_BASE_URL = "https://integrate.api.nvidia.com/v1";
+const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 const REPLICATE_PREDICTIONS_URL = "https://api.replicate.com/v1/predictions";
+
+// OpenRouter's Gemma backends do not implement the `uniqueItems` grammar keyword.
+// The canonical schema remains unchanged and makerAnalysisSchema enforces the same
+// uniqueness rules after decoding, so acceptance is not relaxed here.
+const openRouterMakerAnalysisSchema = JSON.parse(
+  JSON.stringify(makerAnalysisJsonSchema()),
+  (key, value) => key === "uniqueItems" ? undefined : value,
+) as ReturnType<typeof makerAnalysisJsonSchema>;
 
 type OcrFile = PaddleOcrResult & {
   timing?: { initializationSeconds?: number; predictionSeconds?: number };
@@ -97,7 +106,7 @@ export async function callGemmaReferenceAnalysis({
   const timeout = setTimeout(() => controller.abort(), 300_000);
   const startedAt = Date.now();
   try {
-    let response = await fetchJson(fetcher, `${(process.env.NVIDIA_NIM_BASE_URL || NIM_BASE_URL).replace(/\/$/, "")}/chat/completions`, {
+    const response = await fetchJson(fetcher, `${OPENROUTER_BASE_URL}/chat/completions`, {
       method: "POST",
       headers: {
         accept: "application/json",
@@ -106,31 +115,35 @@ export async function callGemmaReferenceAnalysis({
         "user-agent": "wiggly-maker-analysis/1.0",
       },
       body: JSON.stringify({
-        model: process.env.NVIDIA_NIM_MAKER_MODEL || GEMMA_MODEL,
+        model: GEMMA_MODEL,
         messages: [{ role: "user", content: [
           { type: "image_url", image_url: { url: imageUrl } },
           { type: "text", text: buildMakerAnalysisPrompt(ocr) },
         ] }],
-        chat_template_kwargs: { enable_thinking: false },
         temperature: 0,
         seed: 777,
         max_tokens: 4096,
         stream: false,
+        structured_outputs: true,
+        provider: {
+          order: [GEMMA_PROVIDER],
+          allow_fallbacks: false,
+          require_parameters: true,
+        },
         response_format: {
           type: "json_schema",
-          json_schema: { name: "maker_analysis_mvp", schema: makerAnalysisJsonSchema() },
+          json_schema: {
+            name: "maker_analysis_mvp",
+            strict: true,
+            schema: openRouterMakerAnalysisSchema,
+          },
         },
       }),
       signal: controller.signal,
-    }, "Gemma 4 31B analysis");
-    while (response.status === 202) {
-      const requestId = String(response.body.requestId || response.body.request_id || "");
-      if (!requestId) throw new Error("NVIDIA NIM returned 202 without a request ID.");
-      await new Promise((resolve) => setTimeout(resolve, 2_000));
-      response = await fetchJson(fetcher, `${(process.env.NVIDIA_NIM_BASE_URL || NIM_BASE_URL).replace(/\/$/, "")}/status/${encodeURIComponent(requestId)}`, {
-        headers: { authorization: `Bearer ${apiKey}` },
-        signal: controller.signal,
-      }, "Gemma 4 31B status");
+    }, "OpenRouter Gemma 4 31B analysis");
+    const providerError = response.body.error as { message?: unknown } | undefined;
+    if (providerError) {
+      throw new Error(`OpenRouter Gemma 4 31B analysis failed: ${String(providerError.message || "Unknown provider error.")}`);
     }
     const choices = response.body.choices as Array<{ message?: { content?: string } }> | undefined;
     const content = choices?.[0]?.message?.content;
@@ -208,8 +221,8 @@ export async function callSam3AssetRefinement({
 
 export async function analyzeMakerReference(file: File) {
   const fetcher = fetch;
-  const nvidiaApiKey = process.env.NVIDIA_NIM_API_KEY;
-  if (!nvidiaApiKey) throw new Error("NVIDIA NIM Maker analysis is not configured.");
+  const openRouterApiKey = process.env.OPENROUTER_API_KEY;
+  if (!openRouterApiKey) throw new Error("OpenRouter Maker analysis is not configured.");
   const workDir = await mkdtemp(path.join(tmpdir(), "wiggly-maker-analysis-"));
   try {
     const inputPath = path.join(workDir, `input${file.type === "image/png" ? ".png" : file.type === "image/webp" ? ".webp" : ".jpg"}`);
@@ -222,7 +235,7 @@ export async function analyzeMakerReference(file: File) {
     if (ocr.texts.length === 0) throw new Error("PaddleOCR found no editable text in this reference.");
     const referenceImageUrl = await dataUrl(path.join(workDir, "reference.jpg"), "image/jpeg");
     const visionImageUrl = await dataUrl(path.join(workDir, "vision.jpg"), "image/jpeg");
-    const semantic = await callGemmaReferenceAnalysis({ apiKey: nvidiaApiKey, fetcher, imageUrl: visionImageUrl, ocr });
+    const semantic = await callGemmaReferenceAnalysis({ apiKey: openRouterApiKey, fetcher, imageUrl: visionImageUrl, ocr });
     const refinableAssets = assetsNeedingRefinement(semantic.analysis);
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
     if (refinableAssets.length > 0 && !replicateApiToken) {
