@@ -226,7 +226,8 @@ export async function analyzeMakerReference(
     const ocr = paddleOcrResultSchema.parse({ width: rawOcr.width, height: rawOcr.height, texts: rawOcr.texts });
     if (ocr.texts.length === 0) throw new Error("PaddleOCR found no editable text in this reference.");
     const referenceImageUrl = await dataUrl(path.join(workDir, "reference.jpg"), "image/jpeg");
-    const semantic = await callGemmaReferenceAnalysis({ apiKey: nvidiaApiKey, fetcher, imageUrl: referenceImageUrl, ocr });
+    const visionImageUrl = await dataUrl(path.join(workDir, "vision.jpg"), "image/jpeg");
+    const semantic = await callGemmaReferenceAnalysis({ apiKey: nvidiaApiKey, fetcher, imageUrl: visionImageUrl, ocr });
     const refinableAssets = assetsNeedingRefinement(semantic.analysis);
     const replicateApiToken = dependencies.replicateApiToken || process.env.REPLICATE_API_TOKEN;
     if (refinableAssets.length > 0 && !replicateApiToken) {

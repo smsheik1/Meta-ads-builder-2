@@ -55,6 +55,14 @@ def run_ocr(input_path: Path, output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     reference_path = output_dir / "reference.jpg"
     reference = prepare_reference(input_path, reference_path)
+    vision = reference
+    if max(reference.size) > 1024:
+        scale = 1024 / max(reference.size)
+        vision = reference.resize(
+            (round(reference.width * scale), round(reference.height * scale)),
+            Image.Resampling.LANCZOS,
+        )
+    vision.save(output_dir / "vision.jpg", format="JPEG", quality=86, optimize=True)
     os.environ.setdefault("PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK", "True")
     initialized_at = time.perf_counter()
     pipeline = PaddleOCR(

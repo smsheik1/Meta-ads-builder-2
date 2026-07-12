@@ -33,6 +33,7 @@ assert.notEqual(reopened?.scene.layout.layers[0]?.x, 999, "Published version mus
 const pageSource = readFileSync("app/builder/page.tsx", "utf8");
 const canvasSource = readFileSync("features/builder/BuilderCanvas.tsx", "utf8");
 const clientSource = readFileSync("features/builder/MakerBuilderClient.tsx", "utf8");
+const analysisServerSource = readFileSync("features/builder/referenceAnalysis.server.ts", "utf8");
 for (const createFile of ["app/create/CreateResearchClient.tsx", "app/create/CreateControlPanel.tsx"]) {
   assert.doesNotMatch(readFileSync(createFile, "utf8"), /features\/builder|static-package/);
 }
@@ -47,5 +48,7 @@ assert.equal(
 );
 assert.match(clientSource, /fetch\("\/api\/builder\/analyze"/);
 assert.doesNotMatch(clientSource, /NVIDIA_NIM_API_KEY|REPLICATE_API_TOKEN|integrate\.api\.nvidia\.com|api\.replicate\.com/);
+assert.match(analysisServerSource, /vision\.jpg[\s\S]*callGemmaReferenceAnalysis/);
+assert.doesNotMatch(analysisServerSource, /callGemmaReferenceAnalysis\([^)]*referenceImageUrl/);
 
 console.log("maker builder tests passed");
