@@ -68,6 +68,43 @@ await assert.rejects(
 );
 assert.equal(providerFailureRequests, 1, "OpenRouter provider errors must fail without retry or fallback.");
 
+let malformedRequests = 0;
+const loggedErrors: string[] = [];
+const originalConsoleError = console.error;
+console.error = (...values: unknown[]) => loggedErrors.push(values.map(String).join(" "));
+try {
+  await assert.rejects(
+    callGemmaReferenceAnalysis({
+      apiKey: "test-key",
+      imageUrl: "data:image/jpeg;base64,test",
+      ocr,
+      fetcher: async () => {
+        malformedRequests += 1;
+        return new Response(JSON.stringify({
+          id: "generation-test-123",
+          model: "google/gemma-4-31b-it",
+          provider: "DeepInfra",
+          choices: [{
+            finish_reason: "length",
+            native_finish_reason: "MAX_TOKENS",
+            message: { content: '{"formula":{"premise":"cut off"' },
+          }],
+          usage: { prompt_tokens: 1200, completion_tokens: 4096, total_tokens: 5296 },
+        }), { status: 200, headers: { "content-type": "application/json" } });
+      },
+    }),
+    /reached its 4,096-token output limit and returned incomplete JSON/,
+  );
+} finally {
+  console.error = originalConsoleError;
+}
+assert.equal(malformedRequests, 1, "Malformed Gemma output must fail without retry or fallback.");
+assert.equal(loggedErrors.length, 1);
+assert.match(loggedErrors[0]!, /generation-test-123/);
+assert.match(loggedErrors[0]!, /\"finishReason\":\"length\"/);
+assert.match(loggedErrors[0]!, /\"completion_tokens\":4096/);
+assert.match(loggedErrors[0]!, /\"contentChars\":/);
+
 let emptySamRequests = 0;
 const emptySam = await callSam3AssetRefinement({
   assets: [],

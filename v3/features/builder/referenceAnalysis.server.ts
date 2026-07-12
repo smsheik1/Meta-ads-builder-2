@@ -146,14 +146,33 @@ export async function callGemmaReferenceAnalysis({
     if (providerError) {
       throw new Error(`OpenRouter Gemma 4 31B analysis failed: ${String(providerError.message || "Unknown provider error.")}`);
     }
-    const choices = response.body.choices as Array<{ message?: { content?: string } }> | undefined;
-    const content = choices?.[0]?.message?.content;
+    const choices = response.body.choices as Array<{
+      finish_reason?: unknown;
+      native_finish_reason?: unknown;
+      message?: { content?: unknown };
+    }> | undefined;
+    const choice = choices?.[0];
+    const content = choice?.message?.content;
     if (typeof content !== "string" || !content.trim()) throw new Error("Gemma 4 31B returned no analysis.");
     let parsed: unknown;
     try {
       parsed = JSON.parse(content);
     } catch {
-      throw new Error("Gemma 4 31B did not return bare JSON. Nothing was repaired or retried.");
+      console.error(`[wiggly:maker-analysis] invalid Gemma JSON ${JSON.stringify({
+        responseId: response.body.id ?? null,
+        model: response.body.model ?? GEMMA_MODEL,
+        provider: response.body.provider ?? GEMMA_PROVIDER,
+        finishReason: choice?.finish_reason ?? null,
+        nativeFinishReason: choice?.native_finish_reason ?? null,
+        usage: response.body.usage ?? null,
+        contentChars: content.length,
+        contentPrefix: content.slice(0, 160),
+        contentSuffix: content.slice(-160),
+      })}`);
+      if (choice?.finish_reason === "length") {
+        throw new Error("Gemma 4 31B reached its 4,096-token output limit and returned incomplete JSON.");
+      }
+      throw new Error("Gemma 4 31B did not return bare JSON.");
     }
     return {
       analysis: validateMakerAnalysisEvidence(parsed, ocr),
