@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { analyzeMakerReference } from "@/features/builder/referenceAnalysis.server";
+import { encodeMakerAnalysisStreamMessage } from "@/features/builder/analysisProgress";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -16,7 +17,45 @@ export async function POST(request: Request) {
     if (!(file instanceof File)) return NextResponse.json({ error: "Choose one reference image." }, { status: 400 });
     if (!allowedTypes.has(file.type)) return NextResponse.json({ error: "Reference must be a PNG, JPG, or WebP image." }, { status: 400 });
     if (file.size > 12 * 1024 * 1024) return NextResponse.json({ error: "Reference image must be smaller than 12 MB." }, { status: 400 });
-    return NextResponse.json(await analyzeMakerReference(file));
+    const encoder = new TextEncoder();
+    let streamClosed = false;
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        const send = (message: Parameters<typeof encodeMakerAnalysisStreamMessage>[0]) => {
+          if (!streamClosed) controller.enqueue(encoder.encode(encodeMakerAnalysisStreamMessage(message)));
+        };
+        send({
+          type: "progress",
+          activity: {
+            id: "upload",
+            label: "Reference received",
+            detail: `${file.name} is ready for analysis.`,
+            status: "complete",
+            elapsedSeconds: 0,
+          },
+        });
+        void analyzeMakerReference(file, (activity) => send({ type: "progress", activity }))
+          .then((result) => send({ type: "complete", result }))
+          .catch((error) => {
+            const message = error instanceof Error ? error.message : "Reference analysis failed.";
+            console.error("[wiggly:maker-analysis] stopped", { message });
+            send({ type: "error", error: `Analysis stopped: ${message} Nothing was repaired or retried.` });
+          })
+          .finally(() => {
+            if (!streamClosed) controller.close();
+            streamClosed = true;
+          });
+      },
+      cancel() {
+        streamClosed = true;
+      },
+    });
+    return new Response(stream, {
+      headers: {
+        "cache-control": "no-store",
+        "content-type": "application/x-ndjson; charset=utf-8",
+      },
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Reference analysis failed.";
     console.error("[wiggly:maker-analysis] stopped", { message });
