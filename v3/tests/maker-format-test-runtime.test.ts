@@ -68,6 +68,12 @@ assert.equal(logoLayer?.type, "image");
 assert.equal(logoLayer?.type === "image" ? logoLayer.src : "", makerTestResearchFixture.brand.logoUrl);
 const activeListLayer = flattenStaticLayers(scenes[0]!.layout.layers).find((layer) => layer.semanticRole === "list:integration_tools:slack:name");
 assert.equal(activeListLayer?.type === "text" ? activeListLayer.text : "", "Thank-yous");
+const fittedListLayer = flattenStaticLayers(scenes[0]!.layout.layers).find((layer) => layer.type === "text" && layer.text === "Hanukkah");
+const sourceListLayer = flattenStaticLayers(lockedDraft.scene.layout.layers).find((layer) => layer.semanticRole === fittedListLayer?.semanticRole);
+assert.ok(
+  fittedListLayer?.type === "text" && sourceListLayer?.type === "text" && fittedListLayer.fontSize < sourceListLayer.fontSize,
+  "Long rerolled List values must shrink to stay inside the Maker-approved box.",
+);
 assert.equal(scenes[0]?.metadata.selectedProductHandles?.[0], "blueberry-pie");
 
 assert.equal(nextMakerTestVariationIndex(0, 3), 1);

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Check, ChevronLeft, CircleX, FileImage, Layers3, LoaderCircle, Sparkles, Upload } from "lucide-react";
+import { Check, ChevronLeft, CircleX, FileImage, FlaskConical, Layers3, LoaderCircle, Sparkles, Upload } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
@@ -14,6 +14,7 @@ import { useBuilderInteractionActions, useSelectedBuilderLayerId } from "./inter
 import { loadLocalDraft, loadLocalVersion, publishLocalDraft, saveLocalDraft } from "./localRepository";
 import { assertFormatDraft, flattenStaticLayers, makerAnalysisSchema, updateFormatDraft, validateFormatDraft, type FormatDraft, type FormatVersion } from "./model";
 import { createSavedReferenceDraftFixture } from "./savedReferenceFixture";
+import { createMakerFormatTestDraftFixture } from "../formats/static-package/testFixture";
 import { mergeMakerAnalysisActivity, type MakerAnalysisActivity, type MakerAnalysisStreamMessage } from "./analysisProgress";
 
 type UploadReference = { fileName: string; imageUrl: string; file?: File };
@@ -143,6 +144,7 @@ export function MakerBuilderClient() {
   const analyzeReference = async () => {
     if (!reference?.file) return;
     const analysisStartedAt = Date.now();
+    const makerTestFixture = new URLSearchParams(window.location.search).get("makerTestFixture");
     setStatus("analyzing");
     setMessage("Building your editable draft…");
     const activityChanged = (activity: MakerAnalysisActivity) => setAnalysisActivity((current) => mergeMakerAnalysisActivity(current, activity));
@@ -155,17 +157,15 @@ export function MakerBuilderClient() {
       }
       let nextDraft: FormatDraft;
       let readyMessage: string;
-      if (fixture === "saved") {
+      if (fixture === "saved" || fixture === "maker-test") {
         const fixtureStartedAt = Date.now();
         for (const activity of fixtureActivity) {
           await new Promise((resolve) => window.setTimeout(resolve, 350));
           activityChanged({ ...activity, elapsedSeconds: Math.round((Date.now() - fixtureStartedAt) / 1000) });
         }
-        nextDraft = createSavedReferenceDraftFixture({
-          id: crypto.randomUUID(),
-          fileName: reference.fileName,
-          imageUrl: reference.imageUrl,
-        });
+        nextDraft = fixture === "maker-test"
+          ? createMakerFormatTestDraftFixture(crypto.randomUUID())
+          : createSavedReferenceDraftFixture({ id: crypto.randomUUID(), fileName: reference.fileName, imageUrl: reference.imageUrl });
         readyMessage = "Editable draft built from the saved live-analysis fixture. No API call was made.";
       } else {
         const form = new FormData();
@@ -207,7 +207,7 @@ export function MakerBuilderClient() {
       interactionActions.interactionReset();
       setStatus("ready");
       setMessage(readyMessage);
-      window.history.replaceState({}, "", `/builder?draft=${encodeURIComponent(nextDraft.id)}`);
+      window.history.replaceState({}, "", `/builder?draft=${encodeURIComponent(nextDraft.id)}${makerTestFixture === "saved" ? "&makerTestFixture=saved" : ""}`);
     } catch (error) {
       const failureMessage = error instanceof Error && error.message.startsWith("Analysis stopped:")
         ? error.message
@@ -318,7 +318,10 @@ export function MakerBuilderClient() {
           {readOnly ? (
             <Button variant="outline" onClick={() => window.location.assign(`/builder?draft=${encodeURIComponent(activeDraft.id)}`)}>Open draft</Button>
           ) : (
-            <Button disabled={!validateFormatDraft(activeDraft).valid} onClick={publish}><Check /> Publish version</Button>
+            <>
+              <Button asChild variant="outline"><a href={`/create?makerTest=${encodeURIComponent(activeDraft.id)}${typeof window !== "undefined" && new URLSearchParams(window.location.search).get("makerTestFixture") === "saved" ? "&makerTestFixture=saved" : ""}`}><FlaskConical /> Test with a brand</a></Button>
+              <Button disabled={!validateFormatDraft(activeDraft).valid} onClick={publish}><Check /> Publish version</Button>
+            </>
           )}
         </div>
       </header>

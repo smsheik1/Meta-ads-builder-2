@@ -40,6 +40,8 @@ const makerTestOcr: PaddleOcrResult = {
 
 const referenceImage = svgDataUrl('<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080"><rect width="1080" height="1080" fill="white"/></svg>');
 const logoImage = svgDataUrl('<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><circle cx="40" cy="40" r="34" fill="none" stroke="black" stroke-width="8"/></svg>');
+const blueberryPieImage = svgDataUrl('<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360"><rect width="480" height="360" fill="#fff4e3"/><circle cx="240" cy="190" r="105" fill="#d89a43"/><circle cx="240" cy="190" r="72" fill="#563067"/><text x="240" y="330" text-anchor="middle" font-family="Arial" font-size="28" font-weight="700" fill="#d71920">Blueberry Pie</text></svg>');
+const cookieTinImage = svgDataUrl('<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360"><rect width="480" height="360" fill="#eef3ff"/><rect x="120" y="78" width="240" height="210" rx="28" fill="#173c8c"/><circle cx="240" cy="183" r="70" fill="#c98238"/><circle cx="215" cy="160" r="9" fill="#472716"/><circle cx="265" cy="205" r="9" fill="#472716"/><text x="240" y="330" text-anchor="middle" font-family="Arial" font-size="28" font-weight="700" fill="#d71920">Cookie Tin</text></svg>');
 
 export function createMakerFormatTestDraftFixture(id = "maker-format-test-draft") {
   const analysis = structuredClone(makerAnalysisFixture);
@@ -110,7 +112,7 @@ export const makerTestResearchFixture: StoredWebsiteResearchResult = {
         title: "Grande Blueberry Pie",
         handle: "blueberry-pie",
         url: "https://davids-cookies.test/products/blueberry-pie",
-        imageUrl: "https://images.example.test/blueberry-pie.png",
+        imageUrl: blueberryPieImage,
         imageAlt: "David's Grande Blueberry Pie",
         productType: "Pie",
         vendor: "David's Cookies",
@@ -124,7 +126,7 @@ export const makerTestResearchFixture: StoredWebsiteResearchResult = {
         title: "Chocolate Chunk Cookie Tin",
         handle: "cookie-tin",
         url: "https://davids-cookies.test/products/cookie-tin",
-        imageUrl: "https://images.example.test/cookie-tin.png",
+        imageUrl: cookieTinImage,
         imageAlt: "Chocolate Chunk Cookie Tin",
         productType: "Cookies",
         vendor: "David's Cookies",

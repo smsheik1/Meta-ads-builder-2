@@ -209,7 +209,7 @@ const pickBrandAccent = (research: StoredWebsiteResearchResult, background: stri
 const fitText = (layer: StaticTextLayer, text: string): StaticTextLayer => {
   let fontSize = layer.fontSize;
   while (fontSize > 10) {
-    const charactersPerLine = Math.max(1, Math.floor(layer.width / (fontSize * 0.56)));
+    const charactersPerLine = Math.max(1, Math.floor(layer.width / (fontSize * 0.68)));
     const lines = Math.max(1, Math.floor(layer.height / (fontSize * layer.lineHeight)));
     if (text.length <= charactersPerLine * lines) break;
     fontSize -= 2;
