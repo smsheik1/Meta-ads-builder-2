@@ -31,13 +31,6 @@ type SamResult = {
   masks_offset?: number[][];
 };
 
-type AnalysisDependencies = {
-  fetch?: typeof fetch;
-  pythonPath?: string;
-  nvidiaApiKey?: string;
-  replicateApiToken?: string;
-};
-
 const dataUrl = async (filePath: string, mimeType: string) =>
   `data:${mimeType};base64,${(await readFile(filePath)).toString("base64")}`;
 
@@ -106,7 +99,12 @@ export async function callGemmaReferenceAnalysis({
   try {
     let response = await fetchJson(fetcher, `${(process.env.NVIDIA_NIM_BASE_URL || NIM_BASE_URL).replace(/\/$/, "")}/chat/completions`, {
       method: "POST",
-      headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
+      headers: {
+        accept: "application/json",
+        authorization: `Bearer ${apiKey}`,
+        "content-type": "application/json",
+        "user-agent": "wiggly-maker-analysis/1.0",
+      },
       body: JSON.stringify({
         model: process.env.NVIDIA_NIM_MAKER_MODEL || GEMMA_MODEL,
         messages: [{ role: "user", content: [
@@ -208,18 +206,15 @@ export async function callSam3AssetRefinement({
   return { results, elapsedSeconds: Math.round((Date.now() - startedAt) / 100) / 10 };
 }
 
-export async function analyzeMakerReference(
-  file: File,
-  dependencies: AnalysisDependencies = {},
-) {
-  const fetcher = dependencies.fetch || fetch;
-  const nvidiaApiKey = dependencies.nvidiaApiKey || process.env.NVIDIA_NIM_API_KEY;
+export async function analyzeMakerReference(file: File) {
+  const fetcher = fetch;
+  const nvidiaApiKey = process.env.NVIDIA_NIM_API_KEY;
   if (!nvidiaApiKey) throw new Error("NVIDIA NIM Maker analysis is not configured.");
   const workDir = await mkdtemp(path.join(tmpdir(), "wiggly-maker-analysis-"));
   try {
     const inputPath = path.join(workDir, `input${file.type === "image/png" ? ".png" : file.type === "image/webp" ? ".webp" : ".jpg"}`);
     await writeFile(inputPath, Buffer.from(await file.arrayBuffer()));
-    const python = await resolvePython(dependencies.pythonPath);
+    const python = await resolvePython();
     const script = path.join(/*turbopackIgnore: true*/ process.cwd(), "scripts", "maker-reference-ocr.py");
     await runPython(python, [script, "ocr", inputPath, workDir], 180_000);
     const rawOcr = JSON.parse(await readFile(path.join(workDir, "ocr.json"), "utf8")) as OcrFile;
@@ -229,7 +224,7 @@ export async function analyzeMakerReference(
     const visionImageUrl = await dataUrl(path.join(workDir, "vision.jpg"), "image/jpeg");
     const semantic = await callGemmaReferenceAnalysis({ apiKey: nvidiaApiKey, fetcher, imageUrl: visionImageUrl, ocr });
     const refinableAssets = assetsNeedingRefinement(semantic.analysis);
-    const replicateApiToken = dependencies.replicateApiToken || process.env.REPLICATE_API_TOKEN;
+    const replicateApiToken = process.env.REPLICATE_API_TOKEN;
     if (refinableAssets.length > 0 && !replicateApiToken) {
       throw new Error(`SAM 3 is required for ${refinableAssets.length} editable asset${refinableAssets.length === 1 ? "" : "s"}, but Replicate is not configured.`);
     }
@@ -262,7 +257,6 @@ export async function analyzeMakerReference(
         backgroundImageUrl: await dataUrl(path.join(workDir, "background.jpg"), "image/jpeg"),
         ocr,
         refinedAssets,
-        warnings: composition.warnings,
       },
     });
     return {

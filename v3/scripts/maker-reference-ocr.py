@@ -189,7 +189,6 @@ def compose_reference(
                 "y": y,
                 "width": asset_width,
                 "height": asset_height,
-                "confidence": round(confidence, 4),
             }
         )
 

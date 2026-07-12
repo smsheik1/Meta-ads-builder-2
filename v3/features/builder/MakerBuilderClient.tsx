@@ -10,10 +10,10 @@ import { cn } from "@/lib/utils";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
 import { BuilderCanvas } from "./BuilderCanvas";
 import { BuilderInspector } from "./BuilderInspector";
-import { createMakerDraftFixture } from "./fixture";
 import { useBuilderInteractionActions, useSelectedBuilderLayerId } from "./interactionStore";
 import { loadLocalDraft, loadLocalVersion, publishLocalDraft, saveLocalDraft } from "./localRepository";
 import { assertFormatDraft, flattenStaticLayers, makerAnalysisSchema, updateFormatDraft, validateFormatDraft, type FormatDraft, type FormatVersion } from "./model";
+import { createSavedReferenceDraftFixture } from "./savedReferenceFixture";
 
 type UploadReference = { fileName: string; imageUrl: string; file?: File };
 
@@ -102,13 +102,14 @@ export function MakerBuilderClient() {
     try {
       const fixture = new URLSearchParams(window.location.search).get("analysisFixture");
       if (fixture === "invalid") {
-        makerAnalysisSchema.parse({ formula: {}, fields: [], lists: [], assets: [], reroll_groups: [], maker_questions: [] });
+        const invalid = makerAnalysisSchema.safeParse({ formula: {}, fields: [], lists: [], assets: [], reroll_groups: [], maker_questions: [] });
+        if (!invalid.success) throw new Error("The analysis response failed the Maker schema.");
       }
       let nextDraft: FormatDraft;
       let readyMessage: string;
       if (fixture === "saved") {
         await new Promise((resolve) => window.setTimeout(resolve, 180));
-        nextDraft = createMakerDraftFixture({
+        nextDraft = createSavedReferenceDraftFixture({
           id: crypto.randomUUID(),
           fileName: reference.fileName,
           imageUrl: reference.imageUrl,

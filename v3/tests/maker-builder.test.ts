@@ -34,6 +34,7 @@ const pageSource = readFileSync("app/builder/page.tsx", "utf8");
 const canvasSource = readFileSync("features/builder/BuilderCanvas.tsx", "utf8");
 const clientSource = readFileSync("features/builder/MakerBuilderClient.tsx", "utf8");
 const analysisServerSource = readFileSync("features/builder/referenceAnalysis.server.ts", "utf8");
+const inspectorSource = readFileSync("features/builder/BuilderInspector.tsx", "utf8");
 for (const createFile of ["app/create/CreateResearchClient.tsx", "app/create/CreateControlPanel.tsx"]) {
   assert.doesNotMatch(readFileSync(createFile, "utf8"), /features\/builder|static-package/);
 }
@@ -47,8 +48,10 @@ assert.equal(
   "Drag, resize, and rotate must clear temporary Moveable transforms before saving scene geometry.",
 );
 assert.match(clientSource, /fetch\("\/api\/builder\/analyze"/);
+assert.match(clientSource, /The analysis response failed the Maker schema/);
 assert.doesNotMatch(clientSource, /NVIDIA_NIM_API_KEY|REPLICATE_API_TOKEN|integrate\.api\.nvidia\.com|api\.replicate\.com/);
 assert.match(analysisServerSource, /vision\.jpg[\s\S]*callGemmaReferenceAnalysis/);
 assert.doesNotMatch(analysisServerSource, /callGemmaReferenceAnalysis\([^)]*referenceImageUrl/);
+assert.match(inspectorSource, /list:\$\{list\.id\}:\$\{item\.id\}:\$\{itemValue\.key\}/, "Live List edits must update their reconstructed scene layer.");
 
 console.log("maker builder tests passed");

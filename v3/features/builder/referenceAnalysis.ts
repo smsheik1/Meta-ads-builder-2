@@ -1,4 +1,5 @@
 import { z } from "zod";
+import makerAnalysisMvpJsonSchema from "../../../docs/research-intake/schemas/maker-analysis-mvp.schema.json";
 import type {
   StaticAdLayer,
   StaticImageLayer,
@@ -37,7 +38,6 @@ export type RefinedAsset = {
   y: number;
   width: number;
   height: number;
-  confidence: number;
 };
 
 export type ReferenceAnalysisArtifacts = {
@@ -45,7 +45,6 @@ export type ReferenceAnalysisArtifacts = {
   backgroundImageUrl: string;
   ocr: PaddleOcrResult;
   refinedAssets: RefinedAsset[];
-  warnings: string[];
 };
 
 const claimedEvidenceIds = (analysis: MakerAnalysis) => [
@@ -77,7 +76,7 @@ export function validateMakerAnalysisEvidence(value: unknown, ocr: PaddleOcrResu
 }
 
 export function makerAnalysisJsonSchema() {
-  return z.toJSONSchema(makerAnalysisSchema, { target: "draft-7" });
+  return makerAnalysisMvpJsonSchema;
 }
 
 export function buildMakerAnalysisPrompt(ocr: PaddleOcrResult) {
@@ -111,6 +110,22 @@ Rules:
 const evidenceBounds = (ids: string[], ocr: PaddleOcrResult) => {
   const evidence = ocr.texts.filter((item) => ids.includes(item.id));
   if (evidence.length === 0) throw new Error(`No OCR geometry exists for ${ids.join(", ")}.`);
+  if (evidence.length === 1) {
+    const [[x0, y0], [x1, y1], [x2, y2], [x3, y3]] = evidence[0]!.polygon;
+    const distance = (left: [number, number], right: [number, number]) => Math.hypot(right[0] - left[0], right[1] - left[1]);
+    const width = (distance([x0, y0], [x1, y1]) + distance([x3, y3], [x2, y2])) / 2;
+    const height = (distance([x0, y0], [x3, y3]) + distance([x1, y1], [x2, y2])) / 2;
+    const centerX = (x0 + x1 + x2 + x3) / 4;
+    const centerY = (y0 + y1 + y2 + y3) / 4;
+    return {
+      x: centerX - width / 2,
+      y: centerY - height / 2,
+      width: Math.max(1, width),
+      height: Math.max(1, height),
+      rotation: Math.atan2(y1 - y0, x1 - x0) * (180 / Math.PI),
+      color: evidence[0]!.textColor,
+    };
+  }
   const xs = evidence.flatMap((item) => item.polygon.map(([x]) => x));
   const ys = evidence.flatMap((item) => item.polygon.map(([, y]) => y));
   const x = Math.max(0, Math.min(...xs));
@@ -122,6 +137,7 @@ const evidenceBounds = (ids: string[], ocr: PaddleOcrResult) => {
     y,
     width: Math.max(1, right - x),
     height: Math.max(1, bottom - y),
+    rotation: 0,
     color: evidence[0]!.textColor,
   };
 };
@@ -155,7 +171,7 @@ const textLayer = ({
     y: bounds.y,
     width: bounds.width,
     height: Math.max(bounds.height, bounds.height * 1.18),
-    rotation: 0,
+    rotation: bounds.rotation,
     visible: true,
     locked: binding === "locked",
     opacity: 1,

@@ -153,9 +153,16 @@ export function BuilderInspector({
                         const value = event.target.value;
                         const analysis = structuredClone(draft.analysis);
                         analysis.lists[listIndex]!.items[itemIndex]!.values[0]!.value = value;
+                        const itemValue = list.items[itemIndex]?.values[0];
+                        const itemLayer = itemValue
+                          ? flattenStaticLayers(draft.scene.layout.layers).find((layer) => layer.semanticRole === `list:${list.id}:${item.id}:${itemValue.key}`)
+                          : null;
                         const activeLayer = flattenStaticLayers(draft.scene.layout.layers).find((layer) => layer.semanticRole === `list:${list.id}:active`);
-                        const scene = item.id === list.active_item_id && activeLayer?.type === "text"
-                          ? replaceStaticLayer(draft.scene, activeLayer.id, (layer) => layer.type === "text" ? { ...layer, text: value } : layer)
+                        const targetLayer = itemLayer?.type === "text"
+                          ? itemLayer
+                          : item.id === list.active_item_id && activeLayer?.type === "text" ? activeLayer : null;
+                        const scene = targetLayer
+                          ? replaceStaticLayer(draft.scene, targetLayer.id, (layer) => layer.type === "text" ? { ...layer, text: value } : layer)
                           : draft.scene;
                         draftChanged(updateFormatDraft(draft, { analysis, scene }));
                       }}
