@@ -169,4 +169,10 @@ Default public test host:
 https://v3.wiggly.agentenamel.com/create
 ```
 
-The workflow is intentionally `workflow_dispatch` only until v3 passes live smoke.
+### Maker dogfood runtime
+
+Production `/builder` analysis is enabled by `WIGGLY_MAKER_LIVE_ANALYSIS=true` and requires the GitHub Actions secrets `OPENROUTER_API_KEY` and `REPLICATE_API_TOKEN`. The Oracle deploy installs and prewarms PaddleOCR in `v3/.maker-analysis-venv` only when the requirements checksum changes; normal deploys reuse that environment. Missing provider secrets or a failed Python setup stops deployment visibly before PM2 restarts the app.
+
+Maker drafts and published versions remain browser-local during dogfooding. The assistant must use the same browser profile and should not clear site storage until durable persistence is implemented.
+
+The workflow runs automatically when `main` changes and remains manually triggerable for retries.

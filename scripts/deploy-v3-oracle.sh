@@ -35,6 +35,15 @@ for env_var in "${REQUIRED_ENV_VARS[@]}"; do
   fi
 done
 
+if [ "${WIGGLY_MAKER_LIVE_ANALYSIS:-false}" = "true" ]; then
+  for env_var in OPENROUTER_API_KEY REPLICATE_API_TOKEN; do
+    if [ -z "${!env_var:-}" ]; then
+      echo "Missing required Maker production env var: $env_var" >&2
+      exit 1
+    fi
+  done
+fi
+
 export CONVEX_DEPLOY_KEY="$V3_CONVEX_DEPLOY_KEY"
 export CONVEX_URL="$V3_CONVEX_URL"
 export NEXT_PUBLIC_CONVEX_URL="$NEXT_PUBLIC_V3_CONVEX_URL"
@@ -63,6 +72,22 @@ if [ -f package-lock.json ]; then
   npm ci --workspaces=false --include=optional
 else
   npm install --workspaces=false --include=optional
+fi
+
+if [ "${WIGGLY_MAKER_LIVE_ANALYSIS:-false}" = "true" ]; then
+  MAKER_REQUIREMENTS_HASH="$(sha256sum maker-analysis-requirements.txt | cut -d' ' -f1)"
+  MAKER_REQUIREMENTS_STAMP=".maker-analysis-venv/.wiggly-requirements-sha256"
+  if [ ! -x .maker-analysis-venv/bin/python ] || [ ! -f "$MAKER_REQUIREMENTS_STAMP" ] || [ "$(<"$MAKER_REQUIREMENTS_STAMP")" != "$MAKER_REQUIREMENTS_HASH" ]; then
+    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+    if ! command -v uv >/dev/null 2>&1; then
+      curl -LsSf https://astral.sh/uv/install.sh | sh
+    fi
+    command -v uv >/dev/null 2>&1 || { echo "uv installation failed." >&2; exit 1; }
+    bash scripts/setup-maker-analysis.sh
+    printf '%s\n' "$MAKER_REQUIREMENTS_HASH" > "$MAKER_REQUIREMENTS_STAMP"
+  else
+    .maker-analysis-venv/bin/python -c 'from paddleocr import PaddleOCR; print("Maker PaddleOCR cache is ready.")'
+  fi
 fi
 
 for env_var in "${CONVEX_ACTION_ENV_VARS[@]}"; do
