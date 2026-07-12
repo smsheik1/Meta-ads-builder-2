@@ -6,6 +6,7 @@ import {
   makerTestResearchFixture,
 } from "../features/formats/static-package/testFixture";
 import {
+  assertMakerFormatTestProductUsable,
   createMakerFormatTestContract,
   createMakerFormatTestGuidedJson,
   createMakerFormatTestScenes,
@@ -28,12 +29,22 @@ const selectedProduct = selectMakerTestProduct(makerTestResearchFixture.productC
 assert.equal(selectedProduct?.title, "Grande Blueberry Pie");
 assert.equal(getDefaultMakerTestProductHandle(makerTestResearchFixture.productCatalog), "");
 assert.equal(getDefaultMakerTestProductHandle({ ...makerTestResearchFixture.productCatalog!, products: [makerTestResearchFixture.productCatalog!.products[0]!] }), "blueberry-pie");
+assert.throws(() => assertMakerFormatTestProductUsable(contract, {
+  ...selectedProduct!,
+  imageUrl: null,
+}), /Choose a product with a usable image/);
 
 const generation = createMakerFormatTestGenerationFixture(contract);
 const guidedJson = JSON.stringify(createMakerFormatTestGuidedJson(contract));
 assert.match(guidedJson, /\"enum\":\[\"brand_name\"/);
 assert.match(guidedJson, /\"maxItems\":7/);
 assert.equal(validateMakerFormatTestGeneration(contract, generation).variations.length, 3);
+const repeatedLabels = structuredClone(generation);
+repeatedLabels.variations[1]!.angleLabel = repeatedLabels.variations[0]!.angleLabel;
+assert.equal(validateMakerFormatTestGeneration(contract, repeatedLabels).variations.length, 3, "Distinct ad content must not fail because display labels repeat.");
+const repeatedContent = structuredClone(generation);
+repeatedContent.variations[1] = { ...structuredClone(repeatedContent.variations[0]!), angleLabel: "Different label", angleSummary: "Different summary for identical ad content." };
+assert.throws(() => validateMakerFormatTestGeneration(contract, repeatedContent), /change the generated ad content/);
 const missingField = structuredClone(generation);
 missingField.variations[0]!.fields.pop();
 assert.throws(() => validateMakerFormatTestGeneration(contract, missingField), /field output/);
@@ -96,6 +107,8 @@ assert.equal(generated.variations.length, 3);
 assert.match(capturedPrompt, /FORMAT SKILL/);
 assert.match(capturedPrompt, /Grande Blueberry Pie/);
 assert.match(capturedPrompt, /Do not merely swap company names/);
+assert.match(capturedPrompt, /CREATIVE ANGLES/);
+assert.match(capturedPrompt, /variations\[2\] must adapt angle 3/);
 await assert.rejects(() => generateMakerFormatTestVariations({
   answers: [],
   contract,

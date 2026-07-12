@@ -167,6 +167,18 @@ export function createMakerFormatTestContract(draft: FormatDraft): MakerFormatTe
 const ids = (values: Array<{ id: string }>) => values.map((value) => value.id).sort();
 const keys = (values: Array<{ key: string }>) => values.map((value) => value.key).sort();
 const sameIds = (left: string[], right: string[]) => left.length === right.length && left.every((value, index) => value === right[index]);
+const normalizedDirectionFingerprint = (variation: MakerFormatTestVariation) => JSON.stringify({
+  fields: variation.fields.map((field) => ({ id: field.id, value: field.value.trim().toLowerCase() })),
+  lists: variation.lists.map((list) => ({
+    id: list.id,
+    activeItemId: list.activeItemId,
+    items: list.items.map((item) => ({
+      id: item.id,
+      values: item.values.map((value) => ({ key: value.key, value: value.value.trim().toLowerCase() })),
+    })),
+  })),
+  assets: variation.assets.map((asset) => ({ id: asset.id, kind: asset.kind, emoji: asset.emoji?.trim() || "" })),
+});
 
 export function validateMakerFormatTestGeneration(
   contractValue: MakerFormatTestContract,
@@ -177,12 +189,12 @@ export function validateMakerFormatTestGeneration(
   const expectedFieldIds = ids(contract.fields.filter((field) => field.mutable));
   const expectedListIds = ids(contract.lists.filter((list) => list.mutable));
   const expectedAssetIds = ids(contract.assets.filter((asset) => asset.mutable));
-  const angleLabels = new Set<string>();
+  const directionFingerprints = new Set<string>();
 
   for (const variation of generation.variations) {
-    const normalizedLabel = variation.angleLabel.trim().toLowerCase();
-    if (angleLabels.has(normalizedLabel)) throw new Error("Maker test variations must use three different creative angles.");
-    angleLabels.add(normalizedLabel);
+    const directionFingerprint = normalizedDirectionFingerprint(variation);
+    if (directionFingerprints.has(directionFingerprint)) throw new Error("Maker test variations must change the generated ad content for each creative angle.");
+    directionFingerprints.add(directionFingerprint);
     if (!sameIds(ids(variation.fields), expectedFieldIds)) throw new Error("Maker test field output does not match the editable Format fields.");
     if (!sameIds(ids(variation.lists), expectedListIds)) throw new Error("Maker test List output does not match the editable Format Lists.");
     if (!sameIds(ids(variation.assets), expectedAssetIds)) throw new Error("Maker test asset output does not match the editable Format assets.");
@@ -224,6 +236,21 @@ export function selectMakerTestProduct(catalog: ProductCatalog | null | undefine
   const selected = products.find((product) => product.handle === (handle || products[0]!.handle));
   if (!selected) throw new Error("The selected product was not found in this website catalog.");
   return selected;
+}
+
+export function makerFormatTestNeedsProductImage(contractValue: MakerFormatTestContract) {
+  const contract = makerFormatTestContractSchema.parse(contractValue);
+  return contract.assets.some((asset) => asset.mutable);
+}
+
+export function assertMakerFormatTestProductUsable(
+  contractValue: MakerFormatTestContract,
+  product: ProductCatalogItem | null,
+) {
+  if (product && makerFormatTestNeedsProductImage(contractValue) && !product.imageUrl) {
+    throw new Error("Choose a product with a usable image for this Format's editable visual.");
+  }
+  return product;
 }
 
 const hexToRgb = (value: string) => {
@@ -398,5 +425,7 @@ export function createMakerFormatTestPrompt({
   research: StoredWebsiteResearchResult;
 }) {
   const contract = makerFormatTestContractSchema.parse(contractValue);
-  return `You are Wiggly's static ad format adapter. Return bare JSON only.\n\nCreate exactly three genuinely different, runnable social-ad directions for the target brand. Preserve the Format's communication formula and exact editable structure. Do not merely swap company names. Use fifth-grade language. Generate every mutable field, every mutable List value, and every mutable asset directive together so reroll-group members remain coherent. Never add, remove, or rename fields, List items, value keys, or assets. Fixed and locked content is omitted and must remain unchanged.\n\nFORMAT SKILL:\n${contract.skill}\n\nFORMAT CONTRACT:\n${JSON.stringify(contract)}\n\nTARGET BRAND:\n${JSON.stringify({ brand: research.brand, brief: research.brandBrief, receipts: research.evidence.receipts, product, answers })}\n\nReturn this exact shape:\n${JSON.stringify({ variations: [{ angleLabel: "Plain-language angle", angleSummary: "Why this ad direction works", fields: [{ id: "exact_mutable_field_id", value: "new value" }], lists: [{ id: "exact_mutable_list_id", activeItemId: "existing_item_id_or_null", items: [{ id: "existing_item_id", values: [{ key: "existing_key", value: "new value" }] }] }], assets: [{ id: "exact_mutable_asset_id", kind: "brand-logo | product-image | emoji | keep", emoji: "only when kind is emoji" }] }] })}`;
+  const creativeAngles = (research.adAngles || []).slice(0, 3);
+  if (creativeAngles.length < 3) throw new Error("Website research found fewer than three usable creative angles.");
+  return `You are Wiggly's static ad format adapter. Return bare JSON only.\n\nCreate exactly three genuinely different, runnable social-ad directions for the target brand. Preserve the Format's communication formula and exact editable structure. Do not merely swap company names. Use fifth-grade language. Generate every mutable field, every mutable List value, and every mutable asset directive together so reroll-group members remain coherent. Never add, remove, or rename fields, List items, value keys, or assets. Fixed and locked content is omitted and must remain unchanged.\n\nUse the three CREATIVE ANGLES in order: variations[0] must adapt angle 1, variations[1] must adapt angle 2, and variations[2] must adapt angle 3. Do not blend or repeat them.\n\nCREATIVE ANGLES:\n${JSON.stringify(creativeAngles.map((angle, index) => ({ number: index + 1, ...angle })))}\n\nFORMAT SKILL:\n${contract.skill}\n\nFORMAT CONTRACT:\n${JSON.stringify(contract)}\n\nTARGET BRAND:\n${JSON.stringify({ brand: research.brand, brief: research.brandBrief, receipts: research.evidence.receipts, product, answers })}\n\nReturn this exact shape:\n${JSON.stringify({ variations: [{ angleLabel: "Plain-language angle", angleSummary: "Why this ad direction works", fields: [{ id: "exact_mutable_field_id", value: "new value" }], lists: [{ id: "exact_mutable_list_id", activeItemId: "existing_item_id_or_null", items: [{ id: "existing_item_id", values: [{ key: "existing_key", value: "new value" }] }] }], assets: [{ id: "exact_mutable_asset_id", kind: "brand-logo | product-image | emoji | keep", emoji: "only when kind is emoji" }] }] })}`;
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
 import { generateMakerFormatTestVariations } from "@/features/formats/static-package/testGeneration.server";
 import {
+  assertMakerFormatTestProductUsable,
   makerFormatTestContractSchema,
   selectMakerTestProduct,
 } from "@/features/formats/static-package/testRuntime";
@@ -22,7 +23,10 @@ export async function POST(request: Request) {
     if (!research?.researchRunId || !research.brand?.name || !research.brandBrief) {
       return NextResponse.json({ error: "Website research is missing or incomplete." }, { status: 400 });
     }
-    const product = selectMakerTestProduct(research.productCatalog, String(payload.productHandle || ""));
+    const product = assertMakerFormatTestProductUsable(
+      contract,
+      selectMakerTestProduct(research.productCatalog, String(payload.productHandle || "")),
+    );
     const answers = (payload.answers || []).slice(0, 3).map((answer) => ({
       question: String(answer.question || "").trim(),
       answer: String(answer.answer || "").trim(),

@@ -101,12 +101,14 @@ export const makerTestResearchFixture: StoredWebsiteResearchResult = {
   },
   adAngles: [
     { buyer: "Holiday gift buyer", moment: "Needs a gift", pain: "Generic gifts feel forgettable", proof: "Gift-ready cookie tins", sitePhrase: "Make their day sweeter" },
+    { buyer: "Family host", moment: "Needs dessert for a gathering", pain: "Baking takes too much time", proof: "Fresh-baked desserts delivered", sitePhrase: "Fresh-baked desserts" },
+    { buyer: "Thank-you gift buyer", moment: "Wants to thank someone warmly", pain: "A generic card feels impersonal", proof: "Gift-ready desserts shipped nationwide", sitePhrase: "Send something delicious" },
   ],
   productCatalog: {
     provider: "shopify-products-json",
     sourceUrl: "https://davids-cookies.test/products.json",
     groups: { bestSellers: ["blueberry-pie"] },
-    summary: { productCount: 2, bestSellerCount: 1 },
+    summary: { productCount: 3, bestSellerCount: 1 },
     products: [
       {
         title: "Grande Blueberry Pie",
@@ -132,6 +134,20 @@ export const makerTestResearchFixture: StoredWebsiteResearchResult = {
         vendor: "David's Cookies",
         priceMin: 34.99,
         priceMax: 34.99,
+        currency: "USD",
+        available: true,
+        badges: [],
+      },
+      {
+        title: "Cookie Dough Without Photography",
+        handle: "image-less-cookie-dough",
+        url: "https://davids-cookies.test/products/image-less-cookie-dough",
+        imageUrl: null,
+        imageAlt: null,
+        productType: "Cookie dough",
+        vendor: "David's Cookies",
+        priceMin: 29.99,
+        priceMax: 29.99,
         currency: "USD",
         available: true,
         badges: [],

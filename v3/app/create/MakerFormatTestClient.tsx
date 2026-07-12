@@ -18,9 +18,11 @@ import {
   makerTestResearchFixture,
 } from "@/features/formats/static-package/testFixture";
 import {
+  assertMakerFormatTestProductUsable,
   createMakerFormatTestContract,
   createMakerFormatTestScenes,
   getDefaultMakerTestProductHandle,
+  makerFormatTestNeedsProductImage,
   selectMakerTestProduct,
   type MakerFormatTestContract,
   type MakerFormatTestGeneration,
@@ -73,12 +75,14 @@ function MakerFormatTestSession({ draftId, fixture, runGeneration, runResearch }
 
   const contract = useMemo(() => draft ? createMakerFormatTestContract(draft) : null, [draft]);
   const products = research?.productCatalog?.products || [];
+  const needsProductImage = contract ? makerFormatTestNeedsProductImage(contract) : false;
   const selectedProduct = research && (products.length <= 1 || selectedProductHandle) ? selectMakerTestProduct(
     research.productCatalog,
     selectedProductHandle || getDefaultMakerTestProductHandle(research.productCatalog),
   ) : null;
   const questionsComplete = contract ? contract.questions.every((question) => answers[question]?.trim()) : false;
-  const productComplete = products.length <= 1 || Boolean(selectedProductHandle);
+  const productComplete = (products.length <= 1 || Boolean(selectedProductHandle))
+    && (!selectedProduct || !needsProductImage || Boolean(selectedProduct.imageUrl));
   const selectedScene = scenes[selectedIndex] || null;
   const previewCanvas = selectedScene?.layout.canvas || draft?.scene.layout.canvas;
   const busy = status === "researching" || status === "generating";
@@ -123,7 +127,10 @@ function MakerFormatTestSession({ draftId, fixture, runGeneration, runResearch }
     setStatus("generating");
     setError("");
     try {
-      const product = selectMakerTestProduct(research.productCatalog, selectedProductHandle);
+      const product = assertMakerFormatTestProductUsable(
+        contract,
+        selectMakerTestProduct(research.productCatalog, selectedProductHandle),
+      );
       const answerList = contract.questions.map((question) => ({ question, answer: answers[question] || "" }));
       const generation = await runGeneration({ answers: answerList, contract, productHandle: product?.handle || "", research });
       setScenes(createMakerFormatTestScenes({ draft, generation, product, research }));
@@ -186,9 +193,10 @@ function MakerFormatTestSession({ draftId, fixture, runGeneration, runResearch }
               <p className="mt-1 text-xs font-semibold text-slate-500">{products.length} products found. Pick the one this test should use.</p>
               <select id="maker-test-product" aria-label="Product to advertise" className="mt-3 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold" value={selectedProductHandle} onChange={(event) => setSelectedProductHandle(event.target.value)}>
                 {products.length > 1 ? <option value="">Choose a product</option> : null}
-                {products.map((product) => <option key={product.handle} value={product.handle}>{product.title}</option>)}
+                {products.map((product) => <option disabled={needsProductImage && !product.imageUrl} key={product.handle} value={product.handle}>{product.title}{needsProductImage && !product.imageUrl ? " — no usable image" : ""}</option>)}
               </select>
               {selectedProduct ? <div className="mt-3 flex items-center gap-3 rounded-2xl bg-slate-50 p-3">{selectedProduct.imageUrl ? <img alt={selectedProduct.imageAlt || selectedProduct.title} className="size-16 rounded-xl object-contain" src={selectedProduct.imageUrl} /> : null}<div><p className="font-black">{selectedProduct.title}</p><p className="text-xs font-semibold text-slate-500">{selectedProduct.productType || "Product"}</p></div></div> : null}
+              {selectedProduct && needsProductImage && !selectedProduct.imageUrl ? <p className="mt-3 rounded-xl bg-amber-50 p-3 text-xs font-bold text-amber-900">Choose another product. This Format has an editable visual, and this product has no usable image.</p> : null}
             </section>
           ) : null}
 
