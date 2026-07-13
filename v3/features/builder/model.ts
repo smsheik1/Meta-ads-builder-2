@@ -6,6 +6,16 @@ const semanticId = z.string().regex(/^[a-z][a-z0-9_]*$/);
 const evidenceId = z.string().regex(/^text_(?:[0-9]{2,}|cluster_[0-9]{2,})$/);
 const evidenceIds = z.array(evidenceId).min(1).refine((values) => new Set(values).size === values.length);
 
+export const makerAssetRoleSchema = z.enum([
+  "brand_identity",
+  "story_setting",
+  "news_subject",
+  "supporting_visual",
+  "decorative",
+]);
+
+export type MakerAssetRole = z.infer<typeof makerAssetRoleSchema>;
+
 const fieldSchema = z.object({
   id: semanticId,
   value: z.string(),
@@ -31,6 +41,7 @@ const listSchema = z.object({
 const assetSchema = z.object({
   id: semanticId,
   label: z.string(),
+  role: makerAssetRoleSchema.default("decorative"),
   evidence_ids: z.array(evidenceId).refine((values) => new Set(values).size === values.length),
   binding: z.enum(["fixed", "brand", "campaign", "locked"]),
   sam_prompt: z.string().min(1),
@@ -156,7 +167,7 @@ export function assertFormatDraft(value: unknown): FormatDraft {
   const draft = value as FormatDraft;
   const validation = validateFormatDraft(draft);
   if (!validation.valid) throw new Error(validation.errors.join(" "));
-  return draft;
+  return { ...draft, analysis: makerAnalysisSchema.parse(draft.analysis) };
 }
 
 export function assertFormatVersion(value: unknown): FormatVersion {
@@ -175,7 +186,7 @@ export function assertFormatVersion(value: unknown): FormatVersion {
   if (!version.id?.trim() || !Number.isInteger(version.version) || version.version < 1 || !draftValidation.valid) {
     throw new Error(draftValidation.errors.join(" ") || "Format version is invalid.");
   }
-  return version;
+  return { ...version, analysis: makerAnalysisSchema.parse(version.analysis) };
 }
 
 export function replaceStaticLayer(

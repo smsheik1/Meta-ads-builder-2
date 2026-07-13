@@ -27,10 +27,16 @@ const ocr: PaddleOcrResult = {
 
 assert.equal(validateMakerAnalysisEvidence(makerAnalysisFixture, ocr).lists[0]?.active_item_id, "slack");
 assert.match(buildMakerAnalysisPrompt(ocr), /never invent an ID/);
+assert.match(buildMakerAnalysisPrompt(ocr), /advertiser identity inside platform chrome is reusable content/);
+assert.match(buildMakerAnalysisPrompt(ocr), /story_setting, news_subject, supporting_visual/);
 assert.equal((makerAnalysisJsonSchema() as { additionalProperties?: boolean }).additionalProperties, false);
 assert.deepEqual(makerAnalysisJsonSchema(), JSON.parse(readFileSync("../docs/research-intake/schemas/maker-analysis-mvp.schema.json", "utf8")));
 assert.deepEqual(assetsNeedingRefinement(makerAnalysisFixture).map((asset) => asset.id), ["brand_mark"]);
 assert.ok(editableTextEvidenceIds(makerAnalysisFixture).includes("text_10"));
+
+const legacyAnalysis = structuredClone(makerAnalysisFixture) as unknown as { assets: Array<Record<string, unknown>> };
+delete legacyAnalysis.assets[0]!.role;
+assert.equal(validateMakerAnalysisEvidence(legacyAnalysis, ocr).assets[0]?.role, "decorative", "Saved drafts from before semantic asset roles must still open.");
 
 const contradictoryBindings = structuredClone(makerAnalysisFixture);
 contradictoryBindings.fields.forEach((field) => { field.binding = "fixed"; });

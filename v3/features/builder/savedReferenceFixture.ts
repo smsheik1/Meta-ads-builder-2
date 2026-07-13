@@ -32,8 +32,8 @@ export const savedCodexReferenceAnalysis: MakerAnalysis = {
     active_item_id: "item_5",
   }],
   assets: [
-    { id: "asset_logo", label: "Codex Logo", evidence_ids: [], binding: "brand", sam_prompt: "minimalist spiral logo" },
-    { id: "asset_handshake", label: "Handshake Emoji", evidence_ids: [], binding: "fixed", sam_prompt: "handshake emoji" },
+    { id: "asset_logo", label: "Codex Logo", role: "brand_identity", evidence_ids: [], binding: "brand", sam_prompt: "minimalist spiral logo" },
+    { id: "asset_handshake", label: "Handshake Emoji", role: "decorative", evidence_ids: [], binding: "fixed", sam_prompt: "handshake emoji" },
   ],
   reroll_groups: [
     { id: "group_brand", members: ["field_brand", "asset_logo"], instruction: "Update brand identity" },

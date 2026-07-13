@@ -88,10 +88,11 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "label", "evidence_ids", "binding", "sam_prompt"],
+        "required": ["id", "label", "role", "evidence_ids", "binding", "sam_prompt"],
         "properties": {
           "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
           "label": {"type": "string"},
+          "role": {"enum": ["brand_identity", "story_setting", "news_subject", "supporting_visual", "decorative"]},
           "evidence_ids": {
             "type": "array",
             "uniqueItems": true,

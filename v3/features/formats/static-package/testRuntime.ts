@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { FormatDraft } from "../../builder/model";
-import { flattenStaticLayers, validateFormatDraftReady } from "../../builder/model";
+import { flattenStaticLayers, makerAssetRoleSchema, validateFormatDraftReady } from "../../builder/model";
 import type { ProductCatalog, ProductCatalogItem, StoredWebsiteResearchResult } from "../../research/types";
 import type { StaticAdLayer, StaticImageLayer, StaticPackageAdScene, StaticTextLayer } from "../../scene/types";
 import { fitStaticTextLayer } from "./textFit";
@@ -25,7 +25,7 @@ export const makerFormatTestContractSchema = z.object({
     activeItemId: semanticId.nullable(),
     items: z.array(contractItemSchema).min(2),
   }).strict()),
-  assets: z.array(z.object({ id: semanticId, label: z.string(), binding: z.enum(["fixed", "brand", "campaign", "locked"]), mutable: z.boolean() }).strict()),
+  assets: z.array(z.object({ id: semanticId, label: z.string(), role: makerAssetRoleSchema, binding: z.enum(["fixed", "brand", "campaign", "locked"]), mutable: z.boolean() }).strict()),
   rerollGroups: z.array(z.object({ id: semanticId, members: z.array(semanticId).min(1), instruction: z.string() }).strict()),
   questions: z.array(z.string().min(1)).max(3),
 }).strict();
@@ -40,8 +40,10 @@ const plannedListSchema = z.object({
 
 const plannedAssetSchema = z.object({
   id: semanticId,
-  kind: z.enum(["brand-logo", "product-image", "emoji", "keep"]),
+  kind: z.enum(["brand-logo", "product-image", "web-image", "emoji", "keep"]),
   emoji: z.string().max(8).optional(),
+  query: z.string().min(3).max(180).optional(),
+  imageUrl: z.string().url().optional(),
 }).strict();
 
 export const makerFormatTestVariationSchema = z.object({
@@ -104,7 +106,9 @@ export function createMakerFormatTestGuidedJson(contractValue: MakerFormatTestCo
   }
   const valueKeys = [...new Set(sourceValues.map((value) => value.key))].sort();
   if (valueKeys.length) schemaProperty(schemaItems(values), "key").enum = valueKeys;
-  constrainIdArray(schemaProperty(variation, "assets"), ids(mutableAssets));
+  const assetOutput = schemaProperty(variation, "assets");
+  constrainIdArray(assetOutput, ids(mutableAssets));
+  delete (schemaItems(assetOutput).properties as Record<string, JsonSchema>).imageUrl;
   return schema;
 }
 
@@ -152,6 +156,7 @@ export function createMakerFormatTestContract(draft: FormatDraft): MakerFormatTe
     assets: draft.analysis.assets.map((asset) => ({
       id: asset.id,
       label: asset.label,
+      role: asset.role,
       binding: asset.binding,
       mutable: mutableFromLayers(`asset:${asset.id}`, asset.binding),
     })),
@@ -177,7 +182,7 @@ const normalizedDirectionFingerprint = (variation: MakerFormatTestVariation) => 
       values: item.values.map((value) => ({ key: value.key, value: value.value.trim().toLowerCase() })),
     })),
   })),
-  assets: variation.assets.map((asset) => ({ id: asset.id, kind: asset.kind, emoji: asset.emoji?.trim() || "" })),
+  assets: variation.assets.map((asset) => ({ id: asset.id, kind: asset.kind, emoji: asset.emoji?.trim() || "", query: asset.query?.trim().toLowerCase() || "" })),
 });
 
 export function validateMakerFormatTestGeneration(
@@ -213,11 +218,17 @@ export function validateMakerFormatTestGeneration(
 
     for (const plannedAsset of variation.assets) {
       const source = contract.assets.find((asset) => asset.id === plannedAsset.id)!;
-      if (source.binding === "brand" && plannedAsset.kind !== "brand-logo") {
+      if ((source.binding === "brand" || source.role === "brand_identity") && plannedAsset.kind !== "brand-logo") {
         throw new Error(`Brand asset ${plannedAsset.id} must use the researched brand logo.`);
+      }
+      if (["story_setting", "news_subject", "supporting_visual"].includes(source.role) && !["product-image", "web-image"].includes(plannedAsset.kind)) {
+        throw new Error(`Story asset ${plannedAsset.id} must use a product or searched image for the target brand.`);
       }
       if (plannedAsset.kind === "emoji" && !plannedAsset.emoji?.trim()) {
         throw new Error(`Emoji asset ${plannedAsset.id} is missing its emoji.`);
+      }
+      if (plannedAsset.kind === "web-image" && !plannedAsset.query?.trim()) {
+        throw new Error(`Web image asset ${plannedAsset.id} is missing its search query.`);
       }
     }
   }
@@ -240,7 +251,7 @@ export function selectMakerTestProduct(catalog: ProductCatalog | null | undefine
 
 export function makerFormatTestNeedsProductImage(contractValue: MakerFormatTestContract) {
   const contract = makerFormatTestContractSchema.parse(contractValue);
-  return contract.assets.some((asset) => asset.mutable);
+  return contract.assets.some((asset) => asset.mutable && asset.role === "supporting_visual");
 }
 
 export function assertMakerFormatTestProductUsable(
@@ -289,6 +300,10 @@ const asImageLayer = (layer: StaticAdLayer, src: string, alt: string): StaticIma
   borderRadius: layer.type === "image" ? layer.borderRadius : 0,
 });
 
+const objectFitForAssetRole = (role: MakerFormatTestContract["assets"][number]["role"]) => (
+  role === "story_setting" || role === "news_subject" ? "cover" as const : "contain" as const
+);
+
 const asEmojiLayer = (layer: StaticAdLayer, emoji: string): StaticTextLayer => ({
   ...layer,
   type: "text",
@@ -303,30 +318,37 @@ const asEmojiLayer = (layer: StaticAdLayer, emoji: string): StaticTextLayer => (
 
 const resolveLayers = ({
   accent,
+  contract,
   layers,
   product,
   research,
   variation,
 }: {
   accent: string;
+  contract: MakerFormatTestContract;
   layers: StaticAdLayer[];
   product: ProductCatalogItem | null;
   research: StoredWebsiteResearchResult;
   variation: MakerFormatTestVariation;
 }): StaticAdLayer[] => {
   const fields = new Map(variation.fields.map((field) => [field.id, field.value]));
+  const contractFields = new Map(contract.fields.map((field) => [field.id, field]));
   const lists = new Map(variation.lists.map((list) => [list.id, list]));
   const assets = new Map(variation.assets.map((asset) => [asset.id, asset]));
+  const contractAssets = new Map(contract.assets.map((asset) => [asset.id, asset]));
   const logoUrl = research.brand.logoUrl || research.brand.faviconUrl || "";
 
   return layers.map((layer) => {
-    if (layer.type === "group") return { ...layer, children: resolveLayers({ accent, layers: layer.children, product, research, variation }) };
+    if (layer.type === "group") return { ...layer, children: resolveLayers({ accent, contract, layers: layer.children, product, research, variation }) };
     if (!layerIsMutable(layer)) return structuredClone(layer);
     const [roleType, roleId, itemId, key] = layer.semanticRole.split(":");
     let nextLayer: StaticAdLayer = structuredClone(layer);
 
     if (roleType === "field" && roleId && nextLayer.type === "text") {
-      const value = fields.get(roleId);
+      const sourceField = contractFields.get(roleId);
+      const value = sourceField?.binding === "brand" && /brand|publisher|account|handle|company/i.test(roleId)
+        ? research.brand.name
+        : fields.get(roleId);
       if (value) nextLayer = fitStaticTextLayer(nextLayer, value);
     }
     if (roleType === "list" && roleId && nextLayer.type === "text") {
@@ -341,6 +363,7 @@ const resolveLayers = ({
     }
     if (roleType === "asset" && roleId) {
       const directive = assets.get(roleId);
+      const sourceAsset = contractAssets.get(roleId);
       if (directive?.kind === "brand-logo") {
         if (!logoUrl) throw new Error(`The website did not provide a logo for ${research.brand.name}.`);
         nextLayer = asImageLayer(nextLayer, logoUrl, `${research.brand.name} logo`);
@@ -349,7 +372,12 @@ const resolveLayers = ({
         if (!product?.imageUrl) throw new Error("The selected product has no usable image.");
         nextLayer = asImageLayer(nextLayer, product.imageUrl, product.imageAlt || product.title);
       }
+      if (directive?.kind === "web-image") {
+        if (!directive.imageUrl) throw new Error(`Image search did not resolve ${sourceAsset?.label || roleId}.`);
+        nextLayer = asImageLayer(nextLayer, directive.imageUrl, sourceAsset?.label || variation.angleLabel);
+      }
       if (directive?.kind === "emoji") nextLayer = asEmojiLayer(nextLayer, directive.emoji || "✨");
+      if (nextLayer.type === "image" && sourceAsset) nextLayer = { ...nextLayer, objectFit: objectFitForAssetRole(sourceAsset.role) };
     }
     if (nextLayer.binding === "brand") {
       if (nextLayer.type === "text") nextLayer = { ...nextLayer, color: accent };
@@ -397,7 +425,7 @@ export function createMakerFormatTestScenes({
     },
     layout: {
       ...structuredClone(draft.scene.layout),
-      layers: resolveLayers({ accent, layers: draft.scene.layout.layers, product, research, variation }),
+      layers: resolveLayers({ accent, contract, layers: draft.scene.layout.layers, product, research, variation }),
     },
     metadata: {
       candidateIndex: index,
@@ -425,7 +453,6 @@ export function createMakerFormatTestPrompt({
   research: StoredWebsiteResearchResult;
 }) {
   const contract = makerFormatTestContractSchema.parse(contractValue);
-  const creativeAngles = (research.adAngles || []).slice(0, 3);
-  if (creativeAngles.length < 3) throw new Error("Website research found fewer than three usable creative angles.");
-  return `You are Wiggly's static ad format adapter. Return bare JSON only.\n\nCreate exactly three genuinely different, runnable social-ad directions for the target brand. Preserve the Format's communication formula and exact editable structure. Do not merely swap company names. Use fifth-grade language. Generate every mutable field, every mutable List value, and every mutable asset directive together so reroll-group members remain coherent. Never add, remove, or rename fields, List items, value keys, or assets. Fixed and locked content is omitted and must remain unchanged.\n\nUse the three CREATIVE ANGLES in order: variations[0] must adapt angle 1, variations[1] must adapt angle 2, and variations[2] must adapt angle 3. Do not blend or repeat them.\n\nCREATIVE ANGLES:\n${JSON.stringify(creativeAngles.map((angle, index) => ({ number: index + 1, ...angle })))}\n\nFORMAT SKILL:\n${contract.skill}\n\nFORMAT CONTRACT:\n${JSON.stringify(contract)}\n\nTARGET BRAND:\n${JSON.stringify({ brand: research.brand, brief: research.brandBrief, receipts: research.evidence.receipts, product, answers })}\n\nReturn this exact shape:\n${JSON.stringify({ variations: [{ angleLabel: "Plain-language angle", angleSummary: "Why this ad direction works", fields: [{ id: "exact_mutable_field_id", value: "new value" }], lists: [{ id: "exact_mutable_list_id", activeItemId: "existing_item_id_or_null", items: [{ id: "existing_item_id", values: [{ key: "existing_key", value: "new value" }] }] }], assets: [{ id: "exact_mutable_asset_id", kind: "brand-logo | product-image | emoji | keep", emoji: "only when kind is emoji" }] }] })}`;
+  const creativeAngles = research.adAngles || [];
+  return `You are Wiggly's static ad format adapter. Return bare JSON only.\n\nCreate exactly three genuinely different, runnable social-ad directions for the target brand. Preserve the Format's communication formula and exact editable structure. Do not merely swap company names. Use fifth-grade language. Generate every mutable field, every mutable List value, and every mutable asset directive together so reroll-group members remain coherent. Never add, remove, or rename fields, List items, value keys, or assets. Fixed and locked content is omitted and must remain unchanged.\n\nChoose the three strongest angles for the selected product and this Format. The WEBSITE ANGLES are evidence, not mandatory slots: improve, combine, or replace weak angles rather than forcing an irrelevant one. Each direction needs a different buyer moment or reason to care, not three phrasings of one idea. Never invent a fake leak, endorsement, quote, statistic, or news event.\n\nBrand-bound Fields must identify the TARGET BRAND. A publisher_handle or account name must become the target brand name or natural social handle; never preserve the source advertiser.\n\nAsset rules:\n- brand_identity always uses brand-logo\n- supporting_visual uses product-image when a selected product exists; otherwise use web-image\n- story_setting and news_subject use web-image with a precise, literal search query that includes the target brand or selected product when relevant\n- web-image queries should seek real usable photography, not describe an image generator prompt\n- use keep only for decorative assets; every formula-critical story asset must change with the direction\n\nWEBSITE ANGLES:\n${JSON.stringify(creativeAngles)}\n\nFORMAT SKILL:\n${contract.skill}\n\nFORMAT CONTRACT:\n${JSON.stringify(contract)}\n\nTARGET BRAND:\n${JSON.stringify({ brand: research.brand, brief: research.brandBrief, receipts: research.evidence.receipts, product, answers })}\n\nReturn this exact shape:\n${JSON.stringify({ variations: [{ angleLabel: "Plain-language angle", angleSummary: "Why this ad direction works", fields: [{ id: "exact_mutable_field_id", value: "new value" }], lists: [{ id: "exact_mutable_list_id", activeItemId: "existing_item_id_or_null", items: [{ id: "existing_item_id", values: [{ key: "existing_key", value: "new value" }] }] }], assets: [{ id: "exact_mutable_asset_id", kind: "brand-logo | product-image | web-image | emoji | keep", emoji: "only when kind is emoji", query: "required only when kind is web-image" }] }] })}`;
 }

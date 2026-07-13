@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
 import { generateMakerFormatTestVariations } from "@/features/formats/static-package/testGeneration.server";
+import { createSerperImageSearch, resolveMakerFormatTestImages } from "@/features/formats/static-package/imageSearch.server";
 import {
   assertMakerFormatTestProductUsable,
   makerFormatTestContractSchema,
@@ -34,7 +35,8 @@ export async function POST(request: Request) {
     if (contract.questions.some((question) => !answers.find((answer) => answer.question === question)?.answer)) {
       return NextResponse.json({ error: "Answer the required Format questions before generating." }, { status: 400 });
     }
-    const generation = await generateMakerFormatTestVariations({ answers, contract, product, research });
+    const plan = await generateMakerFormatTestVariations({ answers, contract, product, research });
+    const generation = await resolveMakerFormatTestImages(plan, createSerperImageSearch({ preferredHost: research.host }));
     return NextResponse.json({ generation });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Maker Format test generation failed.";

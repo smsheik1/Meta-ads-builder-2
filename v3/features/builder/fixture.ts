@@ -23,7 +23,7 @@ export const makerAnalysisFixture: MakerAnalysis = {
     active_item_id: "slack",
   }],
   assets: [
-    { id: "brand_mark", label: "Brand logo", evidence_ids: [], binding: "brand", sam_prompt: "footer brand logo" },
+    { id: "brand_mark", label: "Brand logo", role: "brand_identity", evidence_ids: [], binding: "brand", sam_prompt: "footer brand logo" },
   ],
   reroll_groups: [{
     id: "relationship_message",

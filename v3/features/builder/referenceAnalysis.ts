@@ -110,14 +110,18 @@ Return exactly one valid JSON object with these keys and shapes:
 - formula: { premise: string, visual_mechanic: string, adaptation_rule: string }
 - fields: [{ id, value, evidence_ids: string[], binding }]
 - lists: [{ id, binding, items: [{ id, values: [{ key, value, evidence_ids: string[] }], asset_ids: string[] }], active_item_id: string | null }]
-- assets: [{ id, label, evidence_ids: string[], binding, sam_prompt }]
+- assets: [{ id, label, role, evidence_ids: string[], binding, sam_prompt }]
 - reroll_groups: [{ id, members: string[], instruction }]
 - maker_questions: string[]
 
 Rules:
 - use each creative OCR evidence ID at most once; never invent an ID
-- native status bars, account headers, platform CTA stickers, captions, reactions, and footers stay unassigned
-- logos and wordmarks are brand-bound assets, not Fields
+- native status bars, progress bars, menus, close buttons, reactions, and fixed platform controls stay unassigned
+- advertiser identity inside platform chrome is reusable content, never fixed chrome: account/avatar logos are brand-bound assets with role brand_identity, and account names or handles are brand-bound Fields (prefer id publisher_handle)
+- logos and wordmarks are brand-bound assets with role brand_identity, not Fields
+- classify every visual asset by what it does: brand_identity, story_setting, news_subject, supporting_visual, or decorative
+- story_setting is the main scene or environment; news_subject is the person or object the story is about; supporting_visual is the product or secondary proof image
+- formula-critical story images must be separate mutable assets and reroll with the headline; do not leave the source advertiser, spokesperson, setting, or product baked into the background
 - active_item_id is null unless one List item is visually emphasized
 - ask only for missing information that is not visible and blocks a useful draft
 - every formula-critical Field, List, and asset belongs to a Reroll Group
@@ -127,7 +131,7 @@ Rules:
 - keep each List item's text and asset IDs together
 - every asset_id must match an id declared in assets; otherwise leave asset_ids empty
 - if a highlighted value belongs to a repeated set, keep it in the List and set active_item_id; do not split it into a Field
-- complex nested interfaces or illustrations default to one locked asset
+- complex nested interfaces or illustrations may stay locked only when they are decoration rather than part of the Format's message
 - binding is fixed, brand, campaign, proof, or locked as allowed by the schema
 - Reroll Group members use existing Field, List, or asset IDs
 - sam_prompt is 1 to 6 literal words

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { replaceStaticLayer } from "../features/builder/model";
+import { replaceStaticLayer, updateFormatDraft } from "../features/builder/model";
 import {
   createMakerFormatTestDraftFixture,
   createMakerFormatTestGenerationFixture,
@@ -16,6 +16,7 @@ import {
 } from "../features/formats/static-package/testRuntime";
 import { flattenStaticLayers } from "../features/builder/model";
 import { generateMakerFormatTestVariations } from "../features/formats/static-package/testGeneration.server";
+import { resolveMakerFormatTestImages } from "../features/formats/static-package/imageSearch.server";
 
 const draft = createMakerFormatTestDraftFixture();
 const contract = createMakerFormatTestContract(draft);
@@ -29,15 +30,91 @@ const selectedProduct = selectMakerTestProduct(makerTestResearchFixture.productC
 assert.equal(selectedProduct?.title, "Grande Blueberry Pie");
 assert.equal(getDefaultMakerTestProductHandle(makerTestResearchFixture.productCatalog), "");
 assert.equal(getDefaultMakerTestProductHandle({ ...makerTestResearchFixture.productCatalog!, products: [makerTestResearchFixture.productCatalog!.products[0]!] }), "blueberry-pie");
-assert.throws(() => assertMakerFormatTestProductUsable(contract, {
+assert.doesNotThrow(() => assertMakerFormatTestProductUsable(contract, {
+  ...selectedProduct!,
+  imageUrl: null,
+}), "A brand logo slot must not incorrectly require product photography.");
+
+const draftWithProductVisual = updateFormatDraft(draft, {
+  analysis: {
+    ...structuredClone(draft.analysis),
+    assets: [...structuredClone(draft.analysis.assets), {
+      id: "supporting_product",
+      label: "Supporting product",
+      role: "supporting_visual",
+      evidence_ids: [],
+      binding: "campaign",
+      sam_prompt: "supporting product",
+    }],
+  },
+  scene: {
+    ...draft.scene,
+    layout: {
+      ...draft.scene.layout,
+      layers: [...draft.scene.layout.layers, {
+        ...flattenStaticLayers(draft.scene.layout.layers).find((layer) => layer.semanticRole === "asset:brand_mark")!,
+        id: "asset-supporting-product",
+        semanticRole: "asset:supporting_product",
+        binding: "campaign",
+      }],
+    },
+  },
+});
+const productVisualContract = createMakerFormatTestContract(draftWithProductVisual);
+assert.throws(() => assertMakerFormatTestProductUsable(productVisualContract, {
   ...selectedProduct!,
   imageUrl: null,
 }), /Choose a product with a usable image/);
+
+const storySubjectDraft = updateFormatDraft(draftWithProductVisual, {
+  analysis: {
+    ...structuredClone(draftWithProductVisual.analysis),
+    assets: [...structuredClone(draftWithProductVisual.analysis.assets), {
+      id: "news_subject",
+      label: "Person or object in the news",
+      role: "news_subject",
+      evidence_ids: [],
+      binding: "campaign",
+      sam_prompt: "news subject",
+    }],
+  },
+  scene: {
+    ...draftWithProductVisual.scene,
+    layout: {
+      ...draftWithProductVisual.scene.layout,
+      layers: [...draftWithProductVisual.scene.layout.layers, {
+        ...flattenStaticLayers(draft.scene.layout.layers).find((layer) => layer.semanticRole === "asset:brand_mark")!,
+        id: "asset-news-subject",
+        semanticRole: "asset:news_subject",
+        binding: "campaign",
+      }],
+    },
+  },
+});
+const storySubjectContract = createMakerFormatTestContract(storySubjectDraft);
+const storyPlan = createMakerFormatTestGenerationFixture(storySubjectContract);
+storyPlan.variations.forEach((variation) => variation.assets.filter((asset) => asset.kind === "web-image").forEach((asset) => { delete asset.imageUrl; }));
+const searchedQueries: string[] = [];
+const resolvedStoryPlan = await resolveMakerFormatTestImages(storyPlan, async (query) => {
+  searchedQueries.push(query);
+  return `https://images.example.test/result-${searchedQueries.length}.jpg`;
+});
+assert.equal(searchedQueries.length, 3);
+const storyScenes = createMakerFormatTestScenes({
+  draft: storySubjectDraft,
+  generation: resolvedStoryPlan,
+  product: selectedProduct,
+  research: makerTestResearchFixture,
+});
+const storySubjectLayer = flattenStaticLayers(storyScenes[0]!.layout.layers).find((layer) => layer.semanticRole === "asset:news_subject");
+assert.equal(storySubjectLayer?.type === "image" ? storySubjectLayer.src : "", "https://images.example.test/result-1.jpg");
+assert.equal(storySubjectLayer?.type === "image" ? storySubjectLayer.objectFit : "", "cover");
 
 const generation = createMakerFormatTestGenerationFixture(contract);
 const guidedJson = JSON.stringify(createMakerFormatTestGuidedJson(contract));
 assert.match(guidedJson, /\"enum\":\[\"brand_name\"/);
 assert.match(guidedJson, /\"maxItems\":7/);
+assert.doesNotMatch(guidedJson, /imageUrl/);
 assert.equal(validateMakerFormatTestGeneration(contract, generation).variations.length, 3);
 const repeatedLabels = structuredClone(generation);
 repeatedLabels.variations[1]!.angleLabel = repeatedLabels.variations[0]!.angleLabel;
@@ -78,6 +155,11 @@ assert.equal(scenes[1]?.creative.headline, "Crowd favorites");
 assert.equal(scenes[2]?.creative.headline, "Easy thank-you");
 const brandLayer = flattenStaticLayers(scenes[0]!.layout.layers).find((layer) => layer.semanticRole === "field:brand_name");
 assert.equal(brandLayer?.type === "text" ? brandLayer.text : "", "David's Cookies");
+const sourceLeakGeneration = structuredClone(lockedGeneration);
+sourceLeakGeneration.variations[0]!.fields.find((field) => field.id === "brand_name")!.value = "kingkong.com.au";
+const sourceLeakScene = createMakerFormatTestScenes({ draft: lockedDraft, generation: sourceLeakGeneration, product: selectedProduct, research: makerTestResearchFixture })[0]!;
+const sourceLeakBrandLayer = flattenStaticLayers(sourceLeakScene.layout.layers).find((layer) => layer.semanticRole === "field:brand_name");
+assert.equal(sourceLeakBrandLayer?.type === "text" ? sourceLeakBrandLayer.text : "", "David's Cookies", "Source advertiser identity must never survive a cross-brand test.");
 const logoLayer = flattenStaticLayers(scenes[0]!.layout.layers).find((layer) => layer.semanticRole === "asset:brand_mark");
 assert.equal(logoLayer?.type, "image");
 assert.equal(logoLayer?.type === "image" ? logoLayer.src : "", makerTestResearchFixture.brand.logoUrl);
@@ -107,8 +189,8 @@ assert.equal(generated.variations.length, 3);
 assert.match(capturedPrompt, /FORMAT SKILL/);
 assert.match(capturedPrompt, /Grande Blueberry Pie/);
 assert.match(capturedPrompt, /Do not merely swap company names/);
-assert.match(capturedPrompt, /CREATIVE ANGLES/);
-assert.match(capturedPrompt, /variations\[2\] must adapt angle 3/);
+assert.match(capturedPrompt, /WEBSITE ANGLES/);
+assert.match(capturedPrompt, /evidence, not mandatory slots/);
 await assert.rejects(() => generateMakerFormatTestVariations({
   answers: [],
   contract,

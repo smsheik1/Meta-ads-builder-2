@@ -8,10 +8,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Lock, Unlock } from "lucide-react";
 import type { StaticAdLayer, StaticLayerBinding } from "../scene/types";
-import { findStaticLayer, flattenStaticLayers, replaceStaticLayer, updateFormatDraft, validateFormatDraftReady, type FormatDraft } from "./model";
+import { findStaticLayer, flattenStaticLayers, replaceStaticLayer, updateFormatDraft, validateFormatDraftReady, type FormatDraft, type MakerAssetRole } from "./model";
 
 const bindings: StaticLayerBinding[] = ["fixed", "brand", "campaign", "proof", "locked"];
 const selectClass = "h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-slate-950";
+const assetRoles: MakerAssetRole[] = ["brand_identity", "story_setting", "news_subject", "supporting_visual", "decorative"];
 
 export function BuilderInspector({
   draft,
@@ -227,6 +228,11 @@ export function BuilderInspector({
                 <Input aria-label={`${asset.id} label`} disabled={readOnly} value={asset.label} onChange={(event) => updateAnalysis((analysis) => {
                   analysis.assets[assetIndex]!.label = event.target.value;
                 })} />
+                <select className={selectClass} aria-label={`${asset.id} role`} disabled={readOnly} value={asset.role} onChange={(event) => updateAnalysis((analysis) => {
+                  analysis.assets[assetIndex]!.role = event.target.value as MakerAssetRole;
+                })}>
+                  {assetRoles.map((role) => <option key={role} value={role}>{role.replaceAll("_", " ")}</option>)}
+                </select>
                 <select className={selectClass} aria-label={`${asset.id} binding`} disabled={readOnly} value={asset.binding} onChange={(event) => bindingChanged(`asset:${asset.id}`, event.target.value as StaticLayerBinding)}>
                   {(["fixed", "brand", "campaign", "locked"] as const).map((binding) => <option key={binding} value={binding}>{binding}</option>)}
                 </select>

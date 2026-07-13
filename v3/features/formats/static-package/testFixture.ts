@@ -201,7 +201,7 @@ export function createMakerFormatTestGenerationFixture(contract: MakerFormatTest
       angleSummary: angle.summary,
       fields: contract.fields.filter((field) => field.mutable).map((field) => ({
         id: field.id,
-        value: /brand/i.test(field.id) ? makerTestResearchFixture.brand.name
+        value: /brand|publisher|account|handle/i.test(field.id) ? makerTestResearchFixture.brand.name
           : /symbol|emoji/i.test(field.id) ? angle.emoji
             : /cta/i.test(field.id) ? angle.cta
               : `${makerTestResearchFixture.brand.name}: ${angle.label}`,
@@ -216,10 +216,16 @@ export function createMakerFormatTestGenerationFixture(contract: MakerFormatTest
       })),
       assets: contract.assets.filter((asset) => asset.mutable).map((asset) => ({
         id: asset.id,
-        kind: asset.binding === "brand" ? "brand-logo" as const
+        kind: asset.role === "brand_identity" || asset.binding === "brand" ? "brand-logo" as const
+          : asset.role === "supporting_visual" ? "product-image" as const
+            : asset.role === "story_setting" || asset.role === "news_subject" ? "web-image" as const
           : /emoji|symbol/i.test(asset.label) ? "emoji" as const
             : "keep" as const,
         ...(/emoji|symbol/i.test(asset.label) ? { emoji: angle.emoji } : {}),
+        ...(asset.role === "story_setting" || asset.role === "news_subject" ? {
+          query: `${makerTestResearchFixture.brand.name} ${asset.label} ${angle.label}`,
+          imageUrl: `https://images.example.test/${asset.id}-${angle.label.toLowerCase().replaceAll(" ", "-")}.jpg`,
+        } : {}),
       })),
     })),
   };
