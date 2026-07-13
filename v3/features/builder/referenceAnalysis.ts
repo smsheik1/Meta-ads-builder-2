@@ -132,7 +132,10 @@ Rules:
 - every asset_id must match an id declared in assets; otherwise leave asset_ids empty
 - if a highlighted value belongs to a repeated set, keep it in the List and set active_item_id; do not split it into a Field
 - complex nested interfaces or illustrations may stay locked only when they are decoration rather than part of the Format's message
-- binding is fixed, brand, campaign, proof, or locked as allowed by the schema
+- Field binding is exactly one of: fixed, brand, campaign, proof
+- List binding is exactly one of: fixed, brand, campaign
+- asset binding is exactly one of: fixed, brand, campaign, locked
+- only brand_identity assets use brand binding; story settings, news subjects, products, and supporting visuals use campaign unless they are fixed or locked
 - Reroll Group members use existing Field, List, or asset IDs
 - sam_prompt is 1 to 6 literal words
 - do not return Markdown, coordinates, explanations, or extra keys`;

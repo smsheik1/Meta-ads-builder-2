@@ -42,7 +42,7 @@ assert.equal(gemmaBodies[0]?.model, "google/gemma-4-31b-it");
 assert.deepEqual(gemmaBodies[0]?.response_format, { type: "json_object" });
 assert.equal("structured_outputs" in gemmaBodies[0]!, false);
 assert.deepEqual(gemmaBodies[0]?.provider, {
-  order: ["DeepInfra"],
+  order: ["WandB"],
   allow_fallbacks: false,
   require_parameters: true,
 });
@@ -51,6 +51,8 @@ const gemmaMessages = gemmaBodies[0]?.messages as Array<{ content?: Array<{ type
 const gemmaPrompt = gemmaMessages?.[0]?.content?.find((part) => part.type === "text")?.text || "";
 assert.match(gemmaPrompt, /Return exactly one valid JSON object/);
 assert.match(gemmaPrompt, /maker_questions: string\[\]/);
+assert.match(gemmaPrompt, /Field binding is exactly one of: fixed, brand, campaign, proof/);
+assert.match(gemmaPrompt, /only brand_identity assets use brand binding/);
 
 let providerFailureRequests = 0;
 await assert.rejects(
