@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Wiggly Maker dogfood — July 13, 2026</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f4efe4;
+      --card: #fffdf7;
+      --ink: #171717;
+      --muted: #615f5a;
+      --line: #d8d0c2;
+      --green: #087847;
+      --red: #b42318;
+      --amber: #9a6700;
+      --violet: #6d28d9;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.45 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(1480px, calc(100% - 32px)); margin: 0 auto; padding: 56px 0 96px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { max-width: 980px; margin-bottom: 18px; font-size: clamp(42px, 7vw, 92px); line-height: .9; letter-spacing: -.065em; }
+    h2 { font-size: clamp(30px, 4vw, 54px); line-height: .98; letter-spacing: -.04em; }
+    h3 { margin-bottom: 8px; font-size: 20px; }
+    a { color: inherit; }
+    .eyebrow { margin-bottom: 18px; color: var(--violet); font-size: 13px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+    .lede { max-width: 900px; color: var(--muted); font-size: 20px; }
+    .truth {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin: 36px 0;
+    }
+    .truth article, .summary, .test, .scorecard {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--card);
+      box-shadow: 0 8px 22px rgb(65 53 33 / 7%);
+    }
+    .truth article { padding: 22px; }
+    .truth strong { display: block; font-size: 42px; line-height: 1; }
+    .truth span { color: var(--muted); font-weight: 700; }
+    .scorecard { overflow: auto; margin: 24px 0 48px; }
+    table { width: 100%; border-collapse: collapse; min-width: 860px; }
+    th, td { padding: 14px 16px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: #eee7da; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+    tr:last-child td { border-bottom: 0; }
+    .yes { color: var(--green); font-weight: 900; }
+    .no { color: var(--red); font-weight: 900; }
+    .partial { color: var(--amber); font-weight: 900; }
+    .tests { display: grid; gap: 28px; }
+    .test { padding: 28px; }
+    .test-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 22px; }
+    .number { color: var(--violet); font-size: 13px; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
+    .badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .badge { padding: 7px 11px; border-radius: 999px; font-size: 12px; font-weight: 900; }
+    .badge.fail { background: #fee4e2; color: var(--red); }
+    .badge.partial { background: #fff0c2; color: #7a4e00; }
+    .badge.pass { background: #d9f5e5; color: var(--green); }
+    .media-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 22px 0; }
+    .media-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    figure { margin: 0; min-width: 0; }
+    figure a { display: block; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: #e9e3d8; }
+    figure img { display: block; width: 100%; height: 430px; object-fit: contain; background: #e9e3d8; }
+    figcaption { margin-top: 7px; color: var(--muted); font-size: 13px; font-weight: 800; }
+    .failure {
+      display: grid;
+      min-height: 260px;
+      place-items: center;
+      padding: 24px;
+      border: 1px dashed #b8ad9b;
+      border-radius: 16px;
+      color: var(--muted);
+      background: #f7f2e9;
+      text-align: center;
+      font-weight: 800;
+    }
+    .findings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .finding { padding: 17px; border-radius: 16px; background: #f1ece2; }
+    .finding p { margin-bottom: 0; color: var(--muted); }
+    .winner { border-left: 4px solid var(--violet); }
+    .summary { margin-top: 48px; padding: 30px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .summary section { padding: 20px; border-radius: 16px; background: #f1ece2; }
+    li + li { margin-top: 8px; }
+    code { padding: 2px 6px; border-radius: 6px; background: #e8e1d5; font-size: .9em; }
+    @media (max-width: 1050px) {
+      .media-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .findings, .truth { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 680px) {
+      main { width: min(100% - 20px, 1480px); padding-top: 28px; }
+      .test { padding: 18px; }
+      .test-head { display: block; }
+      .badges { justify-content: flex-start; margin-top: 12px; }
+      .media-grid, .media-grid.two, .summary-grid { grid-template-columns: 1fr; }
+      figure img { height: auto; max-height: 660px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Real UI dogfood · davidscookies.com · July 13, 2026</p>
+  <h1>The Maker works sometimes. The ads are not ready.</h1>
+  <p class="lede">Ten references went through the real <code>/builder</code> screen like a nontechnical assistant would use it. A run only counts as a marketing success if the finished David’s Cookies ad is good enough to send without an apology.</p>
+
+  <div class="truth">
+    <article><strong>6/10</strong><span>references produced an editable Format after the shared provider fix</span></article>
+    <article><strong>3/10</strong><span>completed all three David’s Cookies directions</span></article>
+    <article><strong>0/10</strong><span>produced an ad I would send to the head of marketing</span></article>
+  </div>
+
+  <section>
+    <h2>Scorecard</h2>
+    <div class="scorecard">
+      <table>
+        <thead><tr><th>Test</th><th>Format worked?</th><th>Easy for assistant?</th><th>Good enough to send?</th><th>Main problem</th></tr></thead>
+        <tbody>
+          <tr><td>1. Click, click, click, grow</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>OpenRouter provider rate limit stopped analysis.</td></tr>
+          <tr><td>2. Ranked mistakes</td><td class="partial">Partial</td><td class="no">No</td><td class="no">No</td><td>Important images stayed baked into the background; generation validator stopped.</td></tr>
+          <tr><td>3. Breaking news</td><td class="yes">Yes</td><td class="partial">Partial</td><td class="no">No</td><td>Mark Zuckerberg stayed; wrong products and fake report/claims appeared.</td></tr>
+          <tr><td>4. Delivery dialogue</td><td class="partial">Partial</td><td class="yes">Yes until generation</td><td class="no">No</td><td>NVIDIA NIM timed out after the strong editable draft.</td></tr>
+          <tr><td>5. Beta testers</td><td class="yes">Yes</td><td class="partial">Partial</td><td class="no">No</td><td>All three directions ignored the selected product and invented tester programs.</td></tr>
+          <tr><td>6. Catalog lift</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>OpenRouter provider rate limit stopped analysis.</td></tr>
+          <tr><td>7. Dumb ads vs smart ads</td><td class="yes">Yes after fix</td><td class="partial">Partial</td><td class="no">No</td><td>Old platform images remained; exact counts and ratings were invented.</td></tr>
+          <tr><td>8. LinkedIn effect</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>OpenRouter provider rate limit stopped analysis.</td></tr>
+          <tr><td>9. Quote post</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>OpenRouter provider rate limit stopped analysis.</td></tr>
+          <tr><td>10. Bus-stop headline</td><td class="partial">Partial</td><td class="yes">Yes until generation</td><td class="no">No</td><td>NVIDIA NIM returned a network failure during generation.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="tests">
+    <article class="test">
+      <div class="test-head"><div><p class="number">Test 01</p><h2>Click, click, click, grow</h2></div><div class="badges"><span class="badge fail">Maker fail</span><span class="badge fail">Do not send</span></div></div>
+      <div class="media-grid two">
+        <figure><a href="evidence/01-click-grow/original.jpg"><img src="evidence/01-click-grow/original.jpg" alt="Original Click click click grow ad"></a><figcaption>Original reference</figcaption></figure>
+        <figure><a href="evidence/01-click-grow/provider-error.png"><img src="evidence/01-click-grow/provider-error.png" alt="Provider rate-limit error"></a><figcaption>Failure in the real Builder</figcaption></figure>
+      </div>
+      <div class="failure">No reconstruction or three David’s Cookies versions were produced.</div>
+      <div class="findings">
+        <section class="finding"><h3>Friction</h3><p>The assistant uploads a clean, simple ad and gets a provider error before she can do anything.</p></section>
+        <section class="finding"><h3>What she should be allowed to do</h3><p>Trust that a normal upload will reach an editable draft without knowing which OpenRouter provider is behind it.</p></section>
+        <section class="finding"><h3>Fix / retest</h3><p>The analysis provider was pinned to the healthier W&amp;B endpoint. This exact image was not rerun after the shared fix.</p></section>
+      </div>
+    </article>
+
+    <article class="test">
+      <div class="test-head"><div><p class="number">Test 02</p><h2>Ranked mistakes</h2></div><div class="badges"><span class="badge partial">Maker partial</span><span class="badge fail">Do not send</span></div></div>
+      <div class="media-grid">
+        <figure><a href="evidence/02-ranked-mistakes/original.png"><img src="evidence/02-ranked-mistakes/original.png" alt="Original ranked mistakes ad"></a><figcaption>Original</figcaption></figure>
+        <figure><a href="evidence/02-ranked-mistakes/reconstruction.png"><img src="evidence/02-ranked-mistakes/reconstruction.png" alt="Reconstructed ranked mistakes Format"></a><figcaption>Reconstructed Format</figcaption></figure>
+        <figure><a href="evidence/02-ranked-mistakes/edit-test.png"><img src="evidence/02-ranked-mistakes/edit-test.png" alt="Edited ranked mistakes Format"></a><figcaption>Manual edit test</figcaption></figure>
+        <figure><a href="evidence/02-ranked-mistakes/generation-error.png"><img src="evidence/02-ranked-mistakes/generation-error.png" alt="Generation validator error"></a><figcaption>Generation stopped</figcaption></figure>
+      </div>
+      <div class="failure">No David’s Cookies versions were produced because generation rejected a brand-bound visual as if it had to be a logo.</div>
+      <div class="findings">
+        <section class="finding"><h3>Friction</h3><p>Text editing worked, but four important thumbnail images remained trapped inside the background. The product picker also dumped 196 items into one list.</p></section>
+        <section class="finding"><h3>What she should be allowed to do</h3><p>See every important image the Format expects, crop one from the reference, upload a replacement, and mark it fixed or changeable.</p></section>
+        <section class="finding"><h3>Fix / retest</h3><p>The incorrect logo rule was fixed and covered by a regression test. The missing-image correction tool is a larger Maker feature and was not built overnight.</p></section>
+      </div>
+    </article>
+
+    <article class="test">
+      <div class="test-head"><div><p class="number">Test 03</p><h2>Breaking news</h2></div><div class="badges"><span class="badge pass">Maker pass</span><span class="badge fail">Do not send</span></div></div>
+      <div class="media-grid">
+        <figure><a href="evidence/03-breaking-news/original.png"><img src="evidence/03-breaking-news/original.png" alt="Original breaking news ad"></a><figcaption>Original</figcaption></figure>
+        <figure><a href="evidence/03-breaking-news/reconstruction.png"><img src="evidence/03-breaking-news/reconstruction.png" alt="Reconstructed breaking news Format"></a><figcaption>Reconstructed Format</figcaption></figure>
+        <figure><a href="evidence/03-breaking-news/edit-test.png"><img src="evidence/03-breaking-news/edit-test.png" alt="Edited breaking news Format"></a><figcaption>Manual edit test</figcaption></figure>
+        <div class="failure">The headline was easy to edit, but the Mark Zuckerberg inset was not an editable asset.</div>
+      </div>
+      <div class="media-grid">
+        <figure><a href="evidence/03-breaking-news/variation-1.png"><img src="evidence/03-breaking-news/variation-1.png" alt="Breaking news variation one"></a><figcaption>Variation 1 — wrong 54-cookie claim</figcaption></figure>
+        <figure><a href="evidence/03-breaking-news/variation-2.png"><img src="evidence/03-breaking-news/variation-2.png" alt="Breaking news variation two"></a><figcaption>Variation 2 — wrong cheesecake</figcaption></figure>
+        <figure><a href="evidence/03-breaking-news/variation-3.png"><img src="evidence/03-breaking-news/variation-3.png" alt="Breaking news variation three"></a><figcaption>Variation 3 — best available, still not sendable</figcaption></figure>
+        <section class="finding winner"><h3>Chosen winner</h3><p>Variation 3 is the least wrong because its product image fits the brand, but it still keeps Zuckerberg, invents a “free report,” and uses an unsupported rating claim.</p></section>
+      </div>
+      <div class="findings">
+        <section class="finding"><h3>Friction</h3><p>The Format understood “breaking news,” but it did not understand that the inset person is part of the story and must change.</p></section>
+        <section class="finding"><h3>What she should be allowed to do</h3><p>Click the Zuckerberg inset, replace it with a searched or uploaded image, and decide whether that asset changes with each direction.</p></section>
+        <section class="finding"><h3>Fix / retest</h3><p>The prompt now binds every direction to the selected product and bans unsupported reports, ratings, and events. Prompt rules alone are not a hard guarantee, so an evidence check is still needed.</p></section>
+      </div>
+    </article>
+
+    <article class="test">
+      <div class="test-head"><div><p class="number">Test 04</p><h2>Delivery dialogue</h2></div><div class="badges"><span class="badge partial">Maker partial</span><span class="badge fail">Do not send</span></div></div>
+      <div class="media-grid">
+        <figure><a href="evidence/04-delivery-dialogue/original.png"><img src="evidence/04-delivery-dialogue/original.png" alt="Original delivery dialogue meme"></a><figcaption>Original</figcaption></figure>
+        <figure><a href="evidence/04-delivery-dialogue/reconstruction.png"><img src="evidence/04-delivery-dialogue/reconstruction.png" alt="Reconstructed delivery dialogue Format"></a><figcaption>Strong reconstruction</figcaption></figure>
+        <figure><a href="evidence/04-delivery-dialogue/edit-test.png"><img src="evidence/04-delivery-dialogue/edit-test.png" alt="Edited delivery dialogue Format"></a><figcaption>Faces and dialogue were editable</figcaption></figure>
+        <figure><a href="evidence/04-delivery-dialogue/generation-timeout.png"><img src="evidence/04-delivery-dialogue/generation-timeout.png" alt="NIM timeout"></a><figcaption>Generation timeout</figcaption></figure>
+      </div>
+      <div class="failure">No three David’s Cookies versions were produced.</div>
+      <div class="findings">
+        <section class="finding"><h3>Friction</h3><p>This was one of the best Maker drafts, then a 120-second NIM timeout erased the momentum.</p></section>
+        <section class="finding"><h3>What she should be allowed to do</h3><p>Keep the completed Format and manually try generation again without repeating upload, analysis, or edits.</p></section>
+        <section class="finding"><h3>Fix / retest</h3><p>No fallback or automatic retry was added. Provider execution should become a durable job later; that is bigger than an overnight bug fix.</p></section>
+      </div>
+    </article>
+
+    <article class="test">
+      <div class="test-head"><div><p class="number">Test 05</p><h2>Beta testers</h2></div><div class="badges"><span class="badge pass">Maker pass</span><span class="badge fail">Do not send</span></div></div>
+      <div class="media-grid">
+        <figure><a href="evidence/05-beta-testers/original.png"><img src="evidence/05-beta-testers/original.png" alt="Original beta testers ad"></a><figcaption>Original</figcaption></figure>
+        <figure><a href="evidence/05-beta-testers/reconstruction.png"><img src="evidence/05-beta-testers/reconstruction.png" alt="Reconstructed beta testers Format"></a><figcaption>Reconstructed Format</figcaption></figure>
+        <figure><a href="evidence/05-beta-testers/edit-test.png"><img src="evidence/05-beta-testers/edit-test.png" alt="Edited beta testers Format"></a><figcaption>Manual edit test</figcaption></figure>
+        <div class="failure">Layout fidelity was good; marketing truth was not.</div>
+      </div>
+      <div class="media-grid">
+        <figure><a href="evidence/05-beta-testers/variation-1.png"><img src="evidence/05-beta-testers/variation-1.png" alt="Beta testers variation one"></a><figcaption>Variation 1 — unselected 54-cookie tin</figcaption></figure>
+        <figure><a href="evidence/05-beta-testers/variation-2.png"><img src="evidence/05-beta-testers/variation-2.png" alt="Beta testers variation two"></a><figcaption>Variation 2 — unselected cheesecake</figcaption></figure>
+        <figure><a href="evidence/05-beta-testers/variation-3.png"><img src="evidence/05-beta-testers/variation-3.png" alt="Beta testers variation three"></a><figcaption>Variation 3 — fake tester/rating claim</figcaption></figure>
+        <section class="finding winner"><h3>Chosen winner</h3><p>Variation 1 is visually the cleanest, but no winner is sendable: “100 parent taste testers” is made up and the selected product was ignored.</p></section>
+      </div>
+      <div class="findings">
+        <section class="finding"><h3>Friction</h3><p>The assistant made a real product choice, yet each result advertised something else.</p></section>
+        <section class="finding"><h3>What she should be allowed to do</h3><p>Trust that selecting one product locks the whole batch to that product, or choose a clear brand-level mode.</p></section>
+        <section class="finding"><h3>Fix / retest</h3><p>Product selection is now optional for brand-level Formats and strict for product-image Formats. The generator prompt now says the selected product is the only product allowed.</p></section>
+      </div>
+    </article>
+
+    <article class="test">
+      <div class="test-head"><div><p class="number">Test 06</p><h2>Catalog lift</h2></div><div class="badges"><span class="badge fail">Maker fail</span><span class="badge fail">Do not send</span></div></div>
+      <div class="media-grid two">
+        <figure><a href="evidence/06-marpipe-catalog/original.png"><img src="evidence/06-marpipe-catalog/original.png" alt="Original catalog lift ad"></a><figcaption>Original</figcaption></figure>
+        <figure><a href="evidence/06-marpipe-catalog/provider-error.png"><img src="evidence/06-marpipe-catalog/provider-error.png" alt="Provider error"></a><figcaption>Provider failure</figcaption></figure>
+      </div>
+      <div class="failure">No reconstruction or three David’s Cookies versions were produced.</div>
+      <div class="findings">
+        <section class="finding"><h3>Friction</h3><p>Analysis stopped before the Maker could discover whether the image-within-image structure was editable.</p></section>
+        <section class="finding"><h3>What she should be allowed to do</h3><p>Upload a dense reference without caring about provider traffic or model routing.</p></section>
+        <section class="finding"><h3>Fix / retest</h3><p>The shared provider pin fixed the rate-limit path. This exact reference was not rerun after the fix.</p></section>
+      </div>
+    </article>
+
+    <article class="test">
+      <div class="test-head"><div><p class="number">Test 07</p><h2>Dumb ads vs smart ads</h2></div><div class="badges"><span class="badge pass">Maker pass after fix</span><span class="badge fail">Do not send</span></div></div>
+      <div class="media-grid">
+        <figure><a href="evidence/07-dumb-vs-smart/original.jpg"><img src="evidence/07-dumb-vs-smart/original.jpg" alt="Original dumb ads versus smart ads"></a><figcaption>Original</figcaption></figure>
+        <figure><a href="evidence/07-dumb-vs-smart/schema-error.png"><img src="evidence/07-dumb-vs-smart/schema-error.png" alt="First schema error"></a><figcaption>First attempt failed</figcaption></figure>
+        <figure><a href="evidence/07-dumb-vs-smart/retest-reconstruction.png"><img src="evidence/07-dumb-vs-smart/retest-reconstruction.png" alt="Reconstructed comparison Format after fix"></a><figcaption>Retest reconstruction</figcaption></figure>
+        <div class="failure">The comparison formula was recognized, but one platform logo was missed and the remaining old logos stayed in the final ads.</div>
+      </div>
+      <div class="media-grid">
+        <figure><a href="evidence/07-dumb-vs-smart/retest-variation-1.png"><img src="evidence/07-dumb-vs-smart/retest-variation-1.png" alt="Comparison variation one"></a><figcaption>Variation 1 — office party</figcaption></figure>
+        <figure><a href="evidence/07-dumb-vs-smart/retest-variation-2.png"><img src="evidence/07-dumb-vs-smart/retest-variation-2.png" alt="Comparison variation two"></a><figcaption>Variation 2 — thank-you gift</figcaption></figure>
+        <figure><a href="evidence/07-dumb-vs-smart/retest-variation-3.png"><img src="evidence/07-dumb-vs-smart/retest-variation-3.png" alt="Comparison variation three"></a><figcaption>Variation 3 — school event</figcaption></figure>
+        <section class="finding winner"><h3>Chosen winner</h3><p>Variation 2 has the strongest buyer moment. It is still not sendable because the old platform logos remain and “4.6 stars from 1531 reviews” was generated without a hard evidence check.</p></section>
+      </div>
+      <div class="findings">
+        <section class="finding"><h3>Friction</h3><p>The first run used unsupported schema values. After that was fixed, the assistant still had no way to correct missed assets before testing.</p></section>
+        <section class="finding"><h3>What she should be allowed to do</h3><p>Review a simple checklist of formula-critical assets, add the missing logo, and say what each image becomes on reroll.</p></section>
+        <section class="finding"><h3>Fix / retest</h3><p>Explicit enum instructions and the fixed W&amp;B provider made analysis succeed. The full UI retest created all three directions. Marketing quality still failed.</p></section>
+      </div>
+    </article>
+
+    <article class="test">
+      <div class="test-head"><div><p class="number">Test 08</p><h2>LinkedIn effect</h2></div><div class="badges"><span class="badge fail">Maker fail</span><span class="badge fail">Do not send</span></div></div>
+      <div class="media-grid two">
+        <figure><a href="evidence/08-linkedin-effect/original.jpeg"><img src="evidence/08-linkedin-effect/original.jpeg" alt="Original LinkedIn effect meme"></a><figcaption>Original</figcaption></figure>
+        <figure><a href="evidence/08-linkedin-effect/provider-error.png"><img src="evidence/08-linkedin-effect/provider-error.png" alt="Provider error"></a><figcaption>Provider failure</figcaption></figure>
+      </div>
+      <div class="failure">No reconstruction or three David’s Cookies versions were produced.</div>
+      <div class="findings">
+        <section class="finding"><h3>Friction</h3><p>A potentially strong two-column meme never reached the editing screen.</p></section>
+        <section class="finding"><h3>What she should be allowed to do</h3><p>Use the same workflow for memes, ads, and social screenshots without guessing what is supported.</p></section>
+        <section class="finding"><h3>Fix / retest</h3><p>The shared provider was fixed. This exact image was not rerun.</p></section>
+      </div>
+    </article>
+
+    <article class="test">
+      <div class="test-head"><div><p class="number">Test 09</p><h2>Quote post</h2></div><div class="badges"><span class="badge fail">Maker fail</span><span class="badge fail">Do not send</span></div></div>
+      <div class="media-grid two">
+        <figure><a href="evidence/09-justin-welsh-tweet/original.jpeg"><img src="evidence/09-justin-welsh-tweet/original.jpeg" alt="Original quote post"></a><figcaption>Original</figcaption></figure>
+        <figure><a href="evidence/09-justin-welsh-tweet/provider-error.png"><img src="evidence/09-justin-welsh-tweet/provider-error.png" alt="Provider error"></a><figcaption>Provider failure</figcaption></figure>
+      </div>
+      <div class="failure">No reconstruction or three David’s Cookies versions were produced.</div>
+      <div class="findings">
+        <section class="finding"><h3>Friction</h3><p>Even the simplest quote layout was blocked by provider routing.</p></section>
+        <section class="finding"><h3>What she should be allowed to do</h3><p>Turn a quote-style reference into a brand-safe post and decide whether social metrics are fixed, editable, or removed.</p></section>
+        <section class="finding"><h3>Fix / retest</h3><p>The shared provider was fixed. This exact image was not rerun.</p></section>
+      </div>
+    </article>
+
+    <article class="test">
+      <div class="test-head"><div><p class="number">Test 10</p><h2>Bus-stop headline</h2></div><div class="badges"><span class="badge partial">Maker partial</span><span class="badge fail">Do not send</span></div></div>
+      <div class="media-grid">
+        <figure><a href="evidence/10-lucent-bus-stop/original.jpeg"><img src="evidence/10-lucent-bus-stop/original.jpeg" alt="Original Lucent bus stop ad"></a><figcaption>Original</figcaption></figure>
+        <figure><a href="evidence/10-lucent-bus-stop/reconstruction.png"><img src="evidence/10-lucent-bus-stop/reconstruction.png" alt="Reconstructed bus stop Format"></a><figcaption>Reconstructed Format</figcaption></figure>
+        <figure><a href="evidence/10-lucent-bus-stop/edit-test.png"><img src="evidence/10-lucent-bus-stop/edit-test.png" alt="Edited bus stop Format"></a><figcaption>Manual edit test</figcaption></figure>
+        <figure><a href="evidence/10-lucent-bus-stop/generation-error.png"><img src="evidence/10-lucent-bus-stop/generation-error.png" alt="Generation network error"></a><figcaption>Generation network failure</figcaption></figure>
+      </div>
+      <div class="failure">No three David’s Cookies versions were produced.</div>
+      <div class="findings">
+        <section class="finding"><h3>Friction</h3><p>The simple three-step layout reconstructed well and edited easily, then generation failed with a network error.</p></section>
+        <section class="finding"><h3>What she should be allowed to do</h3><p>Manually retry the failed generation while keeping the finished Format and website research intact.</p></section>
+        <section class="finding"><h3>Fix / retest</h3><p>No hidden retry or fallback was added. The failure remains visible, as required.</p></section>
+      </div>
+    </article>
+  </section>
+
+  <section class="summary">
+    <p class="eyebrow">Overnight conclusion</p>
+    <h2>The next win is not more templates. It is better Maker correction and stricter truth.</h2>
+    <div class="summary-grid">
+      <section>
+        <h3>What was fixed</h3>
+        <ul>
+          <li>OpenRouter analysis is pinned to the healthier W&amp;B Gemma 4 31B provider.</li>
+          <li>The analysis prompt names the exact allowed binding values.</li>
+          <li>A brand-bound news subject is no longer mistaken for the brand logo.</li>
+          <li>Brand-level Formats no longer force a product choice; product-image Formats still do.</li>
+          <li>The remix prompt now locks to the selected product and forbids unsupported reports, ratings, events, and offers.</li>
+        </ul>
+      </section>
+      <section>
+        <h3>What still blocks the assistant</h3>
+        <ul>
+          <li>SAM can miss an important image and leave it baked into the locked background.</li>
+          <li>There is no simple Maker correction step for adding, cropping, replacing, or rebinding that missing image.</li>
+          <li>Prompt instructions do not guarantee factual copy. Exact claims still need machine-checkable evidence.</li>
+          <li>NIM generation can take 60–120 seconds, time out, or fail at the network.</li>
+          <li>The 196-item product dropdown is technically usable but not assistant-friendly.</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Bigger ideas that need approval</h3>
+        <ul>
+          <li>A Maker asset checklist with “crop from reference,” upload, image search, fixed/changeable, and reroll-group controls.</li>
+          <li>A deterministic evidence validator that rejects unsupported product facts and source-brand leakage before showing an ad.</li>
+          <li>Durable generation jobs with visible stages and a manual retry button that preserves completed work.</li>
+        </ul>
+      </section>
+      <section>
+        <h3>The three improvements to make next</h3>
+        <ol>
+          <li><strong>Let the Maker correct missing images.</strong> This unlocks the news inset, ranked thumbnails, platform logos, and other formula-critical art.</li>
+          <li><strong>Check every generated claim against real evidence.</strong> Stop fake counts, ratings, reports, tester programs, and off-product copy before render.</li>
+          <li><strong>Make product choice searchable and reliable.</strong> The assistant should find one product quickly, and every output must use exactly that product.</li>
+        </ol>
+      </section>
+    </div>
+  </section>
+</main>
+</body>
+</html>
