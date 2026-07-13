@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import { createMakerDraftFixture } from "../features/builder/fixture";
 import { createDefaultBuilderInteractionSnapshot, reduceBuilderInteraction } from "../features/builder/interactionStore";
 import { mergeMakerAnalysisActivity } from "../features/builder/analysisProgress";
+import { scaleTextLayer, scaleTextLayerToValue } from "../features/builder/textResize";
+import { flattenStaticLayers } from "../features/builder/model";
 
 class MemoryStorage {
   private values = new Map<string, string>();
@@ -22,6 +24,14 @@ assert.equal(selected.selectedLayerId, "active-tool");
 assert.equal(reduceBuilderInteraction(selected, { type: "interactionReset" }).selectedLayerId, null);
 
 const draft = createMakerDraftFixture({ id: "browser-draft", now: 100 });
+const textLayer = flattenStaticLayers(draft.scene.layout.layers).find((layer) => layer.type === "text");
+assert.ok(textLayer && textLayer.type === "text");
+const doubledText = scaleTextLayer(textLayer, 2);
+assert.equal(doubledText.width, textLayer.width * 2, "Corner resizing must scale the text box.");
+assert.equal(doubledText.height, textLayer.height * 2, "Corner resizing must preserve the text box ratio.");
+assert.equal(doubledText.fontSize, textLayer.fontSize * 2, "Corner resizing must scale the font with its box.");
+const inspectorScaledText = scaleTextLayerToValue(textLayer, "width", textLayer.width / 2);
+assert.equal(inspectorScaledText.fontSize, textLayer.fontSize / 2, "Inspector width changes must not leave typography behind.");
 saveLocalDraft(draft);
 assert.deepEqual(loadLocalDraft(draft.id), draft);
 
@@ -69,6 +79,8 @@ assert.match(pageSource, /MakerBuilderClient/);
 assert.match(canvasSource, /AdRenderSurface/);
 assert.match(canvasSource, /react-moveable/);
 assert.match(canvasSource, /react-selecto/);
+assert.match(canvasSource, /useResizeObserver/, "Moveable controls must follow scene-driven text geometry changes.");
+assert.match(canvasSource, /renderDirections=.*\["nw", "ne", "sw", "se", "w", "e"\]/, "Text layers must not expose vertical-only resize handles that can clip glyphs.");
 assert.equal(
   (canvasSource.match(/event\.target\.style\.transform = `rotate\(\$\{start\.rotation\}deg\)`/g) || []).length,
   3,
