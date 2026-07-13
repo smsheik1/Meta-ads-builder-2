@@ -4,6 +4,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   buildPcmWav,
+  createThreeDBreakdownTtsText,
   FISH_STUDIO_THREE_D_BREAKDOWN_MODEL,
   generateFishThreeDBreakdownVoiceover,
   THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID,
@@ -526,11 +527,11 @@ assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions p
   "Style A - toy-character-vsl",
   "Style B - presenter-teardown-vsl",
   "voice is unseen",
-  "human/demo subject is a recurring silent 3D demonstrator/scale figure",
+  "demonstrator is silent feature-animation CGI",
   "use -> false classification",
   "Include a literal transformation verb",
   "Narrator teaches; visuals demonstrate.",
-  "recurring silent 3D demonstrator/scale figure",
+  "recurring silent feature-animation CGI demonstrator/scale figure",
   "referenceScript",
   "110-160 words",
   "Then compress that script into the 5 scriptBeats",
@@ -880,6 +881,11 @@ assert.equal(selectedDirectionCalls, 0);
 assert.equal(selectedDirectionGeneration.variants.length, 1);
 assert.ok(selectedDirectionGeneration.variants[0]?.variantAngle.startsWith("A gift has to feel remembered"));
 assert.equal(selectedDirectionGeneration.variants[0]?.visualStyle, "presenter-teardown-vsl");
+assert.equal(
+  selectedDirectionGeneration.variants[0]?.scriptBeats[4]?.narration,
+  selectedDirectionGeneration.variants[0]?.ctaLine,
+  "The compressed Style B script must end on the buyer action, not an abstract mechanism slogan.",
+);
 
 let observedMaxTokens: number | undefined;
 let observedDirectorCalls = 0;
@@ -928,9 +934,9 @@ assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("same clos
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Visual style: toy-character-vsl"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("recurring stylized human demo character/body proxy"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("Visual style: presenter-teardown-vsl"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("silent recurring demonstrator"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("silent recurring stylized feature-animation CGI demonstrator"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("full body, torso, hands"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("casual creator-ad 3D person"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("unmistakable feature-animation CGI"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human/product use, transparent body-route or product path"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("obstacle wall or pile-up"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("same face, plain shirt color"));
@@ -1560,9 +1566,12 @@ const threeDImageActionSource = readFileSync(new URL("../convex/threeDImages.ts"
 assert.ok(threeDImageActionSource.includes("ecommerce-teardown-style-reference-clean-v7.jpg"));
 assert.ok(threeDImageActionSource.includes("captions, shirt text, labels, or logos"));
 assert.ok(threeDImageActionSource.includes("never render those words in image pixels"));
-assert.ok(threeDImageActionSource.includes("recurring casual silent 3D demonstrator/scale figure"));
+assert.ok(threeDImageActionSource.includes("recurring silent stylized feature-animation CGI demonstrator/scale figure"));
+assert.ok(threeDImageActionSource.includes("UNSEEN NARRATOR ONLY"));
+assert.ok(threeDImageActionSource.includes("keep lips closed and relaxed, mouth and jaw still"));
+assert.ok(threeDImageActionSource.includes("never photorealistic, live action, photographed"));
 assert.ok(threeDImageActionSource.includes("oversized tactile props"));
-assert.ok(threeDImageActionSource.includes("No smooth bald mannequins, blank anatomy models"));
+assert.ok(threeDImageActionSource.includes("No photorealistic or live-action people, smooth bald mannequins"));
 assert.ok(threeDImageActionSource.includes("semi-transparent torso overlay, body-route"));
 assert.ok(threeDImageActionSource.includes("This does not ban reference-style semi-transparent torso"));
 assert.ok(threeDImageActionSource.includes("do not ban body-route visuals"));
@@ -1608,7 +1617,8 @@ assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("Time-code the clip
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("0.0-3.3s = frame 1"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("six quick micro-beats"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("every idea must become a visible physical action"));
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("same recurring casual silent 3D demonstrator"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("same recurring silent stylized feature-animation CGI demonstrator"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("lips closed and still, no lip-sync"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("Clip 1 motion target"));
 assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("peak teardown"));
 assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("physical payoff"));
@@ -1666,6 +1676,11 @@ const fishResult = await generateFishThreeDBreakdownVoiceover({
   },
 });
 assert.equal(THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID, "0873499c22e24d13b074fa76d27562e5");
+assert.equal(
+  createThreeDBreakdownTtsText(["A probiotic meets probiotics."]),
+  "A pro-bye-AH-tik meets pro-bye-AH-tiks.",
+  "Fish receives a private pronunciation hint while renderer captions keep the original spelling.",
+);
 assert.equal(fishResult.provider, "fish-studio");
 assert.equal(fishResult.model, FISH_STUDIO_THREE_D_BREAKDOWN_MODEL);
 assert.equal(fishVoiceRequests[0]?.reference_id, THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID);
