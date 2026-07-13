@@ -74,22 +74,6 @@ else
   npm install --workspaces=false --include=optional
 fi
 
-if [ "${WIGGLY_MAKER_LIVE_ANALYSIS:-false}" = "true" ]; then
-  MAKER_REQUIREMENTS_HASH="$(sha256sum maker-analysis-requirements.txt | cut -d' ' -f1)"
-  MAKER_REQUIREMENTS_STAMP=".maker-analysis-venv/.wiggly-requirements-sha256"
-  if [ ! -x .maker-analysis-venv/bin/python ] || [ ! -f "$MAKER_REQUIREMENTS_STAMP" ] || [ "$(<"$MAKER_REQUIREMENTS_STAMP")" != "$MAKER_REQUIREMENTS_HASH" ]; then
-    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
-    if ! command -v uv >/dev/null 2>&1; then
-      curl -LsSf https://astral.sh/uv/install.sh | sh
-    fi
-    command -v uv >/dev/null 2>&1 || { echo "uv installation failed." >&2; exit 1; }
-    bash scripts/setup-maker-analysis.sh
-    printf '%s\n' "$MAKER_REQUIREMENTS_HASH" > "$MAKER_REQUIREMENTS_STAMP"
-  else
-    .maker-analysis-venv/bin/python -c 'from paddleocr import PaddleOCR; print("Maker PaddleOCR cache is ready.")'
-  fi
-fi
-
 for env_var in "${CONVEX_ACTION_ENV_VARS[@]}"; do
   if [ -n "${!env_var:-}" ]; then
     npx convex env set "$env_var" "${!env_var}" >/dev/null
@@ -116,6 +100,24 @@ pm2 status
 
 sleep 3
 npm run runtime:health
+
+# Maker OCR is optional infrastructure for /builder reference analysis. Bootstrap it only
+# after the core app and Convex deployment are healthy so it cannot block unrelated formats.
+if [ "${WIGGLY_MAKER_LIVE_ANALYSIS:-false}" = "true" ]; then
+  MAKER_REQUIREMENTS_HASH="$(sha256sum maker-analysis-requirements.txt | cut -d' ' -f1)"
+  MAKER_REQUIREMENTS_STAMP=".maker-analysis-venv/.wiggly-requirements-sha256"
+  if [ ! -x .maker-analysis-venv/bin/python ] || [ ! -f "$MAKER_REQUIREMENTS_STAMP" ] || [ "$(<"$MAKER_REQUIREMENTS_STAMP")" != "$MAKER_REQUIREMENTS_HASH" ]; then
+    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+    if ! command -v uv >/dev/null 2>&1; then
+      curl -LsSf https://astral.sh/uv/install.sh | sh
+    fi
+    command -v uv >/dev/null 2>&1 || { echo "uv installation failed." >&2; exit 1; }
+    bash scripts/setup-maker-analysis.sh
+    printf '%s\n' "$MAKER_REQUIREMENTS_HASH" > "$MAKER_REQUIREMENTS_STAMP"
+  else
+    .maker-analysis-venv/bin/python -c 'from paddleocr import PaddleOCR; print("Maker PaddleOCR cache is ready.")'
+  fi
+fi
 
 if [ -n "$V3_PUBLIC_HOST" ]; then
   if ! [[ "$V3_PUBLIC_HOST" =~ ^[A-Za-z0-9.-]+$ ]]; then
