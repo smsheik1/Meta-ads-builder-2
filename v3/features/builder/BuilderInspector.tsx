@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Lock, Unlock } from "lucide-react";
 import type { StaticAdLayer, StaticLayerBinding } from "../scene/types";
 import { findStaticLayer, flattenStaticLayers, replaceStaticLayer, updateFormatDraft, validateFormatDraft, type FormatDraft } from "./model";
+import { scaleTextLayerToValue } from "./textResize";
 
 const bindings: StaticLayerBinding[] = ["fixed", "brand", "campaign", "proof", "locked"];
 const selectClass = "h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-slate-950";
@@ -30,6 +31,13 @@ export function BuilderInspector({
     if (!selectedLayerId) return;
     const scene = replaceStaticLayer(draft.scene, selectedLayerId, (layer) => ({ ...layer, ...patch } as StaticAdLayer));
     draftChanged(updateFormatDraft(draft, { scene }));
+  };
+  const updateGeometry = (property: "x" | "y" | "width" | "height", value: number) => {
+    if (selectedLayer?.type === "text" && (property === "width" || property === "height")) {
+      updateLayer(scaleTextLayerToValue(selectedLayer, property, value));
+      return;
+    }
+    updateLayer({ [property]: value });
   };
   const updateAnalysis = (change: (analysis: FormatDraft["analysis"]) => void) => {
     const analysis = structuredClone(draft.analysis);
@@ -63,7 +71,7 @@ export function BuilderInspector({
                     <div className="grid grid-cols-[1fr_84px] gap-3">
                       <div className="space-y-1.5">
                         <Label htmlFor="font-size">Size</Label>
-                        <Input id="font-size" type="number" min={8} disabled={readOnly} value={selectedLayer.fontSize} onChange={(event) => updateLayer({ fontSize: Number(event.target.value) })} />
+                        <Input id="font-size" type="number" min={8} disabled={readOnly} value={selectedLayer.fontSize} onChange={(event) => updateLayer(scaleTextLayerToValue(selectedLayer, "fontSize", Number(event.target.value)))} />
                       </div>
                       <div className="space-y-1.5">
                         <Label htmlFor="text-color">Color</Label>
@@ -93,7 +101,7 @@ export function BuilderInspector({
                         type="number"
                         disabled={readOnly}
                         value={selectedLayer[property]}
-                        onChange={(event) => updateLayer({ [property]: Number(event.target.value) })}
+                        onChange={(event) => updateGeometry(property, Number(event.target.value))}
                       />
                     </div>
                   ))}
