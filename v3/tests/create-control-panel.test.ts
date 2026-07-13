@@ -149,7 +149,9 @@ assert.ok(
 assert.ok(
   createClientSource.includes('if (firstScene?.format === "three-d-breakdown") resetThreeDStoryDirections();') &&
     createClientSource.includes('setThreeDStoryDirectionStatus("loading")') &&
-    createClientSource.includes('setThreeDStoryDirectionError(message)'),
+    createClientSource.includes('setThreeDStoryDirectionError(message)') &&
+    quickActionsSource.indexOf('role="alert"') < quickActionsSource.indexOf('{directions.length ? (') &&
+    quickActionsSource.includes('status === "error" && selected ? "Retry direction" : "Use direction"'),
   "Choosing a 3D story direction must clear stale slate state after success and expose a recoverable error after failure.",
 );
 assert.ok(

@@ -507,6 +507,12 @@ function ThreeDBreakdownStoryDirectionsCard({
         </div>
       ) : null}
 
+      {error ? (
+        <p role="alert" className="mb-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
+          {error}
+        </p>
+      ) : null}
+
       {directions.length ? (
         <div className="space-y-2">
           {directions.map((direction) => {
@@ -550,18 +556,12 @@ function ThreeDBreakdownStoryDirectionsCard({
                   className={`mt-3 h-9 w-full rounded-2xl text-[11px] font-black uppercase tracking-[0.12em] ${selected ? "bg-white text-slate-950 hover:bg-slate-100" : "bg-slate-950 text-white hover:bg-slate-800"}`}
                   data-three-d-use-story-direction={direction.directionId}
                 >
-                  Use direction
+                  {status === "error" && selected ? "Retry direction" : "Use direction"}
                 </Button>
               </article>
             );
           })}
         </div>
-      ) : null}
-
-      {error ? (
-        <p className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
-          {error}
-        </p>
       ) : null}
     </section>
   );
