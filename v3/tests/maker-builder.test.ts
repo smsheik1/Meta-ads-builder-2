@@ -99,5 +99,6 @@ assert.match(analysisServerSource, /Separating editable visual assets/);
 assert.match(analysisRouteSource, /application\/x-ndjson/);
 assert.doesNotMatch(analysisServerSource, /NVIDIA_NIM_API_KEY|NVIDIA_NIM_MAKER_MODEL|integrate\.api\.nvidia\.com/);
 assert.match(inspectorSource, /list:\$\{list\.id\}:\$\{item\.id\}:\$\{itemValue\.key\}/, "Live List edits must update their reconstructed scene layer.");
+assert.match(inspectorSource, /layerControlsDisabled = readOnly \|\| Boolean\(selectedLayer\?\.locked\)/, "Locked layers must stay unchanged until the Maker explicitly unlocks them.");
 
 console.log("maker builder tests passed");

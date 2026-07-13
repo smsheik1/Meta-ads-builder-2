@@ -12,6 +12,7 @@ import {
   type PaddleOcrResult,
 } from "../features/builder/referenceAnalysis";
 import { createSavedReferenceDraftFixture, savedCodexOcr, savedCodexReferenceAnalysis } from "../features/builder/savedReferenceFixture";
+import { createHybridNewsDraftFixture } from "../features/builder/hybridNewsFixture";
 
 const ocr: PaddleOcrResult = {
   width: 1080,
@@ -121,5 +122,15 @@ assert.equal(savedAnalysis.lists[0]?.items.find((item) => item.id === savedAnaly
 assert.equal(saved.scene.metadata.model, "google/gemma-4-31b-it");
 assert.equal(saved.scene.layout.layers.filter((layer) => layer.type === "text").length, 9);
 assert.ok(Math.abs(saved.scene.layout.layers.find((layer) => layer.semanticRole === "list:list_integrations:item_2:app_name")?.rotation || 0) > 5, "Rotated OCR evidence must preserve its angle without inflating the layer box.");
+
+const hybridNews = createHybridNewsDraftFixture({ id: "hybrid-news", fileName: "breaking-news.png", imageUrl: "data:image/png;base64,reference", now: 123 });
+assert.equal(hybridNews.scene.layout.layers.find((layer) => layer.semanticRole === "reference:background")?.locked, true);
+assert.deepEqual(
+  hybridNews.scene.layout.layers.filter((layer) => layer.type === "image" && layer.semanticRole.startsWith("asset:")).map((layer) => layer.semanticRole),
+  ["asset:publisher_logo", "asset:story_setting", "asset:news_subject"],
+  "The hybrid fixture must keep publisher, setting, and subject independently replaceable.",
+);
+assert.equal(hybridNews.scene.layout.layers.find((layer) => layer.semanticRole === "field:headline")?.type, "text");
+assert.equal(hybridNews.scene.layout.layers.find((layer) => layer.id === "headline-plate")?.locked, true);
 
 console.log("maker reference analysis tests passed");

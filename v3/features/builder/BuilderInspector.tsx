@@ -27,6 +27,7 @@ export function BuilderInspector({
   selectedLayerId: string | null;
 }) {
   const selectedLayer = selectedLayerId ? findStaticLayer(draft.scene.layout.layers, selectedLayerId) : null;
+  const layerControlsDisabled = readOnly || Boolean(selectedLayer?.locked);
   const validation = validateFormatDraftReady(draft);
   const updateLayer = (patch: Partial<StaticAdLayer>) => {
     if (!selectedLayerId) return;
@@ -92,22 +93,22 @@ export function BuilderInspector({
               <div className="space-y-4 rounded-2xl border border-slate-200 p-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="layer-name">Layer name</Label>
-                  <Input id="layer-name" disabled={readOnly} value={selectedLayer.name} onChange={(event) => updateLayer({ name: event.target.value })} />
+                  <Input id="layer-name" disabled={layerControlsDisabled} value={selectedLayer.name} onChange={(event) => updateLayer({ name: event.target.value })} />
                 </div>
                 {selectedLayer.type === "text" ? (
                   <>
                     <div className="space-y-1.5">
                       <Label htmlFor="layer-text">Text</Label>
-                      <Textarea id="layer-text" disabled={readOnly} value={selectedLayer.text} onChange={(event) => updateLayer({ text: event.target.value })} />
+                      <Textarea id="layer-text" disabled={layerControlsDisabled} value={selectedLayer.text} onChange={(event) => updateLayer({ text: event.target.value })} />
                     </div>
                     <div className="grid grid-cols-[1fr_84px] gap-3">
                       <div className="space-y-1.5">
                         <Label htmlFor="font-size">Size</Label>
-                        <Input id="font-size" type="number" min={8} disabled={readOnly} value={selectedLayer.fontSize} onChange={(event) => updateLayer(scaleTextLayerToValue(selectedLayer, "fontSize", Number(event.target.value)))} />
+                        <Input id="font-size" type="number" min={8} disabled={layerControlsDisabled} value={selectedLayer.fontSize} onChange={(event) => updateLayer(scaleTextLayerToValue(selectedLayer, "fontSize", Number(event.target.value)))} />
                       </div>
                       <div className="space-y-1.5">
                         <Label htmlFor="text-color">Color</Label>
-                        <Input id="text-color" type="color" disabled={readOnly} value={selectedLayer.color} onChange={(event) => updateLayer({ color: event.target.value })} />
+                        <Input id="text-color" type="color" disabled={layerControlsDisabled} value={selectedLayer.color} onChange={(event) => updateLayer({ color: event.target.value })} />
                       </div>
                     </div>
                   </>
@@ -115,13 +116,13 @@ export function BuilderInspector({
                 {selectedLayer.type === "shape" ? (
                   <div className="space-y-1.5">
                     <Label htmlFor="shape-color">Fill color</Label>
-                    <Input id="shape-color" type="color" disabled={readOnly} value={selectedLayer.fill} onChange={(event) => updateLayer({ fill: event.target.value })} />
+                    <Input id="shape-color" type="color" disabled={layerControlsDisabled} value={selectedLayer.fill} onChange={(event) => updateLayer({ fill: event.target.value })} />
                   </div>
                 ) : null}
                 {selectedLayer.type === "image" ? (
                   <div className="space-y-1.5">
                     <Label htmlFor="image-source">Image URL</Label>
-                    <Input id="image-source" disabled={readOnly} value={selectedLayer.src} onChange={(event) => updateLayer({ src: event.target.value })} />
+                    <Input id="image-source" disabled={layerControlsDisabled} value={selectedLayer.src} onChange={(event) => updateLayer({ src: event.target.value })} />
                   </div>
                 ) : null}
                 <div className="grid grid-cols-2 gap-3">
@@ -131,7 +132,7 @@ export function BuilderInspector({
                       <Input
                         id={`layer-${property}`}
                         type="number"
-                        disabled={readOnly}
+                        disabled={layerControlsDisabled}
                         value={selectedLayer[property]}
                         onChange={(event) => updateGeometry(property, Number(event.target.value))}
                       />
@@ -140,7 +141,7 @@ export function BuilderInspector({
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="layer-binding">Changes with</Label>
-                  <select id="layer-binding" className={selectClass} disabled={readOnly} value={selectedLayer.binding} onChange={(event) => bindingChanged(selectedLayer.semanticRole, event.target.value as StaticLayerBinding)}>
+                  <select id="layer-binding" className={selectClass} disabled={layerControlsDisabled} value={selectedLayer.binding} onChange={(event) => bindingChanged(selectedLayer.semanticRole, event.target.value as StaticLayerBinding)}>
                     {bindings.map((binding) => <option key={binding} value={binding}>{binding}</option>)}
                   </select>
                 </div>

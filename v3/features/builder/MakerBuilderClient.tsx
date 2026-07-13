@@ -14,6 +14,7 @@ import { useBuilderInteractionActions, useSelectedBuilderLayerId } from "./inter
 import { loadLocalDraft, loadLocalVersion, publishLocalDraft, saveLocalDraft } from "./localRepository";
 import { assertFormatDraft, flattenStaticLayers, makerAnalysisSchema, updateFormatDraft, validateFormatDraftReady, type FormatDraft, type FormatVersion } from "./model";
 import { createSavedReferenceDraftFixture } from "./savedReferenceFixture";
+import { createHybridNewsDraftFixture } from "./hybridNewsFixture";
 import { createMakerFormatTestDraftFixture } from "../formats/static-package/testFixture";
 import { mergeMakerAnalysisActivity, type MakerAnalysisActivity, type MakerAnalysisStreamMessage } from "./analysisProgress";
 
@@ -157,7 +158,7 @@ export function MakerBuilderClient() {
       }
       let nextDraft: FormatDraft;
       let readyMessage: string;
-      if (fixture === "saved" || fixture === "maker-test") {
+      if (fixture === "saved" || fixture === "maker-test" || fixture === "hybrid-news") {
         const fixtureStartedAt = Date.now();
         for (const activity of fixtureActivity) {
           await new Promise((resolve) => window.setTimeout(resolve, 350));
@@ -165,7 +166,9 @@ export function MakerBuilderClient() {
         }
         nextDraft = fixture === "maker-test"
           ? createMakerFormatTestDraftFixture(crypto.randomUUID())
-          : createSavedReferenceDraftFixture({ id: crypto.randomUUID(), fileName: reference.fileName, imageUrl: reference.imageUrl });
+          : fixture === "hybrid-news"
+            ? createHybridNewsDraftFixture({ id: crypto.randomUUID(), fileName: reference.fileName, imageUrl: reference.imageUrl })
+            : createSavedReferenceDraftFixture({ id: crypto.randomUUID(), fileName: reference.fileName, imageUrl: reference.imageUrl });
         readyMessage = "Editable draft built from the saved live-analysis fixture. No API call was made.";
       } else {
         const form = new FormData();
