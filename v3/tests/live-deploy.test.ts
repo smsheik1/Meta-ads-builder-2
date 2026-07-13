@@ -39,6 +39,11 @@ assert.ok(script.includes("npx convex deploy"), "v3 deploy must sync Convex func
 assert.ok(script.includes("OPENROUTER_API_KEY REPLICATE_API_TOKEN"), "Maker deploy must fail visibly when provider secrets are missing.");
 assert.ok(script.includes("MAKER_REQUIREMENTS_HASH"), "Maker deploy must cache PaddleOCR by requirements hash.");
 assert.ok(script.includes("bash scripts/setup-maker-analysis.sh"), "Maker deploy must install and prewarm PaddleOCR.");
+assert.ok(
+  script.indexOf("npx convex deploy") < script.indexOf("bash scripts/setup-maker-analysis.sh") &&
+    script.indexOf("npm run runtime:health") < script.indexOf("bash scripts/setup-maker-analysis.sh"),
+  "Maker OCR bootstrap must not block the core Convex and app deployment.",
+);
 for (const setting of [
   'engine="transformers"',
   'device="cpu"',

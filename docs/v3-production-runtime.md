@@ -171,7 +171,7 @@ https://v3.wiggly.agentenamel.com/create
 
 ### Maker dogfood runtime
 
-Production `/builder` analysis is enabled by `WIGGLY_MAKER_LIVE_ANALYSIS=true` and requires the GitHub Actions secrets `OPENROUTER_API_KEY` and `REPLICATE_API_TOKEN`. The Oracle deploy installs and prewarms PaddleOCR in `v3/.maker-analysis-venv` only when the requirements checksum changes; normal deploys reuse that environment. Missing provider secrets or a failed Python setup stops deployment visibly before PM2 restarts the app.
+Production `/builder` analysis is enabled by `WIGGLY_MAKER_LIVE_ANALYSIS=true` and requires the GitHub Actions secrets `OPENROUTER_API_KEY` and `REPLICATE_API_TOKEN`. The Oracle deploy installs and prewarms PaddleOCR in `v3/.maker-analysis-venv` only when the requirements checksum changes; normal deploys reuse that environment. Core Convex and app deployment completes before the optional Maker OCR bootstrap, so a slow model download cannot hold unrelated formats on the previous release.
 
 Maker drafts and published versions remain browser-local during dogfooding. The assistant must use the same browser profile and should not clear site storage until durable persistence is implemented.
 
