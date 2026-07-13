@@ -14,6 +14,7 @@ assert.match(testClientSource, /Maker Test Mode/);
 assert.match(testClientSource, /Back to builder/);
 assert.match(testClientSource, /api\.researchRuns\.runWebsiteResearch/, "Maker Test Mode must reuse the existing research action.");
 assert.match(testClientSource, /Product to advertise/);
+assert.match(testClientSource, /No specific product \(brand-level ad\)/);
 assert.match(testClientSource, /Full creative brief/);
 assert.match(testClientSource, /Generate test ads/);
 assert.match(testClientSource, /event\.code !== "Space"/);

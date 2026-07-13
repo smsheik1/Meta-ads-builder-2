@@ -24,9 +24,10 @@ export async function POST(request: Request) {
     if (!research?.researchRunId || !research.brand?.name || !research.brandBrief) {
       return NextResponse.json({ error: "Website research is missing or incomplete." }, { status: 400 });
     }
+    const productHandle = String(payload.productHandle || "").trim();
     const product = assertMakerFormatTestProductUsable(
       contract,
-      selectMakerTestProduct(research.productCatalog, String(payload.productHandle || "")),
+      productHandle ? selectMakerTestProduct(research.productCatalog, productHandle) : null,
     );
     const answers = (payload.answers || []).slice(0, 3).map((answer) => ({
       question: String(answer.question || "").trim(),

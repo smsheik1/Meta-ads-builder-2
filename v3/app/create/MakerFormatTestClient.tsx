@@ -81,8 +81,7 @@ function MakerFormatTestSession({ draftId, fixture, runGeneration, runResearch }
     selectedProductHandle || getDefaultMakerTestProductHandle(research.productCatalog),
   ) : null;
   const questionsComplete = contract ? contract.questions.every((question) => answers[question]?.trim()) : false;
-  const productComplete = (products.length <= 1 || Boolean(selectedProductHandle))
-    && (!selectedProduct || !needsProductImage || Boolean(selectedProduct.imageUrl));
+  const productComplete = !needsProductImage || Boolean(selectedProduct?.imageUrl);
   const selectedScene = scenes[selectedIndex] || null;
   const previewCanvas = selectedScene?.layout.canvas || draft?.scene.layout.canvas;
   const busy = status === "researching" || status === "generating";
@@ -127,10 +126,7 @@ function MakerFormatTestSession({ draftId, fixture, runGeneration, runResearch }
     setStatus("generating");
     setError("");
     try {
-      const product = assertMakerFormatTestProductUsable(
-        contract,
-        selectMakerTestProduct(research.productCatalog, selectedProductHandle),
-      );
+      const product = assertMakerFormatTestProductUsable(contract, selectedProduct);
       const answerList = contract.questions.map((question) => ({ question, answer: answers[question] || "" }));
       const generation = await runGeneration({ answers: answerList, contract, productHandle: product?.handle || "", research });
       setScenes(createMakerFormatTestScenes({ draft, generation, product, research }));
@@ -190,9 +186,9 @@ function MakerFormatTestSession({ draftId, fixture, runGeneration, runResearch }
           {research && products.length ? (
             <section className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
               <Label htmlFor="maker-test-product">Product to advertise</Label>
-              <p className="mt-1 text-xs font-semibold text-slate-500">{products.length} products found. Pick the one this test should use.</p>
+              <p className="mt-1 text-xs font-semibold text-slate-500">{products.length} products found. {needsProductImage ? "This Format needs one product image." : "Choose one only if this ad should feature a specific product."}</p>
               <select id="maker-test-product" aria-label="Product to advertise" className="mt-3 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold" value={selectedProductHandle} onChange={(event) => setSelectedProductHandle(event.target.value)}>
-                {products.length > 1 ? <option value="">Choose a product</option> : null}
+                {products.length > 1 ? <option value="">{needsProductImage ? "Choose a product" : "No specific product (brand-level ad)"}</option> : null}
                 {products.map((product) => <option disabled={needsProductImage && !product.imageUrl} key={product.handle} value={product.handle}>{product.title}{needsProductImage && !product.imageUrl ? " — no usable image" : ""}</option>)}
               </select>
               {selectedProduct ? <div className="mt-3 flex items-center gap-3 rounded-2xl bg-slate-50 p-3">{selectedProduct.imageUrl ? <img alt={selectedProduct.imageAlt || selectedProduct.title} className="size-16 rounded-xl object-contain" src={selectedProduct.imageUrl} /> : null}<div><p className="font-black">{selectedProduct.title}</p><p className="text-xs font-semibold text-slate-500">{selectedProduct.productType || "Product"}</p></div></div> : null}

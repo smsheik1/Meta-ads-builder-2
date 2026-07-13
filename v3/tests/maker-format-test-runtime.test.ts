@@ -65,6 +65,7 @@ assert.throws(() => assertMakerFormatTestProductUsable(productVisualContract, {
   ...selectedProduct!,
   imageUrl: null,
 }), /Choose a product with a usable image/);
+assert.throws(() => assertMakerFormatTestProductUsable(productVisualContract, null), /Choose a product with a usable image/);
 
 const storySubjectDraft = updateFormatDraft(draftWithProductVisual, {
   analysis: {
@@ -93,6 +94,12 @@ const storySubjectDraft = updateFormatDraft(draftWithProductVisual, {
 });
 const storySubjectContract = createMakerFormatTestContract(storySubjectDraft);
 const storyPlan = createMakerFormatTestGenerationFixture(storySubjectContract);
+const brandBoundStorySubjectContract = structuredClone(storySubjectContract);
+brandBoundStorySubjectContract.assets.find((asset) => asset.id === "news_subject")!.binding = "brand";
+assert.doesNotThrow(
+  () => validateMakerFormatTestGeneration(brandBoundStorySubjectContract, storyPlan),
+  "A brand-bound news subject is not the brand logo.",
+);
 storyPlan.variations.forEach((variation) => variation.assets.filter((asset) => asset.kind === "web-image").forEach((asset) => { delete asset.imageUrl; }));
 const searchedQueries: string[] = [];
 const resolvedStoryPlan = await resolveMakerFormatTestImages(storyPlan, async (query) => {
@@ -191,6 +198,8 @@ assert.match(capturedPrompt, /Grande Blueberry Pie/);
 assert.match(capturedPrompt, /Do not merely swap company names/);
 assert.match(capturedPrompt, /WEBSITE ANGLES/);
 assert.match(capturedPrompt, /evidence, not mandatory slots/);
+assert.match(capturedPrompt, /The selected product is the only product you may advertise or describe/);
+assert.match(capturedPrompt, /Preserve the source Format's idea, not unsupported source claims/);
 await assert.rejects(() => generateMakerFormatTestVariations({
   answers: [],
   contract,
