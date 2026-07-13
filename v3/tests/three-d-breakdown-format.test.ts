@@ -296,6 +296,46 @@ const grunsProductResearch = makeResearch({
 });
 assert.equal(selectThreeDBreakdownProductAnchor(grunsProductResearch)?.title, "Grüns Daily Nutrition Gummies");
 
+const seedOgProductResearch = makeResearch({
+  websiteUrl: "https://seed.com/",
+  finalUrl: "https://seed.com/",
+  host: "seed.com",
+  brand: {
+    ...research.brand,
+    name: "Seed",
+    title: "Seed • Whole Body Health Starts in the Gut",
+    description: "Seed develops DS-01 Daily Synbiotic, a probiotic and prebiotic for whole-body health.",
+    logoUrl: "https://cdn.example/seed-logo.png",
+    faviconUrl: "https://cdn.example/seed-favicon.png",
+    ogImageUrl: "https://cdn.example/seed-product-lineup.png",
+  },
+  brandBrief: {
+    ...research.brandBrief,
+    brandName: "Seed",
+    offer: "Clinically studied daily synbiotics, multivitamins, and targeted supplements.",
+  },
+  metadata: {
+    "og:image:alt": "Seed daily supplement lineup",
+  },
+  productCatalog: null,
+});
+assert.deepEqual(selectThreeDBreakdownProductAnchor(seedOgProductResearch), {
+  title: "Seed products",
+  url: "https://seed.com/",
+  imageUrl: "https://cdn.example/seed-product-lineup.png",
+  imageAlt: "Seed daily supplement lineup",
+});
+
+const logoOnlyOgResearch = makeResearch({
+  ...seedOgProductResearch,
+  brand: {
+    ...seedOgProductResearch.brand,
+    logoUrl: "https://cdn.example/seed-logo.png",
+    ogImageUrl: "https://cdn.example/seed-logo.png",
+  },
+});
+assert.equal(selectThreeDBreakdownProductAnchor(logoOnlyOgResearch), undefined);
+
 const grunsLiveOrderResearch = makeResearch({
   websiteUrl: "https://gruns.co/",
   finalUrl: "https://gruns.co/",

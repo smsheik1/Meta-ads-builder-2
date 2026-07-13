@@ -60,6 +60,35 @@ const productText = (product: ProductCatalogItem) => [
   product.url,
 ].join(" ");
 
+const metadataText = (research: StoredWebsiteResearchResult, ...keys: string[]) => keys
+  .map((key) => research.metadata[key])
+  .filter((value): value is string => typeof value === "string")
+  .join(" ");
+
+const selectProductOgImage = (
+  research: StoredWebsiteResearchResult,
+): ThreeDBreakdownAdScene["layout"]["productAnchor"] => {
+  const imageUrl = research.brand.ogImageUrl?.trim();
+  if (!imageUrl || imageUrl === research.brand.logoUrl || imageUrl === research.brand.faviconUrl) return undefined;
+
+  const imageAlt = metadataText(research, "og:image:alt", "twitter:image:alt").trim();
+  const productEvidence = normalizeProductText([
+    imageAlt,
+    research.brand.description,
+    research.brandBrief.offer,
+    ...research.brandBrief.siteLanguage,
+  ].join(" "));
+  const imageIdentity = normalizeProductText(`${imageUrl} ${imageAlt}`);
+  if (!productHeroTerms.test(productEvidence) || logoOnlyTerms.test(imageIdentity)) return undefined;
+
+  return {
+    title: `${research.brand.name || "Featured"} products`,
+    url: research.finalUrl || research.websiteUrl,
+    imageUrl,
+    imageAlt: imageAlt || research.brand.title,
+  };
+};
+
 const isApparelSite = (research: StoredWebsiteResearchResult) => {
   const products = research.productCatalog?.products || [];
   const copy = [
@@ -107,7 +136,7 @@ export const selectThreeDBreakdownProductAnchor = (
     .filter((item) => item.product.imageUrl && item.score > Number.NEGATIVE_INFINITY)
     .sort((a, b) => b.score - a.score || a.index - b.index);
   const selected = scoredProducts.find((item) => item.score >= 0)?.product;
-  if (!selected?.imageUrl) return undefined;
+  if (!selected?.imageUrl) return selectProductOgImage(research);
   return {
     title: selected.title,
     url: selected.url,
