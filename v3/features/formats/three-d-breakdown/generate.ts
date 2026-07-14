@@ -459,6 +459,8 @@ const parseStyleBScriptPlanOutput = (
     const allowedEvidenceIds = evidenceItems.map((item) => item.evidenceIndex).join(", ");
     throw new Error(`3D Breakdown Style B script plan references invalid evidence; use one of: ${allowedEvidenceIds}.`);
   }
+  const ctaLine = cleanText(parsed.ctaLine, 180);
+  assertCtaLineShape(ctaLine);
   const plan = {
     visualStyle: "presenter-teardown-vsl" as const,
     variantAngle: cleanText(parsed.variantAngle, 120),
@@ -466,8 +468,8 @@ const parseStyleBScriptPlanOutput = (
     mechanismSummary: cleanText(parsed.mechanismSummary, 180),
     visualMetaphor: cleanText(parsed.visualMetaphor, 160),
     referenceScript: parseReferenceScript(parsed.referenceScript, "presenter-teardown-vsl", evidence, evidenceItems) || "",
-    scriptBeats: parseScriptBeats(parsed.scriptBeats),
-    ctaLine: cleanText(parsed.ctaLine, 180),
+    scriptBeats: parseScriptBeats(parsed.scriptBeats, ctaLine),
+    ctaLine,
     evidenceIndex,
     evidenceUseType: evidence.evidenceUseType,
     wowMomentType: parseEnum(parsed.wowMomentType, THREE_D_REVEAL_PATTERNS, "wowMomentType"),
@@ -480,7 +482,6 @@ const parseStyleBScriptPlanOutput = (
     plan.referenceScript,
     ...plan.scriptBeats.map((beat) => beat.narration),
   ].join(" "), evidence, evidenceItems);
-  assertCtaLineShape(plan.ctaLine);
   for (const [key, value] of Object.entries(plan)) {
     if (typeof value === "string" && !value) {
       throw new Error(`3D Breakdown Style B script plan ${key} is missing.`);
@@ -507,14 +508,23 @@ const assertClaimRisk = ({
   }
 };
 
-const parseScriptBeats = (value: unknown): ThreeDBreakdownScriptBeat[] => {
+const parseScriptBeats = (value: unknown, fallbackCtaLine = ""): ThreeDBreakdownScriptBeat[] => {
   if (!Array.isArray(value) || value.length !== THREE_D_SCRIPT_BEATS.length) {
     throw new Error("3D Breakdown needs exactly 5 narration beats.");
   }
   const beats = value.map((beat, index) => {
     const raw = beat as Record<string, unknown>;
     const contract = THREE_D_SCRIPT_BEATS[index]!;
-    const narration = cleanText(raw.narration, 180);
+    const rawNarration = cleanText(raw.narration, 180);
+    const shouldUseFallbackCta = contract.role === "punchline"
+      && countWords(fallbackCtaLine) <= 7
+      && (
+        !ctaActionPattern.test(rawNarration)
+        || fakeCtaPattern.test(rawNarration)
+        || abstractCtaPattern.test(rawNarration)
+        || abstractPunchlinePattern.test(rawNarration)
+      );
+    const narration = shouldUseFallbackCta ? fallbackCtaLine : rawNarration;
     if (raw.role !== contract.role) {
       throw new Error(`3D Breakdown beat ${index + 1} role is invalid.`);
     }
@@ -773,7 +783,7 @@ const parseVariants = (
       if (typeof value === "string" && !value) throw new Error(`3D Breakdown variant ${index + 1} ${key} is missing.`);
       if (typeof value === "string") assertNoBannedText(value);
     }
-    const scriptBeats = lockedScript?.scriptBeats ?? parseScriptBeats(rawVariant.scriptBeats);
+    const scriptBeats = lockedScript?.scriptBeats ?? parseScriptBeats(rawVariant.scriptBeats, parsedVariantBase.ctaLine);
     if (parsedVariantBase.visualStyle === "presenter-teardown-vsl") {
       assertReferenceScriptGrounding([
         referenceScript,

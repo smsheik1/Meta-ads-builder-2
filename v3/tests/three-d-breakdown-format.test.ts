@@ -604,8 +604,8 @@ assert.ok(styleBScriptPrompt.includes("Bad contrast"));
 assert.ok(!styleBScriptPrompt.includes("pet water fountain"));
 assert.ok(!styleBScriptPrompt.includes("beauty refill"));
 assert.ok(styleBScriptPrompt.includes("Start with human curiosity before selling"));
-assert.ok(styleBScriptPrompt.includes("ctaLine is 7-16 words"));
-assert.ok(styleBScriptPrompt.includes("ctaLine must be conversion copy"));
+assert.ok(styleBScriptPrompt.includes("ctaLine is 3-7 words"));
+assert.ok(styleBScriptPrompt.includes("must exactly match the punchline narration"));
 assert.ok(styleBScriptPrompt.includes("ctaLine must sell the product action, not the mechanism"));
 assert.ok(styleBScriptPrompt.includes("name the plain product category once"));
 assert.ok(styleBScriptPrompt.includes("use the selected evidenceIndex/evidenceUseType exactly"));
@@ -916,7 +916,7 @@ const grunsCompressionBeats = [
   { role: "context", narration: "People assume daily nutrition must stay scattered across extra steps.", startMs: 3000, endMs: 7000 },
   { role: "mechanism", narration: "Then Grüns compresses that routine into one grab-and-go gummy pack.", startMs: 7000, endMs: 12000 },
   { role: "revelation", narration: "One pack contains 60+ ingredients, including fruits, vegetables, vitamins, and minerals.", startMs: 12000, endMs: 16000 },
-  { role: "punchline", narration: "Try Grüns gummies today.", startMs: 16000, endMs: 20000 },
+  { role: "punchline", narration: "Daily nutrition, rebuilt for motion.", startMs: 16000, endMs: 20000 },
 ];
 const grunsCompressionScriptPlan = styleBScriptPlanPayload({
   ...grunsCompressionLock,
@@ -950,6 +950,7 @@ const grunsCompressionGeneration = await generateThreeDBreakdownVariantsFromRese
 });
 assert.equal(grunsCompressionCalls, 2, "Evidence-backed visual compression should pass without a validation retry.");
 assert.equal(grunsCompressionGeneration.variants[0]?.referenceScript, grunsCompressionReferenceScript);
+assert.equal(grunsCompressionGeneration.variants[0]?.scriptBeats[4]?.narration, "Try Grüns gummies today.");
 
 let storySlateCalls = 0;
 const storySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
@@ -1418,20 +1419,18 @@ const factualMadeForGeneration = await generateThreeDBreakdownVariantsFromResear
 });
 assert.equal(factualMadeForGeneration.variants.length, 1);
 
-await assert.rejects(
-  () => generateThreeDBreakdownVariantsFromResearch(research, {
-    count: 1,
-    nvidiaNimApiKey: "test-key",
-    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
-      consequence: "Most probiotics enter digestion and everyone assumes they survive the trip.",
-      context: "Then stomach acid turns that trip into the first real test.",
-      mechanism: "But ViaCap shields the probiotic core while prebiotics move with it.",
-      revelation: "The selected proof says the delivery system reaches the colon.",
-      punchline: "The trip was the product.",
-    })])),
-  }),
-  /punchline must not sell the mechanism/,
-);
+const normalizedPunchlineGeneration = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+    consequence: "Most probiotics enter digestion and everyone assumes they survive the trip.",
+    context: "Then stomach acid turns that trip into the first real test.",
+    mechanism: "But ViaCap shields the probiotic core while prebiotics move with it.",
+    revelation: "The selected proof says the delivery system reaches the colon.",
+    punchline: "The trip was the product.",
+  })])),
+});
+assert.equal(normalizedPunchlineGeneration.variants[0]?.scriptBeats[4]?.narration, "Shop memorable cookie gifts from David's Cookies.");
 
 await assert.rejects(
   () => generateThreeDBreakdownVariantsFromResearch(research, {
@@ -1455,16 +1454,14 @@ await assert.rejects(
   /forbidden ad-style narration/,
 );
 
-await assert.rejects(
-  () => generateThreeDBreakdownVariantsFromResearch(research, {
-    count: 1,
-    nvidiaNimApiKey: "test-key",
-    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
-      punchline: "Presence finally had weight.",
-    })])),
-  }),
-  /abstract noun/,
-);
+const normalizedAbstractPunchline = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+    punchline: "Presence finally had weight.",
+  })])),
+});
+assert.equal(normalizedAbstractPunchline.variants[0]?.scriptBeats[4]?.narration, "Shop memorable cookie gifts from David's Cookies.");
 
 const extraVariantResult = await generateThreeDBreakdownVariantsFromResearch(research, {
   count: 1,

@@ -506,7 +506,7 @@ Return JSON only:
     { "role": "revelation", "narration": "...", "startMs": 12000, "endMs": 16000 },
     { "role": "punchline", "narration": "...", "startMs": 16000, "endMs": ${THREE_D_BREAKDOWN_DURATION_MS} }
   ],
-  "ctaLine": "direct final CTA, not narrator copy",
+  "ctaLine": "3-7 word direct final CTA matching the punchline",
   "evidenceIndex": 0,
   "evidenceUseType": "feature | mechanism | offer | review | material | process | guarantee | shipping | proof | claim",
   "wowMomentType": "one of: ${THREE_D_REVEAL_PATTERNS.join(" | ")}",
@@ -532,7 +532,7 @@ Rules:
 - Spoken copy never mentions production: demonstrator, camera, frame, scene, animation, x-ray, cutaway, map, token, caption, or storyboard.
 - Only evidence text authorizes product facts. Hook and visualEngine authorize staging, not facts. Preserve qualifiers exactly; infer ordinary customer actions, never product parts, materials, methods, filter contents, conditions, hidden behavior, or certain outcomes.
 - End referenceScript with a product reframe, not a slogan. Do not put the CTA inside referenceScript.
-- ctaLine is 7-16 words with brand/product/category plus one clear action. ctaLine must be conversion copy.
+- ctaLine is 3-7 words with brand/product/category plus one clear action. It must exactly match the punchline narration.
 - ctaLine must sell the product action, not the mechanism. Ban see the mechanism, visible mechanism, journey is the product, and trip is the product.
 - When the site makes it clear, name the plain product category once: gummies, capsules, cookie tin, dessert gifts, skincare, drink, app, or the closest evidence-backed category.
 - For supplements, use product journey and delivery mechanics, not detached biology-documentary narration.
