@@ -1,0 +1,40 @@
+{
+  "steps": [
+    {
+      "name": "captured-live-draft-opened",
+      "draftId": "7f9221aa-b523-4e94-9a9a-6e92748261c9",
+      "url": "http://localhost:3049/builder?draft=7f9221aa-b523-4e94-9a9a-6e92748261c9"
+    },
+    {
+      "name": "subject-moved",
+      "before": {
+        "x": 788.484375,
+        "y": 165.984375,
+        "width": 315.65625,
+        "height": 316.640625
+      },
+      "after": {
+        "x": 590.703125,
+        "y": 201.046875,
+        "width": 315.65625,
+        "height": 316.640625
+      }
+    },
+    {
+      "name": "image-replaced",
+      "choices": 6
+    },
+    {
+      "name": "text-edited-and-fitted"
+    },
+    {
+      "name": "brand-read"
+    },
+    {
+      "name": "product-selected",
+      "productValue": "10-grande-ready-to-bake-wildberry-pie"
+    }
+  ],
+  "variations": [],
+  "error": "locator.waitFor: Timeout 180000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('Variation 1 of 3', { exact: true }) to be visible\u001b[22m\n"
+}
