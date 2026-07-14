@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wiggly Maker — Breaking News Golden Path</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        background: #f4efe6;
+        color: #171714;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { width: min(1440px, 100%); margin: 0 auto; padding: 48px 28px 72px; }
+      h1 { max-width: 900px; margin: 0; font-size: clamp(40px, 6vw, 88px); line-height: .92; letter-spacing: -.065em; }
+      .lede { max-width: 760px; margin: 24px 0 40px; color: #5b574e; font-size: 20px; line-height: 1.5; }
+      .status { display: inline-flex; margin-bottom: 22px; padding: 8px 12px; border-radius: 999px; background: #171714; color: white; font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+      .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+      article { overflow: hidden; border: 1px solid #d6cec0; border-radius: 24px; background: #fffdf8; box-shadow: 0 12px 30px rgba(36, 29, 19, .08); }
+      .image { min-height: 440px; padding: 18px; display: grid; place-items: center; background: #ded8cd; }
+      img { display: block; max-width: 100%; max-height: 620px; object-fit: contain; border-radius: 12px; }
+      .copy { padding: 20px 22px 24px; }
+      h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -.035em; }
+      p { margin: 0; color: #656057; line-height: 1.45; }
+      .bad h2::before { content: "Fails · "; color: #c5312d; }
+      .good h2::before { content: "Works · "; color: #16834c; }
+      .wide { grid-column: span 2; }
+      footer { margin-top: 24px; padding: 22px; border-radius: 20px; background: #171714; color: white; font-size: 18px; line-height: 1.5; }
+      @media (max-width: 920px) {
+        .grid { grid-template-columns: 1fr 1fr; }
+        .wide { grid-column: span 1; }
+      }
+      @media (max-width: 620px) {
+        main { padding: 28px 16px 48px; }
+        .grid { grid-template-columns: 1fr; }
+        .image { min-height: 280px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="status">Pre-code evidence</div>
+      <h1>Can Wiggly move Zuckerberg without breaking the ad?</h1>
+      <p class="lede">The current pipeline finds the right pieces, but its background repair smears large photo areas. RevealLayer already produced the missing clean background on this exact reference. The next code change should replace only that broken step.</p>
+      <section class="grid">
+        <article>
+          <div class="image"><img src="evidence/original.png" alt="Original breaking news ad" /></div>
+          <div class="copy"><h2>Original reference</h2><p>The ad Wiggly must turn into an editable Format.</p></div>
+        </article>
+        <article>
+          <div class="image"><img src="evidence/current-reconstruction.png" alt="Current Wiggly reconstruction" /></div>
+          <div class="copy"><h2>Current reconstruction</h2><p>Wiggly correctly found the headline, proof line, building, logo, and Zuckerberg.</p></div>
+        </article>
+        <article class="bad">
+          <div class="image"><img src="evidence/current-moved-subject-failure.png" alt="Current moved subject failure" /></div>
+          <div class="copy"><h2>Move Zuckerberg</h2><p>The old local inpaint leaves a giant red-and-white hole. This is not usable.</p></div>
+        </article>
+        <article class="good wide">
+          <div class="image"><img src="evidence/reveallayer-clean-background.png" alt="RevealLayer clean background" /></div>
+          <div class="copy"><h2>Clean background</h2><p>The sky is restored while the building, Meta sign, story chrome, and all other content stay intact.</p></div>
+        </article>
+        <article class="good">
+          <div class="image"><img src="evidence/reveallayer-subject.png" alt="RevealLayer Zuckerberg subject layer" /></div>
+          <div class="copy"><h2>Movable subject</h2><p>Zuckerberg becomes a transparent asset that can be moved or replaced.</p></div>
+        </article>
+        <article class="good wide">
+          <div class="image"><img src="evidence/reveallayer-reconstructed.png" alt="RevealLayer reconstructed original" /></div>
+          <div class="copy"><h2>Reconstruction check</h2><p>Putting the clean background and subject back together reproduces the original.</p></div>
+        </article>
+      </section>
+      <footer><strong>Decision:</strong> keep the current OCR, semantic understanding, SAM cutouts, AdScene, and AdRenderSurface. Replace only the large-photo background repair with one small RevealLayer provider seam.</footer>
+    </main>
+  </body>
+</html>

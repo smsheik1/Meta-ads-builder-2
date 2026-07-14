@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { makerAnalysisFixture } from "../features/builder/fixture";
 import {
   callGemmaReferenceAnalysis,
+  callRevealLayerBackgroundRepair,
   callSam3AssetRefinement,
 } from "../features/builder/referenceAnalysis.server";
 import type { PaddleOcrResult } from "../features/builder/referenceAnalysis";
@@ -140,5 +141,53 @@ const sam = await callSam3AssetRefinement({
 assert.equal(samRequests, 2);
 assert.equal(sam.results[0]?.assetId, "brand_mark");
 assert.equal(((samBodies[0]?.input as { prompts?: string[] }).prompts || []).length, 1);
+
+const repairAssets = [
+  { ...makerAnalysisFixture.assets[0]!, id: "logo", role: "brand_identity" as const },
+  { ...makerAnalysisFixture.assets[0]!, id: "setting", role: "story_setting" as const },
+  { ...makerAnalysisFixture.assets[0]!, id: "subject", role: "news_subject" as const },
+];
+const repairSam = [
+  { assetId: "logo", result: { boxes: [[1, 1, 9, 9]], scores: [0.99] } },
+  { assetId: "setting", result: { boxes: [[10, 20, 300, 400], [11, 21, 301, 401]], scores: [0.4, 0.9] } },
+  { assetId: "subject", result: { boxes: [[500, 100, 800, 500]], scores: [0.95] } },
+];
+let revealRequests = 0;
+let revealBody: Record<string, unknown> | undefined;
+const reveal = await callRevealLayerBackgroundRepair({
+  assets: repairAssets,
+  endpoint: "https://reveal.test/decompose",
+  fetcher: async (_url, init) => {
+    revealRequests += 1;
+    revealBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    return new Response(new Uint8Array([137, 80, 78, 71]), {
+      status: 200,
+      headers: { "content-type": "image/png" },
+    });
+  },
+  imageUrl: "data:image/jpeg;base64,test",
+  samResults: repairSam,
+});
+assert.equal(revealRequests, 1, "RevealLayer must run once with no retry.");
+assert.deepEqual(revealBody, {
+  image: "data:image/jpeg;base64,test",
+  detections: [
+    { assetId: "setting", bbox: [11, 21, 301, 401] },
+    { assetId: "subject", bbox: [500, 100, 800, 500] },
+  ],
+});
+assert.deepEqual(reveal.repairedAssetIds, ["setting", "subject"]);
+assert.deepEqual([...reveal.background], [137, 80, 78, 71]);
+
+await assert.rejects(
+  callRevealLayerBackgroundRepair({
+    assets: repairAssets,
+    endpoint: "",
+    fetcher: async () => { throw new Error("should not call"); },
+    imageUrl: "data:image/jpeg;base64,test",
+    samResults: repairSam,
+  }),
+  /RevealLayer is required for 2 large editable visual assets, but it is not configured/,
+);
 
 console.log("maker reference provider tests passed");
