@@ -158,7 +158,10 @@ Script requirements:
 - Direct buyer-action CTA.
 - No feature-list structure.
 - No abstract endings such as `the journey is the product`, `see the mechanism`, or `visible mechanism`.
-- Every line must be visually depictable.
+- Every line must be visually depictable, but spoken copy never names the demonstrator, camera, cutaway, or other production direction.
+- Hooks and visual engines authorize premise and staging, not new product facts.
+- Preserve evidence qualifiers exactly; `designed to help` must not become a certain outcome.
+- Ordinary intended use may be inferred. Product parts, materials, experiments, filter contents, hidden behavior, and medical conditions may not.
 
 ### 4. Storyboard Director
 

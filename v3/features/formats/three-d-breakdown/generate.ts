@@ -186,6 +186,9 @@ const assertTranscriptScriptShape = (beats: ThreeDBreakdownScriptBeat[]) => {
   if (abstractPunchlinePattern.test(punchline)) {
     throw new Error("3D Breakdown punchline must not start with an abstract noun.");
   }
+  if (!ctaActionPattern.test(punchline)) {
+    throw new Error("3D Breakdown punchline must contain a direct buyer action.");
+  }
 };
 
 const assertCtaLineShape = (value: string) => {
@@ -207,6 +210,7 @@ const assertCtaLineShape = (value: string) => {
 
 const referenceScriptConnectorPattern = /\b(arriv(?:e|es|ed|ing)|open(?:s|ed|ing)?|use(?:s|d|ing)?|assum(?:e|es|ed|ing)|thinks?|thought|pictured|decided|but|that's why|that is why|so|then|compare|not just|not only|dips?|cracks?|wakes?|stirs?|digests?|feeds?|dissolves?|descends?|travels?|reaches?|reveals?|rebuild(?:s|t|ing)|turns?|locks?|stacks?)\b/gi;
 const presenterNarrationPattern = /\b(i am|i'm|i'll|let me|watch me|today i|my favorite|we're going to|i want to show|i recommend)\b/i;
+const productionDirectionPattern = /\b(demonstrator|camera|frame|scene|animation|x[- ]?ray|cutaway|review tokens?|proof tokens?|caption|storyboard)\b/i;
 const templateLeakPattern = /\bwhen a buyer receives it\b|\bthe product reveals hidden proof\b|\bone version fills space\b|\bthe other changes the moment\b/i;
 const falseClassificationPattern = /\b(assum(?:e|es|ed|ing)|thought|pictured|decided|not for|only for|just for|wrong(?:ly)?|looked like|felt like)\b/i;
 const revealRebuildPattern = /\b(cracks?|cracked|peels?|peeled|falls? away|fell away|reveals?|revealed|rebuild(?:s|t|ing)|snaps?|snapped|turns?|turned|stacks?|stacked|locks?|locked|opens?|opened)\b/i;
@@ -217,7 +221,6 @@ const REFERENCE_SCRIPT_ACCEPT_MIN_WORDS = 100;
 const REFERENCE_SCRIPT_ACCEPT_MAX_WORDS = 180;
 const REFERENCE_SCRIPT_ACCEPT_MIN_SENTENCES = 10;
 const REFERENCE_SCRIPT_ACCEPT_MAX_SENTENCES = 24;
-const productScienceEvidenceTypes = new Set<ThreeDBreakdownEvidenceUseType>(["feature", "mechanism", "material", "process"]);
 const shippingLikeEvidenceTypes = new Set<ThreeDBreakdownEvidenceUseType>(["shipping", "offer", "guarantee"]);
 const arrivalContextEvidenceTypes = new Set<ThreeDBreakdownEvidenceUseType>(["review", "proof", "shipping", "offer", "guarantee"]);
 const logisticsContextTerms = new Set(["sorting", "truck", "warehouse", "transit"]);
@@ -259,6 +262,20 @@ const unsupportedMechanismTerms = [
   ["mass market", /\bmass market\b/i],
   ["months", /\bmonths?\b/i],
   ["human-cell comparison", /\bhuman cells?\b|\boutnumber(?:s|ed|ing)?\b/i],
+  ["stomach acid", /\bstomach acid\b|\bgastric acid\b/i],
+  ["hostile digestive environment", /\b(?:hostile|harsh)\s+(?:digestive|gastric|stomach)\s+(?:tract|environment|conditions?)\b/i],
+  ["blocked digestive path", /\b(?:digestion|digestive tract|stomach acid)\s+blocks?\b/i],
+  ["arrives where needed", /\b(?:arriv(?:e|es)|reach(?:es)?)\s+(?:the\s+gut\s+)?where\s+(?:it|they|strains?)\s+(?:is|are)\s+needed\b/i],
+  ["destroy", /\bdestroy(?:s|ed|ing)?\b/i],
+  ["absorb", /\babsorb(?:s|ed|ing)?\b/i],
+  ["completely", /\bcompletely\b/i],
+  ["carbon", /\bcarbon\b/i],
+  ["arthritis", /\barthritis\b/i],
+  ["vacuum", /\bvacuum\b/i],
+  ["thick", /\bthick\b/i],
+  ["filter layer order", /\b(?:first|second|next|final)\s+(?:filter\s+)?(?:layer|barrier|mesh|sheet)\b/i],
+  ["invented water state", /\b(?:dirty|clean)\s+water\b/i],
+  ["invented water direction", /\b(?:pulls?|forces?)\s+(?:the\s+)?(?:dirty\s+)?water\s+(?:downward|through)\b/i],
 ] as const;
 
 const assertReferenceScriptGrounding = (
@@ -266,14 +283,15 @@ const assertReferenceScriptGrounding = (
   evidence: ThreeDBreakdownEvidenceItem,
   supportingEvidenceItems: ThreeDBreakdownEvidenceItem[] = [evidence],
 ) => {
-  if (productScienceEvidenceTypes.has(evidence.evidenceUseType)) return;
   const evidenceText = supportingEvidenceItems.map((item) => item.text).join(" ").toLowerCase();
-  const hasDigestiveDeliverySupport = /\b(surviv(?:e|es|al)|protect(?:s|ed|ing)?|shield(?:s|ed|ing)?|delivery system|capsule-in-capsule|outer capsule|inner capsule|probiotic core|viacap|colon)\b/i.test(evidenceText);
+  const factualScript = script
+    .split(/(?<=[.!?])\s+/)
+    .filter((sentence) => !falseClassificationPattern.test(sentence))
+    .join(" ");
   for (const [term, pattern] of unsupportedMechanismTerms) {
     if (arrivalContextEvidenceTypes.has(evidence.evidenceUseType) && logisticsContextTerms.has(term)) continue;
     if (term === "oven aroma" && /\b(fresh|fresh[- ]baked|tasted|homemade)\b/i.test(evidenceText)) continue;
-    if ((term === "intact" || term === "protect") && hasDigestiveDeliverySupport) continue;
-    if (pattern.test(script) && !evidenceText.includes(term)) {
+    if (pattern.test(factualScript) && !pattern.test(evidenceText)) {
       throw new Error(`3D Breakdown Style B referenceScript invented product mechanism details not supported by evidence: ${term}.`);
     }
   }
@@ -290,6 +308,9 @@ const parseReferenceScript = (
   if (!script) throw new Error("3D Breakdown Style B referenceScript is missing.");
   if (presenterNarrationPattern.test(script)) {
     throw new Error("3D Breakdown Style B referenceScript must use an unseen narrator, not presenter lines.");
+  }
+  if (productionDirectionPattern.test(script)) {
+    throw new Error("3D Breakdown Style B referenceScript must contain spoken copy, not production directions.");
   }
   if (templateLeakPattern.test(script)) {
     throw new Error("3D Breakdown Style B referenceScript copied generic prompt-template wording.");
@@ -436,6 +457,7 @@ const parseStyleBScriptPlanOutput = (
     mechanismSummary: cleanText(parsed.mechanismSummary, 180),
     visualMetaphor: cleanText(parsed.visualMetaphor, 160),
     referenceScript: parseReferenceScript(parsed.referenceScript, "presenter-teardown-vsl", evidence, evidenceItems) || "",
+    scriptBeats: parseScriptBeats(parsed.scriptBeats),
     ctaLine: cleanText(parsed.ctaLine, 180),
     evidenceIndex,
     evidenceUseType: evidence.evidenceUseType,
@@ -445,6 +467,10 @@ const parseStyleBScriptPlanOutput = (
     claimRisk: parseEnum(parsed.claimRisk, claimRisks, "claimRisk"),
     claimRiskReason: cleanText(parsed.claimRiskReason, 220),
   };
+  assertReferenceScriptGrounding([
+    plan.referenceScript,
+    ...plan.scriptBeats.map((beat) => beat.narration),
+  ].join(" "), evidence, evidenceItems);
   assertCtaLineShape(plan.ctaLine);
   for (const [key, value] of Object.entries(plan)) {
     if (typeof value === "string" && !value) {
@@ -741,7 +767,7 @@ const parseVariants = (
       if (typeof value === "string" && !value) throw new Error(`3D Breakdown variant ${index + 1} ${key} is missing.`);
       if (typeof value === "string") assertNoBannedText(value);
     }
-    const scriptBeats = parseScriptBeats(rawVariant.scriptBeats);
+    const scriptBeats = lockedScript?.scriptBeats ?? parseScriptBeats(rawVariant.scriptBeats);
     if (parsedVariantBase.visualStyle === "presenter-teardown-vsl") {
       assertReferenceScriptGrounding([
         referenceScript,

@@ -38,6 +38,7 @@ type BenchmarkCandidate = {
 const directActionPattern = /\b(shop|try|get|order|buy|start|visit|subscribe)\b/i;
 const generatedTextPattern = /(?:render|generate|display|show|write|spell)\s+(?:the\s+)?(?:readable\s+)?(?:text|caption|label|logo|headline|cta|words?|letters?|numbers?)/i;
 const speakingDemonstratorPattern = /\b(?:demonstrator|presenter|character|man|woman|person)\b.{0,50}\b(?:speaks?|talks?|says?|lip[- ]?syncs?|mouths?)\b/i;
+const countWords = (value: string) => value.match(/[A-Za-z0-9]+(?:['-][A-Za-z0-9]+)?/g)?.length || 0;
 
 const scoreCandidate = (candidate: BenchmarkCandidate) => (
   rubricDimensions.reduce((total, dimension) => total + candidate.scores[dimension], 0)
@@ -54,6 +55,8 @@ const hardFailures = (candidate: BenchmarkCandidate) => {
   const finalText = `${finalFrame?.visual || ""} ${finalFrame?.motion || ""}`;
 
   if (candidate.scriptBeats.length !== 5) errors.push("script must have 5 beats");
+  const scriptWordCount = countWords(candidate.scriptBeats.join(" "));
+  if (scriptWordCount < 45 || scriptWordCount > 65) errors.push("script must be 45-65 words");
   if (candidate.storyboardFrames.length !== 6) errors.push("storyboard must have 6 frames");
   if (candidate.clipPlans.length !== 2) errors.push("plan must have 2 clips");
   if (candidate.clipPlans[0]?.frameIndexes.join(",") !== "1,2,3") errors.push("clip 1 must cover frames 1-3");

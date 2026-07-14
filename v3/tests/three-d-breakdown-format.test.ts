@@ -540,11 +540,7 @@ assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions p
   "If a line cannot be drawn as a specific object/action",
   "Show, don't tell",
   "The visuals do the heavy lifting",
-  "Demonstrator is not host",
-  "Founder prompt discipline",
-  "If a narration sentence cannot become a visible production still",
   "same face, plain shirt color",
-  "locked style, recurring demonstrator/product, scene action",
   "human/product use, body-route/path, obstacle, mechanism pipe",
   "clean graphic product-science footage",
   "no wet gut, gore, organ close-up",
@@ -553,7 +549,7 @@ assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions p
   "Use [] for no riskFlags",
   "Write 1 variant.",
   "No invented reviews, numbers, results, guarantees, source names, customer names, or claims.",
-  "Total narration must be 35-80 words",
+  "Total narration must be 45-65 words",
   "ctaLine must make a real viewer action obvious",
   "Never use an abstract closer as ctaLine",
   "pick the most visual evidence item",
@@ -575,6 +571,17 @@ assert.ok(styleBScriptPrompt.includes("Wiggly Style B Script Director"));
 assert.ok(styleBScriptPrompt.includes("Do not write storyboard, shots, image prompts, animation prompts, or captions."));
 assert.ok(styleBScriptPrompt.includes("unseen omniscient narrator"));
 assert.ok(styleBScriptPrompt.includes("referenceScript must be 110-160 words"));
+assert.ok(styleBScriptPrompt.includes("scriptBeats are the final 20-second narration"));
+assert.ok(styleBScriptPrompt.includes("45-65 words total"));
+assert.ok(styleBScriptPrompt.includes("Spoken copy never mentions production"));
+assert.ok(styleBScriptPrompt.includes("Only evidence text authorizes product facts"));
+assert.ok(styleBScriptPrompt.includes("no invented experiment"));
+assert.ok(styleBScriptPrompt.includes("Example A - supplement mechanism"));
+assert.ok(styleBScriptPrompt.includes("Example B - commodity gift proof"));
+assert.ok(styleBScriptPrompt.includes("Example C - physical gadget mechanism"));
+assert.ok(styleBScriptPrompt.includes("Bad contrast"));
+assert.ok(!styleBScriptPrompt.includes("pet water fountain"));
+assert.ok(!styleBScriptPrompt.includes("beauty refill"));
 assert.ok(styleBScriptPrompt.includes("Start with human curiosity before selling"));
 assert.ok(styleBScriptPrompt.includes("ctaLine is 7-16 words"));
 assert.ok(styleBScriptPrompt.includes("ctaLine must be conversion copy"));
@@ -582,12 +589,14 @@ assert.ok(styleBScriptPrompt.includes("ctaLine must sell the product action, not
 assert.ok(styleBScriptPrompt.includes("name the plain product category once"));
 assert.ok(styleBScriptPrompt.includes("use the selected evidenceIndex/evidenceUseType exactly"));
 assert.ok(styleBScriptPrompt.includes("higher-scoring evidence into supporting context only"));
-assert.ok(styleBScriptPrompt.includes("For review/proof/shipping, do not invent package physics"));
+assert.ok(styleBScriptPrompt.includes("Do not invent package physics"));
 assert.ok(storyDirectionsPrompt.includes("Wiggly 3D Breakdown Story Slate Director"));
 assert.ok(storyDirectionsPrompt.includes("Write exactly 5 directions."));
 assert.ok(storyDirectionsPrompt.includes("directionId values must be idea-1, idea-2, idea-3, idea-4, idea-5."));
 assert.ok(storyDirectionsPrompt.includes("Do not write the final script."));
 assert.ok(storyDirectionsPrompt.includes("shortSummary should explain start, escalation, reveal, and payoff."));
+assert.ok(storyDirectionsPrompt.includes("Commodity gift proof"));
+assert.ok(storyDirectionsPrompt.includes("Physical gadget"));
 assert.ok(storyDirectionsPrompt.includes("visualEngine must describe the physical 3D reveal"));
 assert.ok(seedPrompt.includes("DS-01 Daily Synbiotic"));
 assert.ok(seedPrompt.includes("ViaCap"));
@@ -681,7 +690,7 @@ const makeVariant = ({
   context = "Everyone said it was fine, but the table still looked unfinished.",
   mechanism = "Then a David's Cookies tin showed up, ready to open and share.",
   revelation = "More than 1,500 buyers rate David's Cookies 4.6 stars.",
-  punchline = "She missed it, but the cookies arrived.",
+  punchline = "Shop David's Cookies gifts.",
   ctaLine = "Shop memorable cookie gifts from David's Cookies.",
   consequence = "When the birthday started, her gift still had not arrived.",
   referenceScript = "When someone sends a cookie tin, they assume the box carries the whole birthday. Through the lid, they picture a polite backup dessert nobody remembers. But a stale backup gift can make the table feel unfinished before anyone says it out loud. Then that backup feeling peels away. A red tin opens into cookies made for passing around. The first test is arrival. The second test is taste. Buyers describe cookies that arrived fast and tasted homemade. So the tin becomes proof in motion. Birthday, thank-you, office, client. Cookies are not just for one sweet tooth. Those moments were simply first to notice. One box fills space. The other makes the missing gift feel handled.",
@@ -768,7 +777,7 @@ const variantsPayload = {
       viewerLearns: "The gift still works across distance because buyers describe fast arrival and homemade taste.",
       consequence: "When the thank-you gift had nowhere local to go, the table stayed empty.",
       revelation: "More than 1,500 buyers rate David's Cookies 4.6 stars.",
-      punchline: "Distance stopped mattering.",
+      punchline: "Shop David's Cookies gifts.",
     }),
   ],
 };
@@ -817,6 +826,7 @@ const styleBScriptPlanPayload = (overrides: Record<string, unknown> = {}) => {
     mechanismSummary: variant.mechanismSummary,
     visualMetaphor: variant.visualMetaphor,
     referenceScript: variant.referenceScript,
+    scriptBeats: variant.scriptBeats,
     evidenceIndex: variant.evidenceIndex,
     evidenceUseType: variant.evidenceUseType,
     wowMomentType: variant.wowMomentType,
@@ -909,7 +919,34 @@ assert.equal(selectedDirectionGeneration.variants[0]?.visualStyle, "presenter-te
 assert.equal(selectedDirectionGeneration.variants[0]?.evidenceIndex, selectedStoryDirection.evidenceIndex);
 assert.equal(selectedDirectionGeneration.variants[0]?.evidenceUseType, selectedStoryDirection.evidenceUseType);
 assert.equal(selectedDirectionGeneration.variants[0]?.referenceScript, selectedScriptPlan.referenceScript);
+assert.deepEqual(
+  selectedDirectionGeneration.variants[0]?.scriptBeats.map((beat) => beat.narration),
+  selectedScriptPlan.scriptBeats.map((beat) => beat.narration),
+);
 assert.equal(selectedDirectionGeneration.variants[0]?.ctaLine, selectedScriptPlan.ctaLine);
+
+let productionDirectionCalls = 0;
+const productionDirectionResult = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    productionDirectionCalls += 1;
+    if (directorPrompt.includes("Wiggly Style B Script Director") && !directorPrompt.includes("failed validation")) {
+      return JSON.stringify(styleBScriptPlanPayload({
+        ...selectedStoryLock,
+        referenceScript: `The demonstrator points at the product. ${selectedScriptPlan.referenceScript}`,
+      }));
+    }
+    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+      assert.ok(directorPrompt.includes("spoken copy, not production directions"));
+      return JSON.stringify(selectedScriptPlan);
+    }
+    return JSON.stringify(selectedVisualPayload);
+  },
+  selectedStoryDirection,
+});
+assert.equal(productionDirectionCalls, 3);
+assert.equal(productionDirectionResult.variants[0]?.referenceScript, selectedScriptPlan.referenceScript);
 
 let observedMaxTokens: number | undefined;
 let observedDirectorCalls = 0;
@@ -998,7 +1035,7 @@ assert.ok(prompt.includes("Show, don't tell"));
 assert.ok(prompt.includes("Each frame must visualize one narration line/causal turn"));
 assert.ok(prompt.includes("same face, plain shirt color"));
 assert.ok(prompt.includes("No branded caps, hats, hoodies, shirts, totes, merch, or character outfit details may become the product or final payoff."));
-assert.ok(prompt.includes("locked style, recurring demonstrator/product, scene action"));
+assert.ok(prompt.includes("locked style, recurring demonstrator/product, action"));
 assert.ok(prompt.includes("2 hidden obstacle/invisible problem/impossible zoom"));
 assert.ok(prompt.includes("overlayText is metadata for Wiggly renderer overlays only"));
 
@@ -1008,7 +1045,7 @@ timingDriftPayload.variants[0].scriptBeats = [
   { role: "context", narration: "Everyone said it was fine, but the table still looked unfinished.", startMs: 4000, endMs: 7000 },
   { role: "mechanism", narration: "Then a David's Cookies tin showed up, ready to open and share.", startMs: 7000, endMs: 14000 },
   { role: "revelation", narration: "More than 1,500 buyers rate David's Cookies 4.6 stars.", startMs: 14000, endMs: 19000 },
-  { role: "punchline", narration: "She missed it, but the cookies arrived.", startMs: 19000, endMs: 20000 },
+  { role: "punchline", narration: "Shop David's Cookies gifts.", startMs: 19000, endMs: 20000 },
 ];
 const timingDriftResult = await generateThreeDBreakdownVariantsFromResearch(research, {
   count: 1,
@@ -1185,7 +1222,7 @@ await assert.rejects(
     nvidiaNimApiKey: "test-key",
     nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([compactNearMissVariant])),
   }),
-  /script must be 35-80 words|beat 4 must be one sentence/,
+  /script must be 45-65 words|beat 4 must be one sentence/,
 );
 
 await assert.rejects(
@@ -1328,7 +1365,7 @@ const dentalRiskResult = await generateThreeDBreakdownVariantsFromResearch(resea
       context: "By lunch, the missed call had become an empty appointment slot.",
       mechanism: "Then the voicemail turned into a booking path before anyone looked up.",
       revelation: "Missed calls become booked appointments through voice AI.",
-      punchline: "The call became the booking.",
+      punchline: "Try voice AI booking.",
     })],
   }),
 });
@@ -1342,8 +1379,9 @@ await assert.rejects(
       ...variantsPayload,
       riskFlags: ["health", "regulated"],
       variants: [makeVariant({
-        consequence: "The patient waited while a cavity got worse.",
+        consequence: "The worried patient waited while a cavity got worse.",
         revelation: "The product prevents cavities before the pain starts.",
+        punchline: "Shop David's Cookies gifts today.",
       })],
     }),
   }),
@@ -1468,7 +1506,7 @@ const shippingOnlyResult = await generateThreeDBreakdownVariantsFromResearch(wea
     evidenceUseType: shippingOnlyEvidence.evidenceUseType,
     referenceScript: "When someone sends dessert to another city, they assume distance makes the gift less personal. Through the box, they picture a local treat losing its meaning before it arrives. But the hidden problem starts before anyone opens it. Then the local-only idea peels away. A gift box can cross the map and still feel intentional. The first test is shipping. The second test is opening. So the nationwide shipping promise gets the gift to the door. But the dessert moment makes it feel chosen. Birthday, thank-you, office, client. Dessert is not just for the people nearby. Those moments were simply first to notice. One gift stops at the bakery. The other crosses the map.",
     mechanismSummary: "nationwide shipping turns a local dessert into a sendable gift moment",
-    revelation: "Gift boxes ship nationwide to your door.",
+    revelation: "Gift boxes can ship nationwide directly to your recipient's door.",
   })])),
 });
 assert.equal(shippingOnlyResult.variants[0]?.evidenceUseType, "shipping");
