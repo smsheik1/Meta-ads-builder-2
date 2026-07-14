@@ -2157,4 +2157,47 @@ const finalExportMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
 assert.ok(!finalExportMarkup.includes("final-three-d-breakdown.mp4"), "MP4 export must not render a previous final MP4 back into itself.");
 assert.ok(finalExportMarkup.includes("clip-1.mp4"));
 
+const presenterSceneWithShortVoice: ThreeDBreakdownAdScene = {
+  ...styleBScene,
+  audio: {
+    status: "generated",
+    storageId: "presenter-voice",
+    url: "https://cdn.example/presenter-voice.wav",
+    mimeType: "audio/wav",
+    durationMs: 16_000,
+    durationSeconds: 16,
+    transcript: "Short narrator voice",
+    captions: [],
+    provider: "fish-studio",
+    model: "s1",
+    generatedAt: 1,
+  },
+  layout: {
+    ...styleBScene.layout,
+    clipPlans: styleBScene.layout.clipPlans!.map((clipPlan, index) => ({
+      ...clipPlan,
+      video: {
+        status: "ready" as const,
+        url: `https://cdn.example/presenter-clip-${index + 1}.mp4`,
+        storageId: `presenter-clip-${index + 1}`,
+        mimeType: "video/mp4",
+      },
+    })) as ThreeDBreakdownAdScene["layout"]["clipPlans"],
+  },
+};
+const beforePresenterHandoff = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: presenterSceneWithShortVoice,
+  style: { width: 360, height: 640 },
+  timeSeconds: 9.9,
+}));
+const afterPresenterHandoff = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: presenterSceneWithShortVoice,
+  style: { width: 360, height: 640 },
+  timeSeconds: 10.1,
+}));
+assert.ok(beforePresenterHandoff.includes("presenter-clip-1.mp4"));
+assert.ok(!beforePresenterHandoff.includes("presenter-clip-2.mp4"));
+assert.ok(afterPresenterHandoff.includes("presenter-clip-2.mp4"));
+assert.ok(!afterPresenterHandoff.includes("presenter-clip-1.mp4"));
+
 console.log("three-d-breakdown format tests passed");
