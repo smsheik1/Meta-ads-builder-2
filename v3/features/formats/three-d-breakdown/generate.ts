@@ -293,12 +293,16 @@ const assertReferenceScriptGrounding = (
   supportingEvidenceItems: ThreeDBreakdownEvidenceItem[] = [evidence],
 ) => {
   const evidenceText = supportingEvidenceItems.map((item) => item.text).join(" ").toLowerCase();
+  const evidenceSupportsCompressionMetaphor = /\b(?:\d{2,}\+?|dozens?|many|multiple|handfuls?)\b/i.test(evidenceText)
+    && /\b(?:one|single|all[- ]in[- ]one|grab[- ]and[- ]go)\b/i.test(evidenceText)
+    && /\b(?:pack|packet|pouch|gumm(?:y|ies)|serving|capsule|tablet|product)\b/i.test(evidenceText);
   const factualScript = script
     .split(/(?<=[.!?])\s+/)
     .filter((sentence) => !falseClassificationPattern.test(sentence))
     .join(" ");
   for (const [term, pattern] of unsupportedMechanismTerms) {
     if (arrivalContextEvidenceTypes.has(evidence.evidenceUseType) && logisticsContextTerms.has(term)) continue;
+    if (term === "compression" && evidenceSupportsCompressionMetaphor) continue;
     if (term === "oven aroma" && /\b(fresh|fresh[- ]baked|tasted|homemade)\b/i.test(evidenceText)) continue;
     if (pattern.test(factualScript) && !pattern.test(evidenceText)) {
       throw new Error(`3D Breakdown Style B referenceScript invented product mechanism details not supported by evidence: ${term}.`);

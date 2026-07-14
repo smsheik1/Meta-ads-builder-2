@@ -851,6 +851,90 @@ const styleBScriptPlanPayload = (overrides: Record<string, unknown> = {}) => {
   };
 };
 
+const grunsCompressionResearch = makeResearch({
+  ...grunsLiveOrderResearch,
+  brandBrief: {
+    ...grunsLiveOrderResearch.brandBrief,
+    proof: ["One grab-and-go pack contains 60+ ingredients, including fruits, vegetables, vitamins, and minerals."],
+  },
+  evidence: {
+    ...grunsLiveOrderResearch.evidence,
+    paragraphs: ["One grab-and-go pack contains 60+ ingredients, including fruits, vegetables, vitamins, and minerals."],
+    receipts: {
+      specificClaims: ["One grab-and-go pack contains 60+ ingredients, including fruits, vegetables, vitamins, and minerals."],
+      buyerMoments: ["A busy morning routine spreads nutrition across bottles, powders, water, and extra steps."],
+      exactSiteLanguage: ["60+ ingredients", "grab-and-go pack", "daily nutrition gummies"],
+      namedProof: [],
+    },
+  },
+});
+const grunsCompressionEvidence = extractThreeDBreakdownEvidence(grunsCompressionResearch)
+  .find((item) => /60\+ ingredients/i.test(item.text) && /grab-and-go pack/i.test(item.text));
+assert.ok(grunsCompressionEvidence, "Grüns compression fixture should expose the many-parts-to-one-pack evidence.");
+const grunsCompressionDirection = {
+  directionId: "idea-1",
+  hookLine: "A pile of daily routines just collapsed into a single grab-and-go pack.",
+  subheadline: "See a full nutrient stack become one daily pack.",
+  shortSummary: "A busy counter fills with separate routine steps. The pieces stack until the routine feels impossible. Then the documented ingredients compress into the Grüns gummy pack. One pack replaces the scattered visual problem.",
+  category: "Product mystery",
+  whyCompelling: "It turns routine overload into one satisfying physical transformation.",
+  adAngle: "Simplify daily nutrition into one grab-and-go pack.",
+  visualEngine: "Documented ingredient pieces compress and lock into the Grüns gummy pack.",
+  evidenceIndex: grunsCompressionEvidence.evidenceIndex,
+  evidenceUseType: grunsCompressionEvidence.evidenceUseType,
+  possibleRevealPatterns: ["chaos-to-order" as const, "process-pipeline" as const],
+};
+const grunsCompressionLock = {
+  variantAngle: grunsCompressionDirection.adAngle,
+  customerProblem: grunsCompressionDirection.hookLine,
+  mechanismSummary: grunsCompressionDirection.visualEngine,
+  visualMetaphor: grunsCompressionDirection.visualEngine,
+  evidenceIndex: grunsCompressionEvidence.evidenceIndex,
+  evidenceUseType: grunsCompressionEvidence.evidenceUseType,
+  wowMomentType: "chaos-to-order" as const,
+  wowMoment: grunsCompressionDirection.visualEngine,
+  viewerLearns: grunsCompressionDirection.whyCompelling,
+};
+const grunsCompressionReferenceScript = "When mornings get busy, people assume nutrition has to spread across bottles, powders, water, and extra steps. So the counter becomes the routine. But Grüns starts with a smaller shape. One grab-and-go pack contains more than sixty ingredients, including fruits, vegetables, vitamins, and minerals. Then the scattered stack compresses into one gummy pack. The first bottle turns into a simple piece. Then the others stack behind it. The pouch opens, and every piece locks into place. Now the counter clears. The pack travels to work, the gym, or school pickup. Parents, operators, and everyday commuters can use the same simple format. So compare the crowded counter with one pocket-ready pack. The difference is daily nutrition rebuilt for motion. Try Grüns gummies.";
+const grunsCompressionBeats = [
+  { role: "consequence", narration: "When mornings get busy, bottles and powders crowd the counter.", startMs: 0, endMs: 3000 },
+  { role: "context", narration: "People assume daily nutrition must stay scattered across extra steps.", startMs: 3000, endMs: 7000 },
+  { role: "mechanism", narration: "Then Grüns compresses that routine into one grab-and-go gummy pack.", startMs: 7000, endMs: 12000 },
+  { role: "revelation", narration: "One pack contains 60+ ingredients, including fruits, vegetables, vitamins, and minerals.", startMs: 12000, endMs: 16000 },
+  { role: "punchline", narration: "Try Grüns gummies today.", startMs: 16000, endMs: 20000 },
+];
+const grunsCompressionScriptPlan = styleBScriptPlanPayload({
+  ...grunsCompressionLock,
+  referenceScript: grunsCompressionReferenceScript,
+  scriptBeats: grunsCompressionBeats,
+  ctaLine: "Try Grüns gummies today.",
+});
+const grunsCompressionVisualPlan = payloadWithVariants([makeVariant({
+  ...grunsCompressionLock,
+  visualStyle: "presenter-teardown-vsl",
+  referenceScript: grunsCompressionReferenceScript,
+  consequence: grunsCompressionBeats[0]!.narration,
+  context: grunsCompressionBeats[1]!.narration,
+  mechanism: grunsCompressionBeats[2]!.narration,
+  revelation: grunsCompressionBeats[3]!.narration,
+  punchline: grunsCompressionBeats[4]!.narration,
+  ctaLine: "Try Grüns gummies today.",
+})]);
+let grunsCompressionCalls = 0;
+const grunsCompressionGeneration = await generateThreeDBreakdownVariantsFromResearch(grunsCompressionResearch, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    grunsCompressionCalls += 1;
+    return JSON.stringify(directorPrompt.includes("Wiggly Style B Script Director")
+      ? grunsCompressionScriptPlan
+      : grunsCompressionVisualPlan);
+  },
+  selectedStoryDirection: grunsCompressionDirection,
+});
+assert.equal(grunsCompressionCalls, 2, "Evidence-backed visual compression should pass without a validation retry.");
+assert.equal(grunsCompressionGeneration.variants[0]?.referenceScript, grunsCompressionReferenceScript);
+
 let storySlateCalls = 0;
 const storySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
   nvidiaNimApiKey: "test-key",
