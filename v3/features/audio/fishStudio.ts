@@ -22,10 +22,10 @@ export const createThreeDBreakdownTtsText = (lines: string[]) => (
   lines
     .map((line) => /[.!?]$/.test(line.trim()) ? line.trim() : `${line.trim()}.`)
     .join(" ")
-    .replace(/\bvitamins\b/gi, "VY-tuh-minz")
-    .replace(/\bvitamin\b/gi, "VY-tuh-min")
-    .replace(/\bprobiotics\b/gi, "pro-bye-AH-tiks")
-    .replace(/\bprobiotic\b/gi, "pro-bye-AH-tik")
+    .replace(/\bvitamins\b/gi, "<|phoneme_start|>V AY1 T AH0 M AH0 N Z<|phoneme_end|>")
+    .replace(/\bvitamin\b/gi, "<|phoneme_start|>V AY1 T AH0 M AH0 N<|phoneme_end|>")
+    .replace(/\bprobiotics\b/gi, "<|phoneme_start|>P R OW2 B AY0 AA1 T IH0 K S<|phoneme_end|>")
+    .replace(/\bprobiotic\b/gi, "<|phoneme_start|>P R OW2 B AY0 AA1 T IH0 K<|phoneme_end|>")
 );
 
 type ParsedWav = {

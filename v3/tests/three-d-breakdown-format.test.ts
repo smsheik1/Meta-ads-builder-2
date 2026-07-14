@@ -2039,7 +2039,7 @@ const fishResult = await generateFishThreeDBreakdownVoiceover({
 assert.equal(THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID, "0873499c22e24d13b074fa76d27562e5");
 assert.equal(
   createThreeDBreakdownTtsText(["A probiotic meets probiotics and vitamins."]),
-  "A pro-bye-AH-tik meets pro-bye-AH-tiks and VY-tuh-minz.",
+  "A <|phoneme_start|>P R OW2 B AY0 AA1 T IH0 K<|phoneme_end|> meets <|phoneme_start|>P R OW2 B AY0 AA1 T IH0 K S<|phoneme_end|> and <|phoneme_start|>V AY1 T AH0 M AH0 N Z<|phoneme_end|>.",
   "Fish receives a private pronunciation hint while renderer captions keep the original spelling.",
 );
 assert.equal(
