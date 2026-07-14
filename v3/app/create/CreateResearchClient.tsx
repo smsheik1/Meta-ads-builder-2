@@ -553,16 +553,6 @@ function ResearchConnected() {
     api.researchRuns.latestReadyForAnonymousIdAndUrl,
     anonymousId && url.trim() ? { anonymousId, url } : "skip",
   ) as StoredWebsiteResearchResult | null | undefined;
-  const selectedSceneId = sceneIds[selectedSceneIndex] || null;
-  const latestBrickStoryboard = useQuery(
-    api.jingleStoryboards.latestForScene,
-    selectedScene?.format === "jingle" && selectedSceneId ? { sceneId: selectedSceneId } : "skip",
-  ) as {
-    _id: Id<"jingleStoryboards">;
-    storyboard: unknown;
-    stitchStatus?: "queued" | "claimed" | "rendering" | "ready" | "failed";
-    stitchError?: string;
-  } | null | undefined;
   const latestProductPhotoshoot = useQuery(
     api.productPhotoshoots.latestForResearch,
     result?.researchRunId ? { researchRunId: result.researchRunId as Id<"researchRuns"> } : "skip",
@@ -575,6 +565,22 @@ function ResearchConnected() {
     api.adScenes.listForResearchRun,
     result?.researchRunId ? { researchRunId: result.researchRunId as Id<"researchRuns"> } : "skip",
   ) as Array<CreativePackSceneRow<Id<"adScenes">>> | undefined;
+  const selectedSceneId = sceneIds[selectedSceneIndex]
+    || researchRunSceneRows?.find((row) => (
+      row.generationBatchId === selectedScene?.metadata.generationBatchId
+      && row.candidateIndex === selectedScene?.metadata.candidateIndex
+      && row.format === selectedScene?.format
+    ))?._id
+    || null;
+  const latestBrickStoryboard = useQuery(
+    api.jingleStoryboards.latestForScene,
+    selectedScene?.format === "jingle" && selectedSceneId ? { sceneId: selectedSceneId } : "skip",
+  ) as {
+    _id: Id<"jingleStoryboards">;
+    storyboard: unknown;
+    stitchStatus?: "queued" | "claimed" | "rendering" | "ready" | "failed";
+    stitchError?: string;
+  } | null | undefined;
   const saveDesign = useMutation(api.savedDesigns.saveFromScene);
   const savedDesignItems = savedDesigns || [];
   const canvasActions = useCanvasActions();
@@ -3129,8 +3135,12 @@ function ResearchConnected() {
   const onGenerateThreeDImages = async (
     modeOverride?: "storyboard" | "anchors" | "regenerate-anchors" | "all",
   ) => {
-    const sceneId = sceneIds[selectedSceneIndex];
-    if (!selectedScene || selectedScene.format !== "three-d-breakdown" || !sceneId || threeDImageStatus === "loading") return;
+    const sceneId = selectedSceneId;
+    if (!selectedScene || selectedScene.format !== "three-d-breakdown" || threeDImageStatus === "loading") return;
+    if (!sceneId) {
+      setThreeDError("This 3D Breakdown scene is still syncing. Wait a moment and try again.");
+      return;
+    }
     setThreeDImageBusyIndex(threeDAllShotsBusyIndex);
     setThreeDError("");
     resetShareState();
@@ -3157,8 +3167,12 @@ function ResearchConnected() {
   };
 
   const onGenerateThreeDClip = async (clipIndex: ThreeDBreakdownClipIndex) => {
-    const sceneId = sceneIds[selectedSceneIndex];
-    if (!selectedScene || selectedScene.format !== "three-d-breakdown" || !sceneId || threeDClipBusyIndex !== null) return;
+    const sceneId = selectedSceneId;
+    if (!selectedScene || selectedScene.format !== "three-d-breakdown" || threeDClipBusyIndex !== null) return;
+    if (!sceneId) {
+      setThreeDError("This 3D Breakdown scene is still syncing. Wait a moment and try again.");
+      return;
+    }
     const clipPlans = selectedScene.layout.clipPlans || [];
     if (clipIndex > 1) {
       const previousClipIndex = (clipIndex - 1) as ThreeDBreakdownClipIndex;

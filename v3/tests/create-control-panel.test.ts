@@ -136,6 +136,13 @@ assert.ok(
   "/create must hydrate the Creative Pack rail from saved research-run scenes after refresh.",
 );
 assert.ok(
+  createClientSource.includes("sceneIds[selectedSceneIndex]") &&
+    createClientSource.includes("row.generationBatchId === selectedScene?.metadata.generationBatchId") &&
+    createClientSource.includes("const sceneId = selectedSceneId;") &&
+    createClientSource.includes("This 3D Breakdown scene is still syncing. Wait a moment and try again."),
+  "/create must recover the persisted scene id before paid 3D media actions instead of silently doing nothing.",
+);
+assert.ok(
   createClientSource.includes("api.adScenes.generateThreeDStoryDirections") &&
     createClientSource.includes("generateThreeDStoryDirectionSlate") &&
     createClientSource.includes("threeDStoryDirection: direction") &&
