@@ -34,11 +34,27 @@ const productLock = (scene: ThreeDBreakdownAdScene) => {
   return clean([
     `PRODUCT: use the supplied reference for ${product.title}.`,
     product.imageAlt ? `Reference cue: ${product.imageAlt}.` : "",
-    "Preserve its category, silhouette, proportions, material, dominant colors, packaging form, and relationship to the demonstrator.",
-    "Do not replace it with merch, apparel, a logo-only object, a generic bottle, or another product category.",
+    "Copy its exact outer packaging category and geometry before staging the story: flexible pouch stays pouch, carton stays carton, jar stays jar, bottle stays bottle.",
+    "Preserve silhouette, proportions, material, dominant color blocking, packaging form, and scale. Script nouns such as pack, package, product, or snack pack never redefine its shape.",
+    "Do not replace it with merch, apparel, a logo-only object, a cube, a generic bottle, or another product category.",
     "Any generated package surface must be blank and free of readable labels; Wiggly composites the exact branded packshot later.",
   ].join(" "));
 };
+
+const storyboardReferenceLock = (scene: ThreeDBreakdownAdScene) => clean([
+  "REFERENCE ORDER: image 1 is the STYLE MASTER. Copy its same stylized male CGI demonstrator identity, facial proportions, modeled hair, matte skin, body proportions, blue-grid world, and feature-animation rendering. Do not invent a woman, a different person, or a photoreal human.",
+  scene.layout.productAnchor
+    ? `Images 2 and later are PRODUCT MASTERS for ${scene.layout.productAnchor.title}. Their real outer geometry outranks every generic product noun in the written frame plan.`
+    : "No Product Master is available; use an abstract category object and do not invent branded packaging.",
+  "RIGHT: the Style Master character handles the Product Master while the physical story changes around them. WRONG: a new realistic person handles a cube, carton, jar, or bottle invented from the word pack.",
+].join(" "));
+
+const productionReferenceLock = (scene: ThreeDBreakdownAdScene) => clean([
+  "REFERENCE ORDER: image 1 is the approved storyboard board and owns character, world, action, and composition. Image 2 is the PRODUCT MASTER and owns exact outer product geometry, material, color blocking, and scale.",
+  scene.layout.productAnchor
+    ? `If the storyboard simplified ${scene.layout.productAnchor.title}, correct its product form to match image 2 without changing the approved action.`
+    : "No Product Master is available; preserve the approved abstract category object.",
+].join(" "));
 
 const framePlan = (
   scene: ThreeDBreakdownAdScene,
@@ -82,10 +98,8 @@ const sharedStyle = (scene: ThreeDBreakdownAdScene) => clean([
   `LIGHTING: ${scene.layout.storyContract.lighting}.`,
   `CAMERA LANGUAGE: ${scene.layout.storyContract.cameraStyle}.`,
   `RECURRING OBJECTS: ${scene.layout.storyContract.recurringObjects.join(", ")}.`,
-  "Use one recurring silent stylized feature-animation CGI demonstrator as a scale figure and physical demonstrator, never as the narrator.",
-  "Keep the same face, modeled hair, matte CG skin, plain clothing color, proportions, product silhouette, and world throughout.",
-  "The demonstrator's lips, mouth, and jaw stay closed and still: no lip-sync, speech animation, singing, presenter delivery, or narration-timed talking gestures.",
-  "Never switch to live action, photorealistic influencer footage, a mannequin, doctor, scientist, lab coat, medical PPE, or a faceless stock-science montage.",
+  "Use one recurring silent feature-animation CGI demonstrator as a scale figure, never as narrator; preserve face, hair, matte CG skin, plain clothing, proportions, and world.",
+  "Keep lips and jaw closed: no speech, lip-sync, presenter delivery, live action, photoreal person, mannequin, doctor, scientist, PPE, or stock-science montage.",
 ].join(" "));
 
 const pixelTextBan = "PIXEL TEXT BAN: generate no readable words, letters, numbers, captions, subtitles, logos, labels, UI, arrows, checkmarks, X marks, pseudo-writing, or watermarks. Wiggly adds captions, proof, product branding, and CTA in the renderer.";
@@ -97,6 +111,7 @@ export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) 
   return clean([
     "TASK: create ONE vertical 9:16 image containing exactly six raw production stills in reading order, arranged as a 2-column by 3-row contact sheet for visual review.",
     "LAYOUT: thin white gutters only; every still fills its cell edge-to-edge. No title band, margin, annotation, card, frame number, caption bar, or presentation whitespace.",
+    storyboardReferenceLock(scene),
     sharedStyle(scene),
     productLock(scene),
     supplementDirection(scene),
@@ -112,6 +127,7 @@ export const buildThreeDProductionFramePrompt = (
   frameIndex: ThreeDBreakdownStoryboardFrameIndex,
 ) => clean([
   `TASK: recreate panel ${frameIndex} from the supplied approved six-panel board as ONE full-frame vertical 9:16 production keyframe. This is not a collage or storyboard sheet.`,
+  productionReferenceLock(scene),
   sharedStyle(scene),
   productLock(scene),
   supplementDirection(scene),
