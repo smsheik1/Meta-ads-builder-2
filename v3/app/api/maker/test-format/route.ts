@@ -37,7 +37,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Answer the required Format questions before generating." }, { status: 400 });
     }
     const plan = await generateMakerFormatTestVariations({ answers, contract, product, research });
-    const generation = await resolveMakerFormatTestImages(plan, createSerperImageSearch({ preferredHost: research.host }));
+    const generation = await resolveMakerFormatTestImages(
+      plan,
+      createSerperImageSearch({ preferredHost: research.host }),
+      {
+        target: `${research.brand.name} ${product?.title || ""}`,
+        assetRoles: Object.fromEntries(contract.assets.map((asset) => [asset.id, asset.role.replaceAll("_", " ")])),
+      },
+    );
     return NextResponse.json({ generation });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Maker Format test generation failed.";

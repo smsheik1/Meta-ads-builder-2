@@ -105,8 +105,12 @@ const searchedQueries: string[] = [];
 const resolvedStoryPlan = await resolveMakerFormatTestImages(storyPlan, async (query) => {
   searchedQueries.push(query);
   return `https://images.example.test/result-${searchedQueries.length}.jpg`;
-});
+}, { target: "David's Cookies Grande Blueberry Pie", assetRoles: { news_subject: "news subject" } });
 assert.equal(searchedQueries.length, 3);
+assert.ok(
+  searchedQueries.every((query) => query.startsWith("David's Cookies Grande Blueberry Pie ") && query.endsWith(" news subject")),
+  "Generated image searches must stay tied to the target brand and selected product.",
+);
 const storyScenes = createMakerFormatTestScenes({
   draft: storySubjectDraft,
   generation: resolvedStoryPlan,
@@ -216,6 +220,8 @@ assert.match(capturedPrompt, /WEBSITE ANGLES/);
 assert.match(capturedPrompt, /evidence, not mandatory slots/);
 assert.match(capturedPrompt, /The selected product is the only product you may advertise or describe/);
 assert.match(capturedPrompt, /Preserve the source Format's idea, not unsupported source claims/);
+assert.match(capturedPrompt, /WEBSITE ANGLES:\n\[\]/, "Selected-product prompts must not include unrelated brand-wide angles.");
+assert.doesNotMatch(capturedPrompt, /Gift-ready cookie tins/, "A selected pie must not receive another product's proof.");
 await assert.rejects(() => generateMakerFormatTestVariations({
   answers: [],
   contract,

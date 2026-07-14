@@ -69,11 +69,15 @@ export function createSerperImageSearch({
 export async function resolveMakerFormatTestImages(
   generation: MakerFormatTestGeneration,
   search: MakerImageSearch,
+  context?: { target: string; assetRoles: Record<string, string> },
 ): Promise<MakerFormatTestGeneration> {
   const resolved = structuredClone(generation);
   await Promise.all(resolved.variations.flatMap((variation) => variation.assets.map(async (asset) => {
     if (asset.kind !== "web-image") return;
-    asset.imageUrl = await search(asset.query || "");
+    const query = context
+      ? `${context.target} ${variation.angleLabel} ${context.assetRoles[asset.id] || "creative image"}`
+      : asset.query || "";
+    asset.imageUrl = await search(query.trim());
   })));
   return resolved;
 }

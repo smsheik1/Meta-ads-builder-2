@@ -104,6 +104,8 @@ assert.match(inspectorSource, /list:\$\{list\.id\}:\$\{item\.id\}:\$\{itemValue\
 assert.match(inspectorSource, /layerControlsDisabled = readOnly \|\| Boolean\(selectedLayer\?\.locked\)/, "Locked layers must stay unchanged until the Maker explicitly unlocks them.");
 assert.match(inspectorSource, /Why this Format works/);
 assert.match(inspectorSource, /Upload image/);
+assert.match(inspectorSource, /Image shape/);
+assert.match(inspectorSource, /borderRadius.*circle.*Math\.min/, "Replacing an inset image must let the Maker preserve a circle without editing pixels.");
 assert.match(inspectorSource, /\/api\/maker\/search-images/);
 assert.match(inspectorSource, /defaultValue=\{selectedLayer\[property\]\}/, "Typing a multi-digit geometry value must commit once instead of resizing after every digit.");
 assert.match(inspectorSource, /onKeyDown=.*event\.key === "Enter"/, "Number edits must have an obvious keyboard commit path.");

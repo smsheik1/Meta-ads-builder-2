@@ -177,6 +177,20 @@ export function BuilderInspector({
                       <Label htmlFor="image-source">Paste image URL</Label>
                       <Input id="image-source" disabled={layerControlsDisabled} value={selectedLayer.src} onChange={(event) => updateLayer({ src: event.target.value })} />
                     </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="image-shape">Image shape</Label>
+                      <select
+                        id="image-shape"
+                        className={selectClass}
+                        disabled={layerControlsDisabled}
+                        value={selectedLayer.borderRadius >= Math.min(selectedLayer.width, selectedLayer.height) / 2 ? "circle" : selectedLayer.borderRadius > 0 ? "rounded" : "square"}
+                        onChange={(event) => updateLayer({ borderRadius: event.target.value === "circle" ? Math.min(selectedLayer.width, selectedLayer.height) / 2 : event.target.value === "rounded" ? 16 : 0 })}
+                      >
+                        <option value="square">Square</option>
+                        <option value="rounded">Rounded</option>
+                        <option value="circle">Circle</option>
+                      </select>
+                    </div>
                     <Input
                       id={`replace-image-upload-${selectedLayer.id}`}
                       className="sr-only"

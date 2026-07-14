@@ -27,6 +27,8 @@ assert.match(testClientSource, /loadLocalDraft/);
 assert.doesNotMatch(testClientSource, /saveLocalDraft|publishLocalDraft|Replicate|image generation/i);
 assert.match(testRouteSource, /generateMakerFormatTestVariations/);
 assert.match(testRouteSource, /contract\.questions\.some/, "The API must reject unanswered Maker questions.");
+assert.match(testRouteSource, /research\.brand\.name/, "Generated image searches must include the target brand.");
+assert.match(testRouteSource, /product\?\.title/, "Generated image searches must include the selected product.");
 assert.doesNotMatch(testRouteSource, /fallback|retry|REPLICATE_API_TOKEN|OPENROUTER_API_KEY/i);
 
 console.log("maker format test flow tests passed");
