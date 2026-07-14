@@ -21,11 +21,16 @@ const readNvidiaNimStream = async (response: Response) => {
   const decoder = new TextDecoder();
   let buffer = "";
   let content = "";
+  let streamDone = false;
 
   const consumeLine = (line: string) => {
     if (!line.startsWith("data:")) return;
     const data = line.slice(5).trim();
-    if (!data || data === "[DONE]") return;
+    if (!data) return;
+    if (data === "[DONE]") {
+      streamDone = true;
+      return;
+    }
     const payload = JSON.parse(data) as {
       choices?: Array<{ delta?: { content?: string } }>;
     };
@@ -39,6 +44,10 @@ const readNvidiaNimStream = async (response: Response) => {
     const lines = buffer.split(/\r?\n/);
     buffer = lines.pop() || "";
     lines.forEach(consumeLine);
+    if (streamDone) {
+      await reader.cancel().catch(() => undefined);
+      break;
+    }
   }
   buffer += decoder.decode();
   if (buffer.trim()) consumeLine(buffer);
