@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import {
   buildPcmWav,
   createThreeDBreakdownTtsText,
+  FISH_STUDIO_TTS_MODEL,
   FISH_STUDIO_THREE_D_BREAKDOWN_MODEL,
   generateFishThreeDBreakdownVoiceover,
   THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID,
@@ -2022,10 +2023,12 @@ const legacyScene = {
 assert.equal(validateThreeDBreakdownScene(legacyScene).valid, true);
 
 const fishVoiceRequests: Record<string, unknown>[] = [];
+let fishVoiceModelHeader = "";
 const fishResult = await generateFishThreeDBreakdownVoiceover({
   apiKey: "test-fish-key",
   scene,
   fetcher: async (_url, init) => {
+    fishVoiceModelHeader = new Headers(init?.headers).get("model") || "";
     fishVoiceRequests.push(JSON.parse(String(init?.body || "{}")) as Record<string, unknown>);
     return new Response(buildPcmWav(new Uint8Array(44_100 * 2)), {
       status: 200,
@@ -2035,13 +2038,20 @@ const fishResult = await generateFishThreeDBreakdownVoiceover({
 });
 assert.equal(THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID, "0873499c22e24d13b074fa76d27562e5");
 assert.equal(
-  createThreeDBreakdownTtsText(["A probiotic meets probiotics."]),
-  "A pro-bye-AH-tik meets pro-bye-AH-tiks.",
+  createThreeDBreakdownTtsText(["A probiotic meets probiotics and vitamins."]),
+  "A pro-bye-AH-tik meets pro-bye-AH-tiks and VY-tuh-minz.",
   "Fish receives a private pronunciation hint while renderer captions keep the original spelling.",
+);
+assert.equal(
+  createThreeDBreakdownTtsText(["First beat.", "Second beat"]),
+  "First beat. Second beat.",
+  "Fish receives one clean pause between already-punctuated script beats.",
 );
 assert.equal(fishResult.provider, "fish-studio");
 assert.equal(fishResult.model, FISH_STUDIO_THREE_D_BREAKDOWN_MODEL);
 assert.equal(fishVoiceRequests[0]?.reference_id, THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID);
+assert.equal(FISH_STUDIO_TTS_MODEL, "s2.1-pro-free");
+assert.equal(fishVoiceModelHeader, FISH_STUDIO_TTS_MODEL);
 assert.equal(fishVoiceRequests[0]?.format, "wav");
 assert.equal((fishVoiceRequests[0]?.prosody as Record<string, unknown>)?.speed, 1.1);
 assert.ok(fishResult.captions.length >= 5);

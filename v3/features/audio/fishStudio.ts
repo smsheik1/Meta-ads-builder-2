@@ -10,16 +10,20 @@ import {
 } from "../formats/brainrot/prompt";
 
 const FISH_TTS_URL = "https://api.fish.audio/v1/tts";
-export const FISH_STUDIO_BRAINROT_MODEL = "fish-audio/s2-pro";
+export const FISH_STUDIO_TTS_MODEL = "s2.1-pro-free";
+export const FISH_STUDIO_BRAINROT_MODEL = `fish-audio/${FISH_STUDIO_TTS_MODEL}`;
 export const THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID = "0873499c22e24d13b074fa76d27562e5";
-export const FISH_STUDIO_THREE_D_BREAKDOWN_MODEL = `fish-audio/s2-pro:${THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID}`;
+export const FISH_STUDIO_THREE_D_BREAKDOWN_MODEL = `fish-audio/${FISH_STUDIO_TTS_MODEL}:${THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID}`;
 const fishSampleRate = 44_100;
 const fishChannels = 1;
 const fishBitsPerSample = 16;
 
 export const createThreeDBreakdownTtsText = (lines: string[]) => (
   lines
-    .join(". ")
+    .map((line) => /[.!?]$/.test(line.trim()) ? line.trim() : `${line.trim()}.`)
+    .join(" ")
+    .replace(/\bvitamins\b/gi, "VY-tuh-minz")
+    .replace(/\bvitamin\b/gi, "VY-tuh-min")
     .replace(/\bprobiotics\b/gi, "pro-bye-AH-tiks")
     .replace(/\bprobiotic\b/gi, "pro-bye-AH-tik")
 );
@@ -222,7 +226,7 @@ const generateFishWav = async ({
     headers: {
       "Authorization": `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "model": "s2-pro",
+      "model": FISH_STUDIO_TTS_MODEL,
     },
     body: JSON.stringify({
       text,
