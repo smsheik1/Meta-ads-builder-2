@@ -82,7 +82,7 @@ const frameRole = (
     3: "Set up the exact product mechanism with a tactile demonstration.",
     4: `Deliver the peak ${contract.wowMomentType} reveal: ${promptField(contract.wowMoment)}. Teach: ${promptField(contract.viewerLearns)}.`,
     5: `Turn the selected evidence into a visible payoff: ${promptField(scene.layout.groundedEvidence.text)}.`,
-    6: "Resolve to the selected product and a clear buyer-action setup; do not end on an abstract mechanism or logo card.",
+    6: "Resolve to the selected product with the same demonstrator's torso or hands completing a clear buyer-action setup; never end on a lonely product, empty stage, abstract mechanism, or logo card.",
   };
   return roles[frameIndex];
 };
@@ -127,6 +127,7 @@ export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) 
     productLock(scene),
     supplementDirection(scene),
     `APPROVED SIX-FRAME PLAN: ${plans}`,
+    "CONTINUITY OVERRIDE: the same male CGI demonstrator from image 1 appears in panels 1, 2, 5, and 6; torso, connected hands, or over-shoulder framing count. Panel 6 shows him placing, holding, carrying, using, or reaching for the large central product, never a product alone on an empty grid.",
     "VISUAL STORY: each cell shows one concrete physical action and one visible state change. Frame 1 establishes the demonstrator and product category; frame 6 resolves to the accurate selected product. Middle frames may use hands, cutaways, pipes, components, particles, scale comparisons, or impossible-camera reveals while preserving continuity.",
     "VARIETY: do not repeat six product-holding poses or six macro science inserts. Move from use, to obstacle, to setup, to reveal, to evidence, to product payoff.",
     pixelTextBan,
