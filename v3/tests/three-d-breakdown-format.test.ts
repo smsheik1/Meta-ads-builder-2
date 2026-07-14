@@ -912,7 +912,7 @@ const grunsCompressionLock = {
 };
 const grunsCompressionReferenceScript = "Busy mornings make people assume daily nutrition requires a counter full of bottles and powders. Each extra container becomes another step before leaving home. Water, scoops, and loose capsules turn the routine into clutter. Grüns starts with a smaller shape. One grab-and-go pack contains more than sixty ingredients, including fruits, vegetables, vitamins, and minerals. The crowded routine falls away. Documented ingredient pieces compress into one gummy pack. Someone carries the pouch into a work bag. At the desk, the pouch opens. One serving replaces the scattered visual routine. The counter stays clear for tomorrow. Instead of rebuilding the same pile, the customer handles one pack. Compare the crowded counter with one pocket-ready pack. Grüns leaves the daily stack pocket-ready.";
 const grunsCompressionBeats = [
-  { role: "consequence", narration: "When mornings get busy, bottles and powders crowd the counter.", startMs: 0, endMs: 3000 },
+  { role: "consequence", narration: "You think daily nutrition needs bottles and powders everywhere.", startMs: 0, endMs: 3000 },
   { role: "context", narration: "People assume daily nutrition must stay scattered across extra steps.", startMs: 3000, endMs: 7000 },
   { role: "mechanism", narration: "Then Grüns compresses that routine into one grab-and-go gummy pack.", startMs: 7000, endMs: 12000 },
   { role: "revelation", narration: "One pack contains 60+ ingredients, including fruits, vegetables, vitamins, and minerals.", startMs: 12000, endMs: 16000 },
