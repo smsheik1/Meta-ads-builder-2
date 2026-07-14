@@ -25,6 +25,13 @@ const visualizerModuleSource = readFileSync("features/formats/visualizer/index.t
 const globalsSource = readFileSync("app/globals.css", "utf8");
 
 assert.ok(
+  adScenesSource.includes("const generatedRows = latestRows.filter((row) => row.researchRunId)") &&
+    adScenesSource.includes("const latestBatchId = generatedRows[0]?.generationBatchId") &&
+    adScenesSource.includes("const batchRows = generatedRows"),
+  "/create restore must ignore newer render/share snapshots that do not belong to a generated research run.",
+);
+
+assert.ok(
   !createClientSource.includes("<CreateActionCard"),
   "The legacy Download Island must not be the primary /create control surface.",
 );
