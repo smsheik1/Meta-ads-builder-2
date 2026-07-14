@@ -345,3 +345,16 @@ The gathering step is complete when:
 - The ecommerce-only scope is explicit.
 - Credit limits are explicit.
 - The next step is to build the benchmark, not immediately rewrite every prompt.
+
+## Media-Handoff Checkpoint
+
+Validated offline without Replicate generation:
+
+- Generic Style B media prompts no longer assume capsules, gut routes, cell walls, or supplement bottles. Supplement direction is enabled only when selected evidence and product context identify a supplement story.
+- Nano Banana receives one job per call: first create the approved six-panel board, then recreate only the requested start panel as one production anchor.
+- Style B Seedance prompts receive approved frame actions, camera cues, and physical motion rather than narration prose. This keeps the narrator unseen and prevents the video model from inventing presenter speech.
+- Clip 1 maps frames 1-3 and clip 2 maps frames 4-6. The exact frame action, camera, and motion survive into each clip prompt.
+- Seedance first/last-frame conditioning is supported without increasing paid image calls: frames 3 and 6 are cropped locally from the approved board and passed as `last_frame_image`; frames 1 and 4 remain the two paid start anchors.
+- First/last-frame mode is intentionally not combined with Seedance reference images because the provider contract treats those modes as mutually exclusive.
+- Media prompts fail before provider invocation if they exceed Seedance's prompt limit; approved actions are never silently truncated.
+- Automated tests mock all provider traffic and assert `generate_audio: false`, preserving one unseen narrator and no generated clip audio.

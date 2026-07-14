@@ -18,6 +18,7 @@ const adScenesSource = readFileSync("convex/adScenes.ts", "utf8");
 const threeDImagesSource = readFileSync("convex/threeDImages.ts", "utf8");
 const threeDProgressCanvasSource = readFileSync("features/formats/three-d-breakdown/ProgressCanvas.tsx", "utf8");
 const storyboardContractsSource = readFileSync("features/formats/three-d-breakdown/storyboardContracts.ts", "utf8");
+const threeDMediaPromptsSource = readFileSync("features/formats/three-d-breakdown/mediaPrompts.ts", "utf8");
 const jingleStoryboardSource = readFileSync("features/formats/jingle/storyboard.ts", "utf8");
 const visualizerSchemaSource = readFileSync("features/formats/visualizer/schema.ts", "utf8");
 const visualizerModuleSource = readFileSync("features/formats/visualizer/index.ts", "utf8");
@@ -365,9 +366,13 @@ assert.ok(
     !threeDImagesSource.includes("Promise.all(baseFrames.map") &&
     threeDImagesSource.includes("buildThreeDSeedancePrompt") &&
     threeDImagesSource.includes("createThreeDClipPlans(nextScene.layout)") &&
-    threeDImagesSource.includes("THREE_D_SEEDANCE_MAX_PROMPT_CHARS = 3900") &&
-    threeDImagesSource.includes(".slice(0, THREE_D_SEEDANCE_MAX_PROMPT_CHARS)") &&
+    threeDMediaPromptsSource.includes("MAX_SEEDANCE_PROMPT_CHARS = 3900") &&
+    threeDMediaPromptsSource.includes("simplify the approved frame plan before generation") &&
+    !threeDMediaPromptsSource.includes(".slice(0, MAX_SEEDANCE_PROMPT_CHARS)") &&
     threeDImagesSource.includes("seedancePromptLength") &&
+    threeDImagesSource.includes("cropThreeDStoryboardPanel") &&
+    threeDImagesSource.includes("lastFrameImageUrl: endFrameImage.url") &&
+    jingleStoryboardSource.includes("last_frame_image") &&
     threeDImagesSource.includes("imageInput,") &&
     threeDImagesSource.includes("scene.layout.referenceImages?.productImageUrls"),
   "3D Breakdown media generation must require the style reference and expose explicit sequential Seedance clips without preflight/repair scaffolding.",

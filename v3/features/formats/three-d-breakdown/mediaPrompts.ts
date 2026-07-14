@@ -1,0 +1,147 @@
+import type {
+  ThreeDBreakdownAdScene,
+  ThreeDBreakdownClipPlan,
+  ThreeDBreakdownStoryboardFrameIndex,
+} from "../../scene/types";
+
+const MAX_SEEDANCE_PROMPT_CHARS = 3900;
+
+const clean = (value: string | null | undefined) => String(value || "").replace(/\s+/g, " ").trim();
+
+const sceneEvidenceText = (scene: ThreeDBreakdownAdScene) => clean([
+  scene.layout.productAnchor?.title,
+  scene.layout.productAnchor?.imageAlt,
+  scene.layout.groundedEvidence.text,
+  scene.layout.storyContract.customerProblem,
+  scene.layout.storyContract.mechanismSummary,
+  scene.layout.storyContract.viewerLearns,
+  ...scene.layout.scriptBeats.map((beat) => beat.narration),
+].join(" "));
+
+export const isThreeDSupplementStory = (scene: ThreeDBreakdownAdScene) => {
+  const text = sceneEvidenceText(scene);
+  const explicitSupplement = /\b(?:supplement|probiotic|prebiotic|synbiotic|microbiome|gut health|digestive health|vitamin|mineral|softgel)\b/i;
+  const dosageForm = /\b(?:capsule|gummy|tablet|powder|strain)\b/i;
+  const healthContext = /\b(?:daily|health|nutrient|digest|gut|microbe|serving|formula)\b/i;
+  return explicitSupplement.test(text) || (dosageForm.test(text) && healthContext.test(text));
+};
+
+const productLock = (scene: ThreeDBreakdownAdScene) => {
+  const product = scene.layout.productAnchor;
+  if (!product) {
+    return "PRODUCT: no product image is available. Use only an abstract category-level object; never invent branded packaging or a specific product design.";
+  }
+  return clean([
+    `PRODUCT: use the supplied reference for ${product.title}.`,
+    product.imageAlt ? `Reference cue: ${product.imageAlt}.` : "",
+    "Preserve its category, silhouette, proportions, material, dominant colors, packaging form, and relationship to the demonstrator.",
+    "Do not replace it with merch, apparel, a logo-only object, a generic bottle, or another product category.",
+    "Any generated package surface must be blank and free of readable labels; Wiggly composites the exact branded packshot later.",
+  ].join(" "));
+};
+
+const framePlan = (
+  scene: ThreeDBreakdownAdScene,
+  frameIndex: ThreeDBreakdownStoryboardFrameIndex,
+) => {
+  const frame = scene.layout.storyboardBoard?.frames?.find((item) => item.frameIndex === frameIndex);
+  if (!frame) return `FRAME ${frameIndex}: preserve the approved storyboard panel and its physical action.`;
+  return clean([
+    `FRAME ${frameIndex} (${frame.label}).`,
+    frame.visual ? `ACTION: ${frame.visual}.` : "",
+    frame.camera ? `CAMERA: ${frame.camera}.` : "",
+    frame.motion ? `STATE CHANGE: ${frame.motion}.` : "",
+    frame.editingNote ? `EDIT INTENT: ${frame.editingNote}.` : "",
+  ].join(" "));
+};
+
+const frameRole = (
+  scene: ThreeDBreakdownAdScene,
+  frameIndex: ThreeDBreakdownStoryboardFrameIndex,
+) => {
+  const contract = scene.layout.storyContract;
+  const roles: Record<ThreeDBreakdownStoryboardFrameIndex, string> = {
+    1: "Show ordinary product use and the customer's false assumption before the problem is visible.",
+    2: "Make the selected hidden obstacle physically visible in the same world.",
+    3: "Set up the exact product mechanism with a tactile demonstration.",
+    4: `Deliver the peak ${contract.wowMomentType} reveal: ${contract.wowMoment}. Teach: ${contract.viewerLearns}.`,
+    5: `Turn the selected evidence into a visible payoff: ${scene.layout.groundedEvidence.text}.`,
+    6: "Resolve to the selected product and a clear buyer-action setup; do not end on an abstract mechanism or logo card.",
+  };
+  return roles[frameIndex];
+};
+
+const supplementDirection = (scene: ThreeDBreakdownAdScene) => (
+  isThreeDSupplementStory(scene)
+    ? "SUPPLEMENT-SPECIFIC: when the approved frame plan calls for ingestion or digestion, a clean transparent body route, capsule path, tidy obstacle surface, and contained particles are allowed. Keep these connected to the same product and demonstrator. No gore, wet intestine tunnel, detached organ montage, or respiratory anatomy unless evidence requires it."
+    : "CATEGORY LOCK: this is not automatically a supplement story. Do not invent capsules, gummies, digestion, gut tunnels, anatomy, cell walls, medical particles, or a blank supplement bottle unless the selected product evidence and approved frame plan explicitly require them."
+);
+
+const sharedStyle = (scene: ThreeDBreakdownAdScene) => clean([
+  `STYLE: ${scene.layout.storyContract.visualWorld}.`,
+  `LIGHTING: ${scene.layout.storyContract.lighting}.`,
+  `CAMERA LANGUAGE: ${scene.layout.storyContract.cameraStyle}.`,
+  `RECURRING OBJECTS: ${scene.layout.storyContract.recurringObjects.join(", ")}.`,
+  "Use one recurring silent stylized feature-animation CGI demonstrator as a scale figure and physical demonstrator, never as the narrator.",
+  "Keep the same face, modeled hair, matte CG skin, plain clothing color, proportions, product silhouette, and world throughout.",
+  "The demonstrator's lips, mouth, and jaw stay closed and still: no lip-sync, speech animation, singing, presenter delivery, or narration-timed talking gestures.",
+  "Never switch to live action, photorealistic influencer footage, a mannequin, doctor, scientist, lab coat, medical PPE, or a faceless stock-science montage.",
+].join(" "));
+
+const pixelTextBan = "PIXEL TEXT BAN: generate no readable words, letters, numbers, captions, subtitles, logos, labels, UI, arrows, checkmarks, X marks, pseudo-writing, or watermarks. Wiggly adds captions, proof, product branding, and CTA in the renderer.";
+
+export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
+  const plans = ([1, 2, 3, 4, 5, 6] as ThreeDBreakdownStoryboardFrameIndex[])
+    .map((index) => `${framePlan(scene, index)} ROLE: ${frameRole(scene, index)}`)
+    .join(" ");
+  return clean([
+    "TASK: create ONE vertical 9:16 image containing exactly six raw production stills in reading order, arranged as a 2-column by 3-row contact sheet for visual review.",
+    "LAYOUT: thin white gutters only; every still fills its cell edge-to-edge. No title band, margin, annotation, card, frame number, caption bar, or presentation whitespace.",
+    sharedStyle(scene),
+    productLock(scene),
+    supplementDirection(scene),
+    `APPROVED SIX-FRAME PLAN: ${plans}`,
+    "VISUAL STORY: each cell shows one concrete physical action and one visible state change. Frames 1 and 6 include the demonstrator and selected product; middle frames may use hands, cutaways, pipes, components, particles, scale comparisons, or impossible-camera reveals while preserving continuity.",
+    "VARIETY: do not repeat six product-holding poses or six macro science inserts. Move from use, to obstacle, to setup, to reveal, to evidence, to product payoff.",
+    pixelTextBan,
+  ].join(" "));
+};
+
+export const buildThreeDProductionFramePrompt = (
+  scene: ThreeDBreakdownAdScene,
+  frameIndex: ThreeDBreakdownStoryboardFrameIndex,
+) => clean([
+  `TASK: recreate panel ${frameIndex} from the supplied approved six-panel board as ONE full-frame vertical 9:16 production keyframe. This is not a collage or storyboard sheet.`,
+  sharedStyle(scene),
+  productLock(scene),
+  supplementDirection(scene),
+  framePlan(scene, frameIndex),
+  `ROLE: ${frameRole(scene, frameIndex)}`,
+  "CONTINUITY: preserve the board panel's demonstrator identity, clothing color, product form, recurring objects, world, camera relationship, and scene logic. Crop or expand only enough to fill 9:16.",
+  "COMPOSITION: fill the frame with the approved subject and action. No split screen, multiple panels, huge empty table, dead negative space, quiet showroom card, or alternate concept.",
+  pixelTextBan,
+].join(" "));
+
+export const buildThreeDSeedancePrompt = (
+  scene: ThreeDBreakdownAdScene,
+  clipPlan: ThreeDBreakdownClipPlan,
+) => {
+  const product = scene.layout.productAnchor;
+  const categoryRule = isThreeDSupplementStory(scene)
+    ? "CATEGORY: use clean body-route or capsule-path footage only where the approved frames require it; no gore or detached anatomy montage."
+    : "CATEGORY: do not invent supplement, capsule, digestive, anatomy, or medical imagery absent from the approved frames.";
+  const prompt = clean([
+    clipPlan.prompt,
+    product
+      ? `PRODUCT LOCK: preserve the supplied ${product.title} category, silhouette, colors, material, and packaging form; never replace it or invent readable packaging.`
+      : "PRODUCT LOCK: preserve the approved category-level object and do not invent branded packaging.",
+    categoryRule,
+    "INPUT LOCK: the supplied first image is the exact opening composition and the supplied last image is the exact ending target. Begin on the first image, perform the approved physical changes, and arrive naturally at the last image without inventing another scene, person, or product.",
+    "MOTION: use direct cuts, push-throughs, object wipes, camera pushes, component reveals, or particle transitions. Change a product, prop, obstacle, component, or camera scale every 1-2 seconds; no static product with drifting particles and no empty transition frames.",
+    "No readable text, captions, labels, logos, UI, pseudo-writing, or watermarks; Wiggly adds every word later.",
+  ].join(" "));
+  if (prompt.length > MAX_SEEDANCE_PROMPT_CHARS) {
+    throw new Error(`3D Breakdown Seedance prompt is ${prompt.length} characters; simplify the approved frame plan before generation.`);
+  }
+  return prompt;
+};
