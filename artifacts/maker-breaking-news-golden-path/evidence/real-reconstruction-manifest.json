@@ -1,0 +1,36 @@
+{
+  "source": {
+    "path": "/Users/shaz/Downloads/IMG_1499.PNG",
+    "sha256": "747da0df1c9ca00798ed3e9504cac9ce810c6813c8053ae17b66cfad52285ca6",
+    "width": 1125,
+    "height": 2436
+  },
+  "capturedRevealLayerRun": {
+    "sourceMatchesExactly": true,
+    "workingWidth": 464,
+    "workingHeight": 1024,
+    "detections": [
+      {
+        "role": "news_subject",
+        "description": "Circular Zuckerberg subject inset",
+        "sourceBbox": [620, 560, 1124, 1070],
+        "output": "reveallayer-subject.png"
+      }
+    ],
+    "cleanBackground": "reveallayer-clean-background.png",
+    "reconstructedResult": "reveallayer-reconstructed.png"
+  },
+  "proved": [
+    "The source is byte-for-byte the requested IMG_1499.PNG reference.",
+    "The subject inset is a separate transparent layer.",
+    "The subject can be removed while leaving a clean sky underneath.",
+    "The clean background and subject reproduce the reference at the working resolution."
+  ],
+  "notYetProved": [
+    "The real upload pipeline produces the complete Format without fixture data.",
+    "Publisher name and logo are replaceable native components.",
+    "Breaking-news label, headline, proof line, and CTA are native editable text.",
+    "The story setting is replaceable without pasted-image artifacts.",
+    "A real davidscookies.com run produces three coherent remixes and a sendable winner."
+  ]
+}

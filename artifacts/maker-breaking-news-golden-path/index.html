@@ -50,7 +50,7 @@
       <div class="status">Partial proof — not a finished golden path</div>
       <h1>Can Wiggly move Zuckerberg without breaking the ad?</h1>
       <p class="lede">The current pipeline finds the right pieces, but its background repair smears large photo areas. RevealLayer already produced the missing clean background on this exact reference. The next code change should replace only that broken step.</p>
-      <p class="warning"><strong>Honest result:</strong> the captured RevealLayer output and the local Maker editing flow work, but the required live end-to-end verification did not finish. The rented GPU was destroyed after the secure terminal connection consumed the spending allowance. No David’s Cookies ad below is presented as a winner because none passed the real live pipeline.</p>
+      <p class="warning"><strong>Honest result:</strong> the captured RevealLayer output and the local Maker editing flow work, but the required live end-to-end verification is still unfinished. A second GPU attempt proved the direct SSH setup and downloaded the complete model in under one minute, but the GPU was rented too early and remained metered during unrelated local setup. It was stopped before a new reconstruction ran. No David’s Cookies ad below is presented as a winner because none passed the real live pipeline.</p>
       <section class="grid">
         <article>
           <div class="image"><img src="evidence/original.png" alt="Original breaking news ad" /></div>
@@ -96,18 +96,23 @@
 
       <h3>Cost and stopping point</h3>
       <dl>
-        <dt>Provider</dt><dd>Vast.ai</dd>
-        <dt>GPU</dt><dd>1× A100 SXM4, 80 GB</dd>
-        <dt>Rate</dt><dd>$1.060/hour</dd>
-        <dt>Balance before</dt><dd>$3.57</dd>
-        <dt>Balance after</dt><dd>$2.58</dd>
-        <dt>Exact charge</dt><dd>$0.99</dd>
+        <dt>Latest provider</dt><dd>Vast.ai</dd>
+        <dt>Latest instance</dt><dd>#44894756 · 1× A100 SXM4, 80 GB</dd>
+        <dt>Latest listed rate</dt><dd>$1.341/hour</dd>
+        <dt>Latest start</dt><dd>2026-07-14 14:59:40 UTC</dd>
+        <dt>Latest stop</dt><dd>2026-07-14 15:19:35 UTC</dd>
+        <dt>Latest runtime</dt><dd>19 minutes 55 seconds</dd>
+        <dt>Latest balance before</dt><dd>$2.54</dd>
+        <dt>Latest balance after</dt><dd>$1.95</dd>
+        <dt>Latest exact balance change</dt><dd>$0.59</dd>
+        <dt>Earlier failed attempt</dt><dd>$0.99</dd>
+        <dt>Total documented GPU spend</dt><dd>$1.58</dd>
         <dt>Paid resources after stop</dt><dd>0 instances, 0 storage</dd>
-        <dt>Why it stopped</dt><dd>The provider’s secure Jupyter terminal was blocked by its certificate path; setup never reached inference before the cap.</dd>
+        <dt>What the latest attempt proved</dt><dd>Direct SSH works, the official RevealLayer environment installs, and the full FLUX model downloads quickly. The remaining failure was execution order, not model setup.</dd>
       </dl>
 
       <h3>Final judgment</h3>
-      <footer><strong>Maker result: partial.</strong> The smallest useful editing improvements are verified through the real UI. <strong>Marketing result: do not send.</strong> The real upload → live RevealLayer → three David’s Cookies remixes → chosen winner path is still unproven. The next action is not more UI: make the RevealLayer worker reachable with a prebuilt image or persistent model cache, then rerun this same one-image test without changing the renderer or adding another system.</footer>
+      <footer><strong>Maker result: partial.</strong> The smallest useful editing improvements are verified through the real UI. <strong>Marketing result: do not send.</strong> The real upload → live RevealLayer → three David’s Cookies remixes → chosen winner path is still unproven. The next paid attempt must finish every local step first, start the GPU only for the prepared reconstruction, copy the visual proof immediately, and stop before any UI work continues.</footer>
     </main>
   </body>
 </html>
