@@ -381,13 +381,13 @@ assert.ok(
     threeDImagesSource.includes("lastFrameImageUrl: endFrameImage.url") &&
     jingleStoryboardSource.includes("last_frame_image") &&
     threeDImagesSource.includes("imageInput,") &&
-    threeDImagesSource.includes("scene.layout.referenceImages?.productImageUrls") &&
+    threeDImagesSource.includes("getThreeDProductReferenceUrls") &&
     threeDImagesSource.includes("LEGACY_THREE_D_STYLE_REFERENCE") &&
     threeDImagesSource.includes("Style B cannot use the legacy anatomy-only reference"),
   "3D Breakdown media generation must require the style reference and expose explicit sequential Seedance clips without preflight/repair scaffolding.",
 );
 assert.ok(
-  threeDImagesSource.includes("scene.layout.productAnchor?.imageUrl") &&
+  threeDImagesSource.includes("getThreeDProductReferenceUrls(scene)") &&
     !threeDImagesSource.includes("getThreeDAnchorImageInput(nextScene, imageInput)"),
   "Production anchors must use only the approved storyboard and selected product references, not competing site/style images.",
 );

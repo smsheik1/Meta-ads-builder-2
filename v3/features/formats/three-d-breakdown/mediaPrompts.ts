@@ -45,13 +45,13 @@ const productLock = (scene: ThreeDBreakdownAdScene) => {
 const storyboardReferenceLock = (scene: ThreeDBreakdownAdScene) => clean([
   "REFERENCE ORDER: image 1 is the STYLE MASTER. Copy its same stylized male CGI demonstrator identity, facial proportions, modeled hair, matte skin, body proportions, blue-grid world, and feature-animation rendering. Do not invent a woman, a different person, or a photoreal human.",
   scene.layout.productAnchor
-    ? `Images 2 and later are PRODUCT MASTERS for ${scene.layout.productAnchor.title}. Their real outer geometry outranks every generic product noun in the written frame plan.`
+    ? `Image 2 is the PRODUCT MASTER for ${scene.layout.productAnchor.title} and owns retail geometry; later images only define its real serving/use form.`
     : "No Product Master is available; use an abstract category object and do not invent branded packaging.",
   "RIGHT: the Style Master character handles the Product Master while the physical story changes around them. WRONG: a new realistic person handles a cube, carton, jar, or bottle invented from the word pack.",
 ].join(" "));
 
 const productionReferenceLock = (scene: ThreeDBreakdownAdScene) => clean([
-  "REFERENCE ORDER: image 1 is the locally cropped approved storyboard panel and owns character, world, action, and composition. Image 2 is the PRODUCT MASTER and owns exact outer product geometry, material, color blocking, and scale.",
+  "REFERENCE ORDER: image 1 is the locally cropped approved storyboard panel and owns character, world, action, and composition. Image 2 is the PRODUCT MASTER and owns exact outer product geometry, material, color blocking, and scale. If image 3 exists, it shows the real single-serving or in-use form without replacing image 2's retail package.",
   scene.layout.productAnchor
     ? `If the storyboard simplified ${scene.layout.productAnchor.title}, correct its product form to match image 2 without changing the approved action.`
     : "No Product Master is available; preserve the approved abstract category object.",

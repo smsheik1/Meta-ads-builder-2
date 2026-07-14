@@ -8,6 +8,7 @@ import { generateReplicateNanoBanana2Image, generateReplicateSeedanceVideo } fro
 import { createThreeDClipPlans } from "../features/formats/three-d-breakdown/storyboardContracts";
 import { buildThreeDProductionFramePrompt, buildThreeDSeedancePrompt, buildThreeDStoryboardBoardPrompt } from "../features/formats/three-d-breakdown/mediaPrompts";
 import { cropThreeDStoryboardPanel } from "../features/formats/three-d-breakdown/storyboardImageCrop";
+import { fetchThreeDProductUseImageUrl } from "../features/formats/three-d-breakdown/productReference";
 import type {
   AdScene,
   ThreeDBreakdownAdScene,
@@ -54,9 +55,25 @@ const patchThreeDScene = async (
   scene: ThreeDBreakdownAdScene,
 ) => ctx.runMutation(internal.adSceneStorage.patchScene, { sceneId, scene });
 
-const getThreeDImageInput = (scene: ThreeDBreakdownAdScene) => {
+const getThreeDProductReferenceUrls = async (scene: ThreeDBreakdownAdScene) => {
+  const product = scene.layout.productAnchor;
+  if (!product?.imageUrl) return [];
+  let useImageUrl: string | null = null;
+  if (product.url) {
+    try {
+      useImageUrl = await fetchThreeDProductUseImageUrl(product.url, product.imageUrl);
+    } catch (error) {
+      console.warn("[wiggly:3d-breakdown] product-use-reference:unavailable", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+  return Array.from(new Set([product.imageUrl, useImageUrl].filter((url): url is string => Boolean(url))));
+};
+
+const getThreeDImageInput = async (scene: ThreeDBreakdownAdScene) => {
   const styleReferenceUrl = requireThreeDStyleReferenceUrl();
-  const productImageUrls = scene.layout.referenceImages?.productImageUrls || [];
+  const productImageUrls = await getThreeDProductReferenceUrls(scene);
   const brandImageUrls = productImageUrls.length
     ? []
     : scene.layout.referenceImages?.brandImageUrls || [];
@@ -79,9 +96,10 @@ const getThreeDAnchorImageInput = async (
   if (!response.ok) throw new Error("3D Breakdown could not read the approved storyboard board for the production anchor.");
   const panelBytes = cropThreeDStoryboardPanel(new Uint8Array(await response.arrayBuffer()), frameIndex);
   const panelDataUrl = `data:image/jpeg;base64,${Buffer.from(panelBytes).toString("base64")}`;
+  const productImageUrls = await getThreeDProductReferenceUrls(scene);
   return Array.from(new Set([
     panelDataUrl,
-    scene.layout.productAnchor?.imageUrl || "",
+    ...productImageUrls,
   ].filter((url): url is string => Boolean(url)))).slice(0, 5);
 };
 
@@ -178,7 +196,7 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
     if (!replicateApiToken) throw new Error("Replicate image generation is not configured for 3D Breakdown.");
     let nextScene = assertThreeDBreakdownScene(scene as AdScene);
-    const imageInput = getThreeDImageInput(nextScene);
+    const imageInput = await getThreeDImageInput(nextScene);
 
     const storyboardBoard = nextScene.layout.storyboardBoard;
     if (!storyboardBoard?.imagePrompt) throw new Error("3D Breakdown storyboard board image prompt is missing.");

@@ -29,6 +29,7 @@ import {
   buildThreeDStoryboardBoardPrompt,
   isThreeDSupplementStory,
 } from "../features/formats/three-d-breakdown/mediaPrompts";
+import { extractThreeDProductUseImageUrl } from "../features/formats/three-d-breakdown/productReference";
 import { validateThreeDBreakdownScene } from "../features/formats/three-d-breakdown/validate";
 import { DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL } from "../features/llm/nvidiaNimModels";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
@@ -302,6 +303,11 @@ const grunsProductResearch = makeResearch({
   },
 });
 assert.equal(selectThreeDBreakdownProductAnchor(grunsProductResearch)?.title, "Grüns Daily Nutrition Gummies");
+assert.equal(extractThreeDProductUseImageUrl(`
+  <img src="/hero-pouch.webp" alt="Grüns 28 daily packs">
+  <img src="/clinical-chart.webp" alt="Clinical study chart">
+  <img src="/LifestyleImage-HandSatchet.webp" alt="Hand opening a single serving sachet">
+`, "https://gruns.co/products/gruns", "https://gruns.co/hero-pouch.webp"), "https://gruns.co/LifestyleImage-HandSatchet.webp");
 
 const seedOgProductResearch = makeResearch({
   websiteUrl: "https://seed.com/",
@@ -1812,7 +1818,8 @@ assert.ok(threeDImageActionSource.includes("Generate the 3D Breakdown storyboard
 assert.ok(threeDImageActionSource.includes("getThreeDAnchorImageInput"), "Production anchors must include the generated storyboard board as an image reference.");
 assert.ok(threeDImageActionSource.includes("storyboardBoard?.image?.status === \"ready\""), "Production anchors must only use a ready storyboard board reference.");
 assert.ok(threeDImageActionSource.includes("cropThreeDStoryboardPanel(new Uint8Array(await response.arrayBuffer()), frameIndex)"), "Production anchors must receive a local crop of their approved storyboard panel.");
-assert.ok(threeDImageActionSource.includes("scene.layout.productAnchor?.imageUrl"), "Production anchors must keep the selected product reference beside the storyboard.");
+assert.ok(threeDImageActionSource.includes("getThreeDProductReferenceUrls(scene)"), "Production anchors must keep retail and in-use product references beside the storyboard.");
+assert.ok(threeDImageActionSource.includes("fetchThreeDProductUseImageUrl"), "Production anchors must recover a real in-use product reference when the product page exposes one.");
 assert.ok(!threeDImageActionSource.includes("getThreeDAnchorImageInput(nextScene, imageInput)"), "Production anchors must not receive competing style and site references after storyboard approval.");
 assert.ok(threeDImageActionSource.includes('imageMode === "regenerate-anchors"'), "Ready anchors must support explicit visual-QA regeneration.");
 assert.ok(threeDImageActionSource.includes("usesStoryboardPanelCrop"), "Production-frame logs must expose whether the local storyboard panel crop was sent.");
@@ -1830,7 +1837,8 @@ assert.ok(cookieBoardPrompt.includes("exactly six raw production stills"));
 assert.ok(cookieBoardPrompt.includes("APPROVED SIX-FRAME PLAN"));
 assert.ok(cookieBoardPrompt.includes("Hands place a red cookie tin"));
 assert.ok(cookieBoardPrompt.includes("image 1 is the STYLE MASTER"));
-assert.ok(cookieBoardPrompt.includes("Images 2 and later are PRODUCT MASTERS"));
+assert.ok(cookieBoardPrompt.includes("Image 2 is the PRODUCT MASTER"));
+assert.ok(cookieBoardPrompt.includes("later images only define its real serving/use form"));
 assert.ok(cookieBoardPrompt.includes("Do not invent a woman, a different person, or a photoreal human"));
 assert.ok(cookieBoardPrompt.includes("appears in panels 1, 2, 5, and 6"));
 assert.ok(cookieBoardPrompt.includes("never a product alone on an empty grid"));
