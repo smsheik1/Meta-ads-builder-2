@@ -22,12 +22,15 @@
   },
   "proved": [
     "The source is byte-for-byte the requested IMG_1499.PNG reference.",
+    "The real local PaddleOCR pipeline found 21 positioned text regions in the reference.",
+    "The detected regions cover the publisher, breaking-news label, headline, proof line, CTA, and social chrome.",
     "The subject inset is a separate transparent layer.",
     "The subject can be removed while leaving a clean sky underneath.",
     "The clean background and subject reproduce the reference at the working resolution."
   ],
   "notYetProved": [
     "The real upload pipeline produces the complete Format without fixture data.",
+    "Gemma groups the OCR word regions into the correct semantic editable fields.",
     "Publisher name and logo are replaceable native components.",
     "Breaking-news label, headline, proof line, and CTA are native editable text.",
     "The story setting is replaceable without pasted-image artifacts.",
