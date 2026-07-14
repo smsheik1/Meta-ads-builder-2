@@ -358,6 +358,16 @@ const grunsLiveOrderResearch = makeResearch({
     offer: "Daily nutritional superfood gummies containing 60+ ingredients including fruits, vegetables, vitamins, and minerals.",
     audience: "Busy individuals looking for a simple, tasty way to bridge nutritional gaps without powders or pills.",
     ctaDirection: "Try Grüns gummies",
+    siteLanguage: ["60+ Ingredients in One Pack You'll Actually Crave"],
+  },
+  evidence: {
+    ...research.evidence,
+    receipts: {
+      specificClaims: Array.from({ length: 16 }, (_, index) => `Price option ${index + 1}: $${40 + index}`),
+      buyerMoments: [],
+      exactSiteLanguage: [],
+      namedProof: [],
+    },
   },
   productCatalog: {
     provider: "shopify-products-json",
@@ -453,6 +463,11 @@ const grunsLiveOrderResearch = makeResearch({
   },
 });
 assert.equal(selectThreeDBreakdownProductAnchor(grunsLiveOrderResearch)?.title, "Grüns");
+const grunsNutrientPackEvidence = extractThreeDBreakdownEvidence(grunsLiveOrderResearch)
+  .find((item) => /60\+ ingredients in one pack/i.test(item.text));
+assert.ok(grunsNutrientPackEvidence, "Evidence ranking must not let early price noise hide a stronger visual product detail.");
+assert.equal(grunsNutrientPackEvidence.evidenceUseType, "material");
+assert.ok(grunsNutrientPackEvidence.visualPotentialScore >= 0.8);
 assert.equal(selectThreeDBreakdownBuyerCta({
   generatedCta: "Start your daily routine from Grüns.",
   siteCta: "Try Grüns gummies.",
