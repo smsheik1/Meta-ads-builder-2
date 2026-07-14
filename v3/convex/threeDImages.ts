@@ -63,12 +63,20 @@ const getThreeDImageInput = (scene: ThreeDBreakdownAdScene) => {
   ].filter(Boolean))).slice(0, 4);
 };
 
-const getThreeDAnchorImageInput = (scene: ThreeDBreakdownAdScene) => {
+const getThreeDAnchorImageInput = async (
+  scene: ThreeDBreakdownAdScene,
+  frameIndex: ThreeDBreakdownStoryboardFrameIndex,
+) => {
   const storyboardImageUrl = scene.layout.storyboardBoard?.image?.status === "ready"
     ? scene.layout.storyboardBoard.image.url
     : "";
+  if (!storyboardImageUrl) throw new Error("3D Breakdown production anchor needs an approved storyboard board.");
+  const response = await fetch(storyboardImageUrl);
+  if (!response.ok) throw new Error("3D Breakdown could not read the approved storyboard board for the production anchor.");
+  const panelBytes = cropThreeDStoryboardPanel(new Uint8Array(await response.arrayBuffer()), frameIndex);
+  const panelDataUrl = `data:image/jpeg;base64,${Buffer.from(panelBytes).toString("base64")}`;
   return Array.from(new Set([
-    storyboardImageUrl,
+    panelDataUrl,
     scene.layout.productAnchor?.imageUrl || "",
   ].filter((url): url is string => Boolean(url)))).slice(0, 5);
 };
@@ -264,11 +272,11 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
       for (const frame of anchorFramesToGenerate) {
         activeFrameIndex = frame.frameIndex;
         const prompt = buildThreeDProductionFramePrompt(nextScene, frame.frameIndex);
-        const anchorImageInput = getThreeDAnchorImageInput(nextScene);
+        const anchorImageInput = await getThreeDAnchorImageInput(nextScene, frame.frameIndex);
         console.log("[wiggly:3d-breakdown] production-frame:start", {
           frameIndex: frame.frameIndex,
           imageInputCount: anchorImageInput.length,
-          usesStoryboardReference: anchorImageInput.some((url) => url === nextScene.layout.storyboardBoard?.image?.url),
+          usesStoryboardPanelCrop: anchorImageInput[0]?.startsWith("data:image/jpeg;base64,"),
           promptLength: prompt.length,
         });
         const image = await generateReplicateNanoBanana2Image({

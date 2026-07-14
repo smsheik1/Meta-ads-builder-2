@@ -358,3 +358,17 @@ Validated offline without Replicate generation:
 - First/last-frame mode is intentionally not combined with Seedance reference images because the provider contract treats those modes as mutually exclusive.
 - Media prompts fail before provider invocation if they exceed Seedance's prompt limit; approved actions are never silently truncated.
 - Automated tests mock all provider traffic and assert `generate_audio: false`, preserving one unseen narrator and no generated clip audio.
+
+## First Paid Storyboard Learning
+
+One approved Nano Banana 2 Lite board call exposed two reference-binding failures: the model replaced the fixed stylized male CGI demonstrator with a photoreal woman and replaced the real flexible Gruns pouch with a rigid green cube. The references were present, but their authority was implicit.
+
+Adopted corrections:
+
+- Storyboard prompts now declare image 1 as the Style Master and images 2+ as Product Masters.
+- The Style Master owns demonstrator identity and world; Product Masters own outer product geometry, material, color blocking, and scale.
+- Generic script nouns such as `pack`, `package`, or `product` cannot override product-reference geometry.
+- Production anchors receive a local crop of the exact approved panel as image 1, not the full six-panel board, followed by the real product master as image 2.
+- Exact readable packaging remains a renderer responsibility; generated media preserves physical product identity without attempting labels or logos.
+
+The rejected board does not authorize anchors. No automatic retry or additional Replicate call ran.

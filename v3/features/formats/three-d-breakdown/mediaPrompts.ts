@@ -50,7 +50,7 @@ const storyboardReferenceLock = (scene: ThreeDBreakdownAdScene) => clean([
 ].join(" "));
 
 const productionReferenceLock = (scene: ThreeDBreakdownAdScene) => clean([
-  "REFERENCE ORDER: image 1 is the approved storyboard board and owns character, world, action, and composition. Image 2 is the PRODUCT MASTER and owns exact outer product geometry, material, color blocking, and scale.",
+  "REFERENCE ORDER: image 1 is the locally cropped approved storyboard panel and owns character, world, action, and composition. Image 2 is the PRODUCT MASTER and owns exact outer product geometry, material, color blocking, and scale.",
   scene.layout.productAnchor
     ? `If the storyboard simplified ${scene.layout.productAnchor.title}, correct its product form to match image 2 without changing the approved action.`
     : "No Product Master is available; preserve the approved abstract category object.",
