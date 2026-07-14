@@ -286,13 +286,13 @@ Style B - presenter-teardown-vsl:
 - Narrator/captions argue; human demonstrates scale/use/cause-effect.
 - Keep the demonstrator consistent: same face, plain shirt color, body scale, and product relationship. No branded caps, hats, hoodies, shirts, totes, merch, or character outfit details may become the product or final payoff.
 - If a face appears, use the same stylized feature-animation CGI demo person; no photorealistic human, mannequin, anatomy model, test dummy, blue gloves, mask, lab/medical costume, or PPE.
-- Across six frames include human/product use, body-route/path, obstacle, mechanism pipe, particles, payoff; frames 1 and 6 show human/product relationship.
+- Across six frames: human/product use, obstacle, mechanism, components, payoff. Use a body route only when the locked premise and evidence concern ingestion, digestion, or absorption.
 - Formula: ${THREE_D_STYLE_B_REFERENCE_FORMULA}; compress to 20 seconds.
-- Supplement/digestive: frame 3 crowded particle pile-up; frame 4 machine-room wow with pipe, fans, valves, protected capsule core, active flow.
+- Supplement: routine, testing, portability, taste, and compression stay external. Only ingestion, digestion, or absorption uses body-route footage.
 - Avoid mannequins, anatomy models, test dummies, biology-doc visuals, random gut tunnels, huge counters, medical costumes, and logo-only endings.
 
-- Supplement/digestive: demonstrator with capsule/cup, torso/body-route, obstacle wall, pipe/machine mechanism, product payoff, final blank bottle/package. No gloves or medical mannequin.
-- Supplement/digestive obstacle frames: clean graphic product-science footage with blue body-route, tidy pink cell-wall/obstacle, visible particles; no wet gut, gore, organ close-up, or gross macro.
+- Approved supplement body-route stories: demonstrator with product, correct route, obstacle wall, mechanism, product payoff, and final blank package. No gloves or medical mannequin.
+- Approved body-route obstacle frames: clean graphic product-science footage with a blue route, tidy pink barrier, and visible particles; no wet gut, gore, organ close-up, or gross macro.
 - Product category alone fails. Prefer mechanism, process, material, component, product detail, or concrete feature evidence.
 - If product imagery exists, preserve shape, colors, packaging cues, and category. Do not invent labels/logos/text; without imagery, use abstract 3D metaphors.
 - For ecommerce Style B, product imagery is required before paid visual generation. Prefer real pack, jar, pouch, gummies, capsules, product-in-use, or product-on-surface references; do not use hats, merch, logos, icons, or accessories unless the site is apparel.

@@ -350,7 +350,7 @@ The gathering step is complete when:
 
 Validated offline without Replicate generation:
 
-- Generic Style B media prompts no longer assume capsules, gut routes, cell walls, or supplement bottles. Supplement direction is enabled only when selected evidence and product context identify a supplement story.
+- Generic Style B media prompts no longer assume capsules, gut routes, cell walls, or supplement bottles. Supplement routine, testing, portability, taste, and compression stories stay external; body-route direction is enabled only when the selected premise and approved frames concern ingestion, digestion, or absorption.
 - Nano Banana receives one job per call: first create the approved six-panel board, then recreate only the requested start panel as one production anchor.
 - Style B Seedance prompts receive approved frame actions, camera cues, and physical motion rather than narration prose. This keeps the narrator unseen and prevents the video model from inventing presenter speech.
 - Clip 1 maps frames 1-3 and clip 2 maps frames 4-6. The exact frame action, camera, and motion survive into each clip prompt.

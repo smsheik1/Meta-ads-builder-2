@@ -562,7 +562,8 @@ assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions p
   "Show, don't tell",
   "The visuals do the heavy lifting",
   "same face, plain shirt color",
-  "human/product use, body-route/path, obstacle, mechanism pipe",
+  "Use a body route only when the locked premise and evidence concern ingestion, digestion, or absorption",
+  "routine, testing, portability, taste, and compression stay external",
   "clean graphic product-science footage",
   "no wet gut, gore, organ close-up",
   "product-science teardown",
@@ -1180,7 +1181,8 @@ assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("Visual st
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("silent recurring stylized feature-animation CGI demonstrator"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("full body, torso, hands"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("unmistakable feature-animation CGI"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human/product use, transparent body-route or product path"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human/product use, product path or selected body-route"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("Routine, testing, portability, taste, and ingredient-compression stories stay in the external product/demo world"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("obstacle wall or pile-up"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("same face, plain shirt color"));
 assert.ok(!generated.variants[1]?.storyboardBoard.imagePrompt.includes("cap/goggles"));

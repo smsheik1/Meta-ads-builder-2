@@ -51,7 +51,7 @@ Required ingredients:
 - Apply the founder prompt discipline to every storyboard still and production anchor: visual fingerprint first, recurring subject/product second, then concrete action, camera/framing, lighting, color/mood, and consistency. The frame must feel like footage from the same ad, not a standalone AI image sample.
 - Each frame needs one visible before/after state change: object moves, layer peels, path blocks, capsule travels, particles scatter, mechanism opens, or payoff resolves.
 - The demonstrator must stay consistent across frames: same face, cap/goggles if used, shirt color, body scale, and product relationship. Reference consistency matters more than inventing a fresh character pose in every panel.
-- For supplement/digestive products, the original reference grammar is: full-body demonstrator with capsule/cup, transparent torso or body-route, macro obstacle wall, machine/pipe mechanism, demonstrator/product proof, final bottle/product close.
+- For delivery, digestion, or absorption premises, the original reference grammar is: full-body demonstrator with capsule/cup, transparent torso or body-route, macro obstacle wall, machine/pipe mechanism, demonstrator/product proof, final bottle/product close. Do not force this grammar onto routine, testing, portability, taste, or ingredient-compression premises.
 - Do not overcorrect this into a standalone beaker or generic lab-chamber demo. The original uses transparent torso, gut route, cell-wall, and body/pathway footage, but it stays tied to the same silent demonstrator, product, capsule, and blue-grid world.
 - "Avoid biology montage" means avoid detached stock-science footage. Reference-style body-route/cell-wall visuals are correct when the demonstrator, product path, capsule particles, or scale proxy remains the continuity anchor.
 - Hidden obstacle frames should look like clean graphic product-science footage: blue body-route, tidy pink cell-wall/obstacle surface, visible particles, and crisp grid-world lighting. Avoid wet fleshy intestine tunnels, gore, horror anatomy, disconnected organ close-ups, or gross medical macro shots.
@@ -107,16 +107,14 @@ Current accepted Seed visual gate artifacts:
 
 ## 20 Second Clip Rhythm
 
-MVP duration is 20 seconds. Current target assembly splits it into four 5-second teaching blocks:
+MVP duration is 20 seconds. The locked acceptance assembly uses two 10-second clips:
 
-1. Clip 1: frames 1-2, false assumption and ordinary product use.
-2. Clip 2: frames 2-3, hidden problem and first mechanism setup.
-3. Clip 3: frames 4-5, peak mechanism reveal and evidence payoff.
-4. Clip 4: frames 5-6, proof payoff and clean final product state.
+1. Clip 1: frames 1-3, false assumption, hidden problem, and mechanism setup.
+2. Clip 2: frames 4-6, peak reveal, evidence payoff, and clean final product state.
 
-Each clip needs quick micro-beats: setup, obstruction/change, reveal, payoff/reset. The reference changes object state, camera scale, or mechanism almost every second, so four shorter clips are a better match than two slow 10-second drifts.
+Each clip needs quick internal micro-beats rather than one slow drift. First/last-frame conditioning locks frames 1 to 3 and frames 4 to 6; the middle frame becomes timecoded choreography.
 
-Clip 1 and clip 2 for supplement/digestive brands must include the body-route or hidden internal obstacle, not only an external jar/beaker. The accepted direction should restore reference-style transparent torso/pathway or cell-wall footage while keeping it attached to the silent demonstrator/product story.
+Supplement clips use a body-route only when the selected premise and evidence are about ingestion, digestion, or absorption. Routine, testing, portability, taste, and ingredient-compression stories stay in the coherent demonstrator/product world instead of inventing anatomy.
 
 ## Current Provider Stop Condition
 
