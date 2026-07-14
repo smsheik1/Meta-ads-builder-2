@@ -215,6 +215,47 @@ const assertCtaLineShape = (value: string) => {
   if (countWords(ctaLine) < 3) {
     throw new Error("3D Breakdown CTA line is too short.");
   }
+  if (countWords(ctaLine) > 7) {
+    throw new Error("3D Breakdown CTA line must be 7 words or fewer.");
+  }
+};
+
+const buildDeterministicCtaLine = (research: StoredWebsiteResearchResult) => {
+  const brand = cleanText(research.brandBrief.brandName || research.brand.name, 60)
+    .split(/\s+/)
+    .slice(0, 4)
+    .join(" ");
+  const productContext = [
+    research.brandBrief.offer,
+    ...(research.productCatalog?.products || []).slice(0, 8).map((product) => product.title),
+  ].join(" ");
+  const category = ([
+    ["gummies", /\bgumm(?:y|ies)\b/i],
+    ["cookies", /\bcookies?\b/i],
+    ["capsules", /\bcapsules?\b/i],
+    ["supplements", /\bsupplements?\b/i],
+    ["skincare", /\bskincare\b/i],
+    ["drinks", /\b(?:drink|beverage)s?\b/i],
+    ["snacks", /\bsnacks?\b/i],
+    ["gifts", /\bgifts?\b/i],
+    ["app", /\b(?:app|software|platform)\b/i],
+  ] satisfies Array<[string, RegExp]>).find(([, pattern]) => pattern.test(productContext))?.[0] || "";
+  const productName = category && !brand.toLowerCase().includes(category)
+    ? `${brand} ${category}`
+    : brand;
+  return cleanText(`Try ${productName} today.`, 180);
+};
+
+const resolveCtaLine = (value: unknown, research: StoredWebsiteResearchResult) => {
+  const candidate = cleanText(value, 180);
+  try {
+    assertCtaLineShape(candidate);
+    return candidate;
+  } catch {
+    const fallback = buildDeterministicCtaLine(research);
+    assertCtaLineShape(fallback);
+    return fallback;
+  }
 };
 
 const presenterNarrationPattern = /\b(i am|i'm|i'll|let me|watch me|today i|my favorite|we're going to|i want to show|i recommend)\b/i;
@@ -444,6 +485,7 @@ const parseStoryDirectionSlateOutput = (
 const parseStyleBScriptPlanOutput = (
   raw: string,
   evidenceItems: ThreeDBreakdownEvidenceItem[],
+  research: StoredWebsiteResearchResult,
   selectedStoryDirection?: ThreeDBreakdownStoryDirection | null,
 ): ThreeDBreakdownLockedStyleBScript => {
   const parsed = parseJsonObject(raw);
@@ -459,8 +501,7 @@ const parseStyleBScriptPlanOutput = (
     const allowedEvidenceIds = evidenceItems.map((item) => item.evidenceIndex).join(", ");
     throw new Error(`3D Breakdown Style B script plan references invalid evidence; use one of: ${allowedEvidenceIds}.`);
   }
-  const ctaLine = cleanText(parsed.ctaLine, 180);
-  assertCtaLineShape(ctaLine);
+  const ctaLine = resolveCtaLine(parsed.ctaLine, research);
   const plan = {
     visualStyle: "presenter-teardown-vsl" as const,
     variantAngle: cleanText(parsed.variantAngle, 120),
@@ -1047,7 +1088,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
       responseChars: scriptRaw.length,
     });
     try {
-      lockedStyleBScript = parseStyleBScriptPlanOutput(scriptRaw, directorEvidenceItems, selectedStoryDirection);
+      lockedStyleBScript = parseStyleBScriptPlanOutput(scriptRaw, directorEvidenceItems, research, selectedStoryDirection);
     } catch (error) {
       console.warn("[wiggly:3d-breakdown] style-b-script:parse:retry", {
         elapsedMs: Date.now() - startedAt,
@@ -1068,7 +1109,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
         elapsedMs: Date.now() - startedAt,
         responseChars: retryRaw.length,
       });
-      lockedStyleBScript = parseStyleBScriptPlanOutput(retryRaw, directorEvidenceItems, selectedStoryDirection);
+      lockedStyleBScript = parseStyleBScriptPlanOutput(retryRaw, directorEvidenceItems, research, selectedStoryDirection);
     }
     console.log("[wiggly:3d-breakdown] style-b-script:ready", {
       elapsedMs: Date.now() - startedAt,

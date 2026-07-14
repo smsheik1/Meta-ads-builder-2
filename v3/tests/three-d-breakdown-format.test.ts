@@ -924,6 +924,36 @@ const grunsCompressionScriptPlan = styleBScriptPlanPayload({
   scriptBeats: grunsCompressionBeats,
   ctaLine: "Try Grüns gummies today.",
 });
+
+const grunsFallbackCtaScriptPlan = styleBScriptPlanPayload({
+  ...grunsCompressionScriptPlan,
+  ctaLine: "Daily nutrition, rebuilt for motion.",
+  scriptBeats: grunsCompressionBeats,
+});
+let grunsFallbackCtaCalls = 0;
+const grunsFallbackCtaGeneration = await generateThreeDBreakdownVariantsFromResearch(grunsCompressionResearch, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  selectedStoryDirection: grunsCompressionDirection,
+  nvidiaNimChatCompletion: async () => {
+    grunsFallbackCtaCalls += 1;
+    return grunsFallbackCtaCalls === 1
+      ? JSON.stringify(grunsFallbackCtaScriptPlan)
+      : JSON.stringify(payloadWithVariants([makeVariant({
+          ...grunsCompressionLock,
+          referenceScript: grunsCompressionReferenceScript,
+          ctaLine: "Try Grüns gummies today.",
+          consequence: grunsCompressionBeats[0]!.narration,
+          context: grunsCompressionBeats[1]!.narration,
+          mechanism: grunsCompressionBeats[2]!.narration,
+          revelation: grunsCompressionBeats[3]!.narration,
+          punchline: "Try Grüns gummies today.",
+        })]));
+  },
+});
+assert.equal(grunsFallbackCtaCalls, 2, "A malformed CTA should be normalized without retrying the Script Director.");
+assert.equal(grunsFallbackCtaGeneration.variants[0]?.ctaLine, "Try Grüns gummies today.");
+assert.equal(grunsFallbackCtaGeneration.variants[0]?.scriptBeats[4]?.narration, "Try Grüns gummies today.");
 const grunsCompressionVisualPlan = payloadWithVariants([makeVariant({
   ...grunsCompressionLock,
   visualStyle: "presenter-teardown-vsl",
