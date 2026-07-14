@@ -398,7 +398,8 @@ Rules:
 - Never return creator names, creator references, "creator style", or exact creator fingerprints in JSON.
 
 Good card shapes:
-- Supplement mechanism: a swallowed capsule meets a hidden digestive obstacle, then evidence-backed delivery design changes the journey.
+- Supplement compression: a documented pile of ingredients or daily steps physically compresses into the exact product format named in evidence.
+- Supplement proof: documented testing or measured study evidence becomes a visible inspection, count, or before/after proof reveal without inventing a biological mechanism.
 - Commodity gift proof: the sender cannot see the recipient reaction, then shipping/review evidence closes that proof gap without inventing package physics.
 - Physical gadget: ordinary use fails, one visible component catches or moves, and the mechanism resolves the exact friction.
 Each card still needs its own concrete hook, selected evidence, physical visual engine, product reframe, and payoff.

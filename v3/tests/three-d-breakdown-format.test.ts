@@ -607,6 +607,9 @@ assert.ok(storyDirectionsPrompt.includes("visualEngine must describe the physica
 assert.ok(storyDirectionsPrompt.includes("never fake bodily harm or fear"));
 assert.ok(storyDirectionsPrompt.includes("must dramatize its selected evidence"));
 assert.ok(storyDirectionsPrompt.includes("Do not invent a failing body or failing competitor"));
+assert.ok(storyDirectionsPrompt.includes("Supplement compression"));
+assert.ok(storyDirectionsPrompt.includes("Supplement proof"));
+assert.ok(!storyDirectionsPrompt.includes("a swallowed capsule meets a hidden digestive obstacle"));
 assert.ok(seedPrompt.includes("DS-01 Daily Synbiotic"));
 assert.ok(seedPrompt.includes("ViaCap"));
 assert.ok(seedPrompt.includes("capsule-in-capsule"));
