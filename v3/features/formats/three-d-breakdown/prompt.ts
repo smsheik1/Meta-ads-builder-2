@@ -97,7 +97,7 @@ export const THREE_D_STYLE_B_REFERENCE_FORMULA = [
   "hidden body/path obstacle",
   "mechanism demo",
   "proof/payoff",
-  "audience/use expansion",
+  "ordinary use payoff",
   "product close",
 ].join(" -> ");
 
@@ -261,13 +261,13 @@ Style B narration spine:
 - Most referenceScript sentences should be 6-12 words. Avoid tiny standalone fragments.
 - Narrator teaches; visuals demonstrate.
 - Reference formula: ${THREE_D_STYLE_B_REFERENCE_FORMULA}.
-- Causal shape: use -> false classification -> hidden obstacle -> mechanism demo -> proof -> use test -> audience expansion -> product close.
+- Causal shape: use -> false classification -> hidden obstacle -> mechanism demo -> proof -> use test -> ordinary use payoff -> product close.
 - The first 3 sentences must be product-specific, not generic buyer/product/problem nouns.
 - Use short documentary sentences; count before returning JSON.
 - Include "thought", "pictured", "decided", or "assumed" where the demo subject misclassifies the product.
 - Include a literal transformation verb like cracks, peels, falls away, reveals, rebuilds, snaps, turns, stacks, or locks.
 - Include a use test where the product is worn/opened/tasted/applied/carried/used/moved/shared/trained/handled.
-- Include audience expansion: show the product is not only for the assumed user or moment.
+- Audience expansion is optional. Use it only when it sharpens the selected premise without inventing a new customer or use case.
 - If a story direction was selected, stay on that premise even when another evidence item scores higher.
 - Open with curiosity before selling. Prefer "You think..." / "A person assumes..." / "Every time..." when it fits.
 - For review/proof/shipping, write proof-chain VSL: tokens, reactions, calendars, maps, unboxing, distance, occasion pressure, or proof gap.
@@ -456,7 +456,7 @@ If any error mentions script length, beat sentence count, opening, forbidden nar
 The full script across 5 beats must be ${THREE_D_MIN_SCRIPT_WORDS}-${THREE_D_MAX_SCRIPT_WORDS} words. Count before returning.
 Never use these exact ad phrases in rewritten scriptBeats: ${THREE_D_FORBIDDEN_NARRATION_TERMS.join(", ")}.
 
-If any error mentions referenceScript, rewrite the Style B referenceScript as ${THREE_D_REFERENCE_SCRIPT_MIN_WORDS}-${THREE_D_REFERENCE_SCRIPT_MAX_WORDS} words, 10-24 short documentary sentences, unseen narrator only, with arrival/use -> false classification -> wrong mental model -> reveal/rebuild -> use test -> audience expansion -> clean product close.`;
+If any error mentions referenceScript, rewrite the Style B referenceScript as ${THREE_D_REFERENCE_SCRIPT_MIN_WORDS}-${THREE_D_REFERENCE_SCRIPT_MAX_WORDS} words, 10-24 short documentary sentences, unseen narrator only, with arrival/use -> false classification -> wrong mental model -> reveal/rebuild -> use test -> ordinary use payoff -> clean product close.`;
 }
 
 export function buildThreeDBreakdownStyleBScriptPrompt({
@@ -526,7 +526,7 @@ Rules:
 - Most sentences should be 6-12 words. No tiny list fragments.
 - Start with human curiosity before selling: a concrete product action plus a false assumption, never a brand intro.
 - Build one causal chain: hidden obstacle -> evidence-backed mechanism -> visible reveal/rebuild -> proof/payoff.
-- Opening carries the false assumption. Include a transformation verb, ordinary intended use, and evidence-backed audience expansion; no invented experiment.
+- Opening carries the false assumption. Include a transformation verb and ordinary intended use; add audience expansion only when the selected premise supports it; no invented experiment.
 - Every line describes a customer action or object state change the visual planner can depict.
 - Unseen narrator only; never refer to demonstrator or staging in spoken copy.
 - Spoken copy never mentions production: demonstrator, camera, frame, scene, animation, x-ray, cutaway, map, token, caption, or storyboard.

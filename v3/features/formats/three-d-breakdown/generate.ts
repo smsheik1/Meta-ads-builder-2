@@ -224,7 +224,6 @@ const templateLeakPattern = /\bwhen a buyer receives it\b|\bthe product reveals 
 const falseClassificationPattern = /\b(assum(?:e|es|ed|ing)|thought|pictured|decided|not for|only for|just for|wrong(?:ly)?|looked like|felt like)\b/i;
 const revealRebuildPattern = /\b(cracks?|cracked|peels?|peeled|falls? away|fell away|reveals?|revealed|rebuild(?:s|t|ing)|snaps?|snapped|turns?|turned|stacks?|stacked|locks?|locked|opens?|opened)\b/i;
 const useTestPattern = /\b(wears?|wore|pull(?:s|ed)?|opens?|opened|tastes?|tasted|bites?|bit|appl(?:y|ies|ied)|carr(?:y|ies|ied)|uses?|used|moves?|moved|shares?|shared|trains?|trained|handles?|handled|stays? up|comfortable|arriv(?:e|es|ed))\b/i;
-const audienceExpansionPattern = /\b(not just|not only|not for one|first to notice|athlete|pilot|golfer|surgeon|birthday|thank-you|office|client|everyday|parents?|teams?|customers?|operators?|owners?|managers?|patients?|guests?|friends?|families)\b/i;
 const finalReframePattern = /\b(reimagined|the difference|so compare|compare them|the other|not just|not only|first to notice|was the proof|was the product|actually enjoy|handled|remembered)\b/i;
 const REFERENCE_SCRIPT_ACCEPT_MIN_WORDS = 100;
 const REFERENCE_SCRIPT_ACCEPT_MAX_WORDS = 180;
@@ -350,9 +349,6 @@ const parseReferenceScript = (
   }
   if (!useTestPattern.test(script)) {
     throw new Error("3D Breakdown Style B referenceScript must include a product use test.");
-  }
-  if (!audienceExpansionPattern.test(script)) {
-    throw new Error("3D Breakdown Style B referenceScript must include audience expansion.");
   }
   if (!finalReframePattern.test(script)) {
     throw new Error("3D Breakdown Style B referenceScript must end with a product reframe.");
