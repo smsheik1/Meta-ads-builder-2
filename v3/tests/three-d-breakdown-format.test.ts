@@ -868,24 +868,48 @@ assert.ok(selectedStyleBScriptPrompt.includes("Selected story direction:"));
 assert.ok(selectedStyleBScriptPrompt.includes(selectedStoryDirection.adAngle));
 
 let selectedDirectionCalls = 0;
+const selectedStoryLock = {
+  variantAngle: selectedStoryDirection.adAngle,
+  customerProblem: selectedStoryDirection.hookLine,
+  mechanismSummary: selectedStoryDirection.visualEngine,
+  visualMetaphor: selectedStoryDirection.visualEngine,
+  evidenceIndex: selectedStoryDirection.evidenceIndex,
+  evidenceUseType: selectedStoryDirection.evidenceUseType,
+  wowMomentType: selectedStoryDirection.possibleRevealPatterns[0],
+  wowMoment: selectedStoryDirection.visualEngine,
+  viewerLearns: selectedStoryDirection.whyCompelling,
+  ctaLine: "Shop memorable cookie gifts from David's Cookies.",
+};
+const selectedScriptPlan = styleBScriptPlanPayload(selectedStoryLock);
+const selectedVisualPayload = payloadWithVariants([makeVariant({
+  ...selectedStoryLock,
+  visualStyle: "presenter-teardown-vsl",
+  punchline: "Shop David's Cookies gifts.",
+})]);
 const selectedDirectionGeneration = await generateThreeDBreakdownVariantsFromResearch(research, {
   count: 1,
   nvidiaNimApiKey: "test-key",
-  nvidiaNimChatCompletion: async () => {
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
     selectedDirectionCalls += 1;
-    throw new Error("Selected story directions should not require another NIM director call.");
+    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+      assert.ok(directorPrompt.includes(selectedStoryDirection.directionId));
+      assert.ok(directorPrompt.includes(`evidenceIndex ${selectedStoryDirection.evidenceIndex}`));
+      return JSON.stringify(selectedScriptPlan);
+    }
+    assert.ok(directorPrompt.includes("Locked Style B script plan:"));
+    assert.ok(directorPrompt.includes(selectedStoryDirection.hookLine));
+    return JSON.stringify(selectedVisualPayload);
   },
   selectedStoryDirection,
 });
-assert.equal(selectedDirectionCalls, 0);
+assert.equal(selectedDirectionCalls, 2);
 assert.equal(selectedDirectionGeneration.variants.length, 1);
-assert.ok(selectedDirectionGeneration.variants[0]?.variantAngle.startsWith("A gift has to feel remembered"));
+assert.equal(selectedDirectionGeneration.variants[0]?.variantAngle, selectedStoryDirection.adAngle);
 assert.equal(selectedDirectionGeneration.variants[0]?.visualStyle, "presenter-teardown-vsl");
-assert.equal(
-  selectedDirectionGeneration.variants[0]?.scriptBeats[4]?.narration,
-  selectedDirectionGeneration.variants[0]?.ctaLine,
-  "The compressed Style B script must end on the buyer action, not an abstract mechanism slogan.",
-);
+assert.equal(selectedDirectionGeneration.variants[0]?.evidenceIndex, selectedStoryDirection.evidenceIndex);
+assert.equal(selectedDirectionGeneration.variants[0]?.evidenceUseType, selectedStoryDirection.evidenceUseType);
+assert.equal(selectedDirectionGeneration.variants[0]?.referenceScript, selectedScriptPlan.referenceScript);
+assert.equal(selectedDirectionGeneration.variants[0]?.ctaLine, selectedScriptPlan.ctaLine);
 
 let observedMaxTokens: number | undefined;
 let observedDirectorCalls = 0;
