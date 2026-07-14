@@ -604,6 +604,7 @@ assert.ok(storyDirectionsPrompt.includes("shortSummary should explain start, esc
 assert.ok(storyDirectionsPrompt.includes("Commodity gift proof"));
 assert.ok(storyDirectionsPrompt.includes("Physical gadget"));
 assert.ok(storyDirectionsPrompt.includes("visualEngine must describe the physical 3D reveal"));
+assert.ok(storyDirectionsPrompt.includes("never fake bodily harm or fear"));
 assert.ok(seedPrompt.includes("DS-01 Daily Synbiotic"));
 assert.ok(seedPrompt.includes("ViaCap"));
 assert.ok(seedPrompt.includes("capsule-in-capsule"));
@@ -865,6 +866,26 @@ assert.equal(storySlate.directions.length, 5);
 assert.equal(storySlate.recommendedDirectionId, "idea-1");
 assert.equal(storySlate.directions[0]?.evidenceUseType, reviewEvidence.evidenceUseType);
 assert.ok(storySlate.directions[0]?.visualEngine.includes("Proof blocks"));
+
+let unsafeStorySlateCalls = 0;
+await assert.rejects(
+  () => generateThreeDBreakdownStoryDirectionsFromResearch(research, {
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => {
+      unsafeStorySlateCalls += 1;
+      return JSON.stringify({
+        ...storyDirectionPayload,
+        directions: storyDirectionPayload.directions.map((direction, index) => (
+          index === 0
+            ? { ...direction, hookLine: "Your body is starving while this daily product destroys your health." }
+            : direction
+        )),
+      });
+    },
+  }),
+  /unsupported harm or fear framing/,
+);
+assert.equal(unsafeStorySlateCalls, 2, "Unsafe story slates should receive only the existing single validation retry.");
 
 const selectedStoryDirection = storySlate.directions[0]!;
 const selectedDirectionPrompt = buildThreeDBreakdownPrompt({

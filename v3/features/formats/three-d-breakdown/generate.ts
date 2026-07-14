@@ -100,6 +100,7 @@ const ctaActionPattern = /\b(shop|start|try|visit|order|get|book|support|join|su
 const fakeCtaPattern = /\b(the\s+)?(?:journey|trip|route|path|difference|proof|evidence|moment|mechanism)\s+(?:is|was|became)\s+the\s+(?:product|proof|point|difference|mechanism)\b/i;
 const abstractCtaPattern = /\b(?:see|watch|view|learn)\s+(?:the\s+)?(?:journey|trip|route|path|proof|evidence|mechanism|difference)\b|\b(?:visible|hidden)\s+mechanism\b/i;
 const regulatedUnsafePattern = /\b(cures?|diagnos(?:e|is)|treats?|clinically proven|doctor[- ]recommended|risk[- ]free|legal outcome|guaranteed result|guaranteed to)\b|\b(?:prevents?|eliminates?)\s+(?:disease|pain|cavities|infection|injury|illness|complications|lawsuits?|legal risk|financial loss)\b|\b(?:doubles?|triples?|guarantees?|increases?)\s+(?:revenue|profit|sales|return|roi)\b/i;
+const storySlateFearPattern = /\b(?:toxic|toxins?|poison(?:s|ed|ing)?|starv(?:e|es|ed|ing|ation)|destroy(?:s|ed|ing)?|deadly|dangerous|killing|ruining|stripped\s+of\s+(?:its|their|the)\s+(?:health|nutrition|nutrients?))\b/i;
 const primarySiteTypes: ThreeDBreakdownPrimarySiteType[] = ["ecommerce", "saas", "local-service", "restaurant-food", "nonprofit", "portfolio", "unclear"];
 const riskFlags: ThreeDBreakdownRiskFlag[] = ["health", "medical", "legal", "financial", "beauty", "regulated"];
 const claimRisks: ThreeDBreakdownClaimRisk[] = ["low", "medium", "high"];
@@ -419,6 +420,14 @@ const parseStoryDirectionSlateOutput = (
         throw new Error(`3D Breakdown story direction ${index + 1} ${key} is missing.`);
       }
       if (typeof value === "string") assertNoBannedText(value);
+    }
+    if (storySlateFearPattern.test([
+      parsedDirection.hookLine,
+      parsedDirection.subheadline,
+      parsedDirection.shortSummary,
+      parsedDirection.adAngle,
+    ].join(" "))) {
+      throw new Error(`3D Breakdown story direction ${index + 1} uses unsupported harm or fear framing.`);
     }
     return parsedDirection;
   });
