@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { Lock, Unlock } from "lucide-react";
+import { LoaderCircle, Lock, Search, Unlock, Upload } from "lucide-react";
+import { useEffect, useState } from "react";
 import type { StaticAdLayer, StaticLayerBinding } from "../scene/types";
 import { findStaticLayer, flattenStaticLayers, replaceStaticLayer, updateFormatDraft, validateFormatDraftReady, type FormatDraft, type MakerAssetRole } from "./model";
 import { scaleTextLayerToValue } from "./textResize";
@@ -27,6 +28,18 @@ export function BuilderInspector({
   selectedLayerId: string | null;
 }) {
   const selectedLayer = selectedLayerId ? findStaticLayer(draft.scene.layout.layers, selectedLayerId) : null;
+  const [imageQuery, setImageQuery] = useState("");
+  const [imageResults, setImageResults] = useState<string[]>([]);
+  const [imageSearching, setImageSearching] = useState(false);
+  const [imageSearchMessage, setImageSearchMessage] = useState("");
+
+  useEffect(() => {
+    setImageQuery(selectedLayer?.type === "image" ? selectedLayer.name : "");
+    setImageResults([]);
+    setImageSearching(false);
+    setImageSearchMessage("");
+  }, [selectedLayer?.id]);
+
   const layerControlsDisabled = readOnly || Boolean(selectedLayer?.locked);
   const validation = validateFormatDraftReady(draft);
   const updateLayer = (patch: Partial<StaticAdLayer>) => {
@@ -77,11 +90,36 @@ export function BuilderInspector({
     change(analysis);
     draftChanged(updateFormatDraft(draft, { analysis }));
   };
+  const searchImages = async () => {
+    if (imageQuery.trim().length < 3) return;
+    setImageSearching(true);
+    setImageSearchMessage("");
+    try {
+      const response = await fetch("/api/maker/search-images", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ query: imageQuery.trim() }),
+      });
+      const payload = await response.json() as { images?: string[]; error?: string };
+      if (!response.ok || !payload.images?.length) throw new Error(payload.error || "No usable images found.");
+      setImageResults(payload.images);
+    } catch (error) {
+      setImageSearchMessage(error instanceof Error ? error.message : "Image search stopped.");
+    } finally {
+      setImageSearching(false);
+    }
+  };
 
   return (
     <aside className="min-h-0 border-l border-black/10 bg-white" data-builder-inspector="true">
       <ScrollArea className="h-full">
         <div className="space-y-7 p-5">
+          <section className="rounded-2xl bg-violet-50 p-4">
+            <h2 className="text-sm font-black text-violet-950">Why this Format works</h2>
+            <p className="mt-2 text-sm font-semibold leading-5 text-violet-900">{draft.analysis.formula.premise}</p>
+            <p className="mt-2 text-xs leading-5 text-violet-700"><strong>What changes:</strong> {draft.analysis.formula.adaptation_rule}</p>
+          </section>
+
           <section className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-sm font-black tracking-tight text-slate-950">Selected layer</h2>
@@ -104,7 +142,20 @@ export function BuilderInspector({
                     <div className="grid grid-cols-[1fr_84px] gap-3">
                       <div className="space-y-1.5">
                         <Label htmlFor="font-size">Size</Label>
-                        <Input id="font-size" type="number" min={8} disabled={layerControlsDisabled} value={selectedLayer.fontSize} onChange={(event) => updateLayer(scaleTextLayerToValue(selectedLayer, "fontSize", Number(event.target.value)))} />
+                        <Input
+                          key={`${selectedLayer.id}-font-size-${selectedLayer.fontSize}`}
+                          id="font-size"
+                          type="number"
+                          min={8}
+                          disabled={layerControlsDisabled}
+                          defaultValue={selectedLayer.fontSize}
+                          onBlur={(event) => {
+                            const value = Number(event.currentTarget.value);
+                            if (event.currentTarget.value.trim() && Number.isFinite(value)) updateLayer(scaleTextLayerToValue(selectedLayer, "fontSize", value));
+                            else event.currentTarget.value = String(selectedLayer.fontSize);
+                          }}
+                          onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }}
+                        />
                       </div>
                       <div className="space-y-1.5">
                         <Label htmlFor="text-color">Color</Label>
@@ -120,9 +171,49 @@ export function BuilderInspector({
                   </div>
                 ) : null}
                 {selectedLayer.type === "image" ? (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="image-source">Image URL</Label>
-                    <Input id="image-source" disabled={layerControlsDisabled} value={selectedLayer.src} onChange={(event) => updateLayer({ src: event.target.value })} />
+                  <div className="space-y-3">
+                    <img alt={selectedLayer.alt} className="h-32 w-full rounded-xl border border-slate-200 bg-slate-50 object-contain" src={selectedLayer.src} />
+                    <div className="space-y-1.5">
+                      <Label htmlFor="image-source">Paste image URL</Label>
+                      <Input id="image-source" disabled={layerControlsDisabled} value={selectedLayer.src} onChange={(event) => updateLayer({ src: event.target.value })} />
+                    </div>
+                    <Input
+                      id={`replace-image-upload-${selectedLayer.id}`}
+                      className="sr-only"
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      disabled={layerControlsDisabled}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = () => updateLayer({ src: String(reader.result || ""), alt: file.name });
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                    <Label
+                      htmlFor={`replace-image-upload-${selectedLayer.id}`}
+                      className="inline-flex h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-sm font-bold shadow-sm hover:bg-slate-50"
+                      aria-disabled={layerControlsDisabled}
+                    >
+                      <Upload className="size-4" /> Upload image
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input aria-label="Image search" disabled={layerControlsDisabled || imageSearching} value={imageQuery} onChange={(event) => setImageQuery(event.target.value)} />
+                      <Button type="button" size="icon" variant="outline" disabled={layerControlsDisabled || imageQuery.trim().length < 3 || imageSearching} onClick={() => void searchImages()} aria-label="Search images">
+                        {imageSearching ? <LoaderCircle className="animate-spin" /> : <Search />}
+                      </Button>
+                    </div>
+                    {imageSearchMessage ? <p className="text-xs font-semibold text-red-600" role="alert">{imageSearchMessage}</p> : null}
+                    {imageResults.length ? (
+                      <div className="grid grid-cols-3 gap-2" aria-label="Image search results">
+                        {imageResults.map((imageUrl, index) => (
+                          <button className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 hover:border-violet-500" key={imageUrl} type="button" onClick={() => updateLayer({ src: imageUrl })} aria-label={`Use image result ${index + 1}`}>
+                            <img alt="" className="aspect-square w-full object-cover" src={imageUrl} />
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 ) : null}
                 <div className="grid grid-cols-2 gap-3">
@@ -130,11 +221,17 @@ export function BuilderInspector({
                     <div className="space-y-1.5" key={property}>
                       <Label htmlFor={`layer-${property}`}>{property === "x" || property === "y" ? property.toUpperCase() : property}</Label>
                       <Input
+                        key={`${selectedLayer.id}-${property}-${selectedLayer[property]}`}
                         id={`layer-${property}`}
                         type="number"
                         disabled={layerControlsDisabled}
-                        value={selectedLayer[property]}
-                        onChange={(event) => updateGeometry(property, Number(event.target.value))}
+                        defaultValue={selectedLayer[property]}
+                        onBlur={(event) => {
+                          const value = Number(event.currentTarget.value);
+                          if (event.currentTarget.value.trim() && Number.isFinite(value)) updateGeometry(property, value);
+                          else event.currentTarget.value = String(selectedLayer[property]);
+                        }}
+                        onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }}
                       />
                     </div>
                   ))}

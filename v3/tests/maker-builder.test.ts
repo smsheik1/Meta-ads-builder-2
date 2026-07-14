@@ -72,6 +72,7 @@ const clientSource = readFileSync("features/builder/MakerBuilderClient.tsx", "ut
 const analysisServerSource = readFileSync("features/builder/referenceAnalysis.server.ts", "utf8");
 const analysisRouteSource = readFileSync("app/api/builder/analyze/route.ts", "utf8");
 const inspectorSource = readFileSync("features/builder/BuilderInspector.tsx", "utf8");
+const imageSearchRouteSource = readFileSync("app/api/maker/search-images/route.ts", "utf8");
 for (const createFile of ["app/create/CreateResearchClient.tsx", "app/create/CreateControlPanel.tsx"]) {
   assert.doesNotMatch(readFileSync(createFile, "utf8"), /features\/builder|static-package/);
 }
@@ -90,6 +91,7 @@ assert.match(clientSource, /fetch\("\/api\/builder\/analyze"/);
 assert.match(clientSource, /role="log"/);
 assert.match(clientSource, /Live milestones from the actual analysis pipeline/);
 assert.match(clientSource, /The analysis response failed the Maker schema/);
+assert.match(clientSource, /hybrid-news[\s\S]*\/maker-fixtures\/hybrid-news\/reference\.png/, "Saved QA must not store the raw multi-megabyte upload in localStorage.");
 assert.doesNotMatch(clientSource, /NVIDIA_NIM_API_KEY|REPLICATE_API_TOKEN|integrate\.api\.nvidia\.com|api\.replicate\.com/);
 assert.match(analysisServerSource, /vision\.jpg[\s\S]*callGemmaReferenceAnalysis/);
 assert.doesNotMatch(analysisServerSource, /callGemmaReferenceAnalysis\([^)]*referenceImageUrl/);
@@ -100,5 +102,12 @@ assert.match(analysisRouteSource, /application\/x-ndjson/);
 assert.doesNotMatch(analysisServerSource, /NVIDIA_NIM_API_KEY|NVIDIA_NIM_MAKER_MODEL|integrate\.api\.nvidia\.com/);
 assert.match(inspectorSource, /list:\$\{list\.id\}:\$\{item\.id\}:\$\{itemValue\.key\}/, "Live List edits must update their reconstructed scene layer.");
 assert.match(inspectorSource, /layerControlsDisabled = readOnly \|\| Boolean\(selectedLayer\?\.locked\)/, "Locked layers must stay unchanged until the Maker explicitly unlocks them.");
+assert.match(inspectorSource, /Why this Format works/);
+assert.match(inspectorSource, /Upload image/);
+assert.match(inspectorSource, /\/api\/maker\/search-images/);
+assert.match(inspectorSource, /defaultValue=\{selectedLayer\[property\]\}/, "Typing a multi-digit geometry value must commit once instead of resizing after every digit.");
+assert.match(inspectorSource, /onKeyDown=.*event\.key === "Enter"/, "Number edits must have an obvious keyboard commit path.");
+assert.match(imageSearchRouteSource, /searchSerperImages/);
+assert.doesNotMatch(imageSearchRouteSource, /fallback|retry|Replicate|image generation/i);
 
 console.log("maker builder tests passed");

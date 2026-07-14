@@ -167,7 +167,7 @@ export function MakerBuilderClient() {
         nextDraft = fixture === "maker-test"
           ? createMakerFormatTestDraftFixture(crypto.randomUUID())
           : fixture === "hybrid-news"
-            ? createHybridNewsDraftFixture({ id: crypto.randomUUID(), fileName: reference.fileName, imageUrl: reference.imageUrl })
+            ? createHybridNewsDraftFixture({ id: crypto.randomUUID(), fileName: reference.fileName, imageUrl: "/maker-fixtures/hybrid-news/reference.png" })
             : createSavedReferenceDraftFixture({ id: crypto.randomUUID(), fileName: reference.fileName, imageUrl: reference.imageUrl });
         readyMessage = "Editable draft built from the saved live-analysis fixture. No API call was made.";
       } else {

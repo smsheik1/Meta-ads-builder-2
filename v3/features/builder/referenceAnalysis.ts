@@ -107,7 +107,7 @@ ${JSON.stringify(evidence)}
 Return the communication formula, singleton editable Fields, repeated Lists, visual assets, coherent Reroll Groups, and at most three blocking Maker questions.
 
 Return exactly one valid JSON object with these keys and shapes:
-- formula: { premise: string, visual_mechanic: string, adaptation_rule: string }
+- formula: { name: string, premise: string, visual_mechanic: string, adaptation_rule: string }
 - fields: [{ id, value, evidence_ids: string[], binding }]
 - lists: [{ id, binding, items: [{ id, values: [{ key, value, evidence_ids: string[] }], asset_ids: string[] }], active_item_id: string | null }]
 - assets: [{ id, label, role, evidence_ids: string[], binding, sam_prompt }]
@@ -116,6 +116,8 @@ Return exactly one valid JSON object with these keys and shapes:
 
 Rules:
 - use each creative OCR evidence ID at most once; never invent an ID
+- name the reusable Format in 2 to 5 plain words; describe the layout idea, not the source brand
+- write the formula in plain language a non-designer can understand
 - native status bars, progress bars, menus, close buttons, reactions, and fixed platform controls stay unassigned
 - advertiser identity inside platform chrome is reusable content, never fixed chrome: account/avatar logos are brand-bound assets with role brand_identity, and account names or handles are brand-bound Fields (prefer id publisher_handle)
 - logos and wordmarks are brand-bound assets with role brand_identity, not Fields
@@ -237,6 +239,9 @@ const titleFromPremise = (premise: string) => {
   return title.length <= 64 ? title : `${title.slice(0, 61).trimEnd()}…`;
 };
 
+const titleFromAnalysis = (analysis: MakerAnalysis) =>
+  analysis.formula.name?.trim() || titleFromPremise(analysis.formula.premise);
+
 export function createMakerDraftFromAnalysis({
   analysis: rawAnalysis,
   artifacts,
@@ -338,7 +343,7 @@ export function createMakerDraftFromAnalysis({
       name: "Reference brand",
       url: "https://wiggly.app/builder",
       host: "wiggly.app",
-      title: titleFromPremise(analysis.formula.premise),
+      title: titleFromAnalysis(analysis),
       description: analysis.formula.adaptation_rule,
       faviconUrl: null,
       logoUrl: null,
@@ -371,14 +376,14 @@ export function createMakerDraftFromAnalysis({
       researchRunId: id,
       brandSnapshotId: id,
       model: "google/gemma-4-31b-it",
-      provider: "nvidia-nim",
+      provider: "openrouter",
       generatedAt: now,
     },
   };
 
   return {
     id,
-    title: titleFromPremise(analysis.formula.premise),
+    title: titleFromAnalysis(analysis),
     status: "draft",
     reference: { fileName, imageUrl: artifacts.referenceImageUrl },
     scene,

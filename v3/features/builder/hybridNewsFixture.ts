@@ -32,6 +32,7 @@ const ocr: PaddleOcrResult = {
 
 const analysis: MakerAnalysis = {
   formula: {
+    name: "Breaking News",
     premise: "Make a brand update feel like urgent, credible breaking news.",
     visual_mechanic: "A story setting and circular subject inset sit above a breaking-news label, large headline, proof line, and CTA inside locked social chrome.",
     adaptation_rule: "Replace the publisher, story setting, subject, headline, proof line, and CTA together while keeping the news hierarchy intact.",
@@ -135,7 +136,7 @@ export function createHybridNewsDraftFixture({
     return layer;
   });
 
-  draft.title = "Breaking news story";
+  draft.title = "Breaking News";
   draft.scene.layout.layers = [
     ...tunedLayers,
     plate("publisher-plate", "Publisher plate", 8, 58, 292, 49, "#59639e", 10),

@@ -49,6 +49,7 @@ const assetSchema = z.object({
 
 export const makerAnalysisSchema = z.object({
   formula: z.object({
+    name: z.string().min(2).max(48).optional(),
     premise: z.string(),
     visual_mechanic: z.string(),
     adaptation_rule: z.string(),

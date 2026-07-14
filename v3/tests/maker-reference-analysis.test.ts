@@ -30,6 +30,7 @@ assert.equal(validateMakerAnalysisEvidence(makerAnalysisFixture, ocr).lists[0]?.
 assert.match(buildMakerAnalysisPrompt(ocr), /never invent an ID/);
 assert.match(buildMakerAnalysisPrompt(ocr), /advertiser identity inside platform chrome is reusable content/);
 assert.match(buildMakerAnalysisPrompt(ocr), /story_setting, news_subject, supporting_visual/);
+assert.match(buildMakerAnalysisPrompt(ocr), /name: string/);
 assert.equal((makerAnalysisJsonSchema() as { additionalProperties?: boolean }).additionalProperties, false);
 assert.deepEqual(makerAnalysisJsonSchema(), JSON.parse(readFileSync("../docs/research-intake/schemas/maker-analysis-mvp.schema.json", "utf8")));
 assert.deepEqual(assetsNeedingRefinement(makerAnalysisFixture).map((asset) => asset.id), ["brand_mark"]);
@@ -73,6 +74,8 @@ const draft = createMakerDraftFromAnalysis({
   now: 123,
 });
 assert.equal(draft.scene.layout.canvas.width, 1080);
+assert.equal(draft.title, "Active relationship");
+assert.equal(createHybridNewsDraftFixture({ id: "hybrid-news", fileName: "reference.png", imageUrl: "/reference.png" }).title, "Breaking News");
 assert.equal(draft.scene.layout.layers[0]?.semanticRole, "reference:background");
 assert.equal(draft.scene.layout.layers.find((layer) => layer.semanticRole === "field:brand_name")?.type, "text");
 assert.equal(draft.scene.layout.layers.find((layer) => layer.semanticRole === "asset:brand_mark")?.type, "image");
@@ -120,6 +123,7 @@ const savedAnalysis = validateMakerAnalysisEvidence(savedCodexReferenceAnalysis,
 assert.equal(savedAnalysis.fields.length, 2);
 assert.equal(savedAnalysis.lists[0]?.items.find((item) => item.id === savedAnalysis.lists[0]?.active_item_id)?.values[0]?.value, "Slack");
 assert.equal(saved.scene.metadata.model, "google/gemma-4-31b-it");
+assert.equal(saved.scene.metadata.provider, "openrouter");
 assert.equal(saved.scene.layout.layers.filter((layer) => layer.type === "text").length, 9);
 assert.ok(Math.abs(saved.scene.layout.layers.find((layer) => layer.semanticRole === "list:list_integrations:item_2:app_name")?.rotation || 0) > 5, "Rotated OCR evidence must preserve its angle without inflating the layer box.");
 

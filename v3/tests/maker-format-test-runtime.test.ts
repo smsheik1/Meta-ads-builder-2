@@ -16,7 +16,7 @@ import {
 } from "../features/formats/static-package/testRuntime";
 import { flattenStaticLayers } from "../features/builder/model";
 import { generateMakerFormatTestVariations } from "../features/formats/static-package/testGeneration.server";
-import { resolveMakerFormatTestImages } from "../features/formats/static-package/imageSearch.server";
+import { resolveMakerFormatTestImages, searchSerperImages } from "../features/formats/static-package/imageSearch.server";
 
 const draft = createMakerFormatTestDraftFixture();
 const contract = createMakerFormatTestContract(draft);
@@ -116,6 +116,22 @@ const storyScenes = createMakerFormatTestScenes({
 const storySubjectLayer = flattenStaticLayers(storyScenes[0]!.layout.layers).find((layer) => layer.semanticRole === "asset:news_subject");
 assert.equal(storySubjectLayer?.type === "image" ? storySubjectLayer.src : "", "https://images.example.test/result-1.jpg");
 assert.equal(storySubjectLayer?.type === "image" ? storySubjectLayer.objectFit : "", "cover");
+
+const searchResults = await searchSerperImages({
+  apiKey: "test-key",
+  preferredHost: "davids-cookies.test",
+  query: "David's Cookies storefront",
+  fetcher: async () => new Response(JSON.stringify({ images: [
+    { imageUrl: "https://example.test/tiny.jpg", imageWidth: 100, imageHeight: 100, link: "https://example.test" },
+    { imageUrl: "https://example.test/animation.gif", imageWidth: 800, imageHeight: 800, link: "https://example.test" },
+    { imageUrl: "https://cdn.test/general.jpg", imageWidth: 900, imageHeight: 700, link: "https://news.test/story" },
+    { imageUrl: "https://davids-cookies.test/store.jpg", imageWidth: 900, imageHeight: 700, link: "https://davids-cookies.test/about" },
+  ] }), { status: 200, headers: { "content-type": "application/json" } }),
+});
+assert.deepEqual(searchResults, [
+  "https://davids-cookies.test/store.jpg",
+  "https://cdn.test/general.jpg",
+]);
 
 const generation = createMakerFormatTestGenerationFixture(contract);
 const guidedJson = JSON.stringify(createMakerFormatTestGuidedJson(contract));

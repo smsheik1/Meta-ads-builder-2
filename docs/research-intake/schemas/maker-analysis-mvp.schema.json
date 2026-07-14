@@ -10,6 +10,7 @@
       "additionalProperties": false,
       "required": ["premise", "visual_mechanic", "adaptation_rule"],
       "properties": {
+        "name": {"type": "string", "minLength": 2, "maxLength": 48},
         "premise": {"type": "string"},
         "visual_mechanic": {"type": "string"},
         "adaptation_rule": {"type": "string"}

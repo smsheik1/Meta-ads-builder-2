@@ -3,6 +3,7 @@ import type { FormatDraft, MakerAnalysis } from "./model";
 
 export const makerAnalysisFixture: MakerAnalysis = {
   formula: {
+    name: "Active relationship",
     premise: "Show one active relationship inside a familiar collection.",
     visual_mechanic: "Gray supporting names surround two bold names joined by a symbol.",
     adaptation_rule: "Replace the brand, collection, active item, symbol, and CTA as one coherent idea.",

@@ -5,6 +5,7 @@ import type { MakerAnalysis } from "./model";
 // browser QA never spends another provider call.
 export const savedCodexReferenceAnalysis: MakerAnalysis = {
   formula: {
+    name: "Active relationship",
     premise: "Codex integrates with your favorite productivity tools.",
     visual_mechanic: "A central brand name connected via a handshake emoji to a vertical list of integrated software names.",
     adaptation_rule: "The list of tools can be swapped based on the target audience's tech stack.",
