@@ -29,7 +29,7 @@ import {
   buildThreeDStoryboardBoardPrompt,
   isThreeDSupplementStory,
 } from "../features/formats/three-d-breakdown/mediaPrompts";
-import { extractThreeDProductUseImageUrl } from "../features/formats/three-d-breakdown/productReference";
+import { extractThreeDProductPackshotImageUrl, extractThreeDProductUseImageUrl } from "../features/formats/three-d-breakdown/productReference";
 import { validateThreeDBreakdownScene } from "../features/formats/three-d-breakdown/validate";
 import { DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL } from "../features/llm/nvidiaNimModels";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
@@ -308,6 +308,11 @@ assert.equal(extractThreeDProductUseImageUrl(`
   <img src="/clinical-chart.webp" alt="Clinical study chart">
   <img src="/LifestyleImage-HandSatchet.webp" alt="Hand opening a single serving sachet">
 `, "https://gruns.co/products/gruns", "https://gruns.co/hero-pouch.webp"), "https://gruns.co/LifestyleImage-HandSatchet.webp");
+assert.equal(extractThreeDProductPackshotImageUrl(`
+  <img src="/hero-pouch.webp" alt="Grüns 28 daily packs" width="1200">
+  <img src="/LifestyleImage-HandSatchet.webp" alt="Hand opening a single serving sachet" width="800">
+  <img src="/Pouch_w_Gummies.webp" alt="" width="1200">
+`, "https://gruns.co/products/gruns", "https://gruns.co/hero-pouch.webp"), "https://gruns.co/Pouch_w_Gummies.webp");
 
 const seedOgProductResearch = makeResearch({
   websiteUrl: "https://seed.com/",
@@ -1818,8 +1823,12 @@ assert.ok(threeDImageActionSource.includes("Generate the 3D Breakdown storyboard
 assert.ok(threeDImageActionSource.includes("getThreeDAnchorImageInput"), "Production anchors must include the generated storyboard board as an image reference.");
 assert.ok(threeDImageActionSource.includes("storyboardBoard?.image?.status === \"ready\""), "Production anchors must only use a ready storyboard board reference.");
 assert.ok(threeDImageActionSource.includes("cropThreeDStoryboardPanel(new Uint8Array(await response.arrayBuffer()), frameIndex)"), "Production anchors must receive a local crop of their approved storyboard panel.");
-assert.ok(threeDImageActionSource.includes("getThreeDProductReferenceUrls(scene)"), "Production anchors must keep retail and in-use product references beside the storyboard.");
-assert.ok(threeDImageActionSource.includes("fetchThreeDProductUseImageUrl"), "Production anchors must recover a real in-use product reference when the product page exposes one.");
+assert.ok(threeDImageActionSource.includes("getThreeDProductReferences(scene)"), "Production anchors must keep retail and in-use product references beside the storyboard.");
+assert.ok(threeDImageActionSource.includes("fetchThreeDProductReferenceImageUrls"), "Production anchors must recover real packshot and in-use references when the product page exposes them.");
+assert.ok(
+  threeDImageActionSource.includes("if (clipIndex === 1)") && threeDImageActionSource.includes("withRefreshedThreeDProductPackshot"),
+  "The first paid clip action must refresh legacy scenes to the clean real packshot before final rendering.",
+);
 assert.ok(!threeDImageActionSource.includes("getThreeDAnchorImageInput(nextScene, imageInput)"), "Production anchors must not receive competing style and site references after storyboard approval.");
 assert.ok(threeDImageActionSource.includes('imageMode === "regenerate-anchors"'), "Ready anchors must support explicit visual-QA regeneration.");
 assert.ok(threeDImageActionSource.includes("usesStoryboardPanelCrop"), "Production-frame logs must expose whether the local storyboard panel crop was sent.");

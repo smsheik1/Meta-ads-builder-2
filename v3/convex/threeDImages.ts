@@ -8,7 +8,7 @@ import { generateReplicateNanoBanana2Image, generateReplicateSeedanceVideo } fro
 import { createThreeDClipPlans } from "../features/formats/three-d-breakdown/storyboardContracts";
 import { buildThreeDProductionFramePrompt, buildThreeDSeedancePrompt, buildThreeDStoryboardBoardPrompt } from "../features/formats/three-d-breakdown/mediaPrompts";
 import { cropThreeDStoryboardPanel } from "../features/formats/three-d-breakdown/storyboardImageCrop";
-import { fetchThreeDProductUseImageUrl } from "../features/formats/three-d-breakdown/productReference";
+import { fetchThreeDProductReferenceImageUrls } from "../features/formats/three-d-breakdown/productReference";
 import type {
   AdScene,
   ThreeDBreakdownAdScene,
@@ -55,33 +55,58 @@ const patchThreeDScene = async (
   scene: ThreeDBreakdownAdScene,
 ) => ctx.runMutation(internal.adSceneStorage.patchScene, { sceneId, scene });
 
-const getThreeDProductReferenceUrls = async (scene: ThreeDBreakdownAdScene) => {
+const getThreeDProductReferences = async (scene: ThreeDBreakdownAdScene) => {
   const product = scene.layout.productAnchor;
-  if (!product?.imageUrl) return [];
-  let useImageUrl: string | null = null;
+  if (!product?.imageUrl) return { imageUrls: [], packshotImageUrl: null };
+  let references: Awaited<ReturnType<typeof fetchThreeDProductReferenceImageUrls>> = null;
   if (product.url) {
     try {
-      useImageUrl = await fetchThreeDProductUseImageUrl(product.url, product.imageUrl);
+      references = await fetchThreeDProductReferenceImageUrls(product.url, product.imageUrl);
     } catch (error) {
       console.warn("[wiggly:3d-breakdown] product-use-reference:unavailable", {
         message: error instanceof Error ? error.message : String(error),
       });
     }
   }
-  return Array.from(new Set([product.imageUrl, useImageUrl].filter((url): url is string => Boolean(url))));
+  const packshotImageUrl = references?.packshotImageUrl || null;
+  return {
+    imageUrls: Array.from(new Set([packshotImageUrl || product.imageUrl, references?.useImageUrl].filter((url): url is string => Boolean(url)))),
+    packshotImageUrl,
+  };
+};
+
+const withThreeDProductPackshot = (scene: ThreeDBreakdownAdScene, imageUrl: string | null) => (
+  scene.layout.productAnchor && imageUrl
+    ? {
+      ...scene,
+      layout: {
+        ...scene.layout,
+        productAnchor: { ...scene.layout.productAnchor, imageUrl },
+      },
+    }
+    : scene
+);
+
+const withRefreshedThreeDProductPackshot = async (scene: ThreeDBreakdownAdScene) => {
+  const references = await getThreeDProductReferences(scene);
+  return withThreeDProductPackshot(scene, references.packshotImageUrl);
 };
 
 const getThreeDImageInput = async (scene: ThreeDBreakdownAdScene) => {
   const styleReferenceUrl = requireThreeDStyleReferenceUrl();
-  const productImageUrls = await getThreeDProductReferenceUrls(scene);
+  const references = await getThreeDProductReferences(scene);
+  const productImageUrls = references.imageUrls;
   const brandImageUrls = productImageUrls.length
     ? []
     : scene.layout.referenceImages?.brandImageUrls || [];
-  return Array.from(new Set([
-    styleReferenceUrl,
-    ...productImageUrls,
-    ...brandImageUrls,
-  ].filter(Boolean))).slice(0, 4);
+  return {
+    imageInput: Array.from(new Set([
+      styleReferenceUrl,
+      ...productImageUrls,
+      ...brandImageUrls,
+    ].filter(Boolean))).slice(0, 4),
+    packshotImageUrl: references.packshotImageUrl,
+  };
 };
 
 const getThreeDAnchorImageInput = async (
@@ -96,7 +121,7 @@ const getThreeDAnchorImageInput = async (
   if (!response.ok) throw new Error("3D Breakdown could not read the approved storyboard board for the production anchor.");
   const panelBytes = cropThreeDStoryboardPanel(new Uint8Array(await response.arrayBuffer()), frameIndex);
   const panelDataUrl = `data:image/jpeg;base64,${Buffer.from(panelBytes).toString("base64")}`;
-  const productImageUrls = await getThreeDProductReferenceUrls(scene);
+  const productImageUrls = (await getThreeDProductReferences(scene)).imageUrls;
   return Array.from(new Set([
     panelDataUrl,
     ...productImageUrls,
@@ -196,7 +221,7 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
     if (!replicateApiToken) throw new Error("Replicate image generation is not configured for 3D Breakdown.");
     let nextScene = assertThreeDBreakdownScene(scene as AdScene);
-    const imageInput = await getThreeDImageInput(nextScene);
+    const { imageInput, packshotImageUrl } = await getThreeDImageInput(nextScene);
 
     const storyboardBoard = nextScene.layout.storyboardBoard;
     if (!storyboardBoard?.imagePrompt) throw new Error("3D Breakdown storyboard board image prompt is missing.");
@@ -241,6 +266,7 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
         video: { status: "idle" as const },
       })) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
     }
+    nextScene = withThreeDProductPackshot(nextScene, packshotImageUrl);
     await patchThreeDScene(ctx, sceneId, nextScene);
     let activeFrameIndex: ThreeDBreakdownStoryboardFrameIndex | null = null;
     let storedBoardImage: NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["image"] | undefined;
@@ -387,6 +413,9 @@ export const generateThreeDClip: ReturnType<typeof action> = action({
     const typedClipIndex = clipIndex as ThreeDBreakdownClipIndex;
 
     let nextScene = assertThreeDBreakdownScene(scene as AdScene);
+    if (clipIndex === 1) {
+      nextScene = await withRefreshedThreeDProductPackshot(nextScene);
+    }
     const storyboardFrames = nextScene.layout.storyboardBoard?.frames || [];
     const existingClipPlans = nextScene.layout.clipPlans || [];
     const refreshedClipPlans = createThreeDClipPlans(nextScene.layout) || [];

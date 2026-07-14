@@ -31,26 +31,55 @@ const productUseScore = (identity: string) => (
   + (weakProductUseTerms.test(identity) ? 10 : 0)
 );
 
+const productPackshotScore = (identity: string, width: number) => (
+  (/(pouch[-_ ]?w[-_ ]?gumm|pouch[-_ ]?with[-_ ]?gumm)/i.test(identity) ? 500 : 0)
+  + (/(packshot|product[-_ ]?(shot|render)|render[-_ ]?front)/i.test(identity) ? 350 : 0)
+  + (/(transparent|no[-_ ]?bg)/i.test(identity) ? 300 : 0)
+  + (weakProductUseTerms.test(identity) ? 80 : 0)
+  + Math.min(120, Math.max(0, width / 10))
+  - (/(lifestyle|hand|holding|comparison|table|modal|gallery|offer)/i.test(identity) ? 240 : 0)
+);
+
+const imageCandidates = (html: string, pageUrl: string, heroImageUrl = "") => {
+  const hero = resolveImageUrl(heroImageUrl, pageUrl);
+  return (html.match(/<img\b[^>]*>/gi) || [])
+    .map((tag, index) => {
+      const url = resolveImageUrl(attribute(tag, "src"), pageUrl);
+      const identity = `${url} ${decodeHtml(attribute(tag, "alt"))}`;
+      const width = Number(attribute(tag, "width")) || 0;
+      if (!url || url === hero || unusableImageTerms.test(identity)) return null;
+      return { url, identity, width, index };
+    })
+    .filter((candidate): candidate is { url: string; identity: string; width: number; index: number } => Boolean(candidate));
+};
+
 export const extractThreeDProductUseImageUrl = (
   html: string,
   pageUrl: string,
   heroImageUrl = "",
 ) => {
-  const hero = resolveImageUrl(heroImageUrl, pageUrl);
-  const candidates = (html.match(/<img\b[^>]*>/gi) || [])
-    .map((tag, index) => {
-      const url = resolveImageUrl(attribute(tag, "src"), pageUrl);
-      const identity = `${url} ${decodeHtml(attribute(tag, "alt"))}`;
-      if (!url || url === hero || unusableImageTerms.test(identity)) return null;
-      return { url, score: productUseScore(identity), index };
-    })
+  const candidates = imageCandidates(html, pageUrl, heroImageUrl)
+    .map(({ url, identity, index }) => ({ url, score: productUseScore(identity), index }))
     .filter((candidate): candidate is { url: string; score: number; index: number } => Boolean(candidate?.score))
     .sort((a, b) => b.score - a.score || a.index - b.index);
 
   return candidates[0]?.url || null;
 };
 
-export const fetchThreeDProductUseImageUrl = async (
+export const extractThreeDProductPackshotImageUrl = (
+  html: string,
+  pageUrl: string,
+  heroImageUrl = "",
+) => {
+  const candidates = imageCandidates(html, pageUrl, heroImageUrl)
+    .map(({ url, identity, width, index }) => ({ url, score: productPackshotScore(identity, width), index }))
+    .filter((candidate) => candidate.score >= 300)
+    .sort((a, b) => b.score - a.score || a.index - b.index);
+
+  return candidates[0]?.url || null;
+};
+
+export const fetchThreeDProductReferenceImageUrls = async (
   productPageUrl: string,
   heroImageUrl: string,
   fetcher: typeof fetch = fetch,
@@ -69,7 +98,11 @@ export const fetchThreeDProductUseImageUrl = async (
     if (!response.ok) return null;
     const contentType = response.headers.get("content-type") || "";
     if (contentType && !contentType.includes("text/html")) return null;
-    return extractThreeDProductUseImageUrl(await response.text(), pageUrl.href, heroImageUrl);
+    const html = await response.text();
+    return {
+      packshotImageUrl: extractThreeDProductPackshotImageUrl(html, pageUrl.href, heroImageUrl),
+      useImageUrl: extractThreeDProductUseImageUrl(html, pageUrl.href, heroImageUrl),
+    };
   } finally {
     clearTimeout(timeout);
   }
