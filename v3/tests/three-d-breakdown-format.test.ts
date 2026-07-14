@@ -605,6 +605,8 @@ assert.ok(storyDirectionsPrompt.includes("Commodity gift proof"));
 assert.ok(storyDirectionsPrompt.includes("Physical gadget"));
 assert.ok(storyDirectionsPrompt.includes("visualEngine must describe the physical 3D reveal"));
 assert.ok(storyDirectionsPrompt.includes("never fake bodily harm or fear"));
+assert.ok(storyDirectionsPrompt.includes("must dramatize its selected evidence"));
+assert.ok(storyDirectionsPrompt.includes("Do not invent a failing body or failing competitor"));
 assert.ok(seedPrompt.includes("DS-01 Daily Synbiotic"));
 assert.ok(seedPrompt.includes("ViaCap"));
 assert.ok(seedPrompt.includes("capsule-in-capsule"));
@@ -886,6 +888,25 @@ await assert.rejects(
   /unsupported harm or fear framing/,
 );
 assert.equal(unsafeStorySlateCalls, 2, "Unsafe story slates should receive only the existing single validation retry.");
+
+await assert.rejects(
+  () => generateThreeDBreakdownStoryDirectionsFromResearch(research, {
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify({
+      ...storyDirectionPayload,
+      directions: storyDirectionPayload.directions.map((direction, index) => (
+        index === 0
+          ? {
+            ...direction,
+            hookLine: "Most pills dissolve before the gift ever works.",
+            shortSummary: "A pill dissolves early, then an invented delivery system survives digestion and releases its payload.",
+          }
+          : direction
+      )),
+    }),
+  }),
+  /invented a digestion mechanism|invented a dissolving mechanism|invented a survival mechanism/,
+);
 
 const selectedStoryDirection = storySlate.directions[0]!;
 const selectedDirectionPrompt = buildThreeDBreakdownPrompt({

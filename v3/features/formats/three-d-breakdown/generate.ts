@@ -100,7 +100,15 @@ const ctaActionPattern = /\b(shop|start|try|visit|order|get|book|support|join|su
 const fakeCtaPattern = /\b(the\s+)?(?:journey|trip|route|path|difference|proof|evidence|moment|mechanism)\s+(?:is|was|became)\s+the\s+(?:product|proof|point|difference|mechanism)\b/i;
 const abstractCtaPattern = /\b(?:see|watch|view|learn)\s+(?:the\s+)?(?:journey|trip|route|path|proof|evidence|mechanism|difference)\b|\b(?:visible|hidden)\s+mechanism\b/i;
 const regulatedUnsafePattern = /\b(cures?|diagnos(?:e|is)|treats?|clinically proven|doctor[- ]recommended|risk[- ]free|legal outcome|guaranteed result|guaranteed to)\b|\b(?:prevents?|eliminates?)\s+(?:disease|pain|cavities|infection|injury|illness|complications|lawsuits?|legal risk|financial loss)\b|\b(?:doubles?|triples?|guarantees?|increases?)\s+(?:revenue|profit|sales|return|roi)\b/i;
-const storySlateFearPattern = /\b(?:toxic|toxins?|poison(?:s|ed|ing)?|starv(?:e|es|ed|ing|ation)|destroy(?:s|ed|ing)?|deadly|dangerous|killing|ruining|stripped\s+of\s+(?:its|their|the)\s+(?:health|nutrition|nutrients?))\b/i;
+const storySlateFearPattern = /\b(?:toxic|toxins?|poison(?:s|ed|ing)?|starv(?:e|es|ed|ing|ation)|destroy(?:s|ed|ing)?|deadly|dangerous|killing|ruining|dirty\s+secret|waste\s+of\s+time|eat(?:s|ing)?\s+[^.!?]{0,30}\s+alive|morning\s+ambush|stripped\s+of\s+(?:its|their|the)\s+(?:health|nutrition|nutrients?))\b/i;
+const storySlateMechanismClaims = [
+  ["absorption", /\b(?:absorb(?:s|ed|ing)?|absorption)\b/i],
+  ["digestion", /\b(?:digest(?:s|ed|ing|ion|ive)?|stomach acid|gastric acid)\b/i],
+  ["dissolving", /\bdissolv(?:e|es|ed|ing)\b/i],
+  ["survival", /\bsurviv(?:e|es|ed|ing|al)\b/i],
+  ["release", /\breleas(?:e|es|ed|ing)\b/i],
+  ["contamination", /\b(?:contaminant|contamination|pesticides?|heavy metals?|microbial)\b/i],
+] as const;
 const primarySiteTypes: ThreeDBreakdownPrimarySiteType[] = ["ecommerce", "saas", "local-service", "restaurant-food", "nonprofit", "portfolio", "unclear"];
 const riskFlags: ThreeDBreakdownRiskFlag[] = ["health", "medical", "legal", "financial", "beauty", "regulated"];
 const claimRisks: ThreeDBreakdownClaimRisk[] = ["low", "medium", "high"];
@@ -428,6 +436,18 @@ const parseStoryDirectionSlateOutput = (
       parsedDirection.adAngle,
     ].join(" "))) {
       throw new Error(`3D Breakdown story direction ${index + 1} uses unsupported harm or fear framing.`);
+    }
+    const directionText = [
+      parsedDirection.hookLine,
+      parsedDirection.subheadline,
+      parsedDirection.shortSummary,
+      parsedDirection.adAngle,
+      parsedDirection.visualEngine,
+    ].join(" ");
+    for (const [claim, pattern] of storySlateMechanismClaims) {
+      if (pattern.test(directionText) && !pattern.test(evidence.text)) {
+        throw new Error(`3D Breakdown story direction ${index + 1} invented a ${claim} mechanism not found in selected evidence.`);
+      }
     }
     return parsedDirection;
   });
