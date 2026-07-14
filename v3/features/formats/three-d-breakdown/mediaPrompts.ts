@@ -7,6 +7,7 @@ import type {
 const MAX_SEEDANCE_PROMPT_CHARS = 3900;
 
 const clean = (value: string | null | undefined) => String(value || "").replace(/\s+/g, " ").trim();
+const promptField = (value: string | null | undefined) => clean(value).replace(/[.!?]+$/, "");
 
 const sceneEvidenceText = (scene: ThreeDBreakdownAdScene) => clean([
   scene.layout.productAnchor?.title,
@@ -64,10 +65,9 @@ const framePlan = (
   if (!frame) return `FRAME ${frameIndex}: preserve the approved storyboard panel and its physical action.`;
   return clean([
     `FRAME ${frameIndex} (${frame.label}).`,
-    frame.visual ? `ACTION: ${frame.visual}.` : "",
-    frame.camera ? `CAMERA: ${frame.camera}.` : "",
-    frame.motion ? `STATE CHANGE: ${frame.motion}.` : "",
-    frame.editingNote ? `EDIT INTENT: ${frame.editingNote}.` : "",
+    frame.visual ? `ACTION: ${promptField(frame.visual)}.` : "",
+    frame.camera ? `CAMERA: ${promptField(frame.camera)}.` : "",
+    frame.motion ? `STATE CHANGE: ${promptField(frame.motion)}.` : "",
   ].join(" "));
 };
 
@@ -80,18 +80,29 @@ const frameRole = (
     1: "Show ordinary product use and the customer's false assumption before the problem is visible.",
     2: "Make the selected hidden obstacle physically visible in the same world.",
     3: "Set up the exact product mechanism with a tactile demonstration.",
-    4: `Deliver the peak ${contract.wowMomentType} reveal: ${contract.wowMoment}. Teach: ${contract.viewerLearns}.`,
-    5: `Turn the selected evidence into a visible payoff: ${scene.layout.groundedEvidence.text}.`,
+    4: `Deliver the peak ${contract.wowMomentType} reveal: ${promptField(contract.wowMoment)}. Teach: ${promptField(contract.viewerLearns)}.`,
+    5: `Turn the selected evidence into a visible payoff: ${promptField(scene.layout.groundedEvidence.text)}.`,
     6: "Resolve to the selected product and a clear buyer-action setup; do not end on an abstract mechanism or logo card.",
   };
   return roles[frameIndex];
 };
 
-const supplementDirection = (scene: ThreeDBreakdownAdScene) => (
-  isThreeDSupplementStory(scene)
-    ? "SUPPLEMENT-SPECIFIC: when the approved frame plan calls for ingestion or digestion, a clean transparent body route, capsule path, tidy obstacle surface, and contained particles are allowed. Keep these connected to the same product and demonstrator. No gore, wet intestine tunnel, detached organ montage, or respiratory anatomy unless evidence requires it."
-    : "CATEGORY LOCK: this is not automatically a supplement story. Do not invent capsules, gummies, digestion, gut tunnels, anatomy, cell walls, medical particles, or a blank supplement bottle unless the selected product evidence and approved frame plan explicitly require them."
-);
+const usesBodyRouteStory = (scene: ThreeDBreakdownAdScene) => {
+  const frameText = (scene.layout.storyboardBoard?.frames || [])
+    .flatMap((frame) => [frame.visual, frame.motion])
+    .join(" ");
+  return /\b(?:swallow(?:ed|ing)?|ingest(?:ed|ion)?|digest(?:ion|ive)?|stomach|gut|intestinal|esophagus|body route|capsule path|inside the body|absorption barrier)\b/i.test(frameText);
+};
+
+const supplementDirection = (scene: ThreeDBreakdownAdScene) => {
+  if (!isThreeDSupplementStory(scene)) {
+    return "CATEGORY LOCK: this is not automatically a supplement story. Do not invent capsules, gummies, digestion, gut tunnels, anatomy, cell walls, medical particles, or a blank supplement bottle unless the selected product evidence and approved frame plan explicitly require them.";
+  }
+  if (!usesBodyRouteStory(scene)) {
+    return "SUPPLEMENT ROUTINE STORY: follow the approved routine, product, and mechanism actions. Do not add anatomy, digestion, gut tunnels, body routes, medical particles, or detached organs because this frame plan does not call for them.";
+  }
+  return "SUPPLEMENT BODY-ROUTE STORY: use a clean transparent body route, capsule path, tidy obstacle surface, and contained particles only where the approved frame plan requires them. Keep the product and demonstrator connected. No gore, wet intestine tunnel, detached organ montage, or unrelated anatomy.";
+};
 
 const sharedStyle = (scene: ThreeDBreakdownAdScene) => clean([
   `STYLE: ${scene.layout.storyContract.visualWorld}.`,
@@ -116,7 +127,7 @@ export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) 
     productLock(scene),
     supplementDirection(scene),
     `APPROVED SIX-FRAME PLAN: ${plans}`,
-    "VISUAL STORY: each cell shows one concrete physical action and one visible state change. Frames 1 and 6 include the demonstrator and selected product; middle frames may use hands, cutaways, pipes, components, particles, scale comparisons, or impossible-camera reveals while preserving continuity.",
+    "VISUAL STORY: each cell shows one concrete physical action and one visible state change. Frame 1 establishes the demonstrator and product category; frame 6 resolves to the accurate selected product. Middle frames may use hands, cutaways, pipes, components, particles, scale comparisons, or impossible-camera reveals while preserving continuity.",
     "VARIETY: do not repeat six product-holding poses or six macro science inserts. Move from use, to obstacle, to setup, to reveal, to evidence, to product payoff.",
     pixelTextBan,
   ].join(" "));

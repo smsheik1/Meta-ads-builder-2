@@ -1833,7 +1833,9 @@ assert.ok(cookieBoardPrompt.includes("Do not invent a woman, a different person,
 assert.ok(cookieBoardPrompt.includes("flexible pouch stays pouch, carton stays carton, jar stays jar, bottle stays bottle"));
 assert.ok(cookieBoardPrompt.includes("Script nouns such as pack, package, product, or snack pack never redefine its shape"));
 assert.ok(cookieBoardPrompt.includes("CATEGORY LOCK: this is not automatically a supplement story"));
-assert.ok(!cookieBoardPrompt.includes("SUPPLEMENT-SPECIFIC"));
+assert.ok(!cookieBoardPrompt.includes("SUPPLEMENT ROUTINE STORY"));
+assert.ok(!cookieBoardPrompt.includes("SUPPLEMENT BODY-ROUTE STORY"));
+assert.ok(!cookieBoardPrompt.includes("EDIT INTENT"));
 assert.ok(cookieBoardPrompt.includes("PIXEL TEXT BAN"));
 assert.ok(cookieBoardPrompt.length < 6000);
 assert.ok(cookieAnchorPrompt.includes("recreate panel 4"));
@@ -1845,7 +1847,8 @@ assert.ok(cookieAnchorPrompt.length < 3500);
 assert.ok(cookieClipPrompt.includes("supplied first image is the exact opening composition"));
 assert.ok(cookieClipPrompt.includes("supplied last image is the exact ending target"));
 assert.ok(cookieClipPrompt.length <= 3900);
-assert.ok(!cookieClipPrompt.includes("SUPPLEMENT-SPECIFIC"));
+assert.ok(!cookieClipPrompt.includes("SUPPLEMENT ROUTINE STORY"));
+assert.ok(!cookieClipPrompt.includes("SUPPLEMENT BODY-ROUTE STORY"));
 const supplementScene = {
   ...styleBScene,
   layout: {
@@ -1862,7 +1865,25 @@ const supplementScene = {
   },
 } as ThreeDBreakdownAdScene;
 assert.equal(isThreeDSupplementStory(supplementScene), true);
-assert.ok(buildThreeDStoryboardBoardPrompt(supplementScene).includes("SUPPLEMENT-SPECIFIC"));
+const supplementRoutinePrompt = buildThreeDStoryboardBoardPrompt(supplementScene);
+assert.ok(supplementRoutinePrompt.includes("SUPPLEMENT ROUTINE STORY"));
+assert.ok(!supplementRoutinePrompt.includes("transparent body route"));
+assert.ok(!supplementRoutinePrompt.includes(".."));
+const supplementBodyRouteScene = {
+  ...supplementScene,
+  layout: {
+    ...supplementScene.layout,
+    storyboardBoard: {
+      ...supplementScene.layout.storyboardBoard!,
+      frames: supplementScene.layout.storyboardBoard!.frames!.map((frame) => (
+        frame.frameIndex === 2
+          ? { ...frame, visual: "A swallowed capsule enters a clean transparent stomach route.", motion: "The capsule travels toward a visible absorption barrier." }
+          : frame
+      )),
+    },
+  },
+} as ThreeDBreakdownAdScene;
+assert.ok(buildThreeDStoryboardBoardPrompt(supplementBodyRouteScene).includes("SUPPLEMENT BODY-ROUTE STORY"));
 const gadgetScene = {
   ...styleBScene,
   layout: {
@@ -1896,7 +1917,8 @@ const gadgetBoardPrompt = buildThreeDStoryboardBoardPrompt(gadgetScene);
 assert.equal(isThreeDSupplementStory(gadgetScene), false);
 assert.ok(gadgetBoardPrompt.includes("Steel jaws close around a glass jar lid"));
 assert.ok(gadgetBoardPrompt.includes("TwistEase steel jar opener"));
-assert.ok(!gadgetBoardPrompt.includes("SUPPLEMENT-SPECIFIC"));
+assert.ok(!gadgetBoardPrompt.includes("SUPPLEMENT ROUTINE STORY"));
+assert.ok(!gadgetBoardPrompt.includes("SUPPLEMENT BODY-ROUTE STORY"));
 assert.equal(getRenderMusicBed(scene), null, "3D Breakdown exports should use voiceover only, no background music bed.");
 assert.equal(scene.layout.storyContract.wowMomentType, "proof-blocks");
 assert.equal(scene.layout.storyContract.visualStyle, "toy-character-vsl");
