@@ -474,11 +474,15 @@ assert.ok(
     createClientSource.includes("src={playableAudioUrl}") &&
     createClientSource.includes("...(sceneId ? { sceneId } : {})") &&
     quickActionsSource.includes("const hasPlayableAudio = Boolean(playableAudioUrl)") &&
+    quickActionsSource.includes('const hasThreeDVoiceover = threeDScene?.audio.status === "generated"') &&
+    quickActionsSource.includes("const hasPreviewMedia = hasPlayableAudio ||") &&
     quickActionsSource.includes('selectedFormat === "motion-story"') &&
     quickActionsSource.includes('selectedFormat === "jingle" || selectedFormat === "brainrot"') &&
     quickActionsSource.includes('selectedFormat === "three-d-breakdown"') &&
     quickActionsSource.includes('audioStatus === "loading"') &&
-    quickActionsSource.includes("onClick={hasPlayableAudio ? onTogglePreviewPlayback : onOpenAudioPanel}") &&
+    quickActionsSource.includes("onClick={hasPreviewMedia ? onTogglePreviewPlayback : onOpenAudioPanel}") &&
+    quickActionsSource.includes("hasVoiceover={hasThreeDVoiceover}") &&
+    createClientSource.includes("renderDownloadUrl={selectedFinalVideoUrl || renderDownloadUrl}") &&
     quickActionsSource.includes('"Audio pending"') &&
     quickActionsSource.includes('const visualizerAudioReady = selectedFormat === "visualizer" && hasPlayableAudio') &&
     quickActionsSource.includes('"Regenerate audio"') &&

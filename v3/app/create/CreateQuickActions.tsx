@@ -201,16 +201,18 @@ export function CreateQuickActions({
 }) {
   const staticPngSelected = selectedFormat === "meme" || selectedFormat === "text-message" || selectedFormat === "reviews" || selectedFormat === "were-sorry";
   const hasPlayableAudio = Boolean(playableAudioUrl);
+  const hasThreeDVoiceover = threeDScene?.audio.status === "generated";
+  const hasPreviewMedia = hasPlayableAudio || (selectedFormat === "three-d-breakdown" && Boolean(renderDownloadUrl));
   const generatedAudioPending = !hasPlayableAudio && audioStatus === "loading";
   const visualizerAudioReady = selectedFormat === "visualizer" && hasPlayableAudio;
-  const shareSupported = selectedFormat === "visualizer" || selectedFormat === "text-message" || selectedFormat === "motion-story" || ((selectedFormat === "jingle" || selectedFormat === "brainrot" || selectedFormat === "three-d-breakdown") && hasPlayableAudio);
+  const shareSupported = selectedFormat === "visualizer" || selectedFormat === "text-message" || selectedFormat === "motion-story" || ((selectedFormat === "jingle" || selectedFormat === "brainrot") && hasPlayableAudio) || (selectedFormat === "three-d-breakdown" && hasThreeDVoiceover);
   const showBrickStoryboard = selectedFormat === "jingle";
   const showThreeDStorySlateStage = threeDStorySlateActive;
   const showThreeDStoryDirections = showThreeDStorySlateStage && (threeDStoryDirections.length > 0 || threeDStoryDirectionStatus === "loading" || Boolean(threeDStoryDirectionError));
   const showThreeDBreakdownAssembly = selectedFormat === "three-d-breakdown" && threeDScene;
   const threeDClipPlans = threeDScene?.layout.clipPlans || [];
   const threeDClipsReady = threeDClipPlans.length > 0 && threeDClipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
-  const threeDVoiceoverBlocked = selectedFormat === "three-d-breakdown" && !hasPlayableAudio;
+  const threeDVoiceoverBlocked = selectedFormat === "three-d-breakdown" && !hasThreeDVoiceover;
   const threeDRenderBlocked = selectedFormat === "three-d-breakdown" && (!threeDClipsReady || threeDVoiceoverBlocked);
   const renderWorkerOffline = hasSelectedScene && !staticPngSelected && renderWorkerHealthy === false;
   const renderButtonDisabled = !hasSelectedScene || renderBusy || renderWorkerOffline || threeDRenderBlocked;
@@ -245,14 +247,14 @@ export function CreateQuickActions({
         >
         <button
           type="button"
-          onClick={hasPlayableAudio ? onTogglePreviewPlayback : onOpenAudioPanel}
-          disabled={(hasPlayableAudio && !hasSelectedScene) || generatedAudioPending}
+          onClick={hasPreviewMedia ? onTogglePreviewPlayback : onOpenAudioPanel}
+          disabled={(hasPreviewMedia && !hasSelectedScene) || generatedAudioPending}
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-black uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35"
-          aria-label={hasPlayableAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : generatedAudioPending ? "Audio pending" : "Add audio for this ad"}
-          title={hasPlayableAudio ? (isAudioPlaying ? "Stop audio preview" : "Play audio preview") : generatedAudioPending ? "Generated audio is still being created." : "Add audio for this ad"}
+          aria-label={hasPreviewMedia ? (isAudioPlaying ? "Stop video preview" : "Play video preview") : generatedAudioPending ? "Audio pending" : "Add audio for this ad"}
+          title={hasPreviewMedia ? (isAudioPlaying ? "Stop video preview" : "Play video preview") : generatedAudioPending ? "Generated audio is still being created." : "Add audio for this ad"}
         >
-          {hasPlayableAudio ? <Play className="size-4" /> : <AudioLines className="size-4" />}
-          {hasPlayableAudio ? (isAudioPlaying ? "Stop" : "Play") : generatedAudioPending ? "Audio pending" : "Add audio"}
+          {hasPreviewMedia ? <Play className="size-4" /> : <AudioLines className="size-4" />}
+          {hasPreviewMedia ? (isAudioPlaying ? "Stop" : "Play") : generatedAudioPending ? "Audio pending" : "Add audio"}
         </button>
 
         <button
@@ -392,7 +394,7 @@ export function CreateQuickActions({
           animationStatus={threeDAnimationStatus}
           currentRenderStatus={currentRenderStatus}
           error={threeDError}
-          hasVoiceover={hasPlayableAudio}
+          hasVoiceover={hasThreeDVoiceover}
           imageStatus={threeDImageStatus}
           onAddVoice={onOpenAudioPanel}
           onBuildFinalVideo={onCreateRenderJob}

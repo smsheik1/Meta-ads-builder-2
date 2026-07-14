@@ -3752,7 +3752,7 @@ function ResearchConnected() {
                 audioStatus={audioStatus}
                 playableAudioUrl={playableAudioUrl}
                 renderBusy={renderBusy}
-                renderDownloadUrl={renderDownloadUrl}
+                renderDownloadUrl={selectedFinalVideoUrl || renderDownloadUrl}
                 renderErrorMessage={renderJob?.error || renderError}
                 renderStatusLabel={renderStatusLabel}
                 renderWorkerHealthy={renderWorkerHealthy}
