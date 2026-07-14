@@ -17,6 +17,7 @@
       h1 { max-width: 900px; margin: 0; font-size: clamp(40px, 6vw, 88px); line-height: .92; letter-spacing: -.065em; }
       .lede { max-width: 760px; margin: 24px 0 40px; color: #5b574e; font-size: 20px; line-height: 1.5; }
       .status { display: inline-flex; margin-bottom: 22px; padding: 8px 12px; border-radius: 999px; background: #171714; color: white; font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+      .warning { margin: 0 0 32px; padding: 20px 22px; border: 2px solid #d27418; border-radius: 20px; background: #fff1d9; color: #512c08; font-size: 17px; line-height: 1.5; }
       .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
       article { overflow: hidden; border: 1px solid #d6cec0; border-radius: 24px; background: #fffdf8; box-shadow: 0 12px 30px rgba(36, 29, 19, .08); }
       .image { min-height: 440px; padding: 18px; display: grid; place-items: center; background: #ded8cd; }
@@ -26,7 +27,12 @@
       p { margin: 0; color: #656057; line-height: 1.45; }
       .bad h2::before { content: "Fails · "; color: #c5312d; }
       .good h2::before { content: "Works · "; color: #16834c; }
+      .verified h2::before { content: "Verified · "; color: #16834c; }
       .wide { grid-column: span 2; }
+      h3 { margin: 48px 0 18px; font-size: 30px; letter-spacing: -.045em; }
+      dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; margin: 24px 0 0; padding: 22px; border: 1px solid #d6cec0; border-radius: 20px; background: #fffdf8; }
+      dt { font-weight: 800; }
+      dd { margin: 0; color: #5b574e; }
       footer { margin-top: 24px; padding: 22px; border-radius: 20px; background: #171714; color: white; font-size: 18px; line-height: 1.5; }
       @media (max-width: 920px) {
         .grid { grid-template-columns: 1fr 1fr; }
@@ -41,9 +47,10 @@
   </head>
   <body>
     <main>
-      <div class="status">Pre-code evidence</div>
+      <div class="status">Partial proof — not a finished golden path</div>
       <h1>Can Wiggly move Zuckerberg without breaking the ad?</h1>
       <p class="lede">The current pipeline finds the right pieces, but its background repair smears large photo areas. RevealLayer already produced the missing clean background on this exact reference. The next code change should replace only that broken step.</p>
+      <p class="warning"><strong>Honest result:</strong> the captured RevealLayer output and the local Maker editing flow work, but the required live end-to-end verification did not finish. The rented GPU was destroyed after the secure terminal connection consumed the spending allowance. No David’s Cookies ad below is presented as a winner because none passed the real live pipeline.</p>
       <section class="grid">
         <article>
           <div class="image"><img src="evidence/original.png" alt="Original breaking news ad" /></div>
@@ -70,7 +77,37 @@
           <div class="copy"><h2>Reconstruction check</h2><p>Putting the clean background and subject back together reproduces the original.</p></div>
         </article>
       </section>
-      <footer><strong>Decision:</strong> keep the current OCR, semantic understanding, SAM cutouts, AdScene, and AdRenderSurface. Replace only the large-photo background repair with one small RevealLayer provider seam.</footer>
+
+      <h3>What the assistant-facing Maker can already do</h3>
+      <section class="grid">
+        <article class="verified wide">
+          <div class="image"><img src="image-replacement-controls.png" alt="Maker image replacement controls with live search results" /></div>
+          <div class="copy"><h2>Replace an important image</h2><p>The subject inset can be selected, uploaded, searched, and swapped from visible controls.</p></div>
+        </article>
+        <article class="verified">
+          <div class="image"><img src="subject-moved-fixture.png" alt="Breaking-news Format with the subject inset moved" /></div>
+          <div class="copy"><h2>Move the subject</h2><p>The subject is an editable layer and the captured RevealLayer background remains clean underneath.</p></div>
+        </article>
+        <article class="verified wide">
+          <div class="image"><img src="text-resize-fit.png" alt="Headline resized without clipped letters" /></div>
+          <div class="copy"><h2>Resize text without clipping</h2><p>Human-style number entry now commits on blur or Enter, and the headline fits the resized box.</p></div>
+        </article>
+      </section>
+
+      <h3>Cost and stopping point</h3>
+      <dl>
+        <dt>Provider</dt><dd>Vast.ai</dd>
+        <dt>GPU</dt><dd>1× A100 SXM4, 80 GB</dd>
+        <dt>Rate</dt><dd>$1.060/hour</dd>
+        <dt>Balance before</dt><dd>$3.57</dd>
+        <dt>Balance after</dt><dd>$2.58</dd>
+        <dt>Exact charge</dt><dd>$0.99</dd>
+        <dt>Paid resources after stop</dt><dd>0 instances, 0 storage</dd>
+        <dt>Why it stopped</dt><dd>The provider’s secure Jupyter terminal was blocked by its certificate path; setup never reached inference before the cap.</dd>
+      </dl>
+
+      <h3>Final judgment</h3>
+      <footer><strong>Maker result: partial.</strong> The smallest useful editing improvements are verified through the real UI. <strong>Marketing result: do not send.</strong> The real upload → live RevealLayer → three David’s Cookies remixes → chosen winner path is still unproven. The next action is not more UI: make the RevealLayer worker reachable with a prebuilt image or persistent model cache, then rerun this same one-image test without changing the renderer or adding another system.</footer>
     </main>
   </body>
 </html>
