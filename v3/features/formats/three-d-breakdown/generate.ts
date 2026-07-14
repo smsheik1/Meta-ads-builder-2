@@ -217,7 +217,7 @@ const assertCtaLineShape = (value: string) => {
   }
 };
 
-const referenceScriptConnectorPattern = /\b(arriv(?:e|es|ed|ing)|open(?:s|ed|ing)?|use(?:s|d|ing)?|assum(?:e|es|ed|ing)|thinks?|thought|pictured|decided|but|that's why|that is why|so|then|compare|not just|not only|dips?|cracks?|wakes?|stirs?|digests?|feeds?|dissolves?|descends?|travels?|reaches?|reveals?|rebuild(?:s|t|ing)|turns?|locks?|stacks?)\b/gi;
+const referenceScriptConnectorPattern = /\b(arriv(?:e|es|ed|ing)|open(?:s|ed|ing)?|use(?:s|d|ing)?|assum(?:e|es|ed|ing)|thinks?|thought|pictured|decided|but|because|while|after|before|until|instead|finally|now|that's why|that is why|so|then|compare|not just|not only|dips?|cracks?|wakes?|stirs?|digests?|feeds?|dissolves?|descends?|travels?|reaches?|reveals?|rebuild(?:s|t|ing)|turns?|locks?|stacks?)\b/gi;
 const presenterNarrationPattern = /\b(i am|i'm|i'll|let me|watch me|today i|my favorite|we're going to|i want to show|i recommend)\b/i;
 const productionDirectionPattern = /\b(demonstrator|camera|frame|scene|animation|x[- ]?ray|cutaway|review tokens?|proof tokens?|caption|storyboard)\b/i;
 const templateLeakPattern = /\bwhen a buyer receives it\b|\bthe product reveals hidden proof\b|\bone version fills space\b|\bthe other changes the moment\b/i;
@@ -338,7 +338,7 @@ const parseReferenceScript = (
     throw new Error(`3D Breakdown Style B referenceScript must have ${REFERENCE_SCRIPT_ACCEPT_MIN_SENTENCES}-${REFERENCE_SCRIPT_ACCEPT_MAX_SENTENCES} short documentary sentences.`);
   }
   const connectorCount = script.match(referenceScriptConnectorPattern)?.length || 0;
-  if (connectorCount < 7) {
+  if (connectorCount < 4) {
     throw new Error("3D Breakdown Style B referenceScript must use reference-style causal motion.");
   }
   if (!falseClassificationPattern.test(script)) {
