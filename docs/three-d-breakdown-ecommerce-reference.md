@@ -1,5 +1,7 @@
 # 3D Breakdown Ecommerce Reference Baseline
 
+> Historical reference analysis: use `docs/three-d-breakdown-prompt-signal-ledger.md` as the current source of truth for prompt, pipeline, evaluation, and credit-control decisions. This file preserves earlier experiments and may describe stale production details such as a four-clip assembly.
+
 This is the current calibration target for the ecommerce version of `3D Breakdown`.
 
 Reference file:
