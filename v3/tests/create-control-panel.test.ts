@@ -351,14 +351,13 @@ assert.ok(
     threeDImagesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_URL") &&
     threeDImagesSource.includes("requireThreeDStyleReferenceUrl") &&
     threeDImagesSource.includes("getThreeDImageInput") &&
-    threeDImagesSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("regenerate-anchors"), v.literal("all")))') &&
+    threeDImagesSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("anchor-1"), v.literal("anchor-2"), v.literal("all")))') &&
     threeDImagesSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")') &&
     quickActionsSource.includes('onGenerateImages("storyboard")') &&
     quickActionsSource.includes('data-three-d-regenerate-storyboard="true"') &&
     quickActionsSource.includes("Regenerate storyboard") &&
-    quickActionsSource.includes('onGenerateImages("regenerate-anchors")') &&
-    quickActionsSource.includes('data-three-d-regenerate-anchors="true"') &&
-    quickActionsSource.includes("Regenerate anchors") &&
+    quickActionsSource.includes('onGenerateImages(clipPlan.clipIndex === 1 ? "anchor-1" : "anchor-2")') &&
+    quickActionsSource.includes('data-three-d-regenerate-anchor={clipPlan.clipIndex}') &&
     threeDImagesSource.includes("generateBoard && !generateAnchors") &&
     threeDImagesSource.includes("Generate the 3D Breakdown storyboard board before production anchors.") &&
     threeDImagesSource.includes("storyboard-gate:ready") &&
@@ -366,7 +365,8 @@ assert.ok(
     threeDImagesSource.includes("production-frame:start") &&
     threeDImagesSource.includes("anchorFramesToGenerate") &&
     threeDImagesSource.includes("frame.image?.status !== \"ready\"") &&
-    threeDImagesSource.includes("regenerateAnchors || frame.image?.status !== \"ready\"") &&
+    threeDImagesSource.includes("frame.frameIndex === regenerateAnchorFrameIndex || frame.image?.status !== \"ready\"") &&
+    threeDImagesSource.includes("changedAnchorFrameIndexes.includes(plan.frameIndexes[0])") &&
     threeDImagesSource.includes("activeFrameIndex") &&
     threeDImagesSource.includes("storyboard board must define 6 frames before image generation") &&
     !threeDImagesSource.includes("createThreeDStoryboardFrames") &&

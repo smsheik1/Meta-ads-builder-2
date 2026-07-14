@@ -227,7 +227,7 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
   args: {
     sceneId: v.id("adScenes"),
     scene: v.any(),
-    mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("regenerate-anchors"), v.literal("all"))),
+    mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("anchor-1"), v.literal("anchor-2"), v.literal("all"))),
   },
   handler: async (ctx, { sceneId, scene, mode }) => {
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
@@ -250,15 +250,26 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
       ? getRequiredAnchorFrameIndexes(nextScene)
       : baseFrames.map((frame) => frame.frameIndex);
     const imageMode = mode || (isPresenterStyle ? "storyboard" : "all");
-    const regenerateAnchors = imageMode === "regenerate-anchors";
+    const regenerateAnchorFrameIndex = imageMode === "anchor-1"
+      ? requiredAnchorFrameIndexes[0]
+      : imageMode === "anchor-2" ? requiredAnchorFrameIndexes[1] : undefined;
     const generateBoard = isPresenterStyle && (imageMode === "storyboard" || imageMode === "all");
-    const generateAnchors = !isPresenterStyle || imageMode === "anchors" || regenerateAnchors || imageMode === "all";
+    const generateAnchors = !isPresenterStyle || imageMode === "anchors" || Boolean(regenerateAnchorFrameIndex) || imageMode === "all";
     if (isPresenterStyle && generateAnchors && !generateBoard && storyboardBoard.image?.status !== "ready") {
       throw new Error("Generate the 3D Breakdown storyboard board before production anchors.");
     }
     const anchorFramesToGenerate = baseFrames.filter((frame) => (
-      requiredAnchorFrameIndexes.includes(frame.frameIndex) && (regenerateAnchors || frame.image?.status !== "ready")
+      requiredAnchorFrameIndexes.includes(frame.frameIndex) && (
+        frame.frameIndex === regenerateAnchorFrameIndex || frame.image?.status !== "ready"
+      )
     ));
+    const invalidatedAnchorFrameIndexes = regenerateAnchorFrameIndex === requiredAnchorFrameIndexes[0]
+      ? requiredAnchorFrameIndexes.slice(1)
+      : [];
+    const changedAnchorFrameIndexes = [
+      ...anchorFramesToGenerate.map((frame) => frame.frameIndex),
+      ...invalidatedAnchorFrameIndexes,
+    ];
     nextScene = withUpdatedThreeDStoryboardBoard(nextScene, (board) => ({
       ...board,
       image: generateBoard ? { status: "generating" as const } : board.image,
@@ -268,6 +279,8 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
           ? { status: "idle" as const }
           : generateAnchors && anchorFramesToGenerate.some((anchorFrame) => anchorFrame.frameIndex === frame.frameIndex)
           ? { status: "generating" as const }
+          : invalidatedAnchorFrameIndexes.includes(frame.frameIndex)
+          ? { status: "idle" as const }
           : frame.image?.status === "ready" ? frame.image : { status: "idle" as const },
       })),
     }));
@@ -275,13 +288,19 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
       nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => ({
         ...plan,
         ...(generateBoard ? { endFrameImage: undefined } : {}),
-        video: { status: "idle" as const },
+        video: generateBoard || changedAnchorFrameIndexes.includes(plan.frameIndexes[0])
+          ? { status: "idle" as const }
+          : plan.video,
       })) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
     }
     nextScene = withThreeDProductPackshot(nextScene, packshotImageUrl);
     await patchThreeDScene(ctx, sceneId, nextScene);
     let activeFrameIndex: ThreeDBreakdownStoryboardFrameIndex | null = null;
-    let continuityAnchorDataUrl: string | null = null;
+    const firstAnchorFrame = baseFrames.find((frame) => frame.frameIndex === requiredAnchorFrameIndexes[0]);
+    let continuityAnchorDataUrl = firstAnchorFrame?.image?.status === "ready" && firstAnchorFrame.image.url &&
+      !anchorFramesToGenerate.some((frame) => frame.frameIndex === firstAnchorFrame.frameIndex)
+      ? await getReplicateImageInput(firstAnchorFrame.image.url)
+      : null;
     let storedBoardImage: NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["image"] | undefined;
     const storedFrames: NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["frames"] = [];
     try {

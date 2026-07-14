@@ -35,7 +35,7 @@ import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
 
 type SaveStatus = "idle" | "loading" | "ready" | "error";
 type BrickStoryboardStatus = "idle" | "loading" | "ready" | "error";
-type ThreeDImageGenerationMode = "storyboard" | "anchors" | "regenerate-anchors" | "all";
+type ThreeDImageGenerationMode = "storyboard" | "anchors" | "anchor-1" | "anchor-2" | "all";
 type ThreeDStoryboardFrame = NonNullable<NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["frames"]>[number];
 
 const statusBannerBaseClass = "rounded-2xl border px-4 py-3 text-xs font-black leading-5";
@@ -752,6 +752,20 @@ function ThreeDBreakdownAssemblyCard({
                       {frame.image?.status === "generating" ? <Loader2 className="size-4 animate-spin" /> : "Pending"}
                     </div>
                   )}
+                  {isPresenterStyle && frame.image?.status === "ready" && (clipPlan?.clipIndex === 1 || clipPlan?.clipIndex === 2) ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="h-8 w-full rounded-none border-t border-slate-200 text-[9px] font-black uppercase tracking-[0.12em] text-slate-600"
+                      onClick={() => onGenerateImages(clipPlan.clipIndex === 1 ? "anchor-1" : "anchor-2")}
+                      disabled={imageStatus === "loading"}
+                      aria-label={`Regenerate ${frameLabel}`}
+                      data-three-d-regenerate-anchor={clipPlan.clipIndex}
+                    >
+                      <RefreshCw className="mr-1.5 size-3" />
+                      Regenerate
+                    </Button>
+                  ) : null}
                 </div>
                 );
               })}
@@ -786,19 +800,6 @@ function ThreeDBreakdownAssemblyCard({
             >
               <RefreshCw className="mr-2 size-4" />
               Regenerate storyboard
-            </Button>
-          ) : null}
-          {isPresenterStyle && framesReady ? (
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-3 h-10 w-full rounded-2xl border-slate-300 bg-white text-xs font-black uppercase tracking-[0.12em] text-slate-700"
-              onClick={() => onGenerateImages("regenerate-anchors")}
-              disabled={imageStatus === "loading"}
-              data-three-d-regenerate-anchors="true"
-            >
-              <RefreshCw className="mr-2 size-4" />
-              Regenerate anchors
             </Button>
           ) : null}
           <Button

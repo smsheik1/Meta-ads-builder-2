@@ -3133,7 +3133,7 @@ function ResearchConnected() {
   };
 
   const onGenerateThreeDImages = async (
-    modeOverride?: "storyboard" | "anchors" | "regenerate-anchors" | "all",
+    modeOverride?: "storyboard" | "anchors" | "anchor-1" | "anchor-2" | "all",
   ) => {
     const sceneId = selectedSceneId;
     if (!selectedScene || selectedScene.format !== "three-d-breakdown" || threeDImageStatus === "loading") return;

@@ -1817,7 +1817,7 @@ assert.equal(scene.layout.productAnchor?.title, "Butter Pecan Meltaways Tin");
 assert.equal(scene.layout.productAnchor?.imageUrl, "https://cdn.example/davids-cookie-tin.png");
 const threeDImageActionSource = readFileSync(new URL("../convex/threeDImages.ts", import.meta.url), "utf8");
 assert.ok(threeDImageActionSource.includes("ecommerce-teardown-style-reference-clean-v7.jpg"));
-assert.ok(threeDImageActionSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("regenerate-anchors"), v.literal("all")))'));
+assert.ok(threeDImageActionSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("anchor-1"), v.literal("anchor-2"), v.literal("all")))'));
 assert.ok(threeDImageActionSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")'));
 assert.ok(threeDImageActionSource.includes("Generate the 3D Breakdown storyboard board before production anchors."));
 assert.ok(threeDImageActionSource.includes("getThreeDAnchorImageInput"), "Production anchors must include the generated storyboard board as an image reference.");
@@ -1835,10 +1835,19 @@ assert.ok(
   "The first paid clip action must refresh legacy scenes to the clean real packshot before final rendering.",
 );
 assert.ok(!threeDImageActionSource.includes("getThreeDAnchorImageInput(nextScene, imageInput)"), "Production anchors must not receive competing style and site references after storyboard approval.");
-assert.ok(threeDImageActionSource.includes('imageMode === "regenerate-anchors"'), "Ready anchors must support explicit visual-QA regeneration.");
+assert.ok(
+  threeDImageActionSource.includes('imageMode === "anchor-1"') &&
+    threeDImageActionSource.includes('imageMode === "anchor-2"') &&
+    threeDImageActionSource.includes("frame.frameIndex === regenerateAnchorFrameIndex") &&
+    threeDImageActionSource.includes("invalidatedAnchorFrameIndexes"),
+  "Ready anchors must support individual visual-QA regeneration without paying to rebuild both.",
+);
 assert.ok(threeDImageActionSource.includes("usesStoryboardPanelCrop"), "Production-frame logs must expose whether the local storyboard panel crop was sent.");
 assert.ok(threeDImageActionSource.includes("storyboard-gate:ready"));
-assert.ok(threeDImageActionSource.includes("video: { status: \"idle\" as const }"), "Regenerating production frames must clear stale 3D clip videos.");
+assert.ok(
+  threeDImageActionSource.includes("changedAnchorFrameIndexes.includes(plan.frameIndexes[0])"),
+  "Regenerating one production anchor must clear only its stale 3D clip video.",
+);
 assert.ok(threeDImageActionSource.includes("storyboard board must define 6 frames before image generation"));
 assert.ok(threeDImageActionSource.includes("cropThreeDStoryboardPanel"), "Clip end frames must be derived locally from approved storyboard panels.");
 assert.ok(
@@ -1874,8 +1883,9 @@ assert.ok(!cookieBoardPrompt.includes("EDIT INTENT"));
 assert.ok(cookieBoardPrompt.includes("PIXEL TEXT BAN"));
 assert.ok(cookieBoardPrompt.length < 6000);
 assert.ok(cookieAnchorPrompt.includes("recreate panel 4"));
-assert.ok(cookieAnchorPrompt.includes("image 1 is the locally cropped approved storyboard panel"));
-assert.ok(cookieAnchorPrompt.includes("Image 2 is the PRODUCT MASTER"));
+assert.ok(cookieAnchorPrompt.includes("image 1 is the approved panel"));
+assert.ok(cookieAnchorPrompt.includes("image 2 is the preceding anchor"));
+assert.ok(cookieAnchorPrompt.includes("image 3 is the PRODUCT MASTER"));
 assert.ok(cookieAnchorPrompt.includes("Proof blocks assemble in midair around the cookie tin"));
 assert.ok(cookieAnchorPrompt.includes("ONE full-frame vertical 9:16 production keyframe"));
 assert.ok(cookieAnchorPrompt.length < 3500);
