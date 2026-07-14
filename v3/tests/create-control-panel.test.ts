@@ -381,7 +381,9 @@ assert.ok(
     threeDImagesSource.includes("lastFrameImageUrl: endFrameImage.url") &&
     jingleStoryboardSource.includes("last_frame_image") &&
     threeDImagesSource.includes("imageInput,") &&
-    threeDImagesSource.includes("scene.layout.referenceImages?.productImageUrls"),
+    threeDImagesSource.includes("scene.layout.referenceImages?.productImageUrls") &&
+    threeDImagesSource.includes("LEGACY_THREE_D_STYLE_REFERENCE") &&
+    threeDImagesSource.includes("Style B cannot use the legacy anatomy-only reference"),
   "3D Breakdown media generation must require the style reference and expose explicit sequential Seedance clips without preflight/repair scaffolding.",
 );
 assert.ok(

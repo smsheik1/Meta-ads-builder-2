@@ -17,6 +17,7 @@ import type {
 } from "../features/scene/types";
 
 const THREE_D_BREAKDOWN_STYLE_REFERENCE_PATH = "/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v7.jpg";
+const LEGACY_THREE_D_STYLE_REFERENCE = "procedural-3d-style-frame-v1.png";
 const getThreeDPublicBaseUrl = () => {
   const raw = process.env.WIGGLY_PUBLIC_BASE_URL || process.env.APP_URL || process.env.VERCEL_URL || "";
   if (!raw.trim()) return "";
@@ -35,6 +36,9 @@ const requireThreeDStyleReferenceUrl = () => {
   const url = getThreeDStyleReferenceUrl();
   if (!url) {
     throw new Error("3D Breakdown style reference is not configured. Set THREE_D_BREAKDOWN_STYLE_REFERENCE_URL or WIGGLY_PUBLIC_BASE_URL before generating storyboard frames.");
+  }
+  if (url.includes(LEGACY_THREE_D_STYLE_REFERENCE)) {
+    throw new Error("3D Breakdown Style B cannot use the legacy anatomy-only reference. Point THREE_D_BREAKDOWN_STYLE_REFERENCE_URL at ecommerce-teardown-style-reference-clean-v7.jpg.");
   }
   return url;
 };
