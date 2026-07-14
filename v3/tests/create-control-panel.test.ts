@@ -463,7 +463,7 @@ assert.ok(
 assert.ok(
   createClientSource.includes("const selectedAudio = selectedScene?.audio.status === \"generated\" ? selectedScene.audio : null") &&
     createClientSource.includes("const selectedMotionStoryMusicUrl = selectedScene?.format === \"motion-story\" ? selectedScene.layout.musicBed.src : \"\"") &&
-    createClientSource.includes("const playableAudioUrl = selectedAudio?.url || selectedMotionStoryMusicUrl") &&
+    createClientSource.includes('const playableAudioUrl = selectedFinalVideoUrl ? "" : selectedAudio?.url || selectedMotionStoryMusicUrl') &&
     createClientSource.includes("if (!audio) return") &&
     createClientSource.includes("void audio.play()") &&
     createClientSource.includes("src={playableAudioUrl}") &&
@@ -618,6 +618,8 @@ assert.ok(
     previewChromeSource.includes("if (syncVideoTimeToPreview)") &&
     previewChromeSource.includes("onPreviewTimeChange?.((clipStartSeconds || 0) + event.currentTarget.currentTime)") &&
     createClientSource.includes("finalVideoPreviewRef") &&
+    createClientSource.includes("const renderedFinalVideoUrl =") &&
+    createClientSource.includes('const playableAudioUrl = selectedFinalVideoUrl ? "" :') &&
     createClientSource.includes("void finalVideo.play()") &&
     previewChromeSource.includes("<RenderAssetProvider Image={PreviewImage} Video={PreviewVideo}>"),
   "A composited final MP4 must own preview timing and audio without corrective seeks while it is playing.",
