@@ -139,6 +139,9 @@ export const buildThreeDProductionFramePrompt = (
   frameIndex: ThreeDBreakdownStoryboardFrameIndex,
 ) => clean([
   `TASK: recreate panel ${frameIndex} from the supplied approved six-panel board as ONE full-frame vertical 9:16 production keyframe. This is not a collage or storyboard sheet.`,
+  frameIndex === 1
+    ? "REFERENCE ORDER: image 1 is the approved storyboard panel; remaining images are product references."
+    : "REFERENCE ORDER: image 1 is the approved storyboard panel; image 2 is the preceding approved production anchor and locks the demonstrator identity, established plain clothing, CGI rendering, and blue world only; remaining images are product references.",
   productionReferenceLock(scene),
   sharedStyle(scene),
   productLock(scene),
@@ -146,6 +149,9 @@ export const buildThreeDProductionFramePrompt = (
   framePlan(scene, frameIndex),
   `ROLE: ${frameRole(scene, frameIndex)}`,
   "CONTINUITY: preserve the board panel's demonstrator identity, clothing color, product form, recurring objects, world, camera relationship, and scene logic. Crop or expand only enough to fill 9:16.",
+  frameIndex === 1
+    ? "IDENTITY: establish one unmistakable feature-animation CGI demonstrator with modeled hair, visible eyes, matte CG skin, and closed mouth."
+    : "IDENTITY: never recast the preceding demonstrator as a bald mannequin, anatomy model, test dummy, photoreal person, or different human. If the current mechanism panel does not clearly show the established face, show only the same clothed torso and connected hands instead of inventing a new face.",
   "COMPOSITION: fill the frame with the approved subject and action. No split screen, multiple panels, huge empty table, dead negative space, quiet showroom card, or alternate concept.",
   pixelTextBan,
 ].join(" "));
@@ -165,6 +171,7 @@ export const buildThreeDSeedancePrompt = (
       : "PRODUCT LOCK: preserve the approved category-level object and do not invent branded packaging.",
     categoryRule,
     "INPUT LOCK: the supplied first image is the exact opening composition and the supplied last image is the exact ending target. Begin on the first image, perform the approved physical changes, and arrive naturally at the last image without inventing another scene, person, or product.",
+    "IDENTITY LOCK: preserve the approved demonstrator whenever visible. If neither endpoint clearly shows his established face, keep human action cropped to the same clothing, torso, and hands; never invent or reveal a bald mannequin, anatomy model, test dummy, photoreal person, or new face.",
     "MOTION: use direct cuts, push-throughs, object wipes, camera pushes, component reveals, or particle transitions. Change a product, prop, obstacle, component, or camera scale every 1-2 seconds; no static product with drifting particles and no empty transition frames.",
     "No readable text, captions, labels, logos, UI, pseudo-writing, or watermarks; Wiggly adds every word later.",
   ].join(" "));

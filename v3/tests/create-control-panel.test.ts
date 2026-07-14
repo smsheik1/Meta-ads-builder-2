@@ -390,7 +390,9 @@ assert.ok(
   "3D Breakdown media generation must require the style reference and expose explicit sequential Seedance clips without preflight/repair scaffolding.",
 );
 assert.ok(
-  threeDImagesSource.includes("getThreeDProductReferences(scene)") &&
+    threeDImagesSource.includes("getThreeDProductReferences(scene)") &&
+    threeDImagesSource.includes("continuityAnchorDataUrl") &&
+    threeDImagesSource.includes("hasContinuityAnchor") &&
     !threeDImagesSource.includes("getThreeDAnchorImageInput(nextScene, imageInput)"),
   "Production anchors must use only the approved storyboard and selected product references, not competing site/style images.",
 );

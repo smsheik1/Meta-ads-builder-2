@@ -1821,6 +1821,11 @@ assert.ok(threeDImageActionSource.includes('mode: v.optional(v.union(v.literal("
 assert.ok(threeDImageActionSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")'));
 assert.ok(threeDImageActionSource.includes("Generate the 3D Breakdown storyboard board before production anchors."));
 assert.ok(threeDImageActionSource.includes("getThreeDAnchorImageInput"), "Production anchors must include the generated storyboard board as an image reference.");
+assert.ok(
+  threeDImageActionSource.includes("continuityAnchorDataUrl") &&
+    threeDImageActionSource.includes("hasContinuityAnchor"),
+  "The second production anchor must receive the first approved anchor as its demonstrator identity reference.",
+);
 assert.ok(threeDImageActionSource.includes("storyboardBoard?.image?.status === \"ready\""), "Production anchors must only use a ready storyboard board reference.");
 assert.ok(threeDImageActionSource.includes("cropThreeDStoryboardPanel(new Uint8Array(await response.arrayBuffer()), frameIndex)"), "Production anchors must receive a local crop of their approved storyboard panel.");
 assert.ok(threeDImageActionSource.includes("getThreeDProductReferences(scene)"), "Production anchors must keep retail and in-use product references beside the storyboard.");

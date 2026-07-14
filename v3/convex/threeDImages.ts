@@ -112,6 +112,7 @@ const getThreeDImageInput = async (scene: ThreeDBreakdownAdScene) => {
 const getThreeDAnchorImageInput = async (
   scene: ThreeDBreakdownAdScene,
   frameIndex: ThreeDBreakdownStoryboardFrameIndex,
+  continuityAnchorDataUrl: string | null,
 ) => {
   const storyboardImageUrl = scene.layout.storyboardBoard?.image?.status === "ready"
     ? scene.layout.storyboardBoard.image.url
@@ -124,6 +125,7 @@ const getThreeDAnchorImageInput = async (
   const productImageUrls = (await getThreeDProductReferences(scene)).imageUrls;
   return Array.from(new Set([
     panelDataUrl,
+    continuityAnchorDataUrl,
     ...productImageUrls,
   ].filter((url): url is string => Boolean(url)))).slice(0, 5);
 };
@@ -279,6 +281,7 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
     nextScene = withThreeDProductPackshot(nextScene, packshotImageUrl);
     await patchThreeDScene(ctx, sceneId, nextScene);
     let activeFrameIndex: ThreeDBreakdownStoryboardFrameIndex | null = null;
+    let continuityAnchorDataUrl: string | null = null;
     let storedBoardImage: NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["image"] | undefined;
     const storedFrames: NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["frames"] = [];
     try {
@@ -330,10 +333,11 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
       for (const frame of anchorFramesToGenerate) {
         activeFrameIndex = frame.frameIndex;
         const prompt = buildThreeDProductionFramePrompt(nextScene, frame.frameIndex);
-        const anchorImageInput = await getThreeDAnchorImageInput(nextScene, frame.frameIndex);
+        const anchorImageInput = await getThreeDAnchorImageInput(nextScene, frame.frameIndex, continuityAnchorDataUrl);
         console.log("[wiggly:3d-breakdown] production-frame:start", {
           frameIndex: frame.frameIndex,
           imageInputCount: anchorImageInput.length,
+          hasContinuityAnchor: Boolean(continuityAnchorDataUrl),
           usesStoryboardPanelCrop: anchorImageInput[0]?.startsWith("data:image/jpeg;base64,"),
           promptLength: prompt.length,
         });
@@ -344,6 +348,7 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
           aspectRatio: "9:16",
         });
         const frameStored = await storeThreeDBytes(ctx, image.bytes, image.mimeType);
+        continuityAnchorDataUrl = `data:${image.mimeType};base64,${Buffer.from(image.bytes).toString("base64")}`;
         console.log("[wiggly:3d-breakdown] production-frame:ready", {
           frameIndex: frame.frameIndex,
           mimeType: image.mimeType,
