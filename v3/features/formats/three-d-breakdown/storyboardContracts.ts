@@ -47,6 +47,7 @@ const createClipPrompt = ({
   `Animate storyboard frame${frameIndexes.length > 1 ? "s" : ""} ${frameIndexes.join("-")} as clip ${clipIndex} of ${totalClips}, vertical 9:16, ${durationSeconds} seconds.`,
   getClipTimingPlan(frameIndexes, durationSeconds),
   `World: ${world}. Recurring objects: ${recurringObjects}.`,
+  "The narrator is never on screen. Any human is a silent stylized CGI demonstrator only: lips closed and still, no lip-sync, no speech animation, no singing, and no presenter delivery. Animate hands, props, product, camera, and body mechanics instead of the mouth.",
   narrative ? `Physical scene meaning, expressed only as objects and motion: ${narrative}` : "",
   "Show, don't tell: every idea must become a visible physical action, transformation, obstacle, reveal, or payoff.",
   "Maxfusion visual rule: if the line says the body, product, ingredient, problem, or mechanism changes state, the clip must show that state change physically.",
@@ -142,7 +143,7 @@ export const createThreeDClipPlans = (
   const recurringObjects = sceneInput.storyContract.recurringObjects.join(", ");
   const isPresenterStyle = sceneInput.storyContract.visualStyle === "presenter-teardown-vsl";
   const presenterClipDirections = [
-    "Open in the bright blue technical grid product-demo studio with the same recurring casual silent 3D demonstrator handling the product. Show ordinary product use and visible physical pressure; no talking or typography.",
+    "Open in the bright blue technical grid product-demo studio with the same recurring silent stylized feature-animation CGI demonstrator handling the product with lips closed. Show ordinary product use and visible physical pressure; no talking or typography.",
     "Push from the human-scale product moment into a clean body route, clear pipe, or guided transit path anchored to the same demonstrator and product. Follow one moving payload through the route.",
     "Make the obstacle physically block, scatter, pile up, break, leak, or create friction in the same blue-grid world. Keep it clean and graphic; no wet fleshy intestine tunnel, standalone beaker demo, mannequin, PPE, doctors, or faceless biology montage.",
     "Create the peak teardown with an impossible-to-film cutaway, pipe, particle path, nested capsule, exploded layer, or process machine changing state. The mechanism must visibly alter the exact obstacle.",

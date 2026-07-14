@@ -729,9 +729,14 @@ function ResearchConnected() {
   ]);
 
   const getCurrentAnonymousId = () => anonymousId || getAnonymousId();
+  const renderedFinalVideoUrl = selectedScene?.format === "three-d-breakdown"
+    && renderJob?.status === "ready"
+    && renderJob.downloadUrl
+    ? renderJob.downloadUrl
+    : "";
   const selectedFinalVideoUrl = selectedScene?.format === "three-d-breakdown" && selectedScene.layout.finalVideo?.status === "ready"
     ? selectedScene.layout.finalVideo.url
-    : "";
+    : renderedFinalVideoUrl;
   const selectedFinalVideoDurationSeconds = selectedScene?.format === "three-d-breakdown"
     ? selectedScene.layout.durationMs / 1000
     : 0;
@@ -3424,7 +3429,7 @@ function ResearchConnected() {
   const selectedMotionStoryMusicUrl = selectedScene?.format === "motion-story" ? selectedScene.layout.musicBed.src : "";
   const selectedBackgroundMusic = selectedScene?.backgroundMusic || null;
   const hasGeneratedAudio = Boolean(selectedAudio || selectedMotionStoryMusicUrl);
-  const playableAudioUrl = selectedAudio?.url || selectedMotionStoryMusicUrl;
+  const playableAudioUrl = selectedFinalVideoUrl ? "" : selectedAudio?.url || selectedMotionStoryMusicUrl;
   const generatedCaptions = selectedAudio?.captions || [];
   const hasEmptyEditedCaption = generatedCaptions.some((caption) => !caption.text.trim());
   const selectedDialogueScript = dialogueScripts[selectedDialogueIndex] || null;

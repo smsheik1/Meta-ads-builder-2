@@ -562,9 +562,9 @@ const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
   visualStyle === "presenter-teardown-vsl"
     ? [
       "Visual style: presenter-teardown-vsl.",
-      "The six frames must feel like a real ecommerce product teardown with an unseen narrator and a silent recurring demonstrator, not a toy-character science world.",
-      "Use the same silent 3D demonstrator/scale figure as the visual continuity spine in at least four frames: full body, torso, hands, product-use surface, or over-shoulder framing depending on the beat.",
-      "When the demo subject's face is visible, use a casual creator-ad 3D person with natural skin, visible eyes, plain everyday shirt, and product-demo posture; no branded caps, hats, hoodies, shirts, totes, merch, smooth bald mannequin, blank anatomy model, test dummy, blue gloves, medical masks, lab technician, doctor, scientist, or PPE worker.",
+      "The six frames must feel like a real ecommerce product teardown with an unseen narrator and a silent recurring stylized feature-animation CGI demonstrator, not a miniature toy-character science world.",
+      "Use the same silent stylized CGI demonstrator/scale figure as the visual continuity spine in at least four frames: full body, torso, hands, product-use surface, or over-shoulder framing depending on the beat.",
+      "When the demo subject's face is visible, use unmistakable feature-animation CGI: simplified facial proportions, modeled hair, matte CG skin, visible eyes, plain everyday shirt, and product-demo posture. Keep lips closed and still. No photorealistic person, live action, photographed human, influencer footage, lip-sync, speech animation, singing, presenter delivery, branded apparel, mannequin, anatomy model, test dummy, gloves, medical mask, lab technician, doctor, scientist, or PPE worker.",
       "The person is demonstration/retention footage only; narrator and captions present the argument, while the person never speaks, sells, points to text, introduces the product, or becomes the narrator.",
       "The demonstrator must be physically involved in the demo - wearing, holding, opening, swallowing, pouring, carrying, training in, or standing behind the product/path - not parked beside the scene like a host.",
       "Keep the demonstrator consistent across frames: same face, plain shirt color, body scale, and relationship to the product. No branded caps, hats, hoodies, shirts, totes, merch, or character outfit details may become the product or final payoff.",
@@ -586,7 +586,7 @@ const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
       "For supplement/digestive products, do not overcorrect into a standalone beaker or jar demo; transparent torso, gut-route, cell-wall, or body/pathway footage is required when it explains the hidden obstacle and stays connected to the silent demonstrator/product path.",
       "For supplement/digestive hidden-obstacle frames, use clean graphic product-science footage: blue body-route, tidy pink cell-wall/obstacle surface, visible particles, and crisp grid-world lighting. Avoid wet fleshy intestine tunnels, gore, horror anatomy, disconnected organ close-ups, or gross medical macro shots.",
       "Use real-world ecommerce spaces where useful, but keep the reference spine: bright blue grid floor/wall, casual demo person, product handling, oversized prop comparison, and macro mechanism inserts.",
-      "Do not use toy-character anatomy, cartoon wall characters, smooth bald mannequins, blank anatomy models, test dummies, faceless biology montages, all-blue tabletop repetition, sterile cleanroom emptiness, huge empty counters, lab-coat scientists, doctor-like presenters, medical masks, medical goggles, PPE, or sunglasses.",
+      "Do not use miniature toy-character anatomy, cartoon wall characters, smooth bald mannequins, blank anatomy models, test dummies, faceless biology montages, all-blue tabletop repetition, sterile cleanroom emptiness, huge empty counters, lab-coat scientists, doctor-like presenters, medical masks, medical goggles, PPE, sunglasses, photorealistic people, live-action people, or talking humans.",
     ]
     : [
       "Visual style: toy-character-vsl.",
@@ -1002,7 +1002,7 @@ const createSelectedDirectionSiteContract = (
   return {
     primarySiteType,
     riskFlags: Array.from(new Set(nextRiskFlags)),
-    visualWorld: `${research.brand.name} bright blue technical grid product-demo studio with recurring casual silent 3D demonstrator/scale figure, full-body or torso product demo, props, particles, pipes, and one impossible 3D insert`,
+    visualWorld: `${research.brand.name} bright blue technical grid product-demo studio with recurring silent stylized feature-animation CGI demonstrator/scale figure, full-body or torso product demo, props, particles, pipes, and one impossible 3D insert`,
     lighting: "bright creator-ad technical blue studio lighting with crisp product readability",
     cameraStyle: "fast silent-demonstrator product teardown camera with macro mechanism inserts and quick state changes",
     recurringObjects,
@@ -1024,7 +1024,7 @@ const createSelectedDirectionStoryboard = ({
 	      ...THREE_D_STORYBOARD_FRAME_CONTRACTS[0]!,
       visual: `The recurring full-body or torso demo character handles the product in the blue technical grid studio while the wrong assumption from ${shortPhrase(direction.hookLine, "the hook")} appears as physical tension.`,
       camera: "Medium demonstrator-demo shot into fast macro push.",
-      motion: "Demonstrator gestures, product holds center, background pressure builds.",
+      motion: "The silent demonstrator handles the product with lips closed while product motion and background pressure carry the beat.",
 	      overlayText: shortPhrase(direction.hookLine, "Not what you think", 42),
 	      editingNote: "Start instantly with practical product use.",
 	    },
@@ -1078,7 +1078,7 @@ const createSelectedDirectionStoryboard = ({
       "Create one vertical 9:16 image containing six raw, unlabeled film stills for a 20-second ecommerce product-science teardown.",
       "Arrange the six stills in a clean 2-column by 3-row contact sheet with thin white gutters only.",
       "Each still must fill its cell edge-to-edge; no blank white rows, title bands, empty margins, or presentation whitespace.",
-      "Use a recurring casual silent 3D demonstrator/scale figure in a bright blue technical grid product-demo studio, plus product handling, body/pathway views, and one impossible 3D insert.",
+      "Use a recurring silent stylized feature-animation CGI demonstrator/scale figure in a bright blue technical grid product-demo studio, plus product handling, body/pathway views, and one impossible 3D insert.",
       "Keep the same demonstrator face, plain shirt color, body scale, product silhouette, and product relationship across all six stills. No branded caps, hats, hoodies, shirts, totes, or merch as product stand-ins.",
       "Use no more than two front-facing waist-up product-holding stills; use hands, over-shoulder views, torso cutaways, mechanism inserts, and product interactions for the other beats.",
       "For swallowed supplements, capsules, probiotics, or gummies, the hidden route is digestive: mouth, esophagus, stomach, intestines. Do not show lungs or respiratory anatomy unless the evidence is respiratory.",
@@ -1136,7 +1136,7 @@ const createSelectedDirectionVariant = ({
     },
     {
       role: "punchline" as const,
-      narration: "The hidden route finally matters.",
+      narration: buyerActionCta(research),
       startMs: THREE_D_SCRIPT_BEATS[4]!.startMs,
       endMs: THREE_D_SCRIPT_BEATS[4]!.endMs,
     },
@@ -1147,7 +1147,7 @@ const createSelectedDirectionVariant = ({
 	    siteContract.visualWorld,
 	    siteContract.lighting,
 	    `recurring objects ${siteContract.recurringObjects.join(", ")}`,
-		    "bright blue technical grid product-demo studio with recurring casual silent 3D demonstrator/scale figure and one clean 3D explanatory insert",
+		    "bright blue technical grid product-demo studio with recurring silent stylized feature-animation CGI demonstrator/scale figure and one clean 3D explanatory insert",
 	    "no readable text no labels no logos no captions",
 	  ].join(", ");
   const shots = [

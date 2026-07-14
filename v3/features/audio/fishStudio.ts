@@ -17,6 +17,13 @@ const fishSampleRate = 44_100;
 const fishChannels = 1;
 const fishBitsPerSample = 16;
 
+export const createThreeDBreakdownTtsText = (lines: string[]) => (
+  lines
+    .join(". ")
+    .replace(/\bprobiotics\b/gi, "pro-bye-AH-tiks")
+    .replace(/\bprobiotic\b/gi, "pro-bye-AH-tik")
+);
+
 type ParsedWav = {
   pcm: Uint8Array;
   durationMs: number;
@@ -298,7 +305,7 @@ export async function generateFishThreeDBreakdownVoiceover({
     apiKey,
     fetcher,
     speed: 1.1,
-    text: lines.join(". "),
+    text: createThreeDBreakdownTtsText(lines),
     voiceId: THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID,
   });
   const parsed = parsePcmWav(bytes);
