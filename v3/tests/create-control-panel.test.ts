@@ -378,7 +378,10 @@ assert.ok(
     !threeDMediaPromptsSource.includes(".slice(0, MAX_SEEDANCE_PROMPT_CHARS)") &&
     threeDImagesSource.includes("seedancePromptLength") &&
     threeDImagesSource.includes("cropThreeDStoryboardPanel") &&
-    threeDImagesSource.includes("lastFrameImageUrl: endFrameImage.url") &&
+    threeDImagesSource.includes("getReplicateImageInput(startFrame.image.url)") &&
+    threeDImagesSource.includes("getReplicateImageInput(endFrameImage.url)") &&
+    threeDImagesSource.includes("imageUrl: startFrameImageInput") &&
+    threeDImagesSource.includes("lastFrameImageUrl: endFrameImageInput") &&
     jingleStoryboardSource.includes("last_frame_image") &&
     threeDImagesSource.includes("imageInput,") &&
     threeDImagesSource.includes("getThreeDProductReferences") &&

@@ -1836,7 +1836,15 @@ assert.ok(threeDImageActionSource.includes("storyboard-gate:ready"));
 assert.ok(threeDImageActionSource.includes("video: { status: \"idle\" as const }"), "Regenerating production frames must clear stale 3D clip videos.");
 assert.ok(threeDImageActionSource.includes("storyboard board must define 6 frames before image generation"));
 assert.ok(threeDImageActionSource.includes("cropThreeDStoryboardPanel"), "Clip end frames must be derived locally from approved storyboard panels.");
-assert.ok(threeDImageActionSource.includes("lastFrameImageUrl: endFrameImage.url"), "Seedance must receive the approved ending panel without another image generation call.");
+assert.ok(
+  threeDImageActionSource.includes("getReplicateImageInput(startFrame.image.url)") &&
+    threeDImageActionSource.includes("getReplicateImageInput(endFrameImage.url)") &&
+    threeDImageActionSource.includes("imageUrl: startFrameImageInput") &&
+    threeDImageActionSource.includes("lastFrameImageUrl: endFrameImageInput") &&
+    !threeDImageActionSource.includes("imageUrl: startFrame.image.url") &&
+    !threeDImageActionSource.includes("lastFrameImageUrl: endFrameImage.url"),
+  "Seedance must receive provider-readable data for both approved anchor images instead of localhost storage URLs.",
+);
 
 const cookieBoardPrompt = buildThreeDStoryboardBoardPrompt(styleBScene);
 const cookieAnchorPrompt = buildThreeDProductionFramePrompt(styleBScene, 4);

@@ -174,6 +174,16 @@ const storeThreeDBytes = async (
   return { storageId: String(storageId), url, mimeType };
 };
 
+const getReplicateImageInput = async (imageUrl: string) => {
+  if (imageUrl.startsWith("data:image/")) return imageUrl;
+  const response = await fetch(imageUrl);
+  if (!response.ok) throw new Error("3D Breakdown could not read an approved image for video generation.");
+  const mimeType = response.headers.get("content-type") || "image/jpeg";
+  if (!mimeType.startsWith("image/")) throw new Error("3D Breakdown approved video input is not an image.");
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  return `data:${mimeType};base64,${Buffer.from(bytes).toString("base64")}`;
+};
+
 const getOrCreateThreeDEndFrameImage = async (
   ctx: Parameters<typeof storeThreeDBytes>[0],
   scene: ThreeDBreakdownAdScene,
@@ -451,6 +461,7 @@ export const generateThreeDClip: ReturnType<typeof action> = action({
     try {
       const seedancePrompt = buildThreeDSeedancePrompt(nextScene, clipPlan);
       const endFrameImage = await getOrCreateThreeDEndFrameImage(ctx, nextScene, clipPlan);
+      if (!endFrameImage.url) throw new Error(`3D Breakdown clip ${typedClipIndex} end frame has no URL.`);
       nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => (
         plan.clipIndex === typedClipIndex
           ? { ...plan, endFrameImage }
@@ -465,10 +476,14 @@ export const generateThreeDClip: ReturnType<typeof action> = action({
         seedancePromptLength: seedancePrompt.length,
         hasLastFrameImage: true,
       });
+      const [startFrameImageInput, endFrameImageInput] = await Promise.all([
+        getReplicateImageInput(startFrame.image.url),
+        getReplicateImageInput(endFrameImage.url),
+      ]);
       const result = await generateReplicateSeedanceVideo({
         replicateApiToken,
-        imageUrl: startFrame.image.url,
-        lastFrameImageUrl: endFrameImage.url,
+        imageUrl: startFrameImageInput,
+        lastFrameImageUrl: endFrameImageInput,
         prompt: seedancePrompt,
         durationSeconds: clipPlan.durationSeconds,
       });
