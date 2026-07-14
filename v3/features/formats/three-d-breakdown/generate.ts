@@ -217,14 +217,10 @@ const assertCtaLineShape = (value: string) => {
   }
 };
 
-const referenceScriptConnectorPattern = /\b(arriv(?:e|es|ed|ing)|open(?:s|ed|ing)?|use(?:s|d|ing)?|assum(?:e|es|ed|ing)|thinks?|thought|pictured|decided|but|because|while|after|before|until|instead|finally|now|that's why|that is why|so|then|compare|not just|not only|dips?|cracks?|wakes?|stirs?|digests?|feeds?|dissolves?|descends?|travels?|reaches?|reveals?|rebuild(?:s|t|ing)|turns?|locks?|stacks?)\b/gi;
 const presenterNarrationPattern = /\b(i am|i'm|i'll|let me|watch me|today i|my favorite|we're going to|i want to show|i recommend)\b/i;
 const productionDirectionPattern = /\b(demonstrator|camera|frame|scene|animation|x[- ]?ray|cutaway|review tokens?|proof tokens?|caption|storyboard)\b/i;
 const templateLeakPattern = /\bwhen a buyer receives it\b|\bthe product reveals hidden proof\b|\bone version fills space\b|\bthe other changes the moment\b/i;
 const falseClassificationPattern = /\b(assum(?:e|es|ed|ing)|thought|pictured|decided|not for|only for|just for|wrong(?:ly)?|looked like|felt like)\b/i;
-const revealRebuildPattern = /\b(cracks?|cracked|peels?|peeled|falls? away|fell away|reveals?|revealed|rebuild(?:s|t|ing)|snaps?|snapped|turns?|turned|stacks?|stacked|locks?|locked|opens?|opened)\b/i;
-const useTestPattern = /\b(wears?|wore|pull(?:s|ed)?|opens?|opened|tastes?|tasted|bites?|bit|appl(?:y|ies|ied)|carr(?:y|ies|ied)|uses?|used|moves?|moved|shares?|shared|trains?|trained|handles?|handled|stays? up|comfortable|arriv(?:e|es|ed))\b/i;
-const finalReframePattern = /\b(reimagined|the difference|so compare|compare them|the other|not just|not only|first to notice|was the proof|was the product|actually enjoy|handled|remembered)\b/i;
 const REFERENCE_SCRIPT_ACCEPT_MIN_WORDS = 100;
 const REFERENCE_SCRIPT_ACCEPT_MAX_WORDS = 180;
 const REFERENCE_SCRIPT_ACCEPT_MIN_SENTENCES = 10;
@@ -336,22 +332,6 @@ const parseReferenceScript = (
   const sentences = sentenceCount(script);
   if (sentences < REFERENCE_SCRIPT_ACCEPT_MIN_SENTENCES || sentences > REFERENCE_SCRIPT_ACCEPT_MAX_SENTENCES) {
     throw new Error(`3D Breakdown Style B referenceScript must have ${REFERENCE_SCRIPT_ACCEPT_MIN_SENTENCES}-${REFERENCE_SCRIPT_ACCEPT_MAX_SENTENCES} short documentary sentences.`);
-  }
-  const connectorCount = script.match(referenceScriptConnectorPattern)?.length || 0;
-  if (connectorCount < 4) {
-    throw new Error("3D Breakdown Style B referenceScript must use reference-style causal motion.");
-  }
-  if (!falseClassificationPattern.test(script)) {
-    throw new Error("3D Breakdown Style B referenceScript must include a false product classification or assumption.");
-  }
-  if (!revealRebuildPattern.test(script)) {
-    throw new Error("3D Breakdown Style B referenceScript must include a literal reveal or rebuild moment.");
-  }
-  if (!useTestPattern.test(script)) {
-    throw new Error("3D Breakdown Style B referenceScript must include a product use test.");
-  }
-  if (!finalReframePattern.test(script)) {
-    throw new Error("3D Breakdown Style B referenceScript must end with a product reframe.");
   }
   return script;
 };
