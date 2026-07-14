@@ -935,6 +935,7 @@ const grunsCompressionVisualPlan = payloadWithVariants([makeVariant({
   punchline: grunsCompressionBeats[4]!.narration,
   ctaLine: "Try Grüns gummies today.",
 })]);
+((grunsCompressionVisualPlan.variants[0] as ThreeDBreakdownVariant).storyboardBoard.frames![1] as { role: string }).role = "hidden-obstacle";
 let grunsCompressionCalls = 0;
 const grunsCompressionGeneration = await generateThreeDBreakdownVariantsFromResearch(grunsCompressionResearch, {
   count: 1,

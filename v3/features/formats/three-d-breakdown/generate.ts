@@ -640,13 +640,10 @@ const parseStoryboardFrames = (value: unknown): NonNullable<ThreeDBreakdownStory
   return THREE_D_STORYBOARD_FRAME_CONTRACTS.map((contract, index) => {
     const frame = value.find((item) => {
       const raw = item as Record<string, unknown>;
-      return raw.frameIndex === contract.frameIndex || raw.role === contract.role;
+      return raw.frameIndex === contract.frameIndex;
     }) || value[index];
     const raw = frame as Record<string, unknown>;
-    if (
-      raw.frameIndex !== contract.frameIndex ||
-      raw.role !== contract.role
-    ) {
+    if (raw.frameIndex !== contract.frameIndex) {
       throw new Error(`3D Breakdown storyboard frame ${index + 1} contract is invalid.`);
     }
     const visual = cleanText(raw.visual, 260);
