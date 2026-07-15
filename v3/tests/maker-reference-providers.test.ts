@@ -39,12 +39,13 @@ const gemma = await callGemmaReferenceAnalysis({
 assert.equal(gemma.analysis.formula.premise, makerAnalysisFixture.formula.premise);
 assert.equal(gemmaRequests, 1, "Gemma must run once with no retry.");
 assert.equal(gemmaUrls[0], "https://openrouter.ai/api/v1/chat/completions");
-assert.equal(gemmaBodies[0]?.model, "google/gemma-4-31b-it");
+assert.deepEqual(gemmaBodies[0]?.models, ["google/gemma-4-31b-it:free", "google/gemma-4-31b-it"]);
+assert.equal("model" in gemmaBodies[0]!, false);
 assert.deepEqual(gemmaBodies[0]?.response_format, { type: "json_object" });
 assert.equal("structured_outputs" in gemmaBodies[0]!, false);
 assert.deepEqual(gemmaBodies[0]?.provider, {
-  order: ["DeepInfra"],
-  allow_fallbacks: false,
+  order: ["Google AI Studio", "DeepInfra", "ModelRun", "WandB"],
+  allow_fallbacks: true,
   require_parameters: true,
 });
 assert.equal("chat_template_kwargs" in gemmaBodies[0]!, false);

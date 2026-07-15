@@ -16,7 +16,8 @@ import type { MakerAnalysis } from "./model";
 import type { MakerAnalysisActivity } from "./analysisProgress";
 
 const GEMMA_MODEL = "google/gemma-4-31b-it";
-const GEMMA_PROVIDER = "DeepInfra";
+const GEMMA_MODELS = [`${GEMMA_MODEL}:free`, GEMMA_MODEL];
+const GEMMA_PROVIDERS = ["Google AI Studio", "DeepInfra", "ModelRun", "WandB"];
 const SAM3_VERSION = "1bf97763d5dfd3a1584adca913a8ef4b43c684fca97e04e39e4c50a3a5e09650";
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 const REPLICATE_PREDICTIONS_URL = "https://api.replicate.com/v1/predictions";
@@ -111,7 +112,7 @@ export async function callGemmaReferenceAnalysis({
         "user-agent": "wiggly-maker-analysis/1.0",
       },
       body: JSON.stringify({
-        model: GEMMA_MODEL,
+        models: GEMMA_MODELS,
         messages: [{ role: "user", content: [
           { type: "image_url", image_url: { url: imageUrl } },
           { type: "text", text: buildMakerAnalysisPrompt(ocr) },
@@ -121,8 +122,8 @@ export async function callGemmaReferenceAnalysis({
         max_tokens: 4096,
         stream: false,
         provider: {
-          order: [GEMMA_PROVIDER],
-          allow_fallbacks: false,
+          order: GEMMA_PROVIDERS,
+          allow_fallbacks: true,
           require_parameters: true,
         },
         response_format: {
@@ -150,7 +151,7 @@ export async function callGemmaReferenceAnalysis({
       console.error(`[wiggly:maker-analysis] invalid Gemma JSON ${JSON.stringify({
         responseId: response.body.id ?? null,
         model: response.body.model ?? GEMMA_MODEL,
-        provider: response.body.provider ?? GEMMA_PROVIDER,
+        provider: response.body.provider ?? null,
         finishReason: choice?.finish_reason ?? null,
         nativeFinishReason: choice?.native_finish_reason ?? null,
         usage: response.body.usage ?? null,

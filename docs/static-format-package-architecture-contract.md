@@ -442,7 +442,7 @@ MVP Maker publishing is protected by a minimal server-enforced internal gate. Ge
 
 GLM 5.2 through NVIDIA NIM produces exactly eight Campaign Plays in a Wiggly-defined structured response. Skill prose cannot redefine the schema.
 
-Every Gemma semantic-analysis request and GLM Campaign-Play request uses a provider-native JSON Schema through its pinned transport; asking for JSON in prompt prose is not schema enforcement. Maker analysis uses exact Gemma 4 31B through OpenRouter's pinned DeepInfra backend with provider fallbacks disabled. GLM remains on NVIDIA NIM. The active Maker MVP contract is the six-key [`maker-analysis-mvp` schema](./research-intake/schemas/maker-analysis-mvp.schema.json); earlier Field/List schemas are benchmark history, not additional runtime paths. Gemma 4 uses strict `response_format.json_schema`. OpenRouter's provider-facing schema omits only the unsupported `uniqueItems` grammar hint while the canonical schema and local Zod validation still enforce uniqueness. Invalid output stops visibly without repair, automatic retry, or fallback.
+Every Gemma semantic-analysis request and GLM Campaign-Play request uses a provider-native JSON contract through its selected transport; asking for JSON in prompt prose is not schema enforcement. Maker analysis uses exact Gemma 4 31B through OpenRouter, trying the free route first and allowing failover only between hosts serving that same model. GLM remains on NVIDIA NIM. The active Maker MVP contract is the six-key [`maker-analysis-mvp` schema](./research-intake/schemas/maker-analysis-mvp.schema.json); earlier Field/List schemas are benchmark history, not additional runtime paths. OpenRouter providers must support the request's JSON parameters, and local Zod validation remains authoritative. Invalid output stops visibly without repair, application retry, or substitution of a different model.
 
 Before generation:
 
@@ -626,12 +626,12 @@ The Maker MVP stack is:
 ```text
 LayerD when pixel separation is needed
   + PaddleOCR for text and text geometry
-  + Gemma 4 31B IT through OpenRouter's pinned DeepInfra backend for semantic analysis
+  + Gemma 4 31B IT through OpenRouter's free-first, same-model provider route for semantic analysis
   + SAM 3 for non-text candidates and masks
   -> Wiggly normalization and Maker confirmation
 ```
 
-These are complementary stage owners, not fallbacks for one another. Each stage emits evidence and confidence; none writes `StaticAdScene` directly. A failed required stage stops visibly without switching models. Gemma's model and transport are selected for the Maker MVP; the broader reconstruction stack still earns expansion through the saved-reference corpus.
+These are complementary stage owners, not fallbacks for one another. Each stage emits evidence and confidence; none writes `StaticAdScene` directly. A failed required stage stops visibly without switching models. OpenRouter may move the exact Gemma model between compatible hosts, but it may not substitute another model. The broader reconstruction stack still earns expansion through the saved-reference corpus.
 
 ### Image generation
 
