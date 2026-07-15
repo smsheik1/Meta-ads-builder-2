@@ -47,10 +47,16 @@
   </head>
   <body>
     <main>
-      <div class="status">Golden-path audit complete — editing pass, marketing fail</div>
-      <h1>The layer system works. The finished ad still is not ready.</h1>
+      <div class="status">Golden-path audit updated — provider blocked final proof</div>
+      <h1>The final live run stopped before reconstruction.</h1>
       <p class="lede">Wiggly reconstructed the real Zuckerberg reference into editable text and image layers, reopened that exact captured draft in the browser, moved and replaced the subject, resized text, read davidscookies.com, selected one pie, and generated three real directions. The remaining failures are output quality and reliability—not a missing canvas.</p>
-      <p class="warning"><strong>Honest result:</strong> my assistant could edit this Format, but I would not send the current David’s Cookies result to its head of marketing. The best copy direction is useful, yet a source Meta image survived one successful generation, the image search can return blank or unrelated hotlinks, and the final verification timed out before returning three cards. Per the agreed stop rule, there was no third fix loop.</p>
+      <p class="warning"><strong>Honest result:</strong> my assistant could edit this Format, but I would not send the current David’s Cookies result to its head of marketing. The blank-image-picker bug is fixed and verified below. New analysis and remix prompts now name this kind of Format simply, treat creative CTA/banner copy as editable, use the selected product for the main subject when appropriate, and forbid fake leaks or unsupported “homemade” claims. Those rules still need one live end-to-end provider run before they count as a sendable result.</p>
+      <section class="grid">
+        <article class="bad wide">
+          <div class="image"><img src="final-run/02-openrouter-429.png" alt="Real builder stopped at OpenRouter upstream 429" /></div>
+          <div class="copy"><h2>Final live proof</h2><p>The real UI found 21 OCR regions, then OpenRouter’s WandB provider rate-limited Gemma 4 31B. Wiggly stopped visibly with no fallback, repair, or retry. RevealLayer was never called.</p></div>
+        </article>
+      </section>
       <section class="grid">
         <article>
           <div class="image"><img src="evidence/original.png" alt="Original breaking news ad" /></div>
@@ -82,7 +88,7 @@
       <section class="grid">
         <article class="verified wide">
           <div class="image"><img src="evidence/ocr-text-layer-proof.png" alt="Exact reference with 21 PaddleOCR text regions outlined" /></div>
-          <div class="copy"><h2>Find the editable writing</h2><p>The real local OCR pipeline found 21 positioned text regions. The captured live analysis grouped them into publisher, headline, proof line, and CTA fields, plus separate publisher-logo, corporate-setting, and key-figure assets.</p></div>
+          <div class="copy"><h2>Find the editable writing</h2><p>The real local OCR pipeline found 21 positioned text regions. The captured live analysis grouped them into publisher, headline, proof line, and CTA fields, plus separate publisher-logo, corporate-setting, and key-figure assets. New analyses now explicitly treat creative banners, proof lines, and CTA copy as editable campaign content instead of fixed app chrome.</p></div>
         </article>
       </section>
 
@@ -99,6 +105,10 @@
         <article class="verified wide">
           <div class="image"><img src="qa/04-text-fitted.png" alt="Real headline resized without clipped letters" /></div>
           <div class="copy"><h2>Resize text without clipping</h2><p>Human-style number entry now commits on blur or Enter, and the headline fits the resized box.</p></div>
+        </article>
+        <article class="verified wide">
+          <div class="image"><img src="qa/08-loaded-image-only.png" alt="Real Builder showing one loaded replacement image and no broken result" /></div>
+          <div class="copy"><h2>Only show images that loaded</h2><p>A Playwright run through the real captured draft returned one dead hotlink and one valid image. The dead result disappeared, the valid image was the only selectable choice, and clicking it updated the canvas layer.</p></div>
         </article>
       </section>
 
@@ -122,20 +132,18 @@
       <h3>Cost and stopping point</h3>
       <dl>
         <dt>Provider</dt><dd>Vast.ai</dd>
-        <dt>Final instance</dt><dd>#44903694 · 1× A100 SXM4, 80 GB</dd>
-        <dt>Listed rate</dt><dd>$1.341/hour</dd>
-        <dt>Final balance before</dt><dd>$1.91</dd>
-        <dt>Final balance after destroy</dt><dd>$1.51</dd>
-        <dt>Final exact balance change</dt><dd>$0.40</dd>
-        <dt>Earlier documented GPU spend</dt><dd>$1.58</dd>
-        <dt>Total documented GPU spend</dt><dd>$1.98</dd>
-        <dt>Approved extra budget</dt><dd>$0.25; the final run exceeded it by $0.15 before the already-running instance was found and destroyed.</dd>
-        <dt>Paid resources after stop</dt><dd>0 running instances. The old #44894756 record remains stopped, and #44903694 was destroyed.</dd>
-        <dt>What the final run proved</dt><dd>The exact reference produced a reusable subject cutout and clean background artifact. Those files were copied locally before the instance was destroyed.</dd>
+        <dt>Attempted final instance</dt><dd>#44946897 · 1× A100 PCIE, 80 GB</dd>
+        <dt>Listed rate</dt><dd>$0.950/hour</dd>
+        <dt>Run balance before</dt><dd>$1.18</dd>
+        <dt>Balance after destroy</dt><dd>$0.48</dd>
+        <dt>Exact balance change</dt><dd>$0.70</dd>
+        <dt>Approved run budget</dt><dd>$0.50; the run exceeded it by $0.20. That is an execution failure, not a successful product result.</dd>
+        <dt>Paid resources after stop</dt><dd>0 running instances. The new #44946897 was destroyed. The old #44894756 remains inactive at its displayed storage rate.</dd>
+        <dt>What the final run proved</dt><dd>The saved 55 GB RevealLayer workspace can transfer to a fresh machine and start behind a private SSH tunnel. It did not prove the product path because OpenRouter stopped first.</dd>
       </dl>
 
       <h3>Final judgment</h3>
-      <footer><strong>Maker result: pass with friction.</strong> My assistant can reopen the real draft, select layers, move a subject, preserve a circle, replace an image, resize copy, read a website, choose a product, view three angles, and publish. <strong>Marketing result: do not send.</strong> The strongest copy is promising, but source-image leakage, unreliable hotlinks, the stale long Format title from the older capture, and the final generation timeout still block an assistant-worthy golden path. The three next fixes are: verify searched images load before showing them, make role-based searches exclude all source-campaign terms, and persist/replay a successful generation so QA does not need another model call.</footer>
+      <footer><strong>Maker result: the existing editing slice still passes.</strong> <strong>Golden-path result: not proven.</strong> The final run stopped at OpenRouter before a new draft existed, so there is no new David’s Cookies winner to judge. Do not call this task complete and do not spend again without a fresh approval and a cheaper way to keep RevealLayer ready while the text provider is checked first.</footer>
     </main>
   </body>
 </html>
