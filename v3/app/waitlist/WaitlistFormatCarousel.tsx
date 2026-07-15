@@ -152,8 +152,8 @@ function FormatArtwork({ slide }: { slide: FormatSlide }) {
 
   if (slide.visual === "visualizer") {
     return (
-      <div className="flex h-full flex-col items-center justify-center bg-[#09091b] px-8 text-white">
-        <img src="/wiggly-wordmark-3d-crop.png" alt="Wiggly" className="w-48" />
+      <div className="flex h-full flex-col items-center justify-center bg-white px-8 text-[#080817]">
+        <img src="/wiggly-wordmark-3d-crop.png" alt="Wiggly" className="w-52" />
         <div className="mt-12 flex h-32 items-center justify-center gap-2">
           {Array.from({ length: 17 }).map((_, index) => (
             <span
@@ -166,7 +166,7 @@ function FormatArtwork({ slide }: { slide: FormatSlide }) {
             />
           ))}
         </div>
-        <p className="mt-9 text-center text-2xl font-black leading-tight">The offer, explained without the wall of text.</p>
+        <p className="mt-9 text-center text-2xl font-black leading-tight">Voice, captions, and motion in one clean story.</p>
       </div>
     );
   }
@@ -183,8 +183,8 @@ function FormatArtwork({ slide }: { slide: FormatSlide }) {
         preload="metadata"
         aria-label="Brainrot format gameplay preview"
       />
-      <img src="/brainrot/peter.png" alt="" className="absolute bottom-24 left-1 w-[45%]" />
-      <img src="/brainrot/stewie.png" alt="" className="absolute bottom-24 right-1 w-[43%]" />
+      <img src="/brainrot/peter.png" alt="" className="absolute bottom-44 left-3 h-auto w-[37%] drop-shadow-lg" />
+      <img src="/brainrot/stewie.png" alt="" className="absolute bottom-44 right-3 h-auto w-[38%] drop-shadow-lg" />
     </div>
   );
 }
