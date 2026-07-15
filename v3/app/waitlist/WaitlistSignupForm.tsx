@@ -46,12 +46,12 @@ export function WaitlistSignupForm() {
 
   if (status === "ready") {
     return (
-      <div className="mt-8 max-w-xl rounded-[1.65rem] border border-[#d9ceff] bg-white/88 p-4 shadow-[0_24px_54px_rgba(38,25,91,0.12)] backdrop-blur">
-        <p className="text-sm font-black uppercase tracking-[0.14em] text-[#6845df]">You're on the list.</p>
-        <p className="mt-2 text-base font-bold leading-6 text-[#30364d]">Enter Wiggly now and make your first creative pack.</p>
+      <div className="mt-9 max-w-xl rounded-lg border-2 border-[#080817] bg-[#C9FF55] p-4 shadow-[8px_9px_0_#080817]">
+        <p className="text-sm font-black uppercase tracking-[0.14em] text-[#080817]">You're on the list.</p>
+        <p className="mt-2 text-base font-bold leading-6 text-[#30364d]">Open Wiggly and turn your first product page into a creative slate.</p>
         <Link
           href="/create"
-          className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-[#07071a] px-5 text-sm font-black text-white shadow-[0_18px_40px_rgba(38,25,91,0.22)] transition hover:bg-[#17132d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7c55ff]"
+          className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-lg border-2 border-[#080817] bg-[#080817] px-5 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-[#5b38d7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5b38d7]"
         >
           Enter Wiggly
         </Link>
@@ -60,32 +60,40 @@ export function WaitlistSignupForm() {
   }
 
   return (
-    <form noValidate onSubmit={onSubmit} className="mt-8 max-w-xl rounded-[1.65rem] border border-white/80 bg-white/86 p-3 shadow-[0_24px_54px_rgba(38,25,91,0.12)] backdrop-blur">
-      <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-[0.22em] text-[#8d98b3]" htmlFor="waitlist-email">
-        Work email
-      </label>
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <input
-          id="waitlist-email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          placeholder="you@brand.com"
-          className="min-h-13 flex-1 rounded-2xl border border-[#dce2ef] bg-[#f8faff] px-4 text-base font-bold text-[#07071a] outline-none transition placeholder:text-[#9aa6bd] focus:border-[#8c6cff] focus:bg-white focus:shadow-[0_0_0_4px_rgba(140,108,255,0.12)]"
-        />
-        <button
-          type="submit"
-          disabled={status === "loading"}
-          className="min-h-13 rounded-2xl bg-[#07071a] px-6 text-sm font-black text-white shadow-[0_16px_34px_rgba(38,25,91,0.22)] transition hover:bg-[#17132d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7c55ff] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {status === "loading" ? "Joining..." : "Get early access"}
-        </button>
+    <div className="mt-9 max-w-xl">
+      <form noValidate onSubmit={onSubmit} className="rounded-lg border-2 border-[#080817] bg-white p-3 shadow-[8px_9px_0_#080817]">
+        <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-[0.22em] text-[#70788d]" htmlFor="waitlist-email">
+          Join the private beta
+        </label>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <input
+            id="waitlist-email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="you@brand.com"
+            className="min-h-13 flex-1 rounded-lg border-2 border-[#d6d8df] bg-[#f7f7f3] px-4 text-base font-bold text-[#080817] outline-none transition placeholder:text-[#9ca3b3] focus:border-[#5b38d7] focus:bg-white focus:shadow-[0_0_0_4px_rgba(91,56,215,0.12)]"
+          />
+          <button
+            type="submit"
+            disabled={status === "loading"}
+            className="min-h-13 rounded-lg border-2 border-[#080817] bg-[#5b38d7] px-6 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-[#4524bb] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5b38d7] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {status === "loading" ? "Joining..." : "Get early access"}
+          </button>
+        </div>
+        {status === "error" ? (
+          <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm font-bold text-red-600">{errorMessage}</p>
+        ) : null}
+      </form>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm font-bold text-[#697186]">
+        <p>No brief. No blank canvas.</p>
+        <Link href="/create" className="font-black text-[#080817] underline decoration-2 underline-offset-4 hover:text-[#5b38d7]">
+          Already invited? Open Wiggly
+        </Link>
       </div>
-      {status === "error" ? (
-        <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm font-bold text-red-600">{errorMessage}</p>
-      ) : null}
-    </form>
+    </div>
   );
 }

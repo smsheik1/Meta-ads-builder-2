@@ -16,6 +16,16 @@ assert.ok(homePage.includes("WaitlistPage"), "Root route should render early acc
 assert.ok(!homePage.includes("redirect(\"/create\")"), "Root route should not redirect straight to /create.");
 assert.ok(existsSync(join(root, "app/waitlist/page.tsx")), "/waitlist route should exist.");
 
+const waitlistPage = read("app/waitlist/WaitlistPage.tsx");
+const formatCarousel = read("app/waitlist/WaitlistFormatCarousel.tsx");
+assert.ok(waitlistPage.includes("WaitlistFormatCarousel"), "Waitlist hero should show the format carousel.");
+assert.ok(waitlistPage.includes("Your product page, turned into ads worth watching."), "Waitlist hero should use the product-focused headline.");
+assert.ok(!waitlistPage.includes("Launch blocker"), "Internal launch notes must never appear on the public homepage.");
+assert.ok(!waitlistPage.includes("creative-pack-demo.mp4"), "The public homepage should not expose internal asset paths.");
+assert.ok(formatCarousel.includes("Previous format") && formatCarousel.includes("Next format"), "Format carousel controls should be visible and accessible.");
+assert.ok(formatCarousel.includes("setInterval"), "Format carousel should auto-rotate.");
+assert.ok(formatCarousel.includes("three-d-breakdown") && formatCarousel.includes("video-meme"), "Format carousel should feature real Wiggly formats.");
+
 const schema = read("convex/schema.ts");
 assert.ok(schema.includes("waitlistSignups"), "Convex schema should store waitlist signups.");
 assert.ok(schema.includes(".index(\"by_email\""), "Waitlist signups should dedupe by email.");
