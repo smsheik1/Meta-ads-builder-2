@@ -30,12 +30,14 @@ export function BuilderInspector({
   const selectedLayer = selectedLayerId ? findStaticLayer(draft.scene.layout.layers, selectedLayerId) : null;
   const [imageQuery, setImageQuery] = useState("");
   const [imageResults, setImageResults] = useState<string[]>([]);
+  const [loadedImageResults, setLoadedImageResults] = useState<string[]>([]);
   const [imageSearching, setImageSearching] = useState(false);
   const [imageSearchMessage, setImageSearchMessage] = useState("");
 
   useEffect(() => {
     setImageQuery(selectedLayer?.type === "image" ? selectedLayer.name : "");
     setImageResults([]);
+    setLoadedImageResults([]);
     setImageSearching(false);
     setImageSearchMessage("");
   }, [selectedLayer?.id]);
@@ -102,6 +104,7 @@ export function BuilderInspector({
       });
       const payload = await response.json() as { images?: string[]; error?: string };
       if (!response.ok || !payload.images?.length) throw new Error(payload.error || "No usable images found.");
+      setLoadedImageResults([]);
       setImageResults(payload.images);
     } catch (error) {
       setImageSearchMessage(error instanceof Error ? error.message : "Image search stopped.");
@@ -222,8 +225,21 @@ export function BuilderInspector({
                     {imageResults.length ? (
                       <div className="grid grid-cols-3 gap-2" aria-label="Image search results">
                         {imageResults.map((imageUrl, index) => (
-                          <button className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 hover:border-violet-500" key={imageUrl} type="button" onClick={() => updateLayer({ src: imageUrl })} aria-label={`Use image result ${index + 1}`}>
-                            <img alt="" className="aspect-square w-full object-cover" src={imageUrl} />
+                          <button
+                            className={`overflow-hidden rounded-lg border border-slate-200 bg-slate-50 hover:border-violet-500 ${loadedImageResults.includes(imageUrl) ? "" : "invisible"}`}
+                            disabled={!loadedImageResults.includes(imageUrl)}
+                            key={imageUrl}
+                            type="button"
+                            onClick={() => updateLayer({ src: imageUrl })}
+                            aria-label={`Use image result ${index + 1}`}
+                          >
+                            <img
+                              alt=""
+                              className="aspect-square w-full object-cover"
+                              src={imageUrl}
+                              onLoad={() => setLoadedImageResults((current) => current.includes(imageUrl) ? current : [...current, imageUrl])}
+                              onError={() => setImageResults((current) => current.filter((result) => result !== imageUrl))}
+                            />
                           </button>
                         ))}
                       </div>

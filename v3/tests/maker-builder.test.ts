@@ -107,6 +107,8 @@ assert.match(inspectorSource, /Upload image/);
 assert.match(inspectorSource, /Image shape/);
 assert.match(inspectorSource, /borderRadius.*circle.*Math\.min/, "Replacing an inset image must let the Maker preserve a circle without editing pixels.");
 assert.match(inspectorSource, /\/api\/maker\/search-images/);
+assert.match(inspectorSource, /loadedImageResults/);
+assert.match(inspectorSource, /onError=.*setImageResults/, "Broken search hotlinks must disappear before the Maker can select them.");
 assert.match(inspectorSource, /defaultValue=\{selectedLayer\[property\]\}/, "Typing a multi-digit geometry value must commit once instead of resizing after every digit.");
 assert.match(inspectorSource, /onKeyDown=.*event\.key === "Enter"/, "Number edits must have an obvious keyboard commit path.");
 assert.match(imageSearchRouteSource, /searchSerperImages/);
