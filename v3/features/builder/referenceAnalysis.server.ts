@@ -16,7 +16,7 @@ import type { MakerAnalysis } from "./model";
 import type { MakerAnalysisActivity } from "./analysisProgress";
 
 const GEMMA_MODEL = "google/gemma-4-31b-it";
-const GEMMA_PROVIDER = "WandB";
+const GEMMA_PROVIDER = "DeepInfra";
 const SAM3_VERSION = "1bf97763d5dfd3a1584adca913a8ef4b43c684fca97e04e39e4c50a3a5e09650";
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 const REPLICATE_PREDICTIONS_URL = "https://api.replicate.com/v1/predictions";

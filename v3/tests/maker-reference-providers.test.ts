@@ -43,7 +43,7 @@ assert.equal(gemmaBodies[0]?.model, "google/gemma-4-31b-it");
 assert.deepEqual(gemmaBodies[0]?.response_format, { type: "json_object" });
 assert.equal("structured_outputs" in gemmaBodies[0]!, false);
 assert.deepEqual(gemmaBodies[0]?.provider, {
-  order: ["WandB"],
+  order: ["DeepInfra"],
   allow_fallbacks: false,
   require_parameters: true,
 });
