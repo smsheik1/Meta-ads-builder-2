@@ -729,14 +729,9 @@ function ResearchConnected() {
   ]);
 
   const getCurrentAnonymousId = () => anonymousId || getAnonymousId();
-  const renderedFinalVideoUrl = selectedScene?.format === "three-d-breakdown"
-    && renderJob?.status === "ready"
-    && renderJob.downloadUrl
-    ? renderJob.downloadUrl
-    : "";
+  const renderedFinalVideoUrl = selectedScene?.format === "three-d-breakdown" && renderJob?.status === "ready" ? renderJob.downloadUrl || "" : "";
   const selectedFinalVideoUrl = selectedScene?.format === "three-d-breakdown" && selectedScene.layout.finalVideo?.status === "ready"
-    ? selectedScene.layout.finalVideo.url
-    : renderedFinalVideoUrl;
+    ? selectedScene.layout.finalVideo.url : renderedFinalVideoUrl;
   const selectedFinalVideoDurationSeconds = selectedScene?.format === "three-d-breakdown"
     ? selectedScene.layout.durationMs / 1000
     : 0;
