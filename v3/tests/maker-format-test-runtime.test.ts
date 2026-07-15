@@ -220,6 +220,9 @@ assert.match(capturedPrompt, /WEBSITE ANGLES/);
 assert.match(capturedPrompt, /evidence, not mandatory slots/);
 assert.match(capturedPrompt, /The selected product is the only product you may advertise or describe/);
 assert.match(capturedPrompt, /Preserve the source Format's idea, not unsupported source claims/);
+assert.match(capturedPrompt, /truthful announcement, discovery, or useful fact/);
+assert.match(capturedPrompt, /news_subject uses product-image when the selected product is the subject/);
+assert.match(capturedPrompt, /Do not call a shipped or ready-to-bake product homemade/);
 assert.match(capturedPrompt, /WEBSITE ANGLES:\n\[\]/, "Selected-product prompts must not include unrelated brand-wide angles.");
 assert.doesNotMatch(capturedPrompt, /Gift-ready cookie tins/, "A selected pie must not receive another product's proof.");
 await assert.rejects(() => generateMakerFormatTestVariations({

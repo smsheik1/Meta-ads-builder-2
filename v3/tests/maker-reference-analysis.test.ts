@@ -29,6 +29,8 @@ const ocr: PaddleOcrResult = {
 assert.equal(validateMakerAnalysisEvidence(makerAnalysisFixture, ocr).lists[0]?.active_item_id, "slack");
 assert.match(buildMakerAnalysisPrompt(ocr), /never invent an ID/);
 assert.match(buildMakerAnalysisPrompt(ocr), /advertiser identity inside platform chrome is reusable content/);
+assert.match(buildMakerAnalysisPrompt(ocr), /creative banner labels, kicker labels, proof lines, and CTA copy are Fields/);
+assert.match(buildMakerAnalysisPrompt(ocr), /CTA Fields use campaign binding/);
 assert.match(buildMakerAnalysisPrompt(ocr), /story_setting, news_subject, supporting_visual/);
 assert.match(buildMakerAnalysisPrompt(ocr), /name: string/);
 assert.equal((makerAnalysisJsonSchema() as { additionalProperties?: boolean }).additionalProperties, false);
@@ -75,6 +77,20 @@ const draft = createMakerDraftFromAnalysis({
 });
 assert.equal(draft.scene.layout.canvas.width, 1080);
 assert.equal(draft.title, "Active relationship");
+const quotedFormatAnalysis = structuredClone(makerAnalysisFixture);
+delete quotedFormatAnalysis.formula.name;
+quotedFormatAnalysis.formula.premise = "A 'Breaking News' style alert about one timely announcement.";
+assert.equal(createMakerDraftFromAnalysis({
+  id: "quoted-format-title",
+  fileName: "reference.jpg",
+  analysis: quotedFormatAnalysis,
+  artifacts: {
+    referenceImageUrl: "data:image/jpeg;base64,reference",
+    backgroundImageUrl: "data:image/jpeg;base64,background",
+    ocr,
+    refinedAssets: [{ assetId: "brand_mark", imageUrl: "data:image/png;base64,logo", x: 10, y: 900, width: 90, height: 90 }],
+  },
+}).title, "Breaking News");
 assert.equal(createHybridNewsDraftFixture({ id: "hybrid-news", fileName: "reference.png", imageUrl: "/reference.png" }).title, "Breaking News");
 assert.equal(draft.scene.layout.layers[0]?.semanticRole, "reference:background");
 assert.equal(draft.scene.layout.layers.find((layer) => layer.semanticRole === "field:brand_name")?.type, "text");

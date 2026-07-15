@@ -119,6 +119,8 @@ Rules:
 - name the reusable Format in 2 to 5 plain words; describe the layout idea, not the source brand
 - write the formula in plain language a non-designer can understand
 - native status bars, progress bars, menus, close buttons, reactions, and fixed platform controls stay unassigned
+- creative banner labels, kicker labels, proof lines, and CTA copy are Fields even when they visually resemble interface chrome
+- CTA Fields use campaign binding unless the words belong to a fixed native platform control
 - advertiser identity inside platform chrome is reusable content, never fixed chrome: account/avatar logos are brand-bound assets with role brand_identity, and account names or handles are brand-bound Fields (prefer id publisher_handle)
 - logos and wordmarks are brand-bound assets with role brand_identity, not Fields
 - classify every visual asset by what it does: brand_identity, story_setting, news_subject, supporting_visual, or decorative
@@ -236,6 +238,8 @@ ${analysis.reroll_groups.map((group) => `- ${group.instruction}`).join("\n") || 
 
 const titleFromPremise = (premise: string) => {
   const title = premise.trim().replace(/[.!?]+$/, "");
+  const quotedFormat = title.match(/^(?:an?\s+)?['“\"]([^'”\"]{2,48})['”\"]\s+(?:style|format|layout|ad|post|creative)\b/i)?.[1]?.trim();
+  if (quotedFormat && quotedFormat.split(/\s+/).length <= 5) return quotedFormat;
   return title.length <= 64 ? title : `${title.slice(0, 61).trimEnd()}…`;
 };
 
