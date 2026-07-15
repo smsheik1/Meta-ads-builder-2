@@ -111,24 +111,28 @@ function FormatArtwork({ slide }: { slide: FormatSlide }) {
   if (slide.visual === "meme") {
     return (
       <div className="h-full bg-[#f2e6d4] p-5">
-        <img
-          src="/memes/this_is_fine_full.png"
-          alt="Meme format preview"
-          className="mt-10 aspect-square w-full border-4 border-[#080817] object-cover"
-        />
+        <div className="relative mt-10 aspect-square w-full overflow-hidden border-4 border-[#080817] bg-white">
+          <img src="/memes/this_is_fine_full.png" alt="This is fine meme" className="absolute inset-0 h-full w-full object-cover" />
+          <p className="absolute inset-x-3 top-[8%] text-center text-xl font-black uppercase leading-none text-[#080817] xl:text-2xl">
+            When every ad
+          </p>
+          <p className="absolute inset-x-3 bottom-[8%] text-center text-xl font-black uppercase leading-none text-[#080817] xl:text-2xl">
+            Looks the same
+          </p>
+        </div>
       </div>
     );
   }
 
   if (slide.visual === "reviews") {
     return (
-      <div className="flex h-full flex-col justify-center bg-[#ffe675] px-8 text-[#080817]">
+      <div className="flex h-full flex-col bg-[#ffe675] px-8 pb-52 pt-10 text-[#080817]">
         <Quote className="size-12 fill-current" strokeWidth={2.5} />
-        <p className="mt-7 text-4xl font-black leading-[1.02]">
-          &ldquo;Finally, an ad tool that starts with what customers actually said.&rdquo;
+        <p className="mt-6 text-3xl font-black leading-[1.04]">
+          &ldquo;I bought one for myself, then ordered three more.&rdquo;
         </p>
-        <div className="mt-8 flex items-center gap-2 text-sm font-black uppercase tracking-[0.16em]">
-          <Sparkles className="size-5" /> Real website proof
+        <div className="mt-6 flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em]">
+          <Sparkles className="size-5 shrink-0" /> Your brand&apos;s website testimonials
         </div>
       </div>
     );
