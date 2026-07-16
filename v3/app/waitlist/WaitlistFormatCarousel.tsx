@@ -1,7 +1,7 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Quote, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, Quote, Sparkles, Volume2, VolumeX } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 const formatSlides = [
   {
@@ -71,6 +71,121 @@ const formatSlides = [
 ] as const;
 
 type FormatSlide = (typeof formatSlides)[number];
+
+const brainrotPreviewBeats = [
+  {
+    speaker: "left" as const,
+    text: "Wait. Your ads still look like everyone else's?",
+  },
+  {
+    speaker: "right" as const,
+    text: "Exactly. Wiggly turns your website into ads people actually watch.",
+  },
+] as const;
+
+const brainrotSecondBeatStartsAtMs = 2_748;
+const brainrotPreviewDurationMs = 6_910;
+
+function BrainrotArtwork() {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [activeBeatIndex, setActiveBeatIndex] = useState(0);
+  const [soundOn, setSoundOn] = useState(false);
+  const activeBeat = brainrotPreviewBeats[activeBeatIndex];
+
+  useEffect(() => {
+    if (soundOn) return undefined;
+    const startedAt = performance.now();
+    const timer = window.setInterval(() => {
+      const elapsedMs = (performance.now() - startedAt) % brainrotPreviewDurationMs;
+      setActiveBeatIndex(elapsedMs < brainrotSecondBeatStartsAtMs ? 0 : 1);
+    }, 100);
+    return () => window.clearInterval(timer);
+  }, [soundOn]);
+
+  const toggleSound = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (soundOn) {
+      audio.pause();
+      setSoundOn(false);
+      return;
+    }
+
+    audio.currentTime = 0;
+    setActiveBeatIndex(0);
+    try {
+      await audio.play();
+      setSoundOn(true);
+    } catch {
+      setSoundOn(false);
+    }
+  };
+
+  return (
+    <div className="relative h-full overflow-hidden bg-[#79D37A]">
+      <video
+        src="/brainrot/block-parkour.mp4"
+        className="h-full w-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        aria-label="Brainrot format gameplay preview"
+      />
+      <audio
+        ref={audioRef}
+        src="/brainrot/homepage-dialogue.mp3"
+        preload="metadata"
+        loop
+        onTimeUpdate={(event) => {
+          setActiveBeatIndex(event.currentTarget.currentTime * 1_000 < brainrotSecondBeatStartsAtMs ? 0 : 1);
+        }}
+      />
+
+      <button
+        type="button"
+        onClick={toggleSound}
+        aria-pressed={soundOn}
+        aria-label={soundOn ? "Mute Brainrot dialogue" : "Play Brainrot dialogue"}
+        className="absolute right-3 top-3 z-20 flex h-9 items-center gap-2 rounded-md border-2 border-[#080817] bg-white px-3 text-[10px] font-black uppercase tracking-[0.08em] text-[#080817] shadow-[3px_3px_0_#080817] transition hover:-translate-y-0.5"
+      >
+        {soundOn ? <VolumeX className="size-4" strokeWidth={3} /> : <Volume2 className="size-4" strokeWidth={3} />}
+        {soundOn ? "Mute" : "Hear it"}
+      </button>
+
+      <p
+        aria-live="off"
+        className="absolute inset-x-4 top-[15%] z-10 text-center text-xl font-black uppercase leading-[0.96] text-white"
+        style={{
+          textShadow: "-2px -2px 0 #080817, 2px -2px 0 #080817, -2px 2px 0 #080817, 2px 2px 0 #080817, 0 4px 0 #080817",
+        }}
+      >
+        {activeBeat.text}
+      </p>
+
+      <img
+        src="/brainrot/peter.png"
+        alt=""
+        className="absolute bottom-44 left-3 h-auto w-[37%] drop-shadow-lg transition duration-300 ease-out"
+        style={{
+          opacity: activeBeat.speaker === "left" ? 1 : 0.42,
+          transform: activeBeat.speaker === "left" ? "translateY(-6px) scale(1.05)" : "translateY(0) scale(1)",
+        }}
+      />
+      <img
+        src="/brainrot/stewie.png"
+        alt=""
+        className="absolute bottom-44 right-3 h-auto w-[38%] drop-shadow-lg transition duration-300 ease-out"
+        style={{
+          opacity: activeBeat.speaker === "right" ? 1 : 0.42,
+          transform: activeBeat.speaker === "right" ? "translateY(-6px) scale(1.05)" : "translateY(0) scale(1)",
+        }}
+      />
+    </div>
+  );
+}
 
 function FormatArtwork({ slide }: { slide: FormatSlide }) {
   if (slide.visual === "three-d") {
@@ -175,22 +290,7 @@ function FormatArtwork({ slide }: { slide: FormatSlide }) {
     );
   }
 
-  return (
-    <div className="relative h-full overflow-hidden bg-[#79D37A]">
-      <video
-        src="/brainrot/block-parkour.mp4"
-        className="h-full w-full object-cover"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        aria-label="Brainrot format gameplay preview"
-      />
-      <img src="/brainrot/peter.png" alt="" className="absolute bottom-44 left-3 h-auto w-[37%] drop-shadow-lg" />
-      <img src="/brainrot/stewie.png" alt="" className="absolute bottom-44 right-3 h-auto w-[38%] drop-shadow-lg" />
-    </div>
-  );
+  return <BrainrotArtwork />;
 }
 
 export function WaitlistFormatCarousel() {
@@ -202,9 +302,9 @@ export function WaitlistFormatCarousel() {
     if (paused) return undefined;
     const timer = window.setInterval(() => {
       setActiveIndex((current) => (current + 1) % formatSlides.length);
-    }, 4_500);
+    }, slide.visual === "brainrot" ? 7_500 : 4_500);
     return () => window.clearInterval(timer);
-  }, [activeIndex, paused]);
+  }, [activeIndex, paused, slide.visual]);
 
   const move = (direction: -1 | 1) => {
     setActiveIndex((current) => (current + direction + formatSlides.length) % formatSlides.length);

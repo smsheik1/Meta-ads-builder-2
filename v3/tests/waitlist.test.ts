@@ -25,6 +25,18 @@ assert.ok(!waitlistPage.includes("creative-pack-demo.mp4"), "The public homepage
 assert.ok(formatCarousel.includes("Previous format") && formatCarousel.includes("Next format"), "Format carousel controls should be visible and accessible.");
 assert.ok(formatCarousel.includes("setInterval"), "Format carousel should auto-rotate.");
 assert.ok(formatCarousel.includes("three-d-breakdown") && formatCarousel.includes("video-meme"), "Format carousel should feature real Wiggly formats.");
+assert.ok(
+  formatCarousel.includes("homepage-dialogue.mp3") && formatCarousel.includes("Play Brainrot dialogue"),
+  "Brainrot preview should expose a visible control for its real dialogue audio.",
+);
+assert.ok(
+  formatCarousel.includes("brainrotPreviewBeats") && formatCarousel.includes("activeBeat.speaker"),
+  "Brainrot preview should synchronize captions and speaker emphasis instead of showing two static characters.",
+);
+assert.ok(
+  existsSync(join(root, "public/brainrot/homepage-dialogue.mp3")),
+  "Brainrot preview dialogue should be bundled so the homepage does not depend on a provider call.",
+);
 
 const schema = read("convex/schema.ts");
 assert.ok(schema.includes("waitlistSignups"), "Convex schema should store waitlist signups.");
