@@ -3,6 +3,7 @@ import type { FormatDraft, MakerAnalysis } from "./model";
 
 export const makerAnalysisFixture: MakerAnalysis = {
   formula: {
+    name: "Active relationship",
     premise: "Show one active relationship inside a familiar collection.",
     visual_mechanic: "Gray supporting names surround two bold names joined by a symbol.",
     adaptation_rule: "Replace the brand, collection, active item, symbol, and CTA as one coherent idea.",
@@ -23,7 +24,7 @@ export const makerAnalysisFixture: MakerAnalysis = {
     active_item_id: "slack",
   }],
   assets: [
-    { id: "brand_mark", label: "Brand logo", evidence_ids: [], binding: "brand", sam_prompt: "footer brand logo" },
+    { id: "brand_mark", label: "Brand logo", role: "brand_identity", evidence_ids: [], binding: "brand", sam_prompt: "footer brand logo" },
   ],
   reroll_groups: [{
     id: "relationship_message",

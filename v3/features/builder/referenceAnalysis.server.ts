@@ -7,7 +7,6 @@ import {
   buildMakerAnalysisPrompt,
   createMakerDraftFromAnalysis,
   editableTextEvidenceIds,
-  makerAnalysisJsonSchema,
   paddleOcrResultSchema,
   validateMakerAnalysisEvidence,
   type PaddleOcrResult,
@@ -17,18 +16,12 @@ import type { MakerAnalysis } from "./model";
 import type { MakerAnalysisActivity } from "./analysisProgress";
 
 const GEMMA_MODEL = "google/gemma-4-31b-it";
-const GEMMA_PROVIDER = "DeepInfra";
+const GEMMA_MODELS = [`${GEMMA_MODEL}:free`, GEMMA_MODEL];
+const GEMMA_PROVIDERS = ["Google AI Studio", "DeepInfra", "ModelRun", "WandB"];
 const SAM3_VERSION = "1bf97763d5dfd3a1584adca913a8ef4b43c684fca97e04e39e4c50a3a5e09650";
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 const REPLICATE_PREDICTIONS_URL = "https://api.replicate.com/v1/predictions";
-
-// OpenRouter's Gemma backends do not implement the `uniqueItems` grammar keyword.
-// The canonical schema remains unchanged and makerAnalysisSchema enforces the same
-// uniqueness rules after decoding, so acceptance is not relaxed here.
-const openRouterMakerAnalysisSchema = JSON.parse(
-  JSON.stringify(makerAnalysisJsonSchema()),
-  (key, value) => key === "uniqueItems" ? undefined : value,
-) as ReturnType<typeof makerAnalysisJsonSchema>;
+const REVEALLAYER_ROLES = new Set(["story_setting", "news_subject", "supporting_visual"]);
 
 type OcrFile = PaddleOcrResult & {
   timing?: { initializationSeconds?: number; predictionSeconds?: number };
@@ -40,6 +33,9 @@ type SamResult = {
   masks?: number[][][];
   masks_offset?: number[][];
 };
+
+const assetsNeedingBackgroundRepair = (assets: MakerAnalysis["assets"]) =>
+  assets.filter((asset) => REVEALLAYER_ROLES.has(asset.role));
 
 const dataUrl = async (filePath: string, mimeType: string) =>
   `data:${mimeType};base64,${(await readFile(filePath)).toString("base64")}`;
@@ -116,7 +112,7 @@ export async function callGemmaReferenceAnalysis({
         "user-agent": "wiggly-maker-analysis/1.0",
       },
       body: JSON.stringify({
-        model: GEMMA_MODEL,
+        models: GEMMA_MODELS,
         messages: [{ role: "user", content: [
           { type: "image_url", image_url: { url: imageUrl } },
           { type: "text", text: buildMakerAnalysisPrompt(ocr) },
@@ -125,19 +121,13 @@ export async function callGemmaReferenceAnalysis({
         seed: 777,
         max_tokens: 4096,
         stream: false,
-        structured_outputs: true,
         provider: {
-          order: [GEMMA_PROVIDER],
-          allow_fallbacks: false,
+          order: GEMMA_PROVIDERS,
+          allow_fallbacks: true,
           require_parameters: true,
         },
         response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "maker_analysis_mvp",
-            strict: true,
-            schema: openRouterMakerAnalysisSchema,
-          },
+          type: "json_object",
         },
       }),
       signal: controller.signal,
@@ -146,14 +136,33 @@ export async function callGemmaReferenceAnalysis({
     if (providerError) {
       throw new Error(`OpenRouter Gemma 4 31B analysis failed: ${String(providerError.message || "Unknown provider error.")}`);
     }
-    const choices = response.body.choices as Array<{ message?: { content?: string } }> | undefined;
-    const content = choices?.[0]?.message?.content;
+    const choices = response.body.choices as Array<{
+      finish_reason?: unknown;
+      native_finish_reason?: unknown;
+      message?: { content?: unknown };
+    }> | undefined;
+    const choice = choices?.[0];
+    const content = choice?.message?.content;
     if (typeof content !== "string" || !content.trim()) throw new Error("Gemma 4 31B returned no analysis.");
     let parsed: unknown;
     try {
       parsed = JSON.parse(content);
     } catch {
-      throw new Error("Gemma 4 31B did not return bare JSON. Nothing was repaired or retried.");
+      console.error(`[wiggly:maker-analysis] invalid Gemma JSON ${JSON.stringify({
+        responseId: response.body.id ?? null,
+        model: response.body.model ?? GEMMA_MODEL,
+        provider: response.body.provider ?? null,
+        finishReason: choice?.finish_reason ?? null,
+        nativeFinishReason: choice?.native_finish_reason ?? null,
+        usage: response.body.usage ?? null,
+        contentChars: content.length,
+        contentPrefix: content.slice(0, 160),
+        contentSuffix: content.slice(-160),
+      })}`);
+      if (choice?.finish_reason === "length") {
+        throw new Error("Gemma 4 31B reached its 4,096-token output limit and returned incomplete JSON.");
+      }
+      throw new Error("Gemma 4 31B did not return bare JSON.");
     }
     return {
       analysis: validateMakerAnalysisEvidence(parsed, ocr),
@@ -229,6 +238,70 @@ export async function callSam3AssetRefinement({
   return { results, elapsedSeconds: Math.round((Date.now() - startedAt) / 100) / 10 };
 }
 
+export async function callRevealLayerBackgroundRepair({
+  assets,
+  endpoint,
+  fetcher,
+  imageUrl,
+  samResults,
+}: {
+  assets: MakerAnalysis["assets"];
+  endpoint: string;
+  fetcher: typeof fetch;
+  imageUrl: string;
+  samResults: Array<{ assetId: string; result: SamResult }>;
+}) {
+  const targets = assetsNeedingBackgroundRepair(assets);
+  if (targets.length === 0) {
+    return { background: Buffer.alloc(0), repairedAssetIds: [] as string[], elapsedSeconds: 0 };
+  }
+  if (!endpoint.trim()) {
+    throw new Error(`RevealLayer is required for ${targets.length} large editable visual asset${targets.length === 1 ? "" : "s"}, but it is not configured.`);
+  }
+  const samByAssetId = new Map(samResults.map((entry) => [entry.assetId, entry.result]));
+  const detections = targets.map((asset) => {
+    const result = samByAssetId.get(asset.id);
+    const scores = result?.scores || [];
+    const boxes = result?.boxes || [];
+    const selected = scores.reduce((best, score, index) => score > (scores[best] ?? -1) ? index : best, 0);
+    const bbox = boxes[selected];
+    if (!bbox || bbox.length !== 4 || bbox.some((value) => !Number.isFinite(value))) {
+      throw new Error(`RevealLayer needs a valid SAM 3 box for ${asset.label}.`);
+    }
+    return { assetId: asset.id, bbox };
+  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 600_000);
+  const startedAt = Date.now();
+  try {
+    const response = await fetcher(endpoint, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ image: imageUrl, detections }),
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`RevealLayer failed with HTTP ${response.status}${body ? `: ${body.slice(0, 300)}` : ""}`);
+    }
+    if (!response.headers.get("content-type")?.startsWith("image/")) {
+      throw new Error("RevealLayer did not return a background image.");
+    }
+    const background = Buffer.from(await response.arrayBuffer());
+    if (background.length === 0) throw new Error("RevealLayer returned an empty background image.");
+    return {
+      background,
+      repairedAssetIds: targets.map((asset) => asset.id),
+      elapsedSeconds: Math.round((Date.now() - startedAt) / 100) / 10,
+    };
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error("RevealLayer timed out after 600 seconds.");
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function analyzeMakerReference(
   file: File,
   onProgress: (activity: MakerAnalysisActivity) => void = () => {},
@@ -275,6 +348,7 @@ export async function analyzeMakerReference(
       `${semantic.analysis.fields.length} field${semantic.analysis.fields.length === 1 ? "" : "s"}, ${semantic.analysis.lists.length} list${semantic.analysis.lists.length === 1 ? "" : "s"}, and ${semantic.analysis.assets.length} asset${semantic.analysis.assets.length === 1 ? "" : "s"} understood in ${semantic.elapsedSeconds}s.`,
     );
     const refinableAssets = assetsNeedingRefinement(semantic.analysis);
+    const repairAssets = assetsNeedingBackgroundRepair(refinableAssets);
     report(
       "asset-plan",
       "Planning editable assets",
@@ -284,6 +358,10 @@ export async function analyzeMakerReference(
         : "No visual assets need AI separation for this reference.",
     );
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
+    const revealLayerUrl = process.env.MAKER_REVEALLAYER_URL || "";
+    if (repairAssets.length > 0 && !revealLayerUrl) {
+      throw new Error(`RevealLayer is required for ${repairAssets.length} large editable visual asset${repairAssets.length === 1 ? "" : "s"}, but it is not configured.`);
+    }
     if (refinableAssets.length > 0 && !replicateApiToken) {
       throw new Error(`SAM 3 is required for ${refinableAssets.length} editable asset${refinableAssets.length === 1 ? "" : "s"}, but Replicate is not configured.`);
     }
@@ -307,10 +385,28 @@ export async function analyzeMakerReference(
     if (refinableAssets.length > 0) {
       report("sam", "Separating editable visual assets", "complete", `${sam.results.length} asset${sam.results.length === 1 ? "" : "s"} separated in ${sam.elapsedSeconds}s.`);
     }
+    if (repairAssets.length > 0) {
+      report("reveal", "Rebuilding hidden background", "active", `RevealLayer is removing ${repairAssets.map((asset) => asset.label).join(" and ")} without smearing the scene.`);
+    }
+    const reveal = await callRevealLayerBackgroundRepair({
+      assets: refinableAssets,
+      endpoint: revealLayerUrl,
+      fetcher,
+      imageUrl: referenceImageUrl,
+      samResults: sam.results,
+    });
+    const revealBackgroundPath = path.join(workDir, "reveallayer-background.png");
+    if (reveal.background.length > 0) {
+      await writeFile(revealBackgroundPath, reveal.background);
+      report("reveal", "Rebuilding hidden background", "complete", `Clean background rebuilt in ${reveal.elapsedSeconds}s.`);
+    }
     report("compose", "Rebuilding the editable artwork", "active", "Removing editable regions from the background and composing clean layers.");
-    await writeFile(path.join(workDir, "claims.json"), JSON.stringify({ editableTextEvidenceIds: editableTextEvidenceIds(semantic.analysis) }));
+    await writeFile(path.join(workDir, "claims.json"), JSON.stringify({
+      editableTextEvidenceIds: editableTextEvidenceIds(semantic.analysis),
+      preRepairedAssetIds: reveal.repairedAssetIds,
+    }));
     await writeFile(path.join(workDir, "sam.json"), JSON.stringify(sam.results));
-    await runPython(python, [
+    const composeArgs = [
       script,
       "compose",
       path.join(workDir, "reference.jpg"),
@@ -318,7 +414,9 @@ export async function analyzeMakerReference(
       path.join(workDir, "claims.json"),
       path.join(workDir, "sam.json"),
       workDir,
-    ], 30_000);
+    ];
+    if (reveal.background.length > 0) composeArgs.push("--background", revealBackgroundPath);
+    await runPython(python, composeArgs, 30_000);
     const composition = JSON.parse(await readFile(path.join(workDir, "composition.json"), "utf8")) as {
       assets: Array<Omit<RefinedAsset, "imageUrl"> & { fileName: string }>;
       warnings: string[];

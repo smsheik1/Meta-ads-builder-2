@@ -13,6 +13,7 @@ import type * as adScenes from "../adScenes.js";
 import type * as audioAssets from "../audioAssets.js";
 import type * as dialogueScripts from "../dialogueScripts.js";
 import type * as jingleStoryboards from "../jingleStoryboards.js";
+import type * as makerFormats from "../makerFormats.js";
 import type * as productPhotoshoots from "../productPhotoshoots.js";
 import type * as renderJobs from "../renderJobs.js";
 import type * as researchRuns from "../researchRuns.js";
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   audioAssets: typeof audioAssets;
   dialogueScripts: typeof dialogueScripts;
   jingleStoryboards: typeof jingleStoryboards;
+  makerFormats: typeof makerFormats;
   productPhotoshoots: typeof productPhotoshoots;
   renderJobs: typeof renderJobs;
   researchRuns: typeof researchRuns;

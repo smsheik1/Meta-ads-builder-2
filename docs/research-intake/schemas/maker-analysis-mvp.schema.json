@@ -10,6 +10,7 @@
       "additionalProperties": false,
       "required": ["premise", "visual_mechanic", "adaptation_rule"],
       "properties": {
+        "name": {"type": "string", "minLength": 2, "maxLength": 48},
         "premise": {"type": "string"},
         "visual_mechanic": {"type": "string"},
         "adaptation_rule": {"type": "string"}
@@ -88,10 +89,11 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "label", "evidence_ids", "binding", "sam_prompt"],
+        "required": ["id", "label", "role", "evidence_ids", "binding", "sam_prompt"],
         "properties": {
           "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
           "label": {"type": "string"},
+          "role": {"enum": ["brand_identity", "story_setting", "news_subject", "supporting_visual", "decorative"]},
           "evidence_ids": {
             "type": "array",
             "uniqueItems": true,

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { makerAnalysisFixture } from "../features/builder/fixture";
 import {
   callGemmaReferenceAnalysis,
+  callRevealLayerBackgroundRepair,
   callSam3AssetRefinement,
 } from "../features/builder/referenceAnalysis.server";
 import type { PaddleOcrResult } from "../features/builder/referenceAnalysis";
@@ -38,17 +39,22 @@ const gemma = await callGemmaReferenceAnalysis({
 assert.equal(gemma.analysis.formula.premise, makerAnalysisFixture.formula.premise);
 assert.equal(gemmaRequests, 1, "Gemma must run once with no retry.");
 assert.equal(gemmaUrls[0], "https://openrouter.ai/api/v1/chat/completions");
-assert.equal(gemmaBodies[0]?.model, "google/gemma-4-31b-it");
-assert.equal((gemmaBodies[0]?.response_format as { type?: string }).type, "json_schema");
-assert.equal((gemmaBodies[0]?.response_format as { json_schema?: { strict?: boolean } }).json_schema?.strict, true);
-assert.equal(gemmaBodies[0]?.structured_outputs, true);
+assert.deepEqual(gemmaBodies[0]?.models, ["google/gemma-4-31b-it:free", "google/gemma-4-31b-it"]);
+assert.equal("model" in gemmaBodies[0]!, false);
+assert.deepEqual(gemmaBodies[0]?.response_format, { type: "json_object" });
+assert.equal("structured_outputs" in gemmaBodies[0]!, false);
 assert.deepEqual(gemmaBodies[0]?.provider, {
-  order: ["DeepInfra"],
-  allow_fallbacks: false,
+  order: ["Google AI Studio", "DeepInfra", "ModelRun", "WandB"],
+  allow_fallbacks: true,
   require_parameters: true,
 });
 assert.equal("chat_template_kwargs" in gemmaBodies[0]!, false);
-assert.equal(JSON.stringify(gemmaBodies[0]?.response_format).includes("uniqueItems"), false);
+const gemmaMessages = gemmaBodies[0]?.messages as Array<{ content?: Array<{ type?: string; text?: string }> }>;
+const gemmaPrompt = gemmaMessages?.[0]?.content?.find((part) => part.type === "text")?.text || "";
+assert.match(gemmaPrompt, /Return exactly one valid JSON object/);
+assert.match(gemmaPrompt, /maker_questions: string\[\]/);
+assert.match(gemmaPrompt, /Field binding is exactly one of: fixed, brand, campaign, proof/);
+assert.match(gemmaPrompt, /only brand_identity assets use brand binding/);
 
 let providerFailureRequests = 0;
 await assert.rejects(
@@ -67,6 +73,43 @@ await assert.rejects(
   /OpenRouter Gemma 4 31B analysis failed: provider exploded/,
 );
 assert.equal(providerFailureRequests, 1, "OpenRouter provider errors must fail without retry or fallback.");
+
+let malformedRequests = 0;
+const loggedErrors: string[] = [];
+const originalConsoleError = console.error;
+console.error = (...values: unknown[]) => loggedErrors.push(values.map(String).join(" "));
+try {
+  await assert.rejects(
+    callGemmaReferenceAnalysis({
+      apiKey: "test-key",
+      imageUrl: "data:image/jpeg;base64,test",
+      ocr,
+      fetcher: async () => {
+        malformedRequests += 1;
+        return new Response(JSON.stringify({
+          id: "generation-test-123",
+          model: "google/gemma-4-31b-it",
+          provider: "DeepInfra",
+          choices: [{
+            finish_reason: "length",
+            native_finish_reason: "MAX_TOKENS",
+            message: { content: '{"formula":{"premise":"cut off"' },
+          }],
+          usage: { prompt_tokens: 1200, completion_tokens: 4096, total_tokens: 5296 },
+        }), { status: 200, headers: { "content-type": "application/json" } });
+      },
+    }),
+    /reached its 4,096-token output limit and returned incomplete JSON/,
+  );
+} finally {
+  console.error = originalConsoleError;
+}
+assert.equal(malformedRequests, 1, "Malformed Gemma output must fail without retry or fallback.");
+assert.equal(loggedErrors.length, 1);
+assert.match(loggedErrors[0]!, /generation-test-123/);
+assert.match(loggedErrors[0]!, /\"finishReason\":\"length\"/);
+assert.match(loggedErrors[0]!, /\"completion_tokens\":4096/);
+assert.match(loggedErrors[0]!, /\"contentChars\":/);
 
 let emptySamRequests = 0;
 const emptySam = await callSam3AssetRefinement({
@@ -99,5 +142,53 @@ const sam = await callSam3AssetRefinement({
 assert.equal(samRequests, 2);
 assert.equal(sam.results[0]?.assetId, "brand_mark");
 assert.equal(((samBodies[0]?.input as { prompts?: string[] }).prompts || []).length, 1);
+
+const repairAssets = [
+  { ...makerAnalysisFixture.assets[0]!, id: "logo", role: "brand_identity" as const },
+  { ...makerAnalysisFixture.assets[0]!, id: "setting", role: "story_setting" as const },
+  { ...makerAnalysisFixture.assets[0]!, id: "subject", role: "news_subject" as const },
+];
+const repairSam = [
+  { assetId: "logo", result: { boxes: [[1, 1, 9, 9]], scores: [0.99] } },
+  { assetId: "setting", result: { boxes: [[10, 20, 300, 400], [11, 21, 301, 401]], scores: [0.4, 0.9] } },
+  { assetId: "subject", result: { boxes: [[500, 100, 800, 500]], scores: [0.95] } },
+];
+let revealRequests = 0;
+let revealBody: Record<string, unknown> | undefined;
+const reveal = await callRevealLayerBackgroundRepair({
+  assets: repairAssets,
+  endpoint: "https://reveal.test/decompose",
+  fetcher: async (_url, init) => {
+    revealRequests += 1;
+    revealBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    return new Response(new Uint8Array([137, 80, 78, 71]), {
+      status: 200,
+      headers: { "content-type": "image/png" },
+    });
+  },
+  imageUrl: "data:image/jpeg;base64,test",
+  samResults: repairSam,
+});
+assert.equal(revealRequests, 1, "RevealLayer must run once with no retry.");
+assert.deepEqual(revealBody, {
+  image: "data:image/jpeg;base64,test",
+  detections: [
+    { assetId: "setting", bbox: [11, 21, 301, 401] },
+    { assetId: "subject", bbox: [500, 100, 800, 500] },
+  ],
+});
+assert.deepEqual(reveal.repairedAssetIds, ["setting", "subject"]);
+assert.deepEqual([...reveal.background], [137, 80, 78, 71]);
+
+await assert.rejects(
+  callRevealLayerBackgroundRepair({
+    assets: repairAssets,
+    endpoint: "",
+    fetcher: async () => { throw new Error("should not call"); },
+    imageUrl: "data:image/jpeg;base64,test",
+    samResults: repairSam,
+  }),
+  /RevealLayer is required for 2 large editable visual assets, but it is not configured/,
+);
 
 console.log("maker reference provider tests passed");

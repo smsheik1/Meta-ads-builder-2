@@ -12,6 +12,7 @@ export type NvidiaNimChatCompletion = (input: {
   maxTokens?: number;
   stream?: boolean;
   structuredOutput?: boolean;
+  guidedJson?: Record<string, unknown>;
 }) => Promise<string>;
 
 const readNvidiaNimStream = async (response: Response) => {
@@ -54,6 +55,7 @@ export const callNvidiaNimChat = async ({
   model,
   nvidiaNimChatCompletion,
   prompt,
+  guidedJson,
   maxTokens,
   stream = false,
   structuredOutput = true,
@@ -66,6 +68,7 @@ export const callNvidiaNimChat = async ({
   model: string;
   nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
   prompt: string;
+  guidedJson?: Record<string, unknown>;
   maxTokens?: number;
   stream?: boolean;
   structuredOutput?: boolean;
@@ -93,6 +96,7 @@ export const callNvidiaNimChat = async ({
           maxTokens,
           stream,
           structuredOutput,
+          guidedJson,
         }),
         timeoutMs,
         label,
@@ -128,7 +132,7 @@ export const callNvidiaNimChat = async ({
         temperature,
         ...(maxTokens ? { max_tokens: maxTokens } : {}),
         ...(stream ? { stream: true } : {}),
-        ...(structuredOutput ? { response_format: { type: "json_object" } } : {}),
+        ...(guidedJson ? { guided_json: guidedJson } : structuredOutput ? { response_format: { type: "json_object" } } : {}),
       }),
       signal: controller.signal,
     });

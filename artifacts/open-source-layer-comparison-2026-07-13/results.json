@@ -1,0 +1,348 @@
+{
+  "date": "2026-07-13",
+  "references": [
+    {
+      "id": "01-click-grow",
+      "title": "Criteo \u201cClick, click, click, grow\u201d",
+      "source": "/Users/shaz/.codex/worktrees/e18f/Meta-ads-builder-2/artifacts/maker-dogfood-2026-07-13/evidence/01-click-grow/original.jpg",
+      "koharuText": [
+        {
+          "text": "CRITEO GO",
+          "box": {
+            "x": 375.8112,
+            "y": 88.615265,
+            "width": 323.06125,
+            "height": 58.825363
+          },
+          "font": "Fontworks/\u65e5\u6587/\u30b4\u30b7\u30c3\u30af\u4f53\uff08\u9ed1\u4f53\uff09/FOT-UDKakugo_SmallPr6-U.otf",
+          "fontSizePx": 46.14359,
+          "textColor": [
+            216,
+            99,
+            70
+          ]
+        },
+        {
+          "text": "Click, click, click, grow",
+          "box": {
+            "x": 260.1429,
+            "y": 206.20886,
+            "width": 555.4586,
+            "height": 752.4846
+          },
+          "font": "Fontworks/\u65e5\u6587/\u30c7\u30b6\u30a4\u30f3\u66f8\u4f53\uff08\u521b\u610f\u5b57\u4f53\uff09/FOT-YurukaStd-UB.otf",
+          "fontSizePx": 247.45277,
+          "textColor": [
+            216,
+            113,
+            60
+          ]
+        },
+        {
+          "text": "Define your goal, set a budget, approve your ads, and let GO handle the rest.",
+          "box": {
+            "x": 107.2836,
+            "y": 1003.064,
+            "width": 863.34534,
+            "height": 120.16962
+          },
+          "font": "Fontworks/\u65e5\u6587/\u30b4\u30b7\u30c3\u30af\u4f53\uff08\u9ed1\u4f53\uff09/FOT-RodinHappyPro-M.otf",
+          "fontSizePx": 67.389046,
+          "textColor": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "text": "TRY GO TODAY",
+          "box": {
+            "x": 386.31094,
+            "y": 1199.6414,
+            "width": 307.96127,
+            "height": 49.752686
+          },
+          "font": "Fontworks/\u65e5\u6587/\u30b4\u30b7\u30c3\u30af\u4f53\uff08\u9ed1\u4f53\uff09/FOT-UDKakugoC80Pro-M.otf",
+          "fontSizePx": 41.675545,
+          "textColor": [
+            231,
+            219,
+            200
+          ]
+        }
+      ],
+      "note": "4/4 semantic text groups found. Copy was exact. Font, size, and color evidence were recovered. The cleanup mask was empty, so the background stayed unchanged."
+    },
+    {
+      "id": "02-ranked-mistakes",
+      "title": "Ranked mistakes short",
+      "source": "/Users/shaz/.codex/worktrees/e18f/Meta-ads-builder-2/artifacts/maker-dogfood-2026-07-13/evidence/02-ranked-mistakes/original.png",
+      "koharuText": [
+        {
+          "text": "RUIN YOUR LIFE",
+          "box": {
+            "x": 121.93509,
+            "y": 590.70374,
+            "width": 875.02856,
+            "height": 117.02478
+          },
+          "font": "Morisawa\uff08\u68ee\u6cfd\uff09/\u65e5\u6587/MorisawaAOTF/\u65e5\u6587/\u30b4\u30b7\u30c3\u30af\u4f53\uff08\u9ed1\u4f53\uff09/A-OTF-UDShinGoCOnizPr6N-Heavy.otf",
+          "fontSizePx": 198.48788,
+          "textColor": [
+            132,
+            136,
+            124
+          ]
+        },
+        {
+          "text": "Share",
+          "box": {
+            "x": 950.48724,
+            "y": 1756.8964,
+            "width": 157.60931,
+            "height": 51.215332
+          },
+          "font": "\u5176\u4ed6/\u65e5\u6587/toppanbunkyumidashigothic-extrabold.ttf",
+          "fontSizePx": 46.858307,
+          "textColor": [
+            255,
+            255,
+            255
+          ]
+        },
+        {
+          "text": "@GaryFrayterBusiness",
+          "box": {
+            "x": 163.16357,
+            "y": 2001.1212,
+            "width": 501.54846,
+            "height": 45.832764
+          },
+          "font": "Monotype\uff08\u8499\u7eb3\uff09/\u7b80\u4f53/MHei PRC Xbold.ttf",
+          "fontSizePx": 42.463055,
+          "textColor": [
+            242,
+            244,
+            233
+          ]
+        },
+        {
+          "text": "Remix",
+          "box": {
+            "x": 948.2865,
+            "y": 1936.7026,
+            "width": 163.29468,
+            "height": 52.2334
+          },
+          "font": "\u5176\u4ed6/\u65e5\u6587/toppanbunkyumidashigothic-extrabold.ttf",
+          "fontSizePx": 44.332638,
+          "textColor": [
+            255,
+            255,
+            255
+          ]
+        },
+        {
+          "text": "5 Mistakes That Are Quietly Destroyed ...",
+          "box": {
+            "x": 41.34268,
+            "y": 2094.5383,
+            "width": 895.26184,
+            "height": 59.92383
+          },
+          "font": "Fontworks/\u65e5\u6587/\u30b4\u30b7\u30c3\u30af\u4f53\uff08\u9ed1\u4f53\uff09/FOT-DNPShueiAntiStd-B.otf",
+          "fontSizePx": 96.598236,
+          "textColor": [
+            255,
+            255,
+            255
+          ]
+        },
+        {
+          "text": "Home",
+          "box": {
+            "x": 66.13721,
+            "y": 2302.0457,
+            "width": 90.60582,
+            "height": 32.904785
+          },
+          "font": "\u5176\u4ed6/\u65e5\u6587/TypeBank/\u65e5\u6587/RoNOWStd-GE.otf",
+          "fontSizePx": 27.900776,
+          "textColor": [
+            162,
+            168,
+            163
+          ]
+        },
+        {
+          "text": "Shorts",
+          "box": {
+            "x": 285.8597,
+            "y": 2300.5269,
+            "width": 101.524475,
+            "height": 34.02295
+          },
+          "font": "Fontworks/\u65e5\u6587/\u30b4\u30b7\u30c3\u30af\u4f53\uff08\u9ed1\u4f53\uff09/FOT-DNPShueiGoKinStd-B.otf",
+          "fontSizePx": 33.43708,
+          "textColor": [
+            177,
+            191,
+            183
+          ]
+        },
+        {
+          "text": "Subscriptions",
+          "box": {
+            "x": 686.0398,
+            "y": 2299.5999,
+            "width": 201.0896,
+            "height": 36.44287
+          },
+          "font": "Founder Type\uff08\u65b9\u6b63\uff09/\u7b80\u7e41/ttf/\u65b9\u6b63\u5170\u4ead\u9ed1Pro Global Demibold.ttf",
+          "fontSizePx": 46.72757,
+          "textColor": [
+            183,
+            193,
+            180
+          ]
+        },
+        {
+          "text": "You",
+          "box": {
+            "x": 981.8157,
+            "y": 2301.3242,
+            "width": 61.74878,
+            "height": 31.682129
+          },
+          "font": "\u5176\u4ed6/\u65e5\u6587/TypeBank/\u65e5\u6587/RoNOWStd-GU.otf",
+          "fontSizePx": 42.71012,
+          "textColor": [
+            94,
+            94,
+            93
+          ]
+        }
+      ],
+      "note": "9 text regions found, including the main hook and app chrome. It missed the five small card captions and produced no image/object layers."
+    },
+    {
+      "id": "03-breaking-news",
+      "title": "Breaking-news ad",
+      "source": "/Users/shaz/.codex/worktrees/e18f/Meta-ads-builder-2/artifacts/maker-dogfood-2026-07-13/evidence/03-breaking-news/original.png",
+      "koharuText": [
+        {
+          "text": "8:21",
+          "box": {
+            "x": 137.20996,
+            "y": 42.541553,
+            "width": 113.487,
+            "height": 52.922268
+          },
+          "font": "\u5176\u4ed6/\u65e5\u6587/toppanbunkyumidashigothic-extrabold.otf",
+          "fontSizePx": 78.41746,
+          "textColor": [
+            157,
+            156,
+            140
+          ]
+        },
+        {
+          "text": "kingkong.com.au",
+          "box": {
+            "x": 160.7175,
+            "y": 194.71675,
+            "width": 478.27383,
+            "height": 65.33269
+          },
+          "font": "Morisawa\uff08\u68ee\u6cfd\uff09/\u65e5\u6587/MorisawaAPOTF/AP-OTF-BunkyuMdGoStd-EB.otf",
+          "fontSizePx": 64.77305,
+          "textColor": [
+            255,
+            255,
+            255
+          ]
+        },
+        {
+          "text": "BREAKING NEWS",
+          "box": {
+            "x": 16.963852,
+            "y": 1249.4781,
+            "width": 333.1543,
+            "height": 46.072998
+          },
+          "font": "Morisawa\uff08\u68ee\u6cfd\uff09/\u65e5\u6587/MorisawaAOTF/\u65e5\u6587/\u30b4\u30b7\u30c3\u30af\u4f53\uff08\u9ed1\u4f53\uff09/A-OTF-GothicMB101Pr6-Bold.otf",
+          "fontSizePx": 43.06056,
+          "textColor": [
+            236,
+            226,
+            219
+          ]
+        },
+        {
+          "text": "NEWLY LEAKED META ADS\n'CHEAT CODES' REVEAL\nHOW TO GET 5-11 ROAS",
+          "box": {
+            "x": 10.944061,
+            "y": 1331.581,
+            "width": 965.7224,
+            "height": 281.594
+          },
+          "font": "Morisawa\uff08\u68ee\u6cfd\uff09/\u65e5\u6587/MorisawaAOTF/\u65e5\u6587/\u30b4\u30b7\u30c3\u30af\u4f53\uff08\u9ed1\u4f53\uff09/A-OTF-UDShinGoCOfizPr6N-Ultra.otf",
+          "fontSizePx": 180.53973,
+          "textColor": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "text": "NEW FREE REPORT REVEALS HOW TO UNLOCK WILD SCALE WITH ADS",
+          "box": {
+            "x": 18.451935,
+            "y": 1638.2914,
+            "width": 929.88855,
+            "height": 38.787354
+          },
+          "font": "DynaFont\uff08\u534e\u5eb7\uff09/\u7b80\u7e41/ttf/\u534e\u5eb7\u624b\u672d\u4f53W7-A.ttf",
+          "fontSizePx": 75.289185,
+          "textColor": [
+            255,
+            255,
+            255
+          ]
+        },
+        {
+          "text": "Check out our site",
+          "box": {
+            "x": 167.48984,
+            "y": 1975.9983,
+            "width": 785.8728,
+            "height": 81.58179
+          },
+          "font": "DynaFont\uff08\u534e\u5eb7\uff09/\u65e5\u6587/otf/Pro-5/\u30b4\u30b7\u30c3\u30af\u4f53\uff08\u9ed1\u4f53\uff09/DFHSGothicRPro5-W5.otf",
+          "fontSizePx": 130.18912,
+          "textColor": [
+            58,
+            86,
+            97
+          ]
+        }
+      ],
+      "note": "6 key text regions found, including account name, label, headline, subhead, and CTA. It did not separate the building, Zuckerberg, logo, or other objects."
+    }
+  ],
+  "koharu": {
+    "status": "tested",
+    "version": "0.61.2",
+    "text_regions": 19,
+    "cleanup_mask_nonzero_pixels": 0,
+    "verdict": "useful text/font evidence; not a general layer engine"
+  },
+  "redesign": {
+    "status": "blocked",
+    "reason": "requires about 55GB GPU memory for Qwen Image Layered plus 10-16GB for vision tools; no hosted endpoint found"
+  },
+  "reveallayer": {
+    "status": "blocked",
+    "reason": "official endpoint returned HTTP 401 login required; local code requires CUDA"
+  }
+}

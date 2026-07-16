@@ -6,6 +6,16 @@ const semanticId = z.string().regex(/^[a-z][a-z0-9_]*$/);
 const evidenceId = z.string().regex(/^text_(?:[0-9]{2,}|cluster_[0-9]{2,})$/);
 const evidenceIds = z.array(evidenceId).min(1).refine((values) => new Set(values).size === values.length);
 
+export const makerAssetRoleSchema = z.enum([
+  "brand_identity",
+  "story_setting",
+  "news_subject",
+  "supporting_visual",
+  "decorative",
+]);
+
+export type MakerAssetRole = z.infer<typeof makerAssetRoleSchema>;
+
 const fieldSchema = z.object({
   id: semanticId,
   value: z.string(),
@@ -31,6 +41,7 @@ const listSchema = z.object({
 const assetSchema = z.object({
   id: semanticId,
   label: z.string(),
+  role: makerAssetRoleSchema.default("decorative"),
   evidence_ids: z.array(evidenceId).refine((values) => new Set(values).size === values.length),
   binding: z.enum(["fixed", "brand", "campaign", "locked"]),
   sam_prompt: z.string().min(1),
@@ -38,6 +49,7 @@ const assetSchema = z.object({
 
 export const makerAnalysisSchema = z.object({
   formula: z.object({
+    name: z.string().min(2).max(48).optional(),
     premise: z.string(),
     visual_mechanic: z.string(),
     adaptation_rule: z.string(),
@@ -131,18 +143,38 @@ export function validateFormatDraft(value: FormatDraft) {
   return { valid: errors.length === 0, errors };
 }
 
+export function validateFormatDraftReady(value: FormatDraft) {
+  const validation = validateFormatDraft(value);
+  const errors = [...validation.errors];
+  const analysisValidation = makerAnalysisSchema.safeParse(value.analysis);
+  if (analysisValidation.success) {
+    const mutableIds = new Set([
+      ...analysisValidation.data.fields.filter((field) => field.binding !== "fixed").map((field) => field.id),
+      ...analysisValidation.data.lists.filter((list) => list.binding !== "fixed").map((list) => list.id),
+      ...analysisValidation.data.assets.filter((asset) => asset.binding !== "fixed" && asset.binding !== "locked").map((asset) => asset.id),
+    ]);
+    if (mutableIds.size === 0) errors.push("Choose at least one component that changes before testing or publishing.");
+    for (const group of analysisValidation.data.reroll_groups) {
+      if (!group.members.some((member) => mutableIds.has(member))) {
+        errors.push(`“${group.instruction}” cannot reroll because every component is fixed or locked.`);
+      }
+    }
+  }
+  return { valid: errors.length === 0, errors };
+}
+
 export function assertFormatDraft(value: unknown): FormatDraft {
   if (!value || typeof value !== "object") throw new Error("Format draft is missing.");
   const draft = value as FormatDraft;
   const validation = validateFormatDraft(draft);
   if (!validation.valid) throw new Error(validation.errors.join(" "));
-  return draft;
+  return { ...draft, analysis: makerAnalysisSchema.parse(draft.analysis) };
 }
 
 export function assertFormatVersion(value: unknown): FormatVersion {
   if (!value || typeof value !== "object") throw new Error("Format version is missing.");
   const version = value as FormatVersion;
-  const draftValidation = validateFormatDraft({
+  const draftValidation = validateFormatDraftReady({
     ...version,
     id: version.draftId,
     status: "published",
@@ -155,7 +187,7 @@ export function assertFormatVersion(value: unknown): FormatVersion {
   if (!version.id?.trim() || !Number.isInteger(version.version) || version.version < 1 || !draftValidation.valid) {
     throw new Error(draftValidation.errors.join(" ") || "Format version is invalid.");
   }
-  return version;
+  return { ...version, analysis: makerAnalysisSchema.parse(version.analysis) };
 }
 
 export function replaceStaticLayer(
@@ -207,7 +239,7 @@ export function updateFormatDraft(
 }
 
 export function createFormatVersion(draft: FormatDraft, version: number, now = Date.now()): FormatVersion {
-  const validation = validateFormatDraft(draft);
+  const validation = validateFormatDraftReady(draft);
   if (!validation.valid) throw new Error(validation.errors.join(" "));
   return {
     id: `${draft.id}:v${version}`,

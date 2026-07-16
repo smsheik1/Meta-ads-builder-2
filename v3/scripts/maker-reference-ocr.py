@@ -12,7 +12,6 @@ from pathlib import Path
 import cv2
 import numpy as np
 from PIL import Image
-from paddleocr import PaddleOCR
 
 
 def write_json(path: Path, value: object) -> None:
@@ -52,6 +51,8 @@ def estimate_text_color(image: np.ndarray, polygon: np.ndarray) -> str:
 
 
 def run_ocr(input_path: Path, output_dir: Path) -> None:
+    from paddleocr import PaddleOCR
+
     output_dir.mkdir(parents=True, exist_ok=True)
     reference_path = output_dir / "reference.jpg"
     reference = prepare_reference(input_path, reference_path)
@@ -133,6 +134,7 @@ def compose_reference(
     claims_path: Path,
     sam_path: Path,
     output_dir: Path,
+    background_path: Path | None = None,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     ocr = json.loads(ocr_path.read_text())
@@ -142,7 +144,11 @@ def compose_reference(
     if source is None:
         raise RuntimeError("Normalized reference could not be read")
     height, width = source.shape[:2]
+    background_source = cv2.imread(str(background_path or reference_path), cv2.IMREAD_COLOR)
+    if background_source is None or background_source.shape[:2] != (height, width):
+        raise RuntimeError("Repaired background must match the normalized reference size")
     removal_mask = np.zeros((height, width), dtype=np.uint8)
+    pre_repaired_asset_ids = set(claims.get("preRepairedAssetIds", []))
     evidence_by_id = {item["id"]: item for item in ocr["texts"]}
     for evidence_id in claims["editableTextEvidenceIds"]:
         evidence = evidence_by_id.get(evidence_id)
@@ -177,10 +183,11 @@ def compose_reference(
         crop = rgba[y : y + asset_height, x : x + asset_width]
         file_name = f"asset-{asset_id}.png"
         cv2.imwrite(str(output_dir / file_name), crop)
-        removal_mask = cv2.bitwise_or(
-            removal_mask,
-            cv2.dilate(mask, np.ones((5, 5), dtype=np.uint8), iterations=1),
-        )
+        if asset_id not in pre_repaired_asset_ids:
+            removal_mask = cv2.bitwise_or(
+                removal_mask,
+                cv2.dilate(mask, np.ones((5, 5), dtype=np.uint8), iterations=1),
+            )
         artifacts.append(
             {
                 "assetId": asset_id,
@@ -192,7 +199,7 @@ def compose_reference(
             }
         )
 
-    background = cv2.inpaint(source, removal_mask, 3, cv2.INPAINT_TELEA)
+    background = cv2.inpaint(background_source, removal_mask, 3, cv2.INPAINT_TELEA) if np.any(removal_mask) else background_source
     cv2.imwrite(str(output_dir / "background.jpg"), background, [cv2.IMWRITE_JPEG_QUALITY, 90])
     write_json(output_dir / "composition.json", {"assets": artifacts, "warnings": warnings})
 
@@ -209,11 +216,12 @@ def main() -> int:
     compose_parser.add_argument("claims", type=Path)
     compose_parser.add_argument("sam", type=Path)
     compose_parser.add_argument("output_dir", type=Path)
+    compose_parser.add_argument("--background", type=Path)
     args = parser.parse_args()
     if args.command == "ocr":
         run_ocr(args.input, args.output_dir)
     else:
-        compose_reference(args.reference, args.ocr, args.claims, args.sam, args.output_dir)
+        compose_reference(args.reference, args.ocr, args.claims, args.sam, args.output_dir, args.background)
     return 0
 
 

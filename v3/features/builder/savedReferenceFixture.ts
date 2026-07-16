@@ -5,6 +5,7 @@ import type { MakerAnalysis } from "./model";
 // browser QA never spends another provider call.
 export const savedCodexReferenceAnalysis: MakerAnalysis = {
   formula: {
+    name: "Active relationship",
     premise: "Codex integrates with your favorite productivity tools.",
     visual_mechanic: "A central brand name connected via a handshake emoji to a vertical list of integrated software names.",
     adaptation_rule: "The list of tools can be swapped based on the target audience's tech stack.",
@@ -32,8 +33,8 @@ export const savedCodexReferenceAnalysis: MakerAnalysis = {
     active_item_id: "item_5",
   }],
   assets: [
-    { id: "asset_logo", label: "Codex Logo", evidence_ids: [], binding: "brand", sam_prompt: "minimalist spiral logo" },
-    { id: "asset_handshake", label: "Handshake Emoji", evidence_ids: [], binding: "fixed", sam_prompt: "handshake emoji" },
+    { id: "asset_logo", label: "Codex Logo", role: "brand_identity", evidence_ids: [], binding: "brand", sam_prompt: "minimalist spiral logo" },
+    { id: "asset_handshake", label: "Handshake Emoji", role: "decorative", evidence_ids: [], binding: "fixed", sam_prompt: "handshake emoji" },
   ],
   reroll_groups: [
     { id: "group_brand", members: ["field_brand", "asset_logo"], instruction: "Update brand identity" },

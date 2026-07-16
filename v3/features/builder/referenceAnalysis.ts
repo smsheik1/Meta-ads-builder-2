@@ -7,6 +7,7 @@ import type {
   StaticPackageAdScene,
   StaticTextLayer,
 } from "../scene/types";
+import { fitStaticTextLayer } from "../formats/static-package/textFit";
 import {
   makerAnalysisSchema,
   type FormatDraft,
@@ -75,6 +76,23 @@ export function validateMakerAnalysisEvidence(value: unknown, ocr: PaddleOcrResu
   return analysis;
 }
 
+export function normalizeMakerAnalysisRerollBindings(value: MakerAnalysis): MakerAnalysis {
+  const analysis = structuredClone(value);
+  const rerollMembers = new Set(analysis.reroll_groups.flatMap((group) => group.members));
+
+  for (const field of analysis.fields) {
+    if (rerollMembers.has(field.id) && field.binding === "fixed") field.binding = "campaign";
+  }
+  for (const list of analysis.lists) {
+    if (rerollMembers.has(list.id) && list.binding === "fixed") list.binding = "campaign";
+  }
+  for (const asset of analysis.assets) {
+    if (rerollMembers.has(asset.id) && asset.binding === "fixed") asset.binding = "campaign";
+  }
+
+  return analysis;
+}
+
 export function makerAnalysisJsonSchema() {
   return makerAnalysisMvpJsonSchema;
 }
@@ -88,23 +106,43 @@ ${JSON.stringify(evidence)}
 
 Return the communication formula, singleton editable Fields, repeated Lists, visual assets, coherent Reroll Groups, and at most three blocking Maker questions.
 
+Return exactly one valid JSON object with these keys and shapes:
+- formula: { name: string, premise: string, visual_mechanic: string, adaptation_rule: string }
+- fields: [{ id, value, evidence_ids: string[], binding }]
+- lists: [{ id, binding, items: [{ id, values: [{ key, value, evidence_ids: string[] }], asset_ids: string[] }], active_item_id: string | null }]
+- assets: [{ id, label, role, evidence_ids: string[], binding, sam_prompt }]
+- reroll_groups: [{ id, members: string[], instruction }]
+- maker_questions: string[]
+
 Rules:
 - use each creative OCR evidence ID at most once; never invent an ID
-- native status bars, account headers, platform CTA stickers, captions, reactions, and footers stay unassigned
-- logos and wordmarks are brand-bound assets, not Fields
+- name the reusable Format in 2 to 5 plain words; describe the layout idea, not the source brand
+- write the formula in plain language a non-designer can understand
+- native status bars, progress bars, menus, close buttons, reactions, and fixed platform controls stay unassigned
+- creative banner labels, kicker labels, proof lines, and CTA copy are Fields even when they visually resemble interface chrome
+- CTA Fields use campaign binding unless the words belong to a fixed native platform control
+- advertiser identity inside platform chrome is reusable content, never fixed chrome: account/avatar logos are brand-bound assets with role brand_identity, and account names or handles are brand-bound Fields (prefer id publisher_handle)
+- logos and wordmarks are brand-bound assets with role brand_identity, not Fields
+- classify every visual asset by what it does: brand_identity, story_setting, news_subject, supporting_visual, or decorative
+- story_setting is the main scene or environment; news_subject is the person or object the story is about; supporting_visual is the product or secondary proof image
+- formula-critical story images must be separate mutable assets and reroll with the headline; do not leave the source advertiser, spokesperson, setting, or product baked into the background
 - active_item_id is null unless one List item is visually emphasized
 - ask only for missing information that is not visible and blocks a useful draft
 - every formula-critical Field, List, and asset belongs to a Reroll Group
+- members of a Reroll Group must use a mutable binding allowed for that component (brand or campaign, plus proof for Fields); fixed and locked components stay outside Reroll Groups
 - wrapped text is one Field, not a List
 - repeated rows or benefits are one List item each and share the same value keys
 - keep each List item's text and asset IDs together
 - every asset_id must match an id declared in assets; otherwise leave asset_ids empty
 - if a highlighted value belongs to a repeated set, keep it in the List and set active_item_id; do not split it into a Field
-- complex nested interfaces or illustrations default to one locked asset
-- binding is fixed, brand, campaign, proof, or locked as allowed by the schema
+- complex nested interfaces or illustrations may stay locked only when they are decoration rather than part of the Format's message
+- Field binding is exactly one of: fixed, brand, campaign, proof
+- List binding is exactly one of: fixed, brand, campaign
+- asset binding is exactly one of: fixed, brand, campaign, locked
+- only brand_identity assets use brand binding; story settings, news subjects, products, and supporting visuals use campaign unless they are fixed or locked
 - Reroll Group members use existing Field, List, or asset IDs
 - sam_prompt is 1 to 6 literal words
-- do not return coordinates, explanations, or extra keys`;
+- do not return Markdown, coordinates, explanations, or extra keys`;
 }
 
 const evidenceBounds = (ids: string[], ocr: PaddleOcrResult) => {
@@ -162,7 +200,7 @@ const textLayer = ({
   zIndex: number;
 }): StaticTextLayer => {
   const bounds = evidenceBounds(evidenceIds, ocr);
-  return {
+  return fitStaticTextLayer({
     id,
     type: "text",
     name,
@@ -184,7 +222,7 @@ const textLayer = ({
     fontWeight: 600,
     lineHeight: 1.08,
     textAlign: "left",
-  };
+  }, text);
 };
 
 const createSkill = (analysis: MakerAnalysis) => `# ${analysis.formula.premise}
@@ -200,8 +238,13 @@ ${analysis.reroll_groups.map((group) => `- ${group.instruction}`).join("\n") || 
 
 const titleFromPremise = (premise: string) => {
   const title = premise.trim().replace(/[.!?]+$/, "");
+  const quotedFormat = title.match(/^(?:an?\s+)?['“\"]([^'”\"]{2,48})['”\"]\s+(?:style|format|layout|ad|post|creative)\b/i)?.[1]?.trim();
+  if (quotedFormat && quotedFormat.split(/\s+/).length <= 5) return quotedFormat;
   return title.length <= 64 ? title : `${title.slice(0, 61).trimEnd()}…`;
 };
+
+const titleFromAnalysis = (analysis: MakerAnalysis) =>
+  analysis.formula.name?.trim() || titleFromPremise(analysis.formula.premise);
 
 export function createMakerDraftFromAnalysis({
   analysis: rawAnalysis,
@@ -217,7 +260,7 @@ export function createMakerDraftFromAnalysis({
   now?: number;
 }): FormatDraft {
   const ocr = paddleOcrResultSchema.parse(artifacts.ocr);
-  const analysis = validateMakerAnalysisEvidence(rawAnalysis, ocr);
+  const analysis = normalizeMakerAnalysisRerollBindings(validateMakerAnalysisEvidence(rawAnalysis, ocr));
   const layers: StaticAdLayer[] = [];
 
   const background: StaticImageLayer = {
@@ -304,7 +347,7 @@ export function createMakerDraftFromAnalysis({
       name: "Reference brand",
       url: "https://wiggly.app/builder",
       host: "wiggly.app",
-      title: titleFromPremise(analysis.formula.premise),
+      title: titleFromAnalysis(analysis),
       description: analysis.formula.adaptation_rule,
       faviconUrl: null,
       logoUrl: null,
@@ -337,14 +380,14 @@ export function createMakerDraftFromAnalysis({
       researchRunId: id,
       brandSnapshotId: id,
       model: "google/gemma-4-31b-it",
-      provider: "nvidia-nim",
+      provider: "openrouter",
       generatedAt: now,
     },
   };
 
   return {
     id,
-    title: titleFromPremise(analysis.formula.premise),
+    title: titleFromAnalysis(analysis),
     status: "draft",
     reference: { fileName, imageUrl: artifacts.referenceImageUrl },
     scene,

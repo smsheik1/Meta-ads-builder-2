@@ -120,7 +120,7 @@ export type AdSceneBase<
     researchRunId: string;
     brandSnapshotId: string;
     model: string;
-    provider: "gemini" | "nvidia-nim" | "deterministic";
+    provider: "gemini" | "nvidia-nim" | "openrouter" | "deterministic";
     generatedAt: number;
     adAngles?: BrandAdAngle[];
     selectedProductHandles?: string[];

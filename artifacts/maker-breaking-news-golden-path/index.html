@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wiggly Maker — Breaking News Golden Path</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        background: #f4efe6;
+        color: #171714;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { width: min(1440px, 100%); margin: 0 auto; padding: 48px 28px 72px; }
+      h1 { max-width: 900px; margin: 0; font-size: clamp(40px, 6vw, 88px); line-height: .92; letter-spacing: -.065em; }
+      .lede { max-width: 760px; margin: 24px 0 40px; color: #5b574e; font-size: 20px; line-height: 1.5; }
+      .status { display: inline-flex; margin-bottom: 22px; padding: 8px 12px; border-radius: 999px; background: #171714; color: white; font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+      .warning { margin: 0 0 32px; padding: 20px 22px; border: 2px solid #d27418; border-radius: 20px; background: #fff1d9; color: #512c08; font-size: 17px; line-height: 1.5; }
+      .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+      article { overflow: hidden; border: 1px solid #d6cec0; border-radius: 24px; background: #fffdf8; box-shadow: 0 12px 30px rgba(36, 29, 19, .08); }
+      .image { min-height: 440px; padding: 18px; display: grid; place-items: center; background: #ded8cd; }
+      img { display: block; max-width: 100%; max-height: 620px; object-fit: contain; border-radius: 12px; }
+      .copy { padding: 20px 22px 24px; }
+      h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -.035em; }
+      p { margin: 0; color: #656057; line-height: 1.45; }
+      .bad h2::before { content: "Fails · "; color: #c5312d; }
+      .good h2::before { content: "Works · "; color: #16834c; }
+      .verified h2::before { content: "Verified · "; color: #16834c; }
+      .wide { grid-column: span 2; }
+      h3 { margin: 48px 0 18px; font-size: 30px; letter-spacing: -.045em; }
+      dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; margin: 24px 0 0; padding: 22px; border: 1px solid #d6cec0; border-radius: 20px; background: #fffdf8; }
+      dt { font-weight: 800; }
+      dd { margin: 0; color: #5b574e; }
+      footer { margin-top: 24px; padding: 22px; border-radius: 20px; background: #171714; color: white; font-size: 18px; line-height: 1.5; }
+      @media (max-width: 920px) {
+        .grid { grid-template-columns: 1fr 1fr; }
+        .wide { grid-column: span 1; }
+      }
+      @media (max-width: 620px) {
+        main { padding: 28px 16px 48px; }
+        .grid { grid-template-columns: 1fr; }
+        .image { min-height: 280px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="status">Golden-path audit updated — provider pin fixed; final proof still pending</div>
+      <h1>The final live run stopped before reconstruction.</h1>
+      <p class="lede">Wiggly reconstructed the real Zuckerberg reference into editable text and image layers, reopened that exact captured draft in the browser, moved and replaced the subject, resized text, read davidscookies.com, selected one pie, and generated three real directions. The remaining failures are output quality and reliability—not a missing canvas.</p>
+      <p class="warning"><strong>Honest result:</strong> my assistant could edit this Format, but I would not send the current David’s Cookies result to its head of marketing. The blank-image-picker bug is fixed and verified below. New analysis and remix prompts now name this kind of Format simply, treat creative CTA/banner copy as editable, use the selected product for the main subject when appropriate, and forbid fake leaks or unsupported “homemade” claims. Those rules still need one live end-to-end provider run before they count as a sendable result.</p>
+      <section class="grid">
+        <article class="good wide">
+          <div class="copy"><h2>Passes · Free-first provider gate</h2><p>The real IMG_1499.PNG passed local OCR and Gemma before any GPU started: 21 text regions in 7.6 seconds, then 5 fields and the three correct asset roles in 13.9 seconds. OpenRouter usage stayed at $0.02316184, proving the request cost $0. The route now permits failover only between hosts serving the same Gemma 4 31B model.</p></div>
+        </article>
+        <article class="bad wide">
+          <div class="image"><img src="final-run/02-openrouter-429.png" alt="Real builder stopped at OpenRouter upstream 429" /></div>
+          <div class="copy"><h2>Final live proof</h2><p>The real UI found 21 OCR regions, then OpenRouter’s WandB provider rate-limited Gemma 4 31B. Wiggly stopped visibly with no fallback, repair, or retry. RevealLayer was never called. Runtime routing is now restored to the already-benchmarked DeepInfra pin, but that correction still needs one live UI verification.</p></div>
+        </article>
+      </section>
+      <section class="grid">
+        <article>
+          <div class="image"><img src="evidence/original.png" alt="Original breaking news ad" /></div>
+          <div class="copy"><h2>Original reference</h2><p>The ad Wiggly must turn into an editable Format.</p></div>
+        </article>
+        <article>
+          <div class="image"><img src="evidence/current-reconstruction.png" alt="Current Wiggly reconstruction" /></div>
+          <div class="copy"><h2>Current reconstruction</h2><p>Wiggly correctly found the headline, proof line, building, logo, and Zuckerberg.</p></div>
+        </article>
+        <article class="bad">
+          <div class="image"><img src="evidence/current-moved-subject-failure.png" alt="Current moved subject failure" /></div>
+          <div class="copy"><h2>Move Zuckerberg</h2><p>The old local inpaint leaves a giant red-and-white hole. This is not usable.</p></div>
+        </article>
+        <article class="good wide">
+          <div class="image"><img src="evidence/reveallayer-clean-background.png" alt="RevealLayer clean background" /></div>
+          <div class="copy"><h2>Clean background</h2><p>The sky is restored while the building, Meta sign, story chrome, and all other content stay intact.</p></div>
+        </article>
+        <article class="good">
+          <div class="image"><img src="evidence/reveallayer-subject.png" alt="RevealLayer Zuckerberg subject layer" /></div>
+          <div class="copy"><h2>Movable subject</h2><p>Zuckerberg becomes a transparent asset that can be moved or replaced.</p></div>
+        </article>
+        <article class="good wide">
+          <div class="image"><img src="evidence/reveallayer-reconstructed.png" alt="RevealLayer reconstructed original" /></div>
+          <div class="copy"><h2>Reconstruction check</h2><p>Putting the clean background and subject back together reproduces the original.</p></div>
+        </article>
+      </section>
+
+      <h3>Real text-layer evidence</h3>
+      <section class="grid">
+        <article class="verified wide">
+          <div class="image"><img src="evidence/ocr-text-layer-proof.png" alt="Exact reference with 21 PaddleOCR text regions outlined" /></div>
+          <div class="copy"><h2>Find the editable writing</h2><p>The real local OCR pipeline found 21 positioned text regions. The captured live analysis grouped them into publisher, headline, proof line, and CTA fields, plus separate publisher-logo, corporate-setting, and key-figure assets. New analyses now explicitly treat creative banners, proof lines, and CTA copy as editable campaign content instead of fixed app chrome.</p></div>
+        </article>
+      </section>
+
+      <h3>What the assistant-facing Maker can already do</h3>
+      <section class="grid">
+        <article class="verified wide">
+          <div class="image"><img src="qa/03-image-replaced.png" alt="Real captured draft with image replacement and circle controls" /></div>
+          <div class="copy"><h2>Replace an important image</h2><p>The live subject layer can be selected, searched, uploaded, and kept square, rounded, or circular. The screenshot also exposes the next bug: a returned hotlink can appear blank or unrelated.</p></div>
+        </article>
+        <article class="verified">
+          <div class="image"><img src="qa/02-subject-moved.png" alt="Real captured draft with the subject inset moved" /></div>
+          <div class="copy"><h2>Move the subject</h2><p>The exact live subject layer moved through the real canvas. The old local repaired region is still visibly poor; the separately captured RevealLayer background above is the clean replacement evidence.</p></div>
+        </article>
+        <article class="verified wide">
+          <div class="image"><img src="qa/04-text-fitted.png" alt="Real headline resized without clipped letters" /></div>
+          <div class="copy"><h2>Resize text without clipping</h2><p>Human-style number entry now commits on blur or Enter, and the headline fits the resized box.</p></div>
+        </article>
+        <article class="verified wide">
+          <div class="image"><img src="qa/08-loaded-image-only.png" alt="Real Builder showing one loaded replacement image and no broken result" /></div>
+          <div class="copy"><h2>Only show images that loaded</h2><p>A Playwright run through the real captured draft returned one dead hotlink and one valid image. The dead result disappeared, the valid image was the only selectable choice, and clicking it updated the canvas layer.</p></div>
+        </article>
+      </section>
+
+      <h3>Real David’s Cookies remix attempt</h3>
+      <p class="warning"><strong>Best direction:</strong> “The Gift Hack Alert” had the clearest buyer idea: send a homemade-looking wildberry pie without the oven mess. It still fails the send-it test because the generated setting retained a distorted Meta logo, the replacement inset lost its intended crop in that run, and the generic CTA stayed “Check out our site.”</p>
+      <section class="grid">
+        <article class="bad">
+          <div class="image"><img src="qa/06-variation-1.png" alt="David's Cookies bakery secret variation" /></div>
+          <div class="copy"><h2>Bakery Secret</h2><p>Product-specific and readable, but the visual setting still carries source-campaign residue.</p></div>
+        </article>
+        <article class="bad">
+          <div class="image"><img src="qa/06-variation-2.png" alt="David's Cookies gift hack variation" /></div>
+          <div class="copy"><h2>Chosen copy direction</h2><p>The strongest concept of the three. It is not a winner yet because the image story is not clean enough to send.</p></div>
+        </article>
+        <article class="bad">
+          <div class="image"><img src="qa/06-variation-3.png" alt="David's Cookies easy dessert variation" /></div>
+          <div class="copy"><h2>Easy Dessert</h2><p>A distinct gathering angle with coherent pie copy, but the same visual contamination remains.</p></div>
+        </article>
+      </section>
+
+      <h3>Cost and stopping point</h3>
+      <dl>
+        <dt>Provider</dt><dd>Vast.ai</dd>
+        <dt>Attempted final instance</dt><dd>#44946897 · 1× A100 PCIE, 80 GB</dd>
+        <dt>Listed rate</dt><dd>$0.950/hour</dd>
+        <dt>Run balance before</dt><dd>$1.18</dd>
+        <dt>Balance after destroy</dt><dd>$0.48</dd>
+        <dt>Exact balance change</dt><dd>$0.70</dd>
+        <dt>Approved run budget</dt><dd>$0.50; the run exceeded it by $0.20. That is an execution failure, not a successful product result.</dd>
+        <dt>OpenRouter key preflight</dt><dd>Active with $0.9768 of its $1 limit remaining. The recorded 429 was WandB’s temporary upstream limit, not Wiggly’s account limit.</dd>
+        <dt>Paid resources after stop</dt><dd>0 running instances. The new #44946897 was destroyed. The old #44894756 remains inactive at its displayed storage rate.</dd>
+        <dt>What the final run proved</dt><dd>The saved 55 GB RevealLayer workspace can transfer to a fresh machine and start behind a private SSH tunnel. It did not prove the product path because OpenRouter stopped first.</dd>
+      </dl>
+
+      <h3>Final judgment</h3>
+      <footer><strong>Maker result: the existing editing slice still passes.</strong> <strong>Golden-path result: not proven.</strong> The final run stopped at OpenRouter before a new draft existed, so there is no new David’s Cookies winner to judge. The provider contract now points back to DeepInfra with fallbacks disabled; do not call this task complete or spend again without fresh approval for the live verification.</footer>
+    </main>
+  </body>
+</html>

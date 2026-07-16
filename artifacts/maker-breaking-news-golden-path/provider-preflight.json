@@ -1,0 +1,34 @@
+{
+  "checkedAtUtc": "2026-07-15T23:51:12Z",
+  "reference": "/Users/shaz/Downloads/IMG_1499.PNG",
+  "routing": {
+    "models": [
+      "google/gemma-4-31b-it:free",
+      "google/gemma-4-31b-it"
+    ],
+    "preferredProviders": [
+      "Google AI Studio",
+      "DeepInfra",
+      "ModelRun",
+      "WandB"
+    ],
+    "differentModelFallback": false
+  },
+  "result": {
+    "ocrRegions": 21,
+    "ocrSeconds": 7.6,
+    "semanticSeconds": 13.9,
+    "fields": 5,
+    "lists": 0,
+    "assets": 3,
+    "assetLabels": [
+      "K Logo",
+      "Meta Building",
+      "Mark Zuckerberg"
+    ]
+  },
+  "openRouterUsageBeforeUsd": 0.02316184,
+  "openRouterUsageAfterUsd": 0.02316184,
+  "openRouterCostUsd": 0,
+  "stoppedBeforeSamOrRevealLayer": true
+}

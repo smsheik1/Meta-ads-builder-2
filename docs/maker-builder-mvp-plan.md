@@ -23,9 +23,9 @@ This phase proves the Maker workflow. It does not build the Player campaign expe
 - One generic `static-package` format module; published Formats are data, never new React components or registry keys.
 - Preview, builder canvas, publish verification, and later export/share all use `AdRenderSurface`.
 - Native editable primitives are Text, Image, Shape, and Group. Complex decoration stays a locked raster by default.
-- Gemma 4 31B through OpenRouter's pinned DeepInfra backend performs semantic analysis only after an explicit click; provider fallbacks are disabled.
+- Gemma 4 31B performs semantic analysis only after an explicit click. OpenRouter tries its free route first, then may fail over between compatible hosts serving the same model; a different model is never substituted.
 - PaddleOCR provides text evidence. SAM 3 runs only when a non-text asset actually needs refinement.
-- Invalid model output stops visibly. There is no repair model, retry, or fallback.
+- Invalid model output stops visibly. There is no repair model, application retry, or different-model fallback.
 - A partial but structurally valid draft proceeds to Maker correction.
 - The Maker can edit the underlying Format skill as plain text.
 - Publishing creates an immutable version; later changes create a new draft.
