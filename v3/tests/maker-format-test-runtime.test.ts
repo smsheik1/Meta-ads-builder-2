@@ -142,6 +142,12 @@ const guidedJson = JSON.stringify(createMakerFormatTestGuidedJson(contract));
 assert.match(guidedJson, /\"enum\":\[\"brand_name\"/);
 assert.match(guidedJson, /\"maxItems\":7/);
 assert.doesNotMatch(guidedJson, /imageUrl/);
+assert.doesNotMatch(guidedJson, /product-image/, "Brand-level generation must not request a missing product image.");
+assert.match(
+  JSON.stringify(createMakerFormatTestGuidedJson(contract, true)),
+  /product-image/,
+  "Product generation may use the selected product image.",
+);
 assert.equal(validateMakerFormatTestGeneration(contract, generation).variations.length, 3);
 const repeatedLabels = structuredClone(generation);
 repeatedLabels.variations[1]!.angleLabel = repeatedLabels.variations[0]!.angleLabel;

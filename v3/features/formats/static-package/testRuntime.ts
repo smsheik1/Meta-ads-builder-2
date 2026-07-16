@@ -75,7 +75,7 @@ const constrainIdArray = (schema: JsonSchema, values: string[]) => {
   if (values.length) schemaProperty(schemaItems(schema), "id").enum = values;
 };
 
-export function createMakerFormatTestGuidedJson(contractValue: MakerFormatTestContract) {
+export function createMakerFormatTestGuidedJson(contractValue: MakerFormatTestContract, hasProductImage = false) {
   const contract = makerFormatTestContractSchema.parse(contractValue);
   const schema = z.toJSONSchema(makerFormatTestGenerationSchema) as JsonSchema;
   const variation = schemaItems(schemaProperty(schema, "variations"));
@@ -108,7 +108,11 @@ export function createMakerFormatTestGuidedJson(contractValue: MakerFormatTestCo
   if (valueKeys.length) schemaProperty(schemaItems(values), "key").enum = valueKeys;
   const assetOutput = schemaProperty(variation, "assets");
   constrainIdArray(assetOutput, ids(mutableAssets));
-  delete (schemaItems(assetOutput).properties as Record<string, JsonSchema>).imageUrl;
+  const plannedAsset = schemaItems(assetOutput);
+  if (!hasProductImage) {
+    schemaProperty(plannedAsset, "kind").enum = ["brand-logo", "web-image", "emoji", "keep"];
+  }
+  delete (plannedAsset.properties as Record<string, JsonSchema>).imageUrl;
   return schema;
 }
 

@@ -153,4 +153,9 @@ assert.deepEqual(
 assert.equal(hybridNews.scene.layout.layers.find((layer) => layer.semanticRole === "field:headline")?.type, "text");
 assert.equal(hybridNews.scene.layout.layers.find((layer) => layer.id === "headline-plate")?.locked, true);
 
+const composeScript = readFileSync("scripts/maker-reference-ocr.py", "utf8");
+assert.match(composeScript, /background_source\[text_mask > 0\] = np\.median\(nearby_background, axis=0\)/, "Editable text cleanup must restore nearby panel color instead of smearing large letters.");
+assert.match(composeScript, /abs\(source_ratio - background_ratio\) > 0\.01/, "RevealLayer output may be smaller, but only a matching aspect ratio may be resized.");
+assert.match(composeScript, /cv2\.resize\(background_source, \(width, height\), interpolation=cv2\.INTER_LANCZOS4\)/, "Matching RevealLayer backgrounds must return to the normalized reference size before composition.");
+
 console.log("maker reference analysis tests passed");
