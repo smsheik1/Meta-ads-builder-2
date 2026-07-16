@@ -5,6 +5,7 @@ node_modules/
 build/
 dist/
 coverage/
+artifacts/
 test-results/
 output/
 tmp/
