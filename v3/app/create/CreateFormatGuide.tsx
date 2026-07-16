@@ -10,7 +10,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import type { CreateFormatId } from "./createFormats";
+import { isComingSoonCreateFormat, type CreateFormatId } from "./createFormats";
 import {
   CREATE_FORMAT_GUIDES,
   CREATE_FORMAT_GUIDE_ORDER,
@@ -75,22 +75,29 @@ function CompareCard({
   onSelect: (format: CreateFormatId) => void;
   selected: boolean;
 }) {
+  const comingSoon = isComingSoonCreateFormat(guide.format);
+
   return (
     <SheetClose asChild>
       <button
         type="button"
-        onClick={() => onSelect(guide.format)}
+        onClick={() => {
+          if (!comingSoon) onSelect(guide.format);
+        }}
+        disabled={comingSoon}
         className={`group min-h-48 rounded-[26px] border p-4 text-left transition ${
           selected
             ? "border-slate-950 bg-slate-950 text-white shadow-xl shadow-slate-950/15"
-            : "border-slate-200 bg-white text-slate-950 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-xl hover:shadow-slate-950/8"
+            : comingSoon
+              ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-950 opacity-70"
+              : "border-slate-200 bg-white text-slate-950 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-xl hover:shadow-slate-950/8"
         }`}
         data-create-format-guide-card={guide.format}
       >
         <div className="flex items-start justify-between gap-3">
           <GuideInitial guide={guide} selected={selected} />
           <span className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] ${selected ? "bg-white/10 text-white" : "bg-slate-100 text-slate-500"}`}>
-            {guide.output}
+            {comingSoon ? "Coming soon" : guide.output}
           </span>
         </div>
         <h3 className="mt-4 text-2xl font-black tracking-normal">{guide.label}</h3>

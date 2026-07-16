@@ -16,7 +16,7 @@ import {
 import type { ProductCatalog } from "@/features/research/types";
 import { CreateFormatCompareSheet, SelectedCreateFormatBento } from "./CreateFormatGuide";
 import { CreateReviewsProductPicker } from "./CreateReviewsProductPicker";
-import { PRODUCT_PHOTOSHOOT_FORMAT, type CreateFormatId } from "./createFormats";
+import { PRODUCT_PHOTOSHOOT_FORMAT, isComingSoonCreateFormat, type CreateFormatId } from "./createFormats";
 
 type LoadStatus = "idle" | "loading" | "ready" | "error";
 export type WebsiteSubmitProgressStage = "reading-site" | "writing-ads" | "preparing-canvas" | null;
@@ -458,7 +458,14 @@ export function CreateLeftColumn({
               ["three-d-breakdown", "3D Breakdown"],
               [PRODUCT_PHOTOSHOOT_FORMAT, "Product Photoshoot"],
               ["visualizer", "Visualizer Ad"],
-            ].map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            ].map(([value, label]) => {
+              const comingSoon = isComingSoonCreateFormat(value as CreateFormatId);
+              return (
+                <option key={value} value={value} disabled={comingSoon}>
+                  {label}{comingSoon ? " — Coming soon" : ""}
+                </option>
+              );
+            })}
           </select>
           <SelectedCreateFormatBento format={format} />
         </div>

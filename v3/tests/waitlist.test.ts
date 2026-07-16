@@ -25,6 +25,7 @@ assert.ok(!waitlistPage.includes("creative-pack-demo.mp4"), "The public homepage
 assert.ok(formatCarousel.includes("Previous format") && formatCarousel.includes("Next format"), "Format carousel controls should be visible and accessible.");
 assert.ok(formatCarousel.includes("setInterval"), "Format carousel should auto-rotate.");
 assert.ok(formatCarousel.includes("three-d-breakdown") && formatCarousel.includes("video-meme"), "Format carousel should feature real Wiggly formats.");
+assert.ok(formatCarousel.includes('status: "Coming soon"'), "Motion Story homepage preview should be marked coming soon.");
 assert.ok(
   formatCarousel.includes("homepage-dialogue.mp3") && formatCarousel.includes("Play Brainrot dialogue"),
   "Brainrot preview should expose a visible control for its real dialogue audio.",
