@@ -1,0 +1,18 @@
+{
+  "provider": "Vast.ai",
+  "approvedRunCapUsd": 0.5,
+  "instanceId": 44894756,
+  "gpu": "1x A100 SXM4 80 GB",
+  "balanceBeforeUsd": 4.9,
+  "inactiveStorageRateUsdPerHour": 0.028,
+  "activeComputeRateUsdPerHour": 1.341,
+  "activeRateNote": "Vast does not display the active compute price while this stopped instance is inactive. The visible 128.8 DLPerf and 96.0 DLP/$/hr imply approximately $1.3417/hr active compute, so the run must stop before 22 minutes to remain under the $0.50 cap.",
+  "startRequestedAtUtc": "2026-07-16T02:20:59Z",
+  "balanceImmediatelyAfterStartRequestUsd": 4.89,
+  "stoppedAtUtc": "2026-07-16T02:42:12Z",
+  "balanceAfterUsd": 4.41,
+  "exactVastBalanceChangeUsd": 0.49,
+  "paidInstancesRunningAfterStop": 0,
+  "status": "stopped-at-budget-cap",
+  "result": "The full visible /builder run completed OCR, Gemma, and SAM, then called the configured RevealLayer URL without the required /decompose path. The preserved server returned HTTP 404 before GPU inference. The endpoint was corrected to http://127.0.0.1:18000/decompose, but the instance was stopped instead of retrying beyond the approved $0.50 cap."
+}
