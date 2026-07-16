@@ -15,6 +15,10 @@ assert.ok(workflow.includes("push:") && workflow.includes("- main"), "v3 deploy 
 assert.ok(workflow.includes("V3_CONVEX_DEPLOY_KEY"), "v3 deploy must use a v3-specific Convex deploy key.");
 assert.ok(!workflow.includes("secrets.CONVEX_DEPLOY_KEY"), "v3 deploy must not use the legacy Convex deploy key.");
 assert.ok(workflow.includes("scripts/deploy-v3-oracle.sh"), "v3 workflow must call the v3 deploy script.");
+assert.ok(
+  workflow.includes("git restore --worktree -- v3/convex/_generated/api.d.ts v3/next-env.d.ts"),
+  "v3 deploy must discard generated-file drift before pulling a new release.",
+);
 assert.ok(workflow.includes("REPLICATE_API_TOKEN: ${{ secrets.REPLICATE_API_TOKEN }}"), "Maker deploy must receive the Replicate secret.");
 assert.ok(workflow.includes('WIGGLY_MAKER_LIVE_ANALYSIS: "true"'), "Production dogfood must enable live Maker analysis.");
 assert.ok(workflow.includes("command_timeout: 40m"), "The first PaddleOCR install needs an explicit SSH timeout.");

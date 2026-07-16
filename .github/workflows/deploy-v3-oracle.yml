@@ -56,6 +56,7 @@ jobs:
             cd /home/ubuntu/Meta-ads-builder-2
             git fetch origin "$DEPLOY_BRANCH"
             git checkout "$DEPLOY_BRANCH"
+            git restore --worktree -- v3/convex/_generated/api.d.ts v3/next-env.d.ts
             git pull --ff-only origin "$DEPLOY_BRANCH"
             chmod +x scripts/deploy-v3-oracle.sh
             bash scripts/deploy-v3-oracle.sh
