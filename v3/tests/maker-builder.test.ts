@@ -5,6 +5,7 @@ import { createDefaultBuilderInteractionSnapshot, reduceBuilderInteraction } fro
 import { mergeMakerAnalysisActivity } from "../features/builder/analysisProgress";
 import { scaleTextLayer, scaleTextLayerToValue } from "../features/builder/textResize";
 import { flattenStaticLayers } from "../features/builder/model";
+import { fitStaticTextLayer } from "../features/formats/static-package/textFit";
 
 class MemoryStorage {
   private values = new Map<string, string>();
@@ -32,6 +33,8 @@ assert.equal(doubledText.height, textLayer.height * 2, "Corner resizing must pre
 assert.equal(doubledText.fontSize, textLayer.fontSize * 2, "Corner resizing must scale the font with its box.");
 const inspectorScaledText = scaleTextLayerToValue(textLayer, "width", textLayer.width / 2);
 assert.equal(inspectorScaledText.fontSize, textLayer.fontSize / 2, "Inspector width changes must not leave typography behind.");
+const fittedLongText = fitStaticTextLayer(textLayer, `${textLayer.text} with enough extra words to need a smaller size`);
+assert.ok(fittedLongText.fontSize < textLayer.fontSize, "Typing longer Maker copy must shrink it to fit instead of clipping it.");
 saveLocalDraft(draft);
 assert.deepEqual(loadLocalDraft(draft.id), draft);
 
@@ -103,6 +106,7 @@ assert.doesNotMatch(analysisServerSource, /NVIDIA_NIM_API_KEY|NVIDIA_NIM_MAKER_M
 assert.match(inspectorSource, /list:\$\{list\.id\}:\$\{item\.id\}:\$\{itemValue\.key\}/, "Live List edits must update their reconstructed scene layer.");
 assert.match(inspectorSource, /layerControlsDisabled = readOnly \|\| Boolean\(selectedLayer\?\.locked\)/, "Locked layers must stay unchanged until the Maker explicitly unlocks them.");
 assert.match(inspectorSource, /Why this Format works/);
+assert.match(inspectorSource, /updateLayer\(fitStaticTextLayer\(selectedLayer, event\.target\.value\)\)/, "Maker text edits must use the same auto-fit path as generated copy.");
 assert.match(inspectorSource, /Upload image/);
 assert.match(inspectorSource, /Image shape/);
 assert.match(inspectorSource, /borderRadius.*circle.*Math\.min/, "Replacing an inset image must let the Maker preserve a circle without editing pixels.");

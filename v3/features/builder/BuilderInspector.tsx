@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { LoaderCircle, Lock, Search, Unlock, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { StaticAdLayer, StaticLayerBinding } from "../scene/types";
+import { fitStaticTextLayer } from "../formats/static-package/textFit";
 import { findStaticLayer, flattenStaticLayers, replaceStaticLayer, updateFormatDraft, validateFormatDraftReady, type FormatDraft, type MakerAssetRole } from "./model";
 import { scaleTextLayerToValue } from "./textResize";
 
@@ -140,7 +141,7 @@ export function BuilderInspector({
                   <>
                     <div className="space-y-1.5">
                       <Label htmlFor="layer-text">Text</Label>
-                      <Textarea id="layer-text" disabled={layerControlsDisabled} value={selectedLayer.text} onChange={(event) => updateLayer({ text: event.target.value })} />
+                      <Textarea id="layer-text" disabled={layerControlsDisabled} value={selectedLayer.text} onChange={(event) => updateLayer(fitStaticTextLayer(selectedLayer, event.target.value))} />
                     </div>
                     <div className="grid grid-cols-[1fr_84px] gap-3">
                       <div className="space-y-1.5">

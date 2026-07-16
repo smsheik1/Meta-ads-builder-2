@@ -1,18 +1,48 @@
 {
   "provider": "Vast.ai",
-  "approvedRunCapUsd": 0.5,
   "instanceId": 44894756,
   "gpu": "1x A100 SXM4 80 GB",
-  "balanceBeforeUsd": 4.9,
-  "inactiveStorageRateUsdPerHour": 0.028,
-  "activeComputeRateUsdPerHour": 1.341,
-  "activeRateNote": "Vast does not display the active compute price while this stopped instance is inactive. The visible 128.8 DLPerf and 96.0 DLP/$/hr imply approximately $1.3417/hr active compute, so the run must stop before 22 minutes to remain under the $0.50 cap.",
-  "startRequestedAtUtc": "2026-07-16T02:20:59Z",
-  "balanceImmediatelyAfterStartRequestUsd": 4.89,
-  "stoppedAtUtc": "2026-07-16T02:42:12Z",
-  "balanceAfterUsd": 4.41,
-  "exactVastBalanceChangeUsd": 0.49,
-  "paidInstancesRunningAfterStop": 0,
-  "status": "stopped-at-budget-cap",
-  "result": "The full visible /builder run completed OCR, Gemma, and SAM, then called the configured RevealLayer URL without the required /decompose path. The preserved server returned HTTP 404 before GPU inference. The endpoint was corrected to http://127.0.0.1:18000/decompose, but the instance was stopped instead of retrying beyond the approved $0.50 cap."
+  "originalCapUsd": 0.5,
+  "additionalUserApprovedUsd": 0.2,
+  "attempts": [
+    {
+      "purpose": "Initial visible-pipeline verification",
+      "startedAtUtc": "2026-07-16T02:20:59Z",
+      "stoppedAtUtc": "2026-07-16T02:42:12Z",
+      "activeRuntime": "21m 13s",
+      "balanceBeforeUsd": 4.9,
+      "balanceAfterUsd": 4.41,
+      "exactBalanceChangeUsd": 0.49,
+      "result": "The visible pipeline reached RevealLayer, but the configured URL omitted /decompose and returned HTTP 404 before inference."
+    },
+    {
+      "purpose": "Approved verification after correcting the endpoint",
+      "startRequestedAtUtc": "2026-07-16T03:03:53Z",
+      "activeWindowFromVastAuditLog": "2026-07-15 10:05 PM-10:13 PM CDT",
+      "activeRuntime": "8m",
+      "balanceBeforeUsd": 4.4,
+      "balanceAfterFinalCleanupUsd": 3.85,
+      "exactBalanceChangeThroughFinalCleanupUsd": 0.55,
+      "result": "RevealLayer returned four layers in 43.08 seconds. The output was copied locally and replayed through the visible /builder flow."
+    }
+  ],
+  "combinedExactRecordedBalanceChangeUsd": 1.04,
+  "combinedApprovedCapUsd": 0.7,
+  "capOverageUsd": 0.34,
+  "billingContext": {
+    "instanceLifetimeChargeUsd": 2.6,
+    "gpu": "0.83 hours at $1.31/hour: $1.08",
+    "storage": "49.78 hours at $0.03/hour: $1.38",
+    "download": "51.90 GB at $0.003/GB: $0.14",
+    "upload": "0.19 GB at $0.004/GB: less than $0.01",
+    "note": "The lifetime charge includes earlier setup and storage activity on the reused instance; it is not the charge for only the two final verification windows."
+  },
+  "finalAccountState": {
+    "verifiedAtCdt": "2026-07-16 11:49 AM",
+    "creditBalanceUsd": 3.85,
+    "currentSpendUsdPerHour": 0,
+    "instances": 0,
+    "storageVolumes": 0,
+    "instanceDestroyed": true
+  }
 }

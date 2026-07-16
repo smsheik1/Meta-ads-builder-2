@@ -36,7 +36,7 @@ export async function generateMakerFormatTestVariations({
     apiKey: nvidiaNimApiKey,
     baseUrl: nvidiaNimBaseUrl,
     label: "NVIDIA NIM Maker Format test",
-    guidedJson: createMakerFormatTestGuidedJson(contract),
+    guidedJson: createMakerFormatTestGuidedJson(contract, Boolean(product?.imageUrl)),
     maxTokens: 5_000,
     model: nvidiaNimModel,
     nvidiaNimChatCompletion,

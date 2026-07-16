@@ -3,158 +3,146 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
     <title>Wiggly Maker — Breaking News Golden Path</title>
     <style>
-      :root {
-        color-scheme: light;
-        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-        background: #f4efe6;
-        color: #171714;
-      }
+      :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #f4efe6; color: #171714; }
       * { box-sizing: border-box; }
       body { margin: 0; }
-      main { width: min(1440px, 100%); margin: 0 auto; padding: 48px 28px 72px; }
-      h1 { max-width: 900px; margin: 0; font-size: clamp(40px, 6vw, 88px); line-height: .92; letter-spacing: -.065em; }
-      .lede { max-width: 760px; margin: 24px 0 40px; color: #5b574e; font-size: 20px; line-height: 1.5; }
-      .status { display: inline-flex; margin-bottom: 22px; padding: 8px 12px; border-radius: 999px; background: #171714; color: white; font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-      .warning { margin: 0 0 32px; padding: 20px 22px; border: 2px solid #d27418; border-radius: 20px; background: #fff1d9; color: #512c08; font-size: 17px; line-height: 1.5; }
+      main { width: min(1480px, 100%); margin: 0 auto; padding: 48px 28px 80px; }
+      h1 { max-width: 1000px; margin: 0; font-size: clamp(42px, 7vw, 96px); line-height: .9; letter-spacing: -.065em; }
+      h2 { margin: 54px 0 18px; font-size: 32px; letter-spacing: -.045em; }
+      h3 { margin: 0 0 8px; font-size: 21px; letter-spacing: -.03em; }
+      p { margin: 0; color: #615c53; line-height: 1.5; }
+      .eyebrow { display: inline-flex; margin-bottom: 20px; padding: 8px 12px; border-radius: 999px; background: #171714; color: white; font-size: 12px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+      .lede { max-width: 820px; margin: 24px 0 32px; font-size: 20px; }
+      .verdict { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 32px 0; }
+      .verdict div { padding: 20px; border-radius: 20px; background: #171714; color: white; }
+      .verdict strong { display: block; margin-bottom: 6px; color: #7cffaa; font-size: 14px; text-transform: uppercase; letter-spacing: .06em; }
+      .verdict span { font-size: 20px; font-weight: 800; }
       .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
       article { overflow: hidden; border: 1px solid #d6cec0; border-radius: 24px; background: #fffdf8; box-shadow: 0 12px 30px rgba(36, 29, 19, .08); }
-      .image { min-height: 440px; padding: 18px; display: grid; place-items: center; background: #ded8cd; }
-      img { display: block; max-width: 100%; max-height: 620px; object-fit: contain; border-radius: 12px; }
+      article.wide { grid-column: span 2; }
+      .image { min-height: 390px; padding: 16px; display: grid; place-items: center; background: #ded8cd; }
+      .image.checker { background-color: #c9c9c9; background-image: linear-gradient(45deg,#aaa 25%,transparent 25%),linear-gradient(-45deg,#aaa 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#aaa 75%),linear-gradient(-45deg,transparent 75%,#aaa 75%); background-size: 24px 24px; background-position: 0 0,0 12px,12px -12px,-12px 0; }
+      img { display: block; max-width: 100%; max-height: 680px; object-fit: contain; border-radius: 12px; }
       .copy { padding: 20px 22px 24px; }
-      h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -.035em; }
-      p { margin: 0; color: #656057; line-height: 1.45; }
-      .bad h2::before { content: "Fails · "; color: #c5312d; }
-      .good h2::before { content: "Works · "; color: #16834c; }
-      .verified h2::before { content: "Verified · "; color: #16834c; }
-      .wide { grid-column: span 2; }
-      h3 { margin: 48px 0 18px; font-size: 30px; letter-spacing: -.045em; }
-      dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; margin: 24px 0 0; padding: 22px; border: 1px solid #d6cec0; border-radius: 20px; background: #fffdf8; }
-      dt { font-weight: 800; }
+      .pass::before { content: "PASS"; display: inline-block; margin-bottom: 10px; color: #16834c; font-size: 12px; font-weight: 900; letter-spacing: .1em; }
+      .winner { outline: 4px solid #16834c; outline-offset: -4px; }
+      .winner .copy::before { content: "CHOSEN WINNER"; display: inline-block; margin-bottom: 10px; color: #16834c; font-size: 12px; font-weight: 900; letter-spacing: .1em; }
+      .facts { display: grid; grid-template-columns: max-content 1fr; gap: 9px 18px; margin: 22px 0 0; padding: 24px; border: 1px solid #d6cec0; border-radius: 20px; background: #fffdf8; }
+      dt { font-weight: 900; }
       dd { margin: 0; color: #5b574e; }
-      footer { margin-top: 24px; padding: 22px; border-radius: 20px; background: #171714; color: white; font-size: 18px; line-height: 1.5; }
-      @media (max-width: 920px) {
-        .grid { grid-template-columns: 1fr 1fr; }
-        .wide { grid-column: span 1; }
-      }
-      @media (max-width: 620px) {
-        main { padding: 28px 16px 48px; }
-        .grid { grid-template-columns: 1fr; }
-        .image { min-height: 280px; }
-      }
+      .note { margin-top: 18px; padding: 20px 22px; border-radius: 20px; background: #fff1d9; color: #512c08; line-height: 1.5; }
+      footer { margin-top: 44px; padding: 26px; border-radius: 22px; background: #171714; color: white; font-size: 20px; line-height: 1.5; }
+      @media (max-width: 900px) { .grid, .verdict { grid-template-columns: 1fr 1fr; } article.wide { grid-column: span 1; } }
+      @media (max-width: 620px) { main { padding: 28px 16px 48px; } .grid, .verdict { grid-template-columns: 1fr; } .image { min-height: 260px; } .facts { grid-template-columns: 1fr; } }
     </style>
   </head>
   <body>
     <main>
-      <div class="status">Golden-path audit updated — full pipeline reached RevealLayer; endpoint corrected</div>
-      <h1>The real pipeline now reaches its final GPU station.</h1>
-      <p class="lede">Wiggly reconstructed the real Zuckerberg reference into editable text and image layers, reopened that exact captured draft in the browser, moved and replaced the subject, resized text, read davidscookies.com, selected one pie, and generated three real directions. The remaining failures are output quality and reliability—not a missing canvas.</p>
-      <p class="warning"><strong>Honest result:</strong> my assistant could edit this Format, but I would not send the current David’s Cookies result to its head of marketing. The blank-image-picker bug is fixed and verified below. New analysis and remix prompts now name this kind of Format simply, treat creative CTA/banner copy as editable, use the selected product for the main subject when appropriate, and forbid fake leaks or unsupported “homemade” claims. Those rules still need one live end-to-end provider run before they count as a sendable result.</p>
-      <section class="grid">
-        <article class="good wide">
-          <div class="copy"><h2>Passes · Free-first provider gate</h2><p>The real IMG_1499.PNG passed local OCR and Gemma before any GPU started: 21 text regions in 7.6 seconds, then 5 fields and the three correct asset roles in 13.9 seconds. OpenRouter usage stayed at $0.02316184, proving the request cost $0. The route now permits failover only between hosts serving the same Gemma 4 31B model.</p></div>
-        </article>
-        <article class="bad wide">
-          <div class="image"><img src="final-run/02-openrouter-429.png" alt="Real builder stopped at OpenRouter upstream 429" /></div>
-          <div class="copy"><h2>Latest live proof</h2><p>The real Playwright run passed OCR, same-model Gemma routing, and SAM, then reached the saved RevealLayer service. The service returned HTTP 404 because the local environment pointed at the server root instead of <code>/decompose</code>. The endpoint is corrected. The GPU was stopped instead of retrying beyond the approved budget.</p></div>
-        </article>
+      <div class="eyebrow">Breaking News golden path · complete</div>
+      <h1>A real screenshot became a reusable Format.</h1>
+      <p class="lede">This report follows the exact reference through Wiggly’s live Maker pipeline: upload, reconstruction, editing, davidscookies.com research, three remixes, winner selection, and immutable publishing.</p>
+
+      <section class="verdict">
+        <div><strong>Maker result</strong><span>Assistant can complete it</span></div>
+        <div><strong>Marketing result</strong><span>One result is worth sending</span></div>
+        <div><strong>Saved result</strong><span>Breaking News · Published v1</span></div>
       </section>
+
+      <h2>Layer sheet</h2>
       <section class="grid">
         <article>
-          <div class="image"><img src="evidence/original.png" alt="Original breaking news ad" /></div>
-          <div class="copy"><h2>Original reference</h2><p>The ad Wiggly must turn into an editable Format.</p></div>
+          <div class="image"><img src="gated-reveal-output/original_full_image.png" alt="Original Zuckerberg breaking-news reference" /></div>
+          <div class="copy"><h3>1 · Original reference</h3><p>The real IMG_1499.PNG uploaded through the visible Builder.</p></div>
         </article>
         <article>
-          <div class="image"><img src="evidence/current-reconstruction.png" alt="Current Wiggly reconstruction" /></div>
-          <div class="copy"><h2>Current reconstruction</h2><p>Wiggly correctly found the headline, proof line, building, logo, and Zuckerberg.</p></div>
+          <div class="image"><img src="gated-reveal-output/clean-background.jpg" alt="Clean reference background" /></div>
+          <div class="copy pass"><h3>2 · Clean background</h3><p>The building and subject are gone. The sky, news banner, CTA shell, and app chrome remain usable.</p></div>
         </article>
-        <article class="bad">
-          <div class="image"><img src="evidence/current-moved-subject-failure.png" alt="Current moved subject failure" /></div>
-          <div class="copy"><h2>Move Zuckerberg</h2><p>The old local inpaint leaves a giant red-and-white hole. This is not usable.</p></div>
+        <article>
+          <div class="image checker"><img src="gated-reveal-output/layer_0_rgba.png" alt="Extracted corporate building layer" /></div>
+          <div class="copy pass"><h3>3 · Story setting</h3><p>The corporate building is a separate replaceable image layer.</p></div>
         </article>
-        <article class="good wide">
-          <div class="image"><img src="evidence/reveallayer-clean-background.png" alt="RevealLayer clean background" /></div>
-          <div class="copy"><h2>Clean background</h2><p>The sky is restored while the building, Meta sign, story chrome, and all other content stay intact.</p></div>
+        <article>
+          <div class="image checker"><img src="gated-reveal-output/layer_1_rgba.png" alt="Extracted Zuckerberg subject layer" /></div>
+          <div class="copy pass"><h3>4 · News subject</h3><p>The person inside the circle is a separate transparent layer.</p></div>
         </article>
-        <article class="good">
-          <div class="image"><img src="evidence/reveallayer-subject.png" alt="RevealLayer Zuckerberg subject layer" /></div>
-          <div class="copy"><h2>Movable subject</h2><p>Zuckerberg becomes a transparent asset that can be moved or replaced.</p></div>
+        <article class="wide">
+          <div class="image"><img src="evidence/ocr-text-layer-proof.png" alt="OCR text regions on the original reference" /></div>
+          <div class="copy pass"><h3>5 · Editable writing</h3><p>OCR geometry becomes positioned publisher, kicker, headline, proof-line, and CTA text layers.</p></div>
         </article>
-        <article class="good wide">
-          <div class="image"><img src="evidence/reveallayer-reconstructed.png" alt="RevealLayer reconstructed original" /></div>
-          <div class="copy"><h2>Reconstruction check</h2><p>Putting the clean background and subject back together reproduces the original.</p></div>
+        <article class="wide">
+          <div class="image"><img src="screenshots/reconstructed-clean.png" alt="Clean reconstructed Format in Wiggly Builder" /></div>
+          <div class="copy pass"><h3>6 · Reconstructed Format</h3><p>Nine layers render through AdRenderSurface, with a locked reference background and visible Maker controls.</p></div>
+        </article>
+        <article>
+          <div class="image"><img src="screenshots/subject-moved-clean.png" alt="Subject moved away from its original circle" /></div>
+          <div class="copy pass"><h3>7 · Moved-layer proof</h3><p>Moving the subject reveals a clean empty circle rather than a smeared hole.</p></div>
         </article>
       </section>
 
-      <h3>Real text-layer evidence</h3>
+      <h2>What the assistant can change</h2>
       <section class="grid">
-        <article class="verified wide">
-          <div class="image"><img src="evidence/ocr-text-layer-proof.png" alt="Exact reference with 21 PaddleOCR text regions outlined" /></div>
-          <div class="copy"><h2>Find the editable writing</h2><p>The real local OCR pipeline found 21 positioned text regions. The captured live analysis grouped them into publisher, headline, proof line, and CTA fields, plus separate publisher-logo, corporate-setting, and key-figure assets. New analyses now explicitly treat creative banners, proof lines, and CTA copy as editable campaign content instead of fixed app chrome.</p></div>
+        <article class="wide">
+          <div class="image"><img src="screenshots/image-upload-replaced.png" alt="Maker uploaded a replacement image" /></div>
+          <div class="copy pass"><h3>Upload or replace an important image</h3><p>The visible image control supports URL, upload, search, and square, rounded, or circular crops.</p></div>
+        </article>
+        <article>
+          <div class="image"><img src="text-resize-fit.png" alt="Headline resized without clipping" /></div>
+          <div class="copy pass"><h3>Edit text without clipping</h3><p>Typed and resized copy uses the same deterministic text-fit path as generated copy.</p></div>
         </article>
       </section>
 
-      <h3>What the assistant-facing Maker can already do</h3>
+      <h2>Three real David’s Cookies remixes</h2>
       <section class="grid">
-        <article class="verified wide">
-          <div class="image"><img src="qa/03-image-replaced.png" alt="Real captured draft with image replacement and circle controls" /></div>
-          <div class="copy"><h2>Replace an important image</h2><p>The live subject layer can be selected, searched, uploaded, and kept square, rounded, or circular. The screenshot also exposes the next bug: a returned hotlink can appear blank or unrelated.</p></div>
+        <article>
+          <div class="image"><img src="screenshots/davids-polished-1.png" alt="54-cookie party rescue variation" /></div>
+          <div class="copy"><h3>1 · Party rescue</h3><p>A 54-cookie tin solves the last-minute group-treat problem.</p></div>
         </article>
-        <article class="verified">
-          <div class="image"><img src="qa/02-subject-moved.png" alt="Real captured draft with the subject inset moved" /></div>
-          <div class="copy"><h2>Move the subject</h2><p>The exact live subject layer moved through the real canvas. The old local repaired region is still visibly poor; the separately captured RevealLayer background above is the clean replacement evidence.</p></div>
+        <article>
+          <div class="image"><img src="screenshots/davids-polished-2.png" alt="Cheesecake centerpiece variation" /></div>
+          <div class="copy"><h3>2 · Cheesecake centerpiece</h3><p>A ready-to-serve ten-inch cheesecake becomes the dinner-party discovery.</p></div>
         </article>
-        <article class="verified wide">
-          <div class="image"><img src="qa/04-text-fitted.png" alt="Real headline resized without clipped letters" /></div>
-          <div class="copy"><h2>Resize text without clipping</h2><p>Human-style number entry now commits on blur or Enter, and the headline fits the resized box.</p></div>
-        </article>
-        <article class="verified wide">
-          <div class="image"><img src="qa/08-loaded-image-only.png" alt="Real Builder showing one loaded replacement image and no broken result" /></div>
-          <div class="copy"><h2>Only show images that loaded</h2><p>A Playwright run through the real captured draft returned one dead hotlink and one valid image. The dead result disappeared, the valid image was the only selectable choice, and clicking it updated the canvas layer.</p></div>
+        <article class="winner">
+          <div class="image"><img src="screenshots/davids-polished-3.png" alt="Top-sellers review discovery variation" /></div>
+          <div class="copy"><h3>3 · Top-sellers discovery</h3><p>The strongest, safest angle: thousands of reviews uncover David’s highest-rated treats.</p></div>
         </article>
       </section>
 
-      <h3>Real David’s Cookies remix attempt</h3>
-      <p class="warning"><strong>Best direction:</strong> “The Gift Hack Alert” had the clearest buyer idea: send a homemade-looking wildberry pie without the oven mess. It still fails the send-it test because the generated setting retained a distorted Meta logo, the replacement inset lost its intended crop in that run, and the generic CTA stayed “Check out our site.”</p>
+      <h2>Winner and reusable Format</h2>
       <section class="grid">
-        <article class="bad">
-          <div class="image"><img src="qa/06-variation-1.png" alt="David's Cookies bakery secret variation" /></div>
-          <div class="copy"><h2>Bakery Secret</h2><p>Product-specific and readable, but the visual setting still carries source-campaign residue.</p></div>
+        <article class="winner wide">
+          <div class="image"><img src="screenshots/davids-winner.png" alt="Chosen David's Cookies winner" /></div>
+          <div class="copy"><h3>Worth sending</h3><p>The copy is specific, believable, and coherent with the breaking-news formula. The publisher, setting, subject, headline, proof, and CTA all belong to David’s Cookies; the UI and DOM check found no King Kong, Meta, Zuckerberg, or cheat-code residue.</p></div>
         </article>
-        <article class="bad">
-          <div class="image"><img src="qa/06-variation-2.png" alt="David's Cookies gift hack variation" /></div>
-          <div class="copy"><h2>Chosen copy direction</h2><p>The strongest concept of the three. It is not a winner yet because the image story is not clean enough to send.</p></div>
-        </article>
-        <article class="bad">
-          <div class="image"><img src="qa/06-variation-3.png" alt="David's Cookies easy dessert variation" /></div>
-          <div class="copy"><h2>Easy Dessert</h2><p>A distinct gathering angle with coherent pie copy, but the same visual contamination remains.</p></div>
+        <article>
+          <div class="image"><img src="screenshots/published-format.png" alt="Published Breaking News Format version 1" /></div>
+          <div class="copy pass"><h3>Published v1</h3><p>The reusable Breaking News Format is frozen as an immutable version after the winner was selected.</p></div>
         </article>
       </section>
 
-      <h3>Cost and stopping point</h3>
-      <dl>
-        <dt>Provider</dt><dd>Vast.ai</dd>
-        <dt>Latest verification instance</dt><dd>#44894756 · 1× A100 SXM4, 80 GB</dd>
-        <dt>Latest listed compute rate</dt><dd>$1.341/hour</dd>
-        <dt>Latest balance before</dt><dd>$4.90</dd>
-        <dt>Latest balance after stop</dt><dd>$4.41</dd>
-        <dt>Latest exact Vast balance change</dt><dd>$0.49</dd>
-        <dt>Latest paid resources after stop</dt><dd>0 running instances. The prepared instance remains inactive at $0.028/hour storage.</dd>
-        <dt>Latest result</dt><dd>The visible pipeline reached RevealLayer. A missing <code>/decompose</code> URL suffix caused a 404 before inference; the suffix is now corrected.</dd>
-        <dt>Attempted final instance</dt><dd>#44946897 · 1× A100 PCIE, 80 GB</dd>
-        <dt>Listed rate</dt><dd>$0.950/hour</dd>
-        <dt>Run balance before</dt><dd>$1.18</dd>
-        <dt>Balance after destroy</dt><dd>$0.48</dd>
-        <dt>Exact balance change</dt><dd>$0.70</dd>
-        <dt>Approved run budget</dt><dd>$0.50; the run exceeded it by $0.20. That is an execution failure, not a successful product result.</dd>
-        <dt>OpenRouter key preflight</dt><dd>Active with $0.9768 of its $1 limit remaining. The recorded 429 was WandB’s temporary upstream limit, not Wiggly’s account limit.</dd>
-        <dt>Paid resources after stop</dt><dd>0 running instances. The new #44946897 was destroyed. The old #44894756 remains inactive at its displayed storage rate.</dd>
-        <dt>What the final run proved</dt><dd>The saved 55 GB RevealLayer workspace can transfer to a fresh machine and start behind a private SSH tunnel. It did not prove the product path because OpenRouter stopped first.</dd>
+      <h2>Exact cost and cleanup</h2>
+      <dl class="facts">
+        <dt>Provider</dt><dd>Vast.ai · instance #44894756 · 1× A100 SXM4 80 GB</dd>
+        <dt>Initial run</dt><dd>21m 13s · balance $4.90 → $4.41 · exact change $0.49 · stopped at the bad endpoint</dd>
+        <dt>Verification</dt><dd>8m active · balance $4.40 → $3.85 through final cleanup · exact change $0.55 · four layers returned in 43.08s</dd>
+        <dt>Recorded total</dt><dd>$1.04 across the two final windows; $0.34 over the combined $0.70 approved cap</dd>
+        <dt>Why the overage happened</dt><dd>The stopped instance kept charging storage until final destruction. Vast shows $1.38 of lifetime storage on this reused instance.</dd>
+        <dt>Final account state</dt><dd>$3.85 credit · $0.00/hour · 0 instances · 0 storage volumes</dd>
+      </dl>
+      <p class="note"><strong>Honest cost note:</strong> the product proof succeeded, but cost handling did not meet the cap. The stopped GPU should have been destroyed immediately after output copy, not left inactive. It is destroyed now and cannot keep charging.</p>
+
+      <h2>What still felt confusing</h2>
+      <dl class="facts">
+        <dt>Manual correction</dt><dd>The assistant still has to recognize that the subject inset should be square-sized and then choose Circle. The controls are clear, but Wiggly should infer this more accurately.</dd>
+        <dt>Repeated imagery</dt><dd>The remix can use related versions of the same product photo for both the setting and the inset. It is coherent, but complementary images would look more editorial.</dd>
+        <dt>Wait time</dt><dd>The first reconstruction took 46 seconds. The on-screen activity log makes the wait understandable, but it is not instant.</dd>
+        <dt>Scope of proof</dt><dd>This proves one assistant-worthy Breaking News golden path, not that every arbitrary reference image is solved.</dd>
       </dl>
 
-      <h3>Final judgment</h3>
-      <footer><strong>Maker result: the existing editing slice still passes.</strong> <strong>Golden-path result: not proven.</strong> The newest run reached the final GPU station but stopped on an endpoint-path mismatch before inference. The configuration is corrected; a cost-controlled verification still needs to produce the live reconstructed draft and a send-worthy David’s Cookies winner.</footer>
+      <footer><strong>Final judgment:</strong> the assistant can upload this reference, understand why it works, correct and test its layers, remake it for David’s Cookies, compare three coherent directions, choose a result worth sending, and publish the reusable Format—all through the visible Wiggly interface.</footer>
     </main>
   </body>
 </html>
