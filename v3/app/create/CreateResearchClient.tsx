@@ -590,12 +590,9 @@ function ResearchConnected() {
 
   const setModal = useCallback((modal: CreateModal) => {
     setActiveModal(modal);
-    if (modal === "brand-details") canvasActions.openModal("brand-dump");
-    else canvasActions.closeModal("brand-dump");
-    if (modal === "dialogue") canvasActions.openModal("dialogue");
-    else canvasActions.closeModal("dialogue");
-    if (modal === "captions") canvasActions.openModal("captions");
-    else canvasActions.closeModal("captions");
+    const canvasModal = modal === "brand-details" ? "brand-dump" : modal;
+    if (canvasModal) canvasActions.openModal(canvasModal);
+    else canvasActions.closeModal();
   }, [canvasActions]);
 
   const clearSubmitProgress = () => {
