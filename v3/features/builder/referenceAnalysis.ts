@@ -243,8 +243,10 @@ const titleFromPremise = (premise: string) => {
   return title.length <= 64 ? title : `${title.slice(0, 61).trimEnd()}…`;
 };
 
-const titleFromAnalysis = (analysis: MakerAnalysis) =>
-  analysis.formula.name?.trim() || titleFromPremise(analysis.formula.premise);
+const titleFromAnalysis = (analysis: MakerAnalysis) => {
+  const name = analysis.formula.name?.trim();
+  return name?.replace(/\s+(?:ad|creative|format|layout|post|template|leak)$/i, "") || titleFromPremise(analysis.formula.premise);
+};
 
 export function createMakerDraftFromAnalysis({
   analysis: rawAnalysis,
