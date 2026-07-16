@@ -18,6 +18,7 @@ const formatSlides = [
     eyebrow: "Make the product feel premium",
     headline: "Turn proof and product imagery into a polished story.",
     accent: "#C9FF55",
+    status: "Coming soon",
     visual: "motion" as const,
   },
   {
@@ -354,7 +355,13 @@ export function WaitlistFormatCarousel() {
               <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: slide.accent }}>
                 {slide.label}
               </p>
-              <span className="size-2 rounded-full" style={{ backgroundColor: slide.accent }} />
+              {"status" in slide ? (
+                <span className="rounded-full border border-white/20 bg-white/10 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-white">
+                  {slide.status}
+                </span>
+              ) : (
+                <span className="size-2 rounded-full" style={{ backgroundColor: slide.accent }} />
+              )}
             </div>
             <p className="mt-2 text-[10px] font-black uppercase tracking-[0.17em] text-white/55">{slide.eyebrow}</p>
             <h2 className="mt-2 text-2xl font-black leading-[1.05] tracking-normal">{slide.headline}</h2>
