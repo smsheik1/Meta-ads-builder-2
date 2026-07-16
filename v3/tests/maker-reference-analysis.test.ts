@@ -92,6 +92,19 @@ assert.equal(createMakerDraftFromAnalysis({
   },
 }).title, "Breaking News");
 assert.equal(createHybridNewsDraftFixture({ id: "hybrid-news", fileName: "reference.png", imageUrl: "/reference.png" }).title, "Breaking News");
+const redundantSuffixAnalysis = structuredClone(makerAnalysisFixture);
+redundantSuffixAnalysis.formula.name = "Breaking News Leak";
+assert.equal(createMakerDraftFromAnalysis({
+  id: "concise-format-title",
+  fileName: "reference.jpg",
+  analysis: redundantSuffixAnalysis,
+  artifacts: {
+    referenceImageUrl: "data:image/jpeg;base64,reference",
+    backgroundImageUrl: "data:image/jpeg;base64,background",
+    ocr,
+    refinedAssets: [{ assetId: "brand_mark", imageUrl: "data:image/png;base64,logo", x: 10, y: 900, width: 90, height: 90 }],
+  },
+}).title, "Breaking News", "Format titles should drop a redundant tactic suffix instead of exposing model jargon.");
 assert.equal(draft.scene.layout.layers[0]?.semanticRole, "reference:background");
 assert.equal(draft.scene.layout.layers.find((layer) => layer.semanticRole === "field:brand_name")?.type, "text");
 assert.equal(draft.scene.layout.layers.find((layer) => layer.semanticRole === "asset:brand_mark")?.type, "image");
