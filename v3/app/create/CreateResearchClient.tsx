@@ -85,6 +85,7 @@ import { CreateCaptionModal } from "./CreateCaptionModal";
 import { BrandDumpModal } from "./CreateBrandDumpModal";
 import { CreateCanvasColumn } from "./CreateCanvasColumn";
 import { CreateControlPanel } from "./CreateControlPanel";
+import { CREATE_FORMAT_GUIDES } from "./createFormatEducation";
 import type { CreativePackOverviewGroup } from "./CreateCreativePackOverview";
 import { CreateCreativeBriefCard } from "./CreateCreativeBriefCard";
 import { CreateDialogueModal } from "./CreateDialogueModal";
@@ -2491,8 +2492,9 @@ function ResearchConnected() {
       setAdStatusNote(reusableResearch ? "Choose products, then generate this format." : "");
       return;
     }
-    if (!reusableResearch || status === "loading" || adStatus === "loading" || !isAdSceneCreateFormat(format)) return;
-    void generateScenesOnly(reusableResearch, format);
+    if (reusableResearch && isAdSceneCreateFormat(format)) {
+      setAdStatusNote(`${CREATE_FORMAT_GUIDES[format].label} selected. Generate when ready.`);
+    }
   };
 
   const onVideoMemeTemplateChange = (templateId: VideoMemeTemplateId) => {
@@ -3448,8 +3450,11 @@ function ResearchConnected() {
       },
     }
     : selectedScene;
-  const selectedThreeDFinalVideoReady = selectedSceneForCanvas?.format === "three-d-breakdown"
-    && selectedSceneForCanvas.layout.finalVideo?.status === "ready";
+  const selectedSceneMatchesActiveFormat = selectedScene?.format === selectedAdFormat;
+  const selectedSceneForActiveFormat = selectedSceneMatchesActiveFormat ? selectedScene : null;
+  const selectedSceneForActiveCanvas = selectedSceneForCanvas?.format === selectedAdFormat ? selectedSceneForCanvas : null;
+  const selectedThreeDFinalVideoReady = selectedSceneForActiveCanvas?.format === "three-d-breakdown"
+    && selectedSceneForActiveCanvas.layout.finalVideo?.status === "ready";
   const showThreeDProgressCanvas = selectedAdFormat === "three-d-breakdown" && !selectedThreeDFinalVideoReady;
   const threeDProgress = (() => {
     if (!showThreeDProgressCanvas) return null;
@@ -3533,10 +3538,11 @@ function ResearchConnected() {
   const adGenerationStatusLabel = selectedAdFormat === "three-d-breakdown" && adStatus === "loading" && progressStage === "writing-ads"
     ? getThreeDBreakdownLoadingLabel(adGenerationElapsedSeconds)
     : "";
+  const selectedFormatLabel = CREATE_FORMAT_GUIDES[selectedAdFormat].label;
   const previewBusyLabel = status === "loading"
-    ? "Reading your brand"
+    ? `Reading your brand for ${selectedFormatLabel}`
     : adStatus === "loading"
-      ? adGenerationStatusLabel || "Making your next version"
+      ? adGenerationStatusLabel || `Building ${selectedFormatLabel}`
       : audioStatus === "loading"
         ? "Making audio"
         : renderBusy
@@ -3544,6 +3550,10 @@ function ResearchConnected() {
           : staticPngDownloadBusy
             ? "Making PNG"
             : "";
+  const previewBusyHidesScene = Boolean(previewBusyLabel) && (
+    status === "loading" ||
+    (adStatus === "loading" && selectedSceneForCanvas?.format !== selectedAdFormat)
+  );
   const productPhotoshootMode = selectedAdFormat === PRODUCT_PHOTOSHOOT_FORMAT;
   const canGenerateProductPhotoshoot = Boolean(
     result?.researchRunId &&
@@ -3630,7 +3640,7 @@ function ResearchConnected() {
       <section className="mx-auto grid max-w-[1500px] items-start gap-8 py-5 sm:gap-10 sm:py-6 lg:min-h-[calc(100vh-5.5rem)] lg:grid-cols-[minmax(300px,0.62fr)_minmax(760px,1.38fr)] lg:gap-8">
         <div>
           <CreateLeftColumn
-            adScenesCount={adScenes.length}
+            adScenesCount={selectedSceneMatchesActiveFormat ? adScenes.length : 0}
             adStatus={adStatus}
             creativePackGroups={creativePackGroups}
             creativePackStatus={creativePackStatus}
@@ -3693,7 +3703,7 @@ function ResearchConnected() {
           ) : (
           <div className="grid items-start gap-5 sm:gap-6 lg:grid-cols-[minmax(260px,420px)_minmax(260px,1fr)]">
             <CreateCanvasColumn
-              adScenesCount={adScenes.length}
+              adScenesCount={selectedSceneMatchesActiveFormat ? adScenes.length : 0}
               isAudioPlaying={isAudioPlaying}
               onFinalVideoElement={onFinalVideoElement}
               onOpenAudioPanel={onOpenAudioPanel}
@@ -3701,20 +3711,25 @@ function ResearchConnected() {
               onRerollScene={onRerollScene}
               placeholderVariantIndex={placeholderVariantIndex}
               previewBusyLabel={previewBusyLabel}
+              previewBusyHidesScene={previewBusyHidesScene}
               previewPlatform={previewPlatform}
               previewTimeSeconds={previewTimeSeconds}
               rerollBusy={status === "loading" || adStatus === "loading" || audioStatus === "loading"}
               rerollCount={rerollCount}
               rerollFlash={rerollFlash}
-              result={result}
-              selectedScene={selectedSceneForCanvas}
+              result={previewBusyHidesScene ? null : result}
+              selectedScene={previewBusyHidesScene ? null : selectedSceneForActiveCanvas}
               threeDProgress={threeDProgress}
             />
 
-            <aside className="space-y-4">
+            <aside
+              aria-hidden={previewBusyHidesScene}
+              className={`space-y-4 transition-opacity ${previewBusyHidesScene ? "pointer-events-none opacity-0" : "opacity-100"}`}
+              data-create-workspace-stale-content={previewBusyHidesScene ? "hidden" : "visible"}
+            >
               <CreateQuickActions
                 currentRenderStatus={currentRenderStatus}
-                hasSelectedScene={Boolean(selectedScene)}
+                hasSelectedScene={Boolean(selectedSceneForActiveFormat)}
                 isAudioPlaying={isAudioPlaying}
                 onAnimateBrickStoryboard={() => void onAnimateBrickStoryboard()}
                 onBuildBrickMusicVideo={() => void onBuildBrickMusicVideo()}
@@ -3732,7 +3747,7 @@ function ResearchConnected() {
                 onSaveSelectedDesign={() => void onSaveSelectedDesign()}
                 onTogglePreviewPlayback={onTogglePreviewPlayback}
                 audioStatus={audioStatus}
-                playableAudioUrl={playableAudioUrl}
+                playableAudioUrl={selectedSceneMatchesActiveFormat ? playableAudioUrl : ""}
                 renderBusy={renderBusy}
                 renderDownloadUrl={selectedFinalVideoUrl || renderDownloadUrl}
                 renderErrorMessage={renderJob?.error || renderError}
@@ -3755,7 +3770,7 @@ function ResearchConnected() {
                 threeDClipBusyIndex={threeDClipBusyIndex}
                 threeDError={threeDError}
                 threeDImageStatus={threeDImageStatus}
-                threeDScene={selectedThreeDScene}
+                threeDScene={selectedSceneMatchesActiveFormat ? selectedThreeDScene : null}
                 threeDStorySlateActive={showThreeDStoryDirectionStage}
                 threeDStoryDirectionError={threeDStoryDirectionError}
                 threeDStoryDirections={threeDStoryDirections}
@@ -3768,7 +3783,7 @@ function ResearchConnected() {
                 savedDesigns={savedDesignItems}
                 saveStatus={saveStatus}
                 saveStatusLabel={saveStatusLabel}
-                selectedFormat={selectedScene?.format || (isAdSceneCreateFormat(selectedAdFormat) ? selectedAdFormat : null)}
+                selectedFormat={selectedSceneForActiveFormat?.format || (isAdSceneCreateFormat(selectedAdFormat) ? selectedAdFormat : null)}
                 selectedThreeDStoryDirectionId={selectedThreeDStoryDirectionId}
                 selectedDesignIsSaved={selectedDesignIsSaved}
                 shareError={shareError}
@@ -3835,7 +3850,7 @@ function ResearchConnected() {
                   backgroundMusicError={backgroundMusicError}
                   backgroundMusicStatus={backgroundMusicStatus}
                   hasGeneratedAudio={hasGeneratedAudio}
-                  hasSelectedScene={Boolean(selectedScene)}
+                  hasSelectedScene={Boolean(selectedSceneForActiveFormat)}
                   onOpenAudioPanel={onOpenAudioPanel}
                   onOpenCaptionEditor={openCaptionPanel}
                   onRemoveBackgroundMusic={onRemoveBackgroundMusic}
@@ -3850,7 +3865,7 @@ function ResearchConnected() {
                   onUpdateStyleColor={onUpdateStyleColor}
                   onUpdateFormatPreset={onUpdateFormatPreset}
                   previewPlatform={previewPlatform}
-                  selectedScene={selectedScene}
+                  selectedScene={selectedSceneForActiveFormat}
                 />
               ) : null}
 
@@ -3866,7 +3881,7 @@ function ResearchConnected() {
 
       {!productPhotoshootMode ? (
       <div className="mx-auto max-w-7xl pb-14">
-        {!showThreeDStoryDirectionStage ? (
+        {!previewBusyHidesScene && selectedSceneMatchesActiveFormat && !showThreeDStoryDirectionStage ? (
           <CreateIdeasList
             scenes={adScenes}
             selectedSceneIndex={selectedSceneIndex}

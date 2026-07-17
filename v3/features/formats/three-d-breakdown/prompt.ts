@@ -356,7 +356,7 @@ Return JSON only:
       "directionId": "idea-1",
       "hookLine": "one sentence cold-open hook",
       "subheadline": "short plain-language promise",
-      "shortSummary": "3-5 sentence story breakdown",
+      "shortSummary": "two short sentences covering tension, reveal, and payoff",
       "category": "Science fact | Product mystery | Hidden mechanism | Proof reveal | Sustainability angle | Customer tension",
       "whyCompelling": "why this would make someone keep watching",
       "adAngle": "one crisp ad angle",
@@ -370,6 +370,7 @@ Return JSON only:
 
 Rules:
 - Write exactly 5 directions.
+- Keep the JSON compact: hookLine max 18 words, subheadline max 12 words, shortSummary exactly 2 short sentences, whyCompelling max 18 words, adAngle max 14 words, and visualEngine max 24 words.
 - directionId values must be idea-1, idea-2, idea-3, idea-4, idea-5.
 - Each direction must use one evidence ID from the list.
 - Prefer the evidence with the strongest visual story, but the five cards should explore meaningfully different premises.
@@ -377,7 +378,7 @@ Rules:
 - Product category alone does not pass.
 - hookLine should be a mystery-style cold open, not a brand intro.
 - subheadline should be short enough to scan on a card.
-- shortSummary should explain start, escalation, reveal, and payoff.
+- shortSummary should cover tension, reveal, and payoff without retelling the whole ad.
 - visualEngine must describe the physical 3D reveal, not just "show product".
 - Create tension from a concrete use problem or evidence-backed mechanism, never fake bodily harm or fear.
 - Never use toxic, poison, starving, destroying, deadly, dangerous, killing, ruining, or "stripped of health" framing.

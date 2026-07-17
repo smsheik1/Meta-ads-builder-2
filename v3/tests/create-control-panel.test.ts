@@ -132,8 +132,9 @@ assert.ok(
   "Creative Pack status must render visible per-format chips with failed-format retry inside the left form.",
 );
 assert.ok(
-  createLeftColumnSource.includes('workingMode ? "Website ready"') &&
-    createLeftColumnSource.includes('adScenesCount ? "Ads ready to review"'),
+  createLeftColumnSource.includes("const pillLabel = singleSubmitBusy") &&
+    createLeftColumnSource.includes('? "Ads ready to review"') &&
+    createLeftColumnSource.includes('? "Website ready"'),
   "/create must not tell users to add a website after research exists but generation failed.",
 );
 assert.ok(
@@ -590,8 +591,10 @@ assert.ok(
 );
 assert.ok(
   createClientSource.includes("onFormatChange={onFormatChange}") &&
-    !createClientSource.includes("onFormatChange={setSelectedAdFormat}"),
-  "Format dropdown changes must route through the reuse-aware generation handler.",
+    !createClientSource.includes("onFormatChange={setSelectedAdFormat}") &&
+    !createClientSource.includes("void generateScenesOnly(reusableResearch, format);") &&
+    createClientSource.includes("selected. Generate when ready."),
+  "Format dropdown changes must preserve reusable research without automatically generating against the previous URL.",
 );
 assert.ok(
   createClientSource.indexOf("const reusableResearch = getReusableResearchForUrl(url)") <
@@ -607,6 +610,11 @@ assert.ok(
     !createClientSource.includes("Ad generation timed out after reusing the saved research.") &&
     createClientSource.includes("setError(getAdGenerationErrorMessage(nextError))"),
   "Manual ad generation must not use a fake client timer or blame saved research for slow provider calls.",
+);
+assert.ok(
+  createLeftColumnSource.includes('const errorPanel = error ?') &&
+    !createLeftColumnSource.includes('const errorPanel = status === "error" || adStatus === "error" ?'),
+  "Website and ad-generation errors must remain visible when Wiggly preserves an older canvas after failure.",
 );
 assert.ok(
   createClientSource.includes("getMusicGenerationErrorMessage") &&
@@ -642,16 +650,28 @@ assert.ok(
 );
 assert.ok(
   createClientSource.includes("const previewBusyLabel = status === \"loading\"") &&
+    createClientSource.includes("CREATE_FORMAT_GUIDES[selectedAdFormat].label") &&
     createClientSource.includes("function getThreeDBreakdownLoadingLabel(elapsedSeconds: number)") &&
     createClientSource.includes("Still waiting on NVIDIA NIM. Slow, not frozen.") &&
     createClientSource.includes("adGenerationStatusLabel={adGenerationStatusLabel}") &&
     createLeftColumnSource.includes("Writing 2 story directions") &&
     createLeftColumnSource.includes("adGenerationStatusLabel ? (") &&
     createClientSource.includes('previewBusyLabel={previewBusyLabel}') &&
+    createClientSource.includes("const previewBusyHidesScene = Boolean(previewBusyLabel)") &&
+    createClientSource.includes("selectedSceneForCanvas?.format !== selectedAdFormat") &&
+    createClientSource.includes('previewBusyHidesScene={previewBusyHidesScene}') &&
     canvasColumnSource.includes("previewBusyLabel: string") &&
+    canvasColumnSource.includes("previewBusyHidesScene: boolean") &&
     canvasColumnSource.includes("data-preview-loading-overlay") &&
+    canvasColumnSource.includes('data-preview-loading-mode={previewBusyHidesScene ? "opaque" : "overlay"}') &&
+    createClientSource.includes('result={previewBusyHidesScene ? null : result}') &&
+    createClientSource.includes("const selectedSceneMatchesActiveFormat = selectedScene?.format === selectedAdFormat") &&
+    createClientSource.includes('selectedScene={previewBusyHidesScene ? null : selectedSceneForActiveCanvas}') &&
+    createClientSource.includes('data-create-workspace-stale-content={previewBusyHidesScene ? "hidden" : "visible"}') &&
+    createClientSource.includes("!previewBusyHidesScene && selectedSceneMatchesActiveFormat && !showThreeDStoryDirectionStage") &&
+    createLeftColumnSource.includes("const pillLabel = singleSubmitBusy") &&
     canvasColumnSource.includes("{previewBusyLabel}"),
-  "The phone preview must show a visible loading overlay while /create is doing work.",
+  "Cross-format work must name the target format and hide the stale scene, controls, brief, and ideas while it runs.",
 );
 assert.ok(
   previewChromeSource.includes("useMemo<RenderVideoComponent>") &&
