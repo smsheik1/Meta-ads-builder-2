@@ -520,6 +520,10 @@ assert.equal(
   "Brainrot voice generation must run only from the explicit Add audio action, never automatically after generation, reroll, or selection.",
 );
 assert.ok(
+  !createClientSource.includes('if (firstScene?.format === "visualizer" && firstScene.audio.status !== "generated")'),
+  "Visualizer voice generation must wait for an explicit user audio action instead of running after scene generation.",
+);
+assert.ok(
   createClientSource.includes("const generateScenesOnly = async") &&
     createClientSource.includes("if (research.result) {") &&
     createClientSource.includes("setResult(research.result)") &&
