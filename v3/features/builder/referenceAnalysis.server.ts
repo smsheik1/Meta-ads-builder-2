@@ -3,11 +3,13 @@ import { access, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
+  assetNeedsBackgroundRepair,
   assetsNeedingRefinement,
   buildMakerAnalysisPrompt,
   createMakerDraftFromAnalysis,
   editableTextEvidenceIds,
   fixedFrameAssets,
+  normalizeMakerAnalysisRerollBindings,
   paddleOcrResultSchema,
   validateMakerAnalysisEvidence,
   type PaddleOcrResult,
@@ -22,7 +24,6 @@ const GEMMA_PROVIDERS = ["Google AI Studio", "DeepInfra", "ModelRun", "WandB"];
 const SAM3_VERSION = "1bf97763d5dfd3a1584adca913a8ef4b43c684fca97e04e39e4c50a3a5e09650";
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 const REPLICATE_PREDICTIONS_URL = "https://api.replicate.com/v1/predictions";
-const REVEALLAYER_ROLES = new Set(["story_setting", "news_subject", "supporting_visual"]);
 
 type OcrFile = PaddleOcrResult & {
   timing?: { initializationSeconds?: number; predictionSeconds?: number };
@@ -36,7 +37,7 @@ type SamResult = {
 };
 
 const assetsNeedingBackgroundRepair = (assets: MakerAnalysis["assets"]) =>
-  assets.filter((asset) => REVEALLAYER_ROLES.has(asset.role));
+  assets.filter(assetNeedsBackgroundRepair);
 
 const dataUrl = async (filePath: string, mimeType: string) =>
   `data:${mimeType};base64,${(await readFile(filePath)).toString("base64")}`;
@@ -342,14 +343,15 @@ export async function analyzeMakerReference(
     const visionImageUrl = await dataUrl(path.join(workDir, "vision.jpg"), "image/jpeg");
     report("semantic", "Understanding how the ad works", "active", "Gemma 4 via OpenRouter is matching the visual structure to the OCR evidence.");
     const semantic = await callGemmaReferenceAnalysis({ apiKey: openRouterApiKey, fetcher, imageUrl: visionImageUrl, ocr });
+    const analysis = normalizeMakerAnalysisRerollBindings(semantic.analysis);
     report(
       "semantic",
       "Understanding how the ad works",
       "complete",
-      `${semantic.analysis.fields.length} field${semantic.analysis.fields.length === 1 ? "" : "s"}, ${semantic.analysis.lists.length} list${semantic.analysis.lists.length === 1 ? "" : "s"}, and ${semantic.analysis.assets.length} asset${semantic.analysis.assets.length === 1 ? "" : "s"} understood in ${semantic.elapsedSeconds}s.`,
+      `${analysis.fields.length} field${analysis.fields.length === 1 ? "" : "s"}, ${analysis.lists.length} list${analysis.lists.length === 1 ? "" : "s"}, and ${analysis.assets.length} asset${analysis.assets.length === 1 ? "" : "s"} understood in ${semantic.elapsedSeconds}s.`,
     );
-    const framedAssets = fixedFrameAssets(semantic.analysis);
-    const refinableAssets = assetsNeedingRefinement(semantic.analysis);
+    const framedAssets = fixedFrameAssets(analysis);
+    const refinableAssets = assetsNeedingRefinement(analysis);
     const repairAssets = assetsNeedingBackgroundRepair(refinableAssets);
     report(
       "asset-plan",
@@ -404,7 +406,7 @@ export async function analyzeMakerReference(
     }
     report("compose", "Rebuilding the editable artwork", "active", "Removing editable regions from the background and composing clean layers.");
     await writeFile(path.join(workDir, "claims.json"), JSON.stringify({
-      editableTextEvidenceIds: editableTextEvidenceIds(semantic.analysis),
+      editableTextEvidenceIds: editableTextEvidenceIds(analysis),
       fixedFrameAssets: framedAssets.map((asset) => ({ assetId: asset.id, ...asset.frame })),
       preRepairedAssetIds: reveal.repairedAssetIds,
     }));
@@ -438,7 +440,7 @@ export async function analyzeMakerReference(
     const draft = createMakerDraftFromAnalysis({
       id: crypto.randomUUID(),
       fileName: file.name,
-      analysis: semantic.analysis,
+      analysis,
       artifacts: {
         referenceImageUrl,
         backgroundImageUrl: await dataUrl(path.join(workDir, "background.jpg"), "image/jpeg"),
