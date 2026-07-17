@@ -61,6 +61,29 @@ assert.ok(normalizedBindings.fields.every((field) => field.binding === "campaign
 assert.ok(normalizedBindings.lists.every((list) => list.binding === "campaign"));
 assert.ok(normalizedBindings.assets.every((asset) => asset.binding === "campaign"));
 
+const orphanSceneAnalysis = structuredClone(makerAnalysisFixture);
+orphanSceneAnalysis.assets.push({
+  id: "bus_stop_setting",
+  label: "Urban Bus Stop",
+  role: "story_setting",
+  evidence_ids: [],
+  binding: "campaign",
+  sam_prompt: "city bus stop",
+  frame: null,
+});
+const normalizedOrphanScene = normalizeMakerAnalysisRerollBindings(orphanSceneAnalysis);
+assert.equal(
+  normalizedOrphanScene.assets.find((asset) => asset.id === "bus_stop_setting")?.binding,
+  "locked",
+  "A freeform scene that no reroll group changes must stay in the background instead of requiring RevealLayer.",
+);
+assert.deepEqual(assetsNeedingRefinement(normalizedOrphanScene).map((asset) => asset.id), ["brand_mark"]);
+const rerolledSceneAnalysis = structuredClone(orphanSceneAnalysis);
+rerolledSceneAnalysis.reroll_groups[0]!.members.push("bus_stop_setting");
+const normalizedRerolledScene = normalizeMakerAnalysisRerollBindings(rerolledSceneAnalysis);
+assert.equal(normalizedRerolledScene.assets.find((asset) => asset.id === "bus_stop_setting")?.binding, "campaign");
+assert.ok(assetsNeedingRefinement(normalizedRerolledScene).some((asset) => asset.id === "bus_stop_setting"));
+
 const unknownEvidence = structuredClone(makerAnalysisFixture);
 unknownEvidence.fields[0]!.evidence_ids = ["text_99"];
 assert.throws(() => validateMakerAnalysisEvidence(unknownEvidence, ocr), /unknown OCR evidence/);

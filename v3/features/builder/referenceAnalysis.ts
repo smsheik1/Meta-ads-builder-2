@@ -79,6 +79,9 @@ export function validateMakerAnalysisEvidence(value: unknown, ocr: PaddleOcrResu
   return analysis;
 }
 
+export const assetNeedsBackgroundRepair = (asset: MakerAnalysis["assets"][number]) =>
+  asset.role === "story_setting" || asset.role === "news_subject" || asset.role === "supporting_visual";
+
 export function normalizeMakerAnalysisRerollBindings(value: MakerAnalysis): MakerAnalysis {
   const analysis = structuredClone(value);
   const rerollMembers = new Set(analysis.reroll_groups.flatMap((group) => group.members));
@@ -90,7 +93,11 @@ export function normalizeMakerAnalysisRerollBindings(value: MakerAnalysis): Make
     if (rerollMembers.has(list.id) && list.binding === "fixed") list.binding = "campaign";
   }
   for (const asset of analysis.assets) {
-    if (rerollMembers.has(asset.id) && asset.binding === "fixed") asset.binding = "campaign";
+    if (rerollMembers.has(asset.id)) {
+      if (asset.binding === "fixed") asset.binding = "campaign";
+    } else if (!asset.frame && asset.binding !== "locked" && assetNeedsBackgroundRepair(asset)) {
+      asset.binding = "locked";
+    }
   }
 
   return analysis;
