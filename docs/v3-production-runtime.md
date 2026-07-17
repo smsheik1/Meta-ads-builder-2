@@ -41,6 +41,10 @@ FIRECRAWL_API_KEY
 BRANDFETCH_API_KEY
 NVIDIA_NIM_API_KEY
 GEMINI_API_KEY
+REPLICATE_API_TOKEN
+FISH_STUDIO_APIKEY
+ELEVENLABS_API_KEY
+V3_PUBLIC_BASE_URL
 NVIDIA_NIM_AD_MODEL optional, defaults to z-ai/glm-5.2
 NVIDIA_NIM_BRAND_CURATOR_MODEL optional, defaults to z-ai/glm-5.2
 NVIDIA_NIM_MEME_MODEL optional, defaults to z-ai/glm-5.2
@@ -76,7 +80,8 @@ npm run runtime:health
 The health script checks:
 
 - v3 Convex URL is present.
-- Firecrawl, NVIDIA NIM, and Gemini keys are present without printing secret values.
+- Firecrawl, NVIDIA NIM, Gemini, Replicate, Fish Audio, and ElevenLabs keys are present without printing secret values.
+- The public base URL needed for provider callbacks and stored media URLs is present.
 - Gemini and TTS feature flags are not disabled.
 - TTS model is unset or matches the pinned Gemini TTS model.
 - Convex public functions are reachable.

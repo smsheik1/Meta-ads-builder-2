@@ -37,14 +37,12 @@ async function refreshClipUrls(ctx: MutationCtx, clips: MusicVideoClip[]) {
   }));
 }
 
-async function generateStoryboardImageWithRetry({
+async function generateStoryboardImageWithThrottleRetry({
   replicateApiToken,
   prompt,
-  retryPrompt,
 }: {
   replicateApiToken: string;
   prompt: string;
-  retryPrompt?: string;
 }) {
   try {
     return await generateReplicateNanoBanana2Image({
@@ -59,11 +57,7 @@ async function generateStoryboardImageWithRetry({
         prompt,
       });
     }
-    if (!retryPrompt) throw error;
-    return generateReplicateNanoBanana2Image({
-      replicateApiToken,
-      prompt: retryPrompt,
-    });
+    throw error;
   }
 }
 
@@ -71,7 +65,6 @@ async function storeStoryboardImage({
   ctx,
   replicateApiToken,
   prompt,
-  retryPrompt,
 }: {
   ctx: {
     storage: {
@@ -81,12 +74,10 @@ async function storeStoryboardImage({
   };
   replicateApiToken: string;
   prompt: string;
-  retryPrompt?: string;
 }): Promise<BrickStoryboardImage> {
-  const result = await generateStoryboardImageWithRetry({
+  const result = await generateStoryboardImageWithThrottleRetry({
     replicateApiToken,
     prompt,
-    retryPrompt,
   });
   const storageId = await ctx.storage.store(new Blob([result.bytes], {
     type: result.mimeType,
@@ -227,13 +218,10 @@ export const regenerateBrickShot: ReturnType<typeof action> = action({
     if (!shot) throw new Error("Storyboard shot not found.");
     const referencePrompt = nextStoryboard.referenceFrame.prompt;
     const prompt = `${shot.shotPrompt}\n\nREFERENCE WORLD TO MATCH:\n${referencePrompt}`;
-    const retryPrompt = `${shot.shotPrompt}\n\nUse the same narrative brick-style miniature world, palette, and recurring hero object from the reference frame. One single full-frame vertical 9:16 still. No storyboard sheet, collage, split-screen, panels, captions, subtitles, readable logos, brand names, brand signage, realistic human faces, trademarked toy names, or extra text. Block-figure characters only.`;
-
     const image = await storeStoryboardImage({
       ctx,
       replicateApiToken,
       prompt,
-      retryPrompt,
     });
     const nextShot = {
       ...shot,
@@ -568,14 +556,12 @@ export const generateBrickForScene: ReturnType<typeof action> = action({
     const shotResultsPromise = Promise.all(promptPlan.shots.map(async (shot) => {
       try {
         const conditionedPrompt = `${shot.shotPrompt}\n\nREFERENCE WORLD TO MATCH:\n${promptPlan.referenceFramePrompt}`;
-        const retryPrompt = `${shot.shotPrompt}\n\nUse the same narrative brick-style miniature world, palette, and recurring hero object from the reference frame. One single full-frame vertical 9:16 still. No storyboard sheet, collage, split-screen, panels, captions, subtitles, readable logos, brand names, brand signage, realistic human faces, trademarked toy names, or extra text. Block-figure characters only.`;
         return {
           ...shot,
           image: await storeStoryboardImage({
             ctx,
             replicateApiToken,
             prompt: conditionedPrompt,
-            retryPrompt,
           }),
           status: "ok" as const,
         };

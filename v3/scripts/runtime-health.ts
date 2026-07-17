@@ -27,8 +27,13 @@ type HealthCheck = {
 
 const secretNames = new Set([
   "FIRECRAWL_API_KEY",
+  "BRANDFETCH_API_KEY",
   "DEEPGRAM_API_KEY",
   "GEMINI_API_KEY",
+  "NVIDIA_NIM_API_KEY",
+  "REPLICATE_API_TOKEN",
+  "FISH_STUDIO_APIKEY",
+  "ELEVENLABS_API_KEY",
 ]);
 
 async function loadEnvFile(filePath: string, options: { override?: boolean } = {}) {
@@ -198,9 +203,15 @@ export async function runRuntimeHealthChecks() {
   const checks: HealthCheck[] = [
     checkRequiredEnv("NEXT_PUBLIC_V3_CONVEX_URL", ["V3_CONVEX_URL"]),
     checkRequiredEnv("FIRECRAWL_API_KEY"),
+    checkRequiredEnv("BRANDFETCH_API_KEY"),
     checkRequiredEnv("DEEPGRAM_API_KEY"),
     checkNotDisabled("DEEPGRAM_ENABLED"),
     checkRequiredEnv("GEMINI_API_KEY"),
+    checkRequiredEnv("NVIDIA_NIM_API_KEY"),
+    checkRequiredEnv("REPLICATE_API_TOKEN"),
+    checkRequiredEnv("FISH_STUDIO_APIKEY"),
+    checkRequiredEnv("ELEVENLABS_API_KEY"),
+    checkRequiredEnv("V3_PUBLIC_BASE_URL", ["WIGGLY_PUBLIC_BASE_URL"]),
     checkNotDisabled("GEMINI_ENABLED"),
     checkNotDisabled("TTS_ENABLED"),
     checkPinnedTtsModel(),
