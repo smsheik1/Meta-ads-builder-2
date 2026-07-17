@@ -279,7 +279,7 @@ export function MakerBuilderClient() {
                   </span>
                 )}
               </Label>
-              <Input id="reference-upload" className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => referenceSelected(event.target.files?.[0])} />
+              <Input id="reference-upload" className="hidden" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => referenceSelected(event.target.files?.[0])} />
               <div className="mt-5 flex items-center justify-between gap-4">
                 <p className={`text-sm font-semibold ${status === "failed" ? "text-red-600" : "text-slate-500"}`} role="status">
                   {message}{status === "analyzing" ? ` ${analysisSeconds}s` : ""}

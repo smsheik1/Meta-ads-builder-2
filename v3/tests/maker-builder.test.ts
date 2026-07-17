@@ -88,6 +88,11 @@ assert.equal(
   "Drag, resize, and rotate must clear temporary Moveable transforms before saving scene geometry.",
 );
 assert.match(clientSource, /fetch\("\/api\/builder\/analyze"/);
+assert.match(
+  clientSource,
+  /id="reference-upload" className="hidden"/,
+  "The visible upload label must not be paired with a full-width offscreen input that expands the page.",
+);
 assert.match(clientSource, /role="log"/);
 assert.match(clientSource, /Live milestones from the actual analysis pipeline/);
 assert.match(clientSource, /The analysis response failed the Maker schema/);

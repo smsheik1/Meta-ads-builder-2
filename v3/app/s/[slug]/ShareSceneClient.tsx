@@ -100,7 +100,7 @@ export function ShareSceneClient({
   const activeScene = share.scene;
 
   return (
-    <section className="mx-auto grid w-full max-w-6xl grid-cols-[0.9fr_1fr] items-center gap-10">
+    <section className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-8 lg:grid-cols-[0.9fr_1fr] lg:gap-10">
       <div className="grid justify-center">
         <PhonePreviewFrame
           scene={activeScene}
@@ -129,7 +129,7 @@ export function ShareSceneClient({
         ) : null}
       </div>
 
-      <aside className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-[0_28px_90px_rgba(15,23,42,0.10)]">
+      <aside className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_28px_90px_rgba(15,23,42,0.10)] sm:p-8">
         <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
           Wiggly share page
         </p>
@@ -147,7 +147,7 @@ export function ShareSceneClient({
             <p className="mt-1 text-sm font-bold text-slate-500">{activeScene.brand.host}</p>
           </div>
         </div>
-        <h1 className="mt-8 text-5xl font-black leading-[0.98] tracking-normal">
+        <h1 className="mt-8 text-3xl font-black leading-[0.98] tracking-normal sm:text-5xl">
           {activeScene.creative.headline}
         </h1>
         <p className="mt-5 text-lg font-bold leading-8 text-slate-500">

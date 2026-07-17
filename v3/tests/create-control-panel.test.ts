@@ -252,6 +252,10 @@ assert.ok(
   "Inline status feedback must be capped at two visible banners.",
 );
 assert.ok(
+  quickActionsSource.includes("const shareSupported = staticPngSelected ||"),
+  "Static formats that can download as PNG must also expose the share action.",
+);
+assert.ok(
 	  quickActionsSource.includes("threeDRenderBlocked") &&
 	    quickActionsSource.includes("threeDVoiceoverBlocked") &&
 	    quickActionsSource.includes("threeDClipPlans.length > 0") &&
