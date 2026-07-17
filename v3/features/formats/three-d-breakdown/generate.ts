@@ -105,7 +105,6 @@ const storySlateMechanismClaims = [
   ["absorption", /\b(?:absorb(?:s|ed|ing)?|absorption)\b/i],
   ["digestion", /\b(?:digest(?:s|ed|ing|ion|ive)?|stomach acid|gastric acid)\b/i],
   ["dissolving", /\bdissolv(?:e|es|ed|ing)\b/i],
-  ["survival", /\bsurviv(?:e|es|ed|ing|al)\b/i],
   ["release", /\breleas(?:e|es|ed|ing)\b/i],
   ["contamination", /\b(?:contaminant|contamination|pesticides?|heavy metals?|microbial)\b/i],
 ] as const;
@@ -965,7 +964,7 @@ export async function generateThreeDBreakdownStoryDirectionsFromResearch(
     apiKey: nvidiaNimApiKey,
     baseUrl: nvidiaNimBaseUrl,
     label: "NVIDIA NIM 3D Breakdown story slate",
-    maxTokens: 2200,
+    maxTokens: 1600,
     model: nvidiaNimModel,
     nvidiaNimChatCompletion,
     prompt: directorPrompt,

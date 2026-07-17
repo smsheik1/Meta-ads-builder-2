@@ -21,6 +21,7 @@ export function CreateCanvasColumn({
   onPreviewTimeChange,
   placeholderVariantIndex,
   previewBusyLabel,
+  previewBusyHidesScene,
   previewPlatform,
   previewTimeSeconds,
   rerollBusy,
@@ -38,6 +39,7 @@ export function CreateCanvasColumn({
   onPreviewTimeChange: (timeSeconds: number) => void;
   placeholderVariantIndex: number;
   previewBusyLabel: string;
+  previewBusyHidesScene: boolean;
   previewPlatform: PreviewPlatform;
   previewTimeSeconds: number;
   rerollBusy: boolean;
@@ -84,8 +86,11 @@ export function CreateCanvasColumn({
               />
               {previewBusyLabel ? (
                 <div
-                  className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-[34px] bg-slate-950/35 p-6 backdrop-blur-[2px]"
+                  className={`pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-[34px] p-6 ${
+                    previewBusyHidesScene ? "bg-[#F7F4EA]" : "bg-slate-950/35 backdrop-blur-[2px]"
+                  }`}
                   data-preview-loading-overlay
+                  data-preview-loading-mode={previewBusyHidesScene ? "opaque" : "overlay"}
                 >
                   <div className="rounded-3xl border border-white/20 bg-white/95 px-5 py-4 text-center shadow-[0_24px_70px_rgba(15,23,42,0.30)]">
                     <img

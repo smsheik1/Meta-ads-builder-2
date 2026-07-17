@@ -629,7 +629,7 @@ assert.ok(storyDirectionsPrompt.includes("Wiggly 3D Breakdown Story Slate Direct
 assert.ok(storyDirectionsPrompt.includes("Write exactly 5 directions."));
 assert.ok(storyDirectionsPrompt.includes("directionId values must be idea-1, idea-2, idea-3, idea-4, idea-5."));
 assert.ok(storyDirectionsPrompt.includes("Do not write the final script."));
-assert.ok(storyDirectionsPrompt.includes("shortSummary should explain start, escalation, reveal, and payoff."));
+assert.ok(storyDirectionsPrompt.includes("shortSummary should cover tension, reveal, and payoff without retelling the whole ad."));
 assert.ok(storyDirectionsPrompt.includes("Commodity gift proof"));
 assert.ok(storyDirectionsPrompt.includes("Physical gadget"));
 assert.ok(storyDirectionsPrompt.includes("visualEngine must describe the physical 3D reveal"));
@@ -1004,6 +1004,7 @@ const storySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(rese
   nvidiaNimChatCompletion: async ({ prompt: directorPrompt, stream, structuredOutput }) => {
     storySlateCalls += 1;
     assert.ok(directorPrompt.includes("Story Slate Director"));
+    assert.ok(directorPrompt.includes("Keep the JSON compact"));
     assert.ok(!directorPrompt.includes("Nano Banana"));
     assert.ok(!directorPrompt.includes("Seedance"));
     assert.equal(stream, true);
@@ -1016,6 +1017,23 @@ assert.equal(storySlate.directions.length, 5);
 assert.equal(storySlate.recommendedDirectionId, "idea-1");
 assert.equal(storySlate.directions[0]?.evidenceUseType, reviewEvidence.evidenceUseType);
 assert.ok(storySlate.directions[0]?.visualEngine.includes("Proof blocks"));
+
+let deliveryTensionStorySlateCalls = 0;
+await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => {
+    deliveryTensionStorySlateCalls += 1;
+    return JSON.stringify({
+      ...storyDirectionPayload,
+      directions: storyDirectionPayload.directions.map((direction, index) => (
+        index === 0
+          ? { ...direction, hookLine: "The sender wonders whether the gift can survive the delivery trip." }
+          : direction
+      )),
+    });
+  },
+});
+assert.equal(deliveryTensionStorySlateCalls, 1, "Ordinary delivery tension must not trigger a second story-slate call.");
 
 let unsafeStorySlateCalls = 0;
 await assert.rejects(

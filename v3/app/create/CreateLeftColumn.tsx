@@ -376,7 +376,7 @@ export function CreateLeftColumn({
     : creativePackStatus === "generating"
       ? "Generating creative pack"
       : "Generate creative pack";
-  const errorPanel = status === "error" || adStatus === "error" ? (
+  const errorPanel = error ? (
     <div className="mt-5 rounded-[22px] border border-red-100 bg-red-50 p-4 text-sm font-black leading-6 text-red-700">
       {error}
     </div>
@@ -388,7 +388,13 @@ export function CreateLeftColumn({
       creativePackStatus !== "idle" ||
       productCatalog?.products?.length,
   );
-  const pillLabel = adScenesCount ? "Ads ready to review" : workingMode ? "Website ready" : "Add a website first";
+  const pillLabel = singleSubmitBusy
+    ? submitLabel
+    : adScenesCount
+      ? "Ads ready to review"
+      : workingMode
+        ? "Website ready"
+        : "Add a website first";
 
   return (
     <div className="max-w-xl">
