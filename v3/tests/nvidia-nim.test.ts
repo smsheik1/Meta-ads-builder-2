@@ -112,6 +112,31 @@ assert.equal(streamedContent, "{\"ok\":true}");
 assert.equal(capturedBody?.stream, true);
 assert.equal("response_format" in capturedBody, false);
 
+globalThis.fetch = (() => {
+  const encoder = new TextEncoder();
+  return Promise.resolve(new Response(new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode("data: {\"choices\":[{\"delta\":{\"content\":\"finished\"}}]}\n\n"));
+      controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+    },
+  }), { status: 200 }));
+}) as typeof fetch;
+
+const doneWithoutSocketClose = await Promise.race([
+  callNvidiaNimChat({
+    apiKey: "test-key",
+    baseUrl: "https://nim.test/v1",
+    label: "NVIDIA NIM done event test",
+    model: "z-ai/glm-5.2",
+    prompt: "{}",
+    stream: true,
+    structuredOutput: false,
+    timeoutMs: 1000,
+  }),
+  new Promise<string>((_resolve, reject) => setTimeout(() => reject(new Error("Stream ignored [DONE].")), 100)),
+]);
+assert.equal(doneWithoutSocketClose, "finished");
+
 globalThis.fetch = originalFetch;
 
 console.log("nvidia-nim tests passed");

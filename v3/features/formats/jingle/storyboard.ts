@@ -627,12 +627,14 @@ export async function generateReplicateNanoBanana2Image({
 export async function generateReplicateSeedanceVideo({
   replicateApiToken,
   imageUrl,
+  lastFrameImageUrl,
   prompt,
   durationSeconds,
   timeoutMs = 180_000,
 }: {
   replicateApiToken: string;
   imageUrl: string;
+  lastFrameImageUrl?: string;
   prompt: string;
   durationSeconds: number;
   timeoutMs?: number;
@@ -644,6 +646,7 @@ export async function generateReplicateSeedanceVideo({
     model: BRICK_STORYBOARD_VIDEO_MODEL,
     duration,
     hasImageUrl: Boolean(imageUrl),
+    hasLastFrameImageUrl: Boolean(lastFrameImageUrl),
     promptLength: safePrompt.length,
   });
 
@@ -657,6 +660,7 @@ export async function generateReplicateSeedanceVideo({
     body: JSON.stringify({
       input: {
         image: imageUrl,
+        ...(lastFrameImageUrl ? { last_frame_image: lastFrameImageUrl } : {}),
         prompt: safePrompt,
         duration,
         aspect_ratio: "9:16",

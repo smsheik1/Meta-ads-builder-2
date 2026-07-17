@@ -437,10 +437,11 @@ export const latestForAnonymousId: ReturnType<typeof query> = query({
       .withIndex("by_sessionId_and_updatedAt", (q) => q.eq("sessionId", session._id))
       .order("desc")
       .take(100);
-    const latestBatchId = latestRows[0]?.generationBatchId;
+    const generatedRows = latestRows.filter((row) => row.researchRunId);
+    const latestBatchId = generatedRows[0]?.generationBatchId;
     if (!latestBatchId) return null;
 
-    const batchRows = latestRows
+    const batchRows = generatedRows
       .filter((row) => row.generationBatchId === latestBatchId)
       .sort((a, b) => (a.candidateIndex ?? 0) - (b.candidateIndex ?? 0));
     const firstRow = batchRows[0];
