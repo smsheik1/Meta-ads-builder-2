@@ -1139,6 +1139,31 @@ assert.deepEqual(
 );
 assert.equal(selectedDirectionGeneration.variants[0]?.ctaLine, selectedScriptPlan.ctaLine);
 
+const nineSentenceReferenceScript = String(selectedScriptPlan.referenceScript)
+  .replace("Then that backup feeling peels away. A red tin", "Then that backup feeling peels away, and a red tin")
+  .replace("The first test is arrival. The second test is taste.", "The first test is arrival, and the second test is taste.")
+  .replace("So the tin becomes proof in motion. Birthday, thank-you, office, client.", "So the tin becomes proof in motion across birthdays, thank-yous, offices, and clients.")
+  .replace("Cookies are not just for one sweet tooth. Those moments were simply first to notice.", "Cookies are not just for one sweet tooth; those moments were simply first to notice.")
+  .replace("One box fills space. The other makes", "One box fills space, while the other makes");
+let flexibleReferenceScriptCalls = 0;
+const flexibleReferenceScriptGeneration = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    flexibleReferenceScriptCalls += 1;
+    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+      return JSON.stringify(styleBScriptPlanPayload({
+        ...selectedStoryLock,
+        referenceScript: nineSentenceReferenceScript,
+      }));
+    }
+    return JSON.stringify(selectedVisualPayload);
+  },
+  selectedStoryDirection,
+});
+assert.equal(flexibleReferenceScriptCalls, 2, "Reference-script sentence count must not cause a redundant retry.");
+assert.equal(flexibleReferenceScriptGeneration.variants[0]?.referenceScript, nineSentenceReferenceScript);
+
 let productionDirectionCalls = 0;
 const productionDirectionResult = await generateThreeDBreakdownVariantsFromResearch(research, {
   count: 1,

@@ -263,8 +263,6 @@ const templateLeakPattern = /\bwhen a buyer receives it\b|\bthe product reveals 
 const falseClassificationPattern = /\b(assum(?:e|es|ed|ing)|thought|pictured|decided|not for|only for|just for|wrong(?:ly)?|looked like|felt like)\b/i;
 const REFERENCE_SCRIPT_ACCEPT_MIN_WORDS = 100;
 const REFERENCE_SCRIPT_ACCEPT_MAX_WORDS = 180;
-const REFERENCE_SCRIPT_ACCEPT_MIN_SENTENCES = 10;
-const REFERENCE_SCRIPT_ACCEPT_MAX_SENTENCES = 24;
 const shippingLikeEvidenceTypes = new Set<ThreeDBreakdownEvidenceUseType>(["shipping", "offer", "guarantee"]);
 const arrivalContextEvidenceTypes = new Set<ThreeDBreakdownEvidenceUseType>(["review", "proof", "shipping", "offer", "guarantee"]);
 const logisticsContextTerms = new Set(["sorting", "truck", "warehouse", "transit"]);
@@ -368,10 +366,6 @@ const parseReferenceScript = (
   const words = countWords(script);
   if (words < REFERENCE_SCRIPT_ACCEPT_MIN_WORDS || words > REFERENCE_SCRIPT_ACCEPT_MAX_WORDS) {
     throw new Error(`3D Breakdown Style B referenceScript must be ${REFERENCE_SCRIPT_ACCEPT_MIN_WORDS}-${REFERENCE_SCRIPT_ACCEPT_MAX_WORDS} words.`);
-  }
-  const sentences = sentenceCount(script);
-  if (sentences < REFERENCE_SCRIPT_ACCEPT_MIN_SENTENCES || sentences > REFERENCE_SCRIPT_ACCEPT_MAX_SENTENCES) {
-    throw new Error(`3D Breakdown Style B referenceScript must have ${REFERENCE_SCRIPT_ACCEPT_MIN_SENTENCES}-${REFERENCE_SCRIPT_ACCEPT_MAX_SENTENCES} short documentary sentences.`);
   }
   return script;
 };
