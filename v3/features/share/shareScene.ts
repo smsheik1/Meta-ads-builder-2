@@ -11,7 +11,7 @@ export function assertShareableAdScene(value: unknown): AdScene {
 
   const scene = value as AdScene;
   if (scene.version !== 1) throw new Error("Share scene version is not supported.");
-  if (scene.format !== "visualizer" && scene.format !== "jingle" && scene.format !== "text-message" && scene.format !== "brainrot" && scene.format !== "motion-story" && scene.format !== "three-d-breakdown") throw new Error("Share scene format is not supported yet.");
+  if (scene.format !== "visualizer" && scene.format !== "meme" && scene.format !== "were-sorry" && scene.format !== "jingle" && scene.format !== "text-message" && scene.format !== "brainrot" && scene.format !== "reviews" && scene.format !== "motion-story" && scene.format !== "three-d-breakdown") throw new Error("Share scene format is not supported yet.");
   if (!scene.brand?.name?.trim()) throw new Error("Share scene brand name is missing.");
   if (!scene.creative?.headline?.trim()) throw new Error("Share scene headline is missing.");
   if (!scene.creative?.subheadline?.trim()) throw new Error("Share scene subheadline is missing.");

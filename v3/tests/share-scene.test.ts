@@ -81,6 +81,14 @@ assert.equal(
 assert.equal(slugifyShareTitle("   "), "wiggly-ad");
 
 assert.equal(assertShareableAdScene(scene), scene);
+for (const format of ["meme", "were-sorry", "text-message", "reviews"] as const) {
+  const staticScene = { ...scene, format } as unknown as AdScene;
+  assert.equal(
+    assertShareableAdScene(staticScene),
+    staticScene,
+    `${format} scenes that can download as PNG must also be shareable.`,
+  );
+}
 const generatedAudio = {
   status: "generated" as const,
   storageId: "brainrot-audio",
@@ -245,6 +253,11 @@ assert.ok(
   shareClientSource.includes('href="/create"') &&
     shareClientSource.includes("Made with Wiggly"),
   "Share pages must include the small Made with Wiggly link back to /create.",
+);
+assert.ok(
+  shareClientSource.includes("grid-cols-1") &&
+    shareClientSource.includes("lg:grid-cols-[0.9fr_1fr]"),
+  "Share pages must stack the preview and CTA card on narrow screens.",
 );
 assert.ok(
   sharePagesSource.includes("refreshThreeDBreakdownFinalVideoUrls") &&

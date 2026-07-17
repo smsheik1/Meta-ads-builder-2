@@ -202,7 +202,7 @@ export function CreateQuickActions({
   const hasPreviewMedia = hasPlayableAudio || (selectedFormat === "three-d-breakdown" && Boolean(renderDownloadUrl));
   const generatedAudioPending = !hasPlayableAudio && audioStatus === "loading";
   const visualizerAudioReady = selectedFormat === "visualizer" && hasPlayableAudio;
-  const shareSupported = selectedFormat === "visualizer" || selectedFormat === "text-message" || selectedFormat === "motion-story" || ((selectedFormat === "jingle" || selectedFormat === "brainrot") && hasPlayableAudio) || (selectedFormat === "three-d-breakdown" && hasThreeDVoiceover);
+  const shareSupported = staticPngSelected || selectedFormat === "visualizer" || selectedFormat === "motion-story" || ((selectedFormat === "jingle" || selectedFormat === "brainrot") && hasPlayableAudio) || (selectedFormat === "three-d-breakdown" && hasThreeDVoiceover);
   const showBrickStoryboard = selectedFormat === "jingle";
   const showThreeDStorySlateStage = threeDStorySlateActive;
   const showThreeDStoryDirections = showThreeDStorySlateStage && (threeDStoryDirections.length > 0 || threeDStoryDirectionStatus === "loading" || Boolean(threeDStoryDirectionError));

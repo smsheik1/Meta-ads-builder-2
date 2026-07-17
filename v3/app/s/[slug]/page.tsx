@@ -23,7 +23,7 @@ export default async function SharePage({ params }: { params: Promise<{ slug: st
   const initialShare = convexConfigured ? await getInitialShare(slug) : undefined;
 
   return (
-    <main className="grid min-h-screen place-items-center bg-[#f6f2e8] px-8 py-10 text-slate-950">
+    <main className="grid min-h-screen place-items-center bg-[#f6f2e8] px-4 py-8 text-slate-950 sm:px-8 sm:py-10">
       {convexConfigured ? (
         <ShareSceneClient slug={slug} initialShare={initialShare} />
       ) : (
