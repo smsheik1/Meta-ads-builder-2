@@ -598,51 +598,32 @@ const parseSiteContract = (parsed: Record<string, unknown>): ThreeDBreakdownSite
   return siteContract;
 };
 
-const parseShots = (value: unknown): ThreeDBreakdownShot[] => {
-  if (!Array.isArray(value) || value.length < THREE_D_SHOT_CONTRACT.length) {
-    throw new Error("3D Breakdown needs exactly 3 visual shots.");
-  }
-  return THREE_D_SHOT_CONTRACT.map((contract, index) => {
-    const shot = value.find((item) => {
-      const raw = item as Record<string, unknown>;
-      return raw.shotIndex === contract.shotIndex || raw.role === contract.role;
-    }) || value[index];
-    const raw = shot as Record<string, unknown>;
-    if (
-      (raw.shotIndex !== undefined && raw.shotIndex !== contract.shotIndex) ||
-      (raw.role !== undefined && raw.role !== contract.role)
-    ) {
-      throw new Error(`3D Breakdown shot ${index + 1} contract is invalid.`);
-    }
-    const requireShotField = (field: "captionText" | "sceneDescription" | "explainerDevice" | "physicalAction" | "imagePrompt" | "animationPrompt", maxLength: number) => {
-      const parsed = cleanText(raw[field], maxLength);
-      if (!parsed) throw new Error(`3D Breakdown shot ${index + 1} ${field} is missing.`);
-      return parsed;
-    };
-    const captionText = requireShotField("captionText", 90);
-    const sceneDescription = requireShotField("sceneDescription", 260);
-    const explainerDevice = requireShotField("explainerDevice", 120);
-    const physicalAction = requireShotField("physicalAction", 140);
-    const imagePrompt = requireShotField("imagePrompt", 1400);
-    const animationPrompt = requireShotField("animationPrompt", 900);
-    for (const text of [captionText, sceneDescription, explainerDevice, physicalAction, imagePrompt, animationPrompt]) {
-      assertNoBannedText(text);
-    }
-    assertNoQuotedImageText(imagePrompt, `shot ${index + 1} image prompt`);
-    return {
-      shotIndex: contract.shotIndex,
-      role: contract.role,
-      captionText,
-      sceneDescription,
-      explainerDevice,
-      physicalAction,
-      imagePrompt,
-      animationPrompt,
-      image: { status: "idle" },
-      video: { status: "idle" },
-    };
-  }) as ThreeDBreakdownShot[];
-};
+const FALLBACK_SHOT_FRAME_INDEXES = [[0, 1], [2, 3], [4, 5]] as const;
+
+const buildFallbackShots = (
+  storyboardBoard: ThreeDBreakdownStoryboardBoard,
+): ThreeDBreakdownShot[] => THREE_D_SHOT_CONTRACT.map((contract, index) => {
+  const frames = FALLBACK_SHOT_FRAME_INDEXES[index]
+    .map((frameIndex) => storyboardBoard.frames?.[frameIndex])
+    .filter((frame): frame is NonNullable<typeof frame> => Boolean(frame));
+  const joinFrameFields = (
+    field: "overlayText" | "visual" | "label" | "motion" | "camera",
+    separator: string,
+    maxLength: number,
+  ) => cleanText(frames.map((frame) => frame[field]).filter(Boolean).join(separator), maxLength);
+  return {
+    shotIndex: contract.shotIndex,
+    role: contract.role,
+    captionText: joinFrameFields("overlayText", " / ", 90),
+    sceneDescription: joinFrameFields("visual", " Then ", 260),
+    explainerDevice: joinFrameFields("label", " to ", 120),
+    physicalAction: joinFrameFields("motion", " Then ", 140),
+    imagePrompt: frames.map((frame) => `${frame.visual}; ${frame.camera}`).join(" Next: "),
+    animationPrompt: joinFrameFields("motion", " Then ", 900),
+    image: { status: "idle" },
+    video: { status: "idle" },
+  };
+}) as ThreeDBreakdownShot[];
 
 const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
   visualStyle === "presenter-teardown-vsl"
@@ -840,12 +821,16 @@ const parseVariants = (
       siteContract,
       variant: parsedVariantBase,
     });
+    const storyboardBoard = parseStoryboardBoard(
+      rawVariant.storyboardBoard ?? rawVariant.storyboardImagePrompt,
+      parsedVariantBase.visualStyle,
+    );
     return {
       ...parsedVariantBase,
       referenceScript,
-      storyboardBoard: parseStoryboardBoard(rawVariant.storyboardBoard ?? rawVariant.storyboardImagePrompt, parsedVariantBase.visualStyle),
+      storyboardBoard,
       scriptBeats,
-      shots: parseShots(rawVariant.shots),
+      shots: buildFallbackShots(storyboardBoard),
     };
   });
   if (variants.length < requestedCount) {

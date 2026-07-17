@@ -443,7 +443,7 @@ export const generateThreeDClip: ReturnType<typeof action> = action({
   handler: async (ctx, { sceneId, scene, clipIndex }) => {
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
     if (!replicateApiToken) throw new Error("Replicate video generation is not configured for 3D Breakdown.");
-    if (!Number.isInteger(clipIndex) || clipIndex < 1 || clipIndex > 6) throw new Error("3D Breakdown clip index must be 1-6.");
+    if (!Number.isInteger(clipIndex) || clipIndex < 1 || clipIndex > 4) throw new Error("3D Breakdown clip index must be 1-4.");
     const typedClipIndex = clipIndex as ThreeDBreakdownClipIndex;
 
     let nextScene = assertThreeDBreakdownScene(scene as AdScene);

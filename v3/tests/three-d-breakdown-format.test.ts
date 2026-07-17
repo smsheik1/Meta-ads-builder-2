@@ -552,6 +552,7 @@ assert.ok(prompt.length < 16_000, `3D Breakdown director prompt is too large: ${
 assert.ok(seedPrompt.length < 16_000, `Seed director prompt is too large: ${seedPrompt.length} chars`);
 assert.ok(styleBScriptPrompt.length < 8_200, `3D Breakdown Style B script prompt is too large: ${styleBScriptPrompt.length} chars`);
 assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions prompt is too large: ${storyDirectionsPrompt.length} chars`);
+assert.ok(!prompt.includes('"shots": ['), "3D Breakdown director must not author a duplicate three-shot plan.");
 [
   "ZachDFilms-style high-retention documentary pacing",
   "visualStyle",
@@ -1580,25 +1581,15 @@ await assert.rejects(
   /unsafe claim language/,
 );
 
-const messyDirectorVariant = makeVariant();
-messyDirectorVariant.shots = [
-  ...messyDirectorVariant.shots,
-  {
-    ...messyDirectorVariant.shots[2],
-    shotIndex: 4,
-    role: "revelation",
-  },
-] as typeof messyDirectorVariant.shots;
-delete (messyDirectorVariant.shots[2] as Record<string, unknown>).physicalAction;
-delete (messyDirectorVariant.shots[2] as Record<string, unknown>).imagePrompt;
-await assert.rejects(
-  () => generateThreeDBreakdownVariantsFromResearch(research, {
-    count: 1,
-    nvidiaNimApiKey: "test-key",
-    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([messyDirectorVariant])),
-  }),
-  /shot 3 physicalAction is missing/,
-);
+const directorVariantWithoutShots = makeVariant();
+delete (directorVariantWithoutShots as unknown as Record<string, unknown>).shots;
+const derivedShotResult = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([directorVariantWithoutShots])),
+});
+assert.equal(derivedShotResult.variants[0]?.shots.length, 3);
+assert.ok(derivedShotResult.variants[0]?.shots.every((shot) => shot.physicalAction && shot.imagePrompt));
 
 await assert.rejects(
   () => generateThreeDBreakdownVariantsFromResearch(research, {

@@ -349,7 +349,7 @@ assert.ok(
     createClientSource.includes("api.threeDImages.generateThreeDClip") &&
     threeDImagesSource.includes('"use node"') &&
     threeDImagesSource.includes("export const generateThreeDClip") &&
-    threeDImagesSource.includes("clipIndex < 1 || clipIndex > 6") &&
+    threeDImagesSource.includes("clipIndex < 1 || clipIndex > 4") &&
     threeDImagesSource.includes("Generate 3D Breakdown clip ${previousClipIndex} before clip ${typedClipIndex}.") &&
     threeDImagesSource.includes("generateReplicateSeedanceVideo") &&
     jingleStoryboardSource.includes("generate_audio: false") &&

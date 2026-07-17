@@ -565,17 +565,13 @@ function ResearchConnected() {
     api.adScenes.listForResearchRun,
     result?.researchRunId ? { researchRunId: result.researchRunId as Id<"researchRuns"> } : "skip",
   ) as Array<CreativePackSceneRow<Id<"adScenes">>> | undefined;
-  const selectedSceneId = sceneIds[selectedSceneIndex]
-    || researchRunSceneRows?.find((row) => (
-      row.generationBatchId === selectedScene?.metadata.generationBatchId
-      && row.candidateIndex === selectedScene?.metadata.candidateIndex
-      && row.format === selectedScene?.format
-    ))?._id
-    || null;
-  const latestBrickStoryboard = useQuery(
-    api.jingleStoryboards.latestForScene,
-    selectedScene?.format === "jingle" && selectedSceneId ? { sceneId: selectedSceneId } : "skip",
-  ) as {
+  const selectedSceneId = sceneIds[selectedSceneIndex] || researchRunSceneRows?.find((row) => (
+    row.generationBatchId === selectedScene?.metadata.generationBatchId
+    && row.candidateIndex === selectedScene?.metadata.candidateIndex
+    && row.format === selectedScene?.format
+  ))?._id || null;
+  const latestBrickStoryboard = useQuery(api.jingleStoryboards.latestForScene,
+    selectedScene?.format === "jingle" && selectedSceneId ? { sceneId: selectedSceneId } : "skip") as {
     _id: Id<"jingleStoryboards">;
     storyboard: unknown;
     stitchStatus?: "queued" | "claimed" | "rendering" | "ready" | "failed";
@@ -3113,20 +3109,13 @@ function ResearchConnected() {
         : selectedThreeDStoryboardFramesReady
           ? "idle"
           : "idle";
-
-  const getThreeDErrorFromScene = (scene: ThreeDBreakdownAdScene) => {
-    const boardFailure = scene.layout.storyboardBoard?.image?.status === "failed"
-      ? scene.layout.storyboardBoard.image.error
-      : "";
-    const frameFailure = scene.layout.storyboardBoard?.frames?.find((frame) => frame.image?.status === "failed");
-    const imageFailure = scene.layout.shots.find((shot) => shot.image?.status === "failed");
-    const clipFailure = scene.layout.clipPlans?.find((clipPlan) => clipPlan.video?.status === "failed");
-    return boardFailure || frameFailure?.image?.error || imageFailure?.image?.error || clipFailure?.video?.error || "";
-  };
-
-  const onGenerateThreeDImages = async (
-    modeOverride?: "storyboard" | "anchors" | "anchor-1" | "anchor-2" | "all",
-  ) => {
+  const getThreeDErrorFromScene = (scene: ThreeDBreakdownAdScene) => (
+    (scene.layout.storyboardBoard?.image?.status === "failed" ? scene.layout.storyboardBoard.image.error : "")
+    || scene.layout.storyboardBoard?.frames?.find((frame) => frame.image?.status === "failed")?.image?.error
+    || scene.layout.clipPlans?.find((clipPlan) => clipPlan.video?.status === "failed")?.video?.error
+    || ""
+  );
+  const onGenerateThreeDImages = async (modeOverride?: "storyboard" | "anchors" | "anchor-1" | "anchor-2" | "all") => {
     const sceneId = selectedSceneId;
     if (!selectedScene || selectedScene.format !== "three-d-breakdown" || threeDImageStatus === "loading") return;
     if (!sceneId) {

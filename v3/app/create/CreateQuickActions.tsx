@@ -32,14 +32,11 @@ import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
 import type { ThreeDBreakdownStoryDirection } from "@/features/formats/three-d-breakdown/storyDirections";
 import type { AdFormatId, ThreeDBreakdownAdScene, ThreeDBreakdownClipIndex } from "@/features/scene/types";
 import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
-
 type SaveStatus = "idle" | "loading" | "ready" | "error";
 type BrickStoryboardStatus = "idle" | "loading" | "ready" | "error";
 type ThreeDImageGenerationMode = "storyboard" | "anchors" | "anchor-1" | "anchor-2" | "all";
 type ThreeDStoryboardFrame = NonNullable<NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["frames"]>[number];
-
 const statusBannerBaseClass = "rounded-2xl border px-4 py-3 text-xs font-black leading-5";
-
 const formatSavedDate = (timestamp: number) => new Intl.DateTimeFormat("en", {
   month: "short",
   day: "numeric",
