@@ -1305,9 +1305,6 @@ function ResearchConnected() {
     if (firstScene?.format === "jingle" && firstScene.audio.status !== "generated") {
       void generateJingleMusicForScene(firstScene, nextSceneIds[0]);
     }
-    if (firstScene?.format === "visualizer" && firstScene.audio.status !== "generated") {
-      void generateVisualizerVoiceoverForScene(firstScene, nextSceneIds[0]);
-    }
   };
 
   const generateScenesForResearch = async (
