@@ -441,6 +441,8 @@ const animateBrickBoardSource = storyboardActionSource.match(/export const anima
 const regenerateBrickShotSource = storyboardActionSource.match(/export const regenerateBrickShot[\s\S]*?export const buildMusicVideoForScene/)?.[0] || "";
 const regenerateBrickShotVideoSource = storyboardActionSource.match(/export const regenerateBrickShotVideo[\s\S]*?export const buildMusicVideoForScene/)?.[0] || "";
 assert.ok(storyboardActionSource.includes("const referenceImagePromise = storeStoryboardImage"), "Reference image generation should not block shot image generation.");
+assert.ok(storyboardActionSource.includes("generateStoryboardImageWithThrottleRetry"), "Paid image generation may retry only after an explicit throttle rejection.");
+assert.ok(!storyboardActionSource.includes("retryPrompt"), "Ambiguous image failures must not trigger a second paid generation.");
 assert.ok(storyboardActionSource.includes("const shotResultsPromise = Promise.all(promptPlan.shots.map(async (shot)"), "Shot stills should generate in parallel.");
 assert.ok(storyboardActionSource.includes("await Promise.all([referenceImagePromise, shotResultsPromise])"), "Reference and shot stills should resolve in parallel.");
 assert.ok(animateBrickBoardSource.includes("Promise.all(nextStoryboard.shots.map(async (shot)"), "Seedance clips should generate in parallel.");

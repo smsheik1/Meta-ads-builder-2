@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { getRuntimeConvexUrl } from "../scripts/runtime-health";
 
 const originalEnv = { ...process.env };
@@ -17,6 +18,21 @@ try {
   assert.equal(getRuntimeConvexUrl(), "");
 } finally {
   process.env = originalEnv;
+}
+
+const runtimeHealthSource = readFileSync(new URL("../scripts/runtime-health.ts", import.meta.url), "utf8");
+for (const requiredRuntimeValue of [
+  "BRANDFETCH_API_KEY",
+  "NVIDIA_NIM_API_KEY",
+  "REPLICATE_API_TOKEN",
+  "FISH_STUDIO_APIKEY",
+  "ELEVENLABS_API_KEY",
+  "V3_PUBLIC_BASE_URL",
+]) {
+  assert.ok(
+    runtimeHealthSource.includes(`checkRequiredEnv(\"${requiredRuntimeValue}\"`),
+    `runtime health must fail when ${requiredRuntimeValue} is missing.`,
+  );
 }
 
 console.log("runtime-health tests passed");

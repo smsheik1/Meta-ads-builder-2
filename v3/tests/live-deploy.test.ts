@@ -20,6 +20,16 @@ assert.ok(
   "v3 deploy must discard generated-file drift before pulling a new release.",
 );
 assert.ok(workflow.includes("REPLICATE_API_TOKEN: ${{ secrets.REPLICATE_API_TOKEN }}"), "Maker deploy must receive the Replicate secret.");
+for (const providerSecret of [
+  "BRANDFETCH_API_KEY",
+  "FISH_STUDIO_APIKEY",
+  "ELEVENLABS_API_KEY",
+]) {
+  assert.ok(
+    workflow.includes(providerSecret + ": ${{ secrets." + providerSecret + " }}"),
+    `v3 deploy must receive ${providerSecret}.`,
+  );
+}
 assert.ok(workflow.includes('WIGGLY_MAKER_LIVE_ANALYSIS: "true"'), "Production dogfood must enable live Maker analysis.");
 assert.ok(workflow.includes("command_timeout: 40m"), "The first PaddleOCR install needs an explicit SSH timeout.");
 
@@ -40,6 +50,18 @@ assert.ok(
 assert.ok(script.includes("wiggly-v3"), "v3 app must have its own PM2 app name.");
 assert.ok(script.includes("wiggly-v3-render-worker"), "v3 render worker must have its own PM2 app name.");
 assert.ok(script.includes("npx convex deploy"), "v3 deploy must sync Convex functions before smoke.");
+for (const convexRuntimeValue of [
+  "BRANDFETCH_API_KEY",
+  "REPLICATE_API_TOKEN",
+  "FISH_STUDIO_APIKEY",
+  "ELEVENLABS_API_KEY",
+  "WIGGLY_PUBLIC_BASE_URL",
+]) {
+  assert.ok(
+    script.includes(convexRuntimeValue),
+    `v3 deploy must sync ${convexRuntimeValue} into the Convex runtime.`,
+  );
+}
 assert.ok(script.includes("OPENROUTER_API_KEY REPLICATE_API_TOKEN"), "Maker deploy must fail visibly when provider secrets are missing.");
 assert.ok(script.includes("MAKER_REQUIREMENTS_HASH"), "Maker deploy must cache PaddleOCR by requirements hash.");
 assert.ok(script.includes("bash scripts/setup-maker-analysis.sh"), "Maker deploy must install and prewarm PaddleOCR.");
