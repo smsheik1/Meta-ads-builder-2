@@ -22,6 +22,7 @@ with tempfile.TemporaryDirectory() as directory:
     (root / "ocr.json").write_text(json.dumps({"width": 20, "height": 20, "texts": []}))
     (root / "claims.json").write_text(json.dumps({
         "editableTextEvidenceIds": [],
+        "fixedFrameAssets": [{"assetId": "tile", "shape": "rectangle", "x": 1, "y": 2, "width": 4, "height": 5}],
         "preRepairedAssetIds": ["subject"],
     }))
     (root / "sam.json").write_text(json.dumps([{
@@ -47,6 +48,9 @@ with tempfile.TemporaryDirectory() as directory:
     assert int(background[10, 10, 0]) > 240, "The repaired blue background must survive composition."
     assert int(background[10, 10, 2]) < 15, "The original red subject must not be painted back."
     composition = json.loads((root / "composition.json").read_text())
-    assert composition["assets"][0]["assetId"] == "subject"
+    assert [asset["assetId"] for asset in composition["assets"]] == ["tile", "subject"]
+    tile = cv2.imread(str(root / "asset-tile.png"))
+    assert tile is not None and tile.shape[:2] == (5, 4), "A fixed frame must be cropped at its declared size."
+    assert int(tile[0, 0, 2]) > 240, "The fixed frame crop must preserve the original pixels."
 
 print("maker reference composition tests passed")

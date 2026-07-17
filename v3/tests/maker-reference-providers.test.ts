@@ -55,6 +55,8 @@ assert.match(gemmaPrompt, /Return exactly one valid JSON object/);
 assert.match(gemmaPrompt, /maker_questions: string\[\]/);
 assert.match(gemmaPrompt, /Field binding is exactly one of: fixed, brand, campaign, proof/);
 assert.match(gemmaPrompt, /only brand_identity assets use brand binding/);
+assert.match(gemmaPrompt, /frame records that exact outer frame in pixels/);
+assert.match(gemmaPrompt, /coordinates are allowed only inside asset\.frame/);
 
 let providerFailureRequests = 0;
 await assert.rejects(

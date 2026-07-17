@@ -542,6 +542,7 @@ export type StaticImageLayer = StaticLayerBase & {
   alt: string;
   objectFit: "contain" | "cover" | "fill";
   borderRadius: number;
+  fixedFrame?: boolean;
 };
 
 export type StaticShapeLayer = StaticLayerBase & {

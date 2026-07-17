@@ -15,6 +15,7 @@ import { loadLocalDraft, loadLocalVersion, publishLocalDraft, saveLocalDraft } f
 import { assertFormatDraft, flattenStaticLayers, makerAnalysisSchema, updateFormatDraft, validateFormatDraftReady, type FormatDraft, type FormatVersion } from "./model";
 import { createSavedReferenceDraftFixture } from "./savedReferenceFixture";
 import { createHybridNewsDraftFixture } from "./hybridNewsFixture";
+import { createMediaSlotDraftFixture } from "./mediaSlotFixtures";
 import { createMakerFormatTestDraftFixture } from "../formats/static-package/testFixture";
 import { mergeMakerAnalysisActivity, type MakerAnalysisActivity, type MakerAnalysisStreamMessage } from "./analysisProgress";
 
@@ -24,7 +25,7 @@ const fixtureActivity: Array<Omit<MakerAnalysisActivity, "elapsedSeconds">> = [
   { id: "upload", label: "Reference received", detail: "Saved test reference is ready for analysis.", status: "complete" },
   { id: "ocr", label: "Reading every text region", detail: "OCR evidence loaded from the saved live result.", status: "complete" },
   { id: "semantic", label: "Understanding how the ad works", detail: "Formula, fields, lists, and assets loaded.", status: "complete" },
-  { id: "sam", label: "Separating editable visual assets", detail: "Saved SAM 3 asset boundaries loaded.", status: "complete" },
+  { id: "asset-plan", label: "Finding replaceable image frames", detail: "Saved circle and rectangle boundaries loaded.", status: "complete" },
   { id: "compose", label: "Rebuilding the editable artwork", detail: "Clean background and editable layers assembled.", status: "complete" },
   { id: "draft", label: "Packaging the Maker draft", detail: "The saved editable package is ready.", status: "complete" },
 ];
@@ -158,17 +159,21 @@ export function MakerBuilderClient() {
       }
       let nextDraft: FormatDraft;
       let readyMessage: string;
-      if (fixture === "saved" || fixture === "maker-test" || fixture === "hybrid-news") {
+      if (fixture === "saved" || fixture === "maker-test" || fixture === "hybrid-news" || fixture === "media-rectangle" || fixture === "media-multiple") {
         const fixtureStartedAt = Date.now();
         for (const activity of fixtureActivity) {
           await new Promise((resolve) => window.setTimeout(resolve, 350));
           activityChanged({ ...activity, elapsedSeconds: Math.round((Date.now() - fixtureStartedAt) / 1000) });
         }
-        nextDraft = fixture === "maker-test"
-          ? createMakerFormatTestDraftFixture(crypto.randomUUID())
-          : fixture === "hybrid-news"
-            ? createHybridNewsDraftFixture({ id: crypto.randomUUID(), fileName: reference.fileName, imageUrl: "/maker-fixtures/hybrid-news/reference.png" })
-            : createSavedReferenceDraftFixture({ id: crypto.randomUUID(), fileName: reference.fileName, imageUrl: reference.imageUrl });
+        if (fixture === "maker-test") nextDraft = createMakerFormatTestDraftFixture(crypto.randomUUID());
+        else if (fixture === "hybrid-news") nextDraft = createHybridNewsDraftFixture({ id: crypto.randomUUID(), fileName: reference.fileName, imageUrl: "/maker-fixtures/hybrid-news/reference.png" });
+        else if (fixture === "media-rectangle" || fixture === "media-multiple") {
+          nextDraft = createMediaSlotDraftFixture({
+            fixtureId: fixture === "media-rectangle" ? "rectangle" : "multiple",
+            id: crypto.randomUUID(),
+            fileName: reference.fileName,
+          });
+        } else nextDraft = createSavedReferenceDraftFixture({ id: crypto.randomUUID(), fileName: reference.fileName, imageUrl: reference.imageUrl });
         readyMessage = "Editable draft built from the saved live-analysis fixture. No API call was made.";
       } else {
         const form = new FormData();

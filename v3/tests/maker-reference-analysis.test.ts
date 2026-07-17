@@ -6,6 +6,7 @@ import {
   buildMakerAnalysisPrompt,
   createMakerDraftFromAnalysis,
   editableTextEvidenceIds,
+  fixedFrameAssets,
   makerAnalysisJsonSchema,
   normalizeMakerAnalysisRerollBindings,
   validateMakerAnalysisEvidence,
@@ -13,6 +14,7 @@ import {
 } from "../features/builder/referenceAnalysis";
 import { createSavedReferenceDraftFixture, savedCodexOcr, savedCodexReferenceAnalysis } from "../features/builder/savedReferenceFixture";
 import { createHybridNewsDraftFixture } from "../features/builder/hybridNewsFixture";
+import { createMediaSlotDraftFixture } from "../features/builder/mediaSlotFixtures";
 
 const ocr: PaddleOcrResult = {
   width: 1080,
@@ -37,6 +39,14 @@ assert.equal((makerAnalysisJsonSchema() as { additionalProperties?: boolean }).a
 assert.deepEqual(makerAnalysisJsonSchema(), JSON.parse(readFileSync("../docs/research-intake/schemas/maker-analysis-mvp.schema.json", "utf8")));
 assert.deepEqual(assetsNeedingRefinement(makerAnalysisFixture).map((asset) => asset.id), ["brand_mark"]);
 assert.ok(editableTextEvidenceIds(makerAnalysisFixture).includes("text_10"));
+
+const framedAnalysis = structuredClone(makerAnalysisFixture);
+framedAnalysis.assets[0]!.frame = { shape: "circle", x: 10, y: 900, width: 90, height: 90 };
+assert.deepEqual(fixedFrameAssets(framedAnalysis).map((asset) => asset.id), ["brand_mark"]);
+assert.deepEqual(assetsNeedingRefinement(framedAnalysis), [], "A clear media frame must skip SAM 3 refinement.");
+const outsideFrame = structuredClone(framedAnalysis);
+outsideFrame.assets[0]!.frame = { shape: "rectangle", x: 1_000, y: 1_000, width: 90, height: 90 };
+assert.throws(() => validateMakerAnalysisEvidence(outsideFrame, ocr), /frame must stay inside/);
 
 const legacyAnalysis = structuredClone(makerAnalysisFixture) as unknown as { assets: Array<Record<string, unknown>> };
 delete legacyAnalysis.assets[0]!.role;
@@ -158,6 +168,7 @@ assert.ok(Math.abs(saved.scene.layout.layers.find((layer) => layer.semanticRole 
 
 const hybridNews = createHybridNewsDraftFixture({ id: "hybrid-news", fileName: "breaking-news.png", imageUrl: "data:image/png;base64,reference", now: 123 });
 const hybridBackground = hybridNews.scene.layout.layers.find((layer) => layer.semanticRole === "reference:background");
+const hybridSetting = hybridNews.scene.layout.layers.find((layer) => layer.semanticRole === "asset:story_setting");
 const hybridSubject = hybridNews.scene.layout.layers.find((layer) => layer.semanticRole === "asset:news_subject");
 assert.equal(hybridBackground?.locked, true);
 assert.ok(hybridBackground?.type === "image");
@@ -167,6 +178,9 @@ assert.equal(
   "The zero-GPU fixture must use the flattened reference instead of a RevealLayer background.",
 );
 assert.ok(hybridSubject?.type === "image");
+assert.ok(hybridSetting?.type === "image" && hybridSetting.fixedFrame, "A rectangular story image should be a fixed replacement frame.");
+assert.equal(hybridSubject.fixedFrame, true);
+assert.equal(hybridSubject.borderRadius, 104.5, "A circular frame must preserve its original shape.");
 assert.equal(
   hybridSubject.src,
   "/maker-fixtures/hybrid-news/source-subject-slot.png",
@@ -179,6 +193,16 @@ assert.deepEqual(
 );
 assert.equal(hybridNews.scene.layout.layers.find((layer) => layer.semanticRole === "field:headline")?.type, "text");
 assert.equal(hybridNews.scene.layout.layers.find((layer) => layer.id === "headline-plate")?.locked, true);
+
+const rectangleFixture = createMediaSlotDraftFixture({ fixtureId: "rectangle", id: "rectangle", fileName: "rectangle.jpg", now: 123 });
+const rectangleLayer = rectangleFixture.scene.layout.layers.find((layer) => layer.semanticRole === "asset:poster");
+assert.ok(rectangleLayer?.type === "image" && rectangleLayer.fixedFrame && rectangleLayer.objectFit === "cover");
+const multipleFixture = createMediaSlotDraftFixture({ fixtureId: "multiple", id: "multiple", fileName: "multiple.png", now: 123 });
+assert.equal(
+  multipleFixture.scene.layout.layers.filter((layer) => layer.type === "image" && layer.fixedFrame).length,
+  4,
+  "One reference may expose several independent replacement frames.",
+);
 
 const composeScript = readFileSync("scripts/maker-reference-ocr.py", "utf8");
 assert.match(composeScript, /background_source\[text_mask > 0\] = np\.median\(nearby_background, axis=0\)/, "Editable text cleanup must restore nearby panel color instead of smearing large letters.");

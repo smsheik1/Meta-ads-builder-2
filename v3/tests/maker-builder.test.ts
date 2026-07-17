@@ -85,6 +85,7 @@ assert.match(canvasSource, /react-moveable/);
 assert.match(canvasSource, /react-selecto/);
 assert.match(canvasSource, /useResizeObserver/, "Moveable controls must follow scene-driven text geometry changes.");
 assert.match(canvasSource, /renderDirections=.*\["nw", "ne", "sw", "se", "w", "e"\]/, "Text layers must not expose vertical-only resize handles that can clip glyphs.");
+assert.match(canvasSource, /draggable=\{!fixedFrameSelected\}/, "Fixed media frames must not move and expose the old image underneath.");
 assert.equal(
   (canvasSource.match(/event\.target\.style\.transform = `rotate\(\$\{start\.rotation\}deg\)`/g) || []).length,
   3,
@@ -109,6 +110,7 @@ assert.match(inspectorSource, /Why this Format works/);
 assert.match(inspectorSource, /updateLayer\(fitStaticTextLayer\(selectedLayer, event\.target\.value\)\)/, "Maker text edits must use the same auto-fit path as generated copy.");
 assert.match(inspectorSource, /Upload image/);
 assert.match(inspectorSource, /Image shape/);
+assert.match(inspectorSource, /Replace this image in place.*original picture remains covered/, "The Maker must understand why a fixed media frame cannot move.");
 assert.match(inspectorSource, /borderRadius.*circle.*Math\.min/, "Replacing an inset image must let the Maker preserve a circle without editing pixels.");
 assert.match(inspectorSource, /\/api\/maker\/search-images/);
 assert.match(inspectorSource, /loadedImageResults/);
