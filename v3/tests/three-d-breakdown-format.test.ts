@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import {
   buildPcmWav,
   createThreeDBreakdownTtsText,
+  FISH_STUDIO_TTS_MODEL,
   FISH_STUDIO_THREE_D_BREAKDOWN_MODEL,
   generateFishThreeDBreakdownVoiceover,
   THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID,
@@ -23,6 +24,13 @@ import {
   THREE_D_BREAKDOWN_DURATION_MS,
   THREE_D_BREAKDOWN_VARIANT_COUNT,
 } from "../features/formats/three-d-breakdown/prompt";
+import {
+  buildThreeDProductionFramePrompt,
+  buildThreeDSeedancePrompt,
+  buildThreeDStoryboardBoardPrompt,
+  isThreeDSupplementStory,
+} from "../features/formats/three-d-breakdown/mediaPrompts";
+import { extractThreeDProductPackshotImageUrl, extractThreeDProductUseImageUrl } from "../features/formats/three-d-breakdown/productReference";
 import { validateThreeDBreakdownScene } from "../features/formats/three-d-breakdown/validate";
 import { DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL } from "../features/llm/nvidiaNimModels";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
@@ -296,6 +304,16 @@ const grunsProductResearch = makeResearch({
   },
 });
 assert.equal(selectThreeDBreakdownProductAnchor(grunsProductResearch)?.title, "Grüns Daily Nutrition Gummies");
+assert.equal(extractThreeDProductUseImageUrl(`
+  <img src="/hero-pouch.webp" alt="Grüns 28 daily packs">
+  <img src="/clinical-chart.webp" alt="Clinical study chart">
+  <img src="/LifestyleImage-HandSatchet.webp" alt="Hand opening a single serving sachet">
+`, "https://gruns.co/products/gruns", "https://gruns.co/hero-pouch.webp"), "https://gruns.co/LifestyleImage-HandSatchet.webp");
+assert.equal(extractThreeDProductPackshotImageUrl(`
+  <img src="/hero-pouch.webp" alt="Grüns 28 daily packs" width="1200">
+  <img src="/LifestyleImage-HandSatchet.webp" alt="Hand opening a single serving sachet" width="800">
+  <img src="/Pouch_w_Gummies.webp" alt="" width="1200">
+`, "https://gruns.co/products/gruns", "https://gruns.co/hero-pouch.webp"), "https://gruns.co/Pouch_w_Gummies.webp");
 
 const seedOgProductResearch = makeResearch({
   websiteUrl: "https://seed.com/",
@@ -352,6 +370,16 @@ const grunsLiveOrderResearch = makeResearch({
     offer: "Daily nutritional superfood gummies containing 60+ ingredients including fruits, vegetables, vitamins, and minerals.",
     audience: "Busy individuals looking for a simple, tasty way to bridge nutritional gaps without powders or pills.",
     ctaDirection: "Try Grüns gummies",
+    siteLanguage: ["60+ Ingredients in One Pack You'll Actually Crave"],
+  },
+  evidence: {
+    ...research.evidence,
+    receipts: {
+      specificClaims: Array.from({ length: 16 }, (_, index) => `Price option ${index + 1}: $${40 + index}`),
+      buyerMoments: [],
+      exactSiteLanguage: [],
+      namedProof: [],
+    },
   },
   productCatalog: {
     provider: "shopify-products-json",
@@ -447,6 +475,11 @@ const grunsLiveOrderResearch = makeResearch({
   },
 });
 assert.equal(selectThreeDBreakdownProductAnchor(grunsLiveOrderResearch)?.title, "Grüns");
+const grunsNutrientPackEvidence = extractThreeDBreakdownEvidence(grunsLiveOrderResearch)
+  .find((item) => /60\+ ingredients in one pack/i.test(item.text));
+assert.ok(grunsNutrientPackEvidence, "Evidence ranking must not let early price noise hide a stronger visual product detail.");
+assert.equal(grunsNutrientPackEvidence.evidenceUseType, "material");
+assert.ok(grunsNutrientPackEvidence.visualPotentialScore >= 0.8);
 assert.equal(selectThreeDBreakdownBuyerCta({
   generatedCta: "Start your daily routine from Grüns.",
   siteCta: "Try Grüns gummies.",
@@ -540,12 +573,9 @@ assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions p
   "If a line cannot be drawn as a specific object/action",
   "Show, don't tell",
   "The visuals do the heavy lifting",
-  "Demonstrator is not host",
-  "Founder prompt discipline",
-  "If a narration sentence cannot become a visible production still",
   "same face, plain shirt color",
-  "locked style, recurring demonstrator/product, scene action",
-  "human/product use, body-route/path, obstacle, mechanism pipe",
+  "Use a body route only when the locked premise and evidence concern ingestion, digestion, or absorption",
+  "routine, testing, portability, taste, and compression stay external",
   "clean graphic product-science footage",
   "no wet gut, gore, organ close-up",
   "product-science teardown",
@@ -553,7 +583,7 @@ assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions p
   "Use [] for no riskFlags",
   "Write 1 variant.",
   "No invented reviews, numbers, results, guarantees, source names, customer names, or claims.",
-  "Total narration must be 35-80 words",
+  "Total narration must be 45-65 words",
   "ctaLine must make a real viewer action obvious",
   "Never use an abstract closer as ctaLine",
   "pick the most visual evidence item",
@@ -575,20 +605,39 @@ assert.ok(styleBScriptPrompt.includes("Wiggly Style B Script Director"));
 assert.ok(styleBScriptPrompt.includes("Do not write storyboard, shots, image prompts, animation prompts, or captions."));
 assert.ok(styleBScriptPrompt.includes("unseen omniscient narrator"));
 assert.ok(styleBScriptPrompt.includes("referenceScript must be 110-160 words"));
+assert.ok(styleBScriptPrompt.includes("scriptBeats are the final 20-second narration"));
+assert.ok(styleBScriptPrompt.includes("45-65 words total"));
+assert.ok(styleBScriptPrompt.includes("Spoken copy never mentions production"));
+assert.ok(styleBScriptPrompt.includes("Only evidence text authorizes product facts"));
+assert.ok(styleBScriptPrompt.includes("no invented experiment"));
+assert.ok(styleBScriptPrompt.includes("Example A - supplement mechanism"));
+assert.ok(styleBScriptPrompt.includes("Example B - commodity gift proof"));
+assert.ok(styleBScriptPrompt.includes("Example C - physical gadget mechanism"));
+assert.ok(styleBScriptPrompt.includes("Bad contrast"));
+assert.ok(!styleBScriptPrompt.includes("pet water fountain"));
+assert.ok(!styleBScriptPrompt.includes("beauty refill"));
 assert.ok(styleBScriptPrompt.includes("Start with human curiosity before selling"));
-assert.ok(styleBScriptPrompt.includes("ctaLine is 7-16 words"));
-assert.ok(styleBScriptPrompt.includes("ctaLine must be conversion copy"));
+assert.ok(styleBScriptPrompt.includes("ctaLine is 3-7 words"));
+assert.ok(styleBScriptPrompt.includes("must exactly match the punchline narration"));
 assert.ok(styleBScriptPrompt.includes("ctaLine must sell the product action, not the mechanism"));
 assert.ok(styleBScriptPrompt.includes("name the plain product category once"));
 assert.ok(styleBScriptPrompt.includes("use the selected evidenceIndex/evidenceUseType exactly"));
 assert.ok(styleBScriptPrompt.includes("higher-scoring evidence into supporting context only"));
-assert.ok(styleBScriptPrompt.includes("For review/proof/shipping, do not invent package physics"));
+assert.ok(styleBScriptPrompt.includes("Do not invent package physics"));
 assert.ok(storyDirectionsPrompt.includes("Wiggly 3D Breakdown Story Slate Director"));
 assert.ok(storyDirectionsPrompt.includes("Write exactly 5 directions."));
 assert.ok(storyDirectionsPrompt.includes("directionId values must be idea-1, idea-2, idea-3, idea-4, idea-5."));
 assert.ok(storyDirectionsPrompt.includes("Do not write the final script."));
 assert.ok(storyDirectionsPrompt.includes("shortSummary should explain start, escalation, reveal, and payoff."));
+assert.ok(storyDirectionsPrompt.includes("Commodity gift proof"));
+assert.ok(storyDirectionsPrompt.includes("Physical gadget"));
 assert.ok(storyDirectionsPrompt.includes("visualEngine must describe the physical 3D reveal"));
+assert.ok(storyDirectionsPrompt.includes("never fake bodily harm or fear"));
+assert.ok(storyDirectionsPrompt.includes("must dramatize its selected evidence"));
+assert.ok(storyDirectionsPrompt.includes("Do not invent a failing body or failing competitor"));
+assert.ok(storyDirectionsPrompt.includes("Supplement compression"));
+assert.ok(storyDirectionsPrompt.includes("Supplement proof"));
+assert.ok(!storyDirectionsPrompt.includes("a swallowed capsule meets a hidden digestive obstacle"));
 assert.ok(seedPrompt.includes("DS-01 Daily Synbiotic"));
 assert.ok(seedPrompt.includes("ViaCap"));
 assert.ok(seedPrompt.includes("capsule-in-capsule"));
@@ -681,7 +730,7 @@ const makeVariant = ({
   context = "Everyone said it was fine, but the table still looked unfinished.",
   mechanism = "Then a David's Cookies tin showed up, ready to open and share.",
   revelation = "More than 1,500 buyers rate David's Cookies 4.6 stars.",
-  punchline = "She missed it, but the cookies arrived.",
+  punchline = "Shop David's Cookies gifts.",
   ctaLine = "Shop memorable cookie gifts from David's Cookies.",
   consequence = "When the birthday started, her gift still had not arrived.",
   referenceScript = "When someone sends a cookie tin, they assume the box carries the whole birthday. Through the lid, they picture a polite backup dessert nobody remembers. But a stale backup gift can make the table feel unfinished before anyone says it out loud. Then that backup feeling peels away. A red tin opens into cookies made for passing around. The first test is arrival. The second test is taste. Buyers describe cookies that arrived fast and tasted homemade. So the tin becomes proof in motion. Birthday, thank-you, office, client. Cookies are not just for one sweet tooth. Those moments were simply first to notice. One box fills space. The other makes the missing gift feel handled.",
@@ -768,7 +817,7 @@ const variantsPayload = {
       viewerLearns: "The gift still works across distance because buyers describe fast arrival and homemade taste.",
       consequence: "When the thank-you gift had nowhere local to go, the table stayed empty.",
       revelation: "More than 1,500 buyers rate David's Cookies 4.6 stars.",
-      punchline: "Distance stopped mattering.",
+      punchline: "Shop David's Cookies gifts.",
     }),
   ],
 };
@@ -817,6 +866,7 @@ const styleBScriptPlanPayload = (overrides: Record<string, unknown> = {}) => {
     mechanismSummary: variant.mechanismSummary,
     visualMetaphor: variant.visualMetaphor,
     referenceScript: variant.referenceScript,
+    scriptBeats: variant.scriptBeats,
     evidenceIndex: variant.evidenceIndex,
     evidenceUseType: variant.evidenceUseType,
     wowMomentType: variant.wowMomentType,
@@ -828,6 +878,122 @@ const styleBScriptPlanPayload = (overrides: Record<string, unknown> = {}) => {
     ...overrides,
   };
 };
+
+const grunsCompressionResearch = makeResearch({
+  ...grunsLiveOrderResearch,
+  brandBrief: {
+    ...grunsLiveOrderResearch.brandBrief,
+    proof: ["One grab-and-go pack contains 60+ ingredients, including fruits, vegetables, vitamins, and minerals."],
+  },
+  evidence: {
+    ...grunsLiveOrderResearch.evidence,
+    paragraphs: ["One grab-and-go pack contains 60+ ingredients, including fruits, vegetables, vitamins, and minerals."],
+    receipts: {
+      specificClaims: ["One grab-and-go pack contains 60+ ingredients, including fruits, vegetables, vitamins, and minerals."],
+      buyerMoments: ["A busy morning routine spreads nutrition across bottles, powders, water, and extra steps."],
+      exactSiteLanguage: ["60+ ingredients", "grab-and-go pack", "daily nutrition gummies"],
+      namedProof: [],
+    },
+  },
+});
+const grunsCompressionEvidence = extractThreeDBreakdownEvidence(grunsCompressionResearch)
+  .find((item) => /60\+ ingredients/i.test(item.text) && /grab-and-go pack/i.test(item.text));
+assert.ok(grunsCompressionEvidence, "Grüns compression fixture should expose the many-parts-to-one-pack evidence.");
+const grunsCompressionDirection = {
+  directionId: "idea-1",
+  hookLine: "A pile of daily routines just collapsed into a single grab-and-go pack.",
+  subheadline: "See a full nutrient stack become one daily pack.",
+  shortSummary: "A busy counter fills with separate routine steps. The pieces stack until the routine feels impossible. Then the documented ingredients compress into the Grüns gummy pack. One pack replaces the scattered visual problem.",
+  category: "Product mystery",
+  whyCompelling: "It turns routine overload into one satisfying physical transformation.",
+  adAngle: "Simplify daily nutrition into one grab-and-go pack.",
+  visualEngine: "Documented ingredient pieces compress and lock into the Grüns gummy pack.",
+  evidenceIndex: grunsCompressionEvidence.evidenceIndex,
+  evidenceUseType: grunsCompressionEvidence.evidenceUseType,
+  possibleRevealPatterns: ["chaos-to-order" as const, "process-pipeline" as const],
+};
+const grunsCompressionLock = {
+  variantAngle: grunsCompressionDirection.adAngle,
+  customerProblem: grunsCompressionDirection.hookLine,
+  mechanismSummary: grunsCompressionDirection.visualEngine,
+  visualMetaphor: grunsCompressionDirection.visualEngine,
+  evidenceIndex: grunsCompressionEvidence.evidenceIndex,
+  evidenceUseType: grunsCompressionEvidence.evidenceUseType,
+  wowMomentType: "chaos-to-order" as const,
+  wowMoment: grunsCompressionDirection.visualEngine,
+  viewerLearns: grunsCompressionDirection.whyCompelling,
+};
+const grunsCompressionReferenceScript = "Busy mornings make people assume daily nutrition requires a counter full of bottles and powders. Each extra container becomes another step before leaving home. Water, scoops, and loose capsules turn the routine into clutter. Grüns starts with a smaller shape. One grab-and-go pack contains more than sixty ingredients, including fruits, vegetables, vitamins, and minerals. The crowded routine falls away. Documented ingredient pieces compress into one gummy pack. Someone carries the pouch into a work bag. At the desk, the pouch opens. One serving replaces the scattered visual routine. The counter stays clear for tomorrow. Instead of rebuilding the same pile, the customer handles one pack. Compare the crowded counter with one pocket-ready pack. Grüns leaves the daily stack pocket-ready.";
+const grunsCompressionBeats = [
+  { role: "consequence", narration: "You think daily nutrition needs bottles and powders everywhere.", startMs: 0, endMs: 3000 },
+  { role: "context", narration: "People assume daily nutrition must stay scattered across extra steps.", startMs: 3000, endMs: 7000 },
+  { role: "mechanism", narration: "Then Grüns compresses that routine into one grab-and-go gummy pack.", startMs: 7000, endMs: 12000 },
+  { role: "revelation", narration: "One pack contains 60+ ingredients, including fruits, vegetables, vitamins, and minerals.", startMs: 12000, endMs: 16000 },
+  { role: "punchline", narration: "Daily nutrition, rebuilt for motion.", startMs: 16000, endMs: 20000 },
+];
+const grunsCompressionScriptPlan = styleBScriptPlanPayload({
+  ...grunsCompressionLock,
+  referenceScript: grunsCompressionReferenceScript,
+  scriptBeats: grunsCompressionBeats,
+  ctaLine: "Try Grüns gummies today.",
+});
+
+const grunsFallbackCtaScriptPlan = styleBScriptPlanPayload({
+  ...grunsCompressionScriptPlan,
+  ctaLine: "Daily nutrition, rebuilt for motion.",
+  scriptBeats: grunsCompressionBeats,
+});
+let grunsFallbackCtaCalls = 0;
+const grunsFallbackCtaGeneration = await generateThreeDBreakdownVariantsFromResearch(grunsCompressionResearch, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  selectedStoryDirection: grunsCompressionDirection,
+  nvidiaNimChatCompletion: async () => {
+    grunsFallbackCtaCalls += 1;
+    return grunsFallbackCtaCalls === 1
+      ? JSON.stringify(grunsFallbackCtaScriptPlan)
+      : JSON.stringify(payloadWithVariants([makeVariant({
+          ...grunsCompressionLock,
+          referenceScript: grunsCompressionReferenceScript,
+          ctaLine: "Try Grüns gummies today.",
+          consequence: grunsCompressionBeats[0]!.narration,
+          context: grunsCompressionBeats[1]!.narration,
+          mechanism: grunsCompressionBeats[2]!.narration,
+          revelation: grunsCompressionBeats[3]!.narration,
+          punchline: "Try Grüns gummies today.",
+        })]));
+  },
+});
+assert.equal(grunsFallbackCtaCalls, 2, "A malformed CTA should be normalized without retrying the Script Director.");
+assert.equal(grunsFallbackCtaGeneration.variants[0]?.ctaLine, "Try Grüns gummies today.");
+assert.equal(grunsFallbackCtaGeneration.variants[0]?.scriptBeats[4]?.narration, "Try Grüns gummies today.");
+const grunsCompressionVisualPlan = payloadWithVariants([makeVariant({
+  ...grunsCompressionLock,
+  visualStyle: "presenter-teardown-vsl",
+  referenceScript: grunsCompressionReferenceScript,
+  consequence: grunsCompressionBeats[0]!.narration,
+  context: grunsCompressionBeats[1]!.narration,
+  mechanism: grunsCompressionBeats[2]!.narration,
+  revelation: grunsCompressionBeats[3]!.narration,
+  punchline: grunsCompressionBeats[4]!.narration,
+  ctaLine: "Try Grüns gummies today.",
+})]);
+((grunsCompressionVisualPlan.variants[0] as ThreeDBreakdownVariant).storyboardBoard.frames![1] as { role: string }).role = "hidden-obstacle";
+let grunsCompressionCalls = 0;
+const grunsCompressionGeneration = await generateThreeDBreakdownVariantsFromResearch(grunsCompressionResearch, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    grunsCompressionCalls += 1;
+    return JSON.stringify(directorPrompt.includes("Wiggly Style B Script Director")
+      ? grunsCompressionScriptPlan
+      : grunsCompressionVisualPlan);
+  },
+  selectedStoryDirection: grunsCompressionDirection,
+});
+assert.equal(grunsCompressionCalls, 2, "Evidence-backed visual compression should pass without a validation retry.");
+assert.equal(grunsCompressionGeneration.variants[0]?.referenceScript, grunsCompressionReferenceScript);
+assert.equal(grunsCompressionGeneration.variants[0]?.scriptBeats[4]?.narration, "Try Grüns gummies today.");
 
 let storySlateCalls = 0;
 const storySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
@@ -850,6 +1016,45 @@ assert.equal(storySlate.recommendedDirectionId, "idea-1");
 assert.equal(storySlate.directions[0]?.evidenceUseType, reviewEvidence.evidenceUseType);
 assert.ok(storySlate.directions[0]?.visualEngine.includes("Proof blocks"));
 
+let unsafeStorySlateCalls = 0;
+await assert.rejects(
+  () => generateThreeDBreakdownStoryDirectionsFromResearch(research, {
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => {
+      unsafeStorySlateCalls += 1;
+      return JSON.stringify({
+        ...storyDirectionPayload,
+        directions: storyDirectionPayload.directions.map((direction, index) => (
+          index === 0
+            ? { ...direction, hookLine: "Your body is starving while this daily product destroys your health." }
+            : direction
+        )),
+      });
+    },
+  }),
+  /unsupported harm or fear framing/,
+);
+assert.equal(unsafeStorySlateCalls, 2, "Unsafe story slates should receive only the existing single validation retry.");
+
+await assert.rejects(
+  () => generateThreeDBreakdownStoryDirectionsFromResearch(research, {
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify({
+      ...storyDirectionPayload,
+      directions: storyDirectionPayload.directions.map((direction, index) => (
+        index === 0
+          ? {
+            ...direction,
+            hookLine: "Most pills dissolve before the gift ever works.",
+            shortSummary: "A pill dissolves early, then an invented delivery system survives digestion and releases its payload.",
+          }
+          : direction
+      )),
+    }),
+  }),
+  /invented a digestion mechanism|invented a dissolving mechanism|invented a survival mechanism/,
+);
+
 const selectedStoryDirection = storySlate.directions[0]!;
 const selectedDirectionPrompt = buildThreeDBreakdownPrompt({
   count: 1,
@@ -868,24 +1073,75 @@ assert.ok(selectedStyleBScriptPrompt.includes("Selected story direction:"));
 assert.ok(selectedStyleBScriptPrompt.includes(selectedStoryDirection.adAngle));
 
 let selectedDirectionCalls = 0;
+const selectedStoryLock = {
+  variantAngle: selectedStoryDirection.adAngle,
+  customerProblem: selectedStoryDirection.hookLine,
+  mechanismSummary: selectedStoryDirection.visualEngine,
+  visualMetaphor: selectedStoryDirection.visualEngine,
+  evidenceIndex: selectedStoryDirection.evidenceIndex,
+  evidenceUseType: selectedStoryDirection.evidenceUseType,
+  wowMomentType: selectedStoryDirection.possibleRevealPatterns[0],
+  wowMoment: selectedStoryDirection.visualEngine,
+  viewerLearns: selectedStoryDirection.whyCompelling,
+  ctaLine: "Shop memorable cookie gifts from David's Cookies.",
+};
+const selectedScriptPlan = styleBScriptPlanPayload(selectedStoryLock);
+const selectedVisualPayload = payloadWithVariants([makeVariant({
+  ...selectedStoryLock,
+  visualStyle: "presenter-teardown-vsl",
+  punchline: "Shop David's Cookies gifts.",
+})]);
 const selectedDirectionGeneration = await generateThreeDBreakdownVariantsFromResearch(research, {
   count: 1,
   nvidiaNimApiKey: "test-key",
-  nvidiaNimChatCompletion: async () => {
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
     selectedDirectionCalls += 1;
-    throw new Error("Selected story directions should not require another NIM director call.");
+    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+      assert.ok(directorPrompt.includes(selectedStoryDirection.directionId));
+      assert.ok(directorPrompt.includes(`evidenceIndex ${selectedStoryDirection.evidenceIndex}`));
+      return JSON.stringify(selectedScriptPlan);
+    }
+    assert.ok(directorPrompt.includes("Locked Style B script plan:"));
+    assert.ok(directorPrompt.includes(selectedStoryDirection.hookLine));
+    return JSON.stringify(selectedVisualPayload);
   },
   selectedStoryDirection,
 });
-assert.equal(selectedDirectionCalls, 0);
+assert.equal(selectedDirectionCalls, 2);
 assert.equal(selectedDirectionGeneration.variants.length, 1);
-assert.ok(selectedDirectionGeneration.variants[0]?.variantAngle.startsWith("A gift has to feel remembered"));
+assert.equal(selectedDirectionGeneration.variants[0]?.variantAngle, selectedStoryDirection.adAngle);
 assert.equal(selectedDirectionGeneration.variants[0]?.visualStyle, "presenter-teardown-vsl");
-assert.equal(
-  selectedDirectionGeneration.variants[0]?.scriptBeats[4]?.narration,
-  selectedDirectionGeneration.variants[0]?.ctaLine,
-  "The compressed Style B script must end on the buyer action, not an abstract mechanism slogan.",
+assert.equal(selectedDirectionGeneration.variants[0]?.evidenceIndex, selectedStoryDirection.evidenceIndex);
+assert.equal(selectedDirectionGeneration.variants[0]?.evidenceUseType, selectedStoryDirection.evidenceUseType);
+assert.equal(selectedDirectionGeneration.variants[0]?.referenceScript, selectedScriptPlan.referenceScript);
+assert.deepEqual(
+  selectedDirectionGeneration.variants[0]?.scriptBeats.map((beat) => beat.narration),
+  selectedScriptPlan.scriptBeats.map((beat) => beat.narration),
 );
+assert.equal(selectedDirectionGeneration.variants[0]?.ctaLine, selectedScriptPlan.ctaLine);
+
+let productionDirectionCalls = 0;
+const productionDirectionResult = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    productionDirectionCalls += 1;
+    if (directorPrompt.includes("Wiggly Style B Script Director") && !directorPrompt.includes("failed validation")) {
+      return JSON.stringify(styleBScriptPlanPayload({
+        ...selectedStoryLock,
+        referenceScript: `The demonstrator points at the product. ${selectedScriptPlan.referenceScript}`,
+      }));
+    }
+    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+      assert.ok(directorPrompt.includes("spoken copy, not production directions"));
+      return JSON.stringify(selectedScriptPlan);
+    }
+    return JSON.stringify(selectedVisualPayload);
+  },
+  selectedStoryDirection,
+});
+assert.equal(productionDirectionCalls, 3);
+assert.equal(productionDirectionResult.variants[0]?.referenceScript, selectedScriptPlan.referenceScript);
 
 let observedMaxTokens: number | undefined;
 let observedDirectorCalls = 0;
@@ -937,7 +1193,8 @@ assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("Visual st
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("silent recurring stylized feature-animation CGI demonstrator"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("full body, torso, hands"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("unmistakable feature-animation CGI"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human/product use, transparent body-route or product path"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human/product use, product path or selected body-route"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("Routine, testing, portability, taste, and ingredient-compression stories stay in the external product/demo world"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("obstacle wall or pile-up"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("same face, plain shirt color"));
 assert.ok(!generated.variants[1]?.storyboardBoard.imagePrompt.includes("cap/goggles"));
@@ -974,7 +1231,7 @@ assert.ok(prompt.includes("Show, don't tell"));
 assert.ok(prompt.includes("Each frame must visualize one narration line/causal turn"));
 assert.ok(prompt.includes("same face, plain shirt color"));
 assert.ok(prompt.includes("No branded caps, hats, hoodies, shirts, totes, merch, or character outfit details may become the product or final payoff."));
-assert.ok(prompt.includes("locked style, recurring demonstrator/product, scene action"));
+assert.ok(prompt.includes("locked style, recurring demonstrator/product, action"));
 assert.ok(prompt.includes("2 hidden obstacle/invisible problem/impossible zoom"));
 assert.ok(prompt.includes("overlayText is metadata for Wiggly renderer overlays only"));
 
@@ -984,7 +1241,7 @@ timingDriftPayload.variants[0].scriptBeats = [
   { role: "context", narration: "Everyone said it was fine, but the table still looked unfinished.", startMs: 4000, endMs: 7000 },
   { role: "mechanism", narration: "Then a David's Cookies tin showed up, ready to open and share.", startMs: 7000, endMs: 14000 },
   { role: "revelation", narration: "More than 1,500 buyers rate David's Cookies 4.6 stars.", startMs: 14000, endMs: 19000 },
-  { role: "punchline", narration: "She missed it, but the cookies arrived.", startMs: 19000, endMs: 20000 },
+  { role: "punchline", narration: "Shop David's Cookies gifts.", startMs: 19000, endMs: 20000 },
 ];
 const timingDriftResult = await generateThreeDBreakdownVariantsFromResearch(research, {
   count: 1,
@@ -1161,7 +1418,7 @@ await assert.rejects(
     nvidiaNimApiKey: "test-key",
     nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([compactNearMissVariant])),
   }),
-  /script must be 35-80 words|beat 4 must be one sentence/,
+  /script must be 45-65 words|beat 4 must be one sentence/,
 );
 
 await assert.rejects(
@@ -1206,20 +1463,18 @@ const factualMadeForGeneration = await generateThreeDBreakdownVariantsFromResear
 });
 assert.equal(factualMadeForGeneration.variants.length, 1);
 
-await assert.rejects(
-  () => generateThreeDBreakdownVariantsFromResearch(research, {
-    count: 1,
-    nvidiaNimApiKey: "test-key",
-    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
-      consequence: "Most probiotics enter digestion and everyone assumes they survive the trip.",
-      context: "Then stomach acid turns that trip into the first real test.",
-      mechanism: "But ViaCap shields the probiotic core while prebiotics move with it.",
-      revelation: "The selected proof says the delivery system reaches the colon.",
-      punchline: "The trip was the product.",
-    })])),
-  }),
-  /punchline must not sell the mechanism/,
-);
+const normalizedPunchlineGeneration = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+    consequence: "Most probiotics enter digestion and everyone assumes they survive the trip.",
+    context: "Then stomach acid turns that trip into the first real test.",
+    mechanism: "But ViaCap shields the probiotic core while prebiotics move with it.",
+    revelation: "The selected proof says the delivery system reaches the colon.",
+    punchline: "The trip was the product.",
+  })])),
+});
+assert.equal(normalizedPunchlineGeneration.variants[0]?.scriptBeats[4]?.narration, "Shop memorable cookie gifts from David's Cookies.");
 
 await assert.rejects(
   () => generateThreeDBreakdownVariantsFromResearch(research, {
@@ -1243,16 +1498,14 @@ await assert.rejects(
   /forbidden ad-style narration/,
 );
 
-await assert.rejects(
-  () => generateThreeDBreakdownVariantsFromResearch(research, {
-    count: 1,
-    nvidiaNimApiKey: "test-key",
-    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
-      punchline: "Presence finally had weight.",
-    })])),
-  }),
-  /abstract noun/,
-);
+const normalizedAbstractPunchline = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+    punchline: "Presence finally had weight.",
+  })])),
+});
+assert.equal(normalizedAbstractPunchline.variants[0]?.scriptBeats[4]?.narration, "Shop memorable cookie gifts from David's Cookies.");
 
 const extraVariantResult = await generateThreeDBreakdownVariantsFromResearch(research, {
   count: 1,
@@ -1304,7 +1557,7 @@ const dentalRiskResult = await generateThreeDBreakdownVariantsFromResearch(resea
       context: "By lunch, the missed call had become an empty appointment slot.",
       mechanism: "Then the voicemail turned into a booking path before anyone looked up.",
       revelation: "Missed calls become booked appointments through voice AI.",
-      punchline: "The call became the booking.",
+      punchline: "Try voice AI booking.",
     })],
   }),
 });
@@ -1318,8 +1571,9 @@ await assert.rejects(
       ...variantsPayload,
       riskFlags: ["health", "regulated"],
       variants: [makeVariant({
-        consequence: "The patient waited while a cavity got worse.",
+        consequence: "The worried patient waited while a cavity got worse.",
         revelation: "The product prevents cavities before the pain starts.",
+        punchline: "Shop David's Cookies gifts today.",
       })],
     }),
   }),
@@ -1444,7 +1698,7 @@ const shippingOnlyResult = await generateThreeDBreakdownVariantsFromResearch(wea
     evidenceUseType: shippingOnlyEvidence.evidenceUseType,
     referenceScript: "When someone sends dessert to another city, they assume distance makes the gift less personal. Through the box, they picture a local treat losing its meaning before it arrives. But the hidden problem starts before anyone opens it. Then the local-only idea peels away. A gift box can cross the map and still feel intentional. The first test is shipping. The second test is opening. So the nationwide shipping promise gets the gift to the door. But the dessert moment makes it feel chosen. Birthday, thank-you, office, client. Dessert is not just for the people nearby. Those moments were simply first to notice. One gift stops at the bakery. The other crosses the map.",
     mechanismSummary: "nationwide shipping turns a local dessert into a sendable gift moment",
-    revelation: "Gift boxes ship nationwide to your door.",
+    revelation: "Gift boxes can ship nationwide directly to your recipient's door.",
   })])),
 });
 assert.equal(shippingOnlyResult.variants[0]?.evidenceUseType, "shipping");
@@ -1564,43 +1818,153 @@ assert.equal(scene.layout.productAnchor?.title, "Butter Pecan Meltaways Tin");
 assert.equal(scene.layout.productAnchor?.imageUrl, "https://cdn.example/davids-cookie-tin.png");
 const threeDImageActionSource = readFileSync(new URL("../convex/threeDImages.ts", import.meta.url), "utf8");
 assert.ok(threeDImageActionSource.includes("ecommerce-teardown-style-reference-clean-v7.jpg"));
-assert.ok(threeDImageActionSource.includes("captions, shirt text, labels, or logos"));
-assert.ok(threeDImageActionSource.includes("never render those words in image pixels"));
-assert.ok(threeDImageActionSource.includes("recurring silent stylized feature-animation CGI demonstrator/scale figure"));
-assert.ok(threeDImageActionSource.includes("UNSEEN NARRATOR ONLY"));
-assert.ok(threeDImageActionSource.includes("keep lips closed and relaxed, mouth and jaw still"));
-assert.ok(threeDImageActionSource.includes("never photorealistic, live action, photographed"));
-assert.ok(threeDImageActionSource.includes("oversized tactile props"));
-assert.ok(threeDImageActionSource.includes("No photorealistic or live-action people, smooth bald mannequins"));
-assert.ok(threeDImageActionSource.includes("semi-transparent torso overlay, body-route"));
-assert.ok(threeDImageActionSource.includes("This does not ban reference-style semi-transparent torso"));
-assert.ok(threeDImageActionSource.includes("do not ban body-route visuals"));
-assert.ok(threeDImageActionSource.includes("the human only demonstrates"));
-assert.ok(threeDImageActionSource.includes("same demonstrator face, plain shirt color"));
-assert.ok(threeDImageActionSource.includes("Show the product as a plain blank version"));
-assert.ok(threeDImageActionSource.includes("Erase every readable label"));
-assert.ok(threeDImageActionSource.includes("no bear, logo, wordmark, label panel, icons, or decorative graphics"));
-assert.ok(threeDImageActionSource.includes("The selected product anchor is the only allowed product hero."));
-assert.ok(threeDImageActionSource.includes("locked style, recurring demonstrator/product, one scene action"));
-assert.ok(threeDImageActionSource.includes("keep the same body-route, payload, hands, or demonstrator anchor visible"));
-assert.ok(threeDImageActionSource.includes("do not invent a new package, mannequin, presenter"));
-assert.ok(threeDImageActionSource.includes("do not overcorrect into a standalone beaker demo"));
-assert.ok(threeDImageActionSource.includes("No huge blank tables"));
-assert.ok(threeDImageActionSource.includes("Wiggly adds the exact product packshot in the final renderer end card"));
-assert.ok(threeDImageActionSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("regenerate-anchors"), v.literal("all")))'));
+assert.ok(threeDImageActionSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("anchor-1"), v.literal("anchor-2"), v.literal("all")))'));
 assert.ok(threeDImageActionSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")'));
 assert.ok(threeDImageActionSource.includes("Generate the 3D Breakdown storyboard board before production anchors."));
 assert.ok(threeDImageActionSource.includes("getThreeDAnchorImageInput"), "Production anchors must include the generated storyboard board as an image reference.");
+assert.ok(
+  threeDImageActionSource.includes("continuityAnchorDataUrl") &&
+    threeDImageActionSource.includes("hasContinuityAnchor"),
+  "The second production anchor must receive the first approved anchor as its demonstrator identity reference.",
+);
 assert.ok(threeDImageActionSource.includes("storyboardBoard?.image?.status === \"ready\""), "Production anchors must only use a ready storyboard board reference.");
-assert.ok(threeDImageActionSource.includes("scene.layout.productAnchor?.imageUrl"), "Production anchors must keep the selected product reference beside the storyboard.");
+assert.ok(threeDImageActionSource.includes("cropThreeDStoryboardPanel(new Uint8Array(await response.arrayBuffer()), frameIndex)"), "Production anchors must receive a local crop of their approved storyboard panel.");
+assert.ok(threeDImageActionSource.includes("getThreeDProductReferences(scene)"), "Production anchors must keep retail and in-use product references beside the storyboard.");
+assert.ok(threeDImageActionSource.includes("fetchThreeDProductReferenceImageUrls"), "Production anchors must recover real packshot and in-use references when the product page exposes them.");
+assert.ok(
+  threeDImageActionSource.includes("if (clipIndex === 1)") && threeDImageActionSource.includes("withRefreshedThreeDProductPackshot"),
+  "The first paid clip action must refresh legacy scenes to the clean real packshot before final rendering.",
+);
 assert.ok(!threeDImageActionSource.includes("getThreeDAnchorImageInput(nextScene, imageInput)"), "Production anchors must not receive competing style and site references after storyboard approval.");
-assert.ok(threeDImageActionSource.includes('imageMode === "regenerate-anchors"'), "Ready anchors must support explicit visual-QA regeneration.");
-assert.ok(threeDImageActionSource.includes("Recreate panel"), "Production anchor prompts must bind each frame to its storyboard panel.");
-assert.ok(threeDImageActionSource.includes("usesStoryboardReference"), "Production-frame logs must expose whether the storyboard reference was sent.");
+assert.ok(
+  threeDImageActionSource.includes('imageMode === "anchor-1"') &&
+    threeDImageActionSource.includes('imageMode === "anchor-2"') &&
+    threeDImageActionSource.includes("frame.frameIndex === regenerateAnchorFrameIndex") &&
+    threeDImageActionSource.includes("invalidatedAnchorFrameIndexes"),
+  "Ready anchors must support individual visual-QA regeneration without paying to rebuild both.",
+);
+assert.ok(threeDImageActionSource.includes("usesStoryboardPanelCrop"), "Production-frame logs must expose whether the local storyboard panel crop was sent.");
 assert.ok(threeDImageActionSource.includes("storyboard-gate:ready"));
-assert.ok(threeDImageActionSource.includes("video: { status: \"idle\" as const }"), "Regenerating production frames must clear stale 3D clip videos.");
-assert.ok(threeDImageActionSource.includes("getThreeDImageStyleRules"));
+assert.ok(
+  threeDImageActionSource.includes("changedAnchorFrameIndexes.includes(plan.frameIndexes[0])"),
+  "Regenerating one production anchor must clear only its stale 3D clip video.",
+);
 assert.ok(threeDImageActionSource.includes("storyboard board must define 6 frames before image generation"));
+assert.ok(threeDImageActionSource.includes("cropThreeDStoryboardPanel"), "Clip end frames must be derived locally from approved storyboard panels.");
+assert.ok(
+  threeDImageActionSource.includes("getReplicateImageInput(startFrame.image.url)") &&
+    threeDImageActionSource.includes("getReplicateImageInput(endFrameImage.url)") &&
+    threeDImageActionSource.includes("imageUrl: startFrameImageInput") &&
+    threeDImageActionSource.includes("lastFrameImageUrl: endFrameImageInput") &&
+    !threeDImageActionSource.includes("imageUrl: startFrame.image.url") &&
+    !threeDImageActionSource.includes("lastFrameImageUrl: endFrameImage.url"),
+  "Seedance must receive provider-readable data for both approved anchor images instead of localhost storage URLs.",
+);
+
+const cookieBoardPrompt = buildThreeDStoryboardBoardPrompt(styleBScene);
+const cookieAnchorPrompt = buildThreeDProductionFramePrompt(styleBScene, 4);
+const cookieClipPrompt = buildThreeDSeedancePrompt(styleBScene, styleBScene.layout.clipPlans![0]!);
+assert.equal(isThreeDSupplementStory(styleBScene), false);
+assert.ok(cookieBoardPrompt.includes("exactly six raw production stills"));
+assert.ok(cookieBoardPrompt.includes("APPROVED SIX-FRAME PLAN"));
+assert.ok(cookieBoardPrompt.includes("Hands place a red cookie tin"));
+assert.ok(cookieBoardPrompt.includes("image 1 is the STYLE MASTER"));
+assert.ok(cookieBoardPrompt.includes("Image 2 is the PRODUCT MASTER"));
+assert.ok(cookieBoardPrompt.includes("later images only define its real serving/use form"));
+assert.ok(cookieBoardPrompt.includes("Do not invent a woman, a different person, or a photoreal human"));
+assert.ok(cookieBoardPrompt.includes("appears in panels 1, 2, 5, and 6"));
+assert.ok(cookieBoardPrompt.includes("never a product alone on an empty grid"));
+assert.ok(cookieBoardPrompt.includes("never end on a lonely product, empty stage"));
+assert.ok(cookieBoardPrompt.includes("flexible pouch stays pouch, carton stays carton, jar stays jar, bottle stays bottle"));
+assert.ok(cookieBoardPrompt.includes("Script nouns such as pack, package, product, or snack pack never redefine its shape"));
+assert.ok(cookieBoardPrompt.includes("CATEGORY LOCK: this is not automatically a supplement story"));
+assert.ok(!cookieBoardPrompt.includes("SUPPLEMENT ROUTINE STORY"));
+assert.ok(!cookieBoardPrompt.includes("SUPPLEMENT BODY-ROUTE STORY"));
+assert.ok(!cookieBoardPrompt.includes("EDIT INTENT"));
+assert.ok(cookieBoardPrompt.includes("PIXEL TEXT BAN"));
+assert.ok(cookieBoardPrompt.length < 6000);
+assert.ok(cookieAnchorPrompt.includes("recreate panel 4"));
+assert.ok(cookieAnchorPrompt.includes("image 1 is the approved panel"));
+assert.ok(cookieAnchorPrompt.includes("image 2 is the preceding anchor"));
+assert.ok(cookieAnchorPrompt.includes("image 3 is the PRODUCT MASTER"));
+assert.ok(cookieAnchorPrompt.includes("Proof blocks assemble in midair around the cookie tin"));
+assert.ok(cookieAnchorPrompt.includes("ONE full-frame vertical 9:16 production keyframe"));
+assert.ok(cookieAnchorPrompt.length < 3500);
+assert.ok(cookieClipPrompt.includes("supplied first image is the exact opening composition"));
+assert.ok(cookieClipPrompt.includes("supplied last image is the exact ending target"));
+assert.ok(cookieClipPrompt.length <= 3900);
+assert.ok(!cookieClipPrompt.includes("SUPPLEMENT ROUTINE STORY"));
+assert.ok(!cookieClipPrompt.includes("SUPPLEMENT BODY-ROUTE STORY"));
+const supplementScene = {
+  ...styleBScene,
+  layout: {
+    ...styleBScene.layout,
+    productAnchor: {
+      ...styleBScene.layout.productAnchor!,
+      title: "Daily probiotic supplement capsules",
+      imageAlt: "green probiotic capsule bottle",
+    },
+    groundedEvidence: {
+      ...styleBScene.layout.groundedEvidence,
+      text: "A daily probiotic supplement with 24 strains.",
+    },
+  },
+} as ThreeDBreakdownAdScene;
+assert.equal(isThreeDSupplementStory(supplementScene), true);
+const supplementRoutinePrompt = buildThreeDStoryboardBoardPrompt(supplementScene);
+assert.ok(supplementRoutinePrompt.includes("SUPPLEMENT ROUTINE STORY"));
+assert.ok(!supplementRoutinePrompt.includes("transparent body route"));
+assert.ok(!supplementRoutinePrompt.includes(".."));
+const supplementBodyRouteScene = {
+  ...supplementScene,
+  layout: {
+    ...supplementScene.layout,
+    storyboardBoard: {
+      ...supplementScene.layout.storyboardBoard!,
+      frames: supplementScene.layout.storyboardBoard!.frames!.map((frame) => (
+        frame.frameIndex === 2
+          ? { ...frame, visual: "A swallowed capsule enters a clean transparent stomach route.", motion: "The capsule travels toward a visible absorption barrier." }
+          : frame
+      )),
+    },
+  },
+} as ThreeDBreakdownAdScene;
+assert.ok(buildThreeDStoryboardBoardPrompt(supplementBodyRouteScene).includes("SUPPLEMENT BODY-ROUTE STORY"));
+const gadgetScene = {
+  ...styleBScene,
+  layout: {
+    ...styleBScene.layout,
+    productAnchor: {
+      ...styleBScene.layout.productAnchor!,
+      title: "TwistEase steel jar opener",
+      imageAlt: "steel jar opener with adjustable gripping jaws",
+    },
+    groundedEvidence: {
+      ...styleBScene.layout.groundedEvidence,
+      text: "Adjustable steel jaws fit jar lids from one to four inches.",
+    },
+    storyContract: {
+      ...styleBScene.layout.storyContract,
+      customerProblem: "A smooth jar lid slips under wet fingers.",
+      mechanismSummary: "Adjustable steel jaws clamp the lid while the handle multiplies leverage.",
+      viewerLearns: "The jaws grip the lid before the handle turns it.",
+    },
+    storyboardBoard: {
+      ...styleBScene.layout.storyboardBoard!,
+      frames: styleBScene.layout.storyboardBoard!.frames!.map((frame) => (
+        frame.frameIndex === 4
+          ? { ...frame, visual: "Steel jaws close around a glass jar lid while the handle rotates above the blue grid." }
+          : frame
+      )),
+    },
+  },
+} as ThreeDBreakdownAdScene;
+const gadgetBoardPrompt = buildThreeDStoryboardBoardPrompt(gadgetScene);
+assert.equal(isThreeDSupplementStory(gadgetScene), false);
+assert.ok(gadgetBoardPrompt.includes("Steel jaws close around a glass jar lid"));
+assert.ok(gadgetBoardPrompt.includes("TwistEase steel jar opener"));
+assert.ok(!gadgetBoardPrompt.includes("SUPPLEMENT ROUTINE STORY"));
+assert.ok(!gadgetBoardPrompt.includes("SUPPLEMENT BODY-ROUTE STORY"));
 assert.equal(getRenderMusicBed(scene), null, "3D Breakdown exports should use voiceover only, no background music bed.");
 assert.equal(scene.layout.storyContract.wowMomentType, "proof-blocks");
 assert.equal(scene.layout.storyContract.visualStyle, "toy-character-vsl");
@@ -1615,21 +1979,16 @@ assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => [clip.startMs, clip
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("clip 1 of 2"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("Time-code the clip into storyboard sub-shots"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("0.0-3.3s = frame 1"));
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("six quick micro-beats"));
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("every idea must become a visible physical action"));
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("same recurring silent stylized feature-animation CGI demonstrator"));
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("lips closed and still, no lip-sync"));
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("Clip 1 motion target"));
-assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("peak teardown"));
-assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("physical payoff"));
-assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("separate product end card"));
-assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("do not invent a bottle, jar, pouch, label, logo, mannequin, or presenter"));
-assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("Clip 2 motion target"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("action: Hands place a red cookie tin"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("ordinary product use"));
+assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("mechanism reveal"));
+assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("final product/CTA setup"));
+assert.ok(styleBScene.layout.clipPlans?.every((clip) => clip.prompt.includes("silent stylized CGI demonstrator")));
+assert.ok(styleBScene.layout.clipPlans?.every((clip) => clip.prompt.includes("no lip-sync")));
+assert.ok(styleBScene.layout.clipPlans?.every((clip) => clip.prompt.length < 2600));
 assert.ok(styleBScene.layout.clipPlans?.every((clip) => !clip.prompt.includes("Narrative:")));
 assert.ok(styleBScene.layout.clipPlans?.every((clip) => !clip.prompt.includes(styleBScene.layout.scriptBeats[0]?.narration || "__missing__")));
 assert.ok(styleBScene.layout.clipPlans?.every((clip) => clip.prompt.includes("Wiggly adds every word after video generation")));
-assert.ok(styleBScene.layout.storyboardBoard?.imagePrompt.includes("no more than two front-facing waist-up product-holding"));
-assert.ok(styleBScene.layout.storyboardBoard?.imagePrompt.includes("mouth, esophagus, stomach, and intestines"));
 assert.ok(scene.layout.groundedEvidence.sourceUrl.includes("davidscookies"));
 const sceneValidation = validateThreeDBreakdownScene(scene);
 assert.deepEqual(sceneValidation.errors, []);
@@ -1664,10 +2023,12 @@ const legacyScene = {
 assert.equal(validateThreeDBreakdownScene(legacyScene).valid, true);
 
 const fishVoiceRequests: Record<string, unknown>[] = [];
+let fishVoiceModelHeader = "";
 const fishResult = await generateFishThreeDBreakdownVoiceover({
   apiKey: "test-fish-key",
   scene,
   fetcher: async (_url, init) => {
+    fishVoiceModelHeader = new Headers(init?.headers).get("model") || "";
     fishVoiceRequests.push(JSON.parse(String(init?.body || "{}")) as Record<string, unknown>);
     return new Response(buildPcmWav(new Uint8Array(44_100 * 2)), {
       status: 200,
@@ -1677,13 +2038,20 @@ const fishResult = await generateFishThreeDBreakdownVoiceover({
 });
 assert.equal(THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID, "0873499c22e24d13b074fa76d27562e5");
 assert.equal(
-  createThreeDBreakdownTtsText(["A probiotic meets probiotics."]),
-  "A pro-bye-AH-tik meets pro-bye-AH-tiks.",
+  createThreeDBreakdownTtsText(["A probiotic meets probiotics and vitamins."]),
+  "A <|phoneme_start|>P R OW2 B AY0 AA1 T IH0 K<|phoneme_end|> meets <|phoneme_start|>P R OW2 B AY0 AA1 T IH0 K S<|phoneme_end|> and <|phoneme_start|>V AY1 T AH0 M AH0 N Z<|phoneme_end|>.",
   "Fish receives a private pronunciation hint while renderer captions keep the original spelling.",
+);
+assert.equal(
+  createThreeDBreakdownTtsText(["First beat.", "Second beat"]),
+  "First beat. Second beat.",
+  "Fish receives one clean pause between already-punctuated script beats.",
 );
 assert.equal(fishResult.provider, "fish-studio");
 assert.equal(fishResult.model, FISH_STUDIO_THREE_D_BREAKDOWN_MODEL);
 assert.equal(fishVoiceRequests[0]?.reference_id, THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID);
+assert.equal(FISH_STUDIO_TTS_MODEL, "s2.1-pro-free");
+assert.equal(fishVoiceModelHeader, FISH_STUDIO_TTS_MODEL);
 assert.equal(fishVoiceRequests[0]?.format, "wav");
 assert.equal((fishVoiceRequests[0]?.prosody as Record<string, unknown>)?.speed, 1.1);
 assert.ok(fishResult.captions.length >= 5);
@@ -1830,5 +2198,48 @@ const finalExportMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
 }));
 assert.ok(!finalExportMarkup.includes("final-three-d-breakdown.mp4"), "MP4 export must not render a previous final MP4 back into itself.");
 assert.ok(finalExportMarkup.includes("clip-1.mp4"));
+
+const presenterSceneWithShortVoice: ThreeDBreakdownAdScene = {
+  ...styleBScene,
+  audio: {
+    status: "generated",
+    storageId: "presenter-voice",
+    url: "https://cdn.example/presenter-voice.wav",
+    mimeType: "audio/wav",
+    durationMs: 16_000,
+    durationSeconds: 16,
+    transcript: "Short narrator voice",
+    captions: [],
+    provider: "fish-studio",
+    model: "s1",
+    generatedAt: 1,
+  },
+  layout: {
+    ...styleBScene.layout,
+    clipPlans: styleBScene.layout.clipPlans!.map((clipPlan, index) => ({
+      ...clipPlan,
+      video: {
+        status: "ready" as const,
+        url: `https://cdn.example/presenter-clip-${index + 1}.mp4`,
+        storageId: `presenter-clip-${index + 1}`,
+        mimeType: "video/mp4",
+      },
+    })) as ThreeDBreakdownAdScene["layout"]["clipPlans"],
+  },
+};
+const beforePresenterHandoff = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: presenterSceneWithShortVoice,
+  style: { width: 360, height: 640 },
+  timeSeconds: 9.9,
+}));
+const afterPresenterHandoff = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: presenterSceneWithShortVoice,
+  style: { width: 360, height: 640 },
+  timeSeconds: 10.1,
+}));
+assert.ok(beforePresenterHandoff.includes("presenter-clip-1.mp4"));
+assert.ok(!beforePresenterHandoff.includes("presenter-clip-2.mp4"));
+assert.ok(afterPresenterHandoff.includes("presenter-clip-2.mp4"));
+assert.ok(!afterPresenterHandoff.includes("presenter-clip-1.mp4"));
 
 console.log("three-d-breakdown format tests passed");

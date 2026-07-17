@@ -94,12 +94,21 @@ const forbiddenNarrationPattern = new RegExp(
   "i",
 );
 const brokenNarrationPattern = /\bali\s+ve\b|\bprotect(?:s|ed|ing)? alive\b/i;
-const transcriptOpeningPattern = /^(when|if|once|imagine|before|after|inside|without|most|many|some|a|an|the|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|hundred|thousand|every|each|she|he|someone|something|\d)\b/i;
+const transcriptOpeningPattern = /^(when|if|once|imagine|before|after|inside|without|you|your|most|many|some|a|an|the|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|hundred|thousand|every|each|she|he|someone|something|\d)\b/i;
 const abstractPunchlinePattern = /^(presence|clarity|confidence|value|connection|impact|control|growth|trust|success)\b/i;
 const ctaActionPattern = /\b(shop|start|try|visit|order|get|book|support|join|subscribe|buy)\b/i;
 const fakeCtaPattern = /\b(the\s+)?(?:journey|trip|route|path|difference|proof|evidence|moment|mechanism)\s+(?:is|was|became)\s+the\s+(?:product|proof|point|difference|mechanism)\b/i;
 const abstractCtaPattern = /\b(?:see|watch|view|learn)\s+(?:the\s+)?(?:journey|trip|route|path|proof|evidence|mechanism|difference)\b|\b(?:visible|hidden)\s+mechanism\b/i;
 const regulatedUnsafePattern = /\b(cures?|diagnos(?:e|is)|treats?|clinically proven|doctor[- ]recommended|risk[- ]free|legal outcome|guaranteed result|guaranteed to)\b|\b(?:prevents?|eliminates?)\s+(?:disease|pain|cavities|infection|injury|illness|complications|lawsuits?|legal risk|financial loss)\b|\b(?:doubles?|triples?|guarantees?|increases?)\s+(?:revenue|profit|sales|return|roi)\b/i;
+const storySlateFearPattern = /\b(?:toxic|toxins?|poison(?:s|ed|ing)?|starv(?:e|es|ed|ing|ation)|destroy(?:s|ed|ing)?|deadly|dangerous|killing|ruining|dirty\s+secret|waste\s+of\s+time|eat(?:s|ing)?\s+[^.!?]{0,30}\s+alive|morning\s+ambush|stripped\s+of\s+(?:its|their|the)\s+(?:health|nutrition|nutrients?))\b/i;
+const storySlateMechanismClaims = [
+  ["absorption", /\b(?:absorb(?:s|ed|ing)?|absorption)\b/i],
+  ["digestion", /\b(?:digest(?:s|ed|ing|ion|ive)?|stomach acid|gastric acid)\b/i],
+  ["dissolving", /\bdissolv(?:e|es|ed|ing)\b/i],
+  ["survival", /\bsurviv(?:e|es|ed|ing|al)\b/i],
+  ["release", /\breleas(?:e|es|ed|ing)\b/i],
+  ["contamination", /\b(?:contaminant|contamination|pesticides?|heavy metals?|microbial)\b/i],
+] as const;
 const primarySiteTypes: ThreeDBreakdownPrimarySiteType[] = ["ecommerce", "saas", "local-service", "restaurant-food", "nonprofit", "portfolio", "unclear"];
 const riskFlags: ThreeDBreakdownRiskFlag[] = ["health", "medical", "legal", "financial", "beauty", "regulated"];
 const claimRisks: ThreeDBreakdownClaimRisk[] = ["low", "medium", "high"];
@@ -186,6 +195,9 @@ const assertTranscriptScriptShape = (beats: ThreeDBreakdownScriptBeat[]) => {
   if (abstractPunchlinePattern.test(punchline)) {
     throw new Error("3D Breakdown punchline must not start with an abstract noun.");
   }
+  if (!ctaActionPattern.test(punchline)) {
+    throw new Error("3D Breakdown punchline must contain a direct buyer action.");
+  }
 };
 
 const assertCtaLineShape = (value: string) => {
@@ -203,21 +215,57 @@ const assertCtaLineShape = (value: string) => {
   if (countWords(ctaLine) < 3) {
     throw new Error("3D Breakdown CTA line is too short.");
   }
+  if (countWords(ctaLine) > 7) {
+    throw new Error("3D Breakdown CTA line must be 7 words or fewer.");
+  }
 };
 
-const referenceScriptConnectorPattern = /\b(arriv(?:e|es|ed|ing)|open(?:s|ed|ing)?|use(?:s|d|ing)?|assum(?:e|es|ed|ing)|thinks?|thought|pictured|decided|but|that's why|that is why|so|then|compare|not just|not only|dips?|cracks?|wakes?|stirs?|digests?|feeds?|dissolves?|descends?|travels?|reaches?|reveals?|rebuild(?:s|t|ing)|turns?|locks?|stacks?)\b/gi;
+const buildDeterministicCtaLine = (research: StoredWebsiteResearchResult) => {
+  const brand = cleanText(research.brandBrief.brandName || research.brand.name, 60)
+    .split(/\s+/)
+    .slice(0, 4)
+    .join(" ");
+  const productContext = [
+    research.brandBrief.offer,
+    ...(research.productCatalog?.products || []).slice(0, 8).map((product) => product.title),
+  ].join(" ");
+  const category = ([
+    ["gummies", /\bgumm(?:y|ies)\b/i],
+    ["cookies", /\bcookies?\b/i],
+    ["capsules", /\bcapsules?\b/i],
+    ["supplements", /\bsupplements?\b/i],
+    ["skincare", /\bskincare\b/i],
+    ["drinks", /\b(?:drink|beverage)s?\b/i],
+    ["snacks", /\bsnacks?\b/i],
+    ["gifts", /\bgifts?\b/i],
+    ["app", /\b(?:app|software|platform)\b/i],
+  ] satisfies Array<[string, RegExp]>).find(([, pattern]) => pattern.test(productContext))?.[0] || "";
+  const productName = category && !brand.toLowerCase().includes(category)
+    ? `${brand} ${category}`
+    : brand;
+  return cleanText(`Try ${productName} today.`, 180);
+};
+
+const resolveCtaLine = (value: unknown, research: StoredWebsiteResearchResult) => {
+  const candidate = cleanText(value, 180);
+  try {
+    assertCtaLineShape(candidate);
+    return candidate;
+  } catch {
+    const fallback = buildDeterministicCtaLine(research);
+    assertCtaLineShape(fallback);
+    return fallback;
+  }
+};
+
 const presenterNarrationPattern = /\b(i am|i'm|i'll|let me|watch me|today i|my favorite|we're going to|i want to show|i recommend)\b/i;
+const productionDirectionPattern = /\b(demonstrator|camera|frame|scene|animation|x[- ]?ray|cutaway|review tokens?|proof tokens?|caption|storyboard)\b/i;
 const templateLeakPattern = /\bwhen a buyer receives it\b|\bthe product reveals hidden proof\b|\bone version fills space\b|\bthe other changes the moment\b/i;
 const falseClassificationPattern = /\b(assum(?:e|es|ed|ing)|thought|pictured|decided|not for|only for|just for|wrong(?:ly)?|looked like|felt like)\b/i;
-const revealRebuildPattern = /\b(cracks?|cracked|peels?|peeled|falls? away|fell away|reveals?|revealed|rebuild(?:s|t|ing)|snaps?|snapped|turns?|turned|stacks?|stacked|locks?|locked|opens?|opened)\b/i;
-const useTestPattern = /\b(wears?|wore|pull(?:s|ed)?|opens?|opened|tastes?|tasted|bites?|bit|appl(?:y|ies|ied)|carr(?:y|ies|ied)|uses?|used|moves?|moved|shares?|shared|trains?|trained|handles?|handled|stays? up|comfortable|arriv(?:e|es|ed))\b/i;
-const audienceExpansionPattern = /\b(not just|not only|not for one|first to notice|athlete|pilot|golfer|surgeon|birthday|thank-you|office|client|everyday|parents?|teams?|customers?|operators?|owners?|managers?|patients?|guests?|friends?|families)\b/i;
-const finalReframePattern = /\b(reimagined|the difference|so compare|compare them|the other|not just|not only|first to notice|was the proof|was the product|actually enjoy|handled|remembered)\b/i;
 const REFERENCE_SCRIPT_ACCEPT_MIN_WORDS = 100;
 const REFERENCE_SCRIPT_ACCEPT_MAX_WORDS = 180;
 const REFERENCE_SCRIPT_ACCEPT_MIN_SENTENCES = 10;
 const REFERENCE_SCRIPT_ACCEPT_MAX_SENTENCES = 24;
-const productScienceEvidenceTypes = new Set<ThreeDBreakdownEvidenceUseType>(["feature", "mechanism", "material", "process"]);
 const shippingLikeEvidenceTypes = new Set<ThreeDBreakdownEvidenceUseType>(["shipping", "offer", "guarantee"]);
 const arrivalContextEvidenceTypes = new Set<ThreeDBreakdownEvidenceUseType>(["review", "proof", "shipping", "offer", "guarantee"]);
 const logisticsContextTerms = new Set(["sorting", "truck", "warehouse", "transit"]);
@@ -259,6 +307,20 @@ const unsupportedMechanismTerms = [
   ["mass market", /\bmass market\b/i],
   ["months", /\bmonths?\b/i],
   ["human-cell comparison", /\bhuman cells?\b|\boutnumber(?:s|ed|ing)?\b/i],
+  ["stomach acid", /\bstomach acid\b|\bgastric acid\b/i],
+  ["hostile digestive environment", /\b(?:hostile|harsh)\s+(?:digestive|gastric|stomach)\s+(?:tract|environment|conditions?)\b/i],
+  ["blocked digestive path", /\b(?:digestion|digestive tract|stomach acid)\s+blocks?\b/i],
+  ["arrives where needed", /\b(?:arriv(?:e|es)|reach(?:es)?)\s+(?:the\s+gut\s+)?where\s+(?:it|they|strains?)\s+(?:is|are)\s+needed\b/i],
+  ["destroy", /\bdestroy(?:s|ed|ing)?\b/i],
+  ["absorb", /\babsorb(?:s|ed|ing)?\b/i],
+  ["completely", /\bcompletely\b/i],
+  ["carbon", /\bcarbon\b/i],
+  ["arthritis", /\barthritis\b/i],
+  ["vacuum", /\bvacuum\b/i],
+  ["thick", /\bthick\b/i],
+  ["filter layer order", /\b(?:first|second|next|final)\s+(?:filter\s+)?(?:layer|barrier|mesh|sheet)\b/i],
+  ["invented water state", /\b(?:dirty|clean)\s+water\b/i],
+  ["invented water direction", /\b(?:pulls?|forces?)\s+(?:the\s+)?(?:dirty\s+)?water\s+(?:downward|through)\b/i],
 ] as const;
 
 const assertReferenceScriptGrounding = (
@@ -266,14 +328,19 @@ const assertReferenceScriptGrounding = (
   evidence: ThreeDBreakdownEvidenceItem,
   supportingEvidenceItems: ThreeDBreakdownEvidenceItem[] = [evidence],
 ) => {
-  if (productScienceEvidenceTypes.has(evidence.evidenceUseType)) return;
   const evidenceText = supportingEvidenceItems.map((item) => item.text).join(" ").toLowerCase();
-  const hasDigestiveDeliverySupport = /\b(surviv(?:e|es|al)|protect(?:s|ed|ing)?|shield(?:s|ed|ing)?|delivery system|capsule-in-capsule|outer capsule|inner capsule|probiotic core|viacap|colon)\b/i.test(evidenceText);
+  const evidenceSupportsCompressionMetaphor = /\b(?:\d{2,}\+?|dozens?|many|multiple|handfuls?)\b/i.test(evidenceText)
+    && /\b(?:one|single|all[- ]in[- ]one|grab[- ]and[- ]go)\b/i.test(evidenceText)
+    && /\b(?:pack|packet|pouch|gumm(?:y|ies)|serving|capsule|tablet|product)\b/i.test(evidenceText);
+  const factualScript = script
+    .split(/(?<=[.!?])\s+/)
+    .filter((sentence) => !falseClassificationPattern.test(sentence))
+    .join(" ");
   for (const [term, pattern] of unsupportedMechanismTerms) {
     if (arrivalContextEvidenceTypes.has(evidence.evidenceUseType) && logisticsContextTerms.has(term)) continue;
+    if (term === "compression" && evidenceSupportsCompressionMetaphor) continue;
     if (term === "oven aroma" && /\b(fresh|fresh[- ]baked|tasted|homemade)\b/i.test(evidenceText)) continue;
-    if ((term === "intact" || term === "protect") && hasDigestiveDeliverySupport) continue;
-    if (pattern.test(script) && !evidenceText.includes(term)) {
+    if (pattern.test(factualScript) && !pattern.test(evidenceText)) {
       throw new Error(`3D Breakdown Style B referenceScript invented product mechanism details not supported by evidence: ${term}.`);
     }
   }
@@ -291,6 +358,9 @@ const parseReferenceScript = (
   if (presenterNarrationPattern.test(script)) {
     throw new Error("3D Breakdown Style B referenceScript must use an unseen narrator, not presenter lines.");
   }
+  if (productionDirectionPattern.test(script)) {
+    throw new Error("3D Breakdown Style B referenceScript must contain spoken copy, not production directions.");
+  }
   if (templateLeakPattern.test(script)) {
     throw new Error("3D Breakdown Style B referenceScript copied generic prompt-template wording.");
   }
@@ -303,25 +373,6 @@ const parseReferenceScript = (
   const sentences = sentenceCount(script);
   if (sentences < REFERENCE_SCRIPT_ACCEPT_MIN_SENTENCES || sentences > REFERENCE_SCRIPT_ACCEPT_MAX_SENTENCES) {
     throw new Error(`3D Breakdown Style B referenceScript must have ${REFERENCE_SCRIPT_ACCEPT_MIN_SENTENCES}-${REFERENCE_SCRIPT_ACCEPT_MAX_SENTENCES} short documentary sentences.`);
-  }
-  const connectorCount = script.match(referenceScriptConnectorPattern)?.length || 0;
-  if (connectorCount < 7) {
-    throw new Error("3D Breakdown Style B referenceScript must use reference-style causal motion.");
-  }
-  if (!falseClassificationPattern.test(script)) {
-    throw new Error("3D Breakdown Style B referenceScript must include a false product classification or assumption.");
-  }
-  if (!revealRebuildPattern.test(script)) {
-    throw new Error("3D Breakdown Style B referenceScript must include a literal reveal or rebuild moment.");
-  }
-  if (!useTestPattern.test(script)) {
-    throw new Error("3D Breakdown Style B referenceScript must include a product use test.");
-  }
-  if (!audienceExpansionPattern.test(script)) {
-    throw new Error("3D Breakdown Style B referenceScript must include audience expansion.");
-  }
-  if (!finalReframePattern.test(script)) {
-    throw new Error("3D Breakdown Style B referenceScript must end with a product reframe.");
   }
   return script;
 };
@@ -399,6 +450,26 @@ const parseStoryDirectionSlateOutput = (
       }
       if (typeof value === "string") assertNoBannedText(value);
     }
+    if (storySlateFearPattern.test([
+      parsedDirection.hookLine,
+      parsedDirection.subheadline,
+      parsedDirection.shortSummary,
+      parsedDirection.adAngle,
+    ].join(" "))) {
+      throw new Error(`3D Breakdown story direction ${index + 1} uses unsupported harm or fear framing.`);
+    }
+    const directionText = [
+      parsedDirection.hookLine,
+      parsedDirection.subheadline,
+      parsedDirection.shortSummary,
+      parsedDirection.adAngle,
+      parsedDirection.visualEngine,
+    ].join(" ");
+    for (const [claim, pattern] of storySlateMechanismClaims) {
+      if (pattern.test(directionText) && !pattern.test(evidence.text)) {
+        throw new Error(`3D Breakdown story direction ${index + 1} invented a ${claim} mechanism not found in selected evidence.`);
+      }
+    }
     return parsedDirection;
   });
   const recommendedDirectionId = cleanText(parsed.recommendedDirectionId, 24) || directions[0]!.directionId;
@@ -414,6 +485,7 @@ const parseStoryDirectionSlateOutput = (
 const parseStyleBScriptPlanOutput = (
   raw: string,
   evidenceItems: ThreeDBreakdownEvidenceItem[],
+  research: StoredWebsiteResearchResult,
   selectedStoryDirection?: ThreeDBreakdownStoryDirection | null,
 ): ThreeDBreakdownLockedStyleBScript => {
   const parsed = parseJsonObject(raw);
@@ -429,6 +501,7 @@ const parseStyleBScriptPlanOutput = (
     const allowedEvidenceIds = evidenceItems.map((item) => item.evidenceIndex).join(", ");
     throw new Error(`3D Breakdown Style B script plan references invalid evidence; use one of: ${allowedEvidenceIds}.`);
   }
+  const ctaLine = resolveCtaLine(parsed.ctaLine, research);
   const plan = {
     visualStyle: "presenter-teardown-vsl" as const,
     variantAngle: cleanText(parsed.variantAngle, 120),
@@ -436,7 +509,8 @@ const parseStyleBScriptPlanOutput = (
     mechanismSummary: cleanText(parsed.mechanismSummary, 180),
     visualMetaphor: cleanText(parsed.visualMetaphor, 160),
     referenceScript: parseReferenceScript(parsed.referenceScript, "presenter-teardown-vsl", evidence, evidenceItems) || "",
-    ctaLine: cleanText(parsed.ctaLine, 180),
+    scriptBeats: parseScriptBeats(parsed.scriptBeats, ctaLine),
+    ctaLine,
     evidenceIndex,
     evidenceUseType: evidence.evidenceUseType,
     wowMomentType: parseEnum(parsed.wowMomentType, THREE_D_REVEAL_PATTERNS, "wowMomentType"),
@@ -445,7 +519,10 @@ const parseStyleBScriptPlanOutput = (
     claimRisk: parseEnum(parsed.claimRisk, claimRisks, "claimRisk"),
     claimRiskReason: cleanText(parsed.claimRiskReason, 220),
   };
-  assertCtaLineShape(plan.ctaLine);
+  assertReferenceScriptGrounding([
+    plan.referenceScript,
+    ...plan.scriptBeats.map((beat) => beat.narration),
+  ].join(" "), evidence, evidenceItems);
   for (const [key, value] of Object.entries(plan)) {
     if (typeof value === "string" && !value) {
       throw new Error(`3D Breakdown Style B script plan ${key} is missing.`);
@@ -472,14 +549,23 @@ const assertClaimRisk = ({
   }
 };
 
-const parseScriptBeats = (value: unknown): ThreeDBreakdownScriptBeat[] => {
+const parseScriptBeats = (value: unknown, fallbackCtaLine = ""): ThreeDBreakdownScriptBeat[] => {
   if (!Array.isArray(value) || value.length !== THREE_D_SCRIPT_BEATS.length) {
     throw new Error("3D Breakdown needs exactly 5 narration beats.");
   }
   const beats = value.map((beat, index) => {
     const raw = beat as Record<string, unknown>;
     const contract = THREE_D_SCRIPT_BEATS[index]!;
-    const narration = cleanText(raw.narration, 180);
+    const rawNarration = cleanText(raw.narration, 180);
+    const shouldUseFallbackCta = contract.role === "punchline"
+      && countWords(fallbackCtaLine) <= 7
+      && (
+        !ctaActionPattern.test(rawNarration)
+        || fakeCtaPattern.test(rawNarration)
+        || abstractCtaPattern.test(rawNarration)
+        || abstractPunchlinePattern.test(rawNarration)
+      );
+    const narration = shouldUseFallbackCta ? fallbackCtaLine : rawNarration;
     if (raw.role !== contract.role) {
       throw new Error(`3D Breakdown beat ${index + 1} role is invalid.`);
     }
@@ -569,7 +655,6 @@ const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
       "The demonstrator must be physically involved in the demo - wearing, holding, opening, swallowing, pouring, carrying, training in, or standing behind the product/path - not parked beside the scene like a host.",
       "Keep the demonstrator consistent across frames: same face, plain shirt color, body scale, and relationship to the product. No branded caps, hats, hoodies, shirts, totes, merch, or character outfit details may become the product or final payoff.",
       "Use no more than two front-facing waist-up product-holding frames. Keep the same person present through hands, over-shoulder views, torso cutaways, scale demonstrations, and product interaction so continuity does not become repetition.",
-      "For swallowed supplements, capsules, probiotics, or gummies, show the digestive route through mouth, esophagus, stomach, and intestines. Never substitute lungs or respiratory anatomy unless the selected evidence is explicitly respiratory.",
       "Each frame should follow this prompt skeleton: locked style, recurring demonstrator/product, scene action, camera/framing, lighting, color/mood, and consistency.",
       "Each frame must read like a production still from the same shot sequence: subject, prop, camera, and lighting stay coherent while the physical action changes.",
       "Maxfusion visual rule: each script line becomes a visible product/body/mechanism action before it becomes an image prompt. Show the state change physically; never settle for topic illustration.",
@@ -578,13 +663,12 @@ const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
       "Frame 2: the hidden customer/product problem appears during actual product use, handling, body-route, opening, eating, applying, wearing, or setup.",
       "Frame 3: full-body, torso, hands, or demo subject silently demonstrate the product detail that sets up the mechanism.",
       "Frame 4: peak impossible-to-film 3D overlay, cutaway, x-ray, component split, invisible-problem reveal, or mechanism insert.",
-      "Frame 5: return from the 3D insert into a practical proof/payoff product moment with blank tokens or physical cues.",
-      "Frame 6: clean human/product final with the recurring demonstrator, torso, hands, or product-in-use payoff, plus blank overlay-safe tokens.",
+      "Frame 5: return from the 3D insert into a practical proof/payoff product moment with the recurring demonstrator's torso, hands, or over-shoulder view visibly connected to the action.",
+      "Frame 6: clean human/product final where the same demonstrator's torso or hands place, hold, open, carry, use, or reach for the large selected product. Never write a product-alone or empty-stage final.",
       "Use oversized tactile demo props like clear tubes, jars, glasses, capsules, particles, piles, blocks, pipes, scoops, scales, trays, or product-use surfaces so the demo feels physically staged, not like a generic science diagram.",
-      "Each frame should be a different physical teaching module when possible: human/product use, transparent body-route or product path, obstacle wall or pile-up, mechanism machine or pipe, moving particles/components, and final product payoff.",
-      "For supplement/digestive products, follow the reference grammar: full-body demonstrator with capsule/cup, transparent torso or body-route, macro obstacle wall, machine/pipe mechanism, demonstrator/product payoff, final bottle/product close.",
-      "For supplement/digestive products, do not overcorrect into a standalone beaker or jar demo; transparent torso, gut-route, cell-wall, or body/pathway footage is required when it explains the hidden obstacle and stays connected to the silent demonstrator/product path.",
-      "For supplement/digestive hidden-obstacle frames, use clean graphic product-science footage: blue body-route, tidy pink cell-wall/obstacle surface, visible particles, and crisp grid-world lighting. Avoid wet fleshy intestine tunnels, gore, horror anatomy, disconnected organ close-ups, or gross medical macro shots.",
+      "Each frame should be a different physical teaching module when possible: human/product use, product path or selected body-route, obstacle wall or pile-up, mechanism machine or pipe, moving particles/components, and final product payoff.",
+      "For supplement stories, match the visual engine to the locked premise. Routine, testing, portability, taste, and ingredient-compression stories stay in the external product/demo world. Only delivery, digestion, or absorption stories use a transparent torso or body-route.",
+      "For approved body-route frames, show the correct digestive route rather than lungs, keep it attached to the silent demonstrator and product path, and use clean blue-route footage with a tidy barrier and visible particles. Avoid gore, wet intestine tunnels, detached organs, or anatomy montage.",
       "Use real-world ecommerce spaces where useful, but keep the reference spine: bright blue grid floor/wall, casual demo person, product handling, oversized prop comparison, and macro mechanism inserts.",
       "Do not use miniature toy-character anatomy, cartoon wall characters, smooth bald mannequins, blank anatomy models, test dummies, faceless biology montages, all-blue tabletop repetition, sterile cleanroom emptiness, huge empty counters, lab-coat scientists, doctor-like presenters, medical masks, medical goggles, PPE, sunglasses, photorealistic people, live-action people, or talking humans.",
     ]
@@ -605,13 +689,10 @@ const parseStoryboardFrames = (value: unknown): NonNullable<ThreeDBreakdownStory
   return THREE_D_STORYBOARD_FRAME_CONTRACTS.map((contract, index) => {
     const frame = value.find((item) => {
       const raw = item as Record<string, unknown>;
-      return raw.frameIndex === contract.frameIndex || raw.role === contract.role;
+      return raw.frameIndex === contract.frameIndex;
     }) || value[index];
     const raw = frame as Record<string, unknown>;
-    if (
-      raw.frameIndex !== contract.frameIndex ||
-      raw.role !== contract.role
-    ) {
+    if (raw.frameIndex !== contract.frameIndex) {
       throw new Error(`3D Breakdown storyboard frame ${index + 1} contract is invalid.`);
     }
     const visual = cleanText(raw.visual, 260);
@@ -741,7 +822,7 @@ const parseVariants = (
       if (typeof value === "string" && !value) throw new Error(`3D Breakdown variant ${index + 1} ${key} is missing.`);
       if (typeof value === "string") assertNoBannedText(value);
     }
-    const scriptBeats = parseScriptBeats(rawVariant.scriptBeats);
+    const scriptBeats = lockedScript?.scriptBeats ?? parseScriptBeats(rawVariant.scriptBeats, parsedVariantBase.ctaLine);
     if (parsedVariantBase.visualStyle === "presenter-teardown-vsl") {
       assertReferenceScriptGrounding([
         referenceScript,
@@ -870,345 +951,6 @@ const prepareThreeDBreakdownEvidence = (research: StoredWebsiteResearchResult, s
   };
 };
 
-const ensureSentence = (value: string, fallback: string, maxLength = 150) => {
-  const cleaned = cleanText(value, maxLength)
-    .replace(/\.\.\./g, ",")
-    .replace(/[!?]+$/g, "")
-    .replace(/\.$/, "")
-    .trim();
-  const sentence = cleaned || fallback;
-  return `${sentence.replace(/\.$/, "")}.`;
-};
-
-const trimAtWord = (value: string, maxLength: number) => {
-  const cleaned = cleanText(value, maxLength + 40);
-  if (cleaned.length <= maxLength) return cleaned;
-  const trimmed = cleaned.slice(0, maxLength).replace(/\s+\S*$/, "").trim();
-  return trimmed || cleaned.slice(0, maxLength).trim();
-};
-
-const shortPhrase = (value: string, fallback: string, maxLength = 34) => {
-  const cleaned = trimAtWord(value, maxLength)
-    .replace(/[.!?]+$/g, "")
-    .trim();
-  return cleaned || fallback;
-};
-
-const inferProductCategory = (research: StoredWebsiteResearchResult) => {
-  const product = research.productCatalog?.products?.[0];
-  const text = [
-    product?.productType || "",
-    product?.title || "",
-    research.brandBrief.offer,
-    research.brand.description,
-  ].join(" ");
-  if (/\bgumm(?:y|ies)\b/i.test(text)) return "gummies";
-  if (/\bcapsules?\b/i.test(text)) return "capsules";
-  if (/\bsynbiotic|probiotic\b/i.test(text)) return "daily synbiotic";
-  if (/\bcookies?|brownies?|dessert\b/i.test(text)) return "dessert gifts";
-  if (/\bdrink|beverage|soda|water\b/i.test(text)) return "drinks";
-  if (/\bserum|cream|lotion|skincare\b/i.test(text)) return "skincare";
-  return shortPhrase(product?.productType || product?.title || research.brandBrief.offer, "product", 36).toLowerCase();
-};
-
-const buyerActionCta = (research: StoredWebsiteResearchResult) => {
-  const brandName = cleanText(research.brandBrief.brandName || research.brand.name, 60) || "the brand";
-  const ctaDirection = cleanText(research.brandBrief.ctaDirection, 80);
-  if (ctaDirection && ctaActionPattern.test(ctaDirection) && !abstractCtaPattern.test(ctaDirection) && !fakeCtaPattern.test(ctaDirection)) {
-    return /\b(from|at|with|on)\b/i.test(ctaDirection)
-      ? ensureSentence(ctaDirection, `Try ${brandName}`)
-      : ensureSentence(`${ctaDirection} from ${brandName}`, `Try ${brandName}`);
-  }
-  const category = inferProductCategory(research);
-  if (/\b(cookie|dessert|gift)\b/i.test(category)) return `Shop ${brandName} ${category}.`;
-  if (/\bgumm(?:y|ies)\b/i.test(category)) return `Try ${brandName} gummies.`;
-  if (/\bcapsule|synbiotic|probiotic|supplement|vitamin|greens?\b/i.test(category)) return `Try ${brandName} ${category}.`;
-  return `Get ${brandName} today.`;
-};
-
-const evidenceNarration = (evidence: ThreeDBreakdownEvidenceItem) => {
-  const text = evidence.text;
-  if (/\bviacap\b/i.test(text) && /\bstomach acid\b/i.test(text)) {
-    return "ViaCap shields probiotics through stomach acid.";
-  }
-  if (/\b24\b/i.test(text) && /\bstrains?\b/i.test(text)) {
-    return "DS-01 carries 24 studied strains.";
-  }
-  if (/\brefill\b/i.test(text) && /\bglass|jar|bottle\b/i.test(text)) {
-    return "The refill changes, while the jar stays.";
-  }
-  if (evidence.evidenceUseType === "shipping") {
-    return ensureSentence(`The page promises ${shortPhrase(text, "delivery proof", 70)}`, "The delivery promise grounds the payoff", 95);
-  }
-  if (evidence.evidenceUseType === "review" || evidence.evidenceUseType === "proof") {
-    return ensureSentence(`The proof is ${shortPhrase(text, "a real customer detail", 70)}`, "Real proof grounds the payoff", 95);
-  }
-  return ensureSentence(shortPhrase(text, "The selected evidence grounds the reveal", 82), "The selected evidence grounds the reveal", 110);
-};
-
-const contextNarration = (direction: ThreeDBreakdownStoryDirection, evidence: ThreeDBreakdownEvidenceItem) => {
-  const combined = `${direction.subheadline} ${direction.shortSummary} ${evidence.text}`;
-  if (/\bstomach acid\b/i.test(combined)) return "Stomach acid turns the route into the hidden problem.";
-  if (/\bmicrobes?\b|\bbacteria\b/i.test(combined)) return "An invisible world reacts before you feel anything.";
-  return ensureSentence(direction.subheadline, "The hidden obstacle starts before the payoff can happen", 110);
-};
-
-const mechanismNarration = (
-  research: StoredWebsiteResearchResult,
-  direction: ThreeDBreakdownStoryDirection,
-  evidence: ThreeDBreakdownEvidenceItem,
-) => {
-  const brandName = cleanText(research.brand.name, 60) || "the product";
-  const combined = `${direction.visualEngine} ${direction.shortSummary} ${evidence.text}`;
-  if (/\bviacap\b/i.test(combined)) return `${brandName}'s ViaCap turns that route into a protected capsule journey.`;
-  if (/\bcapsule\b/i.test(combined)) return `${brandName} turns the capsule into a delivery system.`;
-  return ensureSentence(`${brandName} makes the hidden product path visible`, "The product makes the hidden path visible", 115);
-};
-
-const createSelectedDirectionSiteContract = (
-  research: StoredWebsiteResearchResult,
-  direction: ThreeDBreakdownStoryDirection,
-  evidence: ThreeDBreakdownEvidenceItem,
-): ThreeDBreakdownSiteContract => {
-  const lowerText = [
-    research.brandBrief.offer,
-    research.brandBrief.audience,
-    direction.hookLine,
-    direction.shortSummary,
-    evidence.text,
-  ].join(" ").toLowerCase();
-  const primarySiteType: ThreeDBreakdownPrimarySiteType = research.productCatalog?.products?.length
-    ? "ecommerce"
-    : /\bsoftware|platform|app|dashboard|workflow|support|automation|ai\b/.test(lowerText)
-    ? "saas"
-    : /\brestaurant|menu|food|drink|cafe\b/.test(lowerText)
-    ? "restaurant-food"
-    : /\bdonate|nonprofit|foundation|charity\b/.test(lowerText)
-    ? "nonprofit"
-    : "unclear";
-  const nextRiskFlags: ThreeDBreakdownRiskFlag[] = [
-    /\b(health|gut|probiotic|supplement|wellness|immune|digestion|bloating|gas)\b/.test(lowerText) ? "health" : "",
-    /\b(clinic|doctor|medical|patient|diagnos|treat|cure)\b/.test(lowerText) ? "medical" : "",
-    /\b(legal|law|attorney|lawsuit)\b/.test(lowerText) ? "legal" : "",
-    /\b(finance|financial|investment|loan|credit|revenue|roi)\b/.test(lowerText) ? "financial" : "",
-    /\b(skin|beauty|cosmetic|hair)\b/.test(lowerText) ? "beauty" : "",
-  ].filter(Boolean) as ThreeDBreakdownRiskFlag[];
-	  const recurringObjects = [
-	    research.brand.name,
-	    direction.evidenceUseType === "mechanism" ? "hidden pathway" : "proof tokens",
-	    evidence.evidenceUseType === "material" ? "component particles" : "product anchor",
-	    "demo character",
-	  ].slice(0, 4);
-  return {
-    primarySiteType,
-    riskFlags: Array.from(new Set(nextRiskFlags)),
-    visualWorld: `${research.brand.name} bright blue technical grid product-demo studio with recurring silent stylized feature-animation CGI demonstrator/scale figure, full-body or torso product demo, props, particles, pipes, and one impossible 3D insert`,
-    lighting: "bright creator-ad technical blue studio lighting with crisp product readability",
-    cameraStyle: "fast silent-demonstrator product teardown camera with macro mechanism inserts and quick state changes",
-    recurringObjects,
-  };
-};
-
-const createSelectedDirectionStoryboard = ({
-  direction,
-  evidence,
-  siteContract,
-}: {
-  direction: ThreeDBreakdownStoryDirection;
-  evidence: ThreeDBreakdownEvidenceItem;
-  siteContract: ThreeDBreakdownSiteContract;
-}): ThreeDBreakdownStoryboardBoard => {
-  const recurringObject = siteContract.recurringObjects[1] || "product mechanism";
-	  const frames: NonNullable<ThreeDBreakdownStoryboardBoard["frames"]> = [
-	    {
-	      ...THREE_D_STORYBOARD_FRAME_CONTRACTS[0]!,
-      visual: `The recurring full-body or torso demo character handles the product in the blue technical grid studio while the wrong assumption from ${shortPhrase(direction.hookLine, "the hook")} appears as physical tension.`,
-      camera: "Medium demonstrator-demo shot into fast macro push.",
-      motion: "The silent demonstrator handles the product with lips closed while product motion and background pressure carry the beat.",
-	      overlayText: shortPhrase(direction.hookLine, "Not what you think", 42),
-	      editingNote: "Start instantly with practical product use.",
-	    },
-	    {
-	      ...THREE_D_STORYBOARD_FRAME_CONTRACTS[1]!,
-      visual: `${recurringObject} becomes a visible obstacle around the product path as a semi-transparent torso overlay, body-route, gut-route, cell-wall, clear pipe, or lab prop anchored to the same recurring demonstrator/product path, never as a standalone anatomy mannequin.`,
-      camera: "Extreme macro zoom from demonstrator setup into the hidden obstacle.",
-      motion: "The path narrows and particles push against the product while the recurring demonstrator or body-route keeps the obstacle grounded.",
-	      overlayText: "Hidden obstacle",
-	      editingNote: "Make the invisible problem obvious.",
-	    },
-	    {
-	      ...THREE_D_STORYBOARD_FRAME_CONTRACTS[2]!,
-      visual: `The recurring demo character, torso, or hands show the product detail as selected evidence forms into an unlabeled mechanism around it.`,
-      camera: "Tracking close-up through floating components in the blue technical grid studio.",
-      motion: "Components align around the product in sequence.",
-	      overlayText: "Mechanism wakes up",
-	      editingNote: "Set up the reveal without labels.",
-	    },
-    {
-      ...THREE_D_STORYBOARD_FRAME_CONTRACTS[3]!,
-      visual: `${direction.visualEngine || direction.adAngle} becomes an impossible 3D reveal tied to ${shortPhrase(evidence.text, "the evidence", 70)}.`,
-      camera: "X-ray macro reveal with a controlled orbit.",
-      motion: "Layers separate, protect, assemble, or route through the obstacle.",
-      overlayText: "The reveal",
-      editingNote: "This is the visual peak.",
-    },
-	    {
-	      ...THREE_D_STORYBOARD_FRAME_CONTRACTS[4]!,
-      visual: `The product returns to the demonstrator demo surface while proof tokens lock into place.`,
-      camera: "Pull back from 3D insert to blue-grid product handling.",
-      motion: "Tokens settle around the product without readable text.",
-	      overlayText: "Proof lands",
-	      editingNote: "Connect evidence to payoff.",
-	    },
-	    {
-	      ...THREE_D_STORYBOARD_FRAME_CONTRACTS[5]!,
-      visual: "Clean final casual-demonstrator-and-real-product payoff frame in the blue technical grid studio with the selected product hero clearly staged for renderer CTA overlay.",
-      camera: "Locked product-and-demonstrator hero shot.",
-      motion: "Subtle hold with one final product movement.",
-	      overlayText: "Final payoff",
-	      editingNote: "Hold clean for CTA.",
-	    },
-	  ];
-  const framePlanText = frames.map((frame) => (
-    `visual ${frame.visual}; camera ${frame.camera}; motion ${frame.motion}`
-  )).join(" / next silent still: ");
-	  return {
-	    frameCount: 6,
-	    imagePrompt: [
-      "Create one vertical 9:16 image containing six raw, unlabeled film stills for a 20-second ecommerce product-science teardown.",
-      "Arrange the six stills in a clean 2-column by 3-row contact sheet with thin white gutters only.",
-      "Each still must fill its cell edge-to-edge; no blank white rows, title bands, empty margins, or presentation whitespace.",
-      "Use a recurring silent stylized feature-animation CGI demonstrator/scale figure in a bright blue technical grid product-demo studio, plus product handling, body/pathway views, and one impossible 3D insert.",
-      "Keep the same demonstrator face, plain shirt color, body scale, product silhouette, and product relationship across all six stills. No branded caps, hats, hoodies, shirts, totes, or merch as product stand-ins.",
-      "Use no more than two front-facing waist-up product-holding stills; use hands, over-shoulder views, torso cutaways, mechanism inserts, and product interactions for the other beats.",
-      "For swallowed supplements, capsules, probiotics, or gummies, the hidden route is digestive: mouth, esophagus, stomach, intestines. Do not show lungs or respiratory anatomy unless the evidence is respiratory.",
-      "Each still must have a clear prompt skeleton: locked style, recurring demonstrator/product, scene action, camera/framing, lighting, color/mood, and consistency.",
-      "Maxfusion visual rule: every script line becomes a visible physical action first. Show product handling, body route, obstacle, particle movement, mechanism change, or payoff; never create a topic poster or static product illustration under narration.",
-      "For supplement/digestive stories, include a reference-style semi-transparent torso overlay, gut-route, cell-wall, or body/pathway obstacle; do not reduce the first half to only a standalone jar or beaker demo, and never render a standalone medical mannequin or blank anatomy model.",
-      "Supplement/digestive hidden-obstacle stills should be clean graphic product-science footage: blue route, tidy pink cell-wall/obstacle surface, visible particles, and crisp lighting. Do not render wet fleshy intestine tunnels, gore, horror anatomy, detached organ close-ups, or gross medical macro shots.",
-      `Shared world: ${siteContract.visualWorld}. Lighting: ${siteContract.lighting}. Camera: ${siteContract.cameraStyle}.`,
-      `Recurring objects: ${siteContract.recurringObjects.join(", ")}.`,
-      "No readable text, labels, captions, logos, receipts, numbers, arrows, icons, panel headings, beat numbers, or UI inside the generated frames.",
-      "The written still descriptions are internal instructions only; do not draw any of those words.",
-      framePlanText,
-    ].join(" "),
-    image: { status: "idle" },
-    frames,
-  };
-};
-
-const createSelectedDirectionVariant = ({
-  direction,
-  evidence,
-  research,
-  siteContract,
-}: {
-  direction: ThreeDBreakdownStoryDirection;
-  evidence: ThreeDBreakdownEvidenceItem;
-  research: StoredWebsiteResearchResult;
-  siteContract: ThreeDBreakdownSiteContract;
-}): ThreeDBreakdownVariant => {
-  const brandName = cleanText(research.brand.name, 60) || "the product";
-  const scriptBeats = [
-    {
-      role: "consequence" as const,
-      narration: ensureSentence(direction.hookLine, `${brandName} has to survive the part nobody sees`, 115),
-      startMs: THREE_D_SCRIPT_BEATS[0]!.startMs,
-      endMs: THREE_D_SCRIPT_BEATS[0]!.endMs,
-    },
-    {
-      role: "context" as const,
-      narration: contextNarration(direction, evidence),
-      startMs: THREE_D_SCRIPT_BEATS[1]!.startMs,
-      endMs: THREE_D_SCRIPT_BEATS[1]!.endMs,
-    },
-    {
-      role: "mechanism" as const,
-      narration: mechanismNarration(research, direction, evidence),
-      startMs: THREE_D_SCRIPT_BEATS[2]!.startMs,
-      endMs: THREE_D_SCRIPT_BEATS[2]!.endMs,
-    },
-    {
-      role: "revelation" as const,
-      narration: evidenceNarration(evidence),
-      startMs: THREE_D_SCRIPT_BEATS[3]!.startMs,
-      endMs: THREE_D_SCRIPT_BEATS[3]!.endMs,
-    },
-    {
-      role: "punchline" as const,
-      narration: buyerActionCta(research),
-      startMs: THREE_D_SCRIPT_BEATS[4]!.startMs,
-      endMs: THREE_D_SCRIPT_BEATS[4]!.endMs,
-    },
-  ];
-  const storyboardBoard = createSelectedDirectionStoryboard({ direction, evidence, siteContract });
-	  const sharedPrompt = [
-	    "vertical 9:16 ecommerce product-science teardown",
-	    siteContract.visualWorld,
-	    siteContract.lighting,
-	    `recurring objects ${siteContract.recurringObjects.join(", ")}`,
-		    "bright blue technical grid product-demo studio with recurring silent stylized feature-animation CGI demonstrator/scale figure and one clean 3D explanatory insert",
-	    "no readable text no labels no logos no captions",
-	  ].join(", ");
-  const shots = [
-    {
-	      shotIndex: 1 as const,
-	      role: "consequence" as const,
-	      captionText: shortPhrase(direction.hookLine, "Hidden obstacle", 26),
-      sceneDescription: "The silent demonstrator uses the product as the hidden obstacle becomes physically visible.",
-      explainerDevice: "invisible-problem",
-      physicalAction: "The product path tightens and pressure builds around it.",
-      imagePrompt: `${sharedPrompt}, full-body or torso recurring demo character with product on blue technical grid studio stage, hidden obstacle physically forming around product path, no mannequin`,
-      animationPrompt: "Push from demonstrator demo into the hidden obstacle forming around the product.",
-	      image: { status: "idle" as const },
-	      video: { status: "idle" as const },
-	    },
-    {
-      shotIndex: 2 as const,
-      role: "mechanism" as const,
-      captionText: "The reveal",
-      sceneDescription: "A cutaway shows the product mechanism crossing the obstacle.",
-      explainerDevice: direction.possibleRevealPatterns[0] || "xray-cutaway",
-      physicalAction: "Layers separate and route the core through the obstacle.",
-      imagePrompt: `${sharedPrompt}, impossible xray cutaway, product layers separate, mechanism routes through obstacle, proof tokens stay blank`,
-      animationPrompt: "Separate layers, route the core through the obstacle, then rebuild cleanly.",
-      image: { status: "idle" as const },
-      video: { status: "idle" as const },
-    },
-    {
-	      shotIndex: 3 as const,
-	      role: "revelation" as const,
-	      captionText: "Proof lands",
-      sceneDescription: "The product returns to the demonstrator demo surface as blank proof tokens lock into payoff.",
-      explainerDevice: "proof-blocks",
-      physicalAction: "Blank tokens lock beside the product while the final frame settles.",
-      imagePrompt: `${sharedPrompt}, final blue grid product-and-demonstrator stage, blank proof tokens lock beside product, clean CTA-safe ending`,
-	      animationPrompt: "Pull back to product, proof tokens lock, hold final frame cleanly.",
-	      image: { status: "idle" as const },
-	      video: { status: "idle" as const },
-    },
-  ];
-  return {
-    visualStyle: "presenter-teardown-vsl",
-    variantAngle: shortPhrase(direction.adAngle, direction.category, 120),
-    customerProblem: shortPhrase(direction.hookLine, "hidden product obstacle", 150),
-    mechanismSummary: shortPhrase(direction.visualEngine || direction.subheadline, "product mechanism reveal", 170),
-    visualMetaphor: shortPhrase(direction.visualEngine, "hidden route becomes visible", 150),
-    referenceScript: scriptBeats.map((beat) => beat.narration).join(" "),
-    ctaLine: buyerActionCta(research),
-    evidenceIndex: evidence.evidenceIndex,
-    evidenceUseType: evidence.evidenceUseType,
-    wowMomentType: direction.possibleRevealPatterns[0] || "xray-cutaway",
-    wowMoment: shortPhrase(direction.visualEngine, "The hidden mechanism becomes visible as the product crosses the obstacle.", 210),
-    viewerLearns: shortPhrase(direction.whyCompelling, "The product works because the hidden mechanism changes the journey.", 210),
-    claimRisk: siteContract.riskFlags.length ? "medium" : "low",
-    claimRiskReason: "Uses selected scraped evidence without adding stronger measurable claims.",
-    storyboardBoard,
-    scriptBeats,
-    shots,
-  };
-};
-
 export async function generateThreeDBreakdownStoryDirectionsFromResearch(
   research: StoredWebsiteResearchResult,
   {
@@ -1318,35 +1060,6 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     elapsedMs: Date.now() - startedAt,
     requestedCount,
   });
-  if (selectedStoryDirection) {
-    const evidence = directorEvidenceItems.find((item) => item.evidenceIndex === selectedStoryDirection.evidenceIndex)
-      || directorEvidenceItems[0];
-    if (!evidence) throw new Error(`${weakSiteCopy} missing_strong_evidence`);
-    const siteContract = createSelectedDirectionSiteContract(research, selectedStoryDirection, evidence);
-    const variant = createSelectedDirectionVariant({
-      direction: selectedStoryDirection,
-      evidence,
-      research,
-      siteContract,
-    });
-    console.log("[wiggly:3d-breakdown] selected-direction:ready", {
-      elapsedMs: Date.now() - startedAt,
-      evidenceIndex: evidence.evidenceIndex,
-      visualStyle: variant.visualStyle,
-    });
-    return {
-      siteContract,
-      variants: [variant],
-      evidenceItems,
-      model: "selected-story-direction-v1",
-      provider: "nvidia-nim",
-      providerStatus: {
-        provider: "nvidia-nim-curator",
-        status: "used",
-        reason: "Converted the selected 3D Breakdown story direction into one script scene without paid media generation.",
-      },
-    };
-  }
   const callDirector = (directorPrompt: string) => callNvidiaNimChat({
     apiKey: nvidiaNimApiKey,
     baseUrl: nvidiaNimBaseUrl,
@@ -1373,7 +1086,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
       responseChars: scriptRaw.length,
     });
     try {
-      lockedStyleBScript = parseStyleBScriptPlanOutput(scriptRaw, directorEvidenceItems, selectedStoryDirection);
+      lockedStyleBScript = parseStyleBScriptPlanOutput(scriptRaw, directorEvidenceItems, research, selectedStoryDirection);
     } catch (error) {
       console.warn("[wiggly:3d-breakdown] style-b-script:parse:retry", {
         elapsedMs: Date.now() - startedAt,
@@ -1394,7 +1107,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
         elapsedMs: Date.now() - startedAt,
         responseChars: retryRaw.length,
       });
-      lockedStyleBScript = parseStyleBScriptPlanOutput(retryRaw, directorEvidenceItems, selectedStoryDirection);
+      lockedStyleBScript = parseStyleBScriptPlanOutput(retryRaw, directorEvidenceItems, research, selectedStoryDirection);
     }
     console.log("[wiggly:3d-breakdown] style-b-script:ready", {
       elapsedMs: Date.now() - startedAt,

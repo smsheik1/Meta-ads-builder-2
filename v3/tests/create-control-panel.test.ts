@@ -18,10 +18,18 @@ const adScenesSource = readFileSync("convex/adScenes.ts", "utf8");
 const threeDImagesSource = readFileSync("convex/threeDImages.ts", "utf8");
 const threeDProgressCanvasSource = readFileSync("features/formats/three-d-breakdown/ProgressCanvas.tsx", "utf8");
 const storyboardContractsSource = readFileSync("features/formats/three-d-breakdown/storyboardContracts.ts", "utf8");
+const threeDMediaPromptsSource = readFileSync("features/formats/three-d-breakdown/mediaPrompts.ts", "utf8");
 const jingleStoryboardSource = readFileSync("features/formats/jingle/storyboard.ts", "utf8");
 const visualizerSchemaSource = readFileSync("features/formats/visualizer/schema.ts", "utf8");
 const visualizerModuleSource = readFileSync("features/formats/visualizer/index.ts", "utf8");
 const globalsSource = readFileSync("app/globals.css", "utf8");
+
+assert.ok(
+  adScenesSource.includes("const generatedRows = latestRows.filter((row) => row.researchRunId)") &&
+    adScenesSource.includes("const latestBatchId = generatedRows[0]?.generationBatchId") &&
+    adScenesSource.includes("const batchRows = generatedRows"),
+  "/create restore must ignore newer render/share snapshots that do not belong to a generated research run.",
+);
 
 assert.ok(
   !createClientSource.includes("<CreateActionCard"),
@@ -133,6 +141,13 @@ assert.ok(
     createClientSource.includes("hydrateCreativePackGroupsFromSceneRows") &&
     createClientSource.includes("minimumReadyFormats: 2"),
   "/create must hydrate the Creative Pack rail from saved research-run scenes after refresh.",
+);
+assert.ok(
+  createClientSource.includes("sceneIds[selectedSceneIndex]") &&
+    createClientSource.includes("row.generationBatchId === selectedScene?.metadata.generationBatchId") &&
+    createClientSource.includes("const sceneId = selectedSceneId;") &&
+    createClientSource.includes("This 3D Breakdown scene is still syncing. Wait a moment and try again."),
+  "/create must recover the persisted scene id before paid 3D media actions instead of silently doing nothing.",
 );
 assert.ok(
   createClientSource.includes("api.adScenes.generateThreeDStoryDirections") &&
@@ -343,14 +358,13 @@ assert.ok(
     threeDImagesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_URL") &&
     threeDImagesSource.includes("requireThreeDStyleReferenceUrl") &&
     threeDImagesSource.includes("getThreeDImageInput") &&
-    threeDImagesSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("regenerate-anchors"), v.literal("all")))') &&
+    threeDImagesSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("anchor-1"), v.literal("anchor-2"), v.literal("all")))') &&
     threeDImagesSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")') &&
     quickActionsSource.includes('onGenerateImages("storyboard")') &&
     quickActionsSource.includes('data-three-d-regenerate-storyboard="true"') &&
     quickActionsSource.includes("Regenerate storyboard") &&
-    quickActionsSource.includes('onGenerateImages("regenerate-anchors")') &&
-    quickActionsSource.includes('data-three-d-regenerate-anchors="true"') &&
-    quickActionsSource.includes("Regenerate anchors") &&
+    quickActionsSource.includes('onGenerateImages(clipPlan.clipIndex === 1 ? "anchor-1" : "anchor-2")') &&
+    quickActionsSource.includes('data-three-d-regenerate-anchor={clipPlan.clipIndex}') &&
     threeDImagesSource.includes("generateBoard && !generateAnchors") &&
     threeDImagesSource.includes("Generate the 3D Breakdown storyboard board before production anchors.") &&
     threeDImagesSource.includes("storyboard-gate:ready") &&
@@ -358,22 +372,34 @@ assert.ok(
     threeDImagesSource.includes("production-frame:start") &&
     threeDImagesSource.includes("anchorFramesToGenerate") &&
     threeDImagesSource.includes("frame.image?.status !== \"ready\"") &&
-    threeDImagesSource.includes("regenerateAnchors || frame.image?.status !== \"ready\"") &&
+    threeDImagesSource.includes("frame.frameIndex === regenerateAnchorFrameIndex || frame.image?.status !== \"ready\"") &&
+    threeDImagesSource.includes("changedAnchorFrameIndexes.includes(plan.frameIndexes[0])") &&
     threeDImagesSource.includes("activeFrameIndex") &&
     threeDImagesSource.includes("storyboard board must define 6 frames before image generation") &&
     !threeDImagesSource.includes("createThreeDStoryboardFrames") &&
     !threeDImagesSource.includes("Promise.all(baseFrames.map") &&
     threeDImagesSource.includes("buildThreeDSeedancePrompt") &&
     threeDImagesSource.includes("createThreeDClipPlans(nextScene.layout)") &&
-    threeDImagesSource.includes("THREE_D_SEEDANCE_MAX_PROMPT_CHARS = 3900") &&
-    threeDImagesSource.includes(".slice(0, THREE_D_SEEDANCE_MAX_PROMPT_CHARS)") &&
+    threeDMediaPromptsSource.includes("MAX_SEEDANCE_PROMPT_CHARS = 3900") &&
+    threeDMediaPromptsSource.includes("simplify the approved frame plan before generation") &&
+    !threeDMediaPromptsSource.includes(".slice(0, MAX_SEEDANCE_PROMPT_CHARS)") &&
     threeDImagesSource.includes("seedancePromptLength") &&
+    threeDImagesSource.includes("cropThreeDStoryboardPanel") &&
+    threeDImagesSource.includes("getReplicateImageInput(startFrame.image.url)") &&
+    threeDImagesSource.includes("getReplicateImageInput(endFrameImage.url)") &&
+    threeDImagesSource.includes("imageUrl: startFrameImageInput") &&
+    threeDImagesSource.includes("lastFrameImageUrl: endFrameImageInput") &&
+    jingleStoryboardSource.includes("last_frame_image") &&
     threeDImagesSource.includes("imageInput,") &&
-    threeDImagesSource.includes("scene.layout.referenceImages?.productImageUrls"),
+    threeDImagesSource.includes("getThreeDProductReferences") &&
+    threeDImagesSource.includes("LEGACY_THREE_D_STYLE_REFERENCE") &&
+    threeDImagesSource.includes("Style B cannot use the legacy anatomy-only reference"),
   "3D Breakdown media generation must require the style reference and expose explicit sequential Seedance clips without preflight/repair scaffolding.",
 );
 assert.ok(
-  threeDImagesSource.includes("scene.layout.productAnchor?.imageUrl") &&
+    threeDImagesSource.includes("getThreeDProductReferences(scene)") &&
+    threeDImagesSource.includes("continuityAnchorDataUrl") &&
+    threeDImagesSource.includes("hasContinuityAnchor") &&
     !threeDImagesSource.includes("getThreeDAnchorImageInput(nextScene, imageInput)"),
   "Production anchors must use only the approved storyboard and selected product references, not competing site/style images.",
 );
@@ -469,11 +495,15 @@ assert.ok(
     createClientSource.includes("src={playableAudioUrl}") &&
     createClientSource.includes("...(sceneId ? { sceneId } : {})") &&
     quickActionsSource.includes("const hasPlayableAudio = Boolean(playableAudioUrl)") &&
+    quickActionsSource.includes('const hasThreeDVoiceover = threeDScene?.audio.status === "generated"') &&
+    quickActionsSource.includes("const hasPreviewMedia = hasPlayableAudio ||") &&
     quickActionsSource.includes('selectedFormat === "motion-story"') &&
     quickActionsSource.includes('selectedFormat === "jingle" || selectedFormat === "brainrot"') &&
     quickActionsSource.includes('selectedFormat === "three-d-breakdown"') &&
     quickActionsSource.includes('audioStatus === "loading"') &&
-    quickActionsSource.includes("onClick={hasPlayableAudio ? onTogglePreviewPlayback : onOpenAudioPanel}") &&
+    quickActionsSource.includes("onClick={hasPreviewMedia ? onTogglePreviewPlayback : onOpenAudioPanel}") &&
+    quickActionsSource.includes("hasVoiceover={hasThreeDVoiceover}") &&
+    createClientSource.includes("renderDownloadUrl={selectedFinalVideoUrl || renderDownloadUrl}") &&
     quickActionsSource.includes('"Audio pending"') &&
     quickActionsSource.includes('const visualizerAudioReady = selectedFormat === "visualizer" && hasPlayableAudio') &&
     quickActionsSource.includes('"Regenerate audio"') &&

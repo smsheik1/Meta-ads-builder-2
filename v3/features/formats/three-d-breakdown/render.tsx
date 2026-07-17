@@ -5,7 +5,7 @@ import type { ThreeDBreakdownAdScene } from "../../scene/types";
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
-function getTimelineMs(scene: ThreeDBreakdownAdScene, timeSeconds: number) {
+function getNarrationTimelineMs(scene: ThreeDBreakdownAdScene, timeSeconds: number) {
   const audioDurationMs = scene.audio.status === "generated" ? scene.audio.durationMs : scene.layout.durationMs;
   const safeDurationMs = Math.max(1000, audioDurationMs);
   return clamp(timeSeconds * 1000 * (scene.layout.durationMs / safeDurationMs), 0, scene.layout.durationMs);
@@ -112,20 +112,21 @@ export function ThreeDBreakdownFormatRenderer({
   timeSeconds = 0,
 }: FormatRenderProps<ThreeDBreakdownAdScene>) {
   const { Image, Video } = useRenderAssetComponents();
-  const timelineMs = getTimelineMs(scene, timeSeconds);
-  const activeShot = getActiveShot(scene, timelineMs);
-  const activeClipPlan = getActiveClipPlan(scene, timelineMs);
-  const activeStoryboardFrame = getActiveStoryboardFrame(scene, timelineMs);
+  const playbackMs = clamp(timeSeconds * 1000, 0, scene.layout.durationMs);
+  const narrationTimelineMs = getNarrationTimelineMs(scene, timeSeconds);
+  const activeShot = getActiveShot(scene, playbackMs);
+  const activeClipPlan = getActiveClipPlan(scene, playbackMs);
+  const activeStoryboardFrame = getActiveStoryboardFrame(scene, playbackMs);
   const finalVideo = scene.layout.finalVideo?.status === "ready" && scene.layout.finalVideo.url
     ? scene.layout.finalVideo
     : null;
   const shouldUseFinalVideo = Boolean(finalVideo && mode !== "video");
   const rawCaption = scene.audio.status === "generated"
-    ? getVisibleCaptionText(scene.audio, timeSeconds) || getFallbackCaption(scene, timelineMs)
-    : activeShot?.captionText || getFallbackCaption(scene, timelineMs);
+    ? getVisibleCaptionText(scene.audio, timeSeconds) || getFallbackCaption(scene, narrationTimelineMs)
+    : activeShot?.captionText || getFallbackCaption(scene, narrationTimelineMs);
   const caption = scene.audio.status === "generated" && rawCaption
     ? rawCaption
-    : getCaptionForTimeline(scene, timelineMs, rawCaption);
+    : getCaptionForTimeline(scene, narrationTimelineMs, rawCaption);
   const brandColor = scene.style.accentColor || "#7DD3FC";
   const videoUrl = finalVideo && shouldUseFinalVideo
     ? finalVideo.url
@@ -141,12 +142,11 @@ export function ThreeDBreakdownFormatRenderer({
     ? (finalVideo?.durationMs || scene.layout.durationMs) / 1000
     : activeClipPlan ? activeClipPlan.endMs / 1000 : undefined;
   const clipTimeSeconds = shouldUseFinalVideo
-    ? timelineMs / 1000
-    : activeClipPlan ? Math.max(0, timelineMs / 1000 - clipStartSeconds) : timeSeconds;
+    ? playbackMs / 1000
+    : activeClipPlan ? Math.max(0, playbackMs / 1000 - clipStartSeconds) : timeSeconds;
   const captionWords = getCaptionWords(caption);
   const finalCtaText = getFinalCtaText(scene);
   const productAnchor = scene.layout.productAnchor;
-  const playbackMs = timeSeconds * 1000;
   const endCardStartMs = scene.layout.durationMs - 4000;
   const endCardTransitionStartMs = endCardStartMs - 300;
   const endCardOpacity = clamp((playbackMs - endCardTransitionStartMs) / 300, 0, 1);

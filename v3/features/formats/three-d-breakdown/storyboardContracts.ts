@@ -120,6 +120,7 @@ const getPresenterClipFramePlan = (
       if (!frame) return "";
       return [
         `Frame ${frameIndex}`,
+        frame.visual ? `action: ${frame.visual}` : "",
         frame.camera ? `camera: ${frame.camera}` : "",
         frame.motion ? `physical motion: ${frame.motion}` : "",
       ].filter(Boolean).join("; ");
@@ -130,6 +131,34 @@ const getPresenterClipFramePlan = (
     ? `Use these camera and motion cues only: ${framePlan}. Never turn prompt words into visible text.`
     : "Follow the approved storyboard composition and physical motion. Never generate visible text.";
 };
+
+const createPresenterClipPrompt = ({
+  clipIndex,
+  frameIndexes,
+  framePlan,
+  durationSeconds,
+  world,
+  recurringObjects,
+}: {
+  clipIndex: ThreeDBreakdownClipIndex;
+  frameIndexes: ThreeDBreakdownStoryboardFrameIndex[];
+  framePlan: string;
+  durationSeconds: number;
+  world: string;
+  recurringObjects: string;
+}) => [
+  `Animate approved storyboard frames ${frameIndexes.join("-")} as clip ${clipIndex} of 2, vertical 9:16, ${durationSeconds} seconds.`,
+  getClipTimingPlan(frameIndexes, durationSeconds),
+  framePlan,
+  `SETTING: ${world}. CONTINUITY OBJECTS: ${recurringObjects}.`,
+  "The human is a recurring silent stylized CGI demonstrator, not the narrator. Keep lips, mouth, and jaw closed and still: no lip-sync, speech, singing, or presenter delivery.",
+  clipIndex === 1
+    ? "STORY JOB: move from ordinary product use, to the selected hidden obstacle, to the approved mechanism setup. Make each turn visible through product, prop, obstacle, camera, or component motion."
+    : "STORY JOB: move from the approved mechanism reveal, through the selected evidence payoff, to the final product/CTA setup. The product and obstacle must visibly change state.",
+  "Use hard cuts, whip zooms, push-throughs, or object wipes between the three approved moments; do not blend them into one drifting shot.",
+  "Do not invent extra product claims, packaging, people, anatomy, props, or mechanisms beyond the approved frames.",
+  "No generated typography, captions, subtitles, labels, logos, letters, numbers, UI, or pseudo-writing. Wiggly adds every word after video generation.",
+].join(" ");
 
 export const createThreeDClipPlans = (
   sceneInput: Pick<ThreeDBreakdownAdScene["layout"], "scriptBeats" | "storyContract" | "storyboardBoard">,
@@ -142,24 +171,12 @@ export const createThreeDClipPlans = (
   const world = sceneInput.storyContract.visualWorld;
   const recurringObjects = sceneInput.storyContract.recurringObjects.join(", ");
   const isPresenterStyle = sceneInput.storyContract.visualStyle === "presenter-teardown-vsl";
-  const presenterClipDirections = [
-    "Open in the bright blue technical grid product-demo studio with the same recurring silent stylized feature-animation CGI demonstrator handling the product with lips closed. Show ordinary product use and visible physical pressure; no talking or typography.",
-    "Push from the human-scale product moment into a clean body route, clear pipe, or guided transit path anchored to the same demonstrator and product. Follow one moving payload through the route.",
-    "Make the obstacle physically block, scatter, pile up, break, leak, or create friction in the same blue-grid world. Keep it clean and graphic; no wet fleshy intestine tunnel, standalone beaker demo, mannequin, PPE, doctors, or faceless biology montage.",
-    "Create the peak teardown with an impossible-to-film cutaway, pipe, particle path, nested capsule, exploded layer, or process machine changing state. The mechanism must visibly alter the exact obstacle.",
-    "Carry the selected evidence into an organized physical payoff through moving protected particles, blank proof tokens, or the payload arriving intact. Do not introduce packaging, logos, title cards, or new people.",
-    "Hold on the resolved mechanism in the same blue-grid world. Wiggly supplies the real product end card afterward, so do not invent a bottle, jar, pouch, label, logo, mannequin, or presenter.",
+  const clipDirections = [
+    "Open with the stylized human demo character body or torso acting as the scale/customer/body proxy beside the product, then push into the hidden internal problem physically appearing. Preserve product identity, blue-grid 3D world, and no generated text.",
+    "Escalate the hidden problem inside the body/pathway or process world into a physical obstruction, breakdown, pile-up, leak, split, or blocked path. End on the mechanism setup, ready for the reveal. Preserve product identity and no generated text.",
+    "This is the peak wow reveal. Start from storyboard frame 4, then move into the unified evidence/payoff state from frame 5 without using a split-screen comparison. Reveal why the engineered version survives. Keep the product sealed and capsule-shaped; if contents appear, suspend them as particles inside a transparent capsule shell or controlled cutaway, never as an open cup, tube, bucket, bowl, or generic container. Preserve product identity and no generated text.",
+    "Land the evidence payoff, then return to a human-scale final transformed state with the demo character body or torso beside the clean product payoff composition. Resolve the physical problem clearly, hold the final branded world long enough for Wiggly overlays, and do not turn into a logo-only end card.",
   ];
-  const clipDirections = isPresenterStyle
-    ? [
-      ...presenterClipDirections,
-    ]
-    : [
-      "Open with the stylized human demo character body or torso acting as the scale/customer/body proxy beside the product, then push into the hidden internal problem physically appearing. Preserve product identity, blue-grid 3D world, and no generated text.",
-      "Escalate the hidden problem inside the body/pathway or process world into a physical obstruction, breakdown, pile-up, leak, split, or blocked path. End on the mechanism setup, ready for the reveal. Preserve product identity and no generated text.",
-      "This is the peak wow reveal. Start from storyboard frame 4, then move into the unified evidence/payoff state from frame 5 without using a split-screen comparison. Reveal why the engineered version survives. Keep the product sealed and capsule-shaped; if contents appear, suspend them as particles inside a transparent capsule shell or controlled cutaway, never as an open cup, tube, bucket, bowl, or generic container. Preserve product identity and no generated text.",
-      "Land the evidence payoff, then return to a human-scale final transformed state with the demo character body or torso beside the clean product payoff composition. Resolve the physical problem clearly, hold the final branded world long enough for Wiggly overlays, and do not turn into a logo-only end card.",
-    ];
 
   if (isPresenterStyle) {
     const presenterTimings = [
@@ -170,23 +187,7 @@ export const createThreeDClipPlans = (
       "Clip 1: frames 1-3",
       "Clip 2: frames 4-6",
     ] as const;
-    const presenterNarratives = [
-      `${context} ${mechanism}`,
-      `${revelation} ${punchline}`,
-    ];
     const presenterFrameGroups: ThreeDBreakdownStoryboardFrameIndex[][] = [[1, 2, 3], [4, 5, 6]];
-    const presenterDirections = [
-      [
-        presenterClipDirections[0],
-        presenterClipDirections[1],
-        presenterClipDirections[2],
-      ].join(" "),
-      [
-        presenterClipDirections[3],
-        presenterClipDirections[4],
-        presenterClipDirections[5],
-      ].join(" "),
-    ];
 
     return presenterTimings.map(([startMs, endMs], index) => {
       const clipIndex = (index + 1) as ThreeDBreakdownClipIndex;
@@ -198,16 +199,13 @@ export const createThreeDClipPlans = (
         endMs,
         durationSeconds: 10,
         frameIndexes,
-        prompt: createClipPrompt({
+        prompt: createPresenterClipPrompt({
           clipIndex,
           durationSeconds: 10,
-          totalClips: presenterTimings.length,
           frameIndexes,
           framePlan: getPresenterClipFramePlan(sceneInput.storyboardBoard, frameIndexes),
           world,
           recurringObjects,
-          narrative: presenterNarratives[index] || consequence,
-          direction: presenterDirections[index] || presenterClipDirections[0],
         }),
         video: { status: "idle" as const },
       };

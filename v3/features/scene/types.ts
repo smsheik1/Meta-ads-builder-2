@@ -424,6 +424,7 @@ export type ThreeDBreakdownClipPlan = {
   durationSeconds: number;
   frameIndexes: ThreeDBreakdownStoryboardFrameIndex[];
   prompt: string;
+  endFrameImage?: ThreeDBreakdownMediaRef;
   video?: ThreeDBreakdownMediaRef;
 };
 
