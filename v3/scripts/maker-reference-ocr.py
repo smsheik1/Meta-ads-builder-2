@@ -174,6 +174,27 @@ def compose_reference(
 
     artifacts = []
     warnings = []
+    for frame in claims.get("fixedFrameAssets", []):
+        asset_id = frame["assetId"]
+        x = int(frame["x"])
+        y = int(frame["y"])
+        asset_width = int(frame["width"])
+        asset_height = int(frame["height"])
+        if x < 0 or y < 0 or asset_width < 1 or asset_height < 1 or x + asset_width > width or y + asset_height > height:
+            raise RuntimeError(f"Fixed frame for {asset_id} must stay inside the normalized reference")
+        file_name = f"asset-{asset_id}.png"
+        cv2.imwrite(str(output_dir / file_name), source[y : y + asset_height, x : x + asset_width])
+        artifacts.append(
+            {
+                "assetId": asset_id,
+                "fileName": file_name,
+                "x": x,
+                "y": y,
+                "width": asset_width,
+                "height": asset_height,
+            }
+        )
+
     for entry in sam_payload:
         asset_id = entry["assetId"]
         result = entry["result"]

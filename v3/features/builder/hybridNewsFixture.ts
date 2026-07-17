@@ -47,8 +47,8 @@ const analysis: MakerAnalysis = {
   lists: [],
   assets: [
     { id: "publisher_logo", label: "Publisher logo", role: "brand_identity", evidence_ids: [], binding: "brand", sam_prompt: "publisher logo" },
-    { id: "story_setting", label: "Story setting", role: "story_setting", evidence_ids: [], binding: "campaign", sam_prompt: "Meta office building" },
-    { id: "news_subject", label: "News subject inset", role: "news_subject", evidence_ids: [], binding: "campaign", sam_prompt: "Mark Zuckerberg portrait" },
+    { id: "story_setting", label: "Story setting", role: "story_setting", evidence_ids: [], binding: "campaign", sam_prompt: "Meta office building", frame: { shape: "rectangle", x: 0, y: 112, width: 464, height: 428 } },
+    { id: "news_subject", label: "News subject inset", role: "news_subject", evidence_ids: [], binding: "campaign", sam_prompt: "Mark Zuckerberg portrait", frame: { shape: "circle", x: 255, y: 235, width: 209, height: 216 } },
   ],
   reroll_groups: [
     { id: "publisher_identity", members: ["company_name", "publisher_logo"], instruction: "Replace the publisher name and logo together." },
@@ -131,8 +131,8 @@ export function createHybridNewsDraftFixture({
   const tunedLayers = draft.scene.layout.layers.map((layer): StaticAdLayer => {
     if (layer.type === "text") return tuneText(layer);
     if (layer.type === "image" && layer.semanticRole === "asset:publisher_logo") return { ...layer, objectFit: "contain", zIndex: 40 };
-    if (layer.type === "image" && layer.semanticRole === "asset:story_setting") return { ...layer, objectFit: "cover", zIndex: 5 };
-    if (layer.type === "image" && layer.semanticRole === "asset:news_subject") return { ...layer, objectFit: "cover", borderRadius: layer.width / 2, zIndex: 30 };
+    if (layer.type === "image" && layer.semanticRole === "asset:story_setting") return { ...layer, zIndex: 5 };
+    if (layer.type === "image" && layer.semanticRole === "asset:news_subject") return { ...layer, zIndex: 30 };
     return layer;
   });
 

@@ -45,6 +45,13 @@ const assetSchema = z.object({
   evidence_ids: z.array(evidenceId).refine((values) => new Set(values).size === values.length),
   binding: z.enum(["fixed", "brand", "campaign", "locked"]),
   sam_prompt: z.string().min(1),
+  frame: z.object({
+    shape: z.enum(["rectangle", "circle"]),
+    x: z.number().int().nonnegative(),
+    y: z.number().int().nonnegative(),
+    width: z.number().int().positive(),
+    height: z.number().int().positive(),
+  }).strict().nullable().optional(),
 }).strict();
 
 export const makerAnalysisSchema = z.object({

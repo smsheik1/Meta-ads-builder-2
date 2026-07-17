@@ -72,6 +72,9 @@ export function validateMakerAnalysisEvidence(value: unknown, ocr: PaddleOcrResu
   for (const asset of analysis.assets) {
     const words = asset.sam_prompt.trim().split(/\s+/).filter(Boolean).length;
     if (words < 1 || words > 6) throw new Error(`Asset ${asset.id} needs a 1–6 word SAM prompt.`);
+    if (asset.frame && (asset.frame.x + asset.frame.width > ocr.width || asset.frame.y + asset.frame.height > ocr.height)) {
+      throw new Error(`Asset ${asset.id} frame must stay inside the ${ocr.width}×${ocr.height} reference.`);
+    }
   }
   return analysis;
 }
@@ -110,7 +113,7 @@ Return exactly one valid JSON object with these keys and shapes:
 - formula: { name: string, premise: string, visual_mechanic: string, adaptation_rule: string }
 - fields: [{ id, value, evidence_ids: string[], binding }]
 - lists: [{ id, binding, items: [{ id, values: [{ key, value, evidence_ids: string[] }], asset_ids: string[] }], active_item_id: string | null }]
-- assets: [{ id, label, role, evidence_ids: string[], binding, sam_prompt }]
+- assets: [{ id, label, role, evidence_ids: string[], binding, sam_prompt, frame: null | { shape: "rectangle" | "circle", x, y, width, height } }]
 - reroll_groups: [{ id, members: string[], instruction }]
 - maker_questions: string[]
 
@@ -125,6 +128,9 @@ Rules:
 - logos and wordmarks are brand-bound assets with role brand_identity, not Fields
 - classify every visual asset by what it does: brand_identity, story_setting, news_subject, supporting_visual, or decorative
 - story_setting is the main scene or environment; news_subject is the person or object the story is about; supporting_visual is the product or secondary proof image
+- when an asset sits completely inside a clear circle or rectangle, frame records that exact outer frame in pixels on this ${ocr.width}×${ocr.height} image
+- use frame only when the whole frame edge is visible; use null for freeform, overlapping, partly hidden, or uncertain assets
+- frame x and y start at the image's top-left; width and height include the complete visible frame
 - formula-critical story images must be separate mutable assets and reroll with the headline; do not leave the source advertiser, spokesperson, setting, or product baked into the background
 - active_item_id is null unless one List item is visually emphasized
 - ask only for missing information that is not visible and blocks a useful draft
@@ -142,7 +148,7 @@ Rules:
 - only brand_identity assets use brand binding; story settings, news subjects, products, and supporting visuals use campaign unless they are fixed or locked
 - Reroll Group members use existing Field, List, or asset IDs
 - sam_prompt is 1 to 6 literal words
-- do not return Markdown, coordinates, explanations, or extra keys`;
+- do not return Markdown, explanations, or extra keys; coordinates are allowed only inside asset.frame`;
 }
 
 const evidenceBounds = (ids: string[], ocr: PaddleOcrResult) => {
@@ -320,14 +326,16 @@ export function createMakerDraftFromAnalysis({
   for (const artifact of artifacts.refinedAssets) {
     const asset = assetById.get(artifact.assetId);
     if (!asset) throw new Error(`Refined asset ${artifact.assetId} is not declared by the analysis.`);
+    const fixedFrame = Boolean(asset.frame);
     layers.push({
       id: `asset-${asset.id}`,
       type: "image",
       name: asset.label,
       src: artifact.imageUrl,
       alt: asset.label,
-      objectFit: "contain",
-      borderRadius: 0,
+      objectFit: fixedFrame ? "cover" : "contain",
+      borderRadius: asset.frame?.shape === "circle" ? Math.min(artifact.width, artifact.height) / 2 : 0,
+      fixedFrame,
       x: artifact.x,
       y: artifact.y,
       width: artifact.width,
@@ -410,5 +418,9 @@ export function editableTextEvidenceIds(analysis: MakerAnalysis) {
 }
 
 export function assetsNeedingRefinement(analysis: MakerAnalysis) {
-  return analysis.assets.filter((asset) => asset.binding !== "locked");
+  return analysis.assets.filter((asset) => asset.binding !== "locked" && !asset.frame);
+}
+
+export function fixedFrameAssets(analysis: MakerAnalysis) {
+  return analysis.assets.filter((asset) => asset.binding !== "locked" && asset.frame);
 }
