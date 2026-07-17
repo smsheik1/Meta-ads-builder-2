@@ -1305,9 +1305,6 @@ function ResearchConnected() {
     if (firstScene?.format === "jingle" && firstScene.audio.status !== "generated") {
       void generateJingleMusicForScene(firstScene, nextSceneIds[0]);
     }
-    if (firstScene?.format === "brainrot" && firstScene.audio.status !== "generated") {
-      void generateBrainrotAudioForSceneSelected(firstScene, nextSceneIds[0]);
-    }
     if (firstScene?.format === "visualizer" && firstScene.audio.status !== "generated") {
       void generateVisualizerVoiceoverForScene(firstScene, nextSceneIds[0]);
     }
@@ -2279,14 +2276,10 @@ function ResearchConnected() {
     if (nextScene.format === "jingle" && nextScene.audio.status !== "generated") {
       void generateJingleMusicForScene(nextScene, sceneIds[next.index]);
     }
-    if (nextScene.format === "brainrot" && nextScene.audio.status !== "generated") {
-      void generateBrainrotAudioForSceneSelected(nextScene, sceneIds[next.index]);
-    }
   }, [
     adScenes,
     adStatus,
     audioStatus,
-    generateBrainrotAudioForSceneSelected,
     generateJingleMusicForScene,
     generateScenesOnly,
     resetPreviewPlayback,
@@ -2926,9 +2919,6 @@ function ResearchConnected() {
     resetBrickStoryboardState();
     if (scene.format === "jingle" && scene.audio.status !== "generated") {
       void generateJingleMusicForScene(scene, sceneIds[index]);
-    }
-    if (scene.format === "brainrot" && scene.audio.status !== "generated") {
-      void generateBrainrotAudioForSceneSelected(scene, sceneIds[index]);
     }
   };
 

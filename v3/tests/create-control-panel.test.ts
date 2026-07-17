@@ -514,6 +514,11 @@ assert.ok(
     createClientSource.includes('format: "three-d-breakdown"'),
   "The primary audio quick action must derive from selected scene audio and 3D Breakdown must use the existing generated voiceover path.",
 );
+assert.equal(
+  createClientSource.match(/generateBrainrotAudioForSceneSelected\(/g)?.length,
+  1,
+  "Brainrot voice generation must run only from the explicit Add audio action, never automatically after generation, reroll, or selection.",
+);
 assert.ok(
   createClientSource.includes("const generateScenesOnly = async") &&
     createClientSource.includes("if (research.result) {") &&
