@@ -157,7 +157,21 @@ assert.equal(saved.scene.layout.layers.filter((layer) => layer.type === "text").
 assert.ok(Math.abs(saved.scene.layout.layers.find((layer) => layer.semanticRole === "list:list_integrations:item_2:app_name")?.rotation || 0) > 5, "Rotated OCR evidence must preserve its angle without inflating the layer box.");
 
 const hybridNews = createHybridNewsDraftFixture({ id: "hybrid-news", fileName: "breaking-news.png", imageUrl: "data:image/png;base64,reference", now: 123 });
-assert.equal(hybridNews.scene.layout.layers.find((layer) => layer.semanticRole === "reference:background")?.locked, true);
+const hybridBackground = hybridNews.scene.layout.layers.find((layer) => layer.semanticRole === "reference:background");
+const hybridSubject = hybridNews.scene.layout.layers.find((layer) => layer.semanticRole === "asset:news_subject");
+assert.equal(hybridBackground?.locked, true);
+assert.ok(hybridBackground?.type === "image");
+assert.equal(
+  hybridBackground.src,
+  "/maker-fixtures/hybrid-news/reference.png",
+  "The zero-GPU fixture must use the flattened reference instead of a RevealLayer background.",
+);
+assert.ok(hybridSubject?.type === "image");
+assert.equal(
+  hybridSubject.src,
+  "/maker-fixtures/hybrid-news/source-subject-slot.png",
+  "A fixed-shape media slot should come from a deterministic source crop, not a decomposed layer.",
+);
 assert.deepEqual(
   hybridNews.scene.layout.layers.filter((layer) => layer.type === "image" && layer.semanticRole.startsWith("asset:")).map((layer) => layer.semanticRole),
   ["asset:publisher_logo", "asset:story_setting", "asset:news_subject"],
