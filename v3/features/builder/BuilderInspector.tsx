@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { LoaderCircle, Lock, Search, Unlock, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { StaticAdLayer, StaticLayerBinding } from "../scene/types";
+import { fitStaticTextLayer } from "../formats/static-package/textFit";
 import { findStaticLayer, flattenStaticLayers, replaceStaticLayer, updateFormatDraft, validateFormatDraftReady, type FormatDraft, type MakerAssetRole } from "./model";
 import { scaleTextLayerToValue } from "./textResize";
 
@@ -43,6 +44,7 @@ export function BuilderInspector({
   }, [selectedLayer?.id]);
 
   const layerControlsDisabled = readOnly || Boolean(selectedLayer?.locked);
+  const fixedFrameSelected = selectedLayer?.type === "image" && Boolean(selectedLayer.fixedFrame);
   const validation = validateFormatDraftReady(draft);
   const updateLayer = (patch: Partial<StaticAdLayer>) => {
     if (!selectedLayerId) return;
@@ -140,7 +142,7 @@ export function BuilderInspector({
                   <>
                     <div className="space-y-1.5">
                       <Label htmlFor="layer-text">Text</Label>
-                      <Textarea id="layer-text" disabled={layerControlsDisabled} value={selectedLayer.text} onChange={(event) => updateLayer({ text: event.target.value })} />
+                      <Textarea id="layer-text" disabled={layerControlsDisabled} value={selectedLayer.text} onChange={(event) => updateLayer(fitStaticTextLayer(selectedLayer, event.target.value))} />
                     </div>
                     <div className="grid grid-cols-[1fr_84px] gap-3">
                       <div className="space-y-1.5">
@@ -185,7 +187,7 @@ export function BuilderInspector({
                       <select
                         id="image-shape"
                         className={selectClass}
-                        disabled={layerControlsDisabled}
+                        disabled={layerControlsDisabled || fixedFrameSelected}
                         value={selectedLayer.borderRadius >= Math.min(selectedLayer.width, selectedLayer.height) / 2 ? "circle" : selectedLayer.borderRadius > 0 ? "rounded" : "square"}
                         onChange={(event) => updateLayer({ borderRadius: event.target.value === "circle" ? Math.min(selectedLayer.width, selectedLayer.height) / 2 : event.target.value === "rounded" ? 16 : 0 })}
                       >
@@ -193,6 +195,7 @@ export function BuilderInspector({
                         <option value="rounded">Rounded</option>
                         <option value="circle">Circle</option>
                       </select>
+                      {fixedFrameSelected ? <p className="text-xs leading-5 text-slate-500">Replace this image in place. Its position and shape stay fixed so the original picture remains covered.</p> : null}
                     </div>
                     <Input
                       id={`replace-image-upload-${selectedLayer.id}`}
@@ -254,7 +257,7 @@ export function BuilderInspector({
                         key={`${selectedLayer.id}-${property}-${selectedLayer[property]}`}
                         id={`layer-${property}`}
                         type="number"
-                        disabled={layerControlsDisabled}
+                        disabled={layerControlsDisabled || fixedFrameSelected}
                         defaultValue={selectedLayer[property]}
                         onBlur={(event) => {
                           const value = Number(event.currentTarget.value);

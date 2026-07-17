@@ -145,8 +145,15 @@ def compose_reference(
         raise RuntimeError("Normalized reference could not be read")
     height, width = source.shape[:2]
     background_source = cv2.imread(str(background_path or reference_path), cv2.IMREAD_COLOR)
-    if background_source is None or background_source.shape[:2] != (height, width):
-        raise RuntimeError("Repaired background must match the normalized reference size")
+    if background_source is None:
+        raise RuntimeError("Repaired background could not be read")
+    if background_source.shape[:2] != (height, width):
+        background_height, background_width = background_source.shape[:2]
+        source_ratio = width / height
+        background_ratio = background_width / background_height
+        if abs(source_ratio - background_ratio) > 0.01:
+            raise RuntimeError("Repaired background must match the normalized reference aspect ratio")
+        background_source = cv2.resize(background_source, (width, height), interpolation=cv2.INTER_LANCZOS4)
     removal_mask = np.zeros((height, width), dtype=np.uint8)
     pre_repaired_asset_ids = set(claims.get("preRepairedAssetIds", []))
     evidence_by_id = {item["id"]: item for item in ocr["texts"]}
@@ -155,11 +162,39 @@ def compose_reference(
         if evidence is None:
             raise RuntimeError(f"Missing OCR geometry for {evidence_id}")
         polygon = np.asarray(evidence["polygon"], dtype=np.int32)
-        cv2.fillPoly(removal_mask, [polygon], 255)
-    removal_mask = cv2.dilate(removal_mask, np.ones((5, 5), dtype=np.uint8), iterations=1)
+        text_mask = np.zeros((height, width), dtype=np.uint8)
+        cv2.fillPoly(text_mask, [polygon], 255)
+        text_mask = cv2.dilate(text_mask, np.ones((17, 17), dtype=np.uint8), iterations=1)
+        ring = cv2.subtract(cv2.dilate(text_mask, np.ones((9, 9), dtype=np.uint8), iterations=1), text_mask)
+        nearby_background = background_source[ring > 0]
+        if len(nearby_background):
+            background_source[text_mask > 0] = np.median(nearby_background, axis=0)
+        else:
+            removal_mask = cv2.bitwise_or(removal_mask, text_mask)
 
     artifacts = []
     warnings = []
+    for frame in claims.get("fixedFrameAssets", []):
+        asset_id = frame["assetId"]
+        x = int(frame["x"])
+        y = int(frame["y"])
+        asset_width = int(frame["width"])
+        asset_height = int(frame["height"])
+        if x < 0 or y < 0 or asset_width < 1 or asset_height < 1 or x + asset_width > width or y + asset_height > height:
+            raise RuntimeError(f"Fixed frame for {asset_id} must stay inside the normalized reference")
+        file_name = f"asset-{asset_id}.png"
+        cv2.imwrite(str(output_dir / file_name), source[y : y + asset_height, x : x + asset_width])
+        artifacts.append(
+            {
+                "assetId": asset_id,
+                "fileName": file_name,
+                "x": x,
+                "y": y,
+                "width": asset_width,
+                "height": asset_height,
+            }
+        )
+
     for entry in sam_payload:
         asset_id = entry["assetId"]
         result = entry["result"]

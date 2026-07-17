@@ -30,6 +30,7 @@ export function BuilderCanvas({
     [scene.layout.layers, selectedLayerId],
   );
   const [target, setTarget] = useState<HTMLElement | null>(null);
+  const fixedFrameSelected = selectedLayer?.type === "image" && Boolean(selectedLayer.fixedFrame);
 
   useEffect(() => {
     const element = selectedLayerId
@@ -82,12 +83,12 @@ export function BuilderCanvas({
             <Moveable
               target={selectedLayer?.locked ? null : target}
               container={canvasRef.current}
-              draggable
-              resizable
-              rotatable
+              draggable={!fixedFrameSelected}
+              resizable={!fixedFrameSelected}
+              rotatable={!fixedFrameSelected}
               snappable
               useResizeObserver
-              renderDirections={selectedLayer?.type === "text" ? ["nw", "ne", "sw", "se", "w", "e"] : true}
+              renderDirections={fixedFrameSelected ? false : selectedLayer?.type === "text" ? ["nw", "ne", "sw", "se", "w", "e"] : true}
               bounds={{ left: 0, top: 0, right: 0, bottom: 0, position: "css" }}
               onDragStart={beginTransaction}
               onDrag={(event) => {

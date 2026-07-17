@@ -7,6 +7,7 @@ import {
   buildMakerAnalysisPrompt,
   createMakerDraftFromAnalysis,
   editableTextEvidenceIds,
+  fixedFrameAssets,
   paddleOcrResultSchema,
   validateMakerAnalysisEvidence,
   type PaddleOcrResult,
@@ -347,14 +348,15 @@ export async function analyzeMakerReference(
       "complete",
       `${semantic.analysis.fields.length} field${semantic.analysis.fields.length === 1 ? "" : "s"}, ${semantic.analysis.lists.length} list${semantic.analysis.lists.length === 1 ? "" : "s"}, and ${semantic.analysis.assets.length} asset${semantic.analysis.assets.length === 1 ? "" : "s"} understood in ${semantic.elapsedSeconds}s.`,
     );
+    const framedAssets = fixedFrameAssets(semantic.analysis);
     const refinableAssets = assetsNeedingRefinement(semantic.analysis);
     const repairAssets = assetsNeedingBackgroundRepair(refinableAssets);
     report(
       "asset-plan",
       "Planning editable assets",
       "complete",
-      refinableAssets.length
-        ? `${refinableAssets.length} asset${refinableAssets.length === 1 ? "" : "s"} will be separated: ${refinableAssets.map((asset) => asset.label).join(", ")}.`
+      framedAssets.length || refinableAssets.length
+        ? `${framedAssets.length} fixed frame${framedAssets.length === 1 ? "" : "s"} will be cropped locally and ${refinableAssets.length} freeform asset${refinableAssets.length === 1 ? "" : "s"} will be separated.`
         : "No visual assets need AI separation for this reference.",
     );
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
@@ -403,6 +405,7 @@ export async function analyzeMakerReference(
     report("compose", "Rebuilding the editable artwork", "active", "Removing editable regions from the background and composing clean layers.");
     await writeFile(path.join(workDir, "claims.json"), JSON.stringify({
       editableTextEvidenceIds: editableTextEvidenceIds(semantic.analysis),
+      fixedFrameAssets: framedAssets.map((asset) => ({ assetId: asset.id, ...asset.frame })),
       preRepairedAssetIds: reveal.repairedAssetIds,
     }));
     await writeFile(path.join(workDir, "sam.json"), JSON.stringify(sam.results));
