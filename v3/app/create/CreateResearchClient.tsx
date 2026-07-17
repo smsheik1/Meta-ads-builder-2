@@ -2492,9 +2492,7 @@ function ResearchConnected() {
       setAdStatusNote(reusableResearch ? "Choose products, then generate this format." : "");
       return;
     }
-    if (reusableResearch && isAdSceneCreateFormat(format)) {
-      setAdStatusNote(`${CREATE_FORMAT_GUIDES[format].label} selected. Generate when ready.`);
-    }
+    if (reusableResearch && isAdSceneCreateFormat(format)) setAdStatusNote(`${CREATE_FORMAT_GUIDES[format].label} selected. Generate when ready.`);
   };
 
   const onVideoMemeTemplateChange = (templateId: VideoMemeTemplateId) => {
