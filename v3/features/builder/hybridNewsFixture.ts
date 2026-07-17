@@ -118,12 +118,12 @@ export function createHybridNewsDraftFixture({
     now,
     artifacts: {
       referenceImageUrl: imageUrl,
-      backgroundImageUrl: "/maker-fixtures/hybrid-news/repaired-background.png",
+      backgroundImageUrl: "/maker-fixtures/hybrid-news/reference.png",
       ocr,
       refinedAssets: [
         { assetId: "publisher_logo", imageUrl: "/maker-fixtures/hybrid-news/kingkong-avatar.svg", x: 16, y: 67, width: 36, height: 36 },
-        { assetId: "story_setting", imageUrl: "/maker-fixtures/hybrid-news/meta-story-setting.png", x: 0, y: 112, width: 464, height: 428 },
-        { assetId: "news_subject", imageUrl: "/maker-fixtures/hybrid-news/zuckerberg-inset.png", x: 255, y: 235, width: 209, height: 216 },
+        { assetId: "story_setting", imageUrl: "/maker-fixtures/hybrid-news/source-story-setting.png", x: 0, y: 112, width: 464, height: 428 },
+        { assetId: "news_subject", imageUrl: "/maker-fixtures/hybrid-news/source-subject-slot.png", x: 255, y: 235, width: 209, height: 216 },
       ],
     },
   });
