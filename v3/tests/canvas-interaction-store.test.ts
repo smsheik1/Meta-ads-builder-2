@@ -13,7 +13,7 @@ const idle = createDefaultCanvasInteractionSnapshot();
 assert.equal(getCanvasCanReroll(idle), true, "Spacebar should be allowed only in idle + paused.");
 assert.equal(typeof getCanvasCanRerollNow, "function", "Keyboard handlers need a live store reroll gate.");
 
-for (const modal of ["brand-dump", "dialogue", "captions"] as const) {
+for (const modal of ["brand-dump", "dialogue", "captions", "paywall"] as const) {
   const state = reduceCanvasInteractionState(idle, { type: "openModal", modal });
   assert.equal(getCanvasCanReroll(state), false, `Spacebar should be blocked in modal:${modal}.`);
 }
@@ -94,6 +94,10 @@ assert.ok(
 assert.ok(
   keyboardSource.indexOf("event.preventDefault();") < keyboardSource.indexOf("if (!getCanvasCanRerollNow()) return;"),
   "Spacebar handler must prevent browser scroll before skipping reroll while /create is busy.",
+);
+assert.ok(
+  createClientSource.includes('const canvasModal = modal === "brand-details" ? "brand-dump" : modal;'),
+  "Opening the paywall must block background spacebar rerolls through the interaction store.",
 );
 
 for (const forbiddenStoreShape of [

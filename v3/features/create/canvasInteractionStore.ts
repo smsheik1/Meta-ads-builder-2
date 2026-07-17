@@ -10,7 +10,7 @@ export type CanvasInteractionBusyReason =
   | "audio-upload"
   | "product-photoshoot"
   | "render";
-export type CanvasInteractionModal = "brand-dump" | "dialogue" | "captions";
+export type CanvasInteractionModal = "brand-dump" | "dialogue" | "captions" | "paywall";
 export type CanvasInteractionUiStatus =
   | "idle"
   | `busy:${CanvasInteractionBusyReason}`
