@@ -121,7 +121,7 @@ const claimRisks: ThreeDBreakdownClaimRisk[] = ["low", "medium", "high"];
 const visualStyles: ThreeDBreakdownVisualStyle[] = [...THREE_D_VISUAL_STYLES];
 const weakSiteCopy = "This page does not contain enough concrete evidence for a 3D Breakdown. Try a product, features, testimonials, case-study, or offer page - or use Visualizer for a lighter ad from this URL.";
 const MIN_VISUAL_POTENTIAL_SCORE = 0.7;
-const restrictedVerticalPattern = /\b(alcohol|beer|wine|vodka|whiskey|liquor|nicotine|tobacco|vape|cbd|thc|cannabis|marijuana|gambling|casino|betting|weapon|gun|rifle|ammo|adult product|porn|sex toy|political campaign|crypto|investment return|counterfeit|illegal service|extremist)\b/i;
+const restrictedVerticalPattern = /\b(alcohol|beer|wine|vodka|whiskey|liquor|nicotine|tobacco|vape|cbd|thc|cannabis|marijuana|gambling|casino|betting|weapons?|firearm|handgun|shotgun|gun\s+(?:store|shop|sale|sales|range|safe)|rifle|ammo|adult product|porn|sex toy|political campaign|crypto|investment return|counterfeit|illegal service|extremist)\b/i;
 
 const cleanText = (value: unknown, maxLength = 900) => String(value ?? "")
   .replace(/[—–]/g, "-")

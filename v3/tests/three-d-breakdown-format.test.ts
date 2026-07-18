@@ -1770,6 +1770,38 @@ await assert.rejects(
   /restricted_vertical/,
 );
 
+const massageGunResearch = makeResearch({
+  brand: {
+    ...research.brand,
+    name: "Therabody",
+    description: "Recovery devices including massage guns.",
+  },
+  brandBrief: {
+    ...research.brandBrief,
+    brandName: "Therabody",
+    offer: "Massage guns for post-workout recovery.",
+  },
+  productCatalog: {
+    ...research.productCatalog!,
+    products: [{
+      ...research.productCatalog!.products[0]!,
+      title: "Theragun PRO Plus",
+      handle: "theragun-pro-plus",
+      productType: "Massage gun",
+    }],
+  },
+});
+const massageGunEvidence = extractThreeDBreakdownEvidence(massageGunResearch)[0]!;
+const massageGunResult = await generateThreeDBreakdownVariantsFromResearch(massageGunResearch, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+    evidenceIndex: massageGunEvidence.evidenceIndex,
+    evidenceUseType: massageGunEvidence.evidenceUseType,
+  })])),
+});
+assert.equal(massageGunResult.variants.length, 1, "Massage gun products must not be confused with restricted weapon verticals.");
+
 let retryCalls = 0;
 let retryPrompt = "";
 const retried = await generateThreeDBreakdownVariantsFromResearch(research, {
