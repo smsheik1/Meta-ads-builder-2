@@ -409,8 +409,9 @@ const parseReferenceScript = (
   if (presenterNarrationPattern.test(script)) {
     throw new Error("3D Breakdown Style B referenceScript must use an unseen narrator, not presenter lines.");
   }
-  if (productionDirectionPattern.test(script)) {
-    throw new Error("3D Breakdown Style B referenceScript must contain spoken copy, not production directions.");
+  const productionDirectionMatch = script.match(productionDirectionPattern);
+  if (productionDirectionMatch) {
+    throw new Error(`3D Breakdown Style B referenceScript must contain spoken copy, not production directions: ${productionDirectionMatch[0]}.`);
   }
   if (templateLeakPattern.test(script)) {
     throw new Error("3D Breakdown Style B referenceScript copied generic prompt-template wording.");
