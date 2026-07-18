@@ -62,6 +62,9 @@ const classifyUseType = (
     /\b(delivery system|targeted delivery|delayed release|release|survive|survives|survival|protect|protects|shield|shields|carry|carries|transport|bioavailability|absorb|absorbs|absorption|disperse|dispersed)\b/i.test(text) ||
     /\b(capsule-in-capsule|capsule inside|outer capsule|inner capsule|nested capsule|viacap|via cap|stomach acid|colon|gut barrier)\b/i.test(text)
   ) return "mechanism";
+  if (
+    /\b(percussive therapy|percussive massage|heated percussive|vibration therapy|near-infrared|led light therapy|massage speeds?|biometric sensor|guided routines?)\b/i.test(text)
+  ) return "mechanism";
   if (/\b(standardized|extract|formula|formulation|blend|strains?|cfu|prebiotic|probiotic|postbiotic|bacteria|bacterial|ingredients?|turmeric|curcumin|piperine|black pepper|mct oil|ginger|vitamins?|minerals?|components?|parts?|layers?|materials?|cotton|steel|aluminum|ceramic|wool|protein|fiber)\b/i.test(text)) return "material";
   if (/\b(clinical trial|clinically studied|tested|study|studies|validated|assayed|sequenced|stability|potency|standardized)\b/i.test(text)) return "process";
   if (/\b(how it works|made with|built with|powered by|uses|includes|contains)\b/i.test(text)) return "feature";
@@ -172,7 +175,9 @@ export function extractThreeDBreakdownEvidence(research: StoredWebsiteResearchRe
         sourceUrl: product.url || research.productCatalog?.sourceUrl || defaultSourceUrl,
         sourceName: product.title || product.productType || "product",
       }))),
-    ...research.evidence.paragraphs.slice(0, 18).map((text) => ({ text, sourceName: "page paragraph" })),
+    // Product pages frequently begin with store chrome, then put the usable product
+    // mechanism deeper in the page. Rank a wider bounded set before keeping the top 16.
+    ...research.evidence.paragraphs.slice(0, 80).map((text) => ({ text, sourceName: "page paragraph" })),
   ];
 
   const seen = new Set<string>();

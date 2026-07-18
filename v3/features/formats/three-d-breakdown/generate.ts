@@ -308,6 +308,9 @@ const presenterNarrationPattern = /\b(i am|i'm|i'll|let me|watch me|today i|my f
 const productionDirectionPattern = /\b(demonstrator|camera|frame|scene|animation|x[- ]?ray|cutaway|review tokens?|proof tokens?|caption|storyboard)\b/i;
 const templateLeakPattern = /\bwhen a buyer receives it\b|\bthe product reveals hidden proof\b|\bone version fills space\b|\bthe other changes the moment\b/i;
 const falseClassificationPattern = /\b(assum(?:e|es|ed|ing)|thought|pictured|decided|not for|only for|just for|wrong(?:ly)?|looked like|felt like)\b/i;
+const separatelySoldPattern = /\b(?:sold separately|optional (?:attachment|add-?on)|separate (?:attachment|add-?on))\b/i;
+const builtInAllComponentsPattern = /\b(?:hides?|contains?|inside|built[- ]in|working components?|cores?)\b[^.!?]{0,64}\b(?:five|all five)\b|\b(?:five|all five)\b[^.!?]{0,64}\b(?:inside|built[- ]in|working components?|cores?)\b/i;
+const unsupportedMassageComparisonPattern = /\b(?:ordinary|regular|standard)\s+(?:massage gun|massager|massage)\b[^.!?]{0,72}\b(?:just|only|barely|surface)\b|\b(?:physical|rapid)\s+pounding\b[^.!?]{0,72}\b(?:barely|surface)\b/i;
 const REFERENCE_SCRIPT_ACCEPT_MIN_WORDS = 100;
 const REFERENCE_SCRIPT_ACCEPT_MAX_WORDS = 180;
 const shippingLikeEvidenceTypes = new Set<ThreeDBreakdownEvidenceUseType>(["shipping", "offer", "guarantee"]);
@@ -382,6 +385,12 @@ const assertReferenceScriptGrounding = (
     .join(" ");
   // "Time compression" is a narrative shorthand for a shorter routine, not a product mechanism.
   const factualScriptWithoutTimeCompression = factualScript.replace(/\btime[- ]compression\b/gi, "");
+  if (unsupportedMassageComparisonPattern.test(factualScript) && !unsupportedMassageComparisonPattern.test(evidenceText)) {
+    throw new Error("3D Breakdown Style B referenceScript invented an unsupported massage comparison.");
+  }
+  if (separatelySoldPattern.test(evidenceText) && !separatelySoldPattern.test(script) && builtInAllComponentsPattern.test(factualScript)) {
+    throw new Error("3D Breakdown Style B referenceScript must preserve the selected evidence's sold-separately qualifier.");
+  }
   for (const [term, pattern] of unsupportedMechanismTerms) {
     if (arrivalContextEvidenceTypes.has(evidence.evidenceUseType) && logisticsContextTerms.has(term)) continue;
     if (term === "compression" && evidenceSupportsCompressionMetaphor) continue;

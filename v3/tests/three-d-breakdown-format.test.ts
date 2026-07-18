@@ -1038,6 +1038,112 @@ const unsupportedOutcomeReferenceGeneration = await generateThreeDBreakdownVaria
 assert.equal(unsupportedOutcomeReferenceCalls, 3, "An unsupported health outcome must trigger the one script validation retry before visual planning.");
 assert.equal(unsupportedOutcomeReferenceGeneration.variants[0]?.referenceScript, grunsCompressionReferenceScript);
 
+const separatelySoldTheragunResearch = makeResearch({
+  ...research,
+  websiteUrl: "https://www.therabody.com/products/theragun-pro-plus",
+  finalUrl: "https://www.therabody.com/products/theragun-pro-plus",
+  brand: {
+    ...research.brand,
+    name: "Therabody",
+    description: "Recovery devices including massage guns.",
+  },
+  brandBrief: {
+    ...research.brandBrief,
+    brandName: "Therabody",
+    offer: "Massage guns and recovery devices.",
+  },
+  productCatalog: {
+    ...research.productCatalog!,
+    products: [{
+      ...research.productCatalog!.products[0]!,
+      title: "Theragun PRO Plus",
+      handle: "theragun-pro-plus",
+      productType: "Massage gun",
+      imageUrl: "https://cdn.example.com/theragun-pro-plus.png",
+    }],
+  },
+  evidence: {
+    ...research.evidence,
+    paragraphs: [
+      "Theragun PRO Plus combines five therapies: deep muscle percussive therapy, near-infrared LED light, vibration, heated percussive therapy, and cold therapy sold separately.",
+    ],
+  },
+});
+const separatelySoldTheragunEvidence = extractThreeDBreakdownEvidence(separatelySoldTheragunResearch)
+  .find((item) => /cold therapy sold separately/i.test(item.text));
+assert.ok(separatelySoldTheragunEvidence, "Qualified Theragun evidence should remain available to the script director.");
+const separatelySoldTheragunDirection = {
+  directionId: "idea-theragun-five-therapies",
+  hookLine: "A massage gun can carry more than one recovery tool.",
+  subheadline: "Five documented therapies, with cold sold separately.",
+  shortSummary: "A recovery routine contracts into the Theragun PRO Plus, then its optional cold attachment stays visibly separate.",
+  category: "Product mechanism",
+  whyCompelling: "It makes the device's multiple therapies visible without claiming the optional cold attachment is built in.",
+  adAngle: "Five therapies, one recovery device, with cold available separately.",
+  visualEngine: "The Theragun PRO Plus opens into its documented therapies while the cold attachment remains outside the device.",
+  evidenceIndex: separatelySoldTheragunEvidence.evidenceIndex,
+  evidenceUseType: separatelySoldTheragunEvidence.evidenceUseType,
+  possibleRevealPatterns: ["exploded-product" as const, "process-pipeline" as const],
+};
+const separatelySoldTheragunReferenceScript = "After a hard session, people reach for one massage gun and expect one kind of recovery. The Theragun PRO Plus starts with a bigger recovery toolkit. Deep muscle percussive therapy, near-infrared LED light, vibration, and heated percussive therapy live in the device. Each therapy becomes a visible part of one recovery routine. Then a cold therapy attachment stays beside the device. Therabody lists that cold therapy separately. The point is not one mysterious feature. It is a recovery device that combines several documented therapies without pretending every add-on is built in. The hand changes settings. The device changes the visible routine. One recovery tool becomes a clearer system. Choose the Theragun PRO Plus for your recovery routine.";
+const separatelySoldTheragunBeats = [
+  { role: "consequence", narration: "You expect one massage gun to solve one recovery job after training.", startMs: 0, endMs: 3000 },
+  { role: "context", narration: "But a hard session can leave several recovery needs competing at once.", startMs: 3000, endMs: 7000 },
+  { role: "mechanism", narration: "Theragun PRO Plus combines percussive therapy, near-infrared light, vibration, and heat.", startMs: 7000, endMs: 12000 },
+  { role: "revelation", narration: "Cold therapy stays available separately beside the device for recovery.", startMs: 12000, endMs: 16000 },
+  { role: "punchline", narration: "Shop Theragun PRO Plus.", startMs: 16000, endMs: 20000 },
+];
+const separatelySoldTheragunPlan = styleBScriptPlanPayload({
+  visualStyle: "presenter-teardown-vsl",
+  variantAngle: separatelySoldTheragunDirection.adAngle,
+  customerProblem: "one recovery tool does not explain a full recovery routine",
+  mechanismSummary: "Theragun PRO Plus combines documented therapies while cold remains a separate attachment",
+  visualMetaphor: "device layers open while the separate cold attachment stays outside",
+  referenceScript: separatelySoldTheragunReferenceScript,
+  scriptBeats: separatelySoldTheragunBeats,
+  evidenceIndex: separatelySoldTheragunEvidence.evidenceIndex,
+  evidenceUseType: separatelySoldTheragunEvidence.evidenceUseType,
+  wowMomentType: "exploded-product",
+  wowMoment: "The device separates into its documented therapy layers while the separate cold attachment remains beside it.",
+  viewerLearns: "Cold therapy is a separate attachment, not a built-in component.",
+  claimRisk: "low",
+  claimRiskReason: "Names only therapies and the sold-separately qualifier present in the selected evidence.",
+  ctaLine: "Shop Theragun PRO Plus.",
+});
+const invalidSeparatelySoldTheragunPlan = {
+  ...separatelySoldTheragunPlan,
+  referenceScript: separatelySoldTheragunReferenceScript.replace(
+    "Then a cold therapy attachment stays beside the device. Therabody lists that cold therapy separately.",
+    "Then all five therapies hide inside one shell, including cold therapy.",
+  ),
+};
+const separatelySoldTheragunVisualPlan = payloadWithVariants([makeVariant({
+  ...separatelySoldTheragunPlan,
+  visualStyle: "presenter-teardown-vsl",
+  consequence: separatelySoldTheragunBeats[0]!.narration,
+  context: separatelySoldTheragunBeats[1]!.narration,
+  mechanism: separatelySoldTheragunBeats[2]!.narration,
+  revelation: separatelySoldTheragunBeats[3]!.narration,
+  punchline: separatelySoldTheragunBeats[4]!.narration,
+})]);
+let separatelySoldTheragunCalls = 0;
+const separatelySoldTheragunGeneration = await generateThreeDBreakdownVariantsFromResearch(separatelySoldTheragunResearch, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  selectedStoryDirection: separatelySoldTheragunDirection,
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    separatelySoldTheragunCalls += 1;
+    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+      return JSON.stringify(separatelySoldTheragunCalls === 1
+        ? invalidSeparatelySoldTheragunPlan
+        : separatelySoldTheragunPlan);
+    }
+    return JSON.stringify(separatelySoldTheragunVisualPlan);
+  },
+});
+assert.equal(separatelySoldTheragunCalls, 3, "Calling a sold-separately attachment built in must trigger exactly one script retry before visual planning.");
+assert.match(separatelySoldTheragunGeneration.variants[0]?.referenceScript || "", /cold therapy separately/i);
+
 let storySlateCalls = 0;
 const storySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
   nvidiaNimApiKey: "test-key",
@@ -1884,6 +1990,32 @@ const massageGunResearch = makeResearch({
 const massageGunEvidence = extractThreeDBreakdownEvidence(massageGunResearch)
   .find((item) => /Theragun PRO Plus includes a percussive therapy attachment/i.test(item.text))!;
 assert.ok(massageGunEvidence, "Selected product fixtures need product-specific evidence.");
+
+const lateProductProofResearch = makeResearch({
+  ...massageGunResearch,
+  brandBrief: {
+    ...massageGunResearch.brandBrief,
+    proof: research.brandBrief.proof,
+  },
+  evidence: {
+    ...research.evidence,
+    paragraphs: [
+      ...Array.from({ length: 18 }, (_, index) => `Recovery collection page section ${index + 1}.`),
+      "Theragun PRO Plus combines five therapies: deep muscle percussive therapy, near-infrared LED light, vibration, heated percussive and cold therapy.",
+    ],
+  },
+});
+const lateProductProofEvidence = extractThreeDBreakdownEvidence(lateProductProofResearch)
+  .find((item) => /Theragun PRO Plus combines five therapies/i.test(item.text));
+assert.equal(
+  lateProductProofEvidence?.evidenceUseType,
+  "mechanism",
+  "Later product-page mechanism copy must survive page-chrome extraction and rank as visual evidence.",
+);
+assert.ok(
+  (lateProductProofEvidence?.visualPotentialScore || 0) >= 0.5,
+  "A concrete product mechanism found later on the page must qualify for product-scoped 3D story generation.",
+);
 const productLockedStorySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(massageGunResearch, {
   nvidiaNimApiKey: "test-key",
   storySubject: { kind: "product", productHandle: "theragun-pro-plus" },
