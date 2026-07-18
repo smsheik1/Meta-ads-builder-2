@@ -411,11 +411,18 @@ export async function fetchEcommerceProductCatalog(
 }> {
   const websiteUrl = normalizePublicWebsiteUrl(inputUrl);
   const sourceUrl = new URL(`/products.json?limit=${SHOPIFY_PRODUCTS_LIMIT}`, websiteUrl.origin).toString();
+  const isDirectProductPage = /\/products\//i.test(websiteUrl.pathname);
 
   try {
     const fetcher = options.fetcher ?? fetch;
     const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-    const response = await fetchWithTimeout(fetcher, sourceUrl, timeoutMs, "application/json");
+    let response = await fetchWithTimeout(fetcher, sourceUrl, timeoutMs, "application/json");
+    // A direct product page is the one place where losing the catalog blocks the
+    // user from choosing the exact item they just submitted. Retry one transient
+    // catalog miss before falling back to brand-level story options.
+    if (!response && isDirectProductPage) {
+      response = await fetchWithTimeout(fetcher, sourceUrl, timeoutMs, "application/json");
+    }
     const payload = await response?.json() as { products?: ShopifyProduct[] } | undefined;
     const explicitBestSellers = await fetchBestSellerHandles(fetcher, websiteUrl.origin, timeoutMs);
     const products = (payload?.products || [])

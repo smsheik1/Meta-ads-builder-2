@@ -92,6 +92,24 @@ const empty = await fetchEcommerceProductCatalog("https://example.com/", {
 assert.equal(empty.catalog, null);
 assert.equal(empty.providerStatus.status, "skipped");
 
+let directProductCatalogAttempts = 0;
+const directProductRetry = await fetchEcommerceProductCatalog("https://therabody.test/products/theragun-pro-plus", {
+  fetcher: async (input) => {
+    const url = String(input);
+    if (/^https:\/\/therabody\.test\/products\.json\?limit=250$/.test(url)) {
+      directProductCatalogAttempts += 1;
+      return directProductCatalogAttempts === 1
+        ? textResponse("temporarily unavailable", 503, "text/plain")
+        : jsonResponse(payload);
+    }
+    if (/\/collections\//.test(url)) return jsonResponse({ products: [] });
+    return textResponse("", 404);
+  },
+});
+
+assert.equal(directProductCatalogAttempts, 2);
+assert.equal(directProductRetry.catalog?.products.length, 2);
+
 const headlessShopify = await fetchEcommerceProductCatalog("https://skims.test/", {
   fetcher: fetchFromRoutes([
     [/\/products\.json\?limit=250/, () => textResponse("<html>not found</html>", 404)],
