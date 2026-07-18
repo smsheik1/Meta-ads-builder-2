@@ -1144,6 +1144,52 @@ const separatelySoldTheragunGeneration = await generateThreeDBreakdownVariantsFr
 assert.equal(separatelySoldTheragunCalls, 3, "Calling a sold-separately attachment built in must trigger exactly one script retry before visual planning.");
 assert.match(separatelySoldTheragunGeneration.variants[0]?.referenceScript || "", /cold therapy separately/i);
 
+const qualifiedTheragunSlate = {
+  recommendedDirectionId: "idea-1",
+  directions: [1, 2, 3, 4, 5].map((index) => makeStoryDirection(index, {
+    hookLine: `Why does Theragun PRO Plus open into recovery layer ${index}?`,
+    subheadline: "Documented recovery therapies made visible.",
+    shortSummary: "A recovery routine builds visible needs. Theragun PRO Plus opens into documented therapy layers.",
+    category: "Product mechanism",
+    whyCompelling: "The product mechanism becomes a clear physical reveal.",
+    adAngle: "Theragun PRO Plus makes recovery layers visible.",
+    visualEngine: "Theragun PRO Plus opens into documented therapy layers around a separate attachment for cold therapy.",
+    evidenceIndex: separatelySoldTheragunEvidence.evidenceIndex,
+    evidenceUseType: separatelySoldTheragunEvidence.evidenceUseType,
+    possibleRevealPatterns: ["exploded-product"],
+  })),
+};
+const invalidQualifiedTheragunSlate = {
+  ...qualifiedTheragunSlate,
+  directions: qualifiedTheragunSlate.directions.map((direction, index) => index === 2
+    ? {
+        ...direction,
+        hookLine: "Why does Theragun PRO Plus hide five recovery tools inside?",
+        subheadline: "Theragun PRO Plus combines heat and cold therapy.",
+        visualEngine: "All five recovery tools assemble inside the Theragun PRO Plus shell.",
+      }
+    : direction),
+};
+let separatelySoldStorySlateCalls = 0;
+const qualifiedTheragunStorySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(separatelySoldTheragunResearch, {
+  nvidiaNimApiKey: "test-key",
+  storySubject: { kind: "product", productHandle: "theragun-pro-plus" },
+  nvidiaNimChatCompletion: async () => {
+    separatelySoldStorySlateCalls += 1;
+    return JSON.stringify(separatelySoldStorySlateCalls === 1
+      ? invalidQualifiedTheragunSlate
+      : qualifiedTheragunSlate);
+  },
+});
+assert.equal(separatelySoldStorySlateCalls, 2, "A story card that merges a separate attachment into the product must use the one slate retry.");
+assert.ok(
+  qualifiedTheragunStorySlate.directions.every((direction) => (
+    !/\bcold therapy\b/i.test([direction.hookLine, direction.subheadline, direction.shortSummary, direction.adAngle, direction.visualEngine].join(" "))
+    || /\bseparate(?:ly)?\b/i.test([direction.hookLine, direction.subheadline, direction.shortSummary, direction.adAngle, direction.visualEngine].join(" "))
+  )),
+  "Returned story cards must keep the cold attachment visibly separate.",
+);
+
 let storySlateCalls = 0;
 const storySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
   nvidiaNimApiKey: "test-key",

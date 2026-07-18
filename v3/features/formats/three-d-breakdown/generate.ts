@@ -523,6 +523,13 @@ const parseStoryDirectionSlateOutput = (
       parsedDirection.adAngle,
       parsedDirection.visualEngine,
     ].join(" ");
+    if (
+      separatelySoldPattern.test(evidence.text)
+      && !separatelySoldPattern.test(directionText)
+      && (builtInAllComponentsPattern.test(directionText) || /\bcold(?: therapy| attachment)?\b/i.test(directionText))
+    ) {
+      throw new Error(`3D Breakdown story direction ${index + 1} must preserve the selected evidence's sold-separately qualifier.`);
+    }
     const selectedProductTitle = storySubject?.kind === "product"
       ? cleanText(storySubject.product?.title, 120)
       : "";
