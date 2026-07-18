@@ -1008,6 +1008,26 @@ const prepareThreeDBreakdownEvidence = (research: StoredWebsiteResearchResult, s
   };
 };
 
+const scopeDirectorEvidenceToStorySubject = (
+  evidenceItems: ThreeDBreakdownEvidenceItem[],
+  storySubject: ThreeDBreakdownResolvedStorySubject,
+) => {
+  if (storySubject.kind !== "product" || !storySubject.product) return evidenceItems;
+
+  const productEvidence = evidenceItems.filter((item) => (
+    evidenceNamesSelectedProduct(item.text, storySubject.product?.title)
+    && item.type !== "product"
+    && item.evidenceUseType !== "category"
+    && item.visualPotentialScore >= 0.5
+  ));
+  if (!productEvidence.length) {
+    throw new Error(
+      `${storySubject.product.title} needs a product page with a concrete feature, mechanism, or proof before Wiggly can write a 3D Breakdown. Use that product page URL, choose another product, or choose the brand story.`,
+    );
+  }
+  return productEvidence;
+};
+
 export async function generateThreeDBreakdownStoryDirectionsFromResearch(
   research: StoredWebsiteResearchResult,
   {
@@ -1032,8 +1052,9 @@ export async function generateThreeDBreakdownStoryDirectionsFromResearch(
   });
   const { directorEvidenceItems, evidenceItems } = prepareThreeDBreakdownEvidence(research, startedAt);
   const resolvedStorySubject = resolveThreeDBreakdownStorySubject(research, storySubject);
+  const subjectEvidenceItems = scopeDirectorEvidenceToStorySubject(directorEvidenceItems, resolvedStorySubject);
   const prompt = buildThreeDBreakdownStoryDirectionsPrompt({
-    evidence: directorEvidenceItems,
+    evidence: subjectEvidenceItems,
     research,
     storySubject: resolvedStorySubject,
   });
@@ -1057,7 +1078,7 @@ export async function generateThreeDBreakdownStoryDirectionsFromResearch(
   const raw = await callDirector(prompt);
   let slate: ThreeDBreakdownStoryDirectionSlate;
   try {
-    slate = parseStoryDirectionSlateOutput(raw, directorEvidenceItems, resolvedStorySubject);
+    slate = parseStoryDirectionSlateOutput(raw, subjectEvidenceItems, resolvedStorySubject);
   } catch (error) {
     console.warn("[wiggly:3d-breakdown] story-slate:parse:retry", {
       elapsedMs: Date.now() - startedAt,
@@ -1068,7 +1089,7 @@ export async function generateThreeDBreakdownStoryDirectionsFromResearch(
       validationErrors: [structuredErrorFrom(error)],
     });
     const retryRaw = await callDirector(retryPrompt);
-    slate = parseStoryDirectionSlateOutput(retryRaw, directorEvidenceItems, resolvedStorySubject);
+    slate = parseStoryDirectionSlateOutput(retryRaw, subjectEvidenceItems, resolvedStorySubject);
   }
   console.log("[wiggly:3d-breakdown] story-slate:ready", {
     elapsedMs: Date.now() - startedAt,
@@ -1117,11 +1138,12 @@ export async function generateThreeDBreakdownVariantsFromResearch(
   });
   const { directorEvidenceItems, evidenceItems } = prepareThreeDBreakdownEvidence(research, startedAt);
   const resolvedStorySubject = resolveThreeDBreakdownStorySubject(research, storySubject);
+  const subjectEvidenceItems = scopeDirectorEvidenceToStorySubject(directorEvidenceItems, resolvedStorySubject);
   const requestedCount = selectedStoryDirection
     ? 1
     : Math.max(1, Math.min(2, Math.round(count || THREE_D_BREAKDOWN_VARIANT_COUNT)));
   console.log("[wiggly:3d-breakdown] director:prompt:ready", {
-    directorEvidenceCount: directorEvidenceItems.length,
+    directorEvidenceCount: subjectEvidenceItems.length,
     elapsedMs: Date.now() - startedAt,
     requestedCount,
   });
@@ -1143,7 +1165,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
   let lockedStyleBScript: ThreeDBreakdownLockedStyleBScript | null = null;
   if (requestedCount > 1 || selectedStoryDirection) {
     const scriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({
-      evidence: directorEvidenceItems,
+      evidence: subjectEvidenceItems,
       research,
       selectedStoryDirection,
       storySubject: resolvedStorySubject,
@@ -1166,7 +1188,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     try {
       lockedStyleBScript = parseStyleBScriptPlanOutput(
         scriptRaw,
-        directorEvidenceItems,
+        subjectEvidenceItems,
         research,
         selectedStoryDirection,
         resolvedStorySubject,
@@ -1197,7 +1219,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
       });
       lockedStyleBScript = parseStyleBScriptPlanOutput(
         retryRaw,
-        directorEvidenceItems,
+        subjectEvidenceItems,
         research,
         selectedStoryDirection,
         resolvedStorySubject,
@@ -1211,7 +1233,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
   }
   const prompt = buildThreeDBreakdownPrompt({
     count: requestedCount,
-    evidence: directorEvidenceItems,
+    evidence: subjectEvidenceItems,
     lockedStyleBScript,
     research,
     selectedStoryDirection,
@@ -1239,7 +1261,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
   });
   let parsedGeneration: ReturnType<typeof parseDirectorOutput>;
   try {
-    parsedGeneration = parseDirectorOutput(raw, directorEvidenceItems, requestedCount, lockedStyleBScript);
+    parsedGeneration = parseDirectorOutput(raw, subjectEvidenceItems, requestedCount, lockedStyleBScript);
   } catch (error) {
     console.warn("[wiggly:3d-breakdown] director:parse:retry", {
       elapsedMs: Date.now() - startedAt,
@@ -1266,7 +1288,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
       elapsedMs: Date.now() - startedAt,
       responseChars: retryRaw.length,
     });
-    parsedGeneration = parseDirectorOutput(retryRaw, directorEvidenceItems, requestedCount, lockedStyleBScript);
+    parsedGeneration = parseDirectorOutput(retryRaw, subjectEvidenceItems, requestedCount, lockedStyleBScript);
   }
   console.log("[wiggly:3d-breakdown] ready", {
     elapsedMs: Date.now() - startedAt,

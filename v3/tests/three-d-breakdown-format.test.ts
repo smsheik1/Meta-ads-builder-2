@@ -1866,6 +1866,10 @@ const massageGunResearch = makeResearch({
     ...research.brandBrief,
     brandName: "Therabody",
     offer: "Massage guns, compression boots, and recovery devices for post-workout recovery.",
+    proof: [
+      ...research.brandBrief.proof,
+      "Theragun PRO Plus includes a percussive therapy attachment.",
+    ],
   },
   productCatalog: {
     ...research.productCatalog!,
@@ -1877,7 +1881,9 @@ const massageGunResearch = makeResearch({
     }],
   },
 });
-const massageGunEvidence = extractThreeDBreakdownEvidence(massageGunResearch)[0]!;
+const massageGunEvidence = extractThreeDBreakdownEvidence(massageGunResearch)
+  .find((item) => /Theragun PRO Plus includes a percussive therapy attachment/i.test(item.text))!;
+assert.ok(massageGunEvidence, "Selected product fixtures need product-specific evidence.");
 const productLockedStorySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(massageGunResearch, {
   nvidiaNimApiKey: "test-key",
   storySubject: { kind: "product", productHandle: "theragun-pro-plus" },
@@ -1901,6 +1907,27 @@ assert.ok(
   ].join(" "))),
   "Every product-selected story direction must visibly name the exact product.",
 );
+
+let missingProductEvidenceCalls = 0;
+await assert.rejects(
+  () => generateThreeDBreakdownStoryDirectionsFromResearch(makeResearch({
+    ...massageGunResearch,
+    brandBrief: {
+      ...massageGunResearch.brandBrief,
+      proof: research.brandBrief.proof,
+    },
+    evidence: research.evidence,
+  }), {
+    nvidiaNimApiKey: "test-key",
+    storySubject: { kind: "product", productHandle: "theragun-pro-plus" },
+    nvidiaNimChatCompletion: async () => {
+      missingProductEvidenceCalls += 1;
+      throw new Error("The director must not run without product-specific evidence.");
+    },
+  }),
+  /Theragun PRO Plus needs a product page with a concrete feature, mechanism, or proof/,
+);
+assert.equal(missingProductEvidenceCalls, 0, "A weak selected product must fail before an NVIDIA request.");
 
 const massageGunScriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({
   evidence: [massageGunEvidence],
@@ -1947,7 +1974,7 @@ await assert.rejects(
       });
     },
   }),
-  /invented a sleep outcome/,
+  /references invalid evidence/,
 );
 assert.equal(productOutcomeSlateCalls, 2, "A product-selected outcome must not borrow proof from a broader brand claim.");
 const massageGunResult = await generateThreeDBreakdownVariantsFromResearch(massageGunResearch, {
