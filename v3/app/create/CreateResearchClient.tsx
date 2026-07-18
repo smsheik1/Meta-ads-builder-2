@@ -2348,6 +2348,7 @@ function ResearchConnected() {
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const hadExistingCanvas = Boolean(selectedScene || adScenes.length);
+    if (selectedAdFormat === "three-d-breakdown") resetThreeDStoryDirections();
     // TODO: add an explicit same-URL refresh control if stale site content becomes a real problem.
     const reusableResearch = getReusableResearchForUrl(url, {
       requiresProductImage: selectedAdFormat === "motion-story" || selectedAdFormat === PRODUCT_PHOTOSHOOT_FORMAT,
@@ -2449,7 +2450,6 @@ function ResearchConnected() {
         return;
       }
       if (selectedAdFormat === "three-d-breakdown") {
-        resetThreeDStoryDirections();
         await generateScenesOnly({
           researchRunId: nextResult.researchRunId,
           facts: getWebsiteSubmitProgressFacts(nextResult),
