@@ -565,7 +565,7 @@ const storyDirectionsPrompt = buildThreeDBreakdownStoryDirectionsPrompt({ eviden
 const ecommerceStyleReferenceBytes = readFileSync(new URL("../public/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v7.jpg", import.meta.url));
 assert.equal(THREE_D_BREAKDOWN_VARIANT_COUNT, 2);
 assert.equal(THREE_D_BREAKDOWN_MAX_TOKENS, 4000);
-assert.equal(THREE_D_STYLE_B_VISUAL_MAX_TOKENS, 2600);
+assert.equal(THREE_D_STYLE_B_VISUAL_MAX_TOKENS, 1400);
 assert.equal(THREE_D_BREAKDOWN_DURATION_MS, 20_000);
 assert.equal(DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL, "z-ai/glm-5.2");
 assert.ok(ecommerceStyleReferenceBytes.byteLength > 5_000, "3D Breakdown ecommerce style reference image must stay checked in.");
@@ -1175,11 +1175,10 @@ const selectedStoryLock = {
 };
 const selectedScriptPlan = styleBScriptPlanPayload(selectedStoryLock);
 selectedScriptPlan.referenceScript = `${selectedScriptPlan.referenceScript} Time compression shortens the manual routine.`;
-const selectedVisualPayload = payloadWithVariants([makeVariant({
-  ...selectedStoryLock,
+const selectedVisualPayload = payloadWithVariants([{
   visualStyle: "presenter-teardown-vsl",
-  punchline: "Shop David's Cookies gifts.",
-})]);
+  storyboardBoard: makeVariant().storyboardBoard,
+}]);
 const selectedDirectionGeneration = await generateThreeDBreakdownVariantsFromResearch(research, {
   count: 1,
   nvidiaNimApiKey: "test-key",
@@ -1191,8 +1190,10 @@ const selectedDirectionGeneration = await generateThreeDBreakdownVariantsFromRes
       assert.ok(directorPrompt.includes(`evidenceIndex ${selectedStoryDirection.evidenceIndex}`));
       return JSON.stringify(selectedScriptPlan);
     }
-    assert.ok(directorPrompt.includes("Locked Style B script plan:"));
-    assert.ok(directorPrompt.includes(selectedStoryDirection.hookLine));
+    assert.ok(directorPrompt.includes("Wiggly Style B Visual Planner"));
+    assert.ok(directorPrompt.includes(selectedEvidenceItem.text));
+    assert.ok(!directorPrompt.includes(selectedStoryDirection.hookLine));
+    assert.ok(directorPrompt.length < 8_000, `Selected visual planner prompt is too large: ${directorPrompt.length} chars`);
     return JSON.stringify(selectedVisualPayload);
   },
   selectedStoryDirection,
