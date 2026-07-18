@@ -54,7 +54,7 @@ export const formatThreeDBreakdownStorySubject = (
       `Advertise only this product: ${subject.product.title}.`,
       `Product type: ${subject.product.productType || "not specified"}.`,
       `Product URL: ${subject.product.url}.`,
-      "Every direction, script, visual product reference, and CTA must describe this exact selected product. Do not substitute another catalog item, collection, or generic brand offer.",
+      `Every one of the five directions must name ${subject.product.title} at least once. Every direction, script, visual product reference, and CTA must describe this exact selected product. Do not substitute another catalog item, collection, or generic brand offer.`,
     ].join("\n");
   }
   if (subject.kind === "customer-problem") {

@@ -1822,6 +1822,29 @@ const massageGunResearch = makeResearch({
   },
 });
 const massageGunEvidence = extractThreeDBreakdownEvidence(massageGunResearch)[0]!;
+const productLockedStorySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(massageGunResearch, {
+  nvidiaNimApiKey: "test-key",
+  storySubject: { kind: "product", productHandle: "theragun-pro-plus" },
+  nvidiaNimChatCompletion: async () => JSON.stringify({
+    ...storyDirectionPayload,
+    directions: storyDirectionPayload.directions.map((direction) => ({
+      ...direction,
+      hookLine: `Theragun PRO Plus: ${direction.hookLine}`,
+      evidenceIndex: massageGunEvidence.evidenceIndex,
+      evidenceUseType: massageGunEvidence.evidenceUseType,
+    })),
+  }),
+});
+assert.ok(
+  productLockedStorySlate.directions.every((direction) => /Theragun PRO Plus/i.test([
+    direction.hookLine,
+    direction.subheadline,
+    direction.shortSummary,
+    direction.adAngle,
+    direction.visualEngine,
+  ].join(" "))),
+  "Every product-selected story direction must visibly name the exact product.",
+);
 const massageGunResult = await generateThreeDBreakdownVariantsFromResearch(massageGunResearch, {
   count: 1,
   nvidiaNimApiKey: "test-key",
