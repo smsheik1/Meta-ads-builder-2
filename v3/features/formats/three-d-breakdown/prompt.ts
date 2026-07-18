@@ -681,7 +681,7 @@ Rules:
 - Every line describes a customer action or object state change the visual planner can depict.
 - Unseen narrator only; never refer to demonstrator or staging in spoken copy.
 - Spoken copy never mentions production: demonstrator, camera, frame, scene, animation, x-ray, cutaway, map, token, caption, or storyboard.
-- Only evidence text authorizes product facts. Preserve qualifiers: separate, optional, or add-on attachments are never built in. Infer ordinary use, not product parts or outcomes.
+- Only evidence text authorizes product facts. Separate, optional, or add-on attachments stay separate; never count them inside one unified device. Infer ordinary use, not outcomes.
 - End referenceScript with a product reframe, not a slogan. Do not put the CTA inside referenceScript.
 - ctaLine is 3-7 words with brand/product/category plus one clear action. It must exactly match the punchline narration.
 - ctaLine must sell the product action, not the mechanism. Ban see the mechanism, visible mechanism, journey is the product, and trip is the product.

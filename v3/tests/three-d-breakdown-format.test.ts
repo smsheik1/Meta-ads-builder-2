@@ -1117,6 +1117,18 @@ const invalidSeparatelySoldTheragunPlan = {
     "Then all five therapies hide inside one shell, including cold therapy.",
   ),
 };
+const invalidAggregatedTheragunPlan = {
+  ...separatelySoldTheragunPlan,
+  referenceScript: separatelySoldTheragunReferenceScript.replace(
+    "It is a recovery device that combines several documented therapies without pretending every add-on is built in.",
+    "It combines five therapies into one unified device.",
+  ),
+  scriptBeats: separatelySoldTheragunBeats.map((beat) => (
+    beat.role === "mechanism"
+      ? { ...beat, narration: "Theragun PRO Plus combines five therapies into one unified device." }
+      : beat
+  )),
+};
 const separatelySoldTheragunVisualPlan = payloadWithVariants([makeVariant({
   ...separatelySoldTheragunPlan,
   visualStyle: "presenter-teardown-vsl",
@@ -1143,6 +1155,24 @@ const separatelySoldTheragunGeneration = await generateThreeDBreakdownVariantsFr
 });
 assert.equal(separatelySoldTheragunCalls, 3, "Calling a sold-separately attachment built in must trigger exactly one script retry before visual planning.");
 assert.match(separatelySoldTheragunGeneration.variants[0]?.referenceScript || "", /cold therapy separately/i);
+
+let separatelySoldAggregationCalls = 0;
+const separatelySoldAggregationGeneration = await generateThreeDBreakdownVariantsFromResearch(separatelySoldTheragunResearch, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  selectedStoryDirection: separatelySoldTheragunDirection,
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    separatelySoldAggregationCalls += 1;
+    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+      return JSON.stringify(separatelySoldAggregationCalls === 1
+        ? invalidAggregatedTheragunPlan
+        : separatelySoldTheragunPlan);
+    }
+    return JSON.stringify(separatelySoldTheragunVisualPlan);
+  },
+});
+assert.equal(separatelySoldAggregationCalls, 3, "Counting a sold-separately attachment inside one unified device must trigger the one script retry.");
+assert.match(separatelySoldAggregationGeneration.variants[0]?.scriptBeats[2]?.narration || "", /near-infrared light, vibration, and heat/i);
 
 const qualifiedTheragunSlate = {
   recommendedDirectionId: "idea-1",

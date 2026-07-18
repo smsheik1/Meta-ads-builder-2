@@ -310,6 +310,7 @@ const templateLeakPattern = /\bwhen a buyer receives it\b|\bthe product reveals 
 const falseClassificationPattern = /\b(assum(?:e|es|ed|ing)|thought|pictured|decided|not for|only for|just for|wrong(?:ly)?|looked like|felt like)\b/i;
 const separatelySoldPattern = /\b(?:sold separately|optional (?:attachment|add-?on)|separate (?:attachment|add-?on))\b/i;
 const builtInAllComponentsPattern = /\b(?:hides?|contains?|inside|built[- ]in|working components?|cores?)\b[^.!?]{0,64}\b(?:five|all five)\b|\b(?:five|all five)\b[^.!?]{0,64}\b(?:inside|built[- ]in|working components?|cores?)\b/i;
+const separatelySoldAttachmentAggregationPattern = /\b(?:five|all five)\s+(?:therap(?:y|ies)|tools?|modalities?|features?)\b[^.!?]{0,72}\b(?:one|single|unified|all[- ]in[- ]one)\s+(?:device|form|unit|tool|shell)\b|\b(?:one|single|unified|all[- ]in[- ]one)\s+(?:device|form|unit|tool|shell)\b[^.!?]{0,72}\b(?:five|all five)\s+(?:therap(?:y|ies)|tools?|modalities?|features?)\b/i;
 const unsupportedMassageComparisonPattern = /\b(?:ordinary|regular|standard)\s+(?:massage gun|massager|massage)\b[^.!?]{0,72}\b(?:just|only|barely|surface)\b|\b(?:physical|rapid)\s+pounding\b[^.!?]{0,72}\b(?:barely|surface)\b/i;
 const REFERENCE_SCRIPT_ACCEPT_MIN_WORDS = 100;
 const REFERENCE_SCRIPT_ACCEPT_MAX_WORDS = 180;
@@ -390,6 +391,9 @@ const assertReferenceScriptGrounding = (
   }
   if (separatelySoldPattern.test(evidenceText) && !separatelySoldPattern.test(script) && builtInAllComponentsPattern.test(factualScript)) {
     throw new Error("3D Breakdown Style B referenceScript must preserve the selected evidence's sold-separately qualifier.");
+  }
+  if (separatelySoldPattern.test(evidenceText) && separatelySoldAttachmentAggregationPattern.test(factualScript)) {
+    throw new Error("3D Breakdown Style B referenceScript cannot count a sold-separately attachment as part of one unified device.");
   }
   for (const [term, pattern] of unsupportedMechanismTerms) {
     if (arrivalContextEvidenceTypes.has(evidence.evidenceUseType) && logisticsContextTerms.has(term)) continue;
