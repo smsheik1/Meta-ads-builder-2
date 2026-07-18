@@ -153,6 +153,13 @@ export const callNvidiaNimChat = async ({
         label,
         status: response.status,
       });
+      if (response.status === 429) {
+        const retryAfter = response.headers.get("retry-after");
+        const retryHint = retryAfter
+          ? ` Try again in about ${retryAfter} seconds.`
+          : " Wait a moment, then retry.";
+        throw new Error(`${label} is temporarily rate limited by NVIDIA NIM.${retryHint}`);
+      }
       throw new Error(`${label} failed with ${response.status}${body ? `: ${body.slice(0, 300)}` : ""}`);
     }
 
