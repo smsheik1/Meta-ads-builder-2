@@ -83,7 +83,7 @@ export type ProductCatalogItem = {
 };
 
 export type ProductCatalog = {
-  provider: "shopify-products-json" | "shopify-product-sitemap" | "woocommerce-store-api";
+  provider: "shopify-products-json" | "shopify-product-sitemap" | "woocommerce-store-api" | "scraped-product-page";
   sourceUrl: string;
   groups: {
     bestSellers: string[];

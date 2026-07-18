@@ -1,4 +1,9 @@
-import type { ProductCatalog, ProductCatalogItem, ResearchProviderStatus } from "./types";
+import type {
+  ProductCatalog,
+  ProductCatalogItem,
+  ResearchProviderStatus,
+  WebsiteResearchResult,
+} from "./types";
 import { normalizePublicWebsiteUrl } from "./url";
 
 const SHOPIFY_PRODUCTS_LIMIT = 250;
@@ -73,6 +78,81 @@ const titleFromHandle = (handle: string) => handle
   .filter(Boolean)
   .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
   .join(" ");
+
+const firstMetadataText = (metadata: Record<string, unknown>, keys: string[]) => keys
+  .map((key) => metadata[key])
+  .find((value) => typeof value === "string" && value.trim())
+  ?.toString()
+  .trim() || "";
+
+const productTitleFromMetadata = (metadata: Record<string, unknown>, fallbackHandle: string) => {
+  const title = firstMetadataText(metadata, ["og:title", "ogTitle", "twitter:title", "title"])
+    .split(/[|–—]/u)[0]
+    .replace(/\s+/g, " ")
+    .trim();
+  return title || titleFromHandle(fallbackHandle);
+};
+
+const toHttpsImageUrl = (value: string) => {
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol === "http:") parsed.protocol = "https:";
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+};
+
+export const buildDirectProductPageCatalog = (
+  research: Pick<WebsiteResearchResult, "finalUrl" | "metadata" | "websiteUrl"> & {
+    brand: Pick<WebsiteResearchResult["brand"], "name" | "ogImageUrl">;
+  },
+): { catalog: ProductCatalog; providerStatus: ResearchProviderStatus } | null => {
+  const productUrl = research.finalUrl || research.websiteUrl;
+  const handle = productHandleFromUrl(productUrl);
+  const metadata = research.metadata;
+  const imageUrl = toHttpsImageUrl(firstMetadataText(metadata, [
+    "og:image:secure_url",
+    "ogImage",
+    "og:image",
+    "twitter:image",
+  ]) || research.brand.ogImageUrl || "");
+
+  if (!handle || !imageUrl) return null;
+
+  const title = productTitleFromMetadata(metadata, handle);
+  const price = toNumberOrNull(firstMetadataText(metadata, ["og:price:amount", "product:price:amount"]));
+  const currency = firstMetadataText(metadata, ["og:price:currency", "product:price:currency"]) || null;
+  const product: ProductCatalogItem = {
+    title,
+    handle,
+    url: productUrl,
+    imageUrl,
+    imageAlt: title,
+    productType: null,
+    vendor: research.brand.name || null,
+    priceMin: price,
+    priceMax: price,
+    currency,
+    available: null,
+    badges: [],
+  };
+
+  return {
+    catalog: {
+      provider: "scraped-product-page",
+      sourceUrl: productUrl,
+      groups: { bestSellers: [] },
+      summary: { productCount: 1, bestSellerCount: 0 },
+      products: [product],
+    },
+    providerStatus: {
+      provider: "product-catalog",
+      status: "used",
+      reason: `Catalog endpoint was unavailable; used the submitted product page for ${title}.`,
+    },
+  };
+};
 
 const productLooksBestSellerTagged = (product: ShopifyProduct) => {
   const text = [
