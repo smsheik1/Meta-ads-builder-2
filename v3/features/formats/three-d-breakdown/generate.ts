@@ -226,7 +226,15 @@ const assertCtaLineShape = (value: string) => {
   }
 };
 
-const buildDeterministicCtaLine = (research: StoredWebsiteResearchResult) => {
+const buildDeterministicCtaLine = (
+  research: StoredWebsiteResearchResult,
+  selectedProductTitle?: string,
+) => {
+  const selectedProduct = cleanText(selectedProductTitle, 80)
+    .split(/\s+/)
+    .slice(0, 5)
+    .join(" ");
+  if (selectedProduct) return `Try ${selectedProduct} today.`;
   const brand = cleanText(research.brandBrief.brandName || research.brand.name, 60)
     .split(/\s+/)
     .slice(0, 4)
@@ -252,13 +260,32 @@ const buildDeterministicCtaLine = (research: StoredWebsiteResearchResult) => {
   return cleanText(`Try ${productName} today.`, 180);
 };
 
-const resolveCtaLine = (value: unknown, research: StoredWebsiteResearchResult) => {
+const normalizeCtaText = (value: string) => value
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-z0-9]+/gi, " ")
+  .toLowerCase()
+  .trim();
+
+const ctaMentionsSelectedProduct = (ctaLine: string, selectedProductTitle?: string) => {
+  const product = normalizeCtaText(selectedProductTitle || "");
+  return !product || normalizeCtaText(ctaLine).includes(product);
+};
+
+const resolveCtaLine = (
+  value: unknown,
+  research: StoredWebsiteResearchResult,
+  selectedProductTitle?: string,
+) => {
   const candidate = cleanText(value, 180);
   try {
     assertCtaLineShape(candidate);
+    if (!ctaMentionsSelectedProduct(candidate, selectedProductTitle)) {
+      throw new Error("3D Breakdown CTA must name the selected product.");
+    }
     return candidate;
   } catch {
-    const fallback = buildDeterministicCtaLine(research);
+    const fallback = buildDeterministicCtaLine(research, selectedProductTitle);
     assertCtaLineShape(fallback);
     return fallback;
   }
@@ -487,6 +514,7 @@ const parseStyleBScriptPlanOutput = (
   evidenceItems: ThreeDBreakdownEvidenceItem[],
   research: StoredWebsiteResearchResult,
   selectedStoryDirection?: ThreeDBreakdownStoryDirection | null,
+  storySubject?: ThreeDBreakdownResolvedStorySubject,
 ): ThreeDBreakdownLockedStyleBScript => {
   const parsed = parseJsonObject(raw);
   if (parsed.visualStyle !== "presenter-teardown-vsl") {
@@ -501,7 +529,8 @@ const parseStyleBScriptPlanOutput = (
     const allowedEvidenceIds = evidenceItems.map((item) => item.evidenceIndex).join(", ");
     throw new Error(`3D Breakdown Style B script plan references invalid evidence; use one of: ${allowedEvidenceIds}.`);
   }
-  const ctaLine = resolveCtaLine(parsed.ctaLine, research);
+  const selectedProductTitle = storySubject?.kind === "product" ? storySubject.product?.title : undefined;
+  const ctaLine = resolveCtaLine(parsed.ctaLine, research, selectedProductTitle);
   const mechanismSummary = cleanText(parsed.mechanismSummary, 180);
   const wowMoment = cleanText(parsed.wowMoment, 220);
   const plan = {
@@ -513,7 +542,11 @@ const parseStyleBScriptPlanOutput = (
     // creative requirements while keeping one omitted redundant label from blocking the user.
     visualMetaphor: cleanText(parsed.visualMetaphor, 160) || wowMoment || mechanismSummary,
     referenceScript: parseReferenceScript(parsed.referenceScript, "presenter-teardown-vsl", evidence, evidenceItems) || "",
-    scriptBeats: parseScriptBeats(parsed.scriptBeats, ctaLine),
+    scriptBeats: parseScriptBeats(parsed.scriptBeats, ctaLine).map((beat) => (
+      beat.role === "punchline" && !ctaMentionsSelectedProduct(beat.narration, selectedProductTitle)
+        ? { ...beat, narration: ctaLine }
+        : beat
+    )),
     ctaLine,
     evidenceIndex,
     evidenceUseType: evidence.evidenceUseType,
@@ -1088,7 +1121,13 @@ export async function generateThreeDBreakdownVariantsFromResearch(
       responseChars: scriptRaw.length,
     });
     try {
-      lockedStyleBScript = parseStyleBScriptPlanOutput(scriptRaw, directorEvidenceItems, research, selectedStoryDirection);
+      lockedStyleBScript = parseStyleBScriptPlanOutput(
+        scriptRaw,
+        directorEvidenceItems,
+        research,
+        selectedStoryDirection,
+        resolvedStorySubject,
+      );
     } catch (error) {
       console.warn("[wiggly:3d-breakdown] style-b-script:parse:retry", {
         elapsedMs: Date.now() - startedAt,
@@ -1109,7 +1148,13 @@ export async function generateThreeDBreakdownVariantsFromResearch(
         elapsedMs: Date.now() - startedAt,
         responseChars: retryRaw.length,
       });
-      lockedStyleBScript = parseStyleBScriptPlanOutput(retryRaw, directorEvidenceItems, research, selectedStoryDirection);
+      lockedStyleBScript = parseStyleBScriptPlanOutput(
+        retryRaw,
+        directorEvidenceItems,
+        research,
+        selectedStoryDirection,
+        resolvedStorySubject,
+      );
     }
     console.log("[wiggly:3d-breakdown] style-b-script:ready", {
       elapsedMs: Date.now() - startedAt,

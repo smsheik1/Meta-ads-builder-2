@@ -23,21 +23,37 @@ const isUsableBuyerCta = (value: string) => (
   buyerActionPattern.test(value) && !unusableCtaPattern.test(value)
 );
 
+const normalizeCtaText = (value: string) => value
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-z0-9]+/gi, " ")
+  .toLowerCase()
+  .trim();
+
+const ctaMentionsProduct = (cta: string, productTitle?: string) => {
+  const product = normalizeCtaText(productTitle || "");
+  return !product || normalizeCtaText(cta).includes(product);
+};
+
 export const selectThreeDBreakdownBuyerCta = ({
   generatedCta,
   siteCta,
   productTitle,
   brandName,
+  requireProductTitle = false,
 }: {
   generatedCta?: string;
   siteCta?: string;
   productTitle?: string;
   brandName: string;
+  requireProductTitle?: boolean;
 }) => {
   const candidates = [generatedCta, siteCta]
     .map(cleanCtaText)
     .filter(Boolean);
-  const supportedCta = candidates.find(isUsableBuyerCta);
+  const supportedCta = candidates.find((candidate) => (
+    isUsableBuyerCta(candidate) && (!requireProductTitle || ctaMentionsProduct(candidate, productTitle))
+  ));
   if (supportedCta) return supportedCta;
 
   const subject = cleanCtaText(productTitle) || cleanCtaText(brandName) || "this product";
@@ -201,6 +217,7 @@ export function createThreeDBreakdownAdScene({
     siteCta: research.brandBrief.ctaDirection,
     productTitle: productAnchor?.title,
     brandName: research.brand.name,
+    requireProductTitle: storySubject?.kind === "product",
   });
   if (!variant.storyboardBoard.frames?.length) throw new Error("3D Breakdown storyboard frames are missing.");
   const storyContract: ThreeDBreakdownAdScene["layout"]["storyContract"] = {

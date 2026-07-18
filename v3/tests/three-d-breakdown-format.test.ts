@@ -509,6 +509,13 @@ assert.equal(selectThreeDBreakdownBuyerCta({
   productTitle: "Grüns",
   brandName: "Grüns",
 }), "Get your daily Grüns.");
+assert.equal(selectThreeDBreakdownBuyerCta({
+  generatedCta: "Try Therabody skincare today.",
+  siteCta: "Shop Therabody recovery devices.",
+  productTitle: "Theragun PRO Plus",
+  brandName: "Therabody",
+  requireProductTitle: true,
+}), "Shop Theragun PRO Plus", "A product-selected 3D Breakdown CTA must not drift to another brand category.");
 
 const merchOnlySupplementResearch = makeResearch({
   websiteUrl: "https://gruns.co/",
@@ -1824,6 +1831,24 @@ const massageGunResult = await generateThreeDBreakdownVariantsFromResearch(massa
   })])),
 });
 assert.equal(massageGunResult.variants.length, 1, "Massage gun products must not be confused with restricted weapon verticals.");
+const selectedMassageGunScene = createThreeDBreakdownAdScene({
+  candidateIndex: 0,
+  evidenceItems: [massageGunEvidence],
+  generationBatchId: "batch_selected_theragun",
+  model: "test-model",
+  provider: "nvidia-nim",
+  research: massageGunResearch,
+  siteContract: generated.siteContract,
+  storySubject: { kind: "product", productHandle: "theragun-pro-plus" },
+  variant: makeVariant({
+    ctaLine: "Try Therabody skincare today.",
+    evidenceIndex: massageGunEvidence.evidenceIndex,
+    evidenceUseType: massageGunEvidence.evidenceUseType,
+    punchline: "Try Therabody skincare today.",
+    visualStyle: "presenter-teardown-vsl",
+  }),
+});
+assert.equal(selectedMassageGunScene.creative.ctaText, "Shop Theragun PRO Plus");
 
 let retryCalls = 0;
 let retryPrompt = "";
