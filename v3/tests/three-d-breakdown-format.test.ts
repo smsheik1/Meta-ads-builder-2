@@ -1174,6 +1174,7 @@ const selectedStoryLock = {
   ctaLine: "Shop memorable cookie gifts from David's Cookies.",
 };
 const selectedScriptPlan = styleBScriptPlanPayload(selectedStoryLock);
+selectedScriptPlan.referenceScript = `${selectedScriptPlan.referenceScript} Time compression shortens the manual routine.`;
 const selectedVisualPayload = payloadWithVariants([makeVariant({
   ...selectedStoryLock,
   visualStyle: "presenter-teardown-vsl",

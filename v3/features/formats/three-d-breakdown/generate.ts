@@ -380,11 +380,13 @@ const assertReferenceScriptGrounding = (
     .split(/(?<=[.!?])\s+/)
     .filter((sentence) => !falseClassificationPattern.test(sentence))
     .join(" ");
+  // "Time compression" is a narrative shorthand for a shorter routine, not a product mechanism.
+  const factualScriptWithoutTimeCompression = factualScript.replace(/\btime[- ]compression\b/gi, "");
   for (const [term, pattern] of unsupportedMechanismTerms) {
     if (arrivalContextEvidenceTypes.has(evidence.evidenceUseType) && logisticsContextTerms.has(term)) continue;
     if (term === "compression" && evidenceSupportsCompressionMetaphor) continue;
     if (term === "oven aroma" && /\b(fresh|fresh[- ]baked|tasted|homemade)\b/i.test(evidenceText)) continue;
-    if (pattern.test(factualScript) && !pattern.test(evidenceText)) {
+    if (pattern.test(factualScriptWithoutTimeCompression) && !pattern.test(evidenceText)) {
       throw new Error(`3D Breakdown Style B referenceScript invented product mechanism details not supported by evidence: ${term}.`);
     }
   }
