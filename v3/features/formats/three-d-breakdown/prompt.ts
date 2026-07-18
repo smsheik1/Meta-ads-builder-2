@@ -10,7 +10,7 @@ import {
 export const THREE_D_BREAKDOWN_VARIANT_COUNT = 2;
 export const THREE_D_BREAKDOWN_MAX_TOKENS = 4000;
 // The locked script plan is compact JSON; a lower cap keeps GLM from spending the full director window on prose.
-export const THREE_D_STYLE_B_SCRIPT_MAX_TOKENS = 1600;
+export const THREE_D_STYLE_B_SCRIPT_MAX_TOKENS = 1200;
 export const THREE_D_BREAKDOWN_DURATION_MS = 20_000;
 export const THREE_D_BREAKDOWN_LEGACY_DURATION_MS = 21_000;
 export const THREE_D_MIN_SCRIPT_WORDS = 45;
@@ -500,6 +500,8 @@ ${selectedEvidence ? JSON.stringify({
   possibleRevealPatterns: selectedEvidence.possibleRevealPatterns,
 }) : "Selected evidence must be found in the Evidence items list."}
 Use this chosen card as the script premise. Return exactly evidenceIndex ${selectedStoryDirection.evidenceIndex} and evidenceUseType "${selectedStoryDirection.evidenceUseType}". Do not choose a different evidence ID, even if another item looks more visual. Other evidence may support wording, but the selected evidence is the spine.` : ""}
+
+${selectedStoryDirection ? "Selected product hard boundary: do not borrow a product category, mechanism, or outcome from any other product in the catalog. Do not use compression, sleep, inflammation, flexibility, strength, power, pain relief, or recovery-result language unless the selected evidence explicitly contains that exact claim." : ""}
 
 Return JSON only:
 {

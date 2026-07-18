@@ -1150,6 +1150,7 @@ assert.ok(selectedDirectionPrompt.includes("Selected story direction:"));
 assert.ok(selectedDirectionPrompt.includes(selectedStoryDirection.hookLine));
 assert.ok(selectedStyleBScriptPrompt.includes("Selected story direction:"));
 assert.ok(selectedStyleBScriptPrompt.includes(selectedStoryDirection.adAngle));
+assert.ok(selectedStyleBScriptPrompt.includes("Selected product hard boundary:"));
 
 let selectedDirectionCalls = 0;
 const selectedStoryLock = {
