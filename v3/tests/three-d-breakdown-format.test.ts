@@ -1220,6 +1220,43 @@ assert.ok(
   "Returned story cards must keep the cold attachment visibly separate.",
 );
 
+const invalidReleaseTheragunSlate = {
+  ...qualifiedTheragunSlate,
+  directions: qualifiedTheragunSlate.directions.map((direction, index) => index === 0
+    ? {
+        ...direction,
+        hookLine: "Why does Theragun PRO Plus release a recovery signal?",
+        visualEngine: "Theragun PRO Plus releases five recovery signals through its head.",
+      }
+    : direction),
+};
+let releaseMechanismStorySlateCalls = 0;
+const releaseMechanismStorySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(separatelySoldTheragunResearch, {
+  nvidiaNimApiKey: "test-key",
+  storySubject: { kind: "product", productHandle: "theragun-pro-plus" },
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    releaseMechanismStorySlateCalls += 1;
+    if (releaseMechanismStorySlateCalls === 2) {
+      assert.match(directorPrompt, /remove that factual mechanism entirely/i);
+      assert.match(directorPrompt, /describing a product as "releasing" something/i);
+    }
+    return JSON.stringify(releaseMechanismStorySlateCalls === 1
+      ? invalidReleaseTheragunSlate
+      : qualifiedTheragunSlate);
+  },
+});
+assert.equal(releaseMechanismStorySlateCalls, 2, "An invented release mechanism must use the one slate retry.");
+assert.ok(
+  releaseMechanismStorySlate.directions.every((direction) => !/\breleas(?:e|es|ed|ing)\b/i.test([
+    direction.hookLine,
+    direction.subheadline,
+    direction.shortSummary,
+    direction.adAngle,
+    direction.visualEngine,
+  ].join(" "))),
+  "The corrected story slate must remove unsupported release language.",
+);
+
 let storySlateCalls = 0;
 const storySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
   nvidiaNimApiKey: "test-key",

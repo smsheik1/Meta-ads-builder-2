@@ -572,7 +572,8 @@ The previous story slate failed validation. Return corrected JSON only.
 Validation errors:
 ${JSON.stringify(validationErrors, null, 2)}
 
-Fix only the story directions. Do not write scripts, storyboard frames, image prompts, animation prompts, voiceover, or captions. Use only evidence IDs from the provided evidence list.`;
+Fix only the story directions. Do not write scripts, storyboard frames, image prompts, animation prompts, voiceover, or captions. Use only evidence IDs from the provided evidence list.
+When a validation error says a mechanism was invented, remove that factual mechanism entirely. Do not substitute a loose synonym, such as describing a product as "releasing" something, unless that action appears in its selected evidence.`;
 }
 
 export function buildThreeDBreakdownRetryPrompt({
