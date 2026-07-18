@@ -173,6 +173,7 @@ assert.ok(
   createClientSource.includes("const [threeDStorySubject") &&
     createClientSource.includes("threeDStorySubject: storySubject") &&
     createClientSource.includes("if (!options.threeDStorySubject)") &&
+    createClientSource.includes('if (selectedAdFormat === "three-d-breakdown") {\n        resetThreeDStoryDirections();\n        await generateScenesOnly({') &&
     createClientSource.includes('if (research.result) {\n      rememberResearchForReuse(research.result);\n      setResult(research.result);\n      setUrl(research.result.websiteUrl);\n    }\n    if (format === "three-d-breakdown" && !options.threeDStoryDirection)') &&
     quickActionsSource.includes("CreateThreeDBreakdownSubjectPicker") &&
     quickActionsSource.includes("showThreeDStorySubjectPicker") &&

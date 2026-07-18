@@ -2449,6 +2449,7 @@ function ResearchConnected() {
         return;
       }
       if (selectedAdFormat === "three-d-breakdown") {
+        resetThreeDStoryDirections();
         await generateScenesOnly({
           researchRunId: nextResult.researchRunId,
           facts: getWebsiteSubmitProgressFacts(nextResult),
