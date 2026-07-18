@@ -1280,6 +1280,22 @@ assert.equal(storySlate.recommendedDirectionId, "idea-1");
 assert.equal(storySlate.directions[0]?.evidenceUseType, reviewEvidence.evidenceUseType);
 assert.ok(storySlate.directions[0]?.visualEngine.includes("Proof blocks"));
 
+let missingWhyCompellingCalls = 0;
+const missingWhyCompellingSlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => {
+    missingWhyCompellingCalls += 1;
+    return JSON.stringify({
+      ...storyDirectionPayload,
+      directions: storyDirectionPayload.directions.map((direction, index) => (
+        index === 1 ? { ...direction, whyCompelling: "" } : direction
+      )),
+    });
+  },
+});
+assert.equal(missingWhyCompellingCalls, 1, "A missing explanatory card detail must not spend the one story-slate retry.");
+assert.match(missingWhyCompellingSlate.directions[1]?.whyCompelling || "", /makes the product difference visible/i);
+
 let deliveryTensionStorySlateCalls = 0;
 await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
   nvidiaNimApiKey: "test-key",

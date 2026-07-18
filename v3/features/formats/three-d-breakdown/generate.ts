@@ -493,15 +493,16 @@ const parseStoryDirectionSlateOutput = (
       throw new Error(`3D Breakdown story direction ${index + 1} references invalid evidence.`);
     }
     const possibleRevealPatterns = parseRevealPatternArray(rawDirection.possibleRevealPatterns, `story direction ${index + 1} possibleRevealPatterns`);
+    const visualEngine = cleanText(rawDirection.visualEngine, 260);
     const parsedDirection: ThreeDBreakdownStoryDirection = {
       directionId,
       hookLine: cleanText(rawDirection.hookLine, 160),
       subheadline: cleanText(rawDirection.subheadline, 120),
       shortSummary: cleanText(rawDirection.shortSummary, 600),
       category: cleanText(rawDirection.category, 80),
-      whyCompelling: cleanText(rawDirection.whyCompelling, 300),
+      whyCompelling: cleanText(rawDirection.whyCompelling, 300) || `${visualEngine} makes the product difference visible.`,
       adAngle: cleanText(rawDirection.adAngle, 180),
-      visualEngine: cleanText(rawDirection.visualEngine, 260),
+      visualEngine,
       evidenceIndex,
       evidenceUseType: evidence.evidenceUseType,
       possibleRevealPatterns: possibleRevealPatterns.length ? possibleRevealPatterns : evidence.possibleRevealPatterns,
