@@ -9,6 +9,8 @@ import {
 
 export const THREE_D_BREAKDOWN_VARIANT_COUNT = 2;
 export const THREE_D_BREAKDOWN_MAX_TOKENS = 4000;
+// The locked script plan is compact JSON; a lower cap keeps GLM from spending the full director window on prose.
+export const THREE_D_STYLE_B_SCRIPT_MAX_TOKENS = 1600;
 export const THREE_D_BREAKDOWN_DURATION_MS = 20_000;
 export const THREE_D_BREAKDOWN_LEGACY_DURATION_MS = 21_000;
 export const THREE_D_MIN_SCRIPT_WORDS = 45;

@@ -22,6 +22,7 @@ import {
   buildThreeDBreakdownStoryDirectionsPrompt,
   buildThreeDBreakdownStyleBScriptPrompt,
   THREE_D_BREAKDOWN_MAX_TOKENS,
+  THREE_D_STYLE_B_SCRIPT_MAX_TOKENS,
   THREE_D_BREAKDOWN_DURATION_MS,
   THREE_D_BREAKDOWN_VARIANT_COUNT,
 } from "../features/formats/three-d-breakdown/prompt";
@@ -1269,14 +1270,14 @@ const productionDirectionResult = await generateThreeDBreakdownVariantsFromResea
 assert.equal(productionDirectionCalls, 3);
 assert.equal(productionDirectionResult.variants[0]?.referenceScript, selectedScriptPlan.referenceScript);
 
-let observedMaxTokens: number | undefined;
+const observedMaxTokens: number[] = [];
 let observedDirectorCalls = 0;
 const generated = await generateThreeDBreakdownVariantsFromResearch(research, {
   nvidiaNimApiKey: "test-key",
   nvidiaNimBaseUrl: "https://nim.test/v1",
   nvidiaNimModel: "test-3d-breakdown",
   nvidiaNimChatCompletion: async ({ maxTokens, prompt: directorPrompt }) => {
-    observedMaxTokens = maxTokens;
+    observedMaxTokens.push(maxTokens || 0);
     observedDirectorCalls += 1;
     if (directorPrompt.includes("Wiggly Style B Script Director")) {
       return JSON.stringify(styleBScriptPlanPayload());
@@ -1286,7 +1287,7 @@ const generated = await generateThreeDBreakdownVariantsFromResearch(research, {
     return JSON.stringify(mainPayload);
   },
 });
-assert.equal(observedMaxTokens, 4000);
+assert.deepEqual(observedMaxTokens, [THREE_D_STYLE_B_SCRIPT_MAX_TOKENS, THREE_D_BREAKDOWN_MAX_TOKENS]);
 assert.equal(observedDirectorCalls, 2);
 assert.equal(generated.variants.length, 2);
 assert.equal(generated.variants[0]?.visualStyle, "toy-character-vsl");

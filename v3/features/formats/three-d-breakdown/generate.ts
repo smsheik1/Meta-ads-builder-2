@@ -31,6 +31,7 @@ import {
   THREE_D_MIN_SCRIPT_WORDS,
   THREE_D_REVEAL_PATTERNS,
   THREE_D_SCRIPT_BEATS,
+  THREE_D_STYLE_B_SCRIPT_MAX_TOKENS,
   THREE_D_SHOT_CONTRACT,
   THREE_D_VISUAL_STYLES,
   type ThreeDBreakdownLockedStyleBScript,
@@ -1120,11 +1121,11 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     elapsedMs: Date.now() - startedAt,
     requestedCount,
   });
-  const callDirector = (directorPrompt: string) => callNvidiaNimChat({
+  const callDirector = (directorPrompt: string, maxTokens = THREE_D_BREAKDOWN_MAX_TOKENS) => callNvidiaNimChat({
     apiKey: nvidiaNimApiKey,
     baseUrl: nvidiaNimBaseUrl,
     label: "NVIDIA NIM 3D Breakdown director",
-    maxTokens: THREE_D_BREAKDOWN_MAX_TOKENS,
+    maxTokens,
     model: nvidiaNimModel,
     nvidiaNimChatCompletion,
     prompt: directorPrompt,
@@ -1144,7 +1145,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
       elapsedMs: Date.now() - startedAt,
       timeoutMs: DEFAULT_TIMEOUT_MS,
     });
-    const scriptRaw = await callDirector(scriptPrompt);
+    const scriptRaw = await callDirector(scriptPrompt, THREE_D_STYLE_B_SCRIPT_MAX_TOKENS);
     console.log("[wiggly:3d-breakdown] style-b-script:call:ready", {
       attempt: "initial",
       elapsedMs: Date.now() - startedAt,
@@ -1172,7 +1173,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
         elapsedMs: Date.now() - startedAt,
         timeoutMs: DEFAULT_TIMEOUT_MS,
       });
-      const retryRaw = await callDirector(retryPrompt);
+      const retryRaw = await callDirector(retryPrompt, THREE_D_STYLE_B_SCRIPT_MAX_TOKENS);
       console.log("[wiggly:3d-breakdown] style-b-script:call:ready", {
         attempt: "retry",
         elapsedMs: Date.now() - startedAt,
