@@ -1125,10 +1125,14 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     elapsedMs: Date.now() - startedAt,
     requestedCount,
   });
-  const callDirector = (directorPrompt: string, maxTokens = THREE_D_BREAKDOWN_MAX_TOKENS) => callNvidiaNimChat({
+  const callDirector = (
+    directorPrompt: string,
+    maxTokens = THREE_D_BREAKDOWN_MAX_TOKENS,
+    label = "NVIDIA NIM 3D Breakdown director",
+  ) => callNvidiaNimChat({
     apiKey: nvidiaNimApiKey,
     baseUrl: nvidiaNimBaseUrl,
-    label: "NVIDIA NIM 3D Breakdown director",
+    label,
     maxTokens,
     model: nvidiaNimModel,
     nvidiaNimChatCompletion,
@@ -1149,7 +1153,11 @@ export async function generateThreeDBreakdownVariantsFromResearch(
       elapsedMs: Date.now() - startedAt,
       timeoutMs: DEFAULT_TIMEOUT_MS,
     });
-    const scriptRaw = await callDirector(scriptPrompt, THREE_D_STYLE_B_SCRIPT_MAX_TOKENS);
+    const scriptRaw = await callDirector(
+      scriptPrompt,
+      THREE_D_STYLE_B_SCRIPT_MAX_TOKENS,
+      "NVIDIA NIM 3D Breakdown script director",
+    );
     console.log("[wiggly:3d-breakdown] style-b-script:call:ready", {
       attempt: "initial",
       elapsedMs: Date.now() - startedAt,
@@ -1177,7 +1185,11 @@ export async function generateThreeDBreakdownVariantsFromResearch(
         elapsedMs: Date.now() - startedAt,
         timeoutMs: DEFAULT_TIMEOUT_MS,
       });
-      const retryRaw = await callDirector(retryPrompt, THREE_D_STYLE_B_SCRIPT_MAX_TOKENS);
+      const retryRaw = await callDirector(
+        retryPrompt,
+        THREE_D_STYLE_B_SCRIPT_MAX_TOKENS,
+        "NVIDIA NIM 3D Breakdown script director",
+      );
       console.log("[wiggly:3d-breakdown] style-b-script:call:ready", {
         attempt: "retry",
         elapsedMs: Date.now() - startedAt,
@@ -1213,7 +1225,13 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     elapsedMs: Date.now() - startedAt,
     timeoutMs: DEFAULT_TIMEOUT_MS,
   });
-  const raw = await callDirector(prompt, visualPlanMaxTokens);
+  const raw = await callDirector(
+    prompt,
+    visualPlanMaxTokens,
+    selectedStoryDirection
+      ? "NVIDIA NIM 3D Breakdown visual planner"
+      : "NVIDIA NIM 3D Breakdown director",
+  );
   console.log("[wiggly:3d-breakdown] director:call:ready", {
     attempt: "initial",
     elapsedMs: Date.now() - startedAt,
@@ -1236,7 +1254,13 @@ export async function generateThreeDBreakdownVariantsFromResearch(
       elapsedMs: Date.now() - startedAt,
       timeoutMs: DEFAULT_TIMEOUT_MS,
     });
-    const retryRaw = await callDirector(retryPrompt, visualPlanMaxTokens);
+    const retryRaw = await callDirector(
+      retryPrompt,
+      visualPlanMaxTokens,
+      selectedStoryDirection
+        ? "NVIDIA NIM 3D Breakdown visual planner"
+        : "NVIDIA NIM 3D Breakdown director",
+    );
     console.log("[wiggly:3d-breakdown] director:call:ready", {
       attempt: "retry",
       elapsedMs: Date.now() - startedAt,
