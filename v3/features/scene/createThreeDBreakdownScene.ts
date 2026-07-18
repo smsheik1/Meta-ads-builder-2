@@ -3,6 +3,7 @@ import type { ThreeDBreakdownEvidenceItem } from "../formats/three-d-breakdown/e
 import { THREE_D_BREAKDOWN_DURATION_MS } from "../formats/three-d-breakdown/prompt";
 import { createThreeDClipPlans } from "../formats/three-d-breakdown/storyboardContracts";
 import type { ProductCatalogItem, StoredWebsiteResearchResult } from "../research/types";
+import type { ThreeDBreakdownStorySubject } from "../formats/three-d-breakdown/storySubject";
 import { pickSceneAccentColor } from "./createVisualizerScene";
 import {
   AD_SCENE_VERSION,
@@ -126,7 +127,18 @@ const scoreProductHeroCandidate = (
 
 export const selectThreeDBreakdownProductAnchor = (
   research: StoredWebsiteResearchResult,
+  selectedProductHandle?: string,
 ): ThreeDBreakdownAdScene["layout"]["productAnchor"] => {
+  if (selectedProductHandle) {
+    const selected = (research.productCatalog?.products || []).find((product) => product.handle === selectedProductHandle);
+    if (!selected?.imageUrl) return undefined;
+    return {
+      title: selected.title,
+      url: selected.url,
+      imageUrl: selected.imageUrl,
+      imageAlt: selected.imageAlt,
+    };
+  }
   const scoredProducts = (research.productCatalog?.products || [])
     .map((product, index) => ({
       product,
@@ -154,6 +166,7 @@ export function createThreeDBreakdownAdScene({
   provider,
   research,
   siteContract,
+  storySubject,
   variant,
 }: {
   candidateIndex: number;
@@ -164,12 +177,16 @@ export function createThreeDBreakdownAdScene({
   provider: ThreeDBreakdownAdScene["metadata"]["provider"];
   research: StoredWebsiteResearchResult;
   siteContract: ThreeDBreakdownSiteContract;
+  storySubject?: ThreeDBreakdownStorySubject | null;
   variant: ThreeDBreakdownVariant;
 }): ThreeDBreakdownAdScene {
   const evidence = evidenceItems.find((item) => item.evidenceIndex === variant.evidenceIndex);
   if (!evidence) throw new Error("3D Breakdown evidence item is missing.");
   const accentColor = pickSceneAccentColor(research.brand.colors);
-  const productAnchor = selectThreeDBreakdownProductAnchor(research);
+  const productAnchor = selectThreeDBreakdownProductAnchor(
+    research,
+    storySubject?.kind === "product" ? storySubject.productHandle : undefined,
+  );
   if (variant.visualStyle === "presenter-teardown-vsl" && !productAnchor?.imageUrl) {
     throw new Error(missingProductImageMessage);
   }

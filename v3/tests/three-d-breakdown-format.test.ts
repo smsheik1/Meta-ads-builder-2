@@ -11,6 +11,7 @@ import {
   THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID,
 } from "../features/audio/fishStudio";
 import { extractThreeDBreakdownEvidence } from "../features/formats/three-d-breakdown/evidence";
+import { resolveThreeDBreakdownStorySubject } from "../features/formats/three-d-breakdown/storySubject";
 import {
   generateThreeDBreakdownStoryDirectionsFromResearch,
   generateThreeDBreakdownVariantsFromResearch,
@@ -304,6 +305,16 @@ const grunsProductResearch = makeResearch({
   },
 });
 assert.equal(selectThreeDBreakdownProductAnchor(grunsProductResearch)?.title, "Grüns Daily Nutrition Gummies");
+assert.equal(
+  selectThreeDBreakdownProductAnchor(grunsProductResearch, "daily-gummies")?.title,
+  "Grüns Daily Nutrition Gummies",
+  "A selected 3D product must win over the automatic hero scorer.",
+);
+assert.equal(
+  resolveThreeDBreakdownStorySubject(grunsProductResearch, { kind: "product", productHandle: "daily-gummies" }).product?.title,
+  "Grüns Daily Nutrition Gummies",
+  "The story subject must resolve the exact catalog product before story generation.",
+);
 assert.equal(extractThreeDProductUseImageUrl(`
   <img src="/hero-pouch.webp" alt="Grüns 28 daily packs">
   <img src="/clinical-chart.webp" alt="Clinical study chart">

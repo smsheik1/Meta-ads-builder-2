@@ -25,6 +25,7 @@ import {
 import { DEFAULT_JINGLE_STYLE_ID, JINGLE_STYLES, type JingleStyleId } from "@/features/formats/jingle/prompt";
 import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
 import type { ThreeDBreakdownStoryDirection } from "@/features/formats/three-d-breakdown/storyDirections";
+import type { ThreeDBreakdownStorySubject } from "@/features/formats/three-d-breakdown/storySubject";
 import {
   getDefaultReviewProductHandles,
   normalizeReviewProductHandles,
@@ -509,6 +510,7 @@ function ResearchConnected() {
   const [threeDStoryDirectionError, setThreeDStoryDirectionError] = useState("");
   const [threeDStoryDirections, setThreeDStoryDirections] = useState<ThreeDBreakdownStoryDirection[]>([]);
   const [selectedThreeDStoryDirectionId, setSelectedThreeDStoryDirectionId] = useState("");
+  const [threeDStorySubject, setThreeDStorySubject] = useState<ThreeDBreakdownStorySubject | null>(null);
   const [threeDImageBusyIndex, setThreeDImageBusyIndex] = useState<number | null>(null);
   const [threeDClipBusyIndex, setThreeDClipBusyIndex] = useState<number | null>(null);
   const [productPhotoshootStatus, setProductPhotoshootStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -848,6 +850,7 @@ function ResearchConnected() {
     setThreeDStoryDirectionError("");
     setThreeDStoryDirections([]);
     setSelectedThreeDStoryDirectionId("");
+    setThreeDStorySubject(null);
   };
 
   const resetProductPhotoshootState = () => {
@@ -1318,6 +1321,7 @@ function ResearchConnected() {
     jingleStyleId: JingleStyleId = selectedJingleStyleId,
     reviewProductHandles: string[] = [],
     threeDStoryDirection?: ThreeDBreakdownStoryDirection,
+    threeDStorySubject?: ThreeDBreakdownStorySubject,
   ) => {
     const generationArgs = {
       researchRunId,
@@ -1329,6 +1333,7 @@ function ResearchConnected() {
       ...(format === "jingle" ? { jingleStyleId } : {}),
       ...(format === "reviews" || format === "motion-story" ? { selectedProductHandles: normalizeReviewProductHandles(reviewProductHandles) } : {}),
       ...(format === "three-d-breakdown" && threeDStoryDirection ? { threeDStoryDirection } : {}),
+      ...(format === "three-d-breakdown" && threeDStorySubject ? { threeDStorySubject } : {}),
     };
     const startedAt = Date.now();
     console.info("[wiggly:ad-generation] client:start", {
@@ -2091,7 +2096,10 @@ function ResearchConnected() {
     // TODO(analytics): creative_pack_completed or creative_pack_cancelled.
   };
 
-  const generateThreeDStoryDirectionSlate = async (research: ReusableResearch) => {
+  const generateThreeDStoryDirectionSlate = async (
+    research: ReusableResearch,
+    storySubject: ThreeDBreakdownStorySubject,
+  ) => {
     if (research.result) {
       rememberResearchForReuse(research.result);
       setResult(research.result);
@@ -2119,6 +2127,7 @@ function ResearchConnected() {
     try {
       const slate = await generateThreeDStoryDirections({
         researchRunId: research.researchRunId as Id<"researchRuns">,
+        storySubject,
       }) as ThreeDStoryDirectionsResponse;
       const directions = slate.directions || [];
       if (!directions.length) throw new Error("3D Breakdown story direction generation returned no cards.");
@@ -2152,16 +2161,28 @@ function ResearchConnected() {
     research: ReusableResearch,
     format: AdFormatId,
     videoMemeTemplateId: VideoMemeTemplateId = selectedVideoMemeTemplateId,
-    options: { jingleStyleId?: JingleStyleId; loadingNote?: string; note?: string; threeDStoryDirection?: ThreeDBreakdownStoryDirection } = {},
+    options: { jingleStyleId?: JingleStyleId; loadingNote?: string; note?: string; threeDStoryDirection?: ThreeDBreakdownStoryDirection; threeDStorySubject?: ThreeDBreakdownStorySubject } = {},
   ) => {
-    if (format === "three-d-breakdown" && !options.threeDStoryDirection) {
-      await generateThreeDStoryDirectionSlate(research);
-      return;
-    }
     if (research.result) {
       rememberResearchForReuse(research.result);
       setResult(research.result);
       setUrl(research.result.websiteUrl);
+    }
+    if (format === "three-d-breakdown" && !options.threeDStoryDirection) {
+      if (!options.threeDStorySubject) {
+        setAdScenes([]);
+        setSceneIds([]);
+        setSelectedScene(null);
+        setSelectedSceneIndex(0);
+        setStatus("ready");
+        setAdStatus("ready");
+        setAdStatusNote("Choose what this 3D Breakdown should be about before Wiggly writes the five concepts.");
+        clearSubmitProgress();
+        canvasActions.finishBusy();
+        return;
+      }
+      await generateThreeDStoryDirectionSlate(research, options.threeDStorySubject);
+      return;
     }
     setStatus("ready");
     setAdStatus("loading");
@@ -2195,6 +2216,7 @@ function ResearchConnected() {
         options.jingleStyleId || selectedJingleStyleId,
         reviewProductHandles,
         options.threeDStoryDirection,
+        options.threeDStorySubject,
       );
       setProgressStage("preparing-canvas");
       applyGeneratedScenes(nextGeneration.scenes, nextGeneration.sceneIds, {
@@ -2427,11 +2449,11 @@ function ResearchConnected() {
         return;
       }
       if (selectedAdFormat === "three-d-breakdown") {
-        await generateThreeDStoryDirectionSlate({
+        await generateScenesOnly({
           researchRunId: nextResult.researchRunId,
           facts: getWebsiteSubmitProgressFacts(nextResult),
           result: nextResult,
-        });
+        }, "three-d-breakdown");
         return;
       }
       setPendingProgressFacts(getWebsiteSubmitProgressFacts(nextResult));
@@ -3058,7 +3080,7 @@ function ResearchConnected() {
   };
 
   const selectedThreeDScene = selectedScene?.format === "three-d-breakdown" ? selectedScene : null;
-  const showThreeDStoryDirectionStage = selectedAdFormat === "three-d-breakdown" && (
+  const showThreeDStoryDirectionStage = selectedAdFormat === "three-d-breakdown" && status !== "loading" && Boolean(result?.researchRunId) && (
     !selectedThreeDScene
     || threeDStoryDirectionStatus !== "idle"
     || threeDStoryDirections.length > 0
@@ -3199,7 +3221,30 @@ function ResearchConnected() {
         loadingNote: `Writing the 3D script for: ${direction.hookLine}`,
         note: "3D script ready. Generate frames only when you're ready to spend on media.",
         threeDStoryDirection: direction,
+        threeDStorySubject: threeDStorySubject || undefined,
       },
+    );
+  };
+
+  const onChooseThreeDStorySubject = (storySubject: ThreeDBreakdownStorySubject) => {
+    const reusableResearch = result?.researchRunId
+      ? {
+        researchRunId: result.researchRunId,
+        facts: getWebsiteSubmitProgressFacts(result),
+        result,
+      }
+      : getReusableResearchForUrl(url);
+    if (!reusableResearch) {
+      setThreeDStoryDirectionStatus("error");
+      setThreeDStoryDirectionError("Run website research before choosing what this 3D Breakdown is about.");
+      return;
+    }
+    setThreeDStorySubject(storySubject);
+    void generateScenesOnly(
+      reusableResearch,
+      "three-d-breakdown",
+      selectedVideoMemeTemplateId,
+      { threeDStorySubject: storySubject },
     );
   };
 
@@ -3773,9 +3818,12 @@ function ResearchConnected() {
                 threeDStoryDirectionError={threeDStoryDirectionError}
                 threeDStoryDirections={threeDStoryDirections}
                 threeDStoryDirectionStatus={threeDStoryDirectionStatus}
+                threeDStorySubject={threeDStorySubject}
                 staticPngDownloadBusy={staticPngDownloadBusy}
                 onSelectThreeDStoryDirection={setSelectedThreeDStoryDirectionId}
                 onUseThreeDStoryDirection={onUseThreeDStoryDirection}
+                onChooseThreeDStorySubject={onChooseThreeDStorySubject}
+                productCatalog={result?.productCatalog}
                 saveCounterLabel={saveCounterLabel}
                 saveError={saveError}
                 savedDesigns={savedDesignItems}

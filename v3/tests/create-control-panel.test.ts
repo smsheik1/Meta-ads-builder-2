@@ -8,6 +8,7 @@ const createDialogueModalSource = readFileSync("app/create/CreateDialogueModal.t
 const createLeftColumnSource = readFileSync("app/create/CreateLeftColumn.tsx", "utf8");
 const canvasColumnSource = readFileSync("app/create/CreateCanvasColumn.tsx", "utf8");
 const reviewsProductPickerSource = readFileSync("app/create/CreateReviewsProductPicker.tsx", "utf8");
+const threeDSubjectPickerSource = readFileSync("app/create/CreateThreeDBreakdownSubjectPicker.tsx", "utf8");
 const rootLayoutSource = readFileSync("app/layout.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const remotionRootSource = readFileSync("remotion-entry/Root.tsx", "utf8");
@@ -161,6 +162,22 @@ assert.ok(
     adScenesSource.includes("export const generateThreeDStoryDirections") &&
     adScenesSource.includes("threeDStoryDirection: v.optional"),
   "3D Breakdown must show a five-card story slate before generating the script/media pipeline.",
+);
+assert.ok(
+  createClientSource.includes("const [threeDStorySubject") &&
+    createClientSource.includes("threeDStorySubject: storySubject") &&
+    createClientSource.includes("if (!options.threeDStorySubject)") &&
+    createClientSource.includes('if (research.result) {\n      rememberResearchForReuse(research.result);\n      setResult(research.result);\n      setUrl(research.result.websiteUrl);\n    }\n    if (format === "three-d-breakdown" && !options.threeDStoryDirection)') &&
+    quickActionsSource.includes("CreateThreeDBreakdownSubjectPicker") &&
+    quickActionsSource.includes("showThreeDStorySubjectPicker") &&
+    adScenesSource.includes("threeDStorySubject: v.optional") &&
+    threeDSubjectPickerSource.includes("Choose from all ") &&
+    !threeDSubjectPickerSource.includes("filteredProducts.slice(") &&
+    threeDSubjectPickerSource.includes('kind: "product"') &&
+    threeDSubjectPickerSource.includes('kind: "brand"') &&
+    threeDSubjectPickerSource.includes('kind: "customer-problem"') &&
+    threeDSubjectPickerSource.includes('kind: "custom"'),
+  "3D Breakdown must ask what the video is about before the story slate and expose the full product catalog without a hidden cap.",
 );
 assert.ok(
   createClientSource.includes('if (firstScene?.format === "three-d-breakdown") resetThreeDStoryDirections();') &&

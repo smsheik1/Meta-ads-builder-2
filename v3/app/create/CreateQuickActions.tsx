@@ -30,8 +30,11 @@ import {
 import type { SavedAdSceneDesign } from "@/features/create/savedDesigns";
 import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
 import type { ThreeDBreakdownStoryDirection } from "@/features/formats/three-d-breakdown/storyDirections";
+import type { ThreeDBreakdownStorySubject } from "@/features/formats/three-d-breakdown/storySubject";
+import type { ProductCatalog } from "@/features/research/types";
 import type { AdFormatId, ThreeDBreakdownAdScene, ThreeDBreakdownClipIndex } from "@/features/scene/types";
 import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
+import { CreateThreeDBreakdownSubjectPicker } from "./CreateThreeDBreakdownSubjectPicker";
 type SaveStatus = "idle" | "loading" | "ready" | "error";
 type BrickStoryboardStatus = "idle" | "loading" | "ready" | "error";
 type ThreeDImageGenerationMode = "storyboard" | "anchors" | "anchor-1" | "anchor-2" | "all";
@@ -98,6 +101,7 @@ export function CreateQuickActions({
   onOpenAudioPanel,
   onSaveSelectedDesign,
   onTogglePreviewPlayback,
+  productCatalog,
   audioStatus,
   playableAudioUrl,
   renderBusy,
@@ -123,9 +127,11 @@ export function CreateQuickActions({
   threeDStoryDirectionError,
   threeDStoryDirections,
   threeDStoryDirectionStatus,
+  threeDStorySubject,
   staticPngDownloadBusy,
   onSelectThreeDStoryDirection,
   onUseThreeDStoryDirection,
+  onChooseThreeDStorySubject,
   saveCounterLabel,
   saveError,
   savedDesigns,
@@ -181,9 +187,12 @@ export function CreateQuickActions({
   threeDStoryDirectionError: string;
   threeDStoryDirections: ThreeDBreakdownStoryDirection[];
   threeDStoryDirectionStatus: BrickStoryboardStatus;
+  threeDStorySubject: ThreeDBreakdownStorySubject | null;
   staticPngDownloadBusy: boolean;
   onSelectThreeDStoryDirection: (directionId: string) => void;
   onUseThreeDStoryDirection: (direction: ThreeDBreakdownStoryDirection) => void;
+  onChooseThreeDStorySubject: (subject: ThreeDBreakdownStorySubject) => void;
+  productCatalog: ProductCatalog | null | undefined;
   saveCounterLabel: string;
   saveError: string;
   savedDesigns: SavedAdSceneDesign[];
@@ -205,7 +214,8 @@ export function CreateQuickActions({
   const shareSupported = staticPngSelected || selectedFormat === "visualizer" || selectedFormat === "motion-story" || ((selectedFormat === "jingle" || selectedFormat === "brainrot") && hasPlayableAudio) || (selectedFormat === "three-d-breakdown" && hasThreeDVoiceover);
   const showBrickStoryboard = selectedFormat === "jingle";
   const showThreeDStorySlateStage = threeDStorySlateActive;
-  const showThreeDStoryDirections = showThreeDStorySlateStage && (threeDStoryDirections.length > 0 || threeDStoryDirectionStatus === "loading" || Boolean(threeDStoryDirectionError));
+  const showThreeDStorySubjectPicker = showThreeDStorySlateStage && !threeDStorySubject;
+  const showThreeDStoryDirections = showThreeDStorySlateStage && Boolean(threeDStorySubject) && (threeDStoryDirections.length > 0 || threeDStoryDirectionStatus === "loading" || Boolean(threeDStoryDirectionError));
   const showThreeDBreakdownAssembly = selectedFormat === "three-d-breakdown" && threeDScene;
   const threeDClipPlans = threeDScene?.layout.clipPlans || [];
   const threeDClipsReady = threeDClipPlans.length > 0 && threeDClipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
@@ -373,6 +383,10 @@ export function CreateQuickActions({
           onRegenerateBrickShot={onRegenerateBrickShot}
           onRegenerateBrickShotVideo={onRegenerateBrickShotVideo}
         />
+      ) : null}
+
+      {showThreeDStorySubjectPicker ? (
+        <CreateThreeDBreakdownSubjectPicker catalog={productCatalog} onContinue={onChooseThreeDStorySubject} />
       ) : null}
 
       {showThreeDStoryDirections ? (

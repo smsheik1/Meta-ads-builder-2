@@ -40,6 +40,11 @@ import type {
   ThreeDBreakdownStoryDirection,
   ThreeDBreakdownStoryDirectionSlate,
 } from "./storyDirections";
+import {
+  resolveThreeDBreakdownStorySubject,
+  type ThreeDBreakdownResolvedStorySubject,
+  type ThreeDBreakdownStorySubject,
+} from "./storySubject";
 
 export type ThreeDBreakdownSiteContract = {
   primarySiteType: ThreeDBreakdownPrimarySiteType;
@@ -77,6 +82,7 @@ export type ThreeDBreakdownGeneration = {
   model: string;
   provider: "nvidia-nim";
   providerStatus: StoredWebsiteResearchResult["providerStatus"][number];
+  storySubject: ThreeDBreakdownResolvedStorySubject;
 };
 
 export type ThreeDBreakdownStoryDirectionGeneration = ThreeDBreakdownStoryDirectionSlate & {
@@ -84,6 +90,7 @@ export type ThreeDBreakdownStoryDirectionGeneration = ThreeDBreakdownStoryDirect
   model: string;
   provider: "nvidia-nim";
   providerStatus: StoredWebsiteResearchResult["providerStatus"][number];
+  storySubject: ThreeDBreakdownResolvedStorySubject;
 };
 
 const DEFAULT_TIMEOUT_MS = 75_000;
@@ -936,11 +943,13 @@ export async function generateThreeDBreakdownStoryDirectionsFromResearch(
     nvidiaNimBaseUrl = process.env.NVIDIA_NIM_BASE_URL || DEFAULT_NVIDIA_NIM_BASE_URL,
     nvidiaNimChatCompletion,
     nvidiaNimModel = process.env.NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL || DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL,
+    storySubject,
   }: {
     nvidiaNimApiKey?: string;
     nvidiaNimBaseUrl?: string;
     nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
     nvidiaNimModel?: string;
+    storySubject?: ThreeDBreakdownStorySubject | null;
   } = {},
 ): Promise<ThreeDBreakdownStoryDirectionGeneration> {
   if (!nvidiaNimApiKey) throw new Error("NVIDIA NIM is not configured for 3D Breakdown story directions.");
@@ -950,9 +959,11 @@ export async function generateThreeDBreakdownStoryDirectionsFromResearch(
     model: nvidiaNimModel,
   });
   const { directorEvidenceItems, evidenceItems } = prepareThreeDBreakdownEvidence(research, startedAt);
+  const resolvedStorySubject = resolveThreeDBreakdownStorySubject(research, storySubject);
   const prompt = buildThreeDBreakdownStoryDirectionsPrompt({
     evidence: directorEvidenceItems,
     research,
+    storySubject: resolvedStorySubject,
   });
   const callDirector = (directorPrompt: string) => callNvidiaNimChat({
     apiKey: nvidiaNimApiKey,
@@ -994,6 +1005,7 @@ export async function generateThreeDBreakdownStoryDirectionsFromResearch(
   return {
     ...slate,
     evidenceItems,
+    storySubject: resolvedStorySubject,
     model: nvidiaNimModel,
     provider: "nvidia-nim",
     providerStatus: {
@@ -1013,6 +1025,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     nvidiaNimChatCompletion,
     nvidiaNimModel = process.env.NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL || DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL,
     selectedStoryDirection,
+    storySubject,
   }: {
     count?: number;
     nvidiaNimApiKey?: string;
@@ -1020,6 +1033,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
     nvidiaNimModel?: string;
     selectedStoryDirection?: ThreeDBreakdownStoryDirection | null;
+    storySubject?: ThreeDBreakdownStorySubject | null;
   } = {},
 ): Promise<ThreeDBreakdownGeneration> {
   if (!nvidiaNimApiKey) throw new Error("NVIDIA NIM is not configured for 3D Breakdown generation.");
@@ -1030,6 +1044,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     model: nvidiaNimModel,
   });
   const { directorEvidenceItems, evidenceItems } = prepareThreeDBreakdownEvidence(research, startedAt);
+  const resolvedStorySubject = resolveThreeDBreakdownStorySubject(research, storySubject);
   const requestedCount = selectedStoryDirection
     ? 1
     : Math.max(1, Math.min(2, Math.round(count || THREE_D_BREAKDOWN_VARIANT_COUNT)));
@@ -1051,7 +1066,12 @@ export async function generateThreeDBreakdownVariantsFromResearch(
   });
   let lockedStyleBScript: ThreeDBreakdownLockedStyleBScript | null = null;
   if (requestedCount > 1 || selectedStoryDirection) {
-    const scriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({ evidence: directorEvidenceItems, research, selectedStoryDirection });
+    const scriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({
+      evidence: directorEvidenceItems,
+      research,
+      selectedStoryDirection,
+      storySubject: resolvedStorySubject,
+    });
     console.log("[wiggly:3d-breakdown] style-b-script:call:start", {
       attempt: "initial",
       elapsedMs: Date.now() - startedAt,
@@ -1099,6 +1119,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     lockedStyleBScript,
     research,
     selectedStoryDirection,
+    storySubject: resolvedStorySubject,
   });
   console.log("[wiggly:3d-breakdown] director:call:start", {
     attempt: "initial",
@@ -1144,6 +1165,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     siteContract: parsedGeneration.siteContract,
     variants: parsedGeneration.variants,
     evidenceItems,
+    storySubject: resolvedStorySubject,
     model: nvidiaNimModel,
     provider: "nvidia-nim",
     providerStatus: {
