@@ -142,7 +142,7 @@ export function CreateThreeDBreakdownSubjectPicker({
                     <input suppressHydrationWarning value={search} onChange={(event) => setSearch(event.target.value)} className="w-full bg-transparent text-sm font-semibold text-slate-950 outline-none placeholder:text-slate-400" placeholder="Search all products" />
                   </label>
                 </div>
-                <div className="grid flex-1 grid-cols-2 gap-3 overflow-y-auto p-6 sm:grid-cols-3">
+                <div className="grid flex-1 auto-rows-max grid-cols-2 items-start gap-3 overflow-y-auto p-6 sm:grid-cols-3">
                   {filteredProducts.map((product) => {
                     const selected = product.handle === productHandle;
                     const usable = Boolean(product.imageUrl);
@@ -153,7 +153,7 @@ export function CreateThreeDBreakdownSubjectPicker({
                         onClick={() => usable && setProductHandle(product.handle)}
                         disabled={!usable}
                         className={[
-                          "relative overflow-hidden rounded-2xl border bg-white text-left shadow-sm transition",
+                          "relative min-h-[18.5rem] overflow-hidden rounded-2xl border bg-white text-left shadow-sm transition",
                           selected ? "border-slate-950 ring-2 ring-slate-950" : "border-slate-200 hover:border-slate-300",
                           usable ? "" : "cursor-not-allowed opacity-55",
                         ].join(" ")}

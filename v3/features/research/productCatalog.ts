@@ -154,6 +154,32 @@ export const buildDirectProductPageCatalog = (
   };
 };
 
+export const mergeDirectProductPageIntoCatalog = (
+  catalog: ProductCatalog,
+  research: Parameters<typeof buildDirectProductPageCatalog>[0],
+): ProductCatalog => {
+  const directProductCatalog = buildDirectProductPageCatalog(research);
+  const directProduct = directProductCatalog?.catalog.products[0];
+  if (!directProduct) return catalog;
+
+  const existingIndex = catalog.products.findIndex((product) => product.handle === directProduct.handle);
+  const products = existingIndex === -1
+    ? [directProduct, ...catalog.products]
+    : catalog.products.map((product, index) => index === existingIndex
+      ? { ...product, ...directProduct, badges: product.badges }
+      : product,
+    );
+
+  return {
+    ...catalog,
+    summary: {
+      ...catalog.summary,
+      productCount: products.length,
+    },
+    products,
+  };
+};
+
 const productLooksBestSellerTagged = (product: ShopifyProduct) => {
   const text = [
     product.title,

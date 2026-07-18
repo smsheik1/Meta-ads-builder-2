@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   buildDirectProductPageCatalog,
   fetchEcommerceProductCatalog,
+  mergeDirectProductPageIntoCatalog,
 } from "../features/research/productCatalog";
 import { getDefaultReviewProductHandles } from "../features/formats/reviews/productSelection";
 
@@ -133,6 +134,26 @@ assert.equal(directProductPageCatalog?.catalog.products[0]?.title, "Theragun PRO
 assert.equal(directProductPageCatalog?.catalog.products[0]?.handle, "theragun-pro-plus");
 assert.equal(directProductPageCatalog?.catalog.products[0]?.imageUrl, "https://cdn.therabody.test/theragun-pro-plus.png");
 assert.equal(directProductPageCatalog?.catalog.products[0]?.priceMin, 649.99);
+
+const mergedDirectProductCatalog = mergeDirectProductPageIntoCatalog(
+  result.catalog!,
+  {
+    websiteUrl: "https://therabody.test/products/theragun-pro-plus",
+    finalUrl: "https://therabody.test/products/theragun-pro-plus",
+    brand: {
+      name: "Therabody",
+      ogImageUrl: "https://cdn.therabody.test/theragun-pro-plus.png",
+    },
+    metadata: {
+      "og:title": "Theragun PRO Plus | Powerful Percussive Massage | Therabody",
+      "og:image:secure_url": "https://cdn.therabody.test/theragun-pro-plus.png",
+    },
+  },
+);
+
+assert.equal(mergedDirectProductCatalog.products.length, 3);
+assert.equal(mergedDirectProductCatalog.products[0]?.handle, "theragun-pro-plus");
+assert.equal(mergedDirectProductCatalog.products[0]?.title, "Theragun PRO Plus");
 
 const headlessShopify = await fetchEcommerceProductCatalog("https://skims.test/", {
   fetcher: fetchFromRoutes([

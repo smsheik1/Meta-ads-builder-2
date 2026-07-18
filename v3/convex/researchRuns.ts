@@ -9,6 +9,7 @@ import { extractAdAnglesFromResearch } from "../features/research/adAngles";
 import {
   buildDirectProductPageCatalog,
   fetchEcommerceProductCatalog,
+  mergeDirectProductPageIntoCatalog,
 } from "../features/research/productCatalog";
 import { normalizePublicWebsiteUrl } from "../features/research/url";
 import { toStoredResearchResult } from "./researchStorage";
@@ -33,16 +34,17 @@ export const runWebsiteResearch: ReturnType<typeof action> = action({
         brandAssets: { cachedBrand },
       });
       const productCatalog = await fetchEcommerceProductCatalog(result.finalUrl || url);
-      const directProductCatalog = productCatalog.catalog
-        ? null
-        : buildDirectProductPageCatalog(result);
+      const directProductCatalog = buildDirectProductPageCatalog(result);
+      const resolvedProductCatalog = productCatalog.catalog
+        ? mergeDirectProductPageIntoCatalog(productCatalog.catalog, result)
+        : directProductCatalog?.catalog || null;
       result = {
         ...result,
-        productCatalog: productCatalog.catalog || directProductCatalog?.catalog || null,
+        productCatalog: resolvedProductCatalog,
         providerStatus: [
           ...result.providerStatus,
           productCatalog.providerStatus,
-          ...(directProductCatalog ? [directProductCatalog.providerStatus] : []),
+          ...(!productCatalog.catalog && directProductCatalog ? [directProductCatalog.providerStatus] : []),
         ],
       };
       const cachedAdAngles = await ctx.runQuery(internal.researchStorage.latestAdAnglesForHost, {

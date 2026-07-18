@@ -182,11 +182,13 @@ assert.ok(
     adScenesSource.includes("threeDStorySubject: v.optional") &&
     threeDSubjectPickerSource.includes("Choose from all ") &&
     !threeDSubjectPickerSource.includes("filteredProducts.slice(") &&
+    threeDSubjectPickerSource.includes("auto-rows-max") &&
+    threeDSubjectPickerSource.includes("min-h-[18.5rem]") &&
     threeDSubjectPickerSource.includes('kind: "product"') &&
     threeDSubjectPickerSource.includes('kind: "brand"') &&
     threeDSubjectPickerSource.includes('kind: "customer-problem"') &&
     threeDSubjectPickerSource.includes('kind: "custom"'),
-  "3D Breakdown must ask what the video is about before the story slate and expose the full product catalog without a hidden cap.",
+  "3D Breakdown must ask what the video is about before the story slate and expose the full product catalog without a hidden cap or collapsed product cards.",
 );
 assert.ok(
   createClientSource.includes('if (firstScene?.format === "three-d-breakdown") resetThreeDStoryDirections();') &&
