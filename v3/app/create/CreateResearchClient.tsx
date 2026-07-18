@@ -2450,6 +2450,11 @@ function ResearchConnected() {
         return;
       }
       if (selectedAdFormat === "three-d-breakdown") {
+        setAdScenes([]);
+        setSceneIds([]);
+        setSelectedScene(null);
+        setSelectedSceneIndex(0);
+        canvasActions.interactionReset();
         await generateScenesOnly({
           researchRunId: nextResult.researchRunId,
           facts: getWebsiteSubmitProgressFacts(nextResult),
@@ -3500,8 +3505,20 @@ function ResearchConnected() {
   const selectedThreeDFinalVideoReady = selectedSceneForActiveCanvas?.format === "three-d-breakdown"
     && selectedSceneForActiveCanvas.layout.finalVideo?.status === "ready";
   const showThreeDProgressCanvas = selectedAdFormat === "three-d-breakdown" && !selectedThreeDFinalVideoReady;
+  const readingThreeDBreakdownWebsite = selectedAdFormat === "three-d-breakdown"
+    && status === "loading"
+    && progressStage === "reading-site";
   const threeDProgress = (() => {
     if (!showThreeDProgressCanvas) return null;
+
+    if (readingThreeDBreakdownWebsite) {
+      return {
+        activeMessage: "Reading your brand",
+        activeStatus: "working" as const,
+        activeStep: 0,
+        completedSteps: 0,
+      };
+    }
 
     if (!selectedThreeDScene) {
       const writingScript = threeDStoryDirections.length > 0 && threeDStoryDirectionStatus === "loading";

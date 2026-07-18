@@ -67,6 +67,7 @@ assert.ok(
     threeDProgressCanvasSource.includes("Add motion + voice") &&
     threeDProgressCanvasSource.includes("Finish the video") &&
     threeDProgressCanvasSource.includes("Your final video will appear here") &&
+    createClientSource.includes('activeMessage: "Reading your brand"') &&
     !threeDProgressCanvasSource.includes("Hidden mechanism") &&
     !threeDProgressCanvasSource.includes("3D reveal") &&
     !threeDProgressCanvasSource.includes("Learn More") &&
@@ -174,6 +175,7 @@ assert.ok(
     createClientSource.includes("threeDStorySubject: storySubject") &&
     createClientSource.includes("if (!options.threeDStorySubject)") &&
     createClientSource.includes('const hadExistingCanvas = Boolean(selectedScene || adScenes.length);\n    if (selectedAdFormat === "three-d-breakdown") resetThreeDStoryDirections();') &&
+    createClientSource.includes('if (selectedAdFormat === "three-d-breakdown") {\n        setAdScenes([]);\n        setSceneIds([]);\n        setSelectedScene(null);') &&
     createClientSource.includes('if (research.result) {\n      rememberResearchForReuse(research.result);\n      setResult(research.result);\n      setUrl(research.result.websiteUrl);\n    }\n    if (format === "three-d-breakdown" && !options.threeDStoryDirection)') &&
     quickActionsSource.includes("CreateThreeDBreakdownSubjectPicker") &&
     quickActionsSource.includes("showThreeDStorySubjectPicker") &&
