@@ -115,6 +115,12 @@ const storySlateMechanismClaims = [
   ["release", /\breleas(?:e|es|ed|ing)\b/i],
   ["contamination", /\b(?:contaminant|contamination|pesticides?|heavy metals?|microbial)\b/i],
 ] as const;
+const evidenceBoundOutcomeClaims = [
+  ["sleep outcome", /\b(?:deep(?:er)? sleep|sleep deeper|better sleep|sleep quality|fall asleep|sleep faster)\b/i],
+  ["inflammation outcome", /\b(?:inflammation|inflamed)\b/i],
+  ["strength outcome", /\b(?:stronger|strength(?: gains?| improvement| improved| increase| better)|measurable strength)\b/i],
+  ["flexibility outcome", /\b(?:flexibility|more flexible|range of motion)\b/i],
+] as const;
 const primarySiteTypes: ThreeDBreakdownPrimarySiteType[] = ["ecommerce", "saas", "local-service", "restaurant-food", "nonprofit", "portfolio", "unclear"];
 const riskFlags: ThreeDBreakdownRiskFlag[] = ["health", "medical", "legal", "financial", "beauty", "regulated"];
 const claimRisks: ThreeDBreakdownClaimRisk[] = ["low", "medium", "high"];
@@ -272,6 +278,11 @@ const ctaMentionsSelectedProduct = (ctaLine: string, selectedProductTitle?: stri
   return !product || normalizeCtaText(ctaLine).includes(product);
 };
 
+const evidenceNamesSelectedProduct = (evidenceText: string, selectedProductTitle?: string) => {
+  const product = normalizeCtaText(selectedProductTitle || "");
+  return Boolean(product) && normalizeCtaText(evidenceText).includes(product);
+};
+
 const resolveCtaLine = (
   value: unknown,
   research: StoredWebsiteResearchResult,
@@ -373,6 +384,11 @@ const assertReferenceScriptGrounding = (
     if (term === "oven aroma" && /\b(fresh|fresh[- ]baked|tasted|homemade)\b/i.test(evidenceText)) continue;
     if (pattern.test(factualScript) && !pattern.test(evidenceText)) {
       throw new Error(`3D Breakdown Style B referenceScript invented product mechanism details not supported by evidence: ${term}.`);
+    }
+  }
+  for (const [claim, pattern] of evidenceBoundOutcomeClaims) {
+    if (pattern.test(factualScript) && !pattern.test(evidenceText)) {
+      throw new Error(`3D Breakdown Style B referenceScript invented a ${claim} not supported by evidence.`);
     }
   }
 };
@@ -502,6 +518,13 @@ const parseStoryDirectionSlateOutput = (
     for (const [claim, pattern] of storySlateMechanismClaims) {
       if (pattern.test(directionText) && !pattern.test(evidence.text)) {
         throw new Error(`3D Breakdown story direction ${index + 1} invented a ${claim} mechanism not found in selected evidence.`);
+      }
+    }
+    for (const [claim, pattern] of evidenceBoundOutcomeClaims) {
+      const productSubjectNeedsProductEvidence = Boolean(selectedProductTitle)
+        && !evidenceNamesSelectedProduct(evidence.text, selectedProductTitle);
+      if (pattern.test(directionText) && (!pattern.test(evidence.text) || productSubjectNeedsProductEvidence)) {
+        throw new Error(`3D Breakdown story direction ${index + 1} invented a ${claim} not found in selected evidence.`);
       }
     }
     return parsedDirection;

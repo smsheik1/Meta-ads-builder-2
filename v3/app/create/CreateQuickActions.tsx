@@ -216,6 +216,9 @@ export function CreateQuickActions({
   const showThreeDStorySlateStage = threeDStorySlateActive;
   const showThreeDStorySubjectPicker = showThreeDStorySlateStage && !threeDStorySubject;
   const showThreeDStoryDirections = showThreeDStorySlateStage && Boolean(threeDStorySubject) && (threeDStoryDirections.length > 0 || threeDStoryDirectionStatus === "loading" || Boolean(threeDStoryDirectionError));
+  const selectedThreeDProductTitle = threeDStorySubject?.kind === "product"
+    ? productCatalog?.products.find((product) => product.handle === threeDStorySubject.productHandle)?.title || ""
+    : "";
   const showThreeDBreakdownAssembly = selectedFormat === "three-d-breakdown" && threeDScene;
   const threeDClipPlans = threeDScene?.layout.clipPlans || [];
   const threeDClipsReady = threeDClipPlans.length > 0 && threeDClipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
@@ -395,6 +398,7 @@ export function CreateQuickActions({
           error={threeDStoryDirectionError}
           onSelectDirection={onSelectThreeDStoryDirection}
           onUseDirection={onUseThreeDStoryDirection}
+          productTitle={selectedThreeDProductTitle}
           selectedDirectionId={selectedThreeDStoryDirectionId}
           status={threeDStoryDirectionStatus}
         />
@@ -486,6 +490,7 @@ function ThreeDBreakdownStoryDirectionsCard({
   error,
   onSelectDirection,
   onUseDirection,
+  productTitle,
   selectedDirectionId,
   status,
 }: {
@@ -493,6 +498,7 @@ function ThreeDBreakdownStoryDirectionsCard({
   error: string;
   onSelectDirection: (directionId: string) => void;
   onUseDirection: (direction: ThreeDBreakdownStoryDirection) => void;
+  productTitle: string;
   selectedDirectionId: string;
   status: BrickStoryboardStatus;
 }) {
@@ -546,6 +552,11 @@ function ThreeDBreakdownStoryDirectionsCard({
                       <p className={`text-[9px] font-black uppercase tracking-[0.16em] ${selected ? "text-white/55" : "text-slate-400"}`}>
                         {direction.category}
                       </p>
+                      {productTitle ? (
+                        <p className={`mt-1 text-[10px] font-black leading-4 ${selected ? "text-cyan-200" : "text-cyan-700"}`}>
+                          For {productTitle}
+                        </p>
+                      ) : null}
                       <h4 className="mt-1 text-sm font-black leading-4">{direction.hookLine}</h4>
                       <p className={`mt-1 text-[11px] font-bold leading-4 ${selected ? "text-white/70" : "text-slate-500"}`}>
                         {direction.subheadline}
@@ -686,7 +697,8 @@ function ThreeDBreakdownAssemblyCard({
           <div className="mt-2 space-y-1.5">
             {scene.layout.storyContract.referenceScript ? (
               <div className="rounded-xl border border-slate-200 bg-white px-3 py-2" data-three-d-reference-script="true">
-                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Narrator script</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Long-form creative reference</p>
+                <p className="mt-0.5 text-[10px] font-semibold leading-4 text-slate-400">Used to plan visuals. The five beats below are the 20-second voiceover.</p>
                 <p className="mt-1 max-h-40 overflow-y-auto text-xs font-semibold leading-5 text-slate-600">
                   {scene.layout.storyContract.referenceScript}
                 </p>

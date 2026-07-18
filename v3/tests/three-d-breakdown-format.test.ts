@@ -1014,6 +1014,27 @@ assert.equal(grunsCompressionCalls, 2, "Evidence-backed visual compression shoul
 assert.equal(grunsCompressionGeneration.variants[0]?.referenceScript, grunsCompressionReferenceScript);
 assert.equal(grunsCompressionGeneration.variants[0]?.scriptBeats[4]?.narration, "Try Grüns gummies today.");
 
+let unsupportedOutcomeReferenceCalls = 0;
+const unsupportedOutcomeReferenceGeneration = await generateThreeDBreakdownVariantsFromResearch(grunsCompressionResearch, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  selectedStoryDirection: grunsCompressionDirection,
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    unsupportedOutcomeReferenceCalls += 1;
+    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+      return JSON.stringify(unsupportedOutcomeReferenceCalls === 1
+        ? {
+            ...grunsCompressionScriptPlan,
+            referenceScript: `${grunsCompressionReferenceScript} This daily routine helps you sleep deeper.`,
+          }
+        : grunsCompressionScriptPlan);
+    }
+    return JSON.stringify(grunsCompressionVisualPlan);
+  },
+});
+assert.equal(unsupportedOutcomeReferenceCalls, 3, "An unsupported health outcome must trigger the one script validation retry before visual planning.");
+assert.equal(unsupportedOutcomeReferenceGeneration.variants[0]?.referenceScript, grunsCompressionReferenceScript);
+
 let storySlateCalls = 0;
 const storySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
   nvidiaNimApiKey: "test-key",
@@ -1072,6 +1093,26 @@ await assert.rejects(
   /unsupported harm or fear framing/,
 );
 assert.equal(unsafeStorySlateCalls, 2, "Unsafe story slates should receive only the existing single validation retry.");
+
+let unsupportedOutcomeStorySlateCalls = 0;
+await assert.rejects(
+  () => generateThreeDBreakdownStoryDirectionsFromResearch(research, {
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => {
+      unsupportedOutcomeStorySlateCalls += 1;
+      return JSON.stringify({
+        ...storyDirectionPayload,
+        directions: storyDirectionPayload.directions.map((direction, index) => (
+          index === 0
+            ? { ...direction, hookLine: "Why does this cookie tin make deep sleep feel effortless?" }
+            : direction
+        )),
+      });
+    },
+  }),
+  /invented a sleep outcome/,
+);
+assert.equal(unsupportedOutcomeStorySlateCalls, 2, "Unsupported outcome cards should receive only the existing single validation retry.");
 
 await assert.rejects(
   () => generateThreeDBreakdownStoryDirectionsFromResearch(research, {
@@ -1845,6 +1886,41 @@ assert.ok(
   ].join(" "))),
   "Every product-selected story direction must visibly name the exact product.",
 );
+
+const brandWideSleepResearch = makeResearch({
+  ...massageGunResearch,
+  evidence: {
+    ...massageGunResearch.evidence,
+    receipts: {
+      ...massageGunResearch.evidence.receipts,
+      specificClaims: ["Therabody recovery system supports deeper sleep with a connected process."],
+    },
+  },
+});
+const brandWideSleepEvidence = extractThreeDBreakdownEvidence(brandWideSleepResearch)
+  .find((item) => /deeper sleep/i.test(item.text));
+assert.ok(brandWideSleepEvidence, "The fixture should include a brand-wide sleep claim.");
+let productOutcomeSlateCalls = 0;
+await assert.rejects(
+  () => generateThreeDBreakdownStoryDirectionsFromResearch(brandWideSleepResearch, {
+    nvidiaNimApiKey: "test-key",
+    storySubject: { kind: "product", productHandle: "theragun-pro-plus" },
+    nvidiaNimChatCompletion: async () => {
+      productOutcomeSlateCalls += 1;
+      return JSON.stringify({
+        ...storyDirectionPayload,
+        directions: storyDirectionPayload.directions.map((direction) => ({
+          ...direction,
+          hookLine: `Theragun PRO Plus makes deeper sleep effortless.`,
+          evidenceIndex: brandWideSleepEvidence.evidenceIndex,
+          evidenceUseType: brandWideSleepEvidence.evidenceUseType,
+        })),
+      });
+    },
+  }),
+  /invented a sleep outcome/,
+);
+assert.equal(productOutcomeSlateCalls, 2, "A product-selected outcome must not borrow proof from a broader brand claim.");
 const massageGunResult = await generateThreeDBreakdownVariantsFromResearch(massageGunResearch, {
   count: 1,
   nvidiaNimApiKey: "test-key",

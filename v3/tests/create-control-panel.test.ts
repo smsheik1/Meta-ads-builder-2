@@ -74,6 +74,12 @@ assert.ok(
   "3D Breakdown must show a plain-English progress tracker until the final video replaces it.",
 );
 assert.ok(
+  quickActionsSource.includes("selectedThreeDProductTitle") &&
+    quickActionsSource.includes("productTitle={selectedThreeDProductTitle}") &&
+    quickActionsSource.includes("For {productTitle}"),
+  "Product-selected 3D Breakdown story cards must visibly carry the locked product name.",
+);
+assert.ok(
   previewChromeSource.includes('aspect-[1/2] h-[clamp(470px,calc(100vh-15rem),720px)]') &&
     !previewChromeSource.includes("h-[720px] w-[360px]"),
   "/create phone preview must shrink on short desktop viewports instead of forcing a fixed 720px-tall phone.",

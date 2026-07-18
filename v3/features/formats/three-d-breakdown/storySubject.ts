@@ -55,6 +55,7 @@ export const formatThreeDBreakdownStorySubject = (
       `Product type: ${subject.product.productType || "not specified"}.`,
       `Product URL: ${subject.product.url}.`,
       `Every one of the five directions must name ${subject.product.title} at least once. Every direction, script, visual product reference, and CTA must describe this exact selected product. Do not substitute another catalog item, collection, or generic brand offer.`,
+      "Do not use a brand-wide health, sleep, performance, strength, flexibility, inflammation, safety, or outcome claim unless the selected evidence explicitly names this exact product. When product-specific outcome proof is unavailable, build the premise around observable use, handling, components, or a documented product detail instead.",
     ].join("\n");
   }
   if (subject.kind === "customer-problem") {
