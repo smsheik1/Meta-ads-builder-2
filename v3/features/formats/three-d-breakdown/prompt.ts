@@ -608,6 +608,7 @@ ${JSON.stringify(validationErrors, null, 2)}
 Fix the script plan. Do not write storyboard, shots, image prompts, animation prompts, or captions.
 Do not invent evidence outside the listed evidence IDs.
 Spoken copy contains no production directions or facts absent from selected evidence. Preserve qualifiers.
+If a validation error says "production directions", rewrite the referenceScript and every scriptBeat as plain omniscient-narrator dialogue. Never use demonstrator, camera, frame, scene, animation, x-ray, cutaway, map, token, caption, or storyboard in spoken copy.
 The referenceScript must be ${THREE_D_REFERENCE_SCRIPT_MIN_WORDS}-${THREE_D_REFERENCE_SCRIPT_MAX_WORDS} words, 10-24 short documentary sentences, unseen narrator only.
 The scriptBeats must remain exactly five one-sentence beats totaling ${THREE_D_MIN_SCRIPT_WORDS}-${THREE_D_MAX_SCRIPT_WORDS} words. The 3-7 word punchline must contain a direct buyer action.`;
 }

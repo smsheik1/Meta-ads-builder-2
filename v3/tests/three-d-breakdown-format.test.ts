@@ -1267,6 +1267,7 @@ const productionDirectionResult = await generateThreeDBreakdownVariantsFromResea
     }
     if (directorPrompt.includes("Wiggly Style B Script Director")) {
       assert.ok(directorPrompt.includes("spoken copy, not production directions"));
+      assert.ok(directorPrompt.includes("plain omniscient-narrator dialogue"));
       return JSON.stringify(selectedScriptPlan);
     }
     return JSON.stringify(selectedVisualPayload);
