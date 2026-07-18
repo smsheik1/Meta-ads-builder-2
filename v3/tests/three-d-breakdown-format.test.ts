@@ -642,7 +642,7 @@ assert.ok(styleBScriptPrompt.includes("must exactly match the punchline narratio
 assert.ok(styleBScriptPrompt.includes("ctaLine must sell the product action, not the mechanism"));
 assert.ok(styleBScriptPrompt.includes("name the plain product category once"));
 assert.ok(styleBScriptPrompt.includes("use the selected evidenceIndex/evidenceUseType exactly"));
-assert.ok(styleBScriptPrompt.includes("higher-scoring evidence into supporting context only"));
+assert.ok(styleBScriptPrompt.includes("excludes other evidence and catalog copy from the script context"));
 assert.ok(styleBScriptPrompt.includes("Do not invent package physics"));
 assert.ok(storyDirectionsPrompt.includes("Wiggly 3D Breakdown Story Slate Director"));
 assert.ok(storyDirectionsPrompt.includes("Write exactly 5 directions."));
@@ -1146,10 +1146,15 @@ const selectedStyleBScriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({
   research,
   selectedStoryDirection,
 });
-assert.ok(selectedDirectionPrompt.includes("Selected story direction:"));
-assert.ok(selectedDirectionPrompt.includes(selectedStoryDirection.hookLine));
-assert.ok(selectedStyleBScriptPrompt.includes("Selected story direction:"));
-assert.ok(selectedStyleBScriptPrompt.includes(selectedStoryDirection.adAngle));
+const selectedEvidenceItem = evidenceItems.find((item) => item.evidenceIndex === selectedStoryDirection.evidenceIndex)!;
+const unrelatedEvidenceItem = evidenceItems.find((item) => item.evidenceIndex !== selectedStoryDirection.evidenceIndex)!;
+assert.ok(selectedDirectionPrompt.includes("Selected story direction lock:"));
+assert.ok(selectedDirectionPrompt.includes(selectedEvidenceItem.text));
+assert.ok(!selectedDirectionPrompt.includes(selectedStoryDirection.hookLine));
+assert.ok(selectedStyleBScriptPrompt.includes("Selected story direction lock:"));
+assert.ok(selectedStyleBScriptPrompt.includes(selectedEvidenceItem.text));
+assert.ok(!selectedStyleBScriptPrompt.includes(unrelatedEvidenceItem.text));
+assert.ok(!selectedStyleBScriptPrompt.includes(selectedStoryDirection.adAngle));
 assert.ok(selectedStyleBScriptPrompt.includes("Selected product hard boundary:"));
 
 let selectedDirectionCalls = 0;
