@@ -1858,7 +1858,7 @@ const massageGunResearch = makeResearch({
   brandBrief: {
     ...research.brandBrief,
     brandName: "Therabody",
-    offer: "Massage guns for post-workout recovery.",
+    offer: "Massage guns, compression boots, and recovery devices for post-workout recovery.",
   },
   productCatalog: {
     ...research.productCatalog!,
@@ -1907,6 +1907,7 @@ const massageGunScriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({
 assert.ok(massageGunScriptPrompt.includes("Example C - physical gadget mechanism"));
 assert.ok(!massageGunScriptPrompt.includes("Example A - supplement mechanism"));
 assert.ok(!massageGunScriptPrompt.includes("compression"));
+assert.ok(!massageGunScriptPrompt.includes("recovery devices for post-workout"));
 
 const brandWideSleepResearch = makeResearch({
   ...massageGunResearch,

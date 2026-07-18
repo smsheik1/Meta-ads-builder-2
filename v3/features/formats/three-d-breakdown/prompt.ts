@@ -148,6 +148,16 @@ const productNamesForPrompt = (
   return (research.productCatalog?.products || []).slice(0, 4).map((product) => product.title).join(" | ") || "not available";
 };
 
+const offerForPrompt = (
+  research: StoredWebsiteResearchResult,
+  storySubject: ThreeDBreakdownResolvedStorySubject | undefined,
+) => {
+  if (storySubject?.kind === "product" && storySubject.product?.title) {
+    return [storySubject.product.title, storySubject.product.productType].filter(Boolean).join(" · ");
+  }
+  return research.brandBrief.offer;
+};
+
 const STYLE_B_SCRIPT_EXAMPLE_SUPPLEMENT = `Example A - supplement mechanism
 Evidence: a capsule-in-capsule system is designed to help probiotics survive digestion.
 consequence: You swallow a probiotic capsule and assume every live strain reaches your gut.
@@ -382,7 +392,7 @@ Claim-risk: low passes if grounded; medium cannot exceed evidence; high needs ex
 
 Brand:
 Name:${research.brandBrief.brandName || research.brand.name}
-Offer:${research.brandBrief.offer.slice(0, 120)}
+Offer:${offerForPrompt(research, storySubject).slice(0, 120)}
 Aud:${research.brandBrief.audience.slice(0, 110)}
 CTA:${research.brandBrief.ctaDirection || "Go"}
 Colors:${(research.brand.colors || []).slice(0, 4).join(",") || "brand colors"}
@@ -461,7 +471,7 @@ Each card still needs its own concrete hook, selected evidence, physical visual 
 
 Brand:
 Name: ${research.brandBrief.brandName || research.brand.name}
-Offer: ${research.brandBrief.offer}
+Offer: ${offerForPrompt(research, storySubject)}
 Audience: ${research.brandBrief.audience}
 Products: ${productNamesForPrompt(research, storySubject)}
 
@@ -607,7 +617,7 @@ ${styleExamples}
 
 Brand:
 Name: ${research.brandBrief.brandName || research.brand.name}
-Offer: ${research.brandBrief.offer}
+Offer: ${offerForPrompt(research, storySubject)}
 Audience: ${research.brandBrief.audience}
 Products: ${productNamesForPrompt(research, storySubject)}
 
