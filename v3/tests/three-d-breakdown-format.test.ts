@@ -1204,8 +1204,9 @@ let separatelySoldStorySlateCalls = 0;
 const qualifiedTheragunStorySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(separatelySoldTheragunResearch, {
   nvidiaNimApiKey: "test-key",
   storySubject: { kind: "product", productHandle: "theragun-pro-plus" },
-  nvidiaNimChatCompletion: async () => {
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
     separatelySoldStorySlateCalls += 1;
+    assert.match(directorPrompt, /do not build a story card around that attachment/i);
     return JSON.stringify(separatelySoldStorySlateCalls === 1
       ? invalidQualifiedTheragunSlate
       : qualifiedTheragunSlate);
