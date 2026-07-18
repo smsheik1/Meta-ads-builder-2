@@ -1895,6 +1895,19 @@ assert.ok(
   "Every product-selected story direction must visibly name the exact product.",
 );
 
+const massageGunScriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({
+  evidence: [massageGunEvidence],
+  research: massageGunResearch,
+  selectedStoryDirection: productLockedStorySlate.directions[0],
+  storySubject: resolveThreeDBreakdownStorySubject(massageGunResearch, {
+    kind: "product",
+    productHandle: "theragun-pro-plus",
+  }),
+});
+assert.ok(massageGunScriptPrompt.includes("Example C - physical gadget mechanism"));
+assert.ok(!massageGunScriptPrompt.includes("Example A - supplement mechanism"));
+assert.ok(!massageGunScriptPrompt.includes("compression"));
+
 const brandWideSleepResearch = makeResearch({
   ...massageGunResearch,
   evidence: {
