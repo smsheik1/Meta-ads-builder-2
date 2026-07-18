@@ -669,8 +669,8 @@ Return JSON only:
 Rules:
 - Pick one evidence ID from the list. Prefer the evidence with the strongest visual story, not the safest-but-boring claim.
 - If a story direction is selected, the previous line is overridden: use the selected evidenceIndex/evidenceUseType exactly and stay on its selected-evidence premise unless safety requires narrower language.
-- A selected story direction excludes other evidence and catalog copy from the script context; it must not replace the selected premise.
-- referenceScript must be ${THREE_D_REFERENCE_SCRIPT_MIN_WORDS}-${THREE_D_REFERENCE_SCRIPT_MAX_WORDS} words and 10-24 short documentary sentences.
+- Exclude all unselected evidence and catalog copy.
+- referenceScript must be ${THREE_D_REFERENCE_SCRIPT_MIN_WORDS}-${THREE_D_REFERENCE_SCRIPT_MAX_WORDS} words and 10-24 short documentary sentences. Target 130 words.
 - scriptBeats are the final 20-second narration: exactly consequence, context, mechanism, revelation, punchline; ${THREE_D_MIN_SCRIPT_WORDS}-${THREE_D_MAX_SCRIPT_WORDS} words total; one sentence per beat.
 - Compress the same causal argument and evidence from referenceScript. The 3-7 word punchline contains a direct buyer action.
 - Most sentences should be 6-12 words. No tiny list fragments.
@@ -721,6 +721,6 @@ Fix the script plan. Do not write storyboard, shots, image prompts, animation pr
 Do not invent evidence outside the listed evidence IDs.
 Spoken copy contains no production directions or facts absent from selected evidence. Preserve qualifiers.
 If a validation error says "production directions", rewrite the referenceScript and every scriptBeat as plain omniscient-narrator dialogue. Never use demonstrator, camera, frame, scene, animation, x-ray, cutaway, map, token, caption, or storyboard in spoken copy.
-The referenceScript must be ${THREE_D_REFERENCE_SCRIPT_MIN_WORDS}-${THREE_D_REFERENCE_SCRIPT_MAX_WORDS} words, 10-24 short documentary sentences, unseen narrator only.
+The referenceScript must be ${THREE_D_REFERENCE_SCRIPT_MIN_WORDS}-${THREE_D_REFERENCE_SCRIPT_MAX_WORDS} words, 10-24 short documentary sentences, unseen narrator only. Target 130 words.
 The scriptBeats must remain exactly five one-sentence beats totaling ${THREE_D_MIN_SCRIPT_WORDS}-${THREE_D_MAX_SCRIPT_WORDS} words. The 3-7 word punchline must contain a direct buyer action.`;
 }

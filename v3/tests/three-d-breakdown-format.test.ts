@@ -644,7 +644,7 @@ assert.ok(styleBScriptPrompt.includes("must exactly match the punchline narratio
 assert.ok(styleBScriptPrompt.includes("ctaLine must sell the product action, not the mechanism"));
 assert.ok(styleBScriptPrompt.includes("name the plain product category once"));
 assert.ok(styleBScriptPrompt.includes("use the selected evidenceIndex/evidenceUseType exactly"));
-assert.ok(styleBScriptPrompt.includes("excludes other evidence and catalog copy from the script context"));
+assert.ok(styleBScriptPrompt.includes("Exclude all unselected evidence and catalog copy"));
 assert.ok(styleBScriptPrompt.includes("Do not invent package physics"));
 assert.ok(storyDirectionsPrompt.includes("Wiggly 3D Breakdown Story Slate Director"));
 assert.ok(storyDirectionsPrompt.includes("Write exactly 5 directions."));

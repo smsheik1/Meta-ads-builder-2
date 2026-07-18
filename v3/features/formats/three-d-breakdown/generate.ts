@@ -420,7 +420,7 @@ const parseReferenceScript = (
   assertReferenceScriptGrounding(script, evidence, supportingEvidenceItems);
   const words = countWords(script);
   if (words < REFERENCE_SCRIPT_ACCEPT_MIN_WORDS || words > REFERENCE_SCRIPT_ACCEPT_MAX_WORDS) {
-    throw new Error(`3D Breakdown Style B referenceScript must be ${REFERENCE_SCRIPT_ACCEPT_MIN_WORDS}-${REFERENCE_SCRIPT_ACCEPT_MAX_WORDS} words.`);
+    throw new Error(`3D Breakdown Style B referenceScript must be ${REFERENCE_SCRIPT_ACCEPT_MIN_WORDS}-${REFERENCE_SCRIPT_ACCEPT_MAX_WORDS} words; received ${words}.`);
   }
   return script;
 };
