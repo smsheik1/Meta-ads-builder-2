@@ -32,6 +32,7 @@ import {
   THREE_D_REVEAL_PATTERNS,
   THREE_D_SCRIPT_BEATS,
   THREE_D_STYLE_B_SCRIPT_MAX_TOKENS,
+  THREE_D_STYLE_B_VISUAL_MAX_TOKENS,
   THREE_D_SHOT_CONTRACT,
   THREE_D_VISUAL_STYLES,
   type ThreeDBreakdownLockedStyleBScript,
@@ -1201,12 +1202,15 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     selectedStoryDirection,
     storySubject: resolvedStorySubject,
   });
+  const visualPlanMaxTokens = selectedStoryDirection
+    ? THREE_D_STYLE_B_VISUAL_MAX_TOKENS
+    : THREE_D_BREAKDOWN_MAX_TOKENS;
   console.log("[wiggly:3d-breakdown] director:call:start", {
     attempt: "initial",
     elapsedMs: Date.now() - startedAt,
     timeoutMs: DEFAULT_TIMEOUT_MS,
   });
-  const raw = await callDirector(prompt);
+  const raw = await callDirector(prompt, visualPlanMaxTokens);
   console.log("[wiggly:3d-breakdown] director:call:ready", {
     attempt: "initial",
     elapsedMs: Date.now() - startedAt,
@@ -1229,7 +1233,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
       elapsedMs: Date.now() - startedAt,
       timeoutMs: DEFAULT_TIMEOUT_MS,
     });
-    const retryRaw = await callDirector(retryPrompt);
+    const retryRaw = await callDirector(retryPrompt, visualPlanMaxTokens);
     console.log("[wiggly:3d-breakdown] director:call:ready", {
       attempt: "retry",
       elapsedMs: Date.now() - startedAt,

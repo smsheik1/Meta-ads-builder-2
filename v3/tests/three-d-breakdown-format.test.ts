@@ -23,6 +23,7 @@ import {
   buildThreeDBreakdownStyleBScriptPrompt,
   THREE_D_BREAKDOWN_MAX_TOKENS,
   THREE_D_STYLE_B_SCRIPT_MAX_TOKENS,
+  THREE_D_STYLE_B_VISUAL_MAX_TOKENS,
   THREE_D_BREAKDOWN_DURATION_MS,
   THREE_D_BREAKDOWN_VARIANT_COUNT,
 } from "../features/formats/three-d-breakdown/prompt";
@@ -564,6 +565,7 @@ const storyDirectionsPrompt = buildThreeDBreakdownStoryDirectionsPrompt({ eviden
 const ecommerceStyleReferenceBytes = readFileSync(new URL("../public/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v7.jpg", import.meta.url));
 assert.equal(THREE_D_BREAKDOWN_VARIANT_COUNT, 2);
 assert.equal(THREE_D_BREAKDOWN_MAX_TOKENS, 4000);
+assert.equal(THREE_D_STYLE_B_VISUAL_MAX_TOKENS, 2600);
 assert.equal(THREE_D_BREAKDOWN_DURATION_MS, 20_000);
 assert.equal(DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL, "z-ai/glm-5.2");
 assert.ok(ecommerceStyleReferenceBytes.byteLength > 5_000, "3D Breakdown ecommerce style reference image must stay checked in.");
@@ -1158,6 +1160,7 @@ assert.ok(!selectedStyleBScriptPrompt.includes(selectedStoryDirection.adAngle));
 assert.ok(selectedStyleBScriptPrompt.includes("Selected product hard boundary:"));
 
 let selectedDirectionCalls = 0;
+const selectedDirectionTokenLimits: number[] = [];
 const selectedStoryLock = {
   variantAngle: selectedStoryDirection.adAngle,
   customerProblem: selectedStoryDirection.hookLine,
@@ -1179,8 +1182,9 @@ const selectedVisualPayload = payloadWithVariants([makeVariant({
 const selectedDirectionGeneration = await generateThreeDBreakdownVariantsFromResearch(research, {
   count: 1,
   nvidiaNimApiKey: "test-key",
-  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt, maxTokens }) => {
     selectedDirectionCalls += 1;
+    selectedDirectionTokenLimits.push(maxTokens || 0);
     if (directorPrompt.includes("Wiggly Style B Script Director")) {
       assert.ok(directorPrompt.includes(selectedStoryDirection.directionId));
       assert.ok(directorPrompt.includes(`evidenceIndex ${selectedStoryDirection.evidenceIndex}`));
@@ -1193,6 +1197,7 @@ const selectedDirectionGeneration = await generateThreeDBreakdownVariantsFromRes
   selectedStoryDirection,
 });
 assert.equal(selectedDirectionCalls, 2);
+assert.deepEqual(selectedDirectionTokenLimits, [THREE_D_STYLE_B_SCRIPT_MAX_TOKENS, THREE_D_STYLE_B_VISUAL_MAX_TOKENS]);
 assert.equal(selectedDirectionGeneration.variants.length, 1);
 assert.equal(selectedDirectionGeneration.variants[0]?.variantAngle, selectedStoryDirection.adAngle);
 assert.equal(selectedDirectionGeneration.variants[0]?.visualStyle, "presenter-teardown-vsl");
