@@ -1175,6 +1175,29 @@ const flexibleReferenceScriptGeneration = await generateThreeDBreakdownVariantsF
 assert.equal(flexibleReferenceScriptCalls, 2, "Reference-script sentence count must not cause a redundant retry.");
 assert.equal(flexibleReferenceScriptGeneration.variants[0]?.referenceScript, nineSentenceReferenceScript);
 
+let missingVisualMetaphorCalls = 0;
+const missingVisualMetaphorGeneration = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    missingVisualMetaphorCalls += 1;
+    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+      return JSON.stringify(styleBScriptPlanPayload({
+        ...selectedStoryLock,
+        visualMetaphor: "",
+      }));
+    }
+    return JSON.stringify(selectedVisualPayload);
+  },
+  selectedStoryDirection,
+});
+assert.equal(missingVisualMetaphorCalls, 2, "A missing duplicate visual-metaphor label must not trigger another model call.");
+assert.equal(
+  missingVisualMetaphorGeneration.variants[0]?.visualMetaphor,
+  selectedStoryLock.wowMoment,
+  "The required wow moment should supply the missing internal visual-metaphor label.",
+);
+
 let productionDirectionCalls = 0;
 const productionDirectionResult = await generateThreeDBreakdownVariantsFromResearch(research, {
   count: 1,

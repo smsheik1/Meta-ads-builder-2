@@ -502,19 +502,23 @@ const parseStyleBScriptPlanOutput = (
     throw new Error(`3D Breakdown Style B script plan references invalid evidence; use one of: ${allowedEvidenceIds}.`);
   }
   const ctaLine = resolveCtaLine(parsed.ctaLine, research);
+  const mechanismSummary = cleanText(parsed.mechanismSummary, 180);
+  const wowMoment = cleanText(parsed.wowMoment, 220);
   const plan = {
     visualStyle: "presenter-teardown-vsl" as const,
     variantAngle: cleanText(parsed.variantAngle, 120),
     customerProblem: cleanText(parsed.customerProblem, 160),
-    mechanismSummary: cleanText(parsed.mechanismSummary, 180),
-    visualMetaphor: cleanText(parsed.visualMetaphor, 160),
+    mechanismSummary,
+    // The metaphor is internal duplication of the already-required reveal. Preserve strict
+    // creative requirements while keeping one omitted redundant label from blocking the user.
+    visualMetaphor: cleanText(parsed.visualMetaphor, 160) || wowMoment || mechanismSummary,
     referenceScript: parseReferenceScript(parsed.referenceScript, "presenter-teardown-vsl", evidence, evidenceItems) || "",
     scriptBeats: parseScriptBeats(parsed.scriptBeats, ctaLine),
     ctaLine,
     evidenceIndex,
     evidenceUseType: evidence.evidenceUseType,
     wowMomentType: parseEnum(parsed.wowMomentType, THREE_D_REVEAL_PATTERNS, "wowMomentType"),
-    wowMoment: cleanText(parsed.wowMoment, 220),
+    wowMoment,
     viewerLearns: cleanText(parsed.viewerLearns, 220),
     claimRisk: parseEnum(parsed.claimRisk, claimRisks, "claimRisk"),
     claimRiskReason: cleanText(parsed.claimRiskReason, 220),
