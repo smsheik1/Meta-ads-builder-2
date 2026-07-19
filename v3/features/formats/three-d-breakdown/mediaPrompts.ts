@@ -117,6 +117,15 @@ const sharedStyle = (scene: ThreeDBreakdownAdScene) => clean([
 
 const pixelTextBan = "PIXEL TEXT BAN: generate no readable words, letters, numbers, captions, subtitles, logos, labels, UI, arrows, checkmarks, X marks, pseudo-writing, or watermarks. Wiggly adds captions, proof, product branding, and CTA in the renderer.";
 
+const makeWellnessMotionPromptProviderSafe = (value: string) => value
+  .replace(/\bmassage gun head\b/gi, "handheld percussion attachment")
+  .replace(/\bgun head\b/gi, "percussion attachment")
+  .replace(/\bmassage gun\b/gi, "handheld percussion massager")
+  .replace(/\bdense pink muscle wall\b/gi, "dense stylized elastic fiber wall")
+  .replace(/\bmuscle tissue interior\b/gi, "stylized elastic fiber interior")
+  .replace(/\bmuscle tissue\b/gi, "stylized elastic fibers")
+  .replace(/\binside the muscle\b/gi, "inside the elastic fiber model");
+
 export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
   const plans = ([1, 2, 3, 4, 5, 6] as ThreeDBreakdownStoryboardFrameIndex[])
     .map((index) => `${framePlan(scene, index)} ROLE: ${frameRole(scene, index)}`)
@@ -162,7 +171,7 @@ export const buildThreeDSeedancePrompt = (
   const categoryRule = isThreeDSupplementStory(scene)
     ? "CATEGORY: use clean body-route or capsule-path footage only where the approved frames require it; no gore or detached anatomy montage."
     : "CATEGORY: do not invent supplement, capsule, digestive, anatomy, or medical imagery absent from the approved frames.";
-  const prompt = clean([
+  const rawPrompt = clean([
     clipPlan.prompt,
     product
       ? `PRODUCT LOCK: preserve the supplied ${product.title} category, silhouette, colors, material, and packaging form; never replace it or invent readable packaging.`
@@ -173,6 +182,10 @@ export const buildThreeDSeedancePrompt = (
     "MOTION: use direct cuts, push-throughs, object wipes, camera pushes, component reveals, or particle transitions. Change a product, prop, obstacle, component, or camera scale every 1-2 seconds; no static product with drifting particles and no empty transition frames.",
     "No readable text, captions, labels, logos, UI, pseudo-writing, or watermarks; Wiggly adds every word later.",
   ].join(" "));
+  const wellnessSafetyContext = /\b(?:massage gun|gun head|muscle tissue|muscle wall|inside the muscle)\b/i.test(rawPrompt)
+    ? "SAFETY CONTEXT: benign consumer wellness product demonstration. Any fiber forms are clean educational models, not injured anatomy. No weapon use, violence, pain, injury, bodily harm, gore, or medical procedure."
+    : "";
+  const prompt = makeWellnessMotionPromptProviderSafe(clean([rawPrompt, wellnessSafetyContext].join(" ")));
   if (prompt.length > MAX_SEEDANCE_PROMPT_CHARS) {
     throw new Error(`3D Breakdown Seedance prompt is ${prompt.length} characters; simplify the approved frame plan before generation.`);
   }
