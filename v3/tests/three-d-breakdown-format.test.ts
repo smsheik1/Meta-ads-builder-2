@@ -122,6 +122,7 @@ assert.equal(productBadgeEvidence?.evidenceUseType, "proof");
 const reviewEvidence = evidenceItems.find((item) => item.evidenceUseType === "review") || evidenceItems[0]!;
 const shippingEvidence = evidenceItems.find((item) => item.evidenceUseType === "shipping");
 assert.ok(shippingEvidence, "David's Cookies fixture should expose shipping evidence for Style B context.");
+assert.ok(productBadgeEvidence, "David's Cookies fixture should expose product proof for brand-story coverage.");
 
 const promptInjectionResearch = makeResearch({
   brandBrief: {
@@ -868,6 +869,32 @@ const storyDirectionPayload = {
   directions: [1, 2, 3, 4, 5].map((index) => makeStoryDirection(index)),
 };
 
+const explicitBrandStoryDirectionPayload = {
+  ...storyDirectionPayload,
+  directions: storyDirectionPayload.directions.map((direction, index) => {
+    const evidence = [reviewEvidence, shippingEvidence, productBadgeEvidence][index % 3]!;
+    return {
+    ...direction,
+    hookLine: [
+      "Why did David's Cookies turn a delivered dessert into a gift moment?",
+      "Why does David's Cookies make nationwide delivery feel personal?",
+      "Why does David's Cookies start its gift story with the tin itself?",
+    ][index % 3]!,
+    subheadline: [
+      "Review proof closes the reaction gap.",
+      "Nationwide shipping closes the distance.",
+      "The Butter Pecan tin makes the gift tangible.",
+    ][index % 3]!,
+    shortSummary: "A sender cannot watch the reaction from across the country. David's Cookies turns this documented detail into a gift moment.",
+    adAngle: "David's Cookies makes a mailed dessert feel remembered.",
+    visualEngine: "A red cookie tin moves through an evidence-backed gift moment.",
+    evidenceIndex: evidence.evidenceIndex,
+    evidenceUseType: evidence.evidenceUseType,
+    possibleRevealPatterns: evidence.possibleRevealPatterns,
+    };
+  }),
+};
+
 const styleBScriptPlanPayload = (overrides: Record<string, unknown> = {}) => {
   const variant = makeVariant({
     visualStyle: "presenter-teardown-vsl",
@@ -1315,6 +1342,52 @@ assert.equal(storySlate.directions.length, 5);
 assert.equal(storySlate.recommendedDirectionId, "idea-1");
 assert.equal(storySlate.directions[0]?.evidenceUseType, reviewEvidence.evidenceUseType);
 assert.ok(storySlate.directions[0]?.visualEngine.includes("Proof blocks"));
+
+let explicitBrandStorySlateCalls = 0;
+const explicitBrandStorySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
+  nvidiaNimApiKey: "test-key",
+  storySubject: { kind: "brand" },
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    explicitBrandStorySlateCalls += 1;
+    assert.match(directorPrompt, /why David's Cookies exists/i);
+    assert.match(directorPrompt, /Every card must name David's Cookies/i);
+    return JSON.stringify(explicitBrandStorySlateCalls === 1
+      ? storyDirectionPayload
+      : explicitBrandStoryDirectionPayload);
+  },
+});
+assert.equal(explicitBrandStorySlateCalls, 2, "Explicit brand-story slates should retry once when the visible cards omit the brand.");
+assert.ok(
+  explicitBrandStorySlate.directions.every((direction) => /david/i.test(`${direction.hookLine} ${direction.subheadline}`)),
+  "Explicit brand-story cards must visibly name the brand.",
+);
+assert.ok(
+  new Set(explicitBrandStorySlate.directions.map((direction) => direction.evidenceIndex)).size >= 3,
+  "Explicit brand-story cards must cover multiple evidence lenses instead of repeating one feature.",
+);
+
+const genericCompetitorBrandStoryPayload = {
+  ...explicitBrandStoryDirectionPayload,
+  directions: explicitBrandStoryDirectionPayload.directions.map((direction, index) => index === 0
+    ? { ...direction, hookLine: "Why do most desserts make a David's Cookies gift feel forgettable?" }
+    : direction),
+};
+let genericCompetitorBrandStoryCalls = 0;
+const genericCompetitorBrandStorySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
+  nvidiaNimApiKey: "test-key",
+  storySubject: { kind: "brand" },
+  nvidiaNimChatCompletion: async () => {
+    genericCompetitorBrandStoryCalls += 1;
+    return JSON.stringify(genericCompetitorBrandStoryCalls === 1
+      ? genericCompetitorBrandStoryPayload
+      : explicitBrandStoryDirectionPayload);
+  },
+});
+assert.equal(genericCompetitorBrandStoryCalls, 2, "Invented generic competitor framing must use the single slate retry.");
+assert.ok(
+  genericCompetitorBrandStorySlate.directions.every((direction) => !/\bmost desserts\b/i.test(`${direction.hookLine} ${direction.subheadline}`)),
+  "The corrected explicit brand-story slate must remove invented generic competitor framing.",
+);
 
 let missingWhyCompellingCalls = 0;
 const missingWhyCompellingSlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {

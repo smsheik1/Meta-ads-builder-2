@@ -19,6 +19,8 @@ export type ThreeDBreakdownResolvedStorySubject = {
   kind: ThreeDBreakdownStorySubjectKind;
   product?: ProductCatalogItem;
   brief?: string;
+  brandName?: string;
+  isExplicit?: boolean;
 };
 
 const cleanBrief = (value: string | undefined) => String(value || "").replace(/\s+/g, " ").trim();
@@ -28,21 +30,26 @@ export const resolveThreeDBreakdownStorySubject = (
   subject: ThreeDBreakdownStorySubject | null | undefined,
 ): ThreeDBreakdownResolvedStorySubject => {
   const kind = subject?.kind || "brand";
+  const isExplicit = Boolean(subject);
   if (kind === "product") {
     const productHandle = String(subject?.productHandle || "").trim();
     const product = (research.productCatalog?.products || []).find((item) => item.handle === productHandle);
     if (!product) throw new Error("Choose a product before generating 3D story directions.");
     if (!product.imageUrl) throw new Error(`${product.title} has no usable product image for a 3D Breakdown. Choose another product or a product page with imagery.`);
-    return { kind, product };
+    return { kind, product, isExplicit };
   }
 
   if (kind === "custom") {
     const brief = cleanBrief(subject?.brief);
     if (brief.length < 8) throw new Error("Describe what this 3D Breakdown should be about before generating story directions.");
-    return { kind, brief: brief.slice(0, 600) };
+    return { kind, brief: brief.slice(0, 600), isExplicit };
   }
 
-  return { kind };
+  return {
+    kind,
+    brandName: cleanBrief(research.brandBrief.brandName || research.brand.name),
+    isExplicit,
+  };
 };
 
 export const formatThreeDBreakdownStorySubject = (
@@ -74,6 +81,10 @@ export const formatThreeDBreakdownStorySubject = (
   }
   return [
     "USER-SELECTED SUBJECT: the overall brand story.",
-    "Explain what makes this brand or its core offer different. Keep the payoff brand-level unless the evidence clearly names a product.",
+    `Tell an evidence-grounded \"why ${subject.brandName || "this brand"} exists\" story, not founder lore unless the website explicitly provides it.`,
+    `Every card must name ${subject.brandName || "the brand"} in its hookLine or subheadline.`,
+    `Each card must explain one documented category default, routine friction, or incomplete mental model that ${subject.brandName || "the brand"} addresses with its core offer or system.`,
+    "Make the five cards use different evidence lenses. When three or more evidence items are available, the slate must use at least three evidence IDs.",
+    "Keep the payoff brand-level unless the evidence clearly names a product. Do not turn this into five isolated component demos, generic category facts, or invented competitor comparisons.",
   ].join("\n");
 };

@@ -68,7 +68,7 @@ assert.equal(result.brand.ogImageUrl, "https://ogtool.com/og.png");
 assert.equal(result.brand.screenshotUrl, "https://cdn.firecrawl.dev/screenshots/ogtool.png");
 assert.deepEqual(result.brand.colors, ["#82DFFF", "#07111F"]);
 assert.equal(result.brand.fonts.feel, "sans");
-assert.equal(result.brandBrief.offer, "ChatGPT Visibility");
+assert.equal(result.brandBrief.offer, "Fully managed Reddit and ChatGPT visibility campaigns.");
 assert.ok(result.brandBrief.proof.includes("First ChatGPT mention in 14 days."));
 assert.ok(result.evidence.receipts.specificClaims.includes("First ChatGPT mention in 14 days."));
 assert.ok(result.evidence.receipts.buyerMoments.includes("Stop losing AI search visibility to competitors."));
@@ -212,7 +212,7 @@ assert.ok(!shopifyEvidenceText.includes("Your cart is empty"));
 assert.ok(shopifyResult.evidence.headings.includes("David's Cookies: Cookie Delivery | Gift Baskets | Fresh Baked"));
 assert.ok(shopifyResult.evidence.paragraphs.some((paragraph) => paragraph.includes("fabulous cheesecakes")));
 assert.equal(shopifyResult.brandBrief.brandName, "David's Cookies");
-assert.equal(shopifyResult.brandBrief.offer, "Cookie Delivery");
+assert.equal(shopifyResult.brandBrief.offer, "We're known for our cookies, but we make so much more, including our fabulous cheesecakes and specialty desserts.");
 
 const markdownImageResult = normalizeFirecrawlPayload("intercom.com", {
   success: true,
@@ -401,34 +401,18 @@ assert.ok(nimCuratedResult.providerStatus.some((status) => (
   status.provider === "nvidia-nim-curator" && status.status === "used"
 )));
 
-const nimFailureGeminiBackupCuratedResult = await curateWebsiteResearchResult(shopifyResult, {
+const nimFailureUsesDirectEvidenceResult = await curateWebsiteResearchResult(shopifyResult, {
   nvidiaNimApiKey: "test-nim-key",
   nvidiaNimModel: "test-kimi-model",
   nvidiaNimChatCompletion: async () => {
     throw new Error("NIM free tier unavailable.");
   },
-  geminiApiKey: "test-gemini-key",
-  geminiModel: "test-gemini-model",
-  geminiGenerateContent: async () => JSON.stringify({
-    brandName: "David's Cookies",
-    offer: "Fresh baked cookies and giftable desserts delivered for memorable occasions.",
-    audience: "People sending cookies and desserts for birthdays and thank-you gifts.",
-    buyerMoments: ["Someone forgot the birthday and needs a dessert gift that can still ship."],
-    proof: ["We're known for our cookies, but we make so much more, including cheesecakes."],
-    siteLanguage: ["Cookie Delivery | Gift Baskets | Fresh Baked"],
-    ctaDirection: "Shop cookies",
-    visualNotes: [],
-    droppedNoiseSummary: [],
-    confidence: "high",
-  }),
 });
-assert.equal(nimFailureGeminiBackupCuratedResult.brandBrief.offer, "Fresh baked cookies and giftable desserts delivered for memorable occasions.");
-assert.ok(nimFailureGeminiBackupCuratedResult.providerStatus.some((status) => (
+assert.equal(nimFailureUsesDirectEvidenceResult.brandBrief.offer, shopifyResult.brandBrief.offer);
+assert.ok(nimFailureUsesDirectEvidenceResult.providerStatus.some((status) => (
   status.provider === "nvidia-nim-curator" && status.status === "failed"
 )));
-assert.ok(nimFailureGeminiBackupCuratedResult.providerStatus.some((status) => (
-  status.provider === "gemini-curator" && status.status === "used"
-)));
+assert.ok(!nimFailureUsesDirectEvidenceResult.providerStatus.some((status) => status.provider === "gemini-curator"));
 
 const curatedShopifyResult = await fetchWebsiteResearchWithFirecrawl("davidscookies.com", {
   apiKey: "test-firecrawl-key",
@@ -452,40 +436,11 @@ Fresh baked cookies, gift baskets, cheesecakes, and specialty desserts delivered
     status: 200,
     headers: { "content-type": "application/json" },
   }),
-  curator: {
-    geminiApiKey: "test-gemini-key",
-    nvidiaNimApiKey: "",
-    geminiGenerateContent: async ({ prompt }) => {
-      assert.ok(prompt.includes("Ignore website chrome"));
-      assert.ok(prompt.includes("High-protein snack bars with a soft, marshmallow-like texture."));
-      assert.ok(prompt.includes("Scheduling software for teams"));
-      return JSON.stringify({
-        brandName: "David's Cookies",
-        offer: "Fresh baked cookies, gift baskets, cheesecakes, and specialty desserts for delivery.",
-        audience: "People sending memorable desserts for birthdays, holidays, and thank-you gifts.",
-        buyerMoments: [
-          "You need a giftable dessert that feels fresh and easy to send.",
-          "Continue shopping",
-        ],
-        proof: [
-          "Fresh baked cookies, gift baskets, cheesecakes, and specialty desserts delivered for birthdays, holidays, and thank-you gifts.",
-          "Regular price~~$0.00~~Sale price",
-        ],
-        siteLanguage: [
-          "Cookie Delivery | Gift Baskets | Fresh Baked",
-          "Your cart is empty",
-        ],
-        ctaDirection: "Shop fresh cookies",
-        visualNotes: ["Use the David's Cookies dessert-gift positioning."],
-        droppedNoiseSummary: ["Continue shopping", "Your cart is empty"],
-        confidence: "high",
-      });
-    },
-  },
+  curator: { nvidiaNimApiKey: "" },
 });
-assert.equal(curatedShopifyResult.brandBrief.offer, "Fresh baked cookies, gift baskets, cheesecakes, and specialty desserts for delivery.");
+assert.equal(curatedShopifyResult.brandBrief.offer, "Fresh baked cookies, gift baskets, cheesecakes, and specialty desserts delivered for birthdays, holidays, and thank-you gifts.");
 assert.ok(curatedShopifyResult.providerStatus.some((status) => (
-  status.provider === "gemini-curator" && status.status === "used"
+  status.provider === "nvidia-nim-curator" && status.status === "skipped"
 )));
 const productBriefText = JSON.stringify({
   offer: curatedShopifyResult.brandBrief.offer,
@@ -497,7 +452,7 @@ const productBriefText = JSON.stringify({
 assert.ok(!productBriefText.includes("Continue shopping"));
 assert.ok(!productBriefText.includes("Regular price"));
 assert.ok(!productBriefText.includes("Your cart is empty"));
-assert.ok(curatedShopifyResult.brandBrief.droppedNoiseSummary.includes("Continue shopping"));
+assert.ok(!curatedShopifyResult.providerStatus.some((status) => status.provider === "gemini-curator"));
 
 const firecrawlPrimaryResult = await fetchWebsiteResearchWithFirecrawl("ogtool.com", {
   apiKey: "test-firecrawl-key",
@@ -529,25 +484,7 @@ OGTool connects Reddit visibility to ChatGPT recommendation moments.
       },
     },
   }), { status: 200 }),
-  curator: {
-    geminiApiKey: "test-gemini-key",
-    nvidiaNimApiKey: "",
-    geminiGenerateContent: async ({ prompt }) => {
-      assert.ok(prompt.includes("Reddit campaigns give ChatGPT"));
-      return JSON.stringify({
-        brandName: "OGTool",
-        offer: "Fully managed Reddit and ChatGPT visibility campaigns.",
-        audience: "D2C founders trying to show up when buyers ask AI tools for recommendations.",
-        buyerMoments: ["Stop losing AI search visibility to competitors."],
-        proof: ["First ChatGPT mention in 14 days."],
-        siteLanguage: ["ChatGPT Visibility"],
-        ctaDirection: "Book a call",
-        visualNotes: ["Use brand colors: #82DFFF"],
-        droppedNoiseSummary: [],
-        confidence: "high",
-      });
-    },
-  },
+  curator: { nvidiaNimApiKey: "" },
 });
 assert.equal(firecrawlPrimaryResult.providerStatus[0]?.provider, "firecrawl");
 assert.equal(firecrawlPrimaryResult.brandBrief.offer, "Fully managed Reddit and ChatGPT visibility campaigns.");
@@ -597,10 +534,7 @@ The API helps products avoid broken target-site logo metadata.
       throw new Error(`Unexpected Brandfetch integration fetch: ${url}`);
     }) as typeof fetch,
   },
-  curator: {
-    geminiApiKey: "",
-    nvidiaNimApiKey: "",
-  },
+  curator: { nvidiaNimApiKey: "" },
 });
 assert.equal(brandfetchEnrichedResult.brand.logoUrl, "https://cdn.brandfetch.com/logo.png");
 assert.equal(brandfetchEnrichedResult.brand.colors[0], "#00B95B");

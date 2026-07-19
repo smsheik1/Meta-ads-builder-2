@@ -35,7 +35,7 @@ const options: Array<{
   {
     kind: "brand",
     title: "Tell the brand story",
-    description: "Explain the core offer and why this brand exists.",
+    description: "Explain why this approach exists, or its origin when the website proves it.",
   },
   {
     kind: "customer-problem",

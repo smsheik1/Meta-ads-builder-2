@@ -1,33 +1,26 @@
-import { GoogleGenAI } from "@google/genai";
 import {
   callNvidiaNimChat,
   DEFAULT_NVIDIA_NIM_BASE_URL,
   type NvidiaNimChatCompletion,
 } from "../llm/nvidiaNim";
 import { DEFAULT_NVIDIA_NIM_BRAND_CURATOR_MODEL } from "../llm/nvidiaNimModels";
-import { withTimeout } from "../llm/timeout";
 import type { BrandBrief, WebsiteResearchResult } from "./types";
 
 type CuratableResearch = Omit<WebsiteResearchResult, "brandBrief"> & {
   brandBrief?: BrandBrief;
 };
 
-type GeminiGenerateContent = (input: { model: string; prompt: string }) => Promise<string>;
-
 export type BrandCuratorOptions = {
-  geminiApiKey?: string;
-  geminiModel?: string;
   timeoutMs?: number;
-  geminiGenerateContent?: GeminiGenerateContent;
   nvidiaNimApiKey?: string;
   nvidiaNimBaseUrl?: string;
   nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
   nvidiaNimModel?: string;
 };
 
-export const DEFAULT_GEMINI_BRAND_CURATOR_MODEL = "gemini-3.1-flash-lite";
-
-const DEFAULT_TIMEOUT_MS = 20_000;
+// Website curation is a compact text job, but GLM can take longer than a small
+// completion window. Wait once for the configured model; do not switch models.
+const DEFAULT_TIMEOUT_MS = 60_000;
 const MAX_MARKDOWN_CHARS = 14_000;
 const noisePattern = /\b(skip to content|cart is empty|continue shopping|log in|login|check out|checkout|add to cart|quantity|subtotal|loading|have an account|gift message|discount code|free shipping not applied|regular price|sale price|sold out|newsletter|privacy policy|terms of service|powered by tolstoy|something went wrong|try refreshing(?: the)?(?: page)?|site still doesn'?t load|this page couldn'?t load|page couldn'?t load|unknown due to site error|technical difficulties|site is currently experiencing technical difficulties)\b/i;
 const standalonePricePattern = /^(?:from\s+)?\$[\d,.]+(?:\s*-\s*\$[\d,.]+)?$/i;
@@ -116,8 +109,8 @@ export const buildFallbackBrandBrief = (research: CuratableResearch): BrandBrief
     .map((part) => stripBrandPrefix(part, brandName))
     .find((part) => part && part.toLowerCase() !== brandName.toLowerCase());
   const offer = firstUseful([
-    titleOffer,
     research.brand.description,
+    titleOffer,
     ...receipts.exactSiteLanguage,
     ...research.evidence.headings,
   ], `A clearer way to choose ${brandName}`, 150);
@@ -332,35 +325,6 @@ ${JSON.stringify(input, null, 2)}
 `;
 };
 
-const callGeminiCurator = async ({
-  apiKey,
-  model,
-  prompt,
-  timeoutMs,
-  geminiGenerateContent,
-}: {
-  apiKey: string;
-  model: string;
-  prompt: string;
-  timeoutMs: number;
-  geminiGenerateContent?: GeminiGenerateContent;
-}) => {
-  if (geminiGenerateContent) {
-    return withTimeout(geminiGenerateContent({ model, prompt }), timeoutMs, "Gemini brand curator");
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
-  const response = await withTimeout(ai.models.generateContent({
-    model,
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-    },
-  }), timeoutMs, "Gemini brand curator");
-
-  return response.text || "{}";
-};
-
 export const curateWebsiteResearchResult = async (
   research: CuratableResearch,
   options: BrandCuratorOptions = {},
@@ -369,10 +333,6 @@ export const curateWebsiteResearchResult = async (
   const nvidiaNimApiKey = options.nvidiaNimApiKey ?? process.env.NVIDIA_NIM_API_KEY;
   const nvidiaNimModel = options.nvidiaNimModel || process.env.NVIDIA_NIM_BRAND_CURATOR_MODEL || DEFAULT_NVIDIA_NIM_BRAND_CURATOR_MODEL;
   const nvidiaNimBaseUrl = options.nvidiaNimBaseUrl || process.env.NVIDIA_NIM_BASE_URL || DEFAULT_NVIDIA_NIM_BASE_URL;
-  const geminiApiKey = options.geminiApiKey ?? process.env.GEMINI_API_KEY;
-  const geminiModel = options.geminiModel || process.env.GEMINI_BRAND_CURATOR_MODEL || DEFAULT_GEMINI_BRAND_CURATOR_MODEL;
-  let nvidiaNimFailureStatus: WebsiteResearchResult["providerStatus"][number] | null = null;
-
   if (nvidiaNimApiKey && !isDisabled(process.env.NVIDIA_NIM_ENABLED)) {
     try {
       const content = await callNvidiaNimChat({
@@ -401,72 +361,33 @@ export const curateWebsiteResearchResult = async (
       };
     } catch (error) {
       const reason = error instanceof Error
-        ? `${error.message} Trying Gemini backup curator.`
-        : "NVIDIA NIM brand curator failed; trying Gemini backup curator.";
-      nvidiaNimFailureStatus = {
-        provider: "nvidia-nim-curator",
-        status: "failed",
-        reason,
+        ? `${error.message} Used direct website evidence; no alternate model was called.`
+        : "NVIDIA NIM brand curator failed. Used direct website evidence; no alternate model was called.";
+      return {
+        ...research,
+        brandBrief: fallback,
+        providerStatus: [
+          ...research.providerStatus,
+          {
+            provider: "nvidia-nim-curator",
+            status: "failed",
+            reason,
+          },
+        ],
       };
     }
   }
 
-  if (!geminiApiKey || isDisabled(process.env.GEMINI_ENABLED)) {
-    return {
-      ...research,
-      brandBrief: fallback,
-      providerStatus: [
-        ...research.providerStatus,
-        ...(nvidiaNimFailureStatus ? [nvidiaNimFailureStatus] : []),
-        {
-          provider: "gemini-curator",
-          status: "skipped",
-          reason: "Gemini brand curator was not configured; used validated Firecrawl evidence.",
-        },
-      ],
-    };
-  }
-
-  try {
-    const content = await callGeminiCurator({
-      apiKey: geminiApiKey,
-      model: geminiModel,
-      prompt: buildBrandCuratorPrompt(research),
-      timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-      geminiGenerateContent: options.geminiGenerateContent,
-    });
-    const brandBrief = normalizeBrandBriefPayload(parseJsonObject(content, "Gemini"), fallback);
-
-    return {
-      ...research,
-      brandBrief,
-      providerStatus: [
-        ...research.providerStatus,
-        ...(nvidiaNimFailureStatus ? [nvidiaNimFailureStatus] : []),
-        {
-          provider: "gemini-curator",
-          status: "used",
-          reason: `Gemini curated website evidence into a brand brief with ${brandBrief.confidence} confidence.`,
-        },
-      ],
-    };
-  } catch (error) {
-    const reason = error instanceof Error
-      ? `${error.message} Used validated Firecrawl evidence.`
-      : "Gemini brand curator failed; used validated Firecrawl evidence.";
-
-    return {
-      ...research,
-      brandBrief: fallback,
-      providerStatus: [
-        ...research.providerStatus,
-        ...(nvidiaNimFailureStatus ? [nvidiaNimFailureStatus] : []),
-        {
-          provider: "gemini-curator",
-          status: "failed",
-          reason,
-        },
-      ],
-    };
-  }
+  return {
+    ...research,
+    brandBrief: fallback,
+    providerStatus: [
+      ...research.providerStatus,
+      {
+        provider: "nvidia-nim-curator",
+        status: "skipped",
+        reason: "NVIDIA NIM brand curator was not configured; used direct website evidence without an alternate model.",
+      },
+    ],
+  };
 };

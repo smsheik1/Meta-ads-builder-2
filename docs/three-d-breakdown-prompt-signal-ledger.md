@@ -372,3 +372,34 @@ Adopted corrections:
 - Exact readable packaging remains a renderer responsibility; generated media preserves physical product identity without attempting labels or logos.
 
 The rejected board does not authorize anchors. No automatic retry or additional Replicate call ran.
+
+## Latest Root-Cause Learnings
+
+These are implementation learnings from the live `/create` flow. They are separate from visual taste notes because each one has a code or test guardrail behind it.
+
+### Brand-story selection needs its own contract
+
+- “Tell the brand story” does **not** mean invent a founder story from a product page.
+- When founding history is absent, it means: show the documented old routine, category default, or buyer misconception that the brand's approach replaces.
+- Every explicit brand-story card names the brand in its visible hook or subtitle so the card does not read like a generic category fact.
+- Five cards cannot be five phrasings of the same component. When three or more usable evidence items exist, the slate must cover at least three evidence IDs.
+- Generic competitor villains such as “a standard massage gun” are prohibited unless the selected evidence itself makes that comparison.
+
+### Research must not silently switch models
+
+- NVIDIA NIM is the only model used to curate website evidence for this flow.
+- The curator gets a realistic 60-second text window because GLM can take longer than a short completion window.
+- If NIM fails, Wiggly keeps the validated site evidence and records the failure. It does not call Gemini or another model behind the user's back.
+- Direct website evidence is a deterministic source fallback, not a new model or a new claim source.
+
+### What to inspect before paid media
+
+At the five-card step, reject the slate before choosing a direction when any of these appear:
+
+- the five cards repeat one feature with synonym swaps;
+- a card invents a competitor's failure or a category default;
+- a literal origin/founder story appears without source evidence;
+- the selected brand or product is absent from the visible card;
+- a product qualifier such as “sold separately” disappears.
+
+The correct next step is to regenerate the text slate once with the structured validation error. It is never to spend on a storyboard in hopes that visuals will rescue a weak premise.

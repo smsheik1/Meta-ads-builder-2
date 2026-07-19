@@ -275,6 +275,27 @@ const normalizeCtaText = (value: string) => value
   .toLowerCase()
   .trim();
 
+const BRAND_MARKER_STOP_WORDS = new Set([
+  "the",
+  "a",
+  "an",
+  "and",
+  "co",
+  "company",
+  "inc",
+  "llc",
+  "ltd",
+  "us",
+  "usa",
+]);
+
+const explicitBrandStoryMarker = (storySubject?: ThreeDBreakdownResolvedStorySubject) => {
+  if (storySubject?.kind !== "brand" || !storySubject.isExplicit) return "";
+  return normalizeCtaText(storySubject.brandName || "")
+    .split(" ")
+    .find((token) => token.length >= 3 && !BRAND_MARKER_STOP_WORDS.has(token)) || "";
+};
+
 const ctaMentionsSelectedProduct = (ctaLine: string, selectedProductTitle?: string) => {
   const product = normalizeCtaText(selectedProductTitle || "");
   return !product || normalizeCtaText(ctaLine).includes(product);
@@ -312,6 +333,7 @@ const separatelySoldPattern = /\b(?:sold separately|optional (?:attachment|add-?
 const builtInAllComponentsPattern = /\b(?:hides?|contains?|inside|built[- ]in|working components?|cores?)\b[^.!?]{0,64}\b(?:five|all five)\b|\b(?:five|all five)\b[^.!?]{0,64}\b(?:inside|built[- ]in|working components?|cores?)\b/i;
 const separatelySoldAttachmentAggregationPattern = /\b(?:five|all five)\s+(?:therap(?:y|ies)|tools?|modalities?|features?)\b[^.!?]{0,72}\b(?:one|single|unified|all[- ]in[- ]one)\s+(?:device|form|unit|tool|shell)\b|\b(?:one|single|unified|all[- ]in[- ]one)\s+(?:device|form|unit|tool|shell)\b[^.!?]{0,72}\b(?:five|all five)\s+(?:therap(?:y|ies)|tools?|modalities?|features?)\b/i;
 const unsupportedMassageComparisonPattern = /\b(?:ordinary|regular|standard)\s+(?:massage gun|massager|massage)\b[^.!?]{0,72}\b(?:just|only|barely|surface)\b|\b(?:physical|rapid)\s+pounding\b[^.!?]{0,72}\b(?:barely|surface)\b/i;
+const genericCompetitorFramingPattern = /\b(?:most|standard|ordinary|typical|traditional|regular)\s+(?:[a-z-]+\s+){0,3}(?:massage guns?|massagers?|massage|products?|tools?|routines?|supplements?|gummies|vitamins?|probiotics?|cookies|desserts?|recovery|therapy)\b/i;
 const REFERENCE_SCRIPT_ACCEPT_MIN_WORDS = 100;
 const REFERENCE_SCRIPT_ACCEPT_MAX_WORDS = 180;
 const shippingLikeEvidenceTypes = new Set<ThreeDBreakdownEvidenceUseType>(["shipping", "offer", "guarantee"]);
@@ -545,6 +567,18 @@ const parseStoryDirectionSlateOutput = (
     if (selectedProductTitle && !normalizeCtaText(directionText).includes(normalizeCtaText(selectedProductTitle))) {
       throw new Error(`3D Breakdown story direction ${index + 1} must name the selected product ${selectedProductTitle}.`);
     }
+    const brandMarker = explicitBrandStoryMarker(storySubject);
+    const visibleCardText = [parsedDirection.hookLine, parsedDirection.subheadline].join(" ");
+    if (brandMarker && !normalizeCtaText(visibleCardText).includes(brandMarker)) {
+      throw new Error(`3D Breakdown story direction ${index + 1} must name the selected brand in its hook or subheadline.`);
+    }
+    if (
+      brandMarker
+      && genericCompetitorFramingPattern.test(directionText)
+      && !genericCompetitorFramingPattern.test(evidence.text)
+    ) {
+      throw new Error(`3D Breakdown story direction ${index + 1} invented generic competitor framing not found in selected evidence.`);
+    }
     for (const [claim, pattern] of storySlateMechanismClaims) {
       if (pattern.test(directionText) && !pattern.test(evidence.text)) {
         throw new Error(`3D Breakdown story direction ${index + 1} invented a ${claim} mechanism not found in selected evidence.`);
@@ -559,6 +593,14 @@ const parseStoryDirectionSlateOutput = (
     }
     return parsedDirection;
   });
+  const brandMarker = explicitBrandStoryMarker(storySubject);
+  if (brandMarker) {
+    const minimumDistinctEvidence = Math.min(3, new Set(evidenceItems.map((item) => item.evidenceIndex)).size);
+    const distinctEvidenceCount = new Set(directions.map((direction) => direction.evidenceIndex)).size;
+    if (distinctEvidenceCount < minimumDistinctEvidence) {
+      throw new Error(`3D Breakdown explicit brand story must use at least ${minimumDistinctEvidence} distinct evidence items.`);
+    }
+  }
   const recommendedDirectionId = cleanText(parsed.recommendedDirectionId, 24) || directions[0]!.directionId;
   if (!directions.some((direction) => direction.directionId === recommendedDirectionId)) {
     throw new Error("3D Breakdown story slate recommendedDirectionId is invalid.");

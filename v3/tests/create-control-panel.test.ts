@@ -186,9 +186,10 @@ assert.ok(
     threeDSubjectPickerSource.includes("min-h-[18.5rem]") &&
     threeDSubjectPickerSource.includes('kind: "product"') &&
     threeDSubjectPickerSource.includes('kind: "brand"') &&
+    threeDSubjectPickerSource.includes("Explain why this approach exists, or its origin when the website proves it.") &&
     threeDSubjectPickerSource.includes('kind: "customer-problem"') &&
     threeDSubjectPickerSource.includes('kind: "custom"'),
-  "3D Breakdown must ask what the video is about before the story slate and expose the full product catalog without a hidden cap or collapsed product cards.",
+  "3D Breakdown must ask what the video is about before the story slate, describe brand stories without promising invented origin lore, and expose the full product catalog without a hidden cap or collapsed product cards.",
 );
 assert.ok(
   createClientSource.includes('if (firstScene?.format === "three-d-breakdown") resetThreeDStoryDirections();') &&
