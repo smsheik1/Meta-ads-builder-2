@@ -140,8 +140,31 @@ assert.ok(
 assert.ok(
   createClientSource.includes("api.adScenes.listForResearchRun") &&
     createClientSource.includes("hydrateCreativePackGroupsFromSceneRows") &&
-    createClientSource.includes("minimumReadyFormats: 2"),
-  "/create must hydrate the Creative Pack rail from saved research-run scenes after refresh.",
+    createClientSource.includes("recoverCreativePackGroupsFromSceneRows({") &&
+    createClientSource.includes("creativePackWasStarted(result.researchRunId)") &&
+    createClientSource.includes("creativePackWasStarted(research.researchRunId, true)") &&
+    createClientSource.includes("minimumReadyFormats: CREATIVE_PACK_MONEY_SHOT_READY_COUNT"),
+  "/create must restore the Creative Pack rail only after an explicit pack click, never after ordinary format generation.",
+);
+assert.ok(
+  createClientSource.includes('if (format === "video-meme") return Math.min(3, getVideoMemeTemplate') &&
+    !createClientSource.includes("generateCreativePackAudioForScene") &&
+    !createClientSource.includes("format === \"motion-story\" ? getCreativePackReviewProductHandles") &&
+    !createClientSource.includes("void generateJingleMusicForScene(firstScene") &&
+    !createClientSource.includes("void generateJingleMusicForScene(nextScene") &&
+    !createClientSource.includes("void generateJingleMusicForScene(scene, sceneIds[index])"),
+  "/create must keep Video Meme's first batch small and must never spend on jingle audio until the user presses the visible audio control.",
+);
+assert.ok(
+  createClientSource.includes('format === "reviews" && /at least 2 actual review or testimonial lines/i.test(debugMessage)') &&
+    createClientSource.includes('status: "needs-input" as const') &&
+    createClientSource.includes('Needs two real customer quotes from a page you share.') &&
+    createLeftColumnSource.includes('const needsInput = groupStatus === "needs-input"'),
+  "Creative Pack must say when review proof is missing instead of presenting that site-data gap as a retryable generation failure.",
+);
+assert.ok(
+  adScenesSource.includes('generateBrainrotVariantsFromResearch(research, { count })'),
+  "A one-script Creative Pack Brainrot preview must not ask NVIDIA NIM to write the three-script direct-generation batch.",
 );
 assert.ok(
   createClientSource.includes("sceneIds[selectedSceneIndex]") &&

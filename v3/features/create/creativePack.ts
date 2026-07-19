@@ -12,19 +12,17 @@ export const CREATIVE_PACK_FORMATS = [
   { format: "text-message", label: "iMessage", count: 4 },
   { format: "were-sorry", label: "Apology", count: 4 },
   { format: "visualizer", label: "Visualizer", count: 1 },
-  { format: "motion-story", label: "Motion Story", count: 1 },
   { format: "jingle", label: "Jingle", count: 1 },
   { format: "brainrot", label: "Brainrot", count: 1 },
 ] as const;
 
 export type CreativePackFormat = typeof CREATIVE_PACK_FORMATS[number]["format"];
 export type CreativePackStatus = "idle" | "researching" | "generating" | "ready" | "error" | "cancelled";
-export type CreativePackGroupStatus = "pending" | "generating" | "still-cooking" | "ready" | "needs-retry" | "cancelled";
+export type CreativePackGroupStatus = "pending" | "generating" | "still-cooking" | "ready" | "needs-input" | "needs-retry" | "cancelled";
 
 export const CREATIVE_PACK_SHOWCASE_PRIORITY = [
   "jingle",
   "brainrot",
-  "motion-story",
   "visualizer",
   "video-meme",
   "reviews",
@@ -50,14 +48,12 @@ export function isCreativePackAudioFormat(format: CreativePackFormat) {
   return creativePackAudioFormatSet.has(format);
 }
 
-export function hasPlayableCreativePackScenes(format: CreativePackFormat, scenes: AdScene[]) {
-  if (!scenes.length) return false;
-  if (!isCreativePackAudioFormat(format)) return true;
-  return scenes.some((scene) => scene.audio.status === "generated" && Boolean(scene.audio.url));
+export function hasPlayableCreativePackScenes(scenes: AdScene[]) {
+  return scenes.length > 0;
 }
 
 export function isCreativePackTerminalStatus(status: CreativePackGroupStatus) {
-  return status === "ready" || status === "needs-retry" || status === "cancelled";
+  return status === "ready" || status === "needs-input" || status === "needs-retry" || status === "cancelled";
 }
 
 export function getCreativePackFormatLabel(format: CreativePackFormat) {
@@ -123,7 +119,7 @@ export function hydrateCreativePackGroupsFromSceneRows<TSceneId = unknown>({
     const scenes = formatRows
       .map((row) => row.scene)
       .filter((scene): scene is AdScene => Boolean(scene) && scene.format === format);
-    const playable = hasPlayableCreativePackScenes(format, scenes);
+    const playable = hasPlayableCreativePackScenes(scenes);
 
     if (!scenes.length || !playable) {
       return {
@@ -145,5 +141,42 @@ export function hydrateCreativePackGroupsFromSceneRows<TSceneId = unknown>({
       scenes,
       sceneIds: formatRows.map((row) => row._id),
     };
+  });
+}
+
+export function recoverCreativePackGroupsFromSceneRows<TGroup extends {
+  format: CreativePackFormat;
+  status: CreativePackGroupStatus;
+  scenes: AdScene[];
+  sceneIds: unknown[];
+  actionLabel?: string;
+  message?: string;
+  publicMessage?: string;
+  debugMessage?: string;
+}>({
+  groups,
+  rows,
+}: {
+  groups: TGroup[];
+  rows: Array<CreativePackSceneRow>;
+}): TGroup[] {
+  const savedGroups = hydrateCreativePackGroupsFromSceneRows({
+    minimumReadyFormats: 1,
+    rows,
+  });
+  const savedByFormat = new Map(savedGroups.map((group) => [group.format, group]));
+
+  return groups.map((group) => {
+    const saved = savedByFormat.get(group.format);
+    if (group.status !== "needs-retry" || saved?.status !== "ready") return group;
+
+    return {
+      ...group,
+      ...saved,
+      actionLabel: undefined,
+      message: undefined,
+      publicMessage: undefined,
+      debugMessage: undefined,
+    } as TGroup;
   });
 }

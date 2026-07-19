@@ -48,9 +48,9 @@ import {
   getCreativePackFormatLabel,
   hasPlayableCreativePackScenes,
   hydrateCreativePackGroupsFromSceneRows,
-  isCreativePackAudioFormat,
   isCreativePackFormat,
   isCreativePackTerminalStatus,
+  recoverCreativePackGroupsFromSceneRows,
   type CreativePackSceneRow,
   type CreativePackFormat,
   type CreativePackStatus,
@@ -116,6 +116,13 @@ type ThreeDStoryDirectionStatus = "idle" | "loading" | "ready" | "error";
 
 const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const fallbackUploadedAudioDurationMs = 8000;
+function creativePackWasStarted(researchRunId: string, remember = false) {
+  try {
+    const key = `wiggly:create:creative-pack:${researchRunId}`;
+    if (remember) sessionStorage.setItem(key, "1");
+    return sessionStorage.getItem(key) === "1";
+  } catch { return false; }
+}
 
 function getThreeDBreakdownLoadingLabel(elapsedSeconds: number) {
   if (elapsedSeconds >= 90) return "Still waiting on NVIDIA NIM. Slow, not frozen.";
@@ -133,6 +140,9 @@ function getMusicGenerationErrorMessage(error: unknown) {
 
   if (/paid_plan_required|payment_required|402/i.test(message)) {
     return "Music generation failed: ElevenLabs Music requires a paid plan for this API key.";
+  }
+  if (/fish.*(?:401|invalid token)|invalid token.*fish/i.test(message)) {
+    return "Music generation failed: the Fish voice API key is invalid. Update it, then try again.";
   }
   if (!message) return "Music generation failed.";
   if (/^music generation failed/i.test(message)) return message;
@@ -220,7 +230,6 @@ type ThreeDStoryDirectionsResponse = {
 };
 
 type ApplyGeneratedScenesOptions = {
-  autoGenerateAudio?: boolean;
   note?: string;
 };
 
@@ -269,7 +278,26 @@ function getAdGenerationErrorMessage(error: unknown) {
     }
     return "Ad generation timed out. Try again.";
   }
+  if (/NVIDIA NIM.*(?:\b500\b|internal server error|upstream)/i.test(message)) {
+    return "The writing model had a temporary problem. Press Generate ads to try again.";
+  }
   return message || "Ad generation failed.";
+}
+
+function getCreativePackFailure(format: CreativePackFormat, error: unknown) {
+  const debugMessage = getAdGenerationErrorMessage(error);
+  if (format === "reviews" && /at least 2 actual review or testimonial lines/i.test(debugMessage)) {
+    return {
+      status: "needs-input" as const,
+      message: "Needs two real customer quotes from a page you share.",
+      debugMessage,
+    };
+  }
+  return {
+    status: "needs-retry" as const,
+    message: "Needs retry.",
+    debugMessage,
+  };
 }
 
 function getSceneDefaultFlashSlots(scene: AdScene): RenderFlashRole[] {
@@ -309,7 +337,7 @@ function assertRenderableScenes(scenes: AdScene[]) {
 function getGenerationCount(format: AdFormatId, videoMemeTemplateId: VideoMemeTemplateId = "bear-sniff") {
   if (format === "meme") return 12;
   if (format === "were-sorry") return 8;
-  if (format === "video-meme") return getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8;
+  if (format === "video-meme") return Math.min(3, getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 3);
   if (format === "jingle") return 1;
   if (format === "text-message") return 6;
   if (format === "brainrot") return 3;
@@ -1269,9 +1297,9 @@ function ResearchConnected() {
         ...group,
         scenes,
         sceneIds: nextSceneIds.length ? nextSceneIds : scenes.map(() => null),
-        status: hasPlayableCreativePackScenes(firstScene.format, scenes) ? "ready" : group.status,
-        message: hasPlayableCreativePackScenes(firstScene.format, scenes) ? "" : group.message,
-        publicMessage: hasPlayableCreativePackScenes(firstScene.format, scenes) ? "" : group.publicMessage,
+        status: hasPlayableCreativePackScenes(scenes) ? "ready" : group.status,
+        message: hasPlayableCreativePackScenes(scenes) ? "" : group.message,
+        publicMessage: hasPlayableCreativePackScenes(scenes) ? "" : group.publicMessage,
       };
     }));
   };
@@ -1302,10 +1330,6 @@ function ResearchConnected() {
     setAdStatusNote(options.note || `${scenes.length} ads ready. Press spacebar to find a stronger version.`);
     setAdStatus("ready");
     canvasActions.finishBusy();
-    if (options.autoGenerateAudio === false) return;
-    if (firstScene?.format === "jingle" && firstScene.audio.status !== "generated") {
-      void generateJingleMusicForScene(firstScene, nextSceneIds[0]);
-    }
   };
 
   const generateScenesForResearch = async (
@@ -1427,8 +1451,7 @@ function ResearchConnected() {
   );
 
   useEffect(() => {
-    if (!result?.researchRunId || creativePackGroups.length || !researchRunSceneRows?.length) return;
-    if (creativePackStatus === "researching" || creativePackStatus === "generating") return;
+    if (!result?.researchRunId || !researchRunSceneRows?.length) return;
 
     try {
       const currentUrlKey = normalizedUrlKey(url);
@@ -1440,8 +1463,23 @@ function ResearchConnected() {
       return;
     }
 
+    if (!creativePackWasStarted(result.researchRunId)) return;
+
+    if (creativePackGroups.length) {
+      if (
+        creativePackStatus === "researching" ||
+        creativePackStatus === "generating" ||
+        !creativePackGroups.some((group) => group.status === "needs-retry")
+      ) return;
+      setCreativePackGroups((groups) => recoverCreativePackGroupsFromSceneRows({
+        groups,
+        rows: researchRunSceneRows,
+      }));
+      return;
+    }
+
     const hydratedGroups = hydrateCreativePackGroupsFromSceneRows({
-      minimumReadyFormats: 2,
+      minimumReadyFormats: CREATIVE_PACK_MONEY_SHOT_READY_COUNT,
       rows: researchRunSceneRows,
     });
     if (!hydratedGroups.length) return;
@@ -1486,13 +1524,13 @@ function ResearchConnected() {
       group.status === "ready" &&
       group.scenes[0]?.metadata.researchRunId === researchRunId
     ));
-    if (existingGroup?.scenes.length && hasPlayableCreativePackScenes(format, existingGroup.scenes)) return existingGroup;
+    if (existingGroup?.scenes.length && hasPlayableCreativePackScenes(existingGroup.scenes)) return existingGroup;
 
     if (
       adScenes.length &&
       adScenes[0]?.format === format &&
       adScenes[0]?.metadata.researchRunId === researchRunId &&
-      hasPlayableCreativePackScenes(format, adScenes)
+      hasPlayableCreativePackScenes(adScenes)
     ) {
       return {
         format,
@@ -1539,53 +1577,8 @@ function ResearchConnected() {
       if (templateId) setSelectedVideoMemeTemplateId(templateId);
     }
     applyGeneratedScenes(group.scenes, group.sceneIds, {
-      autoGenerateAudio: false,
       note: `${group.label} from your creative pack is ready. Press spacebar to compare variants.`,
     });
-  };
-
-  const generateCreativePackAudioForScene = async (
-    scene: AdScene,
-    sceneId: Id<"adScenes"> | null | undefined,
-  ) => {
-    if (scene.audio.status === "generated") return scene;
-
-    if (scene.format === "jingle") {
-      const result = await generateJingleAudioForScene({
-        anonymousId: getCurrentAnonymousId(),
-        ...(sceneId ? { sceneId } : {}),
-        scene,
-      }) as { scene: AdScene };
-      return result.scene;
-    }
-
-    if (scene.format === "brainrot") {
-      const result = await generateBrainrotAudioForScene({
-        anonymousId: getCurrentAnonymousId(),
-        ...(sceneId ? { sceneId } : {}),
-        scene,
-      }) as { scene: AdScene };
-      return result.scene;
-    }
-
-    if (scene.format === "visualizer") {
-      const scriptsResult = await generateDialogueScripts({
-        scene,
-        count: 1,
-      }) as { scripts: DialogueScript[] };
-      const script = scriptsResult.scripts?.[0];
-      if (!script) throw new Error("Dialogue script generation returned no scripts.");
-
-      const result = await generateDialogueAudioForScene({
-        anonymousId: getCurrentAnonymousId(),
-        ...(sceneId ? { sceneId } : {}),
-        scene,
-        script,
-      }) as { scene: AdScene };
-      return result.scene;
-    }
-
-    return scene;
   };
 
   const generateCreativePackFormat = async (
@@ -1594,7 +1587,7 @@ function ResearchConnected() {
   ) => {
     const researchResult = research.result || result;
     const packFormat = CREATIVE_PACK_FORMATS.find((item) => item.format === format);
-    const reviewProductHandles = format === "reviews" || format === "motion-story" ? getCreativePackReviewProductHandles(researchResult) : [];
+    const reviewProductHandles = format === "reviews" ? getCreativePackReviewProductHandles(researchResult) : [];
     const generation = await generateScenesForResearch(
       research.researchRunId as Id<"researchRuns">,
       packFormat?.count || 1,
@@ -1612,16 +1605,9 @@ function ResearchConnected() {
       scenes = scenes.slice(0, 1);
       sceneIds = sceneIds.slice(0, 1);
     }
-    if (format === "visualizer" || format === "jingle" || format === "motion-story") {
+    if (format === "visualizer" || format === "jingle") {
       scenes = scenes.slice(0, 1);
       sceneIds = sceneIds.slice(0, 1);
-    }
-
-    if (isCreativePackAudioFormat(format)) {
-      const firstScene = scenes[0] || null;
-      if (!firstScene) throw new Error(`${getCreativePackFormatLabel(format)} returned no playable scene.`);
-      const audioScene = await generateCreativePackAudioForScene(firstScene, sceneIds[0]);
-      scenes = [audioScene];
     }
 
     return {
@@ -1661,8 +1647,8 @@ function ResearchConnected() {
       status: "generating",
       startedAt,
       elapsedMs: 0,
-      actionLabel: isCreativePackAudioFormat(format) ? "Generating playable audio" : "Generating ads",
-      publicMessage: isCreativePackAudioFormat(format) ? "Writing it, then attaching audio." : "Generating now.",
+      actionLabel: "Generating preview",
+      publicMessage: "Generating now.",
       message: "Generating now.",
       debugMessage: "",
     }));
@@ -1692,7 +1678,7 @@ function ResearchConnected() {
       if (softTimer) clearTimeout(softTimer);
       const scenes = generation.scenes || [];
       if (!scenes.length) throw new Error(`${label} returned no ads.`);
-      if (!hasPlayableCreativePackScenes(format, scenes)) throw new Error(`${label} returned no playable audio.`);
+      if (!hasPlayableCreativePackScenes(scenes)) throw new Error(`${label} returned no preview.`);
 
       updateCreativePackGroup(format, (candidate) => ({
         ...candidate,
@@ -1716,18 +1702,18 @@ function ResearchConnected() {
           setUrl(reusableResearch.result.websiteUrl);
         }
         applyGeneratedScenes(scenes, generation.sceneIds || [], {
-          autoGenerateAudio: false,
           note: `${label} is ready from your creative pack retry.`,
         });
       }
     } catch (nextError) {
       if (softTimer) clearTimeout(softTimer);
+      const failure = getCreativePackFailure(format, nextError);
       updateCreativePackGroup(format, (candidate) => ({
         ...candidate,
-        status: "needs-retry",
-        publicMessage: "Needs retry.",
-        message: "Needs retry.",
-        debugMessage: getAdGenerationErrorMessage(nextError),
+        status: failure.status,
+        publicMessage: failure.message,
+        message: failure.message,
+        debugMessage: failure.debugMessage,
         elapsedMs: Date.now() - startedAt,
       }));
       setCreativePackStatus("ready");
@@ -1864,6 +1850,7 @@ function ResearchConnected() {
     if (!research) return;
 
     const packRunKey = `${research.researchRunId}:${normalizedUrlKey(research.result?.websiteUrl || url)}`;
+    creativePackWasStarted(research.researchRunId, true);
     const initialGroups = createCreativePackGroupsForResearch(research.researchRunId, research.result || undefined);
     const alreadyRan = creativePackRunKeysRef.current.has(packRunKey);
     setCreativePackGroups(initialGroups);
@@ -1885,7 +1872,6 @@ function ResearchConnected() {
         setUrl(group.researchResult.websiteUrl);
       }
       applyGeneratedScenes(group.scenes, group.sceneIds, {
-        autoGenerateAudio: false,
         note,
       });
       return true;
@@ -1902,7 +1888,7 @@ function ResearchConnected() {
     }
 
     const formatsToGenerate = initialGroups
-      .filter((group) => group.status !== "ready")
+      .filter((group) => !isCreativePackTerminalStatus(group.status))
       .map((group) => group.format);
     if (!formatsToGenerate.length) {
       setCreativePackStatus("ready");
@@ -1965,7 +1951,6 @@ function ResearchConnected() {
         setUrl(generation.researchResult.websiteUrl);
       }
       applyGeneratedScenes(generation.scenes, generation.sceneIds, {
-        autoGenerateAudio: false,
         note: `${getCreativePackFormatLabel(format)} is ready. Other directions can keep landing without stealing the preview.`,
       });
     };
@@ -1980,9 +1965,9 @@ function ResearchConnected() {
         status: "generating",
         startedAt,
         elapsedMs: 0,
-        actionLabel: isCreativePackAudioFormat(format) ? "Generating playable audio" : "Generating ads",
+        actionLabel: "Generating preview",
         message: "Generating now.",
-        publicMessage: isCreativePackAudioFormat(format) ? "Writing it, then attaching audio." : "Generating now.",
+        publicMessage: "Generating now.",
         debugMessage: "",
       }));
       softTimer = setTimeout(() => {
@@ -2009,7 +1994,7 @@ function ResearchConnected() {
         if (creativePackRunRef.current?.id !== runToken.id) return;
         const scenes = generation.scenes || [];
         if (!scenes.length) throw new Error(`${getCreativePackFormatLabel(format)} returned no ads.`);
-        if (!hasPlayableCreativePackScenes(format, scenes)) throw new Error(`${label} returned no playable audio.`);
+        if (!hasPlayableCreativePackScenes(scenes)) throw new Error(`${label} returned no preview.`);
 
         readyFormats.add(format);
         terminalFormats.add(format);
@@ -2046,12 +2031,13 @@ function ResearchConnected() {
           return;
         }
         terminalFormats.add(format);
+        const failure = getCreativePackFailure(format, nextError);
         updateCreativePackGroup(format, (group) => ({
           ...group,
-          status: "needs-retry",
-          message: "Needs retry.",
-          publicMessage: "Needs retry.",
-          debugMessage: getAdGenerationErrorMessage(nextError),
+          status: failure.status,
+          message: failure.message,
+          publicMessage: failure.message,
+          debugMessage: failure.debugMessage,
           elapsedMs: Date.now() - startedAt,
         }));
         // TODO(analytics): creative_pack_group_unavailable.
@@ -2271,9 +2257,6 @@ function ResearchConnected() {
     resetDialogueState();
     resetSaveState();
     triggerRerollFlash(getSceneDefaultFlashSlots(nextScene));
-    if (nextScene.format === "jingle" && nextScene.audio.status !== "generated") {
-      void generateJingleMusicForScene(nextScene, sceneIds[next.index]);
-    }
   }, [
     adScenes,
     adStatus,
@@ -2914,9 +2897,6 @@ function ResearchConnected() {
     resetShareState();
     resetRenderState();
     resetBrickStoryboardState();
-    if (scene.format === "jingle" && scene.audio.status !== "generated") {
-      void generateJingleMusicForScene(scene, sceneIds[index]);
-    }
   };
 
   const onGenerateBrickStoryboard = async () => {

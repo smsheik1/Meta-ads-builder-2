@@ -237,7 +237,7 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     }
 
     if (format === "brainrot") {
-      const generation = await generateBrainrotVariantsFromResearch(research);
+      const generation = await generateBrainrotVariantsFromResearch(research, { count });
       const scenes = generation.variants.map((variant, index) => createBrainrotAdScene({
         research,
         variant,
