@@ -65,6 +65,17 @@ const metadataText = (research: StoredWebsiteResearchResult, ...keys: string[]) 
   .filter((value): value is string => typeof value === "string")
   .join(" ");
 
+const isDirectProductPage = (research: StoredWebsiteResearchResult) => {
+  try {
+    const segments = new URL(research.finalUrl || research.websiteUrl).pathname
+      .split("/")
+      .filter(Boolean);
+    return segments.length >= 2 && /^(?:product|products)$/i.test(segments[0]!);
+  } catch {
+    return false;
+  }
+};
+
 const selectProductOgImage = (
   research: StoredWebsiteResearchResult,
 ): ThreeDBreakdownAdScene["layout"]["productAnchor"] => {
@@ -79,10 +90,17 @@ const selectProductOgImage = (
     ...research.brandBrief.siteLanguage,
   ].join(" "));
   const imageIdentity = normalizeProductText(`${imageUrl} ${imageAlt}`);
-  if (!productHeroTerms.test(productEvidence) || logoOnlyTerms.test(imageIdentity)) return undefined;
+  const directProductPage = isDirectProductPage(research);
+  if ((!directProductPage && !productHeroTerms.test(productEvidence)) || logoOnlyTerms.test(imageIdentity)) return undefined;
+
+  const pageProductTitle = research.brand.title
+    .split(/\s*[|•]\s*/)[0]
+    ?.trim();
 
   return {
-    title: `${research.brand.name || "Featured"} products`,
+    title: directProductPage && pageProductTitle
+      ? pageProductTitle
+      : `${research.brand.name || "Featured"} products`,
     url: research.finalUrl || research.websiteUrl,
     imageUrl,
     imageAlt: imageAlt || research.brand.title,
@@ -127,6 +145,11 @@ const scoreProductHeroCandidate = (
 export const selectThreeDBreakdownProductAnchor = (
   research: StoredWebsiteResearchResult,
 ): ThreeDBreakdownAdScene["layout"]["productAnchor"] => {
+  if (isDirectProductPage(research)) {
+    const directPageProduct = selectProductOgImage(research);
+    if (directPageProduct) return directPageProduct;
+  }
+
   const scoredProducts = (research.productCatalog?.products || [])
     .map((product, index) => ({
       product,
