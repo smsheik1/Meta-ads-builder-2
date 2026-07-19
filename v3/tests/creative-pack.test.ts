@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import {
   CREATIVE_PACK_HARD_TIMEOUT_MS,
   CREATIVE_PACK_MONEY_SHOT_READY_COUNT,
@@ -13,6 +15,7 @@ import {
   isCreativePackTerminalStatus,
   recoverCreativePackGroupsFromSceneRows,
 } from "../features/create/creativePack";
+import { CreateCreativePackOverview } from "../app/create/CreateCreativePackOverview";
 import type { AdScene } from "../features/scene/types";
 
 const formatIds = CREATIVE_PACK_FORMATS.map((item) => item.format);
@@ -56,9 +59,27 @@ assert.equal(isCreativePackAudioFormat("brainrot"), true);
 assert.equal(isCreativePackAudioFormat("visualizer"), true);
 assert.equal(isCreativePackAudioFormat("reviews"), false);
 assert.equal(isCreativePackTerminalStatus("ready"), true);
+assert.equal(isCreativePackTerminalStatus("needs-input"), true);
 assert.equal(isCreativePackTerminalStatus("needs-retry"), true);
 assert.equal(isCreativePackTerminalStatus("cancelled"), true);
 assert.equal(isCreativePackTerminalStatus("still-cooking"), false);
+
+const missingProofCard = renderToStaticMarkup(createElement(CreateCreativePackOverview, {
+  groups: [{
+    format: "reviews",
+    label: "Reviews",
+    status: "needs-input",
+    scenes: [],
+    sceneIds: [],
+    publicMessage: "Needs two real customer quotes from a page you share.",
+  }],
+  onSelectGroup: () => {},
+  selectedFormat: null,
+  status: "ready",
+}));
+assert.ok(missingProofCard.includes("Needs customer quotes"));
+assert.ok(missingProofCard.includes("Needs two real customer quotes from a page you share."));
+assert.ok(missingProofCard.includes('data-creative-pack-card-state="needs-input"'));
 
 const fakeScene = (format: string, audioUrl = "") => ({
   audio: audioUrl ? { status: "generated", url: audioUrl } : { status: "idle" },

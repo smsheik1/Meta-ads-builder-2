@@ -141,6 +141,9 @@ function getMusicGenerationErrorMessage(error: unknown) {
   if (/paid_plan_required|payment_required|402/i.test(message)) {
     return "Music generation failed: ElevenLabs Music requires a paid plan for this API key.";
   }
+  if (/fish.*(?:401|invalid token)|invalid token.*fish/i.test(message)) {
+    return "Music generation failed: the Fish voice API key is invalid. Update it, then try again.";
+  }
   if (!message) return "Music generation failed.";
   if (/^music generation failed/i.test(message)) return message;
   return `Music generation failed: ${message}`;
@@ -275,7 +278,26 @@ function getAdGenerationErrorMessage(error: unknown) {
     }
     return "Ad generation timed out. Try again.";
   }
+  if (/NVIDIA NIM.*(?:\b500\b|internal server error|upstream)/i.test(message)) {
+    return "The writing model had a temporary problem. Press Generate ads to try again.";
+  }
   return message || "Ad generation failed.";
+}
+
+function getCreativePackFailure(format: CreativePackFormat, error: unknown) {
+  const debugMessage = getAdGenerationErrorMessage(error);
+  if (format === "reviews" && /at least 2 actual review or testimonial lines/i.test(debugMessage)) {
+    return {
+      status: "needs-input" as const,
+      message: "Needs two real customer quotes from a page you share.",
+      debugMessage,
+    };
+  }
+  return {
+    status: "needs-retry" as const,
+    message: "Needs retry.",
+    debugMessage,
+  };
 }
 
 function getSceneDefaultFlashSlots(scene: AdScene): RenderFlashRole[] {
@@ -1685,12 +1707,13 @@ function ResearchConnected() {
       }
     } catch (nextError) {
       if (softTimer) clearTimeout(softTimer);
+      const failure = getCreativePackFailure(format, nextError);
       updateCreativePackGroup(format, (candidate) => ({
         ...candidate,
-        status: "needs-retry",
-        publicMessage: "Needs retry.",
-        message: "Needs retry.",
-        debugMessage: getAdGenerationErrorMessage(nextError),
+        status: failure.status,
+        publicMessage: failure.message,
+        message: failure.message,
+        debugMessage: failure.debugMessage,
         elapsedMs: Date.now() - startedAt,
       }));
       setCreativePackStatus("ready");
@@ -1865,7 +1888,7 @@ function ResearchConnected() {
     }
 
     const formatsToGenerate = initialGroups
-      .filter((group) => group.status !== "ready")
+      .filter((group) => !isCreativePackTerminalStatus(group.status))
       .map((group) => group.format);
     if (!formatsToGenerate.length) {
       setCreativePackStatus("ready");
@@ -2008,12 +2031,13 @@ function ResearchConnected() {
           return;
         }
         terminalFormats.add(format);
+        const failure = getCreativePackFailure(format, nextError);
         updateCreativePackGroup(format, (group) => ({
           ...group,
-          status: "needs-retry",
-          message: "Needs retry.",
-          publicMessage: "Needs retry.",
-          debugMessage: getAdGenerationErrorMessage(nextError),
+          status: failure.status,
+          message: failure.message,
+          publicMessage: failure.message,
+          debugMessage: failure.debugMessage,
           elapsedMs: Date.now() - startedAt,
         }));
         // TODO(analytics): creative_pack_group_unavailable.

@@ -51,7 +51,7 @@ const creativePackStatusLabel: Record<CreativePackGroupStatus, string> = {
   generating: "Loading",
   "still-cooking": "Still cooking",
   ready: "Ready",
-  "needs-retry": "Needs retry",
+  "needs-input": "Needs quotes", "needs-retry": "Needs retry",
   cancelled: "Cancelled",
 };
 
@@ -226,7 +226,7 @@ function CreativePackMiniStatus({
           const ready = groupStatus === "ready" && Boolean(group?.scenes.length);
           const selected = selectedFormat === packFormat;
           const loading = groupStatus === "pending" || groupStatus === "generating" || groupStatus === "still-cooking";
-          const failed = groupStatus === "needs-retry" || groupStatus === "cancelled";
+          const needsInput = groupStatus === "needs-input", failed = groupStatus === "needs-retry" || groupStatus === "cancelled";
           const statusText = creativePackStatusLabel[groupStatus];
           const retryable = failed && !packBusy && Boolean(onRetryGroup);
           const title = `${label}: ${statusText}${retryable ? ". Retry this format." : ""}`;
@@ -237,7 +237,7 @@ function CreativePackMiniStatus({
               type="button"
               title={title}
               aria-label={title}
-              disabled={loading || (!ready && !retryable)}
+              disabled={loading || needsInput || (!ready && !retryable)}
               onClick={() => {
                 if (ready) onSelectGroup?.(packFormat);
                 else if (retryable) onRetryGroup?.(packFormat);
@@ -247,6 +247,8 @@ function CreativePackMiniStatus({
                   ? "border-slate-950 bg-slate-950 text-white shadow-lg shadow-slate-950/10"
                   : ready
                     ? "border-emerald-100 bg-white text-slate-950 hover:border-emerald-200 hover:shadow-sm"
+                    : needsInput
+                      ? "border-amber-100 bg-amber-50/60 text-slate-600"
                     : failed
                       ? "border-rose-100 bg-white text-slate-500"
                       : "border-slate-100 bg-white text-slate-500"
@@ -257,6 +259,8 @@ function CreativePackMiniStatus({
               <span className="grid size-4 shrink-0 place-items-center">
                 {ready ? (
                   <Check className={`size-4 ${selected ? "text-white" : "text-emerald-500"}`} />
+                ) : needsInput ? (
+                  <XCircle className="size-4 text-amber-500" />
                 ) : failed ? (
                   <XCircle className="size-4 text-rose-400" />
                 ) : loading ? (
@@ -265,7 +269,7 @@ function CreativePackMiniStatus({
                   <Circle className="size-3 text-slate-300" />
                 )}
               </span>
-              <span className="min-w-0 truncate text-xs font-black">{failed ? `${label} · Retry` : label}</span>
+              <span className="min-w-0 truncate text-xs font-black">{failed ? `${label} · Retry` : needsInput ? `${label} · Quotes` : label}</span>
             </button>
           );
         })}

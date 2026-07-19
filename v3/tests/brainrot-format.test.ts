@@ -129,6 +129,24 @@ assert.equal(retryResult.variants.length, BRAINROT_VARIANT_COUNT);
 assert.equal((capturedGuidedJson?.properties as { variants?: { minItems?: number } })?.variants?.minItems, BRAINROT_VARIANT_COUNT);
 assert.equal(capturedMaxTokens, 2800, "Brainrot must cap the structured response before it grows into an incomplete script batch.");
 
+let capturedSingleGuidedJson: Record<string, unknown> | undefined;
+let capturedSingleMaxTokens = 0;
+const singlePreviewResult = await generateBrainrotVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimBaseUrl: "https://nim.test/v1",
+  nvidiaNimModel: "test-kimi-model",
+  nvidiaNimChatCompletion: async ({ guidedJson, maxTokens }) => {
+    capturedSingleGuidedJson = guidedJson;
+    capturedSingleMaxTokens = maxTokens || 0;
+    return JSON.stringify({ variants: [variants[0]] });
+  },
+});
+assert.equal(singlePreviewResult.variants.length, 1, "A Creative Pack preview should ask NVIDIA NIM for only one Brainrot script.");
+assert.equal((capturedSingleGuidedJson?.properties as { variants?: { minItems?: number; maxItems?: number } })?.variants?.minItems, 1);
+assert.equal((capturedSingleGuidedJson?.properties as { variants?: { minItems?: number; maxItems?: number } })?.variants?.maxItems, 1);
+assert.equal(capturedSingleMaxTokens, 1200, "A one-script pack preview must use a smaller output budget than the three-script direct flow.");
+
 const scenes = parsed.map((variant, index) => createBrainrotAdScene({
   research,
   variant,

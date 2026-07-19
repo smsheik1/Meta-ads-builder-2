@@ -7,7 +7,6 @@ import type {
 } from "@/features/create/creativePack";
 import {
   CREATIVE_PACK_MONEY_SHOT_READY_COUNT as moneyShotReadyCount,
-  isCreativePackAudioFormat,
   isCreativePackTerminalStatus as isTerminalStatus,
 } from "@/features/create/creativePack";
 import type { StoredWebsiteResearchResult } from "@/features/research/types";
@@ -41,6 +40,7 @@ const statusCopy: Record<CreativePackGroupStatus, string> = {
   generating: "Generating",
   "still-cooking": "Still cooking",
   ready: "Ready",
+  "needs-input": "Needs customer quotes",
   "needs-retry": "Needs retry",
   cancelled: "Cancelled",
 };
@@ -48,6 +48,7 @@ const statusCopy: Record<CreativePackGroupStatus, string> = {
 function StatusIcon({ status }: { status: CreativePackGroupStatus }) {
   if (status === "ready") return <Check className="size-4 text-emerald-500" />;
   if (status === "generating" || status === "still-cooking") return <Loader2 className="size-4 animate-spin text-indigo-500" />;
+  if (status === "needs-input") return <XCircle className="size-4 text-amber-500" />;
   if (status === "needs-retry" || status === "cancelled") return <XCircle className="size-4 text-slate-400" />;
   return <Clock3 className="size-4 text-slate-300" />;
 }
@@ -63,6 +64,7 @@ function getCardState({
 }) {
   if (selected) return "opened";
   if (ready) return "ready";
+  if (status === "needs-input") return "needs-input";
   if (status === "needs-retry") return "needs-retry";
   if (status === "cancelled") return "cancelled";
   return "loading";
@@ -156,23 +158,6 @@ function ResearchBeat({
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-function AudioSkeleton({ selected }: { selected: boolean }) {
-  return (
-    <div className="flex h-8 items-end justify-center gap-1">
-      {Array.from({ length: 9 }).map((_, index) => (
-        <span
-          key={index}
-          className={`w-1 rounded-full ${selected ? "bg-white/55" : "bg-slate-300"} animate-pulse`}
-          style={{
-            height: `${9 + ((index * 7) % 18)}px`,
-            animationDelay: `${index * 70}ms`,
-          }}
-        />
-      ))}
     </div>
   );
 }
@@ -277,7 +262,9 @@ export function CreateCreativePackOverview({
                   ? "border-slate-950 bg-slate-950 text-white shadow-xl shadow-slate-950/15"
                   : ready
                     ? "border-emerald-100 bg-white text-slate-950 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-950/10"
-                    : group.status === "needs-retry"
+                    : group.status === "needs-input"
+                      ? "border-amber-100 bg-amber-50/60 text-slate-600"
+                      : group.status === "needs-retry"
                       ? "border-rose-100 bg-rose-50/60 text-slate-500"
                       : "border-slate-100 bg-slate-50 text-slate-500"
               } ${ready ? "scale-100 opacity-100" : "scale-[0.99] opacity-90"} ${moneyShotActive && ready ? "animate-[creativePackReadyGlow_760ms_ease-out_both]" : "animate-[creativePackCardIn_420ms_ease-out_both]"}`}
@@ -318,7 +305,7 @@ export function CreateCreativePackOverview({
                   </p>
                 ) : group.status === "pending" || group.status === "generating" || group.status === "still-cooking" ? (
                   <div>
-                    {isCreativePackAudioFormat(group.format) ? <AudioSkeleton selected={selected} /> : <TextSkeleton selected={selected} />}
+                    <TextSkeleton selected={selected} />
                     <p className="mt-1.5 line-clamp-2 text-xs font-bold leading-4">
                       {publicMessage}
                     </p>

@@ -27,6 +27,7 @@ export type BrainrotVariant = {
 };
 
 type GenerateBrainrotVariantsOptions = {
+  count?: number;
   nvidiaNimApiKey?: string;
   nvidiaNimBaseUrl?: string;
   nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
@@ -36,14 +37,19 @@ type GenerateBrainrotVariantsOptions = {
 
 const DEFAULT_TIMEOUT_MS = 60_000;
 const bannedPhrases = ["unlock", "elevate", "game-changer", "transform", "revolutionary", "supercharge", "level up"];
-const brainrotGuidedJson: Record<string, unknown> = {
+const normalizeVariantCount = (count?: number) => Math.max(
+  1,
+  Math.min(BRAINROT_VARIANT_COUNT, Math.round(count ?? BRAINROT_VARIANT_COUNT)),
+);
+
+const createBrainrotGuidedJson = (variantCount: number): Record<string, unknown> => ({
   type: "object",
   additionalProperties: false,
   properties: {
     variants: {
       type: "array",
-      minItems: BRAINROT_VARIANT_COUNT,
-      maxItems: BRAINROT_VARIANT_COUNT,
+      minItems: variantCount,
+      maxItems: variantCount,
       items: {
         type: "object",
         additionalProperties: false,
@@ -70,7 +76,7 @@ const brainrotGuidedJson: Record<string, unknown> = {
     },
   },
   required: ["variants"],
-};
+});
 
 const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.test(String(value || ""));
 
@@ -108,6 +114,7 @@ export function extractBrainrotVariantsFromResponse(
   content: string,
   brandName: string,
   providerLabel = "Brainrot provider",
+  expectedCount = BRAINROT_VARIANT_COUNT,
 ): BrainrotVariant[] {
   const payload = parseJsonObject(content, providerLabel);
   const rawVariants = Array.isArray(payload.variants) ? payload.variants : [];
@@ -141,7 +148,7 @@ export function extractBrainrotVariantsFromResponse(
     variants.push({ angle, beats, selfCheckPassed });
   }
 
-  if (variants.length !== BRAINROT_VARIANT_COUNT) {
+  if (variants.length !== expectedCount) {
     throw new Error(`${providerLabel} returned incomplete brainrot variants.`);
   }
   return variants;
@@ -152,7 +159,8 @@ export async function generateBrainrotVariantsFromResearch(
   options: GenerateBrainrotVariantsOptions = {},
 ) {
   const brandName = research.brandBrief.brandName || research.brand.name;
-  const prompt = buildBrainrotPrompt(research, BRAINROT_VARIANT_COUNT);
+  const variantCount = normalizeVariantCount(options.count);
+  const prompt = buildBrainrotPrompt(research, variantCount);
   const nvidiaNimModel = options.nvidiaNimModel
     || process.env.NVIDIA_NIM_BRAINROT_MODEL
     || DEFAULT_NVIDIA_NIM_WERE_SORRY_MODEL;
@@ -172,11 +180,11 @@ export async function generateBrainrotVariantsFromResearch(
       model: nvidiaNimModel,
       nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
       prompt,
-      guidedJson: brainrotGuidedJson,
-      maxTokens: 2800,
+      guidedJson: createBrainrotGuidedJson(variantCount),
+      maxTokens: variantCount === 1 ? 1200 : 2800,
       timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
     });
-    const variants = extractBrainrotVariantsFromResponse(content, brandName, "NVIDIA NIM");
+    const variants = extractBrainrotVariantsFromResponse(content, brandName, "NVIDIA NIM", variantCount);
 
     return {
       variants,
@@ -185,7 +193,7 @@ export async function generateBrainrotVariantsFromResearch(
       providerStatus: {
         provider: "nvidia-nim" as const,
         status: "used" as const,
-        reason: `Generated ${BRAINROT_VARIANT_COUNT} brainrot scripts with ${nvidiaNimModel}.`,
+        reason: `Generated ${variantCount} brainrot ${variantCount === 1 ? "script" : "scripts"} with ${nvidiaNimModel}.`,
       },
     };
   } catch (error) {

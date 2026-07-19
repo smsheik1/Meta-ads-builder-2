@@ -18,7 +18,7 @@ export const CREATIVE_PACK_FORMATS = [
 
 export type CreativePackFormat = typeof CREATIVE_PACK_FORMATS[number]["format"];
 export type CreativePackStatus = "idle" | "researching" | "generating" | "ready" | "error" | "cancelled";
-export type CreativePackGroupStatus = "pending" | "generating" | "still-cooking" | "ready" | "needs-retry" | "cancelled";
+export type CreativePackGroupStatus = "pending" | "generating" | "still-cooking" | "ready" | "needs-input" | "needs-retry" | "cancelled";
 
 export const CREATIVE_PACK_SHOWCASE_PRIORITY = [
   "jingle",
@@ -53,7 +53,7 @@ export function hasPlayableCreativePackScenes(scenes: AdScene[]) {
 }
 
 export function isCreativePackTerminalStatus(status: CreativePackGroupStatus) {
-  return status === "ready" || status === "needs-retry" || status === "cancelled";
+  return status === "ready" || status === "needs-input" || status === "needs-retry" || status === "cancelled";
 }
 
 export function getCreativePackFormatLabel(format: CreativePackFormat) {

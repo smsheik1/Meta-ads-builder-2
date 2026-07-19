@@ -156,6 +156,17 @@ assert.ok(
   "/create must keep Video Meme's first batch small and must never spend on jingle audio until the user presses the visible audio control.",
 );
 assert.ok(
+  createClientSource.includes('format === "reviews" && /at least 2 actual review or testimonial lines/i.test(debugMessage)') &&
+    createClientSource.includes('status: "needs-input" as const') &&
+    createClientSource.includes('Needs two real customer quotes from a page you share.') &&
+    createLeftColumnSource.includes('const needsInput = groupStatus === "needs-input"'),
+  "Creative Pack must say when review proof is missing instead of presenting that site-data gap as a retryable generation failure.",
+);
+assert.ok(
+  adScenesSource.includes('generateBrainrotVariantsFromResearch(research, { count })'),
+  "A one-script Creative Pack Brainrot preview must not ask NVIDIA NIM to write the three-script direct-generation batch.",
+);
+assert.ok(
   createClientSource.includes("sceneIds[selectedSceneIndex]") &&
     createClientSource.includes("row.generationBatchId === selectedScene?.metadata.generationBatchId") &&
     createClientSource.includes("const sceneId = selectedSceneId;") &&
