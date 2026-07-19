@@ -1952,13 +1952,14 @@ assert.ok(cookieClipPrompt.length <= 3900);
 
 const wellnessClipPrompt = buildThreeDSeedancePrompt(styleBScene, {
   ...styleBScene.layout.clipPlans![0]!,
-  prompt: "A massage gun head presses into a dense pink muscle wall, then the camera moves inside the muscle tissue interior.",
+  prompt: "An xray view shows a massage gun head penetrating muscle tissue while a knot shrinks and dissolves.",
 });
 assert.ok(wellnessClipPrompt.includes("handheld percussion attachment"));
-assert.ok(wellnessClipPrompt.includes("dense stylized elastic fiber wall"));
-assert.ok(wellnessClipPrompt.includes("stylized elastic fiber interior"));
+assert.ok(wellnessClipPrompt.includes("transparent cutaway"));
+assert.ok(wellnessClipPrompt.includes("moving through stylized elastic fibers"));
+assert.ok(wellnessClipPrompt.includes("tight fiber bundle loosens and opens"));
 assert.ok(wellnessClipPrompt.includes("benign consumer wellness product demonstration"));
-assert.doesNotMatch(wellnessClipPrompt, /\b(?:massage gun|gun head|muscle tissue)\b/i);
+assert.doesNotMatch(wellnessClipPrompt, /\b(?:massage gun|gun head|muscle|tissue|knot|x-?ray|penetrating|dissolves?)\b/i);
 assert.ok(!cookieClipPrompt.includes("SUPPLEMENT ROUTINE STORY"));
 assert.ok(!cookieClipPrompt.includes("SUPPLEMENT BODY-ROUTE STORY"));
 const supplementScene = {
