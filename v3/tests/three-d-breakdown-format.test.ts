@@ -345,6 +345,50 @@ assert.deepEqual(selectThreeDBreakdownProductAnchor(seedOgProductResearch), {
   imageAlt: "Seed daily supplement lineup",
 });
 
+const theragunProductPageResearch = makeResearch({
+  websiteUrl: "https://www.therabody.com/products/theragun-pro-plus",
+  finalUrl: "https://www.therabody.com/products/theragun-pro-plus",
+  host: "www.therabody.com",
+  brand: {
+    ...research.brand,
+    name: "Therabody",
+    title: "Theragun PRO Plus | Powerful Percussive Massage",
+    description: "Theragun PRO Plus combines heated percussive and vibration therapy.",
+    logoUrl: "https://cdn.example/therabody-logo.svg",
+    faviconUrl: "https://cdn.example/therabody-favicon.png",
+    ogImageUrl: "https://cdn.example/theragun-pro-plus.png",
+  },
+  metadata: {
+    "og:image:alt": "Theragun PRO Plus massage device",
+  },
+  productCatalog: {
+    provider: "shopify-products-json",
+    sourceUrl: "https://www.therabody.com/products.json",
+    groups: { bestSellers: ["back-legs-bundle"] },
+    summary: { productCount: 1, bestSellerCount: 1 },
+    products: [{
+      title: "Back & Legs Bundle",
+      handle: "back-legs-bundle",
+      url: "https://www.therabody.com/products/back-legs-bundle",
+      imageUrl: "https://cdn.example/back-legs-bundle.png",
+      imageAlt: "Back and legs recovery bundle",
+      productType: "Bundle",
+      vendor: "Therabody",
+      priceMin: null,
+      priceMax: null,
+      currency: null,
+      available: true,
+      badges: ["best-seller"],
+    }],
+  },
+});
+assert.deepEqual(selectThreeDBreakdownProductAnchor(theragunProductPageResearch), {
+  title: "Theragun PRO Plus",
+  url: "https://www.therabody.com/products/theragun-pro-plus",
+  imageUrl: "https://cdn.example/theragun-pro-plus.png",
+  imageAlt: "Theragun PRO Plus massage device",
+});
+
 const logoOnlyOgResearch = makeResearch({
   ...seedOgProductResearch,
   brand: {
