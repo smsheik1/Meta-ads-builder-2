@@ -859,6 +859,10 @@ const structuredErrorFrom = (error: unknown) => ({
   message: error instanceof Error ? error.message : String(error),
 });
 
+const isNvidiaNimTimeout = (error: unknown) => (
+  /NVIDIA NIM 3D Breakdown director timed out/i.test(error instanceof Error ? error.message : String(error))
+);
+
 const parseDirectorOutput = (
   raw: string,
   evidenceItems: ThreeDBreakdownEvidenceItem[],
@@ -1024,6 +1028,8 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     model: nvidiaNimModel,
     nvidiaNimChatCompletion,
     prompt: directorPrompt,
+    stream: true,
+    structuredOutput: false,
     temperature: 0.45,
     timeoutMs: DEFAULT_TIMEOUT_MS,
   });
@@ -1083,7 +1089,17 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     elapsedMs: Date.now() - startedAt,
     timeoutMs: DEFAULT_TIMEOUT_MS,
   });
-  const raw = await callDirector(prompt);
+  let raw: string;
+  try {
+    raw = await callDirector(prompt);
+  } catch (error) {
+    if (!isNvidiaNimTimeout(error)) throw error;
+    console.warn("[wiggly:3d-breakdown] director:transport:retry", {
+      elapsedMs: Date.now() - startedAt,
+      reason: error instanceof Error ? error.message : String(error),
+    });
+    raw = await callDirector(prompt);
+  }
   console.log("[wiggly:3d-breakdown] director:call:ready", {
     attempt: "initial",
     elapsedMs: Date.now() - startedAt,
