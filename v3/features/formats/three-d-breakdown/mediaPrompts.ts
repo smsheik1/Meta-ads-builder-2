@@ -133,6 +133,14 @@ const makeWellnessMotionPromptProviderSafe = (value: string) => value
   .replace(/\bknot\b/gi, "tight fiber bundle")
   .replace(/\bmuscle\b/gi, "elastic fiber model");
 
+const makeMotionPromptPixelSafe = (value: string) => value
+  .replace(/\bprogress blocks\b/gi, "plain metallic blocks")
+  .replace(
+    /\bshowing faster prep time versus one block for cold massage\b/gi,
+    "beside one contrasting metallic block, conveying the comparison through stacking and scale only",
+  )
+  .replace(/\bproof blocks\b/gi, "metallic comparison blocks");
+
 export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
   const plans = ([1, 2, 3, 4, 5, 6] as ThreeDBreakdownStoryboardFrameIndex[])
     .map((index) => `${framePlan(scene, index)} ROLE: ${frameRole(scene, index)}`)
@@ -187,12 +195,14 @@ export const buildThreeDSeedancePrompt = (
     "INPUT LOCK: the supplied first image is the exact opening composition and the supplied last image is the exact ending target. Begin on the first image, perform the approved physical changes, and arrive naturally at the last image without inventing another scene, person, or product.",
     "IDENTITY: keep the same CGI person. If endpoints hide the face, show only matching clothes, torso, and hands; never invent a face, mannequin, dummy, or photoreal human.",
     "MOTION: use direct cuts, push-throughs, object wipes, camera pushes, component reveals, or particle transitions. Change a product, prop, obstacle, component, or camera scale every 1-2 seconds; no static product with drifting particles and no empty transition frames.",
-    "No readable text, captions, labels, logos, UI, pseudo-writing, or watermarks; Wiggly adds every word later.",
+    "No readable text, captions, labels, logos, UI, pseudo-writing, or watermarks; Wiggly adds every word later. Never visualize a claim as a headline, sign, dashboard, title card, or written comparison.",
   ].join(" "));
   const wellnessSafetyContext = /\b(?:massage gun|gun head|muscle|tissue|knot|x-?ray)\b/i.test(rawPrompt)
     ? "SAFETY CONTEXT: benign consumer wellness product demonstration. Any fiber forms are clean educational models, not injured anatomy. No weapon use, violence, pain, injury, bodily harm, gore, or medical procedure."
     : "";
-  const prompt = makeWellnessMotionPromptProviderSafe(clean([rawPrompt, wellnessSafetyContext].join(" ")));
+  const prompt = makeMotionPromptPixelSafe(
+    makeWellnessMotionPromptProviderSafe(clean([rawPrompt, wellnessSafetyContext].join(" "))),
+  );
   if (prompt.length > MAX_SEEDANCE_PROMPT_CHARS) {
     throw new Error(`3D Breakdown Seedance prompt is ${prompt.length} characters; simplify the approved frame plan before generation.`);
   }
