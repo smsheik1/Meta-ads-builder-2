@@ -114,7 +114,6 @@ const claimRisks: ThreeDBreakdownClaimRisk[] = ["low", "medium", "high"];
 const visualStyles: ThreeDBreakdownVisualStyle[] = [...THREE_D_VISUAL_STYLES];
 const weakSiteCopy = "This page does not contain enough concrete evidence for a 3D Breakdown. Try a product, features, testimonials, case-study, or offer page - or use Visualizer for a lighter ad from this URL.";
 const MIN_VISUAL_POTENTIAL_SCORE = 0.7;
-const restrictedVerticalPattern = /\b(alcohol|beer|wine|vodka|whiskey|liquor|nicotine|tobacco|vape|cbd|thc|cannabis|marijuana|gambling|casino|betting|weapon|gun|rifle|ammo|adult product|porn|sex toy|political campaign|crypto|investment return|counterfeit|illegal service|extremist)\b/i;
 
 const cleanText = (value: unknown, maxLength = 900) => String(value ?? "")
   .replace(/[—–]/g, "-")
@@ -872,28 +871,7 @@ const parseDirectorOutput = (
   return { siteContract, variants };
 };
 
-const assertAllowedVertical = (research: StoredWebsiteResearchResult) => {
-  const productText = (research.productCatalog?.products || [])
-    .slice(0, 12)
-    .map((product) => `${product.title} ${product.productType || ""}`)
-    .join(" ");
-  const combined = [
-    research.brand.name,
-    research.brand.description,
-    research.brandBrief.offer,
-    research.brandBrief.audience,
-    ...research.brandBrief.proof,
-    ...research.brandBrief.siteLanguage,
-    ...research.evidence.receipts.specificClaims,
-    productText,
-  ].join(" ");
-  if (restrictedVerticalPattern.test(combined)) {
-    throw new Error(`${weakSiteCopy} restricted_vertical`);
-  }
-};
-
 const prepareThreeDBreakdownEvidence = (research: StoredWebsiteResearchResult, startedAt: number) => {
-  assertAllowedVertical(research);
   const evidenceItems = extractThreeDBreakdownEvidence(research);
   console.log("[wiggly:3d-breakdown] evidence:ready", {
     elapsedMs: Date.now() - startedAt,
