@@ -1139,6 +1139,27 @@ assert.deepEqual(
 );
 assert.equal(selectedDirectionGeneration.variants[0]?.ctaLine, selectedScriptPlan.ctaLine);
 
+let selectedDirectionTimeoutCalls = 0;
+const selectedDirectionAfterTimeout = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt, stream, structuredOutput }) => {
+    selectedDirectionTimeoutCalls += 1;
+    assert.equal(stream, true, "3D Breakdown director calls must use NVIDIA NIM streaming.");
+    assert.equal(structuredOutput, false, "Streaming director calls must rely on Wiggly's JSON parser.");
+    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+      return JSON.stringify(selectedScriptPlan);
+    }
+    if (selectedDirectionTimeoutCalls === 2) {
+      throw new Error("NVIDIA NIM 3D Breakdown director timed out after 75s.");
+    }
+    return JSON.stringify(selectedVisualPayload);
+  },
+  selectedStoryDirection,
+});
+assert.equal(selectedDirectionTimeoutCalls, 3, "A visual director timeout should retry once with the same model request.");
+assert.equal(selectedDirectionAfterTimeout.variants.length, 1);
+
 const nineSentenceReferenceScript = String(selectedScriptPlan.referenceScript)
   .replace("Then that backup feeling peels away. A red tin", "Then that backup feeling peels away, and a red tin")
   .replace("The first test is arrival. The second test is taste.", "The first test is arrival, and the second test is taste.")
