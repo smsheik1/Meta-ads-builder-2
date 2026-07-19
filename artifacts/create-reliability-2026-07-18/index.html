@@ -22,7 +22,7 @@
   <p class="muted">Wiggly /create reliability pass · 2026-07-18</p>
   <h1>What actually broke, and what changed</h1>
   <div class="callout">
-    <strong>Result:</strong> five text/static formats worked on the first live pass. Three real failures had small shared causes: Video Meme asked for too much at once, Brainrot could return an incomplete shape, and Jingle quietly tried to make paid audio. Those causes are fixed on this branch. 3D is a live deployment mismatch, not a new code path.
+    <strong>Result:</strong> the full no-paid Creative Pack reached 8/8 ready for David's Cookies in the real browser. It now produces static/text previews only; paid audio remains a visible button. One real blocker remains: 3D has a deployed backend contract that does not match <code>origin/main</code>.
   </div>
 
   <h2>Scorecard</h2>
@@ -32,12 +32,12 @@
       <tr><td>Meme</td><td>Pass</td><td>12 scenes rendered from the customer flow.</td><td>Working</td></tr>
       <tr><td>We're Sorry</td><td>Pass</td><td>Completed, though it took about 104 seconds.</td><td>Working</td></tr>
       <tr><td>Video Meme</td><td>Fail</td><td>Bear started with eight variants and timed out at 60 seconds.</td><td>Fixed: first run is three ideas; browser verified.</td></tr>
-      <tr><td>Brand Jingle</td><td>Unsafe</td><td>Normal generation automatically requested ElevenLabs audio.</td><td>Fixed: audio stays behind the visible <em>Add audio</em> button; browser verified.</td></tr>
-      <tr><td>iMessage</td><td>Pass</td><td>Six scenes rendered.</td><td>Working</td></tr>
-      <tr><td>Minecraft Brainrot</td><td>Fail</td><td>Model returned fewer complete variants than the parser requires.</td><td>Fixed in the action with NIM guided JSON; live canary needed after merge.</td></tr>
+      <tr><td>Brand Jingle</td><td>Unsafe</td><td>Normal generation automatically requested ElevenLabs audio.</td><td>Fixed: preview is ready with a visible <em>Add audio</em> button; browser verified.</td></tr>
+      <tr><td>iMessage</td><td>Pass</td><td>Six scenes rendered.</td><td>Working. A late saved result now repairs a stale retry card without generating again.</td></tr>
+      <tr><td>Minecraft Brainrot</td><td>Fail</td><td>Model returned fewer complete variants than the parser requires.</td><td>Current Pack pass; action has guided JSON and needs one post-merge live canary.</td></tr>
       <tr><td>Reviews</td><td>Pass</td><td>Eight product-proof scenes rendered.</td><td>Working</td></tr>
       <tr><td>Motion Story</td><td>Manual</td><td>Clearly marked Coming soon and disabled.</td><td>Not a failure; do not advertise as available.</td></tr>
-      <tr><td>3D Breakdown</td><td>Blocked</td><td>Live Convex required <code>storySubject</code>, but the checked-in client/action contract does not.</td><td>Deploy matching merged backend, then run one direction canary.</td></tr>
+      <tr><td>3D Breakdown</td><td>Blocked</td><td>Live Convex required <code>storySubject</code>, but <code>origin/main</code> sends only <code>researchRunId</code>.</td><td>Merge and normal-deploy this branch, then run one first-directions canary before any paid 3D step.</td></tr>
       <tr><td>Product Photoshoot</td><td>Manual</td><td>Product picker worked; generation is explicitly paid.</td><td>Correctly left unclicked in this pass.</td></tr>
       <tr><td>Visualizer</td><td>Pass</td><td>Static scene rendered and showed a visible audio control.</td><td>Working; no audio was generated.</td></tr>
     </tbody>
@@ -61,6 +61,30 @@
       <h3>Normal generation no longer pretends it started a Creative Pack</h3>
       <p>Generating ordinary Jingle and Video Meme scenes did not show the nine-format Creative Pack rail. The rail is now restored only after the person actually clicks <em>Generate creative pack</em>.</p>
     </article>
+    <article class="card fixed">
+      <span class="label">Fixed</span>
+      <h3>Creative Pack stops before any paid media</h3>
+      <p>The Pack now contains eight static/text preview formats. It excludes the disabled Motion Story route (which could reach Replicate) and never makes Jingle, Brainrot, or Visualizer audio by itself. In the real David's Cookies browser run, all eight cards reached Ready and the Jingle, Brainrot, and Visualizer previews each kept a visible <em>Add audio</em> button.</p>
+      <img src="../../v3/.playwright-cli/page-2026-07-19T05-17-13-407Z.png" alt="David's Cookies Creative Pack showing 8 of 8 ready">
+      <img src="../../v3/.playwright-cli/page-2026-07-19T05-23-07-618Z.png" alt="Jingle preview with visible Add audio button">
+    </article>
+    <article class="card fixed">
+      <span class="label">Fixed</span>
+      <h3>Late work no longer looks like a failure</h3>
+      <p>iMessage crossed the browser's 60-second deadline, then its server work completed and saved the scene. A reload found the scene and showed 8/8 ready. The new reconciliation fixes that exact confusing state in place: when the saved scene arrives, its <em>Needs retry</em> card becomes Ready without a second request.</p>
+    </article>
+    <article class="card manual">
+      <span class="label">Manual paid step</span>
+      <h3>Product Photoshoot is honest before it spends</h3>
+      <p>The real picker shows 195 products and the selected product image, then makes <em>Generate photoshoot</em> an explicit choice. This pass did not press it.</p>
+      <img src="../../v3/.playwright-cli/page-2026-07-19T05-25-00-782Z.png" alt="Product Photoshoot product picker and explicit Generate photoshoot button">
+    </article>
+    <article class="card blocked">
+      <span class="label">Deployment blocker</span>
+      <h3>3D fails before it can spend</h3>
+      <p>Choosing 3D and pressing Generate ads produced a clear <code>storySubject</code> argument validation error before image, video, or audio generation. This is real backend drift, not a paid-media failure.</p>
+      <img src="../../v3/.playwright-cli/page-2026-07-19T05-25-56-562Z.png" alt="3D Breakdown storySubject contract mismatch shown in the browser">
+    </article>
   </div>
 
   <h2>Changes made</h2>
@@ -69,6 +93,8 @@
     <li>Make the Brainrot model return exactly the required JSON shape: three variants, six to ten beats each, and only left/right speakers. The existing parser still rejects bad copy.</li>
     <li>Remove automatic Jingle audio calls on first generation, scene selection, and reroll. Audio is manual and visible.</li>
     <li>Remember Creative Pack intent in the browser session, so ordinary format work is not mislabeled as a half-failed pack.</li>
+    <li>Keep Creative Pack to eight preview-safe formats: no Motion Story, product photoshoot, or automatic audio calls.</li>
+    <li>When a generation saves after the browser timeout, update that one retry card from storage instead of asking the person to reload or pay for another try.</li>
   </ul>
 
   <h2>What was deliberately not done</h2>
@@ -87,6 +113,6 @@
   </ol>
 
   <h2>Checks</h2>
-  <p><strong>Passed:</strong> TypeScript check, full repository test suite, focused format/guardrail tests, and two real Playwright customer flows. <strong>Ponytail review:</strong> Lean already. Ship.</p>
+  <p><strong>Passed:</strong> TypeScript check, full repository test suite, focused format/guardrail tests, and real Playwright customer flows: a full 8/8 Creative Pack, every Pack card opened, Product Photoshoot selection without a spend, and the 3D pre-spend blocker capture. <strong>Ponytail review:</strong> Lean already. Ship.</p>
 </body>
 </html>

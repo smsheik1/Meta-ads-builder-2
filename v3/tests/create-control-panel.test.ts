@@ -140,6 +140,7 @@ assert.ok(
 assert.ok(
   createClientSource.includes("api.adScenes.listForResearchRun") &&
     createClientSource.includes("hydrateCreativePackGroupsFromSceneRows") &&
+    createClientSource.includes("recoverCreativePackGroupsFromSceneRows({") &&
     createClientSource.includes("creativePackWasStarted(result.researchRunId)") &&
     createClientSource.includes("creativePackWasStarted(research.researchRunId, true)") &&
     createClientSource.includes("minimumReadyFormats: CREATIVE_PACK_MONEY_SHOT_READY_COUNT"),
@@ -147,6 +148,8 @@ assert.ok(
 );
 assert.ok(
   createClientSource.includes('if (format === "video-meme") return Math.min(3, getVideoMemeTemplate') &&
+    !createClientSource.includes("generateCreativePackAudioForScene") &&
+    !createClientSource.includes("format === \"motion-story\" ? getCreativePackReviewProductHandles") &&
     !createClientSource.includes("void generateJingleMusicForScene(firstScene") &&
     !createClientSource.includes("void generateJingleMusicForScene(nextScene") &&
     !createClientSource.includes("void generateJingleMusicForScene(scene, sceneIds[index])"),
