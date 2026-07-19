@@ -36,6 +36,41 @@ type GenerateBrainrotVariantsOptions = {
 
 const DEFAULT_TIMEOUT_MS = 60_000;
 const bannedPhrases = ["unlock", "elevate", "game-changer", "transform", "revolutionary", "supercharge", "level up"];
+const brainrotGuidedJson: Record<string, unknown> = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    variants: {
+      type: "array",
+      minItems: BRAINROT_VARIANT_COUNT,
+      maxItems: BRAINROT_VARIANT_COUNT,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["angle", "beats", "selfCheckPassed"],
+        properties: {
+          angle: { type: "string", minLength: 1, maxLength: 140 },
+          selfCheckPassed: { type: "string", minLength: 1, maxLength: 180 },
+          beats: {
+            type: "array",
+            minItems: BRAINROT_MIN_BEATS,
+            maxItems: BRAINROT_MAX_BEATS,
+            items: {
+              type: "object",
+              additionalProperties: false,
+              required: ["speaker", "text"],
+              properties: {
+                speaker: { type: "string", enum: ["left", "right"] },
+                text: { type: "string", minLength: 1, maxLength: BRAINROT_MAX_BEAT_CHARS },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  required: ["variants"],
+};
 
 const isDisabled = (value: string | undefined) => /^(0|false|off|disabled)$/i.test(String(value || ""));
 
@@ -137,6 +172,8 @@ export async function generateBrainrotVariantsFromResearch(
       model: nvidiaNimModel,
       nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
       prompt,
+      guidedJson: brainrotGuidedJson,
+      maxTokens: 2800,
       timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
     });
     const variants = extractBrainrotVariantsFromResponse(content, brandName, "NVIDIA NIM");

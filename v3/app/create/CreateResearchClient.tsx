@@ -116,6 +116,13 @@ type ThreeDStoryDirectionStatus = "idle" | "loading" | "ready" | "error";
 
 const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const fallbackUploadedAudioDurationMs = 8000;
+function creativePackWasStarted(researchRunId: string, remember = false) {
+  try {
+    const key = `wiggly:create:creative-pack:${researchRunId}`;
+    if (remember) sessionStorage.setItem(key, "1");
+    return sessionStorage.getItem(key) === "1";
+  } catch { return false; }
+}
 
 function getThreeDBreakdownLoadingLabel(elapsedSeconds: number) {
   if (elapsedSeconds >= 90) return "Still waiting on NVIDIA NIM. Slow, not frozen.";
@@ -220,7 +227,6 @@ type ThreeDStoryDirectionsResponse = {
 };
 
 type ApplyGeneratedScenesOptions = {
-  autoGenerateAudio?: boolean;
   note?: string;
 };
 
@@ -309,7 +315,7 @@ function assertRenderableScenes(scenes: AdScene[]) {
 function getGenerationCount(format: AdFormatId, videoMemeTemplateId: VideoMemeTemplateId = "bear-sniff") {
   if (format === "meme") return 12;
   if (format === "were-sorry") return 8;
-  if (format === "video-meme") return getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 8;
+  if (format === "video-meme") return Math.min(3, getVideoMemeTemplate(videoMemeTemplateId)?.variantCount || 3);
   if (format === "jingle") return 1;
   if (format === "text-message") return 6;
   if (format === "brainrot") return 3;
@@ -1302,10 +1308,6 @@ function ResearchConnected() {
     setAdStatusNote(options.note || `${scenes.length} ads ready. Press spacebar to find a stronger version.`);
     setAdStatus("ready");
     canvasActions.finishBusy();
-    if (options.autoGenerateAudio === false) return;
-    if (firstScene?.format === "jingle" && firstScene.audio.status !== "generated") {
-      void generateJingleMusicForScene(firstScene, nextSceneIds[0]);
-    }
   };
 
   const generateScenesForResearch = async (
@@ -1440,8 +1442,10 @@ function ResearchConnected() {
       return;
     }
 
+    if (!creativePackWasStarted(result.researchRunId)) return;
+
     const hydratedGroups = hydrateCreativePackGroupsFromSceneRows({
-      minimumReadyFormats: 2,
+      minimumReadyFormats: CREATIVE_PACK_MONEY_SHOT_READY_COUNT,
       rows: researchRunSceneRows,
     });
     if (!hydratedGroups.length) return;
@@ -1539,7 +1543,6 @@ function ResearchConnected() {
       if (templateId) setSelectedVideoMemeTemplateId(templateId);
     }
     applyGeneratedScenes(group.scenes, group.sceneIds, {
-      autoGenerateAudio: false,
       note: `${group.label} from your creative pack is ready. Press spacebar to compare variants.`,
     });
   };
@@ -1716,7 +1719,6 @@ function ResearchConnected() {
           setUrl(reusableResearch.result.websiteUrl);
         }
         applyGeneratedScenes(scenes, generation.sceneIds || [], {
-          autoGenerateAudio: false,
           note: `${label} is ready from your creative pack retry.`,
         });
       }
@@ -1864,6 +1866,7 @@ function ResearchConnected() {
     if (!research) return;
 
     const packRunKey = `${research.researchRunId}:${normalizedUrlKey(research.result?.websiteUrl || url)}`;
+    creativePackWasStarted(research.researchRunId, true);
     const initialGroups = createCreativePackGroupsForResearch(research.researchRunId, research.result || undefined);
     const alreadyRan = creativePackRunKeysRef.current.has(packRunKey);
     setCreativePackGroups(initialGroups);
@@ -1885,7 +1888,6 @@ function ResearchConnected() {
         setUrl(group.researchResult.websiteUrl);
       }
       applyGeneratedScenes(group.scenes, group.sceneIds, {
-        autoGenerateAudio: false,
         note,
       });
       return true;
@@ -1965,7 +1967,6 @@ function ResearchConnected() {
         setUrl(generation.researchResult.websiteUrl);
       }
       applyGeneratedScenes(generation.scenes, generation.sceneIds, {
-        autoGenerateAudio: false,
         note: `${getCreativePackFormatLabel(format)} is ready. Other directions can keep landing without stealing the preview.`,
       });
     };
@@ -2271,9 +2272,6 @@ function ResearchConnected() {
     resetDialogueState();
     resetSaveState();
     triggerRerollFlash(getSceneDefaultFlashSlots(nextScene));
-    if (nextScene.format === "jingle" && nextScene.audio.status !== "generated") {
-      void generateJingleMusicForScene(nextScene, sceneIds[next.index]);
-    }
   }, [
     adScenes,
     adStatus,
@@ -2914,9 +2912,6 @@ function ResearchConnected() {
     resetShareState();
     resetRenderState();
     resetBrickStoryboardState();
-    if (scene.format === "jingle" && scene.audio.status !== "generated") {
-      void generateJingleMusicForScene(scene, sceneIds[index]);
-    }
   };
 
   const onGenerateBrickStoryboard = async () => {

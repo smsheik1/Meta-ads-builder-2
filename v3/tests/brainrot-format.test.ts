@@ -112,14 +112,22 @@ await assert.rejects(
   /NVIDIA NIM brainrot generation is not configured/,
 );
 
+let capturedGuidedJson: Record<string, unknown> | undefined;
+let capturedMaxTokens = 0;
 const retryResult = await generateBrainrotVariantsFromResearch(research, {
   nvidiaNimApiKey: "test-key",
   nvidiaNimBaseUrl: "https://nim.test/v1",
   nvidiaNimModel: "test-kimi-model",
-  nvidiaNimChatCompletion: async () => JSON.stringify({ variants }),
+  nvidiaNimChatCompletion: async ({ guidedJson, maxTokens }) => {
+    capturedGuidedJson = guidedJson;
+    capturedMaxTokens = maxTokens || 0;
+    return JSON.stringify({ variants });
+  },
 });
 assert.equal(retryResult.provider, "nvidia-nim");
 assert.equal(retryResult.variants.length, BRAINROT_VARIANT_COUNT);
+assert.equal((capturedGuidedJson?.properties as { variants?: { minItems?: number } })?.variants?.minItems, BRAINROT_VARIANT_COUNT);
+assert.equal(capturedMaxTokens, 2800, "Brainrot must cap the structured response before it grows into an incomplete script batch.");
 
 const scenes = parsed.map((variant, index) => createBrainrotAdScene({
   research,

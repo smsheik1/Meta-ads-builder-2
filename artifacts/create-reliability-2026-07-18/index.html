@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wiggly /create reliability pass — 2026-07-18</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #152033; background: #f6f4ef; }
+    body { max-width: 1120px; margin: 0 auto; padding: 40px 24px 72px; }
+    h1 { font-size: 2rem; margin: 0 0 8px; } h2 { margin: 36px 0 12px; } h3 { margin: 0 0 6px; }
+    p, li { line-height: 1.5; } .muted { color: #667085; }
+    .callout { background: #fff; border-left: 5px solid #6d28d9; border-radius: 10px; padding: 16px 20px; box-shadow: 0 2px 12px #2413460d; }
+    .cards { display: grid; gap: 12px; } .card { background: #fff; border: 1px solid #e6e2d9; border-radius: 12px; padding: 18px; }
+    .pass { border-left: 5px solid #15803d; } .fixed { border-left: 5px solid #2563eb; } .blocked { border-left: 5px solid #b45309; } .manual { border-left: 5px solid #64748b; }
+    .label { display: inline-block; font-size: .75rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 3px 7px; border-radius: 999px; background: #eef2ff; color: #4338ca; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; } th, td { padding: 12px; text-align: left; vertical-align: top; border-bottom: 1px solid #ece8df; } th { background: #17112b; color: #fff; }
+    img { display: block; max-width: 100%; border: 1px solid #dfd9cc; border-radius: 10px; margin-top: 14px; }
+    code { background: #eeeaf5; padding: 2px 4px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <p class="muted">Wiggly /create reliability pass · 2026-07-18</p>
+  <h1>What actually broke, and what changed</h1>
+  <div class="callout">
+    <strong>Result:</strong> five text/static formats worked on the first live pass. Three real failures had small shared causes: Video Meme asked for too much at once, Brainrot could return an incomplete shape, and Jingle quietly tried to make paid audio. Those causes are fixed on this branch. 3D is a live deployment mismatch, not a new code path.
+  </div>
+
+  <h2>Scorecard</h2>
+  <table>
+    <thead><tr><th>Format</th><th>First real run</th><th>What happened</th><th>Current status</th></tr></thead>
+    <tbody>
+      <tr><td>Meme</td><td>Pass</td><td>12 scenes rendered from the customer flow.</td><td>Working</td></tr>
+      <tr><td>We're Sorry</td><td>Pass</td><td>Completed, though it took about 104 seconds.</td><td>Working</td></tr>
+      <tr><td>Video Meme</td><td>Fail</td><td>Bear started with eight variants and timed out at 60 seconds.</td><td>Fixed: first run is three ideas; browser verified.</td></tr>
+      <tr><td>Brand Jingle</td><td>Unsafe</td><td>Normal generation automatically requested ElevenLabs audio.</td><td>Fixed: audio stays behind the visible <em>Add audio</em> button; browser verified.</td></tr>
+      <tr><td>iMessage</td><td>Pass</td><td>Six scenes rendered.</td><td>Working</td></tr>
+      <tr><td>Minecraft Brainrot</td><td>Fail</td><td>Model returned fewer complete variants than the parser requires.</td><td>Fixed in the action with NIM guided JSON; live canary needed after merge.</td></tr>
+      <tr><td>Reviews</td><td>Pass</td><td>Eight product-proof scenes rendered.</td><td>Working</td></tr>
+      <tr><td>Motion Story</td><td>Manual</td><td>Clearly marked Coming soon and disabled.</td><td>Not a failure; do not advertise as available.</td></tr>
+      <tr><td>3D Breakdown</td><td>Blocked</td><td>Live Convex required <code>storySubject</code>, but the checked-in client/action contract does not.</td><td>Deploy matching merged backend, then run one direction canary.</td></tr>
+      <tr><td>Product Photoshoot</td><td>Manual</td><td>Product picker worked; generation is explicitly paid.</td><td>Correctly left unclicked in this pass.</td></tr>
+      <tr><td>Visualizer</td><td>Pass</td><td>Static scene rendered and showed a visible audio control.</td><td>Working; no audio was generated.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Browser proof</h2>
+  <div class="cards">
+    <article class="card fixed">
+      <span class="label">Fixed</span>
+      <h3>Jingle now stops before paid media</h3>
+      <p>In the real local <code>/create</code> screen, Generate ads created lyrics and a scene. The page kept the visible <em>Add audio</em> control and emitted no browser errors. No ElevenLabs request was made after the fix.</p>
+    </article>
+    <article class="card fixed">
+      <span class="label">Fixed</span>
+      <h3>Video Meme now returns a usable first batch</h3>
+      <p>The same real browser flow created three Bear ideas without the old 60-second timeout. It made no Replicate, Seedance, image, audio, or video-generation request.</p>
+      <img src="../../v3/.playwright-cli/page-2026-07-19T04-53-08-904Z.png" alt="Video Meme customer-flow screenshot showing three generated ideas">
+    </article>
+    <article class="card fixed">
+      <span class="label">Fixed</span>
+      <h3>Normal generation no longer pretends it started a Creative Pack</h3>
+      <p>Generating ordinary Jingle and Video Meme scenes did not show the nine-format Creative Pack rail. The rail is now restored only after the person actually clicks <em>Generate creative pack</em>.</p>
+    </article>
+  </div>
+
+  <h2>Changes made</h2>
+  <ul>
+    <li>Start Video Meme with at most three ideas. The bigger template set remains available for later choice/reroll; it no longer makes the first click fragile.</li>
+    <li>Make the Brainrot model return exactly the required JSON shape: three variants, six to ten beats each, and only left/right speakers. The existing parser still rejects bad copy.</li>
+    <li>Remove automatic Jingle audio calls on first generation, scene selection, and reroll. Audio is manual and visible.</li>
+    <li>Remember Creative Pack intent in the browser session, so ordinary format work is not mislabeled as a half-failed pack.</li>
+  </ul>
+
+  <h2>What was deliberately not done</h2>
+  <ul>
+    <li>No Replicate, Seedance, product photoshoot, image generation, or paid audio generation was called. The original live Jingle bug did make one rejected ElevenLabs request before this fix; it produced no media and exposed the bug.</li>
+    <li>No second renderer, model fallback, automatic retry, new provider, or hidden interaction was added.</li>
+    <li>No shared Convex deployment was changed from this unmerged branch. That is why 3D has a required post-merge canary instead of a risky overnight patch.</li>
+  </ul>
+
+  <h2>Release checklist</h2>
+  <ol>
+    <li>Merge this focused branch and deploy the normal merged backend.</li>
+    <li>On live <code>/create</code>, paste <code>davidscookies.com</code>, choose 3D Breakdown, and generate only the first story directions. It must no longer ask for <code>storySubject</code>.</li>
+    <li>Generate one Minecraft Brainrot run and confirm exactly three complete versions arrive.</li>
+    <li>Generate one Jingle and confirm that audio is still an explicit click.</li>
+  </ol>
+
+  <h2>Checks</h2>
+  <p><strong>Passed:</strong> TypeScript check, full repository test suite, focused format/guardrail tests, and two real Playwright customer flows. <strong>Ponytail review:</strong> Lean already. Ship.</p>
+</body>
+</html>
