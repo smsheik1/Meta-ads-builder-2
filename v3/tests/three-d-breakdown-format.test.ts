@@ -1737,27 +1737,27 @@ const shippingOnlyResult = await generateThreeDBreakdownVariantsFromResearch(wea
 });
 assert.equal(shippingOnlyResult.variants[0]?.evidenceUseType, "shipping");
 
-const restrictedResearch = makeResearch({
+const massageGunTerminologyResearch = makeResearch({
   brand: {
     ...research.brand,
-    name: "Cloud Casino",
-    description: "Online casino betting for card games.",
+    name: "Therabody",
+    description: "Recovery devices including massage guns, heat, and vibration therapy.",
   },
   brandBrief: {
     ...research.brandBrief,
-    brandName: "Cloud Casino",
-    offer: "Online casino betting for card games.",
+    brandName: "Therabody",
+    offer: "A massage gun with heat, vibration, and guided recovery routines.",
   },
 });
-await assert.rejects(
-  () => generateThreeDBreakdownVariantsFromResearch(restrictedResearch, {
-    nvidiaNimApiKey: "test-key",
-    nvidiaNimChatCompletion: async () => {
-      throw new Error("Story Director should not be called for restricted verticals.");
-    },
-  }),
-  /restricted_vertical/,
-);
+let massageGunStorySlateCalls = 0;
+await generateThreeDBreakdownStoryDirectionsFromResearch(massageGunTerminologyResearch, {
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => {
+    massageGunStorySlateCalls += 1;
+    return JSON.stringify(storyDirectionPayload);
+  },
+});
+assert.equal(massageGunStorySlateCalls, 1, "massage-gun terminology must not be treated as a weapon vertical");
 
 let retryCalls = 0;
 let retryPrompt = "";
