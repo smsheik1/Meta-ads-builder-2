@@ -1221,6 +1221,42 @@ assert.ok(
   "Returned story cards must keep the cold attachment visibly separate.",
 );
 
+const invalidAggregatedTheragunSlate = {
+  ...qualifiedTheragunSlate,
+  directions: qualifiedTheragunSlate.directions.map((direction, index) => index === 1
+    ? {
+        ...direction,
+        hookLine: "Why does Theragun PRO Plus put five therapies into one device?",
+        subheadline: "Five therapies in one recovery device.",
+        visualEngine: "Five therapy layers fold into one Theragun PRO Plus unit.",
+      }
+    : direction),
+};
+let aggregatedTheragunStorySlateCalls = 0;
+const aggregatedTheragunStorySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(separatelySoldTheragunResearch, {
+  nvidiaNimApiKey: "test-key",
+  storySubject: { kind: "product", productHandle: "theragun-pro-plus" },
+  nvidiaNimChatCompletion: async () => {
+    aggregatedTheragunStorySlateCalls += 1;
+    return JSON.stringify(aggregatedTheragunStorySlateCalls === 1
+      ? invalidAggregatedTheragunSlate
+      : qualifiedTheragunSlate);
+  },
+});
+assert.equal(aggregatedTheragunStorySlateCalls, 2, "A story card that counts a sold-separately attachment as part of one device must use the one slate retry.");
+assert.ok(
+  aggregatedTheragunStorySlate.directions.every((direction) => (
+    !/\bfive therapies\b[^.!?]{0,72}\b(?:one|single|unified|all[- ]in[- ]one)\s+(?:device|form|unit|tool|shell)\b/i.test([
+      direction.hookLine,
+      direction.subheadline,
+      direction.shortSummary,
+      direction.adAngle,
+      direction.visualEngine,
+    ].join(" "))
+  )),
+  "Returned story cards must not count a sold-separately attachment inside one device.",
+);
+
 const invalidReleaseTheragunSlate = {
   ...qualifiedTheragunSlate,
   directions: qualifiedTheragunSlate.directions.map((direction, index) => index === 0
