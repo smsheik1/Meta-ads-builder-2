@@ -124,7 +124,14 @@ const makeWellnessMotionPromptProviderSafe = (value: string) => value
   .replace(/\bdense pink muscle wall\b/gi, "dense stylized elastic fiber wall")
   .replace(/\bmuscle tissue interior\b/gi, "stylized elastic fiber interior")
   .replace(/\bmuscle tissue\b/gi, "stylized elastic fibers")
-  .replace(/\binside the muscle\b/gi, "inside the elastic fiber model");
+  .replace(/\binside the muscle\b/gi, "inside the elastic fiber model")
+  .replace(/\bshrinks? and dissolves?\b/gi, "loosens and opens")
+  .replace(/\bpenetrating\b/gi, "moving through")
+  .replace(/\bpenetrates?\b/gi, "moves through")
+  .replace(/\bx-?ray\b/gi, "transparent cutaway")
+  .replace(/\btissue\b/gi, "fiber layers")
+  .replace(/\bknot\b/gi, "tight fiber bundle")
+  .replace(/\bmuscle\b/gi, "elastic fiber model");
 
 export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
   const plans = ([1, 2, 3, 4, 5, 6] as ThreeDBreakdownStoryboardFrameIndex[])
@@ -182,7 +189,7 @@ export const buildThreeDSeedancePrompt = (
     "MOTION: use direct cuts, push-throughs, object wipes, camera pushes, component reveals, or particle transitions. Change a product, prop, obstacle, component, or camera scale every 1-2 seconds; no static product with drifting particles and no empty transition frames.",
     "No readable text, captions, labels, logos, UI, pseudo-writing, or watermarks; Wiggly adds every word later.",
   ].join(" "));
-  const wellnessSafetyContext = /\b(?:massage gun|gun head|muscle tissue|muscle wall|inside the muscle)\b/i.test(rawPrompt)
+  const wellnessSafetyContext = /\b(?:massage gun|gun head|muscle|tissue|knot|x-?ray)\b/i.test(rawPrompt)
     ? "SAFETY CONTEXT: benign consumer wellness product demonstration. Any fiber forms are clean educational models, not injured anatomy. No weapon use, violence, pain, injury, bodily harm, gore, or medical procedure."
     : "";
   const prompt = makeWellnessMotionPromptProviderSafe(clean([rawPrompt, wellnessSafetyContext].join(" ")));
