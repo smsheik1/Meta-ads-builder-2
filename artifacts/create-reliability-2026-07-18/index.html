@@ -27,19 +27,19 @@
 
   <h2>Scorecard</h2>
   <table>
-    <thead><tr><th>Format</th><th>First real run</th><th>What happened</th><th>Current status</th></tr></thead>
+    <thead><tr><th>Format</th><th>First real run</th><th>What happened</th><th>Current status</th><th>Browser screenshot</th></tr></thead>
     <tbody>
-      <tr><td>Meme</td><td>Pass</td><td>12 scenes rendered from the customer flow.</td><td>Working</td></tr>
-      <tr><td>We're Sorry</td><td>Pass</td><td>Completed, though it took about 104 seconds.</td><td>Working</td></tr>
-      <tr><td>Video Meme</td><td>Fail</td><td>Bear started with eight variants and timed out at 60 seconds.</td><td>Fixed: first run is three ideas; browser verified.</td></tr>
-      <tr><td>Brand Jingle</td><td>Unsafe</td><td>Normal generation automatically requested ElevenLabs audio.</td><td>Fixed: preview is ready with a visible <em>Add audio</em> button; browser verified.</td></tr>
-      <tr><td>iMessage</td><td>Pass</td><td>Six scenes rendered.</td><td>Working. A late saved result now repairs a stale retry card without generating again.</td></tr>
-      <tr><td>Minecraft Brainrot</td><td>Fail</td><td>Model returned fewer complete variants than the parser requires.</td><td>Current Pack pass; action has guided JSON and needs one post-merge live canary.</td></tr>
-      <tr><td>Reviews</td><td>Pass</td><td>Eight product-proof scenes rendered.</td><td>Working</td></tr>
-      <tr><td>Motion Story</td><td>Manual</td><td>Clearly marked Coming soon and disabled.</td><td>Not a failure; do not advertise as available.</td></tr>
-      <tr><td>3D Breakdown</td><td>Blocked</td><td>Live Convex required <code>storySubject</code>, but <code>origin/main</code> sends only <code>researchRunId</code>.</td><td>Merge and normal-deploy this branch, then run one first-directions canary before any paid 3D step.</td></tr>
-      <tr><td>Product Photoshoot</td><td>Manual</td><td>Product picker worked; generation is explicitly paid.</td><td>Correctly left unclicked in this pass.</td></tr>
-      <tr><td>Visualizer</td><td>Pass</td><td>Static scene rendered and showed a visible audio control.</td><td>Working; no audio was generated.</td></tr>
+      <tr><td>Meme</td><td>Pass</td><td>12 scenes rendered from the customer flow.</td><td>Working</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-23-57-034Z.png">Final Pack preview</a></td></tr>
+      <tr><td>We're Sorry</td><td>Pass</td><td>Completed, though it took about 104 seconds.</td><td>Working</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-23-59-305Z.png">Final Pack preview</a></td></tr>
+      <tr><td>Video Meme</td><td>Fail</td><td>Bear started with eight variants and timed out at 60 seconds.</td><td>Fixed: first run is three ideas; browser verified.</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-23-54-737Z.png">Final Pack preview</a></td></tr>
+      <tr><td>Brand Jingle</td><td>Unsafe</td><td>Normal generation automatically requested ElevenLabs audio.</td><td>Fixed: preview is ready with a visible <em>Add audio</em> button; browser verified.</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-23-07-618Z.png">Preview + visible audio click</a></td></tr>
+      <tr><td>iMessage</td><td>Pass</td><td>Six scenes rendered.</td><td>Working. A late saved result now repairs a stale retry card without generating again.</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-24-02-475Z.png">Final Pack preview</a></td></tr>
+      <tr><td>Minecraft Brainrot</td><td>Fail</td><td>Model returned fewer complete variants than the parser requires.</td><td>Current Pack pass; action has guided JSON and needs one post-merge live canary.</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-23-28-611Z.png">Preview + visible audio click</a></td></tr>
+      <tr><td>Reviews</td><td>Pass</td><td>Eight product-proof scenes rendered.</td><td>Working</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-22-42-302Z.png">Final Pack preview</a></td></tr>
+      <tr><td>Motion Story</td><td>Manual</td><td>Clearly marked Coming soon and disabled.</td><td>Not a failure; do not advertise as available.</td><td>Not selectable</td></tr>
+      <tr><td>3D Breakdown</td><td>Blocked</td><td>Live Convex required <code>storySubject</code>, but <code>origin/main</code> sends only <code>researchRunId</code>.</td><td>Merge and normal-deploy this branch, then run one first-directions canary before any paid 3D step.</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-25-56-562Z.png">Pre-spend error</a></td></tr>
+      <tr><td>Product Photoshoot</td><td>Manual</td><td>Product picker worked; generation is explicitly paid.</td><td>Correctly left unclicked in this pass.</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-25-00-782Z.png">Visible product picker</a></td></tr>
+      <tr><td>Visualizer</td><td>Pass</td><td>Static scene rendered and showed a visible audio control.</td><td>Working; no audio was generated.</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-23-52-271Z.png">Preview + visible audio click</a></td></tr>
     </tbody>
   </table>
 
