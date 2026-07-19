@@ -2180,6 +2180,12 @@ assert.ok(markup.includes('data-format="three-d-breakdown"'));
 assert.ok(markup.includes("data-three-d-breakdown-screen"));
 assert.ok(markup.includes("data-three-d-breakdown-keyword-captions"));
 assert.ok(markup.includes("#FDE047"));
+assert.ok(
+  markup.includes("font-family:Geist Variable, Inter, ui-sans-serif"),
+  "3D Breakdown preview/export must explicitly apply Wiggly's font stack instead of inheriting a browser-only font.",
+);
+assert.ok(markup.includes("font-size:7.8cqw"), "Caption emphasis must not resize individual words and create visual jitter.");
+assert.ok(markup.includes("-webkit-text-stroke:0.1cqw"), "Captions should use a restrained readability stroke.");
 const firstCaptionMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene,
   style: { width: 360, height: 640 },
