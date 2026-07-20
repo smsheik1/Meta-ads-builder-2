@@ -2185,7 +2185,7 @@ assert.ok(
   "3D Breakdown preview/export must explicitly apply Wiggly's font stack instead of inheriting a browser-only font.",
 );
 assert.ok(markup.includes("font-size:7.8cqw"), "Caption emphasis must not resize individual words and create visual jitter.");
-assert.ok(markup.includes("-webkit-text-stroke:0.1cqw"), "Captions should use a restrained readability stroke.");
+assert.ok(!markup.includes("-webkit-text-stroke"), "Caption outlines must avoid WebKit stroke artifacts on glyph crossbars.");
 const firstCaptionMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene,
   style: { width: 360, height: 640 },
