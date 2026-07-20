@@ -1,5 +1,6 @@
 import { getVisibleCaptionText } from "../../audio/sceneAudio";
 import { useRenderAssetComponents } from "../../render/RenderAssetContext";
+import { WIGGLY_FONT_STACK } from "../../render/fontStack";
 import type { FormatRenderProps } from "../types";
 import type { ThreeDBreakdownAdScene } from "../../scene/types";
 
@@ -163,6 +164,7 @@ export function ThreeDBreakdownFormatRenderer({
         height: "100%",
         overflow: "hidden",
         color: "#fff",
+        fontFamily: WIGGLY_FONT_STACK,
         background: `radial-gradient(circle at 20% 12%, ${brandColor}33, transparent 28%), linear-gradient(145deg, #050816 0%, #0f172a 52%, #020617 100%)`,
       }}
     >
@@ -384,14 +386,14 @@ export function ThreeDBreakdownFormatRenderer({
               className="font-black uppercase"
               style={{
                 color: highlighted ? "#FDE047" : "#FFFFFF",
-                fontSize: highlighted ? "8.6cqw" : "7.9cqw",
-                fontWeight: 950,
+                fontSize: "7.8cqw",
+                fontWeight: 900,
                 letterSpacing: "0",
-                lineHeight: 0.84,
+                lineHeight: 0.92,
                 textAlign: "center",
-                textShadow: "0 0.55cqw 0 #020617, 0 0.9cqw 2.2cqw rgba(0,0,0,.72)",
+                textShadow: "0 0.32cqw 0 #020617, 0 0.55cqw 1.2cqw rgba(0,0,0,.58)",
                 textTransform: "uppercase",
-                WebkitTextStroke: "0.18cqw #020617",
+                WebkitTextStroke: "0.1cqw #020617",
               }}
             >
               {word}
