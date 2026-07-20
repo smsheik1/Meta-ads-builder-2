@@ -11,6 +11,7 @@ import {
   THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID,
 } from "../features/audio/fishStudio";
 import { extractThreeDBreakdownEvidence } from "../features/formats/three-d-breakdown/evidence";
+import { editThreeDBreakdownScriptBeat } from "../features/formats/three-d-breakdown/editScript";
 import {
   generateThreeDBreakdownStoryDirectionsFromResearch,
   generateThreeDBreakdownVariantsFromResearch,
@@ -2291,6 +2292,35 @@ const unicodeCaptionScene: ThreeDBreakdownAdScene = {
 const unicodeCaptions = createCaptionsForVoiceover(unicodeCaptionScene, 20_000);
 assert.ok(unicodeCaptions.some((caption) => caption.text.includes("Grüns")), "3D captions must preserve accented brand spelling.");
 assert.ok(unicodeCaptions.every((caption) => caption.text.split(/\s+/).length <= 6), "3D captions must stay in readable phrases of at most six words.");
+
+const editedScriptScene = editThreeDBreakdownScriptBeat({
+  ...styleBScene,
+  audio: {
+    status: "generated",
+    storageId: "old-voice",
+    url: "https://cdn.example/old-voice.wav",
+    mimeType: "audio/wav",
+    durationMs: 20_000,
+    durationSeconds: 20,
+    transcript: "Old script",
+    captions: [],
+    provider: "fish-studio",
+    model: "s1",
+    generatedAt: 1,
+  },
+  layout: {
+    ...styleBScene.layout,
+    finalVideo: {
+      status: "ready",
+      url: "https://cdn.example/old-final.mp4",
+    },
+  },
+}, 2, "The warm attachment reaches the muscle instead of bouncing off the surface.");
+assert.equal(editedScriptScene.layout.scriptBeats[2].narration, "The warm attachment reaches the muscle instead of bouncing off the surface.");
+assert.ok(editedScriptScene.layout.storyContract.referenceScript?.includes("The warm attachment reaches the muscle"));
+assert.equal(editedScriptScene.audio.status, "none", "Editing narration must invalidate the old voice track.");
+assert.equal(editedScriptScene.layout.finalVideo, undefined, "Editing narration must invalidate the old final MP4.");
+assert.notEqual(editedScriptScene, styleBScene, "Script editing must return a complete new scene instead of mutating the current one.");
 const finalExportMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene: sceneWithFinalVideo,
   mode: "video",

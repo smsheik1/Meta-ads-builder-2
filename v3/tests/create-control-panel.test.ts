@@ -12,6 +12,7 @@ const rootLayoutSource = readFileSync("app/layout.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const remotionRootSource = readFileSync("remotion-entry/Root.tsx", "utf8");
 const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
+const threeDScriptEditorSource = readFileSync("app/create/ThreeDBreakdownScriptEditor.tsx", "utf8");
 const brickStoryboardSheetSource = readFileSync("app/create/CreateBrickStoryboardSheet.tsx", "utf8");
 const creativeBriefSource = readFileSync("app/create/CreateCreativeBriefCard.tsx", "utf8");
 const adScenesSource = readFileSync("convex/adScenes.ts", "utf8");
@@ -289,11 +290,21 @@ assert.ok(
   "3D Breakdown must not allow the global MP4 action before generated clips and voiceover exist.",
 );
 assert.ok(
-  quickActionsSource.includes("scene.layout.scriptBeats.map") &&
-    quickActionsSource.includes('data-three-d-script-beat="true"') &&
-    quickActionsSource.includes("scene.layout.storyContract.referenceScript") &&
-    quickActionsSource.includes('data-three-d-reference-script="true"'),
-  "3D Breakdown Script ready state must show the narrator script when present plus all narration beats, not only the first line.",
+  quickActionsSource.includes("<ThreeDBreakdownScriptEditor") &&
+    quickActionsSource.includes("onBeatChanged={onScriptBeatChanged}") &&
+    threeDScriptEditorSource.includes("scriptBeats.map((beat, beatIndex)") &&
+    threeDScriptEditorSource.includes('data-three-d-script-beat="true"') &&
+    threeDScriptEditorSource.includes("onBeatChanged(beatIndex, event.target.value)") &&
+    threeDScriptEditorSource.includes("disabled={disabled}") &&
+    threeDScriptEditorSource.includes("data-three-d-script-beat-editor={beat.role}") &&
+    threeDScriptEditorSource.includes("These exact words will be used for the narrator and captions.") &&
+    threeDScriptEditorSource.includes("Add words to every section before generating media."),
+  "3D Breakdown must expose every timed script beat as a visible editor and block paid media while a beat is empty.",
+);
+assert.ok(
+  createClientSource.includes('scene.layout.scriptBeats.some((beat) => !beat.narration.trim())') &&
+    createClientSource.includes("Add words to every script section before generating the narrator."),
+  "3D Breakdown must also guard the shared audio action from generating narration for an incomplete script.",
 );
 assert.ok(
 	  quickActionsSource.includes('data-three-d-storyboard-board="true"') &&
@@ -326,7 +337,7 @@ assert.ok(
     quickActionsSource.includes("Needs voice") &&
     quickActionsSource.includes("onAddVoice={onOpenAudioPanel}") &&
     quickActionsSource.includes("onClick={hasVoiceover ? onBuildFinalVideo : onAddVoice}") &&
-    quickActionsSource.includes("disabled={!videosReady || renderBusy}") &&
+    quickActionsSource.includes("disabled={!scriptReady || !videosReady || renderBusy}") &&
     quickActionsSource.includes("Generate clip ${nextClipPlan.clipIndex} next") &&
     quickActionsSource.includes("Generate clip ${clipPlan.clipIndex - 1} first") &&
     quickActionsSource.includes("data-three-d-generate-clip={clipPlan.clipIndex}") &&

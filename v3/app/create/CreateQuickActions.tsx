@@ -3,7 +3,6 @@ import {
   AudioLines,
   BookmarkPlus,
   Check,
-  Clapperboard,
   CircleHelp,
   Download,
   ExternalLink,
@@ -32,6 +31,7 @@ import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
 import type { ThreeDBreakdownStoryDirection } from "@/features/formats/three-d-breakdown/storyDirections";
 import type { AdFormatId, ThreeDBreakdownAdScene, ThreeDBreakdownClipIndex } from "@/features/scene/types";
 import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
+import { ThreeDBreakdownScriptEditor } from "./ThreeDBreakdownScriptEditor";
 type SaveStatus = "idle" | "loading" | "ready" | "error";
 type BrickStoryboardStatus = "idle" | "loading" | "ready" | "error";
 type ThreeDImageGenerationMode = "storyboard" | "anchors" | "anchor-1" | "anchor-2" | "all";
@@ -97,6 +97,7 @@ export function CreateQuickActions({
   onLoadSavedDesign,
   onOpenAudioPanel,
   onSaveSelectedDesign,
+  onThreeDScriptBeatChanged,
   onTogglePreviewPlayback,
   audioStatus,
   playableAudioUrl,
@@ -155,6 +156,7 @@ export function CreateQuickActions({
   onLoadSavedDesign: (design: SavedAdSceneDesign) => void;
   onOpenAudioPanel: () => void;
   onSaveSelectedDesign: () => void;
+  onThreeDScriptBeatChanged: (beatIndex: number, narration: string) => void;
   onTogglePreviewPlayback: () => void;
   audioStatus: "idle" | "loading" | "ready" | "error";
   playableAudioUrl: string;
@@ -397,8 +399,10 @@ export function CreateQuickActions({
           onBuildFinalVideo={onCreateRenderJob}
           onGenerateClip={onGenerateThreeDClip}
           onGenerateImages={onGenerateThreeDImages}
+          onScriptBeatChanged={onThreeDScriptBeatChanged}
           renderBusy={renderBusy}
           scene={threeDScene}
+          scriptEditingDisabled={audioStatus === "loading" || threeDImageStatus === "loading" || threeDAnimationStatus === "loading" || renderBusy}
           threeDClipBusyIndex={threeDClipBusyIndex}
         />
       ) : null}
@@ -582,9 +586,11 @@ function ThreeDBreakdownAssemblyCard({
   onBuildFinalVideo,
   onGenerateClip,
   onGenerateImages,
+  onScriptBeatChanged,
   hasVoiceover,
   renderBusy,
   scene,
+  scriptEditingDisabled,
   threeDClipBusyIndex,
 }: {
   animationStatus: BrickStoryboardStatus;
@@ -595,9 +601,11 @@ function ThreeDBreakdownAssemblyCard({
   onBuildFinalVideo: () => void;
   onGenerateClip: (clipIndex: ThreeDBreakdownClipIndex) => void;
   onGenerateImages: (mode?: ThreeDImageGenerationMode) => void;
+  onScriptBeatChanged: (beatIndex: number, narration: string) => void;
   hasVoiceover: boolean;
   renderBusy: boolean;
   scene: ThreeDBreakdownAdScene;
+  scriptEditingDisabled: boolean;
   threeDClipBusyIndex: number | null;
 }) {
   const storyboardBoard = scene.layout.storyboardBoard;
@@ -638,12 +646,15 @@ function ThreeDBreakdownAssemblyCard({
         : "Storyboard is ready. Generate production anchors only after the board looks right."
       : "Generate the six-panel storyboard first. Stop here until it matches the reference."
     : "Generate the production frames before animation.";
-  const finalStatus = renderBusy ? "Building" : finalReady ? "Final ready" : !hasVoiceover ? "Needs voice" : videosReady ? "Needs MP4" : framesReady ? "Ready for Seedance" : "Needs frames";
+  const scriptReady = scene.layout.scriptBeats.every((beat) => beat.narration.trim());
+  const finalStatus = !scriptReady ? "Needs script" : renderBusy ? "Building" : finalReady ? "Final ready" : !hasVoiceover ? "Needs voice" : videosReady ? "Needs MP4" : framesReady ? "Ready for Seedance" : "Needs frames";
   const assemblyStatusLabel = videosReady
     ? "Clips ready"
     : framesReady
       ? (isPresenterStyle ? "Anchors ready" : "Frames ready")
-      : "Script ready";
+      : scriptReady
+        ? "Script ready"
+        : "Finish script";
   const storyDirectionNumber = (scene.metadata.candidateIndex ?? 0) + 1;
   const stepClass = "rounded-2xl border border-slate-200 bg-slate-50 p-3";
 
@@ -663,29 +674,11 @@ function ThreeDBreakdownAssemblyCard({
       </div>
 
       <div className="space-y-2">
-        <div className={stepClass}>
-          <div className="flex items-center gap-2 text-sm font-black text-slate-950">
-            <Clapperboard className="size-4" />
-            Script
-            <Badge className="ml-auto rounded-full bg-emerald-50 text-[10px] font-black text-emerald-700">Ready</Badge>
-          </div>
-          <div className="mt-2 space-y-1.5">
-            {scene.layout.storyContract.referenceScript ? (
-              <div className="rounded-xl border border-slate-200 bg-white px-3 py-2" data-three-d-reference-script="true">
-                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Narrator script</p>
-                <p className="mt-1 max-h-40 overflow-y-auto text-xs font-semibold leading-5 text-slate-600">
-                  {scene.layout.storyContract.referenceScript}
-                </p>
-              </div>
-            ) : null}
-            {scene.layout.scriptBeats.map((beat) => (
-              <div key={`${beat.role}-${beat.startMs}`} className="rounded-xl bg-white px-3 py-2" data-three-d-script-beat="true">
-                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">{beat.role.replace(/-/g, " ")}</p>
-                <p className="mt-1 text-xs font-semibold leading-4 text-slate-600">{beat.narration}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <ThreeDBreakdownScriptEditor
+          disabled={scriptEditingDisabled}
+          onBeatChanged={onScriptBeatChanged}
+          scriptBeats={scene.layout.scriptBeats}
+        />
 
         <div className={stepClass}>
           <div className="flex items-center gap-2 text-sm font-black text-slate-950">
@@ -755,7 +748,7 @@ function ThreeDBreakdownAssemblyCard({
                       variant="ghost"
                       className="h-8 w-full rounded-none border-t border-slate-200 text-[9px] font-black uppercase tracking-[0.12em] text-slate-600"
                       onClick={() => onGenerateImages(clipPlan.clipIndex === 1 ? "anchor-1" : "anchor-2")}
-                      disabled={imageStatus === "loading"}
+                      disabled={imageStatus === "loading" || !scriptReady}
                       aria-label={`Regenerate ${frameLabel}`}
                       data-three-d-regenerate-anchor={clipPlan.clipIndex}
                     >
@@ -792,7 +785,7 @@ function ThreeDBreakdownAssemblyCard({
               variant="outline"
               className="mt-3 h-10 w-full rounded-2xl border-slate-300 bg-white text-xs font-black uppercase tracking-[0.12em] text-slate-700"
               onClick={() => onGenerateImages("storyboard")}
-              disabled={imageStatus === "loading"}
+              disabled={imageStatus === "loading" || !scriptReady}
               data-three-d-regenerate-storyboard="true"
             >
               <RefreshCw className="mr-2 size-4" />
@@ -803,7 +796,7 @@ function ThreeDBreakdownAssemblyCard({
             type="button"
             className="mt-3 h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
             onClick={() => onGenerateImages()}
-            disabled={imageStatus === "loading" || (isPresenterStyle && storyboardBoardReady && framesReady)}
+            disabled={!scriptReady || imageStatus === "loading" || (isPresenterStyle && storyboardBoardReady && framesReady)}
           >
             {imageStatus === "loading" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImageIcon className="mr-2 size-4" />}
             {imageButtonLabel}
@@ -883,7 +876,7 @@ function ThreeDBreakdownAssemblyCard({
                   type="button"
                   className="mt-3 h-9 w-full rounded-2xl bg-slate-950 text-[11px] font-black uppercase tracking-[0.12em] text-white disabled:bg-slate-200 disabled:text-slate-400"
                   onClick={() => onGenerateClip(clipPlan.clipIndex)}
-                  disabled={!framesReady || threeDClipBusyIndex !== null || !getPreviousClipReady(clipPlan.clipIndex)}
+                  disabled={!scriptReady || !framesReady || threeDClipBusyIndex !== null || !getPreviousClipReady(clipPlan.clipIndex)}
                   data-three-d-generate-clip={clipPlan.clipIndex}
                 >
                   {clipBusy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Film className="mr-2 size-4" />}
@@ -925,7 +918,7 @@ function ThreeDBreakdownAssemblyCard({
             type="button"
             className="mt-3 h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
             onClick={hasVoiceover ? onBuildFinalVideo : onAddVoice}
-            disabled={!videosReady || renderBusy}
+            disabled={!scriptReady || !videosReady || renderBusy}
           >
             {renderBusy
               ? <Loader2 className="mr-2 size-4 animate-spin" />
