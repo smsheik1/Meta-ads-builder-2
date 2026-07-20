@@ -80,7 +80,7 @@ export const buildJinglePrompt = (
 
   return `You are a senior jingle copywriter and music director.
 Write exactly ${JINGLE_VARIANT_COUNT} short, catchy, singable ${style.label} brand jingle.
-Each output object is a composition plan for ElevenLabs Music v2.
+Write the creative lines only. Wiggly builds the exact ElevenLabs Music v2 composition plan.
 
 BRAND CONTEXT:
 - Brand: ${brandName}
@@ -97,22 +97,20 @@ ${adAngles || "- none"}
 
 WHAT A JINGLE IS HERE:
 - A tiny 20 second hip hop track.
-- Exactly 3 chunks: [Hook] 6000ms, [Verse] 8000ms, [Hook] 6000ms.
-- The first hook contains brandPhonetic.
-- The final hook repeats the payoff and the FINAL lyric line is brandPhonetic.
-- The verse names exactly ONE evidence-based pain or benefit.
+- hook is exactly ONE catchy line.
+- verseLines contains 2-3 short lines about exactly ONE evidence-based pain or benefit.
+- Do not put the brand name in hook. Wiggly adds brandPhonetic to both hooks and makes it the final lyric line.
+- Wiggly builds exactly 3 chunks: [Hook] 6000ms, [Verse] 8000ms, [Hook] 6000ms.
 
-STYLE FOR EVERY CHUNK:
-positive_styles must include these exact ideas, in English, with no artist/song/band references:
+STYLE DIRECTION:
 ${style.positiveStyles.join(", ")}
-negative_styles should avoid: ${style.negativeStyles.join(", ")}
+Avoid: ${style.negativeStyles.join(", ")}
 ${toneRules}
 
 CRAFT RULES:
 - Lines in the same section must have matching or near-matching syllable counts.
 - Use short, common, punchy words that rap cleanly.
-- Brand name appears in both hooks using brandPhonetic.
-- Final lyric line is brandPhonetic only.
+- hook is one line and does not include the brand name.
 - No invented stats, percentages, discounts, offers, guarantees, reviews, awards, or features.
 - No jargon, hype words, hashtags, emojis, em dashes, or en dashes.
 - Never name real artists, bands, songs, or copyrighted style references.
@@ -132,33 +130,8 @@ Return only valid JSON in this shape:
     {
       "angle": "the one pain or benefit this jingle uses",
       "brandPhonetic": "how the brand is sung",
-      "musicLengthMs": 20000,
-      "compositionPlan": {
-        "chunks": [
-          {
-            "text": "[Hook]\\n<1-2 singable lines with brandPhonetic>",
-            "duration_ms": 6000,
-            "positive_styles": ${JSON.stringify(style.positiveStyles)},
-            "negative_styles": ${JSON.stringify(style.negativeStyles)},
-            "context_adherence": "high"
-          },
-          {
-            "text": "[Verse]\\n<2-3 lines about ONE evidence-backed pain or benefit>",
-            "duration_ms": 8000,
-            "positive_styles": ${JSON.stringify(style.positiveStyles)},
-            "negative_styles": ${JSON.stringify(style.negativeStyles)},
-            "context_adherence": "high"
-          },
-          {
-            "text": "[Hook]\\n<repeat hook payoff>\\n<brandPhonetic>",
-            "duration_ms": 6000,
-            "positive_styles": ${JSON.stringify(style.positiveStyles)},
-            "negative_styles": ${JSON.stringify(style.negativeStyles)},
-            "context_adherence": "high"
-          }
-        ]
-      },
-      "selfCheckPassed": "syllable count per line; durations sum to 20000; final line is brandPhonetic; no invented claims"
+      "hook": "one catchy line without the brand name",
+      "verseLines": ["short line one", "short line two"]
     }
   ]
 }`;
