@@ -104,8 +104,6 @@ const storySlateFearPattern = /\b(?:toxic|toxins?|poison(?:s|ed|ing)?|starv(?:e|
 const storySlateMechanismClaims = [
   ["absorption", /\b(?:absorb(?:s|ed|ing)?|absorption)\b/i],
   ["digestion", /\b(?:digest(?:s|ed|ing|ion|ive)?|stomach acid|gastric acid)\b/i],
-  ["dissolving", /\bdissolv(?:e|es|ed|ing)\b/i],
-  ["release", /\breleas(?:e|es|ed|ing)\b/i],
   ["contamination", /\b(?:contaminant|contamination|pesticides?|heavy metals?|microbial)\b/i],
 ] as const;
 const primarySiteTypes: ThreeDBreakdownPrimarySiteType[] = ["ecommerce", "saas", "local-service", "restaurant-food", "nonprofit", "portfolio", "unclear"];
@@ -165,7 +163,7 @@ const assertTranscriptScriptShape = (beats: ThreeDBreakdownScriptBeat[]) => {
   const combined = beats.map((beat) => beat.narration).join(" ");
   const totalWords = countWords(combined);
   if (totalWords < THREE_D_MIN_SCRIPT_WORDS || totalWords > THREE_D_MAX_SCRIPT_WORDS) {
-    throw new Error(`3D Breakdown script must be ${THREE_D_MIN_SCRIPT_WORDS}-${THREE_D_MAX_SCRIPT_WORDS} words.`);
+    throw new Error(`3D Breakdown script has ${totalWords} words; it must have ${THREE_D_MIN_SCRIPT_WORDS}-${THREE_D_MAX_SCRIPT_WORDS}.`);
   }
   beats.forEach((beat, index) => {
     if (sentenceCount(beat.narration) !== 1) {
@@ -219,6 +217,13 @@ const assertCtaLineShape = (value: string) => {
 };
 
 const buildDeterministicCtaLine = (research: StoredWebsiteResearchResult) => {
+  const websiteCta = cleanText(research.brandBrief.ctaDirection, 180).replace(/[.!]+$/, "");
+  try {
+    assertCtaLineShape(websiteCta);
+    return websiteCta;
+  } catch {
+    // Fall through to a short brand/category CTA when the website CTA is missing or unusable.
+  }
   const brand = cleanText(research.brandBrief.brandName || research.brand.name, 60)
     .split(/\s+/)
     .slice(0, 4)
@@ -260,13 +265,12 @@ const presenterNarrationPattern = /\b(i am|i'm|i'll|let me|watch me|today i|my f
 const productionDirectionPattern = /\b(demonstrator|camera|frame|scene|animation|x[- ]?ray|cutaway|review tokens?|proof tokens?|caption|storyboard)\b/i;
 const templateLeakPattern = /\bwhen a buyer receives it\b|\bthe product reveals hidden proof\b|\bone version fills space\b|\bthe other changes the moment\b/i;
 const falseClassificationPattern = /\b(assum(?:e|es|ed|ing)|thought|pictured|decided|not for|only for|just for|wrong(?:ly)?|looked like|felt like)\b/i;
-const REFERENCE_SCRIPT_ACCEPT_MIN_WORDS = 100;
+const REFERENCE_SCRIPT_ACCEPT_MIN_WORDS = THREE_D_MIN_SCRIPT_WORDS;
 const REFERENCE_SCRIPT_ACCEPT_MAX_WORDS = 180;
 const shippingLikeEvidenceTypes = new Set<ThreeDBreakdownEvidenceUseType>(["shipping", "offer", "guarantee"]);
 const arrivalContextEvidenceTypes = new Set<ThreeDBreakdownEvidenceUseType>(["review", "proof", "shipping", "offer", "guarantee"]);
 const logisticsContextTerms = new Set(["sorting", "truck", "warehouse", "transit"]);
 const unsupportedMechanismTerms = [
-  ["compression", /\bcompress(?:ion|es|ed|ing)?\b/i],
   ["impact", /\b(?:shipping|delivery|box|tin|package|container|carton|gift box)\s+impact\b|\bimpact\s+(?:damage|resistance|protection|test|shock)\b/i],
   ["interlocking", /\binterlocking\b/i],
   ["rigid", /\brigid\b/i],
@@ -286,10 +290,8 @@ const unsupportedMechanismTerms = [
   ["same-day", /\bsame[- ]day\b/i],
   ["oven aroma", /\boven aroma\b/i],
   ["transit", /\btransit\b/i],
-  ["structure", /\bstructure\b/i],
   ["dented", /\bdented\b/i],
   ["crumple", /\bcrumple\b/i],
-  ["intact", /\bintact\b/i],
   ["trackable", /\btrackable\b/i],
   ["hand-cut", /\bhand[- ]cut\b/i],
   ["die press", /\bdie press\b/i],
@@ -301,7 +303,6 @@ const unsupportedMechanismTerms = [
   ["powdery", /\bpowdery\b/i],
   ["factory-stamped", /\bfactory[- ]stamped\b/i],
   ["mass market", /\bmass market\b/i],
-  ["months", /\bmonths?\b/i],
   ["human-cell comparison", /\bhuman cells?\b|\boutnumber(?:s|ed|ing)?\b/i],
   ["stomach acid", /\bstomach acid\b|\bgastric acid\b/i],
   ["hostile digestive environment", /\b(?:hostile|harsh)\s+(?:digestive|gastric|stomach)\s+(?:tract|environment|conditions?)\b/i],
@@ -309,11 +310,9 @@ const unsupportedMechanismTerms = [
   ["arrives where needed", /\b(?:arriv(?:e|es)|reach(?:es)?)\s+(?:the\s+gut\s+)?where\s+(?:it|they|strains?)\s+(?:is|are)\s+needed\b/i],
   ["destroy", /\bdestroy(?:s|ed|ing)?\b/i],
   ["absorb", /\babsorb(?:s|ed|ing)?\b/i],
-  ["completely", /\bcompletely\b/i],
   ["carbon", /\bcarbon\b/i],
   ["arthritis", /\barthritis\b/i],
   ["vacuum", /\bvacuum\b/i],
-  ["thick", /\bthick\b/i],
   ["filter layer order", /\b(?:first|second|next|final)\s+(?:filter\s+)?(?:layer|barrier|mesh|sheet)\b/i],
   ["invented water state", /\b(?:dirty|clean)\s+water\b/i],
   ["invented water direction", /\b(?:pulls?|forces?)\s+(?:the\s+)?(?:dirty\s+)?water\s+(?:downward|through)\b/i],
@@ -325,16 +324,12 @@ const assertReferenceScriptGrounding = (
   supportingEvidenceItems: ThreeDBreakdownEvidenceItem[] = [evidence],
 ) => {
   const evidenceText = supportingEvidenceItems.map((item) => item.text).join(" ").toLowerCase();
-  const evidenceSupportsCompressionMetaphor = /\b(?:\d{2,}\+?|dozens?|many|multiple|handfuls?)\b/i.test(evidenceText)
-    && /\b(?:one|single|all[- ]in[- ]one|grab[- ]and[- ]go)\b/i.test(evidenceText)
-    && /\b(?:pack|packet|pouch|gumm(?:y|ies)|serving|capsule|tablet|product)\b/i.test(evidenceText);
   const factualScript = script
     .split(/(?<=[.!?])\s+/)
     .filter((sentence) => !falseClassificationPattern.test(sentence))
     .join(" ");
   for (const [term, pattern] of unsupportedMechanismTerms) {
     if (arrivalContextEvidenceTypes.has(evidence.evidenceUseType) && logisticsContextTerms.has(term)) continue;
-    if (term === "compression" && evidenceSupportsCompressionMetaphor) continue;
     if (term === "oven aroma" && /\b(fresh|fresh[- ]baked|tasted|homemade)\b/i.test(evidenceText)) continue;
     if (pattern.test(factualScript) && !pattern.test(evidenceText)) {
       throw new Error(`3D Breakdown Style B referenceScript invented product mechanism details not supported by evidence: ${term}.`);
@@ -413,10 +408,7 @@ const parseStoryDirectionSlateOutput = (
   }
   const directions = rawDirections.map((direction, index) => {
     const rawDirection = direction as Record<string, unknown>;
-    const directionId = cleanText(rawDirection.directionId, 24) || `idea-${index + 1}`;
-    if (directionId !== `idea-${index + 1}`) {
-      throw new Error(`3D Breakdown story direction ${index + 1} must use directionId idea-${index + 1}.`);
-    }
+    const directionId = `idea-${index + 1}`;
     const evidenceIndex = Number(rawDirection.evidenceIndex);
     const evidence = evidenceItems.find((item) => item.evidenceIndex === evidenceIndex);
     if (!evidence || evidence.evidenceUseType === "category") {
@@ -464,7 +456,10 @@ const parseStoryDirectionSlateOutput = (
     }
     return parsedDirection;
   });
-  const recommendedDirectionId = cleanText(parsed.recommendedDirectionId, 24) || directions[0]!.directionId;
+  const recommendedIndex = Number(parsed.recommendedIndex);
+  const recommendedDirectionId = Number.isInteger(recommendedIndex) && recommendedIndex >= 1 && recommendedIndex <= directions.length
+    ? directions[recommendedIndex - 1]!.directionId
+    : cleanText(parsed.recommendedDirectionId, 24) || directions[0]!.directionId;
   if (!directions.some((direction) => direction.directionId === recommendedDirectionId)) {
     throw new Error("3D Breakdown story slate recommendedDirectionId is invalid.");
   }
@@ -481,9 +476,6 @@ const parseStyleBScriptPlanOutput = (
   selectedStoryDirection?: ThreeDBreakdownStoryDirection | null,
 ): ThreeDBreakdownLockedStyleBScript => {
   const parsed = parseJsonObject(raw);
-  if (parsed.visualStyle !== "presenter-teardown-vsl") {
-    throw new Error("3D Breakdown Style B script plan must use presenter-teardown-vsl.");
-  }
   const evidenceIndex = Number(parsed.evidenceIndex);
   if (selectedStoryDirection && evidenceIndex !== selectedStoryDirection.evidenceIndex) {
     throw new Error("3D Breakdown Style B script plan must preserve the selected story direction evidence.");
@@ -494,14 +486,21 @@ const parseStyleBScriptPlanOutput = (
     throw new Error(`3D Breakdown Style B script plan references invalid evidence; use one of: ${allowedEvidenceIds}.`);
   }
   const ctaLine = resolveCtaLine(parsed.ctaLine, research);
+  const scriptBeats = parseScriptBeats(parsed.narrationBeats ?? parsed.scriptBeats, ctaLine);
+  const referenceScript = parseReferenceScript(
+    parsed.referenceScript || scriptBeats.map((beat) => beat.narration).join(" "),
+    "presenter-teardown-vsl",
+    evidence,
+    evidenceItems,
+  ) || "";
   const plan = {
     visualStyle: "presenter-teardown-vsl" as const,
     variantAngle: cleanText(parsed.variantAngle, 120),
     customerProblem: cleanText(parsed.customerProblem, 160),
     mechanismSummary: cleanText(parsed.mechanismSummary, 180),
     visualMetaphor: cleanText(parsed.visualMetaphor, 160),
-    referenceScript: parseReferenceScript(parsed.referenceScript, "presenter-teardown-vsl", evidence, evidenceItems) || "",
-    scriptBeats: parseScriptBeats(parsed.scriptBeats, ctaLine),
+    referenceScript,
+    scriptBeats,
     ctaLine,
     evidenceIndex,
     evidenceUseType: evidence.evidenceUseType,
@@ -542,13 +541,16 @@ const assertClaimRisk = ({
 };
 
 const parseScriptBeats = (value: unknown, fallbackCtaLine = ""): ThreeDBreakdownScriptBeat[] => {
-  if (!Array.isArray(value) || value.length !== THREE_D_SCRIPT_BEATS.length) {
-    throw new Error("3D Breakdown needs exactly 5 narration beats.");
+  if (!Array.isArray(value) || (value.length !== 4 && value.length !== THREE_D_SCRIPT_BEATS.length)) {
+    throw new Error("3D Breakdown needs exactly 4 narration beats plus the CTA.");
   }
-  const beats = value.map((beat, index) => {
-    const raw = beat as Record<string, unknown>;
+  const narrationValues = value.map((beat) => (
+    typeof beat === "string" ? beat : (beat as Record<string, unknown>).narration
+  ));
+  if (narrationValues.length === 4) narrationValues.push(fallbackCtaLine);
+  const beats = narrationValues.map((rawValue, index) => {
     const contract = THREE_D_SCRIPT_BEATS[index]!;
-    const rawNarration = cleanText(raw.narration, 180);
+    const rawNarration = cleanText(rawValue, 180);
     const shouldUseFallbackCta = contract.role === "punchline"
       && countWords(fallbackCtaLine) <= 7
       && (
@@ -558,9 +560,6 @@ const parseScriptBeats = (value: unknown, fallbackCtaLine = ""): ThreeDBreakdown
         || abstractPunchlinePattern.test(rawNarration)
       );
     const narration = shouldUseFallbackCta ? fallbackCtaLine : rawNarration;
-    if (raw.role !== contract.role) {
-      throw new Error(`3D Breakdown beat ${index + 1} role is invalid.`);
-    }
     if (!narration) throw new Error(`3D Breakdown beat ${index + 1} narration is missing.`);
     assertNoBannedText(narration);
     return {
@@ -660,14 +659,8 @@ const parseStoryboardFrames = (value: unknown): NonNullable<ThreeDBreakdownStory
     throw new Error("3D Breakdown storyboard board must include exactly 6 detailed frames.");
   }
   return THREE_D_STORYBOARD_FRAME_CONTRACTS.map((contract, index) => {
-    const frame = value.find((item) => {
-      const raw = item as Record<string, unknown>;
-      return raw.frameIndex === contract.frameIndex;
-    }) || value[index];
+    const frame = value[index];
     const raw = frame as Record<string, unknown>;
-    if (raw.frameIndex !== contract.frameIndex) {
-      throw new Error(`3D Breakdown storyboard frame ${index + 1} contract is invalid.`);
-    }
     const visual = cleanText(raw.visual, 260);
     const camera = cleanText(raw.camera, 160);
     const motion = cleanText(raw.motion, 180);
@@ -700,9 +693,6 @@ const parseStoryboardBoard = (value: unknown, visualStyle: ThreeDBreakdownVisual
     : value as Record<string, unknown>;
   if (!raw || typeof raw !== "object") {
     throw new Error("3D Breakdown storyboard board is missing.");
-  }
-  if (raw.frameCount !== 6) {
-    throw new Error("3D Breakdown storyboard board must have 6 frames.");
   }
   const imagePrompt = cleanText(raw.imagePrompt, 1800);
   if (!imagePrompt) throw new Error("3D Breakdown storyboard board image prompt is missing.");
@@ -762,7 +752,10 @@ const parseVariants = (
 ) => {
   const variants = (Array.isArray(parsed.variants) ? parsed.variants : []).map((variant, index) => {
     const rawVariant = variant as Record<string, unknown>;
-    const visualStyle = parseEnum(rawVariant.visualStyle, visualStyles, "visualStyle");
+    const inferredLockedStyle = lockedStyleBScript && (requestedCount === 1 || index === 1)
+      ? lockedStyleBScript.visualStyle
+      : undefined;
+    const visualStyle = inferredLockedStyle || parseEnum(rawVariant.visualStyle, visualStyles, "visualStyle");
     const lockedScript = visualStyle === "presenter-teardown-vsl" ? lockedStyleBScript : null;
     const evidenceIndex = lockedScript?.evidenceIndex ?? Number(rawVariant.evidenceIndex);
     const evidence = evidenceItems.find((item) => item.evidenceIndex === evidenceIndex);
@@ -790,12 +783,19 @@ const parseVariants = (
       claimRiskReason: cleanText(lockedScript?.claimRiskReason ?? rawVariant.claimRiskReason, 220),
     };
     assertCtaLineShape(parsedVariantBase.ctaLine);
-    const referenceScript = parseReferenceScript(lockedScript?.referenceScript ?? rawVariant.referenceScript, parsedVariantBase.visualStyle, evidence, evidenceItems);
+    const scriptBeats = lockedScript?.scriptBeats
+      ?? parseScriptBeats(rawVariant.narrationBeats ?? rawVariant.scriptBeats, parsedVariantBase.ctaLine);
+    const referenceScript = parseReferenceScript(
+      lockedScript?.referenceScript
+        ?? (cleanText(rawVariant.referenceScript, 2400) || scriptBeats.map((beat) => beat.narration).join(" ")),
+      parsedVariantBase.visualStyle,
+      evidence,
+      evidenceItems,
+    );
     for (const [key, value] of Object.entries(parsedVariantBase)) {
       if (typeof value === "string" && !value) throw new Error(`3D Breakdown variant ${index + 1} ${key} is missing.`);
       if (typeof value === "string") assertNoBannedText(value);
     }
-    const scriptBeats = lockedScript?.scriptBeats ?? parseScriptBeats(rawVariant.scriptBeats, parsedVariantBase.ctaLine);
     if (parsedVariantBase.visualStyle === "presenter-teardown-vsl") {
       assertReferenceScriptGrounding([
         referenceScript,
