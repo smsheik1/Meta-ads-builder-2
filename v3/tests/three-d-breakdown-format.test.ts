@@ -23,7 +23,9 @@ import {
   THREE_D_BREAKDOWN_MAX_TOKENS,
   THREE_D_BREAKDOWN_DURATION_MS,
   THREE_D_BREAKDOWN_VARIANT_COUNT,
+  THREE_D_SCRIPT_BEATS,
 } from "../features/formats/three-d-breakdown/prompt";
+import { THREE_D_STORYBOARD_FRAME_CONTRACTS } from "../features/formats/three-d-breakdown/storyboardContracts";
 import {
   buildThreeDProductionFramePrompt,
   buildThreeDSeedancePrompt,
@@ -592,97 +594,39 @@ assert.equal(THREE_D_BREAKDOWN_MAX_TOKENS, 4000);
 assert.equal(THREE_D_BREAKDOWN_DURATION_MS, 20_000);
 assert.equal(DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL, "z-ai/glm-5.2");
 assert.ok(ecommerceStyleReferenceBytes.byteLength > 5_000, "3D Breakdown ecommerce style reference image must stay checked in.");
-assert.ok(prompt.length < 16_000, `3D Breakdown director prompt is too large: ${prompt.length} chars`);
-assert.ok(seedPrompt.length < 16_000, `Seed director prompt is too large: ${seedPrompt.length} chars`);
-assert.ok(styleBScriptPrompt.length < 8_200, `3D Breakdown Style B script prompt is too large: ${styleBScriptPrompt.length} chars`);
-assert.ok(storyDirectionsPrompt.length < 6_000, `3D Breakdown story directions prompt is too large: ${storyDirectionsPrompt.length} chars`);
+assert.ok(prompt.length < 7_000, `3D Breakdown director prompt is too large: ${prompt.length} chars`);
+assert.ok(seedPrompt.length < 7_000, `Seed director prompt is too large: ${seedPrompt.length} chars`);
+assert.ok(styleBScriptPrompt.length < 6_000, `3D Breakdown Style B script prompt is too large: ${styleBScriptPrompt.length} chars`);
+assert.ok(storyDirectionsPrompt.length < 4_500, `3D Breakdown story directions prompt is too large: ${storyDirectionsPrompt.length} chars`);
 assert.ok(!prompt.includes('"shots": ['), "3D Breakdown director must not author a duplicate three-shot plan.");
-[
-  "ZachDFilms-style high-retention documentary pacing",
-  "visualStyle",
-  "toy-character-vsl",
-  "presenter-teardown-vsl",
-  "Style A - toy-character-vsl",
-  "Style B - presenter-teardown-vsl",
-  "voice is unseen",
-  "demonstrator is silent feature-animation CGI",
-  "use -> false classification",
-  "Include a literal transformation verb",
-  "Narrator teaches; visuals demonstrate.",
-  "recurring silent feature-animation CGI demonstrator/scale figure",
-  "referenceScript",
-  "110-160 words",
-  "Then compress that script into the 5 scriptBeats",
-  "Every narration line must have a visual job",
-  "Maxfusion visual rule",
-  "If a line cannot be drawn as a specific object/action",
-  "Show, don't tell",
-  "The visuals do the heavy lifting",
-  "same face, plain shirt color",
-  "Use a body route only when the locked premise and evidence concern ingestion, digestion, or absorption",
-  "routine, testing, portability, taste, and compression stay external",
-  "clean graphic product-science footage",
-  "no wet gut, gore, organ close-up",
-  "product-science teardown",
-  "bright blue/cyan technical grid",
-  "Use [] for no riskFlags",
-  "Write 1 variant.",
-  "No invented reviews, numbers, results, guarantees, source names, customer names, or claims.",
-  "Total narration must be 45-65 words",
-  "ctaLine must make a real viewer action obvious",
-  "Never use an abstract closer as ctaLine",
-  "pick the most visual evidence item",
-  "Production truth: 5 script beats, 6 storyboard frames",
-  "Do not ask the image model for readable text",
-  "one unlabeled six-still contact sheet",
-  "Storyboard prompts are the only place where a six-still sheet is allowed",
-  "Never end with see the mechanism",
-  "name the plain product category once",
-  "product imagery is required before paid visual generation",
-  "do not use hats, merch, logos, icons, or accessories unless the site is apparel",
-  "Frame 6 resolves to the real selected product/category",
-  "A website making a risky claim does not automatically make that claim safe to repeat.",
-].forEach((expected) => assert.ok(prompt.includes(expected), `3D Breakdown prompt missing: ${expected}`));
-assert.ok(twoDirectionPrompt.includes("Write 2 variants."));
-assert.ok(twoDirectionPrompt.includes("variant 1 with visualStyle toy-character-vsl"));
-assert.ok(twoDirectionPrompt.includes("variant 2 with visualStyle presenter-teardown-vsl"));
-assert.ok(styleBScriptPrompt.includes("Wiggly Style B Script Director"));
-assert.ok(styleBScriptPrompt.includes("Do not write storyboard, shots, image prompts, animation prompts, or captions."));
-assert.ok(styleBScriptPrompt.includes("unseen omniscient narrator"));
-assert.ok(styleBScriptPrompt.includes("referenceScript must be 110-160 words"));
-assert.ok(styleBScriptPrompt.includes("scriptBeats are the final 20-second narration"));
-assert.ok(styleBScriptPrompt.includes("45-65 words total"));
-assert.ok(styleBScriptPrompt.includes("Spoken copy never mentions production"));
+["visualStyle", "toy-character-vsl", "presenter-teardown-vsl", "six frames", "impossible reveal", "real selected product or service outcome", "one coherent visual world", "no readable text"].forEach((expected) => (
+  assert.ok(prompt.includes(expected), `3D Breakdown visual prompt missing: ${expected}`)
+));
+assert.ok(twoDirectionPrompt.includes("Return toy-character-vsl first and presenter-teardown-vsl second."));
+assert.ok(styleBScriptPrompt.includes("Wiggly's 3D Breakdown Script Director"));
+assert.ok(styleBScriptPrompt.includes("Do not write visuals, camera directions, storyboards, or media prompts."));
+assert.ok(styleBScriptPrompt.includes("unseen narrator"));
+assert.ok(!styleBScriptPrompt.includes('"referenceScript"'));
+assert.ok(styleBScriptPrompt.includes("narrationBeats contains exactly four one-sentence lines"));
+assert.ok(styleBScriptPrompt.includes("Wiggly adds the website CTA as the fifth beat"));
+assert.ok(!styleBScriptPrompt.includes('"ctaLine"'));
 assert.ok(styleBScriptPrompt.includes("Only evidence text authorizes product facts"));
-assert.ok(styleBScriptPrompt.includes("no invented experiment"));
-assert.ok(styleBScriptPrompt.includes("Example A - supplement mechanism"));
-assert.ok(styleBScriptPrompt.includes("Example B - commodity gift proof"));
-assert.ok(styleBScriptPrompt.includes("Example C - physical gadget mechanism"));
-assert.ok(styleBScriptPrompt.includes("Bad contrast"));
-assert.ok(!styleBScriptPrompt.includes("pet water fountain"));
-assert.ok(!styleBScriptPrompt.includes("beauty refill"));
-assert.ok(styleBScriptPrompt.includes("Start with human curiosity before selling"));
-assert.ok(styleBScriptPrompt.includes("ctaLine is 3-7 words"));
-assert.ok(styleBScriptPrompt.includes("must exactly match the punchline narration"));
-assert.ok(styleBScriptPrompt.includes("ctaLine must sell the product action, not the mechanism"));
-assert.ok(styleBScriptPrompt.includes("name the plain product category once"));
-assert.ok(styleBScriptPrompt.includes("use the selected evidenceIndex/evidenceUseType exactly"));
-assert.ok(styleBScriptPrompt.includes("higher-scoring evidence into supporting context only"));
-assert.ok(styleBScriptPrompt.includes("Do not invent package physics"));
-assert.ok(storyDirectionsPrompt.includes("Wiggly 3D Breakdown Story Slate Director"));
-assert.ok(storyDirectionsPrompt.includes("Write exactly 5 directions."));
-assert.ok(storyDirectionsPrompt.includes("directionId values must be idea-1, idea-2, idea-3, idea-4, idea-5."));
-assert.ok(storyDirectionsPrompt.includes("Do not write the final script."));
-assert.ok(storyDirectionsPrompt.includes("shortSummary should cover tension, reveal, and payoff without retelling the whole ad."));
-assert.ok(storyDirectionsPrompt.includes("Commodity gift proof"));
-assert.ok(storyDirectionsPrompt.includes("Physical gadget"));
-assert.ok(storyDirectionsPrompt.includes("visualEngine must describe the physical 3D reveal"));
-assert.ok(storyDirectionsPrompt.includes("never fake bodily harm or fear"));
-assert.ok(storyDirectionsPrompt.includes("must dramatize its selected evidence"));
-assert.ok(storyDirectionsPrompt.includes("Do not invent a failing body or failing competitor"));
-assert.ok(storyDirectionsPrompt.includes("Supplement compression"));
-assert.ok(storyDirectionsPrompt.includes("Supplement proof"));
-assert.ok(!storyDirectionsPrompt.includes("a swallowed capsule meets a hidden digestive obstacle"));
+assert.ok(styleBScriptPrompt.includes("tell an origin"));
+assert.ok(styleBScriptPrompt.includes("expose an industry fact"));
+assert.ok(styleBScriptPrompt.includes("launch something new"));
+assert.ok(storyDirectionsPrompt.includes("Wiggly's 3D Breakdown Story Director"));
+assert.ok(storyDirectionsPrompt.includes("Create five genuinely different ideas"));
+assert.ok(storyDirectionsPrompt.includes("Do not write scripts, storyboards, or media prompts."));
+assert.ok(storyDirectionsPrompt.includes("Wiggly adds direction IDs and evidence types."));
+assert.ok(storyDirectionsPrompt.includes("tell an origin"));
+assert.ok(storyDirectionsPrompt.includes("expose an industry fact"));
+assert.ok(storyDirectionsPrompt.includes("launch something new"));
+assert.ok(storyDirectionsPrompt.includes("answer a buying question"));
+assert.ok(!storyDirectionsPrompt.includes('"directionId"'));
+assert.ok(!styleBScriptPrompt.includes('"startMs"'));
+assert.ok(!styleBScriptPrompt.includes('"endMs"'));
+assert.ok(!prompt.includes('"frameIndex"'));
+assert.ok(!prompt.includes('"frameCount"'));
 assert.ok(seedPrompt.includes("DS-01 Daily Synbiotic"));
 assert.ok(seedPrompt.includes("ViaCap"));
 assert.ok(seedPrompt.includes("capsule-in-capsule"));
@@ -1010,8 +954,8 @@ const grunsFallbackCtaGeneration = await generateThreeDBreakdownVariantsFromRese
   },
 });
 assert.equal(grunsFallbackCtaCalls, 2, "A malformed CTA should be normalized without retrying the Script Director.");
-assert.equal(grunsFallbackCtaGeneration.variants[0]?.ctaLine, "Try Grüns gummies today.");
-assert.equal(grunsFallbackCtaGeneration.variants[0]?.scriptBeats[4]?.narration, "Try Grüns gummies today.");
+assert.equal(grunsFallbackCtaGeneration.variants[0]?.ctaLine, "Try Grüns gummies");
+assert.equal(grunsFallbackCtaGeneration.variants[0]?.scriptBeats[4]?.narration, "Try Grüns gummies");
 const grunsCompressionVisualPlan = payloadWithVariants([makeVariant({
   ...grunsCompressionLock,
   visualStyle: "presenter-teardown-vsl",
@@ -1030,7 +974,7 @@ const grunsCompressionGeneration = await generateThreeDBreakdownVariantsFromRese
   nvidiaNimApiKey: "test-key",
   nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
     grunsCompressionCalls += 1;
-    return JSON.stringify(directorPrompt.includes("Wiggly Style B Script Director")
+    return JSON.stringify(directorPrompt.includes("Wiggly's 3D Breakdown Script Director")
       ? grunsCompressionScriptPlan
       : grunsCompressionVisualPlan);
   },
@@ -1041,19 +985,23 @@ assert.equal(grunsCompressionGeneration.variants[0]?.referenceScript, grunsCompr
 assert.equal(grunsCompressionGeneration.variants[0]?.scriptBeats[4]?.narration, "Try Grüns gummies today.");
 
 let storySlateCalls = 0;
+const simplifiedStoryDirectionPayload = {
+  recommendedIndex: 1,
+  directions: storyDirectionPayload.directions.map(({ directionId: _directionId, evidenceUseType: _evidenceUseType, ...direction }) => direction),
+};
 const storySlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
   nvidiaNimApiKey: "test-key",
   nvidiaNimBaseUrl: "https://nim.test/v1",
   nvidiaNimModel: "test-3d-breakdown",
   nvidiaNimChatCompletion: async ({ prompt: directorPrompt, stream, structuredOutput }) => {
     storySlateCalls += 1;
-    assert.ok(directorPrompt.includes("Story Slate Director"));
+    assert.ok(directorPrompt.includes("3D Breakdown Story Director"));
     assert.ok(directorPrompt.includes("Keep the JSON compact"));
     assert.ok(!directorPrompt.includes("Nano Banana"));
     assert.ok(!directorPrompt.includes("Seedance"));
     assert.equal(stream, true);
     assert.equal(structuredOutput, false);
-    return JSON.stringify(storyDirectionPayload);
+    return JSON.stringify(simplifiedStoryDirectionPayload);
   },
 });
 assert.equal(storySlateCalls, 1);
@@ -1130,9 +1078,9 @@ const selectedStyleBScriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({
   research,
   selectedStoryDirection,
 });
-assert.ok(selectedDirectionPrompt.includes("Selected story direction:"));
+assert.ok(selectedDirectionPrompt.includes("Selected direction:"));
 assert.ok(selectedDirectionPrompt.includes(selectedStoryDirection.hookLine));
-assert.ok(selectedStyleBScriptPrompt.includes("Selected story direction:"));
+assert.ok(selectedStyleBScriptPrompt.includes("Selected direction:"));
 assert.ok(selectedStyleBScriptPrompt.includes(selectedStoryDirection.adAngle));
 
 let selectedDirectionCalls = 0;
@@ -1149,23 +1097,44 @@ const selectedStoryLock = {
   ctaLine: "Shop memorable cookie gifts from David's Cookies.",
 };
 const selectedScriptPlan = styleBScriptPlanPayload(selectedStoryLock);
-const selectedVisualPayload = payloadWithVariants([makeVariant({
+const simplifiedSelectedScriptPlan = {
+  ...selectedScriptPlan,
+  narrationBeats: selectedScriptPlan.scriptBeats.slice(0, 4).map((beat) => beat.narration),
+};
+delete (simplifiedSelectedScriptPlan as Partial<typeof simplifiedSelectedScriptPlan>).visualStyle;
+delete (simplifiedSelectedScriptPlan as Partial<typeof simplifiedSelectedScriptPlan>).evidenceUseType;
+delete (simplifiedSelectedScriptPlan as Partial<typeof simplifiedSelectedScriptPlan>).scriptBeats;
+delete (simplifiedSelectedScriptPlan as Partial<typeof simplifiedSelectedScriptPlan>).referenceScript;
+delete (simplifiedSelectedScriptPlan as Partial<typeof simplifiedSelectedScriptPlan>).ctaLine;
+const selectedVariant = makeVariant({
   ...selectedStoryLock,
   visualStyle: "presenter-teardown-vsl",
   punchline: "Shop David's Cookies gifts.",
-})]);
+});
+const selectedVisualPayload = {
+  ...variantsPayload,
+  variants: [{
+    storyboardBoard: {
+      imagePrompt: selectedVariant.storyboardBoard.imagePrompt,
+      frames: selectedVariant.storyboardBoard.frames?.map(({ frameIndex: _frameIndex, role: _role, label: _label, image: _image, ...frame }) => frame),
+    },
+  }],
+};
 const selectedDirectionGeneration = await generateThreeDBreakdownVariantsFromResearch(research, {
   count: 1,
   nvidiaNimApiKey: "test-key",
   nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
     selectedDirectionCalls += 1;
-    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+    if (directorPrompt.includes("Wiggly's 3D Breakdown Script Director")) {
       assert.ok(directorPrompt.includes(selectedStoryDirection.directionId));
-      assert.ok(directorPrompt.includes(`evidenceIndex ${selectedStoryDirection.evidenceIndex}`));
-      return JSON.stringify(selectedScriptPlan);
+      assert.ok(directorPrompt.includes(`\"evidenceIndex\":${selectedStoryDirection.evidenceIndex}`));
+      return JSON.stringify(simplifiedSelectedScriptPlan);
     }
-    assert.ok(directorPrompt.includes("Locked Style B script plan:"));
+    assert.ok(directorPrompt.includes("Locked story plan:"));
     assert.ok(directorPrompt.includes(selectedStoryDirection.hookLine));
+    assert.ok(!directorPrompt.includes('"visualStyle"'));
+    assert.ok(!directorPrompt.includes('"frameIndex"'));
+    assert.ok(!directorPrompt.includes('"frameCount"'));
     return JSON.stringify(selectedVisualPayload);
   },
   selectedStoryDirection,
@@ -1176,12 +1145,23 @@ assert.equal(selectedDirectionGeneration.variants[0]?.variantAngle, selectedStor
 assert.equal(selectedDirectionGeneration.variants[0]?.visualStyle, "presenter-teardown-vsl");
 assert.equal(selectedDirectionGeneration.variants[0]?.evidenceIndex, selectedStoryDirection.evidenceIndex);
 assert.equal(selectedDirectionGeneration.variants[0]?.evidenceUseType, selectedStoryDirection.evidenceUseType);
-assert.equal(selectedDirectionGeneration.variants[0]?.referenceScript, selectedScriptPlan.referenceScript);
+assert.equal(
+  selectedDirectionGeneration.variants[0]?.referenceScript,
+  [...selectedScriptPlan.scriptBeats.slice(0, 4).map((beat) => beat.narration), research.brandBrief.ctaDirection].join(" "),
+);
 assert.deepEqual(
   selectedDirectionGeneration.variants[0]?.scriptBeats.map((beat) => beat.narration),
-  selectedScriptPlan.scriptBeats.map((beat) => beat.narration),
+  [...selectedScriptPlan.scriptBeats.slice(0, 4).map((beat) => beat.narration), research.brandBrief.ctaDirection],
 );
-assert.equal(selectedDirectionGeneration.variants[0]?.ctaLine, selectedScriptPlan.ctaLine);
+assert.deepEqual(
+  selectedDirectionGeneration.variants[0]?.scriptBeats.map(({ role, startMs, endMs }) => ({ role, startMs, endMs })),
+  THREE_D_SCRIPT_BEATS.map(({ role, startMs, endMs }) => ({ role, startMs, endMs })),
+);
+assert.deepEqual(
+  selectedDirectionGeneration.variants[0]?.storyboardBoard.frames?.map(({ frameIndex, role, label }) => ({ frameIndex, role, label })),
+  THREE_D_STORYBOARD_FRAME_CONTRACTS.map(({ frameIndex, role, label }) => ({ frameIndex, role, label })),
+);
+assert.equal(selectedDirectionGeneration.variants[0]?.ctaLine, research.brandBrief.ctaDirection);
 
 let selectedDirectionTimeoutCalls = 0;
 const selectedDirectionAfterTimeout = await generateThreeDBreakdownVariantsFromResearch(research, {
@@ -1191,7 +1171,7 @@ const selectedDirectionAfterTimeout = await generateThreeDBreakdownVariantsFromR
     selectedDirectionTimeoutCalls += 1;
     assert.equal(stream, true, "3D Breakdown director calls must use NVIDIA NIM streaming.");
     assert.equal(structuredOutput, false, "Streaming director calls must rely on Wiggly's JSON parser.");
-    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+    if (directorPrompt.includes("Wiggly's 3D Breakdown Script Director")) {
       return JSON.stringify(selectedScriptPlan);
     }
     if (selectedDirectionTimeoutCalls === 2) {
@@ -1216,7 +1196,7 @@ const flexibleReferenceScriptGeneration = await generateThreeDBreakdownVariantsF
   nvidiaNimApiKey: "test-key",
   nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
     flexibleReferenceScriptCalls += 1;
-    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+    if (directorPrompt.includes("Wiggly's 3D Breakdown Script Director")) {
       return JSON.stringify(styleBScriptPlanPayload({
         ...selectedStoryLock,
         referenceScript: nineSentenceReferenceScript,
@@ -1235,13 +1215,13 @@ const productionDirectionResult = await generateThreeDBreakdownVariantsFromResea
   nvidiaNimApiKey: "test-key",
   nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
     productionDirectionCalls += 1;
-    if (directorPrompt.includes("Wiggly Style B Script Director") && !directorPrompt.includes("failed validation")) {
+    if (directorPrompt.includes("Wiggly's 3D Breakdown Script Director") && !directorPrompt.includes("failed validation")) {
       return JSON.stringify(styleBScriptPlanPayload({
         ...selectedStoryLock,
         referenceScript: `The demonstrator points at the product. ${selectedScriptPlan.referenceScript}`,
       }));
     }
-    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+    if (directorPrompt.includes("Wiggly's 3D Breakdown Script Director")) {
       assert.ok(directorPrompt.includes("spoken copy, not production directions"));
       return JSON.stringify(selectedScriptPlan);
     }
@@ -1261,7 +1241,7 @@ const generated = await generateThreeDBreakdownVariantsFromResearch(research, {
   nvidiaNimChatCompletion: async ({ maxTokens, prompt: directorPrompt }) => {
     observedMaxTokens = maxTokens;
     observedDirectorCalls += 1;
-    if (directorPrompt.includes("Wiggly Style B Script Director")) {
+    if (directorPrompt.includes("Wiggly's 3D Breakdown Script Director")) {
       return JSON.stringify(styleBScriptPlanPayload());
     }
     const mainPayload = JSON.parse(JSON.stringify(variantsPayload));
@@ -1334,15 +1314,13 @@ assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("Visual b
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("internal instructions only"));
 assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("overlay metadata only"));
 assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("Frame 4 Wow reveal"));
-assert.ok(prompt.includes("Compress the 60-second high-retention storyboard instinct into exactly six unlabeled 20-second film stills."));
-assert.ok(prompt.includes("Every narration line must have a visual job"));
-assert.ok(prompt.includes("Show, don't tell"));
-assert.ok(prompt.includes("Each frame must visualize one narration line/causal turn"));
-assert.ok(prompt.includes("same face, plain shirt color"));
-assert.ok(prompt.includes("No branded caps, hats, hoodies, shirts, totes, merch, or character outfit details may become the product or final payoff."));
-assert.ok(prompt.includes("locked style, recurring demonstrator/product, action"));
-assert.ok(prompt.includes("2 hidden obstacle/invisible problem/impossible zoom"));
-assert.ok(prompt.includes("overlayText is metadata for Wiggly renderer overlays only"));
+assert.ok(prompt.includes("Every narration line must become a visible object, action, transformation, or payoff."));
+assert.ok(prompt.includes("Frame order: ordinary use or assumption; hidden obstacle; mechanism setup; peak impossible reveal; evidence payoff; final product payoff."));
+assert.ok(prompt.includes("Give every frame one new physical state change."));
+assert.ok(prompt.includes("Keep one coherent visual world, product, and recurring subject across all six frames."));
+assert.ok(prompt.includes("one silent, stylized CGI demonstrator"));
+assert.ok(prompt.includes("overlayText is renderer metadata only"));
+assert.ok(prompt.includes("Wiggly adds IDs, roles, timing, frame labels, and final assembly."));
 
 const timingDriftPayload = JSON.parse(JSON.stringify(variantsPayload));
 timingDriftPayload.variants[0].scriptBeats = [
@@ -1395,16 +1373,18 @@ await assert.rejects(
   /include exactly 6 detailed frames/,
 );
 
-await assert.rejects(
-  () => generateThreeDBreakdownVariantsFromResearch(research, {
-    count: 1,
-    nvidiaNimApiKey: "test-key",
-    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
-      visualStyle: "presenter-teardown-vsl",
-      referenceScript: "",
-    })])),
-  }),
-  /referenceScript is missing/,
+const noDuplicateReferenceScriptVariant = makeVariant({
+  visualStyle: "presenter-teardown-vsl",
+  referenceScript: "",
+});
+const noDuplicateReferenceScriptResult = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([noDuplicateReferenceScriptVariant])),
+});
+assert.equal(
+  noDuplicateReferenceScriptResult.variants[0]?.referenceScript,
+  noDuplicateReferenceScriptVariant.scriptBeats.map((beat) => beat.narration).join(" "),
 );
 
 await assert.rejects(
