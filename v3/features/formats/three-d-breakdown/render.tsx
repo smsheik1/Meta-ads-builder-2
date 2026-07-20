@@ -391,9 +391,8 @@ export function ThreeDBreakdownFormatRenderer({
                 letterSpacing: "0",
                 lineHeight: 0.92,
                 textAlign: "center",
-                textShadow: "0 0.32cqw 0 #020617, 0 0.55cqw 1.2cqw rgba(0,0,0,.58)",
+                textShadow: "-0.1cqw -0.1cqw 0 #020617, 0.1cqw -0.1cqw 0 #020617, -0.1cqw 0.1cqw 0 #020617, 0.1cqw 0.1cqw 0 #020617, 0 0.32cqw 0 #020617, 0 0.55cqw 1.2cqw rgba(0,0,0,.58)",
                 textTransform: "uppercase",
-                WebkitTextStroke: "0.1cqw #020617",
               }}
             >
               {word}
