@@ -163,7 +163,7 @@ const assertTranscriptScriptShape = (beats: ThreeDBreakdownScriptBeat[]) => {
   const combined = beats.map((beat) => beat.narration).join(" ");
   const totalWords = countWords(combined);
   if (totalWords < THREE_D_MIN_SCRIPT_WORDS || totalWords > THREE_D_MAX_SCRIPT_WORDS) {
-    throw new Error(`3D Breakdown script must be ${THREE_D_MIN_SCRIPT_WORDS}-${THREE_D_MAX_SCRIPT_WORDS} words.`);
+    throw new Error(`3D Breakdown script has ${totalWords} words; it must have ${THREE_D_MIN_SCRIPT_WORDS}-${THREE_D_MAX_SCRIPT_WORDS}.`);
   }
   beats.forEach((beat, index) => {
     if (sentenceCount(beat.narration) !== 1) {

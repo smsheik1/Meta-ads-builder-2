@@ -608,6 +608,7 @@ assert.ok(styleBScriptPrompt.includes("Do not write visuals, camera directions, 
 assert.ok(styleBScriptPrompt.includes("unseen narrator"));
 assert.ok(!styleBScriptPrompt.includes('"referenceScript"'));
 assert.ok(styleBScriptPrompt.includes("narrationBeats contains exactly four one-sentence lines"));
+assert.ok(styleBScriptPrompt.includes("43-58 words before the CTA"));
 assert.ok(styleBScriptPrompt.includes("Wiggly adds the website CTA as the fifth beat"));
 assert.ok(!styleBScriptPrompt.includes('"ctaLine"'));
 assert.ok(styleBScriptPrompt.includes("Only evidence text authorizes product facts"));
@@ -1507,7 +1508,7 @@ await assert.rejects(
     nvidiaNimApiKey: "test-key",
     nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([compactNearMissVariant])),
   }),
-  /script must be 45-65 words|beat 4 must be one sentence/,
+  /script has \d+ words; it must have 45-65|beat 4 must be one sentence/,
 );
 
 await assert.rejects(

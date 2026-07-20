@@ -2,7 +2,7 @@
 
 Date: 2026-07-20
 
-The prompt file fell from 35,153 characters / 567 lines to 16,435 characters / 381 lines. The pipeline still has the same three creative stages: five story directions, narration for the chosen direction, and six-frame visual planning.
+The prompt file fell from 35,153 characters / 567 lines to 16,498 characters / 381 lines. The pipeline still has the same three creative stages: five story directions, narration for the chosen direction, and six-frame visual planning.
 
 Full raw outputs are in the local ignored artifacts folder at `artifacts/three-d-prompt-simplification/` (`before.json`, `after.json`, and `after-targeted.json`). No paid media models were called.
 
@@ -32,5 +32,6 @@ Keep the simplified prompts. The original passed 1 of 6 real cases. The simplifi
 ## Verification
 
 - Typecheck, the 3D Breakdown format suite, media-handoff mocks, and the ecommerce prompt benchmark pass.
-- Playwright reached the real `/create` flow, researched David's Cookies, and displayed the correct brief plus 195 products. NVIDIA NIM then returned `429 Too Many Requests` before Story Directions; the UI failed loudly and no paid-media step ran.
-- A one-token NVIDIA health request returned the same 429 with no retry window, confirming an external account throttle rather than a prompt or UI failure. A successful browser text run remains pending the provider reset.
+- Playwright reached the real `/create` flow, researched David's Cookies, displayed the correct brief plus 195 products, generated five Story Directions, and ran the selected direction through Script and Visual Planning.
+- The first selected-script run exposed one missing instruction: the four model-written lines could miss the final 45-65-word limit after Wiggly added the CTA. The prompt now budgets 43-58 words before the CTA; the repeated real run produced a valid 51-word script.
+- The browser stopped at the visible `Generate storyboard` button with the script and six-frame plan ready. No image, video, audio, Replicate, GPU, or other paid-media generation ran.
