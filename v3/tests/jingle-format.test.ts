@@ -37,63 +37,34 @@ const research = makeResearch({
   },
 });
 
-const baseStyles = ["modern hip hop", "90 BPM", "confident vocal delivery", "punchy 808 bass", "crisp hi-hats", "clean trap drums", "polished studio production"];
-const negativeStyles = ["sad", "slow", "lo-fi", "distorted", "off-key"];
 const hookStarts = ["Be the name they see", "Show up where they ask", "Win the AI search"];
-const makeVariant = (index: number, angle = `AI answer visibility angle ${index}`) => ({
+const makeModelVariant = (index: number, angle = `AI answer visibility angle ${index}`) => ({
   angle,
   brandPhonetic: "Oh Gee Tool",
-  musicLengthMs: JINGLE_MUSIC_LENGTH_MS,
-  compositionPlan: {
-    chunks: [
-      {
-        text: `[Hook]\n${hookStarts[index - 1]}\nOh Gee Tool`,
-        duration_ms: 6000,
-        positive_styles: baseStyles,
-        negative_styles: negativeStyles,
-        context_adherence: "high",
-      },
-      {
-        text: `[Verse]\nAI answers move fast\nSee your brand at last`,
-        duration_ms: 8000,
-        positive_styles: baseStyles,
-        negative_styles: negativeStyles,
-        context_adherence: "high",
-      },
-      {
-        text: `[Hook]\n${hookStarts[index - 1]}\nOh Gee Tool`,
-        duration_ms: 6000,
-        positive_styles: baseStyles,
-        negative_styles: negativeStyles,
-        context_adherence: "high",
-      },
-    ],
-  },
-  selfCheckPassed: "Hook lines 6/3 syllables; verse lines 5/5 syllables; durations sum to 20000; final line is Oh Gee Tool; no invented claims.",
+  hook: hookStarts[index - 1],
+  verseLines: ["AI answers move fast", "See your brand at last"],
 });
 
-const validVariant = makeVariant(1);
-const extraVariant = makeVariant(2, "brand visibility tracking");
-const variants = [validVariant];
-const parsed = extractJingleVariantsFromResponse(JSON.stringify({ variants }));
+const validModelVariant = makeModelVariant(1);
+const extraModelVariant = makeModelVariant(2, "brand visibility tracking");
+const modelVariants = [validModelVariant];
+const parsed = extractJingleVariantsFromResponse(JSON.stringify({ variants: modelVariants }));
 assert.equal(parsed.length, 1);
 assert.equal(parsed[0]!.brandPhonetic, "Oh Gee Tool");
 assert.equal(parsed[0]!.compositionPlan.chunks.length, 3);
+assert.equal(parsed[0]!.compositionPlan.chunks[0]!.text, "[Hook]\nBe the name they see\nOh Gee Tool");
+assert.equal(parsed[0]!.compositionPlan.chunks[1]!.text, "[Verse]\nAI answers move fast\nSee your brand at last");
+assert.equal(parsed[0]!.compositionPlan.chunks[2]!.text, "[Hook]\nBe the name they see\nOh Gee Tool");
+assert.deepEqual(parsed[0]!.compositionPlan.chunks.map((chunk) => chunk.duration_ms), [6000, 8000, 6000]);
 
-const parsedOverGenerated = extractJingleVariantsFromResponse(JSON.stringify({ variants: [validVariant, extraVariant] }));
+const parsedOverGenerated = extractJingleVariantsFromResponse(JSON.stringify({ variants: [validModelVariant, extraModelVariant] }));
 assert.equal(parsedOverGenerated.length, 1);
-assert.equal(parsedOverGenerated[0]!.angle, validVariant.angle);
+assert.equal(parsedOverGenerated[0]!.angle, validModelVariant.angle);
 
-const looseStylesVariant = makeVariant(1, "loose style wording");
-looseStylesVariant.compositionPlan.chunks = looseStylesVariant.compositionPlan.chunks.map((chunk) => ({
-  ...chunk,
-  positive_styles: ["modern hip-hop", "confident rap vocal"],
-}));
-const parsedLooseStyles = extractJingleVariantsFromResponse(JSON.stringify({ variants: [looseStylesVariant] }));
-assert.ok(parsedLooseStyles[0]!.compositionPlan.chunks[0]!.positive_styles.includes("modern hip hop"));
-assert.ok(parsedLooseStyles[0]!.compositionPlan.chunks[0]!.positive_styles.includes("90 BPM"));
+assert.ok(parsed[0]!.compositionPlan.chunks[0]!.positive_styles.includes("modern hip hop"));
+assert.ok(parsed[0]!.compositionPlan.chunks[0]!.positive_styles.includes("90 BPM"));
 const parsedCinematicStyles = extractJingleVariantsFromResponse(
-  JSON.stringify({ variants: [looseStylesVariant] }),
+  JSON.stringify({ variants: modelVariants }),
   "Jingle provider",
   "cinematic-trap-diss",
 );
@@ -102,38 +73,13 @@ assert.ok(parsedCinematicStyles[0]!.compositionPlan.chunks[0]!.positive_styles.i
 
 const appleLikeVariant = {
   angle: "new phone launch energy",
-  brand_phonetic: "Apple",
-  music_length_ms: JINGLE_MUSIC_LENGTH_MS,
-  composition_plan: {
-    chunks: [
-      {
-        text: "[Hook]\niPhone 16 in your hand\nApple!",
-        duration_ms: 6000,
-        positive_styles: baseStyles,
-        negative_styles: negativeStyles,
-        context_adherence: "high",
-      },
-      {
-        text: "[Verse]\nPocket glow, camera clean\nDaily stuff feels smooth",
-        duration_ms: 8000,
-        positive_styles: baseStyles,
-        negative_styles: negativeStyles,
-        context_adherence: "high",
-      },
-      {
-        text: "[Hook]\niPhone 16 in your hand\nApple!",
-        duration_ms: 6000,
-        positive_styles: baseStyles,
-        negative_styles: negativeStyles,
-        context_adherence: "high",
-      },
-    ],
-  },
-  self_check_passed: "durations sum to 20000; final line is Apple; no invented claims.",
+  brandPhonetic: "Apple",
+  hook: "Pocket glow, camera clean",
+  verseLines: ["Daily stuff feels smooth", "Keep the moments close"],
 };
 const parsedAppleLike = extractJingleVariantsFromResponse(JSON.stringify({ variants: [appleLikeVariant] }));
 assert.equal(parsedAppleLike[0]!.brandPhonetic, "Apple");
-assert.equal(parsedAppleLike[0]!.lyrics.at(-1), "Apple!");
+assert.equal(parsedAppleLike[0]!.lyrics.at(-1), "Apple");
 
 const adScenesActionSource = readFileSync(new URL("../convex/adScenes.ts", import.meta.url), "utf8");
 for (const style of JINGLE_STYLES) {
@@ -143,17 +89,12 @@ for (const style of JINGLE_STYLES) {
 const invalidJingleCases = [
   [],
   [{
-    ...validVariant,
-    musicLengthMs: 31000,
-    compositionPlan: {
-      chunks: validVariant.compositionPlan.chunks.map((chunk) => ({ ...chunk, duration_ms: 31000 })),
-    },
+    ...validModelVariant,
+    verseLines: ["Only one line"],
   }],
   [{
-    ...validVariant,
-    compositionPlan: {
-      chunks: validVariant.compositionPlan.chunks.map((chunk) => ({ ...chunk, text: chunk.text.replace("AI answers move fast", "AI answers grew 47 percent") })),
-    },
+    ...validModelVariant,
+    verseLines: ["AI answers grew 47 percent", "See your brand at last"],
   }],
 ];
 for (const invalidVariants of invalidJingleCases) {
@@ -166,7 +107,8 @@ for (const invalidVariants of invalidJingleCases) {
 const prompt = buildJinglePrompt(research);
 assert.ok(prompt.includes("modern hip hop"));
 assert.ok(prompt.includes("90 BPM"));
-assert.ok(prompt.includes("Final lyric line is brandPhonetic") || prompt.includes("FINAL lyric line is the phonetic brand name"));
+assert.ok(prompt.includes("Wiggly adds brandPhonetic to both hooks"));
+assert.ok(!prompt.includes('"compositionPlan"'));
 assert.ok(prompt.includes('"Agent Enamel" -> "Agent Enamel"'));
 assert.ok(!prompt.includes("Ay-jent"));
 const cinematicPrompt = buildJinglePrompt(research, "cinematic-trap-diss");
@@ -193,9 +135,13 @@ const generated = await generateJingleVariantsFromResearch(research, {
   nvidiaNimApiKey: "test-key",
   nvidiaNimBaseUrl: "https://nim.test/v1",
   nvidiaNimModel: "test-kimi-model",
-  nvidiaNimChatCompletion: async ({ prompt: callPrompt }) => {
+  nvidiaNimChatCompletion: async ({ guidedJson, maxTokens, prompt: callPrompt }) => {
     assert.ok(callPrompt.includes("Write exactly 1 short"));
-    return JSON.stringify({ variants });
+    const variantsSchema = (guidedJson?.properties as Record<string, unknown>)?.variants as Record<string, unknown>;
+    assert.equal(variantsSchema.minItems, 1);
+    assert.equal(variantsSchema.maxItems, 1);
+    assert.equal(maxTokens, 1000);
+    return JSON.stringify({ variants: modelVariants });
   },
 });
 assert.equal(generated.variants.length, 1);
@@ -207,7 +153,7 @@ const cinematicGenerated = await generateJingleVariantsFromResearch(research, {
   jingleStyleId: "cinematic-trap-diss",
   nvidiaNimChatCompletion: async ({ prompt: callPrompt }) => {
     assert.ok(callPrompt.includes("cinematic trap diss rap"));
-    return JSON.stringify({ variants });
+    return JSON.stringify({ variants: modelVariants });
   },
 });
 assert.ok(cinematicGenerated.variants[0]!.compositionPlan.chunks[0]!.positive_styles.includes("cinematic trap diss rap"));

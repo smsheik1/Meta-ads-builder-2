@@ -7,14 +7,13 @@ import { DEFAULT_NVIDIA_NIM_WERE_SORRY_MODEL } from "../../llm/nvidiaNimModels";
 import type { StoredWebsiteResearchResult } from "../../research/types";
 import type { ReviewsProofItem } from "../../scene/types";
 import { buildReviewsPrompt, REVIEWS_VARIANT_COUNT } from "./prompt";
-import { extractWebsiteReviewProofItems, fetchWebsiteReviewProofItems, normalizeProofText } from "./evidence";
+import { extractWebsiteReviewProofItems, fetchWebsiteReviewProofItems } from "./evidence";
 
 export type ReviewsVariant = {
   proofIndex: number;
   proofText: string;
   headline: string;
   ctaText: string;
-  selfCheckPassed: string;
 };
 
 export type GenerateReviewsVariantsResult = {
@@ -66,11 +65,31 @@ const includesBannedPhrase = (value: string) => {
   return bannedPhrases.some((phrase) => lower.includes(phrase));
 };
 
-const isVerbatimTrim = (proofText: string, sourceText: string) => {
-  const proof = normalizeProofText(proofText).toLowerCase();
-  const source = normalizeProofText(sourceText).toLowerCase();
-  return Boolean(proof) && source.includes(proof);
-};
+const createReviewsGuidedJson = (
+  count: number,
+  proofItems: ReviewsProofItem[],
+): Record<string, unknown> => ({
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    variants: {
+      type: "array",
+      minItems: count,
+      maxItems: count,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["proofIndex", "headline", "ctaText"],
+        properties: {
+          proofIndex: { type: "integer", enum: proofItems.map((_, index) => index) },
+          headline: { type: "string", minLength: 1, maxLength: 72 },
+          ctaText: { type: "string", minLength: 1, maxLength: 40 },
+        },
+      },
+    },
+  },
+  required: ["variants"],
+});
 
 export function assertEnoughProofItems(proofItems: ReviewsProofItem[]) {
   if (proofItems.length < 2) {
@@ -95,13 +114,12 @@ export function extractReviewsVariantsFromResponse(
     const record = item as Record<string, unknown>;
     const proofIndex = Number(record.proofIndex);
     const proofItem = Number.isInteger(proofIndex) ? proofItems[proofIndex] : undefined;
-    const proofText = cleanText(record.proofText, 220);
+    const proofText = proofItem?.text.trim() || "";
     const headline = cleanText(record.headline, 72);
     const ctaText = cleanText(record.ctaText, 40);
-    const selfCheckPassed = cleanText(record.selfCheckPassed, 180);
-    const key = `${proofIndex}:${proofText.toLowerCase()}`;
+    const key = `${proofIndex}:${headline.toLowerCase()}:${ctaText.toLowerCase()}`;
 
-    if (!proofItem || !proofText || !headline || !ctaText || !selfCheckPassed) continue;
+    if (!proofItem || !proofText || !headline || !ctaText) continue;
     if (
       "rating" in record ||
       "sourceName" in record ||
@@ -110,7 +128,6 @@ export function extractReviewsVariantsFromResponse(
       "count" in record
     ) continue;
     if (seenKeys.has(key)) continue;
-    if (!isVerbatimTrim(proofText, proofItem.text)) continue;
     if (includesBannedPhrase(`${headline} ${ctaText}`)) continue;
 
     seenKeys.add(key);
@@ -119,7 +136,6 @@ export function extractReviewsVariantsFromResponse(
       proofText,
       headline,
       ctaText,
-      selfCheckPassed,
     });
   }
 
@@ -163,23 +179,11 @@ export async function generateReviewsVariantsFromResearch(
       model: nvidiaNimModel,
       nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
       prompt,
+      guidedJson: createReviewsGuidedJson(count, proofItems),
+      maxTokens: 1600,
       timeoutMs,
     });
-    let variants: ReviewsVariant[];
-    try {
-      variants = extractReviewsVariantsFromResponse(content, proofItems, count, "NVIDIA NIM");
-    } catch {
-      const retryContent = await callNvidiaNimChat({
-        apiKey: nvidiaNimApiKey,
-        baseUrl: nvidiaNimBaseUrl,
-        label: "NVIDIA NIM reviews generation",
-        model: nvidiaNimModel,
-        nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
-        prompt: `${prompt}\n\nYour previous output was invalid. Retry once. Return exactly ${count} variants. proofText must be copied exactly from the selected proof item, as a substring. Do not include fake ratings, sources, counts, or rewritten proof. Return only the JSON object.`,
-        timeoutMs,
-      });
-      variants = extractReviewsVariantsFromResponse(retryContent, proofItems, count, "NVIDIA NIM");
-    }
+    const variants = extractReviewsVariantsFromResponse(content, proofItems, count, "NVIDIA NIM");
 
     return {
       variants,

@@ -22,51 +22,46 @@
   <p class="muted">Wiggly /create reliability pass · 2026-07-18</p>
   <h1>What actually broke, and what changed</h1>
   <div class="callout">
-    <strong>Result:</strong> the full no-paid Creative Pack reached 8/8 ready for David's Cookies in the real browser. It now produces static/text previews only; paid audio remains a visible button. One real blocker remains: 3D has a deployed backend contract that does not match <code>origin/main</code>.
+    <strong>Result:</strong> the first production pass exposed shared reliability failures. After the focused fixes, the real branch <code>/create</code> customer flow reached <strong>8/8 Creative Pack formats ready</strong> for David's Cookies. Product Photoshoot reaches an explicit paid button, 3D reaches five selectable story directions, and Motion Story is visibly disabled. No paid media was generated during the final pass.
   </div>
 
   <h2>Scorecard</h2>
   <table>
-    <thead><tr><th>Format</th><th>First real run</th><th>What happened</th><th>Current status</th><th>Browser screenshot</th></tr></thead>
+    <thead><tr><th>Format</th><th>First result</th><th>Root cause</th><th>Smallest fix</th><th>Final result</th><th>Browser proof</th></tr></thead>
     <tbody>
-      <tr><td>Meme</td><td>Pass</td><td>12 scenes rendered from the customer flow.</td><td>Working</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-23-57-034Z.png">Final Pack preview</a></td></tr>
-      <tr><td>We're Sorry</td><td>Pass</td><td>Completed, though it took about 104 seconds.</td><td>Working</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-23-59-305Z.png">Final Pack preview</a></td></tr>
-      <tr><td>Video Meme</td><td>Fail</td><td>Bear started with eight variants and timed out at 60 seconds.</td><td>Fixed: first run is three ideas; browser verified.</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-23-54-737Z.png">Final Pack preview</a></td></tr>
-      <tr><td>Brand Jingle</td><td>Unsafe</td><td>Normal generation automatically requested ElevenLabs audio.</td><td>Fixed: preview is ready with a visible <em>Add audio</em> button; browser verified.</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-23-07-618Z.png">Preview + visible audio click</a></td></tr>
-      <tr><td>iMessage</td><td>Pass</td><td>Six scenes rendered.</td><td>Working. A late saved result now repairs a stale retry card without generating again.</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-24-02-475Z.png">Final Pack preview</a></td></tr>
-      <tr><td>Minecraft Brainrot</td><td>Fail</td><td>Model returned fewer complete variants than the parser requires.</td><td>Current Pack pass; action has guided JSON and needs one post-merge live canary.</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-23-28-611Z.png">Preview + visible audio click</a></td></tr>
-      <tr><td>Reviews</td><td>Pass</td><td>Eight product-proof scenes rendered.</td><td>Working</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-22-42-302Z.png">Final Pack preview</a></td></tr>
-      <tr><td>Motion Story</td><td>Manual</td><td>Clearly marked Coming soon and disabled.</td><td>Not a failure; do not advertise as available.</td><td>Not selectable</td></tr>
-      <tr><td>3D Breakdown</td><td>Blocked</td><td>Live Convex required <code>storySubject</code>, but <code>origin/main</code> sends only <code>researchRunId</code>.</td><td>Merge and normal-deploy this branch, then run one first-directions canary before any paid 3D step.</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-25-56-562Z.png">Pre-spend error</a></td></tr>
-      <tr><td>Product Photoshoot</td><td>Manual</td><td>Product picker worked; generation is explicitly paid.</td><td>Correctly left unclicked in this pass.</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-25-00-782Z.png">Visible product picker</a></td></tr>
-      <tr><td>Visualizer</td><td>Pass</td><td>Static scene rendered and showed a visible audio control.</td><td>Working; no audio was generated.</td><td><a href="../../v3/.playwright-cli/page-2026-07-19T05-23-52-271Z.png">Preview + visible audio click</a></td></tr>
+      <tr><td>Meme</td><td>Pass</td><td>None.</td><td>None.</td><td>12 scenes rendered through <code>AdRenderSurface</code>.</td><td><a href="screenshots/postfix-meme.png">Preview</a></td></tr>
+      <tr><td>We're Sorry</td><td>Pass, slow</td><td>Provider latency; the result still completed.</td><td>None.</td><td>Eight apology scenes rendered.</td><td><a href="screenshots/postfix-apology.png">Preview</a></td></tr>
+      <tr><td>Video Meme</td><td>Fail</td><td>The first click asked Bear for eight variants and hit the browser deadline.</td><td>Generate three first ideas; leave the larger set for later choice and reroll.</td><td>Three usable ideas render without paid media.</td><td><a href="screenshots/postfix-video-meme.png">Preview</a></td></tr>
+      <tr><td>Brand Jingle</td><td>Fail / unsafe</td><td>Audio started automatically, then the model was asked to reproduce a large exact composition object and sometimes returned an incomplete variant.</td><td>Keep audio manual. Ask the model only for the hook, verse, angle, and pronunciation; Wiggly builds the exact 20-second plan.</td><td>Jingle preview renders with a visible <em>Add audio</em> button.</td><td><a href="screenshots/postfix-jingle.png">Preview</a></td></tr>
+      <tr><td>iMessage</td><td>Pass, then stale</td><td>A result saved after the browser deadline, leaving the card labeled Retry.</td><td>Reconcile the late saved scene into the existing Pack card.</td><td>Six scenes render and the card is Ready.</td><td><a href="screenshots/postfix-imessage.png">Preview</a></td></tr>
+      <tr><td>Minecraft Brainrot</td><td>Fail</td><td>The model returned fewer complete variants than the parser required.</td><td>Constrain the response to exactly three variants and valid speakers.</td><td>Three scripts render; audio remains a manual click.</td><td><a href="screenshots/postfix-brainrot.png">Preview</a></td></tr>
+      <tr><td>Reviews</td><td>Fail</td><td>Tiny punctuation or spacing differences in copied proof made Wiggly reject the group.</td><td>The model chooses a proof index; Wiggly inserts the exact scraped quote.</td><td>Eight verified proof scenes render.</td><td><a href="screenshots/postfix-reviews.png">Preview</a></td></tr>
+      <tr><td>Motion Story</td><td>Intentional manual state</td><td>It is not launched.</td><td>None.</td><td>Clearly marked <em>Coming soon</em> and disabled.</td><td><a href="screenshots/postfix-motion-story-disabled.png">Disabled card</a></td></tr>
+      <tr><td>3D Breakdown</td><td>Pass</td><td>None.</td><td>None.</td><td>Five story directions appear before any paid image, video, or audio step.</td><td><a href="screenshots/postfix-3d-directions.png">Five directions</a></td></tr>
+      <tr><td>Product Photoshoot</td><td>Intentional manual state</td><td>Paid image generation requires an explicit choice.</td><td>None.</td><td>195 products with real images and a visible <em>Generate photoshoot</em> button.</td><td><a href="screenshots/postfix-product-photoshoot.png">Product picker</a></td></tr>
+      <tr><td>Visualizer</td><td>Pass</td><td>None.</td><td>None.</td><td>The scene renders and audio remains a manual click.</td><td><a href="screenshots/postfix-visualizer.png">Preview</a></td></tr>
     </tbody>
   </table>
 
   <h2>Browser proof</h2>
   <div class="cards">
     <article class="card fixed">
-      <span class="label">Fixed</span>
-      <h3>Jingle now stops before paid media</h3>
-      <p>In the real local <code>/create</code> screen, Generate ads created lyrics and a scene. The page kept the visible <em>Add audio</em> control and emitted no browser errors. No ElevenLabs request was made after the fix.</p>
+      <span class="label">8/8 ready</span>
+      <h3>The complete no-paid Creative Pack finishes</h3>
+      <p>The actual customer flow on the branch generated and rendered all eight preview-safe formats for David's Cookies. The audio formats stopped at visible manual buttons.</p>
+      <img src="screenshots/create-postfix-8-of-8.png" alt="David's Cookies Creative Pack showing all eight formats ready">
     </article>
     <article class="card fixed">
       <span class="label">Fixed</span>
-      <h3>Video Meme now returns a usable first batch</h3>
-      <p>The same real browser flow created three Bear ideas without the old 60-second timeout. It made no Replicate, Seedance, image, audio, or video-generation request.</p>
-      <img src="../../v3/.playwright-cli/page-2026-07-19T04-53-08-904Z.png" alt="Video Meme customer-flow screenshot showing three generated ideas">
+      <h3>Jingle is creative where the model helps and deterministic where Wiggly must be exact</h3>
+      <p>The model writes four small creative fields. Wiggly builds the exact hook/verse/hook timing, music style, and final brand line. This removes the fragile nested response while preserving the same output contract.</p>
+      <img src="screenshots/postfix-jingle.png" alt="David's Cookies Jingle preview with a visible Add audio button">
     </article>
     <article class="card fixed">
-      <span class="label">Fixed</span>
-      <h3>Normal generation no longer pretends it started a Creative Pack</h3>
-      <p>Generating ordinary Jingle and Video Meme scenes did not show the nine-format Creative Pack rail. The rail is now restored only after the person actually clicks <em>Generate creative pack</em>.</p>
-    </article>
-    <article class="card fixed">
-      <span class="label">Fixed</span>
-      <h3>Creative Pack stops before any paid media</h3>
-      <p>The Pack now contains eight static/text preview formats. It excludes the disabled Motion Story route (which could reach Replicate) and never makes Jingle, Brainrot, or Visualizer audio by itself. In the real David's Cookies browser run, all eight cards reached Ready and the Jingle, Brainrot, and Visualizer previews each kept a visible <em>Add audio</em> button.</p>
-      <img src="../../v3/.playwright-cli/page-2026-07-19T05-17-13-407Z.png" alt="David's Cookies Creative Pack showing 8 of 8 ready">
-      <img src="../../v3/.playwright-cli/page-2026-07-19T05-23-07-618Z.png" alt="Jingle preview with visible Add audio button">
+      <span class="label">Fixed locally</span>
+      <h3>Reviews uses verified proof without asking the model to retype it</h3>
+      <p>The old flow rejected every card if one copied quote changed punctuation or spacing. NVIDIA now returns a constrained list of proof choices, headlines, and CTAs. Wiggly inserts its own scraped quote, so proof stays real and the model cannot accidentally corrupt it. The real local <code>/create</code> screen recovered all eight saved scenes with no console errors.</p>
+      <img src="screenshots/postfix-reviews.png" alt="Reviews Proof Ad showing David's Cookies proof in the real create screen">
     </article>
     <article class="card fixed">
       <span class="label">Fixed</span>
@@ -77,13 +72,19 @@
       <span class="label">Manual paid step</span>
       <h3>Product Photoshoot is honest before it spends</h3>
       <p>The real picker shows 195 products and the selected product image, then makes <em>Generate photoshoot</em> an explicit choice. This pass did not press it.</p>
-      <img src="../../v3/.playwright-cli/page-2026-07-19T05-25-00-782Z.png" alt="Product Photoshoot product picker and explicit Generate photoshoot button">
+      <img src="screenshots/postfix-product-photoshoot.png" alt="Product Photoshoot product picker and explicit Generate photoshoot button">
     </article>
-    <article class="card blocked">
-      <span class="label">Deployment blocker</span>
-      <h3>3D fails before it can spend</h3>
-      <p>Choosing 3D and pressing Generate ads produced a clear <code>storySubject</code> argument validation error before image, video, or audio generation. This is real backend drift, not a paid-media failure.</p>
-      <img src="../../v3/.playwright-cli/page-2026-07-19T05-25-56-562Z.png" alt="3D Breakdown storySubject contract mismatch shown in the browser">
+    <article class="card pass">
+      <span class="label">Pass</span>
+      <h3>3D reaches five story directions before it can spend</h3>
+      <p>Choosing 3D and pressing Generate ads returned five selectable David's Cookies story premises. The test stopped there, before images, video, voice, or MP4 generation.</p>
+      <img src="screenshots/postfix-3d-directions.png" alt="3D Breakdown showing five story directions">
+    </article>
+    <article class="card manual">
+      <span class="label">Not launched</span>
+      <h3>Motion Story cannot be mistaken for a working format</h3>
+      <p>The format guide labels it <em>Coming soon</em> and the card is disabled.</p>
+      <img src="screenshots/postfix-motion-story-disabled.png" alt="Disabled Motion Story card marked Coming soon">
     </article>
   </div>
 
@@ -95,24 +96,24 @@
     <li>Remember Creative Pack intent in the browser session, so ordinary format work is not mislabeled as a half-failed pack.</li>
     <li>Keep Creative Pack to eight preview-safe formats: no Motion Story, product photoshoot, or automatic audio calls.</li>
     <li>When a generation saves after the browser timeout, update that one retry card from storage instead of asking the person to reload or pay for another try.</li>
+    <li>Constrain Reviews to exactly four model-written frames, then insert the matching verified website quote in Wiggly instead of asking the model to copy proof verbatim.</li>
+    <li>Reduce Jingle generation to four creative fields, then let Wiggly deterministically assemble the exact 20-second composition plan.</li>
   </ul>
 
   <h2>What was deliberately not done</h2>
   <ul>
     <li>No Replicate, Seedance, product photoshoot, image generation, or paid audio generation was called. The original live Jingle bug did make one rejected ElevenLabs request before this fix; it produced no media and exposed the bug.</li>
     <li>No second renderer, model fallback, automatic retry, new provider, or hidden interaction was added.</li>
-    <li>No shared Convex deployment was changed from this unmerged branch. That is why 3D has a required post-merge canary instead of a risky overnight patch.</li>
+    <li>No shared production deployment was changed from this unmerged reliability branch.</li>
   </ul>
 
   <h2>Release checklist</h2>
   <ol>
-    <li>Merge this focused branch and deploy the normal merged backend.</li>
-    <li>On live <code>/create</code>, paste <code>davidscookies.com</code>, choose 3D Breakdown, and generate only the first story directions. It must no longer ask for <code>storySubject</code>.</li>
-    <li>Generate one Minecraft Brainrot run and confirm exactly three complete versions arrive.</li>
-    <li>Generate one Jingle and confirm that audio is still an explicit click.</li>
+    <li>Review and merge PR #291 through the normal deploy.</li>
+    <li>On production <code>/create</code>, generate the David's Cookies Creative Pack once and confirm the deployed Pack reaches 8/8.</li>
   </ol>
 
   <h2>Checks</h2>
-  <p><strong>Passed:</strong> TypeScript check, full repository test suite, focused format/guardrail tests, and real Playwright customer flows: a full 8/8 Creative Pack, every Pack card opened, Product Photoshoot selection without a spend, and the 3D pre-spend blocker capture. <strong>Ponytail review:</strong> Lean already. Ship.</p>
+  <p><strong>Passed:</strong> focused Jingle regression tests, TypeScript check, the complete repository test suite, report rendering, and the final Playwright reload smoke. The reload recovered the 8/8 Pack and Jingle preview without a new browser error. <strong>Ponytail review:</strong> removed the parser checks made redundant by Wiggly's deterministic plan; the complete branch is lean already.</p>
 </body>
 </html>

@@ -57,13 +57,6 @@ const cleanText = (value: unknown, maxLength = 400) => String(value ?? "")
   .slice(0, maxLength)
   .trim();
 
-const cleanLyricText = (value: unknown, maxLength = 600) => String(value ?? "")
-  .replace(/[—–]/g, "-")
-  .replace(/\r/g, "")
-  .trim()
-  .slice(0, maxLength)
-  .trim();
-
 const parseJsonObject = (value: string, providerLabel = "AI provider") => {
   const trimmed = value.trim();
   const jsonText = trimmed.startsWith("{")
@@ -78,41 +71,57 @@ const lyricLines = (text: string) => text
   .map((line) => cleanText(line, 120))
   .filter((line) => line && !/^\[[^\]]+]$/.test(line));
 
-const comparableLyric = (value: unknown) => cleanText(value, 160)
-  .toLowerCase()
-  .replace(/[’]/g, "'")
-  .replace(/[^a-z0-9]+/g, " ")
-  .trim();
-
 const hasInventedNumber = (text: string) => /\b(percent|guarantee|guaranteed|award|discount)\b|#\s*1|\d+\s*%\b|\d+\s+percent|\d+\s+off\b/i.test(text);
 
-const normalizeChunk = (chunk: Record<string, unknown>, styleId: JingleStyleId): JingleCompositionChunk | null => {
+const createJingleGuidedJson = (): Record<string, unknown> => ({
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    variants: {
+      type: "array",
+      minItems: JINGLE_VARIANT_COUNT,
+      maxItems: JINGLE_VARIANT_COUNT,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["angle", "brandPhonetic", "hook", "verseLines"],
+        properties: {
+          angle: { type: "string", minLength: 1, maxLength: 160 },
+          brandPhonetic: { type: "string", minLength: 1, maxLength: 80 },
+          hook: { type: "string", minLength: 1, maxLength: 120 },
+          verseLines: {
+            type: "array",
+            minItems: 2,
+            maxItems: 3,
+            items: { type: "string", minLength: 1, maxLength: 120 },
+          },
+        },
+      },
+    },
+  },
+  required: ["variants"],
+});
+
+const createCompositionPlan = (
+  hook: string,
+  verseLines: string[],
+  brandPhonetic: string,
+  styleId: JingleStyleId,
+): JingleCompositionChunk[] => {
   const style = getJingleStyle(styleId);
-  const text = cleanLyricText(chunk.text);
-  const durationMs = Number(chunk.duration_ms ?? chunk.durationMs);
-  const rawPositiveStyles = chunk.positive_styles ?? chunk.positiveStyles;
-  const rawNegativeStyles = chunk.negative_styles ?? chunk.negativeStyles;
-  const positiveStyles = Array.isArray(rawPositiveStyles)
-    ? rawPositiveStyles.map((item: unknown) => cleanText(item, 80)).filter(Boolean).slice(0, 8)
-    : [];
-  const negativeStyles = Array.isArray(rawNegativeStyles)
-    ? rawNegativeStyles.map((item: unknown) => cleanText(item, 80)).filter(Boolean).slice(0, 8)
-    : [];
-  const contextAdherence = cleanText(chunk.context_adherence ?? chunk.contextAdherence, 20);
-
-  if (!text || !Number.isFinite(durationMs)) return null;
-  if (durationMs < 3000 || durationMs > 120000) return null;
-  if (contextAdherence !== "high") return null;
-  if (hasInventedNumber(lyricLines(text).join(" "))) return null;
-  const normalizedPositiveStyles = Array.from(new Set([...style.positiveStyles, ...positiveStyles]));
-
-  return {
+  const chunk = (text: string, durationMs: number): JingleCompositionChunk => ({
     text,
-    duration_ms: Math.round(durationMs),
-    positive_styles: normalizedPositiveStyles.slice(0, 8),
-    negative_styles: negativeStyles.length ? negativeStyles : ["sad", "slow", "lo-fi", "distorted", "off-key"],
+    duration_ms: durationMs,
+    positive_styles: [...style.positiveStyles],
+    negative_styles: [...style.negativeStyles],
     context_adherence: "high",
-  };
+  });
+  const hookText = `[Hook]\n${hook}\n${brandPhonetic}`;
+  return [
+    chunk(hookText, 6000),
+    chunk(`[Verse]\n${verseLines.join("\n")}`, 8000),
+    chunk(hookText, 6000),
+  ];
 };
 
 export function extractJingleVariantsFromResponse(
@@ -130,33 +139,22 @@ export function extractJingleVariantsFromResponse(
     if (!item || typeof item !== "object") continue;
     const record = item as Record<string, unknown>;
     const angle = cleanText(record.angle, 160);
-    const brandPhonetic = cleanText(record.brandPhonetic ?? record.brand_phonetic, 80);
-    const musicLengthMs = Math.round(Number(record.musicLengthMs ?? record.music_length_ms));
-    const compositionPlan = record.compositionPlan || record.composition_plan;
-    const chunks = compositionPlan && typeof compositionPlan === "object" && Array.isArray((compositionPlan as Record<string, unknown>).chunks)
-      ? ((compositionPlan as Record<string, unknown>).chunks as unknown[])
-        .map((chunk) => chunk && typeof chunk === "object" ? normalizeChunk(chunk as Record<string, unknown>, styleId) : null)
-        .filter((chunk): chunk is JingleCompositionChunk => Boolean(chunk))
+    const brandPhonetic = cleanText(record.brandPhonetic, 80);
+    const hook = cleanText(record.hook, 120);
+    const verseLines = Array.isArray(record.verseLines)
+      ? record.verseLines.map((line) => cleanText(line, 120)).filter(Boolean)
       : [];
-    // ponytail: syllable counts are review-only for MVP; add real prosody scoring after bad outputs prove it is worth the false-reject risk.
-    const selfCheckPassed = cleanText(record.selfCheckPassed ?? record.self_check_passed, 260);
-    const hookLines = chunks[0] ? lyricLines(chunks[0].text) : [];
-    const finalHookLines = chunks[2] ? lyricLines(chunks[2].text) : [];
+    const chunks = createCompositionPlan(hook, verseLines, brandPhonetic, styleId);
+    const musicLengthMs = JINGLE_MUSIC_LENGTH_MS;
+    const selfCheckPassed = "Wiggly assembled the fixed 20-second composition plan.";
     const lyrics = chunks.flatMap((chunk) => lyricLines(chunk.text));
-    const durationSum = chunks.reduce((sum, chunk) => sum + chunk.duration_ms, 0);
     const angleKey = angle.toLowerCase();
-    const hookKey = hookLines.join(" ").toLowerCase();
+    const hookKey = hook.toLowerCase();
 
-    if (!angle || !brandPhonetic || !selfCheckPassed) continue;
+    if (!angle || !brandPhonetic || !hook) continue;
     if (seenAngles.has(angleKey) || seenHooks.has(hookKey)) continue;
-    if (chunks.length !== 3) continue;
-    if (!chunks[0].text.startsWith("[Hook]") || !chunks[1].text.startsWith("[Verse]") || !chunks[2].text.startsWith("[Hook]")) continue;
-    if (musicLengthMs !== JINGLE_MUSIC_LENGTH_MS) continue;
-    if (durationSum !== musicLengthMs) continue;
-    const comparableBrand = comparableLyric(brandPhonetic);
-    if (!comparableLyric(hookLines.join(" ")).includes(comparableBrand)) continue;
-    if (!comparableLyric(finalHookLines.join(" ")).includes(comparableBrand)) continue;
-    if (comparableLyric(finalHookLines.at(-1)) !== comparableBrand) continue;
+    if (verseLines.length < 2 || verseLines.length > 3) continue;
+    if (hasInventedNumber([hook, ...verseLines].join(" "))) continue;
     if (!lyrics.length) continue;
 
     seenAngles.add(angleKey);
@@ -202,6 +200,8 @@ export async function generateJingleVariantsFromResearch(
       model: nvidiaNimModel,
       nvidiaNimChatCompletion: options.nvidiaNimChatCompletion,
       prompt,
+      guidedJson: createJingleGuidedJson(),
+      maxTokens: 1000,
       timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
     });
     const variants = extractJingleVariantsFromResponse(content, "NVIDIA NIM", jingleStyleId);
