@@ -91,7 +91,7 @@ const visualProfileForEvidence = (
     return {
       visualPotentialScore: 0.46,
       whyVisual: "This is claim or proof language, but it does not expose a concrete visual mechanism for the 3D reveal.",
-      possibleRevealPatterns: ["proof-blocks", "impact-chain"],
+      possibleRevealPatterns: ["before-after-reconstruction", "impact-chain"],
     };
   }
   if (
@@ -115,21 +115,21 @@ const visualProfileForEvidence = (
     return {
       visualPotentialScore: evidenceUseType === "process" ? 0.86 : 0.82,
       whyVisual: "A concrete feature, process, ingredient, or material can be opened, layered, measured, or shown as a formula stack.",
-      possibleRevealPatterns: ["exploded-product", "xray-cutaway", "miniature-world", "process-pipeline", "proof-blocks"],
+      possibleRevealPatterns: ["exploded-product", "xray-cutaway", "miniature-world", "process-pipeline", "chaos-to-order"],
     };
   }
   if (evidenceUseType === "review" || evidenceUseType === "proof") {
     return {
       visualPotentialScore: 0.74,
-      whyVisual: "Real proof can become blocks, receipts, or reactions locking into the final payoff.",
-      possibleRevealPatterns: ["proof-blocks", "impact-chain", "before-after-reconstruction"],
+      whyVisual: "Proof stays in renderer copy while the visual shows the product causing a concrete customer or product state change.",
+      possibleRevealPatterns: ["before-after-reconstruction", "impact-chain", "invisible-problem"],
     };
   }
   if (evidenceUseType === "offer" || evidenceUseType === "shipping" || evidenceUseType === "guarantee") {
     return {
       visualPotentialScore: 0.58,
       whyVisual: "Offer or delivery proof can support the payoff, but is usually less visually explosive than mechanism evidence.",
-      possibleRevealPatterns: ["process-pipeline", "proof-blocks", "impact-chain"],
+      possibleRevealPatterns: ["process-pipeline", "impact-chain", "before-after-reconstruction"],
     };
   }
   if (/\b(grow|easy|quality|premium|modern|simple|trusted|better|solution)\b/i.test(text)) {

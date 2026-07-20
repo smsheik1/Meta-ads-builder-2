@@ -37,7 +37,8 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
   if (!scene.layout.storyContract?.cameraStyle?.trim()) errors.push("3D Breakdown story camera style is missing.");
   if (!Array.isArray(scene.layout.storyContract?.riskFlags)) errors.push("3D Breakdown risk flags must be an array.");
   if (!Array.isArray(scene.layout.storyContract?.recurringObjects) || !scene.layout.storyContract.recurringObjects.length) errors.push("3D Breakdown recurring objects are missing.");
-  if (!THREE_D_REVEAL_PATTERNS.includes(scene.layout.storyContract?.wowMomentType)) errors.push("3D Breakdown wow moment pattern is invalid.");
+  const usesActiveRevealPattern = THREE_D_REVEAL_PATTERNS.some((pattern) => pattern === scene.layout.storyContract?.wowMomentType);
+  if (!usesActiveRevealPattern && scene.layout.storyContract?.wowMomentType !== "proof-blocks") errors.push("3D Breakdown wow moment pattern is invalid.");
   if (scene.layout.finalVideo) {
     if (scene.layout.finalVideo.status !== "ready") errors.push("3D Breakdown final video status is invalid.");
     if (!scene.layout.finalVideo.url?.trim()) errors.push("3D Breakdown final video URL is missing.");
