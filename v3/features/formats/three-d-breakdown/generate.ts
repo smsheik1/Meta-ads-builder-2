@@ -41,6 +41,31 @@ import type {
   ThreeDBreakdownStoryDirectionSlate,
 } from "./storyDirections";
 
+export const focusThreeDBreakdownResearchOnProduct = (
+  research: StoredWebsiteResearchResult,
+  selectedProductHandle?: string,
+): StoredWebsiteResearchResult => {
+  const products = research.productCatalog?.products || [];
+  const currentUrl = (research.finalUrl || research.websiteUrl).replace(/\/$/, "");
+  const selectedProduct = products.find((product) => product.handle === selectedProductHandle)
+    || products.find((product) => product.url.replace(/\/$/, "") === currentUrl);
+  if (!selectedProduct || !research.productCatalog) return research;
+  return {
+    ...research,
+    productCatalog: {
+      ...research.productCatalog,
+      groups: {
+        bestSellers: research.productCatalog.groups.bestSellers.filter((handle) => handle === selectedProduct.handle),
+      },
+      summary: {
+        productCount: 1,
+        bestSellerCount: selectedProduct.badges.includes("best-seller") ? 1 : 0,
+      },
+      products: [selectedProduct],
+    },
+  };
+};
+
 export type ThreeDBreakdownSiteContract = {
   primarySiteType: ThreeDBreakdownPrimarySiteType;
   riskFlags: ThreeDBreakdownRiskFlag[];

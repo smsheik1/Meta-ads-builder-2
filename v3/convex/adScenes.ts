@@ -12,6 +12,7 @@ import { generateReviewsVariantsFromResearch } from "../features/formats/reviews
 import { normalizeReviewProductHandles, productCatalogHasProductImage } from "../features/formats/reviews/productSelection";
 import { generateTextMessageVariantsFromResearch } from "../features/formats/text-message/generate";
 import {
+  focusThreeDBreakdownResearchOnProduct,
   generateThreeDBreakdownStoryDirectionsFromResearch,
   generateThreeDBreakdownVariantsFromResearch,
 } from "../features/formats/three-d-breakdown/generate";
@@ -53,8 +54,9 @@ const threeDStoryDirectionValidator = v.object({
 export const generateThreeDStoryDirections: ReturnType<typeof action> = action({
   args: {
     researchRunId: v.id("researchRuns"),
+    selectedProductHandle: v.optional(v.string()),
   },
-  handler: async (ctx, { researchRunId }) => {
+  handler: async (ctx, { researchRunId, selectedProductHandle }) => {
     const startedAt = Date.now();
     console.log("[wiggly:ad-generation] 3d-story-slate:start", {
       researchRunId: String(researchRunId),
@@ -62,7 +64,9 @@ export const generateThreeDStoryDirections: ReturnType<typeof action> = action({
     const research = await ctx.runQuery(internal.adSceneStorage.loadResearchForGeneration, {
       researchRunId,
     });
-    const generation = await generateThreeDBreakdownStoryDirectionsFromResearch(research);
+    const generation = await generateThreeDBreakdownStoryDirectionsFromResearch(
+      focusThreeDBreakdownResearchOnProduct(research, selectedProductHandle),
+    );
     console.log("[wiggly:ad-generation] 3d-story-slate:ready", {
       elapsedMs: Date.now() - startedAt,
       storyDirectionCount: generation.directions.length,
@@ -352,13 +356,14 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     }
 
     if (format === "three-d-breakdown") {
-      const generation = await generateThreeDBreakdownVariantsFromResearch(research, {
+      const threeDResearch = focusThreeDBreakdownResearchOnProduct(research, selectedProductHandles?.[0]);
+      const generation = await generateThreeDBreakdownVariantsFromResearch(threeDResearch, {
         count,
         selectedStoryDirection: threeDStoryDirection || null,
       });
       const scenes = generation.variants.map((variant, index) => createThreeDBreakdownAdScene({
         evidenceItems: generation.evidenceItems,
-        research,
+        research: threeDResearch,
         siteContract: generation.siteContract,
         variant,
         candidateIndex: index,

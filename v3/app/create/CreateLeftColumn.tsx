@@ -16,11 +16,11 @@ import {
 import type { ProductCatalog } from "@/features/research/types";
 import { CreateFormatCompareSheet, SelectedCreateFormatBento } from "./CreateFormatGuide";
 import { CreateReviewsProductPicker } from "./CreateReviewsProductPicker";
+import { CreateThreeDSubjectPicker } from "./CreateThreeDSubjectPicker";
 import { PRODUCT_PHOTOSHOOT_FORMAT, isComingSoonCreateFormat, type CreateFormatId } from "./createFormats";
-
+import { getCreateSubmitLabel } from "./createSubmitLabel";
 type LoadStatus = "idle" | "loading" | "ready" | "error";
 export type WebsiteSubmitProgressStage = "reading-site" | "writing-ads" | "preparing-canvas" | null;
-
 export type WebsiteSubmitProgressFacts = {
   brandName: string;
   hasLogo: boolean;
@@ -29,14 +29,11 @@ export type WebsiteSubmitProgressFacts = {
   proofCount: number;
   buyerMomentCount: number;
 };
-
 const pillClass = "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-slate-500 shadow-sm";
-
 type ModelOption = {
   id: string;
   label: string;
 };
-
 type CreativePackMiniGroup = {
   format: CreativePackFormat;
   label: string;
@@ -289,6 +286,9 @@ export function CreateLeftColumn({
   memeModel,
   productCatalog,
   selectedReviewProductHandles,
+  threeDNeedsSpecificPage,
+  threeDSubjectUrl,
+  selectedThreeDSubjectHandle,
   jingleStyleId,
   videoMemeTemplateId,
   visualizerModel,
@@ -300,6 +300,8 @@ export function CreateLeftColumn({
   onJingleStyleChange,
   onMemeModelChange,
   onReviewProductSelectionChange,
+  onThreeDSubjectUrlChange,
+  onThreeDSubjectChange,
   onVideoMemeTemplateChange,
   onVisualizerModelChange,
   onSubmit,
@@ -321,6 +323,9 @@ export function CreateLeftColumn({
   memeModel: string;
   productCatalog?: ProductCatalog | null;
   selectedReviewProductHandles: string[];
+  threeDNeedsSpecificPage: boolean;
+  threeDSubjectUrl: string;
+  selectedThreeDSubjectHandle: string;
   jingleStyleId: JingleStyleId;
   videoMemeTemplateId: VideoMemeTemplateId;
   visualizerModel: string;
@@ -332,6 +337,8 @@ export function CreateLeftColumn({
   onJingleStyleChange: (styleId: JingleStyleId) => void;
   onMemeModelChange: (model: string) => void;
   onReviewProductSelectionChange: (handles: string[]) => void;
+  onThreeDSubjectUrlChange: (url: string) => void;
+  onThreeDSubjectChange: (handle: string) => void;
   onVideoMemeTemplateChange: (templateId: VideoMemeTemplateId) => void;
   onVisualizerModelChange: (model: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
@@ -346,35 +353,17 @@ export function CreateLeftColumn({
   const creativePackBusy = creativePackStatus === "researching" || creativePackStatus === "generating";
   const singleSubmitBusy = status === "loading" || adStatus === "loading";
   const submitIsBusy = singleSubmitBusy || creativePackBusy;
-  const submitLabel = creativePackBusy
-    ? "Creative pack running"
-    : status === "loading"
-    ? "Reading website"
-    : adStatus === "loading"
-      ? format === PRODUCT_PHOTOSHOOT_FORMAT
-        ? "Generating shots"
-        : format === "meme"
-        ? "Writing memes"
-        : format === "were-sorry"
-          ? "Writing apologies"
-          : format === "video-meme"
-            ? "Writing video memes"
-            : format === "jingle"
-              ? "Writing jingles"
-              : format === "text-message"
-                ? "Writing texts"
-                : format === "brainrot"
-                  ? "Writing brainrot"
-                  : format === "reviews"
-                    ? "Writing proof ads"
-                    : format === "motion-story"
-                      ? "Writing stories"
-                      : format === "three-d-breakdown"
-                        ? "Writing 3D stories"
-                        : "Writing ideas"
-      : format === PRODUCT_PHOTOSHOOT_FORMAT
-        ? "Generate product shots"
-        : "Generate ads";
+  const threeDProducts = productCatalog?.products || [];
+  const needsThreeDSubject = format === "three-d-breakdown" && threeDProducts.length > 0 && !selectedThreeDSubjectHandle;
+  const needsThreeDSubjectUrl = format === "three-d-breakdown" && threeDNeedsSpecificPage && !threeDSubjectUrl.trim();
+  const submitLabel = getCreateSubmitLabel({
+    adStatus,
+    creativePackBusy,
+    format,
+    needsThreeDSubject,
+    needsThreeDSubjectUrl,
+    status,
+  });
   const packLabel = creativePackStatus === "researching"
     ? "Reading site for pack"
     : creativePackStatus === "generating"
@@ -540,9 +529,20 @@ export function CreateLeftColumn({
           />
         ) : null}
 
+        {format === "three-d-breakdown" ? (
+          <CreateThreeDSubjectPicker
+            catalog={productCatalog}
+            needsSpecificPage={threeDNeedsSpecificPage}
+            selectedHandle={selectedThreeDSubjectHandle}
+            subjectUrl={threeDSubjectUrl}
+            onSelectedHandleChange={onThreeDSubjectChange}
+            onSubjectUrlChange={onThreeDSubjectUrlChange}
+          />
+        ) : null}
+
         <button
           type="submit"
-          disabled={submitIsBusy}
+          disabled={submitIsBusy || needsThreeDSubject || needsThreeDSubjectUrl}
           className={`flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-4 text-base font-black text-white shadow-xl shadow-slate-950/15 transition hover:bg-slate-800 ${submitIsBusy ? "cursor-progress" : ""} disabled:cursor-not-allowed disabled:opacity-45`}
         >
           {submitIsBusy ? <Loader2 className="size-5 animate-spin" /> : <Wand2 className="size-5" />}

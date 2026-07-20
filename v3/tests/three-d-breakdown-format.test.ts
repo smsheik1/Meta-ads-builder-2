@@ -12,6 +12,7 @@ import {
 } from "../features/audio/fishStudio";
 import { extractThreeDBreakdownEvidence } from "../features/formats/three-d-breakdown/evidence";
 import {
+  focusThreeDBreakdownResearchOnProduct,
   generateThreeDBreakdownStoryDirectionsFromResearch,
   generateThreeDBreakdownVariantsFromResearch,
 } from "../features/formats/three-d-breakdown/generate";
@@ -119,6 +120,30 @@ assert.equal(productBadgeEvidence?.evidenceUseType, "proof");
 const reviewEvidence = evidenceItems.find((item) => item.evidenceUseType === "review") || evidenceItems[0]!;
 const shippingEvidence = evidenceItems.find((item) => item.evidenceUseType === "shipping");
 assert.ok(shippingEvidence, "David's Cookies fixture should expose shipping evidence for Style B context.");
+
+const focusedProductResearch = focusThreeDBreakdownResearchOnProduct({
+  ...research,
+  productCatalog: {
+    ...research.productCatalog!,
+    groups: { bestSellers: ["butter-pecan-tin", "wildberry-pie"] },
+    summary: { productCount: 2, bestSellerCount: 2 },
+    products: [
+      ...research.productCatalog!.products,
+      {
+        ...research.productCatalog!.products[0]!,
+        title: "Wildberry Pie",
+        handle: "wildberry-pie",
+        url: "https://davidscookies.com/products/wildberry-pie",
+      },
+    ],
+  },
+}, "wildberry-pie");
+assert.deepEqual(
+  focusedProductResearch.productCatalog?.products.map((product) => product.handle),
+  ["wildberry-pie"],
+  "A chosen 3D subject must be the only catalog product shown to the story writer.",
+);
+assert.equal(focusedProductResearch.productCatalog?.summary.productCount, 1);
 
 const promptInjectionResearch = makeResearch({
   brandBrief: {

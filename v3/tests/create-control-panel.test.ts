@@ -6,6 +6,9 @@ const createCaptionModalSource = readFileSync("app/create/CreateCaptionModal.tsx
 const controlPanelSource = readFileSync("app/create/CreateControlPanel.tsx", "utf8");
 const createDialogueModalSource = readFileSync("app/create/CreateDialogueModal.tsx", "utf8");
 const createLeftColumnSource = readFileSync("app/create/CreateLeftColumn.tsx", "utf8");
+const createErrorMessagesSource = readFileSync("app/create/createErrorMessages.ts", "utf8");
+const threeDSubjectPickerSource = readFileSync("app/create/CreateThreeDSubjectPicker.tsx", "utf8");
+const threeDSubjectSelectionSource = readFileSync("app/create/useThreeDSubjectSelection.ts", "utf8");
 const canvasColumnSource = readFileSync("app/create/CreateCanvasColumn.tsx", "utf8");
 const reviewsProductPickerSource = readFileSync("app/create/CreateReviewsProductPicker.tsx", "utf8");
 const rootLayoutSource = readFileSync("app/layout.tsx", "utf8");
@@ -186,6 +189,22 @@ assert.ok(
   "3D Breakdown must show a five-card story slate before generating the script/media pipeline.",
 );
 assert.ok(
+    threeDSubjectPickerSource.includes('aria-label="3D Breakdown subject"') &&
+    threeDSubjectPickerSource.includes('aria-label="3D Breakdown product page"') &&
+    threeDSubjectPickerSource.includes('<option value="brand-overview">The whole brand</option>') &&
+    createLeftColumnSource.includes('disabled={submitIsBusy || needsThreeDSubject || needsThreeDSubjectUrl}') &&
+    createClientSource.includes('getThreeDResearchTarget({') &&
+    createClientSource.includes('isThreeDEvidenceGap(getAdGenerationErrorMessage(nextError))') &&
+    createClientSource.includes('threeDSubject.requestSpecificPage') &&
+    createClientSource.includes('{ selectedProductHandle: threeDSubject.selectedHandle }') &&
+    createClientSource.includes('{ selectedProductHandles: [threeDSubject.selectedHandle] }') &&
+    adScenesSource.includes('focusThreeDBreakdownResearchOnProduct(research, selectedProductHandle)') &&
+    adScenesSource.includes('focusThreeDBreakdownResearchOnProduct(research, selectedProductHandles?.[0])') &&
+    createClientSource.includes('url: threeDResearchUrl') &&
+    createClientSource.includes('nextResult.productCatalog?.products.length && !threeDSubject.selectedHandle'),
+  "3D Breakdown must ask for a concrete subject when a homepage is too broad, then research that specific page without charging for a second run.",
+);
+assert.ok(
   createClientSource.includes('if (firstScene?.format === "three-d-breakdown") resetThreeDStoryDirections();') &&
     createClientSource.includes('setThreeDStoryDirectionStatus("loading")') &&
     createClientSource.includes('setThreeDStoryDirectionError(message)') &&
@@ -215,6 +234,7 @@ assert.ok(
   "Root body must suppress extension-injected hydration attrs before React boots.",
 );
 assertHydrationGuards(createLeftColumnSource, 5, "CreateLeftColumn");
+assertHydrationGuards(threeDSubjectPickerSource, 2, "CreateThreeDSubjectPicker");
 assertHydrationGuards(reviewsProductPickerSource, 1, "CreateReviewsProductPicker");
 assertHydrationGuards(controlPanelSource, 6, "CreateControlPanel");
 assertHydrationGuards(createDialogueModalSource, 2, "CreateDialogueModal");
@@ -626,9 +646,9 @@ assert.ok(
 );
 assert.ok(
   createClientSource.includes("getAdGenerationErrorMessage") &&
-    createClientSource.includes("We're Sorry copy generation timed out. Try again.") &&
-    createClientSource.includes("Ad generation timed out. Try again.") &&
-    createClientSource.includes("/NVIDIA NIM|Gemini|Replicate|Seedance|Nano Banana|director/i.test(message)") &&
+    createErrorMessagesSource.includes("We're Sorry copy generation timed out. Try again.") &&
+    createErrorMessagesSource.includes("Ad generation timed out. Try again.") &&
+    createErrorMessagesSource.includes("/NVIDIA NIM|Gemini|Replicate|Seedance|Nano Banana|director/i.test(message)") &&
     createClientSource.includes("const nextGeneration = await generateAdScenes(generationArgs) as AdSceneGenerationResponse") &&
     !createClientSource.includes("Ad generation timed out after reusing the saved research.") &&
     createClientSource.includes("setError(getAdGenerationErrorMessage(nextError))"),
@@ -641,7 +661,7 @@ assert.ok(
 );
 assert.ok(
   createClientSource.includes("getMusicGenerationErrorMessage") &&
-    createClientSource.includes("ElevenLabs Music requires a paid plan for this API key") &&
+    createErrorMessagesSource.includes("ElevenLabs Music requires a paid plan for this API key") &&
     createClientSource.includes("setAudioError(getMusicGenerationErrorMessage(nextError))"),
   "Jingle audio failures must surface a clear visible music-generation error instead of a raw Convex stack.",
 );
@@ -674,8 +694,8 @@ assert.ok(
 assert.ok(
   createClientSource.includes("const previewBusyLabel = status === \"loading\"") &&
     createClientSource.includes("CREATE_FORMAT_GUIDES[selectedAdFormat].label") &&
-    createClientSource.includes("function getThreeDBreakdownLoadingLabel(elapsedSeconds: number)") &&
-    createClientSource.includes("Still waiting on NVIDIA NIM. Slow, not frozen.") &&
+    threeDSubjectSelectionSource.includes("function getThreeDBreakdownLoadingLabel(elapsedSeconds: number)") &&
+    threeDSubjectSelectionSource.includes("Still waiting on NVIDIA NIM. Slow, not frozen.") &&
     createClientSource.includes("adGenerationStatusLabel={adGenerationStatusLabel}") &&
     createLeftColumnSource.includes("Writing 2 story directions") &&
     createLeftColumnSource.includes("adGenerationStatusLabel ? (") &&

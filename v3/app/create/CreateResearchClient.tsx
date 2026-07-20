@@ -85,6 +85,11 @@ import { CreateCaptionModal } from "./CreateCaptionModal";
 import { BrandDumpModal } from "./CreateBrandDumpModal";
 import { CreateCanvasColumn } from "./CreateCanvasColumn";
 import { CreateControlPanel } from "./CreateControlPanel";
+import {
+  getAdGenerationErrorMessage,
+  getMusicGenerationErrorMessage,
+  getResearchActionErrorMessage,
+} from "./createErrorMessages";
 import { CREATE_FORMAT_GUIDES } from "./createFormatEducation";
 import type { CreativePackOverviewGroup } from "./CreateCreativePackOverview";
 import { CreateCreativeBriefCard } from "./CreateCreativeBriefCard";
@@ -106,6 +111,12 @@ import {
   type CreateFormatId,
 } from "./createFormats";
 import { getAnonymousId } from "./createSession";
+import {
+  getThreeDBreakdownLoadingLabel,
+  getThreeDResearchTarget,
+  isThreeDEvidenceGap,
+  useThreeDSubjectSelection,
+} from "./useThreeDSubjectSelection";
 
 const rerollFlashMs = 680;
 const slowResearchMessageDelayMs = 8000;
@@ -114,7 +125,6 @@ const threeDAllShotsBusyIndex = 0;
 type ThreeDMediaUiStatus = "idle" | "loading" | "ready" | "error";
 type ThreeDStoryDirectionStatus = "idle" | "loading" | "ready" | "error";
 
-const researchTimeoutMessage = "That site took too long to read. Try again, or paste a more specific public page from the same brand.";
 const fallbackUploadedAudioDurationMs = 8000;
 function creativePackWasStarted(researchRunId: string, remember = false) {
   try {
@@ -122,31 +132,6 @@ function creativePackWasStarted(researchRunId: string, remember = false) {
     if (remember) sessionStorage.setItem(key, "1");
     return sessionStorage.getItem(key) === "1";
   } catch { return false; }
-}
-
-function getThreeDBreakdownLoadingLabel(elapsedSeconds: number) {
-  if (elapsedSeconds >= 90) return "Still waiting on NVIDIA NIM. Slow, not frozen.";
-  if (elapsedSeconds >= 45) return "Checking strict 3D story rules";
-  if (elapsedSeconds >= 15) return "Writing 3D story directions";
-  return "Finding visual evidence";
-}
-
-function getMusicGenerationErrorMessage(error: unknown) {
-  const rawMessage = error instanceof Error ? error.message : String(error || "");
-  const message = rawMessage
-    .replace(/^Uncaught Error:\s*/i, "")
-    .replace(/\s+at\s+[\s\S]*$/m, "")
-    .trim();
-
-  if (/paid_plan_required|payment_required|402/i.test(message)) {
-    return "Music generation failed: ElevenLabs Music requires a paid plan for this API key.";
-  }
-  if (/fish.*(?:401|invalid token)|invalid token.*fish/i.test(message)) {
-    return "Music generation failed: the Fish voice API key is invalid. Update it, then try again.";
-  }
-  if (!message) return "Music generation failed.";
-  if (/^music generation failed/i.test(message)) return message;
-  return `Music generation failed: ${message}`;
 }
 
 function getBrickStoryboardErrorMessage(error: unknown) {
@@ -258,31 +243,6 @@ type ReusableResearch = {
   facts: WebsiteSubmitProgressFacts | null;
   result?: StoredWebsiteResearchResult;
 };
-
-function getResearchActionErrorMessage(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error || "");
-  if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) return researchTimeoutMessage;
-  return message || "Website research failed.";
-}
-
-function getAdGenerationErrorMessage(error: unknown) {
-  const rawMessage = error instanceof Error ? error.message : String(error || "");
-  const message = rawMessage.match(/Uncaught Error:\s*([\s\S]*?)(?:\s+at\s|\n\s+at\s| Called by client|$)/)?.[1]?.trim()
-    || rawMessage.replace(/^\[CONVEX[^\]]+]\s*\[Request ID:[^\]]+]\s*Server Error\s*/i, "").trim();
-  if (/\b(aborterror|aborted|timed out|timeout)\b/i.test(message)) {
-    if (/NVIDIA NIM|Gemini|Replicate|Seedance|Nano Banana|director/i.test(message)) {
-      return `${message.replace(/[.\s]*$/, "")}. Try again.`;
-    }
-    if (/we'?re sorry/i.test(message)) {
-      return "We're Sorry copy generation timed out. Try again.";
-    }
-    return "Ad generation timed out. Try again.";
-  }
-  if (/NVIDIA NIM.*(?:\b500\b|internal server error|upstream)/i.test(message)) {
-    return "The writing model had a temporary problem. Press Generate ads to try again.";
-  }
-  return message || "Ad generation failed.";
-}
 
 function getCreativePackFailure(format: CreativePackFormat, error: unknown) {
   const debugMessage = getAdGenerationErrorMessage(error);
@@ -488,6 +448,7 @@ function ResearchConnected() {
   const [selectedVisualizerModel, setSelectedVisualizerModel] = useState(DEFAULT_NVIDIA_NIM_VISUALIZER_MODEL);
   const [selectedJingleStyleId, setSelectedJingleStyleId] = useState<JingleStyleId>(DEFAULT_JINGLE_STYLE_ID);
   const [selectedReviewProductHandles, setSelectedReviewProductHandles] = useState<string[]>([]);
+  const threeDSubject = useThreeDSubjectSelection();
   const [creativePackStatus, setCreativePackStatus] = useState<CreativePackStatus>("idle");
   const [creativePackGroups, setCreativePackGroups] = useState<CreativePackOverviewGroup[]>([]);
   const [selectedCreativePackFormat, setSelectedCreativePackFormat] = useState<CreativePackFormat | null>(null);
@@ -1352,6 +1313,9 @@ function ResearchConnected() {
       ...(format === "visualizer" && visualizerModel ? { visualizerModel } : {}),
       ...(format === "jingle" ? { jingleStyleId } : {}),
       ...(format === "reviews" || format === "motion-story" ? { selectedProductHandles: normalizeReviewProductHandles(reviewProductHandles) } : {}),
+      ...(format === "three-d-breakdown" && threeDSubject.selectedHandle && threeDSubject.selectedHandle !== "brand-overview"
+        ? { selectedProductHandles: [threeDSubject.selectedHandle] }
+        : {}),
       ...(format === "three-d-breakdown" && threeDStoryDirection ? { threeDStoryDirection } : {}),
     };
     const startedAt = Date.now();
@@ -2105,6 +2069,9 @@ function ResearchConnected() {
     try {
       const slate = await generateThreeDStoryDirections({
         researchRunId: research.researchRunId as Id<"researchRuns">,
+        ...(threeDSubject.selectedHandle && threeDSubject.selectedHandle !== "brand-overview"
+          ? { selectedProductHandle: threeDSubject.selectedHandle }
+          : {}),
       }) as ThreeDStoryDirectionsResponse;
       const directions = slate.directions || [];
       if (!directions.length) throw new Error("3D Breakdown story direction generation returned no cards.");
@@ -2126,6 +2093,14 @@ function ResearchConnected() {
     } catch (nextError) {
       clearSubmitProgress();
       canvasActions.finishBusy();
+      if (isThreeDEvidenceGap(getAdGenerationErrorMessage(nextError))) {
+        setThreeDStoryDirectionStatus("idle");
+        setThreeDStoryDirectionError("");
+        setAdStatus("idle");
+        setError("");
+        setAdStatusNote(threeDSubject.requestSpecificPage(Boolean(research.result?.productCatalog?.products.length)));
+        return;
+      }
       setThreeDStoryDirectionStatus("error");
       setThreeDStoryDirectionError(getAdGenerationErrorMessage(nextError));
       setAdStatus("error");
@@ -2309,8 +2284,17 @@ function ResearchConnected() {
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const hadExistingCanvas = Boolean(selectedScene || adScenes.length);
+    const threeDTarget = getThreeDResearchTarget({
+      catalog: selectedAdFormat === "three-d-breakdown" ? result?.productCatalog : null,
+      needsSpecificPage: threeDSubject.needsSpecificPage,
+      selectedHandle: threeDSubject.selectedHandle,
+      subjectUrl: threeDSubject.subjectUrl,
+      websiteUrl: url,
+    });
+    const threeDResearchUrl = selectedAdFormat === "three-d-breakdown" ? threeDTarget.url : url;
+    const refiningThreeDProduct = selectedAdFormat === "three-d-breakdown" && threeDTarget.isRefinement;
     // TODO: add an explicit same-URL refresh control if stale site content becomes a real problem.
-    const reusableResearch = getReusableResearchForUrl(url, {
+    const reusableResearch = getReusableResearchForUrl(threeDResearchUrl, {
       requiresProductImage: selectedAdFormat === "motion-story" || selectedAdFormat === PRODUCT_PHOTOSHOOT_FORMAT,
     });
     if (reusableResearch) {
@@ -2355,7 +2339,9 @@ function ResearchConnected() {
 
     try {
       try {
-        setBillingStatus(await fetchBillingJson("/api/billing/consume-run", { method: "POST" }));
+        if (!refiningThreeDProduct) {
+          setBillingStatus(await fetchBillingJson("/api/billing/consume-run", { method: "POST" }));
+        }
       } catch (billingError: unknown) {
         const typedError = billingError as Error & { status?: number; code?: string };
         if (typedError.status === 402 || typedError.code === "PAYWALL_REQUIRED") {
@@ -2371,7 +2357,7 @@ function ResearchConnected() {
 
       const nextResult = await runWebsiteResearch({
         anonymousId: getAnonymousId(),
-        url,
+        url: threeDResearchUrl,
       }) as StoredWebsiteResearchResponse;
       if (isStoredWebsiteResearchFailure(nextResult)) {
         setStatus(hadExistingCanvas ? "ready" : "error");
@@ -2410,6 +2396,17 @@ function ResearchConnected() {
         return;
       }
       if (selectedAdFormat === "three-d-breakdown") {
+        if (nextResult.productCatalog?.products.length && !threeDSubject.selectedHandle) {
+          rememberResearchForReuse(nextResult);
+          setResult(nextResult);
+          setStatus("ready");
+          setAdStatus(hadExistingCanvas ? "ready" : "idle");
+          setAdStatusNote("Choose a product or the whole brand for this 3D video.");
+          clearSubmitProgress();
+          canvasActions.finishBusy();
+          return;
+        }
+        threeDSubject.clearSpecificPage();
         await generateThreeDStoryDirectionSlate({
           researchRunId: nextResult.researchRunId,
           facts: getWebsiteSubmitProgressFacts(nextResult),
@@ -2458,7 +2455,10 @@ function ResearchConnected() {
   const onFormatChange = (format: CreateFormatId) => {
     if (format === selectedAdFormat) return;
     setSelectedAdFormat(format);
-    if (format !== "three-d-breakdown") resetThreeDStoryDirections();
+    if (format !== "three-d-breakdown") {
+      resetThreeDStoryDirections();
+      threeDSubject.reset();
+    }
     setSelectedCreativePackFormat(isAdSceneCreateFormat(format) && isCreativePackFormat(format) ? format : null);
     const reusableResearch = getReusableResearchForUrl(url, {
       requiresProductImage: format === "motion-story" || format === PRODUCT_PHOTOSHOOT_FORMAT,
@@ -3628,6 +3628,9 @@ function ResearchConnected() {
             memeModel={selectedMemeModel}
             productCatalog={result ? result.productCatalog || null : undefined}
             selectedReviewProductHandles={selectedReviewProductHandles}
+            threeDNeedsSpecificPage={threeDSubject.needsSpecificPage}
+            threeDSubjectUrl={threeDSubject.subjectUrl}
+            selectedThreeDSubjectHandle={threeDSubject.selectedHandle}
             jingleStyleId={selectedJingleStyleId}
             videoMemeTemplateId={selectedVideoMemeTemplateId}
             visualizerModel={selectedVisualizerModel}
@@ -3639,12 +3642,20 @@ function ResearchConnected() {
             onJingleStyleChange={setSelectedJingleStyleId}
             onMemeModelChange={setSelectedMemeModel}
             onReviewProductSelectionChange={(handles) => setSelectedReviewProductHandles(normalizeReviewProductHandles(handles))}
+            onThreeDSubjectUrlChange={threeDSubject.setSubjectUrl}
+            onThreeDSubjectChange={(handle) => {
+              threeDSubject.selectHandle(handle);
+              resetThreeDStoryDirections();
+              setError("");
+              setAdStatusNote(handle ? "Subject selected. Generate the 3D story directions when ready." : "Choose what this 3D video is about.");
+            }}
             onVideoMemeTemplateChange={onVideoMemeTemplateChange}
             onVisualizerModelChange={setSelectedVisualizerModel}
             onSubmit={onSubmit}
             onUrlChange={(nextUrl) => {
               setUrl(nextUrl);
               setSelectedReviewProductHandles([]);
+              threeDSubject.reset();
               setSelectedPhotoshootProductHandle("");
               setCreativePackStatus("idle");
               setCreativePackGroups([]);
