@@ -43,6 +43,7 @@ export const normalizeProofText = (value: string) => decodeHtmlEntities(value)
   .replace(/[“”]/g, "\"")
   .replace(/[‘’]/g, "'")
   .replace(/\s+/g, " ")
+  .replace(/\s+([,.!?])/g, "$1")
   .trim();
 
 const cleanLine = (value: unknown) => normalizeProofText(String(value ?? "")
