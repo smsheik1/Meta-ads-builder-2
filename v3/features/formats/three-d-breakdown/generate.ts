@@ -637,7 +637,7 @@ const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
       "Frame 4: peak impossible-to-film 3D overlay, cutaway, x-ray, component split, invisible-problem reveal, or mechanism insert.",
       "Frame 5: return from the 3D insert into a practical proof/payoff product moment with the recurring demonstrator's torso, hands, or over-shoulder view visibly connected to the action.",
       "Frame 6: clean human/product final where the same demonstrator's torso or hands place, hold, open, carry, use, or reach for the large selected product. Never write a product-alone or empty-stage final.",
-      "Use oversized tactile demo props like clear tubes, jars, glasses, capsules, particles, piles, blocks, pipes, scoops, scales, trays, or product-use surfaces so the demo feels physically staged, not like a generic science diagram.",
+      "Use oversized tactile demo props like clear tubes, jars, glasses, capsules, particles, piles, pipes, scoops, scales, trays, or product-use surfaces so the demo feels physically staged, not like a generic science diagram.",
       "Each frame should be a different physical teaching module when possible: human/product use, product path or selected body-route, obstacle wall or pile-up, mechanism machine or pipe, moving particles/components, and final product payoff.",
       "For supplement stories, match the visual engine to the locked premise. Routine, testing, portability, taste, and ingredient-compression stories stay in the external product/demo world. Only delivery, digestion, or absorption stories use a transparent torso or body-route.",
       "For approved body-route frames, show the correct digestive route rather than lungs, keep it attached to the silent demonstrator and product path, and use clean blue-route footage with a tidy barrier and visible particles. Avoid gore, wet intestine tunnels, detached organs, or anatomy montage.",
@@ -650,9 +650,11 @@ const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
       "Use a recurring stylized human demo character/body proxy as the continuity spine in at least four frames, including the first and final frame.",
       "Frame 1 and frame 6 must show the character's full body or torso prominently beside the product; at least one middle frame should show the same body proxy, tiny scale figure, hand, pointer, or probe.",
       "Do not create a faceless biology montage. Internal body, gut, cell-wall, or process visuals should feel like environments the same demo character enters, scales against, points into, or returns from.",
-      "Frame 6 should resemble a clean product payoff: product large, demo character body/torso nearby, and 2-4 blank proof/benefit/component cards or tokens arranged around it for renderer overlays.",
+      "Frame 6 should resemble a clean product payoff: product large, demo character body/torso nearby, and 2-4 real components or use-case props arranged around it with open space for renderer overlays.",
     ]
 );
+
+const abstractProofPropPattern = /\b(?:abstract\s+)?(?:proof|progress|comparison|evidence)\s+(?:blocks?|tokens?|counters?|cubes?)\b/i;
 
 const parseStoryboardFrames = (value: unknown): NonNullable<ThreeDBreakdownStoryboardBoard["frames"]> => {
   if (!Array.isArray(value) || value.length !== THREE_D_STORYBOARD_FRAME_CONTRACTS.length) {
@@ -674,6 +676,9 @@ const parseStoryboardFrames = (value: unknown): NonNullable<ThreeDBreakdownStory
     for (const text of [visual, camera, motion, overlayText, editingNote]) assertNoBannedText(text);
     for (const [field, text] of Object.entries({ visual, camera, motion, editingNote })) {
       assertNoQuotedImageText(text, `storyboard frame ${index + 1} ${field}`);
+    }
+    if (abstractProofPropPattern.test([visual, camera, motion, editingNote].join(" "))) {
+      throw new Error(`3D Breakdown storyboard frame ${index + 1} uses abstract proof props instead of a physical product payoff.`);
     }
     return {
       ...contract,
@@ -733,7 +738,7 @@ const parseStoryboardBoard = (value: unknown, visualStyle: ThreeDBreakdownVisual
     "The written still plan and any overlayText values are internal instructions only. Do not draw any of those words.",
     "No panel labels, no panel numbers, no captions, no caption bars, no black lower bars, no progress bars, no readable text, no UI labels, no speech bubbles, no receipts, no posters, no typography-led design.",
     "No words, letters, numbers, percentages, ratings, price tags, labels, handwriting, UI copy, text-like glyphs, icons, arrows, checkmarks, X marks, or alphanumeric marks anywhere inside panels. Do not write FRAME 1, FRAME 2, scene labels, headings, or any other annotations.",
-    "If proof or numeric evidence appears in the story, visualize it as blank physical tokens, unmarked blocks, unlabeled counters, plain geometric tokens, or motion only.",
+    "If proof or numeric evidence appears in the story, keep it in overlayText metadata and show the selected product physically causing the documented customer or product outcome. Never visualize evidence as abstract blocks, counters, cubes, tokens, charts, or scoreboards.",
   ].join(" ");
   return {
     frameCount: 6,
