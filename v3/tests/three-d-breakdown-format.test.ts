@@ -1648,6 +1648,19 @@ const concreteCountOpenerResult = await generateThreeDBreakdownVariantsFromResea
 });
 assert.equal(concreteCountOpenerResult.variants[0]?.scriptBeats[0]?.narration.startsWith("Twenty-four"), true);
 
+const concreteActionOpenerResult = await generateThreeDBreakdownVariantsFromResearch(research, {
+  count: 1,
+  nvidiaNimApiKey: "test-key",
+  nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([makeVariant({
+    consequence: "Choking down huge pills turns daily nutrition into punishment before breakfast begins.",
+  })])),
+});
+assert.equal(
+  concreteActionOpenerResult.variants[0]?.scriptBeats[0]?.narration.startsWith("Choking down"),
+  true,
+  "A concrete action opener from the selected story direction must satisfy the narration contract.",
+);
+
 const evidenceTypeMismatchResult = await generateThreeDBreakdownVariantsFromResearch(research, {
   count: 1,
   nvidiaNimApiKey: "test-key",
