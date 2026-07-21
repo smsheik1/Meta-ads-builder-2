@@ -94,7 +94,7 @@ const forbiddenNarrationPattern = new RegExp(
   "i",
 );
 const brokenNarrationPattern = /\bali\s+ve\b|\bprotect(?:s|ed|ing)? alive\b/i;
-const transcriptOpeningPattern = /^(when|if|once|imagine|before|after|inside|without|you|your|most|many|some|a|an|the|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|hundred|thousand|every|each|she|he|someone|something|\d)\b/i;
+const transcriptOpeningPattern = /^(?:(?:when|if|once|imagine|before|after|inside|without|why|how|what|you|your|most|many|some|a|an|the|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|hundred|thousand|every|each|she|he|someone|something|\d)\b|[a-z]+ing\b)/i;
 const abstractPunchlinePattern = /^(presence|clarity|confidence|value|connection|impact|control|growth|trust|success)\b/i;
 const ctaActionPattern = /\b(shop|start|try|visit|order|get|book|support|join|subscribe|buy)\b/i;
 const fakeCtaPattern = /\b(the\s+)?(?:journey|trip|route|path|difference|proof|evidence|moment|mechanism)\s+(?:is|was|became)\s+the\s+(?:product|proof|point|difference|mechanism)\b/i;
