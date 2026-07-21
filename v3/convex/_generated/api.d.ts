@@ -22,6 +22,7 @@ import type * as savedDesigns from "../savedDesigns.js";
 import type * as sceneUrlRefresh from "../sceneUrlRefresh.js";
 import type * as sessions from "../sessions.js";
 import type * as sharePages from "../sharePages.js";
+import type * as storageMaintenance from "../storageMaintenance.js";
 import type * as threeDImages from "../threeDImages.js";
 import type * as waitlist from "../waitlist.js";
 
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   sceneUrlRefresh: typeof sceneUrlRefresh;
   sessions: typeof sessions;
   sharePages: typeof sharePages;
+  storageMaintenance: typeof storageMaintenance;
   threeDImages: typeof threeDImages;
   waitlist: typeof waitlist;
 }>;
