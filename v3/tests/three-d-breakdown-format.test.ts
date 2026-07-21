@@ -1914,6 +1914,45 @@ assert.throws(
   }),
   /needs a real product image/,
 );
+const brandOriginResearch = makeResearch({
+  websiteUrl: "https://www.lego.com/history/the-beginning",
+  finalUrl: "https://www.lego.com/history/the-beginning",
+  host: "www.lego.com",
+  brand: {
+    ...research.brand,
+    name: "LEGO",
+    title: "LEGO History: The Beginning",
+    description: "The history of Ole Kirk Kristiansen and the first LEGO wooden toys.",
+    logoUrl: "https://cdn.example/lego-logo.png",
+    ogImageUrl: null,
+  },
+  brandBrief: {
+    ...research.brandBrief,
+    brandName: "LEGO",
+    offer: "An editorial history of the founder and the first LEGO products from 1932.",
+  },
+  productCatalog: undefined,
+});
+const brandOriginEvidenceItems = extractThreeDBreakdownEvidence(brandOriginResearch);
+const brandOriginScene = createThreeDBreakdownAdScene({
+  candidateIndex: 0,
+  evidenceItems: brandOriginEvidenceItems,
+  generationBatchId: "batch_brand_origin",
+  model: generated.model,
+  provider: generated.provider,
+  research: brandOriginResearch,
+  siteContract: { ...generated.siteContract, primarySiteType: "ecommerce" },
+  variant: makeVariant({
+    visualStyle: "presenter-teardown-vsl",
+    variantAngle: "the founder's 1932 origin story",
+    customerProblem: "an economic crisis crushed the carpenter's furniture business",
+    mechanismSummary: "the workshop pivoted from furniture to wooden toys",
+    visualMetaphor: "a carpenter's workshop rebuilds itself into the first toy line",
+    evidenceIndex: brandOriginEvidenceItems[0]!.evidenceIndex,
+    evidenceUseType: brandOriginEvidenceItems[0]!.evidenceUseType,
+  }),
+});
+assert.equal(brandOriginScene.layout.productAnchor, undefined);
 assert.equal(scene.format, "three-d-breakdown");
 assert.equal(scene.layout.durationMs, 20_000);
 assert.equal(scene.layout.scriptBeats.length, 5);
