@@ -24,6 +24,7 @@ import {
 } from "@/features/llm/nvidiaNimModels";
 import { DEFAULT_JINGLE_STYLE_ID, JINGLE_STYLES, type JingleStyleId } from "@/features/formats/jingle/prompt";
 import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
+import { editThreeDBreakdownMediaPrompt, type ThreeDBreakdownMediaPromptTarget } from "@/features/formats/three-d-breakdown/editablePrompts";
 import type { ThreeDBreakdownStoryDirection } from "@/features/formats/three-d-breakdown/storyDirections";
 import { editThreeDBreakdownScriptBeat } from "@/features/formats/three-d-breakdown/editScript";
 import {
@@ -3049,6 +3050,11 @@ function ResearchConnected() {
     if (hadGeneratedAudio) resetAudioState();
   };
 
+  const onThreeDMediaPromptChanged = (target: ThreeDBreakdownMediaPromptTarget, prompt: string) => {
+    if (!selectedThreeDScene) return;
+    updateSelectedThreeDScene(editThreeDBreakdownMediaPrompt(selectedThreeDScene, target, prompt));
+  };
+
   const selectedThreeDScene = selectedScene?.format === "three-d-breakdown" ? selectedScene : null;
   const showThreeDStoryDirectionStage = selectedAdFormat === "three-d-breakdown" && (
     !selectedThreeDScene
@@ -3735,6 +3741,7 @@ function ResearchConnected() {
                 onLoadSavedDesign={onLoadSavedDesign}
                 onOpenAudioPanel={onOpenAudioPanel}
                 onSaveSelectedDesign={() => void onSaveSelectedDesign()}
+                onThreeDMediaPromptChanged={onThreeDMediaPromptChanged}
                 onThreeDScriptBeatChanged={onThreeDScriptBeatChanged}
                 onTogglePreviewPlayback={onTogglePreviewPlayback}
                 audioStatus={audioStatus}

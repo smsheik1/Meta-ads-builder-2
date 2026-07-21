@@ -12,6 +12,7 @@ const rootLayoutSource = readFileSync("app/layout.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const remotionRootSource = readFileSync("remotion-entry/Root.tsx", "utf8");
 const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
+const threeDMediaPromptEditorSource = readFileSync("app/create/ThreeDBreakdownMediaPromptEditor.tsx", "utf8");
 const threeDScriptEditorSource = readFileSync("app/create/ThreeDBreakdownScriptEditor.tsx", "utf8");
 const brickStoryboardSheetSource = readFileSync("app/create/CreateBrickStoryboardSheet.tsx", "utf8");
 const creativeBriefSource = readFileSync("app/create/CreateCreativeBriefCard.tsx", "utf8");
@@ -314,11 +315,15 @@ assert.ok(
 	    quickActionsSource.includes("assemblyStatusLabel") &&
 	    quickActionsSource.includes('isPresenterStyle ? "Anchors ready" : "Frames ready"') &&
 	    quickActionsSource.includes("requiredFrames.map") &&
-	    quickActionsSource.includes("storyboardBoard.imagePrompt") &&
-	    quickActionsSource.includes("formatStoryboardFramePrompt(frame)") &&
+	    quickActionsSource.includes("getThreeDStoryboardPrompt(storyboardBoard)") &&
+	    quickActionsSource.includes("getThreeDAnchorPrompt(frame)") &&
 	    quickActionsSource.includes('data-three-d-storyboard-frames="true"') &&
+      quickActionsSource.includes('target="storyboard"') &&
+      quickActionsSource.includes('target={`anchor-${frame.frameIndex}`}') &&
+      threeDMediaPromptEditorSource.includes("data-three-d-media-prompt-editor={target}") &&
+      threeDMediaPromptEditorSource.includes("This creative prompt will be sent with Wiggly’s safety and continuity rules.") &&
     !quickActionsSource.includes("Six-frame 3D Breakdown storyboard board"),
-  "3D Breakdown Images step must show compact storyboard status, frame references, and inspectable prompts without duplicating the full board preview.",
+  "3D Breakdown Images step must expose raw storyboard and anchor creative prompts without duplicating the full board preview.",
 );
 assert.ok(
   quickActionsSource.includes('data-three-d-anchor-errors="true"') &&
@@ -344,10 +349,15 @@ assert.ok(
     quickActionsSource.includes("data-three-d-clip-preview={clipPlan.clipIndex}") &&
     quickActionsSource.includes("autoPlay") &&
     quickActionsSource.includes("playsInline") &&
-    quickActionsSource.includes("PromptHelp") &&
+    quickActionsSource.includes('target={`clip-${clipPlan.clipIndex}`}') &&
+    quickActionsSource.includes("onMediaPromptChanged({ kind: \"clip\", clipIndex: clipPlan.clipIndex }, prompt)") &&
     quickActionsSource.includes("clipPlan.prompt") &&
-    quickActionsSource.includes('data-three-d-prompt-help="true"'),
-  "3D Breakdown preflight must show planned clips, inspectable prompts, visible ready previews, and explicit sequential Seedance actions.",
+    quickActionsSource.includes("Clip ${clipPlan.clipIndex} motion prompt"),
+  "3D Breakdown preflight must show planned clips, editable prompts, visible ready previews, and explicit sequential Seedance actions.",
+);
+assert.ok(
+  threeDImagesSource.includes("prompt: existingClipPlans.find((existing) => existing.clipIndex === plan.clipIndex)?.prompt ?? plan.prompt"),
+  "Paid clip generation must preserve the user's approved prompt instead of silently rebuilding over it.",
 );
 assert.ok(
   storyboardContractsSource.includes("const presenterFrameGroups") &&

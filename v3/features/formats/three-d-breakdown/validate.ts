@@ -47,12 +47,14 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
   if (scene.layout.storyboardBoard) {
     if (scene.layout.storyboardBoard.frameCount !== 6) errors.push("3D Breakdown storyboard board must have 6 frames.");
     if (!scene.layout.storyboardBoard.imagePrompt?.trim()) errors.push("3D Breakdown storyboard board image prompt is missing.");
+    if (scene.layout.storyboardBoard.creativePrompt !== undefined && !scene.layout.storyboardBoard.creativePrompt.trim()) errors.push("3D Breakdown storyboard creative prompt is missing.");
     if (!Array.isArray(scene.layout.storyboardBoard.frames) || scene.layout.storyboardBoard.frames.length !== 6) {
       errors.push("3D Breakdown storyboard board must define 6 panel frames.");
 	    } else {
 	      scene.layout.storyboardBoard.frames.forEach((frame, index) => {
 	        if (frame.frameIndex !== index + 1) errors.push(`3D Breakdown storyboard frame ${index + 1} index is invalid.`);
 	        if (!frame.label?.trim()) errors.push(`3D Breakdown storyboard frame ${index + 1} label is missing.`);
+	        if (frame.anchorPrompt !== undefined && !frame.anchorPrompt.trim()) errors.push(`3D Breakdown storyboard frame ${index + 1} anchor prompt is missing.`);
 	      });
 	    }
 	  }

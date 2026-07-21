@@ -455,6 +455,7 @@ export const generateThreeDClip: ReturnType<typeof action> = action({
     const refreshedClipPlans = createThreeDClipPlans(nextScene.layout) || [];
     const clipPlans = refreshedClipPlans.map((plan) => ({
       ...plan,
+      prompt: existingClipPlans.find((existing) => existing.clipIndex === plan.clipIndex)?.prompt ?? plan.prompt,
       endFrameImage: existingClipPlans.find((existing) => existing.clipIndex === plan.clipIndex)?.endFrameImage || plan.endFrameImage,
       video: existingClipPlans.find((existing) => existing.clipIndex === plan.clipIndex)?.video || plan.video,
     })) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>;

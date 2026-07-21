@@ -11,6 +11,7 @@ import {
   THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID,
 } from "../features/audio/fishStudio";
 import { extractThreeDBreakdownEvidence } from "../features/formats/three-d-breakdown/evidence";
+import { editThreeDBreakdownMediaPrompt } from "../features/formats/three-d-breakdown/editablePrompts";
 import { editThreeDBreakdownScriptBeat } from "../features/formats/three-d-breakdown/editScript";
 import {
   generateThreeDBreakdownStoryDirectionsFromResearch,
@@ -1969,6 +1970,7 @@ assert.ok(cookieAnchorPrompt.includes("image 1 is the approved panel"));
 assert.ok(cookieAnchorPrompt.includes("image 2 is the preceding anchor"));
 assert.ok(cookieAnchorPrompt.includes("image 3 is the PRODUCT MASTER"));
 assert.ok(cookieAnchorPrompt.includes("Proof blocks assemble in midair around the cookie tin"));
+assert.ok(cookieAnchorPrompt.includes("APPROVED ANCHOR CREATIVE PROMPT:"));
 assert.ok(cookieAnchorPrompt.includes("ONE full-frame vertical 9:16 production keyframe"));
 assert.ok(cookieAnchorPrompt.length < 3500);
 assert.ok(cookieClipPrompt.includes("supplied first image is the exact opening composition"));
@@ -2321,6 +2323,53 @@ assert.ok(editedScriptScene.layout.storyContract.referenceScript?.includes("The 
 assert.equal(editedScriptScene.audio.status, "none", "Editing narration must invalidate the old voice track.");
 assert.equal(editedScriptScene.layout.finalVideo, undefined, "Editing narration must invalidate the old final MP4.");
 assert.notEqual(editedScriptScene, styleBScene, "Script editing must return a complete new scene instead of mutating the current one.");
+
+const readyMediaScene: ThreeDBreakdownAdScene = {
+  ...styleBScene,
+  layout: {
+    ...styleBScene.layout,
+    finalVideo: { status: "ready", url: "https://cdn.example/final.mp4" },
+    storyboardBoard: {
+      ...styleBScene.layout.storyboardBoard!,
+      image: { status: "ready", url: "https://cdn.example/board.jpg" },
+      frames: styleBScene.layout.storyboardBoard!.frames!.map((frame) => ({
+        ...frame,
+        image: { status: "ready", url: `https://cdn.example/frame-${frame.frameIndex}.jpg` },
+      })),
+    },
+    clipPlans: styleBScene.layout.clipPlans!.map((plan) => ({
+      ...plan,
+      video: { status: "ready", url: `https://cdn.example/clip-${plan.clipIndex}.mp4` },
+    })),
+  },
+};
+const editedStoryboardPromptScene = editThreeDBreakdownMediaPrompt(readyMediaScene, { kind: "storyboard" }, "Six bold cookie science panels with a warm bakery payoff.");
+assert.equal(editedStoryboardPromptScene.layout.storyboardBoard?.creativePrompt, "Six bold cookie science panels with a warm bakery payoff.");
+assert.ok(editedStoryboardPromptScene.layout.storyboardBoard?.frames?.every((frame) => frame.image?.status === "idle"));
+assert.ok(editedStoryboardPromptScene.layout.clipPlans?.every((plan) => plan.video?.status === "idle"));
+assert.equal(editedStoryboardPromptScene.layout.finalVideo, undefined);
+const editedStoryboardProviderPrompt = buildThreeDStoryboardBoardPrompt(editedStoryboardPromptScene);
+assert.ok(editedStoryboardProviderPrompt.includes("APPROVED SIX-FRAME PLAN: Six bold cookie science panels with a warm bakery payoff."));
+assert.ok(!editedStoryboardProviderPrompt.includes("Hands place a red cookie tin"));
+
+const firstAnchorFrameIndex = styleBScene.layout.clipPlans![0]!.frameIndexes[0]!;
+const editedAnchorPromptScene = editThreeDBreakdownMediaPrompt(readyMediaScene, { kind: "anchor", frameIndex: firstAnchorFrameIndex }, "Macro cookie tin opening with warm crumbs suspended in the blue grid world.");
+const editedAnchorFrame = editedAnchorPromptScene.layout.storyboardBoard?.frames?.find((frame) => frame.frameIndex === firstAnchorFrameIndex);
+assert.equal(editedAnchorFrame?.anchorPrompt, "Macro cookie tin opening with warm crumbs suspended in the blue grid world.");
+assert.equal(editedAnchorFrame?.image?.status, "idle");
+assert.equal(
+  editedAnchorPromptScene.layout.storyboardBoard?.frames?.find((frame) => frame.frameIndex === 4)?.image?.status,
+  "idle",
+  "Changing the first anchor must invalidate the later continuity anchor.",
+);
+assert.ok(editedAnchorPromptScene.layout.clipPlans?.every((plan) => plan.video?.status === "idle"));
+assert.ok(buildThreeDProductionFramePrompt(editedAnchorPromptScene, firstAnchorFrameIndex).includes("Macro cookie tin opening with warm crumbs"));
+
+const editedClipPromptScene = editThreeDBreakdownMediaPrompt(readyMediaScene, { kind: "clip", clipIndex: 1 }, "Push through the open cookie tin, then whip-pan into the hidden freshness barrier.");
+assert.equal(editedClipPromptScene.layout.clipPlans?.[0]?.prompt, "Push through the open cookie tin, then whip-pan into the hidden freshness barrier.");
+assert.ok(editedClipPromptScene.layout.clipPlans?.every((plan) => plan.video?.status === "idle"));
+assert.ok(buildThreeDSeedancePrompt(editedClipPromptScene, editedClipPromptScene.layout.clipPlans![0]!).includes("Push through the open cookie tin"));
+assert.equal(readyMediaScene.layout.finalVideo?.status, "ready", "Media prompt editing must not mutate the current scene.");
 const finalExportMarkup = renderToStaticMarkup(createElement(AdRenderSurface, {
   scene: sceneWithFinalVideo,
   mode: "video",

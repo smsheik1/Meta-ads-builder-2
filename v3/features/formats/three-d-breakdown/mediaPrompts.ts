@@ -3,6 +3,7 @@ import type {
   ThreeDBreakdownClipPlan,
   ThreeDBreakdownStoryboardFrameIndex,
 } from "../../scene/types";
+import { getThreeDAnchorPrompt, getThreeDStoryboardPrompt } from "./editablePrompts";
 
 const MAX_SEEDANCE_PROMPT_CHARS = 3900;
 
@@ -152,7 +153,9 @@ export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) 
     sharedStyle(scene),
     productLock(scene),
     supplementDirection(scene),
-    `APPROVED SIX-FRAME PLAN: ${plans}`,
+    `APPROVED SIX-FRAME PLAN: ${scene.layout.storyboardBoard?.creativePrompt
+      ? clean(getThreeDStoryboardPrompt(scene.layout.storyboardBoard))
+      : plans}`,
     "CONTINUITY OVERRIDE: the same male CGI demonstrator from image 1 appears in panels 1, 2, 5, and 6; torso, connected hands, or over-shoulder framing count. Panel 6 shows him placing, holding, carrying, using, or reaching for the large central product, never a product alone on an empty grid.",
     "VISUAL STORY: each cell shows one concrete physical action and one visible state change. Frame 1 establishes the demonstrator and product category; frame 6 resolves to the accurate selected product. Middle frames may use hands, cutaways, pipes, components, particles, scale comparisons, or impossible-camera reveals while preserving continuity.",
     "VARIETY: do not repeat six product-holding poses or six macro science inserts. Move from use, to obstacle, to setup, to reveal, to evidence, to product payoff.",
@@ -163,13 +166,16 @@ export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) 
 export const buildThreeDProductionFramePrompt = (
   scene: ThreeDBreakdownAdScene,
   frameIndex: ThreeDBreakdownStoryboardFrameIndex,
-) => clean([
+) => {
+  const frame = scene.layout.storyboardBoard?.frames?.find((item) => item.frameIndex === frameIndex);
+  const anchorPrompt = frame ? getThreeDAnchorPrompt(frame) : framePlan(scene, frameIndex);
+  return clean([
   `TASK: recreate panel ${frameIndex} from the supplied approved six-panel board as ONE full-frame vertical 9:16 production keyframe. This is not a collage or storyboard sheet.`,
   productionReferenceLock(scene, frameIndex !== 1),
   sharedStyle(scene),
   productLock(scene),
   supplementDirection(scene),
-  framePlan(scene, frameIndex),
+  `APPROVED ANCHOR CREATIVE PROMPT: ${anchorPrompt}`,
   `ROLE: ${frameRole(scene, frameIndex)}`,
   frameIndex === 1
     ? "CONTINUITY: establish the panel's feature-animation CGI demonstrator, product, recurring objects, world, and camera relationship. Keep modeled hair, visible eyes, matte CG skin, plain clothing, and a closed mouth."
@@ -177,6 +183,7 @@ export const buildThreeDProductionFramePrompt = (
   "COMPOSITION: fill the frame with the approved subject and action. No split screen, multiple panels, huge empty table, dead negative space, quiet showroom card, or alternate concept.",
   pixelTextBan,
 ].join(" "));
+};
 
 export const buildThreeDSeedancePrompt = (
   scene: ThreeDBreakdownAdScene,
