@@ -37,6 +37,18 @@ assert.ok(
   "Brainrot preview should expose a visible control for its real dialogue audio.",
 );
 assert.ok(
+  formatCarousel.includes("AdRenderSurface") && formatCarousel.includes("visualizerPreviewScene"),
+  "Visualizer preview should use Wiggly's real scene renderer instead of a decorative imitation.",
+);
+assert.ok(
+  formatCarousel.includes("Play Visualizer conversation") && formatCarousel.includes("Mute Visualizer conversation"),
+  "Visualizer preview should expose a visible control for its two-person conversation.",
+);
+assert.ok(
+  formatCarousel.includes("splitSpeakers: true") && formatCarousel.includes("timeSeconds={timeSeconds}"),
+  "Visualizer preview should synchronize the real split-speaker format with playback time.",
+);
+assert.ok(
   formatCarousel.includes("brainrotPreviewBeats") && formatCarousel.includes("activeBeat.speaker"),
   "Brainrot preview should synchronize captions and speaker emphasis instead of showing two static characters.",
 );
