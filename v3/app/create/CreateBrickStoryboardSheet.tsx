@@ -2,8 +2,6 @@
 
 import {
   Check,
-  ChevronDown,
-  ChevronRight,
   Clapperboard,
   Download,
   FileText,
@@ -13,9 +11,10 @@ import {
   Music2,
   RotateCcw,
 } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
+import { CreateAssemblyLine, type CreateAssemblyStageStatus } from "./CreateAssemblyLine";
 
 type BrickStoryboardStatus = "idle" | "loading" | "ready" | "error";
 
@@ -36,7 +35,6 @@ export type CreateBrickStoryboardSheetProps = {
 };
 
 type StageId = "song" | "scenes" | "images" | "animation" | "final";
-type StageStatus = "ready" | "failed" | "building" | "needs";
 
 const stageMeta = [
   { id: "song", label: "Song", compactLabel: "Song", kicker: "audio and lyrics", icon: <Music2 className="size-4" /> },
@@ -46,27 +44,11 @@ const stageMeta = [
   { id: "final", label: "Final Video", compactLabel: "Final", kicker: "stitched MP4", icon: <Download className="size-4" /> },
 ] satisfies Array<{ id: StageId; label: string; compactLabel: string; kicker: string; icon: ReactNode }>;
 
-const numberTone = (status: StageStatus, active: boolean) => {
-  if (active) return "bg-white text-slate-950";
-  if (status === "failed") return "bg-red-50 text-red-600";
-  if (status === "building") return "bg-sky-50 text-sky-600";
-  if (status === "ready") return "bg-emerald-50 text-emerald-700";
-  return "bg-slate-100 text-slate-400";
-};
-
 const pillTone = (status: string) => {
   if (status.includes("failed")) return "bg-red-50 text-red-600";
   if (status.includes("ready")) return "bg-emerald-50 text-emerald-600";
   if (status.includes("building")) return "bg-sky-50 text-sky-600";
   return "bg-slate-100 text-slate-500";
-};
-
-const compactStageTone = (status: StageStatus, active: boolean) => {
-  if (status === "ready") return "text-emerald-600";
-  if (status === "failed") return "text-red-600";
-  if (status === "building") return "text-sky-600";
-  if (active) return "text-slate-800";
-  return "text-slate-400";
 };
 
 export function CreateBrickStoryboardSheet({
@@ -84,8 +66,6 @@ export function CreateBrickStoryboardSheet({
   onRegenerateBrickShot,
   onRegenerateBrickShotVideo,
 }: CreateBrickStoryboardSheetProps) {
-  const [activeStage, setActiveStage] = useState<StageId | null>(null);
-  const [collapsed, setCollapsed] = useState(false);
   const storyboardBusy = brickStoryboardStatus === "loading";
   const animating = brickStoryboardAnimationStatus === "loading";
   const building = brickStoryboardBuildStatus === "loading";
@@ -102,7 +82,7 @@ export function CreateBrickStoryboardSheet({
   const canBuild = allVideosReady && !storyboardBusy && !animating && !building && !anyShotBusy;
   const animationFailed = brickStoryboardAnimationStatus === "error" || shots.some((shot) => Boolean(shot.error && shot.image?.url && !shot.video?.url));
 
-  const statuses: Record<StageId, StageStatus> = {
+  const statuses: Record<StageId, CreateAssemblyStageStatus> = {
     song: songReady ? "ready" : "needs",
     scenes: storyboardBusy ? "building" : brickStoryboard ? "ready" : "needs",
     images: brickStoryboardShotBusyIndex !== null ? "building" : allImagesReady ? "ready" : "needs",
@@ -120,94 +100,23 @@ export function CreateBrickStoryboardSheet({
           : !finalReady || building
             ? "final"
             : "song";
-  const selectedStage = activeStage || defaultStage;
   const animationShotsNeedingAction = shots.filter((shot) => (
     brickStoryboardVideoBusyIndex === shot.shotIndex || !shot.video?.url || Boolean(shot.error && shot.image?.url)
   ));
 
   return (
     <section data-music-video-assembly-card="true">
-      <div className="rounded-[28px] border border-slate-200 bg-white p-3 shadow-xl shadow-slate-950/5">
-        <button
-          type="button"
-          onClick={() => setCollapsed((nextCollapsed) => !nextCollapsed)}
-          className="flex w-full items-center gap-3 rounded-[18px] px-3 py-2 text-left transition hover:bg-slate-50"
-          aria-expanded={!collapsed}
-          data-music-video-assembly-toggle="true"
-        >
-          <span className="min-w-0 flex-1">
-            <span className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-              Assembly line
-            </span>
-            <span className="mt-1 flex min-w-0 items-center gap-1.5 text-xs font-black text-slate-700">
-              {collapsed ? (
-                <span className="flex min-w-0 flex-wrap items-center gap-1 text-[10px] leading-none" data-music-video-assembly-compact-steps="true">
-                  {stageMeta.map((stage, index) => {
-                    const active = selectedStage === stage.id;
-                    return (
-                      <span key={stage.id} className="flex items-center gap-1">
-                        <span className={compactStageTone(statuses[stage.id], active)}>
-                          {stage.compactLabel}
-                        </span>
-                        {index < stageMeta.length - 1 ? <ChevronRight className="size-3 shrink-0 text-slate-300" /> : null}
-                      </span>
-                    );
-                  })}
-                </span>
-              ) : "Collapse"}
-            </span>
-          </span>
-          <ChevronDown className={`size-4 shrink-0 text-slate-400 transition ${collapsed ? "" : "rotate-180"}`} />
-        </button>
-
-        {collapsed ? null : (
-          <>
-            <div className="mt-1 space-y-2">
-              {stageMeta.map((stage, index) => {
-                const active = selectedStage === stage.id;
-                return (
-                  <button
-                    key={stage.id}
-                    type="button"
-                    onClick={() => setActiveStage(stage.id)}
-                    className={`group flex w-full items-center gap-3 rounded-[18px] border p-3 text-left transition ${
-                      active
-                        ? "border-slate-950 bg-slate-950 text-white shadow-lg shadow-slate-950/15"
-                        : "border-slate-100 bg-slate-50 text-slate-950 hover:border-slate-200 hover:bg-white"
-                    }`}
-                  >
-                    <span className={`grid size-9 shrink-0 place-items-center rounded-full text-sm font-black ${numberTone(statuses[stage.id], active)}`}>
-                      {index + 1}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-2 text-sm font-black leading-none">
-                        {stage.icon}
-                        {stage.label}
-                      </span>
-                      <span className={`mt-1 block truncate text-[10px] font-black uppercase tracking-[0.15em] ${
-                        active ? "text-white/55" : "text-slate-400"
-                      }`}>
-                        {stage.kicker}
-                      </span>
-                    </span>
-                    <ChevronRight className={`size-4 shrink-0 ${active ? "text-white" : "text-slate-300"}`} />
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="mt-3 max-h-[320px] overflow-y-auto rounded-[20px] border border-slate-100 bg-slate-50 p-3">
-              {brickStoryboardError ? (
-                <p className="mb-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
-                  {brickStoryboardError}
-                </p>
-              ) : null}
-              {selectedStage === "song" ? (
+      <CreateAssemblyLine
+        defaultStageId={defaultStage}
+        error={brickStoryboardError}
+        stages={stageMeta.map((stage) => ({
+          ...stage,
+          status: statuses[stage.id],
+          content: stage.id === "song" ? (
                 <p className="text-xs font-bold leading-5 text-slate-600">
                   The song is the master track. Use the global Play/Add Audio button above.
                 </p>
-              ) : null}
-              {selectedStage === "scenes" ? (
+              ) : stage.id === "scenes" ? (
                 <ScenesStage
                   busy={storyboardBusy}
                   canGenerate={canGenerateBrickStoryboard && !storyboardBusy && !animating && !building && !anyShotBusy}
@@ -215,8 +124,7 @@ export function CreateBrickStoryboardSheet({
                   shots={shots}
                   storyShots={storyShots}
                 />
-              ) : null}
-              {selectedStage === "images" ? (
+              ) : stage.id === "images" ? (
                 <ImagesStage
                   anyBusy={storyboardBusy || animating || building || anyShotBusy}
                   busyIndex={brickStoryboardShotBusyIndex}
@@ -224,8 +132,7 @@ export function CreateBrickStoryboardSheet({
                   shots={shots}
                   storyShots={storyShots}
                 />
-              ) : null}
-              {selectedStage === "animation" ? (
+              ) : stage.id === "animation" ? (
                 <AnimationStage
                   allImagesReady={allImagesReady}
                   canAnimate={canAnimate}
@@ -237,8 +144,7 @@ export function CreateBrickStoryboardSheet({
                   animating={animating}
                   videoReadyCount={videoReadyCount}
                 />
-              ) : null}
-              {selectedStage === "final" ? (
+              ) : (
                 <FinalStage
                   canBuild={canBuild}
                   finalReady={finalReady}
@@ -246,11 +152,9 @@ export function CreateBrickStoryboardSheet({
                   allVideosReady={allVideosReady}
                   onBuild={onBuildBrickMusicVideo}
                 />
-              ) : null}
-            </div>
-          </>
-        )}
-      </div>
+              ),
+        }))}
+      />
     </section>
   );
 }

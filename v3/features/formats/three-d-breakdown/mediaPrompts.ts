@@ -60,13 +60,23 @@ const productionReferenceLock = (scene: ThreeDBreakdownAdScene, hasContinuityAnc
     : "No Product Master is available; preserve the approved abstract category object.",
 ].join(" "));
 
+const physicalizeEvidencePayoff = (value: string) => clean(value)
+  .replace(
+    /\b(?:one|two|three|four|five|\d+)\s+abstract\s+(?:(?:proof|progress|comparison|evidence)\s+)?(?:blocks?|tokens?|counters?|cubes?)[^.]*\.?/gi,
+    "the selected product visibly changes the customer problem through the documented mechanism. ",
+  )
+  .replace(
+    /\b(?:proof|progress|comparison|evidence)\s+(?:blocks?|tokens?|counters?|cubes?)[^.]*\.?/gi,
+    "the selected product visibly changes the customer problem through the documented mechanism. ",
+  );
+
 const framePlan = (
   scene: ThreeDBreakdownAdScene,
   frameIndex: ThreeDBreakdownStoryboardFrameIndex,
 ) => {
   const frame = scene.layout.storyboardBoard?.frames?.find((item) => item.frameIndex === frameIndex);
   if (!frame) return `FRAME ${frameIndex}: preserve the approved storyboard panel and its physical action.`;
-  return clean([
+  return physicalizeEvidencePayoff([
     `FRAME ${frameIndex} (${frame.label}).`,
     frame.visual ? `ACTION: ${promptField(frame.visual)}.` : "",
     frame.camera ? `CAMERA: ${promptField(frame.camera)}.` : "",
@@ -84,7 +94,7 @@ const frameRole = (
     2: "Make the selected hidden obstacle physically visible in the same world.",
     3: "Set up the exact product mechanism with a tactile demonstration.",
     4: `Deliver the peak ${contract.wowMomentType} reveal: ${promptField(contract.wowMoment)}. Teach: ${promptField(contract.viewerLearns)}.`,
-    5: `Turn the selected evidence into a visible payoff: ${promptField(scene.layout.groundedEvidence.text)}.`,
+    5: `Product changes the problem: ${promptField(scene.layout.groundedEvidence.text)}. Proof text is overlay only.`,
     6: "Resolve to the selected product with the same demonstrator's torso or hands completing a clear buyer-action setup; never end on a lonely product, empty stage, abstract mechanism, or logo card.",
   };
   return roles[frameIndex];
@@ -133,14 +143,6 @@ const makeWellnessMotionPromptProviderSafe = (value: string) => value
   .replace(/\btissue\b/gi, "fiber layers")
   .replace(/\bknot\b/gi, "tight fiber bundle")
   .replace(/\bmuscle\b/gi, "elastic fiber model");
-
-const makeMotionPromptPixelSafe = (value: string) => value
-  .replace(/\bprogress blocks\b/gi, "plain metallic blocks")
-  .replace(
-    /\bshowing faster prep time versus one block for cold massage\b/gi,
-    "beside one contrasting metallic block, conveying the comparison through stacking and scale only",
-  )
-  .replace(/\bproof blocks\b/gi, "metallic comparison blocks");
 
 export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
   const plans = ([1, 2, 3, 4, 5, 6] as ThreeDBreakdownStoryboardFrameIndex[])
@@ -207,7 +209,7 @@ export const buildThreeDSeedancePrompt = (
   const wellnessSafetyContext = /\b(?:massage gun|gun head|muscle|tissue|knot|x-?ray)\b/i.test(rawPrompt)
     ? "SAFETY CONTEXT: benign consumer wellness product demonstration. Any fiber forms are clean educational models, not injured anatomy. No weapon use, violence, pain, injury, bodily harm, gore, or medical procedure."
     : "";
-  const prompt = makeMotionPromptPixelSafe(
+  const prompt = physicalizeEvidencePayoff(
     makeWellnessMotionPromptProviderSafe(clean([rawPrompt, wellnessSafetyContext].join(" "))),
   );
   if (prompt.length > MAX_SEEDANCE_PROMPT_CHARS) {

@@ -12,6 +12,7 @@ const rootLayoutSource = readFileSync("app/layout.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const remotionRootSource = readFileSync("remotion-entry/Root.tsx", "utf8");
 const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
+const assemblyLineSource = readFileSync("app/create/CreateAssemblyLine.tsx", "utf8");
 const threeDMediaPromptEditorSource = readFileSync("app/create/ThreeDBreakdownMediaPromptEditor.tsx", "utf8");
 const threeDScriptEditorSource = readFileSync("app/create/ThreeDBreakdownScriptEditor.tsx", "utf8");
 const brickStoryboardSheetSource = readFileSync("app/create/CreateBrickStoryboardSheet.tsx", "utf8");
@@ -312,18 +313,19 @@ assert.ok(
 	    quickActionsSource.includes("Generate the six-panel storyboard first. Stop here until it matches the reference.") &&
 	    quickActionsSource.includes("Generate anchors") &&
 	    quickActionsSource.includes("Anchors ready") &&
-	    quickActionsSource.includes("assemblyStatusLabel") &&
+	    quickActionsSource.includes('id: isPresenterStyle ? "storyboard" : "frames"') &&
+	    quickActionsSource.includes('id: "anchors"') &&
 	    quickActionsSource.includes('isPresenterStyle ? "Anchors ready" : "Frames ready"') &&
 	    quickActionsSource.includes("requiredFrames.map") &&
 	    quickActionsSource.includes("getThreeDStoryboardPrompt(storyboardBoard)") &&
 	    quickActionsSource.includes("getThreeDAnchorPrompt(frame)") &&
 	    quickActionsSource.includes('data-three-d-storyboard-frames="true"') &&
-      quickActionsSource.includes('target="storyboard"') &&
-      quickActionsSource.includes('target={`anchor-${frame.frameIndex}`}') &&
-      threeDMediaPromptEditorSource.includes("data-three-d-media-prompt-editor={target}") &&
-      threeDMediaPromptEditorSource.includes("This creative prompt will be sent with Wiggly’s safety and continuity rules.") &&
+    quickActionsSource.includes('target="storyboard"') &&
+    quickActionsSource.includes('target={`anchor-${frame.frameIndex}`}') &&
+    threeDMediaPromptEditorSource.includes("data-three-d-media-prompt-editor={target}") &&
+    threeDMediaPromptEditorSource.includes("This creative prompt will be sent with Wiggly’s safety and continuity rules.") &&
     !quickActionsSource.includes("Six-frame 3D Breakdown storyboard board"),
-  "3D Breakdown Images step must expose raw storyboard and anchor creative prompts without duplicating the full board preview.",
+  "3D Breakdown must split storyboard review and production anchors into compact editable assembly stages.",
 );
 assert.ok(
   quickActionsSource.includes('data-three-d-anchor-errors="true"') &&
@@ -339,7 +341,7 @@ assert.ok(
     quickActionsSource.includes("clipPlan.video?.status") &&
     quickActionsSource.includes("Clip {clipPlan.clipIndex}") &&
     quickActionsSource.includes("All clips ready · build the final MP4") &&
-    quickActionsSource.includes("Needs voice") &&
+	    quickActionsSource.includes('!hasVoiceover ? "Add voice" : "Build final video"') &&
     quickActionsSource.includes("onAddVoice={onOpenAudioPanel}") &&
     quickActionsSource.includes("onClick={hasVoiceover ? onBuildFinalVideo : onAddVoice}") &&
     quickActionsSource.includes("disabled={!scriptReady || !videosReady || renderBusy}") &&
@@ -410,7 +412,7 @@ assert.ok(
     threeDImagesSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("anchor-1"), v.literal("anchor-2"), v.literal("all")))') &&
     threeDImagesSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")') &&
     quickActionsSource.includes('onGenerateImages("storyboard")') &&
-    quickActionsSource.includes('data-three-d-regenerate-storyboard="true"') &&
+	    quickActionsSource.includes('data-three-d-regenerate-storyboard={storyboardBoardReady ? "true" : undefined}') &&
     quickActionsSource.includes("Regenerate storyboard") &&
     quickActionsSource.includes('onGenerateImages(clipPlan.clipIndex === 1 ? "anchor-1" : "anchor-2")') &&
     quickActionsSource.includes('data-three-d-regenerate-anchor={clipPlan.clipIndex}') &&
@@ -482,21 +484,31 @@ assert.ok(
 assert.ok(
     quickActionsSource.includes('const showBrickStoryboard = selectedFormat === "jingle"') &&
     brickStoryboardSheetSource.includes("data-music-video-assembly-card") &&
-    brickStoryboardSheetSource.includes("data-music-video-assembly-toggle") &&
-    brickStoryboardSheetSource.includes("data-music-video-assembly-compact-steps") &&
-    brickStoryboardSheetSource.includes("aria-expanded={!collapsed}") &&
-    brickStoryboardSheetSource.includes("Assembly line") &&
-    brickStoryboardSheetSource.includes("Collapse") &&
+    brickStoryboardSheetSource.includes("<CreateAssemblyLine") &&
+    quickActionsSource.includes("<CreateAssemblyLine") &&
+    quickActionsSource.includes('data-three-d-breakdown-assembly-card="true"') &&
+    assemblyLineSource.includes('data-create-assembly-line="true"') &&
+    assemblyLineSource.includes('data-create-assembly-toggle="true"') &&
+    assemblyLineSource.includes('data-create-assembly-compact-steps="true"') &&
+    assemblyLineSource.includes("aria-expanded={!collapsed}") &&
+    assemblyLineSource.includes("Assembly line") &&
+    assemblyLineSource.includes("Collapse") &&
     !brickStoryboardSheetSource.includes("Build health") &&
     brickStoryboardSheetSource.includes("Song") &&
     brickStoryboardSheetSource.includes("Scenes") &&
     brickStoryboardSheetSource.includes("Images") &&
     brickStoryboardSheetSource.includes("Animation") &&
     brickStoryboardSheetSource.includes("Final Video") &&
+    quickActionsSource.includes('label: "Script"') &&
+    quickActionsSource.includes('label: isPresenterStyle ? "Storyboard" : "Frames"') &&
+    quickActionsSource.includes('label: "Anchors"') &&
+    quickActionsSource.includes('label: "Clips"') &&
+    quickActionsSource.includes('label: "Final Video"') &&
+    !quickActionsSource.includes("const stepClass") &&
     brickStoryboardSheetSource.includes("data-brick-storyboard-animate") &&
     brickStoryboardSheetSource.includes("data-brick-storyboard-build") &&
     !quickActionsSource.includes("if (!brickStoryboard && canGenerateBrickStoryboard"),
-  "Jingle music video assembly rail must stay in the right panel and only explicit buttons may spend image/video calls.",
+  "Jingle and 3D Breakdown must share one bounded assembly rail while only explicit buttons may spend image/video calls.",
 );
 assert.ok(
   createClientSource.includes("sceneIds: nextGeneration.sceneIds") &&

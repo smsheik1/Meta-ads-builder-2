@@ -2,6 +2,8 @@
 
 import { ChevronLeft, ChevronRight, Quote, Sparkles, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { AdRenderSurface } from "@/features/render/AdRenderSurface";
+import type { JingleAdScene, VisualizerAdScene } from "@/features/scene/types";
 
 const formatSlides = [
   {
@@ -11,6 +13,14 @@ const formatSlides = [
     headline: "Show what the product does from the inside.",
     accent: "#52D6FF",
     visual: "three-d" as const,
+  },
+  {
+    id: "jingle",
+    label: "Brand Jingle",
+    eyebrow: "Make the brand memorable",
+    headline: "Turn the selling angle into a hook people can sing back.",
+    accent: "#FF7BAA",
+    visual: "jingle" as const,
   },
   {
     id: "motion-story",
@@ -86,6 +96,291 @@ const brainrotPreviewBeats = [
 
 const brainrotSecondBeatStartsAtMs = 2_748;
 const brainrotPreviewDurationMs = 6_910;
+const jinglePreviewDurationMs = 23_796;
+
+const visualizerPreviewScene: VisualizerAdScene = {
+  version: 1,
+  format: "visualizer",
+  brand: {
+    name: "Wiggly",
+    url: "https://wiggly.agentenamel.com",
+    host: "wiggly.agentenamel.com",
+    title: "Wiggly",
+    description: "Ads without the hard part.",
+    faviconUrl: null,
+    logoUrl: "/wiggly-wordmark-3d-crop.png",
+    ogImageUrl: null,
+    screenshotUrl: null,
+    colors: ["#52D6FF", "#5B38D7"],
+    fonts: { feel: "sans" },
+    vibeTags: ["playful", "direct"],
+    receipts: {
+      specificClaims: [],
+      buyerMoments: [],
+      exactSiteLanguage: [],
+      namedProof: [],
+    },
+  },
+  creative: {
+    angleId: "homepage-visualizer-preview",
+    headline: "Your website has an ad hiding inside it.",
+    subheadline: "Hear the two-person Visualizer format.",
+    ctaText: "Hear it",
+    headlineType: "callout",
+    selectedPain: "Ads that look like every other ad.",
+    selectedProof: "Wiggly turns a website into ready-to-test creative.",
+  },
+  style: {
+    backgroundColor: "#FFFFFF",
+    textColor: "#080817",
+    accentColor: "#5B38D7",
+    visualizerColor: "#52D6FF",
+    fontFeel: "sans",
+    visualizer: {
+      type: "waveform-strip",
+      barCount: 24,
+      sensitivity: 1.5,
+      heightScale: 0.9,
+      baseline: 4,
+      gain: 1.7,
+      compression: 4,
+      floor: 0.08,
+      ceiling: 0.92,
+      curve: "sqrt",
+      bandFocus: "voice",
+      mirror: false,
+      splitSpeakers: true,
+    },
+  },
+  audio: {
+    status: "generated",
+    storageId: "homepage-visualizer-dialogue",
+    url: "/brainrot/homepage-dialogue.mp3",
+    mimeType: "audio/mpeg",
+    durationMs: brainrotPreviewDurationMs,
+    durationSeconds: brainrotPreviewDurationMs / 1_000,
+    transcript: "Wait. Your ads still look like everyone else's? Exactly. Wiggly turns your website into ads people actually watch.",
+    captions: [
+      { text: "Wait. Your ads still look", startMs: 0, endMs: 1_350, speaker: 1 },
+      { text: "like everyone else's?", startMs: 1_350, endMs: brainrotSecondBeatStartsAtMs, speaker: 1 },
+      { text: "Exactly. Wiggly turns your website", startMs: brainrotSecondBeatStartsAtMs, endMs: 4_750, speaker: 2 },
+      { text: "into ads people actually watch.", startMs: 4_750, endMs: brainrotPreviewDurationMs, speaker: 2 },
+    ],
+    provider: "upload",
+    model: "bundled-homepage-dialogue",
+    generatedAt: 0,
+  },
+  layout: { preset: "centered-hero" },
+  metadata: {
+    candidateIndex: 0,
+    generationBatchId: "homepage-visualizer-preview",
+    researchRunId: "homepage-visualizer-preview",
+    brandSnapshotId: "homepage-visualizer-preview",
+    model: "bundled-homepage-preview",
+    provider: "deterministic",
+    generatedAt: 0,
+  },
+};
+
+const jinglePreviewScene: JingleAdScene = {
+  version: 1,
+  format: "jingle",
+  brand: {
+    name: "David's Cookies",
+    url: "https://www.davidscookies.com",
+    host: "davidscookies.com",
+    title: "David's Cookies",
+    description: "Fresh-baked gifts delivered door to door.",
+    faviconUrl: null,
+    logoUrl: null,
+    ogImageUrl: null,
+    screenshotUrl: null,
+    colors: ["#FF315D", "#52D6FF"],
+    fonts: { feel: "sans" },
+    vibeTags: ["gifting", "playful"],
+    receipts: {
+      specificClaims: [],
+      buyerMoments: [],
+      exactSiteLanguage: [],
+      namedProof: [],
+    },
+  },
+  creative: {
+    angleId: "homepage-brand-jingle-preview",
+    headline: "When the gift gotta hit, not just any way",
+    subheadline: "Fresh-baked gifting without the guesswork.",
+    ctaText: "Send a gift",
+    headlineType: "callout",
+    selectedPain: "Guessing what gift will actually land.",
+    selectedProof: "Fresh-baked cookies delivered door to door.",
+  },
+  style: {
+    backgroundColor: "#07111F",
+    textColor: "#FFFFFF",
+    accentColor: "#FF315D",
+    fontFeel: "sans",
+  },
+  audio: {
+    status: "generated",
+    storageId: "homepage-davids-cookies-jingle",
+    url: "/homepage/davids-cookies-brand-jingle.mp3",
+    mimeType: "audio/mpeg",
+    durationMs: jinglePreviewDurationMs,
+    durationSeconds: jinglePreviewDurationMs / 1_000,
+    transcript: "When the gift gotta hit, not just any way. Okay David's Cookies, we sendin' love your way. No more guessin' what they want. No more gas station runs. Fresh-baked, door to door. Yeah, we get it done.",
+    captions: [
+      { text: "When the gift gotta hit, not just any way", startMs: 0, endMs: 3_900 },
+      { text: "Okay David's Cookies, we sendin' love your way", startMs: 3_900, endMs: 8_000 },
+      { text: "No more guessin' what they want", startMs: 8_000, endMs: 11_400 },
+      { text: "No more gas station runs", startMs: 11_400, endMs: 14_700 },
+      { text: "Fresh-baked, door to door", startMs: 14_700, endMs: 19_000 },
+      { text: "Yeah, we get it done", startMs: 19_000, endMs: jinglePreviewDurationMs },
+    ],
+    provider: "upload",
+    model: "bundled-davids-cookies-jingle",
+    generatedAt: 0,
+  },
+  layout: {
+    preset: "jingle-lyrics",
+    brandPhonetic: "David's Cookies",
+    angle: "A memorable answer to last-minute gifting",
+    lyrics: [
+      "When the gift gotta hit, not just any way",
+      "Okay David's Cookies, we sendin' love your way",
+      "Fresh-baked, door to door, yeah, we get it done",
+    ],
+    musicLengthMs: jinglePreviewDurationMs,
+    compositionPlan: {
+      chunks: [
+        { text: "When the gift gotta hit", duration_ms: 7_932, positive_styles: ["modern hip hop"], negative_styles: ["corporate"], context_adherence: "high" },
+        { text: "David's Cookies sends love", duration_ms: 7_932, positive_styles: ["catchy hook"], negative_styles: ["generic"], context_adherence: "high" },
+        { text: "Fresh-baked, door to door", duration_ms: 7_932, positive_styles: ["confident finish"], negative_styles: ["spoken word"], context_adherence: "high" },
+      ],
+    },
+    selfCheckPassed: "Real bundled Wiggly brand-jingle output.",
+  },
+  metadata: {
+    candidateIndex: 0,
+    generationBatchId: "homepage-brand-jingle-preview",
+    researchRunId: "homepage-brand-jingle-preview",
+    brandSnapshotId: "homepage-brand-jingle-preview",
+    model: "bundled-homepage-preview",
+    provider: "deterministic",
+    generatedAt: 0,
+  },
+};
+
+function VisualizerArtwork() {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [soundOn, setSoundOn] = useState(false);
+  const [timeSeconds, setTimeSeconds] = useState(0);
+
+  const toggleSound = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (soundOn) {
+      audio.pause();
+      setSoundOn(false);
+      return;
+    }
+
+    try {
+      await audio.play();
+      setSoundOn(true);
+    } catch {
+      setSoundOn(false);
+    }
+  };
+
+  return (
+    <div className="relative h-full overflow-hidden bg-white">
+      <audio
+        ref={audioRef}
+        src="/brainrot/homepage-dialogue.mp3"
+        preload="metadata"
+        loop
+        onTimeUpdate={(event) => setTimeSeconds(event.currentTarget.currentTime)}
+        onPause={() => setSoundOn(false)}
+        onPlay={() => setSoundOn(true)}
+      />
+      <AdRenderSurface
+        scene={visualizerPreviewScene}
+        timeSeconds={timeSeconds}
+        motionMode={soundOn ? "auto" : "idle"}
+      />
+      <button
+        type="button"
+        onClick={toggleSound}
+        aria-pressed={soundOn}
+        aria-label={soundOn ? "Mute Visualizer conversation" : "Play Visualizer conversation"}
+        className="absolute right-3 top-3 z-20 grid size-10 place-items-center rounded-full border-2 border-[#080817] bg-white text-[#080817] shadow-[3px_3px_0_#080817] transition hover:-translate-y-0.5"
+        title={soundOn ? "Mute conversation" : "Hear the conversation"}
+      >
+        {soundOn ? <VolumeX className="size-5" strokeWidth={3} /> : <Volume2 className="size-5" strokeWidth={3} />}
+      </button>
+    </div>
+  );
+}
+
+function JingleArtwork() {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [soundOn, setSoundOn] = useState(false);
+  const [timeSeconds, setTimeSeconds] = useState(0);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return undefined;
+    audio.muted = true;
+    void audio.play().catch(() => undefined);
+    return () => audio.pause();
+  }, []);
+
+  const toggleSound = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (soundOn) {
+      audio.muted = true;
+      setSoundOn(false);
+      return;
+    }
+
+    audio.muted = false;
+    try {
+      await audio.play();
+      setSoundOn(true);
+    } catch {
+      audio.muted = true;
+      setSoundOn(false);
+    }
+  };
+
+  return (
+    <div className="relative h-full overflow-hidden bg-[#07111F]">
+      <audio
+        ref={audioRef}
+        src="/homepage/davids-cookies-brand-jingle.mp3"
+        autoPlay
+        muted
+        loop
+        preload="metadata"
+        onTimeUpdate={(event) => setTimeSeconds(event.currentTarget.currentTime)}
+      />
+      <AdRenderSurface scene={jinglePreviewScene} timeSeconds={timeSeconds} />
+      <button
+        type="button"
+        onClick={toggleSound}
+        aria-pressed={soundOn}
+        aria-label={soundOn ? "Mute brand jingle" : "Unmute brand jingle"}
+        className="absolute right-3 top-3 z-20 grid size-10 place-items-center rounded-full border-2 border-[#080817] bg-white text-[#080817] shadow-[3px_3px_0_#080817] transition hover:-translate-y-0.5"
+        title={soundOn ? "Mute brand jingle" : "Hear the brand jingle"}
+      >
+        {soundOn ? <VolumeX className="size-5" strokeWidth={3} /> : <Volume2 className="size-5" strokeWidth={3} />}
+      </button>
+    </div>
+  );
+}
 
 function BrainrotArtwork() {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -191,12 +486,22 @@ function BrainrotArtwork() {
 function FormatArtwork({ slide }: { slide: FormatSlide }) {
   if (slide.visual === "three-d") {
     return (
-      <img
-        src="/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v7.jpg"
-        alt="Six-frame 3D Breakdown storyboard"
+      <video
+        src="/homepage/three-d-breakdown-showcase.mp4"
+        poster="/homepage/three-d-breakdown-showcase-poster.jpg"
         className="h-full w-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        aria-label="Compilation of Wiggly 3D Breakdown ads"
       />
     );
+  }
+
+  if (slide.visual === "jingle") {
+    return <JingleArtwork />;
   }
 
   if (slide.visual === "motion") {
@@ -271,24 +576,7 @@ function FormatArtwork({ slide }: { slide: FormatSlide }) {
   }
 
   if (slide.visual === "visualizer") {
-    return (
-      <div className="flex h-full flex-col items-center justify-center bg-white px-8 text-[#080817]">
-        <img src="/wiggly-wordmark-3d-crop.png" alt="Wiggly" className="w-52" />
-        <div className="mt-12 flex h-32 items-center justify-center gap-2">
-          {Array.from({ length: 17 }).map((_, index) => (
-            <span
-              key={index}
-              className="wiggly-format-wave block w-2 rounded-full bg-[#52D6FF]"
-              style={{
-                height: `${24 + ((index * 23) % 88)}px`,
-                animationDelay: `${index * 65}ms`,
-              }}
-            />
-          ))}
-        </div>
-        <p className="mt-9 text-center text-2xl font-black leading-tight">Voice, captions, and motion in one clean story.</p>
-      </div>
-    );
+    return <VisualizerArtwork />;
   }
 
   return <BrainrotArtwork />;
@@ -298,6 +586,13 @@ export function WaitlistFormatCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const slide = formatSlides[activeIndex];
+  const compactFooterCopy = slide.visual === "three-d"
+    ? "Real Wiggly-generated 3D ad highlights."
+    : slide.visual === "jingle"
+      ? "Tap the sound button to hear the jingle."
+      : slide.visual === "visualizer"
+        ? "Tap the sound button to hear both voices."
+        : null;
 
   useEffect(() => {
     if (paused) return undefined;
@@ -322,8 +617,7 @@ export function WaitlistFormatCarousel() {
     >
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#626b82]">One URL, many ways in</p>
-          <p className="mt-1 text-xl font-black text-[#080817]">Pick the format that fits the angle.</p>
+          <p className="text-xl font-black text-[#080817]">Pick the format that fits the angle.</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <button
@@ -350,22 +644,34 @@ export function WaitlistFormatCarousel() {
       <div className="relative mx-auto aspect-[9/16] w-[315px] overflow-hidden rounded-lg border-2 border-[#080817] bg-[#080817] shadow-[12px_14px_0_#080817] sm:w-[350px] lg:w-[275px] xl:w-[310px] 2xl:w-[360px]">
         <div key={slide.id} className="wiggly-format-slide absolute inset-0">
           <FormatArtwork slide={slide} />
-          <div className="absolute inset-x-0 bottom-0 border-t border-white/15 bg-[#080817]/96 p-5 text-white backdrop-blur-sm">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: slide.accent }}>
-                {slide.label}
-              </p>
-              {"status" in slide ? (
-                <span className="rounded-full border border-white/20 bg-white/10 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-white">
-                  {slide.status}
-                </span>
-              ) : (
+          {compactFooterCopy ? (
+            <div className="absolute inset-x-0 bottom-0 border-t border-white/15 bg-[#080817]/96 px-4 py-3 text-white backdrop-blur-sm">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: slide.accent }}>
+                  {slide.label}
+                </p>
                 <span className="size-2 rounded-full" style={{ backgroundColor: slide.accent }} />
-              )}
+              </div>
+              <p className="mt-1 text-xs font-bold text-white/70">{compactFooterCopy}</p>
             </div>
-            <p className="mt-2 text-[10px] font-black uppercase tracking-[0.17em] text-white/55">{slide.eyebrow}</p>
-            <h2 className="mt-2 text-2xl font-black leading-[1.05] tracking-normal">{slide.headline}</h2>
-          </div>
+          ) : (
+            <div className="absolute inset-x-0 bottom-0 border-t border-white/15 bg-[#080817]/96 p-5 text-white backdrop-blur-sm">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: slide.accent }}>
+                  {slide.label}
+                </p>
+                {"status" in slide ? (
+                  <span className="rounded-full border border-white/20 bg-white/10 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-white">
+                    {slide.status}
+                  </span>
+                ) : (
+                  <span className="size-2 rounded-full" style={{ backgroundColor: slide.accent }} />
+                )}
+              </div>
+              <p className="mt-2 text-[10px] font-black uppercase tracking-[0.17em] text-white/55">{slide.eyebrow}</p>
+              <h2 className="mt-2 text-2xl font-black leading-[1.05] tracking-normal">{slide.headline}</h2>
+            </div>
+          )}
         </div>
       </div>
 

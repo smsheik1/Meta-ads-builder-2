@@ -25,6 +25,7 @@ import {
   THREE_D_BREAKDOWN_MAX_TOKENS,
   THREE_D_BREAKDOWN_DURATION_MS,
   THREE_D_BREAKDOWN_VARIANT_COUNT,
+  THREE_D_REVEAL_PATTERNS,
   THREE_D_SCRIPT_BEATS,
 } from "../features/formats/three-d-breakdown/prompt";
 import { THREE_D_STORYBOARD_FRAME_CONTRACTS } from "../features/formats/three-d-breakdown/storyboardContracts";
@@ -614,6 +615,14 @@ assert.ok(styleBScriptPrompt.includes("43-58 words before the CTA"));
 assert.ok(styleBScriptPrompt.includes("Wiggly adds the website CTA as the fifth beat"));
 assert.ok(!styleBScriptPrompt.includes('"ctaLine"'));
 assert.ok(styleBScriptPrompt.includes("Only evidence text authorizes product facts"));
+assert.ok(styleBScriptPrompt.includes("Narration states the real human truth"));
+assert.ok(styleBScriptPrompt.includes("Never narrate an abstract visual metaphor as if it literally happened"));
+assert.ok(styleBScriptPrompt.includes("Plain-spoken pass"));
+assert.ok(styleBScriptPrompt.includes("State evidence directly"));
+assert.ok(styleBScriptPrompt.includes("save those actions for visualMetaphor and wowMoment"));
+assert.ok(styleBScriptPrompt.includes("Do not call proof obvious, undeniable, safe, trusted, or perfect"));
+assert.ok(styleBScriptPrompt.includes("Buyer moments can frame the hook, but they are not proof"));
+assert.ok(styleBScriptPrompt.includes("Silently read the narration aloud"));
 assert.ok(styleBScriptPrompt.includes("tell an origin"));
 assert.ok(styleBScriptPrompt.includes("expose an industry fact"));
 assert.ok(styleBScriptPrompt.includes("launch something new"));
@@ -652,9 +661,9 @@ const makeStoryboardFrames = (): StoryboardFrames => [
     frameIndex: 2,
     role: "escalation",
     label: "Escalation",
-    visual: "The camera dives toward the table gap as blank proof tokens hover where a reaction should be.",
-    camera: "Fast punch-in from tabletop to miniature proof space.",
-    motion: "Tokens drift apart and expose the hidden occasion pressure.",
+    visual: "The camera dives toward the empty table gap as guest hands stop short of the unfinished place setting.",
+    camera: "Fast punch-in from tabletop to the empty place setting.",
+    motion: "Guest hands pause and expose the hidden occasion pressure.",
     overlayText: "The gap shows",
     editingNote: "Make the hidden social pressure visible without text in the image.",
   },
@@ -664,7 +673,7 @@ const makeStoryboardFrames = (): StoryboardFrames => [
     label: "Mechanism setup",
     visual: "Hands open the red tin and cookie pieces become the center of a small practical product teardown.",
     camera: "Macro tabletop close-up with the tin anchored in frame.",
-    motion: "Lid lifts, cookie pieces settle, and proof tokens begin forming a ring.",
+    motion: "Lid lifts and warm cookie pieces spread toward the empty place setting.",
     overlayText: "Tin opens",
     editingNote: "This is the product detail setup before the impossible reveal.",
   },
@@ -672,9 +681,9 @@ const makeStoryboardFrames = (): StoryboardFrames => [
     frameIndex: 4,
     role: "wow-reveal",
     label: "Wow reveal",
-    visual: "Proof blocks assemble in midair around the cookie tin and lock the empty table gap closed.",
-    camera: "Impossible macro cutaway orbit around the tin and floating proof blocks.",
-    motion: "Blocks snap together, then the table gap visibly collapses.",
+    visual: "The open cookie tin unfolds into a miniature serving route that carries warm cookies into the empty place setting.",
+    camera: "Impossible macro cutaway orbit around the tin and moving cookie route.",
+    motion: "The route unfolds, cookies travel across it, and the empty table gap closes.",
     overlayText: "Proof locks in",
     editingNote: "Peak impossible-to-film reveal with the tin still central.",
   },
@@ -682,9 +691,9 @@ const makeStoryboardFrames = (): StoryboardFrames => [
     frameIndex: 5,
     role: "payoff",
     label: "Evidence payoff",
-    visual: "The product returns to a practical table moment with cookies shared and blank proof tokens settled nearby.",
+    visual: "The product returns to a practical table moment as guests reach into the open tin and share the cookies.",
     camera: "Warm overhead product-use shot returning from the cutaway.",
-    motion: "Tokens land softly while hands move cookies toward guests.",
+    motion: "Hands move cookies toward guests and the unfinished place setting becomes active.",
     overlayText: "Handled",
     editingNote: "Connect the proof to a real payoff, not a logo card.",
   },
@@ -692,7 +701,7 @@ const makeStoryboardFrames = (): StoryboardFrames => [
     frameIndex: 6,
     role: "final-state",
     label: "Final state",
-    visual: "Clean final hand-demo frame with the red tin open, cookies visible, and blank overlay-safe tokens nearby.",
+    visual: "Clean final hand-demo frame with the red tin open, cookies visible, and a guest reaching for one.",
     camera: "Locked final product shot with enough room for renderer overlays.",
     motion: "Hands stop, product holds, and the final frame feels ready for CTA.",
     overlayText: "Send the gift",
@@ -716,8 +725,8 @@ const makeVariant = ({
   visualMetaphor = "empty gift table becomes proof-backed gift table",
   evidenceIndex = reviewEvidence.evidenceIndex,
   evidenceUseType = reviewEvidence.evidenceUseType,
-  wowMomentType = "proof-blocks",
-  wowMoment = "Proof blocks assemble around the cookie tin as it fills the empty gift spot.",
+  wowMomentType = "impact-chain",
+  wowMoment = "The cookie tin unfolds into a serving route that carries warm cookies into the empty gift spot.",
   viewerLearns = "The gift works because buyers describe fast delivery and homemade taste.",
   context = "Everyone said it was fine, but the table still looked unfinished.",
   mechanism = "Then a David's Cookies tin showed up, ready to open and share.",
@@ -768,20 +777,20 @@ const makeVariant = ({
       shotIndex: 2,
       role: "mechanism",
       captionText: "The cookie tin solves the moment.",
-      sceneDescription: "Proof-blocks mechanism in the miniature red gift table diorama assembles around the red cookie tin.",
-      explainerDevice: "Proof-blocks mechanism diagram",
-      physicalAction: "Proof blocks assemble and lock around the red cookie tin.",
-      imagePrompt: "Cinematic 3D explainer render of proof blocks assembling around a red cookie tin inside the miniature red gift table diorama, cinematic product lighting.",
+      sceneDescription: "An impact-chain serving route unfolds from the red cookie tin across the miniature gift table.",
+      explainerDevice: "Impact-chain serving route",
+      physicalAction: "The route unfolds and warm cookies travel into the empty place setting.",
+      imagePrompt: "Cinematic 3D explainer render of a serving route unfolding from a red cookie tin inside the miniature red gift table diorama, cinematic product lighting.",
       animationPrompt: "The red tin slides into place and stops cleanly.",
     },
     {
       shotIndex: 3,
       role: "revelation",
       captionText: "Fresh cookies tasted homemade.",
-      sceneDescription: "Miniature red gift table diorama cutaway shows warm cookies inside the red cookie tin as proof blocks settle.",
+      sceneDescription: "Miniature red gift table diorama cutaway shows warm cookies shared from the open red cookie tin.",
       explainerDevice: "Cutaway proof payoff",
       physicalAction: "Steam curls above the cookies while the proof payoff glows.",
-      imagePrompt: "Cinematic 3D cutaway of fresh cookies inside a red tin in the miniature red gift table diorama, warm steam, proof blocks, no captions, no realistic faces.",
+      imagePrompt: "Cinematic 3D cutaway of fresh cookies shared from a red tin in the miniature red gift table diorama, warm steam, no captions, no realistic faces.",
       animationPrompt: "Steam rises once from the cookies while the tin lid opens slightly.",
     },
   ],
@@ -800,12 +809,12 @@ const variantsPayload = {
       visualStyle: "presenter-teardown-vsl",
       variantAngle: "nationwide gift shipping",
       customerProblem: "sending thoughtful gifts across distance",
-      mechanismSummary: "cookie tin proof blocks cross the map",
-      visualMetaphor: "proof blocks travel across a miniature map",
+      mechanismSummary: "a cookie delivery route crosses the map",
+      visualMetaphor: "warm cookies travel across a miniature route",
       evidenceIndex: reviewEvidence.evidenceIndex,
       evidenceUseType: reviewEvidence.evidenceUseType,
-      wowMomentType: "proof-blocks",
-      wowMoment: "Proof blocks travel with the red cookie tin from bakery door to a distant gift table.",
+      wowMomentType: "impact-chain",
+      wowMoment: "A miniature delivery route carries the red cookie tin from bakery door to a distant gift table.",
       viewerLearns: "The gift still works across distance because buyers describe fast arrival and homemade taste.",
       consequence: "When the thank-you gift had nowhere local to go, the table stayed empty.",
       revelation: "More than 1,500 buyers rate David's Cookies 4.6 stars.",
@@ -826,10 +835,10 @@ const makeStoryDirection = (index: number, overrides: Record<string, unknown> = 
   category: index % 2 === 0 ? "Proof reveal" : "Customer tension",
   whyCompelling: "It turns a normal dessert gift into a visible anxiety-and-proof story.",
   adAngle: "A gift has to feel remembered, not merely delivered.",
-  visualEngine: "Proof blocks travel with the red tin and lock into the empty gift spot.",
+  visualEngine: "A miniature route carries the red tin into the empty gift spot as guests reach for cookies.",
   evidenceIndex: reviewEvidence.evidenceIndex,
   evidenceUseType: reviewEvidence.evidenceUseType,
-  possibleRevealPatterns: ["proof-blocks", "impact-chain"],
+  possibleRevealPatterns: ["impact-chain", "before-after-reconstruction"],
   ...overrides,
 });
 
@@ -843,12 +852,12 @@ const styleBScriptPlanPayload = (overrides: Record<string, unknown> = {}) => {
     visualStyle: "presenter-teardown-vsl",
     variantAngle: "nationwide gift shipping",
     customerProblem: "sending thoughtful gifts across distance",
-    mechanismSummary: "cookie tin proof blocks cross the map",
-    visualMetaphor: "proof blocks travel across a miniature map",
+    mechanismSummary: "a cookie delivery route crosses the map",
+    visualMetaphor: "warm cookies travel across a miniature route",
     evidenceIndex: reviewEvidence.evidenceIndex,
     evidenceUseType: reviewEvidence.evidenceUseType,
-    wowMomentType: "proof-blocks",
-    wowMoment: "Proof blocks travel with the red cookie tin from bakery door to a distant gift table.",
+    wowMomentType: "impact-chain",
+    wowMoment: "A miniature delivery route carries the red cookie tin from bakery door to a distant gift table.",
     viewerLearns: "The gift still works across distance because buyers describe fast arrival and homemade taste.",
   });
   return {
@@ -1011,7 +1020,9 @@ assert.equal(storySlateCalls, 1);
 assert.equal(storySlate.directions.length, 5);
 assert.equal(storySlate.recommendedDirectionId, "idea-1");
 assert.equal(storySlate.directions[0]?.evidenceUseType, reviewEvidence.evidenceUseType);
-assert.ok(storySlate.directions[0]?.visualEngine.includes("Proof blocks"));
+assert.ok(storySlate.directions[0]?.visualEngine.includes("miniature route"));
+assert.ok(!(THREE_D_REVEAL_PATTERNS as readonly string[]).includes("proof-blocks"));
+assert.ok(evidenceItems.every((item) => !item.possibleRevealPatterns.includes("proof-blocks")));
 
 let deliveryTensionStorySlateCalls = 0;
 await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
@@ -1304,15 +1315,15 @@ assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("character
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("clean product payoff"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("visible subject, object, and physical action"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("No words, letters, numbers, percentages, ratings"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("blank physical tokens, unmarked blocks, unlabeled counters"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("checkmarks, X marks"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("plain geometric tokens"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("keep it in overlayText metadata"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Never visualize evidence as abstract blocks"));
 assert.equal(generated.variants[0]?.storyboardBoard.frames?.length, 6);
 assert.equal(generated.variants[0]?.storyboardBoard.frames?.[0]?.visual, "Hands place a red cookie tin beside an empty birthday table setting while the gift spot feels unresolved.");
 assert.equal(generated.variants[0]?.storyboardBoard.frames?.[3]?.role, "wow-reveal");
-assert.equal(generated.variants[0]?.storyboardBoard.frames?.[3]?.motion, "Blocks snap together, then the table gap visibly collapses.");
+assert.equal(generated.variants[0]?.storyboardBoard.frames?.[3]?.motion, "The route unfolds, cookies travel across it, and the empty table gap closes.");
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Internal reading-order still plan to preserve"));
-assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("visual Proof blocks assemble"));
+assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("visual The open cookie tin unfolds"));
 assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("Visual beat 4"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("internal instructions only"));
 assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("overlay metadata only"));
@@ -1361,6 +1372,12 @@ await assert.rejects(
   /quoted readable text/,
 );
 
+const abstractProofFrames = makeStoryboardFrames()!;
+abstractProofFrames[4] = {
+  ...abstractProofFrames[4]!,
+  visual: "Three abstract progress blocks lock into place beside the product to represent 3x faster prep.",
+  motion: "The progress blocks stack and lock while the product stays still.",
+};
 await assert.rejects(
   () => generateThreeDBreakdownVariantsFromResearch(research, {
     count: 1,
@@ -1369,7 +1386,23 @@ await assert.rejects(
       ...makeVariant(),
       storyboardBoard: {
         frameCount: 6,
-        imagePrompt: "Six distinct vertical production keyframes with red cookie tin proof blocks.",
+        imagePrompt: "Six vertical production keyframes with a physical product payoff.",
+        frames: abstractProofFrames,
+      },
+    }])),
+  }),
+  /uses abstract proof props instead of a physical product payoff/,
+);
+
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([{
+      ...makeVariant(),
+      storyboardBoard: {
+        frameCount: 6,
+        imagePrompt: "Six distinct vertical production keyframes with a red cookie tin serving route.",
       },
     }])),
   }),
@@ -1495,7 +1528,7 @@ const compactNearMissVariant = makeVariant();
 compactNearMissVariant.scriptBeats = [
   { role: "consequence", narration: "The gift table had one empty spot.", startMs: 0, endMs: 3000 },
   { role: "context", narration: "The backup box looked late.", startMs: 3000, endMs: 8000 },
-  { role: "mechanism", narration: "A red cookie tin slides in as proof blocks lock around it.", startMs: 8000, endMs: 13000 },
+  { role: "mechanism", narration: "A red cookie tin slides in and opens into a serving route.", startMs: 8000, endMs: 13000 },
   { role: "revelation", narration: "Fresh cookies arrived fast. Buyers said they tasted homemade.", startMs: 13000, endMs: 18000 },
   { role: "punchline", narration: "The backup gift becomes remembered.", startMs: 18000, endMs: 20000 },
 ];
@@ -1891,7 +1924,7 @@ assert.ok(scene.layout.clipPlans?.[0]?.prompt.includes("Hands place a red cookie
 assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("Start from storyboard frame 4"));
 assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("unified evidence/payoff state from frame 5"));
 assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("without using a split-screen comparison"));
-assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("Proof blocks assemble in midair around the cookie tin"));
+assert.ok(scene.layout.clipPlans?.[2]?.prompt.includes("serving route that carries warm cookies"));
 assert.ok(scene.layout.clipPlans?.[3]?.prompt.includes("clean product payoff composition"));
 assert.ok(scene.layout.clipPlans?.[3]?.prompt.includes("Clean final hand-demo frame"));
 assert.deepEqual(scene.layout.clipPlans?.map((clip) => clip.video?.status), ["idle", "idle", "idle", "idle"]);
@@ -1964,12 +1997,12 @@ assert.ok(!cookieBoardPrompt.includes("SUPPLEMENT ROUTINE STORY"));
 assert.ok(!cookieBoardPrompt.includes("SUPPLEMENT BODY-ROUTE STORY"));
 assert.ok(!cookieBoardPrompt.includes("EDIT INTENT"));
 assert.ok(cookieBoardPrompt.includes("PIXEL TEXT BAN"));
-assert.ok(cookieBoardPrompt.length < 6000);
+assert.ok(cookieBoardPrompt.length < 6000, `Storyboard prompt grew to ${cookieBoardPrompt.length} characters.`);
 assert.ok(cookieAnchorPrompt.includes("recreate panel 4"));
 assert.ok(cookieAnchorPrompt.includes("image 1 is the approved panel"));
 assert.ok(cookieAnchorPrompt.includes("image 2 is the preceding anchor"));
 assert.ok(cookieAnchorPrompt.includes("image 3 is the PRODUCT MASTER"));
-assert.ok(cookieAnchorPrompt.includes("Proof blocks assemble in midair around the cookie tin"));
+assert.ok(cookieAnchorPrompt.includes("serving route that carries warm cookies"));
 assert.ok(cookieAnchorPrompt.includes("APPROVED ANCHOR CREATIVE PROMPT:"));
 assert.ok(cookieAnchorPrompt.includes("ONE full-frame vertical 9:16 production keyframe"));
 assert.ok(cookieAnchorPrompt.length < 3500);
@@ -1986,11 +2019,10 @@ assert.ok(wellnessClipPrompt.includes("handheld percussion attachment"));
 assert.ok(wellnessClipPrompt.includes("transparent cutaway"));
 assert.ok(wellnessClipPrompt.includes("moving through stylized elastic fibers"));
 assert.ok(wellnessClipPrompt.includes("tight fiber bundle loosens and opens"));
-assert.ok(wellnessClipPrompt.includes("plain metallic blocks lock into place beside one contrasting metallic block"));
-assert.ok(wellnessClipPrompt.includes("metallic comparison blocks remain visible"));
+assert.ok(wellnessClipPrompt.includes("selected product visibly changes the customer problem through the documented mechanism"));
 assert.ok(wellnessClipPrompt.includes("Never visualize a claim as a headline"));
 assert.ok(wellnessClipPrompt.includes("benign consumer wellness product demonstration"));
-assert.doesNotMatch(wellnessClipPrompt, /\b(?:massage gun|gun head|muscle|tissue|knot|x-?ray|penetrating|dissolves?|faster prep time|proof blocks)\b/i);
+assert.doesNotMatch(wellnessClipPrompt, /\b(?:massage gun|gun head|muscle|tissue|knot|x-?ray|penetrating|dissolves?|faster prep time|proof blocks|progress blocks|metallic blocks|comparison blocks)\b/i);
 assert.ok(!cookieClipPrompt.includes("SUPPLEMENT ROUTINE STORY"));
 assert.ok(!cookieClipPrompt.includes("SUPPLEMENT BODY-ROUTE STORY"));
 const supplementScene = {
@@ -2064,7 +2096,7 @@ assert.ok(gadgetBoardPrompt.includes("TwistEase steel jar opener"));
 assert.ok(!gadgetBoardPrompt.includes("SUPPLEMENT ROUTINE STORY"));
 assert.ok(!gadgetBoardPrompt.includes("SUPPLEMENT BODY-ROUTE STORY"));
 assert.equal(getRenderMusicBed(scene), null, "3D Breakdown exports should use voiceover only, no background music bed.");
-assert.equal(scene.layout.storyContract.wowMomentType, "proof-blocks");
+assert.equal(scene.layout.storyContract.wowMomentType, "impact-chain");
 assert.equal(scene.layout.storyContract.visualStyle, "toy-character-vsl");
 assert.equal(scene.creative.ctaText, "Shop memorable cookie gifts from David's Cookies.");
 assert.equal(scene.layout.storyContract.ctaLine, "Shop memorable cookie gifts from David's Cookies.");
@@ -2312,10 +2344,7 @@ const editedScriptScene = editThreeDBreakdownScriptBeat({
   },
   layout: {
     ...styleBScene.layout,
-    finalVideo: {
-      status: "ready",
-      url: "https://cdn.example/old-final.mp4",
-    },
+    finalVideo: { status: "ready", url: "https://cdn.example/old-final.mp4" },
   },
 }, 2, "The warm attachment reaches the muscle instead of bouncing off the surface.");
 assert.equal(editedScriptScene.layout.scriptBeats[2].narration, "The warm attachment reaches the muscle instead of bouncing off the surface.");

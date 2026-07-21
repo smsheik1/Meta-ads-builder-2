@@ -3,8 +3,10 @@ import {
   AudioLines,
   BookmarkPlus,
   Check,
+  Clapperboard,
   Download,
   ExternalLink,
+  FileText,
   Film,
   Image as ImageIcon,
   Loader2,
@@ -30,6 +32,7 @@ import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
 import { getThreeDAnchorPrompt, getThreeDStoryboardPrompt, type ThreeDBreakdownMediaPromptTarget } from "@/features/formats/three-d-breakdown/editablePrompts";
 import type { ThreeDBreakdownStoryDirection } from "@/features/formats/three-d-breakdown/storyDirections";
 import type { AdFormatId, ThreeDBreakdownAdScene, ThreeDBreakdownClipIndex } from "@/features/scene/types";
+import { CreateAssemblyLine, type CreateAssemblyStageStatus } from "./CreateAssemblyLine";
 import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
 import { ThreeDBreakdownMediaPromptEditor } from "./ThreeDBreakdownMediaPromptEditor";
 import { ThreeDBreakdownScriptEditor } from "./ThreeDBreakdownScriptEditor";
@@ -41,6 +44,9 @@ const formatSavedDate = (timestamp: number) => new Intl.DateTimeFormat("en", {
   month: "short",
   day: "numeric",
 }).format(new Date(timestamp));
+
+const getAssemblyStageStatus = (ready: boolean, failed: boolean, building: boolean): CreateAssemblyStageStatus =>
+  ready ? "ready" : failed ? "failed" : building ? "building" : "needs";
 
 export function CreateQuickActions({
   currentRenderStatus,
@@ -536,13 +542,6 @@ function ThreeDBreakdownStoryDirectionsCard({
   );
 }
 
-function statusPill(status: BrickStoryboardStatus) {
-  if (status === "ready") return "Ready";
-  if (status === "loading") return "Building";
-  if (status === "error") return "Failed";
-  return "Needs work";
-}
-
 function ThreeDBreakdownAssemblyCard({
   animationStatus,
   currentRenderStatus,
@@ -601,15 +600,7 @@ function ThreeDBreakdownAssemblyCard({
   const storyboardPrompt = storyboardBoard ? getThreeDStoryboardPrompt(storyboardBoard) : "";
   const storyboardPromptReady = Boolean(storyboardPrompt.trim());
   const anchorPromptsReady = requiredFrames.length > 0 && requiredFrames.every((frame) => getThreeDAnchorPrompt(frame).trim());
-  const imageButtonLabel = imageStatus === "loading"
-    ? "Generating..."
-    : isPresenterStyle && !storyboardBoardReady
-      ? "Generate storyboard"
-      : isPresenterStyle && !framesReady
-        ? "Generate anchors"
-        : isPresenterStyle
-          ? "Anchors ready"
-        : "Generate frames";
+  const scriptReady = scene.layout.scriptBeats.every((beat) => beat.narration.trim());
   const storyboardHelperCopy = isPresenterStyle
     ? storyboardBoardReady
       ? framesReady
@@ -617,308 +608,329 @@ function ThreeDBreakdownAssemblyCard({
         : "Storyboard is ready. Generate production anchors only after the board looks right."
       : "Generate the six-panel storyboard first. Stop here until it matches the reference."
     : "Generate the production frames before animation.";
-  const scriptReady = scene.layout.scriptBeats.every((beat) => beat.narration.trim());
-  const finalStatus = !scriptReady ? "Needs script" : renderBusy ? "Building" : finalReady ? "Final ready" : !hasVoiceover ? "Needs voice" : videosReady ? "Needs MP4" : framesReady ? "Ready for Seedance" : "Needs frames";
-  const assemblyStatusLabel = videosReady
-    ? "Clips ready"
-    : framesReady
-      ? (isPresenterStyle ? "Anchors ready" : "Frames ready")
-      : scriptReady
-        ? "Script ready"
-        : "Finish script";
   const storyDirectionNumber = (scene.metadata.candidateIndex ?? 0) + 1;
-  const stepClass = "rounded-2xl border border-slate-200 bg-slate-50 p-3";
-
-  return (
-    <section className="rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/6" data-three-d-breakdown-assembly-card="true">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Assembly line</p>
-          <h3 className="mt-1 text-lg font-black text-slate-950">3D Breakdown</h3>
-          <p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">
-            Story direction {storyDirectionNumber}. Press Spacebar to compare before generating images.
-          </p>
-        </div>
-        <Badge variant="outline" className="rounded-full text-[10px] font-black uppercase">
-          {assemblyStatusLabel}
-        </Badge>
-      </div>
-
-      <div className="space-y-2">
-        <ThreeDBreakdownScriptEditor
-          disabled={scriptEditingDisabled}
-          onBeatChanged={onScriptBeatChanged}
-          scriptBeats={scene.layout.scriptBeats}
-        />
-
-        <div className={stepClass}>
-          <div className="flex items-center gap-2 text-sm font-black text-slate-950">
-            <ImageIcon className="size-4" />
-            {isPresenterStyle ? "Storyboard & anchors" : "Storyboard frames"}
-            <Badge variant="outline" className="ml-auto rounded-full text-[10px] font-black uppercase">
-              {statusPill(imageStatus)}
-            </Badge>
+  const storyboardStageStatus = getAssemblyStageStatus(
+    storyboardBoardReady,
+    storyboardBoardFailed || (!storyboardBoardReady && imageStatus === "error"),
+    !storyboardBoardReady && imageStatus === "loading",
+  );
+  const anchorsStageStatus = getAssemblyStageStatus(
+    framesReady,
+    framesFailed || (storyboardBoardReady && imageStatus === "error"),
+    imageStatus === "loading",
+  );
+  const clipsFailed = clipPlans.some((clipPlan) => clipPlan.video?.status === "failed");
+  const clipsStageStatus = getAssemblyStageStatus(
+    videosReady,
+    clipsFailed || animationStatus === "error",
+    threeDClipBusyIndex !== null || animationStatus === "loading",
+  );
+  const finalStageStatus = getAssemblyStageStatus(
+    finalReady,
+    currentRenderStatus === "failed" || currentRenderStatus === "error",
+    renderBusy,
+  );
+  const scriptContent = (
+    <div className="space-y-2">
+      <p className="text-xs font-bold leading-5 text-slate-500">
+        Story direction {storyDirectionNumber}. Press Spacebar to compare before generating images.
+      </p>
+      <ThreeDBreakdownScriptEditor
+        disabled={scriptEditingDisabled}
+        onBeatChanged={onScriptBeatChanged}
+        scriptBeats={scene.layout.scriptBeats}
+      />
+    </div>
+  );
+  const storyboardContent = (
+    <div className="space-y-3">
+      <p className="text-xs font-bold leading-5 text-slate-500">{storyboardHelperCopy}</p>
+      {storyboardBoard ? (
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-three-d-storyboard-board="true">
+          <div className="p-3">
+            <ThreeDBreakdownMediaPromptEditor
+              disabled={scriptEditingDisabled}
+              label="Storyboard creative prompt"
+              onChange={(prompt) => onMediaPromptChanged({ kind: "storyboard" }, prompt)}
+              prompt={storyboardPrompt}
+              rows={8}
+              target="storyboard"
+            />
           </div>
-          {storyboardBoard ? (
-            <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white" data-three-d-storyboard-board="true">
-              <div className="flex items-center justify-between gap-3 px-3 py-2">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Storyboard board</p>
-                  <p className="mt-0.5 text-xs font-black leading-4 text-slate-950">{storyboardHelperCopy}</p>
-                </div>
-                <Badge variant={storyboardBoardStatus === "ready" ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
-                  {storyboardBoardStatus}
-                </Badge>
-              </div>
-              <div className="px-3 pb-2">
-                <ThreeDBreakdownMediaPromptEditor
-                  disabled={scriptEditingDisabled}
-                  label="Storyboard creative prompt"
-                  onChange={(prompt) => onMediaPromptChanged({ kind: "storyboard" }, prompt)}
-                  prompt={storyboardPrompt}
-                  rows={8}
-                  target="storyboard"
-                />
-              </div>
-              {storyboardBoard.image?.url ? (
-                <img src={storyboardBoard.image.url} alt="3D Breakdown storyboard board" className="aspect-[9/16] w-full object-cover" />
-              ) : null}
+          {storyboardBoard.image?.url ? (
+            <img src={storyboardBoard.image.url} alt="3D Breakdown storyboard board" className="aspect-[9/16] w-full object-cover" />
+          ) : (
+            <div className="grid aspect-[9/16] place-items-center bg-slate-100 text-[10px] font-black uppercase tracking-[0.12em] text-slate-300">
+              {imageStatus === "loading" ? <Loader2 className="size-5 animate-spin" /> : "Storyboard pending"}
             </div>
-          ) : null}
-          {requiredFrames.length ? (
-            <div className="mt-3 grid grid-cols-2 gap-2" data-three-d-storyboard-frames="true">
-              {requiredFrames.map((frame) => {
-                const clipPlan = clipPlans.find((plan) => plan.frameIndexes[0] === frame.frameIndex);
-                const frameLabel = isPresenterStyle && clipPlan
-                  ? `Anchor ${clipPlan.clipIndex}`
-                  : `Frame ${frame.frameIndex}`;
-                const detailLabel = isPresenterStyle && clipPlan
-                  ? `Frames ${clipPlan.frameIndexes.join("-")}`
-                  : frame.label;
-                return (
-                <div key={frame.frameIndex} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                  <div className="flex items-center justify-between gap-2 px-2.5 py-2">
-                    <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">{frameLabel}</p>
-                      <p className="text-[10px] font-black leading-3 text-slate-950">{detailLabel}</p>
-                    </div>
-                    <Badge variant={frame.image?.status === "ready" ? "default" : "outline"} className="rounded-full px-2 text-[9px] font-black uppercase">
-                      {frame.image?.status || (requiredFrameIndexes.includes(frame.frameIndex) ? "idle" : "plan")}
-                    </Badge>
-                  </div>
-                  <div className="px-2.5 pb-2">
-                    <ThreeDBreakdownMediaPromptEditor
-                      disabled={scriptEditingDisabled}
-                      label={`${frameLabel} creative prompt`}
-                      onChange={(prompt) => onMediaPromptChanged({ kind: "anchor", frameIndex: frame.frameIndex }, prompt)}
-                      prompt={getThreeDAnchorPrompt(frame)}
-                      rows={5}
-                      target={`anchor-${frame.frameIndex}`}
-                    />
-                  </div>
-                  {frame.image?.url ? (
-                    <img src={frame.image.url} alt={`Storyboard frame ${frame.frameIndex}`} className="aspect-[6/7] w-full object-cover" />
-                  ) : (
-                    <div className="flex aspect-[6/7] items-center justify-center bg-slate-50 text-[10px] font-black uppercase tracking-[0.12em] text-slate-300">
-                      {frame.image?.status === "generating" ? <Loader2 className="size-4 animate-spin" /> : "Pending"}
-                    </div>
-                  )}
-                  {isPresenterStyle && frame.image?.status === "ready" && (clipPlan?.clipIndex === 1 || clipPlan?.clipIndex === 2) ? (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="h-8 w-full rounded-none border-t border-slate-200 text-[9px] font-black uppercase tracking-[0.12em] text-slate-600"
-                      onClick={() => onGenerateImages(clipPlan.clipIndex === 1 ? "anchor-1" : "anchor-2")}
-                      disabled={imageStatus === "loading" || !scriptReady || !getThreeDAnchorPrompt(frame).trim()}
-                      aria-label={`Regenerate ${frameLabel}`}
-                      data-three-d-regenerate-anchor={clipPlan.clipIndex}
-                    >
-                      <RefreshCw className="mr-1.5 size-3" />
-                      Regenerate
-                    </Button>
-                  ) : null}
-                </div>
-                );
-              })}
-            </div>
-          ) : null}
-          {storyboardBoardFailed ? (
-            <p className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
-              Storyboard generation failed. Generate the storyboard again before production anchors.
-            </p>
-          ) : framesFailed ? (
-            <div className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
-              <p>One or more production anchors failed. Generate anchors again.</p>
-              {failedFrames.length ? (
-                <div className="mt-2 space-y-1" data-three-d-anchor-errors="true">
-                  {failedFrames.map((frame) => (
-                    <p key={frame.frameIndex}>
-                      Frame {frame.frameIndex}: {frame.image?.error || "Anchor image generation failed."}
-                    </p>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-          {isPresenterStyle && storyboardBoardReady ? (
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-3 h-10 w-full rounded-2xl border-slate-300 bg-white text-xs font-black uppercase tracking-[0.12em] text-slate-700"
-              onClick={() => onGenerateImages("storyboard")}
-              disabled={imageStatus === "loading" || !scriptReady || !storyboardPromptReady}
-              data-three-d-regenerate-storyboard="true"
-            >
-              <RefreshCw className="mr-2 size-4" />
-              Regenerate storyboard
-            </Button>
-          ) : null}
-          <Button
-            type="button"
-            className="mt-3 h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
-            onClick={() => onGenerateImages()}
-            disabled={!scriptReady || !storyboardPromptReady || (storyboardBoardReady && !anchorPromptsReady) || imageStatus === "loading" || (isPresenterStyle && storyboardBoardReady && framesReady)}
-          >
-            {imageStatus === "loading" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImageIcon className="mr-2 size-4" />}
-            {imageButtonLabel}
-          </Button>
+          )}
         </div>
-
-        <div className={stepClass}>
-          <div className="flex items-center gap-2 text-sm font-black text-slate-950">
-            <Film className="size-4" />
-            Video clip plan
-            <Badge variant="outline" className="ml-auto rounded-full text-[10px] font-black uppercase">
-              {videosReady ? "Clips ready" : framesReady ? "Ready" : statusPill(animationStatus)}
-            </Badge>
-          </div>
-          <div className="mt-3 grid gap-2">
-            {clipPlans.map((clipPlan) => {
-              const clipBusy = threeDClipBusyIndex === clipPlan.clipIndex;
-              const clipReady = clipPlan.video?.status === "ready";
-              const clipFailed = clipPlan.video?.status === "failed";
-              return (
-                <div key={clipPlan.clipIndex} className="rounded-2xl border border-slate-200 bg-white p-3" data-three-d-clip-plan="true">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Clip {clipPlan.clipIndex} · {clipPlan.durationSeconds}s</p>
-                    <p className="mt-1 text-xs font-black leading-4 text-slate-950">{clipPlan.label}</p>
-                  </div>
-                  <Badge
-                    variant={clipReady || (framesReady && !clipPlan.video?.status) ? "default" : "outline"}
-                    className="rounded-full text-[10px] font-black uppercase"
-                  >
-                    {clipBusy
-                      ? "Generating"
-                      : clipReady
-                      ? "Ready"
-                      : clipFailed
-                        ? "Failed"
-                        : framesReady
-                          ? "Plan ready"
-                          : "Needs frames"}
-                  </Badge>
-                </div>
-                <ThreeDBreakdownMediaPromptEditor
-                  disabled={scriptEditingDisabled}
-                  label={`Clip ${clipPlan.clipIndex} motion prompt`}
-                  onChange={(prompt) => onMediaPromptChanged({ kind: "clip", clipIndex: clipPlan.clipIndex }, prompt)}
-                  prompt={clipPlan.prompt}
-                  rows={7}
-                  target={`clip-${clipPlan.clipIndex}`}
-                />
-                {clipReady && clipPlan.video?.url ? (
-                  <video
-                    src={clipPlan.video.url}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="mx-auto mt-3 aspect-[9/16] max-h-72 w-auto rounded-xl bg-slate-950 object-cover"
-                    data-three-d-clip-preview={clipPlan.clipIndex}
-                  />
-                ) : (
-                <div className="mt-3 grid grid-cols-3 gap-1.5">
-                  {(isPresenterStyle ? [clipPlan.frameIndexes[0]] : clipPlan.frameIndexes).map((frameIndex) => {
-                    const frame = storyboardFrames.find((item) => item.frameIndex === frameIndex);
-                    return frame?.image?.url ? (
-                      <img key={frameIndex} src={frame.image.url} alt={`Clip ${clipPlan.clipIndex} frame ${frameIndex}`} className="aspect-[6/7] rounded-lg object-cover" />
-                    ) : (
-                      <div key={frameIndex} className="flex aspect-[6/7] items-center justify-center rounded-lg bg-slate-50 text-[9px] font-black text-slate-300">
-                        {frameIndex}
-                      </div>
-                    );
-                  })}
-                  {isPresenterStyle ? (
-                    <div className="col-span-2 flex aspect-[12/7] items-center justify-center rounded-lg bg-slate-50 px-2 text-center text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
-                      Frames {clipPlan.frameIndexes.join("-")}
-                    </div>
-                  ) : null}
-                </div>
-                )}
-                <Button
-                  type="button"
-                  className="mt-3 h-9 w-full rounded-2xl bg-slate-950 text-[11px] font-black uppercase tracking-[0.12em] text-white disabled:bg-slate-200 disabled:text-slate-400"
-                  onClick={() => onGenerateClip(clipPlan.clipIndex)}
-                  disabled={!scriptReady || !clipPlan.prompt.trim() || !framesReady || threeDClipBusyIndex !== null || !getPreviousClipReady(clipPlan.clipIndex)}
-                  data-three-d-generate-clip={clipPlan.clipIndex}
-                >
-                  {clipBusy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Film className="mr-2 size-4" />}
-                  {clipReady
-                    ? `Regenerate clip ${clipPlan.clipIndex}`
-                    : !getPreviousClipReady(clipPlan.clipIndex)
-                      ? `Generate clip ${clipPlan.clipIndex - 1} first`
-                      : `Generate clip ${clipPlan.clipIndex}`}
-                </Button>
-                {clipFailed ? (
-                  <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-[11px] font-bold leading-4 text-red-700">
-                    {clipPlan.video?.error || "Seedance clip generation failed."}
-                  </p>
-                ) : null}
-                </div>
-              );
-            })}
-          </div>
-          <p className="mt-3 rounded-2xl bg-slate-950 px-3 py-2 text-center text-[11px] font-black uppercase tracking-[0.12em] text-white">
-            {videosReady
-              ? "All clips ready · build the final MP4"
-              : !framesReady
-                ? isPresenterStyle && storyboardBoardReady ? "Generate production anchors first" : "Generate storyboard first"
-                : nextClipPlan
-                  ? `Generate clip ${nextClipPlan.clipIndex} next`
-                  : "Preflight complete · generate clip 1"}
-          </p>
-        </div>
-
-        <div className={stepClass}>
-          <div className="flex items-center gap-2 text-sm font-black text-slate-950">
-            <Download className="size-4" />
-            Final Video
-            <Badge variant={finalReady ? "default" : "outline"} className="ml-auto rounded-full text-[10px] font-black uppercase">
-              {finalStatus}
-            </Badge>
-          </div>
-          <Button
-            type="button"
-            className="mt-3 h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
-            onClick={hasVoiceover ? onBuildFinalVideo : onAddVoice}
-            disabled={!scriptReady || !videosReady || renderBusy}
-          >
-            {renderBusy
-              ? <Loader2 className="mr-2 size-4 animate-spin" />
-              : hasVoiceover
-                ? <Download className="mr-2 size-4" />
-                : <AudioLines className="mr-2 size-4" />}
-            {!videosReady ? "Build after clips" : !hasVoiceover ? "Add voice" : "Build final video"}
-          </Button>
-        </div>
-      </div>
-
-      {error ? (
-        <p className="mt-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
-          {error}
+      ) : null}
+      {storyboardBoardFailed ? (
+        <p className="rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
+          Storyboard generation failed. Generate the storyboard again before production anchors.
         </p>
       ) : null}
+      <Button
+        type="button"
+        variant={storyboardBoardReady ? "outline" : "default"}
+        className="h-10 w-full rounded-2xl text-xs font-black uppercase tracking-[0.12em]"
+        onClick={() => onGenerateImages("storyboard")}
+        disabled={imageStatus === "loading" || !scriptReady || !storyboardPromptReady}
+        data-three-d-regenerate-storyboard={storyboardBoardReady ? "true" : undefined}
+        data-three-d-generate-storyboard={!storyboardBoardReady ? "true" : undefined}
+      >
+        {imageStatus === "loading" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <RefreshCw className="mr-2 size-4" />}
+        {storyboardBoardReady ? "Regenerate storyboard" : "Generate storyboard"}
+      </Button>
+    </div>
+  );
+  const anchorsContent = (
+    <div className="space-y-3">
+      <p className="text-xs font-bold leading-5 text-slate-500">
+        {isPresenterStyle
+          ? "Create the two production anchors only after the storyboard looks right."
+          : "Create the production frames before animation."}
+      </p>
+      {requiredFrames.length ? (
+        <div className="grid grid-cols-2 gap-2" data-three-d-storyboard-frames="true">
+          {requiredFrames.map((frame) => {
+            const clipPlan = clipPlans.find((plan) => plan.frameIndexes[0] === frame.frameIndex);
+            const frameLabel = isPresenterStyle && clipPlan ? `Anchor ${clipPlan.clipIndex}` : `Frame ${frame.frameIndex}`;
+            const detailLabel = isPresenterStyle && clipPlan ? `Frames ${clipPlan.frameIndexes.join("-")}` : frame.label;
+            return (
+              <div key={frame.frameIndex} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                <div className="flex items-center justify-between gap-2 px-2.5 py-2">
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">{frameLabel}</p>
+                    <p className="truncate text-[10px] font-black leading-3 text-slate-950">{detailLabel}</p>
+                  </div>
+                  <Badge variant={frame.image?.status === "ready" ? "default" : "outline"} className="rounded-full px-2 text-[9px] font-black uppercase">
+                    {frame.image?.status || "idle"}
+                  </Badge>
+                </div>
+                <div className="px-2.5 pb-2">
+                  <ThreeDBreakdownMediaPromptEditor
+                    disabled={scriptEditingDisabled}
+                    label={`${frameLabel} creative prompt`}
+                    onChange={(prompt) => onMediaPromptChanged({ kind: "anchor", frameIndex: frame.frameIndex }, prompt)}
+                    prompt={getThreeDAnchorPrompt(frame)}
+                    rows={5}
+                    target={`anchor-${frame.frameIndex}`}
+                  />
+                </div>
+                {frame.image?.url ? (
+                  <img src={frame.image.url} alt={`${frameLabel} preview`} className="aspect-[6/7] w-full object-cover" />
+                ) : (
+                  <div className="flex aspect-[6/7] items-center justify-center bg-slate-50 text-[10px] font-black uppercase tracking-[0.12em] text-slate-300">
+                    {frame.image?.status === "generating" ? <Loader2 className="size-4 animate-spin" /> : "Pending"}
+                  </div>
+                )}
+                {isPresenterStyle && frame.image?.status === "ready" && (clipPlan?.clipIndex === 1 || clipPlan?.clipIndex === 2) ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-8 w-full rounded-none border-t border-slate-200 text-[9px] font-black uppercase tracking-[0.12em] text-slate-600"
+                    onClick={() => onGenerateImages(clipPlan.clipIndex === 1 ? "anchor-1" : "anchor-2")}
+                    disabled={imageStatus === "loading" || !scriptReady || !getThreeDAnchorPrompt(frame).trim()}
+                    aria-label={`Regenerate ${frameLabel}`}
+                    data-three-d-regenerate-anchor={clipPlan.clipIndex}
+                  >
+                    <RefreshCw className="mr-1.5 size-3" />
+                    Regenerate
+                  </Button>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+      {framesFailed ? (
+        <div className="rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
+          <p>One or more production anchors failed. Generate anchors again.</p>
+          {failedFrames.length ? (
+            <div className="mt-2 space-y-1" data-three-d-anchor-errors="true">
+              {failedFrames.map((frame) => (
+                <p key={frame.frameIndex}>Frame {frame.frameIndex}: {frame.image?.error || "Anchor image generation failed."}</p>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+      <Button
+        type="button"
+        className="h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
+        onClick={() => onGenerateImages()}
+        disabled={imageStatus === "loading" || !scriptReady || !storyboardPromptReady || !anchorPromptsReady || framesReady || (isPresenterStyle && !storyboardBoardReady)}
+        data-three-d-generate-anchors={isPresenterStyle ? "true" : undefined}
+      >
+        {imageStatus === "loading" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImageIcon className="mr-2 size-4" />}
+        {framesReady ? (isPresenterStyle ? "Anchors ready" : "Frames ready") : isPresenterStyle ? "Generate anchors" : "Generate frames"}
+      </Button>
+    </div>
+  );
+  const clipsContent = (
+    <div className="space-y-3">
+      {clipPlans.map((clipPlan) => {
+        const clipBusy = threeDClipBusyIndex === clipPlan.clipIndex;
+        const clipReady = clipPlan.video?.status === "ready";
+        const clipFailed = clipPlan.video?.status === "failed";
+        return (
+          <div key={clipPlan.clipIndex} className="rounded-2xl border border-slate-200 bg-white p-3" data-three-d-clip-plan="true">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Clip {clipPlan.clipIndex} · {clipPlan.durationSeconds}s</p>
+                <p className="mt-1 text-xs font-black leading-4 text-slate-950">{clipPlan.label}</p>
+              </div>
+              <Badge variant={clipReady || (framesReady && !clipPlan.video?.status) ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
+                {clipBusy ? "Generating" : clipReady ? "Ready" : clipFailed ? "Failed" : framesReady ? "Plan ready" : "Needs frames"}
+              </Badge>
+            </div>
+            <ThreeDBreakdownMediaPromptEditor
+              disabled={scriptEditingDisabled}
+              label={`Clip ${clipPlan.clipIndex} motion prompt`}
+              onChange={(prompt) => onMediaPromptChanged({ kind: "clip", clipIndex: clipPlan.clipIndex }, prompt)}
+              prompt={clipPlan.prompt}
+              rows={7}
+              target={`clip-${clipPlan.clipIndex}`}
+            />
+            {clipReady && clipPlan.video?.url ? (
+              <video
+                src={clipPlan.video.url}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="mx-auto mt-3 aspect-[9/16] max-h-72 w-auto rounded-xl bg-slate-950 object-cover"
+                data-three-d-clip-preview={clipPlan.clipIndex}
+              />
+            ) : (
+              <div className="mt-3 grid grid-cols-3 gap-1.5">
+                {(isPresenterStyle ? [clipPlan.frameIndexes[0]] : clipPlan.frameIndexes).map((frameIndex) => {
+                  const frame = storyboardFrames.find((item) => item.frameIndex === frameIndex);
+                  return frame?.image?.url ? (
+                    <img key={frameIndex} src={frame.image.url} alt={`Clip ${clipPlan.clipIndex} frame ${frameIndex}`} className="aspect-[6/7] rounded-lg object-cover" />
+                  ) : (
+                    <div key={frameIndex} className="flex aspect-[6/7] items-center justify-center rounded-lg bg-slate-50 text-[9px] font-black text-slate-300">
+                      {frameIndex}
+                    </div>
+                  );
+                })}
+                {isPresenterStyle ? (
+                  <div className="col-span-2 flex aspect-[12/7] items-center justify-center rounded-lg bg-slate-50 px-2 text-center text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                    Frames {clipPlan.frameIndexes.join("-")}
+                  </div>
+                ) : null}
+              </div>
+            )}
+            <Button
+              type="button"
+              className="mt-3 h-9 w-full rounded-2xl bg-slate-950 text-[11px] font-black uppercase tracking-[0.12em] text-white disabled:bg-slate-200 disabled:text-slate-400"
+              onClick={() => onGenerateClip(clipPlan.clipIndex)}
+              disabled={!scriptReady || !clipPlan.prompt.trim() || !framesReady || threeDClipBusyIndex !== null || !getPreviousClipReady(clipPlan.clipIndex)}
+              data-three-d-generate-clip={clipPlan.clipIndex}
+            >
+              {clipBusy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Film className="mr-2 size-4" />}
+              {clipReady
+                ? `Regenerate clip ${clipPlan.clipIndex}`
+                : !getPreviousClipReady(clipPlan.clipIndex)
+                  ? `Generate clip ${clipPlan.clipIndex - 1} first`
+                  : `Generate clip ${clipPlan.clipIndex}`}
+            </Button>
+            {clipFailed ? (
+              <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-[11px] font-bold leading-4 text-red-700">
+                {clipPlan.video?.error || "Seedance clip generation failed."}
+              </p>
+            ) : null}
+          </div>
+        );
+      })}
+      <p className="rounded-2xl bg-slate-950 px-3 py-2 text-center text-[11px] font-black uppercase tracking-[0.12em] text-white">
+        {videosReady
+          ? "All clips ready · build the final MP4"
+          : !framesReady
+            ? isPresenterStyle && storyboardBoardReady ? "Generate production anchors first" : "Generate storyboard first"
+            : nextClipPlan
+              ? `Generate clip ${nextClipPlan.clipIndex} next`
+              : "Preflight complete · generate clip 1"}
+      </p>
+    </div>
+  );
+  const finalContent = (
+    <div className="space-y-2">
+      <Button
+        type="button"
+        className="h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
+        onClick={hasVoiceover ? onBuildFinalVideo : onAddVoice}
+        disabled={!scriptReady || !videosReady || renderBusy}
+      >
+        {renderBusy
+          ? <Loader2 className="mr-2 size-4 animate-spin" />
+          : hasVoiceover
+            ? <Download className="mr-2 size-4" />
+            : <AudioLines className="mr-2 size-4" />}
+        {!videosReady ? "Build after clips" : !hasVoiceover ? "Add voice" : "Build final video"}
+      </Button>
+      <p className="text-xs font-bold leading-5 text-slate-500">
+        {finalReady
+          ? "Use the global MP4 button above to download it."
+          : hasVoiceover
+            ? "Build the final video after both clips are ready."
+            : "Narration is added here before the final MP4."}
+      </p>
+    </div>
+  );
+  const stages = [
+    {
+      id: "script",
+      label: "Script",
+      compactLabel: "Script",
+      kicker: "narrator story",
+      icon: <FileText className="size-4" />,
+      status: scriptReady ? "ready" as const : "needs" as const,
+      content: scriptContent,
+    },
+    {
+      id: isPresenterStyle ? "storyboard" : "frames",
+      label: isPresenterStyle ? "Storyboard" : "Frames",
+      compactLabel: isPresenterStyle ? "Board" : "Frames",
+      kicker: isPresenterStyle ? "six-frame plan" : "production images",
+      icon: <Clapperboard className="size-4" />,
+      status: isPresenterStyle ? storyboardStageStatus : anchorsStageStatus,
+      content: isPresenterStyle ? storyboardContent : anchorsContent,
+    },
+    ...(isPresenterStyle ? [{
+      id: "anchors",
+      label: "Anchors",
+      compactLabel: "Anchors",
+      kicker: "two video scenes",
+      icon: <ImageIcon className="size-4" />,
+      status: anchorsStageStatus,
+      content: anchorsContent,
+    }] : []),
+    {
+      id: "clips",
+      label: "Clips",
+      compactLabel: "Clips",
+      kicker: "motion and preview",
+      icon: <Film className="size-4" />,
+      status: clipsStageStatus,
+      content: clipsContent,
+    },
+    {
+      id: "final",
+      label: "Final Video",
+      compactLabel: "Final",
+      kicker: "voice and MP4",
+      icon: <Download className="size-4" />,
+      status: finalStageStatus,
+      content: finalContent,
+    },
+  ];
+  const defaultStageId = stages.find((stage) => stage.status !== "ready")?.id || "final";
+  return (
+    <section data-three-d-breakdown-assembly-card="true">
+      <CreateAssemblyLine defaultStageId={defaultStageId} error={error} stages={stages} />
     </section>
   );
 }

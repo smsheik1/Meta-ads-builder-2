@@ -18,17 +18,51 @@ assert.ok(existsSync(join(root, "app/waitlist/page.tsx")), "/waitlist route shou
 
 const waitlistPage = read("app/waitlist/WaitlistPage.tsx");
 const formatCarousel = read("app/waitlist/WaitlistFormatCarousel.tsx");
+const signupForm = read("app/waitlist/WaitlistSignupForm.tsx");
 assert.ok(waitlistPage.includes("WaitlistFormatCarousel"), "Waitlist hero should show the format carousel.");
 assert.ok(waitlistPage.includes("Your product page, turned into ads worth watching."), "Waitlist hero should use the product-focused headline.");
 assert.ok(!waitlistPage.includes("Launch blocker"), "Internal launch notes must never appear on the public homepage.");
 assert.ok(!waitlistPage.includes("creative-pack-demo.mp4"), "The public homepage should not expose internal asset paths.");
 assert.ok(formatCarousel.includes("Previous format") && formatCarousel.includes("Next format"), "Format carousel controls should be visible and accessible.");
 assert.ok(formatCarousel.includes("setInterval"), "Format carousel should auto-rotate.");
-assert.ok(formatCarousel.includes("three-d-breakdown") && formatCarousel.includes("video-meme"), "Format carousel should feature real Wiggly formats.");
+assert.ok(
+  formatCarousel.includes("three-d-breakdown") && formatCarousel.includes("video-meme") && formatCarousel.includes('id: "jingle"'),
+  "Format carousel should feature real Wiggly formats, including Brand Jingle.",
+);
 assert.ok(formatCarousel.includes('status: "Coming soon"'), "Motion Story homepage preview should be marked coming soon.");
+assert.ok(!formatCarousel.includes("One URL, many ways in"), "Format carousel should not repeat the hero's URL message.");
+assert.ok(
+  !signupForm.includes("No brief. No blank canvas.") && !signupForm.includes("Already invited? Open Wiggly"),
+  "Waitlist form should not repeat secondary access copy beneath its primary CTA.",
+);
 assert.ok(
   formatCarousel.includes("homepage-dialogue.mp3") && formatCarousel.includes("Play Brainrot dialogue"),
   "Brainrot preview should expose a visible control for its real dialogue audio.",
+);
+assert.ok(
+  formatCarousel.includes("AdRenderSurface") && formatCarousel.includes("visualizerPreviewScene"),
+  "Visualizer preview should use Wiggly's real scene renderer instead of a decorative imitation.",
+);
+assert.ok(
+  formatCarousel.includes("Play Visualizer conversation") && formatCarousel.includes("Mute Visualizer conversation"),
+  "Visualizer preview should expose a visible control for its two-person conversation.",
+);
+assert.ok(
+  formatCarousel.includes("splitSpeakers: true") && formatCarousel.includes("timeSeconds={timeSeconds}"),
+  "Visualizer preview should synchronize the real split-speaker format with playback time.",
+);
+assert.ok(
+  formatCarousel.includes("jinglePreviewScene") && formatCarousel.includes("Unmute brand jingle"),
+  "Brand Jingle preview should use the real renderer with a visible sound control.",
+);
+assert.ok(
+  existsSync(join(root, "public/homepage/davids-cookies-brand-jingle.mp3")),
+  "Brand Jingle preview should bundle a real generated jingle without a provider call.",
+);
+assert.ok(
+  formatCarousel.includes("three-d-breakdown-showcase.mp4")
+    && existsSync(join(root, "public/homepage/three-d-breakdown-showcase.mp4")),
+  "3D Breakdown preview should play a bundled compilation of real Wiggly outputs.",
 );
 assert.ok(
   formatCarousel.includes("brainrotPreviewBeats") && formatCarousel.includes("activeBeat.speaker"),
