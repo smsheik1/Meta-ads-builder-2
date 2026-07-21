@@ -13,6 +13,8 @@ const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "
 const remotionRootSource = readFileSync("remotion-entry/Root.tsx", "utf8");
 const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
 const assemblyLineSource = readFileSync("app/create/CreateAssemblyLine.tsx", "utf8");
+const threeDMediaPromptEditorSource = readFileSync("app/create/ThreeDBreakdownMediaPromptEditor.tsx", "utf8");
+const threeDScriptEditorSource = readFileSync("app/create/ThreeDBreakdownScriptEditor.tsx", "utf8");
 const brickStoryboardSheetSource = readFileSync("app/create/CreateBrickStoryboardSheet.tsx", "utf8");
 const creativeBriefSource = readFileSync("app/create/CreateCreativeBriefCard.tsx", "utf8");
 const adScenesSource = readFileSync("convex/adScenes.ts", "utf8");
@@ -290,11 +292,21 @@ assert.ok(
   "3D Breakdown must not allow the global MP4 action before generated clips and voiceover exist.",
 );
 assert.ok(
-  quickActionsSource.includes("scene.layout.scriptBeats.map") &&
-    quickActionsSource.includes('data-three-d-script-beat="true"') &&
-    quickActionsSource.includes("scene.layout.storyContract.referenceScript") &&
-    quickActionsSource.includes('data-three-d-reference-script="true"'),
-  "3D Breakdown Script ready state must show the narrator script when present plus all narration beats, not only the first line.",
+  quickActionsSource.includes("<ThreeDBreakdownScriptEditor") &&
+    quickActionsSource.includes("onBeatChanged={onScriptBeatChanged}") &&
+    threeDScriptEditorSource.includes("scriptBeats.map((beat, beatIndex)") &&
+    threeDScriptEditorSource.includes('data-three-d-script-beat="true"') &&
+    threeDScriptEditorSource.includes("onBeatChanged(beatIndex, event.target.value)") &&
+    threeDScriptEditorSource.includes("disabled={disabled}") &&
+    threeDScriptEditorSource.includes("data-three-d-script-beat-editor={beat.role}") &&
+    threeDScriptEditorSource.includes("These exact words will be used for the narrator and captions.") &&
+    threeDScriptEditorSource.includes("Add words to every section before generating media."),
+  "3D Breakdown must expose every timed script beat as a visible editor and block paid media while a beat is empty.",
+);
+assert.ok(
+  createClientSource.includes('scene.layout.scriptBeats.some((beat) => !beat.narration.trim())') &&
+    createClientSource.includes("Add words to every script section before generating the narrator."),
+  "3D Breakdown must also guard the shared audio action from generating narration for an incomplete script.",
 );
 assert.ok(
 	  quickActionsSource.includes('data-three-d-storyboard-board="true"') &&
@@ -305,11 +317,15 @@ assert.ok(
 	    quickActionsSource.includes('id: "anchors"') &&
 	    quickActionsSource.includes('isPresenterStyle ? "Anchors ready" : "Frames ready"') &&
 	    quickActionsSource.includes("requiredFrames.map") &&
-	    quickActionsSource.includes("storyboardBoard.imagePrompt") &&
-	    quickActionsSource.includes("formatStoryboardFramePrompt(frame)") &&
+	    quickActionsSource.includes("getThreeDStoryboardPrompt(storyboardBoard)") &&
+	    quickActionsSource.includes("getThreeDAnchorPrompt(frame)") &&
 	    quickActionsSource.includes('data-three-d-storyboard-frames="true"') &&
+    quickActionsSource.includes('target="storyboard"') &&
+    quickActionsSource.includes('target={`anchor-${frame.frameIndex}`}') &&
+    threeDMediaPromptEditorSource.includes("data-three-d-media-prompt-editor={target}") &&
+    threeDMediaPromptEditorSource.includes("This creative prompt will be sent with Wiggly’s safety and continuity rules.") &&
     !quickActionsSource.includes("Six-frame 3D Breakdown storyboard board"),
-  "3D Breakdown must split storyboard review and production anchors into compact inspectable assembly stages.",
+  "3D Breakdown must split storyboard review and production anchors into compact editable assembly stages.",
 );
 assert.ok(
   quickActionsSource.includes('data-three-d-anchor-errors="true"') &&
@@ -328,17 +344,22 @@ assert.ok(
 	    quickActionsSource.includes('!hasVoiceover ? "Add voice" : "Build final video"') &&
     quickActionsSource.includes("onAddVoice={onOpenAudioPanel}") &&
     quickActionsSource.includes("onClick={hasVoiceover ? onBuildFinalVideo : onAddVoice}") &&
-    quickActionsSource.includes("disabled={!videosReady || renderBusy}") &&
+    quickActionsSource.includes("disabled={!scriptReady || !videosReady || renderBusy}") &&
     quickActionsSource.includes("Generate clip ${nextClipPlan.clipIndex} next") &&
     quickActionsSource.includes("Generate clip ${clipPlan.clipIndex - 1} first") &&
     quickActionsSource.includes("data-three-d-generate-clip={clipPlan.clipIndex}") &&
     quickActionsSource.includes("data-three-d-clip-preview={clipPlan.clipIndex}") &&
     quickActionsSource.includes("autoPlay") &&
     quickActionsSource.includes("playsInline") &&
-    quickActionsSource.includes("PromptHelp") &&
+    quickActionsSource.includes('target={`clip-${clipPlan.clipIndex}`}') &&
+    quickActionsSource.includes("onMediaPromptChanged({ kind: \"clip\", clipIndex: clipPlan.clipIndex }, prompt)") &&
     quickActionsSource.includes("clipPlan.prompt") &&
-    quickActionsSource.includes('data-three-d-prompt-help="true"'),
-  "3D Breakdown preflight must show planned clips, inspectable prompts, visible ready previews, and explicit sequential Seedance actions.",
+    quickActionsSource.includes("Clip ${clipPlan.clipIndex} motion prompt"),
+  "3D Breakdown preflight must show planned clips, editable prompts, visible ready previews, and explicit sequential Seedance actions.",
+);
+assert.ok(
+  threeDImagesSource.includes("prompt: existingClipPlans.find((existing) => existing.clipIndex === plan.clipIndex)?.prompt ?? plan.prompt"),
+  "Paid clip generation must preserve the user's approved prompt instead of silently rebuilding over it.",
 );
 assert.ok(
   storyboardContractsSource.includes("const presenterFrameGroups") &&

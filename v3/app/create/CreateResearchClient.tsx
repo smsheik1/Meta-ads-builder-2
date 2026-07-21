@@ -24,7 +24,9 @@ import {
 } from "@/features/llm/nvidiaNimModels";
 import { DEFAULT_JINGLE_STYLE_ID, JINGLE_STYLES, type JingleStyleId } from "@/features/formats/jingle/prompt";
 import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
+import { editThreeDBreakdownMediaPrompt, type ThreeDBreakdownMediaPromptTarget } from "@/features/formats/three-d-breakdown/editablePrompts";
 import type { ThreeDBreakdownStoryDirection } from "@/features/formats/three-d-breakdown/storyDirections";
+import { editThreeDBreakdownScriptBeat } from "@/features/formats/three-d-breakdown/editScript";
 import {
   getDefaultReviewProductHandles,
   normalizeReviewProductHandles,
@@ -2559,6 +2561,10 @@ function ResearchConnected() {
       return;
     }
     if (scene.format === "three-d-breakdown") {
+      if (scene.layout.scriptBeats.some((beat) => !beat.narration.trim())) {
+        setAudioError("Add words to every script section before generating the narrator.");
+        return;
+      }
       void generateSceneAudio(scene, sceneIds[selectedSceneIndex], {
         format: "three-d-breakdown",
         action: generateVoiceoverForScene,
@@ -3035,6 +3041,18 @@ function ResearchConnected() {
     resetShareState();
     resetRenderState();
     resetSaveState();
+  };
+
+  const onThreeDScriptBeatChanged = (beatIndex: number, narration: string) => {
+    if (!selectedThreeDScene) return;
+    const hadGeneratedAudio = selectedThreeDScene.audio.status === "generated";
+    updateSelectedThreeDScene(editThreeDBreakdownScriptBeat(selectedThreeDScene, beatIndex, narration));
+    if (hadGeneratedAudio) resetAudioState();
+  };
+
+  const onThreeDMediaPromptChanged = (target: ThreeDBreakdownMediaPromptTarget, prompt: string) => {
+    if (!selectedThreeDScene) return;
+    updateSelectedThreeDScene(editThreeDBreakdownMediaPrompt(selectedThreeDScene, target, prompt));
   };
 
   const selectedThreeDScene = selectedScene?.format === "three-d-breakdown" ? selectedScene : null;
@@ -3723,6 +3741,8 @@ function ResearchConnected() {
                 onLoadSavedDesign={onLoadSavedDesign}
                 onOpenAudioPanel={onOpenAudioPanel}
                 onSaveSelectedDesign={() => void onSaveSelectedDesign()}
+                onThreeDMediaPromptChanged={onThreeDMediaPromptChanged}
+                onThreeDScriptBeatChanged={onThreeDScriptBeatChanged}
                 onTogglePreviewPlayback={onTogglePreviewPlayback}
                 audioStatus={audioStatus}
                 playableAudioUrl={selectedSceneMatchesActiveFormat ? playableAudioUrl : ""}

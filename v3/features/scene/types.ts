@@ -402,6 +402,7 @@ export type ThreeDBreakdownShot = {
 export type ThreeDBreakdownStoryboardBoard = {
   frameCount: 6;
   imagePrompt: string;
+  creativePrompt?: string;
   image?: ThreeDBreakdownMediaRef;
   frames?: Array<{
     frameIndex: 1 | 2 | 3 | 4 | 5 | 6;
@@ -410,6 +411,7 @@ export type ThreeDBreakdownStoryboardBoard = {
     visual?: string;
     camera?: string;
     motion?: string;
+    anchorPrompt?: string;
     overlayText?: string;
     editingNote?: string;
     image?: ThreeDBreakdownMediaRef;
