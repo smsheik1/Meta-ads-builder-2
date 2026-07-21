@@ -358,11 +358,12 @@ assert.deepEqual(
   [
     "app/create/CreatePreviewChrome.tsx",
     "app/create/MakerFormatTestClient.tsx",
+    "app/waitlist/WaitlistFormatCarousel.tsx",
     "features/builder/BuilderCanvas.tsx",
     "features/render/AdRenderSurface.tsx",
     "remotion-entry/RemotionAdScene.tsx",
   ],
-  "Only /create, /builder, and Remotion may draw ad pixels through AdRenderSurface.",
+  "Only approved preview, builder, homepage showcase, and Remotion surfaces may draw ad pixels through AdRenderSurface.",
 );
 
 const previewSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
