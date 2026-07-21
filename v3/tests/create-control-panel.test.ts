@@ -12,6 +12,7 @@ const rootLayoutSource = readFileSync("app/layout.tsx", "utf8");
 const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "utf8");
 const remotionRootSource = readFileSync("remotion-entry/Root.tsx", "utf8");
 const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
+const storyDirectionsCardSource = readFileSync("app/create/ThreeDBreakdownStoryDirectionsCard.tsx", "utf8");
 const assemblyLineSource = readFileSync("app/create/CreateAssemblyLine.tsx", "utf8");
 const threeDMediaPromptEditorSource = readFileSync("app/create/ThreeDBreakdownMediaPromptEditor.tsx", "utf8");
 const threeDScriptEditorSource = readFileSync("app/create/ThreeDBreakdownScriptEditor.tsx", "utf8");
@@ -181,20 +182,31 @@ assert.ok(
     createClientSource.includes("generateThreeDStoryDirectionSlate") &&
     createClientSource.includes("threeDStoryDirection: direction") &&
     createClientSource.includes('format === "three-d-breakdown" && !options.threeDStoryDirection') &&
-    quickActionsSource.includes("data-three-d-story-directions-card") &&
-    quickActionsSource.includes("Pick the premise") &&
-    !quickActionsSource.includes("data-three-d-use-manual-story-direction") &&
+    quickActionsSource.includes("<ThreeDBreakdownStoryDirectionsCard") &&
+    storyDirectionsCardSource.includes("data-three-d-story-directions-card") &&
+    storyDirectionsCardSource.includes("Pick the premise") &&
+    !storyDirectionsCardSource.includes("data-three-d-use-manual-story-direction") &&
     adScenesSource.includes("export const generateThreeDStoryDirections") &&
     adScenesSource.includes("threeDStoryDirection: v.optional"),
-  "3D Breakdown must show a five-card story slate before generating the script/media pipeline.",
+  "3D Breakdown must show a five-option story slate before generating the script/media pipeline.",
 );
 assert.ok(
   createClientSource.includes('if (firstScene?.format === "three-d-breakdown") resetThreeDStoryDirections();') &&
     createClientSource.includes('setThreeDStoryDirectionStatus("loading")') &&
     createClientSource.includes('setThreeDStoryDirectionError(message)') &&
-    quickActionsSource.indexOf('role="alert"') < quickActionsSource.indexOf('{directions.length ? (') &&
-    quickActionsSource.includes('status === "error" && selected ? "Retry direction" : "Use direction"'),
+    storyDirectionsCardSource.indexOf('role="alert"') < storyDirectionsCardSource.indexOf('{directions.length ? (') &&
+    storyDirectionsCardSource.includes('status === "error" ? "Retry direction" : "Use this direction"'),
   "Choosing a 3D story direction must clear stale slate state after success and expose a recoverable error after failure.",
+);
+assert.ok(
+  storyDirectionsCardSource.includes('role="tablist"') &&
+    storyDirectionsCardSource.includes('role="tabpanel"') &&
+    storyDirectionsCardSource.includes("line-clamp-2") &&
+    storyDirectionsCardSource.includes("directions.map((direction, index)") &&
+    storyDirectionsCardSource.includes('aria-controls="selected-story-direction"') &&
+    storyDirectionsCardSource.includes("onUseDirection(selectedDirection)") &&
+    storyDirectionsCardSource.includes('data-three-d-use-story-direction={selectedDirection.directionId}'),
+  "3D Breakdown story directions must stay in one compact picker with one expanded selected direction, not a vertical stack of full cards.",
 );
 assert.ok(
   createClientSource.includes("function isRenderableScene") &&
