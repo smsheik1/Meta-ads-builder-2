@@ -88,12 +88,6 @@ export function WaitlistSignupForm() {
           <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm font-bold text-red-600">{errorMessage}</p>
         ) : null}
       </form>
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm font-bold text-[#697186]">
-        <p>No brief. No blank canvas.</p>
-        <Link href="/create" className="font-black text-[#080817] underline decoration-2 underline-offset-4 hover:text-[#5b38d7]">
-          Already invited? Open Wiggly
-        </Link>
-      </div>
     </div>
   );
 }

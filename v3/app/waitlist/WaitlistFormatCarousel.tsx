@@ -2,6 +2,8 @@
 
 import { ChevronLeft, ChevronRight, Quote, Sparkles, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { AdRenderSurface } from "@/features/render/AdRenderSurface";
+import type { VisualizerAdScene } from "@/features/scene/types";
 
 const formatSlides = [
   {
@@ -86,6 +88,143 @@ const brainrotPreviewBeats = [
 
 const brainrotSecondBeatStartsAtMs = 2_748;
 const brainrotPreviewDurationMs = 6_910;
+
+const visualizerPreviewScene: VisualizerAdScene = {
+  version: 1,
+  format: "visualizer",
+  brand: {
+    name: "Wiggly",
+    url: "https://wiggly.agentenamel.com",
+    host: "wiggly.agentenamel.com",
+    title: "Wiggly",
+    description: "Ads without the hard part.",
+    faviconUrl: null,
+    logoUrl: "/wiggly-wordmark-3d-crop.png",
+    ogImageUrl: null,
+    screenshotUrl: null,
+    colors: ["#52D6FF", "#5B38D7"],
+    fonts: { feel: "sans" },
+    vibeTags: ["playful", "direct"],
+    receipts: {
+      specificClaims: [],
+      buyerMoments: [],
+      exactSiteLanguage: [],
+      namedProof: [],
+    },
+  },
+  creative: {
+    angleId: "homepage-visualizer-preview",
+    headline: "Your website has an ad hiding inside it.",
+    subheadline: "Hear the two-person Visualizer format.",
+    ctaText: "Hear it",
+    headlineType: "callout",
+    selectedPain: "Ads that look like every other ad.",
+    selectedProof: "Wiggly turns a website into ready-to-test creative.",
+  },
+  style: {
+    backgroundColor: "#FFFFFF",
+    textColor: "#080817",
+    accentColor: "#5B38D7",
+    visualizerColor: "#52D6FF",
+    fontFeel: "sans",
+    visualizer: {
+      type: "waveform-strip",
+      barCount: 24,
+      sensitivity: 1.5,
+      heightScale: 0.9,
+      baseline: 4,
+      gain: 1.7,
+      compression: 4,
+      floor: 0.08,
+      ceiling: 0.92,
+      curve: "sqrt",
+      bandFocus: "voice",
+      mirror: false,
+      splitSpeakers: true,
+    },
+  },
+  audio: {
+    status: "generated",
+    storageId: "homepage-visualizer-dialogue",
+    url: "/brainrot/homepage-dialogue.mp3",
+    mimeType: "audio/mpeg",
+    durationMs: brainrotPreviewDurationMs,
+    durationSeconds: brainrotPreviewDurationMs / 1_000,
+    transcript: "Wait. Your ads still look like everyone else's? Exactly. Wiggly turns your website into ads people actually watch.",
+    captions: [
+      { text: "Wait. Your ads still look", startMs: 0, endMs: 1_350, speaker: 1 },
+      { text: "like everyone else's?", startMs: 1_350, endMs: brainrotSecondBeatStartsAtMs, speaker: 1 },
+      { text: "Exactly. Wiggly turns your website", startMs: brainrotSecondBeatStartsAtMs, endMs: 4_750, speaker: 2 },
+      { text: "into ads people actually watch.", startMs: 4_750, endMs: brainrotPreviewDurationMs, speaker: 2 },
+    ],
+    provider: "upload",
+    model: "bundled-homepage-dialogue",
+    generatedAt: 0,
+  },
+  layout: { preset: "centered-hero" },
+  metadata: {
+    candidateIndex: 0,
+    generationBatchId: "homepage-visualizer-preview",
+    researchRunId: "homepage-visualizer-preview",
+    brandSnapshotId: "homepage-visualizer-preview",
+    model: "bundled-homepage-preview",
+    provider: "deterministic",
+    generatedAt: 0,
+  },
+};
+
+function VisualizerArtwork() {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [soundOn, setSoundOn] = useState(false);
+  const [timeSeconds, setTimeSeconds] = useState(0);
+
+  const toggleSound = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (soundOn) {
+      audio.pause();
+      setSoundOn(false);
+      return;
+    }
+
+    try {
+      await audio.play();
+      setSoundOn(true);
+    } catch {
+      setSoundOn(false);
+    }
+  };
+
+  return (
+    <div className="relative h-full overflow-hidden bg-white">
+      <audio
+        ref={audioRef}
+        src="/brainrot/homepage-dialogue.mp3"
+        preload="metadata"
+        loop
+        onTimeUpdate={(event) => setTimeSeconds(event.currentTarget.currentTime)}
+        onPause={() => setSoundOn(false)}
+        onPlay={() => setSoundOn(true)}
+      />
+      <AdRenderSurface
+        scene={visualizerPreviewScene}
+        timeSeconds={timeSeconds}
+        motionMode={soundOn ? "auto" : "idle"}
+      />
+      <button
+        type="button"
+        onClick={toggleSound}
+        aria-pressed={soundOn}
+        aria-label={soundOn ? "Mute Visualizer conversation" : "Play Visualizer conversation"}
+        className="absolute right-3 top-3 z-20 grid size-10 place-items-center rounded-full border-2 border-[#080817] bg-white text-[#080817] shadow-[3px_3px_0_#080817] transition hover:-translate-y-0.5"
+        title={soundOn ? "Mute conversation" : "Hear the conversation"}
+      >
+        {soundOn ? <VolumeX className="size-5" strokeWidth={3} /> : <Volume2 className="size-5" strokeWidth={3} />}
+      </button>
+    </div>
+  );
+}
 
 function BrainrotArtwork() {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -271,24 +410,7 @@ function FormatArtwork({ slide }: { slide: FormatSlide }) {
   }
 
   if (slide.visual === "visualizer") {
-    return (
-      <div className="flex h-full flex-col items-center justify-center bg-white px-8 text-[#080817]">
-        <img src="/wiggly-wordmark-3d-crop.png" alt="Wiggly" className="w-52" />
-        <div className="mt-12 flex h-32 items-center justify-center gap-2">
-          {Array.from({ length: 17 }).map((_, index) => (
-            <span
-              key={index}
-              className="wiggly-format-wave block w-2 rounded-full bg-[#52D6FF]"
-              style={{
-                height: `${24 + ((index * 23) % 88)}px`,
-                animationDelay: `${index * 65}ms`,
-              }}
-            />
-          ))}
-        </div>
-        <p className="mt-9 text-center text-2xl font-black leading-tight">Voice, captions, and motion in one clean story.</p>
-      </div>
-    );
+    return <VisualizerArtwork />;
   }
 
   return <BrainrotArtwork />;
@@ -322,8 +444,7 @@ export function WaitlistFormatCarousel() {
     >
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#626b82]">One URL, many ways in</p>
-          <p className="mt-1 text-xl font-black text-[#080817]">Pick the format that fits the angle.</p>
+          <p className="text-xl font-black text-[#080817]">Pick the format that fits the angle.</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <button
@@ -350,22 +471,34 @@ export function WaitlistFormatCarousel() {
       <div className="relative mx-auto aspect-[9/16] w-[315px] overflow-hidden rounded-lg border-2 border-[#080817] bg-[#080817] shadow-[12px_14px_0_#080817] sm:w-[350px] lg:w-[275px] xl:w-[310px] 2xl:w-[360px]">
         <div key={slide.id} className="wiggly-format-slide absolute inset-0">
           <FormatArtwork slide={slide} />
-          <div className="absolute inset-x-0 bottom-0 border-t border-white/15 bg-[#080817]/96 p-5 text-white backdrop-blur-sm">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: slide.accent }}>
-                {slide.label}
-              </p>
-              {"status" in slide ? (
-                <span className="rounded-full border border-white/20 bg-white/10 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-white">
-                  {slide.status}
-                </span>
-              ) : (
+          {slide.visual === "visualizer" ? (
+            <div className="absolute inset-x-0 bottom-0 border-t border-white/15 bg-[#080817]/96 px-4 py-3 text-white backdrop-blur-sm">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: slide.accent }}>
+                  {slide.label}
+                </p>
                 <span className="size-2 rounded-full" style={{ backgroundColor: slide.accent }} />
-              )}
+              </div>
+              <p className="mt-1 text-xs font-bold text-white/70">Tap the sound button to hear both voices.</p>
             </div>
-            <p className="mt-2 text-[10px] font-black uppercase tracking-[0.17em] text-white/55">{slide.eyebrow}</p>
-            <h2 className="mt-2 text-2xl font-black leading-[1.05] tracking-normal">{slide.headline}</h2>
-          </div>
+          ) : (
+            <div className="absolute inset-x-0 bottom-0 border-t border-white/15 bg-[#080817]/96 p-5 text-white backdrop-blur-sm">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: slide.accent }}>
+                  {slide.label}
+                </p>
+                {"status" in slide ? (
+                  <span className="rounded-full border border-white/20 bg-white/10 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-white">
+                    {slide.status}
+                  </span>
+                ) : (
+                  <span className="size-2 rounded-full" style={{ backgroundColor: slide.accent }} />
+                )}
+              </div>
+              <p className="mt-2 text-[10px] font-black uppercase tracking-[0.17em] text-white/55">{slide.eyebrow}</p>
+              <h2 className="mt-2 text-2xl font-black leading-[1.05] tracking-normal">{slide.headline}</h2>
+            </div>
+          )}
         </div>
       </div>
 
