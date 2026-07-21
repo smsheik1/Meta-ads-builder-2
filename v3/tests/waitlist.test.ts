@@ -26,7 +26,7 @@ assert.ok(!waitlistPage.includes("creative-pack-demo.mp4"), "The public homepage
 assert.ok(formatCarousel.includes("Previous format") && formatCarousel.includes("Next format"), "Format carousel controls should be visible and accessible.");
 assert.ok(formatCarousel.includes("setInterval"), "Format carousel should auto-rotate.");
 assert.ok(
-  formatCarousel.includes("three-d-breakdown") && formatCarousel.includes("video-meme") && formatCarousel.includes('id: "jingle"'),
+  formatCarousel.includes("three-d-breakdown") && formatCarousel.includes("video-meme") && formatCarousel.includes('id: "jingle-apple"'),
   "Format carousel should feature real Wiggly formats, including Brand Jingle.",
 );
 assert.ok(formatCarousel.includes('status: "Coming soon"'), "Motion Story homepage preview should be marked coming soon.");
@@ -52,12 +52,20 @@ assert.ok(
   "Visualizer preview should synchronize the real split-speaker format with playback time.",
 );
 assert.ok(
-  formatCarousel.includes("jinglePreviewScene") && formatCarousel.includes("Unmute brand jingle"),
-  "Brand Jingle preview should use the real renderer with a visible sound control.",
+  formatCarousel.includes("homepageJinglePreviews") && formatCarousel.includes("Play brand jingle"),
+  "Brand Jingle previews should use the real renderer with a visible sound control.",
 );
 assert.ok(
-  existsSync(join(root, "public/homepage/davids-cookies-brand-jingle.mp3")),
-  "Brand Jingle preview should bundle a real generated jingle without a provider call.",
+  [
+    "apple-all-in-one-place.mp3",
+    "davids-no-time-to-bake.mp3",
+    "ogtool-break-the-rules.mp3",
+  ].every((fileName) => existsSync(join(root, "public/homepage/jingles", fileName))),
+  "Brand Jingle preview should bundle the three selected Wiggly-generated jingles without provider calls.",
+);
+assert.ok(
+  ["jingle-apple", "jingle-davids", "jingle-ogtool"].every((id) => formatCarousel.includes(`id: "${id}"`)),
+  "Brand Jingle examples should be separate, discoverable carousel cards.",
 );
 assert.ok(
   formatCarousel.includes("three-d-breakdown-showcase.mp4")

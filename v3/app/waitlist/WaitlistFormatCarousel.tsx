@@ -15,11 +15,12 @@ const formatSlides = [
     visual: "three-d" as const,
   },
   {
-    id: "jingle",
-    label: "Brand Jingle",
-    eyebrow: "Make the brand memorable",
-    headline: "Turn the selling angle into a hook people can sing back.",
+    id: "jingle-apple",
+    label: "Apple Jingle",
+    eyebrow: "Brand jingle",
+    headline: "Apple magic, all in one place.",
     accent: "#FF7BAA",
+    jinglePreviewId: "apple-all-in-one-place",
     visual: "jingle" as const,
   },
   {
@@ -48,6 +49,15 @@ const formatSlides = [
     visual: "reviews" as const,
   },
   {
+    id: "jingle-davids",
+    label: "David's Jingle",
+    eyebrow: "Brand jingle",
+    headline: "Need a gift that hits, no time to bake?",
+    accent: "#FF7BAA",
+    jinglePreviewId: "davids-no-time-to-bake",
+    visual: "jingle" as const,
+  },
+  {
     id: "meme",
     label: "Meme",
     eyebrow: "Test the pain cheaply",
@@ -62,6 +72,15 @@ const formatSlides = [
     headline: "Sell the product like one friend texting another.",
     accent: "#63E6BE",
     visual: "text-message" as const,
+  },
+  {
+    id: "jingle-ogtool",
+    label: "OGTool Jingle",
+    eyebrow: "Brand jingle",
+    headline: "Oh Gee Tool, we break the old rules.",
+    accent: "#FF7BAA",
+    jinglePreviewId: "ogtool-break-the-rules",
+    visual: "jingle" as const,
   },
   {
     id: "visualizer",
@@ -96,7 +115,7 @@ const brainrotPreviewBeats = [
 
 const brainrotSecondBeatStartsAtMs = 2_748;
 const brainrotPreviewDurationMs = 6_910;
-const jinglePreviewDurationMs = 23_796;
+const jinglePreviewDurationMs = 20_000;
 
 const visualizerPreviewScene: VisualizerAdScene = {
   version: 1,
@@ -182,93 +201,174 @@ const visualizerPreviewScene: VisualizerAdScene = {
   },
 };
 
-const jinglePreviewScene: JingleAdScene = {
-  version: 1,
-  format: "jingle",
-  brand: {
-    name: "David's Cookies",
-    url: "https://www.davidscookies.com",
-    host: "davidscookies.com",
-    title: "David's Cookies",
-    description: "Fresh-baked gifts delivered door to door.",
-    faviconUrl: null,
-    logoUrl: null,
-    ogImageUrl: null,
-    screenshotUrl: null,
-    colors: ["#FF315D", "#52D6FF"],
-    fonts: { feel: "sans" },
-    vibeTags: ["gifting", "playful"],
-    receipts: {
-      specificClaims: [],
-      buyerMoments: [],
-      exactSiteLanguage: [],
-      namedProof: [],
-    },
-  },
-  creative: {
-    angleId: "homepage-brand-jingle-preview",
-    headline: "When the gift gotta hit, not just any way",
-    subheadline: "Fresh-baked gifting without the guesswork.",
-    ctaText: "Send a gift",
-    headlineType: "callout",
-    selectedPain: "Guessing what gift will actually land.",
-    selectedProof: "Fresh-baked cookies delivered door to door.",
-  },
-  style: {
-    backgroundColor: "#07111F",
-    textColor: "#FFFFFF",
-    accentColor: "#FF315D",
-    fontFeel: "sans",
-  },
-  audio: {
-    status: "generated",
-    storageId: "homepage-davids-cookies-jingle",
-    url: "/homepage/davids-cookies-brand-jingle.mp3",
-    mimeType: "audio/mpeg",
-    durationMs: jinglePreviewDurationMs,
-    durationSeconds: jinglePreviewDurationMs / 1_000,
-    transcript: "When the gift gotta hit, not just any way. Okay David's Cookies, we sendin' love your way. No more guessin' what they want. No more gas station runs. Fresh-baked, door to door. Yeah, we get it done.",
-    captions: [
-      { text: "When the gift gotta hit, not just any way", startMs: 0, endMs: 3_900 },
-      { text: "Okay David's Cookies, we sendin' love your way", startMs: 3_900, endMs: 8_000 },
-      { text: "No more guessin' what they want", startMs: 8_000, endMs: 11_400 },
-      { text: "No more gas station runs", startMs: 11_400, endMs: 14_700 },
-      { text: "Fresh-baked, door to door", startMs: 14_700, endMs: 19_000 },
-      { text: "Yeah, we get it done", startMs: 19_000, endMs: jinglePreviewDurationMs },
-    ],
-    provider: "upload",
-    model: "bundled-davids-cookies-jingle",
-    generatedAt: 0,
-  },
-  layout: {
-    preset: "jingle-lyrics",
-    brandPhonetic: "David's Cookies",
-    angle: "A memorable answer to last-minute gifting",
-    lyrics: [
-      "When the gift gotta hit, not just any way",
-      "Okay David's Cookies, we sendin' love your way",
-      "Fresh-baked, door to door, yeah, we get it done",
-    ],
-    musicLengthMs: jinglePreviewDurationMs,
-    compositionPlan: {
-      chunks: [
-        { text: "When the gift gotta hit", duration_ms: 7_932, positive_styles: ["modern hip hop"], negative_styles: ["corporate"], context_adherence: "high" },
-        { text: "David's Cookies sends love", duration_ms: 7_932, positive_styles: ["catchy hook"], negative_styles: ["generic"], context_adherence: "high" },
-        { text: "Fresh-baked, door to door", duration_ms: 7_932, positive_styles: ["confident finish"], negative_styles: ["spoken word"], context_adherence: "high" },
-      ],
-    },
-    selfCheckPassed: "Real bundled Wiggly brand-jingle output.",
-  },
-  metadata: {
-    candidateIndex: 0,
-    generationBatchId: "homepage-brand-jingle-preview",
-    researchRunId: "homepage-brand-jingle-preview",
-    brandSnapshotId: "homepage-brand-jingle-preview",
-    model: "bundled-homepage-preview",
-    provider: "deterministic",
-    generatedAt: 0,
-  },
+type HomepageJinglePreview = {
+  id: string;
+  audioUrl: string;
+  scene: JingleAdScene;
 };
+
+function createHomepageJinglePreview(input: {
+  id: string;
+  brandName: string;
+  brandUrl: string;
+  description: string;
+  colors: string[];
+  accentColor: string;
+  audioUrl: string;
+  headline: string;
+  subheadline: string;
+  ctaText: string;
+  transcript: string;
+  captions: Array<{ text: string; startMs: number; endMs: number }>;
+  lyrics: string[];
+  angle: string;
+  musicStyle: string;
+}): HomepageJinglePreview {
+  const host = new URL(input.brandUrl).host;
+  return {
+    id: input.id,
+    audioUrl: input.audioUrl,
+    scene: {
+      version: 1,
+      format: "jingle",
+      brand: {
+        name: input.brandName,
+        url: input.brandUrl,
+        host,
+        title: input.brandName,
+        description: input.description,
+        faviconUrl: null,
+        logoUrl: null,
+        ogImageUrl: null,
+        screenshotUrl: null,
+        colors: input.colors,
+        fonts: { feel: "sans" },
+        vibeTags: ["memorable", "musical"],
+        receipts: { specificClaims: [], buyerMoments: [], exactSiteLanguage: [], namedProof: [] },
+      },
+      creative: {
+        angleId: `homepage-brand-jingle-${input.id}`,
+        headline: input.headline,
+        subheadline: input.subheadline,
+        ctaText: input.ctaText,
+        headlineType: "callout",
+        selectedPain: input.angle,
+        selectedProof: input.subheadline,
+      },
+      style: {
+        backgroundColor: "#07111F",
+        textColor: "#FFFFFF",
+        accentColor: input.accentColor,
+        fontFeel: "sans",
+      },
+      audio: {
+        status: "generated",
+        storageId: `homepage-${input.id}-jingle`,
+        url: input.audioUrl,
+        mimeType: "audio/mpeg",
+        durationMs: jinglePreviewDurationMs,
+        durationSeconds: jinglePreviewDurationMs / 1_000,
+        transcript: input.transcript,
+        captions: input.captions,
+        provider: "elevenlabs",
+        model: "music_v2",
+        generatedAt: 0,
+      },
+      layout: {
+        preset: "jingle-lyrics",
+        brandPhonetic: input.brandName === "OGTool" ? "Oh Gee Tool" : input.brandName,
+        angle: input.angle,
+        lyrics: input.lyrics,
+        musicLengthMs: jinglePreviewDurationMs,
+        compositionPlan: {
+          chunks: input.captions.map((caption) => ({
+            text: caption.text,
+            duration_ms: caption.endMs - caption.startMs,
+            positive_styles: [input.musicStyle],
+            negative_styles: ["generic"],
+            context_adherence: "high",
+          })) as JingleAdScene["layout"]["compositionPlan"]["chunks"],
+        },
+        selfCheckPassed: "Real bundled Wiggly brand-jingle output.",
+      },
+      metadata: {
+        candidateIndex: 0,
+        generationBatchId: `homepage-brand-jingle-${input.id}`,
+        researchRunId: `homepage-brand-jingle-${input.id}`,
+        brandSnapshotId: `homepage-brand-jingle-${input.id}`,
+        model: "bundled-homepage-preview",
+        provider: "deterministic",
+        generatedAt: 0,
+      },
+    },
+  };
+}
+
+const homepageJinglePreviews = [
+  createHomepageJinglePreview({
+    id: "apple-all-in-one-place",
+    brandName: "Apple",
+    brandUrl: "https://apple.com",
+    description: "Devices designed to work together.",
+    colors: ["#0071E3", "#2997FF", "#FFFFFF"],
+    accentColor: "#2997FF",
+    audioUrl: "/homepage/jingles/apple-all-in-one-place.mp3",
+    headline: "Apple magic, all in one place",
+    subheadline: "Every device in sync, keeping your pace.",
+    ctaText: "Discover Apple",
+    transcript: "Apple magic, all in one place\nEvery device in sync, keeping your pace\nYour old phone drags, your laptop won't play\nM5 wakes up, chases lags away\nApple magic, all in one place\nApple",
+    captions: [
+      { text: "Apple magic, all in one place", startMs: 0, endMs: 6_000 },
+      { text: "M5 wakes up, chases lags away", startMs: 6_000, endMs: 14_000 },
+      { text: "Apple magic, all in one place", startMs: 14_000, endMs: 20_000 },
+    ],
+    lyrics: ["Apple magic, all in one place", "Every device in sync, keeping your pace", "Your old phone drags, your laptop won't play", "M5 wakes up, chases lags away", "Apple magic, all in one place", "Apple"],
+    angle: "One connected ecosystem across devices.",
+    musicStyle: "funk pop",
+  }),
+  createHomepageJinglePreview({
+    id: "davids-no-time-to-bake",
+    brandName: "David's Cookies",
+    brandUrl: "https://davidscookies.com",
+    description: "Fresh-baked gifts delivered door to door.",
+    colors: ["#D6001C", "#FFFFFF", "#097DB3"],
+    accentColor: "#D6001C",
+    audioUrl: "/homepage/jingles/davids-no-time-to-bake.mp3",
+    headline: "Need a gift that hits, no time to bake?",
+    subheadline: "Fresh-baked cookies delivered for gifting.",
+    ctaText: "Shop fresh baked",
+    transcript: "Need a gift that hits, no time to bake?\nDavid's Cookies, fresh, no mistake\nNo more stale sweets from the grocery aisle\nSend a tin that travels mile to mile\nFresh baked, packed tight, make em smile\nNeed a gift that hits, no time to bake?\nDavid's Cookies",
+    captions: [
+      { text: "Need a gift that hits, no time to bake?", startMs: 0, endMs: 6_000 },
+      { text: "Fresh baked, packed tight, make em smile", startMs: 6_000, endMs: 14_000 },
+      { text: "David's Cookies", startMs: 14_000, endMs: 20_000 },
+    ],
+    lyrics: ["Need a gift that hits, no time to bake?", "David's Cookies, fresh, no mistake", "No more stale sweets from the grocery aisle", "Send a tin that travels mile to mile", "Fresh baked, packed tight, make em smile", "Need a gift that hits, no time to bake?", "David's Cookies"],
+    angle: "A memorable answer to last-minute gifting.",
+    musicStyle: "modern hip hop",
+  }),
+  createHomepageJinglePreview({
+    id: "ogtool-break-the-rules",
+    brandName: "OGTool",
+    brandUrl: "https://ogtool.com",
+    description: "Reddit campaigns and AI visibility for D2C brands.",
+    colors: ["#2563EB", "#FFFFFF", "#111827"],
+    accentColor: "#52D6FF",
+    audioUrl: "/homepage/jingles/ogtool-break-the-rules.mp3",
+    headline: "Oh Gee Tool, we break the old rules",
+    subheadline: "Turn paid attention into traffic that compounds.",
+    ctaText: "Book a call",
+    transcript: "Oh Gee Tool, we break the old rules\nTurn your spend into something that compounds and fuels\nAds gettin' pricey, no stackin' effect\nWe seed Reddit threads for the traffic you get\nRank on Google fast, AI knows your name\nInbound from the model, not the same old game\nOh Gee Tool, we break the old rules\nTurn your spend into something that compounds and fuels\nOh Gee Tool",
+    captions: [
+      { text: "Oh Gee Tool, we break the old rules", startMs: 0, endMs: 6_000 },
+      { text: "Inbound from the model, not the same old game", startMs: 6_000, endMs: 14_000 },
+      { text: "Oh Gee Tool, we break the old rules", startMs: 14_000, endMs: 20_000 },
+    ],
+    lyrics: ["Oh Gee Tool, we break the old rules", "Turn your spend into something that compounds and fuels", "Ads gettin' pricey, no stackin' effect", "We seed Reddit threads for the traffic you get", "Rank on Google fast, AI knows your name", "Inbound from the model, not the same old game", "Oh Gee Tool, we break the old rules", "Turn your spend into something that compounds and fuels", "Oh Gee Tool"],
+    angle: "Replace rising ad costs with visibility that compounds.",
+    musicStyle: "modern hip hop",
+  }),
+] as const;
 
 function VisualizerArtwork() {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -323,7 +423,7 @@ function VisualizerArtwork() {
   );
 }
 
-function JingleArtwork() {
+function JingleArtwork({ preview }: { preview: HomepageJinglePreview }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [soundOn, setSoundOn] = useState(false);
   const [timeSeconds, setTimeSeconds] = useState(0);
@@ -331,10 +431,14 @@ function JingleArtwork() {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return undefined;
-    audio.muted = true;
-    void audio.play().catch(() => undefined);
+    audio.currentTime = 0;
+    audio.muted = false;
+    setTimeSeconds(0);
+    void audio.play()
+      .then(() => setSoundOn(true))
+      .catch(() => setSoundOn(false));
     return () => audio.pause();
-  }, []);
+  }, [preview.audioUrl]);
 
   const toggleSound = async () => {
     const audio = audioRef.current;
@@ -360,19 +464,18 @@ function JingleArtwork() {
     <div className="relative h-full overflow-hidden bg-[#07111F]">
       <audio
         ref={audioRef}
-        src="/homepage/davids-cookies-brand-jingle.mp3"
+        src={preview.audioUrl}
         autoPlay
-        muted
         loop
         preload="metadata"
         onTimeUpdate={(event) => setTimeSeconds(event.currentTarget.currentTime)}
       />
-      <AdRenderSurface scene={jinglePreviewScene} timeSeconds={timeSeconds} />
+      <AdRenderSurface scene={preview.scene} timeSeconds={timeSeconds} />
       <button
         type="button"
         onClick={toggleSound}
         aria-pressed={soundOn}
-        aria-label={soundOn ? "Mute brand jingle" : "Unmute brand jingle"}
+        aria-label={soundOn ? "Mute brand jingle" : "Play brand jingle"}
         className="absolute right-3 top-3 z-20 grid size-10 place-items-center rounded-full border-2 border-[#080817] bg-white text-[#080817] shadow-[3px_3px_0_#080817] transition hover:-translate-y-0.5"
         title={soundOn ? "Mute brand jingle" : "Hear the brand jingle"}
       >
@@ -501,7 +604,9 @@ function FormatArtwork({ slide }: { slide: FormatSlide }) {
   }
 
   if (slide.visual === "jingle") {
-    return <JingleArtwork />;
+    const preview = homepageJinglePreviews.find((item) => item.id === slide.jinglePreviewId)
+      || homepageJinglePreviews[0];
+    return <JingleArtwork preview={preview} />;
   }
 
   if (slide.visual === "motion") {
@@ -589,7 +694,7 @@ export function WaitlistFormatCarousel() {
   const compactFooterCopy = slide.visual === "three-d"
     ? "Real Wiggly-generated 3D ad highlights."
     : slide.visual === "jingle"
-      ? "Tap the sound button to hear the jingle."
+      ? "A real Wiggly-generated brand jingle."
       : slide.visual === "visualizer"
         ? "Tap the sound button to hear both voices."
         : null;
@@ -598,7 +703,7 @@ export function WaitlistFormatCarousel() {
     if (paused) return undefined;
     const timer = window.setInterval(() => {
       setActiveIndex((current) => (current + 1) % formatSlides.length);
-    }, slide.visual === "brainrot" ? 7_500 : 4_500);
+    }, slide.visual === "brainrot" ? 7_500 : slide.visual === "jingle" ? 20_500 : 4_500);
     return () => window.clearInterval(timer);
   }, [activeIndex, paused, slide.visual]);
 
