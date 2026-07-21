@@ -322,8 +322,7 @@ export function WaitlistFormatCarousel() {
     >
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#626b82]">One URL, many ways in</p>
-          <p className="mt-1 text-xl font-black text-[#080817]">Pick the format that fits the angle.</p>
+          <p className="text-xl font-black text-[#080817]">Pick the format that fits the angle.</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <button
