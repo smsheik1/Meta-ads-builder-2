@@ -12,6 +12,7 @@ import {
 const missingProductImageMessage = "3D Breakdown needs a real product image for this site. Use a product page, add a product image, or switch to Reviews/Visualizer.";
 const buyerActionPattern = /\b(shop|try|get|buy|order|start|choose|book|download|subscribe|visit)\b/i;
 const unusableCtaPattern = /\b(see the mechanism|the journey is the product|visible mechanism|start\b.{0,64}\bfrom\b)\b/i;
+const brandOriginPattern = /\b(origin|history|founder|founded|began|beginning|first product|established|started)\b/i;
 
 const cleanCtaText = (value: string | null | undefined) => String(value || "")
   .replace(/\s+/g, " ")
@@ -168,6 +169,20 @@ export const selectThreeDBreakdownProductAnchor = (
   };
 };
 
+const isBrandOriginStory = (
+  research: StoredWebsiteResearchResult,
+  variant: ThreeDBreakdownVariant,
+) => brandOriginPattern.test([
+  research.finalUrl || research.websiteUrl,
+  research.brand.title,
+  research.brand.description,
+  research.brandBrief.offer,
+  variant.variantAngle,
+  variant.customerProblem,
+  variant.mechanismSummary,
+  variant.visualMetaphor,
+].join(" "));
+
 export function createThreeDBreakdownAdScene({
   candidateIndex,
   evidenceItems,
@@ -193,7 +208,11 @@ export function createThreeDBreakdownAdScene({
   if (!evidence) throw new Error("3D Breakdown evidence item is missing.");
   const accentColor = pickSceneAccentColor(research.brand.colors);
   const productAnchor = selectThreeDBreakdownProductAnchor(research);
-  if (variant.visualStyle === "presenter-teardown-vsl" && !productAnchor?.imageUrl) {
+  if (
+    variant.visualStyle === "presenter-teardown-vsl"
+    && !productAnchor?.imageUrl
+    && !isBrandOriginStory(research, variant)
+  ) {
     throw new Error(missingProductImageMessage);
   }
   const productImageUrls = productAnchor?.imageUrl ? [productAnchor.imageUrl] : [];
