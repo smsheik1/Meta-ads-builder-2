@@ -13,7 +13,6 @@ import {
   Play,
   RefreshCw,
   Share2,
-  Sparkles,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,6 +33,7 @@ import type { ThreeDBreakdownStoryDirection } from "@/features/formats/three-d-b
 import type { AdFormatId, ThreeDBreakdownAdScene, ThreeDBreakdownClipIndex } from "@/features/scene/types";
 import { CreateAssemblyLine, type CreateAssemblyStageStatus } from "./CreateAssemblyLine";
 import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
+import { ThreeDBreakdownStoryDirectionsCard } from "./ThreeDBreakdownStoryDirectionsCard";
 import { ThreeDBreakdownMediaPromptEditor } from "./ThreeDBreakdownMediaPromptEditor";
 import { ThreeDBreakdownScriptEditor } from "./ThreeDBreakdownScriptEditor";
 type SaveStatus = "idle" | "loading" | "ready" | "error";
@@ -438,105 +438,6 @@ export function CreateQuickActions({
             </ScrollArea>
           </SheetContent>
         </Sheet>
-      ) : null}
-    </section>
-  );
-}
-
-function ThreeDBreakdownStoryDirectionsCard({
-  directions,
-  error,
-  onSelectDirection,
-  onUseDirection,
-  selectedDirectionId,
-  status,
-}: {
-  directions: ThreeDBreakdownStoryDirection[];
-  error: string;
-  onSelectDirection: (directionId: string) => void;
-  onUseDirection: (direction: ThreeDBreakdownStoryDirection) => void;
-  selectedDirectionId: string;
-  status: BrickStoryboardStatus;
-}) {
-  const selectedDirection = directions.find((direction) => direction.directionId === selectedDirectionId) || directions[0] || null;
-
-  return (
-    <section className="rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-950/6" data-three-d-story-directions-card="true">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Story directions</p>
-          <h3 className="mt-1 text-lg font-black text-slate-950">Pick the premise</h3>
-          <p className="mt-1 text-[11px] font-bold leading-4 text-slate-500">
-            Choose the story before spending on images or video.
-          </p>
-        </div>
-        <Badge variant="outline" className="rounded-full text-[10px] font-black uppercase">
-          {status === "loading" ? "Finding ideas" : `${directions.length || 0} ideas`}
-        </Badge>
-      </div>
-
-      {status === "loading" ? (
-        <div className="flex min-h-28 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-xs font-black uppercase tracking-[0.12em] text-slate-400">
-          <Loader2 className="mr-2 size-4 animate-spin" />
-          Building story slate
-        </div>
-      ) : null}
-
-      {error ? (
-        <p role="alert" className="mb-3 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
-          {error}
-        </p>
-      ) : null}
-
-      {directions.length ? (
-        <div className="space-y-2">
-          {directions.map((direction) => {
-            const selected = direction.directionId === selectedDirectionId;
-            return (
-              <article
-                key={direction.directionId}
-                className={`rounded-2xl border p-3 transition ${selected ? "border-slate-950 bg-slate-950 text-white shadow-lg shadow-slate-950/12" : "border-slate-200 bg-slate-50 text-slate-950"}`}
-                data-three-d-story-direction={direction.directionId}
-              >
-                <button
-                  type="button"
-                  onClick={() => onSelectDirection(direction.directionId)}
-                  className="w-full text-left"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className={`text-[9px] font-black uppercase tracking-[0.16em] ${selected ? "text-white/55" : "text-slate-400"}`}>
-                        {direction.category}
-                      </p>
-                      <h4 className="mt-1 text-sm font-black leading-4">{direction.hookLine}</h4>
-                      <p className={`mt-1 text-[11px] font-bold leading-4 ${selected ? "text-white/70" : "text-slate-500"}`}>
-                        {direction.subheadline}
-                      </p>
-                    </div>
-                    {selected ? <Check className="mt-1 size-4 shrink-0" /> : <Sparkles className="mt-1 size-4 shrink-0 text-slate-400" />}
-                  </div>
-                </button>
-                <details className={`mt-3 rounded-xl border px-3 py-2 text-[11px] font-semibold leading-4 ${selected ? "border-white/15 bg-white/10 text-white/75" : "border-slate-200 bg-white text-slate-600"}`}>
-                  <summary className="cursor-pointer text-[10px] font-black uppercase tracking-[0.12em]">
-                    Why this works
-                  </summary>
-                  <p className="mt-2">{direction.shortSummary}</p>
-                  <p className="mt-2"><span className="font-black">Angle:</span> {direction.adAngle}</p>
-                  <p className="mt-2"><span className="font-black">3D reveal:</span> {direction.visualEngine}</p>
-                  <p className="mt-2"><span className="font-black">Why compelling:</span> {direction.whyCompelling}</p>
-                </details>
-                <Button
-                  type="button"
-                  onClick={() => onUseDirection(direction)}
-                  className={`mt-3 h-9 w-full rounded-2xl text-[11px] font-black uppercase tracking-[0.12em] ${selected ? "bg-white text-slate-950 hover:bg-slate-100" : "bg-slate-950 text-white hover:bg-slate-800"}`}
-                  data-three-d-use-story-direction={direction.directionId}
-                >
-                  {status === "error" && selected ? "Retry direction" : "Use direction"}
-                </Button>
-              </article>
-            );
-          })}
-        </div>
       ) : null}
     </section>
   );
