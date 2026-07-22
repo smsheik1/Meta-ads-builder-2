@@ -1,0 +1,23 @@
+{
+  "provider": "fish-audio",
+  "model": "s2.1-pro-free",
+  "voices": {
+    "naruto": "c658e20af0364df6b73bdcef998b6a8b",
+    "kakashi": "6fb91544d42b4d57a5b408c398459237",
+    "orochimaru": "8ecce156f83e4fa0bb75f99b30894e63",
+    "yugi": "a27f617599df41f9aa6e95bb57ac69ba",
+    "kaiba": "710a3478dcc4477d8aae292c2de85964",
+    "joey": "2ef97f8ba13a4f71a7e291a3998af362"
+  },
+  "dialogue": {
+    "format": "wav",
+    "sampleRate": 44100,
+    "speed": 1.08
+  },
+  "music": {
+    "source": "/Users/shaz/Downloads/videoplayback (4).mp4",
+    "localPath": "assets/audio/background-music.mp3",
+    "volume": 0.1,
+    "loop": true
+  }
+}

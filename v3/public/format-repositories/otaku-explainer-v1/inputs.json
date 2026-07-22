@@ -1,0 +1,28 @@
+{
+  "fields": [
+    {
+      "id": "topic",
+      "label": "What should the characters explain?",
+      "type": "text",
+      "required": true
+    },
+    {
+      "id": "storyWorld",
+      "label": "Which story world should teach it?",
+      "type": "select",
+      "required": true,
+      "options": ["Naruto", "Yu-Gi-Oh"]
+    },
+    {
+      "id": "cast",
+      "label": "Who is in the conversation?",
+      "type": "character-list",
+      "required": true
+    }
+  ],
+  "defaults": {
+    "topic": "Compilers versus interpreters",
+    "storyWorld": "Naruto",
+    "cast": ["Naruto", "Kakashi", "Orochimaru"]
+  }
+}

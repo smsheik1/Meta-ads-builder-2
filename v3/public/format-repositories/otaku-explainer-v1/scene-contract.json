@@ -1,0 +1,26 @@
+{
+  "scene": {
+    "id": "stable string",
+    "speaker": "character asset id",
+    "dialogue": "speech bubble and voice text",
+    "background": "background asset id",
+    "estimatedDurationMs": "positive number",
+    "characters": [
+      {
+        "asset": "character asset id",
+        "x": "0 to 100 percent",
+        "bottom": "0 to 100 percent",
+        "width": "1 to 100 percent",
+        "rotate": "degrees"
+      }
+    ],
+    "accent": "none | question | compiler | interpreter | network | duel"
+  },
+  "run": {
+    "input": "exact user input",
+    "scenes": "filled scene array",
+    "audio": "one generated clip per scene plus music",
+    "rendererVersion": "immutable renderer version",
+    "output": "final mp4 path"
+  }
+}
