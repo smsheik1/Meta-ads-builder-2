@@ -333,9 +333,21 @@ const parseRevealPatternArray = (value: unknown, label: string) => {
   return Array.from(new Set(patterns));
 };
 
+const normalizeForSubjectMatch = (value: string) => value
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-z0-9]+/gi, " ")
+  .toLowerCase()
+  .trim();
+
+const brandMarker = (brandName: string) => normalizeForSubjectMatch(brandName)
+  .split(" ")
+  .find((token) => token.length >= 3 && !["the", "and", "company", "inc", "llc"].includes(token)) || "";
+
 const parseStoryDirectionSlateOutput = (
   raw: string,
   evidenceItems: ThreeDBreakdownEvidenceItem[],
+  storySubject?: ThreeDBreakdownResolvedStorySubject,
 ): ThreeDBreakdownStoryDirectionSlate => {
   const parsed = parseJsonObject(raw);
   const rawDirections = Array.isArray(parsed.directions) ? parsed.directions : [];
@@ -385,6 +397,20 @@ const parseStoryDirectionSlateOutput = (
       parsedDirection.adAngle,
       parsedDirection.visualEngine,
     ].join(" ");
+    const selectedProductTitle = storySubject?.kind === "product" ? storySubject.product?.title || "" : "";
+    if (
+      selectedProductTitle
+      && !normalizeForSubjectMatch(directionText).includes(normalizeForSubjectMatch(selectedProductTitle))
+    ) {
+      throw new Error(`3D Breakdown story direction ${index + 1} must name the selected product ${selectedProductTitle}.`);
+    }
+    const selectedBrandMarker = storySubject?.kind === "brand" ? brandMarker(storySubject.brandName || "") : "";
+    if (
+      selectedBrandMarker
+      && !normalizeForSubjectMatch(`${parsedDirection.hookLine} ${parsedDirection.subheadline}`).includes(selectedBrandMarker)
+    ) {
+      throw new Error(`3D Breakdown story direction ${index + 1} must name the selected brand in its hook or subheadline.`);
+    }
     for (const [claim, pattern] of storySlateMechanismClaims) {
       if (pattern.test(directionText) && !pattern.test(evidence.text)) {
         throw new Error(`3D Breakdown story direction ${index + 1} invented a ${claim} mechanism not found in selected evidence.`);
@@ -911,7 +937,7 @@ export async function generateThreeDBreakdownStoryDirectionsFromResearch(
   const raw = await callDirector(prompt);
   let slate: ThreeDBreakdownStoryDirectionSlate;
   try {
-    slate = parseStoryDirectionSlateOutput(raw, directorEvidenceItems);
+    slate = parseStoryDirectionSlateOutput(raw, directorEvidenceItems, resolvedStorySubject);
   } catch (error) {
     console.warn("[wiggly:3d-breakdown] story-slate:parse:retry", {
       elapsedMs: Date.now() - startedAt,
@@ -922,7 +948,7 @@ export async function generateThreeDBreakdownStoryDirectionsFromResearch(
       validationErrors: [structuredErrorFrom(error)],
     });
     const retryRaw = await callDirector(retryPrompt);
-    slate = parseStoryDirectionSlateOutput(retryRaw, directorEvidenceItems);
+    slate = parseStoryDirectionSlateOutput(retryRaw, directorEvidenceItems, resolvedStorySubject);
   }
   console.log("[wiggly:3d-breakdown] story-slate:ready", {
     elapsedMs: Date.now() - startedAt,

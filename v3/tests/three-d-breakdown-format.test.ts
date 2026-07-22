@@ -1081,6 +1081,70 @@ assert.ok(storySlate.directions[0]?.visualEngine.includes("miniature route"));
 assert.ok(!(THREE_D_REVEAL_PATTERNS as readonly string[]).includes("proof-blocks"));
 assert.ok(evidenceItems.every((item) => !item.possibleRevealPatterns.includes("proof-blocks")));
 
+const selectedGrunsEvidence = extractThreeDBreakdownEvidence(grunsProductResearch)
+  .find((item) => item.evidenceUseType !== "category" && item.visualPotentialScore >= 0.65)!;
+const selectedGrunsDirections = [1, 2, 3, 4, 5].map((index) => ({
+  hookLine: `Grüns Daily Nutrition Gummies make one daily routine visible ${index}.`,
+  subheadline: "See the selected gummy routine.",
+  shortSummary: "Separate daily ingredients fill the counter. Grüns Daily Nutrition Gummies remain central as the routine resolves around the selected pouch.",
+  category: "Product mystery",
+  whyCompelling: "The exact selected product stays at the center of the reveal.",
+  adAngle: "Make one daily nutrition routine visible.",
+  visualEngine: "Ingredients orbit Grüns Daily Nutrition Gummies while the selected pouch stays central.",
+  evidenceIndex: selectedGrunsEvidence.evidenceIndex,
+  possibleRevealPatterns: selectedGrunsEvidence.possibleRevealPatterns,
+}));
+let selectedProductSlateCalls = 0;
+const selectedProductSlate = await generateThreeDBreakdownStoryDirectionsFromResearch(grunsProductResearch, {
+  nvidiaNimApiKey: "test-key",
+  storySubject: { kind: "product", productHandle: "daily-gummies" },
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    selectedProductSlateCalls += 1;
+    if (selectedProductSlateCalls === 1) {
+      assert.match(directorPrompt, /Products: Grüns Daily Nutrition Gummies/);
+      assert.doesNotMatch(directorPrompt, /Grüns Logo Hat/);
+      return JSON.stringify({
+        recommendedIndex: 1,
+        directions: selectedGrunsDirections.map((direction) => ({
+          ...direction,
+          hookLine: "A generic supplement routine hides more than buyers expect.",
+          subheadline: "See the daily routine.",
+          shortSummary: "Separate daily ingredients fill the counter. A generic supplement remains central as the routine resolves.",
+          visualEngine: "Ingredients orbit a generic supplement while the pouch stays central.",
+        })),
+      });
+    }
+    assert.match(directorPrompt, /must name the selected product Grüns Daily Nutrition Gummies/);
+    return JSON.stringify({ recommendedIndex: 1, directions: selectedGrunsDirections });
+  },
+});
+assert.equal(selectedProductSlateCalls, 2, "A product slate that drops the selected item should receive one validation retry.");
+assert.ok(selectedProductSlate.directions.every((direction) => /Grüns Daily Nutrition Gummies/i.test([
+  direction.hookLine,
+  direction.subheadline,
+  direction.shortSummary,
+  direction.visualEngine,
+].join(" "))));
+
+let explicitBrandSlateCalls = 0;
+const explicitBrandSlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
+  nvidiaNimApiKey: "test-key",
+  storySubject: { kind: "brand" },
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    explicitBrandSlateCalls += 1;
+    const directions = simplifiedStoryDirectionPayload.directions.map((direction) => ({
+      ...direction,
+      ...(explicitBrandSlateCalls > 1 ? { hookLine: `David's Cookies: ${direction.hookLine}` } : {}),
+    }));
+    if (explicitBrandSlateCalls > 1) {
+      assert.match(directorPrompt, /must name the selected brand in its hook or subheadline/);
+    }
+    return JSON.stringify({ recommendedIndex: 1, directions });
+  },
+});
+assert.equal(explicitBrandSlateCalls, 2, "An anonymous brand story should receive one validation retry.");
+assert.ok(explicitBrandSlate.directions.every((direction) => /David's Cookies/i.test(direction.hookLine)));
+
 let deliveryTensionStorySlateCalls = 0;
 await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
   nvidiaNimApiKey: "test-key",

@@ -121,13 +121,26 @@ const evidenceForPrompt = (evidence: ThreeDBreakdownEvidenceItem[]) => (
   ].join("\n")).join("\n\n")
 );
 
-const brandForPrompt = (research: StoredWebsiteResearchResult) => `Brand:
+const brandForPrompt = (
+  research: StoredWebsiteResearchResult,
+  storySubject?: ThreeDBreakdownResolvedStorySubject,
+) => {
+  const selectedProduct = storySubject?.kind === "product" ? storySubject.product : undefined;
+  const offer = selectedProduct
+    ? [selectedProduct.title, selectedProduct.productType].filter(Boolean).join(" · ")
+    : research.brandBrief.offer;
+  const products = selectedProduct
+    ? selectedProduct.title
+    : (research.productCatalog?.products || []).slice(0, 4).map((product) => product.title).join(" | ");
+
+  return `Brand:
 Name: ${research.brandBrief.brandName || research.brand.name}
-Offer: ${research.brandBrief.offer.slice(0, 180)}
+Offer: ${offer.slice(0, 180)}
 Audience: ${research.brandBrief.audience.slice(0, 160)}
 Buyer moments: ${research.brandBrief.buyerMoments.slice(0, 3).join(" | ").slice(0, 300) || "not available"}
 CTA: ${research.brandBrief.ctaDirection || "Go"}
-Products: ${(research.productCatalog?.products || []).slice(0, 4).map((product) => product.title).join(" | ").slice(0, 220) || "not available"}`;
+Products: ${products.slice(0, 220) || "not available"}`;
+};
 
 const lockedVisualPlanForPrompt = (script: ThreeDBreakdownLockedStyleBScript) => ({
   variantAngle: script.variantAngle,
@@ -225,7 +238,7 @@ Creative rules:
 - Never include creator names or style-cloning language in JSON.
 ${selectedOnly ? "" : `- Narration totals ${THREE_D_MIN_SCRIPT_WORDS}-${THREE_D_MAX_SCRIPT_WORDS} words across four narrationBeats plus ctaLine. Each line is one sentence.`}
 
-${brandForPrompt(research)}
+${brandForPrompt(research, storySubject)}
 
 Evidence items:
 ${evidenceForPrompt(evidence)}
@@ -278,7 +291,7 @@ Rules:
 
 Useful shapes: a pile compresses into one documented product; a hidden part opens to show how it works; distance becomes a route; a product visibly resolves the customer problem; an origin process rebuilds the first product.
 
-${brandForPrompt(research)}
+${brandForPrompt(research, storySubject)}
 
 Evidence items:
 ${evidenceForPrompt(evidence)}
@@ -381,7 +394,7 @@ Plain-spoken pass — do this last before returning JSON:
 
 Story-shape examples only: a slipping lid meets gripping teeth and releases; sender uncertainty crosses distance and becomes proof; a scattered routine compresses only when evidence supports that compression. Do not copy these nouns into unrelated stories.
 
-${brandForPrompt(research)}
+${brandForPrompt(research, storySubject)}
 
 Evidence items:
 ${evidenceForPrompt(evidence)}
