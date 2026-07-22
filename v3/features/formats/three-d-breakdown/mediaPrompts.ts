@@ -190,7 +190,7 @@ export const buildThreeDProductionFramePrompt = (
   sharedStyle(scene),
   productLock(scene),
   supplementDirection(scene),
-  `APPROVED ANCHOR CREATIVE PROMPT: ${anchorPrompt}`,
+  `APPROVED ANCHOR CREATIVE PROMPT: ${sanitizeThreeDStoryboardImagePlan(anchorPrompt)}`,
   `ROLE: ${frameRole(scene, frameIndex)}`,
   frameIndex === 1
     ? "CONTINUITY: establish the panel's feature-animation CGI demonstrator, product, recurring objects, world, and camera relationship. Keep modeled hair, visible eyes, matte CG skin, plain clothing, and a closed mouth."

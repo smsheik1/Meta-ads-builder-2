@@ -2459,6 +2459,18 @@ assert.equal(
 assert.ok(editedAnchorPromptScene.layout.clipPlans?.every((plan) => plan.video?.status === "idle"));
 assert.ok(buildThreeDProductionFramePrompt(editedAnchorPromptScene, firstAnchorFrameIndex).includes("Macro cookie tin opening with warm crumbs"));
 
+const metadataAnchorPromptScene = editThreeDBreakdownMediaPrompt(
+  readyMediaScene,
+  { kind: "anchor", frameIndex: firstAnchorFrameIndex },
+  "Frame 1: Problem state Role: problem Visual: A silent CGI carpenter stands at a dusty workbench. Camera: Medium wide. Motion: Dust drifts. Renderer overlay: Total Ruin Editing note: Establish the historical problem.",
+);
+const metadataAnchorProviderPrompt = buildThreeDProductionFramePrompt(metadataAnchorPromptScene, firstAnchorFrameIndex);
+assert.ok(metadataAnchorProviderPrompt.includes("silent CGI carpenter"));
+assert.ok(!metadataAnchorProviderPrompt.includes("Problem state"));
+assert.ok(!metadataAnchorProviderPrompt.includes("Renderer overlay"));
+assert.ok(!metadataAnchorProviderPrompt.includes("Total Ruin"));
+assert.ok(!metadataAnchorProviderPrompt.includes("Editing note"));
+
 const editedClipPromptScene = editThreeDBreakdownMediaPrompt(readyMediaScene, { kind: "clip", clipIndex: 1 }, "Push through the open cookie tin, then whip-pan into the hidden freshness barrier.");
 assert.equal(editedClipPromptScene.layout.clipPlans?.[0]?.prompt, "Push through the open cookie tin, then whip-pan into the hidden freshness barrier.");
 assert.ok(editedClipPromptScene.layout.clipPlans?.every((plan) => plan.video?.status === "idle"));
