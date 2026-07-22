@@ -55,7 +55,7 @@ assert.ok(
   createClientSource.includes("showThreeDStoryDirectionStage") &&
     createClientSource.includes("showThreeDProgressCanvas") &&
     createClientSource.includes("selectedSceneForCanvas") &&
-    createClientSource.includes("const scriptFailed = threeDStoryDirections.length > 0") &&
+    threeDProgressCanvasSource.includes("const scriptStage = storyDirectionCount > 0") &&
     canvasColumnSource.includes("threeDProgress ?") &&
     canvasColumnSource.includes("<ThreeDBreakdownProgressCanvas") &&
     quickActionsSource.includes("!showThreeDStorySlateStage ?") &&

@@ -54,5 +54,5 @@ export const selectThreeDBreakdownCta = ({
   if (supported) return supported;
 
   if (subjectKind === "custom") return `Learn more about ${shortName(brandName, 4)}.`;
-  return `Shop ${shortName(productTitle || brandName || "this product")}`;
+  return `Shop ${shortName(productTitle || brandName || "this product")} today.`;
 };

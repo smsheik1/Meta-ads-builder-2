@@ -53,6 +53,7 @@ import {
 import { createCaptionsForVoiceover } from "../features/audio/sceneAudio";
 import type { ThreeDBreakdownAdScene } from "../features/scene/types";
 import { getRenderMusicBed } from "../remotion-entry/RemotionAdScene";
+import { getAdSceneDimensions, getAdSceneDurationInFrames } from "../remotion-entry/Root";
 import { makeResearch } from "./helpers/research";
 
 const research = makeResearch({
@@ -583,7 +584,7 @@ assert.equal(selectThreeDBreakdownBuyerCta({
   siteCta: "The journey is the product.",
   productTitle: "Grüns",
   brandName: "Grüns",
-}), "Shop Grüns");
+}), "Shop Grüns today.");
 assert.equal(selectThreeDBreakdownBuyerCta({
   generatedCta: "Get your daily Grüns.",
   siteCta: "Shop now.",
@@ -2037,6 +2038,56 @@ const selectedProductScene = createThreeDBreakdownAdScene({
 });
 assert.equal(selectedProductScene.layout.productAnchor?.title, "Butter Pecan Meltaways Tin");
 assert.equal(selectedProductScene.creative.ctaText, "Try Butter Pecan Meltaways Tin today.");
+const selectedGrunsProductScene = createThreeDBreakdownAdScene({
+  candidateIndex: 0,
+  evidenceItems: extractThreeDBreakdownEvidence(grunsLiveOrderResearch),
+  generationBatchId: "batch_selected_gruns_product",
+  model: generated.model,
+  provider: generated.provider,
+  research: grunsLiveOrderResearch,
+  siteContract: { ...generated.siteContract, primarySiteType: "ecommerce" },
+  storySubject: { kind: "product", productHandle: "gruns-kids" },
+  variant: makeVariant({
+    visualStyle: "presenter-teardown-vsl",
+    evidenceIndex: grunsNutrientPackEvidence.evidenceIndex,
+    evidenceUseType: grunsNutrientPackEvidence.evidenceUseType,
+  }),
+});
+assert.equal(selectedGrunsProductScene.layout.productAnchor?.title, "Grüns Kids");
+assert.deepEqual(selectedGrunsProductScene.layout.storyContract.storySubject, {
+  kind: "product",
+  productHandle: "gruns-kids",
+});
+assert.equal(selectedGrunsProductScene.creative.ctaText, "Try Grüns Kids today.");
+
+const customerProblemScene = createThreeDBreakdownAdScene({
+  candidateIndex: 0,
+  evidenceItems: generated.evidenceItems,
+  generationBatchId: "batch_customer_problem",
+  model: generated.model,
+  provider: generated.provider,
+  research,
+  siteContract: generated.siteContract,
+  storySubject: { kind: "customer-problem" },
+  variant: makeVariant({ customerProblem: "last-minute gifts can still feel generic" }),
+});
+assert.deepEqual(customerProblemScene.layout.storyContract.storySubject, { kind: "customer-problem" });
+assert.equal(customerProblemScene.layout.storyContract.customerProblem, "last-minute gifts can still feel generic");
+assert.equal(customerProblemScene.layout.productAnchor, undefined);
+
+const customBrief = "Show how nationwide delivery turns distance into a shared dessert moment.";
+const customBriefScene = createThreeDBreakdownAdScene({
+  candidateIndex: 0,
+  evidenceItems: generated.evidenceItems,
+  generationBatchId: "batch_custom_brief",
+  model: generated.model,
+  provider: generated.provider,
+  research,
+  siteContract: generated.siteContract,
+  storySubject: { kind: "custom", brief: customBrief },
+  variant: makeVariant(),
+});
+assert.deepEqual(customBriefScene.layout.storyContract.storySubject, { kind: "custom", brief: customBrief });
 assert.equal(scene.format, "three-d-breakdown");
 assert.equal(scene.layout.durationMs, 20_000);
 assert.equal(scene.layout.scriptBeats.length, 5);
@@ -2242,6 +2293,8 @@ assert.equal(styleBScene.layout.storyContract.ctaLine, "Shop memorable cookie gi
 assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => clip.frameIndexes), [[1, 2, 3], [4, 5, 6]]);
 assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => clip.durationSeconds), [10, 10]);
 assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => [clip.startMs, clip.endMs]), [[0, 10000], [10000, 20000]]);
+assert.deepEqual(getAdSceneDimensions(styleBScene), { width: 1080, height: 1920 });
+assert.equal(getAdSceneDurationInFrames(styleBScene, 60), 1_200);
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("clip 1 of 2"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("Time-code the clip into storyboard sub-shots"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("0.0-3.3s = frame 1"));
