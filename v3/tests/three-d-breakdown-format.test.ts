@@ -34,6 +34,7 @@ import {
   buildThreeDSeedancePrompt,
   buildThreeDStoryboardBoardPrompt,
   isThreeDSupplementStory,
+  sanitizeThreeDStoryboardImagePlan,
 } from "../features/formats/three-d-breakdown/mediaPrompts";
 import { extractThreeDProductPackshotImageUrl, extractThreeDProductUseImageUrl } from "../features/formats/three-d-breakdown/productReference";
 import { validateThreeDBreakdownScene } from "../features/formats/three-d-breakdown/validate";
@@ -1279,6 +1280,18 @@ assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("six raw, 
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("2-column by 3-row contact sheet"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Each still must fill its cell edge-to-edge"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("visual QA before video generation"));
+
+const sanitizedStoryboardImagePlan = sanitizeThreeDStoryboardImagePlan(
+  "Frame 1: Problem state Role: problem Visual: A silent CGI carpenter stands at a dusty workbench. Camera: Medium wide. Motion: Dust drifts. Renderer overlay: Total Ruin Editing note: Establish the historical problem. Frame 2: Evidence payoff Role: payoff Visual: A wooden duck rolls beside an unprinted archival tag. Camera: Close-up. Motion: The wheels turn. Renderer overlay: 1932 Editing note: Keep proof in overlayText only.",
+);
+assert.ok(sanitizedStoryboardImagePlan.includes("silent CGI carpenter"));
+assert.ok(sanitizedStoryboardImagePlan.includes("unprinted archival tag"));
+assert.ok(!sanitizedStoryboardImagePlan.includes("Problem state"));
+assert.ok(!sanitizedStoryboardImagePlan.includes("Evidence payoff"));
+assert.ok(!sanitizedStoryboardImagePlan.includes("Renderer overlay"));
+assert.ok(!sanitizedStoryboardImagePlan.includes("Total Ruin"));
+assert.ok(!sanitizedStoryboardImagePlan.includes("1932"));
+assert.ok(!sanitizedStoryboardImagePlan.includes("Editing note"));
 assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not generate one board"));
 assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("SIX separate vertical 9:16 production keyframes"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("no black lower bars"));
