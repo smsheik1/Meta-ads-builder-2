@@ -29,18 +29,20 @@
     {
       "id": "yugi",
       "label": "Yugi",
-      "localPath": "assets/images/yugi-alpha.png",
+      "localPath": "assets/images/yugi-clean.png",
+      "postprocess": "remove-checkerboard-and-trim",
       "searchQuery": "Yami Yugi full body transparent png render",
-      "sourcePage": "https://www.pngkey.com/maxpic/u2w7a9w7t4o0a9q8/",
-      "sourceUrl": "https://www.pngkey.com/png/full/163-1635588_yugi-muto-yami-yugi-16-birthday-yami-yugi.png"
+      "sourcePage": "https://www.pngaaa.com/detail/4492094",
+      "sourceUrl": "https://image.pngaaa.com/94/4492094-middle.png"
     },
     {
       "id": "kaiba",
       "label": "Kaiba",
-      "localPath": "assets/images/kaiba.png",
+      "localPath": "assets/images/kaiba-clean.png",
+      "postprocess": "remove-checkerboard-and-trim",
       "searchQuery": "Seto Kaiba full body transparent png render",
-      "sourcePage": "https://toppng.com/show_download/234836/seto-kaiba-png-seto-kaiba-render",
-      "sourceUrl": "https://toppng.com/uploads/preview/seto-kaiba-png-seto-kaiba-render-11563302449vokrfg2zhd.png"
+      "sourcePage": "https://www.pngaaa.com/detail/4354853",
+      "sourceUrl": "https://image.pngaaa.com/853/4354853-middle.png"
     },
     {
       "id": "joey",

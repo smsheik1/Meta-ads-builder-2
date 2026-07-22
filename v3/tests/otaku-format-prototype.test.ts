@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { PNG } from "pngjs";
 
 const packageRoot = path.resolve("public", "format-repositories", "otaku-explainer-v1");
 const readJson = <T>(relativePath: string) => JSON.parse(readFileSync(path.join(packageRoot, relativePath), "utf8")) as T;
@@ -49,21 +50,40 @@ for (const asset of [...assets.characters, ...assets.backgrounds]) {
 }
 assert.equal(assets.characters.find((asset) => asset.id === "naruto")?.postprocess, "remove-white-and-trim");
 assert.equal(assets.characters.find((asset) => asset.id === "orochimaru")?.postprocess, "remove-white-and-trim");
-
-const slice = readJson<{
-  renderer: string;
-  rendererVersion: string;
-  scenes: Array<{ audioPath?: string; durationMs?: number }>;
-}>("outputs/naruto-compilers-slice.run.json");
-assert.equal(slice.renderer, format.renderer);
-assert.match(slice.rendererVersion, /^otaku-format-renderer@/);
-assert.equal(slice.scenes.length, 4);
-for (const scene of slice.scenes) {
-  assert.ok((scene.durationMs || 0) > 2_000);
-  assert.ok(scene.audioPath);
-  assert.ok(existsSync(path.resolve("public", scene.audioPath!)));
+for (const assetId of ["yugi", "kaiba"]) {
+  const asset = assets.characters.find((candidate) => candidate.id === assetId);
+  assert.equal(asset?.postprocess, "remove-checkerboard-and-trim");
+  const image = PNG.sync.read(readFileSync(path.join(packageRoot, asset!.localPath)));
+  const opaqueBorderPixels = Array.from({ length: image.width }, (_, x) => [x, 0, x, image.height - 1])
+    .flatMap(([topX, topY, bottomX, bottomY]) => [
+      image.data[((topY * image.width + topX) * 4) + 3],
+      image.data[((bottomY * image.width + bottomX) * 4) + 3],
+    ])
+    .filter((alpha) => alpha > 16).length;
+  assert.equal(opaqueBorderPixels, 0, `${assetId} must not keep a fake checkerboard background.`);
 }
-assert.ok(existsSync(path.join(packageRoot, "outputs", "naruto-compilers-slice.mp4")));
+
+for (const sourceId of sourceIds) {
+  const run = readJson<{
+    renderer: string;
+    rendererVersion: string;
+    scenes: Array<{ audioPath?: string; durationMs?: number }>;
+  }>(`outputs/${sourceId}.run.json`);
+  assert.equal(run.renderer, format.renderer);
+  assert.match(run.rendererVersion, /^otaku-format-renderer@/);
+  assert.equal(run.scenes.length, readJson<{ scenes: SourceScene[] }>(`scenes/${sourceId}.json`).scenes.length);
+  for (const scene of run.scenes) {
+    assert.ok((scene.durationMs || 0) > 2_000);
+    assert.ok(scene.audioPath && existsSync(path.resolve("public", scene.audioPath)));
+  }
+  assert.ok(existsSync(path.join(packageRoot, "outputs", `${sourceId}.mp4`)), `${sourceId} is missing its proof video.`);
+}
+
+const repositoryPage = readFileSync("app/format-lab/otaku-explainer/OtakuFormatRepositoryClient.tsx", "utf8");
+assert.match(repositoryPage, /Needs rerun/);
+assert.match(repositoryPage, /Local draft/);
+assert.match(repositoryPage, /Replace \$\{asset\.label\}/);
+assert.match(repositoryPage, /Copy rerun commands/);
 
 const productionFiles = [
   "app/create/page.tsx",

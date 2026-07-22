@@ -15,8 +15,8 @@ const fishUrl = "https://api.fish.audio/v1/tts";
 const fishModel = "s2.1-pro-free";
 
 type AssetManifest = {
-  characters: Array<{ id: string; label: string; localPath: string; sourceUrl: string; postprocess?: "remove-white-and-trim" }>;
-  backgrounds: Array<{ id: string; label: string; localPath: string; sourceUrl: string; postprocess?: "remove-white-and-trim" }>;
+  characters: Array<{ id: string; label: string; localPath: string; sourceUrl: string; postprocess?: "remove-white-and-trim" | "remove-checkerboard-and-trim" }>;
+  backgrounds: Array<{ id: string; label: string; localPath: string; sourceUrl: string; postprocess?: "remove-white-and-trim" | "remove-checkerboard-and-trim" }>;
 };
 
 type AudioManifest = {
@@ -40,17 +40,6 @@ async function fileExists(filePath: string) {
     return true;
   } catch {
     return false;
-  }
-}
-
-async function loadEnvFile(filePath: string) {
-  if (!await fileExists(filePath)) return;
-  const contents = await readFile(filePath, "utf8");
-  for (const line of contents.split(/\r?\n/)) {
-    const match = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/.exec(line.trim());
-    if (!match) continue;
-    const [, key, rawValue] = match;
-    process.env[key] = rawValue.replace(/^["']|["']$/g, "");
   }
 }
 
@@ -128,7 +117,48 @@ async function trimTransparentPng(sourcePath: string, outputPath: string) {
   await writeFile(outputPath, PNG.sync.write(output));
 }
 
-async function downloadAsset(asset: { id: string; label: string; localPath: string; sourceUrl: string; postprocess?: "remove-white-and-trim" }) {
+async function removeBrightBorderBackground(sourcePath: string, outputPath: string) {
+  const image = PNG.sync.read(await readFile(sourcePath));
+  const visited = new Uint8Array(image.width * image.height);
+  const queue: number[] = [];
+  const isBackground = (offset: number) => {
+    const red = image.data[offset];
+    const green = image.data[offset + 1];
+    const blue = image.data[offset + 2];
+    return image.data[offset + 3] < 16 || (Math.min(red, green, blue) >= 220 && Math.max(red, green, blue) - Math.min(red, green, blue) <= 14);
+  };
+  const add = (x: number, y: number) => {
+    if (x < 0 || y < 0 || x >= image.width || y >= image.height) return;
+    const index = (y * image.width) + x;
+    if (visited[index] || !isBackground(index * 4)) return;
+    visited[index] = 1;
+    queue.push(index);
+  };
+  for (let x = 0; x < image.width; x += 1) {
+    add(x, 0);
+    add(x, image.height - 1);
+  }
+  for (let y = 0; y < image.height; y += 1) {
+    add(0, y);
+    add(image.width - 1, y);
+  }
+  for (let cursor = 0; cursor < queue.length; cursor += 1) {
+    const index = queue[cursor];
+    const x = index % image.width;
+    const y = Math.floor(index / image.width);
+    image.data[(index * 4) + 3] = 0;
+    add(x - 1, y);
+    add(x + 1, y);
+    add(x, y - 1);
+    add(x, y + 1);
+  }
+  const mattePath = `${outputPath}.matte.png`;
+  await writeFile(mattePath, PNG.sync.write(image));
+  await trimTransparentPng(mattePath, outputPath);
+  await rm(mattePath, { force: true });
+}
+
+async function downloadAsset(asset: { id: string; label: string; localPath: string; sourceUrl: string; postprocess?: "remove-white-and-trim" | "remove-checkerboard-and-trim" }) {
   const target = path.join(packageRoot, asset.localPath);
   if (await fileExists(target)) return;
   if (!asset.postprocess) {
@@ -142,6 +172,10 @@ async function downloadAsset(asset: { id: string; label: string; localPath: stri
     await downloadTo({ label: `${asset.label} source`, sourceUrl: asset.sourceUrl, target: sourceTarget });
   }
   await mkdir(path.dirname(target), { recursive: true });
+  if (asset.postprocess === "remove-checkerboard-and-trim") {
+    await removeBrightBorderBackground(sourceTarget, target);
+    return;
+  }
   await runCommand("ffmpeg", [
     "-hide_banner", "-loglevel", "error", "-y",
     "-i", sourceTarget,
@@ -226,19 +260,17 @@ async function generateFishClip({
 
 async function prepareRun({
   audio,
-  limit,
   runId,
 }: {
   audio: AudioManifest;
-  limit?: number;
   runId: string;
 }) {
   const fishApiKey = process.env.FISH_STUDIO_APIKEY;
   if (!fishApiKey) throw new Error("FISH_STUDIO_APIKEY is required.");
   const sourcePath = path.join(packageRoot, "scenes", `${runId}.json`);
   const source = JSON.parse(await readFile(sourcePath, "utf8")) as SceneSource;
-  const scenes = limit ? source.scenes.slice(0, limit) : source.scenes;
-  const outputId = limit ? `${runId}-slice` : runId;
+  const scenes = source.scenes;
+  const outputId = runId;
   const voiceDirectory = path.join(packageRoot, "assets", "audio", outputId);
   const filledScenes: OtakuScene[] = [];
 
@@ -247,11 +279,6 @@ async function prepareRun({
     if (!voiceId) throw new Error(`No Fish Audio voice is configured for ${scene.speaker}.`);
     const audioFile = `${scene.id}.wav`;
     const audioTarget = path.join(voiceDirectory, audioFile);
-    const sliceAudio = path.join(packageRoot, "assets", "audio", `${runId}-slice`, audioFile);
-    if (!limit && !await fileExists(audioTarget) && await fileExists(sliceAudio)) {
-      await mkdir(voiceDirectory, { recursive: true });
-      await copyFile(sliceAudio, audioTarget);
-    }
     console.log(`[${index + 1}/${scenes.length}] ${scene.speaker}: ${scene.dialogue}`);
     await generateFishClip({
       apiKey: fishApiKey,
@@ -301,16 +328,15 @@ async function prepareRun({
 }
 
 async function main() {
-  await loadEnvFile(path.join(v3Root, ".env.local"));
+  const envPath = path.join(v3Root, ".env.local");
+  if (await fileExists(envPath)) process.loadEnvFile(envPath);
   const assets = JSON.parse(await readFile(path.join(packageRoot, "assets.json"), "utf8")) as AssetManifest;
   const audio = JSON.parse(await readFile(path.join(packageRoot, "audio.json"), "utf8")) as AudioManifest;
   await prepareFixedAssets(assets, audio);
 
   const runArgument = process.argv.find((argument) => argument.startsWith("--run="));
-  const limitArgument = process.argv.find((argument) => argument.startsWith("--limit="));
   const runId = runArgument?.split("=")[1] || "naruto-compilers";
-  const limit = limitArgument ? Number(limitArgument.split("=")[1]) : undefined;
-  await prepareRun({ audio, limit, runId });
+  await prepareRun({ audio, runId });
 }
 
 main().catch((error) => {
