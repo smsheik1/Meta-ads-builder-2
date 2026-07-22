@@ -8,7 +8,10 @@ import { generateReplicateNanoBanana2Image, generateReplicateSeedanceVideo } fro
 import { createThreeDClipPlans } from "../features/formats/three-d-breakdown/storyboardContracts";
 import { buildThreeDProductionFramePrompt, buildThreeDSeedancePrompt, buildThreeDStoryboardBoardPrompt } from "../features/formats/three-d-breakdown/mediaPrompts";
 import { cropThreeDStoryboardPanel } from "../features/formats/three-d-breakdown/storyboardImageCrop";
-import { fetchThreeDProductReferenceImageUrls } from "../features/formats/three-d-breakdown/productReference";
+import {
+  fetchThreeDProductReferenceImageUrls,
+  prepareThreeDBrandReferenceImageInputs,
+} from "../features/formats/three-d-breakdown/productReference";
 import type {
   AdScene,
   ThreeDBreakdownAdScene,
@@ -98,7 +101,7 @@ const getThreeDImageInput = async (scene: ThreeDBreakdownAdScene) => {
   const productImageUrls = references.imageUrls;
   const brandImageUrls = productImageUrls.length
     ? []
-    : scene.layout.referenceImages?.brandImageUrls || [];
+    : await prepareThreeDBrandReferenceImageInputs(scene.layout.referenceImages?.brandImageUrls || []);
   return {
     imageInput: Array.from(new Set([
       styleReferenceUrl,
