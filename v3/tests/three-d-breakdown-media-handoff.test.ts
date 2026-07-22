@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { decode, encode } from "jpeg-js";
 import { generateReplicateSeedanceVideo } from "../features/formats/jingle/storyboard";
 import { cropThreeDStoryboardPanel } from "../features/formats/three-d-breakdown/storyboardImageCrop";
+import { prepareThreeDBrandReferenceImageInputs } from "../features/formats/three-d-breakdown/productReference";
 
 const width = 576;
 const height = 1024;
@@ -36,6 +37,29 @@ const centerOffset = (Math.floor(frameThree.height / 2) * frameThree.width + Mat
 assert.ok(frameThree.data[centerOffset + 2]! > 220, "Frame 3 crop should preserve its blue storyboard panel.");
 assert.ok(frameThree.data[centerOffset]! < 35);
 assert.ok(frameThree.data[centerOffset + 1]! < 35);
+
+const validPngBytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+const preparedBrandInputs = await prepareThreeDBrandReferenceImageInputs([
+  "https://brand.example/hero.png",
+  "https://brand.example/logo.svg",
+  "https://brand.example/not-an-image.jpg",
+  "https://brand.example/missing.jpg",
+], async (input) => {
+  const url = String(input);
+  if (url.endsWith("hero.png")) {
+    return new Response(validPngBytes, { status: 200, headers: { "content-type": "image/png" } });
+  }
+  if (url.endsWith("logo.svg")) {
+    return new Response("<svg/>", { status: 200, headers: { "content-type": "image/svg+xml" } });
+  }
+  if (url.endsWith("not-an-image.jpg")) {
+    return new Response("not really a jpeg", { status: 200, headers: { "content-type": "image/jpeg" } });
+  }
+  return new Response("missing", { status: 404 });
+});
+assert.deepEqual(preparedBrandInputs, [
+  `data:image/png;base64,${Buffer.from(validPngBytes).toString("base64")}`,
+]);
 
 const originalFetch = globalThis.fetch;
 const capturedRequest: { input?: Record<string, unknown> } = {};

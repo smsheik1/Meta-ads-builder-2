@@ -2,6 +2,8 @@ import { normalizePublicWebsiteUrl } from "../../research/url";
 
 const weakProductUseTerms = /\b(pack|packet|pouch|gumm(?:y|ies)|capsule|bottle|jar|tin|box)\b/i;
 const unusableImageTerms = /\b(logo|icon|favicon|review|clinical|chart|badge|banner|desktop|mobile|thumbnail|size[-_ ]?guide)\b/i;
+const replicateReferenceMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const MAX_REPLICATE_REFERENCE_BYTES = 8 * 1024 * 1024;
 
 const decodeHtml = (value: string) => value
   .replace(/&amp;/gi, "&")
@@ -20,6 +22,54 @@ const resolveImageUrl = (value: string, pageUrl: string) => {
   } catch {
     return "";
   }
+};
+
+const hasMatchingImageSignature = (bytes: Uint8Array, mimeType: string) => {
+  if (mimeType === "image/jpeg") return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  if (mimeType === "image/png") {
+    return bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
+  }
+  if (mimeType === "image/webp") {
+    return String.fromCharCode(...bytes.slice(0, 4)) === "RIFF"
+      && String.fromCharCode(...bytes.slice(8, 12)) === "WEBP";
+  }
+  return false;
+};
+
+export const prepareThreeDBrandReferenceImageInputs = async (
+  imageUrls: string[],
+  fetcher: typeof fetch = fetch,
+) => {
+  const prepared = await Promise.all(Array.from(new Set(imageUrls)).map(async (imageUrl) => {
+    if (/^data:image\/(?:jpe?g|png|webp);base64,/i.test(imageUrl)) return imageUrl;
+    if (!/^https?:\/\//i.test(imageUrl)) return null;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8_000);
+    try {
+      const response = await fetcher(imageUrl, {
+        headers: {
+          accept: "image/jpeg,image/png,image/webp",
+          "user-agent": "Mozilla/5.0",
+        },
+        signal: controller.signal,
+      });
+      if (!response.ok) return null;
+      const mimeType = (response.headers.get("content-type") || "").split(";")[0]!.trim().toLowerCase();
+      if (!replicateReferenceMimeTypes.has(mimeType)) return null;
+      const contentLength = Number(response.headers.get("content-length") || 0);
+      if (contentLength > MAX_REPLICATE_REFERENCE_BYTES) return null;
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      if (!bytes.length || bytes.length > MAX_REPLICATE_REFERENCE_BYTES || !hasMatchingImageSignature(bytes, mimeType)) return null;
+      return `data:${mimeType};base64,${Buffer.from(bytes).toString("base64")}`;
+    } catch {
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }));
+
+  return prepared.filter((imageUrl): imageUrl is string => Boolean(imageUrl));
 };
 
 const productUseScore = (identity: string) => (
