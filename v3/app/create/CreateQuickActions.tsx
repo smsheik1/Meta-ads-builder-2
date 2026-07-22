@@ -30,9 +30,12 @@ import type { SavedAdSceneDesign } from "@/features/create/savedDesigns";
 import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
 import { getThreeDAnchorPrompt, getThreeDStoryboardPrompt, type ThreeDBreakdownMediaPromptTarget } from "@/features/formats/three-d-breakdown/editablePrompts";
 import type { ThreeDBreakdownStoryDirection } from "@/features/formats/three-d-breakdown/storyDirections";
+import type { ThreeDBreakdownStorySubject } from "@/features/formats/three-d-breakdown/storySubject";
+import type { ProductCatalog } from "@/features/research/types";
 import type { AdFormatId, ThreeDBreakdownAdScene, ThreeDBreakdownClipIndex } from "@/features/scene/types";
 import { CreateAssemblyLine, type CreateAssemblyStageStatus } from "./CreateAssemblyLine";
 import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
+import { CreateThreeDBreakdownSubjectPicker } from "./CreateThreeDBreakdownSubjectPicker";
 import { ThreeDBreakdownStoryDirectionsCard } from "./ThreeDBreakdownStoryDirectionsCard";
 import { ThreeDBreakdownMediaPromptEditor } from "./ThreeDBreakdownMediaPromptEditor";
 import { ThreeDBreakdownScriptEditor } from "./ThreeDBreakdownScriptEditor";
@@ -69,6 +72,7 @@ export function CreateQuickActions({
   onThreeDMediaPromptChanged,
   onThreeDScriptBeatChanged,
   onTogglePreviewPlayback,
+  productCatalog,
   audioStatus,
   playableAudioUrl,
   renderBusy,
@@ -94,9 +98,11 @@ export function CreateQuickActions({
   threeDStoryDirectionError,
   threeDStoryDirections,
   threeDStoryDirectionStatus,
+  threeDStorySubject,
   staticPngDownloadBusy,
   onSelectThreeDStoryDirection,
   onUseThreeDStoryDirection,
+  onChooseThreeDStorySubject,
   saveCounterLabel,
   saveError,
   savedDesigns,
@@ -129,6 +135,7 @@ export function CreateQuickActions({
   onThreeDMediaPromptChanged: (target: ThreeDBreakdownMediaPromptTarget, prompt: string) => void;
   onThreeDScriptBeatChanged: (beatIndex: number, narration: string) => void;
   onTogglePreviewPlayback: () => void;
+  productCatalog: ProductCatalog | null | undefined;
   audioStatus: "idle" | "loading" | "ready" | "error";
   playableAudioUrl: string;
   renderBusy: boolean;
@@ -154,9 +161,11 @@ export function CreateQuickActions({
   threeDStoryDirectionError: string;
   threeDStoryDirections: ThreeDBreakdownStoryDirection[];
   threeDStoryDirectionStatus: BrickStoryboardStatus;
+  threeDStorySubject: ThreeDBreakdownStorySubject | null;
   staticPngDownloadBusy: boolean;
   onSelectThreeDStoryDirection: (directionId: string) => void;
   onUseThreeDStoryDirection: (direction: ThreeDBreakdownStoryDirection) => void;
+  onChooseThreeDStorySubject: (subject: ThreeDBreakdownStorySubject) => void;
   saveCounterLabel: string;
   saveError: string;
   savedDesigns: SavedAdSceneDesign[];
@@ -178,7 +187,8 @@ export function CreateQuickActions({
   const shareSupported = staticPngSelected || selectedFormat === "visualizer" || selectedFormat === "motion-story" || ((selectedFormat === "jingle" || selectedFormat === "brainrot") && hasPlayableAudio) || (selectedFormat === "three-d-breakdown" && hasThreeDVoiceover);
   const showBrickStoryboard = selectedFormat === "jingle";
   const showThreeDStorySlateStage = threeDStorySlateActive;
-  const showThreeDStoryDirections = showThreeDStorySlateStage && (threeDStoryDirections.length > 0 || threeDStoryDirectionStatus === "loading" || Boolean(threeDStoryDirectionError));
+  const showThreeDStorySubjectPicker = showThreeDStorySlateStage && !threeDStorySubject;
+  const showThreeDStoryDirections = showThreeDStorySlateStage && Boolean(threeDStorySubject) && (threeDStoryDirections.length > 0 || threeDStoryDirectionStatus === "loading" || Boolean(threeDStoryDirectionError));
   const showThreeDBreakdownAssembly = selectedFormat === "three-d-breakdown" && threeDScene;
   const threeDClipPlans = threeDScene?.layout.clipPlans || [];
   const threeDClipsReady = threeDClipPlans.length > 0 && threeDClipPlans.every((clipPlan) => clipPlan.video?.status === "ready");
@@ -346,6 +356,10 @@ export function CreateQuickActions({
           onRegenerateBrickShot={onRegenerateBrickShot}
           onRegenerateBrickShotVideo={onRegenerateBrickShotVideo}
         />
+      ) : null}
+
+      {showThreeDStorySubjectPicker ? (
+        <CreateThreeDBreakdownSubjectPicker catalog={productCatalog} onContinue={onChooseThreeDStorySubject} />
       ) : null}
 
       {showThreeDStoryDirections ? (

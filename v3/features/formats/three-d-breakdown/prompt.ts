@@ -2,6 +2,10 @@ import type { StoredWebsiteResearchResult } from "../../research/types";
 import type { ThreeDBreakdownScriptBeat } from "../../scene/types";
 import type { ThreeDBreakdownEvidenceItem } from "./evidence";
 import type { ThreeDBreakdownStoryDirection } from "./storyDirections";
+import {
+  formatThreeDBreakdownStorySubject,
+  type ThreeDBreakdownResolvedStorySubject,
+} from "./storySubject";
 
 export const THREE_D_BREAKDOWN_VARIANT_COUNT = 2;
 export const THREE_D_BREAKDOWN_MAX_TOKENS = 4000;
@@ -144,12 +148,14 @@ export function buildThreeDBreakdownPrompt({
   lockedStyleBScript,
   research,
   selectedStoryDirection,
+  storySubject,
 }: {
   count: number;
   evidence: ThreeDBreakdownEvidenceItem[];
   lockedStyleBScript?: ThreeDBreakdownLockedStyleBScript | null;
   research: StoredWebsiteResearchResult;
   selectedStoryDirection?: ThreeDBreakdownStoryDirection | null;
+  storySubject?: ThreeDBreakdownResolvedStorySubject;
 }) {
   const selectedOnly = count === 1 && Boolean(lockedStyleBScript);
   const styleRule = selectedOnly
@@ -177,6 +183,7 @@ export function buildThreeDBreakdownPrompt({
 Turn the locked story into six clear film stills for a fast 20-second 3D documentary ad. Every narration line must become a visible object, action, transformation, or payoff. Return original JSON only.
 
 ${styleRule}
+${storySubject ? formatThreeDBreakdownStorySubject(storySubject) : ""}
 ${selectedStoryDirection ? `Selected direction: ${JSON.stringify(selectedStoryDirection)}` : ""}
 ${lockedStyleBScript ? `Locked story plan: ${JSON.stringify(lockedVisualPlanForPrompt(lockedStyleBScript))}` : ""}
 
@@ -228,13 +235,16 @@ ${evidenceForPrompt(evidence)}
 export function buildThreeDBreakdownStoryDirectionsPrompt({
   evidence,
   research,
+  storySubject,
 }: {
   evidence: ThreeDBreakdownEvidenceItem[];
   research: StoredWebsiteResearchResult;
+  storySubject?: ThreeDBreakdownResolvedStorySubject;
 }) {
   return `You are Wiggly's 3D Breakdown Story Director.
 
 Create five genuinely different ideas for a 20-second 3D documentary ad. Each idea needs a concrete hook, a hidden problem or mechanism, an impossible visual reveal, real evidence, and a useful payoff. Do not write scripts, storyboards, or media prompts. Keep the JSON compact.
+${storySubject ? formatThreeDBreakdownStorySubject(storySubject) : ""}
 
 Return JSON only:
 {
@@ -309,10 +319,12 @@ export function buildThreeDBreakdownStyleBScriptPrompt({
   evidence,
   research,
   selectedStoryDirection,
+  storySubject,
 }: {
   evidence: ThreeDBreakdownEvidenceItem[];
   research: StoredWebsiteResearchResult;
   selectedStoryDirection?: ThreeDBreakdownStoryDirection | null;
+  storySubject?: ThreeDBreakdownResolvedStorySubject;
 }) {
   const selectedEvidence = selectedStoryDirection
     ? evidence.find((item) => item.evidenceIndex === selectedStoryDirection.evidenceIndex)
@@ -320,6 +332,8 @@ export function buildThreeDBreakdownStyleBScriptPrompt({
   return `You are Wiggly's 3D Breakdown Script Director.
 
 Write the narration for one high-retention 20-second documentary ad. The chosen direction is the premise and the selected evidence is the factual limit. Do not write visuals, camera directions, storyboards, or media prompts.
+
+${storySubject ? formatThreeDBreakdownStorySubject(storySubject) : ""}
 
 ${selectedStoryDirection ? `Selected direction: ${JSON.stringify(selectedStoryDirection)}
 Selected evidence: ${selectedEvidence ? JSON.stringify({

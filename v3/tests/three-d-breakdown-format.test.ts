@@ -30,6 +30,10 @@ import {
 } from "../features/formats/three-d-breakdown/prompt";
 import { THREE_D_STORYBOARD_FRAME_CONTRACTS } from "../features/formats/three-d-breakdown/storyboardContracts";
 import {
+  formatThreeDBreakdownStorySubject,
+  resolveThreeDBreakdownStorySubject,
+} from "../features/formats/three-d-breakdown/storySubject";
+import {
   buildThreeDProductionFramePrompt,
   buildThreeDSeedancePrompt,
   buildThreeDStoryboardBoardPrompt,
@@ -117,6 +121,43 @@ const research = makeResearch({
 });
 
 const evidenceItems = extractThreeDBreakdownEvidence(research);
+const selectedProductSubject = resolveThreeDBreakdownStorySubject(research, {
+  kind: "product",
+  productHandle: "butter-pecan-tin",
+});
+assert.equal(selectedProductSubject.product?.title, "Butter Pecan Meltaways Tin");
+assert.match(formatThreeDBreakdownStorySubject(selectedProductSubject), /Advertise only this product: Butter Pecan Meltaways Tin/);
+assert.match(
+  buildThreeDBreakdownStoryDirectionsPrompt({
+    evidence: evidenceItems,
+    research,
+    storySubject: selectedProductSubject,
+  }),
+  /Never substitute another catalog item/,
+);
+assert.throws(
+  () => resolveThreeDBreakdownStorySubject(research, { kind: "product", productHandle: "missing-product" }),
+  /Choose a product/,
+);
+assert.match(
+  formatThreeDBreakdownStorySubject(resolveThreeDBreakdownStorySubject(research, { kind: "brand" })),
+  /overall brand story/,
+);
+assert.match(
+  formatThreeDBreakdownStorySubject(resolveThreeDBreakdownStorySubject(research, { kind: "customer-problem" })),
+  /customer problem or hidden truth/,
+);
+assert.match(
+  formatThreeDBreakdownStorySubject(resolveThreeDBreakdownStorySubject(research, {
+    kind: "custom",
+    brief: "Show why dessert gifting fails when it feels generic.",
+  })),
+  /Show why dessert gifting fails/,
+);
+assert.throws(
+  () => resolveThreeDBreakdownStorySubject(research, { kind: "custom", brief: "cookies" }),
+  /Describe what this 3D Breakdown should be about/,
+);
 assert.ok(evidenceItems.length >= 2);
 assert.ok(evidenceItems.every((item) => item.sourceUrl));
 assert.ok(evidenceItems.every((item) => item.possibleRevealPatterns.length > 0));
@@ -1955,6 +1996,7 @@ const brandOriginScene = createThreeDBreakdownAdScene({
   provider: generated.provider,
   research: brandOriginResearch,
   siteContract: { ...generated.siteContract, primarySiteType: "ecommerce" },
+  storySubject: { kind: "brand" },
   variant: makeVariant({
     visualStyle: "presenter-teardown-vsl",
     variantAngle: "the founder's 1932 origin story",
@@ -1966,6 +2008,7 @@ const brandOriginScene = createThreeDBreakdownAdScene({
   }),
 });
 assert.equal(brandOriginScene.layout.productAnchor, undefined);
+assert.deepEqual(brandOriginScene.layout.storyContract.storySubject, { kind: "brand" });
 assert.equal(scene.format, "three-d-breakdown");
 assert.equal(scene.layout.durationMs, 20_000);
 assert.equal(scene.layout.scriptBeats.length, 5);

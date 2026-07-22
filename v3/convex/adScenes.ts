@@ -36,6 +36,12 @@ const createGenerationBatchId = () => (
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 );
 
+const threeDStorySubjectValidator = v.object({
+  kind: v.union(v.literal("product"), v.literal("brand"), v.literal("customer-problem"), v.literal("custom")),
+  productHandle: v.optional(v.string()),
+  brief: v.optional(v.string()),
+});
+
 const threeDStoryDirectionValidator = v.object({
   directionId: v.string(),
   hookLine: v.string(),
@@ -53,8 +59,9 @@ const threeDStoryDirectionValidator = v.object({
 export const generateThreeDStoryDirections: ReturnType<typeof action> = action({
   args: {
     researchRunId: v.id("researchRuns"),
+    storySubject: threeDStorySubjectValidator,
   },
-  handler: async (ctx, { researchRunId }) => {
+  handler: async (ctx, { researchRunId, storySubject }) => {
     const startedAt = Date.now();
     console.log("[wiggly:ad-generation] 3d-story-slate:start", {
       researchRunId: String(researchRunId),
@@ -62,7 +69,7 @@ export const generateThreeDStoryDirections: ReturnType<typeof action> = action({
     const research = await ctx.runQuery(internal.adSceneStorage.loadResearchForGeneration, {
       researchRunId,
     });
-    const generation = await generateThreeDBreakdownStoryDirectionsFromResearch(research);
+    const generation = await generateThreeDBreakdownStoryDirectionsFromResearch(research, { storySubject });
     console.log("[wiggly:ad-generation] 3d-story-slate:ready", {
       elapsedMs: Date.now() - startedAt,
       storyDirectionCount: generation.directions.length,
@@ -82,8 +89,9 @@ export const generateFromResearch: ReturnType<typeof action> = action({
     jingleStyleId: v.optional(v.union(v.literal("modern-hip-hop"), v.literal("cinematic-trap-diss"), v.literal("pop-rap-hook"), v.literal("retail-dance"), v.literal("funky-commercial"))),
     selectedProductHandles: v.optional(v.array(v.string())),
     threeDStoryDirection: v.optional(threeDStoryDirectionValidator),
+    threeDStorySubject: v.optional(threeDStorySubjectValidator),
   },
-  handler: async (ctx, { researchRunId, count, format = "visualizer", memeModel, videoMemeTemplateId, visualizerModel, jingleStyleId, selectedProductHandles, threeDStoryDirection }) => {
+  handler: async (ctx, { researchRunId, count, format = "visualizer", memeModel, videoMemeTemplateId, visualizerModel, jingleStyleId, selectedProductHandles, threeDStoryDirection, threeDStorySubject }) => {
     const startedAt = Date.now();
     const generationBatchId = createGenerationBatchId();
     console.log("[wiggly:ad-generation] action:start", {
@@ -355,6 +363,7 @@ export const generateFromResearch: ReturnType<typeof action> = action({
       const generation = await generateThreeDBreakdownVariantsFromResearch(research, {
         count,
         selectedStoryDirection: threeDStoryDirection || null,
+        storySubject: threeDStorySubject || null,
       });
       const scenes = generation.variants.map((variant, index) => createThreeDBreakdownAdScene({
         evidenceItems: generation.evidenceItems,
@@ -365,6 +374,7 @@ export const generateFromResearch: ReturnType<typeof action> = action({
         generationBatchId,
         model: generation.model,
         provider: generation.provider,
+        storySubject: threeDStorySubject || null,
       }));
       const { sceneIds } = await ctx.runMutation(internal.adSceneStorage.saveGeneratedScenes, {
         sessionId: research.sessionId,

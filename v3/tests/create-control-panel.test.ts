@@ -13,6 +13,7 @@ const previewChromeSource = readFileSync("app/create/CreatePreviewChrome.tsx", "
 const remotionRootSource = readFileSync("remotion-entry/Root.tsx", "utf8");
 const quickActionsSource = readFileSync("app/create/CreateQuickActions.tsx", "utf8");
 const storyDirectionsCardSource = readFileSync("app/create/ThreeDBreakdownStoryDirectionsCard.tsx", "utf8");
+const storySubjectPickerSource = readFileSync("app/create/CreateThreeDBreakdownSubjectPicker.tsx", "utf8");
 const assemblyLineSource = readFileSync("app/create/CreateAssemblyLine.tsx", "utf8");
 const threeDMediaPromptEditorSource = readFileSync("app/create/ThreeDBreakdownMediaPromptEditor.tsx", "utf8");
 const threeDScriptEditorSource = readFileSync("app/create/ThreeDBreakdownScriptEditor.tsx", "utf8");
@@ -176,6 +177,21 @@ assert.ok(
     createClientSource.includes("const sceneId = selectedSceneId;") &&
     createClientSource.includes("This 3D Breakdown scene is still syncing. Wait a moment and try again."),
   "/create must recover the persisted scene id before paid 3D media actions instead of silently doing nothing.",
+);
+assert.ok(
+  createClientSource.includes("threeDStorySubject") &&
+    createClientSource.includes("setThreeDStorySubject") &&
+    createClientSource.includes("options.threeDStorySubject") &&
+    quickActionsSource.includes("<CreateThreeDBreakdownSubjectPicker") &&
+    quickActionsSource.includes("showThreeDStorySubjectPicker") &&
+    storySubjectPickerSource.includes('data-three-d-subject-option={option.kind}') &&
+    storySubjectPickerSource.includes('kind: "product"') &&
+    storySubjectPickerSource.includes('kind: "brand"') &&
+    storySubjectPickerSource.includes('kind: "customer-problem"') &&
+    storySubjectPickerSource.includes('kind: "custom"') &&
+    storySubjectPickerSource.includes("catalog?.products || []") &&
+    !storySubjectPickerSource.includes(".slice("),
+  "3D Breakdown must choose and persist one of four story subjects before showing five directions, with every catalog product available.",
 );
 assert.ok(
   createClientSource.includes("api.adScenes.generateThreeDStoryDirections") &&
