@@ -144,6 +144,19 @@ const makeWellnessMotionPromptProviderSafe = (value: string) => value
   .replace(/\bknot\b/gi, "tight fiber bundle")
   .replace(/\bmuscle\b/gi, "elastic fiber model");
 
+export const sanitizeThreeDStoryboardImagePlan = (value: string) => clean(value)
+  .split(/(?=Frame\s+\d+\s*:)/gi)
+  .map((section) => section
+    .replace(/^Frame\s+\d+\s*:\s*.*?(?=\bVisual\s*:)/i, "")
+    .replace(/\bVisual\s*:\s*/i, "")
+    .replace(/\s*Renderer overlay\s*:\s*.*?(?=\s*Editing note\s*:|$)/i, " ")
+    .replace(/\s*Editing note\s*:\s*.*$/i, "")
+    .replace(/\bCamera\s*:\s*/i, "Camera: ")
+    .replace(/\bMotion\s*:\s*/i, "State change: ")
+    .trim())
+  .filter(Boolean)
+  .join(" Next still: ");
+
 export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
   const plans = ([1, 2, 3, 4, 5, 6] as ThreeDBreakdownStoryboardFrameIndex[])
     .map((index) => `${framePlan(scene, index)} ROLE: ${frameRole(scene, index)}`)
@@ -156,7 +169,7 @@ export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) 
     productLock(scene),
     supplementDirection(scene),
     `APPROVED SIX-FRAME PLAN: ${scene.layout.storyboardBoard?.creativePrompt
-      ? clean(getThreeDStoryboardPrompt(scene.layout.storyboardBoard))
+      ? sanitizeThreeDStoryboardImagePlan(getThreeDStoryboardPrompt(scene.layout.storyboardBoard))
       : plans}`,
     "CONTINUITY OVERRIDE: the same male CGI demonstrator from image 1 appears in panels 1, 2, 5, and 6; torso, connected hands, or over-shoulder framing count. Panel 6 shows him placing, holding, carrying, using, or reaching for the large central product, never a product alone on an empty grid.",
     "VISUAL STORY: each cell shows one concrete physical action and one visible state change. Frame 1 establishes the demonstrator and product category; frame 6 resolves to the accurate selected product. Middle frames may use hands, cutaways, pipes, components, particles, scale comparisons, or impossible-camera reveals while preserving continuity.",
