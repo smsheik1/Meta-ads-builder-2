@@ -41,6 +41,11 @@ import type {
   ThreeDBreakdownStoryDirectionSlate,
 } from "./storyDirections";
 import {
+  assertThreeDBreakdownCta,
+  getThreeDBreakdownCtaError,
+  selectThreeDBreakdownCta,
+} from "./cta";
+import {
   resolveThreeDBreakdownStorySubject,
   type ThreeDBreakdownResolvedStorySubject,
   type ThreeDBreakdownStorySubject,
@@ -100,10 +105,6 @@ const forbiddenNarrationPattern = new RegExp(
 );
 const brokenNarrationPattern = /\bali\s+ve\b|\bprotect(?:s|ed|ing)? alive\b/i;
 const transcriptOpeningPattern = /^(?:(?:when|if|once|imagine|before|after|inside|without|why|how|what|you|your|most|many|some|a|an|the|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|hundred|thousand|every|each|she|he|someone|something|\d)\b|[a-z]+ing\b)/i;
-const abstractPunchlinePattern = /^(presence|clarity|confidence|value|connection|impact|control|growth|trust|success)\b/i;
-const ctaActionPattern = /\b(shop|start|try|visit|order|get|book|support|join|subscribe|buy)\b/i;
-const fakeCtaPattern = /\b(the\s+)?(?:journey|trip|route|path|difference|proof|evidence|moment|mechanism)\s+(?:is|was|became)\s+the\s+(?:product|proof|point|difference|mechanism)\b/i;
-const abstractCtaPattern = /\b(?:see|watch|view|learn)\s+(?:the\s+)?(?:journey|trip|route|path|proof|evidence|mechanism|difference)\b|\b(?:visible|hidden)\s+mechanism\b/i;
 const regulatedUnsafePattern = /\b(cures?|diagnos(?:e|is)|treats?|clinically proven|doctor[- ]recommended|risk[- ]free|legal outcome|guaranteed result|guaranteed to)\b|\b(?:prevents?|eliminates?)\s+(?:disease|pain|cavities|infection|injury|illness|complications|lawsuits?|legal risk|financial loss)\b|\b(?:doubles?|triples?|guarantees?|increases?)\s+(?:revenue|profit|sales|return|roi)\b/i;
 const storySlateFearPattern = /\b(?:toxic|toxins?|poison(?:s|ed|ing)?|starv(?:e|es|ed|ing|ation)|destroy(?:s|ed|ing)?|deadly|dangerous|killing|ruining|dirty\s+secret|waste\s+of\s+time|eat(?:s|ing)?\s+[^.!?]{0,30}\s+alive|morning\s+ambush|stripped\s+of\s+(?:its|their|the)\s+(?:health|nutrition|nutrients?))\b/i;
 const storySlateMechanismClaims = [
@@ -164,7 +165,10 @@ const sentenceCount = (value: string) => {
   return Math.max(1, sentences.length);
 };
 
-const assertTranscriptScriptShape = (beats: ThreeDBreakdownScriptBeat[]) => {
+const assertTranscriptScriptShape = (
+  beats: ThreeDBreakdownScriptBeat[],
+  subjectKind?: ThreeDBreakdownStorySubject["kind"],
+) => {
   const combined = beats.map((beat) => beat.narration).join(" ");
   const totalWords = countWords(combined);
   if (totalWords < THREE_D_MIN_SCRIPT_WORDS || totalWords > THREE_D_MAX_SCRIPT_WORDS) {
@@ -190,80 +194,7 @@ const assertTranscriptScriptShape = (beats: ThreeDBreakdownScriptBeat[]) => {
   if (countWords(punchline) > 7) {
     throw new Error("3D Breakdown punchline must be 7 words or fewer.");
   }
-  if (fakeCtaPattern.test(punchline) || abstractCtaPattern.test(punchline)) {
-    throw new Error("3D Breakdown punchline must not sell the mechanism instead of the product.");
-  }
-  if (abstractPunchlinePattern.test(punchline)) {
-    throw new Error("3D Breakdown punchline must not start with an abstract noun.");
-  }
-  if (!ctaActionPattern.test(punchline)) {
-    throw new Error("3D Breakdown punchline must contain a direct buyer action.");
-  }
-};
-
-const assertCtaLineShape = (value: string) => {
-  const ctaLine = cleanText(value, 180);
-  if (!ctaLine) throw new Error("3D Breakdown CTA line is missing.");
-  if (fakeCtaPattern.test(ctaLine)) {
-    throw new Error("3D Breakdown CTA line must be a direct action, not a poetic closer.");
-  }
-  if (abstractCtaPattern.test(ctaLine)) {
-    throw new Error("3D Breakdown CTA line must sell the product action, not the mechanism.");
-  }
-  if (!ctaActionPattern.test(ctaLine)) {
-    throw new Error("3D Breakdown CTA line must include a clear action verb.");
-  }
-  if (countWords(ctaLine) < 3) {
-    throw new Error("3D Breakdown CTA line is too short.");
-  }
-  if (countWords(ctaLine) > 7) {
-    throw new Error("3D Breakdown CTA line must be 7 words or fewer.");
-  }
-};
-
-const buildDeterministicCtaLine = (research: StoredWebsiteResearchResult) => {
-  const websiteCta = cleanText(research.brandBrief.ctaDirection, 180).replace(/[.!]+$/, "");
-  try {
-    assertCtaLineShape(websiteCta);
-    return websiteCta;
-  } catch {
-    // Fall through to a short brand/category CTA when the website CTA is missing or unusable.
-  }
-  const brand = cleanText(research.brandBrief.brandName || research.brand.name, 60)
-    .split(/\s+/)
-    .slice(0, 4)
-    .join(" ");
-  const productContext = [
-    research.brandBrief.offer,
-    ...(research.productCatalog?.products || []).slice(0, 8).map((product) => product.title),
-  ].join(" ");
-  const category = ([
-    ["gummies", /\bgumm(?:y|ies)\b/i],
-    ["cookies", /\bcookies?\b/i],
-    ["capsules", /\bcapsules?\b/i],
-    ["supplements", /\bsupplements?\b/i],
-    ["skincare", /\bskincare\b/i],
-    ["drinks", /\b(?:drink|beverage)s?\b/i],
-    ["snacks", /\bsnacks?\b/i],
-    ["gifts", /\bgifts?\b/i],
-    ["app", /\b(?:app|software|platform)\b/i],
-  ] satisfies Array<[string, RegExp]>).find(([, pattern]) => pattern.test(productContext))?.[0] || "";
-  const productName = category && !brand.toLowerCase().includes(category)
-    ? `${brand} ${category}`
-    : brand;
-  return cleanText(`Try ${productName} today.`, 180);
-};
-
-const resolveCtaLine = (value: unknown, research: StoredWebsiteResearchResult) => {
-  const candidate = cleanText(value, 180);
-  try {
-    assertCtaLineShape(candidate);
-    return candidate;
-  } catch {
-    const fallback = buildDeterministicCtaLine(research);
-    assertCtaLineShape(fallback);
-    return fallback;
-  }
+  assertThreeDBreakdownCta(punchline, subjectKind);
 };
 
 const presenterNarrationPattern = /\b(i am|i'm|i'll|let me|watch me|today i|my favorite|we're going to|i want to show|i recommend)\b/i;
@@ -479,6 +410,7 @@ const parseStyleBScriptPlanOutput = (
   evidenceItems: ThreeDBreakdownEvidenceItem[],
   research: StoredWebsiteResearchResult,
   selectedStoryDirection?: ThreeDBreakdownStoryDirection | null,
+  storySubject?: ThreeDBreakdownResolvedStorySubject,
 ): ThreeDBreakdownLockedStyleBScript => {
   const parsed = parseJsonObject(raw);
   const evidenceIndex = Number(parsed.evidenceIndex);
@@ -490,8 +422,14 @@ const parseStyleBScriptPlanOutput = (
     const allowedEvidenceIds = evidenceItems.map((item) => item.evidenceIndex).join(", ");
     throw new Error(`3D Breakdown Style B script plan references invalid evidence; use one of: ${allowedEvidenceIds}.`);
   }
-  const ctaLine = resolveCtaLine(parsed.ctaLine, research);
-  const scriptBeats = parseScriptBeats(parsed.narrationBeats ?? parsed.scriptBeats, ctaLine);
+  const ctaLine = selectThreeDBreakdownCta({
+    brandName: research.brandBrief.brandName || research.brand.name,
+    generatedCta: cleanText(parsed.ctaLine, 180),
+    productTitle: storySubject?.product?.title,
+    siteCta: research.brandBrief.ctaDirection,
+    subjectKind: storySubject?.kind,
+  });
+  const scriptBeats = parseScriptBeats(parsed.narrationBeats ?? parsed.scriptBeats, ctaLine, storySubject?.kind);
   const referenceScript = parseReferenceScript(
     parsed.referenceScript || scriptBeats.map((beat) => beat.narration).join(" "),
     "presenter-teardown-vsl",
@@ -545,7 +483,11 @@ const assertClaimRisk = ({
   }
 };
 
-const parseScriptBeats = (value: unknown, fallbackCtaLine = ""): ThreeDBreakdownScriptBeat[] => {
+const parseScriptBeats = (
+  value: unknown,
+  fallbackCtaLine = "",
+  subjectKind?: ThreeDBreakdownStorySubject["kind"],
+): ThreeDBreakdownScriptBeat[] => {
   if (!Array.isArray(value) || (value.length !== 4 && value.length !== THREE_D_SCRIPT_BEATS.length)) {
     throw new Error("3D Breakdown needs exactly 4 narration beats plus the CTA.");
   }
@@ -558,12 +500,7 @@ const parseScriptBeats = (value: unknown, fallbackCtaLine = ""): ThreeDBreakdown
     const rawNarration = cleanText(rawValue, 180);
     const shouldUseFallbackCta = contract.role === "punchline"
       && countWords(fallbackCtaLine) <= 7
-      && (
-        !ctaActionPattern.test(rawNarration)
-        || fakeCtaPattern.test(rawNarration)
-        || abstractCtaPattern.test(rawNarration)
-        || abstractPunchlinePattern.test(rawNarration)
-      );
+      && Boolean(getThreeDBreakdownCtaError(rawNarration, subjectKind));
     const narration = shouldUseFallbackCta ? fallbackCtaLine : rawNarration;
     if (!narration) throw new Error(`3D Breakdown beat ${index + 1} narration is missing.`);
     assertNoBannedText(narration);
@@ -574,7 +511,7 @@ const parseScriptBeats = (value: unknown, fallbackCtaLine = ""): ThreeDBreakdown
       endMs: contract.endMs,
     };
   }) as ThreeDBreakdownScriptBeat[];
-  assertTranscriptScriptShape(beats);
+  assertTranscriptScriptShape(beats, subjectKind);
   return beats;
 };
 
@@ -759,6 +696,7 @@ const parseVariants = (
   requestedCount: number,
   siteContract: ThreeDBreakdownSiteContract,
   lockedStyleBScript?: ThreeDBreakdownLockedStyleBScript | null,
+  storySubject?: ThreeDBreakdownResolvedStorySubject,
 ) => {
   const variants = (Array.isArray(parsed.variants) ? parsed.variants : []).map((variant, index) => {
     const rawVariant = variant as Record<string, unknown>;
@@ -792,9 +730,9 @@ const parseVariants = (
         : parseEnum(rawVariant.claimRisk, claimRisks, "claimRisk"),
       claimRiskReason: cleanText(lockedScript?.claimRiskReason ?? rawVariant.claimRiskReason, 220),
     };
-    assertCtaLineShape(parsedVariantBase.ctaLine);
+    assertThreeDBreakdownCta(parsedVariantBase.ctaLine, storySubject?.kind);
     const scriptBeats = lockedScript?.scriptBeats
-      ?? parseScriptBeats(rawVariant.narrationBeats ?? rawVariant.scriptBeats, parsedVariantBase.ctaLine);
+      ?? parseScriptBeats(rawVariant.narrationBeats ?? rawVariant.scriptBeats, parsedVariantBase.ctaLine, storySubject?.kind);
     const referenceScript = parseReferenceScript(
       lockedScript?.referenceScript
         ?? (cleanText(rawVariant.referenceScript, 2400) || scriptBeats.map((beat) => beat.narration).join(" ")),
@@ -878,10 +816,11 @@ const parseDirectorOutput = (
   evidenceItems: ThreeDBreakdownEvidenceItem[],
   requestedCount: number,
   lockedStyleBScript?: ThreeDBreakdownLockedStyleBScript | null,
+  storySubject?: ThreeDBreakdownResolvedStorySubject,
 ) => {
   const parsed = parseJsonObject(raw);
   const siteContract = parseSiteContract(parsed);
-  const variants = parseVariants(parsed, evidenceItems, requestedCount, siteContract, lockedStyleBScript);
+  const variants = parseVariants(parsed, evidenceItems, requestedCount, siteContract, lockedStyleBScript, storySubject);
   return { siteContract, variants };
 };
 
@@ -944,7 +883,9 @@ export async function generateThreeDBreakdownStoryDirectionsFromResearch(
     model: nvidiaNimModel,
   });
   const { directorEvidenceItems, evidenceItems } = prepareThreeDBreakdownEvidence(research, startedAt);
-  const resolvedStorySubject = resolveThreeDBreakdownStorySubject(research, storySubject);
+  const resolvedStorySubject = storySubject
+    ? resolveThreeDBreakdownStorySubject(research, storySubject)
+    : undefined;
   const prompt = buildThreeDBreakdownStoryDirectionsPrompt({
     evidence: directorEvidenceItems,
     research,
@@ -1028,7 +969,9 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     model: nvidiaNimModel,
   });
   const { directorEvidenceItems, evidenceItems } = prepareThreeDBreakdownEvidence(research, startedAt);
-  const resolvedStorySubject = resolveThreeDBreakdownStorySubject(research, storySubject);
+  const resolvedStorySubject = storySubject
+    ? resolveThreeDBreakdownStorySubject(research, storySubject)
+    : undefined;
   const requestedCount = selectedStoryDirection
     ? 1
     : Math.max(1, Math.min(2, Math.round(count || THREE_D_BREAKDOWN_VARIANT_COUNT)));
@@ -1070,7 +1013,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
       responseChars: scriptRaw.length,
     });
     try {
-      lockedStyleBScript = parseStyleBScriptPlanOutput(scriptRaw, directorEvidenceItems, research, selectedStoryDirection);
+      lockedStyleBScript = parseStyleBScriptPlanOutput(scriptRaw, directorEvidenceItems, research, selectedStoryDirection, resolvedStorySubject);
     } catch (error) {
       console.warn("[wiggly:3d-breakdown] style-b-script:parse:retry", {
         elapsedMs: Date.now() - startedAt,
@@ -1091,7 +1034,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
         elapsedMs: Date.now() - startedAt,
         responseChars: retryRaw.length,
       });
-      lockedStyleBScript = parseStyleBScriptPlanOutput(retryRaw, directorEvidenceItems, research, selectedStoryDirection);
+      lockedStyleBScript = parseStyleBScriptPlanOutput(retryRaw, directorEvidenceItems, research, selectedStoryDirection, resolvedStorySubject);
     }
     console.log("[wiggly:3d-breakdown] style-b-script:ready", {
       elapsedMs: Date.now() - startedAt,
@@ -1130,7 +1073,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
   });
   let parsedGeneration: ReturnType<typeof parseDirectorOutput>;
   try {
-    parsedGeneration = parseDirectorOutput(raw, directorEvidenceItems, requestedCount, lockedStyleBScript);
+    parsedGeneration = parseDirectorOutput(raw, directorEvidenceItems, requestedCount, lockedStyleBScript, resolvedStorySubject);
   } catch (error) {
     console.warn("[wiggly:3d-breakdown] director:parse:retry", {
       elapsedMs: Date.now() - startedAt,
@@ -1151,7 +1094,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
       elapsedMs: Date.now() - startedAt,
       responseChars: retryRaw.length,
     });
-    parsedGeneration = parseDirectorOutput(retryRaw, directorEvidenceItems, requestedCount, lockedStyleBScript);
+    parsedGeneration = parseDirectorOutput(retryRaw, directorEvidenceItems, requestedCount, lockedStyleBScript, resolvedStorySubject);
   }
   console.log("[wiggly:3d-breakdown] ready", {
     elapsedMs: Date.now() - startedAt,

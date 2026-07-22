@@ -11,6 +11,7 @@ import {
   THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID,
 } from "../features/audio/fishStudio";
 import { extractThreeDBreakdownEvidence } from "../features/formats/three-d-breakdown/evidence";
+import { getThreeDBreakdownCtaError } from "../features/formats/three-d-breakdown/cta";
 import { editThreeDBreakdownMediaPrompt } from "../features/formats/three-d-breakdown/editablePrompts";
 import { editThreeDBreakdownScriptBeat } from "../features/formats/three-d-breakdown/editScript";
 import {
@@ -589,6 +590,19 @@ assert.equal(selectThreeDBreakdownBuyerCta({
   productTitle: "Grüns",
   brandName: "Grüns",
 }), "Get your daily Grüns.");
+assert.equal(selectThreeDBreakdownBuyerCta({
+  generatedCta: "Try LEGO today.",
+  brandName: "LEGO",
+  subjectKind: "brand",
+}), "Watch the full story.");
+assert.equal(selectThreeDBreakdownBuyerCta({
+  brandName: "Grüns",
+  productTitle: "Grüns Kids",
+  subjectKind: "product",
+}), "Try Grüns Kids today.");
+assert.equal(getThreeDBreakdownCtaError("The journey is the product.", "brand"), "CTA must ask the viewer to act, not describe the mechanism.");
+assert.equal(getThreeDBreakdownCtaError("Watch the full story.", "brand"), "");
+assert.equal(getThreeDBreakdownCtaError("This CTA contains far too many words for a short ending.", "product"), "CTA must be 7 words or fewer.");
 
 const merchOnlySupplementResearch = makeResearch({
   websiteUrl: "https://gruns.co/",
@@ -654,7 +668,7 @@ assert.ok(styleBScriptPrompt.includes("unseen narrator"));
 assert.ok(!styleBScriptPrompt.includes('"referenceScript"'));
 assert.ok(styleBScriptPrompt.includes("narrationBeats contains exactly four one-sentence lines"));
 assert.ok(styleBScriptPrompt.includes("43-58 words before the CTA"));
-assert.ok(styleBScriptPrompt.includes("Wiggly adds the website CTA as the fifth beat"));
+assert.ok(styleBScriptPrompt.includes("Wiggly adds an objective-aware CTA as the fifth beat"));
 assert.ok(!styleBScriptPrompt.includes('"ctaLine"'));
 assert.ok(styleBScriptPrompt.includes("Only evidence text authorizes product facts"));
 assert.ok(styleBScriptPrompt.includes("Narration states the real human truth"));
@@ -1608,7 +1622,7 @@ await assert.rejects(
       ctaLine: "The journey is the product.",
     })])),
   }),
-  /CTA line must be a direct action/,
+  /CTA must ask the viewer to act/,
 );
 
 await assert.rejects(
@@ -1619,7 +1633,7 @@ await assert.rejects(
       ctaLine: "Visit David's Cookies to see the mechanism.",
     })])),
   }),
-  /CTA line must sell the product action/,
+  /CTA must ask the viewer to act/,
 );
 
 await assert.rejects(
@@ -2009,6 +2023,20 @@ const brandOriginScene = createThreeDBreakdownAdScene({
 });
 assert.equal(brandOriginScene.layout.productAnchor, undefined);
 assert.deepEqual(brandOriginScene.layout.storyContract.storySubject, { kind: "brand" });
+assert.equal(brandOriginScene.creative.ctaText, "Watch the full story.");
+const selectedProductScene = createThreeDBreakdownAdScene({
+  candidateIndex: 1,
+  evidenceItems: generated.evidenceItems,
+  generationBatchId: "batch_selected_product",
+  model: generated.model,
+  provider: generated.provider,
+  research,
+  siteContract: generated.siteContract,
+  storySubject: { kind: "product", productHandle: "butter-pecan-tin" },
+  variant: generated.variants[1]!,
+});
+assert.equal(selectedProductScene.layout.productAnchor?.title, "Butter Pecan Meltaways Tin");
+assert.equal(selectedProductScene.creative.ctaText, "Try Butter Pecan Meltaways Tin today.");
 assert.equal(scene.format, "three-d-breakdown");
 assert.equal(scene.layout.durationMs, 20_000);
 assert.equal(scene.layout.scriptBeats.length, 5);
@@ -2460,6 +2488,12 @@ assert.ok(editedScriptScene.layout.storyContract.referenceScript?.includes("The 
 assert.equal(editedScriptScene.audio.status, "none", "Editing narration must invalidate the old voice track.");
 assert.equal(editedScriptScene.layout.finalVideo, undefined, "Editing narration must invalidate the old final MP4.");
 assert.notEqual(editedScriptScene, styleBScene, "Script editing must return a complete new scene instead of mutating the current one.");
+
+const editedCtaScene = editThreeDBreakdownScriptBeat(styleBScene, 4, "Try David's Cookies today.");
+assert.equal(editedCtaScene.layout.scriptBeats[4].narration, "Try David's Cookies today.");
+assert.equal(editedCtaScene.creative.ctaText, "Try David's Cookies today.");
+assert.equal(editedCtaScene.layout.storyContract.ctaLine, "Try David's Cookies today.");
+assert.ok(editedCtaScene.layout.storyContract.referenceScript?.endsWith("Try David's Cookies today."));
 
 const readyMediaScene: ThreeDBreakdownAdScene = {
   ...styleBScene,

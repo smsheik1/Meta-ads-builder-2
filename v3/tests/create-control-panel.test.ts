@@ -327,14 +327,23 @@ assert.ok(
     threeDScriptEditorSource.includes("onBeatChanged(beatIndex, event.target.value)") &&
     threeDScriptEditorSource.includes("disabled={disabled}") &&
     threeDScriptEditorSource.includes("data-three-d-script-beat-editor={beat.role}") &&
+    threeDScriptEditorSource.includes('beatIndex === 4 ? "Final CTA"') &&
+    threeDScriptEditorSource.includes("getThreeDBreakdownCtaError") &&
     threeDScriptEditorSource.includes("These exact words will be used for the narrator and captions.") &&
     threeDScriptEditorSource.includes("Add words to every section before generating media."),
   "3D Breakdown must expose every timed script beat as a visible editor and block paid media while a beat is empty.",
 );
 assert.ok(
   createClientSource.includes('scene.layout.scriptBeats.some((beat) => !beat.narration.trim())') &&
+    createClientSource.includes("getThreeDBreakdownCtaError") &&
     createClientSource.includes("Add words to every script section before generating the narrator."),
   "3D Breakdown must also guard the shared audio action from generating narration for an incomplete script.",
+);
+assert.ok(
+  quickActionsSource.includes('const scriptLocked = scriptEditingDisabled || storyboardBoardStatus !== "idle"') &&
+    quickActionsSource.includes("disabled={scriptLocked}") &&
+    quickActionsSource.includes("approvedScriptReady"),
+  "3D Breakdown must lock its approved script and CTA when storyboard generation starts and block paid actions for an invalid CTA.",
 );
 assert.ok(
 	  quickActionsSource.includes('data-three-d-storyboard-board="true"') &&
@@ -372,7 +381,7 @@ assert.ok(
 	    quickActionsSource.includes('!hasVoiceover ? "Add voice" : "Build final video"') &&
     quickActionsSource.includes("onAddVoice={onOpenAudioPanel}") &&
     quickActionsSource.includes("onClick={hasVoiceover ? onBuildFinalVideo : onAddVoice}") &&
-    quickActionsSource.includes("disabled={!scriptReady || !videosReady || renderBusy}") &&
+    quickActionsSource.includes("disabled={!approvedScriptReady || !videosReady || renderBusy}") &&
     quickActionsSource.includes("Generate clip ${nextClipPlan.clipIndex} next") &&
     quickActionsSource.includes("Generate clip ${clipPlan.clipIndex - 1} first") &&
     quickActionsSource.includes("data-three-d-generate-clip={clipPlan.clipIndex}") &&
@@ -499,9 +508,9 @@ assert.ok(
   "Replicate image generation must use Nano Banana 2 Lite and poll created predictions instead of treating delayed output as a missing image.",
 );
 assert.ok(
-  quickActionsSource.includes("Story direction {storyDirectionNumber}") &&
-    quickActionsSource.includes("Press Spacebar to compare before generating images."),
-  "3D Breakdown must explain that generated scripts are story directions users can compare before paid media.",
+  quickActionsSource.includes("Direction {storyDirectionNumber}") &&
+    quickActionsSource.includes("Approve the script and final CTA before generating images."),
+  "3D Breakdown must name the approved direction and CTA before paid media.",
 );
 assert.ok(
   quickActionsSource.includes("data-create-saved-library-trigger") &&

@@ -13,6 +13,9 @@ export function editThreeDBreakdownScriptBeat(
 
   return {
     ...scene,
+    creative: beatIndex === 4
+      ? { ...scene.creative, ctaText: narration }
+      : scene.creative,
     audio: { status: "none", transcript: "", captions: [] },
     layout: {
       ...scene.layout,
@@ -20,6 +23,7 @@ export function editThreeDBreakdownScriptBeat(
       finalVideo: undefined,
       storyContract: {
         ...scene.layout.storyContract,
+        ...(beatIndex === 4 ? { ctaLine: narration } : {}),
         referenceScript: scriptBeats
           .map((beat) => beat.narration.trim())
           .filter(Boolean)

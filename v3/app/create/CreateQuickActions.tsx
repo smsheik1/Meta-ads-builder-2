@@ -31,6 +31,7 @@ import type { BrickStoryboard } from "@/features/formats/jingle/storyboard";
 import { getThreeDAnchorPrompt, getThreeDStoryboardPrompt, type ThreeDBreakdownMediaPromptTarget } from "@/features/formats/three-d-breakdown/editablePrompts";
 import type { ThreeDBreakdownStoryDirection } from "@/features/formats/three-d-breakdown/storyDirections";
 import type { ThreeDBreakdownStorySubject } from "@/features/formats/three-d-breakdown/storySubject";
+import { getThreeDBreakdownCtaError } from "@/features/formats/three-d-breakdown/cta";
 import type { ProductCatalog } from "@/features/research/types";
 import type { AdFormatId, ThreeDBreakdownAdScene, ThreeDBreakdownClipIndex } from "@/features/scene/types";
 import { CreateAssemblyLine, type CreateAssemblyStageStatus } from "./CreateAssemblyLine";
@@ -516,6 +517,19 @@ function ThreeDBreakdownAssemblyCard({
   const storyboardPromptReady = Boolean(storyboardPrompt.trim());
   const anchorPromptsReady = requiredFrames.length > 0 && requiredFrames.every((frame) => getThreeDAnchorPrompt(frame).trim());
   const scriptReady = scene.layout.scriptBeats.every((beat) => beat.narration.trim());
+  const ctaError = getThreeDBreakdownCtaError(
+    scene.layout.scriptBeats[4]?.narration,
+    scene.layout.storyContract.storySubject?.kind,
+  );
+  const approvedScriptReady = scriptReady && !ctaError;
+  const scriptLocked = scriptEditingDisabled || storyboardBoardStatus !== "idle";
+  const storySubjectLabel = scene.layout.storyContract.storySubject?.kind === "product"
+    ? `Product: ${scene.layout.productAnchor?.title || "selected product"}`
+    : scene.layout.storyContract.storySubject?.kind === "customer-problem"
+      ? "Goal: expose one customer problem"
+      : scene.layout.storyContract.storySubject?.kind === "custom"
+        ? `Custom goal: ${scene.layout.storyContract.storySubject.brief || "your brief"}`
+        : "Goal: tell the brand story";
   const storyboardHelperCopy = isPresenterStyle
     ? storyboardBoardReady
       ? framesReady
@@ -548,12 +562,13 @@ function ThreeDBreakdownAssemblyCard({
   const scriptContent = (
     <div className="space-y-2">
       <p className="text-xs font-bold leading-5 text-slate-500">
-        Story direction {storyDirectionNumber}. Press Spacebar to compare before generating images.
+        {storySubjectLabel} · Direction {storyDirectionNumber}. Approve the script and final CTA before generating images.
       </p>
       <ThreeDBreakdownScriptEditor
-        disabled={scriptEditingDisabled}
+        disabled={scriptLocked}
         onBeatChanged={onScriptBeatChanged}
         scriptBeats={scene.layout.scriptBeats}
+        subjectKind={scene.layout.storyContract.storySubject?.kind}
       />
     </div>
   );
@@ -591,7 +606,7 @@ function ThreeDBreakdownAssemblyCard({
         variant={storyboardBoardReady ? "outline" : "default"}
         className="h-10 w-full rounded-2xl text-xs font-black uppercase tracking-[0.12em]"
         onClick={() => onGenerateImages("storyboard")}
-        disabled={imageStatus === "loading" || !scriptReady || !storyboardPromptReady}
+        disabled={imageStatus === "loading" || !approvedScriptReady || !storyboardPromptReady}
         data-three-d-regenerate-storyboard={storyboardBoardReady ? "true" : undefined}
         data-three-d-generate-storyboard={!storyboardBoardReady ? "true" : undefined}
       >
@@ -647,7 +662,7 @@ function ThreeDBreakdownAssemblyCard({
                     variant="ghost"
                     className="h-8 w-full rounded-none border-t border-slate-200 text-[9px] font-black uppercase tracking-[0.12em] text-slate-600"
                     onClick={() => onGenerateImages(clipPlan.clipIndex === 1 ? "anchor-1" : "anchor-2")}
-                    disabled={imageStatus === "loading" || !scriptReady || !getThreeDAnchorPrompt(frame).trim()}
+                    disabled={imageStatus === "loading" || !approvedScriptReady || !getThreeDAnchorPrompt(frame).trim()}
                     aria-label={`Regenerate ${frameLabel}`}
                     data-three-d-regenerate-anchor={clipPlan.clipIndex}
                   >
@@ -676,7 +691,7 @@ function ThreeDBreakdownAssemblyCard({
         type="button"
         className="h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
         onClick={() => onGenerateImages()}
-        disabled={imageStatus === "loading" || !scriptReady || !storyboardPromptReady || !anchorPromptsReady || framesReady || (isPresenterStyle && !storyboardBoardReady)}
+        disabled={imageStatus === "loading" || !approvedScriptReady || !storyboardPromptReady || !anchorPromptsReady || framesReady || (isPresenterStyle && !storyboardBoardReady)}
         data-three-d-generate-anchors={isPresenterStyle ? "true" : undefined}
       >
         {imageStatus === "loading" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImageIcon className="mr-2 size-4" />}
@@ -742,7 +757,7 @@ function ThreeDBreakdownAssemblyCard({
               type="button"
               className="mt-3 h-9 w-full rounded-2xl bg-slate-950 text-[11px] font-black uppercase tracking-[0.12em] text-white disabled:bg-slate-200 disabled:text-slate-400"
               onClick={() => onGenerateClip(clipPlan.clipIndex)}
-              disabled={!scriptReady || !clipPlan.prompt.trim() || !framesReady || threeDClipBusyIndex !== null || !getPreviousClipReady(clipPlan.clipIndex)}
+              disabled={!approvedScriptReady || !clipPlan.prompt.trim() || !framesReady || threeDClipBusyIndex !== null || !getPreviousClipReady(clipPlan.clipIndex)}
               data-three-d-generate-clip={clipPlan.clipIndex}
             >
               {clipBusy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Film className="mr-2 size-4" />}
@@ -777,7 +792,7 @@ function ThreeDBreakdownAssemblyCard({
         type="button"
         className="h-10 w-full rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.14em] text-white"
         onClick={hasVoiceover ? onBuildFinalVideo : onAddVoice}
-        disabled={!scriptReady || !videosReady || renderBusy}
+        disabled={!approvedScriptReady || !videosReady || renderBusy}
       >
         {renderBusy
           ? <Loader2 className="mr-2 size-4 animate-spin" />
@@ -802,7 +817,7 @@ function ThreeDBreakdownAssemblyCard({
       compactLabel: "Script",
       kicker: "narrator story",
       icon: <FileText className="size-4" />,
-      status: scriptReady ? "ready" as const : "needs" as const,
+      status: approvedScriptReady ? "ready" as const : "needs" as const,
       content: scriptContent,
     },
     {

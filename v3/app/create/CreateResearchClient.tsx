@@ -28,6 +28,7 @@ import { editThreeDBreakdownMediaPrompt, type ThreeDBreakdownMediaPromptTarget }
 import type { ThreeDBreakdownStoryDirection } from "@/features/formats/three-d-breakdown/storyDirections";
 import type { ThreeDBreakdownStorySubject } from "@/features/formats/three-d-breakdown/storySubject";
 import { editThreeDBreakdownScriptBeat } from "@/features/formats/three-d-breakdown/editScript";
+import { getThreeDBreakdownCtaError } from "@/features/formats/three-d-breakdown/cta";
 import {
   getDefaultReviewProductHandles,
   normalizeReviewProductHandles,
@@ -2585,8 +2586,14 @@ function ResearchConnected() {
       return;
     }
     if (scene.format === "three-d-breakdown") {
-      if (scene.layout.scriptBeats.some((beat) => !beat.narration.trim())) {
-        setAudioError("Add words to every script section before generating the narrator.");
+      const scriptError = scene.layout.scriptBeats.some((beat) => !beat.narration.trim())
+        ? "Add words to every script section before generating the narrator."
+        : getThreeDBreakdownCtaError(
+          scene.layout.scriptBeats[4]?.narration,
+          scene.layout.storyContract.storySubject?.kind,
+        );
+      if (scriptError) {
+        setAudioError(scriptError);
         return;
       }
       void generateSceneAudio(scene, sceneIds[selectedSceneIndex], {
