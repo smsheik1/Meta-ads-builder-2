@@ -548,6 +548,12 @@ assert.equal(selectThreeDBreakdownBuyerCta({
   productTitle: "Grüns",
   brandName: "Grüns",
 }), "Get your daily Grüns.");
+assert.equal(selectThreeDBreakdownBuyerCta({
+  generatedCta: "See the mechanism.",
+  siteCta: "",
+  productTitle: "Theragun PRO Plus",
+  brandName: "Therabody",
+}), "Shop Theragun PRO Plus");
 
 const merchOnlySupplementResearch = makeResearch({
   websiteUrl: "https://gruns.co/",
@@ -2012,8 +2018,10 @@ assert.ok(threeDImageActionSource.includes("cropThreeDStoryboardPanel(new Uint8A
 assert.ok(threeDImageActionSource.includes("getThreeDProductReferences(scene)"), "Production anchors must keep retail and in-use product references beside the storyboard.");
 assert.ok(threeDImageActionSource.includes("fetchThreeDProductReferenceImageUrls"), "Production anchors must recover real packshot and in-use references when the product page exposes them.");
 assert.ok(
-  threeDImageActionSource.includes("if (clipIndex === 1)") && threeDImageActionSource.includes("withRefreshedThreeDProductPackshot"),
-  "The first paid clip action must refresh legacy scenes to the clean real packshot before final rendering.",
+  threeDImageActionSource.includes("product.imageUrl") &&
+    !threeDImageActionSource.includes("withRefreshedThreeDProductPackshot") &&
+    !threeDImageActionSource.includes("productAnchor: { ...scene.layout.productAnchor, imageUrl }"),
+  "Supplementary page scraping must never replace the selected product used by the end card and CTA.",
 );
 assert.ok(!threeDImageActionSource.includes("getThreeDAnchorImageInput(nextScene, imageInput)"), "Production anchors must not receive competing style and site references after storyboard approval.");
 assert.ok(
