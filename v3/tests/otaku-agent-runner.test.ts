@@ -52,6 +52,8 @@ assert.deepEqual(materialized[7].callout, { label: "AUTH", theme: "gold" });
 const dannyPlan = readJson<OtakuScenePlan>("scenes/danny-apis.json");
 const dannyWorld = readJson<OtakuWorldPack>("worlds/danny-phantom.json");
 assert.deepEqual(validateScenePlan(dannyPlan, dannyWorld, layouts), []);
+assert.equal(dannyWorld.music?.localPath, "assets/audio/danny-phantom-background.mp3");
+assert.equal(dannyWorld.music?.volume, 0.16);
 const dannyScenes = materializeScenePlan(dannyPlan, dannyWorld, layouts);
 assert.deepEqual(
   [dannyScenes[0].speaker, dannyScenes[1].speaker, dannyScenes[9].speaker],

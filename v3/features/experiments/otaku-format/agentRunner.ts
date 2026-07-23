@@ -11,6 +11,12 @@ export type CalloutTheme = (typeof calloutThemes)[number];
 export type OtakuWorldPack = {
   id: string;
   label: string;
+  music?: {
+    localPath: string;
+    volume: number;
+    sourceUrl: string;
+    selectionReason: string;
+  };
   roles: Record<LessonRole, {
     character: string;
     voice: string;

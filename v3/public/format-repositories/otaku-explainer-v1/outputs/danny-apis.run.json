@@ -20,8 +20,8 @@
     "tucker-foley": "e3e1212180ee4f87ab0730db54d1a8e2",
     "vlad-plasmius": "23231b8547f04d79bebc51bb2a23b5ab"
   },
-  "musicPath": "format-repositories/otaku-explainer-v1/assets/audio/background-music.mp3",
-  "musicVolume": 0.1,
+  "musicPath": "format-repositories/otaku-explainer-v1/assets/audio/danny-phantom-background.mp3",
+  "musicVolume": 0.16,
   "scenes": [
     {
       "id": "api-01",
@@ -482,5 +482,5 @@
     "layouts": "layouts.json"
   },
   "attempt": 1,
-  "renderedAt": "2026-07-23T06:25:59.167Z"
+  "renderedAt": "2026-07-23T16:49:21.958Z"
 }

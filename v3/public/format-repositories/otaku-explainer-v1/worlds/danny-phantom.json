@@ -1,6 +1,12 @@
 {
   "id": "danny-phantom",
   "label": "Danny Phantom",
+  "music": {
+    "localPath": "assets/audio/danny-phantom-background.mp3",
+    "volume": 0.16,
+    "sourceUrl": "https://www.youtube.com/watch?v=s8N1O07Lxpw",
+    "selectionReason": "The top exact-match search result is the official instrumental rather than a cover or remix. Its trailing silence was removed before making a crossfaded loop."
+  },
   "roles": {
     "learner": {
       "character": "danny-phantom",

@@ -217,6 +217,7 @@ async function render() {
   try {
     const audio = await readJson<AudioManifest>(path.join(packageRoot, "audio.json"));
     const format = await readJson<{ version: string }>(path.join(packageRoot, "format.json"));
+    const music = world.music ?? audio.music;
     const concreteScenes = materializeScenePlan(plan, world, layouts);
     for (const [index, scene] of concreteScenes.entries()) {
       const role = plan.scenes[index].speakerRole;
@@ -237,8 +238,8 @@ async function render() {
       provider: audio.provider,
       model: audio.model,
       voiceAssignments: Object.fromEntries(Object.values(world.roles).map((role) => [role.character, role.voice])),
-      musicPath: `format-repositories/otaku-explainer-v1/${audio.music.localPath}`,
-      musicVolume: audio.music.volume,
+      musicPath: `format-repositories/otaku-explainer-v1/${music.localPath}`,
+      musicVolume: music.volume,
       scenes: concreteScenes,
       qualityChecks: "quality.json",
       output: `format-repositories/otaku-explainer-v1/${relativeAttempt}/video.mp4`,
