@@ -18,7 +18,12 @@ import {
   type OtakuScenePlan,
   type OtakuWorldPack,
 } from "../features/experiments/otaku-format/agentRunner";
-import { generateFishClip, probeDurationMs } from "./prepare-otaku-format";
+import {
+  generateFishClip,
+  prepareMusicBed,
+  probeDurationMs,
+  sceneDurationFromAudioMs,
+} from "./otaku-media";
 
 const filename = fileURLToPath(import.meta.url);
 const v3Root = path.resolve(path.dirname(filename), "..");
@@ -226,8 +231,15 @@ async function render() {
       console.log(`[${index + 1}/${concreteScenes.length}] ${role}: ${scene.dialogue}`);
       await generateFishClip({ apiKey, outputPath: audioFile, speed: audio.dialogue.speed, text: scene.dialogue, voiceId: world.roles[role].voice });
       scene.audioPath = `format-repositories/otaku-explainer-v1/${relativeAttempt}/audio/${scene.id}.wav`;
-      scene.durationMs = Math.max(2_400, (await probeDurationMs(audioFile)) + 520);
+      scene.durationMs = sceneDurationFromAudioMs(await probeDurationMs(audioFile));
     }
+    const totalDurationMs = concreteScenes.reduce((total, scene) => total + (scene.durationMs || 0), 0);
+    const musicFile = path.join(attemptDirectory, "music.mp3");
+    await prepareMusicBed({
+      outputPath: musicFile,
+      sourcePath: path.join(packageRoot, music.localPath),
+      targetDurationMs: totalDurationMs,
+    });
     const characters = Object.values(world.roles).map((role) => role.character);
     const runRecord = {
       id: `${runId}-attempt-${attemptNumber}`,
@@ -239,7 +251,8 @@ async function render() {
       provider: audio.provider,
       model: audio.model,
       voiceAssignments: Object.fromEntries(Object.values(world.roles).map((role) => [role.character, role.voice])),
-      musicPath: `format-repositories/otaku-explainer-v1/${music.localPath}`,
+      musicPath: `format-repositories/otaku-explainer-v1/${relativeAttempt}/music.mp3`,
+      musicLoop: false,
       musicVolume: music.volume,
       scenes: concreteScenes,
       qualityChecks: "quality.json",
@@ -272,7 +285,10 @@ async function inspect() {
   const attempt = state.attempts.at(-1);
   if (!attempt || attempt.status !== "rendered") throw new Error("The latest attempt has not rendered successfully.");
   const directory = runDirectory(runId);
-  const runRecord = await readJson<{ scenes: Array<{ durationMs?: number; audioPath?: string }> }>(path.join(packageRoot, attempt.runRecord));
+  const runRecord = await readJson<{
+    musicPath: string;
+    scenes: Array<{ durationMs?: number; audioPath?: string }>;
+  }>(path.join(packageRoot, attempt.runRecord));
   const outputPath = path.join(packageRoot, attempt.output);
   const contactSheetPath = path.join(packageRoot, attempt.contactSheet);
   const technical = JSON.parse(await runProcess("ffprobe", [
@@ -284,6 +300,13 @@ async function inspect() {
   const expectedDurationMs = runRecord.scenes.reduce((total, scene) => total + (scene.durationMs || 0), 0);
   const actualDurationMs = Math.round(Number(technical.format?.duration || 0) * 1000);
   const stream = technical.streams?.[0];
+  const audioDurations = await Promise.all(runRecord.scenes.map(async (scene) => {
+    if (!scene.audioPath) return undefined;
+    const audioPath = path.join(v3Root, "public", scene.audioPath);
+    return existsSync(audioPath) ? await probeDurationMs(audioPath) : undefined;
+  }));
+  const musicPath = path.join(v3Root, "public", runRecord.musicPath);
+  const musicDurationMs = existsSync(musicPath) ? await probeDurationMs(musicPath) : 0;
   const report: OtakuQualityReport = {
     attempt: attempt.number,
     automaticChecks: {
@@ -292,6 +315,11 @@ async function inspect() {
       dimensionsAre720x1280: stream?.width === 720 && stream?.height === 1280,
       durationMatchesScenes: Math.abs(actualDurationMs - expectedDurationMs) <= 1_500,
       everySceneHasAudio: runRecord.scenes.every((scene) => Boolean(scene.audioPath && existsSync(path.join(v3Root, "public", scene.audioPath)))),
+      sceneTimingMatchesVoiceTracks: runRecord.scenes.every((scene, index) => (
+        audioDurations[index] !== undefined
+        && Math.abs((scene.durationMs || 0) - audioDurations[index]!) <= 40
+      )),
+      musicCoversFullVideo: musicDurationMs >= expectedDurationMs - 100,
       attemptLimitRespected: attempt.number <= maxRenderAttempts,
     },
     creativeReview: {

@@ -3,6 +3,7 @@ import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { PNG } from "pngjs";
+import { generateFishClip, probeDurationMs, sceneDurationFromAudioMs } from "./otaku-media";
 import type { OtakuScene } from "../public/format-repositories/otaku-explainer-v1/renderer/OtakuFormatRenderer";
 import {
   materializeScenePlan,
@@ -17,8 +18,6 @@ const packageRoot = path.join(v3Root, "public", "format-repositories", "otaku-ex
 const outputRoot = path.join(packageRoot, "outputs");
 const sourceReference = "/Users/shaz/Downloads/aidnfenri__DY4un70q8I7.mp4";
 const sourceMusic = "/Users/shaz/Downloads/videoplayback (4).mp4";
-const fishUrl = "https://api.fish.audio/v1/tts";
-const fishModel = "s2.1-pro-free";
 
 type AssetManifest = {
   characters: Array<{ id: string; label: string; localPath: string; sourceUrl: string; postprocess?: "remove-white-and-trim" | "remove-checkerboard-and-trim" }>;
@@ -48,26 +47,6 @@ async function runCommand(command: string, args: string[]) {
     child.stderr.on("data", (chunk) => { stderr += String(chunk); });
     child.on("error", reject);
     child.on("close", (code) => code === 0 ? resolve() : reject(new Error(`${command} failed: ${stderr.slice(-1200)}`)));
-  });
-}
-
-export async function probeDurationMs(filePath: string) {
-  return await new Promise<number>((resolve, reject) => {
-    const child = spawn("ffprobe", [
-      "-v", "error",
-      "-show_entries", "format=duration",
-      "-of", "default=noprint_wrappers=1:nokey=1",
-      filePath,
-    ], { stdio: ["ignore", "pipe", "pipe"] });
-    let stdout = "";
-    let stderr = "";
-    child.stdout.on("data", (chunk) => { stdout += String(chunk); });
-    child.stderr.on("data", (chunk) => { stderr += String(chunk); });
-    child.on("error", reject);
-    child.on("close", (code) => {
-      if (code !== 0) return reject(new Error(`ffprobe failed: ${stderr.trim()}`));
-      resolve(Math.round(Number(stdout.trim()) * 1000));
-    });
   });
 }
 
@@ -208,54 +187,6 @@ async function prepareFixedAssets(assets: AssetManifest, audio: AudioManifest) {
   }
 }
 
-export async function generateFishClip({
-  apiKey,
-  outputPath,
-  speed,
-  text,
-  voiceId,
-}: {
-  apiKey: string;
-  outputPath: string;
-  speed: number;
-  text: string;
-  voiceId: string;
-}) {
-  if (await fileExists(outputPath)) return;
-  const response = await fetch(fishUrl, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "model": fishModel,
-    },
-    body: JSON.stringify({
-      text,
-      reference_id: voiceId,
-      temperature: 0.35,
-      top_p: 0.55,
-      format: "wav",
-      sample_rate: 44_100,
-      normalize: true,
-      latency: "normal",
-      chunk_length: 100,
-      max_new_tokens: 1024,
-      repetition_penalty: 1.2,
-      condition_on_previous_chunks: false,
-      prosody: { speed, volume: 0, normalize_loudness: true },
-    }),
-    signal: AbortSignal.timeout(90_000),
-  });
-  if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(`Fish Audio failed with ${response.status}: ${body.slice(0, 300)}`);
-  }
-  const bytes = new Uint8Array(await response.arrayBuffer());
-  if (bytes.length < 10_000) throw new Error("Fish Audio returned an unexpectedly small clip.");
-  await mkdir(path.dirname(outputPath), { recursive: true });
-  await writeFile(outputPath, bytes);
-}
-
 async function prepareRun({
   audio,
   runId,
@@ -292,7 +223,7 @@ async function prepareRun({
     filledScenes.push({
       ...scene,
       audioPath: `format-repositories/otaku-explainer-v1/assets/audio/${outputId}/${audioFile}`,
-      durationMs: Math.max(2_400, audioDurationMs + 520),
+      durationMs: sceneDurationFromAudioMs(audioDurationMs),
     });
   }
 

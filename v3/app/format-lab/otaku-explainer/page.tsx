@@ -134,6 +134,7 @@ export default function OtakuExplainerFormatPage() {
       files={files}
       format={format}
       agentRuns={agentRuns}
+      downloadUrl="/format-repositories/otaku-explainer-v1/downloads/wiggly-otaku-explainer-format-kit.zip"
       referenceVideo="/format-repositories/otaku-explainer-v1/assets/reference/reference.mp4"
       runs={runs.map((run) => ({
         ...run,

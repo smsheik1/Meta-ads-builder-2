@@ -126,6 +126,8 @@ assert.match(repositoryPage, /Needs rerun/);
 assert.match(repositoryPage, /Local draft/);
 assert.match(repositoryPage, /Replace \$\{asset\.label\}/);
 assert.match(repositoryPage, /Copy rerun commands/);
+assert.match(repositoryPage, /Download runnable Format Kit/);
+assert.match(repositoryPage, /download-format-kit/);
 assert.match(repositoryPage, /worldFiles\.map/);
 assert.match(repositoryPage, /sceneFiles\.map/);
 assert.match(repositoryServer, /function readRepositoryFiles/);
@@ -133,6 +135,7 @@ assert.match(repositoryServer, /function readOutputRuns/);
 assert.doesNotMatch(repositoryServer, /const runIds|world-naruto|world-spongebob/);
 assert.ok(existsSync(path.join(packageRoot, "SKILL.md")));
 assert.ok(existsSync(path.join(packageRoot, "requirements.json")));
+assert.ok(existsSync(path.join(packageRoot, "downloads", "wiggly-otaku-explainer-format-kit.zip")));
 assert.ok(existsSync(path.join(packageRoot, "worlds", "naruto.json")));
 assert.ok(existsSync(path.join(packageRoot, "worlds", "yugioh.json")));
 

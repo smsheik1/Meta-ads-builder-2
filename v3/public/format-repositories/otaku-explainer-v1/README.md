@@ -6,6 +6,15 @@ This package is the first Wiggly Format repository experiment. It contains the i
 
 An agent can operate the package without an OpenRouter planning call. Start with `SKILL.md`; it explains how to check requirements, create and validate a scene plan, request one render-loop approval, inspect the result, and stop after three attempts.
 
+## Start from the public Wiggly Repo
+
+1. Download and unzip the **Runnable Format Kit**.
+2. Open its `v3` folder and run `npm install`.
+3. Copy `.env.example` to `.env.local` and add the requested key values.
+4. Tell Claude or Codex: “Read `public/format-repositories/otaku-explainer-v1/SKILL.md` and use the packaged renderer. Do not rebuild it.”
+
+The kit contains the real runner, renderer, dependencies, rules, layouts, and required assets. A fresh agent may write a new scene plan or story-world pack, but it must not recreate the renderer or timing pipeline.
+
 ## Formula
 
 1. Open with a question that names the confusing idea.
