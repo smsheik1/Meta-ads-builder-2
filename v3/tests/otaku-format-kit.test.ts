@@ -14,6 +14,22 @@ const run = (command: string, args: string[], cwd = process.cwd()) => {
   return `${result.stdout}${result.stderr}`;
 };
 
+const readZipEntries = (archivePath: string) => {
+  const archive = readFileSync(archivePath);
+  const entries: string[] = [];
+  for (let offset = 0; offset <= archive.length - 46;) {
+    offset = archive.indexOf("PK\u0001\u0002", offset, "binary");
+    if (offset < 0) break;
+    const nameLength = archive.readUInt16LE(offset + 28);
+    const extraLength = archive.readUInt16LE(offset + 30);
+    const commentLength = archive.readUInt16LE(offset + 32);
+    entries.push(archive.subarray(offset + 46, offset + 46 + nameLength).toString());
+    offset += 46 + nameLength + extraLength + commentLength;
+  }
+  assert.ok(entries.length > 0, "Format Kit ZIP must contain files.");
+  return entries;
+};
+
 const temporaryRoot = mkdtempSync(path.join(os.tmpdir(), "wiggly-format-kit-"));
 try {
   const sourceMusic = path.join(temporaryRoot, "source.wav");
@@ -43,7 +59,8 @@ try {
     "downloads",
     "wiggly-otaku-explainer-format-kit.zip",
   );
-  const entries = run("unzip", ["-Z1", archive]);
+  const entryList = readZipEntries(archive);
+  const entries = entryList.join("\n");
   for (const required of [
     "v3/package.json",
     "v3/kit-smoke.mjs",
@@ -57,14 +74,14 @@ try {
   ]) {
     assert.match(entries, new RegExp(required.replaceAll(".", "\\.")), `${required} must be downloadable.`);
   }
-  const entryList = entries.trim().split("\n");
   assert.equal(entryList.some((entry) => entry.includes("/outputs/") || entry.includes("/agent-runs/")), false);
   assert.equal(entryList.some((entry) => /\/assets\/audio\/[^/]+\//.test(entry)), false);
 
-  run("unzip", ["-q", archive, "-d", temporaryRoot]);
-  const extractedV3 = path.join(temporaryRoot, "wiggly-otaku-explainer-format-kit", "v3");
-  assert.match(run("node", ["kit-smoke.mjs"], extractedV3), /Format Kit files are complete/);
-  const packageJson = JSON.parse(readFileSync(path.join(extractedV3, "package.json"), "utf8")) as {
+  assert.match(run("node", ["public/format-repositories/otaku-explainer-v1/kit-smoke.mjs"]), /Format Kit files are complete/);
+  const packageJson = JSON.parse(readFileSync(
+    "public/format-repositories/otaku-explainer-v1/kit.package.json",
+    "utf8",
+  )) as {
     scripts: Record<string, string>;
   };
   assert.match(packageJson.scripts["prototype:otaku"], /otaku-format\.ts/);
