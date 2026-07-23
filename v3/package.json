@@ -20,6 +20,7 @@
     "prototype:otaku:prepare": "tsx scripts/prepare-otaku-format.ts",
     "prototype:otaku:render": "tsx scripts/render-otaku-proofs.ts",
     "prototype:otaku": "tsx scripts/otaku-format.ts",
+    "prototype:otaku:smoke": "tsx scripts/smoke-otaku-format.ts",
     "prototype:otaku:kit": "node scripts/build-otaku-format-kit.mjs",
     "render-worker": "tsx scripts/render-worker.ts",
     "render-worker:watch": "tsx scripts/render-worker.ts --watch",

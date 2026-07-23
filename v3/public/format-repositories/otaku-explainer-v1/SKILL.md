@@ -20,6 +20,7 @@ The renderer deliberately adds a soft glow around the active speaker. This hides
 Run commands from the downloaded kit's `v3` folder:
 
 ```bash
+npm run smoke
 npm run prototype:otaku -- check
 npm run prototype:otaku -- init --run=<run-id> --topic="<topic>" --world=naruto
 npm run prototype:otaku -- validate --run=<run-id>
@@ -28,12 +29,14 @@ npm run prototype:otaku -- inspect --run=<run-id>
 npm run prototype:otaku -- finalize --run=<run-id>
 ```
 
+Run `npm run smoke` first. It makes a tiny local test video and verifies the packaged renderer, assets, FFmpeg, Remotion, and audio mix without calling Fish or any paid provider.
+
 `--approve-loop` records permission for one initial render and up to two focused improvement renders without storing secrets. If the configured voice model is free and the user already asked the agent to make the video, that request is enough; do not interrupt them for another approval. Ask first when a provider may charge money.
 
 ## Required loop
 
 1. Read this file, `requirements.json`, `worlds/<world>.json`, `layouts.json`, `scene-contract.json`, `prompts/script-system.md`, and `quality.json`.
-2. Run `check`. If it reports a missing key, ask the user to add the named key to `.env.local`. Never ask them to paste a secret into chat and never print its value.
+2. Run `npm run smoke`, then run `check`. If either fails, stop and report the exact missing local requirement. If `check` reports a missing key, ask the user to add the named key to `.env.local`. Never ask them to paste a secret into chat and never print its value.
 3. Run `init`, then write 12–18 short scene records in the new run's `scene-plan.json`.
 4. Use only packaged role names, backgrounds, layout IDs, and assets. Do not invent character coordinates.
 5. Run `validate` before any media call. Fix every validation error first.

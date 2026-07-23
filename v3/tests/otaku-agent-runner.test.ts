@@ -135,5 +135,9 @@ const passingReport: OtakuQualityReport = {
 assert.equal(canFinalize(passingReport), true);
 assert.equal(canFinalize({ ...passingReport, problems: ["Text clips in scene 4."] }), false);
 assert.equal(canFinalize({ ...passingReport, creativeReview: { ...passingReport.creativeReview, audioClear: false } }), false);
+assert.equal(canFinalize({
+  ...passingReport,
+  automaticChecks: { ...passingReport.automaticChecks, voiceClipEndingsAreNotAbrupt: false },
+}), false);
 
 console.log("Otaku agent runner tests passed.");

@@ -81,10 +81,12 @@ async function main() {
     process.stdout.write("\n");
 
     const sheetPath = entry.sheetPath;
+    const durationSeconds = composition.durationInFrames / composition.fps;
+    const contactSheetFps = 9 / durationSeconds;
     await runFfmpeg([
       "-hide_banner", "-loglevel", "error", "-y",
       "-i", outputLocation,
-      "-vf", "fps=1/10,scale=240:427,tile=3x3:padding=8:margin=8:color=white",
+      "-vf", `fps=${contactSheetFps.toFixed(6)},scale=240:427,tile=3x3:nb_frames=9:padding=8:margin=8:color=white`,
       "-frames:v", "1",
       sheetPath,
     ]);

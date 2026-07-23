@@ -18,6 +18,7 @@ const runtimeFiles = [
   "scripts/otaku-format.ts",
   "scripts/otaku-media.ts",
   "scripts/render-otaku-proofs.ts",
+  "scripts/smoke-otaku-format.ts",
   "features/experiments/otaku-format/agentRunner.ts",
   "features/experiments/otaku-format/OtakuProofVideo.tsx",
   "features/experiments/otaku-format/Root.tsx",
@@ -38,6 +39,6 @@ if (missing.length) {
     console.error("SKILL.md must tell agents to use the packaged renderer instead of rebuilding it.");
     process.exitCode = 1;
   } else {
-    console.log("Format Kit files are complete. Run `npm install`, then `npm run prototype:otaku -- check`.");
+    console.log("Format Kit files are complete. Run `npm install`, then `npm run smoke`.");
   }
 }

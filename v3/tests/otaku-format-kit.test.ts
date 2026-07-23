@@ -67,6 +67,7 @@ try {
     "v3/scripts/otaku-format.ts",
     "v3/scripts/otaku-media.ts",
     "v3/scripts/render-otaku-proofs.ts",
+    "v3/scripts/smoke-otaku-format.ts",
     "v3/tests/otaku-format-runtime.test.ts",
     "v3/features/experiments/otaku-format/OtakuProofVideo.tsx",
     "v3/public/format-repositories/otaku-explainer-v1/SKILL.md",
@@ -85,6 +86,7 @@ try {
     scripts: Record<string, string>;
   };
   assert.match(packageJson.scripts["prototype:otaku"], /otaku-format\.ts/);
+  assert.match(packageJson.scripts.smoke, /smoke-otaku-format\.ts/);
 } finally {
   rmSync(temporaryRoot, { force: true, recursive: true });
 }

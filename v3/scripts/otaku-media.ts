@@ -26,6 +26,18 @@ async function run(command: string, args: string[]) {
   });
 }
 
+async function captureStderr(command: string, args: string[]) {
+  return await new Promise<string>((resolve, reject) => {
+    const child = spawn(command, args, { stdio: ["ignore", "ignore", "pipe"] });
+    let stderr = "";
+    child.stderr.on("data", (chunk) => { stderr += String(chunk); });
+    child.on("error", reject);
+    child.on("close", (code) => code === 0
+      ? resolve(stderr)
+      : reject(new Error(`${command} failed: ${stderr.slice(-1_200)}`)));
+  });
+}
+
 export async function probeDurationMs(filePath: string) {
   return await new Promise<number>((resolve, reject) => {
     const child = spawn("ffprobe", [
@@ -44,6 +56,103 @@ export async function probeDurationMs(filePath: string) {
       resolve(Math.round(Number(stdout.trim()) * 1_000));
     });
   });
+}
+
+export type AudioSignalReport = {
+  durationMs: number;
+  leadingSilenceMs: number;
+  trailingSilenceMs: number;
+  meanVolumeDb: number;
+  maxVolumeDb: number;
+  tailPeakDb: number;
+  peakCount: number;
+  sampleCount: number;
+};
+
+export const audioDoesNotClip = (report: AudioSignalReport) => (
+  report.maxVolumeDb < -0.1 || (report.peakCount / report.sampleCount) < 0.001
+);
+
+export function evaluateVoiceSignal(report: AudioSignalReport) {
+  return {
+    audible: report.meanVolumeDb >= -35 && report.maxVolumeDb >= -25,
+    edgesAreClean: report.leadingSilenceMs <= 250 && report.trailingSilenceMs <= 250,
+    endingIsNotAbrupt: report.tailPeakDb <= -12,
+    doesNotClip: audioDoesNotClip(report),
+  };
+}
+
+export function musicDialogueMarginDb(
+  voiceReports: AudioSignalReport[],
+  musicReport: AudioSignalReport,
+  musicVolume: number,
+) {
+  if (!voiceReports.length || musicVolume <= 0) return Number.NEGATIVE_INFINITY;
+  const averageVoiceDb = voiceReports.reduce((total, report) => total + report.meanVolumeDb, 0) / voiceReports.length;
+  const audibleMusicDb = musicReport.meanVolumeDb + (20 * Math.log10(musicVolume));
+  return averageVoiceDb - audibleMusicDb;
+}
+
+const metric = (output: string, name: "mean_volume" | "max_volume") => {
+  const match = output.match(new RegExp(`${name}: (-?(?:\\d+(?:\\.\\d+)?|inf)) dB`));
+  if (!match) throw new Error(`FFmpeg did not report ${name}.`);
+  return match[1] === "-inf" ? Number.NEGATIVE_INFINITY : Number(match[1]);
+};
+
+const lastMetric = (output: string, name: "Peak count" | "Number of samples") => {
+  const matches = [...output.matchAll(new RegExp(`${name}: ([0-9.]+)`, "g"))];
+  if (!matches.length) throw new Error(`FFmpeg did not report ${name}.`);
+  return Number(matches.at(-1)![1]);
+};
+
+export async function analyzeAudioSignal(filePath: string): Promise<AudioSignalReport> {
+  const durationMs = await probeDurationMs(filePath);
+  const stderr = await captureStderr("ffmpeg", [
+    "-hide_banner", "-nostats",
+    "-i", filePath,
+    "-af", "silencedetect=noise=-45dB:d=0.12,volumedetect,astats=metadata=1:reset=0",
+    "-f", "null", "-",
+  ]);
+
+  const silenceRanges: Array<{ startMs: number; endMs: number }> = [];
+  let openSilenceMs: number | undefined;
+  for (const match of stderr.matchAll(/silence_(start|end): ([0-9.]+)/g)) {
+    const positionMs = Number(match[2]) * 1_000;
+    if (match[1] === "start") openSilenceMs = positionMs;
+    else if (openSilenceMs !== undefined) {
+      silenceRanges.push({ startMs: openSilenceMs, endMs: positionMs });
+      openSilenceMs = undefined;
+    }
+  }
+  if (openSilenceMs !== undefined) silenceRanges.push({ startMs: openSilenceMs, endMs: durationMs });
+
+  const firstSilence = silenceRanges[0];
+  const lastSilence = silenceRanges.at(-1);
+  const leadingSilenceMs = firstSilence && firstSilence.startMs <= 20 ? firstSilence.endMs : 0;
+  const trailingSilenceMs = lastSilence && lastSilence.endMs >= durationMs - 50
+    ? Math.max(0, durationMs - lastSilence.startMs)
+    : 0;
+  const tailSeconds = Math.min(0.08, durationMs / 1_000);
+  const tailStartSeconds = Math.max(0, (durationMs / 1_000) - tailSeconds);
+  const tailStderr = await captureStderr("ffmpeg", [
+    "-hide_banner", "-nostats",
+    "-ss", tailStartSeconds.toFixed(3),
+    "-i", filePath,
+    "-t", tailSeconds.toFixed(3),
+    "-af", "volumedetect",
+    "-f", "null", "-",
+  ]);
+
+  return {
+    durationMs,
+    leadingSilenceMs: Math.round(leadingSilenceMs),
+    trailingSilenceMs: Math.round(trailingSilenceMs),
+    meanVolumeDb: metric(stderr, "mean_volume"),
+    maxVolumeDb: metric(stderr, "max_volume"),
+    tailPeakDb: metric(tailStderr, "max_volume"),
+    peakCount: lastMetric(stderr, "Peak count"),
+    sampleCount: lastMetric(stderr, "Number of samples"),
+  };
 }
 
 export function sceneDurationFromAudioMs(audioDurationMs: number) {
