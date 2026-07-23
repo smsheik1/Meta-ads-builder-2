@@ -141,7 +141,7 @@ export function OtakuFormatRepositoryClient({
           <div className="mt-1 flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold">otaku-explainer</h1>
             <Badge variant="secondary">experimental</Badge>
-            <span className="text-sm text-slate-400">v1.1.0</span>
+            <span className="text-sm text-slate-400">v1.2.0</span>
           </div>
         </div>
       </header>

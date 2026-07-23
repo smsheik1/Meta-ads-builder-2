@@ -5,7 +5,7 @@
     { "id": "grounded-characters", "label": "Feet or lower body meet a believable ground line." },
     { "id": "background-pan", "label": "Every scene has visible right-to-left background movement." },
     { "id": "voice-match", "label": "The active speaker uses the assigned Fish Audio voice." },
-    { "id": "music-balance", "label": "Music stays below the dialogue." },
+    { "id": "music-balance", "label": "Music has no vocals, clipping, or dead loop gap and stays below the dialogue." },
     { "id": "simple-language", "label": "A nontechnical viewer can repeat the lesson after watching." },
     { "id": "world-fit", "label": "The analogy uses objects and behavior from the selected story world." }
   ]

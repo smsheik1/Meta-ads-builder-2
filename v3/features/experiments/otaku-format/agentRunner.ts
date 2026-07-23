@@ -99,7 +99,8 @@ export function evaluateRequirements({
     .filter((requirement) => !environment[requirement.name])
     .map((requirement) => requirement.name);
   const missingTools = manifest.localTools
-    .filter((requirement) => requirement.requiredFor.includes(command))
+    .filter((requirement) => requirement.requiredFor.includes(command)
+      || (needsNewAssets && requirement.requiredFor.includes("new-story-world-assets")))
     .filter((requirement) => !tools[requirement.name])
     .map((requirement) => requirement.name);
   return { missingEnvironment, missingTools, ok: missingEnvironment.length === 0 && missingTools.length === 0 };

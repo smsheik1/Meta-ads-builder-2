@@ -20,7 +20,7 @@ const packageRoot = path.resolve("public", "format-repositories", "otaku-explain
 const readJson = <T,>(relativePath: string) => JSON.parse(readFileSync(path.join(packageRoot, relativePath), "utf8")) as T;
 
 const requirements = readJson<OtakuRequirementManifest>("requirements.json");
-const installedTools = { node: true, ffmpeg: true, ffprobe: true, remotion: true };
+const installedTools = { node: true, ffmpeg: true, ffprobe: true, remotion: true, uvx: true };
 const missingVoiceKey = evaluateRequirements({ command: "render", environment: {}, manifest: requirements, tools: installedTools });
 assert.deepEqual(missingVoiceKey.missingEnvironment, ["FISH_STUDIO_APIKEY"]);
 assert.equal(missingVoiceKey.ok, false);
@@ -28,6 +28,15 @@ assert.equal(missingVoiceKey.ok, false);
 const missingAssetKey = evaluateRequirements({ command: "render", environment: { FISH_STUDIO_APIKEY: "present" }, manifest: requirements, needsNewAssets: true, tools: installedTools });
 assert.deepEqual(missingAssetKey.missingEnvironment, ["SERPER_API_KEY"]);
 assert.equal(missingAssetKey.ok, false);
+
+const missingAssetTool = evaluateRequirements({
+  command: "render",
+  environment: { FISH_STUDIO_APIKEY: "present", SERPER_API_KEY: "present" },
+  manifest: requirements,
+  needsNewAssets: true,
+  tools: { ...installedTools, uvx: false },
+});
+assert.deepEqual(missingAssetTool.missingTools, ["uvx"]);
 
 const missingTool = evaluateRequirements({ command: "render", environment: { FISH_STUDIO_APIKEY: "present" }, manifest: requirements, tools: { ...installedTools, ffmpeg: false } });
 assert.deepEqual(missingTool.missingTools, ["ffmpeg"]);
@@ -54,6 +63,10 @@ const dannyWorld = readJson<OtakuWorldPack>("worlds/danny-phantom.json");
 assert.deepEqual(validateScenePlan(dannyPlan, dannyWorld, layouts), []);
 assert.equal(dannyWorld.music?.localPath, "assets/audio/danny-phantom-background.mp3");
 assert.equal(dannyWorld.music?.volume, 0.16);
+const dannyRun = readJson<{ musicPath: string }>("outputs/danny-apis.run.json");
+const narutoRun = readJson<{ musicPath: string }>("outputs/naruto-apis.run.json");
+assert.match(dannyRun.musicPath, /danny-phantom-background\.mp3$/);
+assert.match(narutoRun.musicPath, /background-music\.mp3$/);
 const dannyScenes = materializeScenePlan(dannyPlan, dannyWorld, layouts);
 assert.deepEqual(
   [dannyScenes[0].speaker, dannyScenes[1].speaker, dannyScenes[9].speaker],

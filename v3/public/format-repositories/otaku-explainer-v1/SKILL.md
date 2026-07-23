@@ -44,10 +44,20 @@ When the user asks for a story world that is not packaged:
 3. Map one character to each lesson role: learner, guide, and challenger. Keep the renderer, layouts, and scene contract unchanged.
 4. Search Fish Audio's public models for each character, audition available samples, and record the chosen model IDs and why they fit.
 5. Use Serper to find full-body character cutouts and wide backgrounds. Follow `prompts/image-search.md`; prefer existing transparent assets and use local cleanup when needed.
-6. Add the inspected files and provenance to `assets.json`, then create `worlds/<world>.json` with the cast, voices, backgrounds, useful lore, and claims to avoid.
-7. Validate the new world before rendering. If it requires special renderer, runner, layout, or schema code, stop: the Format is not portable yet.
+6. Source one quiet instrumental track using the music procedure below.
+7. Add the inspected files and provenance to `assets.json`, then create `worlds/<world>.json` with the cast, voices, backgrounds, useful lore, claims to avoid, and selected music.
+8. Validate the new world before rendering. If it requires special renderer, runner, layout, or schema code, stop: the Format is not portable yet.
 
 Do not generate images unless the user separately approves it. Do not add an automated world-building workflow; the agent performs and documents this work.
+
+### Source story-world music
+
+1. Search Serper for `"<story world> background music instrumental"` and inspect the top three credible results.
+2. Prefer an exact official or studio instrumental over a cover, remix, or re-orchestration unless the Format calls for one.
+3. Download audio with `uvx yt-dlp --no-playlist -x --audio-format mp3 --audio-quality 0 <url>`.
+4. Use FFprobe and FFmpeg to check duration, loudness, clipping, and trailing silence. Remove dead air, normalize with `loudnorm=I=-14:TP=-1.5:LRA=11`, and use a one-second crossfade when looping the track to the video length.
+5. Verify that the loop has no silent seam and dialogue remains clear. If you cannot hear the candidates, do not claim that you auditioned them: use metadata and technical checks, then show the user playable options when taste affects the decision.
+6. Record `localPath`, `sourceUrl`, `volume`, and `selectionReason` in the world pack. Keep the Format's default music when no candidate passes.
 
 ## Good result
 
@@ -59,7 +69,7 @@ A passing result:
 - keeps every visible character grounded;
 - fits every line inside the speech bubble;
 - assigns the right voice to the active speaker;
-- keeps music below the dialogue; and
+- uses a clean music loop that stays below the dialogue; and
 - leaves a clear final takeaway.
 
 ## Failure rules

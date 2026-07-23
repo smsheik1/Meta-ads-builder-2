@@ -8,13 +8,14 @@
     {
       "name": "SERPER_API_KEY",
       "requiredFor": ["new-story-world-assets"],
-      "description": "Finds character and background assets only when a story world is not already packaged."
+      "description": "Finds character, background, and instrumental music candidates only when a story world is not already packaged."
     }
   ],
   "localTools": [
     { "name": "node", "requiredFor": ["check", "init", "validate", "render", "inspect", "finalize"] },
-    { "name": "ffmpeg", "requiredFor": ["render", "inspect"] },
-    { "name": "ffprobe", "requiredFor": ["render", "inspect"] },
+    { "name": "ffmpeg", "requiredFor": ["render", "inspect", "new-story-world-assets"] },
+    { "name": "ffprobe", "requiredFor": ["render", "inspect", "new-story-world-assets"] },
+    { "name": "uvx", "requiredFor": ["new-story-world-assets"] },
     { "name": "remotion", "requiredFor": ["render"] }
   ],
   "notUsed": [

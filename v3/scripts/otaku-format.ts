@@ -85,9 +85,9 @@ async function loadEnvironment() {
   if (existsSync(envPath)) process.loadEnvFile(envPath);
 }
 
-async function commandAvailable(command: string) {
+async function commandAvailable(command: string, versionFlag = "-version") {
   return await new Promise<boolean>((resolve) => {
-    const child = spawn(command, ["-version"], { stdio: "ignore" });
+    const child = spawn(command, [versionFlag], { stdio: "ignore" });
     child.on("error", () => resolve(false));
     child.on("close", (code) => resolve(code === 0));
   });
@@ -136,6 +136,7 @@ async function check() {
     node: true,
     ffmpeg: await commandAvailable("ffmpeg"),
     ffprobe: await commandAvailable("ffprobe"),
+    uvx: await commandAvailable("uvx", "--version"),
     remotion: (() => {
       try { require.resolve("remotion"); return true; } catch { return false; }
     })(),
