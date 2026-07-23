@@ -11,6 +11,7 @@ import {
   THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID,
 } from "../features/audio/fishStudio";
 import { extractThreeDBreakdownEvidence } from "../features/formats/three-d-breakdown/evidence";
+import { getThreeDBreakdownCtaError } from "../features/formats/three-d-breakdown/cta";
 import { editThreeDBreakdownMediaPrompt } from "../features/formats/three-d-breakdown/editablePrompts";
 import { editThreeDBreakdownScriptBeat } from "../features/formats/three-d-breakdown/editScript";
 import {
@@ -30,6 +31,10 @@ import {
 } from "../features/formats/three-d-breakdown/prompt";
 import { THREE_D_STORYBOARD_FRAME_CONTRACTS } from "../features/formats/three-d-breakdown/storyboardContracts";
 import {
+  formatThreeDBreakdownStorySubject,
+  resolveThreeDBreakdownStorySubject,
+} from "../features/formats/three-d-breakdown/storySubject";
+import {
   buildThreeDProductionFramePrompt,
   buildThreeDSeedancePrompt,
   buildThreeDStoryboardBoardPrompt,
@@ -48,6 +53,7 @@ import {
 import { createCaptionsForVoiceover } from "../features/audio/sceneAudio";
 import type { ThreeDBreakdownAdScene } from "../features/scene/types";
 import { getRenderMusicBed } from "../remotion-entry/RemotionAdScene";
+import { getAdSceneDimensions, getAdSceneDurationInFrames } from "../remotion-entry/Root";
 import { makeResearch } from "./helpers/research";
 
 const research = makeResearch({
@@ -117,6 +123,43 @@ const research = makeResearch({
 });
 
 const evidenceItems = extractThreeDBreakdownEvidence(research);
+const selectedProductSubject = resolveThreeDBreakdownStorySubject(research, {
+  kind: "product",
+  productHandle: "butter-pecan-tin",
+});
+assert.equal(selectedProductSubject.product?.title, "Butter Pecan Meltaways Tin");
+assert.match(formatThreeDBreakdownStorySubject(selectedProductSubject), /Advertise only this product: Butter Pecan Meltaways Tin/);
+assert.match(
+  buildThreeDBreakdownStoryDirectionsPrompt({
+    evidence: evidenceItems,
+    research,
+    storySubject: selectedProductSubject,
+  }),
+  /Never substitute another catalog item/,
+);
+assert.throws(
+  () => resolveThreeDBreakdownStorySubject(research, { kind: "product", productHandle: "missing-product" }),
+  /Choose a product/,
+);
+assert.match(
+  formatThreeDBreakdownStorySubject(resolveThreeDBreakdownStorySubject(research, { kind: "brand" })),
+  /overall brand story/,
+);
+assert.match(
+  formatThreeDBreakdownStorySubject(resolveThreeDBreakdownStorySubject(research, { kind: "customer-problem" })),
+  /customer problem or hidden truth/,
+);
+assert.match(
+  formatThreeDBreakdownStorySubject(resolveThreeDBreakdownStorySubject(research, {
+    kind: "custom",
+    brief: "Show why dessert gifting fails when it feels generic.",
+  })),
+  /Show why dessert gifting fails/,
+);
+assert.throws(
+  () => resolveThreeDBreakdownStorySubject(research, { kind: "custom", brief: "cookies" }),
+  /Describe what this 3D Breakdown should be about/,
+);
 assert.ok(evidenceItems.length >= 2);
 assert.ok(evidenceItems.every((item) => item.sourceUrl));
 assert.ok(evidenceItems.every((item) => item.possibleRevealPatterns.length > 0));
@@ -541,7 +584,7 @@ assert.equal(selectThreeDBreakdownBuyerCta({
   siteCta: "The journey is the product.",
   productTitle: "Grüns",
   brandName: "Grüns",
-}), "Shop Grüns");
+}), "Shop Grüns today.");
 assert.equal(selectThreeDBreakdownBuyerCta({
   generatedCta: "Get your daily Grüns.",
   siteCta: "Shop now.",
@@ -549,11 +592,24 @@ assert.equal(selectThreeDBreakdownBuyerCta({
   brandName: "Grüns",
 }), "Get your daily Grüns.");
 assert.equal(selectThreeDBreakdownBuyerCta({
+  generatedCta: "Try LEGO today.",
+  brandName: "LEGO",
+  subjectKind: "brand",
+}), "Watch the full story.");
+assert.equal(selectThreeDBreakdownBuyerCta({
+  brandName: "Grüns",
+  productTitle: "Grüns Kids",
+  subjectKind: "product",
+}), "Try Grüns Kids today.");
+assert.equal(getThreeDBreakdownCtaError("The journey is the product.", "brand"), "CTA must ask the viewer to act, not describe the mechanism.");
+assert.equal(getThreeDBreakdownCtaError("Watch the full story.", "brand"), "");
+assert.equal(getThreeDBreakdownCtaError("This CTA contains far too many words for a short ending.", "product"), "CTA must be 7 words or fewer.");
+assert.equal(selectThreeDBreakdownBuyerCta({
   generatedCta: "See the mechanism.",
   siteCta: "",
   productTitle: "Theragun PRO Plus",
   brandName: "Therabody",
-}), "Shop Theragun PRO Plus");
+}), "Shop Theragun PRO Plus today.");
 
 const merchOnlySupplementResearch = makeResearch({
   websiteUrl: "https://gruns.co/",
@@ -619,7 +675,7 @@ assert.ok(styleBScriptPrompt.includes("unseen narrator"));
 assert.ok(!styleBScriptPrompt.includes('"referenceScript"'));
 assert.ok(styleBScriptPrompt.includes("narrationBeats contains exactly four one-sentence lines"));
 assert.ok(styleBScriptPrompt.includes("43-58 words before the CTA"));
-assert.ok(styleBScriptPrompt.includes("Wiggly adds the website CTA as the fifth beat"));
+assert.ok(styleBScriptPrompt.includes("Wiggly adds an objective-aware CTA as the fifth beat"));
 assert.ok(!styleBScriptPrompt.includes('"ctaLine"'));
 assert.ok(styleBScriptPrompt.includes("Only evidence text authorizes product facts"));
 assert.ok(styleBScriptPrompt.includes("Narration states the real human truth"));
@@ -1030,6 +1086,70 @@ assert.equal(storySlate.directions[0]?.evidenceUseType, reviewEvidence.evidenceU
 assert.ok(storySlate.directions[0]?.visualEngine.includes("miniature route"));
 assert.ok(!(THREE_D_REVEAL_PATTERNS as readonly string[]).includes("proof-blocks"));
 assert.ok(evidenceItems.every((item) => !item.possibleRevealPatterns.includes("proof-blocks")));
+
+const selectedGrunsEvidence = extractThreeDBreakdownEvidence(grunsProductResearch)
+  .find((item) => item.evidenceUseType !== "category" && item.visualPotentialScore >= 0.65)!;
+const selectedGrunsDirections = [1, 2, 3, 4, 5].map((index) => ({
+  hookLine: `Grüns Daily Nutrition Gummies make one daily routine visible ${index}.`,
+  subheadline: "See the selected gummy routine.",
+  shortSummary: "Separate daily ingredients fill the counter. Grüns Daily Nutrition Gummies remain central as the routine resolves around the selected pouch.",
+  category: "Product mystery",
+  whyCompelling: "The exact selected product stays at the center of the reveal.",
+  adAngle: "Make one daily nutrition routine visible.",
+  visualEngine: "Ingredients orbit Grüns Daily Nutrition Gummies while the selected pouch stays central.",
+  evidenceIndex: selectedGrunsEvidence.evidenceIndex,
+  possibleRevealPatterns: selectedGrunsEvidence.possibleRevealPatterns,
+}));
+let selectedProductSlateCalls = 0;
+const selectedProductSlate = await generateThreeDBreakdownStoryDirectionsFromResearch(grunsProductResearch, {
+  nvidiaNimApiKey: "test-key",
+  storySubject: { kind: "product", productHandle: "daily-gummies" },
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    selectedProductSlateCalls += 1;
+    if (selectedProductSlateCalls === 1) {
+      assert.match(directorPrompt, /Products: Grüns Daily Nutrition Gummies/);
+      assert.doesNotMatch(directorPrompt, /Grüns Logo Hat/);
+      return JSON.stringify({
+        recommendedIndex: 1,
+        directions: selectedGrunsDirections.map((direction) => ({
+          ...direction,
+          hookLine: "A generic supplement routine hides more than buyers expect.",
+          subheadline: "See the daily routine.",
+          shortSummary: "Separate daily ingredients fill the counter. A generic supplement remains central as the routine resolves.",
+          visualEngine: "Ingredients orbit a generic supplement while the pouch stays central.",
+        })),
+      });
+    }
+    assert.match(directorPrompt, /must name the selected product Grüns Daily Nutrition Gummies/);
+    return JSON.stringify({ recommendedIndex: 1, directions: selectedGrunsDirections });
+  },
+});
+assert.equal(selectedProductSlateCalls, 2, "A product slate that drops the selected item should receive one validation retry.");
+assert.ok(selectedProductSlate.directions.every((direction) => /Grüns Daily Nutrition Gummies/i.test([
+  direction.hookLine,
+  direction.subheadline,
+  direction.shortSummary,
+  direction.visualEngine,
+].join(" "))));
+
+let explicitBrandSlateCalls = 0;
+const explicitBrandSlate = await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
+  nvidiaNimApiKey: "test-key",
+  storySubject: { kind: "brand" },
+  nvidiaNimChatCompletion: async ({ prompt: directorPrompt }) => {
+    explicitBrandSlateCalls += 1;
+    const directions = simplifiedStoryDirectionPayload.directions.map((direction) => ({
+      ...direction,
+      ...(explicitBrandSlateCalls > 1 ? { hookLine: `David's Cookies: ${direction.hookLine}` } : {}),
+    }));
+    if (explicitBrandSlateCalls > 1) {
+      assert.match(directorPrompt, /must name the selected brand in its hook or subheadline/);
+    }
+    return JSON.stringify({ recommendedIndex: 1, directions });
+  },
+});
+assert.equal(explicitBrandSlateCalls, 2, "An anonymous brand story should receive one validation retry.");
+assert.ok(explicitBrandSlate.directions.every((direction) => /David's Cookies/i.test(direction.hookLine)));
 
 let deliveryTensionStorySlateCalls = 0;
 await generateThreeDBreakdownStoryDirectionsFromResearch(research, {
@@ -1573,7 +1693,7 @@ await assert.rejects(
       ctaLine: "The journey is the product.",
     })])),
   }),
-  /CTA line must be a direct action/,
+  /CTA must ask the viewer to act/,
 );
 
 await assert.rejects(
@@ -1584,7 +1704,7 @@ await assert.rejects(
       ctaLine: "Visit David's Cookies to see the mechanism.",
     })])),
   }),
-  /CTA line must sell the product action/,
+  /CTA must ask the viewer to act/,
 );
 
 await assert.rejects(
@@ -1961,6 +2081,7 @@ const brandOriginScene = createThreeDBreakdownAdScene({
   provider: generated.provider,
   research: brandOriginResearch,
   siteContract: { ...generated.siteContract, primarySiteType: "ecommerce" },
+  storySubject: { kind: "brand" },
   variant: makeVariant({
     visualStyle: "presenter-teardown-vsl",
     variantAngle: "the founder's 1932 origin story",
@@ -1972,6 +2093,71 @@ const brandOriginScene = createThreeDBreakdownAdScene({
   }),
 });
 assert.equal(brandOriginScene.layout.productAnchor, undefined);
+assert.deepEqual(brandOriginScene.layout.storyContract.storySubject, { kind: "brand" });
+assert.equal(brandOriginScene.creative.ctaText, "Watch the full story.");
+const selectedProductScene = createThreeDBreakdownAdScene({
+  candidateIndex: 1,
+  evidenceItems: generated.evidenceItems,
+  generationBatchId: "batch_selected_product",
+  model: generated.model,
+  provider: generated.provider,
+  research,
+  siteContract: generated.siteContract,
+  storySubject: { kind: "product", productHandle: "butter-pecan-tin" },
+  variant: generated.variants[1]!,
+});
+assert.equal(selectedProductScene.layout.productAnchor?.title, "Butter Pecan Meltaways Tin");
+assert.equal(selectedProductScene.creative.ctaText, "Try Butter Pecan Meltaways Tin today.");
+const selectedGrunsProductScene = createThreeDBreakdownAdScene({
+  candidateIndex: 0,
+  evidenceItems: extractThreeDBreakdownEvidence(grunsLiveOrderResearch),
+  generationBatchId: "batch_selected_gruns_product",
+  model: generated.model,
+  provider: generated.provider,
+  research: grunsLiveOrderResearch,
+  siteContract: { ...generated.siteContract, primarySiteType: "ecommerce" },
+  storySubject: { kind: "product", productHandle: "gruns-kids" },
+  variant: makeVariant({
+    visualStyle: "presenter-teardown-vsl",
+    evidenceIndex: grunsNutrientPackEvidence.evidenceIndex,
+    evidenceUseType: grunsNutrientPackEvidence.evidenceUseType,
+  }),
+});
+assert.equal(selectedGrunsProductScene.layout.productAnchor?.title, "Grüns Kids");
+assert.deepEqual(selectedGrunsProductScene.layout.storyContract.storySubject, {
+  kind: "product",
+  productHandle: "gruns-kids",
+});
+assert.equal(selectedGrunsProductScene.creative.ctaText, "Try Grüns Kids today.");
+
+const customerProblemScene = createThreeDBreakdownAdScene({
+  candidateIndex: 0,
+  evidenceItems: generated.evidenceItems,
+  generationBatchId: "batch_customer_problem",
+  model: generated.model,
+  provider: generated.provider,
+  research,
+  siteContract: generated.siteContract,
+  storySubject: { kind: "customer-problem" },
+  variant: makeVariant({ customerProblem: "last-minute gifts can still feel generic" }),
+});
+assert.deepEqual(customerProblemScene.layout.storyContract.storySubject, { kind: "customer-problem" });
+assert.equal(customerProblemScene.layout.storyContract.customerProblem, "last-minute gifts can still feel generic");
+assert.equal(customerProblemScene.layout.productAnchor, undefined);
+
+const customBrief = "Show how nationwide delivery turns distance into a shared dessert moment.";
+const customBriefScene = createThreeDBreakdownAdScene({
+  candidateIndex: 0,
+  evidenceItems: generated.evidenceItems,
+  generationBatchId: "batch_custom_brief",
+  model: generated.model,
+  provider: generated.provider,
+  research,
+  siteContract: generated.siteContract,
+  storySubject: { kind: "custom", brief: customBrief },
+  variant: makeVariant(),
+});
+assert.deepEqual(customBriefScene.layout.storyContract.storySubject, { kind: "custom", brief: customBrief });
 assert.equal(scene.format, "three-d-breakdown");
 assert.equal(scene.layout.durationMs, 20_000);
 assert.equal(scene.layout.scriptBeats.length, 5);
@@ -2179,6 +2365,8 @@ assert.equal(styleBScene.layout.storyContract.ctaLine, "Shop memorable cookie gi
 assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => clip.frameIndexes), [[1, 2, 3], [4, 5, 6]]);
 assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => clip.durationSeconds), [10, 10]);
 assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => [clip.startMs, clip.endMs]), [[0, 10000], [10000, 20000]]);
+assert.deepEqual(getAdSceneDimensions(styleBScene), { width: 1080, height: 1920 });
+assert.equal(getAdSceneDurationInFrames(styleBScene, 60), 1_200);
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("clip 1 of 2"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("Time-code the clip into storyboard sub-shots"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("0.0-3.3s = frame 1"));
@@ -2425,6 +2613,12 @@ assert.ok(editedScriptScene.layout.storyContract.referenceScript?.includes("The 
 assert.equal(editedScriptScene.audio.status, "none", "Editing narration must invalidate the old voice track.");
 assert.equal(editedScriptScene.layout.finalVideo, undefined, "Editing narration must invalidate the old final MP4.");
 assert.notEqual(editedScriptScene, styleBScene, "Script editing must return a complete new scene instead of mutating the current one.");
+
+const editedCtaScene = editThreeDBreakdownScriptBeat(styleBScene, 4, "Try David's Cookies today.");
+assert.equal(editedCtaScene.layout.scriptBeats[4].narration, "Try David's Cookies today.");
+assert.equal(editedCtaScene.creative.ctaText, "Try David's Cookies today.");
+assert.equal(editedCtaScene.layout.storyContract.ctaLine, "Try David's Cookies today.");
+assert.ok(editedCtaScene.layout.storyContract.referenceScript?.endsWith("Try David's Cookies today."));
 
 const readyMediaScene: ThreeDBreakdownAdScene = {
   ...styleBScene,

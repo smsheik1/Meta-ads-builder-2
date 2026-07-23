@@ -17,6 +17,98 @@ export type ThreeDBreakdownProgressState = {
   completedSteps: number;
 };
 
+type ThreeDBreakdownProgressInput = {
+  show: boolean;
+  hasScene: boolean;
+  storyDirectionCount: number;
+  storyDirectionStatus: "idle" | "loading" | "ready" | "error";
+  storyboardReady: boolean;
+  framesReady: boolean;
+  imageStatus: "idle" | "loading" | "ready" | "error";
+  clipsReady: boolean;
+  voiceReady: boolean;
+  animationStatus: "idle" | "loading" | "ready" | "error";
+  audioStatus: "idle" | "loading" | "ready" | "error";
+  renderBusy: boolean;
+  renderFailed: boolean;
+  renderStatusLabel: string;
+};
+
+export function getThreeDBreakdownProgress({
+  show,
+  hasScene,
+  storyDirectionCount,
+  storyDirectionStatus,
+  storyboardReady,
+  framesReady,
+  imageStatus,
+  clipsReady,
+  voiceReady,
+  animationStatus,
+  audioStatus,
+  renderBusy,
+  renderFailed,
+  renderStatusLabel,
+}: ThreeDBreakdownProgressInput): ThreeDBreakdownProgressState | null {
+  if (!show) return null;
+
+  if (!hasScene) {
+    const scriptStage = storyDirectionCount > 0 && (storyDirectionStatus === "loading" || storyDirectionStatus === "error");
+    return {
+      activeMessage: storyDirectionStatus === "loading"
+        ? storyDirectionCount > 0 ? "Writing your narrator script" : "Finding five story ideas"
+        : storyDirectionStatus === "error"
+          ? storyDirectionCount > 0 ? "The script needs another try" : "Story ideas need another try"
+          : "Choose a story on the right",
+      activeStatus: storyDirectionStatus === "loading" ? "working" : storyDirectionStatus === "error" ? "error" : "waiting",
+      activeStep: scriptStage ? 1 : 0,
+      completedSteps: scriptStage ? 1 : 0,
+    };
+  }
+
+  if (!storyboardReady) {
+    return {
+      activeMessage: imageStatus === "loading" ? "Drawing your six-frame storyboard" : imageStatus === "error" ? "The storyboard needs another try" : "Ready to generate the storyboard",
+      activeStatus: imageStatus === "loading" ? "working" : imageStatus === "error" ? "error" : "waiting",
+      activeStep: 2,
+      completedSteps: 2,
+    };
+  }
+
+  if (!framesReady) {
+    return {
+      activeMessage: imageStatus === "loading" ? "Creating two polished video scenes" : imageStatus === "error" ? "The video scenes need another try" : "Ready to create the video scenes",
+      activeStatus: imageStatus === "loading" ? "working" : imageStatus === "error" ? "error" : "waiting",
+      activeStep: 3,
+      completedSteps: 3,
+    };
+  }
+
+  if (!clipsReady || !voiceReady) {
+    const loading = animationStatus === "loading" || audioStatus === "loading";
+    const failed = animationStatus === "error" || audioStatus === "error";
+    return {
+      activeMessage: loading
+        ? clipsReady ? "Recording the narrator voice" : "Animating your video"
+        : failed
+          ? "Motion or voice needs another try"
+          : clipsReady
+            ? "Ready to add the narrator voice"
+            : "Ready to animate the video",
+      activeStatus: loading ? "working" : failed ? "error" : "waiting",
+      activeStep: 4,
+      completedSteps: 4,
+    };
+  }
+
+  return {
+    activeMessage: renderBusy ? renderStatusLabel : renderFailed ? "The final video needs another try" : "Ready to build the final video",
+    activeStatus: renderBusy ? "working" : renderFailed ? "error" : "waiting",
+    activeStep: 5,
+    completedSteps: 5,
+  };
+}
+
 const steps = [
   { title: "Choose your story", detail: "One clear video idea", Icon: Lightbulb },
   { title: "Write the script", detail: "A 20-second narrator script", Icon: ScrollText },
