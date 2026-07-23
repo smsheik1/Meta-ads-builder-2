@@ -63,6 +63,7 @@ const componentLinks = [
 export function OtakuFormatRepositoryClient({
   agentRuns,
   assets,
+  downloadUrl,
   files,
   format,
   referenceVideo,
@@ -70,6 +71,7 @@ export function OtakuFormatRepositoryClient({
 }: {
   agentRuns: AgentRun[];
   assets: Asset[];
+  downloadUrl: string;
   files: EditableFile[];
   format: FormatManifest;
   referenceVideo: string;
@@ -181,6 +183,17 @@ export function OtakuFormatRepositoryClient({
                 {statusText}
               </Badge>
             </div>
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-md border border-violet-300 bg-violet-50 p-4">
+              <div className="max-w-2xl">
+                <h3 className="font-bold text-violet-950">Give an agent the working Format—not screenshots of it</h3>
+                <p className="mt-1 text-sm text-violet-900">
+                  The kit contains the renderer, runner, rules, layouts, and assets. Unzip it and tell Claude or Codex to read <code>SKILL.md</code>. It must use the packaged renderer, not rebuild one.
+                </p>
+              </div>
+              <Button asChild data-testid="download-format-kit">
+                <a href={downloadUrl} download>Download runnable Format Kit</a>
+              </Button>
+            </div>
             {needsRerun && (
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
                 <span>Your draft changed. The saved videos stay honest until you rerun the Format.</span>
@@ -192,7 +205,7 @@ export function OtakuFormatRepositoryClient({
           <section id="agent-loop" className="scroll-mt-5 space-y-4">
             <div>
               <h2 className="text-xl font-bold">1. Agent loop</h2>
-              <p className="mt-1 text-sm text-slate-600">Claude or Codex can read this package, check what is missing, plan a lesson, render it, inspect it, and improve it up to two times.</p>
+              <p className="mt-1 text-sm text-slate-600">Claude or Codex can download this package, use its existing renderer, check what is missing, plan a lesson, render it, inspect it, and improve it up to two times.</p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <article className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm">

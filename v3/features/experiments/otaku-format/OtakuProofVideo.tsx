@@ -16,6 +16,7 @@ export type OtakuProofRun = {
   };
   rendererVersion: string;
   musicPath: string;
+  musicLoop?: boolean;
   musicVolume: number;
   scenes: OtakuScene[];
 };
@@ -59,7 +60,7 @@ export function OtakuProofVideo({ assets, run }: { assets: OtakuAssetLibrary; ru
 
   return (
     <AbsoluteFill style={{ background: "#101827" }}>
-      <Audio src={staticFile(run.musicPath)} volume={run.musicVolume} loop />
+      <Audio src={staticFile(run.musicPath)} volume={run.musicVolume} loop={run.musicLoop !== false} />
       {audio}
       <OtakuFormatRenderer
         assets={assets}

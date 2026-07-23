@@ -5,11 +5,19 @@ description: Use the Otaku Explainer Format to make a short story-world lesson v
 
 # Otaku Explainer Agent Loop
 
-You are operating a complete Wiggly Format. The user supplies a topic and chooses a packaged story world. This folder supplies the cast, voices, backgrounds, layouts, renderer, audio rules, and quality checks.
+You are operating a complete runnable Wiggly Format Kit. The user supplies a topic and chooses a packaged story world. This folder supplies the cast, voices, backgrounds, layouts, renderer, runner, audio rules, and quality checks.
+
+## Use the packaged runtime
+
+Do not rebuild, replace, translate, or imitate the renderer. Run the renderer and runner already included in this kit. A different framework or a new scene-timing loop is a failed use of the Format, even when its final video looks similar.
+
+If you received the public Wiggly Repo URL, download and unzip the **Runnable Format Kit** first. Open its `v3` folder, run `npm install`, copy `.env.example` to `.env.local`, and add only the missing key values. Then follow the commands below.
+
+The renderer deliberately adds a soft glow around the active speaker. This hides rough transparent-image edges and makes the speaker obvious. Preserve that behavior.
 
 ## Commands
 
-Run commands from `v3`:
+Run commands from the downloaded kit's `v3` folder:
 
 ```bash
 npm run prototype:otaku -- check
@@ -25,7 +33,7 @@ npm run prototype:otaku -- finalize --run=<run-id>
 ## Required loop
 
 1. Read this file, `requirements.json`, `worlds/<world>.json`, `layouts.json`, `scene-contract.json`, `prompts/script-system.md`, and `quality.json`.
-2. Run `check`. If it reports a missing key, ask the user to add the named key to `v3/.env.local`. Never ask them to paste a secret into chat and never print its value.
+2. Run `check`. If it reports a missing key, ask the user to add the named key to `.env.local`. Never ask them to paste a secret into chat and never print its value.
 3. Run `init`, then write 12–18 short scene records in the new run's `scene-plan.json`.
 4. Use only packaged role names, backgrounds, layout IDs, and assets. Do not invent character coordinates.
 5. Run `validate` before any media call. Fix every validation error first.
@@ -75,6 +83,9 @@ A passing result:
 ## Failure rules
 
 - Never render an invalid plan.
+- Never rebuild the packaged renderer or write a substitute timing/rendering pipeline.
+- Scene duration comes from the actual voice file. Never add arbitrary silence after a voice clip.
+- Use the full-length music bed prepared by the runner. Never loop a short track with a hard seam.
 - Never exceed three attempts for one run.
 - Never silently change providers or generate replacement images or video.
 - If the packaged world lacks an asset, stop and explain what is missing. Use Serper only after the user approves sourcing a new asset.

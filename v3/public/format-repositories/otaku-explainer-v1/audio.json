@@ -7,9 +7,9 @@
     "speed": 1.08
   },
   "music": {
-    "source": "/Users/shaz/Downloads/videoplayback (4).mp4",
     "localPath": "assets/audio/background-music.mp3",
     "volume": 0.1,
-    "loop": true
+    "loop": false,
+    "preparation": "The runner trims or crossfades the packaged track into one full-length music bed for each video."
   }
 }
