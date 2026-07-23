@@ -19,7 +19,11 @@ import {
   type OtakuWorldPack,
 } from "../features/experiments/otaku-format/agentRunner";
 import {
+  analyzeAudioSignal,
+  audioDoesNotClip,
+  evaluateVoiceSignal,
   generateFishClip,
+  musicDialogueMarginDb,
   prepareMusicBed,
   probeDurationMs,
   sceneDurationFromAudioMs,
@@ -286,8 +290,9 @@ async function inspect() {
   if (!attempt || attempt.status !== "rendered") throw new Error("The latest attempt has not rendered successfully.");
   const directory = runDirectory(runId);
   const runRecord = await readJson<{
+    musicVolume: number;
     musicPath: string;
-    scenes: Array<{ durationMs?: number; audioPath?: string }>;
+    scenes: Array<{ id: string; durationMs?: number; audioPath?: string }>;
   }>(path.join(packageRoot, attempt.runRecord));
   const outputPath = path.join(packageRoot, attempt.output);
   const contactSheetPath = path.join(packageRoot, attempt.contactSheet);
@@ -300,28 +305,55 @@ async function inspect() {
   const expectedDurationMs = runRecord.scenes.reduce((total, scene) => total + (scene.durationMs || 0), 0);
   const actualDurationMs = Math.round(Number(technical.format?.duration || 0) * 1000);
   const stream = technical.streams?.[0];
-  const audioDurations = await Promise.all(runRecord.scenes.map(async (scene) => {
+  const audioPaths = runRecord.scenes.map((scene) => {
     if (!scene.audioPath) return undefined;
-    const audioPath = path.join(v3Root, "public", scene.audioPath);
-    return existsSync(audioPath) ? await probeDurationMs(audioPath) : undefined;
-  }));
+    return path.join(v3Root, "public", scene.audioPath);
+  });
+  const audioDurations = await Promise.all(audioPaths.map(async (audioPath) => (
+    audioPath && existsSync(audioPath) ? await probeDurationMs(audioPath) : undefined
+  )));
+  const voiceSignals = await Promise.all(audioPaths.map(async (audioPath) => (
+    audioPath && existsSync(audioPath) ? await analyzeAudioSignal(audioPath) : undefined
+  )));
+  const presentVoiceSignals = voiceSignals.filter((signal) => signal !== undefined);
   const musicPath = path.join(v3Root, "public", runRecord.musicPath);
   const musicDurationMs = existsSync(musicPath) ? await probeDurationMs(musicPath) : 0;
+  const musicSignal = existsSync(musicPath) ? await analyzeAudioSignal(musicPath) : undefined;
+  const finalMixSignal = existsSync(outputPath) ? await analyzeAudioSignal(outputPath) : undefined;
+  const voiceChecks = voiceSignals.map((signal) => signal ? evaluateVoiceSignal(signal) : undefined);
+  const musicMarginDb = musicSignal
+    ? musicDialogueMarginDb(presentVoiceSignals, musicSignal, runRecord.musicVolume)
+    : Number.NEGATIVE_INFINITY;
+  const automaticChecks = {
+    videoExists: existsSync(outputPath),
+    contactSheetExists: existsSync(contactSheetPath),
+    dimensionsAre720x1280: stream?.width === 720 && stream?.height === 1280,
+    durationMatchesScenes: Math.abs(actualDurationMs - expectedDurationMs) <= 1_500,
+    everySceneHasAudio: audioPaths.every((audioPath) => Boolean(audioPath && existsSync(audioPath))),
+    sceneTimingMatchesVoiceTracks: runRecord.scenes.every((scene, index) => (
+      audioDurations[index] !== undefined
+      && Math.abs((scene.durationMs || 0) - audioDurations[index]!) <= 40
+    )),
+    voiceClipsAreAudible: voiceChecks.length === runRecord.scenes.length
+      && voiceChecks.every((checks) => checks?.audible),
+    voiceClipEdgesAreClean: voiceChecks.length === runRecord.scenes.length
+      && voiceChecks.every((checks) => checks?.edgesAreClean),
+    voiceClipEndingsAreNotAbrupt: voiceChecks.length === runRecord.scenes.length
+      && voiceChecks.every((checks) => checks?.endingIsNotAbrupt),
+    voiceClipsDoNotClip: voiceChecks.length === runRecord.scenes.length
+      && voiceChecks.every((checks) => checks?.doesNotClip),
+    musicCoversFullVideo: musicDurationMs >= expectedDurationMs - 100,
+    musicStaysBelowDialogue: musicMarginDb >= 6,
+    finalMixHasAudibleAudio: Boolean(finalMixSignal && finalMixSignal.meanVolumeDb >= -35),
+    finalMixDoesNotClip: Boolean(finalMixSignal && audioDoesNotClip(finalMixSignal)),
+    attemptLimitRespected: attempt.number <= maxRenderAttempts,
+  };
+  const failedAutomaticChecks = Object.entries(automaticChecks)
+    .filter(([, passed]) => !passed)
+    .map(([name]) => `Automatic check failed: ${name}.`);
   const report: OtakuQualityReport = {
     attempt: attempt.number,
-    automaticChecks: {
-      videoExists: existsSync(outputPath),
-      contactSheetExists: existsSync(contactSheetPath),
-      dimensionsAre720x1280: stream?.width === 720 && stream?.height === 1280,
-      durationMatchesScenes: Math.abs(actualDurationMs - expectedDurationMs) <= 1_500,
-      everySceneHasAudio: runRecord.scenes.every((scene) => Boolean(scene.audioPath && existsSync(path.join(v3Root, "public", scene.audioPath)))),
-      sceneTimingMatchesVoiceTracks: runRecord.scenes.every((scene, index) => (
-        audioDurations[index] !== undefined
-        && Math.abs((scene.durationMs || 0) - audioDurations[index]!) <= 40
-      )),
-      musicCoversFullVideo: musicDurationMs >= expectedDurationMs - 100,
-      attemptLimitRespected: attempt.number <= maxRenderAttempts,
-    },
+    automaticChecks,
     creativeReview: {
       lessonAccurate: false,
       dialogueNatural: false,
@@ -330,7 +362,7 @@ async function inspect() {
       audioClear: false,
       analogyMakesSense: false,
     },
-    problems: ["Agent creative review is not complete."],
+    problems: [...failedAutomaticChecks, "Agent creative review is not complete."],
     status: "fail",
   };
   await writeJson(path.join(packageRoot, attempt.report), report);

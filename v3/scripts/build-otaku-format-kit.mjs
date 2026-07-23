@@ -30,6 +30,7 @@ for (const relativePath of [
   "scripts/otaku-format.ts",
   "scripts/otaku-media.ts",
   "scripts/render-otaku-proofs.ts",
+  "scripts/smoke-otaku-format.ts",
   "tests/otaku-format-runtime.test.ts",
 ]) {
   await copyFromV3(relativePath);

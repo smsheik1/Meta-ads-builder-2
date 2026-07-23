@@ -10,8 +10,9 @@ An agent can operate the package without an OpenRouter planning call. Start with
 
 1. Download and unzip the **Runnable Format Kit**.
 2. Open its `v3` folder and run `npm install`.
-3. Copy `.env.example` to `.env.local` and add the requested key values.
-4. Tell Claude or Codex: “Read `public/format-repositories/otaku-explainer-v1/SKILL.md` and use the packaged renderer. Do not rebuild it.”
+3. Run `npm run smoke`. This free local test proves the renderer, assets, FFmpeg, Remotion, and audio mix work.
+4. Copy `.env.example` to `.env.local` and add the requested key values.
+5. Tell Claude or Codex: “Read `public/format-repositories/otaku-explainer-v1/SKILL.md` and use the packaged renderer. Do not rebuild it.”
 
 The kit contains the real runner, renderer, dependencies, rules, layouts, and required assets. A fresh agent may write a new scene plan or story-world pack, but it must not recreate the renderer or timing pipeline.
 
@@ -32,6 +33,7 @@ Scene writers choose lesson roles and an approved layout. `worlds/*.json` maps t
 From `v3`:
 
 ```bash
+npm run smoke
 npm run prototype:otaku -- check
 npm run prototype:otaku -- init --run=<run-id> --topic="<topic>" --world=naruto
 npm run prototype:otaku -- validate --run=<run-id>

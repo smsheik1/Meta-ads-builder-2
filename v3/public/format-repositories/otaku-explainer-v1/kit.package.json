@@ -8,6 +8,7 @@
   },
   "scripts": {
     "check:kit": "node kit-smoke.mjs",
+    "smoke": "tsx scripts/smoke-otaku-format.ts",
     "prototype:otaku": "tsx scripts/otaku-format.ts",
     "prototype:otaku:render": "tsx scripts/render-otaku-proofs.ts",
     "test": "tsx tests/otaku-format-runtime.test.ts && node kit-smoke.mjs"
