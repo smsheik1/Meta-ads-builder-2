@@ -2,55 +2,86 @@
 
 ## Result
 
-One portable Format kit now produces three complete videos through the same renderer and scene contract.
+The Wiggly Repo successfully taught an agent to make a new lesson, research a new story world, assemble its world pack, and produce a finished video without changing the renderer, runner, layouts, or scene contract.
 
-| Proof | What changed | Scenes | Length | Result |
-|---|---|---:|---:|---|
-| Naruto explains compilers vs interpreters | Close rebuild of the reference | 18 | 1:14 | Pass |
-| Naruto explains MCP | New lesson, same story world | 15 | 1:03 | Pass |
-| Yu-Gi-Oh explains compilers vs interpreters | Same lesson, new story world | 18 | 1:04 | Pass |
+| Proof | What changed | Scenes | Length | Attempts | Result |
+|---|---|---:|---:|---:|---|
+| Naruto explains compilers vs interpreters | Close rebuild of the reference | 18 | 1:14 | 1 | Pass |
+| Naruto explains MCP | New lesson, same story world | 15 | 1:03 | 1 | Pass |
+| Yu-Gi-Oh explains compilers vs interpreters | Same lesson, packaged world swap | 18 | 1:04 | 1 | Pass |
+| Naruto explains APIs | Agent-operated control run | 15 | 1:08 | 1 | Pass |
+| Danny Phantom explains APIs | Agent-researched world swap | 15 | 1:10 | 1 | Pass |
 
-The package includes all nine agreed parts: instructions, inputs, fixed assets, AI-content rules, scene slots, renderer, audio, quality checks, and final outputs.
+The Danny proof is the important result: the agent started with no Danny pack, researched the show and lore, selected voices, sourced and inspected six assets, wrote the lesson, validated it, rendered it, inspected it, and finalized it through the Repo instructions.
 
-## Visual proof
+## Cross-world proof
 
-### 1. Naruto rebuild
+### Naruto control
 
-![Naruto compiler proof](outputs/naruto-compilers-contact-sheet.jpg)
+![Naruto explains APIs](outputs/naruto-apis-contact-sheet.jpg)
 
-[Watch the full Naruto compiler video](outputs/naruto-compilers.mp4)
+[Watch Naruto explain APIs](outputs/naruto-apis.mp4)
 
-### 2. Naruto explains MCP
+The run used Naruto as learner, Kakashi as guide, and Orochimaru as challenger. All automatic and creative checks passed.
 
-![Naruto MCP proof](outputs/naruto-mcp-contact-sheet.jpg)
+### Danny Phantom portability test
 
-[Watch the full Naruto MCP video](outputs/naruto-mcp.mp4)
+![Danny Phantom explains APIs](outputs/danny-apis-contact-sheet.jpg)
 
-### 3. Yu-Gi-Oh explains compilers
+[Watch Danny Phantom explain APIs](outputs/danny-apis.mp4)
 
-![Yu-Gi-Oh compiler proof](outputs/yugioh-compilers-contact-sheet.jpg)
+The lesson maps the Fenton Portal to an API doorway, portal commands to requests, controls to endpoints, returned results to responses, details to parameters, and access keys to authentication. Danny, Tucker, and Vlad stay inside their intended lesson roles.
 
-[Watch the full Yu-Gi-Oh compiler video](outputs/yugioh-compilers.mp4)
+## New world evidence
 
-## What the page lets a person do
+### Selected voices
 
-At `/format-lab/otaku-explainer`, a person can inspect every part of the Format, edit or delete text files, replace or delete assets, inspect run records, and play all three videos. Any content or asset change visibly marks the draft **Needs rerun** while keeping the saved videos unchanged.
+| Role | Character | Fish voice ID | Why it was selected |
+|---|---|---|---|
+| Learner | Danny Phantom | `14f06ac475944bb7a0ef5cc958f07462` | Highest-use English result with a youthful, energetic sample |
+| Guide | Tucker Foley | `e3e1212180ee4f87ab0730db54d1a8e2` | Public English result with a friendly, energetic sample |
+| Challenger | Vlad Plasmius | `23231b8547f04d79bebc51bb2a23b5ab` | Exact English result with an appropriately confident delivery |
+
+### Selected assets
+
+- Character cutouts: Danny, Tucker, and Vlad from their documented Danny Phantom Wiki pages.
+- Backgrounds: Amity Park, the Fenton lab and portal, and a Ghost Zone stage with visible ground.
+- Every query, source page, source URL, and local path is recorded in `assets.json`.
+- The canonical character files already had clean transparency, so no AI image generation or custom cleanup system was needed.
+
+## What the Repo handled
+
+- Reported the required key names and local tools without exposing secret values.
+- Enforced 12–18 scenes, short dialogue, approved layouts, valid roles, valid backgrounds, and a three-attempt ceiling before media spending.
+- Mapped lesson roles to world-specific characters and Fish voices.
+- Turned role-based scenes into the existing renderer's character positions.
+- Generated a contact sheet and technical report after each render.
+- Refused finalization until every automatic and creative check passed.
+
+## What the agent still decided
+
+- Which story-world idea best explains the lesson.
+- Which search results are clean enough to use.
+- Which Fish voice sounds closest to each character.
+- How to write natural dialogue and pace the lesson.
+- Whether the finished video is honestly good enough to finalize.
+
+Those are useful agent decisions, not missing framework code.
 
 ## Checks completed
 
-- All four videos load at 720×1280 in a real browser: the source plus three outputs.
-- Desktop and phone layouts have no horizontal overflow.
-- Edit, delete, restore, reset, and asset replacement work through the visible page.
-- The three runs use the same experimental renderer and exact Fish Audio voice assignments.
-- Yu-Gi-Oh cutouts no longer contain fake white or checkerboard cards.
+- Both new videos are 720×1280 H.264 with AAC audio.
+- Naruto API: 68.3 seconds; Danny API: 69.8 seconds.
+- Every scene has voice audio; speech bubbles fit; characters are grounded; the API lesson is accurate.
+- Existing Naruto and Yu-Gi-Oh proofs remain in the package.
 - Production `/create`, `/builder`, `/share`, `AdScene`, `AdRenderSurface`, and the Format registry remain untouched.
 
-## Cost
+## Cost and boundaries
 
-Estimated paid API spend: **$0**. Dialogue used Fish Audio's free developer model. No image generator, AI video model, Seedance, OpenRouter generation, or rented GPU was used.
+Fish used the free developer voice model. Asset discovery stayed below the 20-search Serper cap. No OpenRouter, Replicate, GPU, image generation, AI video generation, or MCP was used.
 
 ## Honest limits
 
-- Page edits are a local prototype; they do not write files back to disk or run the render job in the browser.
-- The scene scripts were authored for these three proofs. The next experiment should generate one fourth topic from the package rules before treating the system as broadly reusable.
-- Character and background searches are documented, but the chosen images are fixed local assets for deterministic reruns.
+- Page edits are still a local prototype; changing a file on the page does not write it back to disk or start a render.
+- Voice selection remains subjective even when public samples and usage data are available.
+- The agent can assemble a world pack, but a person should still review likeness, asset quality, and the story analogy before publishing.

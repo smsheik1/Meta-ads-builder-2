@@ -17,7 +17,10 @@ export type OtakuScene = {
   durationMs?: number;
   audioPath?: string;
   characters: OtakuCharacterPlacement[];
-  accent: "none" | "question" | "compiler" | "interpreter" | "network" | "duel";
+  callout?: {
+    label: string;
+    theme: "neutral" | "question" | "warm" | "cool" | "violet" | "gold";
+  };
 };
 
 export type OtakuAsset = {
@@ -43,13 +46,15 @@ const packageBase = "/format-repositories/otaku-explainer-v1/";
 
 const defaultResolveAsset = (localPath: string) => `${packageBase}${localPath}`;
 
-const accentColors: Record<OtakuScene["accent"], [string, string]> = {
-  none: ["#ffffff", "#d7e4ff"],
+type CalloutTheme = NonNullable<OtakuScene["callout"]>["theme"];
+
+const calloutColors: Record<CalloutTheme, [string, string]> = {
+  neutral: ["#ffffff", "#64748b"],
   question: ["#ffe66d", "#ff7b00"],
-  compiler: ["#ff5d4a", "#7d160b"],
-  interpreter: ["#55d6ff", "#1154b7"],
-  network: ["#c98cff", "#5a2ad1"],
-  duel: ["#fff06a", "#6c41ff"],
+  warm: ["#ff5d4a", "#7d160b"],
+  cool: ["#55d6ff", "#1154b7"],
+  violet: ["#c98cff", "#5a2ad1"],
+  gold: ["#fff06a", "#6c41ff"],
 };
 
 const speechFontSize = (dialogue: string) => {
@@ -59,33 +64,9 @@ const speechFontSize = (dialogue: string) => {
   return 44;
 };
 
-function AccentProp({ accent }: { accent: OtakuScene["accent"] }) {
-  if (accent === "none") return null;
-  if (accent === "question") {
-    return (
-      <div style={{
-        position: "absolute",
-        zIndex: 2,
-        left: "46%",
-        top: "54%",
-        color: "#fff",
-        fontFamily: "Arial Black, sans-serif",
-        fontSize: 90,
-        textShadow: "0 6px 0 rgba(0,0,0,.45), 0 0 26px rgba(255,230,109,.9)",
-        transform: "rotate(-8deg)",
-      }}>?</div>
-    );
-  }
-
-  const [bright, dark] = accentColors[accent];
-  const label = accent === "compiler"
-    ? "FULL SCROLL"
-    : accent === "interpreter"
-      ? "ONE STEP"
-      : accent === "network"
-        ? "MCP"
-        : "DUEL";
-
+function Callout({ callout }: { callout?: OtakuScene["callout"] }) {
+  if (!callout) return null;
+  const [bright, dark] = calloutColors[callout.theme];
   return (
     <div style={{
       position: "absolute",
@@ -95,7 +76,7 @@ function AccentProp({ accent }: { accent: OtakuScene["accent"] }) {
       width: 145,
       padding: "18px 14px",
       border: `5px solid ${dark}`,
-      borderRadius: accent === "duel" ? 14 : 26,
+      borderRadius: 24,
       background: `linear-gradient(135deg, ${bright}, ${dark})`,
       boxShadow: `0 10px 30px ${dark}88, inset 0 0 0 3px rgba(255,255,255,.35)`,
       color: "white",
@@ -104,7 +85,7 @@ function AccentProp({ accent }: { accent: OtakuScene["accent"] }) {
       lineHeight: 1,
       textAlign: "center",
       transform: "rotate(-7deg)",
-    }}>{label}</div>
+    }}>{callout.label}</div>
   );
 }
 
@@ -117,7 +98,7 @@ export function OtakuFormatRenderer({
 }: OtakuFormatRendererProps) {
   const progress = Math.max(0, Math.min(1, timeInSceneMs / Math.max(1, durationMs)));
   const background = assets.backgrounds.find((asset) => asset.id === scene.background);
-  const [bright] = accentColors[scene.accent];
+  const [bright] = scene.callout ? calloutColors[scene.callout.theme] : ["#ffffff"];
   return (
     <div style={{
       position: "relative",
@@ -151,7 +132,7 @@ export function OtakuFormatRenderer({
         background: "linear-gradient(180deg, rgba(7,12,24,.34) 0%, rgba(7,12,24,0) 32%, rgba(7,12,24,.12) 68%, rgba(7,12,24,.58) 100%)",
       }} />
 
-      <AccentProp accent={scene.accent} />
+      <Callout callout={scene.callout} />
 
       {scene.characters.map((placement, index) => {
         const character = assets.characters.find((asset) => asset.id === placement.asset);

@@ -1,0 +1,12 @@
+{
+  "id": "naruto",
+  "label": "Naruto",
+  "roles": {
+    "learner": { "character": "naruto", "voice": "c658e20af0364df6b73bdcef998b6a8b", "behavior": "Curious, impatient, and repeats the lesson in plain words." },
+    "guide": { "character": "kakashi", "voice": "6fb91544d42b4d57a5b408c398459237", "behavior": "Calm teacher who makes the main idea accurate." },
+    "challenger": { "character": "orochimaru", "voice": "8ecce156f83e4fa0bb75f99b30894e63", "behavior": "Adds tension, a sharper example, or a correction." }
+  },
+  "backgrounds": ["konoha", "naruto-forest", "training-ground"],
+  "lore": ["ninja villages", "missions", "scrolls", "jutsu", "summoning contracts", "messenger birds"],
+  "avoid": ["invented canon claims", "modern apps appearing inside the story world"]
+}

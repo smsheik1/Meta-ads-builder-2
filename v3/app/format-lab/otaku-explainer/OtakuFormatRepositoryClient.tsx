@@ -27,7 +27,20 @@ type Run = {
   videoSrc: string;
 };
 
+type AgentRun = {
+  id: string;
+  status: string;
+  attemptCount: number;
+  finalAttempt?: number;
+  latest?: {
+    videoSrc?: string;
+    contactSheetSrc?: string;
+    report?: string;
+  };
+};
+
 const componentLinks = [
+  ["agent-loop", "Agent loop"],
   ["instructions", "Instructions"],
   ["user-inputs", "User inputs"],
   ["fixed-assets", "Fixed assets"],
@@ -40,11 +53,13 @@ const componentLinks = [
 ] as const;
 
 export function OtakuFormatRepositoryClient({
+  agentRuns,
   assets,
   files,
   referenceVideo,
   runs,
 }: {
+  agentRuns: AgentRun[];
   assets: Asset[];
   files: EditableFile[];
   referenceVideo: string;
@@ -126,7 +141,7 @@ export function OtakuFormatRepositoryClient({
           <div className="mt-1 flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold">otaku-explainer</h1>
             <Badge variant="secondary">experimental</Badge>
-            <span className="text-sm text-slate-400">v1.0.0</span>
+            <span className="text-sm text-slate-400">v1.1.0</span>
           </div>
         </div>
       </header>
@@ -162,6 +177,33 @@ export function OtakuFormatRepositoryClient({
             )}
           </section>
 
+          <section id="agent-loop" className="scroll-mt-5 space-y-4">
+            <div>
+              <h2 className="text-xl font-bold">1. Agent loop</h2>
+              <p className="mt-1 text-sm text-slate-600">Claude or Codex can read this package, check what is missing, plan a lesson, render it, inspect it, and improve it up to two times.</p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <article className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm">
+                <h3 className="font-semibold">What it needs</h3>
+                <ul className="mt-3 grid gap-2 text-sm text-slate-700">
+                  <li><code>FISH_STUDIO_APIKEY</code> in <code>v3/.env.local</code></li>
+                  <li>Node, FFmpeg, FFprobe, and Remotion installed locally</li>
+                  <li>Serper only when a new story world needs assets</li>
+                </ul>
+              </article>
+              <article className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm">
+                <h3 className="font-semibold">What it will not use</h3>
+                <p className="mt-3 text-sm text-slate-700">No OpenRouter planner, Replicate, GPU, image generation, or video generation. Secret values never enter the Format files or reports.</p>
+              </article>
+            </div>
+            {renderFile("agent-skill")}
+            {renderFile("requirements")}
+            {renderFile("world-naruto")}
+            {renderFile("world-yugioh")}
+            {renderFile("world-danny")}
+            {renderFile("layouts")}
+          </section>
+
           <section className="grid gap-5 md:grid-cols-2">
             <div className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm">
               <h2 className="font-bold">Original reference</h2>
@@ -173,22 +215,24 @@ export function OtakuFormatRepositoryClient({
                 <li className="rounded-md bg-slate-100 p-3"><strong>1. Rebuild:</strong> Naruto teaches compilers and interpreters.</li>
                 <li className="rounded-md bg-slate-100 p-3"><strong>2. New topic:</strong> The Naruto world teaches MCP.</li>
                 <li className="rounded-md bg-slate-100 p-3"><strong>3. New world:</strong> Yu-Gi-Oh teaches the original compiler lesson.</li>
+                <li className="rounded-md bg-slate-100 p-3"><strong>4. Agent control:</strong> The Repo teaches an agent to make Naruto explain APIs.</li>
+                <li className="rounded-md bg-slate-100 p-3"><strong>5. Agent portability:</strong> The agent researches Danny Phantom and teaches the same lesson without changing the renderer.</li>
               </ol>
             </div>
           </section>
 
           <section id="instructions" className="scroll-mt-5 space-y-3">
-            <h2 className="text-xl font-bold">1. Instructions</h2>
+            <h2 className="text-xl font-bold">2. Instructions</h2>
             {renderFile("instructions")}
           </section>
 
           <section id="user-inputs" className="scroll-mt-5 space-y-3">
-            <h2 className="text-xl font-bold">2. User inputs</h2>
+            <h2 className="text-xl font-bold">3. User inputs</h2>
             {renderFile("inputs")}
           </section>
 
           <section id="fixed-assets" className="scroll-mt-5 space-y-3">
-            <h2 className="text-xl font-bold">3. Fixed assets</h2>
+            <h2 className="text-xl font-bold">4. Fixed assets</h2>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {assets.map((asset) => {
                 const src = assetValues[asset.id];
@@ -219,35 +263,37 @@ export function OtakuFormatRepositoryClient({
           </section>
 
           <section id="ai-content" className="scroll-mt-5 space-y-3">
-            <h2 className="text-xl font-bold">4. AI-generated content</h2>
+            <h2 className="text-xl font-bold">5. AI-generated content</h2>
             {renderFile("script-prompt")}
             {renderFile("image-prompt")}
           </section>
 
           <section id="scene-slots" className="scroll-mt-5 space-y-3">
-            <h2 className="text-xl font-bold">5. Scene slots</h2>
+            <h2 className="text-xl font-bold">6. Scene slots</h2>
             {renderFile("naruto-compilers-scenes")}
             {renderFile("naruto-mcp-scenes")}
             {renderFile("yugioh-compilers-scenes")}
+            {renderFile("naruto-apis-scenes")}
+            {renderFile("danny-apis-scenes")}
           </section>
 
           <section id="renderer" className="scroll-mt-5 space-y-3">
-            <h2 className="text-xl font-bold">6. Renderer</h2>
+            <h2 className="text-xl font-bold">7. Renderer</h2>
             {renderFile("renderer")}
           </section>
 
           <section id="audio" className="scroll-mt-5 space-y-3">
-            <h2 className="text-xl font-bold">7. Audio</h2>
+            <h2 className="text-xl font-bold">8. Audio</h2>
             {renderFile("audio")}
           </section>
 
           <section id="quality" className="scroll-mt-5 space-y-3">
-            <h2 className="text-xl font-bold">8. Quality checks</h2>
+            <h2 className="text-xl font-bold">9. Quality checks</h2>
             {renderFile("quality")}
           </section>
 
           <section id="outputs" className="scroll-mt-5 space-y-4">
-            <h2 className="text-xl font-bold">9. Final output</h2>
+            <h2 className="text-xl font-bold">10. Final output</h2>
             <div className="grid gap-5 xl:grid-cols-3">
               {runs.map((run) => (
                 <article key={run.id} className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm" data-testid={`run-${run.id}`}>
@@ -272,6 +318,38 @@ export function OtakuFormatRepositoryClient({
                   </dl>
                 </article>
               ))}
+            </div>
+            <div className="space-y-3 pt-4">
+              <div>
+                <h3 className="text-lg font-bold">Agent runs</h3>
+                <p className="mt-1 text-sm text-slate-600">Drafts, the latest contact sheet, quality report, and final video appear here after refresh.</p>
+              </div>
+              {agentRuns.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-600" data-testid="agent-runs-empty">
+                  No agent run yet. The packaged proof videos above remain available.
+                </div>
+              ) : (
+                <div className="grid gap-5 xl:grid-cols-2">
+                  {agentRuns.map((run) => (
+                    <article key={run.id} className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm" data-testid={`agent-run-${run.id}`}>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h4 className="font-bold">{run.id}</h4>
+                        <Badge variant={run.status === "finalized" ? "default" : "secondary"}>{run.status}</Badge>
+                      </div>
+                      <p className="mt-2 text-sm text-slate-600">{run.attemptCount} of 3 render attempts used{run.finalAttempt ? ` · final attempt ${run.finalAttempt}` : ""}.</p>
+                      {run.latest?.contactSheetSrc ? <img className="mt-3 w-full rounded-md border border-slate-200" src={run.latest.contactSheetSrc} alt={`Contact sheet for ${run.id}`} /> : null}
+                      {run.latest?.videoSrc ? <video className="mt-3 aspect-[9/16] max-h-[620px] w-full rounded-md bg-black object-contain" controls preload="metadata" src={run.latest.videoSrc} /> : null}
+                      {!run.latest && <p className="mt-3 rounded-md bg-slate-100 p-3 text-sm">Draft created. The scene plan has not been rendered.</p>}
+                      {run.latest?.report ? (
+                        <details className="mt-3 rounded-md border border-slate-200 p-3">
+                          <summary className="cursor-pointer text-sm font-semibold">Latest quality report</summary>
+                          <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap text-xs leading-5">{run.latest.report}</pre>
+                        </details>
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         </div>

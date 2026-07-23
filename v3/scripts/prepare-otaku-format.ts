@@ -1,9 +1,15 @@
 import { spawn } from "node:child_process";
 import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { PNG } from "pngjs";
 import type { OtakuScene } from "../public/format-repositories/otaku-explainer-v1/renderer/OtakuFormatRenderer";
+import {
+  materializeScenePlan,
+  type OtakuLayoutManifest,
+  type OtakuScenePlan,
+  type OtakuWorldPack,
+} from "../features/experiments/otaku-format/agentRunner";
 
 const filename = fileURLToPath(import.meta.url);
 const v3Root = path.resolve(path.dirname(filename), "..");
@@ -27,13 +33,6 @@ type AudioManifest = {
   music: { localPath: string; volume: number };
 };
 
-type SceneSource = {
-  id: string;
-  title: string;
-  input: { topic: string; storyWorld: string; cast: string[] };
-  scenes: OtakuScene[];
-};
-
 async function fileExists(filePath: string) {
   try {
     await stat(filePath);
@@ -53,7 +52,7 @@ async function runCommand(command: string, args: string[]) {
   });
 }
 
-async function probeDurationMs(filePath: string) {
+export async function probeDurationMs(filePath: string) {
   return await new Promise<number>((resolve, reject) => {
     const child = spawn("ffprobe", [
       "-v", "error",
@@ -210,7 +209,7 @@ async function prepareFixedAssets(assets: AssetManifest, audio: AudioManifest) {
   }
 }
 
-async function generateFishClip({
+export async function generateFishClip({
   apiKey,
   outputPath,
   speed,
@@ -268,8 +267,10 @@ async function prepareRun({
   const fishApiKey = process.env.FISH_STUDIO_APIKEY;
   if (!fishApiKey) throw new Error("FISH_STUDIO_APIKEY is required.");
   const sourcePath = path.join(packageRoot, "scenes", `${runId}.json`);
-  const source = JSON.parse(await readFile(sourcePath, "utf8")) as SceneSource;
-  const scenes = source.scenes;
+  const source = JSON.parse(await readFile(sourcePath, "utf8")) as OtakuScenePlan;
+  const world = JSON.parse(await readFile(path.join(packageRoot, "worlds", `${source.input.storyWorld}.json`), "utf8")) as OtakuWorldPack;
+  const layouts = JSON.parse(await readFile(path.join(packageRoot, "layouts.json"), "utf8")) as OtakuLayoutManifest;
+  const scenes = materializeScenePlan(source, world, layouts);
   const outputId = runId;
   const voiceDirectory = path.join(packageRoot, "assets", "audio", outputId);
   const filledScenes: OtakuScene[] = [];
@@ -299,7 +300,7 @@ async function prepareRun({
     id: outputId,
     title: source.title,
     createdAt: new Date().toISOString(),
-    input: source.input,
+    input: { ...source.input, cast: Object.values(world.roles).map((role) => role.character) },
     instructions: "README.md",
     scriptPrompt: "prompts/script-system.md",
     imagePrompt: "prompts/image-search.md",
@@ -307,10 +308,10 @@ async function prepareRun({
     assetsManifest: "assets.json",
     sceneContract: "scene-contract.json",
     renderer: "renderer/OtakuFormatRenderer.tsx",
-    rendererVersion: "otaku-format-renderer@1.0.0-experiment",
+    rendererVersion: "otaku-format-renderer@1.1.0-experiment",
     provider: "fish-audio",
     model: audio.model,
-    voiceAssignments: Object.fromEntries(source.input.cast.map((character) => [character, audio.voices[character]])),
+    voiceAssignments: Object.fromEntries(Object.values(world.roles).map((role) => [role.character, role.voice])),
     musicPath: `format-repositories/otaku-explainer-v1/${audio.music.localPath}`,
     musicVolume: audio.music.volume,
     scenes: filledScenes,
@@ -339,7 +340,9 @@ async function main() {
   await prepareRun({ audio, runId });
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  });
+}

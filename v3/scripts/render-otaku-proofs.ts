@@ -27,8 +27,11 @@ async function runFfmpeg(args: string[]) {
 
 async function main() {
   await mkdir(outputRoot, { recursive: true });
+  const customRunPath = process.argv.find((argument) => argument.startsWith("--run-record="))?.split("=").slice(1).join("=");
+  const customOutputPath = process.argv.find((argument) => argument.startsWith("--output="))?.split("=").slice(1).join("=");
+  const customContactSheetPath = process.argv.find((argument) => argument.startsWith("--contact-sheet="))?.split("=").slice(1).join("=");
   const requestedRuns = process.argv.filter((argument) => argument.startsWith("--run=")).map((argument) => argument.split("=")[1]);
-  const runIds = requestedRuns.length ? requestedRuns : ["naruto-compilers", "naruto-mcp", "yugioh-compilers"];
+  const runIds = customRunPath ? [] : requestedRuns.length ? requestedRuns : ["naruto-compilers", "naruto-mcp", "yugioh-compilers"];
   const assets = JSON.parse(await readFile(path.join(packageRoot, "assets.json"), "utf8")) as OtakuAssetLibrary;
   const serveUrl = await bundle({
     entryPoint,
@@ -36,14 +39,30 @@ async function main() {
     outDir: bundleDirectory,
   });
 
-  for (const runId of runIds) {
-    const runPath = path.join(outputRoot, `${runId}.run.json`);
+  const entries = customRunPath
+    ? [{
+        runId: path.basename(path.dirname(customRunPath)),
+        runPath: customRunPath,
+        outputLocation: customOutputPath,
+        sheetPath: customContactSheetPath,
+      }]
+    : runIds.map((runId) => ({
+        runId,
+        runPath: path.join(outputRoot, `${runId}.run.json`),
+        outputLocation: path.join(outputRoot, `${runId}.mp4`),
+        sheetPath: path.join(outputRoot, `${runId}-contact-sheet.jpg`),
+      }));
+
+  for (const entry of entries) {
+    const { runId, runPath } = entry;
+    if (!entry.outputLocation || !entry.sheetPath) throw new Error("Custom renders require --output and --contact-sheet.");
     const run = JSON.parse(await readFile(runPath, "utf8")) as OtakuProofRun & Record<string, unknown>;
     const inputProps = { assets, run };
     const compositions = await getCompositions(serveUrl, { inputProps });
     const composition = compositions.find((candidate) => candidate.id === otakuCompositionId);
     if (!composition) throw new Error(`Missing ${otakuCompositionId} composition.`);
-    const outputLocation = path.join(outputRoot, `${runId}.mp4`);
+    const outputLocation = entry.outputLocation;
+    await mkdir(path.dirname(outputLocation), { recursive: true });
     console.log(`Rendering ${runId} (${composition.durationInFrames} frames).`);
     await renderMedia({
       serveUrl,
@@ -61,7 +80,7 @@ async function main() {
     });
     process.stdout.write("\n");
 
-    const sheetPath = path.join(outputRoot, `${runId}-contact-sheet.jpg`);
+    const sheetPath = entry.sheetPath;
     await runFfmpeg([
       "-hide_banner", "-loglevel", "error", "-y",
       "-i", outputLocation,
@@ -72,8 +91,6 @@ async function main() {
     await writeFile(runPath, `${JSON.stringify({
       ...run,
       renderedAt: new Date().toISOString(),
-      output: `format-repositories/otaku-explainer-v1/outputs/${runId}.mp4`,
-      contactSheet: `format-repositories/otaku-explainer-v1/outputs/${runId}-contact-sheet.jpg`,
     }, null, 2)}\n`);
   }
 }

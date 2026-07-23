@@ -51,6 +51,30 @@
       "searchQuery": "Joey Wheeler full body transparent png render",
       "sourcePage": "https://all-worlds-alliance.fandom.com/wiki/Joey_Wheeler",
       "sourceUrl": "https://static.wikia.nocookie.net/all-worlds-alliance/images/d/d2/JoeyWheelerMD.png/revision/latest/scale-to-width-down/340?cb=20200516064401"
+    },
+    {
+      "id": "danny-phantom",
+      "label": "Danny Phantom",
+      "localPath": "assets/images/danny-phantom.webp",
+      "searchQuery": "Danny Phantom full body transparent png render",
+      "sourcePage": "https://dannyphantom.fandom.com/wiki/Danny_Phantom_(character)",
+      "sourceUrl": "https://static.wikia.nocookie.net/dpwikia/images/3/3c/Render-_Danny_Phantom_stock_image.png/revision/latest?cb=20250529003148"
+    },
+    {
+      "id": "tucker-foley",
+      "label": "Tucker Foley",
+      "localPath": "assets/images/tucker-foley.webp",
+      "searchQuery": "Tucker Foley full body transparent png render",
+      "sourcePage": "https://dannyphantom.fandom.com/wiki/Tucker_Foley",
+      "sourceUrl": "https://static.wikia.nocookie.net/dpwikia/images/a/ac/Render-_Tucker_Foley.png/revision/latest?cb=20250529003317"
+    },
+    {
+      "id": "vlad-plasmius",
+      "label": "Vlad Plasmius",
+      "localPath": "assets/images/vlad-plasmius.webp",
+      "searchQuery": "Vlad Plasmius full body transparent png render",
+      "sourcePage": "https://dannyphantom.fandom.com/wiki/Vlad_Plasmius",
+      "sourceUrl": "https://static.wikia.nocookie.net/dpwikia/images/6/67/Render-_Vlad_Plasmius_pose.png/revision/latest?cb=20260610224348"
     }
   ],
   "backgrounds": [
@@ -101,6 +125,30 @@
       "searchQuery": "Yu-Gi-Oh city background no characters",
       "sourcePage": "https://backgrounds.gallery/backgrounds/753/1150640-Paradise%20City",
       "sourceUrl": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/items/1150640/cacb64095456a03c8e04e9e886d938c1f504d29c.jpg"
+    },
+    {
+      "id": "amity-park",
+      "label": "Amity Park",
+      "localPath": "assets/images/bg-amity-park.webp",
+      "searchQuery": "Danny Phantom Amity Park street background no characters wide",
+      "sourcePage": "https://dannyphantom.fandom.com/wiki/Amity_Park",
+      "sourceUrl": "https://static.wikia.nocookie.net/dpwikia/images/c/c0/S01e16_AP_welcome_sign.png/revision/latest?cb=20160627025704"
+    },
+    {
+      "id": "fenton-lab",
+      "label": "Fenton lab",
+      "localPath": "assets/images/bg-fenton-lab.webp",
+      "searchQuery": "Danny Phantom Fenton lab background no characters",
+      "sourcePage": "https://dannyphantom.fandom.com/wiki/Fenton_Portal",
+      "sourceUrl": "https://static.wikia.nocookie.net/dpwikia/images/f/fe/S01e04_Fenton_Ghost_Portal.png/revision/latest?cb=20160428225359"
+    },
+    {
+      "id": "ghost-zone",
+      "label": "Ghost Zone",
+      "localPath": "assets/images/bg-ghost-zone.jpg",
+      "searchQuery": "Danny Phantom Ghost Zone landscape ground background no characters wide",
+      "sourcePage": "https://www.ign.com/wikis/nick-all-star-brawl/Ghost_Zone",
+      "sourceUrl": "https://oyster.ignimgs.com/mediawiki/apis.ign.com/nick-all-star-brawl/1/19/Ghost_Zone.jpg"
     }
   ]
 }

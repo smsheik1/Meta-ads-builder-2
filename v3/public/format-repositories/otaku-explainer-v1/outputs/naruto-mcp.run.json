@@ -18,7 +18,7 @@
   "assetsManifest": "assets.json",
   "sceneContract": "scene-contract.json",
   "renderer": "renderer/OtakuFormatRenderer.tsx",
-  "rendererVersion": "otaku-format-renderer@1.0.0-experiment",
+  "rendererVersion": "otaku-format-renderer@1.1.0-experiment",
   "provider": "fish-audio",
   "model": "s2.1-pro-free",
   "voiceAssignments": {
@@ -50,9 +50,12 @@
           "width": 37
         }
       ],
-      "accent": "question",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-01.wav",
-      "durationMs": 5138
+      "durationMs": 5138,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
     },
     {
       "id": "nm-02",
@@ -74,9 +77,12 @@
           "width": 43
         }
       ],
-      "accent": "network",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-02.wav",
-      "durationMs": 3762
+      "durationMs": 3762,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
     },
     {
       "id": "nm-03",
@@ -98,9 +104,12 @@
           "width": 35
         }
       ],
-      "accent": "question",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-03.wav",
-      "durationMs": 3117
+      "durationMs": 3117,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
     },
     {
       "id": "nm-04",
@@ -122,9 +131,12 @@
           "width": 43
         }
       ],
-      "accent": "network",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-04.wav",
-      "durationMs": 5697
+      "durationMs": 5697,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
     },
     {
       "id": "nm-05",
@@ -146,9 +158,12 @@
           "width": 38
         }
       ],
-      "accent": "network",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-05.wav",
-      "durationMs": 3590
+      "durationMs": 3590,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
     },
     {
       "id": "nm-06",
@@ -170,9 +185,12 @@
           "width": 38
         }
       ],
-      "accent": "network",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-06.wav",
-      "durationMs": 4880
+      "durationMs": 4880,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
     },
     {
       "id": "nm-07",
@@ -194,9 +212,12 @@
           "width": 36
         }
       ],
-      "accent": "question",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-07.wav",
-      "durationMs": 3504
+      "durationMs": 3504,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
     },
     {
       "id": "nm-08",
@@ -218,9 +239,12 @@
           "width": 43
         }
       ],
-      "accent": "network",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-08.wav",
-      "durationMs": 4192
+      "durationMs": 4192,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
     },
     {
       "id": "nm-09",
@@ -242,9 +266,12 @@
           "width": 43
         }
       ],
-      "accent": "network",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-09.wav",
-      "durationMs": 4493
+      "durationMs": 4493,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
     },
     {
       "id": "nm-10",
@@ -266,9 +293,12 @@
           "width": 42
         }
       ],
-      "accent": "network",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-10.wav",
-      "durationMs": 3719
+      "durationMs": 3719,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
     },
     {
       "id": "nm-11",
@@ -290,9 +320,12 @@
           "width": 35
         }
       ],
-      "accent": "question",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-11.wav",
-      "durationMs": 2816
+      "durationMs": 2816,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
     },
     {
       "id": "nm-12",
@@ -314,9 +347,12 @@
           "width": 43
         }
       ],
-      "accent": "network",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-12.wav",
-      "durationMs": 4579
+      "durationMs": 4579,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
     },
     {
       "id": "nm-13",
@@ -338,9 +374,12 @@
           "width": 38
         }
       ],
-      "accent": "network",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-13.wav",
-      "durationMs": 4192
+      "durationMs": 4192,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
     },
     {
       "id": "nm-14",
@@ -363,9 +402,12 @@
           "width": 35
         }
       ],
-      "accent": "network",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-14.wav",
-      "durationMs": 4106
+      "durationMs": 4106,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
     },
     {
       "id": "nm-15",
@@ -388,9 +430,12 @@
           "width": 35
         }
       ],
-      "accent": "duel",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/naruto-mcp/nm-15.wav",
-      "durationMs": 5396
+      "durationMs": 5396,
+      "callout": {
+        "label": "DUEL",
+        "theme": "gold"
+      }
     }
   ],
   "qualityChecks": "quality.json",
@@ -401,6 +446,6 @@
     "estimatedUsd": 0,
     "note": "Serper used the existing account. Fish used the free s2.1-pro-free developer model."
   },
-  "renderedAt": "2026-07-22T07:12:42.753Z",
+  "renderedAt": "2026-07-22T20:35:33.155Z",
   "contactSheet": "format-repositories/otaku-explainer-v1/outputs/naruto-mcp-contact-sheet.jpg"
 }

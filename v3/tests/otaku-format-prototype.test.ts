@@ -2,6 +2,13 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { PNG } from "pngjs";
+import {
+  materializeScenePlan,
+  validateScenePlan,
+  type OtakuLayoutManifest,
+  type OtakuScenePlan,
+  type OtakuWorldPack,
+} from "../features/experiments/otaku-format/agentRunner";
 
 const packageRoot = path.resolve("public", "format-repositories", "otaku-explainer-v1");
 const readJson = <T>(relativePath: string) => JSON.parse(readFileSync(path.join(packageRoot, relativePath), "utf8")) as T;
@@ -22,23 +29,31 @@ assert.equal(format.renderer, "renderer/OtakuFormatRenderer.tsx");
 
 type SourceScene = {
   id: string;
-  speaker: string;
+  speakerRole: "learner" | "guide" | "challenger";
+  visibleRoles: Array<"learner" | "guide" | "challenger">;
+  layout: string;
   dialogue: string;
   background: string;
   estimatedDurationMs: number;
-  characters: Array<{ asset: string; x: number; bottom: number; width: number }>;
+  callout?: { label: string; theme: string };
 };
 
 const sourceIds = ["naruto-compilers", "naruto-mcp", "yugioh-compilers"];
 for (const sourceId of sourceIds) {
-  const source = readJson<{ scenes: SourceScene[] }>(`scenes/${sourceId}.json`);
+  const source = readJson<OtakuScenePlan>(`scenes/${sourceId}.json`);
+  const world = readJson<OtakuWorldPack>(`worlds/${source.input.storyWorld}.json`);
+  const layouts = readJson<OtakuLayoutManifest>("layouts.json");
+  assert.deepEqual(validateScenePlan(source, world, layouts), [], `${sourceId} must satisfy the agent scene contract.`);
   assert.ok(source.scenes.length >= 15, `${sourceId} must be a complete lesson.`);
+  const concreteScenes = materializeScenePlan(source, world, layouts);
   for (const scene of source.scenes) {
     assert.ok(scene.dialogue.length <= 100, `${scene.id} is too long for the speech bubble.`);
     assert.ok(scene.estimatedDurationMs >= 2_000, `${scene.id} needs a readable duration.`);
-    assert.ok(scene.characters.some((character) => character.asset === scene.speaker), `${scene.id} must show its speaker.`);
-    assert.ok(scene.characters.every((character) => character.bottom >= 0 && character.bottom <= 8), `${scene.id} characters must stay near the ground line.`);
+    assert.ok(scene.visibleRoles.includes(scene.speakerRole), `${scene.id} must show its speaker.`);
+    assert.ok(!("characters" in scene), `${scene.id} must use an approved layout instead of raw coordinates.`);
+    assert.ok(!("accent" in scene), `${scene.id} must use a generic callout.`);
   }
+  assert.ok(concreteScenes.every((scene) => scene.characters.every((character) => character.bottom >= 0 && character.bottom <= 8)), `${sourceId} layouts must stay near the ground line.`);
 }
 
 const assets = readJson<{
@@ -84,6 +99,10 @@ assert.match(repositoryPage, /Needs rerun/);
 assert.match(repositoryPage, /Local draft/);
 assert.match(repositoryPage, /Replace \$\{asset\.label\}/);
 assert.match(repositoryPage, /Copy rerun commands/);
+assert.ok(existsSync(path.join(packageRoot, "SKILL.md")));
+assert.ok(existsSync(path.join(packageRoot, "requirements.json")));
+assert.ok(existsSync(path.join(packageRoot, "worlds", "naruto.json")));
+assert.ok(existsSync(path.join(packageRoot, "worlds", "yugioh.json")));
 
 const productionFiles = [
   "app/create/page.tsx",

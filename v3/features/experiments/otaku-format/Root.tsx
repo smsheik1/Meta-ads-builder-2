@@ -1,6 +1,6 @@
 import { Composition } from "remotion";
 import assets from "../../../public/format-repositories/otaku-explainer-v1/assets.json";
-import sourceRun from "../../../public/format-repositories/otaku-explainer-v1/scenes/naruto-compilers.json";
+import sourceRun from "../../../public/format-repositories/otaku-explainer-v1/outputs/naruto-compilers.run.json";
 import { OtakuProofVideo, proofDurationMs, type OtakuProofRun } from "./OtakuProofVideo";
 
 export const otakuCompositionId = "OtakuFormatProof";
@@ -8,7 +8,7 @@ export const otakuFps = 30;
 
 const defaultRun = {
   ...sourceRun,
-  rendererVersion: "otaku-format-renderer@1.0.0-experiment",
+  rendererVersion: "otaku-format-renderer@1.1.0-experiment",
   musicPath: "format-repositories/otaku-explainer-v1/assets/audio/background-music.mp3",
   musicVolume: 0.1,
 } as OtakuProofRun;

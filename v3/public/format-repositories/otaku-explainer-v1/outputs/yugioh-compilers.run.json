@@ -18,7 +18,7 @@
   "assetsManifest": "assets.json",
   "sceneContract": "scene-contract.json",
   "renderer": "renderer/OtakuFormatRenderer.tsx",
-  "rendererVersion": "otaku-format-renderer@1.0.0-experiment",
+  "rendererVersion": "otaku-format-renderer@1.1.0-experiment",
   "provider": "fish-audio",
   "model": "s2.1-pro-free",
   "voiceAssignments": {
@@ -49,9 +49,12 @@
           "width": 40
         }
       ],
-      "accent": "question",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-01.wav",
-      "durationMs": 3891
+      "durationMs": 3891,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
     },
     {
       "id": "yc-02",
@@ -74,9 +77,12 @@
           "width": 39
         }
       ],
-      "accent": "question",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-02.wav",
-      "durationMs": 3676
+      "durationMs": 3676,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
     },
     {
       "id": "yc-03",
@@ -98,9 +104,12 @@
           "width": 43
         }
       ],
-      "accent": "duel",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-03.wav",
-      "durationMs": 4192
+      "durationMs": 4192,
+      "callout": {
+        "label": "DUEL",
+        "theme": "gold"
+      }
     },
     {
       "id": "yc-04",
@@ -122,9 +131,12 @@
           "width": 43
         }
       ],
-      "accent": "compiler",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-04.wav",
-      "durationMs": 4063
+      "durationMs": 4063,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
     },
     {
       "id": "yc-05",
@@ -146,9 +158,12 @@
           "width": 39
         }
       ],
-      "accent": "question",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-05.wav",
-      "durationMs": 3289
+      "durationMs": 3289,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
     },
     {
       "id": "yc-06",
@@ -170,7 +185,6 @@
           "width": 40
         }
       ],
-      "accent": "none",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-06.wav",
       "durationMs": 3289
     },
@@ -194,9 +208,12 @@
           "width": 41
         }
       ],
-      "accent": "compiler",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-07.wav",
-      "durationMs": 3891
+      "durationMs": 3891,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
     },
     {
       "id": "yc-08",
@@ -218,9 +235,12 @@
           "width": 41
         }
       ],
-      "accent": "compiler",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-08.wav",
-      "durationMs": 3289
+      "durationMs": 3289,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
     },
     {
       "id": "yc-09",
@@ -242,9 +262,12 @@
           "width": 35
         }
       ],
-      "accent": "question",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-09.wav",
-      "durationMs": 2400
+      "durationMs": 2400,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
     },
     {
       "id": "yc-10",
@@ -266,9 +289,12 @@
           "width": 40
         }
       ],
-      "accent": "interpreter",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-10.wav",
-      "durationMs": 3332
+      "durationMs": 3332,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
     },
     {
       "id": "yc-11",
@@ -290,9 +316,12 @@
           "width": 41
         }
       ],
-      "accent": "interpreter",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-11.wav",
-      "durationMs": 4192
+      "durationMs": 4192,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
     },
     {
       "id": "yc-12",
@@ -314,9 +343,12 @@
           "width": 37
         }
       ],
-      "accent": "question",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-12.wav",
-      "durationMs": 2902
+      "durationMs": 2902,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
     },
     {
       "id": "yc-13",
@@ -339,9 +371,12 @@
           "width": 39
         }
       ],
-      "accent": "interpreter",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-13.wav",
-      "durationMs": 2988
+      "durationMs": 2988,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
     },
     {
       "id": "yc-14",
@@ -363,9 +398,12 @@
           "width": 41
         }
       ],
-      "accent": "compiler",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-14.wav",
-      "durationMs": 3762
+      "durationMs": 3762,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
     },
     {
       "id": "yc-15",
@@ -387,9 +425,12 @@
           "width": 41
         }
       ],
-      "accent": "interpreter",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-15.wav",
-      "durationMs": 3590
+      "durationMs": 3590,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
     },
     {
       "id": "yc-16",
@@ -411,9 +452,12 @@
           "width": 39
         }
       ],
-      "accent": "compiler",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-16.wav",
-      "durationMs": 3848
+      "durationMs": 3848,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
     },
     {
       "id": "yc-17",
@@ -436,9 +480,12 @@
           "width": 39
         }
       ],
-      "accent": "interpreter",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-17.wav",
-      "durationMs": 3848
+      "durationMs": 3848,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
     },
     {
       "id": "yc-18",
@@ -461,9 +508,12 @@
           "width": 36
         }
       ],
-      "accent": "duel",
       "audioPath": "format-repositories/otaku-explainer-v1/assets/audio/yugioh-compilers/yc-18.wav",
-      "durationMs": 3590
+      "durationMs": 3590,
+      "callout": {
+        "label": "DUEL",
+        "theme": "gold"
+      }
     }
   ],
   "qualityChecks": "quality.json",
@@ -474,6 +524,6 @@
     "estimatedUsd": 0,
     "note": "Serper used the existing account. Fish used the free s2.1-pro-free developer model."
   },
-  "renderedAt": "2026-07-22T07:31:24.766Z",
+  "renderedAt": "2026-07-22T20:36:47.821Z",
   "contactSheet": "format-repositories/otaku-explainer-v1/outputs/yugioh-compilers-contact-sheet.jpg"
 }

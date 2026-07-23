@@ -1,0 +1,28 @@
+{
+  "environment": [
+    {
+      "name": "FISH_STUDIO_APIKEY",
+      "requiredFor": ["render"],
+      "description": "Generates one voice clip for each scene."
+    },
+    {
+      "name": "SERPER_API_KEY",
+      "requiredFor": ["new-story-world-assets"],
+      "description": "Finds character and background assets only when a story world is not already packaged."
+    }
+  ],
+  "localTools": [
+    { "name": "node", "requiredFor": ["check", "init", "validate", "render", "inspect", "finalize"] },
+    { "name": "ffmpeg", "requiredFor": ["render", "inspect"] },
+    { "name": "ffprobe", "requiredFor": ["render", "inspect"] },
+    { "name": "remotion", "requiredFor": ["render"] }
+  ],
+  "notUsed": [
+    "OpenRouter",
+    "Replicate",
+    "GPU",
+    "image generation",
+    "video generation"
+  ],
+  "secretPolicy": "Read keys from v3/.env.local. Never write secret values to plans, logs, reports, or run records."
+}

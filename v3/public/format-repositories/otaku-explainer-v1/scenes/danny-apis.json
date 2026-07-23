@@ -1,0 +1,157 @@
+{
+  "id": "danny-phantom-how-apis-work",
+  "title": "Danny Phantom explains how APIs work",
+  "input": {
+    "topic": "How APIs work",
+    "storyWorld": "danny-phantom"
+  },
+  "scenes": [
+    {
+      "id": "api-01",
+      "speakerRole": "learner",
+      "visibleRoles": ["learner", "guide"],
+      "layout": "two-balanced",
+      "dialogue": "Tucker, how do two apps talk without giving each other full access?",
+      "background": "fenton-lab",
+      "estimatedDurationMs": 3700,
+      "callout": { "label": "API?", "theme": "question" }
+    },
+    {
+      "id": "api-02",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner"],
+      "layout": "two-second-focus",
+      "dialogue": "They use an API, like the Fenton Portal between Earth and the Ghost Zone.",
+      "background": "fenton-lab",
+      "estimatedDurationMs": 4000,
+      "callout": { "label": "SAFE DOORWAY", "theme": "cool" }
+    },
+    {
+      "id": "api-03",
+      "speakerRole": "learner",
+      "visibleRoles": ["learner", "guide"],
+      "layout": "two-first-focus",
+      "dialogue": "The worlds stay separate, but the portal lets something cross between them.",
+      "background": "ghost-zone",
+      "estimatedDurationMs": 3900
+    },
+    {
+      "id": "api-04",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner"],
+      "layout": "two-balanced",
+      "dialogue": "Right. An app sends a request, like a command entered into the portal controls.",
+      "background": "fenton-lab",
+      "estimatedDurationMs": 4100,
+      "callout": { "label": "REQUEST", "theme": "warm" }
+    },
+    {
+      "id": "api-05",
+      "speakerRole": "learner",
+      "visibleRoles": ["learner", "guide"],
+      "layout": "two-first-focus",
+      "dialogue": "And I need the correct control for the job, not just any button.",
+      "background": "fenton-lab",
+      "estimatedDurationMs": 3500,
+      "callout": { "label": "WHICH CONTROL?", "theme": "question" }
+    },
+    {
+      "id": "api-06",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner"],
+      "layout": "two-second-focus",
+      "dialogue": "Exactly. That specific place to send a request is called an endpoint.",
+      "background": "fenton-lab",
+      "estimatedDurationMs": 3700,
+      "callout": { "label": "ENDPOINT", "theme": "violet" }
+    },
+    {
+      "id": "api-07",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner"],
+      "layout": "two-balanced",
+      "dialogue": "The system does the work, then sends a response back through the doorway.",
+      "background": "ghost-zone",
+      "estimatedDurationMs": 3800,
+      "callout": { "label": "RESPONSE", "theme": "cool" }
+    },
+    {
+      "id": "api-08",
+      "speakerRole": "learner",
+      "visibleRoles": ["learner", "guide"],
+      "layout": "two-first-focus",
+      "dialogue": "Can the request say which ghost file or location I need?",
+      "background": "amity-park",
+      "estimatedDurationMs": 3300
+    },
+    {
+      "id": "api-09",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner"],
+      "layout": "two-balanced",
+      "dialogue": "Yes. Those extra details are parameters. They make the request specific.",
+      "background": "fenton-lab",
+      "estimatedDurationMs": 3900,
+      "callout": { "label": "DETAILS", "theme": "warm" }
+    },
+    {
+      "id": "api-10",
+      "speakerRole": "challenger",
+      "visibleRoles": ["challenger", "learner", "guide"],
+      "layout": "three-balanced",
+      "dialogue": "Surely you would not let every foolish child control such a powerful portal.",
+      "background": "ghost-zone",
+      "estimatedDurationMs": 4100,
+      "callout": { "label": "WHO GETS IN?", "theme": "gold" }
+    },
+    {
+      "id": "api-11",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner", "challenger"],
+      "layout": "three-balanced",
+      "dialogue": "We would not. Many APIs check a secret key or token before they answer.",
+      "background": "fenton-lab",
+      "estimatedDurationMs": 3900,
+      "callout": { "label": "AUTH", "theme": "violet" }
+    },
+    {
+      "id": "api-12",
+      "speakerRole": "challenger",
+      "visibleRoles": ["challenger", "learner"],
+      "layout": "two-first-focus",
+      "dialogue": "Send the wrong command or key, and the system returns an error instead.",
+      "background": "ghost-zone",
+      "estimatedDurationMs": 3900,
+      "callout": { "label": "ERROR", "theme": "warm" }
+    },
+    {
+      "id": "api-13",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner"],
+      "layout": "two-second-focus",
+      "dialogue": "Both sides follow the same rules, so each request has a clear meaning.",
+      "background": "fenton-lab",
+      "estimatedDurationMs": 3700,
+      "callout": { "label": "SHARED RULES", "theme": "cool" }
+    },
+    {
+      "id": "api-14",
+      "speakerRole": "learner",
+      "visibleRoles": ["learner", "guide"],
+      "layout": "two-first-focus",
+      "dialogue": "So an API is a controlled doorway where software can ask and get an answer.",
+      "background": "amity-park",
+      "estimatedDurationMs": 4000
+    },
+    {
+      "id": "api-15",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner", "challenger"],
+      "layout": "three-balanced",
+      "dialogue": "You got it. Separate systems can work together without exposing everything.",
+      "background": "fenton-lab",
+      "estimatedDurationMs": 3800,
+      "callout": { "label": "ASK + ANSWER", "theme": "gold" }
+    }
+  ]
+}

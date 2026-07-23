@@ -1,25 +1,294 @@
 {
   "id": "yugioh-compilers",
   "title": "Yu-Gi-Oh explains compilers versus interpreters",
-  "input": { "topic": "Compilers versus interpreters", "storyWorld": "Yu-Gi-Oh", "cast": ["yugi", "kaiba", "joey"] },
+  "input": {
+    "topic": "Compilers versus interpreters",
+    "storyWorld": "yugioh"
+  },
   "scenes": [
-    { "id": "yc-01", "speaker": "yugi", "dialogue": "Kaiba... if compilers and interpreters both run code...", "background": "duel-arena", "estimatedDurationMs": 3500, "characters": [{"asset":"yugi","x":7,"bottom":2,"width":50},{"asset":"kaiba","x":56,"bottom":3,"width":40}], "accent": "question" },
-    { "id": "yc-02", "speaker": "yugi", "dialogue": "Why do C++ and Python duel so differently?", "background": "domino-city", "estimatedDurationMs": 3000, "characters": [{"asset":"yugi","x":8,"bottom":2,"width":51,"rotate":-2},{"asset":"kaiba","x":57,"bottom":3,"width":39}], "accent": "question" },
-    { "id": "yc-03", "speaker": "kaiba", "dialogue": "One prepares the whole deck. The other draws turn by turn.", "background": "duel-club", "estimatedDurationMs": 3700, "characters": [{"asset":"kaiba","x":7,"bottom":3,"width":48},{"asset":"yugi","x":55,"bottom":2,"width":43}], "accent": "duel" },
-    { "id": "yc-04", "speaker": "kaiba", "dialogue": "A compiler checks every card before the duel begins.", "background": "duel-arena", "estimatedDurationMs": 3400, "characters": [{"asset":"kaiba","x":7,"bottom":3,"width":48},{"asset":"yugi","x":55,"bottom":2,"width":43}], "accent": "compiler" },
-    { "id": "yc-05", "speaker": "joey", "dialogue": "So C++ enters with the whole combo ready?", "background": "domino-city", "estimatedDurationMs": 3000, "characters": [{"asset":"joey","x":7,"bottom":2,"width":52},{"asset":"kaiba","x":57,"bottom":3,"width":39}], "accent": "question" },
-    { "id": "yc-06", "speaker": "kaiba", "dialogue": "Finally, Wheeler understands something.", "background": "duel-club", "estimatedDurationMs": 2600, "characters": [{"asset":"kaiba","x":9,"bottom":3,"width":50},{"asset":"joey","x":57,"bottom":2,"width":40}], "accent": "none" },
-    { "id": "yc-07", "speaker": "kaiba", "dialogue": "The compiler turns the full program into machine code.", "background": "duel-arena", "estimatedDurationMs": 3400, "characters": [{"asset":"kaiba","x":8,"bottom":3,"width":49},{"asset":"yugi","x":56,"bottom":2,"width":41}], "accent": "compiler" },
-    { "id": "yc-08", "speaker": "kaiba", "dialogue": "Then it can run that prepared deck very fast.", "background": "domino-city", "estimatedDurationMs": 3100, "characters": [{"asset":"kaiba","x":8,"bottom":3,"width":49},{"asset":"yugi","x":56,"bottom":2,"width":41}], "accent": "compiler" },
-    { "id": "yc-09", "speaker": "yugi", "dialogue": "And an interpreter?", "background": "duel-club", "estimatedDurationMs": 2200, "characters": [{"asset":"yugi","x":12,"bottom":2,"width":54},{"asset":"kaiba","x":62,"bottom":3,"width":35}], "accent": "question" },
-    { "id": "yc-10", "speaker": "joey", "dialogue": "It reads one move at a time, like drawing every turn?", "background": "duel-arena", "estimatedDurationMs": 3500, "characters": [{"asset":"joey","x":7,"bottom":2,"width":52},{"asset":"yugi","x":57,"bottom":2,"width":40}], "accent": "interpreter" },
-    { "id": "yc-11", "speaker": "kaiba", "dialogue": "Correct. Python often runs instructions line by line.", "background": "domino-city", "estimatedDurationMs": 3300, "characters": [{"asset":"kaiba","x":8,"bottom":3,"width":49},{"asset":"yugi","x":56,"bottom":2,"width":41}], "accent": "interpreter" },
-    { "id": "yc-12", "speaker": "yugi", "dialogue": "That sounds slower. Why use it?", "background": "duel-club", "estimatedDurationMs": 2700, "characters": [{"asset":"yugi","x":10,"bottom":2,"width":52},{"asset":"kaiba","x":59,"bottom":3,"width":37}], "accent": "question" },
-    { "id": "yc-13", "speaker": "joey", "dialogue": "Because when a card fails, ya know right away.", "background": "duel-arena", "estimatedDurationMs": 3100, "characters": [{"asset":"joey","x":8,"bottom":2,"width":53,"rotate":2},{"asset":"yugi","x":58,"bottom":2,"width":39}], "accent": "interpreter" },
-    { "id": "yc-14", "speaker": "kaiba", "dialogue": "Compilers catch many errors before the duel starts.", "background": "domino-city", "estimatedDurationMs": 3200, "characters": [{"asset":"kaiba","x":8,"bottom":3,"width":49},{"asset":"yugi","x":56,"bottom":2,"width":41}], "accent": "compiler" },
-    { "id": "yc-15", "speaker": "kaiba", "dialogue": "Interpreters reveal errors while the program is running.", "background": "duel-club", "estimatedDurationMs": 3400, "characters": [{"asset":"kaiba","x":8,"bottom":3,"width":49},{"asset":"joey","x":56,"bottom":2,"width":41}], "accent": "interpreter" },
-    { "id": "yc-16", "speaker": "yugi", "dialogue": "So compile errors are illegal cards before the duel...", "background": "duel-arena", "estimatedDurationMs": 3500, "characters": [{"asset":"yugi","x":8,"bottom":2,"width":51},{"asset":"kaiba","x":57,"bottom":3,"width":39}], "accent": "compiler" },
-    { "id": "yc-17", "speaker": "joey", "dialogue": "And runtime errors are your combo exploding mid-turn!", "background": "domino-city", "estimatedDurationMs": 3300, "characters": [{"asset":"joey","x":8,"bottom":2,"width":54,"rotate":-2},{"asset":"yugi","x":58,"bottom":2,"width":39}], "accent": "interpreter" },
-    { "id": "yc-18", "speaker": "yugi", "dialogue": "Programming languages are just different duel strategies!", "background": "duel-club", "estimatedDurationMs": 3400, "characters": [{"asset":"yugi","x":8,"bottom":2,"width":54,"rotate":-2},{"asset":"kaiba","x":60,"bottom":3,"width":36}], "accent": "duel" }
+    {
+      "id": "yc-01",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Kaiba... if compilers and interpreters both run code...",
+      "background": "duel-arena",
+      "estimatedDurationMs": 3500,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
+    },
+    {
+      "id": "yc-02",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Why do C++ and Python duel so differently?",
+      "background": "domino-city",
+      "estimatedDurationMs": 3000,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
+    },
+    {
+      "id": "yc-03",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "One prepares the whole deck. The other draws turn by turn.",
+      "background": "duel-club",
+      "estimatedDurationMs": 3700,
+      "callout": {
+        "label": "DUEL",
+        "theme": "gold"
+      }
+    },
+    {
+      "id": "yc-04",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "A compiler checks every card before the duel begins.",
+      "background": "duel-arena",
+      "estimatedDurationMs": 3400,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
+    },
+    {
+      "id": "yc-05",
+      "speakerRole": "challenger",
+      "visibleRoles": [
+        "challenger",
+        "guide"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "So C++ enters with the whole combo ready?",
+      "background": "domino-city",
+      "estimatedDurationMs": 3000,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
+    },
+    {
+      "id": "yc-06",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "challenger"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Finally, Wheeler understands something.",
+      "background": "duel-club",
+      "estimatedDurationMs": 2600
+    },
+    {
+      "id": "yc-07",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "The compiler turns the full program into machine code.",
+      "background": "duel-arena",
+      "estimatedDurationMs": 3400,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
+    },
+    {
+      "id": "yc-08",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Then it can run that prepared deck very fast.",
+      "background": "domino-city",
+      "estimatedDurationMs": 3100,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
+    },
+    {
+      "id": "yc-09",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "And an interpreter?",
+      "background": "duel-club",
+      "estimatedDurationMs": 2200,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
+    },
+    {
+      "id": "yc-10",
+      "speakerRole": "challenger",
+      "visibleRoles": [
+        "challenger",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "It reads one move at a time, like drawing every turn?",
+      "background": "duel-arena",
+      "estimatedDurationMs": 3500,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
+    },
+    {
+      "id": "yc-11",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Correct. Python often runs instructions line by line.",
+      "background": "domino-city",
+      "estimatedDurationMs": 3300,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
+    },
+    {
+      "id": "yc-12",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "That sounds slower. Why use it?",
+      "background": "duel-club",
+      "estimatedDurationMs": 2700,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
+    },
+    {
+      "id": "yc-13",
+      "speakerRole": "challenger",
+      "visibleRoles": [
+        "challenger",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Because when a card fails, ya know right away.",
+      "background": "duel-arena",
+      "estimatedDurationMs": 3100,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
+    },
+    {
+      "id": "yc-14",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Compilers catch many errors before the duel starts.",
+      "background": "domino-city",
+      "estimatedDurationMs": 3200,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
+    },
+    {
+      "id": "yc-15",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "challenger"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Interpreters reveal errors while the program is running.",
+      "background": "duel-club",
+      "estimatedDurationMs": 3400,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
+    },
+    {
+      "id": "yc-16",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "So compile errors are illegal cards before the duel...",
+      "background": "duel-arena",
+      "estimatedDurationMs": 3500,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
+    },
+    {
+      "id": "yc-17",
+      "speakerRole": "challenger",
+      "visibleRoles": [
+        "challenger",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "And runtime errors are your combo exploding mid-turn!",
+      "background": "domino-city",
+      "estimatedDurationMs": 3300,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
+    },
+    {
+      "id": "yc-18",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Programming languages are just different duel strategies!",
+      "background": "duel-club",
+      "estimatedDurationMs": 3400,
+      "callout": {
+        "label": "DUEL",
+        "theme": "gold"
+      }
+    }
   ]
 }
