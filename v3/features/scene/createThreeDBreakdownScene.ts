@@ -1,6 +1,8 @@
 import type { ThreeDBreakdownSiteContract, ThreeDBreakdownVariant } from "../formats/three-d-breakdown/generate";
 import type { ThreeDBreakdownEvidenceItem } from "../formats/three-d-breakdown/evidence";
 import { THREE_D_BREAKDOWN_DURATION_MS } from "../formats/three-d-breakdown/prompt";
+import type { ThreeDBreakdownStorySubject } from "../formats/three-d-breakdown/storySubject";
+import { selectThreeDBreakdownCta } from "../formats/three-d-breakdown/cta";
 import { createThreeDClipPlans } from "../formats/three-d-breakdown/storyboardContracts";
 import type { ProductCatalogItem, StoredWebsiteResearchResult } from "../research/types";
 import { pickSceneAccentColor } from "./createVisualizerScene";
@@ -10,39 +12,8 @@ import {
 } from "./types";
 
 const missingProductImageMessage = "3D Breakdown needs a real product image for this site. Use a product page, add a product image, or switch to Reviews/Visualizer.";
-const buyerActionPattern = /\b(shop|try|get|buy|order|start|choose|book|download|subscribe|visit)\b/i;
-const unusableCtaPattern = /\b(see the mechanism|the journey is the product|visible mechanism|start\b.{0,64}\bfrom\b)\b/i;
 const brandOriginPattern = /\b(origin|history|founder|founded|began|beginning|first product|established|started)\b/i;
-
-const cleanCtaText = (value: string | null | undefined) => String(value || "")
-  .replace(/\s+/g, " ")
-  .trim()
-  .slice(0, 90);
-
-const isUsableBuyerCta = (value: string) => (
-  buyerActionPattern.test(value) && !unusableCtaPattern.test(value)
-);
-
-export const selectThreeDBreakdownBuyerCta = ({
-  generatedCta,
-  siteCta,
-  productTitle,
-  brandName,
-}: {
-  generatedCta?: string;
-  siteCta?: string;
-  productTitle?: string;
-  brandName: string;
-}) => {
-  const candidates = [generatedCta, siteCta]
-    .map(cleanCtaText)
-    .filter(Boolean);
-  const supportedCta = candidates.find(isUsableBuyerCta);
-  if (supportedCta) return supportedCta;
-
-  const subject = cleanCtaText(productTitle) || cleanCtaText(brandName) || "this product";
-  return `Shop ${subject}`.slice(0, 90);
-};
+export { selectThreeDBreakdownCta as selectThreeDBreakdownBuyerCta } from "../formats/three-d-breakdown/cta";
 
 const normalizeProductText = (value: string) => value
   .normalize("NFD")
@@ -145,7 +116,19 @@ const scoreProductHeroCandidate = (
 
 export const selectThreeDBreakdownProductAnchor = (
   research: StoredWebsiteResearchResult,
+  selectedProductHandle?: string,
 ): ThreeDBreakdownAdScene["layout"]["productAnchor"] => {
+  if (selectedProductHandle) {
+    const selected = (research.productCatalog?.products || []).find((product) => product.handle === selectedProductHandle);
+    if (!selected?.imageUrl) return undefined;
+    return {
+      title: selected.title,
+      url: selected.url,
+      imageUrl: selected.imageUrl,
+      imageAlt: selected.imageAlt,
+    };
+  }
+
   if (isDirectProductPage(research)) {
     const directPageProduct = selectProductOgImage(research);
     if (directPageProduct) return directPageProduct;
@@ -192,6 +175,7 @@ export function createThreeDBreakdownAdScene({
   provider,
   research,
   siteContract,
+  storySubject,
   variant,
 }: {
   candidateIndex: number;
@@ -202,16 +186,21 @@ export function createThreeDBreakdownAdScene({
   provider: ThreeDBreakdownAdScene["metadata"]["provider"];
   research: StoredWebsiteResearchResult;
   siteContract: ThreeDBreakdownSiteContract;
+  storySubject?: ThreeDBreakdownStorySubject | null;
   variant: ThreeDBreakdownVariant;
 }): ThreeDBreakdownAdScene {
   const evidence = evidenceItems.find((item) => item.evidenceIndex === variant.evidenceIndex);
   if (!evidence) throw new Error("3D Breakdown evidence item is missing.");
   const accentColor = pickSceneAccentColor(research.brand.colors);
-  const productAnchor = selectThreeDBreakdownProductAnchor(research);
+  const productAnchor = storySubject?.kind === "product"
+    ? selectThreeDBreakdownProductAnchor(research, storySubject.productHandle)
+    : storySubject?.kind === "brand" || storySubject?.kind === "customer-problem"
+      ? undefined
+      : selectThreeDBreakdownProductAnchor(research);
   if (
     variant.visualStyle === "presenter-teardown-vsl"
     && !productAnchor?.imageUrl
-    && !isBrandOriginStory(research, variant)
+    && (storySubject?.kind === "product" || (!storySubject && !isBrandOriginStory(research, variant)))
   ) {
     throw new Error(missingProductImageMessage);
   }
@@ -221,15 +210,17 @@ export function createThreeDBreakdownAdScene({
     .slice(0, 2);
   const firstBeat = variant.scriptBeats[0]!;
   const revelationBeat = variant.scriptBeats.find((beat) => beat.role === "revelation") || variant.scriptBeats[3]!;
-  const buyerCtaText = selectThreeDBreakdownBuyerCta({
+  const buyerCtaText = selectThreeDBreakdownCta({
     generatedCta: variant.ctaLine,
     siteCta: research.brandBrief.ctaDirection,
     productTitle: productAnchor?.title,
     brandName: research.brand.name,
+    subjectKind: storySubject?.kind,
   });
   if (!variant.storyboardBoard.frames?.length) throw new Error("3D Breakdown storyboard frames are missing.");
   const storyContract: ThreeDBreakdownAdScene["layout"]["storyContract"] = {
     ...siteContract,
+    ...(storySubject ? { storySubject } : {}),
     visualStyle: variant.visualStyle,
     variantAngle: variant.variantAngle,
     customerProblem: variant.customerProblem,

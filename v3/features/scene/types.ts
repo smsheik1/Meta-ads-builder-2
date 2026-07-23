@@ -1,4 +1,5 @@
 import type { BrandAdAngle, BrandSnapshot, ResearchReceipts } from "../research/types";
+import type { ThreeDBreakdownStorySubject } from "../formats/three-d-breakdown/storySubject";
 
 export const AD_SCENE_VERSION = 1 as const;
 
@@ -474,6 +475,7 @@ export type ThreeDBreakdownAdScene = AdSceneBase<
     productAnchor?: ThreeDBreakdownProductAnchor;
     finalVideo?: ThreeDBreakdownFinalVideo;
     storyContract: {
+      storySubject?: ThreeDBreakdownStorySubject;
       visualStyle: ThreeDBreakdownVisualStyle;
       primarySiteType: ThreeDBreakdownPrimarySiteType;
       riskFlags: ThreeDBreakdownRiskFlag[];
