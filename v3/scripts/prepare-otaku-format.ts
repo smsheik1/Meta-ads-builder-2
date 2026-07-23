@@ -28,7 +28,6 @@ type AssetManifest = {
 type AudioManifest = {
   provider: string;
   model: string;
-  voices: Record<string, string>;
   dialogue: { speed: number };
   music: { localPath: string; volume: number };
 };
@@ -271,12 +270,13 @@ async function prepareRun({
   const world = JSON.parse(await readFile(path.join(packageRoot, "worlds", `${source.input.storyWorld}.json`), "utf8")) as OtakuWorldPack;
   const layouts = JSON.parse(await readFile(path.join(packageRoot, "layouts.json"), "utf8")) as OtakuLayoutManifest;
   const scenes = materializeScenePlan(source, world, layouts);
+  const voices = Object.fromEntries(Object.values(world.roles).map((role) => [role.character, role.voice]));
   const outputId = runId;
   const voiceDirectory = path.join(packageRoot, "assets", "audio", outputId);
   const filledScenes: OtakuScene[] = [];
 
   for (const [index, scene] of scenes.entries()) {
-    const voiceId = audio.voices[scene.speaker];
+    const voiceId = voices[scene.speaker];
     if (!voiceId) throw new Error(`No Fish Audio voice is configured for ${scene.speaker}.`);
     const audioFile = `${scene.id}.wav`;
     const audioTarget = path.join(voiceDirectory, audioFile);

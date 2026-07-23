@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { PNG } from "pngjs";
 import {
@@ -38,8 +38,11 @@ type SourceScene = {
   callout?: { label: string; theme: string };
 };
 
-const sourceIds = ["naruto-compilers", "naruto-mcp", "yugioh-compilers"];
-for (const sourceId of sourceIds) {
+const sceneIds = readdirSync(path.join(packageRoot, "scenes"))
+  .filter((name) => name.endsWith(".json"))
+  .map((name) => name.replace(/\.json$/, ""))
+  .sort();
+for (const sourceId of sceneIds) {
   const source = readJson<OtakuScenePlan>(`scenes/${sourceId}.json`);
   const world = readJson<OtakuWorldPack>(`worlds/${source.input.storyWorld}.json`);
   const layouts = readJson<OtakuLayoutManifest>("layouts.json");
@@ -63,6 +66,28 @@ const assets = readJson<{
 for (const asset of [...assets.characters, ...assets.backgrounds]) {
   assert.ok(existsSync(path.join(packageRoot, asset.localPath)), `${asset.id} is missing its local asset.`);
 }
+const characterIds = new Set(assets.characters.map((asset) => asset.id));
+const backgroundIds = new Set(assets.backgrounds.map((asset) => asset.id));
+const worldFiles = readdirSync(path.join(packageRoot, "worlds")).filter((name) => name.endsWith(".json")).sort();
+for (const worldFile of worldFiles) {
+  const world = readJson<OtakuWorldPack>(`worlds/${worldFile}`);
+  for (const role of Object.values(world.roles)) {
+    assert.equal(characterIds.has(role.character), true, `${world.id} references missing character ${role.character}.`);
+  }
+  for (const background of world.backgrounds) {
+    assert.equal(backgroundIds.has(background), true, `${world.id} references missing background ${background}.`);
+  }
+}
+
+const inputs = readJson<{ fields: Array<{ id: string; source?: string; options?: string[] }> }>("inputs.json");
+const storyWorldInput = inputs.fields.find((field) => field.id === "storyWorld");
+assert.equal(storyWorldInput?.source, "worlds/*.json");
+assert.equal(storyWorldInput?.options, undefined);
+assert.equal(inputs.fields.some((field) => field.id === "cast"), false);
+
+const audio = readJson<Record<string, unknown>>("audio.json");
+assert.equal("voices" in audio, false, "World packs, not audio.json, must own voice assignments.");
+
 assert.equal(assets.characters.find((asset) => asset.id === "naruto")?.postprocess, "remove-white-and-trim");
 assert.equal(assets.characters.find((asset) => asset.id === "orochimaru")?.postprocess, "remove-white-and-trim");
 for (const assetId of ["yugi", "kaiba"]) {
@@ -78,7 +103,8 @@ for (const assetId of ["yugi", "kaiba"]) {
   assert.equal(opaqueBorderPixels, 0, `${assetId} must not keep a fake checkerboard background.`);
 }
 
-for (const sourceId of sourceIds) {
+const bundledAudioProofIds = ["naruto-compilers", "naruto-mcp", "yugioh-compilers"];
+for (const sourceId of bundledAudioProofIds) {
   const run = readJson<{
     renderer: string;
     rendererVersion: string;
@@ -95,10 +121,16 @@ for (const sourceId of sourceIds) {
 }
 
 const repositoryPage = readFileSync("app/format-lab/otaku-explainer/OtakuFormatRepositoryClient.tsx", "utf8");
+const repositoryServer = readFileSync("app/format-lab/otaku-explainer/page.tsx", "utf8");
 assert.match(repositoryPage, /Needs rerun/);
 assert.match(repositoryPage, /Local draft/);
 assert.match(repositoryPage, /Replace \$\{asset\.label\}/);
 assert.match(repositoryPage, /Copy rerun commands/);
+assert.match(repositoryPage, /worldFiles\.map/);
+assert.match(repositoryPage, /sceneFiles\.map/);
+assert.match(repositoryServer, /function readRepositoryFiles/);
+assert.match(repositoryServer, /function readOutputRuns/);
+assert.doesNotMatch(repositoryServer, /const runIds|world-naruto|world-spongebob/);
 assert.ok(existsSync(path.join(packageRoot, "SKILL.md")));
 assert.ok(existsSync(path.join(packageRoot, "requirements.json")));
 assert.ok(existsSync(path.join(packageRoot, "worlds", "naruto.json")));

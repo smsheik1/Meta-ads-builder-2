@@ -39,6 +39,14 @@ type AgentRun = {
   };
 };
 
+type FormatManifest = {
+  id: string;
+  version: string;
+  title: string;
+  description: string;
+  status: string;
+};
+
 const componentLinks = [
   ["agent-loop", "Agent loop"],
   ["instructions", "Instructions"],
@@ -56,12 +64,14 @@ export function OtakuFormatRepositoryClient({
   agentRuns,
   assets,
   files,
+  format,
   referenceVideo,
   runs,
 }: {
   agentRuns: AgentRun[];
   assets: Asset[];
   files: EditableFile[];
+  format: FormatManifest;
   referenceVideo: string;
   runs: Run[];
 }) {
@@ -78,6 +88,8 @@ export function OtakuFormatRepositoryClient({
   const dirtyOutputs = runs.filter((run) => !outputValues[run.id]).length;
   const dirtyCount = dirtyTextFiles + dirtyAssets + dirtyOutputs;
   const needsRerun = dirtyTextFiles + dirtyAssets > 0;
+  const worldFiles = files.filter((candidate) => candidate.id.startsWith("world-"));
+  const sceneFiles = files.filter((candidate) => candidate.id.startsWith("scene-"));
   const statusText = needsRerun
     ? `Needs rerun · ${dirtyCount} change${dirtyCount === 1 ? "" : "s"}`
     : dirtyOutputs > 0
@@ -129,7 +141,7 @@ export function OtakuFormatRepositoryClient({
   };
 
   const copyRerunCommand = async () => {
-    await navigator.clipboard.writeText("npm run prototype:otaku:prepare -- --run=naruto-compilers\nnpm run prototype:otaku:prepare -- --run=naruto-mcp\nnpm run prototype:otaku:prepare -- --run=yugioh-compilers\nnpm run prototype:otaku:render");
+    await navigator.clipboard.writeText("npm run prototype:otaku -- validate --run=<run-id>\nnpm run prototype:otaku -- render --run=<run-id> --approve-loop\nnpm run prototype:otaku -- inspect --run=<run-id>\nnpm run prototype:otaku -- finalize --run=<run-id>");
     setCopied(true);
   };
 
@@ -139,9 +151,9 @@ export function OtakuFormatRepositoryClient({
         <div className="mx-auto max-w-7xl px-5 py-4">
           <p className="text-sm text-slate-400">Wiggly / Format Lab /</p>
           <div className="mt-1 flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold">otaku-explainer</h1>
-            <Badge variant="secondary">experimental</Badge>
-            <span className="text-sm text-slate-400">v1.2.0</span>
+            <h1 className="text-2xl font-bold">{format.id}</h1>
+            <Badge variant="secondary">{format.status}</Badge>
+            <span className="text-sm text-slate-400">v{format.version}</span>
           </div>
         </div>
       </header>
@@ -162,8 +174,8 @@ export function OtakuFormatRepositoryClient({
           <section className="rounded-lg border border-slate-300 bg-white p-5 shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="max-w-3xl">
-                <h2 className="text-xl font-bold">Anime characters teach a real idea through their own story world.</h2>
-                <p className="mt-2 text-slate-600">This is a real reusable kit: instructions, inputs, assets, prompts, scenes, renderer, voices, checks, and finished runs.</p>
+                <h2 className="text-xl font-bold">{format.title}</h2>
+                <p className="mt-2 text-slate-600">{format.description}</p>
               </div>
               <Badge className={needsRerun || dirtyOutputs > 0 ? "bg-amber-500 text-black" : "bg-emerald-600"} data-testid="rerun-status">
                 {statusText}
@@ -198,9 +210,7 @@ export function OtakuFormatRepositoryClient({
             </div>
             {renderFile("agent-skill")}
             {renderFile("requirements")}
-            {renderFile("world-naruto")}
-            {renderFile("world-yugioh")}
-            {renderFile("world-danny")}
+            {worldFiles.map((worldFile) => <div key={worldFile.id}>{renderFile(worldFile.id)}</div>)}
             {renderFile("layouts")}
           </section>
 
@@ -212,11 +222,9 @@ export function OtakuFormatRepositoryClient({
             <div className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm">
               <h2 className="font-bold">What this proves</h2>
               <ol className="mt-4 grid gap-3 text-sm">
-                <li className="rounded-md bg-slate-100 p-3"><strong>1. Rebuild:</strong> Naruto teaches compilers and interpreters.</li>
-                <li className="rounded-md bg-slate-100 p-3"><strong>2. New topic:</strong> The Naruto world teaches MCP.</li>
-                <li className="rounded-md bg-slate-100 p-3"><strong>3. New world:</strong> Yu-Gi-Oh teaches the original compiler lesson.</li>
-                <li className="rounded-md bg-slate-100 p-3"><strong>4. Agent control:</strong> The Repo teaches an agent to make Naruto explain APIs.</li>
-                <li className="rounded-md bg-slate-100 p-3"><strong>5. Agent portability:</strong> The agent researches Danny Phantom and teaches the same lesson without changing the renderer.</li>
+                <li className="rounded-md bg-slate-100 p-3"><strong>Rebuild:</strong> Recreate the reference format with a reusable scene contract.</li>
+                <li className="rounded-md bg-slate-100 p-3"><strong>New topic:</strong> Teach a different lesson without changing the renderer.</li>
+                <li className="rounded-md bg-slate-100 p-3"><strong>New world:</strong> Research and package different characters without adding world-specific code.</li>
               </ol>
             </div>
           </section>
@@ -270,11 +278,7 @@ export function OtakuFormatRepositoryClient({
 
           <section id="scene-slots" className="scroll-mt-5 space-y-3">
             <h2 className="text-xl font-bold">6. Scene slots</h2>
-            {renderFile("naruto-compilers-scenes")}
-            {renderFile("naruto-mcp-scenes")}
-            {renderFile("yugioh-compilers-scenes")}
-            {renderFile("naruto-apis-scenes")}
-            {renderFile("danny-apis-scenes")}
+            {sceneFiles.map((sceneFile) => <div key={sceneFile.id}>{renderFile(sceneFile.id)}</div>)}
           </section>
 
           <section id="renderer" className="scroll-mt-5 space-y-3">

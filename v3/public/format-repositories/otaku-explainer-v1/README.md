@@ -1,6 +1,6 @@
 # Otaku Explainer
 
-Turn a technical lesson into a short anime conversation. A curious lead asks the obvious questions, an expert explains the idea through the story world, and a third character adds tension or a joke.
+Turn a real lesson into a short conversation between familiar characters. A curious lead asks the obvious questions, an expert explains the idea through the story world, and a third character adds tension or a joke.
 
 This package is the first Wiggly Format repository experiment. It contains the instructions, inputs, assets, prompts, scene slots, renderer, audio rules, quality checks, and exact run records needed to recreate its outputs.
 
@@ -9,12 +9,12 @@ An agent can operate the package without an OpenRouter planning call. Start with
 ## Formula
 
 1. Open with a question that names the confusing idea.
-2. Explain the first side of the comparison with a story-world object.
-3. Explain the second side with a contrasting story-world object.
-4. Show when each approach is useful.
-5. End with the lead character saying the lesson back in one simple line.
+2. Explain it one step at a time through story-world objects and actions.
+3. Let the challenger introduce a believable mistake, warning, or joke.
+4. Correct the mistake and complete the lesson.
+5. End with the lead character saying the core idea back in one simple line.
 
-Each scene uses the same visual grammar: a slowly panning anime background, two or three grounded character cutouts, one visible speaker, one speech bubble, and an optional short callout.
+Each scene uses the same visual grammar: a slowly panning story-world background, two or three grounded character cutouts, one visible speaker, one speech bubble, and an optional short callout.
 
 Scene writers choose lesson roles and an approved layout. `worlds/*.json` maps the roles to characters and voices, while `layouts.json` owns the coordinates. This keeps a new topic from inventing a new renderer.
 
@@ -31,17 +31,13 @@ npm run prototype:otaku -- inspect --run=<run-id>
 npm run prototype:otaku -- finalize --run=<run-id>
 ```
 
-The Fish key stays in `v3/.env.local`. Serper is needed only when an approved run adds a new story world. `SKILL.md` tells the agent how to research lore, choose voices, source and inspect assets, and create the world pack without adding another command or changing the renderer. The package never needs OpenRouter, Replicate, a GPU, image generation, or video generation.
+The Fish key stays in `v3/.env.local`. Serper is needed only when a run adds a new story world. `SKILL.md` tells the agent how to research lore, choose voices, source and inspect assets, and create the world pack without adding another command or changing the renderer. The package never needs OpenRouter, Replicate, a GPU, image generation, or video generation.
 
 ## Proof runs
 
-- Naruto explains compilers versus interpreters.
-- Naruto explains MCP through Naruto lore.
-- Yu-Gi-Oh explains compilers versus interpreters through Yu-Gi-Oh lore.
-- Naruto explains APIs in the agent-operated control run.
-- Danny Phantom explains the same API lesson after the agent researches and packages that world.
+The Format page discovers every packaged world from `worlds/*.json`, every scene plan from `scenes/*.json`, and every finished proof from `outputs/*.run.json`. These files are the source of truth; the README and page do not maintain separate lists.
 
-All five runs use the same scene contract and `renderer/OtakuFormatRenderer.tsx`. The two API videos and their quality reports are tracked proof that the agent loop works across story worlds.
+Every proof uses the same scene contract and `renderer/OtakuFormatRenderer.tsx`. The tracked videos, contact sheets, run records, and quality reports show whether the agent loop works across topics and story worlds.
 
 ## Editing
 

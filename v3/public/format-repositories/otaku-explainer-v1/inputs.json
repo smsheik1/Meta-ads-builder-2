@@ -9,20 +9,13 @@
     {
       "id": "storyWorld",
       "label": "Which story world should teach it?",
-      "type": "select",
+      "type": "story-world",
       "required": true,
-      "options": ["Naruto", "Yu-Gi-Oh"]
-    },
-    {
-      "id": "cast",
-      "label": "Who is in the conversation?",
-      "type": "character-list",
-      "required": true
+      "source": "worlds/*.json"
     }
   ],
   "defaults": {
     "topic": "Compilers versus interpreters",
-    "storyWorld": "Naruto",
-    "cast": ["Naruto", "Kakashi", "Orochimaru"]
+    "storyWorld": "naruto"
   }
 }

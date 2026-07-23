@@ -37,31 +37,62 @@ type AgentRunState = {
   finalAttempt?: number;
 };
 
-const textFiles = [
+type FormatManifest = {
+  id: string;
+  version: string;
+  title: string;
+  description: string;
+  status: string;
+};
+
+const coreTextFiles = [
   { id: "instructions", label: "Format instructions", path: "README.md", description: "What this Format does and how to run it." },
   { id: "agent-skill", label: "Agent skill", path: "SKILL.md", description: "The complete loop an agent follows without the user explaining the Format." },
   { id: "requirements", label: "Requirements", path: "requirements.json", description: "The key names and local tools needed, without any secret values." },
-  { id: "world-naruto", label: "Naruto world pack", path: "worlds/naruto.json", description: "Lesson roles mapped to Naruto characters, voices, backgrounds, and lore." },
-  { id: "world-yugioh", label: "Yu-Gi-Oh world pack", path: "worlds/yugioh.json", description: "The same lesson roles mapped to a different packaged story world." },
-  { id: "world-danny", label: "Danny Phantom world pack", path: "worlds/danny-phantom.json", description: "A world pack researched and assembled by the agent from the Repo instructions." },
-  { id: "world-spongebob", label: "SpongeBob world pack", path: "worlds/spongebob.json", description: "A second agent-researched world pack proving the same Repo can teach a new subject outside anime." },
   { id: "layouts", label: "Approved layouts", path: "layouts.json", description: "Reusable two- and three-character positions. Scene writers do not invent coordinates." },
-  { id: "inputs", label: "User inputs", path: "inputs.json", description: "The topic, story world, and cast the Format needs." },
+  { id: "inputs", label: "User inputs", path: "inputs.json", description: "The topic and story world the Format needs. The world pack supplies the cast." },
   { id: "assets", label: "Fixed assets", path: "assets.json", description: "Character cutouts, backgrounds, source links, and local files." },
   { id: "script-prompt", label: "Script prompt", path: "prompts/script-system.md", description: "How the lesson becomes dialogue that fits the story world." },
   { id: "image-prompt", label: "Image search rules", path: "prompts/image-search.md", description: "How to find grounded backgrounds and clean character art." },
-  { id: "naruto-compilers-scenes", label: "Naruto compiler scenes", path: "scenes/naruto-compilers.json", description: "The scene-by-scene plan for the close reconstruction." },
-  { id: "naruto-mcp-scenes", label: "Naruto MCP scenes", path: "scenes/naruto-mcp.json", description: "The same Format teaching a new topic." },
-  { id: "yugioh-compilers-scenes", label: "Yu-Gi-Oh compiler scenes", path: "scenes/yugioh-compilers.json", description: "The same lesson moved into a different story world." },
-  { id: "naruto-apis-scenes", label: "Naruto API scenes", path: "scenes/naruto-apis.json", description: "The control run created by the agent from the Format instructions." },
-  { id: "danny-apis-scenes", label: "Danny Phantom API scenes", path: "scenes/danny-apis.json", description: "The same API lesson moved into a world the agent researched itself." },
-  { id: "spongebob-evs-scenes", label: "SpongeBob EV scenes", path: "scenes/spongebob-evs.json", description: "A fresh EV lesson written after the agent assembled the SpongeBob world pack." },
   { id: "renderer", label: "Renderer", path: "renderer/OtakuFormatRenderer.tsx", description: "The visual rules: moving background, characters, bubble, props, and active speaker." },
-  { id: "audio", label: "Audio setup", path: "audio.json", description: "Voice IDs, Fish model, speaking speed, and music level." },
+  { id: "audio", label: "Audio setup", path: "audio.json", description: "Shared Fish model, speaking speed, and default music. World packs own their voices." },
   { id: "quality", label: "Quality checks", path: "quality.json", description: "The checks every rerun should pass." },
-].map((file) => ({ ...file, value: readText(file.path) }));
+];
 
-const runIds = ["naruto-compilers", "naruto-mcp", "yugioh-compilers", "naruto-apis", "danny-apis", "spongebob-evs"];
+function readRepositoryFiles() {
+  const worlds = readdirSync(path.join(packagePath, "worlds"))
+    .filter((name) => name.endsWith(".json"))
+    .sort()
+    .map((name) => {
+      const world = readJson<{ id: string; label: string }>(`worlds/${name}`);
+      return {
+        id: `world-${world.id}`,
+        label: `${world.label} world pack`,
+        path: `worlds/${name}`,
+        description: "Lesson roles mapped to characters, voices, backgrounds, lore, and music.",
+      };
+    });
+  const scenes = readdirSync(path.join(packagePath, "scenes"))
+    .filter((name) => name.endsWith(".json"))
+    .sort()
+    .map((name) => {
+      const scenePlan = readJson<{ id: string; title: string }>(`scenes/${name}`);
+      return {
+        id: `scene-${scenePlan.id}`,
+        label: scenePlan.title,
+        path: `scenes/${name}`,
+        description: "A validated scene-by-scene lesson plan.",
+      };
+    });
+  return [...coreTextFiles, ...worlds, ...scenes].map((file) => ({ ...file, value: readText(file.path) }));
+}
+
+function readOutputRuns() {
+  return readdirSync(path.join(packagePath, "outputs"))
+    .filter((name) => name.endsWith(".run.json"))
+    .sort()
+    .map((name) => readJson<RunRecord>(`outputs/${name}`));
+}
 
 function readAgentRuns() {
   const root = path.join(packagePath, "agent-runs");
@@ -88,8 +119,10 @@ function readAgentRuns() {
 }
 
 export default function OtakuExplainerFormatPage() {
+  const format = readJson<FormatManifest>("format.json");
   const assets = readJson<AssetManifest>("assets.json");
-  const runs = runIds.map((runId) => readJson<RunRecord>(`outputs/${runId}.run.json`));
+  const files = readRepositoryFiles();
+  const runs = readOutputRuns();
   const agentRuns = readAgentRuns();
 
   return (
@@ -98,7 +131,8 @@ export default function OtakuExplainerFormatPage() {
         ...asset,
         src: `/format-repositories/otaku-explainer-v1/${asset.localPath}`,
       }))}
-      files={textFiles}
+      files={files}
+      format={format}
       agentRuns={agentRuns}
       referenceVideo="/format-repositories/otaku-explainer-v1/assets/reference/reference.mp4"
       runs={runs.map((run) => ({

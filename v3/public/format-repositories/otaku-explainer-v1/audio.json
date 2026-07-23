@@ -1,17 +1,6 @@
 {
   "provider": "fish-audio",
   "model": "s2.1-pro-free",
-  "voices": {
-    "naruto": "c658e20af0364df6b73bdcef998b6a8b",
-    "kakashi": "6fb91544d42b4d57a5b408c398459237",
-    "orochimaru": "8ecce156f83e4fa0bb75f99b30894e63",
-    "yugi": "a27f617599df41f9aa6e95bb57ac69ba",
-    "kaiba": "710a3478dcc4477d8aae292c2de85964",
-    "joey": "2ef97f8ba13a4f71a7e291a3998af362",
-    "danny-phantom": "14f06ac475944bb7a0ef5cc958f07462",
-    "tucker-foley": "e3e1212180ee4f87ab0730db54d1a8e2",
-    "vlad-plasmius": "23231b8547f04d79bebc51bb2a23b5ab"
-  },
   "dialogue": {
     "format": "wav",
     "sampleRate": 44100,

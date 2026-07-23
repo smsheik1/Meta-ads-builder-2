@@ -2,7 +2,7 @@
   "id": "otaku-explainer",
   "version": "1.2.0-experiment",
   "title": "Otaku Explainer",
-  "description": "Anime characters explain a technical idea through their own story world.",
+  "description": "Familiar characters explain a real idea through their own story world.",
   "status": "experimental",
   "canvas": { "width": 720, "height": 1280, "fps": 30 },
   "components": [

@@ -1,6 +1,6 @@
 ---
 name: otaku-explainer-format
-description: Use the Otaku Explainer Format to make a short anime-world lesson video without asking the user to explain how the Format works.
+description: Use the Otaku Explainer Format to make a short story-world lesson video without asking the user to explain how the Format works.
 ---
 
 # Otaku Explainer Agent Loop
