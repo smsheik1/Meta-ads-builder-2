@@ -44,6 +44,7 @@ const textFiles = [
   { id: "world-naruto", label: "Naruto world pack", path: "worlds/naruto.json", description: "Lesson roles mapped to Naruto characters, voices, backgrounds, and lore." },
   { id: "world-yugioh", label: "Yu-Gi-Oh world pack", path: "worlds/yugioh.json", description: "The same lesson roles mapped to a different packaged story world." },
   { id: "world-danny", label: "Danny Phantom world pack", path: "worlds/danny-phantom.json", description: "A world pack researched and assembled by the agent from the Repo instructions." },
+  { id: "world-spongebob", label: "SpongeBob world pack", path: "worlds/spongebob.json", description: "A second agent-researched world pack proving the same Repo can teach a new subject outside anime." },
   { id: "layouts", label: "Approved layouts", path: "layouts.json", description: "Reusable two- and three-character positions. Scene writers do not invent coordinates." },
   { id: "inputs", label: "User inputs", path: "inputs.json", description: "The topic, story world, and cast the Format needs." },
   { id: "assets", label: "Fixed assets", path: "assets.json", description: "Character cutouts, backgrounds, source links, and local files." },
@@ -54,12 +55,13 @@ const textFiles = [
   { id: "yugioh-compilers-scenes", label: "Yu-Gi-Oh compiler scenes", path: "scenes/yugioh-compilers.json", description: "The same lesson moved into a different story world." },
   { id: "naruto-apis-scenes", label: "Naruto API scenes", path: "scenes/naruto-apis.json", description: "The control run created by the agent from the Format instructions." },
   { id: "danny-apis-scenes", label: "Danny Phantom API scenes", path: "scenes/danny-apis.json", description: "The same API lesson moved into a world the agent researched itself." },
+  { id: "spongebob-evs-scenes", label: "SpongeBob EV scenes", path: "scenes/spongebob-evs.json", description: "A fresh EV lesson written after the agent assembled the SpongeBob world pack." },
   { id: "renderer", label: "Renderer", path: "renderer/OtakuFormatRenderer.tsx", description: "The visual rules: moving background, characters, bubble, props, and active speaker." },
   { id: "audio", label: "Audio setup", path: "audio.json", description: "Voice IDs, Fish model, speaking speed, and music level." },
   { id: "quality", label: "Quality checks", path: "quality.json", description: "The checks every rerun should pass." },
 ].map((file) => ({ ...file, value: readText(file.path) }));
 
-const runIds = ["naruto-compilers", "naruto-mcp", "yugioh-compilers", "naruto-apis", "danny-apis"];
+const runIds = ["naruto-compilers", "naruto-mcp", "yugioh-compilers", "naruto-apis", "danny-apis", "spongebob-evs"];
 
 function readAgentRuns() {
   const root = path.join(packagePath, "agent-runs");

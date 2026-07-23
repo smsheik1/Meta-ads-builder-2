@@ -81,6 +81,20 @@ const backgroundIds = new Set(assetManifest.backgrounds.map((asset) => asset.id)
 for (const role of Object.values(dannyWorld.roles)) assert.equal(characterIds.has(role.character), true);
 for (const background of dannyWorld.backgrounds) assert.equal(backgroundIds.has(background), true);
 
+const spongebobPlan = readJson<OtakuScenePlan>("scenes/spongebob-evs.json");
+const spongebobWorld = readJson<OtakuWorldPack>("worlds/spongebob.json");
+assert.deepEqual(validateScenePlan(spongebobPlan, spongebobWorld, layouts), []);
+assert.equal(spongebobWorld.music?.localPath, "assets/audio/spongebob-background.mp3");
+const spongebobRun = readJson<{ musicPath: string }>("outputs/spongebob-evs.run.json");
+assert.match(spongebobRun.musicPath, /spongebob-background\.mp3$/);
+const spongebobScenes = materializeScenePlan(spongebobPlan, spongebobWorld, layouts);
+assert.deepEqual(
+  [spongebobScenes[0].speaker, spongebobScenes[1].speaker, spongebobScenes[7].speaker],
+  ["spongebob", "sandy-cheeks", "plankton"],
+);
+for (const role of Object.values(spongebobWorld.roles)) assert.equal(characterIds.has(role.character), true);
+for (const background of spongebobWorld.backgrounds) assert.equal(backgroundIds.has(background), true);
+
 const invalid = structuredClone(plan);
 invalid.scenes[0].visibleRoles = ["guide", "guide"];
 invalid.scenes[0].layout = "invented-layout";

@@ -20,7 +20,7 @@ npm run prototype:otaku -- inspect --run=<run-id>
 npm run prototype:otaku -- finalize --run=<run-id>
 ```
 
-`--approve-loop` may be used only after the user approves one initial render and up to two focused improvement renders. That approval is recorded without storing secrets.
+`--approve-loop` records permission for one initial render and up to two focused improvement renders without storing secrets. If the configured voice model is free and the user already asked the agent to make the video, that request is enough; do not interrupt them for another approval. Ask first when a provider may charge money.
 
 ## Required loop
 
@@ -29,7 +29,7 @@ npm run prototype:otaku -- finalize --run=<run-id>
 3. Run `init`, then write 12–18 short scene records in the new run's `scene-plan.json`.
 4. Use only packaged role names, backgrounds, layout IDs, and assets. Do not invent character coordinates.
 5. Run `validate` before any media call. Fix every validation error first.
-6. Show the user the scene plan, scene count, cast, and estimated duration. Ask once for approval covering no more than three total render attempts.
+6. Show the user the scene plan, scene count, cast, and estimated duration. If any media call may cost money, ask once for approval covering no more than three total render attempts.
 7. Run `render --approve-loop` for the first attempt. Later attempts use `render` without that flag.
 8. Run `inspect`. Look at the full video and contact sheet. Record only concrete problems in `quality-report.json`.
 9. Fix only the problems you found. Do not rewrite good scenes. Render and inspect again when needed.

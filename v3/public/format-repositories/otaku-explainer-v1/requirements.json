@@ -3,7 +3,7 @@
     {
       "name": "FISH_STUDIO_APIKEY",
       "requiredFor": ["render"],
-      "description": "Generates one voice clip for each scene."
+      "description": "Generates one free S2.1 Pro voice clip for each scene."
     },
     {
       "name": "SERPER_API_KEY",

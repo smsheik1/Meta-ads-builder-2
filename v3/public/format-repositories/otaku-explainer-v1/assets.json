@@ -75,6 +75,30 @@
       "searchQuery": "Vlad Plasmius full body transparent png render",
       "sourcePage": "https://dannyphantom.fandom.com/wiki/Vlad_Plasmius",
       "sourceUrl": "https://static.wikia.nocookie.net/dpwikia/images/6/67/Render-_Vlad_Plasmius_pose.png/revision/latest?cb=20260610224348"
+    },
+    {
+      "id": "spongebob",
+      "label": "SpongeBob SquarePants",
+      "localPath": "assets/images/spongebob.webp",
+      "searchQuery": "SpongeBob full body transparent PNG stock art",
+      "sourcePage": "https://spongebob.fandom.com/wiki/SpongeBob_SquarePants_(character)/gallery",
+      "sourceUrl": "https://static.wikia.nocookie.net/spongebob/images/5/5f/SpongeBobStockArt-2D.png/revision/latest?cb=20251102074746"
+    },
+    {
+      "id": "sandy-cheeks",
+      "label": "Sandy Cheeks",
+      "localPath": "assets/images/sandy-cheeks.png",
+      "searchQuery": "Sandy Cheeks full body spacesuit transparent PNG render",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Sandy_Cheeks_(transparent).png",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Sandy_Cheeks_%28transparent%29.png/500px-Sandy_Cheeks_%28transparent%29.png"
+    },
+    {
+      "id": "plankton",
+      "label": "Plankton",
+      "localPath": "assets/images/plankton.webp",
+      "searchQuery": "Plankton full body transparent PNG stock art",
+      "sourcePage": "https://spongebob.fandom.com/wiki/Sheldon_J._Plankton/gallery",
+      "sourceUrl": "https://static.wikia.nocookie.net/spongebob/images/7/7a/Laughton.png/revision/latest?cb=20221113005908"
     }
   ],
   "backgrounds": [
@@ -149,6 +173,30 @@
       "searchQuery": "Danny Phantom Ghost Zone landscape ground background no characters wide",
       "sourcePage": "https://www.ign.com/wikis/nick-all-star-brawl/Ghost_Zone",
       "sourceUrl": "https://oyster.ignimgs.com/mediawiki/apis.ign.com/nick-all-star-brawl/1/19/Ghost_Zone.jpg"
+    },
+    {
+      "id": "bikini-bottom",
+      "label": "Bikini Bottom",
+      "localPath": "assets/images/bg-bikini-bottom.webp",
+      "searchQuery": "SpongeBob Bikini Bottom city background no characters wide",
+      "sourcePage": "https://spongebob.fandom.com/wiki/Bikini_Bottom",
+      "sourceUrl": "https://static.wikia.nocookie.net/spongebob/images/2/26/Bubbletown_002.png/revision/latest/scale-to-width-down/1200?cb=20181028171458"
+    },
+    {
+      "id": "sandy-treedome",
+      "label": "Sandy's treedome",
+      "localPath": "assets/images/bg-sandy-treedome.webp",
+      "searchQuery": "Sandy treedome exterior background no characters wide",
+      "sourcePage": "https://spongebob.fandom.com/wiki/Sandy_Cheeks%27_treedome",
+      "sourceUrl": "https://static.wikia.nocookie.net/spongebob/images/f/f2/Sandy%2C_Help_Us%21_002.png/revision/latest/scale-to-width-down/1200?cb=20231007030731"
+    },
+    {
+      "id": "boating-school",
+      "label": "Mrs. Puff's Boating School",
+      "localPath": "assets/images/bg-boating-school.webp",
+      "searchQuery": "Mrs. Puff Boating School exterior background no characters wide",
+      "sourcePage": "https://spongebob.fandom.com/wiki/Mrs._Puff%27s_Boating_School",
+      "sourceUrl": "https://static.wikia.nocookie.net/spongebob/images/1/12/Lighthouse_Louie_001.png/revision/latest?cb=20200527190216"
     }
   ]
 }

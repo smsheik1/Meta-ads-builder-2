@@ -11,8 +11,11 @@ The Wiggly Repo successfully taught an agent to make a new lesson, research a ne
 | Yu-Gi-Oh explains compilers vs interpreters | Same lesson, packaged world swap | 18 | 1:04 | 1 | Pass |
 | Naruto explains APIs | Agent-operated control run | 15 | 1:08 | 1 | Pass |
 | Danny Phantom explains APIs | Agent-researched world swap | 15 | 1:10 | 1 | Pass |
+| SpongeBob explains EVs | New world and new lesson | 15 | 1:02 | 2 | Pass |
 
 The Danny proof is the important result: the agent started with no Danny pack, researched the show and lore, selected voices, sourced and inspected six assets, wrote the lesson, validated it, rendered it, inspected it, and finalized it through the Repo instructions.
+
+The SpongeBob proof goes one step further: the agent changed both the story world and the lesson while keeping the renderer, runner, layouts, and scene contract unchanged. The first attempt exposed a short music loop; the second attempt changed only that asset and passed.
 
 ## Cross-world proof
 
@@ -31,6 +34,14 @@ The run used Naruto as learner, Kakashi as guide, and Orochimaru as challenger. 
 [Watch Danny Phantom explain APIs](outputs/danny-apis.mp4)
 
 The lesson maps the Fenton Portal to an API doorway, portal commands to requests, controls to endpoints, returned results to responses, details to parameters, and access keys to authentication. Danny, Tucker, and Vlad stay inside their intended lesson roles.
+
+### SpongeBob portability test
+
+![SpongeBob explains EVs](outputs/spongebob-evs-contact-sheet.jpg)
+
+[Watch SpongeBob explain EVs](outputs/spongebob-evs.mp4)
+
+SpongeBob learns how an electric boatmobile works, Sandy explains the battery, controller, inverter, motor, charging, and regenerative braking, and Plankton proposes a bad shortcut for Sandy to correct. The run used the existing layouts without adding SpongeBob-specific renderer code.
 
 ## New world evidence
 
