@@ -1,0 +1,250 @@
+{
+  "id": "naruto-mcp",
+  "title": "Naruto explains MCP",
+  "input": {
+    "topic": "Model Context Protocol",
+    "storyWorld": "naruto"
+  },
+  "scenes": [
+    {
+      "id": "nm-01",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-first-focus",
+      "dialogue": "Kakashi Sensei... why can't every AI tool just share its stuff?",
+      "background": "konoha",
+      "estimatedDurationMs": 3900,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
+    },
+    {
+      "id": "nm-02",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Each tool guards its data like a different ninja village.",
+      "background": "training-ground",
+      "estimatedDurationMs": 3400,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
+    },
+    {
+      "id": "nm-03",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-first-focus",
+      "dialogue": "So Claude needs a new jutsu for every app?",
+      "background": "naruto-forest",
+      "estimatedDurationMs": 3000,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
+    },
+    {
+      "id": "nm-04",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Exactly. One for files. One for Slack. One for a database.",
+      "background": "konoha",
+      "estimatedDurationMs": 3900,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
+    },
+    {
+      "id": "nm-05",
+      "speakerRole": "challenger",
+      "visibleRoles": [
+        "challenger",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "That is where MCP becomes interesting.",
+      "background": "naruto-forest",
+      "estimatedDurationMs": 2900,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
+    },
+    {
+      "id": "nm-06",
+      "speakerRole": "challenger",
+      "visibleRoles": [
+        "challenger",
+        "guide"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Think of MCP as one scroll format every village can read.",
+      "background": "training-ground",
+      "estimatedDurationMs": 3600,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
+    },
+    {
+      "id": "nm-07",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-first-focus",
+      "dialogue": "The same scroll can ask for tools, files, and data?",
+      "background": "konoha",
+      "estimatedDurationMs": 3300,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
+    },
+    {
+      "id": "nm-08",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Yes. The AI is the shinobi asking for help.",
+      "background": "naruto-forest",
+      "estimatedDurationMs": 3200,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
+    },
+    {
+      "id": "nm-09",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "An MCP server is the village gate offering approved tools.",
+      "background": "training-ground",
+      "estimatedDurationMs": 3500,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
+    },
+    {
+      "id": "nm-10",
+      "speakerRole": "challenger",
+      "visibleRoles": [
+        "challenger",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "It tells the AI what exists and how to use it.",
+      "background": "konoha",
+      "estimatedDurationMs": 3300,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
+    },
+    {
+      "id": "nm-11",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-first-focus",
+      "dialogue": "So I don't rebuild the road every time?",
+      "background": "naruto-forest",
+      "estimatedDurationMs": 2800,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
+    },
+    {
+      "id": "nm-12",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Right. Add a server, and the AI gets new abilities.",
+      "background": "training-ground",
+      "estimatedDurationMs": 3400,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
+    },
+    {
+      "id": "nm-13",
+      "speakerRole": "challenger",
+      "visibleRoles": [
+        "challenger",
+        "guide"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "But the village gate still decides what the AI may touch.",
+      "background": "konoha",
+      "estimatedDurationMs": 3600,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
+    },
+    {
+      "id": "nm-14",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-first-focus",
+      "dialogue": "One common rulebook... and many powerful jutsu.",
+      "background": "naruto-forest",
+      "estimatedDurationMs": 3100,
+      "callout": {
+        "label": "MCP",
+        "theme": "violet"
+      }
+    },
+    {
+      "id": "nm-15",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-first-focus",
+      "dialogue": "Dattebayo... MCP is basically the ninja network for AI!",
+      "background": "training-ground",
+      "estimatedDurationMs": 3700,
+      "callout": {
+        "label": "DUEL",
+        "theme": "gold"
+      }
+    }
+  ]
+}

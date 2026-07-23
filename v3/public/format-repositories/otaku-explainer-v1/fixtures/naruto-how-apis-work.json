@@ -1,0 +1,156 @@
+{
+  "id": "naruto-how-apis-work",
+  "title": "Naruto explains how APIs work",
+  "input": {
+    "topic": "How APIs work",
+    "storyWorld": "naruto"
+  },
+  "scenes": [
+    {
+      "id": "api-01",
+      "speakerRole": "learner",
+      "visibleRoles": ["learner", "guide"],
+      "layout": "two-balanced",
+      "dialogue": "Kakashi Sensei, how do two apps talk without sharing everything?",
+      "background": "konoha",
+      "estimatedDurationMs": 3600,
+      "callout": { "label": "API?", "theme": "question" }
+    },
+    {
+      "id": "api-02",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner"],
+      "layout": "two-balanced",
+      "dialogue": "They use an API, like a mission desk with a clear list of requests.",
+      "background": "training-ground",
+      "estimatedDurationMs": 3900,
+      "callout": { "label": "MISSION DESK", "theme": "cool" }
+    },
+    {
+      "id": "api-03",
+      "speakerRole": "learner",
+      "visibleRoles": ["learner", "guide"],
+      "layout": "two-first-focus",
+      "dialogue": "So I ask the desk instead of running into the secret scroll room?",
+      "background": "konoha",
+      "estimatedDurationMs": 3900
+    },
+    {
+      "id": "api-04",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner"],
+      "layout": "two-balanced",
+      "dialogue": "Right. Your app sends a request that says exactly what it needs.",
+      "background": "training-ground",
+      "estimatedDurationMs": 3600,
+      "callout": { "label": "REQUEST", "theme": "warm" }
+    },
+    {
+      "id": "api-05",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner"],
+      "layout": "two-first-focus",
+      "dialogue": "The other app does the work and sends back a response.",
+      "background": "naruto-forest",
+      "estimatedDurationMs": 3400,
+      "callout": { "label": "RESPONSE", "theme": "cool" }
+    },
+    {
+      "id": "api-06",
+      "speakerRole": "learner",
+      "visibleRoles": ["learner", "guide"],
+      "layout": "two-balanced",
+      "dialogue": "Where do I send the request?",
+      "background": "konoha",
+      "estimatedDurationMs": 2500,
+      "callout": { "label": "WHERE?", "theme": "question" }
+    },
+    {
+      "id": "api-07",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner"],
+      "layout": "two-balanced",
+      "dialogue": "To an endpoint. Think of it as the right window at the mission desk.",
+      "background": "training-ground",
+      "estimatedDurationMs": 3900,
+      "callout": { "label": "ENDPOINT", "theme": "violet" }
+    },
+    {
+      "id": "api-08",
+      "speakerRole": "challenger",
+      "visibleRoles": ["challenger", "learner", "guide"],
+      "layout": "three-balanced",
+      "dialogue": "And the desk should not obey every stranger who walks in.",
+      "background": "naruto-forest",
+      "estimatedDurationMs": 3500,
+      "callout": { "label": "AUTH", "theme": "gold" }
+    },
+    {
+      "id": "api-09",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner"],
+      "layout": "two-balanced",
+      "dialogue": "That is why many APIs check a key or token before helping.",
+      "background": "training-ground",
+      "estimatedDurationMs": 3600
+    },
+    {
+      "id": "api-10",
+      "speakerRole": "learner",
+      "visibleRoles": ["learner", "guide"],
+      "layout": "two-first-focus",
+      "dialogue": "Can my request include details, like which mission I want?",
+      "background": "konoha",
+      "estimatedDurationMs": 3500
+    },
+    {
+      "id": "api-11",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner"],
+      "layout": "two-balanced",
+      "dialogue": "Yes. Those details are parameters, like a mission name and rank.",
+      "background": "training-ground",
+      "estimatedDurationMs": 3700,
+      "callout": { "label": "DETAILS", "theme": "warm" }
+    },
+    {
+      "id": "api-12",
+      "speakerRole": "challenger",
+      "visibleRoles": ["challenger", "learner"],
+      "layout": "two-balanced",
+      "dialogue": "If you ask for a missing scroll, the response returns an error.",
+      "background": "naruto-forest",
+      "estimatedDurationMs": 3600,
+      "callout": { "label": "404", "theme": "warm" }
+    },
+    {
+      "id": "api-13",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner"],
+      "layout": "two-balanced",
+      "dialogue": "APIs can also limit requests so one ninja cannot block the whole desk.",
+      "background": "training-ground",
+      "estimatedDurationMs": 3900,
+      "callout": { "label": "RATE LIMIT", "theme": "violet" }
+    },
+    {
+      "id": "api-14",
+      "speakerRole": "learner",
+      "visibleRoles": ["learner", "guide"],
+      "layout": "two-first-focus",
+      "dialogue": "So the apps stay separate, but the request rules let them work together!",
+      "background": "konoha",
+      "estimatedDurationMs": 4000
+    },
+    {
+      "id": "api-15",
+      "speakerRole": "guide",
+      "visibleRoles": ["guide", "learner", "challenger"],
+      "layout": "three-balanced",
+      "dialogue": "Exactly. An API is a safe, agreed way for software to ask and answer.",
+      "background": "training-ground",
+      "estimatedDurationMs": 3900,
+      "callout": { "label": "ASK + ANSWER", "theme": "gold" }
+    }
+  ]
+}

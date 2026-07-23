@@ -1,0 +1,21 @@
+{
+  "fields": [
+    {
+      "id": "topic",
+      "label": "What should the characters explain?",
+      "type": "text",
+      "required": true
+    },
+    {
+      "id": "storyWorld",
+      "label": "Which story world should teach it?",
+      "type": "story-world",
+      "required": true,
+      "source": "worlds/*.json"
+    }
+  ],
+  "defaults": {
+    "topic": "Compilers versus interpreters",
+    "storyWorld": "naruto"
+  }
+}

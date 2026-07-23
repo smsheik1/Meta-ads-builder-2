@@ -1,0 +1,21 @@
+{
+  "layouts": {
+    "two-balanced": [
+      { "x": 8, "bottom": 2, "width": 52, "rotate": -1 },
+      { "x": 56, "bottom": 3, "width": 41, "rotate": 0 }
+    ],
+    "two-first-focus": [
+      { "x": 8, "bottom": 2, "width": 58, "rotate": -2 },
+      { "x": 60, "bottom": 3, "width": 36, "rotate": 0 }
+    ],
+    "two-second-focus": [
+      { "x": 8, "bottom": 3, "width": 45, "rotate": 0 },
+      { "x": 52, "bottom": 2, "width": 47, "rotate": 1 }
+    ],
+    "three-balanced": [
+      { "x": 2, "bottom": 2, "width": 38, "rotate": -2 },
+      { "x": 33, "bottom": 3, "width": 37, "rotate": 0 },
+      { "x": 64, "bottom": 2, "width": 35, "rotate": 2 }
+    ]
+  }
+}

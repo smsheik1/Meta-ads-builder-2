@@ -1,0 +1,12 @@
+{
+  "id": "yugioh",
+  "label": "Yu-Gi-Oh",
+  "roles": {
+    "learner": { "character": "yugi", "voice": "a27f617599df41f9aa6e95bb57ac69ba", "behavior": "Asks the clear question and states the final lesson." },
+    "guide": { "character": "kaiba", "voice": "710a3478dcc4477d8aae292c2de85964", "behavior": "Confident expert who explains the rule precisely." },
+    "challenger": { "character": "joey", "voice": "2ef97f8ba13a4f71a7e291a3998af362", "behavior": "Adds a practical example, joke, or objection." }
+  },
+  "backgrounds": ["duel-arena", "duel-club", "domino-city"],
+  "lore": ["decks", "cards", "duels", "turns", "combos", "trap cards"],
+  "avoid": ["invented card rules", "switching the learner and guide roles without a reason"]
+}

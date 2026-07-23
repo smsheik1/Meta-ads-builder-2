@@ -1,0 +1,15 @@
+{
+  "provider": "fish-audio",
+  "model": "s2.1-pro-free",
+  "dialogue": {
+    "format": "wav",
+    "sampleRate": 44100,
+    "speed": 1.08
+  },
+  "music": {
+    "source": "/Users/shaz/Downloads/videoplayback (4).mp4",
+    "localPath": "assets/audio/background-music.mp3",
+    "volume": 0.1,
+    "loop": true
+  }
+}

@@ -1,0 +1,202 @@
+{
+  "characters": [
+    {
+      "id": "naruto",
+      "label": "Naruto",
+      "localPath": "assets/images/naruto-clean.png",
+      "postprocess": "remove-white-and-trim",
+      "searchQuery": "Naruto Uzumaki full body transparent png render",
+      "sourcePage": "https://www.pngitem.com/middle/hJmTRwx_naruto-naruto-shippuden-anime-naruto-render-hd-png/",
+      "sourceUrl": "https://www.pngitem.com/pimgs/m/487-4873619_naruto-naruto-shippuden-anime-naruto-render-hd-png.png"
+    },
+    {
+      "id": "kakashi",
+      "label": "Kakashi",
+      "localPath": "assets/images/kakashi-alpha.png",
+      "searchQuery": "Kakashi Hatake full body transparent png render",
+      "sourcePage": "https://freepngimg.com/png/32495-kakashi-hd",
+      "sourceUrl": "https://freepngimg.com/save/32495-kakashi-hd/900x2332"
+    },
+    {
+      "id": "orochimaru",
+      "label": "Orochimaru",
+      "localPath": "assets/images/orochimaru-clean.png",
+      "postprocess": "remove-white-and-trim",
+      "searchQuery": "Orochimaru full body transparent png render",
+      "sourcePage": "https://www.pngitem.com/middle/iJbimTT_renders-de-naruto-y-naruto-shippuden-naruto-orochimaru/",
+      "sourceUrl": "https://www.pngitem.com/pimgs/m/282-2823667_renders-de-naruto-y-naruto-shippuden-naruto-orochimaru.png"
+    },
+    {
+      "id": "yugi",
+      "label": "Yugi",
+      "localPath": "assets/images/yugi-clean.png",
+      "postprocess": "remove-checkerboard-and-trim",
+      "searchQuery": "Yami Yugi full body transparent png render",
+      "sourcePage": "https://www.pngaaa.com/detail/4492094",
+      "sourceUrl": "https://image.pngaaa.com/94/4492094-middle.png"
+    },
+    {
+      "id": "kaiba",
+      "label": "Kaiba",
+      "localPath": "assets/images/kaiba-clean.png",
+      "postprocess": "remove-checkerboard-and-trim",
+      "searchQuery": "Seto Kaiba full body transparent png render",
+      "sourcePage": "https://www.pngaaa.com/detail/4354853",
+      "sourceUrl": "https://image.pngaaa.com/853/4354853-middle.png"
+    },
+    {
+      "id": "joey",
+      "label": "Joey",
+      "localPath": "assets/images/joey.webp",
+      "searchQuery": "Joey Wheeler full body transparent png render",
+      "sourcePage": "https://all-worlds-alliance.fandom.com/wiki/Joey_Wheeler",
+      "sourceUrl": "https://static.wikia.nocookie.net/all-worlds-alliance/images/d/d2/JoeyWheelerMD.png/revision/latest/scale-to-width-down/340?cb=20200516064401"
+    },
+    {
+      "id": "danny-phantom",
+      "label": "Danny Phantom",
+      "localPath": "assets/images/danny-phantom.webp",
+      "searchQuery": "Danny Phantom full body transparent png render",
+      "sourcePage": "https://dannyphantom.fandom.com/wiki/Danny_Phantom_(character)",
+      "sourceUrl": "https://static.wikia.nocookie.net/dpwikia/images/3/3c/Render-_Danny_Phantom_stock_image.png/revision/latest?cb=20250529003148"
+    },
+    {
+      "id": "tucker-foley",
+      "label": "Tucker Foley",
+      "localPath": "assets/images/tucker-foley.webp",
+      "searchQuery": "Tucker Foley full body transparent png render",
+      "sourcePage": "https://dannyphantom.fandom.com/wiki/Tucker_Foley",
+      "sourceUrl": "https://static.wikia.nocookie.net/dpwikia/images/a/ac/Render-_Tucker_Foley.png/revision/latest?cb=20250529003317"
+    },
+    {
+      "id": "vlad-plasmius",
+      "label": "Vlad Plasmius",
+      "localPath": "assets/images/vlad-plasmius.webp",
+      "searchQuery": "Vlad Plasmius full body transparent png render",
+      "sourcePage": "https://dannyphantom.fandom.com/wiki/Vlad_Plasmius",
+      "sourceUrl": "https://static.wikia.nocookie.net/dpwikia/images/6/67/Render-_Vlad_Plasmius_pose.png/revision/latest?cb=20260610224348"
+    },
+    {
+      "id": "spongebob",
+      "label": "SpongeBob SquarePants",
+      "localPath": "assets/images/spongebob.webp",
+      "searchQuery": "SpongeBob full body transparent PNG stock art",
+      "sourcePage": "https://spongebob.fandom.com/wiki/SpongeBob_SquarePants_(character)/gallery",
+      "sourceUrl": "https://static.wikia.nocookie.net/spongebob/images/5/5f/SpongeBobStockArt-2D.png/revision/latest?cb=20251102074746"
+    },
+    {
+      "id": "sandy-cheeks",
+      "label": "Sandy Cheeks",
+      "localPath": "assets/images/sandy-cheeks.png",
+      "searchQuery": "Sandy Cheeks full body spacesuit transparent PNG render",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Sandy_Cheeks_(transparent).png",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Sandy_Cheeks_%28transparent%29.png/500px-Sandy_Cheeks_%28transparent%29.png"
+    },
+    {
+      "id": "plankton",
+      "label": "Plankton",
+      "localPath": "assets/images/plankton.webp",
+      "searchQuery": "Plankton full body transparent PNG stock art",
+      "sourcePage": "https://spongebob.fandom.com/wiki/Sheldon_J._Plankton/gallery",
+      "sourceUrl": "https://static.wikia.nocookie.net/spongebob/images/7/7a/Laughton.png/revision/latest?cb=20221113005908"
+    }
+  ],
+  "backgrounds": [
+    {
+      "id": "konoha",
+      "label": "Konoha",
+      "localPath": "assets/images/bg-konoha.jpg",
+      "searchQuery": "Naruto Konoha village background no characters",
+      "sourcePage": "https://www.peakpx.com/en/hd-wallpaper-desktop-fzdbf",
+      "sourceUrl": "https://w0.peakpx.com/wallpaper/589/265/HD-wallpaper-konohagakure-anime-naruto-the-leaf-village.jpg"
+    },
+    {
+      "id": "naruto-forest",
+      "label": "Forest",
+      "localPath": "assets/images/bg-naruto-forest.jpg",
+      "searchQuery": "Naruto forest background no characters",
+      "sourcePage": "https://www.pinterest.com/ideas/naruto-backgrounds/941180977477/",
+      "sourceUrl": "https://s-media-cache-ak0.pinimg.com/originals/ed/ed/05/eded05d47a6e14ef62a7c275589f16bb.jpg"
+    },
+    {
+      "id": "training-ground",
+      "label": "Training ground",
+      "localPath": "assets/images/bg-training-ground.jpg",
+      "searchQuery": "Naruto training ground background no characters",
+      "sourcePage": "https://sketchfab.com/3d-models/training-field-naruto-stage-glb-c6cd7082ee864ec984b11f8cdaeefa64",
+      "sourceUrl": "https://media.sketchfab.com/models/c6cd7082ee864ec984b11f8cdaeefa64/thumbnails/f612af92dae545d2be1ec358e21e2b23/1e62e315d3684beab34923a07f51edd6.jpeg"
+    },
+    {
+      "id": "duel-arena",
+      "label": "Duel arena",
+      "localPath": "assets/images/bg-duel-arena.jpg",
+      "searchQuery": "Yu-Gi-Oh duel arena background no characters",
+      "sourcePage": "https://yugioh.fandom.com/wiki/Dueling_Arena",
+      "sourceUrl": "https://static.wikia.nocookie.net/yugioh/images/c/ce/DuelingArena-EN-Anime-DM.png/revision/latest?cb=20080930233413"
+    },
+    {
+      "id": "duel-club",
+      "label": "Duel club",
+      "localPath": "assets/images/bg-duel-club.jpg",
+      "searchQuery": "Yu-Gi-Oh classroom background no characters",
+      "sourcePage": "https://yugioh.fandom.com/wiki/Duel_Club",
+      "sourceUrl": "https://static.wikia.nocookie.net/yugioh/images/d/d0/Dc.png/revision/latest/scale-to-width-down/1200?cb=20170903092444"
+    },
+    {
+      "id": "domino-city",
+      "label": "Domino City",
+      "localPath": "assets/images/bg-domino-city.jpg",
+      "searchQuery": "Yu-Gi-Oh city background no characters",
+      "sourcePage": "https://backgrounds.gallery/backgrounds/753/1150640-Paradise%20City",
+      "sourceUrl": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/items/1150640/cacb64095456a03c8e04e9e886d938c1f504d29c.jpg"
+    },
+    {
+      "id": "amity-park",
+      "label": "Amity Park",
+      "localPath": "assets/images/bg-amity-park.webp",
+      "searchQuery": "Danny Phantom Amity Park street background no characters wide",
+      "sourcePage": "https://dannyphantom.fandom.com/wiki/Amity_Park",
+      "sourceUrl": "https://static.wikia.nocookie.net/dpwikia/images/c/c0/S01e16_AP_welcome_sign.png/revision/latest?cb=20160627025704"
+    },
+    {
+      "id": "fenton-lab",
+      "label": "Fenton lab",
+      "localPath": "assets/images/bg-fenton-lab.webp",
+      "searchQuery": "Danny Phantom Fenton lab background no characters",
+      "sourcePage": "https://dannyphantom.fandom.com/wiki/Fenton_Portal",
+      "sourceUrl": "https://static.wikia.nocookie.net/dpwikia/images/f/fe/S01e04_Fenton_Ghost_Portal.png/revision/latest?cb=20160428225359"
+    },
+    {
+      "id": "ghost-zone",
+      "label": "Ghost Zone",
+      "localPath": "assets/images/bg-ghost-zone.jpg",
+      "searchQuery": "Danny Phantom Ghost Zone landscape ground background no characters wide",
+      "sourcePage": "https://www.ign.com/wikis/nick-all-star-brawl/Ghost_Zone",
+      "sourceUrl": "https://oyster.ignimgs.com/mediawiki/apis.ign.com/nick-all-star-brawl/1/19/Ghost_Zone.jpg"
+    },
+    {
+      "id": "bikini-bottom",
+      "label": "Bikini Bottom",
+      "localPath": "assets/images/bg-bikini-bottom.webp",
+      "searchQuery": "SpongeBob Bikini Bottom city background no characters wide",
+      "sourcePage": "https://spongebob.fandom.com/wiki/Bikini_Bottom",
+      "sourceUrl": "https://static.wikia.nocookie.net/spongebob/images/2/26/Bubbletown_002.png/revision/latest/scale-to-width-down/1200?cb=20181028171458"
+    },
+    {
+      "id": "sandy-treedome",
+      "label": "Sandy's treedome",
+      "localPath": "assets/images/bg-sandy-treedome.webp",
+      "searchQuery": "Sandy treedome exterior background no characters wide",
+      "sourcePage": "https://spongebob.fandom.com/wiki/Sandy_Cheeks%27_treedome",
+      "sourceUrl": "https://static.wikia.nocookie.net/spongebob/images/f/f2/Sandy%2C_Help_Us%21_002.png/revision/latest/scale-to-width-down/1200?cb=20231007030731"
+    },
+    {
+      "id": "boating-school",
+      "label": "Mrs. Puff's Boating School",
+      "localPath": "assets/images/bg-boating-school.webp",
+      "searchQuery": "Mrs. Puff Boating School exterior background no characters wide",
+      "sourcePage": "https://spongebob.fandom.com/wiki/Mrs._Puff%27s_Boating_School",
+      "sourceUrl": "https://static.wikia.nocookie.net/spongebob/images/1/12/Lighthouse_Louie_001.png/revision/latest?cb=20200527190216"
+    }
+  ]
+}

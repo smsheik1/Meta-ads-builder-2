@@ -1,0 +1,294 @@
+{
+  "id": "naruto-compilers",
+  "title": "Naruto explains compilers versus interpreters",
+  "input": {
+    "topic": "Compilers versus interpreters",
+    "storyWorld": "naruto"
+  },
+  "scenes": [
+    {
+      "id": "nc-01",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Kakashi Sensei... if compilers and interpreters both translate code...",
+      "background": "konoha",
+      "estimatedDurationMs": 3900,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
+    },
+    {
+      "id": "nc-02",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-first-focus",
+      "dialogue": "Why do Python and C++ work so differently?!",
+      "background": "naruto-forest",
+      "estimatedDurationMs": 3100,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
+    },
+    {
+      "id": "nc-03",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Because they execute jutsu differently, Naruto.",
+      "background": "training-ground",
+      "estimatedDurationMs": 3000
+    },
+    {
+      "id": "nc-04",
+      "speakerRole": "challenger",
+      "visibleRoles": [
+        "challenger",
+        "guide"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "A compiler prepares the entire forbidden scroll before the battle begins.",
+      "background": "naruto-forest",
+      "estimatedDurationMs": 4300,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
+    },
+    {
+      "id": "nc-05",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-first-focus",
+      "dialogue": "So C++ works like a prepared jutsu?",
+      "background": "konoha",
+      "estimatedDurationMs": 3000,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
+    },
+    {
+      "id": "nc-06",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Exactly. The compiler checks the whole program first.",
+      "background": "training-ground",
+      "estimatedDurationMs": 3200,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
+    },
+    {
+      "id": "nc-07",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "It turns everything into machine code, then runs it fast later.",
+      "background": "konoha",
+      "estimatedDurationMs": 3800,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
+    },
+    {
+      "id": "nc-08",
+      "speakerRole": "challenger",
+      "visibleRoles": [
+        "challenger",
+        "guide"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "An interpreter is different. It reads instructions during battle...",
+      "background": "naruto-forest",
+      "estimatedDurationMs": 3900,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
+    },
+    {
+      "id": "nc-09",
+      "speakerRole": "challenger",
+      "visibleRoles": [
+        "challenger",
+        "guide"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "One step at a time.",
+      "background": "training-ground",
+      "estimatedDurationMs": 2300,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
+    },
+    {
+      "id": "nc-10",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-first-focus",
+      "dialogue": "Yes. Python often runs line by line with an interpreter.",
+      "background": "konoha",
+      "estimatedDurationMs": 3600,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
+    },
+    {
+      "id": "nc-11",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-first-focus",
+      "dialogue": "Then why use interpreters at all?",
+      "background": "naruto-forest",
+      "estimatedDurationMs": 2700,
+      "callout": {
+        "label": "?",
+        "theme": "question"
+      }
+    },
+    {
+      "id": "nc-12",
+      "speakerRole": "challenger",
+      "visibleRoles": [
+        "challenger",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Because feedback is instant. If one hand sign fails, you see the error.",
+      "background": "training-ground",
+      "estimatedDurationMs": 4400,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
+    },
+    {
+      "id": "nc-13",
+      "speakerRole": "guide",
+      "visibleRoles": [
+        "guide",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Compilers catch many mistakes before the program runs.",
+      "background": "konoha",
+      "estimatedDurationMs": 3400,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
+    },
+    {
+      "id": "nc-14",
+      "speakerRole": "challenger",
+      "visibleRoles": [
+        "challenger",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "Interpreters find problems while the jutsu is already running.",
+      "background": "naruto-forest",
+      "estimatedDurationMs": 3600,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
+    },
+    {
+      "id": "nc-15",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-first-focus",
+      "dialogue": "So compile errors are failed hand signs before battle...",
+      "background": "training-ground",
+      "estimatedDurationMs": 3500,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
+    },
+    {
+      "id": "nc-16",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-first-focus",
+      "dialogue": "And runtime errors are jutsu failing mid-fight?!",
+      "background": "konoha",
+      "estimatedDurationMs": 3200,
+      "callout": {
+        "label": "ONE STEP",
+        "theme": "cool"
+      }
+    },
+    {
+      "id": "nc-17",
+      "speakerRole": "challenger",
+      "visibleRoles": [
+        "challenger",
+        "learner"
+      ],
+      "layout": "two-balanced",
+      "dialogue": "A compiler leaves you with one completed forbidden scroll.",
+      "background": "naruto-forest",
+      "estimatedDurationMs": 3400,
+      "callout": {
+        "label": "FULL SCROLL",
+        "theme": "warm"
+      }
+    },
+    {
+      "id": "nc-18",
+      "speakerRole": "learner",
+      "visibleRoles": [
+        "learner",
+        "guide"
+      ],
+      "layout": "two-first-focus",
+      "dialogue": "Dattebayo... programming languages are basically ninja fighting styles!",
+      "background": "training-ground",
+      "estimatedDurationMs": 4200,
+      "callout": {
+        "label": "DUEL",
+        "theme": "gold"
+      }
+    }
+  ]
+}

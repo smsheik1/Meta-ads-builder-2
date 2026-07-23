@@ -1,0 +1,64 @@
+{
+  "id": "spongebob",
+  "label": "SpongeBob SquarePants",
+  "music": {
+    "localPath": "assets/audio/spongebob-background.mp3",
+    "volume": 0.14,
+    "sourceUrl": "https://www.youtube.com/watch?v=3xWZB1SoWE8",
+    "selectionReason": "Hawaiian Cocktail is an exact SpongeBob production instrumental and is calm enough to sit below dialogue. Its leading and trailing silence were removed before loudness normalization."
+  },
+  "roles": {
+    "learner": {
+      "character": "spongebob",
+      "voice": "9845e056f37b470d9a1005e41c864e25",
+      "behavior": "Cheerful and curious; repeats the mechanism in simple words to prove he understands it."
+    },
+    "guide": {
+      "character": "sandy-cheeks",
+      "voice": "783d32b03d0c4ff28dd66455364d8665",
+      "behavior": "A practical scientist who explains each electric vehicle part accurately and plainly."
+    },
+    "challenger": {
+      "character": "plankton",
+      "voice": "fc33048c58604823aa19ace52e4842c9",
+      "behavior": "An overconfident inventor who suggests one tempting shortcut or misconception for Sandy to correct."
+    }
+  },
+  "backgrounds": ["bikini-bottom", "sandy-treedome", "boating-school"],
+  "lore": [
+    "Bikini Bottom is SpongeBob's underwater home",
+    "Sandy is an inventor and scientist who lives in a treedome",
+    "Mrs. Puff's Boating School is where SpongeBob practices driving boatmobiles",
+    "Plankton is an overconfident inventor and SpongeBob's recurring rival",
+    "Sandy can test an electric boatmobile as a lesson device without claiming it is show canon"
+  ],
+  "avoid": [
+    "claiming the lesson's electric boatmobile is a canon invention from the show",
+    "pretending an electric vehicle battery connects directly to the wheels",
+    "saying regenerative braking recovers all energy or replaces the regular brakes",
+    "turning the explanation into unrelated SpongeBob catchphrases",
+    "invented character relationships or locations"
+  ],
+  "researchSources": [
+    "https://afdc.energy.gov/vehicles/how-do-all-electric-cars-work.html",
+    "https://www.energy.gov/cmei/femp/articles/electric-vehicle-technology-overview-federal-fleet-training",
+    "https://spongebob.fandom.com/wiki/Bikini_Bottom",
+    "https://spongebob.fandom.com/wiki/Sandy_Cheeks",
+    "https://spongebob.fandom.com/wiki/Mrs._Puff%27s_Boating_School",
+    "https://spongebob.fandom.com/wiki/Sheldon_J._Plankton"
+  ],
+  "voiceResearch": {
+    "spongebob": {
+      "query": "Spongebob Squarepants",
+      "selectionReason": "Highest-use exact English public result with an available sample and more than 31,000 prior tasks."
+    },
+    "sandy-cheeks": {
+      "query": "Sandy Cheeks",
+      "selectionReason": "Highest-use exact English public result with an available sample and more than 4,000 prior tasks."
+    },
+    "plankton": {
+      "query": "Plankton",
+      "selectionReason": "Highest-use exact English public result that also provides an audition sample."
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "id": "danny-phantom",
+  "label": "Danny Phantom",
+  "music": {
+    "localPath": "assets/audio/danny-phantom-background.mp3",
+    "volume": 0.16,
+    "sourceUrl": "https://www.youtube.com/watch?v=s8N1O07Lxpw",
+    "selectionReason": "The top exact-match search result is the official instrumental rather than a cover or remix. Its trailing silence was removed before making a crossfaded loop."
+  },
+  "roles": {
+    "learner": {
+      "character": "danny-phantom",
+      "voice": "14f06ac475944bb7a0ef5cc958f07462",
+      "behavior": "Curious, brave, and restates the lesson in plain words."
+    },
+    "guide": {
+      "character": "tucker-foley",
+      "voice": "e3e1212180ee4f87ab0730db54d1a8e2",
+      "behavior": "Tech-obsessed friend who explains the mechanism clearly."
+    },
+    "challenger": {
+      "character": "vlad-plasmius",
+      "voice": "23231b8547f04d79bebc51bb2a23b5ab",
+      "behavior": "Confident antagonist who adds a warning, edge case, or correction."
+    }
+  },
+  "backgrounds": ["amity-park", "fenton-lab", "ghost-zone"],
+  "lore": [
+    "the Fenton Portal connects Earth to the separate Ghost Zone",
+    "portal controls send specific commands across that boundary",
+    "Tucker is Danny's tech-obsessed best friend",
+    "Vlad is an experienced half-ghost and Danny's antagonist",
+    "Amity Park is Danny's home and the place he protects",
+    "ghost-hunting equipment follows specific controls and limits"
+  ],
+  "avoid": [
+    "claiming Tucker built the Fenton Portal",
+    "treating Vlad as a trusted teacher",
+    "invented ghost powers or portal rules",
+    "random technical words that do not map to the story-world action"
+  ],
+  "researchSources": [
+    "https://en.wikipedia.org/wiki/Danny_Phantom",
+    "https://dannyphantom.fandom.com/wiki/Danny_Phantom_(character)",
+    "https://dannyphantom.fandom.com/wiki/Tucker_Foley",
+    "https://dannyphantom.fandom.com/wiki/Vlad_Plasmius",
+    "https://dannyphantom.fandom.com/wiki/Fenton_Portal",
+    "https://dannyphantom.fandom.com/wiki/Ghost_Zone"
+  ],
+  "voiceResearch": {
+    "danny-phantom": {
+      "query": "Danny Phantom",
+      "selectionReason": "Highest-use English result with a youthful, energetic sample and 1,700 prior tasks."
+    },
+    "tucker-foley": {
+      "query": "Tucker Foley",
+      "selectionReason": "English public model with an available energetic, friendly sample."
+    },
+    "vlad-plasmius": {
+      "query": "Vlad Plasmius",
+      "selectionReason": "Only exact English public result; its sample has the confident antagonist delivery the role needs."
+    }
+  }
+}

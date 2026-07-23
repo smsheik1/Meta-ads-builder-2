@@ -1,0 +1,28 @@
+{
+  "authoredScene": {
+    "id": "stable string",
+    "speakerRole": "learner | guide | challenger",
+    "visibleRoles": "two or three unique lesson roles; the speaker must be included",
+    "layout": "approved id from layouts.json",
+    "dialogue": "speech bubble and voice text, at most 100 characters",
+    "background": "background id approved by the selected world pack",
+    "estimatedDurationMs": "2000 to 8000",
+    "callout": {
+      "label": "optional short label, at most 14 characters",
+      "theme": "neutral | question | warm | cool | violet | gold"
+    }
+  },
+  "materializedScene": {
+    "speaker": "character asset id resolved from speakerRole",
+    "characters": "concrete placements resolved from visibleRoles and layout",
+    "voice": "Fish voice resolved from the selected world pack"
+  },
+  "run": {
+    "input": "exact topic and packaged story world",
+    "approval": "one approval covering at most three render attempts",
+    "provenance": "format, version, plan hash, world pack, layout file, and runner version",
+    "audio": "one generated clip per scene plus fixed music",
+    "inspection": "technical checks plus agent-reviewed creative checks",
+    "output": "final MP4 path"
+  }
+}

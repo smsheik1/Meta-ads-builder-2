@@ -1,0 +1,22 @@
+{
+  "id": "otaku-explainer",
+  "version": "1.2.0-experiment",
+  "title": "Otaku Explainer",
+  "description": "Familiar characters explain a real idea through their own story world.",
+  "status": "experimental",
+  "canvas": { "width": 720, "height": 1280, "fps": 30 },
+  "components": [
+    "instructions",
+    "user-inputs",
+    "fixed-assets",
+    "ai-generated-content",
+    "scene-slots",
+    "renderer",
+    "audio",
+    "quality-checks",
+    "final-output"
+  ],
+  "renderer": "renderer/OtakuFormatRenderer.tsx",
+  "sceneContract": "scene-contract.json",
+  "sourceReference": "assets/reference/reference.mp4"
+}
