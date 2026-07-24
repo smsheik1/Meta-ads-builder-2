@@ -28,7 +28,7 @@
     },
     {
       "id": "video-clips",
-      "output": "Two continuous 10-second 720p clips",
+      "output": "Two continuous 10-second 480p clips",
       "paidMedia": true,
       "approvalRequired": true,
       "oneCallAtATime": true,

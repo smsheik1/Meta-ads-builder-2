@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import { decode, encode } from "jpeg-js";
 import { generateReplicateSeedanceVideo } from "../features/formats/jingle/storyboard";
+import { THREE_D_BREAKDOWN_VIDEO_RESOLUTION } from "../features/formats/three-d-breakdown/mediaPrompts";
 import { cropThreeDStoryboardPanel } from "../features/formats/three-d-breakdown/storyboardImageCrop";
 import { prepareThreeDBrandReferenceImageInputs } from "../features/formats/three-d-breakdown/productReference";
+
+assert.equal(THREE_D_BREAKDOWN_VIDEO_RESOLUTION, "480p");
 
 const width = 576;
 const height = 1024;

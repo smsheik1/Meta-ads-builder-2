@@ -8,7 +8,7 @@ This Repo packages the recipe behind Wiggly's existing 3D Breakdown Format. It d
 2. One selected Style B script and scene.
 3. One six-frame storyboard contact sheet.
 4. Four full-quality 9:16 video endpoints: frames 1, 3, 4, and 6.
-5. After separate approval, two continuous 10-second 720p clips.
+5. After separate approval, two continuous 10-second 480p clips.
 6. Later: Fish voice and one 20-second MP4.
 
 The storyboard is a planning reference. Its small panel crops must never become video endpoints. This version stops after two inspected video clips; voice generation and final composition remain disabled.

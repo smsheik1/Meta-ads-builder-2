@@ -45,5 +45,5 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 - The six-frame plan shows different physical actions in one coherent world. Object-only frames do not invent people.
 - All four video endpoints are sharp, use the approved recurring subjects, and show the exact intended start or end state.
 - Storyboard panel crops guide endpoint generation but never become Seedance inputs.
-- Both 720p clips use one continuous transformation, follow the approved physical action, and do not jump to another person, room, or visual style.
+- Both 480p clips use one continuous transformation, follow the approved physical action, and do not jump to another person, room, or visual style.
 - No voice or final-video asset exists yet.

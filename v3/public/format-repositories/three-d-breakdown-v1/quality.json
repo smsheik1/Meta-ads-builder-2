@@ -23,7 +23,7 @@
   "video": [
     "Generate clip 1 before clip 2 and inspect each result before another paid call.",
     "Each clip uses its approved full-quality start and end production frames.",
-    "Each clip is rendered at 720p as one continuous transformation with no montage, hard cut, new person, or unrelated setting.",
+    "Each clip is rendered at 480p as one continuous transformation with no montage, hard cut, new person, or unrelated setting.",
     "Each clip is within one second of its planned 10-second duration.",
     "The contact sheet preserves the approved world, subjects, and recurring objects across both clips.",
     "No voice or final composition is generated during clip inspection."

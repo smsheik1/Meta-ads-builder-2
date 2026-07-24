@@ -10,7 +10,7 @@
 - Result: `failed-paid-media-quality`.
 - Human review: the clips are not good enough to run as ads. Their ending images are visibly soft, the payoff appears too early, and clip 2 invents a different CGI person and setting.
 - Root cause: planning thumbnails were used as production media, while old prompt rules forced a recurring presenter and three hard-cut subshots even when the approved story was object-led.
-- Correction: the runner now requires four independently generated endpoints (frames 1, 3, 4, and 6), preserves object-only frames, makes each clip one continuous transformation, and requests 720p.
+- Correction: the runner now requires four independently generated endpoints (frames 1, 3, 4, and 6), preserves object-only frames, makes each clip one continuous transformation, and requests 480p.
 - Reproof status: no new paid calls have been made. The corrected pipeline must pass endpoint review before another video attempt.
 - Technical note: the old clips are 10.042 seconds at 496×864 and contain no audio stream. Passing those mechanical checks did not make them creatively acceptable.
 - Boundary: no voice or final 20-second composition was generated.

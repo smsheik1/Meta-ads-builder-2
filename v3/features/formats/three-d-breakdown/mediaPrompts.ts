@@ -6,7 +6,7 @@ import type {
 import { getThreeDAnchorPrompt, getThreeDStoryboardPrompt } from "./editablePrompts";
 
 const MAX_SEEDANCE_PROMPT_CHARS = 3900;
-export const THREE_D_BREAKDOWN_VIDEO_RESOLUTION = "720p" as const;
+export const THREE_D_BREAKDOWN_VIDEO_RESOLUTION = "480p" as const;
 
 const clean = (value: string | null | undefined) => String(value || "").replace(/\s+/g, " ").trim();
 const promptField = (value: string | null | undefined) => clean(value).replace(/[.!?]+$/, "");
