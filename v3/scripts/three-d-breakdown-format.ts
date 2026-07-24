@@ -153,8 +153,8 @@ async function check() {
     stage,
     tools: {
       node: await commandAvailable("node"),
-      ffmpeg: await commandAvailable("ffmpeg"),
-      ffprobe: await commandAvailable("ffprobe"),
+      ffmpeg: await commandAvailable("ffmpeg", "-version"),
+      ffprobe: await commandAvailable("ffprobe", "-version"),
     },
   });
   console.log(result.ok ? `3D Breakdown ${stage} stage is ready.` : `3D Breakdown ${stage} stage is not ready.`);

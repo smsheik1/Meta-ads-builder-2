@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { extractThreeDBreakdownEvidence } from "../features/formats/three-d-breakdown/evidence";
 import {
   assertThreeDBreakdownImageCallAllowed,
@@ -268,5 +269,8 @@ const readyVideo = evaluateThreeDBreakdownRepoRequirements({
   tools: { node: true, ffmpeg: true, ffprobe: true },
 });
 assert.equal(readyVideo.ok, true);
+const runnerSource = readFileSync("scripts/three-d-breakdown-format.ts", "utf8");
+assert.match(runnerSource, /commandAvailable\("ffmpeg", "-version"\)/);
+assert.match(runnerSource, /commandAvailable\("ffprobe", "-version"\)/);
 
 console.log("3D Breakdown Repo tests passed.");
