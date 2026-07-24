@@ -19,10 +19,15 @@
   "tools": {
     "node": {
       "requiredFor": ["plan", "images", "voice", "video"]
+    },
+    "ffmpeg": {
+      "requiredFor": ["video"]
+    },
+    "ffprobe": {
+      "requiredFor": ["video"]
     }
   },
   "disabledStages": {
-    "video": "Paid video generation is deliberately disabled in this build-first phase.",
     "voice": "Voice generation waits until the video phase is approved."
   }
 }

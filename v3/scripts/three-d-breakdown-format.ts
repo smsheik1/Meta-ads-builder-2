@@ -7,10 +7,15 @@ import {
   generateThreeDBreakdownStoryDirectionsFromResearch,
   generateThreeDBreakdownVariantsFromResearch,
 } from "../features/formats/three-d-breakdown/generate";
-import { buildThreeDProductionFramePrompt, buildThreeDStoryboardBoardPrompt } from "../features/formats/three-d-breakdown/mediaPrompts";
+import {
+  buildThreeDProductionFramePrompt,
+  buildThreeDSeedancePrompt,
+  buildThreeDStoryboardBoardPrompt,
+} from "../features/formats/three-d-breakdown/mediaPrompts";
 import { fetchThreeDProductReferenceImageUrls, prepareThreeDBrandReferenceImageInputs } from "../features/formats/three-d-breakdown/productReference";
 import {
   assertThreeDBreakdownImageCallAllowed,
+  assertThreeDBreakdownVideoCallAllowed,
   evaluateThreeDBreakdownRepoRequirements,
   getThreeDBreakdownRequiredAnchorFrameIndexes,
   inspectThreeDBreakdownRepoScene,
@@ -21,10 +26,19 @@ import type { ThreeDBreakdownStoryDirection } from "../features/formats/three-d-
 import type { ThreeDBreakdownStorySubject } from "../features/formats/three-d-breakdown/storySubject";
 import { cropThreeDStoryboardPanel } from "../features/formats/three-d-breakdown/storyboardImageCrop";
 import { validateThreeDBreakdownScene } from "../features/formats/three-d-breakdown/validate";
-import { generateReplicateNanoBanana2Image } from "../features/formats/jingle/storyboard";
+import {
+  BRICK_STORYBOARD_VIDEO_MODEL,
+  generateReplicateNanoBanana2Image,
+  generateReplicateSeedanceVideo,
+} from "../features/formats/jingle/storyboard";
 import type { StoredWebsiteResearchResult } from "../features/research/types";
 import { createThreeDBreakdownAdScene } from "../features/scene/createThreeDBreakdownScene";
-import type { ThreeDBreakdownAdScene, ThreeDBreakdownStoryboardFrameIndex } from "../features/scene/types";
+import type {
+  ThreeDBreakdownAdScene,
+  ThreeDBreakdownClipIndex,
+  ThreeDBreakdownClipPlan,
+  ThreeDBreakdownStoryboardFrameIndex,
+} from "../features/scene/types";
 
 const filename = fileURLToPath(import.meta.url);
 const v3Root = path.resolve(path.dirname(filename), "..");
@@ -40,14 +54,26 @@ type ImageAttempt = {
   error?: string;
 };
 
+type VideoAttempt = {
+  clipIndex: ThreeDBreakdownClipIndex;
+  number: number;
+  status: "generating" | "ready" | "failed";
+  createdAt: string;
+  provider: "replicate";
+  model: typeof BRICK_STORYBOARD_VIDEO_MODEL;
+  output?: string;
+  error?: string;
+};
+
 type RunState = {
   id: string;
-  status: "draft" | "directions-ready" | "scene-ready" | "images-started" | "ready-for-video";
+  status: "draft" | "directions-ready" | "scene-ready" | "images-started" | "ready-for-video" | "video-started" | "clips-ready";
   createdAt: string;
   subject: ThreeDBreakdownStorySubject;
   planningApprovedAt?: string;
   planningCalls: number;
   imageAttempts: ImageAttempt[];
+  videoAttempts?: VideoAttempt[];
 };
 
 const readJson = async <T,>(filePath: string) => JSON.parse(await readFile(filePath, "utf8")) as T;
@@ -96,6 +122,21 @@ async function commandAvailable(command: string, versionFlag = "--version") {
   });
 }
 
+async function runCommand(command: string, args: string[]) {
+  return await new Promise<string>((resolve, reject) => {
+    const child = spawn(command, args, { stdio: ["ignore", "pipe", "pipe"] });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => { stdout += String(chunk); });
+    child.stderr.on("data", (chunk) => { stderr += String(chunk); });
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code === 0) resolve(stdout.trim());
+      else reject(new Error(`${command} failed: ${stderr.trim() || `exit ${code}`}`));
+    });
+  });
+}
+
 const parseStage = (): ThreeDBreakdownRepoStage => {
   const stage = argument("stage") || "plan";
   if (!["plan", "images", "voice", "video"].includes(stage)) throw new Error("Stage must be plan, images, voice, or video.");
@@ -110,7 +151,11 @@ async function check() {
     environment: process.env,
     manifest,
     stage,
-    tools: { node: await commandAvailable("node") },
+    tools: {
+      node: await commandAvailable("node"),
+      ffmpeg: await commandAvailable("ffmpeg"),
+      ffprobe: await commandAvailable("ffprobe"),
+    },
   });
   console.log(result.ok ? `3D Breakdown ${stage} stage is ready.` : `3D Breakdown ${stage} stage is not ready.`);
   if (result.missingEnvironment.length) console.log(`Add to v3/.env.local: ${result.missingEnvironment.join(", ")}`);
@@ -146,6 +191,7 @@ async function init() {
     subject: readSubject(),
     planningCalls: 0,
     imageAttempts: [],
+    videoAttempts: [],
   });
   console.log(`Created ${path.relative(v3Root, directory)}. No provider was called.`);
 }
@@ -366,19 +412,207 @@ async function image() {
   }
 }
 
+function updateClipPlan(
+  scene: ThreeDBreakdownAdScene,
+  clipIndex: ThreeDBreakdownClipIndex,
+  update: (clip: ThreeDBreakdownClipPlan) => ThreeDBreakdownClipPlan,
+): ThreeDBreakdownAdScene {
+  return {
+    ...scene,
+    layout: {
+      ...scene.layout,
+      clipPlans: scene.layout.clipPlans?.map((clip) => clip.clipIndex === clipIndex ? update(clip) : clip),
+    },
+  };
+}
+
+async function prepareEndFrame(
+  runId: string,
+  scene: ThreeDBreakdownAdScene,
+  clipPlan: ThreeDBreakdownClipPlan,
+) {
+  if (clipPlan.endFrameImage?.status === "ready" && clipPlan.endFrameImage.url) {
+    return clipPlan.endFrameImage;
+  }
+  const board = scene.layout.storyboardBoard;
+  if (board?.image?.status !== "ready" || !board.image.url) {
+    throw new Error(`Video clip ${clipPlan.clipIndex} needs the approved storyboard board.`);
+  }
+  const endFrameIndex = clipPlan.frameIndexes.at(-1);
+  if (!endFrameIndex) throw new Error(`Video clip ${clipPlan.clipIndex} has no ending storyboard frame.`);
+  const bytes = cropThreeDStoryboardPanel(
+    new Uint8Array(await readFile(localMediaPath(board.image.url))),
+    endFrameIndex,
+  );
+  const relativeOutput = `agent-runs/${runId}/images/clip-${clipPlan.clipIndex}-end.jpg`;
+  await mkdir(path.dirname(localMediaPath(relativeOutput)), { recursive: true });
+  await writeFile(localMediaPath(relativeOutput), bytes);
+  return {
+    status: "ready" as const,
+    storageId: `local:${relativeOutput}`,
+    url: relativeOutput,
+    mimeType: "image/jpeg",
+  };
+}
+
+async function generateVideoClip(
+  runId: string,
+  scene: ThreeDBreakdownAdScene,
+  clipIndex: ThreeDBreakdownClipIndex,
+) {
+  const clipPlan = scene.layout.clipPlans?.find((clip) => clip.clipIndex === clipIndex);
+  if (!clipPlan) throw new Error(`Video clip ${clipIndex} is missing from the scene.`);
+  const startFrameIndex = clipPlan.frameIndexes[0];
+  const startFrame = scene.layout.storyboardBoard?.frames?.find((frame) => frame.frameIndex === startFrameIndex);
+  if (startFrame?.image?.status !== "ready" || !startFrame.image.url) {
+    throw new Error(`Video clip ${clipIndex} needs approved anchor frame ${startFrameIndex}.`);
+  }
+  const endFrameImage = await prepareEndFrame(runId, scene, clipPlan);
+  if (!endFrameImage.url) throw new Error(`Video clip ${clipIndex} end frame has no local URL.`);
+  const [startBytes, endBytes] = await Promise.all([
+    readFile(localMediaPath(startFrame.image.url)),
+    readFile(localMediaPath(endFrameImage.url)),
+  ]);
+  const result = await generateReplicateSeedanceVideo({
+    replicateApiToken: process.env.REPLICATE_API_TOKEN || "",
+    imageUrl: toDataUrl(new Uint8Array(startBytes), startFrame.image.mimeType || "image/jpeg"),
+    lastFrameImageUrl: toDataUrl(new Uint8Array(endBytes), endFrameImage.mimeType || "image/jpeg"),
+    prompt: buildThreeDSeedancePrompt(scene, clipPlan),
+    durationSeconds: clipPlan.durationSeconds,
+  });
+  const relativeOutput = `agent-runs/${runId}/videos/clip-${clipIndex}.mp4`;
+  await mkdir(path.dirname(localMediaPath(relativeOutput)), { recursive: true });
+  await writeFile(localMediaPath(relativeOutput), result.bytes);
+  return updateClipPlan(scene, clipIndex, (clip) => ({
+    ...clip,
+    endFrameImage,
+    video: {
+      status: "ready",
+      storageId: `local:${relativeOutput}`,
+      url: relativeOutput,
+      mimeType: result.mimeType,
+    },
+  }));
+}
+
+async function video() {
+  await loadEnvironment();
+  const runId = requiredArgument("run");
+  const clipIndex = Number(requiredArgument("clip")) as ThreeDBreakdownClipIndex;
+  const state = await loadState(runId);
+  const scene = await loadScene(runId);
+  const attempts = (state.videoAttempts || []).filter((attempt) => attempt.clipIndex === clipIndex).length;
+  assertThreeDBreakdownVideoCallAllowed({
+    approved: hasFlag("approve-video"),
+    attempts,
+    clipIndex,
+    scene,
+  });
+  if (!process.env.REPLICATE_API_TOKEN?.trim()) {
+    throw new Error("Add REPLICATE_API_TOKEN to v3/.env.local before video generation.");
+  }
+  const attempt: VideoAttempt = {
+    clipIndex,
+    number: attempts + 1,
+    status: "generating",
+    createdAt: new Date().toISOString(),
+    provider: "replicate",
+    model: BRICK_STORYBOARD_VIDEO_MODEL,
+  };
+  state.videoAttempts = [...(state.videoAttempts || []), attempt];
+  state.status = "video-started";
+  const generatingScene = updateClipPlan(scene, clipIndex, (clip) => ({
+    ...clip,
+    video: { status: "generating" },
+  }));
+  await Promise.all([saveState(state), saveScene(runId, generatingScene)]);
+  try {
+    const nextScene = await generateVideoClip(runId, generatingScene, clipIndex);
+    const output = nextScene.layout.clipPlans?.find((clip) => clip.clipIndex === clipIndex)?.video;
+    attempt.status = "ready";
+    attempt.output = output?.status === "ready" ? output.url : undefined;
+    state.status = nextScene.layout.clipPlans?.every((clip) => clip.video?.status === "ready")
+      ? "clips-ready"
+      : "video-started";
+    await saveScene(runId, nextScene);
+    console.log(`Generated video clip ${clipIndex}. Inspect it before another paid call.`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    attempt.status = "failed";
+    attempt.error = message;
+    await saveScene(runId, updateClipPlan(generatingScene, clipIndex, (clip) => ({
+      ...clip,
+      video: { status: "failed", error: message },
+    })));
+    throw error;
+  } finally {
+    await saveState(state);
+  }
+}
+
+async function probeDurationMs(filePath: string) {
+  const seconds = Number(await runCommand("ffprobe", [
+    "-v", "error",
+    "-show_entries", "format=duration",
+    "-of", "default=noprint_wrappers=1:nokey=1",
+    filePath,
+  ]));
+  if (!Number.isFinite(seconds) || seconds <= 0) throw new Error(`Could not read video duration: ${filePath}`);
+  return Math.round(seconds * 1_000);
+}
+
+async function createVideoContactSheet(runId: string, clipPaths: string[]) {
+  const relativeOutput = `agent-runs/${runId}/video-contact-sheet.jpg`;
+  const output = localMediaPath(relativeOutput);
+  await runCommand("ffmpeg", [
+    "-y",
+    "-i", clipPaths[0]!,
+    "-i", clipPaths[1]!,
+    "-filter_complex",
+    "[0:v][1:v]concat=n=2:v=1:a=0,fps=1/3,scale=270:-1,tile=3x2:padding=8:margin=8",
+    "-frames:v", "1",
+    output,
+  ]);
+  return relativeOutput;
+}
+
 async function inspect() {
   const runId = requiredArgument("run");
   const scene = await loadScene(runId);
-  const report = inspectThreeDBreakdownRepoScene(scene, (url) => (
+  const baseReport = inspectThreeDBreakdownRepoScene(scene, (url) => (
     /^https?:\/\//.test(url) || existsSync(localMediaPath(url))
   ));
-  await writeJson(path.join(runDirectory(runId), "quality-report.json"), report);
+  let report: Record<string, unknown> = baseReport;
   const state = await loadState(runId);
-  if (report.status === "ready-for-video") state.status = "ready-for-video";
+  if (baseReport.status === "clips-ready") {
+    const videoPaths = scene.layout.clipPlans!.map((clip) => localMediaPath(clip.video!.url!));
+    const clipDurationsMs = await Promise.all(videoPaths.map(probeDurationMs));
+    const durationsMatchPlan = clipDurationsMs.every((durationMs, index) => (
+      Math.abs(durationMs - scene.layout.clipPlans![index]!.durationSeconds * 1_000) <= 1_000
+    ));
+    const contactSheet = await createVideoContactSheet(runId, videoPaths);
+    report = {
+      ...baseReport,
+      status: durationsMatchPlan ? "clips-ready" : "video-in-progress",
+      checks: { ...baseReport.checks, clipDurationsMatchPlan: durationsMatchPlan },
+      problems: [
+        ...baseReport.problems,
+        ...(durationsMatchPlan ? [] : ["Check failed: clipDurationsMatchPlan."]),
+      ],
+      clipDurationsMs,
+      contactSheet,
+    };
+    state.status = durationsMatchPlan ? "clips-ready" : "video-started";
+  } else if (baseReport.status === "ready-for-video") {
+    state.status = "ready-for-video";
+  }
+  await writeJson(path.join(runDirectory(runId), "quality-report.json"), report);
   await saveState(state);
   console.log(`Inspection status: ${report.status}.`);
-  if (report.problems.length) console.log(report.problems.map((problem) => `- ${problem}`).join("\n"));
-  if (report.status === "ready-for-video") console.log("Stop here. Video generation is still disabled.");
+  const problems = report.problems as string[];
+  if (problems.length) console.log(problems.map((problem) => `- ${problem}`).join("\n"));
+  if (report.status === "ready-for-video") console.log("Both anchors are ready. Paid video still requires explicit approval.");
+  if (report.status === "clips-ready") console.log("Both clips passed technical inspection. Voice and final composition remain disabled.");
 }
 
 async function main() {
@@ -390,7 +624,7 @@ async function main() {
   if (command === "validate") return await validate();
   if (command === "image") return await image();
   if (command === "inspect") return await inspect();
-  if (command === "video") throw new Error("Paid video generation is disabled in this build-first phase.");
+  if (command === "video") return await video();
   throw new Error("Use: check | init | directions | select | validate | image | inspect | video");
 }
 

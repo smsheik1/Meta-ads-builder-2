@@ -32,10 +32,10 @@ if (missing.length) {
   process.exitCode = 1;
 } else {
   const skill = readFileSync(path.join(packageRoot, "SKILL.md"), "utf8");
-  if (!/Do not rebuild/i.test(skill) || !/Do not generate video or voice/i.test(skill)) {
-    console.error("The skill must preserve the official renderer and the no-video Phase 1 boundary.");
+  if (!/Do not rebuild/i.test(skill) || !/Do not generate voice or a final MP4/i.test(skill)) {
+    console.error("The skill must preserve the official renderer and stop before voice or final composition.");
     process.exitCode = 1;
   } else {
-    console.log("3D Breakdown Kit files are complete. Phase 1 stops before video.");
+    console.log("3D Breakdown Kit files are complete. Clip generation is enabled; voice and final composition remain locked.");
   }
 }

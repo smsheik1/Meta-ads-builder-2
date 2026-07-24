@@ -15,13 +15,14 @@ export type ThreeDBreakdownRepoRequirementManifest = {
 };
 
 export type ThreeDBreakdownRepoInspection = {
-  status: "invalid" | "planned" | "ready-for-video";
+  status: "invalid" | "planned" | "ready-for-video" | "video-in-progress" | "clips-ready";
   checks: Record<string, boolean>;
   problems: string[];
   requiredAnchorFrameIndexes: number[];
 };
 
 export const THREE_D_BREAKDOWN_REPO_IMAGE_ATTEMPT_LIMIT = 3;
+export const THREE_D_BREAKDOWN_REPO_VIDEO_ATTEMPT_LIMIT = 3;
 
 export function evaluateThreeDBreakdownRepoRequirements({
   environment,
@@ -71,6 +72,46 @@ export function assertThreeDBreakdownImageCallAllowed({
   }
 }
 
+export function assertThreeDBreakdownVideoCallAllowed({
+  approved,
+  attempts,
+  clipIndex,
+  scene,
+}: {
+  approved: boolean;
+  attempts: number;
+  clipIndex: number;
+  scene: ThreeDBreakdownAdScene;
+}) {
+  if (!approved) throw new Error("Approve this paid video clip before running the command.");
+  if (attempts >= THREE_D_BREAKDOWN_REPO_VIDEO_ATTEMPT_LIMIT) {
+    throw new Error(`The video attempt limit is ${THREE_D_BREAKDOWN_REPO_VIDEO_ATTEMPT_LIMIT}. Inspect the current result before spending again.`);
+  }
+  const validation = validateThreeDBreakdownScene(scene);
+  if (!validation.valid) throw new Error(`Fix the scene before video generation:\n${validation.errors.join("\n")}`);
+  if (scene.layout.storyContract.visualStyle !== "presenter-teardown-vsl") {
+    throw new Error("This Repo version supports Style B (presenter-teardown-vsl) only.");
+  }
+  const clipPlans = scene.layout.clipPlans || [];
+  if (!Number.isInteger(clipIndex) || !clipPlans.some((clip) => clip.clipIndex === clipIndex)) {
+    throw new Error("Video clip must be one of the two approved clip plans.");
+  }
+  const requiredAnchors = getThreeDBreakdownRequiredAnchorFrameIndexes(scene);
+  const frames = scene.layout.storyboardBoard?.frames || [];
+  if (!requiredAnchors.every((frameIndex) => {
+    const image = frames.find((frame) => frame.frameIndex === frameIndex)?.image;
+    return image?.status === "ready" && Boolean(image.url);
+  })) {
+    throw new Error("Generate and inspect both production anchors before video.");
+  }
+  const clip = clipPlans.find((plan) => plan.clipIndex === clipIndex)!;
+  if (clip.video?.status === "ready") throw new Error(`Video clip ${clipIndex} is already ready.`);
+  if (clipIndex > 1) {
+    const previous = clipPlans.find((plan) => plan.clipIndex === clipIndex - 1);
+    if (previous?.video?.status !== "ready") throw new Error(`Generate and inspect video clip ${clipIndex - 1} before clip ${clipIndex}.`);
+  }
+}
+
 export function getThreeDBreakdownRequiredAnchorFrameIndexes(scene: ThreeDBreakdownAdScene) {
   return Array.from(new Set(
     (scene.layout.clipPlans || [])
@@ -89,6 +130,11 @@ export function inspectThreeDBreakdownRepoScene(
   const requiredAnchors = requiredAnchorFrameIndexes.map((frameIndex) => (
     board?.frames?.find((frame) => frame.frameIndex === frameIndex)?.image
   ));
+  const clipPlans = scene.layout.clipPlans || [];
+  const videoStarted = clipPlans.some((clip) => clip.video && clip.video.status !== "idle");
+  const twoVideoClipsReady = clipPlans.length === 2
+    && clipPlans.every((clip) => clip.video?.status === "ready"
+      && Boolean(clip.video.url && mediaExists(clip.video.url)));
   const checks = {
     sceneContractValid: validation.valid,
     styleBSelected: scene.layout.storyContract.visualStyle === "presenter-teardown-vsl",
@@ -101,18 +147,36 @@ export function inspectThreeDBreakdownRepoScene(
     twoProductionAnchorsReady: requiredAnchorFrameIndexes.length === 2
       && requiredAnchors.every((image) => image?.status === "ready"
         && Boolean(image.url && mediaExists(image.url))),
-    noVideoWasGenerated: !scene.layout.clipPlans?.some((clip) => clip.video?.status === "ready")
-      && !scene.layout.finalVideo,
+    noVideoWasGenerated: !videoStarted && !scene.layout.finalVideo,
+    twoVideoClipsReady,
   };
+  const requiredChecks = [
+    "sceneContractValid",
+    "styleBSelected",
+    "fiveScriptBeats",
+    "sixStoryboardFrames",
+    "twoTenSecondClipPlans",
+    "storyboardReady",
+    "twoProductionAnchorsReady",
+  ];
   const problems = [
     ...validation.errors,
     ...Object.entries(checks)
-      .filter(([, passed]) => !passed)
+      .filter(([name, passed]) => requiredChecks.includes(name) && !passed)
       .map(([name]) => `Check failed: ${name}.`),
+    ...(videoStarted && !twoVideoClipsReady ? ["Check failed: twoVideoClipsReady."] : []),
   ];
   const imageReady = checks.storyboardReady && checks.twoProductionAnchorsReady;
   return {
-    status: !validation.valid ? "invalid" : imageReady ? "ready-for-video" : "planned",
+    status: !validation.valid
+      ? "invalid"
+      : twoVideoClipsReady
+        ? "clips-ready"
+        : videoStarted
+          ? "video-in-progress"
+          : imageReady
+            ? "ready-for-video"
+            : "planned",
     checks,
     problems,
     requiredAnchorFrameIndexes,

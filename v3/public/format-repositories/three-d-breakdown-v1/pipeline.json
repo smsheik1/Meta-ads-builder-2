@@ -31,7 +31,8 @@
       "output": "Two 10-second clips",
       "paidMedia": true,
       "approvalRequired": true,
-      "enabled": false
+      "oneCallAtATime": true,
+      "enabled": true
     },
     {
       "id": "voice-and-final",

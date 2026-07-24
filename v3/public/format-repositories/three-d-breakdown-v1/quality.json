@@ -16,5 +16,12 @@
     "Both production anchors are present and manually inspected.",
     "Every generated asset has provenance and an attempt number.",
     "The user explicitly approves paid video generation in a later phase."
+  ],
+  "video": [
+    "Generate clip 1 before clip 2 and inspect each result before another paid call.",
+    "Each clip uses its approved production anchor as the first frame and its storyboard crop as the ending target.",
+    "Each clip is within one second of its planned 10-second duration.",
+    "The contact sheet preserves the same workshop, demonstrator, brick, and wooden toy across both clips.",
+    "No voice or final composition is generated during clip inspection."
   ]
 }

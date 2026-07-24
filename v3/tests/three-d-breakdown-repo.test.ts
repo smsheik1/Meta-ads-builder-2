@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { extractThreeDBreakdownEvidence } from "../features/formats/three-d-breakdown/evidence";
 import {
   assertThreeDBreakdownImageCallAllowed,
+  assertThreeDBreakdownVideoCallAllowed,
   evaluateThreeDBreakdownRepoRequirements,
   getThreeDBreakdownRequiredAnchorFrameIndexes,
   inspectThreeDBreakdownRepoScene,
@@ -174,14 +175,85 @@ readyScene.layout.storyboardBoard!.frames = readyScene.layout.storyboardBoard!.f
 const readyInspection = inspectThreeDBreakdownRepoScene(readyScene, () => true);
 assert.equal(readyInspection.status, "ready-for-video");
 assert.deepEqual(readyInspection.problems, []);
+assert.throws(
+  () => assertThreeDBreakdownVideoCallAllowed({
+    approved: false,
+    attempts: 0,
+    clipIndex: 1,
+    scene: readyScene,
+  }),
+  /Approve this paid video clip/,
+);
+assert.doesNotThrow(
+  () => assertThreeDBreakdownVideoCallAllowed({
+    approved: true,
+    attempts: 0,
+    clipIndex: 1,
+    scene: readyScene,
+  }),
+);
+assert.throws(
+  () => assertThreeDBreakdownVideoCallAllowed({
+    approved: true,
+    attempts: 0,
+    clipIndex: 2,
+    scene: readyScene,
+  }),
+  /clip 1 before clip 2/,
+);
+assert.throws(
+  () => assertThreeDBreakdownVideoCallAllowed({
+    approved: true,
+    attempts: 3,
+    clipIndex: 1,
+    scene: readyScene,
+  }),
+  /attempt limit is 3/,
+);
+
+const oneClipScene = structuredClone(readyScene);
+oneClipScene.layout.clipPlans![0]!.video = {
+  status: "ready",
+  storageId: "local:clip-1",
+  url: "agent-runs/test/videos/clip-1.mp4",
+  mimeType: "video/mp4",
+};
+const inProgressInspection = inspectThreeDBreakdownRepoScene(oneClipScene, () => true);
+assert.equal(inProgressInspection.status, "video-in-progress");
+assert.match(inProgressInspection.problems.join("\n"), /twoVideoClipsReady/);
+assert.doesNotThrow(
+  () => assertThreeDBreakdownVideoCallAllowed({
+    approved: true,
+    attempts: 0,
+    clipIndex: 2,
+    scene: oneClipScene,
+  }),
+);
+
+const clipsReadyScene = structuredClone(oneClipScene);
+clipsReadyScene.layout.clipPlans![1]!.video = {
+  status: "ready",
+  storageId: "local:clip-2",
+  url: "agent-runs/test/videos/clip-2.mp4",
+  mimeType: "video/mp4",
+};
+const clipsReadyInspection = inspectThreeDBreakdownRepoScene(clipsReadyScene, () => true);
+assert.equal(clipsReadyInspection.status, "clips-ready");
+assert.equal(clipsReadyInspection.checks.twoVideoClipsReady, true);
+assert.equal(clipsReadyInspection.checks.noVideoWasGenerated, false);
+assert.deepEqual(clipsReadyInspection.problems, []);
 
 const manifest: ThreeDBreakdownRepoRequirementManifest = {
   environment: {
     NVIDIA_NIM_API_KEY: { requiredFor: ["plan"], secret: true },
     REPLICATE_API_TOKEN: { requiredFor: ["images", "video"], secret: true },
   },
-  tools: { node: { requiredFor: ["plan", "images", "video"] } },
-  disabledStages: { video: "Video is disabled in Phase 1." },
+  tools: {
+    node: { requiredFor: ["plan", "images", "video"] },
+    ffmpeg: { requiredFor: ["video"] },
+    ffprobe: { requiredFor: ["video"] },
+  },
+  disabledStages: {},
 };
 assert.deepEqual(evaluateThreeDBreakdownRepoRequirements({
   stage: "images",
@@ -189,13 +261,12 @@ assert.deepEqual(evaluateThreeDBreakdownRepoRequirements({
   manifest,
   tools: { node: true },
 }).missingEnvironment, ["REPLICATE_API_TOKEN"]);
-const disabledVideo = evaluateThreeDBreakdownRepoRequirements({
+const readyVideo = evaluateThreeDBreakdownRepoRequirements({
   stage: "video",
   environment: { REPLICATE_API_TOKEN: "present" },
   manifest,
-  tools: { node: true },
+  tools: { node: true, ffmpeg: true, ffprobe: true },
 });
-assert.equal(disabledVideo.ok, false);
-assert.match(disabledVideo.disabledReason || "", /disabled/);
+assert.equal(readyVideo.ok, true);
 
 console.log("3D Breakdown Repo tests passed.");

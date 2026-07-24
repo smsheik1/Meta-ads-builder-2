@@ -7,5 +7,5 @@
   "clipCount": 2,
   "clipDurationSeconds": 10,
   "finalDurationMs": 20000,
-  "videoGenerationEnabled": false
+  "videoGenerationEnabled": true
 }

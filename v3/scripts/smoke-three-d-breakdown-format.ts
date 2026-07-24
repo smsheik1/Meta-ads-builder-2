@@ -26,7 +26,7 @@ assert.equal(fixture.storyboardFrameCount, 6);
 assert.deepEqual(fixture.productionAnchorFrameIndexes, [1, 4]);
 assert.equal(fixture.clipCount, 2);
 assert.equal(fixture.clipDurationSeconds, 10);
-assert.equal(fixture.videoGenerationEnabled, false);
+assert.equal(fixture.videoGenerationEnabled, true);
 
 const manifest = readJson<ThreeDBreakdownRepoRequirementManifest>("requirements.json");
 const freeCheck = evaluateThreeDBreakdownRepoRequirements({
@@ -40,9 +40,8 @@ const videoCheck = evaluateThreeDBreakdownRepoRequirements({
   stage: "video",
   environment: { REPLICATE_API_TOKEN: "present" },
   manifest,
-  tools: { node: true },
+  tools: { node: true, ffmpeg: true, ffprobe: true },
 });
-assert.equal(videoCheck.ok, false);
-assert.match(videoCheck.disabledReason || "", /disabled/i);
+assert.equal(videoCheck.ok, true);
 
 console.log("3D Breakdown Repo smoke passed without a provider call.");

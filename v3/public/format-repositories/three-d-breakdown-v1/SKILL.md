@@ -17,7 +17,8 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 - Show the five story directions before selecting one.
 - Validate the selected plan before any image call.
 - One explicit approval covers one image call only. Never batch the storyboard and anchors.
-- This Repo version stops after the storyboard and two production anchors. Do not generate video or voice.
+- Ask once before the two planned video clips. Submit one clip at a time and inspect clip 1 before spending on clip 2.
+- This Repo version stops after the two inspected video clips. Do not generate voice or a final MP4.
 - Never print secret values. Report only missing key names.
 - Fail loudly. Do not switch providers, repair model output, retry automatically, or hide an error.
 
@@ -32,7 +33,9 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 7. Ask before each `image` command.
 8. Generate the storyboard first, then anchor frame 1, then anchor frame 4.
 9. Run `inspect`.
-10. Stop at `ready-for-video` and explain that paid video remains locked for the next approved phase.
+10. After explicit approval, generate video clip 1, inspect it, then generate video clip 2.
+11. Run `inspect` again and review `video-contact-sheet.jpg`.
+12. Stop at `clips-ready`; voice and final composition remain locked.
 
 ## Good result
 
@@ -40,5 +43,6 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 - Every factual claim maps to the saved website evidence.
 - The five beats sound spoken, not like production notes or AI copy.
 - The six frames show different physical actions while preserving the same world, demonstrator, and product category.
-- The two anchors are clean enough to become the first frames of the two later clips.
-- No video or voice asset exists yet.
+- The two anchors are clean enough to become the first frames of the two clips.
+- Both clips follow the approved physical actions, remain visually coherent, and match their planned duration.
+- No voice or final-video asset exists yet.
