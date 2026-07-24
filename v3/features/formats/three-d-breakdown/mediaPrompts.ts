@@ -4,6 +4,11 @@ import type {
   ThreeDBreakdownStoryboardFrameIndex,
 } from "../../scene/types";
 import { getThreeDAnchorPrompt, getThreeDStoryboardPrompt } from "./editablePrompts";
+import {
+  describeThreeDFrameWorld,
+  getThreeDFrameWorldRole,
+  THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD,
+} from "./storyboardContracts";
 
 const MAX_SEEDANCE_PROMPT_CHARS = 3900;
 export const THREE_D_BREAKDOWN_VIDEO_RESOLUTION = "480p" as const;
@@ -45,7 +50,7 @@ const productLock = (scene: ThreeDBreakdownAdScene) => {
 };
 
 const storyboardReferenceLock = (scene: ThreeDBreakdownAdScene) => clean([
-  "REFERENCE ORDER: image 1 is the STYLE MASTER for feature-animation CGI rendering, modeled materials, and finish only. The approved story contract owns the setting, recurring subject, lighting, and camera. Do not copy an unrelated person, product, or blue-grid setting from the style reference.",
+  "REFERENCE ORDER: image 1 is the STYLE MASTER for feature-animation CGI rendering, modeled materials, and finish only. The approved frame world owns the setting; copy the blue-grid stage only for frames 3-4. Do not copy an unrelated person or product from the style reference.",
   scene.layout.productAnchor
     ? `Image 2 is the PRODUCT MASTER for ${scene.layout.productAnchor.title} and owns retail geometry; later images only define its real serving/use form.`
     : "No Product Master is available; use an abstract category object and do not invent branded packaging.",
@@ -53,8 +58,8 @@ const storyboardReferenceLock = (scene: ThreeDBreakdownAdScene) => clean([
 
 const productionReferenceLock = (scene: ThreeDBreakdownAdScene, hasContinuityAnchor: boolean) => clean([
   hasContinuityAnchor
-    ? "REFERENCE ORDER: image 1 is the approved panel and owns action/composition; image 2 is the preceding anchor and owns demonstrator identity/clothing/world; image 3 is the PRODUCT MASTER; image 4 may show real product use."
-    : "REFERENCE ORDER: image 1 is the approved panel and owns character/world/action/composition; image 2 is the PRODUCT MASTER; image 3 may show real product use.",
+    ? "REFERENCE ORDER: image 1 is the approved panel and owns action/composition; image 2 owns recurring identity, clothing, materials, and camera but not environment; image 3 is the PRODUCT MASTER; image 4 may show real use."
+    : "REFERENCE ORDER: image 1 is the approved panel and owns character/action/composition; the current frame world directive owns the environment; image 2 is the PRODUCT MASTER; image 3 may show real product use.",
   scene.layout.productAnchor
     ? `If the storyboard simplified ${scene.layout.productAnchor.title}, correct its product form to match the PRODUCT MASTER without changing the approved action.`
     : "No Product Master is available; preserve the approved abstract category object.",
@@ -119,7 +124,8 @@ const supplementDirection = (scene: ThreeDBreakdownAdScene) => {
 };
 
 const sharedStyle = (scene: ThreeDBreakdownAdScene) => clean([
-  `STYLE: ${scene.layout.storyContract.visualWorld}.`,
+  "STYLE: polished feature-animation CGI with modeled materials, crisp subject separation, and tactile physical demonstrations.",
+  `LIFESTYLE WORLD: ${scene.layout.storyContract.visualWorld}.`,
   `LIGHTING: ${scene.layout.storyContract.lighting}.`,
   `CAMERA LANGUAGE: ${scene.layout.storyContract.cameraStyle}.`,
   `RECURRING OBJECTS: ${scene.layout.storyContract.recurringObjects.join(", ")}.`,
@@ -160,7 +166,7 @@ export const sanitizeThreeDStoryboardImagePlan = (value: string) => clean(value)
 
 export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
   const plans = ([1, 2, 3, 4, 5, 6] as ThreeDBreakdownStoryboardFrameIndex[])
-    .map((index) => `${framePlan(scene, index)} ROLE: ${frameRole(scene, index)}`)
+    .map((index) => `${framePlan(scene, index)} ROLE: ${frameRole(scene, index)} WORLD: ${getThreeDFrameWorldRole(index)}.`)
     .join(" ");
   return clean([
     "TASK: create ONE vertical 9:16 image containing exactly six raw production stills in reading order, arranged as a 2-column by 3-row contact sheet for visual review.",
@@ -169,12 +175,11 @@ export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) 
     sharedStyle(scene),
     productLock(scene),
     supplementDirection(scene),
+    `WORLD SEQUENCE: frames 1-2 use the lifestyle setup; frames 3-4 use ${THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD}; frames 5-6 return to the lifestyle payoff. This overrides conflicting settings in the written plan.`,
     `APPROVED SIX-FRAME PLAN: ${scene.layout.storyboardBoard?.creativePrompt
       ? sanitizeThreeDStoryboardImagePlan(getThreeDStoryboardPrompt(scene.layout.storyboardBoard))
       : plans}`,
     "CONTINUITY OVERRIDE: preserve the same approved recurring demonstrator or hand-proxy only in panels that call for it. Object-only panels remain object-only. Never add a new face, person, goggles, hat, or outfit.",
-    "VISUAL STORY: each cell shows one concrete physical action and one visible state change. Frame 1 establishes the approved recurring subject and world; frame 6 resolves to the approved final subject. Middle frames may use hands, cutaways, components, particles, scale comparisons, or impossible-camera reveals while preserving continuity.",
-    "VARIETY: do not repeat six product-holding poses or six macro science inserts. Move from use, to obstacle, to setup, to reveal, to evidence, to product payoff.",
     pixelTextBan,
   ].join(" "));
 };
@@ -193,10 +198,11 @@ export const buildThreeDProductionFramePrompt = (
   supplementDirection(scene),
   `APPROVED ANCHOR CREATIVE PROMPT: ${sanitizeThreeDStoryboardImagePlan(anchorPrompt)}`,
   `ROLE: ${frameRole(scene, frameIndex)}`,
+  describeThreeDFrameWorld(frameIndex, scene.layout.storyContract.visualWorld),
   frameIndex === 1
     ? "CONTINUITY: establish the panel's approved subject or hand-proxy, recurring objects, world, and camera relationship. Do not add a face or full person unless the panel requires one."
-    : "CONTINUITY: copy image 2's exact world and any recurring demonstrator, clothing, or hand-proxy. If the approved panel hides or omits a face, do not invent one.",
-  "COMPOSITION: fill the frame with the approved subject and action. No split screen, multiple panels, huge empty table, dead negative space, quiet showroom card, or alternate concept.",
+    : "CONTINUITY: preserve image 2's identity, clothing, materials, hand-proxy, and camera; obey the current frame world. Do not invent a hidden face.",
+  "COMPOSITION: fill the frame with the approved subject/action. No collage, split screen, dead space, or alternate concept.",
   pixelTextBan,
 ].join(" "));
 };
@@ -209,15 +215,18 @@ export const buildThreeDSeedancePrompt = (
   const categoryRule = isThreeDSupplementStory(scene)
     ? "CATEGORY: use clean body-route or capsule-path footage only where the approved frames require it; no gore or detached anatomy montage."
     : "CATEGORY: do not invent supplement, capsule, digestive, anatomy, or medical imagery absent from the approved frames.";
+  const worldMotionRule = scene.layout.storyContract.visualStyle === "presenter-teardown-vsl"
+    ? "MOTION: follow the approved world transition between the supplied endpoints while preserving the same subject, product, materials, and feature-animation CGI camera language. Make the transition feel physically motivated; do not cut to an unrelated setting, person, presenter, or composition."
+    : "MOTION: stay inside one continuous world and evolve naturally from the supplied opening frame to the supplied ending frame. Use camera movement, object motion, component reveals, or physical transformations; do not cut to another setting, person, presenter, or unrelated composition.";
   const rawPrompt = clean([
     clipPlan.prompt,
     product
       ? `PRODUCT LOCK: preserve the supplied ${product.title} category, silhouette, colors, material, and packaging form; never replace it or invent readable packaging.`
       : "PRODUCT LOCK: preserve the approved category-level object and do not invent branded packaging.",
     categoryRule,
-    "INPUT LOCK: the supplied first image is the exact opening composition and the supplied last image is the exact ending target. Begin on the first image, perform the approved physical changes, and arrive naturally at the last image without inventing another scene, person, or product.",
+    "INPUT LOCK: the supplied first image is the exact opening composition and the supplied last image is the exact ending target. Begin on the first image, perform the approved physical changes, and arrive naturally at the last image without inventing another person or product.",
     "IDENTITY: preserve only the recurring subject or hand-proxy visible in the supplied endpoints. If the endpoints are object-only, never invent a person, face, mannequin, dummy, or photoreal human.",
-    "MOTION: stay inside one continuous world and evolve naturally from the supplied opening frame to the supplied ending frame. Use camera movement, object motion, component reveals, or physical transformations; do not cut to another setting, person, presenter, or unrelated composition.",
+    worldMotionRule,
     "No readable text, captions, labels, logos, UI, pseudo-writing, or watermarks; Wiggly adds every word later. Never visualize a claim as a headline, sign, dashboard, title card, or written comparison.",
   ].join(" "));
   const wellnessSafetyContext = /\b(?:massage gun|gun head|muscle|tissue|knot|x-?ray)\b/i.test(rawPrompt)

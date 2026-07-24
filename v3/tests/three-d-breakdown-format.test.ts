@@ -29,7 +29,11 @@ import {
   THREE_D_REVEAL_PATTERNS,
   THREE_D_SCRIPT_BEATS,
 } from "../features/formats/three-d-breakdown/prompt";
-import { THREE_D_STORYBOARD_FRAME_CONTRACTS } from "../features/formats/three-d-breakdown/storyboardContracts";
+import {
+  getThreeDFrameWorldRole,
+  THREE_D_STORYBOARD_FRAME_CONTRACTS,
+  THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD,
+} from "../features/formats/three-d-breakdown/storyboardContracts";
 import {
   formatThreeDBreakdownStorySubject,
   resolveThreeDBreakdownStorySubject,
@@ -665,7 +669,7 @@ assert.ok(seedPrompt.length < 7_000, `Seed director prompt is too large: ${seedP
 assert.ok(styleBScriptPrompt.length < 6_000, `3D Breakdown Style B script prompt is too large: ${styleBScriptPrompt.length} chars`);
 assert.ok(storyDirectionsPrompt.length < 4_500, `3D Breakdown story directions prompt is too large: ${storyDirectionsPrompt.length} chars`);
 assert.ok(!prompt.includes('"shots": ['), "3D Breakdown director must not author a duplicate three-shot plan.");
-["visualStyle", "toy-character-vsl", "presenter-teardown-vsl", "six frames", "impossible reveal", "real selected product or service outcome", "one coherent visual world", "no readable text"].forEach((expected) => (
+["visualStyle", "toy-character-vsl", "presenter-teardown-vsl", "six frames", "impossible reveal", "real selected product or service outcome", "one coherent feature-animation CGI style", "World sequence is fixed", "no readable text"].forEach((expected) => (
   assert.ok(prompt.includes(expected), `3D Breakdown visual prompt missing: ${expected}`)
 ));
 assert.ok(twoDirectionPrompt.includes("Return toy-character-vsl first and presenter-teardown-vsl second."));
@@ -1469,7 +1473,8 @@ assert.ok(!generated.variants[0]?.storyboardBoard.imagePrompt.includes("Frame 4 
 assert.ok(prompt.includes("Every narration line must become a visible object, action, transformation, or payoff."));
 assert.ok(prompt.includes("Frame order: ordinary use or assumption; hidden obstacle; mechanism setup; peak impossible reveal; evidence payoff; final product payoff."));
 assert.ok(prompt.includes("Give every frame one new physical state change."));
-assert.ok(prompt.includes("Keep one coherent visual world, product, and recurring subject across all six frames."));
+assert.ok(prompt.includes("Keep one coherent feature-animation CGI style, product, and recurring subject across all six frames."));
+assert.ok(prompt.includes("frames 3-4 enter Wiggly's bright blue/cyan blueprint-grid explanation stage"));
 assert.ok(prompt.includes("one silent, stylized CGI demonstrator"));
 assert.ok(prompt.includes("overlayText is renderer metadata only"));
 assert.ok(prompt.includes("Wiggly adds IDs, roles, timing, frame labels, and final assembly."));
@@ -2240,16 +2245,20 @@ assert.ok(
 );
 
 const cookieBoardPrompt = buildThreeDStoryboardBoardPrompt(styleBScene);
+const cookieSetupAnchorPrompt = buildThreeDProductionFramePrompt(styleBScene, 1);
 const cookieAnchorPrompt = buildThreeDProductionFramePrompt(styleBScene, 4);
+const cookiePayoffAnchorPrompt = buildThreeDProductionFramePrompt(styleBScene, 6);
 const cookieClipPrompt = buildThreeDSeedancePrompt(styleBScene, styleBScene.layout.clipPlans![0]!);
 assert.equal(isThreeDSupplementStory(styleBScene), false);
 assert.ok(cookieBoardPrompt.includes("exactly six raw production stills"));
 assert.ok(cookieBoardPrompt.includes("APPROVED SIX-FRAME PLAN"));
+assert.ok(cookieBoardPrompt.includes("WORLD SEQUENCE: frames 1-2 use the lifestyle setup"));
+assert.ok(cookieBoardPrompt.includes(THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD));
 assert.ok(cookieBoardPrompt.includes("Hands place a red cookie tin"));
 assert.ok(cookieBoardPrompt.includes("image 1 is the STYLE MASTER"));
 assert.ok(cookieBoardPrompt.includes("Image 2 is the PRODUCT MASTER"));
 assert.ok(cookieBoardPrompt.includes("later images only define its real serving/use form"));
-assert.ok(cookieBoardPrompt.includes("story contract owns the setting, recurring subject, lighting, and camera"));
+assert.ok(cookieBoardPrompt.includes("approved frame world owns the setting"));
 assert.ok(cookieBoardPrompt.includes("Object-only panels remain object-only"));
 assert.ok(cookieBoardPrompt.includes("flexible pouch stays pouch, carton stays carton, jar stays jar, bottle stays bottle"));
 assert.ok(cookieBoardPrompt.includes("Script nouns such as pack, package, product, or snack pack never redefine its shape"));
@@ -2261,14 +2270,22 @@ assert.ok(cookieBoardPrompt.includes("PIXEL TEXT BAN"));
 assert.ok(cookieBoardPrompt.length < 6000, `Storyboard prompt grew to ${cookieBoardPrompt.length} characters.`);
 assert.ok(cookieAnchorPrompt.includes("recreate panel 4"));
 assert.ok(cookieAnchorPrompt.includes("image 1 is the approved panel"));
-assert.ok(cookieAnchorPrompt.includes("image 2 is the preceding anchor"));
+assert.ok(cookieAnchorPrompt.includes("image 2 owns recurring identity"));
 assert.ok(cookieAnchorPrompt.includes("image 3 is the PRODUCT MASTER"));
 assert.ok(cookieAnchorPrompt.includes("serving route that carries warm cookies"));
 assert.ok(cookieAnchorPrompt.includes("APPROVED ANCHOR CREATIVE PROMPT:"));
+assert.ok(cookieAnchorPrompt.includes("BLUE BREAKDOWN WORLD"));
+assert.ok(cookieAnchorPrompt.includes(THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD));
+assert.ok(cookieAnchorPrompt.includes("obey the current frame world"));
+assert.ok(!cookieAnchorPrompt.includes("copy image 2's exact world"));
+assert.ok(cookieSetupAnchorPrompt.includes("LIFESTYLE SETUP WORLD"));
+assert.ok(cookiePayoffAnchorPrompt.includes("LIFESTYLE PAYOFF WORLD"));
 assert.ok(cookieAnchorPrompt.includes("ONE full-frame vertical 9:16 production keyframe"));
-assert.ok(cookieAnchorPrompt.length < 3500);
+assert.ok(cookieAnchorPrompt.length < 3500, `Production anchor prompt grew to ${cookieAnchorPrompt.length} characters.`);
 assert.ok(cookieClipPrompt.includes("supplied first image is the exact opening composition"));
 assert.ok(cookieClipPrompt.includes("supplied last image is the exact ending target"));
+assert.ok(cookieClipPrompt.includes("follow the approved world transition"));
+assert.ok(!cookieClipPrompt.includes("stay inside one continuous world"));
 assert.ok(!cookieClipPrompt.includes("benign consumer wellness product demonstration"));
 assert.ok(cookieClipPrompt.length <= 3900);
 
@@ -2367,11 +2384,18 @@ assert.equal(styleBScene.layout.storyContract.ctaLine, "Shop memorable cookie gi
 assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => clip.frameIndexes), [[1, 2, 3], [4, 5, 6]]);
 assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => clip.durationSeconds), [10, 10]);
 assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => [clip.startMs, clip.endMs]), [[0, 10000], [10000, 20000]]);
+assert.deepEqual(
+  ([1, 2, 3, 4, 5, 6] as const).map(getThreeDFrameWorldRole),
+  ["lifestyle-setup", "lifestyle-setup", "blue-breakdown", "blue-breakdown", "lifestyle-payoff", "lifestyle-payoff"],
+);
 assert.deepEqual(getAdSceneDimensions(styleBScene), { width: 1080, height: 1920 });
 assert.equal(getAdSceneDurationInFrames(styleBScene, 60), 1_200);
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("clip 1 of 2"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("Create one continuous"));
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("frame 2 is a motion checkpoint inside the same world"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("frame 2 is a motion checkpoint in the approved world arc"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("WORLD ARC: begin in"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes(THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD));
+assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("then use the approved payoff action to return"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("No montage, hard cut"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("action: Hands place a red cookie tin"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("begin on the approved setup"));

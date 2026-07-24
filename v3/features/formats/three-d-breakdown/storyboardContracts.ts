@@ -16,6 +16,31 @@ const frameMeta = [
 
 type StoryboardFrame = NonNullable<ThreeDBreakdownStoryboardBoard["frames"]>[number];
 
+export type ThreeDBreakdownFrameWorldRole = "lifestyle-setup" | "blue-breakdown" | "lifestyle-payoff";
+
+export const THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD =
+  "Style B's bright blue/cyan blueprint-grid stage with crisp 3D objects, cool lighting, and hard subject separation";
+
+export const getThreeDFrameWorldRole = (
+  frameIndex: ThreeDBreakdownStoryboardFrameIndex,
+): ThreeDBreakdownFrameWorldRole => (
+  frameIndex <= 2 ? "lifestyle-setup" : frameIndex <= 4 ? "blue-breakdown" : "lifestyle-payoff"
+);
+
+export const describeThreeDFrameWorld = (
+  frameIndex: ThreeDBreakdownStoryboardFrameIndex,
+  lifestyleWorld: string,
+) => {
+  const role = getThreeDFrameWorldRole(frameIndex);
+  if (role === "blue-breakdown") {
+    return `BLUE BREAKDOWN WORLD: use ${THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD}; preserve the approved subject, objects, and action.`;
+  }
+  if (role === "lifestyle-payoff") {
+    return `LIFESTYLE PAYOFF WORLD: return to ${lifestyleWorld} for the resolved payoff; preserve the CGI style and recurring elements.`;
+  }
+  return `LIFESTYLE SETUP WORLD: use ${lifestyleWorld} in feature-animation CGI; blue may foreshadow but not fill the background.`;
+};
+
 export const THREE_D_STORYBOARD_FRAME_CONTRACTS: NonNullable<ThreeDBreakdownStoryboardBoard["frames"]> = frameMeta.map(([role, label], index) => ({
   frameIndex: (index + 1) as StoryboardFrame["frameIndex"],
   role,
@@ -137,21 +162,24 @@ const createPresenterClipPrompt = ({
   frameIndexes,
   framePlan,
   durationSeconds,
-  world,
+  lifestyleWorld,
   recurringObjects,
 }: {
   clipIndex: ThreeDBreakdownClipIndex;
   frameIndexes: ThreeDBreakdownStoryboardFrameIndex[];
   framePlan: string;
   durationSeconds: number;
-  world: string;
+  lifestyleWorld: string;
   recurringObjects: string;
 }) => [
   `Create one continuous ${durationSeconds}-second transformation for clip ${clipIndex} of 2, vertical 9:16, beginning on frame ${frameIndexes[0]} and ending exactly on frame ${frameIndexes.at(-1)}.`,
   framePlan,
-  `SETTING: ${world}. CONTINUITY OBJECTS: ${recurringObjects}.`,
+  clipIndex === 1
+    ? `WORLD ARC: begin in ${lifestyleWorld} for frames 1-2, then use the approved physical change to enter ${THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD} by frame 3.`
+    : `WORLD ARC: begin on ${THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD} for frame 4, then use the approved payoff action to return to ${lifestyleWorld} for frames 5-6.`,
+  `CONTINUITY OBJECTS: ${recurringObjects}.`,
   "If an approved person or hand-proxy is visible, preserve it as a silent recurring subject with no lip-sync, speech, singing, or presenter delivery. If both endpoints are object-only, never introduce a person.",
-  `CONTINUITY: frame ${frameIndexes[1]} is a motion checkpoint inside the same world, not permission to cut to a new scene, person, or visual style. Preserve the same subject, materials, lighting, and camera language from start to finish.`,
+  `CONTINUITY: frame ${frameIndexes[1]} is a motion checkpoint in the approved world arc, not permission to invent a new person, product, or visual style. Preserve the same subject, materials, feature-animation CGI finish, and camera language through the world transition.`,
   clipIndex === 1
     ? "STORY JOB: begin on the approved setup, make the problem visible through physical motion, and finish on the approved mechanism setup."
     : "STORY JOB: begin on the approved mechanism reveal, complete one physical transformation, and finish on the approved product or CTA setup.",
@@ -204,7 +232,7 @@ export const createThreeDClipPlans = (
           durationSeconds: 10,
           frameIndexes,
           framePlan: getPresenterClipFramePlan(sceneInput.storyboardBoard, frameIndexes),
-          world,
+          lifestyleWorld: world,
           recurringObjects,
         }),
         video: { status: "idle" as const },

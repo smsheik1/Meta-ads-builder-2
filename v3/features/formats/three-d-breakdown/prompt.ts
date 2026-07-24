@@ -204,8 +204,8 @@ Return JSON only:
 {
   "primarySiteType": "ecommerce | saas | local-service | restaurant-food | nonprofit | portfolio | unclear",
   "riskFlags": [],
-  "visualWorld": "one visual world shared by every frame",
-  "lighting": "consistent lighting",
+  "visualWorld": "one relevant lifestyle setting used for setup and payoff",
+  "lighting": "one CGI lighting language that bridges lifestyle and the blue explanation stage",
   "cameraStyle": "consistent camera language",
   "recurringObjects": ["2-4 concrete recurring objects"],
   "variants": [
@@ -228,7 +228,8 @@ Creative rules:
 - Frame order: ordinary use or assumption; hidden obstacle; mechanism setup; peak impossible reveal; evidence payoff; final product payoff.
 - Frame 5 must show the selected product physically causing the documented payoff in the same problem world. Keep proof or numbers in overlayText only; never turn evidence into abstract blocks, counters, cubes, tokens, or charts.
 - Give every frame one new physical state change. Do not repeat the same product angle more than twice.
-- Keep one coherent visual world, product, and recurring subject across all six frames.
+- Keep one coherent feature-animation CGI style, product, and recurring subject across all six frames.
+- World sequence is fixed: frames 1-2 use the relevant lifestyle setting; frames 3-4 enter Wiggly's bright blue/cyan blueprint-grid explanation stage; frames 5-6 return to the lifestyle setting for the payoff.
 - presenter-teardown-vsl uses an unseen narrator and one silent, stylized CGI demonstrator or body proxy in at least four frames. The demonstrator never speaks or lip-syncs.
 - toy-character-vsl uses a bright technical 3D stage and a recurring toy-like scale figure.
 - Use a body route only when the selected evidence concerns ingestion, digestion, or absorption. Other stories stay outside the body.

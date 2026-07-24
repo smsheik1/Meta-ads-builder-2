@@ -67,13 +67,13 @@ export default function ThreeDBreakdownRepositoryPage() {
             </Button>
           </div>
           <div className="mt-5 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" data-testid="video-phase-boundary">
-            <strong>Quality checkpoint:</strong> the corrected LEGO proof used four full-quality endpoints and produced two continuous 480p Seedance 2.0 Mini clips. Both clips passed technical and human review. Voice generation and final composition remain locked.
+            <strong>Quality checkpoint:</strong> the LEGO clips passed continuity and technical review, but failed Style B world fidelity because they stayed in the warm workshop. The Format now requires lifestyle setup → blue breakdown → lifestyle payoff; paid reproof, voice generation, and final composition remain locked.
           </div>
         </section>
 
         <section data-testid="lego-quality-proof">
-          <h2 className="text-xl font-bold">Corrected LEGO proof</h2>
-          <p className="mt-1 text-sm text-slate-600">The ladder becomes working wood, then a wooden toy car, without changing the carpenter or workshop.</p>
+          <h2 className="text-xl font-bold">LEGO continuity proof — world arc failed</h2>
+          <p className="mt-1 text-sm text-slate-600">The carpenter and transformation stay coherent, but the clips never enter Style B’s blue breakdown world. This evidence remains visible so the next paid proof must beat it.</p>
           <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
             <Image
               alt="Contact sheet from the corrected LEGO 3D Breakdown clips"

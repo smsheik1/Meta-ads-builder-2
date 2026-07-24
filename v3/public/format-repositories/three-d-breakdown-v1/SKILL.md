@@ -31,7 +31,7 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 5. Run `select`, then `validate`.
 6. Let the user inspect and edit the script, storyboard plan, image prompts, and CTA.
 7. Ask before each `image` command.
-8. Generate the storyboard first, then full-quality endpoint frames 1, 3, 4, and 6, one approved image call at a time.
+8. Generate the storyboard first, then full-quality endpoint frames 1, 3, 4, and 6, one approved image call at a time. Frames 1-2 use the lifestyle setup, frames 3-4 use the Style B blue/cyan blueprint-grid explanation stage, and frames 5-6 return to the lifestyle setting for the payoff.
 9. Run `inspect`.
 10. After explicit approval, generate video clip 1, inspect it, then generate video clip 2.
 11. Run `inspect` again and review `video-contact-sheet.jpg`.
@@ -42,8 +42,8 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 - The story is understandable without knowing the brand.
 - Every factual claim maps to the saved website evidence.
 - The five beats sound spoken, not like production notes or AI copy.
-- The six-frame plan shows different physical actions in one coherent world. Object-only frames do not invent people.
+- The six-frame plan shows different physical actions in one coherent CGI style across the fixed lifestyle-to-blue-to-lifestyle world sequence. Object-only frames do not invent people.
 - All four video endpoints are sharp, use the approved recurring subjects, and show the exact intended start or end state.
 - Storyboard panel crops guide endpoint generation but never become Seedance inputs.
-- Both 480p clips use one continuous transformation, follow the approved physical action, and do not jump to another person, room, or visual style.
+- Both 480p clips use one continuous transformation, follow the approved physical action and world transition, and do not jump to another person, unapproved setting, or visual style.
 - No voice or final-video asset exists yet.

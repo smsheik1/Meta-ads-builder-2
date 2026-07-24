@@ -5,10 +5,12 @@ const source = readFileSync("app/format-lab/three-d-breakdown/page.tsx", "utf8")
 assert.match(source, /download-three-d-format-kit/);
 assert.match(source, /video-phase-boundary/);
 assert.match(source, /lego-quality-proof/);
-assert.match(source, /two continuous 480p Seedance 2\.0 Mini clips/);
+assert.match(source, /LEGO clips passed continuity and technical review/);
+assert.match(source, /failed Style B world fidelity/);
+assert.match(source, /lifestyle setup → blue breakdown → lifestyle payoff/);
 assert.match(source, /lego-origin-quality-proof\/video-contact-sheet\.jpg/);
 assert.match(source, /lego-origin-quality-proof\/videos\/clip-\$\{clip\}\.mp4/);
-assert.match(source, /Voice generation and final composition remain locked/);
+assert.match(source, /paid reproof, voice generation, and final composition remain locked/);
 assert.match(source, /one explicitly approved image or video clip at a time/);
 assert.match(source, /pipeline-\$\{stage\.id\}/);
 assert.match(source, /ecommerce-teardown-style-reference-clean-v7\.jpg/);

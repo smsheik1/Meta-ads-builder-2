@@ -21,9 +21,10 @@ See `agent-runs/lego-origin-proof/` for the inputs, scene contract, images, atte
 - Planning: the locked GLM 5.2 path produced a 48-word script, six-frame plan, and two continuous clip contracts.
 - Paid image attempts: one Nano Banana 2 Lite storyboard plus four separate full-quality endpoints at frames 1, 3, 4, and 6.
 - Video: two 10-second Seedance 2.0 Mini clips at 480p, generated and inspected one at a time.
-- Result: `clips-ready`.
-- Human review: the ladder, carpenter, workshop, wood, and toy car remain coherent; both clips use continuous physical motion; the final car is sharp; no unrelated person or setting appears.
+- Result: `continuity-passed-style-b-failed`.
+- Human review: the ladder, carpenter, workshop, wood, and toy car remain coherent; both clips use continuous physical motion; the final car is sharp; no unrelated person appears. However, both clips stay in the warm workshop and omit Style B's recognizable blue explanation stage.
 - Technical review: both clips are 10.042 seconds at 496×864, the duration gate passes, and the quality report contains no problems.
+- Root correction: the Format now fixes the world sequence by frame number—lifestyle setup in frames 1-2, blue/cyan blueprint-grid breakdown in frames 3-4, and lifestyle payoff in frames 5-6. This corrected world arc has not yet received a paid media reproof.
 - Boundary: no voice or final 20-second composition was generated.
 
 See `agent-runs/lego-origin-quality-proof/` for the scene, four production endpoints, both clips, contact sheet, attempt history, and quality report.

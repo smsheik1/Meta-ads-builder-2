@@ -299,5 +299,12 @@ assert.equal(readyVideo.ok, true);
 const runnerSource = readFileSync("scripts/three-d-breakdown-format.ts", "utf8");
 assert.match(runnerSource, /commandAvailable\("ffmpeg", "-version"\)/);
 assert.match(runnerSource, /commandAvailable\("ffprobe", "-version"\)/);
+const sceneContract = JSON.parse(readFileSync("public/format-repositories/three-d-breakdown-v1/scene-contract.json", "utf8"));
+assert.deepEqual(sceneContract.storyboard.worldSequence.map((stage: { role: string }) => stage.role), [
+  "lifestyle-setup",
+  "blue-breakdown",
+  "lifestyle-payoff",
+]);
+assert.deepEqual(sceneContract.productionAnchors.frameIndexes, [1, 3, 4, 6]);
 
 console.log("3D Breakdown Repo tests passed.");
