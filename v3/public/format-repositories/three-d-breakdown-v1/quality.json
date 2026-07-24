@@ -1,0 +1,20 @@
+{
+  "planning": [
+    "The scene passes validateThreeDBreakdownScene.",
+    "The selected style is presenter-teardown-vsl.",
+    "The script has five correctly timed beats.",
+    "The storyboard has six distinct physical actions in one coherent world.",
+    "The clip plan has two 10-second clips mapped to frames 1-3 and 4-6."
+  ],
+  "images": [
+    "The storyboard is a 2-by-3 contact sheet with no readable generated text.",
+    "The same CGI demonstrator, product category, and world survive all six panels.",
+    "Frame 1 and frame 4 each have one approved production anchor.",
+    "No video call happens during image inspection."
+  ],
+  "videoGate": [
+    "Both production anchors are present and manually inspected.",
+    "Every generated asset has provenance and an attempt number.",
+    "The user explicitly approves paid video generation in a later phase."
+  ]
+}

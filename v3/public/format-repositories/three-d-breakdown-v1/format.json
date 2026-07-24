@@ -1,0 +1,9 @@
+{
+  "id": "three-d-breakdown",
+  "version": "1.0.0-repo-preview",
+  "title": "3D Breakdown",
+  "description": "Turn one evidence-backed brand story into a 20-second 3D explainer with a six-frame plan, two production anchors, two clips, and one voice track.",
+  "status": "build-first",
+  "canonicalRenderer": "features/formats/three-d-breakdown/render.tsx",
+  "canonicalSceneContract": "features/scene/types.ts#ThreeDBreakdownAdScene"
+}

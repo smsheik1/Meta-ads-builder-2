@@ -1,0 +1,28 @@
+{
+  "required": [
+    {
+      "id": "research",
+      "label": "Website research",
+      "type": "StoredWebsiteResearchResult",
+      "description": "The brand brief, evidence, and product catalog already produced by Wiggly."
+    },
+    {
+      "id": "storySubject",
+      "label": "Story focus",
+      "type": "product | brand | customer-problem | custom",
+      "description": "What the 3D Breakdown should explain."
+    }
+  ],
+  "conditional": [
+    {
+      "when": "storySubject is product",
+      "field": "productHandle",
+      "rule": "The chosen product must exist in the catalog and have a usable image."
+    },
+    {
+      "when": "storySubject is custom",
+      "field": "brief",
+      "rule": "The brief must be at least eight characters and remains creative direction, not factual evidence."
+    }
+  ]
+}

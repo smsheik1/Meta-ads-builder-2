@@ -1,0 +1,25 @@
+{
+  "format": "three-d-breakdown",
+  "visualStyle": "presenter-teardown-vsl",
+  "durationMs": 20000,
+  "scriptBeats": [
+    { "role": "consequence", "startMs": 0, "endMs": 3000 },
+    { "role": "context", "startMs": 3000, "endMs": 7000 },
+    { "role": "mechanism", "startMs": 7000, "endMs": 12000 },
+    { "role": "revelation", "startMs": 12000, "endMs": 16000 },
+    { "role": "punchline", "startMs": 16000, "endMs": 20000 }
+  ],
+  "storyboard": {
+    "frameCount": 6,
+    "roles": ["problem", "escalation", "mechanism-setup", "wow-reveal", "payoff", "final-state"],
+    "layout": "2 columns by 3 rows"
+  },
+  "productionAnchors": {
+    "frameIndexes": [1, 4],
+    "count": 2
+  },
+  "clips": [
+    { "clipIndex": 1, "frameIndexes": [1, 2, 3], "startMs": 0, "endMs": 10000 },
+    { "clipIndex": 2, "frameIndexes": [4, 5, 6], "startMs": 10000, "endMs": 20000 }
+  ]
+}

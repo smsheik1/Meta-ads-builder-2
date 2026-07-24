@@ -1,0 +1,44 @@
+{
+  "stages": [
+    {
+      "id": "directions",
+      "output": "Exactly five evidence-backed story directions",
+      "paidMedia": false,
+      "approvalRequired": true
+    },
+    {
+      "id": "selected-plan",
+      "output": "One selected Style B script, scene contract, and six-frame storyboard plan",
+      "paidMedia": false,
+      "approvalRequired": true
+    },
+    {
+      "id": "storyboard",
+      "output": "One 2-by-3 storyboard contact sheet",
+      "paidMedia": true,
+      "approvalRequired": true,
+      "oneCallAtATime": true
+    },
+    {
+      "id": "production-anchors",
+      "output": "Two approved 9:16 production anchors",
+      "paidMedia": true,
+      "approvalRequired": true,
+      "oneCallAtATime": true
+    },
+    {
+      "id": "video-clips",
+      "output": "Two 10-second clips",
+      "paidMedia": true,
+      "approvalRequired": true,
+      "enabled": false
+    },
+    {
+      "id": "voice-and-final",
+      "output": "Fish voice and one 20-second final MP4",
+      "paidMedia": true,
+      "approvalRequired": true,
+      "enabled": false
+    }
+  ]
+}
