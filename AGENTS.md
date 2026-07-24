@@ -93,3 +93,4 @@ Ask these questions before writing code:
 
 - Human-readable rulebook: `docs/wiggly-engineering-rules.md`
 - Local Codex skill: `wiggly-guardrails`
+- Required before creating or materially changing a Wiggly Repo: `.agents/skills/wiggly-repo-builder`
