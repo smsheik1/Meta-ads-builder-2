@@ -348,11 +348,11 @@ assert.ok(
 assert.ok(
 	  quickActionsSource.includes('data-three-d-storyboard-board="true"') &&
 	    quickActionsSource.includes("Generate the six-panel storyboard first. Stop here until it matches the reference.") &&
-	    quickActionsSource.includes("Generate anchors") &&
-	    quickActionsSource.includes("Anchors ready") &&
+	    quickActionsSource.includes("Generate next endpoint") &&
+	    quickActionsSource.includes("Endpoints ready") &&
 	    quickActionsSource.includes('id: isPresenterStyle ? "storyboard" : "frames"') &&
 	    quickActionsSource.includes('id: "anchors"') &&
-	    quickActionsSource.includes('isPresenterStyle ? "Anchors ready" : "Frames ready"') &&
+	    quickActionsSource.includes('isPresenterStyle ? "Endpoints ready" : "Frames ready"') &&
 	    quickActionsSource.includes("requiredFrames.map") &&
 	    quickActionsSource.includes("getThreeDStoryboardPrompt(storyboardBoard)") &&
 	    quickActionsSource.includes("getThreeDAnchorPrompt(frame)") &&
@@ -401,10 +401,11 @@ assert.ok(
 assert.ok(
   storyboardContractsSource.includes("const presenterFrameGroups") &&
     storyboardContractsSource.includes("[[1, 2, 3], [4, 5, 6]]") &&
-    storyboardContractsSource.includes("Time-code the clip into storyboard sub-shots") &&
+    storyboardContractsSource.includes("Create one continuous") &&
+    storyboardContractsSource.includes("No montage, hard cut") &&
     storyboardContractsSource.includes("durationSeconds: 10") &&
     !storyboardContractsSource.includes("Clip 6: product reframe"),
-  "Presenter teardown 3D Breakdown must use two 10s clips from the six-frame storyboard, not six separate Seedance clips.",
+  "Presenter teardown 3D Breakdown must use two continuous 10s clips from four full-quality endpoints, not a montage of six separate shots.",
 );
 assert.ok(
   !createClientSource.includes("min-w-[1280px]") &&
@@ -446,13 +447,13 @@ assert.ok(
     threeDImagesSource.includes("THREE_D_BREAKDOWN_STYLE_REFERENCE_URL") &&
     threeDImagesSource.includes("requireThreeDStyleReferenceUrl") &&
     threeDImagesSource.includes("getThreeDImageInput") &&
-    threeDImagesSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("anchor-1"), v.literal("anchor-2"), v.literal("all")))') &&
+    threeDImagesSource.includes('v.literal("anchor-6")') &&
     threeDImagesSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")') &&
     quickActionsSource.includes('onGenerateImages("storyboard")') &&
 	    quickActionsSource.includes('data-three-d-regenerate-storyboard={storyboardBoardReady ? "true" : undefined}') &&
     quickActionsSource.includes("Regenerate storyboard") &&
-    quickActionsSource.includes('onGenerateImages(clipPlan.clipIndex === 1 ? "anchor-1" : "anchor-2")') &&
-    quickActionsSource.includes('data-three-d-regenerate-anchor={clipPlan.clipIndex}') &&
+    quickActionsSource.includes('onGenerateImages(`anchor-${frame.frameIndex}`)') &&
+    quickActionsSource.includes('data-three-d-regenerate-endpoint={frame.frameIndex}') &&
     threeDImagesSource.includes("generateBoard && !generateAnchors") &&
     threeDImagesSource.includes("Generate the 3D Breakdown storyboard board before production anchors.") &&
     threeDImagesSource.includes("storyboard-gate:ready") &&
@@ -461,7 +462,7 @@ assert.ok(
     threeDImagesSource.includes("anchorFramesToGenerate") &&
     threeDImagesSource.includes("frame.image?.status !== \"ready\"") &&
     threeDImagesSource.includes("frame.frameIndex === regenerateAnchorFrameIndex || frame.image?.status !== \"ready\"") &&
-    threeDImagesSource.includes("changedAnchorFrameIndexes.includes(plan.frameIndexes[0])") &&
+    threeDImagesSource.includes("frameIndex === plan.frameIndexes[0] || frameIndex === plan.frameIndexes.at(-1)") &&
     threeDImagesSource.includes("activeFrameIndex") &&
     threeDImagesSource.includes("storyboard board must define 6 frames before image generation") &&
     !threeDImagesSource.includes("createThreeDStoryboardFrames") &&
@@ -475,8 +476,10 @@ assert.ok(
     threeDImagesSource.includes("cropThreeDStoryboardPanel") &&
     threeDImagesSource.includes("getReplicateImageInput(startFrame.image.url)") &&
     threeDImagesSource.includes("getReplicateImageInput(endFrameImage.url)") &&
+    threeDImagesSource.includes("const endFrameImage = { ...endFrame.image, url: endFrame.image.url }") &&
     threeDImagesSource.includes("imageUrl: startFrameImageInput") &&
     threeDImagesSource.includes("lastFrameImageUrl: endFrameImageInput") &&
+    threeDImagesSource.includes("resolution: THREE_D_BREAKDOWN_VIDEO_RESOLUTION") &&
     jingleStoryboardSource.includes("last_frame_image") &&
     threeDImagesSource.includes("imageInput,") &&
     threeDImagesSource.includes("getThreeDProductReferences") &&

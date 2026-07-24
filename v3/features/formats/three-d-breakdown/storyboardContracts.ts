@@ -147,15 +147,15 @@ const createPresenterClipPrompt = ({
   world: string;
   recurringObjects: string;
 }) => [
-  `Animate approved storyboard frames ${frameIndexes.join("-")} as clip ${clipIndex} of 2, vertical 9:16, ${durationSeconds} seconds.`,
-  getClipTimingPlan(frameIndexes, durationSeconds),
+  `Create one continuous ${durationSeconds}-second transformation for clip ${clipIndex} of 2, vertical 9:16, beginning on frame ${frameIndexes[0]} and ending exactly on frame ${frameIndexes.at(-1)}.`,
   framePlan,
   `SETTING: ${world}. CONTINUITY OBJECTS: ${recurringObjects}.`,
-  "The human is a recurring silent stylized CGI demonstrator, not the narrator. Keep lips, mouth, and jaw closed and still: no lip-sync, speech, singing, or presenter delivery.",
+  "If an approved person or hand-proxy is visible, preserve it as a silent recurring subject with no lip-sync, speech, singing, or presenter delivery. If both endpoints are object-only, never introduce a person.",
+  `CONTINUITY: frame ${frameIndexes[1]} is a motion checkpoint inside the same world, not permission to cut to a new scene, person, or visual style. Preserve the same subject, materials, lighting, and camera language from start to finish.`,
   clipIndex === 1
-    ? "STORY JOB: move from ordinary product use, to the selected hidden obstacle, to the approved mechanism setup. Make each turn visible through product, prop, obstacle, camera, or component motion."
-    : "STORY JOB: move from the approved mechanism reveal, through the selected evidence payoff, to the final product/CTA setup. The product and obstacle must visibly change state.",
-  "Use hard cuts, whip zooms, push-throughs, or object wipes between the three approved moments; do not blend them into one drifting shot.",
+    ? "STORY JOB: begin on the approved setup, make the problem visible through physical motion, and finish on the approved mechanism setup."
+    : "STORY JOB: begin on the approved mechanism reveal, complete one physical transformation, and finish on the approved product or CTA setup.",
+  "Use one camera move or a physically motivated object transition. No montage, hard cut, title card, empty transition frame, unrelated room, or newly invented presenter.",
   "Do not invent extra product claims, packaging, people, anatomy, props, or mechanisms beyond the approved frames.",
   "No generated typography, captions, subtitles, labels, logos, letters, numbers, UI, or pseudo-writing. Wiggly adds every word after video generation.",
 ].join(" ");

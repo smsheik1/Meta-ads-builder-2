@@ -118,6 +118,14 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 **Evidence:** The useful Otaku proof was the playable video delivered in chat.
 
+### 13. Never animate planning thumbnails
+
+**Rule:** Storyboards and contact sheets may guide production, but every generative-video start and end frame must be a separately generated, full-quality production asset.
+
+**Why:** Enlarging a small storyboard panel produced a blurry endpoint, and the video model copied that blur while inventing a new person and setting to bridge the mismatch.
+
+**Evidence:** The first 3D Breakdown LEGO proof passed duration and file checks but failed paid-media review because its ending frames came from upscaled storyboard crops.
+
 ## Still testing
 
 These ideas are deliberately not universal yet:

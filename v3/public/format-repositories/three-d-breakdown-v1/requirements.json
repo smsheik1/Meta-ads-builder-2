@@ -8,7 +8,7 @@
     "REPLICATE_API_TOKEN": {
       "requiredFor": ["images", "video"],
       "secret": true,
-      "purpose": "Create the storyboard, production anchors, and later video clips."
+      "purpose": "Create the storyboard, four production endpoints, and later video clips."
     },
     "FISH_STUDIO_APIKEY": {
       "requiredFor": ["voice"],

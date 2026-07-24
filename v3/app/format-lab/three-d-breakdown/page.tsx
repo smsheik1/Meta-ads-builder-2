@@ -66,7 +66,7 @@ export default function ThreeDBreakdownRepositoryPage() {
             </Button>
           </div>
           <div className="mt-5 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" data-testid="video-phase-boundary">
-            <strong>Clip checkpoint:</strong> planning, storyboard images, production anchors, and two approved video clips are available. Voice generation and final composition remain locked.
+            <strong>Quality checkpoint:</strong> the first video proof exposed blurry storyboard-derived endpoints and continuity jumps. The corrected runner now requires four full-quality endpoints before two continuous 720p clips. A new paid proof has not run yet. Voice generation and final composition remain locked.
           </div>
         </section>
 
@@ -108,7 +108,7 @@ export default function ThreeDBreakdownRepositoryPage() {
               <li>BYOK requirements that report key names without exposing values.</li>
               <li>The same story directors, prompt builders, scene validator, and renderer source used by Wiggly.</li>
               <li>A free smoke test and a fixture that prove the Style B contract without calling a provider.</li>
-                <li>A local runner that permits one explicitly approved image or video clip at a time.</li>
+              <li>A local runner that permits one explicitly approved image or video clip at a time.</li>
             </ul>
             <div className="mt-4 rounded-md bg-slate-950 p-4 font-mono text-xs leading-6 text-slate-100">
               npm run format:three-d -- check --stage=plan<br />

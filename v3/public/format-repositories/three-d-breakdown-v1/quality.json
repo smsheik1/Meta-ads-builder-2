@@ -8,20 +8,24 @@
   ],
   "images": [
     "The storyboard is a 2-by-3 contact sheet with no readable generated text.",
-    "The same CGI demonstrator, product category, and world survive all six panels.",
-    "Frame 1 and frame 4 each have one approved production anchor.",
+    "The approved recurring subject, product category, and world survive all six planned frames.",
+    "Object-only frames do not invent a face or full person.",
+    "Frames 1, 3, 4, and 6 each have one approved full-quality production endpoint.",
+    "Every endpoint is sharp and matches its intended subject, setting, and story state.",
     "No video call happens during image inspection."
   ],
   "videoGate": [
-    "Both production anchors are present and manually inspected.",
+    "All four production endpoints are present and manually inspected.",
+    "Storyboard panel crops are planning references only and are never sent to video generation.",
     "Every generated asset has provenance and an attempt number.",
     "The user explicitly approves paid video generation in a later phase."
   ],
   "video": [
     "Generate clip 1 before clip 2 and inspect each result before another paid call.",
-    "Each clip uses its approved production anchor as the first frame and its storyboard crop as the ending target.",
+    "Each clip uses its approved full-quality start and end production frames.",
+    "Each clip is rendered at 720p as one continuous transformation with no montage, hard cut, new person, or unrelated setting.",
     "Each clip is within one second of its planned 10-second duration.",
-    "The contact sheet preserves the same workshop, demonstrator, brick, and wooden toy across both clips.",
+    "The contact sheet preserves the approved world, subjects, and recurring objects across both clips.",
     "No voice or final composition is generated during clip inspection."
   ]
 }

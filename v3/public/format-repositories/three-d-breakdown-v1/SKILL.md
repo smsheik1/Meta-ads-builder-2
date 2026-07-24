@@ -16,7 +16,7 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 - Treat website research as evidence. A custom brief changes the creative focus but does not authorize new factual claims.
 - Show the five story directions before selecting one.
 - Validate the selected plan before any image call.
-- One explicit approval covers one image call only. Never batch the storyboard and anchors.
+- One explicit approval covers one image call only. Never batch the storyboard and video endpoints.
 - Ask once before the two planned video clips. Submit one clip at a time and inspect clip 1 before spending on clip 2.
 - This Repo version stops after the two inspected video clips. Do not generate voice or a final MP4.
 - Never print secret values. Report only missing key names.
@@ -31,7 +31,7 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 5. Run `select`, then `validate`.
 6. Let the user inspect and edit the script, storyboard plan, image prompts, and CTA.
 7. Ask before each `image` command.
-8. Generate the storyboard first, then anchor frame 1, then anchor frame 4.
+8. Generate the storyboard first, then full-quality endpoint frames 1, 3, 4, and 6, one approved image call at a time.
 9. Run `inspect`.
 10. After explicit approval, generate video clip 1, inspect it, then generate video clip 2.
 11. Run `inspect` again and review `video-contact-sheet.jpg`.
@@ -42,7 +42,8 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 - The story is understandable without knowing the brand.
 - Every factual claim maps to the saved website evidence.
 - The five beats sound spoken, not like production notes or AI copy.
-- The six frames show different physical actions while preserving the same world, demonstrator, and product category.
-- The two anchors are clean enough to become the first frames of the two clips.
-- Both clips follow the approved physical actions, remain visually coherent, and match their planned duration.
+- The six-frame plan shows different physical actions in one coherent world. Object-only frames do not invent people.
+- All four video endpoints are sharp, use the approved recurring subjects, and show the exact intended start or end state.
+- Storyboard panel crops guide endpoint generation but never become Seedance inputs.
+- Both 720p clips use one continuous transformation, follow the approved physical action, and do not jump to another person, room, or visual style.
 - No voice or final-video asset exists yet.

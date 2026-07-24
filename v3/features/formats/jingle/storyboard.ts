@@ -630,6 +630,7 @@ export async function generateReplicateSeedanceVideo({
   lastFrameImageUrl,
   prompt,
   durationSeconds,
+  resolution = BRICK_STORYBOARD_VIDEO_RESOLUTION,
   timeoutMs = 180_000,
 }: {
   replicateApiToken: string;
@@ -637,6 +638,7 @@ export async function generateReplicateSeedanceVideo({
   lastFrameImageUrl?: string;
   prompt: string;
   durationSeconds: number;
+  resolution?: "480p" | "720p";
   timeoutMs?: number;
 }) {
   if (!replicateApiToken) throw new Error("Replicate video generation is not configured.");
@@ -645,6 +647,7 @@ export async function generateReplicateSeedanceVideo({
   console.log("[brick-video] seedance request", {
     model: BRICK_STORYBOARD_VIDEO_MODEL,
     duration,
+    resolution,
     hasImageUrl: Boolean(imageUrl),
     hasLastFrameImageUrl: Boolean(lastFrameImageUrl),
     promptLength: safePrompt.length,
@@ -664,7 +667,7 @@ export async function generateReplicateSeedanceVideo({
         prompt: safePrompt,
         duration,
         aspect_ratio: "9:16",
-        resolution: BRICK_STORYBOARD_VIDEO_RESOLUTION,
+        resolution,
         generate_audio: false,
       },
     }),

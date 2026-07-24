@@ -102,7 +102,7 @@ export function assertThreeDBreakdownVideoCallAllowed({
     const image = frames.find((frame) => frame.frameIndex === frameIndex)?.image;
     return image?.status === "ready" && Boolean(image.url);
   })) {
-    throw new Error("Generate and inspect both production anchors before video.");
+    throw new Error("Generate and inspect all four full-quality video endpoints before video.");
   }
   const clip = clipPlans.find((plan) => plan.clipIndex === clipIndex)!;
   if (clip.video?.status === "ready") throw new Error(`Video clip ${clipIndex} is already ready.`);
@@ -115,7 +115,7 @@ export function assertThreeDBreakdownVideoCallAllowed({
 export function getThreeDBreakdownRequiredAnchorFrameIndexes(scene: ThreeDBreakdownAdScene) {
   return Array.from(new Set(
     (scene.layout.clipPlans || [])
-      .map((clip) => clip.frameIndexes[0])
+      .flatMap((clip) => [clip.frameIndexes[0], clip.frameIndexes.at(-1)])
       .filter((frameIndex) => frameIndex !== undefined),
   ));
 }
@@ -130,9 +130,16 @@ export function inspectThreeDBreakdownRepoScene(
   const requiredAnchors = requiredAnchorFrameIndexes.map((frameIndex) => (
     board?.frames?.find((frame) => frame.frameIndex === frameIndex)?.image
   ));
+  const missingProductionEndpointFrameIndexes = requiredAnchorFrameIndexes.filter((frameIndex) => {
+    const image = board?.frames?.find((frame) => frame.frameIndex === frameIndex)?.image;
+    return image?.status !== "ready" || !image.url || !mediaExists(image.url);
+  });
   const clipPlans = scene.layout.clipPlans || [];
   const videoStarted = clipPlans.some((clip) => clip.video && clip.video.status !== "idle");
-  const twoVideoClipsReady = clipPlans.length === 2
+  const fourProductionEndpointsReady = requiredAnchorFrameIndexes.length === 4
+    && requiredAnchors.every((image) => image?.status === "ready"
+      && Boolean(image.url && mediaExists(image.url)));
+  const twoVideoClipsReady = fourProductionEndpointsReady && clipPlans.length === 2
     && clipPlans.every((clip) => clip.video?.status === "ready"
       && Boolean(clip.video.url && mediaExists(clip.video.url)));
   const checks = {
@@ -144,9 +151,7 @@ export function inspectThreeDBreakdownRepoScene(
       && scene.layout.clipPlans.every((clip) => clip.durationSeconds === 10),
     storyboardReady: board?.image?.status === "ready"
       && Boolean(board.image.url && mediaExists(board.image.url)),
-    twoProductionAnchorsReady: requiredAnchorFrameIndexes.length === 2
-      && requiredAnchors.every((image) => image?.status === "ready"
-        && Boolean(image.url && mediaExists(image.url))),
+    fourProductionEndpointsReady,
     noVideoWasGenerated: !videoStarted && !scene.layout.finalVideo,
     twoVideoClipsReady,
   };
@@ -157,16 +162,22 @@ export function inspectThreeDBreakdownRepoScene(
     "sixStoryboardFrames",
     "twoTenSecondClipPlans",
     "storyboardReady",
-    "twoProductionAnchorsReady",
+    "fourProductionEndpointsReady",
   ];
   const problems = [
     ...validation.errors,
     ...Object.entries(checks)
       .filter(([name, passed]) => requiredChecks.includes(name) && !passed)
       .map(([name]) => `Check failed: ${name}.`),
+    ...(missingProductionEndpointFrameIndexes.length
+      ? [`Missing or unreadable full-quality production endpoints: frames ${missingProductionEndpointFrameIndexes.join(", ")}.`]
+      : []),
+    ...(videoStarted && missingProductionEndpointFrameIndexes.length
+      ? ["Existing clips are not approved because they were created without all required full-quality endpoints."]
+      : []),
     ...(videoStarted && !twoVideoClipsReady ? ["Check failed: twoVideoClipsReady."] : []),
   ];
-  const imageReady = checks.storyboardReady && checks.twoProductionAnchorsReady;
+  const imageReady = checks.storyboardReady && checks.fourProductionEndpointsReady;
   return {
     status: !validation.valid
       ? "invalid"

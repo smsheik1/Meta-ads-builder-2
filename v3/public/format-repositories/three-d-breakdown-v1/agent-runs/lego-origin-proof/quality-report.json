@@ -1,5 +1,5 @@
 {
-  "status": "clips-ready",
+  "status": "video-in-progress",
   "checks": {
     "sceneContractValid": true,
     "styleBSelected": true,
@@ -7,19 +7,20 @@
     "sixStoryboardFrames": true,
     "twoTenSecondClipPlans": true,
     "storyboardReady": true,
-    "twoProductionAnchorsReady": true,
+    "fourProductionEndpointsReady": false,
     "noVideoWasGenerated": false,
-    "twoVideoClipsReady": true,
-    "clipDurationsMatchPlan": true
+    "twoVideoClipsReady": false
   },
-  "problems": [],
+  "problems": [
+    "Check failed: fourProductionEndpointsReady.",
+    "Missing or unreadable full-quality production endpoints: frames 3, 6.",
+    "Existing clips are not approved because they were created without all required full-quality endpoints.",
+    "Check failed: twoVideoClipsReady."
+  ],
   "requiredAnchorFrameIndexes": [
     1,
-    4
-  ],
-  "clipDurationsMs": [
-    10042,
-    10042
-  ],
-  "contactSheet": "agent-runs/lego-origin-proof/video-contact-sheet.jpg"
+    3,
+    4,
+    6
+  ]
 }

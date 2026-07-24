@@ -1432,22 +1432,20 @@ assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("same clos
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Visual style: toy-character-vsl"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("recurring stylized human demo character/body proxy"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("Visual style: presenter-teardown-vsl"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("silent recurring stylized feature-animation CGI demonstrator"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("full body, torso, hands"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("approved subject, product, or hand-proxy"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("Object-only frames stay object-only"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("unmistakable feature-animation CGI"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("human/product use, product path or selected body-route"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("product use, product path or selected body-route"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("Routine, testing, portability, taste, and ingredient-compression stories stay in the external product/demo world"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("obstacle wall or pile-up"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("same face, plain shirt color"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("keep its identity and clothing consistent"));
 assert.ok(!generated.variants[1]?.storyboardBoard.imagePrompt.includes("cap/goggles"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("locked style, recurring demonstrator/product, scene action"));
+assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("locked style, recurring subject/product, scene action"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("founder prompt discipline"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("one visible state change"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("smooth bald mannequin"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("narrator and captions present the argument"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("oversized tactile demo props"));
 assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("lab-coat scientists"));
-assert.ok(generated.variants[1]?.storyboardBoard.imagePrompt.includes("demonstration/retention footage only"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("continuity spine"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("Do not create a faceless biology montage"));
 assert.ok(generated.variants[0]?.storyboardBoard.imagePrompt.includes("character's full body or torso"));
@@ -2190,7 +2188,7 @@ assert.equal(scene.layout.productAnchor?.title, "Butter Pecan Meltaways Tin");
 assert.equal(scene.layout.productAnchor?.imageUrl, "https://cdn.example/davids-cookie-tin.png");
 const threeDImageActionSource = readFileSync(new URL("../convex/threeDImages.ts", import.meta.url), "utf8");
 assert.ok(threeDImageActionSource.includes("ecommerce-teardown-style-reference-clean-v7.jpg"));
-assert.ok(threeDImageActionSource.includes('mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("anchor-1"), v.literal("anchor-2"), v.literal("all")))'));
+assert.ok(threeDImageActionSource.includes('v.literal("anchor-6")'));
 assert.ok(threeDImageActionSource.includes('const imageMode = mode || (isPresenterStyle ? "storyboard" : "all")'));
 assert.ok(threeDImageActionSource.includes("Generate the 3D Breakdown storyboard board before production anchors."));
 assert.ok(threeDImageActionSource.includes("getThreeDAnchorImageInput"), "Production anchors must include the generated storyboard board as an image reference.");
@@ -2211,25 +2209,30 @@ assert.ok(
 );
 assert.ok(!threeDImageActionSource.includes("getThreeDAnchorImageInput(nextScene, imageInput)"), "Production anchors must not receive competing style and site references after storyboard approval.");
 assert.ok(
-  threeDImageActionSource.includes('imageMode === "anchor-1"') &&
-    threeDImageActionSource.includes('imageMode === "anchor-2"') &&
+  threeDImageActionSource.includes('imageMode.startsWith("anchor-")') &&
     threeDImageActionSource.includes("frame.frameIndex === regenerateAnchorFrameIndex") &&
     threeDImageActionSource.includes("invalidatedAnchorFrameIndexes"),
-  "Ready anchors must support individual visual-QA regeneration without paying to rebuild both.",
+  "Ready endpoints must support individual visual-QA regeneration without paying to rebuild all four.",
 );
 assert.ok(threeDImageActionSource.includes("usesStoryboardPanelCrop"), "Production-frame logs must expose whether the local storyboard panel crop was sent.");
 assert.ok(threeDImageActionSource.includes("storyboard-gate:ready"));
 assert.ok(
-  threeDImageActionSource.includes("changedAnchorFrameIndexes.includes(plan.frameIndexes[0])"),
-  "Regenerating one production anchor must clear only its stale 3D clip video.",
+  threeDImageActionSource.includes("frameIndex === plan.frameIndexes[0] || frameIndex === plan.frameIndexes.at(-1)"),
+  "Regenerating a production endpoint must clear only the clip that uses it.",
 );
 assert.ok(threeDImageActionSource.includes("storyboard board must define 6 frames before image generation"));
-assert.ok(threeDImageActionSource.includes("cropThreeDStoryboardPanel"), "Clip end frames must be derived locally from approved storyboard panels.");
+assert.ok(threeDImageActionSource.includes("cropThreeDStoryboardPanel"), "Production endpoints must receive a crop of the matching storyboard panel as planning guidance.");
+assert.ok(
+  threeDImageActionSource.includes("const endFrameImage = { ...endFrame.image, url: endFrame.image.url }") &&
+    !threeDImageActionSource.includes("getOrCreateThreeDEndFrameImage"),
+  "Clip end frames must use full-quality generated endpoints, never upscaled storyboard crops.",
+);
 assert.ok(
   threeDImageActionSource.includes("getReplicateImageInput(startFrame.image.url)") &&
     threeDImageActionSource.includes("getReplicateImageInput(endFrameImage.url)") &&
     threeDImageActionSource.includes("imageUrl: startFrameImageInput") &&
     threeDImageActionSource.includes("lastFrameImageUrl: endFrameImageInput") &&
+    threeDImageActionSource.includes("resolution: THREE_D_BREAKDOWN_VIDEO_RESOLUTION") &&
     !threeDImageActionSource.includes("imageUrl: startFrame.image.url") &&
     !threeDImageActionSource.includes("lastFrameImageUrl: endFrameImage.url"),
   "Seedance must receive provider-readable data for both approved anchor images instead of localhost storage URLs.",
@@ -2245,10 +2248,8 @@ assert.ok(cookieBoardPrompt.includes("Hands place a red cookie tin"));
 assert.ok(cookieBoardPrompt.includes("image 1 is the STYLE MASTER"));
 assert.ok(cookieBoardPrompt.includes("Image 2 is the PRODUCT MASTER"));
 assert.ok(cookieBoardPrompt.includes("later images only define its real serving/use form"));
-assert.ok(cookieBoardPrompt.includes("Do not invent a woman, a different person, or a photoreal human"));
-assert.ok(cookieBoardPrompt.includes("appears in panels 1, 2, 5, and 6"));
-assert.ok(cookieBoardPrompt.includes("never a product alone on an empty grid"));
-assert.ok(cookieBoardPrompt.includes("never end on a lonely product, empty stage"));
+assert.ok(cookieBoardPrompt.includes("story contract owns the setting, recurring subject, lighting, and camera"));
+assert.ok(cookieBoardPrompt.includes("Object-only panels remain object-only"));
 assert.ok(cookieBoardPrompt.includes("flexible pouch stays pouch, carton stays carton, jar stays jar, bottle stays bottle"));
 assert.ok(cookieBoardPrompt.includes("Script nouns such as pack, package, product, or snack pack never redefine its shape"));
 assert.ok(cookieBoardPrompt.includes("CATEGORY LOCK: this is not automatically a supplement story"));
@@ -2368,13 +2369,15 @@ assert.deepEqual(styleBScene.layout.clipPlans?.map((clip) => [clip.startMs, clip
 assert.deepEqual(getAdSceneDimensions(styleBScene), { width: 1080, height: 1920 });
 assert.equal(getAdSceneDurationInFrames(styleBScene, 60), 1_200);
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("clip 1 of 2"));
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("Time-code the clip into storyboard sub-shots"));
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("0.0-3.3s = frame 1"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("Create one continuous"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("frame 2 is a motion checkpoint inside the same world"));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("No montage, hard cut"));
 assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("action: Hands place a red cookie tin"));
-assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("ordinary product use"));
-assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("mechanism reveal"));
-assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("final product/CTA setup"));
-assert.ok(styleBScene.layout.clipPlans?.every((clip) => clip.prompt.includes("silent stylized CGI demonstrator")));
+assert.ok(styleBScene.layout.clipPlans?.[0]?.prompt.includes("begin on the approved setup"));
+assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("approved mechanism reveal"));
+assert.ok(styleBScene.layout.clipPlans?.[1]?.prompt.includes("approved product or CTA setup"));
+assert.ok(styleBScene.layout.clipPlans?.every((clip) => clip.prompt.includes("If an approved person or hand-proxy is visible")));
+assert.ok(styleBScene.layout.clipPlans?.every((clip) => clip.prompt.includes("If both endpoints are object-only, never introduce a person")));
 assert.ok(styleBScene.layout.clipPlans?.every((clip) => clip.prompt.includes("no lip-sync")));
 assert.ok(styleBScene.layout.clipPlans?.every((clip) => clip.prompt.length < 2600));
 assert.ok(styleBScene.layout.clipPlans?.every((clip) => !clip.prompt.includes("Narrative:")));

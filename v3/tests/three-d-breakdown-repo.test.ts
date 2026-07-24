@@ -135,7 +135,7 @@ const plannedScene = createThreeDBreakdownAdScene({
   },
 });
 
-assert.deepEqual(getThreeDBreakdownRequiredAnchorFrameIndexes(plannedScene), [1, 4]);
+assert.deepEqual(getThreeDBreakdownRequiredAnchorFrameIndexes(plannedScene), [1, 3, 4, 6]);
 const plannedInspection = inspectThreeDBreakdownRepoScene(plannedScene);
 assert.equal(plannedInspection.status, "planned");
 assert.equal(plannedInspection.checks.sceneContractValid, true);
@@ -160,8 +160,34 @@ readyScene.layout.storyboardBoard!.image = {
   url: "agent-runs/test/images/storyboard-board.jpg",
   mimeType: "image/jpeg",
 };
-readyScene.layout.storyboardBoard!.frames = readyScene.layout.storyboardBoard!.frames!.map((frame) => (
+const startAnchorsOnlyScene = structuredClone(readyScene);
+startAnchorsOnlyScene.layout.storyboardBoard!.frames = startAnchorsOnlyScene.layout.storyboardBoard!.frames!.map((frame) => (
   frame.frameIndex === 1 || frame.frameIndex === 4
+    ? {
+      ...frame,
+      image: {
+        status: "ready",
+        storageId: `local:anchor-${frame.frameIndex}`,
+        url: `agent-runs/test/images/anchor-${frame.frameIndex}.jpg`,
+        mimeType: "image/jpeg",
+      },
+    }
+    : frame
+));
+const startAnchorsOnlyInspection = inspectThreeDBreakdownRepoScene(startAnchorsOnlyScene, () => true);
+assert.equal(startAnchorsOnlyInspection.status, "planned");
+assert.ok(startAnchorsOnlyInspection.problems.includes("Missing or unreadable full-quality production endpoints: frames 3, 6."));
+assert.throws(
+  () => assertThreeDBreakdownVideoCallAllowed({
+    approved: true,
+    attempts: 0,
+    clipIndex: 1,
+    scene: startAnchorsOnlyScene,
+  }),
+  /all four full-quality video endpoints/,
+);
+readyScene.layout.storyboardBoard!.frames = readyScene.layout.storyboardBoard!.frames!.map((frame) => (
+  [1, 3, 4, 6].includes(frame.frameIndex)
     ? {
       ...frame,
       image: {
@@ -175,6 +201,7 @@ readyScene.layout.storyboardBoard!.frames = readyScene.layout.storyboardBoard!.f
 ));
 const readyInspection = inspectThreeDBreakdownRepoScene(readyScene, () => true);
 assert.equal(readyInspection.status, "ready-for-video");
+assert.equal(readyInspection.checks.fourProductionEndpointsReady, true);
 assert.deepEqual(readyInspection.problems, []);
 assert.throws(
   () => assertThreeDBreakdownVideoCallAllowed({

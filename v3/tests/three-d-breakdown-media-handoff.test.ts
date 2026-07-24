@@ -92,10 +92,12 @@ try {
     lastFrameImageUrl: "https://media.example/end.jpg",
     prompt: "Animate the approved product demonstration without text.",
     durationSeconds: 10,
+    resolution: "720p",
   });
   assert.equal(result.mimeType, "video/mp4");
   assert.equal(capturedRequest.input?.image, "https://media.example/start.jpg");
   assert.equal(capturedRequest.input?.last_frame_image, "https://media.example/end.jpg");
+  assert.equal(capturedRequest.input?.resolution, "720p");
   assert.equal(capturedRequest.input?.generate_audio, false);
 } finally {
   globalThis.fetch = originalFetch;

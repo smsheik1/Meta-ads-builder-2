@@ -33,7 +33,12 @@ import type { ThreeDBreakdownStoryDirection } from "@/features/formats/three-d-b
 import type { ThreeDBreakdownStorySubject } from "@/features/formats/three-d-breakdown/storySubject";
 import { getThreeDBreakdownCtaError } from "@/features/formats/three-d-breakdown/cta";
 import type { ProductCatalog } from "@/features/research/types";
-import type { AdFormatId, ThreeDBreakdownAdScene, ThreeDBreakdownClipIndex } from "@/features/scene/types";
+import type {
+  AdFormatId,
+  ThreeDBreakdownAdScene,
+  ThreeDBreakdownClipIndex,
+  ThreeDBreakdownStoryboardFrameIndex,
+} from "@/features/scene/types";
 import { CreateAssemblyLine, type CreateAssemblyStageStatus } from "./CreateAssemblyLine";
 import { CreateBrickStoryboardSheet } from "./CreateBrickStoryboardSheet";
 import { CreateThreeDBreakdownSubjectPicker } from "./CreateThreeDBreakdownSubjectPicker";
@@ -42,7 +47,11 @@ import { ThreeDBreakdownMediaPromptEditor } from "./ThreeDBreakdownMediaPromptEd
 import { ThreeDBreakdownScriptEditor } from "./ThreeDBreakdownScriptEditor";
 type SaveStatus = "idle" | "loading" | "ready" | "error";
 type BrickStoryboardStatus = "idle" | "loading" | "ready" | "error";
-type ThreeDImageGenerationMode = "storyboard" | "anchors" | "anchor-1" | "anchor-2" | "all";
+type ThreeDImageGenerationMode =
+  | "storyboard"
+  | "anchors"
+  | `anchor-${ThreeDBreakdownStoryboardFrameIndex}`
+  | "all";
 const statusBannerBaseClass = "rounded-2xl border px-4 py-3 text-xs font-black leading-5";
 const formatSavedDate = (timestamp: number) => new Intl.DateTimeFormat("en", {
   month: "short",
@@ -494,7 +503,9 @@ function ThreeDBreakdownAssemblyCard({
   const storyboardBoard = scene.layout.storyboardBoard;
   const storyboardFrames = storyboardBoard?.frames || [];
   const clipPlans = scene.layout.clipPlans || [];
-  const requiredFrameIndexes = Array.from(new Set(clipPlans.map((clipPlan) => clipPlan.frameIndexes[0]).filter(Boolean)));
+  const requiredFrameIndexes = Array.from(new Set(
+    clipPlans.flatMap((clipPlan) => [clipPlan.frameIndexes[0], clipPlan.frameIndexes.at(-1)]).filter(Boolean),
+  ));
   const requiredFrames = requiredFrameIndexes.length
     ? storyboardFrames.filter((frame) => requiredFrameIndexes.includes(frame.frameIndex))
     : storyboardFrames;
@@ -533,8 +544,8 @@ function ThreeDBreakdownAssemblyCard({
   const storyboardHelperCopy = isPresenterStyle
     ? storyboardBoardReady
       ? framesReady
-        ? "Storyboard and production anchors are ready for animation."
-        : "Storyboard is ready. Generate production anchors only after the board looks right."
+        ? "Storyboard and full-quality video endpoints are ready for animation."
+        : "Storyboard is ready. Generate video endpoints only after the board looks right."
       : "Generate the six-panel storyboard first. Stop here until it matches the reference."
     : "Generate the production frames before animation.";
   const storyDirectionNumber = (scene.metadata.candidateIndex ?? 0) + 1;
@@ -598,7 +609,7 @@ function ThreeDBreakdownAssemblyCard({
       ) : null}
       {storyboardBoardFailed ? (
         <p className="rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
-          Storyboard generation failed. Generate the storyboard again before production anchors.
+          Storyboard generation failed. Generate the storyboard again before video endpoints.
         </p>
       ) : null}
       <Button
@@ -619,15 +630,18 @@ function ThreeDBreakdownAssemblyCard({
     <div className="space-y-3">
       <p className="text-xs font-bold leading-5 text-slate-500">
         {isPresenterStyle
-          ? "Create the two production anchors only after the storyboard looks right."
+          ? "Create and inspect all four full-quality video endpoints only after the storyboard looks right."
           : "Create the production frames before animation."}
       </p>
       {requiredFrames.length ? (
         <div className="grid grid-cols-2 gap-2" data-three-d-storyboard-frames="true">
           {requiredFrames.map((frame) => {
-            const clipPlan = clipPlans.find((plan) => plan.frameIndexes[0] === frame.frameIndex);
-            const frameLabel = isPresenterStyle && clipPlan ? `Anchor ${clipPlan.clipIndex}` : `Frame ${frame.frameIndex}`;
-            const detailLabel = isPresenterStyle && clipPlan ? `Frames ${clipPlan.frameIndexes.join("-")}` : frame.label;
+            const clipPlan = clipPlans.find((plan) => (
+              plan.frameIndexes[0] === frame.frameIndex || plan.frameIndexes.at(-1) === frame.frameIndex
+            ));
+            const endpoint = clipPlan?.frameIndexes[0] === frame.frameIndex ? "start" : "end";
+            const frameLabel = isPresenterStyle && clipPlan ? `Clip ${clipPlan.clipIndex} ${endpoint}` : `Frame ${frame.frameIndex}`;
+            const detailLabel = isPresenterStyle && clipPlan ? `Frame ${frame.frameIndex} · ${frame.label}` : frame.label;
             return (
               <div key={frame.frameIndex} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
                 <div className="flex items-center justify-between gap-2 px-2.5 py-2">
@@ -656,15 +670,15 @@ function ThreeDBreakdownAssemblyCard({
                     {frame.image?.status === "generating" ? <Loader2 className="size-4 animate-spin" /> : "Pending"}
                   </div>
                 )}
-                {isPresenterStyle && frame.image?.status === "ready" && (clipPlan?.clipIndex === 1 || clipPlan?.clipIndex === 2) ? (
+                {isPresenterStyle && frame.image?.status === "ready" && clipPlan ? (
                   <Button
                     type="button"
                     variant="ghost"
                     className="h-8 w-full rounded-none border-t border-slate-200 text-[9px] font-black uppercase tracking-[0.12em] text-slate-600"
-                    onClick={() => onGenerateImages(clipPlan.clipIndex === 1 ? "anchor-1" : "anchor-2")}
+                    onClick={() => onGenerateImages(`anchor-${frame.frameIndex}`)}
                     disabled={imageStatus === "loading" || !approvedScriptReady || !getThreeDAnchorPrompt(frame).trim()}
                     aria-label={`Regenerate ${frameLabel}`}
-                    data-three-d-regenerate-anchor={clipPlan.clipIndex}
+                    data-three-d-regenerate-endpoint={frame.frameIndex}
                   >
                     <RefreshCw className="mr-1.5 size-3" />
                     Regenerate
@@ -677,11 +691,11 @@ function ThreeDBreakdownAssemblyCard({
       ) : null}
       {framesFailed ? (
         <div className="rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-700">
-          <p>One or more production anchors failed. Generate anchors again.</p>
+          <p>One or more video endpoints failed. Generate the failed endpoint again.</p>
           {failedFrames.length ? (
             <div className="mt-2 space-y-1" data-three-d-anchor-errors="true">
               {failedFrames.map((frame) => (
-                <p key={frame.frameIndex}>Frame {frame.frameIndex}: {frame.image?.error || "Anchor image generation failed."}</p>
+                <p key={frame.frameIndex}>Frame {frame.frameIndex}: {frame.image?.error || "Endpoint image generation failed."}</p>
               ))}
             </div>
           ) : null}
@@ -695,7 +709,7 @@ function ThreeDBreakdownAssemblyCard({
         data-three-d-generate-anchors={isPresenterStyle ? "true" : undefined}
       >
         {imageStatus === "loading" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ImageIcon className="mr-2 size-4" />}
-        {framesReady ? (isPresenterStyle ? "Anchors ready" : "Frames ready") : isPresenterStyle ? "Generate anchors" : "Generate frames"}
+        {framesReady ? (isPresenterStyle ? "Endpoints ready" : "Frames ready") : isPresenterStyle ? "Generate next endpoint" : "Generate frames"}
       </Button>
     </div>
   );

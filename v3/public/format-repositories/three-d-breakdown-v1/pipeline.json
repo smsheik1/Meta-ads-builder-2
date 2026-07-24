@@ -20,15 +20,15 @@
       "oneCallAtATime": true
     },
     {
-      "id": "production-anchors",
-      "output": "Two approved 9:16 production anchors",
+      "id": "production-endpoints",
+      "output": "Four approved full-quality 9:16 video endpoints",
       "paidMedia": true,
       "approvalRequired": true,
       "oneCallAtATime": true
     },
     {
       "id": "video-clips",
-      "output": "Two 10-second clips",
+      "output": "Two continuous 10-second 720p clips",
       "paidMedia": true,
       "approvalRequired": true,
       "oneCallAtATime": true,

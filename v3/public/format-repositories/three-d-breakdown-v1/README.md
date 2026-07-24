@@ -7,11 +7,11 @@ This Repo packages the recipe behind Wiggly's existing 3D Breakdown Format. It d
 1. Five story directions from website evidence.
 2. One selected Style B script and scene.
 3. One six-frame storyboard contact sheet.
-4. Two 9:16 production anchors.
-5. After separate approval, two 10-second clips.
+4. Four full-quality 9:16 video endpoints: frames 1, 3, 4, and 6.
+5. After separate approval, two continuous 10-second 720p clips.
 6. Later: Fish voice and one 20-second MP4.
 
-This version stops after the two inspected video clips. Voice generation and final composition remain disabled.
+The storyboard is a planning reference. Its small panel crops must never become video endpoints. This version stops after two inspected video clips; voice generation and final composition remain disabled.
 
 ## Commands
 
@@ -29,10 +29,12 @@ Image commands always create one image:
 ```bash
 npm run format:three-d -- image --run=my-run --kind=storyboard --approve-image
 npm run format:three-d -- image --run=my-run --kind=anchor --frame=1 --approve-image
+npm run format:three-d -- image --run=my-run --kind=anchor --frame=3 --approve-image
 npm run format:three-d -- image --run=my-run --kind=anchor --frame=4 --approve-image
+npm run format:three-d -- image --run=my-run --kind=anchor --frame=6 --approve-image
 ```
 
-Video commands create one paid clip at a time. Generate and inspect clip 1 before clip 2:
+Each image command makes one endpoint. Inspect all four for sharpness, matching subjects, matching settings, and correct start/end states before video. Video commands create one paid clip at a time:
 
 ```bash
 npm run format:three-d -- video --run=my-run --clip=1 --approve-video

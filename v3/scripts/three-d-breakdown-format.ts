@@ -11,6 +11,7 @@ import {
   buildThreeDProductionFramePrompt,
   buildThreeDSeedancePrompt,
   buildThreeDStoryboardBoardPrompt,
+  THREE_D_BREAKDOWN_VIDEO_RESOLUTION,
 } from "../features/formats/three-d-breakdown/mediaPrompts";
 import { fetchThreeDProductReferenceImageUrls, prepareThreeDBrandReferenceImageInputs } from "../features/formats/three-d-breakdown/productReference";
 import {
@@ -266,7 +267,7 @@ async function validate() {
     process.exitCode = 1;
     return;
   }
-  console.log("Scene contract is valid: 5 beats, 6 storyboard frames, 2 anchors, 2 planned clips, 20 seconds.");
+  console.log("Scene contract is valid: 5 beats, 6 storyboard frames, 4 production endpoints, 2 planned clips, 20 seconds.");
 }
 
 const toDataUrl = (bytes: Uint8Array, mimeType: string) => `data:${mimeType};base64,${Buffer.from(bytes).toString("base64")}`;
@@ -328,9 +329,10 @@ async function generateAnchor(
   const required = getThreeDBreakdownRequiredAnchorFrameIndexes(scene);
   if (!required.includes(frameIndex)) throw new Error(`Style B anchor frame must be one of: ${required.join(", ")}.`);
   const panelBytes = cropThreeDStoryboardPanel(new Uint8Array(await readFile(localMediaPath(board.image.url))), frameIndex);
-  const priorIndex = required[0];
+  const position = required.indexOf(frameIndex);
+  const priorIndex = position > 0 ? required[position - 1] : undefined;
   const priorImage = board.frames?.find((frame) => frame.frameIndex === priorIndex)?.image;
-  const continuityInput = frameIndex !== priorIndex && priorImage?.status === "ready" && priorImage.url
+  const continuityInput = priorImage?.status === "ready" && priorImage.url
     ? toDataUrl(new Uint8Array(await readFile(localMediaPath(priorImage.url))), priorImage.mimeType || "image/jpeg")
     : null;
   const references = await fetchReferenceDataUrls(scene);
@@ -347,7 +349,7 @@ async function generateAnchor(
   const relativeOutput = `agent-runs/${runId}/images/anchor-${frameIndex}.jpg`;
   await mkdir(path.dirname(localMediaPath(relativeOutput)), { recursive: true });
   await writeFile(localMediaPath(relativeOutput), result.bytes);
-  const invalidateLaterAnchors = frameIndex === priorIndex;
+  const invalidatedFrameIndexes = required.slice(position + 1);
   return {
     ...scene,
     layout: {
@@ -357,7 +359,7 @@ async function generateAnchor(
         frames: board.frames?.map((frame) => (
           frame.frameIndex === frameIndex
             ? { ...frame, image: { status: "ready" as const, storageId: `local:${relativeOutput}`, url: relativeOutput, mimeType: result.mimeType } }
-            : invalidateLaterAnchors && required.includes(frame.frameIndex)
+            : invalidatedFrameIndexes.includes(frame.frameIndex)
               ? { ...frame, image: { status: "idle" as const } }
               : frame
         )),
@@ -426,35 +428,6 @@ function updateClipPlan(
   };
 }
 
-async function prepareEndFrame(
-  runId: string,
-  scene: ThreeDBreakdownAdScene,
-  clipPlan: ThreeDBreakdownClipPlan,
-) {
-  if (clipPlan.endFrameImage?.status === "ready" && clipPlan.endFrameImage.url) {
-    return clipPlan.endFrameImage;
-  }
-  const board = scene.layout.storyboardBoard;
-  if (board?.image?.status !== "ready" || !board.image.url) {
-    throw new Error(`Video clip ${clipPlan.clipIndex} needs the approved storyboard board.`);
-  }
-  const endFrameIndex = clipPlan.frameIndexes.at(-1);
-  if (!endFrameIndex) throw new Error(`Video clip ${clipPlan.clipIndex} has no ending storyboard frame.`);
-  const bytes = cropThreeDStoryboardPanel(
-    new Uint8Array(await readFile(localMediaPath(board.image.url))),
-    endFrameIndex,
-  );
-  const relativeOutput = `agent-runs/${runId}/images/clip-${clipPlan.clipIndex}-end.jpg`;
-  await mkdir(path.dirname(localMediaPath(relativeOutput)), { recursive: true });
-  await writeFile(localMediaPath(relativeOutput), bytes);
-  return {
-    status: "ready" as const,
-    storageId: `local:${relativeOutput}`,
-    url: relativeOutput,
-    mimeType: "image/jpeg",
-  };
-}
-
 async function generateVideoClip(
   runId: string,
   scene: ThreeDBreakdownAdScene,
@@ -463,12 +436,16 @@ async function generateVideoClip(
   const clipPlan = scene.layout.clipPlans?.find((clip) => clip.clipIndex === clipIndex);
   if (!clipPlan) throw new Error(`Video clip ${clipIndex} is missing from the scene.`);
   const startFrameIndex = clipPlan.frameIndexes[0];
+  const endFrameIndex = clipPlan.frameIndexes.at(-1);
   const startFrame = scene.layout.storyboardBoard?.frames?.find((frame) => frame.frameIndex === startFrameIndex);
+  const endFrame = scene.layout.storyboardBoard?.frames?.find((frame) => frame.frameIndex === endFrameIndex);
   if (startFrame?.image?.status !== "ready" || !startFrame.image.url) {
-    throw new Error(`Video clip ${clipIndex} needs approved anchor frame ${startFrameIndex}.`);
+    throw new Error(`Video clip ${clipIndex} needs full-quality production frame ${startFrameIndex}.`);
   }
-  const endFrameImage = await prepareEndFrame(runId, scene, clipPlan);
-  if (!endFrameImage.url) throw new Error(`Video clip ${clipIndex} end frame has no local URL.`);
+  if (endFrame?.image?.status !== "ready" || !endFrame.image.url) {
+    throw new Error(`Video clip ${clipIndex} needs full-quality production frame ${endFrameIndex}.`);
+  }
+  const endFrameImage = { ...endFrame.image, url: endFrame.image.url };
   const [startBytes, endBytes] = await Promise.all([
     readFile(localMediaPath(startFrame.image.url)),
     readFile(localMediaPath(endFrameImage.url)),
@@ -479,6 +456,7 @@ async function generateVideoClip(
     lastFrameImageUrl: toDataUrl(new Uint8Array(endBytes), endFrameImage.mimeType || "image/jpeg"),
     prompt: buildThreeDSeedancePrompt(scene, clipPlan),
     durationSeconds: clipPlan.durationSeconds,
+    resolution: THREE_D_BREAKDOWN_VIDEO_RESOLUTION,
   });
   const relativeOutput = `agent-runs/${runId}/videos/clip-${clipIndex}.mp4`;
   await mkdir(path.dirname(localMediaPath(relativeOutput)), { recursive: true });
@@ -611,7 +589,7 @@ async function inspect() {
   console.log(`Inspection status: ${report.status}.`);
   const problems = report.problems as string[];
   if (problems.length) console.log(problems.map((problem) => `- ${problem}`).join("\n"));
-  if (report.status === "ready-for-video") console.log("Both anchors are ready. Paid video still requires explicit approval.");
+  if (report.status === "ready-for-video") console.log("All four production endpoints are ready. Inspect all four before explicitly approving paid video.");
   if (report.status === "clips-ready") console.log("Both clips passed technical inspection. Voice and final composition remain disabled.");
 }
 
