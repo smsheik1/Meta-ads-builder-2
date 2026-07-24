@@ -1,6 +1,6 @@
 {
   "id": "lego-origin-proof",
-  "status": "ready-for-video",
+  "status": "clips-ready",
   "createdAt": "2026-07-24T03:52:13.331Z",
   "subject": {
     "kind": "brand"
@@ -29,5 +29,25 @@
       "output": "agent-runs/lego-origin-proof/images/anchor-4.jpg"
     }
   ],
-  "planningApprovedAt": "2026-07-24T03:52:13.602Z"
+  "planningApprovedAt": "2026-07-24T03:52:13.602Z",
+  "videoAttempts": [
+    {
+      "clipIndex": 1,
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-24T17:29:31.914Z",
+      "provider": "replicate",
+      "model": "bytedance/seedance-2.0-mini",
+      "output": "agent-runs/lego-origin-proof/videos/clip-1.mp4"
+    },
+    {
+      "clipIndex": 2,
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-24T17:32:36.179Z",
+      "provider": "replicate",
+      "model": "bytedance/seedance-2.0-mini",
+      "output": "agent-runs/lego-origin-proof/videos/clip-2.mp4"
+    }
+  ]
 }

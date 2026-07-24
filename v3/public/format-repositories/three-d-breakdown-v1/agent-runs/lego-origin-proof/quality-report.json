@@ -1,5 +1,5 @@
 {
-  "status": "ready-for-video",
+  "status": "clips-ready",
   "checks": {
     "sceneContractValid": true,
     "styleBSelected": true,
@@ -8,11 +8,18 @@
     "twoTenSecondClipPlans": true,
     "storyboardReady": true,
     "twoProductionAnchorsReady": true,
-    "noVideoWasGenerated": true
+    "noVideoWasGenerated": false,
+    "twoVideoClipsReady": true,
+    "clipDurationsMatchPlan": true
   },
   "problems": [],
   "requiredAnchorFrameIndexes": [
     1,
     4
-  ]
+  ],
+  "clipDurationsMs": [
+    10042,
+    10042
+  ],
+  "contactSheet": "agent-runs/lego-origin-proof/video-contact-sheet.jpg"
 }

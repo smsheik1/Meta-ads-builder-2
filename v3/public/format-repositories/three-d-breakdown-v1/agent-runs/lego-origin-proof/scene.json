@@ -264,7 +264,16 @@
         ],
         "prompt": "Animate approved storyboard frames 1-2-3 as clip 1 of 2, vertical 9:16, 10 seconds. Time-code the clip into storyboard sub-shots: 0.0-3.3s = frame 1; 3.3-6.7s = frame 2; 6.7-10.0s = frame 3. Use hard cuts, whip zooms, or push-through transitions between frames; do not blend them into one vague drifting scene. Use these camera and motion cues only: Frame 1; action: A CGI carpenter hand-proxy sets down a modern red 2x4 LEGO brick on a dusty workshop bench.; camera: Macro close-up on the bench surface; physical motion: Brick contacts wood, sending up a small puff of sawdust. | Frame 2; action: The modern brick sits isolated as shadows lengthen across the bench, representing the economic crisis.; camera: Wide shot with deep shadows; physical motion: Light dims, pushing the brick into silhouette. | Frame 3; action: A glowing timeline track shoots out from the modern brick, unspooling backward across the bench.; camera: Tracking shot following the timeline; physical motion: The red brick visually unspools into a raw block of wood.. Never turn prompt words into visible text. SETTING: A stylized, dust-moted carpenter's workshop floor that gradually transitions into a clean museum-timeline plinth, where a modern LEGO brick unspools backward in. CONTINUITY OBJECTS: a modern red 2x4 LEGO brick, a 1932 wooden pull-toy car, a glowing timeline track, a silent CGI carpenter hand-proxy. The human is a recurring silent stylized CGI demonstrator, not the narrator. Keep lips, mouth, and jaw closed and still: no lip-sync, speech, singing, or presenter delivery. STORY JOB: move from ordinary product use, to the selected hidden obstacle, to the approved mechanism setup. Make each turn visible through product, prop, obstacle, camera, or component motion. Use hard cuts, whip zooms, push-throughs, or object wipes between the three approved moments; do not blend them into one drifting shot. Do not invent extra product claims, packaging, people, anatomy, props, or mechanisms beyond the approved frames. No generated typography, captions, subtitles, labels, logos, letters, numbers, UI, or pseudo-writing. Wiggly adds every word after video generation.",
         "video": {
-          "status": "idle"
+          "status": "ready",
+          "storageId": "local:agent-runs/lego-origin-proof/videos/clip-1.mp4",
+          "url": "agent-runs/lego-origin-proof/videos/clip-1.mp4",
+          "mimeType": "video/mp4"
+        },
+        "endFrameImage": {
+          "status": "ready",
+          "storageId": "local:agent-runs/lego-origin-proof/images/clip-1-end.jpg",
+          "url": "agent-runs/lego-origin-proof/images/clip-1-end.jpg",
+          "mimeType": "image/jpeg"
         }
       },
       {
@@ -280,7 +289,16 @@
         ],
         "prompt": "Animate approved storyboard frames 4-5-6 as clip 2 of 2, vertical 9:16, 10 seconds. Time-code the clip into storyboard sub-shots: 0.0-3.3s = frame 4; 3.3-6.7s = frame 5; 6.7-10.0s = frame 6. Use hard cuts, whip zooms, or push-through transitions between frames; do not blend them into one vague drifting scene. Use these camera and motion cues only: Frame 4; action: The raw wood block is precisely carved by unseen tools into a 1932 wooden toy car.; camera: Over-the-shoulder macro of the hand-proxy; physical motion: Wood shavings fall away as the toy car form snaps into existence. | Frame 5; action: The CGI hand-proxy pushes the completed wooden toy car along the glowing timeline track.; camera: Low angle tracking the toy's wheels; physical motion: The wooden toy rolls forward, leaving a trail of modern LEGO bricks in its wake. | Frame 6; action: The camera lands on a pristine modern red 2x4 LEGO brick sitting on a clean museum plinth.; camera: Slow push-in to a final product shot; physical motion: The brick locks into place as the timeline track fades.. Never turn prompt words into visible text. SETTING: A stylized, dust-moted carpenter's workshop floor that gradually transitions into a clean museum-timeline plinth, where a modern LEGO brick unspools backward in. CONTINUITY OBJECTS: a modern red 2x4 LEGO brick, a 1932 wooden pull-toy car, a glowing timeline track, a silent CGI carpenter hand-proxy. The human is a recurring silent stylized CGI demonstrator, not the narrator. Keep lips, mouth, and jaw closed and still: no lip-sync, speech, singing, or presenter delivery. STORY JOB: move from the approved mechanism reveal, through the selected evidence payoff, to the final product/CTA setup. The product and obstacle must visibly change state. Use hard cuts, whip zooms, push-throughs, or object wipes between the three approved moments; do not blend them into one drifting shot. Do not invent extra product claims, packaging, people, anatomy, props, or mechanisms beyond the approved frames. No generated typography, captions, subtitles, labels, logos, letters, numbers, UI, or pseudo-writing. Wiggly adds every word after video generation.",
         "video": {
-          "status": "idle"
+          "status": "ready",
+          "storageId": "local:agent-runs/lego-origin-proof/videos/clip-2.mp4",
+          "url": "agent-runs/lego-origin-proof/videos/clip-2.mp4",
+          "mimeType": "video/mp4"
+        },
+        "endFrameImage": {
+          "status": "ready",
+          "storageId": "local:agent-runs/lego-origin-proof/images/clip-2-end.jpg",
+          "url": "agent-runs/lego-origin-proof/images/clip-2-end.jpg",
+          "mimeType": "image/jpeg"
         }
       }
     ],
