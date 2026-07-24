@@ -675,6 +675,7 @@ assert.ok(styleBScriptPrompt.includes("unseen narrator"));
 assert.ok(!styleBScriptPrompt.includes('"referenceScript"'));
 assert.ok(styleBScriptPrompt.includes("narrationBeats contains exactly four one-sentence lines"));
 assert.ok(styleBScriptPrompt.includes("43-58 words before the CTA"));
+assert.ok(styleBScriptPrompt.includes("every line 11-14 words"));
 assert.ok(styleBScriptPrompt.includes("Wiggly adds an objective-aware CTA as the fifth beat"));
 assert.ok(!styleBScriptPrompt.includes('"ctaLine"'));
 assert.ok(styleBScriptPrompt.includes("Only evidence text authorizes product facts"));
