@@ -1,0 +1,18 @@
+{
+  "status": "ready-for-video",
+  "checks": {
+    "sceneContractValid": true,
+    "styleBSelected": true,
+    "fiveScriptBeats": true,
+    "sixStoryboardFrames": true,
+    "twoTenSecondClipPlans": true,
+    "storyboardReady": true,
+    "twoProductionAnchorsReady": true,
+    "noVideoWasGenerated": true
+  },
+  "problems": [],
+  "requiredAnchorFrameIndexes": [
+    1,
+    4
+  ]
+}

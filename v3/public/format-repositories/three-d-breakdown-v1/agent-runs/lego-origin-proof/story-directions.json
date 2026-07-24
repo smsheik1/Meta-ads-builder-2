@@ -1,0 +1,330 @@
+{
+  "directions": [
+    {
+      "directionId": "idea-1",
+      "hookLine": "Why did a carpenter abandon wood during the Great Depression for LEGO?",
+      "subheadline": "LEGO survived economic collapse by changing materials.",
+      "shortSummary": "Wooden toys falter during economic crisis, revealing a shift toward new materials that secures the brand's future. This pivot establishes LEGO's foundation in embracing innovation.",
+      "category": "Customer tension",
+      "whyCompelling": "It contrasts traditional craft with survival-driven innovation during a crisis.",
+      "adAngle": "Economic crisis forces a pivot from wood to new materials.",
+      "visualEngine": "Wooden toy parts dissolve into plastic granules that compress into a modern brick.",
+      "evidenceIndex": 2,
+      "evidenceUseType": "review",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction",
+        "impact-chain",
+        "invisible-problem"
+      ]
+    },
+    {
+      "directionId": "idea-2",
+      "hookLine": "What hidden interest drove LEGO to abandon wood for plastic bricks?",
+      "subheadline": "LEGO embraced new technology to improve quality.",
+      "shortSummary": "A founder's obsession with new technology exposes the hidden mechanism behind LEGO's material evolution. The brand's enduring legacy is built on rationalizing production through innovation.",
+      "category": "Hidden mechanism",
+      "whyCompelling": "It exposes a founder's technological curiosity as the engine of brand longevity.",
+      "adAngle": "Founder's tech interest transforms production methods forever.",
+      "visualEngine": "A factory floor cross-sections to reveal plastic injection molding gears turning.",
+      "evidenceIndex": 0,
+      "evidenceUseType": "material",
+      "possibleRevealPatterns": [
+        "exploded-product",
+        "xray-cutaway",
+        "process-pipeline"
+      ]
+    },
+    {
+      "directionId": "idea-3",
+      "hookLine": "How did a 1932 product line save a carpenter's business?",
+      "subheadline": "The first LEGO products launched in 1932.",
+      "shortSummary": "A timeline reverses from modern bricks back to the first 1932 products that started the LEGO Group. This origin proves the brand's resilience through simple, sellable ideas.",
+      "category": "Proof reveal",
+      "whyCompelling": "It rewinds time to show the humble, documented origins of a global giant.",
+      "adAngle": "Tracing the brand back to its first documented product line.",
+      "visualEngine": "A modern brick unspools into a 1932 wooden toy on a timeline track.",
+      "evidenceIndex": 1,
+      "evidenceUseType": "review",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction",
+        "impact-chain"
+      ]
+    },
+    {
+      "directionId": "idea-4",
+      "hookLine": "Why did LEGO start by making ladders and yoyos?",
+      "subheadline": "Early LEGO survival relied on easy, sellable items.",
+      "shortSummary": "A chaotic pile of ladders and yoyos compresses into the focused vision of the LEGO brand. The payoff shows that adaptability is baked into the brand's DNA.",
+      "category": "Science fact",
+      "whyCompelling": "It reveals the surprising, pragmatic origins behind a legendary toy empire.",
+      "adAngle": "Diverse early products compress into a unified brand vision.",
+      "visualEngine": "Assorted wooden items collapse and stack into a single branded mold.",
+      "evidenceIndex": 2,
+      "evidenceUseType": "review",
+      "possibleRevealPatterns": [
+        "chaos-to-order",
+        "process-pipeline"
+      ]
+    },
+    {
+      "directionId": "idea-5",
+      "hookLine": "What inside a depression-era workshop built the LEGO brand?",
+      "subheadline": "LEGO's origin is rooted in adopting new machinery.",
+      "shortSummary": "A dusty workshop's hidden machinery reveals the technological leap that birthed LEGO. The brand's core identity emerges from a commitment to progressive production.",
+      "category": "Product mystery",
+      "whyCompelling": "It turns a historical workshop into a discovery of hidden technological innovation.",
+      "adAngle": "Uncovering the machinery that built a global toy brand.",
+      "visualEngine": "A miniature workshop expands to expose early plastic molding mechanisms inside.",
+      "evidenceIndex": 0,
+      "evidenceUseType": "material",
+      "possibleRevealPatterns": [
+        "miniature-world",
+        "xray-cutaway",
+        "exploded-product"
+      ]
+    }
+  ],
+  "recommendedDirectionId": "idea-1",
+  "evidenceItems": [
+    {
+      "evidenceIndex": 0,
+      "type": "claim",
+      "evidenceUseType": "material",
+      "text": "Ole Kirk Kristiansen is interested in all forms of new technology, which can improve quality and rationalize production. His interest in new technology, tools and machinery, new materials and processing methods is also obvious when it comes to his own company.",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "buyer moment",
+      "visualPotentialScore": 0.82,
+      "whyVisual": "A concrete feature, process, ingredient, or material can be opened, layered, measured, or shown as a formula stack.",
+      "possibleRevealPatterns": [
+        "exploded-product",
+        "xray-cutaway",
+        "miniature-world",
+        "process-pipeline",
+        "chaos-to-order"
+      ]
+    },
+    {
+      "evidenceIndex": 1,
+      "type": "review",
+      "evidenceUseType": "review",
+      "text": "The first product line is presented in 1932.",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "brand proof",
+      "visualPotentialScore": 0.74,
+      "whyVisual": "Proof stays in renderer copy while the visual shows the product causing a concrete customer or product state change.",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction",
+        "impact-chain",
+        "invisible-problem"
+      ]
+    },
+    {
+      "evidenceIndex": 2,
+      "type": "review",
+      "evidenceUseType": "review",
+      "text": "The global economic crisis forces carpenter Ole Kirk Kristiansen to produce new easy saleable products. The beginning of the LEGO Group starts with wooden toys, such as cars, airplanes and yoyo's. Ole Kirk Kristiansen also produces ladders, ironing boards, Chr",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "page paragraph",
+      "visualPotentialScore": 0.74,
+      "whyVisual": "Proof stays in renderer copy while the visual shows the product causing a concrete customer or product state change.",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction",
+        "impact-chain",
+        "invisible-problem"
+      ]
+    },
+    {
+      "evidenceIndex": 3,
+      "type": "result",
+      "evidenceUseType": "proof",
+      "text": "A devastating fire in the factory in 1942 virtually destroys Ole Kirk Kristiansen's life work. During the night of March 20, 1942, a fire rages through the woodworking factory, but the adjoining family home is saved from the flames. The fire is almost too much",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "page paragraph",
+      "visualPotentialScore": 0.74,
+      "whyVisual": "Proof stays in renderer copy while the visual shows the product causing a concrete customer or product state change.",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction",
+        "impact-chain",
+        "invisible-problem"
+      ]
+    },
+    {
+      "evidenceIndex": 4,
+      "type": "result",
+      "evidenceUseType": "proof",
+      "text": "You can shop, get support & more.",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "page paragraph",
+      "visualPotentialScore": 0.74,
+      "whyVisual": "Proof stays in renderer copy while the visual shows the product causing a concrete customer or product state change.",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction",
+        "impact-chain",
+        "invisible-problem"
+      ]
+    },
+    {
+      "evidenceIndex": 5,
+      "type": "result",
+      "evidenceUseType": "proof",
+      "text": "Play games, watch videos and more!",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "page paragraph",
+      "visualPotentialScore": 0.74,
+      "whyVisual": "Proof stays in renderer copy while the visual shows the product causing a concrete customer or product state change.",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction",
+        "impact-chain",
+        "invisible-problem"
+      ]
+    },
+    {
+      "evidenceIndex": 6,
+      "type": "guarantee",
+      "evidenceUseType": "guarantee",
+      "text": "Ole Kirk Kristiansen has always guaranteed the quality of his work, something he continues to do in his work with wooden toys. He is convinced that children deserve toys of high quality, made of the finest materials, so that they will last for many years of pl",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "page paragraph",
+      "visualPotentialScore": 0.58,
+      "whyVisual": "Offer or delivery proof can support the payoff, but is usually less visually explosive than mechanism evidence.",
+      "possibleRevealPatterns": [
+        "process-pipeline",
+        "impact-chain",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 7,
+      "type": "claim",
+      "evidenceUseType": "claim",
+      "text": "The company name is derived from 'LEg GOdt' (play well).",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "brand proof",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 8,
+      "type": "claim",
+      "evidenceUseType": "claim",
+      "text": "The original woodworking factory burned down in a devastating fire in 1942.",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "brand proof",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 9,
+      "type": "claim",
+      "evidenceUseType": "claim",
+      "text": "The company doubled its sales during the first two years of World War II.",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "brand proof",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 10,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "The beginning of the LEGO Group | LEGO® History",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 11,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "The first product line is presented in 1932",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 12,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "LEg GOdt becomes the LEGO® name",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 13,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "Employees in the woodworking factory with the company motto on the wall, 1954",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 14,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "Purchase of the first milling machine",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 15,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "Employee at a milling machine, 1938",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    }
+  ],
+  "model": "z-ai/glm-5.2",
+  "provider": "nvidia-nim",
+  "providerStatus": {
+    "provider": "nvidia-nim-curator",
+    "status": "used",
+    "reason": "Generated 5 3D Breakdown story directions."
+  }
+}

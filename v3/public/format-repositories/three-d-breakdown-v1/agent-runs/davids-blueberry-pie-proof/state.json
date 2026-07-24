@@ -1,0 +1,12 @@
+{
+  "id": "davids-blueberry-pie-proof",
+  "status": "directions-ready",
+  "createdAt": "2026-07-24T03:49:05.125Z",
+  "subject": {
+    "kind": "product",
+    "productHandle": "10-grande-ready-to-bake-blueberry-pie"
+  },
+  "planningCalls": 1,
+  "imageAttempts": [],
+  "planningApprovedAt": "2026-07-24T03:49:23.473Z"
+}

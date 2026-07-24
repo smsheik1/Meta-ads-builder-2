@@ -1,0 +1,33 @@
+{
+  "id": "lego-origin-proof",
+  "status": "ready-for-video",
+  "createdAt": "2026-07-24T03:52:13.331Z",
+  "subject": {
+    "kind": "brand"
+  },
+  "planningCalls": 2,
+  "imageAttempts": [
+    {
+      "asset": "storyboard",
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-24T03:55:13.487Z",
+      "output": "agent-runs/lego-origin-proof/images/storyboard-board.jpg"
+    },
+    {
+      "asset": "anchor-1",
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-24T04:02:10.492Z",
+      "output": "agent-runs/lego-origin-proof/images/anchor-1.jpg"
+    },
+    {
+      "asset": "anchor-4",
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-24T04:30:54.350Z",
+      "output": "agent-runs/lego-origin-proof/images/anchor-4.jpg"
+    }
+  ],
+  "planningApprovedAt": "2026-07-24T03:52:13.602Z"
+}

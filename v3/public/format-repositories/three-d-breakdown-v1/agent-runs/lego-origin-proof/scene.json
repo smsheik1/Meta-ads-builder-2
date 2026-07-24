@@ -1,0 +1,380 @@
+{
+  "version": 1,
+  "format": "three-d-breakdown",
+  "brand": {
+    "colors": [
+      "#FFD502",
+      "#DFCEB3",
+      "#005AD2",
+      "#F8F8F8",
+      "#000000"
+    ],
+    "description": "The global economic crisis forces carpenter Ole Kirk Kristiansen to produce new easy saleable products. The beginning of the LEGO Group starts with wooden toys, such as cars, airplanes and yoyo's. Ole Kirk Kristiansen also produces ladders, ironing boards, Chr",
+    "faviconUrl": "https://www.lego.com/favicon.ico",
+    "fonts": {
+      "body": "Cera Pro",
+      "feel": "sans",
+      "heading": "Cera Pro"
+    },
+    "host": "www.lego.com",
+    "logoUrl": "https://assets.lego.com/logos/v4.5.0/brand-lego.svg",
+    "name": "LEGO® History",
+    "ogImageUrl": "https://www.lego.com/cdn/cs/history/assets/bltdca3976db0441e91/lego-wooden-duck.jpg",
+    "screenshotUrl": null,
+    "title": "The beginning of the LEGO Group | LEGO® History",
+    "url": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+    "vibeTags": [
+      "LEGO® History",
+      "buyer-moment"
+    ],
+    "receipts": {
+      "specificClaims": [
+        "The first product line is presented in 1932.",
+        "The company name is derived from 'LEg GOdt' (play well).",
+        "The original woodworking factory burned down in a devastating fire in 1942.",
+        "The company doubled its sales during the first two years of World War II."
+      ],
+      "buyerMoments": [
+        "Curiosity about how a global toy brand started during an economic crisis.",
+        "Interest in the transition from wooden toys to modern plastic bricks.",
+        "Reading about historical company milestones like surviving a factory fire.",
+        "Learning about the origin of the brand name and its 'play well' meaning."
+      ],
+      "exactSiteLanguage": [
+        "The beginning of the LEGO Group",
+        "LEg GOdt becomes the LEGO® name",
+        "Quality above all",
+        "Children need toys - even in hard times"
+      ],
+      "namedProof": []
+    }
+  },
+  "creative": {
+    "angleId": "three-d-breakdown-1",
+    "headline": "A global economic crisis leaves a carpenter without steady work.",
+    "subheadline": "Tracing the brand back to its first documented product line.",
+    "ctaText": "Watch the full story.",
+    "headlineType": "receipt_drop",
+    "selectedPain": "A carpenter loses steady work during a global economic crisis and needs a new way to survive.",
+    "selectedProof": "That humble start builds a global giant from a single idea."
+  },
+  "style": {
+    "backgroundColor": "#07111F",
+    "textColor": "#FFFFFF",
+    "accentColor": "#FFD502",
+    "fontFeel": "sans"
+  },
+  "audio": {
+    "status": "none",
+    "transcript": "",
+    "captions": []
+  },
+  "layout": {
+    "preset": "three-d-breakdown",
+    "durationMs": 20000,
+    "scriptBeats": [
+      {
+        "role": "consequence",
+        "narration": "A global economic crisis leaves a carpenter without steady work.",
+        "startMs": 0,
+        "endMs": 3000
+      },
+      {
+        "role": "context",
+        "narration": "He needs something simple that people will actually buy.",
+        "startMs": 3000,
+        "endMs": 7000
+      },
+      {
+        "role": "mechanism",
+        "narration": "The first LEGO product line launches in 1932 with wooden toys.",
+        "startMs": 7000,
+        "endMs": 12000
+      },
+      {
+        "role": "revelation",
+        "narration": "That humble start builds a global giant from a single idea.",
+        "startMs": 12000,
+        "endMs": 16000
+      },
+      {
+        "role": "punchline",
+        "narration": "Watch the full story.",
+        "startMs": 16000,
+        "endMs": 20000
+      }
+    ],
+    "shots": [
+      {
+        "shotIndex": 1,
+        "role": "consequence",
+        "captionText": "LEGO without steady work / LEGO needs something simple",
+        "sceneDescription": "A CGI carpenter hand-proxy sets down a modern red 2x4 LEGO brick on a dusty workshop bench. Then The modern brick sits isolated as shadows lengthen across the bench, representing the economic crisis.",
+        "explainerDevice": "Problem state to Escalation",
+        "physicalAction": "Brick contacts wood, sending up a small puff of sawdust. Then Light dims, pushing the brick into silhouette.",
+        "imagePrompt": "A CGI carpenter hand-proxy sets down a modern red 2x4 LEGO brick on a dusty workshop bench.; Macro close-up on the bench surface Next: The modern brick sits isolated as shadows lengthen across the bench, representing the economic crisis.; Wide shot with deep shadows",
+        "animationPrompt": "Brick contacts wood, sending up a small puff of sawdust. Then Light dims, pushing the brick into silhouette.",
+        "image": {
+          "status": "idle"
+        },
+        "video": {
+          "status": "idle"
+        }
+      },
+      {
+        "shotIndex": 2,
+        "role": "mechanism",
+        "captionText": "LEGO 1932 product line / LEGO wooden toys",
+        "sceneDescription": "A glowing timeline track shoots out from the modern brick, unspooling backward across the bench. Then The raw wood block is precisely carved by unseen tools into a 1932 wooden toy car.",
+        "explainerDevice": "Mechanism setup to Wow reveal",
+        "physicalAction": "The red brick visually unspools into a raw block of wood. Then Wood shavings fall away as the toy car form snaps into existence.",
+        "imagePrompt": "A glowing timeline track shoots out from the modern brick, unspooling backward across the bench.; Tracking shot following the timeline Next: The raw wood block is precisely carved by unseen tools into a 1932 wooden toy car.; Over-the-shoulder macro of the hand-proxy",
+        "animationPrompt": "The red brick visually unspools into a raw block of wood. Then Wood shavings fall away as the toy car form snaps into existence.",
+        "image": {
+          "status": "idle"
+        },
+        "video": {
+          "status": "idle"
+        }
+      },
+      {
+        "shotIndex": 3,
+        "role": "revelation",
+        "captionText": "LEGO global giant / Read the LEGO history",
+        "sceneDescription": "The CGI hand-proxy pushes the completed wooden toy car along the glowing timeline track. Then The camera lands on a pristine modern red 2x4 LEGO brick sitting on a clean museum plinth.",
+        "explainerDevice": "Evidence payoff to Final state",
+        "physicalAction": "The wooden toy rolls forward, leaving a trail of modern LEGO bricks in its wake. Then The brick locks into place as the timeline track fades",
+        "imagePrompt": "The CGI hand-proxy pushes the completed wooden toy car along the glowing timeline track.; Low angle tracking the toy's wheels Next: The camera lands on a pristine modern red 2x4 LEGO brick sitting on a clean museum plinth.; Slow push-in to a final product shot",
+        "animationPrompt": "The wooden toy rolls forward, leaving a trail of modern LEGO bricks in its wake. Then The brick locks into place as the timeline track fades.",
+        "image": {
+          "status": "idle"
+        },
+        "video": {
+          "status": "idle"
+        }
+      }
+    ],
+    "storyboardBoard": {
+      "frameCount": 6,
+      "imagePrompt": "Create ONE vertical 9:16 image containing six raw, unlabeled film stills for visual QA before video generation. Arrange the six stills in a clean 2-column by 3-row contact sheet with thin white gutters only. Each still must fill its cell edge-to-edge; no blank white rows, title bands, empty margins, or presentation whitespace. Absolute text ban: the image must contain zero words and zero letters. Do not draw headings, titles, labels, frame numbers, UI, arrows, icons, shirt text, product text, fake writing, glyphs, or alphanumeric marks. This is not final footage and not a single hero frame. It is a full-board visual plan that lets a human judge the whole 20-second story before spending video credits. Use one coherent procedural 3D explainer world on a clean blue/cyan blueprint-grid stage, close camera, one dominant subject/action per panel. If image references are provided, use the style reference frame only for visual grammar and use product/brand references only for shape, color, packaging cues, and material cues. Story sequence to visualize: one unlabeled six-still contact sheet Internal reading-order still plan to preserve, never visible as text: visual A CGI carpenter hand-proxy sets down a modern red 2x4 LEGO brick on a dusty workshop bench.; camera Macro close-up on the bench surface; motion Brick contacts wood, sending up a small puff of sawdust. / next silent still: visual The modern brick sits isolated as shadows lengthen across the bench, representing the economic crisis.; camera Wide shot with deep shadows; motion Light dims, pushing the brick into silhouette. / next silent still: visual A glowing timeline track shoots out from the modern brick, unspooling backward across the bench.; camera Tracking shot following the timeline; motion The red brick visually unspools into a raw block of wood. / next silent still: visual The raw wood block is precisely carved by unseen tools into a 1932 wooden toy car.; camera Over-the-shoulder macro of the hand-proxy; motion Wood shavings fall away as the toy car form snaps into existence. / next silent still: visual The CGI hand-proxy pushes the completed wooden toy car along the glowing timeline track.; camera Low angle tracking the toy's wheels; motion The wooden toy rolls forward, leaving a trail of modern LEGO bricks in its wake. / next silent still: visual The camera lands on a pristine modern red 2x4 LEGO brick sitting on a clean museum plinth.; camera Slow push-in to a final product shot; motion The brick locks into place as the timeline track fades. Sequence, visually: ordinary-use setup; hidden obstacle; mechanism setup; peak impossible-to-film reveal; evidence/payoff; final transformed product state. For ecommerce mechanism teardowns, show common use first, then hidden physical obstacle, then first component/mechanism, then peak cutaway or delivery reveal, then a unified evidence/payoff frame where the selected product stays central and any ordinary-version contrast appears only as a small unmarked remnant/token/background residue, then final product payoff. For capsule/supplement mechanisms, the main selected capsule/product must not crack, shatter, leak, explode, or fail; show impact against an outer layer, obstacle, or ordinary side remnant instead. The fifth visual beat must not be a split-screen, side-by-side divider, comparison chart, two-column layout, before/after wall, vertical seam, or separated left/right comparison because later production anchors must stay coherent. The fifth visual beat must keep the selected product stable and central as the main subject. Do not crack, shatter, melt, break, leak, or fail the central product in that beat; any failed ordinary version must be a small separate side remnant, debris token, or background residue. For ecommerce, make the plan feel like a fast product-science teardown short: repeated product/package anchoring, quick visual resets, macro mechanism close-ups, component or particle movement, and a final product payoff composition. For reference-style ecommerce teardown, prefer high-energy physical teaching frames over clean beauty renders: dense obstacle worlds, particle floods, moving routes, machinery, fans, valves, tubes, and tactile props. Do not make the board polite. It should look like six active frames pulled from a fast product-science ad, not six static product-render samples. Use at least four distinct visual modules across the six frames: product/scale intro, hidden obstacle, mechanism machine or cutaway, ingredient/component movement, unified ordinary-to-selected-product payoff, final product payoff. For reference-style ecommerce teardown, the best frames teach with objects: a person uses or carries the product, the hidden path/obstacle appears, particles/components move, a machine/cutaway changes state, and the final product resolves the lesson. Every frame follows the founder prompt discipline: style declaration, recurring subject/product, concrete action, camera/framing, lighting, color/mood, and consistency. If any piece is missing, the frame is too vague. Every frame must show one visible state change so the storyboard feels like footage: object moves, layer peels, path blocks, capsule travels, particles scatter, mechanism opens, or payoff resolves. The six panels must feel like a storyboard artist planned one continuous ad: same demonstrator/product world, new visual information every panel, no disconnected beauty shots. Do not let the same close-up product angle dominate more than two frames. Keep the visual story changing every frame. Visual style: presenter-teardown-vsl. The six frames must feel like a real ecommerce product teardown with an unseen narrator and a silent recurring stylized feature-animation CGI demonstrator, not a miniature toy-character science world. Use the same silent stylized CGI demonstrator/scale figure as the visual continuity spine in at least four frames: full body, torso, hands, product-use surface, or over-shoulder framing depending on the beat. When the demo subject's face is visible, use unmistakable feature-animation CGI: simplified facial proportions, modeled hair, matte CG skin, visible eyes, plain everyday shirt, and product-demo posture. Keep lips closed and still. No photorealistic person, live action, photographed human, influencer footage, lip-sync, speech animation, singing, presenter delivery, branded apparel, mannequin, anatomy model, test dummy, gloves, medical mask, lab technician, doctor, scientist, or PPE worker. The person is demonstration/retention footage only; narrator and captions present the argument, while the person never speaks, sells, points to text, introduces the product, or becomes the narrator. The demonstrator must be physically involved in the demo - wearing, holding, opening, swallowing, pouring, carrying, training in, or standing behind the product/path - not parked beside the scene like a host. Keep the demonstrator consistent across frames: same face, plain shirt color, body scale, and relationship to the product. No branded caps, hats, hoodies, shirts, totes, merch, or character outfit details may become the product or final payoff. Use no more than two front-facing waist-up product-holding frames. Keep the same person present through hands, over-shoulder views, torso cutaways, scale demonstrations, and product interaction so continuity does not become repetition. Each frame should follow this prompt skeleton: locked style, recurring demonstrator/product, scene action, camera/framing, lighting, color/mood, and consistency. Each frame must read like a production still from the same shot sequence: subject, prop, camera, and lighting stay coherent while the physical action changes. Maxfusion visual rule: each script line becomes a visible product/body/mechanism action before it becomes an image prompt. Show the state change physically; never settle for topic illustration. Each frame must translate one narration sentence into a visible before/after state: object moves, layer peels, path blocks, capsule travels, particles scatter, mechanism opens, or payoff resolves. Frame 1: full-body or torso demo subject shows the product in a real use setting while the false assumption appears visually. Frame 2: the hidden customer/product problem appears during actual product use, handling, body-route, opening, eating, applying, wearing, or setup. Frame 3: full-body, torso, hands, or demo subject silently demonstrate the product detail that sets up the mechanism. Frame 4: peak impossible-to-film 3D overlay, cutaway, x-ray, component split, invisible-problem reveal, or mechanism insert. Frame 5: return from the 3D insert into a practical proof/payoff product moment with the recurring demonstrator's torso, hands, or over-shoulder view visibly connected to the action. Frame 6: clean human/product final where the same demonstrator's torso or hands place, hold, open, carry, use, or reach for the large selected product. Never write a product-alone or empty-stage final. Use oversized tactile demo props like clear tubes, jars, glasses, capsules, particles, piles, pipes, scoops, scales, trays, or product-use surfaces so the demo feels physically staged, not like a generic science diagram. Each frame should be a different physical teaching module when possible: human/product use, product path or selected body-route, obstacle wall or pile-up, mechanism machine or pipe, moving particles/components, and final product payoff. For supplement stories, match the visual engine to the locked premise. Routine, testing, portability, taste, and ingredient-compression stories stay in the external product/demo world. Only delivery, digestion, or absorption stories use a transparent torso or body-route. For approved body-route frames, show the correct digestive route rather than lungs, keep it attached to the silent demonstrator and product path, and use clean blue-route footage with a tidy barrier and visible particles. Avoid gore, wet intestine tunnels, detached organs, or anatomy montage. Use real-world ecommerce spaces where useful, but keep the reference spine: bright blue grid floor/wall, casual demo person, product handling, oversized prop comparison, and macro mechanism inserts. Do not use miniature toy-character anatomy, cartoon wall characters, smooth bald mannequins, blank anatomy models, test dummies, faceless biology montages, all-blue tabletop repetition, sterile cleanroom emptiness, huge empty counters, lab-coat scientists, doctor-like presenters, medical masks, medical goggles, PPE, sunglasses, photorealistic people, live-action people, or talking humans. Every panel must contain a visible subject, object, and physical action. The first panel cannot be an empty stage; it must show friction physically blocking, piling up, splitting, leaking, breaking, tangling, or creating tension. The written still plan and any overlayText values are internal instructions only. Do not draw any of those words. No panel labels, no panel numbers, no captions, no caption bars, no black lower bars, no progress bars, no readable text, no UI labels, no speech bubbles, no receipts, no posters, no typography-led design. No words, letters, numbers, percentages, ratings, price tags, labels, handwriting, UI copy, text-like glyphs, icons, arrows, checkmarks, X marks, or alphanumeric marks anywhere inside panels. Do not write FRAME 1, FRAME 2, scene labels, headings, or any other annotations. If proof or numeric evidence appears in the story, keep it in overlayText metadata and show the selected product physically causing the documented customer or product outcome. Never visualize evidence as abstract blocks, counters, cubes, tokens, charts, or scoreboards.",
+      "image": {
+        "status": "ready",
+        "storageId": "local:agent-runs/lego-origin-proof/images/storyboard-board.jpg",
+        "url": "agent-runs/lego-origin-proof/images/storyboard-board.jpg",
+        "mimeType": "image/jpeg"
+      },
+      "frames": [
+        {
+          "frameIndex": 1,
+          "role": "problem",
+          "label": "Problem state",
+          "image": {
+            "status": "ready",
+            "storageId": "local:agent-runs/lego-origin-proof/images/anchor-1.jpg",
+            "url": "agent-runs/lego-origin-proof/images/anchor-1.jpg",
+            "mimeType": "image/jpeg"
+          },
+          "visual": "A CGI carpenter hand-proxy sets down a modern red 2x4 LEGO brick on a dusty workshop bench.",
+          "camera": "Macro close-up on the bench surface",
+          "motion": "Brick contacts wood, sending up a small puff of sawdust.",
+          "overlayText": "LEGO without steady work",
+          "editingNote": "Establish the ordinary modern product in an unexpected historical setting."
+        },
+        {
+          "frameIndex": 2,
+          "role": "escalation",
+          "label": "Escalation",
+          "image": {
+            "status": "idle"
+          },
+          "visual": "The modern brick sits isolated as shadows lengthen across the bench, representing the economic crisis.",
+          "camera": "Wide shot with deep shadows",
+          "motion": "Light dims, pushing the brick into silhouette.",
+          "overlayText": "LEGO needs something simple",
+          "editingNote": "Visualize the lack of steady work and the need for a solution."
+        },
+        {
+          "frameIndex": 3,
+          "role": "mechanism-setup",
+          "label": "Mechanism setup",
+          "image": {
+            "status": "idle"
+          },
+          "visual": "A glowing timeline track shoots out from the modern brick, unspooling backward across the bench.",
+          "camera": "Tracking shot following the timeline",
+          "motion": "The red brick visually unspools into a raw block of wood.",
+          "overlayText": "LEGO 1932 product line",
+          "editingNote": "Set up the reverse-engineering mechanism and the specific 1932 evidence."
+        },
+        {
+          "frameIndex": 4,
+          "role": "wow-reveal",
+          "label": "Wow reveal",
+          "image": {
+            "status": "ready",
+            "storageId": "local:agent-runs/lego-origin-proof/images/anchor-4.jpg",
+            "url": "agent-runs/lego-origin-proof/images/anchor-4.jpg",
+            "mimeType": "image/jpeg"
+          },
+          "visual": "The raw wood block is precisely carved by unseen tools into a 1932 wooden toy car.",
+          "camera": "Over-the-shoulder macro of the hand-proxy",
+          "motion": "Wood shavings fall away as the toy car form snaps into existence.",
+          "overlayText": "LEGO wooden toys",
+          "editingNote": "Peak impossible reveal of the transformation from modern brick to historical product."
+        },
+        {
+          "frameIndex": 5,
+          "role": "payoff",
+          "label": "Evidence payoff",
+          "image": {
+            "status": "idle"
+          },
+          "visual": "The CGI hand-proxy pushes the completed wooden toy car along the glowing timeline track.",
+          "camera": "Low angle tracking the toy's wheels",
+          "motion": "The wooden toy rolls forward, leaving a trail of modern LEGO bricks in its wake.",
+          "overlayText": "LEGO global giant",
+          "editingNote": "Evidence payoff showing the 1932 product physically causing the modern brand's existence."
+        },
+        {
+          "frameIndex": 6,
+          "role": "final-state",
+          "label": "Final state",
+          "image": {
+            "status": "idle"
+          },
+          "visual": "The camera lands on a pristine modern red 2x4 LEGO brick sitting on a clean museum plinth.",
+          "camera": "Slow push-in to a final product shot",
+          "motion": "The brick locks into place as the timeline track fades.",
+          "overlayText": "Read the LEGO history",
+          "editingNote": "Final product payoff returning to the real selected subject."
+        }
+      ]
+    },
+    "clipPlans": [
+      {
+        "clipIndex": 1,
+        "label": "Clip 1: frames 1-3",
+        "startMs": 0,
+        "endMs": 10000,
+        "durationSeconds": 10,
+        "frameIndexes": [
+          1,
+          2,
+          3
+        ],
+        "prompt": "Animate approved storyboard frames 1-2-3 as clip 1 of 2, vertical 9:16, 10 seconds. Time-code the clip into storyboard sub-shots: 0.0-3.3s = frame 1; 3.3-6.7s = frame 2; 6.7-10.0s = frame 3. Use hard cuts, whip zooms, or push-through transitions between frames; do not blend them into one vague drifting scene. Use these camera and motion cues only: Frame 1; action: A CGI carpenter hand-proxy sets down a modern red 2x4 LEGO brick on a dusty workshop bench.; camera: Macro close-up on the bench surface; physical motion: Brick contacts wood, sending up a small puff of sawdust. | Frame 2; action: The modern brick sits isolated as shadows lengthen across the bench, representing the economic crisis.; camera: Wide shot with deep shadows; physical motion: Light dims, pushing the brick into silhouette. | Frame 3; action: A glowing timeline track shoots out from the modern brick, unspooling backward across the bench.; camera: Tracking shot following the timeline; physical motion: The red brick visually unspools into a raw block of wood.. Never turn prompt words into visible text. SETTING: A stylized, dust-moted carpenter's workshop floor that gradually transitions into a clean museum-timeline plinth, where a modern LEGO brick unspools backward in. CONTINUITY OBJECTS: a modern red 2x4 LEGO brick, a 1932 wooden pull-toy car, a glowing timeline track, a silent CGI carpenter hand-proxy. The human is a recurring silent stylized CGI demonstrator, not the narrator. Keep lips, mouth, and jaw closed and still: no lip-sync, speech, singing, or presenter delivery. STORY JOB: move from ordinary product use, to the selected hidden obstacle, to the approved mechanism setup. Make each turn visible through product, prop, obstacle, camera, or component motion. Use hard cuts, whip zooms, push-throughs, or object wipes between the three approved moments; do not blend them into one drifting shot. Do not invent extra product claims, packaging, people, anatomy, props, or mechanisms beyond the approved frames. No generated typography, captions, subtitles, labels, logos, letters, numbers, UI, or pseudo-writing. Wiggly adds every word after video generation.",
+        "video": {
+          "status": "idle"
+        }
+      },
+      {
+        "clipIndex": 2,
+        "label": "Clip 2: frames 4-6",
+        "startMs": 10000,
+        "endMs": 20000,
+        "durationSeconds": 10,
+        "frameIndexes": [
+          4,
+          5,
+          6
+        ],
+        "prompt": "Animate approved storyboard frames 4-5-6 as clip 2 of 2, vertical 9:16, 10 seconds. Time-code the clip into storyboard sub-shots: 0.0-3.3s = frame 4; 3.3-6.7s = frame 5; 6.7-10.0s = frame 6. Use hard cuts, whip zooms, or push-through transitions between frames; do not blend them into one vague drifting scene. Use these camera and motion cues only: Frame 4; action: The raw wood block is precisely carved by unseen tools into a 1932 wooden toy car.; camera: Over-the-shoulder macro of the hand-proxy; physical motion: Wood shavings fall away as the toy car form snaps into existence. | Frame 5; action: The CGI hand-proxy pushes the completed wooden toy car along the glowing timeline track.; camera: Low angle tracking the toy's wheels; physical motion: The wooden toy rolls forward, leaving a trail of modern LEGO bricks in its wake. | Frame 6; action: The camera lands on a pristine modern red 2x4 LEGO brick sitting on a clean museum plinth.; camera: Slow push-in to a final product shot; physical motion: The brick locks into place as the timeline track fades.. Never turn prompt words into visible text. SETTING: A stylized, dust-moted carpenter's workshop floor that gradually transitions into a clean museum-timeline plinth, where a modern LEGO brick unspools backward in. CONTINUITY OBJECTS: a modern red 2x4 LEGO brick, a 1932 wooden pull-toy car, a glowing timeline track, a silent CGI carpenter hand-proxy. The human is a recurring silent stylized CGI demonstrator, not the narrator. Keep lips, mouth, and jaw closed and still: no lip-sync, speech, singing, or presenter delivery. STORY JOB: move from the approved mechanism reveal, through the selected evidence payoff, to the final product/CTA setup. The product and obstacle must visibly change state. Use hard cuts, whip zooms, push-throughs, or object wipes between the three approved moments; do not blend them into one drifting shot. Do not invent extra product claims, packaging, people, anatomy, props, or mechanisms beyond the approved frames. No generated typography, captions, subtitles, labels, logos, letters, numbers, UI, or pseudo-writing. Wiggly adds every word after video generation.",
+        "video": {
+          "status": "idle"
+        }
+      }
+    ],
+    "referenceImages": {
+      "productImageUrls": [],
+      "brandImageUrls": [
+        "https://www.lego.com/cdn/cs/history/assets/bltdca3976db0441e91/lego-wooden-duck.jpg",
+        "https://assets.lego.com/logos/v4.5.0/brand-lego.svg"
+      ]
+    },
+    "storyContract": {
+      "primarySiteType": "portfolio",
+      "riskFlags": [],
+      "visualWorld": "A stylized, dust-moted carpenter's workshop floor that gradually transitions into a clean museum-timeline plinth, where a modern LEGO brick unspools backward in",
+      "lighting": "Warm, directional workshop sunlight casting long shadows, shifting to clean, even archival gallery lighting by the final frames.",
+      "cameraStyle": "Smooth, slow dolly pushes and macro rack focuses with a shallow depth of field, maintaining a documentary aesthetic.",
+      "recurringObjects": [
+        "a modern red 2x4 LEGO brick",
+        "a 1932 wooden pull-toy car",
+        "a glowing timeline track",
+        "a silent CGI carpenter hand-proxy"
+      ],
+      "storySubject": {
+        "kind": "brand"
+      },
+      "visualStyle": "presenter-teardown-vsl",
+      "variantAngle": "Tracing the brand back to its first documented product line.",
+      "customerProblem": "A carpenter loses steady work during a global economic crisis and needs a new way to survive.",
+      "mechanismSummary": "The economic crisis forces the carpenter to produce new, easy-to-sell wooden toys, establishing the first documented product line in 1932.",
+      "visualMetaphor": "A modern brick unspools into a 1932 wooden toy on a timeline track.",
+      "referenceScript": "A global economic crisis leaves a carpenter without steady work. He needs something simple that people will actually buy. The first LEGO product line launches in 1932 with wooden toys. That humble start builds a global giant from a single idea. Watch the full story.",
+      "ctaLine": "Watch the full story.",
+      "evidenceIndex": 1,
+      "evidenceUseType": "review",
+      "wowMomentType": "exploded-product",
+      "wowMoment": "A modern brick unspools backward through a timeline track, reconstructing itself into a 1932 wooden toy.",
+      "viewerLearns": "The global giant started from a documented 1932 product line born of economic necessity.",
+      "claimRisk": "low",
+      "claimRiskReason": "The narration strictly uses the provided evidence regarding the 1932 product line and the economic crisis forcing the production of new sellable products, without inventing unsupported facts."
+    },
+    "groundedEvidence": {
+      "evidenceIndex": 1,
+      "type": "review",
+      "evidenceUseType": "review",
+      "text": "The first product line is presented in 1932.",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "brand proof",
+      "visualPotentialScore": 0.74,
+      "whyVisual": "Proof stays in renderer copy while the visual shows the product causing a concrete customer or product state change.",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction",
+        "impact-chain",
+        "invisible-problem"
+      ],
+      "scrapedAt": 1784865272617
+    }
+  },
+  "metadata": {
+    "candidateIndex": 0,
+    "generationBatchId": "repo-lego-origin-proof",
+    "researchRunId": "jn72y4d4jxhfes1pnjjwd2c5f98azvt2",
+    "brandSnapshotId": "jd75sa5mn4h46g05nxjp9ckffs8ay0j1",
+    "model": "z-ai/glm-5.2",
+    "provider": "nvidia-nim",
+    "generatedAt": 1784865272617,
+    "adAngles": [
+      {
+        "buyer": "a sports fan looking to celebrate a major victory",
+        "moment": "watching a championship final and wanting to immortalize the team's success",
+        "pain": "feeling like the excitement of the win will fade without a physical memento",
+        "proof": "offers buildable LEGO sets like the FIFA World Cup™ Official Trophy",
+        "sitePhrase": "Get ready for the big final!"
+      },
+      {
+        "buyer": "a dedicated collector of rare items",
+        "moment": "browsing an online store and feeling frustrated by common, mass-market toys that everyone else already owns",
+        "pain": "wasting time and money on products that lack prestige or uniqueness",
+        "proof": "provides a dedicated section for rare, hard-to-find Exclusives",
+        "sitePhrase": "Exclusives"
+      },
+      {
+        "buyer": "a hobbyist shopping for a long-term display project",
+        "moment": "scrolling through social media and realizing their favorite set is about to disappear from shelves forever",
+        "pain": "the regret of missing out on a specific, retiring collectible set",
+        "proof": "explicitly flags sets that are Retiring Soon to notify buyers before availability ends",
+        "sitePhrase": "Retiring soon"
+      },
+      {
+        "buyer": "a parent shopping for a gift for a child",
+        "moment": "staring at a screen full of thousands of options while feeling overwhelmed and unsure if the item will be a hit",
+        "pain": "the anxiety of buying the wrong gift and disappointing their child",
+        "proof": "provides a guided 'Find the perfect set' search tool to narrow down options",
+        "sitePhrase": "Find the perfect set"
+      }
+    ]
+  }
+}
