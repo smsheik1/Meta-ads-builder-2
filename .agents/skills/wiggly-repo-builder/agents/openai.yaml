@@ -1,0 +1,4 @@
+interface:
+  display_name: "Wiggly Repo Builder"
+  short_description: "Build and prove reusable Wiggly Repos"
+  default_prompt: "Use $wiggly-repo-builder to build and prove a new Wiggly Repo from this format idea."
