@@ -124,7 +124,7 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 **Why:** Enlarging a small storyboard panel produced a blurry endpoint, and the video model copied that blur while inventing a new person and setting to bridge the mismatch.
 
-**Evidence:** The first 3D Breakdown LEGO proof passed duration and file checks but failed paid-media review because its ending frames came from upscaled storyboard crops.
+**Evidence:** The first 3D Breakdown LEGO proof passed duration and file checks but failed paid-media review because its ending frames came from upscaled storyboard crops. The corrected proof used four separate full-quality endpoints and kept the same workshop, subject, and physical story across both clips.
 
 ## Still testing
 

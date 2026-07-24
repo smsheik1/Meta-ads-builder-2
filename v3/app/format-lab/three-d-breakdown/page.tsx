@@ -33,6 +33,7 @@ const files = [
   ["scene-contract.json", "Scene contract"],
   ["assets.json", "Assets"],
   ["quality.json", "Quality checks"],
+  ["REAL-PROOF.md", "Real proof"],
 ] as const;
 
 export default function ThreeDBreakdownRepositoryPage() {
@@ -66,7 +67,33 @@ export default function ThreeDBreakdownRepositoryPage() {
             </Button>
           </div>
           <div className="mt-5 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" data-testid="video-phase-boundary">
-            <strong>Quality checkpoint:</strong> the first video proof exposed blurry storyboard-derived endpoints and continuity jumps. The corrected runner now requires four full-quality endpoints before two continuous 720p clips. A new paid proof has not run yet. Voice generation and final composition remain locked.
+            <strong>Quality checkpoint:</strong> the corrected LEGO proof used four full-quality endpoints and produced two continuous 480p Seedance 2.0 Mini clips. Both clips passed technical and human review. Voice generation and final composition remain locked.
+          </div>
+        </section>
+
+        <section data-testid="lego-quality-proof">
+          <h2 className="text-xl font-bold">Corrected LEGO proof</h2>
+          <p className="mt-1 text-sm text-slate-600">The ladder becomes working wood, then a wooden toy car, without changing the carpenter or workshop.</p>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+            <Image
+              alt="Contact sheet from the corrected LEGO 3D Breakdown clips"
+              className="h-auto w-full rounded-lg border border-slate-300 bg-white shadow-sm"
+              height={964}
+              src="/format-repositories/three-d-breakdown-v1/agent-runs/lego-origin-quality-proof/video-contact-sheet.jpg"
+              width={842}
+            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[1, 2].map((clip) => (
+                <video
+                  className="aspect-[496/864] w-full rounded-lg border border-slate-300 bg-black shadow-sm"
+                  controls
+                  key={clip}
+                  playsInline
+                  preload="metadata"
+                  src={`/format-repositories/three-d-breakdown-v1/agent-runs/lego-origin-quality-proof/videos/clip-${clip}.mp4`}
+                />
+              ))}
+            </div>
           </div>
         </section>
 
