@@ -1,0 +1,370 @@
+{
+  "adAngles": [
+    {
+      "buyer": "a sports fan looking to celebrate a major victory",
+      "moment": "watching a championship final and wanting to immortalize the team's success",
+      "pain": "feeling like the excitement of the win will fade without a physical memento",
+      "proof": "offers buildable LEGO sets like the FIFA World Cup™ Official Trophy",
+      "sitePhrase": "Get ready for the big final!"
+    },
+    {
+      "buyer": "a dedicated collector of rare items",
+      "moment": "browsing an online store and feeling frustrated by common, mass-market toys that everyone else already owns",
+      "pain": "wasting time and money on products that lack prestige or uniqueness",
+      "proof": "provides a dedicated section for rare, hard-to-find Exclusives",
+      "sitePhrase": "Exclusives"
+    },
+    {
+      "buyer": "a hobbyist shopping for a long-term display project",
+      "moment": "scrolling through social media and realizing their favorite set is about to disappear from shelves forever",
+      "pain": "the regret of missing out on a specific, retiring collectible set",
+      "proof": "explicitly flags sets that are Retiring Soon to notify buyers before availability ends",
+      "sitePhrase": "Retiring soon"
+    },
+    {
+      "buyer": "a parent shopping for a gift for a child",
+      "moment": "staring at a screen full of thousands of options while feeling overwhelmed and unsure if the item will be a hit",
+      "pain": "the anxiety of buying the wrong gift and disappointing their child",
+      "proof": "provides a guided 'Find the perfect set' search tool to narrow down options",
+      "sitePhrase": "Find the perfect set"
+    }
+  ],
+  "brand": {
+    "colors": [
+      "#FFD502",
+      "#DFCEB3",
+      "#005AD2",
+      "#F8F8F8",
+      "#000000"
+    ],
+    "description": "The global economic crisis forces carpenter Ole Kirk Kristiansen to produce new easy saleable products. The beginning of the LEGO Group starts with wooden toys, such as cars, airplanes and yoyo's. Ole Kirk Kristiansen also produces ladders, ironing boards, Chr",
+    "faviconUrl": "https://www.lego.com/favicon.ico",
+    "fonts": {
+      "body": "Cera Pro",
+      "feel": "sans",
+      "heading": "Cera Pro"
+    },
+    "host": "www.lego.com",
+    "logoUrl": "https://assets.lego.com/logos/v4.5.0/brand-lego.svg",
+    "name": "LEGO® History",
+    "ogImageUrl": "https://www.lego.com/cdn/cs/history/assets/bltdca3976db0441e91/lego-wooden-duck.jpg",
+    "screenshotUrl": null,
+    "title": "The beginning of the LEGO Group | LEGO® History",
+    "url": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+    "vibeTags": [
+      "LEGO® History",
+      "buyer-moment"
+    ]
+  },
+  "brandBrief": {
+    "audience": "Readers and fans interested in the historical origins of the LEGO brand and its founder.",
+    "brandName": "LEGO",
+    "buyerMoments": [
+      "Curiosity about how a global toy brand started during an economic crisis.",
+      "Interest in the transition from wooden toys to modern plastic bricks.",
+      "Reading about historical company milestones like surviving a factory fire.",
+      "Learning about the origin of the brand name and its 'play well' meaning."
+    ],
+    "confidence": "high",
+    "ctaDirection": "Read the history",
+    "droppedNoiseSummary": [
+      "Cookie consent text",
+      "Age gate interstitial text",
+      "Navigation links to shop and support",
+      "Play zone game promotions"
+    ],
+    "offer": "An editorial article detailing the history and origins of the LEGO Group.",
+    "proof": [
+      "The first product line is presented in 1932.",
+      "The company name is derived from 'LEg GOdt' (play well).",
+      "The original woodworking factory burned down in a devastating fire in 1942.",
+      "The company doubled its sales during the first two years of World War II."
+    ],
+    "siteLanguage": [
+      "The beginning of the LEGO Group",
+      "LEg GOdt becomes the LEGO® name",
+      "Quality above all",
+      "Children need toys - even in hard times"
+    ],
+    "visualNotes": [
+      "Primary brand yellow (#FFD502) and bright blue (#005AD2) accents.",
+      "Sans-serif typography using Cera Pro for both headings and body.",
+      "Rounded primary buttons (border-radius 999px).",
+      "Historical documentary-style photography of wooden toys and factory employees.",
+      "Light background (#F8F8F8) with black text."
+    ]
+  },
+  "brandSnapshotId": "jd75sa5mn4h46g05nxjp9ckffs8ay0j1",
+  "branding": {
+    "__llm_button_reasoning": {
+      "confidence": 0.95,
+      "primary": {
+        "index": 0,
+        "reasoning": "Button #0 uses a vibrant blue color (#005AD2) which is consistent with the brand's accent color and is labeled 'Subscribe', indicating a primary call-to-action.",
+        "text": "Subscribe"
+      },
+      "secondary": {
+        "index": 1,
+        "reasoning": "Button #1 has a different background color (#FFFFFF) and serves as a secondary option with the same 'Subscribe' label, but less visual prominence due to its neutral color.",
+        "text": "Subscribe"
+      }
+    },
+    "__llm_logo_reasoning": {
+      "confidence": 0.95,
+      "reasoning": "Selected #0 because it is visible, located in the header, and matches the brand's favicon and overall branding. It is the most prominent logo representing LEGO.",
+      "selectedIndex": 0,
+      "source": "llm"
+    },
+    "__llm_metadata": {
+      "buttonClassification": {
+        "llmCalled": true,
+        "llmSucceeded": true
+      },
+      "logoSelection": {
+        "finalSource": "llm",
+        "llmCalled": true,
+        "llmSucceeded": true,
+        "rawLogoSelection": {
+          "confidence": 0.95,
+          "selectedLogoIndex": 0,
+          "selectedLogoReasoning": "Selected #0 because it is visible, located in the header, and matches the brand's favicon and overall branding. It is the most prominent logo representing LEGO."
+        }
+      }
+    },
+    "colorScheme": "light",
+    "colors": {
+      "accent": "#005AD2",
+      "background": "#F8F8F8",
+      "link": "#005AD2",
+      "primary": "#FFD502",
+      "secondary": "#DFCEB3",
+      "textPrimary": "#000000"
+    },
+    "components": {
+      "buttonPrimary": {
+        "background": "#005AD2",
+        "borderRadius": "999px",
+        "borderRadiusCorners": {
+          "bottomLeft": "999px",
+          "bottomRight": "999px",
+          "topLeft": "999px",
+          "topRight": "999px"
+        },
+        "shadow": "none",
+        "textColor": "#FFFFFF"
+      },
+      "buttonSecondary": {
+        "background": "#FFFFFF",
+        "borderRadius": "0px",
+        "borderRadiusCorners": {
+          "bottomLeft": "0px",
+          "bottomRight": "0px",
+          "topLeft": "0px",
+          "topRight": "0px"
+        },
+        "shadow": "none",
+        "textColor": "#141414"
+      },
+      "input": {
+        "background": "transparent",
+        "borderColor": null,
+        "borderRadius": "0px",
+        "borderRadiusCorners": {
+          "bottomLeft": "0px",
+          "bottomRight": "0px",
+          "topLeft": "0px",
+          "topRight": "0px"
+        },
+        "shadow": "none",
+        "textColor": "#141414"
+      }
+    },
+    "confidence": {
+      "buttons": 0.95,
+      "colors": 0.9,
+      "overall": 0.925
+    },
+    "designSystem": {
+      "componentLibrary": "",
+      "framework": "custom"
+    },
+    "fonts": [
+      {
+        "family": "Cera Pro",
+        "role": "body"
+      }
+    ],
+    "images": {
+      "favicon": "https://www.lego.com/favicon.ico",
+      "logo": "https://assets.lego.com/logos/v4.5.0/brand-lego.svg",
+      "logoAlt": "LEGO",
+      "logoHref": "/en-ca",
+      "ogImage": "https://www.lego.com/cdn/cs/history/assets/bltdca3976db0441e91/lego-wooden-duck.jpg"
+    },
+    "personality": {
+      "energy": "high",
+      "targetAudience": "children and families",
+      "tone": "playful"
+    },
+    "spacing": {
+      "baseUnit": 4,
+      "borderRadius": "0px"
+    },
+    "typography": {
+      "fontFamilies": {
+        "heading": "Cera Pro",
+        "primary": "Cera Pro"
+      },
+      "fontSizes": {
+        "body": "12px",
+        "h1": "61px",
+        "h2": "61px"
+      },
+      "fontStacks": {
+        "body": [
+          "Cera Pro",
+          "sans-serif"
+        ],
+        "heading": [
+          "Cera Pro",
+          "sans-serif"
+        ],
+        "paragraph": [
+          "Cera Pro",
+          "sans-serif"
+        ]
+      }
+    }
+  },
+  "evidence": {
+    "headings": [
+      "The first product line is presented in 1932",
+      "LEg GOdt becomes the LEGO® name",
+      "Quality above all",
+      "Employees in the woodworking factory with the company motto on the wall, 1954",
+      "Purchase of the first milling machine",
+      "Employee at a milling machine, 1938",
+      "Children need toys - even in hard times",
+      "The fire in 1942",
+      "LEGO employees assessing the damage to the woodworking factory after the fire in 1942",
+      "1. **The beginning of the LEGO Group**",
+      "2. **A new milling machine**",
+      "3. **Dagny Holm**",
+      "4. **LEGO® trains**",
+      "LEGO.com",
+      "You are about to enter LEGO.com.",
+      "You can shop, get support & more.",
+      "Continue",
+      "THE PLAY ZONE",
+      "Play games, watch videos and more!",
+      "START PLAYING"
+    ],
+    "paragraphs": [
+      "The global economic crisis forces carpenter Ole Kirk Kristiansen to produce new easy saleable products. The beginning of the LEGO Group starts with wooden toys, such as cars, airplanes and yoyo's. Ole Kirk Kristiansen also produces ladders, ironing boards, Chr",
+      "The first product line is presented in 1932",
+      "LEg GOdt becomes the LEGO® name",
+      "In late 1935, Ole Kirk Kristiansen decides to further concentrate his business on the toy production he started in 1932. This decision involves finding a new name for the company. The company changes its name after Ole Kirk Kristiansen allegedly holds a compet",
+      "Ole Kirk Kristiansen has always guaranteed the quality of his work, something he continues to do in his work with wooden toys. He is convinced that children deserve toys of high quality, made of the finest materials, so that they will last for many years of pl",
+      "Employees in the woodworking factory with the company motto on the wall, 1954",
+      "Purchase of the first milling machine",
+      "Ole Kirk Kristiansen is interested in all forms of new technology, which can improve quality and rationalize production. His interest in new technology, tools and machinery, new materials and processing methods is also obvious when it comes to his own company.",
+      "Employee at a milling machine, 1938",
+      "Children need toys - even in hard times",
+      "The outbreak of World War II does nothing to limit Ole Kirk Kristiansen and his toy production. In times of crisis, the demand for toys is greater than ever. During the first two years of the war, the company doubles its sales. Due to the war, all import activ",
+      "A devastating fire in the factory in 1942 virtually destroys Ole Kirk Kristiansen’s life work. During the night of March 20, 1942, a fire rages through the woodworking factory, but the adjoining family home is saved from the flames. The fire is almost too much",
+      "LEGO employees assessing the damage to the woodworking factory after the fire in 1942",
+      "1. **The beginning of the LEGO Group**",
+      "2. **A new milling machine**",
+      "You are about to enter LEGO.com.",
+      "You can shop, get support & more.",
+      "Play games, watch videos and more!",
+      "We want to let you know that we are placing cookies on your device that remember your choices on LEGO.com, e.g. your home country, high-score and your LEGO Account. We also place cookies that help us run the website. For more info view our Cookie Policy and ou"
+    ],
+    "rawMarkdown": "The global economic crisis forces carpenter Ole Kirk Kristiansen to produce new easy saleable products. The beginning of the LEGO Group starts with wooden toys, such as cars, airplanes and yoyo's. Ole Kirk Kristiansen also produces ladders, ironing boards, Chr\nThe first product line is presented in 1932\nLEg GOdt becomes the LEGO® name\nIn late 1935, Ole Kirk Kristiansen decides to further concentrate his business on the toy production he started in 1932. This decision involves finding a new name for the company. The company changes its name after Ole Kirk Kristiansen allegedly holds a compet\nQuality above all\nOle Kirk Kristiansen has always guaranteed the quality of his work, something he continues to do in his work with wooden toys. He is convinced that children deserve toys of high quality, made of the finest materials, so that they will last for many years of pl\nEmployees in the woodworking factory with the company motto on the wall, 1954\nPurchase of the first milling machine\nOle Kirk Kristiansen is interested in all forms of new technology, which can improve quality and rationalize production. His interest in new technology, tools and machinery, new materials and processing methods is also obvious when it comes to his own company.\nEmployee at a milling machine, 1938\nChildren need toys - even in hard times\nThe outbreak of World War II does nothing to limit Ole Kirk Kristiansen and his toy production. In times of crisis, the demand for toys is greater than ever. During the first two years of the war, the company doubles its sales. Due to the war, all import activ\nThe fire in 1942\nA devastating fire in the factory in 1942 virtually destroys Ole Kirk Kristiansen’s life work. During the night of March 20, 1942, a fire rages through the woodworking factory, but the adjoining family home is saved from the flames. The fire is almost too much\nLEGO employees assessing the damage to the woodworking factory after the fire in 1942\n1. **The beginning of the LEGO Group**\n2. **A new milling machine**\n3. **Dagny Holm**\n4. **LEGO® trains**\nLEGO.com\nYou are about to enter LEGO.com.\nYou can shop, get support & more.\nContinue\nTHE PLAY ZONE\nPlay games, watch videos and more!\nSTART PLAYING\nWe want to let you know that we are placing cookies on your device that remember your choices on LEGO.com, e.g. your home country, high-score and your LEGO Account. We also place cookies that help us run the website. For more info view our Cookie Policy and ou",
+    "receipts": {
+      "buyerMoments": [
+        "In late 1935, Ole Kirk Kristiansen decides to further concentrate his business on the toy production he started in 1932. This decision involves finding a new name for the company. The company changes its name after Ole Kirk Kristiansen allegedly holds a compet",
+        "Ole Kirk Kristiansen is interested in all forms of new technology, which can improve quality and rationalize production. His interest in new technology, tools and machinery, new materials and processing methods is also obvious when it comes to his own company.",
+        "LEGO employees assessing the damage to the woodworking factory after the fire in 1942",
+        "We want to let you know that we are placing cookies on your device that remember your choices on LEGO.com, e.g. your home country, high-score and your LEGO Account. We also place cookies that help us run the website. For more info view our Cookie Policy and ou"
+      ],
+      "exactSiteLanguage": [
+        "The beginning of the LEGO Group | LEGO® History",
+        "The first product line is presented in 1932",
+        "LEg GOdt becomes the LEGO® name",
+        "Quality above all",
+        "Employees in the woodworking factory with the company motto on the wall, 1954",
+        "Purchase of the first milling machine",
+        "Employee at a milling machine, 1938",
+        "Children need toys - even in hard times"
+      ],
+      "namedProof": [],
+      "specificClaims": []
+    }
+  },
+  "finalUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+  "host": "www.lego.com",
+  "metadata": {
+    "concurrencyLimited": false,
+    "contentType": "text/html; charset=utf-8",
+    "creditsUsed": 1,
+    "favicon": "https://www.lego.com/favicon.ico",
+    "indexId": "ce6a4bdc-4946-42ac-9d9b-e7735cbccfa1",
+    "language": "en-US",
+    "og:image": "https://www.lego.com/cdn/cs/history/assets/bltdca3976db0441e91/lego-wooden-duck.jpg",
+    "og:image:height": "1440",
+    "og:image:type": "image/jpeg",
+    "og:image:width": "1200",
+    "og:locale": "en_CA",
+    "og:site_name": "LEGO® History",
+    "og:title": "The beginning of the LEGO Group | LEGO® History",
+    "og:type": "website",
+    "og:url": "https://www.lego.com/en-us/history/articles/b-the-beginning-of-the-lego-group",
+    "ogImage": "https://www.lego.com/cdn/cs/history/assets/bltdca3976db0441e91/lego-wooden-duck.jpg",
+    "ogLocale": "en_CA",
+    "ogSiteName": "LEGO® History",
+    "ogTitle": "The beginning of the LEGO Group | LEGO® History",
+    "ogUrl": "https://www.lego.com/en-us/history/articles/b-the-beginning-of-the-lego-group",
+    "proxyUsed": "basic",
+    "robots": "index, follow",
+    "scrapeId": "019f86ff-239e-720b-bd18-27da49a2b4a7",
+    "sourceURL": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+    "statusCode": 200,
+    "timezone": "America/New_York",
+    "title": "The beginning of the LEGO Group | LEGO® History | LEGO.com CA",
+    "twitter:card": "summary_large_image",
+    "twitter:image": "https://www.lego.com/cdn/cs/history/assets/bltdca3976db0441e91/lego-wooden-duck.jpg",
+    "twitter:image:height": "1440",
+    "twitter:image:type": "image/jpeg",
+    "twitter:image:width": "1200",
+    "twitter:title": "The beginning of the LEGO Group | LEGO® History",
+    "url": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group?locale=en-ca&age-gate=grown_up",
+    "viewport": "width=device-width, initial-scale=1"
+  },
+  "productCatalog": null,
+  "providerStatus": [
+    {
+      "provider": "firecrawl",
+      "reason": "Firecrawl read 19 page snippets.",
+      "status": "used"
+    },
+    {
+      "provider": "nvidia-nim-curator",
+      "reason": "NVIDIA NIM curated website evidence with z-ai/glm-5.2 at high confidence.",
+      "status": "used"
+    },
+    {
+      "provider": "product-catalog",
+      "reason": "Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON",
+      "status": "failed"
+    },
+    {
+      "provider": "ad-angles",
+      "reason": "Reused cached ad angles for www.lego.com.",
+      "status": "used"
+    }
+  ],
+  "researchRunId": "jn72y4d4jxhfes1pnjjwd2c5f98azvt2",
+  "sessionId": "js752ezjgv7f6hn2jda6gdyfzh8azrdp",
+  "websiteUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group"
+}

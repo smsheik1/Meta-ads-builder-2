@@ -83,6 +83,7 @@ import type {
   JingleAdScene,
   ThreeDBreakdownAdScene,
   ThreeDBreakdownClipIndex,
+  ThreeDBreakdownStoryboardFrameIndex,
 } from "@/features/scene/types";
 import { visualizerSceneVariants } from "@/features/scene/visualizerVariants";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
@@ -3098,7 +3099,9 @@ function ResearchConnected() {
   const selectedThreeDStoryboardFrames = selectedThreeDScene?.layout.storyboardBoard?.frames || [];
   const selectedThreeDClipPlans = selectedThreeDScene?.layout.clipPlans || [];
   const selectedThreeDRequiredFrameIndexes = Array.from(new Set(
-    selectedThreeDClipPlans.map((clipPlan) => clipPlan.frameIndexes[0]).filter(Boolean),
+    selectedThreeDClipPlans
+      .flatMap((clipPlan) => [clipPlan.frameIndexes[0], clipPlan.frameIndexes.at(-1)])
+      .filter(Boolean),
   ));
   const selectedThreeDRequiredFrames = selectedThreeDRequiredFrameIndexes.length
     ? selectedThreeDStoryboardFrames.filter((frame) => selectedThreeDRequiredFrameIndexes.includes(frame.frameIndex))
@@ -3132,7 +3135,9 @@ function ResearchConnected() {
     || scene.layout.clipPlans?.find((clipPlan) => clipPlan.video?.status === "failed")?.video?.error
     || ""
   );
-  const onGenerateThreeDImages = async (modeOverride?: "storyboard" | "anchors" | "anchor-1" | "anchor-2" | "all") => {
+  const onGenerateThreeDImages = async (
+    modeOverride?: "storyboard" | "anchors" | `anchor-${ThreeDBreakdownStoryboardFrameIndex}` | "all",
+  ) => {
     const sceneId = selectedSceneId;
     if (!selectedScene || selectedScene.format !== "three-d-breakdown" || threeDImageStatus === "loading") return;
     if (!sceneId) {

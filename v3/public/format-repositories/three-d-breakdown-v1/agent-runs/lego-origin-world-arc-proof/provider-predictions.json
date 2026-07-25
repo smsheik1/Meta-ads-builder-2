@@ -1,0 +1,22 @@
+{
+  "provider": "replicate",
+  "model": "bytedance/seedance-2.0-mini",
+  "predictions": [
+    {
+      "clipIndex": 1,
+      "predictionId": "4w2j5wp5xhrmy0czjvdstp6f1r",
+      "createdAt": "2026-07-25T01:20:13.292Z",
+      "completedAt": "2026-07-25T01:25:32.336673Z",
+      "totalSeconds": 319.04467365,
+      "recoveredAfterRunnerTimeout": true
+    },
+    {
+      "clipIndex": 2,
+      "predictionId": "w1fvwa2rchrmt0czjvjrvym3d8",
+      "createdAt": "2026-07-25T01:30:40.612Z",
+      "completedAt": "2026-07-25T01:59:25.67512354Z",
+      "totalSeconds": 1725.06312354,
+      "recoveredAfterRunnerTimeout": true
+    }
+  ]
+}

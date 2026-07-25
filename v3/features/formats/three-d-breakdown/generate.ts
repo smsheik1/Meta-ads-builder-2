@@ -546,7 +546,7 @@ const parseSiteContract = (parsed: Record<string, unknown>): ThreeDBreakdownSite
   const siteContract = {
     primarySiteType: parseEnum(parsed.primarySiteType, primarySiteTypes, "primarySiteType"),
     riskFlags: parsedRiskFlags,
-    visualWorld: cleanText(parsed.visualWorld, 160),
+    visualWorld: cleanText(parsed.visualWorld, 260),
     lighting: cleanText(parsed.lighting, 140),
     cameraStyle: cleanText(parsed.cameraStyle, 140),
     recurringObjects: parseStringArray(parsed.recurringObjects, "recurringObjects", 4),
@@ -588,28 +588,25 @@ const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
   visualStyle === "presenter-teardown-vsl"
     ? [
       "Visual style: presenter-teardown-vsl.",
-      "The six frames must feel like a real ecommerce product teardown with an unseen narrator and a silent recurring stylized feature-animation CGI demonstrator, not a miniature toy-character science world.",
-      "Use the same silent stylized CGI demonstrator/scale figure as the visual continuity spine in at least four frames: full body, torso, hands, product-use surface, or over-shoulder framing depending on the beat.",
+      "Build one coherent ecommerce teardown with an unseen narrator.",
+      "Use the approved subject, product, or hand-proxy as the continuity spine. Object-only frames stay object-only; never invent a person.",
       "When the demo subject's face is visible, use unmistakable feature-animation CGI: simplified facial proportions, modeled hair, matte CG skin, visible eyes, plain everyday shirt, and product-demo posture. Keep lips closed and still. No photorealistic person, live action, photographed human, influencer footage, lip-sync, speech animation, singing, presenter delivery, branded apparel, mannequin, anatomy model, test dummy, gloves, medical mask, lab technician, doctor, scientist, or PPE worker.",
-      "The person is demonstration/retention footage only; narrator and captions present the argument, while the person never speaks, sells, points to text, introduces the product, or becomes the narrator.",
-      "The demonstrator must be physically involved in the demo - wearing, holding, opening, swallowing, pouring, carrying, training in, or standing behind the product/path - not parked beside the scene like a host.",
-      "Keep the demonstrator consistent across frames: same face, plain shirt color, body scale, and relationship to the product. No branded caps, hats, hoodies, shirts, totes, merch, or character outfit details may become the product or final payoff.",
-      "Use no more than two front-facing waist-up product-holding frames. Keep the same person present through hands, over-shoulder views, torso cutaways, scale demonstrations, and product interaction so continuity does not become repetition.",
-      "Each frame should follow this prompt skeleton: locked style, recurring demonstrator/product, scene action, camera/framing, lighting, color/mood, and consistency.",
+      "If a person or hand-proxy is approved, keep its identity and clothing consistent and physically involved in the demo; it never speaks, sells, points to text, or becomes the narrator.",
+      "Each frame should follow this prompt skeleton: locked style, recurring subject/product, scene action, camera/framing, lighting, color/mood, and consistency.",
       "Each frame must read like a production still from the same shot sequence: subject, prop, camera, and lighting stay coherent while the physical action changes.",
       "Maxfusion visual rule: each script line becomes a visible product/body/mechanism action before it becomes an image prompt. Show the state change physically; never settle for topic illustration.",
       "Each frame must translate one narration sentence into a visible before/after state: object moves, layer peels, path blocks, capsule travels, particles scatter, mechanism opens, or payoff resolves.",
-      "Frame 1: full-body or torso demo subject shows the product in a real use setting while the false assumption appears visually.",
+      "Frame 1: establish the approved subject and product in a real use setting while the false assumption appears visually.",
       "Frame 2: the hidden customer/product problem appears during actual product use, handling, body-route, opening, eating, applying, wearing, or setup.",
-      "Frame 3: full-body, torso, hands, or demo subject silently demonstrate the product detail that sets up the mechanism.",
+      "Frame 3: the approved subject, product, components, or hands set up the mechanism.",
       "Frame 4: peak impossible-to-film 3D overlay, cutaway, x-ray, component split, invisible-problem reveal, or mechanism insert.",
-      "Frame 5: return from the 3D insert into a practical proof/payoff product moment with the recurring demonstrator's torso, hands, or over-shoulder view visibly connected to the action.",
-      "Frame 6: clean human/product final where the same demonstrator's torso or hands place, hold, open, carry, use, or reach for the large selected product. Never write a product-alone or empty-stage final.",
+      "Frame 5: return from the 3D insert into a practical proof or payoff connected to the approved recurring subject.",
+      "Frame 6: resolve exactly to the approved final subject and product state. A clean product-only final is valid when the story calls for it.",
       "Use oversized tactile demo props like clear tubes, jars, glasses, capsules, particles, piles, pipes, scoops, scales, trays, or product-use surfaces so the demo feels physically staged, not like a generic science diagram.",
-      "Each frame should be a different physical teaching module when possible: human/product use, product path or selected body-route, obstacle wall or pile-up, mechanism machine or pipe, moving particles/components, and final product payoff.",
+      "Each frame should be a different physical teaching module when possible: product use, product path or selected body-route, obstacle wall or pile-up, mechanism machine or pipe, moving particles/components, and final product payoff.",
       "For supplement stories, match the visual engine to the locked premise. Routine, testing, portability, taste, and ingredient-compression stories stay in the external product/demo world. Only delivery, digestion, or absorption stories use a transparent torso or body-route.",
       "For approved body-route frames, show the correct digestive route rather than lungs, keep it attached to the silent demonstrator and product path, and use clean blue-route footage with a tidy barrier and visible particles. Avoid gore, wet intestine tunnels, detached organs, or anatomy montage.",
-      "Use real-world ecommerce spaces where useful, but keep the reference spine: bright blue grid floor/wall, casual demo person, product handling, oversized prop comparison, and macro mechanism inserts.",
+      "Use the relevant lifestyle setting for frames 1-2, move into the recognizable bright blue/cyan blueprint-grid explanation stage for frames 3-4, then return to the lifestyle setting for frames 5-6. Keep the same feature-animation CGI finish, recurring subject, product, tactile props, and camera language through both transitions.",
       "Do not use miniature toy-character anatomy, cartoon wall characters, smooth bald mannequins, blank anatomy models, test dummies, faceless biology montages, all-blue tabletop repetition, sterile cleanroom emptiness, huge empty counters, lab-coat scientists, doctor-like presenters, medical masks, medical goggles, PPE, sunglasses, photorealistic people, live-action people, or talking humans.",
     ]
     : [
@@ -623,6 +620,7 @@ const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
 );
 
 const abstractProofPropPattern = /\b(?:abstract\s+)?(?:proof|progress|comparison|evidence)\s+(?:blocks?|tokens?|counters?|cubes?)\b/i;
+const textBearingPropPattern = /\b(?:article\s+page|newspaper|document|receipt|poster|sign(?:age|board)?|web\s?page)\b/i;
 
 const parseStoryboardFrames = (value: unknown): NonNullable<ThreeDBreakdownStoryboardBoard["frames"]> => {
   if (!Array.isArray(value) || value.length !== THREE_D_STORYBOARD_FRAME_CONTRACTS.length) {
@@ -647,6 +645,9 @@ const parseStoryboardFrames = (value: unknown): NonNullable<ThreeDBreakdownStory
     }
     if (abstractProofPropPattern.test([visual, camera, motion, editingNote].join(" "))) {
       throw new Error(`3D Breakdown storyboard frame ${index + 1} uses abstract proof props instead of a physical product payoff.`);
+    }
+    if (textBearingPropPattern.test([visual, camera, motion, editingNote].join(" "))) {
+      throw new Error(`3D Breakdown storyboard frame ${index + 1} depends on a text-bearing prop that image models cannot render cleanly.`);
     }
     return {
       ...contract,
@@ -683,7 +684,7 @@ const parseStoryboardBoard = (value: unknown, visualStyle: ThreeDBreakdownVisual
     "Each still must fill its cell edge-to-edge; no blank white rows, title bands, empty margins, or presentation whitespace.",
     "Absolute text ban: the image must contain zero words and zero letters. Do not draw headings, titles, labels, frame numbers, UI, arrows, icons, shirt text, product text, fake writing, glyphs, or alphanumeric marks.",
     "This is not final footage and not a single hero frame. It is a full-board visual plan that lets a human judge the whole 20-second story before spending video credits.",
-    "Use one coherent procedural 3D explainer world on a clean blue/cyan blueprint-grid stage, close camera, one dominant subject/action per panel.",
+    "Use one coherent feature-animation CGI style across a fixed world sequence: frames 1-2 in the relevant lifestyle setting, frames 3-4 on the bright blue/cyan blueprint-grid explanation stage, and frames 5-6 back in the lifestyle setting for the payoff. Keep one dominant subject/action per panel.",
     "If image references are provided, use the style reference frame only for visual grammar and use product/brand references only for shape, color, packaging cues, and material cues.",
     `Story sequence to visualize: ${imagePrompt}`,
     `Internal reading-order still plan to preserve, never visible as text: ${framePlanText}`,
@@ -699,7 +700,7 @@ const parseStoryboardBoard = (value: unknown, visualStyle: ThreeDBreakdownVisual
     "For reference-style ecommerce teardown, the best frames teach with objects: a person uses or carries the product, the hidden path/obstacle appears, particles/components move, a machine/cutaway changes state, and the final product resolves the lesson.",
     "Every frame follows the founder prompt discipline: style declaration, recurring subject/product, concrete action, camera/framing, lighting, color/mood, and consistency. If any piece is missing, the frame is too vague.",
     "Every frame must show one visible state change so the storyboard feels like footage: object moves, layer peels, path blocks, capsule travels, particles scatter, mechanism opens, or payoff resolves.",
-    "The six panels must feel like a storyboard artist planned one continuous ad: same demonstrator/product world, new visual information every panel, no disconnected beauty shots.",
+    "The six panels must feel like a storyboard artist planned one continuous ad: same demonstrator, product, materials, and CGI language through the approved lifestyle-to-blue-to-lifestyle world arc, with new visual information every panel and no disconnected beauty shots.",
     "Do not let the same close-up product angle dominate more than two frames. Keep the visual story changing every frame.",
     ...getStoryboardStyleRules(visualStyle),
     "Every panel must contain a visible subject, object, and physical action. The first panel cannot be an empty stage; it must show friction physically blocking, piling up, splitting, leaking, breaking, tangling, or creating tension.",

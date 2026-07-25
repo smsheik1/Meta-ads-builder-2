@@ -1,0 +1,319 @@
+{
+  "directions": [
+    {
+      "directionId": "idea-1",
+      "hookLine": "A frozen disc becomes a bakery-fresh gift in under an hour.",
+      "subheadline": "Send a freshly baked pie without leaving home.",
+      "shortSummary": "A frozen pie stays dormant until oven heat triggers its dough rise and blueberry filling burst. The 10\" Grandé Ready To Bake Blueberry Pie resolves the distance between sender and recipient.",
+      "category": "Proof reveal",
+      "whyCompelling": "Watch a solid frozen disc transform into a bubbling, golden pie.",
+      "adAngle": "Oven-heat transformation turns a frozen disc into a gift.",
+      "visualEngine": "A frozen disc cracks open, expanding outward as heat forces dough upward and blueberry filling bubbles through.",
+      "evidenceIndex": 0,
+      "evidenceUseType": "review",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "directionId": "idea-2",
+      "hookLine": "Sending dessert often means stale crusts and broken crumbs.",
+      "subheadline": "A ready-to-bake pie ships intact and bakes perfect.",
+      "shortSummary": "Shipping a baked pie risks crushing, but a frozen ready-to-bake shell survives transit intact. The 10\" Grandé Ready To Bake Blueberry Pie arrives cold and bakes fresh on arrival.",
+      "category": "Customer tension",
+      "whyCompelling": "See the exact shipping problem that ruins baked gifts solved.",
+      "adAngle": "Frozen shipping survives transit while baked pies crush.",
+      "visualEngine": "A baked pie collapses under a shipping box weight, then rebuilds as a solid frozen disc that stays perfectly round.",
+      "evidenceIndex": 1,
+      "evidenceUseType": "review",
+      "possibleRevealPatterns": [
+        "impact-chain"
+      ]
+    },
+    {
+      "directionId": "idea-3",
+      "hookLine": "Most gifted desserts lose freshness within twenty-four hours.",
+      "subheadline": "A ready-to-bake pie stays dormant until needed.",
+      "shortSummary": "A pre-baked pie degrades rapidly, but a frozen dough shell stays suspended until oven heat triggers its rise. The 10\" Grandé Ready To Bake Blueberry Pie waits for the recipient.",
+      "category": "Hidden mechanism",
+      "whyCompelling": "A frozen crust holds its bakery-quality state in suspension.",
+      "adAngle": "Frozen dough suspends freshness until the oven releases it.",
+      "visualEngine": "A clock spins around a baked pie as it shrinks, then reverses as a frozen disc locks solid and pauses time.",
+      "evidenceIndex": 2,
+      "evidenceUseType": "review",
+      "possibleRevealPatterns": [
+        "invisible-problem"
+      ]
+    },
+    {
+      "directionId": "idea-4",
+      "hookLine": "A gift pie needs ten inches to serve a whole family.",
+      "subheadline": "The 10-inch Grandé size feeds a full gathering.",
+      "shortSummary": "Standard pies fail to feed large groups, but the 10-inch diameter expands to cover a full table. The 10\" Grandé Ready To Bake Blueberry Pie scales up for sharing.",
+      "category": "Product mystery",
+      "whyCompelling": "See the exact physical scale needed for a group celebration.",
+      "adAngle": "Ten inches of pie guarantees enough for everyone.",
+      "visualEngine": "A small pie explodes outward, its diameter stretching until it covers a full dining table surface completely.",
+      "evidenceIndex": 0,
+      "evidenceUseType": "review",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "directionId": "idea-5",
+      "hookLine": "A thank-you gift requires more than a simple cookie tin.",
+      "subheadline": "A warm blueberry pie delivers a deeper message.",
+      "shortSummary": "A standard cookie tin feels ordinary, but a whole ready-to-bake pie carries more emotional weight. The 10\" Grandé Ready To Bake Blueberry Pie elevates the gesture.",
+      "category": "Science fact",
+      "whyCompelling": "Watch a flat tin transform into a towering, warm gift.",
+      "adAngle": "A whole pie says more than a cookie tin ever could.",
+      "visualEngine": "A flat cookie tin compresses and expands upward into a domed, golden pie with blueberry filling overflowing.",
+      "evidenceIndex": 1,
+      "evidenceUseType": "review",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction"
+      ]
+    }
+  ],
+  "recommendedDirectionId": "idea-1",
+  "evidenceItems": [
+    {
+      "evidenceIndex": 0,
+      "type": "review",
+      "evidenceUseType": "review",
+      "text": "2339 reviews for Butter Pecan Meltaways.",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "brand proof",
+      "visualPotentialScore": 0.74,
+      "whyVisual": "Proof stays in renderer copy while the visual shows the product causing a concrete customer or product state change.",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction",
+        "impact-chain",
+        "invisible-problem"
+      ]
+    },
+    {
+      "evidenceIndex": 1,
+      "type": "review",
+      "evidenceUseType": "review",
+      "text": "1545 reviews for Fresh Baked Assorted Cookies Tin.",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "brand proof",
+      "visualPotentialScore": 0.74,
+      "whyVisual": "Proof stays in renderer copy while the visual shows the product causing a concrete customer or product state change.",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction",
+        "impact-chain",
+        "invisible-problem"
+      ]
+    },
+    {
+      "evidenceIndex": 2,
+      "type": "review",
+      "evidenceUseType": "review",
+      "text": "4.7 out of 5 stars average rating for top-selling items.",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "brand proof",
+      "visualPotentialScore": 0.74,
+      "whyVisual": "Proof stays in renderer copy while the visual shows the product causing a concrete customer or product state change.",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction",
+        "impact-chain",
+        "invisible-problem"
+      ]
+    },
+    {
+      "evidenceIndex": 3,
+      "type": "review",
+      "evidenceUseType": "review",
+      "text": "4.3 out 5 stars rating in total",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "page paragraph",
+      "visualPotentialScore": 0.74,
+      "whyVisual": "Proof stays in renderer copy while the visual shows the product causing a concrete customer or product state change.",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction",
+        "impact-chain",
+        "invisible-problem"
+      ]
+    },
+    {
+      "evidenceIndex": 4,
+      "type": "site-language",
+      "evidenceUseType": "offer",
+      "text": "Unit price/ per",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.58,
+      "whyVisual": "Offer or delivery proof can support the payoff, but is usually less visually explosive than mechanism evidence.",
+      "possibleRevealPatterns": [
+        "process-pipeline",
+        "impact-chain",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 5,
+      "type": "claim",
+      "evidenceUseType": "offer",
+      "text": "Pies](https://davidscookies.com/pages/pie-bundle-builder)",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "page paragraph",
+      "visualPotentialScore": 0.58,
+      "whyVisual": "Offer or delivery proof can support the payoff, but is usually less visually explosive than mechanism evidence.",
+      "possibleRevealPatterns": [
+        "process-pipeline",
+        "impact-chain",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 6,
+      "type": "claim",
+      "evidenceUseType": "claim",
+      "text": "Large variety including cookies, cheesecakes, brownies, and crumbcakes.",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "brand proof",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 7,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "David's Cookies: Cookie Delivery | Gift Baskets | Fresh Baked",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 8,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "our top sellers**",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 9,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "Butter Pecan Meltaways",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 10,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "4.7 out 5 stars rating in total",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 11,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "2339 Reviews",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 12,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "Fresh Baked Assorted Cookies Tin",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 13,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "4.6 out 5 stars rating in total",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 14,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "Cookie Delivery",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    },
+    {
+      "evidenceIndex": 15,
+      "type": "site-language",
+      "evidenceUseType": "claim",
+      "text": "Gift Baskets",
+      "sourceUrl": "https://davidscookies.com/",
+      "sourceName": "site language",
+      "visualPotentialScore": 0.42,
+      "whyVisual": "This claim may support a script, but needs stronger visual grounding.",
+      "possibleRevealPatterns": [
+        "invisible-problem",
+        "before-after-reconstruction"
+      ]
+    }
+  ],
+  "model": "z-ai/glm-5.2",
+  "provider": "nvidia-nim",
+  "providerStatus": {
+    "provider": "nvidia-nim-curator",
+    "status": "used",
+    "reason": "Generated 5 3D Breakdown story directions."
+  }
+}

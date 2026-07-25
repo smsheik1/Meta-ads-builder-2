@@ -1,0 +1,67 @@
+{
+  "id": "lego-origin-quality-proof",
+  "status": "clips-ready",
+  "createdAt": "2026-07-24T19:30:15.495Z",
+  "subject": {
+    "kind": "brand"
+  },
+  "planningCalls": 2,
+  "imageAttempts": [
+    {
+      "asset": "storyboard",
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-24T19:39:22.219Z",
+      "output": "agent-runs/lego-origin-quality-proof/images/storyboard-board.jpg"
+    },
+    {
+      "asset": "anchor-1",
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-24T19:40:06.593Z",
+      "output": "agent-runs/lego-origin-quality-proof/images/anchor-1.jpg"
+    },
+    {
+      "asset": "anchor-3",
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-24T19:40:54.682Z",
+      "output": "agent-runs/lego-origin-quality-proof/images/anchor-3.jpg"
+    },
+    {
+      "asset": "anchor-4",
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-24T19:41:40.262Z",
+      "output": "agent-runs/lego-origin-quality-proof/images/anchor-4.jpg"
+    },
+    {
+      "asset": "anchor-6",
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-24T19:42:33.170Z",
+      "output": "agent-runs/lego-origin-quality-proof/images/anchor-6.jpg"
+    }
+  ],
+  "videoAttempts": [
+    {
+      "clipIndex": 1,
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-24T19:43:33.067Z",
+      "provider": "replicate",
+      "model": "bytedance/seedance-2.0-mini",
+      "output": "agent-runs/lego-origin-quality-proof/videos/clip-1.mp4"
+    },
+    {
+      "clipIndex": 2,
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-24T19:46:35.921Z",
+      "provider": "replicate",
+      "model": "bytedance/seedance-2.0-mini",
+      "output": "agent-runs/lego-origin-quality-proof/videos/clip-2.mp4"
+    }
+  ],
+  "planningApprovedAt": "2026-07-24T19:30:15.770Z"
+}

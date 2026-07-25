@@ -1,0 +1,28 @@
+{
+  "status": "final-ready",
+  "checks": {
+    "sceneContractValid": true,
+    "styleBSelected": true,
+    "fiveScriptBeats": true,
+    "sixStoryboardFrames": true,
+    "twoTenSecondClipPlans": true,
+    "storyboardReady": true,
+    "fourProductionEndpointsReady": true,
+    "noVideoWasGenerated": false,
+    "twoVideoClipsReady": true,
+    "finalDuration": true,
+    "finalDimensions": true,
+    "finalAudio": true,
+    "narrationFits": true
+  },
+  "problems": [],
+  "requiredAnchorFrameIndexes": [
+    1,
+    3,
+    4,
+    6
+  ],
+  "finalDurationMs": 20000,
+  "finalVideo": "agent-runs/lego-origin-world-arc-proof/final.mp4",
+  "contactSheet": "agent-runs/lego-origin-world-arc-proof/final-contact-sheet.jpg"
+}

@@ -1,0 +1,17 @@
+{
+  "fixed": [
+    {
+      "id": "style-master",
+      "label": "Style B master reference",
+      "localPath": "assets/ecommerce-teardown-style-reference-clean-v7.jpg",
+      "sourcePath": "/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v7.jpg",
+      "purpose": "Locks feature-animation CGI rendering, materials, and finish without overriding the approved story setting or subject."
+    }
+  ],
+  "variable": [
+    "Selected product packshot when the story is product-led",
+    "Up to two usable brand images when no product packshot is available",
+    "One generated storyboard contact sheet",
+    "Four generated full-quality production endpoints"
+  ]
+}

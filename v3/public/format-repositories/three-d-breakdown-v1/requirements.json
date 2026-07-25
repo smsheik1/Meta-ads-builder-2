@@ -1,0 +1,34 @@
+{
+  "environment": {
+    "NVIDIA_NIM_API_KEY": {
+      "requiredFor": ["plan"],
+      "secret": true,
+      "purpose": "Create five story directions and the selected Style B script."
+    },
+    "REPLICATE_API_TOKEN": {
+      "requiredFor": ["images", "video"],
+      "secret": true,
+      "purpose": "Create the storyboard, four production endpoints, and later video clips."
+    },
+    "FISH_STUDIO_APIKEY": {
+      "requiredFor": ["voice"],
+      "secret": true,
+      "purpose": "Create the final narrator voice after the video gate opens."
+    }
+  },
+  "tools": {
+    "node": {
+      "requiredFor": ["plan", "images", "voice", "video", "final"]
+    },
+    "ffmpeg": {
+      "requiredFor": ["video", "final"]
+    },
+    "ffprobe": {
+      "requiredFor": ["video", "final"]
+    },
+    "remotion": {
+      "requiredFor": ["final"]
+    }
+  },
+  "disabledStages": {}
+}

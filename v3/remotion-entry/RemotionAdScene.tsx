@@ -59,7 +59,7 @@ export function RemotionAdScene({ scene }: { scene: RenderableAdScene }) {
 
   return (
     <AbsoluteFill style={{ background: scene.style.backgroundColor }}>
-      {audio ? <Audio src={audio.url} /> : null}
+      {audio ? <Audio src={resolveRenderAssetSrc(audio.url)} /> : null}
       {motionStoryMusicSrc ? (
         <Audio
           src={resolveRenderAssetSrc(motionStoryMusicSrc)}

@@ -1,0 +1,403 @@
+{
+  "version": 1,
+  "format": "three-d-breakdown",
+  "brand": {
+    "colors": [
+      "#FFD502",
+      "#DFCEB3",
+      "#005AD2",
+      "#F8F8F8",
+      "#000000"
+    ],
+    "description": "The global economic crisis forces carpenter Ole Kirk Kristiansen to produce new easy saleable products. The beginning of the LEGO Group starts with wooden toys, such as cars, airplanes and yoyo's. Ole Kirk Kristiansen also produces ladders, ironing boards, Chr",
+    "faviconUrl": "https://www.lego.com/favicon.ico",
+    "fonts": {
+      "body": "Cera Pro",
+      "feel": "sans",
+      "heading": "Cera Pro"
+    },
+    "host": "www.lego.com",
+    "logoUrl": "https://assets.lego.com/logos/v4.5.0/brand-lego.svg",
+    "name": "LEGO® History",
+    "ogImageUrl": "https://www.lego.com/cdn/cs/history/assets/bltdca3976db0441e91/lego-wooden-duck.jpg",
+    "screenshotUrl": null,
+    "title": "The beginning of the LEGO Group | LEGO® History",
+    "url": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+    "vibeTags": [
+      "LEGO® History",
+      "buyer-moment"
+    ],
+    "receipts": {
+      "specificClaims": [
+        "The first product line is presented in 1932.",
+        "The company name is derived from 'LEg GOdt' (play well).",
+        "The original woodworking factory burned down in a devastating fire in 1942.",
+        "The company doubled its sales during the first two years of World War II."
+      ],
+      "buyerMoments": [
+        "Curiosity about how a global toy brand started during an economic crisis.",
+        "Interest in the transition from wooden toys to modern plastic bricks.",
+        "Reading about historical company milestones like surviving a factory fire.",
+        "Learning about the origin of the brand name and its 'play well' meaning."
+      ],
+      "exactSiteLanguage": [
+        "The beginning of the LEGO Group",
+        "LEg GOdt becomes the LEGO® name",
+        "Quality above all",
+        "Children need toys - even in hard times"
+      ],
+      "namedProof": []
+    }
+  },
+  "creative": {
+    "angleId": "three-d-breakdown-1",
+    "headline": "When a global crisis killed a carpenter's livelihood, he needed fast cash.",
+    "subheadline": "A desperate career pivot creates a global toy legacy.",
+    "ctaText": "Watch the full story.",
+    "headlineType": "receipt_drop",
+    "selectedPain": "A carpenter loses his trade to an economic crisis.",
+    "selectedProof": "That desperate pivot launched the LEGO Group's enduring toy legacy."
+  },
+  "style": {
+    "backgroundColor": "#07111F",
+    "textColor": "#FFFFFF",
+    "accentColor": "#FFD502",
+    "fontFeel": "sans"
+  },
+  "audio": {
+    "status": "none",
+    "transcript": "",
+    "captions": []
+  },
+  "layout": {
+    "preset": "three-d-breakdown",
+    "durationMs": 20000,
+    "scriptBeats": [
+      {
+        "role": "consequence",
+        "narration": "When a global crisis killed a carpenter's livelihood, he needed fast cash.",
+        "startMs": 0,
+        "endMs": 3000
+      },
+      {
+        "role": "context",
+        "narration": "Ole Kirk Kristiansen shifted from heavy ladders to small wooden toys.",
+        "startMs": 3000,
+        "endMs": 7000
+      },
+      {
+        "role": "mechanism",
+        "narration": "He crafted easy-to-sell wooden cars, airplanes, and yoyos to survive.",
+        "startMs": 7000,
+        "endMs": 12000
+      },
+      {
+        "role": "revelation",
+        "narration": "That desperate pivot launched the LEGO Group's enduring toy legacy.",
+        "startMs": 12000,
+        "endMs": 16000
+      },
+      {
+        "role": "punchline",
+        "narration": "Watch the full story.",
+        "startMs": 16000,
+        "endMs": 20000
+      }
+    ],
+    "shots": [
+      {
+        "shotIndex": 1,
+        "role": "consequence",
+        "captionText": "LEGO origin: Crisis / LEGO history: Pivot",
+        "sceneDescription": "A silent CGI carpenter in a vest stands still beside a towering, heavy wooden ladder, looking down at empty hands. Then The heavy wooden ladder begins to splinter and crack apart at the rungs, collapsing into a pile of raw wood blocks.",
+        "explainerDevice": "Problem state to Escalation",
+        "physicalAction": "Dust motes drift slowly; the figure remains frozen. Then Ladder splinters and fragments into smaller wood pieces.",
+        "imagePrompt": "A silent CGI carpenter in a vest stands still beside a towering, heavy wooden ladder, looking down at empty hands.; Wide shot, low angle emphasizing the ladder's size. Next: The heavy wooden ladder begins to splinter and crack apart at the rungs, collapsing into a pile of raw wood blocks.; Medium shot, tracking the falling rungs.",
+        "animationPrompt": "Dust motes drift slowly; the figure remains frozen. Then Ladder splinters and fragments into smaller wood pieces.",
+        "image": {
+          "status": "idle"
+        },
+        "video": {
+          "status": "idle"
+        }
+      },
+      {
+        "shotIndex": 2,
+        "role": "mechanism",
+        "captionText": "LEGO 1932: Crafted / LEGO survival: Built",
+        "sceneDescription": "The CGI carpenter's hands gather the broken wood pieces, feeding them into a miniature tabletop lathe. Then A chaotic cloud of wood shavings and carved parts rapidly compress and snap together, forming a tiny wooden toy car.",
+        "explainerDevice": "Mechanism setup to Wow reveal",
+        "physicalAction": "Wood blocks are shaped and carved into small components. Then Chaos-to-order assembly; parts violently click into place.",
+        "imagePrompt": "The CGI carpenter's hands gather the broken wood pieces, feeding them into a miniature tabletop lathe.; Close-up on the hands and the spinning lathe. Next: A chaotic cloud of wood shavings and carved parts rapidly compress and snap together, forming a tiny wooden toy car.; Macro shot, rapid push-in.",
+        "animationPrompt": "Wood blocks are shaped and carved into small components. Then Chaos-to-order assembly; parts violently click into place.",
+        "image": {
+          "status": "idle"
+        },
+        "video": {
+          "status": "idle"
+        }
+      },
+      {
+        "shotIndex": 3,
+        "role": "revelation",
+        "captionText": "LEGO legacy: Sold / Read the history",
+        "sceneDescription": "The CGI carpenter pushes the finished wooden toy car across a worn wooden floorboard, rolling past a discarded ladder rung. Then The wooden toy car rests illuminated in a warm beam of light on the workbench, next to a stack of modern LEGO bricks.",
+        "explainerDevice": "Evidence payoff to Final state",
+        "physicalAction": "Toy car rolls smoothly forward, displacing a wood shaving. Then Dust settles; modern bricks subtly glint in the light.",
+        "imagePrompt": "The CGI carpenter pushes the finished wooden toy car across a worn wooden floorboard, rolling past a discarded ladder rung.; Low angle tracking shot following the moving car. Next: The wooden toy car rests illuminated in a warm beam of light on the workbench, next to a stack of modern LEGO bricks.; Static medium close-up, shallow focus.",
+        "animationPrompt": "Toy car rolls smoothly forward, displacing a wood shaving. Then Dust settles; modern bricks subtly glint in the light.",
+        "image": {
+          "status": "idle"
+        },
+        "video": {
+          "status": "idle"
+        }
+      }
+    ],
+    "storyboardBoard": {
+      "frameCount": 6,
+      "imagePrompt": "Create ONE vertical 9:16 image containing six raw, unlabeled film stills for visual QA before video generation. Arrange the six stills in a clean 2-column by 3-row contact sheet with thin white gutters only. Each still must fill its cell edge-to-edge; no blank white rows, title bands, empty margins, or presentation whitespace. Absolute text ban: the image must contain zero words and zero letters. Do not draw headings, titles, labels, frame numbers, UI, arrows, icons, shirt text, product text, fake writing, glyphs, or alphanumeric marks. This is not final footage and not a single hero frame. It is a full-board visual plan that lets a human judge the whole 20-second story before spending video credits. Use one coherent procedural 3D explainer world on a clean blue/cyan blueprint-grid stage, close camera, one dominant subject/action per panel. If image references are provided, use the style reference frame only for visual grammar and use product/brand references only for shape, color, packaging cues, and material cues. Story sequence to visualize: one unlabeled six-still contact sheet Internal reading-order still plan to preserve, never visible as text: visual A silent CGI carpenter in a vest stands still beside a towering, heavy wooden ladder, looking down at empty hands.; camera Wide shot, low angle emphasizing the ladder's size.; motion Dust motes drift slowly; the figure remains frozen. / next silent still: visual The heavy wooden ladder begins to splinter and crack apart at the rungs, collapsing into a pile of raw wood blocks.; camera Medium shot, tracking the falling rungs.; motion Ladder splinters and fragments into smaller wood pieces. / next silent still: visual The CGI carpenter's hands gather the broken wood pieces, feeding them into a miniature tabletop lathe.; camera Close-up on the hands and the spinning lathe.; motion Wood blocks are shaped and carved into small components. / next silent still: visual A chaotic cloud of wood shavings and carved parts rapidly compress and snap together, forming a tiny wooden toy car.; camera Macro shot, rapid push-in.; motion Chaos-to-order assembly; parts violently click into place. / next silent still: visual The CGI carpenter pushes the finished wooden toy car across a worn wooden floorboard, rolling past a discarded ladder rung.; camera Low angle tracking shot following the moving car.; motion Toy car rolls smoothly forward, displacing a wood shaving. / next silent still: visual The wooden toy car rests illuminated in a warm beam of light on the workbench, next to a stack of modern LEGO bricks.; camera Static medium close-up, shallow focus.; motion Dust settles; modern bricks subtly glint in the light. Sequence, visually: ordinary-use setup; hidden obstacle; mechanism setup; peak impossible-to-film reveal; evidence/payoff; final transformed product state. For ecommerce mechanism teardowns, show common use first, then hidden physical obstacle, then first component/mechanism, then peak cutaway or delivery reveal, then a unified evidence/payoff frame where the selected product stays central and any ordinary-version contrast appears only as a small unmarked remnant/token/background residue, then final product payoff. For capsule/supplement mechanisms, the main selected capsule/product must not crack, shatter, leak, explode, or fail; show impact against an outer layer, obstacle, or ordinary side remnant instead. The fifth visual beat must not be a split-screen, side-by-side divider, comparison chart, two-column layout, before/after wall, vertical seam, or separated left/right comparison because later production anchors must stay coherent. The fifth visual beat must keep the selected product stable and central as the main subject. Do not crack, shatter, melt, break, leak, or fail the central product in that beat; any failed ordinary version must be a small separate side remnant, debris token, or background residue. For ecommerce, make the plan feel like a fast product-science teardown short: repeated product/package anchoring, quick visual resets, macro mechanism close-ups, component or particle movement, and a final product payoff composition. For reference-style ecommerce teardown, prefer high-energy physical teaching frames over clean beauty renders: dense obstacle worlds, particle floods, moving routes, machinery, fans, valves, tubes, and tactile props. Do not make the board polite. It should look like six active frames pulled from a fast product-science ad, not six static product-render samples. Use at least four distinct visual modules across the six frames: product/scale intro, hidden obstacle, mechanism machine or cutaway, ingredient/component movement, unified ordinary-to-selected-product payoff, final product payoff. For reference-style ecommerce teardown, the best frames teach with objects: a person uses or carries the product, the hidden path/obstacle appears, particles/components move, a machine/cutaway changes state, and the final product resolves the lesson. Every frame follows the founder prompt discipline: style declaration, recurring subject/product, concrete action, camera/framing, lighting, color/mood, and consistency. If any piece is missing, the frame is too vague. Every frame must show one visible state change so the storyboard feels like footage: object moves, layer peels, path blocks, capsule travels, particles scatter, mechanism opens, or payoff resolves. The six panels must feel like a storyboard artist planned one continuous ad: same demonstrator/product world, new visual information every panel, no disconnected beauty shots. Do not let the same close-up product angle dominate more than two frames. Keep the visual story changing every frame. Visual style: presenter-teardown-vsl. Build one coherent ecommerce teardown with an unseen narrator. Use the approved subject, product, or hand-proxy as the continuity spine. Object-only frames stay object-only; never invent a person. When the demo subject's face is visible, use unmistakable feature-animation CGI: simplified facial proportions, modeled hair, matte CG skin, visible eyes, plain everyday shirt, and product-demo posture. Keep lips closed and still. No photorealistic person, live action, photographed human, influencer footage, lip-sync, speech animation, singing, presenter delivery, branded apparel, mannequin, anatomy model, test dummy, gloves, medical mask, lab technician, doctor, scientist, or PPE worker. If a person or hand-proxy is approved, keep its identity and clothing consistent and physically involved in the demo; it never speaks, sells, points to text, or becomes the narrator. Each frame should follow this prompt skeleton: locked style, recurring subject/product, scene action, camera/framing, lighting, color/mood, and consistency. Each frame must read like a production still from the same shot sequence: subject, prop, camera, and lighting stay coherent while the physical action changes. Maxfusion visual rule: each script line becomes a visible product/body/mechanism action before it becomes an image prompt. Show the state change physically; never settle for topic illustration. Each frame must translate one narration sentence into a visible before/after state: object moves, layer peels, path blocks, capsule travels, particles scatter, mechanism opens, or payoff resolves. Frame 1: establish the approved subject and product in a real use setting while the false assumption appears visually. Frame 2: the hidden customer/product problem appears during actual product use, handling, body-route, opening, eating, applying, wearing, or setup. Frame 3: the approved subject, product, components, or hands set up the mechanism. Frame 4: peak impossible-to-film 3D overlay, cutaway, x-ray, component split, invisible-problem reveal, or mechanism insert. Frame 5: return from the 3D insert into a practical proof or payoff connected to the approved recurring subject. Frame 6: resolve exactly to the approved final subject and product state. A clean product-only final is valid when the story calls for it. Use oversized tactile demo props like clear tubes, jars, glasses, capsules, particles, piles, pipes, scoops, scales, trays, or product-use surfaces so the demo feels physically staged, not like a generic science diagram. Each frame should be a different physical teaching module when possible: product use, product path or selected body-route, obstacle wall or pile-up, mechanism machine or pipe, moving particles/components, and final product payoff. For supplement stories, match the visual engine to the locked premise. Routine, testing, portability, taste, and ingredient-compression stories stay in the external product/demo world. Only delivery, digestion, or absorption stories use a transparent torso or body-route. For approved body-route frames, show the correct digestive route rather than lungs, keep it attached to the silent demonstrator and product path, and use clean blue-route footage with a tidy barrier and visible particles. Avoid gore, wet intestine tunnels, detached organs, or anatomy montage. Use real-world ecommerce spaces where useful, but keep the reference spine: bright blue grid floor/wall, casual demo person, product handling, oversized prop comparison, and macro mechanism inserts. Do not use miniature toy-character anatomy, cartoon wall characters, smooth bald mannequins, blank anatomy models, test dummies, faceless biology montages, all-blue tabletop repetition, sterile cleanroom emptiness, huge empty counters, lab-coat scientists, doctor-like presenters, medical masks, medical goggles, PPE, sunglasses, photorealistic people, live-action people, or talking humans. Every panel must contain a visible subject, object, and physical action. The first panel cannot be an empty stage; it must show friction physically blocking, piling up, splitting, leaking, breaking, tangling, or creating tension. The written still plan and any overlayText values are internal instructions only. Do not draw any of those words. No panel labels, no panel numbers, no captions, no caption bars, no black lower bars, no progress bars, no readable text, no UI labels, no speech bubbles, no receipts, no posters, no typography-led design. No words, letters, numbers, percentages, ratings, price tags, labels, handwriting, UI copy, text-like glyphs, icons, arrows, checkmarks, X marks, or alphanumeric marks anywhere inside panels. Do not write FRAME 1, FRAME 2, scene labels, headings, or any other annotations. If proof or numeric evidence appears in the story, keep it in overlayText metadata and show the selected product physically causing the documented customer or product outcome. Never visualize evidence as abstract blocks, counters, cubes, tokens, charts, or scoreboards.",
+      "image": {
+        "status": "ready",
+        "storageId": "local:agent-runs/lego-origin-quality-proof/images/storyboard-board.jpg",
+        "url": "agent-runs/lego-origin-quality-proof/images/storyboard-board.jpg",
+        "mimeType": "image/jpeg"
+      },
+      "frames": [
+        {
+          "frameIndex": 1,
+          "role": "problem",
+          "label": "Problem state",
+          "image": {
+            "status": "ready",
+            "storageId": "local:agent-runs/lego-origin-quality-proof/images/anchor-1.jpg",
+            "url": "agent-runs/lego-origin-quality-proof/images/anchor-1.jpg",
+            "mimeType": "image/jpeg"
+          },
+          "visual": "A silent CGI carpenter in a vest stands still beside a towering, heavy wooden ladder, looking down at empty hands.",
+          "camera": "Wide shot, low angle emphasizing the ladder's size.",
+          "motion": "Dust motes drift slowly; the figure remains frozen.",
+          "overlayText": "LEGO origin: Crisis",
+          "editingNote": "Establish the ordinary world and the scale of the carpenter's original trade."
+        },
+        {
+          "frameIndex": 2,
+          "role": "escalation",
+          "label": "Escalation",
+          "image": {
+            "status": "idle"
+          },
+          "visual": "The heavy wooden ladder begins to splinter and crack apart at the rungs, collapsing into a pile of raw wood blocks.",
+          "camera": "Medium shot, tracking the falling rungs.",
+          "motion": "Ladder splinters and fragments into smaller wood pieces.",
+          "overlayText": "LEGO history: Pivot",
+          "editingNote": "Show the forced destruction of the old livelihood to create the mechanism setup."
+        },
+        {
+          "frameIndex": 3,
+          "role": "mechanism-setup",
+          "label": "Mechanism setup",
+          "image": {
+            "status": "ready",
+            "storageId": "local:agent-runs/lego-origin-quality-proof/images/anchor-3.jpg",
+            "url": "agent-runs/lego-origin-quality-proof/images/anchor-3.jpg",
+            "mimeType": "image/jpeg"
+          },
+          "visual": "The CGI carpenter's hands gather the broken wood pieces, feeding them into a miniature tabletop lathe.",
+          "camera": "Close-up on the hands and the spinning lathe.",
+          "motion": "Wood blocks are shaped and carved into small components.",
+          "overlayText": "LEGO 1932: Crafted",
+          "editingNote": "Introduce the transformation mechanism without showing the final product yet."
+        },
+        {
+          "frameIndex": 4,
+          "role": "wow-reveal",
+          "label": "Wow reveal",
+          "image": {
+            "status": "ready",
+            "storageId": "local:agent-runs/lego-origin-quality-proof/images/anchor-4.jpg",
+            "url": "agent-runs/lego-origin-quality-proof/images/anchor-4.jpg",
+            "mimeType": "image/jpeg"
+          },
+          "visual": "A chaotic cloud of wood shavings and carved parts rapidly compress and snap together, forming a tiny wooden toy car.",
+          "camera": "Macro shot, rapid push-in.",
+          "motion": "Chaos-to-order assembly; parts violently click into place.",
+          "overlayText": "LEGO survival: Built",
+          "editingNote": "Peak impossible reveal where the raw materials instantly become the new product."
+        },
+        {
+          "frameIndex": 5,
+          "role": "payoff",
+          "label": "Evidence payoff",
+          "image": {
+            "status": "idle"
+          },
+          "visual": "The CGI carpenter pushes the finished wooden toy car across a worn wooden floorboard, rolling past a discarded ladder rung.",
+          "camera": "Low angle tracking shot following the moving car.",
+          "motion": "Toy car rolls smoothly forward, displacing a wood shaving.",
+          "overlayText": "LEGO legacy: Sold",
+          "editingNote": "Evidence payoff showing the toy physically succeeding in the same workshop world."
+        },
+        {
+          "frameIndex": 6,
+          "role": "final-state",
+          "label": "Final state",
+          "image": {
+            "status": "ready",
+            "storageId": "local:agent-runs/lego-origin-quality-proof/images/anchor-6.jpg",
+            "url": "agent-runs/lego-origin-quality-proof/images/anchor-6.jpg",
+            "mimeType": "image/jpeg"
+          },
+          "visual": "The wooden toy car rests illuminated in a warm beam of light on the workbench, next to a stack of modern LEGO bricks.",
+          "camera": "Static medium close-up, shallow focus.",
+          "motion": "Dust settles; modern bricks subtly glint in the light.",
+          "overlayText": "Read the history",
+          "editingNote": "Final product payoff linking the 1932 wooden car to the enduring modern brand."
+        }
+      ]
+    },
+    "clipPlans": [
+      {
+        "clipIndex": 1,
+        "label": "Clip 1: frames 1-3",
+        "startMs": 0,
+        "endMs": 10000,
+        "durationSeconds": 10,
+        "frameIndexes": [
+          1,
+          2,
+          3
+        ],
+        "prompt": "Create one continuous 10-second transformation for clip 1 of 2, vertical 9:16, beginning on frame 1 and ending exactly on frame 3. Use these camera and motion cues only: Frame 1; action: A silent CGI carpenter in a vest stands still beside a towering, heavy wooden ladder, looking down at empty hands.; camera: Wide shot, low angle emphasizing the ladder's size.; physical motion: Dust motes drift slowly; the figure remains frozen. | Frame 2; action: The heavy wooden ladder begins to splinter and crack apart at the rungs, collapsing into a pile of raw wood blocks.; camera: Medium shot, tracking the falling rungs.; physical motion: Ladder splinters and fragments into smaller wood pieces. | Frame 3; action: The CGI carpenter's hands gather the broken wood pieces, feeding them into a miniature tabletop lathe.; camera: Close-up on the hands and the spinning lathe.; physical motion: Wood blocks are shaped and carved into small components.. Never turn prompt words into visible text. SETTING: A dimly lit 1930s carpenter's workshop rendered in tactile 3D, featuring warm wood tones, scattered wood shavings, and dust motes catching the light.. CONTINUITY OBJECTS: wooden ladder, wood shavings, wooden toy car. If an approved person or hand-proxy is visible, preserve it as a silent recurring subject with no lip-sync, speech, singing, or presenter delivery. If both endpoints are object-only, never introduce a person. CONTINUITY: frame 2 is a motion checkpoint inside the same world, not permission to cut to a new scene, person, or visual style. Preserve the same subject, materials, lighting, and camera language from start to finish. STORY JOB: begin on the approved setup, make the problem visible through physical motion, and finish on the approved mechanism setup. Use one camera move or a physically motivated object transition. No montage, hard cut, title card, empty transition frame, unrelated room, or newly invented presenter. Do not invent extra product claims, packaging, people, anatomy, props, or mechanisms beyond the approved frames. No generated typography, captions, subtitles, labels, logos, letters, numbers, UI, or pseudo-writing. Wiggly adds every word after video generation.",
+        "video": {
+          "status": "ready",
+          "storageId": "local:agent-runs/lego-origin-quality-proof/videos/clip-1.mp4",
+          "url": "agent-runs/lego-origin-quality-proof/videos/clip-1.mp4",
+          "mimeType": "video/mp4"
+        },
+        "endFrameImage": {
+          "status": "ready",
+          "storageId": "local:agent-runs/lego-origin-quality-proof/images/anchor-3.jpg",
+          "url": "agent-runs/lego-origin-quality-proof/images/anchor-3.jpg",
+          "mimeType": "image/jpeg"
+        }
+      },
+      {
+        "clipIndex": 2,
+        "label": "Clip 2: frames 4-6",
+        "startMs": 10000,
+        "endMs": 20000,
+        "durationSeconds": 10,
+        "frameIndexes": [
+          4,
+          5,
+          6
+        ],
+        "prompt": "Create one continuous 10-second transformation for clip 2 of 2, vertical 9:16, beginning on frame 4 and ending exactly on frame 6. Use these camera and motion cues only: Frame 4; action: A chaotic cloud of wood shavings and carved parts rapidly compress and snap together, forming a tiny wooden toy car.; camera: Macro shot, rapid push-in.; physical motion: Chaos-to-order assembly; parts violently click into place. | Frame 5; action: The CGI carpenter pushes the finished wooden toy car across a worn wooden floorboard, rolling past a discarded ladder rung.; camera: Low angle tracking shot following the moving car.; physical motion: Toy car rolls smoothly forward, displacing a wood shaving. | Frame 6; action: The wooden toy car rests illuminated in a warm beam of light on the workbench, next to a stack of modern LEGO bricks.; camera: Static medium close-up, shallow focus.; physical motion: Dust settles; modern bricks subtly glint in the light.. Never turn prompt words into visible text. SETTING: A dimly lit 1930s carpenter's workshop rendered in tactile 3D, featuring warm wood tones, scattered wood shavings, and dust motes catching the light.. CONTINUITY OBJECTS: wooden ladder, wood shavings, wooden toy car. If an approved person or hand-proxy is visible, preserve it as a silent recurring subject with no lip-sync, speech, singing, or presenter delivery. If both endpoints are object-only, never introduce a person. CONTINUITY: frame 5 is a motion checkpoint inside the same world, not permission to cut to a new scene, person, or visual style. Preserve the same subject, materials, lighting, and camera language from start to finish. STORY JOB: begin on the approved mechanism reveal, complete one physical transformation, and finish on the approved product or CTA setup. Use one camera move or a physically motivated object transition. No montage, hard cut, title card, empty transition frame, unrelated room, or newly invented presenter. Do not invent extra product claims, packaging, people, anatomy, props, or mechanisms beyond the approved frames. No generated typography, captions, subtitles, labels, logos, letters, numbers, UI, or pseudo-writing. Wiggly adds every word after video generation.",
+        "video": {
+          "status": "ready",
+          "storageId": "local:agent-runs/lego-origin-quality-proof/videos/clip-2.mp4",
+          "url": "agent-runs/lego-origin-quality-proof/videos/clip-2.mp4",
+          "mimeType": "video/mp4"
+        },
+        "endFrameImage": {
+          "status": "ready",
+          "storageId": "local:agent-runs/lego-origin-quality-proof/images/anchor-6.jpg",
+          "url": "agent-runs/lego-origin-quality-proof/images/anchor-6.jpg",
+          "mimeType": "image/jpeg"
+        }
+      }
+    ],
+    "referenceImages": {
+      "productImageUrls": [],
+      "brandImageUrls": [
+        "https://www.lego.com/cdn/cs/history/assets/bltdca3976db0441e91/lego-wooden-duck.jpg",
+        "https://assets.lego.com/logos/v4.5.0/brand-lego.svg"
+      ]
+    },
+    "storyContract": {
+      "primarySiteType": "portfolio",
+      "riskFlags": [],
+      "visualWorld": "A dimly lit 1930s carpenter's workshop rendered in tactile 3D, featuring warm wood tones, scattered wood shavings, and dust motes catching the light.",
+      "lighting": "Warm, directional sunlight streaming through a dusty workshop window, creating high-contrast, cinematic shadows.",
+      "cameraStyle": "Slow, deliberate macro pans and shallow depth-of-field pushes, maintaining a grounded, documentary-style perspective.",
+      "recurringObjects": [
+        "wooden ladder",
+        "wood shavings",
+        "wooden toy car"
+      ],
+      "storySubject": {
+        "kind": "brand"
+      },
+      "visualStyle": "presenter-teardown-vsl",
+      "variantAngle": "A desperate career pivot creates a global toy legacy.",
+      "customerProblem": "A carpenter loses his trade to an economic crisis.",
+      "mechanismSummary": "The global economic crisis forced Ole Kirk Kristiansen to produce easy-to-sell wooden toys, launching the LEGO Group.",
+      "visualMetaphor": "Heavy wooden ladders compress into a tiny wooden toy car.",
+      "referenceScript": "When a global crisis killed a carpenter's livelihood, he needed fast cash. Ole Kirk Kristiansen shifted from heavy ladders to small wooden toys. He crafted easy-to-sell wooden cars, airplanes, and yoyos to survive. That desperate pivot launched the LEGO Group's enduring toy legacy. Watch the full story.",
+      "ctaLine": "Watch the full story.",
+      "evidenceIndex": 2,
+      "evidenceUseType": "review",
+      "wowMomentType": "exploded-product",
+      "wowMoment": "A heavy wooden ladder splinters apart and reassembles into a tiny 1932 wooden LEGO car.",
+      "viewerLearns": "The LEGO brand originated from a carpenter's desperate pivot to easy-to-sell wooden toys.",
+      "claimRisk": "low",
+      "claimRiskReason": "The origin story and shift from ladders to wooden toys are directly supported by the official LEGO website evidence."
+    },
+    "groundedEvidence": {
+      "evidenceIndex": 2,
+      "type": "review",
+      "evidenceUseType": "review",
+      "text": "The global economic crisis forces carpenter Ole Kirk Kristiansen to produce new easy saleable products. The beginning of the LEGO Group starts with wooden toys, such as cars, airplanes and yoyo's. Ole Kirk Kristiansen also produces ladders, ironing boards, Chr",
+      "sourceUrl": "https://www.lego.com/en-ca/history/articles/b-the-beginning-of-the-lego-group",
+      "sourceName": "page paragraph",
+      "visualPotentialScore": 0.74,
+      "whyVisual": "Proof stays in renderer copy while the visual shows the product causing a concrete customer or product state change.",
+      "possibleRevealPatterns": [
+        "before-after-reconstruction",
+        "impact-chain",
+        "invisible-problem"
+      ],
+      "scrapedAt": 1784921898117
+    }
+  },
+  "metadata": {
+    "candidateIndex": 0,
+    "generationBatchId": "repo-lego-origin-quality-proof",
+    "researchRunId": "jn72y4d4jxhfes1pnjjwd2c5f98azvt2",
+    "brandSnapshotId": "jd75sa5mn4h46g05nxjp9ckffs8ay0j1",
+    "model": "z-ai/glm-5.2",
+    "provider": "nvidia-nim",
+    "generatedAt": 1784921898117,
+    "adAngles": [
+      {
+        "buyer": "a sports fan looking to celebrate a major victory",
+        "moment": "watching a championship final and wanting to immortalize the team's success",
+        "pain": "feeling like the excitement of the win will fade without a physical memento",
+        "proof": "offers buildable LEGO sets like the FIFA World Cup™ Official Trophy",
+        "sitePhrase": "Get ready for the big final!"
+      },
+      {
+        "buyer": "a dedicated collector of rare items",
+        "moment": "browsing an online store and feeling frustrated by common, mass-market toys that everyone else already owns",
+        "pain": "wasting time and money on products that lack prestige or uniqueness",
+        "proof": "provides a dedicated section for rare, hard-to-find Exclusives",
+        "sitePhrase": "Exclusives"
+      },
+      {
+        "buyer": "a hobbyist shopping for a long-term display project",
+        "moment": "scrolling through social media and realizing their favorite set is about to disappear from shelves forever",
+        "pain": "the regret of missing out on a specific, retiring collectible set",
+        "proof": "explicitly flags sets that are Retiring Soon to notify buyers before availability ends",
+        "sitePhrase": "Retiring soon"
+      },
+      {
+        "buyer": "a parent shopping for a gift for a child",
+        "moment": "staring at a screen full of thousands of options while feeling overwhelmed and unsure if the item will be a hit",
+        "pain": "the anxiety of buying the wrong gift and disappointing their child",
+        "proof": "provides a guided 'Find the perfect set' search tool to narrow down options",
+        "sitePhrase": "Find the perfect set"
+      }
+    ]
+  }
+}

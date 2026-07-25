@@ -4,8 +4,14 @@ import type {
   ThreeDBreakdownStoryboardFrameIndex,
 } from "../../scene/types";
 import { getThreeDAnchorPrompt, getThreeDStoryboardPrompt } from "./editablePrompts";
+import {
+  describeThreeDFrameWorld,
+  getThreeDFrameWorldRole,
+  THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD,
+} from "./storyboardContracts";
 
 const MAX_SEEDANCE_PROMPT_CHARS = 3900;
+export const THREE_D_BREAKDOWN_VIDEO_RESOLUTION = "480p" as const;
 
 const clean = (value: string | null | undefined) => String(value || "").replace(/\s+/g, " ").trim();
 const promptField = (value: string | null | undefined) => clean(value).replace(/[.!?]+$/, "");
@@ -44,17 +50,16 @@ const productLock = (scene: ThreeDBreakdownAdScene) => {
 };
 
 const storyboardReferenceLock = (scene: ThreeDBreakdownAdScene) => clean([
-  "REFERENCE ORDER: image 1 is the STYLE MASTER. Copy its same stylized male CGI demonstrator identity, facial proportions, modeled hair, matte skin, body proportions, blue-grid world, and feature-animation rendering. Do not invent a woman, a different person, or a photoreal human.",
+  "REFERENCE ORDER: image 1 is the STYLE MASTER for feature-animation CGI rendering, modeled materials, and finish only. The approved frame world owns the setting; copy the blue-grid stage only for frames 3-4. Do not copy an unrelated person or product from the style reference.",
   scene.layout.productAnchor
     ? `Image 2 is the PRODUCT MASTER for ${scene.layout.productAnchor.title} and owns retail geometry; later images only define its real serving/use form.`
     : "No Product Master is available; use an abstract category object and do not invent branded packaging.",
-  "RIGHT: the Style Master character handles the Product Master while the physical story changes around them. WRONG: a new realistic person handles a cube, carton, jar, or bottle invented from the word pack.",
 ].join(" "));
 
 const productionReferenceLock = (scene: ThreeDBreakdownAdScene, hasContinuityAnchor: boolean) => clean([
   hasContinuityAnchor
-    ? "REFERENCE ORDER: image 1 is the approved panel and owns action/composition; image 2 is the preceding anchor and owns demonstrator identity/clothing/world; image 3 is the PRODUCT MASTER; image 4 may show real product use."
-    : "REFERENCE ORDER: image 1 is the approved panel and owns character/world/action/composition; image 2 is the PRODUCT MASTER; image 3 may show real product use.",
+    ? "REFERENCE ORDER: image 1 is the approved panel and owns action/composition; image 2 owns recurring identity, clothing, materials, and camera but not environment; image 3 is the PRODUCT MASTER; image 4 may show real use."
+    : "REFERENCE ORDER: image 1 is the approved panel and owns character/action/composition; the current frame world directive owns the environment; image 2 is the PRODUCT MASTER; image 3 may show real product use.",
   scene.layout.productAnchor
     ? `If the storyboard simplified ${scene.layout.productAnchor.title}, correct its product form to match the PRODUCT MASTER without changing the approved action.`
     : "No Product Master is available; preserve the approved abstract category object.",
@@ -89,13 +94,14 @@ const frameRole = (
   frameIndex: ThreeDBreakdownStoryboardFrameIndex,
 ) => {
   const contract = scene.layout.storyContract;
+  const frame = scene.layout.storyboardBoard?.frames?.find((item) => item.frameIndex === frameIndex);
   const roles: Record<ThreeDBreakdownStoryboardFrameIndex, string> = {
     1: "Show ordinary product use and the customer's false assumption before the problem is visible.",
     2: "Make the selected hidden obstacle physically visible in the same world.",
     3: "Set up the exact product mechanism with a tactile demonstration.",
     4: `Deliver the peak ${contract.wowMomentType} reveal: ${promptField(contract.wowMoment)}. Teach: ${promptField(contract.viewerLearns)}.`,
     5: `Product changes the problem: ${promptField(scene.layout.groundedEvidence.text)}. Proof text is overlay only.`,
-    6: "Resolve to the selected product with the same demonstrator's torso or hands completing a clear buyer-action setup; never end on a lonely product, empty stage, abstract mechanism, or logo card.",
+    6: `Resolve exactly to the approved final state: ${promptField(frame?.visual || "the finished subject in its established world")}. Include a demonstrator or hands only if that final frame calls for them; never invent a new person.`,
   };
   return roles[frameIndex];
 };
@@ -118,12 +124,13 @@ const supplementDirection = (scene: ThreeDBreakdownAdScene) => {
 };
 
 const sharedStyle = (scene: ThreeDBreakdownAdScene) => clean([
-  `STYLE: ${scene.layout.storyContract.visualWorld}.`,
+  "STYLE: polished feature-animation CGI with modeled materials, crisp subject separation, and tactile physical demonstrations.",
+  `LIFESTYLE WORLD: ${scene.layout.storyContract.visualWorld}.`,
   `LIGHTING: ${scene.layout.storyContract.lighting}.`,
   `CAMERA LANGUAGE: ${scene.layout.storyContract.cameraStyle}.`,
   `RECURRING OBJECTS: ${scene.layout.storyContract.recurringObjects.join(", ")}.`,
-  "Use one recurring silent feature-animation CGI demonstrator as a scale figure, never as narrator; preserve face, hair, matte CG skin, plain clothing, proportions, and world.",
-  "Keep lips and jaw closed: no speech, lip-sync, presenter delivery, live action, photoreal person, mannequin, doctor, scientist, PPE, or stock-science montage.",
+  "Use only the recurring feature-animation CGI demonstrator, torso, or hand-proxy named by the approved frames. Preserve its identity, clothing, proportions, and world wherever it appears.",
+  "If an approved frame shows only objects or hands, do not add a face or full person. Any visible mouth stays closed: no speech, lip-sync, presenter delivery, live action, photoreal person, mannequin, doctor, scientist, PPE, or stock-science montage.",
 ].join(" "));
 
 const pixelTextBan = "PIXEL TEXT BAN: generate no readable words, letters, numbers, captions, subtitles, logos, labels, UI, arrows, checkmarks, X marks, pseudo-writing, or watermarks. Wiggly adds captions, proof, product branding, and CTA in the renderer.";
@@ -159,7 +166,7 @@ export const sanitizeThreeDStoryboardImagePlan = (value: string) => clean(value)
 
 export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) => {
   const plans = ([1, 2, 3, 4, 5, 6] as ThreeDBreakdownStoryboardFrameIndex[])
-    .map((index) => `${framePlan(scene, index)} ROLE: ${frameRole(scene, index)}`)
+    .map((index) => `${framePlan(scene, index)} ROLE: ${frameRole(scene, index)} WORLD: ${getThreeDFrameWorldRole(index)}.`)
     .join(" ");
   return clean([
     "TASK: create ONE vertical 9:16 image containing exactly six raw production stills in reading order, arranged as a 2-column by 3-row contact sheet for visual review.",
@@ -168,12 +175,11 @@ export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) 
     sharedStyle(scene),
     productLock(scene),
     supplementDirection(scene),
+    `WORLD SEQUENCE: frames 1-2 use the lifestyle setup; frames 3-4 use ${THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD}; frames 5-6 return to the lifestyle payoff. This overrides conflicting settings in the written plan.`,
     `APPROVED SIX-FRAME PLAN: ${scene.layout.storyboardBoard?.creativePrompt
       ? sanitizeThreeDStoryboardImagePlan(getThreeDStoryboardPrompt(scene.layout.storyboardBoard))
       : plans}`,
-    "CONTINUITY OVERRIDE: the same male CGI demonstrator from image 1 appears in panels 1, 2, 5, and 6; torso, connected hands, or over-shoulder framing count. Panel 6 shows him placing, holding, carrying, using, or reaching for the large central product, never a product alone on an empty grid.",
-    "VISUAL STORY: each cell shows one concrete physical action and one visible state change. Frame 1 establishes the demonstrator and product category; frame 6 resolves to the accurate selected product. Middle frames may use hands, cutaways, pipes, components, particles, scale comparisons, or impossible-camera reveals while preserving continuity.",
-    "VARIETY: do not repeat six product-holding poses or six macro science inserts. Move from use, to obstacle, to setup, to reveal, to evidence, to product payoff.",
+    "CONTINUITY OVERRIDE: preserve the same approved recurring demonstrator or hand-proxy only in panels that call for it. Object-only panels remain object-only. Never add a new face, person, goggles, hat, or outfit.",
     pixelTextBan,
   ].join(" "));
 };
@@ -192,10 +198,11 @@ export const buildThreeDProductionFramePrompt = (
   supplementDirection(scene),
   `APPROVED ANCHOR CREATIVE PROMPT: ${sanitizeThreeDStoryboardImagePlan(anchorPrompt)}`,
   `ROLE: ${frameRole(scene, frameIndex)}`,
+  describeThreeDFrameWorld(frameIndex, scene.layout.storyContract.visualWorld),
   frameIndex === 1
-    ? "CONTINUITY: establish the panel's feature-animation CGI demonstrator, product, recurring objects, world, and camera relationship. Keep modeled hair, visible eyes, matte CG skin, plain clothing, and a closed mouth."
-    : "CONTINUITY: copy image 2's exact CGI demonstrator and clothing. If the panel hides that face, show only the same clothed torso and connected hands; never invent a new face, mannequin, anatomy model, test dummy, or photoreal human.",
-  "COMPOSITION: fill the frame with the approved subject and action. No split screen, multiple panels, huge empty table, dead negative space, quiet showroom card, or alternate concept.",
+    ? "CONTINUITY: establish the panel's approved subject or hand-proxy, recurring objects, world, and camera relationship. Do not add a face or full person unless the panel requires one."
+    : "CONTINUITY: preserve image 2's identity, clothing, materials, hand-proxy, and camera; obey the current frame world. Do not invent a hidden face.",
+  "COMPOSITION: fill the frame with the approved subject/action. No collage, split screen, dead space, or alternate concept.",
   pixelTextBan,
 ].join(" "));
 };
@@ -208,15 +215,18 @@ export const buildThreeDSeedancePrompt = (
   const categoryRule = isThreeDSupplementStory(scene)
     ? "CATEGORY: use clean body-route or capsule-path footage only where the approved frames require it; no gore or detached anatomy montage."
     : "CATEGORY: do not invent supplement, capsule, digestive, anatomy, or medical imagery absent from the approved frames.";
+  const worldMotionRule = scene.layout.storyContract.visualStyle === "presenter-teardown-vsl"
+    ? "MOTION: follow the approved world transition between the supplied endpoints while preserving the same subject, product, materials, and feature-animation CGI camera language. Make the transition feel physically motivated; do not cut to an unrelated setting, person, presenter, or composition."
+    : "MOTION: stay inside one continuous world and evolve naturally from the supplied opening frame to the supplied ending frame. Use camera movement, object motion, component reveals, or physical transformations; do not cut to another setting, person, presenter, or unrelated composition.";
   const rawPrompt = clean([
     clipPlan.prompt,
     product
       ? `PRODUCT LOCK: preserve the supplied ${product.title} category, silhouette, colors, material, and packaging form; never replace it or invent readable packaging.`
       : "PRODUCT LOCK: preserve the approved category-level object and do not invent branded packaging.",
     categoryRule,
-    "INPUT LOCK: the supplied first image is the exact opening composition and the supplied last image is the exact ending target. Begin on the first image, perform the approved physical changes, and arrive naturally at the last image without inventing another scene, person, or product.",
-    "IDENTITY: keep the same CGI person. If endpoints hide the face, show only matching clothes, torso, and hands; never invent a face, mannequin, dummy, or photoreal human.",
-    "MOTION: use direct cuts, push-throughs, object wipes, camera pushes, component reveals, or particle transitions. Change a product, prop, obstacle, component, or camera scale every 1-2 seconds; no static product with drifting particles and no empty transition frames.",
+    "INPUT LOCK: the supplied first image is the exact opening composition and the supplied last image is the exact ending target. Begin on the first image, perform the approved physical changes, and arrive naturally at the last image without inventing another person or product.",
+    "IDENTITY: preserve only the recurring subject or hand-proxy visible in the supplied endpoints. If the endpoints are object-only, never invent a person, face, mannequin, dummy, or photoreal human.",
+    worldMotionRule,
     "No readable text, captions, labels, logos, UI, pseudo-writing, or watermarks; Wiggly adds every word later. Never visualize a claim as a headline, sign, dashboard, title card, or written comparison.",
   ].join(" "));
   const wellnessSafetyContext = /\b(?:massage gun|gun head|muscle|tissue|knot|x-?ray)\b/i.test(rawPrompt)

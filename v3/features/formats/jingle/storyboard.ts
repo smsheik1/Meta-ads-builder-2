@@ -630,45 +630,60 @@ export async function generateReplicateSeedanceVideo({
   lastFrameImageUrl,
   prompt,
   durationSeconds,
+  resolution = BRICK_STORYBOARD_VIDEO_RESOLUTION,
   timeoutMs = 180_000,
+  predictionId,
+  onPredictionCreated,
+  pollAttempts = 36,
+  preferWaitSeconds = 60,
 }: {
   replicateApiToken: string;
   imageUrl: string;
   lastFrameImageUrl?: string;
   prompt: string;
   durationSeconds: number;
+  resolution?: "480p" | "720p";
   timeoutMs?: number;
+  predictionId?: string;
+  onPredictionCreated?: (predictionId: string) => void | Promise<void>;
+  pollAttempts?: number;
+  preferWaitSeconds?: number;
 }) {
   if (!replicateApiToken) throw new Error("Replicate video generation is not configured.");
   const duration = Math.min(15, Math.max(5, Math.round(durationSeconds)));
   const safePrompt = toSeedanceSafeBrickPrompt(prompt);
-  console.log("[brick-video] seedance request", {
+  console.log(predictionId ? "[brick-video] seedance resume" : "[brick-video] seedance request", {
     model: BRICK_STORYBOARD_VIDEO_MODEL,
+    predictionId: predictionId || null,
     duration,
+    resolution,
     hasImageUrl: Boolean(imageUrl),
     hasLastFrameImageUrl: Boolean(lastFrameImageUrl),
     promptLength: safePrompt.length,
   });
-
-  const prediction = await withTimeout(fetch(`https://api.replicate.com/v1/models/${BRICK_STORYBOARD_VIDEO_MODEL}/predictions`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${replicateApiToken}`,
-      "Content-Type": "application/json",
-      Prefer: "wait=60",
-    },
-    body: JSON.stringify({
-      input: {
-        image: imageUrl,
-        ...(lastFrameImageUrl ? { last_frame_image: lastFrameImageUrl } : {}),
-        prompt: safePrompt,
-        duration,
-        aspect_ratio: "9:16",
-        resolution: BRICK_STORYBOARD_VIDEO_RESOLUTION,
-        generate_audio: false,
+  const prediction = predictionId
+    ? await withTimeout(fetch(`https://api.replicate.com/v1/predictions/${encodeURIComponent(predictionId)}`, {
+      headers: { Authorization: `Bearer ${replicateApiToken}` },
+    }), timeoutMs, "Replicate Seedance prediction resume")
+    : await withTimeout(fetch(`https://api.replicate.com/v1/models/${BRICK_STORYBOARD_VIDEO_MODEL}/predictions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${replicateApiToken}`,
+        "Content-Type": "application/json",
+        ...(preferWaitSeconds > 0 ? { Prefer: `wait=${preferWaitSeconds}` } : {}),
       },
-    }),
-  }), timeoutMs, "Replicate Seedance video generation");
+      body: JSON.stringify({
+        input: {
+          image: imageUrl,
+          ...(lastFrameImageUrl ? { last_frame_image: lastFrameImageUrl } : {}),
+          prompt: safePrompt,
+          duration,
+          aspect_ratio: "9:16",
+          resolution,
+          generate_audio: false,
+        },
+      }),
+    }), timeoutMs, "Replicate Seedance video generation");
   let payload = await prediction.json().catch(() => null) as {
     id?: string;
     status?: string;
@@ -679,6 +694,7 @@ export async function generateReplicateSeedanceVideo({
     logs?: string;
   } | null;
   if (!prediction.ok) throw new Error(payload?.error || payload?.detail || "Replicate Seedance video generation failed.");
+  if (!predictionId && payload?.id) await onPredictionCreated?.(payload.id);
   console.log("[brick-video] seedance prediction created", {
     id: payload?.id,
     status: payload?.status,
@@ -687,7 +703,7 @@ export async function generateReplicateSeedanceVideo({
     error: payload?.error || null,
   });
 
-  for (let attempt = 0; payload?.urls?.get && !payload.output && !["succeeded", "failed", "canceled"].includes(payload.status || "") && attempt < 36; attempt += 1) {
+  for (let attempt = 0; payload?.urls?.get && !payload.output && !["succeeded", "failed", "canceled"].includes(payload.status || "") && attempt < pollAttempts; attempt += 1) {
     await sleep(5_000);
     const nextResponse = await withTimeout(fetch(payload.urls.get, {
       headers: { Authorization: `Bearer ${replicateApiToken}` },
@@ -703,6 +719,9 @@ export async function generateReplicateSeedanceVideo({
 
   if (payload?.status === "failed" || payload?.status === "canceled") {
     throw new Error(`Replicate Seedance ${payload.status}: ${payload.error || payload.logs || "no provider error returned"}`);
+  }
+  if (!payload?.output && payload?.id && payload.status !== "succeeded") {
+    throw new ReplicatePredictionStillRunningError(payload.id);
   }
   if (!payload?.output) throw new Error("Replicate Seedance returned no video.");
 
@@ -720,4 +739,11 @@ export async function generateReplicateSeedanceVideo({
     bytes: new Uint8Array(await videoResponse.arrayBuffer()),
     mimeType: videoResponse.headers.get("content-type") || "video/mp4",
   };
+}
+
+export class ReplicatePredictionStillRunningError extends Error {
+  constructor(readonly predictionId: string) {
+    super(`Replicate prediction ${predictionId} is still processing.`);
+    this.name = "ReplicatePredictionStillRunningError";
+  }
 }

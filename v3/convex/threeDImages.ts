@@ -4,9 +4,18 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { action } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
-import { generateReplicateNanoBanana2Image, generateReplicateSeedanceVideo } from "../features/formats/jingle/storyboard";
+import {
+  generateReplicateNanoBanana2Image,
+  generateReplicateSeedanceVideo,
+  ReplicatePredictionStillRunningError,
+} from "../features/formats/jingle/storyboard";
 import { createThreeDClipPlans } from "../features/formats/three-d-breakdown/storyboardContracts";
-import { buildThreeDProductionFramePrompt, buildThreeDSeedancePrompt, buildThreeDStoryboardBoardPrompt } from "../features/formats/three-d-breakdown/mediaPrompts";
+import {
+  buildThreeDProductionFramePrompt,
+  buildThreeDSeedancePrompt,
+  buildThreeDStoryboardBoardPrompt,
+  THREE_D_BREAKDOWN_VIDEO_RESOLUTION,
+} from "../features/formats/three-d-breakdown/mediaPrompts";
 import { cropThreeDStoryboardPanel } from "../features/formats/three-d-breakdown/storyboardImageCrop";
 import {
   fetchThreeDProductReferenceImageUrls,
@@ -173,39 +182,11 @@ const getReplicateImageInput = async (imageUrl: string) => {
   return `data:${mimeType};base64,${Buffer.from(bytes).toString("base64")}`;
 };
 
-const getOrCreateThreeDEndFrameImage = async (
-  ctx: Parameters<typeof storeThreeDBytes>[0],
-  scene: ThreeDBreakdownAdScene,
-  clipPlan: ThreeDBreakdownClipPlan,
-) => {
-  if (clipPlan.endFrameImage?.status === "ready" && clipPlan.endFrameImage.url) {
-    return clipPlan.endFrameImage;
-  }
-  const boardImage = scene.layout.storyboardBoard?.image;
-  if (boardImage?.status !== "ready" || !boardImage.url) {
-    throw new Error(`3D Breakdown clip ${clipPlan.clipIndex} needs the approved storyboard board for its end frame.`);
-  }
-  const endFrameIndex = clipPlan.frameIndexes.at(-1);
-  if (!endFrameIndex) throw new Error(`3D Breakdown clip ${clipPlan.clipIndex} has no ending storyboard frame.`);
-
-  const response = await fetch(boardImage.url);
-  if (!response.ok) throw new Error(`3D Breakdown clip ${clipPlan.clipIndex} could not download its storyboard end frame.`);
-  const contentType = response.headers.get("content-type") || boardImage.mimeType || "";
-  if (!/jpe?g/i.test(contentType)) {
-    throw new Error(`3D Breakdown storyboard end-frame crop requires JPEG input, received ${contentType || "unknown image type"}.`);
-  }
-  const cropped = cropThreeDStoryboardPanel(new Uint8Array(await response.arrayBuffer()), endFrameIndex);
-  return {
-    status: "ready" as const,
-    ...(await storeThreeDBytes(ctx, cropped, "image/jpeg")),
-  };
-};
-
 const getRequiredAnchorFrameIndexes = (
   scene: ThreeDBreakdownAdScene,
 ): ThreeDBreakdownStoryboardFrameIndex[] => {
   const indexes = (scene.layout.clipPlans || [])
-    .map((clipPlan) => clipPlan.frameIndexes[0])
+    .flatMap((clipPlan) => [clipPlan.frameIndexes[0], clipPlan.frameIndexes.at(-1)])
     .filter((frameIndex): frameIndex is ThreeDBreakdownStoryboardFrameIndex => Boolean(frameIndex));
   return Array.from(new Set(indexes));
 };
@@ -214,7 +195,17 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
   args: {
     sceneId: v.id("adScenes"),
     scene: v.any(),
-    mode: v.optional(v.union(v.literal("storyboard"), v.literal("anchors"), v.literal("anchor-1"), v.literal("anchor-2"), v.literal("all"))),
+    mode: v.optional(v.union(
+      v.literal("storyboard"),
+      v.literal("anchors"),
+      v.literal("anchor-1"),
+      v.literal("anchor-2"),
+      v.literal("anchor-3"),
+      v.literal("anchor-4"),
+      v.literal("anchor-5"),
+      v.literal("anchor-6"),
+      v.literal("all"),
+    )),
   },
   handler: async (ctx, { sceneId, scene, mode }) => {
     const replicateApiToken = process.env.REPLICATE_API_TOKEN;
@@ -237,21 +228,30 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
       ? getRequiredAnchorFrameIndexes(nextScene)
       : baseFrames.map((frame) => frame.frameIndex);
     const imageMode = mode || (isPresenterStyle ? "storyboard" : "all");
-    const regenerateAnchorFrameIndex = imageMode === "anchor-1"
-      ? requiredAnchorFrameIndexes[0]
-      : imageMode === "anchor-2" ? requiredAnchorFrameIndexes[1] : undefined;
+    const regenerateAnchorFrameIndex = imageMode.startsWith("anchor-")
+      ? Number(imageMode.slice("anchor-".length)) as ThreeDBreakdownStoryboardFrameIndex
+      : undefined;
     const generateBoard = isPresenterStyle && (imageMode === "storyboard" || imageMode === "all");
     const generateAnchors = !isPresenterStyle || imageMode === "anchors" || Boolean(regenerateAnchorFrameIndex) || imageMode === "all";
     if (isPresenterStyle && generateAnchors && !generateBoard && storyboardBoard.image?.status !== "ready") {
       throw new Error("Generate the 3D Breakdown storyboard board before production anchors.");
     }
-    const anchorFramesToGenerate = baseFrames.filter((frame) => (
+    const pendingAnchorFrames = baseFrames.filter((frame) => (
       requiredAnchorFrameIndexes.includes(frame.frameIndex) && (
         frame.frameIndex === regenerateAnchorFrameIndex || frame.image?.status !== "ready"
       )
     ));
-    const invalidatedAnchorFrameIndexes = regenerateAnchorFrameIndex === requiredAnchorFrameIndexes[0]
-      ? requiredAnchorFrameIndexes.slice(1)
+    if (regenerateAnchorFrameIndex && !requiredAnchorFrameIndexes.includes(regenerateAnchorFrameIndex)) {
+      throw new Error(`3D Breakdown production endpoint must be one of: ${requiredAnchorFrameIndexes.join(", ")}.`);
+    }
+    const anchorFramesToGenerate = isPresenterStyle && imageMode === "anchors"
+      ? pendingAnchorFrames.slice(0, 1)
+      : pendingAnchorFrames;
+    const regeneratedPosition = regenerateAnchorFrameIndex
+      ? requiredAnchorFrameIndexes.indexOf(regenerateAnchorFrameIndex)
+      : -1;
+    const invalidatedAnchorFrameIndexes = regeneratedPosition >= 0
+      ? requiredAnchorFrameIndexes.slice(regeneratedPosition + 1)
       : [];
     const changedAnchorFrameIndexes = [
       ...anchorFramesToGenerate.map((frame) => frame.frameIndex),
@@ -272,20 +272,30 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
       })),
     }));
     if (nextScene.layout.clipPlans?.length) {
-      nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => ({
-        ...plan,
-        ...(generateBoard ? { endFrameImage: undefined } : {}),
-        video: generateBoard || changedAnchorFrameIndexes.includes(plan.frameIndexes[0])
+      nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => {
+        const endpointChanged = changedAnchorFrameIndexes.some((frameIndex) => (
+          frameIndex === plan.frameIndexes[0] || frameIndex === plan.frameIndexes.at(-1)
+        ));
+        return {
+          ...plan,
+          ...(generateBoard || endpointChanged ? { endFrameImage: undefined } : {}),
+          video: generateBoard || endpointChanged
           ? { status: "idle" as const }
           : plan.video,
-      })) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
+        };
+      }) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
     }
     await patchThreeDScene(ctx, sceneId, nextScene);
     let activeFrameIndex: ThreeDBreakdownStoryboardFrameIndex | null = null;
-    const firstAnchorFrame = baseFrames.find((frame) => frame.frameIndex === requiredAnchorFrameIndexes[0]);
-    let continuityAnchorDataUrl = firstAnchorFrame?.image?.status === "ready" && firstAnchorFrame.image.url &&
-      !anchorFramesToGenerate.some((frame) => frame.frameIndex === firstAnchorFrame.frameIndex)
-      ? await getReplicateImageInput(firstAnchorFrame.image.url)
+    const firstGeneratedFramePosition = anchorFramesToGenerate[0]
+      ? requiredAnchorFrameIndexes.indexOf(anchorFramesToGenerate[0].frameIndex)
+      : -1;
+    const precedingAnchorIndex = firstGeneratedFramePosition > 0
+      ? requiredAnchorFrameIndexes[firstGeneratedFramePosition - 1]
+      : undefined;
+    const precedingAnchor = baseFrames.find((frame) => frame.frameIndex === precedingAnchorIndex)?.image;
+    let continuityAnchorDataUrl = precedingAnchor?.status === "ready" && precedingAnchor.url
+      ? await getReplicateImageInput(precedingAnchor.url)
       : null;
     let storedBoardImage: NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["image"] | undefined;
     const storedFrames: NonNullable<ThreeDBreakdownAdScene["layout"]["storyboardBoard"]>["frames"] = [];
@@ -370,6 +380,9 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
         frames: baseFrames.map((frame) => {
           const storedFrame = storedFrames.find((stored) => stored.frameIndex === frame.frameIndex);
           if (storedFrame) return storedFrame;
+          if (invalidatedAnchorFrameIndexes.includes(frame.frameIndex)) {
+            return { ...frame, image: { status: "idle" as const } };
+          }
           if (frame.image?.status === "ready") return frame;
           return {
             ...frame,
@@ -397,6 +410,9 @@ export const generateThreeDImages: ReturnType<typeof action> = action({
         frames: baseFrames.map((frame) => {
           const storedFrame = storedFrames.find((stored) => stored.frameIndex === frame.frameIndex);
           if (storedFrame) return storedFrame;
+          if (invalidatedAnchorFrameIndexes.includes(frame.frameIndex)) {
+            return { ...frame, image: { status: "idle" as const } };
+          }
           if (frame.image?.status === "ready") return frame;
           if (activeFrameIndex === frame.frameIndex) {
             return {
@@ -457,19 +473,33 @@ export const generateThreeDClip: ReturnType<typeof action> = action({
       if (!previousClipReady) throw new Error(`Generate 3D Breakdown clip ${previousClipIndex} before clip ${typedClipIndex}.`);
     }
     const startFrame = storyboardFrames.find((frame) => frame.frameIndex === clipPlan.frameIndexes[0]);
-    if (!startFrame?.image?.url) throw new Error(`3D Breakdown clip ${typedClipIndex} needs storyboard frame ${clipPlan.frameIndexes[0]} first.`);
+    const endFrameIndex = clipPlan.frameIndexes.at(-1);
+    const endFrame = storyboardFrames.find((frame) => frame.frameIndex === endFrameIndex);
+    if (!startFrame?.image?.url || startFrame.image.status !== "ready") {
+      throw new Error(`3D Breakdown clip ${typedClipIndex} needs full-quality production frame ${clipPlan.frameIndexes[0]} first.`);
+    }
+    if (!endFrame?.image?.url || endFrame.image.status !== "ready") {
+      throw new Error(`3D Breakdown clip ${typedClipIndex} needs full-quality production frame ${endFrameIndex} first.`);
+    }
 
-    nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => (
-      plan.clipIndex === typedClipIndex
-        ? { ...plan, video: { status: "generating" as const } }
-        : plan
-    )) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
-    await patchThreeDScene(ctx, sceneId, nextScene);
+    const activePredictionId = clipPlan.video?.status === "generating"
+      ? clipPlan.video.providerJobId
+      : undefined;
+    if (clipPlan.video?.status === "generating" && !activePredictionId) {
+      throw new Error(`3D Breakdown clip ${typedClipIndex} is still starting. Wait a moment before checking it again.`);
+    }
+    if (!activePredictionId) {
+      nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => (
+        plan.clipIndex === typedClipIndex
+          ? { ...plan, video: { status: "generating" as const } }
+          : plan
+      )) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
+      await patchThreeDScene(ctx, sceneId, nextScene);
+    }
 
     try {
       const seedancePrompt = buildThreeDSeedancePrompt(nextScene, clipPlan);
-      const endFrameImage = await getOrCreateThreeDEndFrameImage(ctx, nextScene, clipPlan);
-      if (!endFrameImage.url) throw new Error(`3D Breakdown clip ${typedClipIndex} end frame has no URL.`);
+      const endFrameImage = { ...endFrame.image, url: endFrame.image.url };
       nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => (
         plan.clipIndex === typedClipIndex
           ? { ...plan, endFrameImage }
@@ -494,11 +524,23 @@ export const generateThreeDClip: ReturnType<typeof action> = action({
         lastFrameImageUrl: endFrameImageInput,
         prompt: seedancePrompt,
         durationSeconds: clipPlan.durationSeconds,
+        resolution: THREE_D_BREAKDOWN_VIDEO_RESOLUTION,
+        predictionId: activePredictionId,
+        preferWaitSeconds: 0,
+        pollAttempts: activePredictionId ? 0 : 12,
+        onPredictionCreated: async (providerJobId) => {
+          nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => (
+            plan.clipIndex === typedClipIndex
+              ? { ...plan, video: { status: "generating" as const, providerJobId } }
+              : plan
+          )) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
+          await patchThreeDScene(ctx, sceneId, nextScene);
+        },
       });
       const stored = await storeThreeDBytes(ctx, result.bytes, result.mimeType);
       nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => (
         plan.clipIndex === typedClipIndex
-          ? { ...plan, video: { status: "ready" as const, ...stored } }
+          ? { ...plan, video: { status: "ready" as const, providerJobId: activePredictionId || plan.video?.providerJobId, ...stored } }
           : plan
       )) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
       console.log("[wiggly:3d-breakdown] seedance:clip:ready", {
@@ -508,10 +550,20 @@ export const generateThreeDClip: ReturnType<typeof action> = action({
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "3D Breakdown Seedance clip generation failed.";
-      console.warn("[wiggly:3d-breakdown] seedance:clip:failed", { clipIndex: typedClipIndex, message });
+      const providerJobId = error instanceof ReplicatePredictionStillRunningError
+        ? error.predictionId
+        : activePredictionId || nextScene.layout.clipPlans?.find((plan) => plan.clipIndex === typedClipIndex)?.video?.providerJobId;
+      const providerStopped = /^Replicate Seedance (failed|canceled):/.test(message);
+      console.warn("[wiggly:3d-breakdown] seedance:clip:stopped", {
+        clipIndex: typedClipIndex,
+        message,
+        resumable: Boolean(providerJobId && !providerStopped),
+      });
       nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => (
         plan.clipIndex === typedClipIndex
-          ? { ...plan, video: { status: "failed" as const, error: message } }
+          ? providerJobId && !providerStopped
+            ? { ...plan, video: { status: "generating" as const, providerJobId } }
+            : { ...plan, video: { status: "failed" as const, error: message } }
           : plan
       )) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
     }
