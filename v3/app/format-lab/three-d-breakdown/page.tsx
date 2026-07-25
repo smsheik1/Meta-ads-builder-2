@@ -37,6 +37,7 @@ type GoldenExample = {
 type GoldenManifest = {
   purpose: string;
   contactSheet: string;
+  canonicalContactSheet: string;
   contactSheetRows: string[];
   sharedQualityBar: string[];
   examples: GoldenExample[];
@@ -86,7 +87,7 @@ export default function ThreeDBreakdownRepositoryPage() {
             </Button>
           </div>
           <div className="mt-5 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" data-testid="video-phase-boundary">
-            <strong>Honest proof status:</strong> the LEGO run proves the official pipeline can finish lifestyle setup → blue breakdown → lifestyle payoff. The packaged Grüns, Kiala, and Theragun videos set the stronger creative bar every new run must meet.
+            <strong>Canonical proof:</strong> the packaged FinalStraw run is the reproducibility target: one blue-grid world, one identity-locked silent demonstrator, readable physical actions, exact captions, and an approved product payoff.
           </div>
         </section>
 
@@ -111,19 +112,23 @@ export default function ThreeDBreakdownRepositoryPage() {
                 <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
                   {example.whyItWorks.map((reason) => <li key={reason}>{reason}</li>)}
                 </ul>
-                <p className="mt-4 text-xs font-bold uppercase tracking-wide text-amber-700">What to beat</p>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                  {example.knownWeaknesses.map((weakness) => <li key={weakness}>{weakness}</li>)}
-                </ul>
+                {example.knownWeaknesses.length ? (
+                  <>
+                    <p className="mt-4 text-xs font-bold uppercase tracking-wide text-amber-700">What to beat</p>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                      {example.knownWeaknesses.map((weakness) => <li key={weakness}>{weakness}</li>)}
+                    </ul>
+                  </>
+                ) : null}
               </article>
             ))}
           </div>
           <div className="mt-5 grid gap-5 rounded-lg border border-slate-300 bg-white p-4 shadow-sm lg:grid-cols-[minmax(0,1fr)_320px]">
             <Image
-              alt="Contact sheet comparing the Grüns, Kiala Nutrition, and Theragun production references"
+              alt="FinalStraw canonical Style B contact sheet"
               className="h-auto w-full rounded-md border border-slate-200"
               height={1440}
-              src={`/format-repositories/three-d-breakdown-v1/${goldens.contactSheet}`}
+              src={`/format-repositories/three-d-breakdown-v1/${goldens.canonicalContactSheet}`}
               width={810}
             />
             <div>
@@ -131,14 +136,14 @@ export default function ThreeDBreakdownRepositoryPage() {
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-slate-700">
                 {goldens.sharedQualityBar.map((check) => <li key={check}>{check}</li>)}
               </ol>
-              <p className="mt-4 text-xs text-slate-500">{goldens.contactSheetRows.join(" · ")}</p>
+              <p className="mt-4 text-xs text-slate-500">FinalStraw at 2, 8, 14, and 18 seconds. Supporting comparison sheet: {goldens.contactSheetRows.join(" · ")}</p>
             </div>
           </div>
         </section>
 
         <section data-testid="lego-world-arc-proof">
-          <h2 className="text-xl font-bold">LEGO technical proof — pipeline passed, marketing failed</h2>
-          <p className="mt-1 text-sm text-slate-600">The same carpenter and wooden-toy story moves from the warm workshop into the blue explanation world and returns to the workshop payoff. The file proves the assembly line works, but its weak hook is not the creative bar.</p>
+          <h2 className="text-xl font-bold">Historical LEGO run — useful failure evidence</h2>
+          <p className="mt-1 text-sm text-slate-600">This older run completed technically, but its world hopping and weak hook are exactly what the current contract rejects. It remains packaged as a regression lesson, not a creative proof target.</p>
           <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
             <Image
               alt="Contact sheet from the final LEGO Style B video"

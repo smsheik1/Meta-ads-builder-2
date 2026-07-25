@@ -6,7 +6,10 @@ import { fileURLToPath } from "node:url";
 import { bundle } from "@remotion/bundler";
 import { getCompositions, renderMedia } from "@remotion/renderer";
 import { generateFishThreeDBreakdownVoiceover } from "../features/audio/fishStudio";
-import { createGeneratedSceneAudio } from "../features/audio/sceneAudio";
+import {
+  createCaptionsForVoiceover,
+  createGeneratedSceneAudio,
+} from "../features/audio/sceneAudio";
 import {
   generateThreeDBreakdownStoryDirectionsFromResearch,
   generateThreeDBreakdownVariantsFromResearch,
@@ -51,6 +54,9 @@ const filename = fileURLToPath(import.meta.url);
 const v3Root = path.resolve(path.dirname(filename), "..");
 const packageRoot = path.join(v3Root, "public", "format-repositories", "three-d-breakdown-v1");
 const runsRoot = path.join(packageRoot, "agent-runs");
+const narrationTargetMs = 18_100;
+const narrationMaximumMs = 18_500;
+const narrationMaximumRetimeRatio = 1.25;
 
 type ImageAttempt = {
   asset: "storyboard" | `anchor-${number}`;
@@ -70,6 +76,8 @@ type VideoAttempt = {
   model: typeof BRICK_STORYBOARD_VIDEO_MODEL;
   predictionId?: string;
   output?: string;
+  sourceOutput?: string;
+  locallyRetimedAt?: string;
   error?: string;
 };
 
@@ -92,6 +100,16 @@ type FinalRender = {
   finalizedAt?: string;
 };
 
+type ReviewAsset = ImageAttempt["asset"] | `clip-${ThreeDBreakdownClipIndex}`;
+
+type ArtifactReview = {
+  asset: ReviewAsset;
+  attemptNumber: number;
+  decision: "approved" | "rejected";
+  reviewedAt: string;
+  reason?: string;
+};
+
 type RunState = {
   id: string;
   status: "draft" | "directions-ready" | "scene-ready" | "images-started" | "ready-for-video" | "video-started" | "clips-ready" | "voice-ready" | "final-ready" | "finalized";
@@ -102,6 +120,7 @@ type RunState = {
   imageAttempts: ImageAttempt[];
   videoAttempts?: VideoAttempt[];
   voiceAttempts?: VoiceAttempt[];
+  reviews?: ArtifactReview[];
   finalRender?: FinalRender;
 };
 
@@ -137,6 +156,72 @@ const saveState = async (state: RunState) => writeJson(path.join(runDirectory(st
 const loadResearch = async (runId: string) => readJson<StoredWebsiteResearchResult>(path.join(runDirectory(runId), "research.json"));
 const loadScene = async (runId: string) => readJson<ThreeDBreakdownAdScene>(path.join(runDirectory(runId), "scene.json"));
 const saveScene = async (runId: string, scene: ThreeDBreakdownAdScene) => writeJson(path.join(runDirectory(runId), "scene.json"), scene);
+
+const attemptsForAsset = (state: RunState, asset: ReviewAsset) => (
+  asset.startsWith("clip-")
+    ? (state.videoAttempts || []).filter((attempt) => `clip-${attempt.clipIndex}` === asset)
+    : state.imageAttempts.filter((attempt) => attempt.asset === asset)
+);
+
+const currentSceneOutput = (scene: ThreeDBreakdownAdScene, asset: ReviewAsset) => {
+  if (asset === "storyboard") {
+    const image = scene.layout.storyboardBoard?.image;
+    return image?.status === "ready" ? image.url : undefined;
+  }
+  if (asset.startsWith("anchor-")) {
+    const frameIndex = Number(asset.slice("anchor-".length));
+    const image = scene.layout.storyboardBoard?.frames?.find((frame) => frame.frameIndex === frameIndex)?.image;
+    return image?.status === "ready" ? image.url : undefined;
+  }
+  const clipIndex = Number(asset.slice("clip-".length));
+  const video = scene.layout.clipPlans?.find((clip) => clip.clipIndex === clipIndex)?.video;
+  return video?.status === "ready" ? video.url : undefined;
+};
+
+const latestReadyAttemptForAsset = (
+  state: RunState,
+  scene: ThreeDBreakdownAdScene,
+  asset: ReviewAsset,
+) => {
+  const output = currentSceneOutput(scene, asset);
+  if (!output) return undefined;
+  return [...attemptsForAsset(state, asset)].reverse().find((attempt) => (
+    attempt.status === "ready" && attempt.output === output
+  ));
+};
+
+const reviewForCurrentAttempt = (
+  state: RunState,
+  scene: ThreeDBreakdownAdScene,
+  asset: ReviewAsset,
+) => {
+  const attempt = latestReadyAttemptForAsset(state, scene, asset);
+  if (!attempt) return null;
+  return [...(state.reviews || [])].reverse().find((review) => (
+    review.asset === asset && review.attemptNumber === attempt.number
+  )) || null;
+};
+
+const assertArtifactApproved = (
+  state: RunState,
+  scene: ThreeDBreakdownAdScene,
+  asset: ReviewAsset,
+) => {
+  const attempt = latestReadyAttemptForAsset(state, scene, asset);
+  if (!attempt) throw new Error(`${asset} has no generated result to approve.`);
+  const review = reviewForCurrentAttempt(state, scene, asset);
+  if (review?.decision !== "approved") {
+    throw new Error(`Review ${asset} and record approval before continuing.`);
+  }
+};
+
+function readReviewAsset(): ReviewAsset {
+  const asset = requiredArgument("asset");
+  if (asset === "storyboard") return asset;
+  if (/^anchor-(1|3|4|6)$/.test(asset)) return asset as ReviewAsset;
+  if (/^clip-(1|2)$/.test(asset)) return asset as ReviewAsset;
+  throw new Error("Review asset must be storyboard, anchor-1, anchor-3, anchor-4, anchor-6, clip-1, or clip-2.");
+}
 
 async function loadEnvironment() {
   const envPath = path.join(v3Root, ".env.local");
@@ -299,6 +384,37 @@ async function validate() {
   console.log("Scene contract is valid: 5 beats, 6 storyboard frames, 4 production endpoints, 2 planned clips, 20 seconds.");
 }
 
+async function review() {
+  const runId = requiredArgument("run");
+  const asset = readReviewAsset();
+  const decision = requiredArgument("decision");
+  if (!["approve", "reject"].includes(decision)) {
+    throw new Error("Review decision must be approve or reject.");
+  }
+  const reason = argument("reason")?.trim();
+  if (decision === "reject" && !reason) {
+    throw new Error("Rejected artifacts require --reason so the next attempt has a useful diagnosis.");
+  }
+  const [state, scene] = await Promise.all([loadState(runId), loadScene(runId)]);
+  const attempt = latestReadyAttemptForAsset(state, scene, asset);
+  if (!attempt) throw new Error(`${asset} has no current ready result to review.`);
+  const reviewRecord: ArtifactReview = {
+    asset,
+    attemptNumber: attempt.number,
+    decision: decision === "approve" ? "approved" : "rejected",
+    reviewedAt: new Date().toISOString(),
+    ...(reason ? { reason } : {}),
+  };
+  state.reviews = [
+    ...(state.reviews || []).filter((item) => (
+      item.asset !== asset || item.attemptNumber !== attempt.number
+    )),
+    reviewRecord,
+  ];
+  await saveState(state);
+  console.log(`${asset} attempt ${attempt.number} was ${reviewRecord.decision}. No provider was called.`);
+}
+
 const toDataUrl = (bytes: Uint8Array, mimeType: string) => `data:${mimeType};base64,${Buffer.from(bytes).toString("base64")}`;
 
 async function fetchReferenceDataUrls(scene: ThreeDBreakdownAdScene) {
@@ -324,14 +440,14 @@ function localMediaPath(url: string) {
   return resolved;
 }
 
-async function generateStoryboard(runId: string, scene: ThreeDBreakdownAdScene) {
+async function generateStoryboard(runId: string, scene: ThreeDBreakdownAdScene, attemptNumber: number) {
   const result = await generateReplicateNanoBanana2Image({
     replicateApiToken: process.env.REPLICATE_API_TOKEN || "",
     prompt: buildThreeDStoryboardBoardPrompt(scene),
     imageInput: await fetchReferenceDataUrls(scene),
     aspectRatio: "9:16",
   });
-  const relativeOutput = `agent-runs/${runId}/images/storyboard-board.jpg`;
+  const relativeOutput = `agent-runs/${runId}/images/storyboard-board-attempt-${attemptNumber}.jpg`;
   await mkdir(path.dirname(localMediaPath(relativeOutput)), { recursive: true });
   await writeFile(localMediaPath(relativeOutput), result.bytes);
   return {
@@ -352,6 +468,7 @@ async function generateAnchor(
   runId: string,
   scene: ThreeDBreakdownAdScene,
   frameIndex: ThreeDBreakdownStoryboardFrameIndex,
+  attemptNumber: number,
 ) {
   const board = scene.layout.storyboardBoard;
   if (board?.image?.status !== "ready" || !board.image.url) throw new Error("Generate and inspect the storyboard before an anchor.");
@@ -361,21 +478,30 @@ async function generateAnchor(
   const position = required.indexOf(frameIndex);
   const priorIndex = position > 0 ? required[position - 1] : undefined;
   const priorImage = board.frames?.find((frame) => frame.frameIndex === priorIndex)?.image;
+  const identityImage = frameIndex === 1
+    ? undefined
+    : board.frames?.find((frame) => frame.frameIndex === 1)?.image;
   const continuityInput = priorImage?.status === "ready" && priorImage.url
     ? toDataUrl(new Uint8Array(await readFile(localMediaPath(priorImage.url))), priorImage.mimeType || "image/jpeg")
     : null;
+  const identityInput = identityImage?.status === "ready" && identityImage.url
+    ? toDataUrl(new Uint8Array(await readFile(localMediaPath(identityImage.url))), identityImage.mimeType || "image/jpeg")
+    : null;
   const references = await fetchReferenceDataUrls(scene);
+  const imageInput = Array.from(new Set([
+    toDataUrl(panelBytes, "image/jpeg"),
+    references[0],
+    identityInput,
+    continuityInput,
+    references[1],
+  ].filter((value): value is string => Boolean(value))));
   const result = await generateReplicateNanoBanana2Image({
     replicateApiToken: process.env.REPLICATE_API_TOKEN || "",
     prompt: buildThreeDProductionFramePrompt(scene, frameIndex),
-    imageInput: [
-      toDataUrl(panelBytes, "image/jpeg"),
-      ...(continuityInput ? [continuityInput] : []),
-      ...references.slice(1),
-    ].slice(0, 5),
+    imageInput: imageInput.slice(0, 5),
     aspectRatio: "9:16",
   });
-  const relativeOutput = `agent-runs/${runId}/images/anchor-${frameIndex}.jpg`;
+  const relativeOutput = `agent-runs/${runId}/images/anchor-${frameIndex}-attempt-${attemptNumber}.jpg`;
   await mkdir(path.dirname(localMediaPath(relativeOutput)), { recursive: true });
   await writeFile(localMediaPath(relativeOutput), result.bytes);
   const invalidatedFrameIndexes = required.slice(position + 1);
@@ -409,6 +535,16 @@ async function image() {
   const state = await loadState(runId);
   const scene = await loadScene(runId);
   const attempts = state.imageAttempts.filter((attempt) => attempt.asset === asset).length;
+  if (kind === "anchor") {
+    assertArtifactApproved(state, scene, "storyboard");
+    const required = getThreeDBreakdownRequiredAnchorFrameIndexes(scene);
+    const position = required.indexOf(frame as ThreeDBreakdownStoryboardFrameIndex);
+    const priorFrame = position > 0 ? required[position - 1] : undefined;
+    if (position < 0) throw new Error(`Style B anchor frame must be one of: ${required.join(", ")}.`);
+    if (priorFrame !== undefined) {
+      assertArtifactApproved(state, scene, `anchor-${priorFrame}` as ReviewAsset);
+    }
+  }
   assertThreeDBreakdownImageCallAllowed({
     approved: hasFlag("approve-image"),
     attempts,
@@ -425,8 +561,8 @@ async function image() {
   await saveState(state);
   try {
     const nextScene = kind === "storyboard"
-      ? await generateStoryboard(runId, scene)
-      : await generateAnchor(runId, scene, frame as ThreeDBreakdownStoryboardFrameIndex);
+      ? await generateStoryboard(runId, scene, attempt.number)
+      : await generateAnchor(runId, scene, frame as ThreeDBreakdownStoryboardFrameIndex, attempt.number);
     attempt.status = "ready";
     const outputImage = kind === "storyboard"
       ? nextScene.layout.storyboardBoard?.image
@@ -461,6 +597,7 @@ async function generateVideoClip(
   runId: string,
   scene: ThreeDBreakdownAdScene,
   clipIndex: ThreeDBreakdownClipIndex,
+  attemptNumber: number,
   options: {
     predictionId?: string;
     onPredictionCreated?: (predictionId: string) => void | Promise<void>;
@@ -493,7 +630,7 @@ async function generateVideoClip(
     resolution: THREE_D_BREAKDOWN_VIDEO_RESOLUTION,
     ...options,
   });
-  const relativeOutput = `agent-runs/${runId}/videos/clip-${clipIndex}.mp4`;
+  const relativeOutput = `agent-runs/${runId}/videos/clip-${clipIndex}-attempt-${attemptNumber}.mp4`;
   await mkdir(path.dirname(localMediaPath(relativeOutput)), { recursive: true });
   await writeFile(localMediaPath(relativeOutput), result.bytes);
   return updateClipPlan(scene, clipIndex, (clip) => ({
@@ -531,22 +668,45 @@ async function video() {
     model: BRICK_STORYBOARD_VIDEO_MODEL,
   };
   if (!activeAttempt) {
+    for (const frameIndex of getThreeDBreakdownRequiredAnchorFrameIndexes(scene)) {
+      assertArtifactApproved(state, scene, `anchor-${frameIndex}` as ReviewAsset);
+    }
+    if (clipIndex === 2) {
+      assertArtifactApproved(state, scene, "clip-1");
+    }
+    const currentReview = reviewForCurrentAttempt(state, scene, `clip-${clipIndex}`);
+    if (scene.layout.clipPlans?.find((clip) => clip.clipIndex === clipIndex)?.video?.status === "ready"
+      && currentReview?.decision !== "rejected") {
+      throw new Error(`Video clip ${clipIndex} is ready. Approve it, or reject it with a reason before generating a replacement.`);
+    }
+    const gateScene = currentReview?.decision === "rejected"
+      ? updateClipPlan(scene, clipIndex, (clip) => ({ ...clip, video: { status: "idle" } }))
+      : scene;
     assertThreeDBreakdownVideoCallAllowed({
       approved: hasFlag("approve-video"),
       attempts: clipAttempts.length,
       clipIndex,
-      scene,
+      scene: gateScene,
     });
     state.videoAttempts = [...(state.videoAttempts || []), attempt];
     state.status = "video-started";
   }
-  const generatingScene = updateClipPlan(scene, clipIndex, (clip) => ({
-    ...clip,
-    video: { status: "generating" },
-  }));
+  const generatingScene: ThreeDBreakdownAdScene = {
+    ...scene,
+    layout: {
+      ...scene.layout,
+      clipPlans: scene.layout.clipPlans?.map((clip) => (
+        clip.clipIndex === clipIndex
+          ? { ...clip, video: { status: "generating" as const } }
+          : clipIndex === 1 && clip.clipIndex > clipIndex
+            ? { ...clip, endFrameImage: undefined, video: { status: "idle" as const } }
+            : clip
+      )),
+    },
+  };
   await Promise.all([saveState(state), saveScene(runId, generatingScene)]);
   try {
-    const nextScene = await generateVideoClip(runId, generatingScene, clipIndex, {
+    const nextScene = await generateVideoClip(runId, generatingScene, clipIndex, attempt.number, {
       predictionId: activeAttempt?.predictionId,
       pollAttempts: activeAttempt ? 0 : undefined,
       onPredictionCreated: async (predictionId) => {
@@ -588,6 +748,60 @@ async function video() {
   }
 }
 
+async function retimeClip() {
+  const runId = requiredArgument("run");
+  const clipIndex = Number(requiredArgument("clip")) as ThreeDBreakdownClipIndex;
+  if (clipIndex !== 2) {
+    throw new Error("The MVP local timing correction is limited to clip 2.");
+  }
+  if (!hasFlag("approve-local-retime")) {
+    throw new Error("Review clip 2, then pass --approve-local-retime to change its timing without a provider call.");
+  }
+  const visibleSeconds = Number(argument("action-seconds") || "6");
+  if (!Number.isFinite(visibleSeconds) || visibleSeconds < 3 || visibleSeconds > 9) {
+    throw new Error("--action-seconds must be between 3 and 9.");
+  }
+  const [state, scene] = await Promise.all([loadState(runId), loadScene(runId)]);
+  const attempt = latestReadyAttemptForAsset(state, scene, "clip-2");
+  if (!attempt || !("clipIndex" in attempt) || !attempt.output) {
+    throw new Error("Clip 2 has no current ready provider result to retime.");
+  }
+  const sourceDurationMs = await probeDurationMs(localMediaPath(attempt.output));
+  const plannedDurationSeconds = scene.layout.clipPlans?.find((clip) => clip.clipIndex === 2)?.durationSeconds || 10;
+  const speedScale = visibleSeconds / (sourceDurationMs / 1_000);
+  const holdSeconds = plannedDurationSeconds - visibleSeconds;
+  const relativeOutput = `agent-runs/${runId}/videos/clip-2-attempt-${attempt.number}-retimed.mp4`;
+  await mkdir(path.dirname(localMediaPath(relativeOutput)), { recursive: true });
+  await runCommand("ffmpeg", [
+    "-y",
+    "-i", localMediaPath(attempt.output),
+    "-vf", `setpts=${speedScale.toFixed(6)}*PTS,tpad=stop_mode=clone:stop_duration=${holdSeconds.toFixed(3)}`,
+    "-an",
+    "-t", String(plannedDurationSeconds),
+    "-c:v", "libx264",
+    "-pix_fmt", "yuv420p",
+    "-movflags", "+faststart",
+    localMediaPath(relativeOutput),
+  ]);
+  const nextScene = updateClipPlan(scene, 2, (clip) => ({
+    ...clip,
+    video: {
+      status: "ready",
+      storageId: `local:${relativeOutput}`,
+      url: relativeOutput,
+      mimeType: "video/mp4",
+    },
+  }));
+  attempt.sourceOutput = attempt.sourceOutput || attempt.output;
+  attempt.output = relativeOutput;
+  attempt.locallyRetimedAt = new Date().toISOString();
+  state.reviews = (state.reviews || []).filter((review) => (
+    review.asset !== "clip-2" || review.attemptNumber !== attempt.number
+  ));
+  await Promise.all([saveState(state), saveScene(runId, nextScene)]);
+  console.log(`Retimed clip 2 locally: action fits in ${visibleSeconds}s and the resolved frame holds for ${holdSeconds}s. No provider was called; review clip-2 again.`);
+}
+
 function assertClipsReady(scene: ThreeDBreakdownAdScene) {
   if (scene.layout.clipPlans?.length !== 2 || scene.layout.clipPlans.some((clip) => (
     clip.video?.status !== "ready" || !clip.video.url || !existsSync(localMediaPath(clip.video.url))
@@ -602,6 +816,8 @@ async function voice() {
   const state = await loadState(runId);
   const scene = await loadScene(runId);
   assertClipsReady(scene);
+  assertArtifactApproved(state, scene, "clip-1");
+  assertArtifactApproved(state, scene, "clip-2");
   if (scene.audio.status === "generated") throw new Error("This run already has generated narration.");
   if (!hasFlag("approve-voice")) throw new Error("Approve one Fish voice generation with --approve-voice.");
   if (!process.env.FISH_STUDIO_APIKEY?.trim()) {
@@ -622,15 +838,31 @@ async function voice() {
       apiKey: process.env.FISH_STUDIO_APIKEY,
       scene,
     });
-    if (generated.durationMs > scene.layout.durationMs) {
-      throw new Error(`Narration is ${generated.durationMs}ms, longer than the ${scene.layout.durationMs}ms video. Shorten the script before another voice call.`);
-    }
     const output = `agent-runs/${runId}/audio/narration.wav`;
+    const sourceOutput = `agent-runs/${runId}/audio/narration-source.wav`;
     await mkdir(path.dirname(localMediaPath(output)), { recursive: true });
-    await writeFile(localMediaPath(output), generated.bytes);
+    let durationMs = generated.durationMs;
+    let wasRetimed = false;
+    if (generated.durationMs > narrationMaximumMs) {
+      const ratio = generated.durationMs / narrationTargetMs;
+      await writeFile(localMediaPath(sourceOutput), generated.bytes);
+      if (ratio > narrationMaximumRetimeRatio) {
+        throw new Error(`Narration is ${generated.durationMs}ms and would need ${ratio.toFixed(2)}x retiming. The source audio was preserved; shorten the script before another voice call.`);
+      }
+      await runCommand("ffmpeg", [
+        "-y",
+        "-i", localMediaPath(sourceOutput),
+        "-filter:a", `atempo=${ratio.toFixed(6)}`,
+        localMediaPath(output),
+      ]);
+      durationMs = await probeDurationMs(localMediaPath(output));
+      wasRetimed = true;
+    } else {
+      await writeFile(localMediaPath(output), generated.bytes);
+    }
     attempt.status = "ready";
     attempt.output = output;
-    attempt.durationMs = generated.durationMs;
+    attempt.durationMs = durationMs;
     state.status = "voice-ready";
     await saveScene(runId, {
       ...scene,
@@ -638,14 +870,14 @@ async function voice() {
         storageId: `local:${output}`,
         url: output,
         mimeType: generated.mimeType,
-        durationMs: generated.durationMs,
+        durationMs,
         transcript: generated.transcript,
-        captions: generated.captions,
+        captions: createCaptionsForVoiceover(scene, durationMs),
         model: generated.model,
         provider: generated.provider,
       }),
     });
-    console.log(`Narration is ready (${generated.durationMs}ms). No video provider was called.`);
+    console.log(`Narration is ready (${durationMs}ms${wasRetimed ? `, locally retimed from ${generated.durationMs}ms` : ""}). No video provider was called.`);
   } catch (error) {
     attempt.status = "failed";
     attempt.error = error instanceof Error ? error.message : String(error);
@@ -697,6 +929,8 @@ async function render() {
   const state = await loadState(runId);
   const scene = await loadScene(runId);
   assertClipsReady(scene);
+  assertArtifactApproved(state, scene, "clip-1");
+  assertArtifactApproved(state, scene, "clip-2");
   if (scene.audio.status !== "generated" || !scene.audio.url || !existsSync(localMediaPath(scene.audio.url))) {
     throw new Error("Generate and inspect narration before final rendering.");
   }
@@ -781,8 +1015,22 @@ async function inspect() {
   const baseReport = inspectThreeDBreakdownRepoScene(scene, (url) => (
     /^https?:\/\//.test(url) || existsSync(localMediaPath(url))
   ));
-  let report: Record<string, unknown> = baseReport;
   const state = await loadState(runId);
+  const reviewAssets: ReviewAsset[] = [
+    "storyboard",
+    ...getThreeDBreakdownRequiredAnchorFrameIndexes(scene).map((frameIndex) => `anchor-${frameIndex}` as ReviewAsset),
+    "clip-1",
+    "clip-2",
+  ];
+  const artifactReviews = Object.fromEntries(reviewAssets.map((asset) => [
+    asset,
+    reviewForCurrentAttempt(state, scene, asset)?.decision || "unreviewed",
+  ]));
+  const allCurrentArtifactsApproved = reviewAssets.every((asset) => artifactReviews[asset] === "approved");
+  let report: Record<string, unknown> = {
+    ...baseReport,
+    artifactReviews,
+  };
   if (scene.layout.finalVideo?.status === "ready" && scene.layout.finalVideo.url) {
     const finalPath = localMediaPath(scene.layout.finalVideo.url);
     const probe = JSON.parse(await runCommand("ffprobe", [
@@ -802,12 +1050,13 @@ async function inspect() {
       finalDimensions: videoStream?.width === 1080 && videoStream.height === 1920,
       finalAudio: hasAudio,
       narrationFits: scene.audio.status === "generated" && scene.audio.durationMs <= scene.layout.durationMs,
+      allCurrentArtifactsApproved,
     };
     const finalProblems = Object.entries(finalChecks)
       .filter(([, passed]) => !passed)
       .map(([name]) => `Check failed: ${name}.`);
     report = {
-      ...baseReport,
+      ...report,
       status: finalProblems.length ? "final-invalid" : "final-ready",
       checks: { ...baseReport.checks, ...finalChecks },
       problems: [...baseReport.problems, ...finalProblems],
@@ -824,17 +1073,22 @@ async function inspect() {
     ));
     const contactSheet = await createVideoContactSheet(runId, videoPaths);
     report = {
-      ...baseReport,
-      status: durationsMatchPlan ? "clips-ready" : "video-in-progress",
-      checks: { ...baseReport.checks, clipDurationsMatchPlan: durationsMatchPlan },
+      ...report,
+      status: durationsMatchPlan && allCurrentArtifactsApproved ? "clips-ready" : "video-in-progress",
+      checks: {
+        ...baseReport.checks,
+        clipDurationsMatchPlan: durationsMatchPlan,
+        allCurrentArtifactsApproved,
+      },
       problems: [
         ...baseReport.problems,
         ...(durationsMatchPlan ? [] : ["Check failed: clipDurationsMatchPlan."]),
+        ...(allCurrentArtifactsApproved ? [] : ["Check failed: allCurrentArtifactsApproved."]),
       ],
       clipDurationsMs,
       contactSheet,
     };
-    state.status = durationsMatchPlan ? "clips-ready" : "video-started";
+    state.status = durationsMatchPlan && allCurrentArtifactsApproved ? "clips-ready" : "video-started";
   } else if (baseReport.status === "ready-for-video") {
     state.status = "ready-for-video";
   }
@@ -874,13 +1128,15 @@ async function main() {
   if (command === "directions") return await directions();
   if (command === "select") return await select();
   if (command === "validate") return await validate();
+  if (command === "review") return await review();
   if (command === "image") return await image();
   if (command === "inspect") return await inspect();
   if (command === "video") return await video();
+  if (command === "retime-clip") return await retimeClip();
   if (command === "voice") return await voice();
   if (command === "render") return await render();
   if (command === "finalize") return await finalize();
-  throw new Error("Use: check | init | directions | select | validate | image | inspect | video | voice | render | finalize");
+  throw new Error("Use: check | init | directions | select | validate | review | image | inspect | video | retime-clip | voice | render | finalize");
 }
 
 main().catch((error) => {

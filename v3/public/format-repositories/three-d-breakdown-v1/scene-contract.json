@@ -14,9 +14,11 @@
     "roles": ["problem", "escalation", "mechanism-setup", "wow-reveal", "payoff", "final-state"],
     "layout": "2 columns by 3 rows",
     "worldSequence": [
-      { "frameIndexes": [1, 2], "role": "lifestyle-setup", "world": "the relevant real-use or story setting" },
-      { "frameIndexes": [3, 4], "role": "blue-breakdown", "world": "the recognizable Style B bright blue/cyan blueprint-grid explanation stage" },
-      { "frameIndexes": [5, 6], "role": "lifestyle-payoff", "world": "the setup setting, now resolved around the product payoff" }
+      {
+        "frameIndexes": [1, 2, 3, 4, 5, 6],
+        "role": "blue-breakdown",
+        "world": "one recognizable bright blue/cyan blueprint-grid explanation stage; vary camera, scale, props, and physical state without changing visual worlds"
+      }
     ]
   },
   "productionAnchors": {
@@ -25,6 +27,17 @@
   },
   "clips": [
     { "clipIndex": 1, "frameIndexes": [1, 2, 3], "startMs": 0, "endMs": 10000 },
-    { "clipIndex": 2, "frameIndexes": [4, 5, 6], "startMs": 10000, "endMs": 20000 }
-  ]
+    {
+      "clipIndex": 2,
+      "frameIndexes": [4, 5, 6],
+      "startMs": 10000,
+      "endMs": 20000,
+      "meaningfulActionCompleteByMs": 16000
+    }
+  ],
+  "endCard": {
+    "startMs": 16000,
+    "endMs": 20000,
+    "rule": "The product and CTA overlay occupy the final four seconds, so clip 2 must finish its meaningful action by 16 seconds."
+  }
 }

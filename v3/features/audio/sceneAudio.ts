@@ -69,23 +69,14 @@ export const estimateVoiceoverDurationMs = (scene: AdScene) => {
 
 const splitThreeDBreakdownCaptionLine = (value: string) => {
   const normalized = cleanText(value)
-    .replace(/\bis built to protect\b/gi, "protects")
-    .replace(/\bcan break\b/gi, "breaks")
-    .replace(/\bcan scatter\b/gi, "scatters")
-    .replace(/^(but|then|and|so)\s+/i, "")
-    .replace(/\s+long before\b.+$/i, "")
     .replace(/\s+/g, " ")
     .trim();
-  const clauses = normalized
-    .split(/\b(?:and|but|then|so|because|while|until)\b/i)
-    .map((part) => cleanText(part).replace(/^(but|then|and|so)\s+/i, ""))
-    .filter(Boolean);
   const chunks: string[] = [];
   const maxWords = 4;
   const maxChars = 32;
   const trailingPrepositions = new Set(["after", "before", "for", "from", "inside", "into", "of", "through", "to", "with"]);
 
-  for (const clause of clauses.length ? clauses : [normalized]) {
+  for (const clause of [normalized]) {
     const words = clause.split(/\s+/).filter(Boolean);
     let current: string[] = [];
 

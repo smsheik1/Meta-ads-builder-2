@@ -13,7 +13,10 @@ const required = [
   "assets.json",
   "quality.json",
   "fixtures/style-b-checkpoint.json",
+  "fixtures/finalstraw-reproducibility.json",
   "assets/ecommerce-teardown-style-reference-clean-v7.jpg",
+  "goldens/finalstraw.mp4",
+  "goldens/finalstraw-contact-sheet.jpg",
 ];
 const runtime = [
   "scripts/three-d-breakdown-format.ts",

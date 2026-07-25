@@ -9,10 +9,10 @@
     },
     {
       "id": "production-reference-set",
-      "label": "Grüns, Kiala Nutrition, and Theragun production references",
+      "label": "FinalStraw canonical proof plus Grüns, Kiala Nutrition, and Theragun supporting references",
       "localPath": "goldens/",
       "sourcePath": "See goldens.json for source filenames and SHA-256 hashes.",
-      "purpose": "Shows the creative quality bar and reusable causal structure. These videos are references to compare against, not assets to copy into a new ad."
+      "purpose": "FinalStraw locks the reproducible Style B recipe; the other videos broaden the comparison set. These videos are references to compare against, not assets to copy into a new ad."
     }
   ],
   "variable": [

@@ -1,14 +1,28 @@
 # Real production proof
 
-## Creative quality evidence
+## Canonical successful proof
 
-The Repo includes three earlier Wiggly production references in `goldens/`, with provenance, reviewed narration, strengths, and known weaknesses in `goldens.json`.
+The FinalStraw Day 5 video is the current Style B reproducibility target.
+
+- Script: five concise beats moving from hidden product to customer friction, mechanism, resolved use, and buyer-action CTA.
+- World: one bright blue/cyan blueprint-grid explanation stage across the entire story.
+- Demonstrator: one silent semi-stylized 3D man with a dark backward cap, white sunglasses on the cap, pink polo, and tan cargo shorts.
+- Media: one six-frame storyboard, full-quality anchors at frames 1, 3, 4, and 6, and two 10-second Seedance clips.
+- Human review: clip 2 was rejected and regenerated before approval.
+- Post-production: existing voice and late clip action were retimed locally rather than buying replacement provider calls; captions preserve the approved script wording.
+- Final: one 1080×1920, 20-second MP4 with one audio stream and a four-second product/CTA hold.
+
+See `goldens/finalstraw.mp4`, `goldens/finalstraw-contact-sheet.jpg`, and `fixtures/finalstraw-reproducibility.json`.
+
+## Supporting creative quality evidence
+
+The Repo also includes three earlier Wiggly production references in `goldens/`, with provenance, reviewed narration, strengths, and known weaknesses in `goldens.json`.
 
 - **Grüns:** the earlier Wiggly baseline. It proves the product can travel into an explanation world and return to a clean payoff, but its abstract hook and repeated tunnel shots remain weaknesses to beat.
 - **Kiala Nutrition:** the clearest routine-compression example. A pile of separate supplements becomes one unified product system.
 - **Theragun:** the clearest physical-mechanism example. A familiar customer action becomes a cutaway that shows why heat changes the result.
 
-These references establish the creative bar. They do not authorize copying brand claims, wording, or shots.
+FinalStraw establishes the reproducibility target. The supporting references broaden the comparison set. None authorize copying brand claims, wording, or shots.
 
 ## LEGO technical proof
 
@@ -20,7 +34,7 @@ These references establish the creative bar. They do not authorize copying brand
 - Result: `failed-paid-media-quality`.
 - Human review: the clips are not good enough to run as ads. Their ending images are visibly soft, the payoff appears too early, and clip 2 invents a different CGI person and setting.
 - Root cause: planning thumbnails were used as production media, while old prompt rules forced a recurring presenter and three hard-cut subshots even when the approved story was object-led.
-- Correction: the runner now requires four independently generated endpoints (frames 1, 3, 4, and 6), preserves object-only frames, makes each clip one continuous transformation, and requests 480p.
+- Historical correction: the runner was changed to require four independently generated endpoints (frames 1, 3, 4, and 6), preserve object-only frames, and request 480p. The later FinalStraw proof showed that forcing one continuous transformation was itself too restrictive.
 - Technical note: the old clips are 10.042 seconds at 496×864 and contain no audio stream. Passing those mechanical checks did not make them creatively acceptable.
 
 See `agent-runs/lego-origin-proof/` for the inputs, scene contract, images, attempt history, and quality report.
@@ -34,7 +48,7 @@ See `agent-runs/lego-origin-proof/` for the inputs, scene contract, images, atte
 - Result: `continuity-passed-style-b-failed`.
 - Human review: the ladder, carpenter, workshop, wood, and toy car remain coherent; both clips use continuous physical motion; the final car is sharp; no unrelated person appears. However, both clips stay in the warm workshop and omit Style B's recognizable blue explanation stage.
 - Technical review: both clips are 10.042 seconds at 496×864, the duration gate passes, and the quality report contains no problems.
-- Root correction: the Format now fixes the world sequence by frame number—lifestyle setup in frames 1-2, blue/cyan blueprint-grid breakdown in frames 3-4, and lifestyle payoff in frames 5-6. This corrected world arc has not yet received a paid media reproof.
+- Historical correction: this run introduced a lifestyle-to-blue-to-lifestyle world sequence. The successful FinalStraw proof later replaced that rule with one coherent blue-grid world across all six frames.
 - Boundary: no voice or final 20-second composition was generated.
 
 See `agent-runs/lego-origin-quality-proof/` for the scene, four production endpoints, both clips, contact sheet, attempt history, and quality report.

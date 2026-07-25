@@ -50,18 +50,19 @@ const productLock = (scene: ThreeDBreakdownAdScene) => {
 };
 
 const storyboardReferenceLock = (scene: ThreeDBreakdownAdScene) => clean([
-  "REFERENCE ORDER: image 1 is the STYLE MASTER for feature-animation CGI rendering, modeled materials, and finish only. The approved frame world owns the setting; copy the blue-grid stage only for frames 3-4. Do not copy an unrelated person or product from the style reference.",
+  "REFERENCE ORDER: image 1 is the immutable STYLE AND DEMONSTRATOR MASTER. Copy its blue-grid CGI, face, backward dark cap, white sunglasses on the cap, pink polo, tan cargo shorts, and proportions. The demonstrator is silent and never lip-syncs.",
   scene.layout.productAnchor
     ? `Image 2 is the PRODUCT MASTER for ${scene.layout.productAnchor.title} and owns retail geometry; later images only define its real serving/use form.`
     : "No Product Master is available; use an abstract category object and do not invent branded packaging.",
 ].join(" "));
 
-const productionReferenceLock = (scene: ThreeDBreakdownAdScene, hasContinuityAnchor: boolean) => clean([
-  hasContinuityAnchor
-    ? "REFERENCE ORDER: image 1 is the approved panel and owns action/composition; image 2 owns recurring identity, clothing, materials, and camera but not environment; image 3 is the PRODUCT MASTER; image 4 may show real use."
-    : "REFERENCE ORDER: image 1 is the approved panel and owns character/action/composition; the current frame world directive owns the environment; image 2 is the PRODUCT MASTER; image 3 may show real product use.",
+const productionReferenceLock = (scene: ThreeDBreakdownAdScene, hasIdentityAnchor: boolean) => clean([
+  "REFERENCES: the storyboard panel owns action and composition; the Style Master owns blue-grid CGI and demonstrator identity.",
+  hasIdentityAnchor
+    ? "The immutable frame-1 anchor owns face, outfit, and proportions; later endpoints guide pose and camera only."
+    : "This frame establishes identity. Match the Style Master when the panel contains the demonstrator.",
   scene.layout.productAnchor
-    ? `If the storyboard simplified ${scene.layout.productAnchor.title}, correct its product form to match the PRODUCT MASTER without changing the approved action.`
+    ? `If needed, correct ${scene.layout.productAnchor.title} to the PRODUCT MASTER without changing the action.`
     : "No Product Master is available; preserve the approved abstract category object.",
 ].join(" "));
 
@@ -125,11 +126,11 @@ const supplementDirection = (scene: ThreeDBreakdownAdScene) => {
 
 const sharedStyle = (scene: ThreeDBreakdownAdScene) => clean([
   "STYLE: polished feature-animation CGI with modeled materials, crisp subject separation, and tactile physical demonstrations.",
-  `LIFESTYLE WORLD: ${scene.layout.storyContract.visualWorld}.`,
+  `VISUAL WORLD: ${scene.layout.storyContract.visualWorld}. Keep the bright blue/cyan blueprint-grid explanation world coherent across every frame.`,
   `LIGHTING: ${scene.layout.storyContract.lighting}.`,
   `CAMERA LANGUAGE: ${scene.layout.storyContract.cameraStyle}.`,
   `RECURRING OBJECTS: ${scene.layout.storyContract.recurringObjects.join(", ")}.`,
-  "Use only the recurring feature-animation CGI demonstrator, torso, or hand-proxy named by the approved frames. Preserve its identity, clothing, proportions, and world wherever it appears.",
+  "When the demonstrator appears, preserve the Style Master's exact face, cap, sunglasses, pink polo, tan cargo shorts, and proportions. Cropped torso or hands keep that identity.",
   "If an approved frame shows only objects or hands, do not add a face or full person. Any visible mouth stays closed: no speech, lip-sync, presenter delivery, live action, photoreal person, mannequin, doctor, scientist, PPE, or stock-science montage.",
 ].join(" "));
 
@@ -175,7 +176,7 @@ export const buildThreeDStoryboardBoardPrompt = (scene: ThreeDBreakdownAdScene) 
     sharedStyle(scene),
     productLock(scene),
     supplementDirection(scene),
-    `WORLD SEQUENCE: frames 1-2 use the lifestyle setup; frames 3-4 use ${THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD}; frames 5-6 return to the lifestyle payoff. This overrides conflicting settings in the written plan.`,
+    `WORLD LOCK: all six panels remain inside ${scene.layout.storyContract.visualWorld}, using ${THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD} as the visual grammar. Vary camera scale, props, and physical state without changing environments.`,
     `APPROVED SIX-FRAME PLAN: ${scene.layout.storyboardBoard?.creativePrompt
       ? sanitizeThreeDStoryboardImagePlan(getThreeDStoryboardPrompt(scene.layout.storyboardBoard))
       : plans}`,
@@ -216,7 +217,7 @@ export const buildThreeDSeedancePrompt = (
     ? "CATEGORY: use clean body-route or capsule-path footage only where the approved frames require it; no gore or detached anatomy montage."
     : "CATEGORY: do not invent supplement, capsule, digestive, anatomy, or medical imagery absent from the approved frames.";
   const worldMotionRule = scene.layout.storyContract.visualStyle === "presenter-teardown-vsl"
-    ? "MOTION: follow the approved world transition between the supplied endpoints while preserving the same subject, product, materials, and feature-animation CGI camera language. Make the transition feel physically motivated; do not cut to an unrelated setting, person, presenter, or composition."
+    ? "MOTION: stay inside the approved blue-grid visual world while preserving the same subject, product, materials, and feature-animation CGI camera language. Use motivated cuts, push-ins, macro changes, or object-led transitions between the three approved beats; do not cut to an unrelated setting, person, presenter, or composition."
     : "MOTION: stay inside one continuous world and evolve naturally from the supplied opening frame to the supplied ending frame. Use camera movement, object motion, component reveals, or physical transformations; do not cut to another setting, person, presenter, or unrelated composition.";
   const rawPrompt = clean([
     clipPlan.prompt,
