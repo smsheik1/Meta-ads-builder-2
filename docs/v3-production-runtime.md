@@ -24,6 +24,26 @@ Remotion
 -> does not rebuild scenes from browser state
 ```
 
+## When To Scale Rendering
+
+The current Convex queue plus Oracle render worker is the MVP architecture. Do not add BullMQ, Redis, or Remotion Lambda because of one slow render or an expected increase in users.
+
+Review render capacity when real production evidence shows one of these patterns:
+
+- Queued jobs regularly wait more than 60 seconds before a worker claims them.
+- More than two jobs remain queued for over 10 minutes.
+- Users see three or more render delays or failures in one week that trace to worker saturation rather than invalid scenes or provider errors.
+- The Oracle worker stays near its CPU or memory limit while the queue continues growing.
+
+Scale in this order:
+
+1. Confirm the delay is queue capacity, not a broken worker, invalid scene, provider failure, or slow individual render.
+2. Keep the Convex queue and add another identical Oracle worker, or move the worker to a larger machine.
+3. Consider Remotion Lambda only when bursty demand requires automatic scaling that fixed workers cannot handle economically.
+4. Add a different queue such as BullMQ only if Convex job claiming becomes the measured bottleneck; do not run two queue systems without replacing one.
+
+Never move Remotion rendering into the Next.js request path.
+
 ## Required Environment
 
 Browser/runtime:
