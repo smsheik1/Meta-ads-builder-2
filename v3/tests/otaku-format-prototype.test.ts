@@ -135,7 +135,7 @@ assert.match(repositoryServer, /function readOutputRuns/);
 assert.doesNotMatch(repositoryServer, /const runIds|world-naruto|world-spongebob/);
 assert.ok(existsSync(path.join(packageRoot, "SKILL.md")));
 assert.ok(existsSync(path.join(packageRoot, "requirements.json")));
-assert.ok(existsSync(path.join(packageRoot, "downloads", "wiggly-otaku-explainer-format-kit.zip")));
+assert.ok(existsSync(path.join(packageRoot, "downloads", "wiggly-cartoon-explainer-format-kit.zip")));
 assert.ok(existsSync(path.join(packageRoot, "worlds", "naruto.json")));
 assert.ok(existsSync(path.join(packageRoot, "worlds", "yugioh.json")));
 
