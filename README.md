@@ -1,146 +1,111 @@
 # Wiggly
 
-Wiggly turns a brand URL into visualizer-style video ads that can be previewed,
-rerolled, saved, shared, and exported without opening a video editor.
+<p align="center">
+  <img src="docs/assets/github/hero.png" alt="Wiggly — the open format layer for creative agents, shown with six real outputs from two reusable Formats." width="100%">
+</p>
 
-## Current App
+<p align="center">
+  <strong>Discover a Format. Give it to your agent. Get the finished creative.</strong>
+</p>
 
-The active product lives in `v3/`.
+<p align="center">
+  <a href="https://wiggly.agentenamel.com">Open Wiggly</a>
+  ·
+  <a href="https://wiggly.agentenamel.com/format-lab/otaku-explainer">Try the Otaku Explainer Repo</a>
+  ·
+  <a href="https://wiggly.agentenamel.com/format-lab/three-d-breakdown">Try the 3D Breakdown Repo</a>
+</p>
 
-- Frontend: Next.js App Router
-- Backend/data: Convex
-- Video: Remotion
-- Audio/captions: Gemini TTS, uploaded audio, Deepgram transcription
-- Interaction state: small Zustand canvas store
+Wiggly is the format layer between a creative idea and the agent that makes it.
+Instead of explaining a workflow to Claude or Codex from scratch, you give it a
+self-contained **Wiggly Repo**: the instructions, inputs, assets, prompts,
+renderer, audio, dependencies, examples, and quality checks for one repeatable
+creative Format.
 
-The legacy Vite/Express `/create` and `/builder` code was archived before
-deletion at:
+The agent still does the creative work. Wiggly removes the repeated explaining,
+setup, and guesswork.
 
-- Branch: `legacy/v1-create-builder-reference`
-- Tag: `legacy-v1-create-builder-reference`
+## This is a system, not three hand-made demos
 
-Use that branch only as a read-only reference for old visual taste or behavior.
-Do not ship from it.
+<p align="center">
+  <img src="docs/assets/github/proof-reel.gif" alt="The Otaku Explainer Format running across Naruto, Danny Phantom, and SpongeBob, followed by the 3D Breakdown Format running across Kiala, Grüns, and Theragun." width="720">
+</p>
 
-## Local Setup
+The same **Otaku Explainer** renderer worked across Naruto, Danny Phantom, and
+SpongeBob. The same **3D Breakdown** renderer worked across Kiala, Grüns, and
+Theragun. The subjects, worlds, voices, assets, and products changed. The
+underlying Format stayed reusable.
+
+| Working Format | What changed | What stayed reusable |
+| --- | --- | --- |
+| [Otaku Explainer](https://wiggly.agentenamel.com/format-lab/otaku-explainer) | Story world, characters, voices, backgrounds, and lesson | Scene contract, layouts, renderer, pacing rules, and quality checks |
+| [3D Breakdown](https://wiggly.agentenamel.com/format-lab/three-d-breakdown) | Brand, product, story angle, generated media, and narration | Production stages, blue-world visual grammar, renderer, and creative quality bar |
+
+## One link. One instruction.
+
+Give a compatible agent the Format page and a result you want:
+
+```text
+Open https://wiggly.agentenamel.com/format-lab/otaku-explainer
+and make SpongeBob explain how electric vehicles work.
+Use the packaged runner. Inspect your work before returning the final video.
+```
+
+<p align="center">
+  <img src="docs/assets/github/agent-challenge.jpg" alt="A copyable agent instruction beside real SpongeBob, Naruto, and Danny Phantom outputs made from the Otaku Explainer Wiggly Repo." width="100%">
+</p>
+
+The Format tells the agent what it needs, which inputs are missing, how to make
+the creative, what it must never improvise, and how to decide whether the result
+is good enough to return.
+
+## What is inside a Wiggly Repo?
+
+<p align="center">
+  <img src="docs/assets/github/format-anatomy.svg" alt="A Wiggly Repo teaches the agent, defines the creative, packages production assets, and proves the result with quality checks." width="100%">
+</p>
+
+Every Format can work differently. A cartoon explainer, a product breakdown,
+and a static ad do not need the same renderer or inputs. They do need the same
+kind of complete handoff:
+
+- **Instructions:** what the Format is, how the agent should work, and when it must stop.
+- **Inputs:** what the user supplies and what the agent can discover.
+- **Creative recipe:** prompts, roles, scene rules, timing, and approved variation.
+- **Production kit:** fixed assets, audio, dependencies, and the official renderer.
+- **Proof:** examples, output history, and checks that block broken work.
+
+## Formats get better together
+
+<p align="center">
+  <img src="docs/assets/github/format-flywheel.svg" alt="Build, publish, run, remix, improve, and contribute form the Wiggly Format flywheel." width="100%">
+</p>
+
+The long-term product is not a folder of private templates. People should be
+able to create Formats, publish them, remix someone else's work, improve a
+prompt or renderer, and contribute those improvements back. A great creative
+idea becomes reusable infrastructure for people and their agents.
+
+## What exists today
+
+Wiggly currently has:
+
+- A live ecommerce creative engine that turns product-page research into ad concepts.
+- Two downloadable, agent-readable Wiggly Repos with official runners.
+- Real outputs across multiple brands, story worlds, voices, and topics.
+- Format-level requirements, validation, inspection, and quality checks.
+
+The discovery marketplace, public contribution workflow, and first-class Format
+versioning are the direction, not finished features. The working Repos above are
+the proof that the underlying package can travel.
+
+## Run Wiggly locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Run `npm run dev` from the repo root, not from `v3/`. The root dev command
-starts the full local stack:
-
-- Next.js app on `http://localhost:3020`
-- Local Convex on `http://127.0.0.1:3210`
-- Render worker for MP4 downloads
-
-If only Next is running, `/create` may load but downloads will show
-`Render worker is offline`.
-
-The v3 app runs at:
-
-```text
-http://localhost:3020/create
-```
-
-## Useful Commands
-
-```bash
-npm run test
-npm run build
-npm run typecheck
-npm run runtime:health
-npm run smoke:live
-```
-
-All root commands delegate to `@wiggly/v3`.
-
-To verify the local runtime, run:
-
-```bash
-npm run runtime:health
-```
-
-The render worker is healthy when the `worker:queue` check passes. If it fails,
-stop the partial dev process and restart from the repo root with `npm run dev`.
-
-## Environment
-
-Use `v3/.env.local` for local v3 development. The root `.env` is legacy and
-should stay empty. Required production secrets are documented in
-`docs/v3-production-runtime.md`.
-
-Common local keys:
-
-```bash
-V3_CONVEX_URL=
-NEXT_PUBLIC_V3_CONVEX_URL=
-NEXT_PUBLIC_V3_CONVEX_SITE_URL=
-V3_CONVEX_DEPLOY_KEY=
-FIRECRAWL_API_KEY=
-BRANDFETCH_API_KEY=
-GEMINI_API_KEY=
-DEEPGRAM_API_KEY=
-```
-
-Website research tries Jina Reader first with an 8 second timeout. `FIRECRAWL_API_KEY`
-is still needed as the hard-site fallback for weak, blocked, timed-out, or JS-heavy
-Jina reads.
-
-Never commit real API keys.
-
-### Local Convex Env
-
-Convex actions do not automatically inherit `v3/.env.local`.
-If local website research needs the Firecrawl fallback, set the action env vars
-on the local Convex deployment:
-
-```bash
-cd v3
-admin_key=$(node -e 'const fs = require("fs"); const data = JSON.parse(fs.readFileSync(".convex/local/default/config.json", "utf8")); process.stdout.write(data.adminKey || "");')
-
-CONVEX_DEPLOYMENT= \
-CONVEX_SELF_HOSTED_URL=http://127.0.0.1:3210 \
-CONVEX_SELF_HOSTED_ADMIN_KEY="$admin_key" \
-npx convex env set FIRECRAWL_API_KEY "$FIRECRAWL_API_KEY"
-```
-
-Repeat that command for each env var used by Convex actions through the
-`v3/convex/` feature import chain:
-
-```bash
-FIRECRAWL_API_KEY=
-BRANDFETCH_API_KEY=
-GEMINI_API_KEY=
-GEMINI_ENABLED=true
-GEMINI_DIALOGUE_MODEL=gemini-3.1-flash-lite
-NVIDIA_NIM_API_KEY=
-NVIDIA_NIM_AD_MODEL=z-ai/glm-5.2
-NVIDIA_NIM_BRAND_CURATOR_MODEL=z-ai/glm-5.2
-NVIDIA_NIM_MEME_MODEL=z-ai/glm-5.2
-NVIDIA_NIM_BASE_URL=https://integrate.api.nvidia.com/v1
-NVIDIA_NIM_ENABLED=true
-DEEPGRAM_API_KEY=
-DEEPGRAM_ENABLED=true
-TTS_ENABLED=true
-TTS_MODEL=gemini-3.1-flash-tts-preview
-```
-
-## Deployment
-
-The active deploy workflow is:
-
-```text
-.github/workflows/deploy-v3-oracle.yml
-```
-
-The workflow runs `scripts/deploy-v3-oracle.sh`, deploys Convex, builds Next,
-starts the v3 app, and starts the render worker.
-
-## Project Memory
-
-- v3 spec and architecture: `docs/v3-spec.md`, `docs/v3-architecture.md`
-- Production runtime: `docs/v3-production-runtime.md`
-- Future work: `ROADMAP.md`
+The v3 app starts at [`http://localhost:3020/create`](http://localhost:3020/create).
+See [Development](docs/development.md) for environment setup, runtime checks,
+architecture references, and deployment notes.
