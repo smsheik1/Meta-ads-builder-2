@@ -1,0 +1,79 @@
+{
+  "purpose": "Production references that teach an agent what a usable 20-second 3D Breakdown feels like. They are a comparison set, not shots or claims to copy.",
+  "contactSheet": "goldens/contact-sheet.jpg",
+  "contactSheetRows": [
+    "Grüns at 2, 9, and 16 seconds",
+    "Kiala Nutrition at 2, 9, and 16 seconds",
+    "Theragun at 2, 9, and 16 seconds"
+  ],
+  "sharedQualityBar": [
+    "The first two seconds establish a concrete product, customer tension, or false assumption.",
+    "The blue explanation world makes an invisible mechanism or change easy to see; it is not decorative filler.",
+    "Every major narration beat causes a visible action, object change, or result.",
+    "The product or subject remains recognizable while the world changes.",
+    "The final seconds return to a clear product payoff and direct buyer action."
+  ],
+  "examples": [
+    {
+      "id": "gruns",
+      "brand": "Grüns",
+      "role": "Earlier Wiggly baseline",
+      "videoPath": "goldens/gruns.mp4",
+      "sourceFilename": "gruns-3d-breakdown-final-v2.mp4",
+      "sourceSha256": "6ef913016b8a8b694121f544631462b8ba71ed013e03f5dbb4ab0861d092851e",
+      "packageSha256": "0284a154adb3eb97a167d2ff0b2a66a4636f5cebeca60d936d23d032a32e104b",
+      "durationSeconds": 20,
+      "resolution": "540x960",
+      "reviewedTranscript": "A clinical trial can prove a supplement works, but that does not mean the one in your hand will. Stomach acid turns the route into the hidden problem. Grüns makes the hidden product path visible, clinically tested in 2025 in a randomized, double-blind, placebo-controlled study. The hidden route finally matters. Start your daily habit.",
+      "whyItWorks": [
+        "The real pouch appears immediately and returns in the final product card.",
+        "The journey through the body gives the blue world a specific explanation job.",
+        "The product payoff is visually clean and easy to recognize."
+      ],
+      "knownWeaknesses": [
+        "The opening line starts with an abstract credential instead of a concrete customer moment.",
+        "Some middle shots repeat the same tunnel idea instead of showing a stronger product-specific mechanism."
+      ]
+    },
+    {
+      "id": "kiala",
+      "brand": "Kiala Nutrition",
+      "role": "Routine-compression reference",
+      "videoPath": "goldens/kiala.mp4",
+      "sourceFilename": "kiala-nutrition-3d-breakdown-final.mp4",
+      "sourceSha256": "621fa12733cb9198961820298fbb248b529922409a362d81d480d570f8cb19d4",
+      "packageSha256": "07329d96c8977a93fa4c88e686d468827402eb407c767087151f43ca762d16a0",
+      "durationSeconds": 20.053,
+      "resolution": "540x960",
+      "reviewedTranscript": "You organize your morning supplements and assume swallowing a handful covers your bases. But keeping 45 different superfoods stocked creates daily routine friction. A combined system provides 45-plus superfoods, adaptogens, and enzymes. All those scattered bottles assemble into a single unified scoop of greens. Shop Kiala Nutrition greens powder.",
+      "whyItWorks": [
+        "The opening bottle pile makes the customer problem visible before explaining anything.",
+        "The blue world compresses many scattered objects into one product system.",
+        "The final packshot resolves the same clutter shown in the hook."
+      ],
+      "knownWeaknesses": [
+        "The narration carries several product details quickly and needs careful evidence review."
+      ]
+    },
+    {
+      "id": "theragun",
+      "brand": "Theragun",
+      "role": "Physical-mechanism reference",
+      "videoPath": "goldens/theragun.mp4",
+      "sourceFilename": "theragun-3d-breakdown-no-blocks (1).mp4",
+      "sourceSha256": "ae1d00fc59a21c1c245d3863f883cc343b4b2b598010c475c196afe4a20af570",
+      "packageSha256": "acf8b2063c6ea0b946569cb34b181ce39515f410d9b1e81df53f36e8b9ad61b8",
+      "durationSeconds": 20,
+      "resolution": "540x960",
+      "reviewedTranscript": "You press a massage gun against a knot and assume force alone will release it. But cold percussion just bounces off tight tissue. A heated attachment drives warm percussion into the muscle. Heat-enhanced percussive therapy preps tight muscles three times faster than massage alone. Get the Theragun heated massage gun.",
+      "whyItWorks": [
+        "The hook begins with an action the customer already understands.",
+        "The cutaway makes the difference between cold and heated percussion physically visible.",
+        "The internal product view connects the mechanism to the final device."
+      ],
+      "knownWeaknesses": [
+        "The measurable claim must remain tied to saved brand evidence."
+      ]
+    }
+  ]
+}

@@ -35,7 +35,12 @@ for (const required of [
   "v3/remotion-entry/index.ts",
   "v3/remotion-entry/RemotionAdScene.tsx",
   "v3/public/format-repositories/three-d-breakdown-v1/SKILL.md",
+  "v3/public/format-repositories/three-d-breakdown-v1/goldens.json",
   "v3/public/format-repositories/three-d-breakdown-v1/assets/ecommerce-teardown-style-reference-clean-v7.jpg",
+  "v3/public/format-repositories/three-d-breakdown-v1/goldens/contact-sheet.jpg",
+  "v3/public/format-repositories/three-d-breakdown-v1/goldens/gruns.mp4",
+  "v3/public/format-repositories/three-d-breakdown-v1/goldens/kiala.mp4",
+  "v3/public/format-repositories/three-d-breakdown-v1/goldens/theragun.mp4",
 ]) {
   assert.match(listing, new RegExp(required.replaceAll(".", "\\.")), `${required} must be downloadable.`);
 }

@@ -6,6 +6,13 @@
       "localPath": "assets/ecommerce-teardown-style-reference-clean-v7.jpg",
       "sourcePath": "/three-d-breakdown/references/ecommerce-teardown-style-reference-clean-v7.jpg",
       "purpose": "Locks feature-animation CGI rendering, materials, and finish without overriding the approved story setting or subject."
+    },
+    {
+      "id": "production-reference-set",
+      "label": "Grüns, Kiala Nutrition, and Theragun production references",
+      "localPath": "goldens/",
+      "sourcePath": "See goldens.json for source filenames and SHA-256 hashes.",
+      "purpose": "Shows the creative quality bar and reusable causal structure. These videos are references to compare against, not assets to copy into a new ad."
     }
   ],
   "variable": [
