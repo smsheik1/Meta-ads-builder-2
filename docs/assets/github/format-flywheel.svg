@@ -2,7 +2,7 @@
 <svg width="1400" height="320" viewBox="0 0 1400 320" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2F6BFF"/>
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7C3AED"/>
     </marker>
   </defs>
   <rect width="1400" height="320" rx="30" fill="#F5F0E8"/>
@@ -12,27 +12,27 @@
       <g>
         <rect x="54" y="162" width="172" height="82" rx="20" fill="#070611" stroke="#070611" stroke-width="2"/>
         <text x="140" y="213" text-anchor="middle" fill="#FFFDF8" font-family="Arial, sans-serif" font-size="17" font-weight="700" letter-spacing="1">BUILD</text>
-        <path d="M 232 203 H 261" stroke="#2F6BFF" stroke-width="4" marker-end="url(#arrow)"/>
+        <path d="M 232 203 H 261" stroke="#7C3AED" stroke-width="4" marker-end="url(#arrow)"/>
       </g>
       <g>
         <rect x="271" y="162" width="172" height="82" rx="20" fill="#FFFDF8" stroke="#D8D1C7" stroke-width="2"/>
         <text x="357" y="213" text-anchor="middle" fill="#070611" font-family="Arial, sans-serif" font-size="17" font-weight="700" letter-spacing="1">PUBLISH</text>
-        <path d="M 449 203 H 478" stroke="#2F6BFF" stroke-width="4" marker-end="url(#arrow)"/>
+        <path d="M 449 203 H 478" stroke="#7C3AED" stroke-width="4" marker-end="url(#arrow)"/>
       </g>
       <g>
         <rect x="488" y="162" width="172" height="82" rx="20" fill="#FFFDF8" stroke="#D8D1C7" stroke-width="2"/>
         <text x="574" y="213" text-anchor="middle" fill="#070611" font-family="Arial, sans-serif" font-size="17" font-weight="700" letter-spacing="1">RUN</text>
-        <path d="M 666 203 H 695" stroke="#2F6BFF" stroke-width="4" marker-end="url(#arrow)"/>
+        <path d="M 666 203 H 695" stroke="#7C3AED" stroke-width="4" marker-end="url(#arrow)"/>
       </g>
       <g>
         <rect x="705" y="162" width="172" height="82" rx="20" fill="#FFFDF8" stroke="#D8D1C7" stroke-width="2"/>
         <text x="791" y="213" text-anchor="middle" fill="#070611" font-family="Arial, sans-serif" font-size="17" font-weight="700" letter-spacing="1">REMIX</text>
-        <path d="M 883 203 H 912" stroke="#2F6BFF" stroke-width="4" marker-end="url(#arrow)"/>
+        <path d="M 883 203 H 912" stroke="#7C3AED" stroke-width="4" marker-end="url(#arrow)"/>
       </g>
       <g>
         <rect x="922" y="162" width="172" height="82" rx="20" fill="#FFFDF8" stroke="#D8D1C7" stroke-width="2"/>
         <text x="1008" y="213" text-anchor="middle" fill="#070611" font-family="Arial, sans-serif" font-size="17" font-weight="700" letter-spacing="1">IMPROVE</text>
-        <path d="M 1100 203 H 1129" stroke="#2F6BFF" stroke-width="4" marker-end="url(#arrow)"/>
+        <path d="M 1100 203 H 1129" stroke="#7C3AED" stroke-width="4" marker-end="url(#arrow)"/>
       </g>
       <g>
         <rect x="1139" y="162" width="172" height="82" rx="20" fill="#FFFDF8" stroke="#D8D1C7" stroke-width="2"/>
