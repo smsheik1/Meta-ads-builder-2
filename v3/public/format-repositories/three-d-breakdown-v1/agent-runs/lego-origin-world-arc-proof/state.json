@@ -1,0 +1,74 @@
+{
+  "id": "lego-origin-world-arc-proof",
+  "status": "clips-ready",
+  "createdAt": "2026-07-24T23:45:30.505Z",
+  "subject": {
+    "kind": "brand"
+  },
+  "planningCalls": 2,
+  "imageAttempts": [
+    {
+      "asset": "storyboard",
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-24T23:52:03.753Z",
+      "output": "agent-runs/lego-origin-world-arc-proof/images/storyboard-board.jpg"
+    },
+    {
+      "asset": "anchor-1",
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-24T23:59:27.875Z",
+      "output": "agent-runs/lego-origin-world-arc-proof/images/anchor-1.jpg"
+    },
+    {
+      "asset": "anchor-3",
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-25T00:00:09.197Z",
+      "output": "agent-runs/lego-origin-world-arc-proof/images/anchor-3.jpg"
+    },
+    {
+      "asset": "anchor-4",
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-25T00:00:49.059Z",
+      "output": "agent-runs/lego-origin-world-arc-proof/images/anchor-4.jpg"
+    },
+    {
+      "asset": "anchor-6",
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-25T00:01:34.394Z",
+      "output": "agent-runs/lego-origin-world-arc-proof/images/anchor-6.jpg"
+    },
+    {
+      "asset": "anchor-6",
+      "number": 2,
+      "status": "ready",
+      "createdAt": "2026-07-25T01:18:40.132Z",
+      "output": "agent-runs/lego-origin-world-arc-proof/images/anchor-6.jpg"
+    }
+  ],
+  "videoAttempts": [
+    {
+      "clipIndex": 1,
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-25T01:20:12.536Z",
+      "provider": "replicate",
+      "model": "bytedance/seedance-2.0-mini",
+      "output": "agent-runs/lego-origin-world-arc-proof/videos/clip-1.mp4"
+    },
+    {
+      "clipIndex": 2,
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-25T01:30:40.196Z",
+      "provider": "replicate",
+      "model": "bytedance/seedance-2.0-mini",
+      "output": "agent-runs/lego-origin-world-arc-proof/videos/clip-2.mp4"
+    }
+  ],
+  "planningApprovedAt": "2026-07-24T23:45:30.791Z"
+}

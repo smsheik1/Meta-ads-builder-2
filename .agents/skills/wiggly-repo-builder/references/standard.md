@@ -126,6 +126,14 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 **Evidence:** The first 3D Breakdown LEGO proof passed duration and file checks but failed paid-media review because its ending frames came from upscaled storyboard crops. The corrected proof used four separate full-quality endpoints and kept the same workshop, subject, and physical story across both clips.
 
+### 14. Persist provider jobs before waiting
+
+**Rule:** Save a provider prediction ID as soon as a paid job starts, then collect or resume that same job after foreground timeouts. Never create a replacement call merely because local polling ended.
+
+**Why:** A healthy media job can outlive the command, request, or function that started it. Treating a polling timeout as a provider failure risks duplicate spend and loses recoverable output.
+
+**Evidence:** In the Style B LEGO proof, two Seedance predictions completed successfully after 319 and 1,725 seconds. The runner had already marked both failed because its foreground polling ended, but their exact outputs were recovered from the original prediction IDs without retries.
+
 ## Still testing
 
 These ideas are deliberately not universal yet:

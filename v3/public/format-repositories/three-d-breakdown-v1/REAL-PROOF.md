@@ -29,6 +29,20 @@ See `agent-runs/lego-origin-proof/` for the inputs, scene contract, images, atte
 
 See `agent-runs/lego-origin-quality-proof/` for the scene, four production endpoints, both clips, contact sheet, attempt history, and quality report.
 
+### Style B world-arc proof
+
+- Direction: LEGO survives the 1930s downturn by turning difficult-to-sell carpentry into simple wooden toys.
+- Planning: the approved scene moves from the warm workshop into the blue/cyan breakdown world, then returns to the workshop for the payoff.
+- Paid image attempts: one Nano Banana 2 Lite storyboard, four accepted full-quality endpoints, and one replacement for a rejected final endpoint that contained fake article text.
+- Video: two separately approved 10-second Seedance 2.0 Mini clips at 480p, with no retry or duplicate generation.
+- Result: `style-b-clips-passed`.
+- Human review: clip 1 keeps the carpenter and wooden objects coherent while moving from the workshop into the blue grid. Clip 2 assembles the wooden car in the blue world, returns to the same workshop, and ends with a finished wooden-toy collection. Neither clip invents visible text or an unrelated person.
+- Technical review: both clips are 10.042 seconds, the duration gate passes, and the Repo inspector reports `clips-ready`.
+- Provider finding: the first Replicate prediction took 319 seconds and the second took 1,725 seconds. The foreground runner incorrectly stopped polling before both healthy predictions completed. Their exact prediction outputs were recovered without retries. A future runner must persist and resume provider prediction IDs instead of extending a foreground timer.
+- Boundary: voice generation and final 20-second composition were not run.
+
+See `agent-runs/lego-origin-world-arc-proof/` for the accepted endpoints, rejected endpoint evidence, scene, clips, contact sheet, attempt history, and quality report.
+
 ## David's Cookies stopped attempt
 
 - Input: a selected blueberry-pie product from a real saved site-research run.

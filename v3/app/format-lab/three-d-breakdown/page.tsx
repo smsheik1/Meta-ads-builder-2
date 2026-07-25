@@ -66,21 +66,21 @@ export default function ThreeDBreakdownRepositoryPage() {
               </a>
             </Button>
           </div>
-          <div className="mt-5 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" data-testid="video-phase-boundary">
-            <strong>Quality checkpoint:</strong> the LEGO clips passed continuity and technical review, but failed Style B world fidelity because they stayed in the warm workshop. The Format now requires lifestyle setup → blue breakdown → lifestyle payoff; paid reproof, voice generation, and final composition remain locked.
+          <div className="mt-5 rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-950" data-testid="video-phase-boundary">
+            <strong>Quality checkpoint:</strong> the new LEGO proof completes the required lifestyle setup → blue breakdown → lifestyle payoff arc with four full-quality endpoints and two inspected 480p clips. Voice generation and final composition remain locked.
           </div>
         </section>
 
-        <section data-testid="lego-quality-proof">
-          <h2 className="text-xl font-bold">LEGO continuity proof — world arc failed</h2>
-          <p className="mt-1 text-sm text-slate-600">The carpenter and transformation stay coherent, but the clips never enter Style B’s blue breakdown world. This evidence remains visible so the next paid proof must beat it.</p>
+        <section data-testid="lego-world-arc-proof">
+          <h2 className="text-xl font-bold">LEGO Style B proof — clips passed</h2>
+          <p className="mt-1 text-sm text-slate-600">The same carpenter and wooden-toy story moves from the warm workshop into the blue explanation world, then returns to the workshop payoff.</p>
           <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
             <Image
-              alt="Contact sheet from the corrected LEGO 3D Breakdown clips"
+              alt="Contact sheet from the LEGO Style B world-arc clips"
               className="h-auto w-full rounded-lg border border-slate-300 bg-white shadow-sm"
-              height={964}
-              src="/format-repositories/three-d-breakdown-v1/agent-runs/lego-origin-quality-proof/video-contact-sheet.jpg"
-              width={842}
+              height={960}
+              src="/format-repositories/three-d-breakdown-v1/agent-runs/lego-origin-world-arc-proof/video-contact-sheet.jpg"
+              width={840}
             />
             <div className="grid gap-4 sm:grid-cols-2">
               {[1, 2].map((clip) => (
@@ -90,11 +90,24 @@ export default function ThreeDBreakdownRepositoryPage() {
                   key={clip}
                   playsInline
                   preload="metadata"
-                  src={`/format-repositories/three-d-breakdown-v1/agent-runs/lego-origin-quality-proof/videos/clip-${clip}.mp4`}
+                  src={`/format-repositories/three-d-breakdown-v1/agent-runs/lego-origin-world-arc-proof/videos/clip-${clip}.mp4`}
                 />
               ))}
             </div>
           </div>
+          <p className="mt-3 text-xs text-slate-500">Both paid predictions completed without retries, but Replicate took 5 minutes for clip 1 and almost 29 minutes for clip 2. Resumable provider-job collection remains the next runner fix.</p>
+        </section>
+
+        <section data-testid="lego-quality-proof">
+          <h2 className="text-xl font-bold">Previous continuity proof — world arc failed</h2>
+          <p className="mt-1 text-sm text-slate-600">The earlier clips kept the carpenter coherent but never entered Style B’s blue breakdown world. This failed evidence remains visible beside the proof that replaced it.</p>
+          <Image
+            alt="Contact sheet from the previous LEGO continuity proof"
+            className="mt-4 h-auto w-full max-w-3xl rounded-lg border border-slate-300 bg-white shadow-sm"
+            height={964}
+            src="/format-repositories/three-d-breakdown-v1/agent-runs/lego-origin-quality-proof/video-contact-sheet.jpg"
+            width={842}
+          />
         </section>
 
         <section>
