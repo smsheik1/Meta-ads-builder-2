@@ -153,7 +153,7 @@ export function OtakuFormatRepositoryClient({
         <div className="mx-auto max-w-7xl px-5 py-4">
           <p className="text-sm text-slate-400">Wiggly / Format Lab /</p>
           <div className="mt-1 flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold">{format.id}</h1>
+            <h1 className="text-2xl font-bold">{format.title}</h1>
             <Badge variant="secondary">{format.status}</Badge>
             <span className="text-sm text-slate-400">v{format.version}</span>
           </div>
