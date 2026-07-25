@@ -1,11 +1,12 @@
 # Wiggly
 
 <p align="center">
-  <img src="docs/assets/github/hero.png" alt="Wiggly turns a great ad or video into a reusable repo any agent can run, shown with six real outputs from two reusable Formats." width="100%">
+  <img src="docs/assets/github/hero.png" alt="Wiggly: Ads without the hard part, shown with six real outputs from two reusable Formats." width="100%">
 </p>
 
 <p align="center">
-  <strong>Find a Format. Hand it to your agent. Get the finished ad or video back.</strong>
+  <strong>Ads without the hard part.</strong><br>
+  Find a Format. Hand it to your agent. Get the finished ad or video back.
 </p>
 
 <p align="center">
