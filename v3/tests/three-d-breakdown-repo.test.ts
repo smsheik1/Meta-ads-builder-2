@@ -324,5 +324,36 @@ assert.deepEqual(sceneContract.storyboard.worldSequence.map((stage: { role: stri
   "lifestyle-payoff",
 ]);
 assert.deepEqual(sceneContract.productionAnchors.frameIndexes, [1, 3, 4, 6]);
+const goldens = JSON.parse(readFileSync(
+  "public/format-repositories/three-d-breakdown-v1/goldens.json",
+  "utf8",
+)) as {
+  sharedQualityBar: string[];
+  examples: Array<{
+    id: string;
+    videoPath: string;
+    reviewedTranscript: string;
+    whyItWorks: string[];
+    knownWeaknesses: string[];
+  }>;
+};
+assert.deepEqual(goldens.examples.map((example) => example.id), ["gruns", "kiala", "theragun"]);
+assert.ok(goldens.sharedQualityBar.length >= 5);
+for (const example of goldens.examples) {
+  assert.match(example.videoPath, /^goldens\/.+\.mp4$/);
+  assert.ok(example.reviewedTranscript.length > 100);
+  assert.ok(example.whyItWorks.length >= 3);
+  assert.ok(example.knownWeaknesses.length >= 1);
+}
+const repoSkill = readFileSync("public/format-repositories/three-d-breakdown-v1/SKILL.md", "utf8");
+assert.match(repoSkill, /Watch the three videos in `goldens\/` before planning/);
+assert.match(repoSkill, /Technical completion alone is not a pass/);
+assert.match(repoSkill, /compare it with at least two production references/i);
+const qualityManifest = JSON.parse(readFileSync(
+  "public/format-repositories/three-d-breakdown-v1/quality.json",
+  "utf8",
+)) as { creative: string[]; final: string[] };
+assert.ok(qualityManifest.creative.length >= 6);
+assert.ok(qualityManifest.final.some((gate) => /does not override a failed creative comparison/i.test(gate)));
 
 console.log("3D Breakdown Repo tests passed.");

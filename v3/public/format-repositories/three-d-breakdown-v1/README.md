@@ -2,6 +2,8 @@
 
 This Repo packages the recipe behind Wiggly's existing 3D Breakdown Format. It does not create a second renderer or a second creative pipeline.
 
+Before planning, watch the packaged Grüns, Kiala Nutrition, and Theragun production references and read `goldens.json`. They show the creative bar and its reusable structure. They are not claims, shots, or copy to reuse.
+
 ## What it makes
 
 1. Five story directions from website evidence.
@@ -57,6 +59,8 @@ npm run format:three-d -- finalize --run=my-run --approve-final
 ```
 
 `render`, `inspect`, and `finalize` are local and make no provider calls. Do not finalize just because rendering completed; watch the video first.
+
+Compare the result with at least two production references before finalizing. A file can pass resolution, duration, and audio checks while still failing as an ad.
 
 Never paste keys into prompts, files, run records, or chat. Add the required key names to `.env.local`.
 

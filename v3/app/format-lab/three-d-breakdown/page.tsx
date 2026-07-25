@@ -25,6 +25,23 @@ type PipelineStage = {
   oneCallAtATime?: boolean;
 };
 
+type GoldenExample = {
+  id: string;
+  brand: string;
+  role: string;
+  videoPath: string;
+  whyItWorks: string[];
+  knownWeaknesses: string[];
+};
+
+type GoldenManifest = {
+  purpose: string;
+  contactSheet: string;
+  contactSheetRows: string[];
+  sharedQualityBar: string[];
+  examples: GoldenExample[];
+};
+
 const files = [
   ["SKILL.md", "Agent instructions"],
   ["requirements.json", "Requirements"],
@@ -32,6 +49,7 @@ const files = [
   ["pipeline.json", "Pipeline"],
   ["scene-contract.json", "Scene contract"],
   ["assets.json", "Assets"],
+  ["goldens.json", "Production references"],
   ["quality.json", "Quality checks"],
   ["REAL-PROOF.md", "Real proof"],
 ] as const;
@@ -39,6 +57,7 @@ const files = [
 export default function ThreeDBreakdownRepositoryPage() {
   const format = readJson<FormatManifest>("format.json");
   const pipeline = readJson<{ stages: PipelineStage[] }>("pipeline.json");
+  const goldens = readJson<GoldenManifest>("goldens.json");
 
   return (
     <main className="min-h-screen bg-[#f6f8fa] text-slate-950">
@@ -66,14 +85,60 @@ export default function ThreeDBreakdownRepositoryPage() {
               </a>
             </Button>
           </div>
-          <div className="mt-5 rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-950" data-testid="video-phase-boundary">
-            <strong>Complete proof:</strong> the LEGO run completes lifestyle setup → blue breakdown → lifestyle payoff, Fish narration, and one inspected 20-second MP4 rendered through Wiggly&apos;s official renderer.
+          <div className="mt-5 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" data-testid="video-phase-boundary">
+            <strong>Honest proof status:</strong> the LEGO run proves the official pipeline can finish lifestyle setup → blue breakdown → lifestyle payoff. The packaged Grüns, Kiala, and Theragun videos set the stronger creative bar every new run must meet.
+          </div>
+        </section>
+
+        <section data-testid="creative-quality-bar">
+          <h2 className="text-xl font-bold">Creative quality bar</h2>
+          <p className="mt-1 max-w-3xl text-sm text-slate-600">{goldens.purpose}</p>
+          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+            {goldens.examples.map((example) => (
+              <article key={example.id} className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm" data-testid={`golden-${example.id}`}>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="font-bold">{example.brand}</h3>
+                  <Badge variant="outline">{example.role}</Badge>
+                </div>
+                <video
+                  className="mt-3 aspect-[9/16] w-full rounded-md border border-slate-200 bg-black"
+                  controls
+                  playsInline
+                  preload="metadata"
+                  src={`/format-repositories/three-d-breakdown-v1/${example.videoPath}`}
+                />
+                <p className="mt-4 text-xs font-bold uppercase tracking-wide text-emerald-700">What to learn</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                  {example.whyItWorks.map((reason) => <li key={reason}>{reason}</li>)}
+                </ul>
+                <p className="mt-4 text-xs font-bold uppercase tracking-wide text-amber-700">What to beat</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                  {example.knownWeaknesses.map((weakness) => <li key={weakness}>{weakness}</li>)}
+                </ul>
+              </article>
+            ))}
+          </div>
+          <div className="mt-5 grid gap-5 rounded-lg border border-slate-300 bg-white p-4 shadow-sm lg:grid-cols-[minmax(0,1fr)_320px]">
+            <Image
+              alt="Contact sheet comparing the Grüns, Kiala Nutrition, and Theragun production references"
+              className="h-auto w-full rounded-md border border-slate-200"
+              height={1440}
+              src={`/format-repositories/three-d-breakdown-v1/${goldens.contactSheet}`}
+              width={810}
+            />
+            <div>
+              <h3 className="font-bold">The five checks</h3>
+              <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-slate-700">
+                {goldens.sharedQualityBar.map((check) => <li key={check}>{check}</li>)}
+              </ol>
+              <p className="mt-4 text-xs text-slate-500">{goldens.contactSheetRows.join(" · ")}</p>
+            </div>
           </div>
         </section>
 
         <section data-testid="lego-world-arc-proof">
-          <h2 className="text-xl font-bold">LEGO Style B proof — final passed</h2>
-          <p className="mt-1 text-sm text-slate-600">The same carpenter and wooden-toy story moves from the warm workshop into the blue explanation world, returns to the workshop payoff, and includes the finished narration and CTA.</p>
+          <h2 className="text-xl font-bold">LEGO technical proof — pipeline passed, marketing failed</h2>
+          <p className="mt-1 text-sm text-slate-600">The same carpenter and wooden-toy story moves from the warm workshop into the blue explanation world and returns to the workshop payoff. The file proves the assembly line works, but its weak hook is not the creative bar.</p>
           <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
             <Image
               alt="Contact sheet from the final LEGO Style B video"
@@ -91,7 +156,7 @@ export default function ThreeDBreakdownRepositoryPage() {
               src="/format-repositories/three-d-breakdown-v1/agent-runs/lego-origin-world-arc-proof/final.mp4"
             />
           </div>
-          <p className="mt-3 text-xs text-slate-500">The final render reused the accepted clips, added one Fish narration, and made no new Replicate call. Provider prediction IDs now persist so a slow clip can be collected later without buying a duplicate.</p>
+          <p className="mt-3 text-xs text-slate-500">The final render reused the accepted clips, added one Fish narration, and made no new Replicate call. Provider prediction IDs now persist so a slow clip can be collected later without buying a duplicate. Technical completion alone no longer counts as success.</p>
         </section>
 
         <section data-testid="lego-quality-proof">

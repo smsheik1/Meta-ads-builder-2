@@ -6,6 +6,14 @@
     "The storyboard has six distinct physical actions in one coherent CGI style across the fixed lifestyle-to-blue-to-lifestyle world sequence.",
     "The clip plan has two 10-second clips mapped to frames 1-3 and 4-6."
   ],
+  "creative": [
+    "The agent watches all three packaged production references before choosing a direction.",
+    "The first two seconds establish a concrete product, customer tension, or false assumption.",
+    "The blue explanation world makes an invisible mechanism or change easy to see instead of acting as decoration.",
+    "Every major narration beat causes a visible action, object change, or result.",
+    "The approved product or subject remains recognizable through the world change and returns in the payoff.",
+    "Before finalization, the agent compares the finished video with at least two production references and records why it is or is not credible beside them."
+  ],
   "images": [
     "The storyboard is a 2-by-3 contact sheet with no readable generated text.",
     "The approved recurring subject, product category, and world survive all six planned frames.",
@@ -32,6 +40,7 @@
     "Narration is generated only after both clips pass inspection and must fit inside 20 seconds.",
     "The final MP4 is rendered locally through AdRenderSurface with no background music.",
     "The final MP4 is 1080 by 1920, 20 seconds long, and contains an audio stream.",
-    "An agent watches the final video and explicitly approves it before finalization."
+    "An agent watches the final video and explicitly approves it before finalization.",
+    "Passing duration, resolution, and audio checks does not override a failed creative comparison."
   ]
 }

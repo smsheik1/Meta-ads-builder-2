@@ -45,6 +45,7 @@ for (const name of [
   "SKILL.md",
   "assets.json",
   "format.json",
+  "goldens.json",
   "inputs.json",
   "kit-smoke.mjs",
   "pipeline.json",
@@ -54,7 +55,7 @@ for (const name of [
 ]) {
   await copyFromV3(path.join(formatRelative, name));
 }
-for (const directory of ["assets", "fixtures"]) {
+for (const directory of ["assets", "fixtures", "goldens"]) {
   await copyFromV3(path.join(formatRelative, directory));
 }
 await copyFromV3(path.join(formatRelative, "kit-smoke.mjs"), "kit-smoke.mjs");

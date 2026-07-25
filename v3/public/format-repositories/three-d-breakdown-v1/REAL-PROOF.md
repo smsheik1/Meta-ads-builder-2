@@ -1,6 +1,16 @@
 # Real production proof
 
-## LEGO origin story
+## Creative quality evidence
+
+The Repo includes three earlier Wiggly production references in `goldens/`, with provenance, reviewed narration, strengths, and known weaknesses in `goldens.json`.
+
+- **Grüns:** the earlier Wiggly baseline. It proves the product can travel into an explanation world and return to a clean payoff, but its abstract hook and repeated tunnel shots remain weaknesses to beat.
+- **Kiala Nutrition:** the clearest routine-compression example. A pile of separate supplements becomes one unified product system.
+- **Theragun:** the clearest physical-mechanism example. A familiar customer action becomes a cutaway that shows why heat changes the result.
+
+These references establish the creative bar. They do not authorize copying brand claims, wording, or shots.
+
+## LEGO technical proof
 
 - Input: LEGO's documented company-origin article.
 - Direction: rewind from a modern brick to the first documented 1932 wooden-toy product line.
@@ -29,7 +39,7 @@ See `agent-runs/lego-origin-proof/` for the inputs, scene contract, images, atte
 
 See `agent-runs/lego-origin-quality-proof/` for the scene, four production endpoints, both clips, contact sheet, attempt history, and quality report.
 
-### Style B world-arc proof
+### Style B world-arc technical proof
 
 - Direction: LEGO survives the 1930s downturn by turning difficult-to-sell carpentry into simple wooden toys.
 - Planning: the approved scene moves from the warm workshop into the blue/cyan breakdown world, then returns to the workshop for the payoff.
@@ -41,7 +51,7 @@ See `agent-runs/lego-origin-quality-proof/` for the scene, four production endpo
 - Provider finding: the first Replicate prediction took 319 seconds and the second took 1,725 seconds. The foreground runner incorrectly stopped polling before both healthy predictions completed. Their exact prediction outputs were recovered without retries. A future runner must persist and resume provider prediction IDs instead of extending a foreground timer.
 - Voice: one Fish S2.1 Pro Free narration, 19.193 seconds.
 - Final: one 1080×1920, 20-second MP4 with audio, rendered locally through `AdRenderSurface`.
-- Final result: `passed`. The automated report has no problems and the contact sheet preserves the approved world arc.
+- Final result: `technical-passed-marketing-failed`. The automated report found no mechanical problems and the contact sheet preserves the approved world arc, but the hook does not quickly establish LEGO or a strong viewer problem. The finished file is evidence that the pipeline works, not evidence that the ad is good enough to run.
 - Spend note: the final proof reused the accepted clips and made no new Replicate call.
 
 See `agent-runs/lego-origin-world-arc-proof/` for the accepted endpoints, rejected endpoint evidence, scene, clips, narration, final MP4, contact sheets, attempt history, and quality report.
