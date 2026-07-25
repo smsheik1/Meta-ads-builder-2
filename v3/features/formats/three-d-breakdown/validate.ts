@@ -7,14 +7,38 @@ import type { FormatValidationResult } from "../types";
 import {
   THREE_D_BREAKDOWN_DURATION_MS,
   THREE_D_BREAKDOWN_LEGACY_DURATION_MS,
+  THREE_D_MAX_SCRIPT_WORDS,
+  THREE_D_MIN_SCRIPT_WORDS,
   THREE_D_LEGACY_SCRIPT_BEATS,
   THREE_D_REVEAL_PATTERNS,
   THREE_D_SCRIPT_BEATS,
   THREE_D_SHOT_CONTRACT,
   THREE_D_VISUAL_STYLES,
 } from "./prompt";
+import { getThreeDBreakdownCtaError } from "./cta";
+import { isThreeDBreakdownEvidenceForProduct } from "./evidence";
 
 const scriptBeatContracts = [THREE_D_SCRIPT_BEATS, THREE_D_LEGACY_SCRIPT_BEATS] as const;
+const countWords = (value: string) => (
+  value.match(/[A-Za-z0-9]+(?:['-][A-Za-z0-9]+)?/g)?.length || 0
+);
+const sentenceCount = (value: string) => {
+  const sentences = value
+    .replace(/\d[.,]\d/g, "0")
+    .split(/[.!?]+(?=\s|$)/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return Math.max(1, sentences.length);
+};
+const requestsGeneratedText = (value: string | undefined) => {
+  if (!value) return false;
+  const withoutNegativeRules = value.replace(
+    /\b(?:no|without|avoid|never|do not|don't)\b[^.!?\n]{0,80}\b(?:text|caption|headline|cta|logo|label|letters|numbers|typography)\b/gi,
+    "",
+  );
+  return /\b(?:render|generate|write|spell|display|include|add)\b[^.!?\n]{0,60}\b(?:readable\s+)?(?:text|caption|headline|cta|logo|label|letters|numbers|typography)\b/i
+    .test(withoutNegativeRules);
+};
 
 export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): FormatValidationResult {
   const errors: string[] = [];
@@ -30,6 +54,11 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
     if (!scene.layout.productAnchor.title?.trim()) errors.push("3D Breakdown product anchor title is missing.");
     if (!scene.layout.productAnchor.url?.trim()) errors.push("3D Breakdown product anchor URL is missing.");
     if (!scene.layout.productAnchor.imageUrl?.trim()) errors.push("3D Breakdown product anchor image is missing.");
+    if (scene.layout.storyContract.storySubject?.kind === "product") {
+      if (!isThreeDBreakdownEvidenceForProduct(scene.layout.groundedEvidence, scene.layout.productAnchor)) {
+        errors.push("3D Breakdown selected product evidence belongs to a different product or page.");
+      }
+    }
   }
   if (!scene.layout.storyContract?.visualWorld?.trim()) errors.push("3D Breakdown story visual world is missing.");
   if (!isLegacyScene && !THREE_D_VISUAL_STYLES.includes(scene.layout.storyContract?.visualStyle)) errors.push("3D Breakdown visual style is invalid.");
@@ -38,7 +67,7 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
   if (!Array.isArray(scene.layout.storyContract?.riskFlags)) errors.push("3D Breakdown risk flags must be an array.");
   if (!Array.isArray(scene.layout.storyContract?.recurringObjects) || !scene.layout.storyContract.recurringObjects.length) errors.push("3D Breakdown recurring objects are missing.");
   const usesActiveRevealPattern = THREE_D_REVEAL_PATTERNS.some((pattern) => pattern === scene.layout.storyContract?.wowMomentType);
-  if (!usesActiveRevealPattern && scene.layout.storyContract?.wowMomentType !== "proof-blocks") errors.push("3D Breakdown wow moment pattern is invalid.");
+  if (!usesActiveRevealPattern) errors.push("3D Breakdown wow moment pattern is invalid.");
   if (scene.layout.finalVideo) {
     if (scene.layout.finalVideo.status !== "ready") errors.push("3D Breakdown final video status is invalid.");
     if (!scene.layout.finalVideo.url?.trim()) errors.push("3D Breakdown final video URL is missing.");
@@ -49,13 +78,20 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
     if (scene.layout.storyboardBoard.frameCount !== 6) errors.push("3D Breakdown storyboard board must have 6 frames.");
     if (!scene.layout.storyboardBoard.imagePrompt?.trim()) errors.push("3D Breakdown storyboard board image prompt is missing.");
     if (scene.layout.storyboardBoard.creativePrompt !== undefined && !scene.layout.storyboardBoard.creativePrompt.trim()) errors.push("3D Breakdown storyboard creative prompt is missing.");
+    if (requestsGeneratedText(scene.layout.storyboardBoard.imagePrompt) || requestsGeneratedText(scene.layout.storyboardBoard.creativePrompt)) {
+      errors.push("3D Breakdown storyboard prompt must not request generated readable text.");
+    }
     if (!Array.isArray(scene.layout.storyboardBoard.frames) || scene.layout.storyboardBoard.frames.length !== 6) {
       errors.push("3D Breakdown storyboard board must define 6 panel frames.");
 	    } else {
 	      scene.layout.storyboardBoard.frames.forEach((frame, index) => {
 	        if (frame.frameIndex !== index + 1) errors.push(`3D Breakdown storyboard frame ${index + 1} index is invalid.`);
 	        if (!frame.label?.trim()) errors.push(`3D Breakdown storyboard frame ${index + 1} label is missing.`);
+	        if (!frame.visual?.trim()) errors.push(`3D Breakdown storyboard frame ${index + 1} visual is missing.`);
+	        if (!frame.camera?.trim()) errors.push(`3D Breakdown storyboard frame ${index + 1} camera is missing.`);
+	        if (!frame.motion?.trim()) errors.push(`3D Breakdown storyboard frame ${index + 1} motion is missing.`);
 	        if (frame.anchorPrompt !== undefined && !frame.anchorPrompt.trim()) errors.push(`3D Breakdown storyboard frame ${index + 1} anchor prompt is missing.`);
+	        if (requestsGeneratedText(frame.anchorPrompt)) errors.push(`3D Breakdown storyboard frame ${index + 1} prompt must not request generated readable text.`);
 	      });
 	    }
 	  }
@@ -74,6 +110,7 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
       if (clipPlan.clipIndex !== index + 1) errors.push(`3D Breakdown clip plan ${index + 1} index is invalid.`);
       if (clipPlan.durationSeconds !== expectedClipDuration) errors.push(`3D Breakdown clip plan ${index + 1} duration is invalid.`);
       if (!clipPlan.prompt?.trim()) errors.push(`3D Breakdown clip plan ${index + 1} prompt is missing.`);
+      if (requestsGeneratedText(clipPlan.prompt)) errors.push(`3D Breakdown clip plan ${index + 1} prompt must not request generated readable text.`);
       const expectedFrames = expectedClipFrameIndexes[index];
       const expectedTiming = expectedClipTimings[index];
       if (JSON.stringify(clipPlan.frameIndexes) !== JSON.stringify(expectedFrames)) {
@@ -100,7 +137,19 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
       if (beat.role !== contract.role as ThreeDBreakdownScriptBeatRole) errors.push(`3D Breakdown beat ${index + 1} role is invalid.`);
       if (!matchingContract && (beat.startMs !== contract.startMs || beat.endMs !== contract.endMs)) errors.push(`3D Breakdown beat ${index + 1} timing is invalid.`);
       if (!beat.narration?.trim()) errors.push(`3D Breakdown beat ${index + 1} narration is missing.`);
+      if (!isLegacyScene && sentenceCount(beat.narration) !== 1) errors.push(`3D Breakdown beat ${index + 1} must be one sentence.`);
     });
+    if (!isLegacyScene) {
+      const scriptWordCount = countWords(scene.layout.scriptBeats.map((beat) => beat.narration).join(" "));
+      if (scriptWordCount < THREE_D_MIN_SCRIPT_WORDS || scriptWordCount > THREE_D_MAX_SCRIPT_WORDS) {
+        errors.push(`3D Breakdown script must have ${THREE_D_MIN_SCRIPT_WORDS}-${THREE_D_MAX_SCRIPT_WORDS} words.`);
+      }
+      const ctaError = getThreeDBreakdownCtaError(
+        scene.creative.ctaText || scene.layout.scriptBeats[4]?.narration,
+        scene.layout.storyContract.storySubject?.kind,
+      );
+      if (ctaError) errors.push(`3D Breakdown ${ctaError}`);
+    }
   }
 
   if (!Array.isArray(scene.layout.shots) || scene.layout.shots.length !== THREE_D_SHOT_CONTRACT.length) {
@@ -117,6 +166,7 @@ export function validateThreeDBreakdownScene(scene: ThreeDBreakdownAdScene): For
       if (!shot.physicalAction?.trim()) errors.push(`3D Breakdown shot ${index + 1} physical action is missing.`);
       if (!shot.imagePrompt?.trim()) errors.push(`3D Breakdown shot ${index + 1} image prompt is missing.`);
       if (!shot.animationPrompt?.trim()) errors.push(`3D Breakdown shot ${index + 1} animation prompt is missing.`);
+      if (requestsGeneratedText(shot.imagePrompt)) errors.push(`3D Breakdown shot ${index + 1} image prompt must not request generated readable text.`);
     });
   }
 

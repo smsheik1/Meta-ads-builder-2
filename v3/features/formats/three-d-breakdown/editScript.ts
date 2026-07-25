@@ -21,6 +21,21 @@ export function editThreeDBreakdownScriptBeat(
       ...scene.layout,
       scriptBeats,
       finalVideo: undefined,
+      storyboardBoard: scene.layout.storyboardBoard
+        ? {
+            ...scene.layout.storyboardBoard,
+            image: { status: "idle" },
+            frames: scene.layout.storyboardBoard.frames?.map((frame) => ({
+              ...frame,
+              image: { status: "idle" },
+            })),
+          }
+        : undefined,
+      clipPlans: scene.layout.clipPlans?.map((clip) => ({
+        ...clip,
+        endFrameImage: undefined,
+        video: { status: "idle" },
+      })),
       storyContract: {
         ...scene.layout.storyContract,
         ...(beatIndex === 4 ? { ctaLine: narration } : {}),

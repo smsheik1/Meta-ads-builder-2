@@ -2,6 +2,24 @@
 
 This Repo packages the recipe behind Wiggly's existing 3D Breakdown Format. It does not create a second renderer or a second creative pipeline.
 
+## Send the link to an agent
+
+You can send an agent only this Repo link.
+
+The agent should ask:
+
+1. `What brand or website is this for?`
+2. `Do you want Guide Me or Turbo?`
+3. `What should the video focus on?`
+
+The agent asks one question at a time.
+
+**Guide Me** shows each big step and waits for you.
+
+**Turbo** makes the choices after you approve one clear run estimate. The estimate lists each provider step, its call count, its current cost, the total cost, and the expected time. Turbo covers one normal attempt per step. Retries still need a new yes.
+
+The agent never asks for a budget. It never asks you to choose tools or models.
+
 Before planning, watch the packaged FinalStraw reference first, then Grüns, Kiala Nutrition, and Theragun, and read `goldens.json`. FinalStraw is the canonical Style B reproducibility target. These references teach structure, not claims, shots, or copy to reuse.
 
 ## What it makes
@@ -14,6 +32,7 @@ Before planning, watch the packaged FinalStraw reference first, then Grüns, Kia
 6. One Fish narration and one final 20-second MP4 rendered through `AdRenderSurface`.
 
 The storyboard is a planning reference. Its small panel crops must never become video endpoints.
+Planning uses exactly three NIM calls in the Repo runner: one story slate, one selected script, and one selected scene plan. Calls are counted before dispatch, and the runner does not retry them automatically.
 
 ## Commands
 
@@ -80,7 +99,7 @@ npm run format:three-d -- inspect --run=my-run
 npm run format:three-d -- finalize --run=my-run --approve-final
 ```
 
-`render`, `inspect`, and `finalize` are local and make no provider calls. Do not finalize just because rendering completed; watch the video first.
+`render`, `inspect`, and `finalize` are local and make no provider calls. Regenerating any upstream media invalidates the old final report. Do not finalize just because rendering completed; watch the video first.
 
 Compare the result with FinalStraw and at least one supporting reference before finalizing. A file can pass resolution, duration, and audio checks while still failing as an ad.
 

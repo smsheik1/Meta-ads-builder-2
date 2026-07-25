@@ -53,7 +53,7 @@ const threeDStoryDirectionValidator = v.object({
   visualEngine: v.string(),
   evidenceIndex: v.number(),
   evidenceUseType: v.union(v.literal("feature"), v.literal("mechanism"), v.literal("offer"), v.literal("review"), v.literal("material"), v.literal("process"), v.literal("guarantee"), v.literal("shipping"), v.literal("proof"), v.literal("category"), v.literal("claim")),
-  possibleRevealPatterns: v.array(v.union(v.literal("exploded-product"), v.literal("xray-cutaway"), v.literal("chaos-to-order"), v.literal("physicalized-ui"), v.literal("invisible-problem"), v.literal("miniature-world"), v.literal("process-pipeline"), v.literal("proof-blocks"), v.literal("before-after-reconstruction"), v.literal("impact-chain"))),
+  possibleRevealPatterns: v.array(v.union(v.literal("exploded-product"), v.literal("xray-cutaway"), v.literal("chaos-to-order"), v.literal("physicalized-ui"), v.literal("invisible-problem"), v.literal("miniature-world"), v.literal("process-pipeline"), v.literal("before-after-reconstruction"), v.literal("impact-chain"))),
 });
 
 export const generateThreeDStoryDirections: ReturnType<typeof action> = action({

@@ -61,4 +61,22 @@ assert.match(packageJson.scripts.smoke, /smoke-three-d-breakdown-format\.ts/);
 assert.equal(packageJson.dependencies["@remotion/renderer"], "4.0.473");
 assert.equal(packageJson.dependencies.remotion, "4.0.473");
 
+const skill = readFileSync(
+  "public/format-repositories/three-d-breakdown-v1/SKILL.md",
+  "utf8",
+);
+assert.match(skill, /What brand or website is this for\?/);
+assert.match(skill, /Do you want Guide Me or Turbo\?/);
+assert.match(skill, /Ask only one question in each message/);
+assert.match(skill, /Use short sentences and simple words/);
+assert.match(skill, /Never ask for a budget or spend limit/);
+assert.match(skill, /Story ideas and plan: 3 NIM calls/);
+assert.match(skill, /Ready to start\?/);
+assert.match(skill, /A retry needs a new estimate and a new yes/);
+assert.match(skill, /Save the facts in `research\.json`/);
+assert.match(skill, /Research → Story → Script → Images → Clips → Final/);
+assert.match(skill, /Start every work update with `Step X of 6: Name`/);
+assert.match(skill, /Key image 2 of 4/);
+assert.match(skill, /Clip 1 of 2/);
+
 console.log("3D Breakdown Kit tests passed.");
