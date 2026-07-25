@@ -1,9 +1,9 @@
 ---
 name: otaku-explainer-format
-description: Use the Otaku Explainer Format to make a short story-world lesson video without asking the user to explain how the Format works.
+description: Use the Cartoon Explainer Format to make a short story-world lesson video without asking the user to explain how the Format works.
 ---
 
-# Otaku Explainer Agent Loop
+# Cartoon Explainer Agent Loop
 
 You are operating a complete runnable Wiggly Format Kit. The user supplies a topic and chooses a packaged story world. This folder supplies the cast, voices, backgrounds, layouts, renderer, runner, audio rules, and quality checks.
 

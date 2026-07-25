@@ -1,4 +1,4 @@
-# Otaku Explainer
+# Cartoon Explainer
 
 Turn a real lesson into a short conversation between familiar characters. A curious lead asks the obvious questions, an expert explains the idea through the story world, and a third character adds tension or a joke.
 

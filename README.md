@@ -5,99 +5,99 @@
 </p>
 
 <p align="center">
-  <strong>Discover a Format. Give it to your agent. Get the finished creative.</strong>
+  <strong>Find a Format. Hand it to your agent. Get the finished ad or video back.</strong>
 </p>
 
 <p align="center">
   <a href="https://wiggly.agentenamel.com">Open Wiggly</a>
   ·
-  <a href="https://wiggly.agentenamel.com/format-lab/otaku-explainer">Try the Otaku Explainer Repo</a>
+  <a href="https://wiggly.agentenamel.com/format-lab/cartoon-explainer">Try the Cartoon Explainer Repo</a>
   ·
   <a href="https://wiggly.agentenamel.com/format-lab/three-d-breakdown">Try the 3D Breakdown Repo</a>
 </p>
 
-Wiggly is the format layer between a creative idea and the agent that makes it.
-Instead of explaining a workflow to Claude or Codex from scratch, you give it a
-self-contained **Wiggly Repo**: the instructions, inputs, assets, prompts,
-renderer, audio, dependencies, examples, and quality checks for one repeatable
-creative Format.
+Most good AI videos are not made with one prompt. They take prompts, reference
+images, voices, music, model settings, timing rules, a renderer, and a pile of
+small decisions. Today, the person who made the video usually keeps all of that
+in their head.
 
-The agent still does the creative work. Wiggly removes the repeated explaining,
-setup, and guesswork.
+Wiggly puts the whole recipe in a **Wiggly Repo**.
 
-## This is a system, not three hand-made demos
+Give the Repo to Claude, Codex, or another coding agent. It can see how the
+Format works, ask you for anything missing, use the included renderer, check
+its own work, and hand you back the finished file.
+
+## We changed the idea, not the renderer
 
 <p align="center">
-  <img src="docs/assets/github/proof-reel.gif" alt="The Otaku Explainer Format running across Naruto, Danny Phantom, and SpongeBob, followed by the 3D Breakdown Format running across Kiala, Grüns, and Theragun." width="720">
+  <img src="docs/assets/github/proof-reel.gif" alt="The Cartoon Explainer Format running across Naruto, Danny Phantom, and SpongeBob, followed by the 3D Breakdown Format running across Kiala, Grüns, and Theragun." width="720">
 </p>
 
-The same **Otaku Explainer** renderer worked across Naruto, Danny Phantom, and
-SpongeBob. The same **3D Breakdown** renderer worked across Kiala, Grüns, and
-Theragun. The subjects, worlds, voices, assets, and products changed. The
-underlying Format stayed reusable.
+These are not six videos we built one by one. **Cartoon Explainer** used the same
+renderer for Naruto, Danny Phantom, and SpongeBob. **3D Breakdown** used the same
+renderer for Kiala, Grüns, and Theragun.
 
-| Working Format | What changed | What stayed reusable |
+| Format | What we swapped | What we did not rebuild |
 | --- | --- | --- |
-| [Otaku Explainer](https://wiggly.agentenamel.com/format-lab/otaku-explainer) | Story world, characters, voices, backgrounds, and lesson | Scene contract, layouts, renderer, pacing rules, and quality checks |
-| [3D Breakdown](https://wiggly.agentenamel.com/format-lab/three-d-breakdown) | Brand, product, story angle, generated media, and narration | Production stages, blue-world visual grammar, renderer, and creative quality bar |
+| [Cartoon Explainer](https://wiggly.agentenamel.com/format-lab/cartoon-explainer) | Characters, voices, backgrounds, and lesson | Layouts, speech bubbles, pacing, renderer, and checks |
+| [3D Breakdown](https://wiggly.agentenamel.com/format-lab/three-d-breakdown) | Brand, product, story, images, and narration | Production steps, blue 3D look, renderer, and checks |
 
-## One link. One instruction.
+## Try it with your agent
 
-Give a compatible agent the Format page and a result you want:
+Copy this into Claude or Codex:
 
 ```text
-Open https://wiggly.agentenamel.com/format-lab/otaku-explainer
+Open https://wiggly.agentenamel.com/format-lab/cartoon-explainer
 and make SpongeBob explain how electric vehicles work.
-Use the packaged runner. Inspect your work before returning the final video.
+Use the included runner. Check the video before you send it back.
 ```
 
 <p align="center">
-  <img src="docs/assets/github/agent-challenge.jpg" alt="A copyable agent instruction beside real SpongeBob, Naruto, and Danny Phantom outputs made from the Otaku Explainer Wiggly Repo." width="100%">
+  <img src="docs/assets/github/agent-challenge.jpg" alt="A copyable agent instruction beside real SpongeBob, Naruto, and Danny Phantom outputs made from the Cartoon Explainer Wiggly Repo." width="100%">
 </p>
 
-The Format tells the agent what it needs, which inputs are missing, how to make
-the creative, what it must never improvise, and how to decide whether the result
-is good enough to return.
+That short instruction made the SpongeBob video above. The Repo told the agent
+which files to use, what it was allowed to change, and what to check before it
+called the video done.
 
-## What is inside a Wiggly Repo?
+## What does a Wiggly Repo include?
 
 <p align="center">
   <img src="docs/assets/github/format-anatomy.svg" alt="A Wiggly Repo teaches the agent, defines the creative, packages production assets, and proves the result with quality checks." width="100%">
 </p>
 
-Every Format can work differently. A cartoon explainer, a product breakdown,
-and a static ad do not need the same renderer or inputs. They do need the same
-kind of complete handoff:
+Every Format is different. A cartoon explainer should not be forced into the
+same box as a product breakdown or a static ad. But the agent always needs five
+answers:
 
-- **Instructions:** what the Format is, how the agent should work, and when it must stop.
-- **Inputs:** what the user supplies and what the agent can discover.
-- **Creative recipe:** prompts, roles, scene rules, timing, and approved variation.
-- **Production kit:** fixed assets, audio, dependencies, and the official renderer.
-- **Proof:** examples, output history, and checks that block broken work.
+- **What am I making?** The instructions and examples.
+- **What do I need from the user?** The inputs and API keys.
+- **What am I allowed to change?** The prompts, roles, scenes, and timing rules.
+- **Which files and tools must I use?** The assets, audio, dependencies, and renderer.
+- **How do I know it is good?** The finished examples and checks.
 
-## Formats get better together
+## Make a good Format once. Let other people build on it.
 
 <p align="center">
   <img src="docs/assets/github/format-flywheel.svg" alt="Build, publish, run, remix, improve, and contribute form the Wiggly Format flywheel." width="100%">
 </p>
 
-The long-term product is not a folder of private templates. People should be
-able to create Formats, publish them, remix someone else's work, improve a
-prompt or renderer, and contribute those improvements back. A great creative
-idea becomes reusable infrastructure for people and their agents.
+People should be able to publish a Format, make their own version, fix a bad
+prompt, improve the renderer, and share that work back. The next person should
+start with the better version instead of repeating the same mistakes.
 
-## What exists today
+That is the part of GitHub we want to bring to creative work.
 
-Wiggly currently has:
+## What works today
 
-- A live ecommerce creative engine that turns product-page research into ad concepts.
-- Two downloadable, agent-readable Wiggly Repos with official runners.
-- Real outputs across multiple brands, story worlds, voices, and topics.
-- Format-level requirements, validation, inspection, and quality checks.
+- The live Wiggly app can read a store and turn what it finds into ad ideas.
+- Cartoon Explainer and 3D Breakdown are downloadable and come with their real runners.
+- Both have finished videos across different brands, characters, voices, and topics.
+- Both tell the agent what it needs and stop broken work from being called finished.
 
-The discovery marketplace, public contribution workflow, and first-class Format
-versioning are the direction, not finished features. The working Repos above are
-the proof that the underlying package can travel.
+It is still early. There is no full Format marketplace or pull-request flow in
+Wiggly yet. These first two Repos prove the important part: an agent can pick up
+someone else's Format and run it without being walked through every step.
 
 ## Run Wiggly locally
 

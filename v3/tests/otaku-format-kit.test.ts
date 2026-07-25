@@ -57,7 +57,7 @@ try {
     "format-repositories",
     "otaku-explainer-v1",
     "downloads",
-    "wiggly-otaku-explainer-format-kit.zip",
+    "wiggly-cartoon-explainer-format-kit.zip",
   );
   const entryList = readZipEntries(archive);
   const entries = entryList.join("\n");

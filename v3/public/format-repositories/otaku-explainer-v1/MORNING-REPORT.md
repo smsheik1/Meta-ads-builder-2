@@ -1,4 +1,4 @@
-# Otaku Explainer Format — morning report
+# Cartoon Explainer Format — morning report
 
 ## Result
 
