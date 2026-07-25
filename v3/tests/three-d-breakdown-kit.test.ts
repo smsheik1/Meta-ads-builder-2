@@ -75,5 +75,8 @@ assert.match(skill, /Ready to start\?/);
 assert.match(skill, /A retry needs a new estimate and a new yes/);
 assert.match(skill, /Save the facts in `research\.json`/);
 assert.match(skill, /Research → Story → Script → Images → Clips → Final/);
+assert.match(skill, /Start every work update with `Step X of 6: Name`/);
+assert.match(skill, /Key image 2 of 4/);
+assert.match(skill, /Clip 1 of 2/);
 
 console.log("3D Breakdown Kit tests passed.");

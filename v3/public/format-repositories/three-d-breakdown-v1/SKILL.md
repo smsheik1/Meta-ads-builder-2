@@ -34,7 +34,14 @@ Use this line during the run:
 
 `Research → Story → Script → Images → Clips → Final`
 
-Start each update with `Step X of 6: Name`. Keep the update short. In Turbo, send an update after each step but do not ask a question unless blocked.
+Start every work update with `Step X of 6: Name`. Never send a work update without it. Add the current item when a step has more than one part:
+
+- `Step 4 of 6: Images — Storyboard`
+- `Step 4 of 6: Images — Key image 2 of 4`
+- `Step 5 of 6: Clips — Clip 1 of 2`
+- `Step 6 of 6: Final — Done`
+
+Keep the update short. In Turbo, send an update after each step but do not ask a question unless blocked.
 
 ## Work modes
 
