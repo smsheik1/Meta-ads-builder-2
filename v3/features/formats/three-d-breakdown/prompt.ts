@@ -10,6 +10,9 @@ import {
 export const THREE_D_BREAKDOWN_VARIANT_COUNT = 2;
 export const THREE_D_BREAKDOWN_MAX_TOKENS = 4000;
 export const THREE_D_BREAKDOWN_DURATION_MS = 20_000;
+export const THREE_D_BREAKDOWN_END_CARD_DURATION_MS = 4_000;
+export const THREE_D_BREAKDOWN_CONTENT_END_MS =
+  THREE_D_BREAKDOWN_DURATION_MS - THREE_D_BREAKDOWN_END_CARD_DURATION_MS;
 export const THREE_D_BREAKDOWN_LEGACY_DURATION_MS = 21_000;
 export const THREE_D_MIN_SCRIPT_WORDS = 45;
 export const THREE_D_MAX_SCRIPT_WORDS = 65;
@@ -204,8 +207,8 @@ Return JSON only:
 {
   "primarySiteType": "ecommerce | saas | local-service | restaurant-food | nonprofit | portfolio | unclear",
   "riskFlags": [],
-  "visualWorld": "one relevant lifestyle setting used for setup and payoff",
-  "lighting": "one CGI lighting language that bridges lifestyle and the blue explanation stage",
+  "visualWorld": "one coherent bright blue/cyan blueprint-grid 3D explanation world adapted to this product or story",
+  "lighting": "one consistent feature-animation CGI lighting language",
   "cameraStyle": "consistent camera language",
   "recurringObjects": ["2-4 concrete recurring objects"],
   "variants": [
@@ -229,7 +232,7 @@ Creative rules:
 - Frame 5 must show the selected product physically causing the documented payoff in the same problem world. Keep proof or numbers in overlayText only; never turn evidence into abstract blocks, counters, cubes, tokens, or charts.
 - Give every frame one new physical state change. Do not repeat the same product angle more than twice.
 - Keep one coherent feature-animation CGI style, product, and recurring subject across all six frames.
-- World sequence is fixed: frames 1-2 use the relevant lifestyle setting; frames 3-4 enter Wiggly's bright blue/cyan blueprint-grid explanation stage; frames 5-6 return to the lifestyle setting for the payoff.
+- Keep all six frames inside the same approved visualWorld. Change camera scale, props, and physical state instead of jumping between unrelated lifestyle and explanation environments.
 - presenter-teardown-vsl uses an unseen narrator and one silent, stylized CGI demonstrator or body proxy in at least four frames. The demonstrator never speaks or lip-syncs.
 - toy-character-vsl uses a bright technical 3D stage and a recurring toy-like scale figure.
 - Use a body route only when the selected evidence concerns ingestion, digestion, or absorption. Other stories stay outside the body.

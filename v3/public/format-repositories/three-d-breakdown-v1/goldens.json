@@ -1,6 +1,7 @@
 {
-  "purpose": "Production references that teach an agent what a usable 20-second 3D Breakdown feels like. They are a comparison set, not shots or claims to copy.",
+  "purpose": "Production references that teach an agent what a usable 20-second 3D Breakdown feels like. FinalStraw is the canonical reproducibility target; the others are supporting comparisons, not shots or claims to copy.",
   "contactSheet": "goldens/contact-sheet.jpg",
+  "canonicalContactSheet": "goldens/finalstraw-contact-sheet.jpg",
   "contactSheetRows": [
     "Grüns at 2, 9, and 16 seconds",
     "Kiala Nutrition at 2, 9, and 16 seconds",
@@ -14,6 +15,30 @@
     "The final seconds return to a clear product payoff and direct buyer action."
   ],
   "examples": [
+    {
+      "id": "finalstraw",
+      "brand": "FinalStraw",
+      "role": "Canonical Style B reproducibility target",
+      "videoPath": "goldens/finalstraw.mp4",
+      "sourceFilename": "finalstraw-3d-breakdown-day-5.mp4",
+      "sourceSha256": "1c36bd36015a703e7db46dbce26cbd8f8bfe04ef770b84a6b6db76ab94b5cc2d",
+      "packageSha256": "961d846faac089dfbba09c5b053e6d1cb20bf19655cabdffdd2cb702abda0a7f",
+      "durationSeconds": 20,
+      "resolution": "540x960",
+      "reviewedTranscript": "This keychain-sized case is hiding a full-sized stainless-steel straw. A reusable straw only works if you actually remember to bring it. Inside, linked stainless-steel segments unfold until the whole thing snaps straight. When you're done, it collapses into its case and clips back onto your keys. Carry FinalStraw and skip the plastic.",
+      "whyItWorks": [
+        "One recognizable blue-grid world carries the entire story while camera, scale, props, and physical states keep changing.",
+        "The silent demonstrator remains visually consistent while an omniscient narrator explains the product.",
+        "The product mechanism is shown through readable physical actions rather than generic science imagery.",
+        "The final product and buyer-action CTA get a designed four-second hold."
+      ],
+      "productionLessons": [
+        "Clip 2 was rejected and regenerated before approval.",
+        "Voice and late clip action were retimed locally instead of spending on replacement provider calls.",
+        "Captions match the approved script wording exactly."
+      ],
+      "knownWeaknesses": []
+    },
     {
       "id": "gruns",
       "brand": "Grüns",

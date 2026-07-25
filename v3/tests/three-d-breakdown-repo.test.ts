@@ -313,17 +313,39 @@ assert.match(runnerSource, /error instanceof ReplicatePredictionStillRunningErro
 assert.match(runnerSource, /marked as generating but has no saved Replicate prediction ID/);
 assert.match(runnerSource, /generateFishThreeDBreakdownVoiceover/);
 assert.match(runnerSource, /createGeneratedSceneAudio/);
+assert.match(runnerSource, /async function review\(\)/);
+assert.match(runnerSource, /decision: "approved" \| "rejected"/);
+assert.match(runnerSource, /assertArtifactApproved\(state, scene, "storyboard"\)/);
+assert.match(runnerSource, /assertArtifactApproved\(state, scene, "clip-1"\)/);
+assert.match(runnerSource, /storyboard-board-attempt-\$\{attemptNumber\}\.jpg/);
+assert.match(runnerSource, /clip-\$\{clipIndex\}-attempt-\$\{attemptNumber\}\.mp4/);
+assert.match(runnerSource, /references\[0\]/, "Production anchors must receive the immutable Style Master.");
+assert.match(runnerSource, /atempo=/, "Long but usable narration must be retimed locally instead of regenerated.");
+assert.match(runnerSource, /async function retimeClip\(\)/);
+assert.match(runnerSource, /No provider was called; review clip-2 again/);
 assert.match(runnerSource, /entryPoint: path\.join\(v3Root, "remotion-entry", "index\.ts"\)/);
 assert.match(runnerSource, /finalize --approve-final|approve-final/);
 const remotionSource = readFileSync("remotion-entry/RemotionAdScene.tsx", "utf8");
 assert.match(remotionSource, /Audio src=\{resolveRenderAssetSrc\(audio\.url\)\}/);
 const sceneContract = JSON.parse(readFileSync("public/format-repositories/three-d-breakdown-v1/scene-contract.json", "utf8"));
-assert.deepEqual(sceneContract.storyboard.worldSequence.map((stage: { role: string }) => stage.role), [
-  "lifestyle-setup",
-  "blue-breakdown",
-  "lifestyle-payoff",
-]);
+assert.deepEqual(sceneContract.storyboard.worldSequence, [{
+  frameIndexes: [1, 2, 3, 4, 5, 6],
+  role: "blue-breakdown",
+  world: "one recognizable bright blue/cyan blueprint-grid explanation stage; vary camera, scale, props, and physical state without changing visual worlds",
+}]);
+assert.equal(sceneContract.endCard.startMs, 16_000);
+assert.equal(sceneContract.clips[1].meaningfulActionCompleteByMs, 16_000);
 assert.deepEqual(sceneContract.productionAnchors.frameIndexes, [1, 3, 4, 6]);
+const finalStrawFixture = JSON.parse(readFileSync(
+  "public/format-repositories/three-d-breakdown-v1/fixtures/finalstraw-reproducibility.json",
+  "utf8",
+));
+assert.equal(finalStrawFixture.scriptBeats.length, 5);
+assert.equal(finalStrawFixture.visualContract.storyboardFrames, 6);
+assert.deepEqual(finalStrawFixture.visualContract.productionAnchorFrameIndexes, [1, 3, 4, 6]);
+assert.equal(finalStrawFixture.visualContract.clipCount, 2);
+assert.equal(finalStrawFixture.visualContract.clip2MeaningfulActionCompleteByGlobalMs, 16_000);
+assert.equal(finalStrawFixture.postProductionContract.captionsMustPreserveExactScriptWords, true);
 const goldens = JSON.parse(readFileSync(
   "public/format-repositories/three-d-breakdown-v1/goldens.json",
   "utf8",
@@ -337,18 +359,19 @@ const goldens = JSON.parse(readFileSync(
     knownWeaknesses: string[];
   }>;
 };
-assert.deepEqual(goldens.examples.map((example) => example.id), ["gruns", "kiala", "theragun"]);
+assert.deepEqual(goldens.examples.map((example) => example.id), ["finalstraw", "gruns", "kiala", "theragun"]);
 assert.ok(goldens.sharedQualityBar.length >= 5);
 for (const example of goldens.examples) {
   assert.match(example.videoPath, /^goldens\/.+\.mp4$/);
   assert.ok(example.reviewedTranscript.length > 100);
   assert.ok(example.whyItWorks.length >= 3);
-  assert.ok(example.knownWeaknesses.length >= 1);
+  if (example.id !== "finalstraw") assert.ok(example.knownWeaknesses.length >= 1);
 }
 const repoSkill = readFileSync("public/format-repositories/three-d-breakdown-v1/SKILL.md", "utf8");
-assert.match(repoSkill, /Watch the three videos in `goldens\/` before planning/);
+assert.match(repoSkill, /Watch FinalStraw first/);
 assert.match(repoSkill, /Technical completion alone is not a pass/);
-assert.match(repoSkill, /compare it with at least two production references/i);
+assert.match(repoSkill, /review the storyboard first/i);
+assert.match(repoSkill, /meaningful action by global second 16/i);
 const qualityManifest = JSON.parse(readFileSync(
   "public/format-repositories/three-d-breakdown-v1/quality.json",
   "utf8",

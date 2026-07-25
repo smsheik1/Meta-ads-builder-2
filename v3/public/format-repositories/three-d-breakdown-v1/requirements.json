@@ -21,10 +21,10 @@
       "requiredFor": ["plan", "images", "voice", "video", "final"]
     },
     "ffmpeg": {
-      "requiredFor": ["video", "final"]
+      "requiredFor": ["voice", "video", "final"]
     },
     "ffprobe": {
-      "requiredFor": ["video", "final"]
+      "requiredFor": ["voice", "video", "final"]
     },
     "remotion": {
       "requiredFor": ["final"]

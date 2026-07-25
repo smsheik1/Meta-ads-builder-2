@@ -42,6 +42,7 @@ await copyFromV3("public/fonts");
 for (const name of [
   ".env.example",
   "README.md",
+  "REAL-PROOF.md",
   "SKILL.md",
   "assets.json",
   "format.json",

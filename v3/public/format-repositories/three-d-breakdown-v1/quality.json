@@ -3,7 +3,7 @@
     "The scene passes validateThreeDBreakdownScene.",
     "The selected style is presenter-teardown-vsl.",
     "The script has five correctly timed beats.",
-    "The storyboard has six distinct physical actions in one coherent CGI style across the fixed lifestyle-to-blue-to-lifestyle world sequence.",
+    "The storyboard has six distinct physical actions in one coherent bright blue/cyan blueprint-grid CGI world.",
     "The clip plan has two 10-second clips mapped to frames 1-3 and 4-6."
   ],
   "creative": [
@@ -16,14 +16,14 @@
   ],
   "images": [
     "The storyboard is a 2-by-3 contact sheet with no readable generated text.",
-    "The approved recurring subject, product category, and world survive all six planned frames.",
+    "The approved recurring subject, exact demonstrator identity, product category, and blue-grid world survive all six planned frames.",
     "Object-only frames do not invent a face or full person.",
     "Frames 1, 3, 4, and 6 each have one approved full-quality production endpoint.",
     "Every endpoint is sharp and matches its intended subject, setting, and story state.",
     "No video call happens during image inspection."
   ],
   "videoGate": [
-    "All four production endpoints are present and manually inspected.",
+    "The storyboard and all four production endpoints are present and explicitly approved for their current attempt.",
     "Storyboard panel crops are planning references only and are never sent to video generation.",
     "Every generated asset has provenance and an attempt number.",
     "The user explicitly approves paid video generation in a later phase."
@@ -31,13 +31,15 @@
   "video": [
     "Generate clip 1 before clip 2 and inspect each result before another paid call.",
     "Each clip uses its approved full-quality start and end production frames.",
-    "Each clip is rendered at 480p as one continuous transformation with no montage, hard cut, new person, or unapproved setting.",
+    "Each clip is rendered at 480p as one coherent sequence with three readable visual beats and motivated cuts or transitions inside the approved blue-grid world.",
     "Each clip is within one second of its planned 10-second duration.",
-    "The contact sheet preserves the approved world sequence, subjects, and recurring objects across both clips.",
+    "The contact sheet preserves the approved blue-grid world, exact demonstrator identity, subjects, and recurring objects across both clips.",
+    "Clip 2 completes meaningful action by global second 16 because the end-card overlay occupies seconds 16-20.",
     "No voice or final composition is generated during clip inspection."
   ],
   "final": [
-    "Narration is generated only after both clips pass inspection and must fit inside 20 seconds.",
+    "Narration is generated only after both clips are explicitly approved, targets 18.1 seconds, and may be locally retimed only within the documented safe ratio.",
+    "Renderer captions preserve every spoken word in the five script beats.",
     "The final MP4 is rendered locally through AdRenderSurface with no background music.",
     "The final MP4 is 1080 by 1920, 20 seconds long, and contains an audio stream.",
     "An agent watches the final video and explicitly approves it before finalization.",

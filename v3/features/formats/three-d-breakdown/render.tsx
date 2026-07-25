@@ -3,6 +3,7 @@ import { useRenderAssetComponents } from "../../render/RenderAssetContext";
 import { WIGGLY_FONT_STACK } from "../../render/fontStack";
 import type { FormatRenderProps } from "../types";
 import type { ThreeDBreakdownAdScene } from "../../scene/types";
+import { THREE_D_BREAKDOWN_END_CARD_DURATION_MS } from "./prompt";
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
@@ -40,9 +41,6 @@ function getFallbackCaption(scene: ThreeDBreakdownAdScene, timelineMs: number) {
 
 function normalizeCaption(value: string) {
   return value
-    .replace(/\bis built to protect\b/gi, "protects")
-    .replace(/\bcan break\b/gi, "breaks")
-    .replace(/\bcan scatter\b/gi, "scatters")
     .replace(/[^\p{L}\p{N}'% -]/gu, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -74,13 +72,6 @@ function splitCaptionClause(value: string, maxWords = 5) {
 
 function getCaptionChunks(value: string) {
   const normalized = normalizeCaption(value);
-  const clauses = normalized
-    .split(/\b(?:and|but|then|so|because|while|until)\b/i)
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .flatMap((part) => splitCaptionClause(part, 6));
-
-  if (clauses.length) return clauses;
   return splitCaptionClause(normalized, 6);
 }
 
@@ -148,7 +139,7 @@ export function ThreeDBreakdownFormatRenderer({
   const captionWords = getCaptionWords(caption);
   const finalCtaText = getFinalCtaText(scene);
   const productAnchor = scene.layout.productAnchor;
-  const endCardStartMs = scene.layout.durationMs - 4000;
+  const endCardStartMs = scene.layout.durationMs - THREE_D_BREAKDOWN_END_CARD_DURATION_MS;
   const endCardTransitionStartMs = endCardStartMs - 300;
   const endCardOpacity = clamp((playbackMs - endCardTransitionStartMs) / 300, 0, 1);
   const showFinalCta = Boolean(!shouldUseFinalVideo && finalCtaText && playbackMs >= endCardStartMs);

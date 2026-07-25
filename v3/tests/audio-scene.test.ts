@@ -212,13 +212,18 @@ const threeDAudio = createGeneratedSceneAudio({
   model: "fish-studio",
   provider: "fish-studio",
 });
-assert.ok(!threeDCaptions.includes("apart long before the colon."));
 assert.ok(!threeDCaptions.some((text) => text.split(/\s+/).length > MAX_CAPTION_WORDS_ON_SCREEN));
 assert.ok(!threeDCaptions.some((text) => text.split(/\s+/).length > 5));
 assert.ok(!threeDCaptions.some((text) => text.length > 32));
-assert.ok(threeDCaptions.includes("stomach acid breaks fragile"));
-assert.ok(threeDCaptions.includes("everyone assumes it survives"));
-assert.ok(threeDCaptions.includes("ViaCap protects the probiotic"));
+const normalizeCaptionWords = (value: string) => value
+  .toLowerCase()
+  .replace(/[^\p{L}\p{N}]+/gu, " ")
+  .trim();
+assert.equal(
+  normalizeCaptionWords(threeDCaptions.join(" ")),
+  normalizeCaptionWords(threeDScene.layout.scriptBeats.map((beat: any) => beat.narration).join(" ")),
+  "3D captions must preserve every approved script word in order.",
+);
 assert.equal(getVisibleCaptionText(threeDAudio, 19.2), "");
 
 console.log("audio-scene tests passed");

@@ -14,25 +14,25 @@
     },
     {
       "id": "storyboard",
-      "output": "One 2-by-3 storyboard contact sheet",
+      "output": "One reviewed 2-by-3 storyboard contact sheet",
       "paidMedia": true,
       "approvalRequired": true,
       "oneCallAtATime": true
     },
     {
       "id": "production-endpoints",
-      "output": "Four approved full-quality 9:16 video endpoints",
+      "output": "Four individually reviewed, identity-locked full-quality 9:16 video endpoints",
       "paidMedia": true,
       "approvalRequired": true,
       "oneCallAtATime": true
     },
     {
       "id": "video-clips",
-      "output": "Two continuous 10-second 480p clips",
+      "output": "Two individually reviewed 10-second 480p clips with three readable visual beats each",
       "paidMedia": true,
       "approvalRequired": true,
       "oneCallAtATime": true,
-      "resumePolicy": "Persist each Replicate prediction ID. If local polling ends first, keep the clip processing and collect that same prediction on the next video command.",
+      "resumePolicy": "Persist each Replicate prediction ID. If local polling ends first, keep the clip processing and collect that same prediction on the next video command. A rejected ready clip may be replaced only after its rejection reason is recorded.",
       "enabled": true
     },
     {

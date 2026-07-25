@@ -1,0 +1,59 @@
+{
+  "id": "finalstraw-day-5",
+  "purpose": "Canonical successful Style B run used to regression-test the reusable recipe, not its brand copy.",
+  "scriptBeats": [
+    {
+      "role": "consequence",
+      "narration": "This keychain-sized case is hiding a full-sized stainless-steel straw."
+    },
+    {
+      "role": "context",
+      "narration": "A reusable straw only works if you actually remember to bring it."
+    },
+    {
+      "role": "mechanism",
+      "narration": "Inside, linked stainless-steel segments unfold until the whole thing snaps straight."
+    },
+    {
+      "role": "revelation",
+      "narration": "When you're done, it collapses into its case and clips back onto your keys."
+    },
+    {
+      "role": "punchline",
+      "narration": "Carry FinalStraw and skip the plastic."
+    }
+  ],
+  "visualContract": {
+    "visualWorld": "one bright blue/cyan blueprint-grid 3D explanation world across all six frames",
+    "demonstrator": "silent semi-stylized 3D man with dark backward cap, white sunglasses on cap, pink polo, and tan cargo shorts",
+    "narrator": "omniscient voiceover; the demonstrator never lip-syncs",
+    "storyboardFrames": 6,
+    "productionAnchorFrameIndexes": [1, 3, 4, 6],
+    "clipCount": 2,
+    "clipDurationSeconds": 10,
+    "clip2MeaningfulActionCompleteByGlobalMs": 16000,
+    "endCardStartMs": 16000
+  },
+  "postProductionContract": {
+    "narrationTargetMs": 18100,
+    "narrationMaximumMsBeforeLocalRetime": 18500,
+    "captionsMustPreserveExactScriptWords": true,
+    "finalDurationMs": 20000,
+    "finalResolution": "1080x1920",
+    "audioStreamCount": 1
+  },
+  "productionLesson": {
+    "accepted": [
+      "One coherent visual world with varied cameras and physical states.",
+      "Multiple readable visual beats inside each ten-second clip.",
+      "Exact character identity carried from the style master into every production anchor.",
+      "A rejected clip can be regenerated without replacing approved upstream work."
+    ],
+    "rejected": [
+      "Lifestyle-to-blue-to-lifestyle world hopping.",
+      "One slow continuous transformation with no internal shot changes.",
+      "Treating a generated clip as approved.",
+      "Dropping connector words from renderer captions."
+    ]
+  }
+}

@@ -4,6 +4,10 @@ import type {
   ThreeDBreakdownClipIndex,
   ThreeDBreakdownStoryboardFrameIndex,
 } from "../../scene/types";
+import {
+  THREE_D_BREAKDOWN_CONTENT_END_MS,
+  THREE_D_BREAKDOWN_DURATION_MS,
+} from "./prompt";
 
 const frameMeta = [
   ["problem", "Problem state"],
@@ -16,30 +20,19 @@ const frameMeta = [
 
 type StoryboardFrame = NonNullable<ThreeDBreakdownStoryboardBoard["frames"]>[number];
 
-export type ThreeDBreakdownFrameWorldRole = "lifestyle-setup" | "blue-breakdown" | "lifestyle-payoff";
+export type ThreeDBreakdownFrameWorldRole = "blue-breakdown";
 
 export const THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD =
   "Style B's bright blue/cyan blueprint-grid stage with crisp 3D objects, cool lighting, and hard subject separation";
 
 export const getThreeDFrameWorldRole = (
-  frameIndex: ThreeDBreakdownStoryboardFrameIndex,
-): ThreeDBreakdownFrameWorldRole => (
-  frameIndex <= 2 ? "lifestyle-setup" : frameIndex <= 4 ? "blue-breakdown" : "lifestyle-payoff"
-);
+  _frameIndex: ThreeDBreakdownStoryboardFrameIndex,
+): ThreeDBreakdownFrameWorldRole => "blue-breakdown";
 
 export const describeThreeDFrameWorld = (
-  frameIndex: ThreeDBreakdownStoryboardFrameIndex,
-  lifestyleWorld: string,
-) => {
-  const role = getThreeDFrameWorldRole(frameIndex);
-  if (role === "blue-breakdown") {
-    return `BLUE BREAKDOWN WORLD: use ${THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD}; preserve the approved subject, objects, and action.`;
-  }
-  if (role === "lifestyle-payoff") {
-    return `LIFESTYLE PAYOFF WORLD: return to ${lifestyleWorld} for the resolved payoff; preserve the CGI style and recurring elements.`;
-  }
-  return `LIFESTYLE SETUP WORLD: use ${lifestyleWorld} in feature-animation CGI; blue may foreshadow but not fill the background.`;
-};
+  _frameIndex: ThreeDBreakdownStoryboardFrameIndex,
+  visualWorld: string,
+) => `APPROVED VISUAL WORLD: remain inside ${visualWorld}. Keep the bright blue/cyan blueprint-grid stage, approved subject, objects, and CGI finish consistent.`;
 
 export const THREE_D_STORYBOARD_FRAME_CONTRACTS: NonNullable<ThreeDBreakdownStoryboardBoard["frames"]> = frameMeta.map(([role, label], index) => ({
   frameIndex: (index + 1) as StoryboardFrame["frameIndex"],
@@ -162,29 +155,31 @@ const createPresenterClipPrompt = ({
   frameIndexes,
   framePlan,
   durationSeconds,
-  lifestyleWorld,
+  visualWorld,
   recurringObjects,
 }: {
   clipIndex: ThreeDBreakdownClipIndex;
   frameIndexes: ThreeDBreakdownStoryboardFrameIndex[];
   framePlan: string;
   durationSeconds: number;
-  lifestyleWorld: string;
+  visualWorld: string;
   recurringObjects: string;
 }) => [
-  `Create one continuous ${durationSeconds}-second transformation for clip ${clipIndex} of 2, vertical 9:16, beginning on frame ${frameIndexes[0]} and ending exactly on frame ${frameIndexes.at(-1)}.`,
+  `Create one coherent ${durationSeconds}-second sequence for clip ${clipIndex} of 2, vertical 9:16, beginning on frame ${frameIndexes[0]} and ending exactly on frame ${frameIndexes.at(-1)}.`,
   framePlan,
-  clipIndex === 1
-    ? `WORLD ARC: begin in ${lifestyleWorld} for frames 1-2, then use the approved physical change to enter ${THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD} by frame 3.`
-    : `WORLD ARC: begin on ${THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD} for frame 4, then use the approved payoff action to return to ${lifestyleWorld} for frames 5-6.`,
+  `WORLD LOCK: every sub-shot remains inside ${visualWorld}, using ${THREE_D_STYLE_B_BLUE_BREAKDOWN_WORLD} as the visual grammar. Change camera scale and physical state, not the world or character.`,
   `CONTINUITY OBJECTS: ${recurringObjects}.`,
   "If an approved person or hand-proxy is visible, preserve it as a silent recurring subject with no lip-sync, speech, singing, or presenter delivery. If both endpoints are object-only, never introduce a person.",
-  `CONTINUITY: frame ${frameIndexes[1]} is a motion checkpoint in the approved world arc, not permission to invent a new person, product, or visual style. Preserve the same subject, materials, feature-animation CGI finish, and camera language through the world transition.`,
+  `CONTINUITY: frame ${frameIndexes[1]} is a motion checkpoint inside the approved visual world, not permission to invent a new person, product, setting, or visual style. Preserve the same subject, materials, feature-animation CGI finish, and camera language.`,
+  "SHOT GRAMMAR: use three readable sub-shots matching the three approved frames. Use motivated cuts, push-ins, macro changes, or object-led transitions. Each sub-shot must add new information; never dissolve the three beats into one vague drifting camera move.",
+  clipIndex === 1
+    ? "TIMING: 0-3.2s setup, 3.2-6.4s hidden problem, 6.4-10s mechanism setup. Finish on the approved frame-3 state."
+    : `TIMING: 0-2.5s mechanism reveal, 2.5-5.5s physical payoff, 5.5-${(THREE_D_BREAKDOWN_CONTENT_END_MS / 1000) - 10}s resolved frame-6 state. The meaningful action must be complete before global second ${THREE_D_BREAKDOWN_CONTENT_END_MS / 1000}; hold the resolved state afterward because Wiggly's product end card covers global seconds ${THREE_D_BREAKDOWN_CONTENT_END_MS / 1000}-${THREE_D_BREAKDOWN_DURATION_MS / 1000}.`,
   clipIndex === 1
     ? "STORY JOB: begin on the approved setup, make the problem visible through physical motion, and finish on the approved mechanism setup."
-    : "STORY JOB: begin on the approved mechanism reveal, complete one physical transformation, and finish on the approved product or CTA setup.",
-  "Use one camera move or a physically motivated object transition. No montage, hard cut, title card, empty transition frame, unrelated room, or newly invented presenter.",
-  "Do not invent extra product claims, packaging, people, anatomy, props, or mechanisms beyond the approved frames.",
+    : "STORY JOB: begin on the approved mechanism reveal, complete the transformation before the end-card deadline, and hold on the approved product or CTA setup.",
+  "No title card, empty frame, unrelated room, or new presenter.",
+  "Do not invent claims, packaging, people, anatomy, props, or mechanisms outside the approved frames.",
   "No generated typography, captions, subtitles, labels, logos, letters, numbers, UI, or pseudo-writing. Wiggly adds every word after video generation.",
 ].join(" ");
 
@@ -232,7 +227,7 @@ export const createThreeDClipPlans = (
           durationSeconds: 10,
           frameIndexes,
           framePlan: getPresenterClipFramePlan(sceneInput.storyboardBoard, frameIndexes),
-          lifestyleWorld: world,
+          visualWorld: world,
           recurringObjects,
         }),
         video: { status: "idle" as const },
