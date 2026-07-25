@@ -7,18 +7,87 @@ description: Use the official Wiggly 3D Breakdown recipe to plan and prepare a 2
 
 Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3D Breakdown.
 
+## Start from one link
+
+When the user sends only this Repo link:
+
+1. Say: `I can make this ad for you.`
+2. Ask: `What brand or website is this for?`
+3. Wait for the answer.
+4. Ask: `Do you want Guide Me or Turbo?`
+5. Wait for the answer.
+6. Research the site with your web tools.
+7. Save the facts in `research.json` with the provided `StoredWebsiteResearchResult` shape.
+8. Ask: `What should the video focus on?`
+9. Offer product, brand story, customer problem, custom idea, or `Pick for me`.
+10. If the user picks product, ask which product in the next message.
+11. Show the run estimate.
+12. Ask: `Ready to start?`
+
+Ask only one question in each message. Use short sentences and simple words. Never ask for a budget or spend limit. Never ask the user to pick a model, tool, or technical setting.
+
+If you cannot browse the web, ask for a Wiggly research export. Do not ask for anything else in that message. Turn the research into the provided `StoredWebsiteResearchResult` input. Keep a source URL for each fact. Never invent a fact.
+
+## Progress
+
+Use this line during the run:
+
+`Research → Story → Script → Images → Clips → Final`
+
+Start each update with `Step X of 6: Name`. Keep the update short. In Turbo, send an update after each step but do not ask a question unless blocked.
+
+## Work modes
+
+### Guide Me
+
+- Show each big deliverable.
+- Explain it in plain words.
+- Ask for approval before the next big step.
+- Ask before each paid call.
+- Show all five story ideas.
+- Let the user pick the idea.
+
+### Turbo
+
+- Pick the strongest story and creative choices.
+- Show the run estimate before any provider call.
+- `Ready to start?` is approval for one normal attempt at each listed step.
+- Do not ask again during a clean run.
+- Stop if work looks wrong, a tool fails, or a retry is needed.
+- Explain the problem in one short note.
+- Ask before any retry or replacement call.
+
+## Run estimate
+
+Before `Ready to start?`, check the current provider prices and show:
+
+```text
+Run estimate
+
+- Story ideas and plan: 3 NIM calls — about $X
+- Storyboard: 1 image — about $X
+- Key images: 4 images — about $X
+- Video clips: 2 clips, 10 seconds each — about $X
+- Voice: 1 voice track — about $X
+- Final video: local render — $0
+
+Total: about $X
+Time: about X-Y minutes
+```
+
+Use current prices. Do not guess. If a price is not public, say `price not listed`. The estimate covers one attempt per item. A retry needs a new estimate and a new yes.
+
 ## Rules
 
 - Read `requirements.json`, `inputs.json`, `pipeline.json`, `scene-contract.json`, `assets.json`, `goldens.json`, and `quality.json`.
 - Watch FinalStraw first, then the supporting videos in `goldens/`. They show the creative bar; do not copy their brands, claims, shots, or wording.
 - Use the packaged runner and the canonical Wiggly modules. Do not rebuild the renderer, timing model, prompt builders, or scene contract.
-- Ask what the story should focus on: a product, the brand, a customer problem, or a custom idea.
 - Product focus requires a catalog product with a usable image. Brand and customer-problem stories do not require a product.
 - Treat website research as evidence. A custom brief changes the creative focus but does not authorize new factual claims.
-- Show the five story directions before selecting one.
+- In Guide Me, show the five story directions before selecting one. In Turbo, save all five and pick the strongest one.
 - Validate the selected plan before any image call.
-- One explicit approval covers one image call only. Never batch the storyboard and video endpoints. Record a separate approve or reject review for every current artifact.
-- Ask once before the two planned video clips. Submit one clip at a time and inspect clip 1 before spending on clip 2.
+- In Guide Me, one explicit approval covers one image call only. In Turbo, the approved run estimate covers one attempt for each listed image. Never batch provider requests. Record a separate approve or reject review for every current artifact.
+- In Guide Me, ask once before the two planned video clips. In Turbo, use the approved run estimate. Submit one clip at a time and inspect clip 1 before spending on clip 2.
 - Generate one explicitly approved Fish narration only after both clips pass inspection.
 - Render the final MP4 locally through the packaged Remotion entry and `AdRenderSurface`. Never rebuild or replace the renderer.
 - Never print secret values. Report only missing key names.
@@ -28,12 +97,12 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 
 1. Run `check --stage=plan`.
 2. Run `init` with the exported Wiggly website research and the chosen story subject.
-3. Ask once before the three planning calls: one story-slate call, then one script call and one scene-plan call. Run `directions`.
-4. Show all five directions and let the user choose.
+3. Use the approval for the three planning calls: one story-slate call, then one script call and one scene-plan call. Run `directions`.
+4. In Guide Me, show all five directions and let the user choose. In Turbo, pick the strongest saved direction.
 5. Run `select`, then `validate`.
 6. Compare the selected direction with the production references. State the concrete hook, the job of the blue explanation world, the visible transformation, the product or subject carried through the story, and the final payoff. If any answer is vague, revise before an image call.
 7. Let the user inspect the script, storyboard plan, image prompts, and CTA. The MVP runner does not edit these fields; if the plan is wrong, stop and start a new run from the saved research instead of spending on media.
-8. Ask before each `image` command.
+8. In Guide Me, ask before each `image` command. In Turbo, use the approved run estimate.
 9. Generate and review the storyboard first, then generate and review full-quality endpoint frames 1, 3, 4, and 6, one approved image call at a time. All six frames stay in one Style B blue/cyan blueprint-grid explanation world while camera, scale, props, and physical state change.
 10. Run `inspect`.
 11. After explicit approval, generate video clip 1, review it, then generate video clip 2. Each clip may use motivated cuts or transitions to deliver three readable visual beats, but it must keep the approved world and demonstrator identity.

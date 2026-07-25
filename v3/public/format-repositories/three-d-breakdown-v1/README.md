@@ -2,6 +2,24 @@
 
 This Repo packages the recipe behind Wiggly's existing 3D Breakdown Format. It does not create a second renderer or a second creative pipeline.
 
+## Send the link to an agent
+
+You can send an agent only this Repo link.
+
+The agent should ask:
+
+1. `What brand or website is this for?`
+2. `Do you want Guide Me or Turbo?`
+3. `What should the video focus on?`
+
+The agent asks one question at a time.
+
+**Guide Me** shows each big step and waits for you.
+
+**Turbo** makes the choices after you approve one clear run estimate. The estimate lists each provider step, its call count, its current cost, the total cost, and the expected time. Turbo covers one normal attempt per step. Retries still need a new yes.
+
+The agent never asks for a budget. It never asks you to choose tools or models.
+
 Before planning, watch the packaged FinalStraw reference first, then Grüns, Kiala Nutrition, and Theragun, and read `goldens.json`. FinalStraw is the canonical Style B reproducibility target. These references teach structure, not claims, shots, or copy to reuse.
 
 ## What it makes
