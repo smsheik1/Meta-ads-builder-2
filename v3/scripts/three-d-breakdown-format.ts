@@ -3,6 +3,10 @@ import { existsSync } from "node:fs";
 import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { bundle } from "@remotion/bundler";
+import { getCompositions, renderMedia } from "@remotion/renderer";
+import { generateFishThreeDBreakdownVoiceover } from "../features/audio/fishStudio";
+import { createGeneratedSceneAudio } from "../features/audio/sceneAudio";
 import {
   generateThreeDBreakdownStoryDirectionsFromResearch,
   generateThreeDBreakdownVariantsFromResearch,
@@ -41,6 +45,7 @@ import type {
   ThreeDBreakdownClipPlan,
   ThreeDBreakdownStoryboardFrameIndex,
 } from "../features/scene/types";
+import { adSceneCompositionId } from "../remotion-entry/Root";
 
 const filename = fileURLToPath(import.meta.url);
 const v3Root = path.resolve(path.dirname(filename), "..");
@@ -68,15 +73,36 @@ type VideoAttempt = {
   error?: string;
 };
 
+type VoiceAttempt = {
+  number: number;
+  status: "generating" | "ready" | "failed";
+  createdAt: string;
+  provider: "fish-studio";
+  output?: string;
+  durationMs?: number;
+  error?: string;
+};
+
+type FinalRender = {
+  status: "ready" | "finalized";
+  createdAt: string;
+  output: string;
+  durationMs: number;
+  contactSheet: string;
+  finalizedAt?: string;
+};
+
 type RunState = {
   id: string;
-  status: "draft" | "directions-ready" | "scene-ready" | "images-started" | "ready-for-video" | "video-started" | "clips-ready";
+  status: "draft" | "directions-ready" | "scene-ready" | "images-started" | "ready-for-video" | "video-started" | "clips-ready" | "voice-ready" | "final-ready" | "finalized";
   createdAt: string;
   subject: ThreeDBreakdownStorySubject;
   planningApprovedAt?: string;
   planningCalls: number;
   imageAttempts: ImageAttempt[];
   videoAttempts?: VideoAttempt[];
+  voiceAttempts?: VoiceAttempt[];
+  finalRender?: FinalRender;
 };
 
 const readJson = async <T,>(filePath: string) => JSON.parse(await readFile(filePath, "utf8")) as T;
@@ -142,7 +168,7 @@ async function runCommand(command: string, args: string[]) {
 
 const parseStage = (): ThreeDBreakdownRepoStage => {
   const stage = argument("stage") || "plan";
-  if (!["plan", "images", "voice", "video"].includes(stage)) throw new Error("Stage must be plan, images, voice, or video.");
+  if (!["plan", "images", "voice", "video", "final"].includes(stage)) throw new Error("Stage must be plan, images, voice, video, or final.");
   return stage as ThreeDBreakdownRepoStage;
 };
 
@@ -158,6 +184,7 @@ async function check() {
       node: await commandAvailable("node"),
       ffmpeg: await commandAvailable("ffmpeg", "-version"),
       ffprobe: await commandAvailable("ffprobe", "-version"),
+      remotion: existsSync(path.join(v3Root, "node_modules", "@remotion", "renderer")),
     },
   });
   console.log(result.ok ? `3D Breakdown ${stage} stage is ready.` : `3D Breakdown ${stage} stage is not ready.`);
@@ -561,6 +588,167 @@ async function video() {
   }
 }
 
+function assertClipsReady(scene: ThreeDBreakdownAdScene) {
+  if (scene.layout.clipPlans?.length !== 2 || scene.layout.clipPlans.some((clip) => (
+    clip.video?.status !== "ready" || !clip.video.url || !existsSync(localMediaPath(clip.video.url))
+  ))) {
+    throw new Error("Both inspected video clips must be ready before voice or final rendering.");
+  }
+}
+
+async function voice() {
+  await loadEnvironment();
+  const runId = requiredArgument("run");
+  const state = await loadState(runId);
+  const scene = await loadScene(runId);
+  assertClipsReady(scene);
+  if (scene.audio.status === "generated") throw new Error("This run already has generated narration.");
+  if (!hasFlag("approve-voice")) throw new Error("Approve one Fish voice generation with --approve-voice.");
+  if (!process.env.FISH_STUDIO_APIKEY?.trim()) {
+    throw new Error("Add FISH_STUDIO_APIKEY to v3/.env.local before voice generation.");
+  }
+  const attempts = state.voiceAttempts || [];
+  if (attempts.length >= 3) throw new Error("The voice attempt limit is 3. Fix the script before spending again.");
+  const attempt: VoiceAttempt = {
+    number: attempts.length + 1,
+    status: "generating",
+    createdAt: new Date().toISOString(),
+    provider: "fish-studio",
+  };
+  state.voiceAttempts = [...attempts, attempt];
+  await saveState(state);
+  try {
+    const generated = await generateFishThreeDBreakdownVoiceover({
+      apiKey: process.env.FISH_STUDIO_APIKEY,
+      scene,
+    });
+    if (generated.durationMs > scene.layout.durationMs) {
+      throw new Error(`Narration is ${generated.durationMs}ms, longer than the ${scene.layout.durationMs}ms video. Shorten the script before another voice call.`);
+    }
+    const output = `agent-runs/${runId}/audio/narration.wav`;
+    await mkdir(path.dirname(localMediaPath(output)), { recursive: true });
+    await writeFile(localMediaPath(output), generated.bytes);
+    attempt.status = "ready";
+    attempt.output = output;
+    attempt.durationMs = generated.durationMs;
+    state.status = "voice-ready";
+    await saveScene(runId, {
+      ...scene,
+      audio: createGeneratedSceneAudio({
+        storageId: `local:${output}`,
+        url: output,
+        mimeType: generated.mimeType,
+        durationMs: generated.durationMs,
+        transcript: generated.transcript,
+        captions: generated.captions,
+        model: generated.model,
+        provider: generated.provider,
+      }),
+    });
+    console.log(`Narration is ready (${generated.durationMs}ms). No video provider was called.`);
+  } catch (error) {
+    attempt.status = "failed";
+    attempt.error = error instanceof Error ? error.message : String(error);
+    throw error;
+  } finally {
+    await saveState(state);
+  }
+}
+
+const publicRepoUrl = (url: string) => (
+  url.startsWith("agent-runs/")
+    ? `/format-repositories/three-d-breakdown-v1/${url}`
+    : url
+);
+
+function sceneForLocalRender(scene: ThreeDBreakdownAdScene): ThreeDBreakdownAdScene {
+  return {
+    ...scene,
+    audio: scene.audio.status === "generated"
+      ? { ...scene.audio, url: publicRepoUrl(scene.audio.url || "") }
+      : scene.audio,
+    layout: {
+      ...scene.layout,
+      finalVideo: undefined,
+      clipPlans: scene.layout.clipPlans?.map((clip) => ({
+        ...clip,
+        video: clip.video?.status === "ready"
+          ? { ...clip.video, url: publicRepoUrl(clip.video.url || "") }
+          : clip.video,
+      })),
+    },
+  };
+}
+
+async function createFinalContactSheet(runId: string, input: string) {
+  const relativeOutput = `agent-runs/${runId}/final-contact-sheet.jpg`;
+  await runCommand("ffmpeg", [
+    "-y",
+    "-i", input,
+    "-vf", "fps=1/3,scale=270:-1,tile=3x2:padding=8:margin=8",
+    "-frames:v", "1",
+    localMediaPath(relativeOutput),
+  ]);
+  return relativeOutput;
+}
+
+async function render() {
+  const runId = requiredArgument("run");
+  const state = await loadState(runId);
+  const scene = await loadScene(runId);
+  assertClipsReady(scene);
+  if (scene.audio.status !== "generated" || !scene.audio.url || !existsSync(localMediaPath(scene.audio.url))) {
+    throw new Error("Generate and inspect narration before final rendering.");
+  }
+  const relativeOutput = `agent-runs/${runId}/final.mp4`;
+  const output = localMediaPath(relativeOutput);
+  const serveUrl = await bundle({
+    entryPoint: path.join(v3Root, "remotion-entry", "index.ts"),
+    publicDir: path.join(v3Root, "public"),
+    outDir: path.join(v3Root, "tmp", "three-d-breakdown-remotion"),
+  });
+  const inputProps = { scene: sceneForLocalRender(scene) };
+  const compositions = await getCompositions(serveUrl, { inputProps });
+  const composition = compositions.find((candidate) => candidate.id === adSceneCompositionId);
+  if (!composition) throw new Error(`Missing ${adSceneCompositionId} composition.`);
+  await mkdir(path.dirname(output), { recursive: true });
+  await renderMedia({
+    serveUrl,
+    composition,
+    codec: "h264",
+    crf: 23,
+    imageFormat: "jpeg",
+    jpegQuality: 88,
+    inputProps,
+    outputLocation: output,
+  });
+  const contactSheet = await createFinalContactSheet(runId, output);
+  const durationMs = await probeDurationMs(output);
+  state.status = "final-ready";
+  state.finalRender = {
+    status: "ready",
+    createdAt: new Date().toISOString(),
+    output: relativeOutput,
+    durationMs,
+    contactSheet,
+  };
+  await saveScene(runId, {
+    ...scene,
+    layout: {
+      ...scene.layout,
+      finalVideo: {
+        status: "ready",
+        storageId: `local:${relativeOutput}`,
+        url: relativeOutput,
+        mimeType: "video/mp4",
+        durationMs: scene.layout.durationMs,
+      },
+    },
+  });
+  await saveState(state);
+  console.log(`Rendered the official ${scene.layout.durationMs / 1000}-second MP4 through AdRenderSurface. No media provider was called.`);
+}
+
 async function probeDurationMs(filePath: string) {
   const seconds = Number(await runCommand("ffprobe", [
     "-v", "error",
@@ -595,7 +783,40 @@ async function inspect() {
   ));
   let report: Record<string, unknown> = baseReport;
   const state = await loadState(runId);
-  if (baseReport.status === "clips-ready") {
+  if (scene.layout.finalVideo?.status === "ready" && scene.layout.finalVideo.url) {
+    const finalPath = localMediaPath(scene.layout.finalVideo.url);
+    const probe = JSON.parse(await runCommand("ffprobe", [
+      "-v", "error",
+      "-show_entries", "format=duration:stream=codec_type,width,height",
+      "-of", "json",
+      finalPath,
+    ])) as {
+      format?: { duration?: string };
+      streams?: Array<{ codec_type?: string; width?: number; height?: number }>;
+    };
+    const durationMs = Math.round(Number(probe.format?.duration || 0) * 1_000);
+    const videoStream = probe.streams?.find((stream) => stream.codec_type === "video");
+    const hasAudio = Boolean(probe.streams?.some((stream) => stream.codec_type === "audio"));
+    const finalChecks = {
+      finalDuration: Math.abs(durationMs - scene.layout.durationMs) <= 250,
+      finalDimensions: videoStream?.width === 1080 && videoStream.height === 1920,
+      finalAudio: hasAudio,
+      narrationFits: scene.audio.status === "generated" && scene.audio.durationMs <= scene.layout.durationMs,
+    };
+    const finalProblems = Object.entries(finalChecks)
+      .filter(([, passed]) => !passed)
+      .map(([name]) => `Check failed: ${name}.`);
+    report = {
+      ...baseReport,
+      status: finalProblems.length ? "final-invalid" : "final-ready",
+      checks: { ...baseReport.checks, ...finalChecks },
+      problems: [...baseReport.problems, ...finalProblems],
+      finalDurationMs: durationMs,
+      finalVideo: scene.layout.finalVideo.url,
+      contactSheet: state.finalRender?.contactSheet,
+    };
+    state.status = finalProblems.length ? "voice-ready" : "final-ready";
+  } else if (baseReport.status === "clips-ready") {
     const videoPaths = scene.layout.clipPlans!.map((clip) => localMediaPath(clip.video!.url!));
     const clipDurationsMs = await Promise.all(videoPaths.map(probeDurationMs));
     const durationsMatchPlan = clipDurationsMs.every((durationMs, index) => (
@@ -623,7 +844,27 @@ async function inspect() {
   const problems = report.problems as string[];
   if (problems.length) console.log(problems.map((problem) => `- ${problem}`).join("\n"));
   if (report.status === "ready-for-video") console.log("All four production endpoints are ready. Inspect all four before explicitly approving paid video.");
-  if (report.status === "clips-ready") console.log("Both clips passed technical inspection. Voice and final composition remain disabled.");
+  if (report.status === "clips-ready") console.log("Both clips passed technical inspection. Generate narration next.");
+  if (report.status === "final-ready") console.log("The final MP4 passed duration, dimensions, audio, and narration-fit checks. Review it, then finalize.");
+}
+
+async function finalize() {
+  const runId = requiredArgument("run");
+  if (!hasFlag("approve-final")) throw new Error("Watch the final video, then pass --approve-final.");
+  const state = await loadState(runId);
+  const report = await readJson<{ status?: string; problems?: string[] }>(path.join(runDirectory(runId), "quality-report.json"));
+  if (report.status !== "final-ready" || report.problems?.length) {
+    throw new Error("Finalization requires a clean final-ready quality report.");
+  }
+  if (!state.finalRender) throw new Error("The final render record is missing.");
+  state.status = "finalized";
+  state.finalRender = {
+    ...state.finalRender,
+    status: "finalized",
+    finalizedAt: new Date().toISOString(),
+  };
+  await saveState(state);
+  console.log(`Finalized ${state.finalRender.output}. Return this MP4 to the user.`);
 }
 
 async function main() {
@@ -636,7 +877,10 @@ async function main() {
   if (command === "image") return await image();
   if (command === "inspect") return await inspect();
   if (command === "video") return await video();
-  throw new Error("Use: check | init | directions | select | validate | image | inspect | video");
+  if (command === "voice") return await voice();
+  if (command === "render") return await render();
+  if (command === "finalize") return await finalize();
+  throw new Error("Use: check | init | directions | select | validate | image | inspect | video | voice | render | finalize");
 }
 
 main().catch((error) => {

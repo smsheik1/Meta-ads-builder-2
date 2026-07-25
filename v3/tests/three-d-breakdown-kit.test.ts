@@ -27,10 +27,13 @@ for (const required of [
   "v3/kit-smoke.mjs",
   "v3/scripts/three-d-breakdown-format.ts",
   "v3/scripts/smoke-three-d-breakdown-format.ts",
-  "v3/features/audio/visualizerPresets.ts",
+  "v3/features/audio/fishStudio.ts",
   "v3/features/formats/three-d-breakdown/repoRuntime.ts",
   "v3/features/formats/three-d-breakdown/render.tsx",
+  "v3/features/render/AdRenderSurface.tsx",
   "v3/features/scene/visualizerStyle.ts",
+  "v3/remotion-entry/index.ts",
+  "v3/remotion-entry/RemotionAdScene.tsx",
   "v3/public/format-repositories/three-d-breakdown-v1/SKILL.md",
   "v3/public/format-repositories/three-d-breakdown-v1/assets/ecommerce-teardown-style-reference-clean-v7.jpg",
 ]) {
@@ -43,8 +46,10 @@ assert.equal(entries.some((entry) => /seedance.*\.mp4/i.test(entry)), false);
 const packageJson = JSON.parse(readFileSync(
   "public/format-repositories/three-d-breakdown-v1/kit.package.json",
   "utf8",
-)) as { scripts: Record<string, string> };
+)) as { scripts: Record<string, string>; dependencies: Record<string, string> };
 assert.match(packageJson.scripts["format:three-d"], /three-d-breakdown-format\.ts/);
 assert.match(packageJson.scripts.smoke, /smoke-three-d-breakdown-format\.ts/);
+assert.equal(packageJson.dependencies["@remotion/renderer"], "4.0.473");
+assert.equal(packageJson.dependencies.remotion, "4.0.473");
 
 console.log("3D Breakdown Kit tests passed.");

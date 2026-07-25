@@ -277,9 +277,10 @@ const manifest: ThreeDBreakdownRepoRequirementManifest = {
     REPLICATE_API_TOKEN: { requiredFor: ["images", "video"], secret: true },
   },
   tools: {
-    node: { requiredFor: ["plan", "images", "video"] },
-    ffmpeg: { requiredFor: ["video"] },
-    ffprobe: { requiredFor: ["video"] },
+    node: { requiredFor: ["plan", "images", "video", "final"] },
+    ffmpeg: { requiredFor: ["video", "final"] },
+    ffprobe: { requiredFor: ["video", "final"] },
+    remotion: { requiredFor: ["final"] },
   },
   disabledStages: {},
 };
@@ -296,6 +297,13 @@ const readyVideo = evaluateThreeDBreakdownRepoRequirements({
   tools: { node: true, ffmpeg: true, ffprobe: true },
 });
 assert.equal(readyVideo.ok, true);
+const readyFinal = evaluateThreeDBreakdownRepoRequirements({
+  stage: "final",
+  environment: {},
+  manifest,
+  tools: { node: true, ffmpeg: true, ffprobe: true, remotion: true },
+});
+assert.equal(readyFinal.ok, true);
 const runnerSource = readFileSync("scripts/three-d-breakdown-format.ts", "utf8");
 assert.match(runnerSource, /commandAvailable\("ffmpeg", "-version"\)/);
 assert.match(runnerSource, /commandAvailable\("ffprobe", "-version"\)/);
@@ -303,6 +311,12 @@ assert.match(runnerSource, /attempt\.predictionId = predictionId;[\s\S]*await sa
 assert.ok(runnerSource.includes("predictionId: activeAttempt?.predictionId"));
 assert.match(runnerSource, /error instanceof ReplicatePredictionStillRunningError/);
 assert.match(runnerSource, /marked as generating but has no saved Replicate prediction ID/);
+assert.match(runnerSource, /generateFishThreeDBreakdownVoiceover/);
+assert.match(runnerSource, /createGeneratedSceneAudio/);
+assert.match(runnerSource, /entryPoint: path\.join\(v3Root, "remotion-entry", "index\.ts"\)/);
+assert.match(runnerSource, /finalize --approve-final|approve-final/);
+const remotionSource = readFileSync("remotion-entry/RemotionAdScene.tsx", "utf8");
+assert.match(remotionSource, /Audio src=\{resolveRenderAssetSrc\(audio\.url\)\}/);
 const sceneContract = JSON.parse(readFileSync("public/format-repositories/three-d-breakdown-v1/scene-contract.json", "utf8"));
 assert.deepEqual(sceneContract.storyboard.worldSequence.map((stage: { role: string }) => stage.role), [
   "lifestyle-setup",

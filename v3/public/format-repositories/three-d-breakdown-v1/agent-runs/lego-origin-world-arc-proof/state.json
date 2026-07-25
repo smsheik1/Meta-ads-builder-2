@@ -1,6 +1,6 @@
 {
   "id": "lego-origin-world-arc-proof",
-  "status": "clips-ready",
+  "status": "finalized",
   "createdAt": "2026-07-24T23:45:30.505Z",
   "subject": {
     "kind": "brand"
@@ -70,5 +70,23 @@
       "output": "agent-runs/lego-origin-world-arc-proof/videos/clip-2.mp4"
     }
   ],
-  "planningApprovedAt": "2026-07-24T23:45:30.791Z"
+  "planningApprovedAt": "2026-07-24T23:45:30.791Z",
+  "voiceAttempts": [
+    {
+      "number": 1,
+      "status": "ready",
+      "createdAt": "2026-07-25T03:44:05.610Z",
+      "provider": "fish-studio",
+      "output": "agent-runs/lego-origin-world-arc-proof/audio/narration.wav",
+      "durationMs": 19193
+    }
+  ],
+  "finalRender": {
+    "status": "finalized",
+    "createdAt": "2026-07-25T03:45:32.032Z",
+    "output": "agent-runs/lego-origin-world-arc-proof/final.mp4",
+    "durationMs": 20000,
+    "contactSheet": "agent-runs/lego-origin-world-arc-proof/final-contact-sheet.jpg",
+    "finalizedAt": "2026-07-25T03:49:28.161Z"
+  }
 }

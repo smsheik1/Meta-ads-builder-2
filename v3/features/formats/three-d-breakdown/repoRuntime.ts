@@ -1,7 +1,7 @@
 import type { ThreeDBreakdownAdScene } from "../../scene/types";
 import { validateThreeDBreakdownScene } from "./validate";
 
-export type ThreeDBreakdownRepoStage = "plan" | "images" | "voice" | "video";
+export type ThreeDBreakdownRepoStage = "plan" | "images" | "voice" | "video" | "final";
 
 export type ThreeDBreakdownRepoRequirementManifest = {
   environment: Record<string, {

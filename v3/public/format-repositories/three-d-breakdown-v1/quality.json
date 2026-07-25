@@ -27,5 +27,11 @@
     "Each clip is within one second of its planned 10-second duration.",
     "The contact sheet preserves the approved world sequence, subjects, and recurring objects across both clips.",
     "No voice or final composition is generated during clip inspection."
+  ],
+  "final": [
+    "Narration is generated only after both clips pass inspection and must fit inside 20 seconds.",
+    "The final MP4 is rendered locally through AdRenderSurface with no background music.",
+    "The final MP4 is 1080 by 1920, 20 seconds long, and contains an audio stream.",
+    "An agent watches the final video and explicitly approves it before finalization."
   ]
 }

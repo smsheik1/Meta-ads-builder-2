@@ -23,20 +23,13 @@ await mkdir(path.join(stagingV3, formatRelative), { recursive: true });
 await mkdir(outputDirectory, { recursive: true });
 
 for (const relativePath of [
-  "features/audio/visualizerPresets.ts",
-  "features/formats/three-d-breakdown",
-  "features/formats/jingle/storyboard.ts",
-  "features/formats/types.ts",
-  "features/llm/nvidiaNim.ts",
-  "features/llm/nvidiaNimModels.ts",
-  "features/llm/timeout.ts",
-  "features/research/types.ts",
-  "features/research/url.ts",
-  "features/scene/types.ts",
-  "features/scene/createThreeDBreakdownScene.ts",
-  "features/scene/createVisualizerScene.ts",
-  "features/scene/visualizerVariants.ts",
-  "features/scene/visualizerStyle.ts",
+  "features/audio",
+  "features/formats",
+  "features/llm",
+  "features/render",
+  "features/research",
+  "features/scene",
+  "remotion-entry",
   "scripts/three-d-breakdown-format.ts",
   "scripts/smoke-three-d-breakdown-format.ts",
   "tests/helpers/research.ts",
@@ -44,6 +37,7 @@ for (const relativePath of [
 ]) {
   await copyFromV3(relativePath);
 }
+await copyFromV3("public/fonts");
 
 for (const name of [
   ".env.example",

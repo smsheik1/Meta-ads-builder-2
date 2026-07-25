@@ -39,9 +39,12 @@ See `agent-runs/lego-origin-quality-proof/` for the scene, four production endpo
 - Human review: clip 1 keeps the carpenter and wooden objects coherent while moving from the workshop into the blue grid. Clip 2 assembles the wooden car in the blue world, returns to the same workshop, and ends with a finished wooden-toy collection. Neither clip invents visible text or an unrelated person.
 - Technical review: both clips are 10.042 seconds, the duration gate passes, and the Repo inspector reports `clips-ready`.
 - Provider finding: the first Replicate prediction took 319 seconds and the second took 1,725 seconds. The foreground runner incorrectly stopped polling before both healthy predictions completed. Their exact prediction outputs were recovered without retries. A future runner must persist and resume provider prediction IDs instead of extending a foreground timer.
-- Boundary: voice generation and final 20-second composition were not run.
+- Voice: one Fish S2.1 Pro Free narration, 19.193 seconds.
+- Final: one 1080×1920, 20-second MP4 with audio, rendered locally through `AdRenderSurface`.
+- Final result: `passed`. The automated report has no problems and the contact sheet preserves the approved world arc.
+- Spend note: the final proof reused the accepted clips and made no new Replicate call.
 
-See `agent-runs/lego-origin-world-arc-proof/` for the accepted endpoints, rejected endpoint evidence, scene, clips, contact sheet, attempt history, and quality report.
+See `agent-runs/lego-origin-world-arc-proof/` for the accepted endpoints, rejected endpoint evidence, scene, clips, narration, final MP4, contact sheets, attempt history, and quality report.
 
 ## David's Cookies stopped attempt
 

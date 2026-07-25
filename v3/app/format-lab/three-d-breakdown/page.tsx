@@ -67,35 +67,31 @@ export default function ThreeDBreakdownRepositoryPage() {
             </Button>
           </div>
           <div className="mt-5 rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-950" data-testid="video-phase-boundary">
-            <strong>Quality checkpoint:</strong> the new LEGO proof completes the required lifestyle setup → blue breakdown → lifestyle payoff arc with four full-quality endpoints and two inspected 480p clips. Voice generation and final composition remain locked.
+            <strong>Complete proof:</strong> the LEGO run completes lifestyle setup → blue breakdown → lifestyle payoff, Fish narration, and one inspected 20-second MP4 rendered through Wiggly&apos;s official renderer.
           </div>
         </section>
 
         <section data-testid="lego-world-arc-proof">
-          <h2 className="text-xl font-bold">LEGO Style B proof — clips passed</h2>
-          <p className="mt-1 text-sm text-slate-600">The same carpenter and wooden-toy story moves from the warm workshop into the blue explanation world, then returns to the workshop payoff.</p>
+          <h2 className="text-xl font-bold">LEGO Style B proof — final passed</h2>
+          <p className="mt-1 text-sm text-slate-600">The same carpenter and wooden-toy story moves from the warm workshop into the blue explanation world, returns to the workshop payoff, and includes the finished narration and CTA.</p>
           <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
             <Image
-              alt="Contact sheet from the LEGO Style B world-arc clips"
+              alt="Contact sheet from the final LEGO Style B video"
               className="h-auto w-full rounded-lg border border-slate-300 bg-white shadow-sm"
               height={960}
-              src="/format-repositories/three-d-breakdown-v1/agent-runs/lego-origin-world-arc-proof/video-contact-sheet.jpg"
+              src="/format-repositories/three-d-breakdown-v1/agent-runs/lego-origin-world-arc-proof/final-contact-sheet.jpg"
               width={840}
             />
-            <div className="grid gap-4 sm:grid-cols-2">
-              {[1, 2].map((clip) => (
-                <video
-                  className="aspect-[496/864] w-full rounded-lg border border-slate-300 bg-black shadow-sm"
-                  controls
-                  key={clip}
-                  playsInline
-                  preload="metadata"
-                  src={`/format-repositories/three-d-breakdown-v1/agent-runs/lego-origin-world-arc-proof/videos/clip-${clip}.mp4`}
-                />
-              ))}
-            </div>
+            <video
+              className="aspect-[9/16] w-full max-w-md rounded-lg border border-slate-300 bg-black shadow-sm"
+              controls
+              data-testid="lego-final-video"
+              playsInline
+              preload="metadata"
+              src="/format-repositories/three-d-breakdown-v1/agent-runs/lego-origin-world-arc-proof/final.mp4"
+            />
           </div>
-          <p className="mt-3 text-xs text-slate-500">Both paid predictions completed without retries, but Replicate took 5 minutes for clip 1 and almost 29 minutes for clip 2. Resumable provider-job collection remains the next runner fix.</p>
+          <p className="mt-3 text-xs text-slate-500">The final render reused the accepted clips, added one Fish narration, and made no new Replicate call. Provider prediction IDs now persist so a slow clip can be collected later without buying a duplicate.</p>
         </section>
 
         <section data-testid="lego-quality-proof">
@@ -148,12 +144,13 @@ export default function ThreeDBreakdownRepositoryPage() {
               <li>BYOK requirements that report key names without exposing values.</li>
               <li>The same story directors, prompt builders, scene validator, and renderer source used by Wiggly.</li>
               <li>A free smoke test and a fixture that prove the Style B contract without calling a provider.</li>
-              <li>A local runner that permits one explicitly approved image or video clip at a time.</li>
+              <li>A local runner that gates every provider call, renders the final video locally, and refuses to finalize a broken file.</li>
             </ul>
             <div className="mt-4 rounded-md bg-slate-950 p-4 font-mono text-xs leading-6 text-slate-100">
               npm run format:three-d -- check --stage=plan<br />
               npm run format:three-d -- validate --run=&lt;run-id&gt;<br />
-              npm run format:three-d -- inspect --run=&lt;run-id&gt;
+              npm run format:three-d -- inspect --run=&lt;run-id&gt;<br />
+              npm run format:three-d -- finalize --run=&lt;run-id&gt; --approve-final
             </div>
           </article>
         </section>

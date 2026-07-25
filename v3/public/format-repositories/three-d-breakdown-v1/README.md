@@ -9,9 +9,9 @@ This Repo packages the recipe behind Wiggly's existing 3D Breakdown Format. It d
 3. One six-frame storyboard contact sheet.
 4. Four full-quality 9:16 video endpoints: frames 1, 3, 4, and 6.
 5. After separate approval, two continuous 10-second 480p clips.
-6. Later: Fish voice and one 20-second MP4.
+6. One Fish narration and one final 20-second MP4 rendered through `AdRenderSurface`.
 
-The storyboard is a planning reference. Its small panel crops must never become video endpoints. This version stops after two inspected video clips; voice generation and final composition remain disabled.
+The storyboard is a planning reference. Its small panel crops must never become video endpoints.
 
 ## Commands
 
@@ -44,6 +44,19 @@ npm run format:three-d -- inspect --run=my-run
 ```
 
 If Replicate is still processing after the local wait ends, the runner saves the prediction ID instead of failing the clip. Run the same `video` command again to check and collect that exact job. A saved active job never requires another approval and never creates a replacement generation.
+
+Finish with one approved voice call and a local render:
+
+```bash
+npm run format:three-d -- check --stage=voice
+npm run format:three-d -- voice --run=my-run --approve-voice
+npm run format:three-d -- check --stage=final
+npm run format:three-d -- render --run=my-run
+npm run format:three-d -- inspect --run=my-run
+npm run format:three-d -- finalize --run=my-run --approve-final
+```
+
+`render`, `inspect`, and `finalize` are local and make no provider calls. Do not finalize just because rendering completed; watch the video first.
 
 Never paste keys into prompts, files, run records, or chat. Add the required key names to `.env.local`.
 

@@ -65,9 +65,88 @@
     "fontFeel": "sans"
   },
   "audio": {
-    "status": "none",
-    "transcript": "",
-    "captions": []
+    "status": "generated",
+    "storageId": "local:agent-runs/lego-origin-world-arc-proof/audio/narration.wav",
+    "url": "agent-runs/lego-origin-world-arc-proof/audio/narration.wav",
+    "mimeType": "audio/wav",
+    "durationMs": 19193,
+    "durationSeconds": 19.193,
+    "transcript": "How do you sell toys when nobody has money?\nDuring the global economic crisis, carpenter Ole Kirk Kristiansen needed easy saleable products.\nLEGO began with simple wooden toys like cars, airplanes, and yoyos.\nThis pivot toward accessible play still anchors the entire brand today.\nWatch the full story.",
+    "captions": [
+      {
+        "text": "How do you sell",
+        "startMs": 0,
+        "endMs": 1280
+      },
+      {
+        "text": "toys when nobody has",
+        "startMs": 1280,
+        "endMs": 2560
+      },
+      {
+        "text": "money?",
+        "startMs": 2560,
+        "endMs": 2879
+      },
+      {
+        "text": "During the global economic",
+        "startMs": 2879,
+        "endMs": 4060
+      },
+      {
+        "text": "crisis, carpenter Ole Kirk",
+        "startMs": 4060,
+        "endMs": 5241
+      },
+      {
+        "text": "Kristiansen needed easy saleable",
+        "startMs": 5241,
+        "endMs": 6422
+      },
+      {
+        "text": "products.",
+        "startMs": 6422,
+        "endMs": 6718
+      },
+      {
+        "text": "LEGO began with simple",
+        "startMs": 6718,
+        "endMs": 8637
+      },
+      {
+        "text": "wooden toys like cars,",
+        "startMs": 8637,
+        "endMs": 10556
+      },
+      {
+        "text": "airplanes, yoyos.",
+        "startMs": 10556,
+        "endMs": 11516
+      },
+      {
+        "text": "This pivot toward accessible",
+        "startMs": 11516,
+        "endMs": 12912
+      },
+      {
+        "text": "play still anchors the",
+        "startMs": 12912,
+        "endMs": 14308
+      },
+      {
+        "text": "entire brand today.",
+        "startMs": 14308,
+        "endMs": 15354
+      },
+      {
+        "text": "Watch the full story.",
+        "startMs": 15354,
+        "endMs": 19193
+      }
+    ],
+    "provider": "fish-studio",
+    "model": "fish-audio/s2.1-pro-free:0873499c22e24d13b074fa76d27562e5",
+    "generatedAt": 1784951050090
   },
   "layout": {
     "preset": "three-d-breakdown",
@@ -359,6 +438,13 @@
         "invisible-problem"
       ],
       "scrapedAt": 1784937020100
+    },
+    "finalVideo": {
+      "status": "ready",
+      "storageId": "local:agent-runs/lego-origin-world-arc-proof/final.mp4",
+      "url": "agent-runs/lego-origin-world-arc-proof/final.mp4",
+      "mimeType": "video/mp4",
+      "durationMs": 20000
     }
   },
   "metadata": {

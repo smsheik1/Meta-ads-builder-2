@@ -18,16 +18,17 @@
   },
   "tools": {
     "node": {
-      "requiredFor": ["plan", "images", "voice", "video"]
+      "requiredFor": ["plan", "images", "voice", "video", "final"]
     },
     "ffmpeg": {
-      "requiredFor": ["video"]
+      "requiredFor": ["video", "final"]
     },
     "ffprobe": {
-      "requiredFor": ["video"]
+      "requiredFor": ["video", "final"]
+    },
+    "remotion": {
+      "requiredFor": ["final"]
     }
   },
-  "disabledStages": {
-    "voice": "Voice generation waits until the video phase is approved."
-  }
+  "disabledStages": {}
 }

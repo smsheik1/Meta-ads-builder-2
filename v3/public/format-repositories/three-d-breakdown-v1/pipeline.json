@@ -40,7 +40,7 @@
       "output": "Fish voice and one 20-second final MP4",
       "paidMedia": true,
       "approvalRequired": true,
-      "enabled": false
+      "enabled": true
     }
   ]
 }

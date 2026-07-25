@@ -23,7 +23,7 @@ const fixture = readJson<{
 assert.equal(fixture.storyDirectionCount, 5);
 assert.equal(fixture.selectedVisualStyle, "presenter-teardown-vsl");
 assert.equal(fixture.storyboardFrameCount, 6);
-assert.deepEqual(fixture.productionAnchorFrameIndexes, [1, 4]);
+assert.deepEqual(fixture.productionAnchorFrameIndexes, [1, 3, 4, 6]);
 assert.equal(fixture.clipCount, 2);
 assert.equal(fixture.clipDurationSeconds, 10);
 assert.equal(fixture.videoGenerationEnabled, true);

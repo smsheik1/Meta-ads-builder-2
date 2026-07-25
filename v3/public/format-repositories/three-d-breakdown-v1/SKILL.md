@@ -18,7 +18,8 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 - Validate the selected plan before any image call.
 - One explicit approval covers one image call only. Never batch the storyboard and video endpoints.
 - Ask once before the two planned video clips. Submit one clip at a time and inspect clip 1 before spending on clip 2.
-- This Repo version stops after the two inspected video clips. Do not generate voice or a final MP4.
+- Generate one explicitly approved Fish narration only after both clips pass inspection.
+- Render the final MP4 locally through the packaged Remotion entry and `AdRenderSurface`. Never rebuild or replace the renderer.
 - Never print secret values. Report only missing key names.
 - Fail loudly. Do not switch providers, repair model output, retry automatically, or hide an error.
 
@@ -36,7 +37,9 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 10. After explicit approval, generate video clip 1, inspect it, then generate video clip 2.
     - If a clip is still processing, its Replicate prediction ID is saved. Run the same command again without new approval to check that job; never submit a replacement.
 11. Run `inspect` again and review `video-contact-sheet.jpg`.
-12. Stop at `clips-ready`; voice and final composition remain locked.
+12. Run `voice --approve-voice`, then `render`.
+13. Run `inspect`, watch the final MP4, and use `finalize --approve-final` only if the creative result is genuinely usable.
+14. Return the finalized MP4 to the user.
 
 ## Good result
 
@@ -47,4 +50,5 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 - All four video endpoints are sharp, use the approved recurring subjects, and show the exact intended start or end state.
 - Storyboard panel crops guide endpoint generation but never become Seedance inputs.
 - Both 480p clips use one continuous transformation, follow the approved physical action and world transition, and do not jump to another person, unapproved setting, or visual style.
-- No voice or final-video asset exists yet.
+- Narration ends before the 20-second video ends and is not clipped.
+- The final MP4 is 1080×1920, 20 seconds, contains audio, and preserves the approved two-clip story.
