@@ -1537,6 +1537,28 @@ await assert.rejects(
   /uses abstract proof props instead of a physical product payoff/,
 );
 
+const textBearingPropFrames = makeStoryboardFrames()!;
+textBearingPropFrames[5] = {
+  ...textBearingPropFrames[5]!,
+  visual: "The selected product rests on the workbench while an editorial article page materializes behind it.",
+  motion: "The article page fades into view behind the product.",
+};
+await assert.rejects(
+  () => generateThreeDBreakdownVariantsFromResearch(research, {
+    count: 1,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => JSON.stringify(payloadWithVariants([{
+      ...makeVariant(),
+      storyboardBoard: {
+        frameCount: 6,
+        imagePrompt: "Six distinct vertical production keyframes with a physical product payoff.",
+        frames: textBearingPropFrames,
+      },
+    }])),
+  }),
+  /depends on a text-bearing prop that image models cannot render cleanly/,
+);
+
 await assert.rejects(
   () => generateThreeDBreakdownVariantsFromResearch(research, {
     count: 1,

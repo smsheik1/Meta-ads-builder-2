@@ -41,6 +41,50 @@ assert.ok(frameThree.data[centerOffset + 2]! > 220, "Frame 3 crop should preserv
 assert.ok(frameThree.data[centerOffset]! < 35);
 assert.ok(frameThree.data[centerOffset + 1]! < 35);
 
+const extraRowWidth = 600;
+const extraRowHeight = 1200;
+const gutterSize = 4;
+const columnWidth = (extraRowWidth - gutterSize) / 2;
+const rowHeight = (extraRowHeight - (gutterSize * 3)) / 4;
+const extraRowPixels = new Uint8Array(extraRowWidth * extraRowHeight * 4);
+const extraRowColors = [
+  [255, 0, 0],
+  [0, 255, 0],
+  [0, 0, 255],
+  [255, 255, 0],
+  [255, 0, 255],
+  [0, 255, 255],
+  [0, 0, 0],
+  [0, 0, 0],
+] as const;
+
+for (let y = 0; y < extraRowHeight; y += 1) {
+  for (let x = 0; x < extraRowWidth; x += 1) {
+    const inVerticalGutter = x >= columnWidth && x < columnWidth + gutterSize;
+    const rowWithGutters = Math.floor(y / (rowHeight + gutterSize));
+    const rowStart = rowWithGutters * (rowHeight + gutterSize);
+    const inHorizontalGutter = y >= rowStart + rowHeight && rowWithGutters < 3;
+    const color = inVerticalGutter || inHorizontalGutter
+      ? [255, 255, 255]
+      : extraRowColors[(Math.min(3, rowWithGutters) * 2) + (x > columnWidth ? 1 : 0)]!;
+    const offset = (y * extraRowWidth + x) * 4;
+    extraRowPixels[offset] = color[0];
+    extraRowPixels[offset + 1] = color[1];
+    extraRowPixels[offset + 2] = color[2];
+    extraRowPixels[offset + 3] = 255;
+  }
+}
+
+const extraRowBoard = new Uint8Array(encode({
+  width: extraRowWidth,
+  height: extraRowHeight,
+  data: extraRowPixels,
+}, 100).data);
+const frameSix = decode(cropThreeDStoryboardPanel(extraRowBoard, 6), { useTArray: true, formatAsRGBA: true });
+const frameSixCenter = (Math.floor(frameSix.height / 2) * frameSix.width + Math.floor(frameSix.width / 2)) * 4;
+assert.ok(frameSix.data[frameSixCenter + 1]! > 220, "Frame 6 should use the sixth panel, not a duplicated fourth row.");
+assert.ok(frameSix.data[frameSixCenter + 2]! > 220);
+
 const validPngBytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const preparedBrandInputs = await prepareThreeDBrandReferenceImageInputs([
   "https://brand.example/hero.png",

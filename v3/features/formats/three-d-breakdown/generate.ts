@@ -620,6 +620,7 @@ const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
 );
 
 const abstractProofPropPattern = /\b(?:abstract\s+)?(?:proof|progress|comparison|evidence)\s+(?:blocks?|tokens?|counters?|cubes?)\b/i;
+const textBearingPropPattern = /\b(?:article\s+page|newspaper|document|receipt|poster|sign(?:age|board)?|web\s?page)\b/i;
 
 const parseStoryboardFrames = (value: unknown): NonNullable<ThreeDBreakdownStoryboardBoard["frames"]> => {
   if (!Array.isArray(value) || value.length !== THREE_D_STORYBOARD_FRAME_CONTRACTS.length) {
@@ -644,6 +645,9 @@ const parseStoryboardFrames = (value: unknown): NonNullable<ThreeDBreakdownStory
     }
     if (abstractProofPropPattern.test([visual, camera, motion, editingNote].join(" "))) {
       throw new Error(`3D Breakdown storyboard frame ${index + 1} uses abstract proof props instead of a physical product payoff.`);
+    }
+    if (textBearingPropPattern.test([visual, camera, motion, editingNote].join(" "))) {
+      throw new Error(`3D Breakdown storyboard frame ${index + 1} depends on a text-bearing prop that image models cannot render cleanly.`);
     }
     return {
       ...contract,
