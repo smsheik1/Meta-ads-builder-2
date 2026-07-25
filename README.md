@@ -38,10 +38,12 @@ We did not build these six videos one by one. **Cartoon Explainer** used the sam
 renderer for Naruto, Danny Phantom, and SpongeBob. **3D Breakdown** used the
 same renderer for Kiala, Grüns, and Theragun.
 
-| Format | What we swapped | What we did not rebuild |
-| --- | --- | --- |
-| [Cartoon Explainer](https://wiggly.agentenamel.com/format-lab/cartoon-explainer) | Characters, voices, backgrounds, and lesson | Layouts, speech bubbles, pacing, renderer, and checks |
-| [3D Breakdown](https://wiggly.agentenamel.com/format-lab/three-d-breakdown) | Brand, product, story, images, and narration | Production steps, blue 3D look, renderer, and checks |
+- **[Cartoon Explainer](https://wiggly.agentenamel.com/format-lab/cartoon-explainer)**
+  - Changed: characters, voices, backgrounds, and lesson.
+  - Reused: layouts, speech bubbles, pacing, renderer, and checks.
+- **[3D Breakdown](https://wiggly.agentenamel.com/format-lab/three-d-breakdown)**
+  - Changed: brand, product, story, images, and narration.
+  - Reused: production steps, blue 3D look, renderer, and checks.
 
 ## Try it with your agent
 
