@@ -473,6 +473,14 @@ assert.ok(
     threeDMediaPromptsSource.includes("simplify the approved frame plan before generation") &&
     !threeDMediaPromptsSource.includes(".slice(0, MAX_SEEDANCE_PROMPT_CHARS)") &&
     threeDImagesSource.includes("seedancePromptLength") &&
+    threeDImagesSource.includes("ReplicatePredictionStillRunningError") &&
+    threeDImagesSource.includes("providerJobId") &&
+    threeDImagesSource.includes("predictionId: activePredictionId") &&
+    threeDImagesSource.includes("preferWaitSeconds: 0") &&
+    threeDImagesSource.includes("pollAttempts: activePredictionId ? 0 : 12") &&
+    threeDImagesSource.includes("onPredictionCreated: async (providerJobId)") &&
+    threeDImagesSource.includes("resumable: Boolean(providerJobId && !providerStopped)") &&
+    quickActionsSource.includes("Check clip ${clipPlan.clipIndex}") &&
     threeDImagesSource.includes("cropThreeDStoryboardPanel") &&
     threeDImagesSource.includes("getReplicateImageInput(startFrame.image.url)") &&
     threeDImagesSource.includes("getReplicateImageInput(endFrameImage.url)") &&

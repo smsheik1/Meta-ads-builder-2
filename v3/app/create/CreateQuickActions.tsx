@@ -717,6 +717,7 @@ function ThreeDBreakdownAssemblyCard({
     <div className="space-y-3">
       {clipPlans.map((clipPlan) => {
         const clipBusy = threeDClipBusyIndex === clipPlan.clipIndex;
+        const clipGenerating = clipPlan.video?.status === "generating";
         const clipReady = clipPlan.video?.status === "ready";
         const clipFailed = clipPlan.video?.status === "failed";
         return (
@@ -727,7 +728,7 @@ function ThreeDBreakdownAssemblyCard({
                 <p className="mt-1 text-xs font-black leading-4 text-slate-950">{clipPlan.label}</p>
               </div>
               <Badge variant={clipReady || (framesReady && !clipPlan.video?.status) ? "default" : "outline"} className="rounded-full text-[10px] font-black uppercase">
-                {clipBusy ? "Generating" : clipReady ? "Ready" : clipFailed ? "Failed" : framesReady ? "Plan ready" : "Needs frames"}
+                {clipBusy || clipGenerating ? "Generating" : clipReady ? "Ready" : clipFailed ? "Failed" : framesReady ? "Plan ready" : "Needs frames"}
               </Badge>
             </div>
             <ThreeDBreakdownMediaPromptEditor
@@ -777,6 +778,8 @@ function ThreeDBreakdownAssemblyCard({
               {clipBusy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Film className="mr-2 size-4" />}
               {clipReady
                 ? `Regenerate clip ${clipPlan.clipIndex}`
+                : clipGenerating
+                  ? `Check clip ${clipPlan.clipIndex}`
                 : !getPreviousClipReady(clipPlan.clipIndex)
                   ? `Generate clip ${clipPlan.clipIndex - 1} first`
                   : `Generate clip ${clipPlan.clipIndex}`}

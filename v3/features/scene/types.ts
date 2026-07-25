@@ -381,6 +381,7 @@ export type ThreeDBreakdownScriptBeat = {
 
 export type ThreeDBreakdownMediaRef = {
   status: ThreeDBreakdownMediaStatus;
+  providerJobId?: string;
   url?: string;
   storageId?: string;
   mimeType?: string;

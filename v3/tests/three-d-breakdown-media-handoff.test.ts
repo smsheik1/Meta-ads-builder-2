@@ -159,6 +159,11 @@ let savedPredictionId = "";
 globalThis.fetch = async (input, init) => {
   const url = String(input);
   if (url.includes("/models/") && url.endsWith("/predictions")) {
+    assert.equal(
+      (init?.headers as Record<string, string> | undefined)?.Prefer,
+      undefined,
+      "Resumable generation must receive the provider job ID immediately instead of waiting synchronously.",
+    );
     postCount += 1;
     return new Response(JSON.stringify({
       id: "slow-seedance",
@@ -198,6 +203,7 @@ try {
       prompt: "Animate the approved product demonstration without text.",
       durationSeconds: 10,
       pollAttempts: 0,
+      preferWaitSeconds: 0,
       onPredictionCreated: (predictionId) => {
         savedPredictionId = predictionId;
       },

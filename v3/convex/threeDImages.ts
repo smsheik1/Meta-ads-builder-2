@@ -4,7 +4,11 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { action } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
-import { generateReplicateNanoBanana2Image, generateReplicateSeedanceVideo } from "../features/formats/jingle/storyboard";
+import {
+  generateReplicateNanoBanana2Image,
+  generateReplicateSeedanceVideo,
+  ReplicatePredictionStillRunningError,
+} from "../features/formats/jingle/storyboard";
 import { createThreeDClipPlans } from "../features/formats/three-d-breakdown/storyboardContracts";
 import {
   buildThreeDProductionFramePrompt,
@@ -478,12 +482,20 @@ export const generateThreeDClip: ReturnType<typeof action> = action({
       throw new Error(`3D Breakdown clip ${typedClipIndex} needs full-quality production frame ${endFrameIndex} first.`);
     }
 
-    nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => (
-      plan.clipIndex === typedClipIndex
-        ? { ...plan, video: { status: "generating" as const } }
-        : plan
-    )) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
-    await patchThreeDScene(ctx, sceneId, nextScene);
+    const activePredictionId = clipPlan.video?.status === "generating"
+      ? clipPlan.video.providerJobId
+      : undefined;
+    if (clipPlan.video?.status === "generating" && !activePredictionId) {
+      throw new Error(`3D Breakdown clip ${typedClipIndex} is still starting. Wait a moment before checking it again.`);
+    }
+    if (!activePredictionId) {
+      nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => (
+        plan.clipIndex === typedClipIndex
+          ? { ...plan, video: { status: "generating" as const } }
+          : plan
+      )) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
+      await patchThreeDScene(ctx, sceneId, nextScene);
+    }
 
     try {
       const seedancePrompt = buildThreeDSeedancePrompt(nextScene, clipPlan);
@@ -513,11 +525,22 @@ export const generateThreeDClip: ReturnType<typeof action> = action({
         prompt: seedancePrompt,
         durationSeconds: clipPlan.durationSeconds,
         resolution: THREE_D_BREAKDOWN_VIDEO_RESOLUTION,
+        predictionId: activePredictionId,
+        preferWaitSeconds: 0,
+        pollAttempts: activePredictionId ? 0 : 12,
+        onPredictionCreated: async (providerJobId) => {
+          nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => (
+            plan.clipIndex === typedClipIndex
+              ? { ...plan, video: { status: "generating" as const, providerJobId } }
+              : plan
+          )) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
+          await patchThreeDScene(ctx, sceneId, nextScene);
+        },
       });
       const stored = await storeThreeDBytes(ctx, result.bytes, result.mimeType);
       nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => (
         plan.clipIndex === typedClipIndex
-          ? { ...plan, video: { status: "ready" as const, ...stored } }
+          ? { ...plan, video: { status: "ready" as const, providerJobId: activePredictionId || plan.video?.providerJobId, ...stored } }
           : plan
       )) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
       console.log("[wiggly:3d-breakdown] seedance:clip:ready", {
@@ -527,10 +550,20 @@ export const generateThreeDClip: ReturnType<typeof action> = action({
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "3D Breakdown Seedance clip generation failed.";
-      console.warn("[wiggly:3d-breakdown] seedance:clip:failed", { clipIndex: typedClipIndex, message });
+      const providerJobId = error instanceof ReplicatePredictionStillRunningError
+        ? error.predictionId
+        : activePredictionId || nextScene.layout.clipPlans?.find((plan) => plan.clipIndex === typedClipIndex)?.video?.providerJobId;
+      const providerStopped = /^Replicate Seedance (failed|canceled):/.test(message);
+      console.warn("[wiggly:3d-breakdown] seedance:clip:stopped", {
+        clipIndex: typedClipIndex,
+        message,
+        resumable: Boolean(providerJobId && !providerStopped),
+      });
       nextScene = withUpdatedThreeDClipPlans(nextScene, (plans) => plans.map((plan) => (
         plan.clipIndex === typedClipIndex
-          ? { ...plan, video: { status: "failed" as const, error: message } }
+          ? providerJobId && !providerStopped
+            ? { ...plan, video: { status: "generating" as const, providerJobId } }
+            : { ...plan, video: { status: "failed" as const, error: message } }
           : plan
       )) as NonNullable<ThreeDBreakdownAdScene["layout"]["clipPlans"]>);
     }

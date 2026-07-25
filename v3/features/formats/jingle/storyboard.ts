@@ -635,6 +635,7 @@ export async function generateReplicateSeedanceVideo({
   predictionId,
   onPredictionCreated,
   pollAttempts = 36,
+  preferWaitSeconds = 60,
 }: {
   replicateApiToken: string;
   imageUrl: string;
@@ -646,6 +647,7 @@ export async function generateReplicateSeedanceVideo({
   predictionId?: string;
   onPredictionCreated?: (predictionId: string) => void | Promise<void>;
   pollAttempts?: number;
+  preferWaitSeconds?: number;
 }) {
   if (!replicateApiToken) throw new Error("Replicate video generation is not configured.");
   const duration = Math.min(15, Math.max(5, Math.round(durationSeconds)));
@@ -668,7 +670,7 @@ export async function generateReplicateSeedanceVideo({
       headers: {
         Authorization: `Bearer ${replicateApiToken}`,
         "Content-Type": "application/json",
-        Prefer: "wait=60",
+        ...(preferWaitSeconds > 0 ? { Prefer: `wait=${preferWaitSeconds}` } : {}),
       },
       body: JSON.stringify({
         input: {
