@@ -401,11 +401,12 @@ assert.ok(
 assert.ok(
   storyboardContractsSource.includes("const presenterFrameGroups") &&
     storyboardContractsSource.includes("[[1, 2, 3], [4, 5, 6]]") &&
-    storyboardContractsSource.includes("Create one continuous") &&
-    storyboardContractsSource.includes("No montage, hard cut") &&
+    storyboardContractsSource.includes("Create one coherent") &&
+    storyboardContractsSource.includes("use three readable sub-shots") &&
+    storyboardContractsSource.includes("Each sub-shot must add new information") &&
     storyboardContractsSource.includes("durationSeconds: 10") &&
     !storyboardContractsSource.includes("Clip 6: product reframe"),
-  "Presenter teardown 3D Breakdown must use two continuous 10s clips from four full-quality endpoints, not a montage of six separate shots.",
+  "Presenter teardown 3D Breakdown must use two coherent 10s clips with three readable storyboard beats each.",
 );
 assert.ok(
   !createClientSource.includes("min-w-[1280px]") &&
