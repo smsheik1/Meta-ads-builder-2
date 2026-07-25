@@ -31,6 +31,7 @@ import {
   BRICK_STORYBOARD_VIDEO_MODEL,
   generateReplicateNanoBanana2Image,
   generateReplicateSeedanceVideo,
+  ReplicatePredictionStillRunningError,
 } from "../features/formats/jingle/storyboard";
 import type { StoredWebsiteResearchResult } from "../features/research/types";
 import { createThreeDBreakdownAdScene } from "../features/scene/createThreeDBreakdownScene";
@@ -62,6 +63,7 @@ type VideoAttempt = {
   createdAt: string;
   provider: "replicate";
   model: typeof BRICK_STORYBOARD_VIDEO_MODEL;
+  predictionId?: string;
   output?: string;
   error?: string;
 };
@@ -432,6 +434,11 @@ async function generateVideoClip(
   runId: string,
   scene: ThreeDBreakdownAdScene,
   clipIndex: ThreeDBreakdownClipIndex,
+  options: {
+    predictionId?: string;
+    onPredictionCreated?: (predictionId: string) => void | Promise<void>;
+    pollAttempts?: number;
+  } = {},
 ) {
   const clipPlan = scene.layout.clipPlans?.find((clip) => clip.clipIndex === clipIndex);
   if (!clipPlan) throw new Error(`Video clip ${clipIndex} is missing from the scene.`);
@@ -457,6 +464,7 @@ async function generateVideoClip(
     prompt: buildThreeDSeedancePrompt(scene, clipPlan),
     durationSeconds: clipPlan.durationSeconds,
     resolution: THREE_D_BREAKDOWN_VIDEO_RESOLUTION,
+    ...options,
   });
   const relativeOutput = `agent-runs/${runId}/videos/clip-${clipIndex}.mp4`;
   await mkdir(path.dirname(localMediaPath(relativeOutput)), { recursive: true });
@@ -479,36 +487,50 @@ async function video() {
   const clipIndex = Number(requiredArgument("clip")) as ThreeDBreakdownClipIndex;
   const state = await loadState(runId);
   const scene = await loadScene(runId);
-  const attempts = (state.videoAttempts || []).filter((attempt) => attempt.clipIndex === clipIndex).length;
-  assertThreeDBreakdownVideoCallAllowed({
-    approved: hasFlag("approve-video"),
-    attempts,
-    clipIndex,
-    scene,
-  });
   if (!process.env.REPLICATE_API_TOKEN?.trim()) {
     throw new Error("Add REPLICATE_API_TOKEN to v3/.env.local before video generation.");
   }
-  const attempt: VideoAttempt = {
+  const clipAttempts = (state.videoAttempts || []).filter((attempt) => attempt.clipIndex === clipIndex);
+  const activeAttempt = [...clipAttempts].reverse().find((attempt) => attempt.status === "generating");
+  if (activeAttempt && !activeAttempt.predictionId) {
+    throw new Error(`Video clip ${clipIndex} is marked as generating but has no saved Replicate prediction ID. Inspect the provider before approving another paid call.`);
+  }
+  const attempt: VideoAttempt = activeAttempt || {
     clipIndex,
-    number: attempts + 1,
+    number: clipAttempts.length + 1,
     status: "generating",
     createdAt: new Date().toISOString(),
     provider: "replicate",
     model: BRICK_STORYBOARD_VIDEO_MODEL,
   };
-  state.videoAttempts = [...(state.videoAttempts || []), attempt];
-  state.status = "video-started";
+  if (!activeAttempt) {
+    assertThreeDBreakdownVideoCallAllowed({
+      approved: hasFlag("approve-video"),
+      attempts: clipAttempts.length,
+      clipIndex,
+      scene,
+    });
+    state.videoAttempts = [...(state.videoAttempts || []), attempt];
+    state.status = "video-started";
+  }
   const generatingScene = updateClipPlan(scene, clipIndex, (clip) => ({
     ...clip,
     video: { status: "generating" },
   }));
   await Promise.all([saveState(state), saveScene(runId, generatingScene)]);
   try {
-    const nextScene = await generateVideoClip(runId, generatingScene, clipIndex);
+    const nextScene = await generateVideoClip(runId, generatingScene, clipIndex, {
+      predictionId: activeAttempt?.predictionId,
+      pollAttempts: activeAttempt ? 0 : undefined,
+      onPredictionCreated: async (predictionId) => {
+        attempt.predictionId = predictionId;
+        await saveState(state);
+      },
+    });
     const output = nextScene.layout.clipPlans?.find((clip) => clip.clipIndex === clipIndex)?.video;
     attempt.status = "ready";
     attempt.output = output?.status === "ready" ? output.url : undefined;
+    attempt.error = undefined;
     state.status = nextScene.layout.clipPlans?.every((clip) => clip.video?.status === "ready")
       ? "clips-ready"
       : "video-started";
@@ -516,6 +538,17 @@ async function video() {
     console.log(`Generated video clip ${clipIndex}. Inspect it before another paid call.`);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    const savedPredictionId = error instanceof ReplicatePredictionStillRunningError
+      ? error.predictionId
+      : attempt.predictionId;
+    if (savedPredictionId && !/^Replicate Seedance (failed|canceled):/.test(message)) {
+      attempt.predictionId = savedPredictionId;
+      attempt.status = "generating";
+      attempt.error = error instanceof ReplicatePredictionStillRunningError ? undefined : message;
+      await saveScene(runId, generatingScene);
+      console.log(`Video clip ${clipIndex} was not ready to collect. Prediction ${savedPredictionId} remains saved; run the same video command again to check it without another paid generation.${attempt.error ? ` Last error: ${attempt.error}` : ""}`);
+      return;
+    }
     attempt.status = "failed";
     attempt.error = message;
     await saveScene(runId, updateClipPlan(generatingScene, clipIndex, (clip) => ({

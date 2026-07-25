@@ -34,6 +34,7 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 8. Generate the storyboard first, then full-quality endpoint frames 1, 3, 4, and 6, one approved image call at a time. Frames 1-2 use the lifestyle setup, frames 3-4 use the Style B blue/cyan blueprint-grid explanation stage, and frames 5-6 return to the lifestyle setting for the payoff.
 9. Run `inspect`.
 10. After explicit approval, generate video clip 1, inspect it, then generate video clip 2.
+    - If a clip is still processing, its Replicate prediction ID is saved. Run the same command again without new approval to check that job; never submit a replacement.
 11. Run `inspect` again and review `video-contact-sheet.jpg`.
 12. Stop at `clips-ready`; voice and final composition remain locked.
 

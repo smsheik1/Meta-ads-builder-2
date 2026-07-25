@@ -43,6 +43,8 @@ npm run format:three-d -- video --run=my-run --clip=2 --approve-video
 npm run format:three-d -- inspect --run=my-run
 ```
 
+If Replicate is still processing after the local wait ends, the runner saves the prediction ID instead of failing the clip. Run the same `video` command again to check and collect that exact job. A saved active job never requires another approval and never creates a replacement generation.
+
 Never paste keys into prompts, files, run records, or chat. Add the required key names to `.env.local`.
 
 ## Important boundary

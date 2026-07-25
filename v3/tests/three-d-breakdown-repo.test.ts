@@ -299,6 +299,10 @@ assert.equal(readyVideo.ok, true);
 const runnerSource = readFileSync("scripts/three-d-breakdown-format.ts", "utf8");
 assert.match(runnerSource, /commandAvailable\("ffmpeg", "-version"\)/);
 assert.match(runnerSource, /commandAvailable\("ffprobe", "-version"\)/);
+assert.match(runnerSource, /attempt\.predictionId = predictionId;[\s\S]*await saveState\(state\)/);
+assert.ok(runnerSource.includes("predictionId: activeAttempt?.predictionId"));
+assert.match(runnerSource, /error instanceof ReplicatePredictionStillRunningError/);
+assert.match(runnerSource, /marked as generating but has no saved Replicate prediction ID/);
 const sceneContract = JSON.parse(readFileSync("public/format-repositories/three-d-breakdown-v1/scene-contract.json", "utf8"));
 assert.deepEqual(sceneContract.storyboard.worldSequence.map((stage: { role: string }) => stage.role), [
   "lifestyle-setup",

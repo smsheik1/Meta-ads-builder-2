@@ -32,6 +32,7 @@
       "paidMedia": true,
       "approvalRequired": true,
       "oneCallAtATime": true,
+      "resumePolicy": "Persist each Replicate prediction ID. If local polling ends first, keep the clip processing and collect that same prediction on the next video command.",
       "enabled": true
     },
     {

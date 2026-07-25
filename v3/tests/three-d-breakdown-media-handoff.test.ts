@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { decode, encode } from "jpeg-js";
-import { generateReplicateSeedanceVideo } from "../features/formats/jingle/storyboard";
+import {
+  generateReplicateSeedanceVideo,
+  ReplicatePredictionStillRunningError,
+} from "../features/formats/jingle/storyboard";
 import { THREE_D_BREAKDOWN_VIDEO_RESOLUTION } from "../features/formats/three-d-breakdown/mediaPrompts";
 import { cropThreeDStoryboardPanel } from "../features/formats/three-d-breakdown/storyboardImageCrop";
 import { prepareThreeDBrandReferenceImageInputs } from "../features/formats/three-d-breakdown/productReference";
@@ -146,6 +149,75 @@ try {
   assert.equal(capturedRequest.input?.last_frame_image, "https://media.example/end.jpg");
   assert.equal(capturedRequest.input?.resolution, "720p");
   assert.equal(capturedRequest.input?.generate_audio, false);
+} finally {
+  globalThis.fetch = originalFetch;
+}
+
+let postCount = 0;
+let resumeCount = 0;
+let savedPredictionId = "";
+globalThis.fetch = async (input, init) => {
+  const url = String(input);
+  if (url.includes("/models/") && url.endsWith("/predictions")) {
+    postCount += 1;
+    return new Response(JSON.stringify({
+      id: "slow-seedance",
+      status: "processing",
+      urls: { get: "https://api.replicate.com/v1/predictions/slow-seedance" },
+    }), {
+      status: 201,
+      headers: { "content-type": "application/json" },
+    });
+  }
+  if (url === "https://api.replicate.com/v1/predictions/slow-seedance") {
+    assert.equal(init?.method, undefined, "Resuming must GET the saved prediction instead of creating another one.");
+    resumeCount += 1;
+    return new Response(JSON.stringify({
+      id: "slow-seedance",
+      status: "succeeded",
+      output: "https://media.example/resumed-clip.mp4",
+    }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  }
+  if (url === "https://media.example/resumed-clip.mp4") {
+    return new Response(new Uint8Array([4, 5, 6]), {
+      status: 200,
+      headers: { "content-type": "video/mp4" },
+    });
+  }
+  throw new Error(`Unexpected resumable mocked fetch: ${url}`);
+};
+
+try {
+  await assert.rejects(
+    generateReplicateSeedanceVideo({
+      replicateApiToken: "test-token",
+      imageUrl: "https://media.example/start.jpg",
+      prompt: "Animate the approved product demonstration without text.",
+      durationSeconds: 10,
+      pollAttempts: 0,
+      onPredictionCreated: (predictionId) => {
+        savedPredictionId = predictionId;
+      },
+    }),
+    (error) => error instanceof ReplicatePredictionStillRunningError
+      && error.predictionId === "slow-seedance",
+  );
+  assert.equal(savedPredictionId, "slow-seedance", "The paid prediction ID must be persisted before local polling ends.");
+
+  const resumed = await generateReplicateSeedanceVideo({
+    replicateApiToken: "test-token",
+    imageUrl: "https://media.example/start.jpg",
+    prompt: "Animate the approved product demonstration without text.",
+    durationSeconds: 10,
+    predictionId: savedPredictionId,
+    pollAttempts: 0,
+  });
+  assert.equal(resumed.mimeType, "video/mp4");
+  assert.equal(postCount, 1, "Resuming the same prediction must not create a duplicate paid generation.");
+  assert.equal(resumeCount, 1);
 } finally {
   globalThis.fetch = originalFetch;
 }
