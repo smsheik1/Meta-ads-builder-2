@@ -10,7 +10,10 @@ import {
   generateFishThreeDBreakdownVoiceover,
   THREE_D_BREAKDOWN_ZACH_STYLE_VOICE_ID,
 } from "../features/audio/fishStudio";
-import { extractThreeDBreakdownEvidence } from "../features/formats/three-d-breakdown/evidence";
+import {
+  extractThreeDBreakdownEvidence,
+  isThreeDBreakdownEvidenceForProduct,
+} from "../features/formats/three-d-breakdown/evidence";
 import { getThreeDBreakdownCtaError } from "../features/formats/three-d-breakdown/cta";
 import { editThreeDBreakdownMediaPrompt } from "../features/formats/three-d-breakdown/editablePrompts";
 import { editThreeDBreakdownScriptBeat } from "../features/formats/three-d-breakdown/editScript";
@@ -318,6 +321,10 @@ const grunsProductResearch = makeResearch({
     offer: "Daily nutrition gummies with vitamins, minerals, prebiotics, and whole-food ingredients.",
     audience: "People who want an easier daily nutrition routine.",
     ctaDirection: "Try Grüns gummies",
+    proof: [
+      "Grüns Logo Hat uses embroidered cotton apparel.",
+      "Grüns Daily Nutrition Gummies combine vitamins, minerals, prebiotics, and whole-food ingredients.",
+    ],
   },
   productCatalog: {
     provider: "shopify-products-json",
@@ -1090,7 +1097,41 @@ assert.equal(storySlate.recommendedDirectionId, "idea-1");
 assert.equal(storySlate.directions[0]?.evidenceUseType, reviewEvidence.evidenceUseType);
 assert.ok(storySlate.directions[0]?.visualEngine.includes("miniature route"));
 assert.ok(!(THREE_D_REVEAL_PATTERNS as readonly string[]).includes("proof-blocks"));
-assert.ok(evidenceItems.every((item) => !item.possibleRevealPatterns.includes("proof-blocks")));
+assert.ok(evidenceItems.every((item) => !(item.possibleRevealPatterns as readonly string[]).includes("proof-blocks")));
+
+let noRetryProviderCalls = 0;
+let recordedProviderCalls = 0;
+await assert.rejects(
+  generateThreeDBreakdownStoryDirectionsFromResearch(research, {
+    allowRetries: false,
+    nvidiaNimApiKey: "test-key",
+    nvidiaNimChatCompletion: async () => {
+      noRetryProviderCalls += 1;
+      return "{}";
+    },
+    onProviderCall: () => {
+      recordedProviderCalls += 1;
+    },
+  }),
+  /story directions|directions/i,
+);
+assert.equal(noRetryProviderCalls, 1, "The Repo runner option must not hide a second provider call.");
+assert.equal(recordedProviderCalls, 1, "Provider calls must be recorded before dispatch.");
+assert.equal(
+  isThreeDBreakdownEvidenceForProduct(
+    {
+      sourceName: "Therabody Theragun Pro",
+      sourceUrl: "https://therabody.com/products/theragun-pro",
+      text: "Therabody Theragun Pro delivers commercial-grade percussive massage.",
+    },
+    {
+      title: "Therabody Theragun Mini",
+      url: "https://therabody.com/products/theragun-mini",
+    },
+  ),
+  false,
+  "Evidence from a sibling product must not pass on shared brand/category words.",
+);
 
 const selectedGrunsEvidence = extractThreeDBreakdownEvidence(grunsProductResearch)
   .find((item) => item.evidenceUseType !== "category" && item.visualPotentialScore >= 0.65)!;
@@ -2435,6 +2476,31 @@ const sceneValidation = validateThreeDBreakdownScene(scene);
 assert.deepEqual(sceneValidation.errors, []);
 assert.equal(sceneValidation.valid, true);
 
+const proofBlocksScene = structuredClone(scene);
+proofBlocksScene.layout.storyContract.wowMomentType = "proof-blocks" as never;
+assert.ok(validateThreeDBreakdownScene(proofBlocksScene).errors.includes("3D Breakdown wow moment pattern is invalid."));
+
+const malformedScriptScene = structuredClone(scene);
+malformedScriptScene.layout.scriptBeats = malformedScriptScene.layout.scriptBeats.map((beat, index) => ({
+  ...beat,
+  narration: index === 0
+    ? "This breaks. Then this breaks."
+    : index === 4
+      ? "Shop cookies today."
+      : "Short line.",
+})) as ThreeDBreakdownAdScene["layout"]["scriptBeats"];
+const malformedScriptErrors = validateThreeDBreakdownScene(malformedScriptScene).errors;
+assert.ok(malformedScriptErrors.includes("3D Breakdown beat 1 must be one sentence."));
+assert.ok(malformedScriptErrors.includes("3D Breakdown script must have 45-65 words."));
+
+const generatedTextScene = structuredClone(scene);
+generatedTextScene.layout.storyboardBoard!.imagePrompt = "Generate a readable headline and logo inside every panel.";
+assert.ok(
+  validateThreeDBreakdownScene(generatedTextScene).errors.includes(
+    "3D Breakdown storyboard prompt must not request generated readable text.",
+  ),
+);
+
 const legacyScene = {
   ...scene,
   layout: {
@@ -2689,6 +2755,15 @@ const readyMediaScene: ThreeDBreakdownAdScene = {
     })),
   },
 };
+const editedReadyScriptScene = editThreeDBreakdownScriptBeat(
+  readyMediaScene,
+  2,
+  "The warm attachment reaches the muscle instead of bouncing off the surface.",
+);
+assert.equal(editedReadyScriptScene.layout.storyboardBoard?.image?.status, "idle");
+assert.ok(editedReadyScriptScene.layout.storyboardBoard?.frames?.every((frame) => frame.image?.status === "idle"));
+assert.ok(editedReadyScriptScene.layout.clipPlans?.every((plan) => plan.video?.status === "idle"));
+
 const editedStoryboardPromptScene = editThreeDBreakdownMediaPrompt(readyMediaScene, { kind: "storyboard" }, "Six bold cookie science panels with a warm bakery payoff.");
 assert.equal(editedStoryboardPromptScene.layout.storyboardBoard?.creativePrompt, "Six bold cookie science panels with a warm bakery payoff.");
 assert.ok(editedStoryboardPromptScene.layout.storyboardBoard?.frames?.every((frame) => frame.image?.status === "idle"));
@@ -2710,6 +2785,22 @@ assert.equal(
 );
 assert.ok(editedAnchorPromptScene.layout.clipPlans?.every((plan) => plan.video?.status === "idle"));
 assert.ok(buildThreeDProductionFramePrompt(editedAnchorPromptScene, firstAnchorFrameIndex).includes("Macro cookie tin opening with warm crumbs"));
+
+const clipOneEndFrameIndex = styleBScene.layout.clipPlans![0]!.frameIndexes.at(-1)!;
+const editedClipOneEndAnchorScene = editThreeDBreakdownMediaPrompt(
+  readyMediaScene,
+  { kind: "anchor", frameIndex: clipOneEndFrameIndex },
+  "The opened product exposes its mechanism at the end of clip one.",
+);
+assert.equal(
+  editedClipOneEndAnchorScene.layout.storyboardBoard?.frames?.find((frame) => frame.frameIndex === firstAnchorFrameIndex)?.image?.status,
+  "ready",
+);
+assert.equal(
+  editedClipOneEndAnchorScene.layout.storyboardBoard?.frames?.find((frame) => frame.frameIndex === clipOneEndFrameIndex)?.image?.status,
+  "idle",
+);
+assert.ok(editedClipOneEndAnchorScene.layout.clipPlans?.every((plan) => plan.video?.status === "idle"));
 
 const metadataAnchorPromptScene = editThreeDBreakdownMediaPrompt(
   readyMediaScene,

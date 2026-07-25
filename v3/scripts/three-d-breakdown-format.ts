@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
-import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { bundle } from "@remotion/bundler";
@@ -57,6 +57,7 @@ const runsRoot = path.join(packageRoot, "agent-runs");
 const narrationTargetMs = 18_100;
 const narrationMaximumMs = 18_500;
 const narrationMaximumRetimeRatio = 1.25;
+const maxPlanningCalls = 3;
 
 type ImageAttempt = {
   asset: "storyboard" | `anchor-${number}`;
@@ -156,6 +157,23 @@ const saveState = async (state: RunState) => writeJson(path.join(runDirectory(st
 const loadResearch = async (runId: string) => readJson<StoredWebsiteResearchResult>(path.join(runDirectory(runId), "research.json"));
 const loadScene = async (runId: string) => readJson<ThreeDBreakdownAdScene>(path.join(runDirectory(runId), "scene.json"));
 const saveScene = async (runId: string, scene: ThreeDBreakdownAdScene) => writeJson(path.join(runDirectory(runId), "scene.json"), scene);
+const qualityReportPath = (runId: string) => path.join(runDirectory(runId), "quality-report.json");
+
+const withoutFinalArtifacts = async (
+  runId: string,
+  state: RunState,
+  scene: ThreeDBreakdownAdScene,
+) => {
+  state.finalRender = undefined;
+  await rm(qualityReportPath(runId), { force: true });
+  return {
+    ...scene,
+    layout: {
+      ...scene.layout,
+      finalVideo: undefined,
+    },
+  };
+};
 
 const attemptsForAsset = (state: RunState, asset: ReviewAsset) => (
   asset.startsWith("clip-")
@@ -317,18 +335,29 @@ async function assertPlanningApproved(state: RunState) {
     await saveState(state);
   }
   if (!state.planningApprovedAt) throw new Error("Planning approval is required. Review the run, then pass --approve-planning.");
-  if (state.planningCalls >= 2) throw new Error("This run already used its two planned NIM calls. Inspect the saved output instead of spending again.");
 }
+
+const recordPlanningCall = (state: RunState) => async () => {
+  if (state.planningCalls >= maxPlanningCalls) {
+    throw new Error(`This run already used its ${maxPlanningCalls} planned NIM calls. Start a new run instead of spending silently.`);
+  }
+  state.planningCalls += 1;
+  await saveState(state);
+};
 
 async function directions() {
   await loadEnvironment();
   const runId = requiredArgument("run");
   const state = await loadState(runId);
   await assertPlanningApproved(state);
+  if (state.status !== "draft") {
+    throw new Error("Story directions already ran for this project. Inspect the saved slate instead of calling NIM again.");
+  }
   const slate = await generateThreeDBreakdownStoryDirectionsFromResearch(await loadResearch(runId), {
+    allowRetries: false,
+    onProviderCall: recordPlanningCall(state),
     storySubject: state.subject,
   });
-  state.planningCalls += 1;
   state.status = "directions-ready";
   await Promise.all([
     writeJson(path.join(runDirectory(runId), "story-directions.json"), slate),
@@ -342,6 +371,9 @@ async function select() {
   const runId = requiredArgument("run");
   const state = await loadState(runId);
   await assertPlanningApproved(state);
+  if (state.status !== "directions-ready") {
+    throw new Error("Select a direction only after the saved five-direction slate is ready.");
+  }
   const directionId = requiredArgument("direction");
   const slate = await readJson<{ directions: ThreeDBreakdownStoryDirection[] }>(
     path.join(runDirectory(runId), "story-directions.json"),
@@ -350,7 +382,9 @@ async function select() {
   if (!selectedStoryDirection) throw new Error(`Direction ${directionId} is not in the saved slate.`);
   const research = await loadResearch(runId);
   const generation = await generateThreeDBreakdownVariantsFromResearch(research, {
+    allowRetries: false,
     count: 1,
+    onProviderCall: recordPlanningCall(state),
     selectedStoryDirection,
     storySubject: state.subject,
   });
@@ -367,7 +401,6 @@ async function select() {
     storySubject: state.subject,
     variant,
   });
-  state.planningCalls += 1;
   state.status = "scene-ready";
   await Promise.all([saveScene(runId, scene), saveState(state)]);
   console.log("Saved the selected script, six-frame storyboard plan, and two-clip scene contract. No image or video was generated.");
@@ -427,7 +460,10 @@ async function fetchReferenceDataUrls(scene: ThreeDBreakdownAdScene) {
     productUrls = [...productUrls, extra?.packshotImageUrl, extra?.useImageUrl].filter((url): url is string => Boolean(url));
   }
   const productInputs = await prepareThreeDBrandReferenceImageInputs(productUrls);
-  const brandInputs = productInputs.length
+  if (product && !productInputs.length) {
+    throw new Error(`Could not download a usable product reference for ${product.title}. Fix the saved product image before paid generation.`);
+  }
+  const brandInputs = product
     ? []
     : await prepareThreeDBrandReferenceImageInputs(scene.layout.referenceImages?.brandImageUrls || []);
   return [style, ...productInputs, ...brandInputs].slice(0, 4);
@@ -454,6 +490,7 @@ async function generateStoryboard(runId: string, scene: ThreeDBreakdownAdScene, 
     ...scene,
     layout: {
       ...scene.layout,
+      finalVideo: undefined,
       storyboardBoard: {
         ...scene.layout.storyboardBoard!,
         image: { status: "ready" as const, storageId: `local:${relativeOutput}`, url: relativeOutput, mimeType: result.mimeType },
@@ -509,6 +546,7 @@ async function generateAnchor(
     ...scene,
     layout: {
       ...scene.layout,
+      finalVideo: undefined,
       storyboardBoard: {
         ...board,
         frames: board.frames?.map((frame) => (
@@ -533,7 +571,7 @@ async function image() {
   if (frame !== undefined && !Number.isInteger(frame)) throw new Error("Anchor frame must be an integer.");
   const asset: ImageAttempt["asset"] = kind === "storyboard" ? "storyboard" : `anchor-${frame!}`;
   const state = await loadState(runId);
-  const scene = await loadScene(runId);
+  let scene = await loadScene(runId);
   const attempts = state.imageAttempts.filter((attempt) => attempt.asset === asset).length;
   if (kind === "anchor") {
     assertArtifactApproved(state, scene, "storyboard");
@@ -550,6 +588,7 @@ async function image() {
     attempts,
     scene,
   });
+  scene = await withoutFinalArtifacts(runId, state, scene);
   const attempt: ImageAttempt = {
     asset,
     number: attempts + 1,
@@ -558,7 +597,7 @@ async function image() {
   };
   state.imageAttempts.push(attempt);
   state.status = "images-started";
-  await saveState(state);
+  await Promise.all([saveState(state), saveScene(runId, scene)]);
   try {
     const nextScene = kind === "storyboard"
       ? await generateStoryboard(runId, scene, attempt.number)
@@ -588,6 +627,7 @@ function updateClipPlan(
     ...scene,
     layout: {
       ...scene.layout,
+      finalVideo: undefined,
       clipPlans: scene.layout.clipPlans?.map((clip) => clip.clipIndex === clipIndex ? update(clip) : clip),
     },
   };
@@ -650,7 +690,7 @@ async function video() {
   const runId = requiredArgument("run");
   const clipIndex = Number(requiredArgument("clip")) as ThreeDBreakdownClipIndex;
   const state = await loadState(runId);
-  const scene = await loadScene(runId);
+  let scene = await loadScene(runId);
   if (!process.env.REPLICATE_API_TOKEN?.trim()) {
     throw new Error("Add REPLICATE_API_TOKEN to v3/.env.local before video generation.");
   }
@@ -691,6 +731,7 @@ async function video() {
     state.videoAttempts = [...(state.videoAttempts || []), attempt];
     state.status = "video-started";
   }
+  scene = await withoutFinalArtifacts(runId, state, scene);
   const generatingScene: ThreeDBreakdownAdScene = {
     ...scene,
     layout: {
@@ -761,7 +802,8 @@ async function retimeClip() {
   if (!Number.isFinite(visibleSeconds) || visibleSeconds < 3 || visibleSeconds > 9) {
     throw new Error("--action-seconds must be between 3 and 9.");
   }
-  const [state, scene] = await Promise.all([loadState(runId), loadScene(runId)]);
+  const [state, loadedScene] = await Promise.all([loadState(runId), loadScene(runId)]);
+  const scene = await withoutFinalArtifacts(runId, state, loadedScene);
   const attempt = latestReadyAttemptForAsset(state, scene, "clip-2");
   if (!attempt || !("clipIndex" in attempt) || !attempt.output) {
     throw new Error("Clip 2 has no current ready provider result to retime.");
@@ -814,7 +856,7 @@ async function voice() {
   await loadEnvironment();
   const runId = requiredArgument("run");
   const state = await loadState(runId);
-  const scene = await loadScene(runId);
+  let scene = await loadScene(runId);
   assertClipsReady(scene);
   assertArtifactApproved(state, scene, "clip-1");
   assertArtifactApproved(state, scene, "clip-2");
@@ -825,6 +867,7 @@ async function voice() {
   }
   const attempts = state.voiceAttempts || [];
   if (attempts.length >= 3) throw new Error("The voice attempt limit is 3. Fix the script before spending again.");
+  scene = await withoutFinalArtifacts(runId, state, scene);
   const attempt: VoiceAttempt = {
     number: attempts.length + 1,
     status: "generating",
@@ -832,7 +875,7 @@ async function voice() {
     provider: "fish-studio",
   };
   state.voiceAttempts = [...attempts, attempt];
-  await saveState(state);
+  await Promise.all([saveState(state), saveScene(runId, scene)]);
   try {
     const generated = await generateFishThreeDBreakdownVoiceover({
       apiKey: process.env.FISH_STUDIO_APIKEY,
@@ -917,7 +960,7 @@ async function createFinalContactSheet(runId: string, input: string) {
   await runCommand("ffmpeg", [
     "-y",
     "-i", input,
-    "-vf", "fps=1/3,scale=270:-1,tile=3x2:padding=8:margin=8",
+    "-vf", "fps=1/3,scale=270:-1,tile=4x2:padding=8:margin=8",
     "-frames:v", "1",
     localMediaPath(relativeOutput),
   ]);
@@ -927,13 +970,16 @@ async function createFinalContactSheet(runId: string, input: string) {
 async function render() {
   const runId = requiredArgument("run");
   const state = await loadState(runId);
-  const scene = await loadScene(runId);
+  let scene = await loadScene(runId);
   assertClipsReady(scene);
   assertArtifactApproved(state, scene, "clip-1");
   assertArtifactApproved(state, scene, "clip-2");
   if (scene.audio.status !== "generated" || !scene.audio.url || !existsSync(localMediaPath(scene.audio.url))) {
     throw new Error("Generate and inspect narration before final rendering.");
   }
+  scene = await withoutFinalArtifacts(runId, state, scene);
+  state.status = "voice-ready";
+  await Promise.all([saveState(state), saveScene(runId, scene)]);
   const relativeOutput = `agent-runs/${runId}/final.mp4`;
   const output = localMediaPath(relativeOutput);
   const serveUrl = await bundle({
@@ -1002,7 +1048,7 @@ async function createVideoContactSheet(runId: string, clipPaths: string[]) {
     "-i", clipPaths[0]!,
     "-i", clipPaths[1]!,
     "-filter_complex",
-    "[0:v][1:v]concat=n=2:v=1:a=0,fps=1/3,scale=270:-1,tile=3x2:padding=8:margin=8",
+    "[0:v][1:v]concat=n=2:v=1:a=0,fps=1/3,scale=270:-1,tile=4x2:padding=8:margin=8",
     "-frames:v", "1",
     output,
   ]);
@@ -1044,13 +1090,19 @@ async function inspect() {
     };
     const durationMs = Math.round(Number(probe.format?.duration || 0) * 1_000);
     const videoStream = probe.streams?.find((stream) => stream.codec_type === "video");
-    const hasAudio = Boolean(probe.streams?.some((stream) => stream.codec_type === "audio"));
+    const audioStreamCount = probe.streams?.filter((stream) => stream.codec_type === "audio").length || 0;
+    const renderRecordMatchesScene = Boolean(
+      state.finalRender
+      && state.finalRender.output === scene.layout.finalVideo.url
+      && existsSync(finalPath),
+    );
     const finalChecks = {
       finalDuration: Math.abs(durationMs - scene.layout.durationMs) <= 250,
       finalDimensions: videoStream?.width === 1080 && videoStream.height === 1920,
-      finalAudio: hasAudio,
+      exactlyOneAudioStream: audioStreamCount === 1,
       narrationFits: scene.audio.status === "generated" && scene.audio.durationMs <= scene.layout.durationMs,
       allCurrentArtifactsApproved,
+      renderRecordMatchesScene,
     };
     const finalProblems = Object.entries(finalChecks)
       .filter(([, passed]) => !passed)
@@ -1063,6 +1115,8 @@ async function inspect() {
       finalDurationMs: durationMs,
       finalVideo: scene.layout.finalVideo.url,
       contactSheet: state.finalRender?.contactSheet,
+      finalRenderCreatedAt: state.finalRender?.createdAt,
+      finalRenderOutput: state.finalRender?.output,
     };
     state.status = finalProblems.length ? "voice-ready" : "final-ready";
   } else if (baseReport.status === "clips-ready") {
@@ -1092,7 +1146,7 @@ async function inspect() {
   } else if (baseReport.status === "ready-for-video") {
     state.status = "ready-for-video";
   }
-  await writeJson(path.join(runDirectory(runId), "quality-report.json"), report);
+  await writeJson(qualityReportPath(runId), report);
   await saveState(state);
   console.log(`Inspection status: ${report.status}.`);
   const problems = report.problems as string[];
@@ -1106,11 +1160,22 @@ async function finalize() {
   const runId = requiredArgument("run");
   if (!hasFlag("approve-final")) throw new Error("Watch the final video, then pass --approve-final.");
   const state = await loadState(runId);
-  const report = await readJson<{ status?: string; problems?: string[] }>(path.join(runDirectory(runId), "quality-report.json"));
+  const report = await readJson<{
+    status?: string;
+    problems?: string[];
+    finalRenderCreatedAt?: string;
+    finalRenderOutput?: string;
+  }>(qualityReportPath(runId));
   if (report.status !== "final-ready" || report.problems?.length) {
     throw new Error("Finalization requires a clean final-ready quality report.");
   }
   if (!state.finalRender) throw new Error("The final render record is missing.");
+  if (
+    report.finalRenderCreatedAt !== state.finalRender.createdAt
+    || report.finalRenderOutput !== state.finalRender.output
+  ) {
+    throw new Error("The final quality report is stale. Inspect the current render again before finalizing.");
+  }
   state.status = "finalized";
   state.finalRender = {
     ...state.finalRender,

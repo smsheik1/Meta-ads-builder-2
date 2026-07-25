@@ -14,6 +14,7 @@ Before planning, watch the packaged FinalStraw reference first, then Grüns, Kia
 6. One Fish narration and one final 20-second MP4 rendered through `AdRenderSurface`.
 
 The storyboard is a planning reference. Its small panel crops must never become video endpoints.
+Planning uses exactly three NIM calls in the Repo runner: one story slate, one selected script, and one selected scene plan. Calls are counted before dispatch, and the runner does not retry them automatically.
 
 ## Commands
 
@@ -80,7 +81,7 @@ npm run format:three-d -- inspect --run=my-run
 npm run format:three-d -- finalize --run=my-run --approve-final
 ```
 
-`render`, `inspect`, and `finalize` are local and make no provider calls. Do not finalize just because rendering completed; watch the video first.
+`render`, `inspect`, and `finalize` are local and make no provider calls. Regenerating any upstream media invalidates the old final report. Do not finalize just because rendering completed; watch the video first.
 
 Compare the result with FinalStraw and at least one supporting reference before finalizing. A file can pass resolution, duration, and audio checks while still failing as an ad.
 

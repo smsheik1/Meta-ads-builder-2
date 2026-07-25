@@ -79,7 +79,7 @@ const plannedScene = createThreeDBreakdownAdScene({
     customerProblem: "the furniture business stopped working",
     mechanismSummary: "the workshop shifted into wooden toys",
     visualMetaphor: "a workbench rebuilds itself into a toy line",
-    referenceScript: "A workshop loses its old path. The furniture orders disappear. Then one workbench changes jobs. Wood becomes toys instead. That small pivot becomes the first step in a much bigger story.",
+    referenceScript: "A small workshop loses the furniture orders that once kept every tool moving. Its craftspeople need a new reason to keep the workbench alive. Then that same bench begins shaping simple wooden toys instead. One documented pivot in 1932 turns discarded wood into a new company direction. Watch the full story.",
     ctaLine: "Watch the full story.",
     evidenceIndex: evidenceItem.evidenceIndex,
     evidenceUseType: evidenceItem.evidenceUseType,
@@ -89,10 +89,10 @@ const plannedScene = createThreeDBreakdownAdScene({
     claimRisk: "low",
     claimRiskReason: "The story uses the saved origin evidence.",
     scriptBeats: [
-      { role: "consequence", narration: "A workshop loses its old path.", startMs: 0, endMs: 3000 },
-      { role: "context", narration: "The furniture orders disappear.", startMs: 3000, endMs: 7000 },
-      { role: "mechanism", narration: "Then one workbench changes jobs.", startMs: 7000, endMs: 12000 },
-      { role: "revelation", narration: "Wood becomes toys instead.", startMs: 12000, endMs: 16000 },
+      { role: "consequence", narration: "A small workshop loses the furniture orders that once kept every tool moving.", startMs: 0, endMs: 3000 },
+      { role: "context", narration: "Its craftspeople need a new reason to keep the workbench alive.", startMs: 3000, endMs: 7000 },
+      { role: "mechanism", narration: "Then that same bench begins shaping simple wooden toys instead.", startMs: 7000, endMs: 12000 },
+      { role: "revelation", narration: "One documented pivot in 1932 turns discarded wood into a new company direction.", startMs: 12000, endMs: 16000 },
       { role: "punchline", narration: "Watch the full story.", startMs: 16000, endMs: 20000 },
     ],
     storyboardBoard: {
@@ -325,6 +325,14 @@ assert.match(runnerSource, /async function retimeClip\(\)/);
 assert.match(runnerSource, /No provider was called; review clip-2 again/);
 assert.match(runnerSource, /entryPoint: path\.join\(v3Root, "remotion-entry", "index\.ts"\)/);
 assert.match(runnerSource, /finalize --approve-final|approve-final/);
+assert.match(runnerSource, /const maxPlanningCalls = 3/);
+assert.equal((runnerSource.match(/allowRetries: false/g) || []).length, 2);
+assert.match(runnerSource, /onProviderCall: recordPlanningCall\(state\)/);
+assert.match(runnerSource, /Could not download a usable product reference/);
+assert.match(runnerSource, /withoutFinalArtifacts/);
+assert.match(runnerSource, /exactlyOneAudioStream: audioStreamCount === 1/);
+assert.match(runnerSource, /tile=4x2/);
+assert.match(runnerSource, /finalRenderCreatedAt !== state\.finalRender\.createdAt/);
 const remotionSource = readFileSync("remotion-entry/RemotionAdScene.tsx", "utf8");
 assert.match(remotionSource, /Audio src=\{resolveRenderAssetSrc\(audio\.url\)\}/);
 const sceneContract = JSON.parse(readFileSync("public/format-repositories/three-d-breakdown-v1/scene-contract.json", "utf8"));

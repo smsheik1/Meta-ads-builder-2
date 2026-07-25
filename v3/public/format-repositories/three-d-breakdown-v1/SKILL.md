@@ -28,11 +28,11 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 
 1. Run `check --stage=plan`.
 2. Run `init` with the exported Wiggly website research and the chosen story subject.
-3. Ask once before the planning calls, then run `directions`.
+3. Ask once before the three planning calls: one story-slate call, then one script call and one scene-plan call. Run `directions`.
 4. Show all five directions and let the user choose.
 5. Run `select`, then `validate`.
 6. Compare the selected direction with the production references. State the concrete hook, the job of the blue explanation world, the visible transformation, the product or subject carried through the story, and the final payoff. If any answer is vague, revise before an image call.
-7. Let the user inspect and edit the script, storyboard plan, image prompts, and CTA.
+7. Let the user inspect the script, storyboard plan, image prompts, and CTA. The MVP runner does not edit these fields; if the plan is wrong, stop and start a new run from the saved research instead of spending on media.
 8. Ask before each `image` command.
 9. Generate and review the storyboard first, then generate and review full-quality endpoint frames 1, 3, 4, and 6, one approved image call at a time. All six frames stay in one Style B blue/cyan blueprint-grid explanation world while camera, scale, props, and physical state change.
 10. Run `inspect`.
@@ -61,5 +61,5 @@ Use this skill when a user asks an agent to make, inspect, or improve a Wiggly 3
 - Both 480p clips use three readable visual beats, follow the approved physical actions, and do not jump to another person, unapproved setting, or visual style.
 - Renderer captions preserve the exact approved script words.
 - Narration ends before the 20-second video ends and is not clipped.
-- The final MP4 is 1080×1920, 20 seconds, contains audio, and preserves the approved two-clip story.
+- The final MP4 is 1080×1920, 20 seconds, contains exactly one audio stream, and preserves the approved two-clip story.
 - A finished file that cannot credibly sit beside the Kiala and Theragun production references must not be finalized.

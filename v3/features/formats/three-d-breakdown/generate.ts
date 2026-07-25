@@ -16,7 +16,11 @@ import type {
   ThreeDBreakdownStoryboardBoard,
   ThreeDBreakdownVisualStyle,
 } from "../../scene/types";
-import { extractThreeDBreakdownEvidence, type ThreeDBreakdownEvidenceItem } from "./evidence";
+import {
+  extractThreeDBreakdownEvidence,
+  isThreeDBreakdownEvidenceForProduct,
+  type ThreeDBreakdownEvidenceItem,
+} from "./evidence";
 import {
   buildThreeDBreakdownRetryPrompt,
   buildThreeDBreakdownPrompt,
@@ -851,8 +855,26 @@ const parseDirectorOutput = (
   return { siteContract, variants };
 };
 
-const prepareThreeDBreakdownEvidence = (research: StoredWebsiteResearchResult, startedAt: number) => {
-  const evidenceItems = extractThreeDBreakdownEvidence(research);
+const scopeEvidenceToStorySubject = (
+  evidenceItems: ThreeDBreakdownEvidenceItem[],
+  storySubject?: ThreeDBreakdownResolvedStorySubject,
+) => {
+  if (storySubject?.kind !== "product" || !storySubject.product) return evidenceItems;
+  const product = storySubject.product;
+  return evidenceItems
+    .filter((item) => isThreeDBreakdownEvidenceForProduct(item, product))
+    .map((item, evidenceIndex) => ({ ...item, evidenceIndex }));
+};
+
+const prepareThreeDBreakdownEvidence = (
+  research: StoredWebsiteResearchResult,
+  startedAt: number,
+  storySubject?: ThreeDBreakdownResolvedStorySubject,
+) => {
+  const evidenceItems = scopeEvidenceToStorySubject(
+    extractThreeDBreakdownEvidence(research),
+    storySubject,
+  );
   console.log("[wiggly:3d-breakdown] evidence:ready", {
     elapsedMs: Date.now() - startedAt,
     evidenceCount: evidenceItems.length,
@@ -894,12 +916,16 @@ export async function generateThreeDBreakdownStoryDirectionsFromResearch(
     nvidiaNimBaseUrl = process.env.NVIDIA_NIM_BASE_URL || DEFAULT_NVIDIA_NIM_BASE_URL,
     nvidiaNimChatCompletion,
     nvidiaNimModel = process.env.NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL || DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL,
+    allowRetries = true,
+    onProviderCall,
     storySubject,
   }: {
+    allowRetries?: boolean;
     nvidiaNimApiKey?: string;
     nvidiaNimBaseUrl?: string;
     nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
     nvidiaNimModel?: string;
+    onProviderCall?: () => void | Promise<void>;
     storySubject?: ThreeDBreakdownStorySubject | null;
   } = {},
 ): Promise<ThreeDBreakdownStoryDirectionGeneration> {
@@ -909,28 +935,35 @@ export async function generateThreeDBreakdownStoryDirectionsFromResearch(
     host: research.host,
     model: nvidiaNimModel,
   });
-  const { directorEvidenceItems, evidenceItems } = prepareThreeDBreakdownEvidence(research, startedAt);
   const resolvedStorySubject = storySubject
     ? resolveThreeDBreakdownStorySubject(research, storySubject)
     : undefined;
+  const { directorEvidenceItems, evidenceItems } = prepareThreeDBreakdownEvidence(
+    research,
+    startedAt,
+    resolvedStorySubject,
+  );
   const prompt = buildThreeDBreakdownStoryDirectionsPrompt({
     evidence: directorEvidenceItems,
     research,
     storySubject: resolvedStorySubject,
   });
-  const callDirector = (directorPrompt: string) => callNvidiaNimChat({
-    apiKey: nvidiaNimApiKey,
-    baseUrl: nvidiaNimBaseUrl,
-    label: "NVIDIA NIM 3D Breakdown story slate",
-    maxTokens: 1600,
-    model: nvidiaNimModel,
-    nvidiaNimChatCompletion,
-    prompt: directorPrompt,
-    stream: true,
-    structuredOutput: false,
-    temperature: 0.62,
-    timeoutMs: DEFAULT_TIMEOUT_MS,
-  });
+  const callDirector = async (directorPrompt: string) => {
+    await onProviderCall?.();
+    return callNvidiaNimChat({
+      apiKey: nvidiaNimApiKey,
+      baseUrl: nvidiaNimBaseUrl,
+      label: "NVIDIA NIM 3D Breakdown story slate",
+      maxTokens: 1600,
+      model: nvidiaNimModel,
+      nvidiaNimChatCompletion,
+      prompt: directorPrompt,
+      stream: true,
+      structuredOutput: false,
+      temperature: 0.62,
+      timeoutMs: DEFAULT_TIMEOUT_MS,
+    });
+  };
   console.log("[wiggly:3d-breakdown] story-slate:call:start", {
     attempt: "initial",
     elapsedMs: Date.now() - startedAt,
@@ -940,6 +973,7 @@ export async function generateThreeDBreakdownStoryDirectionsFromResearch(
   try {
     slate = parseStoryDirectionSlateOutput(raw, directorEvidenceItems, resolvedStorySubject);
   } catch (error) {
+    if (!allowRetries) throw error;
     console.warn("[wiggly:3d-breakdown] story-slate:parse:retry", {
       elapsedMs: Date.now() - startedAt,
       message: error instanceof Error ? error.message : String(error),
@@ -976,14 +1010,18 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     nvidiaNimBaseUrl = process.env.NVIDIA_NIM_BASE_URL || DEFAULT_NVIDIA_NIM_BASE_URL,
     nvidiaNimChatCompletion,
     nvidiaNimModel = process.env.NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL || DEFAULT_NVIDIA_NIM_THREE_D_BREAKDOWN_MODEL,
+    allowRetries = true,
+    onProviderCall,
     selectedStoryDirection,
     storySubject,
   }: {
+    allowRetries?: boolean;
     count?: number;
     nvidiaNimApiKey?: string;
     nvidiaNimBaseUrl?: string;
     nvidiaNimChatCompletion?: NvidiaNimChatCompletion;
     nvidiaNimModel?: string;
+    onProviderCall?: () => void | Promise<void>;
     selectedStoryDirection?: ThreeDBreakdownStoryDirection | null;
     storySubject?: ThreeDBreakdownStorySubject | null;
   } = {},
@@ -995,10 +1033,14 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     host: research.host,
     model: nvidiaNimModel,
   });
-  const { directorEvidenceItems, evidenceItems } = prepareThreeDBreakdownEvidence(research, startedAt);
   const resolvedStorySubject = storySubject
     ? resolveThreeDBreakdownStorySubject(research, storySubject)
     : undefined;
+  const { directorEvidenceItems, evidenceItems } = prepareThreeDBreakdownEvidence(
+    research,
+    startedAt,
+    resolvedStorySubject,
+  );
   const requestedCount = selectedStoryDirection
     ? 1
     : Math.max(1, Math.min(2, Math.round(count || THREE_D_BREAKDOWN_VARIANT_COUNT)));
@@ -1007,19 +1049,22 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     elapsedMs: Date.now() - startedAt,
     requestedCount,
   });
-  const callDirector = (directorPrompt: string) => callNvidiaNimChat({
-    apiKey: nvidiaNimApiKey,
-    baseUrl: nvidiaNimBaseUrl,
-    label: "NVIDIA NIM 3D Breakdown director",
-    maxTokens: THREE_D_BREAKDOWN_MAX_TOKENS,
-    model: nvidiaNimModel,
-    nvidiaNimChatCompletion,
-    prompt: directorPrompt,
-    stream: true,
-    structuredOutput: false,
-    temperature: 0.45,
-    timeoutMs: DEFAULT_TIMEOUT_MS,
-  });
+  const callDirector = async (directorPrompt: string) => {
+    await onProviderCall?.();
+    return callNvidiaNimChat({
+      apiKey: nvidiaNimApiKey,
+      baseUrl: nvidiaNimBaseUrl,
+      label: "NVIDIA NIM 3D Breakdown director",
+      maxTokens: THREE_D_BREAKDOWN_MAX_TOKENS,
+      model: nvidiaNimModel,
+      nvidiaNimChatCompletion,
+      prompt: directorPrompt,
+      stream: true,
+      structuredOutput: false,
+      temperature: 0.45,
+      timeoutMs: DEFAULT_TIMEOUT_MS,
+    });
+  };
   let lockedStyleBScript: ThreeDBreakdownLockedStyleBScript | null = null;
   if (requestedCount > 1 || selectedStoryDirection) {
     const scriptPrompt = buildThreeDBreakdownStyleBScriptPrompt({
@@ -1042,6 +1087,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
     try {
       lockedStyleBScript = parseStyleBScriptPlanOutput(scriptRaw, directorEvidenceItems, research, selectedStoryDirection, resolvedStorySubject);
     } catch (error) {
+      if (!allowRetries) throw error;
       console.warn("[wiggly:3d-breakdown] style-b-script:parse:retry", {
         elapsedMs: Date.now() - startedAt,
         message: error instanceof Error ? error.message : String(error),
@@ -1086,7 +1132,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
   try {
     raw = await callDirector(prompt);
   } catch (error) {
-    if (!isNvidiaNimTimeout(error)) throw error;
+    if (!allowRetries || !isNvidiaNimTimeout(error)) throw error;
     console.warn("[wiggly:3d-breakdown] director:transport:retry", {
       elapsedMs: Date.now() - startedAt,
       reason: error instanceof Error ? error.message : String(error),
@@ -1102,6 +1148,7 @@ export async function generateThreeDBreakdownVariantsFromResearch(
   try {
     parsedGeneration = parseDirectorOutput(raw, directorEvidenceItems, requestedCount, lockedStyleBScript, resolvedStorySubject);
   } catch (error) {
+    if (!allowRetries) throw error;
     console.warn("[wiggly:3d-breakdown] director:parse:retry", {
       elapsedMs: Date.now() - startedAt,
       message: error instanceof Error ? error.message : String(error),

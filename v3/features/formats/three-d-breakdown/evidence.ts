@@ -25,6 +25,34 @@ export type ThreeDBreakdownEvidenceItem = {
   sourceName?: string;
 };
 
+const canonicalUrl = (value: string | undefined) => {
+  try {
+    const url = new URL(String(value || ""));
+    return `${url.origin}${url.pathname}`.replace(/\/+$/, "").toLowerCase();
+  } catch {
+    return String(value || "").split(/[?#]/)[0]?.replace(/\/+$/, "").toLowerCase();
+  }
+};
+
+export const isThreeDBreakdownEvidenceForProduct = (
+  evidence: Pick<ThreeDBreakdownEvidenceItem, "sourceName" | "sourceUrl" | "text">,
+  product: { title: string; url: string },
+) => {
+  const productTitle = cleanText(product.title, 160).toLowerCase();
+  const evidenceText = cleanText(evidence.text, 260).toLowerCase();
+  const productTokens = productTitle.match(/[a-z0-9]+/g)?.filter((token) => token.length >= 4) || [];
+  const minimumTokenMatches = productTokens.length <= 3
+    ? productTokens.length
+    : Math.max(3, Math.ceil(productTokens.length * 0.75));
+  return canonicalUrl(evidence.sourceUrl) === canonicalUrl(product.url)
+    || cleanText(evidence.sourceName, 160).toLowerCase() === productTitle
+    || evidenceText.includes(productTitle)
+    || (
+      minimumTokenMatches > 0
+      && productTokens.filter((token) => evidenceText.includes(token)).length >= minimumTokenMatches
+    );
+};
+
 const cleanText = (value: unknown, maxLength = 260) => String(value ?? "")
   .replace(/[“”]/g, "\"")
   .replace(/[‘’]/g, "'")
@@ -151,6 +179,7 @@ const visualProfileForEvidence = (
 export function extractThreeDBreakdownEvidence(research: StoredWebsiteResearchResult): ThreeDBreakdownEvidenceItem[] {
   const defaultSourceUrl = research.finalUrl || research.websiteUrl || research.brand.url;
   const candidates: Array<{ type?: ThreeDBreakdownEvidenceType; text: string; sourceUrl?: string; sourceName?: string }> = [
+    { type: "claim", text: research.brandBrief.offer, sourceName: "brand offer" },
     ...research.brandBrief.proof.map((text) => ({ text, sourceName: "brand proof" })),
     ...research.evidence.receipts.namedProof.map((text) => ({ text, sourceName: "named proof" })),
     ...research.evidence.receipts.specificClaims.map((text) => ({ type: "claim" as const, text, sourceName: "specific claim" })),

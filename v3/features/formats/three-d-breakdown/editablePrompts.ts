@@ -65,10 +65,15 @@ export function editThreeDBreakdownMediaPrompt(
   }
 
   if (target.kind === "anchor") {
-    const affectedClipIndex = clipPlans.find((plan) => plan.frameIndexes[0] === target.frameIndex)?.clipIndex;
-    const affectedAnchorIndexes = new Set(clipPlans
-      .filter((plan) => plan.frameIndexes[0] >= target.frameIndex)
-      .map((plan) => plan.frameIndexes[0]));
+    const affectedClipIndex = clipPlans.find((plan) => plan.frameIndexes.includes(target.frameIndex))?.clipIndex;
+    const anchorIndexes = Array.from(new Set(clipPlans.flatMap((plan) => [
+      plan.frameIndexes[0],
+      plan.frameIndexes.at(-1),
+    ]))).filter((frameIndex): frameIndex is ThreeDBreakdownStoryboardFrameIndex => Boolean(frameIndex));
+    const targetPosition = anchorIndexes.indexOf(target.frameIndex);
+    const affectedAnchorIndexes = new Set(
+      targetPosition >= 0 ? anchorIndexes.slice(targetPosition) : [target.frameIndex],
+    );
     return {
       ...scene,
       layout: {
@@ -84,7 +89,7 @@ export function editThreeDBreakdownMediaPrompt(
         },
         clipPlans: clipPlans.map((plan) => (
           affectedClipIndex && plan.clipIndex >= affectedClipIndex
-            ? { ...plan, video: idleMedia() }
+            ? { ...plan, endFrameImage: undefined, video: idleMedia() }
             : plan
         )),
       },
