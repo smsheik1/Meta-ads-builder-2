@@ -128,6 +128,7 @@ assert.match(repositoryPage, /Replace \$\{asset\.label\}/);
 assert.match(repositoryPage, /Copy rerun commands/);
 assert.match(repositoryPage, /Download runnable Format Kit/);
 assert.match(repositoryPage, /download-format-kit/);
+assert.match(repositoryPage, /<h1[^>]*>\{format\.title\}<\/h1>/);
 assert.match(repositoryPage, /worldFiles\.map/);
 assert.match(repositoryPage, /sceneFiles\.map/);
 assert.match(repositoryServer, /function readRepositoryFiles/);
