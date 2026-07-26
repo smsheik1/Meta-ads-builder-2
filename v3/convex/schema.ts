@@ -22,6 +22,20 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_email", ["email"]),
 
+  discoverySubmissions: defineTable({
+    creatorName: v.string(),
+    contactEmail: v.string(),
+    formatUrl: v.string(),
+    outputUrls: v.array(v.string()),
+    promise: v.string(),
+    sourceCredit: v.string(),
+    status: v.literal("pending"),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_status_and_createdAt", ["status", "createdAt"])
+    .index("by_contactEmail_and_formatUrl", ["contactEmail", "formatUrl"]),
+
   researchRuns: defineTable({
     sessionId: v.string(),
     url: v.string(),
