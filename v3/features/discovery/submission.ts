@@ -1,4 +1,4 @@
-import { isValidWaitlistEmail, normalizeWaitlistEmail } from "@/features/waitlist/email";
+import { isValidWaitlistEmail, normalizeWaitlistEmail } from "../waitlist/email";
 
 export type DiscoverySubmissionInput = {
   creatorName: string;

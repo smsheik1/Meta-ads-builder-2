@@ -55,6 +55,7 @@ assert.equal(
 
 const schema = readFileSync("convex/schema.ts", "utf8");
 const functions = readFileSync("convex/discoverySubmissions.ts", "utf8");
+const validation = readFileSync("features/discovery/submission.ts", "utf8");
 const page = readFileSync("app/submit/page.tsx", "utf8");
 const form = readFileSync("app/submit/DiscoverySubmissionForm.tsx", "utf8");
 
@@ -68,6 +69,7 @@ assert.match(functions, /withIndex\("by_contactEmail_and_formatUrl"/);
 assert.match(functions, /status: \"updated\"/);
 assert.match(functions, /export const listPending[^]*internalQuery/);
 assert.equal(/export const (list|review)[^]*= query\(/.test(functions), false);
+assert.equal(validation.includes('from "@/'), false);
 assert.match(page, /Show us what repeats/);
 assert.match(form, /Three real output links/);
 assert.match(form, /Source or remix credit/);
