@@ -359,7 +359,7 @@
 
 .cardActions button,
 .cardActions a,
-.emptyState button {
+.emptyState a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -407,7 +407,7 @@
   line-height: 0.92;
 }
 
-.emptyState button {
+.emptyState a {
   min-height: 44px;
   padding: 0 16px;
   background: #c9ff55;
@@ -455,7 +455,8 @@
   .filters button:hover,
   .cardActions button:hover,
   .cardActions a:hover,
-  .mediaControls button:hover {
+  .mediaControls button:hover,
+  .emptyState a:hover {
     transform: translateY(-1px);
   }
 }
@@ -609,7 +610,8 @@
   .filters button,
   .cardActions button,
   .cardActions a,
-  .mediaControls button {
+  .mediaControls button,
+  .emptyState a {
     transition: none;
   }
 }

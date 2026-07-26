@@ -31,10 +31,15 @@ const goalFilters: Array<{ id: DiscoveryGoal; label: string }> = [
 
 const soundStorageKey = "wiggly-discovery-sound";
 
-export function DiscoveryClient({ entries }: { entries: DiscoveryEntry[] }) {
+export function DiscoveryClient({
+  entries,
+  savedOnly = false,
+}: {
+  entries: DiscoveryEntry[];
+  savedOnly?: boolean;
+}) {
   const [query, setQuery] = useState("");
   const [goal, setGoal] = useState<DiscoveryGoal>("all");
-  const [savedOnly, setSavedOnly] = useState(false);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
@@ -179,14 +184,13 @@ export function DiscoveryClient({ entries }: { entries: DiscoveryEntry[] }) {
           </label>
 
           <div className={styles.headerActions}>
-            <button
-              type="button"
+            <Link
+              href={savedOnly ? "/discover" : "/saved"}
               className={`${styles.headerButton} ${savedOnly ? styles.headerButtonActive : ""}`}
-              onClick={() => setSavedOnly((current) => !current)}
             >
               <Bookmark aria-hidden="true" />
-              Saved {savedIds.size > 0 ? `(${savedIds.size})` : ""}
-            </button>
+              {savedOnly ? "Browse" : "Saved"} {savedIds.size > 0 ? `(${savedIds.size})` : ""}
+            </Link>
             <Link href="/create" className={`${styles.headerButton} ${styles.primaryButton}`}>
               Open Wiggly
               <ExternalLink aria-hidden="true" />
@@ -198,11 +202,15 @@ export function DiscoveryClient({ entries }: { entries: DiscoveryEntry[] }) {
       <section className={styles.hero}>
         <div>
           <p className={styles.kicker}>Finished ads. Repeatable Formats.</p>
-          <h1>Ads worth stealing.</h1>
+          <h1>{savedOnly ? "The ads you kept." : "Ads worth stealing."}</h1>
         </div>
         <div className={styles.heroCopy}>
-          <strong>See it. Trust it. Make yours.</strong>
-          <p>Every finished ad points to the exact creative recipe behind it.</p>
+          <strong>{savedOnly ? "Your private short list." : "See it. Trust it. Make yours."}</strong>
+          <p>
+            {savedOnly
+              ? "Saved in this browser so you can come back to the work worth studying."
+              : "Every finished ad points to the exact creative recipe behind it."}
+          </p>
         </div>
       </section>
 
@@ -213,10 +221,7 @@ export function DiscoveryClient({ entries }: { entries: DiscoveryEntry[] }) {
             type="button"
             className={goal === filter.id && !savedOnly ? styles.activeFilter : ""}
             aria-pressed={goal === filter.id && !savedOnly}
-            onClick={() => {
-              setGoal(filter.id);
-              setSavedOnly(false);
-            }}
+            onClick={() => setGoal(filter.id)}
           >
             {filter.label}
           </button>
@@ -326,16 +331,9 @@ export function DiscoveryClient({ entries }: { entries: DiscoveryEntry[] }) {
           <div className={styles.emptyState}>
             <p className={styles.kicker}>{savedOnly ? "Nothing saved yet" : "No exact match yet"}</p>
             <h2>{savedOnly ? "Keep the ads you want to study." : "Try another goal or search."}</h2>
-            <button
-              type="button"
-              onClick={() => {
-                setSavedOnly(false);
-                setGoal("all");
-                setQuery("");
-              }}
-            >
+            <Link href="/discover">
               Browse all finished ads
-            </button>
+            </Link>
           </div>
         )}
       </section>
