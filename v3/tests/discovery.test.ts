@@ -50,6 +50,21 @@ assert.ok(
     .every((entry) => entry.order < 20),
   "The three proven jingles should be spread through the opening feed.",
 );
+const videoMemes = published.filter((entry) => entry.format.slug === "video-meme");
+assert.equal(videoMemes.length, 32, "Every completed Video Meme import should be discoverable.");
+assert.equal(
+  new Set(videoMemes.map((entry) => entry.media.src)).size,
+  videoMemes.length,
+  "The Video Meme archive should not repeat the same final render.",
+);
+assert.ok(
+  videoMemes.every((entry) => (
+    entry.media.kind === "video" &&
+    entry.media.src.startsWith("https://wry-viper-639.convex.cloud/api/storage/") &&
+    entry.media.poster?.startsWith("/discovery/video-memes/")
+  )),
+  "Video Memes should use completed Convex renders with local loading posters.",
+);
 assert.equal(
   published.some((entry) => entry.brand === "Something went wrong"),
   false,

@@ -35,6 +35,11 @@ assert.ok(jingle, "Brand Jingle should have a consumer Format proof.");
 assert.equal(jingle.version, "1.0.0");
 assert.equal(jingle.proofEntries.length, 39, "Brand Jingle proof should include every distinct completed song.");
 
+const videoMeme = getDiscoveryFormatProfile("video-meme");
+assert.ok(videoMeme, "Video Meme should have a consumer Format proof.");
+assert.equal(videoMeme.version, "1.0.0");
+assert.equal(videoMeme.proofEntries.length, 32, "Video Meme proof should include every completed DB import.");
+
 assert.deepEqual(
   getRelatedDiscoveryEntries(threeD.proofEntries[0]).map((entry) => entry.format.slug),
   ["three-d-breakdown", "three-d-breakdown", "three-d-breakdown"],
@@ -43,6 +48,7 @@ assert.deepEqual(
 
 assert.ok(
   discoveryFormatSlugs.includes("jingle") &&
+    discoveryFormatSlugs.includes("video-meme") &&
     discoveryFormatSlugs.includes("meme") &&
     discoveryFormatSlugs.includes("hybrid-news"),
 );
