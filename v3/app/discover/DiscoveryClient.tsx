@@ -13,6 +13,10 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { filterDiscoveryEntries } from "@/features/discovery/catalog";
+import {
+  readSavedDiscoveryIds,
+  writeSavedDiscoveryIds,
+} from "@/features/discovery/savedAds";
 import type { DiscoveryEntry, DiscoveryGoal } from "@/features/discovery/types";
 import styles from "./discovery.module.css";
 
@@ -25,19 +29,7 @@ const goalFilters: Array<{ id: DiscoveryGoal; label: string }> = [
   { id: "entertain", label: "Entertain" },
 ];
 
-const savedStorageKey = "wiggly-discovery-saved";
 const soundStorageKey = "wiggly-discovery-sound";
-
-function readSavedEntries(): Set<string> {
-  if (typeof window === "undefined") return new Set();
-
-  try {
-    const saved = JSON.parse(window.localStorage.getItem(savedStorageKey) || "[]");
-    return new Set(Array.isArray(saved) ? saved.filter((id): id is string => typeof id === "string") : []);
-  } catch {
-    return new Set();
-  }
-}
 
 export function DiscoveryClient({ entries }: { entries: DiscoveryEntry[] }) {
   const [query, setQuery] = useState("");
@@ -51,7 +43,7 @@ export function DiscoveryClient({ entries }: { entries: DiscoveryEntry[] }) {
   const videoRefs = useRef(new Map<string, HTMLVideoElement>());
 
   useEffect(() => {
-    setSavedIds(readSavedEntries());
+    setSavedIds(readSavedDiscoveryIds(window.localStorage));
     setSoundOn(window.sessionStorage.getItem(soundStorageKey) === "on");
   }, []);
 
@@ -128,7 +120,7 @@ export function DiscoveryClient({ entries }: { entries: DiscoveryEntry[] }) {
         next.add(id);
         setToast("Saved privately");
       }
-      window.localStorage.setItem(savedStorageKey, JSON.stringify([...next]));
+      writeSavedDiscoveryIds(window.localStorage, next);
       return next;
     });
   };
@@ -320,10 +312,10 @@ export function DiscoveryClient({ entries }: { entries: DiscoveryEntry[] }) {
                         <Share2 aria-hidden="true" />
                         Share
                       </button>
-                      <a href={entry.media.src} target="_blank" rel="noreferrer">
+                      <Link href={`/s/${entry.id}`}>
                         Open ad
                         <ExternalLink aria-hidden="true" />
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </article>

@@ -1,9 +1,27 @@
 import { ConvexHttpClient } from "convex/browser";
+import type { Metadata } from "next";
 import { api } from "@/convex/_generated/api";
+import { getDiscoveryEntryById } from "@/features/discovery/catalog";
+import { DiscoveryAdDetail } from "@/features/discovery/DiscoveryAdDetail";
 import { getV3ConvexUrl } from "@/lib/convexEnv";
 import { ShareSceneClient, type ShareRecord } from "./ShareSceneClient";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const entry = getDiscoveryEntryById(slug);
+  if (!entry) return {};
+
+  return {
+    title: `${entry.title} | Wiggly`,
+    description: `${entry.brand} made this with ${entry.format.name} v${entry.format.version}.`,
+  };
+}
 
 async function getInitialShare(slug: string): Promise<ShareRecord | null | undefined> {
   const convexUrl = getV3ConvexUrl();
@@ -19,6 +37,9 @@ async function getInitialShare(slug: string): Promise<ShareRecord | null | undef
 
 export default async function SharePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const discoveryEntry = getDiscoveryEntryById(slug);
+  if (discoveryEntry) return <DiscoveryAdDetail entry={discoveryEntry} />;
+
   const convexConfigured = Boolean(getV3ConvexUrl());
   const initialShare = convexConfigured ? await getInitialShare(slug) : undefined;
 
