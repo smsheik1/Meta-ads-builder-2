@@ -3,6 +3,8 @@ import { ArrowLeft, ArrowRight, BadgeCheck, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DiscoveryProofMedia } from "@/features/discovery/DiscoveryProofMedia";
+import { DiscoveryFormatHandoff } from "@/features/discovery/DiscoveryFormatHandoff";
+import { getDiscoveryCreatorByName } from "@/features/discovery/creators";
 import {
   discoveryFormatSlugs,
   getDiscoveryFormatProfile,
@@ -38,6 +40,7 @@ export default async function FormatPage({
 
   const heroProof = format.proofEntries[0];
   if (!heroProof) notFound();
+  const creator = getDiscoveryCreatorByName(format.creator);
 
   return (
     <main className="min-h-screen bg-[#f5f1e8] text-[#080817]">
@@ -73,7 +76,15 @@ export default async function FormatPage({
             {format.promise}
           </p>
           <p className="mt-6 text-sm font-bold text-[#596176]">
-            By <strong className="text-[#080817]">{format.creator}</strong> · Updated {format.lastUpdated}
+            By{" "}
+            {creator ? (
+              <Link href={`/creators/${creator.handle}`} className="font-black text-[#080817] underline decoration-2 underline-offset-4">
+                {format.creator}
+              </Link>
+            ) : (
+              <strong className="text-[#080817]">{format.creator}</strong>
+            )}{" "}
+            · Updated {format.lastUpdated}
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -84,6 +95,7 @@ export default async function FormatPage({
               See the proof
               <ArrowRight className="size-4" aria-hidden="true" />
             </a>
+            {format.handoff ? <DiscoveryFormatHandoff format={format} /> : null}
             {format.technicalHref ? (
               <Link
                 href={format.technicalHref}
@@ -165,6 +177,52 @@ export default async function FormatPage({
               </li>
             ))}
           </ul>
+        </div>
+      </section>
+
+      <section className="border-t-2 border-[#080817] bg-[#fffdf8] px-4 py-12 sm:px-8 sm:py-16">
+        <div className="mx-auto max-w-[1100px]">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#667087]">Run it with an agent</p>
+          <div className="mt-3 grid gap-8 lg:grid-cols-[1fr_1.1fr]">
+            <div>
+              <h2 className="text-4xl font-black leading-none sm:text-6xl">
+                {format.handoff ? "Know the run before you start." : "Handoff is not live yet."}
+              </h2>
+              <p className="mt-5 max-w-xl text-lg font-bold leading-7 text-[#596176]">
+                {format.handoff
+                  ? "The task is pinned to this exact public version. Codex asks one short question at a time and names the current step."
+                  : "This Format has public proof, but Wiggly is not offering a broken agent option before the runbook is ready."}
+              </p>
+              {format.handoff ? <div className="mt-7"><DiscoveryFormatHandoff format={format} /></div> : null}
+            </div>
+
+            {format.handoff ? (
+              <div className="rounded-lg border-2 border-[#080817] bg-white shadow-[6px_6px_0_#080817]">
+                <div className="border-b-2 border-[#080817] px-5 py-4">
+                  <p className="text-xs font-black uppercase tracking-[0.16em]">Typical run</p>
+                </div>
+                <div className="divide-y-2 divide-[#dbe2ee]">
+                  {format.handoff.estimates.map((estimate) => (
+                    <div key={estimate.label} className="grid grid-cols-[1fr_auto] gap-5 px-5 py-4 text-sm">
+                      <strong>{estimate.label}</strong>
+                      <span className="text-right font-bold text-[#596176]">{estimate.cost} · {estimate.time}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="border-t-2 border-[#080817] bg-[#f5f1e8] px-5 py-4 text-sm font-black">{format.handoff.totalEstimate}</p>
+                <div className="grid gap-4 px-5 py-4">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#667087]">You provide</p>
+                    <p className="mt-1 text-sm font-bold text-[#30374b]">{format.handoff.requiredInputs.join(" · ")}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#667087]">Output</p>
+                    <p className="mt-1 text-sm font-bold text-[#30374b]">{format.handoff.output}</p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
       </section>
     </main>
