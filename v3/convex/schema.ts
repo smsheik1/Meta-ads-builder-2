@@ -36,6 +36,11 @@ export default defineSchema({
     .index("by_status_and_createdAt", ["status", "createdAt"])
     .index("by_contactEmail_and_formatUrl", ["contactEmail", "formatUrl"]),
 
+  discoveryHiddenEntries: defineTable({
+    entryId: v.string(),
+    hiddenAt: v.number(),
+  }).index("by_entryId", ["entryId"]),
+
   researchRuns: defineTable({
     sessionId: v.string(),
     url: v.string(),

@@ -12,6 +12,7 @@ import type * as adSceneStorage from "../adSceneStorage.js";
 import type * as adScenes from "../adScenes.js";
 import type * as audioAssets from "../audioAssets.js";
 import type * as dialogueScripts from "../dialogueScripts.js";
+import type * as discoveryModeration from "../discoveryModeration.js";
 import type * as discoverySubmissions from "../discoverySubmissions.js";
 import type * as jingleStoryboards from "../jingleStoryboards.js";
 import type * as makerFormats from "../makerFormats.js";
@@ -38,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   adScenes: typeof adScenes;
   audioAssets: typeof audioAssets;
   dialogueScripts: typeof dialogueScripts;
+  discoveryModeration: typeof discoveryModeration;
   discoverySubmissions: typeof discoverySubmissions;
   jingleStoryboards: typeof jingleStoryboards;
   makerFormats: typeof makerFormats;

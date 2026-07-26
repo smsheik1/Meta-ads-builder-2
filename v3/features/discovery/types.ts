@@ -9,10 +9,11 @@ export type DiscoveryEntry = {
   curatorNote: string;
   goal: Exclude<DiscoveryGoal, "all">;
   media: {
-    kind: "video" | "image";
+    kind: "video" | "image" | "audio";
     src: string;
     poster?: string;
     durationLabel: string;
+    accentColor?: string;
   };
   format: {
     slug: string;

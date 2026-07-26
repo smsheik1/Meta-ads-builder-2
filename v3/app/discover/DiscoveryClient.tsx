@@ -9,10 +9,14 @@ import {
   Share2,
   Volume2,
   VolumeX,
+  X,
 } from "lucide-react";
 import Link from "next/link";
+import { useMutation, useQuery } from "convex/react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { api } from "@/convex/_generated/api";
 import { filterDiscoveryEntries } from "@/features/discovery/catalog";
+import { DiscoveryAudioArtwork } from "@/features/discovery/DiscoveryAudioArtwork";
 import {
   readSavedDiscoveryIds,
   writeSavedDiscoveryIds,
@@ -30,6 +34,7 @@ const goalFilters: Array<{ id: DiscoveryGoal; label: string }> = [
 ];
 
 const soundStorageKey = "wiggly-discovery-sound";
+const ownerTokenStorageKey = "wiggly-owner-access-token";
 
 export function DiscoveryClient({
   entries,
@@ -42,20 +47,28 @@ export function DiscoveryClient({
   const [goal, setGoal] = useState<DiscoveryGoal>("all");
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
-  const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
+  const [activeAudioId, setActiveAudioId] = useState<string | null>(null);
+  const [playingMediaId, setPlayingMediaId] = useState<string | null>(null);
   const [soundOn, setSoundOn] = useState(false);
+  const [curationMode, setCurationMode] = useState(false);
   const [toast, setToast] = useState("");
   const videoRefs = useRef(new Map<string, HTMLVideoElement>());
+  const audioRefs = useRef(new Map<string, HTMLAudioElement>());
+  const hiddenEntryIds = useQuery(api.discoveryModeration.listHidden, {}) || [];
+  const hideDiscoveryEntry = useMutation(api.discoveryModeration.hide);
 
   useEffect(() => {
     setSavedIds(readSavedDiscoveryIds(window.localStorage));
     setSoundOn(window.sessionStorage.getItem(soundStorageKey) === "on");
+    setCurationMode(new URLSearchParams(window.location.search).get("curate") === "1");
   }, []);
 
   const visibleEntries = useMemo(() => {
     const filtered = filterDiscoveryEntries(entries, query, goal);
-    return savedOnly ? filtered.filter((entry) => savedIds.has(entry.id)) : filtered;
-  }, [entries, goal, query, savedIds, savedOnly]);
+    const hidden = new Set(hiddenEntryIds);
+    const publicEntries = filtered.filter((entry) => !hidden.has(entry.id));
+    return savedOnly ? publicEntries.filter((entry) => savedIds.has(entry.id)) : publicEntries;
+  }, [entries, goal, hiddenEntryIds, query, savedIds, savedOnly]);
 
   const visibleVideoIds = useMemo(
     () => visibleEntries.filter((entry) => entry.media.kind === "video").map((entry) => entry.id),
@@ -87,7 +100,7 @@ export function DiscoveryClient({
 
   useEffect(() => {
     videoRefs.current.forEach((video, id) => {
-      const shouldPlay = id === activeVideoId;
+      const shouldPlay = !activeAudioId && id === activeVideoId;
       video.muted = !soundOn || !shouldPlay;
 
       if (!shouldPlay) {
@@ -101,7 +114,7 @@ export function DiscoveryClient({
         window.sessionStorage.setItem(soundStorageKey, "off");
       });
     });
-  }, [activeVideoId, soundOn, visibleVideoIds]);
+  }, [activeAudioId, activeVideoId, soundOn, visibleVideoIds]);
 
   useEffect(() => {
     const id = window.location.hash.slice(1);
@@ -130,21 +143,82 @@ export function DiscoveryClient({
     });
   };
 
-  const toggleSound = (id: string) => {
+  const playAudio = (id: string, audio: HTMLAudioElement) => {
+    audioRefs.current.forEach((candidate, candidateId) => {
+      if (candidateId !== id) candidate.pause();
+    });
+    videoRefs.current.forEach((video) => video.pause());
+    audio.muted = false;
+    setSoundOn(true);
+    setActiveAudioId(id);
+    window.sessionStorage.setItem(soundStorageKey, "on");
+    void audio.play();
+  };
+
+  const toggleSound = (entry: DiscoveryEntry) => {
+    if (entry.media.kind === "audio") {
+      const audio = audioRefs.current.get(entry.id);
+      if (!audio) return;
+      if (audio.paused) {
+        playAudio(entry.id, audio);
+        return;
+      }
+      audio.muted = !audio.muted;
+      setSoundOn(!audio.muted);
+      window.sessionStorage.setItem(soundStorageKey, audio.muted ? "off" : "on");
+      return;
+    }
+
+    const id = entry.id;
     const nextSoundOn = !(soundOn && activeVideoId === id);
+    audioRefs.current.forEach((audio) => audio.pause());
+    setActiveAudioId(null);
     setActiveVideoId(id);
     setSoundOn(nextSoundOn);
     window.sessionStorage.setItem(soundStorageKey, nextSoundOn ? "on" : "off");
   };
 
-  const togglePlayback = (id: string) => {
-    const video = videoRefs.current.get(id);
+  const togglePlayback = (entry: DiscoveryEntry) => {
+    if (entry.media.kind === "audio") {
+      const audio = audioRefs.current.get(entry.id);
+      if (!audio) return;
+      if (audio.paused) {
+        playAudio(entry.id, audio);
+      } else {
+        audio.pause();
+        setSoundOn(false);
+        window.sessionStorage.setItem(soundStorageKey, "off");
+      }
+      return;
+    }
+
+    const video = videoRefs.current.get(entry.id);
     if (!video) return;
-    setActiveVideoId(id);
+    audioRefs.current.forEach((audio) => audio.pause());
+    setActiveAudioId(null);
+    setActiveVideoId(entry.id);
     if (video.paused) {
       void video.play();
     } else {
       video.pause();
+    }
+  };
+
+  const hideEntry = async (entry: DiscoveryEntry) => {
+    let accessToken = window.sessionStorage.getItem(ownerTokenStorageKey) || "";
+    if (!accessToken) {
+      accessToken = window.prompt("Enter your Wiggly owner key")?.trim() || "";
+      if (!accessToken) return;
+    }
+    if (!window.confirm(`Hide "${entry.title}" from Discovery?`)) return;
+
+    try {
+      await hideDiscoveryEntry({ accessToken, entryId: entry.id });
+      window.sessionStorage.setItem(ownerTokenStorageKey, accessToken);
+      setToast("Hidden from Discovery");
+    } catch {
+      window.sessionStorage.removeItem(ownerTokenStorageKey);
+      setToast("Owner key was not accepted");
     }
   };
 
@@ -244,8 +318,12 @@ export function DiscoveryClient({
           <div className={styles.grid}>
             {visibleEntries.map((entry) => {
               const saved = savedIds.has(entry.id);
-              const playing = playingVideoId === entry.id;
-              const audible = soundOn && activeVideoId === entry.id;
+              const playing = playingMediaId === entry.id;
+              const audible = soundOn && (
+                entry.media.kind === "audio"
+                  ? activeAudioId === entry.id
+                  : !activeAudioId && activeVideoId === entry.id
+              );
 
               return (
                 <article className={styles.card} id={entry.id} key={entry.id}>
@@ -263,9 +341,27 @@ export function DiscoveryClient({
                         loop
                         playsInline
                         preload="none"
-                        onPlay={() => setPlayingVideoId(entry.id)}
-                        onPause={() => setPlayingVideoId((current) => current === entry.id ? null : current)}
+                        onPlay={() => setPlayingMediaId(entry.id)}
+                        onPause={() => setPlayingMediaId((current) => current === entry.id ? null : current)}
                       />
+                    ) : entry.media.kind === "audio" ? (
+                      <>
+                        <DiscoveryAudioArtwork entry={entry} playing={playing} />
+                        <audio
+                          ref={(audio) => {
+                            if (audio) audioRefs.current.set(entry.id, audio);
+                            else audioRefs.current.delete(entry.id);
+                          }}
+                          src={entry.media.src}
+                          preload="none"
+                          loop
+                          onPlay={() => setPlayingMediaId(entry.id)}
+                          onPause={() => {
+                            setPlayingMediaId((current) => current === entry.id ? null : current);
+                            setActiveAudioId((current) => current === entry.id ? null : current);
+                          }}
+                        />
+                      </>
                     ) : (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={entry.media.src} alt={`${entry.brand}: ${entry.title}`} />
@@ -274,11 +370,11 @@ export function DiscoveryClient({
                     <span className={styles.formatTag}>{entry.format.name}</span>
                     <span className={styles.runtime}>{entry.media.durationLabel}</span>
 
-                    {entry.media.kind === "video" ? (
+                    {entry.media.kind !== "image" ? (
                       <div className={styles.mediaControls}>
                         <button
                           type="button"
-                          onClick={() => togglePlayback(entry.id)}
+                          onClick={() => togglePlayback(entry)}
                           aria-label={playing ? `Pause ${entry.title}` : `Play ${entry.title}`}
                           title={playing ? "Pause" : "Play"}
                         >
@@ -286,13 +382,24 @@ export function DiscoveryClient({
                         </button>
                         <button
                           type="button"
-                          onClick={() => toggleSound(entry.id)}
+                          onClick={() => toggleSound(entry)}
                           aria-label={audible ? `Mute ${entry.title}` : `Hear ${entry.title}`}
                           title={audible ? "Mute" : "Sound on"}
                         >
                           {audible ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
                         </button>
                       </div>
+                    ) : null}
+                    {curationMode ? (
+                      <button
+                        type="button"
+                        className={styles.curationButton}
+                        onClick={() => void hideEntry(entry)}
+                        aria-label={`Hide ${entry.title} from Discovery`}
+                        title="Hide from Discovery"
+                      >
+                        <X aria-hidden="true" />
+                      </button>
                     ) : null}
                   </div>
 

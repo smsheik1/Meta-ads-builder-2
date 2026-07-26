@@ -1,4 +1,5 @@
 import type { DiscoveryEntry, DiscoveryGoal } from "./types";
+import { jingleDiscoveryEntries } from "./jingleArchive";
 
 export const discoveryCatalog: DiscoveryEntry[] = [
   {
@@ -86,9 +87,30 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   {
-    id: "naruto-compilers",
+    id: "lego-origin-story",
     status: "published",
     order: 5,
+    brand: "LEGO",
+    title: "How a wooden toy became a world",
+    curatorNote: "A brand origin becomes a physical transformation instead of a timeline lecture.",
+    goal: "story",
+    media: {
+      kind: "video",
+      src: "/format-repositories/three-d-breakdown-v1/agent-runs/lego-origin-world-arc-proof/final.mp4",
+      poster: "/discovery/lego-origin.jpg",
+      durationLabel: "20 sec",
+    },
+    format: {
+      slug: "three-d-breakdown",
+      name: "3D Breakdown",
+      version: "1.5.0",
+      owner: "Wiggly Studio",
+    },
+  },
+  {
+    id: "naruto-compilers",
+    status: "published",
+    order: 6,
     brand: "Developer Education",
     title: "Compilers, explained by Naruto",
     curatorNote: "Familiar characters carry a technical idea before the jargon arrives.",
@@ -109,7 +131,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "naruto-mcp",
     status: "published",
-    order: 6,
+    order: 7,
     brand: "Developer Tools",
     title: "MCP, explained by Naruto",
     curatorNote: "The visible roles make an unfamiliar agent protocol easier to remember.",
@@ -130,7 +152,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "yugioh-compilers",
     status: "published",
-    order: 7,
+    order: 8,
     brand: "Developer Education",
     title: "Compilers, explained by Yu-Gi-Oh!",
     curatorNote: "A second story world proves the lesson structure travels without changing the Format.",
@@ -149,9 +171,72 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   {
+    id: "danny-phantom-apis",
+    status: "published",
+    order: 9,
+    brand: "Developer Education",
+    title: "APIs, explained by Danny Phantom",
+    curatorNote: "A ghost portal turns an invisible software handoff into a story people can follow.",
+    goal: "teach",
+    media: {
+      kind: "video",
+      src: "/format-repositories/otaku-explainer-v1/outputs/danny-apis.mp4",
+      poster: "/discovery/danny-apis.jpg",
+      durationLabel: "70 sec",
+    },
+    format: {
+      slug: "otaku-explainer",
+      name: "Cartoon Explainer",
+      version: "1.2.0-experiment",
+      owner: "Shaz",
+    },
+  },
+  {
+    id: "naruto-apis",
+    status: "published",
+    order: 10,
+    brand: "Developer Education",
+    title: "APIs, explained by Naruto",
+    curatorNote: "A familiar mission makes software requests and responses easy to remember.",
+    goal: "teach",
+    media: {
+      kind: "video",
+      src: "/format-repositories/otaku-explainer-v1/outputs/naruto-apis.mp4",
+      poster: "/discovery/naruto-apis.jpg",
+      durationLabel: "68 sec",
+    },
+    format: {
+      slug: "otaku-explainer",
+      name: "Cartoon Explainer",
+      version: "1.2.0-experiment",
+      owner: "Shaz",
+    },
+  },
+  {
+    id: "spongebob-evs",
+    status: "published",
+    order: 11,
+    brand: "Consumer Education",
+    title: "Electric vehicles, explained by SpongeBob",
+    curatorNote: "A playful world carries the comparison without turning it into a lecture.",
+    goal: "teach",
+    media: {
+      kind: "video",
+      src: "/format-repositories/otaku-explainer-v1/outputs/spongebob-evs.mp4",
+      poster: "/discovery/spongebob-evs.jpg",
+      durationLabel: "62 sec",
+    },
+    format: {
+      slug: "otaku-explainer",
+      name: "Cartoon Explainer",
+      version: "1.2.0-experiment",
+      owner: "Shaz",
+    },
+  },
+  {
     id: "this-is-fine-ad-fatigue",
     status: "published",
-    order: 8,
+    order: 12,
     brand: "Wiggly",
     title: "When every ad looks the same",
     curatorNote: "A known meme makes the buyer's frustration clear before the copy is read.",
@@ -171,7 +256,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "hybrid-news-founder-moment",
     status: "published",
-    order: 9,
+    order: 13,
     brand: "Founder-led",
     title: "Turn the announcement into the ad",
     curatorNote: "One real event becomes a clear story with a strong visual hierarchy.",
@@ -188,6 +273,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
       owner: "Wiggly Studio",
     },
   },
+  ...jingleDiscoveryEntries,
 ];
 
 export function getPublishedDiscoveryEntries(

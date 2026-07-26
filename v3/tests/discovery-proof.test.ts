@@ -30,13 +30,22 @@ assert.equal(cartoon.version, "1.2.0-experiment");
 assert.ok(cartoon.proofEntries.length >= 3, "Cartoon Explainer should show at least three real proof outputs.");
 assert.equal(cartoon.technicalHref, "/format-lab/cartoon-explainer");
 
+const jingle = getDiscoveryFormatProfile("jingle");
+assert.ok(jingle, "Brand Jingle should have a consumer Format proof.");
+assert.equal(jingle.version, "1.0.0");
+assert.equal(jingle.proofEntries.length, 39, "Brand Jingle proof should include every distinct completed song.");
+
 assert.deepEqual(
   getRelatedDiscoveryEntries(threeD.proofEntries[0]).map((entry) => entry.format.slug),
   ["three-d-breakdown", "three-d-breakdown", "three-d-breakdown"],
   "Related proof should stay inside the exact Format.",
 );
 
-assert.ok(discoveryFormatSlugs.includes("meme") && discoveryFormatSlugs.includes("hybrid-news"));
+assert.ok(
+  discoveryFormatSlugs.includes("jingle") &&
+    discoveryFormatSlugs.includes("meme") &&
+    discoveryFormatSlugs.includes("hybrid-news"),
+);
 assert.equal(getDiscoveryFormatProfile("does-not-exist"), null);
 
 const discoveryClientSource = readFileSync("app/discover/DiscoveryClient.tsx", "utf8");

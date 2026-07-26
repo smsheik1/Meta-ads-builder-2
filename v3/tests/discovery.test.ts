@@ -20,8 +20,12 @@ assert.ok(
   "Every Discovery entry should keep its exact Format version and owner.",
 );
 assert.ok(
-  published.every((entry) => existsSync(`public${entry.media.src}`)),
-  "Discovery entries should reference existing public media instead of copying scene payloads.",
+  published.every((entry) => (
+    entry.media.src.startsWith("/")
+      ? existsSync(`public${entry.media.src}`)
+      : entry.media.src.startsWith("https://")
+  )),
+  "Discovery entries should reference an existing public asset or a secure stored-media URL.",
 );
 assert.ok(
   published
@@ -29,6 +33,31 @@ assert.ok(
     .every((entry) => entry.media.poster && existsSync(`public${entry.media.poster}`)),
   "Every video should have a local poster for slow connections.",
 );
+const jingles = published.filter((entry) => entry.format.slug === "jingle");
+assert.equal(jingles.length, 39, "Every distinct completed jingle with valid brand metadata should be discoverable.");
+assert.equal(
+  new Set(jingles.map((entry) => entry.media.src)).size,
+  jingles.length,
+  "The jingle archive should not repeat the same stored song.",
+);
+assert.ok(
+  jingles.every((entry) => entry.media.kind === "audio"),
+  "Jingles should use native audio playback instead of fake video wrappers.",
+);
+assert.ok(
+  jingles
+    .filter((entry) => entry.media.src.startsWith("/homepage/jingles/"))
+    .every((entry) => entry.order < 20),
+  "The three proven jingles should be spread through the opening feed.",
+);
+assert.equal(
+  published.some((entry) => entry.brand === "Something went wrong"),
+  false,
+  "Failed source metadata should never become public proof.",
+);
+for (const id of ["lego-origin-story", "danny-phantom-apis", "naruto-apis", "spongebob-evs"]) {
+  assert.ok(published.some((entry) => entry.id === id), `${id} should be included in the finished-output archive.`);
+}
 
 const draftEntry: DiscoveryEntry = {
   ...discoveryCatalog[0],
