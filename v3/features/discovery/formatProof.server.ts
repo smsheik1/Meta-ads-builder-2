@@ -108,6 +108,23 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "jingle",
+    promise: "Turn one buyer truth into a 20-second hook people can remember and sing back.",
+    lastUpdated: "July 2026",
+    whatStays: [
+      "One buyer problem",
+      "One repeatable hook",
+      "The brand name in the chorus",
+      "A finished 20-second song",
+    ],
+    whatChanges: [
+      "The brand and offer",
+      "The music lane",
+      "The lyrics",
+      "The buyer action",
+    ],
+  },
+  {
     slug: "meme",
     promise: "Turn a buyer's familiar frustration into an ad they understand in one glance.",
     lastUpdated: "July 2026",
