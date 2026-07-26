@@ -1,5 +1,6 @@
 import type { DiscoveryEntry, DiscoveryGoal } from "./types";
 import { jingleDiscoveryEntries } from "./jingleArchive";
+import { videoMemeDiscoveryEntries } from "./videoMemeArchive";
 
 export const discoveryCatalog: DiscoveryEntry[] = [
   {
@@ -274,6 +275,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   ...jingleDiscoveryEntries,
+  ...videoMemeDiscoveryEntries,
 ];
 
 export function getPublishedDiscoveryEntries(

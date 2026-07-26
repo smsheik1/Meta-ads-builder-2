@@ -125,6 +125,22 @@ const formatConfigs: FormatProfileConfig[] = [
     ],
   },
   {
+    slug: "video-meme",
+    promise: "Turn one sharp buyer truth into a familiar reaction clip people understand instantly.",
+    lastUpdated: "July 2026",
+    whatStays: [
+      "A recognizable reaction",
+      "One brand-specific buyer truth",
+      "A short caption-led payoff",
+    ],
+    whatChanges: [
+      "The brand",
+      "The buyer behavior",
+      "The caption",
+      "The meme template",
+    ],
+  },
+  {
     slug: "meme",
     promise: "Turn a buyer's familiar frustration into an ad they understand in one glance.",
     lastUpdated: "July 2026",
