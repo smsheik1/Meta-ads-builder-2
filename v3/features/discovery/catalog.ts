@@ -128,9 +128,30 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   {
-    id: "this-is-fine-ad-fatigue",
+    id: "yugioh-compilers",
     status: "published",
     order: 7,
+    brand: "Developer Education",
+    title: "Compilers, explained by Yu-Gi-Oh!",
+    curatorNote: "A second story world proves the lesson structure travels without changing the Format.",
+    goal: "teach",
+    media: {
+      kind: "video",
+      src: "/format-repositories/otaku-explainer-v1/outputs/yugioh-compilers.mp4",
+      poster: "/discovery/yugioh-compilers.jpg",
+      durationLabel: "64 sec",
+    },
+    format: {
+      slug: "otaku-explainer",
+      name: "Cartoon Explainer",
+      version: "1.2.0-experiment",
+      owner: "Shaz",
+    },
+  },
+  {
+    id: "this-is-fine-ad-fatigue",
+    status: "published",
+    order: 8,
     brand: "Wiggly",
     title: "When every ad looks the same",
     curatorNote: "A known meme makes the buyer's frustration clear before the copy is read.",
@@ -150,7 +171,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "hybrid-news-founder-moment",
     status: "published",
-    order: 8,
+    order: 9,
     brand: "Founder-led",
     title: "Turn the announcement into the ad",
     curatorNote: "One real event becomes a clear story with a strong visual hierarchy.",
@@ -197,4 +218,18 @@ export function filterDiscoveryEntries(
       entry.curatorNote,
     ].some((value) => value.toLocaleLowerCase().includes(normalizedQuery));
   });
+}
+
+export function getDiscoveryEntryById(id: string): DiscoveryEntry | undefined {
+  return getPublishedDiscoveryEntries().find((entry) => entry.id === id);
+}
+
+export function getDiscoveryEntriesByFormat(formatSlug: string): DiscoveryEntry[] {
+  return getPublishedDiscoveryEntries().filter((entry) => entry.format.slug === formatSlug);
+}
+
+export function getRelatedDiscoveryEntries(entry: DiscoveryEntry, limit = 3): DiscoveryEntry[] {
+  return getDiscoveryEntriesByFormat(entry.format.slug)
+    .filter((candidate) => candidate.id !== entry.id)
+    .slice(0, limit);
 }

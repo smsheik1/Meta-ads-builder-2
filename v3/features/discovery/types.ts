@@ -21,3 +21,16 @@ export type DiscoveryEntry = {
     owner: string;
   };
 };
+
+export type DiscoveryFormatProfile = {
+  slug: string;
+  name: string;
+  version: string;
+  creator: string;
+  promise: string;
+  lastUpdated: string;
+  technicalHref?: string;
+  proofEntries: DiscoveryEntry[];
+  whatStays: string[];
+  whatChanges: string[];
+};
