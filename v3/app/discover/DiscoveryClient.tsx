@@ -184,6 +184,9 @@ export function DiscoveryClient({
           </label>
 
           <div className={styles.headerActions}>
+            <Link href="/submit" className={styles.headerButton}>
+              Submit
+            </Link>
             <Link
               href={savedOnly ? "/discover" : "/saved"}
               className={`${styles.headerButton} ${savedOnly ? styles.headerButtonActive : ""}`}
