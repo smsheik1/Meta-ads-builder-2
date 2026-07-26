@@ -40,6 +40,19 @@ assert.ok(videoMeme, "Video Meme should have a consumer Format proof.");
 assert.equal(videoMeme.version, "1.0.0");
 assert.equal(videoMeme.proofEntries.length, 32, "Video Meme proof should include every completed DB import.");
 
+for (const slug of [
+  "visualizer",
+  "were-sorry",
+  "text-message",
+  "reviews",
+  "brainrot",
+  "motion-story",
+]) {
+  const profile = getDiscoveryFormatProfile(slug);
+  assert.ok(profile, `${slug} should have a consumer Format proof.`);
+  assert.ok(profile.proofEntries.length >= 1, `${slug} should show real saved output.`);
+}
+
 assert.deepEqual(
   getRelatedDiscoveryEntries(threeD.proofEntries[0]).map((entry) => entry.format.slug),
   ["three-d-breakdown", "three-d-breakdown", "three-d-breakdown"],
@@ -50,7 +63,8 @@ assert.ok(
   discoveryFormatSlugs.includes("jingle") &&
     discoveryFormatSlugs.includes("video-meme") &&
     discoveryFormatSlugs.includes("meme") &&
-    discoveryFormatSlugs.includes("hybrid-news"),
+    discoveryFormatSlugs.includes("hybrid-news") &&
+    discoveryFormatSlugs.length === 12,
 );
 assert.equal(getDiscoveryFormatProfile("does-not-exist"), null);
 
