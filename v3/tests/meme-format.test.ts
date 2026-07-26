@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createElement } from "react";
+import { createElement, type CSSProperties } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { buildMemePrompt } from "../features/formats/meme/prompt";
 import {
@@ -9,6 +9,7 @@ import {
 import { MEME_TEMPLATES, MEME_VARIATIONS_PER_TEMPLATE } from "../features/formats/meme/templates";
 import { createMemeAdScene } from "../features/scene/createMemeScene";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
+import { RenderAssetProvider } from "../features/render/RenderAssetContext";
 import { rerollScene, createDefaultSceneLocks } from "../features/create/reroll";
 import { assertSavableAdScene, createSavedDesignId, restoreSavedDesignSelection } from "../features/create/savedDesigns";
 import { makeResearch } from "./helpers/research";
@@ -329,13 +330,32 @@ assert.equal(scenes[3]!.layout.templateId, "woman_yelling_cat");
 assert.equal(scenes[0]!.creative.subheadline, research.brandBrief.offer);
 assert.ok(!scenes[0]!.creative.subheadline.includes("bottom choice"));
 
-const html = renderToStaticMarkup(createElement(AdRenderSurface, {
-  scene: scenes[0]!,
-}));
+function TestRenderImage(props: {
+  alt?: string;
+  className?: string;
+  src: string;
+  style?: CSSProperties;
+}) {
+  return createElement("img", {
+    ...props,
+    "data-render-asset": "shared",
+  });
+}
+
+const html = renderToStaticMarkup(createElement(
+  RenderAssetProvider,
+  {
+    Image: TestRenderImage,
+    children: createElement(AdRenderSurface, {
+      scene: scenes[0]!,
+    }),
+  },
+));
 assert.ok(html.includes('data-format="meme"'));
 assert.ok(html.includes('data-meme-template="drake"'));
 assert.ok(html.includes('data-meme-artboard="drake"'));
 assert.ok(html.includes("/memes/drake.png"));
+assert.ok(html.includes('data-render-asset="shared"'));
 assert.ok(html.includes('data-meme-slot="topText"'));
 assert.ok(!html.includes("-webkit-line-clamp"));
 assert.ok(!html.includes("text-overflow"));

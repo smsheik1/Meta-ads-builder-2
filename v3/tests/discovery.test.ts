@@ -5,6 +5,7 @@ import {
   filterDiscoveryEntries,
   getPublishedDiscoveryEntries,
 } from "../features/discovery/catalog";
+import { databaseFormatDiscoveryEntries } from "../features/discovery/databaseFormatArchive";
 import type { DiscoveryEntry } from "../features/discovery/types";
 
 const published = getPublishedDiscoveryEntries();
@@ -64,6 +65,31 @@ assert.ok(
     entry.media.poster?.startsWith("/discovery/video-memes/")
   )),
   "Video Memes should use completed Convex renders with local loading posters.",
+);
+const generatedFormatSlugs = [
+  "visualizer",
+  "meme",
+  "three-d-breakdown",
+  "video-meme",
+  "were-sorry",
+  "text-message",
+  "reviews",
+  "brainrot",
+  "jingle",
+  "motion-story",
+];
+assert.ok(
+  generatedFormatSlugs.every((slug) => published.some((entry) => entry.format.slug === slug)),
+  "Discovery should include real proof from all 10 generated Wiggly formats.",
+);
+assert.equal(
+  databaseFormatDiscoveryEntries.length,
+  20,
+  "The curated database import should keep only the reviewed cross-format proof set.",
+);
+assert.ok(
+  databaseFormatDiscoveryEntries.every((entry) => entry.media.src.startsWith("/discovery/db-formats/")),
+  "Curated database proof should use inspected local archive assets.",
 );
 assert.equal(
   published.some((entry) => entry.brand === "Something went wrong"),

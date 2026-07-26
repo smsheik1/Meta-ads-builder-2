@@ -1,4 +1,5 @@
 import type { DiscoveryEntry, DiscoveryGoal } from "./types";
+import { databaseFormatDiscoveryEntries } from "./databaseFormatArchive";
 import { jingleDiscoveryEntries } from "./jingleArchive";
 import { videoMemeDiscoveryEntries } from "./videoMemeArchive";
 
@@ -274,6 +275,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
       owner: "Wiggly Studio",
     },
   },
+  ...databaseFormatDiscoveryEntries,
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
 ];

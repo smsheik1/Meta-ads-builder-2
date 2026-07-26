@@ -1,4 +1,5 @@
 import { useEffect, useRef, type CSSProperties } from "react";
+import { useRenderAssetComponents } from "../../render/RenderAssetContext";
 import type { MemeAdScene } from "../../scene/types";
 import type { FormatRenderProps } from "../types";
 import { getMemeTemplate, type MemeSlot } from "./templates";
@@ -151,6 +152,7 @@ export function MemeFormatRenderer({
 }: FormatRenderProps<MemeAdScene>) {
   const template = getMemeTemplate(scene.layout.templateId);
   if (!template) return null;
+  const { Image } = useRenderAssetComponents();
   const templateAspect = template.width / template.height;
   const fitByHeight = templateAspect < 0.8;
 
@@ -174,9 +176,8 @@ export function MemeFormatRenderer({
           width: fitByHeight ? "auto" : "100%",
         }}
       >
-        <img
+        <Image
           alt=""
-          draggable={false}
           src={template.image}
           className="absolute inset-0 size-full select-none object-cover"
         />
