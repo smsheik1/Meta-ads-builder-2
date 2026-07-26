@@ -21,6 +21,10 @@ const formatCarousel = read("app/waitlist/WaitlistFormatCarousel.tsx");
 const signupForm = read("app/waitlist/WaitlistSignupForm.tsx");
 assert.ok(waitlistPage.includes("WaitlistFormatCarousel"), "Waitlist hero should show the format carousel.");
 assert.ok(waitlistPage.includes("Your product page, turned into ads worth watching."), "Waitlist hero should use the product-focused headline.");
+assert.ok(
+  waitlistPage.includes('href="/discover"'),
+  "The homepage Open Wiggly button should lead people into Discovery.",
+);
 assert.ok(!waitlistPage.includes("Launch blocker"), "Internal launch notes must never appear on the public homepage.");
 assert.ok(!waitlistPage.includes("creative-pack-demo.mp4"), "The public homepage should not expose internal asset paths.");
 assert.ok(formatCarousel.includes("Previous format") && formatCarousel.includes("Next format"), "Format carousel controls should be visible and accessible.");

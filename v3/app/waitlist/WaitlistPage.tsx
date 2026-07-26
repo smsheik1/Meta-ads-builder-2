@@ -16,7 +16,7 @@ export function WaitlistPage() {
             </p>
           </div>
           <Link
-            href="/create"
+            href="/discover"
             className="inline-flex h-11 items-center gap-2 rounded-lg border-2 border-[#080817] bg-white px-4 text-sm font-black text-[#080817] transition hover:-translate-y-0.5 hover:bg-[#C9FF55]"
           >
             Open Wiggly <ArrowUpRight className="size-4" strokeWidth={3} />
