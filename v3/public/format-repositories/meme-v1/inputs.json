@@ -1,0 +1,22 @@
+{
+  "firstQuestion": "What website should I use?",
+  "required": [
+    {
+      "id": "websiteUrl",
+      "type": "url",
+      "description": "The brand website the agent should research."
+    }
+  ],
+  "defaults": {
+    "mode": "autopilot",
+    "questions": "one-at-a-time-only-when-blocked",
+    "templates": [
+      "drake",
+      "woman_yelling_cat",
+      "this_is_fine",
+      "expanding_brain"
+    ],
+    "variationsPerTemplate": 3,
+    "outputSize": "1080x1350"
+  }
+}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, type CSSProperties } from "react";
 import { useRenderAssetComponents } from "../../render/RenderAssetContext";
 import type { MemeAdScene } from "../../scene/types";
 import type { FormatRenderProps } from "../types";
@@ -23,6 +23,50 @@ function getSlotText(scene: MemeAdScene, slot: MemeSlot) {
   return slot.textCase === "uppercase" ? value.toUpperCase() : value;
 }
 
+export function layoutMemeSlotText(slot: MemeSlot, text: string) {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return { fontSize: slot.fontSize, text: "" };
+
+  const posterText = slot.textStyle === "poster";
+  const horizontalScale = posterText ? 0.86 : 0.88;
+  const verticalScale = posterText ? 0.84 : 0.88;
+  const glyphWidth = posterText ? 0.58 : 0.62;
+  const lineHeight = posterText ? 0.95 : 0.94;
+  const characterCapacity = Math.max(
+    1,
+    Math.floor((slot.width * horizontalScale) / (slot.fontSize * glyphWidth)),
+  );
+  const lines: string[] = [];
+  let currentLine = "";
+
+  for (const word of words) {
+    const candidate = currentLine ? `${currentLine} ${word}` : word;
+    if (
+      currentLine &&
+      candidate.length > characterCapacity &&
+      lines.length < slot.maxLines - 1
+    ) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = candidate;
+    }
+  }
+  if (currentLine) lines.push(currentLine);
+
+  const longestLine = Math.max(...lines.map((line) => line.length), 1);
+  const widthFit = (slot.width * horizontalScale) / (longestLine * glyphWidth);
+  const heightFit = (slot.height * verticalScale) / (lines.length * lineHeight);
+
+  return {
+    fontSize: Math.max(
+      minFitFontSize,
+      Math.floor(Math.min(slot.fontSize, widthFit, heightFit)),
+    ),
+    text: lines.join("\n"),
+  };
+}
+
 function getSlotStyle(slot: MemeSlot, templateWidth: number, templateHeight: number): CSSProperties {
   return {
     position: "absolute",
@@ -44,6 +88,9 @@ function getSlotFitBoxStyle(slot: MemeSlot): CSSProperties {
     inset: `${verticalInset} ${horizontalInset}`,
     boxSizing: "border-box",
     display: "flex",
+    minHeight: 0,
+    minWidth: 0,
+    overflow: "hidden",
     alignItems: "center",
     justifyContent: slot.align === "left" ? "flex-start" : "center",
     textAlign: slot.align || "center",
@@ -63,12 +110,17 @@ function getSlotFitBoxStyle(slot: MemeSlot): CSSProperties {
   };
 }
 
-function getSlotTextInnerStyle(slot: MemeSlot): CSSProperties {
+function getSlotTextInnerStyle(slot: MemeSlot, fontSize: number): CSSProperties {
   return {
     display: "block",
     boxSizing: "border-box",
-    whiteSpace: "normal",
-    overflowWrap: "normal",
+    fontSize: `${fontSize}px`,
+    maxHeight: "100%",
+    maxWidth: "100%",
+    minWidth: 0,
+    overflow: "hidden",
+    whiteSpace: "pre-line",
+    overflowWrap: "break-word",
     wordBreak: "normal",
     textAlign: slot.align || "center",
   };
@@ -113,12 +165,13 @@ function MemeSlotText({
   text: string;
 }) {
   const textRef = useRef<HTMLSpanElement>(null);
+  const layout = layoutMemeSlotText(slot, text);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = textRef.current;
     if (!element) return undefined;
     const parent = element.parentElement;
-    const maxFontSize = Math.min(slot.fontSize, maxFitFontSize);
+    const maxFontSize = Math.min(layout.fontSize, maxFitFontSize);
     let animationFrame = 0;
 
     const fit = () => {
@@ -126,7 +179,7 @@ function MemeSlotText({
       animationFrame = window.requestAnimationFrame(() => fitTextToSlotBounds(element, maxFontSize));
     };
 
-    fit();
+    fitTextToSlotBounds(element, maxFontSize);
     const resizeObserver = parent && "ResizeObserver" in window
       ? new ResizeObserver(fit)
       : null;
@@ -138,11 +191,11 @@ function MemeSlotText({
       resizeObserver?.disconnect();
       window.removeEventListener("resize", fit);
     };
-  }, [slot.fontSize, text]);
+  }, [layout.fontSize, layout.text]);
 
   return (
-    <span ref={textRef} style={getSlotTextInnerStyle(slot)}>
-      {text}
+    <span ref={textRef} style={getSlotTextInnerStyle(slot, layout.fontSize)}>
+      {layout.text}
     </span>
   );
 }
@@ -190,7 +243,7 @@ export function MemeFormatRenderer({
               data-meme-slot={slot.id}
               style={getSlotStyle(slot, template.width, template.height)}
             >
-              <div style={getSlotFitBoxStyle(slot)}>
+              <div data-meme-fit-box={slot.id} style={getSlotFitBoxStyle(slot)}>
                 <MemeSlotText slot={slot} text={text} />
               </div>
             </div>

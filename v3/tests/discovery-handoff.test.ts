@@ -44,7 +44,15 @@ assert.ok(cartoon?.handoff, "Cartoon Explainer should offer its packaged agent r
 assert.equal(cartoon.handoff.firstQuestion, "What topic should the video explain?");
 assert.match(buildDiscoveryHandoffPrompt(cartoon, origin), /Exact public version: 1\.2\.0-experiment/);
 
-for (const slug of ["meme", "hybrid-news"]) {
+const meme = getDiscoveryFormatProfile("meme");
+assert.ok(meme?.handoff, "Meme should offer its packaged agent run.");
+assert.equal(meme.handoff.firstQuestion, "What website should I use?");
+assert.equal(meme.handoff.estimates.length, 3);
+const memePrompt = buildDiscoveryHandoffPrompt(meme, origin);
+assert.match(memePrompt, /Inspect all twelve local PNGs before delivery/);
+assert.ok(memePrompt.trim().endsWith('"What website should I use?"'));
+
+for (const slug of ["hybrid-news"]) {
   const profile = getDiscoveryFormatProfile(slug);
   assert.ok(profile);
   assert.equal(profile.handoff, undefined, `${slug} should not show a broken agent option.`);

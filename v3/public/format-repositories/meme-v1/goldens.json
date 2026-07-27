@@ -1,0 +1,16 @@
+{
+  "purpose": "Show the expected text fit, instant readability, and template-native contrast.",
+  "examples": [
+    {
+      "id": "davids-expanding-brain",
+      "brand": "David's Cookies",
+      "title": "One buyer problem, four escalating choices",
+      "imagePath": "goldens/davids-expanding-brain.jpg",
+      "whyItWorks": [
+        "The ladder escalates instead of listing disconnected benefits.",
+        "Every line stays short enough to scan instantly.",
+        "The final line lands as the punchline."
+      ]
+    }
+  ]
+}

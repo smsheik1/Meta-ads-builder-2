@@ -1,0 +1,20 @@
+{
+  "acceptanceCriteria": [
+    "Exactly four templates appear in the required order.",
+    "Each template has exactly three distinct buyer angles.",
+    "Every required text slot is present and within its character limit.",
+    "Each caption is a complete thought with no dangling ending.",
+    "The joke uses website evidence or a supported buyer moment.",
+    "No invented numbers, reviews, customers, guarantees, or timeframes appear.",
+    "The result reads like a meme, not an ad headline.",
+    "All twelve PNGs are unique and exactly 1080 x 1350.",
+    "All text is readable without clipping or overflow."
+  ],
+  "manualReview": [
+    "Can someone understand the joke in one glance?",
+    "Would the caption still work if the brand name disappeared?",
+    "Is the buyer moment specific to this business?",
+    "Does each template use three meaningfully different angles?",
+    "Did the renderer keep every word fully visible?"
+  ]
+}

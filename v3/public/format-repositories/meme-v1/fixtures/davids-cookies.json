@@ -1,0 +1,26 @@
+{
+  "websiteUrl": "https://davidscookies.com/",
+  "brandName": "David's Cookies",
+  "description": "Fresh baked cookies and brownies delivered for gifts, parties, and cravings.",
+  "offer": "Fresh baked cookies, brownies, cookie tins, and gift baskets delivered nationwide.",
+  "audience": "People who need an easy dessert gift, party treat, or fresh-baked craving fix.",
+  "ctaDirection": "Shop cookies",
+  "colors": [
+    "#0F172A",
+    "#F97316"
+  ],
+  "fontFeel": "sans",
+  "buyerMoments": [
+    "Forgot a birthday and need a gift fast.",
+    "Need dessert for an office party.",
+    "Want a fresh-baked treat without baking."
+  ],
+  "proof": [
+    "Fresh baked cookies are shipped nationwide.",
+    "The site sells cookie tins, brownies, and gift baskets."
+  ],
+  "siteLanguage": [
+    "Cookie gifts",
+    "Dessert delivery"
+  ]
+}

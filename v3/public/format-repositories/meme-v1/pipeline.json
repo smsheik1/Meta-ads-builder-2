@@ -1,0 +1,30 @@
+{
+  "progress": "Research -> Write -> Render -> Deliver",
+  "stages": [
+    {
+      "id": "research",
+      "output": "Evidence-backed brand research with buyer moments and proof",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "write",
+      "output": "Twelve validated captions across four templates",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "render",
+      "output": "Twelve local 1080 x 1350 PNGs",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "deliver",
+      "output": "Twelve PNGs plus research, variants, scenes, and run state",
+      "paid": false,
+      "approvalRequired": false,
+      "qaAttestationRequired": true
+    }
+  ]
+}
