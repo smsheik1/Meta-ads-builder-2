@@ -1,0 +1,16 @@
+{
+  "purpose": "Show the expected phone-native layout, believable conversation, and clean text fit.",
+  "examples": [
+    {
+      "id": "davids-birthday-text",
+      "brand": "David's Cookies",
+      "title": "A buyer problem becomes a natural recommendation",
+      "imagePath": "goldens/davids-birthday-text.png",
+      "whyItWorks": [
+        "The conversation starts inside a real mistake.",
+        "The brand enters once as a friend's recommendation.",
+        "Every bubble is readable in one glance."
+      ]
+    }
+  ]
+}

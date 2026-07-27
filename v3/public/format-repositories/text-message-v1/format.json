@@ -1,0 +1,24 @@
+{
+  "id": "text-message",
+  "version": "1.0.0",
+  "title": "Wiggly Text Message",
+  "description": "Turn buyer moments and brand proof into six believable iMessage-style static ads.",
+  "status": "agent-ready",
+  "outputs": [
+    {
+      "type": "image/png",
+      "count": 6,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "type": "application/json",
+      "files": [
+        "research.json",
+        "variants.json",
+        "scenes.json",
+        "state.json"
+      ]
+    }
+  ]
+}

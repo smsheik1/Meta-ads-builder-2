@@ -1,0 +1,80 @@
+{
+  "variants": [
+    {
+      "angle": "last-minute birthday gift",
+      "contactName": "Maya",
+      "timestampLabel": "Today 9:41 AM",
+      "messages": [
+        { "side": "left", "text": "i forgot her birthday is tomorrow" },
+        { "side": "right", "text": "again??" },
+        { "side": "left", "text": "i'm sending David's Cookies" },
+        { "side": "right", "text": "wait that's actually perfect" }
+      ],
+      "selfCheckPassed": "Four short messages, both sides, one brand mention, fits one screen."
+    },
+    {
+      "angle": "office party dessert",
+      "contactName": "Jordan",
+      "timestampLabel": "Today 10:12 AM",
+      "messages": [
+        { "side": "left", "text": "they put me in charge of dessert" },
+        { "side": "right", "text": "how many people" },
+        { "side": "left", "text": "thirty. and i can't bake" },
+        { "side": "right", "text": "David's Cookies does gift tins" },
+        { "side": "left", "text": "send me that" }
+      ],
+      "selfCheckPassed": "Five short messages, both sides, one brand mention, fits one screen."
+    },
+    {
+      "angle": "hard-to-shop-for recipient",
+      "contactName": "Sam",
+      "timestampLabel": "Today 11:26 AM",
+      "messages": [
+        { "side": "left", "text": "what do you get the person who has everything" },
+        { "side": "right", "text": "something they can eat" },
+        { "side": "left", "text": "David's Cookies?" },
+        { "side": "right", "text": "exactly" }
+      ],
+      "selfCheckPassed": "Four short messages, both sides, one brand mention, fits one screen."
+    },
+    {
+      "angle": "college care package",
+      "contactName": "Nina",
+      "timestampLabel": "Today 1:08 PM",
+      "messages": [
+        { "side": "left", "text": "the dorm care package needs help" },
+        { "side": "right", "text": "what's in it now" },
+        { "side": "left", "text": "socks and sadness" },
+        { "side": "right", "text": "add David's Cookies" },
+        { "side": "left", "text": "ok now it feels like a gift" }
+      ],
+      "selfCheckPassed": "Five short messages, both sides, one brand mention, fits one screen."
+    },
+    {
+      "angle": "personal thank-you gift",
+      "contactName": "Alex",
+      "timestampLabel": "Today 2:17 PM",
+      "messages": [
+        { "side": "left", "text": "i need a thank-you that doesn't feel corporate" },
+        { "side": "right", "text": "send cookies" },
+        { "side": "left", "text": "from where" },
+        { "side": "right", "text": "David's Cookies" },
+        { "side": "left", "text": "done" }
+      ],
+      "selfCheckPassed": "Five short messages, both sides, one brand mention, fits one screen."
+    },
+    {
+      "angle": "promised to bring dessert",
+      "contactName": "Chris",
+      "timestampLabel": "Today 4:03 PM",
+      "messages": [
+        { "side": "left", "text": "i said i'd bring dessert" },
+        { "side": "right", "text": "and you don't bake" },
+        { "side": "left", "text": "correct" },
+        { "side": "right", "text": "David's Cookies ships brownies too" },
+        { "side": "left", "text": "you just saved me" }
+      ],
+      "selfCheckPassed": "Five short messages, both sides, one brand mention, fits one screen."
+    }
+  ]
+}
