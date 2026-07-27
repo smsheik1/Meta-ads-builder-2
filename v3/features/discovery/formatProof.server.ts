@@ -237,8 +237,34 @@ const formatConfigs: FormatProfileConfig[] = [
     slug: "text-message",
     promise: "Put the product inside a believable conversation at the moment it becomes useful.",
     lastUpdated: "July 2026",
+    technicalHref: "/format-lab/text-message",
+    manifestPath: "format-repositories/text-message-v1/format.json",
     whatStays: ["A familiar chat screen", "One buyer problem", "A natural product reveal"],
     whatChanges: ["The speakers", "The problem", "The proof", "The product"],
+    handoff: {
+      requiredInputs: [
+        "A brand website",
+      ],
+      deliverables: [
+        "Six distinct buyer conversations",
+        "Six static iMessage-style PNGs",
+        "Scene and research data",
+      ],
+      instructions: [
+        "Research real buyer moments and proof from the website",
+        "Use the packaged prompt for all six conversations",
+        "Keep each thread casual, short, and inside the fixed text budgets",
+        "Inspect all six local PNGs before delivery",
+      ],
+      estimates: [
+        { label: "Research", cost: "$0 Wiggly provider cost", time: "about 1-3 min" },
+        { label: "Six conversations", cost: "$0 separate provider cost", time: "about 1-2 min" },
+        { label: "Six PNGs", cost: "$0 provider cost", time: "about 1-2 min" },
+      ],
+      totalEstimate: "$0 Wiggly provider cost, usually 3-6 min",
+      output: "Six static 1080 x 1350 PNGs plus scene and research data",
+      firstQuestion: "What website should I use?",
+    },
   },
   {
     slug: "reviews",

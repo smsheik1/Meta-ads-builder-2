@@ -1,0 +1,20 @@
+{
+  "acceptanceCriteria": [
+    "Exactly six distinct conversations are produced.",
+    "Every conversation contains four to six messages and uses both speakers.",
+    "Every message is 80 characters or fewer and each conversation is 240 characters or fewer.",
+    "The brand appears at most once in each conversation.",
+    "Every conversation begins inside a specific buyer moment.",
+    "No invented numbers, reviews, customers, guarantees, or timeframes appear.",
+    "No CTA-button language, URLs, emojis, hashtags, or generic marketing language appears.",
+    "All six PNGs are unique and exactly 1080 x 1350.",
+    "All bubbles and text are readable without clipping or overflow."
+  ],
+  "manualReview": [
+    "Does this sound like two people texting?",
+    "Is the buyer problem clear before the brand appears?",
+    "Does the brand enter naturally instead of sounding like an ad?",
+    "Are all six openings and buyer moments meaningfully different?",
+    "Did the renderer keep every bubble and word fully visible?"
+  ]
+}
