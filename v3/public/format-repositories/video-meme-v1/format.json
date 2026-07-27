@@ -1,0 +1,16 @@
+{
+  "id": "video-meme",
+  "version": "1.0.0",
+  "title": "Video Meme",
+  "description": "Turn one brand-specific buyer truth into a familiar reaction clip with a short caption.",
+  "status": "complete-runner",
+  "templates": [
+    "bear-sniff",
+    "pingu-noot-noot",
+    "darwin-journey"
+  ],
+  "output": [
+    "mp4"
+  ],
+  "providerCostUsd": 0
+}

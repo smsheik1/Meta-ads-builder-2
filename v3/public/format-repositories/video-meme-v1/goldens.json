@@ -1,0 +1,38 @@
+{
+  "purpose": "These examples show the three different joke structures. Copy the pattern, not the wording.",
+  "examples": [
+    {
+      "id": "bear-secret",
+      "brand": "David's Cookies",
+      "title": "This bear sniffs people who claim they baked the office birthday cookies.",
+      "templateId": "bear-sniff",
+      "videoPath": "goldens/bear-secret.mp4",
+      "whyItWorks": [
+        "It exposes a specific guilty behavior.",
+        "The clip supplies the accusation and comedy."
+      ]
+    },
+    {
+      "id": "pingu-reversal",
+      "brand": "LEGO",
+      "title": "Finished the whole set → the instruction manual is in the wrong language",
+      "templateId": "pingu-noot-noot",
+      "videoPath": "goldens/pingu-reversal.mp4",
+      "whyItWorks": [
+        "The setup feels calm and complete.",
+        "The second line undercuts it with one exact problem."
+      ]
+    },
+    {
+      "id": "darwin-pain-stack",
+      "brand": "Agent Enamel",
+      "title": "POV: the front desk after flu season, 30 voicemails, and a triple-booked Monday",
+      "templateId": "darwin-journey",
+      "videoPath": "goldens/darwin-pain-stack.mp4",
+      "whyItWorks": [
+        "The persona and pain stack are concrete.",
+        "Darwin's calm face carries the mismatch."
+      ]
+    }
+  ]
+}

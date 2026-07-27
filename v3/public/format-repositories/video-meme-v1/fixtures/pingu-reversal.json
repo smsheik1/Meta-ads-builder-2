@@ -1,0 +1,55 @@
+{
+  "research": {
+    "sourceType": "website",
+    "websiteUrl": "https://www.lego.com/",
+    "brandName": "LEGO",
+    "offer": "Buildable sets with step-by-step instructions.",
+    "audience": "Kids, parents, collectors, and adult builders.",
+    "buyerMoments": [
+      {
+        "text": "A builder follows the instructions to finish a whole set.",
+        "sourceUrl": "https://www.lego.com/"
+      }
+    ],
+    "proof": [
+      {
+        "text": "Sets include building instructions.",
+        "sourceUrl": "https://www.lego.com/"
+      }
+    ],
+    "siteLanguage": [
+      {
+        "text": "Building instructions",
+        "sourceUrl": "https://www.lego.com/"
+      }
+    ],
+    "colors": [
+      "#FFD500"
+    ],
+    "adAngles": [
+      {
+        "buyer": "Set builder",
+        "moment": "The last brick clicks into place.",
+        "pain": "The builder realizes they used the wrong instructions.",
+        "proof": "The set depends on step-by-step building instructions.",
+        "sitePhrase": "Building instructions"
+      }
+    ]
+  },
+  "plan": {
+    "version": 1,
+    "angle": "Finished build undercut by the instruction problem",
+    "target": "a builder who finished the set",
+    "templateId": "pingu-noot-noot",
+    "mode": "comic_dread",
+    "slots": {
+      "setupText": "finished the whole set",
+      "dreadText": "the instruction manual is in the wrong language"
+    },
+    "selfCheckPassed": "The specific instruction problem directly undercuts the calm finished-build thought.",
+    "selectedEvidenceIndexes": [
+      0,
+      1
+    ]
+  }
+}

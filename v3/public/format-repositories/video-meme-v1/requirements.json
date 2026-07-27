@@ -1,0 +1,19 @@
+{
+  "environment": {},
+  "tools": {
+    "node": {
+      "requiredFor": [
+        "plan",
+        "render",
+        "final"
+      ]
+    },
+    "ffprobe": {
+      "requiredFor": [
+        "media-inspection"
+      ]
+    }
+  },
+  "providers": [],
+  "note": "The host agent researches and writes. Wiggly bundles the clips and renders locally, so this kit needs no API key."
+}
