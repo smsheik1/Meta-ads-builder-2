@@ -1,0 +1,41 @@
+{
+  "research": {
+    "sourceType": "brief",
+    "brandName": "Maya's Lemonade",
+    "websiteUrl": null,
+    "offer": "Fresh lemonade sold at a neighborhood stand.",
+    "audience": "Neighbors who want a cold drink.",
+    "buyerMoments": ["A hot afternoon needs a cold drink."],
+    "proof": [
+      {
+        "text": "Maya sells fresh lemonade at a neighborhood stand.",
+        "sourceUrl": null
+      }
+    ],
+    "siteLanguage": ["fresh lemonade"],
+    "visual": {
+      "logoUrl": null,
+      "colors": ["#FFE066", "#47A447"],
+      "notes": ["Sunny and homemade"]
+    }
+  },
+  "plan": {
+    "version": 1,
+    "angle": "Turn a hot neighborhood afternoon into a cold lemonade break.",
+    "brandPhonetic": "Maya's Lemonade",
+    "durationSeconds": 60,
+    "genreId": "funky-commercial",
+    "hook": "Hot day, cold cup, meet me outside",
+    "verseLines": [
+      "Sun on the block and the sidewalk glows",
+      "Fresh little pour where the cool wind blows",
+      "Neighbors roll up when the yellow sign shows",
+      "One cold sip and the whole day slows"
+    ],
+    "bridgeLines": [
+      "Made for the block",
+      "Poured while you stop"
+    ],
+    "selectedEvidenceIndexes": [0]
+  }
+}

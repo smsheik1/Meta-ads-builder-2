@@ -1,0 +1,36 @@
+{
+  "research": {
+    "sourceType": "website",
+    "brandName": "David's Cookies",
+    "websiteUrl": "https://www.davidscookies.com/",
+    "offer": "Fresh-baked cookies and gift tins delivered to the recipient.",
+    "audience": "People who need an easy gift that still feels personal.",
+    "buyerMoments": ["A gift is needed quickly and there is no time to bake."],
+    "proof": [
+      {
+        "text": "Fresh-baked cookies are available in gift tins for delivery.",
+        "sourceUrl": "https://www.davidscookies.com/"
+      }
+    ],
+    "siteLanguage": ["fresh-baked", "gift tins"],
+    "visual": {
+      "logoUrl": null,
+      "colors": ["#D6001C", "#FFF5E6"],
+      "notes": ["Warm bakery tone"]
+    }
+  },
+  "plan": {
+    "version": 1,
+    "angle": "Give a personal cookie gift without finding time to bake.",
+    "brandPhonetic": "David's Cookies",
+    "durationSeconds": 20,
+    "genreId": "modern-hip-hop",
+    "hook": "Need a gift that hits, no time to bake?",
+    "verseLines": [
+      "Fresh baked joy at their front door",
+      "Send a tin they will ask for"
+    ],
+    "bridgeLines": [],
+    "selectedEvidenceIndexes": [0]
+  }
+}

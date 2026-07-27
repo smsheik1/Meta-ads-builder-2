@@ -111,6 +111,8 @@ const formatConfigs: FormatProfileConfig[] = [
     slug: "jingle",
     promise: "Turn one buyer truth into a 20-second hook people can remember and sing back.",
     lastUpdated: "July 2026",
+    technicalHref: "/format-lab/brand-jingle",
+    manifestPath: "format-repositories/brand-jingle-v1/format.json",
     whatStays: [
       "One buyer problem",
       "One repeatable hook",
@@ -123,6 +125,31 @@ const formatConfigs: FormatProfileConfig[] = [
       "The lyrics",
       "The buyer action",
     ],
+    handoff: {
+      requiredInputs: [
+        "A website or one-sentence no-website brief",
+      ],
+      deliverables: [
+        "One evidence-backed song angle",
+        "One validated lyric and timing plan",
+        "One branded cover",
+        "One inspected MP3",
+      ],
+      instructions: [
+        "Research one useful buyer truth",
+        "Use the default 20-second lane unless asked otherwise",
+        "Show the lyrics, cover, and estimate before music generation",
+        "Ask again before a replacement song",
+      ],
+      estimates: [
+        { label: "Research + lyrics", cost: "$0 provider cost", time: "about 1-3 min" },
+        { label: "Cover art", cost: "$0", time: "under 10 sec" },
+        { label: "20-second music", cost: "about $0.05", time: "about 1-3 min" },
+      ],
+      totalEstimate: "Usually about $0.05 and 2-6 min",
+      output: "One MP3 plus branded SVG cover art",
+      firstQuestion: "What website is this for? If you do not have one, just say so.",
+    },
   },
   {
     slug: "video-meme",

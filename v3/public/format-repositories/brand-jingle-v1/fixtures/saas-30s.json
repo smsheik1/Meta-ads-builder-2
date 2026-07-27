@@ -1,0 +1,37 @@
+{
+  "research": {
+    "sourceType": "website",
+    "brandName": "QueueBright",
+    "websiteUrl": "https://example.com/queuebright",
+    "offer": "One shared support inbox that assigns and tracks customer requests.",
+    "audience": "Small support teams losing requests across email and chat.",
+    "buyerMoments": ["A customer asks twice because nobody owned the first message."],
+    "proof": [
+      {
+        "text": "QueueBright assigns every incoming request to one owner.",
+        "sourceUrl": "https://example.com/queuebright/features"
+      }
+    ],
+    "siteLanguage": ["one shared inbox", "one owner"],
+    "visual": {
+      "logoUrl": null,
+      "colors": ["#0757D9", "#67E8F9"],
+      "notes": ["Clear and operational"]
+    }
+  },
+  "plan": {
+    "version": 1,
+    "angle": "Every customer question should have one clear owner.",
+    "brandPhonetic": "Queue Bright",
+    "durationSeconds": 30,
+    "genreId": "pop-rap-hook",
+    "hook": "One new question, one clear name",
+    "verseLines": [
+      "No lost thread in a crowded lane",
+      "Every request has someone to own it",
+      "Your whole team can see the moment"
+    ],
+    "bridgeLines": [],
+    "selectedEvidenceIndexes": [0]
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "purpose": "Three proven Wiggly songs show the quality bar without locking future brands to one topic.",
+  "examples": [
+    {
+      "id": "apple-all-in-one-place",
+      "brand": "Apple",
+      "title": "Apple magic, all in one place",
+      "audioPath": "goldens/apple-all-in-one-place.mp3",
+      "whyItWorks": [
+        "The hook is simple and repeatable.",
+        "The verse turns product integration into a buyer benefit.",
+        "The brand pronunciation is ordinary and unforced."
+      ]
+    },
+    {
+      "id": "davids-no-time-to-bake",
+      "brand": "David's Cookies",
+      "title": "Need a gift that hits, no time to bake?",
+      "audioPath": "goldens/davids-no-time-to-bake.mp3",
+      "whyItWorks": [
+        "The hook starts with a real buyer moment.",
+        "The song sells an outcome rather than listing cookie features.",
+        "The rhyme is easy to follow on one listen."
+      ]
+    },
+    {
+      "id": "ogtool-break-the-rules",
+      "brand": "OGTool",
+      "title": "Oh Gee Tool, we break the old rules",
+      "audioPath": "goldens/ogtool-break-the-rules.mp3",
+      "whyItWorks": [
+        "The phonetic spelling protects the brand name.",
+        "The hook gives the brand a clear attitude.",
+        "The verse stays on one contrast between old pain and new result."
+      ]
+    }
+  ]
+}

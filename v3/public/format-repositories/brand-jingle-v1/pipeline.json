@@ -1,0 +1,36 @@
+{
+  "progress": "Research → Angle → Song → Generate → Deliver",
+  "stages": [
+    {
+      "id": "research",
+      "output": "Evidence-backed brand brief",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "angle",
+      "output": "One buyer truth",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "song",
+      "output": "Validated lyrics, timing plan, cover art, and estimate",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "generate",
+      "output": "One ElevenLabs Music v2 MP3",
+      "paid": true,
+      "approvalRequired": true,
+      "attemptsPerApproval": 1
+    },
+    {
+      "id": "deliver",
+      "output": "Inspected MP3, cover, and provenance",
+      "paid": false,
+      "approvalRequired": true
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "planning": [
+    "The source is a website with cited evidence or a user brief.",
+    "The song uses one buyer pain or benefit.",
+    "Every number in the lyrics appears in selected evidence.",
+    "The hook is one line and 12 words or fewer.",
+    "The timing sections sum to the requested duration."
+  ],
+  "creative": [
+    "A stranger can tell what the brand helps with.",
+    "The hook is memorable after one listen.",
+    "Lines use short, common words and compatible rhythms.",
+    "The brand name sounds natural rather than pasted onto the end.",
+    "The song does not imitate or name a living artist."
+  ],
+  "delivery": [
+    "The MP3 exists and is not empty.",
+    "The duration is within 1.5 seconds when ffprobe is available.",
+    "The cover exists and uses the brand name and hook.",
+    "The user listens before final approval.",
+    "No retry or provider fallback happens automatically."
+  ]
+}

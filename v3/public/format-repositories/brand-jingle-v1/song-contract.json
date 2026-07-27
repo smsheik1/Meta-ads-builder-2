@@ -1,0 +1,28 @@
+{
+  "research": {
+    "sourceType": "website | brief",
+    "brandName": "string",
+    "websiteUrl": "string | null",
+    "offer": "string",
+    "audience": "string",
+    "buyerMoments": "string[]",
+    "proof": "{ text: string, sourceUrl: string | null }[]",
+    "siteLanguage": "string[]",
+    "visual": {
+      "logoUrl": "string | null",
+      "colors": "string[]",
+      "notes": "string[]"
+    }
+  },
+  "plan": {
+    "version": 1,
+    "angle": "one buyer pain or benefit",
+    "brandPhonetic": "how the brand is sung",
+    "durationSeconds": "10-300",
+    "genreId": "approved genre id",
+    "hook": "one line, 12 words or fewer, without the brand name",
+    "verseLines": "2-10 short lines based on duration",
+    "bridgeLines": "empty through 40 seconds; 1-4 lines above 40 seconds",
+    "selectedEvidenceIndexes": "indexes into research.proof"
+  }
+}
