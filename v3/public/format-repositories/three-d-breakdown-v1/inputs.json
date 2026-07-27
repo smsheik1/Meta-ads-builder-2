@@ -4,7 +4,9 @@
       "id": "research",
       "label": "Website research",
       "type": "StoredWebsiteResearchResult",
-      "description": "The brand brief, evidence, and product catalog already produced by Wiggly."
+      "description": "The brand brief, evidence, and product catalog already produced by Wiggly.",
+      "example": "fixtures/research.example.json",
+      "exampleRule": "Use the example only for its JSON shape. Replace every value with sourced evidence for the user's website."
     },
     {
       "id": "storySubject",

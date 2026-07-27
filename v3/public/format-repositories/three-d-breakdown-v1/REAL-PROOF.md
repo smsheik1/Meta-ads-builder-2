@@ -37,7 +37,7 @@ FinalStraw establishes the reproducibility target. The supporting references bro
 - Historical correction: the runner was changed to require four independently generated endpoints (frames 1, 3, 4, and 6), preserve object-only frames, and request 480p. The later FinalStraw proof showed that forcing one continuous transformation was itself too restrictive.
 - Technical note: the old clips are 10.042 seconds at 496×864 and contain no audio stream. Passing those mechanical checks did not make them creatively acceptable.
 
-See `agent-runs/lego-origin-proof/` for the inputs, scene contract, images, attempt history, and quality report.
+In the full Wiggly source repository, see `agent-runs/lego-origin-proof/` for the inputs, scene contract, images, attempt history, and quality report. Historical run folders are intentionally excluded from the portable ZIP.
 
 ### Corrected 480p proof
 
@@ -51,7 +51,7 @@ See `agent-runs/lego-origin-proof/` for the inputs, scene contract, images, atte
 - Historical correction: this run introduced a lifestyle-to-blue-to-lifestyle world sequence. The successful FinalStraw proof later replaced that rule with one coherent blue-grid world across all six frames.
 - Boundary: no voice or final 20-second composition was generated.
 
-See `agent-runs/lego-origin-quality-proof/` for the scene, four production endpoints, both clips, contact sheet, attempt history, and quality report.
+In the full Wiggly source repository, see `agent-runs/lego-origin-quality-proof/` for the scene, four production endpoints, both clips, contact sheet, attempt history, and quality report. Historical run folders are intentionally excluded from the portable ZIP.
 
 ### Style B world-arc technical proof
 
@@ -68,7 +68,7 @@ See `agent-runs/lego-origin-quality-proof/` for the scene, four production endpo
 - Final result: `technical-passed-marketing-failed`. The automated report found no mechanical problems and the contact sheet preserves the approved world arc, but the hook does not quickly establish LEGO or a strong viewer problem. The finished file is evidence that the pipeline works, not evidence that the ad is good enough to run.
 - Spend note: the final proof reused the accepted clips and made no new Replicate call.
 
-See `agent-runs/lego-origin-world-arc-proof/` for the accepted endpoints, rejected endpoint evidence, scene, clips, narration, final MP4, contact sheets, attempt history, and quality report.
+In the full Wiggly source repository, see `agent-runs/lego-origin-world-arc-proof/` for the accepted endpoints, rejected endpoint evidence, scene, clips, narration, final MP4, contact sheets, attempt history, and quality report. Historical run folders are intentionally excluded from the portable ZIP.
 
 ## David's Cookies stopped attempt
 
@@ -77,4 +77,4 @@ See `agent-runs/lego-origin-world-arc-proof/` for the accepted endpoints, reject
 - Reason: the proposed directions relied on unsupported product claims because the available evidence did not specifically support the chosen product.
 - Lesson: product-led stories must validate that their evidence belongs to the selected product before approving a direction.
 
-See `agent-runs/davids-blueberry-pie-proof/` for the research, proposed directions, and stopped state.
+In the full Wiggly source repository, see `agent-runs/davids-blueberry-pie-proof/` for the research, proposed directions, and stopped state. Historical run folders are intentionally excluded from the portable ZIP.

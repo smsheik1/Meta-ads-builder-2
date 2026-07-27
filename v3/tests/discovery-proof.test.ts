@@ -20,7 +20,7 @@ for (const entry of discoveryCatalog) {
 
 const threeD = getDiscoveryFormatProfile("three-d-breakdown");
 assert.ok(threeD, "3D Breakdown should have a consumer Format proof.");
-assert.equal(threeD.version, "1.5.0");
+assert.equal(threeD.version, "1.5.1");
 assert.ok(threeD.proofEntries.length >= 3, "3D Breakdown should show at least three real proof outputs.");
 assert.equal(threeD.technicalHref, "/format-lab/three-d-breakdown");
 

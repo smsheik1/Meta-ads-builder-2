@@ -3,17 +3,23 @@
     "NVIDIA_NIM_API_KEY": {
       "requiredFor": ["plan"],
       "secret": true,
-      "purpose": "Create five story directions and the selected Style B script."
+      "purpose": "Create five story directions and the selected Style B script.",
+      "model": "z-ai/glm-5.2",
+      "pricingUrl": "https://build.nvidia.com/z-ai/glm-5.2"
     },
     "REPLICATE_API_TOKEN": {
       "requiredFor": ["images", "video"],
       "secret": true,
-      "purpose": "Create the storyboard, four production endpoints, and later video clips."
+      "purpose": "Create the storyboard, four production endpoints, and later video clips.",
+      "imagePricingUrl": "https://replicate.com/google/nano-banana-2-lite",
+      "videoPricingUrl": "https://replicate.com/bytedance/seedance-2.0-mini"
     },
     "FISH_STUDIO_APIKEY": {
       "requiredFor": ["voice"],
       "secret": true,
-      "purpose": "Create the final narrator voice after the video gate opens."
+      "purpose": "Create the final narrator voice after the video gate opens.",
+      "model": "s2.1-pro-free",
+      "pricingUrl": "https://docs.fish.audio/developer-guide/models-pricing/pricing-and-rate-limits"
     }
   },
   "tools": {

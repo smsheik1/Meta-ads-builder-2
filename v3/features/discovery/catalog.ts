@@ -21,7 +21,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "three-d-breakdown",
       name: "3D Breakdown",
-      version: "1.5.0",
+      version: "1.5.1",
       owner: "Wiggly Studio",
     },
   },
@@ -42,7 +42,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "three-d-breakdown",
       name: "3D Breakdown",
-      version: "1.5.0",
+      version: "1.5.1",
       owner: "Wiggly Studio",
     },
   },
@@ -63,7 +63,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "three-d-breakdown",
       name: "3D Breakdown",
-      version: "1.5.0",
+      version: "1.5.1",
       owner: "Wiggly Studio",
     },
   },
@@ -84,7 +84,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "three-d-breakdown",
       name: "3D Breakdown",
-      version: "1.5.0",
+      version: "1.5.1",
       owner: "Wiggly Studio",
     },
   },
@@ -105,7 +105,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "three-d-breakdown",
       name: "3D Breakdown",
-      version: "1.5.0",
+      version: "1.5.1",
       owner: "Wiggly Studio",
     },
   },

@@ -14,6 +14,7 @@ const required = [
   "quality.json",
   "fixtures/style-b-checkpoint.json",
   "fixtures/finalstraw-reproducibility.json",
+  "fixtures/research.example.json",
   "assets/ecommerce-teardown-style-reference-clean-v7.jpg",
   "goldens/finalstraw.mp4",
   "goldens/finalstraw-contact-sheet.jpg",

@@ -14,10 +14,10 @@ When the user sends only this Repo link:
 1. Say: `I can make this ad for you.`
 2. Ask: `What brand or website is this for?`
 3. Wait for the answer.
-4. Ask: `Do you want Guide Me or Turbo?`
-5. Wait for the answer.
+4. Unless the user already asked for `do it for me`, `autopilot`, or similar, ask: `Do you want Guide Me or Turbo?`
+5. Wait for the answer when you asked.
 6. Research the site with your web tools.
-7. Save the facts in `research.json` with the provided `StoredWebsiteResearchResult` shape.
+7. Save the facts in `research.json` with the provided `StoredWebsiteResearchResult` shape. Use `fixtures/research.example.json` as a shape guide only, then replace every sample value with sourced website evidence.
 8. Ask: `What should the video focus on?`
 9. Offer product, brand story, customer problem, custom idea, or `Pick for me`.
 10. If the user picks product, ask which product in the next message.
@@ -26,7 +26,9 @@ When the user sends only this Repo link:
 
 Ask only one question in each message. Use short sentences and simple words. Never ask for a budget or spend limit. Never ask the user to pick a model, tool, or technical setting.
 
-If you cannot browse the web, ask for a Wiggly research export. Do not ask for anything else in that message. Turn the research into the provided `StoredWebsiteResearchResult` input. Keep a source URL for each fact. Never invent a fact.
+If the user already says `do it for me`, `autopilot`, or similar, use Turbo and skip the mode question.
+
+If you cannot browse the web, ask for a Wiggly research export. Do not ask for anything else in that message. Turn the research into the provided `StoredWebsiteResearchResult` input. Keep the source page URL in `finalUrl`. If research uses more than one page, map each fact to its URL in `metadata.evidenceSources`, following the example fixture. Never invent a fact.
 
 ## Progress
 

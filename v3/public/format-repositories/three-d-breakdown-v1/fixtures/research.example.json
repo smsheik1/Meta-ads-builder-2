@@ -1,0 +1,127 @@
+{
+  "sessionId": "replace-with-session-id",
+  "researchRunId": "replace-with-research-run-id",
+  "brandSnapshotId": "replace-with-brand-snapshot-id",
+  "websiteUrl": "https://example.com/",
+  "finalUrl": "https://example.com/",
+  "host": "example.com",
+  "brand": {
+    "name": "Example Brand",
+    "url": "https://example.com/",
+    "host": "example.com",
+    "title": "Example Brand",
+    "description": "Replace this with the website's supported description.",
+    "faviconUrl": null,
+    "logoUrl": "https://example.com/logo.png",
+    "ogImageUrl": null,
+    "screenshotUrl": null,
+    "colors": [
+      "#0F172A",
+      "#22C55E"
+    ],
+    "fonts": {
+      "feel": "sans"
+    },
+    "vibeTags": [
+      "clear",
+      "practical"
+    ]
+  },
+  "brandBrief": {
+    "brandName": "Example Brand",
+    "offer": "Replace this with the concrete offer.",
+    "audience": "Replace this with the supported audience.",
+    "buyerMoments": [
+      "Replace this with a supported customer moment."
+    ],
+    "proof": [
+      "Replace this with a concrete website proof point."
+    ],
+    "siteLanguage": [
+      "Replace this with exact language from the site."
+    ],
+    "ctaDirection": "Shop now",
+    "visualNotes": [],
+    "droppedNoiseSummary": [],
+    "confidence": "medium"
+  },
+  "evidence": {
+    "headings": [
+      "Replace this with a real page heading."
+    ],
+    "paragraphs": [
+      "Replace this with a real supporting paragraph."
+    ],
+    "receipts": {
+      "specificClaims": [
+        "Replace this with a specific supported claim."
+      ],
+      "buyerMoments": [
+        "Replace this with a supported customer moment."
+      ],
+      "exactSiteLanguage": [
+        "Replace this with exact site language."
+      ],
+      "namedProof": []
+    },
+    "rawMarkdown": "# Replace with the captured website evidence"
+  },
+  "metadata": {
+    "evidenceSources": [
+      {
+        "url": "https://example.com/",
+        "facts": [
+          "Replace this with a fact supported by this exact page."
+        ]
+      }
+    ]
+  },
+  "branding": {},
+  "adAngles": [
+    {
+      "buyer": "Replace with the supported buyer.",
+      "moment": "Replace with the customer moment.",
+      "pain": "Replace with the supported friction.",
+      "proof": "Replace with the evidence-backed proof.",
+      "sitePhrase": "Replace with exact site language."
+    }
+  ],
+  "productCatalog": {
+    "provider": "shopify-products-json",
+    "sourceUrl": "https://example.com/products.json",
+    "groups": {
+      "bestSellers": [
+        "example-product"
+      ]
+    },
+    "summary": {
+      "productCount": 1,
+      "bestSellerCount": 1
+    },
+    "products": [
+      {
+        "title": "Example Product",
+        "handle": "example-product",
+        "url": "https://example.com/products/example-product",
+        "imageUrl": "https://example.com/example-product.jpg",
+        "imageAlt": "Example Product",
+        "productType": "Example category",
+        "vendor": "Example Brand",
+        "priceMin": 25,
+        "priceMax": 25,
+        "currency": "USD",
+        "available": true,
+        "badges": [
+          "best-seller"
+        ]
+      }
+    ]
+  },
+  "providerStatus": [
+    {
+      "provider": "firecrawl",
+      "status": "used",
+      "reason": "Replace with the research source used for this run."
+    }
+  ]
+}
