@@ -1,0 +1,17 @@
+{
+  "purpose": "A proven Wiggly Visualizer with a real two-person conversation, audio-driven bars, and captions.",
+  "examples": [
+    {
+      "id": "davids-cookies-forgot-birthday",
+      "brand": "David's Cookies",
+      "title": "Forgot the birthday? Cookies still ship.",
+      "videoPath": "goldens/davids-cookies.mp4",
+      "whyItWorks": [
+        "The opening names a real buyer moment.",
+        "The conversation sounds overheard instead of pitched.",
+        "The waveform reacts to the voices.",
+        "The caption track follows the spoken exchange."
+      ]
+    }
+  ]
+}

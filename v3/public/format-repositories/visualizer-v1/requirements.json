@@ -1,0 +1,32 @@
+{
+  "runtime": {
+    "node": ">=22",
+    "binaries": ["ffmpeg", "ffprobe"],
+    "install": "npm install"
+  },
+  "providers": [
+    {
+      "id": "gemini-tts",
+      "purpose": "Two-speaker dialogue voice",
+      "model": "gemini-3.1-flash-tts-preview",
+      "environmentVariable": "GEMINI_API_KEY",
+      "requiredFor": ["generate"],
+      "notRequiredFor": ["check", "init", "prompt", "validate", "estimate", "smoke", "render with packaged fixture", "inspect"],
+      "approvalFlag": "--approve-voice",
+      "automaticRetry": false,
+      "pricing": {
+        "source": "https://ai.google.dev/gemini-api/docs/pricing",
+        "paidAudioOutputPerMillionTokensUsd": 20,
+        "audioTokensPerSecond": 25,
+        "estimatedCostPerSecondUsd": 0.0005,
+        "freeTierMayApply": true
+      }
+    }
+  ],
+  "explicitlyNotUsed": [
+    "Replicate",
+    "image generation",
+    "video generation",
+    "music generation"
+  ]
+}

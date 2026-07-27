@@ -1,0 +1,23 @@
+{
+  "firstQuestion": "What website is this conversation ad for?",
+  "mode": {
+    "default": "turbo",
+    "options": ["turbo", "guide"],
+    "turbo": "Research the site, write five options, and select the strongest conversation automatically.",
+    "guide": "Show the five conversation options and let the user choose before voice generation."
+  },
+  "required": [
+    {
+      "id": "websiteUrl",
+      "type": "url",
+      "question": "What website is this conversation ad for?"
+    }
+  ],
+  "defaults": {
+    "dialogueOptions": 5,
+    "linesPerDialogue": 6,
+    "speakers": ["Ava", "Sam"],
+    "voiceModel": "gemini-3.1-flash-tts-preview",
+    "output": "1080x1350 MP4"
+  }
+}

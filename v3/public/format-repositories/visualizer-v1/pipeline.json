@@ -1,0 +1,35 @@
+{
+  "progress": "Research -> Dialogue -> Voice -> Render -> Deliver",
+  "stages": [
+    {
+      "id": "Research",
+      "output": "A sourced brand brief, buyer moment, proof, and visual identity",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "Dialogue",
+      "output": "Five distinct six-line Ava and Sam conversations plus one selection",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "Voice",
+      "output": "One two-speaker WAV with six matching caption cues",
+      "paid": true,
+      "approvalRequired": true
+    },
+    {
+      "id": "Render",
+      "output": "One local 1080x1350 MP4 using Wiggly's Visualizer renderer",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "Deliver",
+      "output": "Inspected MP4, scene JSON, selected dialogue, and run state",
+      "paid": false,
+      "approvalRequired": true
+    }
+  ]
+}

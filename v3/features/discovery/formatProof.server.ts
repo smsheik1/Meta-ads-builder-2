@@ -196,8 +196,35 @@ const formatConfigs: FormatProfileConfig[] = [
     slug: "visualizer",
     promise: "Turn a voice-led pitch into a branded visual people can follow with sound on or off.",
     lastUpdated: "July 2026",
+    technicalHref: "/format-lab/visualizer",
+    manifestPath: "format-repositories/visualizer-v1/format.json",
     whatStays: ["One clear spoken idea", "Animated audio bars", "Readable captions"],
     whatChanges: ["The brand", "The script", "The colors", "The buyer action"],
+    handoff: {
+      requiredInputs: [
+        "A brand or product website",
+      ],
+      deliverables: [
+        "Five evidence-backed dialogue options",
+        "One selected six-line conversation",
+        "One two-speaker voice track",
+        "One captioned 1080x1350 MP4",
+      ],
+      instructions: [
+        "Research one specific buyer moment and one supported proof point",
+        "Write five distinct Ava and Sam conversations",
+        "Show the selected conversation and estimate before voice generation",
+        "Inspect the audio stream and six matching captions before final approval",
+      ],
+      estimates: [
+        { label: "Research + dialogue", cost: "$0 Wiggly provider cost", time: "about 2-5 min" },
+        { label: "Two-speaker voice", cost: "usually about $0.01-$0.02; free tier may be $0", time: "under 2 min" },
+        { label: "Local MP4 render", cost: "$0 provider cost", time: "about 1-3 min" },
+      ],
+      totalEstimate: "Usually about $0.01-$0.02 and 4-10 min",
+      output: "One 1080x1350 MP4 with two voices, audio-driven bars, and six captions",
+      firstQuestion: "What website is this conversation ad for?",
+    },
   },
   {
     slug: "were-sorry",
