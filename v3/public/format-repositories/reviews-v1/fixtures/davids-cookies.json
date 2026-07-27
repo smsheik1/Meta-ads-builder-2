@@ -1,0 +1,60 @@
+{
+  "websiteUrl": "https://davidscookies.com/",
+  "brandName": "David's Cookies",
+  "description": "Gourmet cookies and desserts delivered as gifts.",
+  "offer": "Fresh baked cookies, brownies, cheesecakes, and dessert gifts delivered nationwide.",
+  "audience": "People who want an easy dessert gift that still feels thoughtful.",
+  "ctaDirection": "Shop gifts",
+  "logoUrl": null,
+  "faviconUrl": null,
+  "ogImageUrl": null,
+  "colors": [
+    "#D6001C",
+    "#050B18"
+  ],
+  "fontFeel": "sans",
+  "buyerMoments": [
+    "Sending a dessert gift to someone far away."
+  ],
+  "reviews": [
+    {
+      "text": "The cookies arrived fresh and everyone asked where they came from.",
+      "sourceUrl": "https://davidscookies.com/pages/reviews",
+      "sourceName": "Julia B.",
+      "rating": 5
+    },
+    {
+      "text": "My mom loved the brownies and said they tasted homemade.",
+      "sourceUrl": "https://davidscookies.com/pages/reviews",
+      "sourceName": "Mia R.",
+      "rating": 5
+    },
+    {
+      "text": "The gift tin showed up right on time and looked beautiful.",
+      "sourceUrl": "https://davidscookies.com/pages/reviews",
+      "sourceName": "Taylor S.",
+      "rating": 5
+    },
+    {
+      "text": "They literally melt in your mouth. Best cookies ever.",
+      "sourceUrl": "https://davidscookies.com/pages/reviews",
+      "sourceName": "Anthony H.",
+      "rating": 5
+    }
+  ],
+  "products": [
+    {
+      "title": "Butter Pecan Meltaway Tin",
+      "handle": "butter-pecan-meltaway-tin",
+      "url": "https://davidscookies.com/products/butter-pecan-meltaway-tin",
+      "imageUrl": null,
+      "imageAlt": "Butter Pecan Meltaway Tin",
+      "productType": "Cookies",
+      "vendor": "David's Cookies",
+      "isBestSeller": true
+    }
+  ],
+  "selectedProductHandles": [
+    "butter-pecan-meltaway-tin"
+  ]
+}

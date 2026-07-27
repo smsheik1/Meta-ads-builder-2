@@ -1,0 +1,32 @@
+{
+  "firstQuestion": "What website has the customer reviews you want to turn into ads?",
+  "required": [
+    {
+      "id": "websiteUrl",
+      "label": "Website",
+      "type": "url"
+    }
+  ],
+  "defaults": {
+    "mode": "autopilot",
+    "variantCount": 4,
+    "templates": [
+      "proof-card",
+      "minimal-quote"
+    ],
+    "outputCount": 8,
+    "width": 1080,
+    "height": 1350
+  },
+  "agentDecides": [
+    "The strongest real review proof",
+    "The best seller or user-named product",
+    "Four plain-language headlines",
+    "Four short buyer-action CTAs"
+  ],
+  "askOnlyWhen": [
+    "The user did not provide a website",
+    "The site has fewer than two usable customer reviews",
+    "The user wants a specific product and the choice is unclear"
+  ]
+}

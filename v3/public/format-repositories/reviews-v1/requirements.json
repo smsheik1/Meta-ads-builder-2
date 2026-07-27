@@ -1,0 +1,15 @@
+{
+  "runtime": {
+    "node": ">=22",
+    "commands": [
+      "npm"
+    ]
+  },
+  "providers": [],
+  "environment": [],
+  "notes": [
+    "The host agent uses its own web tools for research and reasoning.",
+    "All final PNGs render locally.",
+    "No BYOK key is required."
+  ]
+}

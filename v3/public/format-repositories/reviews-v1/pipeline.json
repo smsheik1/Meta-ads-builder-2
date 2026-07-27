@@ -1,0 +1,33 @@
+{
+  "progress": "Research -> Frame -> Render -> Deliver",
+  "stages": [
+    {
+      "id": "research",
+      "output": "At least two exact customer quotes with source URLs",
+      "provider": "host-agent web tools",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "frame",
+      "output": "Four proof selections with headline and CTA metadata",
+      "provider": "host-agent reasoning",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "render",
+      "output": "Eight local 1080x1350 PNGs through AdRenderSurface",
+      "provider": "local Remotion",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "deliver",
+      "output": "Inspected PNG pack, scene data, and source list",
+      "provider": "local inspection",
+      "paid": false,
+      "approvalRequired": true
+    }
+  ]
+}
