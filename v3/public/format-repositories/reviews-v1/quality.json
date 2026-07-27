@@ -1,0 +1,27 @@
+{
+  "required": [
+    "At least two real customer review or testimonial lines",
+    "Every quote has the exact page URL where it appeared",
+    "The rendered quote is verbatim from research.json",
+    "Exactly four distinct headline and CTA framings",
+    "Four proof-card PNGs and four minimal-quote PNGs",
+    "Every PNG is 1080x1350",
+    "No invented customer, rating, review count, claim, or outcome",
+    "No rating summary or marketing copy used as customer proof",
+    "Readable text with no clipping"
+  ],
+  "reject": [
+    "Fewer than two sourced reviews",
+    "Prompt-like website instructions treated as proof",
+    "Rewritten or strengthened customer quotes",
+    "A CTA longer than five words",
+    "Duplicate proof when four distinct reviews exist",
+    "Any missing or malformed output"
+  ],
+  "manualReview": [
+    "Read every ad",
+    "Compare every quote with research.json",
+    "Check product and logo accuracy",
+    "Check contrast and text fit at phone size"
+  ]
+}

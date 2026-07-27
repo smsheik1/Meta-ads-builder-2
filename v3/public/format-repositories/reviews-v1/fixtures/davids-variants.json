@@ -1,0 +1,24 @@
+{
+  "variants": [
+    {
+      "proofIndex": 0,
+      "headline": "Fresh enough to get asked about",
+      "ctaText": "Shop cookie gifts"
+    },
+    {
+      "proofIndex": 1,
+      "headline": "The homemade compliment",
+      "ctaText": "Send something sweet"
+    },
+    {
+      "proofIndex": 2,
+      "headline": "A gift that arrives right",
+      "ctaText": "Shop gifts now"
+    },
+    {
+      "proofIndex": 3,
+      "headline": "Melt-in-your-mouth proof",
+      "ctaText": "Try the meltaways"
+    }
+  ]
+}

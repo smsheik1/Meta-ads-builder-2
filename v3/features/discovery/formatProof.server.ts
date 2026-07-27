@@ -192,8 +192,35 @@ const formatConfigs: FormatProfileConfig[] = [
     slug: "reviews",
     promise: "Turn real customer language into a proof-first ad people can trust at a glance.",
     lastUpdated: "July 2026",
+    technicalHref: "/format-lab/reviews",
+    manifestPath: "format-repositories/reviews-v1/format.json",
     whatStays: ["A real review", "Clear attribution", "A proof-first layout"],
     whatChanges: ["The customer quote", "The product", "The brand treatment"],
+    handoff: {
+      requiredInputs: [
+        "A website with real customer reviews",
+      ],
+      deliverables: [
+        "Four proof framings",
+        "Four product proof cards",
+        "Four minimal quote cards",
+        "Exact quote source URLs",
+      ],
+      instructions: [
+        "Find at least two real reviews and save their source URLs",
+        "Keep every customer quote verbatim",
+        "Use the packaged prompt for four headline and CTA framings",
+        "Inspect all eight local PNGs before delivery",
+      ],
+      estimates: [
+        { label: "Research", cost: "$0 Wiggly provider cost", time: "about 1-3 min" },
+        { label: "Four framings", cost: "$0 separate provider cost", time: "under 1 min" },
+        { label: "Eight PNGs", cost: "$0 provider cost", time: "about 1-2 min" },
+      ],
+      totalEstimate: "$0 Wiggly provider cost, usually 2-5 min",
+      output: "Eight static 1080 x 1350 PNGs plus scene and source data",
+      firstQuestion: "What website has the customer reviews you want to turn into ads?",
+    },
   },
   {
     slug: "brainrot",

@@ -1,0 +1,17 @@
+{
+  "purpose": "Use this real Wiggly output to judge proof hierarchy, quote readability, and restraint.",
+  "examples": [
+    {
+      "id": "davids-meltaways",
+      "brand": "David's Cookies",
+      "title": "The sampler review says it all",
+      "imagePath": "goldens/davids-cookies.jpg",
+      "whyItWorks": [
+        "The customer quote is the ad",
+        "The type is readable at phone size",
+        "The brand lockup stays quiet",
+        "Nothing is invented"
+      ]
+    }
+  ]
+}

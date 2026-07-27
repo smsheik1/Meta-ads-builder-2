@@ -1,0 +1,13 @@
+{
+  "id": "reviews",
+  "version": "1.0.0",
+  "title": "Reviews",
+  "description": "Turn real website reviews into a proof-first static ad pack.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "outputs": [
+    "8 PNG files at 1080x1350",
+    "scenes.json",
+    "research.json with exact source URLs"
+  ]
+}
