@@ -1,0 +1,18 @@
+{
+  "environment": {
+    "ELEVENLABS_API_KEY": {
+      "requiredFor": ["music"],
+      "secret": true,
+      "purpose": "Generate one approved song with ElevenLabs Music v2."
+    }
+  },
+  "tools": {
+    "node": {
+      "requiredFor": ["plan", "cover", "music", "final"]
+    },
+    "ffprobe": {
+      "requiredFor": ["duration-inspection"],
+      "optional": true
+    }
+  }
+}

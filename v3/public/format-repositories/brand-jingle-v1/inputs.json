@@ -1,0 +1,25 @@
+{
+  "required": [
+    {
+      "id": "source",
+      "label": "Website or brief",
+      "type": "url | one-sentence brief",
+      "description": "A website to research or one sentence naming the brand and what the song should promote."
+    }
+  ],
+  "optional": [
+    {
+      "id": "durationSeconds",
+      "label": "Length",
+      "type": "20 | 30 | 60 | custom 10-300",
+      "default": 20
+    },
+    {
+      "id": "genre",
+      "label": "Genre",
+      "type": "auto | modern-hip-hop | cinematic-trap-diss | pop-rap-hook | retail-dance | funky-commercial",
+      "default": "auto",
+      "autoChoice": "modern-hip-hop"
+    }
+  ]
+}

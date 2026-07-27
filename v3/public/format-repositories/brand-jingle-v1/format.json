@@ -1,0 +1,11 @@
+{
+  "id": "jingle",
+  "version": "1.0.0",
+  "title": "Brand Jingle",
+  "description": "Turn one website or one-sentence brief into an evidence-backed song and branded cover.",
+  "status": "complete-runner",
+  "defaultDurationSeconds": 20,
+  "defaultGenre": "modern-hip-hop",
+  "output": ["mp3", "svg-cover"],
+  "musicVideoIncluded": false
+}
