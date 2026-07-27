@@ -155,6 +155,8 @@ const formatConfigs: FormatProfileConfig[] = [
     slug: "video-meme",
     promise: "Turn one sharp buyer truth into a familiar reaction clip people understand instantly.",
     lastUpdated: "July 2026",
+    technicalHref: "/format-lab/video-meme",
+    manifestPath: "format-repositories/video-meme-v1/format.json",
     whatStays: [
       "A recognizable reaction",
       "One brand-specific buyer truth",
@@ -166,6 +168,29 @@ const formatConfigs: FormatProfileConfig[] = [
       "The caption",
       "The meme template",
     ],
+    handoff: {
+      requiredInputs: [
+        "A brand website or one-sentence brief",
+      ],
+      deliverables: [
+        "Three brand-specific caption options",
+        "One selected reaction pattern",
+        "One inspected MP4",
+      ],
+      instructions: [
+        "Research one useful buyer truth",
+        "Pick Bear, Pingu, or Darwin by pattern fit",
+        "Validate the caption before rendering",
+        "Watch the whole MP4 before final approval",
+      ],
+      estimates: [
+        { label: "Research + caption", cost: "$0 Wiggly provider cost", time: "about 1-3 min" },
+        { label: "Local MP4 render", cost: "$0 provider cost", time: "about 1-3 min" },
+      ],
+      totalEstimate: "$0 Wiggly provider cost and usually 2-6 min",
+      output: "One 1080 × 1350 MP4 using a bundled reaction clip",
+      firstQuestion: "What website or brand should this meme be for?",
+    },
   },
   {
     slug: "visualizer",

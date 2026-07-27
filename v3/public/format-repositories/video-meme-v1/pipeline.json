@@ -1,0 +1,36 @@
+{
+  "progress": "Research → Pattern → Caption → Render → Deliver",
+  "stages": [
+    {
+      "id": "research",
+      "output": "Evidence-backed buyer moments",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "pattern",
+      "output": "Best-fit reaction clip",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "caption",
+      "output": "Three valid captions and one selection",
+      "paid": false,
+      "approvalRequired": true,
+      "turboDefault": "Agent picks the strongest caption."
+    },
+    {
+      "id": "render",
+      "output": "One local Remotion MP4",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "deliver",
+      "output": "Inspected MP4 and provenance",
+      "paid": false,
+      "approvalRequired": true
+    }
+  ]
+}

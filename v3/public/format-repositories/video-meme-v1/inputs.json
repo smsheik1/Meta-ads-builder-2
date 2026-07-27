@@ -1,0 +1,25 @@
+{
+  "required": [
+    {
+      "id": "source",
+      "label": "Website or brief",
+      "type": "url | one-sentence brief",
+      "description": "A website to research or one sentence naming the brand, audience, and problem."
+    }
+  ],
+  "optional": [
+    {
+      "id": "template",
+      "label": "Reaction clip",
+      "type": "auto | bear-sniff | pingu-noot-noot | darwin-journey",
+      "default": "auto",
+      "autoChoice": "Pick the pattern that best fits the strongest buyer truth."
+    },
+    {
+      "id": "mode",
+      "label": "Run mode",
+      "type": "guide-me | turbo",
+      "default": "guide-me"
+    }
+  ]
+}

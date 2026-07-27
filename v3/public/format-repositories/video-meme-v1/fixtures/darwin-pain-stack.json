@@ -1,0 +1,54 @@
+{
+  "research": {
+    "sourceType": "website",
+    "websiteUrl": "https://agentenamel.com/",
+    "brandName": "Agent Enamel",
+    "offer": "Voice AI that helps dental practices answer patient calls.",
+    "audience": "Dental practice owners and front desk teams.",
+    "buyerMoments": [
+      {
+        "text": "A busy front desk can face 30 voicemails and a triple-booked Monday.",
+        "sourceUrl": "https://agentenamel.com/"
+      }
+    ],
+    "proof": [
+      {
+        "text": "The voice agent helps answer patient calls when the front desk is busy.",
+        "sourceUrl": "https://agentenamel.com/"
+      }
+    ],
+    "siteLanguage": [
+      {
+        "text": "Never miss a patient call",
+        "sourceUrl": "https://agentenamel.com/"
+      }
+    ],
+    "colors": [
+      "#11B5E4"
+    ],
+    "adAngles": [
+      {
+        "buyer": "Dental front desk",
+        "moment": "Flu season collides with a packed Monday.",
+        "pain": "Calls and voicemails stack up while patients check in.",
+        "proof": "Voice AI answers patient calls.",
+        "sitePhrase": "Never miss a patient call"
+      }
+    ]
+  },
+  "plan": {
+    "version": 1,
+    "angle": "Front desk survives a specific workload stack",
+    "target": "the front desk after flu season and a packed Monday",
+    "templateId": "darwin-journey",
+    "mode": "business_pain",
+    "slots": {
+      "caption": "POV: the front desk after flu season, 30 voicemails, and a triple-booked Monday"
+    },
+    "selfCheckPassed": "Darwin's calm face contrasts with a specific operator workload tied to missed calls.",
+    "selectedEvidenceIndexes": [
+      0,
+      1
+    ]
+  }
+}
