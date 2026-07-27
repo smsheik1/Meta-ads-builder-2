@@ -26,7 +26,7 @@ assert.equal(threeD.technicalHref, "/format-lab/three-d-breakdown");
 
 const cartoon = getDiscoveryFormatProfile("otaku-explainer");
 assert.ok(cartoon, "Cartoon Explainer should have a consumer Format proof.");
-assert.equal(cartoon.version, "1.2.0-experiment");
+assert.equal(cartoon.version, "1.2.1-experiment");
 assert.ok(cartoon.proofEntries.length >= 3, "Cartoon Explainer should show at least three real proof outputs.");
 assert.equal(cartoon.technicalHref, "/format-lab/cartoon-explainer");
 

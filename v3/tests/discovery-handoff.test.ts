@@ -42,7 +42,7 @@ assert.ok(
 const cartoon = getDiscoveryFormatProfile("otaku-explainer");
 assert.ok(cartoon?.handoff, "Cartoon Explainer should offer its packaged agent run.");
 assert.equal(cartoon.handoff.firstQuestion, "What topic should the video explain?");
-assert.match(buildDiscoveryHandoffPrompt(cartoon, origin), /Exact public version: 1\.2\.0-experiment/);
+assert.match(buildDiscoveryHandoffPrompt(cartoon, origin), /Exact public version: 1\.2\.1-experiment/);
 
 for (const slug of ["meme", "hybrid-news"]) {
   const profile = getDiscoveryFormatProfile(slug);
