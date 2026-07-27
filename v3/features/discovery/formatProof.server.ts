@@ -240,8 +240,35 @@ const formatConfigs: FormatProfileConfig[] = [
     slug: "meme",
     promise: "Turn a buyer's familiar frustration into an ad they understand in one glance.",
     lastUpdated: "July 2026",
+    technicalHref: "/format-lab/meme",
+    manifestPath: "format-repositories/meme-v1/format.json",
     whatStays: ["A known visual setup", "One sharp buyer tension", "Fast recognition"],
     whatChanges: ["The meme", "The product truth", "The headline"],
+    handoff: {
+      requiredInputs: [
+        "A brand website",
+      ],
+      deliverables: [
+        "Three Drake variants",
+        "Three Woman Yelling at Cat variants",
+        "Three This Is Fine variants",
+        "Three Expanding Brain variants",
+      ],
+      instructions: [
+        "Research real buyer moments and proof from the website",
+        "Use the packaged prompt for all twelve captions",
+        "Keep every slot within the fixed template limits",
+        "Inspect all twelve local PNGs before delivery",
+      ],
+      estimates: [
+        { label: "Research", cost: "$0 Wiggly provider cost", time: "about 1-3 min" },
+        { label: "Twelve captions", cost: "$0 separate provider cost", time: "about 1-2 min" },
+        { label: "Twelve PNGs", cost: "$0 provider cost", time: "about 1-2 min" },
+      ],
+      totalEstimate: "$0 Wiggly provider cost, usually 3-7 min",
+      output: "Twelve static 1080 x 1350 PNGs plus scene and research data",
+      firstQuestion: "What website should I use?",
+    },
   },
   {
     slug: "hybrid-news",

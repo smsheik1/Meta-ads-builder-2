@@ -1,0 +1,114 @@
+{
+  "templates": [
+    {
+      "templateId": "drake",
+      "variants": [
+        {
+          "angle": "last-minute birthday gift",
+          "slots": {
+            "topText": "OVERTHINK THE GIFT",
+            "bottomText": "SEND THE COOKIE TIN"
+          }
+        },
+        {
+          "angle": "office party dessert",
+          "slots": {
+            "topText": "BAKE BEFORE THE PARTY",
+            "bottomText": "COOKIE TIN TO THE RESCUE"
+          }
+        },
+        {
+          "angle": "showing up with dessert",
+          "slots": {
+            "topText": "SHOW UP EMPTY-HANDED",
+            "bottomText": "BRING THE BROWNIE TRAY"
+          }
+        }
+      ]
+    },
+    {
+      "templateId": "woman_yelling_cat",
+      "variants": [
+        {
+          "angle": "forgotten birthday",
+          "slots": {
+            "yellingText": "YOU FORGOT THEIR BIRTHDAY AGAIN",
+            "catResponseText": "COOKIES ARE ALREADY SHIPPING"
+          }
+        },
+        {
+          "angle": "office deadline",
+          "slots": {
+            "yellingText": "WE NEED DESSERT BY NOON",
+            "catResponseText": "THE TIN IS ON ITS WAY"
+          }
+        },
+        {
+          "angle": "hard-to-shop-for recipient",
+          "slots": {
+            "yellingText": "WHAT GIFT DO THEY EVEN LIKE",
+            "catResponseText": "EVERYONE LIKES FRESH COOKIES"
+          }
+        }
+      ]
+    },
+    {
+      "templateId": "this_is_fine",
+      "variants": [
+        {
+          "angle": "birthday tomorrow",
+          "slots": {
+            "topText": "The birthday is tomorrow",
+            "bottomText": "Good thing cookies travel"
+          }
+        },
+        {
+          "angle": "large office party",
+          "slots": {
+            "topText": "Thirty coworkers need dessert",
+            "bottomText": "The cookie tin has this"
+          }
+        },
+        {
+          "angle": "volunteered for dessert",
+          "slots": {
+            "topText": "You volunteered to bring dessert",
+            "bottomText": "Brownies are on the way"
+          }
+        }
+      ]
+    },
+    {
+      "templateId": "expanding_brain",
+      "variants": [
+        {
+          "angle": "birthday gift escalation",
+          "slots": {
+            "level1Text": "Forget the birthday",
+            "level2Text": "Send a gift card",
+            "level3Text": "Send fresh cookies",
+            "level4Text": "Become favorite person"
+          }
+        },
+        {
+          "angle": "office dessert escalation",
+          "slots": {
+            "level1Text": "Bring grocery cookies",
+            "level2Text": "Bring one dozen",
+            "level3Text": "Bring the cookie tin",
+            "level4Text": "Own the office party"
+          }
+        },
+        {
+          "angle": "personal craving escalation",
+          "slots": {
+            "level1Text": "Ignore the craving",
+            "level2Text": "Eat sad cereal",
+            "level3Text": "Order fresh brownies",
+            "level4Text": "Protect your peace"
+          }
+        }
+      ]
+    }
+  ]
+}

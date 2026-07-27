@@ -7,6 +7,7 @@ import {
   generateMemeVariantsFromResearch,
 } from "../features/formats/meme/generate";
 import { MEME_TEMPLATES, MEME_VARIATIONS_PER_TEMPLATE } from "../features/formats/meme/templates";
+import { layoutMemeSlotText } from "../features/formats/meme/render";
 import { createMemeAdScene } from "../features/scene/createMemeScene";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
 import { RenderAssetProvider } from "../features/render/RenderAssetContext";
@@ -357,8 +358,19 @@ assert.ok(html.includes('data-meme-artboard="drake"'));
 assert.ok(html.includes("/memes/drake.png"));
 assert.ok(html.includes('data-render-asset="shared"'));
 assert.ok(html.includes('data-meme-slot="topText"'));
+assert.ok(html.includes('data-meme-fit-box="topText"'));
+assert.ok(html.includes("overflow:hidden"));
 assert.ok(!html.includes("-webkit-line-clamp"));
 assert.ok(!html.includes("text-overflow"));
+
+const expandingBrainTemplate = MEME_TEMPLATES.find((template) => template.id === "expanding_brain");
+assert.ok(expandingBrainTemplate);
+const expandingBrainLayout = layoutMemeSlotText(
+  expandingBrainTemplate.slots[0]!,
+  "Forget the birthday",
+);
+assert.equal(expandingBrainLayout.text, "Forget the\nbirthday");
+assert.ok(expandingBrainLayout.fontSize <= expandingBrainTemplate.slots[0]!.fontSize);
 
 const rerolled = rerollScene(scenes, scenes[0]!, 0, createDefaultSceneLocks());
 assert.equal(rerolled.index, 1);
