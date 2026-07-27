@@ -1,0 +1,15 @@
+{
+  "id": "visualizer",
+  "version": "1.0.0",
+  "title": "Visualizer",
+  "description": "Turn one evidence-backed buyer conversation into a branded audio waveform ad with two voices and readable captions.",
+  "status": "agent-ready",
+  "runtime": "node >=22",
+  "output": {
+    "type": "video",
+    "format": "mp4",
+    "width": 1080,
+    "height": 1350,
+    "duration": "derived from the generated dialogue audio"
+  }
+}

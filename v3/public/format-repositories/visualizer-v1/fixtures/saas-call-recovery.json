@@ -1,0 +1,279 @@
+{
+  "research": {
+    "websiteUrl": "https://example.com/voice-ai",
+    "brandName": "CallDesk",
+    "description": "A fictional fixture for a voice AI receptionist that answers missed calls and books appointments.",
+    "offer": "A voice AI receptionist for local service businesses.",
+    "audience": "Busy local business owners who cannot answer every call.",
+    "logoUrl": null,
+    "faviconUrl": null,
+    "colors": ["#2563EB", "#38BDF8"],
+    "fontFeel": "sans",
+    "buyerMoments": [
+      {
+        "text": "A caller reaches voicemail while the team is helping an in-person customer.",
+        "sourceUrl": "https://example.com/voice-ai"
+      },
+      {
+        "text": "The owner notices missed calls after the office closes.",
+        "sourceUrl": "https://example.com/voice-ai"
+      },
+      {
+        "text": "The front desk is switching between patients and ringing phones.",
+        "sourceUrl": "https://example.com/voice-ai"
+      }
+    ],
+    "specificClaims": [
+      {
+        "text": "CallDesk answers calls and can book appointments.",
+        "sourceUrl": "https://example.com/voice-ai"
+      }
+    ],
+    "exactSiteLanguage": [
+      {
+        "text": "Answer every call",
+        "sourceUrl": "https://example.com/voice-ai"
+      }
+    ],
+    "namedProof": [
+      {
+        "text": "The service includes appointment booking.",
+        "sourceUrl": "https://example.com/voice-ai"
+      }
+    ],
+    "adAngles": [
+      {
+        "buyer": "Dentist",
+        "moment": "A caller reaches voicemail while the front desk helps a patient.",
+        "pain": "The office never sees the appointment that caller wanted.",
+        "proof": "CallDesk answers calls and can book appointments.",
+        "sitePhrase": "Answer every call"
+      },
+      {
+        "buyer": "Clinic owner",
+        "moment": "The missed-call list appears after closing.",
+        "pain": "Follow-up begins after the caller has moved on.",
+        "proof": "The service includes appointment booking.",
+        "sitePhrase": "Appointment booking"
+      },
+      {
+        "buyer": "Front desk lead",
+        "moment": "The phone rings during patient check-in.",
+        "pain": "One person cannot serve the room and the phone at once.",
+        "proof": "CallDesk answers incoming calls.",
+        "sitePhrase": "Answer every call"
+      },
+      {
+        "buyer": "Service owner",
+        "moment": "A new lead calls during a job.",
+        "pain": "Work in progress makes the next job easy to miss.",
+        "proof": "CallDesk can book appointments.",
+        "sitePhrase": "Book appointments"
+      },
+      {
+        "buyer": "Office manager",
+        "moment": "Lunch starts and voicemail fills up.",
+        "pain": "The team returns to a queue instead of customers.",
+        "proof": "CallDesk answers calls while staff are unavailable.",
+        "sitePhrase": "Answer calls"
+      }
+    ],
+    "creative": {
+      "angleId": "missed-call-never-seen",
+      "headline": "The appointment you never saw called first.",
+      "subheadline": "A missed call can disappear before the office has time to call back.",
+      "ctaText": "See CallDesk",
+      "headlineType": "painful_moment",
+      "selectedPain": "A caller reaches voicemail while the team is helping an in-person customer.",
+      "selectedProof": "CallDesk answers calls and can book appointments."
+    }
+  },
+  "dialogueOptions": {
+    "scripts": [
+      {
+        "title": "The Voicemail",
+        "angle": "A live patient makes the front desk miss the next appointment.",
+        "lines": [
+          {
+            "speaker": "Ava",
+            "tone": "frustrated",
+            "text": "The phone rang while I was checking in a patient."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "And the caller probably heard voicemail."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "skeptical",
+            "text": "What changed at your office?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "CallDesk answers the call and can book the appointment."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "surprised",
+            "text": "Send me that before the next patient arrives."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "casual",
+            "text": "CallDesk. I will send the link."
+          }
+        ]
+      },
+      {
+        "title": "After Closing",
+        "angle": "The owner finds the missed-call list after the callers moved on.",
+        "lines": [
+          {
+            "speaker": "Ava",
+            "tone": "frustrated",
+            "text": "I found six missed calls after we closed."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "That list is always later than the customer."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "skeptical",
+            "text": "How are you handling those now?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "CallDesk answers and can book while the office is busy."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "relieved",
+            "text": "What is the name?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "casual",
+            "text": "CallDesk. See how it works."
+          }
+        ]
+      },
+      {
+        "title": "The Check-In Line",
+        "angle": "One front desk cannot serve the room and the phone at once.",
+        "lines": [
+          {
+            "speaker": "Ava",
+            "tone": "frustrated",
+            "text": "Three patients walked in exactly when the phone started ringing."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "One desk cannot be in two places."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "skeptical",
+            "text": "So what takes the call?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "CallDesk answers incoming calls and can book appointments."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "relieved",
+            "text": "I need the link."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "casual",
+            "text": "CallDesk. I will send it."
+          }
+        ]
+      },
+      {
+        "title": "The Job Site",
+        "angle": "Work in progress makes the next lead easy to miss.",
+        "lines": [
+          {
+            "speaker": "Ava",
+            "tone": "frustrated",
+            "text": "A new lead called while I was under the sink."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "Finishing one job should not lose the next one."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "skeptical",
+            "text": "What did you put on the phone?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "CallDesk answers and can book the appointment."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "surprised",
+            "text": "Send me the name."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "casual",
+            "text": "CallDesk. I will text the link."
+          }
+        ]
+      },
+      {
+        "title": "The Lunch Queue",
+        "angle": "Voicemail fills while the team is unavailable.",
+        "lines": [
+          {
+            "speaker": "Ava",
+            "tone": "frustrated",
+            "text": "Lunch ended with four new voicemails."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "That is not much of a break."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "skeptical",
+            "text": "What keeps your queue empty?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "CallDesk answers while the staff is unavailable."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "relieved",
+            "text": "Where do I see it?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "casual",
+            "text": "CallDesk. I will send the site."
+          }
+        ]
+      }
+    ]
+  },
+  "selection": {
+    "selectedIndex": 0,
+    "reason": "The front-desk conflict is specific, visual, and directly tied to the supported call-answering and booking proof."
+  }
+}

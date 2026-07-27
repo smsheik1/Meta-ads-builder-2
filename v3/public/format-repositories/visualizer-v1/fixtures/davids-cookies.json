@@ -1,0 +1,283 @@
+{
+  "research": {
+    "websiteUrl": "https://www.davidscookies.com/",
+    "brandName": "David's Cookies",
+    "description": "Fresh-baked cookies, brownies, cheesecakes, and gift baskets shipped for everyday occasions.",
+    "offer": "Fresh-baked cookie gifts that can be ordered online and shipped to the recipient.",
+    "audience": "People who need a thoughtful gift without time to bake or deliver it themselves.",
+    "logoUrl": null,
+    "faviconUrl": null,
+    "colors": ["#D71920", "#F8D8D5"],
+    "fontFeel": "display",
+    "buyerMoments": [
+      {
+        "text": "The buyer forgot a birthday and needs a gift that can still be shipped.",
+        "sourceUrl": "https://www.davidscookies.com/"
+      },
+      {
+        "text": "The buyer wants a gift that feels more personal than a gift card.",
+        "sourceUrl": "https://www.davidscookies.com/"
+      },
+      {
+        "text": "The buyer has no time to bake but still wants to send fresh-baked cookies.",
+        "sourceUrl": "https://www.davidscookies.com/"
+      }
+    ],
+    "specificClaims": [
+      {
+        "text": "David's Cookies sells fresh-baked cookies and gifts online.",
+        "sourceUrl": "https://www.davidscookies.com/"
+      },
+      {
+        "text": "The catalog includes gifts for birthdays and everyday occasions.",
+        "sourceUrl": "https://www.davidscookies.com/"
+      }
+    ],
+    "exactSiteLanguage": [
+      {
+        "text": "Fresh-baked cookies",
+        "sourceUrl": "https://www.davidscookies.com/"
+      }
+    ],
+    "namedProof": [
+      {
+        "text": "Birthday gifts and cookie gifts are available to order online.",
+        "sourceUrl": "https://www.davidscookies.com/"
+      }
+    ],
+    "adAngles": [
+      {
+        "buyer": "Last-minute gift buyer",
+        "moment": "It is already noon and the birthday gift is still missing.",
+        "pain": "A rushed gift card feels impersonal.",
+        "proof": "David's sells fresh-baked cookie gifts online.",
+        "sitePhrase": "Fresh-baked cookies"
+      },
+      {
+        "buyer": "Busy friend",
+        "moment": "The party is this weekend and there is no time to bake.",
+        "pain": "They want a personal dessert without making it.",
+        "proof": "David's ships cookie gifts for birthdays and everyday occasions.",
+        "sitePhrase": "Birthday gifts"
+      },
+      {
+        "buyer": "Remote family member",
+        "moment": "They cannot hand-deliver a gift.",
+        "pain": "Distance makes the gift feel less personal.",
+        "proof": "The online catalog is built around shippable cookie gifts.",
+        "sitePhrase": "Cookie gifts"
+      },
+      {
+        "buyer": "Office gift buyer",
+        "moment": "A team celebration appears on the calendar tomorrow.",
+        "pain": "Generic office gifts disappear into the background.",
+        "proof": "David's offers baked-goods gift assortments.",
+        "sitePhrase": "Gift baskets"
+      },
+      {
+        "buyer": "Host gift buyer",
+        "moment": "They need something useful to bring tonight.",
+        "pain": "Another bottle feels predictable.",
+        "proof": "David's sells ready-to-order desserts and cookies.",
+        "sitePhrase": "Fresh-baked"
+      }
+    ],
+    "creative": {
+      "angleId": "forgotten-birthday",
+      "headline": "Forgot the birthday? Cookies still ship.",
+      "subheadline": "A fresh-baked gift can still feel personal when time is short.",
+      "ctaText": "Shop cookie gifts",
+      "headlineType": "painful_moment",
+      "selectedPain": "The buyer forgot a birthday and needs a gift that still feels personal.",
+      "selectedProof": "David's Cookies sells fresh-baked cookie gifts online."
+    }
+  },
+  "dialogueOptions": {
+    "scripts": [
+      {
+        "title": "The Noon Panic",
+        "angle": "A forgotten birthday becomes a last-minute cookie gift.",
+        "lines": [
+          {
+            "speaker": "Ava",
+            "tone": "frustrated",
+            "text": "It is already noon and I still have zero for her birthday."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "Then skip the gift card and send something she can open."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "skeptical",
+            "text": "Like what that does not look last minute?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "David's has fresh-baked cookie gifts you can order online."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "relieved",
+            "text": "Send me the link before I forget again."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "casual",
+            "text": "David's Cookies. Shop the cookie gifts."
+          }
+        ]
+      },
+      {
+        "title": "The Party This Weekend",
+        "angle": "No time to bake before a weekend party.",
+        "lines": [
+          {
+            "speaker": "Ava",
+            "tone": "frustrated",
+            "text": "The party is Saturday and I do not have time to bake."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "Nobody said the cookies had to come from your oven."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "skeptical",
+            "text": "What would you send that still feels personal?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "David's sells fresh-baked cookie gifts for birthdays and everyday occasions."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "relieved",
+            "text": "Okay, where do I order that?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "casual",
+            "text": "David's Cookies. Pick a gift online."
+          }
+        ]
+      },
+      {
+        "title": "The Long-Distance Gift",
+        "angle": "A remote family member wants the gift to feel close.",
+        "lines": [
+          {
+            "speaker": "Ava",
+            "tone": "frustrated",
+            "text": "I cannot be there, and another digital card feels cold."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "Send something they can actually share at the table."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "skeptical",
+            "text": "What travels without feeling generic?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "David's online catalog is built around shippable cookie gifts."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "relieved",
+            "text": "That is better. What is the site?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "casual",
+            "text": "David's Cookies. Shop the gift collection."
+          }
+        ]
+      },
+      {
+        "title": "The Office Calendar",
+        "angle": "A team celebration appears with no gift prepared.",
+        "lines": [
+          {
+            "speaker": "Ava",
+            "tone": "surprised",
+            "text": "The team birthday just appeared on tomorrow's calendar."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "That calendar has excellent timing."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "skeptical",
+            "text": "What can I send that everyone will use?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "David's offers baked-goods gift assortments for occasions like that."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "relieved",
+            "text": "Perfect. Send me the name."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "casual",
+            "text": "David's Cookies. Choose an assortment."
+          }
+        ]
+      },
+      {
+        "title": "The Host Gift",
+        "angle": "A buyer needs a useful host gift for tonight.",
+        "lines": [
+          {
+            "speaker": "Ava",
+            "tone": "frustrated",
+            "text": "Dinner is tonight and I am not bringing another bottle."
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "Good. Bring the thing people open before dessert."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "skeptical",
+            "text": "You already have something in mind?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "calm",
+            "text": "David's sells ready-to-order fresh-baked cookies and desserts."
+          },
+          {
+            "speaker": "Ava",
+            "tone": "relieved",
+            "text": "What is it called?"
+          },
+          {
+            "speaker": "Sam",
+            "tone": "casual",
+            "text": "David's Cookies. Shop the desserts."
+          }
+        ]
+      }
+    ]
+  },
+  "selection": {
+    "selectedIndex": 0,
+    "reason": "The noon panic is instantly clear on mute, lands one supported proof point, and ends with the buyer asking for the link."
+  }
+}
