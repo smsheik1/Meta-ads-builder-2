@@ -1,0 +1,17 @@
+{
+  "firstQuestion": "What website should I use?",
+  "required": [
+    {
+      "id": "websiteUrl",
+      "type": "url",
+      "description": "The brand website the agent should research."
+    }
+  ],
+  "defaults": {
+    "mode": "autopilot",
+    "questions": "one-at-a-time-only-when-blocked",
+    "variantCount": 8,
+    "confessionsPerVariant": "2-3",
+    "outputSize": "1080x1350"
+  }
+}

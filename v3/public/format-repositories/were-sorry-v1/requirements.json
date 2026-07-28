@@ -1,0 +1,18 @@
+{
+  "runtime": {
+    "node": ">=22"
+  },
+  "providers": [],
+  "environmentVariables": [],
+  "tools": [
+    "A web research tool available to the host agent",
+    "Google Chrome or Chromium for local Remotion still rendering"
+  ],
+  "byok": false,
+  "providerCost": "$0",
+  "notes": [
+    "The host agent performs website research and writes copy with the packaged prompt.",
+    "All output is rendered locally through Wiggly's shared AdRenderSurface.",
+    "No image, video, voice, Replicate, NVIDIA NIM, or Wiggly generation provider is called."
+  ]
+}

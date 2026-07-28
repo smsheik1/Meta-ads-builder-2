@@ -1,0 +1,31 @@
+{
+  "websiteUrl": "https://www.davidscookies.com/",
+  "brandName": "David's Cookies",
+  "description": "Fresh-baked cookies, brownies, cakes, and gift baskets delivered for personal and business gifting.",
+  "offer": "Fresh-baked desserts and gift assortments delivered nationwide.",
+  "audience": "People and teams who need a thoughtful dessert or gift without baking it themselves.",
+  "ctaDirection": "Shop gifts",
+  "logoUrl": null,
+  "faviconUrl": null,
+  "colors": ["#E63946", "#F4A261"],
+  "fontFeel": "sans",
+  "buyerMoments": [
+    "A birthday gift is needed after there is no time left to bake.",
+    "An office or client thank-you needs to feel more personal than a generic box.",
+    "A dessert needs to arrive ready to share.",
+    "A host gift needs to look thoughtful without another errand."
+  ],
+  "proof": [
+    "The website offers fresh-baked cookies.",
+    "The website offers cookie tins and gift baskets.",
+    "The assortment includes cookies, brownies, and cakes.",
+    "The gifts can be shipped to recipients."
+  ],
+  "siteLanguage": [
+    "fresh-baked cookies",
+    "cookie tins",
+    "gift baskets"
+  ],
+  "suitable": true,
+  "suitabilityReason": "The joke stays on ordinary gifting convenience and dessert variety."
+}

@@ -1,0 +1,19 @@
+{
+  "id": "were-sorry",
+  "version": "1.0.0",
+  "title": "Wiggly We're Sorry",
+  "description": "Turn proof-backed product benefits into eight straight-faced corporate apology ads.",
+  "status": "agent-ready",
+  "outputs": [
+    {
+      "type": "image/png",
+      "count": 8,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "type": "application/json",
+      "files": ["research.json", "variants.json", "scenes.json", "state.json"]
+    }
+  ]
+}

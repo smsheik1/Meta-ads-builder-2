@@ -31,68 +31,176 @@ export function WereSorryFormatRenderer({
 
   return (
     <div
-      className="flex h-full w-full items-center justify-center overflow-hidden bg-[#f8fafc] px-[5cqw] py-[5cqw]"
       data-format="were-sorry"
       style={{
+        alignItems: "center",
+        backgroundColor: "#f8fafc",
         color: scene.style.textColor,
         containerType: "inline-size",
+        display: "flex",
+        height: "100%",
+        justifyContent: "center",
+        overflow: "hidden",
+        padding: "5cqw",
+        width: "100%",
       }}
     >
       <article
-        className="flex h-full w-full flex-col bg-white px-[7cqw] py-[6cqw]"
         data-were-sorry-card="true"
+        style={{
+          backgroundColor: "#ffffff",
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          padding: "6cqw 7cqw",
+          width: "100%",
+        }}
       >
-        <header className="flex items-center justify-between border-b border-slate-200 pb-[4cqw]">
-          <div className="flex min-w-0 items-center gap-[3cqw]">
+        <header
+          style={{
+            alignItems: "center",
+            borderBottom: "0.12cqw solid #e2e8f0",
+            display: "flex",
+            justifyContent: "space-between",
+            paddingBottom: "4cqw",
+          }}
+        >
+          <div style={{ alignItems: "center", display: "flex", gap: "3cqw", minWidth: 0 }}>
             <div
-              className="flex size-[10cqw] shrink-0 items-center justify-center overflow-hidden rounded-full border bg-white text-[3.2cqw] font-black"
-              style={markStyle(scene)}
+              style={{
+                ...markStyle(scene),
+                alignItems: "center",
+                backgroundColor: "#ffffff",
+                borderRadius: "999px",
+                borderStyle: "solid",
+                borderWidth: "0.15cqw",
+                display: "flex",
+                flexShrink: 0,
+                fontSize: "3.2cqw",
+                fontWeight: 900,
+                height: "10cqw",
+                justifyContent: "center",
+                overflow: "hidden",
+                width: "10cqw",
+              }}
             >
               {logoSource ? (
                 <img
                   alt=""
-                  className="size-full object-contain p-[1.4cqw]"
                   src={logoSource}
+                  style={{
+                    height: "100%",
+                    objectFit: "contain",
+                    padding: "1.4cqw",
+                    width: "100%",
+                  }}
                 />
               ) : (
                 <span>{getInitials(scene.brand.name)}</span>
               )}
             </div>
-            <div className="min-w-0">
-              <p className="truncate text-[3.5cqw] font-black leading-none tracking-normal">
+            <div style={{ minWidth: 0 }}>
+              <p
+                style={{
+                  fontSize: "3.5cqw",
+                  fontWeight: 900,
+                  letterSpacing: 0,
+                  lineHeight: 1,
+                  margin: 0,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {scene.brand.name}
               </p>
-              <p className="mt-[0.9cqw] text-[1.9cqw] font-black uppercase tracking-[0.2em] text-slate-400">
+              <p
+                style={{
+                  color: "#94a3b8",
+                  fontSize: "1.9cqw",
+                  fontWeight: 900,
+                  letterSpacing: "0.2em",
+                  lineHeight: 1,
+                  margin: "0.9cqw 0 0",
+                  textTransform: "uppercase",
+                }}
+              >
                 Official statement
               </p>
             </div>
           </div>
-          <div className="h-[0.8cqw] w-[18cqw]" style={{ backgroundColor: scene.style.accentColor }} />
+          <div style={{ backgroundColor: scene.style.accentColor, height: "0.8cqw", width: "18cqw" }} />
         </header>
 
-        <section className="flex flex-1 flex-col justify-center py-[5cqw]">
-          <p className="text-[2.2cqw] font-black uppercase tracking-[0.24em] text-slate-400">
+        <section
+          style={{
+            display: "flex",
+            flex: 1,
+            flexDirection: "column",
+            justifyContent: "center",
+            padding: "5cqw 0",
+          }}
+        >
+          <p
+            style={{
+              color: "#94a3b8",
+              fontSize: "2.2cqw",
+              fontWeight: 900,
+              letterSpacing: "0.24em",
+              lineHeight: 1,
+              margin: 0,
+              textTransform: "uppercase",
+            }}
+          >
             Public notice
           </p>
           <h2
-            className={`mt-[2.5cqw] text-[8.4cqw] font-black leading-[0.95] tracking-normal text-slate-950 ${flashHeadline}`}
+            className={flashHeadline}
             data-were-sorry-apology="true"
+            style={{
+              color: "#020617",
+              fontSize: "8.4cqw",
+              fontWeight: 900,
+              letterSpacing: 0,
+              lineHeight: 0.95,
+              margin: "2.5cqw 0 0",
+            }}
           >
             {header}
           </h2>
           <p
-            className="mt-[4cqw] max-w-[88%] text-[3.6cqw] font-semibold leading-[1.22] text-slate-600"
             data-were-sorry-legal-opener="true"
+            style={{
+              color: "#475569",
+              fontSize: "3.6cqw",
+              fontWeight: 600,
+              lineHeight: 1.22,
+              margin: "4cqw 0 0",
+              maxWidth: "88%",
+            }}
           >
             {opener}
           </p>
 
-          <div className="mt-[4.5cqw] space-y-[2cqw]" data-were-sorry-confessions="true">
+          <div
+            data-were-sorry-confessions="true"
+            style={{ display: "flex", flexDirection: "column", gap: "2cqw", marginTop: "4.5cqw" }}
+          >
             {scene.layout.confessions.map((confession, index) => (
               <p
                 key={`${confession}-${index}`}
-                className="border-l-[0.7cqw] bg-slate-50 py-[2.2cqw] pl-[3cqw] pr-[2cqw] text-[3.35cqw] font-black leading-[1.12] text-slate-900"
-                style={{ borderColor: scene.style.accentColor }}
+                style={{
+                  backgroundColor: "#f8fafc",
+                  borderColor: scene.style.accentColor,
+                  borderLeftStyle: "solid",
+                  borderLeftWidth: "0.7cqw",
+                  color: "#0f172a",
+                  fontSize: "3.35cqw",
+                  fontWeight: 900,
+                  lineHeight: 1.12,
+                  margin: 0,
+                  padding: "2.2cqw 2cqw 2.2cqw 3cqw",
+                }}
               >
                 {confession}
               </p>
@@ -100,11 +208,41 @@ export function WereSorryFormatRenderer({
           </div>
         </section>
 
-        <footer className="flex items-end justify-between gap-[4cqw] border-t border-slate-200 pt-[4cqw]">
-          <p className="max-w-[60%] text-[3cqw] font-black leading-tight text-slate-900" data-were-sorry-signoff="true">
+        <footer
+          style={{
+            alignItems: "flex-end",
+            borderTop: "0.12cqw solid #e2e8f0",
+            display: "flex",
+            gap: "4cqw",
+            justifyContent: "space-between",
+            paddingTop: "4cqw",
+          }}
+        >
+          <p
+            data-were-sorry-signoff="true"
+            style={{
+              color: "#0f172a",
+              fontSize: "3cqw",
+              fontWeight: 900,
+              lineHeight: 1.25,
+              margin: 0,
+              maxWidth: "60%",
+            }}
+          >
             {scene.layout.signoff}
           </p>
-          <p className="text-right text-[1.8cqw] font-black uppercase tracking-[0.18em] text-slate-400">
+          <p
+            style={{
+              color: "#94a3b8",
+              fontSize: "1.8cqw",
+              fontWeight: 900,
+              letterSpacing: "0.18em",
+              lineHeight: 1.1,
+              margin: 0,
+              textAlign: "right",
+              textTransform: "uppercase",
+            }}
+          >
             No further comment
           </p>
         </footer>

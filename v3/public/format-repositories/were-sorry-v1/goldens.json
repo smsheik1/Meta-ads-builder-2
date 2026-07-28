@@ -1,0 +1,16 @@
+{
+  "purpose": "Show the serious legal wrapper and specific proof-backed confession structure.",
+  "examples": [
+    {
+      "id": "davids-birthday-apology",
+      "brand": "David's Cookies",
+      "title": "The last-minute gift apology",
+      "imagePath": "goldens/davids-birthday-apology.png",
+      "whyItWorks": [
+        "The opener briefly resembles a real brand statement.",
+        "The confession turns a clear gifting benefit into fake harm.",
+        "The layout stays readable at a glance."
+      ]
+    }
+  ]
+}

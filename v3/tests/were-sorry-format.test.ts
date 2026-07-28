@@ -191,6 +191,8 @@ assert.ok(html.includes('data-were-sorry-confessions="true"'));
 assert.ok(html.includes("We apologize that your front desk stopped losing calls after lunch."));
 assert.ok(html.includes("Sincerely, Agent Enamel"));
 assert.ok(html.includes("https://cdn.example/logo.png"));
+assert.ok(html.includes("font-size:8.4cqw"), "The apology hierarchy must survive local Remotion rendering.");
+assert.ok(html.includes("padding:6cqw 7cqw"), "The poster layout must not depend on app-only Tailwind styles.");
 
 const rerolled = rerollScene(scenes, scenes[0]!, 0, createDefaultSceneLocks());
 assert.equal(rerolled.index, 1);
