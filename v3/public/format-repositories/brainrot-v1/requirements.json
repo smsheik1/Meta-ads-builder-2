@@ -1,0 +1,37 @@
+{
+  "runtime": {
+    "node": ">=22",
+    "binaries": ["ffmpeg", "ffprobe"],
+    "install": "npm install"
+  },
+  "providers": [
+    {
+      "id": "fish-studio",
+      "purpose": "Two-character dialogue voice",
+      "model": "s2.1-pro-free",
+      "environmentVariable": "FISH_STUDIO_APIKEY",
+      "requiredFor": ["generate"],
+      "notRequiredFor": ["check", "init", "prompt", "validate", "estimate", "smoke", "render with packaged fixture", "inspect"],
+      "approvalFlag": "--approve-voice",
+      "automaticRetry": false,
+      "providerCost": "$0"
+    }
+  ],
+  "tools": [
+    "A web research tool available to the host agent",
+    "Google Chrome or Chromium for local Remotion rendering",
+    "ffmpeg and ffprobe"
+  ],
+  "explicitlyNotUsed": [
+    "Replicate",
+    "image generation",
+    "video generation",
+    "music generation",
+    "automatic provider fallback"
+  ],
+  "notes": [
+    "The host agent researches the website and writes three scripts with the packaged prompt.",
+    "Fish S2.1 Pro Free is the only external generation call.",
+    "All video pixels are rendered locally through Wiggly's shared AdRenderSurface."
+  ]
+}

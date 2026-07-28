@@ -1,0 +1,16 @@
+{
+  "purpose": "Show the finished fast-dialogue format and prove the complete local render path.",
+  "examples": [
+    {
+      "id": "davids-cookies-brainrot",
+      "brand": "David's Cookies",
+      "title": "A buyer problem turned into fast banter",
+      "videoPath": "goldens/davids-cookies.mp4",
+      "whyItWorks": [
+        "The first line opens on a specific buyer tension.",
+        "The second character reveals the brand after the problem is clear.",
+        "The captions, speaker emphasis, and gameplay keep the exchange easy to follow."
+      ]
+    }
+  ]
+}

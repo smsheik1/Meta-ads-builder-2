@@ -330,8 +330,35 @@ const formatConfigs: FormatProfileConfig[] = [
     slug: "brainrot",
     promise: "Turn one buyer truth into a fast character exchange over familiar gameplay.",
     lastUpdated: "July 2026",
+    technicalHref: "/format-lab/brainrot",
+    manifestPath: "format-repositories/brainrot-v1/format.json",
     whatStays: ["Two alternating speakers", "Fast captions", "Looping gameplay", "A sharp reveal"],
     whatChanges: ["The dialogue", "The buyer tension", "The brand", "The CTA"],
+    handoff: {
+      requiredInputs: [
+        "A brand or product website",
+      ],
+      deliverables: [
+        "Three evidence-backed dialogue options",
+        "One selected 6-10 beat script",
+        "One two-character Fish voice track",
+        "One captioned 1080x1350 MP4",
+      ],
+      instructions: [
+        "Research one specific buyer problem and one supported product truth",
+        "Write three distinct fake-podcast dialogue options",
+        "Show the selected script and estimate before voice generation",
+        "Inspect the audio stream, captions, dimensions, and duration before final approval",
+      ],
+      estimates: [
+        { label: "Research + scripts", cost: "$0 Wiggly provider cost", time: "about 2-5 min" },
+        { label: "Two-character Fish voice", cost: "$0 provider cost", time: "usually under 2 min" },
+        { label: "Local MP4 render", cost: "$0 provider cost", time: "about 1-3 min" },
+      ],
+      totalEstimate: "$0 Wiggly provider cost, usually 4-10 min",
+      output: "One 1080x1350 MP4 with two voices, fast captions, gameplay, and character reactions",
+      firstQuestion: "What website should I use for this Brainrot ad?",
+    },
   },
   {
     slug: "motion-story",

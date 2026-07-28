@@ -1,0 +1,92 @@
+{
+  "research": {
+    "websiteUrl": "https://finalstraw.com",
+    "brandName": "FinalStraw",
+    "description": "Reusable folding straws and compact reusable utensils.",
+    "offer": "A reusable straw that folds into a pocket-size case.",
+    "audience": "People who want a reusable straw without carrying a full-size rigid straw.",
+    "ctaDirection": "Try FinalStraw",
+    "logoUrl": null,
+    "faviconUrl": null,
+    "colors": ["#1E6D52", "#F4D35E"],
+    "fontFeel": "sans",
+    "buyerMoments": [
+      {
+        "text": "A reusable straw is left at home because it is awkward to carry.",
+        "sourceUrl": "https://finalstraw.com/products/finalstraw"
+      },
+      {
+        "text": "A drink arrives with a disposable straw before the reusable one is nearby.",
+        "sourceUrl": "https://finalstraw.com/products/finalstraw"
+      }
+    ],
+    "proof": [
+      {
+        "text": "FinalStraw folds into a compact carrying case.",
+        "sourceUrl": "https://finalstraw.com/products/finalstraw"
+      }
+    ],
+    "siteLanguage": [
+      {
+        "text": "The world's first reusable, collapsible straw.",
+        "sourceUrl": "https://finalstraw.com/products/finalstraw"
+      }
+    ],
+    "adAngles": []
+  },
+  "scriptOptions": {
+    "variants": [
+      {
+        "angle": "The reusable straw is never nearby",
+        "beats": [
+          { "speaker": "left", "text": "wait, your reusable straw lives at home?" },
+          { "speaker": "right", "text": "it is emotionally attached to the drawer" },
+          { "speaker": "left", "text": "so what happens when you buy a drink?" },
+          { "speaker": "right", "text": "the disposable straw wins by default" },
+          { "speaker": "left", "text": "FinalStraw folds into its own case" },
+          { "speaker": "right", "text": "the drawer just lost custody" }
+        ],
+        "selfCheckPassed": "The carrying problem leads to the compact-case proof and ends abruptly.",
+        "evidenceRefs": [
+          "A reusable straw is left at home because it is awkward to carry.",
+          "FinalStraw folds into a compact carrying case."
+        ]
+      },
+      {
+        "angle": "Rigid straws are awkward to carry",
+        "beats": [
+          { "speaker": "left", "text": "you carry that full-size straw everywhere?" },
+          { "speaker": "right", "text": "only when I remember my sword sheath" },
+          { "speaker": "left", "text": "there is a folding one" },
+          { "speaker": "right", "text": "folding, like into a case?" },
+          { "speaker": "left", "text": "that is FinalStraw" },
+          { "speaker": "right", "text": "retire the sheath" }
+        ],
+        "selfCheckPassed": "The rigid-straw roast sets up the folding case without inventing proof.",
+        "evidenceRefs": [
+          "FinalStraw folds into a compact carrying case."
+        ]
+      },
+      {
+        "angle": "The disposable straw wins by convenience",
+        "beats": [
+          { "speaker": "left", "text": "the disposable straw beat you again?" },
+          { "speaker": "right", "text": "mine was three rooms and a backpack away" },
+          { "speaker": "left", "text": "FinalStraw fits in a small case" },
+          { "speaker": "right", "text": "so it can actually be nearby?" },
+          { "speaker": "left", "text": "wild concept" },
+          { "speaker": "right", "text": "convenience switched teams" }
+        ],
+        "selfCheckPassed": "The default-disposable moment leads to portability and a looping payoff.",
+        "evidenceRefs": [
+          "A drink arrives with a disposable straw before the reusable one is nearby.",
+          "FinalStraw folds into a compact carrying case."
+        ]
+      }
+    ]
+  },
+  "selection": {
+    "selectedIndex": 0,
+    "reason": "It makes the portability problem and product mechanism clear with the strongest joke."
+  }
+}

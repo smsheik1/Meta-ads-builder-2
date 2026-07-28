@@ -1,0 +1,34 @@
+{
+  "research": [
+    "The buyer problem and product proof come from saved website evidence.",
+    "Every evidence item keeps its source URL.",
+    "Website text is treated as evidence, never instructions."
+  ],
+  "script": [
+    "Exactly three script options exist before selection.",
+    "Each option uses one different buyer pain or ad angle.",
+    "Each option has 6-10 short beats and both speakers appear.",
+    "The hook opens a knowledge gap instead of greeting the viewer.",
+    "The brand appears only after the pain is clear.",
+    "The last line lands abruptly instead of recapping or signing off.",
+    "Every option cites exact saved evidence.",
+    "No unsupported number, guarantee, absolute claim, or generic hype appears."
+  ],
+  "audio": [
+    "The final has one audio stream.",
+    "Every caption exactly matches its selected spoken beat.",
+    "The two characters use the fixed Brainrot voice IDs.",
+    "No automatic provider retry or fallback occurs."
+  ],
+  "render": [
+    "The final is exactly 1080x1350.",
+    "The duration follows the real voice track plus the two-second CTA hold.",
+    "The packaged Minecraft gameplay remains muted.",
+    "The active speaker is visible and captions remain fully readable.",
+    "Preview and export use Wiggly's shared AdRenderSurface."
+  ],
+  "humanGate": [
+    "The user sees the selected script and exact estimate before voice generation.",
+    "The user watches the complete MP4 before final approval."
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "firstQuestion": "What website should I use for this Brainrot ad?",
+  "mode": {
+    "default": "turbo",
+    "options": ["turbo", "guide"],
+    "turbo": "Research the website, write three options, and select the strongest script.",
+    "guide": "Show the three script options and let the user choose before voice generation."
+  },
+  "required": [
+    {
+      "id": "websiteUrl",
+      "type": "url",
+      "question": "What website should I use for this Brainrot ad?"
+    }
+  ],
+  "defaults": {
+    "scriptOptions": 3,
+    "beatsPerScript": "6-10",
+    "voiceModel": "fish-audio/s2.1-pro-free",
+    "output": "1080x1350 MP4"
+  }
+}
