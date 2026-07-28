@@ -1,0 +1,124 @@
+{
+  "suitable": true,
+  "variants": [
+    {
+      "angle": "last-minute birthday gift",
+      "evidenceRefs": [
+        "A birthday gift is needed after there is no time left to bake.",
+        "The website offers cookie tins and gift baskets."
+      ],
+      "apologyHeader": "An Official Apology",
+      "legalOpener": "It has come to our attention that some last-minute gifts looked suspiciously well planned.",
+      "confessions": [
+        "We apologize that a cookie tin made the birthday feel handled.",
+        "We regret that nobody had to know there was no time left to bake."
+      ],
+      "signoff": "Sincerely, David's Cookies",
+      "selfCheckPassed": "The wrapper is serious and both confessions use the birthday buyer moment."
+    },
+    {
+      "angle": "office thank-you",
+      "evidenceRefs": [
+        "An office or client thank-you needs to feel more personal than a generic box.",
+        "The website offers cookie tins and gift baskets."
+      ],
+      "apologyHeader": "A Formal Statement",
+      "legalOpener": "We take full responsibility for making the office thank-you harder to forget.",
+      "confessions": [
+        "We apologize that a gift basket gave the break room something to talk about.",
+        "We regret that the cookies disappeared before the thank-you email did."
+      ],
+      "signoff": "Sincerely, David's Cookies",
+      "selfCheckPassed": "The confessions turn the office gifting moment into specific fake harm."
+    },
+    {
+      "angle": "dessert variety",
+      "evidenceRefs": [
+        "The assortment includes cookies, brownies, and cakes."
+      ],
+      "apologyHeader": "We Owe You an Apology",
+      "legalOpener": "We sincerely apologize for placing too many dessert decisions inside one delivery.",
+      "confessions": [
+        "We regret offering cookies, brownies, and cakes in the same place.",
+        "We apologize that choosing one favorite became less realistic."
+      ],
+      "signoff": "Sincerely, David's Cookies",
+      "selfCheckPassed": "Both confessions are grounded in the listed dessert assortment."
+    },
+    {
+      "angle": "ready-to-share dessert",
+      "evidenceRefs": [
+        "A dessert needs to arrive ready to share.",
+        "The website offers cookie tins and gift baskets."
+      ],
+      "apologyHeader": "An Important Notice",
+      "legalOpener": "It has come to our attention that dessert started arriving ready for the whole table.",
+      "confessions": [
+        "We apologize that the cookie tin opened before anyone found a serving plate.",
+        "We regret that sharing became the easiest part of the evening."
+      ],
+      "signoff": "Sincerely, David's Cookies",
+      "selfCheckPassed": "The joke stays on the supported ready-to-share buyer moment."
+    },
+    {
+      "angle": "host gift",
+      "evidenceRefs": [
+        "A host gift needs to look thoughtful without another errand.",
+        "The website offers fresh-baked cookies."
+      ],
+      "apologyHeader": "A Statement From Us",
+      "legalOpener": "We take full responsibility for reducing one more stop on the way to dinner.",
+      "confessions": [
+        "We apologize that the host gift arrived without another errand.",
+        "We regret that fresh-baked cookies made showing up empty-handed avoidable."
+      ],
+      "signoff": "Sincerely, David's Cookies",
+      "selfCheckPassed": "The confessions use the host-gift moment and fresh-baked product proof."
+    },
+    {
+      "angle": "client gifting",
+      "evidenceRefs": [
+        "An office or client thank-you needs to feel more personal than a generic box.",
+        "A dessert needs to arrive ready to share."
+      ],
+      "apologyHeader": "Our Official Response",
+      "legalOpener": "We sincerely apologize for making a client gift feel less like a required task.",
+      "confessions": [
+        "We regret that a cookie basket felt more personal than another desk item.",
+        "We apologize that the thank-you came with dessert people could share."
+      ],
+      "signoff": "Sincerely, David's Cookies",
+      "selfCheckPassed": "The confessions stay on the client-gifting buyer moment."
+    },
+    {
+      "angle": "no baking required",
+      "evidenceRefs": [
+        "A birthday gift is needed after there is no time left to bake.",
+        "The website offers fresh-baked cookies."
+      ],
+      "apologyHeader": "Please Accept Our Apology",
+      "legalOpener": "It has come to our attention that fresh-baked cookies appeared without a mixing bowl.",
+      "confessions": [
+        "We apologize that nobody had to preheat an oven.",
+        "We regret that the cookie craving skipped the cleanup."
+      ],
+      "signoff": "Sincerely, David's Cookies",
+      "selfCheckPassed": "The joke contrasts fresh-baked cookies with the buyer's lack of time to bake."
+    },
+    {
+      "angle": "shipped gift",
+      "evidenceRefs": [
+        "The gifts can be shipped to recipients.",
+        "The website offers cookie tins and gift baskets."
+      ],
+      "apologyHeader": "A Necessary Correction",
+      "legalOpener": "We take full responsibility for letting dessert cross the distance between two people.",
+      "confessions": [
+        "We apologize that a cookie gift could reach the recipient without a handoff.",
+        "We regret that being far away stopped being the end of the plan."
+      ],
+      "signoff": "Sincerely, David's Cookies",
+      "selfCheckPassed": "Both confessions use the supported shipping and gifting details."
+    }
+  ]
+}

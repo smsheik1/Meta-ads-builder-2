@@ -230,8 +230,34 @@ const formatConfigs: FormatProfileConfig[] = [
     slug: "were-sorry",
     promise: "Turn product proof into an official apology that confidently regrets nothing.",
     lastUpdated: "July 2026",
+    technicalHref: "/format-lab/were-sorry",
+    manifestPath: "format-repositories/were-sorry-v1/format.json",
     whatStays: ["An official statement", "Three proof-backed confessions", "A regret-nothing signoff"],
     whatChanges: ["The brand", "The evidence", "The apology", "The punchline"],
+    handoff: {
+      requiredInputs: [
+        "A brand website",
+      ],
+      deliverables: [
+        "Eight distinct official-apology concepts",
+        "Eight static 1080 x 1350 PNGs",
+        "Scene and research data",
+      ],
+      instructions: [
+        "Research real buyer moments and supported product proof",
+        "Stop when the joke would enter trust-sensitive territory",
+        "Use the packaged prompt for all eight apologies",
+        "Inspect all eight local PNGs before delivery",
+      ],
+      estimates: [
+        { label: "Research", cost: "$0 Wiggly provider cost", time: "about 1-3 min" },
+        { label: "Eight apologies", cost: "$0 separate provider cost", time: "about 1-2 min" },
+        { label: "Eight PNGs", cost: "$0 provider cost", time: "about 1-2 min" },
+      ],
+      totalEstimate: "$0 Wiggly provider cost, usually 3-6 min",
+      output: "Eight static 1080 x 1350 PNGs plus scene and research data",
+      firstQuestion: "What website should I use?",
+    },
   },
   {
     slug: "text-message",

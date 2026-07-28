@@ -1,0 +1,30 @@
+{
+  "progress": "Research -> Write -> Render -> Deliver",
+  "stages": [
+    {
+      "id": "research",
+      "output": "Evidence-backed brand research and suitability decision",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "write",
+      "output": "Eight validated official-apology variants",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "render",
+      "output": "Eight local 1080 x 1350 PNGs",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "deliver",
+      "output": "Eight PNGs plus research, variants, scenes, and run state",
+      "paid": false,
+      "approvalRequired": false,
+      "qaAttestationRequired": true
+    }
+  ]
+}

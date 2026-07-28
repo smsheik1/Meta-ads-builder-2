@@ -1,0 +1,20 @@
+{
+  "acceptanceCriteria": [
+    "Exactly eight distinct apology variants are produced.",
+    "Every variant has one serious header, one legal opener, two or three confessions, and one signoff.",
+    "Every variant cites one or more exact research.json strings in evidenceRefs.",
+    "Every confession reframes a supported benefit or buyer moment as fake harm.",
+    "No two variants use the same angle, opener, or confession.",
+    "No generic praise, hype, invented numbers, guarantees, URLs, hashtags, or emojis appear.",
+    "No confession enters healthcare, insurance, physical safety, legal, breach, crisis, or vulnerable-person territory.",
+    "All eight PNGs are unique and exactly 1080 x 1350.",
+    "All text and logos are readable without clipping or overflow."
+  ],
+  "manualReview": [
+    "Does the header and opener briefly look like a real corporate statement?",
+    "Does each confession contain a specific product truth instead of a generic brag?",
+    "Can every confession be traced to research.json?",
+    "Are all eight jokes meaningfully different?",
+    "Did the renderer keep every word fully visible?"
+  ]
+}
