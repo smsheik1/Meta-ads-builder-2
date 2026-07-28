@@ -1,0 +1,35 @@
+{
+  "progress": "Research -> Script -> Voice -> Render -> Deliver",
+  "stages": [
+    {
+      "id": "Research",
+      "output": "A sourced buyer problem, product proof, brand language, and CTA",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "Script",
+      "output": "Three distinct evidence-backed dialogue options plus one selection",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "Voice",
+      "output": "One Fish two-character voice track with timed captions",
+      "paid": false,
+      "approvalRequired": true
+    },
+    {
+      "id": "Render",
+      "output": "One local 1080x1350 MP4 using packaged gameplay and character assets",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "Deliver",
+      "output": "Inspected MP4, audio, script, scene, evidence, and run state",
+      "paid": false,
+      "approvalRequired": true
+    }
+  ]
+}

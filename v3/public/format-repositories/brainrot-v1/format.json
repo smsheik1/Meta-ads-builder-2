@@ -1,0 +1,27 @@
+{
+  "id": "brainrot",
+  "version": "1.0.0",
+  "title": "Wiggly Brainrot",
+  "description": "Turn one buyer truth into a fast two-character exchange over looping gameplay.",
+  "status": "agent-ready",
+  "outputs": [
+    {
+      "type": "video/mp4",
+      "count": 1,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "type": "application/json",
+      "files": [
+        "research.json",
+        "script-options.json",
+        "selection.json",
+        "selected-script.json",
+        "audio.json",
+        "scene.json",
+        "state.json"
+      ]
+    }
+  ]
+}

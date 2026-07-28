@@ -1,0 +1,25 @@
+{
+  "name": "wiggly-brainrot-format-kit",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check:kit": "node kit-smoke.mjs",
+    "format:brainrot": "tsx scripts/brainrot-format.ts",
+    "test": "tsx tests/brainrot-agent-runner.test.ts && node kit-smoke.mjs"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.473",
+    "@remotion/media": "4.0.473",
+    "@remotion/renderer": "4.0.473",
+    "lucide-react": "0.546.0",
+    "react": "19.0.1",
+    "react-dom": "19.0.1",
+    "remotion": "4.0.473",
+    "tailwindcss": "4.3.3",
+    "tsx": "4.20.6"
+  }
+}

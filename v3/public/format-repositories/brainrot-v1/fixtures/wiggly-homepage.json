@@ -1,0 +1,115 @@
+{
+  "research": {
+    "websiteUrl": "https://wiggly.agentenamel.com",
+    "brandName": "Wiggly",
+    "description": "Wiggly turns brand websites into ready-to-test ad formats.",
+    "offer": "Agent-ready creative formats built from one website.",
+    "audience": "Marketers and creators who need more ad ideas without rebuilding the workflow.",
+    "ctaDirection": "Open Wiggly",
+    "logoUrl": null,
+    "faviconUrl": null,
+    "colors": ["#5B38D7", "#52D6FF"],
+    "fontFeel": "sans",
+    "buyerMoments": [
+      {
+        "text": "A marketer opens another blank canvas after the last ad stops working.",
+        "sourceUrl": "https://wiggly.agentenamel.com"
+      },
+      {
+        "text": "A creator wants a proven format without rebuilding the production workflow.",
+        "sourceUrl": "https://wiggly.agentenamel.com"
+      }
+    ],
+    "proof": [
+      {
+        "text": "Wiggly packages creative formats for agents to run.",
+        "sourceUrl": "https://wiggly.agentenamel.com"
+      }
+    ],
+    "siteLanguage": [
+      {
+        "text": "Ads without the hard part.",
+        "sourceUrl": "https://wiggly.agentenamel.com"
+      }
+    ],
+    "adAngles": []
+  },
+  "scriptOptions": {
+    "variants": [
+      {
+        "angle": "Ads keep looking interchangeable",
+        "beats": [
+          { "speaker": "left", "text": "Wait." },
+          { "speaker": "left", "text": "Your ads still look" },
+          { "speaker": "left", "text": "like everyone else's?" },
+          { "speaker": "right", "text": "Exactly." },
+          { "speaker": "right", "text": "Wiggly turns your website" },
+          { "speaker": "right", "text": "into ads people actually watch." }
+        ],
+        "selfCheckPassed": "The old blank-canvas problem leads to Wiggly and stops on a short payoff.",
+        "evidenceRefs": [
+          "A marketer opens another blank canvas after the last ad stops working.",
+          "Wiggly packages creative formats for agents to run."
+        ]
+      },
+      {
+        "angle": "The blank canvas keeps winning",
+        "beats": [
+          { "speaker": "left", "text": "you opened another empty canvas?" },
+          { "speaker": "right", "text": "yeah. staring at it felt productive" },
+          { "speaker": "left", "text": "or you could start with a format" },
+          { "speaker": "right", "text": "a format that already knows the steps?" },
+          { "speaker": "left", "text": "that is literally Wiggly" },
+          { "speaker": "right", "text": "the canvas never saw it coming" }
+        ],
+        "selfCheckPassed": "The script roasts the blank canvas and lands Wiggly after the pain.",
+        "evidenceRefs": [
+          "A marketer opens another blank canvas after the last ad stops working."
+        ]
+      },
+      {
+        "angle": "Creators rebuild the same workflow",
+        "beats": [
+          { "speaker": "left", "text": "you rebuilt the whole ad workflow again?" },
+          { "speaker": "right", "text": "I enjoy naming folders apparently" },
+          { "speaker": "left", "text": "the format can carry the workflow" },
+          { "speaker": "right", "text": "so the agent already knows the steps?" },
+          { "speaker": "left", "text": "that is the Wiggly part" },
+          { "speaker": "right", "text": "retire the final-final folder" }
+        ],
+        "selfCheckPassed": "The workflow pain is evidence-backed and the payoff ends abruptly.",
+        "evidenceRefs": [
+          "A creator wants a proven format without rebuilding the production workflow.",
+          "Wiggly packages creative formats for agents to run."
+        ]
+      }
+    ]
+  },
+  "selection": {
+    "selectedIndex": 0,
+    "reason": "It is the packaged audio proof and makes the format clear immediately."
+  },
+  "audio": {
+    "mimeType": "audio/mpeg",
+    "durationMs": 6910,
+    "transcript": "Wait.\nYour ads still look\nlike everyone else's?\nExactly.\nWiggly turns your website\ninto ads people actually watch.",
+    "captions": [
+      { "text": "Wait.", "startMs": 0, "endMs": 500 },
+      { "text": "Your ads still look", "startMs": 500, "endMs": 1350 },
+      { "text": "like everyone else's?", "startMs": 1350, "endMs": 2820 },
+      { "text": "Exactly.", "startMs": 2820, "endMs": 3300 },
+      { "text": "Wiggly turns your website", "startMs": 3300, "endMs": 4750 },
+      { "text": "into ads people actually watch.", "startMs": 4750, "endMs": 6910 }
+    ],
+    "beats": [
+      { "speaker": "left", "text": "Wait.", "startMs": 0, "durationMs": 500 },
+      { "speaker": "left", "text": "Your ads still look", "startMs": 500, "durationMs": 850 },
+      { "speaker": "left", "text": "like everyone else's?", "startMs": 1350, "durationMs": 1470 },
+      { "speaker": "right", "text": "Exactly.", "startMs": 2820, "durationMs": 480 },
+      { "speaker": "right", "text": "Wiggly turns your website", "startMs": 3300, "durationMs": 1450 },
+      { "speaker": "right", "text": "into ads people actually watch.", "startMs": 4750, "durationMs": 2160 }
+    ],
+    "provider": "fixture",
+    "model": "packaged-homepage-dialogue"
+  }
+}
