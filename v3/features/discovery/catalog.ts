@@ -421,7 +421,13 @@ const discoveryShelfDefinitions = [
     id: "static-hooks",
     title: "Static Ideas That Land",
     description: "Memes and announcements built to stop the scroll.",
-    formats: ["meme", "hybrid-news", "fortnite-filter", "cinematic-photographer"],
+    formats: [
+      "meme",
+      "hybrid-news",
+      "fortnite-filter",
+      "cinematic-photographer",
+      "gta-vi",
+    ],
   },
   {
     id: "more",

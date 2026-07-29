@@ -40,6 +40,7 @@
   },
   "expectedOutputs": 1,
   "maximumAttempts": 3,
+  "smokeInputPath": "fixtures/input.jpg",
   "smokeExamplePath": "assets/source/example-output.png",
   "minimumOutputWidth": 640,
   "minimumOutputHeight": 800,

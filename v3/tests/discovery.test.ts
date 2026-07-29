@@ -205,5 +205,12 @@ assert.equal(
   1,
   "Cinematic Photographer proof should appear in the static creative shelf.",
 );
+assert.equal(
+  shelves
+    .find((shelf) => shelf.id === "static-hooks")
+    ?.entries.filter((entry) => entry.format.slug === "gta-vi").length,
+  1,
+  "GTA VI proof should appear in the static creative shelf.",
+);
 
 console.log("discovery tests passed");
