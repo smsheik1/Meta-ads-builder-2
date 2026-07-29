@@ -148,7 +148,7 @@ export const MEME_TEMPLATES = [
         id: "bottomText",
         label: "The calm coping line",
         x: 80,
-        y: 1075,
+        y: 850,
         width: 1160,
         height: 180,
         maxChars: 66,
