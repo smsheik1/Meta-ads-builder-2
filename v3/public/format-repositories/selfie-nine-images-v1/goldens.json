@@ -1,0 +1,105 @@
+{
+  "purpose": "Judge identity and outfit consistency, believable levitation, quiet brutalist composition, and photographic realism across all nine gathered scenes.",
+  "examples": [
+    {
+      "id": "petal-umbrella",
+      "title": "The Petal Umbrella",
+      "imagePath": "assets/source/petal-umbrella.jpg",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "The source outfit and proportions remain recognizable",
+        "The visible air gap makes the levitation unambiguous",
+        "Deep red petals provide one controlled accent",
+        "Soft light keeps the frame photographic"
+      ]
+    },
+    {
+      "id": "cloud",
+      "title": "The Cloud",
+      "imagePath": "assets/source/cloud.jpg",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "A dense cloud supports a relaxed full-body pose",
+        "Large negative space creates the intended isolation",
+        "The warm ribbed wall stays quiet behind the subject"
+      ]
+    },
+    {
+      "id": "chair",
+      "title": "The Chair",
+      "imagePath": "assets/source/chair.jpg",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "The seated posture remains casual despite the floating chair",
+        "Worn wood adds one warm material accent",
+        "The grounded camera angle keeps the surrealism believable"
+      ]
+    },
+    {
+      "id": "mirror",
+      "title": "The Mirror",
+      "imagePath": "assets/source/mirror.jpg",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "The mirror reads as a complete unsupported object",
+        "The reflection anchors the subject to the glass",
+        "The aged gold frame stays restrained"
+      ]
+    },
+    {
+      "id": "staircase",
+      "title": "The Staircase",
+      "imagePath": "assets/source/staircase.jpg",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "The subject is frozen in a readable walking step",
+        "Detached stairs preserve the surreal premise",
+        "Crumbling concrete adds motion without visual noise"
+      ]
+    },
+    {
+      "id": "bed",
+      "title": "The Bed",
+      "imagePath": "assets/source/bed.jpg",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "The fully clothed subject remains visually consistent",
+        "Heavy sheets drape naturally from the floating bed",
+        "The white bedding creates clean tonal contrast"
+      ]
+    },
+    {
+      "id": "phone-booth",
+      "title": "The Phone Booth",
+      "imagePath": "assets/source/phone-booth.jpg",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "Clear panels keep the subject readable",
+        "Suspended pigeons reinforce the frozen-time idea",
+        "The receiver and cord retain useful object detail"
+      ]
+    },
+    {
+      "id": "grocery-cart",
+      "title": "The Grocery Cart",
+      "imagePath": "assets/source/grocery-cart.jpg",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "The cross-legged pose fits naturally inside the cart",
+        "Wire mesh and wheels keep convincing real-world detail",
+        "Floating bags stay secondary to the subject"
+      ]
+    },
+    {
+      "id": "door",
+      "title": "The Door",
+      "imagePath": "assets/source/door.jpg",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "All four door edges remain visibly detached",
+        "The mid-step pose reads clearly",
+        "The large air gap completes the impossible transition"
+      ]
+    }
+  ]
+}

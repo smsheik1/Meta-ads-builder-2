@@ -4,12 +4,14 @@ import {
   discoveryCatalog,
   filterDiscoveryEntries,
   getPublishedDiscoveryEntries,
+  getPublishedDiscoveryProofEntries,
   groupDiscoveryEntriesByShelf,
 } from "../features/discovery/catalog";
 import { databaseFormatDiscoveryEntries } from "../features/discovery/databaseFormatArchive";
 import type { DiscoveryEntry } from "../features/discovery/types";
 
 const published = getPublishedDiscoveryEntries();
+const proofEntries = getPublishedDiscoveryProofEntries();
 const discoveryStyles = readFileSync("app/discover/discovery.module.css", "utf8");
 
 assert.match(
@@ -30,11 +32,11 @@ assert.deepEqual(
   "Published entries should keep manual editorial order.",
 );
 assert.ok(
-  published.every((entry) => entry.format.version && entry.format.owner),
+  proofEntries.every((entry) => entry.format.version && entry.format.owner),
   "Every Discovery entry should keep its exact Format version and owner.",
 );
 assert.ok(
-  published.every((entry) => (
+  proofEntries.every((entry) => (
     entry.media.src.startsWith("/")
       ? existsSync(`public${entry.media.src}`)
       : entry.media.src.startsWith("https://")
@@ -42,11 +44,11 @@ assert.ok(
   "Discovery entries should reference an existing public asset or a secure stored-media URL.",
 );
 assert.ok(
-  published.every((entry) => !entry.media.referenceSrc || existsSync(`public${entry.media.referenceSrc}`)),
+  proofEntries.every((entry) => !entry.media.referenceSrc || existsSync(`public${entry.media.referenceSrc}`)),
   "Every before-and-after proof should reference an existing original image.",
 );
 assert.ok(
-  published
+  proofEntries
     .filter((entry) => entry.media.kind === "video")
     .every((entry) => entry.media.poster && existsSync(`public${entry.media.poster}`)),
   "Every video should have a local poster for slow connections.",
@@ -107,6 +109,7 @@ const generatedFormatSlugs = [
   "fortnite-filter",
   "cinematic-photographer",
   "gta-vi",
+  "selfie-nine-images",
   "jingle",
 ];
 assert.ok(
@@ -190,8 +193,8 @@ assert.equal(
   shelves
     .flatMap((shelf) => shelf.entries)
     .filter((entry) => entry.format.slug === "fortnite-filter").length,
-  2,
-  "Both Fortnite Filter ads should remain individually discoverable.",
+  1,
+  "Fortnite Filter should use one Discovery card while its second proof stays inside the Format.",
 );
 assert.deepEqual(
   shelves.find((shelf) => shelf.id === "brand-jingles")?.entries.map((entry) => entry.id),
@@ -220,8 +223,8 @@ assert.equal(
   shelves
     .find((shelf) => shelf.id === "static-hooks")
     ?.entries.filter((entry) => entry.format.slug === "fortnite-filter").length,
-  2,
-  "Fortnite Filter proof should appear in the static creative shelf.",
+  1,
+  "Fortnite Filter should appear once in the static creative shelf.",
 );
 assert.equal(
   shelves
@@ -236,6 +239,18 @@ assert.equal(
     ?.entries.filter((entry) => entry.format.slug === "gta-vi").length,
   1,
   "GTA VI proof should appear in the static creative shelf.",
+);
+assert.equal(
+  shelves
+    .find((shelf) => shelf.id === "static-hooks")
+    ?.entries.filter((entry) => entry.format.slug === "selfie-nine-images").length,
+  1,
+  "1 Selfie, 9 Images should use one Discovery card for all nine proofs.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "selfie-nine-images").length,
+  9,
+  "All nine selfie scenes should remain available inside the Format page.",
 );
 
 console.log("discovery tests passed");

@@ -3,6 +3,7 @@ export type DiscoveryGoal = "all" | "sell" | "explain" | "story" | "teach" | "en
 export type DiscoveryEntry = {
   id: string;
   status: "published" | "draft";
+  showInDiscovery?: boolean;
   order: number;
   brand: string;
   title: string;

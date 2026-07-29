@@ -1,0 +1,50 @@
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
+
+const slug = "selfie-nine-images";
+const packageRoot = path.resolve("public", "format-repositories", `${slug}-v1`);
+const required = [
+  ".env.example",
+  ".gitignore",
+  "README.md",
+  "SKILL.md",
+  "assets.json",
+  "assets/source/guide.pdf",
+  "assets/source/original-selfie.jpg",
+  "format.json",
+  "goldens.json",
+  "inputs.json",
+  "pipeline.json",
+  "quality.json",
+  "requirements.json",
+  "runtime.json",
+];
+for (const file of required) {
+  if (!existsSync(path.join(packageRoot, file))) throw new Error(`Missing kit file: ${file}`);
+}
+if (!existsSync(path.resolve("scripts", "skai-image-format.ts"))) {
+  throw new Error("Missing official runner.");
+}
+const format = JSON.parse(readFileSync(path.join(packageRoot, "format.json"), "utf8"));
+const runtime = JSON.parse(readFileSync(path.join(packageRoot, "runtime.json"), "utf8"));
+const goldens = JSON.parse(readFileSync(path.join(packageRoot, "goldens.json"), "utf8"));
+if (format.id !== slug || format.version !== "1.0.0" || runtime.slug !== slug) {
+  throw new Error("Format identity is invalid.");
+}
+if (
+  runtime.maximumAttempts !== 3 ||
+  runtime.expectedOutputs !== 1 ||
+  Object.keys(runtime.promptVariants).length !== 9 ||
+  goldens.examples.length !== 9
+) {
+  throw new Error("Nine-scene runtime limits are invalid.");
+}
+for (const promptPath of Object.values(runtime.promptVariants)) {
+  if (!existsSync(path.join(packageRoot, promptPath))) throw new Error(`Missing prompt: ${promptPath}`);
+}
+for (const example of goldens.examples) {
+  if (!existsSync(path.join(packageRoot, example.imagePath))) {
+    throw new Error(`Missing source example: ${example.imagePath}`);
+  }
+}
+console.log("1 Selfie, 9 Images Format Kit files are complete.");

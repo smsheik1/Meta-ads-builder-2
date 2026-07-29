@@ -3,6 +3,82 @@ import { databaseFormatDiscoveryEntries } from "./databaseFormatArchive";
 import { jingleDiscoveryEntries } from "./jingleArchive";
 import { videoMemeDiscoveryEntries } from "./videoMemeArchive";
 
+const selfieNineDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "petal-umbrella",
+    brand: "Surreal portrait series",
+    title: "One selfie, nine impossible scenes",
+    curatorNote: "A single recognizable subject carries the same quiet editorial language across nine surreal compositions.",
+  },
+  {
+    id: "cloud",
+    brand: "Cloud",
+    title: "A nap in mid-air",
+    curatorNote: "Dense cloud texture and generous negative space turn the same selfie into a quiet dream.",
+  },
+  {
+    id: "chair",
+    brand: "Chair",
+    title: "Sitting above the pavement",
+    curatorNote: "An ordinary worn chair becomes strange through one clean, visible air gap.",
+  },
+  {
+    id: "mirror",
+    brand: "Mirror",
+    title: "Standing on a reflection",
+    curatorNote: "The reflected boots make an impossible floating mirror feel physically present.",
+  },
+  {
+    id: "staircase",
+    brand: "Staircase",
+    title: "Climbing toward nothing",
+    curatorNote: "A calm walking pose holds together while the final steps dissolve into dust.",
+  },
+  {
+    id: "bed",
+    brand: "Bed",
+    title: "Resting above concrete",
+    curatorNote: "Heavy white bedding and a relaxed pose make the floating bed feel unexpectedly believable.",
+  },
+  {
+    id: "phone-booth",
+    brand: "Phone booth",
+    title: "A call suspended in time",
+    curatorNote: "Clear glass, a loose receiver cord, and frozen pigeons keep every layer readable.",
+  },
+  {
+    id: "grocery-cart",
+    brand: "Grocery cart",
+    title: "Shopping without gravity",
+    curatorNote: "The same subject stays relaxed inside detailed wire mesh while bags float around the cart.",
+  },
+  {
+    id: "door",
+    brand: "Door",
+    title: "Walking out of nowhere",
+    curatorNote: "A detached door, readable mid-step pose, and large empty air gap complete the impossible transition.",
+  },
+].map((proof, index) => ({
+  ...proof,
+  id: `selfie-nine-images-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 18 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/selfie-nine-images-v1/assets/source/${proof.id}.jpg`,
+    referenceSrc: "/format-repositories/selfie-nine-images-v1/assets/source/original-selfie.jpg",
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "selfie-nine-images",
+    name: "1 Selfie, 9 Images",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "final-straw-pocket-problem",
@@ -299,6 +375,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "fortnite-filter-sunset-woman",
     status: "published",
+    showInDiscovery: false,
     order: 15,
     brand: "Portrait transformation",
     title: "The economy model keeps the look",
@@ -357,6 +434,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
       owner: "Wiggly Studio",
     },
   },
+  ...selfieNineDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -422,6 +500,7 @@ const discoveryShelfDefinitions = [
       "fortnite-filter",
       "cinematic-photographer",
       "gta-vi",
+      "selfie-nine-images",
     ],
   },
   {
@@ -464,6 +543,14 @@ export function getPublishedDiscoveryEntries(
   entries: DiscoveryEntry[] = discoveryCatalog,
 ): DiscoveryEntry[] {
   return entries
+    .filter((entry) => entry.status === "published" && entry.showInDiscovery !== false)
+    .sort((left, right) => left.order - right.order);
+}
+
+export function getPublishedDiscoveryProofEntries(
+  entries: DiscoveryEntry[] = discoveryCatalog,
+): DiscoveryEntry[] {
+  return entries
     .filter((entry) => entry.status === "published")
     .sort((left, right) => left.order - right.order);
 }
@@ -491,11 +578,11 @@ export function filterDiscoveryEntries(
 }
 
 export function getDiscoveryEntryById(id: string): DiscoveryEntry | undefined {
-  return getPublishedDiscoveryEntries().find((entry) => entry.id === id);
+  return getPublishedDiscoveryProofEntries().find((entry) => entry.id === id);
 }
 
 export function getDiscoveryEntriesByFormat(formatSlug: string): DiscoveryEntry[] {
-  return getPublishedDiscoveryEntries().filter((entry) => entry.format.slug === formatSlug);
+  return getPublishedDiscoveryProofEntries().filter((entry) => entry.format.slug === formatSlug);
 }
 
 export function getRelatedDiscoveryEntries(entry: DiscoveryEntry, limit = 3): DiscoveryEntry[] {

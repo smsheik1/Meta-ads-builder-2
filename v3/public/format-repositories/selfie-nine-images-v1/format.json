@@ -1,0 +1,20 @@
+{
+  "id": "selfie-nine-images",
+  "version": "1.0.0",
+  "title": "1 Selfie, 9 Images",
+  "description": "Turn one selfie into a consistent nine-scene surreal editorial photo set.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DasjanLiqFq/",
+    "resourceUrl": "https://docs.google.com/document/d/1_SvsT81yfNMgLP5W_g6YUwwAIZZbIlorLeG1Zu2Z_Dc/edit",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana 2"
+  },
+  "outputs": [
+    "1 inspected 3:4 image per selected scene",
+    "up to 9 finalized scene runs for the complete set",
+    "state.json and quality-report.json for every scene"
+  ]
+}

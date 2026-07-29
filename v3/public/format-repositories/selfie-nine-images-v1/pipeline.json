@@ -1,0 +1,30 @@
+{
+  "progress": "Prepare -> Validate -> Transform -> Inspect",
+  "attemptCapPerScene": 3,
+  "stages": [
+    {
+      "id": "prepare",
+      "output": "One run pinned to the selfie, selected scene prompt, and model route.",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "validate",
+      "output": "The selfie and selected prompt contract checked locally.",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "transform",
+      "output": "One selected scene per paid prediction; repeat only for approved variants.",
+      "paid": true,
+      "approvalRequired": true
+    },
+    {
+      "id": "inspect",
+      "output": "Automatic file checks plus an actual visual review for every scene.",
+      "paid": false,
+      "approvalRequired": true
+    }
+  ]
+}

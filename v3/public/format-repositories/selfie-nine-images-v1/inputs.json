@@ -1,0 +1,35 @@
+{
+  "required": [
+    {
+      "id": "selfie",
+      "type": "image",
+      "formats": ["jpg", "png", "webp"],
+      "minimumWidth": 512,
+      "minimumHeight": 512,
+      "maximumBytes": 26214400
+    }
+  ],
+  "question": "Which selfie should I use, and do you want one scene or all nine?",
+  "variants": [
+    "petal-umbrella",
+    "cloud",
+    "chair",
+    "mirror",
+    "staircase",
+    "bed",
+    "phone-booth",
+    "grocery-cart",
+    "door"
+  ],
+  "defaults": {
+    "model": "nano-banana-2",
+    "variant": "petal-umbrella",
+    "aspectRatio": "3:4",
+    "outputCountPerRun": 1
+  },
+  "modelRoutes": {
+    "economy": "google/nano-banana-2-lite",
+    "default": "google/nano-banana-2",
+    "premium": "google/nano-banana-pro"
+  }
+}

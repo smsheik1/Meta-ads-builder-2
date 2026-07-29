@@ -43,6 +43,7 @@ type RuntimeConfig = {
   slug: string;
   version: string;
   promptPath: string;
+  promptVariants?: Record<string, string>;
   input: {
     mode: InputMode;
     formats?: string[];
@@ -100,6 +101,7 @@ type RunState = {
   id: string;
   format: string;
   version: string;
+  variant?: string;
   status: RunStatus;
   createdAt: string;
   model: string;
@@ -172,8 +174,16 @@ async function runtimeConfig(slug = formatSlug()) {
   return config;
 }
 
-async function promptText(config: RuntimeConfig) {
-  return (await readFile(path.join(packageRoot(config.slug), config.promptPath), "utf8")).trim();
+async function promptText(config: RuntimeConfig, variant?: string) {
+  const promptPath = variant
+    ? config.promptVariants?.[variant]
+    : config.promptPath;
+  if (!promptPath) {
+    throw new Error(
+      `--variant must be one of ${Object.keys(config.promptVariants ?? {}).join(", ")}.`,
+    );
+  }
+  return (await readFile(path.join(packageRoot(config.slug), promptPath), "utf8")).trim();
 }
 
 function runsRoot(slug: string) {
@@ -265,6 +275,9 @@ async function check() {
   console.log(`${config.slug} v${config.version}`);
   console.log(`Input mode: ${config.input.mode}`);
   console.log(`Prompt: ${prompt.length} characters, packaged and ready.`);
+  if (config.promptVariants) {
+    console.log(`Prompt variants: ${Object.keys(config.promptVariants).join(", ")}`);
+  }
   console.log(`Expected outputs: ${config.expectedOutputs}`);
   console.log("Model routes:");
   for (const [key, route] of Object.entries(config.modelRoutes)) {
@@ -281,6 +294,8 @@ async function init() {
   const config = await runtimeConfig(slug);
   const runId = requiredArgument("run");
   const { key, route } = selectedModel(config);
+  const variant = argument("variant");
+  const prompt = await promptText(config, variant);
   const directory = runDirectory(slug, runId);
   if (existsSync(directory)) throw new Error(`Run ${runId} already exists.`);
   await mkdir(directory, { recursive: true });
@@ -306,10 +321,11 @@ async function init() {
     id: runId,
     format: slug,
     version: config.version,
+    variant,
     status: "draft",
     createdAt: new Date().toISOString(),
     model: key,
-    prompt: await promptText(config),
+    prompt,
     input,
     attempts: [],
   };
@@ -325,7 +341,9 @@ async function validate() {
   const runId = requiredArgument("run");
   const { directory, state, statePath } = await readRun(slug, runId);
   if (state.attempts.length) throw new Error("Validation is locked after a paid attempt starts.");
-  if (state.prompt !== await promptText(config)) throw new Error("Run prompt differs from the packaged prompt.");
+  if (state.prompt !== await promptText(config, state.variant)) {
+    throw new Error("Run prompt differs from the packaged prompt.");
+  }
 
   if (config.input.mode === "image") {
     if (!state.input) throw new Error("This Format requires one input image.");
