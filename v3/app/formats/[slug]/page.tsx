@@ -125,7 +125,7 @@ export default async function FormatPage({
               <h2 className="mt-3 text-5xl font-black leading-[0.9] sm:text-7xl">Same recipe. New story.</h2>
             </div>
             <p className="max-w-2xl text-lg font-bold leading-8 text-[#596176]">
-              {format.proofEntries.length} finished {format.proofEntries.length === 1 ? "ad shows" : "ads show"} what
+              {format.proofEntries.length} finished {format.proofEntries.length === 1 ? "example shows" : "examples show"} what
               the Format can hold onto while the brand and idea change.
             </p>
           </div>

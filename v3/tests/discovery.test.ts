@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import {
   discoveryCatalog,
   filterDiscoveryEntries,
+  groupDiscoveryEntriesByFormat,
   getPublishedDiscoveryEntries,
   groupDiscoveryEntriesByShelf,
 } from "../features/discovery/catalog";
@@ -28,6 +29,10 @@ assert.ok(
       : entry.media.src.startsWith("https://")
   )),
   "Discovery entries should reference an existing public asset or a secure stored-media URL.",
+);
+assert.ok(
+  published.every((entry) => !entry.media.referenceSrc || existsSync(`public${entry.media.referenceSrc}`)),
+  "Every before-and-after proof should reference an existing original image.",
 );
 assert.ok(
   published
@@ -82,7 +87,7 @@ const generatedFormatSlugs = [
 ];
 assert.ok(
   generatedFormatSlugs.every((slug) => published.some((entry) => entry.format.slug === slug)),
-  "Discovery should include real proof from all 10 generated Wiggly formats.",
+  "Discovery should include real proof from all 11 generated Wiggly formats.",
 );
 assert.equal(
   databaseFormatDiscoveryEntries.length,
@@ -141,6 +146,22 @@ assert.equal(
   published.length,
   "Discovery shelves must not repeat finished ads.",
 );
+const formatGroups = shelves.flatMap((shelf) => groupDiscoveryEntriesByFormat(shelf.entries));
+assert.equal(
+  formatGroups.length,
+  new Set(published.map((entry) => entry.format.slug)).size,
+  "Discovery should show exactly one card per Format.",
+);
+assert.equal(
+  formatGroups.filter((group) => group.slug === "fortnite-filter").length,
+  1,
+  "Fortnite Filter should appear as one Format card.",
+);
+assert.equal(
+  formatGroups.find((group) => group.slug === "fortnite-filter")?.entries.length,
+  2,
+  "Both Fortnite Filter examples should live inside its one Format card.",
+);
 assert.deepEqual(
   shelves.find((shelf) => shelf.id === "brand-jingles")?.entries.map((entry) => entry.id),
   jingles.map((entry) => entry.id),
@@ -163,6 +184,13 @@ assert.ok(
     .find((shelf) => shelf.id === "brainrot")
     ?.entries.every((entry) => entry.format.slug === "brainrot"),
   "Brainrot should not be merged into the Video Meme shelf.",
+);
+assert.equal(
+  shelves
+    .find((shelf) => shelf.id === "static-hooks")
+    ?.entries.filter((entry) => entry.format.slug === "fortnite-filter").length,
+  2,
+  "Fortnite Filter proof should appear in the static creative shelf.",
 );
 
 console.log("discovery tests passed");

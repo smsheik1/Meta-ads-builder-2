@@ -75,8 +75,8 @@ const sharePageSource = readFileSync("app/s/[slug]/page.tsx", "utf8");
 const formatPageSource = readFileSync("app/formats/[slug]/page.tsx", "utf8");
 
 assert.ok(
-  discoveryClientSource.includes("`/s/${entry.id}`"),
-  "Discovery cards should open canonical share paths instead of raw media files.",
+  discoveryClientSource.includes("`/formats/${entry.format.slug}`"),
+  "Discovery should open one Format page containing all of that Format's examples.",
 );
 assert.ok(
   sharePageSource.indexOf("const discoveryEntry") <

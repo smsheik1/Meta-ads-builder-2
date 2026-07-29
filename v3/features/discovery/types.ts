@@ -12,6 +12,7 @@ export type DiscoveryEntry = {
     kind: "video" | "image" | "audio";
     src: string;
     poster?: string;
+    referenceSrc?: string;
     durationLabel: string;
     accentColor?: string;
   };

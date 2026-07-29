@@ -19,9 +19,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import {
   filterDiscoveryEntries,
+  groupDiscoveryEntriesByFormat,
   groupDiscoveryEntriesByShelf,
 } from "@/features/discovery/catalog";
 import { DiscoveryAudioArtwork } from "@/features/discovery/DiscoveryAudioArtwork";
+import { DiscoveryReferenceInset } from "@/features/discovery/DiscoveryProofMedia";
 import {
   readSavedDiscoveryIds,
   writeSavedDiscoveryIds,
@@ -270,10 +272,14 @@ export function DiscoveryClient({
   };
 
   const shareEntry = async (entry: DiscoveryEntry) => {
-    const url = `${window.location.origin}/discover#${entry.id}`;
+    const url = `${window.location.origin}/formats/${entry.format.slug}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: entry.title, text: `Made with ${entry.format.name}`, url });
+        await navigator.share({
+          title: `${entry.format.name} Format`,
+          text: `See the examples and run the ${entry.format.name} Format`,
+          url,
+        });
         return;
       }
       await navigator.clipboard.writeText(url);
@@ -388,7 +394,7 @@ export function DiscoveryClient({
                     <p>{shelf.description}</p>
                   </div>
                   <div className={styles.shelfControls}>
-                    <span>{shelf.entries.length} ads</span>
+                    <span>{groupDiscoveryEntriesByFormat(shelf.entries).length} formats</span>
                     <button
                       type="button"
                       onClick={() => scrollShelf(shelf.id, -1)}
@@ -413,7 +419,9 @@ export function DiscoveryClient({
                     else shelfRefs.current.delete(shelf.id);
                   }}
                 >
-                  {shelf.entries.map((entry) => {
+                  {groupDiscoveryEntriesByFormat(shelf.entries).map((formatGroup) => {
+                    const entry = formatGroup.entries[0];
+                    const exampleCount = formatGroup.entries.length;
                     const saved = savedIds.has(entry.id);
                     const playing = playingMediaId === entry.id;
                     const audible = soundOn && (
@@ -426,7 +434,7 @@ export function DiscoveryClient({
                       <article
                         className={styles.card}
                         id={entry.id}
-                        key={entry.id}
+                        key={formatGroup.slug}
                         onMouseEnter={() => previewMedia(entry)}
                         onMouseLeave={() => stopMediaPreview(entry)}
                       >
@@ -466,12 +474,20 @@ export function DiscoveryClient({
                               />
                             </>
                           ) : (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={entry.media.src} alt={`${entry.brand}: ${entry.title}`} />
+                            <>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={entry.media.src} alt={`${entry.brand}: ${entry.title}`} />
+                              <DiscoveryReferenceInset entry={entry} variant="card" />
+                            </>
                           )}
 
                           <span className={styles.formatTag}>{entry.format.name}</span>
                           <span className={styles.runtime}>{entry.media.durationLabel}</span>
+                          {exampleCount > 1 ? (
+                            <span className={styles.exampleCount}>
+                              {exampleCount} examples inside
+                            </span>
+                          ) : null}
 
                           {entry.media.kind !== "image" ? (
                             <div className={styles.mediaControls}>
@@ -508,12 +524,14 @@ export function DiscoveryClient({
 
                         <div className={styles.cardCopy}>
                           <div>
-                            <p className={styles.brand}>{entry.brand}</p>
-                            <h3>{entry.title}</h3>
+                            <p className={styles.brand}>
+                              {exampleCount} proven {exampleCount === 1 ? "example" : "examples"}
+                            </p>
+                            <h3>{entry.format.name}</h3>
                             <p className={styles.metadata}>
-                              Made with <strong>{entry.format.name}</strong> · v{entry.format.version}
+                              Featured: <strong>{entry.title}</strong>
                               <br />
-                              by {entry.format.owner}
+                              v{entry.format.version} · by {entry.format.owner}
                             </p>
                           </div>
                           <p className={styles.curatorNote}>{entry.curatorNote}</p>
@@ -530,8 +548,8 @@ export function DiscoveryClient({
                               <Share2 aria-hidden="true" />
                               Share
                             </button>
-                            <Link href={`/s/${entry.id}`}>
-                              Open ad
+                            <Link href={`/formats/${entry.format.slug}`}>
+                              Open format · {exampleCount} {exampleCount === 1 ? "example" : "examples"}
                               <ExternalLink aria-hidden="true" />
                             </Link>
                           </div>
