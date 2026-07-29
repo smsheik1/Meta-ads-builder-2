@@ -149,6 +149,57 @@ const ragDollDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const productPhotoshootDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "gift",
+    title: "Gift-ready without the studio",
+    curatorNote: "A warm gift scene keeps the real tin and cookies recognizable while adding occasion and polish.",
+  },
+  {
+    id: "hero",
+    title: "A clean product hero",
+    curatorNote: "The exact product becomes a crisp ecommerce hero with controlled color, spacing, and light.",
+  },
+  {
+    id: "lifestyle",
+    title: "The product in use",
+    curatorNote: "Hands, crumbs, and serving details create a believable lifestyle moment around the same product.",
+  },
+  {
+    id: "seasonal",
+    title: "Ready for the holiday campaign",
+    curatorNote: "Seasonal props change the campaign mood without changing the product customers will receive.",
+  },
+  {
+    id: "social",
+    title: "Built for the feed",
+    curatorNote: "A bold branded composition turns the packshot into a graphic social ad.",
+  },
+  {
+    id: "surface",
+    title: "A polished tabletop shot",
+    curatorNote: "A simple kitchen surface gives the product a natural commercial setting with room to breathe.",
+  },
+].map((proof, index) => ({
+  ...proof,
+  id: `product-photoshoot-davids-meltaways-${proof.id}`,
+  status: "published",
+  order: 5.1 + index / 10,
+  brand: "David's Cookies",
+  goal: "sell",
+  media: {
+    kind: "image",
+    src: `/discovery/product-photoshoot/davids-meltaways-${proof.id}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "product-photoshoot",
+    name: "Product Photoshoot",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "final-straw-pocket-problem",
@@ -504,6 +555,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
       owner: "Wiggly Studio",
     },
   },
+  ...productPhotoshootDiscoveryEntries,
   ...selfieNineDiscoveryEntries,
   ...ragDollDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
@@ -524,6 +576,12 @@ const discoveryShelfDefinitions = [
     title: "Product Stories in Motion",
     description: "3D product stories and compact performance ads.",
     formats: ["three-d-breakdown"],
+  },
+  {
+    id: "product-photoshoots",
+    title: "Product Photoshoots",
+    description: "One real product turned into a complete campaign-ready image set.",
+    formats: ["product-photoshoot"],
   },
   {
     id: "brand-jingles",
