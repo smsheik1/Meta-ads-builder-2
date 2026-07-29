@@ -1,0 +1,29 @@
+{
+  "required": [
+    {
+      "id": "portrait",
+      "type": "image",
+      "count": 1,
+      "formats": [
+        "jpg",
+        "png",
+        "webp"
+      ],
+      "minimumWidth": 512,
+      "minimumHeight": 512,
+      "maximumBytes": 26214400,
+      "question": "Which photo should I turn into a Fortnite-style character?"
+    }
+  ],
+  "defaults": {
+    "model": "nano-banana-2",
+    "aspectRatio": "3:4",
+    "outputFormat": "jpg",
+    "resolution": "1K"
+  },
+  "modelRoutes": {
+    "economy": "google/nano-banana-2-lite",
+    "default": "google/nano-banana-2",
+    "premium": "google/nano-banana-pro"
+  }
+}
