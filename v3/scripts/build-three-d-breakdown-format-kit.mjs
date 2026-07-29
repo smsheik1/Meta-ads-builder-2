@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { cp, mkdir, readFile, readdir, rm, stat, utimes, writeFile } from "node:fs/promises";
+import { copyFile, cp, mkdir, readFile, readdir, rm, stat, utimes, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -60,6 +60,7 @@ for (const directory of ["assets", "fixtures", "goldens"]) {
   await copyFromV3(path.join(formatRelative, directory));
 }
 await copyFromV3(path.join(formatRelative, "kit-smoke.mjs"), "kit-smoke.mjs");
+await copyFile(path.join(formatRoot, "README.md"), path.join(stagingRoot, "README.md"));
 
 await writeFile(path.join(stagingV3, "package.json"), await readFile(path.join(formatRoot, "kit.package.json")));
 

@@ -2,6 +2,16 @@
 
 This Repo packages the recipe behind Wiggly's existing 3D Breakdown Format. It does not create a second renderer or a second creative pipeline.
 
+## Set up the downloaded kit
+
+```bash
+cd wiggly-three-d-breakdown-format-kit/v3
+npm install
+npm run check:kit
+```
+
+Start with `public/format-repositories/three-d-breakdown-v1/fixtures/research.example.json` when shaping a website research export. It is a shape example only. Replace every sample value with evidence from the user's website.
+
 ## Send the link to an agent
 
 You can send an agent only this Repo link.
@@ -17,6 +27,8 @@ The agent asks one question at a time.
 **Guide Me** shows each big step and waits for you.
 
 **Turbo** makes the choices after you approve one clear run estimate. The estimate lists each provider step, its call count, its current cost, the total cost, and the expected time. Turbo covers one normal attempt per step. Retries still need a new yes.
+
+If the user already says `do it for me`, `autopilot`, or similar, use Turbo. Do not ask them to choose the mode again.
 
 The agent never asks for a budget. It never asks you to choose tools or models.
 

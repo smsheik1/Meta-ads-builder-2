@@ -23,12 +23,12 @@ assert.equal(getDiscoveryCreatorByHandle("unknown"), null);
 const origin = "https://wiggly.agentenamel.com";
 const threeD = getDiscoveryFormatProfile("three-d-breakdown");
 assert.ok(threeD?.handoff, "3D Breakdown should offer a runnable Codex handoff.");
-assert.equal(threeD.version, "1.5.0");
+assert.equal(threeD.version, "1.5.1");
 assert.equal(threeD.handoff.firstQuestion, "What brand or website is this for?");
 assert.equal(threeD.handoff.estimates.length, 4);
 
 const threeDPrompt = buildDiscoveryHandoffPrompt(threeD, origin);
-assert.match(threeDPrompt, /Exact public version: 1\.5\.0/);
+assert.match(threeDPrompt, /Exact public version: 1\.5\.1/);
 assert.match(threeDPrompt, /https:\/\/wiggly\.agentenamel\.com\/formats\/three-d-breakdown/);
 assert.match(threeDPrompt, /https:\/\/wiggly\.agentenamel\.com\/s\/final-straw-pocket-problem/);
 assert.match(threeDPrompt, /Ask me one short question at a time/);
