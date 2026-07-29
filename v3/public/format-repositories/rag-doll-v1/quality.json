@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio within 0.02 of the selected route",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The same person, pose, expression, clothing, and composition remain recognizable",
+    "Skin, hair, clothing, shoes, and all visible details read as wool felt",
+    "Fibers, stitching, embroidery, fabric layers, and soft stuffing are coherent",
+    "Face, hands, and body anatomy remain believable",
+    "Warm cinematic lighting and shallow depth of field support the handcrafted look"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

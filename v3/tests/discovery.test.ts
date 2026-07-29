@@ -110,6 +110,7 @@ const generatedFormatSlugs = [
   "cinematic-photographer",
   "gta-vi",
   "selfie-nine-images",
+  "rag-doll",
   "jingle",
 ];
 assert.ok(
@@ -178,7 +179,7 @@ assert.ok(
 
 const shelves = groupDiscoveryEntriesByShelf(published);
 const shelvedEntries = shelves.flatMap((shelf) => shelf.entries);
-assert.equal(shelves.length, 8, "Current Discovery proof should organize into eight useful shelves.");
+assert.equal(shelves.length, 9, "Current Discovery proof should organize into nine useful shelves.");
 assert.equal(
   shelvedEntries.length,
   published.length,
@@ -219,38 +220,26 @@ assert.ok(
     ?.entries.every((entry) => entry.format.slug === "brainrot"),
   "Brainrot should not be merged into the Video Meme shelf.",
 );
-assert.equal(
-  shelves
-    .find((shelf) => shelf.id === "static-hooks")
-    ?.entries.filter((entry) => entry.format.slug === "fortnite-filter").length,
-  1,
-  "Fortnite Filter should appear once in the static creative shelf.",
-);
-assert.equal(
-  shelves
-    .find((shelf) => shelf.id === "static-hooks")
-    ?.entries.filter((entry) => entry.format.slug === "cinematic-photographer").length,
-  1,
-  "Cinematic Photographer proof should appear in the static creative shelf.",
-);
-assert.equal(
-  shelves
-    .find((shelf) => shelf.id === "static-hooks")
-    ?.entries.filter((entry) => entry.format.slug === "gta-vi").length,
-  1,
-  "GTA VI proof should appear in the static creative shelf.",
-);
-assert.equal(
-  shelves
-    .find((shelf) => shelf.id === "static-hooks")
-    ?.entries.filter((entry) => entry.format.slug === "selfie-nine-images").length,
-  1,
-  "1 Selfie, 9 Images should use one Discovery card for all nine proofs.",
+assert.deepEqual(
+  shelves.find((shelf) => shelf.id === "skai-generated")?.entries.map((entry) => entry.format.slug),
+  [
+    "fortnite-filter",
+    "cinematic-photographer",
+    "gta-vi",
+    "selfie-nine-images",
+    "rag-doll",
+  ],
+  "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
 assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "selfie-nine-images").length,
   9,
   "All nine selfie scenes should remain available inside the Format page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "rag-doll").length,
+  7,
+  "All seven Rag Doll examples should remain available inside the Format page.",
 );
 
 console.log("discovery tests passed");
