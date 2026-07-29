@@ -44,7 +44,73 @@ const videoMemeArchiveRows: VideoMemeArchiveRow[] = [
   ["jh76110skgk8c4fgfyje36046h8b807j", "Official LEGO® Shop US", "This bear sniffs parents who stare blankly at a screen full of gift options.", "bear-sniff", 8, "https://wry-viper-639.convex.cloud/api/storage/cf544f06-60e0-4827-a34f-092d667e3f16"],
 ];
 
-export const videoMemeDiscoveryEntries: DiscoveryEntry[] = videoMemeArchiveRows.map((
+const canonicalVideoMemeEntries: DiscoveryEntry[] = [
+  {
+    id: "video-meme-bear-secret",
+    status: "published",
+    order: 16,
+    brand: "David's Cookies",
+    title: "The bear that catches fake bakers",
+    curatorNote: "A guilty buyer behavior becomes funny the instant the bear appears.",
+    goal: "entertain",
+    media: {
+      kind: "video",
+      src: "/format-repositories/video-meme-v1/goldens/bear-secret.mp4",
+      poster: "/discovery/video-meme-templates/bear-secret.jpg",
+      durationLabel: "8 sec",
+    },
+    format: {
+      slug: "video-meme",
+      name: "Video Meme",
+      version: "1.0.0",
+      owner: "Wiggly Studio",
+    },
+  },
+  {
+    id: "video-meme-pingu-reversal",
+    status: "published",
+    order: 17,
+    brand: "LEGO",
+    title: "Noot Noot ruins the finished build",
+    curatorNote: "A calm setup gets undercut by one exact post-purchase fear.",
+    goal: "entertain",
+    media: {
+      kind: "video",
+      src: "/format-repositories/video-meme-v1/goldens/pingu-reversal.mp4",
+      poster: "/discovery/video-meme-templates/pingu-reversal.jpg",
+      durationLabel: "8 sec",
+    },
+    format: {
+      slug: "video-meme",
+      name: "Video Meme",
+      version: "1.0.0",
+      owner: "Wiggly Studio",
+    },
+  },
+  {
+    id: "video-meme-darwin-pain-stack",
+    status: "published",
+    order: 18,
+    brand: "Agent Enamel",
+    title: "The front-desk pain stack",
+    curatorNote: "Darwin stays calm while one painfully specific workday keeps getting worse.",
+    goal: "entertain",
+    media: {
+      kind: "video",
+      src: "/format-repositories/video-meme-v1/goldens/darwin-pain-stack.mp4",
+      poster: "/discovery/video-meme-templates/darwin-pain-stack.jpg",
+      durationLabel: "8 sec",
+    },
+    format: {
+      slug: "video-meme",
+      name: "Video Meme",
+      version: "1.0.0",
+      owner: "Wiggly Studio",
+    },
+  },
+];
+
+const importedVideoMemeEntries: DiscoveryEntry[] = videoMemeArchiveRows.map((
   [renderJobId, storedBrand, title, templateId, durationSeconds, source],
   index,
 ) => ({
@@ -70,3 +136,8 @@ export const videoMemeDiscoveryEntries: DiscoveryEntry[] = videoMemeArchiveRows.
     owner: "Wiggly Studio",
   },
 }));
+
+export const videoMemeDiscoveryEntries: DiscoveryEntry[] = [
+  ...canonicalVideoMemeEntries,
+  ...importedVideoMemeEntries,
+];

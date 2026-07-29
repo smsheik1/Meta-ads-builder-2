@@ -3,7 +3,6 @@ import { existsSync } from "node:fs";
 import {
   discoveryCatalog,
   filterDiscoveryEntries,
-  groupDiscoveryEntriesByFormat,
   getPublishedDiscoveryEntries,
   groupDiscoveryEntriesByShelf,
 } from "../features/discovery/catalog";
@@ -58,14 +57,26 @@ assert.ok(
   "The three proven jingles should be spread through the opening feed.",
 );
 const videoMemes = published.filter((entry) => entry.format.slug === "video-meme");
-assert.equal(videoMemes.length, 32, "Every completed Video Meme import should be discoverable.");
+assert.equal(videoMemes.length, 35, "Canonical templates and every completed Video Meme import should be discoverable.");
 assert.equal(
   new Set(videoMemes.map((entry) => entry.media.src)).size,
   videoMemes.length,
   "The Video Meme archive should not repeat the same final render.",
 );
+const canonicalVideoMemeIds = [
+  "video-meme-bear-secret",
+  "video-meme-pingu-reversal",
+  "video-meme-darwin-pain-stack",
+];
+assert.deepEqual(
+  videoMemes.filter((entry) => canonicalVideoMemeIds.includes(entry.id)).map((entry) => entry.id),
+  canonicalVideoMemeIds,
+  "Bear, Pingu Noot Noot, and Darwin should be three separate Discovery cards.",
+);
+const importedVideoMemes = videoMemes.filter((entry) => !canonicalVideoMemeIds.includes(entry.id));
+assert.equal(importedVideoMemes.length, 32, "Every completed Video Meme database import should remain discoverable.");
 assert.ok(
-  videoMemes.every((entry) => (
+  importedVideoMemes.every((entry) => (
     entry.media.kind === "video" &&
     entry.media.src.startsWith("https://wry-viper-639.convex.cloud/api/storage/") &&
     entry.media.poster?.startsWith("/discovery/video-memes/")
@@ -111,6 +122,17 @@ assert.equal(
 for (const id of ["lego-origin-story", "danny-phantom-apis", "naruto-apis", "spongebob-evs"]) {
   assert.ok(published.some((entry) => entry.id === id), `${id} should be included in the finished-output archive.`);
 }
+assert.deepEqual(
+  published.filter((entry) => entry.format.slug === "three-d-breakdown").map((entry) => entry.id),
+  [
+    "final-straw-pocket-problem",
+    "gruns-daily-stack",
+    "theragun-heat-and-motion",
+    "kiala-supplement-journey",
+    "lego-origin-story",
+  ],
+  "All five 3D Breakdown videos should remain separate Discovery cards.",
+);
 
 const draftEntry: DiscoveryEntry = {
   ...discoveryCatalog[0],
@@ -151,21 +173,12 @@ assert.equal(
   published.length,
   "Discovery shelves must not repeat finished ads.",
 );
-const formatGroups = shelves.flatMap((shelf) => groupDiscoveryEntriesByFormat(shelf.entries));
 assert.equal(
-  formatGroups.length,
-  new Set(published.map((entry) => entry.format.slug)).size,
-  "Discovery should show exactly one card per Format.",
-);
-assert.equal(
-  formatGroups.filter((group) => group.slug === "fortnite-filter").length,
-  1,
-  "Fortnite Filter should appear as one Format card.",
-);
-assert.equal(
-  formatGroups.find((group) => group.slug === "fortnite-filter")?.entries.length,
+  shelves
+    .flatMap((shelf) => shelf.entries)
+    .filter((entry) => entry.format.slug === "fortnite-filter").length,
   2,
-  "Both Fortnite Filter examples should live inside its one Format card.",
+  "Both Fortnite Filter ads should remain individually discoverable.",
 );
 assert.deepEqual(
   shelves.find((shelf) => shelf.id === "brand-jingles")?.entries.map((entry) => entry.id),

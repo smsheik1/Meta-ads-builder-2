@@ -19,7 +19,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import {
   filterDiscoveryEntries,
-  groupDiscoveryEntriesByFormat,
   groupDiscoveryEntriesByShelf,
 } from "@/features/discovery/catalog";
 import { DiscoveryAudioArtwork } from "@/features/discovery/DiscoveryAudioArtwork";
@@ -394,7 +393,9 @@ export function DiscoveryClient({
                     <p>{shelf.description}</p>
                   </div>
                   <div className={styles.shelfControls}>
-                    <span>{groupDiscoveryEntriesByFormat(shelf.entries).length} formats</span>
+                    <span>
+                      {shelf.entries.length} {shelf.entries.length === 1 ? "ad" : "ads"}
+                    </span>
                     <button
                       type="button"
                       onClick={() => scrollShelf(shelf.id, -1)}
@@ -419,9 +420,7 @@ export function DiscoveryClient({
                     else shelfRefs.current.delete(shelf.id);
                   }}
                 >
-                  {groupDiscoveryEntriesByFormat(shelf.entries).map((formatGroup) => {
-                    const entry = formatGroup.entries[0];
-                    const exampleCount = formatGroup.entries.length;
+                  {shelf.entries.map((entry) => {
                     const saved = savedIds.has(entry.id);
                     const playing = playingMediaId === entry.id;
                     const audible = soundOn && (
@@ -434,7 +433,7 @@ export function DiscoveryClient({
                       <article
                         className={styles.card}
                         id={entry.id}
-                        key={formatGroup.slug}
+                        key={entry.id}
                         onMouseEnter={() => previewMedia(entry)}
                         onMouseLeave={() => stopMediaPreview(entry)}
                       >
@@ -483,11 +482,6 @@ export function DiscoveryClient({
 
                           <span className={styles.formatTag}>{entry.format.name}</span>
                           <span className={styles.runtime}>{entry.media.durationLabel}</span>
-                          {exampleCount > 1 ? (
-                            <span className={styles.exampleCount}>
-                              {exampleCount} examples inside
-                            </span>
-                          ) : null}
 
                           {entry.media.kind !== "image" ? (
                             <div className={styles.mediaControls}>
@@ -524,14 +518,10 @@ export function DiscoveryClient({
 
                         <div className={styles.cardCopy}>
                           <div>
-                            <p className={styles.brand}>
-                              {exampleCount} proven {exampleCount === 1 ? "example" : "examples"}
-                            </p>
-                            <h3>{entry.format.name}</h3>
+                            <p className={styles.brand}>{entry.brand}</p>
+                            <h3>{entry.title}</h3>
                             <p className={styles.metadata}>
-                              Featured: <strong>{entry.title}</strong>
-                              <br />
-                              v{entry.format.version} · by {entry.format.owner}
+                              {entry.format.name} · v{entry.format.version} · by {entry.format.owner}
                             </p>
                           </div>
                           <p className={styles.curatorNote}>{entry.curatorNote}</p>
@@ -549,7 +539,7 @@ export function DiscoveryClient({
                               Share
                             </button>
                             <Link href={`/formats/${entry.format.slug}`}>
-                              Open format · {exampleCount} {exampleCount === 1 ? "example" : "examples"}
+                              Open format
                               <ExternalLink aria-hidden="true" />
                             </Link>
                           </div>

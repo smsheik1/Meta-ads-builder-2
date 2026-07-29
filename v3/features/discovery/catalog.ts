@@ -349,11 +349,6 @@ export type DiscoveryShelf = {
   entries: DiscoveryEntry[];
 };
 
-export type DiscoveryFormatGroup = {
-  slug: string;
-  entries: DiscoveryEntry[];
-};
-
 const discoveryShelfDefinitions = [
   {
     id: "product-stories",
@@ -437,20 +432,6 @@ export function groupDiscoveryEntriesByShelf(entries: DiscoveryEntry[]): Discove
         }]
       : [];
   });
-}
-
-export function groupDiscoveryEntriesByFormat(entries: DiscoveryEntry[]): DiscoveryFormatGroup[] {
-  const groups = new Map<string, DiscoveryEntry[]>();
-  for (const entry of entries) {
-    const group = groups.get(entry.format.slug) || [];
-    group.push(entry);
-    groups.set(entry.format.slug, group);
-  }
-
-  return [...groups.entries()].map(([slug, formatEntries]) => ({
-    slug,
-    entries: formatEntries,
-  }));
 }
 
 export function getPublishedDiscoveryEntries(
