@@ -1,5 +1,5 @@
 {
-  "name": "wiggly-fortnite-filter-format-kit",
+  "name": "wiggly-cinematic-photographer-format-kit",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -8,8 +8,8 @@
   },
   "scripts": {
     "check:kit": "node kit-smoke.mjs",
-    "format:fortnite-filter": "tsx scripts/skai-image-format.ts",
-    "test": "tsx tests/skai-image-format-runner.test.ts --format=fortnite-filter && node kit-smoke.mjs"
+    "format:skai-image": "tsx scripts/skai-image-format.ts",
+    "test": "tsx tests/skai-image-format-runner.test.ts && node kit-smoke.mjs"
   },
   "dependencies": {
     "image-size": "2.0.2",

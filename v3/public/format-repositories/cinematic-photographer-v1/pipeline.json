@@ -1,0 +1,30 @@
+{
+  "progress": "Prepare -> Validate -> Generate -> Inspect",
+  "attemptCap": 3,
+  "stages": [
+    {
+      "id": "prepare",
+      "output": "A run pinned to the exact gathered prompt and chosen model route.",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "validate",
+      "output": "Prompt, output contract, and provider route checked locally.",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "generate",
+      "output": "One portrait from the selected Replicate model.",
+      "paid": true,
+      "approvalRequired": true
+    },
+    {
+      "id": "inspect",
+      "output": "Automatic file checks plus an actual visual review.",
+      "paid": false,
+      "approvalRequired": true
+    }
+  ]
+}

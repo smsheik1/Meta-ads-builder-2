@@ -1,0 +1,50 @@
+{
+  "slug": "cinematic-photographer",
+  "version": "1.0.0",
+  "promptPath": "prompts/transform.txt",
+  "input": {
+    "mode": "none"
+  },
+  "defaultModel": "nano-banana-2",
+  "modelRoutes": {
+    "nano-banana-2-lite": {
+      "label": "Nano Banana 2 Lite",
+      "lane": "economy",
+      "model": "google/nano-banana-2-lite",
+      "family": "nano-banana",
+      "aspectRatio": "4:5",
+      "outputFormat": "jpg"
+    },
+    "nano-banana-2": {
+      "label": "Nano Banana 2",
+      "lane": "default",
+      "model": "google/nano-banana-2",
+      "family": "nano-banana",
+      "aspectRatio": "4:5",
+      "outputFormat": "jpg",
+      "resolution": "1K"
+    },
+    "gpt-image-2": {
+      "label": "GPT Image 2",
+      "lane": "source model",
+      "model": "openai/gpt-image-2",
+      "family": "gpt-image",
+      "aspectRatio": "2:3",
+      "outputFormat": "jpeg",
+      "quality": "medium"
+    }
+  },
+  "expectedOutputs": 1,
+  "maximumAttempts": 3,
+  "smokeExamplePath": "assets/source/example-output.png",
+  "minimumOutputWidth": 640,
+  "minimumOutputHeight": 800,
+  "minimumOutputBytes": 51200,
+  "manualReview": [
+    "face and camera anatomy",
+    "moody low-key lighting",
+    "shallow depth of field",
+    "editorial realism",
+    "film grain without muddy detail"
+  ]
+}

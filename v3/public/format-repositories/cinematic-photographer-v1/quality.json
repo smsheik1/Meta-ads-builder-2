@@ -1,0 +1,22 @@
+{
+  "automatic": [
+    "Exactly one decodable image",
+    "At least 640x800",
+    "At least 50 KB",
+    "Aspect ratio matches the chosen model route",
+    "SHA-256 provenance is recorded"
+  ],
+  "manualReview": [
+    "Face, eyes, fingers, and camera geometry are coherent",
+    "The portrait reads as a real editorial photograph",
+    "Lighting is moody and low-key without losing the face",
+    "The subject and camera stay sharply prioritized",
+    "Film grain adds texture without destroying detail"
+  ],
+  "finalizationGate": [
+    "Automatic checks pass",
+    "The actual image is viewed",
+    "Specific visual notes are recorded",
+    "--approve-final is present"
+  ]
+}

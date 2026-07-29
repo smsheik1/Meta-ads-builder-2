@@ -82,6 +82,7 @@ const generatedFormatSlugs = [
   "reviews",
   "brainrot",
   "fortnite-filter",
+  "cinematic-photographer",
   "jingle",
 ];
 assert.ok(
@@ -195,6 +196,13 @@ assert.equal(
     ?.entries.filter((entry) => entry.format.slug === "fortnite-filter").length,
   2,
   "Fortnite Filter proof should appear in the static creative shelf.",
+);
+assert.equal(
+  shelves
+    .find((shelf) => shelf.id === "static-hooks")
+    ?.entries.filter((entry) => entry.format.slug === "cinematic-photographer").length,
+  1,
+  "Cinematic Photographer proof should appear in the static creative shelf.",
 );
 
 console.log("discovery tests passed");

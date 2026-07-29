@@ -8,29 +8,29 @@ Run from `v3`:
 
 ```bash
 npm install
-npm run format:fortnite-filter -- smoke
-npm run format:fortnite-filter -- init --run=my-portrait --input=/absolute/path/photo.jpg
-npm run format:fortnite-filter -- validate --run=my-portrait
-npm run format:fortnite-filter -- estimate --run=my-portrait
+npm run format:fortnite-filter -- smoke --format=fortnite-filter
+npm run format:fortnite-filter -- init --format=fortnite-filter --run=my-portrait --input=/absolute/path/photo.jpg
+npm run format:fortnite-filter -- validate --format=fortnite-filter --run=my-portrait
+npm run format:fortnite-filter -- estimate --format=fortnite-filter --run=my-portrait
 ```
 
 Add `REPLICATE_API_TOKEN` to your shell environment. After approving one paid prediction:
 
 ```bash
-npm run format:fortnite-filter -- render --run=my-portrait --approve-paid
+npm run format:fortnite-filter -- render --format=fortnite-filter --run=my-portrait --approve-paid
 ```
 
-View `public/format-repositories/fortnite-filter-v1/agent-runs/my-portrait/output.jpg`. Then record the visual review and finalize:
+View `public/format-repositories/fortnite-filter-v1/agent-runs/my-portrait/outputs/01.jpg`. Then record the visual review and finalize:
 
 ```bash
-npm run format:fortnite-filter -- inspect --run=my-portrait --visual-pass --review-notes="Resemblance and pose hold; face and hands are coherent; no accidental text."
-npm run format:fortnite-filter -- finalize --run=my-portrait --approve-final
+npm run format:fortnite-filter -- inspect --format=fortnite-filter --run=my-portrait --visual-pass --review-notes="Resemblance and pose hold; face and hands are coherent; no accidental text."
+npm run format:fortnite-filter -- finalize --format=fortnite-filter --run=my-portrait --approve-final
 ```
 
 If a generation keeps running after the terminal times out:
 
 ```bash
-npm run format:fortnite-filter -- resume --run=my-portrait
+npm run format:fortnite-filter -- resume --format=fortnite-filter --run=my-portrait
 ```
 
 The runner reuses the persisted Replicate prediction ID. It does not start a duplicate job.

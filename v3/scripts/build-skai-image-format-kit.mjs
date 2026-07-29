@@ -14,14 +14,21 @@ import { fileURLToPath } from "node:url";
 
 const filename = fileURLToPath(import.meta.url);
 const v3Root = path.resolve(path.dirname(filename), "..");
-const formatRelative = path.join(
-  "public",
-  "format-repositories",
-  "fortnite-filter-v1",
-);
+const formatArgument = process.argv.find((value) => value.startsWith("--format="));
+const slug = formatArgument?.slice("--format=".length);
+if (!slug || !/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
+  throw new Error("Use --format=<lowercase-format-slug>.");
+}
+
+const formatRelative = path.join("public", "format-repositories", `${slug}-v1`);
 const formatRoot = path.join(v3Root, formatRelative);
-const stagingParent = path.join(v3Root, "tmp", "fortnite-filter-format-kit");
-const kitName = "wiggly-fortnite-filter-format-kit";
+const format = JSON.parse(await readFile(path.join(formatRoot, "format.json"), "utf8"));
+if (format.id !== slug || format.version !== "1.0.0") {
+  throw new Error(`Format identity mismatch for ${slug}.`);
+}
+
+const kitName = `wiggly-${slug}-format-kit`;
+const stagingParent = path.join(v3Root, "tmp", `${slug}-format-kit`);
 const stagingRoot = path.join(stagingParent, kitName);
 const stagingV3 = path.join(stagingRoot, "v3");
 const outputDirectory = path.join(formatRoot, "downloads");
@@ -37,29 +44,12 @@ await rm(stagingParent, { force: true, recursive: true });
 await mkdir(path.join(stagingV3, formatRelative), { recursive: true });
 await mkdir(outputDirectory, { recursive: true });
 
-await copyFromV3("scripts/fortnite-filter-format.ts");
-await copyFromV3("tests/fortnite-filter-agent-runner.test.ts");
+await copyFromV3("scripts/skai-image-format.ts");
+await copyFromV3("tests/skai-image-format-runner.test.ts");
 
-for (const name of [
-  ".env.example",
-  ".gitignore",
-  "README.md",
-  "SKILL.md",
-  "assets.json",
-  "format.json",
-  "goldens.json",
-  "inputs.json",
-  "kit.package.json",
-  "kit-smoke.mjs",
-  "pipeline.json",
-  "proofs.json",
-  "quality.json",
-  "requirements.json",
-]) {
-  await copyFromV3(path.join(formatRelative, name));
-}
-for (const directory of ["assets", "fixtures", "goldens", "prompts"]) {
-  await copyFromV3(path.join(formatRelative, directory));
+for (const entry of await readdir(formatRoot, { withFileTypes: true })) {
+  if (entry.name === "downloads" || entry.name === "agent-runs") continue;
+  await copyFromV3(path.join(formatRelative, entry.name));
 }
 await copyFromV3(path.join(formatRelative, "kit-smoke.mjs"), "kit-smoke.mjs");
 await copyFromV3(path.join(formatRelative, "SKILL.md"), "SKILL.md");
@@ -70,10 +60,10 @@ await writeFile(
 await writeFile(
   path.join(stagingRoot, "README.md"),
   [
-    "# Wiggly Fortnite Filter Format Kit",
+    `# Wiggly ${format.title} Format Kit`,
     "",
     "Open `v3/SKILL.md` if you are an agent.",
-    "Open `v3/public/format-repositories/fortnite-filter-v1/README.md` for the human quick start.",
+    `Open \`v3/${formatRelative}/README.md\` for the human quick start.`,
     "Run all commands from the `v3` directory.",
     "",
   ].join("\n"),
@@ -97,6 +87,4 @@ const zip = spawnSync("zip", ["-X", "-q", "-r", outputPath, kitName], {
 });
 if (zip.status !== 0) throw new Error(`zip failed: ${zip.stderr}`);
 const size = (await stat(outputPath)).size;
-console.log(
-  `Built ${path.relative(v3Root, outputPath)} (${Math.round(size / 1_024)} KB).`,
-);
+console.log(`Built ${path.relative(v3Root, outputPath)} (${Math.round(size / 1_024)} KB).`);

@@ -1,0 +1,11 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbWAcxjDJYc/",
+    "resourceUrl": "https://docs.google.com/document/d/1_78s28UMB0Qz4DT7Xpm_EpFNClUKw0oZzkJqc1vZv-4/edit",
+    "guide": "assets/source/guide.pdf",
+    "exampleOutput": "assets/source/example-output.png",
+    "promptPath": "prompts/transform.txt",
+    "verification": "Prompt and image extracted from the downloaded Google Doc and visually checked against the rendered guide."
+  }
+}

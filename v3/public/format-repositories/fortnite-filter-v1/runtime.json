@@ -1,0 +1,61 @@
+{
+  "slug": "fortnite-filter",
+  "version": "1.0.0",
+  "promptPath": "prompts/transform.txt",
+  "input": {
+    "mode": "image",
+    "formats": [
+      "jpg",
+      "png",
+      "webp"
+    ],
+    "minimumWidth": 512,
+    "minimumHeight": 512,
+    "maximumBytes": 26214400
+  },
+  "defaultModel": "nano-banana-2",
+  "modelRoutes": {
+    "nano-banana-2-lite": {
+      "label": "Nano Banana 2 Lite",
+      "lane": "economy",
+      "model": "google/nano-banana-2-lite",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg"
+    },
+    "nano-banana-2": {
+      "label": "Nano Banana 2",
+      "lane": "default",
+      "model": "google/nano-banana-2",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg",
+      "resolution": "1K"
+    },
+    "nano-banana-pro": {
+      "label": "Nano Banana Pro",
+      "lane": "premium",
+      "model": "google/nano-banana-pro",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg",
+      "resolution": "1K"
+    }
+  },
+  "expectedOutputs": 1,
+  "maximumAttempts": 3,
+  "smokeInputPath": "fixtures/trevor-chris-hutchinson-man.jpg",
+  "smokeExamplePath": "goldens/nano-banana-2-seated-man.jpg",
+  "minimumOutputWidth": 768,
+  "minimumOutputHeight": 1024,
+  "minimumOutputBytes": 51200,
+  "aspectRatioTolerance": 0.015,
+  "manualReview": [
+    "subject resemblance",
+    "pose and expression preservation",
+    "face, eyes, hands, fingers, and clothing anatomy",
+    "cinematic 3D volume rather than flat cartoon styling",
+    "warm rim light, soft shadows, depth of field, and subtle particles",
+    "no accidental text, watermarks, duplicate limbs, or broken clothing"
+  ]
+}
