@@ -28,6 +28,7 @@ const required = [
   "proofs.json",
   "quality.json",
   "requirements.json",
+  "runtime.json",
 ];
 
 for (const file of required) {
@@ -35,8 +36,8 @@ for (const file of required) {
     throw new Error(`Missing kit file: ${file}`);
   }
 }
-if (!existsSync(path.resolve("scripts", "fortnite-filter-format.ts"))) {
-  throw new Error("Missing official runner: scripts/fortnite-filter-format.ts");
+if (!existsSync(path.resolve("scripts", "skai-image-format.ts"))) {
+  throw new Error("Missing official runner: scripts/skai-image-format.ts");
 }
 
 const format = JSON.parse(
@@ -48,11 +49,17 @@ const pipeline = JSON.parse(
 const requirements = JSON.parse(
   readFileSync(path.join(packageRoot, "requirements.json"), "utf8"),
 );
+const runtime = JSON.parse(
+  readFileSync(path.join(packageRoot, "runtime.json"), "utf8"),
+);
 if (format.id !== "fortnite-filter" || format.version !== "1.0.0") {
   throw new Error("Format identity is invalid.");
 }
 if (pipeline.stages.length !== 4 || pipeline.attemptCap !== 3) {
   throw new Error("Pipeline contract is invalid.");
+}
+if (runtime.slug !== format.id || runtime.maximumAttempts !== pipeline.attemptCap) {
+  throw new Error("Runtime contract is invalid.");
 }
 if (pipeline.stages.filter((stage) => stage.paid).length !== 1) {
   throw new Error("Exactly one pipeline stage must be paid.");

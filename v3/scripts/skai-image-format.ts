@@ -54,10 +54,12 @@ type RuntimeConfig = {
   modelRoutes: Record<string, ModelRoute>;
   expectedOutputs: number;
   maximumAttempts: number;
+  smokeInputPath?: string;
   smokeExamplePath: string;
   minimumOutputWidth: number;
   minimumOutputHeight: number;
   minimumOutputBytes: number;
+  aspectRatioTolerance?: number;
   manualReview: string[];
 };
 
@@ -576,7 +578,9 @@ async function inspect() {
       },
       {
         id: `${outputPath}:aspect-ratio`,
-        pass: Math.abs(aspectRatio - targetRatio) <= 0.02,
+        pass:
+          Math.abs(aspectRatio - targetRatio) <=
+          (config.aspectRatioTolerance ?? 0.02),
         detail: `${aspectRatio.toFixed(4)}; target ${targetRatio.toFixed(4)}.`,
       },
       {
@@ -651,7 +655,10 @@ async function smoke() {
       `--runs-root=${temporaryRoot}`,
     ];
     if (config.input.mode === "image") {
-      const fixturePath = path.join(packageRoot(slug), "fixtures", "input.jpg");
+      if (!config.smokeInputPath) {
+        throw new Error("Image-input smoke fixture is not configured.");
+      }
+      const fixturePath = path.join(packageRoot(slug), config.smokeInputPath);
       if (!existsSync(fixturePath)) throw new Error("Image-input smoke fixture is missing.");
       initArgs.push(`--input=${fixturePath}`);
     }
@@ -669,12 +676,15 @@ async function smoke() {
     const { directory, state, statePath } = await readRun(slug, "smoke");
     const outputDirectory = path.join(directory, "outputs");
     await mkdir(outputDirectory, { recursive: true });
+    const smokeRoute = config.modelRoutes[state.model];
+    if (!smokeRoute) throw new Error(`Unknown smoke model route: ${state.model}.`);
+    const smokeOutput = smokeRoute.outputFormat === "png" ? "01.png" : "01.jpg";
     await copyFile(
       path.join(packageRoot(slug), config.smokeExamplePath),
-      path.join(outputDirectory, "01.png"),
+      path.join(outputDirectory, smokeOutput),
     );
     state.status = "rendered";
-    state.outputPaths = [path.join("outputs", "01.png")];
+    state.outputPaths = [path.join("outputs", smokeOutput)];
     state.renderedAt = new Date().toISOString();
     await writeJson(statePath, state);
     process.argv = [

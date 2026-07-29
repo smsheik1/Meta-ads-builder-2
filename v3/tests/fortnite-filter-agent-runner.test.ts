@@ -64,10 +64,22 @@ for (const proof of proofs.proofs) {
 }
 
 const prompt = readFileSync(path.join(packageRoot, "prompts/transform.txt"), "utf8").trim();
-const runner = readFileSync("scripts/fortnite-filter-format.ts", "utf8");
+const runner = readFileSync("scripts/skai-image-format.ts", "utf8");
+const runtime = readJson<{
+  maximumAttempts: number;
+  modelRoutes: Record<string, { model: string }>;
+}>("runtime.json");
 const skill = readFileSync(path.join(packageRoot, "SKILL.md"), "utf8");
-assert.match(runner, new RegExp(prompt.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-assert.match(runner, /maxAttempts = 3/);
+assert.ok(prompt.length > 0);
+assert.equal(runtime.maximumAttempts, 3);
+assert.deepEqual(
+  Object.values(runtime.modelRoutes).map((route) => route.model),
+  [
+    "google/nano-banana-2-lite",
+    "google/nano-banana-2",
+    "google/nano-banana-pro",
+  ],
+);
 assert.match(runner, /predictions\.create/);
 assert.match(runner, /predictionId/);
 assert.match(runner, /--approve-paid/);
@@ -77,7 +89,13 @@ assert.doesNotMatch(readFileSync(path.join(packageRoot, ".env.example"), "utf8")
 
 const smoke = spawnSync(
   process.execPath,
-  ["--import", "tsx", "scripts/fortnite-filter-format.ts", "smoke"],
+  [
+    "--import",
+    "tsx",
+    "scripts/skai-image-format.ts",
+    "smoke",
+    "--format=fortnite-filter",
+  ],
   { cwd: process.cwd(), encoding: "utf8" },
 );
 assert.equal(smoke.status, 0, smoke.stderr || smoke.stdout);

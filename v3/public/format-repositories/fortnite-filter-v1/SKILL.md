@@ -17,7 +17,7 @@ Use Nano Banana 2 by default. Offer Nano Banana 2 Lite when the user wants the l
 
 ## Workflow
 
-1. Run `npm run format:fortnite-filter -- check`.
+1. Run `npm run format:fortnite-filter -- check --format=fortnite-filter`.
 2. Initialize a run with one image.
 3. Validate locally.
 4. Show the model route and estimate.
@@ -27,13 +27,13 @@ Use Nano Banana 2 by default. Offer Nano Banana 2 Lite when the user wants the l
 8. Record specific review notes and finalize only after the image passes.
 
 ```bash
-npm run format:fortnite-filter -- init --run=<id> --input=<path>
-npm run format:fortnite-filter -- validate --run=<id>
-npm run format:fortnite-filter -- estimate --run=<id>
-npm run format:fortnite-filter -- render --run=<id> --approve-paid
-npm run format:fortnite-filter -- inspect --run=<id>
-npm run format:fortnite-filter -- inspect --run=<id> --visual-pass --review-notes="<specific observations>"
-npm run format:fortnite-filter -- finalize --run=<id> --approve-final
+npm run format:fortnite-filter -- init --format=fortnite-filter --run=<id> --input=<path>
+npm run format:fortnite-filter -- validate --format=fortnite-filter --run=<id>
+npm run format:fortnite-filter -- estimate --format=fortnite-filter --run=<id>
+npm run format:fortnite-filter -- render --format=fortnite-filter --run=<id> --approve-paid
+npm run format:fortnite-filter -- inspect --format=fortnite-filter --run=<id>
+npm run format:fortnite-filter -- inspect --format=fortnite-filter --run=<id> --visual-pass --review-notes="<specific observations>"
+npm run format:fortnite-filter -- finalize --format=fortnite-filter --run=<id> --approve-final
 ```
 
 Select another route during `init`:

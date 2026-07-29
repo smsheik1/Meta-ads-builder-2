@@ -39,7 +39,6 @@ type Runtime = {
 
 type Golden = {
   id: string;
-  type: string;
   title: string;
   imagePath: string;
   model: string;
