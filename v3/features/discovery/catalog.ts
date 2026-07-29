@@ -317,7 +317,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
       owner: "Wiggly Studio",
     },
   },
-  ...databaseFormatDiscoveryEntries,
+  ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
 ];
@@ -339,7 +339,7 @@ const discoveryShelfDefinitions = [
     id: "product-stories",
     title: "Product Stories in Motion",
     description: "3D product stories and compact performance ads.",
-    formats: ["three-d-breakdown", "motion-story"],
+    formats: ["three-d-breakdown"],
   },
   {
     id: "brand-jingles",

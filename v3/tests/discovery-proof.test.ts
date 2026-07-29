@@ -47,7 +47,6 @@ for (const slug of [
   "reviews",
   "brainrot",
   "fortnite-filter",
-  "motion-story",
 ]) {
   const profile = getDiscoveryFormatProfile(slug);
   assert.ok(profile, `${slug} should have a consumer Format proof.`);
@@ -66,8 +65,10 @@ assert.ok(
     discoveryFormatSlugs.includes("meme") &&
     discoveryFormatSlugs.includes("hybrid-news") &&
     discoveryFormatSlugs.includes("fortnite-filter") &&
-    discoveryFormatSlugs.length === 13,
+    discoveryFormatSlugs.length === 12 &&
+    !discoveryFormatSlugs.includes("motion-story"),
 );
+assert.equal(getDiscoveryFormatProfile("motion-story"), null);
 assert.equal(getDiscoveryFormatProfile("does-not-exist"), null);
 
 const discoveryClientSource = readFileSync("app/discover/DiscoveryClient.tsx", "utf8");
