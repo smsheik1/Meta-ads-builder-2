@@ -1,0 +1,20 @@
+{
+  "id": "rag-doll",
+  "version": "1.0.0",
+  "title": "Rag Doll",
+  "description": "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/Da-Wi8hilw8/",
+    "resourceUrl": "https://docs.google.com/document/d/1_msF6GYiCBuk8pvkcBZg_U4ad--GY7Muo0n05Ky4VPU/edit",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana Pro"
+  },
+  "outputs": [
+    "1 portrait image",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

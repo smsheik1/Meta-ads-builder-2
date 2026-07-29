@@ -1,0 +1,24 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/Da-Wi8hilw8/",
+    "resourceUrl": "https://docs.google.com/document/d/1_msF6GYiCBuk8pvkcBZg_U4ad--GY7Muo0n05Ky4VPU/edit",
+    "guide": "assets/source/guide.pdf",
+    "exampleOutput": "assets/source/example-output.png",
+    "carouselExamples": [
+      "assets/source/carousel-01.jpg",
+      "assets/source/carousel-02.jpg",
+      "assets/source/carousel-03.jpg",
+      "assets/source/carousel-04.jpg",
+      "assets/source/carousel-05.jpg",
+      "assets/source/carousel-06.jpg",
+      "assets/source/carousel-07.jpg"
+    ],
+    "promptPath": "prompts/transform.txt",
+    "verification": "Prompt, model label, guide, and seven source examples were fetched through the creator's Instagram DM flow and visually checked."
+  },
+  "fixture": {
+    "path": "fixtures/input.jpg",
+    "purpose": "Local validation and free smoke only; no provider call."
+  }
+}

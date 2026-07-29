@@ -1,0 +1,20 @@
+{
+  "purpose": "Judge identity, full-frame felt conversion, handmade detail, anatomy, and warm cinematic finish against the gathered source examples.",
+  "examples": [
+    {
+      "id": "skai-rag-doll",
+      "type": "source-reference",
+      "title": "Handcrafted felt source proof",
+      "imagePath": "assets/source/example-output.png",
+      "guidePath": "assets/source/guide.pdf",
+      "sourceUrl": "https://www.instagram.com/p/Da-Wi8hilw8/",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The person's identity, pose, expression, clothing, and accessories stay recognizable",
+        "Skin, hair, clothing, shoes, and surroundings all read as wool felt",
+        "Visible fibers, stitching, and layered fabric create a handmade finish",
+        "Warm light and shallow depth of field keep the result cinematic"
+      ]
+    }
+  ]
+}

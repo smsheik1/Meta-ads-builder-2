@@ -79,6 +79,76 @@ const selfieNineDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const ragDollDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "red-door",
+    brand: "Identity preservation",
+    title: "Every accessory becomes felt",
+    curatorNote: "The seated pose, expression, jewelry, handbag, and red doorway survive as tactile handcrafted details.",
+    image: "02",
+  },
+  {
+    id: "cover",
+    brand: "Felt transformation",
+    title: "Turn any portrait into handmade felt",
+    curatorNote: "The branded source cover establishes the complete wool-and-stitching transformation.",
+    image: "01",
+  },
+  {
+    id: "phone-booth",
+    brand: "Environment transformation",
+    title: "A whole London street in wool",
+    curatorNote: "The person remains recognizable while glass, brick, pavement, and the phone booth become one coherent felt world.",
+    image: "03",
+  },
+  {
+    id: "cafe-couple",
+    brand: "Two-person portrait",
+    title: "Two people, one felt world",
+    curatorNote: "Two distinct faces and a shared pose remain legible inside a detailed handmade café scene.",
+    image: "04",
+  },
+  {
+    id: "juice",
+    brand: "Material detail",
+    title: "Tiny fibers hold the likeness",
+    curatorNote: "Hair, skin, clothing, the drink, and the background all carry visible wool fibers without losing the subject.",
+    image: "05",
+  },
+  {
+    id: "car-bouquet",
+    brand: "Lifestyle portrait",
+    title: "Soft materials, same moment",
+    curatorNote: "The bouquet, car interior, outfit, and relaxed pose become plush while preserving the original composition.",
+    image: "06",
+  },
+  {
+    id: "doorway",
+    brand: "Fashion portrait",
+    title: "Fashion becomes handcrafted",
+    curatorNote: "Layered fabric, stitching, and soft stuffing carry the outfit and doorway into a polished stop-motion world.",
+    image: "07",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `rag-doll-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 27 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/rag-doll-v1/assets/source/carousel-${image}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "rag-doll",
+    name: "Rag Doll",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "final-straw-pocket-problem",
@@ -435,6 +505,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   ...selfieNineDiscoveryEntries,
+  ...ragDollDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -491,17 +562,22 @@ const discoveryShelfDefinitions = [
     formats: ["text-message", "visualizer"],
   },
   {
-    id: "static-hooks",
-    title: "Static Ideas That Land",
-    description: "Memes and announcements built to stop the scroll.",
+    id: "skai-generated",
+    title: "SKAI Image Transformations",
+    description: "Image prompts gathered from @skaigenerated and packaged as runnable Wiggly Formats.",
     formats: [
-      "meme",
-      "hybrid-news",
       "fortnite-filter",
       "cinematic-photographer",
       "gta-vi",
       "selfie-nine-images",
+      "rag-doll",
     ],
+  },
+  {
+    id: "static-hooks",
+    title: "Static Ideas That Land",
+    description: "Memes and announcements built to stop the scroll.",
+    formats: ["meme", "hybrid-news"],
   },
   {
     id: "more",
