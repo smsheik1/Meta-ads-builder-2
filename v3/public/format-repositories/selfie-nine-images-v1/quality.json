@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, PNG, or WebP output per run",
+    "At least 640x800 pixels",
+    "Aspect ratio within 0.02 of 3:4",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The same person, outfit, skin tone, and proportions remain recognizable",
+    "The selected scene matches its exact packaged prompt",
+    "The subject and main prop have coherent anatomy and geometry",
+    "Levitation has a clear visible air gap",
+    "The image reads as a quiet editorial photograph rather than CGI or illustration"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

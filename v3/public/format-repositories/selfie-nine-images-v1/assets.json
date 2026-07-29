@@ -1,0 +1,21 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DasjanLiqFq/",
+    "resourceUrl": "https://docs.google.com/document/d/1_SvsT81yfNMgLP5W_g6YUwwAIZZbIlorLeG1Zu2Z_Dc/edit",
+    "guide": "assets/source/guide.pdf",
+    "originalInput": "assets/source/original-selfie.jpg",
+    "verification": "The public Google Doc supplied the original selfie, Nano Banana 2 label, and nine prompts. The Instagram carousel supplied the nine matching source outputs."
+  },
+  "examples": [
+    { "variant": "petal-umbrella", "path": "assets/source/petal-umbrella.jpg" },
+    { "variant": "cloud", "path": "assets/source/cloud.jpg" },
+    { "variant": "chair", "path": "assets/source/chair.jpg" },
+    { "variant": "mirror", "path": "assets/source/mirror.jpg" },
+    { "variant": "staircase", "path": "assets/source/staircase.jpg" },
+    { "variant": "bed", "path": "assets/source/bed.jpg" },
+    { "variant": "phone-booth", "path": "assets/source/phone-booth.jpg" },
+    { "variant": "grocery-cart", "path": "assets/source/grocery-cart.jpg" },
+    { "variant": "door", "path": "assets/source/door.jpg" }
+  ]
+}

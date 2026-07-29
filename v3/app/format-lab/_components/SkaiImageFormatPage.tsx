@@ -30,6 +30,8 @@ type Pipeline = {
 type Runtime = {
   input: { mode: "none" | "image" };
   expectedOutputs: number;
+  promptPath: string;
+  promptVariants?: Record<string, string>;
   modelRoutes: Record<string, {
     label: string;
     lane: string;
@@ -45,12 +47,14 @@ type Golden = {
   whyItWorks: string[];
 };
 
-const repoFiles = [
+const repoFilesBeforePrompts = [
   ["SKILL.md", "Agent instructions"],
   ["requirements.json", "Replicate BYOK requirements"],
   ["inputs.json", "Input contract and model routing"],
   ["pipeline.json", "Paid-call and resume contract"],
-  ["prompts/transform.txt", "Exact gathered prompt"],
+] as const;
+
+const repoFilesAfterPrompts = [
   ["quality.json", "Automatic and visual gates"],
 ] as const;
 
@@ -70,6 +74,19 @@ export function SkaiImageFormatPage({ slug }: { slug: string }) {
   const pipeline = readJson<Pipeline>("pipeline.json");
   const runtime = readJson<Runtime>("runtime.json");
   const goldens = readJson<{ purpose: string; examples: Golden[] }>("goldens.json");
+  const prompts = Object.entries(
+    runtime.promptVariants ?? { default: runtime.promptPath },
+  );
+  const repoFiles = [
+    ...repoFilesBeforePrompts,
+    ...prompts.map(([variant, promptPath]) => [
+      promptPath,
+      prompts.length === 1
+        ? "Exact gathered prompt"
+        : `Exact ${variant.replaceAll("-", " ")} prompt`,
+    ] as const),
+    ...repoFilesAfterPrompts,
+  ];
   const outputNoun = runtime.expectedOutputs === 1 ? "image" : "images";
 
   return (
@@ -93,7 +110,9 @@ export function SkaiImageFormatPage({ slug }: { slug: string }) {
               <p className="mt-3 text-lg font-semibold text-slate-600">{format.description}</p>
               <p className="mt-4 text-sm font-black text-indigo-700">
                 {runtime.input.mode === "image" ? "One source image" : "One exact concept"} in.{" "}
-                {runtime.expectedOutputs} inspected {outputNoun} out.
+                {prompts.length > 1
+                  ? `${prompts.length} selectable scenes; one inspected image per selected scene.`
+                  : `${runtime.expectedOutputs} inspected ${outputNoun} out.`}
               </p>
             </div>
             <Button asChild data-testid={`download-${slug}-kit`}>
@@ -132,11 +151,30 @@ export function SkaiImageFormatPage({ slug }: { slug: string }) {
             ))}
             <article className="rounded-xl border-2 border-[#11111d] bg-[#d9d7ff] p-6">
               <p className="text-xs font-black uppercase tracking-widest text-indigo-800">
-                Exact gathered prompt
+                Exact gathered {prompts.length === 1 ? "prompt" : "prompts"}
               </p>
-              <p className="mt-4 whitespace-pre-wrap rounded-lg bg-[#11111d] p-5 font-mono text-sm leading-6 text-white">
-                {readText("prompts/transform.txt")}
-              </p>
+              {prompts.length === 1 ? (
+                <p className="mt-4 whitespace-pre-wrap rounded-lg bg-[#11111d] p-5 font-mono text-sm leading-6 text-white">
+                  {readText(prompts[0][1])}
+                </p>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {prompts.map(([variant, promptPath], index) => (
+                    <details
+                      key={variant}
+                      open={index === 0}
+                      className="rounded-lg bg-[#11111d] p-4 text-white"
+                    >
+                      <summary className="cursor-pointer font-black capitalize">
+                        {variant.replaceAll("-", " ")}
+                      </summary>
+                      <p className="mt-4 whitespace-pre-wrap font-mono text-sm leading-6">
+                        {readText(promptPath)}
+                      </p>
+                    </details>
+                  ))}
+                </div>
+              )}
               <p className="mt-4 text-sm font-bold">
                 Source: {format.source.creator} · model shown: {format.source.modelShown}
               </p>

@@ -496,6 +496,52 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "selfie-nine-images",
+    promise: "Turn one selfie into nine consistent, quietly surreal editorial photographs.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/selfie-nine-images",
+    manifestPath: "format-repositories/selfie-nine-images-v1/format.json",
+    whatStays: [
+      "The same recognizable person",
+      "The same outfit and proportions",
+      "Quiet brutalist composition",
+      "Photographic realism",
+    ],
+    whatChanges: [
+      "The floating object",
+      "The subject pose",
+      "The environmental accent",
+      "The selected model cost lane",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP selfie at least 512px on both axes",
+        "One scene or the complete nine-image set",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 image per selected scene",
+        "A persisted Replicate prediction ID per scene",
+        "Automatic checks and visual-review notes for every image",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Ask whether to make one named scene or all nine",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro only when requested",
+        "State that each scene is one paid prediction and name the approved total before spending",
+        "Validate and inspect every scene independently",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "about 1 min" },
+        { label: "Each selected scene", cost: "One current Replicate model charge", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min per scene" },
+      ],
+      totalEstimate: "One prediction per selected scene; the complete set is nine predictions",
+      output: "One inspected 3:4 JPG per selected scene, with run and quality provenance",
+      firstQuestion: "Which selfie should I use?",
+    },
+  },
+  {
     slug: "meme",
     promise: "Turn a buyer's familiar frustration into an ad they understand in one glance.",
     lastUpdated: "July 2026",
