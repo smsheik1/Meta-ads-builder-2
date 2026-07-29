@@ -451,6 +451,51 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "gta-vi",
+    promise: "Turn one portrait into a grounded, neon-lit character from a modern AAA open-world cutscene.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/gta-vi",
+    manifestPath: "format-repositories/gta-vi-v1/format.json",
+    whatStays: [
+      "The same recognizable subject",
+      "The original pose and expression",
+      "Grounded semi-realistic anatomy",
+      "A sharp AAA cutscene finish",
+    ],
+    whatChanges: [
+      "The person and wardrobe",
+      "The Vice City environment",
+      "The sunset or night ambience",
+      "The model cost lane",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP portrait at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 portrait",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro only when requested",
+        "Validate the portrait locally before the single paid prediction",
+        "Resume the saved prediction ID instead of starting duplicate work",
+        "View the actual output and record review notes before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected 3:4 portrait plus prediction and quality provenance",
+      firstQuestion: "Which photo should I transform into a cinematic GTA VI-style character?",
+    },
+  },
+  {
     slug: "motion-story",
     promise: "Move product, proof, and CTA through a compact performance-ad story.",
     lastUpdated: "July 2026",
