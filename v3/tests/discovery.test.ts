@@ -83,6 +83,7 @@ const generatedFormatSlugs = [
   "brainrot",
   "fortnite-filter",
   "cinematic-photographer",
+  "gta-vi",
   "jingle",
 ];
 assert.ok(

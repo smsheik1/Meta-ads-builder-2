@@ -1,0 +1,20 @@
+{
+  "id": "gta-vi",
+  "version": "1.0.0",
+  "title": "GTA VI",
+  "description": "Turn one portrait into a grounded, neon-lit AAA open-world game character.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbV-6dyDGNx/",
+    "resourceUrl": "https://docs.google.com/document/d/1WjHyG4gPQcOGvHK6MDDCAX4XfhaA4PEqkWieoehTjeM/edit",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana Pro"
+  },
+  "outputs": [
+    "1 portrait image",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}
