@@ -345,7 +345,19 @@
   font-size: 9px;
   font-weight: 950;
   letter-spacing: 0.12em;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-5px);
+  transition: opacity 140ms ease, transform 140ms ease;
   text-transform: uppercase;
+}
+
+.card:hover .formatTag,
+.card:hover .runtime,
+.card:focus-within .formatTag,
+.card:focus-within .runtime {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .formatTag {
@@ -362,25 +374,6 @@
   right: 10px;
   padding: 0 7px;
   background: white;
-}
-
-.exampleCount {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  z-index: 2;
-  display: inline-flex;
-  min-height: 27px;
-  align-items: center;
-  padding: 0 9px;
-  border: 2px solid #080817;
-  border-radius: 5px;
-  background: #c9ff55;
-  color: #080817;
-  font-size: 9px;
-  font-weight: 950;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
 
 .mediaControls {
@@ -752,6 +745,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .formatTag,
+  .runtime,
   .toast,
   .headerButton,
   .filters button,

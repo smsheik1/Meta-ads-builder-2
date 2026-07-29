@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import {
   discoveryCatalog,
   filterDiscoveryEntries,
@@ -10,6 +10,18 @@ import { databaseFormatDiscoveryEntries } from "../features/discovery/databaseFo
 import type { DiscoveryEntry } from "../features/discovery/types";
 
 const published = getPublishedDiscoveryEntries();
+const discoveryStyles = readFileSync("app/discover/discovery.module.css", "utf8");
+
+assert.match(
+  discoveryStyles,
+  /\.formatTag,\s*\.runtime\s*\{[^}]*opacity:\s*0;/s,
+  "Card format and runtime labels should stay hidden until the card is engaged.",
+);
+assert.match(
+  discoveryStyles,
+  /\.card:hover \.formatTag,[\s\S]*\.card:focus-within \.runtime\s*\{[^}]*opacity:\s*1;/,
+  "Card format and runtime labels should reveal on hover or keyboard focus.",
+);
 
 assert.ok(published.length >= 6, "Discovery should launch with enough real finished work to browse.");
 assert.deepEqual(
