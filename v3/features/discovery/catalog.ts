@@ -433,16 +433,16 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   {
-    id: "this-is-fine-ad-fatigue",
+    id: "davids-cookies-expanding-brain",
     status: "published",
     order: 12,
-    brand: "Wiggly",
-    title: "When every ad looks the same",
-    curatorNote: "A known meme makes the buyer's frustration clear before the copy is read.",
+    brand: "David's Cookies",
+    title: "Send fresh cookies. Become the favorite.",
+    curatorNote: "Four familiar gift choices escalate into one crisp punchline.",
     goal: "entertain",
     media: {
       kind: "image",
-      src: "/memes/this_is_fine_full.png",
+      src: "/format-repositories/meme-v1/goldens/davids-expanding-brain.jpg",
       durationLabel: "Static",
     },
     format: {

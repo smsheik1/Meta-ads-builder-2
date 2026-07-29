@@ -323,6 +323,11 @@
   background: #080817;
 }
 
+.mediaWellImage {
+  aspect-ratio: 4 / 5;
+  background: white;
+}
+
 .mediaLink {
   display: block;
   width: 100%;
@@ -341,7 +346,14 @@
   display: block;
   width: 100%;
   height: 100%;
+}
+
+.mediaWell video {
   object-fit: cover;
+}
+
+.mediaLink > img:not([data-discovery-reference]) {
+  object-fit: contain;
 }
 
 .formatTag,

@@ -45,6 +45,21 @@ assert.match(
   /<Link[\s\S]*?href=\{formatHref\}[\s\S]*?className=\{styles\.mediaLink\}[\s\S]*?aria-label=\{`Open \$\{entry\.format\.name\} format`\}/,
   "Clicking visible Discovery media should open the same format page as the card action.",
 );
+assert.match(
+  discoveryClient,
+  /entry\.media\.kind === "image" \? styles\.mediaWellImage : ""/,
+  "Static creative cards should use their dedicated 4:5 media well.",
+);
+assert.match(
+  discoveryStyles,
+  /\.mediaWellImage\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*5;[^}]*background:\s*white;/,
+  "Static creative cards should use a 4:5 white canvas.",
+);
+assert.match(
+  discoveryStyles,
+  /\.mediaLink > img:not\(\[data-discovery-reference\]\)\s*\{[^}]*object-fit:\s*contain;/,
+  "Discovery must preserve the complete text and composition of static creatives.",
+);
 
 assert.ok(published.length >= 6, "Discovery should launch with enough real finished work to browse.");
 assert.deepEqual(
@@ -117,6 +132,18 @@ assert.ok(
     entry.media.poster?.startsWith("/discovery/video-memes/")
   )),
   "Video Memes should use completed Convex renders with local loading posters.",
+);
+const memes = published.filter((entry) => entry.format.slug === "meme");
+assert.deepEqual(
+  memes.map((entry) => entry.id),
+  ["davids-cookies-expanding-brain"],
+  "Discovery should show one strong Meme example instead of repeating weaker archive proofs.",
+);
+assert.ok(
+  databaseFormatDiscoveryEntries
+    .filter((entry) => entry.format.slug === "meme")
+    .every((entry) => entry.showInDiscovery === false),
+  "Archived Meme proofs should stay available on the format page without cluttering Discover.",
 );
 const generatedFormatSlugs = [
   "visualizer",
