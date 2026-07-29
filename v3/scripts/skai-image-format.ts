@@ -35,6 +35,8 @@ type ModelRoute = {
   family: ModelFamily;
   aspectRatio: string;
   outputFormat: "jpg" | "jpeg" | "png";
+  costEstimate?: string;
+  timeEstimate?: string;
   resolution?: string;
   quality?: string;
 };
@@ -386,7 +388,8 @@ async function estimate() {
   console.log("- Predictions: one per render attempt");
   console.log(`- Expected outputs: ${config.expectedOutputs}`);
   console.log(`- Attempt cap: ${config.maximumAttempts}`);
-  console.log("- Price: the selected model's current Replicate rate.");
+  console.log(`- Price: ${route.costEstimate ?? "the selected model's current Replicate rate"}.`);
+  console.log(`- Time: ${route.timeEstimate ?? "varies with provider load"}.`);
   console.log("No provider call was made.");
 }
 

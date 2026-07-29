@@ -276,6 +276,75 @@ const moodNotesDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const redDeadRedemptionDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "frontier-portrait",
+    brand: "Character transformation",
+    title: "Turn a portrait into a frontier cutscene",
+    curatorNote: "The original face and centered framing survive a richly textured 1899 Western video-game transformation.",
+    image: "example-output",
+  },
+  {
+    id: "main-street",
+    brand: "Frontier character",
+    title: "A modern headshot becomes a gunslinger",
+    curatorNote: "Hat, coat, vest, gun belt, dust, and golden light relocate the same person to a frontier main street.",
+    image: "example-02",
+  },
+  {
+    id: "ranch-porch",
+    brand: "Ranch scene",
+    title: "The portrait moves onto a ranch porch",
+    curatorNote: "The face stays recognizable while the cabin, mountains, leather, and period weapons form one coherent scene.",
+    image: "example-03",
+  },
+  {
+    id: "winter-saloon",
+    brand: "Seasonal Western",
+    title: "Holiday warmth survives the Western rewrite",
+    curatorNote: "Firelight and Christmas details support the character instead of breaking the dusty game-world atmosphere.",
+    image: "example-04",
+  },
+  {
+    id: "cabin",
+    brand: "Rugged portrait",
+    title: "A clean selfie becomes a cabin character",
+    curatorNote: "Weathered fabric, revolvers, a stove, and volumetric sunbeams deliver the AAA Western finish.",
+    image: "example-05",
+  },
+  {
+    id: "saloon",
+    brand: "In-game cutscene",
+    title: "A studio portrait becomes a saloon scene",
+    curatorNote: "Restrained period styling preserves identity while the bar and practical lighting establish an in-game cutscene.",
+    image: "example-06",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `red-dead-redemption-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 41 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/red-dead-redemption-v1/assets/source/${image}.jpg`,
+    ...(index === 0
+      ? {
+          referenceSrc:
+            "/format-repositories/red-dead-redemption-v1/assets/source/reference-input.jpg",
+        }
+      : {}),
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "red-dead-redemption",
+    name: "Red Dead Redemption",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "final-straw-pocket-problem",
@@ -635,6 +704,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...selfieNineDiscoveryEntries,
   ...ragDollDiscoveryEntries,
   ...moodNotesDiscoveryEntries,
+  ...redDeadRedemptionDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -707,6 +777,7 @@ const discoveryShelfDefinitions = [
       "selfie-nine-images",
       "rag-doll",
       "mood-notes",
+      "red-dead-redemption",
     ],
   },
   {

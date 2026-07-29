@@ -649,6 +649,51 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "red-dead-redemption",
+    promise: "Turn one photo into a cinematic 1899 Western video-game scene while preserving the original identity and composition.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/red-dead-redemption",
+    manifestPath: "format-repositories/red-dead-redemption-v1/format.json",
+    whatStays: [
+      "The subject's recognizable identity",
+      "The original pose and expression",
+      "The source composition and framing",
+      "The camera angle and element layout",
+    ],
+    whatChanges: [
+      "Clothing, props, and weapons become period-correct",
+      "The setting moves into the American frontier",
+      "Materials gain a weathered AAA game finish",
+      "The selected model cost lane",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP photo at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 Western video-game image",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro only when requested",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Validate the source photo locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected 3:4 Western video-game image plus prediction and quality provenance",
+      firstQuestion: "Which photo should I turn into a Red Dead Redemption-style scene?",
+    },
+  },
+  {
     slug: "meme",
     promise: "Turn a buyer's familiar frustration into an ad they understand in one glance.",
     lastUpdated: "July 2026",

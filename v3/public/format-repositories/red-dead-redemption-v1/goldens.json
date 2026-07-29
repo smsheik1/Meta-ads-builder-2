@@ -1,0 +1,65 @@
+{
+  "purpose": "Judge source identity, period adaptation, detailed Western materials, cinematic atmosphere, and AAA video-game finish against six gathered examples.",
+  "examples": [
+    {
+      "id": "frontier-portrait",
+      "title": "Frontier portrait with the reference inset",
+      "imagePath": "assets/source/hero-with-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The face and centered framing remain recognizable",
+        "Weathered leather, bandana, holster, dust, and warm window light establish the 1899 game world"
+      ]
+    },
+    {
+      "id": "main-street",
+      "title": "A modern headshot becomes a frontier gunslinger",
+      "imagePath": "assets/source/example-02.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "Identity carries through the hat, coat, vest, and gun belt",
+        "The dusty town and golden light read as a modern Western game scene"
+      ]
+    },
+    {
+      "id": "ranch-porch",
+      "title": "A portrait moves onto a ranch porch",
+      "imagePath": "assets/source/example-03.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The seated pose and face remain recognizable",
+        "Cabin, mountains, leather, and period weapons form one coherent frontier setting"
+      ]
+    },
+    {
+      "id": "winter-saloon",
+      "title": "Holiday warmth survives the Western rewrite",
+      "imagePath": "assets/source/example-04.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The subject's curls and expression remain distinctive",
+        "Firelight, Christmas details, wood, leather, and dust preserve a warm cinematic mood"
+      ]
+    },
+    {
+      "id": "cabin",
+      "title": "A clean selfie becomes a rugged cabin character",
+      "imagePath": "assets/source/example-05.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "Facial structure and gaze carry through the period styling",
+        "Weathered fabrics, revolvers, stove, and sunbeams create believable game-world detail"
+      ]
+    },
+    {
+      "id": "saloon",
+      "title": "A studio portrait becomes a saloon cutscene",
+      "imagePath": "assets/source/example-06.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The source face remains recognizable under restrained Western styling",
+        "Layered period clothing, the bar background, and practical light read as an in-game cutscene"
+      ]
+    }
+  ]
+}
