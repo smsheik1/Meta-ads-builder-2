@@ -21,7 +21,7 @@ for (const entry of discoveryCatalog) {
 const threeD = getDiscoveryFormatProfile("three-d-breakdown");
 assert.ok(threeD, "3D Breakdown should have a consumer Format proof.");
 assert.equal(threeD.version, "1.5.0");
-assert.ok(threeD.proofEntries.length >= 3, "3D Breakdown should show at least three real proof outputs.");
+assert.equal(threeD.proofEntries.length, 5, "3D Breakdown should show all five real proof outputs separately.");
 assert.equal(threeD.technicalHref, "/format-lab/three-d-breakdown");
 
 const cartoon = getDiscoveryFormatProfile("otaku-explainer");
@@ -38,7 +38,7 @@ assert.equal(jingle.proofEntries.length, 39, "Brand Jingle proof should include 
 const videoMeme = getDiscoveryFormatProfile("video-meme");
 assert.ok(videoMeme, "Video Meme should have a consumer Format proof.");
 assert.equal(videoMeme.version, "1.0.0");
-assert.equal(videoMeme.proofEntries.length, 32, "Video Meme proof should include every completed DB import.");
+assert.equal(videoMeme.proofEntries.length, 35, "Video Meme proof should include three canonical templates and every DB import.");
 
 for (const slug of [
   "visualizer",
