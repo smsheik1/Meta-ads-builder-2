@@ -1,0 +1,20 @@
+{
+  "purpose": "Judge cinematic realism, camera anatomy, lighting, shallow focus, and film texture against the gathered source example.",
+  "examples": [
+    {
+      "id": "skai-cinematic-photographer",
+      "type": "source-reference",
+      "title": "Cinematic photographer source proof",
+      "imagePath": "assets/source/example-output.png",
+      "guidePath": "assets/source/guide.pdf",
+      "sourceUrl": "https://www.instagram.com/p/DbWAcxjDJYc/",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The camera and face share crisp priority",
+        "Low-key light still preserves warm skin detail",
+        "The background stays minimal and cinematic",
+        "Film grain supports the editorial finish"
+      ]
+    }
+  ]
+}

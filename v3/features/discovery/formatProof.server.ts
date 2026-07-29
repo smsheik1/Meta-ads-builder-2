@@ -406,6 +406,51 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "cinematic-photographer",
+    promise: "Create a moody, tactile editorial portrait built around a vintage camera.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/cinematic-photographer",
+    manifestPath: "format-repositories/cinematic-photographer-v1/format.json",
+    whatStays: [
+      "The vintage rangefinder camera",
+      "Moody low-key lighting",
+      "Shallow editorial focus",
+      "Warm skin and tactile film grain",
+    ],
+    whatChanges: [
+      "The subject",
+      "The pose and wardrobe",
+      "The camera styling",
+      "The model cost lane",
+    ],
+    handoff: {
+      requiredInputs: [
+        "Use the packaged concept as-is, or describe a subject variation",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected portrait image",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or GPT Image 2 for the source route",
+        "Keep the exact gathered prompt unless the user explicitly requests a subject change",
+        "Validate locally before any paid prediction",
+        "View the actual output and record review notes before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One portrait", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected portrait image plus prediction and quality provenance",
+      firstQuestion: "Should I use the exact packaged photographer concept, or do you want to change the subject while keeping the cinematic recipe?",
+    },
+  },
+  {
     slug: "meme",
     promise: "Turn a buyer's familiar frustration into an ad they understand in one glance.",
     lastUpdated: "July 2026",

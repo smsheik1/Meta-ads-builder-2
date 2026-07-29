@@ -1,0 +1,15 @@
+{
+  "required": [],
+  "question": "Should I use the exact packaged photographer concept, or do you want to change the subject while keeping the cinematic recipe?",
+  "defaults": {
+    "concept": "exact packaged prompt",
+    "model": "nano-banana-2",
+    "aspectRatio": "4:5",
+    "outputCount": 1
+  },
+  "modelRoutes": {
+    "economy": "google/nano-banana-2-lite",
+    "default": "google/nano-banana-2",
+    "sourceModel": "openai/gpt-image-2"
+  }
+}
