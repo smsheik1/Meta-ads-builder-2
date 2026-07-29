@@ -32,6 +32,17 @@ assert.match(result.stdout, /Free smoke passed/);
 assert.match(result.stdout, /No provider was called/);
 assert.match(result.stdout, /finalization stayed gated/);
 
+const estimated = spawnSync(
+  process.execPath,
+  ["--import", "tsx", "scripts/skai-image-format.ts", "estimate", `--format=${slug}`],
+  { encoding: "utf8" },
+);
+assert.equal(estimated.status, 0, estimated.stderr || estimated.stdout);
+assert.match(estimated.stdout, /No provider call was made/);
+const defaultRoute = runtime.modelRoutes[runtime.defaultModel];
+if (defaultRoute.costEstimate) assert.match(estimated.stdout, /\$[0-9]/);
+if (defaultRoute.timeEstimate) assert.match(estimated.stdout, /Time:.*[0-9]/);
+
 const variants = Object.keys(runtime.promptVariants ?? {});
 if (variants.length) {
   const runsRoot = mkdtempSync(path.join(os.tmpdir(), `wiggly-${slug}-variant-test-`));

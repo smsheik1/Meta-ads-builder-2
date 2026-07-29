@@ -1,0 +1,25 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbI4naVCkwR/",
+    "resourceUrl": "https://docs.google.com/document/d/14QLaIwLzK10xPuUpFEUxvh0suhmGT0A7vOf9HL7JCf0/edit",
+    "guide": "assets/source/guide.pdf",
+    "exampleOutput": "assets/source/example-output.jpg",
+    "hero": "assets/source/hero-with-reference.jpg",
+    "referenceInput": "assets/source/reference-input.jpg",
+    "carouselExamples": [
+      "assets/source/example-output.jpg",
+      "assets/source/example-02.jpg",
+      "assets/source/example-03.jpg",
+      "assets/source/example-04.jpg",
+      "assets/source/example-05.jpg",
+      "assets/source/example-06.jpg"
+    ],
+    "promptPath": "prompts/transform.txt",
+    "verification": "The exact prompt, Nano Banana Pro label, guide, and six examples were gathered through the creator's Android Instagram comment and DM flow and visually checked. The clean reference input was cropped from the source example because the guide did not provide the raw photo."
+  },
+  "fixture": {
+    "path": "assets/source/reference-input.jpg",
+    "purpose": "Local validation and free smoke only; no provider call."
+  }
+}

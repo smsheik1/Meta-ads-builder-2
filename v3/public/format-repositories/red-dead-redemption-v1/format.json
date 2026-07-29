@@ -1,0 +1,20 @@
+{
+  "id": "red-dead-redemption",
+  "version": "1.0.0",
+  "title": "Red Dead Redemption",
+  "description": "Turn one photo into a cinematic 1899 Western video-game scene with period clothing, weathered materials, and frontier atmosphere.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbI4naVCkwR/",
+    "resourceUrl": "https://docs.google.com/document/d/14QLaIwLzK10xPuUpFEUxvh0suhmGT0A7vOf9HL7JCf0/edit",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana Pro"
+  },
+  "outputs": [
+    "1 cinematic Western video-game image",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio within 0.02 of the selected route",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The original composition, pose, expression, framing, camera angle, and layout remain recognizable",
+    "The subject's identity survives the 1899 Western adaptation",
+    "Clothing, props, weapons, and setting are internally consistent with the Old West",
+    "Leather, wood, metal, fabric, dust, light, vegetation, and atmosphere are richly detailed",
+    "The final image reads as a modern AAA video-game screenshot rather than live action or illustration"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}
