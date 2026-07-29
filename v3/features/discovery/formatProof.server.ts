@@ -406,13 +406,6 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
-    slug: "motion-story",
-    promise: "Move product, proof, and CTA through a compact performance-ad story.",
-    lastUpdated: "July 2026",
-    whatStays: ["A fast hook", "A product beat", "Visible proof", "A direct CTA"],
-    whatChanges: ["The product", "The evidence", "The motion preset", "The brand"],
-  },
-  {
     slug: "meme",
     promise: "Turn a buyer's familiar frustration into an ad they understand in one glance.",
     lastUpdated: "July 2026",

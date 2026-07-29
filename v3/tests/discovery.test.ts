@@ -83,11 +83,15 @@ const generatedFormatSlugs = [
   "brainrot",
   "fortnite-filter",
   "jingle",
-  "motion-story",
 ];
 assert.ok(
   generatedFormatSlugs.every((slug) => published.some((entry) => entry.format.slug === slug)),
-  "Discovery should include real proof from all 11 generated Wiggly formats.",
+  "Discovery should include real proof from every currently public generated Wiggly format.",
+);
+assert.equal(
+  published.some((entry) => entry.format.slug === "motion-story"),
+  false,
+  "Motion Story should stay out of Discovery until the format is ready.",
 );
 assert.equal(
   databaseFormatDiscoveryEntries.length,
@@ -170,8 +174,8 @@ assert.deepEqual(
 assert.ok(
   shelves
     .find((shelf) => shelf.id === "product-stories")
-    ?.entries.every((entry) => ["three-d-breakdown", "motion-story"].includes(entry.format.slug)),
-  "Product stories should contain only motion-led product formats.",
+    ?.entries.every((entry) => entry.format.slug === "three-d-breakdown"),
+  "Product stories should contain only the ready 3D Breakdown format.",
 );
 assert.ok(
   shelves
