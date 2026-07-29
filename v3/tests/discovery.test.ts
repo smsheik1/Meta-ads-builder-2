@@ -14,7 +14,7 @@ const discoveryStyles = readFileSync("app/discover/discovery.module.css", "utf8"
 
 assert.match(
   discoveryStyles,
-  /\.formatTag,\s*\.runtime\s*\{[^}]*opacity:\s*0;/s,
+  /\.formatTag,\s*\.runtime\s*\{[\s\S]*?opacity:\s*0;/,
   "Card format and runtime labels should stay hidden until the card is engaged.",
 );
 assert.match(
