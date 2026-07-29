@@ -1,0 +1,20 @@
+{
+  "id": "cinematic-photographer",
+  "version": "1.0.0",
+  "title": "Cinematic Photographer",
+  "description": "Create a moody editorial portrait of a photographer with tactile film detail.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbWAcxjDJYc/",
+    "resourceUrl": "https://docs.google.com/document/d/1_78s28UMB0Qz4DT7Xpm_EpFNClUKw0oZzkJqc1vZv-4/edit",
+    "ctaKeyword": "AI",
+    "modelShown": "GPT Image 2"
+  },
+  "outputs": [
+    "1 portrait image",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

@@ -76,6 +76,7 @@ const generatedFormatSlugs = [
   "reviews",
   "brainrot",
   "fortnite-filter",
+  "cinematic-photographer",
   "jingle",
   "motion-story",
 ];

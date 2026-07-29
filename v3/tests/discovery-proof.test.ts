@@ -47,6 +47,7 @@ for (const slug of [
   "reviews",
   "brainrot",
   "fortnite-filter",
+  "cinematic-photographer",
   "motion-story",
 ]) {
   const profile = getDiscoveryFormatProfile(slug);
@@ -66,7 +67,8 @@ assert.ok(
     discoveryFormatSlugs.includes("meme") &&
     discoveryFormatSlugs.includes("hybrid-news") &&
     discoveryFormatSlugs.includes("fortnite-filter") &&
-    discoveryFormatSlugs.length === 13,
+    discoveryFormatSlugs.includes("cinematic-photographer") &&
+    discoveryFormatSlugs.length === 14,
 );
 assert.equal(getDiscoveryFormatProfile("does-not-exist"), null);
 
