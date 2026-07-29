@@ -1,0 +1,30 @@
+{
+  "progress": "Prepare -> Validate -> Transform -> Inspect",
+  "attemptCap": 3,
+  "stages": [
+    {
+      "id": "prepare",
+      "output": "A run pinned to the source photo, exact gathered prompt, and chosen model route.",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "validate",
+      "output": "The image and complete provider contract checked locally.",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "transform",
+      "output": "One annotated visual-journal image from the selected Replicate model.",
+      "paid": true,
+      "approvalRequired": true
+    },
+    {
+      "id": "inspect",
+      "output": "Automatic file checks plus an actual visual review.",
+      "paid": false,
+      "approvalRequired": true
+    }
+  ]
+}

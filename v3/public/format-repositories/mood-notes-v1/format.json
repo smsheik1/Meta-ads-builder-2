@@ -1,0 +1,20 @@
+{
+  "id": "mood-notes",
+  "version": "1.0.0",
+  "title": "Mood Notes",
+  "description": "Turn one lifestyle photo into a personal visual journal with handwritten scene notes, small doodles, and a mood-matched glass music player.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbGRfBrljBO/",
+    "resourceUrl": "https://docs.google.com/document/d/12QRyuwfmM-s7-2IBFpC8EMb0HdDc_1K68RSaU3_jcw0/edit",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana Pro"
+  },
+  "outputs": [
+    "1 annotated lifestyle image",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

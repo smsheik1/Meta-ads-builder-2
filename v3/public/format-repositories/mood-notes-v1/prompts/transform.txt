@@ -1,0 +1,59 @@
+Use the uploaded photo as the fixed source image. Preserve the original subjects, objects, composition, framing, lighting, colors, and overall atmosphere.
+
+Add meaningful handwritten annotations to the visible elements in the image. The annotations should feel personally tailored to the scene rather than generic.
+
+ANNOTATION STYLE
+
+• Use thin white hand-drawn lines
+• Keep the strokes rough, slightly uneven, and naturally imperfect
+• Use mostly continuous single-stroke outlines
+• Trace selected outer edges of important objects without outlining everything
+• Add arrows, curved connectors, and dotted guide lines to direct the viewer’s eye
+• Use casual handwritten lettering that remains clear and readable
+• Maintain generous negative space and avoid visual clutter
+
+ANNOTATION CONTENT
+
+Adapt each note to the type of subject:
+
+• Drinks: describe the taste, temperature, energy, or mood
+• Food: highlight flavor, texture, aroma, or a memorable detail
+• People: reference expressions, gestures, energy, or the feeling they bring to the moment
+• Spaces: describe the atmosphere, lighting, sound, comfort, or overall vibe
+• Objects: mention their purpose, significance, or connection to the scene
+
+Keep each annotation short, specific, and emotionally meaningful.
+
+Add one concise handwritten summary line that captures the overall feeling of the moment.
+
+DECORATIVE DOODLES
+
+Enhance the image sparingly with small hand-drawn elements such as:
+
+• Steam lines
+• Sparkles
+• Hearts
+• Stars
+• Motion marks
+• Simple emoticon-style faces
+
+Only include decorations that naturally match the scene.
+
+SPOTIFY GLASSMORPHISM UI
+
+Add a refined Spotify-inspired music player overlay based on the mood of the photo.
+
+The interface should feature:
+
+• A translucent glassmorphism panel
+• Soft background blur
+• Subtle glowing edges
+• Colors sampled from and matched to the original image
+• A believable song title, artist name, album artwork, progress bar, and playback controls
+• A soft ambient glow that blends naturally into the surrounding colors
+
+Choose music that meaningfully matches the atmosphere of the image. Keep the player elegant, compact, and integrated into the composition without covering important subjects.
+
+FINAL RESULT
+
+The finished image should feel like a personal visual journal entry: expressive, intimate, thoughtfully annotated, and visually balanced. Preserve the realism of the original photo while making the handwritten notes and glowing music interface feel naturally layered onto it.

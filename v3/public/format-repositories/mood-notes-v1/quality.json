@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio within 0.02 of the selected route",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The original subject, objects, framing, lighting, colors, and atmosphere remain recognizable",
+    "Short white handwritten notes are specific to visible scene details",
+    "Arrows, connectors, outlines, and doodles remain sparse and legible",
+    "The glass music player matches the photo's mood without covering the subject",
+    "The final image reads as one balanced personal visual-journal composition"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

@@ -604,6 +604,51 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "mood-notes",
+    promise: "Turn one lifestyle photo into a personal visual journal with scene-specific handwriting, doodles, and a mood-matched music player.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/mood-notes",
+    manifestPath: "format-repositories/mood-notes-v1/format.json",
+    whatStays: [
+      "The original subjects and objects",
+      "The source composition and framing",
+      "The lighting, colors, and atmosphere",
+      "Photographic realism",
+    ],
+    whatChanges: [
+      "The handwritten scene observations",
+      "The arrows, outlines, and small doodles",
+      "The mood-matched glass music player",
+      "The selected model cost lane",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP lifestyle photo at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 annotated image",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro only when requested",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Validate the source photo locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected 3:4 visual-journal image plus prediction and quality provenance",
+      firstQuestion: "Which photo should I turn into a personal Mood Notes journal image?",
+    },
+  },
+  {
     slug: "meme",
     promise: "Turn a buyer's familiar frustration into an ad they understand in one glance.",
     lastUpdated: "July 2026",
