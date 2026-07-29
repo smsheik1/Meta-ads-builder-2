@@ -280,6 +280,92 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...videoMemeDiscoveryEntries,
 ];
 
+export type DiscoveryShelf = {
+  id: string;
+  title: string;
+  description: string;
+  entries: DiscoveryEntry[];
+};
+
+const discoveryShelfDefinitions = [
+  {
+    id: "product-stories",
+    title: "Product Stories in Motion",
+    description: "3D product stories and compact performance ads.",
+    formats: ["three-d-breakdown", "motion-story"],
+  },
+  {
+    id: "brand-jingles",
+    title: "Songs People Remember",
+    description: "Brand jingles built around one sharp buyer truth.",
+    formats: ["jingle"],
+  },
+  {
+    id: "fast-social",
+    title: "Fast Social Hooks",
+    description: "Video memes and quick dialogue made for the feed.",
+    formats: ["video-meme", "brainrot"],
+  },
+  {
+    id: "character-explainers",
+    title: "Explain It With Characters",
+    description: "Familiar characters make hard ideas easy to follow.",
+    formats: ["otaku-explainer"],
+  },
+  {
+    id: "customer-proof",
+    title: "Customer Proof",
+    description: "Reviews and proof-led formats that build trust.",
+    formats: ["reviews", "were-sorry"],
+  },
+  {
+    id: "conversations",
+    title: "Conversations That Sell",
+    description: "Messages and voice-led pitches that feel native.",
+    formats: ["text-message", "visualizer"],
+  },
+  {
+    id: "static-hooks",
+    title: "Static Ideas That Land",
+    description: "Memes and announcements built to stop the scroll.",
+    formats: ["meme", "hybrid-news"],
+  },
+  {
+    id: "more",
+    title: "More From Wiggly",
+    description: "New experiments that do not have a shelf yet.",
+    formats: [],
+  },
+] as const;
+
+const shelfIdByFormat = new Map<string, string>(
+  discoveryShelfDefinitions.flatMap((shelf) => (
+    shelf.formats.map((format) => [format, shelf.id] as const)
+  )),
+);
+
+export function groupDiscoveryEntriesByShelf(entries: DiscoveryEntry[]): DiscoveryShelf[] {
+  const buckets = new Map<string, DiscoveryEntry[]>();
+  for (const entry of entries) {
+    const shelfId = shelfIdByFormat.get(entry.format.slug) || "more";
+    const bucket = buckets.get(shelfId) || [];
+    bucket.push(entry);
+    buckets.set(shelfId, bucket);
+  }
+
+  return discoveryShelfDefinitions.flatMap((shelf) => {
+    const shelfEntries = buckets.get(shelf.id);
+    return shelfEntries?.length
+      ? [{
+          id: shelf.id,
+          title: shelf.title,
+          description: shelf.description,
+          entries: shelfEntries,
+        }]
+      : [];
+  });
+}
+
 export function getPublishedDiscoveryEntries(
   entries: DiscoveryEntry[] = discoveryCatalog,
 ): DiscoveryEntry[] {

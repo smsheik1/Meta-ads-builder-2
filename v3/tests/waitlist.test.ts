@@ -12,8 +12,8 @@ assert.equal(isValidWaitlistEmail("shaz@wiggly.so"), true);
 assert.equal(isValidWaitlistEmail("not-an-email"), false);
 
 const homePage = read("app/page.tsx");
-assert.ok(homePage.includes("WaitlistPage"), "Root route should render early access page.");
-assert.ok(!homePage.includes("redirect(\"/create\")"), "Root route should not redirect straight to /create.");
+assert.ok(homePage.includes('redirect("/discover")'), "Root route should open Discovery by default.");
+assert.ok(!homePage.includes("WaitlistPage"), "The early-access page should remain available only at /waitlist.");
 assert.ok(existsSync(join(root, "app/waitlist/page.tsx")), "/waitlist route should exist.");
 
 const waitlistPage = read("app/waitlist/WaitlistPage.tsx");
