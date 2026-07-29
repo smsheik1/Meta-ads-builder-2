@@ -1,0 +1,29 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbA4f6Blm2v/",
+    "guideScreenshot": "assets/source/skai-guide-screenshot.png",
+    "exampleOutput": "assets/source/skai-example-output.jpg",
+    "capturedPrompt": "prompts/transform.txt"
+  },
+  "proofInputs": [
+    {
+      "id": "seated-man",
+      "path": "fixtures/trevor-chris-hutchinson-man.jpg",
+      "creator": "Trevor Chris Hutchinson",
+      "sourceUrl": "https://www.pexels.com/photo/portrait-of-a-man-sitting-5790938/",
+      "license": "Pexels License",
+      "licenseUrl": "https://www.pexels.com/license/",
+      "description": "Full-body seated outdoor portrait with a detailed pose and visible hands."
+    },
+    {
+      "id": "sunset-woman",
+      "path": "fixtures/rao-qingwei-woman.jpg",
+      "creator": "rao qingwei",
+      "sourceUrl": "https://www.pexels.com/photo/elegant-portrait-of-woman-at-city-sunset-29484597/",
+      "license": "Pexels License",
+      "licenseUrl": "https://www.pexels.com/license/",
+      "description": "Close portrait at sunset with a different subject, crop, expression, and lighting."
+    }
+  ]
+}

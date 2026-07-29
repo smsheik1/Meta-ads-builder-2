@@ -1,0 +1,35 @@
+{
+  "runtime": {
+    "node": ">=22",
+    "commands": [
+      "npm"
+    ]
+  },
+  "providers": [
+    {
+      "name": "Replicate",
+      "purpose": "Run the selected official Google Nano Banana image model.",
+      "models": [
+        "google/nano-banana-2-lite",
+        "google/nano-banana-2",
+        "google/nano-banana-pro"
+      ]
+    }
+  ],
+  "environment": [
+    {
+      "name": "REPLICATE_API_TOKEN",
+      "requiredFor": [
+        "render",
+        "resume"
+      ],
+      "secret": true
+    }
+  ],
+  "notes": [
+    "check, init, validate, estimate, inspect, finalize, and smoke are local.",
+    "render makes exactly one Replicate prediction per attempt after --approve-paid.",
+    "The runner persists the prediction ID before polling and can resume the same job.",
+    "Maximum paid attempts per run: 3."
+  ]
+}

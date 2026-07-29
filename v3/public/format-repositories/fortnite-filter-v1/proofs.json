@@ -1,0 +1,29 @@
+{
+  "generatedAt": "2026-07-29",
+  "provider": "Replicate",
+  "promptPath": "prompts/transform.txt",
+  "proofs": [
+    {
+      "id": "proof-seated-man",
+      "inputPath": "fixtures/trevor-chris-hutchinson-man.jpg",
+      "outputPath": "goldens/nano-banana-2-seated-man.jpg",
+      "qualityReportPath": "goldens/nano-banana-2-seated-man.quality.json",
+      "model": "google/nano-banana-2",
+      "predictionId": "9v21s663tdrmr0cznh9rh31qc0",
+      "attemptsUsed": 1,
+      "status": "finalized",
+      "sha256": "ce90f7f01df202cc29a0ef3c9fc6d571ee53acb15e4e70f28911feb914bba49d"
+    },
+    {
+      "id": "proof-sunset-woman",
+      "inputPath": "fixtures/rao-qingwei-woman.jpg",
+      "outputPath": "goldens/nano-banana-2-lite-sunset-woman.jpg",
+      "qualityReportPath": "goldens/nano-banana-2-lite-sunset-woman.quality.json",
+      "model": "google/nano-banana-2-lite",
+      "predictionId": "zkwhk22bvhrmr0cznha91n4aa4",
+      "attemptsUsed": 1,
+      "status": "finalized",
+      "sha256": "8f1939f82f113f062ec288a574259e10cbdb1bf090d8680f8017214f4afb80db"
+    }
+  ]
+}
