@@ -275,6 +275,48 @@ export const discoveryCatalog: DiscoveryEntry[] = [
       owner: "Wiggly Studio",
     },
   },
+  {
+    id: "fortnite-filter-seated-man",
+    status: "published",
+    order: 14,
+    brand: "Portrait transformation",
+    title: "From real portrait to game character",
+    curatorNote: "The full seated pose, face, clothing, and small details survive a cinematic 3D transformation.",
+    goal: "entertain",
+    media: {
+      kind: "image",
+      src: "/format-repositories/fortnite-filter-v1/goldens/nano-banana-2-seated-man.jpg",
+      referenceSrc: "/format-repositories/fortnite-filter-v1/fixtures/trevor-chris-hutchinson-man.jpg",
+      durationLabel: "Static",
+    },
+    format: {
+      slug: "fortnite-filter",
+      name: "Fortnite Filter",
+      version: "1.0.0",
+      owner: "Wiggly Studio",
+    },
+  },
+  {
+    id: "fortnite-filter-sunset-woman",
+    status: "published",
+    order: 15,
+    brand: "Portrait transformation",
+    title: "The economy model keeps the look",
+    curatorNote: "A different face, crop, gaze, and outfit prove the cheaper Lite route can still hold the recipe.",
+    goal: "entertain",
+    media: {
+      kind: "image",
+      src: "/format-repositories/fortnite-filter-v1/goldens/nano-banana-2-lite-sunset-woman.jpg",
+      referenceSrc: "/format-repositories/fortnite-filter-v1/fixtures/rao-qingwei-woman.jpg",
+      durationLabel: "Static",
+    },
+    format: {
+      slug: "fortnite-filter",
+      name: "Fortnite Filter",
+      version: "1.0.0",
+      owner: "Wiggly Studio",
+    },
+  },
   ...databaseFormatDiscoveryEntries,
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -284,6 +326,11 @@ export type DiscoveryShelf = {
   id: string;
   title: string;
   description: string;
+  entries: DiscoveryEntry[];
+};
+
+export type DiscoveryFormatGroup = {
+  slug: string;
   entries: DiscoveryEntry[];
 };
 
@@ -334,7 +381,7 @@ const discoveryShelfDefinitions = [
     id: "static-hooks",
     title: "Static Ideas That Land",
     description: "Memes and announcements built to stop the scroll.",
-    formats: ["meme", "hybrid-news"],
+    formats: ["meme", "hybrid-news", "fortnite-filter"],
   },
   {
     id: "more",
@@ -370,6 +417,20 @@ export function groupDiscoveryEntriesByShelf(entries: DiscoveryEntry[]): Discove
         }]
       : [];
   });
+}
+
+export function groupDiscoveryEntriesByFormat(entries: DiscoveryEntry[]): DiscoveryFormatGroup[] {
+  const groups = new Map<string, DiscoveryEntry[]>();
+  for (const entry of entries) {
+    const group = groups.get(entry.format.slug) || [];
+    group.push(entry);
+    groups.set(entry.format.slug, group);
+  }
+
+  return [...groups.entries()].map(([slug, formatEntries]) => ({
+    slug,
+    entries: formatEntries,
+  }));
 }
 
 export function getPublishedDiscoveryEntries(

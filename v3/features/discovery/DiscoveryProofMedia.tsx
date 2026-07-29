@@ -1,6 +1,30 @@
 import type { DiscoveryEntry } from "./types";
 import { DiscoveryAudioArtwork } from "./DiscoveryAudioArtwork";
 
+export function DiscoveryReferenceInset({
+  entry,
+  variant = "hero",
+}: {
+  entry: DiscoveryEntry;
+  variant?: "hero" | "card";
+}) {
+  if (entry.media.kind !== "image" || !entry.media.referenceSrc) return null;
+
+  const placement = variant === "card"
+    ? "right-3 top-12 w-[23%]"
+    : "right-[4%] top-[4%] w-[24%]";
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      data-discovery-reference
+      className={`absolute z-10 aspect-[3/4] rounded-[18%] border-4 border-white bg-white object-cover shadow-[0_5px_18px_rgba(8,8,23,0.32)] ${placement}`}
+      src={entry.media.referenceSrc}
+      alt={`Original reference for ${entry.title}`}
+    />
+  );
+}
+
 export function DiscoveryProofMedia({
   entry,
   className,
@@ -11,8 +35,17 @@ export function DiscoveryProofMedia({
   autoPlay?: boolean;
 }) {
   if (entry.media.kind === "image") {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img className={className} src={entry.media.src} alt={`${entry.brand}: ${entry.title}`} />;
+    return (
+      <div className={`relative overflow-hidden ${className}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          className="absolute inset-0 h-full w-full object-cover"
+          src={entry.media.src}
+          alt={`${entry.brand}: ${entry.title}`}
+        />
+        <DiscoveryReferenceInset entry={entry} />
+      </div>
+    );
   }
 
   if (entry.media.kind === "audio") {

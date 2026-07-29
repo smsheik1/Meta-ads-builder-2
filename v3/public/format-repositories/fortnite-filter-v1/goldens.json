@@ -1,0 +1,50 @@
+{
+  "purpose": "Compare resemblance, pose retention, cinematic 3D styling, and output consistency across distinct portraits.",
+  "examples": [
+    {
+      "id": "skai-source-example",
+      "type": "source-reference",
+      "title": "Original @skaigenerated example",
+      "inputPath": null,
+      "imagePath": "assets/source/skai-example-output.jpg",
+      "sourceUrl": "https://www.instagram.com/p/DbA4f6Blm2v/",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The person stays recognizable",
+        "The pose survives the transformation",
+        "The look is dimensional and cinematic",
+        "The warm lighting and particles support the game-inspired finish"
+      ]
+    },
+    {
+      "id": "nano-banana-2-seated-man",
+      "type": "replicate-proof",
+      "title": "Full-body pose proof",
+      "inputPath": "fixtures/trevor-chris-hutchinson-man.jpg",
+      "imagePath": "goldens/nano-banana-2-seated-man.jpg",
+      "sourceUrl": "https://www.pexels.com/photo/portrait-of-a-man-sitting-5790938/",
+      "model": "google/nano-banana-2",
+      "whyItWorks": [
+        "Identity and seated pose remain recognizable",
+        "Visible hands, tattoos, watch, and clothing survive",
+        "The silhouette has cinematic 3D volume",
+        "It passed automatic and recorded visual inspection"
+      ]
+    },
+    {
+      "id": "nano-banana-2-lite-sunset-woman",
+      "type": "replicate-proof",
+      "title": "Economy close-portrait proof",
+      "inputPath": "fixtures/rao-qingwei-woman.jpg",
+      "imagePath": "goldens/nano-banana-2-lite-sunset-woman.jpg",
+      "sourceUrl": "https://www.pexels.com/photo/elegant-portrait-of-woman-at-city-sunset-29484597/",
+      "model": "google/nano-banana-2-lite",
+      "whyItWorks": [
+        "Identity, gaze, head angle, hair, and outfit remain recognizable",
+        "The sunset city composition carries through",
+        "The economy route still produces a polished 3D finish",
+        "It passed automatic and recorded visual inspection"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "automaticPass": true,
+  "manualPass": true,
+  "reviewNotes": "Subject identity, seated pose, expression, red shirt, tattoos, watch, and outdoor setting remain recognizable. Face, hands, fingers, and limbs are coherent; silhouette is clean; warm rim light and subtle particles add cinematic 3D volume; no accidental text or duplicate anatomy.",
+  "inspectedAt": "2026-07-29T05:23:51.265Z",
+  "file": {
+    "path": "output.jpg",
+    "bytes": 184900,
+    "width": 896,
+    "height": 1200,
+    "type": "jpg",
+    "sha256": "ce90f7f01df202cc29a0ef3c9fc6d571ee53acb15e4e70f28911feb914bba49d",
+    "aspectRatio": 0.7466666666666667
+  },
+  "checks": [
+    {
+      "id": "decode",
+      "pass": true,
+      "detail": "Decoded JPG image."
+    },
+    {
+      "id": "minimum-size",
+      "pass": true,
+      "detail": "896x1200; minimum is 768x1024."
+    },
+    {
+      "id": "aspect-ratio",
+      "pass": true,
+      "detail": "0.7467; target is 0.7500 (3:4)."
+    },
+    {
+      "id": "non-empty",
+      "pass": true,
+      "detail": "181 KB; minimum is 50 KB."
+    }
+  ]
+}

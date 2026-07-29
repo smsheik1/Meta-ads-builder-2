@@ -1,0 +1,30 @@
+{
+  "progress": "Prepare -> Validate -> Transform -> Inspect",
+  "attemptCap": 3,
+  "stages": [
+    {
+      "id": "prepare",
+      "output": "A local run with one copied input image and selected model route.",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "validate",
+      "output": "Decoded dimensions, type, byte size, and SHA-256 stored before spending.",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "transform",
+      "output": "One 3:4 JPG from the selected official Replicate model.",
+      "paid": true,
+      "approvalRequired": true
+    },
+    {
+      "id": "inspect",
+      "output": "Automatic media checks plus a recorded visual review.",
+      "paid": false,
+      "approvalRequired": true
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "automatic": [
+    "The output decodes as JPEG or PNG",
+    "The output is at least 768x1024",
+    "The output aspect ratio is 3:4 within 0.015",
+    "The output is at least 50 KB",
+    "The output SHA-256 is recorded"
+  ],
+  "manualReview": [
+    "The subject remains recognizably the same person",
+    "The original pose and expression are preserved",
+    "Face, eyes, hands, and fingers do not contain obvious artifacts",
+    "The silhouette and hair read clearly",
+    "The result has cinematic 3D volume rather than a flat cartoon look",
+    "Warm rim light, soft shadows, depth of field, and subtle particles support the look",
+    "No accidental text, watermarks, duplicate limbs, or broken clothing"
+  ],
+  "finalizationGate": [
+    "All automatic checks pass",
+    "A human or viewing agent inspected the actual output",
+    "Review notes are stored",
+    "The --approve-final flag is present"
+  ],
+  "reject": [
+    "The subject is no longer recognizable",
+    "The pose or expression changes substantially",
+    "Visible face, hand, limb, or clothing artifacts",
+    "Flat 2D cartoon treatment",
+    "Malformed, undersized, or wrong-aspect output"
+  ]
+}

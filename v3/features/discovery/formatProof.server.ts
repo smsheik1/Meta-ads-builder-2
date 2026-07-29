@@ -361,6 +361,51 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "fortnite-filter",
+    promise: "Turn one portrait into a recognizable, cinematic Fortnite-style 3D character.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/fortnite-filter",
+    manifestPath: "format-repositories/fortnite-filter-v1/format.json",
+    whatStays: [
+      "The same person",
+      "The original pose and expression",
+      "A clean game-character silhouette",
+      "Warm cinematic 3D lighting",
+    ],
+    whatChanges: [
+      "The person and wardrobe",
+      "The setting",
+      "The model cost lane",
+      "The character details",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP portrait at least 512px on both axes",
+        "A Replicate API token for the paid transform",
+      ],
+      deliverables: [
+        "One inspected 3:4 JPG",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro only when requested",
+        "Validate the portrait locally before the single paid prediction",
+        "Resume the saved prediction ID instead of starting duplicate work",
+        "View the actual output and record review notes before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected 3:4 JPG plus prediction and quality provenance",
+      firstQuestion: "Which photo should I turn into a Fortnite-style character?",
+    },
+  },
+  {
     slug: "motion-story",
     promise: "Move product, proof, and CTA through a compact performance-ad story.",
     lastUpdated: "July 2026",
