@@ -1,0 +1,76 @@
+{
+  "purpose": "Judge source-scene preservation, scene-specific handwriting, restrained doodles, readable spacing, and a mood-matched glass music player against seven gathered examples.",
+  "examples": [
+    {
+      "id": "poolside",
+      "title": "Poolside notes with the reference inset",
+      "imagePath": "assets/source/hero-with-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The original poolside photo remains realistic and recognizable",
+        "Short notes point to the hat, drink, water, light, and overall mood",
+        "The glass music player fits the sunny palette without hiding the subject"
+      ]
+    },
+    {
+      "id": "matcha",
+      "title": "Accessories become the story",
+      "imagePath": "assets/source/example-02.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The matcha, sunglasses, and bag each receive one specific note",
+        "Small hearts and sparkles support the composition without clutter"
+      ]
+    },
+    {
+      "id": "garden",
+      "title": "A relaxed garden portrait",
+      "imagePath": "assets/source/example-03.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "Notes describe the jacket, shades, greenery, and relaxed energy",
+        "The compact player stays secondary to the seated portrait"
+      ]
+    },
+    {
+      "id": "mirror",
+      "title": "Mirror-selfie details stay readable",
+      "imagePath": "assets/source/example-04.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "Arrows connect short notes to the phone, bag, outfit, and room light",
+        "White line work remains legible over a bright interior"
+      ]
+    },
+    {
+      "id": "beach",
+      "title": "Golden-hour beach mood",
+      "imagePath": "assets/source/example-05.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The handwritten observations follow the hat, drink, jewelry, and sunlight",
+        "The player colors echo the warm beach atmosphere"
+      ]
+    },
+    {
+      "id": "street",
+      "title": "City walk as a journal page",
+      "imagePath": "assets/source/example-06.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "Architecture, clothing, and the walk itself receive tailored notes",
+        "Sparse line work preserves the street portrait's negative space"
+      ]
+    },
+    {
+      "id": "market",
+      "title": "A colorful market moment",
+      "imagePath": "assets/source/example-07.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "Food, clothing, textures, and the setting become personal memory cues",
+        "The interface and annotations match the scene's playful color"
+      ]
+    }
+  ]
+}

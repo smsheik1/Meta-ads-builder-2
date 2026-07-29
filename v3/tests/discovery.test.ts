@@ -133,6 +133,7 @@ const generatedFormatSlugs = [
   "selfie-nine-images",
   "rag-doll",
   "product-photoshoot",
+  "mood-notes",
   "jingle",
 ];
 assert.ok(
@@ -257,6 +258,7 @@ assert.deepEqual(
     "gta-vi",
     "selfie-nine-images",
     "rag-doll",
+    "mood-notes",
   ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
@@ -269,6 +271,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "rag-doll").length,
   7,
   "All seven Rag Doll examples should remain available inside the Format page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "mood-notes").length,
+  7,
+  "All seven Mood Notes examples should remain available inside the Format page.",
 );
 
 console.log("discovery tests passed");

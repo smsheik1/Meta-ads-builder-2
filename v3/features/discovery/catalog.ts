@@ -200,6 +200,82 @@ const productPhotoshootDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const moodNotesDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "poolside",
+    brand: "Personal visual journal",
+    title: "Turn a real moment into Mood Notes",
+    curatorNote: "Scene-specific handwriting, restrained doodles, and a glass music player turn one lifestyle photo into a personal journal page.",
+    image: "example-output",
+  },
+  {
+    id: "matcha",
+    brand: "Everyday details",
+    title: "Small objects carry the mood",
+    curatorNote: "The matcha, sunglasses, and bag each receive one short observation while the original scene stays intact.",
+    image: "example-02",
+  },
+  {
+    id: "garden",
+    brand: "Lifestyle portrait",
+    title: "A relaxed portrait gets its soundtrack",
+    curatorNote: "Notes describe the jacket, shades, greenery, and calm energy without crowding the seated subject.",
+    image: "example-03",
+  },
+  {
+    id: "mirror",
+    brand: "Mirror selfie",
+    title: "An outfit becomes a memory page",
+    curatorNote: "Readable arrows connect quick thoughts to the phone, bag, outfit, and room light.",
+    image: "example-04",
+  },
+  {
+    id: "beach",
+    brand: "Golden hour",
+    title: "Beach light sets the whole interface",
+    curatorNote: "The warm music card and white notes echo the hat, drink, jewelry, and sunlit atmosphere.",
+    image: "example-05",
+  },
+  {
+    id: "street",
+    brand: "Travel journal",
+    title: "A city walk gets annotated",
+    curatorNote: "Architecture, clothing, and the pace of the walk become personal cues while the street portrait keeps its negative space.",
+    image: "example-06",
+  },
+  {
+    id: "market",
+    brand: "Colorful moment",
+    title: "Food, texture, and color become notes",
+    curatorNote: "The annotations and music interface follow the market scene's playful details and palette.",
+    image: "example-07",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `mood-notes-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 34 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/mood-notes-v1/assets/source/${image}.jpg`,
+    ...(index === 0
+      ? {
+          referenceSrc:
+            "/format-repositories/mood-notes-v1/assets/source/reference-input.jpg",
+        }
+      : {}),
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "mood-notes",
+    name: "Mood Notes",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "final-straw-pocket-problem",
@@ -558,6 +634,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...productPhotoshootDiscoveryEntries,
   ...selfieNineDiscoveryEntries,
   ...ragDollDiscoveryEntries,
+  ...moodNotesDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -629,6 +706,7 @@ const discoveryShelfDefinitions = [
       "gta-vi",
       "selfie-nine-images",
       "rag-doll",
+      "mood-notes",
     ],
   },
   {
