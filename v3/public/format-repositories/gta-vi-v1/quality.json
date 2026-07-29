@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio within 0.02 of the selected route",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The same person, pose, expression, and composition remain recognizable",
+    "Face, hands, clothing, and street geometry are coherent",
+    "The render is realistic rather than comic, cel-shaded, or GTA V-like",
+    "Warm highlights, teal shadows, and neon ambience stay controlled",
+    "The frame reads like a sharp modern AAA cutscene"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

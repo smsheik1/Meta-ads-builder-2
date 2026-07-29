@@ -1,0 +1,20 @@
+{
+  "purpose": "Judge subject identity, anatomy, grounded realism, Vice City color, and AAA cutscene finish against the gathered source example.",
+  "examples": [
+    {
+      "id": "skai-gta-vi",
+      "type": "source-reference",
+      "title": "Neon Vice City source proof",
+      "imagePath": "assets/source/example-output.png",
+      "guidePath": "assets/source/guide.pdf",
+      "sourceUrl": "https://www.instagram.com/p/DbV-6dyDGNx/",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The face and proportions stay grounded and realistic",
+        "Warm sunset and teal-magenta neon create a controlled Vice City palette",
+        "Wet streets, palms, and signage add atmosphere without swallowing the subject",
+        "Depth and sharpness read like a modern AAA cutscene"
+      ]
+    }
+  ]
+}

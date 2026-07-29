@@ -1,0 +1,15 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbV-6dyDGNx/",
+    "resourceUrl": "https://docs.google.com/document/d/1WjHyG4gPQcOGvHK6MDDCAX4XfhaA4PEqkWieoehTjeM/edit",
+    "guide": "assets/source/guide.pdf",
+    "exampleOutput": "assets/source/example-output.png",
+    "promptPath": "prompts/transform.txt",
+    "verification": "Prompt, model label, and embedded source image were fetched from the shared Google Doc and visually checked."
+  },
+  "fixture": {
+    "path": "fixtures/input.jpg",
+    "purpose": "Local validation and free smoke only; no provider call."
+  }
+}
