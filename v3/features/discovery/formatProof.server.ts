@@ -65,6 +65,23 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "product-photoshoot",
+    promise: "Turn one real product image into six polished campaign photos without booking a studio.",
+    lastUpdated: "July 2026",
+    whatStays: [
+      "The real product shape",
+      "The real packaging and label",
+      "A clear commercial focus",
+      "A consistent 4:5 crop",
+    ],
+    whatChanges: [
+      "The setting and props",
+      "The lighting",
+      "The camera framing",
+      "The campaign mood",
+    ],
+  },
+  {
     slug: "otaku-explainer",
     promise: "Teach a real idea through a familiar story world people already understand.",
     lastUpdated: "July 2026",

@@ -13,6 +13,7 @@ import type { DiscoveryEntry } from "../features/discovery/types";
 const published = getPublishedDiscoveryEntries();
 const proofEntries = getPublishedDiscoveryProofEntries();
 const discoveryStyles = readFileSync("app/discover/discovery.module.css", "utf8");
+const discoveryClient = readFileSync("app/discover/DiscoveryClient.tsx", "utf8");
 
 assert.match(
   discoveryStyles,
@@ -23,6 +24,26 @@ assert.match(
   discoveryStyles,
   /\.card:hover \.formatTag,[\s\S]*\.card:focus-within \.runtime\s*\{[^}]*opacity:\s*1;/,
   "Card format and runtime labels should reveal on hover or keyboard focus.",
+);
+assert.doesNotMatch(
+  discoveryClient,
+  /IntersectionObserver|visibleVideoIds\[0\]/,
+  "Discovery media must never resume a background video after the user leaves another card.",
+);
+assert.doesNotMatch(
+  discoveryClient,
+  /const previewMedia[\s\S]*?setSoundOn\(false\)/,
+  "Hover previews must preserve the sound choice the user made.",
+);
+assert.match(
+  discoveryClient,
+  /error instanceof DOMException && error\.name === "AbortError"\) return/,
+  "Intentionally pausing the previous preview must not turn sound off.",
+);
+assert.match(
+  discoveryClient,
+  /<Link[\s\S]*?href=\{formatHref\}[\s\S]*?className=\{styles\.mediaLink\}[\s\S]*?aria-label=\{`Open \$\{entry\.format\.name\} format`\}/,
+  "Clicking visible Discovery media should open the same format page as the card action.",
 );
 
 assert.ok(published.length >= 6, "Discovery should launch with enough real finished work to browse.");
@@ -111,6 +132,7 @@ const generatedFormatSlugs = [
   "gta-vi",
   "selfie-nine-images",
   "rag-doll",
+  "product-photoshoot",
   "jingle",
 ];
 assert.ok(
@@ -179,7 +201,7 @@ assert.ok(
 
 const shelves = groupDiscoveryEntriesByShelf(published);
 const shelvedEntries = shelves.flatMap((shelf) => shelf.entries);
-assert.equal(shelves.length, 9, "Current Discovery proof should organize into nine useful shelves.");
+assert.equal(shelves.length, 10, "Current Discovery proof should organize into ten useful shelves.");
 assert.equal(
   shelvedEntries.length,
   published.length,
@@ -207,6 +229,13 @@ assert.ok(
     .find((shelf) => shelf.id === "product-stories")
     ?.entries.every((entry) => entry.format.slug === "three-d-breakdown"),
   "Product stories should contain only the ready 3D Breakdown format.",
+);
+assert.equal(
+  shelves
+    .find((shelf) => shelf.id === "product-photoshoots")
+    ?.entries.filter((entry) => entry.format.slug === "product-photoshoot").length,
+  6,
+  "Product Photoshoot should show one complete six-image campaign set.",
 );
 assert.ok(
   shelves

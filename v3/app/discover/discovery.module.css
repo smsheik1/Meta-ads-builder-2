@@ -323,8 +323,21 @@
   background: #080817;
 }
 
+.mediaLink {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: inherit;
+  cursor: pointer;
+}
+
+.mediaLink:focus-visible {
+  outline: 4px solid #52d6ff;
+  outline-offset: -6px;
+}
+
 .mediaWell video,
-.mediaWell > img:not([data-discovery-reference]) {
+.mediaLink > img:not([data-discovery-reference]) {
   display: block;
   width: 100%;
   height: 100%;
