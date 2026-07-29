@@ -129,7 +129,7 @@ assert.ok(
 
 const shelves = groupDiscoveryEntriesByShelf(published);
 const shelvedEntries = shelves.flatMap((shelf) => shelf.entries);
-assert.equal(shelves.length, 7, "Current Discovery proof should organize into seven useful shelves.");
+assert.equal(shelves.length, 8, "Current Discovery proof should organize into eight useful shelves.");
 assert.equal(
   shelvedEntries.length,
   published.length,
@@ -150,6 +150,18 @@ assert.ok(
     .find((shelf) => shelf.id === "product-stories")
     ?.entries.every((entry) => ["three-d-breakdown", "motion-story"].includes(entry.format.slug)),
   "Product stories should contain only motion-led product formats.",
+);
+assert.ok(
+  shelves
+    .find((shelf) => shelf.id === "video-memes")
+    ?.entries.every((entry) => entry.format.slug === "video-meme"),
+  "Video Memes should have their own shelf.",
+);
+assert.ok(
+  shelves
+    .find((shelf) => shelf.id === "brainrot")
+    ?.entries.every((entry) => entry.format.slug === "brainrot"),
+  "Brainrot should not be merged into the Video Meme shelf.",
 );
 
 console.log("discovery tests passed");

@@ -60,6 +60,7 @@ export function DiscoveryClient({
   const videoRefs = useRef(new Map<string, HTMLVideoElement>());
   const audioRefs = useRef(new Map<string, HTMLAudioElement>());
   const shelfRefs = useRef(new Map<string, HTMLDivElement>());
+  const hoveredMediaId = useRef<string | null>(null);
   const hiddenEntryIds = useQuery(api.discoveryModeration.listHidden, {}) || [];
   const hideDiscoveryEntry = useMutation(api.discoveryModeration.hide);
 
@@ -101,7 +102,7 @@ export function DiscoveryClient({
       const next = [...visibility.entries()]
         .filter(([id]) => visibleVideoIds.includes(id))
         .sort((left, right) => right[1] - left[1])[0];
-      if (next && next[1] >= 0.55) setActiveVideoId(next[0]);
+      if (!hoveredMediaId.current && next && next[1] >= 0.55) setActiveVideoId(next[0]);
     }, { threshold: [0, 0.35, 0.55, 0.8] });
 
     videoRefs.current.forEach((video) => observer.observe(video));
@@ -212,6 +213,42 @@ export function DiscoveryClient({
     } else {
       video.pause();
     }
+  };
+
+  const previewMedia = (entry: DiscoveryEntry) => {
+    if (entry.media.kind === "image") return;
+    hoveredMediaId.current = entry.id;
+    if (entry.media.kind === "audio") {
+      const audio = audioRefs.current.get(entry.id);
+      if (audio) playAudio(entry.id, audio);
+      return;
+    }
+    if (entry.media.kind !== "video") return;
+
+    audioRefs.current.forEach((audio) => audio.pause());
+    setActiveAudioId(null);
+    setActiveVideoId(entry.id);
+    setSoundOn(false);
+    window.sessionStorage.setItem(soundStorageKey, "off");
+
+    const video = videoRefs.current.get(entry.id);
+    if (!video) return;
+    video.muted = true;
+    void video.play().catch(() => undefined);
+  };
+
+  const stopMediaPreview = (entry: DiscoveryEntry) => {
+    if (entry.media.kind === "image") return;
+    hoveredMediaId.current = null;
+    if (entry.media.kind === "audio") {
+      audioRefs.current.get(entry.id)?.pause();
+      setActiveAudioId((current) => current === entry.id ? null : current);
+      setSoundOn(false);
+      window.sessionStorage.setItem(soundStorageKey, "off");
+    } else if (entry.media.kind === "video") {
+      videoRefs.current.get(entry.id)?.pause();
+    }
+    setActiveVideoId(visibleVideoIds[0] || null);
   };
 
   const hideEntry = async (entry: DiscoveryEntry) => {
@@ -386,7 +423,13 @@ export function DiscoveryClient({
                     );
 
                     return (
-                      <article className={styles.card} id={entry.id} key={entry.id}>
+                      <article
+                        className={styles.card}
+                        id={entry.id}
+                        key={entry.id}
+                        onMouseEnter={() => previewMedia(entry)}
+                        onMouseLeave={() => stopMediaPreview(entry)}
+                      >
                         <div className={styles.mediaWell}>
                           {entry.media.kind === "video" ? (
                             <video
