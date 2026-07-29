@@ -2,6 +2,8 @@
 
 import {
   Bookmark,
+  ChevronLeft,
+  ChevronRight,
   ExternalLink,
   Pause,
   Play,
@@ -15,7 +17,10 @@ import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
-import { filterDiscoveryEntries } from "@/features/discovery/catalog";
+import {
+  filterDiscoveryEntries,
+  groupDiscoveryEntriesByShelf,
+} from "@/features/discovery/catalog";
 import { DiscoveryAudioArtwork } from "@/features/discovery/DiscoveryAudioArtwork";
 import {
   readSavedDiscoveryIds,
@@ -54,6 +59,7 @@ export function DiscoveryClient({
   const [toast, setToast] = useState("");
   const videoRefs = useRef(new Map<string, HTMLVideoElement>());
   const audioRefs = useRef(new Map<string, HTMLAudioElement>());
+  const shelfRefs = useRef(new Map<string, HTMLDivElement>());
   const hiddenEntryIds = useQuery(api.discoveryModeration.listHidden, {}) || [];
   const hideDiscoveryEntry = useMutation(api.discoveryModeration.hide);
 
@@ -72,6 +78,10 @@ export function DiscoveryClient({
 
   const visibleVideoIds = useMemo(
     () => visibleEntries.filter((entry) => entry.media.kind === "video").map((entry) => entry.id),
+    [visibleEntries],
+  );
+  const visibleShelves = useMemo(
+    () => groupDiscoveryEntriesByShelf(visibleEntries),
     [visibleEntries],
   );
 
@@ -237,6 +247,15 @@ export function DiscoveryClient({
     }
   };
 
+  const scrollShelf = (shelfId: string, direction: -1 | 1) => {
+    const shelf = shelfRefs.current.get(shelfId);
+    if (!shelf) return;
+    shelf.scrollBy({
+      left: direction * Math.max(280, shelf.clientWidth * 0.8),
+      behavior: "smooth",
+    });
+  };
+
   return (
     <main className={styles.page}>
       <header className={styles.header}>
@@ -309,133 +328,177 @@ export function DiscoveryClient({
         <div className={styles.sectionHeading}>
           <div>
             <p className={styles.kicker}>{savedOnly ? "Private to you" : "Curated by Wiggly"}</p>
-            <h2 id="discovery-feed-title">{savedOnly ? "Saved ads" : "Worth stealing this week"}</h2>
+            <h2 id="discovery-feed-title">{savedOnly ? "Saved ads" : "Find your next format"}</h2>
           </div>
-          <p>{savedOnly ? "The work you kept for later." : "Real finished work with a reusable Format attached."}</p>
+          <p>
+            {savedOnly
+              ? "The work you kept for later."
+              : "Browse finished work by the kind of ad you want to make."}
+          </p>
         </div>
 
         {visibleEntries.length > 0 ? (
-          <div className={styles.grid}>
-            {visibleEntries.map((entry) => {
-              const saved = savedIds.has(entry.id);
-              const playing = playingMediaId === entry.id;
-              const audible = soundOn && (
-                entry.media.kind === "audio"
-                  ? activeAudioId === entry.id
-                  : !activeAudioId && activeVideoId === entry.id
-              );
-
-              return (
-                <article className={styles.card} id={entry.id} key={entry.id}>
-                  <div className={styles.mediaWell}>
-                    {entry.media.kind === "video" ? (
-                      <video
-                        ref={(video) => {
-                          if (video) videoRefs.current.set(entry.id, video);
-                          else videoRefs.current.delete(entry.id);
-                        }}
-                        data-discovery-video={entry.id}
-                        src={entry.media.src}
-                        poster={entry.media.poster}
-                        muted
-                        loop
-                        playsInline
-                        preload="none"
-                        onPlay={() => setPlayingMediaId(entry.id)}
-                        onPause={() => setPlayingMediaId((current) => current === entry.id ? null : current)}
-                      />
-                    ) : entry.media.kind === "audio" ? (
-                      <>
-                        <DiscoveryAudioArtwork entry={entry} playing={playing} />
-                        <audio
-                          ref={(audio) => {
-                            if (audio) audioRefs.current.set(entry.id, audio);
-                            else audioRefs.current.delete(entry.id);
-                          }}
-                          src={entry.media.src}
-                          preload="none"
-                          loop
-                          onPlay={() => setPlayingMediaId(entry.id)}
-                          onPause={() => {
-                            setPlayingMediaId((current) => current === entry.id ? null : current);
-                            setActiveAudioId((current) => current === entry.id ? null : current);
-                          }}
-                        />
-                      </>
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={entry.media.src} alt={`${entry.brand}: ${entry.title}`} />
-                    )}
-
-                    <span className={styles.formatTag}>{entry.format.name}</span>
-                    <span className={styles.runtime}>{entry.media.durationLabel}</span>
-
-                    {entry.media.kind !== "image" ? (
-                      <div className={styles.mediaControls}>
-                        <button
-                          type="button"
-                          onClick={() => togglePlayback(entry)}
-                          aria-label={playing ? `Pause ${entry.title}` : `Play ${entry.title}`}
-                          title={playing ? "Pause" : "Play"}
-                        >
-                          {playing ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => toggleSound(entry)}
-                          aria-label={audible ? `Mute ${entry.title}` : `Hear ${entry.title}`}
-                          title={audible ? "Mute" : "Sound on"}
-                        >
-                          {audible ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
-                        </button>
-                      </div>
-                    ) : null}
-                    {curationMode ? (
-                      <button
-                        type="button"
-                        className={styles.curationButton}
-                        onClick={() => void hideEntry(entry)}
-                        aria-label={`Hide ${entry.title} from Discovery`}
-                        title="Hide from Discovery"
-                      >
-                        <X aria-hidden="true" />
-                      </button>
-                    ) : null}
+          <div className={styles.shelves}>
+            {visibleShelves.map((shelf) => (
+              <section
+                className={styles.shelf}
+                key={shelf.id}
+                aria-labelledby={`shelf-${shelf.id}`}
+              >
+                <div className={styles.shelfHeading}>
+                  <div>
+                    <h3 id={`shelf-${shelf.id}`}>{shelf.title}</h3>
+                    <p>{shelf.description}</p>
                   </div>
-
-                  <div className={styles.cardCopy}>
-                    <div>
-                      <p className={styles.brand}>{entry.brand}</p>
-                      <h3>{entry.title}</h3>
-                      <p className={styles.metadata}>
-                        Made with <strong>{entry.format.name}</strong> · v{entry.format.version}
-                        <br />
-                        by {entry.format.owner}
-                      </p>
-                    </div>
-                    <p className={styles.curatorNote}>{entry.curatorNote}</p>
-                    <div className={styles.cardActions}>
-                      <button
-                        type="button"
-                        className={saved ? styles.savedButton : ""}
-                        onClick={() => toggleSave(entry.id)}
-                      >
-                        <Bookmark aria-hidden="true" />
-                        {saved ? "Saved" : "Save"}
-                      </button>
-                      <button type="button" onClick={() => void shareEntry(entry)}>
-                        <Share2 aria-hidden="true" />
-                        Share
-                      </button>
-                      <Link href={`/s/${entry.id}`}>
-                        Open ad
-                        <ExternalLink aria-hidden="true" />
-                      </Link>
-                    </div>
+                  <div className={styles.shelfControls}>
+                    <span>{shelf.entries.length} ads</span>
+                    <button
+                      type="button"
+                      onClick={() => scrollShelf(shelf.id, -1)}
+                      aria-label={`Scroll ${shelf.title} left`}
+                    >
+                      <ChevronLeft aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => scrollShelf(shelf.id, 1)}
+                      aria-label={`Scroll ${shelf.title} right`}
+                    >
+                      <ChevronRight aria-hidden="true" />
+                    </button>
                   </div>
-                </article>
-              );
-            })}
+                </div>
+
+                <div
+                  className={styles.shelfTrack}
+                  ref={(track) => {
+                    if (track) shelfRefs.current.set(shelf.id, track);
+                    else shelfRefs.current.delete(shelf.id);
+                  }}
+                >
+                  {shelf.entries.map((entry) => {
+                    const saved = savedIds.has(entry.id);
+                    const playing = playingMediaId === entry.id;
+                    const audible = soundOn && (
+                      entry.media.kind === "audio"
+                        ? activeAudioId === entry.id
+                        : !activeAudioId && activeVideoId === entry.id
+                    );
+
+                    return (
+                      <article className={styles.card} id={entry.id} key={entry.id}>
+                        <div className={styles.mediaWell}>
+                          {entry.media.kind === "video" ? (
+                            <video
+                              ref={(video) => {
+                                if (video) videoRefs.current.set(entry.id, video);
+                                else videoRefs.current.delete(entry.id);
+                              }}
+                              data-discovery-video={entry.id}
+                              src={entry.media.src}
+                              poster={entry.media.poster}
+                              muted
+                              loop
+                              playsInline
+                              preload="none"
+                              onPlay={() => setPlayingMediaId(entry.id)}
+                              onPause={() => setPlayingMediaId((current) => current === entry.id ? null : current)}
+                            />
+                          ) : entry.media.kind === "audio" ? (
+                            <>
+                              <DiscoveryAudioArtwork entry={entry} playing={playing} />
+                              <audio
+                                ref={(audio) => {
+                                  if (audio) audioRefs.current.set(entry.id, audio);
+                                  else audioRefs.current.delete(entry.id);
+                                }}
+                                src={entry.media.src}
+                                preload="none"
+                                loop
+                                onPlay={() => setPlayingMediaId(entry.id)}
+                                onPause={() => {
+                                  setPlayingMediaId((current) => current === entry.id ? null : current);
+                                  setActiveAudioId((current) => current === entry.id ? null : current);
+                                }}
+                              />
+                            </>
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={entry.media.src} alt={`${entry.brand}: ${entry.title}`} />
+                          )}
+
+                          <span className={styles.formatTag}>{entry.format.name}</span>
+                          <span className={styles.runtime}>{entry.media.durationLabel}</span>
+
+                          {entry.media.kind !== "image" ? (
+                            <div className={styles.mediaControls}>
+                              <button
+                                type="button"
+                                onClick={() => togglePlayback(entry)}
+                                aria-label={playing ? `Pause ${entry.title}` : `Play ${entry.title}`}
+                                title={playing ? "Pause" : "Play"}
+                              >
+                                {playing ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => toggleSound(entry)}
+                                aria-label={audible ? `Mute ${entry.title}` : `Hear ${entry.title}`}
+                                title={audible ? "Mute" : "Sound on"}
+                              >
+                                {audible ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
+                              </button>
+                            </div>
+                          ) : null}
+                          {curationMode ? (
+                            <button
+                              type="button"
+                              className={styles.curationButton}
+                              onClick={() => void hideEntry(entry)}
+                              aria-label={`Hide ${entry.title} from Discovery`}
+                              title="Hide from Discovery"
+                            >
+                              <X aria-hidden="true" />
+                            </button>
+                          ) : null}
+                        </div>
+
+                        <div className={styles.cardCopy}>
+                          <div>
+                            <p className={styles.brand}>{entry.brand}</p>
+                            <h3>{entry.title}</h3>
+                            <p className={styles.metadata}>
+                              Made with <strong>{entry.format.name}</strong> · v{entry.format.version}
+                              <br />
+                              by {entry.format.owner}
+                            </p>
+                          </div>
+                          <p className={styles.curatorNote}>{entry.curatorNote}</p>
+                          <div className={styles.cardActions}>
+                            <button
+                              type="button"
+                              className={saved ? styles.savedButton : ""}
+                              onClick={() => toggleSave(entry.id)}
+                            >
+                              <Bookmark aria-hidden="true" />
+                              {saved ? "Saved" : "Save"}
+                            </button>
+                            <button type="button" onClick={() => void shareEntry(entry)}>
+                              <Share2 aria-hidden="true" />
+                              Share
+                            </button>
+                            <Link href={`/s/${entry.id}`}>
+                              Open ad
+                              <ExternalLink aria-hidden="true" />
+                            </Link>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
           </div>
         ) : (
           <div className={styles.emptyState}>

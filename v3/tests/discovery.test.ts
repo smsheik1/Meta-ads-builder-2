@@ -4,6 +4,7 @@ import {
   discoveryCatalog,
   filterDiscoveryEntries,
   getPublishedDiscoveryEntries,
+  groupDiscoveryEntriesByShelf,
 } from "../features/discovery/catalog";
 import { databaseFormatDiscoveryEntries } from "../features/discovery/databaseFormatArchive";
 import type { DiscoveryEntry } from "../features/discovery/types";
@@ -124,6 +125,31 @@ assert.ok(
 assert.ok(
   filterDiscoveryEntries(published, "", "teach").every((entry) => entry.goal === "teach"),
   "Goal filters should return only matching entries.",
+);
+
+const shelves = groupDiscoveryEntriesByShelf(published);
+const shelvedEntries = shelves.flatMap((shelf) => shelf.entries);
+assert.equal(shelves.length, 7, "Current Discovery proof should organize into seven useful shelves.");
+assert.equal(
+  shelvedEntries.length,
+  published.length,
+  "Every published ad should appear on exactly one Discovery shelf.",
+);
+assert.equal(
+  new Set(shelvedEntries.map((entry) => entry.id)).size,
+  published.length,
+  "Discovery shelves must not repeat finished ads.",
+);
+assert.deepEqual(
+  shelves.find((shelf) => shelf.id === "brand-jingles")?.entries.map((entry) => entry.id),
+  jingles.map((entry) => entry.id),
+  "Every Brand Jingle should stay together in one horizontal shelf.",
+);
+assert.ok(
+  shelves
+    .find((shelf) => shelf.id === "product-stories")
+    ?.entries.every((entry) => ["three-d-breakdown", "motion-story"].includes(entry.format.slug)),
+  "Product stories should contain only motion-led product formats.",
 );
 
 console.log("discovery tests passed");
