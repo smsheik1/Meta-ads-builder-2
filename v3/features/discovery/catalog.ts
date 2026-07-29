@@ -301,10 +301,16 @@ const discoveryShelfDefinitions = [
     formats: ["jingle"],
   },
   {
-    id: "fast-social",
-    title: "Fast Social Hooks",
-    description: "Video memes and quick dialogue made for the feed.",
-    formats: ["video-meme", "brainrot"],
+    id: "video-memes",
+    title: "Video Memes",
+    description: "Familiar clips carrying brand-specific buyer truths.",
+    formats: ["video-meme"],
+  },
+  {
+    id: "brainrot",
+    title: "Brainrot Ads",
+    description: "Fast dialogue and chaos built to hold attention.",
+    formats: ["brainrot"],
   },
   {
     id: "character-explainers",
