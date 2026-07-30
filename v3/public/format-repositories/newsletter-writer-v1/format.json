@@ -1,6 +1,6 @@
 {
   "id": "newsletter-writer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": "Wiggly Newsletter Writer",
   "description": "Turn a newsletter topic into grounded marketing email copy that follows a company's real writing samples.",
   "status": "agent-ready",

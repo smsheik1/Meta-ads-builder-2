@@ -1,7 +1,12 @@
 {
   "canonicalProfile": "goldens/brightmark-brand-profile.json",
   "canonicalNewsletter": "goldens/brightmark-newsletter.json",
-  "realProofNewsletter": "goldens/holden-brand-newsletter.json",
+  "legacyBaselineNewsletter": "goldens/holden-brand-newsletter.json",
+  "currentControlledRun": "comparisons/holden-current-controlled-run.json",
+  "improvedControlledRun": "comparisons/holden-improved-controlled-run.json",
+  "blindHoldoutRun": "comparisons/brightmark-holdout-run.json",
   "fixtureSources": "fixtures/brightmark-sources.json",
-  "fixtureBrief": "fixtures/brightmark-brief.json"
+  "fixtureBrief": "fixtures/brightmark-brief.json",
+  "holdoutSources": "fixtures/brightmark-holdout-sources.json",
+  "holdoutBrief": "fixtures/brightmark-holdout-brief.json"
 }

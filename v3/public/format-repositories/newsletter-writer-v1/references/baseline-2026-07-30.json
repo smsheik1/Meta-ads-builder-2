@@ -1,0 +1,32 @@
+{
+  "frozenAt": "2026-07-30",
+  "baseCommit": "0c08645e",
+  "purpose": "Immutable pointer to the current Newsletter Writer before the evidence-based improvement pass.",
+  "artifacts": [
+    {
+      "path": "goldens/holden-brand-newsletter.json",
+      "sha256": "003c46ecada0abbc8df684bd7da20a4f96a77c0f26f971b420d41ae1306d0fd4"
+    },
+    {
+      "path": "goldens/holden-brand-newsletter.md",
+      "sha256": "dd44a0d70a341779d5f3e75a172582ee9ba6ec3a678f5b6fe7be24d4dd6cabe0"
+    },
+    {
+      "path": "prompts/voice-profile.md",
+      "sha256": "651ae3adbbc2e5c33f1ef7085eb236a84d008caf07b4857d07da8e231f1397aa"
+    },
+    {
+      "path": "prompts/draft.md",
+      "sha256": "a16a184d0d5d6e98c93f4cf21dca895167a05f85ad120c20a78de5c2bcd51b73"
+    },
+    {
+      "path": "prompts/review.md",
+      "sha256": "f5ecfafe6ddd17ff2d03bdae048d73feeef595c550829f77dbdf442d56205f92"
+    },
+    {
+      "path": "v3/scripts/newsletter-writer-format.mjs",
+      "sha256": "e7a7a77a526ae8e02c701915d719ac02fbf6ea52a08f0feba59052dd67b76be9"
+    }
+  ],
+  "provenanceCaveat": "The Holden golden predates complete run provenance. Its original sources.json, profile, brief, and generated prompt files were not preserved. The output remains frozen as the current-agent baseline; any reconstructed evidence used later must be labeled reconstructed rather than presented as the original run record."
+}

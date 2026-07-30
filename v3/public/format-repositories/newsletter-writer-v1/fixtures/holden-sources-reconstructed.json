@@ -1,0 +1,72 @@
+{
+  "companyName": "Holden Brand",
+  "brandUrl": "https://www.holdenbrand.com/",
+  "websiteFacts": [
+    {
+      "id": "site-history-origin",
+      "claim": "R.B. (Pete) Holden started Holden in 1978 by manufacturing and selling three-ring binders from a small parking garage at 2301 North Akard in Dallas.",
+      "sourceUrl": "https://www.holdenbrand.com/about/"
+    },
+    {
+      "id": "site-history-recognition",
+      "claim": "Texas Instruments named Holden Vendor of the Year for product quality and customer service, and Holden received the recognition again in 2004 and 2006.",
+      "sourceUrl": "https://www.holdenbrand.com/about/"
+    },
+    {
+      "id": "site-history-promotional",
+      "claim": "Holden entered the promotional products industry in 1992 as the business world moved toward a paperless future.",
+      "sourceUrl": "https://www.holdenbrand.com/about/"
+    },
+    {
+      "id": "site-history-family",
+      "claim": "The Holden family became actively involved in 1992 as the company began transitioning to a second-generation family-owned business.",
+      "sourceUrl": "https://www.holdenbrand.com/about/"
+    },
+    {
+      "id": "site-history-technology",
+      "claim": "Holden began developing an in-house software platform in 2010 to improve its customer experience and internal operations, and launched the platform in 2014.",
+      "sourceUrl": "https://www.holdenbrand.com/about/"
+    },
+    {
+      "id": "site-products",
+      "claim": "Holden offers more than 500,000 customizable products.",
+      "sourceUrl": "https://www.holdenbrand.com/products/"
+    },
+    {
+      "id": "site-services",
+      "claim": "Holden offers branded products, packaging and kitting, custom apparel, and corporate gifting.",
+      "sourceUrl": "https://www.holdenbrand.com/what-we-do/"
+    },
+    {
+      "id": "site-process",
+      "claim": "Holden works with customers throughout the process and tailors the experience to how each customer works best.",
+      "sourceUrl": "https://www.holdenbrand.com/what-we-do/"
+    },
+    {
+      "id": "site-contact",
+      "claim": "New customers can submit Holden's New Project Request Form to start a project.",
+      "sourceUrl": "https://www.holdenbrand.com/contact-us-2/"
+    }
+  ],
+  "websiteVoiceSamples": [
+    {
+      "id": "site-language-history",
+      "label": "Company history",
+      "sourceUrl": "https://www.holdenbrand.com/about/",
+      "content": "R.B. (Pete) Holden envisions a business opportunity by manufacturing and selling three-ring binders. He starts his operation in a small parking garage at 2301 North Akard, across from what is now American Airlines Center. Holden is born and quickly becomes a nationwide supplier of professional business products."
+    },
+    {
+      "id": "site-language-process",
+      "label": "How Holden works",
+      "sourceUrl": "https://www.holdenbrand.com/what-we-do/",
+      "content": "We work with you every step of the way to create a unique promotional product and help your brand make an impact. We know what we’re doing, and we know that your business deserves a tailored experience. We don’t have to follow the same process every time – we work with you in the way that you work best."
+    },
+    {
+      "id": "site-language-contact",
+      "label": "New project invitation",
+      "sourceUrl": "https://www.holdenbrand.com/contact-us-2/",
+      "content": "Let’s Create Something Worth Talking About. Welcome! We’re excited to learn more about your project. To get started, please complete our New Project Request Form. Once submitted, a member of the Holden Brand team will review your request and follow up to begin the onboarding process."
+    }
+  ],
+  "newsletterSamples": []
+}

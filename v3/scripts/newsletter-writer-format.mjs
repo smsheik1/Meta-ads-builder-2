@@ -17,17 +17,25 @@ const GENERIC_PATTERNS = [
   /\brevolutioni[sz]e\b/i,
   /\bit is important to note\b/i,
   /\bwithout further ado\b/i,
+  /\bin conclusion\b/i,
+  /\bat the end of the day\b/i,
 ];
 
 const PROMPT_INJECTION = [
-  /ignore (?:all |any )?(?:previous|prior|earlier) instructions?/i,
-  /disregard (?:all |any )?(?:previous|prior|earlier) (?:instructions?|directions?)/i,
   /reveal (?:the )?(?:system prompt|hidden instructions?|secrets?)/i,
   /you are now (?:the|a) /i,
+  /(?:^|\n)\s*(?:system|developer|assistant)\s+(?:message|prompt|instructions?)\s*:/im,
+  /\b(?:upload|send|transmit|exfiltrate)\b[^.\n]{0,100}\b(?:input data|source data|system prompt|hidden instructions?|secrets?)\b/i,
+  /\b(?:ignore|override|disregard)\b[^.\n]{0,60}\b(?:instructions?|prompt|rules?)\b/i,
 ];
 
 const TOPIC_STOP_WORDS = new Set(
   "about after and company different from have make that the their this what when where which with".split(" "),
+);
+
+const FACT_SIGNAL_PATTERN = /\b(?:\d[\d,.]*%?|guarantee(?:d|s)?|overnight|same[- ]day|next[- ]day|free shipping|award(?:ed)?|certified|fastest|cheapest)\b/gi;
+const FACT_STOP_WORDS = new Set(
+  "about after also and are because been before brand can company every for from have into its more that the their them this today was were when where which with would your".split(" "),
 );
 
 function argument(name) {
@@ -68,16 +76,39 @@ async function writeJson(filePath, value) {
 }
 
 const hash = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+const contentHash = (value) => createHash("sha256").update(value).digest("hex");
 const words = (value) => value.trim().split(/\s+/).filter(Boolean);
 const normalizedTerms = (value) => value.toLowerCase().match(/[a-z0-9]+/g) ?? [];
+const websiteVoiceSamples = (sources) => sources.websiteVoiceSamples ?? [];
 const sourceIds = (sources) => new Set([
   ...sources.websiteFacts.map((fact) => fact.id),
+  ...websiteVoiceSamples(sources).map((sample) => sample.id),
   ...sources.newsletterSamples.map((sample) => sample.id),
 ]);
 const sourceTextById = (sources) => new Map([
   ...sources.websiteFacts.map((fact) => [fact.id, fact.claim]),
+  ...websiteVoiceSamples(sources).map((sample) => [sample.id, sample.content]),
   ...sources.newsletterSamples.map((sample) => [sample.id, sample.content]),
 ]);
+
+function voiceSources(sources) {
+  if (sources.newsletterSamples.length) {
+    return {
+      basis: "newsletter-samples",
+      items: sources.newsletterSamples,
+    };
+  }
+  if (websiteVoiceSamples(sources).length) {
+    return {
+      basis: "website-language",
+      items: websiteVoiceSamples(sources),
+    };
+  }
+  return {
+    basis: "facts-only",
+    items: sources.websiteFacts,
+  };
+}
 
 function containsPromptInjection(value) {
   return PROMPT_INJECTION.some((pattern) => pattern.test(value));
@@ -95,6 +126,27 @@ function addressesTopic(body, topic) {
     && topicTerms.filter((term) => bodyTerms.has(term)).length >= requiredMatches;
 }
 
+function sensitiveFactSignals(value) {
+  return (value.match(FACT_SIGNAL_PATTERN) ?? [])
+    .map((signal) => signal.toLowerCase().replace(/[-,\s]/g, ""));
+}
+
+function meaningfulTerms(value) {
+  return normalizedTerms(value).filter(
+    (term) => term.length >= 4 && !FACT_STOP_WORDS.has(term),
+  );
+}
+
+function unsupportedFactSignals(paragraph, citedClaims) {
+  const paragraphTerms = new Set(meaningfulTerms(paragraph));
+  return sensitiveFactSignals(paragraph).filter((signal) => !citedClaims.some((claim) => {
+    const normalizedClaim = claim.toLowerCase().replace(/[-,\s]/g, "");
+    if (!normalizedClaim.includes(signal)) return false;
+    const sharedTerms = meaningfulTerms(claim).filter((term) => paragraphTerms.has(term));
+    return sharedTerms.length >= 2;
+  }));
+}
+
 function validateSources(sources) {
   const errors = [];
   if (!sources.companyName?.trim()) errors.push("Company name is missing.");
@@ -103,11 +155,15 @@ function validateSources(sources) {
   } catch {
     errors.push("Brand URL is invalid.");
   }
-  if (!Array.isArray(sources.websiteFacts) || !Array.isArray(sources.newsletterSamples)) {
-    return [...errors, "Sources must include websiteFacts and newsletterSamples arrays."];
+  if (
+    !Array.isArray(sources.websiteFacts)
+    || !Array.isArray(sources.newsletterSamples)
+    || (sources.websiteVoiceSamples !== undefined && !Array.isArray(sources.websiteVoiceSamples))
+  ) {
+    return [...errors, "Sources must include websiteFacts and newsletterSamples arrays; websiteVoiceSamples is optional."];
   }
-  if (!sources.websiteFacts.length && !sources.newsletterSamples.length) {
-    errors.push("Add website facts or newsletter samples before building a voice profile.");
+  if (!sources.websiteFacts.length && !websiteVoiceSamples(sources).length && !sources.newsletterSamples.length) {
+    errors.push("Add website facts, website language, or newsletter samples before building a voice profile.");
   }
   if (sources.newsletterSamples.length > 5) errors.push("Use at most five newsletter samples.");
   for (const fact of sources.websiteFacts) {
@@ -117,14 +173,32 @@ function validateSources(sources) {
     }
     if (containsPromptInjection(fact.claim)) errors.push(`Website fact ${fact.id} looks like page instructions.`);
   }
+  for (const sample of websiteVoiceSamples(sources)) {
+    if (!sample.id?.trim() || !sample.label?.trim() || !sample.content?.trim() || !sample.sourceUrl?.trim()) {
+      errors.push("Every website voice sample needs id, label, content, and sourceUrl.");
+      continue;
+    }
+    if (containsPromptInjection(sample.content)) {
+      errors.push(`Website voice sample ${sample.id} looks like page instructions.`);
+    }
+  }
   for (const sample of sources.newsletterSamples) {
-    if (!sample.id?.trim() || !sample.label?.trim() || !sample.content?.trim()) {
-      errors.push("Every newsletter sample needs id, label, and content.");
+    if (!sample.id?.trim() || !sample.label?.trim() || !sample.content?.trim() || !sample.sha256?.trim()) {
+      errors.push("Every newsletter sample needs id, label, content, and sha256.");
       continue;
     }
     if (words(sample.content).length < 40) errors.push(`Newsletter sample ${sample.id} is too short.`);
+    if (sample.sha256 !== contentHash(sample.content)) {
+      errors.push(`Newsletter sample ${sample.id} does not match its sha256 provenance hash.`);
+    }
+    if (containsPromptInjection(sample.content)) {
+      errors.push(`Newsletter sample ${sample.id} looks like embedded instructions.`);
+    }
   }
-  if (sourceIds(sources).size !== sources.websiteFacts.length + sources.newsletterSamples.length) {
+  if (
+    sourceIds(sources).size
+    !== sources.websiteFacts.length + websiteVoiceSamples(sources).length + sources.newsletterSamples.length
+  ) {
     errors.push("Source ids must be unique.");
   }
   return errors;
@@ -138,12 +212,17 @@ function validateProfile(profile, sources) {
     "voiceSummary",
     "audience",
     "confidence",
+    "voiceBasis",
   ];
   for (const field of requiredStrings) {
     if (!profile[field]?.trim()) errors.push(`Brand profile ${field} is missing.`);
   }
   if (!["low", "medium", "high"].includes(profile.confidence)) {
     errors.push("Brand profile confidence must be low, medium, or high.");
+  }
+  const expectedVoice = voiceSources(sources);
+  if (profile.voiceBasis !== expectedVoice.basis) {
+    errors.push(`Brand profile voiceBasis must be ${expectedVoice.basis}.`);
   }
   const rules = profile.rules ?? {};
   for (const field of [
@@ -165,7 +244,7 @@ function validateProfile(profile, sources) {
   if ((profile.mustDo?.length ?? 0) < 2) errors.push("Brand profile needs at least two must-do rules.");
   if ((profile.neverDo?.length ?? 0) < 2) errors.push("Brand profile needs at least two never-do rules.");
   if ((profile.evidence?.length ?? 0) < 2) errors.push("Brand profile needs at least two evidence-backed observations.");
-  const allowed = sourceIds(sources);
+  const allowed = new Set(expectedVoice.items.map((item) => item.id));
   const sourceText = sourceTextById(sources);
   for (const item of profile.evidence ?? []) {
     if (!allowed.has(item.sourceId)) errors.push(`Unknown voice evidence source: ${item.sourceId}.`);
@@ -177,6 +256,19 @@ function validateProfile(profile, sources) {
     ) {
       errors.push(`Voice evidence quote was not found in source: ${item.sourceId}.`);
     }
+  }
+  for (const phrase of profile.signaturePhrases ?? []) {
+    if (
+      phrase?.trim()
+      && !expectedVoice.items.some((item) => (
+        sourceText.get(item.id)?.toLowerCase().includes(phrase.trim().toLowerCase())
+      ))
+    ) {
+      errors.push(`Signature phrase was not found in allowed voice evidence: ${phrase}.`);
+    }
+  }
+  if (!sources.newsletterSamples.length && profile.confidence !== "low") {
+    errors.push("A profile without past newsletters must use low confidence.");
   }
   if (sources.newsletterSamples.length >= 3 && profile.confidence === "low") {
     errors.push("A profile built from three or more samples should not have low confidence.");
@@ -232,23 +324,41 @@ function validateNewsletter(newsletter, sources, brief) {
     }
   }
   const allowed = sourceIds(sources);
+  const sourceText = sourceTextById(sources);
   if (!Array.isArray(newsletter.factsUsed) || newsletter.factsUsed.length < 1) {
     errors.push("Newsletter must list at least one grounded fact.");
   }
   for (const fact of newsletter.factsUsed ?? []) {
     if (!fact.claim?.trim() || !allowed.has(fact.sourceId)) {
       errors.push("Every grounded fact needs a claim and valid sourceId.");
+    } else {
+      const citedText = sourceText.get(fact.sourceId)?.toLowerCase() ?? "";
+      const claim = fact.claim.trim().toLowerCase();
+      const websiteFact = sources.websiteFacts.find((item) => item.id === fact.sourceId);
+      if (websiteFact ? claim !== citedText : !citedText.includes(claim)) {
+        errors.push(`Grounded fact must preserve the exact cited evidence snapshot: ${fact.sourceId}.`);
+      }
+    }
+  }
+  const citedClaims = (newsletter.factsUsed ?? [])
+    .map((fact) => fact.claim?.trim())
+    .filter(Boolean);
+  for (const paragraph of body.split(/\n{2,}/)) {
+    const unsupported = unsupportedFactSignals(paragraph, citedClaims);
+    if (unsupported.length) {
+      errors.push(`Sensitive factual claim is not supported by cited facts: ${unsupported.join(", ")}.`);
     }
   }
   if (!Array.isArray(newsletter.voiceEvidence) || newsletter.voiceEvidence.length < 2) {
     errors.push("Newsletter must cite at least two voice decisions.");
   }
-  const newsletterSourceIds = new Set(sources.newsletterSamples.map((sample) => sample.id));
+  const expectedVoice = voiceSources(sources);
+  const voiceSourceIds = new Set(expectedVoice.items.map((sample) => sample.id));
   for (const item of newsletter.voiceEvidence ?? []) {
     if (!item.choice?.trim() || !allowed.has(item.sourceId)) {
       errors.push("Every voice decision needs a choice and valid sourceId.");
-    } else if (newsletterSourceIds.size && !newsletterSourceIds.has(item.sourceId)) {
-      errors.push("Voice decisions must cite past newsletters when samples are available.");
+    } else if (!voiceSourceIds.has(item.sourceId)) {
+      errors.push(`Voice decisions must cite ${expectedVoice.basis} evidence.`);
     }
   }
   return errors;
@@ -324,12 +434,14 @@ async function init() {
       label: path.basename(samplePath),
       content: await readFile(path.resolve(samplePath), "utf8"),
     });
+    newsletterSamples.at(-1).sha256 = contentHash(newsletterSamples.at(-1).content);
   }
   await mkdir(directory, { recursive: true });
   await writeJson(path.join(directory, "sources.json"), {
     companyName: argument("company") ?? "",
     brandUrl,
     websiteFacts: [],
+    websiteVoiceSamples: [],
     newsletterSamples,
   });
   await writeJson(path.join(directory, "state.json"), {

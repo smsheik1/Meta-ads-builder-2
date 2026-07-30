@@ -1,0 +1,222 @@
+{
+  "runMetadata": {
+    "comparisonRole": "improved-v1.1",
+    "generatedIndependently": true,
+    "modelConfigurationRecorded": false,
+    "inputSha256": {
+      "sources": "e6cf0382ce71a3e1ff439711df4224c84dccd587ddf4f8fc77dd5cf3515fc732",
+      "brief": "7677d2d63311e247797c7cd93101681207aa120a467d48149ba377f8ce0bdc03"
+    },
+    "promptSha256": {
+      "voiceProfile": "2480815baae438171645930916164f1626a267917de1e2a86781190ab17c3450",
+      "draft": "ca85c05f46e2ffa32a02e25fb1c21df19b33e703cd9e36de34c231d32243b536",
+      "review": "6c655c8109c73aa99039cae9b1875f4b3f51154eeb931995149e1d418077883d"
+    }
+  },
+  "profile": {
+    "companyName": "Holden Brand",
+    "brandUrl": "https://www.holdenbrand.com/",
+    "voiceSummary": "A website-informed baseline, not a proven newsletter voice: direct reader address, concrete project language, specific origin details, and confident statements about adapting the process to the customer. Invitations are upbeat but restrained and lead to a literal next step.",
+    "audience": "Marketing, people, event, and procurement teams buying branded merchandise",
+    "confidence": "low",
+    "voiceBasis": "website-language",
+    "rules": {
+      "register": "Use plain, confident brand language. Speak as we for Holden and you for the reader without inventing familiarity or an inbox persona.",
+      "sentenceRhythm": "Favor clear 10-20-word declarative sentences, varied with an occasional short invitation or longer explanatory sentence.",
+      "paragraphShape": "Use compact one-to-three-sentence paragraphs. Give a concrete history detail, practical distinction, or buyer action its own paragraph when emphasis helps.",
+      "openingStyle": "Open with a sourced object, action, place, or direct project invitation. Avoid broad promotional-products category statements.",
+      "transitionStyle": "Connect ideas causally: a concrete origin, a change in the business world, the current tailored process, and the reader's next action.",
+      "punctuation": "Favor periods and natural contractions. Reserve exclamation points for a brief welcome or invitation and use dashes only for a genuine contrast.",
+      "vocabulary": "Use specific terms such as branded products, packaging and kitting, custom apparel, corporate gifting, promotional products, and tailored experience.",
+      "ctaStyle": "Invite the reader to create something, then name one literal action: complete the New Project Request Form. Do not manufacture urgency.",
+      "formatting": "Use plain paragraphs and one clear CTA. Avoid emojis, hashtags, ornamental separators, and dense lists."
+    },
+    "mustDo": [
+      "Translate Holden's history into a practical reason to work with its team rather than presenting a chronology.",
+      "Put a sourced object, place, action, or buyer moment near the beginning.",
+      "Use direct reader address when explaining how Holden adapts its process.",
+      "Name relevant services instead of relying on generic merchandise language."
+    ],
+    "neverDo": [
+      "Present this website-informed profile as evidence of Holden's established newsletter behavior.",
+      "Add unsupported superlatives, savings, turnaround times, deadlines, or customer outcomes.",
+      "Turn the company history into a year-by-year résumé.",
+      "Add slang, fake quotations, forced humor, or an invented founder persona."
+    ],
+    "domainTerms": [
+      "promotional products",
+      "branded products",
+      "packaging and kitting",
+      "custom apparel",
+      "corporate gifting",
+      "customizable products",
+      "tailored experience",
+      "New Project Request Form"
+    ],
+    "signaturePhrases": [
+      "We work with you every step of the way",
+      "tailored experience",
+      "We don’t have to follow the same process every time",
+      "Let’s Create Something Worth Talking About."
+    ],
+    "evidence": [
+      {
+        "sourceId": "site-language-history",
+        "quote": "R.B. (Pete) Holden envisions a business opportunity by manufacturing and selling three-ring binders.",
+        "lesson": "Ground company history in a specific person, object, and action."
+      },
+      {
+        "sourceId": "site-language-process",
+        "quote": "We know what we’re doing, and we know that your business deserves a tailored experience.",
+        "lesson": "Express competence directly, then connect it to a customer-specific benefit."
+      },
+      {
+        "sourceId": "site-language-process",
+        "quote": "We don’t have to follow the same process every time – we work with you in the way that you work best.",
+        "lesson": "Use first- and second-person language to make process flexibility concrete."
+      },
+      {
+        "sourceId": "site-language-contact",
+        "quote": "Let’s Create Something Worth Talking About.",
+        "lesson": "Frame the invitation around making something together."
+      },
+      {
+        "sourceId": "site-language-contact",
+        "quote": "To get started, please complete our New Project Request Form.",
+        "lesson": "Follow an inviting headline with a direct, literal next step."
+      }
+    ]
+  },
+  "draft": {
+    "subjectLines": [
+      {
+        "text": "From a Dallas parking garage to your next branded project",
+        "angle": "Company origin and continuity"
+      },
+      {
+        "text": "More than 500,000 products are only the beginning",
+        "angle": "Product breadth plus service"
+      },
+      {
+        "text": "A tailored alternative to the product-search routine",
+        "angle": "Buyer process and differentiation"
+      }
+    ],
+    "previewText": "Holden has adapted since 1978 while keeping each customer's way of working at the center of the process.",
+    "body": "In 1978, R.B. (Pete) Holden began selling three-ring binders from a small parking garage at 2301 North Akard in Dallas. That history shapes what Holden offers beyond an online product catalog: a tailored way to plan the project.\n\nHolden did not stay tied to its original product. As the business world moved toward a paperless future, the company entered promotional products in 1992. It later began developing an in-house software platform in 2010 to improve customer experience and internal operations, launching the platform in 2014.\n\nToday, Holden offers more than 500,000 customizable products, plus packaging and kitting, custom apparel, and corporate gifting. A catalog that broad creates possibilities, but the practical value is having a team help make the choices fit the project.\n\nHolden works with customers throughout the process and tailors the experience to how each customer works best. For marketing, people, event, and procurement teams, that can mean starting with the real need and then deciding whether the project calls for products, packaging, apparel, gifting, or a combination.\n\nIf you have a branded merchandise project in mind, submit Holden’s New Project Request Form to start a tailored project plan.",
+    "cta": {
+      "text": "Start a New Project",
+      "url": "https://www.holdenbrand.com/contact-us-2/"
+    },
+    "factsUsed": [
+      {
+        "claim": "R.B. (Pete) Holden started Holden in 1978 by manufacturing and selling three-ring binders from a small parking garage at 2301 North Akard in Dallas.",
+        "sourceId": "site-history-origin"
+      },
+      {
+        "claim": "Holden entered the promotional products industry in 1992 as the business world moved toward a paperless future.",
+        "sourceId": "site-history-promotional"
+      },
+      {
+        "claim": "Holden began developing an in-house software platform in 2010 to improve its customer experience and internal operations, and launched the platform in 2014.",
+        "sourceId": "site-history-technology"
+      },
+      {
+        "claim": "Holden offers more than 500,000 customizable products.",
+        "sourceId": "site-products"
+      },
+      {
+        "claim": "Holden offers branded products, packaging and kitting, custom apparel, and corporate gifting.",
+        "sourceId": "site-services"
+      },
+      {
+        "claim": "Holden works with customers throughout the process and tailors the experience to how each customer works best.",
+        "sourceId": "site-process"
+      },
+      {
+        "claim": "New customers can submit Holden's New Project Request Form to start a project.",
+        "sourceId": "site-contact"
+      }
+    ],
+    "voiceEvidence": [
+      {
+        "choice": "Opened with Holden's concrete product and Dallas origin before explaining its present relevance.",
+        "sourceId": "site-language-history"
+      },
+      {
+        "choice": "Made the tailored process the practical distinction rather than relying on generic service claims.",
+        "sourceId": "site-language-process"
+      },
+      {
+        "choice": "Closed with a direct invitation to complete the project request form.",
+        "sourceId": "site-language-contact"
+      }
+    ]
+  },
+  "final": {
+    "subjectLines": [
+      {
+        "text": "What began with three-ring binders in Dallas",
+        "angle": "Concrete company origin"
+      },
+      {
+        "text": "More than 500,000 products, shaped around your project",
+        "angle": "Breadth made useful through a tailored process"
+      },
+      {
+        "text": "Start with the project, not the search box",
+        "angle": "A more useful buying workflow"
+      }
+    ],
+    "previewText": "Holden's history of adapting now supports tailored plans across products, packaging, apparel, and gifting.",
+    "body": "In 1978, R.B. (Pete) Holden started with three-ring binders in a small parking garage at 2301 North Akard in Dallas. That history matters to today’s buyer because Holden offers more than an online product search: it offers a tailored way to plan the work.\n\nWhen the business world moved toward a paperless future, Holden entered promotional products in 1992. That was the consequential turn: change the offer when the customer’s world changes. Holden later developed an in-house software platform to improve its customer experience and internal operations, launching it in 2014. Its experience is grounded in adapting, not standing still.\n\nToday, breadth is part of the answer: we offer more than 500,000 customizable products.\n\nFor a marketing team planning an event, a people team assembling gifts, or procurement coordinating branded materials, the useful question is not simply which item to pick. It is what the whole project needs. We work with you throughout the process. Whether the project calls for branded products, packaging and kitting, custom apparel, or corporate gifting, the plan is tailored to how you work best.\n\nHave a project in mind? Complete Holden’s New Project Request Form to get started.",
+    "cta": {
+      "text": "Complete the Project Request Form",
+      "url": "https://www.holdenbrand.com/contact-us-2/"
+    },
+    "factsUsed": [
+      {
+        "claim": "R.B. (Pete) Holden started Holden in 1978 by manufacturing and selling three-ring binders from a small parking garage at 2301 North Akard in Dallas.",
+        "sourceId": "site-history-origin"
+      },
+      {
+        "claim": "Holden entered the promotional products industry in 1992 as the business world moved toward a paperless future.",
+        "sourceId": "site-history-promotional"
+      },
+      {
+        "claim": "Holden began developing an in-house software platform in 2010 to improve its customer experience and internal operations, and launched the platform in 2014.",
+        "sourceId": "site-history-technology"
+      },
+      {
+        "claim": "Holden offers more than 500,000 customizable products.",
+        "sourceId": "site-products"
+      },
+      {
+        "claim": "Holden offers branded products, packaging and kitting, custom apparel, and corporate gifting.",
+        "sourceId": "site-services"
+      },
+      {
+        "claim": "Holden works with customers throughout the process and tailors the experience to how each customer works best.",
+        "sourceId": "site-process"
+      },
+      {
+        "claim": "New customers can submit Holden's New Project Request Form to start a project.",
+        "sourceId": "site-contact"
+      }
+    ],
+    "voiceEvidence": [
+      {
+        "choice": "Kept the concrete binder and Dallas origin while connecting it immediately to the buyer's present decision.",
+        "sourceId": "site-language-history"
+      },
+      {
+        "choice": "Shifted into we and you when describing the current tailored process.",
+        "sourceId": "site-language-process"
+      },
+      {
+        "choice": "Used a specific form-based CTA without urgency or an unsupported promise.",
+        "sourceId": "site-language-contact"
+      }
+    ]
+  }
+}

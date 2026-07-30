@@ -36,6 +36,10 @@ type Newsletter = {
   cta: { text: string; url: string };
 };
 
+type ControlledRun = {
+  final: Newsletter;
+};
+
 const files = [
   ["SKILL.md", "Agent instructions"],
   ["inputs.json", "Inputs and defaults"],
@@ -49,7 +53,17 @@ const files = [
 export default function NewsletterWriterFormatPage() {
   const format = readJson<FormatManifest>("format.json");
   const pipeline = readJson<{ progress: string; stages: PipelineStage[] }>("pipeline.json");
-  const newsletter = readJson<Newsletter>("goldens/holden-brand-newsletter.json");
+  const improvedRun = readJson<ControlledRun>("comparisons/holden-improved-controlled-run.json");
+  const controlledRuns = [
+    {
+      label: "Version A",
+      run: readJson<ControlledRun>("comparisons/holden-current-controlled-run.json"),
+    },
+    {
+      label: "Version B",
+      run: improvedRun,
+    },
+  ];
 
   return (
     <main className="min-h-screen bg-[#f4f6f8] text-slate-950">
@@ -86,66 +100,60 @@ export default function NewsletterWriterFormatPage() {
           </Button>
         </section>
 
-        <section data-testid="newsletter-writer-proof">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-bold">See the finished format</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Real Holden Brand proof built from its public website, with no past newsletters supplied.
+        <section data-testid="newsletter-writer-comparison">
+          <div className="max-w-3xl">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-700">
+              Controlled before and after
+            </p>
+            <h2 className="mt-2 text-xl font-bold">Holden Brand proof: read both before revealing the labels</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Same reconstructed Holden evidence, topic, and brief. Each version was generated
+              independently with a different prompt set.
+            </p>
+            <Badge variant="outline" className="mt-3">
+              Website-only profile · low confidence
+            </Badge>
+          </div>
+
+          <div className="mt-5 grid items-start gap-5 lg:grid-cols-2">
+            {controlledRuns.map(({ label, run }) => (
+              <article
+                key={label}
+                className="overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm"
+                data-testid={`controlled-${label.toLowerCase().replace(" ", "-")}`}
+              >
+                <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
+                  <Badge variant="outline">{label}</Badge>
+                  <h3 className="mt-3 text-lg font-bold">{run.final.subjectLines[0]?.text}</h3>
+                  <p className="mt-1 text-sm text-slate-600">{run.final.previewText}</p>
+                </div>
+                <div className="space-y-4 px-5 py-6 text-[15px] leading-7 text-slate-800">
+                  {run.final.body.split("\n\n").map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
+                  <p className="pt-2 font-bold">{run.final.cta.text}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <details className="mt-5 rounded-md border border-slate-300 bg-white p-5 shadow-sm">
+            <summary className="cursor-pointer font-bold">Reveal which agent wrote each version</summary>
+            <div className="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+              <p>
+                <strong>Version A is the frozen v1.0 agent. Version B is the improved v1.1 agent.</strong>
+              </p>
+              <p>
+                B begins inside the Dallas garage, builds one causal story about adapting when the
+                customer&apos;s world changes, and turns Holden&apos;s product range into a buyer decision.
+                A is factual, but reads more like a milestone timeline.
+              </p>
+              <p>
+                This is still a low-confidence website-language match. Three to five past newsletters
+                are required before Wiggly can claim a demonstrated email voice.
               </p>
             </div>
-            <Badge variant="outline">Website-only profile · low confidence</Badge>
-          </div>
-
-          <div className="mt-5 grid items-start gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.6fr)]">
-            <article
-              className="overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm"
-              data-testid="holden-newsletter-preview"
-            >
-              <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
-                  Holden Brand · Newsletter proof
-                </p>
-                <h3 className="mt-2 text-xl font-bold">{newsletter.subjectLines[0]?.text}</h3>
-                <p className="mt-1 text-sm text-slate-600">{newsletter.previewText}</p>
-              </div>
-              <div className="space-y-4 px-5 py-6 text-[15px] leading-7 text-slate-800">
-                {newsletter.body.split("\n\n").map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-                <Button asChild className="mt-2">
-                  <a href={newsletter.cta.url}>{newsletter.cta.text}</a>
-                </Button>
-              </div>
-            </article>
-
-            <aside className="space-y-6">
-              <div>
-                <h3 className="font-bold">Three distinct inbox angles</h3>
-                <ol className="mt-3 space-y-2">
-                  {newsletter.subjectLines.map((subject, index) => (
-                    <li key={subject.text} className="rounded-md border border-slate-300 bg-white p-3 text-sm">
-                      <span className="font-bold">{index + 1}. {subject.text}</span>
-                      <span className="mt-1 block text-slate-500">{subject.angle}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-              <div className="border-l-4 border-cyan-500 pl-4">
-                <h3 className="font-bold">Why it works</h3>
-                <ul className="mt-2 space-y-2 text-sm text-slate-700">
-                  <li>Specific company history replaces generic longevity claims.</li>
-                  <li>Every factual statement maps back to a Holden page.</li>
-                  <li>The central argument turns history into buyer value.</li>
-                  <li>One fact-and-voice review removes unsupported flourishes.</li>
-                </ul>
-              </div>
-              <p className="text-sm text-slate-600">
-                Add three to five past emails and the same workflow upgrades from a website-informed
-                voice to a high-confidence newsletter voice.
-              </p>
-            </aside>
-          </div>
+          </details>
         </section>
 
         <section data-testid="newsletter-writer-pipeline">

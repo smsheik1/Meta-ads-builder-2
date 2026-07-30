@@ -10,7 +10,9 @@ assert.match(source, /format-repositories\/newsletter-writer-v1/);
 assert.match(source, /Download runnable kit/);
 assert.match(source, /Holden Brand proof/);
 assert.match(source, /Website-only profile/);
-assert.match(source, /Three distinct inbox angles/);
+assert.match(source, /read both before revealing the labels/i);
+assert.match(source, /run: improvedRun/);
+assert.match(source, /Version A is the frozen v1\.0 agent\. Version B is the improved v1\.1 agent\./);
 assert.match(source, /No image, video, voice, or paid Wiggly provider is called/);
 assert.equal(
   existsSync(
@@ -32,7 +34,7 @@ assert.equal(
 );
 assert.match(profile?.handoff?.totalEstimate || "", /\$0/);
 const prompt = buildDiscoveryHandoffPrompt(profile!, "https://wiggly.agentenamel.com");
-assert.match(prompt, /Exact public version: 1\.0\.0/);
+assert.match(prompt, /Exact public version: 1\.1\.0/);
 assert.match(prompt, /Ask me one short question at a time/);
 assert.ok(
   prompt.trim().endsWith('"What company is this for? Share its website if it has one."'),

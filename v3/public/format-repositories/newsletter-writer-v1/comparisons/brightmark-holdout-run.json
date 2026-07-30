@@ -1,0 +1,162 @@
+{
+  "profile": {
+    "companyName": "Brightmark Promotions",
+    "brandUrl": "https://brightmark.example",
+    "voiceSummary": "Brightmark writes in short, practical paragraphs that reframe a familiar buying habit, test products against ordinary use, and move quickly toward a low-pressure next step. Concrete products and buyer moments carry the argument; hype does not.",
+    "audience": "Teams choosing branded gifts and event merchandise for clients, attendees, and other recipients.",
+    "confidence": "medium",
+    "voiceBasis": "newsletter-samples",
+    "rules": {
+      "register": "Use plain, assured language. Address the reader directly and use we only for Brightmark's process or offer.",
+      "sentenceRhythm": "Mix short verdicts with medium explanatory sentences. Use an occasional two-sentence contrast to sharpen the main idea.",
+      "paragraphShape": "Keep paragraphs compact and centered on one practical point. Move from problem, to concrete examples, to Brightmark's help.",
+      "openingStyle": "Open by challenging a weak buying assumption with a specific product or occasion already in view.",
+      "transitionStyle": "Advance through practical consequences and buyer moments rather than headings, summaries, or formal signposting.",
+      "punctuation": "Favor periods, commas, and occasional colons. Avoid exclamation points, decorative punctuation, and parenthetical asides.",
+      "vocabulary": "Use concrete product and fulfillment terms such as bottle, tote, charger, mailer, address list, audience, budget, event date, and branded kit.",
+      "ctaStyle": "End with one direct, low-pressure request for a useful input or offer. State what Brightmark will send or narrow in return.",
+      "formatting": "Use plain paragraphs without bullets, emojis, bold text, or ornamental section labels."
+    },
+    "mustDo": [
+      "Judge products by how recipients will use them after the occasion.",
+      "Use concrete objects and ordinary buyer moments to make the point.",
+      "Connect Brightmark's operational help directly to the reader's next step."
+    ],
+    "neverDo": [
+      "Do not rely on hype, superlatives, fake urgency, or exclamation points.",
+      "Do not lead with catalog breadth or stack up product features.",
+      "Do not end with a generic recap or inspirational conclusion."
+    ],
+    "domainTerms": [
+      "branded kits",
+      "individual recipients",
+      "drinkware",
+      "bags",
+      "tech accessories",
+      "apparel",
+      "event merchandise",
+      "mailer",
+      "address list",
+      "attendee profile"
+    ],
+    "signaturePhrases": [
+      "useful on an ordinary Tuesday",
+      "would someone still use this if the logo disappeared?",
+      "You send one address list. We handle the boxes."
+    ],
+    "evidence": [
+      {
+        "sourceId": "newsletter-1",
+        "quote": "A client gift does not need to be loud. It needs to be useful on an ordinary Tuesday.",
+        "lesson": "Open with a concise contrast, then judge the product by ordinary usefulness."
+      },
+      {
+        "sourceId": "newsletter-1",
+        "quote": "You send one address list. We handle the boxes.",
+        "lesson": "Explain service value through a concrete division of work."
+      },
+      {
+        "sourceId": "newsletter-2",
+        "quote": "People take pens because they are free. That is a pretty low bar.",
+        "lesson": "Challenge a familiar behavior in plain language without inflating the tone."
+      },
+      {
+        "sourceId": "newsletter-2",
+        "quote": "Send us the attendee profile and we will narrow the catalog before you lose an afternoon to it.",
+        "lesson": "Close by requesting one buyer input and promising a specific form of help."
+      }
+    ]
+  },
+  "draft": {
+    "subjectLines": [
+      {
+        "text": "Welcome new hires with one planned kit",
+        "angle": "A coordinated welcome"
+      },
+      {
+        "text": "What will they use after the first week?",
+        "angle": "Longer-term usefulness"
+      },
+      {
+        "text": "A better way to handle onboarding equipment",
+        "angle": "Replacing loose items with a kit"
+      }
+    ],
+    "previewText": "Choose useful products, package them as one welcome, and plan around your next start date.",
+    "body": "A new-hire kit should not arrive like loose equipment. It should feel like someone planned the welcome.\n\nStart with what happens after the box opens. A bottle can sit beside the laptop. A bag can carry the things that do not stay at the desk. A tech accessory can solve one small, recurring problem. Apparel can give the new hire something they would choose to wear. The point is not to fill the package. It is to choose products with a job.\n\nThen make the packaging part of the welcome. Put the note where it is seen first. Group the products in an order that makes sense. Keep the branding considered, so the kit feels made for a person instead of pulled from a supply shelf.\n\nBrightmark sells branded drinkware, bags, tech accessories, apparel, and event merchandise. We also assemble branded kits and ship them to individual recipients. People teams can choose the useful pieces and deliver them as one coordinated welcome instead of managing loose items one by one.\n\nBefore you choose anything, ask three questions: What will they use on the first day? What will still be useful after the first week? What should the packaging say before the note is even read?\n\nShare your headcount and start date, and we will prepare a tailored onboarding-kit plan.\n\nWant a clearer plan for your next group of new hires? Request one here.",
+    "cta": {
+      "text": "Request a kit plan",
+      "url": "https://brightmark.example/contact"
+    },
+    "factsUsed": [
+      {
+        "claim": "Brightmark sells branded drinkware, bags, tech accessories, apparel, and event merchandise.",
+        "sourceId": "site-categories"
+      },
+      {
+        "claim": "Brightmark assembles branded kits and ships them to individual recipients.",
+        "sourceId": "site-fulfillment"
+      }
+    ],
+    "voiceEvidence": [
+      {
+        "choice": "Opened with a concise contrast between loose equipment and a planned welcome.",
+        "sourceId": "newsletter-1"
+      },
+      {
+        "choice": "Used concrete products and tested them against use after the immediate occasion.",
+        "sourceId": "newsletter-2"
+      },
+      {
+        "choice": "Closed by requesting buyer inputs and offering a specific planning deliverable.",
+        "sourceId": "newsletter-2"
+      }
+    ]
+  },
+  "final": {
+    "subjectLines": [
+      {
+        "text": "An onboarding kit, not loose equipment",
+        "angle": "Packaging and presentation"
+      },
+      {
+        "text": "What will they use after the first week?",
+        "angle": "Everyday product usefulness"
+      },
+      {
+        "text": "Plan the next welcome around headcount and start date",
+        "angle": "The tailored kit-plan offer"
+      }
+    ],
+    "previewText": "Useful products, considered packaging, and one kit plan for your next start date.",
+    "body": "An onboarding kit should not arrive like loose equipment in a box. It should feel like someone planned the welcome.\n\nStart with what happens after the package is opened. A bottle earns a place beside the laptop. A bag carries what does not stay at the desk. A tech accessory solves one small, recurring problem. Apparel gives the new hire something they would choose to wear. Give every item a job. That is a better test than filling every inch of the box: will this still be useful after the first week?\n\nPackaging does some of the welcoming, too. Put the note where it is seen first. Arrange the products in an order that makes sense. Keep the mix focused. The result should feel made for a person, not pulled from a supply shelf.\n\nBrightmark sells branded drinkware, bags, tech accessories, apparel, and event merchandise. We assemble branded kits and ship them to individual recipients. People teams can plan one coordinated welcome instead of managing loose items one by one.\n\nBefore choosing products, answer three questions: What belongs in the first-day routine? What will still be useful after the first week? What should the new hire notice first when the box opens?\n\nSend us your headcount and start date. We will build a tailored onboarding-kit plan before you lose an afternoon to the catalog.",
+    "cta": {
+      "text": "Request a kit plan",
+      "url": "https://brightmark.example/contact"
+    },
+    "factsUsed": [
+      {
+        "claim": "Brightmark sells branded drinkware, bags, tech accessories, apparel, and event merchandise.",
+        "sourceId": "site-categories"
+      },
+      {
+        "claim": "Brightmark assembles branded kits and ships them to individual recipients.",
+        "sourceId": "site-fulfillment"
+      }
+    ],
+    "voiceEvidence": [
+      {
+        "choice": "Opened with a specific kit and a short contrast that establishes the topic immediately.",
+        "sourceId": "newsletter-1"
+      },
+      {
+        "choice": "Built the argument through concrete products and a test based on continued usefulness.",
+        "sourceId": "newsletter-2"
+      },
+      {
+        "choice": "Ended with a direct request for buyer inputs and a practical promise to narrow the planning work.",
+        "sourceId": "newsletter-2"
+      }
+    ]
+  }
+}
