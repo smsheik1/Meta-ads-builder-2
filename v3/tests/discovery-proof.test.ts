@@ -119,7 +119,11 @@ assert.ok(
 assert.ok(
   formatPageSource.includes("generateStaticParams") &&
     formatPageSource.includes("DiscoveryProofMedia") &&
-    formatPageSource.includes("Technical proof"),
+    formatPageSource.includes("Technical proof") &&
+    formatPageSource.includes('heroProof.media.kind === "image"') &&
+    formatPageSource.includes('entry.media.kind === "image"') &&
+    formatPageSource.includes("aspect-[3/4]") &&
+    formatPageSource.includes("aspect-[9/16]"),
   "Format pages should be static consumer proof surfaces over existing media and technical pages.",
 );
 assert.equal(existsSync("app/ads"), false, "Discovery must not add a second /ads detail route.");

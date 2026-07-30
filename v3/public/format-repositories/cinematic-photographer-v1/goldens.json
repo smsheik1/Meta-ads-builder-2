@@ -6,6 +6,7 @@
       "type": "source-reference",
       "title": "Cinematic photographer source proof",
       "imagePath": "assets/source/example-output.png",
+      "styleReferencePath": "assets/source/style-reference.jpg",
       "guidePath": "assets/source/guide.pdf",
       "sourceUrl": "https://www.instagram.com/p/DbWAcxjDJYc/",
       "model": "GPT Image 2",

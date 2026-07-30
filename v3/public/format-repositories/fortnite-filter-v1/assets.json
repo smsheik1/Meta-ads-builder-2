@@ -4,6 +4,16 @@
     "postUrl": "https://www.instagram.com/p/DbA4f6Blm2v/",
     "guideScreenshot": "assets/source/skai-guide-screenshot.png",
     "exampleOutput": "assets/source/skai-example-output.jpg",
+    "carouselExamples": [
+      "assets/source/skai-example-output.jpg",
+      "assets/source/example-02.jpg",
+      "assets/source/example-03.jpg",
+      "assets/source/example-04.jpg",
+      "assets/source/example-05.jpg",
+      "assets/source/example-06.jpg",
+      "assets/source/example-07.jpg",
+      "assets/source/example-08.jpg"
+    ],
     "capturedPrompt": "prompts/transform.txt"
   },
   "proofInputs": [

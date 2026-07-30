@@ -5,8 +5,9 @@
     "resourceUrl": "https://docs.google.com/document/d/1WjHyG4gPQcOGvHK6MDDCAX4XfhaA4PEqkWieoehTjeM/edit",
     "guide": "assets/source/guide.pdf",
     "exampleOutput": "assets/source/example-output.png",
+    "referenceInput": "assets/source/reference-input.jpg",
     "promptPath": "prompts/transform.txt",
-    "verification": "Prompt, model label, and embedded source image were fetched from the shared Google Doc and visually checked."
+    "verification": "Prompt, model label, and embedded source image were fetched from the shared Google Doc and visually checked. The matching original portrait was recovered from the source Instagram carousel."
   },
   "fixture": {
     "path": "fixtures/input.jpg",

@@ -17,6 +17,10 @@ assert.equal(profile.version, "1.0.0");
 assert.equal(profile.technicalHref, "/format-lab/gta-vi");
 assert.equal(profile.proofEntries.length, 1);
 assert.equal(
+  profile.proofEntries[0]?.media.referenceSrc,
+  "/format-repositories/gta-vi-v1/assets/source/reference-input.jpg",
+);
+assert.equal(
   profile.handoff.firstQuestion,
   "Which photo should I transform into a cinematic GTA VI-style character?",
 );

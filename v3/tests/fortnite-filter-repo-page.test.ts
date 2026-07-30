@@ -24,7 +24,18 @@ const profile = getDiscoveryFormatProfile("fortnite-filter");
 assert.ok(profile?.handoff, "Fortnite Filter should offer a runnable agent handoff.");
 assert.equal(profile.version, "1.0.0");
 assert.equal(profile.technicalHref, "/format-lab/fortnite-filter");
-assert.equal(profile.proofEntries.length, 2);
+assert.equal(profile.proofEntries.length, 8);
+assert.equal(
+  profile.proofEntries.filter((entry) => entry.showInDiscovery !== false).length,
+  1,
+);
+assert.ok(
+  profile.proofEntries.every((entry) =>
+    entry.media.kind === "image" &&
+    entry.media.src.startsWith("/format-repositories/fortnite-filter-v1/assets/source/")
+  ),
+  "Fortnite public proof should use the canonical SKAI carousel examples.",
+);
 assert.equal(
   profile.handoff.firstQuestion,
   "Which photo should I turn into a Fortnite-style character?",

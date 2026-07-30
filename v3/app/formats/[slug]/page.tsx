@@ -112,7 +112,11 @@ export default async function FormatPage({
           <DiscoveryProofMedia
             entry={heroProof}
             autoPlay={heroProof.media.kind === "video"}
-            className="block aspect-[9/16] w-full object-cover"
+            className={
+              heroProof.media.kind === "image"
+                ? "block aspect-[3/4] w-full object-cover"
+                : "block aspect-[9/16] w-full object-cover"
+            }
           />
         </div>
       </section>
@@ -139,7 +143,11 @@ export default async function FormatPage({
                 <DiscoveryProofMedia
                   entry={entry}
                   autoPlay={false}
-                  className="block aspect-[9/16] w-full bg-[#080817] object-cover"
+                  className={
+                    entry.media.kind === "image"
+                      ? "block aspect-[3/4] w-full bg-[#080817] object-cover"
+                      : "block aspect-[9/16] w-full bg-[#080817] object-cover"
+                  }
                 />
                 <div className="p-4">
                   <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#667087]">

@@ -21,6 +21,10 @@ assert.equal(profile.version, "1.0.0");
 assert.equal(profile.technicalHref, "/format-lab/cinematic-photographer");
 assert.equal(profile.proofEntries.length, 1);
 assert.equal(
+  profile.proofEntries[0]?.media.referenceSrc,
+  "/format-repositories/cinematic-photographer-v1/assets/source/style-reference.jpg",
+);
+assert.equal(
   profile.handoff.firstQuestion,
   "Should I use the exact packaged photographer concept, or do you want to change the subject while keeping the cinematic recipe?",
 );
