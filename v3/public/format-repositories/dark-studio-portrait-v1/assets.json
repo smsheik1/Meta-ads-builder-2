@@ -1,0 +1,19 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DbA4-FuFrfs/",
+    "resourceUrl": "https://docs.google.com/document/d/1kWU1Pl9R7IwN3W9-o6mSmHAAk-0Rh2orF0cTUgRzIek/edit",
+    "guide": "assets/source/guide.pdf",
+    "referenceInset": "assets/source/reference-input.jpg",
+    "verification": "The delivered Google Doc supplied the exact GPT Image 2 prompt. The Instagram carousel supplied six matching native source outputs.",
+    "referenceNote": "The creator did not publish a separate original input, so the native cover portrait is reused only as Wiggly's visual identity anchor."
+  },
+  "examples": [
+    { "id": "afro-glasses", "path": "assets/source/afro-glasses.jpg" },
+    { "id": "cover", "path": "assets/source/cover.jpg" },
+    { "id": "soft-glasses", "path": "assets/source/soft-glasses.jpg" },
+    { "id": "braided-rim", "path": "assets/source/braided-rim.jpg" },
+    { "id": "wet-curls-glasses", "path": "assets/source/wet-curls-glasses.jpg" },
+    { "id": "shadow-fringe", "path": "assets/source/shadow-fringe.jpg" }
+  ]
+}

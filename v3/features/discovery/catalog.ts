@@ -693,6 +693,71 @@ const fakeItTillYouMakeItDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const darkStudioPortraitDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "afro-glasses",
+    brand: "Monochrome portrait",
+    title: "Let the rim light draw the whole face",
+    curatorNote: "A clean halo, deep facial shadow, crisp glasses, and heavy grain turn formal tailoring into a raw analog portrait.",
+    image: "afro-glasses",
+  },
+  {
+    id: "cover",
+    brand: "Editorial cover",
+    title: "Put the calm stare inside the darkness",
+    curatorNote: "The off-center crop, formal black suit, and controlled falloff make a simple portrait feel immediately cinematic.",
+    image: "cover",
+  },
+  {
+    id: "soft-glasses",
+    brand: "Soft-focus portrait",
+    title: "Keep the edges imperfect",
+    curatorNote: "A slight head tilt, faint bloom, and gentle softness keep the high-contrast studio treatment human.",
+    image: "soft-glasses",
+  },
+  {
+    id: "braided-rim",
+    brand: "Hair-light study",
+    title: "Trace every braid with light",
+    curatorNote: "The overhead halo separates the braided silhouette while pores, grain, and deep eye shadows preserve realism.",
+    image: "braided-rim",
+  },
+  {
+    id: "wet-curls-glasses",
+    brand: "Textured close-up",
+    title: "Make every curl catch the backlight",
+    curatorNote: "Wet curls, facial hair, and glasses retain their geometry even as the face recedes into crushed blacks.",
+    image: "wet-curls-glasses",
+  },
+  {
+    id: "shadow-fringe",
+    brand: "Low-key silhouette",
+    title: "Let the face almost disappear",
+    curatorNote: "A bright fringe halo and barely visible expression show how little fill light the recipe needs.",
+    image: "shadow-fringe",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `dark-studio-portrait-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 81 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/dark-studio-portrait-v1/assets/source/${image}.jpg`,
+    referenceSrc:
+      "/format-repositories/dark-studio-portrait-v1/assets/source/reference-input.jpg",
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "dark-studio-portrait",
+    name: "Dark Studio Portrait",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -1116,6 +1181,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...ccdJpegFilterDiscoveryEntries,
   ...passportClickDiscoveryEntries,
   ...fakeItTillYouMakeItDiscoveryEntries,
+  ...darkStudioPortraitDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -1200,6 +1266,7 @@ const discoveryShelfDefinitions = [
       "ccd-jpeg-filter",
       "passport-click",
       "fake-it-till-you-make-it",
+      "dark-studio-portrait",
     ],
   },
   {

@@ -1,0 +1,20 @@
+{
+  "id": "dark-studio-portrait",
+  "version": "1.0.0",
+  "title": "Dark Studio Portrait",
+  "description": "Turn one portrait into a grainy, high-contrast black-and-white studio image with a glowing rim light, formal tailoring, and deep analog shadows.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DbA4-FuFrfs/",
+    "resourceUrl": "https://docs.google.com/document/d/1kWU1Pl9R7IwN3W9-o6mSmHAAk-0Rh2orF0cTUgRzIek/edit",
+    "ctaKeyword": "AI",
+    "modelShown": "GPT Image 2"
+  },
+  "outputs": [
+    "1 inspected monochrome dark-studio portrait",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

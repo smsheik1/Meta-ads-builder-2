@@ -1,0 +1,22 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The source identity remains recognizable",
+    "The subject wears a formal black suit and tie",
+    "A strong overhead or back light creates a clean halo around hair and shoulders",
+    "The face falls into deep shadow with smooth high-contrast falloff",
+    "Heavy film grain, slight softness, pores, and faint bloom feel analog",
+    "The result is a black-and-white photograph rather than CGI or illustration"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}
