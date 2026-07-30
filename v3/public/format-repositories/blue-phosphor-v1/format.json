@@ -1,0 +1,20 @@
+{
+  "id": "blue-phosphor",
+  "version": "1.0.0",
+  "title": "Blue Phosphor Filter",
+  "description": "Turn one photograph into a luminous cyan-blue monochrome image with analog scanlines, soft phosphor bloom, and concentric optical interference.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/Da5ngwyimYQ/",
+    "resourceUrl": "https://docs.google.com/document/d/1RHT3MDjm1a7nI-ieQdN6YjOF-bYUGT3GEJrvzX7ajIM/edit",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana Pro"
+  },
+  "outputs": [
+    "1 inspected Blue Phosphor image",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

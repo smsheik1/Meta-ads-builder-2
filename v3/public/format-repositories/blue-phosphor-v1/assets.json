@@ -1,0 +1,21 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/Da5ngwyimYQ/",
+    "resourceUrl": "https://docs.google.com/document/d/1RHT3MDjm1a7nI-ieQdN6YjOF-bYUGT3GEJrvzX7ajIM/edit",
+    "guide": "assets/source/guide.pdf",
+    "cover": "assets/source/cover.jpg",
+    "referenceInset": "assets/source/car-headlights-reference.jpg",
+    "verification": "The delivered Google Doc supplied the exact Nano Banana Pro prompt and negative prompt. The Instagram carousel supplied seven native before-and-after examples.",
+    "referenceNote": "Each native example already displays its matching original photo in the top-right corner. The same originals are also packaged as separate reference crops for agent use."
+  },
+  "examples": [
+    { "id": "car-headlights", "path": "assets/source/car-headlights.jpg", "referencePath": "assets/source/car-headlights-reference.jpg" },
+    { "id": "terrace", "path": "assets/source/terrace.jpg", "referencePath": "assets/source/terrace-reference.jpg" },
+    { "id": "neon-stage", "path": "assets/source/neon-stage.jpg", "referencePath": "assets/source/neon-stage-reference.jpg" },
+    { "id": "night-car", "path": "assets/source/night-car.jpg", "referencePath": "assets/source/night-car-reference.jpg" },
+    { "id": "cowboy-market", "path": "assets/source/cowboy-market.jpg", "referencePath": "assets/source/cowboy-market-reference.jpg" },
+    { "id": "garage", "path": "assets/source/garage.jpg", "referencePath": "assets/source/garage-reference.jpg" },
+    { "id": "lounge", "path": "assets/source/lounge.jpg", "referencePath": "assets/source/lounge-reference.jpg" }
+  ]
+}
