@@ -166,6 +166,7 @@ const generatedFormatSlugs = [
   "chrome-void",
   "ccd-jpeg-filter",
   "jingle",
+  "newsletter-writer",
 ];
 assert.ok(
   generatedFormatSlugs.every((slug) => published.some((entry) => entry.format.slug === slug)),
@@ -233,7 +234,7 @@ assert.ok(
 
 const shelves = groupDiscoveryEntriesByShelf(published);
 const shelvedEntries = shelves.flatMap((shelf) => shelf.entries);
-assert.equal(shelves.length, 10, "Current Discovery proof should organize into ten useful shelves.");
+assert.equal(shelves.length, 11, "Current Discovery proof should organize into eleven useful shelves.");
 assert.equal(
   shelvedEntries.length,
   published.length,
@@ -280,6 +281,11 @@ assert.ok(
     .find((shelf) => shelf.id === "brainrot")
     ?.entries.every((entry) => entry.format.slug === "brainrot"),
   "Brainrot should not be merged into the Video Meme shelf.",
+);
+assert.deepEqual(
+  shelves.find((shelf) => shelf.id === "written-content")?.entries.map((entry) => entry.id),
+  ["newsletter-writer-holden-history"],
+  "Newsletter Writer should use one real finished email proof in its own shelf.",
 );
 assert.deepEqual(
   shelves.find((shelf) => shelf.id === "skai-generated")?.entries.map((entry) => entry.format.slug),

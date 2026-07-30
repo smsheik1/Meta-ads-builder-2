@@ -1,0 +1,74 @@
+{
+  "subjectLines": [
+    {
+      "text": "The parking garage where Holden began",
+      "angle": "Origin-story curiosity"
+    },
+    {
+      "text": "What nearly five decades should buy you",
+      "angle": "Experience translated into buyer value"
+    },
+    {
+      "text": "Why Holden never became just another catalog",
+      "angle": "Service-led differentiation"
+    }
+  ],
+  "previewText": "Since 1978, Holden has changed with the market while keeping the work personal.",
+  "body": "Before Holden offered more than 500,000 customizable products, R.B. “Pete” Holden was making three-ring binders in a small Dallas parking garage.\n\nThat was 1978.\n\nThe easy move would have been to keep selling what already worked. But in 1992, as business moved toward a paperless future, Holden adapted and entered the promotional products industry. The Holden family also became actively involved, beginning the transition into a second-generation family-owned business.\n\nWe kept adapting. Holden built its own software platform to improve the customer experience and make the work behind it more efficient. Along the way, Texas Instruments named Holden Vendor of the Year for product quality and customer service, then recognized us again in 2004 and 2006.\n\nBut a long history only matters if it changes what you get today.\n\nThat is the Holden difference. You get access to branded products, custom apparel, packaging and kitting, and corporate gifts without being left alone with a giant catalog. We work with you every step of the way to find a solution that fits your brand, audience, and goal.\n\nYour brand is not one size fits all. Your service should not be either.\n\nNearly five decades have taught us when to adapt, where the details matter, and how to keep a big project personal.\n\nHave an idea in mind—or no idea where to start? Let’s make a game plan and bring your brand to life.",
+  "cta": {
+    "text": "Start your project with Holden",
+    "url": "https://www.holdenbrand.com/contact-us-2/"
+  },
+  "factsUsed": [
+    {
+      "claim": "Holden has been bringing brands to life since 1978.",
+      "sourceId": "site-home"
+    },
+    {
+      "claim": "R.B. Pete Holden started the company by manufacturing three-ring binders in a small Dallas parking garage.",
+      "sourceId": "site-history-origin"
+    },
+    {
+      "claim": "Holden entered promotional products in 1992 as business moved toward a paperless society.",
+      "sourceId": "site-history-promotional"
+    },
+    {
+      "claim": "Holden became a second-generation family-owned business.",
+      "sourceId": "site-history-family"
+    },
+    {
+      "claim": "Texas Instruments recognized Holden for product quality and customer service.",
+      "sourceId": "site-history-recognition"
+    },
+    {
+      "claim": "Holden built an in-house software platform to improve customer experience and operations.",
+      "sourceId": "site-history-technology"
+    },
+    {
+      "claim": "Holden offers more than 500,000 customizable products.",
+      "sourceId": "site-products"
+    },
+    {
+      "claim": "Holden offers branded products, packaging and kitting, custom apparel, and corporate gifting.",
+      "sourceId": "site-services"
+    },
+    {
+      "claim": "Holden works with customers every step of the way.",
+      "sourceId": "site-process"
+    }
+  ],
+  "voiceEvidence": [
+    {
+      "choice": "The opening uses a specific object and place to make company history tangible.",
+      "sourceId": "site-voice-vet-detail"
+    },
+    {
+      "choice": "Short standalone sentences carry the contrast between history and present-day value.",
+      "sourceId": "site-voice-physical"
+    },
+    {
+      "choice": "The close makes Holden the reassuring partner for the next practical decision.",
+      "sourceId": "site-voice-vet-help"
+    }
+  ]
+}

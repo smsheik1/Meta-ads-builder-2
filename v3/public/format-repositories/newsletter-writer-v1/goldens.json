@@ -1,6 +1,7 @@
 {
   "canonicalProfile": "goldens/brightmark-brand-profile.json",
   "canonicalNewsletter": "goldens/brightmark-newsletter.json",
+  "realProofNewsletter": "goldens/holden-brand-newsletter.json",
   "fixtureSources": "fixtures/brightmark-sources.json",
   "fixtureBrief": "fixtures/brightmark-brief.json"
 }

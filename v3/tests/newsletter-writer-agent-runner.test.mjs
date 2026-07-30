@@ -178,6 +178,8 @@ for (const required of [
   "goldens/brightmark-brand-profile.json",
   "goldens/brightmark-draft.json",
   "goldens/brightmark-newsletter.json",
+  "goldens/holden-brand-newsletter.json",
+  "goldens/holden-brand-newsletter.md",
 ]) {
   assert.equal(existsSync(path.join(packageRoot, required)), true, `${required} must be packaged.`);
 }
