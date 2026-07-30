@@ -353,7 +353,11 @@ export function DiscoveryClient({
                         onMouseEnter={() => previewMedia(entry)}
                         onMouseLeave={() => stopMediaPreview(entry)}
                       >
-                        <div className={styles.mediaWell}>
+                        <div
+                          className={`${styles.mediaWell} ${
+                            entry.media.kind === "image" ? styles.mediaWellImage : ""
+                          }`}
+                        >
                           <Link
                             href={formatHref}
                             className={styles.mediaLink}

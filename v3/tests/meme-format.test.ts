@@ -372,6 +372,15 @@ const expandingBrainLayout = layoutMemeSlotText(
 assert.equal(expandingBrainLayout.text, "Forget the\nbirthday");
 assert.ok(expandingBrainLayout.fontSize <= expandingBrainTemplate.slots[0]!.fontSize);
 
+const thisIsFineTemplate = MEME_TEMPLATES.find((template) => template.id === "this_is_fine");
+assert.ok(thisIsFineTemplate);
+const thisIsFineBottomSlot = thisIsFineTemplate.slots.find((slot) => slot.id === "bottomText");
+assert.ok(thisIsFineBottomSlot);
+assert.ok(
+  thisIsFineBottomSlot.y <= 875,
+  "This Is Fine bottom copy should sit directly below the source image.",
+);
+
 const rerolled = rerollScene(scenes, scenes[0]!, 0, createDefaultSceneLocks());
 assert.equal(rerolled.index, 1);
 assert.equal(rerolled.scene?.format, "meme");

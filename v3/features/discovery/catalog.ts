@@ -716,16 +716,16 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   {
-    id: "this-is-fine-ad-fatigue",
+    id: "davids-cookies-this-is-fine",
     status: "published",
     order: 12,
-    brand: "Wiggly",
-    title: "When every ad looks the same",
-    curatorNote: "A known meme makes the buyer's frustration clear before the copy is read.",
+    brand: "David's Cookies",
+    title: "The birthday is tomorrow",
+    curatorNote: "A familiar panic becomes a simple reason to send cookies now.",
     goal: "entertain",
     media: {
       kind: "image",
-      src: "/memes/this_is_fine_full.png",
+      src: "/discovery/meme/davids-cookies-this-is-fine.png",
       durationLabel: "Static",
     },
     format: {
