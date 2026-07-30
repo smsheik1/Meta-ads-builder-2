@@ -248,10 +248,6 @@ export function DiscoveryClient({
               <Bookmark aria-hidden="true" />
               {savedOnly ? "Browse" : "Saved"} {savedIds.size > 0 ? `(${savedIds.size})` : ""}
             </Link>
-            <Link href="/create" className={`${styles.headerButton} ${styles.primaryButton}`}>
-              Open Wiggly
-              <ExternalLink aria-hidden="true" />
-            </Link>
           </div>
         </div>
       </header>

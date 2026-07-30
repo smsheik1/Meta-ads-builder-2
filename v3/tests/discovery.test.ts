@@ -15,6 +15,11 @@ const proofEntries = getPublishedDiscoveryProofEntries();
 const discoveryStyles = readFileSync("app/discover/discovery.module.css", "utf8");
 const discoveryClient = readFileSync("app/discover/DiscoveryClient.tsx", "utf8");
 
+assert.doesNotMatch(
+  discoveryClient,
+  /Open Wiggly/,
+  "Discover should not repeat a generic Open Wiggly CTA in its header.",
+);
 assert.match(
   discoveryStyles,
   /\.formatTag,\s*\.runtime\s*\{[\s\S]*?opacity:\s*0;/,

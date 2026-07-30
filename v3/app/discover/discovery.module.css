@@ -100,11 +100,6 @@
   background: #c9ff55;
 }
 
-.primaryButton {
-  background: #080817;
-  color: white;
-}
-
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
@@ -605,10 +600,6 @@
   .headerInner {
     grid-template-columns: auto minmax(240px, 1fr) auto;
     gap: 14px;
-  }
-
-  .primaryButton {
-    display: none;
   }
 
   .shelfTrack {
