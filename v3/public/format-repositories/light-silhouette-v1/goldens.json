@@ -1,0 +1,96 @@
+{
+  "purpose": "Judge subject-only silhouette transformation, exact pose and scene preservation, premium glow behavior, cinematic depth, and natural photographic finish.",
+  "examples": [
+    {
+      "id": "coastal-cliff",
+      "title": "Coastal Cliff",
+      "imagePath": "assets/source/coastal-cliff.jpg",
+      "referencePath": "assets/source/coastal-cliff-reference.jpg",
+      "referenceType": "creator-published-inset",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The relaxed standing pose, loose clothing, bag placement, coastline, and horizon stay fixed",
+        "The white silhouette remains readable against a detailed green and blue landscape",
+        "Warm glow and thin light trails add energy without replacing the scene"
+      ]
+    },
+    {
+      "id": "desert-camel",
+      "title": "Desert Camel",
+      "imagePath": "assets/source/desert-camel.jpg",
+      "referencePath": "assets/source/desert-camel-reference.jpg",
+      "referenceType": "creator-published-inset",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The camel, reins, stance, dunes, and low horizon remain intact",
+        "The subject alone becomes luminous while the animal stays photographic",
+        "The warm desert palette naturally supports the golden aura"
+      ]
+    },
+    {
+      "id": "subway-platform",
+      "title": "Subway Platform",
+      "imagePath": "assets/source/subway-platform.jpg",
+      "referencePath": "assets/source/subway-platform-reference.jpg",
+      "referenceType": "creator-published-inset",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The crossed-leg lean, folded arms, pole, train, signage, and platform perspective all survive",
+        "The bright figure reads clearly against the dark station",
+        "Cinematic contrast heightens the scene without changing its geometry"
+      ]
+    },
+    {
+      "id": "misty-hills",
+      "title": "Misty Hills",
+      "imagePath": "assets/source/misty-hills.jpg",
+      "referencePath": "assets/source/misty-hills-reference.jpg",
+      "referenceType": "creator-published-inset",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The small standing pose and layered green ridges remain in the same positions",
+        "A restrained glow keeps the subject visible through soft mist",
+        "The background gains gentle separation without losing natural detail"
+      ]
+    },
+    {
+      "id": "pyramid-dance",
+      "title": "Pyramid Dance",
+      "imagePath": "assets/source/pyramid-dance.jpg",
+      "referencePath": "assets/source/pyramid-dance-reference.jpg",
+      "referenceType": "creator-published-inset",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The airborne dance pose, foreground sand, and pyramid scale stay recognizable",
+        "Fine glow lines preserve the unusual limb shapes without adding facial detail",
+        "The luminous figure remains distinct inside a bright desert scene"
+      ]
+    },
+    {
+      "id": "mountain-meadow",
+      "title": "Mountain Meadow",
+      "imagePath": "assets/source/mountain-meadow.jpg",
+      "referencePath": "assets/source/mountain-meadow-reference.jpg",
+      "referenceType": "creator-published-inset",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The outstretched arms, body proportions, meadow, and mountain skyline stay locked",
+        "Sunset backlight and the generated aura feel like one consistent light source",
+        "The distant landscape keeps its photographic texture and depth"
+      ]
+    },
+    {
+      "id": "lakeside-field",
+      "title": "Lakeside Field",
+      "imagePath": "assets/source/lakeside-field.jpg",
+      "referencePath": "assets/source/lakeside-field-reference.jpg",
+      "referenceType": "creator-published-inset",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The standing subject, grassy foreground, lake, and green valley remain unchanged",
+        "The white silhouette stays legible against both water and grass",
+        "Warm highlights balance the cool landscape without making it look synthetic"
+      ]
+    }
+  ]
+}

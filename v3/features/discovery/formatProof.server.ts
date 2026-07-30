@@ -923,6 +923,52 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "light-silhouette",
+    promise: "Turn only the subject into a glowing white silhouette while preserving the original pose, scene, and photographic detail.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/light-silhouette",
+    manifestPath: "format-repositories/light-silhouette-v1/format.json",
+    whatStays: [
+      "The subject's exact pose and proportions",
+      "The original background, scenery, and perspective",
+      "The source lighting direction, shadows, and composition",
+      "A realistic photographic finish",
+    ],
+    whatChanges: [
+      "Only the human subject becomes a glowing white silhouette",
+      "Smooth edges remove facial detail without changing the pose",
+      "Soft golden light trails and a restrained aura add energy",
+      "Gentle optical depth and contrast create a premium cinematic finish",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP photograph at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected Light Silhouette photograph",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for premium",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Treat GPT Image 2 as creator provenance, not as the packaged Replicate route",
+        "Validate the photograph locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected 3:4 Light Silhouette photograph plus prediction and quality provenance",
+      firstQuestion: "Which photo should I turn into a Light Silhouette?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",

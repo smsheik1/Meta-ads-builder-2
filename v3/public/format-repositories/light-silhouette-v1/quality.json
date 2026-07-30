@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "Only the subject becomes a glowing white silhouette",
+    "The original pose, proportions, background, composition, and environment remain recognizable",
+    "Smooth edges, warm highlights, soft golden trails, and a subtle aura feel cinematic",
+    "The background has natural depth without looking artificial, painted, or over-blurred",
+    "The result remains premium and photographic without facial detail, warped anatomy, stray text, or watermarks"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

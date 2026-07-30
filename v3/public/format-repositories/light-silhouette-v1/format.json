@@ -1,0 +1,22 @@
+{
+  "id": "light-silhouette",
+  "version": "1.0.0",
+  "title": "Light Silhouette",
+  "description": "Turn only the subject into a glowing white human silhouette while preserving the original pose, scene, lighting, shadows, and composition.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/Daxp6JYCvuf/",
+    "resourceTitle": "Light Silhouette Prompt",
+    "resourceUrl": "https://docs.google.com/document/d/1fkCvR3TDStmfpjo6ULhGmw-A2V2It-bulTVFNv-cISs",
+    "resourceAccess": "Instagram DM to public Google Doc",
+    "ctaKeyword": "AI",
+    "modelShown": "GPT Image 2"
+  },
+  "outputs": [
+    "1 inspected Light Silhouette photograph",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

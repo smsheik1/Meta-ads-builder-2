@@ -1130,6 +1130,76 @@ const doodleArtDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const lightSilhouetteDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "coastal-cliff",
+    brand: "Coastal portrait",
+    title: "Turn one quiet pose into a beacon",
+    curatorNote: "The exact stance, loose clothing, bag, horizon, and coastline remain intact while only the subject becomes luminous.",
+    image: "coastal-cliff",
+  },
+  {
+    id: "desert-camel",
+    brand: "Travel portrait",
+    title: "Keep the animal and transform only the person",
+    curatorNote: "The camel, reins, dunes, and stance stay photographic while the human subject becomes a warm white silhouette.",
+    image: "desert-camel",
+  },
+  {
+    id: "subway-platform",
+    brand: "Urban portrait",
+    title: "Make the subject glow inside a dark commute",
+    curatorNote: "The folded arms, crossed-leg lean, pole, train, and platform perspective survive the high-contrast treatment.",
+    image: "subway-platform",
+  },
+  {
+    id: "misty-hills",
+    brand: "Landscape portrait",
+    title: "Hold a tiny figure inside a huge landscape",
+    curatorNote: "A restrained glow keeps the distant subject visible without flattening the mist or layered green ridges.",
+    image: "misty-hills",
+  },
+  {
+    id: "pyramid-dance",
+    brand: "Action portrait",
+    title: "Preserve an impossible pose in full light",
+    curatorNote: "Fine glow lines keep the airborne limbs readable while the pyramids and desert remain untouched.",
+    image: "pyramid-dance",
+  },
+  {
+    id: "mountain-meadow",
+    brand: "Golden-hour portrait",
+    title: "Let the existing sun drive the effect",
+    curatorNote: "The outstretched arms, meadow, and mountain skyline stay fixed while the aura follows the original backlight.",
+    image: "mountain-meadow",
+  },
+  {
+    id: "lakeside-field",
+    brand: "Nature portrait",
+    title: "Balance a warm silhouette against a cool valley",
+    curatorNote: "The standing subject stays legible across water and grass while every landscape layer preserves its photographic depth.",
+    image: "lakeside-field",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `light-silhouette-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 120 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/light-silhouette-v1/assets/source/${image}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "light-silhouette",
+    name: "Light Silhouette",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -1560,6 +1630,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...coolToneFilterDiscoveryEntries,
   ...haloEffectDiscoveryEntries,
   ...doodleArtDiscoveryEntries,
+  ...lightSilhouetteDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -1651,6 +1722,7 @@ const discoveryShelfDefinitions = [
       "cool-tone-filter",
       "halo-effect",
       "doodle-art",
+      "light-silhouette",
     ],
   },
   {
