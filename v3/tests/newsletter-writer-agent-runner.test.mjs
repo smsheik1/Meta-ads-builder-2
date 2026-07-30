@@ -31,6 +31,22 @@ assert.deepEqual(validateSources(sources), []);
 assert.deepEqual(validateProfile(profile, sources), []);
 assert.deepEqual(validateNewsletter(draftNewsletter, sources, brief), []);
 assert.deepEqual(validateNewsletter(newsletter, sources, brief), []);
+
+const possessiveTopic = {
+  ...brief,
+  topic: "Brightmark's summer event kits",
+};
+assert.deepEqual(validateNewsletter(newsletter, sources, possessiveTopic), []);
+
+const unrelatedTopic = {
+  ...brief,
+  topic: "Deep sea welding certification",
+};
+assert.ok(
+  validateNewsletter(newsletter, sources, unrelatedTopic)
+    .some((error) => error.includes("approved topic")),
+);
+
 assert.notEqual(draftNewsletter.body, newsletter.body);
 assert.match(newsletterMarkdown(newsletter), /## Subject line options/);
 assert.match(newsletterMarkdown(newsletter), /\[Build my summer event shortlist\]/);

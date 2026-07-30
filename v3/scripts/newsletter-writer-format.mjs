@@ -26,6 +26,10 @@ const PROMPT_INJECTION = [
   /you are now (?:the|a) /i,
 ];
 
+const TOPIC_STOP_WORDS = new Set(
+  "about after and company different from have make that the their this what when where which with".split(" "),
+);
+
 function argument(name) {
   const inline = process.argv.find((value) => value.startsWith(`--${name}=`));
   if (inline) return inline.slice(name.length + 3);
@@ -65,6 +69,7 @@ async function writeJson(filePath, value) {
 
 const hash = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 const words = (value) => value.trim().split(/\s+/).filter(Boolean);
+const normalizedTerms = (value) => value.toLowerCase().match(/[a-z0-9]+/g) ?? [];
 const sourceIds = (sources) => new Set([
   ...sources.websiteFacts.map((fact) => fact.id),
   ...sources.newsletterSamples.map((sample) => sample.id),
@@ -76,6 +81,18 @@ const sourceTextById = (sources) => new Map([
 
 function containsPromptInjection(value) {
   return PROMPT_INJECTION.some((pattern) => pattern.test(value));
+}
+
+function addressesTopic(body, topic) {
+  const bodyTerms = new Set(normalizedTerms(body));
+  const allTopicTerms = normalizedTerms(topic);
+  const usefulTopicTerms = allTopicTerms.filter(
+    (term) => term.length >= 4 && !TOPIC_STOP_WORDS.has(term),
+  );
+  const topicTerms = usefulTopicTerms.length ? usefulTopicTerms : allTopicTerms;
+  const requiredMatches = Math.min(2, topicTerms.length);
+  return requiredMatches > 0
+    && topicTerms.filter((term) => bodyTerms.has(term)).length >= requiredMatches;
 }
 
 function validateSources(sources) {
@@ -198,7 +215,7 @@ function validateNewsletter(newsletter, sources, brief) {
   if (bodyWords < minimum || bodyWords > maximum) {
     errors.push(`Newsletter body must be ${minimum}-${maximum} words for ${brief.targetLength} length.`);
   }
-  if (!body.toLowerCase().includes(brief.topic.trim().split(/\s+/)[0].toLowerCase())) {
+  if (!addressesTopic(body, brief.topic)) {
     errors.push("Newsletter body does not clearly address the approved topic.");
   }
   for (const pattern of GENERIC_PATTERNS) {
