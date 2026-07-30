@@ -863,6 +863,52 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "newsletter-writer",
+    promise: "Turn one topic into a grounded marketing email that follows the company's real writing habits.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/newsletter-writer",
+    manifestPath: "format-repositories/newsletter-writer-v1/format.json",
+    whatStays: [
+      "Grounded company facts",
+      "Real voice patterns",
+      "Three distinct subject lines",
+      "One clear CTA",
+    ],
+    whatChanges: [
+      "The company",
+      "The topic",
+      "The audience",
+      "The offer",
+    ],
+    handoff: {
+      requiredInputs: [
+        "A company website",
+        "Three to five past newsletters when available",
+        "One newsletter topic",
+      ],
+      deliverables: [
+        "One evidence-backed voice profile",
+        "Three subject lines and preview text",
+        "One grounded newsletter body and CTA",
+        "One Markdown file plus JSON provenance",
+      ],
+      instructions: [
+        "Research the official website",
+        "Learn voice from past emails when available",
+        "Write the newsletter from the approved topic",
+        "Run one fact-and-voice review before finalizing",
+      ],
+      estimates: [
+        { label: "Research + voice profile", cost: "$0 Wiggly provider cost", time: "about 2-5 min" },
+        { label: "Draft", cost: "$0 Wiggly provider cost", time: "about 1-3 min" },
+        { label: "Review + finalize", cost: "$0 Wiggly provider cost", time: "about 1-2 min" },
+      ],
+      totalEstimate: "$0 Wiggly provider cost, usually 4-10 min",
+      output: "One newsletter.md plus JSON evidence, voice, brief, and final-copy records",
+      firstQuestion: "What company is this for? Share its website if it has one.",
+    },
+  },
+  {
     slug: "hybrid-news",
     promise: "Turn a real announcement into a bold, proof-led story people can scan quickly.",
     lastUpdated: "July 2026",

@@ -894,6 +894,27 @@ export const discoveryCatalog: DiscoveryEntry[] = [
       owner: "Wiggly Studio",
     },
   },
+  {
+    id: "newsletter-writer-holden-history",
+    status: "published",
+    order: 13.5,
+    brand: "Holden Brand",
+    title: "What nearly five decades should buy you",
+    curatorNote:
+      "A parking-garage origin becomes a grounded reason to choose the experienced, hands-on partner.",
+    goal: "story",
+    media: {
+      kind: "image",
+      src: "/discovery/newsletter-writer/holden-brand-history.png",
+      durationLabel: "Email",
+    },
+    format: {
+      slug: "newsletter-writer",
+      name: "Newsletter Writer",
+      version: "1.0.0",
+      owner: "Wiggly Studio",
+    },
+  },
   ...fortniteFilterDiscoveryEntries,
   {
     id: "cinematic-photographer-source",
@@ -1005,6 +1026,12 @@ const discoveryShelfDefinitions = [
     title: "Conversations That Sell",
     description: "Messages and voice-led pitches that feel native.",
     formats: ["text-message", "visualizer"],
+  },
+  {
+    id: "written-content",
+    title: "Words People Want to Read",
+    description: "Brand-voice writing grounded in real company proof.",
+    formats: ["newsletter-writer"],
   },
   {
     id: "skai-generated",

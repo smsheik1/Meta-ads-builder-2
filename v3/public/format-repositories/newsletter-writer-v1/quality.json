@@ -1,0 +1,22 @@
+{
+  "acceptanceCriteria": [
+    "Exactly three distinct subject lines are delivered.",
+    "Preview text is 30-160 characters.",
+    "The body stays inside the selected length range.",
+    "The approved topic is clear in the opening paragraph.",
+    "Every factual claim is grounded in an allowed source.",
+    "At least two writing choices trace back to real newsletter evidence, or website voice evidence when no newsletters exist.",
+    "The CTA gives the reader one clear next action.",
+    "No customer story, quote, number, offer, deadline, personal experience, or URL is invented.",
+    "The draft avoids generic AI scaffolding without adding random slang or fake imperfections.",
+    "The final newsletter is reviewed once and saved as newsletter.md."
+  ],
+  "manualReview": [
+    "Would someone familiar with the source newsletters recognize the voice?",
+    "Does the email say something specific to this company?",
+    "Would the body still work unchanged for an unrelated company?",
+    "Are the subject lines meaningfully different instead of paraphrases?",
+    "Does the CTA match the email's actual purpose?",
+    "Did the review preserve every supported fact and link?"
+  ]
+}

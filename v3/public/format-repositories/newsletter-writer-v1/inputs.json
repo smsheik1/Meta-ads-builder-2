@@ -1,0 +1,54 @@
+{
+  "firstQuestionWithoutProfile": "What company is this for? Share its website if it has one.",
+  "firstQuestionWithProfile": "What should this newsletter be about?",
+  "required": [
+    {
+      "id": "brandUrl",
+      "type": "url",
+      "description": "The company website used for current facts and terminology."
+    },
+    {
+      "id": "topic",
+      "type": "string",
+      "description": "The subject of the next newsletter."
+    }
+  ],
+  "recommended": [
+    {
+      "id": "newsletterSamples",
+      "type": "files",
+      "count": "3-5",
+      "description": "Past newsletters that reveal the company's real email voice."
+    }
+  ],
+  "optional": [
+    {
+      "id": "goal",
+      "type": "string"
+    },
+    {
+      "id": "offer",
+      "type": "string"
+    },
+    {
+      "id": "ctaUrl",
+      "type": "url"
+    },
+    {
+      "id": "targetLength",
+      "type": "enum",
+      "values": [
+        "short",
+        "standard",
+        "long"
+      ]
+    }
+  ],
+  "defaults": {
+    "mode": "autopilot",
+    "questions": "one-at-a-time-only-when-blocked",
+    "targetLength": "standard",
+    "subjectLineCount": 3,
+    "reviewPasses": 1
+  }
+}

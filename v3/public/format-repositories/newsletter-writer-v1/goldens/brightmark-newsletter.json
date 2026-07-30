@@ -1,0 +1,42 @@
+{
+  "subjectLines": [
+    {
+      "text": "The summer event kit test",
+      "angle": "A practical rule for choosing merchandise"
+    },
+    {
+      "text": "What survives after the event?",
+      "angle": "Curiosity about post-event usefulness"
+    },
+    {
+      "text": "Skip the throwaway summer swag",
+      "angle": "Rejecting disposable category habits"
+    }
+  ],
+  "previewText": "Choose the pieces people will still reach for after the summer event ends.",
+  "body": "Summer events make it easy to buy for the moment. A tote at the booth. A bottle on the table. Another pen because it was easy to order.\n\nThe better question comes a week later: what is still being used?\n\nStart with what happens after the booth. A compact charger gets tossed into a travel bag. A cable organizer stays beside a laptop. A light insulated bottle earns a spot on a desk. Each piece has a job after the event ends.\n\nThat is the test we use at Brightmark. If the item would feel useful without a logo, thoughtful branding can make it feel like part of the experience instead of an ad someone has to carry.\n\nThe kit does not need ten products. Three or four well-chosen pieces, packed together and shipped where they need to go, can do more than a table full of filler. Brightmark can assemble the kits and ship them to individual recipients, so the plan works for remote attendees and distributed teams too.\n\nSend us your audience, budget, and event date. We will narrow the catalog to a short list built for the week after the event, not just the check-in table.",
+  "cta": {
+    "text": "Build my summer event shortlist",
+    "url": "https://brightmark.example/contact"
+  },
+  "factsUsed": [
+    {
+      "claim": "Brightmark can assemble kits and ship them to individual recipients.",
+      "sourceId": "site-fulfillment"
+    },
+    {
+      "claim": "Brightmark offers drinkware, bags, and tech accessories.",
+      "sourceId": "site-categories"
+    }
+  ],
+  "voiceEvidence": [
+    {
+      "choice": "The opening tests the product against an ordinary post-event moment.",
+      "sourceId": "newsletter-1"
+    },
+    {
+      "choice": "The email reduces a large catalog to one practical selection rule.",
+      "sourceId": "newsletter-2"
+    }
+  ]
+}
