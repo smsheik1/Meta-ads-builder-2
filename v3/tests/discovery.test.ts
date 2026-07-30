@@ -171,6 +171,7 @@ const generatedFormatSlugs = [
   "blue-phosphor",
   "dusk-effect",
   "sparkling-effect",
+  "cool-tone-filter",
   "jingle",
   "newsletter-writer",
 ];
@@ -312,6 +313,7 @@ assert.deepEqual(
       "blue-phosphor",
       "dusk-effect",
       "sparkling-effect",
+      "cool-tone-filter",
     ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
@@ -379,6 +381,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "sparkling-effect").length,
   4,
   "All four Sparkling Effect examples should remain available inside the Format page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "cool-tone-filter").length,
+  6,
+  "All six Cool Tone Filter examples should remain available inside the Format page.",
 );
 
 console.log("discovery tests passed");

@@ -1,0 +1,11 @@
+Cool Tone Filter Prompt
+
+Source creator: @skaigenerated
+Source post: https://www.instagram.com/p/Da-YbX_CuYi/
+CTA keyword: AI
+Guide delivery: Instagram DM to public Google Doc
+Model shown: GPT Image 2
+
+Exact prompt:
+
+Give this photo an authentic Y2K digital-camera aesthetic: bright flash, slightly cool tones, mild overexposure, timestamp in the corner, low-resolution texture, and a fun candid energy. Keep faces and key details unchanged.

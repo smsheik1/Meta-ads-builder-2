@@ -1,0 +1,21 @@
+{
+  "id": "cool-tone-filter",
+  "version": "1.0.0",
+  "title": "Cool Tone Filter",
+  "description": "Give one photograph an authentic Y2K digital-camera finish with bright flash, cool color, mild overexposure, timestamp texture, and candid energy.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/Da-YbX_CuYi/",
+    "resourceTitle": "Cool Tone Filter Prompt",
+    "resourceAccess": "Instagram DM to public Google Doc",
+    "ctaKeyword": "AI",
+    "modelShown": "GPT Image 2"
+  },
+  "outputs": [
+    "1 inspected Cool Tone Filter photograph",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

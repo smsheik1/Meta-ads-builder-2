@@ -1,0 +1,44 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/Da-YbX_CuYi/",
+    "resourceTitle": "Cool Tone Filter Prompt",
+    "guide": "assets/source/guide.txt",
+    "cover": "assets/source/cover.jpg",
+    "referenceInset": "assets/source/snow-duo-reference.jpg",
+    "verification": "The Instagram DM delivered the public Google Doc with the exact GPT Image 2 prompt. The original carousel supplied its cover and six native output examples; promotional slides were omitted.",
+    "referenceNote": "Each source example includes its original inset. The packaged reference files are exact crops from those insets so Wiggly can also place the original at the top right of the consumer Format page."
+  },
+  "examples": [
+    {
+      "id": "snow-duo",
+      "path": "assets/source/snow-duo.jpg",
+      "referencePath": "assets/source/snow-duo-reference.jpg"
+    },
+    {
+      "id": "reclining-portrait",
+      "path": "assets/source/reclining-portrait.jpg",
+      "referencePath": "assets/source/reclining-portrait-reference.jpg"
+    },
+    {
+      "id": "canal-portrait",
+      "path": "assets/source/canal-portrait.jpg",
+      "referencePath": "assets/source/canal-portrait-reference.jpg"
+    },
+    {
+      "id": "beach-couple",
+      "path": "assets/source/beach-couple.jpg",
+      "referencePath": "assets/source/beach-couple-reference.jpg"
+    },
+    {
+      "id": "shutter-portrait",
+      "path": "assets/source/shutter-portrait.jpg",
+      "referencePath": "assets/source/shutter-portrait-reference.jpg"
+    },
+    {
+      "id": "london-candid",
+      "path": "assets/source/london-candid.jpg",
+      "referencePath": "assets/source/london-candid-reference.jpg"
+    }
+  ]
+}
