@@ -414,6 +414,75 @@ const oldMoneyShotDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const chromeVoidDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "red-jacket-street",
+    brand: "Surreal streetwear",
+    title: "Turn a fashion portrait into living chrome",
+    curatorNote: "The person, red jacket, denim, pose, and street camera remain intact while reflective liquid-metal sculpture grows through the scene.",
+    image: "example-output",
+  },
+  {
+    id: "boutique-mirror",
+    brand: "Mirror selfie",
+    title: "Keep the casual pose. Rebuild the environment.",
+    curatorNote: "The phone, shopping bag, layered outfit, and proportions survive while chrome branches create believable boutique depth.",
+    image: "example-02",
+  },
+  {
+    id: "green-knit",
+    brand: "Texture proof",
+    title: "Soft knit stays readable beside hard chrome",
+    curatorNote: "Dress texture, boots, bag, crossed arms, and face remain clear while metallic forms curve around the subject.",
+    image: "example-03",
+  },
+  {
+    id: "layered-mini",
+    brand: "Fashion editorial",
+    title: "Preserve every layer inside a surreal set",
+    curatorNote: "Hair, shoulder pose, dress, bag, and tall boots keep their color and shape across foreground and background chrome.",
+    image: "example-04",
+  },
+  {
+    id: "city-layers",
+    brand: "City portrait",
+    title: "Make the effect feel planted on the sidewalk",
+    curatorNote: "Reflections and occlusion place the chrome convincingly without replacing the cap, jewelry, jacket, jeans, or gaze.",
+    image: "example-05",
+  },
+  {
+    id: "graphic-knit",
+    brand: "Accessory detail",
+    title: "Keep the graphics, glasses, cup, and full pose",
+    curatorNote: "The metallic sculpture adds spectacle while the original streetwear portrait stays recognizable down to the accessories.",
+    image: "example-06",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `chrome-void-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 55 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/chrome-void-v1/assets/source/${image}.jpg`,
+    ...(index === 0
+      ? {
+          referenceSrc:
+            "/format-repositories/chrome-void-v1/assets/source/reference-input.jpg",
+        }
+      : {}),
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "chrome-void",
+    name: "Chrome Void",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "final-straw-pocket-problem",
@@ -775,6 +844,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...moodNotesDiscoveryEntries,
   ...redDeadRedemptionDiscoveryEntries,
   ...oldMoneyShotDiscoveryEntries,
+  ...chromeVoidDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -849,6 +919,7 @@ const discoveryShelfDefinitions = [
       "mood-notes",
       "red-dead-redemption",
       "old-money-shot",
+      "chrome-void",
     ],
   },
   {

@@ -136,6 +136,7 @@ const generatedFormatSlugs = [
   "mood-notes",
   "red-dead-redemption",
   "old-money-shot",
+  "chrome-void",
   "jingle",
 ];
 assert.ok(
@@ -263,6 +264,7 @@ assert.deepEqual(
     "mood-notes",
     "red-dead-redemption",
     "old-money-shot",
+    "chrome-void",
   ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
@@ -290,6 +292,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "old-money-shot").length,
   6,
   "All six Old Money Shot examples should remain available inside the Format page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "chrome-void").length,
+  6,
+  "All six Chrome Void examples should remain available inside the Format page.",
 );
 
 console.log("discovery tests passed");

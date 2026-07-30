@@ -739,6 +739,51 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "chrome-void",
+    promise: "Surround one existing fashion photo with physically integrated liquid-chrome sculpture while preserving the person, outfit, pose, camera, and original color.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/chrome-void",
+    manifestPath: "format-repositories/chrome-void-v1/format.json",
+    whatStays: [
+      "The subject's recognizable identity and facial features",
+      "Hair, skin tone, outfit, and accessories",
+      "The original pose, body proportions, and camera angle",
+      "The original clothing and skin colors",
+    ],
+    whatChanges: [
+      "Organic liquid-chrome sculpture grows through the environment",
+      "Reflections and contact shadows make the chrome physically present",
+      "Foreground and background forms add cinematic depth",
+      "The selected model cost lane",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP fashion or lifestyle photo at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 Chrome Void fashion editorial",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for the premium or source-model route",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Validate the source photo locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected liquid-chrome fashion editorial plus prediction and quality provenance",
+      firstQuestion: "Which photo should I surround with the Chrome Void?",
+    },
+  },
+  {
     slug: "meme",
     promise: "Turn a buyer's familiar frustration into an ad they understand in one glance.",
     lastUpdated: "July 2026",
