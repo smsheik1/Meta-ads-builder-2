@@ -1,0 +1,20 @@
+{
+  "id": "old-money-shot",
+  "version": "1.0.0",
+  "title": "Old Money Shot",
+  "description": "Turn one portrait into a timeless black-and-white editorial beside a classic roadster, with soft daylight, deep contrast, and tactile film grain.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbTPupVipI5/",
+    "resourceUrl": "https://docs.google.com/document/d/18-pvSPZjWPE_3QKgNP7tgrr7frX8tvAMgmP1zJjpoY4/edit",
+    "ctaKeyword": "AI",
+    "modelShown": "GPT Image 2"
+  },
+  "outputs": [
+    "1 black-and-white old-money editorial image",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

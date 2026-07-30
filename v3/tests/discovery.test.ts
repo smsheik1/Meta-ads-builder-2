@@ -135,6 +135,7 @@ const generatedFormatSlugs = [
   "product-photoshoot",
   "mood-notes",
   "red-dead-redemption",
+  "old-money-shot",
   "jingle",
 ];
 assert.ok(
@@ -261,6 +262,7 @@ assert.deepEqual(
     "rag-doll",
     "mood-notes",
     "red-dead-redemption",
+    "old-money-shot",
   ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
@@ -283,6 +285,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "red-dead-redemption").length,
   6,
   "All six Red Dead Redemption examples should remain available inside the Format page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "old-money-shot").length,
+  6,
+  "All six Old Money Shot examples should remain available inside the Format page.",
 );
 
 console.log("discovery tests passed");

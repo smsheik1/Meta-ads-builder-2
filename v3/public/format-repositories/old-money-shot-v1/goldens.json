@@ -1,0 +1,65 @@
+{
+  "purpose": "Judge timeless black-and-white styling, low-angle portrait composition, classic-roadster detail, soft daylight, deep contrast, and tactile film grain against six gathered examples.",
+  "examples": [
+    {
+      "id": "roadster-portrait",
+      "title": "A modern portrait becomes an old-money film still",
+      "imagePath": "assets/source/hero-with-reference.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The low camera angle, open shirt, tailored pants, and roadster create one coherent editorial scene",
+        "Soft daylight, deep contrast, and visible grain deliver the timeless monochrome finish"
+      ]
+    },
+    {
+      "id": "windblown",
+      "title": "Wind and posture carry the editorial mood",
+      "imagePath": "assets/source/example-02.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The three-quarter gaze and windblown hair feel candid rather than posed",
+        "Shirt folds, skin, clouds, and polished car surfaces retain detail inside the monochrome grade"
+      ]
+    },
+    {
+      "id": "roadster-stance",
+      "title": "A full stance keeps the car and tailoring readable",
+      "imagePath": "assets/source/example-03.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The relaxed hand placement and high-waisted trousers sell the old-money silhouette",
+        "Roadster chrome, grassland, and cloudy sky stay crisp without losing film softness"
+      ]
+    },
+    {
+      "id": "roadside-seat",
+      "title": "A seated portrait still feels cinematic",
+      "imagePath": "assets/source/example-04.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The off-camera look and open collar keep the frame relaxed and self-possessed",
+        "Deep blacks in the trousers and car balance the bright shirt and sky"
+      ]
+    },
+    {
+      "id": "field-roadster",
+      "title": "Simple styling lets the subject lead",
+      "imagePath": "assets/source/example-05.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The clean shirt and tailored trousers create a timeless silhouette",
+        "The field, roadster, and open sky provide quiet depth without distracting from the face"
+      ]
+    },
+    {
+      "id": "glasses",
+      "title": "Accessories survive the monochrome recipe",
+      "imagePath": "assets/source/example-06.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "Glasses, tousled hair, shirt texture, and the relaxed lean remain individually legible",
+        "Soft daylight and grain unify the person, car, and landscape into one film still"
+      ]
+    }
+  ]
+}

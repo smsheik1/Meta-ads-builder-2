@@ -345,6 +345,75 @@ const redDeadRedemptionDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const oldMoneyShotDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "roadster-portrait",
+    brand: "Old-money editorial",
+    title: "Turn a portrait into a timeless film still",
+    curatorNote: "A low camera, classic roadster, open collar, deep contrast, and tactile grain turn one modern portrait into a confident monochrome editorial.",
+    image: "example-output",
+  },
+  {
+    id: "windblown",
+    brand: "Candid portrait",
+    title: "Wind and posture carry the mood",
+    curatorNote: "The off-camera gaze and windblown hair keep the polished scene from feeling staged.",
+    image: "example-02",
+  },
+  {
+    id: "roadster-stance",
+    brand: "Tailored portrait",
+    title: "A full stance keeps every detail readable",
+    curatorNote: "High-waisted trousers, relaxed hands, chrome, grassland, and cloudy sky all survive the monochrome grade.",
+    image: "example-03",
+  },
+  {
+    id: "roadside-seat",
+    brand: "Roadside editorial",
+    title: "A seated portrait still feels cinematic",
+    curatorNote: "Deep blacks in the trousers and car balance the bright shirt, open sky, and self-possessed gaze.",
+    image: "example-04",
+  },
+  {
+    id: "field-roadster",
+    brand: "Minimal styling",
+    title: "Simple styling lets the subject lead",
+    curatorNote: "The quiet field and vintage car provide depth without pulling attention away from the person.",
+    image: "example-05",
+  },
+  {
+    id: "glasses",
+    brand: "Accessory detail",
+    title: "Accessories survive the film recipe",
+    curatorNote: "Glasses, tousled hair, shirt texture, and polished bodywork remain legible through soft daylight and grain.",
+    image: "example-06",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `old-money-shot-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 48 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/old-money-shot-v1/assets/source/${image}.jpg`,
+    ...(index === 0
+      ? {
+          referenceSrc:
+            "/format-repositories/old-money-shot-v1/assets/source/reference-input.jpg",
+        }
+      : {}),
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "old-money-shot",
+    name: "Old Money Shot",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "final-straw-pocket-problem",
@@ -705,6 +774,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...ragDollDiscoveryEntries,
   ...moodNotesDiscoveryEntries,
   ...redDeadRedemptionDiscoveryEntries,
+  ...oldMoneyShotDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -778,6 +848,7 @@ const discoveryShelfDefinitions = [
       "rag-doll",
       "mood-notes",
       "red-dead-redemption",
+      "old-money-shot",
     ],
   },
   {
