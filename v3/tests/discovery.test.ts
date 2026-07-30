@@ -174,6 +174,7 @@ const generatedFormatSlugs = [
   "cool-tone-filter",
   "halo-effect",
   "doodle-art",
+  "light-silhouette",
   "jingle",
   "newsletter-writer",
 ];
@@ -318,6 +319,7 @@ assert.deepEqual(
       "cool-tone-filter",
       "halo-effect",
       "doodle-art",
+      "light-silhouette",
     ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
@@ -400,6 +402,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "doodle-art").length,
   5,
   "All five Doodle Art examples should remain available inside the Format page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "light-silhouette").length,
+  7,
+  "All seven Light Silhouette examples should remain available inside the Format page.",
 );
 
 console.log("discovery tests passed");

@@ -1,0 +1,57 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/Daxp6JYCvuf/",
+    "resourceTitle": "Light Silhouette Prompt",
+    "resourceUrl": "https://docs.google.com/document/d/1fkCvR3TDStmfpjo6ULhGmw-A2V2It-bulTVFNv-cISs",
+    "guide": "assets/source/guide.txt",
+    "cover": "assets/source/cover.jpg",
+    "referenceInset": "assets/source/coastal-cliff-reference.jpg",
+    "verification": "The Instagram DM delivered the public Google Doc with the exact GPT Image 2 prompt. The ten-slide carousel supplied one cover and seven native output examples; two promotional slides were omitted. Clean 1080x1440 creator files were recovered from Instagram's public embed data.",
+    "referenceNote": "Each creator example already includes its original input photo in a rounded top-right inset. The separate reference files are direct crops of those published insets and are retained for provenance and runner smoke inputs."
+  },
+  "examples": [
+    {
+      "id": "coastal-cliff",
+      "path": "assets/source/coastal-cliff.jpg",
+      "referencePath": "assets/source/coastal-cliff-reference.jpg",
+      "referenceType": "creator-published-inset"
+    },
+    {
+      "id": "desert-camel",
+      "path": "assets/source/desert-camel.jpg",
+      "referencePath": "assets/source/desert-camel-reference.jpg",
+      "referenceType": "creator-published-inset"
+    },
+    {
+      "id": "subway-platform",
+      "path": "assets/source/subway-platform.jpg",
+      "referencePath": "assets/source/subway-platform-reference.jpg",
+      "referenceType": "creator-published-inset"
+    },
+    {
+      "id": "misty-hills",
+      "path": "assets/source/misty-hills.jpg",
+      "referencePath": "assets/source/misty-hills-reference.jpg",
+      "referenceType": "creator-published-inset"
+    },
+    {
+      "id": "pyramid-dance",
+      "path": "assets/source/pyramid-dance.jpg",
+      "referencePath": "assets/source/pyramid-dance-reference.jpg",
+      "referenceType": "creator-published-inset"
+    },
+    {
+      "id": "mountain-meadow",
+      "path": "assets/source/mountain-meadow.jpg",
+      "referencePath": "assets/source/mountain-meadow-reference.jpg",
+      "referenceType": "creator-published-inset"
+    },
+    {
+      "id": "lakeside-field",
+      "path": "assets/source/lakeside-field.jpg",
+      "referencePath": "assets/source/lakeside-field-reference.jpg",
+      "referenceType": "creator-published-inset"
+    }
+  ]
+}
