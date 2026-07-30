@@ -1,0 +1,24 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbQ10eICvPo/",
+    "resourceUrl": "https://docs.google.com/document/d/1VK39fnwcHtReiXfzf7lPN0OQLMqiW98Zz1JlTkdv66I/edit",
+    "guide": "assets/source/guide.pdf",
+    "exampleOutput": "assets/source/example-output.jpg",
+    "hero": "assets/source/hero-with-reference.jpg",
+    "referenceInput": "assets/source/reference-input.jpg",
+    "carouselExamples": [
+      "assets/source/example-output.jpg",
+      "assets/source/example-02.jpg",
+      "assets/source/example-03.jpg",
+      "assets/source/example-04.jpg",
+      "assets/source/example-05.jpg"
+    ],
+    "promptPath": "prompts/transform.txt",
+    "verification": "The exact prompt, negative prompt, GPT Image 2 label, guide, five examples, and matching before insets were gathered through the creator's Android Instagram comment and DM flow and visually checked. The reference fixture is cropped directly from the creator's before inset for the matching lakeside example; no provider generation was run."
+  },
+  "fixture": {
+    "path": "assets/source/reference-input.jpg",
+    "purpose": "Creator-provided lakeside before inset used for local validation, hero comparison, and free smoke input only; no provider call was made."
+  }
+}

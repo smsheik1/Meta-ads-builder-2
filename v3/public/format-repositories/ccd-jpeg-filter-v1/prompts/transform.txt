@@ -1,0 +1,27 @@
+Transform the image into an authentic low-quality digital photograph captured on an inexpensive late-2000s consumer camera. Preserve the original composition, framing, perspective, lighting, subject, and colors while changing only the photographic rendering. The image should look naturally imperfect, not intentionally stylized.
+Apply an extremely dense layer of fine digital sens or noise across the entire frame, including the sky, walls, shadows, and all smooth surfaces. The grain must be tight, uniform, and electronic rather than cinematic film grain, with subtle chroma noise visible in darker regions.
+Simulate heavy JPEG compression with realistic compression artifacts, slight blockiness, texture smearing, and reduced micro-detail. Fine textures such as leaves, grass, clouds, distant objects, and walls should lose crispness while remaining recognizable.
+Lower the overall dynamic range. Introduce slightly crushed blacks, noisy shadows, softly clipped highlights, and imperfect automatic exposure. Midtones should feel slightly underexposed while bright areas retain a soft glow without looking HDR.
+Reduce local contrast and optical sharpness to mimic inexpensive consumer camera optics. Edges should appear naturally soft with weak digital sharpening, never crisp or modern.
+Preserve natural color saturation while allowing the heavy digital noise and compression to subtly contaminate colors. Reds remain vibrant, blues slightly cyan, greens lean slightly olive, and white balance should feel imperfect, as if determined by an old automatic camera.
+The final image should resemble a heavily compressed social media screenshot of an old digital photograph, as if it had been captured on a cheap camera, uploaded, downloaded, and re-shared multiple times. The imperfections should feel authentic and accidental rather than applied as an obvious retro filter.
+Visual Characteristics
+Dense fine digital sensor noise
+Uniform electronic grain
+High ISO appearance
+Heavy JPEG compression artifacts
+Slight pixel smearing
+Weak sharpening
+Reduced micro-detail
+Slightly underexposed midtones
+Soft highlight clipping
+Crushed noisy shadows
+Low dynamic range
+Slight automatic white balance inconsistency
+Soft inexpensive optics
+Natural colors with subtle digital contamination
+Archived internet photo aesthetic
+Early social media compression
+Authentic consumer digital camera rendering
+Negative Prompt
+Modern smartphone photo, DSLR, mirrorless camera, cinematic lighting, HDR, ultra sharp, crystal clear, computational photography, AI hyper-detail, clean noise reduction, glossy finish, film grain, analog film, Polaroid, disposable camera, Fujifilm simulation, Kodak Portra, Leica rendering, professional photography, perfect optics, vibrant HDR colors, oversharpening, modern image processing, unrealistically clean textures.

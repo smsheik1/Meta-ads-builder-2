@@ -483,6 +483,68 @@ const chromeVoidDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const ccdJpegFilterDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "lakeside-speedboat",
+    brand: "Archived lake night",
+    title: "Turn a clean snapshot into a believable CCD JPEG",
+    curatorNote: "The composition stays intact while dense electronic noise, soft optics, imperfect exposure, and compression make the file feel genuinely old.",
+    image: "example-output",
+  },
+  {
+    id: "red-car-night",
+    brand: "Direct-flash nightlife",
+    title: "Keep the pose. Break the modern polish.",
+    curatorNote: "Hard flash, crushed shadows, chroma noise, and texture smearing degrade the file without replacing the subject or red car.",
+    image: "example-02",
+  },
+  {
+    id: "phone-booth",
+    brand: "Phone-booth portrait",
+    title: "Make compression part of the memory",
+    curatorNote: "The phone, suit, booth, and graffiti remain recognizable while early-social JPEG damage softens every surface.",
+    image: "example-03",
+  },
+  {
+    id: "parking-lot-lighter",
+    brand: "Parking-lot flash",
+    title: "Underexpose it like a cheap automatic camera",
+    curatorNote: "The lighter, jewelry, jacket, and empty lot survive beneath noisy shadows, weak sharpening, and imperfect white balance.",
+    image: "example-04",
+  },
+  {
+    id: "airport-flowers",
+    brand: "Airport snapshot",
+    title: "Daylight can still feel downloaded and reshared",
+    curatorNote: "Flowers, clothing, airplane, and tarmac stay fixed while low dynamic range and compression create an archived-internet finish.",
+    image: "example-05",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `ccd-jpeg-filter-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 61 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/ccd-jpeg-filter-v1/assets/source/${image}.jpg`,
+    ...(index === 0
+      ? {
+          referenceSrc:
+            "/format-repositories/ccd-jpeg-filter-v1/assets/source/reference-input.jpg",
+        }
+      : {}),
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "ccd-jpeg-filter",
+    name: "CCD JPEG Filter",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "final-straw-pocket-problem",
@@ -845,6 +907,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...redDeadRedemptionDiscoveryEntries,
   ...oldMoneyShotDiscoveryEntries,
   ...chromeVoidDiscoveryEntries,
+  ...ccdJpegFilterDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -920,6 +983,7 @@ const discoveryShelfDefinitions = [
       "red-dead-redemption",
       "old-money-shot",
       "chrome-void",
+      "ccd-jpeg-filter",
     ],
   },
   {

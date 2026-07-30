@@ -1,0 +1,20 @@
+{
+  "id": "ccd-jpeg-filter",
+  "version": "1.0.0",
+  "title": "CCD JPEG Filter",
+  "description": "Turn one existing photo into an authentically noisy, compressed late-2000s consumer-camera image while preserving the original scene.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbQ10eICvPo/",
+    "resourceUrl": "https://docs.google.com/document/d/1VK39fnwcHtReiXfzf7lPN0OQLMqiW98Zz1JlTkdv66I/edit",
+    "ctaKeyword": "AI",
+    "modelShown": "GPT Image 2"
+  },
+  "outputs": [
+    "1 authentic CCD JPEG-style image",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}
