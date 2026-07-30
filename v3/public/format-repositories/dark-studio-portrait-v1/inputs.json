@@ -1,0 +1,24 @@
+{
+  "required": [
+    {
+      "id": "portrait",
+      "type": "image",
+      "formats": ["jpg", "png", "webp"],
+      "minimumWidth": 512,
+      "minimumHeight": 512,
+      "maximumBytes": 26214400
+    }
+  ],
+  "question": "Which portrait should I turn into a Dark Studio Portrait?",
+  "defaults": {
+    "model": "nano-banana-2",
+    "aspectRatio": "3:4",
+    "outputCount": 1
+  },
+  "modelRoutes": {
+    "economy": "google/nano-banana-2-lite",
+    "default": "google/nano-banana-2",
+    "premium": "google/nano-banana-pro",
+    "source": "openai/gpt-image-2"
+  }
+}

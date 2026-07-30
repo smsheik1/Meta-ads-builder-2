@@ -167,6 +167,7 @@ const generatedFormatSlugs = [
   "ccd-jpeg-filter",
   "passport-click",
   "fake-it-till-you-make-it",
+  "dark-studio-portrait",
   "jingle",
   "newsletter-writer",
 ];
@@ -304,6 +305,7 @@ assert.deepEqual(
     "ccd-jpeg-filter",
       "passport-click",
       "fake-it-till-you-make-it",
+      "dark-studio-portrait",
     ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
@@ -351,6 +353,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "fake-it-till-you-make-it").length,
   8,
   "All eight Fake It Till You Make It examples should remain available inside the Format page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "dark-studio-portrait").length,
+  6,
+  "All six Dark Studio Portrait examples should remain available inside the Format page.",
 );
 
 console.log("discovery tests passed");

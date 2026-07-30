@@ -1,0 +1,65 @@
+{
+  "slug": "dark-studio-portrait",
+  "version": "1.0.0",
+  "promptPath": "prompts/transform.txt",
+  "input": {
+    "mode": "image",
+    "formats": ["jpg", "png", "webp"],
+    "minimumWidth": 512,
+    "minimumHeight": 512,
+    "maximumBytes": 26214400
+  },
+  "defaultModel": "nano-banana-2",
+  "modelRoutes": {
+    "nano-banana-2-lite": {
+      "label": "Nano Banana 2 Lite",
+      "lane": "economy",
+      "model": "google/nano-banana-2-lite",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg"
+    },
+    "nano-banana-2": {
+      "label": "Nano Banana 2",
+      "lane": "default",
+      "model": "google/nano-banana-2",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg",
+      "resolution": "1K"
+    },
+    "nano-banana-pro": {
+      "label": "Nano Banana Pro",
+      "lane": "premium",
+      "model": "google/nano-banana-pro",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg",
+      "resolution": "1K"
+    },
+    "gpt-image-2": {
+      "label": "GPT Image 2",
+      "lane": "source model",
+      "model": "openai/gpt-image-2",
+      "family": "gpt-image",
+      "aspectRatio": "2:3",
+      "outputFormat": "jpeg",
+      "quality": "medium"
+    }
+  },
+  "expectedOutputs": 1,
+  "maximumAttempts": 3,
+  "smokeInputPath": "assets/source/reference-input.jpg",
+  "smokeExamplePath": "assets/source/afro-glasses.jpg",
+  "minimumOutputWidth": 640,
+  "minimumOutputHeight": 800,
+  "minimumOutputBytes": 51200,
+  "manualReview": [
+    "recognizable source identity",
+    "formal black suit and tie",
+    "strong overhead or back rim light",
+    "deep facial shadow with smooth falloff",
+    "heavy analog grain and natural skin texture",
+    "monochrome photographic realism"
+  ]
+}

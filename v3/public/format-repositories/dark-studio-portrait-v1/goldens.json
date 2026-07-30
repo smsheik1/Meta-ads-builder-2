@@ -1,0 +1,71 @@
+{
+  "purpose": "Judge identity preservation, formal styling, luminous rim light, controlled deep shadow, heavy analog grain, and black-and-white photographic realism.",
+  "examples": [
+    {
+      "id": "afro-glasses",
+      "title": "Rim Light Through Glasses",
+      "imagePath": "assets/source/afro-glasses.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The white rim cleanly separates hair and shoulders from black",
+        "Glasses stay readable without flattening the eye shadows",
+        "Film grain and soft focus keep the image analog"
+      ]
+    },
+    {
+      "id": "cover",
+      "title": "The Quiet Cover Portrait",
+      "imagePath": "assets/source/cover.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The off-center crop creates immediate editorial tension",
+        "A serious gaze survives the heavy facial shadow",
+        "The black suit disappears naturally into the studio"
+      ]
+    },
+    {
+      "id": "soft-glasses",
+      "title": "Soft Focus, Hard Contrast",
+      "imagePath": "assets/source/soft-glasses.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "A slight head tilt loosens the formal portrait",
+        "Bloom around the hair stays subtle",
+        "Crushed blacks retain a smooth tonal falloff"
+      ]
+    },
+    {
+      "id": "braided-rim",
+      "title": "Braids in the Halo",
+      "imagePath": "assets/source/braided-rim.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The overhead light traces every braid cleanly",
+        "Natural pores and fine grain prevent a plastic finish",
+        "The centered stare feels calm rather than theatrical"
+      ]
+    },
+    {
+      "id": "wet-curls-glasses",
+      "title": "Wet Curls, Deep Shadow",
+      "imagePath": "assets/source/wet-curls-glasses.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "Loose curls catch the back light strand by strand",
+        "Facial hair and glasses remain coherent in the darkness",
+        "The frame reads as a real 50mm studio photograph"
+      ]
+    },
+    {
+      "id": "shadow-fringe",
+      "title": "Let the Face Fall Away",
+      "imagePath": "assets/source/shadow-fringe.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The fringe becomes a bright halo over an almost hidden face",
+        "The suit silhouette stays legible with minimal fill",
+        "High ISO texture gives the deepest blacks life"
+      ]
+    }
+  ]
+}

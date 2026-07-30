@@ -1,0 +1,30 @@
+{
+  "progress": "Prepare -> Validate -> Transform -> Inspect",
+  "attemptCap": 3,
+  "stages": [
+    {
+      "id": "prepare",
+      "output": "One run pinned to the portrait, exact gathered prompt, and selected model route.",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "validate",
+      "output": "The portrait and prompt contract checked locally.",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "transform",
+      "output": "One dark-studio portrait from one approved prediction.",
+      "paid": true,
+      "approvalRequired": true
+    },
+    {
+      "id": "inspect",
+      "output": "Automatic file checks plus an actual visual review.",
+      "paid": false,
+      "approvalRequired": true
+    }
+  ]
+}
