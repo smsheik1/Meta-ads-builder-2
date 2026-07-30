@@ -65,7 +65,7 @@ Ask what the email should be about only if the user has not said.
 
 Run:
 
-`npm run format:newsletter -- brief --run=<id> --topic="<topic>" --goal="<goal>" --offer="<optional offer>" --cta-url="<optional URL>" --length=standard`
+`npm run format:newsletter -- brief --run=<id> --topic="<topic>" --goal="<goal>" --audience="<known audience>" --offer="<optional offer>" --cta-url="<optional URL>" --length=standard`
 
 Length options are `short`, `standard`, and `long`. Use `standard` unless the user asks otherwise.
 
