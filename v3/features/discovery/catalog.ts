@@ -1681,12 +1681,6 @@ const discoveryShelfDefinitions = [
     formats: ["otaku-explainer"],
   },
   {
-    id: "customer-proof",
-    title: "Customer Proof",
-    description: "Reviews and proof-led formats that build trust.",
-    formats: ["reviews", "were-sorry"],
-  },
-  {
     id: "conversations",
     title: "Conversations That Sell",
     description: "Messages and voice-led pitches that feel native.",
