@@ -134,6 +134,14 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 **Evidence:** In the Style B LEGO proof, two Seedance predictions completed successfully after 319 and 1,725 seconds. The runner had already marked both failed because its foreground polling ended, but their exact outputs were recovered from the original prediction IDs without retries.
 
+### 15. Add a reference inset exactly once
+
+**Rule:** When a creator proof already contains its input as a baked-in inset, use a clean display copy before Wiggly adds its standard top-right reference.
+
+**Why:** Reusing the composited creator proof and adding `referenceSrc` produced two copies of the original photo on Cool Tone Filter and Halo Effect cards.
+
+**Evidence:** Clean display copies restored one top-right reference across both formats without changing the shared Discovery renderer.
+
 ## Still testing
 
 These ideas are deliberately not universal yet:
