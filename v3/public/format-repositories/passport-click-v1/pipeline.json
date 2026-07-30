@@ -1,0 +1,30 @@
+{
+  "progress": "Prepare -> Validate -> Transform -> Inspect",
+  "attemptCap": 3,
+  "stages": [
+    {
+      "id": "prepare",
+      "output": "A run pinned to the source portrait, exact gathered prompt, and chosen Nano Banana route.",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "validate",
+      "output": "The portrait and complete provider contract checked locally.",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "transform",
+      "output": "One extreme-close-up passport image from the selected Replicate model.",
+      "paid": true,
+      "approvalRequired": true
+    },
+    {
+      "id": "inspect",
+      "output": "Automatic file checks plus an actual visual review.",
+      "paid": false,
+      "approvalRequired": true
+    }
+  ]
+}

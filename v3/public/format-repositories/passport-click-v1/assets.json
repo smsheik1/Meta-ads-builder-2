@@ -1,0 +1,26 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbLeMIjissA/",
+    "resourceUrl": "https://docs.google.com/document/d/1nK1PPXRkHCY_qlNxf7ryFSaJ5qhuHsFzB0xcVdFhorE/edit",
+    "guide": "assets/source/guide.pdf",
+    "sourceCover": "assets/source/source-cover.jpg",
+    "exampleOutput": "assets/source/example-output.jpg",
+    "hero": "assets/source/hero-with-reference.jpg",
+    "referenceInput": "assets/source/reference-input.jpg",
+    "carouselExamples": [
+      "assets/source/example-output.jpg",
+      "assets/source/example-02.jpg",
+      "assets/source/example-03.jpg",
+      "assets/source/example-04.jpg",
+      "assets/source/example-05.jpg",
+      "assets/source/example-06.jpg"
+    ],
+    "promptPath": "prompts/transform.txt",
+    "verification": "The exact prompt, negative prompt, Nano Banana Pro label, guide, and six output examples were gathered through the creator's Instagram comment and DM flow and visually checked. The reference fixture is cropped directly from the creator's matching before inset; no provider generation was run."
+  },
+  "fixture": {
+    "path": "assets/source/reference-input.jpg",
+    "purpose": "Creator-provided selfie inset used for local validation, hero comparison, and free smoke input only; no provider call was made."
+  }
+}

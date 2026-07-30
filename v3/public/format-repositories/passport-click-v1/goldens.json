@@ -1,0 +1,65 @@
+{
+  "purpose": "Judge recognizable identity, a surprisingly photogenic government portrait, extreme close-up framing, believable document wear, and accumulated smartphone/social compression against six gathered examples.",
+  "examples": [
+    {
+      "id": "dominican-passport",
+      "title": "The passport photo becomes the whole story",
+      "imagePath": "assets/source/hero-with-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The source selfie remains recognizable inside a neutral government portrait",
+        "The cropped document, print texture, holograms, and imperfect phone capture make the image feel casually real"
+      ]
+    },
+    {
+      "id": "brazilian-passport",
+      "title": "A clean portrait survives a worn document",
+      "imagePath": "assets/source/example-02.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The face stays recognizable while becoming unusually polished for an ID photo",
+        "Creases, lamination, printed security detail, and tight framing keep the passport believable"
+      ]
+    },
+    {
+      "id": "european-passport",
+      "title": "Low-fi printing keeps beauty believable",
+      "imagePath": "assets/source/example-03.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The neutral expression and straight-on crop read as a real government portrait",
+        "Washed color, soft detail, paper wear, and compression prevent a studio-photo finish"
+      ]
+    },
+    {
+      "id": "georgia-passport",
+      "title": "The same recipe works across another face",
+      "imagePath": "assets/source/example-04.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The identity is preserved without turning the subject into a different person",
+        "Machine-readable typography and handheld perspective support the spontaneous repost aesthetic"
+      ]
+    },
+    {
+      "id": "jamaican-passport",
+      "title": "Print artifacts make the portrait feel issued",
+      "imagePath": "assets/source/example-05.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The portrait remains attractive without losing the neutral passport-photo posture",
+        "Halftone texture, security patterns, glare, and document wear feel physically integrated"
+      ]
+    },
+    {
+      "id": "united-states-passport",
+      "title": "An aggressive crop creates the social hook",
+      "imagePath": "assets/source/example-06.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The passport extends beyond the frame so the portrait immediately dominates",
+        "Visible compression and imperfect material detail make the image feel screenshotted and reposted"
+      ]
+    }
+  ]
+}

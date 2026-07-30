@@ -1,0 +1,23 @@
+{
+  "required": [
+    {
+      "id": "photo",
+      "type": "image",
+      "formats": ["jpg", "png", "webp"],
+      "minimumWidth": 512,
+      "minimumHeight": 512,
+      "maximumBytes": 26214400
+    }
+  ],
+  "question": "Which portrait should I turn into a Passport Click?",
+  "defaults": {
+    "model": "nano-banana-2",
+    "aspectRatio": "3:4",
+    "outputCount": 1
+  },
+  "modelRoutes": {
+    "economy": "google/nano-banana-2-lite",
+    "default": "google/nano-banana-2",
+    "premium": "google/nano-banana-pro"
+  }
+}

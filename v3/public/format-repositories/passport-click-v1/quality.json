@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, PNG, or WebP output",
+    "At least 720x960 pixels",
+    "Aspect ratio within 0.02 of 3:4",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The source person's identity remains recognizable inside a neutral, straight-on government portrait",
+    "The passport portrait is subtly photogenic without beauty-filter skin or a changed identity",
+    "The document dominates roughly 97-100% of the frame and extends beyond the image edges",
+    "Lamination, holograms, security printing, scratches, dust, warping, and wear feel physically believable",
+    "JPEG damage, print grain, scanner softness, moire, and repost compression accumulate naturally instead of reading as a clean product photo"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}
