@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio within 0.02 of the selected route",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The subject remains recognizable in a contemplative three-quarter pose",
+    "The low camera angle, open-collar shirt, tailored pants, and classic roadster read clearly",
+    "Soft daylight and deep monochrome contrast preserve facial structure and fabric detail",
+    "Film grain feels tactile without muddying skin, hair, clothing, or car anatomy",
+    "The result feels timeless and editorial rather than glossy, modern, or cartoon-like"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

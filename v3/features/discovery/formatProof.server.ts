@@ -694,6 +694,51 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "old-money-shot",
+    promise: "Turn one portrait into a timeless black-and-white old-money editorial beside a classic roadster.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/old-money-shot",
+    manifestPath: "format-repositories/old-money-shot-v1/format.json",
+    whatStays: [
+      "The subject's recognizable identity",
+      "A contemplative three-quarter gaze",
+      "A low editorial camera angle",
+      "The relaxed portrait energy",
+    ],
+    whatChanges: [
+      "The setting gains a classic roadster and open grassland",
+      "Wardrobe becomes an open-collar shirt and tailored trousers",
+      "Color becomes deep black-and-white film",
+      "The selected model cost lane",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP portrait at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 4:5 old-money editorial image",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, Pro for a premium alternative, or GPT Image 2 only for the source route",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Validate the source portrait locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected old-money editorial image plus prediction and quality provenance",
+      firstQuestion: "Which portrait should I turn into an Old Money Shot?",
+    },
+  },
+  {
     slug: "meme",
     promise: "Turn a buyer's familiar frustration into an ad they understand in one glance.",
     lastUpdated: "July 2026",

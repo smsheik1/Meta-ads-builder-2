@@ -1,0 +1,25 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbTPupVipI5/",
+    "resourceUrl": "https://docs.google.com/document/d/18-pvSPZjWPE_3QKgNP7tgrr7frX8tvAMgmP1zJjpoY4/edit",
+    "guide": "assets/source/guide.pdf",
+    "exampleOutput": "assets/source/example-output.jpg",
+    "hero": "assets/source/hero-with-reference.jpg",
+    "referenceInput": "assets/source/reference-input.jpg",
+    "carouselExamples": [
+      "assets/source/example-output.jpg",
+      "assets/source/example-02.jpg",
+      "assets/source/example-03.jpg",
+      "assets/source/example-04.jpg",
+      "assets/source/example-05.jpg",
+      "assets/source/example-06.jpg"
+    ],
+    "promptPath": "prompts/transform.txt",
+    "verification": "The exact prompt, GPT Image 2 label, guide, and six examples were gathered through the creator's Android Instagram comment and DM flow and visually checked. The guide did not include the raw input photo, so the inset and smoke fixture use a clearly documented representative Pexels portrait by Philip Boakye (photo 2698918); no provider generation was run."
+  },
+  "fixture": {
+    "path": "assets/source/reference-input.jpg",
+    "purpose": "Representative local validation and free smoke input only; it is not claimed as the unavailable original source photo and no provider call was made."
+  }
+}
