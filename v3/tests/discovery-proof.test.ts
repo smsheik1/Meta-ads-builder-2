@@ -64,6 +64,7 @@ for (const slug of [
   "blue-phosphor",
   "dusk-effect",
   "sparkling-effect",
+  "cool-tone-filter",
 ]) {
   const profile = getDiscoveryFormatProfile(slug);
   assert.ok(profile, `${slug} should have a consumer Format proof.`);
@@ -99,7 +100,8 @@ assert.ok(
     discoveryFormatSlugs.includes("blue-phosphor") &&
     discoveryFormatSlugs.includes("dusk-effect") &&
     discoveryFormatSlugs.includes("sparkling-effect") &&
-    discoveryFormatSlugs.length === 29 &&
+    discoveryFormatSlugs.includes("cool-tone-filter") &&
+    discoveryFormatSlugs.length === 30 &&
     !discoveryFormatSlugs.includes("motion-story"),
 );
 assert.equal(getDiscoveryFormatProfile("motion-story"), null);

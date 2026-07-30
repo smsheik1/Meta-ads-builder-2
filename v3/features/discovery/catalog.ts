@@ -928,6 +928,76 @@ const sparklingEffectDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const coolToneFilterDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "snow-duo",
+    brand: "Night snapshot",
+    title: "Make flash feel colder than the weather",
+    curatorNote: "Both people, winter layers, hand gestures, and the snowy setting stay readable under bright compact-camera flash.",
+    image: "snow-duo",
+    reference: "snow-duo-reference",
+  },
+  {
+    id: "reclining-portrait",
+    brand: "Casual portrait",
+    title: "Turn a polished pose into a Y2K snapshot",
+    curatorNote: "The relaxed pose and location stay intact while mild overexposure and low-resolution texture make the frame feel casually captured.",
+    image: "reclining-portrait",
+    reference: "reclining-portrait-reference",
+  },
+  {
+    id: "canal-portrait",
+    brand: "Travel portrait",
+    title: "Give blue hour a cheap-digital flash",
+    curatorNote: "Cool ambient color, frontal flash, grain, and a corner timestamp turn a canal portrait into an era-specific memory.",
+    image: "canal-portrait",
+    reference: "canal-portrait-reference",
+  },
+  {
+    id: "beach-couple",
+    brand: "Couple portrait",
+    title: "Keep the tenderness, add the timestamp",
+    curatorNote: "Both identities and the affectionate pose survive while flash, slight blowout, and texture make the beach image feel candid.",
+    image: "beach-couple",
+    reference: "beach-couple-reference",
+  },
+  {
+    id: "shutter-portrait",
+    brand: "Low-light portrait",
+    title: "Let low light stay a little imperfect",
+    curatorNote: "The dark outfit and shuttered setting stay recognizable as cool flash and digital noise give the frame compact-camera character.",
+    image: "shutter-portrait",
+    reference: "shutter-portrait-reference",
+  },
+  {
+    id: "london-candid",
+    brand: "Travel candid",
+    title: "Make the tourist photo feel found",
+    curatorNote: "The person, gesture, river, and Big Ben remain clear under a cool, timestamped treatment that feels lifted from an old memory card.",
+    image: "london-candid",
+    reference: "london-candid-reference",
+  },
+].map(({ image, reference, ...proof }, index) => ({
+  ...proof,
+  id: `cool-tone-filter-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 103 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/cool-tone-filter-v1/assets/source/${image}.jpg`,
+    referenceSrc: `/format-repositories/cool-tone-filter-v1/assets/source/${reference}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "cool-tone-filter",
+    name: "Cool Tone Filter",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -1355,6 +1425,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...bluePhosphorDiscoveryEntries,
   ...duskEffectDiscoveryEntries,
   ...sparklingEffectDiscoveryEntries,
+  ...coolToneFilterDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -1443,6 +1514,7 @@ const discoveryShelfDefinitions = [
       "blue-phosphor",
       "dusk-effect",
       "sparkling-effect",
+      "cool-tone-filter",
     ],
   },
   {

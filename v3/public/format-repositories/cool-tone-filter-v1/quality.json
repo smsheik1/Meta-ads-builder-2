@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "Faces, people, poses, clothing, composition, and key details remain recognizable",
+    "Bright flash, slightly cool color, and mild overexposure read as one coherent Y2K digital-camera treatment",
+    "Low-resolution texture feels photographic rather than smeared or artificially sharpened",
+    "A plausible timestamp sits in a corner without covering important content",
+    "The image keeps candid energy while avoiding warped faces, hands, logos, or watermarks"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "purpose": "Judge strict identity preservation, direct-flash Y2K color, believable mild overexposure, compact-camera texture, timestamp placement, and candid energy.",
+  "examples": [
+    {
+      "id": "snow-duo",
+      "title": "Snowy Night Snapshot",
+      "imagePath": "assets/source/snow-duo.jpg",
+      "referencePath": "assets/source/snow-duo-reference.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "Both people, winter clothing, hand gestures, and setting stay recognizable",
+        "Direct flash separates the pair from the dark snowy background",
+        "Cool texture and a compact timestamp create a convincing found-camera frame"
+      ]
+    },
+    {
+      "id": "reclining-portrait",
+      "title": "Reclining Flash Portrait",
+      "imagePath": "assets/source/reclining-portrait.jpg",
+      "referencePath": "assets/source/reclining-portrait-reference.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The relaxed pose, outfit, and surrounding architecture remain intact",
+        "Mild overexposure gives skin and light fabric an authentic flash-camera response",
+        "Low-resolution texture makes a polished portrait feel casually captured"
+      ]
+    },
+    {
+      "id": "canal-portrait",
+      "title": "Canal-Side Digital Snapshot",
+      "imagePath": "assets/source/canal-portrait.jpg",
+      "referencePath": "assets/source/canal-portrait-reference.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The face, clothing, canal, and city context remain recognizable",
+        "Cool blues and bright frontal flash balance the fading outdoor light",
+        "The timestamp and texture add era without overpowering the portrait"
+      ]
+    },
+    {
+      "id": "beach-couple",
+      "title": "Beach Couple Flash",
+      "imagePath": "assets/source/beach-couple.jpg",
+      "referencePath": "assets/source/beach-couple-reference.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "Both identities, the affectionate pose, and the shoreline composition survive",
+        "A bright cool flash keeps the couple clear against the softer background",
+        "The slight blowout and grain feel candid rather than clinically perfect"
+      ]
+    },
+    {
+      "id": "shutter-portrait",
+      "title": "Low-Light Street Portrait",
+      "imagePath": "assets/source/shutter-portrait.jpg",
+      "referencePath": "assets/source/shutter-portrait-reference.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The subject, black outfit, pose, and shuttered location remain recognizable",
+        "Cool direct flash creates crisp foreground detail without flattening the setting",
+        "Digital noise and mild exposure errors make the image feel era-authentic"
+      ]
+    },
+    {
+      "id": "london-candid",
+      "title": "London Tourist Candid",
+      "imagePath": "assets/source/london-candid.jpg",
+      "referencePath": "assets/source/london-candid-reference.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The person, gesture, coat, river, and Big Ben remain immediately recognizable",
+        "Cool compact-camera color turns the travel portrait into a candid memory",
+        "Timestamp, grain, and slight overexposure stay readable without hiding key details"
+      ]
+    }
+  ]
+}
