@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The main subject, pose, composition, and key details remain recognizable",
+    "Simple black brush-pen outlines feel handmade, slightly wobbly, and intentionally imperfect",
+    "Complex details reduce into cute, childlike shapes without flattening the subject beyond recognition",
+    "The background stays clean white and the linework remains minimal",
+    "The illustration feels playful and polished without warped anatomy, stray text, logos, or watermarks"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

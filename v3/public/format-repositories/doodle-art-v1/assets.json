@@ -1,0 +1,44 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbD26niikqG/",
+    "resourceTitle": "Doodle Art Prompt",
+    "guide": "assets/source/guide.txt",
+    "cover": "assets/source/cover.jpg",
+    "referenceInset": "assets/source/neon-fashion-reference.jpg",
+    "verification": "The Instagram DM delivered the public Google Doc with the exact GPT Image 2 prompt. The original eight-slide carousel supplied its cover and five native output examples; two promotional slides were omitted.",
+    "referenceNote": "The creator did not publish the original input photos. The packaged top-right reference insets are photorealistic reconstructions made from the five native doodles with Codex's built-in image generator. They are comparison stand-ins, not creator assets, and used no Replicate credits."
+  },
+  "examples": [
+    {
+      "id": "neon-fashion",
+      "path": "assets/source/neon-fashion-doodle.jpg",
+      "referencePath": "assets/source/neon-fashion-reference.jpg",
+      "referenceType": "reconstructed"
+    },
+    {
+      "id": "blue-glasses",
+      "path": "assets/source/blue-glasses-doodle.jpg",
+      "referencePath": "assets/source/blue-glasses-reference.jpg",
+      "referenceType": "reconstructed"
+    },
+    {
+      "id": "star-sticker",
+      "path": "assets/source/star-sticker-doodle.jpg",
+      "referencePath": "assets/source/star-sticker-reference.jpg",
+      "referenceType": "reconstructed"
+    },
+    {
+      "id": "couple",
+      "path": "assets/source/couple-doodle.jpg",
+      "referencePath": "assets/source/couple-reference.jpg",
+      "referenceType": "reconstructed"
+    },
+    {
+      "id": "popsicle",
+      "path": "assets/source/popsicle-doodle.jpg",
+      "referencePath": "assets/source/popsicle-reference.jpg",
+      "referenceType": "reconstructed"
+    }
+  ]
+}
