@@ -1,0 +1,20 @@
+{
+  "id": "passport-click",
+  "version": "1.0.0",
+  "title": "Passport Click",
+  "description": "Turn one portrait into an extreme close-up smartphone photo of a believable passport whose unexpectedly photogenic ID picture becomes the entire story.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbLeMIjissA/",
+    "resourceUrl": "https://docs.google.com/document/d/1nK1PPXRkHCY_qlNxf7ryFSaJ5qhuHsFzB0xcVdFhorE/edit",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana Pro"
+  },
+  "outputs": [
+    "1 extreme-close-up passport image",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

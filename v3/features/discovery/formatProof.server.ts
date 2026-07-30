@@ -829,6 +829,51 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "passport-click",
+    promise: "Turn one portrait into a believable extreme-close-up passport post whose unexpectedly photogenic government photo becomes the hook.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/passport-click",
+    manifestPath: "format-repositories/passport-click-v1/format.json",
+    whatStays: [
+      "The source person's recognizable identity",
+      "A straight-on neutral government portrait",
+      "The portrait as the visual hero",
+      "A spontaneous smartphone-post feeling",
+    ],
+    whatChanges: [
+      "The portrait becomes subtly editorial and unusually photogenic",
+      "A fictional but believable passport frames the face",
+      "Print, lamination, wear, and security details become physically visible",
+      "The selected Nano Banana cost lane",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP portrait at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 Passport Click image",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for the premium and original source-model route",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Validate the source portrait locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected Passport Click image plus prediction and quality provenance",
+      firstQuestion: "Which portrait should I turn into a Passport Click?",
+    },
+  },
+  {
     slug: "meme",
     promise: "Turn a buyer's familiar frustration into an ad they understand in one glance.",
     lastUpdated: "July 2026",

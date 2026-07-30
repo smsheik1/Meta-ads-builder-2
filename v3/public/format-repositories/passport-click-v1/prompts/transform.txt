@@ -1,0 +1,39 @@
+The goal is NOT to create a passport template or a clean product photo. The goal is to create a viral Instagram-style image where someone casually posted their real passport because their passport photo looks unbelievably attractive. The viewer should immediately think, "How is someone's passport photo this good?" The passport is only the frame. The passport photo is the hero.
+
+Use the uploaded image only as the facial identity reference. Preserve the person's recognizable identity while transforming them into the most photogenic version of themselves. The enhancement must remain subtle and believable. Refine facial symmetry naturally, improve skin while retaining realistic pores, define the jawline slightly, brighten the eyes, clean the eyebrows, and create the effortless attractiveness commonly seen in luxury fashion editorials and runway castings without changing the person's identity. They should still look exactly like themselves.
+
+Transform the uploaded image into a perfect government passport portrait. The subject faces directly forward with a neutral expression, relaxed eyes, closed mouth, natural posture, centered framing, and authentic passport composition. Hair should be neat and symmetrical while remaining faithful to the person's appearance. The passport photo should feel like the rare government photo where someone accidentally looks like a fashion model.
+
+Place the portrait inside a completely believable government-issued passport or driver's license chosen automatically by the AI. Include convincing fictional names, passport numbers, signatures, expiration dates, machine-readable text, holographic security features, guilloche patterns, UV printing, embossed textures, serial numbers, and authentic government typography. All information must be fictional but visually convincing.
+
+COMPOSITION (Highest Priority)
+
+Generate an EXTREME CLOSE-UP smartphone photograph. The passport must completely dominate the frame, occupying approximately 97–100% of the entire image. The document should naturally extend beyond all four edges of the frame, with most passport borders cropped off. Leave virtually no empty background. The composition should feel aggressively zoomed in, as if photographed at 2×–3× zoom on an iPhone from only a few inches away. The passport itself becomes the entire composition. Avoid wide framing, tabletop shots, or product photography. The passport photo should occupy a large portion of the visible document and immediately attract the viewer's attention.
+
+DOCUMENT REALISM
+
+The passport should appear physically real and slightly worn. Include glossy lamination, subtle reflections, tiny fingerprints, microscopic scratches, trapped dust particles, faint smudges, slight paper warping, tiny print registration imperfections, realistic hologram reflections, security ink textures, soft edge wear, and natural imperfections accumulated through normal use. Nothing should look freshly printed or digitally perfect.
+
+PASSPORT PHOTO QUALITY
+
+The passport portrait must intentionally resemble a genuine low-resolution government database image. Simulate multiple generations of quality degradation exactly in this order:
+
+Government passport camera → Passport printing → Lamination → Smartphone photo → Instagram upload → Instagram screenshot → Repost compression.
+
+The portrait should contain heavy JPEG compression, visible pixelation, scanner softness, photocopier softness, halftone print dots, print grain, ink bleed, slight chroma noise, digital compression artifacts, moiré patterns from photographing printed material, washed-out colors, flattened dynamic range, mild motion softness, sharpening halos, color banding, slight color misregistration, sensor noise, and subtle blur.
+
+The passport portrait should look genuinely low quality while somehow making the person appear effortlessly attractive. The image quality should feel authentic rather than intentionally filtered. Avoid any ultra-sharp details inside the passport photograph.
+
+CAMERA
+
+Photograph the passport using a modern smartphone under ordinary indoor ambient lighting. Use a slight handheld angle of approximately 3–8 degrees with minimal perspective distortion. The image should feel spontaneous and accidental rather than carefully composed. Focus should slightly favor the passport portrait while allowing tiny imperfections elsewhere.
+
+SOCIAL MEDIA AESTHETIC
+
+The final image should genuinely resemble a screenshot of an Instagram Story or Reel showing a smartphone photo of a real passport. It should appear to have been uploaded, compressed, screenshotted, reposted, and saved multiple times. Every stage should introduce subtle quality loss. The accumulated degradation is an essential part of the aesthetic.
+
+The overall feeling should be understated, mysterious, expensive, effortless, editorial, and authentic. It should look like someone casually shared their passport online, and everyone was shocked by how unrealistically good the passport photo looked. Prioritize realism over perfection. Every imperfection should increase believability.
+
+Negative Prompt
+
+clean passport scan, flatbed scanner, product photography, tabletop composition, entire passport visible, large empty borders, lots of background, hand prominently holding passport, fingers covering document, studio portrait, DSLR portrait, HDR, ultra sharp image, cinematic lighting, beauty filter, AI art, CGI, illustration, cartoon, anime, perfect typography, flawless document, pristine passport, luxury photoshoot, vibrant colors, overprocessed skin, plastic skin, fantasy ID, futuristic passport, malformed document layout, duplicated facial features, deformed anatomy, watermark, logo, obvious AI artifacts, crisp passport photo, high-resolution government photo, excessive empty space around the passport.

@@ -545,6 +545,75 @@ const ccdJpegFilterDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const passportClickDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "dominican-passport",
+    brand: "Viral document portrait",
+    title: "The passport photo becomes the whole story",
+    curatorNote: "A recognizable selfie becomes a neutral but unexpectedly photogenic government portrait inside a tightly cropped, worn passport.",
+    image: "example-output",
+  },
+  {
+    id: "brazilian-passport",
+    brand: "Identity preservation",
+    title: "Keep the face. Change the context.",
+    curatorNote: "The same recipe preserves another identity while lamination, print texture, creases, and security detail make the document feel issued.",
+    image: "example-02",
+  },
+  {
+    id: "european-passport",
+    brand: "Low-fi realism",
+    title: "Let print damage sell the illusion",
+    curatorNote: "Washed color, scanner softness, halftone texture, and paper wear prevent the attractive portrait from feeling like a studio photo.",
+    image: "example-03",
+  },
+  {
+    id: "georgia-passport",
+    brand: "Repeatable portrait",
+    title: "A new face still fits the same recipe",
+    curatorNote: "Straight-on posture, tight document framing, and machine-readable detail repeat without turning the subject into somebody else.",
+    image: "example-04",
+  },
+  {
+    id: "jamaican-passport",
+    brand: "Printed portrait",
+    title: "Make the beauty feel government-issued",
+    curatorNote: "A neutral expression stays photogenic beneath holograms, print dots, glare, slight warping, and convincing document wear.",
+    image: "example-05",
+  },
+  {
+    id: "united-states-passport",
+    brand: "Social-media crop",
+    title: "Crop aggressively enough to stop the scroll",
+    curatorNote: "The passport extends beyond the frame while compression and handheld softness make the close-up feel casually screenshotted and reposted.",
+    image: "example-06",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `passport-click-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 67 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/passport-click-v1/assets/source/${image}.jpg`,
+    ...(index === 0
+      ? {
+          referenceSrc:
+            "/format-repositories/passport-click-v1/assets/source/reference-input.jpg",
+        }
+      : {}),
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "passport-click",
+    name: "Passport Click",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -966,6 +1035,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...oldMoneyShotDiscoveryEntries,
   ...chromeVoidDiscoveryEntries,
   ...ccdJpegFilterDiscoveryEntries,
+  ...passportClickDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -1048,6 +1118,7 @@ const discoveryShelfDefinitions = [
       "old-money-shot",
       "chrome-void",
       "ccd-jpeg-filter",
+      "passport-click",
     ],
   },
   {

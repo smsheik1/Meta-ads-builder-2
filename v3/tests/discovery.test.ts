@@ -165,6 +165,7 @@ const generatedFormatSlugs = [
   "old-money-shot",
   "chrome-void",
   "ccd-jpeg-filter",
+  "passport-click",
   "jingle",
   "newsletter-writer",
 ];
@@ -300,6 +301,7 @@ assert.deepEqual(
     "old-money-shot",
     "chrome-void",
     "ccd-jpeg-filter",
+    "passport-click",
   ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
@@ -337,6 +339,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "ccd-jpeg-filter").length,
   5,
   "All five CCD JPEG Filter examples should remain available inside the Format page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "passport-click").length,
+  6,
+  "All six Passport Click examples should remain available inside the Format page.",
 );
 
 console.log("discovery tests passed");
