@@ -116,6 +116,7 @@ const importedVideoMemeEntries: DiscoveryEntry[] = videoMemeArchiveRows.map((
 ) => ({
   id: `video-meme-${renderJobId}`,
   status: "published",
+  showInDiscovery: false,
   order: 100.5 + index,
   brand: storedBrand === "Official LEGO® Shop US" ? "LEGO" : storedBrand,
   title,

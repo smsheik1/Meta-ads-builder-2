@@ -9,6 +9,7 @@ import {
 } from "../features/discovery/catalog";
 import { databaseFormatDiscoveryEntries } from "../features/discovery/databaseFormatArchive";
 import type { DiscoveryEntry } from "../features/discovery/types";
+import { videoMemeDiscoveryEntries } from "../features/discovery/videoMemeArchive";
 
 const published = getPublishedDiscoveryEntries();
 const proofEntries = getPublishedDiscoveryProofEntries();
@@ -118,7 +119,7 @@ assert.ok(
   "The three proven jingles should be spread through the opening feed.",
 );
 const videoMemes = published.filter((entry) => entry.format.slug === "video-meme");
-assert.equal(videoMemes.length, 35, "Canonical templates and every completed Video Meme import should be discoverable.");
+assert.equal(videoMemes.length, 3, "Discover should show each canonical Video Meme clip once.");
 assert.equal(
   new Set(videoMemes.map((entry) => entry.media.src)).size,
   videoMemes.length,
@@ -130,19 +131,20 @@ const canonicalVideoMemeIds = [
   "video-meme-darwin-pain-stack",
 ];
 assert.deepEqual(
-  videoMemes.filter((entry) => canonicalVideoMemeIds.includes(entry.id)).map((entry) => entry.id),
+  videoMemes.map((entry) => entry.id),
   canonicalVideoMemeIds,
   "Bear, Pingu Noot Noot, and Darwin should be three separate Discovery cards.",
 );
-const importedVideoMemes = videoMemes.filter((entry) => !canonicalVideoMemeIds.includes(entry.id));
-assert.equal(importedVideoMemes.length, 32, "Every completed Video Meme database import should remain discoverable.");
+const importedVideoMemes = videoMemeDiscoveryEntries.filter((entry) => !canonicalVideoMemeIds.includes(entry.id));
+assert.equal(importedVideoMemes.length, 32, "Every completed Video Meme database import should remain available as proof.");
 assert.ok(
   importedVideoMemes.every((entry) => (
+    entry.showInDiscovery === false &&
     entry.media.kind === "video" &&
     entry.media.src.startsWith("https://wry-viper-639.convex.cloud/api/storage/") &&
     entry.media.poster?.startsWith("/discovery/video-memes/")
   )),
-  "Video Memes should use completed Convex renders with local loading posters.",
+  "Imported Video Memes should stay off Discover while retaining completed renders and local loading posters.",
 );
 const memes = published.filter((entry) => entry.format.slug === "meme");
 assert.deepEqual(
