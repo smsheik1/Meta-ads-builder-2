@@ -11,6 +11,7 @@ const required = [
   "assets.json",
   "assets/source/example-output.png",
   "assets/source/guide.pdf",
+  "assets/source/style-reference.jpg",
   "format.json",
   "goldens.json",
   "inputs.json",

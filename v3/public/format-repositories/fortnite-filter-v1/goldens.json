@@ -17,6 +17,104 @@
       ]
     },
     {
+      "id": "skai-banana-grove",
+      "type": "source-reference",
+      "title": "Banana grove source proof",
+      "inputPath": null,
+      "imagePath": "assets/source/example-02.jpg",
+      "sourceUrl": "https://www.instagram.com/p/DbA4f6Blm2v/",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The subject and goose stay recognizable",
+        "The playful pose survives the transformation",
+        "The banana grove remains a coherent environment"
+      ]
+    },
+    {
+      "id": "skai-pizza-street",
+      "type": "source-reference",
+      "title": "Pizza street source proof",
+      "inputPath": null,
+      "imagePath": "assets/source/example-03.jpg",
+      "sourceUrl": "https://www.instagram.com/p/DbA4f6Blm2v/",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The pizza box and hand pose stay readable",
+        "Streetwear and tattoos remain distinct",
+        "The city scene keeps cinematic depth"
+      ]
+    },
+    {
+      "id": "skai-stadium",
+      "type": "source-reference",
+      "title": "Stadium source proof",
+      "inputPath": null,
+      "imagePath": "assets/source/example-04.jpg",
+      "sourceUrl": "https://www.instagram.com/p/DbA4f6Blm2v/",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The full-body silhouette stays intact",
+        "The raised-arm pose and Brazil outfit remain recognizable",
+        "The stadium crowd supports the subject"
+      ]
+    },
+    {
+      "id": "skai-cafe-duo",
+      "type": "source-reference",
+      "title": "Cafe duo source proof",
+      "inputPath": null,
+      "imagePath": "assets/source/example-05.jpg",
+      "sourceUrl": "https://www.instagram.com/p/DbA4f6Blm2v/",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "Both people remain distinct",
+        "The table pose and drinks survive",
+        "One consistent 3D treatment holds the scene together"
+      ]
+    },
+    {
+      "id": "skai-puppy",
+      "type": "source-reference",
+      "title": "Puppy portrait source proof",
+      "inputPath": null,
+      "imagePath": "assets/source/example-06.jpg",
+      "sourceUrl": "https://www.instagram.com/p/DbA4f6Blm2v/",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The puppy remains visible and believable",
+        "The seated posture and tracksuit carry through",
+        "The quiet interior still feels cinematic"
+      ]
+    },
+    {
+      "id": "skai-safari",
+      "type": "source-reference",
+      "title": "Safari source proof",
+      "inputPath": null,
+      "imagePath": "assets/source/example-07.jpg",
+      "sourceUrl": "https://www.instagram.com/p/DbA4f6Blm2v/",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The open-arm pose stays readable",
+        "The elephants and foliage survive",
+        "The bright travel scene keeps polished depth"
+      ]
+    },
+    {
+      "id": "skai-city-bench",
+      "type": "source-reference",
+      "title": "City bench source proof",
+      "inputPath": null,
+      "imagePath": "assets/source/example-08.jpg",
+      "sourceUrl": "https://www.instagram.com/p/DbA4f6Blm2v/",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The seated pose and full outfit stay recognizable",
+        "The cap and sneakers retain their shape",
+        "The bench and skyline support a cohesive game-world frame"
+      ]
+    },
+    {
       "id": "nano-banana-2-seated-man",
       "type": "replicate-proof",
       "title": "Full-body pose proof",

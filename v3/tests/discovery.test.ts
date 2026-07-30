@@ -249,7 +249,7 @@ assert.equal(
     .flatMap((shelf) => shelf.entries)
     .filter((entry) => entry.format.slug === "fortnite-filter").length,
   1,
-  "Fortnite Filter should use one Discovery card while its second proof stays inside the Format.",
+  "Fortnite Filter should use one Discovery card while all eight proofs stay inside the Format.",
 );
 assert.deepEqual(
   shelves.find((shelf) => shelf.id === "brand-jingles")?.entries.map((entry) => entry.id),

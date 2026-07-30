@@ -545,6 +545,83 @@ const ccdJpegFilterDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "rio-overlook",
+    brand: "Portrait transformation",
+    title: "From real portrait to game character",
+    curatorNote: "The face, folded-arm pose, Brazil shirt, and Rio overlook survive the cinematic 3D transformation.",
+    image: "skai-example-output",
+  },
+  {
+    id: "banana-grove",
+    brand: "Environment transformation",
+    title: "Carry the whole setting into the game world",
+    curatorNote: "The subject, goose, banana leaves, warm light, and playful gesture stay readable in one stylized scene.",
+    image: "example-02",
+  },
+  {
+    id: "pizza-street",
+    brand: "Everyday action",
+    title: "Keep the action, outfit, and location",
+    curatorNote: "A pizza box, layered streetwear, tattoos, and the city backdrop all survive without losing the subject.",
+    image: "example-03",
+  },
+  {
+    id: "stadium",
+    brand: "Full-body transformation",
+    title: "Turn fan energy into a game-character frame",
+    curatorNote: "The raised arms, Brazil outfit, stadium crowd, and long silhouette stay intact from head to toe.",
+    image: "example-04",
+  },
+  {
+    id: "cafe-duo",
+    brand: "Two-person transformation",
+    title: "Keep two people inside one coherent scene",
+    curatorNote: "Both faces, the table pose, drinks, clothing, and cafe setting carry through the same polished 3D language.",
+    image: "example-05",
+  },
+  {
+    id: "puppy",
+    brand: "Quiet character moment",
+    title: "Small details still make it through",
+    curatorNote: "The puppy, tracksuit, seated posture, expression, and soft home setting all remain recognizable.",
+    image: "example-06",
+  },
+  {
+    id: "safari",
+    brand: "Travel transformation",
+    title: "Make a travel portrait feel playable",
+    curatorNote: "The subject, open-arm pose, elephants, foliage, and bright daylight become one believable game-world scene.",
+    image: "example-07",
+  },
+  {
+    id: "city-bench",
+    brand: "Fashion transformation",
+    title: "Hold onto the full fashion silhouette",
+    curatorNote: "The seated pose, layered outfit, sneakers, cap, and city bench retain their shape through the stylization.",
+    image: "example-08",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `fortnite-filter-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 14 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/fortnite-filter-v1/assets/source/${image}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "fortnite-filter",
+    name: "Fortnite Filter",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 export const discoveryCatalog: DiscoveryEntry[] = [
   {
     id: "final-straw-pocket-problem",
@@ -817,49 +894,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
       owner: "Wiggly Studio",
     },
   },
-  {
-    id: "fortnite-filter-seated-man",
-    status: "published",
-    order: 14,
-    brand: "Portrait transformation",
-    title: "From real portrait to game character",
-    curatorNote: "The full seated pose, face, clothing, and small details survive a cinematic 3D transformation.",
-    goal: "entertain",
-    media: {
-      kind: "image",
-      src: "/format-repositories/fortnite-filter-v1/goldens/nano-banana-2-seated-man.jpg",
-      referenceSrc: "/format-repositories/fortnite-filter-v1/fixtures/trevor-chris-hutchinson-man.jpg",
-      durationLabel: "Static",
-    },
-    format: {
-      slug: "fortnite-filter",
-      name: "Fortnite Filter",
-      version: "1.0.0",
-      owner: "Wiggly Studio",
-    },
-  },
-  {
-    id: "fortnite-filter-sunset-woman",
-    status: "published",
-    showInDiscovery: false,
-    order: 15,
-    brand: "Portrait transformation",
-    title: "The economy model keeps the look",
-    curatorNote: "A different face, crop, gaze, and outfit prove the cheaper Lite route can still hold the recipe.",
-    goal: "entertain",
-    media: {
-      kind: "image",
-      src: "/format-repositories/fortnite-filter-v1/goldens/nano-banana-2-lite-sunset-woman.jpg",
-      referenceSrc: "/format-repositories/fortnite-filter-v1/fixtures/rao-qingwei-woman.jpg",
-      durationLabel: "Static",
-    },
-    format: {
-      slug: "fortnite-filter",
-      name: "Fortnite Filter",
-      version: "1.0.0",
-      owner: "Wiggly Studio",
-    },
-  },
+  ...fortniteFilterDiscoveryEntries,
   {
     id: "cinematic-photographer-source",
     status: "published",
@@ -871,6 +906,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     media: {
       kind: "image",
       src: "/format-repositories/cinematic-photographer-v1/assets/source/example-output.png",
+      referenceSrc: "/format-repositories/cinematic-photographer-v1/assets/source/style-reference.jpg",
       durationLabel: "Static",
     },
     format: {
@@ -891,6 +927,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     media: {
       kind: "image",
       src: "/format-repositories/gta-vi-v1/assets/source/example-output.png",
+      referenceSrc: "/format-repositories/gta-vi-v1/assets/source/reference-input.jpg",
       durationLabel: "Static",
     },
     format: {

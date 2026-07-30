@@ -5,7 +5,8 @@
     "resourceUrl": "https://docs.google.com/document/d/1_78s28UMB0Qz4DT7Xpm_EpFNClUKw0oZzkJqc1vZv-4/edit",
     "guide": "assets/source/guide.pdf",
     "exampleOutput": "assets/source/example-output.png",
+    "styleReference": "assets/source/style-reference.jpg",
     "promptPath": "prompts/transform.txt",
-    "verification": "Prompt and image extracted from the downloaded Google Doc and visually checked against the rendered guide."
+    "verification": "Prompt and image extracted from the downloaded Google Doc and visually checked against the rendered guide. The style reference is a second finished example from the source Instagram carousel; this text-to-image recipe has no original input photo."
   }
 }
