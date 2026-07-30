@@ -169,6 +169,7 @@ const generatedFormatSlugs = [
   "fake-it-till-you-make-it",
   "dark-studio-portrait",
   "blue-phosphor",
+  "dusk-effect",
   "jingle",
   "newsletter-writer",
 ];
@@ -308,6 +309,7 @@ assert.deepEqual(
       "fake-it-till-you-make-it",
       "dark-studio-portrait",
       "blue-phosphor",
+      "dusk-effect",
     ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
@@ -365,6 +367,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "blue-phosphor").length,
   7,
   "All seven Blue Phosphor examples should remain available inside the Format page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "dusk-effect").length,
+  3,
+  "All three Dusk Effect examples should remain available inside the Format page.",
 );
 
 console.log("discovery tests passed");

@@ -1,0 +1,35 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DbGRFNSFlmt/",
+    "resourceUrl": "https://docs.google.com/document/d/1rjRBiqYyVmbafUaCYejMmA9LtvfqoE02lGSW6V58ozk/edit",
+    "guide": "assets/source/guide.pdf",
+    "cover": "assets/source/cover.jpg",
+    "referenceInset": "assets/source/mountain-hiker-reference.jpg",
+    "verification": "The delivered Google Doc supplied the exact Nano Banana Pro prompt. The Instagram carousel supplied three complete native before-and-after examples plus one additional source reference.",
+    "referenceNote": "Wiggly overlays each packaged original at the top right of its matching output on the consumer Format page."
+  },
+  "examples": [
+    {
+      "id": "mountain-hiker",
+      "path": "assets/source/mountain-hiker.jpg",
+      "referencePath": "assets/source/mountain-hiker-reference.jpg"
+    },
+    {
+      "id": "beach-path",
+      "path": "assets/source/beach-path.jpg",
+      "referencePath": "assets/source/beach-path-reference.jpg"
+    },
+    {
+      "id": "paddleboard",
+      "path": "assets/source/paddleboard.jpg",
+      "referencePath": "assets/source/paddleboard-reference.jpg"
+    }
+  ],
+  "additionalReferences": [
+    {
+      "id": "lakeside",
+      "path": "assets/source/lakeside-reference.jpg"
+    }
+  ]
+}

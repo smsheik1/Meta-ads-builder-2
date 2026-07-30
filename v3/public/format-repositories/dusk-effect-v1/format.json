@@ -1,0 +1,20 @@
+{
+  "id": "dusk-effect",
+  "version": "1.0.0",
+  "title": "Dusk Effect",
+  "description": "Turn one outdoor photograph into a photorealistic dusk scene with a golden-to-deep-blue sky, soft haze, and a naturally lit foreground.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DbGRFNSFlmt/",
+    "resourceUrl": "https://docs.google.com/document/d/1rjRBiqYyVmbafUaCYejMmA9LtvfqoE02lGSW6V58ozk/edit",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana Pro"
+  },
+  "outputs": [
+    "1 inspected Dusk Effect photograph",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

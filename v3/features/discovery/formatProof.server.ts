@@ -695,6 +695,51 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "dusk-effect",
+    promise: "Turn one outdoor photograph into a photorealistic dusk scene with a sunless golden-to-deep-blue sky and a naturally lit foreground.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/dusk-effect",
+    manifestPath: "format-repositories/dusk-effect-v1/format.json",
+    whatStays: [
+      "The source people and recognizable foreground objects",
+      "The original composition and camera angle",
+      "Fine clothing, landscape, water, and environmental detail",
+      "A natural photographic finish",
+    ],
+    whatChanges: [
+      "The sky becomes about 20% darker",
+      "A sunless golden-orange horizon transitions through pink and lavender into deep blue",
+      "Soft haze, smooth tones, subtle bloom, and cinematic HDR shape the atmosphere",
+      "People and foreground remain naturally well lit",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP outdoor photograph at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected Dusk Effect photograph",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for premium and creator-source fidelity",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Validate the photograph locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected 3:4 Dusk Effect photograph plus prediction and quality provenance",
+      firstQuestion: "Which outdoor photo should I give the Dusk Effect?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",
