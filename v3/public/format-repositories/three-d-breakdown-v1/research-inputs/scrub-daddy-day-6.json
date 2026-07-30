@@ -1,0 +1,243 @@
+{
+  "websiteUrl": "https://scrubdaddy.com/",
+  "finalUrl": "https://scrubdaddy.com/about/",
+  "host": "scrubdaddy.com",
+  "brand": {
+    "name": "Scrub Daddy",
+    "url": "https://scrubdaddy.com/",
+    "host": "scrubdaddy.com",
+    "title": "Scrub Daddy",
+    "description": "High-performance cleaning products that combine exclusive materials with fun, functional designs.",
+    "faviconUrl": "https://scrubdaddy.com/wp-content/uploads/2024/08/cropped-Scrub_Daddy_Icon_logo-32x32.png",
+    "logoUrl": "https://scrubdaddy.com/wp-content/uploads/2024/07/Scrub_Daddy_Logo_SVG.svg",
+    "ogImageUrl": "https://scrubdaddy.com/wp-content/uploads/2024/06/ScrubDaddy-083.jpg",
+    "screenshotUrl": null,
+    "colors": [
+      "yellow",
+      "orange",
+      "blue",
+      "white",
+      "black"
+    ],
+    "fonts": {
+      "heading": "display sans",
+      "body": "sans-serif",
+      "feel": "display"
+    },
+    "vibeTags": [
+      "playful",
+      "inventive",
+      "functional",
+      "smiling",
+      "bold"
+    ]
+  },
+  "brandBrief": {
+    "brandName": "Scrub Daddy",
+    "offer": "A temperature-responsive FlexTexture scrubber that is firm in cold water for tough scrubbing and soft in warm water for gentle cleaning.",
+    "audience": "People cleaning dishes, cookware, appliances, counters, and other household surfaces who want one tool for both stuck-on messes and gentler cleaning.",
+    "buyerMoments": [
+      "Facing burned or stuck-on food that needs firm scrubbing.",
+      "Switching to a delicate surface that needs a softer cleaning tool.",
+      "Cleaning both sides of forks, spoons, and other utensils.",
+      "Wanting one reusable scrubber instead of changing tools for every mess."
+    ],
+    "proof": [
+      "Scrub Daddy Original uses temperature-controlled FlexTexture that changes firmness in hot and cold water.",
+      "The scrubber is firm in cold water for tough scrubbing and soft in warm water for gentle cleaning.",
+      "The smile design provides eye holes for grip and a mouth that cleans both sides of utensils.",
+      "The product page describes Scrub Daddy Original as scratch-free on over a dozen common household surfaces.",
+      "The original material was first developed as a hand scrubber before its temperature-changing cleaning behavior was rediscovered on lawn furniture."
+    ],
+    "siteLanguage": [
+      "The original smiley sponge that started it all",
+      "Temperature-controlled FlexTexture",
+      "Firm in cold water for tough scrubbing",
+      "Soft in warm water for gentle cleaning",
+      "Make you smile while you scrub"
+    ],
+    "ctaDirection": "Shop Scrub Daddy Original",
+    "visualNotes": [
+      "The hero product is a bright yellow circular foam scrubber with two eye holes and a wide smiling mouth.",
+      "Use cold blue water and warm orange water as immediate visual opposites.",
+      "Show firmness through a rigid edge attacking stuck-on food and softness through the sponge bending around a delicate glass or utensil.",
+      "Keep the smiling product recognizable through every transformation.",
+      "The official product image is a clean, high-resolution packshot suitable for product reference."
+    ],
+    "droppedNoiseSummary": [
+      "Shipping thresholds, checkout details, related products, retailer availability, and account navigation are irrelevant to the story.",
+      "Official pages currently show inconsistent odor-resistance durations, so no odor-duration claim should appear in the video.",
+      "Avoid unsupported molecular explanations for why FlexTexture changes firmness; show only the documented temperature response."
+    ],
+    "confidence": "high"
+  },
+  "adAngles": [
+    {
+      "buyer": "a home cook facing baked-on food",
+      "moment": "scrubbing a pan after dinner",
+      "pain": "a soft sponge folds against the mess without enough scrubbing force",
+      "proof": "Scrub Daddy Original becomes firm in cold water for tough scrubbing",
+      "sitePhrase": "Firm in cold water for tough scrubbing"
+    },
+    {
+      "buyer": "someone moving between cookware and delicate surfaces",
+      "moment": "switching from a stuck-on mess to lighter cleaning",
+      "pain": "using one fixed-texture sponge risks being too weak for one job and too harsh for another",
+      "proof": "FlexTexture changes from firm in cold water to soft in warm water",
+      "sitePhrase": "Temperature-controlled FlexTexture"
+    },
+    {
+      "buyer": "a person cleaning utensils",
+      "moment": "washing forks and spoons after a meal",
+      "pain": "pinching a flat sponge around each utensil is awkward",
+      "proof": "the smile mouth is designed to clean both sides of utensils",
+      "sitePhrase": "Ergonomic smiley face design"
+    },
+    {
+      "buyer": "a fan of unexpected invention stories",
+      "moment": "discovering why the sponge changes texture",
+      "pain": "the original hand-scrubber idea had been rejected and stored away",
+      "proof": "Aaron Krause rediscovered the foam while cleaning lawn furniture and noticed that cold made it firm while soapy water softened it",
+      "sitePhrase": "A Smile Is Born"
+    },
+    {
+      "buyer": "someone choosing a recognizable everyday cleaning tool",
+      "moment": "reaching for one scrubber to handle several household jobs",
+      "pain": "ordinary cleaning tools hide their function until they are already being used",
+      "proof": "the eye holes provide grip and the smiling mouth has a specific utensil-cleaning function",
+      "sitePhrase": "Fun, functional designs"
+    }
+  ],
+  "productCatalog": {
+    "provider": "woocommerce-store-api",
+    "sourceUrl": "https://scrubdaddy.com/product/scrub-daddy-original/",
+    "groups": {
+      "bestSellers": []
+    },
+    "summary": {
+      "productCount": 1,
+      "bestSellerCount": 0
+    },
+    "products": [
+      {
+        "title": "Scrub Daddy Original (1ct)",
+        "handle": "scrub-daddy-original",
+        "url": "https://scrubdaddy.com/product/scrub-daddy-original/",
+        "imageUrl": "https://scrubdaddy.com/wp-content/uploads/2024/06/ScrubDaddy-083.jpg",
+        "imageAlt": "Scrub Daddy Original bright yellow smiling scrubber",
+        "productType": "Temperature-responsive household scrubber",
+        "vendor": "Scrub Daddy",
+        "priceMin": 3.99,
+        "priceMax": 3.99,
+        "currency": "USD",
+        "available": true,
+        "badges": []
+      }
+    ]
+  },
+  "evidence": {
+    "headings": [
+      "Scrub Daddy Original (1ct)",
+      "Features & Benefits",
+      "About Scrub Daddy",
+      "A Smile Is Born",
+      "What is FlexTexture?"
+    ],
+    "paragraphs": [
+      "Scrub Daddy combines powerful scrubbing with gentle cleaning, adapting to water temperature.",
+      "Temperature-controlled FlexTexture changes firmness in hot and cold water.",
+      "Scrub Daddy Original is firm in cold water for tough scrubbing and soft in warm water for gentle cleaning.",
+      "The eye holes provide a comfortable grip and the smiling mouth cleans both sides of utensils.",
+      "FlexTexture is a highly engineered polymer foam that changes texture based on water temperature.",
+      "The material began as a hand scrubber, was rejected by its original target market, and was stored away.",
+      "While cleaning lawn furniture, Aaron Krause noticed that cold made the foam firmer and soapy water softened it.",
+      "A smiling mouth was added to help clean utensils."
+    ],
+    "receipts": {
+      "specificClaims": [
+        "Firm in cold water for tough scrubbing.",
+        "Soft in warm water for gentle cleaning.",
+        "The smile mouth cleans both sides of utensils.",
+        "FlexTexture changes texture based on water temperature."
+      ],
+      "buyerMoments": [
+        "Scrubbing stuck-on food from cookware.",
+        "Switching from a tough mess to a surface needing gentler cleaning.",
+        "Cleaning both sides of utensils."
+      ],
+      "exactSiteLanguage": [
+        "The original smiley sponge that started it all",
+        "Temperature-controlled FlexTexture",
+        "Firm in cold water for tough scrubbing",
+        "Soft in warm water for gentle cleaning",
+        "A Smile Is Born"
+      ],
+      "namedProof": [
+        "Official Scrub Daddy product page: https://scrubdaddy.com/product/scrub-daddy-original/",
+        "Official Scrub Daddy history: https://scrubdaddy.com/about/",
+        "Official FlexTexture support article: https://support.scrubdaddy.com/support/solutions/articles/156000293546-what-is-flextexture-"
+      ]
+    },
+    "rawMarkdown": "Official product page: Scrub Daddy Original uses temperature-controlled FlexTexture that changes firmness in hot and cold water. It is firm in cold water for tough scrubbing and soft in warm water for gentle cleaning. The eye holes support grip and the smiling mouth cleans both sides of utensils. Official brand history: the engineered polymer foam began as a hand scrubber, was rejected by its target market, and was later rediscovered while Aaron Krause cleaned lawn furniture. Cold made the foam firmer, while soapy water softened it. Official sources: https://scrubdaddy.com/product/scrub-daddy-original/ | https://scrubdaddy.com/about/ | https://support.scrubdaddy.com/support/solutions/articles/156000293546-what-is-flextexture-"
+  },
+  "metadata": {
+    "researchDate": "2026-07-30",
+    "researchMode": "Guide Me",
+    "sources": [
+      "https://scrubdaddy.com/product/scrub-daddy-original/",
+      "https://scrubdaddy.com/about/",
+      "https://support.scrubdaddy.com/support/solutions/articles/156000293546-what-is-flextexture-"
+    ],
+    "claimConflictNote": "Odor-resistance duration was intentionally excluded because current official pages disagree on the duration."
+  },
+  "branding": {
+    "colorScheme": "light",
+    "colors": {
+      "primary": "yellow",
+      "secondary": "orange",
+      "accent": "blue",
+      "background": "white",
+      "textPrimary": "black"
+    },
+    "personality": {
+      "energy": "high",
+      "tone": "playful",
+      "targetAudience": "household cleaners and home cooks"
+    },
+    "images": {
+      "logo": "https://scrubdaddy.com/wp-content/uploads/2024/07/Scrub_Daddy_Logo_SVG.svg",
+      "favicon": "https://scrubdaddy.com/wp-content/uploads/2024/08/cropped-Scrub_Daddy_Icon_logo-32x32.png",
+      "ogImage": "https://scrubdaddy.com/wp-content/uploads/2024/06/ScrubDaddy-083.jpg"
+    }
+  },
+  "providerStatus": [
+    {
+      "provider": "html-brand-assets",
+      "status": "used",
+      "reason": "Official product and about pages provided the logo, product imagery, copy, and invention history."
+    },
+    {
+      "provider": "product-catalog",
+      "status": "used",
+      "reason": "The official product page provided one product with a usable image, current price, and availability."
+    },
+    {
+      "provider": "ad-angles",
+      "status": "used",
+      "reason": "Five evidence-backed creative angles were derived from official product behavior and brand history."
+    },
+    {
+      "provider": "brand-cache",
+      "status": "skipped",
+      "reason": "Fresh official-site research was available."
+    },
+    {
+      "provider": "firecrawl",
+      "status": "skipped",
+      "reason": "The official pages were directly readable without a separate crawl."
+    }
+  ],
+  "sessionId": "day-6-scrub-daddy-guide-me",
+  "researchRunId": "scrub-daddy-day-6-research",
+  "brandSnapshotId": "scrub-daddy-official-20260730"
+}
