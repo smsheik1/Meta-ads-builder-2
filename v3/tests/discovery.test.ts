@@ -53,8 +53,8 @@ assert.match(
 );
 assert.match(
   discoveryClient,
-  /entry\.media\.kind === "image" \? styles\.mediaWellImage : ""/,
-  "Static creative cards should use their dedicated 4:5 media well.",
+  /entry\.media\.kind === "image" \|\| entry\.format\.slug === "brainrot"[\s\S]*?\? styles\.mediaWellImage/,
+  "Static creatives and the 4:5 Brainrot format should use the 4:5 media well.",
 );
 assert.match(
   discoveryStyles,

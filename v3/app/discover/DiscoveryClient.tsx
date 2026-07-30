@@ -351,7 +351,9 @@ export function DiscoveryClient({
                       >
                         <div
                           className={`${styles.mediaWell} ${
-                            entry.media.kind === "image" ? styles.mediaWellImage : ""
+                            entry.media.kind === "image" || entry.format.slug === "brainrot"
+                              ? styles.mediaWellImage
+                              : ""
                           }`}
                         >
                           <Link
