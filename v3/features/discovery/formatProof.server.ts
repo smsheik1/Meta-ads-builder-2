@@ -832,6 +832,51 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "halo-effect",
+    promise: "Turn one portrait into a clean, dramatic semi-silhouette with a bright rim-light halo against black.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/halo-effect",
+    manifestPath: "format-repositories/halo-effect-v1/format.json",
+    whatStays: [
+      "The subject's recognizable face and identity",
+      "The original pose, body proportions, clothing, and accessories",
+      "The source framing and point of view",
+      "A realistic photographic finish",
+    ],
+    whatChanges: [
+      "Strong backlight draws a bright halo around the visible silhouette",
+      "The subject falls into a controlled semi-silhouette",
+      "The environment becomes a black studio background",
+      "High contrast creates a clean, cinematic finish",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP portrait at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected Halo Effect portrait",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for the creator-matched premium route",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Validate the portrait locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected 3:4 Halo Effect portrait plus prediction and quality provenance",
+      firstQuestion: "Which portrait should I give the Halo Effect?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",

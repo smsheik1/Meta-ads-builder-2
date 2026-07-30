@@ -1,0 +1,30 @@
+{
+  "runtime": {
+    "node": ">=22",
+    "commands": ["npm"]
+  },
+  "providers": [
+    {
+      "name": "Replicate",
+      "models": [
+        "google/nano-banana-2-lite",
+        "google/nano-banana-2",
+        "google/nano-banana-pro"
+      ]
+    }
+  ],
+  "environment": [
+    {
+      "name": "REPLICATE_API_TOKEN",
+      "secret": true,
+      "requiredFor": ["render", "resume"]
+    }
+  ],
+  "notes": [
+    "All smoke and validation commands are local.",
+    "The creator examples were labeled Nano Banana Pro; the packaged Replicate runtime keeps Pro as premium and uses Nano Banana 2 as the cheaper default.",
+    "No proof generation was purchased for this package.",
+    "One render attempt is one paid prediction.",
+    "Paid generation requires explicit approval and is capped at three attempts."
+  ]
+}

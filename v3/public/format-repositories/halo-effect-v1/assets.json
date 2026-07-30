@@ -1,0 +1,44 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/Da8PpG7lpUc/",
+    "resourceTitle": "HALO Effect Prompt",
+    "guide": "assets/source/guide.txt",
+    "cover": "assets/source/cover.jpg",
+    "referenceInset": "assets/source/football-rim-glow-reference.jpg",
+    "verification": "The Instagram DM delivered the public Google Doc with the exact Nano Banana Pro prompt. The original carousel supplied its cover and six native output examples; two promotional slides were omitted.",
+    "referenceNote": "Each source example includes its original inset at bottom left. The packaged reference files are exact crops from those insets so Wiggly can place the original at the top right of the consumer Format page."
+  },
+  "examples": [
+    {
+      "id": "football-rim-glow",
+      "path": "assets/source/football-rim-glow.jpg",
+      "referencePath": "assets/source/football-rim-glow-reference.jpg"
+    },
+    {
+      "id": "alpine-portrait",
+      "path": "assets/source/alpine-portrait.jpg",
+      "referencePath": "assets/source/alpine-portrait-reference.jpg"
+    },
+    {
+      "id": "mountain-sunglasses",
+      "path": "assets/source/mountain-sunglasses.jpg",
+      "referencePath": "assets/source/mountain-sunglasses-reference.jpg"
+    },
+    {
+      "id": "sea-portrait",
+      "path": "assets/source/sea-portrait.jpg",
+      "referencePath": "assets/source/sea-portrait-reference.jpg"
+    },
+    {
+      "id": "city-candid",
+      "path": "assets/source/city-candid.jpg",
+      "referencePath": "assets/source/city-candid-reference.jpg"
+    },
+    {
+      "id": "golf-silhouette",
+      "path": "assets/source/golf-silhouette.jpg",
+      "referencePath": "assets/source/golf-silhouette-reference.jpg"
+    }
+  ]
+}
