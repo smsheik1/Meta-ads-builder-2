@@ -874,6 +874,60 @@ const duskEffectDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const sparklingEffectDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "shoreline-bather",
+    brand: "Coastal transformation",
+    title: "Put sunlight back into the water",
+    curatorNote: "The person, shoreline, horizon, and camera angle stay recognizable as tiny natural glints warm the whole scene.",
+    image: "shoreline-bather",
+    reference: "shoreline-bather-reference",
+  },
+  {
+    id: "seashells",
+    brand: "Detail transformation",
+    title: "Make close details catch the light",
+    curatorNote: "Hands, shells, jewelry, and crop remain intact while soft reflections and warmer film color add polish.",
+    image: "seashells",
+    reference: "seashells-reference",
+  },
+  {
+    id: "ocean-texture",
+    brand: "Texture study",
+    title: "Turn existing highlights into crystal glints",
+    curatorNote: "The original wave pattern stays untouched while diamond-like highlights follow the water's real contours.",
+    image: "ocean-texture",
+    reference: "ocean-texture-reference",
+  },
+  {
+    id: "walking-beach",
+    brand: "Golden-hour transformation",
+    title: "Warm the hour without changing the moment",
+    curatorNote: "The person, walking pose, clothing, sea, and horizon remain recognizable beneath believable sunset bloom.",
+    image: "walking-beach",
+    reference: "walking-beach-reference",
+  },
+].map(({ image, reference, ...proof }, index) => ({
+  ...proof,
+  id: `sparkling-effect-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 99 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/sparkling-effect-v1/assets/source/${image}.jpg`,
+    referenceSrc: `/format-repositories/sparkling-effect-v1/assets/source/${reference}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "sparkling-effect",
+    name: "Sparkling Effect",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -1300,6 +1354,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...darkStudioPortraitDiscoveryEntries,
   ...bluePhosphorDiscoveryEntries,
   ...duskEffectDiscoveryEntries,
+  ...sparklingEffectDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -1387,6 +1442,7 @@ const discoveryShelfDefinitions = [
       "dark-studio-portrait",
       "blue-phosphor",
       "dusk-effect",
+      "sparkling-effect",
     ],
   },
   {
