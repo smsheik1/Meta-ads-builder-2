@@ -1,0 +1,35 @@
+# Wiggly Chrome Void Format
+
+This runnable Repo preserves the exact prompt and six transformation examples
+gathered from @skaigenerated. It surrounds one existing fashion photo with
+photoreal liquid-chrome sculpture while preserving the person, outfit, pose,
+camera, and original color through Replicate.
+
+Run from `v3`:
+
+```bash
+npm install
+npm run format:skai-image -- smoke --format=chrome-void
+npm run format:skai-image -- init --format=chrome-void --run=my-chrome-void --input=/absolute/path/to/photo.jpg
+npm run format:skai-image -- validate --format=chrome-void --run=my-chrome-void
+npm run format:skai-image -- estimate --format=chrome-void --run=my-chrome-void
+```
+
+Generation requires `REPLICATE_API_TOKEN` and explicit approval:
+
+```bash
+npm run format:skai-image -- render --format=chrome-void --run=my-chrome-void --approve-paid
+```
+
+View the output, record visual notes with
+`inspect --visual-pass --review-notes="..."`, then use
+`finalize --approve-final`.
+
+Model routes:
+
+- Economy: `google/nano-banana-2-lite`
+- Default: `google/nano-banana-2`
+- Premium and source model: `google/nano-banana-pro`
+
+No Replicate proof call was made while packaging this Repo. The six included
+source examples and guide are the proof artifacts.

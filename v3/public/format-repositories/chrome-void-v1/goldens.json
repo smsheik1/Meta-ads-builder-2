@@ -1,0 +1,65 @@
+{
+  "purpose": "Judge identity and outfit preservation, physically integrated liquid chrome, believable reflections, clean subject visibility, and premium fashion-editorial finish against six gathered examples.",
+  "examples": [
+    {
+      "id": "red-jacket-street",
+      "title": "Liquid chrome turns one street portrait into a campaign",
+      "imagePath": "assets/source/hero-with-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The red jacket, denim, hood, pose, and street camera remain recognizable",
+        "Chrome ribbons cast believable reflections and wrap around the scene without covering the subject"
+      ]
+    },
+    {
+      "id": "boutique-mirror",
+      "title": "A mirror selfie keeps its clothes and casual posture",
+      "imagePath": "assets/source/example-02.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The phone, shopping bag, layered outfit, cap, and proportions survive the transformation",
+        "Liquid-metal sculpture grows through the boutique with useful depth and contact shadows"
+      ]
+    },
+    {
+      "id": "green-knit",
+      "title": "Soft knit texture stays legible beside hard chrome",
+      "imagePath": "assets/source/example-03.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The green dress, boots, bag, crossed arms, and face stay clear",
+        "Chrome branches curve behind and around the body instead of flattening into a backdrop"
+      ]
+    },
+    {
+      "id": "layered-mini",
+      "title": "A layered fashion look survives the surreal set",
+      "imagePath": "assets/source/example-04.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "Hair, shoulder pose, mini dress, bag, and tall boots keep their original color and shape",
+        "Foreground and background chrome create real depth without swallowing the person"
+      ]
+    },
+    {
+      "id": "city-layers",
+      "title": "Busy city context still reads through the effect",
+      "imagePath": "assets/source/example-05.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The cap, layered jacket, jewelry, jeans, backpack straps, and gaze remain intact",
+        "Reflections and occlusion place the chrome sculpture convincingly on the sidewalk"
+      ]
+    },
+    {
+      "id": "graphic-knit",
+      "title": "Graphic clothing and accessories stay untouched",
+      "imagePath": "assets/source/example-06.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The glasses, cup, knit graphics, baggy pants, shoes, and full pose remain recognizable",
+        "The metallic forms add spectacle without replacing the original street portrait"
+      ]
+    }
+  ]
+}

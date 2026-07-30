@@ -1,0 +1,25 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbYeeVCCjws/",
+    "resourceUrl": "https://docs.google.com/document/d/1i1jOJCSLtq7wsmWAlOTH6rG3LelgjbGvFlxjthdiF5k/edit",
+    "guide": "assets/source/guide.pdf",
+    "exampleOutput": "assets/source/example-output.jpg",
+    "hero": "assets/source/hero-with-reference.jpg",
+    "referenceInput": "assets/source/reference-input.jpg",
+    "carouselExamples": [
+      "assets/source/example-output.jpg",
+      "assets/source/example-02.jpg",
+      "assets/source/example-03.jpg",
+      "assets/source/example-04.jpg",
+      "assets/source/example-05.jpg",
+      "assets/source/example-06.jpg"
+    ],
+    "promptPath": "prompts/transform.txt",
+    "verification": "The exact prompt, Nano Banana Pro label, guide, six examples, and before/after proof were gathered through the creator's Android Instagram comment and DM flow and visually checked. The reference fixture is cropped directly from the creator's before inset for the matching red-jacket example; no provider generation was run."
+  },
+  "fixture": {
+    "path": "assets/source/reference-input.jpg",
+    "purpose": "Creator-provided before inset used for local validation, hero comparison, and free smoke input only; no provider call was made."
+  }
+}

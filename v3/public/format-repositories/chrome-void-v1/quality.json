@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio within 0.02 of the selected route",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The subject's identity, facial features, hairstyle, skin tone, outfit, pose, proportions, and camera angle remain recognizable",
+    "Liquid-chrome structures surround the subject without covering the face or important body parts",
+    "Reflections, contact shadows, depth, and perspective make the chrome feel physically present",
+    "Original clothing and skin colors remain intact under soft daylight and cinematic contrast",
+    "The result feels like a premium photoreal fashion campaign rather than a pasted effect or synthetic sculpture render"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

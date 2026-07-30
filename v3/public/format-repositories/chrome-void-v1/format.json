@@ -1,0 +1,20 @@
+{
+  "id": "chrome-void",
+  "version": "1.0.0",
+  "title": "Chrome Void",
+  "description": "Turn one portrait into a premium surreal fashion editorial surrounded by flowing liquid-chrome sculpture while preserving identity, outfit, pose, and color.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DbYeeVCCjws/",
+    "resourceUrl": "https://docs.google.com/document/d/1i1jOJCSLtq7wsmWAlOTH6rG3LelgjbGvFlxjthdiF5k/edit",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana Pro"
+  },
+  "outputs": [
+    "1 surreal liquid-chrome fashion editorial image",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}
