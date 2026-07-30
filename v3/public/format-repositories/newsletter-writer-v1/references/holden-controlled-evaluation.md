@@ -1,5 +1,9 @@
 # Holden controlled comparison
 
+This is historical v1.0-to-v1.1 proof, not a generation from the current v1.1.1
+prompts. The current release's six-scenario validation is documented in
+`blind-customer-stress-2026-07-30.md`.
+
 Both versions used the same reconstructed Holden website evidence, topic,
 brief, and three-stage generation sequence. Version A used the prompts from
 base commit `0c08645e`. Version B used the revised prompts. Neither agent saw

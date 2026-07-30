@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, realpath, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -66,6 +66,38 @@ function runDirectory(runId) {
     throw new Error("Run id must use lowercase letters, numbers, and hyphens.");
   }
   return path.join(runsRoot(), runId);
+}
+
+async function contentHashesInDirectory(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const hashes = await Promise.all(entries.map(async (entry) => {
+    const entryPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) return contentHashesInDirectory(entryPath);
+    if (entry.isFile()) return [contentHash(await readFile(entryPath))];
+    return [];
+  }));
+  return hashes.flat();
+}
+
+async function assertCustomerSample(samplePath, content) {
+  const testDirectories = ["fixtures", "goldens", "comparisons"]
+    .map((name) => path.join(packageRoot, name));
+  if (testDirectories.some((directory) => {
+    const relative = path.relative(directory, samplePath);
+    return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+  })) {
+    throw new Error(
+      "Bundled fixtures, goldens, and comparisons are test-only. Ask the user for their newsletter files.",
+    );
+  }
+  const bundledTestHashes = new Set(
+    (await Promise.all(testDirectories.map(contentHashesInDirectory))).flat(),
+  );
+  if (bundledTestHashes.has(contentHash(content))) {
+    throw new Error(
+      "Bundled fixtures, goldens, and comparisons are test-only. Ask the user for their newsletter files.",
+    );
+  }
 }
 
 const readJson = async (filePath) => JSON.parse(await readFile(filePath, "utf8"));
@@ -280,7 +312,7 @@ function validateProfile(profile, sources) {
 }
 
 function wordRange(targetLength) {
-  if (targetLength === "short") return [100, 260];
+  if (targetLength === "short") return [50, 240];
   if (targetLength === "long") return [400, 900];
   return [180, 520];
 }
@@ -421,7 +453,7 @@ async function estimate() {
 
 async function init() {
   const runId = requiredArgument("run");
-  const brandUrl = requiredArgument("brand-url");
+  const brandUrl = argument("brand-url") ?? "customer-provided://no-website";
   new URL(brandUrl);
   const directory = runDirectory(runId);
   if (existsSync(directory)) throw new Error(`Run ${runId} already exists.`);
@@ -429,10 +461,13 @@ async function init() {
   if (samplePaths.length > 5) throw new Error("Use at most five newsletter samples.");
   const newsletterSamples = [];
   for (const [index, samplePath] of samplePaths.entries()) {
+    const resolvedSamplePath = await realpath(path.resolve(samplePath));
+    const content = await readFile(resolvedSamplePath, "utf8");
+    await assertCustomerSample(resolvedSamplePath, content);
     newsletterSamples.push({
       id: `newsletter-${index + 1}`,
       label: path.basename(samplePath),
-      content: await readFile(path.resolve(samplePath), "utf8"),
+      content,
     });
     newsletterSamples.at(-1).sha256 = contentHash(newsletterSamples.at(-1).content);
   }
@@ -450,7 +485,7 @@ async function init() {
     createdAt: new Date().toISOString(),
   });
   console.log(`Step 1 of 4: Learn voice - created ${path.relative(v3Root, directory)}.`);
-  console.log("Research the website, fill companyName and websiteFacts in sources.json, then build the profile prompt.");
+  console.log("Fill companyName and grounded facts in sources.json, then build the profile prompt.");
   console.log("No provider was called.");
 }
 
@@ -594,7 +629,7 @@ async function resume() {
   const next = {
     sources: "Fill sources.json, then run profile-prompt.",
     "profile-prompted": "Save brand-profile.json, then run validate-profile.",
-    "profile-ready": "Run brief with the next newsletter topic.",
+    "profile-ready": "Ask what this newsletter should be about, capture the complete current brief, then run brief.",
     "brief-ready": "Run draft-prompt.",
     "draft-prompted": "Save draft.json, then run validate-draft.",
     "draft-ready": "Run review-prompt.",

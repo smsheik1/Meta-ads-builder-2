@@ -18,6 +18,7 @@ const required = [
   "references/research.md",
   "references/holden-controlled-evaluation.md",
   "references/brightmark-holdout-evaluation.md",
+  "references/blind-customer-stress-2026-07-30.md",
   "fixtures/brightmark-sources.json",
   "fixtures/brightmark-brief.json",
   "fixtures/brightmark-holdout-sources.json",

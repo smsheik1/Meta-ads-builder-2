@@ -108,7 +108,8 @@ export default function NewsletterWriterFormatPage() {
             <h2 className="mt-2 text-xl font-bold">Holden Brand proof: read both before revealing the labels</h2>
             <p className="mt-1 text-sm text-slate-600">
               Same reconstructed Holden evidence, topic, and brief. Each version was generated
-              independently with a different prompt set.
+              independently with a different prompt set. This is the historical v1.0-to-v1.1
+              comparison; the packaged report documents the current v1.1.1 blind stress test.
             </p>
             <Badge variant="outline" className="mt-3">
               Website-only profile · low confidence
@@ -181,7 +182,7 @@ export default function NewsletterWriterFormatPage() {
           <article>
             <h2 className="font-bold">What the agent runs</h2>
             <div className="mt-3 overflow-auto rounded-md bg-slate-950 p-4 font-mono text-xs leading-6 text-slate-100">
-              npm run format:newsletter -- init --run=&lt;id&gt; --brand-url=&lt;url&gt;<br />
+              npm run format:newsletter -- init --run=&lt;id&gt; --company=&lt;name&gt; [--brand-url=&lt;url&gt;]<br />
               npm run format:newsletter -- profile-prompt --run=&lt;id&gt;<br />
               npm run format:newsletter -- brief --run=&lt;id&gt; --topic=&lt;topic&gt;<br />
               npm run format:newsletter -- draft-prompt --run=&lt;id&gt;<br />

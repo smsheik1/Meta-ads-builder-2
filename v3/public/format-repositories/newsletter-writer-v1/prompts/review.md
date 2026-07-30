@@ -10,10 +10,12 @@ Review the draft once. Do not start a new concept.
 3. **Voice:** Compare rhythm, openings, transitions, vocabulary, punctuation, and CTA style with the evidence-backed profile.
 4. **Specificity:** Replace generic marketing claims with supported company details.
 5. **Opening:** Put a sourced object, place, action, or buyer moment in the first 25 words. Cut category-level throat-clearing.
-6. **Story:** Keep one causal arc. For company history, retain only milestones that explain the present buyer value.
-7. **Naturalness:** Remove formulaic AI structures, repeated sentence shapes, fake enthusiasm, empty conclusions, and unnecessary throat-clearing.
-8. **Restraint:** Do not add slang, fragments, humor, first person, or punctuation quirks unless the source samples support them.
-9. **Confidence:** When the profile is website-informed rather than newsletter-informed, improve specificity without pretending the system learned a private email voice.
+6. **Story:** Keep one causal arc. Preserve the requested origin, human difference, or buyer tension as the narrative spine. For company history, retain only milestones that explain the present buyer value.
+7. **Progression:** Make every paragraph add a new fact, consequence, human detail, proof point, or action. Collapse repeated claims and metaphors across the subject, preview, and body. Delete explanations of obvious actions, calendar reading, and reply mechanics.
+8. **Short copy:** Keep a short facts-only announcement to two or three compact body paragraphs. Remove facts repeated across body paragraphs. Prefer a direct invitation over a company-description opening for an event.
+9. **Naturalness:** Remove formulaic AI structures, repeated sentence shapes, fake enthusiasm, empty conclusions, unnecessary throat-clearing, and unsupported clever abstractions.
+10. **Restraint:** Do not add slang, fragments, humor, first person, or punctuation quirks unless the source samples support them.
+11. **Confidence:** When the profile is website-informed rather than newsletter-informed, improve specificity without pretending the system learned a private email voice. Keep facts-only copy natural and direct; replace tautological or bureaucratic restatements with a plain invitation or remove them.
 
 Use one revision pass only. Over-editing can flatten the voice.
 

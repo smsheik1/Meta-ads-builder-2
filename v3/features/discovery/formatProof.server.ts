@@ -1337,7 +1337,7 @@ const formatConfigs: FormatProfileConfig[] = [
     ],
     handoff: {
       requiredInputs: [
-        "A company website",
+        "A company website or short company description",
         "Three to five past newsletters when available",
         "One newsletter topic",
       ],
@@ -1348,10 +1348,11 @@ const formatConfigs: FormatProfileConfig[] = [
         "One Markdown file plus JSON provenance",
       ],
       instructions: [
-        "Research the official website",
+        "Research the official website, or capture grounded user-provided facts when none exists",
         "Learn voice from past emails when available",
         "Write the newsletter from the approved topic",
         "Run one fact-and-voice review before finalizing",
+        "Treat the Holden example as historical v1.1 proof; use the v1.1.1 rules and blind-stress report for current behavior",
       ],
       estimates: [
         { label: "Research + voice profile", cost: "$0 Wiggly provider cost", time: "about 2-5 min" },

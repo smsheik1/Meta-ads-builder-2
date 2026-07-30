@@ -1556,7 +1556,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     brand: "Holden Brand",
     title: "What nearly five decades should buy you",
     curatorNote:
-      "A parking-garage origin becomes a grounded reason to choose the experienced, hands-on partner.",
+      "Historical v1.1 proof: a parking-garage origin becomes a grounded reason to choose the experienced, hands-on partner.",
     goal: "story",
     media: {
       kind: "image",
@@ -1566,7 +1566,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     format: {
       slug: "newsletter-writer",
       name: "Newsletter Writer",
-      version: "1.1.0",
+      version: "1.1.1",
       owner: "Wiggly Studio",
     },
   },
