@@ -78,3 +78,12 @@ See `agent-runs/lego-origin-world-arc-proof/` for the accepted endpoints, reject
 - Lesson: product-led stories must validate that their evidence belongs to the selected product before approving a direction.
 
 See `agent-runs/davids-blueberry-pie-proof/` for the research, proposed directions, and stopped state.
+
+## Agent-planning requirement correction
+
+- Trigger: the first Day 6 Scrub Daddy smoke check stopped at the planning stage because the Repo required `NVIDIA_NIM_API_KEY`.
+- Finding: that requirement came from the earlier web-app workflow. It was unnecessary for an agent-operated Format because the operating agent can author the planning JSON and the canonical runtime already owns grounding and validation.
+- Correction: the canonical Repo and downloadable kit no longer require a planning-provider key. `init` now writes numbered `planning-context.json`; the operating agent authors directions and the selected plan; the runner rejects unsupported claims, bad evidence indexes, invalid scripts, and invalid scene contracts before paid media.
+- Prompt correction: the canonical storyboard prompt still contained the older lifestyle-to-blue-to-lifestyle sequence even though FinalStraw had disproved it. That contradictory sequence was removed; all six frames now stay in the proven blue-grid explanation world.
+- Boundary: the older interactive web-app NIM functions remain available for backward compatibility. They are not part of the canonical agent-operated Repo workflow.
+- Status: source and packaged smoke tests must pass before this correction is considered shipped. A successful planner correction does not prove the Scrub Daddy creative.

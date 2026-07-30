@@ -71,7 +71,7 @@ Before `Ready to start?`, check the current provider prices and show:
 ```text
 Run estimate
 
-- Story ideas and plan: 3 NIM calls — about $X
+- Story ideas and plan: operating agent + local validation — $0
 - Storyboard: 1 image — about $X
 - Key images: 4 images — about $X
 - Video clips: 2 clips, 10 seconds each — about $X
@@ -87,6 +87,7 @@ Use current prices. Do not guess. If a price is not public, say `price not liste
 ## Rules
 
 - Read `requirements.json`, `inputs.json`, `pipeline.json`, `scene-contract.json`, `assets.json`, `goldens.json`, and `quality.json`.
+- Read `planning-contract.json`; the operating agent authors both planning inputs and the canonical runner validates them.
 - Watch FinalStraw first, then the supporting videos in `goldens/`. They show the creative bar; do not copy their brands, claims, shots, or wording.
 - Use the packaged runner and the canonical Wiggly modules. Do not rebuild the renderer, timing model, prompt builders, or scene contract.
 - Product focus requires a catalog product with a usable image. Brand and customer-problem stories do not require a product.
@@ -97,16 +98,18 @@ Use current prices. Do not guess. If a price is not public, say `price not liste
 - In Guide Me, ask once before the two planned video clips. In Turbo, use the approved run estimate. Submit one clip at a time and inspect clip 1 before spending on clip 2.
 - Generate one explicitly approved Fish narration only after both clips pass inspection.
 - Render the final MP4 locally through the packaged Remotion entry and `AdRenderSurface`. Never rebuild or replace the renderer.
+- Do not require a separate LLM API key for planning. The operating agent is the planner.
 - Never print secret values. Report only missing key names.
 - Fail loudly. Do not switch providers, repair model output, retry automatically, or hide an error.
+- Challenge inherited web-UI assumptions. Flag hard-coded providers, fixed counts, required fields, or workflow steps that lack a current production reason. Explain the risk and proposed replacement before removing a proven guardrail.
 
 ## Agent loop
 
 1. Run `check --stage=plan`.
-2. Run `init` with the exported Wiggly website research and the chosen story subject.
-3. Use the approval for the three planning calls: one story-slate call, then one script call and one scene-plan call. Run `directions`.
+2. Run `init` with the exported Wiggly website research and the chosen story subject. It saves the numbered evidence accepted by validation in `planning-context.json`.
+3. Read `planning-context.json`, author exactly five evidence-backed directions using its `directionEvidenceItems` and `planning-contract.json`, then run `directions --input=/absolute/path/directions.json`. This is local and makes no provider call.
 4. In Guide Me, show all five directions and let the user choose. In Turbo, pick the strongest saved direction.
-5. Run `select`, then `validate`.
+5. Author the selected script and scene plan using `planning-contract.json`, then run `select --plan=/absolute/path/selected-plan.json`, followed by `validate`.
 6. Compare the selected direction with the production references. State the concrete hook, the job of the blue explanation world, the visible transformation, the product or subject carried through the story, and the final payoff. If any answer is vague, revise before an image call.
 7. Let the user inspect the script, storyboard plan, image prompts, and CTA. The MVP runner does not edit these fields; if the plan is wrong, stop and start a new run from the saved research instead of spending on media.
 8. In Guide Me, ask before each `image` command. In Turbo, use the approved run estimate.

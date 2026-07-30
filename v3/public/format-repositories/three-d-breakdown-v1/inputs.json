@@ -11,6 +11,18 @@
       "label": "Story focus",
       "type": "product | brand | customer-problem | custom",
       "description": "What the 3D Breakdown should explain."
+    },
+    {
+      "id": "agentDirections",
+      "label": "Agent-authored story directions",
+      "type": "ThreeDBreakdownAgentDirectionsInput",
+      "description": "Exactly five evidence-linked directions written by the operating agent and validated by the canonical runner."
+    },
+    {
+      "id": "agentSelectedPlan",
+      "label": "Agent-authored selected plan",
+      "type": "ThreeDBreakdownAgentSelectedPlanInput",
+      "description": "The selected script and scene plan written by the operating agent and validated before paid media."
     }
   ],
   "conditional": [

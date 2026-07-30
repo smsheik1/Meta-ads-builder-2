@@ -89,15 +89,20 @@ export type ThreeDBreakdownGeneration = {
   variants: ThreeDBreakdownVariant[];
   evidenceItems: ThreeDBreakdownEvidenceItem[];
   model: string;
-  provider: "nvidia-nim";
+  provider: "nvidia-nim" | "agent";
   providerStatus: StoredWebsiteResearchResult["providerStatus"][number];
 };
 
 export type ThreeDBreakdownStoryDirectionGeneration = ThreeDBreakdownStoryDirectionSlate & {
   evidenceItems: ThreeDBreakdownEvidenceItem[];
   model: string;
-  provider: "nvidia-nim";
+  provider: "nvidia-nim" | "agent";
   providerStatus: StoredWebsiteResearchResult["providerStatus"][number];
+};
+
+export type ThreeDBreakdownAgentSelectedPlanInput = {
+  scriptPlan: Record<string, unknown>;
+  scenePlan: Record<string, unknown>;
 };
 
 const DEFAULT_TIMEOUT_MS = 75_000;
@@ -604,13 +609,13 @@ const getStoryboardStyleRules = (visualStyle: ThreeDBreakdownVisualStyle) => (
       "Frame 2: the hidden customer/product problem appears during actual product use, handling, body-route, opening, eating, applying, wearing, or setup.",
       "Frame 3: the approved subject, product, components, or hands set up the mechanism.",
       "Frame 4: peak impossible-to-film 3D overlay, cutaway, x-ray, component split, invisible-problem reveal, or mechanism insert.",
-      "Frame 5: return from the 3D insert into a practical proof or payoff connected to the approved recurring subject.",
+      "Frame 5: resolve the 3D insert into a practical proof or payoff connected to the approved recurring subject without changing visual worlds.",
       "Frame 6: resolve exactly to the approved final subject and product state. A clean product-only final is valid when the story calls for it.",
       "Use oversized tactile demo props like clear tubes, jars, glasses, capsules, particles, piles, pipes, scoops, scales, trays, or product-use surfaces so the demo feels physically staged, not like a generic science diagram.",
       "Each frame should be a different physical teaching module when possible: product use, product path or selected body-route, obstacle wall or pile-up, mechanism machine or pipe, moving particles/components, and final product payoff.",
       "For supplement stories, match the visual engine to the locked premise. Routine, testing, portability, taste, and ingredient-compression stories stay in the external product/demo world. Only delivery, digestion, or absorption stories use a transparent torso or body-route.",
       "For approved body-route frames, show the correct digestive route rather than lungs, keep it attached to the silent demonstrator and product path, and use clean blue-route footage with a tidy barrier and visible particles. Avoid gore, wet intestine tunnels, detached organs, or anatomy montage.",
-      "Use the relevant lifestyle setting for frames 1-2, move into the recognizable bright blue/cyan blueprint-grid explanation stage for frames 3-4, then return to the lifestyle setting for frames 5-6. Keep the same feature-animation CGI finish, recurring subject, product, tactile props, and camera language through both transitions.",
+      "Keep all six frames in one recognizable bright blue/cyan blueprint-grid explanation world. Stage the real-use setup, mechanism reveal, and payoff inside that world while varying camera, scale, props, and physical state.",
       "Do not use miniature toy-character anatomy, cartoon wall characters, smooth bald mannequins, blank anatomy models, test dummies, faceless biology montages, all-blue tabletop repetition, sterile cleanroom emptiness, huge empty counters, lab-coat scientists, doctor-like presenters, medical masks, medical goggles, PPE, sunglasses, photorealistic people, live-action people, or talking humans.",
     ]
     : [
@@ -688,7 +693,7 @@ const parseStoryboardBoard = (value: unknown, visualStyle: ThreeDBreakdownVisual
     "Each still must fill its cell edge-to-edge; no blank white rows, title bands, empty margins, or presentation whitespace.",
     "Absolute text ban: the image must contain zero words and zero letters. Do not draw headings, titles, labels, frame numbers, UI, arrows, icons, shirt text, product text, fake writing, glyphs, or alphanumeric marks.",
     "This is not final footage and not a single hero frame. It is a full-board visual plan that lets a human judge the whole 20-second story before spending video credits.",
-    "Use one coherent feature-animation CGI style across a fixed world sequence: frames 1-2 in the relevant lifestyle setting, frames 3-4 on the bright blue/cyan blueprint-grid explanation stage, and frames 5-6 back in the lifestyle setting for the payoff. Keep one dominant subject/action per panel.",
+    "Use one coherent feature-animation CGI style inside one recognizable bright blue/cyan blueprint-grid explanation world across all six frames. Vary camera, scale, props, and physical state while keeping one dominant subject/action per panel.",
     "If image references are provided, use the style reference frame only for visual grammar and use product/brand references only for shape, color, packaging cues, and material cues.",
     `Story sequence to visualize: ${imagePrompt}`,
     `Internal reading-order still plan to preserve, never visible as text: ${framePlanText}`,
@@ -704,7 +709,7 @@ const parseStoryboardBoard = (value: unknown, visualStyle: ThreeDBreakdownVisual
     "For reference-style ecommerce teardown, the best frames teach with objects: a person uses or carries the product, the hidden path/obstacle appears, particles/components move, a machine/cutaway changes state, and the final product resolves the lesson.",
     "Every frame follows the founder prompt discipline: style declaration, recurring subject/product, concrete action, camera/framing, lighting, color/mood, and consistency. If any piece is missing, the frame is too vague.",
     "Every frame must show one visible state change so the storyboard feels like footage: object moves, layer peels, path blocks, capsule travels, particles scatter, mechanism opens, or payoff resolves.",
-    "The six panels must feel like a storyboard artist planned one continuous ad: same demonstrator, product, materials, and CGI language through the approved lifestyle-to-blue-to-lifestyle world arc, with new visual information every panel and no disconnected beauty shots.",
+    "The six panels must feel like a storyboard artist planned one continuous ad: same demonstrator, product, materials, blue-grid explanation world, and CGI language, with new visual information every panel and no disconnected beauty shots.",
     "Do not let the same close-up product angle dominate more than two frames. Keep the visual story changing every frame.",
     ...getStoryboardStyleRules(visualStyle),
     "Every panel must contain a visible subject, object, and physical action. The first panel cannot be an empty stage; it must show friction physically blocking, piling up, splitting, leaking, breaking, tangling, or creating tension.",
@@ -908,6 +913,100 @@ const prepareThreeDBreakdownEvidence = (
     evidenceItems,
   };
 };
+
+export function getThreeDBreakdownAgentPlanningContext(
+  research: StoredWebsiteResearchResult,
+  storySubject?: ThreeDBreakdownStorySubject | null,
+) {
+  const startedAt = Date.now();
+  const resolvedStorySubject = storySubject
+    ? resolveThreeDBreakdownStorySubject(research, storySubject)
+    : undefined;
+  const { directorEvidenceItems, evidenceItems } = prepareThreeDBreakdownEvidence(
+    research,
+    startedAt,
+    resolvedStorySubject,
+  );
+  return {
+    storySubject: resolvedStorySubject,
+    directionEvidenceItems: directorEvidenceItems,
+    evidenceItems,
+  };
+}
+
+export function parseThreeDBreakdownAgentStoryDirectionsFromResearch(
+  research: StoredWebsiteResearchResult,
+  input: Record<string, unknown>,
+  storySubject?: ThreeDBreakdownStorySubject | null,
+): ThreeDBreakdownStoryDirectionGeneration {
+  const startedAt = Date.now();
+  const resolvedStorySubject = storySubject
+    ? resolveThreeDBreakdownStorySubject(research, storySubject)
+    : undefined;
+  const { directorEvidenceItems, evidenceItems } = prepareThreeDBreakdownEvidence(
+    research,
+    startedAt,
+    resolvedStorySubject,
+  );
+  const slate = parseStoryDirectionSlateOutput(
+    JSON.stringify(input),
+    directorEvidenceItems,
+    resolvedStorySubject,
+  );
+  return {
+    ...slate,
+    evidenceItems,
+    model: "operating-agent",
+    provider: "agent",
+    providerStatus: {
+      provider: "agent-planner",
+      status: "used",
+      reason: `The operating agent authored and the canonical runtime validated ${slate.directions.length} story directions.`,
+    },
+  };
+}
+
+export function parseThreeDBreakdownAgentSelectedPlanFromResearch(
+  research: StoredWebsiteResearchResult,
+  input: ThreeDBreakdownAgentSelectedPlanInput,
+  selectedStoryDirection: ThreeDBreakdownStoryDirection,
+  storySubject?: ThreeDBreakdownStorySubject | null,
+): ThreeDBreakdownGeneration {
+  const startedAt = Date.now();
+  const resolvedStorySubject = storySubject
+    ? resolveThreeDBreakdownStorySubject(research, storySubject)
+    : undefined;
+  const { directorEvidenceItems, evidenceItems } = prepareThreeDBreakdownEvidence(
+    research,
+    startedAt,
+    resolvedStorySubject,
+  );
+  const lockedStyleBScript = parseStyleBScriptPlanOutput(
+    JSON.stringify(input.scriptPlan),
+    directorEvidenceItems,
+    research,
+    selectedStoryDirection,
+    resolvedStorySubject,
+  );
+  const parsedGeneration = parseDirectorOutput(
+    JSON.stringify(input.scenePlan),
+    directorEvidenceItems,
+    1,
+    lockedStyleBScript,
+    resolvedStorySubject,
+  );
+  return {
+    ...parsedGeneration,
+    evidenceItems,
+    model: "operating-agent",
+    provider: "agent",
+    providerStatus: {
+      provider: "agent-planner",
+      status: "used",
+      reason: "The operating agent authored and the canonical runtime validated the selected script and scene plan.",
+    },
+  };
+}
 
 export async function generateThreeDBreakdownStoryDirectionsFromResearch(
   research: StoredWebsiteResearchResult,

@@ -8,6 +8,7 @@ export type ResearchProviderStatus = {
 	    | "ad-angles"
 	    | "gemini-curator"
 	    | "nvidia-nim-curator"
+	    | "agent-planner"
 	    | "product-catalog";
   status: "used" | "failed" | "skipped";
   reason: string;

@@ -50,6 +50,7 @@ for (const name of [
   "inputs.json",
   "kit-smoke.mjs",
   "pipeline.json",
+  "planning-contract.json",
   "quality.json",
   "requirements.json",
   "scene-contract.json",

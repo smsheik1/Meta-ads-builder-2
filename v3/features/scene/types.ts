@@ -121,7 +121,7 @@ export type AdSceneBase<
     researchRunId: string;
     brandSnapshotId: string;
     model: string;
-    provider: "gemini" | "nvidia-nim" | "openrouter" | "deterministic";
+    provider: "gemini" | "nvidia-nim" | "openrouter" | "deterministic" | "agent";
     generatedAt: number;
     adAngles?: BrandAdAngle[];
     selectedProductHandles?: string[];

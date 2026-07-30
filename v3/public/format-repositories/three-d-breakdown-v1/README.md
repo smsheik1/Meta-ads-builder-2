@@ -32,18 +32,22 @@ Before planning, watch the packaged FinalStraw reference first, then Grüns, Kia
 6. One Fish narration and one final 20-second MP4 rendered through `AdRenderSurface`.
 
 The storyboard is a planning reference. Its small panel crops must never become video endpoints.
-Planning uses exactly three NIM calls in the Repo runner: one story slate, one selected script, and one selected scene plan. Calls are counted before dispatch, and the runner does not retry them automatically.
+Planning is authored by the operating agent and costs $0. No separate LLM API key is required. The canonical runner validates the five-direction slate, selected script, evidence links, six-frame plan, and scene contract before any paid media call.
+
+Use `planning-contract.json` for the two agent-authored planning inputs. Do not hand-write a finished `AdScene` or bypass the runner; the runner converts validated planning inputs into the canonical scene.
 
 ## Commands
 
 ```bash
 npm run format:three-d -- check --stage=plan
 npm run format:three-d -- init --run=my-run --research=/absolute/path/research.json --subject=brand
-npm run format:three-d -- directions --run=my-run --approve-planning
-npm run format:three-d -- select --run=my-run --direction=idea-1 --approve-planning
+npm run format:three-d -- directions --run=my-run --input=/absolute/path/directions.json
+npm run format:three-d -- select --run=my-run --direction=idea-1 --plan=/absolute/path/selected-plan.json --approve-planning
 npm run format:three-d -- validate --run=my-run
 npm run format:three-d -- inspect --run=my-run
 ```
+
+`init` also saves a numbered `planning-context.json` inside the run. Read it before authoring directions; its `directionEvidenceItems` are the evidence indexes accepted by the canonical validator.
 
 Image commands always create one image:
 
@@ -104,6 +108,23 @@ npm run format:three-d -- finalize --run=my-run --approve-final
 Compare the result with FinalStraw and at least one supporting reference before finalizing. A file can pass resolution, duration, and audio checks while still failing as an ad.
 
 Never paste keys into prompts, files, run records, or chat. Add the required key names to `.env.local`.
+
+## Challenge inherited requirements
+
+This Format was translated from a web UI. Do not assume every fixed number, provider choice, step, or field still belongs in an agent-operated workflow. When something appears hard-coded without a clear production reason:
+
+1. Flag the exact requirement to the user.
+2. Explain why it may be inherited or unnecessary.
+3. State what could break if it is removed.
+4. Recommend the smallest replacement or experiment.
+
+Preserve proven media and renderer guardrails until evidence supports changing them. Challenge unexplained workflow ceremony aggressively.
+
+Open challenges:
+
+- The generic storyboard prompt still carries supplement and body-route rules for every product. That adds irrelevant prompt weight for products like Scrub Daddy and may confuse image generation. Proposed replacement: inject those rules only when the selected evidence and risk flags make them relevant.
+- The five-direction slate is a fixed Guide Me convention, not a media or renderer requirement. Proposed replacement: make the comparison count configurable within a small range after the daily workflow shows how many options are actually useful.
+- Six storyboard frames, four production anchors, two 10-second clips, and a 20-second render remain fixed for now because FinalStraw proved that exact production contract and the renderer validates it. Treat these as the current format identity, not universal truths; changing them requires a new end-to-end media proof.
 
 ## Important boundary
 

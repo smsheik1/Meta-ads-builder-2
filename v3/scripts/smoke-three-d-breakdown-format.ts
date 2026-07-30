@@ -35,7 +35,8 @@ const freeCheck = evaluateThreeDBreakdownRepoRequirements({
   manifest,
   tools: { node: true },
 });
-assert.deepEqual(freeCheck.missingEnvironment, ["NVIDIA_NIM_API_KEY"]);
+assert.deepEqual(freeCheck.missingEnvironment, []);
+assert.equal(freeCheck.ok, true);
 const videoCheck = evaluateThreeDBreakdownRepoRequirements({
   stage: "video",
   environment: { REPLICATE_API_TOKEN: "present" },

@@ -1,0 +1,58 @@
+{
+  "planner": "operating-agent",
+  "providerKeyRequired": false,
+  "directionsInput": {
+    "directions": {
+      "count": 5,
+      "fields": {
+        "hookLine": "non-empty string",
+        "subheadline": "non-empty string",
+        "shortSummary": "non-empty string",
+        "category": "non-empty string",
+        "whyCompelling": "non-empty string",
+        "adAngle": "non-empty string",
+        "visualEngine": "non-empty string",
+        "evidenceIndex": "integer from the saved research evidence",
+        "possibleRevealPatterns": "one or more values allowed by the canonical reveal-pattern contract"
+      }
+    },
+    "recommendedIndex": "integer from 1 through 5"
+  },
+  "selectedPlanInput": {
+    "scriptPlan": {
+      "fields": {
+        "variantAngle": "non-empty string",
+        "customerProblem": "non-empty string",
+        "mechanismSummary": "non-empty string",
+        "visualMetaphor": "non-empty string",
+        "referenceScript": "45 to 65 evidence-grounded spoken words",
+        "ctaLine": "evidence-safe buyer action",
+        "evidenceIndex": "must match the selected direction",
+        "wowMomentType": "canonical reveal-pattern value",
+        "wowMoment": "visible physical reveal",
+        "viewerLearns": "one concrete takeaway",
+        "claimRisk": "low | medium | high",
+        "claimRiskReason": "plain-language explanation",
+        "narrationBeats": "exactly five canonical timed narration beats"
+      }
+    },
+    "scenePlan": {
+      "fields": {
+        "primarySiteType": "canonical site type",
+        "riskFlags": "canonical risk flags",
+        "visualWorld": "one coherent bright blue/cyan blueprint-grid explanation world",
+        "lighting": "lighting contract",
+        "cameraStyle": "camera contract",
+        "recurringObjects": "stable product, subject, and prop identities",
+        "variants": "exactly one variant with a six-frame storyboard; the canonical runner derives three shot records"
+      }
+    }
+  },
+  "rules": [
+    "The agent may author creative planning content but may not invent factual claims.",
+    "The runner derives evidence-use metadata and canonical scene metadata.",
+    "The selected plan must preserve the selected direction's evidence index.",
+    "The canonical runtime rejects invalid scripts, timing, frames, shots, CTAs, reveal patterns, and unsupported claims.",
+    "No paid media call may run until the canonical scene passes validation."
+  ]
+}

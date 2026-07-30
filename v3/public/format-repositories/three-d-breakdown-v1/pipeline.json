@@ -4,13 +4,17 @@
       "id": "directions",
       "output": "Exactly five evidence-backed story directions",
       "paidMedia": false,
-      "approvalRequired": true
+      "approvalRequired": false,
+      "planner": "operating-agent",
+      "validation": "canonical-runtime"
     },
     {
       "id": "selected-plan",
       "output": "One selected Style B script, scene contract, and six-frame storyboard plan",
       "paidMedia": false,
-      "approvalRequired": true
+      "approvalRequired": true,
+      "planner": "operating-agent",
+      "validation": "canonical-runtime"
     },
     {
       "id": "storyboard",

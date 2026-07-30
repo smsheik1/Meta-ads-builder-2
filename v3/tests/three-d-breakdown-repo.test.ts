@@ -2,6 +2,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { extractThreeDBreakdownEvidence } from "../features/formats/three-d-breakdown/evidence";
 import {
+  getThreeDBreakdownAgentPlanningContext,
+  parseThreeDBreakdownAgentSelectedPlanFromResearch,
+  parseThreeDBreakdownAgentStoryDirectionsFromResearch,
+} from "../features/formats/three-d-breakdown/generate";
+import {
   assertThreeDBreakdownImageCallAllowed,
   assertThreeDBreakdownVideoCallAllowed,
   evaluateThreeDBreakdownRepoRequirements,
@@ -39,6 +44,94 @@ const research = makeResearch({
 });
 const evidence = extractThreeDBreakdownEvidence(research);
 const evidenceItem = evidence[0]!;
+const agentPlanningContext = getThreeDBreakdownAgentPlanningContext(research, { kind: "brand" });
+assert.ok(agentPlanningContext.directionEvidenceItems.length > 0);
+assert.equal(agentPlanningContext.directionEvidenceItems[0]?.evidenceIndex, evidenceItem.evidenceIndex);
+const agentDirections = parseThreeDBreakdownAgentStoryDirectionsFromResearch(
+  research,
+  {
+    directions: Array.from({ length: 5 }, (_, index) => ({
+      hookLine: `LEGO direction ${index + 1} starts at one small workshop.`,
+      subheadline: "LEGO moved the same tools toward wooden toys.",
+      shortSummary: "A documented 1932 workshop shift becomes a visible before-and-after reconstruction.",
+      category: `Origin angle ${index + 1}`,
+      whyCompelling: "The same physical workbench visibly changes jobs.",
+      adAngle: "Turn one documented workshop shift into a tactile origin reveal.",
+      visualEngine: "Wooden workshop parts reorganize into one rolling toy.",
+      evidenceIndex: evidenceItem.evidenceIndex,
+      possibleRevealPatterns: ["before-after-reconstruction"],
+    })),
+    recommendedIndex: 1,
+  },
+  { kind: "brand" },
+);
+assert.equal(agentDirections.provider, "agent");
+assert.equal(agentDirections.model, "operating-agent");
+assert.equal(agentDirections.directions.length, 5);
+assert.equal(agentDirections.providerStatus.provider, "agent-planner");
+
+const agentFrames = [
+  ["problem", "Problem state"],
+  ["escalation", "Escalation"],
+  ["mechanism-setup", "Mechanism setup"],
+  ["wow-reveal", "Wow reveal"],
+  ["payoff", "Evidence payoff"],
+  ["final-state", "Final state"],
+].map(([role, label], index) => ({
+  frameIndex: index + 1,
+  role,
+  label,
+  visual: `Frame ${index + 1} shows one physical workshop action with wood and tools.`,
+  camera: "Macro push-in on the workbench.",
+  motion: "One wooden object changes state.",
+  overlayText: `Beat ${index + 1}`,
+  editingNote: "Keep the same workbench, wood, tools, and feature-animation CGI finish.",
+}));
+const agentSelectedPlan = parseThreeDBreakdownAgentSelectedPlanFromResearch(
+  research,
+  {
+    scriptPlan: {
+      variantAngle: "the workshop changed jobs",
+      customerProblem: "the small workshop needed a new direction",
+      mechanismSummary: "the same tools moved into wooden toy making",
+      visualMetaphor: "one workbench rebuilds its output",
+      referenceScript: "A small workshop started making wooden toys in 1932. That documented shift gave the same tools a completely different job. Across one workbench, plain wood moves through shaping and assembly. The finished toy rolls forward, making the workshop's new direction visible. Watch the LEGO origin story.",
+      ctaLine: "Watch the LEGO origin story.",
+      evidenceIndex: evidenceItem.evidenceIndex,
+      wowMomentType: "before-after-reconstruction",
+      wowMoment: "The workbench resolves into one finished wooden toy.",
+      viewerLearns: "The documented workshop started making wooden toys in 1932.",
+      claimRisk: "low",
+      claimRiskReason: "The script stays inside the saved 1932 wooden-toy evidence.",
+      narrationBeats: [
+        "A small workshop started making wooden toys in 1932.",
+        "That documented shift gave the same tools a completely different job.",
+        "Across one workbench, plain wood moves through shaping and assembly.",
+        "The finished toy rolls forward, making the workshop's new direction visible.",
+        "Watch the LEGO origin story."
+      ],
+    },
+    scenePlan: {
+      primarySiteType: "ecommerce",
+      riskFlags: [],
+      visualWorld: "one feature-animation CGI workshop with a bright blue blueprint grid",
+      lighting: "warm key light with blue grid accents",
+      cameraStyle: "macro push-ins and tactile cutaways",
+      recurringObjects: ["wooden toy", "workbench", "hand tools"],
+      variants: [{
+        storyboardBoard: {
+          imagePrompt: "Six connected feature-animation CGI workshop stills show one workbench changing from plain wood to a finished wooden toy without visible text.",
+          frames: agentFrames,
+        },
+      }],
+    },
+  },
+  agentDirections.directions[0]!,
+  { kind: "brand" },
+);
+assert.equal(agentSelectedPlan.provider, "agent");
+assert.equal(agentSelectedPlan.variants.length, 1);
+assert.equal(agentSelectedPlan.variants[0]?.scriptBeats.length, 5);
 const frames = [
   ["problem", "Problem state"],
   ["escalation", "Escalation"],
@@ -273,7 +366,6 @@ assert.deepEqual(clipsReadyInspection.problems, []);
 
 const manifest: ThreeDBreakdownRepoRequirementManifest = {
   environment: {
-    NVIDIA_NIM_API_KEY: { requiredFor: ["plan"], secret: true },
     REPLICATE_API_TOKEN: { requiredFor: ["images", "video"], secret: true },
   },
   tools: {
@@ -284,6 +376,12 @@ const manifest: ThreeDBreakdownRepoRequirementManifest = {
   },
   disabledStages: {},
 };
+assert.equal(evaluateThreeDBreakdownRepoRequirements({
+  stage: "plan",
+  environment: {},
+  manifest,
+  tools: { node: true },
+}).ok, true);
 assert.deepEqual(evaluateThreeDBreakdownRepoRequirements({
   stage: "images",
   environment: {},
@@ -305,6 +403,7 @@ const readyFinal = evaluateThreeDBreakdownRepoRequirements({
 });
 assert.equal(readyFinal.ok, true);
 const runnerSource = readFileSync("scripts/three-d-breakdown-format.ts", "utf8");
+const generatorSource = readFileSync("features/formats/three-d-breakdown/generate.ts", "utf8");
 assert.match(runnerSource, /commandAvailable\("ffmpeg", "-version"\)/);
 assert.match(runnerSource, /commandAvailable\("ffprobe", "-version"\)/);
 assert.match(runnerSource, /attempt\.predictionId = predictionId;[\s\S]*await saveState\(state\)/);
@@ -325,9 +424,13 @@ assert.match(runnerSource, /async function retimeClip\(\)/);
 assert.match(runnerSource, /No provider was called; review clip-2 again/);
 assert.match(runnerSource, /entryPoint: path\.join\(v3Root, "remotion-entry", "index\.ts"\)/);
 assert.match(runnerSource, /finalize --approve-final|approve-final/);
-assert.match(runnerSource, /const maxPlanningCalls = 3/);
-assert.equal((runnerSource.match(/allowRetries: false/g) || []).length, 2);
-assert.match(runnerSource, /onProviderCall: recordPlanningCall\(state\)/);
+assert.match(runnerSource, /parseThreeDBreakdownAgentStoryDirectionsFromResearch/);
+assert.match(runnerSource, /parseThreeDBreakdownAgentSelectedPlanFromResearch/);
+assert.match(runnerSource, /planning-context\.json/);
+assert.doesNotMatch(runnerSource, /NVIDIA_NIM_API_KEY/);
+assert.doesNotMatch(runnerSource, /recordPlanningCall/);
+assert.doesNotMatch(generatorSource, /lifestyle-to-blue-to-lifestyle|frames 1-2 in the relevant lifestyle setting/);
+assert.match(generatorSource, /blue\/cyan blueprint-grid explanation world across all six frames/);
 assert.match(runnerSource, /Could not download a usable product reference/);
 assert.match(runnerSource, /withoutFinalArtifacts/);
 assert.match(runnerSource, /exactlyOneAudioStream: audioStreamCount === 1/);
@@ -380,6 +483,19 @@ assert.match(repoSkill, /Watch FinalStraw first/);
 assert.match(repoSkill, /Technical completion alone is not a pass/);
 assert.match(repoSkill, /review the storyboard first/i);
 assert.match(repoSkill, /meaningful action by global second 16/i);
+assert.match(repoSkill, /operating agent is the planner/i);
+assert.match(repoSkill, /Challenge inherited web-UI assumptions/i);
+const requirementsManifest = JSON.parse(readFileSync(
+  "public/format-repositories/three-d-breakdown-v1/requirements.json",
+  "utf8",
+));
+assert.equal("NVIDIA_NIM_API_KEY" in requirementsManifest.environment, false);
+const planningContract = JSON.parse(readFileSync(
+  "public/format-repositories/three-d-breakdown-v1/planning-contract.json",
+  "utf8",
+));
+assert.equal(planningContract.planner, "operating-agent");
+assert.equal(planningContract.providerKeyRequired, false);
 const qualityManifest = JSON.parse(readFileSync(
   "public/format-repositories/three-d-breakdown-v1/quality.json",
   "utf8",

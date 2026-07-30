@@ -36,6 +36,7 @@ for (const required of [
   "v3/remotion-entry/RemotionAdScene.tsx",
   "v3/public/format-repositories/three-d-breakdown-v1/SKILL.md",
   "v3/public/format-repositories/three-d-breakdown-v1/REAL-PROOF.md",
+  "v3/public/format-repositories/three-d-breakdown-v1/planning-contract.json",
   "v3/public/format-repositories/three-d-breakdown-v1/goldens.json",
   "v3/public/format-repositories/three-d-breakdown-v1/assets/ecommerce-teardown-style-reference-clean-v7.jpg",
   "v3/public/format-repositories/three-d-breakdown-v1/goldens/contact-sheet.jpg",
@@ -70,7 +71,9 @@ assert.match(skill, /Do you want Guide Me or Turbo\?/);
 assert.match(skill, /Ask only one question in each message/);
 assert.match(skill, /Use short sentences and simple words/);
 assert.match(skill, /Never ask for a budget or spend limit/);
-assert.match(skill, /Story ideas and plan: 3 NIM calls/);
+assert.match(skill, /Story ideas and plan: operating agent \+ local validation — \$0/);
+assert.match(skill, /Do not require a separate LLM API key for planning/);
+assert.match(skill, /Challenge inherited web-UI assumptions/);
 assert.match(skill, /Ready to start\?/);
 assert.match(skill, /A retry needs a new estimate and a new yes/);
 assert.match(skill, /Save the facts in `research\.json`/);

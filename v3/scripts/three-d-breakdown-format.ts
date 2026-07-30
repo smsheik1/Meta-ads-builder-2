@@ -11,8 +11,10 @@ import {
   createGeneratedSceneAudio,
 } from "../features/audio/sceneAudio";
 import {
-  generateThreeDBreakdownStoryDirectionsFromResearch,
-  generateThreeDBreakdownVariantsFromResearch,
+  getThreeDBreakdownAgentPlanningContext,
+  parseThreeDBreakdownAgentSelectedPlanFromResearch,
+  parseThreeDBreakdownAgentStoryDirectionsFromResearch,
+  type ThreeDBreakdownAgentSelectedPlanInput,
 } from "../features/formats/three-d-breakdown/generate";
 import {
   buildThreeDProductionFramePrompt,
@@ -57,7 +59,6 @@ const runsRoot = path.join(packageRoot, "agent-runs");
 const narrationTargetMs = 18_100;
 const narrationMaximumMs = 18_500;
 const narrationMaximumRetimeRatio = 1.25;
-const maxPlanningCalls = 3;
 
 type ImageAttempt = {
   asset: "storyboard" | `anchor-${number}`;
@@ -117,7 +118,7 @@ type RunState = {
   createdAt: string;
   subject: ThreeDBreakdownStorySubject;
   planningApprovedAt?: string;
-  planningCalls: number;
+  planningCalls?: number;
   imageAttempts: ImageAttempt[];
   videoAttempts?: VideoAttempt[];
   voiceAttempts?: VoiceAttempt[];
@@ -312,21 +313,25 @@ async function init() {
   const runId = requiredArgument("run");
   const sourceResearchPath = path.resolve(requiredArgument("research"));
   if (!existsSync(sourceResearchPath)) throw new Error(`Research file does not exist: ${sourceResearchPath}`);
-  await readJson<StoredWebsiteResearchResult>(sourceResearchPath);
+  const research = await readJson<StoredWebsiteResearchResult>(sourceResearchPath);
+  const subject = readSubject();
+  const planningContext = getThreeDBreakdownAgentPlanningContext(research, subject);
   const directory = runDirectory(runId);
   if (existsSync(directory)) throw new Error(`Run ${runId} already exists.`);
   await mkdir(directory, { recursive: true });
-  await copyFile(sourceResearchPath, path.join(directory, "research.json"));
-  await saveState({
-    id: runId,
-    status: "draft",
-    createdAt: new Date().toISOString(),
-    subject: readSubject(),
-    planningCalls: 0,
-    imageAttempts: [],
-    videoAttempts: [],
-  });
-  console.log(`Created ${path.relative(v3Root, directory)}. No provider was called.`);
+  await Promise.all([
+    copyFile(sourceResearchPath, path.join(directory, "research.json")),
+    writeJson(path.join(directory, "planning-context.json"), planningContext),
+    saveState({
+      id: runId,
+      status: "draft",
+      createdAt: new Date().toISOString(),
+      subject,
+      imageAttempts: [],
+      videoAttempts: [],
+    }),
+  ]);
+  console.log(`Created ${path.relative(v3Root, directory)} with numbered planning evidence. No provider was called.`);
 }
 
 async function assertPlanningApproved(state: RunState) {
@@ -337,27 +342,18 @@ async function assertPlanningApproved(state: RunState) {
   if (!state.planningApprovedAt) throw new Error("Planning approval is required. Review the run, then pass --approve-planning.");
 }
 
-const recordPlanningCall = (state: RunState) => async () => {
-  if (state.planningCalls >= maxPlanningCalls) {
-    throw new Error(`This run already used its ${maxPlanningCalls} planned NIM calls. Start a new run instead of spending silently.`);
-  }
-  state.planningCalls += 1;
-  await saveState(state);
-};
-
 async function directions() {
-  await loadEnvironment();
   const runId = requiredArgument("run");
   const state = await loadState(runId);
-  await assertPlanningApproved(state);
   if (state.status !== "draft") {
-    throw new Error("Story directions already ran for this project. Inspect the saved slate instead of calling NIM again.");
+    throw new Error("Story directions already exist for this project. Inspect the saved slate instead of replacing it.");
   }
-  const slate = await generateThreeDBreakdownStoryDirectionsFromResearch(await loadResearch(runId), {
-    allowRetries: false,
-    onProviderCall: recordPlanningCall(state),
-    storySubject: state.subject,
-  });
+  const input = await readJson<Record<string, unknown>>(path.resolve(requiredArgument("input")));
+  const slate = parseThreeDBreakdownAgentStoryDirectionsFromResearch(
+    await loadResearch(runId),
+    input,
+    state.subject,
+  );
   state.status = "directions-ready";
   await Promise.all([
     writeJson(path.join(runDirectory(runId), "story-directions.json"), slate),
@@ -367,7 +363,6 @@ async function directions() {
 }
 
 async function select() {
-  await loadEnvironment();
   const runId = requiredArgument("run");
   const state = await loadState(runId);
   await assertPlanningApproved(state);
@@ -381,13 +376,15 @@ async function select() {
   const selectedStoryDirection = slate.directions.find((direction) => direction.directionId === directionId);
   if (!selectedStoryDirection) throw new Error(`Direction ${directionId} is not in the saved slate.`);
   const research = await loadResearch(runId);
-  const generation = await generateThreeDBreakdownVariantsFromResearch(research, {
-    allowRetries: false,
-    count: 1,
-    onProviderCall: recordPlanningCall(state),
+  const input = await readJson<ThreeDBreakdownAgentSelectedPlanInput>(
+    path.resolve(requiredArgument("plan")),
+  );
+  const generation = parseThreeDBreakdownAgentSelectedPlanFromResearch(
+    research,
+    input,
     selectedStoryDirection,
-    storySubject: state.subject,
-  });
+    state.subject,
+  );
   const variant = generation.variants[0];
   if (!variant) throw new Error("The selected direction returned no scene plan.");
   const scene = createThreeDBreakdownAdScene({

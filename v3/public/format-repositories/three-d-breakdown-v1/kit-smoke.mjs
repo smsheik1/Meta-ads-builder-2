@@ -9,6 +9,7 @@ const required = [
   "requirements.json",
   "inputs.json",
   "pipeline.json",
+  "planning-contract.json",
   "scene-contract.json",
   "assets.json",
   "quality.json",
