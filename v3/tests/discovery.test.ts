@@ -33,18 +33,58 @@ assert.match(
 );
 assert.doesNotMatch(
   discoveryClient,
-  /IntersectionObserver|visibleVideoIds\[0\]/,
-  "Discovery media must never resume a background video after the user leaves another card.",
+  /onMouseEnter|onMouseLeave|previewMedia|stopMediaPreview/,
+  "Hover must never change Discover playback or sound.",
 );
 assert.doesNotMatch(
   discoveryClient,
-  /const previewMedia[\s\S]*?setSoundOn\(false\)/,
-  "Hover previews must preserve the sound choice the user made.",
+  /wiggly-discovery-sound|soundStorageKey/,
+  "Discover should not restore a stale sound preference on page load.",
+);
+assert.doesNotMatch(
+  discoveryClient,
+  /\bautoPlay\b/,
+  "Discover media must start paused and silent.",
 );
 assert.match(
   discoveryClient,
-  /error instanceof DOMException && error\.name === "AbortError"\) return/,
-  "Intentionally pausing the previous preview must not turn sound off.",
+  /const playWithSound[\s\S]*?media\.muted = false;[\s\S]*?media\.play\(\)/,
+  "The Play control should start the selected media with sound in the click handler.",
+);
+assert.match(
+  discoveryClient,
+  /const syncPlayback[\s\S]*?playbackSynced/,
+  "Native media events should reconcile the visible playback controls.",
+);
+assert.match(
+  discoveryClient,
+  /\{playing \? \([\s\S]*?Mute \$\{entry\.title\}[\s\S]*?Unmute \$\{entry\.title\}[\s\S]*?\) : null\}/,
+  "Mute controls should only appear while the selected media is playing.",
+);
+assert.match(
+  discoveryClient,
+  /IntersectionObserver[\s\S]*?intersectionRatio >= 0\.2[\s\S]*?media\.pause\(\)/,
+  "Active media should stop once its card leaves the viewport.",
+);
+assert.match(
+  discoveryClient,
+  /document\.hidden[\s\S]*?video\.pause\(\)[\s\S]*?audio\.pause\(\)/,
+  "Hiding the page should stop every video and audio track.",
+);
+assert.match(
+  discoveryClient,
+  /onPlay=\{[\s\S]*?syncPlayback[\s\S]*?onPause=\{[\s\S]*?syncPlayback[\s\S]*?onError=\{[\s\S]*?stopErroredPlayback/,
+  "Native play, pause, and error events should keep the controls truthful.",
+);
+assert.match(
+  discoveryClient,
+  /if \(!activePlayback\?\.id \|\| !activeEntryVisible\) return;[\s\S]*?const media = videoRefs\.current\.get\(activePlayback\.id\) \|\| audioRefs\.current\.get\(activePlayback\.id\);[\s\S]*?return \(\) => \{[\s\S]*?media\?\.pause\(\);[\s\S]*?media\.muted = true;/,
+  "The active media node should be captured and stopped if its card unmounts.",
+);
+assert.doesNotMatch(
+  discoveryClient,
+  /ref=\{\([^)]*\) => \{[\s\S]{0,300}?\?\.pause\(\)/,
+  "Inline ref callbacks must not pause media during ordinary React renders.",
 );
 assert.match(
   discoveryClient,
