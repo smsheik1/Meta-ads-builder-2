@@ -85,6 +85,12 @@ assert.ok(
 );
 assert.ok(
   proofEntries
+    .filter((entry) => ["cool-tone-filter", "halo-effect"].includes(entry.format.slug))
+    .every((entry) => entry.media.src.endsWith("-display.jpg")),
+  "Proofs with creator-baked insets must use cleaned display images before Wiggly adds its top-right reference.",
+);
+assert.ok(
+  proofEntries
     .filter((entry) => entry.media.kind === "video")
     .every((entry) => entry.media.poster && existsSync(`public${entry.media.poster}`)),
   "Every video should have a local poster for slow connections.",

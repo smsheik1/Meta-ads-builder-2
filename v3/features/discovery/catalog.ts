@@ -986,7 +986,7 @@ const coolToneFilterDiscoveryEntries: DiscoveryEntry[] = [
   goal: "entertain",
   media: {
     kind: "image",
-    src: `/format-repositories/cool-tone-filter-v1/assets/source/${image}.jpg`,
+    src: `/format-repositories/cool-tone-filter-v1/assets/source/${image}-display.jpg`,
     referenceSrc: `/format-repositories/cool-tone-filter-v1/assets/source/${reference}.jpg`,
     durationLabel: "Static",
   },
@@ -1056,7 +1056,7 @@ const haloEffectDiscoveryEntries: DiscoveryEntry[] = [
   goal: "entertain",
   media: {
     kind: "image",
-    src: `/format-repositories/halo-effect-v1/assets/source/${image}.jpg`,
+    src: `/format-repositories/halo-effect-v1/assets/source/${image}-display.jpg`,
     referenceSrc: `/format-repositories/halo-effect-v1/assets/source/${reference}.jpg`,
     durationLabel: "Static",
   },
