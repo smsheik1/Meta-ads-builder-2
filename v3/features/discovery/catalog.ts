@@ -828,6 +828,52 @@ const bluePhosphorDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const duskEffectDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "mountain-hiker",
+    brand: "Landscape transformation",
+    title: "Turn daylight into a believable dusk",
+    curatorNote: "The hiker, gear, rocks, and distant peaks stay recognizable while the overcast sky becomes a layered pink, lavender, and blue dusk.",
+    image: "mountain-hiker",
+    reference: "mountain-hiker-reference",
+  },
+  {
+    id: "beach-path",
+    brand: "Coastal transformation",
+    title: "Keep the beach clear under a darker sky",
+    curatorNote: "Dunes, fence, path, ocean, and bird keep their source composition as warm horizon light rolls into pink and blue.",
+    image: "beach-path",
+    reference: "beach-path-reference",
+  },
+  {
+    id: "paddleboard",
+    brand: "Outdoor transformation",
+    title: "Change the hour without losing the action",
+    curatorNote: "The swimmer, board, paddle, water, and shoreline stay intact beneath a sunless orange-to-deep-blue gradient.",
+    image: "paddleboard",
+    reference: "paddleboard-reference",
+  },
+].map(({ image, reference, ...proof }, index) => ({
+  ...proof,
+  id: `dusk-effect-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 95 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/dusk-effect-v1/assets/source/${image}.jpg`,
+    referenceSrc: `/format-repositories/dusk-effect-v1/assets/source/${reference}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "dusk-effect",
+    name: "Dusk Effect",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -1253,6 +1299,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...fakeItTillYouMakeItDiscoveryEntries,
   ...darkStudioPortraitDiscoveryEntries,
   ...bluePhosphorDiscoveryEntries,
+  ...duskEffectDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -1339,6 +1386,7 @@ const discoveryShelfDefinitions = [
       "fake-it-till-you-make-it",
       "dark-studio-portrait",
       "blue-phosphor",
+      "dusk-effect",
     ],
   },
   {

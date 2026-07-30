@@ -1,0 +1,22 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "People, foreground objects, composition, and fine source details remain recognizable",
+    "The sky has no visible sun and moves naturally from golden yellow and orange to pink, lavender, and deep blue",
+    "The sky is slightly darker while people and foreground remain naturally well lit",
+    "Soft atmospheric haze, smooth tonal transitions, subtle bloom, and cinematic HDR feel photographic",
+    "Natural green tones remain rich instead of becoming muddy or neon",
+    "There are no obvious AI artifacts, warped subjects, logos, or watermarks"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

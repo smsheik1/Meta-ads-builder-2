@@ -1,0 +1,41 @@
+{
+  "purpose": "Judge source preservation, a natural sunless dusk gradient, a slightly darker sky, well-lit people and foreground, atmospheric haze, and a photorealistic finish.",
+  "examples": [
+    {
+      "id": "mountain-hiker",
+      "title": "Mountain Hiker at Dusk",
+      "imagePath": "assets/source/mountain-hiker.jpg",
+      "referencePath": "assets/source/mountain-hiker-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The person, clothing, binoculars, rocks, and distant peaks stay recognizable",
+        "The overcast sky becomes a layered pink, lavender, and blue dusk",
+        "Foreground detail remains naturally lit beneath the darker sky"
+      ]
+    },
+    {
+      "id": "beach-path",
+      "title": "Beach Path at Dusk",
+      "imagePath": "assets/source/beach-path.jpg",
+      "referencePath": "assets/source/beach-path-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The dunes, fence, path, ocean, and bird keep the source composition",
+        "Golden light near the horizon transitions smoothly into pink and blue",
+        "The foreground gains warm natural color without looking artificially relit"
+      ]
+    },
+    {
+      "id": "paddleboard",
+      "title": "Paddleboard at Dusk",
+      "imagePath": "assets/source/paddleboard.jpg",
+      "referencePath": "assets/source/paddleboard-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The swimmer, board, paddle, water, and distant shore remain intact",
+        "A sunless orange-to-blue gradient replaces the bright daytime sky",
+        "The subject and water stay clear while the atmosphere becomes cinematic"
+      ]
+    }
+  ]
+}

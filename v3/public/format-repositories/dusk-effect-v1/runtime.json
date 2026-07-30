@@ -1,0 +1,64 @@
+{
+  "slug": "dusk-effect",
+  "version": "1.0.0",
+  "promptPath": "prompts/transform.txt",
+  "input": {
+    "mode": "image",
+    "formats": ["jpg", "png", "webp"],
+    "minimumWidth": 512,
+    "minimumHeight": 512,
+    "maximumBytes": 26214400
+  },
+  "defaultModel": "nano-banana-2",
+  "modelRoutes": {
+    "nano-banana-2-lite": {
+      "label": "Nano Banana 2 Lite",
+      "lane": "economy",
+      "model": "google/nano-banana-2-lite",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg"
+    },
+    "nano-banana-2": {
+      "label": "Nano Banana 2",
+      "lane": "default",
+      "model": "google/nano-banana-2",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg",
+      "resolution": "1K"
+    },
+    "nano-banana-pro": {
+      "label": "Nano Banana Pro",
+      "lane": "premium",
+      "model": "google/nano-banana-pro",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg",
+      "resolution": "1K"
+    },
+    "nano-banana-pro-source": {
+      "label": "Nano Banana Pro (creator source)",
+      "lane": "source model",
+      "model": "google/nano-banana-pro",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg",
+      "resolution": "1K"
+    }
+  },
+  "expectedOutputs": 1,
+  "maximumAttempts": 3,
+  "smokeInputPath": "assets/source/mountain-hiker-reference.jpg",
+  "smokeExamplePath": "assets/source/mountain-hiker.jpg",
+  "minimumOutputWidth": 640,
+  "minimumOutputHeight": 800,
+  "minimumOutputBytes": 51200,
+  "manualReview": [
+    "source people, foreground, composition, and details stay recognizable",
+    "sunless golden-orange to pink-lavender-deep-blue dusk gradient",
+    "sky is slightly darker while people and foreground remain naturally lit",
+    "soft haze, cinematic HDR, smooth transitions, subtle bloom, and rich natural greens",
+    "photorealistic DSLR finish with no obvious AI artifacts"
+  ]
+}
