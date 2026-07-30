@@ -1,0 +1,242 @@
+{
+  "runMetadata": {
+    "comparisonRole": "frozen-v1.0",
+    "generatedIndependently": true,
+    "modelConfigurationRecorded": false,
+    "inputSha256": {
+      "sources": "e6cf0382ce71a3e1ff439711df4224c84dccd587ddf4f8fc77dd5cf3515fc732",
+      "brief": "7677d2d63311e247797c7cd93101681207aa120a467d48149ba377f8ce0bdc03"
+    },
+    "promptSha256": {
+      "voiceProfile": "651ae3adbbc2e5c33f1ef7085eb236a84d008caf07b4857d07da8e231f1397aa",
+      "draft": "a16a184d0d5d6e98c93f4cf21dca895167a05f85ad120c20a78de5c2bcd51b73",
+      "review": "f5ecfafe6ddd17ff2d03bdae048d73feeef595c550829f77dbdf442d56205f92"
+    }
+  },
+  "profile": {
+    "companyName": "Holden Brand",
+    "brandUrl": "https://www.holdenbrand.com/",
+    "voiceSummary": "Direct and assured, using concrete company details, first-person plural, and frequent second-person address. Sentences explain what Holden does, then connect it to the reader's project. Openings favor a specific fact or invitation, while closings name the next action plainly. With no newsletter samples supplied, website patterns should be applied cautiously.",
+    "audience": "Marketing, people, event, and procurement teams buying branded merchandise",
+    "confidence": "low",
+    "rules": {
+      "register": "Write plainly and confidently. State capabilities directly, then relate them to the reader's business or project without lofty brand language.",
+      "sentenceRhythm": "Use mostly medium-length declarative sentences, varied with an occasional short welcome, assurance, or invitation.",
+      "paragraphShape": "Keep paragraphs compact at one to three sentences, with important invitations or next steps allowed to stand alone.",
+      "openingStyle": "Earn attention with a concrete company fact, project-focused invitation, or direct statement of what Holden can help create.",
+      "transitionStyle": "Move chronologically or step by step. Use practical transitions such as 'To get started' and 'Once submitted' when explaining a process.",
+      "punctuation": "Favor periods and commas. Use contractions naturally and reserve exclamation points for brief welcomes or invitations.",
+      "vocabulary": "Use concrete terms such as promotional product, branded products, packaging and kitting, custom apparel, corporate gifting, project, tailored experience, and onboarding process.",
+      "ctaStyle": "Invite action directly, name the exact form or next step, and explain briefly what happens after submission.",
+      "formatting": "Use compact text blocks and occasional standalone headline or invitation lines. The supplied evidence does not establish newsletter-specific formatting conventions."
+    },
+    "mustDo": [
+      "Address the reader as 'you' and describe Holden as 'we' when connecting capabilities to project needs.",
+      "Support broad brand claims with specific history, product, service, or process details.",
+      "Describe the experience as tailored to how the customer works best.",
+      "End with a direct invitation and the named New Project Request Form."
+    ],
+    "neverDo": [
+      "Do not rely on generic claims about quality, service, or impact without supplied evidence.",
+      "Do not use slang, exaggerated enthusiasm, or humor unsupported by the samples.",
+      "Do not make the reader decode the next step.",
+      "Do not imply that every customer follows the same fixed process."
+    ],
+    "domainTerms": [
+      "promotional products",
+      "branded products",
+      "packaging and kitting",
+      "custom apparel",
+      "corporate gifting",
+      "customizable products",
+      "tailored experience",
+      "New Project Request Form",
+      "onboarding process"
+    ],
+    "signaturePhrases": [
+      "We work with you every step of the way",
+      "Let’s Create Something Worth Talking About.",
+      "To get started",
+      "the way that you work best"
+    ],
+    "evidence": [
+      {
+        "sourceId": "site-language-history",
+        "quote": "R.B. (Pete) Holden envisions a business opportunity by manufacturing and selling three-ring binders. He starts his operation in a small parking garage at 2301 North Akard, across from what is now American Airlines Center.",
+        "lesson": "Tell company history through specific people, products, places, and actions rather than abstract heritage claims."
+      },
+      {
+        "sourceId": "site-language-process",
+        "quote": "We work with you every step of the way to create a unique promotional product and help your brand make an impact.",
+        "lesson": "Use 'we' and 'you' together to connect Holden's work directly to the reader's desired result."
+      },
+      {
+        "sourceId": "site-language-process",
+        "quote": "We don’t have to follow the same process every time – we work with you in the way that you work best.",
+        "lesson": "Describe customization as a practical change to the working process, not as a vague promise of personal service."
+      },
+      {
+        "sourceId": "site-language-contact",
+        "quote": "Let’s Create Something Worth Talking About. Welcome! We’re excited to learn more about your project.",
+        "lesson": "Use a short, energetic invitation before shifting quickly to the reader's project."
+      },
+      {
+        "sourceId": "site-language-contact",
+        "quote": "To get started, please complete our New Project Request Form. Once submitted, a member of the Holden Brand team will review your request and follow up to begin the onboarding process.",
+        "lesson": "Make CTAs procedural and specific by naming the action and what follows."
+      }
+    ]
+  },
+  "draft": {
+    "subjectLines": [
+      {
+        "text": "From three-ring binders to branded products",
+        "angle": "Company-history arc"
+      },
+      {
+        "text": "What Holden’s experience means for your next project",
+        "angle": "Practical buyer value"
+      },
+      {
+        "text": "More than 500,000 products. A process built around you.",
+        "angle": "Product range and tailored service"
+      }
+    ],
+    "previewText": "Holden’s history leads to a practical difference today: product range, project support, and an experience tailored to how you work best.",
+    "body": "Holden didn’t begin as a generic online promotional-products vendor. In 1978, R.B. (Pete) Holden started manufacturing and selling three-ring binders from a small parking garage at 2301 North Akard in Dallas.\n\nAs the business world moved toward a paperless future, Holden entered the promotional products industry in 1992. The Holden family became actively involved that same year as the company began transitioning to a second-generation family-owned business.\n\nThe company kept adapting. Holden began developing an in-house software platform in 2010 and launched it in 2014 to improve its customer experience and internal operations. Texas Instruments named Holden Vendor of the Year for product quality and customer service, and Holden received the recognition again in 2004 and 2006.\n\nToday, Holden offers more than 500,000 customizable products, along with branded products, packaging and kitting, custom apparel, and corporate gifting. But product range is only part of what makes a project work.\n\nWe work with you every step of the way and tailor the experience to how you work best. That means your next project can start with a plan built around the products and support your team needs, rather than a one-size-fits-all process.\n\nLet’s Create Something Worth Talking About.\n\nComplete our New Project Request Form to get started.",
+    "cta": {
+      "text": "Complete the New Project Request Form",
+      "url": "https://www.holdenbrand.com/contact-us-2/"
+    },
+    "factsUsed": [
+      {
+        "claim": "R.B. (Pete) Holden started Holden in 1978 by manufacturing and selling three-ring binders from a small parking garage at 2301 North Akard in Dallas.",
+        "sourceId": "site-history-origin"
+      },
+      {
+        "claim": "Holden entered the promotional products industry in 1992 as the business world moved toward a paperless future.",
+        "sourceId": "site-history-promotional"
+      },
+      {
+        "claim": "The Holden family became actively involved in 1992 as the company began transitioning to a second-generation family-owned business.",
+        "sourceId": "site-history-family"
+      },
+      {
+        "claim": "Holden began developing an in-house software platform in 2010 to improve its customer experience and internal operations, and launched the platform in 2014.",
+        "sourceId": "site-history-technology"
+      },
+      {
+        "claim": "Texas Instruments named Holden Vendor of the Year for product quality and customer service, and Holden received the recognition again in 2004 and 2006.",
+        "sourceId": "site-history-recognition"
+      },
+      {
+        "claim": "Holden offers more than 500,000 customizable products.",
+        "sourceId": "site-products"
+      },
+      {
+        "claim": "Holden offers branded products, packaging and kitting, custom apparel, and corporate gifting.",
+        "sourceId": "site-services"
+      },
+      {
+        "claim": "Holden works with customers throughout the process and tailors the experience to how each customer works best.",
+        "sourceId": "site-process"
+      },
+      {
+        "claim": "New customers can submit Holden's New Project Request Form to start a project.",
+        "sourceId": "site-contact"
+      }
+    ],
+    "voiceEvidence": [
+      {
+        "choice": "Opened with a concrete origin story built from a person, product, date, and place.",
+        "sourceId": "site-language-history"
+      },
+      {
+        "choice": "Used first-person plural and direct second-person address to describe the working relationship.",
+        "sourceId": "site-language-process"
+      },
+      {
+        "choice": "Closed with the sample’s invitation and named form action.",
+        "sourceId": "site-language-contact"
+      }
+    ]
+  },
+  "final": {
+    "subjectLines": [
+      {
+        "text": "A Dallas parking garage, 1978",
+        "angle": "Origin-story intrigue"
+      },
+      {
+        "text": "More than 500,000 ways to start your next project",
+        "angle": "Current product range"
+      },
+      {
+        "text": "Your branded project, built around how you work",
+        "angle": "Tailored process"
+      }
+    ],
+    "previewText": "Holden’s history now supports more than 500,000 customizable products and an experience tailored to how your team works best.",
+    "body": "Holden’s history starts with a product, not a product search. In 1978, R.B. (Pete) Holden started manufacturing and selling three-ring binders from a small parking garage at 2301 North Akard in Dallas.\n\nAs the business world moved toward a paperless future, Holden entered the promotional products industry in 1992. That same year, the Holden family became actively involved as the company began transitioning to a second-generation family-owned business.\n\nThat history includes proof of product quality and customer service. Texas Instruments named Holden Vendor of the Year, and Holden received the recognition again in 2004 and 2006. Holden later began developing an in-house software platform in 2010 and launched it in 2014 to improve its customer experience and internal operations.\n\nToday, Holden offers more than 500,000 customizable products, with support across branded products, packaging and kitting, custom apparel, and corporate gifting. We work with you every step of the way and tailor the experience to how you work best.\n\nYour next project can begin with a tailored plan for the products and support your team needs, rather than a process that works the same way every time.\n\nLet’s Create Something Worth Talking About.\n\nComplete our New Project Request Form to get started.",
+    "cta": {
+      "text": "Complete the New Project Request Form",
+      "url": "https://www.holdenbrand.com/contact-us-2/"
+    },
+    "factsUsed": [
+      {
+        "claim": "R.B. (Pete) Holden started Holden in 1978 by manufacturing and selling three-ring binders from a small parking garage at 2301 North Akard in Dallas.",
+        "sourceId": "site-history-origin"
+      },
+      {
+        "claim": "Holden entered the promotional products industry in 1992 as the business world moved toward a paperless future.",
+        "sourceId": "site-history-promotional"
+      },
+      {
+        "claim": "The Holden family became actively involved in 1992 as the company began transitioning to a second-generation family-owned business.",
+        "sourceId": "site-history-family"
+      },
+      {
+        "claim": "Texas Instruments named Holden Vendor of the Year for product quality and customer service, and Holden received the recognition again in 2004 and 2006.",
+        "sourceId": "site-history-recognition"
+      },
+      {
+        "claim": "Holden began developing an in-house software platform in 2010 to improve its customer experience and internal operations, and launched the platform in 2014.",
+        "sourceId": "site-history-technology"
+      },
+      {
+        "claim": "Holden offers more than 500,000 customizable products.",
+        "sourceId": "site-products"
+      },
+      {
+        "claim": "Holden offers branded products, packaging and kitting, custom apparel, and corporate gifting.",
+        "sourceId": "site-services"
+      },
+      {
+        "claim": "Holden works with customers throughout the process and tailors the experience to how each customer works best.",
+        "sourceId": "site-process"
+      },
+      {
+        "claim": "New customers can submit Holden's New Project Request Form to start a project.",
+        "sourceId": "site-contact"
+      }
+    ],
+    "voiceEvidence": [
+      {
+        "choice": "Opened with a concrete company-history detail and moved chronologically through Holden’s development.",
+        "sourceId": "site-language-history"
+      },
+      {
+        "choice": "Used 'we' and 'you' to turn company capabilities into a direct working relationship with the reader.",
+        "sourceId": "site-language-process"
+      },
+      {
+        "choice": "Described tailoring through how the customer works rather than through a generic service claim.",
+        "sourceId": "site-language-process"
+      },
+      {
+        "choice": "Closed with the supplied invitation followed by the exact named next step.",
+        "sourceId": "site-language-contact"
+      }
+    ]
+  }
+}

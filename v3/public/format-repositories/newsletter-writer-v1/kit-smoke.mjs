@@ -16,14 +16,23 @@ const required = [
   "prompts/draft.md",
   "prompts/review.md",
   "references/research.md",
+  "references/holden-controlled-evaluation.md",
+  "references/brightmark-holdout-evaluation.md",
   "fixtures/brightmark-sources.json",
   "fixtures/brightmark-brief.json",
+  "fixtures/brightmark-holdout-sources.json",
+  "fixtures/brightmark-holdout-brief.json",
   "fixtures/samples/01-client-thank-you.md",
   "fixtures/samples/02-trade-show.md",
   "fixtures/samples/03-onboarding-kits.md",
   "goldens/brightmark-brand-profile.json",
   "goldens/brightmark-draft.json",
   "goldens/brightmark-newsletter.json",
+  "comparisons/holden-current-controlled-run.json",
+  "comparisons/holden-current-controlled-run.md",
+  "comparisons/holden-improved-controlled-run.json",
+  "comparisons/holden-improved-controlled-run.md",
+  "comparisons/brightmark-holdout-run.json",
 ];
 
 for (const relativePath of required) {

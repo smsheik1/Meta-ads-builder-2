@@ -4,6 +4,7 @@
   "voiceSummary": "Brightmark writes like a practical merchandise advisor who is willing to reject the obvious choice. The emails begin with a familiar moment, make one concrete judgment, and end with a low-pressure next step.",
   "audience": "Marketing, people, and event teams buying branded merchandise",
   "confidence": "high",
+  "voiceBasis": "newsletter-samples",
   "rules": {
     "register": "Plainspoken and confident, with the authority of someone who handles merchandise every day.",
     "sentenceRhythm": "Mix two short observations with a longer sentence that explains the practical consequence.",

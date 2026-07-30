@@ -19,6 +19,11 @@
       "type": "files",
       "count": "3-5",
       "description": "Past newsletters that reveal the company's real email voice."
+    },
+    {
+      "id": "websiteVoiceSamples",
+      "type": "urls",
+      "description": "Exact public website passages used only as a low-confidence brand-language fallback when no newsletters exist."
     }
   ],
   "optional": [

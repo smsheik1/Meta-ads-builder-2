@@ -31,8 +31,10 @@ Open `SKILL.md` for the complete agent workflow.
 ## What makes it different
 
 - Past newsletters determine writing behavior.
-- Website pages supply current facts and terminology.
+- Exact website passages provide only a low-confidence brand-language fallback.
+- Website fact snapshots supply current claims and terminology.
 - Every profile rule cites source evidence.
+- Imported newsletters receive provenance hashes and stay in a gitignored run folder.
 - Drafting and review are separate stages.
 - The review preserves meaning before changing style.
 - There is no detector-bypass target and no paid Wiggly provider call.
@@ -40,3 +42,9 @@ Open `SKILL.md` for the complete agent workflow.
 ## Source acknowledgements
 
 The workflow was informed by the MIT-licensed projects documented in `references/research.md`. Wiggly uses a smaller newsletter-specific contract rather than importing their repositories or dependencies.
+
+## Private source material
+
+Real newsletter samples remain in `agent-runs/`, which is ignored by Git and
+excluded from the built ZIP. The packaged Brightmark samples are synthetic test
+fixtures. Never publish a user's source corpus as a golden or proof artifact.
