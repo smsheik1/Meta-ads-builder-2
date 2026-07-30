@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, PNG, or WebP output per run",
+    "At least 640x800 pixels",
+    "Aspect ratio within 0.02 of 3:4",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The reference identity remains recognizable unless the user explicitly requests a new subject",
+    "The selected scene matches its exact packaged prompt",
+    "Faces, hands, clothing, phones, glasses, and scene props have coherent geometry",
+    "The framing feels like a believable smartphone or candid lifestyle photograph",
+    "The result is photorealistic rather than CGI or illustration"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "purpose": "Judge identity continuity, believable lifestyle styling, natural smartphone framing, prop geometry, and photographic realism across all eight gathered scenes.",
+  "examples": [
+    {
+      "id": "yellow-pirelli-cap",
+      "title": "Yellow Pirelli Cap Mirror Selfie",
+      "imagePath": "assets/source/yellow-pirelli-cap.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The bright shirt, cap embroidery, jewelry, and phone stay crisp",
+        "Flat daylight keeps the mirror selfie casual",
+        "The playful expression prevents the frame from feeling over-directed"
+      ]
+    },
+    {
+      "id": "luxury-bathroom",
+      "title": "Luxury Bathroom Streetwear",
+      "imagePath": "assets/source/luxury-bathroom.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "Layered streetwear remains readable inside the dark tiled room",
+        "The raised cocktail glass creates a convincing candid action",
+        "Warm hotel light balances the cool mirror reflection"
+      ]
+    },
+    {
+      "id": "shooting-range",
+      "title": "Leather Vest Shooting Range",
+      "imagePath": "assets/source/shooting-range.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The three-quarter angle makes the stance easy to read",
+        "Safety gear, lane number, target, and handgun retain useful detail",
+        "Hard fluorescent light supports the gritty candid look"
+      ]
+    },
+    {
+      "id": "sheet-mask-mirror",
+      "title": "Sheet Mask Bathroom Mirror Selfie",
+      "imagePath": "assets/source/sheet-mask-mirror.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The crinkled translucent mask looks physically worn",
+        "Wet hair and dim stone surfaces sell the private bathroom moment",
+        "The loose pose feels unfiltered rather than editorial"
+      ]
+    },
+    {
+      "id": "tropical-hat",
+      "title": "Tropical Sky Hat Selfie",
+      "imagePath": "assets/source/tropical-hat.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The extreme low angle turns the blue sky into clean negative space",
+        "Frayed canvas, mirrored lenses, beads, and mesh retain tactile texture",
+        "Hard midday light feels true to a spontaneous vacation selfie"
+      ]
+    },
+    {
+      "id": "nyc-bench",
+      "title": "NYC Street Bench",
+      "imagePath": "assets/source/nyc-bench.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "Both full-body outfits remain distinct and readable",
+        "Iced drinks and deadpan expressions keep the frame casually social",
+        "Dappled street light avoids a studio-polished finish"
+      ]
+    },
+    {
+      "id": "concrete-cafe",
+      "title": "Raw Concrete Café",
+      "imagePath": "assets/source/concrete-cafe.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "Golden window light builds strong cinematic contrast",
+        "Leather, satin, concrete, and wood keep separate material textures",
+        "The reclined posture creates a quiet unbothered mood"
+      ]
+    },
+    {
+      "id": "bed-mask",
+      "title": "Lying in Bed With a Sheet Mask",
+      "imagePath": "assets/source/bed-mask.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The overhead crop feels intimate and accidental",
+        "Mask wrinkles, earbuds, tattoos, and bedding retain realistic detail",
+        "Warm side light preserves the raw phone-photo character"
+      ]
+    }
+  ]
+}

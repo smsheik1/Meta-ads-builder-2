@@ -1,0 +1,30 @@
+{
+  "runtime": {
+    "node": ">=22",
+    "commands": ["npm"]
+  },
+  "providers": [
+    {
+      "name": "Replicate",
+      "models": [
+        "google/nano-banana-2-lite",
+        "google/nano-banana-2",
+        "google/nano-banana-pro"
+      ]
+    }
+  ],
+  "environment": [
+    {
+      "name": "REPLICATE_API_TOKEN",
+      "secret": true,
+      "requiredFor": ["render", "resume"]
+    }
+  ],
+  "notes": [
+    "All smoke and validation commands are local.",
+    "No proof generation was purchased for this package.",
+    "Each selected scene is one independent paid prediction.",
+    "The complete eight-image set therefore uses eight predictions.",
+    "Paid generation requires explicit approval and is capped at three attempts per scene."
+  ]
+}

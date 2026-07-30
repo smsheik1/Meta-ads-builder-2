@@ -1,0 +1,20 @@
+{
+  "id": "fake-it-till-you-make-it",
+  "version": "1.0.0",
+  "title": "Fake It Till You Make It",
+  "description": "Turn one reference portrait into eight believable lifestyle posts spanning mirrors, streetwear, travel, nightlife, and quiet candid moments.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/Da8Wg1QFpAd/",
+    "resourceUrl": "https://docs.google.com/document/d/1ZxKvu3LJSc83TRrpYfxQlLTK8-o5Skt8FRvlF4UBrUU/edit",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana Pro"
+  },
+  "outputs": [
+    "1 inspected 3:4 image per selected lifestyle scene",
+    "up to 8 finalized scene runs for the complete set",
+    "state.json and quality-report.json for every scene"
+  ]
+}

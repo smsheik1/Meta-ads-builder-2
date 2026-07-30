@@ -166,6 +166,7 @@ const generatedFormatSlugs = [
   "chrome-void",
   "ccd-jpeg-filter",
   "passport-click",
+  "fake-it-till-you-make-it",
   "jingle",
   "newsletter-writer",
 ];
@@ -301,8 +302,9 @@ assert.deepEqual(
     "old-money-shot",
     "chrome-void",
     "ccd-jpeg-filter",
-    "passport-click",
-  ],
+      "passport-click",
+      "fake-it-till-you-make-it",
+    ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
 assert.equal(
@@ -344,6 +346,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "passport-click").length,
   6,
   "All six Passport Click examples should remain available inside the Format page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "fake-it-till-you-make-it").length,
+  8,
+  "All eight Fake It Till You Make It examples should remain available inside the Format page.",
 );
 
 console.log("discovery tests passed");
