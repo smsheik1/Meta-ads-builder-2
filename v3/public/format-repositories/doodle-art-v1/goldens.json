@@ -1,0 +1,70 @@
+{
+  "purpose": "Judge subject and composition preservation, handmade brush-pen character, playful simplification, white-background discipline, and clean doodle readability.",
+  "examples": [
+    {
+      "id": "neon-fashion",
+      "title": "Neon Fashion Doodle",
+      "imagePath": "assets/source/neon-fashion-doodle.jpg",
+      "referencePath": "assets/source/neon-fashion-reference.jpg",
+      "referenceType": "reconstructed",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The folded-arm pose, sunglasses, striped sweater, lime hair, and jewelry remain readable",
+        "Bold black brush-pen contours simplify the fashion portrait without losing its attitude",
+        "Sparse color accents pop against a clean white page"
+      ]
+    },
+    {
+      "id": "blue-glasses",
+      "title": "Blue Glasses Crop",
+      "imagePath": "assets/source/blue-glasses-doodle.jpg",
+      "referencePath": "assets/source/blue-glasses-reference.jpg",
+      "referenceType": "reconstructed",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The extreme right-edge crop, blue hair, and oversized glasses survive the transformation",
+        "Wobbly outlines and crayon-like color feel handmade rather than vector-perfect",
+        "The broad white negative space stays part of the composition"
+      ]
+    },
+    {
+      "id": "star-sticker",
+      "title": "Star Sticker Portrait",
+      "imagePath": "assets/source/star-sticker-doodle.jpg",
+      "referencePath": "assets/source/star-sticker-reference.jpg",
+      "referenceType": "reconstructed",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The centered face, tousled hair, expression, and star-sticker pattern remain recognizable",
+        "Minimal black linework reduces anatomy into playful childlike shapes",
+        "Small color details keep the illustration lively without clutter"
+      ]
+    },
+    {
+      "id": "couple",
+      "title": "Couple Doodle",
+      "imagePath": "assets/source/couple-doodle.jpg",
+      "referencePath": "assets/source/couple-reference.jpg",
+      "referenceType": "reconstructed",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "Both people, the close crop, long hair, curls, and affectionate pose remain legible",
+        "Simple brush lines turn a two-person portrait into one coherent sketch",
+        "The red lip accent and tiny heart add warmth without overpowering the drawing"
+      ]
+    },
+    {
+      "id": "popsicle",
+      "title": "Popsicle Reaction",
+      "imagePath": "assets/source/popsicle-doodle.jpg",
+      "referencePath": "assets/source/popsicle-reference.jpg",
+      "referenceType": "reconstructed",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The closed eyes, open-mouth reaction, earrings, jersey, hand, and popsicle remain clear",
+        "Expressive black strokes exaggerate the moment without changing the composition",
+        "One orange accent carries the entire playful color story"
+      ]
+    }
+  ]
+}

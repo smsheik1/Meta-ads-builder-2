@@ -20,7 +20,7 @@ export function DiscoveryReferenceInset({
       data-discovery-reference
       className={`absolute z-10 aspect-[3/4] rounded-[18%] border-4 border-white bg-white object-cover shadow-[0_5px_18px_rgba(8,8,23,0.32)] ${placement}`}
       src={entry.media.referenceSrc}
-      alt={`Original reference for ${entry.title}`}
+      alt={`Reference for ${entry.title}`}
     />
   );
 }

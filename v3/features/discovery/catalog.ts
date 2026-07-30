@@ -1068,6 +1068,68 @@ const haloEffectDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const doodleArtDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "neon-fashion",
+    brand: "Fashion portrait",
+    title: "Turn neon street style into a playful sketch",
+    curatorNote: "The oversized pose, sunglasses, cap, and vivid palette survive as loose black brush lines and selective color.",
+    image: "neon-fashion-doodle",
+    reference: "neon-fashion-reference",
+  },
+  {
+    id: "blue-glasses",
+    brand: "Character portrait",
+    title: "Let one accessory anchor the doodle",
+    curatorNote: "The close crop, round blue glasses, hairstyle, and direct expression stay recognizable inside a deliberately simple drawing.",
+    image: "blue-glasses-doodle",
+    reference: "blue-glasses-reference",
+  },
+  {
+    id: "star-sticker",
+    brand: "Playful portrait",
+    title: "Reduce the frame without losing the personality",
+    curatorNote: "The face, hand gesture, blue star, and bright expression become a sparse, childlike illustration on white.",
+    image: "star-sticker-doodle",
+    reference: "star-sticker-reference",
+  },
+  {
+    id: "couple",
+    brand: "Couple portrait",
+    title: "Keep two people readable with almost no detail",
+    curatorNote: "The embrace, height relationship, dark outfits, and cheerful pose carry through the simplified linework.",
+    image: "couple-doodle",
+    reference: "couple-reference",
+  },
+  {
+    id: "popsicle",
+    brand: "Lifestyle portrait",
+    title: "Make one candid prop the visual hook",
+    curatorNote: "The close portrait, hand pose, frozen treat, and sunny mood become a compact black-ink character sketch.",
+    image: "popsicle-doodle",
+    reference: "popsicle-reference",
+  },
+].map(({ image, reference, ...proof }, index) => ({
+  ...proof,
+  id: `doodle-art-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 115 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/doodle-art-v1/assets/source/${image}.jpg`,
+    referenceSrc: `/format-repositories/doodle-art-v1/assets/source/${reference}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "doodle-art",
+    name: "Doodle Art",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -1497,6 +1559,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...sparklingEffectDiscoveryEntries,
   ...coolToneFilterDiscoveryEntries,
   ...haloEffectDiscoveryEntries,
+  ...doodleArtDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -1587,6 +1650,7 @@ const discoveryShelfDefinitions = [
       "sparkling-effect",
       "cool-tone-filter",
       "halo-effect",
+      "doodle-art",
     ],
   },
   {
