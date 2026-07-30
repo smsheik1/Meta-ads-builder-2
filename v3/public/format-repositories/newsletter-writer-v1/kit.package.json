@@ -1,0 +1,14 @@
+{
+  "name": "wiggly-newsletter-writer-format-kit",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check:kit": "node kit-smoke.mjs",
+    "format:newsletter": "node scripts/newsletter-writer-format.mjs",
+    "test": "node tests/newsletter-writer-agent-runner.test.mjs && node kit-smoke.mjs"
+  }
+}

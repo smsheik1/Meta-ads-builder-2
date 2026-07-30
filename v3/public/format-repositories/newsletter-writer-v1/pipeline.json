@@ -1,0 +1,30 @@
+{
+  "progress": "Learn voice -> Brief -> Write -> Review",
+  "stages": [
+    {
+      "id": "learn-voice",
+      "output": "Evidence-backed brand voice profile",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "brief",
+      "output": "Approved newsletter topic, goal, offer, CTA, and length",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "write",
+      "output": "Three subject lines, preview text, newsletter body, and CTA",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "review",
+      "output": "One fact-and-voice revision plus final Markdown",
+      "paid": false,
+      "approvalRequired": false,
+      "qaAttestationRequired": true
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "companyName": "Brightmark Promotions",
+  "brandUrl": "https://brightmark.example",
+  "voiceSummary": "Brightmark writes like a practical merchandise advisor who is willing to reject the obvious choice. The emails begin with a familiar moment, make one concrete judgment, and end with a low-pressure next step.",
+  "audience": "Marketing, people, and event teams buying branded merchandise",
+  "confidence": "high",
+  "rules": {
+    "register": "Plainspoken and confident, with the authority of someone who handles merchandise every day.",
+    "sentenceRhythm": "Mix two short observations with a longer sentence that explains the practical consequence.",
+    "paragraphShape": "One to three sentences per paragraph, with frequent single-sentence paragraphs for the central judgment.",
+    "openingStyle": "Start inside a specific buying or receiving moment instead of announcing the topic.",
+    "transitionStyle": "Move directly to the next consequence without formal transition words.",
+    "punctuation": "Mostly periods and commas, with occasional colons for a concrete test or list.",
+    "vocabulary": "Use physical product nouns, ordinary workplace moments, and direct verbs such as pack, ship, use, and send.",
+    "ctaStyle": "Ask for one practical input, then promise a smaller next decision.",
+    "formatting": "Short paragraphs with no headings, bullets, emojis, or decorative emphasis."
+  },
+  "mustDo": [
+    "Judge merchandise by what happens after it is received.",
+    "Make the operational next step feel smaller and easier."
+  ],
+  "neverDo": [
+    "Describe merchandise as swag that creates buzz.",
+    "Use broad claims about memorable brand experiences without a physical example."
+  ],
+  "domainTerms": [
+    "kitting",
+    "drinkware",
+    "tech pouch",
+    "mailers",
+    "event date"
+  ],
+  "signaturePhrases": [
+    "That is the test we use",
+    "We will map the kit backward from there"
+  ],
+  "evidence": [
+    {
+      "sourceId": "newsletter-1",
+      "quote": "A client gift does not need to be loud. It needs to be useful on an ordinary Tuesday.",
+      "lesson": "Open with a direct judgment tied to everyday usefulness."
+    },
+    {
+      "sourceId": "newsletter-2",
+      "quote": "would someone still use this if the logo disappeared?",
+      "lesson": "Use one simple question to turn a product choice into a practical test."
+    },
+    {
+      "sourceId": "newsletter-3",
+      "quote": "You do not need twenty products. You need the right five, packed well.",
+      "lesson": "Reduce choice and end the argument with a concrete operational standard."
+    }
+  ]
+}

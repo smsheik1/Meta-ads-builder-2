@@ -1,0 +1,18 @@
+{
+  "runtime": {
+    "node": ">=22"
+  },
+  "providers": [],
+  "environmentVariables": [],
+  "tools": [
+    "A host agent capable of reading local files and writing JSON",
+    "A web research tool available to the host agent"
+  ],
+  "byok": false,
+  "providerCost": "$0 Wiggly provider cost",
+  "notes": [
+    "The host agent performs website research and follows the packaged prompts.",
+    "No Wiggly LLM, image, video, voice, rendering, Replicate, or NVIDIA NIM provider is called.",
+    "The user's agent plan may have its own usage cost."
+  ]
+}

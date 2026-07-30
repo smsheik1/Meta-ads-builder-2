@@ -1,0 +1,42 @@
+{
+  "subjectLines": [
+    {
+      "text": "Useful ideas for summer event kits",
+      "angle": "Practical product selection"
+    },
+    {
+      "text": "Build a better summer event kit",
+      "angle": "Improving the standard kit"
+    },
+    {
+      "text": "What should go in the event bag?",
+      "angle": "A direct planning question"
+    }
+  ],
+  "previewText": "Choose useful branded products and make the next summer event kit easier to plan.",
+  "body": "Summer events give marketing teams many options for branded merchandise. The challenge is choosing products that make sense for the audience and remain useful after the event.\n\nA good kit starts with the setting. Attendees may need a bottle during the day, a pouch for cables and small items, or a tote for everything they collect. Choosing products around those needs can create a more practical experience than filling a bag with as many items as possible.\n\nBrightmark offers drinkware, bags, and tech accessories that can be combined into a focused kit. The team can also assemble the items and ship kits to individual recipients. This makes the same plan useful for in-person events, remote attendees, and distributed teams.\n\nIt also helps to narrow the list early. Three or four useful pieces can be easier to pack, explain, and distribute than a large collection of unrelated products. The final choices should reflect the audience, budget, and event date.\n\nShare those three details with Brightmark. The team will use them to create a short list of products for the summer event and help organize the kit around the people receiving it.",
+  "cta": {
+    "text": "Build my summer event shortlist",
+    "url": "https://brightmark.example/contact"
+  },
+  "factsUsed": [
+    {
+      "claim": "Brightmark can assemble kits and ship them to individual recipients.",
+      "sourceId": "site-fulfillment"
+    },
+    {
+      "claim": "Brightmark offers drinkware, bags, and tech accessories.",
+      "sourceId": "site-categories"
+    }
+  ],
+  "voiceEvidence": [
+    {
+      "choice": "The draft evaluates products by what attendees use after an event.",
+      "sourceId": "newsletter-1"
+    },
+    {
+      "choice": "The draft narrows a large catalog to a few practical choices.",
+      "sourceId": "newsletter-2"
+    }
+  ]
+}
