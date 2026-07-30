@@ -998,6 +998,76 @@ const coolToneFilterDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const haloEffectDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "football-rim-glow",
+    brand: "Studio portrait",
+    title: "Make the edge light carry the whole frame",
+    curatorNote: "The footballer, jersey, ball, and frontal pose stay recognizable while a bright halo cuts the subject out of pure black.",
+    image: "football-rim-glow",
+    reference: "football-rim-glow-reference",
+  },
+  {
+    id: "alpine-portrait",
+    brand: "Seated portrait",
+    title: "Turn an outdoor pose into low-key studio drama",
+    curatorNote: "The seated pose and technical outfit survive as a crisp rim light traces the hair, shoulders, and arms.",
+    image: "alpine-portrait",
+    reference: "alpine-portrait-reference",
+  },
+  {
+    id: "mountain-sunglasses",
+    brand: "Fashion portrait",
+    title: "Let the silhouette stay recognizable",
+    curatorNote: "Sunglasses, hair, knit texture, and the three-quarter pose remain readable inside a controlled semi-silhouette.",
+    image: "mountain-sunglasses",
+    reference: "mountain-sunglasses-reference",
+  },
+  {
+    id: "sea-portrait",
+    brand: "Body portrait",
+    title: "Sculpt the shoulders with a clean halo",
+    curatorNote: "The wet hair, crossed arms, and physique stay intact while the rim light creates strong separation.",
+    image: "sea-portrait",
+    reference: "sea-portrait-reference",
+  },
+  {
+    id: "city-candid",
+    brand: "Candid portrait",
+    title: "Pull daylight into a black-box studio",
+    curatorNote: "The loose shirt, shoulder bag, stance, and face carry through a dramatic black-background treatment.",
+    image: "city-candid",
+    reference: "city-candid-reference",
+  },
+  {
+    id: "golf-silhouette",
+    brand: "Full-body portrait",
+    title: "Keep the full pose, lose the environment",
+    curatorNote: "The cap, fitted black outfit, standing pose, and proportions remain recognizable inside a narrow rim-light outline.",
+    image: "golf-silhouette",
+    reference: "golf-silhouette-reference",
+  },
+].map(({ image, reference, ...proof }, index) => ({
+  ...proof,
+  id: `halo-effect-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 109 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/halo-effect-v1/assets/source/${image}.jpg`,
+    referenceSrc: `/format-repositories/halo-effect-v1/assets/source/${reference}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "halo-effect",
+    name: "Halo Effect",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -1426,6 +1496,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...duskEffectDiscoveryEntries,
   ...sparklingEffectDiscoveryEntries,
   ...coolToneFilterDiscoveryEntries,
+  ...haloEffectDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -1515,6 +1586,7 @@ const discoveryShelfDefinitions = [
       "dusk-effect",
       "sparkling-effect",
       "cool-tone-filter",
+      "halo-effect",
     ],
   },
   {

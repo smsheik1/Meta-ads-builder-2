@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The subject, face, pose, clothing, composition, and key details remain recognizable",
+    "Strong backlight forms a bright, continuous halo around the visible silhouette",
+    "The subject reads as a controlled semi-silhouette rather than an underexposed mistake",
+    "The background stays black and the contrast feels cinematic and studio-made",
+    "The image remains clean and photographic without warped anatomy, logos, or watermarks"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

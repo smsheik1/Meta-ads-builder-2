@@ -1,0 +1,21 @@
+{
+  "id": "halo-effect",
+  "version": "1.0.0",
+  "title": "Halo Effect",
+  "description": "Turn one portrait into a dramatic, high-contrast studio image with a bright rim-light halo and a near-black background.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/Da8PpG7lpUc/",
+    "resourceTitle": "HALO Effect Prompt",
+    "resourceAccess": "Instagram DM to public Google Doc",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana Pro"
+  },
+  "outputs": [
+    "1 inspected Halo Effect portrait",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

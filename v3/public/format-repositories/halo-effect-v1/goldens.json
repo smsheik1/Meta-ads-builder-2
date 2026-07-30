@@ -1,0 +1,77 @@
+{
+  "purpose": "Judge identity preservation, clean rim-light separation, controlled semi-silhouette exposure, black-background discipline, and cinematic contrast.",
+  "examples": [
+    {
+      "id": "football-rim-glow",
+      "title": "Football Rim Glow",
+      "imagePath": "assets/source/football-rim-glow.jpg",
+      "referencePath": "assets/source/football-rim-glow-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The footballer, jersey, ball, and frontal pose remain recognizable",
+        "Bright edge light cleanly separates the body from the black background",
+        "The controlled facial shadow creates a dramatic semi-silhouette"
+      ]
+    },
+    {
+      "id": "alpine-portrait",
+      "title": "Alpine Rim Portrait",
+      "imagePath": "assets/source/alpine-portrait.jpg",
+      "referencePath": "assets/source/alpine-portrait-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The seated pose, dark technical outfit, and body proportions remain intact",
+        "A crisp halo traces the hair, shoulders, and arms",
+        "The low-key studio treatment stays photographic and clean"
+      ]
+    },
+    {
+      "id": "mountain-sunglasses",
+      "title": "Sunglasses Halo Portrait",
+      "imagePath": "assets/source/mountain-sunglasses.jpg",
+      "referencePath": "assets/source/mountain-sunglasses-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The sunglasses, hair, knit top, and three-quarter pose remain recognizable",
+        "Strong backlight outlines the head and shoulders without flattening the subject",
+        "The black background turns an outdoor portrait into a convincing studio frame"
+      ]
+    },
+    {
+      "id": "sea-portrait",
+      "title": "Sea Portrait Halo",
+      "imagePath": "assets/source/sea-portrait.jpg",
+      "referencePath": "assets/source/sea-portrait-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The subject's face, wet hair, crossed-arm pose, and physique remain recognizable",
+        "Rim light traces both shoulders and creates sculptural separation",
+        "The semi-silhouette stays moody without losing the portrait"
+      ]
+    },
+    {
+      "id": "city-candid",
+      "title": "City Candid Halo",
+      "imagePath": "assets/source/city-candid.jpg",
+      "referencePath": "assets/source/city-candid-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The loose shirt, shoulder bag, stance, and facial structure remain readable",
+        "A bright contour follows the hair and shoulders against pure black",
+        "The lighting turns a daylight candid into a dramatic studio portrait"
+      ]
+    },
+    {
+      "id": "golf-silhouette",
+      "title": "Golf Silhouette",
+      "imagePath": "assets/source/golf-silhouette.jpg",
+      "referencePath": "assets/source/golf-silhouette-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The cap, fitted black outfit, standing pose, and proportions remain recognizable",
+        "A narrow halo separates the full body from the dark background",
+        "The restrained exposure creates a clean, cinematic silhouette"
+      ]
+    }
+  ]
+}

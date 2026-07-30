@@ -1,0 +1,55 @@
+{
+  "slug": "halo-effect",
+  "version": "1.0.0",
+  "promptPath": "prompts/transform.txt",
+  "input": {
+    "mode": "image",
+    "formats": ["jpg", "png", "webp"],
+    "minimumWidth": 512,
+    "minimumHeight": 512,
+    "maximumBytes": 26214400
+  },
+  "defaultModel": "nano-banana-2",
+  "modelRoutes": {
+    "nano-banana-2-lite": {
+      "label": "Nano Banana 2 Lite",
+      "lane": "economy",
+      "model": "google/nano-banana-2-lite",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg"
+    },
+    "nano-banana-2": {
+      "label": "Nano Banana 2",
+      "lane": "default",
+      "model": "google/nano-banana-2",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg",
+      "resolution": "1K"
+    },
+    "nano-banana-pro": {
+      "label": "Nano Banana Pro",
+      "lane": "premium",
+      "model": "google/nano-banana-pro",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg",
+      "resolution": "1K"
+    }
+  },
+  "expectedOutputs": 1,
+  "maximumAttempts": 3,
+  "smokeInputPath": "assets/source/football-rim-glow-reference.jpg",
+  "smokeExamplePath": "assets/source/football-rim-glow.jpg",
+  "minimumOutputWidth": 640,
+  "minimumOutputHeight": 800,
+  "minimumOutputBytes": 51200,
+  "manualReview": [
+    "the subject, pose, clothing, and recognizable details stay intact",
+    "strong backlight creates a clean halo around the visible silhouette",
+    "the face and body fall into a controlled semi-silhouette",
+    "the background remains black and the contrast feels cinematic",
+    "the result stays photographic, clean, and free of obvious AI artifacts"
+  ]
+}
