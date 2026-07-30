@@ -1,0 +1,53 @@
+{
+  "purpose": "Judge strict source preservation, realistic sunlight-driven sparkles, warm cinematic light, filmic color, and a premium photographic finish.",
+  "examples": [
+    {
+      "id": "shoreline-bather",
+      "title": "Sparkling Shoreline",
+      "imagePath": "assets/source/shoreline-bather.jpg",
+      "referencePath": "assets/source/shoreline-bather-reference.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The person, pose, shoreline, horizon, and camera angle stay recognizable",
+        "Tiny glints sit naturally on the water and illuminated areas",
+        "Warm light and color depth feel photographic instead of fantastical"
+      ]
+    },
+    {
+      "id": "seashells",
+      "title": "Seashell Sparkle",
+      "imagePath": "assets/source/seashells.jpg",
+      "referencePath": "assets/source/seashells-reference.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "Every shell, hand, bracelet, and crop remains intact",
+        "Sunlight reflections become soft micro sparkles without redrawing the scene",
+        "The warmer grade adds polish while preserving natural skin and shell color"
+      ]
+    },
+    {
+      "id": "ocean-texture",
+      "title": "Sunlit Ocean Texture",
+      "imagePath": "assets/source/ocean-texture.jpg",
+      "referencePath": "assets/source/ocean-texture-reference.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The source wave pattern and close composition remain unchanged",
+        "Small diamond glints follow existing highlights on the water",
+        "Golden light adds depth without creating artificial fantasy particles"
+      ]
+    },
+    {
+      "id": "walking-beach",
+      "title": "Golden Beach Walk",
+      "imagePath": "assets/source/walking-beach.jpg",
+      "referencePath": "assets/source/walking-beach-reference.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The person, clothing, walking pose, sea, and horizon stay recognizable",
+        "The scene shifts naturally toward golden hour with soft bloom",
+        "Sparkles remain concentrated where sunlight touches the water"
+      ]
+    }
+  ]
+}

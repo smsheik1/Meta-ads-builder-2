@@ -1,0 +1,21 @@
+{
+  "id": "sparkling-effect",
+  "version": "1.0.0",
+  "title": "Sparkling Effect",
+  "description": "Preserve one photograph while adding natural crystal-like sparkles, golden-hour light, soft film grain, and a premium in-camera finish.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DbD3PtGitbO/",
+    "resourceTitle": "Sparkling Effect Prompt",
+    "resourceAccess": "Instagram DM to public Google Doc",
+    "ctaKeyword": "AI",
+    "modelShown": "GPT Image 2"
+  },
+  "outputs": [
+    "1 inspected Sparkling Effect photograph",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

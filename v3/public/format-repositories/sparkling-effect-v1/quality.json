@@ -1,0 +1,22 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The subject, face, hair, clothing, pose, composition, camera angle, background, and environment remain recognizable",
+    "Tiny crystal-like sparkles and diamond glints follow natural sunlight and illuminated areas",
+    "Sparkles blend into the photograph without looking magical, pasted on, or overdone",
+    "Warm golden-hour light, soft bloom, volumetric light, HDR, and tonal transitions remain believable",
+    "ARRI-inspired color, Portra-like warmth, gentle grain, and natural contrast feel premium",
+    "There are no obvious AI artifacts, warped details, logos, or watermarks"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

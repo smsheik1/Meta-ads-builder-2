@@ -740,6 +740,52 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "sparkling-effect",
+    promise: "Preserve one photograph while adding natural crystal-like sparkles, warm golden-hour light, filmic color, and a premium in-camera finish.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/sparkling-effect",
+    manifestPath: "format-repositories/sparkling-effect-v1/format.json",
+    whatStays: [
+      "The source subject, face, clothing, pose, and proportions",
+      "The original composition, perspective, camera angle, background, and environment",
+      "Fine photographic details and recognizable objects",
+      "A realistic photographic finish",
+    ],
+    whatChanges: [
+      "Tiny crystal-like sparkles follow natural sunlight and illuminated areas",
+      "Warm golden-hour light, soft bloom, and gentle volumetric light shape the atmosphere",
+      "ARRI-inspired color, Portra-like warmth, soft grain, and natural contrast add polish",
+      "Subtle rim light and smooth HDR transitions deepen the image",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP photograph at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected Sparkling Effect photograph",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for premium",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Treat GPT Image 2 as creator provenance, not as the packaged Replicate route",
+        "Validate the photograph locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected 3:4 Sparkling Effect photograph plus prediction and quality provenance",
+      firstQuestion: "Which photo should I give the Sparkling Effect?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",

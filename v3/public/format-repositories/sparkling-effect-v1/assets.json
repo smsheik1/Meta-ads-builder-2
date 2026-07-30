@@ -1,0 +1,34 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DbD3PtGitbO/",
+    "resourceTitle": "Sparkling Effect Prompt",
+    "guide": "assets/source/guide.txt",
+    "cover": "assets/source/cover.jpg",
+    "referenceInset": "assets/source/shoreline-bather-reference.jpg",
+    "verification": "The Instagram DM delivered the public Google Doc with the exact GPT Image 2 prompt. The original carousel supplied its cover and four complete native before-and-after examples.",
+    "referenceNote": "Wiggly overlays each packaged original at the top right of its matching output on the consumer Format page."
+  },
+  "examples": [
+    {
+      "id": "shoreline-bather",
+      "path": "assets/source/shoreline-bather.jpg",
+      "referencePath": "assets/source/shoreline-bather-reference.jpg"
+    },
+    {
+      "id": "seashells",
+      "path": "assets/source/seashells.jpg",
+      "referencePath": "assets/source/seashells-reference.jpg"
+    },
+    {
+      "id": "ocean-texture",
+      "path": "assets/source/ocean-texture.jpg",
+      "referencePath": "assets/source/ocean-texture-reference.jpg"
+    },
+    {
+      "id": "walking-beach",
+      "path": "assets/source/walking-beach.jpg",
+      "referencePath": "assets/source/walking-beach-reference.jpg"
+    }
+  ]
+}
