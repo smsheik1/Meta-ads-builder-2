@@ -784,6 +784,51 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "ccd-jpeg-filter",
+    promise: "Turn one existing photo into an authentic late-2000s consumer-camera JPEG while preserving its subject, composition, framing, lighting, and colors.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/ccd-jpeg-filter",
+    manifestPath: "format-repositories/ccd-jpeg-filter-v1/format.json",
+    whatStays: [
+      "The original subject and recognizable identity",
+      "The composition, framing, and perspective",
+      "The scene lighting and objects",
+      "The source image's natural colors",
+    ],
+    whatChanges: [
+      "Dense electronic sensor noise covers the frame",
+      "JPEG compression softens and smears fine textures",
+      "Exposure gains crushed shadows and softly clipped highlights",
+      "The selected model cost lane",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP photo at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 CCD JPEG image by default",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, Pro for a premium alternative, or GPT Image 2 only for the source route",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Validate the source photo locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected CCD JPEG image plus prediction and quality provenance",
+      firstQuestion: "Which photo should I give the CCD JPEG look?",
+    },
+  },
+  {
     slug: "meme",
     promise: "Turn a buyer's familiar frustration into an ad they understand in one glance.",
     lastUpdated: "July 2026",

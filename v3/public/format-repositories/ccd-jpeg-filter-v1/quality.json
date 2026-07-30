@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio within 0.02 of the selected route",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The original composition, framing, perspective, lighting, subject, and colors remain recognizable",
+    "Dense fine electronic noise covers smooth surfaces and shadows without reading as cinematic film grain",
+    "JPEG blockiness, smearing, reduced micro-detail, and weak sharpening feel naturally accumulated",
+    "Crushed noisy shadows, softly clipped highlights, and imperfect automatic exposure lower the dynamic range",
+    "The result feels like a cheap late-2000s camera file repeatedly uploaded and reshared, not a clean modern image with a retro overlay"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "purpose": "Judge scene preservation, dense electronic noise, realistic JPEG compression, soft consumer optics, imperfect exposure, and early-social-media authenticity against five gathered examples.",
+  "examples": [
+    {
+      "id": "lakeside-speedboat",
+      "title": "A clean lakeside snapshot becomes a compressed archive find",
+      "imagePath": "assets/source/hero-with-reference.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The person, boat interior, lake, mountain, and background speedboat remain in the same composition",
+        "Dense sensor noise, cyan contamination, crushed shadows, and soft detail feel native to an old CCD camera"
+      ]
+    },
+    {
+      "id": "red-car-night",
+      "title": "Night flash keeps the pose and car while degrading the file",
+      "imagePath": "assets/source/example-02.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The subject, black outfit, red car, and parking-lot framing remain unchanged",
+        "Highlight clipping, hard flash, chroma noise, and JPEG smearing create believable cheap-camera rendering"
+      ]
+    },
+    {
+      "id": "phone-booth",
+      "title": "A phone-booth portrait gets true early-social compression",
+      "imagePath": "assets/source/example-03.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The phone, suit, booth, graffiti, and original framing remain recognizable",
+        "Texture smearing and noisy shadows degrade the image without turning into film grain"
+      ]
+    },
+    {
+      "id": "parking-lot-lighter",
+      "title": "A simple flash portrait feels downloaded and reshared",
+      "imagePath": "assets/source/example-04.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The lighter, jacket, jewelry, subject, and open parking lot stay fixed",
+        "Underexposed midtones, electronic grain, and weak sharpening feel accidental rather than stylized"
+      ]
+    },
+    {
+      "id": "airport-flowers",
+      "title": "A daylight airport photo still reads through heavy compression",
+      "imagePath": "assets/source/example-05.jpg",
+      "model": "GPT Image 2",
+      "whyItWorks": [
+        "The flowers, cap, clothing, airplane, and tarmac framing remain intact",
+        "Compression artifacts, soft optics, and noisy low-range exposure create an archived-internet finish"
+      ]
+    }
+  ]
+}
