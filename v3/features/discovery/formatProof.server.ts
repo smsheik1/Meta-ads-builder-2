@@ -559,6 +559,52 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "fake-it-till-you-make-it",
+    promise: "Turn one portrait into eight believable lifestyle posts that look like a full social calendar rather than an AI demo.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/fake-it-till-you-make-it",
+    manifestPath: "format-repositories/fake-it-till-you-make-it-v1/format.json",
+    whatStays: [
+      "The reference person's recognizable identity",
+      "Natural smartphone or candid framing",
+      "Photographic skin, fabric, and prop detail",
+      "An unbothered social-post energy",
+    ],
+    whatChanges: [
+      "The location and activity",
+      "The wardrobe and accessories",
+      "The lighting and camera angle",
+      "The selected model cost lane",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP portrait at least 512px on both axes",
+        "One scene or the complete eight-image set",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 image per selected scene",
+        "A persisted Replicate prediction ID per scene",
+        "Automatic checks and visual-review notes for every image",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Ask whether to make one named scene or all eight",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for the source-model route",
+        "State that each scene is one paid prediction and name the approved total before spending",
+        "Validate and inspect every scene independently",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "about 1 min" },
+        { label: "Each selected scene", cost: "One current Replicate model charge", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min per scene" },
+      ],
+      totalEstimate: "One prediction per selected scene; the complete set is eight predictions",
+      output: "One inspected 3:4 JPG per selected scene, with run and quality provenance",
+      firstQuestion: "Which portrait should I use?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",

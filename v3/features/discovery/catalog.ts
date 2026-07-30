@@ -614,6 +614,85 @@ const passportClickDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const fakeItTillYouMakeItDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "yellow-pirelli-cap",
+    brand: "Lifestyle transformation",
+    title: "Make the mirror selfie look casually expensive",
+    curatorNote: "Bright linen, embroidered headwear, jewelry, and flat daylight keep the hero polished without losing its phone-photo energy.",
+    image: "yellow-pirelli-cap",
+  },
+  {
+    id: "luxury-bathroom",
+    brand: "Streetwear mirror selfie",
+    title: "Layer the fit without losing the candid",
+    curatorNote: "A raised drink, hooded color blocking, reflective tiles, and warm hotel light create a believable high-end night out.",
+    image: "luxury-bathroom",
+  },
+  {
+    id: "shooting-range",
+    brand: "Action candid",
+    title: "Freeze the moment downrange",
+    curatorNote: "The stance, safety gear, target, lane number, and hard fluorescent light make the generated action feel observed rather than staged.",
+    image: "shooting-range",
+  },
+  {
+    id: "sheet-mask-mirror",
+    brand: "Private mirror selfie",
+    title: "Make the unbothered moment the post",
+    curatorNote: "Wet hair, a crinkled hydrogel mask, dim stone, and a loose pose make the bathroom frame feel raw and personal.",
+    image: "sheet-mask-mirror",
+  },
+  {
+    id: "tropical-hat",
+    brand: "Vacation selfie",
+    title: "Point the camera straight into summer",
+    curatorNote: "An extreme low angle, clean sky, mirrored lenses, and palm fronds deliver an unmistakable vacation flex.",
+    image: "tropical-hat",
+  },
+  {
+    id: "nyc-bench",
+    brand: "Street-style duo",
+    title: "Two iced coffees, zero effort",
+    curatorNote: "Distinct outfits, deadpan expressions, dappled light, and a full-body street crop make the pairing feel editorial and spontaneous.",
+    image: "nyc-bench",
+  },
+  {
+    id: "concrete-cafe",
+    brand: "Quiet café candid",
+    title: "Let the morning light do the flexing",
+    curatorNote: "Golden window light, worn leather, satin, and a reclined posture turn a raw concrete room into a calm lifestyle frame.",
+    image: "concrete-cafe",
+  },
+  {
+    id: "bed-mask",
+    brand: "Raw close-up",
+    title: "Post the morning exactly as it feels",
+    curatorNote: "The overhead crop, creased mask, wired earbuds, tattoos, and warm side light keep the scene intimate and deliberately unpolished.",
+    image: "bed-mask",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `fake-it-till-you-make-it-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 73 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/fake-it-till-you-make-it-v1/assets/source/${image}.jpg`,
+    referenceSrc:
+      "/format-repositories/fake-it-till-you-make-it-v1/assets/source/reference-input.jpg",
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "fake-it-till-you-make-it",
+    name: "Fake It Till You Make It",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -1036,6 +1115,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...chromeVoidDiscoveryEntries,
   ...ccdJpegFilterDiscoveryEntries,
   ...passportClickDiscoveryEntries,
+  ...fakeItTillYouMakeItDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -1119,6 +1199,7 @@ const discoveryShelfDefinitions = [
       "chrome-void",
       "ccd-jpeg-filter",
       "passport-click",
+      "fake-it-till-you-make-it",
     ],
   },
   {

@@ -1,0 +1,21 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/Da8Wg1QFpAd/",
+    "resourceUrl": "https://docs.google.com/document/d/1ZxKvu3LJSc83TRrpYfxQlLTK8-o5Skt8FRvlF4UBrUU/edit",
+    "guide": "assets/source/guide.pdf",
+    "referenceInset": "assets/source/reference-input.jpg",
+    "verification": "The delivered Google Doc supplied Nano Banana Pro and eight exact prompts. The Instagram carousel supplied the eight matching source outputs.",
+    "referenceNote": "The creator did not publish a separate original input, so the clean sheet-mask carousel scene is reused only as Wiggly's visual identity anchor."
+  },
+  "examples": [
+    { "variant": "sheet-mask-mirror", "path": "assets/source/sheet-mask-mirror.jpg" },
+    { "variant": "luxury-bathroom", "path": "assets/source/luxury-bathroom.jpg" },
+    { "variant": "shooting-range", "path": "assets/source/shooting-range.jpg" },
+    { "variant": "yellow-pirelli-cap", "path": "assets/source/yellow-pirelli-cap.jpg" },
+    { "variant": "tropical-hat", "path": "assets/source/tropical-hat.jpg" },
+    { "variant": "nyc-bench", "path": "assets/source/nyc-bench.jpg" },
+    { "variant": "concrete-cafe", "path": "assets/source/concrete-cafe.jpg" },
+    { "variant": "bed-mask", "path": "assets/source/bed-mask.jpg" }
+  ]
+}

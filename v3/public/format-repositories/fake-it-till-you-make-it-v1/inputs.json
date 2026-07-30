@@ -1,0 +1,34 @@
+{
+  "required": [
+    {
+      "id": "portrait",
+      "type": "image",
+      "formats": ["jpg", "png", "webp"],
+      "minimumWidth": 512,
+      "minimumHeight": 512,
+      "maximumBytes": 26214400
+    }
+  ],
+  "question": "Which portrait should I use, and do you want one scene or the complete eight-image set?",
+  "variants": [
+    "sheet-mask-mirror",
+    "luxury-bathroom",
+    "shooting-range",
+    "yellow-pirelli-cap",
+    "tropical-hat",
+    "nyc-bench",
+    "concrete-cafe",
+    "bed-mask"
+  ],
+  "defaults": {
+    "model": "nano-banana-2",
+    "variant": "yellow-pirelli-cap",
+    "aspectRatio": "3:4",
+    "outputCountPerRun": 1
+  },
+  "modelRoutes": {
+    "economy": "google/nano-banana-2-lite",
+    "default": "google/nano-banana-2",
+    "premium": "google/nano-banana-pro"
+  }
+}

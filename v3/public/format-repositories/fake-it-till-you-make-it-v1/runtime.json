@@ -1,0 +1,65 @@
+{
+  "slug": "fake-it-till-you-make-it",
+  "version": "1.0.0",
+  "promptPath": "prompts/yellow-pirelli-cap.txt",
+  "promptVariants": {
+    "sheet-mask-mirror": "prompts/sheet-mask-mirror.txt",
+    "luxury-bathroom": "prompts/luxury-bathroom.txt",
+    "shooting-range": "prompts/shooting-range.txt",
+    "yellow-pirelli-cap": "prompts/yellow-pirelli-cap.txt",
+    "tropical-hat": "prompts/tropical-hat.txt",
+    "nyc-bench": "prompts/nyc-bench.txt",
+    "concrete-cafe": "prompts/concrete-cafe.txt",
+    "bed-mask": "prompts/bed-mask.txt"
+  },
+  "input": {
+    "mode": "image",
+    "formats": ["jpg", "png", "webp"],
+    "minimumWidth": 512,
+    "minimumHeight": 512,
+    "maximumBytes": 26214400
+  },
+  "defaultModel": "nano-banana-2",
+  "modelRoutes": {
+    "nano-banana-2-lite": {
+      "label": "Nano Banana 2 Lite",
+      "lane": "economy",
+      "model": "google/nano-banana-2-lite",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg"
+    },
+    "nano-banana-2": {
+      "label": "Nano Banana 2",
+      "lane": "default",
+      "model": "google/nano-banana-2",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg",
+      "resolution": "1K"
+    },
+    "nano-banana-pro": {
+      "label": "Nano Banana Pro",
+      "lane": "premium / source model",
+      "model": "google/nano-banana-pro",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg",
+      "resolution": "1K"
+    }
+  },
+  "expectedOutputs": 1,
+  "maximumAttempts": 3,
+  "smokeInputPath": "assets/source/reference-input.jpg",
+  "smokeExamplePath": "assets/source/yellow-pirelli-cap.jpg",
+  "minimumOutputWidth": 640,
+  "minimumOutputHeight": 800,
+  "minimumOutputBytes": 51200,
+  "manualReview": [
+    "recognizable reference identity",
+    "selected lifestyle scene fidelity",
+    "believable face, hands, clothing, and props",
+    "natural smartphone framing",
+    "photographic realism"
+  ]
+}
