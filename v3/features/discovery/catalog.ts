@@ -758,6 +758,76 @@ const darkStudioPortraitDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const bluePhosphorDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "car-headlights",
+    brand: "Analog night portrait",
+    title: "Make the headlights glow like the portrait",
+    curatorNote: "The source face, jacket, car, and city remain intact while cyan bloom, scanlines, and interference rings reshape the mood.",
+    image: "car-headlights",
+  },
+  {
+    id: "terrace",
+    brand: "City portrait",
+    title: "Turn the whole skyline cyan",
+    curatorNote: "A bright face, white shirt, dark jacket, and distant city keep their depth inside a luminous monochrome treatment.",
+    image: "terrace",
+  },
+  {
+    id: "neon-stage",
+    brand: "Neon portrait",
+    title: "Let red disappear into phosphor blue",
+    curatorNote: "The stage architecture, tattoos, jewelry, and relaxed pose survive as face-centered rings travel through the scene.",
+    image: "neon-stage",
+  },
+  {
+    id: "night-car",
+    brand: "Nightlife portrait",
+    title: "Keep the original pose under the filter",
+    curatorNote: "Vehicle lights bloom into cyan without changing the subject's stance, crop, clothing, or airport-night background.",
+    image: "night-car",
+  },
+  {
+    id: "cowboy-market",
+    brand: "Street-style portrait",
+    title: "Run scanlines through every detail",
+    curatorNote: "The cowboy hat, jacket, store, and direct gaze stay legible under fine horizontal texture and soft phosphor halation.",
+    image: "cowboy-market",
+  },
+  {
+    id: "garage",
+    brand: "Garage portrait",
+    title: "Keep rich texture in the blue shadows",
+    curatorNote: "Cap, clothing, stance, and industrial background stay recognizable while the grade pushes deep without crushing detail.",
+    image: "garage",
+  },
+  {
+    id: "lounge",
+    brand: "Lounge portrait",
+    title: "Make a busy room feel hypnotic",
+    curatorNote: "The seated pose, drink, jewelry, and bar remain photographic as subtle optical rings organize the whole frame.",
+    image: "lounge",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `blue-phosphor-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 88 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/blue-phosphor-v1/assets/source/${image}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "blue-phosphor",
+    name: "Blue Phosphor Filter",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -1182,6 +1252,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...passportClickDiscoveryEntries,
   ...fakeItTillYouMakeItDiscoveryEntries,
   ...darkStudioPortraitDiscoveryEntries,
+  ...bluePhosphorDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -1267,6 +1338,7 @@ const discoveryShelfDefinitions = [
       "passport-click",
       "fake-it-till-you-make-it",
       "dark-studio-portrait",
+      "blue-phosphor",
     ],
   },
   {

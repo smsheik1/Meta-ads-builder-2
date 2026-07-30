@@ -1,0 +1,89 @@
+{
+  "purpose": "Judge exact source preservation, luminous cyan-blue monochrome color, fine scanlines, soft phosphor bloom, face-centered interference rings, and an edge-to-edge photographic finish.",
+  "examples": [
+    {
+      "id": "car-headlights",
+      "title": "Headlights in Phosphor",
+      "imagePath": "assets/source/car-headlights.jpg",
+      "referencePath": "assets/source/car-headlights-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The source face, dark jacket, car, and city composition stay intact",
+        "Headlights bloom naturally into the cyan night",
+        "Fine scanlines and face-centered rings remain visible without looking pasted on"
+      ]
+    },
+    {
+      "id": "terrace",
+      "title": "City Terrace in Cyan",
+      "imagePath": "assets/source/terrace.jpg",
+      "referencePath": "assets/source/terrace-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The original pose and leather jacket remain unchanged",
+        "Bright skin and white clothing emit a controlled phosphor glow",
+        "The skyline retains realistic depth under the monochrome grade"
+      ]
+    },
+    {
+      "id": "neon-stage",
+      "title": "Neon Stage Interference",
+      "imagePath": "assets/source/neon-stage.jpg",
+      "referencePath": "assets/source/neon-stage-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The original red stage becomes a coherent cyan-blue environment",
+        "Tattoos, jewelry, and clothing remain readable",
+        "Optical rings radiate from the face through the bright architecture"
+      ]
+    },
+    {
+      "id": "night-car",
+      "title": "Airport Lights Bloom",
+      "imagePath": "assets/source/night-car.jpg",
+      "referencePath": "assets/source/night-car-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The source stance and crop survive exactly",
+        "Vehicle lights glow without flattening the background",
+        "Analog softness supports the early-2000s digital mood"
+      ]
+    },
+    {
+      "id": "cowboy-market",
+      "title": "Cowboy Under Scanlines",
+      "imagePath": "assets/source/cowboy-market.jpg",
+      "referencePath": "assets/source/cowboy-market-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The hat, jacket, posture, and store remain faithful to the source",
+        "Horizontal lines read cleanly across bright and dark areas",
+        "The cyan highlight rolloff feels self-illuminated rather than filtered"
+      ]
+    },
+    {
+      "id": "garage",
+      "title": "Garage Phosphor",
+      "imagePath": "assets/source/garage.jpg",
+      "referencePath": "assets/source/garage-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The subject's face, cap, outfit, and stance remain recognizable",
+        "Deep shadows carry texture instead of collapsing into black",
+        "The edge-to-edge image avoids a fake monitor or bezel"
+      ]
+    },
+    {
+      "id": "lounge",
+      "title": "Blue Lounge Bloom",
+      "imagePath": "assets/source/lounge.jpg",
+      "referencePath": "assets/source/lounge-reference.jpg",
+      "model": "Nano Banana Pro",
+      "whyItWorks": [
+        "The seated pose, drink, jewelry, and lounge setting survive",
+        "Face-centered rings remain subtle against a busy background",
+        "Cyan bloom and analog grain create a cinematic finish"
+      ]
+    }
+  ]
+}

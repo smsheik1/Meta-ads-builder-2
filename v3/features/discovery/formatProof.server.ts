@@ -650,6 +650,51 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "blue-phosphor",
+    promise: "Turn one photograph into luminous cyan-blue monochrome with analog scanlines, phosphor bloom, and face-centered optical interference.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/blue-phosphor",
+    manifestPath: "format-repositories/blue-phosphor-v1/format.json",
+    whatStays: [
+      "The source person's recognizable identity",
+      "The original hairstyle, clothing, pose, and expression",
+      "The source composition, camera angle, lighting, and background",
+      "Realistic photographic skin and environmental detail",
+    ],
+    whatChanges: [
+      "The full image becomes electric cyan-blue monochrome",
+      "Fine analog scanlines cover the photograph",
+      "Soft phosphor bloom, halation, grain, and rich blue shadow define the finish",
+      "Concentric optical interference radiates from the face",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP photograph at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected Blue Phosphor image",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for premium and creator-source fidelity",
+        "Keep the exact gathered prompt and negative prompt unless the user explicitly requests a change",
+        "Validate the photograph locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected 3:4 Blue Phosphor image plus prediction and quality provenance",
+      firstQuestion: "Which photo should I apply the Blue Phosphor Filter to?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",

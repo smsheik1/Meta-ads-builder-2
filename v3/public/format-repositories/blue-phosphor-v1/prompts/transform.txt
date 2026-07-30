@@ -1,0 +1,17 @@
+Transform the uploaded image while preserving the subject's identity exactly. Do not change the face, hairstyle, skin, clothing, body proportions, pose, expression, composition, camera angle, lighting, or background. Apply only the visual effect.
+
+Convert the entire image into a luminous electric cyan-blue monochrome aesthetic with rich phosphor-like glow. The image should appear softly self-illuminated, with bright areas naturally blooming into darker tones while maintaining realistic detail. The overall look should be smooth, dreamy, cinematic, and atmospheric rather than digitally filtered.
+
+Cover the entire image with extremely fine horizontal analog scanlines that blend naturally into the photograph. Add subtle analog softness, gentle phosphor grain, soft highlight halation, reduced micro-contrast, faint luminance noise, and delicate cyan bloom. Every highlight should feel as though it emits light instead of simply reflecting it.
+
+Create large concentric optical interference rings centered precisely on the subject's face, radiating smoothly across the entire image. The rings should resemble natural moiré interference, softly interacting with the scanlines and brightness instead of appearing as an overlay. They must be subtle yet clearly visible, with varying intensity depending on brightness, giving the image a hypnotic analog texture.
+
+The overall image should have a mysterious cyber atmosphere with authentic early-2000s digital aesthetics, soft analog diffusion, glowing cyan highlights, rich blue shadows, subtle texture, and a slightly imperfect organic appearance. Preserve realistic skin texture while allowing the glow and interference pattern to dominate the overall mood.
+
+Keep the image completely edge-to-edge. No borders of any kind. No rounded corners. No television frame. No monitor. No bezel. No screen outline. No glass reflections. No user interface. No hardware. The effect must exist only within the photograph itself.
+
+The final result should look like a cinematic blue phosphor portrait with luminous glow, analog scanlines, and beautiful concentric optical interference integrated naturally throughout the image.
+
+Negative Prompt
+
+black border, rounded corners, television, TV, CRT monitor, monitor frame, display, bezel, screen frame, glass reflections, hardware, user interface, fingerprint graphic, watermark, logo, pixelation, VHS glitches, tracking errors, heavy blur, oversharpening, HDR, modern digital look, AI beauty filter, excessive distortion, changes to identity, clothing, pose, lighting, or background.

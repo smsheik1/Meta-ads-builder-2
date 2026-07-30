@@ -1,0 +1,22 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The source identity, hairstyle, clothing, pose, composition, lighting, and background remain unchanged",
+    "The photograph is luminous electric cyan-blue monochrome from edge to edge",
+    "Fine horizontal analog scanlines blend naturally across the full image",
+    "Soft phosphor grain, bloom, halation, luminance noise, and rich blue shadows feel organic",
+    "Concentric optical interference rings radiate from the subject's face",
+    "There is no border, rounded frame, television, monitor, bezel, UI, logo, or watermark"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}
