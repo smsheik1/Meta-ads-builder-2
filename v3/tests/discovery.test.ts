@@ -151,14 +151,23 @@ assert.ok(
     .every((entry) => entry.showInDiscovery === false),
   "Archived Meme proofs should stay available on the format page without cluttering Discover.",
 );
+assert.ok(
+  databaseFormatDiscoveryEntries
+    .filter((entry) => ["reviews", "were-sorry"].includes(entry.format.slug))
+    .every((entry) => entry.showInDiscovery === false),
+  "Customer Proof examples should stay available on format pages without cluttering Discover.",
+);
+assert.equal(
+  published.some((entry) => ["reviews", "were-sorry"].includes(entry.format.slug)),
+  false,
+  "Reviews and We're Sorry should not appear on Discover.",
+);
 const generatedFormatSlugs = [
   "visualizer",
   "meme",
   "three-d-breakdown",
   "video-meme",
-  "were-sorry",
   "text-message",
-  "reviews",
   "brainrot",
   "fortnite-filter",
   "cinematic-photographer",
@@ -250,7 +259,7 @@ assert.ok(
 
 const shelves = groupDiscoveryEntriesByShelf(published);
 const shelvedEntries = shelves.flatMap((shelf) => shelf.entries);
-assert.equal(shelves.length, 11, "Current Discovery proof should organize into eleven useful shelves.");
+assert.equal(shelves.length, 10, "Current Discovery proof should organize into ten useful shelves.");
 assert.equal(
   shelvedEntries.length,
   published.length,

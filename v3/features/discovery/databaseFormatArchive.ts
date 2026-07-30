@@ -86,7 +86,7 @@ export const databaseFormatDiscoveryEntries: DiscoveryEntry[] = databaseFormatRo
   return {
     id: `scene-${sceneId}`,
     status: "published",
-    showInDiscovery: format === "meme" ? false : undefined,
+    showInDiscovery: ["meme", "reviews", "were-sorry"].includes(format) ? false : undefined,
     order,
     brand,
     title,
