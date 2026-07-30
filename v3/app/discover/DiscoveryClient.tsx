@@ -27,6 +27,12 @@ import {
   readSavedDiscoveryIds,
   writeSavedDiscoveryIds,
 } from "@/features/discovery/savedAds";
+import {
+  playbackPaused,
+  playbackStarted,
+  playbackSynced,
+  type DiscoveryPlaybackState,
+} from "@/features/discovery/playbackState";
 import type { DiscoveryEntry, DiscoveryGoal } from "@/features/discovery/types";
 import styles from "./discovery.module.css";
 
@@ -39,7 +45,6 @@ const goalFilters: Array<{ id: DiscoveryGoal; label: string }> = [
   { id: "entertain", label: "Entertain" },
 ];
 
-const soundStorageKey = "wiggly-discovery-sound";
 const ownerTokenStorageKey = "wiggly-owner-access-token";
 
 export function DiscoveryClient({
@@ -52,9 +57,7 @@ export function DiscoveryClient({
   const [query, setQuery] = useState("");
   const [goal, setGoal] = useState<DiscoveryGoal>("all");
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-  const [activeMediaId, setActiveMediaId] = useState<string | null>(null);
-  const [playingMediaId, setPlayingMediaId] = useState<string | null>(null);
-  const [soundOn, setSoundOn] = useState(false);
+  const [activePlayback, setActivePlayback] = useState<DiscoveryPlaybackState>(null);
   const [curationMode, setCurationMode] = useState(false);
   const [toast, setToast] = useState("");
   const videoRefs = useRef(new Map<string, HTMLVideoElement>());
@@ -65,7 +68,6 @@ export function DiscoveryClient({
 
   useEffect(() => {
     setSavedIds(readSavedDiscoveryIds(window.localStorage));
-    setSoundOn(window.sessionStorage.getItem(soundStorageKey) === "on");
     setCurationMode(new URLSearchParams(window.location.search).get("curate") === "1");
   }, []);
 
@@ -80,44 +82,61 @@ export function DiscoveryClient({
     () => groupDiscoveryEntriesByShelf(visibleEntries),
     [visibleEntries],
   );
+  const activeEntryVisible = activePlayback
+    ? visibleEntries.some((entry) => entry.id === activePlayback.id)
+    : false;
 
   useEffect(() => {
-    const handlePlaybackFailure = (
-      media: HTMLVideoElement | HTMLAudioElement,
-      error: unknown,
-    ) => {
-      // Switching cards intentionally pauses the old media while play() may still
-      // be settling. That AbortError must not undo the user's sound preference.
-      if (error instanceof DOMException && error.name === "AbortError") return;
+    if (!activePlayback?.playing) return;
+    const media = videoRefs.current.get(activePlayback.id) || audioRefs.current.get(activePlayback.id);
+    const cardMedia = media?.closest(`.${styles.mediaWell}`);
+    if (!media || !cardMedia) return;
+
+    const observer = new IntersectionObserver(([item]) => {
+      if (item?.isIntersecting && item.intersectionRatio >= 0.2) return;
+      media.pause();
       media.muted = true;
-      setSoundOn(false);
-      window.sessionStorage.setItem(soundStorageKey, "off");
+      setActivePlayback((current) => playbackPaused(current, activePlayback.id));
+    }, { threshold: [0, 0.2] });
+
+    observer.observe(cardMedia);
+    return () => observer.disconnect();
+  }, [activePlayback?.id, activePlayback?.playing]);
+
+  useEffect(() => {
+    const stopHiddenMedia = () => {
+      if (!document.hidden) return;
+      videoRefs.current.forEach((video) => {
+        video.pause();
+        video.muted = true;
+      });
+      audioRefs.current.forEach((audio) => {
+        audio.pause();
+        audio.muted = true;
+      });
+      setActivePlayback((current) => (
+        current ? playbackPaused(current, current.id) : current
+      ));
     };
 
-    videoRefs.current.forEach((video, id) => {
-      const shouldPlay = id === activeMediaId;
-      video.muted = !soundOn;
+    document.addEventListener("visibilitychange", stopHiddenMedia);
+    return () => document.removeEventListener("visibilitychange", stopHiddenMedia);
+  }, []);
 
-      if (!shouldPlay) {
-        video.pause();
-        return;
-      }
+  useEffect(() => {
+    if (!activePlayback?.id || !activeEntryVisible) return;
+    const media = videoRefs.current.get(activePlayback.id) || audioRefs.current.get(activePlayback.id);
 
-      void video.play().catch((error) => handlePlaybackFailure(video, error));
-    });
+    return () => {
+      media?.pause();
+      if (media) media.muted = true;
+    };
+  }, [activeEntryVisible, activePlayback?.id]);
 
-    audioRefs.current.forEach((audio, id) => {
-      const shouldPlay = id === activeMediaId;
-      audio.muted = !soundOn;
-
-      if (!shouldPlay) {
-        audio.pause();
-        return;
-      }
-
-      void audio.play().catch((error) => handlePlaybackFailure(audio, error));
-    });
-  }, [activeMediaId, soundOn]);
+  useEffect(() => {
+    if (!activePlayback || activeEntryVisible) return;
+    setActivePlayback(null);
+  }, [activeEntryVisible, activePlayback]);
 
   useEffect(() => {
     const id = window.location.hash.slice(1);
@@ -146,29 +165,64 @@ export function DiscoveryClient({
     });
   };
 
-  const toggleSound = (entry: DiscoveryEntry) => {
-    if (entry.media.kind === "image") return;
-    const nextSoundOn = activeMediaId === entry.id ? !soundOn : true;
-    setActiveMediaId(entry.id);
-    setSoundOn(nextSoundOn);
-    window.sessionStorage.setItem(soundStorageKey, nextSoundOn ? "on" : "off");
+  const mediaFor = (entry: DiscoveryEntry) => (
+    videoRefs.current.get(entry.id) || audioRefs.current.get(entry.id)
+  );
+
+  const syncPlayback = (id: string, media: HTMLMediaElement) => {
+    if (media.paused) media.muted = true;
+    setActivePlayback((current) => playbackSynced(current, id, media));
+  };
+
+  const stopErroredPlayback = (id: string, media: HTMLMediaElement) => {
+    media.pause();
+    media.muted = true;
+    setActivePlayback((current) => playbackPaused(current, id));
+  };
+
+  const playWithSound = (entry: DiscoveryEntry) => {
+    const media = mediaFor(entry);
+    if (!media) return;
+
+    videoRefs.current.forEach((video, id) => {
+      if (id === entry.id) return;
+      video.pause();
+      video.muted = true;
+    });
+    audioRefs.current.forEach((audio, id) => {
+      if (id === entry.id) return;
+      audio.pause();
+      audio.muted = true;
+    });
+
+    if (activePlayback?.id !== entry.id) media.currentTime = 0;
+    media.muted = false;
+    setActivePlayback(playbackStarted(entry.id));
+    void media.play().catch((error) => {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      stopErroredPlayback(entry.id, media);
+    });
   };
 
   const togglePlayback = (entry: DiscoveryEntry) => {
     if (entry.media.kind === "image") return;
-    setActiveMediaId((current) => (
-      current === entry.id && playingMediaId === entry.id ? null : entry.id
-    ));
+    const media = mediaFor(entry);
+    if (activePlayback?.id === entry.id && activePlayback.playing) {
+      media?.pause();
+      if (media) media.muted = true;
+      setActivePlayback((current) => playbackPaused(current, entry.id));
+      return;
+    }
+    playWithSound(entry);
   };
 
-  const previewMedia = (entry: DiscoveryEntry) => {
+  const toggleSound = (entry: DiscoveryEntry) => {
     if (entry.media.kind === "image") return;
-    setActiveMediaId(entry.id);
-  };
-
-  const stopMediaPreview = (entry: DiscoveryEntry) => {
-    if (entry.media.kind === "image") return;
-    setActiveMediaId((current) => current === entry.id ? null : current);
+    const media = mediaFor(entry);
+    if (!media || activePlayback?.id !== entry.id || !activePlayback.playing) return;
+    const muted = !activePlayback.muted;
+    media.muted = muted;
+    setActivePlayback({ ...activePlayback, muted });
   };
 
   const hideEntry = async (entry: DiscoveryEntry) => {
@@ -337,18 +391,12 @@ export function DiscoveryClient({
                 >
                   {shelf.entries.map((entry) => {
                     const saved = savedIds.has(entry.id);
-                    const playing = playingMediaId === entry.id;
-                    const audible = soundOn && activeMediaId === entry.id;
+                    const playing = activePlayback?.id === entry.id && activePlayback.playing;
+                    const audible = playing && activePlayback?.muted === false;
                     const formatHref = `/formats/${entry.format.slug}`;
 
                     return (
-                      <article
-                        className={styles.card}
-                        id={entry.id}
-                        key={entry.id}
-                        onMouseEnter={() => previewMedia(entry)}
-                        onMouseLeave={() => stopMediaPreview(entry)}
-                      >
+                      <article className={styles.card} id={entry.id} key={entry.id}>
                         <div
                           className={`${styles.mediaWell} ${
                             entry.media.kind === "image" || entry.format.slug === "brainrot"
@@ -374,8 +422,9 @@ export function DiscoveryClient({
                                 loop
                                 playsInline
                                 preload="none"
-                                onPlay={() => setPlayingMediaId(entry.id)}
-                                onPause={() => setPlayingMediaId((current) => current === entry.id ? null : current)}
+                                onPlay={(event) => syncPlayback(entry.id, event.currentTarget)}
+                                onPause={(event) => syncPlayback(entry.id, event.currentTarget)}
+                                onError={(event) => stopErroredPlayback(entry.id, event.currentTarget)}
                               />
                             ) : entry.media.kind === "audio" ? (
                               <>
@@ -388,10 +437,9 @@ export function DiscoveryClient({
                                   src={entry.media.src}
                                   preload="none"
                                   loop
-                                  onPlay={() => setPlayingMediaId(entry.id)}
-                                  onPause={() => {
-                                    setPlayingMediaId((current) => current === entry.id ? null : current);
-                                  }}
+                                  onPlay={(event) => syncPlayback(entry.id, event.currentTarget)}
+                                  onPause={(event) => syncPlayback(entry.id, event.currentTarget)}
+                                  onError={(event) => stopErroredPlayback(entry.id, event.currentTarget)}
                                 />
                               </>
                             ) : (
@@ -411,19 +459,21 @@ export function DiscoveryClient({
                               <button
                                 type="button"
                                 onClick={() => togglePlayback(entry)}
-                                aria-label={playing ? `Pause ${entry.title}` : `Play ${entry.title}`}
-                                title={playing ? "Pause" : "Play"}
+                                aria-label={playing ? `Pause ${entry.title}` : `Play ${entry.title} with sound`}
+                                title={playing ? "Pause" : "Play with sound"}
                               >
                                 {playing ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
                               </button>
-                              <button
-                                type="button"
-                                onClick={() => toggleSound(entry)}
-                                aria-label={audible ? `Mute ${entry.title}` : `Hear ${entry.title}`}
-                                title={audible ? "Mute" : "Sound on"}
-                              >
-                                {audible ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
-                              </button>
+                              {playing ? (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleSound(entry)}
+                                  aria-label={audible ? `Mute ${entry.title}` : `Unmute ${entry.title}`}
+                                  title={audible ? "Mute" : "Unmute"}
+                                >
+                                  {audible ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
+                                </button>
+                              ) : null}
                             </div>
                           ) : null}
                           {curationMode ? (
