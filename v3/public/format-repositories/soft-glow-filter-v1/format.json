@@ -1,0 +1,20 @@
+{
+  "id": "soft-glow-filter",
+  "version": "1.0.0",
+  "title": "Soft Glow Filter",
+  "description": "Give one existing photo a realistic soft cinematic glow, gentle film texture, and a few restrained handwritten memory captions without changing the subject or scene.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/Da2XzrdCvEQ/",
+    "resourceUrl": "https://docs.google.com/document/d/1r474WFlLhQfs3V1bb3l8jKr5OR9HiNJNc52xVTrjxv0/mobilebasic",
+    "ctaKeyword": "AI",
+    "modelShown": "GPT Image 2"
+  },
+  "outputs": [
+    "1 inspected 3:4 realistic soft-glow memory image",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

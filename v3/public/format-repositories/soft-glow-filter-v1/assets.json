@@ -1,0 +1,21 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/Da2XzrdCvEQ/",
+    "resourceUrl": "https://docs.google.com/document/d/1r474WFlLhQfs3V1bb3l8jKr5OR9HiNJNc52xVTrjxv0/mobilebasic",
+    "guide": "assets/source/guide.txt",
+    "nativeHero": "assets/source/skai-hero.jpg",
+    "referenceInset": "assets/source/reference-input.jpg",
+    "verification": "The delivered Google Doc supplied the exact GPT Image 2 prompt. The Instagram carousel supplied one native 3:4 title cover and six native 3:4 transformation examples.",
+    "referenceNote": "The title cover does not contain a before image, so Discover adds exactly one reference inset extracted from the first native comparison. Each nested source example already contains its own native inset. The two CTA slides are intentionally excluded."
+  },
+  "examples": [
+    { "id": "native-hero", "path": "assets/source/skai-hero.jpg", "provenance": "@skaigenerated carousel title cover" },
+    { "id": "mountain-seat", "path": "assets/source/skai-example-01.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "ridge-overlook", "path": "assets/source/skai-example-02.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "summit-rest", "path": "assets/source/skai-example-03.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "motorbike-road", "path": "assets/source/skai-example-04.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "forest-rock", "path": "assets/source/skai-example-05.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "creek-log", "path": "assets/source/skai-example-06.jpg", "provenance": "@skaigenerated carousel" }
+  ]
+}
