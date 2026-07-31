@@ -2330,15 +2330,15 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     id: "newsletter-writer-holden-history",
     status: "published",
     order: 13.5,
-    brand: "Holden Brand",
-    title: "What nearly five decades should buy you",
+    brand: "Newsletter Writer",
+    title: "Your brand voice, ready to write",
     curatorNote:
-      "Historical v1.1 proof: a parking-garage origin becomes a grounded reason to choose the experienced, hands-on partner.",
+      "Give it a topic and real company proof. It writes a clear newsletter that sounds like your brand.",
     goal: "story",
     media: {
       kind: "image",
-      src: "/discovery/newsletter-writer/holden-brand-history.png",
-      durationLabel: "Email",
+      src: "/discovery/newsletter-writer/newsletter-writer-agent.jpg",
+      durationLabel: "Writing agent",
     },
     format: {
       slug: "newsletter-writer",
