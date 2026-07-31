@@ -1725,6 +1725,76 @@ const cinematicPortraitPackDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const dreamcoreAngelDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "native-hero",
+    brand: "Dreamcore transformation",
+    title: "Become a fallen angel from a damaged tape",
+    curatorNote: "SKAI's native cover makes the recipe immediate: a lowered face, enormous white wings, crushed blacks, blown highlights, and dirty monochrome grain.",
+    image: "skai-carousel-01",
+  },
+  {
+    id: "street-selfie",
+    brand: "SKAI source example",
+    title: "Let the wings consume the frame",
+    curatorNote: "The same face survives inside a fragile lowered pose while luminous feathers push far beyond the body into black negative space.",
+    image: "skai-carousel-02",
+  },
+  {
+    id: "clean-portrait",
+    brand: "SKAI source example",
+    title: "Keep identity beneath crushed blacks",
+    curatorNote: "A clean input portrait becomes a darker side-profile still without losing the recognizable eyes, nose, mouth, or overall identity.",
+    image: "skai-carousel-03",
+  },
+  {
+    id: "soft-features",
+    brand: "SKAI source example",
+    title: "Turn soft features into a gothic still",
+    curatorNote: "Wing light wraps around the face while tape scratches, soft focus, and uneven exposure keep the image eerie and intimate.",
+    image: "skai-carousel-04",
+  },
+  {
+    id: "white-tee",
+    brand: "SKAI source example",
+    title: "Push bloom until it feels haunted",
+    curatorNote: "A white shirt and recognizable face remain legible even as one wing blows through the shoulder and floods the lens with light.",
+    image: "skai-carousel-05",
+  },
+  {
+    id: "sports-selfie",
+    brand: "SKAI source example",
+    title: "Let feather light overpower the lens",
+    curatorNote: "Both wings extend beyond the body while extreme bloom and sensor grain turn an everyday selfie into a low-fidelity music-video still.",
+    image: "skai-carousel-06",
+  },
+  {
+    id: "set-selfie",
+    brand: "SKAI source example",
+    title: "Hold the face inside a damaged tape",
+    curatorNote: "The compact face-and-shoulders composition stays readable beneath horizontal interference, deep blacks, soft focus, and overexposed wings.",
+    image: "skai-carousel-07",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `dreamcore-angel-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 177 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/dreamcore-angel-v1/assets/source/${image}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "dreamcore-angel",
+    name: "Dreamcore Angel",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -2163,6 +2233,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...paperOutfitDiscoveryEntries,
   ...moodyPinkEffectDiscoveryEntries,
   ...cinematicPortraitPackDiscoveryEntries,
+  ...dreamcoreAngelDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -2256,6 +2327,7 @@ const discoveryShelfDefinitions = [
       "paper-outfit",
       "moody-pink-effect",
       "cinematic-portrait-pack",
+      "dreamcore-angel",
     ],
   },
   {

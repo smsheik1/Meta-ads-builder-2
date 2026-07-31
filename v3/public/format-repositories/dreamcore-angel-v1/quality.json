@@ -1,0 +1,22 @@
+{
+  "automatic": [
+    "The source input is 3:4 within 0.02",
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 600x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The same face remains recognizable beneath the stylization",
+    "Gigantic luminous feathered wings dominate the frame and read clearly against a pure black void",
+    "The close side profile, lowered gaze, fragile posture, and melancholic expression feel intimate rather than posed",
+    "Blown whites, crushed blacks, bloom, monochrome grain, VHS damage, and low-fidelity artifacts feel intentional",
+    "There are no malformed facial features, broken wings, or stray modern-background details"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

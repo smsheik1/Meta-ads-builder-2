@@ -1,0 +1,20 @@
+{
+  "id": "dreamcore-angel",
+  "version": "1.0.0",
+  "title": "Dreamcore Angel",
+  "description": "Turn one portrait into a blown-out monochrome fallen angel frame with gigantic luminous wings, damaged-video grain, and a haunting dreamcore mood.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DYK2SU7CgBW/",
+    "resourceUrl": "https://docs.google.com/document/d/1ggp03GnsW9VDaxqSq3CXyhaOLKZb_IZBR3fU3Wb2fxQ/mobilebasic",
+    "ctaKeyword": "AI",
+    "modelShown": "GPT Image 2.0"
+  },
+  "outputs": [
+    "1 inspected 3:4 dreamcore fallen-angel portrait",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}
