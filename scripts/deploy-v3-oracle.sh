@@ -110,8 +110,20 @@ pm2 start npm --name "$V3_WORKER_APP_NAME" --update-env -- run render-worker:wat
 pm2 save
 pm2 status
 
-sleep 3
-npm run runtime:health
+# The worker must build its Remotion bundle before its first heartbeat. Poll the
+# existing health gate instead of failing while that one-time startup work runs.
+for attempt in {1..12}; do
+  if npm run runtime:health; then
+    break
+  fi
+
+  if [ "$attempt" -eq 12 ]; then
+    echo "Render worker did not become healthy before the deployment deadline." >&2
+    exit 1
+  fi
+
+  sleep 5
+done
 
 # Maker OCR is optional infrastructure for /builder reference analysis. Bootstrap it only
 # after the core app and Convex deployment are healthy so it cannot block unrelated formats.
