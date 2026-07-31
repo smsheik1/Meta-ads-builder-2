@@ -1,0 +1,21 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/Da2XgvnCqOG/",
+    "resourceUrl": "https://docs.google.com/document/d/1LjajzBWHChmEmc_Ujjwv9cRnQ8WRs1KouNBIPQ0PFG4/mobilebasic",
+    "guide": "assets/source/guide.txt",
+    "nativeHero": "assets/source/skai-hero.jpg",
+    "smokeInput": "assets/source/reference-input.jpg",
+    "verification": "The delivered Google Doc supplied the exact GPT Image 2 prompt. The Instagram carousel supplied one native 3:4 title cover and six native 3:4 transformation examples.",
+    "referenceNote": "Every published native image already contains exactly one original-photo inset, so Discover adds no second reference overlay. The final two CTA slides are intentionally excluded."
+  },
+  "examples": [
+    { "id": "native-hero", "path": "assets/source/skai-hero.jpg", "provenance": "@skaigenerated carousel title cover" },
+    { "id": "amalfi-balcony", "path": "assets/source/skai-example-01.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "coastal-terrace", "path": "assets/source/skai-example-02.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "ice-cream-street", "path": "assets/source/skai-example-03.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "front-step", "path": "assets/source/skai-example-04.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "resort-wall", "path": "assets/source/skai-example-05.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "museum-hall", "path": "assets/source/skai-example-06.jpg", "provenance": "@skaigenerated carousel" }
+  ]
+}

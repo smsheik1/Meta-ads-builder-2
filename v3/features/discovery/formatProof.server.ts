@@ -1153,6 +1153,53 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "paper-outfit",
+    promise: "Turn only the clothing, bag, and shoes in one fashion photo into handmade paper cutouts while keeping the person, pose, light, and setting photographic.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/paper-outfit",
+    manifestPath: "format-repositories/paper-outfit-v1/format.json",
+    whatStays: [
+      "The face, hair, skin, expression, makeup, and body",
+      "The original pose, crop, perspective, lighting, and shadows",
+      "The complete background and every non-fashion object",
+      "A realistic photographic finish",
+    ],
+    whatChanges: [
+      "Clothing, bag, and shoes become physical paper cutouts",
+      "White paper texture, colored-pencil marks, and paint strokes appear",
+      "Crisp cut edges and layered shapes follow the original silhouette",
+      "The selected model cost lane",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One 3:4 JPEG, PNG, or WebP fashion photo at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 realistic paper-outfit editorial",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for premium",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Apply the effect only to clothing, bag, and shoes while preserving the rest of the photograph",
+        "Require physical paper texture, colored-pencil marks, paint strokes, clean cut edges, and layered construction",
+        "Validate the 3:4 source image locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "About $0.067 on the default 1K route", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "About $0.067 on the default route and usually 2-4 min",
+      output: "One inspected 3:4 paper-outfit editorial plus prediction and quality provenance",
+      firstQuestion: "Which 3:4 fashion photo should I turn into a handmade paper-outfit editorial?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",
