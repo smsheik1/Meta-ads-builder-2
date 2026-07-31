@@ -969,6 +969,51 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "rim-portrait-filter",
+    promise: "Turn one portrait into a centered, sculptural silhouette drawn by a clean white halo and fine rim light.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/rim-portrait-filter",
+    manifestPath: "format-repositories/rim-portrait-filter-v1/format.json",
+    whatStays: [
+      "The source person's recognizable identity",
+      "Natural facial structure and hair texture",
+      "A chest-up photographic portrait",
+      "A calm, direct presence",
+    ],
+    whatChanges: [
+      "The pose becomes centered and nearly symmetrical",
+      "The background becomes a white-to-gray halo",
+      "Strong backlight pushes the face and clothing into deep shadow",
+      "Fine hair strands become the brightest visible detail",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One JPEG, PNG, or WebP portrait at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 Rim Portrait",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for premium and the creator's source route",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Validate the source portrait locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current Replicate model rate", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One Replicate image charge and usually 2-4 min",
+      output: "One inspected 3:4 rim-lit portrait plus prediction and quality provenance",
+      firstQuestion: "Which portrait should I turn into a Rim Portrait?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",

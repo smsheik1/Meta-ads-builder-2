@@ -237,6 +237,7 @@ const generatedFormatSlugs = [
   "halo-effect",
   "doodle-art",
   "light-silhouette",
+  "rim-portrait-filter",
   "jingle",
   "newsletter-writer",
 ];
@@ -382,6 +383,7 @@ assert.deepEqual(
       "halo-effect",
       "doodle-art",
       "light-silhouette",
+      "rim-portrait-filter",
     ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
@@ -469,6 +471,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "light-silhouette").length,
   7,
   "All seven Light Silhouette examples should remain available inside the Format page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "rim-portrait-filter").length,
+  7,
+  "The Wiggly proof and six SKAI Rim Portrait examples should remain inside one Format page.",
 );
 
 console.log("discovery tests passed");

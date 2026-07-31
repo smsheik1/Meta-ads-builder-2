@@ -1,0 +1,82 @@
+{
+  "purpose": "Judge identity preservation, centered portrait geometry, a clean white-to-gray halo, deep sculptural shadow, fine hair rim light, and photographic realism.",
+  "examples": [
+    {
+      "id": "wiggly-proof",
+      "title": "Proof the halo can preserve identity",
+      "imagePath": "assets/source/wiggly-proof.jpg",
+      "model": "Wiggly built-in proof",
+      "whyItWorks": [
+        "The fixture identity and distinctive hair remain recognizable",
+        "Backlight separates every strand from the gray halo",
+        "The face and shirt fall into one controlled sculptural shadow"
+      ]
+    },
+    {
+      "id": "curly-halo",
+      "title": "Let the curls carry the rim",
+      "imagePath": "assets/source/skai-example-01.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "The dense curls create an immediate luminous outline",
+        "The centered crop stays monumental",
+        "The face remains visible without weakening the silhouette"
+      ]
+    },
+    {
+      "id": "braided-halo",
+      "title": "Keep every braid legible",
+      "imagePath": "assets/source/skai-example-02.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "Individual braids retain crisp texture against white",
+        "The shoulders anchor the centered geometry",
+        "Minimal fill preserves a mysterious expression"
+      ]
+    },
+    {
+      "id": "horse-hood",
+      "title": "Make an unusual silhouette feel iconic",
+      "imagePath": "assets/source/skai-example-03.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "The tall hood stays readable in one simple outline",
+        "The white tank creates a restrained second value",
+        "Symmetry turns the costume into a sculptural portrait"
+      ]
+    },
+    {
+      "id": "shearling-profile",
+      "title": "Let profile texture break the symmetry",
+      "imagePath": "assets/source/skai-example-04.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "The three-quarter profile proves the lighting recipe can flex",
+        "Loose locs catch isolated points of rim light",
+        "The jacket collar remains tactile inside deep shadow"
+      ]
+    },
+    {
+      "id": "cowboy-halo",
+      "title": "Use the hat as the whole outline",
+      "imagePath": "assets/source/skai-example-05.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "The brim produces a clean graphic silhouette",
+        "The centered chest-up crop holds the original recipe",
+        "A narrow rim keeps the hat and curls separated"
+      ]
+    },
+    {
+      "id": "hooded-halo",
+      "title": "Hold detail inside an almost black hood",
+      "imagePath": "assets/source/skai-example-06.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "The hood stays distinct from both hair and background",
+        "Sunglasses remain barely readable without adding excess fill",
+        "The tonal restraint keeps the frame cinematic"
+      ]
+    }
+  ]
+}

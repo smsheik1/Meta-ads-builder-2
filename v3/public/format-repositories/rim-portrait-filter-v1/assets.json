@@ -1,0 +1,20 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DbQ2VzjiuzL/",
+    "resourceUrl": "https://docs.google.com/document/d/1H7nbE9_-OWiFXsDxhZqQ1D3P3ijWbIMuEwfOmqBtZvc",
+    "guide": "assets/source/guide.txt",
+    "referenceInset": "assets/source/reference-input.jpg",
+    "verification": "The delivered Google Doc supplied the exact Nano Banana Pro prompt. The Instagram carousel supplied six native 3:4 source outputs.",
+    "referenceNote": "The creator did not publish the original inputs. The clearly identified Wiggly proof uses a separate fixture portrait so Discover can show one honest before-and-after pair; the six SKAI outputs remain unchanged source examples."
+  },
+  "examples": [
+    { "id": "wiggly-proof", "path": "assets/source/wiggly-proof.jpg", "provenance": "Wiggly built-in image-generation proof" },
+    { "id": "curly-halo", "path": "assets/source/skai-example-01.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "braided-halo", "path": "assets/source/skai-example-02.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "horse-hood", "path": "assets/source/skai-example-03.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "shearling-profile", "path": "assets/source/skai-example-04.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "cowboy-halo", "path": "assets/source/skai-example-05.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "hooded-halo", "path": "assets/source/skai-example-06.jpg", "provenance": "@skaigenerated carousel" }
+  ]
+}

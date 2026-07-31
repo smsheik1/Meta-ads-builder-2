@@ -1200,6 +1200,83 @@ const lightSilhouetteDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const rimPortraitFilterDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "wiggly-proof",
+    brand: "Rim-light portrait",
+    title: "Let one halo draw the whole portrait",
+    curatorNote: "A verified fixture portrait keeps its distinctive face and hair while the clean backlight turns the frame into a sculptural silhouette.",
+    image: "wiggly-proof",
+    reference: "reference-input",
+  },
+  {
+    id: "curly-halo",
+    brand: "SKAI source example",
+    title: "Let the curls carry the rim",
+    curatorNote: "Dense curls hold a bright outline while the centered face remains readable inside deep shadow.",
+    image: "skai-example-01",
+  },
+  {
+    id: "braided-halo",
+    brand: "SKAI source example",
+    title: "Keep every braid legible",
+    curatorNote: "Individual braids, shoulders, and jewelry stay distinct without weakening the silhouette.",
+    image: "skai-example-02",
+  },
+  {
+    id: "horse-hood",
+    brand: "SKAI source example",
+    title: "Make an unusual outline iconic",
+    curatorNote: "The tall hood and white tank become a simple, memorable two-value composition.",
+    image: "skai-example-03",
+  },
+  {
+    id: "shearling-profile",
+    brand: "SKAI source example",
+    title: "Break symmetry without losing the light",
+    curatorNote: "A three-quarter profile, loose locs, and tactile collar prove the recipe can flex beyond a straight-on pose.",
+    image: "skai-example-04",
+  },
+  {
+    id: "cowboy-halo",
+    brand: "SKAI source example",
+    title: "Use the hat as the outline",
+    curatorNote: "The brim holds a clean graphic shape while a narrow rim separates the curls from white.",
+    image: "skai-example-05",
+  },
+  {
+    id: "hooded-halo",
+    brand: "SKAI source example",
+    title: "Hold detail inside the darkness",
+    curatorNote: "The hood, hair, and sunglasses remain barely visible without adding excess fill light.",
+    image: "skai-example-06",
+  },
+].map(({ image, reference, ...proof }, index) => ({
+  ...proof,
+  id: `rim-portrait-filter-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 127 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/rim-portrait-filter-v1/assets/source/${image}.jpg`,
+    ...(reference
+      ? {
+          referenceSrc:
+            `/format-repositories/rim-portrait-filter-v1/assets/source/${reference}.jpg`,
+        }
+      : {}),
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "rim-portrait-filter",
+    name: "Rim Portrait Filter",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -1631,6 +1708,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...haloEffectDiscoveryEntries,
   ...doodleArtDiscoveryEntries,
   ...lightSilhouetteDiscoveryEntries,
+  ...rimPortraitFilterDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -1717,6 +1795,7 @@ const discoveryShelfDefinitions = [
       "halo-effect",
       "doodle-art",
       "light-silhouette",
+      "rim-portrait-filter",
     ],
   },
   {
