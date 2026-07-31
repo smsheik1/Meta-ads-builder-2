@@ -1,0 +1,101 @@
+{
+  "purpose": "Judge identity preservation, prompt fidelity, scene geometry, controlled cinematic lighting, and photographic realism across all eight gathered looks.",
+  "examples": [
+    {
+      "id": "mirror-selfie",
+      "title": "The Mirror Selfie",
+      "imagePath": "assets/source/skai-carousel-02.jpg",
+      "cleanImagePath": "assets/source/guide-example-01.png",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "The source face remains recognizable",
+        "Skin, smoke, glasses, shirt, and red marks feel tactile",
+        "Moody indoor light still reads like a casual phone photo"
+      ]
+    },
+    {
+      "id": "rain-mask",
+      "title": "The Rain Mask Reveal",
+      "imagePath": "assets/source/skai-carousel-03.jpg",
+      "cleanImagePath": "assets/source/guide-example-04.png",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "Rain, tears, and wet fabric remain physically convincing",
+        "The half-lifted mask creates a clear action",
+        "Cool moonlight preserves detail without warm contamination"
+      ]
+    },
+    {
+      "id": "car-editorial",
+      "title": "The Open-Car Editorial",
+      "imagePath": "assets/source/skai-carousel-04.jpg",
+      "cleanImagePath": "assets/source/guide-example-02.png",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "The low seated pose fits the open car naturally",
+        "Oversized dark tailoring carries the editorial mood",
+        "Wild grass and bright negative space keep the frame restrained"
+      ]
+    },
+    {
+      "id": "punk-noir",
+      "title": "The Punk-Noir Close-up",
+      "imagePath": "assets/source/skai-carousel-05.jpg",
+      "cleanImagePath": "assets/source/guide-example-03.png",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "The two-finger gesture frames the eye cleanly",
+        "Rings and pearls stay sharp without losing the face",
+        "Hard monochrome contrast and grain sell the film look"
+      ]
+    },
+    {
+      "id": "art-stop-sign",
+      "title": "The ART Stop Sign",
+      "imagePath": "assets/source/skai-carousel-06.jpg",
+      "cleanImagePath": "assets/source/guide-example-06.png",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "The low angle gives the sign and subject equal graphic weight",
+        "Direct flash keeps the face and hoodie crisp against navy sky",
+        "The relaxed lean reads naturally"
+      ]
+    },
+    {
+      "id": "sunroof-flash",
+      "title": "The Sunroof Flash",
+      "imagePath": "assets/source/skai-carousel-07.jpg",
+      "cleanImagePath": "assets/source/guide-example-07.png",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "The roof opening creates a strong natural frame",
+        "Both figures look upward with coherent perspective",
+        "Teal interior light and direct flash feel like one real exposure"
+      ]
+    },
+    {
+      "id": "sword-studio",
+      "title": "The Sword Studio",
+      "imagePath": "assets/source/skai-carousel-08.jpg",
+      "cleanImagePath": "assets/source/guide-example-05.png",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "The strong kneeling posture avoids helpless body language",
+        "Tattoo, skin, metal, and soft spotlight hold believable texture",
+        "The sword alignment reads clearly without gore"
+      ]
+    },
+    {
+      "id": "cow-herd-sports-car",
+      "title": "The Cow-Herd Sports Car",
+      "imagePath": "assets/source/skai-carousel-09.jpg",
+      "cleanImagePath": "assets/source/guide-example-08.png",
+      "model": "Nano Banana 2",
+      "whyItWorks": [
+        "Cows fill the frame without obvious repetition",
+        "The subject sits naturally on the reflective car",
+        "Luxury and rural chaos remain readable in one editorial image"
+      ]
+    }
+  ]
+}

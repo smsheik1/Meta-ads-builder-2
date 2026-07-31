@@ -1,0 +1,21 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, PNG, or WebP output per run",
+    "At least 640x800 pixels",
+    "Aspect ratio within 0.02 of 3:4",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The same person remains recognizable without face drift",
+    "The selected look matches its exact packaged prompt",
+    "Face, hands, clothing, props, and scene geometry are coherent",
+    "Lighting, lens behavior, grain, and texture remain photographic",
+    "The image reads as a finished cinematic editorial portrait"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}
