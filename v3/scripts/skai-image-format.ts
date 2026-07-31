@@ -394,7 +394,7 @@ async function estimate() {
     : selectedModel(config).key;
   const route = config.modelRoutes[modelKey];
   if (!route) throw new Error(`Unknown model route in run state: ${modelKey}.`);
-  console.log("Paid-call estimate");
+  console.log("Packaged paid-call planning estimate");
   console.log(`- Route: ${route.lane}`);
   console.log(`- Model: ${route.model}`);
   console.log("- Predictions: one per render attempt");
@@ -402,6 +402,7 @@ async function estimate() {
   console.log(`- Attempt cap: ${config.maximumAttempts}`);
   console.log(`- Price: ${route.costEstimate ?? "the selected model's current Replicate rate"}.`);
   console.log(`- Time: ${route.timeEstimate ?? "varies with provider load"}.`);
+  console.log("- Verify the current Replicate rate before approving a paid prediction.");
   console.log("No provider call was made.");
 }
 
@@ -567,7 +568,7 @@ async function resume() {
   const active = [...state.attempts].reverse().find(
     (attempt) =>
       attempt.predictionId &&
-      !["succeeded", "failed", "canceled"].includes(attempt.status),
+      !["failed", "canceled"].includes(attempt.status),
   );
   if (!active?.predictionId) {
     console.log(`Run ${runId}: ${state.status}.`);

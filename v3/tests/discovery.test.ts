@@ -241,6 +241,8 @@ const generatedFormatSlugs = [
   "cyanotype",
   "lord-of-the-rings",
   "soft-glow-filter",
+  "paper-outfit",
+  "moody-pink-effect",
   "jingle",
   "newsletter-writer",
 ];
@@ -391,6 +393,7 @@ assert.deepEqual(
       "lord-of-the-rings",
       "soft-glow-filter",
       "paper-outfit",
+      "moody-pink-effect",
     ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
@@ -493,6 +496,16 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "soft-glow-filter").length,
   7,
   "The native hero and six SKAI examples should remain inside one Soft Glow Filter Format page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "paper-outfit").length,
+  7,
+  "The native hero and six SKAI examples should remain inside one Paper Outfit Format page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "moody-pink-effect").length,
+  6,
+  "The native hero and five SKAI examples should remain inside one Moody Pink Effect Format page.",
 );
 
 console.log("discovery tests passed");

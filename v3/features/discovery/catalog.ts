@@ -1578,6 +1578,69 @@ const paperOutfitDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const moodyPinkEffectDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "native-hero",
+    brand: "Nightlife transformation",
+    title: "Turn nightlife into a luxury pink editorial",
+    curatorNote: "The native SKAI cover makes the recipe immediate: a preserved city portrait, polished pink atmosphere, and one original-photo inset.",
+    image: "skai-hero",
+  },
+  {
+    id: "bar-reaction",
+    brand: "SKAI source example",
+    title: "Keep every spontaneous reaction readable",
+    curatorNote: "Three faces, hand gestures, drinks, and a crowded bar remain clear while integrated magenta light reshapes the mood.",
+    image: "skai-example-01",
+  },
+  {
+    id: "late-night-drinks",
+    brand: "SKAI source example",
+    title: "Carry pink light through a crowded frame",
+    curatorNote: "People, clothing, glassware, and the venue keep their structure beneath rich shadows and a premium nightlife grade.",
+    image: "skai-example-02",
+  },
+  {
+    id: "quiet-booth",
+    brand: "SKAI source example",
+    title: "Make a quiet portrait deliberately cinematic",
+    curatorNote: "The face, hand, cigarette, booth, and tiled wall stay recognizable while the practical light motivates the pink atmosphere.",
+    image: "skai-example-03",
+  },
+  {
+    id: "group-snapshot",
+    brand: "SKAI source example",
+    title: "Preserve every face in a candid group photo",
+    curatorNote: "The people and expressions remain photographic as soft contrast and magenta ambient light unify the busy snapshot.",
+    image: "skai-example-04",
+  },
+  {
+    id: "pink-shoreline",
+    brand: "SKAI source example",
+    title: "Move the same palette into open air",
+    curatorNote: "Both people, the shoreline, water, and horizon retain depth under an elegant pink dusk treatment.",
+    image: "skai-example-05",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `moody-pink-effect-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 162 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/moody-pink-effect-v1/assets/source/${image}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "moody-pink-effect",
+    name: "Moody Pink Effect",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -2014,6 +2077,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...lordOfTheRingsDiscoveryEntries,
   ...softGlowFilterDiscoveryEntries,
   ...paperOutfitDiscoveryEntries,
+  ...moodyPinkEffectDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -2105,6 +2169,7 @@ const discoveryShelfDefinitions = [
       "lord-of-the-rings",
       "soft-glow-filter",
       "paper-outfit",
+      "moody-pink-effect",
     ],
   },
   {

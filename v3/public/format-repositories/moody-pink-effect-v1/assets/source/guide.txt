@@ -1,0 +1,10 @@
+Moody Pink Effect Prompt
+
+Source: @skaigenerated
+Post: https://www.instagram.com/skaigenerated/p/Da0HxPuCsSf/
+Guide: https://docs.google.com/document/d/1hmH478kxRmAkv2-nTj3_6bBFGX-WZpwIrly3Ps-Iapo/mobilebasic
+Image Model: Nano Banana Pro
+
+Prompt:
+
+Transform this image into a luxury editorial photograph with a moody pink aesthetic. Add vibrant pink and magenta ambient lighting, cinematic glow, rich shadows, soft contrast, and premium color grading while maintaining realistic skin tones. Create an elegant nighttime atmosphere with subtle reflections, atmospheric depth, and polished lighting. Preserve all facial features, clothing, vehicles, objects, and composition while giving the image a modern, high-fashion editorial look.

@@ -1,0 +1,20 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/Da0HxPuCsSf/",
+    "resourceUrl": "https://docs.google.com/document/d/1hmH478kxRmAkv2-nTj3_6bBFGX-WZpwIrly3Ps-Iapo/mobilebasic",
+    "guide": "assets/source/guide.txt",
+    "nativeHero": "assets/source/skai-hero.jpg",
+    "smokeInput": "assets/source/reference-input.jpg",
+    "verification": "The delivered Google Doc supplied the exact Nano Banana Pro prompt. The Instagram carousel supplied one native 3:4 title cover and five native 3:4 transformation examples.",
+    "referenceNote": "Every published native image already contains exactly one original-photo inset, so Discover adds no second reference overlay. The final two CTA slides are intentionally excluded."
+  },
+  "examples": [
+    { "id": "native-hero", "path": "assets/source/skai-hero.jpg", "provenance": "@skaigenerated carousel title cover" },
+    { "id": "bar-reaction", "path": "assets/source/skai-example-01.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "late-night-drinks", "path": "assets/source/skai-example-02.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "quiet-booth", "path": "assets/source/skai-example-03.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "group-snapshot", "path": "assets/source/skai-example-04.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "pink-shoreline", "path": "assets/source/skai-example-05.jpg", "provenance": "@skaigenerated carousel" }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "slug": "moody-pink-effect",
+  "version": "1.0.0",
+  "promptPath": "prompts/transform.txt",
+  "input": {
+    "mode": "image",
+    "formats": ["jpg", "png", "webp"],
+    "minimumWidth": 512,
+    "minimumHeight": 512,
+    "maximumBytes": 26214400,
+    "aspectRatio": "3:4",
+    "aspectRatioTolerance": 0.02
+  },
+  "defaultModel": "nano-banana-2",
+  "modelRoutes": {
+    "nano-banana-2-lite": {
+      "label": "Nano Banana 2 Lite",
+      "lane": "economy",
+      "model": "google/nano-banana-2-lite",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg",
+      "costEstimate": "about $0.034 per output image at the current listed rate",
+      "timeEstimate": "usually 5-60 seconds"
+    },
+    "nano-banana-2": {
+      "label": "Nano Banana 2",
+      "lane": "default",
+      "model": "google/nano-banana-2",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg",
+      "resolution": "1K",
+      "costEstimate": "about $0.067 per 1K output image at the current listed rate",
+      "timeEstimate": "usually 10-120 seconds"
+    },
+    "nano-banana-pro": {
+      "label": "Nano Banana Pro",
+      "lane": "premium",
+      "model": "google/nano-banana-pro",
+      "family": "nano-banana",
+      "aspectRatio": "3:4",
+      "outputFormat": "jpg",
+      "resolution": "1K",
+      "costEstimate": "about $0.15 per 1K output image at the current listed rate",
+      "timeEstimate": "usually 30-180 seconds"
+    }
+  },
+  "expectedOutputs": 1,
+  "maximumAttempts": 3,
+  "smokeInputPath": "assets/source/reference-input.jpg",
+  "smokeExamplePath": "assets/source/skai-example-01.jpg",
+  "minimumOutputWidth": 640,
+  "minimumOutputHeight": 800,
+  "minimumOutputBytes": 51200,
+  "manualReview": [
+    "recognizable faces, realistic skin tones, clothing, vehicles, objects, composition, crop, and perspective",
+    "vibrant pink and magenta ambient lighting integrated with the existing nighttime scene",
+    "cinematic glow, rich shadows, soft contrast, subtle reflections, atmospheric depth, and polished light",
+    "a luxury high-fashion editorial finish without a flat global pink wash",
+    "no clipped highlights, malformed anatomy, or synthetic background changes"
+  ]
+}

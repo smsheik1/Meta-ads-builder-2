@@ -1,0 +1,30 @@
+{
+  "runtime": {
+    "node": ">=22",
+    "commands": ["npm"]
+  },
+  "providers": [
+    {
+      "name": "Replicate",
+      "models": [
+        "google/nano-banana-2-lite",
+        "google/nano-banana-2",
+        "google/nano-banana-pro"
+      ]
+    }
+  ],
+  "environment": [
+    {
+      "name": "REPLICATE_API_TOKEN",
+      "secret": true,
+      "requiredFor": ["render", "resume"]
+    }
+  ],
+  "notes": [
+    "All smoke and validation commands are local.",
+    "The source guide names Nano Banana Pro; Wiggly's runnable lanes use Nano Banana 2 Lite, Nano Banana 2, and Nano Banana Pro.",
+    "No Replicate proof call was made for this package.",
+    "One render attempt is one paid prediction.",
+    "Paid generation requires explicit approval and is capped at three attempts."
+  ]
+}

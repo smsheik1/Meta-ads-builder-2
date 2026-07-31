@@ -1200,6 +1200,53 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "moody-pink-effect",
+    promise: "Give one nighttime photo a luxury editorial grade with vibrant pink and magenta atmosphere while preserving every recognizable person, object, and scene detail.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/moody-pink-effect",
+    manifestPath: "format-repositories/moody-pink-effect-v1/format.json",
+    whatStays: [
+      "Faces, facial features, expressions, and realistic skin tones",
+      "Clothing, vehicles, objects, and other scene details",
+      "The original composition, crop, perspective, and subject placement",
+      "A recognizable photographic finish",
+    ],
+    whatChanges: [
+      "Pink and magenta ambient lighting reshapes the atmosphere",
+      "Cinematic glow, rich shadows, and soft contrast deepen the image",
+      "Subtle reflections and atmospheric depth add polish",
+      "The scene gains a modern luxury editorial grade",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One 3:4 JPEG, PNG, or WebP nighttime photo at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 luxury moody-pink editorial image",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for premium",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Preserve faces, skin tones, clothing, vehicles, objects, composition, crop, and perspective",
+        "Integrate pink and magenta light into the existing scene rather than applying a flat global wash",
+        "Validate the 3:4 source image locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "About $0.067 on the default 1K route", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "About $0.067 on the default route and usually 2-4 min",
+      output: "One inspected 3:4 moody-pink editorial image plus prediction and quality provenance",
+      firstQuestion: "Which 3:4 nighttime photo should I turn into a moody pink editorial, and should I use Nano Banana 2 (default), Lite (economy), or Pro (source model)?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",
