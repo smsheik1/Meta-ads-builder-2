@@ -1,0 +1,71 @@
+{
+  "purpose": "Judge identity and scene preservation, realistic skin tones, integrated pink and magenta lighting, cinematic depth, and a polished luxury editorial finish.",
+  "examples": [
+    {
+      "id": "native-hero",
+      "title": "Explain the moody-pink grade in one glance",
+      "imagePath": "assets/source/skai-hero.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "The title, finished city portrait, and single original-photo inset explain the transformation immediately",
+        "The subject, clothing, street, and night composition stay recognizable",
+        "Pink and magenta light feels cinematic without flattening the image"
+      ]
+    },
+    {
+      "id": "bar-reaction",
+      "title": "Keep a spontaneous group reaction readable",
+      "imagePath": "assets/source/skai-example-01.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "All three faces, gestures, drinks, and bar details survive the grade",
+        "Realistic skin texture remains visible inside saturated ambient light",
+        "Reflections and glowing bulbs make the treatment feel motivated by the venue"
+      ]
+    },
+    {
+      "id": "late-night-drinks",
+      "title": "Carry pink light across a busy nightlife frame",
+      "imagePath": "assets/source/skai-example-02.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "People, poses, glassware, clothing, and the crowded bar stay intact",
+        "Rich shadows preserve separation between overlapping subjects",
+        "The grade reads as a premium editorial instead of a simple color overlay"
+      ]
+    },
+    {
+      "id": "quiet-booth",
+      "title": "Make a quiet portrait feel deliberately cinematic",
+      "imagePath": "assets/source/skai-example-03.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "The face, hand, cigarette, clothing, booth, and wall remain recognizable",
+        "The practical wall light supports the new magenta atmosphere",
+        "Soft contrast and deep blacks preserve a restrained editorial mood"
+      ]
+    },
+    {
+      "id": "group-snapshot",
+      "title": "Preserve every face in a candid group photo",
+      "imagePath": "assets/source/skai-example-04.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "The source inset confirms the people, expressions, and composition stay recognizable",
+        "Pink light unifies the frame without erasing facial detail",
+        "The background remains photographic and spatially coherent"
+      ]
+    },
+    {
+      "id": "pink-shoreline",
+      "title": "Move the same palette into an open landscape",
+      "imagePath": "assets/source/skai-example-05.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "Both people, clothing, shoreline, water, and horizon retain their structure",
+        "Atmospheric depth keeps the pink dusk from feeling flat",
+        "The treatment proves the recipe can work beyond nightlife interiors"
+      ]
+    }
+  ]
+}

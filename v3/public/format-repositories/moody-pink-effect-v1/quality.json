@@ -1,0 +1,22 @@
+{
+  "automatic": [
+    "The source input is 3:4 within 0.02 so composition can be preserved",
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "Faces, realistic skin tones, clothing, vehicles, objects, composition, crop, and perspective remain recognizable",
+    "Pink and magenta ambient lighting feels motivated by the nighttime scene rather than pasted over it",
+    "Cinematic glow, rich shadows, soft contrast, reflections, and atmospheric depth create a polished luxury editorial",
+    "Highlights retain detail and the pink treatment does not flatten the entire image",
+    "There are no malformed hands, limbs, facial features, or obviously synthetic background details"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -42,6 +49,52 @@ assert.match(estimated.stdout, /No provider call was made/);
 const defaultRoute = runtime.modelRoutes[runtime.defaultModel];
 if (defaultRoute.costEstimate) assert.match(estimated.stdout, /\$[0-9]/);
 if (defaultRoute.timeEstimate) assert.match(estimated.stdout, /Time:.*[0-9]/);
+assert.match(estimated.stdout, /Verify the current Replicate rate/);
+
+{
+  const runsRoot = mkdtempSync(path.join(os.tmpdir(), `wiggly-${slug}-resume-test-`));
+  const runDirectory = path.join(runsRoot, "recover-succeeded");
+  mkdirSync(runDirectory);
+  const state = {
+    id: "recover-succeeded",
+    format: slug,
+    version: "1.0.0",
+    status: "generating",
+    createdAt: new Date().toISOString(),
+    model: runtime.defaultModel,
+    prompt: "test",
+    attempts: [{
+      number: 1,
+      createdAt: new Date().toISOString(),
+      model: defaultRoute.model,
+      status: "succeeded",
+      predictionId: "paid-output-needs-download",
+    }],
+  };
+  writeFileSync(path.join(runDirectory, "state.json"), JSON.stringify(state));
+  const resumeEnvironment = { ...process.env };
+  delete resumeEnvironment.REPLICATE_API_TOKEN;
+  const resumed = spawnSync(
+    process.execPath,
+    [
+      "--import",
+      "tsx",
+      "scripts/skai-image-format.ts",
+      "resume",
+      `--format=${slug}`,
+      "--run=recover-succeeded",
+      `--runs-root=${runsRoot}`,
+    ],
+    { encoding: "utf8", env: resumeEnvironment },
+  );
+  assert.notEqual(resumed.status, 0);
+  assert.match(
+    resumed.stderr || resumed.stdout,
+    /REPLICATE_API_TOKEN is missing/,
+    "A succeeded prediction without local outputs must remain resumable.",
+  );
+  rmSync(runsRoot, { force: true, recursive: true });
+}
 
 const variants = Object.keys(runtime.promptVariants ?? {});
 if (variants.length) {

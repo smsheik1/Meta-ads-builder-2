@@ -1,0 +1,20 @@
+{
+  "id": "moody-pink-effect",
+  "version": "1.0.0",
+  "title": "Moody Pink Effect",
+  "description": "Give one nighttime photo a luxury editorial grade with vibrant pink and magenta light while preserving every recognizable subject and scene detail.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/Da0HxPuCsSf/",
+    "resourceUrl": "https://docs.google.com/document/d/1hmH478kxRmAkv2-nTj3_6bBFGX-WZpwIrly3Ps-Iapo/mobilebasic",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana Pro"
+  },
+  "outputs": [
+    "1 inspected 3:4 luxury moody-pink editorial image",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}
