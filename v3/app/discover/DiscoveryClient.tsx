@@ -490,14 +490,7 @@ export function DiscoveryClient({
                         </div>
 
                         <div className={styles.cardCopy}>
-                          <div>
-                            <p className={styles.brand}>{entry.brand}</p>
-                            <h3>{entry.title}</h3>
-                            <p className={styles.metadata}>
-                              {entry.format.name} · v{entry.format.version} · by {entry.format.owner}
-                            </p>
-                          </div>
-                          <p className={styles.curatorNote}>{entry.curatorNote}</p>
+                          <h3>{entry.format.name}</h3>
                           <div className={styles.cardActions}>
                             <button
                               type="button"
