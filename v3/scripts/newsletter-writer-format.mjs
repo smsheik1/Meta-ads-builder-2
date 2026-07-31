@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, realpath, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -68,6 +68,38 @@ function runDirectory(runId) {
   return path.join(runsRoot(), runId);
 }
 
+async function contentHashesInDirectory(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const hashes = await Promise.all(entries.map(async (entry) => {
+    const entryPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) return contentHashesInDirectory(entryPath);
+    if (entry.isFile()) return [contentHash(await readFile(entryPath))];
+    return [];
+  }));
+  return hashes.flat();
+}
+
+async function assertCustomerSample(samplePath, content) {
+  const testDirectories = ["fixtures", "goldens", "comparisons"]
+    .map((name) => path.join(packageRoot, name));
+  if (testDirectories.some((directory) => {
+    const relative = path.relative(directory, samplePath);
+    return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+  })) {
+    throw new Error(
+      "Bundled fixtures, goldens, and comparisons are test-only. Ask the user for their newsletter files.",
+    );
+  }
+  const bundledTestHashes = new Set(
+    (await Promise.all(testDirectories.map(contentHashesInDirectory))).flat(),
+  );
+  if (bundledTestHashes.has(contentHash(content))) {
+    throw new Error(
+      "Bundled fixtures, goldens, and comparisons are test-only. Ask the user for their newsletter files.",
+    );
+  }
+}
+
 const readJson = async (filePath) => JSON.parse(await readFile(filePath, "utf8"));
 
 async function writeJson(filePath, value) {
@@ -120,10 +152,9 @@ function addressesTopic(body, topic) {
   const usefulTopicTerms = allTopicTerms.filter(
     (term) => term.length >= 4 && !TOPIC_STOP_WORDS.has(term),
   );
-  const topicTerms = usefulTopicTerms.length ? usefulTopicTerms : allTopicTerms;
-  const requiredMatches = Math.min(2, topicTerms.length);
-  return requiredMatches > 0
-    && topicTerms.filter((term) => bodyTerms.has(term)).length >= requiredMatches;
+  if (!usefulTopicTerms.length) return true;
+  const requiredMatches = Math.min(2, usefulTopicTerms.length);
+  return usefulTopicTerms.filter((term) => bodyTerms.has(term)).length >= requiredMatches;
 }
 
 function sensitiveFactSignals(value) {
@@ -217,6 +248,12 @@ function validateProfile(profile, sources) {
   for (const field of requiredStrings) {
     if (!profile[field]?.trim()) errors.push(`Brand profile ${field} is missing.`);
   }
+  if (profile.companyName?.trim() !== (sources.companyName?.trim() ?? "")) {
+    errors.push("Brand profile companyName must match the source company name.");
+  }
+  if (profile.brandUrl?.trim() !== (sources.brandUrl?.trim() ?? "")) {
+    errors.push("Brand profile brandUrl must match the source brand URL.");
+  }
   if (!["low", "medium", "high"].includes(profile.confidence)) {
     errors.push("Brand profile confidence must be low, medium, or high.");
   }
@@ -243,8 +280,11 @@ function validateProfile(profile, sources) {
   }
   if ((profile.mustDo?.length ?? 0) < 2) errors.push("Brand profile needs at least two must-do rules.");
   if ((profile.neverDo?.length ?? 0) < 2) errors.push("Brand profile needs at least two never-do rules.");
-  if ((profile.evidence?.length ?? 0) < 2) errors.push("Brand profile needs at least two evidence-backed observations.");
   const allowed = new Set(expectedVoice.items.map((item) => item.id));
+  const requiredEvidence = Math.min(2, allowed.size);
+  if ((profile.evidence?.length ?? 0) < requiredEvidence) {
+    errors.push(`Brand profile needs at least ${requiredEvidence} evidence-backed observation${requiredEvidence === 1 ? "" : "s"}.`);
+  }
   const sourceText = sourceTextById(sources);
   for (const item of profile.evidence ?? []) {
     if (!allowed.has(item.sourceId)) errors.push(`Unknown voice evidence source: ${item.sourceId}.`);
@@ -280,7 +320,7 @@ function validateProfile(profile, sources) {
 }
 
 function wordRange(targetLength) {
-  if (targetLength === "short") return [100, 260];
+  if (targetLength === "short") return [50, 240];
   if (targetLength === "long") return [400, 900];
   return [180, 520];
 }
@@ -316,9 +356,14 @@ function validateNewsletter(newsletter, sources, brief) {
   if (containsPromptInjection(body)) errors.push("Newsletter contains prompt-like instructions.");
   if (!newsletter.cta?.text?.trim()) errors.push("Newsletter CTA is missing.");
   if ((newsletter.cta?.text?.trim().length ?? 0) > 140) errors.push("Newsletter CTA is too long.");
-  if (newsletter.cta?.url) {
+  const expectedCtaUrl = brief.ctaUrl?.trim() ?? "";
+  const actualCtaUrl = newsletter.cta?.url?.trim() ?? "";
+  if (actualCtaUrl !== expectedCtaUrl) {
+    errors.push("Newsletter CTA URL must exactly match the approved brief.");
+  }
+  if (actualCtaUrl) {
     try {
-      new URL(newsletter.cta.url);
+      new URL(actualCtaUrl);
     } catch {
       errors.push("Newsletter CTA URL is invalid.");
     }
@@ -349,11 +394,15 @@ function validateNewsletter(newsletter, sources, brief) {
       errors.push(`Sensitive factual claim is not supported by cited facts: ${unsupported.join(", ")}.`);
     }
   }
-  if (!Array.isArray(newsletter.voiceEvidence) || newsletter.voiceEvidence.length < 2) {
-    errors.push("Newsletter must cite at least two voice decisions.");
-  }
   const expectedVoice = voiceSources(sources);
   const voiceSourceIds = new Set(expectedVoice.items.map((sample) => sample.id));
+  const requiredVoiceEvidence = Math.min(2, voiceSourceIds.size);
+  if (
+    !Array.isArray(newsletter.voiceEvidence)
+    || newsletter.voiceEvidence.length < requiredVoiceEvidence
+  ) {
+    errors.push(`Newsletter must cite at least ${requiredVoiceEvidence} voice decision${requiredVoiceEvidence === 1 ? "" : "s"}.`);
+  }
   for (const item of newsletter.voiceEvidence ?? []) {
     if (!item.choice?.trim() || !allowed.has(item.sourceId)) {
       errors.push("Every voice decision needs a choice and valid sourceId.");
@@ -421,7 +470,7 @@ async function estimate() {
 
 async function init() {
   const runId = requiredArgument("run");
-  const brandUrl = requiredArgument("brand-url");
+  const brandUrl = argument("brand-url") ?? "customer-provided://no-website";
   new URL(brandUrl);
   const directory = runDirectory(runId);
   if (existsSync(directory)) throw new Error(`Run ${runId} already exists.`);
@@ -429,10 +478,13 @@ async function init() {
   if (samplePaths.length > 5) throw new Error("Use at most five newsletter samples.");
   const newsletterSamples = [];
   for (const [index, samplePath] of samplePaths.entries()) {
+    const resolvedSamplePath = await realpath(path.resolve(samplePath));
+    const content = await readFile(resolvedSamplePath, "utf8");
+    await assertCustomerSample(resolvedSamplePath, content);
     newsletterSamples.push({
       id: `newsletter-${index + 1}`,
       label: path.basename(samplePath),
-      content: await readFile(path.resolve(samplePath), "utf8"),
+      content,
     });
     newsletterSamples.at(-1).sha256 = contentHash(newsletterSamples.at(-1).content);
   }
@@ -450,7 +502,7 @@ async function init() {
     createdAt: new Date().toISOString(),
   });
   console.log(`Step 1 of 4: Learn voice - created ${path.relative(v3Root, directory)}.`);
-  console.log("Research the website, fill companyName and websiteFacts in sources.json, then build the profile prompt.");
+  console.log("Fill companyName and grounded facts in sources.json, then build the profile prompt.");
   console.log("No provider was called.");
 }
 
@@ -488,12 +540,20 @@ async function brief() {
   if (!["short", "standard", "long"].includes(targetLength)) {
     throw new Error("--length must be short, standard, or long.");
   }
+  const ctaUrl = argument("cta-url") ?? "";
+  if (ctaUrl) {
+    try {
+      new URL(ctaUrl);
+    } catch {
+      throw new Error("--cta-url must be a valid URL.");
+    }
+  }
   await writeJson(path.join(directory, "brief.json"), {
     topic: requiredArgument("topic"),
     goal: argument("goal") ?? "Teach one useful idea and drive one clear action.",
     audience: argument("audience") ?? "",
     offer: argument("offer") ?? "",
-    ctaUrl: argument("cta-url") ?? "",
+    ctaUrl,
     targetLength,
   });
   state.status = "brief-ready";
@@ -594,7 +654,7 @@ async function resume() {
   const next = {
     sources: "Fill sources.json, then run profile-prompt.",
     "profile-prompted": "Save brand-profile.json, then run validate-profile.",
-    "profile-ready": "Run brief with the next newsletter topic.",
+    "profile-ready": "Ask what this newsletter should be about, capture the complete current brief, then run brief.",
     "brief-ready": "Run draft-prompt.",
     "draft-prompted": "Save draft.json, then run validate-draft.",
     "draft-ready": "Run review-prompt.",

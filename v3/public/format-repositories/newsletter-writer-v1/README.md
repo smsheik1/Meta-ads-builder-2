@@ -12,7 +12,7 @@ First prove the complete local workflow with the bundled fake company:
 npm test
 ```
 
-That test runs all four stages with the Brightmark fixture and golden JSON responses. It makes no network or provider calls. The goldens are test oracles, not production copy.
+That test runs all four stages with the Brightmark fixture and golden JSON responses. It makes no network or provider calls. Everything in `fixtures/`, `goldens/`, and `comparisons/` is test-only and must never be used as customer evidence.
 
 For a real company, replace the example URL, name, and file paths with the user's own material:
 
@@ -27,6 +27,8 @@ npm run format:newsletter -- init \
 ```
 
 Open `SKILL.md` for the complete agent workflow.
+
+`--brand-url` is optional. When no website exists, the agent asks for a short company description and grounded facts, then records them with `customer-provided://` source URLs.
 
 ## What makes it different
 
@@ -47,4 +49,5 @@ The workflow was informed by the MIT-licensed projects documented in `references
 
 Real newsletter samples remain in `agent-runs/`, which is ignored by Git and
 excluded from the built ZIP. The packaged Brightmark samples are synthetic test
-fixtures. Never publish a user's source corpus as a golden or proof artifact.
+fixtures. Never use those fixtures as customer evidence or publish a user's
+source corpus as a golden or proof artifact.

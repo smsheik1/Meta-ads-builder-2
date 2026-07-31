@@ -3,9 +3,9 @@
   "firstQuestionWithProfile": "What should this newsletter be about?",
   "required": [
     {
-      "id": "brandUrl",
-      "type": "url",
-      "description": "The company website used for current facts and terminology."
+      "id": "companyName",
+      "type": "string",
+      "description": "The company the newsletter is for."
     },
     {
       "id": "topic",
@@ -14,6 +14,11 @@
     }
   ],
   "recommended": [
+    {
+      "id": "brandUrl",
+      "type": "url",
+      "description": "The company website used for current facts and terminology when one exists."
+    },
     {
       "id": "newsletterSamples",
       "type": "files",

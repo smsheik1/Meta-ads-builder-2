@@ -13,6 +13,8 @@ assert.match(source, /Website-only profile/);
 assert.match(source, /read both before revealing the labels/i);
 assert.match(source, /run: improvedRun/);
 assert.match(source, /Version A is the frozen v1\.0 agent\. Version B is the improved v1\.1 agent\./);
+assert.match(source, /historical v1\.0-to-v1\.1\s+comparison/);
+assert.match(source, /\[--brand-url=&lt;url&gt;\]/);
 assert.match(source, /No image, video, voice, or paid Wiggly provider is called/);
 assert.equal(
   existsSync(
@@ -32,9 +34,15 @@ assert.equal(
   profile?.handoff?.firstQuestion,
   "What company is this for? Share its website if it has one.",
 );
+assert.ok(
+  profile?.handoff?.requiredInputs.includes("A company website or short company description"),
+);
+assert.ok(
+  profile?.handoff?.instructions.some((item) => item.includes("historical v1.1 proof")),
+);
 assert.match(profile?.handoff?.totalEstimate || "", /\$0/);
 const prompt = buildDiscoveryHandoffPrompt(profile!, "https://wiggly.agentenamel.com");
-assert.match(prompt, /Exact public version: 1\.1\.0/);
+assert.match(prompt, /Exact public version: 1\.1\.1/);
 assert.match(prompt, /Ask me one short question at a time/);
 assert.ok(
   prompt.trim().endsWith('"What company is this for? Share its website if it has one."'),

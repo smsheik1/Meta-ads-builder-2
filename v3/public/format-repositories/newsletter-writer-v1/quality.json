@@ -5,7 +5,7 @@
     "The body stays inside the selected length range.",
     "The approved topic is clear in the opening paragraph.",
     "Every internal fact snapshot exactly matches its cited source evidence.",
-    "At least two writing choices trace back to real newsletters, or exact website language when no newsletters exist.",
+    "Writing choices cite the best available voice evidence: two decisions when at least two sources exist, otherwise one.",
     "The output labels whether its voice basis is newsletter samples, website language, or facts only.",
     "Every claimed signature phrase appears verbatim in an allowed voice source.",
     "The CTA gives the reader one clear next action.",
