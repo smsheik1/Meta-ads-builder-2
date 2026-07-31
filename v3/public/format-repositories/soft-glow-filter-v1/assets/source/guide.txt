@@ -1,0 +1,10 @@
+Soft Glow Filter Prompt
+
+Source: @skaigenerated
+Post: https://www.instagram.com/skaigenerated/p/Da2XzrdCvEQ/
+Guide: https://docs.google.com/document/d/1r474WFlLhQfs3V1bb3l8jKr5OR9HiNJNc52xVTrjxv0/mobilebasic
+Image Model: GPT Image 2
+
+Prompt:
+
+Edit this image with a soft cinematic mood, soft glow, gentle blur, dot-grain texture, and a little vintage film feel. Keep it realistic and natural, not AI-generated. Preserve the subject, face, pose, background, framing, and all key details. Add captions based on the mood of the image. Choose only 2–5 clean Gen Z handwritten captions,1–3words each, from this style: POV, Core Memory, Soft Life, No Rush, Found Peace, Good Energy, Touch Grass, Calm > Chaos, Worth It, Still Here, Green Escape, Hidden Gem ,In My Zone, Memory Saved, Out of Office, Better Outside, Lowkey, Slow Days, Stay Soft, Real Ones, Main Era, Safe Place, Just Existing, Tiny Moments, Feels Right, Day Well Spent, Archive This, Weekend Dump, Peak Mood. Place text only on readable background areas. Use thin pastel white, cream, or butter-yellow handwritten style with subtle sketch arrows. Avoid emojis, hashtags, long text, and cheesy quotes

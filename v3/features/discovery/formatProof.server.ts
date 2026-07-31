@@ -1106,6 +1106,53 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "soft-glow-filter",
+    promise: "Give one existing photo a realistic soft cinematic glow, gentle film texture, and a few restrained handwritten memory captions without changing the subject or scene.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/soft-glow-filter",
+    manifestPath: "format-repositories/soft-glow-filter-v1/format.json",
+    whatStays: [
+      "The original subject, face, pose, and expression",
+      "The background, framing, crop, and perspective",
+      "Clothing, objects, and other key details",
+      "A realistic and natural photographic finish",
+    ],
+    whatChanges: [
+      "A soft cinematic glow and gentle blur shape the mood",
+      "Dot grain and a restrained vintage film texture appear",
+      "Two to five short Gen Z memory captions are added",
+      "Thin pastel handwriting and subtle sketch arrows sit only in readable areas",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One 3:4 JPEG, PNG, or WebP photo at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 realistic soft-glow memory image",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for premium",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Preserve the subject and scene while treating glow, blur, grain, captions, and arrows as the only edit",
+        "Use only 2–5 supplied captions of 1–3 words each and keep them off faces and busy details",
+        "Validate the 3:4 source image locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "About $0.067 on the default 1K route", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "About $0.067 on the default route and usually 2-4 min",
+      output: "One inspected 3:4 soft-glow memory image plus prediction and quality provenance",
+      firstQuestion: "Which 3:4 photo should I turn into a soft-glow memory?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",

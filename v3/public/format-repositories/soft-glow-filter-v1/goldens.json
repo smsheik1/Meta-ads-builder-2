@@ -1,0 +1,82 @@
+{
+  "purpose": "Judge source preservation, realistic soft glow, restrained blur and film grain, clean handwritten memory captions, readable placement, and natural photographic detail.",
+  "examples": [
+    {
+      "id": "native-hero",
+      "title": "Make the format readable in one glance",
+      "imagePath": "assets/source/skai-hero.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The title and primary result explain the visual recipe immediately",
+        "The subject and mountain setting remain photographic",
+        "Soft texture and small handwritten notes preview the finished treatment"
+      ]
+    },
+    {
+      "id": "mountain-seat",
+      "title": "Turn a summit photo into a saved memory",
+      "imagePath": "assets/source/skai-example-01.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The source inset proves the person, pose, clothing, and location stay recognizable",
+        "Glow and film softness change the mood without replacing the scene",
+        "Three short captions sit in readable areas and support the photograph"
+      ]
+    },
+    {
+      "id": "ridge-overlook",
+      "title": "Let a wide landscape keep its scale",
+      "imagePath": "assets/source/skai-example-02.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The figure and ridge remain the same recognizable composition",
+        "Muted grain and haze feel like a film treatment instead of a new illustration",
+        "The sparse captions leave the landscape room to breathe"
+      ]
+    },
+    {
+      "id": "summit-rest",
+      "title": "Keep a playful pose while softening the frame",
+      "imagePath": "assets/source/skai-example-03.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "Both people, their pose, and the open mountain background survive",
+        "The light remains believable beneath a gentle vintage finish",
+        "Caption placement avoids faces and the busiest parts of the image"
+      ]
+    },
+    {
+      "id": "motorbike-road",
+      "title": "Make a group ride feel archival",
+      "imagePath": "assets/source/skai-example-04.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The riders, bikes, road, and mountain geometry remain intact",
+        "The softer palette carries a coherent memory-dump mood",
+        "Short notes and arrows stay readable without covering the group"
+      ]
+    },
+    {
+      "id": "forest-rock",
+      "title": "Give a quiet forest stop a gentle glow",
+      "imagePath": "assets/source/skai-example-05.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The seated person and wooded trail preserve their source relationship",
+        "Glow, grain, and subdued greens remain natural",
+        "Two restrained captions add context without turning into a poster"
+      ]
+    },
+    {
+      "id": "creek-log",
+      "title": "Keep texture alive in a darker scene",
+      "imagePath": "assets/source/skai-example-06.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The person, log, creek, and foliage remain recognizable",
+        "The vintage softness does not erase the environmental detail",
+        "Small pale captions hold up against a busier forest background"
+      ]
+    }
+  ]
+}

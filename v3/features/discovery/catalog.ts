@@ -1431,6 +1431,83 @@ const lordOfTheRingsDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const softGlowFilterDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "native-hero",
+    brand: "Soft cinematic filter",
+    title: "Make an outdoor memory feel worth saving",
+    curatorNote: "The native SKAI cover makes the recipe instantly legible: a realistic mountain portrait, soft film texture, and restrained handwritten notes.",
+    image: "skai-hero",
+    reference: "reference-input",
+  },
+  {
+    id: "mountain-seat",
+    brand: "SKAI source example",
+    title: "Turn a summit photo into a saved memory",
+    curatorNote: "The same hiker, pose, clothing, and mountain stay recognizable beneath soft glow, grain, and three short captions.",
+    image: "skai-example-01",
+  },
+  {
+    id: "ridge-overlook",
+    brand: "SKAI source example",
+    title: "Let a wide landscape keep its scale",
+    curatorNote: "Muted film texture and sparse handwriting add mood without replacing the ridge or shrinking the scene.",
+    image: "skai-example-02",
+  },
+  {
+    id: "summit-rest",
+    brand: "SKAI source example",
+    title: "Keep the playful pose inside the treatment",
+    curatorNote: "Both people and the open mountain background survive while gentle blur and captions turn the photo into an archive frame.",
+    image: "skai-example-03",
+  },
+  {
+    id: "motorbike-road",
+    brand: "SKAI source example",
+    title: "Make a group ride feel archival",
+    curatorNote: "The riders, bikes, road, and mountain geometry remain intact beneath one coherent memory-dump finish.",
+    image: "skai-example-04",
+  },
+  {
+    id: "forest-rock",
+    brand: "SKAI source example",
+    title: "Give a quiet forest stop a gentle glow",
+    curatorNote: "Subdued greens, fine grain, and two restrained notes support the original wooded portrait.",
+    image: "skai-example-05",
+  },
+  {
+    id: "creek-log",
+    brand: "SKAI source example",
+    title: "Keep texture alive in a darker scene",
+    curatorNote: "The person, log, creek, and foliage stay legible while pale captions hold up against the busier background.",
+    image: "skai-example-06",
+  },
+].map(({ image, reference, ...proof }, index) => ({
+  ...proof,
+  id: `soft-glow-filter-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 148 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/soft-glow-filter-v1/assets/source/${image}.jpg`,
+    ...(reference
+      ? {
+          referenceSrc:
+            `/format-repositories/soft-glow-filter-v1/assets/source/${reference}.jpg`,
+        }
+      : {}),
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "soft-glow-filter",
+    name: "Soft Glow Filter",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -1865,6 +1942,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...rimPortraitFilterDiscoveryEntries,
   ...cyanotypeDiscoveryEntries,
   ...lordOfTheRingsDiscoveryEntries,
+  ...softGlowFilterDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -1954,6 +2032,7 @@ const discoveryShelfDefinitions = [
       "rim-portrait-filter",
       "cyanotype",
       "lord-of-the-rings",
+      "soft-glow-filter",
     ],
   },
   {

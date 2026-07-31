@@ -1,0 +1,23 @@
+{
+  "automatic": [
+    "The source input is 3:4 within 0.02 so composition can be preserved",
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The subject, face, pose, background, framing, and key details remain recognizable",
+    "Soft glow, gentle blur, dot grain, and vintage film texture remain restrained and photographic",
+    "The image contains only 2–5 clean handwritten captions of 1–3 words each",
+    "Every caption comes from the supplied phrase list and sits on a readable background area",
+    "Lettering is thin pastel white, cream, or butter yellow with only subtle sketch arrows",
+    "There are no emojis, hashtags, long captions, cheesy quotes, or obviously synthetic details"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}
