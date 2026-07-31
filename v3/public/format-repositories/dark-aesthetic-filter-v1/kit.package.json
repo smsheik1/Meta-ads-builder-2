@@ -1,0 +1,13 @@
+{
+  "name": "wiggly-dark-aesthetic-filter-format-kit",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "check:kit": "node kit-smoke.mjs",
+    "format:skai-image": "tsx scripts/skai-image-format.ts",
+    "test": "tsx tests/skai-image-format-runner.test.ts --format=dark-aesthetic-filter && node kit-smoke.mjs"
+  },
+  "dependencies": { "image-size": "2.0.2", "replicate": "1.4.0", "tsx": "4.20.6" }
+}
