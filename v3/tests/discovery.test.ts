@@ -377,7 +377,20 @@ assert.ok(
 assert.deepEqual(
   shelves.find((shelf) => shelf.id === "written-content")?.entries.map((entry) => entry.id),
   ["newsletter-writer-holden-history"],
-  "Newsletter Writer should use one real finished email proof in its own shelf.",
+  "Newsletter Writer should use one clear agent card in its own shelf.",
+);
+const newsletterWriterEntry = shelves
+  .find((shelf) => shelf.id === "written-content")
+  ?.entries[0];
+assert.equal(newsletterWriterEntry?.brand, "Newsletter Writer");
+assert.equal(
+  newsletterWriterEntry?.media.src,
+  "/discovery/newsletter-writer/newsletter-writer-agent.jpg",
+);
+assert.doesNotMatch(
+  `${newsletterWriterEntry?.brand} ${newsletterWriterEntry?.title} ${newsletterWriterEntry?.curatorNote}`,
+  /Holden/i,
+  "The Newsletter Writer discovery card should describe the reusable agent, not one proof brand.",
 );
 assert.deepEqual(
   shelves.find((shelf) => shelf.id === "skai-generated")?.entries.map((entry) => entry.format.slug),

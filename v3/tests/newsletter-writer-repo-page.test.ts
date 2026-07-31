@@ -23,7 +23,7 @@ assert.equal(
   true,
 );
 assert.equal(
-  existsSync("public/discovery/newsletter-writer/holden-brand-history.png"),
+  existsSync("public/discovery/newsletter-writer/newsletter-writer-agent.jpg"),
   true,
 );
 
