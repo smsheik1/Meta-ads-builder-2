@@ -1,0 +1,37 @@
+FULL cinematic remaster of the original image with dramatic relighting and high-end fashion editorial quality.
+Preserve identity, pose, and outfit, but completely reinterpret lighting, contrast, and atmosphere.
+
+Lighting:
+strong directional studio lighting, deep shadows, high contrast chiaroscuro
+bright specular highlights on jewelry and skin
+dark background falloff, spotlight effect on subject
+
+Exposure:
+intentionally underexposed base with controlled highlight bloom
+crushed blacks with preserved micro-details in shadows
+
+Jewelry focus:
+extreme shine and brilliance on chains, pendants, and metal
+sharp reflective highlights, diamonds sparkling under hard light
+
+Color grading:
+dark, moody, desaturated tones
+cool shadows, slightly metallic feel
+high contrast luxury editorial grading (NOT natural)
+
+Texture:
+ultra high definition, crisp details, visible pores, fabric texture
+slight cinematic grain for analog feel
+
+Atmosphere:
+gritty underground rap aesthetic, dramatic, raw, intense
+looks like a high-budget magazine shoot in a dark studio
+
+Lens:
+85mm portrait, shallow depth of field, subject isolated
+
+IMPORTANT:
+- keep same person and outfit
+- do NOT smooth skin excessively
+- do NOT flatten lighting
+- push contrast, lighting, and mood aggressively

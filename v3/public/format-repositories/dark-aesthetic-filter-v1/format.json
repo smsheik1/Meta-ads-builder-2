@@ -1,0 +1,20 @@
+{
+  "id": "dark-aesthetic-filter",
+  "version": "1.0.0",
+  "title": "Dark Aesthetic Filter",
+  "description": "Remaster one portrait with dramatic directional light, bright jewelry highlights, crushed blacks, and a dark luxury-editorial grade while keeping the person, pose, and outfit recognizable.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DWrhCPxCvjf/",
+    "resourceUrl": "https://docs.google.com/document/d/1sZRxTmRxJ76QLFXUi5worCtBZIOx0i9rxfBC7tWe9eM/mobilebasic",
+    "ctaKeyword": "dark",
+    "modelShown": "Nano Banana 2"
+  },
+  "outputs": [
+    "1 inspected 3:4 dark luxury-editorial portrait",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

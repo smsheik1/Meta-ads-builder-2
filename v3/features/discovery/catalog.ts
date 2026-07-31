@@ -1795,6 +1795,104 @@ const dreamcoreAngelDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const darkAestheticFilterDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "native-hero",
+    brand: "Dark aesthetic transformation",
+    title: "Make the visual recipe clear in one glance",
+    curatorNote: "SKAI's native cover establishes the aggressive contrast, hard directional light, luxury jewelry speculars, and dark editorial finish.",
+    image: "skai-carousel-01",
+  },
+  {
+    id: "bath-cash",
+    brand: "SKAI source example",
+    title: "Make jewelry own the light",
+    curatorNote: "A single baked source inset proves the person survives while cash, chains, skin, and shadows take on controlled hard light.",
+    image: "skai-carousel-02",
+  },
+  {
+    id: "cash-stack",
+    brand: "SKAI source example",
+    title: "Keep the pose, push the contrast",
+    curatorNote: "The familiar pose and outfit remain intact as crushed blacks and metal highlights turn the frame into an editorial portrait.",
+    image: "skai-carousel-03",
+  },
+  {
+    id: "car-door",
+    brand: "SKAI source example",
+    title: "Turn a street shot into a magazine spread",
+    curatorNote: "Directional light isolates the same street subject and holds enough texture to feel remastered rather than covered by a filter.",
+    image: "skai-carousel-04",
+  },
+  {
+    id: "hood-script",
+    brand: "SKAI source example",
+    title: "Make ink and chains cut through black",
+    curatorNote: "Jewelry, tattoo detail, fabric, and the recognizable hoodie remain sharp inside a much darker composition.",
+    image: "skai-carousel-05",
+  },
+  {
+    id: "eyes-closed",
+    brand: "SKAI source example",
+    title: "Let diamonds carry the frame",
+    curatorNote: "The source pose stays readable while hard reflections and a dark falloff focus attention on jewelry and skin.",
+    image: "skai-carousel-06",
+  },
+  {
+    id: "leopard-wall",
+    brand: "SKAI source example",
+    title: "Hold skin and leather against texture",
+    curatorNote: "Cool shadows and tactile fabric detail make the aggressive grade feel photographic instead of generic.",
+    image: "skai-carousel-07",
+  },
+  {
+    id: "sunglasses",
+    brand: "SKAI source example",
+    title: "Use hard light like a spotlight",
+    curatorNote: "Sharp but believable reflections transform a simple portrait without replacing its identity or pose.",
+    image: "skai-carousel-08",
+  },
+  {
+    id: "concrete-step",
+    brand: "SKAI source example",
+    title: "Keep the street pose, rebuild the mood",
+    curatorNote: "The seated pose remains recognizable as deep falloff, grain, and cool shadows rebuild the mood around it.",
+    image: "skai-carousel-09",
+  },
+  {
+    id: "graffiti-prayer",
+    brand: "SKAI source example",
+    title: "Crush the blacks without losing detail",
+    curatorNote: "Hands, clothes, and background remain readable in shadow—the contrast is intentional rather than a black overlay.",
+    image: "skai-carousel-10",
+  },
+  {
+    id: "studio-smile",
+    brand: "SKAI source example",
+    title: "Make joy survive the dark grade",
+    curatorNote: "Hard studio light gives the same smiling subject a premium sheen without plastic skin or cosmetic smoothing.",
+    image: "skai-carousel-11",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `dark-aesthetic-filter-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 184 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/dark-aesthetic-filter-v1/assets/source/${image}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "dark-aesthetic-filter",
+    name: "Dark Aesthetic Filter",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -2234,6 +2332,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...moodyPinkEffectDiscoveryEntries,
   ...cinematicPortraitPackDiscoveryEntries,
   ...dreamcoreAngelDiscoveryEntries,
+  ...darkAestheticFilterDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -2328,6 +2427,7 @@ const discoveryShelfDefinitions = [
       "moody-pink-effect",
       "cinematic-portrait-pack",
       "dreamcore-angel",
+      "dark-aesthetic-filter",
     ],
   },
   {

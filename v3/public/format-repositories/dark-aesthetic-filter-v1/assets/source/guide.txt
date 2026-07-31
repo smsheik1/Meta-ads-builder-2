@@ -1,0 +1,12 @@
+Dark Aesthetic Filter AI Prompt
+
+Source: @skaigenerated
+Instagram post: https://www.instagram.com/skaigenerated/p/DWrhCPxCvjf/
+Delivered Google Doc: https://docs.google.com/document/d/1sZRxTmRxJ76QLFXUi5worCtBZIOx0i9rxfBC7tWe9eM/mobilebasic
+CTA keyword: dark
+Model named in the source post: Nano Banana 2
+Comments observed at collection: 24,113
+Collected: 2026-07-31
+
+The exact delivered prompt is preserved in prompts/transform.txt.
+Slide 1 is the native SKAI title cover. Slides 2 through 11 are transformation proofs with one baked original-photo inset each. Slides 12 and 13 are promotional CTAs and are intentionally excluded.

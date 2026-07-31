@@ -1343,6 +1343,53 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "dark-aesthetic-filter",
+    promise: "Remaster one portrait with directional studio light, jewelry sparkle, crushed blacks, and a dark luxury-editorial grade while preserving the person, pose, and outfit.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/dark-aesthetic-filter",
+    manifestPath: "format-repositories/dark-aesthetic-filter-v1/format.json",
+    whatStays: [
+      "The same recognizable person, pose, and outfit",
+      "Natural skin, fabric, jewelry, and anatomy",
+      "One photographic 3:4 portrait as the reusable source input",
+    ],
+    whatChanges: [
+      "Directional studio light with deep shadows and high-contrast chiaroscuro",
+      "Bright, believable jewelry and skin speculars",
+      "Dark desaturated color, cool metallic shadows, and controlled highlight bloom",
+      "A gritty high-budget underground editorial mood with slight analog grain",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One 3:4 JPEG, PNG, or WebP portrait at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 dark luxury-editorial portrait",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and specific visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for premium",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Preserve the same person, pose, and outfit—do not cosmetically smooth skin",
+        "Use strong directional studio light, hard contrast, dark falloff, and controlled bloom",
+        "Keep jewelry highlights bright but believable; retain pores, fabric texture, and slight grain",
+        "Validate the 3:4 source image locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current selected Replicate route", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One provider prediction; the estimate command prints the selected route before approval",
+      output: "One inspected 3:4 dark luxury-editorial portrait plus prediction and quality provenance",
+      firstQuestion: "Which 3:4 portrait should I remaster with the dark aesthetic filter, and should I use Nano Banana 2 (default), Lite (economy), or Pro (premium)?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",

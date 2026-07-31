@@ -245,6 +245,7 @@ const generatedFormatSlugs = [
   "moody-pink-effect",
   "cinematic-portrait-pack",
   "dreamcore-angel",
+  "dark-aesthetic-filter",
   "jingle",
   "newsletter-writer",
 ];
@@ -398,6 +399,7 @@ assert.deepEqual(
       "moody-pink-effect",
       "cinematic-portrait-pack",
       "dreamcore-angel",
+      "dark-aesthetic-filter",
     ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
@@ -520,6 +522,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "dreamcore-angel").length,
   7,
   "The native hero and six SKAI source proofs should remain inside one Dreamcore Angel page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "dark-aesthetic-filter").length,
+  11,
+  "The native hero and ten SKAI source proofs should remain inside one Dark Aesthetic Filter page.",
 );
 
 console.log("discovery tests passed");
