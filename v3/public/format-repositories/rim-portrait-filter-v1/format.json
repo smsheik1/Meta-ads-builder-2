@@ -1,0 +1,20 @@
+{
+  "id": "rim-portrait-filter",
+  "version": "1.0.0",
+  "title": "Rim Portrait Filter",
+  "description": "Turn one portrait into a centered, sculptural silhouette with a white-to-gray halo and fine rim light catching the hair.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DbQ2VzjiuzL/",
+    "resourceUrl": "https://docs.google.com/document/d/1H7nbE9_-OWiFXsDxhZqQ1D3P3ijWbIMuEwfOmqBtZvc",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana Pro"
+  },
+  "outputs": [
+    "1 inspected 3:4 rim-lit portrait",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

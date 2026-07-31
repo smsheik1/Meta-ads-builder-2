@@ -1,0 +1,13 @@
+Rim Portrait Prompt
+
+Image model: Nano Banana Pro
+
+Prompt:
+
+Front-facing chest-up portrait of the subject from the reference image, maintaining exact identity. The pose is relaxed yet upright with a slight head tilt, centered in perfect symmetry. The background features a clean white-to-gray gradient creating a subtle halo glow. Lighting is minimal and high-contrast, with a strong backlight forming a deep silhouette. Fine hair strands catch soft rim light, adding texture, while clothing remains barely visible. The look is cinematic, sculptural, and mysterious.
+
+Source post:
+https://www.instagram.com/skaigenerated/p/DbQ2VzjiuzL/
+
+Delivered Google Doc:
+https://docs.google.com/document/d/1H7nbE9_-OWiFXsDxhZqQ1D3P3ijWbIMuEwfOmqBtZvc

@@ -1,0 +1,22 @@
+{
+  "automatic": [
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The source identity remains recognizable",
+    "The portrait is front-facing, chest-up, centered, and nearly symmetrical",
+    "A clean white-to-gray gradient creates a controlled halo",
+    "Strong backlight leaves the face and clothing in deep silhouette",
+    "Fine hair strands catch a visible but restrained rim light",
+    "The result looks cinematic and photographic rather than illustrated"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}
