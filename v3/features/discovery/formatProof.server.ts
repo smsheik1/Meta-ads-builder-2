@@ -1060,6 +1060,52 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "lord-of-the-rings",
+    promise: "Give one existing photo an immersive, photoreal sunrise fantasy grade while preserving its subject, composition, clothing, pose, and background.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/lord-of-the-rings",
+    manifestPath: "format-repositories/lord-of-the-rings-v1/format.json",
+    whatStays: [
+      "The original composition, subject, pose, clothing, expression, and identity",
+      "The camera angle, perspective, framing, and crop",
+      "Every existing background element and object",
+      "A believable photographic rendering",
+    ],
+    whatChanges: [
+      "A soft sunrise arrives from the upper left",
+      "Natural god rays, light mist, volumetric depth, and a restrained lens flare appear",
+      "The grade gains deep greens, warm highlights, clean blues, and neutral shadows",
+      "Smart HDR-style local contrast, texture, and detail become more pronounced",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One 3:4 JPEG, PNG, or WebP photo at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 cinematic fantasy sunrise grade",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for premium",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Treat this as a lighting, atmosphere, color, and detail edit rather than a costume or environment replacement",
+        "Validate the 3:4 source image locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "About $0.067 on the default 1K route", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "About $0.067 on the default route and usually 2-4 min",
+      output: "One inspected 3:4 cinematic fantasy sunrise grade plus prediction and quality provenance",
+      firstQuestion: "Which 3:4 photo should I give a cinematic Lord of the Rings sunrise grade?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",

@@ -1,0 +1,20 @@
+{
+  "id": "lord-of-the-rings",
+  "version": "1.0.0",
+  "title": "Lord of the Rings",
+  "description": "Give one existing photo an immersive, photoreal sunrise fantasy grade while preserving its subject, composition, clothing, pose, and background.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/Dbbkg5nilsa/",
+    "resourceUrl": "https://docs.google.com/document/d/1oYM_XsA5XqdgKtm5cMbgs_0WYnoR7dD0LSdTIDicEvo/mobilebasic",
+    "ctaKeyword": "AI",
+    "modelShown": "GPT Image 2"
+  },
+  "outputs": [
+    "1 inspected 3:4 photoreal fantasy sunrise grade",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}
