@@ -47,6 +47,10 @@ assert.ok(
   script.includes("pm2 start npm") && script.includes("run render-worker:watch"),
   "v3 deploy script must run the render worker through PM2.",
 );
+assert.ok(
+  script.includes("for attempt in {1..12}") && script.includes("Render worker did not become healthy"),
+  "v3 deploy must wait for the worker heartbeat instead of racing its Remotion startup.",
+);
 assert.ok(script.includes("wiggly-v3"), "v3 app must have its own PM2 app name.");
 assert.ok(script.includes("wiggly-v3-render-worker"), "v3 render worker must have its own PM2 app name.");
 assert.ok(script.includes("npx convex deploy"), "v3 deploy must sync Convex functions before smoke.");
