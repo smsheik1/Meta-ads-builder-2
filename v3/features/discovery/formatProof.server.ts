@@ -1014,6 +1014,52 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "cyanotype",
+    promise: "Turn one image into a handcrafted Prussian-blue contact print with real paper texture, chemical variation, and subtle X-ray detail only when the subject calls for it.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/cyanotype",
+    manifestPath: "format-repositories/cyanotype-v1/format.json",
+    whatStays: [
+      "The source subject and recognizable identity",
+      "The original composition, framing, and perspective",
+      "Facial features, clothing, objects, and environmental details",
+      "The original lighting direction and depth",
+    ],
+    whatChanges: [
+      "The palette becomes deep Prussian blue and pale exposed paper",
+      "Watercolor fibers, grain, pigment bleed, and uneven chemistry become visible",
+      "Micro-detail softens into an analogue contact print",
+      "Moving people or animals can gain a subtle, accurate skeletal exposure",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One 3:4 JPEG, PNG, or WebP image at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 cyanotype print",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for premium and the creator's source route",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Add skeletal detail only for a moving person or animal",
+        "Validate the source image locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "About $0.067 on the default 1K route", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "About $0.067 on the default route and usually 2-4 min",
+      output: "One inspected 3:4 cyanotype print plus prediction and quality provenance",
+      firstQuestion: "Which 3:4 image should I turn into a handcrafted cyanotype?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",

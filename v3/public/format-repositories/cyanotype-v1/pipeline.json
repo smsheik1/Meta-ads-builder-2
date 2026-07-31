@@ -1,0 +1,30 @@
+{
+  "progress": "Prepare -> Validate -> Transform -> Inspect",
+  "attemptCap": 3,
+  "stages": [
+    {
+      "id": "prepare",
+      "output": "One run pinned to the source image, exact gathered prompt, and selected model route.",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "validate",
+      "output": "The image and prompt contract checked locally.",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "transform",
+      "output": "One cyanotype print from one approved prediction.",
+      "paid": true,
+      "approvalRequired": true
+    },
+    {
+      "id": "inspect",
+      "output": "Automatic file checks plus an actual visual review.",
+      "paid": false,
+      "approvalRequired": true
+    }
+  ]
+}

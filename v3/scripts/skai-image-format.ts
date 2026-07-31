@@ -52,6 +52,8 @@ type RuntimeConfig = {
     minimumWidth?: number;
     minimumHeight?: number;
     maximumBytes?: number;
+    aspectRatio?: string;
+    aspectRatioTolerance?: number;
   };
   defaultModel: string;
   modelRoutes: Record<string, ModelRoute>;
@@ -362,6 +364,16 @@ async function validate() {
       metadata.height < (config.input.minimumHeight ?? 512)
     ) {
       errors.push("Input is smaller than the packaged minimum.");
+    }
+    if (config.input.aspectRatio) {
+      const actualRatio = metadata.width / metadata.height;
+      const targetRatio = ratioValue(config.input.aspectRatio);
+      if (
+        Math.abs(actualRatio - targetRatio) >
+        (config.input.aspectRatioTolerance ?? 0.02)
+      ) {
+        errors.push(`Input aspect ratio must be ${config.input.aspectRatio}.`);
+      }
     }
     if (errors.length) throw new Error(errors.join("\n"));
     state.input = { ...state.input, ...metadata };

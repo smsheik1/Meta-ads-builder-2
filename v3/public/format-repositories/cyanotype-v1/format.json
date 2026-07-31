@@ -1,0 +1,20 @@
+{
+  "id": "cyanotype",
+  "version": "1.0.0",
+  "title": "Cyanotype",
+  "description": "Turn one image into a handcrafted Prussian-blue cyanotype contact print while preserving the original composition and subject.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DbbjJsQin69/",
+    "resourceUrl": "https://docs.google.com/document/d/1tqmgf_xU2DiCAcl30qX3-a5li_Sx8xY64NB4Emem7DY/mobilebasic",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana Pro"
+  },
+  "outputs": [
+    "1 inspected 3:4 cyanotype print",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

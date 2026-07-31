@@ -1,0 +1,20 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DbbjJsQin69/",
+    "resourceUrl": "https://docs.google.com/document/d/1tqmgf_xU2DiCAcl30qX3-a5li_Sx8xY64NB4Emem7DY/mobilebasic",
+    "guide": "assets/source/guide.txt",
+    "referenceInset": "assets/source/reference-input.jpg",
+    "verification": "The delivered Google Doc supplied the exact Nano Banana Pro prompt. The Instagram carousel supplied six native 3:4 source outputs.",
+    "referenceNote": "The creator did not publish the original inputs. The clearly identified Wiggly proof uses a separate fixture portrait so Discover can show one honest before-and-after pair; the six SKAI outputs remain unchanged source examples."
+  },
+  "examples": [
+    { "id": "wiggly-proof", "path": "assets/source/wiggly-proof.jpg", "provenance": "Wiggly built-in image-generation proof" },
+    { "id": "skull-portrait", "path": "assets/source/skai-example-01.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "woman-and-dog", "path": "assets/source/skai-example-02.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "costume-embrace", "path": "assets/source/skai-example-03.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "beach-skeleton", "path": "assets/source/skai-example-04.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "cat-portrait", "path": "assets/source/skai-example-05.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "boxer-skeleton", "path": "assets/source/skai-example-06.jpg", "provenance": "@skaigenerated carousel" }
+  ]
+}
