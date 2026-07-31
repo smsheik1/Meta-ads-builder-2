@@ -1,0 +1,22 @@
+{
+  "id": "cinematic-portrait-pack",
+  "version": "1.0.0",
+  "title": "Cinematic Portrait Pack",
+  "description": "Turn one portrait into eight distinct cinematic editorial scenes with the exact gathered SKAI prompts.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DW68x5ojE6X/",
+    "resourceUrl": "https://docs.google.com/document/d/1eTB2e0XNjsiEDj8Qa0iUHBJviwdHQ0GPO6rxCkO_SS4/mobilebasic",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana 2",
+    "commentsAtCollection": 39600,
+    "collectedAt": "2026-07-31"
+  },
+  "outputs": [
+    "1 inspected 3:4 image per selected look",
+    "up to 8 finalized runs for the complete portrait pack",
+    "state.json and quality-report.json for every look"
+  ]
+}

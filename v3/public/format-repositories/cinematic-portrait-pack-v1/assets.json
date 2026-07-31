@@ -1,0 +1,67 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DW68x5ojE6X/",
+    "resourceUrl": "https://docs.google.com/document/d/1eTB2e0XNjsiEDj8Qa0iUHBJviwdHQ0GPO6rxCkO_SS4/mobilebasic",
+    "guide": "assets/source/guide.txt",
+    "nativeHero": "assets/source/skai-carousel-01.jpg",
+    "smokeInput": "assets/source/smoke-input.jpg",
+    "modelShown": "Nano Banana 2",
+    "commentsAtCollection": 39600,
+    "collectedAt": "2026-07-31",
+    "verification": "The Instagram carousel supplied the native 1080x1440 hero and eight prompt cards. The public Google Doc supplied the same eight full prompts and clean example outputs.",
+    "referenceNote": "The native hero is a four-output collage. Carousel slides 2 through 9 each already contain exactly one original-photo inset, so Wiggly must not add another. CTA slides 10 and 11 are intentionally excluded from the Format gallery."
+  },
+  "examples": [
+    {
+      "variant": "mirror-selfie",
+      "path": "assets/source/skai-carousel-02.jpg",
+      "cleanPath": "assets/source/guide-example-01.png"
+    },
+    {
+      "variant": "rain-mask",
+      "path": "assets/source/skai-carousel-03.jpg",
+      "cleanPath": "assets/source/guide-example-04.png"
+    },
+    {
+      "variant": "car-editorial",
+      "path": "assets/source/skai-carousel-04.jpg",
+      "cleanPath": "assets/source/guide-example-02.png"
+    },
+    {
+      "variant": "punk-noir",
+      "path": "assets/source/skai-carousel-05.jpg",
+      "cleanPath": "assets/source/guide-example-03.png"
+    },
+    {
+      "variant": "art-stop-sign",
+      "path": "assets/source/skai-carousel-06.jpg",
+      "cleanPath": "assets/source/guide-example-06.png"
+    },
+    {
+      "variant": "sunroof-flash",
+      "path": "assets/source/skai-carousel-07.jpg",
+      "cleanPath": "assets/source/guide-example-07.png"
+    },
+    {
+      "variant": "sword-studio",
+      "path": "assets/source/skai-carousel-08.jpg",
+      "cleanPath": "assets/source/guide-example-05.png"
+    },
+    {
+      "variant": "cow-herd-sports-car",
+      "path": "assets/source/skai-carousel-09.jpg",
+      "cleanPath": "assets/source/guide-example-08.png"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "assets/source/skai-carousel-10.jpg",
+      "reason": "Comment CTA, not a proof image"
+    },
+    {
+      "path": "assets/source/skai-carousel-11.jpg",
+      "reason": "Follow CTA, not a proof image"
+    }
+  ]
+}

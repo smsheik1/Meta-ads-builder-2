@@ -243,6 +243,7 @@ const generatedFormatSlugs = [
   "soft-glow-filter",
   "paper-outfit",
   "moody-pink-effect",
+  "cinematic-portrait-pack",
   "jingle",
   "newsletter-writer",
 ];
@@ -394,6 +395,7 @@ assert.deepEqual(
       "soft-glow-filter",
       "paper-outfit",
       "moody-pink-effect",
+      "cinematic-portrait-pack",
     ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
@@ -506,6 +508,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "moody-pink-effect").length,
   6,
   "The native hero and five SKAI examples should remain inside one Moody Pink Effect Format page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "cinematic-portrait-pack").length,
+  9,
+  "The native hero and eight SKAI prompt cards should remain inside one Cinematic Portrait Pack page.",
 );
 
 console.log("discovery tests passed");

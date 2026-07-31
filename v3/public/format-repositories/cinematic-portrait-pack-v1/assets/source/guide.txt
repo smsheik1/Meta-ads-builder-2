@@ -1,0 +1,20 @@
+Source: @skaigenerated, “Steal These Nano Banana 2 Prompts”
+Instagram: https://www.instagram.com/skaigenerated/p/DW68x5ojE6X/
+Google Doc: https://docs.google.com/document/d/1eTB2e0XNjsiEDj8Qa0iUHBJviwdHQ0GPO6rxCkO_SS4/mobilebasic
+CTA keyword: AI
+Model shown: Nano Banana 2
+Collected: 2026-07-31
+
+The public guide contains eight prompts. Their exact text is preserved in:
+
+1. prompts/mirror-selfie.txt
+2. prompts/rain-mask.txt
+3. prompts/car-editorial.txt
+4. prompts/punk-noir.txt
+5. prompts/art-stop-sign.txt
+6. prompts/sunroof-flash.txt
+7. prompts/sword-studio.txt
+8. prompts/cow-herd-sports-car.txt
+
+The Instagram carousel supplied one native hero, eight 1080x1440 prompt cards,
+and two CTA slides. Only the hero and prompt cards are used as public proofs.

@@ -1641,6 +1641,90 @@ const moodyPinkEffectDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const cinematicPortraitPackDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "native-hero",
+    brand: "Eight-look portrait pack",
+    title: "Turn one portrait into eight cinematic worlds",
+    curatorNote: "SKAI's native cover makes the range immediate: mirror flash, punk noir, car editorial, and cinematic night scenes all belong to one reusable portrait pack.",
+    image: "skai-carousel-01",
+  },
+  {
+    id: "mirror-selfie",
+    brand: "SKAI source example",
+    title: "Make a mirror selfie feel like a film still",
+    curatorNote: "The source face survives moody indoor light, damp hair, cigarette smoke, glasses, skin texture, and a convincingly casual phone-photo finish.",
+    image: "skai-carousel-02",
+  },
+  {
+    id: "rain-mask",
+    brand: "SKAI source example",
+    title: "Catch the mask reveal in heavy rain",
+    curatorNote: "Wet fabric, tears, rain streaks, cool moonlight, and a partially lifted mask turn one close-up into a readable cinematic action.",
+    image: "skai-carousel-03",
+  },
+  {
+    id: "car-editorial",
+    brand: "SKAI source example",
+    title: "Build a quiet fashion frame around the car",
+    curatorNote: "The low seated pose, oversized tailoring, open door, wild grass, and bright negative space hold one restrained editorial mood.",
+    image: "skai-carousel-04",
+  },
+  {
+    id: "punk-noir",
+    brand: "SKAI source example",
+    title: "Push a close-up into hard punk noir",
+    curatorNote: "The eye-framing gesture, rings, pearls, high-contrast monochrome, and heavy film grain stay tactile without losing the subject.",
+    image: "skai-carousel-05",
+  },
+  {
+    id: "art-stop-sign",
+    brand: "SKAI source example",
+    title: "Let one flash-lit sign own the frame",
+    curatorNote: "A low angle, navy night sky, direct flash, relaxed shoulder lean, and spray-painted ART mark create a clean street-editorial poster.",
+    image: "skai-carousel-06",
+  },
+  {
+    id: "sunroof-flash",
+    brand: "SKAI source example",
+    title: "Look down through the sunroof",
+    curatorNote: "Two figures, the roof opening, leather interior, teal ambient light, and direct flash line up in one believable overhead photograph.",
+    image: "skai-carousel-07",
+  },
+  {
+    id: "sword-studio",
+    brand: "SKAI source example",
+    title: "Hold a supernatural pose inside a real studio",
+    curatorNote: "A resilient kneeling posture, dragon tattoo, clean sword alignment, wet skin, and focused spotlight create drama without gore.",
+    image: "skai-carousel-08",
+  },
+  {
+    id: "cow-herd-sports-car",
+    brand: "SKAI source example",
+    title: "Put luxury in the middle of rural chaos",
+    curatorNote: "The subject, reflective sports car, dense herd, forest road, and quiet daylight stay detailed inside one surreal editorial frame.",
+    image: "skai-carousel-09",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `cinematic-portrait-pack-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 168 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/cinematic-portrait-pack-v1/assets/source/${image}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "cinematic-portrait-pack",
+    name: "Cinematic Portrait Pack",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -2078,6 +2162,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...softGlowFilterDiscoveryEntries,
   ...paperOutfitDiscoveryEntries,
   ...moodyPinkEffectDiscoveryEntries,
+  ...cinematicPortraitPackDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -2170,6 +2255,7 @@ const discoveryShelfDefinitions = [
       "soft-glow-filter",
       "paper-outfit",
       "moody-pink-effect",
+      "cinematic-portrait-pack",
     ],
   },
   {

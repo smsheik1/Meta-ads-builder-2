@@ -1,0 +1,13 @@
+Create an ultra-realistic, cinematic image. Night scene: two men are seen from an angle looking down into the car through the sunroof; the camera looks from above into the vehicle. The man in the driver’s seat looks directly up at the camera, while a second man in the back seat, partially visible and wearing a black ski mask (balaclava), also looks upward.
+
+The driver’s face must be 100% identical to the uploaded reference photo (bone structure, eyes, nose, lips, skin texture), with no stylization or modification; the masked man’s face must remain completely hidden. The camera is positioned directly above the car roof with a slight diagonal angle, looking down through the sunroof; the framing is tight and vertical, with the sunroof frame forming a natural border, the driver placed in the bottom-right of the frame and the masked man in the top-left.
+
+Lighting follows a night + direct flash aesthetic: a strong front flash from the camera sharply illuminates both characters, while a blue/teal ambient light remains in the interior; warm subtle reflections appear on the skin, with high contrast but without crushed blacks; soft reflections are visible on glass and the car body.
+
+Color grading is teal/cyan dominant with slight magenta accents, creating a cold urban night atmosphere with deep blacks and slightly desaturated mid-tones; very subtle chromatic aberration appears at the edges. The driver maintains a neutral, cool expression with natural posture and direct eye contact; he wears simple dark streetwear (crewneck/sweatshirt), while the masked man wears a black hoodie and balaclava, remaining slightly in shadow with only the eyes visible.
+
+The car interior features dark leather seats with realistic stitching details and slight wear marks; the sunroof frame is sharp, with very light dust/dirt particles on the glass surface and environmental reflections on the roof paint.
+
+Texture and realism are at a high level: visible skin pores and minor imperfections, natural fabric behavior, and no artificial plastic look; slight film grain, fine noise, and subtle lens dirt/smudges create an old and realistic photo feeling. The lens is 35mm equivalent with f/2.8 shallow depth of field (faces sharp, edges slightly soft), high dynamic range, 8K detail, and editorial photography quality.
+
+Aesthetic: cinematic realism, flash photography, night street atmosphere, raw urban feel, high-end editorial look, natural imperfections.
