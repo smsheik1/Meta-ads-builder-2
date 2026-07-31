@@ -390,6 +390,7 @@ assert.deepEqual(
       "cyanotype",
       "lord-of-the-rings",
       "soft-glow-filter",
+      "paper-outfit",
     ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
