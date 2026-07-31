@@ -44,9 +44,9 @@
       "brand": "Grüns",
       "role": "Earlier Wiggly baseline",
       "videoPath": "goldens/gruns.mp4",
-      "sourceFilename": "gruns-3d-breakdown-final-v2.mp4",
-      "sourceSha256": "6ef913016b8a8b694121f544631462b8ba71ed013e03f5dbb4ab0861d092851e",
-      "packageSha256": "0284a154adb3eb97a167d2ff0b2a66a4636f5cebeca60d936d23d032a32e104b",
+      "sourceFilename": "gruns-caption-refresh.mp4",
+      "sourceSha256": "1f716a2b3612284392bb0fb2abdc50852094d9ea0c40a65f47e087e388f4bb3a",
+      "packageSha256": "579ec70e526ee6051123f20e87b68f37cd7d2b8005a2b1200e440198e9d97d55",
       "durationSeconds": 20,
       "resolution": "540x960",
       "reviewedTranscript": "A clinical trial can prove a supplement works, but that does not mean the one in your hand will. Stomach acid turns the route into the hidden problem. Grüns makes the hidden product path visible, clinically tested in 2025 in a randomized, double-blind, placebo-controlled study. The hidden route finally matters. Start your daily habit.",
@@ -54,6 +54,10 @@
         "The real pouch appears immediately and returns in the final product card.",
         "The journey through the body gives the blue world a specific explanation job.",
         "The product payoff is visually clean and easy to recognize."
+      ],
+      "productionLessons": [
+        "The saved caption-free clips and original narration were re-rendered through AdRenderSurface so captions and the end card use the current sans-serif system.",
+        "Grüns-specific caption breaks keep phrases such as product path visible and clinically tested in 2025 intact."
       ],
       "knownWeaknesses": [
         "The opening line starts with an abstract credential instead of a concrete customer moment.",
