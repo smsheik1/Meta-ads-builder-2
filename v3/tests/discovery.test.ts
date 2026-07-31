@@ -246,6 +246,7 @@ const generatedFormatSlugs = [
   "cinematic-portrait-pack",
   "dreamcore-angel",
   "dark-aesthetic-filter",
+  "2000s-effect",
   "jingle",
   "newsletter-writer",
 ];
@@ -400,6 +401,7 @@ assert.deepEqual(
       "cinematic-portrait-pack",
       "dreamcore-angel",
       "dark-aesthetic-filter",
+      "2000s-effect",
     ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
@@ -527,6 +529,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "dark-aesthetic-filter").length,
   11,
   "The native hero and ten SKAI source proofs should remain inside one Dark Aesthetic Filter page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "2000s-effect").length,
+  9,
+  "The native hero and eight SKAI source proofs should remain inside one 2000s Effect page.",
 );
 
 console.log("discovery tests passed");

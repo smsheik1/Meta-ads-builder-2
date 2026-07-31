@@ -1893,6 +1893,90 @@ const darkAestheticFilterDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const twoThousandsEffectDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "native-hero",
+    brand: "2000s digicam transformation",
+    title: "Make the visual recipe clear in one glance",
+    curatorNote: "SKAI's native cover establishes the direct flash, noisy CCD softness, and candid early-digital camera finish.",
+    image: "slide-01",
+  },
+  {
+    id: "dinner",
+    brand: "SKAI source example",
+    title: "Make flash turn a dinner into a memory",
+    curatorNote: "A baked source inset proves the same dinner scene survives under hot flash, low dynamic range, and camera shake.",
+    image: "slide-02",
+  },
+  {
+    id: "ocean",
+    brand: "SKAI source example",
+    title: "Let the light wash the frame",
+    curatorNote: "The people and ocean-side pose remain visible while blown whites, bloom, and softness make the image feel found on an old memory card.",
+    image: "slide-03",
+  },
+  {
+    id: "subway",
+    brand: "SKAI source example",
+    title: "Give a subway snapshot real CCD character",
+    curatorNote: "Direct flash, dated color, and imperfect focus transform the same close subway moment without replacing its people or setting.",
+    image: "slide-04",
+  },
+  {
+    id: "night-out",
+    brand: "SKAI source example",
+    title: "Turn a night out into a memory-card find",
+    curatorNote: "The source group, sunglasses, and pose stay readable as highlight bloom and noise keep the scene raw rather than polished.",
+    image: "slide-05",
+  },
+  {
+    id: "convertible",
+    brand: "SKAI source example",
+    title: "Make a convertible feel caught on a cheap flash",
+    curatorNote: "Harsh flash, edge softness, and inaccurate color age the same car portrait without changing its subject or composition.",
+    image: "slide-06",
+  },
+  {
+    id: "mirror",
+    brand: "SKAI source example",
+    title: "Let a mirror selfie keep its flaws",
+    curatorNote: "The original reflection is preserved while uneven white balance, bloom, and noise strip away modern-phone polish.",
+    image: "slide-07",
+  },
+  {
+    id: "dog",
+    brand: "SKAI source example",
+    title: "Make a pet portrait feel instantly older",
+    curatorNote: "Direct flash and imperfect autofocus turn the same person-and-dog moment into an authentic candid snapshot.",
+    image: "slide-08",
+  },
+  {
+    id: "crowd",
+    brand: "SKAI source example",
+    title: "Keep the flash hot and the moment messy",
+    curatorNote: "The original friends and crowd stay recognizable under blown highlights, warmth, compression texture, and low-end camera imperfection.",
+    image: "slide-09",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `2000s-effect-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 195 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/2000s-effect-v1/assets/source/${image}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "2000s-effect",
+    name: "2000s Effect",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -2333,6 +2417,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...cinematicPortraitPackDiscoveryEntries,
   ...dreamcoreAngelDiscoveryEntries,
   ...darkAestheticFilterDiscoveryEntries,
+  ...twoThousandsEffectDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -2428,6 +2513,7 @@ const discoveryShelfDefinitions = [
       "cinematic-portrait-pack",
       "dreamcore-angel",
       "dark-aesthetic-filter",
+      "2000s-effect",
     ],
   },
   {

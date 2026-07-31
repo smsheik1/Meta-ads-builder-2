@@ -1,0 +1,5 @@
+{
+  "automatic": ["The source input is 3:4 within 0.02", "Exactly 1 decodable JPG, JPEG, PNG, or WebP output", "At least 1080x1440 pixels", "Aspect ratio matches the selected route within 0.02", "At least 50 KB"],
+  "visual": ["The same person, pose, scene, composition, and natural identity remain recognizable", "Direct on-camera flash creates harsh frontal light, flat shadows, and believable overexposed highlights", "The frame has soft focus, low-end CCD noise, compression artifacts, and imperfect autofocus without breaking the subject", "Color feels dated and inaccurate: slight green-yellow cast, washed contrast, crushed blacks, blown whites, and subtle banding", "There is mild bloom, halation, chromatic aberration, edge softness, and candid imperfect framing—not a polished modern editorial image"],
+  "finalization": { "automaticPassRequired": true, "visualPassRequired": true, "reviewNotesRequired": true, "explicitApprovalFlag": "--approve-final" }
+}
