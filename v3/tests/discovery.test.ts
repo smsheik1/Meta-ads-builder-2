@@ -22,6 +22,16 @@ assert.doesNotMatch(
   "Discover should not repeat a generic Open Wiggly CTA in its header.",
 );
 assert.match(
+  discoveryClient,
+  /<div className=\{styles\.cardCopy\}>\s*<h3>\{entry\.format\.name\}<\/h3>\s*<div className=\{styles\.cardActions\}>/,
+  "Discover cards should lead with the recognizable Format name.",
+);
+assert.doesNotMatch(
+  discoveryClient,
+  /<p className=\{styles\.(?:brand|metadata|curatorNote)\}>/,
+  "Discover cards should not repeat category, ownership/version, or curator-copy metadata below the creative.",
+);
+assert.match(
   discoveryStyles,
   /\.formatTag,\s*\.runtime\s*\{[\s\S]*?opacity:\s*0;/,
   "Card format and runtime labels should stay hidden until the card is engaged.",
