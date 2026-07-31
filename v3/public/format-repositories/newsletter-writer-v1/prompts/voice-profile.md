@@ -15,7 +15,7 @@ Set `voiceBasis` from the evidence:
 
 - `newsletter-samples` when at least one past newsletter is supplied;
 - `website-language` when no newsletters exist but exact website passages are supplied;
-- `facts-only` when only paraphrased website facts exist.
+- `facts-only` when only grounded facts exist, including facts supplied directly by the user.
 
 When `voiceBasis` is not `newsletter-samples`, use low confidence and do not
 claim that the profile represents the company's newsletter voice. Use a clean,

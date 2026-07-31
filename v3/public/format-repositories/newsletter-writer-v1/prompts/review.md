@@ -15,7 +15,7 @@ Review the draft once. Do not start a new concept.
 8. **Short copy:** Keep a short facts-only announcement to two or three compact body paragraphs. Remove facts repeated across body paragraphs. Prefer a direct invitation over a company-description opening for an event.
 9. **Naturalness:** Remove formulaic AI structures, repeated sentence shapes, fake enthusiasm, empty conclusions, unnecessary throat-clearing, and unsupported clever abstractions.
 10. **Restraint:** Do not add slang, fragments, humor, first person, or punctuation quirks unless the source samples support them.
-11. **Confidence:** When the profile is website-informed rather than newsletter-informed, improve specificity without pretending the system learned a private email voice. Keep facts-only copy natural and direct; replace tautological or bureaucratic restatements with a plain invitation or remove them.
+11. **Confidence:** When the profile is not newsletter-informed, improve specificity without pretending the system learned a private email voice. Keep facts-only copy natural and direct; replace tautological or bureaucratic restatements with a plain invitation or remove them.
 
 Use one revision pass only. Over-editing can flatten the voice.
 

@@ -41,3 +41,19 @@ Date: 2026-07-30
 
 All six final reruns passed customer review. This proves the packaged workflow
 inside Codex; it does not claim a separate Claude or Cursor execution.
+
+## Ground-Up Contract Audit
+
+After the six scenario reruns passed, direct validator probes found four edge
+cases the scenarios had not exercised:
+
+- A company with only one grounded source could not complete its voice profile.
+- A short topic such as `Why us` failed lexical topic matching even when the
+  newsletter was relevant.
+- A generated profile could change the company name or website.
+- A generated CTA could introduce a URL that was not in the approved brief.
+
+The runner now handles one-source profiles honestly, skips unreliable lexical
+matching for topics with no meaningful terms, locks profile identity to the
+source record, and requires the CTA URL to match the brief exactly. Each case
+has a focused regression test, and the rebuilt ZIP passes its own test suite.

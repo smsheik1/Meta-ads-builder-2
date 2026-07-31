@@ -152,10 +152,9 @@ function addressesTopic(body, topic) {
   const usefulTopicTerms = allTopicTerms.filter(
     (term) => term.length >= 4 && !TOPIC_STOP_WORDS.has(term),
   );
-  const topicTerms = usefulTopicTerms.length ? usefulTopicTerms : allTopicTerms;
-  const requiredMatches = Math.min(2, topicTerms.length);
-  return requiredMatches > 0
-    && topicTerms.filter((term) => bodyTerms.has(term)).length >= requiredMatches;
+  if (!usefulTopicTerms.length) return true;
+  const requiredMatches = Math.min(2, usefulTopicTerms.length);
+  return usefulTopicTerms.filter((term) => bodyTerms.has(term)).length >= requiredMatches;
 }
 
 function sensitiveFactSignals(value) {
@@ -249,6 +248,12 @@ function validateProfile(profile, sources) {
   for (const field of requiredStrings) {
     if (!profile[field]?.trim()) errors.push(`Brand profile ${field} is missing.`);
   }
+  if (profile.companyName?.trim() !== (sources.companyName?.trim() ?? "")) {
+    errors.push("Brand profile companyName must match the source company name.");
+  }
+  if (profile.brandUrl?.trim() !== (sources.brandUrl?.trim() ?? "")) {
+    errors.push("Brand profile brandUrl must match the source brand URL.");
+  }
   if (!["low", "medium", "high"].includes(profile.confidence)) {
     errors.push("Brand profile confidence must be low, medium, or high.");
   }
@@ -275,8 +280,11 @@ function validateProfile(profile, sources) {
   }
   if ((profile.mustDo?.length ?? 0) < 2) errors.push("Brand profile needs at least two must-do rules.");
   if ((profile.neverDo?.length ?? 0) < 2) errors.push("Brand profile needs at least two never-do rules.");
-  if ((profile.evidence?.length ?? 0) < 2) errors.push("Brand profile needs at least two evidence-backed observations.");
   const allowed = new Set(expectedVoice.items.map((item) => item.id));
+  const requiredEvidence = Math.min(2, allowed.size);
+  if ((profile.evidence?.length ?? 0) < requiredEvidence) {
+    errors.push(`Brand profile needs at least ${requiredEvidence} evidence-backed observation${requiredEvidence === 1 ? "" : "s"}.`);
+  }
   const sourceText = sourceTextById(sources);
   for (const item of profile.evidence ?? []) {
     if (!allowed.has(item.sourceId)) errors.push(`Unknown voice evidence source: ${item.sourceId}.`);
@@ -348,9 +356,14 @@ function validateNewsletter(newsletter, sources, brief) {
   if (containsPromptInjection(body)) errors.push("Newsletter contains prompt-like instructions.");
   if (!newsletter.cta?.text?.trim()) errors.push("Newsletter CTA is missing.");
   if ((newsletter.cta?.text?.trim().length ?? 0) > 140) errors.push("Newsletter CTA is too long.");
-  if (newsletter.cta?.url) {
+  const expectedCtaUrl = brief.ctaUrl?.trim() ?? "";
+  const actualCtaUrl = newsletter.cta?.url?.trim() ?? "";
+  if (actualCtaUrl !== expectedCtaUrl) {
+    errors.push("Newsletter CTA URL must exactly match the approved brief.");
+  }
+  if (actualCtaUrl) {
     try {
-      new URL(newsletter.cta.url);
+      new URL(actualCtaUrl);
     } catch {
       errors.push("Newsletter CTA URL is invalid.");
     }
@@ -381,11 +394,15 @@ function validateNewsletter(newsletter, sources, brief) {
       errors.push(`Sensitive factual claim is not supported by cited facts: ${unsupported.join(", ")}.`);
     }
   }
-  if (!Array.isArray(newsletter.voiceEvidence) || newsletter.voiceEvidence.length < 2) {
-    errors.push("Newsletter must cite at least two voice decisions.");
-  }
   const expectedVoice = voiceSources(sources);
   const voiceSourceIds = new Set(expectedVoice.items.map((sample) => sample.id));
+  const requiredVoiceEvidence = Math.min(2, voiceSourceIds.size);
+  if (
+    !Array.isArray(newsletter.voiceEvidence)
+    || newsletter.voiceEvidence.length < requiredVoiceEvidence
+  ) {
+    errors.push(`Newsletter must cite at least ${requiredVoiceEvidence} voice decision${requiredVoiceEvidence === 1 ? "" : "s"}.`);
+  }
   for (const item of newsletter.voiceEvidence ?? []) {
     if (!item.choice?.trim() || !allowed.has(item.sourceId)) {
       errors.push("Every voice decision needs a choice and valid sourceId.");
@@ -523,12 +540,20 @@ async function brief() {
   if (!["short", "standard", "long"].includes(targetLength)) {
     throw new Error("--length must be short, standard, or long.");
   }
+  const ctaUrl = argument("cta-url") ?? "";
+  if (ctaUrl) {
+    try {
+      new URL(ctaUrl);
+    } catch {
+      throw new Error("--cta-url must be a valid URL.");
+    }
+  }
   await writeJson(path.join(directory, "brief.json"), {
     topic: requiredArgument("topic"),
     goal: argument("goal") ?? "Teach one useful idea and drive one clear action.",
     audience: argument("audience") ?? "",
     offer: argument("offer") ?? "",
-    ctaUrl: argument("cta-url") ?? "",
+    ctaUrl,
     targetLength,
   });
   state.status = "brief-ready";
