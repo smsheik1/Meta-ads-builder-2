@@ -1354,6 +1354,83 @@ const cyanotypeDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const lordOfTheRingsDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "native-hero",
+    brand: "Cinematic fantasy grade",
+    title: "Turn an ordinary greenhouse into an epic sunrise",
+    curatorNote: "The native SKAI cover shows the real before and after together: same person, same greenhouse, same framing, with only light, atmosphere, color, and detail transformed.",
+    image: "skai-hero",
+  },
+  {
+    id: "wiggly-proof",
+    brand: "Wiggly proof",
+    title: "Keep the whole conservatory while changing the hour",
+    curatorNote: "A separate fixture proves the traveler, pose, path, rocks, plants, and glass structure survive the cinematic sunrise grade.",
+    image: "wiggly-proof",
+    reference: "reference-input",
+  },
+  {
+    id: "waterfall-conservatory",
+    brand: "SKAI source example",
+    title: "Turn glasshouse water into a hidden valley",
+    curatorNote: "The waterfall, pool, roof, and planting stay photographic while warm rays add depth through the foliage.",
+    image: "skai-example-01",
+  },
+  {
+    id: "moss-garden",
+    brand: "SKAI source example",
+    title: "Let a quiet garden feel mythic",
+    curatorNote: "The lantern, bridge, koi pond, and clipped shrubs stay intact beneath restrained mist and sunrise light.",
+    image: "skai-example-02",
+  },
+  {
+    id: "forest-path",
+    brand: "SKAI source example",
+    title: "Make the path invite an adventure",
+    curatorNote: "God rays reveal depth through the existing foliage while clean blues and deep greens avoid an orange cast.",
+    image: "skai-example-03",
+  },
+  {
+    id: "glasshouse-garden",
+    brand: "SKAI source example",
+    title: "Keep every flower while changing the hour",
+    curatorNote: "The glasshouse, path, hydrangeas, and beds retain their arrangement while low sunlight expands the dynamic range.",
+    image: "skai-example-04",
+  },
+  {
+    id: "stepping-stone-walk",
+    brand: "SKAI source example",
+    title: "Carry a real person through the atmosphere",
+    curatorNote: "The person, clothing, pond, stones, and garden remain recognizable beneath subtle light and haze.",
+    image: "skai-example-05",
+  },
+].map(({ image, reference, ...proof }, index) => ({
+  ...proof,
+  id: `lord-of-the-rings-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 141 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/lord-of-the-rings-v1/assets/source/${image}.jpg`,
+    ...(reference
+      ? {
+          referenceSrc:
+            `/format-repositories/lord-of-the-rings-v1/assets/source/${reference}.jpg`,
+        }
+      : {}),
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "lord-of-the-rings",
+    name: "Lord of the Rings",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -1787,6 +1864,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...lightSilhouetteDiscoveryEntries,
   ...rimPortraitFilterDiscoveryEntries,
   ...cyanotypeDiscoveryEntries,
+  ...lordOfTheRingsDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -1875,6 +1953,7 @@ const discoveryShelfDefinitions = [
       "light-silhouette",
       "rim-portrait-filter",
       "cyanotype",
+      "lord-of-the-rings",
     ],
   },
   {

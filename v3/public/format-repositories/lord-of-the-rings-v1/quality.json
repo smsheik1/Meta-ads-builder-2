@@ -1,0 +1,23 @@
+{
+  "automatic": [
+    "The source input is 3:4 within 0.02 so composition can be preserved",
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The source subject, pose, clothing, composition, camera angle, perspective, framing, and background remain recognizable",
+    "A soft sunrise reads naturally from the upper left",
+    "God rays, volumetric light, mist, and lens flare remain subtle and physically plausible",
+    "Deep greens, warm highlights, clean blues, accurate skin tones, and neutral shadows avoid an orange or yellow cast",
+    "Dynamic range, local contrast, texture, and detail feel like a polished phone photograph",
+    "The result remains fully photorealistic instead of becoming costume art, a painting, or an obviously AI-generated fantasy scene"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

@@ -1,0 +1,12 @@
+Lord of the Rings Prompt
+
+Source: @skaigenerated
+Post: https://www.instagram.com/skaigenerated/p/Dbbkg5nilsa/
+Guide: https://docs.google.com/document/d/1oYM_XsA5XqdgKtm5cMbgs_0WYnoR7dD0LSdTIDicEvo/mobilebasic
+Image Model: GPT Image 2
+
+Prompt:
+
+Edit this photo into a cinematic The Lord of the Rings style while preserving the original composition, subject, pose, clothing, facial features, expression, camera angle, perspective, framing, and every background element. Transform the lighting into a soft sunrise from the upper left with natural god rays, subtle volumetric light, gentle morning mist, and a soft cinematic lens flare.
+
+Apply a rich, natural color grade with deep greens, warm golden-hour highlights, a clean blue sky, accurate skin tones, and soft neutral shadows without an orange or yellow cast. Enhance dynamic range, local contrast, texture, and detail to an iPhone 16 Pro Smart HDR look while keeping it fully photorealistic. Create an immersive fantasy atmosphere inspired by The Lord of the Rings that still looks like a genuine sunrise photograph, not AI-generated artwork.

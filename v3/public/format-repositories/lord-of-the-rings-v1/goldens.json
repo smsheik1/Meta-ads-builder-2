@@ -1,0 +1,82 @@
+{
+  "purpose": "Judge exact source preservation, believable upper-left sunrise light, natural fantasy atmosphere, restrained color grading, Smart HDR detail, and photographic realism.",
+  "examples": [
+    {
+      "id": "native-hero",
+      "title": "See the complete transformation at a glance",
+      "imagePath": "assets/source/skai-hero.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The native cover keeps the before and after together in one honest frame",
+        "The subject, greenhouse composition, and point of view stay fixed",
+        "The warmer directional light immediately communicates the format"
+      ]
+    },
+    {
+      "id": "wiggly-proof",
+      "title": "Prove an ordinary conservatory photo can hold the grade",
+      "imagePath": "assets/source/wiggly-proof.jpg",
+      "model": "Wiggly built-in proof",
+      "whyItWorks": [
+        "The same traveler, clothing, pose, greenhouse structure, plants, rocks, and path remain recognizable",
+        "Upper-left sunlight, soft rays, and light haze reshape the mood without inventing a new setting",
+        "Deep greens and controlled gold highlights remain photographic rather than painterly"
+      ]
+    },
+    {
+      "id": "waterfall-conservatory",
+      "title": "Turn glasshouse water into a hidden valley",
+      "imagePath": "assets/source/skai-example-01.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The waterfall, pool, glass roof, and dense planting remain fully legible",
+        "Directional rays create depth through the foliage",
+        "Natural greens keep the frame grounded"
+      ]
+    },
+    {
+      "id": "moss-garden",
+      "title": "Let a quiet garden feel mythic",
+      "imagePath": "assets/source/skai-example-02.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The lantern, bridge, koi pond, and clipped shrubs preserve their exact garden logic",
+        "Soft mist and sunrise light add atmosphere without replacing the location",
+        "Warm highlights stay balanced by neutral shadows"
+      ]
+    },
+    {
+      "id": "forest-path",
+      "title": "Make the path invite an adventure",
+      "imagePath": "assets/source/skai-example-03.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The walkway and surrounding plants retain a convincing photographic structure",
+        "God rays reveal depth instead of flattening the foliage",
+        "The blue sky and deep greens avoid a heavy orange cast"
+      ]
+    },
+    {
+      "id": "glasshouse-garden",
+      "title": "Keep every flower while changing the hour",
+      "imagePath": "assets/source/skai-example-04.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The glasshouse, path, hydrangeas, and plant beds keep their detailed arrangement",
+        "Low sunrise light adds cinematic contrast without crushing the shadows",
+        "Fine texture survives the stronger dynamic range"
+      ]
+    },
+    {
+      "id": "stepping-stone-walk",
+      "title": "Carry a real person through the atmosphere",
+      "imagePath": "assets/source/skai-example-05.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The person, clothing, stepping stones, pond, and garden remain recognizable",
+        "The light reads from the upper left and follows the scene naturally",
+        "Subtle haze supports depth without making the photograph look synthetic"
+      ]
+    }
+  ]
+}

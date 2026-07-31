@@ -1,0 +1,21 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/Dbbkg5nilsa/",
+    "resourceUrl": "https://docs.google.com/document/d/1oYM_XsA5XqdgKtm5cMbgs_0WYnoR7dD0LSdTIDicEvo/mobilebasic",
+    "guide": "assets/source/guide.txt",
+    "nativeHero": "assets/source/skai-hero.jpg",
+    "referenceInset": "assets/source/reference-input.jpg",
+    "verification": "The delivered Google Doc supplied the exact GPT Image 2 prompt. The Instagram carousel supplied one native before-and-after cover and five native 3:4 transformation outputs.",
+    "referenceNote": "The native cover already contains its own before-and-after comparison, so Discover must not add a second reference inset to it. The separately identified Wiggly proof uses its own fixture input for one additional truthful pair. The two CTA slides are intentionally excluded."
+  },
+  "examples": [
+    { "id": "native-hero", "path": "assets/source/skai-hero.jpg", "provenance": "@skaigenerated carousel before-and-after cover" },
+    { "id": "wiggly-proof", "path": "assets/source/wiggly-proof.jpg", "provenance": "Wiggly built-in image-generation proof" },
+    { "id": "waterfall-conservatory", "path": "assets/source/skai-example-01.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "moss-garden", "path": "assets/source/skai-example-02.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "forest-path", "path": "assets/source/skai-example-03.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "glasshouse-garden", "path": "assets/source/skai-example-04.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "stepping-stone-walk", "path": "assets/source/skai-example-05.jpg", "provenance": "@skaigenerated carousel" }
+  ]
+}
