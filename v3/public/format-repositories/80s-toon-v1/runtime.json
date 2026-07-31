@@ -1,0 +1,26 @@
+{
+  "slug": "80s-toon",
+  "version": "1.0.0",
+  "promptPath": "prompts/transform.txt",
+  "input": { "mode": "image", "formats": ["jpg", "png", "webp"], "minimumWidth": 512, "minimumHeight": 512, "maximumBytes": 26214400, "aspectRatio": "3:4", "aspectRatioTolerance": 0.02 },
+  "defaultModel": "nano-banana-2",
+  "modelRoutes": {
+    "nano-banana-2-lite": { "label": "Nano Banana 2 Lite", "lane": "economy", "model": "google/nano-banana-2-lite", "family": "nano-banana", "aspectRatio": "3:4", "outputFormat": "jpg", "costEstimate": "about $0.034 per output image at the current listed rate", "timeEstimate": "usually 5-60 seconds" },
+    "nano-banana-2": { "label": "Nano Banana 2", "lane": "default", "model": "google/nano-banana-2", "family": "nano-banana", "aspectRatio": "3:4", "outputFormat": "jpg", "resolution": "1K", "costEstimate": "about $0.067 per 1K output image at the current listed rate", "timeEstimate": "usually 10-120 seconds" },
+    "nano-banana-pro": { "label": "Nano Banana Pro", "lane": "premium", "model": "google/nano-banana-pro", "family": "nano-banana", "aspectRatio": "3:4", "outputFormat": "jpg", "resolution": "1K", "costEstimate": "about $0.15 per 1K output image at the current listed rate", "timeEstimate": "usually 30-180 seconds" }
+  },
+  "expectedOutputs": 1,
+  "maximumAttempts": 3,
+  "smokeInputPath": "assets/source/slide-02.jpg",
+  "smokeExamplePath": "assets/source/slide-02.jpg",
+  "minimumOutputWidth": 1080,
+  "minimumOutputHeight": 1440,
+  "minimumOutputBytes": 51200,
+  "manualReview": [
+    "the exact people, identity, pose, body language, expression, clothing, accessories, background, framing, perspective, and composition remain recognizable",
+    "the result uses thick black outlines, flat solid colors, minimal cel-style shading, and clean hand-drawn 2D linework",
+    "slightly oversized heads, elastic limbs, classic oval eyes, rounded hands, and geometric shapes feel playful without replacing the source",
+    "subtle grain, desaturated cel tones, and soft print texture create a vintage 1960s–1980s American animation finish",
+    "the image avoids realism, 3D rendering, anime, and modern glossy cartoon styling"
+  ]
+}

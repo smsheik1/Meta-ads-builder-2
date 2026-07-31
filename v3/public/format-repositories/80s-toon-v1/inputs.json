@@ -1,0 +1,7 @@
+{
+  "required": [{ "id": "image", "type": "image", "formats": ["jpg", "png", "webp"], "minimumWidth": 512, "minimumHeight": 512, "maximumBytes": 26214400, "aspectRatio": "3:4", "aspectRatioTolerance": 0.02 }],
+  "question": "Which 3:4 photo should I turn into an 80s Toon, and should I use Nano Banana 2 (default), Lite (economy), or Pro (source-recommended)?",
+  "defaults": { "model": "nano-banana-2", "aspectRatio": "3:4", "outputCount": 1 },
+  "modelRoutes": { "economy": "google/nano-banana-2-lite", "default": "google/nano-banana-2", "premium": "google/nano-banana-pro" },
+  "sourceModel": "Nano Banana Pro"
+}

@@ -1437,6 +1437,53 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "80s-toon",
+    promise: "Turn one photo into a bold retro American cartoon while preserving the exact people, identity, pose, clothing, background, framing, and visible details.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/80s-toon",
+    manifestPath: "format-repositories/80s-toon-v1/format.json",
+    whatStays: [
+      "The exact people, facial identity, pose, expression, clothing, accessories, colors, and proportions",
+      "The original background, lighting, framing, perspective, camera angle, and composition",
+      "One photographic 3:4 source image as the reusable input",
+    ],
+    whatChanges: [
+      "Thick black outlines, flat solid colors, minimal cel shading, and hand-drawn 2D linework",
+      "Slightly oversized heads, elastic limbs, classic oval eyes, rounded hands, and playful vintage geometry",
+      "Slightly desaturated cel tones, subtle film grain, and soft retro print texture",
+      "A 1960s–1980s American animation finish without realism, 3D rendering, anime, or modern gloss",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One 3:4 JPEG, PNG, or WebP photo at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 retro cartoon image",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and specific visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for the source-recommended route",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Preserve the exact people, identity, pose, outfit, visible details, background, framing, and composition",
+        "Use bold black outlines, flat color, minimal cel shading, classic oval eyes, and subtle vintage texture",
+        "Avoid realism, 3D rendering, anime, and modern glossy cartoon styling",
+        "Validate the 3:4 source image locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current selected Replicate route", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One provider prediction; the estimate command prints the selected route before approval",
+      output: "One inspected 3:4 retro cartoon image plus prediction and quality provenance",
+      firstQuestion: "Which 3:4 photo should I turn into an 80s Toon, and should I use Nano Banana 2 (default), Lite (economy), or Pro (source-recommended)?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",

@@ -1,0 +1,19 @@
+{
+  "id": "80s-toon",
+  "version": "1.0.0",
+  "title": "80s Toon",
+  "description": "Turn one photo into a bold retro American cartoon while preserving the exact people, pose, clothing, background, framing, and visible details.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/Dbd1wuqiv-k/",
+    "ctaKeyword": "AI",
+    "modelShown": "Nano Banana Pro"
+  },
+  "outputs": [
+    "1 inspected 3:4 retro cartoon image",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

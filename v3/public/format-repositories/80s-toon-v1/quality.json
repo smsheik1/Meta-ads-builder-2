@@ -1,0 +1,5 @@
+{
+  "automatic": ["The source input is 3:4 within 0.02", "Exactly 1 decodable JPG, JPEG, PNG, or WebP output", "At least 1080x1440 pixels", "Aspect ratio matches the selected route within 0.02", "At least 50 KB"],
+  "visual": ["The exact people, facial identity, pose, body language, expression, clothing, accessories, background, framing, perspective, and composition remain recognizable", "Thick black outlines, flat solid colors, minimal cel shading, and clean hand-drawn linework replace realism", "Slightly oversized heads, elastic limbs, classic oval eyes, rounded hands, and simple geometry feel playful but preserve the source", "Subtle grain, slightly desaturated cel tones, and soft print texture create an authentic retro animation finish", "The image avoids realism, 3D rendering, anime, and modern glossy cartoon styling"],
+  "finalization": { "automaticPassRequired": true, "visualPassRequired": true, "reviewNotesRequired": true, "explicitApprovalFlag": "--approve-final" }
+}

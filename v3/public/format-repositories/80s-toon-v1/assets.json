@@ -1,0 +1,31 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/Dbd1wuqiv-k/",
+    "guide": "assets/source/guide.txt",
+    "guideTitle": "80s Toon Prompt",
+    "guideAccess": "Delivered and opened from Instagram mobile DM on 2026-07-31.",
+    "nativeHero": "assets/source/slide-01.jpg",
+    "cleanGuideExample": "assets/source/slide-02.jpg",
+    "smokeInput": "assets/source/slide-02.jpg",
+    "modelShown": "Nano Banana Pro",
+    "commentsAtCollection": 306,
+    "collectedAt": "2026-07-31",
+    "verification": "The Instagram mobile DM delivered and opened the 80s Toon Prompt guide, which supplied the exact prompt. The Instagram carousel supplied one native title cover and seven 3:4 transformation proofs.",
+    "referenceNote": "Slides 1 through 8 each already contain exactly one original-photo inset, so Discover adds no second reference overlay. CTA slides 9 and 10 are intentionally excluded."
+  },
+  "examples": [
+    { "id": "native-hero", "path": "assets/source/slide-01.jpg", "provenance": "@skaigenerated carousel title cover" },
+    { "id": "stone-steps", "path": "assets/source/slide-02.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "beach-toast", "path": "assets/source/slide-03.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "tram", "path": "assets/source/slide-04.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "fruit-market", "path": "assets/source/slide-05.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "mirror-selfie", "path": "assets/source/slide-06.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "car-bouquet", "path": "assets/source/slide-07.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "flower-market", "path": "assets/source/slide-08.jpg", "provenance": "@skaigenerated carousel" }
+  ],
+  "excluded": [
+    { "path": "Instagram carousel slide 9", "reason": "Comment-to-DM CTA, not format proof" },
+    { "path": "Instagram carousel slide 10", "reason": "Follow CTA, not format proof" }
+  ]
+}
