@@ -1977,6 +1977,83 @@ const twoThousandsEffectDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const eightiesToonDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "native-hero",
+    brand: "Retro cartoon transformation",
+    title: "Make the transformation obvious in one glance",
+    curatorNote: "SKAI's native cover shows the finished 80s Toon treatment beside the exact original gaming photo.",
+    image: "slide-01",
+  },
+  {
+    id: "stone-steps",
+    brand: "SKAI source example",
+    title: "Keep the face, ink, and relaxed pose",
+    curatorNote: "The face, mustache, cap, tattoos, seated posture, and stone setting survive the bold retro linework.",
+    image: "slide-02",
+  },
+  {
+    id: "beach-toast",
+    brand: "SKAI source example",
+    title: "Carry a beach snapshot into animation",
+    curatorNote: "The hat, braids, drink, gesture, outfit, and beach remain intact under flat color and classic cartoon eyes.",
+    image: "slide-03",
+  },
+  {
+    id: "tram",
+    brand: "SKAI source example",
+    title: "Preserve a full-body travel moment",
+    curatorNote: "The yellow top, glasses, bag, pose, and tram interior all stay recognizable in clean geometric linework.",
+    image: "slide-04",
+  },
+  {
+    id: "fruit-market",
+    brand: "SKAI source example",
+    title: "Turn a colorful market into a cartoon set",
+    curatorNote: "The expression, outfit, bag, fruit displays, and dense market scene remain legible after the style change.",
+    image: "slide-05",
+  },
+  {
+    id: "mirror-selfie",
+    brand: "SKAI source example",
+    title: "Keep a mirror selfie unmistakably personal",
+    curatorNote: "The layered red outfit, phone pose, tattoos, silhouette, and room survive simple cel shading.",
+    image: "slide-06",
+  },
+  {
+    id: "car-bouquet",
+    brand: "SKAI source example",
+    title: "Hold onto the gesture and bouquet",
+    curatorNote: "The hand-to-forehead gesture, flowers, lace top, face, and car seat remain recognizable.",
+    image: "slide-07",
+  },
+  {
+    id: "flower-market",
+    brand: "SKAI source example",
+    title: "Let the flowers carry the frame",
+    curatorNote: "The striped shirt, bouquet, seated pose, and street setting stay intact under the playful vintage treatment.",
+    image: "slide-08",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `80s-toon-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 204 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/80s-toon-v1/assets/source/${image}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "80s-toon",
+    name: "80s Toon",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -2418,6 +2495,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...dreamcoreAngelDiscoveryEntries,
   ...darkAestheticFilterDiscoveryEntries,
   ...twoThousandsEffectDiscoveryEntries,
+  ...eightiesToonDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -2513,6 +2591,7 @@ const discoveryShelfDefinitions = [
       "red-dead-redemption",
       "lord-of-the-rings",
       "rag-doll",
+      "80s-toon",
       "old-money-shot",
     ],
   },

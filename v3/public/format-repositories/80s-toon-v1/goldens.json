@@ -1,0 +1,61 @@
+{
+  "purpose": "Judge identity, pose, clothing, scene, and composition preservation under a clean 1960s–1980s American cartoon treatment with bold outlines, flat color, simple cel shading, and vintage texture.",
+  "examples": [
+    {
+      "id": "native-hero",
+      "title": "Make the transformation obvious in one glance",
+      "imagePath": "assets/source/slide-01.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": ["The native title cover names the visual recipe immediately", "Both people and the gaming scene remain recognizable", "The original-photo inset makes preservation easy to inspect"]
+    },
+    {
+      "id": "stone-steps",
+      "title": "Keep the face, ink, and relaxed pose",
+      "imagePath": "assets/source/slide-02.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": ["The face, mustache, cap, tattoos, and seated posture survive", "Architectural depth remains intact", "Bold linework replaces realism without redesigning the subject"]
+    },
+    {
+      "id": "beach-toast",
+      "title": "Carry a beach snapshot into animation",
+      "imagePath": "assets/source/slide-03.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": ["The hat, braids, drink, hand gesture, and outfit remain readable", "Flat colors simplify the image without losing the beach setting", "The expression keeps its playful energy"]
+    },
+    {
+      "id": "tram",
+      "title": "Preserve a full-body travel moment",
+      "imagePath": "assets/source/slide-04.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": ["The yellow top, glasses, bag, pose, and tram interior all survive", "The full-body framing stays unchanged", "Clean geometry makes a busy interior feel coherent"]
+    },
+    {
+      "id": "fruit-market",
+      "title": "Turn a colorful market into a cartoon set",
+      "imagePath": "assets/source/slide-05.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": ["The pose, expression, outfit, bag, and fruit displays remain recognizable", "Dense background detail is simplified without becoming empty", "The strong color blocking suits the source scene"]
+    },
+    {
+      "id": "mirror-selfie",
+      "title": "Keep a mirror selfie unmistakably personal",
+      "imagePath": "assets/source/slide-06.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": ["The layered red outfit, phone pose, tattoos, and room remain intact", "The silhouette stays faithful to the source", "Simple cel shading retains depth without adding 3D polish"]
+    },
+    {
+      "id": "car-bouquet",
+      "title": "Hold onto the gesture and bouquet",
+      "imagePath": "assets/source/slide-07.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": ["The hand-to-forehead gesture, flowers, lace top, and car seat survive", "The face remains recognizable under oversized cartoon eyes", "Muted color and linework keep the vintage finish consistent"]
+    },
+    {
+      "id": "flower-market",
+      "title": "Let the flowers carry the frame",
+      "imagePath": "assets/source/slide-08.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": ["The striped shirt, bouquet, seated pose, and street setting remain clear", "The flowers retain enough detail to anchor the composition", "The expressive eyes add character without replacing the person"]
+    }
+  ]
+}

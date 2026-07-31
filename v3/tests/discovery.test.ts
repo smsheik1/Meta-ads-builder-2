@@ -257,6 +257,7 @@ const generatedFormatSlugs = [
   "dreamcore-angel",
   "dark-aesthetic-filter",
   "2000s-effect",
+  "80s-toon",
   "jingle",
   "newsletter-writer",
 ];
@@ -424,6 +425,7 @@ assert.deepEqual(
     "red-dead-redemption",
     "lord-of-the-rings",
     "rag-doll",
+    "80s-toon",
     "old-money-shot",
   ],
   "Every packaged SKAI image format should appear exactly once in descending source-comment order.",
@@ -557,6 +559,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "2000s-effect").length,
   9,
   "The native hero and eight SKAI source proofs should remain inside one 2000s Effect page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "80s-toon").length,
+  8,
+  "The native hero and seven SKAI source proofs should remain inside one 80s Toon page.",
 );
 
 console.log("discovery tests passed");
