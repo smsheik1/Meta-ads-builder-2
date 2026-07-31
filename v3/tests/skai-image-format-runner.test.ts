@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -69,6 +69,52 @@ if (variants.length) {
   assert.equal(
     state.prompt,
     readFileSync(path.join(repository, runtime.promptVariants[variant]), "utf8").trim(),
+  );
+  rmSync(runsRoot, { force: true, recursive: true });
+}
+
+if (runtime.input.aspectRatio) {
+  const runsRoot = mkdtempSync(path.join(os.tmpdir(), `wiggly-${slug}-ratio-test-`));
+  const wrongRatioInput = path.join(runsRoot, "wrong-ratio.png");
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+    "base64",
+  );
+  png.writeUInt32BE(600, 16);
+  png.writeUInt32BE(600, 20);
+  writeFileSync(wrongRatioInput, png);
+  const initialized = spawnSync(
+    process.execPath,
+    [
+      "--import",
+      "tsx",
+      "scripts/skai-image-format.ts",
+      "init",
+      `--format=${slug}`,
+      "--run=wrong-ratio",
+      `--runs-root=${runsRoot}`,
+      `--input=${wrongRatioInput}`,
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(initialized.status, 0, initialized.stderr || initialized.stdout);
+  const validated = spawnSync(
+    process.execPath,
+    [
+      "--import",
+      "tsx",
+      "scripts/skai-image-format.ts",
+      "validate",
+      `--format=${slug}`,
+      "--run=wrong-ratio",
+      `--runs-root=${runsRoot}`,
+    ],
+    { encoding: "utf8" },
+  );
+  assert.notEqual(validated.status, 0, "A mismatched input ratio should be rejected.");
+  assert.match(
+    validated.stderr || validated.stdout,
+    new RegExp(`Input aspect ratio must be ${runtime.input.aspectRatio.replace(":", "\\:")}`),
   );
   rmSync(runsRoot, { force: true, recursive: true });
 }

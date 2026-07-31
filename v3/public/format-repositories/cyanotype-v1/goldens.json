@@ -1,0 +1,82 @@
+{
+  "purpose": "Judge subject and composition preservation, Prussian-blue tonality, real paper and chemistry texture, subtle X-ray detail when relevant, and an authentic analogue contact-print finish.",
+  "examples": [
+    {
+      "id": "wiggly-proof",
+      "title": "Prove a real portrait survives the chemistry",
+      "imagePath": "assets/source/wiggly-proof.jpg",
+      "model": "Wiggly built-in proof",
+      "whyItWorks": [
+        "The fixture identity, expression, clothing, and crop remain recognizable",
+        "Paper fibers and uneven exposure make the blue feel physically printed",
+        "The stationary portrait stays anatomically natural without an unnecessary skeleton"
+      ]
+    },
+    {
+      "id": "skull-portrait",
+      "title": "Layer the skull without losing the face",
+      "imagePath": "assets/source/skai-example-01.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "The sunglasses, chain, face, and hair remain legible",
+        "The skull reads as a translucent photographic exposure",
+        "Soft deckled edges keep the image handmade"
+      ]
+    },
+    {
+      "id": "woman-and-dog",
+      "title": "Keep two personalities in one print",
+      "imagePath": "assets/source/skai-example-02.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "Both the seated woman and dog remain immediately recognizable",
+        "The porch and plants retain spatial depth",
+        "The restrained skeletal layer supports rather than dominates the scene"
+      ]
+    },
+    {
+      "id": "costume-embrace",
+      "title": "Make texture survive a surreal embrace",
+      "imagePath": "assets/source/skai-example-03.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "Fur, fabric, and faces separate cleanly inside one blue palette",
+        "The unusual pose remains readable",
+        "Chemical variation gives the print real tactile character"
+      ]
+    },
+    {
+      "id": "beach-skeleton",
+      "title": "Turn a beach snapshot into an exposure study",
+      "imagePath": "assets/source/skai-example-04.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "The person, sunglasses, shoreline, and horizon stay recognizable",
+        "The torso skeleton blends into the existing body",
+        "White sky and deep-blue shadows preserve convincing tonal range"
+      ]
+    },
+    {
+      "id": "cat-portrait",
+      "title": "Let an animal portrait carry the X-ray idea",
+      "imagePath": "assets/source/skai-example-05.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "The cat and person remain distinct at a glance",
+        "Fine whiskers, hair, and jacket texture survive the print process",
+        "The skeletal detail feels delicate rather than medical"
+      ]
+    },
+    {
+      "id": "boxer-skeleton",
+      "title": "Use anatomy to amplify motion",
+      "imagePath": "assets/source/skai-example-06.jpg",
+      "model": "Nano Banana Pro · SKAI source",
+      "whyItWorks": [
+        "The gloves, trunks, stance, and arena remain intact",
+        "The moving body earns the strongest skeletal reveal",
+        "Cyanotype texture keeps the frame artistic instead of clinical"
+      ]
+    }
+  ]
+}

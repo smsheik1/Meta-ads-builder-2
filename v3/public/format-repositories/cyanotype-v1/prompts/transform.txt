@@ -1,0 +1,48 @@
+Transform the uploaded image into an authentic handcrafted cyanotype print while preserving the exact composition, framing, perspective, subject placement, proportions, and visual storytelling of the original image.
+
+X-ray aesthetic:
+
+If the uploaded image contains an animal or a person in motion, subtly reveal a semi-transparent skeletal structure inside the body, blended naturally into the cyanotype print. The bones should appear faint and artistic—not medical or graphic—matching the ethereal X-ray look seen in experimental cyanotype photography. Preserve anatomy accurately while keeping the overall image elegant and dreamlike.
+
+Recreate the image using the traditional 19th-century cyanotype photographic printing process with rich Prussian blue tones and soft white highlights. The artwork should look like a genuine contact print made on watercolor paper rather than a digital blue filter.
+
+Cyanotype characteristics:
+
+- Deep Prussian blue monochromatic palette
+- White to pale-blue highlights created naturally by the exposure
+- Soft tonal transitions with slightly reduced contrast
+- Fine watercolor paper texture visible throughout
+- Organic chemical staining, slight uneven coating, and subtle edge variations
+- Gentle pigment bleeding and handmade imperfections
+- Slight exposure falloff near the borders
+- Soft grain from the photographic emulsion
+- Natural analogue appearance with no artificial digital sharpening
+
+Subject preservation:
+
+- Keep every object, person, animal, building, vehicle, and environmental element recognizable.
+- Preserve facial features, clothing, expressions, poses, and anatomy.
+- Maintain all lighting direction and shadows from the original scene.
+- Retain depth, perspective, and composition exactly.
+- Preserve fine details while translating them into cyanotype tonal values.
+
+Artistic rendering:
+
+- Emphasize silhouettes, edges, and natural textures.
+- Convert colours into cyanotype luminance rather than simply tinting them blue.
+- Produce delicate highlight blooming characteristic of real cyanotype prints.
+- Slightly soften micro-details to emulate contact printing.
+- Maintain realistic tonal separation.
+
+Quality requirements:
+
+- Museum-quality fine art cyanotype
+- Ultra-high resolution
+- Authentic analogue chemistry
+- Handcrafted photographic print aesthetic
+- No modern digital effects
+- No artificial HDR
+- No oversaturation
+- No neon blues
+- No cartoon or painterly look
+- Preserve the original aspect ratio and composition exactly.

@@ -1277,6 +1277,83 @@ const rimPortraitFilterDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const cyanotypeDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "wiggly-proof",
+    brand: "Handcrafted cyanotype",
+    title: "Make the chemistry feel real",
+    curatorNote: "A verified fixture portrait keeps its identity and clothing while watercolor paper, uneven exposure, and Prussian blue make the result feel physically printed.",
+    image: "wiggly-proof",
+    reference: "reference-input",
+  },
+  {
+    id: "skull-portrait",
+    brand: "SKAI source example",
+    title: "Layer the skull without losing the face",
+    curatorNote: "Sunglasses, chain, face, and hair remain legible beneath a translucent photographic skull exposure.",
+    image: "skai-example-01",
+  },
+  {
+    id: "woman-and-dog",
+    brand: "SKAI source example",
+    title: "Keep two personalities in one print",
+    curatorNote: "The woman, dog, porch, and plants hold their depth while the skeletal layer stays restrained.",
+    image: "skai-example-02",
+  },
+  {
+    id: "costume-embrace",
+    brand: "SKAI source example",
+    title: "Preserve texture through a surreal embrace",
+    curatorNote: "Fur, fabric, faces, and an unusual pose stay distinct inside one tactile blue exposure.",
+    image: "skai-example-03",
+  },
+  {
+    id: "beach-skeleton",
+    brand: "SKAI source example",
+    title: "Turn a snapshot into an exposure study",
+    curatorNote: "The person, sunglasses, shoreline, and horizon survive while the torso skeleton blends into the body.",
+    image: "skai-example-04",
+  },
+  {
+    id: "cat-portrait",
+    brand: "SKAI source example",
+    title: "Make animal anatomy feel delicate",
+    curatorNote: "Fine whiskers, hair, jacket texture, and a faint skeleton feel artistic rather than clinical.",
+    image: "skai-example-05",
+  },
+  {
+    id: "boxer-skeleton",
+    brand: "SKAI source example",
+    title: "Use anatomy to amplify motion",
+    curatorNote: "Gloves, trunks, stance, and arena remain intact while the moving body earns the strongest X-ray reveal.",
+    image: "skai-example-06",
+  },
+].map(({ image, reference, ...proof }, index) => ({
+  ...proof,
+  id: `cyanotype-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 134 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/cyanotype-v1/assets/source/${image}.jpg`,
+    ...(reference
+      ? {
+          referenceSrc:
+            `/format-repositories/cyanotype-v1/assets/source/${reference}.jpg`,
+        }
+      : {}),
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "cyanotype",
+    name: "Cyanotype",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -1709,6 +1786,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...doodleArtDiscoveryEntries,
   ...lightSilhouetteDiscoveryEntries,
   ...rimPortraitFilterDiscoveryEntries,
+  ...cyanotypeDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -1796,6 +1874,7 @@ const discoveryShelfDefinitions = [
       "doodle-art",
       "light-silhouette",
       "rim-portrait-filter",
+      "cyanotype",
     ],
   },
   {

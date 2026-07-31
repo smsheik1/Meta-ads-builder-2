@@ -1,0 +1,23 @@
+{
+  "automatic": [
+    "The source input is 3:4 within 0.02 so composition can be preserved",
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The source subject, framing, and perspective remain recognizable",
+    "The palette is deep Prussian blue with soft natural highlights",
+    "Watercolor paper, chemical staining, grain, and edge falloff feel physical",
+    "Any skeletal reveal is anatomically plausible, subtle, and only used for a moving person or animal",
+    "Tonal separation comes from luminance rather than a flat blue tint",
+    "The result looks like an analogue contact print rather than a digital filter"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

@@ -238,6 +238,7 @@ const generatedFormatSlugs = [
   "doodle-art",
   "light-silhouette",
   "rim-portrait-filter",
+  "cyanotype",
   "jingle",
   "newsletter-writer",
 ];
@@ -384,6 +385,7 @@ assert.deepEqual(
       "doodle-art",
       "light-silhouette",
       "rim-portrait-filter",
+      "cyanotype",
     ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
