@@ -1,0 +1,82 @@
+{
+  "purpose": "Judge identity preservation, enormous luminous wings, intimate fallen-angel body language, extreme monochrome bloom, damaged-video texture, and a haunting dreamcore mood.",
+  "examples": [
+    {
+      "id": "native-hero",
+      "title": "See the fallen-angel transformation in one glance",
+      "imagePath": "assets/source/skai-carousel-01.jpg",
+      "model": "GPT Image 2.0 · SKAI source",
+      "whyItWorks": [
+        "The native cover names the recipe while showing the full visual language",
+        "Huge white wings and the lowered face read immediately against a crushed-black void",
+        "Bloom, grain, and damaged-video texture make the result feel recovered rather than polished"
+      ]
+    },
+    {
+      "id": "street-selfie",
+      "title": "Let the wings consume the frame",
+      "imagePath": "assets/source/skai-carousel-02.jpg",
+      "model": "GPT Image 2.0 · SKAI source",
+      "whyItWorks": [
+        "The original face remains recognizable in the single inset",
+        "Gigantic feathered wings dominate without erasing the fragile lowered pose",
+        "Crushed blacks, dirty grain, and blown highlights create the intended forgotten-video finish"
+      ]
+    },
+    {
+      "id": "clean-portrait",
+      "title": "Keep identity beneath crushed blacks",
+      "imagePath": "assets/source/skai-carousel-03.jpg",
+      "model": "GPT Image 2.0 · SKAI source",
+      "whyItWorks": [
+        "The clean input identity survives the darker hair and side-profile composition",
+        "A brilliant wing creates a readable silhouette inside heavy negative space",
+        "The grain and bloom feel tactile instead of digitally pristine"
+      ]
+    },
+    {
+      "id": "soft-features",
+      "title": "Turn soft features into a gothic still",
+      "imagePath": "assets/source/skai-carousel-04.jpg",
+      "model": "GPT Image 2.0 · SKAI source",
+      "whyItWorks": [
+        "The subject remains recognizable while the lowered gaze becomes more vulnerable",
+        "The wing light wraps around the face without revealing a modern environment",
+        "Subtle tape scratches and uneven exposure sell the degraded archive aesthetic"
+      ]
+    },
+    {
+      "id": "white-tee",
+      "title": "Push bloom until it feels haunted",
+      "imagePath": "assets/source/skai-carousel-05.jpg",
+      "model": "GPT Image 2.0 · SKAI source",
+      "whyItWorks": [
+        "The source face and white shirt remain legible beneath a radical lighting change",
+        "The left wing blows into the body and lens exactly as the prompt requests",
+        "The empty black surround keeps the portrait lonely and intimate"
+      ]
+    },
+    {
+      "id": "sports-selfie",
+      "title": "Let feather light overpower the lens",
+      "imagePath": "assets/source/skai-carousel-06.jpg",
+      "model": "GPT Image 2.0 · SKAI source",
+      "whyItWorks": [
+        "The face remains anchored even as hair, pose, and lighting become dreamlike",
+        "Both wings extend beyond the body and overpower the frame",
+        "Extreme bloom and sensor grain produce the intended low-fidelity music-video still"
+      ]
+    },
+    {
+      "id": "set-selfie",
+      "title": "Hold the face inside a damaged tape",
+      "imagePath": "assets/source/skai-carousel-07.jpg",
+      "model": "GPT Image 2.0 · SKAI source",
+      "whyItWorks": [
+        "The reference inset makes identity preservation easy to judge",
+        "The face, shoulders, glowing wings, and negative space form one compact emotional frame",
+        "Horizontal interference, grain, and soft focus create a convincing degraded recording"
+      ]
+    }
+  ]
+}

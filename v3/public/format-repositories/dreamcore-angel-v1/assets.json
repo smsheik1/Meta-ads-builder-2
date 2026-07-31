@@ -1,0 +1,29 @@
+{
+  "sourceReference": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/DYK2SU7CgBW/",
+    "resourceUrl": "https://docs.google.com/document/d/1ggp03GnsW9VDaxqSq3CXyhaOLKZb_IZBR3fU3Wb2fxQ/mobilebasic",
+    "guide": "assets/source/guide.txt",
+    "nativeHero": "assets/source/skai-carousel-01.jpg",
+    "cleanGuideExample": "assets/source/guide-example.png",
+    "smokeInput": "assets/source/smoke-input.jpg",
+    "modelShown": "GPT Image 2.0",
+    "commentsAtCollection": 31900,
+    "collectedAt": "2026-07-31",
+    "verification": "The delivered Google Doc supplied the exact Dreamcore Angel prompt and a clean 3:4 example. The Instagram carousel supplied one native title cover and six 3:4 transformation proofs.",
+    "referenceNote": "Every proof slide already contains exactly one original-photo inset, so Discover adds no second reference overlay. CTA slides 8 and 9 are intentionally excluded."
+  },
+  "examples": [
+    { "id": "native-hero", "path": "assets/source/skai-carousel-01.jpg", "provenance": "@skaigenerated carousel title cover" },
+    { "id": "street-selfie", "path": "assets/source/skai-carousel-02.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "clean-portrait", "path": "assets/source/skai-carousel-03.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "soft-features", "path": "assets/source/skai-carousel-04.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "white-tee", "path": "assets/source/skai-carousel-05.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "sports-selfie", "path": "assets/source/skai-carousel-06.jpg", "provenance": "@skaigenerated carousel" },
+    { "id": "set-selfie", "path": "assets/source/skai-carousel-07.jpg", "provenance": "@skaigenerated carousel" }
+  ],
+  "excluded": [
+    { "path": "Instagram carousel slide 8", "reason": "Comment-to-DM CTA, not format proof" },
+    { "path": "Instagram carousel slide 9", "reason": "Follow CTA, not format proof" }
+  ]
+}

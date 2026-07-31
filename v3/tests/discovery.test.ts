@@ -244,6 +244,7 @@ const generatedFormatSlugs = [
   "paper-outfit",
   "moody-pink-effect",
   "cinematic-portrait-pack",
+  "dreamcore-angel",
   "jingle",
   "newsletter-writer",
 ];
@@ -396,6 +397,7 @@ assert.deepEqual(
       "paper-outfit",
       "moody-pink-effect",
       "cinematic-portrait-pack",
+      "dreamcore-angel",
     ],
   "Every packaged SKAI image format should appear exactly once in its own shelf.",
 );
@@ -513,6 +515,11 @@ assert.equal(
   proofEntries.filter((entry) => entry.format.slug === "cinematic-portrait-pack").length,
   9,
   "The native hero and eight SKAI prompt cards should remain inside one Cinematic Portrait Pack page.",
+);
+assert.equal(
+  proofEntries.filter((entry) => entry.format.slug === "dreamcore-angel").length,
+  7,
+  "The native hero and six SKAI source proofs should remain inside one Dreamcore Angel page.",
 );
 
 console.log("discovery tests passed");

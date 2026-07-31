@@ -1,0 +1,12 @@
+Dreamcore angel Prompts
+
+Source: @skaigenerated
+Instagram post: https://www.instagram.com/skaigenerated/p/DYK2SU7CgBW/
+Delivered Google Doc: https://docs.google.com/document/d/1ggp03GnsW9VDaxqSq3CXyhaOLKZb_IZBR3fU3Wb2fxQ/mobilebasic
+CTA keyword: AI
+Model named on the Instagram cover: GPT Image 2.0
+Comments observed at collection: 31.9K
+Collected: 2026-07-31
+
+The exact delivered prompt is preserved in prompts/transform.txt.
+The first carousel slide is the native hero. Slides 2 through 7 are transformation proofs. Slides 8 and 9 are promotional CTAs and are intentionally excluded.
