@@ -1,0 +1,20 @@
+{
+  "id": "paper-outfit",
+  "version": "1.0.0",
+  "title": "Paper Outfit",
+  "description": "Turn only the clothing, bag, and shoes in one fashion photo into handmade paper cutouts while keeping the person and photograph real.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/skaigenerated/p/Da2XgvnCqOG/",
+    "resourceUrl": "https://docs.google.com/document/d/1LjajzBWHChmEmc_Ujjwv9cRnQ8WRs1KouNBIPQ0PFG4/mobilebasic",
+    "ctaKeyword": "AI",
+    "modelShown": "GPT Image 2"
+  },
+  "outputs": [
+    "1 inspected 3:4 realistic fashion photo with handmade paper outfit cutouts",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

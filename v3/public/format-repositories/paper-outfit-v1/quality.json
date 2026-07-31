@@ -1,0 +1,23 @@
+{
+  "automatic": [
+    "The source input is 3:4 within 0.02 so composition can be preserved",
+    "Exactly 1 decodable JPG, JPEG, PNG, or WebP output",
+    "At least 640x800 pixels",
+    "Aspect ratio matches the selected route within 0.02",
+    "At least 50 KB"
+  ],
+  "visual": [
+    "The face, hair, skin, expression, makeup, body, pose, lighting, shadows, background, and crop remain photographic and recognizable",
+    "Only clothing, bag, and shoes receive the handmade paper-cutout treatment",
+    "The transformed pieces look like physical white paper drawn with visible colored pencil and paint marks",
+    "Cut edges, layered shapes, and attachment to the original silhouette feel intentional and coherent",
+    "The person is not turned into an illustration and the result does not resemble a global digital filter",
+    "There are no malformed hands, limbs, facial features, or obviously synthetic background details"
+  ],
+  "finalization": {
+    "automaticPassRequired": true,
+    "visualPassRequired": true,
+    "reviewNotesRequired": true,
+    "explicitApprovalFlag": "--approve-final"
+  }
+}

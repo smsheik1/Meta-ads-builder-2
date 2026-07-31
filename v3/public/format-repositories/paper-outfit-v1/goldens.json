@@ -1,0 +1,82 @@
+{
+  "purpose": "Judge photographic preservation, convincing handmade paper construction, clean cut edges, visible pencil texture, and edits limited to clothing, bag, and shoes.",
+  "examples": [
+    {
+      "id": "native-hero",
+      "title": "Explain the paper-outfit trick in one glance",
+      "imagePath": "assets/source/skai-hero.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The title, result, and single original-photo inset explain the transformation immediately",
+        "The face, pose, skin, lighting, street, and shadows remain photographic",
+        "The dress and bag read as physical paper cutouts laid over the real photo"
+      ]
+    },
+    {
+      "id": "amalfi-balcony",
+      "title": "Keep a sunny travel portrait completely real",
+      "imagePath": "assets/source/skai-example-01.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The source inset proves the person, pose, terrace, and sea stay recognizable",
+        "Pencil marks and white paper texture appear only on the outfit and accessories",
+        "Cut edges and layered pieces feel handmade instead of digitally recolored"
+      ]
+    },
+    {
+      "id": "coastal-terrace",
+      "title": "Let the background keep all of its detail",
+      "imagePath": "assets/source/skai-example-02.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The face, hair, body, architecture, and coast remain unchanged",
+        "The gingham top, skirt, and shoes share one coherent paper treatment",
+        "The effect stays readable without flattening the photograph"
+      ]
+    },
+    {
+      "id": "ice-cream-street",
+      "title": "Carry the treatment across a full outfit",
+      "imagePath": "assets/source/skai-example-03.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The subject, ice cream, car, street, and lighting remain photographic",
+        "Top, shorts, and bag use matching drawn texture and crisp cut edges",
+        "The paper pieces sit over the body while respecting pose and silhouette"
+      ]
+    },
+    {
+      "id": "front-step",
+      "title": "Make layered separates feel handmade",
+      "imagePath": "assets/source/skai-example-04.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The portrait and doorway remain realistic and recognizable",
+        "Top and skirt use distinct paper colors without changing the person",
+        "White outlines and pencil strokes make the physical overlay legible"
+      ]
+    },
+    {
+      "id": "resort-wall",
+      "title": "Preserve a soft candid pose",
+      "imagePath": "assets/source/skai-example-05.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The face, skin, arms, body, wall, plants, and light remain photographic",
+        "Each garment and accessory becomes its own cut-paper object",
+        "The new pieces still follow the original pose and proportions"
+      ]
+    },
+    {
+      "id": "museum-hall",
+      "title": "Keep dramatic architecture outside the edit",
+      "imagePath": "assets/source/skai-example-06.jpg",
+      "model": "GPT Image 2 · SKAI source",
+      "whyItWorks": [
+        "The person, pose, hall, exhibits, and golden light stay real",
+        "The floral dress gains visible paper texture and hand-drawn pigment",
+        "The limited edit makes the result feel like a tactile fashion collage"
+      ]
+    }
+  ]
+}

@@ -1508,6 +1508,76 @@ const softGlowFilterDiscoveryEntries: DiscoveryEntry[] = [
   },
 }));
 
+const paperOutfitDiscoveryEntries: DiscoveryEntry[] = [
+  {
+    id: "native-hero",
+    brand: "Fashion transformation",
+    title: "Turn the outfit into a handmade collage",
+    curatorNote: "The native SKAI cover makes the recipe instantly legible: a real street portrait, tactile paper clothing, and one original-photo inset.",
+    image: "skai-hero",
+  },
+  {
+    id: "amalfi-balcony",
+    brand: "SKAI source example",
+    title: "Keep a sunny travel portrait completely real",
+    curatorNote: "The person, pose, terrace, and sea remain photographic while the outfit and accessories become layered paper drawings.",
+    image: "skai-example-01",
+  },
+  {
+    id: "coastal-terrace",
+    brand: "SKAI source example",
+    title: "Let the background keep every detail",
+    curatorNote: "Face, hair, architecture, and coast stay intact while the gingham top, skirt, and shoes share one handmade treatment.",
+    image: "skai-example-02",
+  },
+  {
+    id: "ice-cream-street",
+    brand: "SKAI source example",
+    title: "Carry the effect across a full outfit",
+    curatorNote: "Top, shorts, and bag gain pencil texture and cut edges without changing the subject, ice cream, car, or street.",
+    image: "skai-example-03",
+  },
+  {
+    id: "front-step",
+    brand: "SKAI source example",
+    title: "Make layered separates feel handmade",
+    curatorNote: "Distinct paper colors and white cut edges transform only the clothes while the doorway portrait stays photographic.",
+    image: "skai-example-04",
+  },
+  {
+    id: "resort-wall",
+    brand: "SKAI source example",
+    title: "Preserve the candid pose beneath the craft",
+    curatorNote: "Each garment becomes a paper object aligned to the original body while the face, skin, wall, plants, and light stay real.",
+    image: "skai-example-05",
+  },
+  {
+    id: "museum-hall",
+    brand: "SKAI source example",
+    title: "Keep dramatic architecture outside the edit",
+    curatorNote: "The hall and portrait remain photographic while the dress gains visible paper texture, hand-drawn pigment, and crisp cut edges.",
+    image: "skai-example-06",
+  },
+].map(({ image, ...proof }, index) => ({
+  ...proof,
+  id: `paper-outfit-${proof.id}`,
+  status: "published",
+  showInDiscovery: index === 0,
+  order: 155 + index,
+  goal: "entertain",
+  media: {
+    kind: "image",
+    src: `/format-repositories/paper-outfit-v1/assets/source/${image}.jpg`,
+    durationLabel: "Static",
+  },
+  format: {
+    slug: "paper-outfit",
+    name: "Paper Outfit",
+    version: "1.0.0",
+    owner: "Wiggly Studio",
+  },
+}));
+
 const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
   {
     id: "rio-overlook",
@@ -1943,6 +2013,7 @@ export const discoveryCatalog: DiscoveryEntry[] = [
   ...cyanotypeDiscoveryEntries,
   ...lordOfTheRingsDiscoveryEntries,
   ...softGlowFilterDiscoveryEntries,
+  ...paperOutfitDiscoveryEntries,
   ...databaseFormatDiscoveryEntries.filter((entry) => entry.format.slug !== "motion-story"),
   ...jingleDiscoveryEntries,
   ...videoMemeDiscoveryEntries,
@@ -2033,6 +2104,7 @@ const discoveryShelfDefinitions = [
       "cyanotype",
       "lord-of-the-rings",
       "soft-glow-filter",
+      "paper-outfit",
     ],
   },
   {

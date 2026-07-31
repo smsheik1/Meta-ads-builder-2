@@ -1,0 +1,19 @@
+Paper Outfit Prompt
+
+Source: @skaigenerated
+Post: https://www.instagram.com/skaigenerated/p/Da2XgvnCqOG/
+Guide: https://docs.google.com/document/d/1LjajzBWHChmEmc_Ujjwv9cRnQ8WRs1KouNBIPQ0PFG4/mobilebasic
+Image Model: GPT Image 2
+
+Prompt:
+
+Transforme esta foto em um editorial de moda estilo real photo with handmade paper clothing cutouts placed on top.
+Mantenha a fotografia original completamente real:
+o rosto, cabelo, pele, expressão, maquiagem, braços, mãos, pernas, corpo, iluminação, sombras e fundo devem permanecer exatamente fotográficos.
+Não transforme a modelo em desenho.
+Crie o efeito apenas nas peças do look:
+roupas, bolsa e sapatos.
+Imagine que essas peças foram removidas da fotografia original, redesenhadas manualmente em uma folha de papel, recortadas com tesoura e depois coladas novamente em cima da modelo.
+As peças devem parecer objetos físicos de papel sobrepostos à foto, não um filtro digital.
+Desenhe as roupas e acessórios com aparência propositalmente artesanal:
+lápis de cor visível, textura de papel branco, riscos de pintura.
