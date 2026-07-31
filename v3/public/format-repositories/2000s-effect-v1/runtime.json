@@ -1,0 +1,26 @@
+{
+  "slug": "2000s-effect",
+  "version": "1.0.0",
+  "promptPath": "prompts/transform.txt",
+  "input": { "mode": "image", "formats": ["jpg", "png", "webp"], "minimumWidth": 512, "minimumHeight": 512, "maximumBytes": 26214400, "aspectRatio": "3:4", "aspectRatioTolerance": 0.02 },
+  "defaultModel": "nano-banana-2",
+  "modelRoutes": {
+    "nano-banana-2-lite": { "label": "Nano Banana 2 Lite", "lane": "economy", "model": "google/nano-banana-2-lite", "family": "nano-banana", "aspectRatio": "3:4", "outputFormat": "jpg", "costEstimate": "about $0.034 per output image at the current listed rate", "timeEstimate": "usually 5-60 seconds" },
+    "nano-banana-2": { "label": "Nano Banana 2", "lane": "default", "model": "google/nano-banana-2", "family": "nano-banana", "aspectRatio": "3:4", "outputFormat": "jpg", "resolution": "1K", "costEstimate": "about $0.067 per 1K output image at the current listed rate", "timeEstimate": "usually 10-120 seconds" },
+    "nano-banana-pro": { "label": "Nano Banana Pro", "lane": "premium", "model": "google/nano-banana-pro", "family": "nano-banana", "aspectRatio": "3:4", "outputFormat": "jpg", "resolution": "1K", "costEstimate": "about $0.15 per 1K output image at the current listed rate", "timeEstimate": "usually 30-180 seconds" }
+  },
+  "expectedOutputs": 1,
+  "maximumAttempts": 3,
+  "smokeInputPath": "assets/source/slide-02.jpg",
+  "smokeExamplePath": "assets/source/slide-02.jpg",
+  "minimumOutputWidth": 1080,
+  "minimumOutputHeight": 1440,
+  "minimumOutputBytes": 51200,
+  "manualReview": [
+    "the same recognizable person, pose, scene, and composition remain intact",
+    "harsh direct flash, flat shadows, overexposed highlights, and slight bloom feel like a point-and-shoot photo",
+    "soft focus, low-end CCD noise, compression artifacts, and imperfect autofocus reduce polish without losing the subject",
+    "inaccurate dated color has a slight green-yellow cast, blown whites, crushed blacks, and washed-out contrast",
+    "mild halation, edge softness, chromatic aberration, and candid framing feel authentic rather than like a flat global filter"
+  ]
+}

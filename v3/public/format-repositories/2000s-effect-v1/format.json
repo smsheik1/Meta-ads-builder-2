@@ -1,0 +1,19 @@
+{
+  "id": "2000s-effect",
+  "version": "1.0.0",
+  "title": "2000s Effect",
+  "description": "Give one photo an authentic 2002–05 digicam look—direct flash, bloom, CCD noise, dated color, and candid imperfection—while preserving the person, pose, scene, and composition.",
+  "status": "agent-ready",
+  "owner": "Wiggly Studio",
+  "source": {
+    "creator": "@skaigenerated",
+    "postUrl": "https://www.instagram.com/p/DX6n8vFioky/",
+    "ctaKeyword": "AI",
+    "modelShown": "GPT Image 2"
+  },
+  "outputs": [
+    "1 inspected 3:4 early-2000s digicam image",
+    "state.json with model and prediction provenance",
+    "quality-report.json with automatic and visual inspection"
+  ]
+}

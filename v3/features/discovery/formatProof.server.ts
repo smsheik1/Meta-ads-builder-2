@@ -1390,6 +1390,53 @@ const formatConfigs: FormatProfileConfig[] = [
     },
   },
   {
+    slug: "2000s-effect",
+    promise: "Turn one photo into an authentic early-2000s digicam shot with direct flash, soft focus, noisy CCD texture, dated color, and candid imperfection while preserving the person, pose, scene, and composition.",
+    lastUpdated: "July 2026",
+    technicalHref: "/format-lab/2000s-effect",
+    manifestPath: "format-repositories/2000s-effect-v1/format.json",
+    whatStays: [
+      "The same recognizable person, pose, scene, and composition",
+      "Natural identity and visible people, objects, and setting",
+      "One photographic 3:4 source image as the reusable input",
+    ],
+    whatChanges: [
+      "Harsh frontal flash, flat shadows, and controlled overexposure",
+      "Soft focus, low-end CCD noise, grain, compression artifacts, and imperfect autofocus",
+      "Dated inaccurate color with uneven white balance, lower dynamic range, and subtle banding",
+      "Mild bloom, halation, chromatic aberration, edge softness, and a candid snapshot feel",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One 3:4 JPEG, PNG, or WebP photo at least 512px on both axes",
+        "A Replicate API token only when generation is approved",
+      ],
+      deliverables: [
+        "One inspected 3:4 early-2000s digicam image",
+        "A persisted Replicate prediction ID",
+        "Automatic checks and specific visual-review notes",
+      ],
+      instructions: [
+        "Open the technical instructions and download the runnable kit before generation",
+        "Use Nano Banana 2 by default, Lite for economy, or Pro for premium",
+        "Keep the exact gathered prompt unless the user explicitly requests a change",
+        "Preserve the same person, pose, scene, composition, and natural identity",
+        "Use direct flash, soft focus, low-end CCD noise, compression texture, and dated inaccurate color",
+        "Keep mild bloom and edge imperfections without turning the result into a polished modern editorial image",
+        "Validate the 3:4 source image locally before the single paid prediction",
+        "Resume the saved prediction ID and visually inspect the output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "Free", time: "under 1 min" },
+        { label: "One image transform", cost: "Current selected Replicate route", time: "usually under 2 min" },
+        { label: "Inspect + finalize", cost: "Free", time: "about 1 min" },
+      ],
+      totalEstimate: "One provider prediction; the estimate command prints the selected route before approval",
+      output: "One inspected 3:4 early-2000s digicam image plus prediction and quality provenance",
+      firstQuestion: "Which 3:4 photo should I turn into an authentic 2000s digicam shot, and should I use Nano Banana 2 (default), Lite (economy), or Pro (premium)?",
+    },
+  },
+  {
     slug: "rag-doll",
     promise: "Turn one portrait into a warm, cinematic character made entirely from handcrafted felt.",
     lastUpdated: "July 2026",

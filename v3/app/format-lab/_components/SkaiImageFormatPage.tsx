@@ -12,7 +12,7 @@ type FormatManifest = {
   source: {
     creator: string;
     postUrl: string;
-    resourceUrl: string;
+    resourceUrl?: string;
     modelShown: string;
   };
 };
@@ -180,7 +180,7 @@ export function SkaiImageFormatPage({ slug }: { slug: string }) {
               </p>
               <div className="mt-4 flex flex-wrap gap-3 text-sm font-black text-indigo-800">
                 <a href={format.source.postUrl}>Instagram post</a>
-                <a href={format.source.resourceUrl}>Source guide</a>
+                {format.source.resourceUrl ? <a href={format.source.resourceUrl}>Source guide</a> : null}
               </div>
             </article>
           </div>
