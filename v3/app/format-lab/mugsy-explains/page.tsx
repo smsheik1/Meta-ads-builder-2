@@ -39,6 +39,24 @@ const files = [
   ["requirements.json", "Tools and BYOK requirements"],
 ] as const;
 
+const originalReferences = [
+  {
+    title: "Heat vs. Collateral",
+    videoPath: "references/original/mugsyclips_Da5cRx2sKhl.mp4",
+    sourceUrl: "https://www.instagram.com/mugsyclips/reel/Da5cRx2sKhl/",
+  },
+  {
+    title: "Memento vs. Shutter Island",
+    videoPath: "references/original/mugsyclips_DavoEJ4RAhM.mp4",
+    sourceUrl: "https://www.instagram.com/mugsyclips/reel/DavoEJ4RAhM/",
+  },
+  {
+    title: "Detective vs. Investigator",
+    videoPath: "references/original/mugsyclips_DaqkxFkxXI1.mp4",
+    sourceUrl: "https://www.instagram.com/mugsyclips/reel/DaqkxFkxXI1/",
+  },
+] as const;
+
 export default function MugsyExplainsFormatPage() {
   const format = readJson<FormatManifest>("format.json");
   const pipeline = readJson<{ steps: string[] }>("pipeline.json");
@@ -103,6 +121,38 @@ export default function MugsyExplainsFormatPage() {
                 {proof.whyItWorks.map((reason) => <li key={reason}>{reason}</li>)}
               </ul>
             </article>
+          </div>
+        </section>
+
+        <section data-testid="mugsy-explains-original-references">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-bold">Original format references</h2>
+              <p className="mt-1 max-w-3xl text-sm text-slate-600">
+                Three examples from @mugsyclips that define the source format. These are references, not Wiggly-generated proofs.
+              </p>
+            </div>
+            <Badge variant="outline">Source: @mugsyclips</Badge>
+          </div>
+          <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {originalReferences.map((reference) => (
+              <article key={reference.videoPath} className="overflow-hidden rounded-lg border border-slate-300 bg-white shadow-sm">
+                <video
+                  aria-label={`${reference.title} original format reference`}
+                  className="aspect-[9/16] w-full bg-black object-cover"
+                  controls
+                  playsInline
+                  preload="metadata"
+                  src={`/format-repositories/mugsy-explains-v1/${reference.videoPath}`}
+                />
+                <div className="p-4">
+                  <p className="font-bold">{reference.title}</p>
+                  <a className="mt-2 inline-block text-sm font-semibold text-violet-700 underline-offset-4 hover:underline" href={reference.sourceUrl} rel="noreferrer" target="_blank">
+                    Watch the original on Instagram
+                  </a>
+                </div>
+              </article>
+            ))}
           </div>
         </section>
 

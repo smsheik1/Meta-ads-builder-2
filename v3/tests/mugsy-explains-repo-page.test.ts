@@ -8,8 +8,11 @@ const packageRoot = "public/format-repositories/mugsy-explains-v1";
 
 assert.match(source, /download-mugsy-explains-kit/);
 assert.match(source, /mugsy-explains-proof/);
+assert.match(source, /mugsy-explains-original-references/);
 assert.match(source, /mugsy-explains-pipeline/);
 assert.match(source, /Proof 1 of 2/);
+assert.match(source, /These are references, not Wiggly-generated proofs/);
+assert.match(source, /mugsyclips\/reel\/Da5cRx2sKhl/);
 assert.match(source, /zero provider calls/i);
 assert.doesNotMatch(source, /CreateResearchClient|AdRenderSurface|generateThreeDClip/);
 
@@ -25,6 +28,9 @@ for (const file of [
   "runtime/build_proof.py",
   "goldens/wiggly-format-explainer.mp4",
   "goldens/wiggly-format-explainer-contact.jpg",
+  "references/original/mugsyclips_Da5cRx2sKhl.mp4",
+  "references/original/mugsyclips_DavoEJ4RAhM.mp4",
+  "references/original/mugsyclips_DaqkxFkxXI1.mp4",
   "downloads/wiggly-mugsy-explains-format-kit.zip",
 ]) {
   assert.equal(existsSync(`${packageRoot}/${file}`), true, `${file} should ship in the public package.`);
