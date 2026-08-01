@@ -57,12 +57,23 @@ def validate_content() -> dict:
                 fail(f"Lesson {lesson_index} references a missing image: {lesson[field]}")
             try:
                 with Image.open(image_path) as image:
+                    if image.width < 400 or image.height < 200:
+                        fail(
+                            f"Lesson {lesson_index} proof image is too small for phone-size evidence: "
+                            f"{lesson[field]} ({image.width}x{image.height}; minimum 400x200)."
+                        )
                     image.verify()
             except Exception as error:
                 fail(f"Lesson {lesson_index} has an unreadable image: {lesson[field]} ({error})")
         sentences = lesson["sentences"]
         if len(sentences) != 5 or tuple(item.get("role") for item in sentences) != ROLES:
             fail(f"Lesson {lesson_index} must use roles {ROLES} in order.")
+        if not sentences[0].get("text", "").startswith("This is "):
+            fail(f"Lesson {lesson_index} first sentence must start with 'This is '.")
+        if not sentences[1].get("text", "").startswith("This is "):
+            fail(f"Lesson {lesson_index} second sentence must start with 'This is '.")
+        if sentences[2].get("text") != "What's the difference?":
+            fail(f"Lesson {lesson_index} question must be exactly: What's the difference?")
         for sentence in sentences:
             if not sentence.get("text") or not sentence.get("chunks"):
                 fail(f"Lesson {lesson_index} has an empty sentence or caption chunk.")
