@@ -8,7 +8,10 @@
     "maxSilenceGapSeconds": 0.25
   },
   "human": [
+    "Each A-versus-B pair answers one clear viewer question, and its labels name the contrast.",
+    "All fifteen sentences sound complete and natural when read aloud.",
     "Each spoken line has a matching visual proof.",
+    "Each proof image is a tight crop that communicates one point at phone size in under one second.",
     "The same bundled character pose pack is reused throughout.",
     "The character never lip-syncs or acts as the narrator.",
     "Proof images stay at the top on a plain white canvas.",

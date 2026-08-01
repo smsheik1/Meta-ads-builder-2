@@ -33,7 +33,16 @@ for (const file of [
 const format = JSON.parse(readFileSync(`${packageRoot}/format.json`, "utf8"));
 assert.equal(format.id, "mugsy-explains");
 assert.equal(format.name, "Mugsy Explains");
-assert.equal(format.version, "0.1.0-proof");
+assert.equal(format.version, "0.1.1-proof");
+
+const storyPrompt = readFileSync(`${packageRoot}/prompts/story.md`, "utf8");
+assert.match(storyPrompt, /answer the same viewer question/i);
+assert.match(storyPrompt, /tight crop/i);
+assert.match(storyPrompt, /natural spoken English/i);
+
+const runner = readFileSync(`${packageRoot}/runner.py`, "utf8");
+assert.match(runner, /minimum 400x200/);
+assert.match(runner, /question must be exactly/);
 
 const profile = getDiscoveryFormatProfile("mugsy-explains");
 assert.ok(profile?.handoff);
@@ -42,7 +51,7 @@ assert.equal(profile?.handoff?.firstQuestion, "What should this video explain or
 assert.match(profile?.handoff?.totalEstimate || "", /\$0/);
 
 const prompt = buildDiscoveryHandoffPrompt(profile!, "https://wiggly.agentenamel.com");
-assert.match(prompt, /Exact public version: 0\.1\.0-proof/);
+assert.match(prompt, /Exact public version: 0\.1\.1-proof/);
 assert.match(prompt, /Use the bundled host, renderer, and pose pack/);
 assert.ok(prompt.trim().endsWith('"What should this video explain or compare?"'));
 

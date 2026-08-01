@@ -50,6 +50,18 @@ The release package now preserves full proof images, pins the pose pack, validat
 
 Final independent result: `PASS`, with zero shipping blockers and zero provider calls.
 
+## Recall.ai Cold Run: Mechanical Pass, Human Review Failed
+
+A fresh agent received only the public Mugsy Explains page plus: `Make this for recall.ai.` It asked the correct first question, researched official Recall.ai pages, ran the free smoke and validation steps, stopped for voice approval, rendered through the official runner, and passed every automatic media check without image or video generation.
+
+Human review rejected the creative as a second proof because:
+
+- `This is separate integration.` was awkward spoken grammar;
+- `BOT TEAM` versus `USAGE PRICING` named two unlike artifacts instead of the clear build-versus-buy decision;
+- one proof image was only 259 pixels wide and several screenshots asked viewers to read too much at phone size.
+
+The smallest general fixes were to require natural read-aloud copy, A/B sides that answer one viewer question, labels that state the contrast, tight one-point proof crops, and proof images at least 400x200 pixels. These rules now apply before narration is generated.
+
 ## Scope Of This Pass
 
-This proves a fresh agent can reproduce the bundled Wiggly example without hidden project context. The kit remains version `0.1.0-proof`: a second meaningfully different content input is still required before calling the Format broadly reusable across brands.
+This proves a fresh agent can reproduce the bundled Wiggly example without hidden project context. The Recall.ai run proved that BYOK, research, rendering, inspection, and failure behavior transfer to a second brand, but its creative did not pass human review. A second meaningfully different approved output is still required before calling the Format broadly reusable across brands.
