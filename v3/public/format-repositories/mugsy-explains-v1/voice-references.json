@@ -1,0 +1,14 @@
+[
+  {
+    "file": "assets/voice/reference-00.wav",
+    "text": "This is CGI. This is VFX. What's the difference?"
+  },
+  {
+    "file": "assets/voice/reference-01.wav",
+    "text": "This is a teaser. This is a trailer. What's the difference?"
+  },
+  {
+    "file": "assets/voice/reference-02.wav",
+    "text": "This is dialogue. This is monologue. What's the difference?"
+  }
+]

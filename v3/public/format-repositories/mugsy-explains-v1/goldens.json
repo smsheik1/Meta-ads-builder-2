@@ -1,0 +1,19 @@
+{
+  "purpose": "The proof shows the complete recurring-host rhythm: introduce both sides, ask the question, then explain the useful difference with matching visual evidence.",
+  "examples": [
+    {
+      "id": "wiggly-format-explainer",
+      "brand": "Wiggly",
+      "title": "Prompt vs. Format",
+      "videoPath": "goldens/wiggly-format-explainer.mp4",
+      "posterPath": "goldens/wiggly-format-explainer-poster.jpg",
+      "contactSheetPath": "goldens/wiggly-format-explainer-contact.jpg",
+      "whyItWorks": [
+        "Three comparisons follow the same five-line rhythm.",
+        "Every spoken claim has a matching proof image.",
+        "The same silent host and pose pack recur throughout.",
+        "The captions remain short, handwritten, and readable."
+      ]
+    }
+  ]
+}

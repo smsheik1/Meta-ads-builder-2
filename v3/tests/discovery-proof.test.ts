@@ -24,6 +24,12 @@ assert.equal(threeD.version, "1.5.0");
 assert.equal(threeD.proofEntries.length, 5, "3D Breakdown should show all five real proof outputs separately.");
 assert.equal(threeD.technicalHref, "/format-lab/three-d-breakdown");
 
+const mugsyExplains = getDiscoveryFormatProfile("mugsy-explains");
+assert.ok(mugsyExplains, "Mugsy Explains should have a consumer Format proof.");
+assert.equal(mugsyExplains.version, "0.1.0-proof");
+assert.equal(mugsyExplains.proofEntries.length, 1);
+assert.equal(mugsyExplains.technicalHref, "/format-lab/mugsy-explains");
+
 const cartoon = getDiscoveryFormatProfile("otaku-explainer");
 assert.ok(cartoon, "Cartoon Explainer should have a consumer Format proof.");
 assert.equal(cartoon.version, "1.2.0-experiment");
@@ -93,6 +99,7 @@ assert.deepEqual(
 
 assert.ok(
   discoveryFormatSlugs.includes("jingle") &&
+    discoveryFormatSlugs.includes("mugsy-explains") &&
     discoveryFormatSlugs.includes("video-meme") &&
     discoveryFormatSlugs.includes("meme") &&
     discoveryFormatSlugs.includes("hybrid-news") &&
@@ -129,7 +136,7 @@ assert.ok(
     discoveryFormatSlugs.includes("dark-aesthetic-filter") &&
     discoveryFormatSlugs.includes("2000s-effect") &&
     discoveryFormatSlugs.includes("80s-toon") &&
-    discoveryFormatSlugs.length === 44 &&
+    discoveryFormatSlugs.length === 45 &&
     !discoveryFormatSlugs.includes("motion-story"),
 );
 assert.equal(getDiscoveryFormatProfile("motion-story"), null);

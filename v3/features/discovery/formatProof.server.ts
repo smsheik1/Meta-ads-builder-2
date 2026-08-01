@@ -16,6 +16,54 @@ type FormatProfileConfig = {
 
 const formatConfigs: FormatProfileConfig[] = [
   {
+    slug: "mugsy-explains",
+    promise: "Turn three useful differences into a fast visual lesson people can understand at a glance.",
+    lastUpdated: "August 2026",
+    technicalHref: "/format-lab/mugsy-explains",
+    manifestPath: "format-repositories/mugsy-explains-v1/format.json",
+    whatStays: [
+      "Three A-versus-B lessons",
+      "The same recurring silent host",
+      "Proof images for every comparison",
+      "Short handwritten captions",
+    ],
+    whatChanges: [
+      "The topic",
+      "The six proof images",
+      "The comparison labels",
+      "The narration",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One topic, product, or company to explain",
+        "Three useful A-versus-B differences",
+        "One proof image for each side",
+      ],
+      deliverables: [
+        "One validated three-comparison script",
+        "Six sourced proof images",
+        "One inspected contact sheet",
+        "One vertical MP4",
+      ],
+      instructions: [
+        "Run the packaged smoke test before changing content",
+        "Edit only content.json and its six proof images",
+        "Use the bundled host, renderer, and pose pack without rebuilding them",
+        "Ask before generating new Fish narration",
+        "Inspect the finished MP4 and show the contact sheet before finalizing",
+      ],
+      estimates: [
+        { label: "Research + script", cost: "$0 Wiggly provider cost", time: "about 3-8 min" },
+        { label: "Proof images", cost: "$0 when sourced from supplied or public evidence", time: "about 3-10 min" },
+        { label: "Fish narration", cost: "$0 on S2.1 Pro Free", time: "about 1-3 min" },
+        { label: "Local render + inspection", cost: "$0 provider cost", time: "about 2-5 min" },
+      ],
+      totalEstimate: "$0 provider cost, usually 10-25 min",
+      output: "One vertical 1080 x 1920 MP4, usually 25-35 seconds",
+      firstQuestion: "What should this video explain or compare?",
+    },
+  },
+  {
     slug: "three-d-breakdown",
     promise: "Turn one evidence-backed product story into a fast, impossible-to-film 3D explanation.",
     lastUpdated: "July 2026",

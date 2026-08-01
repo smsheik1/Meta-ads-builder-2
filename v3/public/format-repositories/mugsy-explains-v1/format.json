@@ -1,0 +1,10 @@
+{
+  "id": "mugsy-explains",
+  "name": "Mugsy Explains",
+  "title": "Mugsy Explains",
+  "description": "Turn three A-versus-B lessons into a fast vertical explainer with recurring character poses, visual proof, handwritten captions, and continuous narration.",
+  "version": "0.1.0-proof",
+  "output": "vertical MP4",
+  "runtime": "runner.py",
+  "status": "proof"
+}

@@ -1,0 +1,44 @@
+{
+  "title": "Wiggly",
+  "lessons": [
+    {
+      "leftLabel": "PROMPT",
+      "rightLabel": "FORMAT",
+      "leftImage": "assets/proof/prompt.png",
+      "rightImage": "assets/proof/format.png",
+      "sentences": [
+        {"role": "a", "text": "This is a prompt.", "chunks": ["This is a prompt"]},
+        {"role": "b", "text": "This is a format.", "chunks": ["This is a format"]},
+        {"role": "question", "text": "What's the difference?", "chunks": ["What's the difference?"]},
+        {"role": "explain_a", "text": "A prompt tells AI what to make once.", "chunks": ["A prompt tells AI", "what to make once"]},
+        {"role": "explain_b", "text": "A format packages the creative rules needed to repeat it for a new brand.", "chunks": ["A format packages", "the creative rules", "needed to repeat it", "for a new brand"]}
+      ]
+    },
+    {
+      "leftLabel": "NODE WORKFLOW",
+      "rightLabel": "AGENT SKILL",
+      "leftImage": "assets/proof/node-workflow.png",
+      "rightImage": "assets/proof/agent-skill.png",
+      "sentences": [
+        {"role": "a", "text": "This is a node workflow.", "chunks": ["This is a node workflow"]},
+        {"role": "b", "text": "This is an agent skill.", "chunks": ["This is an agent skill"]},
+        {"role": "question", "text": "What's the difference?", "chunks": ["What's the difference?"]},
+        {"role": "explain_a", "text": "Nodes connect tools together.", "chunks": ["Nodes connect tools together"]},
+        {"role": "explain_b", "text": "Skills tell agents what to make, how to make it, and whether it is actually good.", "chunks": ["Skills tell agents", "what to make", "how to make it", "and whether", "it is", "actually good"]}
+      ]
+    },
+    {
+      "leftLabel": "ONE AI AD",
+      "rightLabel": "WIGGLY",
+      "leftImage": "assets/proof/one-ai-ad.jpg",
+      "rightImage": "assets/proof/wiggly.png",
+      "sentences": [
+        {"role": "a", "text": "This is one AI ad.", "chunks": ["This is one AI ad"]},
+        {"role": "b", "text": "This is Wiggly.", "chunks": ["This is Wiggly"]},
+        {"role": "question", "text": "What's the difference?", "chunks": ["What's the difference?"]},
+        {"role": "explain_a", "text": "One ad is an output.", "chunks": ["One ad is", "an output"]},
+        {"role": "explain_b", "text": "Wiggly makes the whole creative system reusable.", "chunks": ["Wiggly makes the whole", "creative system", "reusable"]}
+      ]
+    }
+  ]
+}
