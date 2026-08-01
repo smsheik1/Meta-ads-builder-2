@@ -1,0 +1,14 @@
+{
+  "steps": [
+    "choose-topic",
+    "write-three-comparisons",
+    "collect-six-proof-images",
+    "smoke",
+    "validate",
+    "approve-voice",
+    "render",
+    "inspect",
+    "human-review",
+    "finalize"
+  ]
+}

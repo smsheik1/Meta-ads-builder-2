@@ -1,0 +1,18 @@
+{
+  "automatic": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "durationSeconds": {"min": 25, "max": 35},
+    "audioStreams": 1,
+    "maxSilenceGapSeconds": 0.25
+  },
+  "human": [
+    "Each spoken line has a matching visual proof.",
+    "The same bundled character pose pack is reused throughout.",
+    "The character never lip-syncs or acts as the narrator.",
+    "Proof images stay at the top on a plain white canvas.",
+    "Handwritten captions are short and readable.",
+    "The voice resembles the authorized source and pronounces every word correctly."
+  ]
+}

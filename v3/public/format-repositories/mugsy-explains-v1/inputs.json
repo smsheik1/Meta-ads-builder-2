@@ -1,0 +1,14 @@
+{
+  "required": [
+    "three clear A-versus-B lessons",
+    "one proof image for each side",
+    "five short narration sentences per lesson"
+  ],
+  "defaults": {
+    "aspectRatio": "9:16",
+    "durationSeconds": "25-35",
+    "host": "bundled recurring pose pack",
+    "voice": "authorized Fish zero-shot reference voice",
+    "cuts": "hard cuts only"
+  }
+}

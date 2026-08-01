@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+run/frames/
+run/output/
+run/contact/
+run/smoke/
+run/inspection.json
+run/render-manifest.json
+final/

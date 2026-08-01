@@ -1,0 +1,14 @@
+{
+  "localTools": ["python3", "ffmpeg", "ffprobe"],
+  "pythonPackages": ["Pillow", "numpy", "ormsgpack"],
+  "providers": [
+    {
+      "name": "Fish Audio",
+      "environmentVariable": "FISH_STUDIO_APIKEY",
+      "model": "s2.1-pro-free",
+      "estimatedCost": "$0 on the free developer model",
+      "approval": "Ask before generating a new narration"
+    }
+  ],
+  "paidImageOrVideoProviders": []
+}

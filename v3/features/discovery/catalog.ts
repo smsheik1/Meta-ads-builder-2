@@ -2238,6 +2238,27 @@ export const discoveryCatalog: DiscoveryEntry[] = [
     },
   },
   {
+    id: "wiggly-prompt-vs-format",
+    status: "published",
+    order: 5.5,
+    brand: "Wiggly",
+    title: "Prompt vs. Format",
+    curatorNote: "Three quick comparisons make the difference between a one-off AI output and a reusable creative system easy to see.",
+    goal: "teach",
+    media: {
+      kind: "video",
+      src: "/format-repositories/mugsy-explains-v1/goldens/wiggly-format-explainer.mp4",
+      poster: "/format-repositories/mugsy-explains-v1/goldens/wiggly-format-explainer-poster.jpg",
+      durationLabel: "25 sec",
+    },
+    format: {
+      slug: "mugsy-explains",
+      name: "Mugsy Explains",
+      version: "0.1.0-proof",
+      owner: "Wiggly Studio",
+    },
+  },
+  {
     id: "naruto-compilers",
     status: "published",
     order: 6,
@@ -2520,6 +2541,12 @@ const discoveryShelfDefinitions = [
     title: "Product Photoshoots",
     description: "One real product turned into a complete campaign-ready image set.",
     formats: ["product-photoshoot"],
+  },
+  {
+    id: "mugsy-explains",
+    title: "Mugsy Explains",
+    description: "Quick comparisons with one recurring host and proof you can see.",
+    formats: ["mugsy-explains"],
   },
   {
     id: "brand-jingles",
