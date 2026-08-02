@@ -620,11 +620,7 @@ def input_hash() -> str:
     paths.extend(ROOT / lesson[field] for lesson in content["lessons"] for field in ("leftImage", "rightImage"))
     paths.extend(sorted((ROOT / "assets" / "poses").glob("*.png")))
     paths.extend(ROOT / item["file"] for item in load_json(ROOT / "voice-references.json"))
-    digest = hashlib.sha256()
-    for path in paths:
-        digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
-        digest.update(path.read_bytes())
-    return digest.hexdigest()
+    return paths_hash(paths)
 
 
 def latest_video() -> Path:
