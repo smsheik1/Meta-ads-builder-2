@@ -33,10 +33,12 @@ type GoldenExample = {
 const files = [
   ["SKILL.md", "Agent instructions"],
   ["brief.json", "Beginner brief"],
+  ["visual-assets.json", "Sourced visual inventory"],
   ["concepts.json", "Five teaching concepts"],
   ["inputs.json", "Inputs and defaults"],
   ["pipeline.json", "Assembly line"],
   ["prompts/research.md", "Research prompt"],
+  ["prompts/visual-research.md", "Visual-research prompt"],
   ["prompts/concepts.md", "Concept prompt"],
   ["prompts/story.md", "Story prompt"],
   ["visual-plan.json", "Six-image proof plan"],
@@ -191,6 +193,7 @@ export default function MugsyExplainsFormatPage() {
             <h2 className="font-bold">What the agent runs</h2>
             <div className="mt-4 rounded-md bg-slate-950 p-4 font-mono text-xs leading-6 text-slate-100">
               python3 runner.py smoke<br />
+              python3 runner.py assets<br />
               python3 runner.py concepts<br />
               python3 runner.py proof-board<br />
               python3 runner.py validate<br />

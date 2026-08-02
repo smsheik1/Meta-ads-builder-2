@@ -9,6 +9,8 @@
   },
   "human": [
     "A beginner can explain the topic after reading the plain-English brief once.",
+    "The agent inventoried real subject-specific visuals before proposing concepts.",
+    "Every concept names six sourced candidate assets and uses no more than two constructed visuals.",
     "The user reviewed five meaningfully different teaching concepts before scripting.",
     "The selected concept teaches one useful lesson instead of presenting an advertisement.",
     "The three comparisons escalate from setup to mechanism to a subject-specific payoff instead of repeating one distinction.",
@@ -18,6 +20,7 @@
     "The user reviewed and approved the complete script before proof-image work began.",
     "Each spoken line has a matching visual proof.",
     "Each proof image is a tight crop that communicates one point at phone size in under one second.",
+    "Official imagery is never replaced by a homemade approximation when the real visual is available.",
     "The user reviewed and approved the six-image proof board before narration.",
     "The same bundled character pose pack is reused throughout.",
     "The character never lip-syncs or acts as the narrator.",

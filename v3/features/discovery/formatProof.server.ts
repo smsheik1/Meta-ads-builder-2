@@ -23,6 +23,7 @@ const formatConfigs: FormatProfileConfig[] = [
     manifestPath: "format-repositories/mugsy-explains-v1/format.json",
     whatStays: [
       "Five teaching concepts before scripting",
+      "A real visual inventory before concepts",
       "Setup, mechanism, and payoff comparisons",
       "The same recurring silent host",
       "Proof images for every comparison",
@@ -41,6 +42,7 @@ const formatConfigs: FormatProfileConfig[] = [
       ],
       deliverables: [
         "One evidence-backed beginner brief",
+        "One sourced visual inventory",
         "Five teaching concepts",
         "One approved setup-to-payoff script",
         "One approved six-image proof board",
@@ -50,16 +52,17 @@ const formatConfigs: FormatProfileConfig[] = [
       ],
       instructions: [
         "Run the packaged smoke test before changing content",
-        "Research a beginner brief, show five concepts, and wait for the user's choice",
+        "Research a beginner brief and inventory real official visuals before concepts",
+        "Show five concepts that are visually executable and wait for the user's choice",
         "Edit only the creative JSON contracts and their six proof images",
         "Use the bundled host, renderer, and pose pack without rebuilding them",
-        "Show the complete script and wait for approval before sourcing proof images",
+        "Show the complete script and wait for approval before mapping the final proof board",
         "Show the proof board and wait for approval before narration",
         "Ask before generating new Fish narration",
         "Inspect the finished MP4 and show the contact sheet before finalizing",
       ],
       estimates: [
-        { label: "Research + five concepts", cost: "$0 Wiggly provider cost", time: "about 4-10 min" },
+        { label: "Research + visual inventory + five concepts", cost: "$0 Wiggly provider cost", time: "about 6-15 min" },
         { label: "Selected script", cost: "$0 Wiggly provider cost", time: "about 2-5 min" },
         { label: "Proof images", cost: "$0 when sourced from supplied or public evidence", time: "about 3-10 min" },
         { label: "Fish narration", cost: "$0 on S2.1 Pro Free", time: "about 1-3 min" },

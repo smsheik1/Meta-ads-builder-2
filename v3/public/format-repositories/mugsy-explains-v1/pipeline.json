@@ -2,6 +2,7 @@
   "steps": [
     "choose-topic",
     "research-beginner-brief",
+    "inventory-real-visual-assets",
     "generate-five-concepts",
     "approve-one-concept",
     "write-setup-mechanism-payoff",

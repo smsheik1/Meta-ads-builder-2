@@ -22,12 +22,15 @@ RUN = ROOT / "run"
 CONTENT_PATH = ROOT / "content.json"
 BRIEF_PATH = ROOT / "brief.json"
 CONCEPTS_PATH = ROOT / "concepts.json"
+VISUAL_ASSETS_PATH = ROOT / "visual-assets.json"
 VISUAL_PLAN_PATH = ROOT / "visual-plan.json"
 APPROVALS = RUN / "approvals"
 ROLES = ("a", "b", "question", "explain_a", "explain_b")
 STORY_BEATS = ("setup", "mechanism", "payoff")
 FONT_PATH = ROOT / "assets" / "fonts" / "PatrickHand-Regular.ttf"
 VISUAL_TYPES = ("object", "diagram", "number", "tight-text-crop", "product", "icon")
+VISUAL_SOURCE_KINDS = ("official-image", "official-screenshot", "licensed-reference", "constructed")
+MAX_CONSTRUCTED_VISUALS = 2
 AD_PHRASES = (
     "book a demo",
     "buy now",
@@ -88,9 +91,56 @@ def validate_brief() -> dict:
     return brief
 
 
+def validate_visual_assets() -> dict:
+    inventory = load_json(VISUAL_ASSETS_PATH)
+    assets = inventory.get("assets")
+    if not isinstance(assets, list) or not 6 <= len(assets) <= 20:
+        fail("visual-assets.json must contain 6-20 sourced visual assets before concepts are generated.")
+    asset_ids: set[str] = set()
+    local_paths: set[str] = set()
+    for index, asset in enumerate(assets, start=1):
+        required = ("id", "localPath", "description", "recognizableObject", "sourcePageUrl", "assetSourceUrl")
+        if not all(isinstance(asset.get(field), str) and asset[field].strip() for field in required):
+            fail(f"Visual asset {index} is missing required source or recognition metadata.")
+        if asset["id"] in asset_ids:
+            fail(f"visual-assets.json repeats asset id: {asset['id']}")
+        if asset["localPath"] in local_paths:
+            fail(f"visual-assets.json repeats local image path: {asset['localPath']}")
+        asset_ids.add(asset["id"])
+        local_paths.add(asset["localPath"])
+        if asset.get("sourceKind") not in VISUAL_SOURCE_KINDS:
+            fail(f"Visual asset {asset['id']} has an unsupported sourceKind.")
+        if not isinstance(asset.get("subjectSpecific"), bool):
+            fail(f"Visual asset {asset['id']} must declare subjectSpecific as true or false.")
+        for source_field in ("sourcePageUrl", "assetSourceUrl"):
+            if not asset[source_field].startswith(("https://", "http://", "bundled://")):
+                fail(f"Visual asset {asset['id']} must use a reviewable URL for {source_field}.")
+        if asset["sourceKind"] == "constructed" and not str(asset.get("whyConstructed", "")).strip():
+            fail(f"Constructed visual asset {asset['id']} must explain why a sourced visual could not be used.")
+        relative_path = Path(asset["localPath"])
+        if relative_path.is_absolute() or ".." in relative_path.parts:
+            fail(f"Visual asset {asset['id']} must use a package-relative localPath.")
+        image_path = ROOT / relative_path
+        if not image_path.is_file():
+            fail(f"Visual asset {asset['id']} is missing its local image: {asset['localPath']}")
+        try:
+            with Image.open(image_path) as image:
+                if image.width < 400 or image.height < 200:
+                    fail(
+                        f"Visual asset {asset['id']} is too small for phone-size evidence: "
+                        f"{asset['localPath']} ({image.width}x{image.height}; minimum 400x200)."
+                    )
+                image.verify()
+        except Exception as error:
+            fail(f"Visual asset {asset['id']} is unreadable: {asset['localPath']} ({error})")
+    return inventory
+
+
 def validate_concepts(require_selected: bool = False) -> dict:
     brief = validate_brief()
+    inventory = validate_visual_assets()
     evidence_ids = {item["id"] for item in brief["evidence"]}
+    visual_assets = {item["id"]: item for item in inventory["assets"]}
     data = load_json(CONCEPTS_PATH)
     concepts = data.get("concepts")
     if not isinstance(concepts, list) or len(concepts) != 5:
@@ -116,6 +166,20 @@ def validate_concepts(require_selected: bool = False) -> dict:
         refs = concept.get("evidenceIds")
         if not isinstance(refs, list) or not refs or any(ref not in evidence_ids for ref in refs):
             fail(f"Concept {concept['id']} must reference evidence from brief.json.")
+        visual_asset_ids = concept.get("visualAssetIds")
+        if (
+            not isinstance(visual_asset_ids, list)
+            or len(visual_asset_ids) != 6
+            or len(set(visual_asset_ids)) != 6
+            or any(asset_id not in visual_assets for asset_id in visual_asset_ids)
+        ):
+            fail(f"Concept {concept['id']} must reference six unique assets from visual-assets.json.")
+        chosen_assets = [visual_assets[asset_id] for asset_id in visual_asset_ids]
+        constructed_count = sum(asset["sourceKind"] == "constructed" for asset in chosen_assets)
+        if constructed_count > MAX_CONSTRUCTED_VISUALS:
+            fail(f"Concept {concept['id']} may use at most two constructed visuals.")
+        if sum(bool(asset["subjectSpecific"]) for asset in chosen_assets) < 4:
+            fail(f"Concept {concept['id']} must use at least four subject-specific visuals.")
         comparisons = concept.get("comparisonPlan")
         if not isinstance(comparisons, list) or len(comparisons) != 3:
             fail(f"Concept {concept['id']} must plan exactly three comparisons.")
@@ -136,7 +200,9 @@ def validate_concepts(require_selected: bool = False) -> dict:
 
 
 def concept_approval_hash() -> str:
-    return paths_hash([BRIEF_PATH, CONCEPTS_PATH])
+    inventory = validate_visual_assets()
+    asset_paths = [ROOT / item["localPath"] for item in inventory["assets"]]
+    return paths_hash([BRIEF_PATH, VISUAL_ASSETS_PATH, CONCEPTS_PATH, *asset_paths])
 
 
 def require_concept_approval() -> dict:
@@ -173,6 +239,10 @@ def require_script_approval() -> dict:
 
 
 def validate_visual_plan(content: dict, concepts: dict) -> dict:
+    inventory = validate_visual_assets()
+    visual_assets = {item["id"]: item for item in inventory["assets"]}
+    approved_asset_ids = selected_concept(concepts)["visualAssetIds"]
+    approved_asset_id_set = set(approved_asset_ids)
     plan = load_json(VISUAL_PLAN_PATH)
     if plan.get("selectedConceptId") != concepts["selectedConceptId"]:
         fail("visual-plan.json must use the approved selected concept.")
@@ -185,24 +255,35 @@ def validate_visual_plan(content: dict, concepts: dict) -> dict:
         for side in ("left", "right")
     }
     seen: set[tuple[int, str]] = set()
+    used_asset_ids: list[str] = []
     for proof in proofs:
         key = (proof.get("lesson"), proof.get("side"))
         if key not in expected or key in seen:
             fail("visual-plan.json must plan each lesson side exactly once.")
         seen.add(key)
-        for field in ("image", "proves", "recognizableObject", "cropInstruction", "source"):
+        for field in ("assetId", "image", "proves", "recognizableObject", "cropInstruction"):
             if not isinstance(proof.get(field), str) or not proof[field].strip():
                 fail(f"Visual plan for lesson {key[0]} {key[1]} is missing {field}.")
+        asset_id = proof["assetId"]
+        if asset_id not in approved_asset_id_set or asset_id not in visual_assets:
+            fail(f"Visual plan for lesson {key[0]} {key[1]} uses an asset outside the approved concept.")
+        if asset_id in used_asset_ids:
+            fail("visual-plan.json must use six different approved visual assets.")
+        used_asset_ids.append(asset_id)
         if proof.get("visualType") not in VISUAL_TYPES:
             fail(f"Visual plan for lesson {key[0]} {key[1]} has an unsupported visualType.")
         if proof["image"] != expected[key]:
             fail(f"Visual plan for lesson {key[0]} {key[1]} does not match content.json.")
+        if proof["image"] != visual_assets[asset_id]["localPath"]:
+            fail(f"Visual plan for lesson {key[0]} {key[1]} does not use its inventoried asset file.")
+    if used_asset_ids != approved_asset_ids:
+        fail("visual-plan.json must preserve the approved concept's six visual assets in comparison order.")
     return plan
 
 
 def proof_approval_hash(content: dict, plan: dict) -> str:
     image_paths = [ROOT / proof["image"] for proof in plan["proofs"]]
-    return paths_hash([CONTENT_PATH, VISUAL_PLAN_PATH, *image_paths])
+    return paths_hash([CONTENT_PATH, VISUAL_ASSETS_PATH, VISUAL_PLAN_PATH, *image_paths])
 
 
 def require_proof_approval(content: dict, plan: dict) -> dict:
@@ -363,6 +444,8 @@ def configure_engine(require_approvals: bool = False) -> None:
 
 def show_concepts() -> None:
     data = validate_concepts()
+    inventory = validate_visual_assets()
+    visual_assets = {item["id"]: item for item in inventory["assets"]}
     rows = [
         {
             "id": concept["id"],
@@ -373,10 +456,23 @@ def show_concepts() -> None:
             "whyNotAnAd": concept["whyNotAnAd"],
             "storyArc": concept["comparisonPlan"],
             "finalTakeaway": concept["finalTakeaway"],
+            "visualAssets": [
+                {
+                    "id": asset_id,
+                    "description": visual_assets[asset_id]["description"],
+                    "sourceKind": visual_assets[asset_id]["sourceKind"],
+                }
+                for asset_id in concept["visualAssetIds"]
+            ],
         }
         for concept in data["concepts"]
     ]
     print(json.dumps({"status": "review-required", "concepts": rows, "providerCalls": 0}, indent=2))
+
+
+def show_assets() -> None:
+    inventory = validate_visual_assets()
+    print(json.dumps({"status": "review-required", **inventory, "providerCalls": 0}, indent=2))
 
 
 def approve_concept(concept_id: str | None, human_review: str) -> None:
@@ -512,7 +608,15 @@ def render() -> None:
 
 def input_hash() -> str:
     content = load_json(CONTENT_PATH)
-    paths = [BRIEF_PATH, CONCEPTS_PATH, CONTENT_PATH, VISUAL_PLAN_PATH, ROOT / "voice-references.json", FONT_PATH]
+    paths = [
+        BRIEF_PATH,
+        VISUAL_ASSETS_PATH,
+        CONCEPTS_PATH,
+        CONTENT_PATH,
+        VISUAL_PLAN_PATH,
+        ROOT / "voice-references.json",
+        FONT_PATH,
+    ]
     paths.extend(ROOT / lesson[field] for lesson in content["lessons"] for field in ("leftImage", "rightImage"))
     paths.extend(sorted((ROOT / "assets" / "poses").glob("*.png")))
     paths.extend(ROOT / item["file"] for item in load_json(ROOT / "voice-references.json"))
@@ -625,6 +729,7 @@ def main() -> None:
         "command",
         choices=(
             "smoke",
+            "assets",
             "concepts",
             "approve-concept",
             "approve-script",
@@ -641,6 +746,8 @@ def main() -> None:
     args = parser.parse_args()
     if args.command == "smoke":
         smoke()
+    elif args.command == "assets":
+        show_assets()
     elif args.command == "concepts":
         show_concepts()
     elif args.command == "approve-concept":

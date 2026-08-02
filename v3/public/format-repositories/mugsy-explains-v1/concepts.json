@@ -14,6 +14,14 @@
         "agent-skill",
         "reusable-output"
       ],
+      "visualAssetIds": [
+        "prompt-card",
+        "format-card",
+        "node-workflow",
+        "agent-skill",
+        "one-ai-ad",
+        "wiggly-system"
+      ],
       "comparisonPlan": [
         {
           "beat": "setup",
@@ -46,6 +54,14 @@
       "evidenceIds": [
         "format-contract",
         "reusable-output"
+      ],
+      "visualAssetIds": [
+        "one-ai-ad",
+        "wiggly-system",
+        "prompt-card",
+        "format-card",
+        "node-workflow",
+        "agent-skill"
       ],
       "comparisonPlan": [
         {
@@ -80,6 +96,14 @@
         "agent-skill",
         "format-contract"
       ],
+      "visualAssetIds": [
+        "prompt-card",
+        "format-card",
+        "node-workflow",
+        "agent-skill",
+        "one-ai-ad",
+        "wiggly-system"
+      ],
       "comparisonPlan": [
         {
           "beat": "setup",
@@ -113,6 +137,14 @@
         "format-contract",
         "reusable-output"
       ],
+      "visualAssetIds": [
+        "one-ai-ad",
+        "format-card",
+        "prompt-card",
+        "agent-skill",
+        "node-workflow",
+        "wiggly-system"
+      ],
       "comparisonPlan": [
         {
           "beat": "setup",
@@ -145,6 +177,14 @@
       "evidenceIds": [
         "agent-skill",
         "reusable-output"
+      ],
+      "visualAssetIds": [
+        "prompt-card",
+        "format-card",
+        "node-workflow",
+        "agent-skill",
+        "one-ai-ad",
+        "wiggly-system"
       ],
       "comparisonPlan": [
         {

@@ -1,0 +1,65 @@
+{
+  "subject": "Wiggly",
+  "assets": [
+    {
+      "id": "prompt-card",
+      "localPath": "assets/proof/prompt.png",
+      "description": "A single short prompt card representing one AI request.",
+      "recognizableObject": "The words MAKE ME AN AD inside one prompt box.",
+      "sourceKind": "official-image",
+      "sourcePageUrl": "https://wiggly.agentenamel.com/discover",
+      "assetSourceUrl": "bundled://assets/proof/prompt.png",
+      "subjectSpecific": false
+    },
+    {
+      "id": "format-card",
+      "localPath": "assets/proof/format.png",
+      "description": "Wiggly's official diagram of a reusable Format and its parts.",
+      "recognizableObject": "One Format card grouping rules, examples, assets, and quality checks.",
+      "sourceKind": "official-image",
+      "sourcePageUrl": "https://wiggly.agentenamel.com/discover",
+      "assetSourceUrl": "bundled://assets/proof/format.png",
+      "subjectSpecific": true
+    },
+    {
+      "id": "node-workflow",
+      "localPath": "assets/proof/node-workflow.png",
+      "description": "A compact node workflow connecting image, video, and voice tools.",
+      "recognizableObject": "Three connected IMAGE, VIDEO, and VOICE nodes.",
+      "sourceKind": "official-image",
+      "sourcePageUrl": "https://wiggly.agentenamel.com/discover",
+      "assetSourceUrl": "bundled://assets/proof/node-workflow.png",
+      "subjectSpecific": false
+    },
+    {
+      "id": "agent-skill",
+      "localPath": "assets/proof/agent-skill.png",
+      "description": "Wiggly's official agent-skill diagram with instructions and creative checks.",
+      "recognizableObject": "One agent-skill card with a short creative checklist.",
+      "sourceKind": "official-image",
+      "sourcePageUrl": "https://wiggly.agentenamel.com/discover",
+      "assetSourceUrl": "bundled://assets/proof/agent-skill.png",
+      "subjectSpecific": true
+    },
+    {
+      "id": "one-ai-ad",
+      "localPath": "assets/proof/one-ai-ad.jpg",
+      "description": "One finished Wiggly-made vertical advertisement.",
+      "recognizableObject": "A single complete vertical ad.",
+      "sourceKind": "official-image",
+      "sourcePageUrl": "https://wiggly.agentenamel.com/discover",
+      "assetSourceUrl": "bundled://assets/proof/one-ai-ad.jpg",
+      "subjectSpecific": true
+    },
+    {
+      "id": "wiggly-system",
+      "localPath": "assets/proof/wiggly.png",
+      "description": "Wiggly's official visual showing coordinated outputs and their reusable system.",
+      "recognizableObject": "One Wiggly card containing several coordinated creative outputs.",
+      "sourceKind": "official-image",
+      "sourcePageUrl": "https://wiggly.agentenamel.com/discover",
+      "assetSourceUrl": "bundled://assets/proof/wiggly.png",
+      "subjectSpecific": true
+    }
+  ]
+}

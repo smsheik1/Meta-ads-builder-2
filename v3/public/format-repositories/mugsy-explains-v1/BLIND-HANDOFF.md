@@ -104,3 +104,11 @@ The final arc was:
 - payoff: capture versus decide.
 
 It ended with: `Recall.ai captures the meeting; your product decides what happens next.` The runner passed the 96-word script, and the agent stopped at script approval before sourcing images. This verifies the creative system now fixes comprehension, progression, and the missing memorable payoff without another paid render.
+
+## Recall.ai Visual Cold Run: Script Passed, Proof Failed
+
+A fresh agent continued the approved Recall.ai story through the six-image proof board and final local render. The MP4 passed duration, dimensions, audio-stream, silence, and cache checks, but human creative review rejected it.
+
+Five of six proof images were homemade diagrams even though Recall.ai's official pages contained real meeting screenshots, UI examples, and product comparisons. The old prompt allowed `simple diagrams`, concepts were approved before checking visual feasibility, and validation checked only fields, file dimensions, and readability.
+
+Version 0.3.0 moves visual research before concepts. Every concept must bind six validated inventory assets, at least four must be subject-specific, no more than two may be constructed, and the final proof plan must use those exact approved files. Browser access is required for official-source research; domain-filtered image search remains an optional supplement rather than a new provider dependency.

@@ -33,7 +33,7 @@ Before returning the script, reject it if:
 - the script sounds like an advertisement instead of an explanation;
 - a beginner could not explain the topic correctly after hearing it once.
 
-Show the complete fifteen-sentence script to the user. Do not source proof images until the user approves it with:
+Show the complete fifteen-sentence script to the user. The source assets are already locked; do not crop or map the final proof board until the user approves the script with:
 
 ```bash
 python3 runner.py approve-script --human-review pass

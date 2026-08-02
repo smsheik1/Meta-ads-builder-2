@@ -2,6 +2,7 @@
   "required": ["one topic, company, product, or question to explain"],
   "agentProduces": [
     "one evidence-backed beginner brief",
+    "one inventory of 6-20 sourced visual assets",
     "exactly five teaching concepts",
     "one approved concept with setup, mechanism, and payoff comparisons",
     "one approved fifteen-sentence script with a subject-specific final takeaway",

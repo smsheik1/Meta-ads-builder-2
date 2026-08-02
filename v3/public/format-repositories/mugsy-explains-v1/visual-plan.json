@@ -4,62 +4,62 @@
     {
       "lesson": 1,
       "side": "left",
+      "assetId": "prompt-card",
       "image": "assets/proof/prompt.png",
       "proves": "A prompt is one direct instruction to make an output.",
       "recognizableObject": "A short MAKE ME AN AD prompt card.",
       "visualType": "tight-text-crop",
-      "cropInstruction": "Keep only the single prompt card large enough to read instantly.",
-      "source": "bundled://assets/proof/prompt.png"
+      "cropInstruction": "Keep only the single prompt card large enough to read instantly."
     },
     {
       "lesson": 1,
       "side": "right",
+      "assetId": "format-card",
       "image": "assets/proof/format.png",
       "proves": "A Format contains multiple reusable creative parts.",
       "recognizableObject": "A compact Format card with rules, examples, assets, and quality checks.",
       "visualType": "diagram",
-      "cropInstruction": "Show the complete Format card with every component visibly grouped.",
-      "source": "bundled://assets/proof/format.png"
+      "cropInstruction": "Show the complete Format card with every component visibly grouped."
     },
     {
       "lesson": 2,
       "side": "left",
+      "assetId": "node-workflow",
       "image": "assets/proof/node-workflow.png",
       "proves": "A node workflow connects generation tools.",
       "recognizableObject": "Three connected IMAGE, VIDEO, and VOICE nodes.",
       "visualType": "diagram",
-      "cropInstruction": "Keep the three connected nodes centered with no surrounding interface.",
-      "source": "bundled://assets/proof/node-workflow.png"
+      "cropInstruction": "Keep the three connected nodes centered with no surrounding interface."
     },
     {
       "lesson": 2,
       "side": "right",
+      "assetId": "agent-skill",
       "image": "assets/proof/agent-skill.png",
       "proves": "An agent skill includes instructions and creative checks.",
       "recognizableObject": "A single agent-skill card with visible checklist items.",
       "visualType": "diagram",
-      "cropInstruction": "Keep the skill card centered and its short checklist readable.",
-      "source": "bundled://assets/proof/agent-skill.png"
+      "cropInstruction": "Keep the skill card centered and its short checklist readable."
     },
     {
       "lesson": 3,
       "side": "left",
+      "assetId": "one-ai-ad",
       "image": "assets/proof/one-ai-ad.jpg",
       "proves": "One AI ad is a single finished output.",
       "recognizableObject": "One complete vertical advertisement.",
       "visualType": "product",
-      "cropInstruction": "Show one full ad clearly, without additional examples around it.",
-      "source": "bundled://assets/proof/one-ai-ad.jpg"
+      "cropInstruction": "Show one full ad clearly, without additional examples around it."
     },
     {
       "lesson": 3,
       "side": "right",
+      "assetId": "wiggly-system",
       "image": "assets/proof/wiggly.png",
       "proves": "Wiggly packages multiple reusable creative outputs and their system.",
       "recognizableObject": "A Wiggly card showing several coordinated creative outputs.",
       "visualType": "product",
-      "cropInstruction": "Keep the grouped Wiggly outputs large and centered.",
-      "source": "bundled://assets/proof/wiggly.png"
+      "cropInstruction": "Keep the grouped Wiggly outputs large and centered."
     }
   ]
 }

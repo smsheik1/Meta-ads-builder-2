@@ -142,6 +142,14 @@ For a new lesson, record the behavior, root cause, smallest general rule, and ev
 
 **Evidence:** Clean display copies restored one top-right reference across both formats without changing the shared Discovery renderer.
 
+### 16. Prove the visuals before choosing the story
+
+**Rule:** In proof-led visual Formats, inventory real subject-specific assets before concepts and reject concepts that cannot bind every required visual beat to sourced evidence.
+
+**Why:** A fresh Mugsy Explains agent wrote a clear Recall.ai lesson but filled five of six proof slots with homemade diagrams because the kit chose the concept before checking whether strong visuals existed.
+
+**Evidence:** Recall.ai's official pages contained product screenshots and meeting examples, yet the old contract accepted generic local diagrams because it validated only fields, dimensions, and file readability.
+
 ## Still testing
 
 These ideas are deliberately not universal yet:

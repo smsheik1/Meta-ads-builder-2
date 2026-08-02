@@ -39,6 +39,10 @@ class MugsyCreativeContractTest(unittest.TestCase):
         (self.root / name).write_text(json.dumps(value, indent=2) + "\n")
 
     def test_approved_example_passes_free_contracts(self) -> None:
+        assets = self.run_runner("assets")
+        self.assertEqual(assets.returncode, 0, assets.stderr)
+        self.assertEqual(len(json.loads(assets.stdout)["assets"]), 6)
+
         concepts = self.run_runner("concepts")
         self.assertEqual(concepts.returncode, 0, concepts.stderr)
         self.assertIn('"review-required"', concepts.stdout)
@@ -67,6 +71,56 @@ class MugsyCreativeContractTest(unittest.TestCase):
         result = self.run_runner("validate")
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("proof-board approval is stale", result.stderr)
+
+    def test_visual_inventory_change_invalidates_concept_approval(self) -> None:
+        inventory = self.read_json("visual-assets.json")
+        inventory["assets"][0]["description"] += " Changed after approval."
+        self.write_json("visual-assets.json", inventory)
+        result = self.run_runner("validate")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("concept approval is stale", result.stderr)
+
+    def test_concepts_reject_unknown_visual_asset(self) -> None:
+        concepts = self.read_json("concepts.json")
+        concepts["concepts"][0]["visualAssetIds"][0] = "missing-asset"
+        self.write_json("concepts.json", concepts)
+        result = self.run_runner("concepts")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("six unique assets", result.stderr)
+
+    def test_visual_inventory_requires_reviewable_source_urls(self) -> None:
+        inventory = self.read_json("visual-assets.json")
+        inventory["assets"][0]["assetSourceUrl"] = "some page"
+        self.write_json("visual-assets.json", inventory)
+        result = self.run_runner("assets")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("reviewable URL", result.stderr)
+
+    def test_concepts_reject_diagram_shortcut(self) -> None:
+        inventory = self.read_json("visual-assets.json")
+        for asset in inventory["assets"][:3]:
+            asset["sourceKind"] = "constructed"
+            asset["whyConstructed"] = "Test fixture has no sourced visual."
+        self.write_json("visual-assets.json", inventory)
+        result = self.run_runner("concepts")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("at most two constructed visuals", result.stderr)
+
+    def test_visual_plan_cannot_substitute_an_unapproved_asset(self) -> None:
+        plan = self.read_json("visual-plan.json")
+        plan["proofs"][0]["assetId"] = "missing-asset"
+        self.write_json("visual-plan.json", plan)
+        result = self.run_runner("proof-board")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("outside the approved concept", result.stderr)
+
+    def test_visual_plan_cannot_reorder_approved_assets(self) -> None:
+        plan = self.read_json("visual-plan.json")
+        plan["proofs"][0], plan["proofs"][1] = plan["proofs"][1], plan["proofs"][0]
+        self.write_json("visual-plan.json", plan)
+        result = self.run_runner("proof-board")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("comparison order", result.stderr)
 
     def test_script_change_invalidates_script_approval_before_proofs(self) -> None:
         content = self.read_json("content.json")
