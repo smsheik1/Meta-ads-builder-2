@@ -68,6 +68,43 @@ class MugsyCreativeContractTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("proof-board approval is stale", result.stderr)
 
+    def test_script_change_invalidates_script_approval_before_proofs(self) -> None:
+        content = self.read_json("content.json")
+        content["lessons"][0]["sentences"][3]["text"] = "A prompt asks AI for one output."
+        content["lessons"][0]["sentences"][3]["chunks"] = ["A prompt asks AI", "for one output"]
+        self.write_json("content.json", content)
+        result = self.run_runner("proof-board")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("script approval is stale", result.stderr)
+
+    def test_story_arc_must_be_setup_mechanism_payoff(self) -> None:
+        concepts = self.read_json("concepts.json")
+        concepts["concepts"][0]["comparisonPlan"][1]["beat"] = "setup"
+        self.write_json("concepts.json", concepts)
+        result = self.run_runner("concepts")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("must escalate through", result.stderr)
+
+    def test_final_sentence_must_match_approved_takeaway(self) -> None:
+        content = self.read_json("content.json")
+        content["lessons"][2]["sentences"][4]["text"] = "The system is reusable."
+        content["lessons"][2]["sentences"][4]["chunks"] = ["The system is reusable"]
+        self.write_json("content.json", content)
+        result = self.run_runner("approve-script", "--human-review", "pass")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("finalTakeaway", result.stderr)
+
+    def test_final_takeaway_must_be_memorable_length(self) -> None:
+        concepts = self.read_json("concepts.json")
+        concepts["concepts"][0]["finalTakeaway"] = (
+            "This deliberately long final takeaway keeps adding abstract corporate words until no ordinary viewer "
+            "could repeat it after hearing it once."
+        )
+        self.write_json("concepts.json", concepts)
+        result = self.run_runner("concepts")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("16 words or fewer", result.stderr)
+
     def test_ad_cta_is_rejected_before_voice(self) -> None:
         content = self.read_json("content.json")
         content["lessons"][2]["sentences"][4] = {

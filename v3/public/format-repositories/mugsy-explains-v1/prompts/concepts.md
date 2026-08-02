@@ -10,11 +10,20 @@ Each concept must contain:
 - why the idea is interesting;
 - why it does not feel like an advertisement;
 - the evidence IDs it uses;
-- three planned A-versus-B comparisons that build one lesson.
+- three planned A-versus-B comparisons that build one escalating lesson;
+- one final takeaway that names the subject's useful role without asking the viewer to act.
+
+The three comparisons must have these `beat` values in order:
+
+1. `setup`: correct the beginner's false assumption or establish the category distinction;
+2. `mechanism`: reveal a deeper process, system, or cause;
+3. `payoff`: apply the mechanism and land the memorable subject-specific conclusion.
+
+The payoff cannot merely rename or restate the setup. Read the three `difference` fields in order: they should feel like discovery, not three definitions of the same distinction. `finalTakeaway` must be a complete spoken sentence of 16 words or fewer that a viewer can repeat after hearing once. Use concrete verbs to show the useful division of labor, cause, or consequence. Prefer lines like `Recall.ai records the meeting; your product decides what happens next.` Reject corporate abstractions such as `supplies the infrastructure layer`. It may name the company or product when that makes the lesson concrete, but it must not be a CTA or slogan.
 
 Every A and B pair must answer the same question. Prefer distinctions a beginner can see: old versus new, myth versus reality, one object versus the system behind it, manual versus managed, or output versus process.
 
-Reject concepts that list features, repeat the company name as the answer, depend on jargon, compare unlike categories, make unsupported claims, or end with a sales action.
+Reject concepts that list features, repeat the same distinction three times, depend on jargon, compare unlike categories, make unsupported claims, omit a subject-specific payoff, or end with a sales action.
 
 Show all five concepts to the user in plain language. Do not write the fifteen-line script until the user chooses one and the runner records approval with:
 

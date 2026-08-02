@@ -1,6 +1,6 @@
 # Wiggly Mugsy Explains
 
-This proof kit researches an unfamiliar topic, offers five teaching concepts, and turns one approved concept into a 25-35 second vertical explainer using three A-versus-B lessons, six approved proof images, the bundled recurring character poses, and an authorized Fish voice reference.
+This proof kit researches an unfamiliar topic, offers five teaching concepts, and turns one approved concept into a 25-35 second vertical explainer using an approved three-part `setup → mechanism → payoff` script, six approved proof images, the bundled recurring character poses, and an authorized Fish voice reference.
 
 ## What stays fixed
 
@@ -27,6 +27,7 @@ python3 -m venv .venv
 .venv/bin/python runner.py smoke
 .venv/bin/python runner.py concepts
 .venv/bin/python runner.py approve-concept --concept-id prompt-to-format --human-review pass
+.venv/bin/python runner.py approve-script --human-review pass
 .venv/bin/python runner.py proof-board
 .venv/bin/python runner.py approve-proofs --human-review pass
 .venv/bin/python runner.py validate
@@ -36,7 +37,7 @@ FISH_STUDIO_APIKEY=... .venv/bin/python runner.py render
 .venv/bin/python tests/test_contracts.py
 ```
 
-Research, concepts, the proof board, `smoke`, `validate`, and `inspect` are local and free. Concept and proof approvals are hash-bound, so changing the brief, concept, script, plan, or images invalidates approval before narration. The included example reuses its approved cached narration, so rendering it makes zero provider calls. If the creative inputs change, the runner invalidates that cache and `render` requires explicit Fish access through `s2.1-pro-free`. It never makes image or video generation calls.
+Research, concepts, script review, the proof board, `smoke`, `validate`, and `inspect` are local and free. Concept, script, and proof approvals are hash-bound, so changing the brief, concept, script, plan, or images invalidates approval before narration. The included example reuses its approved cached narration, so rendering it makes zero provider calls. If the creative inputs change, the runner invalidates that cache and `render` requires explicit Fish access through `s2.1-pro-free`. It never makes image or video generation calls.
 
 The included finished proof is at `examples/wiggly-proof.mp4`.
 

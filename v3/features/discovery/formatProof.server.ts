@@ -17,13 +17,13 @@ type FormatProfileConfig = {
 const formatConfigs: FormatProfileConfig[] = [
   {
     slug: "mugsy-explains",
-    promise: "Turn three useful differences into a fast visual lesson people can understand at a glance.",
+    promise: "Turn one useful idea into three escalating comparisons that end on a memorable teaching payoff.",
     lastUpdated: "August 2026",
     technicalHref: "/format-lab/mugsy-explains",
     manifestPath: "format-repositories/mugsy-explains-v1/format.json",
     whatStays: [
       "Five teaching concepts before scripting",
-      "Three A-versus-B lessons",
+      "Setup, mechanism, and payoff comparisons",
       "The same recurring silent host",
       "Proof images for every comparison",
       "Short handwritten captions",
@@ -42,7 +42,7 @@ const formatConfigs: FormatProfileConfig[] = [
       deliverables: [
         "One evidence-backed beginner brief",
         "Five teaching concepts",
-        "One validated three-comparison script",
+        "One approved setup-to-payoff script",
         "One approved six-image proof board",
         "Six sourced proof images",
         "One inspected contact sheet",
@@ -53,6 +53,7 @@ const formatConfigs: FormatProfileConfig[] = [
         "Research a beginner brief, show five concepts, and wait for the user's choice",
         "Edit only the creative JSON contracts and their six proof images",
         "Use the bundled host, renderer, and pose pack without rebuilding them",
+        "Show the complete script and wait for approval before sourcing proof images",
         "Show the proof board and wait for approval before narration",
         "Ask before generating new Fish narration",
         "Inspect the finished MP4 and show the contact sheet before finalizing",

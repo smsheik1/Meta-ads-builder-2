@@ -74,3 +74,33 @@ The failed run exposed that the first package preserved the rendering grammar bu
 - a six-image visual plan and phone-size proof board with explicit image approval.
 
 The runner now rejects stale approvals after any brief, concept, script, visual-plan, or proof-image change. This correction still needs a second Recall.ai cold run and human creative pass before the Format can be called broadly reusable.
+
+## Recall.ai Second Cold Run: Clear But Forgettable
+
+A new agent received only the sealed version 0.2.0 package plus `Make this for https://www.recall.ai/`. It independently researched Recall, produced five concepts, followed the approval gates, built six readable local proof images, generated free Fish narration, and rendered a mechanically valid MP4 without image or video provider calls.
+
+The second run fixed beginner comprehension and visual proof, but human review still rejected it because all three comparisons restated product surface versus infrastructure and the video never landed a memorable Recall-specific conclusion.
+
+The root cause was the story contract, not the renderer or research. It validated three comparisons independently, forced the same spoken scaffold three times, and prohibited sales language without distinguishing a teaching payoff from a CTA.
+
+Version 0.2.1 keeps the source format's repeated A-versus-B grammar but requires one escalating arc:
+
+- `setup` corrects the beginner's assumption;
+- `mechanism` reveals how the subject works;
+- `payoff` applies that mechanism and lands the approved subject-specific takeaway.
+
+The complete script now has its own hash-bound approval before proof-image work. A fresh script-only Recall handoff must pass this gate before another narration render is justified.
+
+## Recall.ai Script-Only Cold Run: Passed
+
+The first fresh 0.2.1 handoff produced a clear setup, mechanism, and payoff, but its final line still used forgettable product language: `supplies the meeting-recording layer`. Human review rejected that line before proof-image or narration work.
+
+The package now limits `finalTakeaway` to 16 words and requires a concrete line a viewer can repeat after one listen. A second fresh agent received only the newly sealed ZIP plus `Make this for https://www.recall.ai/`. It independently produced five valid concepts and the approved direction's complete 15-sentence script with zero provider calls.
+
+The final arc was:
+
+- setup: AI notetaker versus Recall.ai;
+- mechanism: meeting link versus bot participant;
+- payoff: capture versus decide.
+
+It ended with: `Recall.ai captures the meeting; your product decides what happens next.` The runner passed the 96-word script, and the agent stopped at script approval before sourcing images. This verifies the creative system now fixes comprehension, progression, and the missing memorable payoff without another paid render.

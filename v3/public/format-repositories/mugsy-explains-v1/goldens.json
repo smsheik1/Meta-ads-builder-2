@@ -9,7 +9,8 @@
       "posterPath": "goldens/wiggly-format-explainer-poster.jpg",
       "contactSheetPath": "goldens/wiggly-format-explainer-contact.jpg",
       "whyItWorks": [
-        "Three comparisons follow the same five-line rhythm.",
+        "Three comparisons use the same five-line rhythm while escalating from setup to mechanism to payoff.",
+        "The final line lands a Wiggly-specific teaching takeaway instead of a CTA.",
         "Every spoken claim has a matching proof image.",
         "The same silent host and pose pack recur throughout.",
         "The captions remain short, handwritten, and readable."

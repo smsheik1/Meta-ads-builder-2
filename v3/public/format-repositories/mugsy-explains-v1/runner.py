@@ -25,6 +25,7 @@ CONCEPTS_PATH = ROOT / "concepts.json"
 VISUAL_PLAN_PATH = ROOT / "visual-plan.json"
 APPROVALS = RUN / "approvals"
 ROLES = ("a", "b", "question", "explain_a", "explain_b")
+STORY_BEATS = ("setup", "mechanism", "payoff")
 FONT_PATH = ROOT / "assets" / "fonts" / "PatrickHand-Regular.ttf"
 VISUAL_TYPES = ("object", "diagram", "number", "tight-text-crop", "product", "icon")
 AD_PHRASES = (
@@ -96,9 +97,19 @@ def validate_concepts(require_selected: bool = False) -> dict:
         fail("concepts.json must contain exactly five teaching concepts.")
     concept_ids: set[str] = set()
     for index, concept in enumerate(concepts, start=1):
-        fields = ("id", "title", "viewerQuestion", "viewerLearns", "whyInteresting", "whyNotAnAd")
+        fields = (
+            "id",
+            "title",
+            "viewerQuestion",
+            "viewerLearns",
+            "whyInteresting",
+            "whyNotAnAd",
+            "finalTakeaway",
+        )
         if not all(isinstance(concept.get(field), str) and concept[field].strip() for field in fields):
             fail(f"Concept {index} is missing a required teaching field.")
+        if len(concept["finalTakeaway"].split()) > 16:
+            fail(f"Concept {concept['id']} finalTakeaway must be 16 words or fewer.")
         if concept["id"] in concept_ids:
             fail(f"concepts.json repeats concept id: {concept['id']}")
         concept_ids.add(concept["id"])
@@ -108,10 +119,12 @@ def validate_concepts(require_selected: bool = False) -> dict:
         comparisons = concept.get("comparisonPlan")
         if not isinstance(comparisons, list) or len(comparisons) != 3:
             fail(f"Concept {concept['id']} must plan exactly three comparisons.")
+        if tuple(comparison.get("beat") for comparison in comparisons) != STORY_BEATS:
+            fail(f"Concept {concept['id']} must escalate through {STORY_BEATS} in order.")
         for comparison in comparisons:
             if not all(
                 isinstance(comparison.get(field), str) and comparison[field].strip()
-                for field in ("leftLabel", "rightLabel", "difference")
+                for field in ("beat", "leftLabel", "rightLabel", "difference")
             ):
                 fail(f"Concept {concept['id']} has an incomplete comparison plan.")
             if comparison["leftLabel"].strip().lower() == comparison["rightLabel"].strip().lower():
@@ -143,6 +156,20 @@ def require_concept_approval() -> dict:
 
 def selected_concept(concepts: dict) -> dict:
     return next(item for item in concepts["concepts"] if item["id"] == concepts["selectedConceptId"])
+
+
+def script_approval_hash() -> str:
+    return paths_hash([BRIEF_PATH, CONCEPTS_PATH, CONTENT_PATH])
+
+
+def require_script_approval() -> dict:
+    path = APPROVALS / "script.json"
+    if not path.is_file():
+        fail("The script is not approved. Show all fifteen sentences, then run approve-script.")
+    receipt = load_json(path)
+    if receipt.get("status") != "approved" or receipt.get("inputHash") != script_approval_hash():
+        fail("The script approval is stale. Show and approve the current fifteen sentences again.")
+    return receipt
 
 
 def validate_visual_plan(content: dict, concepts: dict) -> dict:
@@ -188,31 +215,17 @@ def require_proof_approval(content: dict, plan: dict) -> dict:
     return receipt
 
 
-def validate_content() -> dict:
+def validate_script() -> dict:
     engine.NOTES_FONT = str(FONT_PATH)
     concepts = validate_concepts(require_selected=True)
     content = load_json(CONTENT_PATH)
     lessons = content.get("lessons")
     if not isinstance(lessons, list) or len(lessons) != 3:
         fail("content.json must contain exactly three lessons.")
-    for lesson_index, lesson in enumerate(lessons, start=1):
-        for field in ("leftLabel", "rightLabel", "leftImage", "rightImage", "sentences"):
+    for lesson_index, lesson in enumerate(content["lessons"], start=1):
+        for field in ("leftLabel", "rightLabel", "sentences"):
             if not lesson.get(field):
                 fail(f"Lesson {lesson_index} is missing {field}.")
-        for field in ("leftImage", "rightImage"):
-            image_path = ROOT / lesson[field]
-            if not image_path.is_file():
-                fail(f"Lesson {lesson_index} references a missing image: {lesson[field]}")
-            try:
-                with Image.open(image_path) as image:
-                    if image.width < 400 or image.height < 200:
-                        fail(
-                            f"Lesson {lesson_index} proof image is too small for phone-size evidence: "
-                            f"{lesson[field]} ({image.width}x{image.height}; minimum 400x200)."
-                        )
-                    image.verify()
-            except Exception as error:
-                fail(f"Lesson {lesson_index} has an unreadable image: {lesson[field]} ({error})")
         sentences = lesson["sentences"]
         if len(sentences) != 5 or tuple(item.get("role") for item in sentences) != ROLES:
             fail(f"Lesson {lesson_index} must use roles {ROLES} in order.")
@@ -234,11 +247,40 @@ def validate_content() -> dict:
     for lesson_index, (lesson, planned) in enumerate(zip(lessons, comparison_plan), start=1):
         if lesson["leftLabel"] != planned["leftLabel"] or lesson["rightLabel"] != planned["rightLabel"]:
             fail(f"Lesson {lesson_index} labels do not match the approved concept plan.")
+    final_takeaway = selected_concept(concepts)["finalTakeaway"].strip()
+    if lessons[-1]["sentences"][-1]["text"].strip() != final_takeaway:
+        fail("The final sentence must exactly match the approved concept's finalTakeaway.")
+    word_count = sum(len(sentence["text"].split()) for lesson in lessons for sentence in lesson["sentences"])
+    if not 55 <= word_count <= 100:
+        fail(f"Narration must contain 55-100 words for the 25-35 second contract; found {word_count}.")
+    return content
+
+
+def validate_content() -> dict:
+    content = validate_script()
+    concepts = validate_concepts(require_selected=True)
+    for lesson_index, lesson in enumerate(content["lessons"], start=1):
+        for field in ("leftImage", "rightImage"):
+            if not lesson.get(field):
+                fail(f"Lesson {lesson_index} is missing {field}.")
+            image_path = ROOT / lesson[field]
+            if not image_path.is_file():
+                fail(f"Lesson {lesson_index} references a missing image: {lesson[field]}")
+            try:
+                with Image.open(image_path) as image:
+                    if image.width < 400 or image.height < 200:
+                        fail(
+                            f"Lesson {lesson_index} proof image is too small for phone-size evidence: "
+                            f"{lesson[field]} ({image.width}x{image.height}; minimum 400x200)."
+                        )
+                    image.verify()
+            except Exception as error:
+                fail(f"Lesson {lesson_index} has an unreadable image: {lesson[field]} ({error})")
     validate_visual_plan(content, concepts)
     if not FONT_PATH.is_file():
         fail("Missing bundled Patrick Hand font.")
     label_font = ImageFont.truetype(str(FONT_PATH), 53)
-    for lesson_index, lesson in enumerate(lessons, start=1):
+    for lesson_index, lesson in enumerate(content["lessons"], start=1):
         for label in (lesson["leftLabel"], lesson["rightLabel"]):
             box = label_font.getbbox(label.title())
             if box[2] - box[0] > 400:
@@ -264,9 +306,6 @@ def validate_content() -> dict:
                     fail(f"Fixed pose has no visible pixels: {pose}")
         except Exception as error:
             fail(f"Fixed pose is unreadable: {pose} ({error})")
-    word_count = sum(len(sentence["text"].split()) for lesson in lessons for sentence in lesson["sentences"])
-    if not 55 <= word_count <= 100:
-        fail(f"Narration must contain 55-100 words for the 25-35 second contract; found {word_count}.")
     return content
 
 
@@ -280,6 +319,7 @@ def visual_factory(path: Path):
 def require_creative_approvals(content: dict) -> None:
     concepts = validate_concepts(require_selected=True)
     require_concept_approval()
+    require_script_approval()
     plan = validate_visual_plan(content, concepts)
     require_proof_approval(content, plan)
 
@@ -331,6 +371,8 @@ def show_concepts() -> None:
             "viewerLearns": concept["viewerLearns"],
             "whyInteresting": concept["whyInteresting"],
             "whyNotAnAd": concept["whyNotAnAd"],
+            "storyArc": concept["comparisonPlan"],
+            "finalTakeaway": concept["finalTakeaway"],
         }
         for concept in data["concepts"]
     ]
@@ -352,12 +394,24 @@ def approve_concept(concept_id: str | None, human_review: str) -> None:
     print(json.dumps(receipt, indent=2))
 
 
+def approve_script(human_review: str) -> None:
+    if human_review != "pass":
+        fail("Script approval requires --human-review pass after showing all fifteen sentences.")
+    require_concept_approval()
+    validate_script()
+    APPROVALS.mkdir(parents=True, exist_ok=True)
+    receipt = {"status": "approved", "inputHash": script_approval_hash()}
+    write_json(APPROVALS / "script.json", receipt)
+    print(json.dumps(receipt, indent=2))
+
+
 def wrapped_lines(text: str, width: int) -> list[str]:
     return textwrap.wrap(text, width=width, break_long_words=False) or [""]
 
 
 def proof_board() -> Path:
     require_concept_approval()
+    require_script_approval()
     content = validate_content()
     concepts = validate_concepts(require_selected=True)
     plan = validate_visual_plan(content, concepts)
@@ -399,6 +453,7 @@ def approve_proofs(human_review: str) -> None:
     if human_review != "pass":
         fail("Proof approval requires --human-review pass after showing the six-image board.")
     require_concept_approval()
+    require_script_approval()
     content = validate_content()
     concepts = validate_concepts(require_selected=True)
     plan = validate_visual_plan(content, concepts)
@@ -568,7 +623,18 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "command",
-        choices=("smoke", "concepts", "approve-concept", "proof-board", "approve-proofs", "validate", "render", "inspect", "finalize"),
+        choices=(
+            "smoke",
+            "concepts",
+            "approve-concept",
+            "approve-script",
+            "proof-board",
+            "approve-proofs",
+            "validate",
+            "render",
+            "inspect",
+            "finalize",
+        ),
     )
     parser.add_argument("--concept-id")
     parser.add_argument("--human-review", choices=("pass", "fail"), default="fail")
@@ -579,6 +645,8 @@ def main() -> None:
         show_concepts()
     elif args.command == "approve-concept":
         approve_concept(args.concept_id, args.human_review)
+    elif args.command == "approve-script":
+        approve_script(args.human_review)
     elif args.command == "proof-board":
         proof_board()
     elif args.command == "approve-proofs":

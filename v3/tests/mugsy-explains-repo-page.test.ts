@@ -47,13 +47,15 @@ for (const file of [
 const format = JSON.parse(readFileSync(`${packageRoot}/format.json`, "utf8"));
 assert.equal(format.id, "mugsy-explains");
 assert.equal(format.name, "Mugsy Explains");
-assert.equal(format.version, "0.2.0-proof");
+assert.equal(format.version, "0.2.1-proof");
 
 const storyPrompt = readFileSync(`${packageRoot}/prompts/story.md`, "utf8");
 assert.match(storyPrompt, /answer the same viewer question/i);
 assert.match(storyPrompt, /tight crop/i);
 assert.match(storyPrompt, /natural spoken English/i);
 assert.match(storyPrompt, /Teach; do not pitch/i);
+assert.match(storyPrompt, /setup.*mechanism.*payoff/i);
+assert.match(storyPrompt, /approve-script/i);
 
 const conceptsPrompt = readFileSync(`${packageRoot}/prompts/concepts.md`, "utf8");
 assert.match(conceptsPrompt, /exactly five/i);
@@ -67,6 +69,7 @@ const runner = readFileSync(`${packageRoot}/runner.py`, "utf8");
 assert.match(runner, /minimum 400x200/);
 assert.match(runner, /question must be exactly/);
 assert.match(runner, /concept approval is stale/i);
+assert.match(runner, /script approval is stale/i);
 assert.match(runner, /proof-board approval is stale/i);
 
 const profile = getDiscoveryFormatProfile("mugsy-explains");
@@ -76,9 +79,10 @@ assert.equal(profile?.handoff?.firstQuestion, "What should this video explain or
 assert.match(profile?.handoff?.totalEstimate || "", /\$0/);
 
 const prompt = buildDiscoveryHandoffPrompt(profile!, "https://wiggly.agentenamel.com");
-assert.match(prompt, /Exact public version: 0\.2\.0-proof/);
+assert.match(prompt, /Exact public version: 0\.2\.1-proof/);
 assert.match(prompt, /Use the bundled host, renderer, and pose pack/);
 assert.match(prompt, /show five concepts/i);
+assert.match(prompt, /show the complete script/i);
 assert.ok(prompt.trim().endsWith('"What should this video explain or compare?"'));
 
 console.log("Mugsy Explains repo page tests passed.");
