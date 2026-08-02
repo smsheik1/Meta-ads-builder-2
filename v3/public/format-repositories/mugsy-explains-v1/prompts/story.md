@@ -1,6 +1,6 @@
 # Story Prompt
 
-Write three short A-versus-B explanations about the user's topic.
+Write three short A-versus-B explanations from the user-approved concept in `concepts.json`. Do not introduce a sixth concept or combine rejected concepts.
 
 Choose three different buyer-relevant decisions or reveals. In every comparison, A and B must answer the same viewer question: build versus buy, old versus new, myth versus reality, problem versus solution, or one output versus a reusable system. The labels must name that contrast clearly; do not pair two concepts merely because both appeared in the research.
 
@@ -14,6 +14,8 @@ For each comparison, return exactly five sentences:
 
 Read all fifteen sentences aloud before approval. Every sentence must sound like natural spoken English. Use `a`, `an`, or `the` before common nouns when needed; do not write fragments such as `This is separate integration.`
 
+Teach; do not pitch. Do not write a CTA, slogan, feature list, hype claim, or landing-page benefit stack. Mention the company or product only when it is needed to explain the distinction. The final sentence should land the lesson, not ask the viewer to buy, book, sign up, or learn more.
+
 Every sentence must have a visible proof image or a reusable character pose. Each proof image must communicate one point at phone size in under one second. Use a tight crop of the relevant product, diagram, number, or sentence; never use a whole webpage screenshot. Keep each rolling caption to one short phrase. Use the same bundled pose pack repeatedly; do not design a new character, animate lips, or turn the character into the narrator.
 
 Before returning the script, reject it if:
@@ -23,5 +25,7 @@ Before returning the script, reject it if:
 - a sentence sounds incomplete when spoken;
 - a proof image would need zooming or reading a paragraph to understand;
 - the useful takeaway is not clear to a first-time buyer.
+- the script sounds like an advertisement instead of an explanation;
+- a beginner could not explain the topic correctly after hearing it once.
 
 The visual grammar is fixed: white 9:16 canvas, one or two proof images at the top, handwritten label and caption, recurring non-speaking demonstrator below, hard cuts, continuous omniscient narration.

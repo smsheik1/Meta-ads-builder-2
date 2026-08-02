@@ -1,8 +1,12 @@
 {
   "steps": [
     "choose-topic",
+    "research-beginner-brief",
+    "generate-five-concepts",
+    "approve-one-concept",
     "write-three-comparisons",
-    "collect-six-proof-images",
+    "plan-six-proof-images",
+    "approve-proof-board",
     "smoke",
     "validate",
     "approve-voice",

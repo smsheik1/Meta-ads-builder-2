@@ -2,8 +2,8 @@
   "id": "mugsy-explains",
   "name": "Mugsy Explains",
   "title": "Mugsy Explains",
-  "description": "Turn three A-versus-B lessons into a fast vertical explainer with recurring character poses, visual proof, handwritten captions, and continuous narration.",
-  "version": "0.1.1-proof",
+  "description": "Research a topic, choose from five teaching concepts, and turn one approved lesson into a fast vertical explainer with recurring character poses, visual proof, handwritten captions, and continuous narration.",
+  "version": "0.2.0-proof",
   "output": "vertical MP4",
   "runtime": "runner.py",
   "status": "proof"

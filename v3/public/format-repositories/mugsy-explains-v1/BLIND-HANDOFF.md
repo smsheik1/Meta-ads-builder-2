@@ -65,3 +65,12 @@ The smallest general fixes were to require natural read-aloud copy, A/B sides th
 ## Scope Of This Pass
 
 This proves a fresh agent can reproduce the bundled Wiggly example without hidden project context. The Recall.ai run proved that BYOK, research, rendering, inspection, and failure behavior transfer to a second brand, but its creative did not pass human review. A second meaningfully different approved output is still required before calling the Format broadly reusable across brands.
+
+## Recall.ai Root-Cause Correction
+
+The failed run exposed that the first package preserved the rendering grammar but skipped the creative discovery process used to make the Wiggly proof. Version 0.2.0 adds two required, hash-bound checkpoints before narration:
+
+- an evidence-backed beginner brief followed by exactly five teaching concepts and explicit concept approval;
+- a six-image visual plan and phone-size proof board with explicit image approval.
+
+The runner now rejects stale approvals after any brief, concept, script, visual-plan, or proof-image change. This correction still needs a second Recall.ai cold run and human creative pass before the Format can be called broadly reusable.

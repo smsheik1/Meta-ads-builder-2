@@ -32,9 +32,15 @@ type GoldenExample = {
 
 const files = [
   ["SKILL.md", "Agent instructions"],
+  ["brief.json", "Beginner brief"],
+  ["concepts.json", "Five teaching concepts"],
   ["inputs.json", "Inputs and defaults"],
   ["pipeline.json", "Assembly line"],
+  ["prompts/research.md", "Research prompt"],
+  ["prompts/concepts.md", "Concept prompt"],
   ["prompts/story.md", "Story prompt"],
+  ["visual-plan.json", "Six-image proof plan"],
+  ["prompts/visual-plan.md", "Visual-proof prompt"],
   ["quality.json", "Quality checks"],
   ["requirements.json", "Tools and BYOK requirements"],
 ] as const;
@@ -82,7 +88,7 @@ export default function MugsyExplainsFormatPage() {
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-700">Agent-ready video format</p>
             <h2 className="mt-2 text-3xl font-bold">{format.title}</h2>
             <p className="mt-3 text-lg text-slate-600">{format.description}</p>
-            <p className="mt-4 text-sm font-semibold text-violet-700">Three comparisons in. One inspected 25-35 second vertical MP4 out.</p>
+            <p className="mt-4 text-sm font-semibold text-violet-700">Five teaching concepts in. One approved visual lesson and inspected 25-35 second vertical MP4 out.</p>
           </div>
           <Button asChild data-testid="download-mugsy-explains-kit">
             <a href="/format-repositories/mugsy-explains-v1/downloads/wiggly-mugsy-explains-format-kit.zip" download>
@@ -176,6 +182,7 @@ export default function MugsyExplainsFormatPage() {
               <li>One plain white vertical canvas.</li>
               <li>One bundled recurring host and five locked poses.</li>
               <li>Three A-versus-B lessons with five narration lines each.</li>
+              <li>Five concepts and one six-image proof board reviewed before narration.</li>
               <li>Proof images at the top and handwritten captions below.</li>
               <li>Hard cuts and one off-screen narrator.</li>
             </ul>
@@ -184,6 +191,8 @@ export default function MugsyExplainsFormatPage() {
             <h2 className="font-bold">What the agent runs</h2>
             <div className="mt-4 rounded-md bg-slate-950 p-4 font-mono text-xs leading-6 text-slate-100">
               python3 runner.py smoke<br />
+              python3 runner.py concepts<br />
+              python3 runner.py proof-board<br />
               python3 runner.py validate<br />
               python3 runner.py render<br />
               python3 runner.py inspect<br />

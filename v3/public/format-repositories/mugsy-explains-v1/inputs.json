@@ -1,7 +1,10 @@
 {
-  "required": [
-    "three clear A-versus-B lessons",
-    "one proof image for each side",
+  "required": ["one topic, company, product, or question to explain"],
+  "agentProduces": [
+    "one evidence-backed beginner brief",
+    "exactly five teaching concepts",
+    "one approved concept with three clear A-versus-B lessons",
+    "one approved proof image for each side",
     "five short narration sentences per lesson"
   ],
   "defaults": {

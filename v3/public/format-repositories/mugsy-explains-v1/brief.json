@@ -1,0 +1,25 @@
+{
+  "topic": "Wiggly",
+  "plainEnglish": "Wiggly packages proven creative formats so an agent can reproduce them for a new brand.",
+  "audience": "Creators and marketers who want repeatable AI-made creative without rebuilding the workflow each time.",
+  "problemBefore": "A prompt can make one output, but it does not preserve the full creative process or quality bar.",
+  "mechanism": "Each Wiggly Format bundles instructions, examples, assets, a runner, and quality checks for an agent to follow.",
+  "surprisingTruth": "The reusable product is not one generated ad; it is the creative system that can make the next one.",
+  "evidence": [
+    {
+      "id": "format-contract",
+      "claim": "A Wiggly Format packages instructions, examples, assets, runtime behavior, and quality rules.",
+      "source": "https://wiggly.agentenamel.com/discover"
+    },
+    {
+      "id": "agent-skill",
+      "claim": "An agent skill preserves both execution instructions and creative judgment.",
+      "source": "bundled://assets/proof/agent-skill.png"
+    },
+    {
+      "id": "reusable-output",
+      "claim": "The same Format can produce new outputs for different brands.",
+      "source": "bundled://assets/proof/wiggly.png"
+    }
+  ]
+}

@@ -7,10 +7,11 @@ import os
 import shutil
 import subprocess
 import sys
+import textwrap
 from pathlib import Path
 
 try:
-    from PIL import Image, ImageFont, ImageOps
+    from PIL import Image, ImageDraw, ImageFont, ImageOps
 except ModuleNotFoundError as error:
     raise SystemExit("Missing Python packages. Run: python3 -m pip install -r requirements.txt") from error
 
@@ -19,8 +20,23 @@ ROOT = Path(__file__).resolve().parent
 RUNTIME = ROOT / "runtime"
 RUN = ROOT / "run"
 CONTENT_PATH = ROOT / "content.json"
+BRIEF_PATH = ROOT / "brief.json"
+CONCEPTS_PATH = ROOT / "concepts.json"
+VISUAL_PLAN_PATH = ROOT / "visual-plan.json"
+APPROVALS = RUN / "approvals"
 ROLES = ("a", "b", "question", "explain_a", "explain_b")
 FONT_PATH = ROOT / "assets" / "fonts" / "PatrickHand-Regular.ttf"
+VISUAL_TYPES = ("object", "diagram", "number", "tight-text-crop", "product", "icon")
+AD_PHRASES = (
+    "book a demo",
+    "buy now",
+    "click the link",
+    "get started",
+    "learn more",
+    "sign up",
+    "shop now",
+    "try today",
+)
 
 sys.path.insert(0, str(RUNTIME))
 try:
@@ -41,8 +57,140 @@ def file_hash(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def paths_hash(paths: list[Path]) -> str:
+    digest = hashlib.sha256()
+    for path in paths:
+        digest.update(path.relative_to(ROOT).as_posix().encode("utf-8"))
+        digest.update(path.read_bytes())
+    return digest.hexdigest()
+
+
+def write_json(path: Path, value: dict) -> None:
+    path.write_text(json.dumps(value, indent=2) + "\n")
+
+
+def validate_brief() -> dict:
+    brief = load_json(BRIEF_PATH)
+    for field in ("topic", "plainEnglish", "audience", "problemBefore", "mechanism", "surprisingTruth"):
+        if not isinstance(brief.get(field), str) or not brief[field].strip():
+            fail(f"brief.json is missing {field}.")
+    evidence = brief.get("evidence")
+    if not isinstance(evidence, list) or len(evidence) < 3:
+        fail("brief.json must contain at least three evidence records.")
+    evidence_ids: set[str] = set()
+    for index, item in enumerate(evidence, start=1):
+        if not all(isinstance(item.get(field), str) and item[field].strip() for field in ("id", "claim", "source")):
+            fail(f"brief.json evidence {index} must include id, claim, and source.")
+        if item["id"] in evidence_ids:
+            fail(f"brief.json repeats evidence id: {item['id']}")
+        evidence_ids.add(item["id"])
+    return brief
+
+
+def validate_concepts(require_selected: bool = False) -> dict:
+    brief = validate_brief()
+    evidence_ids = {item["id"] for item in brief["evidence"]}
+    data = load_json(CONCEPTS_PATH)
+    concepts = data.get("concepts")
+    if not isinstance(concepts, list) or len(concepts) != 5:
+        fail("concepts.json must contain exactly five teaching concepts.")
+    concept_ids: set[str] = set()
+    for index, concept in enumerate(concepts, start=1):
+        fields = ("id", "title", "viewerQuestion", "viewerLearns", "whyInteresting", "whyNotAnAd")
+        if not all(isinstance(concept.get(field), str) and concept[field].strip() for field in fields):
+            fail(f"Concept {index} is missing a required teaching field.")
+        if concept["id"] in concept_ids:
+            fail(f"concepts.json repeats concept id: {concept['id']}")
+        concept_ids.add(concept["id"])
+        refs = concept.get("evidenceIds")
+        if not isinstance(refs, list) or not refs or any(ref not in evidence_ids for ref in refs):
+            fail(f"Concept {concept['id']} must reference evidence from brief.json.")
+        comparisons = concept.get("comparisonPlan")
+        if not isinstance(comparisons, list) or len(comparisons) != 3:
+            fail(f"Concept {concept['id']} must plan exactly three comparisons.")
+        for comparison in comparisons:
+            if not all(
+                isinstance(comparison.get(field), str) and comparison[field].strip()
+                for field in ("leftLabel", "rightLabel", "difference")
+            ):
+                fail(f"Concept {concept['id']} has an incomplete comparison plan.")
+            if comparison["leftLabel"].strip().lower() == comparison["rightLabel"].strip().lower():
+                fail(f"Concept {concept['id']} compares identical labels.")
+    selected = data.get("selectedConceptId")
+    if require_selected and selected not in concept_ids:
+        fail("concepts.json must select one of its five concept IDs.")
+    return data
+
+
+def concept_approval_hash() -> str:
+    return paths_hash([BRIEF_PATH, CONCEPTS_PATH])
+
+
+def require_concept_approval() -> dict:
+    concepts = validate_concepts(require_selected=True)
+    path = APPROVALS / "concept.json"
+    if not path.is_file():
+        fail("The selected concept is not approved. Show all five concepts, then run approve-concept.")
+    receipt = load_json(path)
+    if (
+        receipt.get("status") != "approved"
+        or receipt.get("conceptId") != concepts["selectedConceptId"]
+        or receipt.get("inputHash") != concept_approval_hash()
+    ):
+        fail("The concept approval is stale. Show the current five concepts and approve one again.")
+    return receipt
+
+
+def selected_concept(concepts: dict) -> dict:
+    return next(item for item in concepts["concepts"] if item["id"] == concepts["selectedConceptId"])
+
+
+def validate_visual_plan(content: dict, concepts: dict) -> dict:
+    plan = load_json(VISUAL_PLAN_PATH)
+    if plan.get("selectedConceptId") != concepts["selectedConceptId"]:
+        fail("visual-plan.json must use the approved selected concept.")
+    proofs = plan.get("proofs")
+    if not isinstance(proofs, list) or len(proofs) != 6:
+        fail("visual-plan.json must contain exactly six proof-image plans.")
+    expected = {
+        (lesson, side): content["lessons"][lesson - 1][f"{side}Image"]
+        for lesson in (1, 2, 3)
+        for side in ("left", "right")
+    }
+    seen: set[tuple[int, str]] = set()
+    for proof in proofs:
+        key = (proof.get("lesson"), proof.get("side"))
+        if key not in expected or key in seen:
+            fail("visual-plan.json must plan each lesson side exactly once.")
+        seen.add(key)
+        for field in ("image", "proves", "recognizableObject", "cropInstruction", "source"):
+            if not isinstance(proof.get(field), str) or not proof[field].strip():
+                fail(f"Visual plan for lesson {key[0]} {key[1]} is missing {field}.")
+        if proof.get("visualType") not in VISUAL_TYPES:
+            fail(f"Visual plan for lesson {key[0]} {key[1]} has an unsupported visualType.")
+        if proof["image"] != expected[key]:
+            fail(f"Visual plan for lesson {key[0]} {key[1]} does not match content.json.")
+    return plan
+
+
+def proof_approval_hash(content: dict, plan: dict) -> str:
+    image_paths = [ROOT / proof["image"] for proof in plan["proofs"]]
+    return paths_hash([CONTENT_PATH, VISUAL_PLAN_PATH, *image_paths])
+
+
+def require_proof_approval(content: dict, plan: dict) -> dict:
+    path = APPROVALS / "proofs.json"
+    if not path.is_file():
+        fail("The six-image proof board is not approved. Run proof-board, show it, then run approve-proofs.")
+    receipt = load_json(path)
+    if receipt.get("status") != "approved" or receipt.get("inputHash") != proof_approval_hash(content, plan):
+        fail("The proof-board approval is stale. Show and approve the current six images again.")
+    return receipt
+
+
 def validate_content() -> dict:
     engine.NOTES_FONT = str(FONT_PATH)
+    concepts = validate_concepts(require_selected=True)
     content = load_json(CONTENT_PATH)
     lessons = content.get("lessons")
     if not isinstance(lessons, list) or len(lessons) != 3:
@@ -77,8 +225,16 @@ def validate_content() -> dict:
         for sentence in sentences:
             if not sentence.get("text") or not sentence.get("chunks"):
                 fail(f"Lesson {lesson_index} has an empty sentence or caption chunk.")
+            lowered = sentence["text"].lower()
+            if any(phrase in lowered for phrase in AD_PHRASES):
+                fail(f"Lesson {lesson_index} contains ad-like CTA language: {sentence['text']}")
             if any(len(chunk) > 42 for chunk in sentence["chunks"]):
                 fail(f"Lesson {lesson_index} has a caption chunk over 42 characters.")
+    comparison_plan = selected_concept(concepts)["comparisonPlan"]
+    for lesson_index, (lesson, planned) in enumerate(zip(lessons, comparison_plan), start=1):
+        if lesson["leftLabel"] != planned["leftLabel"] or lesson["rightLabel"] != planned["rightLabel"]:
+            fail(f"Lesson {lesson_index} labels do not match the approved concept plan.")
+    validate_visual_plan(content, concepts)
     if not FONT_PATH.is_file():
         fail("Missing bundled Patrick Hand font.")
     label_font = ImageFont.truetype(str(FONT_PATH), 53)
@@ -121,9 +277,18 @@ def visual_factory(path: Path):
     return load
 
 
-def configure_engine() -> None:
+def require_creative_approvals(content: dict) -> None:
+    concepts = validate_concepts(require_selected=True)
+    require_concept_approval()
+    plan = validate_visual_plan(content, concepts)
+    require_proof_approval(content, plan)
+
+
+def configure_engine(require_approvals: bool = False) -> None:
     engine.NOTES_FONT = str(FONT_PATH)
     content = validate_content()
+    if require_approvals:
+        require_creative_approvals(content)
     engine.ROOT = ROOT
     engine.RUN = RUN
     engine.FRAMES = RUN / "frames"
@@ -156,6 +321,98 @@ def configure_engine() -> None:
     engine.build_source_voice_references = voice_references
 
 
+def show_concepts() -> None:
+    data = validate_concepts()
+    rows = [
+        {
+            "id": concept["id"],
+            "title": concept["title"],
+            "viewerQuestion": concept["viewerQuestion"],
+            "viewerLearns": concept["viewerLearns"],
+            "whyInteresting": concept["whyInteresting"],
+            "whyNotAnAd": concept["whyNotAnAd"],
+        }
+        for concept in data["concepts"]
+    ]
+    print(json.dumps({"status": "review-required", "concepts": rows, "providerCalls": 0}, indent=2))
+
+
+def approve_concept(concept_id: str | None, human_review: str) -> None:
+    if human_review != "pass":
+        fail("Concept approval requires --human-review pass after showing all five concepts.")
+    data = validate_concepts()
+    valid_ids = {concept["id"] for concept in data["concepts"]}
+    if concept_id not in valid_ids:
+        fail("--concept-id must name one of the five concepts in concepts.json.")
+    data["selectedConceptId"] = concept_id
+    write_json(CONCEPTS_PATH, data)
+    APPROVALS.mkdir(parents=True, exist_ok=True)
+    receipt = {"status": "approved", "conceptId": concept_id, "inputHash": concept_approval_hash()}
+    write_json(APPROVALS / "concept.json", receipt)
+    print(json.dumps(receipt, indent=2))
+
+
+def wrapped_lines(text: str, width: int) -> list[str]:
+    return textwrap.wrap(text, width=width, break_long_words=False) or [""]
+
+
+def proof_board() -> Path:
+    require_concept_approval()
+    content = validate_content()
+    concepts = validate_concepts(require_selected=True)
+    plan = validate_visual_plan(content, concepts)
+    canvas = Image.new("RGB", (1080, 1920), (246, 248, 250))
+    draw = ImageDraw.Draw(canvas)
+    title_font = ImageFont.truetype(str(FONT_PATH), 54)
+    label_font = ImageFont.truetype(str(FONT_PATH), 38)
+    note_font = ImageFont.truetype(str(FONT_PATH), 27)
+    draw.text((40, 30), "Six-image proof review", font=title_font, fill=(12, 12, 24))
+    draw.text((40, 91), "Can every image prove one point in under one second?", font=note_font, fill=(65, 75, 90))
+    card_width, card_height = 498, 560
+    for index, proof in enumerate(plan["proofs"]):
+        column, row = index % 2, index // 2
+        x = 30 + column * 522
+        y = 145 + row * 580
+        draw.rounded_rectangle((x, y, x + card_width, y + card_height), radius=14, fill="white", outline=(190, 198, 210), width=2)
+        lesson = content["lessons"][proof["lesson"] - 1]
+        label = lesson[f"{proof['side']}Label"].title()
+        draw.text((x + 22, y + 16), f"{proof['lesson']}. {label}", font=label_font, fill=(12, 12, 24))
+        image_box = (x + 20, y + 72, x + card_width - 20, y + 390)
+        with Image.open(ROOT / proof["image"]) as image:
+            visual = ImageOps.contain(image.convert("RGB"), (image_box[2] - image_box[0], image_box[3] - image_box[1]), Image.Resampling.LANCZOS)
+        visual_x = image_box[0] + (image_box[2] - image_box[0] - visual.width) // 2
+        visual_y = image_box[1] + (image_box[3] - image_box[1] - visual.height) // 2
+        canvas.paste(visual, (visual_x, visual_y))
+        cursor_y = y + 410
+        for line in wrapped_lines(proof["proves"], 39)[:4]:
+            draw.text((x + 22, cursor_y), line, font=note_font, fill=(45, 55, 70))
+            cursor_y += 31
+    review_dir = RUN / "review"
+    review_dir.mkdir(parents=True, exist_ok=True)
+    path = review_dir / "proof-board.jpg"
+    canvas.save(path, quality=94)
+    print(json.dumps({"status": "review-required", "artifact": str(path), "providerCalls": 0}, indent=2))
+    return path
+
+
+def approve_proofs(human_review: str) -> None:
+    if human_review != "pass":
+        fail("Proof approval requires --human-review pass after showing the six-image board.")
+    require_concept_approval()
+    content = validate_content()
+    concepts = validate_concepts(require_selected=True)
+    plan = validate_visual_plan(content, concepts)
+    board = proof_board()
+    APPROVALS.mkdir(parents=True, exist_ok=True)
+    receipt = {
+        "status": "approved",
+        "inputHash": proof_approval_hash(content, plan),
+        "proofBoard": str(board.relative_to(ROOT)),
+    }
+    write_json(APPROVALS / "proofs.json", receipt)
+    print(json.dumps(receipt, indent=2))
+
+
 def smoke() -> None:
     configure_engine()
     smoke_dir = RUN / "smoke"
@@ -176,6 +433,7 @@ def smoke() -> None:
 
 def validate() -> None:
     content = validate_content()
+    require_creative_approvals(content)
     missing_tools = [tool for tool in ("ffmpeg", "ffprobe") if not shutil.which(tool)]
     if missing_tools:
         fail("Missing local tools: " + ", ".join(missing_tools))
@@ -183,7 +441,7 @@ def validate() -> None:
 
 
 def render() -> None:
-    configure_engine()
+    configure_engine(require_approvals=True)
     engine.main()
     video = sorted((RUN / "output").glob("*.mp4"), key=lambda path: path.stat().st_mtime)[-1]
     contacts = sorted((RUN / "contact").glob("*.jpg"), key=lambda path: path.stat().st_mtime)
@@ -199,7 +457,7 @@ def render() -> None:
 
 def input_hash() -> str:
     content = load_json(CONTENT_PATH)
-    paths = [CONTENT_PATH, ROOT / "voice-references.json", FONT_PATH]
+    paths = [BRIEF_PATH, CONCEPTS_PATH, CONTENT_PATH, VISUAL_PLAN_PATH, ROOT / "voice-references.json", FONT_PATH]
     paths.extend(ROOT / lesson[field] for lesson in content["lessons"] for field in ("leftImage", "rightImage"))
     paths.extend(sorted((ROOT / "assets" / "poses").glob("*.png")))
     paths.extend(ROOT / item["file"] for item in load_json(ROOT / "voice-references.json"))
@@ -223,6 +481,7 @@ def latest_video() -> Path:
 
 
 def inspect() -> dict:
+    require_creative_approvals(validate_content())
     video = latest_video()
     manifest_path = RUN / "render-manifest.json"
     if not manifest_path.exists():
@@ -307,11 +566,23 @@ def finalize(human_review: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=("smoke", "validate", "render", "inspect", "finalize"))
+    parser.add_argument(
+        "command",
+        choices=("smoke", "concepts", "approve-concept", "proof-board", "approve-proofs", "validate", "render", "inspect", "finalize"),
+    )
+    parser.add_argument("--concept-id")
     parser.add_argument("--human-review", choices=("pass", "fail"), default="fail")
     args = parser.parse_args()
     if args.command == "smoke":
         smoke()
+    elif args.command == "concepts":
+        show_concepts()
+    elif args.command == "approve-concept":
+        approve_concept(args.concept_id, args.human_review)
+    elif args.command == "proof-board":
+        proof_board()
+    elif args.command == "approve-proofs":
+        approve_proofs(args.human_review)
     elif args.command == "validate":
         validate()
     elif args.command == "render":

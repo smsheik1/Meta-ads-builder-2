@@ -1,0 +1,151 @@
+{
+  "selectedConceptId": "prompt-to-format",
+  "concepts": [
+    {
+      "id": "prompt-to-format",
+      "title": "What Makes Creative Reusable?",
+      "viewerQuestion": "What turns a one-time AI output into a creative system another agent can repeat?",
+      "viewerLearns": "Prompts request outputs, while Formats preserve the instructions, judgment, and proof needed to repeat them.",
+      "whyInteresting": "It explains a difference most people using generative AI have never named.",
+      "whyNotAnAd": "The lesson compares familiar creative building blocks instead of listing Wiggly features or asking the viewer to buy.",
+      "evidenceIds": [
+        "format-contract",
+        "agent-skill",
+        "reusable-output"
+      ],
+      "comparisonPlan": [
+        {
+          "leftLabel": "PROMPT",
+          "rightLabel": "FORMAT",
+          "difference": "One instruction versus a reusable creative recipe."
+        },
+        {
+          "leftLabel": "NODE WORKFLOW",
+          "rightLabel": "AGENT SKILL",
+          "difference": "Connecting tools versus preserving what to make and how to judge it."
+        },
+        {
+          "leftLabel": "ONE AI AD",
+          "rightLabel": "WIGGLY",
+          "difference": "One finished output versus the reusable system behind future outputs."
+        }
+      ]
+    },
+    {
+      "id": "one-output-to-campaign",
+      "title": "Why One Good Output Is Not a Format",
+      "viewerQuestion": "What is missing when AI makes one strong creative but cannot reliably make the next one?",
+      "viewerLearns": "Repeatability requires preserved rules, examples, and quality checks rather than another isolated prompt.",
+      "whyInteresting": "It starts from the common frustration of getting one lucky result that cannot be reproduced.",
+      "whyNotAnAd": "It teaches why reproducibility is difficult without making product promises.",
+      "evidenceIds": [
+        "format-contract",
+        "reusable-output"
+      ],
+      "comparisonPlan": [
+        {
+          "leftLabel": "LUCKY OUTPUT",
+          "rightLabel": "REPEATABLE RESULT",
+          "difference": "One success versus a process that can succeed again."
+        },
+        {
+          "leftLabel": "PROMPT",
+          "rightLabel": "RECIPE",
+          "difference": "A request versus the complete steps and constraints."
+        },
+        {
+          "leftLabel": "ONE BRAND",
+          "rightLabel": "NEW BRAND",
+          "difference": "Copying content versus transferring the underlying format."
+        }
+      ]
+    },
+    {
+      "id": "tools-to-judgment",
+      "title": "Tools Do Not Make the Creative Decision",
+      "viewerQuestion": "What is the difference between connecting AI tools and directing good creative?",
+      "viewerLearns": "Execution tools move media, while creative instructions decide what should happen and whether it worked.",
+      "whyInteresting": "It reveals the missing layer inside many visual AI workflows.",
+      "whyNotAnAd": "The concept explains a technical distinction instead of presenting a sales claim.",
+      "evidenceIds": [
+        "agent-skill",
+        "format-contract"
+      ],
+      "comparisonPlan": [
+        {
+          "leftLabel": "API CALL",
+          "rightLabel": "CREATIVE CHOICE",
+          "difference": "Executing a request versus deciding what is worth making."
+        },
+        {
+          "leftLabel": "NODE GRAPH",
+          "rightLabel": "AGENT SKILL",
+          "difference": "Wiring tools versus guiding creative decisions."
+        },
+        {
+          "leftLabel": "RENDERED",
+          "rightLabel": "APPROVED",
+          "difference": "A completed file versus a result that passed the quality bar."
+        }
+      ]
+    },
+    {
+      "id": "reference-to-recipe",
+      "title": "A Reference Is Not a Recipe",
+      "viewerQuestion": "Why can an agent see a great example and still fail to recreate what makes it work?",
+      "viewerLearns": "Examples show the result, while a Format also explains the structure, assets, process, and acceptance criteria.",
+      "whyInteresting": "It explains why visual imitation often misses the original format's real grammar.",
+      "whyNotAnAd": "The story focuses on a creative-production problem rather than promoting a feature list.",
+      "evidenceIds": [
+        "format-contract",
+        "reusable-output"
+      ],
+      "comparisonPlan": [
+        {
+          "leftLabel": "REFERENCE",
+          "rightLabel": "RULES",
+          "difference": "Seeing the result versus naming what must stay consistent."
+        },
+        {
+          "leftLabel": "STYLE NOTES",
+          "rightLabel": "PROVEN EXAMPLE",
+          "difference": "Describing the look versus demonstrating a passing output."
+        },
+        {
+          "leftLabel": "INSPIRATION",
+          "rightLabel": "RUNNABLE KIT",
+          "difference": "An idea to imitate versus a process an agent can execute."
+        }
+      ]
+    },
+    {
+      "id": "memory-to-package",
+      "title": "Where Creative Knowledge Goes",
+      "viewerQuestion": "What happens when a working creative process exists only in one person's memory?",
+      "viewerLearns": "Packaging the process lets another agent operate it without hidden context.",
+      "whyInteresting": "It turns an invisible handoff problem into something concrete.",
+      "whyNotAnAd": "The lesson is about transferring creative knowledge, not purchasing software.",
+      "evidenceIds": [
+        "agent-skill",
+        "reusable-output"
+      ],
+      "comparisonPlan": [
+        {
+          "leftLabel": "MEMORY",
+          "rightLabel": "INSTRUCTIONS",
+          "difference": "Hidden context versus guidance another person can read."
+        },
+        {
+          "leftLabel": "MANUAL PROCESS",
+          "rightLabel": "RUNNER",
+          "difference": "Rebuilding every step versus executing the proven sequence."
+        },
+        {
+          "leftLabel": "ONE CREATOR",
+          "rightLabel": "ANY AGENT",
+          "difference": "Personal know-how versus a portable creative package."
+        }
+      ]
+    }
+  ]
+}
