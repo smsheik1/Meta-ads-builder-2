@@ -41,7 +41,7 @@ class MugsyCreativeContractTest(unittest.TestCase):
     def test_approved_example_passes_free_contracts(self) -> None:
         assets = self.run_runner("assets")
         self.assertEqual(assets.returncode, 0, assets.stderr)
-        self.assertEqual(len(json.loads(assets.stdout)["assets"]), 6)
+        self.assertTrue(6 <= len(json.loads(assets.stdout)["assets"]) <= 20)
 
         concepts = self.run_runner("concepts")
         self.assertEqual(concepts.returncode, 0, concepts.stderr)

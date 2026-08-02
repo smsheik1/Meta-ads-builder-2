@@ -2,6 +2,8 @@
 
 Build `visual-assets.json` after the beginner brief and before generating concepts.
 
+Stop once you have 6-12 strong assets that can support five genuinely different concepts. The 20-item limit is a ceiling, not a target; do not keep crawling after the story has enough visual proof.
+
 Use the agent's normal browser or web tools. Start with the subject's official website, product pages, documentation, newsroom, and help center. Save 6-20 usable images or tight screenshots locally under `assets/proof/`. Domain-filtered image search may supplement official research, but it does not replace it.
 
 For each asset, record:
