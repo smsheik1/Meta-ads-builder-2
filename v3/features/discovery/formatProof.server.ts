@@ -36,8 +36,7 @@ const formatConfigs: FormatProfileConfig[] = [
     handoff: {
       requiredInputs: [
         "One finished and explicitly approved video",
-        "The brand logo",
-        "The featured product image, or the business hero product/primary offering when no product appears",
+        "The official brand website",
       ],
       deliverables: [
         "One validated ingredient manifest",
@@ -47,7 +46,9 @@ const formatConfigs: FormatProfileConfig[] = [
       ],
       instructions: [
         "Download and run this standalone Repo only after the source video is approved",
-        "Use the featured product when one appears; use the real hero product or primary offering only as the fallback",
+        "Inspect the video, then source the official logo and exact featured product from the supplied website",
+        "Use the real hero product or primary offering only when no product appears in the video",
+        "Do not depend on assets or context from another Wiggly Repo",
         "Render locally with the packaged composition and no API key",
         "Inspect the contact sheet and watch the complete output before finalizing",
       ],

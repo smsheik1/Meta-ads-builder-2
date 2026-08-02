@@ -15,8 +15,7 @@ The LinkedIn process-card composition is a standalone Post-Production Wiggly Rep
 ## V1 Contract
 
 - One approved local MP4, MOV, or WebM.
-- One brand logo.
-- One featured-product image or hero-offering fallback.
+- One official brand website; the fresh agent sources the real logo and featured-product image or hero-offering fallback itself.
 - One fixed packaged Wiggly wordmark.
 - One local 1920x1080 MP4 timed to the source video and preserving its audio when present.
 - One contact sheet, inspection report, and provenance receipt.
@@ -24,7 +23,7 @@ The LinkedIn process-card composition is a standalone Post-Production Wiggly Rep
 
 ## Integration Boundary
 
-A parent Format may optionally hand off a complete manifest only after its output is approved; the wrapper imports no parent renderer, mutates no parent scene, and remains independently downloadable and runnable.
+A parent Format may optionally hand off a complete manifest only after its output is approved, but the acceptance path assumes no parent exists: a fresh agent receives the approved video and official website, sources the visual ingredients itself, imports no parent renderer, and mutates no parent scene.
 
 ## Discover
 

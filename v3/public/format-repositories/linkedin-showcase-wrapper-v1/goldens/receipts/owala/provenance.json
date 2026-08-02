@@ -4,6 +4,7 @@
   "sourceFormat": "three-d-breakdown",
   "sourceRun": "owala-freesip-day7-v1104-stable-endpoints-r8",
   "sourceApproval": "User approved the complete Owala final before requesting the LinkedIn wrapper",
+  "brandWebsite": "https://owalalife.com/",
   "selectedIngredientRole": "featured-product",
   "inputs": {
     "approvedVideo": {

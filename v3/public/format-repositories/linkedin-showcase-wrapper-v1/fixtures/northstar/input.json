@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "brandWebsite": "https://northstar.example/",
   "approvedVideo": {
     "name": "Northstar approved explainer",
     "path": "./source-video.mp4",
@@ -9,11 +10,12 @@
   },
   "brand": {
     "name": "Northstar Studio",
-    "logo": { "name": "Northstar logo", "path": "./brand-logo.svg" }
+    "logo": { "name": "Northstar logo", "path": "./brand-logo.svg", "sourceUrl": "fixture://northstar/brand-logo" }
   },
   "heroProduct": {
     "name": "Northstar Strategy Dashboard",
-    "path": "./hero-offering.svg"
+    "path": "./hero-offering.svg",
+    "sourceUrl": "fixture://northstar/hero-offering"
   },
   "outputName": "northstar-linkedin-showcase"
 }

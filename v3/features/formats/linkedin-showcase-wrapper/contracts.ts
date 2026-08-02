@@ -8,6 +8,7 @@ export type ShowcaseAsset = {
 
 export type LinkedInShowcaseInput = {
   version: 1;
+  brandWebsite: string;
   approvedVideo: ShowcaseAsset & {
     approved: true;
     approvalNote: string;
@@ -16,10 +17,10 @@ export type LinkedInShowcaseInput = {
   };
   brand: {
     name: string;
-    logo: ShowcaseAsset;
+    logo: ShowcaseAsset & { sourceUrl: string };
   };
-  featuredProduct?: ShowcaseAsset;
-  heroProduct?: ShowcaseAsset;
+  featuredProduct?: ShowcaseAsset & { sourceUrl: string };
+  heroProduct?: ShowcaseAsset & { sourceUrl: string };
   outputName?: string;
 };
 
@@ -39,6 +40,12 @@ export function resolveShowcaseIngredient(input: LinkedInShowcaseInput): Showcas
 export function validateShowcaseInput(input: LinkedInShowcaseInput): string[] {
   const errors: string[] = [];
   if (input.version !== 1) errors.push("Input version must be 1.");
+  try {
+    const website = new URL(input.brandWebsite);
+    if (!["http:", "https:"].includes(website.protocol)) throw new Error("unsupported protocol");
+  } catch {
+    errors.push("A valid brand website URL is required so the agent can source the logo and product independently.");
+  }
   if (!input.approvedVideo?.approved) errors.push("The source video must be explicitly approved before wrapping.");
   if (!input.approvedVideo?.approvalNote?.trim()) errors.push("The approved video needs an approval note.");
   if (!input.approvedVideo?.path?.trim()) errors.push("The approved video path is required.");
@@ -47,11 +54,13 @@ export function validateShowcaseInput(input: LinkedInShowcaseInput): string[] {
   }
   if (!input.brand?.name?.trim()) errors.push("The brand name is required.");
   if (!input.brand?.logo?.path?.trim()) errors.push("The brand logo path is required.");
+  if (!input.brand?.logo?.sourceUrl?.trim()) errors.push("The brand logo needs its exact source URL or user-provided provenance.");
   if (!supportedImageExtensions.has(path.extname(input.brand?.logo?.path || "").toLowerCase())) {
     errors.push("The brand logo must be JPG, PNG, WebP, or SVG.");
   }
   const ingredient = resolveShowcaseIngredient(input);
   if (!ingredient) errors.push("Provide the featured product, or the business hero product when no product appears in the video.");
+  if (ingredient && !ingredient.sourceUrl?.trim()) errors.push("The product or hero-offering image needs its exact source URL or user-provided provenance.");
   if (ingredient && !supportedImageExtensions.has(path.extname(ingredient.path).toLowerCase())) {
     errors.push("The product or hero-offering image must be JPG, PNG, WebP, or SVG.");
   }

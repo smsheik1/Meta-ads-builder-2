@@ -4,9 +4,13 @@ Turn one already-approved video into the 16:9 process card Wiggly uses on Linked
 
 The right side is the untouched approved output; the left side shows what made it: the brand logo, the featured product (or the business hero product when no product appears), and Wiggly.
 
+The user supplies only the approved video and official brand website; the fresh agent inspects the video, sources the official logo and exact featured/hero product itself, and records both source URLs without requiring another Wiggly Repo.
+
 ## Quick start
 
 Run commands from the kit's `v3` directory.
+
+First, read `prompts/asset-sourcing.md`, inspect the approved video, and use the official website to download the logo and featured/hero-product image; then create the input JSON and run:
 
 ```bash
 npm install
@@ -30,6 +34,7 @@ The process costs $0 in provider charges and requires no API key.
 ```json
 {
   "version": 1,
+  "brandWebsite": "https://example.com/",
   "approvedVideo": {
     "name": "Finished vertical ad",
     "path": "./final.mp4",
@@ -39,9 +44,9 @@ The process costs $0 in provider charges and requires no API key.
   },
   "brand": {
     "name": "Example Brand",
-    "logo": { "name": "Example Brand logo", "path": "./logo.png" }
+    "logo": { "name": "Example Brand logo", "path": "./logo.png", "sourceUrl": "https://example.com/official-logo.png" }
   },
-  "featuredProduct": { "name": "Example product", "path": "./product.png" },
+  "featuredProduct": { "name": "Example product", "path": "./product.png", "sourceUrl": "https://example.com/products/example" },
   "outputName": "example-linkedin-showcase"
 }
 ```

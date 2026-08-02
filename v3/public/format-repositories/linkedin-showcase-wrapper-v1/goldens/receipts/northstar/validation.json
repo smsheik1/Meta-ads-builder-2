@@ -1,5 +1,6 @@
 {
   "pass": true,
+  "brandWebsite": "https://northstar.example/",
   "durationSeconds": 3,
   "width": 1080,
   "height": 1920,

@@ -7,6 +7,12 @@
     "The selected ingredient role is recorded as featured-product or hero-product.",
     "The input and output SHA-256 hashes are recorded."
   ],
+  "sourcing": [
+    "The standalone run starts from only an approved video and official brand website.",
+    "The agent sources the real logo and product or hero-offering image without a parent Format.",
+    "Each sourced image keeps its exact official URL or user-provided provenance.",
+    "No generated substitute logo or product image is used."
+  ],
   "visual": [
     "The approved video remains recognizable and is not distorted.",
     "The three left-side assets are clean, readable, and vertically balanced.",

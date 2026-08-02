@@ -33,6 +33,7 @@ type StoredAsset = {
 
 type PreparedInput = {
   version: 1;
+  brandWebsite: string;
   approvedVideo: StoredAsset & {
     approved: true;
     approvalNote: string;
@@ -190,7 +191,7 @@ async function check() {
     execFileAsync("ffmpeg", ["-version"]),
     execFileAsync("ffprobe", ["-version"]),
   ]);
-  console.log("Approve -> Prepare -> Validate -> Render -> Inspect -> Finalize");
+  console.log("Approve -> Source -> Prepare -> Validate -> Render -> Inspect -> Finalize");
   console.log("Local Remotion render only; no API key, provider call, or generation charge.");
   console.log("The wrapper is independent and never changes its source Format or approved video.");
 }
@@ -210,6 +211,7 @@ async function init() {
   const wigglyLogoSource = path.join(packageRoot, "assets", "wiggly-wordmark.png");
   const prepared: PreparedInput = {
     version: 1,
+    brandWebsite: raw.brandWebsite,
     approvedVideo: {
       ...(await storeAsset(
         resolveInputAssetPath(sourceInputPath, raw.approvedVideo.path),
@@ -276,6 +278,7 @@ async function validate() {
   await writeJson(path.join(directory, "state.json"), state);
   await writeJson(path.join(directory, "validation.json"), {
     pass: true,
+    brandWebsite: input.brandWebsite,
     durationSeconds,
     width: video.width,
     height: video.height,
@@ -390,6 +393,7 @@ async function inspect() {
     version: "1.0.0",
     sourceFormat: input.approvedVideo.sourceFormat || null,
     sourceRun: input.approvedVideo.sourceRun || null,
+    brandWebsite: input.brandWebsite,
     sourceApproval: input.approvedVideo.approvalNote,
     selectedIngredientRole: input.selectedIngredient.role,
     inputs: {

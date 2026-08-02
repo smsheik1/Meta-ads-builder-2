@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "brandWebsite": "https://owalalife.com/",
   "approvedVideo": {
     "name": "Owala FreeSip Day 7 final",
     "path": "./source-video.mp4",

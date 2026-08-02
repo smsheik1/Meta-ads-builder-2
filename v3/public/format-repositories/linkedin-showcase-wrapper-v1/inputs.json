@@ -1,14 +1,19 @@
 {
-  "required": {
+  "userProvides": {
     "approvedVideo": "A local MP4, MOV, or WebM with approved=true and a non-empty approvalNote",
-    "brand.name": "The brand name",
-    "brand.logo": "A local JPG, PNG, WebP, or SVG logo"
+    "brandWebsite": "The official brand website used by the agent to source the visual ingredients"
+  },
+  "agentSources": {
+    "brand.name": "The brand name verified from the official website",
+    "brand.logo": "A local official JPG, PNG, WebP, or SVG logo with its exact source URL",
+    "ingredientTwo": "The featured product shown in the video, or the business hero product/primary offering when no product appears, with its exact source URL"
   },
   "ingredientPriority": [
     "featuredProduct when the finished video features a product",
     "heroProduct when no product appears in the finished video"
   ],
   "fixedAsset": "The packaged transparent Wiggly wordmark",
+  "standaloneRule": "The agent must be able to source the logo and ingredient two from the website without any parent Format or handoff.",
   "defaults": {
     "canvas": "1920x1080",
     "layout": "brand logo + product or offering + Wiggly -> approved output",

@@ -4,6 +4,7 @@
   "sourceFormat": "fixture",
   "sourceRun": null,
   "sourceApproval": "Synthetic fixture approved for the hero-product fallback proof",
+  "brandWebsite": "https://northstar.example/",
   "selectedIngredientRole": "hero-product",
   "inputs": {
     "approvedVideo": {

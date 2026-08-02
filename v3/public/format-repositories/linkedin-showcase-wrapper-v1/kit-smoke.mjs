@@ -8,6 +8,7 @@ const required = [
   "inputs.json",
   "pipeline.json",
   "quality.json",
+  "prompts/asset-sourcing.md",
   "requirements.json",
   "assets/wiggly-wordmark.png",
   "fixtures/northstar/input.json",

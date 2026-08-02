@@ -9,15 +9,22 @@ Use this skill only after the source video is finished and approved.
 
 ## Start
 
-If the user supplied an approved video, brand logo, and featured product image, start the run.
+The only required user inputs are the approved video and the brand website; the agent must source the visual ingredients itself unless the user explicitly supplies them.
 
-If no product appears in the video, use the business's real hero product or primary offering as ingredient two; never invent one.
+Ask one question at a time:
+
+1. `Which approved finished video should I package?`
+2. `What is the brand website?`
+
+Do not ask the user to find a logo or product image that the agent can source from the official website.
+
+Inspect the approved video first. If a specific product appears, identify it and source a clean official image from that product's official page. If no product appears, use the business's real hero product or primary offering from its official website; never invent one.
 
 If the source video is not approved, stop and ask the user to approve that video first.
 
 ## Progress
 
-`Approve -> Prepare -> Validate -> Render -> Inspect -> Finalize`
+`Approve -> Source -> Prepare -> Validate -> Render -> Inspect -> Finalize`
 
 Keep updates short and always state the immediate next step.
 
@@ -25,15 +32,19 @@ Keep updates short and always state the immediate next step.
 
 Run all commands from the downloaded kit's `v3` directory.
 
-1. Run `npm run format:linkedin-showcase -- check`.
-2. Create one input JSON using the contract in `inputs.json`.
-3. Run `npm run format:linkedin-showcase -- init --run=<id> --input=<path>`.
-4. Run `npm run format:linkedin-showcase -- validate --run=<id>`.
-5. Confirm the validation selected `featured-product`, or `hero-product` only when no featured product exists.
-6. Run `npm run format:linkedin-showcase -- render --run=<id>`.
-7. Run `npm run format:linkedin-showcase -- inspect --run=<id>`.
-8. Open the contact sheet and watch the complete MP4 with sound.
-9. If both pass, run `npm run format:linkedin-showcase -- finalize --run=<id> --approve-final --review-note="<what you checked>"`.
+1. Run `npm install`.
+2. Run `npm run format:linkedin-showcase -- check`.
+3. Read `prompts/asset-sourcing.md`.
+4. Inspect the approved video to decide whether ingredient two is a featured product or the brand's hero offering.
+5. Use your web tools to research the supplied official website, download the cleanest official logo and product/offering image, and save each exact source URL.
+6. Create one input JSON using the contract in `inputs.json`; do not depend on another Wiggly Repo being present.
+7. Run `npm run format:linkedin-showcase -- init --run=<id> --input=<path>`.
+8. Run `npm run format:linkedin-showcase -- validate --run=<id>`.
+9. Confirm the validation selected `featured-product`, or `hero-product` only when no featured product exists.
+10. Run `npm run format:linkedin-showcase -- render --run=<id>`.
+11. Run `npm run format:linkedin-showcase -- inspect --run=<id>`.
+12. Open the contact sheet and watch the complete MP4 with sound.
+13. If both pass, run `npm run format:linkedin-showcase -- finalize --run=<id> --approve-final --review-note="<what you checked>"`.
 
 Use `resume --run=<id>` after an interruption.
 
@@ -48,8 +59,10 @@ Use `resume --run=<id>` after an interruption.
 ## Boundaries
 
 - This is a standalone post-production Repo, not a required stage in another Format.
-- It never mutates or imports the parent Format's renderer.
-- A parent Format may hand off a complete approved-video manifest, but this Repo remains independently runnable.
+- It must work from the approved video and official brand website with no parent Format present.
+- A parent Format may optionally provide already-sourced assets, but the standalone path is the acceptance test and can never depend on that handoff.
+- It never mutates or imports another Format's renderer.
+- Use official website assets or explicit user uploads; never generate substitute logos or products.
 - Do not add layout controls to V1.
 - Do not add provider fallbacks.
 - Do not add API keys.

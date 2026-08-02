@@ -34,8 +34,9 @@ type GoldenExample = {
 
 const files = [
   ["SKILL.md", "Agent instructions"],
+  ["prompts/asset-sourcing.md", "Standalone asset sourcing"],
   ["inputs.json", "Input and fallback contract"],
-  ["pipeline.json", "Six-stage assembly line"],
+  ["pipeline.json", "Seven-stage assembly line"],
   ["quality.json", "Automatic and human gates"],
   ["requirements.json", "Zero-provider requirements"],
 ] as const;
@@ -109,7 +110,7 @@ export default function LinkedInShowcaseWrapperFormatPage() {
         <section data-testid="linkedin-showcase-wrapper-pipeline">
           <h2 className="text-xl font-bold">The post-production line</h2>
           <p className="mt-1 text-sm font-semibold text-slate-600">{pipeline.progress}</p>
-          <ol className="mt-4 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+          <ol className="mt-4 grid gap-3 md:grid-cols-3 lg:grid-cols-7">
             {pipeline.stages.map((stage, index) => (
               <li key={stage.id} className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm">
                 <div className="flex items-center justify-between gap-2">

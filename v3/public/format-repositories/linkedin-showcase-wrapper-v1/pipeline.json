@@ -1,11 +1,17 @@
 {
-  "progress": "Approve -> Prepare -> Validate -> Render -> Inspect -> Finalize",
+  "progress": "Approve -> Source -> Prepare -> Validate -> Render -> Inspect -> Finalize",
   "stages": [
     {
       "id": "Approve",
       "output": "One finished source video with explicit approval and an approval note",
       "paid": false,
       "approvalRequired": true
+    },
+    {
+      "id": "Source",
+      "output": "An official brand logo and the featured product or hero offering, each downloaded by the agent with exact source provenance",
+      "paid": false,
+      "approvalRequired": false
     },
     {
       "id": "Prepare",

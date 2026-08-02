@@ -8,6 +8,7 @@ import {
 
 const base: LinkedInShowcaseInput = {
   version: 1,
+  brandWebsite: "https://example.com/",
   approvedVideo: {
     name: "Approved video",
     path: "./final.mp4",
@@ -16,10 +17,10 @@ const base: LinkedInShowcaseInput = {
   },
   brand: {
     name: "Example",
-    logo: { name: "Example logo", path: "./logo.png" },
+    logo: { name: "Example logo", path: "./logo.png", sourceUrl: "https://example.com/logo.png" },
   },
-  featuredProduct: { name: "Featured bottle", path: "./bottle.png" },
-  heroProduct: { name: "Fallback offering", path: "./offering.png" },
+  featuredProduct: { name: "Featured bottle", path: "./bottle.png", sourceUrl: "https://example.com/bottle.png" },
+  heroProduct: { name: "Fallback offering", path: "./offering.png", sourceUrl: "https://example.com/offering.png" },
 };
 
 assert.deepEqual(validateShowcaseInput(base), []);
@@ -31,6 +32,21 @@ assert.equal(resolveShowcaseIngredient(heroOnly)?.role, "hero-product", "A real 
 
 const missingIngredient = { ...heroOnly, heroProduct: undefined };
 assert.match(validateShowcaseInput(missingIngredient).join(" "), /hero product/i);
+
+assert.match(
+  validateShowcaseInput({ ...base, brandWebsite: "" }).join(" "),
+  /brand website URL/i,
+  "A cold run must include the website needed for independent asset sourcing.",
+);
+
+assert.match(
+  validateShowcaseInput({
+    ...base,
+    brand: { ...base.brand, logo: { ...base.brand.logo, sourceUrl: "" } },
+  }).join(" "),
+  /logo needs its exact source URL/i,
+  "The independently sourced logo must keep provenance.",
+);
 
 const unapproved = {
   ...base,
@@ -44,7 +60,11 @@ assert.match(runner, /contact-sheet\.jpg/);
 assert.match(runner, /automaticPass/);
 assert.match(runner, /approve-final/);
 assert.match(runner, /provenance\.json/);
+assert.match(runner, /Approve -> Source -> Prepare -> Validate -> Render -> Inspect -> Finalize/);
 assert.doesNotMatch(runner, /REPLICATE_API|GEMINI_API|OPENAI_API/);
+
+const skill = readFileSync("public/format-repositories/linkedin-showcase-wrapper-v1/SKILL.md", "utf8");
+assert.match(skill, /1\. Run `npm install`\./, "A cold agent must install the standalone kit before running its check.");
 
 const composition = readFileSync("features/formats/linkedin-showcase-wrapper/LinkedInShowcase.tsx", "utf8");
 assert.match(composition, /OffthreadVideo/);
