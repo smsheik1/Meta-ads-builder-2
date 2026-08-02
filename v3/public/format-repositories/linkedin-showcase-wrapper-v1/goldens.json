@@ -1,0 +1,29 @@
+{
+  "purpose": "One real physical-product result and one synthetic no-featured-product proof demonstrate both ingredient paths through the same runtime.",
+  "examples": [
+    {
+      "id": "owala-freesip",
+      "brand": "Owala",
+      "ingredientRole": "featured-product",
+      "videoPath": "goldens/owala-linkedin-showcase.mp4",
+      "posterPath": "goldens/owala-linkedin-showcase-poster.jpg",
+      "receiptPath": "goldens/receipts/owala/provenance.json",
+      "whyItWorks": [
+        "The featured FreeSip bottle explains the exact product used in the finished 3D Breakdown.",
+        "The approved 20-second video and its audio are preserved inside a LinkedIn-ready 16:9 frame."
+      ]
+    },
+    {
+      "id": "northstar-studio",
+      "brand": "Northstar Studio",
+      "ingredientRole": "hero-product",
+      "videoPath": "goldens/northstar-linkedin-showcase.mp4",
+      "posterPath": "goldens/northstar-linkedin-showcase-poster.jpg",
+      "receiptPath": "goldens/receipts/northstar/provenance.json",
+      "whyItWorks": [
+        "No featured product is supplied, so the runtime deterministically selects the studio's hero offering.",
+        "The same renderer, validation, inspection, and provenance path works without a physical product."
+      ]
+    }
+  ]
+}

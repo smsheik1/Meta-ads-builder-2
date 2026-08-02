@@ -1,0 +1,15 @@
+{
+  "fixed": [
+    {
+      "id": "wiggly-wordmark",
+      "path": "assets/wiggly-wordmark.png",
+      "role": "Third process ingredient",
+      "license": "Wiggly-owned brand asset"
+    }
+  ],
+  "perRun": [
+    "approved source video",
+    "brand logo",
+    "featured product or hero offering image"
+  ]
+}

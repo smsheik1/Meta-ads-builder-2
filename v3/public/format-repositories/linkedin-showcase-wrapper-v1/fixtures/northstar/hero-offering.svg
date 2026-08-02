@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="540" viewBox="0 0 720 540">
+  <rect x="24" y="24" width="672" height="492" rx="36" fill="#10132b"/>
+  <rect x="62" y="70" width="596" height="374" rx="20" fill="#f7f4ff"/>
+  <rect x="96" y="108" width="180" height="22" rx="11" fill="#6655ff"/>
+  <rect x="96" y="160" width="236" height="220" rx="18" fill="#dcd6ff"/>
+  <path d="M370 346l56-76 54 33 84-118" fill="none" stroke="#ff5ea8" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="564" cy="185" r="18" fill="#ff5ea8"/>
+  <text x="360" y="490" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="white">Strategy Dashboard</text>
+</svg>

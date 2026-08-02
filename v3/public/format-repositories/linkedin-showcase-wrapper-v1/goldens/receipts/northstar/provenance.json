@@ -1,0 +1,30 @@
+{
+  "format": "linkedin-showcase-wrapper",
+  "version": "1.0.0",
+  "sourceFormat": "fixture",
+  "sourceRun": null,
+  "sourceApproval": "Synthetic fixture approved for the hero-product fallback proof",
+  "selectedIngredientRole": "hero-product",
+  "inputs": {
+    "approvedVideo": {
+      "path": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/northstar-golden/assets/approved-video.mp4",
+      "sha256": "76060277ab9cf8c78fd5f7e0c44f10fbf5993cfad638108fb503c0d4e31ed5a7"
+    },
+    "brandLogo": {
+      "path": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/northstar-golden/assets/brand-logo.svg",
+      "sha256": "c32f1b307d65a5931d88bcdb3faca2bf7f43ae4c829cccd185bf3806224ebdb8"
+    },
+    "productOrOffering": {
+      "path": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/northstar-golden/assets/product-or-offering.svg",
+      "sha256": "fad6640128f59b91742c3fe07370e5bf263991f7f8f1304e63e00a39176cca28"
+    },
+    "wigglyLogo": {
+      "path": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/northstar-golden/assets/wiggly-wordmark.png",
+      "sha256": "1aaa74bd1eccc770c550742e5147d51116739c8a2d86c4af7dde2ecfa697ae9c"
+    }
+  },
+  "output": {
+    "path": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/northstar-golden/northstar-linkedin-showcase.mp4",
+    "sha256": "d2b8ad0734496e4e7bdd6d92e9300d944a45034198bf12af87f17a0c8407c50b"
+  }
+}

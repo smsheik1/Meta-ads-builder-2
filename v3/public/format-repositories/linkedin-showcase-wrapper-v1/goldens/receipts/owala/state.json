@@ -1,0 +1,27 @@
+{
+  "id": "owala-golden",
+  "status": "finalized",
+  "createdAt": "2026-08-02T15:05:26.347Z",
+  "validatedAt": "2026-08-02T15:05:26.808Z",
+  "renderedAt": "2026-08-02T15:06:55.757Z",
+  "output": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/owala-golden/owala-linkedin-showcase.mp4",
+  "inspectedAt": "2026-08-02T15:06:56.765Z",
+  "inspection": {
+    "automaticPass": true,
+    "durationSeconds": 20,
+    "sourceDurationSeconds": 20,
+    "durationWithinTolerance": true,
+    "width": 1920,
+    "height": 1080,
+    "videoStreams": 1,
+    "audioStreams": 1,
+    "sourceAudioStreams": 1,
+    "audioPreserved": true,
+    "contactSheet": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/owala-golden/contact-sheet.jpg"
+  },
+  "finalizedAt": "2026-08-02T15:07:08.692Z",
+  "humanReview": {
+    "approved": true,
+    "note": "The Owala logo, FreeSip bottle, Wiggly wordmark, arrow, and all four sampled output frames are clean and unclipped."
+  }
+}

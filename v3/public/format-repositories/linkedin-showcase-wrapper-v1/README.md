@@ -1,0 +1,49 @@
+# LinkedIn Showcase Wrapper
+
+Turn one already-approved video into the 16:9 process card Wiggly uses on LinkedIn.
+
+The right side is the untouched approved output; the left side shows what made it: the brand logo, the featured product (or the business hero product when no product appears), and Wiggly.
+
+## Quick start
+
+Run commands from the kit's `v3` directory.
+
+```bash
+npm install
+npm run format:linkedin-showcase -- check
+npm run format:linkedin-showcase -- init --run=my-showcase --input=/absolute/path/to/input.json
+npm run format:linkedin-showcase -- validate --run=my-showcase
+npm run format:linkedin-showcase -- render --run=my-showcase
+npm run format:linkedin-showcase -- inspect --run=my-showcase
+```
+
+Watch the complete MP4 and open the generated contact sheet, then finalize it:
+
+```bash
+npm run format:linkedin-showcase -- finalize --run=my-showcase --approve-final --review-note="All four ingredients are clean and the full video plays correctly."
+```
+
+The process costs $0 in provider charges and requires no API key.
+
+## Input example
+
+```json
+{
+  "version": 1,
+  "approvedVideo": {
+    "name": "Finished vertical ad",
+    "path": "./final.mp4",
+    "approved": true,
+    "approvalNote": "Approved after watching the complete cut",
+    "sourceFormat": "three-d-breakdown"
+  },
+  "brand": {
+    "name": "Example Brand",
+    "logo": { "name": "Example Brand logo", "path": "./logo.png" }
+  },
+  "featuredProduct": { "name": "Example product", "path": "./product.png" },
+  "outputName": "example-linkedin-showcase"
+}
+```
+
+If the video has no featured product, omit `featuredProduct` and provide `heroProduct` instead.

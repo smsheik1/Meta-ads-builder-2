@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="320" viewBox="0 0 1000 320">
+  <rect width="1000" height="320" fill="white"/>
+  <path d="M120 42l24 69 73 2-58 44 20 70-59-41-59 41 20-70-58-44 73-2z" fill="#6655ff"/>
+  <text x="240" y="195" font-family="Arial, sans-serif" font-size="112" font-weight="700" fill="#10132b">Northstar</text>
+</svg>

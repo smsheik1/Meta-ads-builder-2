@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "approvedVideo": {
+    "name": "Northstar approved explainer",
+    "path": "./source-video.mp4",
+    "approved": true,
+    "approvalNote": "Synthetic fixture approved for the hero-product fallback proof",
+    "sourceFormat": "fixture"
+  },
+  "brand": {
+    "name": "Northstar Studio",
+    "logo": { "name": "Northstar logo", "path": "./brand-logo.svg" }
+  },
+  "heroProduct": {
+    "name": "Northstar Strategy Dashboard",
+    "path": "./hero-offering.svg"
+  },
+  "outputName": "northstar-linkedin-showcase"
+}

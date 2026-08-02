@@ -399,7 +399,9 @@ export function DiscoveryClient({
                       <article className={styles.card} id={entry.id} key={entry.id}>
                         <div
                           className={`${styles.mediaWell} ${
-                            entry.media.kind === "image" || entry.format.slug === "brainrot"
+                            entry.media.aspectRatio === "landscape"
+                              ? styles.mediaWellLandscape
+                              : entry.media.kind === "image" || entry.format.slug === "brainrot"
                               ? styles.mediaWellImage
                               : ""
                           }`}

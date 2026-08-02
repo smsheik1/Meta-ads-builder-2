@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "approvedVideo": {
+    "name": "Owala FreeSip Day 7 final",
+    "path": "./source-video.mp4",
+    "approved": true,
+    "approvalNote": "User approved the complete Owala final before requesting the LinkedIn wrapper",
+    "sourceFormat": "three-d-breakdown",
+    "sourceRun": "owala-freesip-day7-v1104-stable-endpoints-r8"
+  },
+  "brand": {
+    "name": "Owala",
+    "logo": {
+      "name": "Owala wordmark",
+      "path": "./brand-logo.png",
+      "sourceUrl": "https://owalalife.com/"
+    }
+  },
+  "featuredProduct": {
+    "name": "Owala FreeSip Blue Jay bottle",
+    "path": "./product.png",
+    "sourceUrl": "https://owalalife.com/"
+  },
+  "outputName": "owala-linkedin-showcase"
+}

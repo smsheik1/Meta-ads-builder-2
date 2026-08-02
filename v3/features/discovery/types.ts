@@ -14,6 +14,7 @@ export type DiscoveryEntry = {
     src: string;
     poster?: string;
     referenceSrc?: string;
+    aspectRatio?: "landscape";
     durationLabel: string;
     accentColor?: string;
   };
