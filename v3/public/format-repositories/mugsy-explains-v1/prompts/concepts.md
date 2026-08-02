@@ -12,6 +12,7 @@ Each concept must contain:
 - the evidence IDs it uses;
 - six unique `visualAssetIds` from the inventory that can actually show the three comparisons, ordered as `setup A`, `setup B`, `mechanism A`, `mechanism B`, `payoff A`, `payoff B`;
 - three planned A-versus-B comparisons that build one escalating lesson;
+- one `visualContrast` per comparison describing what looks different before narration;
 - one final takeaway that names the subject's useful role without asking the viewer to act.
 
 The three comparisons must have these `beat` values in order:
@@ -22,9 +23,9 @@ The three comparisons must have these `beat` values in order:
 
 The payoff cannot merely rename or restate the setup. Read the three `difference` fields in order: they should feel like discovery, not three definitions of the same distinction. `finalTakeaway` must be a complete spoken sentence of 16 words or fewer that a viewer can repeat after hearing once. Use concrete verbs to show the useful division of labor, cause, or consequence. Prefer lines like `Recall.ai records the meeting; your product decides what happens next.` Reject corporate abstractions such as `supplies the infrastructure layer`. It may name the company or product when that makes the lesson concrete, but it must not be a CTA or slogan.
 
-Every A and B pair must answer the same question. Prefer distinctions a beginner can see: old versus new, myth versus reality, one object versus the system behind it, manual versus managed, or output versus process.
+Every A and B pair must answer the same question and come from different `sceneFamily` values. The six selected assets must cover at least five scene families and three visual forms, with no more than two interface visuals. Prefer distinctions a beginner can see: old versus new, myth versus reality, one object versus the system behind it, manual versus managed, or output versus process.
 
-Visual feasibility is part of concept quality. Recommend a concept only when its six inventoried assets make all three comparisons instantly understandable. At least four candidates must be subject-specific, and no more than two may be constructed. Do not propose a concept and hope to invent its visuals later.
+Visual feasibility is part of concept quality. Recommend a concept only when its six inventoried assets make all three comparisons instantly understandable without fine print or explanatory captions. At least four candidates must be subject-specific, and no more than two may be constructed. Do not propose a concept and hope to invent its visuals later.
 
 Reject concepts that list features, repeat the same distinction three times, depend on jargon, compare unlike categories, make unsupported claims, omit a subject-specific payoff, end with a sales action, or lack six strong sourced visuals.
 

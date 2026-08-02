@@ -27,19 +27,22 @@
           "beat": "setup",
           "leftLabel": "PROMPT",
           "rightLabel": "FORMAT",
-          "difference": "One instruction versus a reusable creative recipe."
+          "difference": "One instruction versus a reusable creative recipe.",
+          "visualContrast": "One isolated prompt box versus one card containing grouped parts."
         },
         {
           "beat": "mechanism",
           "leftLabel": "NODE WORKFLOW",
           "rightLabel": "AGENT SKILL",
-          "difference": "Connecting tools versus preserving what to make and how to judge it."
+          "difference": "Connecting tools versus preserving what to make and how to judge it.",
+          "visualContrast": "Connected tool nodes versus one checklist-style skill card."
         },
         {
           "beat": "payoff",
           "leftLabel": "ONE AI AD",
           "rightLabel": "WIGGLY",
-          "difference": "One finished output versus the reusable system behind future outputs."
+          "difference": "One finished output versus the reusable system behind future outputs.",
+          "visualContrast": "One vertical ad versus several coordinated creative outputs."
         }
       ]
     },
@@ -68,19 +71,22 @@
           "beat": "setup",
           "leftLabel": "LUCKY OUTPUT",
           "rightLabel": "REPEATABLE RESULT",
-          "difference": "One success versus a process that can succeed again."
+          "difference": "One success versus a process that can succeed again.",
+          "visualContrast": "One vertical ad versus several coordinated creative outputs."
         },
         {
           "beat": "mechanism",
           "leftLabel": "PROMPT",
           "rightLabel": "RECIPE",
-          "difference": "A request versus the complete steps and constraints."
+          "difference": "A request versus the complete steps and constraints.",
+          "visualContrast": "One isolated prompt box versus one card containing grouped parts."
         },
         {
           "beat": "payoff",
           "leftLabel": "ONE BRAND",
           "rightLabel": "NEW BRAND",
-          "difference": "Copying content versus transferring the underlying format."
+          "difference": "Copying content versus transferring the underlying format.",
+          "visualContrast": "Connected tool nodes versus one checklist-style skill card."
         }
       ]
     },
@@ -109,19 +115,22 @@
           "beat": "setup",
           "leftLabel": "API CALL",
           "rightLabel": "CREATIVE CHOICE",
-          "difference": "Executing a request versus deciding what is worth making."
+          "difference": "Executing a request versus deciding what is worth making.",
+          "visualContrast": "One isolated prompt box versus one card containing grouped parts."
         },
         {
           "beat": "mechanism",
           "leftLabel": "NODE GRAPH",
           "rightLabel": "AGENT SKILL",
-          "difference": "Wiring tools versus guiding creative decisions."
+          "difference": "Wiring tools versus guiding creative decisions.",
+          "visualContrast": "Connected tool nodes versus one checklist-style skill card."
         },
         {
           "beat": "payoff",
           "leftLabel": "RENDERED",
           "rightLabel": "APPROVED",
-          "difference": "A completed file versus a result that passed the quality bar."
+          "difference": "A completed file versus a result that passed the quality bar.",
+          "visualContrast": "One vertical ad versus several coordinated creative outputs."
         }
       ]
     },
@@ -150,19 +159,22 @@
           "beat": "setup",
           "leftLabel": "REFERENCE",
           "rightLabel": "RULES",
-          "difference": "Seeing the result versus naming what must stay consistent."
+          "difference": "Seeing the result versus naming what must stay consistent.",
+          "visualContrast": "One vertical ad versus one grouped format card."
         },
         {
           "beat": "mechanism",
           "leftLabel": "STYLE NOTES",
           "rightLabel": "PROVEN EXAMPLE",
-          "difference": "Describing the look versus demonstrating a passing output."
+          "difference": "Describing the look versus demonstrating a passing output.",
+          "visualContrast": "One isolated prompt box versus one checklist-style skill card."
         },
         {
           "beat": "payoff",
           "leftLabel": "INSPIRATION",
           "rightLabel": "RUNNABLE KIT",
-          "difference": "An idea to imitate versus a process an agent can execute."
+          "difference": "An idea to imitate versus a process an agent can execute.",
+          "visualContrast": "Connected tool nodes versus several coordinated creative outputs."
         }
       ]
     },
@@ -191,19 +203,22 @@
           "beat": "setup",
           "leftLabel": "MEMORY",
           "rightLabel": "INSTRUCTIONS",
-          "difference": "Hidden context versus guidance another person can read."
+          "difference": "Hidden context versus guidance another person can read.",
+          "visualContrast": "One isolated prompt box versus one grouped format card."
         },
         {
           "beat": "mechanism",
           "leftLabel": "MANUAL PROCESS",
           "rightLabel": "RUNNER",
-          "difference": "Rebuilding every step versus executing the proven sequence."
+          "difference": "Rebuilding every step versus executing the proven sequence.",
+          "visualContrast": "Connected tool nodes versus one checklist-style skill card."
         },
         {
           "beat": "payoff",
           "leftLabel": "ONE CREATOR",
           "rightLabel": "ANY AGENT",
-          "difference": "Personal know-how versus a portable creative package."
+          "difference": "Personal know-how versus a portable creative package.",
+          "visualContrast": "One vertical ad versus several coordinated creative outputs."
         }
       ]
     }

@@ -111,4 +111,15 @@ A fresh agent continued the approved Recall.ai story through the six-image proof
 
 Five of six proof images were homemade diagrams even though Recall.ai's official pages contained real meeting screenshots, UI examples, and product comparisons. The old prompt allowed `simple diagrams`, concepts were approved before checking visual feasibility, and validation checked only fields, file dimensions, and readability.
 
-Version 0.3.0 moves visual research before concepts. Every concept must bind six validated inventory assets, at least four must be subject-specific, no more than two may be constructed, and the final proof plan must use those exact approved files. Browser access is required for official-source research; domain-filtered image search remains an optional supplement rather than a new provider dependency.
+Version 0.3.1 moves an image-only phone-size audition before concepts. Every selected asset must work without fine print, every A/B pair must use different scene families, and the six-image proof board hides explanatory notes so weak pictures cannot borrow meaning from captions. Browser access is required for official-source research; domain-filtered image search remains an optional supplement rather than a new provider dependency.
+
+## Four-Vertical Visual Proof: Passed
+
+Four fresh agents received isolated kits and completed visual research, image-only asset audition, concepts, script, and six-image proof review without image, video, voice, or MP4 provider calls.
+
+- Recall.ai (SaaS) replaced tiny interface copy with visible meeting, bot, participant, and product-output states.
+- FinalStraw (ecommerce) replaced an ambiguous elastic-core patent image with disposal, carry, assembly, and cleaning actions.
+- MasterClass (information business) replaced course-page screenshots with experts demonstrating, teaching, and practicing alongside a learner artifact. A direct-download 403 exposed and verified the timeboxed visible-browser screenshot fallback.
+- Orangetheory (brick and mortar) replaced two similar orange class photos and an unrelated machine readout with room versus floor plan, treadmill versus station loop, and coach versus heart-zone visuals.
+
+Human review passed all four image-only boards at phone size. The result proves the visual gate across four business models; it does not claim that final narrated videos were rendered in this pass.

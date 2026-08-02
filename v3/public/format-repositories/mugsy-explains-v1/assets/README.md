@@ -5,6 +5,6 @@
 - `voice/*.wav`: authorized voice references extracted from that same source.
 - `proof/*`: bundled proof images for the Wiggly example.
 
-For a new subject, inventory 6-20 sourced images in `visual-assets.json` before concepts. Prefer official images and screenshots. General image search is supplemental, not a substitute for source provenance.
+For a new subject, inventory 6-12 sourced images in `visual-assets.json` before concepts. Prefer official images and screenshots that work without fine text. General image search is supplemental, not a substitute for source provenance.
 
 The pose and voice-reference assets are included with the source owner's permission for use inside this Wiggly Format. They are not licensed for extraction, resale, or standalone redistribution.

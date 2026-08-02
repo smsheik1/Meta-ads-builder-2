@@ -8,7 +8,7 @@
       "image": "assets/proof/prompt.png",
       "proves": "A prompt is one direct instruction to make an output.",
       "recognizableObject": "A short MAKE ME AN AD prompt card.",
-      "visualType": "tight-text-crop",
+      "visualType": "interface",
       "cropInstruction": "Keep only the single prompt card large enough to read instantly."
     },
     {

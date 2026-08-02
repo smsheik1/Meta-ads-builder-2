@@ -41,7 +41,11 @@ class MugsyCreativeContractTest(unittest.TestCase):
     def test_approved_example_passes_free_contracts(self) -> None:
         assets = self.run_runner("assets")
         self.assertEqual(assets.returncode, 0, assets.stderr)
-        self.assertTrue(6 <= len(json.loads(assets.stdout)["assets"]) <= 20)
+        self.assertTrue(6 <= len(json.loads(assets.stdout)["assets"]) <= 12)
+
+        asset_board = self.run_runner("asset-board")
+        self.assertEqual(asset_board.returncode, 0, asset_board.stderr)
+        self.assertTrue((self.root / "run" / "review" / "asset-audition.jpg").is_file())
 
         concepts = self.run_runner("concepts")
         self.assertEqual(concepts.returncode, 0, concepts.stderr)
@@ -78,7 +82,42 @@ class MugsyCreativeContractTest(unittest.TestCase):
         self.write_json("visual-assets.json", inventory)
         result = self.run_runner("validate")
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("concept approval is stale", result.stderr)
+        self.assertIn("visual-inventory approval is stale", result.stderr)
+
+    def test_concepts_require_phone_size_asset_approval(self) -> None:
+        (self.root / "run" / "approvals" / "assets.json").unlink()
+        result = self.run_runner("concepts")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("visual inventory is not approved", result.stderr)
+
+    def test_visual_inventory_rejects_fine_text_dependency(self) -> None:
+        inventory = self.read_json("visual-assets.json")
+        inventory["assets"][0]["textDependency"] = "fine-text"
+        self.write_json("visual-assets.json", inventory)
+        result = self.run_runner("assets")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("depends on fine text", result.stderr)
+
+    def test_concepts_reject_same_scene_family_pair(self) -> None:
+        inventory = self.read_json("visual-assets.json")
+        inventory["assets"][1]["sceneFamily"] = inventory["assets"][0]["sceneFamily"]
+        self.write_json("visual-assets.json", inventory)
+        approval = self.run_runner("approve-assets", "--human-review", "pass")
+        self.assertEqual(approval.returncode, 0, approval.stderr)
+        result = self.run_runner("concepts")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("same scene family", result.stderr)
+
+    def test_concepts_reject_interface_heavy_story(self) -> None:
+        inventory = self.read_json("visual-assets.json")
+        inventory["assets"][1]["visualForm"] = "interface"
+        inventory["assets"][2]["visualForm"] = "interface"
+        self.write_json("visual-assets.json", inventory)
+        approval = self.run_runner("approve-assets", "--human-review", "pass")
+        self.assertEqual(approval.returncode, 0, approval.stderr)
+        result = self.run_runner("concepts")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("at most two interface visuals", result.stderr)
 
     def test_concepts_reject_unknown_visual_asset(self) -> None:
         concepts = self.read_json("concepts.json")
@@ -102,6 +141,8 @@ class MugsyCreativeContractTest(unittest.TestCase):
             asset["sourceKind"] = "constructed"
             asset["whyConstructed"] = "Test fixture has no sourced visual."
         self.write_json("visual-assets.json", inventory)
+        approval = self.run_runner("approve-assets", "--human-review", "pass")
+        self.assertEqual(approval.returncode, 0, approval.stderr)
         result = self.run_runner("concepts")
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("at most two constructed visuals", result.stderr)

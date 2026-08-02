@@ -49,7 +49,7 @@ for (const file of [
 const format = JSON.parse(readFileSync(`${packageRoot}/format.json`, "utf8"));
 assert.equal(format.id, "mugsy-explains");
 assert.equal(format.name, "Mugsy Explains");
-assert.equal(format.version, "0.3.0-proof");
+assert.equal(format.version, "0.3.1-proof");
 
 const storyPrompt = readFileSync(`${packageRoot}/prompts/story.md`, "utf8");
 assert.match(storyPrompt, /answer the same viewer question/i);
@@ -67,6 +67,8 @@ assert.match(conceptsPrompt, /six unique.*visualAssetIds/i);
 const visualResearchPrompt = readFileSync(`${packageRoot}/prompts/visual-research.md`, "utf8");
 assert.match(visualResearchPrompt, /official website/i);
 assert.match(visualResearchPrompt, /domain-filtered image search/i);
+assert.match(visualResearchPrompt, /five minutes fighting one download method/i);
+assert.match(visualResearchPrompt, /Do not use `pageAssets\.bundle`/i);
 assert.match(visualResearchPrompt, /at most two constructed visuals/i);
 
 const visualPrompt = readFileSync(`${packageRoot}/prompts/visual-plan.md`, "utf8");
@@ -79,7 +81,7 @@ assert.match(runner, /question must be exactly/);
 assert.match(runner, /concept approval is stale/i);
 assert.match(runner, /script approval is stale/i);
 assert.match(runner, /proof-board approval is stale/i);
-assert.match(runner, /6-20 sourced visual assets/i);
+assert.match(runner, /6-12 strong visual assets/i);
 assert.match(runner, /at most two constructed visuals/i);
 
 const profile = getDiscoveryFormatProfile("mugsy-explains");
@@ -89,7 +91,7 @@ assert.equal(profile?.handoff?.firstQuestion, "What should this video explain or
 assert.match(profile?.handoff?.totalEstimate || "", /\$0/);
 
 const prompt = buildDiscoveryHandoffPrompt(profile!, "https://wiggly.agentenamel.com");
-assert.match(prompt, /Exact public version: 0\.3\.0-proof/);
+assert.match(prompt, /Exact public version: 0\.3\.1-proof/);
 assert.match(prompt, /Use the bundled host, renderer, and pose pack/);
 assert.match(prompt, /show five concepts/i);
 assert.match(prompt, /show the complete script/i);

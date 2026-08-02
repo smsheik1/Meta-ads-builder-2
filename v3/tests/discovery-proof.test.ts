@@ -26,7 +26,7 @@ assert.equal(threeD.technicalHref, "/format-lab/three-d-breakdown");
 
 const mugsyExplains = getDiscoveryFormatProfile("mugsy-explains");
 assert.ok(mugsyExplains, "Mugsy Explains should have a consumer Format proof.");
-assert.equal(mugsyExplains.version, "0.3.0-proof");
+assert.equal(mugsyExplains.version, "0.3.1-proof");
 assert.equal(mugsyExplains.proofEntries.length, 1);
 assert.equal(mugsyExplains.technicalHref, "/format-lab/mugsy-explains");
 

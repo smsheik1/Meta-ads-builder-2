@@ -7,7 +7,6 @@ import os
 import shutil
 import subprocess
 import sys
-import textwrap
 from pathlib import Path
 
 try:
@@ -28,7 +27,9 @@ APPROVALS = RUN / "approvals"
 ROLES = ("a", "b", "question", "explain_a", "explain_b")
 STORY_BEATS = ("setup", "mechanism", "payoff")
 FONT_PATH = ROOT / "assets" / "fonts" / "PatrickHand-Regular.ttf"
-VISUAL_TYPES = ("object", "diagram", "number", "tight-text-crop", "product", "icon")
+VISUAL_TYPES = ("object", "person", "action", "place", "diagram", "number", "product", "icon", "interface")
+VISUAL_FORMS = ("object", "person", "action", "place", "simple-graphic", "interface")
+TEXT_DEPENDENCIES = ("none", "large-label")
 VISUAL_SOURCE_KINDS = ("official-image", "official-screenshot", "licensed-reference", "constructed")
 MAX_CONSTRUCTED_VISUALS = 2
 AD_PHRASES = (
@@ -94,12 +95,21 @@ def validate_brief() -> dict:
 def validate_visual_assets() -> dict:
     inventory = load_json(VISUAL_ASSETS_PATH)
     assets = inventory.get("assets")
-    if not isinstance(assets, list) or not 6 <= len(assets) <= 20:
-        fail("visual-assets.json must contain 6-20 sourced visual assets before concepts are generated.")
+    if not isinstance(assets, list) or not 6 <= len(assets) <= 12:
+        fail("visual-assets.json must contain 6-12 strong visual assets before concepts are generated.")
     asset_ids: set[str] = set()
     local_paths: set[str] = set()
     for index, asset in enumerate(assets, start=1):
-        required = ("id", "localPath", "description", "recognizableObject", "sourcePageUrl", "assetSourceUrl")
+        required = (
+            "id",
+            "localPath",
+            "description",
+            "recognizableObject",
+            "glanceMeaning",
+            "sceneFamily",
+            "sourcePageUrl",
+            "assetSourceUrl",
+        )
         if not all(isinstance(asset.get(field), str) and asset[field].strip() for field in required):
             fail(f"Visual asset {index} is missing required source or recognition metadata.")
         if asset["id"] in asset_ids:
@@ -110,6 +120,16 @@ def validate_visual_assets() -> dict:
         local_paths.add(asset["localPath"])
         if asset.get("sourceKind") not in VISUAL_SOURCE_KINDS:
             fail(f"Visual asset {asset['id']} has an unsupported sourceKind.")
+        if asset.get("visualForm") not in VISUAL_FORMS:
+            fail(f"Visual asset {asset['id']} has an unsupported visualForm.")
+        if asset.get("textDependency") not in TEXT_DEPENDENCIES:
+            fail(
+                f"Visual asset {asset['id']} depends on fine text or has an unsupported textDependency. "
+                "Use a picture that works without reading small copy."
+            )
+        glance_word_count = len(asset["glanceMeaning"].split())
+        if not 2 <= glance_word_count <= 8:
+            fail(f"Visual asset {asset['id']} glanceMeaning must be 2-8 concrete words.")
         if not isinstance(asset.get("subjectSpecific"), bool):
             fail(f"Visual asset {asset['id']} must declare subjectSpecific as true or false.")
         for source_field in ("sourcePageUrl", "assetSourceUrl"):
@@ -134,6 +154,22 @@ def validate_visual_assets() -> dict:
         except Exception as error:
             fail(f"Visual asset {asset['id']} is unreadable: {asset['localPath']} ({error})")
     return inventory
+
+
+def asset_approval_hash() -> str:
+    inventory = validate_visual_assets()
+    asset_paths = [ROOT / item["localPath"] for item in inventory["assets"]]
+    return paths_hash([VISUAL_ASSETS_PATH, *asset_paths])
+
+
+def require_asset_approval() -> dict:
+    path = APPROVALS / "assets.json"
+    if not path.is_file():
+        fail("The visual inventory is not approved. Run asset-board, inspect it at phone size, then run approve-assets.")
+    receipt = load_json(path)
+    if receipt.get("status") != "approved" or receipt.get("inputHash") != asset_approval_hash():
+        fail("The visual-inventory approval is stale. Review the current asset board and approve it again.")
+    return receipt
 
 
 def validate_concepts(require_selected: bool = False) -> dict:
@@ -180,6 +216,12 @@ def validate_concepts(require_selected: bool = False) -> dict:
             fail(f"Concept {concept['id']} may use at most two constructed visuals.")
         if sum(bool(asset["subjectSpecific"]) for asset in chosen_assets) < 4:
             fail(f"Concept {concept['id']} must use at least four subject-specific visuals.")
+        if len({asset["visualForm"] for asset in chosen_assets}) < 3:
+            fail(f"Concept {concept['id']} must use at least three different visual forms.")
+        if len({asset["sceneFamily"] for asset in chosen_assets}) < 5:
+            fail(f"Concept {concept['id']} must use at least five visibly different scene families.")
+        if sum(asset["visualForm"] == "interface" for asset in chosen_assets) > 2:
+            fail(f"Concept {concept['id']} may use at most two interface visuals.")
         comparisons = concept.get("comparisonPlan")
         if not isinstance(comparisons, list) or len(comparisons) != 3:
             fail(f"Concept {concept['id']} must plan exactly three comparisons.")
@@ -188,11 +230,19 @@ def validate_concepts(require_selected: bool = False) -> dict:
         for comparison in comparisons:
             if not all(
                 isinstance(comparison.get(field), str) and comparison[field].strip()
-                for field in ("beat", "leftLabel", "rightLabel", "difference")
+                for field in ("beat", "leftLabel", "rightLabel", "difference", "visualContrast")
             ):
                 fail(f"Concept {concept['id']} has an incomplete comparison plan.")
             if comparison["leftLabel"].strip().lower() == comparison["rightLabel"].strip().lower():
                 fail(f"Concept {concept['id']} compares identical labels.")
+        for pair_index in range(3):
+            left_asset, right_asset = chosen_assets[pair_index * 2 : pair_index * 2 + 2]
+            if left_asset["sceneFamily"] == right_asset["sceneFamily"]:
+                fail(
+                    f"Concept {concept['id']} comparison {pair_index + 1} uses two images from the same scene family."
+                )
+            if left_asset["glanceMeaning"].strip().lower() == right_asset["glanceMeaning"].strip().lower():
+                fail(f"Concept {concept['id']} comparison {pair_index + 1} does not have a visible A/B difference.")
     selected = data.get("selectedConceptId")
     if require_selected and selected not in concept_ids:
         fail("concepts.json must select one of its five concept IDs.")
@@ -399,6 +449,7 @@ def visual_factory(path: Path):
 
 def require_creative_approvals(content: dict) -> None:
     concepts = validate_concepts(require_selected=True)
+    require_asset_approval()
     require_concept_approval()
     require_script_approval()
     plan = validate_visual_plan(content, concepts)
@@ -443,6 +494,7 @@ def configure_engine(require_approvals: bool = False) -> None:
 
 
 def show_concepts() -> None:
+    require_asset_approval()
     data = validate_concepts()
     inventory = validate_visual_assets()
     visual_assets = {item["id"]: item for item in inventory["assets"]}
@@ -475,9 +527,66 @@ def show_assets() -> None:
     print(json.dumps({"status": "review-required", **inventory, "providerCalls": 0}, indent=2))
 
 
+def asset_board() -> Path:
+    inventory = validate_visual_assets()
+    assets = inventory["assets"]
+    rows = (len(assets) + 1) // 2
+    canvas = Image.new("RGB", (1080, 1920), (246, 248, 250))
+    draw = ImageDraw.Draw(canvas)
+    title_font = ImageFont.truetype(str(FONT_PATH), 54)
+    number_font = ImageFont.truetype(str(FONT_PATH), 34)
+    draw.text((40, 30), "Visual audition", font=title_font, fill=(12, 12, 24))
+    draw.text((40, 91), "At phone size, can you identify every picture without reading fine print?", font=number_font, fill=(65, 75, 90))
+    card_width = 498
+    card_height = min(560, 1710 // rows)
+    for index, asset in enumerate(assets):
+        column, row = index % 2, index // 2
+        x = 30 + column * 522
+        y = 160 + row * card_height
+        draw.rounded_rectangle(
+            (x, y, x + card_width, y + card_height - 14),
+            radius=14,
+            fill="white",
+            outline=(190, 198, 210),
+            width=2,
+        )
+        draw.text((x + 18, y + 10), str(index + 1), font=number_font, fill=(12, 12, 24))
+        image_box = (x + 18, y + 54, x + card_width - 18, y + card_height - 32)
+        with Image.open(ROOT / asset["localPath"]) as image:
+            visual = ImageOps.contain(
+                image.convert("RGB"),
+                (image_box[2] - image_box[0], image_box[3] - image_box[1]),
+                Image.Resampling.LANCZOS,
+            )
+        visual_x = image_box[0] + (image_box[2] - image_box[0] - visual.width) // 2
+        visual_y = image_box[1] + (image_box[3] - image_box[1] - visual.height) // 2
+        canvas.paste(visual, (visual_x, visual_y))
+    review_dir = RUN / "review"
+    review_dir.mkdir(parents=True, exist_ok=True)
+    path = review_dir / "asset-audition.jpg"
+    canvas.save(path, quality=94)
+    print(json.dumps({"status": "review-required", "artifact": str(path), "providerCalls": 0}, indent=2))
+    return path
+
+
+def approve_assets(human_review: str) -> None:
+    if human_review != "pass":
+        fail("Asset approval requires --human-review pass after viewing the image-only audition at phone size.")
+    board = asset_board()
+    APPROVALS.mkdir(parents=True, exist_ok=True)
+    receipt = {
+        "status": "approved",
+        "inputHash": asset_approval_hash(),
+        "assetBoard": str(board.relative_to(ROOT)),
+    }
+    write_json(APPROVALS / "assets.json", receipt)
+    print(json.dumps(receipt, indent=2))
+
+
 def approve_concept(concept_id: str | None, human_review: str) -> None:
     if human_review != "pass":
         fail("Concept approval requires --human-review pass after showing all five concepts.")
+    require_asset_approval()
     data = validate_concepts()
     valid_ids = {concept["id"] for concept in data["concepts"]}
     if concept_id not in valid_ids:
@@ -501,10 +610,6 @@ def approve_script(human_review: str) -> None:
     print(json.dumps(receipt, indent=2))
 
 
-def wrapped_lines(text: str, width: int) -> list[str]:
-    return textwrap.wrap(text, width=width, break_long_words=False) or [""]
-
-
 def proof_board() -> Path:
     require_concept_approval()
     require_script_approval()
@@ -515,9 +620,14 @@ def proof_board() -> Path:
     draw = ImageDraw.Draw(canvas)
     title_font = ImageFont.truetype(str(FONT_PATH), 54)
     label_font = ImageFont.truetype(str(FONT_PATH), 38)
-    note_font = ImageFont.truetype(str(FONT_PATH), 27)
     draw.text((40, 30), "Six-image proof review", font=title_font, fill=(12, 12, 24))
-    draw.text((40, 91), "Can every image prove one point in under one second?", font=note_font, fill=(65, 75, 90))
+    subtitle_font = ImageFont.truetype(str(FONT_PATH), 27)
+    draw.text(
+        (40, 91),
+        "Do the pictures and A/B differences make sense without explanatory copy?",
+        font=subtitle_font,
+        fill=(65, 75, 90),
+    )
     card_width, card_height = 498, 560
     for index, proof in enumerate(plan["proofs"]):
         column, row = index % 2, index // 2
@@ -527,16 +637,12 @@ def proof_board() -> Path:
         lesson = content["lessons"][proof["lesson"] - 1]
         label = lesson[f"{proof['side']}Label"].title()
         draw.text((x + 22, y + 16), f"{proof['lesson']}. {label}", font=label_font, fill=(12, 12, 24))
-        image_box = (x + 20, y + 72, x + card_width - 20, y + 390)
+        image_box = (x + 20, y + 72, x + card_width - 20, y + card_height - 24)
         with Image.open(ROOT / proof["image"]) as image:
             visual = ImageOps.contain(image.convert("RGB"), (image_box[2] - image_box[0], image_box[3] - image_box[1]), Image.Resampling.LANCZOS)
         visual_x = image_box[0] + (image_box[2] - image_box[0] - visual.width) // 2
         visual_y = image_box[1] + (image_box[3] - image_box[1] - visual.height) // 2
         canvas.paste(visual, (visual_x, visual_y))
-        cursor_y = y + 410
-        for line in wrapped_lines(proof["proves"], 39)[:4]:
-            draw.text((x + 22, cursor_y), line, font=note_font, fill=(45, 55, 70))
-            cursor_y += 31
     review_dir = RUN / "review"
     review_dir.mkdir(parents=True, exist_ok=True)
     path = review_dir / "proof-board.jpg"
@@ -726,6 +832,8 @@ def main() -> None:
         choices=(
             "smoke",
             "assets",
+            "asset-board",
+            "approve-assets",
             "concepts",
             "approve-concept",
             "approve-script",
@@ -744,6 +852,10 @@ def main() -> None:
         smoke()
     elif args.command == "assets":
         show_assets()
+    elif args.command == "asset-board":
+        asset_board()
+    elif args.command == "approve-assets":
+        approve_assets(args.human_review)
     elif args.command == "concepts":
         show_concepts()
     elif args.command == "approve-concept":
