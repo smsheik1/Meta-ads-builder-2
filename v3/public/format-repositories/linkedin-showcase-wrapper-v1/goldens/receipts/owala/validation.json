@@ -1,0 +1,10 @@
+{
+  "pass": true,
+  "brandWebsite": "https://owalalife.com/",
+  "durationSeconds": 20,
+  "width": 1080,
+  "height": 1920,
+  "fps": 60,
+  "audioStreams": 1,
+  "selectedIngredientRole": "featured-product"
+}

@@ -47,6 +47,7 @@ assert.equal(videoMeme.version, "1.0.0");
 assert.equal(videoMeme.proofEntries.length, 35, "Video Meme proof should include three canonical templates and every DB import.");
 
 for (const slug of [
+  "linkedin-showcase-wrapper",
   "visualizer",
   "were-sorry",
   "text-message",
@@ -136,7 +137,8 @@ assert.ok(
     discoveryFormatSlugs.includes("dark-aesthetic-filter") &&
     discoveryFormatSlugs.includes("2000s-effect") &&
     discoveryFormatSlugs.includes("80s-toon") &&
-    discoveryFormatSlugs.length === 45 &&
+    discoveryFormatSlugs.includes("linkedin-showcase-wrapper") &&
+    discoveryFormatSlugs.length === 46 &&
     !discoveryFormatSlugs.includes("motion-story"),
 );
 assert.equal(getDiscoveryFormatProfile("motion-story"), null);
@@ -171,11 +173,12 @@ assert.ok(
   formatPageSource.includes("generateStaticParams") &&
     formatPageSource.includes("DiscoveryProofMedia") &&
     formatPageSource.includes("Technical proof") &&
-    formatPageSource.includes('heroProof.media.kind === "image"') &&
+    formatPageSource.includes('entry.media.aspectRatio === "landscape"') &&
     formatPageSource.includes('entry.media.kind === "image"') &&
+    formatPageSource.includes("aspect-video") &&
     formatPageSource.includes("aspect-[3/4]") &&
     formatPageSource.includes("aspect-[9/16]"),
-  "Format pages should be static consumer proof surfaces over existing media and technical pages.",
+  "Format pages should be static consumer proof surfaces that preserve each proof's declared aspect ratio.",
 );
 assert.equal(existsSync("app/ads"), false, "Discovery must not add a second /ads detail route.");
 

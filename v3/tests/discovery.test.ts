@@ -112,6 +112,16 @@ assert.match(
   "Static creative cards should use a 4:5 white canvas.",
 );
 assert.match(
+  discoveryClient,
+  /entry\.media\.aspectRatio === "landscape"[\s\S]*?styles\.mediaWellLandscape/,
+  "Landscape proof should select the reusable landscape media well without a Format-slug exception.",
+);
+assert.match(
+  discoveryStyles,
+  /\.mediaWellLandscape\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*9;[^}]*background:\s*white;/,
+  "Landscape proof cards should use a 16:9 white canvas.",
+);
+assert.match(
   discoveryStyles,
   /\.mediaLink > img:not\(\[data-discovery-reference\]\)\s*\{[^}]*object-fit:\s*contain;/,
   "Discovery must preserve the complete text and composition of static creatives.",
@@ -327,7 +337,7 @@ assert.ok(
 
 const shelves = groupDiscoveryEntriesByShelf(published);
 const shelvedEntries = shelves.flatMap((shelf) => shelf.entries);
-assert.equal(shelves.length, 11, "Current Discovery proof should organize into eleven useful shelves.");
+assert.equal(shelves.length, 12, "Current Discovery proof should organize into twelve useful shelves.");
 assert.equal(
   shelvedEntries.length,
   published.length,
@@ -349,6 +359,12 @@ assert.deepEqual(
   shelves.find((shelf) => shelf.id === "brand-jingles")?.entries.map((entry) => entry.id),
   jingles.map((entry) => entry.id),
   "Every Brand Jingle should stay together in one horizontal shelf.",
+);
+assert.ok(
+  shelves
+    .find((shelf) => shelf.id === "post-production")
+    ?.entries.every((entry) => entry.format.slug === "linkedin-showcase-wrapper"),
+  "Post-Production should contain only independently runnable finishing Formats.",
 );
 assert.ok(
   shelves

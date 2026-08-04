@@ -1,0 +1,17 @@
+{
+  "id": "linkedin-showcase-wrapper",
+  "version": "1.0.0",
+  "title": "LinkedIn Showcase Wrapper",
+  "description": "Package one approved vertical video as a 16:9 LinkedIn process card showing the brand logo, featured or hero product, and Wiggly as the three ingredients.",
+  "status": "agent-ready",
+  "runtime": "node >=22",
+  "output": {
+    "type": "video",
+    "format": "mp4",
+    "width": 1920,
+    "height": 1080,
+    "duration": "derived from the approved source video",
+    "audio": "preserved when present"
+  },
+  "providerCostUsd": 0
+}

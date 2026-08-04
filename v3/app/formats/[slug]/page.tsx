@@ -9,6 +9,15 @@ import {
   discoveryFormatSlugs,
   getDiscoveryFormatProfile,
 } from "@/features/discovery/formatProof.server";
+import type { DiscoveryEntry } from "@/features/discovery/types";
+
+const proofMediaClassName = (entry: DiscoveryEntry, withBackground = false) => {
+  const background = withBackground ? " bg-[#080817]" : "";
+  if (entry.media.aspectRatio === "landscape") return `block aspect-video w-full object-contain${background}`;
+  return entry.media.kind === "image"
+    ? `block aspect-[3/4] w-full object-cover${background}`
+    : `block aspect-[9/16] w-full object-cover${background}`;
+};
 
 export function generateStaticParams() {
   return discoveryFormatSlugs.map((slug) => ({ slug }));
@@ -108,15 +117,11 @@ export default async function FormatPage({
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-[440px] overflow-hidden rounded-lg border-2 border-[#080817] bg-[#080817] shadow-[8px_8px_0_#080817]">
+        <div className={`mx-auto w-full ${heroProof.media.aspectRatio === "landscape" ? "max-w-[760px]" : "max-w-[440px]"} overflow-hidden rounded-lg border-2 border-[#080817] bg-[#080817] shadow-[8px_8px_0_#080817]`}>
           <DiscoveryProofMedia
             entry={heroProof}
             autoPlay={heroProof.media.kind === "video"}
-            className={
-              heroProof.media.kind === "image"
-                ? "block aspect-[3/4] w-full object-cover"
-                : "block aspect-[9/16] w-full object-cover"
-            }
+            className={proofMediaClassName(heroProof)}
           />
         </div>
       </section>
@@ -143,11 +148,7 @@ export default async function FormatPage({
                 <DiscoveryProofMedia
                   entry={entry}
                   autoPlay={false}
-                  className={
-                    entry.media.kind === "image"
-                      ? "block aspect-[3/4] w-full bg-[#080817] object-cover"
-                      : "block aspect-[9/16] w-full bg-[#080817] object-cover"
-                  }
+                  className={proofMediaClassName(entry, true)}
                 />
                 <div className="p-4">
                   <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#667087]">

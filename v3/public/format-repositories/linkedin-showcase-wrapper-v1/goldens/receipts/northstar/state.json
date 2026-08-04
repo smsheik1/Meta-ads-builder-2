@@ -1,0 +1,27 @@
+{
+  "id": "northstar-golden",
+  "status": "finalized",
+  "createdAt": "2026-08-02T15:04:52.544Z",
+  "validatedAt": "2026-08-02T15:04:53.003Z",
+  "renderedAt": "2026-08-02T15:05:01.753Z",
+  "output": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/northstar-golden/northstar-linkedin-showcase.mp4",
+  "inspectedAt": "2026-08-02T15:05:02.281Z",
+  "inspection": {
+    "automaticPass": true,
+    "durationSeconds": 3.050667,
+    "sourceDurationSeconds": 3,
+    "durationWithinTolerance": true,
+    "width": 1920,
+    "height": 1080,
+    "videoStreams": 1,
+    "audioStreams": 1,
+    "sourceAudioStreams": 1,
+    "audioPreserved": true,
+    "contactSheet": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/northstar-golden/contact-sheet.jpg"
+  },
+  "finalizedAt": "2026-08-02T15:05:16.187Z",
+  "humanReview": {
+    "approved": true,
+    "note": "All three ingredients are clean, the arrow is clear, the output is undistorted, and all four contact-sheet frames pass."
+  }
+}

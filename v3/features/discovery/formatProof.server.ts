@@ -16,6 +16,53 @@ type FormatProfileConfig = {
 
 const formatConfigs: FormatProfileConfig[] = [
   {
+    slug: "linkedin-showcase-wrapper",
+    promise: "Turn one approved vertical video into a LinkedIn-ready process card that shows what made it.",
+    lastUpdated: "August 2026",
+    technicalHref: "/format-lab/linkedin-showcase-wrapper",
+    manifestPath: "format-repositories/linkedin-showcase-wrapper-v1/format.json",
+    whatStays: [
+      "The approved finished video on the right",
+      "The brand logo as ingredient one",
+      "The featured or hero product as ingredient two",
+      "The Wiggly wordmark as ingredient three",
+      "A 16:9 MP4 with source timing and audio preserved",
+    ],
+    whatChanges: [
+      "The approved source video",
+      "The brand logo",
+      "The featured product or primary offering",
+    ],
+    handoff: {
+      requiredInputs: [
+        "One finished and explicitly approved video",
+        "The official brand website",
+      ],
+      deliverables: [
+        "One validated ingredient manifest",
+        "One 1920x1080 MP4 timed to the source",
+        "One four-frame contact sheet",
+        "One inspection and provenance receipt",
+      ],
+      instructions: [
+        "Download and run this standalone Repo only after the source video is approved",
+        "Inspect the video, then source the official logo and exact featured product from the supplied website",
+        "Use the real hero product or primary offering only when no product appears in the video",
+        "Do not depend on assets or context from another Wiggly Repo",
+        "Render locally with the packaged composition and no API key",
+        "Inspect the contact sheet and watch the complete output before finalizing",
+      ],
+      estimates: [
+        { label: "Prepare + validate", cost: "$0 provider cost", time: "under 1 min" },
+        { label: "Local render", cost: "$0 provider cost", time: "usually 1-4 min" },
+        { label: "Inspect + finalize", cost: "$0 provider cost", time: "about 1 min" },
+      ],
+      totalEstimate: "$0 provider cost and usually 2-6 min",
+      output: "One landscape 1920x1080 MP4 matching the approved source duration and audio",
+      firstQuestion: "Which approved finished video should I package for LinkedIn?",
+    },
+  },
+  {
     slug: "mugsy-explains",
     promise: "Turn three useful differences into a fast visual lesson people can understand at a glance.",
     lastUpdated: "August 2026",

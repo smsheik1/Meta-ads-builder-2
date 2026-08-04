@@ -1,0 +1,47 @@
+{
+  "progress": "Approve -> Source -> Prepare -> Validate -> Render -> Inspect -> Finalize",
+  "stages": [
+    {
+      "id": "Approve",
+      "output": "One finished source video with explicit approval and an approval note",
+      "paid": false,
+      "approvalRequired": true
+    },
+    {
+      "id": "Source",
+      "output": "An official brand logo and the featured product or hero offering, each downloaded by the agent with exact source provenance",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "Prepare",
+      "output": "A local copy of the video, brand logo, featured or hero product, and fixed Wiggly wordmark",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "Validate",
+      "output": "Readable media, resolved ingredient role, duration, frame rate, audio count, and input hashes",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "Render",
+      "output": "One local 1920x1080 MP4 through the packaged Remotion composition",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "Inspect",
+      "output": "Automatic media checks, four-frame contact sheet, and provenance receipt",
+      "paid": false,
+      "approvalRequired": false
+    },
+    {
+      "id": "Finalize",
+      "output": "One human-reviewed LinkedIn-ready MP4",
+      "paid": false,
+      "approvalRequired": true
+    }
+  ]
+}

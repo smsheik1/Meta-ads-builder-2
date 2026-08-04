@@ -1,0 +1,13 @@
+{
+  "automaticPass": true,
+  "durationSeconds": 3.050667,
+  "sourceDurationSeconds": 3,
+  "durationWithinTolerance": true,
+  "width": 1920,
+  "height": 1080,
+  "videoStreams": 1,
+  "audioStreams": 1,
+  "sourceAudioStreams": 1,
+  "audioPreserved": true,
+  "contactSheet": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/northstar-golden/contact-sheet.jpg"
+}

@@ -1,0 +1,31 @@
+{
+  "format": "linkedin-showcase-wrapper",
+  "version": "1.0.0",
+  "sourceFormat": "three-d-breakdown",
+  "sourceRun": "owala-freesip-day7-v1104-stable-endpoints-r8",
+  "sourceApproval": "User approved the complete Owala final before requesting the LinkedIn wrapper",
+  "brandWebsite": "https://owalalife.com/",
+  "selectedIngredientRole": "featured-product",
+  "inputs": {
+    "approvedVideo": {
+      "path": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/owala-golden/assets/approved-video.mp4",
+      "sha256": "9f6140b04c3196d5dc50fa6be96b928907d0156b6d635db6c9a5db8522dc7c40"
+    },
+    "brandLogo": {
+      "path": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/owala-golden/assets/brand-logo.png",
+      "sha256": "6c91b715515f4fff290e14d6bd041a63bfa60419f1cfd5bd5abc3ad7c7e58468"
+    },
+    "productOrOffering": {
+      "path": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/owala-golden/assets/product-or-offering.png",
+      "sha256": "320fa89d09ea179c6f8fd0d67a6b21c2dd05642255068d66d943d023374de87f"
+    },
+    "wigglyLogo": {
+      "path": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/owala-golden/assets/wiggly-wordmark.png",
+      "sha256": "1aaa74bd1eccc770c550742e5147d51116739c8a2d86c4af7dde2ecfa697ae9c"
+    }
+  },
+  "output": {
+    "path": "format-repositories/linkedin-showcase-wrapper-v1/agent-runs/owala-golden/owala-linkedin-showcase.mp4",
+    "sha256": "2b9b19e4aaa49b1230cf13ebf3f39cdfca1a947f2cca0867db03896eaf5c2688"
+  }
+}

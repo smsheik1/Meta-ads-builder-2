@@ -1,0 +1,21 @@
+{
+  "name": "wiggly-linkedin-showcase-wrapper-format-kit",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "check:kit": "node kit-smoke.mjs",
+    "format:linkedin-showcase": "tsx scripts/linkedin-showcase-wrapper-format.ts",
+    "smoke": "tsx scripts/smoke-linkedin-showcase-wrapper.ts",
+    "test": "tsx tests/linkedin-showcase-wrapper-agent-runner.test.ts && node kit-smoke.mjs"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.473",
+    "@remotion/renderer": "4.0.473",
+    "react": "19.0.1",
+    "react-dom": "19.0.1",
+    "remotion": "4.0.473",
+    "tsx": "4.20.6"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "runtime": "Node.js 22 or newer",
+  "system": ["ffmpeg", "ffprobe"],
+  "apiKeys": [],
+  "providerCalls": [],
+  "providerCostUsd": 0,
+  "notes": [
+    "The input video must already be approved.",
+    "The host agent needs web access to source the official logo and product or hero-offering image from the supplied website.",
+    "The renderer is local and does not call Replicate, Gemini, OpenAI, or another provider."
+  ]
+}

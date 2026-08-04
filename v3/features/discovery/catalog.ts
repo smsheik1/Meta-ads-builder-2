@@ -2133,6 +2133,28 @@ const fortniteFilterDiscoveryEntries: DiscoveryEntry[] = [
 
 export const discoveryCatalog: DiscoveryEntry[] = [
   {
+    id: "owala-linkedin-showcase-wrapper",
+    status: "published",
+    order: 0.5,
+    brand: "Owala",
+    title: "Show the ingredients behind the finished video",
+    curatorNote: "The landscape wrapper makes the process legible at a glance: Owala, the featured FreeSip bottle, and Wiggly become the approved vertical output.",
+    goal: "story",
+    media: {
+      kind: "video",
+      src: "/format-repositories/linkedin-showcase-wrapper-v1/goldens/owala-linkedin-showcase.mp4",
+      poster: "/format-repositories/linkedin-showcase-wrapper-v1/goldens/owala-linkedin-showcase-poster.jpg",
+      aspectRatio: "landscape",
+      durationLabel: "20 sec",
+    },
+    format: {
+      slug: "linkedin-showcase-wrapper",
+      name: "LinkedIn Showcase Wrapper",
+      version: "1.0.0",
+      owner: "Wiggly Studio",
+    },
+  },
+  {
     id: "final-straw-pocket-problem",
     status: "published",
     order: 1,
@@ -2530,6 +2552,12 @@ export type DiscoveryShelf = {
 };
 
 const discoveryShelfDefinitions = [
+  {
+    id: "post-production",
+    title: "Post-Production",
+    description: "Package finished work for the place you want to share it.",
+    formats: ["linkedin-showcase-wrapper"],
+  },
   {
     id: "product-stories",
     title: "Product Stories in Motion",
