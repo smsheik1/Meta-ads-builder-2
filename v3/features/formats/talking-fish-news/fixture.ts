@@ -75,6 +75,17 @@ export const talkingFishNewsProofScene: TalkingFishNewsProofScene = {
     stationName: "Breaking News",
     anchorOpenImageSrc: "/talking-fish-news-assets/fixed-fish-anchor-open.png",
     anchorClosedImageSrc: "/talking-fish-news-assets/fixed-fish-anchor-closed.png",
+    speechSegments: [
+      { startMs: 117, endMs: 1075 },
+      { startMs: 1222, endMs: 1970 },
+      { startMs: 2071, endMs: 3626 },
+      { startMs: 3723, endMs: 6644 },
+      { startMs: 6908, endMs: 8953 },
+      { startMs: 9158, endMs: 10854 },
+      { startMs: 10943, endMs: 13638 },
+      { startMs: 13869, endMs: 15709 },
+      { startMs: 16169, endMs: 18504 },
+    ],
     linkText: "nasa.gov",
     beats: [
       {

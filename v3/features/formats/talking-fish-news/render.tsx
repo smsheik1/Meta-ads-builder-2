@@ -31,8 +31,13 @@ export function TalkingFishNewsRenderer({
   const fadeIn = Math.min(1, elapsedMs / 220);
   const fadeOut = Math.min(1, remainingMs / 220);
   const proofOpacity = Math.min(fadeIn, fadeOut);
-  const mouthOpen = timeSeconds * 1000 < scene.layout.durationMs
-    && Math.floor((timeSeconds * 1000) / 150) % 2 === 1;
+  const timeMs = timeSeconds * 1000;
+  const speechSegment = scene.layout.speechSegments.find((segment) => (
+    timeMs >= segment.startMs && timeMs < segment.endMs
+  ));
+  const mouthOpen = speechSegment
+    ? Math.floor((timeMs - speechSegment.startMs) / 150) % 2 === 0
+    : false;
 
   const anchorStyle: CSSProperties = {
     position: "absolute",

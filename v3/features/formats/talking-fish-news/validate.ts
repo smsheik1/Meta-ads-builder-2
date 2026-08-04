@@ -22,6 +22,18 @@ export function validateTalkingFishNewsScene(scene: TalkingFishNewsProofScene): 
   }
   if (!scene.layout.anchorOpenImageSrc.trim()) errors.push("Talking Fish News open-mouth anchor image is missing.");
   if (!scene.layout.anchorClosedImageSrc.trim()) errors.push("Talking Fish News closed-mouth anchor image is missing.");
+  if (
+    scene.layout.speechSegments.length === 0
+    || scene.layout.speechSegments.some((segment) => (
+      !Number.isFinite(segment.startMs)
+      || !Number.isFinite(segment.endMs)
+      || segment.startMs < 0
+      || segment.endMs <= segment.startMs
+      || segment.endMs > durationMs
+    ))
+  ) {
+    errors.push("Talking Fish News speech timing is invalid.");
+  }
   if (!scene.layout.stationName.trim()) errors.push("Talking Fish News station name is missing.");
   if (!scene.layout.linkText.trim()) errors.push("Talking Fish News final link is missing.");
   if (scene.backgroundMusic) errors.push("Talking Fish News proof cannot use a music bed.");

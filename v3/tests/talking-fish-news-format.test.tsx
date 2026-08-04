@@ -35,11 +35,17 @@ const openMouthHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
   mode: "video",
   timeSeconds: 7.65,
 }));
+const silentMouthHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
+  scene: talkingFishNewsProofScene,
+  mode: "video",
+  timeSeconds: 6.75,
+}));
 assert.ok(closedMouthHtml.includes('data-render-surface="ad"'));
 assert.ok(closedMouthHtml.includes('data-format="talking-fish-news"'));
 assert.ok(closedMouthHtml.includes('data-talking-fish-news-caption="true"'));
 assert.ok(closedMouthHtml.includes('data-talking-fish-news-mouth="closed"'));
 assert.ok(openMouthHtml.includes('data-talking-fish-news-mouth="open"'));
+assert.ok(silentMouthHtml.includes('data-talking-fish-news-mouth="closed"'));
 assert.ok(closedMouthHtml.includes("Tiny polygons. Entire valley."));
 assert.ok(closedMouthHtml.includes("fixed-fish-anchor-open.png"));
 assert.ok(closedMouthHtml.includes("fixed-fish-anchor-closed.png"));
