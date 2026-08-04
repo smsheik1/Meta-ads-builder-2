@@ -36,7 +36,10 @@ export function validateTalkingFishNewsScene(scene: TalkingFishNewsProofScene): 
   }
   if (!scene.layout.stationName.trim()) errors.push("Talking Fish News station name is missing.");
   if (!scene.layout.linkText.trim()) errors.push("Talking Fish News final link is missing.");
-  if (scene.backgroundMusic) errors.push("Talking Fish News proof cannot use a music bed.");
+  if (!scene.layout.musicBed.src.trim()) errors.push("Talking Fish News theme music is missing.");
+  if (scene.layout.musicBed.volume !== 0.11) errors.push("Talking Fish News theme music volume is invalid.");
+  if (scene.layout.musicBed.loop !== true) errors.push("Talking Fish News theme music must loop.");
+  if (scene.backgroundMusic) errors.push("Talking Fish News cannot add a second music bed.");
   if (scene.audio.status !== "generated" || !scene.audio.url) {
     errors.push("Talking Fish News narration is missing.");
   } else {

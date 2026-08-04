@@ -43,7 +43,9 @@ const RemotionVideoAsset: RenderVideoComponent = ({
 };
 
 export function getRenderMusicBed(scene: RenderableAdScene) {
-  return scene.format === "motion-story" ? scene.layout.musicBed : null;
+  return scene.format === "motion-story" || scene.format === "talking-fish-news"
+    ? scene.layout.musicBed
+    : null;
 }
 
 export function RemotionAdScene({ scene }: { scene: RenderableAdScene }) {
@@ -53,17 +55,18 @@ export function RemotionAdScene({ scene }: { scene: RenderableAdScene }) {
     ? scene.audio
     : null;
   const musicBed = getRenderMusicBed(scene);
-  const motionStoryMusicSrc = musicBed
+  const musicBedSrc = musicBed
     ? musicBed.src
     : "";
 
   return (
     <AbsoluteFill style={{ background: scene.style.backgroundColor }}>
       {audio ? <Audio src={resolveRenderAssetSrc(audio.url)} /> : null}
-      {motionStoryMusicSrc ? (
+      {musicBedSrc ? (
         <Audio
-          src={resolveRenderAssetSrc(motionStoryMusicSrc)}
+          src={resolveRenderAssetSrc(musicBedSrc)}
           volume={musicBed?.volume ?? 0.18}
+          loop={musicBed?.loop}
         />
       ) : null}
       <RenderAssetProvider Image={RemotionImageAsset} Video={RemotionVideoAsset}>

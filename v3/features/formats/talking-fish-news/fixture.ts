@@ -83,6 +83,11 @@ export const talkingFishNewsProofScene: TalkingFishNewsProofScene = {
     stationName: "Breaking News",
     anchorOpenImageSrc: "/talking-fish-news-assets/fixed-fish-anchor-open.png",
     anchorClosedImageSrc: "/talking-fish-news-assets/fixed-fish-anchor-closed.png",
+    musicBed: {
+      src: "/talking-fish-news-assets/bikini-bottom-news-theme.mp3",
+      volume: 0.11,
+      loop: true,
+    },
     speechSegments: [
       { startMs: 117, endMs: 1075 },
       { startMs: 1222, endMs: 1970 },

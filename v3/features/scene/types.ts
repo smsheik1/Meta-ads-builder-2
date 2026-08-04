@@ -598,6 +598,11 @@ export type TalkingFishNewsProofScene = AdSceneBase<
     anchorOpenImageSrc: string;
     anchorClosedImageSrc: string;
     speechSegments: Array<{ startMs: number; endMs: number }>;
+    musicBed: {
+      src: string;
+      volume: 0.11;
+      loop: true;
+    };
     linkText: string;
     beats: [
       TalkingFishNewsBeat,

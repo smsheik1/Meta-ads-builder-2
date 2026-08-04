@@ -47,6 +47,7 @@ used.
 - White captions with a coral outline sit directly over the anchor.
 - No station header, generic report pill, or dark lower-third box.
 - Narration uses Fish Audio voice `105a95c3aa3d4301b175ca1f7b3996ca` on `s2.1-pro-free`.
+- The user-supplied Bikini Bottom News theme plays at 11% beneath narration; confirm music rights before commercial distribution.
 - No image-generation or video-generation call.
 
 The two proof-only anchor poses were extracted from the public

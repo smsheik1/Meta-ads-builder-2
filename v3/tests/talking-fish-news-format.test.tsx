@@ -5,6 +5,7 @@ import { talkingFishNewsProofScene, talkingFishNewsProofScript } from "../featur
 import { validateTalkingFishNewsScene } from "../features/formats/talking-fish-news/validate";
 import { getFormatModule } from "../features/formats/registry";
 import { AdRenderSurface } from "../features/render/AdRenderSurface";
+import { getRenderMusicBed } from "../remotion-entry/RemotionAdScene";
 
 const wordCount = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
 const validation = validateTalkingFishNewsScene(talkingFishNewsProofScene);
@@ -18,6 +19,11 @@ assert.equal(talkingFishNewsProofScene.audio.status, "generated");
 assert.equal(talkingFishNewsProofScene.audio.provider, "fish-studio");
 assert.ok(talkingFishNewsProofScene.audio.model.includes("105a95c3aa3d4301b175ca1f7b3996ca"));
 assert.equal(talkingFishNewsProofScene.backgroundMusic, undefined);
+assert.deepEqual(getRenderMusicBed(talkingFishNewsProofScene), {
+  src: "/talking-fish-news-assets/bikini-bottom-news-theme.mp3",
+  volume: 0.11,
+  loop: true,
+});
 assert.equal(getFormatModule("talking-fish-news").id, "talking-fish-news");
 
 for (const beat of talkingFishNewsProofScene.layout.beats) {
