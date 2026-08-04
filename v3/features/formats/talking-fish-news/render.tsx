@@ -48,42 +48,38 @@ export function TalkingFishNewsRenderer({
     width: "100%",
     height: "100%",
     objectFit: "contain",
-    objectPosition: "center bottom",
-    transform: "translateY(5cqw)",
+    transform: "translateY(13cqw)",
     filter: "drop-shadow(0 1.2cqw 1.8cqw rgba(0,0,0,0.26))",
   };
 
   return (
     <div data-format="talking-fish-news" data-talking-fish-news-beat={activeIndex + 1} style={rootStyle}>
-      <div
-        aria-hidden="true"
-        data-talking-fish-news-studio="true"
+      <Image
+        alt="Underwater studio texture"
+        src="/talking-fish-news-assets/underwater-studio-background.png"
         style={{
           position: "absolute",
           inset: 0,
-          background: [
-            "radial-gradient(ellipse at 24% 18%, rgba(255,255,255,0.22) 0 5%, transparent 5.4%)",
-            "radial-gradient(ellipse at 70% 32%, rgba(255,255,255,0.13) 0 9%, transparent 9.5%)",
-            "radial-gradient(ellipse at 38% 58%, rgba(89,55,138,0.2) 0 13%, transparent 13.5%)",
-            "linear-gradient(180deg, #A98ADE 0%, #9A76CB 54%, #8763B8 100%)",
-          ].join(","),
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
         }}
       />
       <section
-        aria-label="News evidence inset"
-        data-talking-fish-news-evidence-inset="true"
+        aria-label="Framed evidence screen"
+        data-talking-fish-news-evidence-frame="true"
         style={{
           position: "absolute",
-          top: "22cqw",
-          left: "18cqw",
-          width: "40cqw",
-          height: "35cqw",
+          top: "7cqw",
+          left: "7cqw",
+          right: "7cqw",
+          height: "62cqw",
           overflow: "hidden",
-          border: "0.75cqw solid #29485D",
-          borderRadius: "0.7cqw",
-          background: "#18293A",
-          boxShadow: "0 1.2cqw 2cqw rgba(26,18,50,0.35)",
-          zIndex: 3,
+          border: "2.4cqw solid #D6A449",
+          borderRadius: "1.2cqw",
+          background: "#F7FBFF",
+          boxShadow: "0 0 0 0.55cqw #5B391E, 0 1.5cqw 2.8cqw rgba(20,42,44,0.28), inset 0 0 0 0.45cqw #F3CE72",
+          zIndex: 2,
         }}
       >
         <div
@@ -93,7 +89,7 @@ export function TalkingFishNewsRenderer({
             display: "grid",
             placeItems: "center",
             overflow: "hidden",
-            background: "#18293A",
+            background: "#F7FBFF",
           }}
         >
           <Image
@@ -128,12 +124,12 @@ export function TalkingFishNewsRenderer({
         aria-label="Fish report desk"
         style={{
           position: "absolute",
-          right: "1cqw",
+          left: 0,
+          right: 0,
           bottom: 0,
-          width: "82cqw",
-          height: "128cqw",
+          height: "108cqw",
           overflow: "hidden",
-          zIndex: 4,
+          zIndex: 3,
         }}
       >
         <div data-talking-fish-news-mouth={mouthOpen ? "open" : "closed"}>
@@ -152,21 +148,21 @@ export function TalkingFishNewsRenderer({
           aria-hidden="true"
           style={{
             position: "absolute",
-            left: "-28cqw",
-            right: "-2cqw",
+            left: 0,
+            right: 0,
             bottom: 0,
-            height: "18cqw",
-            borderTop: "0.55cqw solid rgba(18,61,69,0.9)",
-            background: "linear-gradient(180deg, #2CBCC3, #168791)",
+            height: "12cqw",
+            borderTop: "0.45cqw solid rgba(40,25,14,0.78)",
+            background: "linear-gradient(180deg, #806839, #4C361D)",
           }}
         />
         <div
           data-talking-fish-news-caption="true"
           style={{
             position: "absolute",
-            left: "-21cqw",
-            right: "3cqw",
-            bottom: "27cqw",
+            left: "5cqw",
+            right: "5cqw",
+            bottom: "39cqw",
             fontSize: "6.4cqw",
             fontWeight: 950,
             lineHeight: 1.02,
@@ -182,21 +178,6 @@ export function TalkingFishNewsRenderer({
           {caption?.text ?? ""}
         </div>
       </section>
-
-      <Image
-        alt="Underwater television frame"
-        data-talking-fish-news-tv-frame="true"
-        src="/talking-fish-news-assets/tv-frame-overlay.png"
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "fill",
-          pointerEvents: "none",
-          zIndex: 10,
-        }}
-      />
     </div>
   );
 }
