@@ -4,7 +4,7 @@ import type { ThreeDBreakdownStorySubject } from "../formats/three-d-breakdown/s
 export const AD_SCENE_VERSION = 1 as const;
 
 export type AdFormatId = "visualizer" | "meme" | "were-sorry" | "video-meme" | "jingle" | "text-message" | "brainrot" | "reviews" | "motion-story" | "three-d-breakdown";
-export type RenderableAdFormatId = AdFormatId | "static-package";
+export type RenderableAdFormatId = AdFormatId | "static-package" | "talking-fish-news";
 
 export type HeadlineType =
   | "painful_moment"
@@ -581,6 +581,32 @@ export type StaticPackageAdScene = AdSceneBase<
   }
 >;
 
+export type TalkingFishNewsBeat = {
+  line: string;
+  caption: string;
+  proofSrc: string;
+  startMs: number;
+  endMs: number;
+};
+
+export type TalkingFishNewsProofScene = AdSceneBase<
+  "talking-fish-news",
+  AdSceneStyleBase,
+  {
+    preset: "talking-fish-news-report";
+    durationMs: number;
+    stationName: string;
+    anchorImageSrc: string;
+    linkText: string;
+    beats: [
+      TalkingFishNewsBeat,
+      TalkingFishNewsBeat,
+      TalkingFishNewsBeat,
+      TalkingFishNewsBeat,
+    ];
+  }
+>;
+
 export type AdScene =
   | VisualizerAdScene
   | MemeAdScene
@@ -593,4 +619,4 @@ export type AdScene =
   | MotionStoryAdScene
   | ThreeDBreakdownAdScene;
 
-export type RenderableAdScene = AdScene | StaticPackageAdScene;
+export type RenderableAdScene = AdScene | StaticPackageAdScene | TalkingFishNewsProofScene;

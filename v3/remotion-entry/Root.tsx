@@ -9,7 +9,7 @@ export const adSceneFps = 60;
 export const adSceneDurationInFrames = adSceneFps * 5;
 
 export const getAdSceneDimensions = (scene: RenderableAdScene) => (
-  scene.format === "three-d-breakdown"
+  scene.format === "three-d-breakdown" || scene.format === "talking-fish-news"
     ? { width: 1080, height: 1920 }
     : scene.format === "static-package"
       ? { width: scene.layout.canvas.width, height: scene.layout.canvas.height }
@@ -26,7 +26,7 @@ export const getAdSceneDurationInFrames = (
   if (scene.format === "video-meme") {
     return Math.ceil(Math.max(1, scene.layout.durationSeconds, audioDurationSeconds + 0.35) * fps);
   }
-  if (scene.format === "motion-story" || scene.format === "three-d-breakdown") {
+  if (scene.format === "motion-story" || scene.format === "three-d-breakdown" || scene.format === "talking-fish-news") {
     return Math.ceil((scene.layout.durationMs / 1000) * fps);
   }
   const extraSeconds = scene.format === "brainrot" ? brainrotCtaDurationMs / 1000 : 0.35;
