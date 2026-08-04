@@ -6,12 +6,12 @@ export default function TalkingFishNewsProofPage() {
       <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[405px_minmax(0,1fr)] lg:items-center">
         <TalkingFishNewsProofClient />
         <section>
-          <p className="text-sm font-black uppercase tracking-[0.18em] text-teal-800">Wiggly proof</p>
+          <p className="text-sm font-black uppercase tracking-[0.18em] text-teal-800">Fresh news proof</p>
           <h1 className="mt-3 text-4xl font-black leading-none">Talking Fish News</h1>
-          <p className="mt-4 max-w-xl text-lg leading-7 text-slate-700">An original 18.45-second mini-report: fixed anchor, big visual proof, renderer captions, and one neutral narration track.</p>
+          <p className="mt-4 max-w-xl text-lg leading-7 text-slate-700">An 18.50-second report on Curiosity&apos;s latest Mars discovery, built from official NASA images and the fixed fish anchor.</p>
           <ul className="mt-6 space-y-2 text-sm font-semibold text-slate-700">
             <li>Fixed anchor across every beat</li>
-            <li>Four evidence-led proof changes</li>
+            <li>Three official NASA visuals</li>
             <li>No image or video provider call</li>
           </ul>
         </section>
