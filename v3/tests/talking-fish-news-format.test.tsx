@@ -43,6 +43,7 @@ assert.ok(openMouthHtml.includes('data-talking-fish-news-mouth="open"'));
 assert.ok(closedMouthHtml.includes("Tiny polygons. Entire valley."));
 assert.ok(closedMouthHtml.includes("fixed-fish-anchor-open.png"));
 assert.ok(closedMouthHtml.includes("fixed-fish-anchor-closed.png"));
+assert.ok(closedMouthHtml.includes("translateY(6cqw)"));
 assert.ok(closedMouthHtml.includes("mars-polygons-closeup.png"));
 assert.equal(closedMouthHtml.includes("THE DAILY CURRENT"), false);
 assert.equal(closedMouthHtml.includes("REPORT"), false);
