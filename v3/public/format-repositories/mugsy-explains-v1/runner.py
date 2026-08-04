@@ -54,6 +54,15 @@ def fail(message: str) -> None:
     raise SystemExit(message)
 
 
+def require_render_dependencies() -> None:
+    try:
+        __import__("ormsgpack")
+    except ModuleNotFoundError as error:
+        raise SystemExit(
+            "Missing Python packages: ormsgpack. Run: python3 -m pip install -r requirements.txt"
+        ) from error
+
+
 def load_json(path: Path):
     return json.loads(path.read_text())
 
@@ -671,6 +680,7 @@ def approve_proofs(human_review: str) -> None:
 
 
 def smoke() -> None:
+    require_render_dependencies()
     configure_engine()
     smoke_dir = RUN / "smoke"
     smoke_dir.mkdir(parents=True, exist_ok=True)
@@ -698,6 +708,7 @@ def validate() -> None:
 
 
 def render() -> None:
+    require_render_dependencies()
     configure_engine(require_approvals=True)
     engine.main()
     video = sorted((RUN / "output").glob("*.mp4"), key=lambda path: path.stat().st_mtime)[-1]

@@ -60,6 +60,13 @@ class MugsyCreativeContractTest(unittest.TestCase):
         self.assertEqual(validation.returncode, 0, validation.stderr)
         self.assertIn('"providerCalls": 0', validation.stdout)
 
+    def test_smoke_reports_missing_render_dependency(self) -> None:
+        (self.root / "ormsgpack.py").write_text('raise ModuleNotFoundError("simulated missing package")\n')
+        result = self.run_runner("smoke")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Missing Python packages: ormsgpack", result.stderr)
+        self.assertIn("python3 -m pip install -r requirements.txt", result.stderr)
+
     def test_brief_change_invalidates_concept_approval(self) -> None:
         brief = self.read_json("brief.json")
         brief["plainEnglish"] += " Changed after approval."
