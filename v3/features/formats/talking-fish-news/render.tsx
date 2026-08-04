@@ -54,16 +54,32 @@ export function TalkingFishNewsRenderer({
 
   return (
     <div data-format="talking-fish-news" data-talking-fish-news-beat={activeIndex + 1} style={rootStyle}>
-      <section
-        aria-label="Evidence panel"
+      <Image
+        alt="Underwater studio texture"
+        src="/talking-fish-news-assets/underwater-studio-background.png"
         style={{
           position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "50%",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+        }}
+      />
+      <section
+        aria-label="Framed evidence screen"
+        data-talking-fish-news-evidence-frame="true"
+        style={{
+          position: "absolute",
+          top: "7cqw",
+          left: "7cqw",
+          right: "7cqw",
+          height: "62cqw",
           overflow: "hidden",
-          background: "#081621",
+          border: "2.4cqw solid #D6A449",
+          borderRadius: "1.2cqw",
+          background: "#F7FBFF",
+          boxShadow: "0 0 0 0.55cqw #5B391E, 0 1.5cqw 2.8cqw rgba(20,42,44,0.28), inset 0 0 0 0.45cqw #F3CE72",
+          zIndex: 2,
         }}
       >
         <div
@@ -111,24 +127,11 @@ export function TalkingFishNewsRenderer({
           left: 0,
           right: 0,
           bottom: 0,
-          height: "50%",
+          height: "108cqw",
           overflow: "hidden",
-          background: "#42ADCA",
-          borderTop: "0.4cqw solid rgba(255,255,255,0.9)",
+          zIndex: 3,
         }}
       >
-        <Image
-          alt="Underwater studio texture"
-          src="/talking-fish-news-assets/underwater-studio-background.png"
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            opacity: 1,
-          }}
-        />
         <div data-talking-fish-news-mouth={mouthOpen ? "open" : "closed"}>
           <Image
             alt="Fish anchor, mouth closed"

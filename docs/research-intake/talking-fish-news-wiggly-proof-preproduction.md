@@ -40,6 +40,7 @@ used.
 
 - Evidence fills the upper half of the vertical frame.
 - The supplied suited fish anchor fills the lower half behind a plain desk.
+- Evidence plays inside one fixed newsroom picture frame instead of a detached split screen.
 - Talking uses exactly two aligned fixed sprites: one open mouth and one closed mouth.
 - The renderer closes the mouth during WAV-detected pauses and swaps the two sprites during speech; it does not generate lip sync or morph the character.
 - Captions use the exact narration words and their own audio timing; visual evidence changes independently.

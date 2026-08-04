@@ -46,6 +46,7 @@ const silentMouthHtml = renderToStaticMarkup(createElement(AdRenderSurface, {
 assert.ok(closedMouthHtml.includes('data-render-surface="ad"'));
 assert.ok(closedMouthHtml.includes('data-format="talking-fish-news"'));
 assert.ok(closedMouthHtml.includes('data-talking-fish-news-caption="true"'));
+assert.ok(closedMouthHtml.includes('data-talking-fish-news-evidence-frame="true"'));
 assert.ok(closedMouthHtml.includes('data-talking-fish-news-mouth="closed"'));
 assert.ok(openMouthHtml.includes('data-talking-fish-news-mouth="open"'));
 assert.ok(silentMouthHtml.includes('data-talking-fish-news-mouth="closed"'));
@@ -55,6 +56,8 @@ assert.ok(closedMouthHtml.includes("fixed-fish-anchor-open.png"));
 assert.ok(closedMouthHtml.includes("fixed-fish-anchor-closed.png"));
 assert.ok(closedMouthHtml.includes("translateY(6cqw)"));
 assert.ok(closedMouthHtml.includes("mars-polygons-closeup.png"));
+assert.ok(closedMouthHtml.includes("Framed evidence screen"));
+assert.equal(closedMouthHtml.includes("height:50%"), false);
 assert.equal(closedMouthHtml.includes("THE DAILY CURRENT"), false);
 assert.equal(closedMouthHtml.includes("REPORT"), false);
 
